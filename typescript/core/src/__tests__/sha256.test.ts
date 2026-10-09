@@ -3,11 +3,9 @@
  * implementation.
  *
  * It exists because the id of an annotation is a SHA-256 worked out at once,
- * and a sign-in's PKCE challenge is one worked out where `crypto.subtle` is
- * withheld, on a page that is not a secure context. A challenge hashes one
- * length only, a 64-character verifier, and an id a text of any length, so
- * that length and the padding boundaries around a block are where the
- * equivalence run looks hardest.
+ * in a browser as anywhere else. An id hashes a text of any length, so the
+ * padding boundaries around a block are where the equivalence run looks
+ * hardest.
  */
 import { createHash, randomBytes } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
@@ -40,7 +38,7 @@ describe('sha256', () => {
 
   it('agrees with the platform at every length across three blocks, the padding boundaries included', () => {
     // 55 bytes is the longest message whose padding fits its block; 56 spills
-    // the length into another; 64 is a whole block, and the length production hashes.
+    // the length into another; 64 is a whole block.
     for (let length = 0; length <= 192; length++) {
       const message = randomBytes(length);
       expect(hex(sha256(message)), `${length} bytes`).toBe(createHash('sha256').update(message).digest('hex'));
