@@ -1,0 +1,46 @@
+[package]
+name = "semiont"
+version.workspace = true
+edition = "2024"
+license = "Apache-2.0"
+repository.workspace = true
+description = "Semiont's Rust SDK: the protocol's types, the transport contract and a client of the bus over it, and what a client needs to name its principals and hold its roles, as specs/ states it."
+documentation = "https://docs.rs/semiont"
+keywords = ["semiont", "knowledge-base", "annotation", "agents", "sdk"]
+categories = ["api-bindings", "asynchronous"]
+
+[features]
+# The doubles and the axiom harnesses a consumer's tests use.
+testing = ["dep:proptest", "tokio/test-util"]
+# Text in any charset the Encoding Standard names, as a browser reads it.
+# Without it a resource's text is decoded only when it is UTF-8. A service
+# reads no resource as text, and does not enable it.
+charsets = ["dep:encoding_rs"]
+
+[dependencies]
+base64.workspace = true
+bytes.workspace = true
+encoding_rs = { workspace = true, optional = true }
+futures-core.workspace = true
+percent-encoding.workspace = true
+proptest = { workspace = true, optional = true }
+# The SHA-256 an annotation's id is derived with.
+ring.workspace = true
+serde = { workspace = true, features = ["derive"] }
+serde_json.workspace = true
+tokio = { workspace = true, features = ["sync", "time", "macros", "rt"] }
+tokio-stream = { workspace = true, features = ["sync"] }
+uuid = { workspace = true, features = ["v4"] }
+
+[dev-dependencies]
+base64.workspace = true
+# The claims tests read the trace a claim is made in, as a transport would.
+opentelemetry = { workspace = true, features = ["trace"] }
+# This crate's own tests use its testing surface, and read text in every charset.
+semiont = { path = ".", features = ["testing", "charsets"] }
+# The multi-threaded runtime is for the tests that hold a unit to the order it hears things in.
+tokio = { workspace = true, features = ["test-util", "rt-multi-thread"] }
+
+[build-dependencies]
+semiont-codegen.workspace = true
+serde_json.workspace = true
