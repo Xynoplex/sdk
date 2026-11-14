@@ -143,10 +143,15 @@ if [[ "$LANGUAGE" == all ]]; then
   cat <<EOF
 
 SDK artifacts are ready under:
-  TypeScript: $STATE_ROOT/npm/packages
-  Python:     $STATE_ROOT/python/packages
-  Rust:       $STATE_ROOT/rust/packages
-  Other SDKs: $STATE_ROOT
+  TypeScript (npm archives): $STATE_ROOT/npm/packages
+  Python (wheel and sdist):  $STATE_ROOT/python/packages
+  Rust (.crate archives):    $STATE_ROOT/rust/packages
+  Go (module proxy):         $STATE_ROOT/go-proxy
+  C# (NuGet packages):       $STATE_ROOT/nuget
+  Haskell (sdist):           $STATE_ROOT/haskell
+  Kotlin (Maven repository): $STATE_ROOT/kotlin-maven
+  OCaml (opam repository):   $STATE_ROOT/opam-repo/repo
+  Swift (source archive):    $STATE_ROOT/swift
 
 EOF
 else

@@ -47,7 +47,6 @@ run_container_quietly "$RUNTIME" run --rm \
     (cd /tmp/go-proxy-package && zip -qr "/out/$escaped/@v/v$version.zip" .)
   '
 fi
-
 if [[ "$LANGUAGE" == all || "$LANGUAGE" == csharp ]]; then
 echo 'Packing the .NET SDK in a .NET container…'
 dotnet_version="$(sed -n 's/.*"version": "\([^"]*\)".*/\1/p' "$ROOT/csharp/sdk/global.json" | sed -E 's/(-(preview|rc)\.[0-9]+)\.[0-9]+\.[0-9]+$/\1/')"
@@ -162,18 +161,4 @@ run_container_quietly "$RUNTIME" run --rm --memory 4g --volume "$ROOT/swift/sdk:
     rm -f "/out/xynoplex-$XYNOPLEX_SDK_VERSION.zip"
     zip -qr "/out/xynoplex-$XYNOPLEX_SDK_VERSION.zip" sdk -x "sdk/.build/" "sdk/.build/*"
   '
-fi
-
-if [[ "$LANGUAGE" == all ]]; then
-cat <<EOF
-
-Additional local SDK artifacts are ready under:
-  Go module proxy: $STATE_ROOT/go-proxy (set GOPROXY=file://$STATE_ROOT/go-proxy)
-  NuGet feed:      $STATE_ROOT/nuget (add as a local folder source)
-  Haskell sdist:   $STATE_ROOT/haskell
-  Maven repo:      $STATE_ROOT/kotlin-maven
-  opam repo:       $STATE_ROOT/opam-repo/repo
-  Swift archive:   $STATE_ROOT/swift
-
-EOF
 fi

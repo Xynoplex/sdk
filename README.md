@@ -18,7 +18,21 @@ The shared wire protocol, specifications, and portable conformance kit live in t
 
 Run `git clone --recurse-submodules https://github.com/Xynoplex/sdk.git` (or initialize submodules after cloning), then run `make` at the repository root to build and stage all nine SDKs, or `make test` to run the Go SDK tests and write a Codecov report. Build, test, clean, and local artifact targets use the runtime selected by `CONTAINER_RUNTIME`, or auto-detect `container`, `docker`, then `podman`. GitHub Actions checks the SDKs and uploads coverage. Dependabot checks the supported manifests for Go, Rust and its toolchain, TypeScript, Python (uv), .NET, Kotlin, Swift, and GitHub Actions; Dependabot does not currently support the Haskell or OCaml package manifests.
 
-Run `make local` to build and stage all nine SDKs in local, ecosystem-native formats, or run `make typescript`, `make python`, `make rust`, `make go`, `make csharp`, `make haskell`, `make kotlin`, `make ocaml`, or `make swift` to build one language. These targets create package archives and local feeds as files; they do not start npm, PyPI, or Cargo registry servers. TypeScript npm tarballs are written under `npm/packages`, Python source and wheel distributions under `python/packages`, and Rust `.crate` archives under `rust/packages`. Every SDK build and package toolchain runs in its language container. Package data persists in `${XDG_CACHE_HOME:-~/.cache}/xynoplex-sdk/local`. Go uses a file-based module proxy, .NET a NuGet folder feed, Haskell a Cabal source distribution, Kotlin a Maven repository, OCaml a local opam repository, and Swift a source archive. `make local-stop` stops retired registry containers from older versions of the local build and retains cached package artifacts.
+Run `make local` to build and stage all nine SDKs in local, ecosystem-native formats, or run `make typescript`, `make python`, `make rust`, `make go`, `make csharp`, `make haskell`, `make kotlin`, `make ocaml`, or `make swift` to build one language. These targets create package archives and local feeds as files; they do not start npm, PyPI, or Cargo registry servers. Every SDK build and package toolchain runs in its language container. Artifacts persist under `${XDG_CACHE_HOME:-~/.cache}/xynoplex-sdk/local`:
+
+| SDK | Output | Format |
+| --- | --- | --- |
+| TypeScript | `npm/packages` | npm tarballs |
+| Python | `python/packages` | wheel and source distribution |
+| Rust | `rust/packages` | Cargo `.crate` archives |
+| Go | `go-proxy` | file-based Go module proxy |
+| C# | `nuget` | NuGet packages / folder feed |
+| Haskell | `haskell` | Cabal source distribution |
+| Kotlin | `kotlin-maven` | Maven repository |
+| OCaml | `opam-repo/repo` | opam repository |
+| Swift | `swift` | source archive |
+
+`make local-stop` stops retired registry containers from older versions of the local build and retains cached package artifacts.
 
 ## License
 
