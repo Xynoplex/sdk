@@ -13,7 +13,7 @@ help:
 	  '' \
 	  '  make build    Build the Go SDK in a container' \
 	  '  make test     Run Go SDK tests with coverage in a container' \
-	  '  make local    Publish all SDKs to local package feeds' \
+	  '  make local    Build and stage all nine SDKs locally' \
 	  '  make local-stop Stop local package registries' \
 	  '  make clean    Remove Go build outputs'
 

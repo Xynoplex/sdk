@@ -233,12 +233,16 @@ else
     "$CARGO_CONTAINER" bash /source/scripts/publish-rust-local.sh
 fi
 
+echo 'Building the Go, .NET, Haskell, Kotlin, OCaml, and Swift local artifacts…'
+bash "$ROOT/scripts/publish-other-local.sh"
+
 cat <<EOF
 
 Local SDK registries are ready:
   npm:    http://localhost:4873
   Python: http://localhost:8081/simple/
   Cargo:  sparse+http://127.0.0.1:8000/api/v1/crates/
+  Other SDK feeds and source archives: $STATE_ROOT
 
 Run 'make local-stop' to stop registry containers. Their packages remain in:
   $STATE_ROOT
