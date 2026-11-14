@@ -31,6 +31,12 @@ def main() -> None:
                     info.uname = ""
                     info.gname = ""
                     info.mtime = 0
+                    if info.isdir():
+                        info.mode = 0o755
+                    elif info.isfile():
+                        info.mode = 0o644
+                    elif info.issym():
+                        info.mode = 0o777
                     if info.isfile():
                         with path.open("rb") as source:
                             archive.addfile(info, source)
