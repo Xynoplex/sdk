@@ -3,6 +3,7 @@ name: Publish SDK artifact bundle
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -18,7 +19,11 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4.4.1
+
       - name: Verify tag matches SDK package version
+        if: github.event_name == 'push'
         shell: bash
         run: |
           version="$(python3 -c 'import json; print(json.load(open("version.json"))["version"])')"
@@ -33,19 +38,32 @@ jobs:
 
       - name: Create deterministic release archive
         shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
         run: |
+          if [ "$EVENT_NAME" = push ]; then
+            release_tag="$REF_NAME"
+          else
+            release_tag="sdk-$GITHUB_SHA"
+          fi
+          echo "release_tag=$release_tag" >> "$GITHUB_ENV"
           tar --sort=name --mtime='@0' --owner=0 --group=0 --numeric-owner \
-            -cf - -C "$RUNNER_TEMP" sdk-artifacts | gzip -n > "$RUNNER_TEMP/xynoplex-sdk-artifacts-${GITHUB_REF_NAME}.tar.gz"
+            -cf - -C "$RUNNER_TEMP" sdk-artifacts | gzip -n > "$RUNNER_TEMP/xynoplex-sdk-artifacts-${release_tag}.tar.gz"
           cd "$RUNNER_TEMP"
-          shasum -a 256 "xynoplex-sdk-artifacts-${GITHUB_REF_NAME}.tar.gz" > "xynoplex-sdk-artifacts-${GITHUB_REF_NAME}.tar.gz.sha256"
+          shasum -a 256 "xynoplex-sdk-artifacts-${release_tag}.tar.gz" > "xynoplex-sdk-artifacts-${release_tag}.tar.gz.sha256"
 
       - name: Publish the bundle as versioned release assets
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" \
-            "$RUNNER_TEMP/xynoplex-sdk-artifacts-${GITHUB_REF_NAME}.tar.gz" \
-            "$RUNNER_TEMP/xynoplex-sdk-artifacts-${GITHUB_REF_NAME}.tar.gz.sha256" \
-            --verify-tag \
-            --title "Xynoplex SDK ${GITHUB_REF_NAME}" \
+          asset="$RUNNER_TEMP/xynoplex-sdk-artifacts-${release_tag}.tar.gz"
+          checksum="$asset.sha256"
+          if gh release view "$release_tag" >/dev/null 2>&1; then
+            echo "Immutable SDK artifact release already exists: $release_tag" >&2
+            exit 1
+          fi
+          gh release create "$release_tag" "$asset" "$checksum" \
+            --target "$GITHUB_SHA" \
+            --title "Xynoplex SDK artifacts ${release_tag}" \
             --generate-notes

@@ -1,8 +1,8 @@
 name: Download Xynoplex SDK artifact bundle
 description: Download and verify an immutable SDK release bundle
 inputs:
-  version:
-    description: SDK release version, without the v prefix
+  tag:
+    description: Immutable SDK artifact release tag
     required: true
   commit:
     description: Full SDK source commit recorded in the bundle
@@ -26,7 +26,7 @@ runs:
     - id: download
       shell: bash
       env:
-        INPUT_VERSION: ${{ inputs.version }}
+        INPUT_TAG: ${{ inputs.tag }}
         INPUT_COMMIT: ${{ inputs.commit }}
         INPUT_PROTOCOL_COMMIT: ${{ inputs.protocol-commit }}
         INPUT_SHA256: ${{ inputs.sha256 }}
