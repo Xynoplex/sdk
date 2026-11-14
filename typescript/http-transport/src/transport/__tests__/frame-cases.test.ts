@@ -13,7 +13,7 @@
 import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { filter, firstValueFrom } from 'rxjs';
-import { Bus, FrameRefusal, SemiontError, type EventMap, type Heard } from '@semiont/core';
+import { Bus, FrameRefusal, XynoplexError, type EventMap, type Heard } from '@xynoplex/core';
 import { createActorStateUnit } from '../actor-state-unit';
 import { mockFetch, mockSSEResponse, sseChunk } from './helpers/mock-conn';
 
@@ -178,7 +178,7 @@ describe('frame-cases.json', () => {
       await vi.waitFor(() => expect(request.settled()).not.toBeUndefined());
       const settled = request.settled();
       if (settled === undefined || settled === 'answered') throw new Error('the request was answered, not failed');
-      expect(settled.error).toBeInstanceOf(SemiontError);
+      expect(settled.error).toBeInstanceOf(XynoplexError);
       expect(settled.error).toMatchObject({ code: 'error', message: `a frame on ${channel} is not that channel's: ${said(stated.member, stated.reason)}` });
     }
     if (request !== undefined && stated.request === 'waits') {

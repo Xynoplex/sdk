@@ -7,7 +7,7 @@
 //!
 //! It is a transport's token source, as a person's stored sign-in is: it
 //! gives the current token and each one after it, renews the token by the
-//! schedule every Semiont client keeps (`semiont::session`), and renews it at
+//! schedule every Xynoplex client keeps (`xynoplex::session`), and renews it at
 //! once when the gateway refuses it (`TokenRefresher`). It renews one token
 //! once: whatever asks for the renewal of a token while it is being renewed
 //! is given the token that renewal makes.
@@ -20,11 +20,11 @@
 use crate::service_account::{ServiceToken, SignInError};
 use crate::transport::{TokenRefresher, declared, refuses_credential, why_unanswered};
 use rand_core::Rng;
-use semiont::retry::{self, RetryFacts, retry_with_backoff};
-use semiont::session::renew_when_due;
-use semiont::timing::{HTTP_REQUEST_TIMEOUT, REFRESH_RETRY};
-use semiont::transport::BoxFuture;
-use semiont::types::{UserId, UserResponse};
+use xynoplex::retry::{self, RetryFacts, retry_with_backoff};
+use xynoplex::session::renew_when_due;
+use xynoplex::timing::{HTTP_REQUEST_TIMEOUT, REFRESH_RETRY};
+use xynoplex::transport::BoxFuture;
+use xynoplex::types::{UserId, UserResponse};
 use serde_json::Value;
 use std::fmt;
 use std::sync::{Arc, Mutex, Weak};

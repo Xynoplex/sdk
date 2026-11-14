@@ -4,7 +4,7 @@ package registry_test
 // one and its session, a sign-in landing on the entry for the knowledge base
 // that answered, what is open in each, and what a session's arrival checks.
 //
-// Sessions are built by semionttest.ScriptedSessions, each over a scripted
+// Sessions are built by xynoplextest.ScriptedSessions, each over a scripted
 // transport: a test says what each knowledge base answers when asked who it is
 // and what of each resource, and reads what was asked. Each test runs in a
 // testing/synctest bubble, whose clock moves the moment nothing in it can run,
@@ -25,11 +25,11 @@ import (
 	"testing/synctest"
 	"time"
 
-	semiont "github.com/The-AI-Alliance/semiont/packages/go/sdk"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/bus"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/registry"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/semionttest"
+	xynoplex "github.com/Xynoplex/sdk/go"
+	"github.com/Xynoplex/sdk/go/api"
+	"github.com/Xynoplex/sdk/go/bus"
+	"github.com/Xynoplex/sdk/go/registry"
+	"github.com/Xynoplex/sdk/go/xynoplextest"
 )
 
 // ── The knowledge bases behind the factory ──────────────────────────────
@@ -57,7 +57,7 @@ type behind struct {
 // factory is scripted sessions, and what their knowledge bases say of
 // themselves and of each resource.
 type factory struct {
-	sessions *semionttest.ScriptedSessions
+	sessions *xynoplextest.ScriptedSessions
 	behind   *behind
 }
 
@@ -91,7 +91,7 @@ func resourceIDOf(payload json.RawMessage) string {
 
 func newFactory() *factory {
 	held := &behind{describes: map[string]describes{}, gone: map[string]bool{}, failing: map[string]bool{}, mediaTypes: map[string]string{}}
-	sessions := semionttest.NewScriptedSessions(func(kbID string, operation bus.Channel, payload json.RawMessage) (json.RawMessage, error) {
+	sessions := xynoplextest.NewScriptedSessions(func(kbID string, operation bus.Channel, payload json.RawMessage) (json.RawMessage, error) {
 		held.mu.Lock()
 		defer held.mu.Unlock()
 		switch operation {
@@ -207,7 +207,7 @@ func tokens(refresh string) registry.StoredSession {
 	return registry.StoredSession{
 		Access:             jwt(time.Hour),
 		Refresh:            refresh,
-		ClientID:           "semiont-browser",
+		ClientID:           "xynoplex-browser",
 		TokenEndpoint:      "https://issuer.test/token",
 		RevocationEndpoint: "https://issuer.test/revoke",
 	}
@@ -224,7 +224,7 @@ func id(text string) api.ResourceId {
 // world is a storage and a factory, and the registries over them.
 type world struct {
 	t       *testing.T
-	storage *semionttest.SharedStorage
+	storage *xynoplextest.SharedStorage
 	factory *factory
 }
 
@@ -232,7 +232,7 @@ type world struct {
 func bubble(t *testing.T, test func(t *testing.T, w *world)) {
 	t.Helper()
 	synctest.Test(t, func(t *testing.T) {
-		test(t, &world{t: t, storage: semionttest.NewSharedStorage(), factory: newFactory()})
+		test(t, &world{t: t, storage: xynoplextest.NewSharedStorage(), factory: newFactory()})
 	})
 }
 
@@ -256,11 +256,11 @@ func must(t *testing.T, err error) {
 	}
 }
 
-func (w *world) browser() *registry.SemiontBrowser { return w.browserOver(w.storage) }
+func (w *world) browser() *registry.XynoplexBrowser { return w.browserOver(w.storage) }
 
 // browserOver is a registry over storage, closed when the test ends.
-func (w *world) browserOver(storage semiont.SessionStorage) *registry.SemiontBrowser {
-	browser, err := registry.NewSemiontBrowser(registry.SemiontBrowserConfig{Storage: storage, SessionFactory: w.factory.sessions})
+func (w *world) browserOver(storage xynoplex.SessionStorage) *registry.XynoplexBrowser {
+	browser, err := registry.NewXynoplexBrowser(registry.XynoplexBrowserConfig{Storage: storage, SessionFactory: w.factory.sessions})
 	must(w.t, err)
 	closedAtTheEnd(w.t, browser)
 	return browser
@@ -268,7 +268,7 @@ func (w *world) browserOver(storage semiont.SessionStorage) *registry.SemiontBro
 
 // closedAtTheEnd closes a registry when the test ends: a failure of what it
 // ran fails the test.
-func closedAtTheEnd(t *testing.T, browser *registry.SemiontBrowser) {
+func closedAtTheEnd(t *testing.T, browser *registry.XynoplexBrowser) {
 	t.Cleanup(func() {
 		if err := browser.Close(); err != nil {
 			t.Errorf("closing the registry: %v", err)
@@ -314,7 +314,7 @@ func settle() {
 
 // live is the registry's live session, once it has one, with what its arrival
 // starts let run: who it is, and what is open.
-func live(t *testing.T, browser *registry.SemiontBrowser) *semiont.Session {
+func live(t *testing.T, browser *registry.XynoplexBrowser) *xynoplex.Session {
 	t.Helper()
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
@@ -328,14 +328,14 @@ func live(t *testing.T, browser *registry.SemiontBrowser) *semiont.Session {
 	return nil
 }
 
-func sessionOf(browser *registry.SemiontBrowser) string {
+func sessionOf(browser *registry.XynoplexBrowser) string {
 	if session := browser.ActiveSession().Value(); session != nil {
 		return session.Kb().Id
 	}
 	return ""
 }
 
-func open(browser *registry.SemiontBrowser) []string {
+func open(browser *registry.XynoplexBrowser) []string {
 	ids := []string{}
 	for _, resource := range browser.OpenResources().Value() {
 		ids = append(ids, resource.ID.String())
@@ -343,8 +343,8 @@ func open(browser *registry.SemiontBrowser) []string {
 	return ids
 }
 
-func closed(transport *semionttest.FaultyTransport) bool {
-	return transport.State().Value() == semiont.ConnectionStateClosed
+func closed(transport *xynoplextest.FaultyTransport) bool {
+	return transport.State().Value() == xynoplex.ConnectionStateClosed
 }
 
 func description(name, domain, branch string) json.RawMessage {
@@ -534,7 +534,7 @@ func TestTheIdentityTokenIsWhatItWasLastSetTo(t *testing.T) {
 
 // watchSessions records the knowledge base of each session the registry shows,
 // "" for none, until the returned stop is called.
-func watchSessions(browser *registry.SemiontBrowser) (seen func() []string, stop func()) {
+func watchSessions(browser *registry.XynoplexBrowser) (seen func() []string, stop func()) {
 	ctx, cancel := context.WithCancel(context.Background())
 	var mu sync.Mutex
 	var shown []string
@@ -763,7 +763,7 @@ type gated struct {
 	open chan struct{}
 }
 
-func (g gated) Session(ctx context.Context, options registry.SessionFactoryOptions) (*semiont.Session, func(), error) {
+func (g gated) Session(ctx context.Context, options registry.SessionFactoryOptions) (*xynoplex.Session, func(), error) {
 	select {
 	case <-g.open:
 	case <-ctx.Done():
@@ -777,7 +777,7 @@ func TestASessionThatCannotBeBuiltIsSaidAndThereIsNone(t *testing.T) {
 		w.with(kbOfA())
 		w.factory.sessions.RefuseToBuild("this factory builds nothing")
 		gate := gated{SessionFactory: w.factory.sessions, open: make(chan struct{})}
-		browser, err := registry.NewSemiontBrowser(registry.SemiontBrowserConfig{Storage: w.storage, SessionFactory: gate})
+		browser, err := registry.NewXynoplexBrowser(registry.XynoplexBrowserConfig{Storage: w.storage, SessionFactory: gate})
 		must(t, err)
 		closedAtTheEnd(t, browser)
 		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
@@ -785,14 +785,14 @@ func TestASessionThatCannotBeBuiltIsSaidAndThereIsNone(t *testing.T) {
 		errs := browser.Errors(ctx)
 		close(gate.open)
 
-		var refused *semiont.SessionError
+		var refused *xynoplex.SessionError
 		for err := range errs {
 			refused = err
 			break
 		}
 		settle()
 
-		if refused == nil || refused.Code != semiont.SessionErrorCodeConstructFailed || refused.KbID != kbA {
+		if refused == nil || refused.Code != xynoplex.SessionErrorCodeConstructFailed || refused.KbID != kbA {
 			t.Fatalf("the failure said is %+v", refused)
 		}
 		if sessionOf(browser) != "" || browser.ActiveSignals().Value() != nil || browser.SessionActivating().Value() {

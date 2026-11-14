@@ -1,4 +1,4 @@
-package semiont
+package xynoplex
 
 // Where the launcher's state home is: the directory that holds the sign-in
 // store's tokens.json. Every program that finds that file computes it the same
@@ -51,14 +51,14 @@ func StateDir(system System, home, xdgStateHome, localAppData string) (string, b
 	case home == "":
 		return "", false
 	case system == SystemMacOS:
-		return under(system, home, "Library", "Application Support", "semiont"), true
+		return under(system, home, "Library", "Application Support", "xynoplex"), true
 	case system == SystemWindows:
 		if localAppData == "" {
 			localAppData = under(system, home, "AppData", "Local")
 		}
-		return under(system, localAppData, "semiont"), true
+		return under(system, localAppData, "xynoplex"), true
 	case xdgStateHome != "":
-		return under(system, xdgStateHome, "semiont"), true
+		return under(system, xdgStateHome, "xynoplex"), true
 	}
-	return under(system, home, ".local", "state", "semiont"), true
+	return under(system, home, ".local", "state", "xynoplex"), true
 }

@@ -7,7 +7,7 @@ import Data.Aeson (Value(..), object, toJSON, (.=))
 import Data.Either (isLeft)
 import qualified Data.Map.Strict as Map
 import Data.Text (Text)
-import Semiont.Internal.Schema
+import Xynoplex.Internal.Schema
 
 require :: String -> Bool -> IO ()
 require label good = unless good (ioError (userError label))

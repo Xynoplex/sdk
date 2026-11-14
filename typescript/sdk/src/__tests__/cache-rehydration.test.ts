@@ -20,8 +20,8 @@
  */
 import { describe, it, expect, vi } from 'vitest';
 import { map, firstValueFrom, filter, take } from 'rxjs';
-import { EventBus, resourceId as makeResourceId } from '@semiont/core';
-import type { IContentTransport, ITransport, ResourceDescriptor } from '@semiont/core';
+import { EventBus, resourceId as makeResourceId } from '@xynoplex/core';
+import type { IContentTransport, ITransport, ResourceDescriptor } from '@xynoplex/core';
 import { isReady } from '../cache';
 import { BrowseNamespace } from '../namespaces/browse';
 import { keptPersister } from '../cache-persister';

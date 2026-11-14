@@ -1,11 +1,11 @@
-from semiont.bus import reply_channels_for
-from semiont.http import AgentToken, HttpTransport, SecretCredential, ServiceToken
-from semiont.operations import JOB_CLAIM
-from semiont.watched import reached
+from xynoplex.bus import reply_channels_for
+from xynoplex.http import AgentToken, HttpTransport, SecretCredential, ServiceToken
+from xynoplex.operations import JOB_CLAIM
+from xynoplex.watched import reached
 
 
 async def work(gateway: str, issuer: str, secret: str) -> None:
-    service = ServiceToken(SecretCredential(issuer=issuer, client_id="semiont-smelter", client_secret=secret))
+    service = ServiceToken(SecretCredential(issuer=issuer, client_id="xynoplex-smelter", client_secret=secret))
     async with (
         AgentToken(gateway, service=service) as agent,
         HttpTransport(gateway, token=agent.token, refresher=agent.refresh, channels=reply_channels_for(JOB_CLAIM)) as transport,

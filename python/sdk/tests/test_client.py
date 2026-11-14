@@ -17,17 +17,17 @@ from kb import refusing, silent
 from pydantic import JsonValue
 from spec import JsonObject
 
-from semiont.bus import Bus, Delivered
-from semiont.channels import BRIDGED_CHANNELS, JOB_QUEUED
-from semiont.client import ClientTiming, SemiontClient
-from semiont.errors import BusRequestError, SemiontError, TransportError
-from semiont.event_bus import EventBus
-from semiont.events import Events
-from semiont.identifiers import AnnotationId, JobId, ResourceId
-from semiont.namespaces.browse import EngineWithLimits
-from semiont.running import Running
-from semiont.testing import FaultyTransport, GetAnchoredText, InMemoryContent, StubGateway, create_test_client
-from semiont.transport import (
+from xynoplex.bus import Bus, Delivered
+from xynoplex.channels import BRIDGED_CHANNELS, JOB_QUEUED
+from xynoplex.client import ClientTiming, XynoplexClient
+from xynoplex.errors import BusRequestError, XynoplexError, TransportError
+from xynoplex.event_bus import EventBus
+from xynoplex.events import Events
+from xynoplex.identifiers import AnnotationId, JobId, ResourceId
+from xynoplex.namespaces.browse import EngineWithLimits
+from xynoplex.running import Running
+from xynoplex.testing import FaultyTransport, GetAnchoredText, InMemoryContent, StubGateway, create_test_client
+from xynoplex.transport import (
     ConnectionState,
     Content,
     Frame,
@@ -37,8 +37,8 @@ from semiont.transport import (
     ResourceHold,
     Transport,
 )
-from semiont.types import AnchoredTextAbsent, GatheredContext, JobStatusResponse, MatchSearchResult
-from semiont.watched import Watched
+from xynoplex.types import AnchoredTextAbsent, GatheredContext, JobStatusResponse, MatchSearchResult
+from xynoplex.watched import Watched
 
 RESOURCE = ResourceId("res-1")
 CONTEXT: JsonObject = {
@@ -50,7 +50,7 @@ CONTEXT: JsonObject = {
     "metadata": {},
 }
 
-type Client = SemiontClient[FaultyTransport]
+type Client = XynoplexClient[FaultyTransport]
 
 
 @final
@@ -92,7 +92,7 @@ class Down(Transport):
         return self._beneath.state
 
     @override
-    def failures(self) -> Events[SemiontError]:
+    def failures(self) -> Events[XynoplexError]:
         return self._beneath.failures()
 
     @override
@@ -175,7 +175,7 @@ def test_a_signal_never_reaches_the_wire_and_a_report_does_without_being_awaited
 
         # A report the transport could not send is the transport's to tell of: nothing is raised to nobody.
         down = Down()
-        unheard: SemiontClient[Down] = SemiontClient(down, InMemoryContent(), StubGateway())
+        unheard: XynoplexClient[Down] = XynoplexClient(down, InMemoryContent(), StubGateway())
         unheard.browse.resource_viewed(RESOURCE)
         await turns()
         assert down.refused == ["browse:resource-viewed"]
@@ -308,13 +308,13 @@ async def awaited(searching: Running[MatchSearchResult]) -> MatchSearchResult:
 def test_a_request_waits_as_long_as_its_client_was_told_and_a_closed_client_ends_what_it_was_doing() -> None:
     async def scenario() -> None:
         transport = silent()
-        client: Client = SemiontClient(transport, InMemoryContent(), StubGateway(), timing=ClientTiming(bus_request_ms=40))
+        client: Client = XynoplexClient(transport, InMemoryContent(), StubGateway(), timing=ClientTiming(bus_request_ms=40))
         # Nobody answers: the request is over when the client's own wait is.
         with pytest.raises(BusRequestError) as late:
             await soon(client.browse.kb(), within=2.0)
         assert late.value.code == "bus.timeout"
 
-        patient: Client = SemiontClient(transport, InMemoryContent(), StubGateway())
+        patient: Client = XynoplexClient(transport, InMemoryContent(), StubGateway())
         searching = asyncio.ensure_future(
             awaited(patient.match.search(RESOURCE, AnnotationId("ann-1"), GatheredContext.model_validate(CONTEXT)))
         )

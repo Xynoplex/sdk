@@ -55,7 +55,7 @@ describe('SearchResultsStep — pure results', () => {
     const { container } = render(
       <SearchResultsStep results={RESULTS} onBack={vi.fn()} onLink={vi.fn()} translations={T} />,
     );
-    expect(container.querySelector('.semiont-gather-pane')).toBeNull();
-    expect(container.querySelector('.semiont-search-results__two-pane')).toBeNull();
+    expect(container.querySelector('.xynoplex-gather-pane')).toBeNull();
+    expect(container.querySelector('.xynoplex-search-results__two-pane')).toBeNull();
   });
 });

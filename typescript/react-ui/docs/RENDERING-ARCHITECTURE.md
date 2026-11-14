@@ -2,7 +2,7 @@
 
 ## Overview
 
-The `@semiont/react-ui` package provides **two rendering pipelines** for displaying documents with annotations (highlights, references, comments, assessments, tags):
+The `@xynoplex/react-ui` package provides **two rendering pipelines** for displaying documents with annotations (highlights, references, comments, assessments, tags):
 
 - **AnnotateView** (curation mode): CodeMirror-based editor with decorations and widgets
 - **BrowseView** (browse mode): ReactMarkdown with DOM Range overlay for annotations
@@ -58,7 +58,7 @@ ResourceViewer
 - Subscribes to toolbar events and hover events via `useEventSubscriptions`
 - Pre-computes text segments via `segmentTextWithAnnotations()` (render-time anchoring)
 
-**Render-Time Anchoring**: `segmentTextWithAnnotations()` calls `anchorAnnotation()` from `@semiont/core`. Anchoring is **verbatim-only**: a `fast-path` when the stored offset already lands on the quote, otherwise an exact `indexOf(exact)` search disambiguated by prefix/suffix and (for repeated text) by position. When `exact` is not found verbatim, the renderer keeps the stored offset and flags the anchor low-confidence — it does **not** fuzzy-match. The fallback chain (normalized → case-insensitive → Levenshtein) lives at *write* time in `reconcile`, which produces records whose two selectors already agree.
+**Render-Time Anchoring**: `segmentTextWithAnnotations()` calls `anchorAnnotation()` from `@xynoplex/core`. Anchoring is **verbatim-only**: a `fast-path` when the stored offset already lands on the quote, otherwise an exact `indexOf(exact)` search disambiguated by prefix/suffix and (for repeated text) by position. When `exact` is not found verbatim, the renderer keeps the stored offset and flags the anchor low-confidence — it does **not** fuzzy-match. The fallback chain (normalized → case-insensitive → Levenshtein) lives at *write* time in `reconcile`, which produces records whose two selectors already agree.
 
 ### BrowseView
 

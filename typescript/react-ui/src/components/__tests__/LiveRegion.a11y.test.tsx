@@ -81,8 +81,8 @@ describe('LiveRegion - Accessibility', () => {
       const assertiveRegion = screen.getByRole('alert');
 
       // Should have screen reader only class
-      expect(politeRegion).toHaveClass('semiont-sr-only');
-      expect(assertiveRegion).toHaveClass('semiont-sr-only');
+      expect(politeRegion).toHaveClass('xynoplex-sr-only');
+      expect(assertiveRegion).toHaveClass('xynoplex-sr-only');
     });
   });
 

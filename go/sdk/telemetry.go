@@ -1,4 +1,4 @@
-package semiont
+package xynoplex
 
 // What this SDK's transports tell OpenTelemetry: the spans and the count the
 // SDK telemetry table lists (telemetry_gen.go), a span for each frame sent and
@@ -6,7 +6,7 @@ package semiont
 // sent. It takes OpenTelemetry's API alone, so every OpenTelemetry choice is
 // the application's: nothing here is recorded or sent until the process
 // installs a provider, and no trace context travels until it installs a
-// propagator (W3C's, for the traceparent and tracestate every Semiont service
+// propagator (W3C's, for the traceparent and tracestate every Xynoplex service
 // reads). The tracer, the meter and the propagator are taken at each use, so
 // what is installed after a client opened is used all the same.
 //
@@ -27,12 +27,12 @@ import (
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
 
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/bus"
+	"github.com/Xynoplex/sdk/go/api"
+	"github.com/Xynoplex/sdk/go/bus"
 )
 
 // instrumentationScope is the scope every span and count here is made under.
-const instrumentationScope = "semiont"
+const instrumentationScope = "xynoplex"
 
 // TraceContext is a trace as the wire carries one: what a frame was sent
 // under. Its zero value is no trace.
@@ -135,7 +135,7 @@ func onTheBus(channel bus.Channel, scope api.ResourceId) []attribute.KeyValue {
 // emitting counts an emit as sent and starts its span, which the emit ends.
 func emitting(ctx context.Context, channel bus.Channel, scope api.ResourceId) (context.Context, trace.Span) {
 	attributes := onTheBus(channel, scope)
-	sent, err := otel.Meter(instrumentationScope).Int64Counter(metricSemiontBusSent.name, metric.WithDescription(metricSemiontBusSent.meaning))
+	sent, err := otel.Meter(instrumentationScope).Int64Counter(metricXynoplexBusSent.name, metric.WithDescription(metricXynoplexBusSent.meaning))
 	if err != nil {
 		otel.Handle(err)
 	} else {

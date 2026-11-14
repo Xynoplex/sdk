@@ -7,12 +7,12 @@ import pytest
 from pydantic import Field, JsonValue, ValidationError
 from spec import SPEC, objects, read, strings, text
 
-import semiont.types
-from semiont import channels, operations
-from semiont.channel import Channel, Empty, Operation, RecordedChannel, ScopedChannel
-from semiont.identifiers import AnnotationId, JobId, ResourceId, UserId
-from semiont.model import WireModel
-from semiont.types import (
+import xynoplex.types
+from xynoplex import channels, operations
+from xynoplex.channel import Channel, Empty, Operation, RecordedChannel, ScopedChannel
+from xynoplex.identifiers import AnnotationId, JobId, ResourceId, UserId
+from xynoplex.model import WireModel
+from xynoplex.types import (
     AnnotationRemovedPayload,
     EnrichedResourceEvent,
     EntityTagChangedPayload,
@@ -64,7 +64,7 @@ def test_a_channel_s_payload_is_what_its_shape_says() -> None:
         match stated["shape"]:
             case "schema":
                 # The type the spec's schema of that name generated: a class, or a union of them under its own name.
-                assert payload is getattr(semiont.types, text(stated["schema"], "a schema"))
+                assert payload is getattr(xynoplex.types, text(stated["schema"], "a schema"))
             case "envelope":
                 assert payload.__name__ == f"Response[{text(stated['schema'], 'a schema')}]"
             case "storedEvent":
@@ -89,7 +89,7 @@ def test_a_channel_of_the_record_names_its_event_s_own_payload_and_no_other_chan
         # A resource's scope carries its record's events, and the rest of the record is heard on no scope.
         assert type(BY_NAME[name]) is (ScopedChannel if name in scoped else RecordedChannel)
         # Read off the constant, as untyped code reads it: by its name, a channel is one that says nothing of an event.
-        payload = getattr(semiont.types, text(stated["payload"], "a stored event's payload"))
+        payload = getattr(xynoplex.types, text(stated["payload"], "a stored event's payload"))
         assert getattr(channels, constant(name)).event_payload is payload
     assert recorded, "no channel carries a stored event: this reads nothing"
     assert set(scoped) <= set(recorded)

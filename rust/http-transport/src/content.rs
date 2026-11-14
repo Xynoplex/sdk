@@ -1,5 +1,5 @@
 //! Bytes over the gateway's HTTP transport, as
-//! `semiont::transport::ContentTransport`: an upload (`POST /resources`), a
+//! `xynoplex::transport::ContentTransport`: an upload (`POST /resources`), a
 //! resource's bytes whole or as a stream (`GET /resources/{id}`), its
 //! description as linked data (`GET /resources/{id}/jsonld`), its
 //! annotations (`GET /resources/{id}/annotations`), and its anchored text
@@ -18,16 +18,16 @@
 use crate::transport::{HttpTransport, IDEMPOTENCY_KEY, Shared, idempotency_key};
 use bytes::Bytes;
 use futures::StreamExt;
-use semiont::bus_log::bus_log;
-use semiont::errors::{TransportError, TransportErrorCode};
-use semiont::transport::{
+use xynoplex::bus_log::bus_log;
+use xynoplex::errors::{TransportError, TransportErrorCode};
+use xynoplex::transport::{
     BoxFuture, Content, ContentStream, ContentTransport, PutBinaryRequest, Upload, UploadProgress,
 };
-use semiont::types::AnchoredTextAnswer;
-use semiont::types::GetAnnotationsResponse;
-use semiont::types::GetResourceResponse;
-use semiont::types::ResourceId;
-use semiont::types::{AnnotationId, JobId};
+use xynoplex::types::AnchoredTextAnswer;
+use xynoplex::types::GetAnnotationsResponse;
+use xynoplex::types::GetResourceResponse;
+use xynoplex::types::ResourceId;
+use xynoplex::types::{AnnotationId, JobId};
 use serde_json::json;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -60,7 +60,7 @@ struct Form {
 
 impl Form {
     fn of(request: &PutBinaryRequest) -> Form {
-        let boundary = format!("semiont-{}", uuid::Uuid::new_v4().simple());
+        let boundary = format!("xynoplex-{}", uuid::Uuid::new_v4().simple());
         let field = |name: &str, value: &str| {
             format!(
                 "--{boundary}\r\nContent-Disposition: form-data; name=\"{name}\"\r\n\r\n{value}\r\n"
@@ -186,7 +186,7 @@ impl ContentTransport for HttpContentTransport {
             );
             let form = Form::of(&request);
             let key = idempotency_key();
-            semiont_telemetry::content_put(
+            xynoplex_telemetry::content_put(
                 &request.format,
                 size as u64,
                 shared.answer_at_length(reqwest::Method::POST, "/resources", true, |builder| {
@@ -217,7 +217,7 @@ impl ContentTransport for HttpContentTransport {
                 None,
                 None,
             );
-            semiont_telemetry::content_get(resource_id, false, async {
+            xynoplex_telemetry::content_get(resource_id, false, async {
                 let response = self.read(resource_id).await?;
                 let content_type = content_type(&response);
                 let bytes = response
@@ -245,7 +245,7 @@ impl ContentTransport for HttpContentTransport {
                 None,
                 None,
             );
-            semiont_telemetry::content_get(resource_id, true, async {
+            xynoplex_telemetry::content_get(resource_id, true, async {
                 let response = self.read(resource_id).await?;
                 let content_type = content_type(&response);
                 let resource = resource_id.clone();
@@ -274,7 +274,7 @@ impl ContentTransport for HttpContentTransport {
                 None,
                 None,
             );
-            semiont_telemetry::content_get_graph(
+            xynoplex_telemetry::content_get_graph(
                 resource_id,
                 self.shared.answer(
                     reqwest::Method::GET,
@@ -299,7 +299,7 @@ impl ContentTransport for HttpContentTransport {
                 None,
                 None,
             );
-            semiont_telemetry::content_get_annotations(
+            xynoplex_telemetry::content_get_annotations(
                 resource_id,
                 self.shared.answer(
                     reqwest::Method::GET,
@@ -327,7 +327,7 @@ impl ContentTransport for HttpContentTransport {
             // The Archivist may hold this read while the Smelter settles the
             // content, and the gateway passes that wait through: the
             // deadline (`Timing::http_request`) must outlast it.
-            semiont_telemetry::content_get_anchored_text(
+            xynoplex_telemetry::content_get_anchored_text(
                 resource_id,
                 self.shared.answer(
                     reqwest::Method::GET,
@@ -383,7 +383,7 @@ fn interrupted(resource_id: &ResourceId, error: &reqwest::Error) -> TransportErr
 #[cfg(test)]
 mod tests {
     use super::*;
-    use semiont::testing::as_id;
+    use xynoplex::testing::as_id;
 
     fn request() -> PutBinaryRequest {
         PutBinaryRequest {

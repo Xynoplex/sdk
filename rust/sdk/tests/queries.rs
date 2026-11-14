@@ -6,27 +6,27 @@
 //! behaviour, against a real gateway, is the live layer of
 //! protocol/conformance/sdk.
 
-use semiont::cache::CacheState;
-use semiont::cached::Observed;
-use semiont::channels::BRIDGED_CHANNELS;
-use semiont::client::{CachePersistence, ClientOptions, ClientTiming, SemiontClient};
-use semiont::errors::SemiontError;
-use semiont::namespaces::ResourceFilters;
-use semiont::refresh::CacheQuery;
-use semiont::resume::CoupledBookmarks;
-use semiont::session::{cache_key, last_event_id_key};
-use semiont::storage::{
+use xynoplex::cache::CacheState;
+use xynoplex::cached::Observed;
+use xynoplex::channels::BRIDGED_CHANNELS;
+use xynoplex::client::{CachePersistence, ClientOptions, ClientTiming, XynoplexClient};
+use xynoplex::errors::XynoplexError;
+use xynoplex::namespaces::ResourceFilters;
+use xynoplex::refresh::CacheQuery;
+use xynoplex::resume::CoupledBookmarks;
+use xynoplex::session::{cache_key, last_event_id_key};
+use xynoplex::storage::{
     InMemorySessionStorage, SessionStorage, StorageChange, StorageSubscription,
 };
-use semiont::testing::as_id;
-use semiont::testing::liveness::{LivenessScenario, LivenessSpec, assert_liveness_axioms};
-use semiont::testing::{
+use xynoplex::testing::as_id;
+use xynoplex::testing::liveness::{LivenessScenario, LivenessSpec, assert_liveness_axioms};
+use xynoplex::testing::{
     ContentCall, FaultAction, FaultyTransport, InMemoryContent, SharedStorage, TestClientOptions,
     create_test_client,
 };
-use semiont::timing::SAVE_DEBOUNCE;
-use semiont::transport::{ConnectionState, Envelope, Frame, STREAM_BACKLOG};
-use semiont::types::MatchResourcesResponse;
+use xynoplex::timing::SAVE_DEBOUNCE;
+use xynoplex::transport::{ConnectionState, Envelope, Frame, STREAM_BACKLOG};
+use xynoplex::types::MatchResourcesResponse;
 use serde_json::{Map, Value, json};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, OnceLock};
@@ -143,7 +143,7 @@ fn options(persistence: Option<CachePersistence>) -> ClientOptions {
 fn client_over(
     transport: &FaultyTransport,
     persistence: Option<CachePersistence>,
-) -> Arc<SemiontClient> {
+) -> Arc<XynoplexClient> {
     create_test_client(TestClientOptions {
         transport: Some(transport.clone()),
         client: options(persistence),
@@ -169,7 +169,7 @@ fn annotated() -> InMemoryContent {
     content
 }
 
-fn world() -> (Arc<SemiontClient>, FaultyTransport, InMemoryContent) {
+fn world() -> (Arc<XynoplexClient>, FaultyTransport, InMemoryContent) {
     let transport = FaultyTransport::answering(BRIDGED_CHANNELS, vec![], answers(&[]));
     let content = annotated();
     let client = create_test_client(TestClientOptions {
@@ -260,7 +260,7 @@ fn recorded_of_the_knowledge_base() -> Map<String, Value> {
     event
 }
 
-fn heard(client: &SemiontClient, channel: &str, payload: Map<String, Value>) {
+fn heard(client: &XynoplexClient, channel: &str, payload: Map<String, Value>) {
     client.bus().emit(channel, payload, Envelope::default());
 }
 
@@ -297,7 +297,7 @@ fn made(transport: &FaultyTransport, content: &InMemoryContent) -> [usize; 10] {
 struct Everything {
     transport: FaultyTransport,
     content: InMemoryContent,
-    client: Arc<SemiontClient>,
+    client: Arc<XynoplexClient>,
     _watching: Vec<Box<dyn std::any::Any + Send>>,
     before: [usize; 10],
 }
@@ -563,7 +563,7 @@ async fn b13a_an_annotation_that_is_gone_fails_its_watchers_as_not_found_and_ask
         heard(&client, channel, event);
         match holds(&mut watcher).await {
             CacheState::Failed(gone) => assert_eq!(
-                gone.downcast_ref::<SemiontError>().map(SemiontError::code),
+                gone.downcast_ref::<XynoplexError>().map(XynoplexError::code),
                 Some("bus.not-found"),
                 "{channel}"
             ),
@@ -629,7 +629,7 @@ async fn b13b_a_body_update_that_carries_the_annotation_writes_it_and_asks_only_
             json!({ "annotation": annotation("ann-1", "res-1", "as the event says") }),
         ),
     );
-    let said = |state: CacheState<semiont::types::Annotation>| {
+    let said = |state: CacheState<xynoplex::types::Annotation>| {
         serde_json::to_value(state.ready().expect("a value")).expect("it serializes")["body"]["value"]
             .clone()
     };
@@ -742,7 +742,7 @@ fn places_in(storage: Arc<dyn SessionStorage>) -> CoupledBookmarks {
 /// storage, for `kb-1` and `PERSON`, the places coupled to it as a
 /// session's are: written with its caches only while it is at rest, and at
 /// its close, only those noted before the close read that.
-fn coupled(places: &CoupledBookmarks, transport: FaultyTransport) -> Arc<SemiontClient> {
+fn coupled(places: &CoupledBookmarks, transport: FaultyTransport) -> Arc<XynoplexClient> {
     let client = create_test_client(TestClientOptions {
         transport: Some(transport),
         content: Some(annotated()),
@@ -803,7 +803,7 @@ impl SessionStorage for ReachedAtEachWrite {
 
 /// A client whose caches are kept in `storage` for `kb-1` and `PERSON`,
 /// with the stream's places coupled to it, as a session's are.
-fn keeping(storage: &Arc<ReachedAtEachWrite>) -> (Arc<SemiontClient>, CoupledBookmarks) {
+fn keeping(storage: &Arc<ReachedAtEachWrite>) -> (Arc<XynoplexClient>, CoupledBookmarks) {
     let places = places_in(storage.clone());
     storage.places.get_or_init(|| places.clone());
     let client = coupled(
@@ -1029,8 +1029,8 @@ async fn b16_b19_a_closed_client_drops_what_its_windows_owed_and_no_event_asks_a
         .expect_err("it is closed");
     assert_eq!(
         refusal
-            .downcast_ref::<SemiontError>()
-            .map(SemiontError::code),
+            .downcast_ref::<XynoplexError>()
+            .map(XynoplexError::code),
         Some("bus.closed")
     );
     assert_eq!(given(&mut client.browse.entity_types().watch()).await, None);
@@ -1186,7 +1186,7 @@ async fn a_search_asks_for_its_text_among_the_resources_its_filters_admit() {
 /// A watcher of three searches, two of them the same: of one text, of that
 /// text among people, and of another text.
 async fn searching() -> (
-    Arc<SemiontClient>,
+    Arc<XynoplexClient>,
     FaultyTransport,
     Vec<Observed<MatchResourcesResponse>>,
 ) {
@@ -1388,7 +1388,7 @@ async fn b13_a_gap_asks_again_for_what_refers_to_the_resource_it_names_and_to_no
 
 // ── The engines ─────────────────────────────────────────
 
-fn limits_of(engines: &[semiont::namespaces::EngineWithLimits]) -> Vec<Option<f64>> {
+fn limits_of(engines: &[xynoplex::namespaces::EngineWithLimits]) -> Vec<Option<f64>> {
     engines
         .iter()
         .map(|engine| engine.limits.as_ref().map(|limits| limits.context_tokens))
@@ -1616,7 +1616,7 @@ fn l1_l2_a_watcher_is_given_a_value_or_a_failure_and_a_read_settles_under_every_
                 ..TestClientOptions::default()
             })
             .client;
-            let said = |mut watcher: Observed<_>, client: Arc<SemiontClient>| async move {
+            let said = |mut watcher: Observed<_>, client: Arc<XynoplexClient>| async move {
                 while let Some(state) = watcher.next().await {
                     if state != CacheState::Pending {
                         break;

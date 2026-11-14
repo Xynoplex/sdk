@@ -14,7 +14,7 @@ export default defineConfig({
   clean: true,
   sourcemap: true,
   // MUST be true with two entries: `false` gives dist/testing.js its OWN
-  // copies of SemiontClient/AuthNamespace, so consumer prototype spies (the
+  // copies of XynoplexClient/AuthNamespace, so consumer prototype spies (the
   // AuthShell pattern) silently miss clients built by createTestClient —
   // found as 5s timeouts when the welcome page was converted to
   // session-typed state-unit factories. Shared chunks = one class identity

@@ -5,27 +5,27 @@
  * Only requires minimal props from the framework layer (routing, modals).
  */
 
-import type { AnnotationId } from '@semiont/core';
+import type { AnnotationId } from '@xynoplex/core';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useResourceViewedReport } from '../hooks/useResourceViewedReport';
-import type { components, ResourceDescriptor, ResourceId, EventMap } from '@semiont/core';
-import type { ConnectionState, RenderMode } from '@semiont/core';
-import { folderOf } from '@semiont/core';
+import type { components, ResourceDescriptor, ResourceId, EventMap } from '@xynoplex/core';
+import type { ConnectionState, RenderMode } from '@xynoplex/core';
+import { folderOf } from '@xynoplex/core';
 import type { ComposeParams } from '../../../components/modals/ComposeStep';
-import { getLanguage, getPrimaryRepresentation, getPrimaryMediaType, getStorageUri, capabilitiesOf, extensionForMediaType } from '@semiont/core';
-import { ANNOTATORS } from '@semiont/react-ui';
-import { ErrorBoundary } from '@semiont/react-ui';
-import { AnnotationHistory } from '@semiont/react-ui';
-import { UnifiedAnnotationsPanel } from '@semiont/react-ui';
-import { ResourceInfoPanel } from '@semiont/react-ui';
-import { CollaborationPanel } from '@semiont/react-ui';
-import { JsonLdPanel } from '@semiont/react-ui';
-import { Toolbar } from '@semiont/react-ui';
-import { useResourceLoadingAnnouncements } from '@semiont/react-ui';
-import { ResourceViewer } from '@semiont/react-ui';
-import type { BrowseMediaRenderers, AnnotateMediaRenderers, ToolbarPanelsProps } from '@semiont/react-ui';
-import { useObservable } from '@semiont/react-ui';
-import { JobCancelledError } from '@semiont/sdk';
+import { getLanguage, getPrimaryRepresentation, getPrimaryMediaType, getStorageUri, capabilitiesOf, extensionForMediaType } from '@xynoplex/core';
+import { ANNOTATORS } from '@xynoplex/react-ui';
+import { ErrorBoundary } from '@xynoplex/react-ui';
+import { AnnotationHistory } from '@xynoplex/react-ui';
+import { UnifiedAnnotationsPanel } from '@xynoplex/react-ui';
+import { ResourceInfoPanel } from '@xynoplex/react-ui';
+import { CollaborationPanel } from '@xynoplex/react-ui';
+import { JsonLdPanel } from '@xynoplex/react-ui';
+import { Toolbar } from '@xynoplex/react-ui';
+import { useResourceLoadingAnnouncements } from '@xynoplex/react-ui';
+import { ResourceViewer } from '@xynoplex/react-ui';
+import type { BrowseMediaRenderers, AnnotateMediaRenderers, ToolbarPanelsProps } from '@xynoplex/react-ui';
+import { useObservable } from '@xynoplex/react-ui';
+import { JobCancelledError } from '@xynoplex/sdk';
 import { useResourceContent } from '../../../hooks/useResourceContent';
 import { useMediaToken } from '../../../hooks/useMediaToken';
 import { useEngines } from '../../../hooks/useEngines';
@@ -41,7 +41,7 @@ import { useObservableExternalNavigation } from '../../../hooks/useObservableBro
 import { useToolbarPrefs } from '../../../hooks/useToolbarPrefs';
 import { getSelectorType } from '../../../lib/media-shapes';
 import { useResourceAnnotations } from '../../../contexts/ResourceAnnotationsContext';
-import { useSemiont } from '../../../session/SemiontProvider';
+import { useXynoplex } from '../../../session/XynoplexProvider';
 import { createResourceViewerPageStateUnit } from '../state/resource-viewer-page-state-unit';
 import { useSessionStateUnit } from '../../../hooks/useSessionStateUnit';
 import { useShellStateUnit } from '../../../hooks/useShellStateUnit';
@@ -52,7 +52,7 @@ import type { GenerationConfig } from '../../../components/modals/ConfigureGener
 import type { LinkComponentProps, RouteBuilder } from '../../../contexts/RoutingContext';
 import { toGenerationParams } from '../generation-params';
 
-type SemiontResource = ResourceDescriptor;
+type XynoplexResource = ResourceDescriptor;
 
 /**
  * What the page loads for the view each render mode mounts. Exhaustive over
@@ -72,7 +72,7 @@ export interface ResourceViewerPageProps {
   /**
    * The resource to display
    */
-  resource: SemiontResource;
+  resource: XynoplexResource;
 
   /**
    * Resource URI
@@ -168,16 +168,16 @@ export function ResourceViewerPage({
   // The viewer takes its language as a prop; the page hands it the host's own.
   const translationManager = useTranslationManager();
 
-  const browser = useSemiont();
+  const browser = useXynoplex();
   const session = useObservable(browser.activeSession$);
-  const semiont = session?.client;
+  const xynoplex = session?.client;
   const navigateExternal = useObservableExternalNavigation();
 
   // The KB's engines, for the Collaboration panel's engine rows and the
   // generation ceiling. Subscribed unconditionally at the top level (hooks
   // ordering) even though only some views read it; the underlying cache is a
   // KB-wide singleton, so this costs one shared subscription, not one per panel open.
-  const { engines } = useEngines(semiont ?? null);
+  const { engines } = useEngines(xynoplex ?? null);
 
   // At most one engine is used for `yield` jobs — the Inference document names
   // one engine under `engines.jobs.yield` — so `find` is exact, not a first-wins guess.
@@ -218,7 +218,7 @@ export function ResourceViewerPage({
 
   // Headless hook returns the error; the page (chrome tier) owns the toast.
   const { content: textContent, loading: textLoading, error: contentError } =
-    useResourceContent(semiont ?? null, rUri, resource, contentSource === 'text');
+    useResourceContent(xynoplex ?? null, rUri, resource, contentSource === 'text');
 
   useEffect(() => {
     if (contentError) showError('Failed to load resource representation');
@@ -226,9 +226,9 @@ export function ResourceViewerPage({
 
   // A null client mints nothing: only a view that loads by URL needs a token.
   const { token: mediaToken, loading: mediaTokenLoading } =
-    useMediaToken(contentSource === 'media-url' ? semiont ?? null : null, rUri);
+    useMediaToken(contentSource === 'media-url' ? xynoplex ?? null : null, rUri);
 
-  const tokenUrl = mediaUrl(semiont, rUri, mediaToken);
+  const tokenUrl = mediaUrl(xynoplex, rUri, mediaToken);
 
   // Each source says what the view reads, whether it is still arriving, and
   // whether the view has it. Loaded is a fact of the source — the text landed,
@@ -333,9 +333,9 @@ export function ResourceViewerPage({
   }, [stateUnit, resource]);
 
   const handleWizardLinkResource = useCallback(async (referenceId: AnnotationId, targetResourceId: ResourceId) => {
-    if (!semiont) return;
+    if (!xynoplex) return;
     try {
-      await semiont.bind.body(
+      await xynoplex.bind.body(
         rUri,
         referenceId,
         [{ op: 'add', item: { type: 'SpecificResource' as const, source: targetResourceId, purpose: 'linking' as const } }],
@@ -344,14 +344,14 @@ export function ResourceViewerPage({
     } catch (error) {
       showError(`Failed to link reference: ${error instanceof Error ? error.message : String(error)}`);
     }
-  }, [rUri, semiont, showSuccess, showError]);
+  }, [rUri, xynoplex, showSuccess, showError]);
 
   // The wizard's compose handler: create-and-link, in place. The modal
   // already holds the context, so nothing is stashed in sessionStorage and
   // nothing navigates to the compose page. Text-only by design — uploads stay
   // on the standalone compose page.
   const handleWizardComposeSubmit = useCallback(async (referenceId: AnnotationId, params: ComposeParams) => {
-    if (!semiont) throw new Error('No active session');
+    if (!xynoplex) throw new Error('No active session');
     try {
       const format = 'text/markdown';
       const file = new File(
@@ -360,7 +360,7 @@ export function ResourceViewerPage({
         { type: format },
       );
       const newResourceId = await new Promise<ResourceId>((resolve, reject) => {
-        semiont.yield.resource({
+        xynoplex.yield.resource({
           name: params.name,
           file,
           format,
@@ -372,7 +372,7 @@ export function ResourceViewerPage({
           error: reject,
         });
       });
-      await semiont.bind.body(
+      await xynoplex.bind.body(
         rUri,
         referenceId,
         [{ op: 'add', item: { type: 'SpecificResource' as const, source: newResourceId, purpose: 'linking' as const } }],
@@ -382,7 +382,7 @@ export function ResourceViewerPage({
       showError(`Failed to compose resource: ${error instanceof Error ? error.message : String(error)}`);
       throw error; // ComposeStep re-enables its footer on rejection
     }
-  }, [semiont, rUri, showSuccess, showError]);
+  }, [xynoplex, rUri, showSuccess, showError]);
 
   // Add resource to open tabs when it loads, and record it as this KB's
   // last-viewed for the /know landing route to resume from. Both are per-KB
@@ -413,38 +413,38 @@ export function ResourceViewerPage({
   // domain events into the local EventBus) and releases it on teardown.
 
   const handleResourceArchive = useCallback(async () => {
-    if (!semiont) return;
+    if (!xynoplex) return;
     try {
-      await semiont.mark.archive(rUri);
+      await xynoplex.mark.archive(rUri);
       await refetchDocument();
     } catch (err) {
       console.error('Failed to archive document:', err);
       showError('Failed to archive document');
     }
-  }, [semiont, rUri, refetchDocument, showError]);
+  }, [xynoplex, rUri, refetchDocument, showError]);
 
   const handleResourceUnarchive = useCallback(async () => {
-    if (!semiont) return;
+    if (!xynoplex) return;
     try {
-      await semiont.mark.unarchive(rUri);
+      await xynoplex.mark.unarchive(rUri);
       await refetchDocument();
     } catch (err) {
       console.error('Failed to unarchive document:', err);
       showError('Failed to unarchive document');
     }
-  }, [semiont, rUri, refetchDocument, showError]);
+  }, [xynoplex, rUri, refetchDocument, showError]);
 
   const handleResourceClone = useCallback(async () => {
-    if (!semiont) return;
+    if (!xynoplex) return;
     try {
-      const result = await semiont.yield.cloneToken(rUri);
+      const result = await xynoplex.yield.cloneToken(rUri);
       const token = result.token;
       browser.emit('nav:push', { path: `/know/compose?mode=clone&token=${token}`, reason: 'clone' });
     } catch (err) {
       console.error('Failed to generate clone token:', err);
       showError('Failed to generate clone link');
     }
-  }, [semiont, rUri, showError, browser]);
+  }, [xynoplex, rUri, showError, browser]);
 
   const handleAnnotationSparkle = useCallback(({ annotationId }: { annotationId: string }) => {
     triggerSparkleAnimation(annotationId);
@@ -485,7 +485,7 @@ export function ResourceViewerPage({
   useOutcomeToasts(rUri);
 
   // Single useEventSubscriptions call per file (enforced by
-  // packages/typescript/scripts/compliance/audit-hooks-ordering.ts); hooks like useOutcomeToasts
+  // typescript/scripts/compliance/audit-hooks-ordering.ts); hooks like useOutcomeToasts
   // own their channels in their own files.
   useEventSubscriptions({
     'mark:archive': handleResourceArchive,
@@ -553,33 +553,33 @@ export function ResourceViewerPage({
 
   // Document rendering
   return (
-    <div className={`semiont-document-viewer${activePanel ? ' semiont-document-viewer--panel-open' : ''}`}>
+    <div className={`xynoplex-document-viewer${activePanel ? ' xynoplex-document-viewer--panel-open' : ''}`}>
       {/* Main Content - Fills remaining height */}
-      <div className="semiont-document-viewer__main">
+      <div className="xynoplex-document-viewer__main">
         {/* Document Content - Left Side */}
-        <div className="semiont-document-viewer__content">
+        <div className="xynoplex-document-viewer__content">
           {/* Document Header - Only spans document content width */}
-          <div className="semiont-document-viewer__header">
-            <div className="semiont-document-viewer__header-inner">
-              <h2 className="semiont-document-viewer__title">
+          <div className="xynoplex-document-viewer__header">
+            <div className="xynoplex-document-viewer__header-inner">
+              <h2 className="xynoplex-document-viewer__title">
                 {resource.name}
               </h2>
             </div>
           </div>
           {/* Scrollable body wrapper - contains document content, header is sibling above */}
-          <div className="semiont-document-viewer__scrollable-body" lang={getLanguage(resource) || undefined}>
+          <div className="xynoplex-document-viewer__scrollable-body" lang={getLanguage(resource) || undefined}>
             <ErrorBoundary
               fallback={(error, reset) => (
-                <div className="semiont-document-viewer__error">
-                  <h3 className="semiont-document-viewer__error-title">
+                <div className="xynoplex-document-viewer__error">
+                  <h3 className="xynoplex-document-viewer__error-title">
                     Error loading document viewer
                   </h3>
-                  <p className="semiont-document-viewer__error-message">
+                  <p className="xynoplex-document-viewer__error-message">
                     {error.message}
                   </p>
                   <button
                     onClick={reset}
-                    className="semiont-document-viewer__error-button"
+                    className="xynoplex-document-viewer__error-button"
                   >
                     Try again
                   </button>
@@ -587,7 +587,7 @@ export function ResourceViewerPage({
               )}
             >
               {contentLoading ? (
-                <div className="semiont-document-viewer__loading">
+                <div className="xynoplex-document-viewer__loading">
                   Loading document content...
                 </div>
               ) : (
@@ -620,7 +620,7 @@ export function ResourceViewerPage({
         </div>
 
         {/* Sidebar */}
-        <div className="semiont-document-viewer__sidebar">
+        <div className="xynoplex-document-viewer__sidebar">
           {/* Right Panel - Conditional based on active toolbar panel */}
           <ToolbarPanels
             activePanel={activePanel}
@@ -628,8 +628,8 @@ export function ResourceViewerPage({
           >
             {/* Archived Status */}
             {annotateMode && resource.archived && (
-              <div className="semiont-document-viewer__archived-status">
-                <div className="semiont-document-viewer__archived-text">
+              <div className="xynoplex-document-viewer__archived-status">
+                <div className="xynoplex-document-viewer__archived-text">
                   📦 Archived
                 </div>
               </div>

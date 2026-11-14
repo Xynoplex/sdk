@@ -55,16 +55,16 @@ import (
 
 	"github.com/google/uuid"
 
-	semiont "github.com/The-AI-Alliance/semiont/packages/go/sdk"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/internal/kept"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/internal/required"
+	xynoplex "github.com/Xynoplex/sdk/go"
+	"github.com/Xynoplex/sdk/go/api"
+	"github.com/Xynoplex/sdk/go/internal/kept"
+	"github.com/Xynoplex/sdk/go/internal/required"
 )
 
-// SemiontBrowserConfig is what a registry is made of.
-type SemiontBrowserConfig struct {
+// XynoplexBrowserConfig is what a registry is made of.
+type XynoplexBrowserConfig struct {
 	// Storage is where everything the registry keeps is kept.
-	Storage semiont.SessionStorage
+	Storage xynoplex.SessionStorage
 	// SessionFactory is what builds a knowledge base's session.
 	SessionFactory SessionFactory
 }
@@ -129,22 +129,22 @@ type KbReadVerdict struct {
 	ObservedName string
 }
 
-// SemiontBrowser is a registry of knowledge bases: see the package's
+// XynoplexBrowser is a registry of knowledge bases: see the package's
 // documentation.
-type SemiontBrowser struct {
-	storage semiont.SessionStorage
+type XynoplexBrowser struct {
+	storage xynoplex.SessionStorage
 	factory SessionFactory
 
 	knowledgeBases    *held[[]api.KnowledgeBase]
-	activeKbID        *semiont.Variable[string]
-	activeSession     *semiont.Variable[*semiont.Session]
-	activeSignals     *semiont.Variable[*semiont.SessionSignals]
-	sessionActivating *semiont.Variable[bool]
+	activeKbID        *xynoplex.Variable[string]
+	activeSession     *xynoplex.Variable[*xynoplex.Session]
+	activeSignals     *xynoplex.Variable[*xynoplex.SessionSignals]
+	sessionActivating *xynoplex.Variable[bool]
 	openResources     *held[[]OpenResource]
-	lastViewed        *semiont.Variable[api.ResourceId]
-	identityToken     *semiont.Variable[string]
-	failures          *kept.Stream[*semiont.SessionError]
-	bus               *semiont.EventBus
+	lastViewed        *xynoplex.Variable[api.ResourceId]
+	identityToken     *xynoplex.Variable[string]
+	failures          *kept.Stream[*xynoplex.SessionError]
+	bus               *xynoplex.EventBus
 
 	// mu guards what the registry keeps in memory of what its storage holds,
 	// and the live session's end.
@@ -171,12 +171,12 @@ type SemiontBrowser struct {
 	closed        atomic.Bool
 }
 
-// NewSemiontBrowser is a registry over what config.Storage holds. The active
+// NewXynoplexBrowser is a registry over what config.Storage holds. The active
 // knowledge base's session is brought up at once, in the background. What was
 // read is what is kept: an entry that did not read as a knowledge base is gone
 // from the storage too. A storage that refuses those writes is the error, and
 // no registry is made.
-func NewSemiontBrowser(config SemiontBrowserConfig) (*SemiontBrowser, error) {
+func NewXynoplexBrowser(config XynoplexBrowserConfig) (*XynoplexBrowser, error) {
 	storage := config.Storage
 	kbs := LoadKnowledgeBases(storage)
 	active, _ := storage.Get(ActiveKey)
@@ -187,19 +187,19 @@ func NewSemiontBrowser(config SemiontBrowserConfig) (*SemiontBrowser, error) {
 		}
 	}
 	alive, stop := context.WithCancel(context.Background())
-	b := &SemiontBrowser{
+	b := &XynoplexBrowser{
 		storage:           storage,
 		factory:           config.SessionFactory,
 		knowledgeBases:    newHeld([]api.KnowledgeBase{}),
-		activeKbID:        semiont.NewVariable(""),
-		activeSession:     semiont.NewVariable[*semiont.Session](nil),
-		activeSignals:     semiont.NewVariable[*semiont.SessionSignals](nil),
-		sessionActivating: semiont.NewVariable(false),
+		activeKbID:        xynoplex.NewVariable(""),
+		activeSession:     xynoplex.NewVariable[*xynoplex.Session](nil),
+		activeSignals:     xynoplex.NewVariable[*xynoplex.SessionSignals](nil),
+		sessionActivating: xynoplex.NewVariable(false),
 		openResources:     newHeld([]OpenResource{}),
-		lastViewed:        semiont.NewVariable(api.ResourceId{}),
-		identityToken:     semiont.NewVariable(""),
-		failures:          kept.NewStream[*semiont.SessionError](semiont.DefaultTiming().ErrorsKeptForFirstReaderCount),
-		bus:               semiont.NewEventBus(),
+		lastViewed:        xynoplex.NewVariable(api.ResourceId{}),
+		identityToken:     xynoplex.NewVariable(""),
+		failures:          kept.NewStream[*xynoplex.SessionError](xynoplex.DefaultTiming().ErrorsKeptForFirstReaderCount),
+		bus:               xynoplex.NewEventBus(),
 		openByKb:          openByKbOf(storage.Get(OpenResourcesByKbKey)),
 		lastViewedByKb:    lastViewedByKbOf(storage.Get(LastViewedResourceByKbKey)),
 		turn:              make(chan struct{}, 1),
@@ -227,76 +227,76 @@ func NewSemiontBrowser(config SemiontBrowserConfig) (*SemiontBrowser, error) {
 // ── What it holds ───────────────────────────────────────────────────────
 
 // KnowledgeBases is the registered knowledge bases.
-func (b *SemiontBrowser) KnowledgeBases() semiont.Watched[[]api.KnowledgeBase] {
+func (b *XynoplexBrowser) KnowledgeBases() xynoplex.Watched[[]api.KnowledgeBase] {
 	return b.knowledgeBases
 }
 
 // ActiveKbId is the id of the active knowledge base; "" for none. It names
 // the one meant: its session may still be on its way, or there may be none.
-func (b *SemiontBrowser) ActiveKbId() semiont.Watched[string] { return b.activeKbID.Reading() }
+func (b *XynoplexBrowser) ActiveKbId() xynoplex.Watched[string] { return b.activeKbID.Reading() }
 
 // ActiveSession is the active knowledge base's session; nil when it has none.
-func (b *SemiontBrowser) ActiveSession() semiont.Watched[*semiont.Session] {
+func (b *XynoplexBrowser) ActiveSession() xynoplex.Watched[*xynoplex.Session] {
 	return b.activeSession.Reading()
 }
 
 // ActiveSignals is what a host shows about the active session. There exactly
 // when the session is.
-func (b *SemiontBrowser) ActiveSignals() semiont.Watched[*semiont.SessionSignals] {
+func (b *XynoplexBrowser) ActiveSignals() xynoplex.Watched[*xynoplex.SessionSignals] {
 	return b.activeSignals.Reading()
 }
 
 // SessionActivating is whether a session is being brought up.
-func (b *SemiontBrowser) SessionActivating() semiont.Watched[bool] {
+func (b *XynoplexBrowser) SessionActivating() xynoplex.Watched[bool] {
 	return b.sessionActivating.Reading()
 }
 
 // OpenResources is what is open in the active knowledge base, in order.
 // Empty while it has no live session.
-func (b *SemiontBrowser) OpenResources() semiont.Watched[[]OpenResource] { return b.openResources }
+func (b *XynoplexBrowser) OpenResources() xynoplex.Watched[[]OpenResource] { return b.openResources }
 
 // LastViewedResource is the resource last viewed in the active knowledge
 // base; the zero id while it has no live session, and never another knowledge
 // base's.
-func (b *SemiontBrowser) LastViewedResource() semiont.Watched[api.ResourceId] {
+func (b *XynoplexBrowser) LastViewedResource() xynoplex.Watched[api.ResourceId] {
 	return b.lastViewed.Reading()
 }
 
 // Errors is the failures its sessions say of their own (each a
-// *semiont.SessionError among semiont.Session's Errors, which the registry
+// *xynoplex.SessionError among xynoplex.Session's Errors, which the registry
 // reads from the first thing each session said): those that made a session
 // unusable, those that stopped a session's client keeping what it holds, and
 // each write its storage refused, from this call on, in order, however far
 // behind its reader falls, until ctx is done or the registry is closed; saying
 // never waits for a reader. The first call is given first the latest
-// ErrorsKeptForFirstReaderCount (semiont.Timing) said before it, the oldest
+// ErrorsKeptForFirstReaderCount (xynoplex.Timing) said before it, the oldest
 // dropped beyond them; a call once the registry has closed, nothing.
-func (b *SemiontBrowser) Errors(ctx context.Context) iter.Seq[*semiont.SessionError] {
+func (b *XynoplexBrowser) Errors(ctx context.Context) iter.Seq[*xynoplex.SessionError] {
 	return b.failures.Reported(ctx.Done())
 }
 
 // IdentityToken is the token of an identity the host's environment supplies;
 // "" for none.
-func (b *SemiontBrowser) IdentityToken() semiont.Watched[string] { return b.identityToken.Reading() }
+func (b *XynoplexBrowser) IdentityToken() xynoplex.Watched[string] { return b.identityToken.Reading() }
 
 // SetIdentityToken sets the identity token; "" for none.
-func (b *SemiontBrowser) SetIdentityToken(token string) { b.identityToken.Set(token) }
+func (b *XynoplexBrowser) SetIdentityToken(token string) { b.identityToken.Set(token) }
 
 // Storage is where the registry keeps what it keeps: what a sign-in that is
 // under way is remembered in, too.
-func (b *SemiontBrowser) Storage() semiont.SessionStorage { return b.storage }
+func (b *XynoplexBrowser) Storage() xynoplex.SessionStorage { return b.storage }
 
 // Bus is the application's own bus: what its parts say to each other whether
 // or not a knowledge base is active. Apart from a client's own bus, which
 // carries what happens in one knowledge base.
-func (b *SemiontBrowser) Bus() *semiont.EventBus { return b.bus }
+func (b *XynoplexBrowser) Bus() *xynoplex.EventBus { return b.bus }
 
 // ── The knowledge bases ─────────────────────────────────────────────────
 
 // AddKb registers a knowledge base that a sign-in reached, keeps its tokens,
 // and makes it the active one, returning once its session is up or known not
 // to be.
-func (b *SemiontBrowser) AddKb(input api.NewKnowledgeBase, session StoredSession) (api.KnowledgeBase, error) {
+func (b *XynoplexBrowser) AddKb(input api.NewKnowledgeBase, session StoredSession) (api.KnowledgeBase, error) {
 	kb := api.KnowledgeBase{Id: uuid.NewString(), Label: input.Label, Did: input.Did, Endpoint: input.Endpoint, LastRead: input.LastRead}
 	if err := StoreSession(b.storage, kb.Id, session); err != nil {
 		return api.KnowledgeBase{}, err
@@ -313,7 +313,7 @@ func (b *SemiontBrowser) AddKb(input api.NewKnowledgeBase, session StoredSession
 // kept of the person its sign-in named is deleted (forgetKept): forgetting a
 // saved sign-in deletes its person's entries, once the client has closed, so
 // nothing its closing writes is left.
-func (b *SemiontBrowser) RemoveKb(id string) error {
+func (b *XynoplexBrowser) RemoveKb(id string) error {
 	stored, _, err := swapStoredSession(b.storage, id, nil)
 	if err != nil {
 		return err
@@ -340,7 +340,7 @@ func (b *SemiontBrowser) RemoveKb(id string) error {
 // UpdateKb writes what a knowledge base last said of itself onto its entry: a
 // label, unless it is nil, and a last read, unless it is nil. Its endpoint is
 // not changed in place, and its did is never changed.
-func (b *SemiontBrowser) UpdateKb(id string, label *string, lastRead *api.KbRead) error {
+func (b *XynoplexBrowser) UpdateKb(id string, label *string, lastRead *api.KbRead) error {
 	kbs := slices.Clone(b.knowledgeBases.Value())
 	for i := range kbs {
 		if kbs[i].Id != id {
@@ -359,12 +359,12 @@ func (b *SemiontBrowser) UpdateKb(id string, label *string, lastRead *api.KbRead
 
 // KbSessionStatus is what the credential stored for a knowledge base says,
 // read without asking anyone.
-func (b *SemiontBrowser) KbSessionStatus(kbID string) KbSessionStatus {
+func (b *XynoplexBrowser) KbSessionStatus(kbID string) KbSessionStatus {
 	stored, ok := StoredSessionOf(b.storage, kbID)
 	switch {
 	case !ok:
 		return KbSessionSignedOut
-	case semiont.IsTokenExpired(stored.Access, time.Now()):
+	case xynoplex.IsTokenExpired(stored.Access, time.Now()):
 		return KbSessionExpired
 	default:
 		return KbSessionAuthenticated
@@ -373,7 +373,7 @@ func (b *SemiontBrowser) KbSessionStatus(kbID string) KbSessionStatus {
 
 // SetActiveKb makes a knowledge base the active one, or none for "". It
 // returns once its session is up, or once it is known there will be none.
-func (b *SemiontBrowser) SetActiveKb(id string) error { return b.setActiveKb(id) }
+func (b *XynoplexBrowser) SetActiveKb(id string) error { return b.setActiveKb(id) }
 
 // SignIn keeps a new sign-in for a registered knowledge base in place of the
 // one stored, and brings its session up on it. A session it already had is
@@ -382,7 +382,7 @@ func (b *SemiontBrowser) SetActiveKb(id string) error { return b.setActiveKb(id)
 // sign-in names nobody until its gateway names them, so keeping one forgets
 // the saved sign-in it replaces, once the client has closed, so nothing its
 // closing writes is left.
-func (b *SemiontBrowser) SignIn(id string, session StoredSession) error {
+func (b *XynoplexBrowser) SignIn(id string, session StoredSession) error {
 	if b.closed.Load() {
 		return nil
 	}
@@ -407,8 +407,8 @@ func (b *SemiontBrowser) SignIn(id string, session StoredSession) error {
 // entry for the knowledge base that answered (see the package's
 // documentation). A description whose domain no did can hold is refused, and
 // nothing is registered.
-func (b *SemiontBrowser) SignedIn(signedIn SignedIn) (SignInOutcome, error) {
-	did, err := semiont.KbDid(signedIn.Description.Domain)
+func (b *XynoplexBrowser) SignedIn(signedIn SignedIn) (SignInOutcome, error) {
+	did, err := xynoplex.KbDid(signedIn.Description.Domain)
 	if err != nil {
 		return SignInOutcome{}, err
 	}
@@ -457,7 +457,7 @@ func (b *SemiontBrowser) SignedIn(signedIn SignedIn) (SignInOutcome, error) {
 // sign-in named is deleted (forgetKept): forgetting a saved sign-in deletes
 // its person's entries, once the client has closed, so nothing its closing
 // writes is left.
-func (b *SemiontBrowser) SignOut(id string) error {
+func (b *XynoplexBrowser) SignOut(id string) error {
 	if b.closed.Load() {
 		return nil
 	}
@@ -486,7 +486,7 @@ func (b *SemiontBrowser) SignOut(id string) error {
 // AddOpenResource opens a resource in the active knowledge base, or, when it
 // is open already, takes its name, and its media type and storage URI unless
 // each is "". Nothing is opened while it has no live session.
-func (b *SemiontBrowser) AddOpenResource(id api.ResourceId, name, mediaType, storageURI string) error {
+func (b *XynoplexBrowser) AddOpenResource(id api.ResourceId, name, mediaType, storageURI string) error {
 	return b.mutateOpenResources(func(open []OpenResource) []OpenResource {
 		for i := range open {
 			if open[i].ID != id {
@@ -512,7 +512,7 @@ func (b *SemiontBrowser) AddOpenResource(id api.ResourceId, name, mediaType, sto
 }
 
 // RemoveOpenResource closes a resource in the active knowledge base.
-func (b *SemiontBrowser) RemoveOpenResource(id api.ResourceId) error {
+func (b *XynoplexBrowser) RemoveOpenResource(id api.ResourceId) error {
 	return b.mutateOpenResources(func(open []OpenResource) []OpenResource {
 		return slices.DeleteFunc(open, func(resource OpenResource) bool { return resource.ID == id })
 	})
@@ -520,7 +520,7 @@ func (b *SemiontBrowser) RemoveOpenResource(id api.ResourceId) error {
 
 // UpdateOpenResourceName gives an open resource of the active knowledge base
 // a name.
-func (b *SemiontBrowser) UpdateOpenResourceName(id api.ResourceId, name string) error {
+func (b *XynoplexBrowser) UpdateOpenResourceName(id api.ResourceId, name string) error {
 	return b.mutateOpenResources(func(open []OpenResource) []OpenResource {
 		for i := range open {
 			if open[i].ID == id {
@@ -533,7 +533,7 @@ func (b *SemiontBrowser) UpdateOpenResourceName(id api.ResourceId, name string) 
 
 // ReorderOpenResources moves the open resource at one place in the visible
 // list to another. A place that is not in the list moves nothing.
-func (b *SemiontBrowser) ReorderOpenResources(from, to int) error {
+func (b *XynoplexBrowser) ReorderOpenResources(from, to int) error {
 	return b.mutateOpenResources(func(open []OpenResource) []OpenResource {
 		if from < 0 || to < 0 || from >= len(open) || to >= len(open) {
 			return open
@@ -550,7 +550,7 @@ func (b *SemiontBrowser) ReorderOpenResources(from, to int) error {
 
 // SetLastViewedResource records the resource a person is looking at, in the
 // active knowledge base. Nothing is recorded while it has no live session.
-func (b *SemiontBrowser) SetLastViewedResource(id api.ResourceId) error {
+func (b *XynoplexBrowser) SetLastViewedResource(id api.ResourceId) error {
 	kbID := b.liveKbID()
 	if kbID == "" {
 		return nil
@@ -562,7 +562,7 @@ func (b *SemiontBrowser) SetLastViewedResource(id api.ResourceId) error {
 // says what it answered. Asking is not activating: an answer as the entry is
 // recorded on it, and a different knowledge base answering is reported.
 // Nothing is voided and nothing raised.
-func (b *SemiontBrowser) ReadActiveKb(ctx context.Context) (KbReadVerdict, error) {
+func (b *XynoplexBrowser) ReadActiveKb(ctx context.Context) (KbReadVerdict, error) {
 	session, kbID := b.activeSession.Value(), b.activeKbID.Value()
 	if session == nil || kbID == "" {
 		return KbReadVerdict{Kind: KbReadNoVerdict}, nil
@@ -578,7 +578,7 @@ func (b *SemiontBrowser) ReadActiveKb(ctx context.Context) (KbReadVerdict, error
 // the factory returns too. Called from within the storage, in a write the
 // registry is making, it does not return: it waits for that write. Closing
 // twice is closing once.
-func (b *SemiontBrowser) Close() error {
+func (b *XynoplexBrowser) Close() error {
 	b.mu.Lock()
 	closing := !b.closed.Swap(true)
 	b.mu.Unlock()
@@ -613,7 +613,7 @@ func (b *SemiontBrowser) Close() error {
 
 // spawn runs work under the registry's lifetime; Close waits for it, and
 // returns what it failed with.
-func (b *SemiontBrowser) spawn(work func() error) {
+func (b *XynoplexBrowser) spawn(work func() error) {
 	b.tasks.Add(1)
 	go func() {
 		defer b.tasks.Done()
@@ -692,7 +692,7 @@ func written(value any) string {
 	return string(text)
 }
 
-func (b *SemiontBrowser) putKbs(kbs []api.KnowledgeBase) error {
+func (b *XynoplexBrowser) putKbs(kbs []api.KnowledgeBase) error {
 	if b.closed.Load() {
 		return nil
 	}
@@ -703,7 +703,7 @@ func (b *SemiontBrowser) putKbs(kbs []api.KnowledgeBase) error {
 	return nil
 }
 
-func (b *SemiontBrowser) putActiveID(id string) error {
+func (b *XynoplexBrowser) putActiveID(id string) error {
 	if b.closed.Load() {
 		return nil
 	}
@@ -720,7 +720,7 @@ func (b *SemiontBrowser) putActiveID(id string) error {
 	return nil
 }
 
-func (b *SemiontBrowser) failed(err *semiont.SessionError) { b.failures.Report(err) }
+func (b *XynoplexBrowser) failed(err *xynoplex.SessionError) { b.failures.Report(err) }
 
 // ── The active session ──────────────────────────────────────────────────
 
@@ -728,7 +728,7 @@ func (b *SemiontBrowser) failed(err *semiont.SessionError) { b.failures.Report(e
 // registry to be closed.
 type ended struct {
 	end     func()
-	signals *semiont.SessionSignals
+	signals *xynoplex.SessionSignals
 }
 
 // close ends the session as its factory's end does, the client it was built
@@ -742,7 +742,7 @@ func (e *ended) close() {
 
 // takeSession takes the live session out: its readers see none, and what is
 // open is shown no more. Whoever takes it closes it.
-func (b *SemiontBrowser) takeSession() *ended {
+func (b *XynoplexBrowser) takeSession() *ended {
 	b.mu.Lock()
 	if b.activeSession.Value() == nil {
 		b.mu.Unlock()
@@ -762,7 +762,7 @@ func (b *SemiontBrowser) takeSession() *ended {
 // find is said through the signals. A session is put once, so what is open is
 // checked once per session. One that came up as the registry closed is closed
 // instead.
-func (b *SemiontBrowser) putSession(session *semiont.Session, end func(), signals *semiont.SessionSignals) {
+func (b *XynoplexBrowser) putSession(session *xynoplex.Session, end func(), signals *xynoplex.SessionSignals) {
 	b.mu.Lock()
 	if b.closed.Load() {
 		b.mu.Unlock()
@@ -777,7 +777,7 @@ func (b *SemiontBrowser) putSession(session *semiont.Session, end func(), signal
 	b.spawn(func() error { return b.validateOpenResources(session) })
 }
 
-func (b *SemiontBrowser) setActiveKb(id string) error {
+func (b *XynoplexBrowser) setActiveKb(id string) error {
 	if b.closed.Load() {
 		return nil
 	}
@@ -813,14 +813,14 @@ func (b *SemiontBrowser) setActiveKb(id string) error {
 	return nil
 }
 
-func (b *SemiontBrowser) activating(change int) {
+func (b *XynoplexBrowser) activating(change int) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.activations += change
 	b.sessionActivating.Set(b.activations > 0)
 }
 
-func (b *SemiontBrowser) activate(id string) {
+func (b *XynoplexBrowser) activate(id string) {
 	kbs := b.knowledgeBases.Value()
 	i := slices.IndexFunc(kbs, func(kb api.KnowledgeBase) bool { return kb.Id == id })
 	if i < 0 {
@@ -828,7 +828,7 @@ func (b *SemiontBrowser) activate(id string) {
 	}
 	// The signals exist before the session does: the session says it is over
 	// through them, and may be over before it is ready.
-	signals := semiont.NewSessionSignals()
+	signals := xynoplex.NewSessionSignals()
 	handed, ok := b.build(SessionFactoryOptions{Kb: kbs[i], Storage: b.storage, Signals: signals})
 	if !ok {
 		return
@@ -855,7 +855,7 @@ func (b *SemiontBrowser) activate(id string) {
 
 // built is what the factory handed back for a session.
 type built struct {
-	session *semiont.Session
+	session *xynoplex.Session
 	end     func()
 	err     error
 }
@@ -865,7 +865,7 @@ type built struct {
 // closed: ok is false when the registry closed first. A session handed back
 // after that is ended where it is handed back, with what a host was to be
 // shown of it.
-func (b *SemiontBrowser) build(options SessionFactoryOptions) (handed built, ok bool) {
+func (b *XynoplexBrowser) build(options SessionFactoryOptions) (handed built, ok bool) {
 	handing := make(chan built)
 	go func() {
 		session, end, err := b.factory.Session(b.alive, options)
@@ -888,12 +888,12 @@ func (b *SemiontBrowser) build(options SessionFactoryOptions) (handed built, ok 
 
 // constructFailed is a factory's refusal as the failure a registry says: the
 // factory's own when it is one.
-func constructFailed(err error, kbID string) *semiont.SessionError {
-	var refused *semiont.SessionError
+func constructFailed(err error, kbID string) *xynoplex.SessionError {
+	var refused *xynoplex.SessionError
 	if errors.As(err, &refused) {
 		return refused
 	}
-	return &semiont.SessionError{Code: semiont.SessionErrorCodeConstructFailed, Message: err.Error(), KbID: kbID}
+	return &xynoplex.SessionError{Code: xynoplex.SessionErrorCodeConstructFailed, Message: err.Error(), KbID: kbID}
 }
 
 // route reads the session's errors, as their one reader, and so from what
@@ -902,15 +902,15 @@ func constructFailed(err error, kbID string) *semiont.SessionError {
 // signals; any other failure of its transport, a refusal for want of a valid
 // token among them, is not acted on. It ends when the session's errors do,
 // when the session ends.
-func (b *SemiontBrowser) route(session *semiont.Session, signals *semiont.SessionSignals) {
+func (b *XynoplexBrowser) route(session *xynoplex.Session, signals *xynoplex.SessionSignals) {
 	for each := range session.Errors() {
-		var own *semiont.SessionError
+		var own *xynoplex.SessionError
 		if errors.As(each, &own) {
 			b.failed(own)
 			continue
 		}
-		var failure *semiont.TransportError
-		if errors.As(each, &failure) && failure.Code == semiont.TransportErrorCodeForbidden {
+		var failure *xynoplex.TransportError
+		if errors.As(each, &failure) && failure.Code == xynoplex.TransportErrorCodeForbidden {
 			detail := failure.Message
 			signals.NotifyPermissionDenied(&detail)
 		}
@@ -921,7 +921,7 @@ func (b *SemiontBrowser) route(session *semiont.Session, signals *semiont.Sessio
 
 // liveKbID is the id of the active knowledge base when it has a live
 // session; "" otherwise.
-func (b *SemiontBrowser) liveKbID() string {
+func (b *XynoplexBrowser) liveKbID() string {
 	if b.activeSession.Value() == nil {
 		return ""
 	}
@@ -930,7 +930,7 @@ func (b *SemiontBrowser) liveKbID() string {
 
 // project shows what is open, and where the person was, in the active
 // knowledge base: only while it has a live session.
-func (b *SemiontBrowser) project() {
+func (b *XynoplexBrowser) project() {
 	b.mu.Lock()
 	open := []OpenResource{}
 	var viewed api.ResourceId
@@ -945,7 +945,7 @@ func (b *SemiontBrowser) project() {
 
 // mutateOpenResources changes what is open in the active knowledge base,
 // against what the storage holds, as one step.
-func (b *SemiontBrowser) mutateOpenResources(mutate func([]OpenResource) []OpenResource) error {
+func (b *XynoplexBrowser) mutateOpenResources(mutate func([]OpenResource) []OpenResource) error {
 	kbID := b.liveKbID()
 	if kbID == "" {
 		return nil
@@ -967,7 +967,7 @@ func (b *SemiontBrowser) mutateOpenResources(mutate func([]OpenResource) []OpenR
 	return nil
 }
 
-func (b *SemiontBrowser) mutateLastViewed(mutate func(map[string]api.ResourceId)) error {
+func (b *XynoplexBrowser) mutateLastViewed(mutate func(map[string]api.ResourceId)) error {
 	var committed map[string]api.ResourceId
 	err := b.storage.Update(LastViewedResourceByKbKey, func(stored string, has bool) (string, bool) {
 		viewed := lastViewedByKbOf(stored, has)
@@ -987,7 +987,7 @@ func (b *SemiontBrowser) mutateLastViewed(mutate func(map[string]api.ResourceId)
 
 // forgetOpenIn forgets what was open in a knowledge base and where the person
 // was.
-func (b *SemiontBrowser) forgetOpenIn(kbID string) error {
+func (b *XynoplexBrowser) forgetOpenIn(kbID string) error {
 	var committed map[string][]OpenResource
 	err := b.storage.Update(OpenResourcesByKbKey, func(stored string, has bool) (string, bool) {
 		open := openByKbOf(stored, has)
@@ -1006,7 +1006,7 @@ func (b *SemiontBrowser) forgetOpenIn(kbID string) error {
 
 // writtenElsewhere hears another context change what is open, or where the
 // person was.
-func (b *SemiontBrowser) writtenElsewhere(key, value string, has bool) {
+func (b *XynoplexBrowser) writtenElsewhere(key, value string, has bool) {
 	if b.closed.Load() || !has {
 		return
 	}
@@ -1035,7 +1035,7 @@ func (b *SemiontBrowser) writtenElsewhere(key, value string, has bool) {
 
 // ── The checks a session's arrival starts ───────────────────────────────
 
-func (b *SemiontBrowser) validateOpenResources(session *semiont.Session) error {
+func (b *XynoplexBrowser) validateOpenResources(session *xynoplex.Session) error {
 	// The session's own knowledge base: by the time this runs, another may be
 	// the active one.
 	kbID := session.Kb().Id
@@ -1077,7 +1077,7 @@ func (b *SemiontBrowser) validateOpenResources(session *semiont.Session) error {
 	var mu sync.Mutex
 	checks := map[api.ResourceId]TabCheck{}
 	var lanes sync.WaitGroup
-	for range semiont.DefaultTiming().ChecksAtOnceCount {
+	for range xynoplex.DefaultTiming().ChecksAtOnceCount {
 		lanes.Go(func() {
 			for id := range ids {
 				check := checkOpenResource(b.alive, session, id)
@@ -1101,7 +1101,7 @@ func (b *SemiontBrowser) validateOpenResources(session *semiont.Session) error {
 // A did is read one way only. It is not unique, so one that differs says a
 // different knowledge base answered, and one that matches says nothing about
 // what is in it: that is each resource's own check.
-func (b *SemiontBrowser) readKb(ctx context.Context, session *semiont.Session, kbID string) (KbReadVerdict, error) {
+func (b *XynoplexBrowser) readKb(ctx context.Context, session *xynoplex.Session, kbID string) (KbReadVerdict, error) {
 	kbs := b.knowledgeBases.Value()
 	i := slices.IndexFunc(kbs, func(kb api.KnowledgeBase) bool { return kb.Id == kbID })
 	if i < 0 {
@@ -1111,7 +1111,7 @@ func (b *SemiontBrowser) readKb(ctx context.Context, session *semiont.Session, k
 	if err != nil {
 		return KbReadVerdict{Kind: KbReadNoVerdict}, nil
 	}
-	observed, err := semiont.KbDid(description.Domain)
+	observed, err := xynoplex.KbDid(description.Domain)
 	if err != nil {
 		// A domain no did can hold is a knowledge base that could not say who
 		// it is.
@@ -1134,7 +1134,7 @@ func (b *SemiontBrowser) readKb(ctx context.Context, session *semiont.Session, k
 // answered for the active entry: it voids what claims to be about the entry's
 // contents, both at once, and raises the conflict. Registering the knowledge
 // base that answered is a person's act.
-func (b *SemiontBrowser) voidForConflict(kbID, observedDid string) error {
+func (b *XynoplexBrowser) voidForConflict(kbID, observedDid string) error {
 	kbs := b.knowledgeBases.Value()
 	i := slices.IndexFunc(kbs, func(kb api.KnowledgeBase) bool { return kb.Id == kbID })
 	if i < 0 {
@@ -1147,22 +1147,22 @@ func (b *SemiontBrowser) voidForConflict(kbID, observedDid string) error {
 		return err
 	}
 	if signals := b.activeSignals.Value(); signals != nil {
-		signals.NotifyKbIdentityConflict(semiont.KbIdentityConflict{ExpectedDid: kbs[i].Did, ObservedDid: observedDid})
+		signals.NotifyKbIdentityConflict(xynoplex.KbIdentityConflict{ExpectedDid: kbs[i].Did, ObservedDid: observedDid})
 	}
 	return nil
 }
 
 // checkOpenResource is one open resource's verdict. Asking for it freshly
 // also puts what it answered in the client's cache, where a viewer reads it.
-func checkOpenResource(ctx context.Context, session *semiont.Session, id api.ResourceId) TabCheck {
+func checkOpenResource(ctx context.Context, session *xynoplex.Session, id api.ResourceId) TabCheck {
 	descriptor, err := session.Client().Browse.Resource(id).Fresh(ctx)
 	if err == nil {
 		// A descriptor with no primary representation states no media type.
-		mediaType, _, _ := semiont.PrimaryMediaType(descriptor)
+		mediaType, _, _ := xynoplex.PrimaryMediaType(descriptor)
 		return TabCheck{Verdict: TabReady, Name: descriptor.Name, MediaType: mediaType}
 	}
-	var refusal *semiont.BusRequestError
-	if errors.As(err, &refusal) && refusal.Code == semiont.BusRequestErrorCodeNotFound {
+	var refusal *xynoplex.BusRequestError
+	if errors.As(err, &refusal) && refusal.Code == xynoplex.BusRequestErrorCodeNotFound {
 		return TabCheck{Verdict: TabGone}
 	}
 	// Anything else is a symptom, not a verdict.

@@ -1,4 +1,4 @@
-package semiont
+package xynoplex
 
 // How a knowledge base is named, and the principals who act in it. Every
 // function here is held to a case table every implementation runs: the
@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
+	"github.com/Xynoplex/sdk/go/api"
 )
 
 // EncodeUriComponent is value as ECMAScript's encodeURIComponent writes it:

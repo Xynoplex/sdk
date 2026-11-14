@@ -11,10 +11,10 @@ from typing import ClassVar, Final, final, override
 
 import pytest
 
-from semiont._reading import Reading
-from semiont.state_unit import StateUnit
-from semiont.testing.axioms import AxiomSubject, DisposeProbe, Fresh, assert_state_unit_axioms
-from semiont.watched import Variable, Watched
+from xynoplex._reading import Reading
+from xynoplex.state_unit import StateUnit
+from xynoplex.testing.axioms import AxiomSubject, DisposeProbe, Fresh, assert_state_unit_axioms
+from xynoplex.watched import Variable, Watched
 
 
 class Counter(StateUnit):

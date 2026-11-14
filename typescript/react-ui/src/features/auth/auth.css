@@ -8,17 +8,17 @@
  */
 
 /* Icon styles */
-.semiont-icon {
+.xynoplex-icon {
   display: inline-block;
   vertical-align: middle;
 }
 
-.semiont-icon--small {
+.xynoplex-icon--small {
   width: 1.25rem;
   height: 1.25rem;
 }
 
-.semiont-icon--inline {
+.xynoplex-icon--inline {
   margin-right: 0.5rem;
 }
 
@@ -39,82 +39,82 @@
  * Auth error display — the classes `AuthErrorDisplay` renders.
  * ────────────────────────────────────────────────────────────────────────── */
 
-.semiont-auth-error-display {
+.xynoplex-auth-error-display {
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 3rem 1rem;
 }
 
-.semiont-auth-error-display__container {
+.xynoplex-auth-error-display__container {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
   width: 100%;
   max-width: 28rem;
   padding: 2rem;
-  background-color: var(--semiont-bg-primary);
-  border: 1px solid var(--semiont-border-primary);
-  border-radius: var(--semiont-radius-lg);
+  background-color: var(--xynoplex-bg-primary);
+  border: 1px solid var(--xynoplex-border-primary);
+  border-radius: var(--xynoplex-radius-lg);
   text-align: center;
 }
 
-.semiont-auth-error-display__title {
+.xynoplex-auth-error-display__title {
   margin: 0;
-  font-size: var(--semiont-text-2xl);
-  color: var(--semiont-text-primary);
+  font-size: var(--xynoplex-text-2xl);
+  color: var(--xynoplex-text-primary);
 }
 
 /* The error is the reason the reader is here: tinted, not merely bordered. */
-.semiont-auth-error-display__error-box {
+.xynoplex-auth-error-display__error-box {
   padding: 1rem;
-  background-color: var(--semiont-color-error-light);
-  border: 1px solid var(--semiont-color-error);
-  border-radius: var(--semiont-radius-base);
+  background-color: var(--xynoplex-color-error-light);
+  border: 1px solid var(--xynoplex-color-error);
+  border-radius: var(--xynoplex-radius-base);
 }
 
-.semiont-auth-error-display__error-message {
-  color: var(--semiont-color-error-dark);
-  font-size: var(--semiont-text-base);
+.xynoplex-auth-error-display__error-message {
+  color: var(--xynoplex-color-error-dark);
+  font-size: var(--xynoplex-text-base);
 }
 
-[data-theme="dark"] .semiont-auth-error-display__error-box {
+[data-theme="dark"] .xynoplex-auth-error-display__error-box {
   /* The light tint is unreadable on a dark ground; carry the hue in the
      border and the text instead of the fill. */
   background-color: transparent;
 }
 
-[data-theme="dark"] .semiont-auth-error-display__error-message {
-  color: var(--semiont-color-error-light);
+[data-theme="dark"] .xynoplex-auth-error-display__error-message {
+  color: var(--xynoplex-color-error-light);
 }
 
-.semiont-auth-error-display__actions {
+.xynoplex-auth-error-display__actions {
   display: flex;
   justify-content: center;
 }
 
-.semiont-auth-error-display__link {
+.xynoplex-auth-error-display__link {
   display: inline-block;
   padding: 0.625rem 1.25rem;
-  background-color: var(--semiont-color-primary-600);
-  color: var(--semiont-text-inverse);
-  border-radius: var(--semiont-radius-base);
-  font-size: var(--semiont-text-sm);
+  background-color: var(--xynoplex-color-primary-600);
+  color: var(--xynoplex-text-inverse);
+  border-radius: var(--xynoplex-radius-base);
+  font-size: var(--xynoplex-text-sm);
   text-decoration: none;
 }
 
-.semiont-auth-error-display__link:hover {
-  background-color: var(--semiont-color-primary-700);
+.xynoplex-auth-error-display__link:hover {
+  background-color: var(--xynoplex-color-primary-700);
 }
 
-.semiont-auth-error-display__link:focus-visible {
-  outline: 2px solid var(--semiont-color-primary-500);
+.xynoplex-auth-error-display__link:focus-visible {
+  outline: 2px solid var(--xynoplex-color-primary-500);
   outline-offset: 2px;
 }
 
-[data-theme="dark"] .semiont-auth-error-display__link {
-  /* `--semiont-text-inverse` FLIPS between themes, so on a dark ground the
+[data-theme="dark"] .xynoplex-auth-error-display__link {
+  /* `--xynoplex-text-inverse` FLIPS between themes, so on a dark ground the
      label would turn dark on a blue button. The fill stays blue in both
      themes, so the label must be pinned, not inherited. */
-  color: var(--semiont-color-white);
+  color: var(--xynoplex-color-white);
 }

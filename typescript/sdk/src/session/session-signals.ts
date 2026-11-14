@@ -2,15 +2,15 @@
  * SessionSignals — UI-facing notification state that belongs to the host
  * surface, not to the session itself.
  *
- * `SemiontSession` is a headless per-gateway client + token + user
+ * `XynoplexSession` is a headless per-gateway client + token + user
  * holder. It can run in any process: browser, worker, CLI, test. But
  * the session-expired / permission-denied *notifications* are inherently
- * a UI-host concern. Keeping those observables on `SemiontSession` would
+ * a UI-host concern. Keeping those observables on `XynoplexSession` would
  * mean workers and CLIs carry dead BehaviorSubjects that nothing ever
  * fires.
  *
  * `SessionSignals` owns the notification state and has no hard reference
- * to a session. A UI host (e.g. `SemiontBrowser`) constructs one alongside
+ * to a session. A UI host (e.g. `XynoplexBrowser`) constructs one alongside
  * every active session and wires:
  *
  *   - `session.onAuthFailed` → `signals.notifySessionEnded` so a session
@@ -29,7 +29,7 @@
  */
 
 import { BehaviorSubject } from 'rxjs';
-import { watched, type StateUnit, type Watched } from '@semiont/core';
+import { watched, type StateUnit, type Watched } from '@xynoplex/core';
 
 /**
  * Why a session ended: its issuer refused to renew its token (`expired`), or

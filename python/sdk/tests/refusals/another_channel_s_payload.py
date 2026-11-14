@@ -1,10 +1,10 @@
 """A channel carries its own payload and no other's."""
 
-from semiont import channels, operations
-from semiont.channel import Channel, Operation
-from semiont.identifiers import AnnotationId
-from semiont.model import WireModel
-from semiont.types import AnnotationRemovedPayload, MarkDeleteCommand, MarkJobCreateCommand, MarkSubmitEvent, StoredEventResponse
+from xynoplex import channels, operations
+from xynoplex.channel import Channel, Operation
+from xynoplex.identifiers import AnnotationId
+from xynoplex.model import WireModel
+from xynoplex.types import AnnotationRemovedPayload, MarkDeleteCommand, MarkJobCreateCommand, MarkSubmitEvent, StoredEventResponse
 
 
 def emit[P: WireModel](channel: Channel[P], payload: P) -> None:

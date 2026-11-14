@@ -1,7 +1,7 @@
 {
-  "name": "@semiont/sdk",
+  "name": "@xynoplex/sdk",
   "version": "0.7.3",
-  "description": "Semiont SDK — SemiontClient, namespaces, session/browser, state units, and the bus-request/cache helpers. Transport-agnostic; pair with @semiont/http-transport (HttpTransport) for the wire.",
+  "description": "Xynoplex SDK — XynoplexClient, namespaces, session/browser, state units, and the bus-request/cache helpers. Transport-agnostic; pair with @xynoplex/http-transport (HttpTransport) for the wire.",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -29,8 +29,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/The-AI-Alliance/semiont.git",
-    "directory": "packages/typescript/sdk"
+    "url": "git+https://github.com/Xynoplex/sdk.git",
+    "directory": "typescript/sdk"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
@@ -43,9 +43,9 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@semiont/core": "*",
-    "@semiont/http-transport": "*",
-    "@semiont/observability": "*",
+    "@xynoplex/core": "*",
+    "@xynoplex/http-transport": "*",
+    "@xynoplex/observability": "*",
     "rxjs": "^7.8.1"
   },
   "devDependencies": {
@@ -61,12 +61,12 @@
     "vitest": "^5.1.0"
   },
   "keywords": [
-    "semiont",
+    "xynoplex",
     "sdk",
     "client",
     "annotations",
     "w3c"
   ],
-  "author": "Semiont Team",
+  "author": "Xynoplex Team",
   "license": "Apache-2.0"
 }

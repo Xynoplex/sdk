@@ -83,7 +83,7 @@ export function Button({
         data-icon-only={iconOnly ? 'true' : undefined}
         data-active={active ? 'true' : undefined}
         data-disabled={isDisabled ? 'true' : undefined}
-        className={clsx('semiont-button', className)}
+        className={clsx('xynoplex-button', className)}
         disabled={isDisabled}
         aria-busy={loading}
         aria-disabled={isDisabled}
@@ -92,11 +92,11 @@ export function Button({
         {/* Loading spinner */}
         {loading && (
           <span
-            className="semiont-button-spinner"
+            className="xynoplex-button-spinner"
             aria-label="Loading"
           >
             <svg
-              className="semiont-spinner-svg"
+              className="xynoplex-spinner-svg"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
@@ -104,7 +104,7 @@ export function Button({
               height="1em"
             >
               <circle
-                className="semiont-spinner-circle"
+                className="xynoplex-spinner-circle"
                 cx="12"
                 cy="12"
                 r="10"
@@ -114,7 +114,7 @@ export function Button({
                 opacity="0.25"
               />
               <path
-                className="semiont-spinner-path"
+                className="xynoplex-spinner-path"
                 fill="currentColor"
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               />
@@ -124,14 +124,14 @@ export function Button({
 
         {/* Left icon */}
         {leftIcon && !loading && (
-          <span className="semiont-button-icon semiont-button-icon-left">
+          <span className="xynoplex-button-icon xynoplex-button-icon-left">
             {leftIcon}
           </span>
         )}
 
         {/* Button content */}
         {!iconOnly && children && (
-          <span className="semiont-button-content">{children}</span>
+          <span className="xynoplex-button-content">{children}</span>
         )}
 
         {/* Icon-only content (centered) */}
@@ -139,7 +139,7 @@ export function Button({
 
         {/* Right icon */}
         {rightIcon && !loading && (
-          <span className="semiont-button-icon semiont-button-icon-right">
+          <span className="xynoplex-button-icon xynoplex-button-icon-right">
             {rightIcon}
           </span>
         )}
@@ -181,7 +181,7 @@ export const ButtonGroup: React.FC<ButtonGroupProps> = ({
       data-orientation={orientation}
       data-attached={attached ? 'true' : undefined}
       data-spacing={attached ? undefined : spacing}
-      className={clsx('semiont-button-group', className)}
+      className={clsx('xynoplex-button-group', className)}
       role="group"
     >
       {children}

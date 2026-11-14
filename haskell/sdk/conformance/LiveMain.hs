@@ -20,23 +20,23 @@ import Data.Time.Clock.POSIX (getPOSIXTime)
 import DriverProtocol
 import LiveQueries
 import Network.HTTP.Client (defaultManagerSettings, noProxy)
-import qualified Semiont.Browse as Browse
-import qualified Semiont.Cache as Cache
-import qualified Semiont.Channels as Channels
-import qualified Semiont.Client as Client
-import qualified Semiont.Delegation as Delegation
-import qualified Semiont.Gather as Gather
-import qualified Semiont.Http as Http
-import qualified Semiont.Mark as Mark
-import qualified Semiont.Match as Match
-import qualified Semiont.Retry as Retry
-import qualified Semiont.Running as Running
-import qualified Semiont.SessionStorage as Storage
-import qualified Semiont.StateValue as State
-import qualified Semiont.Timing.Settings as Timing
-import qualified Semiont.Transport as Transport
-import Semiont.Transport.Facts (connectionStateName)
-import qualified Semiont.Yield as Yield
+import qualified Xynoplex.Browse as Browse
+import qualified Xynoplex.Cache as Cache
+import qualified Xynoplex.Channels as Channels
+import qualified Xynoplex.Client as Client
+import qualified Xynoplex.Delegation as Delegation
+import qualified Xynoplex.Gather as Gather
+import qualified Xynoplex.Http as Http
+import qualified Xynoplex.Mark as Mark
+import qualified Xynoplex.Match as Match
+import qualified Xynoplex.Retry as Retry
+import qualified Xynoplex.Running as Running
+import qualified Xynoplex.SessionStorage as Storage
+import qualified Xynoplex.StateValue as State
+import qualified Xynoplex.Timing.Settings as Timing
+import qualified Xynoplex.Transport as Transport
+import Xynoplex.Transport.Facts (connectionStateName)
+import qualified Xynoplex.Yield as Yield
 import qualified Streaming.Prelude as Stream
 import System.IO
 import System.Random (randomRIO)

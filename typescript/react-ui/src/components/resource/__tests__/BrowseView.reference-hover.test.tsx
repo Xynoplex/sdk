@@ -16,10 +16,10 @@ import { asStates } from '../../../__tests__/test-client';
 import { render, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { BehaviorSubject } from 'rxjs';
-import type { Annotation, AnnotationId, ResourceDescriptor } from '@semiont/core';
-import type { SemiontSession } from '@semiont/sdk';
+import type { Annotation, AnnotationId, ResourceDescriptor } from '@xynoplex/core';
+import type { XynoplexSession } from '@xynoplex/sdk';
 import { BrowseView } from '../BrowseView';
-import { resourceId, EventBus } from '@semiont/core';
+import { resourceId, EventBus } from '@xynoplex/core';
 import { englishTranslationManager } from '../../../test-utils';
 
 vi.mock('../../annotation/AnnotateToolbar', () => ({ AnnotateToolbar: () => null }));
@@ -62,7 +62,7 @@ function setup(onReferenceHover?: (h: unknown) => void) {
       browse: { click: vi.fn(), resource: browseResource },
       beckon: { hover: beckonHover },
     },
-  } as unknown as SemiontSession;
+  } as unknown as XynoplexSession;
 
   const { container } = render(
     <BrowseView
@@ -77,7 +77,7 @@ function setup(onReferenceHover?: (h: unknown) => void) {
       {...(onReferenceHover ? { onReferenceHover } : {})}
     />,
   );
-  const content = container.querySelector('.semiont-browse-view__content')!;
+  const content = container.querySelector('.xynoplex-browse-view__content')!;
 
   const hoverTarget = (id: string) => {
     const el = document.createElement('span');

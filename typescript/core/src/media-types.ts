@@ -1,5 +1,5 @@
 /**
- * Media-type registry for Semiont
+ * Media-type registry for Xynoplex
  *
  * One supported-types list, capability-tiered, keyed by the spec's
  * SupportedMediaType enum. The rows are protocol/specs/src/media-types/registry.json's,

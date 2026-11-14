@@ -13,22 +13,22 @@ import Data.Text (Text)
 import qualified Data.Text as Text
 import qualified Data.UUID.Types as UUID
 import Network.HTTP.Client (defaultManagerSettings, noProxy)
-import qualified Semiont.Bus as Bus
-import qualified Semiont.Channels as Channels
-import qualified Semiont.Client as Client
-import qualified Semiont.Content as Content
-import qualified Semiont.Http as Http
-import qualified Semiont.Registry as Browser
-import qualified Semiont.Registry.Factory as Factory
-import qualified Semiont.Session as Session
-import qualified Semiont.SessionStorage as Storage
-import qualified Semiont.SignIn as SignIn
-import qualified Semiont.State.SessionSignals as Signals
-import qualified Semiont.StateValue as State
-import qualified Semiont.Retry as Retry
-import qualified Semiont.Timing.Settings as Timing
-import qualified Semiont.Transport as Transport
-import Semiont.Types
+import qualified Xynoplex.Bus as Bus
+import qualified Xynoplex.Channels as Channels
+import qualified Xynoplex.Client as Client
+import qualified Xynoplex.Content as Content
+import qualified Xynoplex.Http as Http
+import qualified Xynoplex.Registry as Browser
+import qualified Xynoplex.Registry.Factory as Factory
+import qualified Xynoplex.Session as Session
+import qualified Xynoplex.SessionStorage as Storage
+import qualified Xynoplex.SignIn as SignIn
+import qualified Xynoplex.State.SessionSignals as Signals
+import qualified Xynoplex.StateValue as State
+import qualified Xynoplex.Retry as Retry
+import qualified Xynoplex.Timing.Settings as Timing
+import qualified Xynoplex.Transport as Transport
+import Xynoplex.Types
 import qualified ControlledTime as Time
 import System.Timeout (timeout)
 
@@ -121,12 +121,12 @@ cases fixtures=do
   pool <- Http.newHttpClient noProxy defaultManagerSettings
   let http=Http.HttpOptions "http://unused.test:1" pool (pure Nothing) (const (pure Nothing))
         (Retry.RetryOptions (Time.now time) (Time.waitUntil time) (pure 0)) Timing.protocolSettings fresh Set.empty (pure Map.empty) (\_ _ -> pure ())
-      config=Browser.SemiontBrowserConfig storage factory http (pure 1800000000)
+      config=Browser.XynoplexBrowserConfig storage factory http (pure 1800000000)
       local name=KbEndpointBranch2 (LocalEndpoint name LocalEndpointKindLocal mempty)
       proposed name domain=NewKnowledgeBase ("did:web:"<>domain) (local name) name Nothing mempty
   grant <- fixture fixtures "StoredSession"
   resource <- either (ioError . userError) pure (mkResourceId "res-1")
-  bracket (Browser.newSemiontBrowser config) Browser.dispose $ \browser -> do
+  bracket (Browser.newXynoplexBrowser config) Browser.dispose $ \browser -> do
     a <- Browser.addKb browser (proposed "A" "a.example.test") grant
     Time.settle
     require "registry did not own one active connection" . (==1) =<< readTVarIO active

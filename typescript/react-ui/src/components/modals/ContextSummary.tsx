@@ -1,6 +1,6 @@
 'use client';
 
-import { deriveViews, getBodySource, getExactText, getTargetSelector, type GatheredContext } from '@semiont/core';
+import { deriveViews, getBodySource, getExactText, getTargetSelector, type GatheredContext } from '@xynoplex/core';
 
 export interface ContextSummaryTranslations {
   sourceContextLabel: string;
@@ -174,17 +174,17 @@ export function ContextSummary({ context, translations: t }: ContextSummaryProps
   // title is drawn here. Emptiness is evidence: an empty neighborhood
   // renders its empty state, never a blank pane.
   return (
-    <div className="semiont-gather-pane semiont-gather-pane--graph">
-      <div className="semiont-gather-pane__title">{t.graphPaneTitle}</div>
+    <div className="xynoplex-gather-pane xynoplex-gather-pane--graph">
+      <div className="xynoplex-gather-pane__title">{t.graphPaneTitle}</div>
       {context.inferredRelationshipSummary && (
-        <p className="semiont-gather-pane__summary">{context.inferredRelationshipSummary}</p>
+        <p className="xynoplex-gather-pane__summary">{context.inferredRelationshipSummary}</p>
       )}
       {!hasBody && (
-        <p className="semiont-gather-pane__empty">{t.graphEmpty}</p>
+        <p className="xynoplex-gather-pane__empty">{t.graphEmpty}</p>
       )}
       {hasBody && (
           <svg
-            className="semiont-graph"
+            className="xynoplex-graph"
             viewBox={`0 0 ${width} ${height}`}
             // Natural-size cap: 1 viewBox unit never exceeds 1px, so a compact
             // graph renders small instead of stretching to fill the pane.
@@ -193,7 +193,7 @@ export function ContextSummary({ context, translations: t }: ContextSummaryProps
             aria-label={t.graphPaneTitle}
           >
             {drawnEdges.map((e) => (
-              <g key={e.key} className={`semiont-graph__edge semiont-graph__edge--${e.kind}`}>
+              <g key={e.key} className={`xynoplex-graph__edge xynoplex-graph__edge--${e.kind}`}>
                 <line x1={e.x1} y1={e.y1} x2={e.x2} y2={e.y2} />
                 <title>{e.hover}</title>
               </g>
@@ -201,7 +201,7 @@ export function ContextSummary({ context, translations: t }: ContextSummaryProps
             {drawn.map((n) => (
               <g
                 key={n.id}
-                className={`semiont-graph__node semiont-graph__node--${n.kind}`}
+                className={`xynoplex-graph__node xynoplex-graph__node--${n.kind}`}
                 data-node-id={n.id}
               >
                 <rect x={n.x} y={n.y} width={NODE_W} height={NODE_H} rx={6} />

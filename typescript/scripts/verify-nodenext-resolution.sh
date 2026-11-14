@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Verify that every published @semiont/* package's dist resolves cleanly
+# Verify that every published @xynoplex/* package's dist resolves cleanly
 # under `tsc --moduleResolution NodeNext` against a synthetic consumer
 # project. Catches an asymmetric dist — bundled .js
 # with per-file .d.ts shards (or any other dist incoherence) — *before*
@@ -18,14 +18,14 @@ set -euo pipefail
 #   1. For every `packages/<name>` listed in version.json:
 #      a. `npm pack` → tarball
 #      b. Extract to a scratch dir
-#      c. Drop a synthetic `smoke.ts` that does `import * as p from "@semiont/<name>"`
+#      c. Drop a synthetic `smoke.ts` that does `import * as p from "@xynoplex/<name>"`
 #      d. Run `tsc --noEmit` with `moduleResolution: NodeNext`
 #   2. Any non-zero tsc exit fails the gate.
 #
 # Usage:
-#   ./packages/typescript/scripts/verify-nodenext-resolution.sh
+#   ./typescript/scripts/verify-nodenext-resolution.sh
 #
-# Assumes packages have already been built (run after `./packages/typescript/scripts/build.sh`).
+# Assumes packages have already been built (run after `./typescript/scripts/build.sh`).
 # Runs inside the host shell; uses the host's `node`/`npm`/`npx` (the
 # whole point is to mimic an external consumer).
 
@@ -57,7 +57,7 @@ for (const [name, pkg] of Object.entries(v.packages || {})) {
 }
 ")
 
-SCRATCH=$(mktemp -d -t semiont-nodenext-XXXXXX)
+SCRATCH=$(mktemp -d -t xynoplex-nodenext-XXXXXX)
 trap "rm -rf '$SCRATCH'" EXIT
 
 step "Scratch dir: ${DIM}$SCRATCH${RESET}"
@@ -70,7 +70,7 @@ FAILED=()
 
 while IFS=$'\t' read -r pkg_name pkg_dir; do
   [ -z "$pkg_name" ] && continue
-  short_name="${pkg_name#@semiont/}"  # bare name for scratch dir
+  short_name="${pkg_name#@xynoplex/}"  # bare name for scratch dir
 
   if [ ! -d "$pkg_dir/dist" ]; then
     fail "$pkg_name: no dist/ — run build first"
@@ -165,4 +165,4 @@ if [ ${#FAILED[@]} -gt 0 ]; then
 fi
 
 echo
-ok "All @semiont/* packages resolve cleanly under NodeNext."
+ok "All @xynoplex/* packages resolve cleanly under NodeNext."

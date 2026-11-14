@@ -1,4 +1,4 @@
-import type { GenerationJobParams } from '@semiont/core';
+import type { GenerationJobParams } from '@xynoplex/core';
 import type { GenerationConfig } from '../../components/modals/ConfigureGenerationStep';
 
 /**

@@ -2,19 +2,19 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { delegateProgressTranslations } from '../../../lib/delegate-progress-copy';
-import { isReady } from '@semiont/sdk';
+import { isReady } from '@xynoplex/sdk';
 import { useTranslations } from '../../../contexts/TranslationContext';
 import { useObservable } from '../../../hooks/useObservable';
-import type { MarkStateUnit, SemiontSession } from '@semiont/sdk';
+import type { MarkStateUnit, XynoplexSession } from '@xynoplex/sdk';
 import { markJobControls } from '../../../lib/delegated-job-controls';
 import { DelegateShell } from './DelegateShell';
 import { useSessionEventSubscriptions } from '../../../hooks/useSessionEventSubscriptions';
-import type { components, JobId, ResourceId, Selector } from '@semiont/core';
-import { getTextPositionSelector, getTargetSelector } from '@semiont/core';
+import type { components, JobId, ResourceId, Selector } from '@xynoplex/core';
+import { getTextPositionSelector, getTargetSelector } from '@xynoplex/core';
 import { TagEntry } from './TagEntry';
 import { PanelHeader } from './PanelHeader';
 
-import type { Annotation } from '@semiont/core';
+import type { Annotation } from '@xynoplex/core';
 type Motivation = components['schemas']['Motivation'];
 type JobProgress = components['schemas']['JobProgress'];
 
@@ -43,7 +43,7 @@ function getSelectorDisplayText(selector: Selector | Selector[]): string | null 
 
 interface TaggingPanelProps {
   /** Session carrying the client and event bus; null renders inert. */
-  session: SemiontSession | null;
+  session: XynoplexSession | null;
   /** The resource's mark unit, which delegations, cancels and dismissals are asked of; undefined renders inert. */
   mark: MarkStateUnit | undefined;
   /** The '@id' of the panel's resource — stamped as `source` on mark:submit (multi-viewer routing). */
@@ -176,9 +176,9 @@ export function TaggingPanel({
       const elementHeight = element.offsetHeight;
       const scrollTo = elementTop - (containerHeight / 2) + (elementHeight / 2);
       containerRef.current.scrollTo({ top: scrollTo, behavior: 'smooth' });
-      element.classList.remove('semiont-annotation-pulse');
+      element.classList.remove('xynoplex-annotation-pulse');
       void element.offsetWidth;
-      element.classList.add('semiont-annotation-pulse');
+      element.classList.add('xynoplex-annotation-pulse');
       if (onScrollCompleted) onScrollCompleted();
     }
   }, [scrollToAnnotationId]);
@@ -261,19 +261,19 @@ export function TaggingPanel({
   }, [pendingAnnotation, mark]);
 
   return (
-    <div className="semiont-panel">
+    <div className="xynoplex-panel">
       <PanelHeader count={annotations.length} title={t('title')} />
 
       {/* Scrollable content area */}
-      <div ref={containerRef} className="semiont-panel__content">
+      <div ref={containerRef} className="xynoplex-panel__content">
         {/* Pending Manual Tag Creation - shown when there's a pending annotation with tagging motivation */}
         {pendingAnnotation && pendingAnnotation.motivation === 'tagging' && (
-          <div className="semiont-annotation-prompt" data-type="tag">
-            <h3 className="semiont-annotation-prompt__title">
+          <div className="xynoplex-annotation-prompt" data-type="tag">
+            <h3 className="xynoplex-annotation-prompt__title">
               {t('createTagForSelection')}
             </h3>
-            <div className="semiont-annotation-prompt__quote">
-              <p className="semiont-annotation-prompt__text">
+            <div className="xynoplex-annotation-prompt__quote">
+              <p className="xynoplex-annotation-prompt__text">
                 {(() => {
                   const displayText = getSelectorDisplayText(pendingAnnotation.selector);
                   if (displayText) {
@@ -287,21 +287,21 @@ export function TaggingPanel({
 
             {/* Empty-state — registry has resolved with no schemas. */}
             {noSchemasRegistered && (
-              <p className="semiont-form__help" data-type="tag-no-schemas">
+              <p className="xynoplex-form__help" data-type="tag-no-schemas">
                 {t('noSchemas')}
               </p>
             )}
 
             {/* Schema and Category Selection for Manual Tag */}
             {!noSchemasRegistered && (
-              <div className="semiont-form-field">
-                <label className="semiont-form-field__label">
+              <div className="xynoplex-form-field">
+                <label className="xynoplex-form-field__label">
                   {t('selectSchema')}
                 </label>
                 <select
                   value={selectedSchemaId}
                   onChange={(e) => handleSchemaChange(e.target.value)}
-                  className="semiont-select"
+                  className="xynoplex-select"
                 >
                   {schemas.map(schema => (
                     <option key={schema.id} value={schema.id}>
@@ -313,12 +313,12 @@ export function TaggingPanel({
             )}
 
             {selectedSchema && (
-              <div className="semiont-form-field">
-                <label className="semiont-form-field__label">
+              <div className="xynoplex-form-field">
+                <label className="xynoplex-form-field__label">
                   {t('selectCategory')}
                 </label>
                 <select
-                  className="semiont-select"
+                  className="xynoplex-select"
                   onChange={(e) => {
                     if (e.target.value && pendingAnnotation) {
                       session?.client.mark.submit({
@@ -351,10 +351,10 @@ export function TaggingPanel({
             )}
 
             {/* Cancel button */}
-            <div className="semiont-annotation-prompt__footer">
+            <div className="xynoplex-annotation-prompt__footer">
               <button
                 onClick={() => mark?.cancelPending()}
-                className="semiont-button semiont-button--secondary"
+                className="xynoplex-button xynoplex-button--secondary"
                 data-type="tag"
               >
                 {t('cancel')}
@@ -379,21 +379,21 @@ export function TaggingPanel({
               <>
                   {/* Empty-state — registry has resolved with no schemas. */}
                   {noSchemasRegistered && (
-                    <p className="semiont-form__help" data-type="tag-no-schemas">
+                    <p className="xynoplex-form__help" data-type="tag-no-schemas">
                       {t('noSchemas')}
                     </p>
                   )}
 
                   {/* Schema Selector */}
                   {!noSchemasRegistered && (
-                    <div className="semiont-form-field">
-                      <label className="semiont-form-field__label">
+                    <div className="xynoplex-form-field">
+                      <label className="xynoplex-form-field__label">
                         {t('selectSchema')}
                       </label>
                       <select
                         value={selectedSchemaId}
                         onChange={(e) => handleSchemaChange(e.target.value)}
-                        className="semiont-select"
+                        className="xynoplex-select"
                       >
                         {schemas.map(schema => (
                           <option key={schema.id} value={schema.id}>
@@ -402,7 +402,7 @@ export function TaggingPanel({
                         ))}
                       </select>
                       {selectedSchema && (
-                        <p className="semiont-form__help">
+                        <p className="xynoplex-form__help">
                           {selectedSchema.description}
                         </p>
                       )}
@@ -411,24 +411,24 @@ export function TaggingPanel({
 
                   {/* Category Selector */}
                   {selectedSchema && (
-                    <div className="semiont-form-field">
-                      <label className="semiont-form-field__label">
+                    <div className="xynoplex-form-field">
+                      <label className="xynoplex-form-field__label">
                         {t('selectCategories')}
                       </label>
                       <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
                         <button
                           onClick={handleSelectAll}
                           type="button"
-                          className="semiont-button--secondary"
-                          style={{ fontSize: 'var(--semiont-text-xs)', padding: '0.25rem 0.5rem' }}
+                          className="xynoplex-button--secondary"
+                          style={{ fontSize: 'var(--xynoplex-text-xs)', padding: '0.25rem 0.5rem' }}
                         >
                           {t('selectAll')}
                         </button>
                         <button
                           onClick={handleDeselectAll}
                           type="button"
-                          className="semiont-button--secondary"
-                          style={{ fontSize: 'var(--semiont-text-xs)', padding: '0.25rem 0.5rem' }}
+                          className="xynoplex-button--secondary"
+                          style={{ fontSize: 'var(--xynoplex-text-xs)', padding: '0.25rem 0.5rem' }}
                         >
                           {t('deselectAll')}
                         </button>
@@ -436,23 +436,23 @@ export function TaggingPanel({
 
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                         {selectedSchema.tags.map(category => (
-                          <div key={category.name} className="semiont-form__checkbox-field">
+                          <div key={category.name} className="xynoplex-form__checkbox-field">
                             <input
                               type="checkbox"
                               id={`category-${category.name.replace(/\s+/g, '-')}`}
                               checked={selectedCategories.has(category.name)}
                               onChange={() => handleCategoryToggle(category.name)}
-                              className="semiont-checkbox"
+                              className="xynoplex-checkbox"
                             />
                             <label
                               htmlFor={`category-${category.name.replace(/\s+/g, '-')}`}
-                              className="semiont-form__checkbox-label"
+                              className="xynoplex-form__checkbox-label"
                               style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}
                             >
                               <span style={{ fontWeight: 500 }}>
                                 {category.name}
                               </span>
-                              <span style={{ fontSize: 'var(--semiont-text-xs)', color: 'var(--semiont-text-secondary)' }}>
+                              <span style={{ fontSize: 'var(--xynoplex-text-xs)', color: 'var(--xynoplex-text-secondary)' }}>
                                 {category.description}
                               </span>
                             </label>
@@ -460,7 +460,7 @@ export function TaggingPanel({
                         ))}
                       </div>
 
-                      <p className="semiont-form__help">
+                      <p className="xynoplex-form__help">
                         {t('categoriesSelected', { count: selectedCategories.size })}
                       </p>
                     </div>
@@ -469,11 +469,11 @@ export function TaggingPanel({
                 <button
                   onClick={handleDelegate}
                   disabled={selectedCategories.size === 0 || isDelegating}
-                  className="semiont-button"
+                  className="xynoplex-button"
                   data-variant="delegate"
                   data-type="tag"
                 >
-                  <span className="semiont-button-icon">✨</span>
+                  <span className="xynoplex-button-icon">✨</span>
                   <span>{t('annotate')}</span>
                 </button>
 
@@ -483,9 +483,9 @@ export function TaggingPanel({
         )}
 
         {/* Tags list */}
-        <div className="semiont-panel__list">
+        <div className="xynoplex-panel__list">
           {sortedAnnotations.length === 0 ? (
-            <p className="semiont-panel__empty">
+            <p className="xynoplex-panel__empty">
               {t('noTags')}
             </p>
           ) : (

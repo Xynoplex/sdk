@@ -30,10 +30,10 @@
  * one `replaceChild` per annotated text node.
  */
 
-import { getTextPositionSelector, getTargetSelector, getExactText, getBodySource } from '@semiont/core';
+import { getTextPositionSelector, getTargetSelector, getExactText, getBodySource } from '@xynoplex/core';
 import { ANNOTATORS } from './annotation-registry';
 
-import type { Annotation, TextOffsets } from '@semiont/core';
+import type { Annotation, TextOffsets } from '@xynoplex/core';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

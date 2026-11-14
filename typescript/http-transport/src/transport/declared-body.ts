@@ -7,7 +7,7 @@
  * answer is not its declared body and names the fault.
  */
 
-import { faultOf, said, type components } from '@semiont/core';
+import { faultOf, said, type components } from '@xynoplex/core';
 import { APIError } from './api-error';
 
 type Schemas = components['schemas'];

@@ -1,6 +1,6 @@
 #!/usr/bin/env ts-node
 /**
- * Audit dependency arrays for compliance with packages/typescript/scripts/compliance/docs/TENETS-REACT-UI.md
+ * Audit dependency arrays for compliance with typescript/scripts/compliance/docs/TENETS-REACT-UI.md
  *
  * Uses TypeScript Compiler API for precise AST analysis
  */

@@ -14,10 +14,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import React from 'react';
 import { screen } from '@testing-library/react';
-import { renderWithProviders, createTestSemiontWrapper } from '../../../../test-utils';
+import { renderWithProviders, createTestXynoplexWrapper } from '../../../../test-utils';
 import userEvent from '@testing-library/user-event';
-import { resourceId } from '@semiont/core';
-import { createMarkStateUnit, type MarkStateUnit, type SemiontSession } from '@semiont/sdk';
+import { resourceId } from '@xynoplex/core';
+import { createMarkStateUnit, type MarkStateUnit, type XynoplexSession } from '@xynoplex/sdk';
 import { DelegateSection } from '../DelegateSection';
 
 // Mock translations
@@ -79,12 +79,12 @@ describe('DelegateSection', () => {
   // Per-test session and mark unit — created in beforeEach (a module-scope
   // factory call would hand tests a client that test-utils disposes after
   // the first test).
-  let session: SemiontSession;
+  let session: XynoplexSession;
   let mark: MarkStateUnit;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    ({ session } = createTestSemiontWrapper());
+    ({ session } = createTestXynoplexWrapper());
     mark = createMarkStateUnit(session.client, resourceId('res-1'));
     // Clear localStorage
     if (typeof window !== 'undefined') {
@@ -129,9 +129,9 @@ describe('DelegateSection', () => {
       );
 
       // Check for icon and status text
-      const progressDiv = screen.getByText('Annotating...').closest('.semiont-delegate-progress__status');
+      const progressDiv = screen.getByText('Annotating...').closest('.xynoplex-delegate-progress__status');
       expect(progressDiv).toBeInTheDocument();
-      expect(progressDiv?.querySelector('.semiont-delegate-progress__icon')).toBeInTheDocument();
+      expect(progressDiv?.querySelector('.xynoplex-delegate-progress__icon')).toBeInTheDocument();
     });
 
     it('should render request parameters when provided', () => {
@@ -152,7 +152,7 @@ describe('DelegateSection', () => {
         />
       );
 
-      expect(screen.getByTestId('semiont-delegate-params')).toBeInTheDocument();
+      expect(screen.getByTestId('xynoplex-delegate-params')).toBeInTheDocument();
       expect(screen.getByText('Find important points')).toBeInTheDocument();
       expect(screen.getByText('5')).toBeInTheDocument();
       // The wire carries a CODE; the label the user reads is LOOKED UP. Under
@@ -506,7 +506,7 @@ describe('DelegateSection', () => {
 
       // Renders the progress section with the translated status line — the
       // wire carries a code (or nothing), never a sentence to fall back on.
-      const progressDiv = document.querySelector('.semiont-delegate-progress');
+      const progressDiv = document.querySelector('.xynoplex-delegate-progress');
       expect(progressDiv).toBeInTheDocument();
     });
 
@@ -525,7 +525,7 @@ describe('DelegateSection', () => {
         />
       );
 
-      expect(screen.queryByTestId('semiont-delegate-params')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('xynoplex-delegate-params')).not.toBeInTheDocument();
     });
   });
 });

@@ -8,14 +8,14 @@
  */
 import util from 'node:util';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { HTTP_REQUEST_TIMEOUT_MS, STARTUP_FETCH_RETRY, ServiceToken, SignInError } from '@semiont/core';
+import { HTTP_REQUEST_TIMEOUT_MS, STARTUP_FETCH_RETRY, ServiceToken, SignInError } from '@xynoplex/core';
 import { agentToken } from '../agent-token';
 import { APIError } from '../api-error';
 
 const GATEWAY = 'http://192.168.64.1:4000';
-const DID = 'did:web:kb.example:agents:service-account-semiont-worker';
+const DID = 'did:web:kb.example:agents:service-account-xynoplex-worker';
 
-const ACCOUNT = { issuer: 'https://issuer.test/realms/kb', clientId: 'semiont-worker', clientSecret: 'client-secret' };
+const ACCOUNT = { issuer: 'https://issuer.test/realms/kb', clientId: 'xynoplex-worker', clientSecret: 'client-secret' };
 const service = () => new ServiceToken(ACCOUNT);
 
 interface Asked {
@@ -173,7 +173,7 @@ describe('agentToken', () => {
     expect(refused).toMatchObject({
       code: 'exchange',
       status: 401,
-      message: `Client-credentials grant for semiont-worker at ${ACCOUNT.issuer} failed (HTTP 401)`,
+      message: `Client-credentials grant for xynoplex-worker at ${ACCOUNT.issuer} failed (HTTP 401)`,
     });
     expect(wire.gateway()).toHaveLength(0);
   });
@@ -271,7 +271,7 @@ describe('agentToken', () => {
     expect(util.inspect(failure, { depth: 6 })).not.toContain(UNREAD);
     expect(failure).toMatchObject({
       code: 'unavailable',
-      message: `Client-credentials grant for semiont-worker at ${ACCOUNT.issuer} got no answer: HTTPParserError`,
+      message: `Client-credentials grant for xynoplex-worker at ${ACCOUNT.issuer} got no answer: HTTPParserError`,
     });
     // The issuer may be starting when this process does: the whole sign-in is made again.
     expect(grants).toBe(STARTUP_FETCH_RETRY.attempts);

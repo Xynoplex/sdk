@@ -1,6 +1,6 @@
-import type { ResourceId, AnnotationId, BodyOperation, EventBus, EventMap } from '@semiont/core';
-import type { ITransport } from '@semiont/core';
-import { Bus } from '@semiont/core';
+import type { ResourceId, AnnotationId, BodyOperation, EventBus, EventMap } from '@xynoplex/core';
+import type { ITransport } from '@xynoplex/core';
+import { Bus } from '@xynoplex/core';
 import type { BindNamespace as IBindNamespace } from './types';
 
 export class BindNamespace implements IBindNamespace {

@@ -1,6 +1,6 @@
 //go:build windows
 
-package semiont
+package xynoplex
 
 import (
 	"os"

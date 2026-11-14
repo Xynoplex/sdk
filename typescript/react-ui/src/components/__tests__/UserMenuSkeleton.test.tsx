@@ -12,7 +12,7 @@ describe('UserMenuSkeleton', () => {
 
     it('should have correct class name', () => {
       const { container } = render(<UserMenuSkeleton />);
-      const skeleton = container.querySelector('.semiont-user-menu-skeleton');
+      const skeleton = container.querySelector('.xynoplex-user-menu-skeleton');
       expect(skeleton).toBeInTheDocument();
     });
 
@@ -23,7 +23,7 @@ describe('UserMenuSkeleton', () => {
 
     it('should have screen reader text with sr-only class', () => {
       const { container } = render(<UserMenuSkeleton />);
-      const srText = container.querySelector('.semiont-sr-only');
+      const srText = container.querySelector('.xynoplex-sr-only');
       expect(srText).toBeInTheDocument();
       expect(srText).toHaveTextContent('Loading user menu...');
     });
@@ -44,7 +44,7 @@ describe('UserMenuSkeleton', () => {
 
     it('should have both role and aria-label on same element', () => {
       const { container } = render(<UserMenuSkeleton />);
-      const skeleton = container.querySelector('.semiont-user-menu-skeleton');
+      const skeleton = container.querySelector('.xynoplex-user-menu-skeleton');
       expect(skeleton).toHaveAttribute('role', 'status');
       expect(skeleton).toHaveAttribute('aria-label', 'Loading user menu');
     });
@@ -73,14 +73,14 @@ describe('UserMenuSkeleton', () => {
 
     it('should contain a span with sr-only class', () => {
       const { container } = render(<UserMenuSkeleton />);
-      const span = container.querySelector('span.semiont-sr-only');
+      const span = container.querySelector('span.xynoplex-sr-only');
       expect(span).toBeInTheDocument();
     });
 
     it('should nest sr-only span inside skeleton div', () => {
       const { container } = render(<UserMenuSkeleton />);
-      const skeleton = container.querySelector('.semiont-user-menu-skeleton');
-      const srText = skeleton?.querySelector('.semiont-sr-only');
+      const skeleton = container.querySelector('.xynoplex-user-menu-skeleton');
+      const srText = skeleton?.querySelector('.xynoplex-sr-only');
       expect(srText).toBeInTheDocument();
     });
   });
@@ -95,7 +95,7 @@ describe('UserMenuSkeleton', () => {
         </div>
       );
 
-      const skeletons = container.querySelectorAll('.semiont-user-menu-skeleton');
+      const skeletons = container.querySelectorAll('.xynoplex-user-menu-skeleton');
       expect(skeletons).toHaveLength(3);
     });
 
@@ -107,7 +107,7 @@ describe('UserMenuSkeleton', () => {
         </div>
       );
 
-      const srTexts = container.querySelectorAll('.semiont-sr-only');
+      const srTexts = container.querySelectorAll('.xynoplex-sr-only');
       expect(srTexts).toHaveLength(2);
       srTexts.forEach(text => {
         expect(text).toHaveTextContent('Loading user menu...');
@@ -125,7 +125,7 @@ describe('UserMenuSkeleton', () => {
         </header>
       );
 
-      expect(container.querySelector('.semiont-user-menu-skeleton')).toBeInTheDocument();
+      expect(container.querySelector('.xynoplex-user-menu-skeleton')).toBeInTheDocument();
     });
 
     it('should work alongside other elements', () => {
@@ -138,7 +138,7 @@ describe('UserMenuSkeleton', () => {
       );
 
       expect(screen.getByText('Before')).toBeInTheDocument();
-      expect(container.querySelector('.semiont-user-menu-skeleton')).toBeInTheDocument();
+      expect(container.querySelector('.xynoplex-user-menu-skeleton')).toBeInTheDocument();
       expect(screen.getByText('After')).toBeInTheDocument();
     });
   });
@@ -148,7 +148,7 @@ describe('UserMenuSkeleton', () => {
       // UserMenuSkeleton has no props interface
       // This test ensures it renders correctly with no props
       const { container } = render(<UserMenuSkeleton />);
-      expect(container.querySelector('.semiont-user-menu-skeleton')).toBeInTheDocument();
+      expect(container.querySelector('.xynoplex-user-menu-skeleton')).toBeInTheDocument();
     });
   });
 

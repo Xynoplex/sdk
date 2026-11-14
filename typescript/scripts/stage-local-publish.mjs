@@ -15,7 +15,7 @@ for (const entry of Object.values(version.packages).filter((entry) => entry.publ
   const manifest = JSON.parse(readFileSync(join(root, entry.dir, 'package.json'), 'utf8'));
   verifyPublication(join(root, entry.dir), manifest, entry.dir);
 }
-execFileSync(process.execPath, [join(root, 'packages/typescript/scripts/publish-npm-apps.mjs'), '--verify'], { stdio: 'inherit' });
+execFileSync(process.execPath, [join(root, 'typescript/scripts/publish-npm-apps.mjs'), '--verify'], { stdio: 'inherit' });
 if (operation === 'stage') {
   const copy = (relative) => {
     const target = join(destination, relative);
@@ -27,7 +27,7 @@ if (operation === 'stage') {
   };
   copy('version.json');
   copy('LICENSE');
-  copy('packages/typescript/scripts');
+  copy('typescript/scripts');
   for (const entry of Object.values(version.packages)) {
     copy(entry.publish ? entry.dir : `${entry.dir}/package.json`);
   }

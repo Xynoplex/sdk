@@ -3,8 +3,8 @@ package registry_test
 import (
 	"testing"
 
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/registry"
+	"github.com/Xynoplex/sdk/go/api"
+	"github.com/Xynoplex/sdk/go/registry"
 )
 
 func tab(named string, openedAt int64, order int) registry.OpenResource {

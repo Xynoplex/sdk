@@ -27,7 +27,7 @@ let raw_json () =
     (Yojson.Raw.equal raw (Yojson.Raw.from_string (Yojson.Raw.to_string raw)))
 
 let presence () =
-  let distinguish : int Semiont.Types.presence -> string = function
+  let distinguish : int Xynoplex.Types.presence -> string = function
     | Absent -> "absent"
     | Null -> "null"
     | Present value -> string_of_int value

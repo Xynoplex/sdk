@@ -7,7 +7,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
-import type { HttpEndpoint } from '@semiont/core';
+import type { HttpEndpoint } from '@xynoplex/core';
 import { kbGatewayUrl } from '../storage';
 
 interface GatewayUrlCase {

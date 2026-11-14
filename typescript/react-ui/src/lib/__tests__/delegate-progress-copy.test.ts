@@ -13,7 +13,7 @@
  *    A typo'd key ships the key name to the user, in every language.
  */
 import { describe, it, expect } from 'vitest';
-import { MARK_MOTIVATIONS, type components } from '@semiont/core';
+import { MARK_MOTIVATIONS, type components } from '@xynoplex/core';
 import { delegateProgressCopy, delegateSubjectCopy, delegateParamLabel } from '../delegate-progress-copy';
 import en from '../../../translations/en.json';
 

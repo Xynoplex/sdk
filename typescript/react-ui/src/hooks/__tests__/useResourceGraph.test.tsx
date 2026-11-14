@@ -3,7 +3,7 @@ import React from 'react';
 import { renderHook, waitFor, act } from '@testing-library/react';
 import { BehaviorSubject } from 'rxjs';
 import '@testing-library/jest-dom';
-import { resourceId } from '@semiont/core';
+import { resourceId } from '@xynoplex/core';
 import { useResourceGraph } from '../useResourceGraph';
 
 const mockResourceGraph = vi.fn();
@@ -16,9 +16,9 @@ const stableMockSession = { client: stableMockClient };
 const stableActiveSession$ = new BehaviorSubject<unknown>(stableMockSession);
 const stableMockBrowser = { activeSession$: stableActiveSession$ };
 
-vi.mock('../../session/SemiontProvider', async () => {
-  const actual = await vi.importActual<typeof import('../../session/SemiontProvider')>('../../session/SemiontProvider');
-  return { ...actual, useSemiont: () => stableMockBrowser };
+vi.mock('../../session/XynoplexProvider', async () => {
+  const actual = await vi.importActual<typeof import('../../session/XynoplexProvider')>('../../session/XynoplexProvider');
+  return { ...actual, useXynoplex: () => stableMockBrowser };
 });
 
 function Wrapper({ children }: { children: React.ReactNode }) {

@@ -9,8 +9,8 @@
  */
 
 import { describe, it, expect, afterEach } from 'vitest';
-import { EventBus, resourceId as makeResourceId } from '@semiont/core';
-import type { EventMap } from '@semiont/core';
+import { EventBus, resourceId as makeResourceId } from '@xynoplex/core';
+import type { EventMap } from '@xynoplex/core';
 import { GatherNamespace } from '../namespaces/gather';
 import { inMemoryTransport } from './helpers/in-memory-transport';
 import { resourceContextFor } from './fixtures/gathered-context';

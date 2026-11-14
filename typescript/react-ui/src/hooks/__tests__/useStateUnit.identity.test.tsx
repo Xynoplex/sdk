@@ -19,12 +19,12 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { BehaviorSubject, Subject, map, type Observable } from 'rxjs';
-import { readyValue } from '@semiont/sdk';
-import { inMemoryContent } from '@semiont/sdk/testing';
-import type { BusFrame, ConnectionState, EventMap, SemiontError } from '@semiont/core';
-import { EventBus, FrameRefusal, baseUrl } from '@semiont/core';
-import { type ITransport } from '@semiont/core';
-import { BrowseNamespace } from '@semiont/sdk';
+import { readyValue } from '@xynoplex/sdk';
+import { inMemoryContent } from '@xynoplex/sdk/testing';
+import type { BusFrame, ConnectionState, EventMap, XynoplexError } from '@xynoplex/core';
+import { EventBus, FrameRefusal, baseUrl } from '@xynoplex/core';
+import { type ITransport } from '@xynoplex/core';
+import { BrowseNamespace } from '@xynoplex/sdk';
 import { useStateUnit } from '../useStateUnit';
 import { useObservable } from '../useObservable';
 
@@ -49,7 +49,7 @@ const NINE_TYPES = [
  * here returns the bus subject for whatever channel is asked, so this
  * transport genuinely does deliver every channel.
  */
-// NOT `FaultyTransport` from `@semiont/sdk/testing`, deliberately: that double
+// NOT `FaultyTransport` from `@xynoplex/sdk/testing`, deliberately: that double
 // scripts replies declaratively (a fault schedule + a reply queue), and the
 // LATE REPLY test below must hold a request pending, observe its
 // correlationId, re-render, and only THEN answer it. No fault kind expresses
@@ -94,7 +94,7 @@ function inMemoryTransport(
     state$: new BehaviorSubject<ConnectionState>('open').asObservable(),
     isSubscribed: () => true,
     trackReply: () => () => {},
-    errors$: new Subject<SemiontError>().asObservable(),
+    errors$: new Subject<XynoplexError>().asObservable(),
     dispose: () => {},
   };
 }

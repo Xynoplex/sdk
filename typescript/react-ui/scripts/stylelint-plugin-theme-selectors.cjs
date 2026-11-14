@@ -10,7 +10,7 @@
 const stylelint = require('stylelint');
 const { report, ruleMessages, validateOptions } = stylelint.utils;
 
-const ruleName = 'semiont/theme-selectors';
+const ruleName = 'xynoplex/theme-selectors';
 const messages = ruleMessages(ruleName, {
   avoidRootNot: 'Avoid ":root:not([data-theme=\\"light\\"])" - use "[data-theme=\\"dark\\"]" instead',
   duplicateSelector: (selector) => `Duplicate selector "${selector}" after dark theme selector`,

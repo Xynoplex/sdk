@@ -5,13 +5,13 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import { annotationId } from '@semiont/core';
-import type { HoverDwell, SemiontSession } from '@semiont/sdk';
+import { annotationId } from '@xynoplex/core';
+import type { HoverDwell, XynoplexSession } from '@xynoplex/sdk';
 import { useHoverDwell } from '../useHoverDwell';
 
 function sessionDouble() {
   const hover = vi.fn();
-  const session = { client: { beckon: { hover } } } as unknown as SemiontSession;
+  const session = { client: { beckon: { hover } } } as unknown as XynoplexSession;
   return { session, hover };
 }
 

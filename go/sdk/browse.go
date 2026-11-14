@@ -1,4 +1,4 @@
-package semiont
+package xynoplex
 
 // Browse: reads, and this viewer's own signals. The queries (Cached) are
 // read once with Fresh. The one-shot reads are asked once. The signals are
@@ -7,8 +7,8 @@ package semiont
 import (
 	"context"
 
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/bus"
+	"github.com/Xynoplex/sdk/go/api"
+	"github.com/Xynoplex/sdk/go/bus"
 )
 
 // EngineWithLimits is one of the knowledge base's engines: its entry, and

@@ -1,12 +1,12 @@
-# @semiont/sdk
+# @xynoplex/sdk
 
-[![Tests](https://github.com/The-AI-Alliance/semiont/actions/workflows/ci.yml/badge.svg)](https://github.com/The-AI-Alliance/semiont/actions/workflows/ci.yml?query=branch%3Amain+is%3Asuccess+job%3A%22Test+sdk%22)
-[![codecov](https://codecov.io/gh/The-AI-Alliance/semiont/graph/badge.svg?component=typescript-sdk)](https://app.codecov.io/gh/The-AI-Alliance/semiont/components)
-[![npm version](https://img.shields.io/npm/v/@semiont/sdk.svg)](https://www.npmjs.com/package/@semiont/sdk)
-[![npm downloads](https://img.shields.io/npm/dm/@semiont/sdk.svg)](https://www.npmjs.com/package/@semiont/sdk)
-[![License](https://img.shields.io/npm/l/@semiont/sdk.svg)](https://github.com/The-AI-Alliance/semiont/blob/main/LICENSE)
+[![Tests](https://github.com/Xynoplex/sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/Xynoplex/sdk/actions/workflows/ci.yml?query=branch%3Amain+is%3Asuccess+job%3A%22Test+sdk%22)
+[![codecov](https://codecov.io/gh/Xynoplex/sdk/graph/badge.svg?component=typescript-sdk)](https://app.codecov.io/gh/Xynoplex/sdk/components)
+[![npm version](https://img.shields.io/npm/v/@xynoplex/sdk.svg)](https://www.npmjs.com/package/@xynoplex/sdk)
+[![npm downloads](https://img.shields.io/npm/dm/@xynoplex/sdk.svg)](https://www.npmjs.com/package/@xynoplex/sdk)
+[![License](https://img.shields.io/npm/l/@xynoplex/sdk.svg)](https://github.com/Xynoplex/sdk/blob/main/LICENSE)
 
-The TypeScript SDK for [Semiont](https://github.com/The-AI-Alliance/semiont), an open platform for building
+The TypeScript SDK for [Xynoplex](https://github.com/Xynoplex/sdk), an open platform for building
 trusted AI knowledge bases: a shared workspace where humans and AI agents
 annotate, connect and govern a corpus of documents.
 
@@ -17,48 +17,48 @@ A person's application and an AI agent use the same client. The SDK does not
 tell them apart.
 
 It has the same namespaces, methods and behaviour as the
-[Rust SDK](https://github.com/The-AI-Alliance/semiont/tree/main/packages/rust/sdk) ([`semiont`](https://crates.io/crates/semiont) on crates.io)
-the [Python SDK](https://github.com/The-AI-Alliance/semiont/tree/main/packages/python/sdk) ([`semiont`](https://pypi.org/project/semiont/) on PyPI)
-the [Go SDK](https://github.com/The-AI-Alliance/semiont/tree/main/packages/go/sdk) ([`github.com/The-AI-Alliance/semiont/packages/go/sdk`](https://pkg.go.dev/github.com/The-AI-Alliance/semiont/packages/go/sdk) on pkg.go.dev)
-and the [Kotlin SDK](https://github.com/The-AI-Alliance/semiont/tree/main/packages/kotlin/sdk), for Kotlin and Java programs,
-and the five are held to the same [conformance suite](https://github.com/The-AI-Alliance/semiont/tree/main/protocol/conformance/sdk).
-New to Semiont? The [Introduction](https://github.com/The-AI-Alliance/semiont/blob/main/docs/builder/INTRODUCTION.md)
+[Rust SDK](https://github.com/Xynoplex/sdk/tree/main/rust/sdk) ([`xynoplex`](https://crates.io/crates/xynoplex) on crates.io)
+the [Python SDK](https://github.com/Xynoplex/sdk/tree/main/python/sdk) ([`xynoplex`](https://pypi.org/project/xynoplex/) on PyPI)
+the [Go SDK](https://github.com/Xynoplex/sdk/tree/main/go/sdk) ([`github.com/Xynoplex/sdk/go`](https://pkg.go.dev/github.com/Xynoplex/sdk/go) on pkg.go.dev)
+and the [Kotlin SDK](https://github.com/Xynoplex/sdk/tree/main/kotlin/sdk), for Kotlin and Java programs,
+and the five are held to the same [conformance suite](https://github.com/Xynoplex/sdk/tree/main/protocol/conformance/sdk).
+New to Xynoplex? The [Introduction](https://github.com/Xynoplex/sdk/blob/main/docs/builder/INTRODUCTION.md)
 explains the domain and the ideas the API falls out of.
 
 ## Install
 
 ```bash
-npm install @semiont/sdk
+npm install @xynoplex/sdk
 ```
 
 It runs in a browser and in Node. In a browser it needs Chrome 116, Firefox 124 or Safari 17.4,
 or later: its transport joins abort signals with `AbortSignal.any`, which each of those was the
 first version to have. A client speaks to a running knowledge base.
-The [Quick Start](https://github.com/The-AI-Alliance/semiont/blob/main/docs/builder/QUICK-START.md) sets one up on
+The [Quick Start](https://github.com/Xynoplex/sdk/blob/main/docs/builder/QUICK-START.md) sets one up on
 your own machine.
 
 ## Connect
 
 Sign-in happens at the knowledge base's identity provider, never at the gateway. A script uses
 the device grant: it prints a URL, the person approves in any browser, and the sign-in is kept
-where the script says, in a `SignInKept`. `SemiontSession.fromKept` then opens a session over
+where the script says, in a `SignInKept`. `XynoplexSession.fromKept` then opens a session over
 it, which owns the token lifecycle (proactive refresh at the issuer, each renewal kept where the
 sign-in is, disposal). There is no client-level signIn: the issuer decides how long an access
 token lives and it is short — minutes, not hours — so anything that outlives one token needs a
 session to renew it.
 
 ```ts
-import { MemorySignIn, SemiontSession, httpKb } from '@semiont/sdk';
+import { MemorySignIn, XynoplexSession, httpKb } from '@xynoplex/sdk';
 
 const kb = httpKb({ id: 'my-watcher', label: 'My Watcher',
                     host: 'localhost', port: 4000, protocol: 'http' });
 const kept = new MemorySignIn();
-await SemiontSession.signInDevice({
+await XynoplexSession.signInDevice({
   kb,
   kept,
   onCode: ({ verificationUri, userCode }) => console.log(`Open ${verificationUri} and enter ${userCode}`),
 });
-const opened = await SemiontSession.fromKept({ kb, kept });
+const opened = await XynoplexSession.fromKept({ kb, kept });
 const { resources } = await opened.session.client.browse.resources({ limit: 10 }).fresh();
 opened.dispose(); // the client it was built with, then the session
 ```
@@ -66,38 +66,38 @@ opened.dispose(); // the client it was built with, then the session
 `fromKept` gives an `OpenedSession`: the session, and the client it was built with. The session
 only uses its client, so the two end together. The session asks the gateway who its token is,
 and so learns who is signed in, unless it is given `validate: false`. What goes wrong, it says
-on `session.errors$`, its one stream of it: its own errors (a `SemiontSessionError`, such as
+on `session.errors$`, its one stream of it: its own errors (a `XynoplexSessionError`, such as
 `session.refresh-exhausted`, or `session.save-refused` for a write its storage refused) and its
 client's transport failures, each once, until it ends.
 
 Where the sign-in is kept decides what a restart does. A `MemorySignIn` lives as long as the
 process. `keptIn(storage, kb.id)` keeps it in a `SessionStorage` under `kb.id`, so distinct
 scripts sharing one storage use distinct ids. An entry of the `SignInStore` is the sign-in
-`semiont login` keeps (below).
+`xynoplex login` keeps (below).
 
 Already hold tokens? Keep the access and refresh pair in a `MemorySignIn` and open it with
-`SemiontSession.fromKept(...)`. `SemiontSession.fromHttp(...)` takes a bare access token and the
+`XynoplexSession.fromKept(...)`. `XynoplexSession.fromHttp(...)` takes a bare access token and the
 `refresh` that renews it, which is given the token it renews, and gives an
 `OpenedSession` too. A holder of tokens that builds no session over them renews a kept
 sign-in with `renewKept(kept, holding)`.
-`SemiontClient.fromHttp({ baseUrl, token })` takes a bare token and never renews it, which suits
+`XynoplexClient.fromHttp({ baseUrl, token })` takes a bare token and never renews it, which suits
 a one-shot script that finishes inside one token's life.
 
-### The sign-in `semiont login` keeps
+### The sign-in `xynoplex login` keeps
 
-A person who has run `semiont login` has a sign-in the launcher keeps for each stack, in
+A person who has run `xynoplex login` has a sign-in the launcher keeps for each stack, in
 `tokens.json` in the launcher's state home
-([the sign-in store](https://github.com/The-AI-Alliance/semiont/tree/main/protocol/specs/src/sign-in-store)).
+([the sign-in store](https://github.com/Xynoplex/sdk/tree/main/protocol/specs/src/sign-in-store)).
 A `SignInStore` is that file, and `entry(key)` is where the sign-in of the stack `key` is kept.
-`SemiontSession.fromKept` builds a session over an entry; with nothing kept there, the session is
+`XynoplexSession.fromKept` builds a session over an entry; with nothing kept there, the session is
 signed out. The session renews the sign-in by the contract's rules and keeps each renewal in the
 file, so one sign-in serves the launcher and the script. An entry keeps only what the launcher's
 script client was issued, and records no person, so a session over it keeps no caches.
 
 ```ts
-import { SemiontSession, SignInStore, httpKb } from '@semiont/sdk';
+import { XynoplexSession, SignInStore, httpKb } from '@xynoplex/sdk';
 
-const opened = await SemiontSession.fromKept({
+const opened = await XynoplexSession.fromKept({
   kb: httpKb({ id: 'local:example.org-my-kb', label: 'My KB',
                host: 'localhost', port: 4000, protocol: 'http' }),
   kept: new SignInStore(signInFiles).entry('local:example.org-my-kb'),
@@ -129,13 +129,13 @@ and forgets the sign-in whatever the issuer answers.
 
 Every request these make, of the gateway and of the issuer, is sent with the `fetch` they are
 given, or with the runtime's own when they are given none. `signInDevice`, `fromKept`,
-`fromHttp`, `startAgentSession` and `SemiontBrowser` take it in their options as `fetch`;
+`fromHttp`, `startAgentSession` and `XynoplexBrowser` take it in their options as `fetch`;
 `signOut`, `createHttpSessionFactory` and `httpDiscovery` take it as their last argument. The certificates a
 request trusts, and the proxy it goes through, are that fetch's: the SDK reads no setting of its
 own for either. In Node, a gateway whose certificate another authority signed is reached with
 undici's `fetch` sent through an `Agent` that trusts that authority; in a browser page, the
 browser decides.
-[`@semiont/http-transport`](https://github.com/The-AI-Alliance/semiont/tree/main/packages/typescript/http-transport#the-fetch-it-sends-with)
+[`@xynoplex/http-transport`](https://github.com/Xynoplex/sdk/tree/main/typescript/http-transport#the-fetch-it-sends-with)
 says which requests that covers.
 
 ## Eight verbs
@@ -157,13 +157,13 @@ attention. Each is a namespace of the client.
 
 Beside the eight are `job`, and `auth` and `system` when the client has a
 gateway. What each flow means is in
-[protocol/contract/flows](https://github.com/The-AI-Alliance/semiont/tree/main/protocol/contract/flows).
+[protocol/contract/flows](https://github.com/Xynoplex/sdk/tree/main/protocol/contract/flows).
 
 ## A first program
 
 From a signed-in session, this ingests a paper, has a model mark the concepts
 it mentions, gathers the context around it, and generates a summary grounded
-in that context. Those are the [Quick Start](https://github.com/The-AI-Alliance/semiont/blob/main/docs/builder/QUICK-START.md)'s
+in that context. Those are the [Quick Start](https://github.com/Xynoplex/sdk/blob/main/docs/builder/QUICK-START.md)'s
 last two steps, from code, and the two that come next. [Connect](#connect) is
 how a session comes to be signed in.
 
@@ -201,10 +201,10 @@ for the next participant, person or agent, to read and build on.
 
 Where to go from here:
 
-- The [Developer Guide](https://github.com/The-AI-Alliance/semiont/blob/main/docs/builder/DEVELOPER-GUIDE.md) has
+- The [Developer Guide](https://github.com/Xynoplex/sdk/blob/main/docs/builder/DEVELOPER-GUIDE.md) has
   each of these steps as a recipe, and the ones after them: reading, searching,
   annotating by hand, reacting to what others do, and testing.
-- The [agent skills](https://github.com/The-AI-Alliance/semiont/tree/main/docs/builder/skills) are whole scripts on
+- The [agent skills](https://github.com/Xynoplex/sdk/tree/main/docs/builder/skills) are whole scripts on
   this SDK, one per task, for an AI coding assistant to load: ingesting a
   corpus, annotating it, linking it, and the layers built on those.
 
@@ -229,7 +229,7 @@ Methods return one of: `Promise<T>` (atomic gateway ops), `StreamObservable` /
 never silently become a round trip), `ClaimsObservable` (a worker's claims — below), a count
 (wire drives — below), or `void` (local signals). The
 per-method table and the `.run()` rule for progress-plus-result live in
-[`docs/builder/REACTIVE-MODEL.md`](https://github.com/The-AI-Alliance/semiont/blob/main/docs/builder/REACTIVE-MODEL.md).
+[`docs/builder/REACTIVE-MODEL.md`](https://github.com/Xynoplex/sdk/blob/main/docs/builder/REACTIVE-MODEL.md).
 
 ## Directing attention
 
@@ -251,8 +251,8 @@ returns hands out the jobs the worker comes to hold, one at a time, and a held j
 own lifecycle.
 
 ```ts
-import { annotationOfSpan, reconcile, type Annotation, type QuotedText } from '@semiont/sdk';
-import type { components } from '@semiont/core';
+import { annotationOfSpan, reconcile, type Annotation, type QuotedText } from '@xynoplex/sdk';
+import type { components } from '@xynoplex/core';
 
 /** Your model: the passages of a text worth a highlight, each as the words it quotes. */
 declare function passagesOf(text: string): Promise<QuotedText[]>;
@@ -288,7 +288,7 @@ claims.subscribe(async (job) => {
   signs it in, learns its DID, and keeps the token fresh. The engine it runs is no part of
   who it is: what it commits names that in its `generator`.
 - **A worker signs in with a key.** Its credential is a `KeyCredential`: its issuer, its
-  client id, and the RSA key the launcher hands it as `SEMIONT_OIDC_CLIENT_KEY`, a PKCS#8
+  client id, and the RSA key the launcher hands it as `XYNOPLEX_OIDC_CLIENT_KEY`, a PKCS#8
   PEM that `privateKeyFromPem` reads. Each grant carries an assertion signed for it alone,
   which the issuer checks with the public half registered on the client, and no secret is
   sent. A service account that holds a secret signs in with a `SecretCredential` instead.
@@ -331,19 +331,19 @@ claims.subscribe(async (job) => {
   trace OpenTelemetry has active when the reply arrives, so in a process that has set up
   no OpenTelemetry it is `undefined`, as every trace is there.
 
-The [`semiont-worker` skill](https://github.com/The-AI-Alliance/semiont/blob/main/docs/builder/skills/semiont-worker/SKILL.md)
+The [`xynoplex-worker` skill](https://github.com/Xynoplex/sdk/blob/main/docs/builder/skills/xynoplex-worker/SKILL.md)
 is a whole worker, sign-in to shutdown, and
-[`protocol/contract/WORKER-CONTRACT.md`](https://github.com/The-AI-Alliance/semiont/blob/main/protocol/contract/WORKER-CONTRACT.md)
+[`protocol/contract/WORKER-CONTRACT.md`](https://github.com/Xynoplex/sdk/blob/main/protocol/contract/WORKER-CONTRACT.md)
 is what a worker promises the dispatcher.
 
 ## Any transport
 
-`SemiontClient` is built against the `ITransport` / `IContentTransport` contracts from
-`@semiont/core`, not any particular wire. The HTTP adapter is re-exported here for convenience.
+`XynoplexClient` is built against the `ITransport` / `IContentTransport` contracts from
+`@xynoplex/core`, not any particular wire. The HTTP adapter is re-exported here for convenience.
 
 ## What is in the package
 
-- **`SemiontClient`** — the verb-oriented coordinator: the eight flow namespaces, plus `job`
+- **`XynoplexClient`** — the verb-oriented coordinator: the eight flow namespaces, plus `job`
   (always present) and `auth`/`system` (present when constructed with gateway operations).
 - **Annotation readers** — `getAnnotationExactText`, `getBodySource`, `getTargetSource`,
   `getEntityTypes`, `isStubReference`, `getTagCategory` and their siblings read an
@@ -358,52 +358,52 @@ is what a worker promises the dispatcher.
 - **A worker's side of the job queue** — `job.claim`, the held jobs it hands out,
   `startAgentSession` and `privateKeyFromPem` for a worker's sign-in, and
   `JOB_CLAIM_CHANNELS` and `JOB_COMMIT_CHANNELS` for its stream.
-- **Session layer** — `SemiontSession` (per-KB auth, proactive token refresh, lifecycle),
-  `SemiontBrowser` (multi-KB orchestration), `SessionStorage` adapters, `SignInKept` and
+- **Session layer** — `XynoplexSession` (per-KB auth, proactive token refresh, lifecycle),
+  `XynoplexBrowser` (multi-KB orchestration), `SessionStorage` adapters, `SignInKept` and
   where a sign-in is kept (`MemorySignIn`, `keptIn`), `signOut`, the `httpKb` helper for
-  endpoint shapes, and `SignInStore` and `stateDir` for the sign-in `semiont login` keeps.
+  endpoint shapes, and `SignInStore` and `stateDir` for the sign-in `xynoplex login` keeps.
 - **Flow state machines** — closure-based factories (`createMarkStateUnit`, `…Gather…`,
   `…Match…`, `…Yield…`, `…Beckon…`) wrapping each long-running flow with `loading$`/`error$`/
-  progress observables; UI-shape-agnostic ([`docs/builder/STATE-UNITS.md`](https://github.com/The-AI-Alliance/semiont/blob/main/docs/builder/STATE-UNITS.md)).
+  progress observables; UI-shape-agnostic ([`docs/builder/STATE-UNITS.md`](https://github.com/Xynoplex/sdk/blob/main/docs/builder/STATE-UNITS.md)).
 - **KB discovery** — the consumer side of the launcher's published KB view:
   `httpDiscovery` (polls the Browser origin's `DISCOVERY_URL_PATH` with ETag/304),
   `textDiscovery` (bring-your-own IO — the sdk never imports `fs`), and
   `subscribeDiscovery` (a polling diff stream with a typed absent-vs-managed state).
   Descriptors only; auth stays per-KB. Types (`DiscoveredKB`, `DiscoveryDocument`) come
-  from `@semiont/core`'s generated schema.
+  from `@xynoplex/core`'s generated schema.
 - **Helpers & types** — the cache primitive behind live queries
-  ([`protocol/contract/CACHE-SEMANTICS.md`](https://github.com/The-AI-Alliance/semiont/blob/main/protocol/contract/CACHE-SEMANTICS.md)),
-  `createSearchPipeline`, branded ids, and the unified error hierarchy (`SemiontError`,
+  ([`protocol/contract/CACHE-SEMANTICS.md`](https://github.com/Xynoplex/sdk/blob/main/protocol/contract/CACHE-SEMANTICS.md)),
+  `createSearchPipeline`, branded ids, and the unified error hierarchy (`XynoplexError`,
   `BusRequestError`) re-exported so you catch every SDK error from one package. (The
-  typed bus over a transport, `Bus`, lives in `@semiont/core`; a client hands its own out as
+  typed bus over a transport, `Bus`, lives in `@xynoplex/core`; a client hands its own out as
   `client.wire`.)
 
 This is everything a non-web consumer (TUI, mobile, daemon, agent) needs — nothing
 page-shaped. Page-level state machines and components, including the **embeddable
-`ResourceViewer`**, live in [`@semiont/react-ui`](https://github.com/The-AI-Alliance/semiont/tree/main/packages/typescript/react-ui).
+`ResourceViewer`**, live in [`@xynoplex/react-ui`](https://github.com/Xynoplex/sdk/tree/main/typescript/react-ui).
 
 ## Documentation
 
-The builder docs start at [`docs/builder/README.md`](https://github.com/The-AI-Alliance/semiont/blob/main/docs/builder/README.md):
+The builder docs start at [`docs/builder/README.md`](https://github.com/Xynoplex/sdk/blob/main/docs/builder/README.md):
 who the SDK is for, where it goes, and the docs in reading order.
 
-- **[`docs/builder/DEVELOPER-GUIDE.md`](https://github.com/The-AI-Alliance/semiont/blob/main/docs/builder/DEVELOPER-GUIDE.md) — start here to build.** Task-ordered recipes, connect through teardown.
-- [`docs/builder/Usage.md`](https://github.com/The-AI-Alliance/semiont/blob/main/docs/builder/Usage.md) — per-namespace API tour with concrete examples, plus SSE and error handling.
-- [`docs/builder/REACTIVE-MODEL.md`](https://github.com/The-AI-Alliance/semiont/blob/main/docs/builder/REACTIVE-MODEL.md) — the Promise-shape-over-Observable design.
-- [`docs/builder/STATE-UNITS.md`](https://github.com/The-AI-Alliance/semiont/blob/main/docs/builder/STATE-UNITS.md) — the state-unit pattern and its enforced axioms.
-- [`protocol/contract/CACHE-SEMANTICS.md`](https://github.com/The-AI-Alliance/semiont/blob/main/protocol/contract/CACHE-SEMANTICS.md) — the cache primitive's numbered behavioral contract.
-- [`protocol/contract/TRANSPORT-CONTRACT.md`](https://github.com/The-AI-Alliance/semiont/blob/main/protocol/contract/TRANSPORT-CONTRACT.md) — what every `ITransport` must honor; HTTP specifics in [TRANSPORT-HTTP.md](https://github.com/The-AI-Alliance/semiont/blob/main/protocol/contract/TRANSPORT-HTTP.md). New transports implement the `@semiont/core` interfaces directly — no inheritance from `HttpTransport`.
+- **[`docs/builder/DEVELOPER-GUIDE.md`](https://github.com/Xynoplex/sdk/blob/main/docs/builder/DEVELOPER-GUIDE.md) — start here to build.** Task-ordered recipes, connect through teardown.
+- [`docs/builder/Usage.md`](https://github.com/Xynoplex/sdk/blob/main/docs/builder/Usage.md) — per-namespace API tour with concrete examples, plus SSE and error handling.
+- [`docs/builder/REACTIVE-MODEL.md`](https://github.com/Xynoplex/sdk/blob/main/docs/builder/REACTIVE-MODEL.md) — the Promise-shape-over-Observable design.
+- [`docs/builder/STATE-UNITS.md`](https://github.com/Xynoplex/sdk/blob/main/docs/builder/STATE-UNITS.md) — the state-unit pattern and its enforced axioms.
+- [`protocol/contract/CACHE-SEMANTICS.md`](https://github.com/Xynoplex/sdk/blob/main/protocol/contract/CACHE-SEMANTICS.md) — the cache primitive's numbered behavioral contract.
+- [`protocol/contract/TRANSPORT-CONTRACT.md`](https://github.com/Xynoplex/sdk/blob/main/protocol/contract/TRANSPORT-CONTRACT.md) — what every `ITransport` must honor; HTTP specifics in [TRANSPORT-HTTP.md](https://github.com/Xynoplex/sdk/blob/main/protocol/contract/TRANSPORT-HTTP.md). New transports implement the `@xynoplex/core` interfaces directly — no inheritance from `HttpTransport`.
 
 ## Related packages
 
-- [`semiont`](https://github.com/The-AI-Alliance/semiont/tree/main/packages/rust/sdk) — the Rust SDK, a full peer of this one, on [crates.io](https://crates.io/crates/semiont)
-- [`semiont`](https://github.com/The-AI-Alliance/semiont/tree/main/packages/python/sdk) — the Python SDK, on [PyPI](https://pypi.org/project/semiont/)
-- [`github.com/The-AI-Alliance/semiont/packages/go/sdk`](https://github.com/The-AI-Alliance/semiont/tree/main/packages/go/sdk) — the Go SDK, on [pkg.go.dev](https://pkg.go.dev/github.com/The-AI-Alliance/semiont/packages/go/sdk), which the `semiont` launcher is built on
-- [`@semiont/core`](https://github.com/The-AI-Alliance/semiont/tree/main/packages/typescript/core) — domain types, `ITransport` contract, `Bus`, OpenAPI-derived schemas
-- [`@semiont/http-transport`](https://github.com/The-AI-Alliance/semiont/tree/main/packages/typescript/http-transport) — HTTP transport (`HttpTransport`, `HttpContentTransport`)
-- [`@semiont/observability`](https://github.com/The-AI-Alliance/semiont/tree/main/packages/typescript/observability) — OpenTelemetry tracing the SDK propagates across the bus
-- [`@semiont/react-ui`](https://github.com/The-AI-Alliance/semiont/tree/main/packages/typescript/react-ui) — the embeddable `ResourceViewer` (bring-your-own-session) plus React hooks (`useResourceLoader`, `useMediaToken`, `useObservable`) and the web `SessionStorage`; its docs cross-link the [Developer Guide](https://github.com/The-AI-Alliance/semiont/blob/main/docs/builder/DEVELOPER-GUIDE.md)
+- [`xynoplex`](https://github.com/Xynoplex/sdk/tree/main/rust/sdk) — the Rust SDK, a full peer of this one, on [crates.io](https://crates.io/crates/xynoplex)
+- [`xynoplex`](https://github.com/Xynoplex/sdk/tree/main/python/sdk) — the Python SDK, on [PyPI](https://pypi.org/project/xynoplex/)
+- [`github.com/Xynoplex/sdk/go`](https://github.com/Xynoplex/sdk/tree/main/go/sdk) — the Go SDK, on [pkg.go.dev](https://pkg.go.dev/github.com/Xynoplex/sdk/go), which the `xynoplex` launcher is built on
+- [`@xynoplex/core`](https://github.com/Xynoplex/sdk/tree/main/typescript/core) — domain types, `ITransport` contract, `Bus`, OpenAPI-derived schemas
+- [`@xynoplex/http-transport`](https://github.com/Xynoplex/sdk/tree/main/typescript/http-transport) — HTTP transport (`HttpTransport`, `HttpContentTransport`)
+- [`@xynoplex/observability`](https://github.com/Xynoplex/sdk/tree/main/typescript/observability) — OpenTelemetry tracing the SDK propagates across the bus
+- [`@xynoplex/react-ui`](https://github.com/Xynoplex/sdk/tree/main/typescript/react-ui) — the embeddable `ResourceViewer` (bring-your-own-session) plus React hooks (`useResourceLoader`, `useMediaToken`, `useObservable`) and the web `SessionStorage`; its docs cross-link the [Developer Guide](https://github.com/Xynoplex/sdk/blob/main/docs/builder/DEVELOPER-GUIDE.md)
 
 ## License
 
-Apache-2.0 — see [LICENSE](https://github.com/The-AI-Alliance/semiont/blob/main/LICENSE).
+Apache-2.0 — see [LICENSE](https://github.com/Xynoplex/sdk/blob/main/LICENSE).

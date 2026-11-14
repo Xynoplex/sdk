@@ -12,8 +12,8 @@
  */
 import { describe, it, expect } from 'vitest';
 import '@testing-library/jest-dom';
-import { annotationId, resourceId, type Annotation } from '@semiont/core';
-import { createTestSemiontWrapper, renderInEnglish, englishTranslationManager } from '../../../test-utils';
+import { annotationId, resourceId, type Annotation } from '@xynoplex/core';
+import { createTestXynoplexWrapper, renderInEnglish, englishTranslationManager } from '../../../test-utils';
 import { BrowseView } from '../BrowseView';
 
 /** A heading, a blank line and a paragraph with bold words. 49 code points; its "words" are at 42 to 47, and at 44 to 49 in the string. */
@@ -37,7 +37,7 @@ function highlight(id: string, start: number, end: number): Annotation {
 }
 
 function mount(content: string, mimeType: string, highlights: Annotation[]): HTMLElement {
-  const { session } = createTestSemiontWrapper();
+  const { session } = createTestXynoplexWrapper();
   return renderInEnglish(
     <BrowseView
       translationManager={englishTranslationManager}

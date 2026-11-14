@@ -10,9 +10,9 @@ from typing import final, override
 
 from aio import pass_time, run, turns
 
-from semiont.state import SearchPipeline
-from semiont.testing.axioms import AxiomSubject, Fresh, assert_state_unit_axioms
-from semiont.timing import SEARCH_DEBOUNCE_MS
+from xynoplex.state import SearchPipeline
+from xynoplex.testing.axioms import AxiomSubject, Fresh, assert_state_unit_axioms
+from xynoplex.timing import SEARCH_DEBOUNCE_MS
 
 
 async def never_answered(query: str) -> AsyncGenerator[Sequence[str] | None, None]:

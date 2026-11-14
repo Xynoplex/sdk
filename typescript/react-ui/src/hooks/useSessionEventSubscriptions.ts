@@ -1,15 +1,15 @@
 'use client';
 
 import { useEffect, useRef, useMemo } from 'react';
-import type { EventMap, UnscopedChannel } from '@semiont/core';
-import type { SemiontSession } from '@semiont/sdk';
+import type { EventMap, UnscopedChannel } from '@xynoplex/core';
+import type { XynoplexSession } from '@xynoplex/sdk';
 import { subscribeChannel } from '../session/channel-subscription';
 
 /**
- * Subscribe to session-scoped bus events on an explicit `SemiontSession` — the
+ * Subscribe to session-scoped bus events on an explicit `XynoplexSession` — the
  * provider-free counterpart to `useEventSubscriptions`. The embeddable viewer
  * path takes its session as a prop (bring-your-own-session), so it can't reach
- * the app-scoped `SemiontBrowser` bus; every channel it needs (`mark:*`,
+ * the app-scoped `XynoplexBrowser` bus; every channel it needs (`mark:*`,
  * `browse:click`) is session-scoped anyway and reaches it on the session's client.
  * The channels of a resource's scope are not among them: those are read for
  * one resource.
@@ -20,7 +20,7 @@ import { subscribeChannel } from '../session/channel-subscription';
  * session subscribes to nothing, and cleanly re-subscribes when one arrives.
  */
 export function useSessionEventSubscriptions(
-  session: SemiontSession | null,
+  session: XynoplexSession | null,
   subscriptions: {
     [K in UnscopedChannel]?: (payload: EventMap[K]) => void;
   },

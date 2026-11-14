@@ -1,4 +1,4 @@
-package semiont
+package xynoplex
 
 // A person's sign-in by a page redirect: the authorization-code grant with
 // PKCE (RFC 7636), for an application a person uses. BeginAuthorization finds
@@ -20,12 +20,12 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/internal/required"
+	"github.com/Xynoplex/sdk/go/api"
+	"github.com/Xynoplex/sdk/go/internal/required"
 )
 
 // PendingAuthorizationKey is the key a pending sign-in is remembered under.
-const PendingAuthorizationKey = "semiont.pendingAuthorization"
+const PendingAuthorizationKey = "xynoplex.pendingAuthorization"
 
 // PendingAuthorization is what a sign-in remembers across the trip to the
 // issuer and back: the verifier and the state the response must match, where

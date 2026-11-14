@@ -18,8 +18,8 @@
  * Frame for its reads would duplicate machinery without benefit.
  */
 
-import type { ITransport, TagSchema } from '@semiont/core';
-import { Bus } from '@semiont/core';
+import type { ITransport, TagSchema } from '@xynoplex/core';
+import { Bus } from '@xynoplex/core';
 import type { FrameNamespace as IFrameNamespace } from './types';
 
 export class FrameNamespace implements IFrameNamespace {

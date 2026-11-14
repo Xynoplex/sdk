@@ -5,7 +5,7 @@ import gc
 
 from aio import run, soon
 
-from semiont.events import Broadcast
+from xynoplex.events import Broadcast
 
 
 def test_a_reader_that_falls_behind_loses_nothing_and_delays_nobody() -> None:

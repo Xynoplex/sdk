@@ -31,11 +31,11 @@ import (
 	"time"
 	"unicode"
 
-	semiont "github.com/The-AI-Alliance/semiont/packages/go/sdk"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/bus"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/semionttest"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/state"
+	xynoplex "github.com/Xynoplex/sdk/go"
+	"github.com/Xynoplex/sdk/go/api"
+	"github.com/Xynoplex/sdk/go/bus"
+	"github.com/Xynoplex/sdk/go/xynoplextest"
+	"github.com/Xynoplex/sdk/go/state"
 )
 
 // sdk is this SDK, as the names table's `absent` names it.
@@ -192,7 +192,7 @@ func durationOf(value any) (time.Duration, error) {
 // timingNamed is the timing table's row of that name, as this SDK's Timing
 // holds it: "delegateSilenceMs" is Timing.DelegateSilence.
 func timingNamed(name string) (time.Duration, error) {
-	field := reflect.ValueOf(semiont.DefaultTiming()).FieldByName(goName(strings.TrimSuffix(name, "Ms")))
+	field := reflect.ValueOf(xynoplex.DefaultTiming()).FieldByName(goName(strings.TrimSuffix(name, "Ms")))
 	if !field.IsValid() || field.Type() != reflect.TypeFor[time.Duration]() {
 		return 0, fmt.Errorf("%s is no duration of this SDK's timing", name)
 	}
@@ -221,27 +221,27 @@ func jobs(operation bus.Channel, payload json.RawMessage) (json.RawMessage, erro
 	case "job:status-requested":
 		return json.RawMessage(`{"jobId":"job-1","type":"mark","status":"running","userId":"did:web:example.org:users:alice","created":"2026-10-01T00:00:00.000Z"}`), nil
 	default:
-		return semionttest.RefuseUnscriptedOperation(operation, payload)
+		return xynoplextest.RefuseUnscriptedOperation(operation, payload)
 	}
 }
 
 // transportOf is the transport a case states. Its stream carries what a
 // client's does: the replies and the broadcasts, never the requests.
-func transportOf(fixtures map[string]any, stated caseTransport) (*semionttest.FaultyTransport, error) {
-	config := semionttest.FaultyConfig{Channels: bus.BridgedChannels}
+func transportOf(fixtures map[string]any, stated caseTransport) (*xynoplextest.FaultyTransport, error) {
+	config := xynoplextest.FaultyConfig{Channels: bus.BridgedChannels}
 	if stated.DelayMs != nil {
 		delay, err := durationOf(stated.DelayMs)
 		if err != nil {
 			return nil, err
 		}
-		config.Schedule = []semionttest.FaultAction{semionttest.Delay{For: delay}}
+		config.Schedule = []xynoplextest.FaultAction{xynoplextest.Delay{For: delay}}
 	}
 	switch stated.Answers {
 	case "never":
 		if stated.DelayMs != nil {
 			return nil, errors.New("a transport that never answers holds no reply")
 		}
-		config.Schedule = []semionttest.FaultAction{semionttest.DropReply{}}
+		config.Schedule = []xynoplextest.FaultAction{xynoplextest.DropReply{}}
 		config.MakeResponse = never
 	case "refuses":
 	case "jobs":
@@ -249,7 +249,7 @@ func transportOf(fixtures map[string]any, stated caseTransport) (*semionttest.Fa
 	default:
 		return nil, fmt.Errorf("no transport answers %q", stated.Answers)
 	}
-	transport := semionttest.NewFaultyTransport(config)
+	transport := xynoplextest.NewFaultyTransport(config)
 	for operation, responses := range stated.Replies {
 		for _, response := range responses {
 			text, err := jsonOf(fixtures, response)
@@ -336,47 +336,47 @@ func (s *searches) queries() []string {
 // run is one case being played.
 type run struct {
 	fixtures  map[string]any
-	client    *semiont.Client
-	transport *semionttest.FaultyTransport
+	client    *xynoplex.Client
+	transport *xynoplextest.FaultyTransport
 	searches  *searches
 	kind      string
-	units     map[string]semiont.StateUnit
+	units     map[string]xynoplex.StateUnit
 
 	mu    sync.Mutex
-	heard []semiont.Frame
+	heard []xynoplex.Frame
 	// told is how much of what was heard has been checked.
 	told int
 }
 
 // makers is how this SDK makes each unit it has, from the client and what the
 // case makes it from.
-var makers = map[string]func(r *run, made map[string]any) (semiont.StateUnit, error){
-	"match": func(r *run, _ map[string]any) (semiont.StateUnit, error) {
+var makers = map[string]func(r *run, made map[string]any) (xynoplex.StateUnit, error){
+	"match": func(r *run, _ map[string]any) (xynoplex.StateUnit, error) {
 		return state.NewMatchStateUnit(r.client), nil
 	},
-	"beckon": func(r *run, made map[string]any) (semiont.StateUnit, error) {
+	"beckon": func(r *run, made map[string]any) (xynoplex.StateUnit, error) {
 		resource, err := decoded[api.ResourceId](made["resourceId"])
 		if err != nil {
 			return nil, err
 		}
 		return state.NewBeckonStateUnit(r.client, resource), nil
 	},
-	"hoverDwell": func(r *run, made map[string]any) (semiont.StateUnit, error) {
+	"hoverDwell": func(r *run, made map[string]any) (xynoplex.StateUnit, error) {
 		delay, err := durationOf(made["delayMs"])
 		if err != nil {
 			return nil, err
 		}
 		return state.NewHoverDwell(r.client.Beckon.Hover, delay), nil
 	},
-	"gather": func(r *run, made map[string]any) (semiont.StateUnit, error) {
+	"gather": func(r *run, made map[string]any) (xynoplex.StateUnit, error) {
 		resource, err := decoded[api.ResourceId](made["resourceId"])
 		if err != nil {
 			return nil, err
 		}
 		return state.NewGatherStateUnit(r.client, resource), nil
 	},
-	"search": func(r *run, made map[string]any) (semiont.StateUnit, error) {
-		debounce := semiont.DefaultTiming().SearchDebounce
+	"search": func(r *run, made map[string]any) (xynoplex.StateUnit, error) {
+		debounce := xynoplex.DefaultTiming().SearchDebounce
 		if stated, ok := made["debounceMs"]; ok {
 			var err error
 			if debounce, err = durationOf(stated); err != nil {
@@ -389,28 +389,28 @@ var makers = map[string]func(r *run, made map[string]any) (semiont.StateUnit, er
 		}
 		return state.NewSearchPipeline(r.searches.search, debounce, initial), nil
 	},
-	"yield": func(r *run, made map[string]any) (semiont.StateUnit, error) {
+	"yield": func(r *run, made map[string]any) (xynoplex.StateUnit, error) {
 		locale, ok := made["locale"].(string)
 		if !ok {
 			return nil, errors.New("a yield unit is made from its locale")
 		}
 		return state.NewYieldStateUnit(r.client, locale), nil
 	},
-	"mark": func(r *run, made map[string]any) (semiont.StateUnit, error) {
+	"mark": func(r *run, made map[string]any) (xynoplex.StateUnit, error) {
 		resource, err := decoded[api.ResourceId](made["resourceId"])
 		if err != nil {
 			return nil, err
 		}
 		return state.NewMarkStateUnit(r.client, resource), nil
 	},
-	"sessionSignals": func(*run, map[string]any) (semiont.StateUnit, error) { return semiont.NewSessionSignals(), nil },
+	"sessionSignals": func(*run, map[string]any) (xynoplex.StateUnit, error) { return xynoplex.NewSessionSignals(), nil },
 }
 
 // invoker is a unit's method as a case calls it: the arguments it takes, by
 // the names the table gives them, and the call.
 type invoker struct {
 	takes []string
-	call  func(unit semiont.StateUnit, args map[string]any) error
+	call  func(unit xynoplex.StateUnit, args map[string]any) error
 }
 
 // takes is the argument named name, read as T.
@@ -425,22 +425,22 @@ func takes[T any](args map[string]any, name string) (T, error) {
 
 // invokers is each method a case calls, by its unit and its name.
 var invokers = map[string]invoker{
-	"mark.requestDelegate": {[]string{"params"}, func(unit semiont.StateUnit, args map[string]any) error {
+	"mark.requestDelegate": {[]string{"params"}, func(unit xynoplex.StateUnit, args map[string]any) error {
 		params, err := takes[api.MarkJobParams](args, "params")
 		if err == nil {
 			unit.(*state.MarkStateUnit).RequestDelegate(params)
 		}
 		return err
 	}},
-	"mark.cancelPending": {nil, func(unit semiont.StateUnit, _ map[string]any) error {
+	"mark.cancelPending": {nil, func(unit xynoplex.StateUnit, _ map[string]any) error {
 		unit.(*state.MarkStateUnit).CancelPending()
 		return nil
 	}},
-	"mark.dismissProgress": {nil, func(unit semiont.StateUnit, _ map[string]any) error {
+	"mark.dismissProgress": {nil, func(unit xynoplex.StateUnit, _ map[string]any) error {
 		unit.(*state.MarkStateUnit).DismissProgress()
 		return nil
 	}},
-	"yield.generate": {[]string{"params", "stallDeadlineMs"}, func(unit semiont.StateUnit, args map[string]any) error {
+	"yield.generate": {[]string{"params", "stallDeadlineMs"}, func(unit xynoplex.StateUnit, args map[string]any) error {
 		params, err := takes[api.GenerationJobParams](args, "params")
 		if err != nil {
 			return err
@@ -454,11 +454,11 @@ var invokers = map[string]invoker{
 		unit.(*state.YieldStateUnit).Generate(params, stall)
 		return nil
 	}},
-	"yield.dismissProgress": {nil, func(unit semiont.StateUnit, _ map[string]any) error {
+	"yield.dismissProgress": {nil, func(unit xynoplex.StateUnit, _ map[string]any) error {
 		unit.(*state.YieldStateUnit).DismissProgress()
 		return nil
 	}},
-	"gather.gatherAnnotation": {[]string{"annotationId", "contextWindow", "includeSourceContext", "includeTargetContext"}, func(unit semiont.StateUnit, args map[string]any) error {
+	"gather.gatherAnnotation": {[]string{"annotationId", "contextWindow", "includeSourceContext", "includeTargetContext"}, func(unit xynoplex.StateUnit, args map[string]any) error {
 		annotation, err := takes[api.AnnotationId](args, "annotationId")
 		if err != nil {
 			return err
@@ -477,69 +477,69 @@ var invokers = map[string]invoker{
 		unit.(*state.GatherStateUnit).GatherAnnotation(annotation, options)
 		return nil
 	}},
-	"gather.gatherResource": {[]string{"resourceId"}, func(unit semiont.StateUnit, args map[string]any) error {
+	"gather.gatherResource": {[]string{"resourceId"}, func(unit xynoplex.StateUnit, args map[string]any) error {
 		resource, err := takes[api.ResourceId](args, "resourceId")
 		if err == nil {
-			unit.(*state.GatherStateUnit).GatherResource(resource, semiont.GatherResourceDefaults())
+			unit.(*state.GatherStateUnit).GatherResource(resource, xynoplex.GatherResourceDefaults())
 		}
 		return err
 	}},
-	"beckon.focus": {[]string{"annotationId"}, func(unit semiont.StateUnit, args map[string]any) error {
+	"beckon.focus": {[]string{"annotationId"}, func(unit xynoplex.StateUnit, args map[string]any) error {
 		annotation, err := takes[api.AnnotationId](args, "annotationId")
 		if err == nil {
 			unit.(*state.BeckonStateUnit).Focus(annotation)
 		}
 		return err
 	}},
-	"hoverDwell.enter": {[]string{"annotationId"}, func(unit semiont.StateUnit, args map[string]any) error {
+	"hoverDwell.enter": {[]string{"annotationId"}, func(unit xynoplex.StateUnit, args map[string]any) error {
 		annotation, err := takes[api.AnnotationId](args, "annotationId")
 		if err == nil {
 			unit.(*state.HoverDwell).Enter(annotation)
 		}
 		return err
 	}},
-	"hoverDwell.leave": {nil, func(unit semiont.StateUnit, _ map[string]any) error {
+	"hoverDwell.leave": {nil, func(unit xynoplex.StateUnit, _ map[string]any) error {
 		unit.(*state.HoverDwell).Leave()
 		return nil
 	}},
-	"search.setQuery": {[]string{"value"}, func(unit semiont.StateUnit, args map[string]any) error {
+	"search.setQuery": {[]string{"value"}, func(unit xynoplex.StateUnit, args map[string]any) error {
 		value, err := takes[string](args, "value")
 		if err == nil {
 			unit.(*state.SearchPipeline[string]).SetQuery(value)
 		}
 		return err
 	}},
-	"sessionSignals.notifySessionEnded": {[]string{"reason"}, func(unit semiont.StateUnit, args map[string]any) error {
-		reason, err := takes[semiont.SessionEndReason](args, "reason")
+	"sessionSignals.notifySessionEnded": {[]string{"reason"}, func(unit xynoplex.StateUnit, args map[string]any) error {
+		reason, err := takes[xynoplex.SessionEndReason](args, "reason")
 		if err == nil {
-			unit.(*semiont.SessionSignals).NotifySessionEnded(reason)
+			unit.(*xynoplex.SessionSignals).NotifySessionEnded(reason)
 		}
 		return err
 	}},
-	"sessionSignals.notifyPermissionDenied": {[]string{"detail"}, func(unit semiont.StateUnit, args map[string]any) error {
+	"sessionSignals.notifyPermissionDenied": {[]string{"detail"}, func(unit xynoplex.StateUnit, args map[string]any) error {
 		detail, err := takes[*string](args, "detail")
 		if err == nil {
-			unit.(*semiont.SessionSignals).NotifyPermissionDenied(detail)
+			unit.(*xynoplex.SessionSignals).NotifyPermissionDenied(detail)
 		}
 		return err
 	}},
-	"sessionSignals.notifyKbIdentityConflict": {[]string{"conflict"}, func(unit semiont.StateUnit, args map[string]any) error {
-		conflict, err := takes[semiont.KbIdentityConflict](args, "conflict")
+	"sessionSignals.notifyKbIdentityConflict": {[]string{"conflict"}, func(unit xynoplex.StateUnit, args map[string]any) error {
+		conflict, err := takes[xynoplex.KbIdentityConflict](args, "conflict")
 		if err == nil {
-			unit.(*semiont.SessionSignals).NotifyKbIdentityConflict(conflict)
+			unit.(*xynoplex.SessionSignals).NotifyKbIdentityConflict(conflict)
 		}
 		return err
 	}},
-	"sessionSignals.acknowledgeSessionEnded": {nil, func(unit semiont.StateUnit, _ map[string]any) error {
-		unit.(*semiont.SessionSignals).AcknowledgeSessionEnded()
+	"sessionSignals.acknowledgeSessionEnded": {nil, func(unit xynoplex.StateUnit, _ map[string]any) error {
+		unit.(*xynoplex.SessionSignals).AcknowledgeSessionEnded()
 		return nil
 	}},
-	"sessionSignals.acknowledgePermissionDenied": {nil, func(unit semiont.StateUnit, _ map[string]any) error {
-		unit.(*semiont.SessionSignals).AcknowledgePermissionDenied()
+	"sessionSignals.acknowledgePermissionDenied": {nil, func(unit xynoplex.StateUnit, _ map[string]any) error {
+		unit.(*xynoplex.SessionSignals).AcknowledgePermissionDenied()
 		return nil
 	}},
-	"sessionSignals.acknowledgeKbIdentityConflict": {nil, func(unit semiont.StateUnit, _ map[string]any) error {
-		unit.(*semiont.SessionSignals).AcknowledgeKbIdentityConflict()
+	"sessionSignals.acknowledgeKbIdentityConflict": {nil, func(unit xynoplex.StateUnit, _ map[string]any) error {
+		unit.(*xynoplex.SessionSignals).AcknowledgeKbIdentityConflict()
 		return nil
 	}},
 }
@@ -547,7 +547,7 @@ var invokers = map[string]invoker{
 // ── What a unit holds, as the wire writes it ────────────────────────────
 
 // watchedOf is the state a unit's member holds, read by the member's name.
-func watchedOf(unit semiont.StateUnit, member string) (reflect.Value, error) {
+func watchedOf(unit xynoplex.StateUnit, member string) (reflect.Value, error) {
 	method := reflect.ValueOf(unit).MethodByName(goName(member))
 	if !method.IsValid() || method.Type().NumIn() != 0 || method.Type().NumOut() != 1 {
 		return reflect.Value{}, fmt.Errorf("%T has no state %s", unit, member)
@@ -589,7 +589,7 @@ func none(held any) bool {
 // writtenError is an error as a case states one: its code and its message.
 func writtenError(err error) map[string]any {
 	written := map[string]any{"message": err.Error()}
-	var coded semiont.Error
+	var coded xynoplex.Error
 	if errors.As(err, &coded) {
 		written["code"] = coded.ErrorCode()
 	}
@@ -711,7 +711,7 @@ func hasEnded(watched reflect.Value) bool {
 
 // busEnded reports whether a bus has ended: a reader taken of it now ends at
 // once.
-func busEnded(b *semiont.EventBus) bool {
+func busEnded(b *xynoplex.EventBus) bool {
 	ctx, cancel := context.WithCancel(context.Background())
 	frames := b.FramesAmong(ctx)
 	ended := make(chan struct{})
@@ -741,8 +741,8 @@ func play(c stateCase, fixtures map[string]any) (failure error) {
 	if err != nil {
 		return err
 	}
-	made := semionttest.NewTestClient(semionttest.TestClientConfig{Transport: transport, Timing: semiont.DefaultTiming()})
-	r := &run{fixtures: fixtures, client: made.Client, transport: transport, searches: &searches{}, kind: c.Unit, units: map[string]semiont.StateUnit{}}
+	made := xynoplextest.NewTestClient(xynoplextest.TestClientConfig{Transport: transport, Timing: xynoplex.DefaultTiming()})
+	r := &run{fixtures: fixtures, client: made.Client, transport: transport, searches: &searches{}, kind: c.Unit, units: map[string]xynoplex.StateUnit{}}
 	listening, stopListening := context.WithCancel(context.Background())
 	defer func() {
 		for _, unit := range r.units {
@@ -794,7 +794,7 @@ func play(c stateCase, fixtures map[string]any) (failure error) {
 
 // requestID is the correlation id the nth request sent on channel carried.
 func (r *run) requestID(channel string, nth int) (string, error) {
-	var sent []semionttest.RequestLogEntry
+	var sent []xynoplextest.RequestLogEntry
 	for _, entry := range r.transport.RequestLog() {
 		if entry.Channel == bus.Channel(channel) {
 			sent = append(sent, entry)
@@ -806,7 +806,7 @@ func (r *run) requestID(channel string, nth int) (string, error) {
 	return sent[nth].CorrelationID, nil
 }
 
-func (r *run) unit(name any) (semiont.StateUnit, error) {
+func (r *run) unit(name any) (xynoplex.StateUnit, error) {
 	unit, ok := r.units[fmt.Sprint(name)]
 	if !ok {
 		return nil, fmt.Errorf("the case made no unit %v", name)
@@ -815,12 +815,12 @@ func (r *run) unit(name any) (semiont.StateUnit, error) {
 }
 
 // frame is a frame a step states.
-func (r *run) frame(channel any, payload any, correlationID string) (semiont.Frame, error) {
+func (r *run) frame(channel any, payload any, correlationID string) (xynoplex.Frame, error) {
 	text, err := jsonOf(r.fixtures, payload)
 	if err != nil {
-		return semiont.Frame{}, err
+		return xynoplex.Frame{}, err
 	}
-	return semiont.Frame{Channel: bus.Channel(fmt.Sprint(channel)), Envelope: semiont.Envelope{CorrelationID: correlationID}, Payload: text}, nil
+	return xynoplex.Frame{Channel: bus.Channel(fmt.Sprint(channel)), Envelope: xynoplex.Envelope{CorrelationID: correlationID}, Payload: text}, nil
 }
 
 // perform performs one step.

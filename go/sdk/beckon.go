@@ -1,4 +1,4 @@
-package semiont
+package xynoplex
 
 // Beckon: attention. The drives go over the wire, to every other
 // participant, and give how many the gateway reached, or counted false when
@@ -8,8 +8,8 @@ package semiont
 import (
 	"context"
 
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/bus"
+	"github.com/Xynoplex/sdk/go/api"
+	"github.com/Xynoplex/sdk/go/bus"
 )
 
 // BeckonNamespace is attention: driving the other participants' viewers.

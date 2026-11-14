@@ -13,13 +13,13 @@
  * compile, and is refused when called.
  */
 
-import { FrameRefusal, isResourceScopedChannel } from '@semiont/core';
-import type { EventMap, UnscopedChannel } from '@semiont/core';
-import type { SemiontClient } from '@semiont/sdk';
+import { FrameRefusal, isResourceScopedChannel } from '@xynoplex/core';
+import type { EventMap, UnscopedChannel } from '@xynoplex/core';
+import type { XynoplexClient } from '@xynoplex/sdk';
 
 /** Hear a channel of no resource's scope. Returns what stops hearing it. */
 export function subscribeChannel<K extends UnscopedChannel>(
-  client: SemiontClient,
+  client: XynoplexClient,
   channel: K,
   handler: (payload: EventMap[K]) => void,
 ): () => void {

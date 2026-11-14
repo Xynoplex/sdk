@@ -330,7 +330,7 @@ if (require.main === module) {
 
   const repoRoot = path.resolve(__dirname, '../../../..');
 
-  auditor.analyzeDirectories(repoRoot, ['packages/typescript/react-ui/src', 'images/browser/src']);
+  auditor.analyzeDirectories(repoRoot, ['typescript/react-ui/src', 'images/browser/src']);
   auditor.printReport();
 }
 

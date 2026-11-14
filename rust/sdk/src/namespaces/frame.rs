@@ -4,7 +4,7 @@
 
 use crate::channels::{FrameAddEntityType, FrameAddTagSchema};
 use crate::client::Links;
-use crate::errors::SemiontError;
+use crate::errors::XynoplexError;
 use crate::types::{FrameAddEntityTypeCommand, FrameAddTagSchemaCommand, TagSchema};
 
 pub struct FrameNamespace {
@@ -17,7 +17,7 @@ impl FrameNamespace {
     }
 
     /// Add one entity type. Adding one that is there already changes nothing.
-    pub async fn add_entity_type(&self, entity_type: &str) -> Result<(), SemiontError> {
+    pub async fn add_entity_type(&self, entity_type: &str) -> Result<(), XynoplexError> {
         self.links
             .request::<FrameAddEntityType>(&FrameAddEntityTypeCommand {
                 tag: entity_type.to_owned(),
@@ -28,7 +28,7 @@ impl FrameNamespace {
     }
 
     /// Add several, one request each, in order; the first that fails ends it.
-    pub async fn add_entity_types(&self, entity_types: &[String]) -> Result<(), SemiontError> {
+    pub async fn add_entity_types(&self, entity_types: &[String]) -> Result<(), XynoplexError> {
         for entity_type in entity_types {
             self.add_entity_type(entity_type).await?;
         }
@@ -37,7 +37,7 @@ impl FrameNamespace {
 
     /// Register a tag schema. The last registration under an id is the one
     /// that stands.
-    pub async fn add_tag_schema(&self, schema: TagSchema) -> Result<(), SemiontError> {
+    pub async fn add_tag_schema(&self, schema: TagSchema) -> Result<(), XynoplexError> {
         self.links
             .request::<FrameAddTagSchema>(&FrameAddTagSchemaCommand {
                 schema,

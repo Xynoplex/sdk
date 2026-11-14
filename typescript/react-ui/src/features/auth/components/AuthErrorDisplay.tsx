@@ -56,22 +56,22 @@ export function AuthErrorDisplay({ errorType, Link, translations: t }: AuthError
   const errorMessage = getErrorMessage(errorType, t);
 
   return (
-    <div className="semiont-auth-error-display">
-      <div className="semiont-auth-error-display__container">
+    <div className="xynoplex-auth-error-display">
+      <div className="xynoplex-auth-error-display__container">
         <div>
-          <h2 className="semiont-auth-error-display__title">
+          <h2 className="xynoplex-auth-error-display__title">
             {t.pageTitle}
           </h2>
         </div>
 
-        <div className="semiont-auth-error-display__error-box">
-          <div className="semiont-auth-error-display__error-message">{errorMessage}</div>
+        <div className="xynoplex-auth-error-display__error-box">
+          <div className="xynoplex-auth-error-display__error-message">{errorMessage}</div>
         </div>
 
-        <div className="semiont-auth-error-display__actions">
+        <div className="xynoplex-auth-error-display__actions">
           <Link
             href="/auth/signin"
-            className="semiont-auth-error-display__link"
+            className="xynoplex-auth-error-display__link"
           >
             {t.tryAgain}
           </Link>

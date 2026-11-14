@@ -24,8 +24,8 @@ kotlin {
     abiValidation {
         filters {
             exclude {
-                byNames.addAll("semiont.types.**", "semiont.identifiers.**")
-                annotatedWith.add("semiont.Generated")
+                byNames.addAll("xynoplex.types.**", "xynoplex.identifiers.**")
+                annotatedWith.add("xynoplex.Generated")
             }
         }
     }
@@ -52,7 +52,7 @@ configurations.matching { it.name.startsWith("kotlin") }.configureEach {
 // Case_Ignorable properties, whose output is compiled with the SDK's own
 // sources. Nothing it writes is committed.
 val codegen: SourceSet = sourceSets.create("codegen")
-val generated = layout.buildDirectory.dir("generated/semiont/main/kotlin")
+val generated = layout.buildDirectory.dir("generated/xynoplex/main/kotlin")
 val generate = tasks.register<JavaExec>("generate") {
     description = "Writes the SDK's protocol types from protocol/specs/src."
     group = LifecycleBasePlugin.BUILD_GROUP
@@ -64,7 +64,7 @@ val generate = tasks.register<JavaExec>("generate") {
     inputs.file(unicodeCase).withPathSensitivity(PathSensitivity.RELATIVE)
     outputs.dir(generated)
     classpath = codegen.runtimeClasspath
-    mainClass = "semiont.codegen.GenerateKt"
+    mainClass = "xynoplex.codegen.GenerateKt"
     args(specs.asFile.path, generated.get().asFile.path, required.asFile.path, unicodeCase.asFile.path)
 }
 kotlin.sourceSets.named("main") {
@@ -140,7 +140,7 @@ tasks.jacocoTestReport {
  * What the sources may not say. `@Suppress` (Kotlin) and `@SuppressWarnings`
  * (Java) appear nowhere: every warning is an error, so a suppression is the
  * one way an unchecked cast gets in. The SDK reads no environment variable
- * but the bus log's, `SEMIONT_BUS_LOG`. The Java tests are Java.
+ * but the bus log's, `XYNOPLEX_BUS_LOG`. The Java tests are Java.
  *
  * Every wait the SDK makes, every interval it measures and every jitter it
  * draws keeps the context, clock and random source its caller gives
@@ -185,8 +185,8 @@ abstract class Census : DefaultTask() {
                 }
                 if (path.startsWith("main/")) {
                     for (read in Regex("""\bgetenv\s*\(([^)]*)\)""").findAll(line)) {
-                        if (read.groupValues[1].trim() != "\"SEMIONT_BUS_LOG\"") {
-                            failures += "$at reads the environment (${read.value}): the SDK reads SEMIONT_BUS_LOG and nothing else, and is handed the rest by the application"
+                        if (read.groupValues[1].trim() != "\"XYNOPLEX_BUS_LOG\"") {
+                            failures += "$at reads the environment (${read.value}): the SDK reads XYNOPLEX_BUS_LOG and nothing else, and is handed the rest by the application"
                         }
                     }
                     val said = defaults.replace(line, "")
@@ -201,7 +201,7 @@ abstract class Census : DefaultTask() {
         }
         if (failures.isNotEmpty()) throw GradleException("census — ${failures.size} problem(s):\n  " + failures.joinToString("\n  "))
         report.get().asFile.writeText("${read.size} files read\n")
-        logger.lifecycle("census: ${read.size} files under src/, none suppressing a warning, and the SDK reading no environment variable but SEMIONT_BUS_LOG and keeping no time but its caller's")
+        logger.lifecycle("census: ${read.size} files under src/, none suppressing a warning, and the SDK reading no environment variable but XYNOPLEX_BUS_LOG and keeping no time but its caller's")
     }
 }
 
@@ -313,24 +313,24 @@ dependencies {
     conformance.implementationConfigurationName(libs.opentelemetry.exporter.otlp)
 }
 val conformanceJar = tasks.register<Jar>("conformanceJar") {
-    archiveBaseName = "semiont-conformance"
+    archiveBaseName = "xynoplex-conformance"
     from(conformance.output)
 }
 val wireDriverScripts = tasks.register<CreateStartScripts>("wireDriverScripts") {
-    applicationName = "semiont-kotlin-wire-driver"
-    mainClass = "semiont.conformance.WireDriverKt"
+    applicationName = "xynoplex-kotlin-wire-driver"
+    mainClass = "xynoplex.conformance.WireDriverKt"
     outputDir = layout.buildDirectory.dir("conformance-scripts").get().asFile
     classpath = files(conformanceJar, tasks.jar, configurations.named(conformance.runtimeClasspathConfigurationName))
 }
 val liveDriverScripts = tasks.register<CreateStartScripts>("liveDriverScripts") {
-    applicationName = "semiont-kotlin-live-driver"
-    mainClass = "semiont.conformance.LiveDriverKt"
+    applicationName = "xynoplex-kotlin-live-driver"
+    mainClass = "xynoplex.conformance.LiveDriverKt"
     outputDir = layout.buildDirectory.dir("conformance-scripts").get().asFile
     classpath = files(conformanceJar, tasks.jar, configurations.named(conformance.runtimeClasspathConfigurationName))
 }
 val workerDriverScripts = tasks.register<CreateStartScripts>("workerDriverScripts") {
-    applicationName = "semiont-kotlin-worker-driver"
-    mainClass = "semiont.conformance.WorkerDriver"
+    applicationName = "xynoplex-kotlin-worker-driver"
+    mainClass = "xynoplex.conformance.WorkerDriver"
     outputDir = layout.buildDirectory.dir("conformance-scripts").get().asFile
     classpath = files(conformanceJar, tasks.jar, configurations.named(conformance.runtimeClasspathConfigurationName))
 }

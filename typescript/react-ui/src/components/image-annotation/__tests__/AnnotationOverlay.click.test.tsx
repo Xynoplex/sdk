@@ -8,10 +8,10 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import type { SemiontSession } from '@semiont/sdk';
-import type { Annotation, AnnotationId } from '@semiont/core';
+import type { XynoplexSession } from '@xynoplex/sdk';
+import type { Annotation, AnnotationId } from '@xynoplex/core';
 import { AnnotationOverlay } from '../AnnotationOverlay';
-import { resourceId } from '@semiont/core';
+import { resourceId } from '@xynoplex/core';
 
 function svgAnnotation(id: string, motivation: Annotation['motivation'], svgValue: string): Annotation {
   return {
@@ -39,7 +39,7 @@ function sessionDouble() {
       browse: { click },
       beckon: { hover: vi.fn() },
     },
-  } as unknown as SemiontSession;
+  } as unknown as XynoplexSession;
   return { session, click };
 }
 
@@ -59,7 +59,7 @@ describe('AnnotationOverlay — anchorRect on click', () => {
       />,
     );
 
-    const shape = container.querySelector('.semiont-annotation-overlay__shape');
+    const shape = container.querySelector('.xynoplex-annotation-overlay__shape');
     expect(shape).toBeInTheDocument();
 
     fireEvent.click(shape!);
@@ -92,7 +92,7 @@ describe('AnnotationOverlay — anchorRect on click', () => {
       />,
     );
 
-    const shape = container.querySelector('.semiont-annotation-overlay__shape');
+    const shape = container.querySelector('.xynoplex-annotation-overlay__shape');
     expect(shape).toBeInTheDocument();
 
     fireEvent.click(shape!);
@@ -121,7 +121,7 @@ describe('AnnotationOverlay — anchorRect on click', () => {
       />,
     );
 
-    const indicator = container.querySelector('.semiont-annotation-overlay__status-indicator');
+    const indicator = container.querySelector('.xynoplex-annotation-overlay__status-indicator');
     expect(indicator).toBeInTheDocument();
 
     fireEvent.click(indicator!);

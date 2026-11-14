@@ -1,5 +1,5 @@
-import type { Annotation } from '@semiont/core';
-import { isHighlight, isComment, isAssessment, isReference, isTag } from '@semiont/core';
+import type { Annotation } from '@xynoplex/core';
+import { isHighlight, isComment, isAssessment, isReference, isTag } from '@xynoplex/core';
 import type { AnnotationsCollection } from '../types/annotation-props';
 
 /**

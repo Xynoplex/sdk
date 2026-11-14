@@ -1,11 +1,11 @@
-package semiont
+package xynoplex
 
 // Auth: the gateway's view of who is signed in.
 
 import (
 	"context"
 
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
+	"github.com/Xynoplex/sdk/go/api"
 )
 
 // AuthNamespace is the gateway's view of who is signed in.

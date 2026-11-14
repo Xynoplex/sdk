@@ -2,7 +2,7 @@
 
 from typing import assert_never
 
-from semiont.transport import ConnectionState
+from xynoplex.transport import ConnectionState
 
 
 def delivers(state: ConnectionState) -> bool:

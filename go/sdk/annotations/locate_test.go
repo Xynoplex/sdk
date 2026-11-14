@@ -10,7 +10,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
+	"github.com/Xynoplex/sdk/go/api"
 )
 
 func TestASpanIsLocatedAsTheTableSays(t *testing.T) {

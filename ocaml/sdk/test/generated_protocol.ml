@@ -1,5 +1,5 @@
-module Bus = Semiont.Bus_registry
-module Selector = Semiont.Selector
+module Bus = Xynoplex.Bus_registry
+module Selector = Xynoplex.Selector
 
 let selector json =
   let parsed = Yojson.Safe.from_string json in
@@ -99,7 +99,7 @@ let payload_codecs () =
   | _ -> Alcotest.fail "expected a strict JSON fault"
 
 let component_codecs () =
-  let module M = Semiont.Models in
+  let module M = Xynoplex.Models in
   let round_trip model source =
     Alcotest.(check string)
       "component literal preserved" source
@@ -116,9 +116,9 @@ let component_codecs () =
   | _ -> Alcotest.fail "expected a union branch fault at start"
 
 let record_views () =
-  let module M = Semiont.Models in
-  let module R = Semiont.Records in
-  let module T = Semiont.Types in
+  let module M = Xynoplex.Models in
+  let module R = Xynoplex.Records in
+  let module T = Xynoplex.Types in
   let frame =
     Result.get_ok
       (M.decode M.bus_frame

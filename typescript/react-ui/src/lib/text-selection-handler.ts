@@ -8,7 +8,7 @@
  * points from its start, as a `TextPositionSelector` does.
  */
 
-import { extractContext, type TextOffsets, type components } from '@semiont/core';
+import { extractContext, type TextOffsets, type components } from '@xynoplex/core';
 
 /**
  * A pair of selectors for a text annotation:

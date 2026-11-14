@@ -20,11 +20,11 @@ import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
 import { screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
-import type { GatheredContext } from '@semiont/core';
+import type { GatheredContext } from '@xynoplex/core';
 import { renderWithProviders } from '../../../test-utils';
 import { ReferenceWizardModal } from '../ReferenceWizardModal';
 import type { CodeMirrorRenderer } from '../../CodeMirrorRenderer';
-import { annotationId, resourceId } from '@semiont/core';
+import { annotationId, resourceId } from '@xynoplex/core';
 
 // jsdom implements no layout, so it has no `scrollIntoView`. GatherContextStep
 // calls it to bring the highlighted passage into view whenever the context
@@ -127,9 +127,9 @@ describe('ReferenceWizardModal — the Hint reaches every strategy, at focus.use
 
   it('the gather panel carries the widened class', () => {
     const { baseElement } = renderWizard();
-    const panel = baseElement.querySelector('.semiont-search-modal__panel--gather');
+    const panel = baseElement.querySelector('.xynoplex-search-modal__panel--gather');
     expect(panel).not.toBeNull();
-    expect(panel!.className).toContain('semiont-search-modal__panel--wide');
+    expect(panel!.className).toContain('xynoplex-search-modal__panel--wide');
   });
 
   it('the typed hint stays visible after stepping into configure-search', async () => {
@@ -137,7 +137,7 @@ describe('ReferenceWizardModal — the Hint reaches every strategy, at focus.use
     const { baseElement } = renderWizard();
     await typeHint('the ancient city');
     await userEvent.click(screen.getByRole('button', { name: /Search…/ }));
-    const echo = baseElement.querySelector('.semiont-wizard__hint-echo');
+    const echo = baseElement.querySelector('.xynoplex-wizard__hint-echo');
     expect(echo).not.toBeNull();
     expect(echo!.textContent).toContain('the ancient city');
   });
@@ -191,11 +191,11 @@ describe('ReferenceWizardModal — the context stays in view on the strategy ste
     const { baseElement } = renderWizard();
     await userEvent.click(screen.getByText(new RegExp(`^🔍? ?${T.search}`)));
 
-    expect(baseElement.querySelector('.semiont-gather__source-box')).not.toBeNull(); // quotation strip
+    expect(baseElement.querySelector('.xynoplex-gather__source-box')).not.toBeNull(); // quotation strip
     expect(screen.getByText(T.graphPaneTitle)).toBeInTheDocument();                  // graph pane
     expect(screen.getByText(T.maxResults)).toBeInTheDocument();                      // the form, below
     // The band survives the step: header + the chosen strategy, nothing clickable.
-    const footer = baseElement.querySelector('.semiont-gather__footer');
+    const footer = baseElement.querySelector('.xynoplex-gather__footer');
     expect(footer).not.toBeNull();
     expect(footer!.textContent).toContain(T.resolutionStrategyLabel);
     expect(footer!.textContent).toContain(`🔍 ${T.search}`);
@@ -203,8 +203,8 @@ describe('ReferenceWizardModal — the context stays in view on the strategy ste
     expect(screen.queryByRole('button', { name: `✨ ${T.generate}…` })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: `✍️ ${T.compose}` })).not.toBeInTheDocument();
     expect(screen.queryByPlaceholderText(T.userHintPlaceholder)).not.toBeInTheDocument();
-    const panel = baseElement.querySelector('.semiont-search-modal__panel')!;
-    expect(panel.className).toContain('semiont-search-modal__panel--wide');          // evidence needs the width
+    const panel = baseElement.querySelector('.xynoplex-search-modal__panel')!;
+    expect(panel.className).toContain('xynoplex-search-modal__panel--wide');          // evidence needs the width
   });
 
   it('search-results keeps the evidence and the collapsed band above the results', async () => {
@@ -216,30 +216,30 @@ describe('ReferenceWizardModal — the context stays in view on the strategy ste
     await userEvent.click(screen.getByRole('button', { name: T.search }));
     client.bus.emit('match:search-results', {
       referenceId: annotationId('ann-1'),
-      response: [{ '@context': 'https://semiont.dev/context/v1', '@id': resourceId('res-9'), name: 'Caspian Sea', representations: [], score: 54.2 }],
+      response: [{ '@context': 'https://xynoplex.dev/context/v1', '@id': resourceId('res-9'), name: 'Caspian Sea', representations: [], score: 54.2 }],
     });
     await screen.findByRole('button', { name: new RegExp(T.link) }); // results are up
 
-    expect(baseElement.querySelector('.semiont-gather__source-box')).not.toBeNull(); // quotation strip
+    expect(baseElement.querySelector('.xynoplex-gather__source-box')).not.toBeNull(); // quotation strip
     expect(screen.getByText(T.graphPaneTitle)).toBeInTheDocument();                  // graph pane
     expect(screen.getByText(T.corpusPaneTitle)).toBeInTheDocument();                 // full display, not the redux
-    const footer = baseElement.querySelector('.semiont-gather__footer');
+    const footer = baseElement.querySelector('.xynoplex-gather__footer');
     expect(footer).not.toBeNull();
     expect(footer!.textContent).toContain(`🔍 ${T.search}`);
     expect(footer!.querySelectorAll('button')).toHaveLength(0);
     expect(screen.getByRole('button', { name: `🔗 ${T.link}` })).toBeInTheDocument(); // the results
-    const panel = baseElement.querySelector('.semiont-search-modal__panel')!;
-    expect(panel.className).toContain('semiont-search-modal__panel--gather');
+    const panel = baseElement.querySelector('.xynoplex-search-modal__panel')!;
+    expect(panel.className).toContain('xynoplex-search-modal__panel--gather');
   });
 
   it('configure-generation renders the evidence above the form, the strategy band collapsed to Generate', async () => {
     const { baseElement } = renderWizard();
     await userEvent.click(screen.getByRole('button', { name: `✨ ${T.generate}…` }));
 
-    expect(baseElement.querySelector('.semiont-gather__source-box')).not.toBeNull();
+    expect(baseElement.querySelector('.xynoplex-gather__source-box')).not.toBeNull();
     expect(screen.getByText(T.graphPaneTitle)).toBeInTheDocument();
     expect(screen.getByText(T.resourceTitle)).toBeInTheDocument();
-    const footer = baseElement.querySelector('.semiont-gather__footer');
+    const footer = baseElement.querySelector('.xynoplex-gather__footer');
     expect(footer).not.toBeNull();
     expect(footer!.textContent).toContain(T.resolutionStrategyLabel);
     expect(footer!.textContent).toContain(`✨ ${T.generate}`);
@@ -248,23 +248,23 @@ describe('ReferenceWizardModal — the context stays in view on the strategy ste
     // the --echo band, and the chooser's button-row wrapper is absent — the
     // value must never sit where controls sit (there it wears a control's
     // costume: inherited base size + link blue).
-    expect(footer!.className).toContain('semiont-gather__footer--echo');
-    expect(footer!.querySelector('.semiont-gather__actions')).toBeNull();
-    expect(footer!.querySelector('.semiont-gather__chosen-strategy')).not.toBeNull();
+    expect(footer!.className).toContain('xynoplex-gather__footer--echo');
+    expect(footer!.querySelector('.xynoplex-gather__actions')).toBeNull();
+    expect(footer!.querySelector('.xynoplex-gather__chosen-strategy')).not.toBeNull();
     expect(screen.queryByText(new RegExp(`^🔍 ${T.search}…`))).not.toBeInTheDocument();
-    const panel = baseElement.querySelector('.semiont-search-modal__panel')!;
-    expect(panel.className).toContain('semiont-search-modal__panel--wide');
+    const panel = baseElement.querySelector('.xynoplex-search-modal__panel')!;
+    expect(panel.className).toContain('xynoplex-search-modal__panel--wide');
 
     // ONE scroll pane for the whole step: evidence and parameters scroll
     // together, the form in full at the bottom, the evidence tucking up under
     // the modal top. An independently-scrollable form inside the stack
     // squeezes the parameters out of view.
-    const scroll = baseElement.querySelector('.semiont-wizard__step-scroll');
+    const scroll = baseElement.querySelector('.xynoplex-wizard__step-scroll');
     expect(scroll).not.toBeNull();
-    expect(scroll!.querySelector('.semiont-gather__outer')).not.toBeNull();
-    const form = scroll!.querySelector('form.semiont-form');
+    expect(scroll!.querySelector('.xynoplex-gather__outer')).not.toBeNull();
+    const form = scroll!.querySelector('form.xynoplex-form');
     expect(form).not.toBeNull();
-    expect(form!.className).not.toContain('semiont-form--scrollable');
+    expect(form!.className).not.toContain('xynoplex-form--scrollable');
   });
 });
 
@@ -279,18 +279,18 @@ describe('ReferenceWizardModal — compose is the fourth in-modal strategy', () 
     const { baseElement } = renderWizard();
     await enterCompose();
 
-    expect(baseElement.querySelector('.semiont-gather__source-box')).not.toBeNull();
+    expect(baseElement.querySelector('.xynoplex-gather__source-box')).not.toBeNull();
     expect(screen.getByText(T.graphPaneTitle)).toBeInTheDocument();
-    const footer = baseElement.querySelector('.semiont-gather__footer');
+    const footer = baseElement.querySelector('.xynoplex-gather__footer');
     expect(footer).not.toBeNull();
     expect(footer!.textContent).toContain(T.resolutionStrategyLabel);
     expect(footer!.textContent).toContain(`✍️ ${T.compose}`);
     expect(footer!.querySelectorAll('button')).toHaveLength(0);
     // ONE scroll pane holding display + form (same grammar as the others).
-    const scroll = baseElement.querySelector('.semiont-wizard__step-scroll');
+    const scroll = baseElement.querySelector('.xynoplex-wizard__step-scroll');
     expect(scroll).not.toBeNull();
-    expect(scroll!.querySelector('.semiont-gather__outer')).not.toBeNull();
-    expect(scroll!.querySelector('form.semiont-form')).not.toBeNull();
+    expect(scroll!.querySelector('.xynoplex-gather__outer')).not.toBeNull();
+    expect(scroll!.querySelector('form.xynoplex-form')).not.toBeNull();
   });
 
   it('the draft survives Back and re-entry', async () => {
@@ -469,10 +469,10 @@ describe('ReferenceWizardModal — the gather skeleton', () => {
     expect(screen.getByText(T.corpusPaneTitle)).toBeInTheDocument();
     // One dots animation PER zone — source excerpt, Neighborhood, Similar
     // passages — each where its content will land; no central block, no bars.
-    expect(baseElement.querySelectorAll('.semiont-gather__skeleton-dots')).toHaveLength(3);
-    expect(baseElement.querySelectorAll('.semiont-gather__skeleton-bar')).toHaveLength(0);
+    expect(baseElement.querySelectorAll('.xynoplex-gather__skeleton-dots')).toHaveLength(3);
+    expect(baseElement.querySelectorAll('.xynoplex-gather__skeleton-bar')).toHaveLength(0);
     // The sentence survives for screen readers only.
-    expect(screen.getByText(T.loadingContext)).toHaveClass('semiont-sr-only');
+    expect(screen.getByText(T.loadingContext)).toHaveClass('xynoplex-sr-only');
   });
 
   it('the source line, Hint, and strategy chooser render during loading — buttons grayed until context lands', () => {
@@ -545,7 +545,7 @@ describe('ReferenceWizardModal — the three strategies complete', () => {
       // `ResourceDescriptor` is JSON-LD: the identifier is `@id`, and the
       // results step links on that. A fixture using `id` renders the row and
       // links `undefined` — passing the eye, failing the reference.
-      response: [{ '@context': 'https://semiont.dev/context/v1', '@id': resourceId('res-9'), name: 'Caspian Sea', representations: [], score: 54.2 }],
+      response: [{ '@context': 'https://xynoplex.dev/context/v1', '@id': resourceId('res-9'), name: 'Caspian Sea', representations: [], score: 54.2 }],
     });
 
     await userEvent.click(await screen.findByRole('button', { name: new RegExp(T.link) }));
@@ -604,7 +604,7 @@ describe('ReferenceWizardModal — the three strategies complete', () => {
     const { client } = renderWizard();
     client.bus.emit('match:search-results', {
       referenceId: annotationId('someone-elses-annotation'),
-      response: [{ '@context': 'https://semiont.dev/context/v1', '@id': resourceId('res-9'), name: 'Caspian Sea', representations: [] }],
+      response: [{ '@context': 'https://xynoplex.dev/context/v1', '@id': resourceId('res-9'), name: 'Caspian Sea', representations: [] }],
     });
     expect(screen.getByRole('button', { name: `🔍 ${T.search}…` })).toBeInTheDocument(); // still the gather step
   });
@@ -673,7 +673,7 @@ describe('ReferenceWizardModal — nothing fires without an annotation to resolv
     // A reply that arrives anyway is ignored rather than advancing the step.
     client.bus.emit('match:search-results', {
       referenceId: annotationId('ann-1'),
-      response: [{ '@context': 'https://semiont.dev/context/v1', '@id': resourceId('res-9'), name: 'X', representations: [] }],
+      response: [{ '@context': 'https://xynoplex.dev/context/v1', '@id': resourceId('res-9'), name: 'X', representations: [] }],
     });
     expect(screen.queryByRole('button', { name: new RegExp(T.link) })).not.toBeInTheDocument();
     expect(onGenerateSubmit).not.toHaveBeenCalled();

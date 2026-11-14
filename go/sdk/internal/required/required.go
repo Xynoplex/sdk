@@ -26,8 +26,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/bus"
+	"github.com/Xynoplex/sdk/go/api"
+	"github.com/Xynoplex/sdk/go/bus"
 )
 
 // shape is what a value must be: packages/codegen/schemas/required-shapes.mjs states

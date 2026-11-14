@@ -5,9 +5,9 @@ import Control.Concurrent.Async (Async, AsyncCancelled, async, cancel, waitCatch
 import Control.Concurrent.STM
 import Control.Exception (finally, fromException, try)
 import Control.Monad (unless)
-import qualified Semiont.Internal.Lifetime as Lifetime
-import Semiont.Errors (BusRequestError(..))
-import Semiont.ErrorCodes (BusRequestCode(BusRequestClosed))
+import qualified Xynoplex.Internal.Lifetime as Lifetime
+import Xynoplex.Errors (BusRequestError(..))
+import Xynoplex.ErrorCodes (BusRequestCode(BusRequestClosed))
 import System.Timeout (timeout)
 
 require :: String -> Bool -> IO ()

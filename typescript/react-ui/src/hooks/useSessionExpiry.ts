@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useSemiont } from '../session/SemiontProvider';
+import { useXynoplex } from '../session/XynoplexProvider';
 import { useObservable } from './useObservable';
 
 /**
@@ -10,7 +10,7 @@ import { useObservable } from './useObservable';
  * derives from the current `token$` value) and re-derives once per second.
  */
 export function useSessionExpiry() {
-  const session = useObservable(useSemiont().activeSession$);
+  const session = useObservable(useXynoplex().activeSession$);
   // Subscribe to token$ so we re-run when it changes; expiresAt is derived
   // from the current token on the session.
   useObservable(session?.token$);

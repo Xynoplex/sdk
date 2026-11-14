@@ -2,20 +2,20 @@
 
 ## Overview
 
-This document explains how user interactions with annotations flow through the Semiont React UI architecture. It covers both click interactions (opening panels and scrolling to entries) and hover interactions (highlighting annotations and entries bidirectionally).
+This document explains how user interactions with annotations flow through the Xynoplex React UI architecture. It covers both click interactions (opening panels and scrolling to entries) and hover interactions (highlighting annotations and entries bidirectionally).
 
 **Key Architectural Principle**: Events flow UP (user actions) → State flows DOWN (rendering)
 
 ## Three-Layer Architecture
 
-### Layer 1: Data Layer (`@semiont/core` + `@semiont/sdk`)
+### Layer 1: Data Layer (`@xynoplex/core` + `@xynoplex/sdk`)
 
 **Responsibility**: Owns annotation data and provides TypeScript types from OpenAPI spec.
 
 **What it does**:
 - CRUD operations for annotations (via the SDK)
-- TypeScript types generated from the OpenAPI spec, `protocol/specs/src/openapi.json` (in `@semiont/core`)
-- Utility functions for annotation manipulation (e.g., `getAnnotationExactText`, `getBodySource`) (in `@semiont/core`)
+- TypeScript types generated from the OpenAPI spec, `protocol/specs/src/openapi.json` (in `@xynoplex/core`)
+- Utility functions for annotation manipulation (e.g., `getAnnotationExactText`, `getBodySource`) (in `@xynoplex/core`)
 
 **What it does NOT do**:
 - NO knowledge of React, DOM, or UI state
@@ -23,14 +23,14 @@ This document explains how user interactions with annotations flow through the S
 
 **Key Types**:
 ```typescript
-import type { components } from '@semiont/core';
+import type { components } from '@xynoplex/core';
 
 type Annotation = components['schemas']['Annotation'];
 type Motivation = components['schemas']['Motivation'];
 // 'linking' | 'commenting' | 'highlighting' | 'tagging' | 'assessing'
 ```
 
-**Location**: types and annotation utilities in `packages/typescript/core/`; the SDK in `packages/typescript/sdk/`
+**Location**: types and annotation utilities in `typescript/core/`; the SDK in `typescript/sdk/`
 
 ### Layer 2: State Layer (React Components)
 
@@ -63,7 +63,7 @@ type Motivation = components['schemas']['Motivation'];
 - **Callbacks Up**: Children notify parents via callback props (e.g., `onScrollCompleted`)
 - **Refs Via Callbacks**: Parents receive refs via `ref={(el) => setEntryRef(id, el)}`
 
-**Location**: `packages/typescript/react-ui/src/components/`, `packages/typescript/react-ui/src/features/`
+**Location**: `typescript/react-ui/src/components/`, `typescript/react-ui/src/features/`
 
 ### Layer 3: Coordination Layer (Event Bus)
 
@@ -82,11 +82,11 @@ session's channels; the browser holds a second, app-scoped one for shell channel
 - ❌ Tracking DOM refs (use React ref callbacks instead)
 - ❌ Data persistence (use the SDK instead)
 
-**Location**: `packages/typescript/core/src/event-bus.ts` (the bus), `packages/typescript/core/src/bus-protocol.ts` (the channels)
+**Location**: `typescript/core/src/event-bus.ts` (the bus), `typescript/core/src/bus-protocol.ts` (the channels)
 
 ## Event Catalog
 
-All events are typed by `EventMap` in `@semiont/core`, generated from the spec. The ids they
+All events are typed by `EventMap` in `@xynoplex/core`, generated from the spec. The ids they
 carry are typed (`AnnotationId`, `ResourceId`), not `string`:
 
 ```typescript
@@ -135,7 +135,7 @@ sequenceDiagram
     participant Bus as Session bus
     participant Coord as ResourceViewer<br/>(Coordinator)
     participant Page as ResourceViewerPage
-    participant App as App bus<br/>(SemiontBrowser)
+    participant App as App bus<br/>(XynoplexBrowser)
     participant Shell as ShellStateUnit
     participant Panel as UnifiedAnnotationsPanel
     participant Specific as ReferencesPanel
@@ -217,7 +217,7 @@ sequenceDiagram
     Note over Specific: Pulse handled by isHovered prop
 
     Specific->>Entry: props: {<br/>  isHovered: true<br/>}
-    Entry->>Entry: className includes 'semiont-annotation-pulse'<br/>(via isHovered prop)
+    Entry->>Entry: className includes 'xynoplex-annotation-pulse'<br/>(via isHovered prop)
 
     Note over Entry: CSS animation plays
 
@@ -286,7 +286,7 @@ sequenceDiagram
 
 ```tsx
 // ReferencesPanel.tsx — the ref, scroll and focus handling
-import { getTargetSelector, getTextPositionSelector } from '@semiont/core';
+import { getTargetSelector, getTextPositionSelector } from '@xynoplex/core';
 
 function ReferencesPanelExcerpt({
   session,
@@ -334,9 +334,9 @@ function ReferencesPanelExcerpt({
       containerRef.current.scrollTo({ top: scrollTo, behavior: 'smooth' });
 
       // Pulse effect
-      element.classList.remove('semiont-annotation-pulse');
+      element.classList.remove('xynoplex-annotation-pulse');
       void element.offsetWidth; // Force reflow
-      element.classList.add('semiont-annotation-pulse');
+      element.classList.add('xynoplex-annotation-pulse');
 
       // Notify parent
       if (onScrollCompleted) {
@@ -383,7 +383,7 @@ function ReferencesPanelExcerpt({
   });
 
   return (
-    <div ref={containerRef} className="semiont-panel__content">
+    <div ref={containerRef} className="xynoplex-panel__content">
       {sortedAnnotations.map((reference) => (
         <ReferenceEntry
           session={session}
@@ -419,7 +419,7 @@ function ReferenceEntryExcerpt({
   return (
     <div
       ref={ref}
-      className={`semiont-annotation-entry${isHovered ? ' semiont-annotation-pulse' : ''}`}
+      className={`xynoplex-annotation-entry${isHovered ? ' xynoplex-annotation-pulse' : ''}`}
       data-type="reference"
       data-focused={isFocused ? 'true' : 'false'}
       onClick={() => {
@@ -444,7 +444,7 @@ events, and the page reads their observables and passes the values down.
 ```tsx
 // ResourceViewerPage.tsx — the coordination
 function ResourceViewerPageExcerpt() {
-  const browser = useSemiont();
+  const browser = useXynoplex();
   const session = useObservable(browser.activeSession$) ?? null;
 
   // The page state unit composes the flow units: beckon (hover), mark
@@ -465,7 +465,7 @@ function ResourceViewerPageExcerpt() {
   const panelInitialTab = useObservable(stateUnit?.browse.panelInitialTab$) ?? null;
 
   return (
-    <div className="semiont-document-viewer">
+    <div className="xynoplex-document-viewer">
       <ResourceViewer
         locale="en"
         resource={{ ...resource, content }}
@@ -524,12 +524,12 @@ function Panel({ hoveredAnnotationId }: { hoveredAnnotationId: string | null }) 
     if (!element) return undefined;
 
     const timeoutId = setTimeout(() => {
-      element.classList.add('semiont-annotation-pulse');  // DOM manipulation
+      element.classList.add('xynoplex-annotation-pulse');  // DOM manipulation
     }, 100);
 
     return () => {
       clearTimeout(timeoutId);
-      element.classList.remove('semiont-annotation-pulse');
+      element.classList.remove('xynoplex-annotation-pulse');
     };
   }, [hoveredAnnotationId]);
   // ...
@@ -540,7 +540,7 @@ function Entry({ isHovered, ref }: { isHovered: boolean; ref: React.Ref<HTMLDivE
   return (
     <div
       ref={ref}
-      className={`semiont-annotation-entry${isHovered ? ' semiont-annotation-pulse' : ''}`}
+      className={`xynoplex-annotation-entry${isHovered ? ' xynoplex-annotation-pulse' : ''}`}
     />
   );
 }
@@ -586,7 +586,7 @@ function Entry({ isHovered, ref }: { isHovered: boolean; ref: React.Ref<HTMLDivE
   return (
     <div
       ref={ref}
-      className={`semiont-annotation-entry${isHovered ? ' semiont-annotation-pulse' : ''}`}
+      className={`xynoplex-annotation-entry${isHovered ? ' xynoplex-annotation-pulse' : ''}`}
     />
   );
 }
@@ -605,7 +605,7 @@ function Entry({ isHovered, ref }: { isHovered: boolean; ref: React.Ref<HTMLDivE
 These rules MUST be followed:
 
 1. **Data Layer has NO React knowledge**
-   - `@semiont/core` (types and annotation utilities) and `@semiont/sdk` cannot import React, DOM types, or UI state
+   - `@xynoplex/core` (types and annotation utilities) and `@xynoplex/sdk` cannot import React, DOM types, or UI state
    - Only TypeScript types and pure functions
 
 2. **Event Bus is for coordination ONLY**
@@ -632,5 +632,5 @@ These rules MUST be followed:
 ## Related Documentation
 
 - **OpenAPI Spec**: `protocol/specs/src/openapi.json`, and `protocol/specs/src/components/schemas/Annotation.json` in it - Source of truth for annotation types
-- **Event channels**: `packages/typescript/core/src/bus-protocol.ts` - `EventMap`, the channel type definitions
-- **Annotation Utilities**: `packages/typescript/core/src/web-annotation-utils.ts` - Pure functions for annotation manipulation
+- **Event channels**: `typescript/core/src/bus-protocol.ts` - `EventMap`, the channel type definitions
+- **Annotation Utilities**: `typescript/core/src/web-annotation-utils.ts` - Pure functions for annotation manipulation

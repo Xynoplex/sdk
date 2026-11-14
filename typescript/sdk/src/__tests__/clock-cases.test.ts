@@ -29,15 +29,15 @@ import {
   type EventMap,
   type HttpEndpoint,
   type JobFilter,
-} from '@semiont/core';
-import { APIError, HttpTransport } from '@semiont/http-transport';
+} from '@xynoplex/core';
+import { APIError, HttpTransport } from '@xynoplex/http-transport';
 import { createCache, type CachePersister } from '../cache';
 import { JOB_CLAIM_CHANNELS, type HeldJob } from '../claims';
-import { SemiontClient } from '../client';
+import { XynoplexClient } from '../client';
 import { subscribeDiscovery, type DiscoveryReadResult, type DiscoveryTransport } from '../discovery';
 import { httpKb } from '../session/knowledge-base';
 import { signInWithDeviceGrant } from '../session/oauth';
-import { SemiontSession, type UserInfo } from '../session/semiont-session';
+import { XynoplexSession, type UserInfo } from '../session/xynoplex-session';
 import { InMemorySessionStorage } from '../session/session-storage';
 import { keptIn, setStoredSession } from '../session/storage';
 import { createTestClient, FaultyTransport, inMemoryContent, refuseUnscriptedOperation } from '../testing';
@@ -382,7 +382,7 @@ async function timedOutBusRequest(given: JsonObject | undefined, held: Held): Pr
 
 const KB_TARGET: HttpEndpoint = { kind: 'http', host: 'localhost', port: 4000, protocol: 'http' };
 const KB_GATEWAY = 'http://localhost:4000';
-const ISSUER = 'http://issuer.test/realms/semiont';
+const ISSUER = 'http://issuer.test/realms/xynoplex';
 
 /**
  * A knowledge base that trusts an issuer, and the issuer, in this process:
@@ -460,9 +460,9 @@ async function renewal(given: JsonObject | undefined, held: Held): Promise<Subje
   if (lifetime === undefined) throw new Error("a renewal's case states how long its tokens live");
   let renewals = 0;
   const storage = new InMemorySessionStorage();
-  setStoredSession(storage, KB.id, { access: token(lifetime, 0), refresh: 'a-refresh-token', clientId: 'semiont-cli', tokenEndpoint: `${ISSUER}/token` });
+  setStoredSession(storage, KB.id, { access: token(lifetime, 0), refresh: 'a-refresh-token', clientId: 'xynoplex-cli', tokenEndpoint: `${ISSUER}/token` });
   const { client } = createTestClient();
-  const session = new SemiontSession({
+  const session = new XynoplexSession({
     kb: KB,
     kept: keptIn(storage, KB.id),
     client,
@@ -510,7 +510,7 @@ function answering(held: Held, answers: Partial<Record<BusOperationKey, (payload
 async function heldJobStall(_given: JsonObject | undefined, held: Held): Promise<Subject> {
   // A worker's transport names what its claims read, and no more.
   const transport = new FaultyTransport({ channels: JOB_CLAIM_CHANNELS, makeResponse: answering(held, { 'job:claim': () => CLAIMED }) });
-  const client = new SemiontClient(transport, inMemoryContent());
+  const client = new XynoplexClient(transport, inMemoryContent());
   held.later(() => client.dispose());
   const claims = client.job.claim({ accepts: MARK_JOBS });
   let job: HeldJob | undefined;
@@ -534,7 +534,7 @@ async function heldJobStall(_given: JsonObject | undefined, held: Held): Promise
 
 // ── Discovery ───────────────────────────────────────────────────────────
 
-const MANAGED: DiscoveredKB = { host: 'localhost', port: 4000, placement: 'local', managedBy: 'semiont-launcher', did: 'did:web:example.org:kb-a' };
+const MANAGED: DiscoveredKB = { host: 'localhost', port: 4000, placement: 'local', managedBy: 'xynoplex-launcher', did: 'did:web:example.org:kb-a' };
 
 /** A launcher's document: one managed knowledge base at the first read, and unchanged at every read after it. */
 class LauncherDocument implements DiscoveryTransport {

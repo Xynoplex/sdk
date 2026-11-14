@@ -7,7 +7,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
-import * as core from '@semiont/core';
+import * as core from '@xynoplex/core';
 import {
   getAnnotationExactText,
   getBodySource,

@@ -52,22 +52,22 @@ export function ConfigureSearchStep({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="semiont-form">
+    <form onSubmit={handleSubmit} className="xynoplex-form">
       {hintEcho && (
-        <p className="semiont-wizard__hint-echo">
+        <p className="xynoplex-wizard__hint-echo">
           {hintEcho.label}: {hintEcho.value}
         </p>
       )}
       {/* Max Results */}
-      <div className="semiont-form__field">
-        <label htmlFor="wizard-limit" className="semiont-form__label">
+      <div className="xynoplex-form__field">
+        <label htmlFor="wizard-limit" className="xynoplex-form__label">
           {t.maxResults}
         </label>
         <select
           id="wizard-limit"
           value={config.limit}
           onChange={(e) => onConfigChange({ ...config, limit: parseInt(e.target.value) })}
-          className="semiont-select"
+          className="xynoplex-select"
         >
           <option value={1}>1</option>
           <option value={5}>5</option>
@@ -77,8 +77,8 @@ export function ConfigureSearchStep({
       </div>
 
       {/* Semantic Scoring Toggle */}
-      <div className="semiont-form__field">
-        <label className="semiont-form__label semiont-form__label--inline">
+      <div className="xynoplex-form__field">
+        <label className="xynoplex-form__label xynoplex-form__label--inline">
           <input
             type="checkbox"
             checked={config.useSemanticScoring}
@@ -86,13 +86,13 @@ export function ConfigureSearchStep({
           />
           {t.semanticScoring}
         </label>
-        <p className="semiont-form__help">
+        <p className="xynoplex-form__help">
           {t.semanticScoringHelp}
         </p>
       </div>
 
       {searchError && (
-        <div role="alert" style={{ textAlign: 'center', padding: '0.5rem 0', color: 'var(--semiont-color-red-600)' }}>
+        <div role="alert" style={{ textAlign: 'center', padding: '0.5rem 0', color: 'var(--xynoplex-color-red-600)' }}>
           {t.searchFailed}: {searchError}
         </div>
       )}

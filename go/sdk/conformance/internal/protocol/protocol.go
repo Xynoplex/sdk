@@ -14,7 +14,7 @@ import (
 	"os"
 	"sync"
 
-	semiont "github.com/The-AI-Alliance/semiont/packages/go/sdk"
+	xynoplex "github.com/Xynoplex/sdk/go"
 )
 
 // Arguments is an operation's arguments, by name.
@@ -47,12 +47,12 @@ func Say(line any) {
 
 // Failure is a failure as the protocol carries it: the SDK's code, a
 // server's status, and a job failure's class, each where there is one.
-func Failure(err semiont.Error) map[string]any {
+func Failure(err xynoplex.Error) map[string]any {
 	failure := map[string]any{"code": err.ErrorCode(), "detail": err.Error()}
 	if status, ok := err.Status(); ok {
 		failure["status"] = status
 	}
-	var job *semiont.JobError
+	var job *xynoplex.JobError
 	if errors.As(err, &job) && job.FailureClass != nil {
 		failure["failureClass"] = *job.FailureClass
 	}
@@ -213,7 +213,7 @@ func Serve(makeDriver func(Abandoner) Driver) {
 // answer answers the operation id, once.
 func answer(id uint64, value any, err error, abandoned bool) {
 	var misuse *Misuse
-	var failed semiont.Error
+	var failed xynoplex.Error
 	switch {
 	case err == nil:
 		Say(map[string]any{"id": id, "ok": value})

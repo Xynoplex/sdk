@@ -9,12 +9,12 @@ import inspect
 from collections.abc import AsyncIterable, Callable, Sequence
 from typing import final, override
 
-from semiont.channels import BRIDGED_CHANNELS
-from semiont.namespaces.yield_ import YieldNamespace
-from semiont.state import YieldStateUnit
-from semiont.testing import FaultyTransport, create_test_client
-from semiont.testing.axioms import AxiomSubject, Fresh, assert_state_unit_axioms
-from semiont.types import GatheredContext, GenerationJobParams
+from xynoplex.channels import BRIDGED_CHANNELS
+from xynoplex.namespaces.yield_ import YieldNamespace
+from xynoplex.state import YieldStateUnit
+from xynoplex.testing import FaultyTransport, create_test_client
+from xynoplex.testing.axioms import AxiomSubject, Fresh, assert_state_unit_axioms
+from xynoplex.types import GatheredContext, GenerationJobParams
 
 PARAMS = GenerationJobParams(
     title="A title",

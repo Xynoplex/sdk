@@ -14,9 +14,9 @@ import Data.Scientific (Scientific)
 import Data.Text (Text)
 import qualified Data.Text as Text
 import Data.Text.Encoding (decodeUtf8)
-import qualified Semiont.SessionStorage as Storage
-import qualified Semiont.Tokens as Tokens
-import qualified Semiont.Timing.Settings as Timing
+import qualified Xynoplex.SessionStorage as Storage
+import qualified Xynoplex.Tokens as Tokens
+import qualified Xynoplex.Timing.Settings as Timing
 import System.FilePath ((</>))
 
 require :: String -> Bool -> IO ()

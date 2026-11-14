@@ -5,7 +5,7 @@
 //! the jitter's random source can give.
 //!
 //! A subject in this process alone lets the paused clock run to each instant
-//! a timer falls due, in turn, as `semiont`'s `state_cases.rs` does: a `pass`
+//! a timer falls due, in turn, as `xynoplex`'s `state_cases.rs` does: a `pass`
 //! sleeps, and what falls due on the way runs where it falls due.
 //!
 //! A subject over the network meets a gateway in this process over loopback
@@ -36,27 +36,27 @@ use futures::FutureExt;
 use futures::future::LocalBoxFuture;
 use futures::stream::Stream;
 use rand_core::{Rng, TryRng};
-use semiont::bus::{Bus, operation};
-use semiont::cache::{Cache, CachePersister};
-use semiont::channels::BRIDGED_CHANNELS;
-use semiont::claims::{ClaimOptions, JOB_CLAIM_CHANNELS};
-use semiont::client::SemiontClient;
-use semiont::discovery::{DiscoveryRead, DiscoveryState, DiscoveryTransport, subscribe_discovery};
-use semiont::errors::{BusRequestErrorCode, SemiontError};
-use semiont::session::{
-    SemiontSession, SemiontSessionConfig, StoredSession, kept_in, store_session,
+use xynoplex::bus::{Bus, operation};
+use xynoplex::cache::{Cache, CachePersister};
+use xynoplex::channels::BRIDGED_CHANNELS;
+use xynoplex::claims::{ClaimOptions, JOB_CLAIM_CHANNELS};
+use xynoplex::client::XynoplexClient;
+use xynoplex::discovery::{DiscoveryRead, DiscoveryState, DiscoveryTransport, subscribe_discovery};
+use xynoplex::errors::{BusRequestErrorCode, XynoplexError};
+use xynoplex::session::{
+    XynoplexSession, XynoplexSessionConfig, StoredSession, kept_in, store_session,
 };
-use semiont::storage::InMemorySessionStorage;
-use semiont::testing::{FaultyTransport, TestClientOptions, as_id, create_test_client};
-use semiont::transport::{
+use xynoplex::storage::InMemorySessionStorage;
+use xynoplex::testing::{FaultyTransport, TestClientOptions, as_id, create_test_client};
+use xynoplex::transport::{
     BoxFuture, ConnectionState, Envelope, Frame, GatewayOperations, ResourceHold, Transport,
 };
-use semiont::types::{
+use xynoplex::types::{
     DiscoveredKB, HighlightingJobParams, HttpEndpoint, HttpEndpointProtocol, JobFilter,
     JobProgress, JobStatusResponse, KbTarget, UserResponse,
 };
-use semiont_http_transport::oauth::sign_in_with_device_grant;
-use semiont_http_transport::transport::{HttpTransport, HttpTransportConfig, Timing};
+use xynoplex_http_transport::oauth::sign_in_with_device_grant;
+use xynoplex_http_transport::transport::{HttpTransport, HttpTransportConfig, Timing};
 use serde_json::{Map, Value, json};
 use std::any::Any;
 use std::cell::Cell;
@@ -681,7 +681,7 @@ fn unanswered_emit(_: Map<String, Value>) -> LocalBoxFuture<'static, Subject> {
 }
 
 /// How a bus request ended, once it has.
-type Ended = Arc<Mutex<Option<Result<Option<Value>, SemiontError>>>>;
+type Ended = Arc<Mutex<Option<Result<Option<Value>, XynoplexError>>>>;
 
 /// A bus request of a resource's events, made as the case begins, over a
 /// gateway that holds its stream open and refuses every emit; and how it
@@ -703,7 +703,7 @@ async fn refused_request(given: &Map<String, Value>) -> (Arc<HttpTransport>, Net
             .request_of(
                 events,
                 payload.as_object().cloned().expect("an object"),
-                semiont::timing::BUS_REQUEST_TIMEOUT,
+                xynoplex::timing::BUS_REQUEST_TIMEOUT,
             )
             .await;
         *telling.lock().expect("the outcome") = Some(asked);
@@ -737,7 +737,7 @@ fn timed_out_bus_request(given: Map<String, Value>) -> LocalBoxFuture<'static, S
         Subject {
             counted: Box::new(move || match &*ended.lock().expect("the outcome") {
                 None => 0,
-                Some(Err(SemiontError::Bus(failed)))
+                Some(Err(XynoplexError::Bus(failed)))
                     if failed.code == BusRequestErrorCode::Timeout =>
                 {
                     1
@@ -754,7 +754,7 @@ fn timed_out_bus_request(given: Map<String, Value>) -> LocalBoxFuture<'static, S
 
 // ── The issuer ──────────────────────────────────────────────────────────
 
-const REALM: &str = "/realms/semiont";
+const REALM: &str = "/realms/xynoplex";
 
 /// A knowledge base that trusts an issuer, and the issuer, in this process:
 /// what a device grant asks. It mints a code that lives 900 seconds, with the
@@ -896,8 +896,8 @@ fn renewal(given: Map<String, Value>) -> LocalBoxFuture<'static, Subject> {
             &StoredSession {
                 access: token(lifetime, 0),
                 refresh: "a-refresh-token".to_owned(),
-                client_id: "semiont-cli".to_owned(),
-                token_endpoint: "http://issuer.test/realms/semiont/token".to_owned(),
+                client_id: "xynoplex-cli".to_owned(),
+                token_endpoint: "http://issuer.test/realms/xynoplex/token".to_owned(),
                 revocation_endpoint: None,
                 person_key: None,
             },
@@ -905,7 +905,7 @@ fn renewal(given: Map<String, Value>) -> LocalBoxFuture<'static, Subject> {
         .expect("the sign-in is kept");
         let renewals = Arc::new(AtomicUsize::new(0));
         let renewing = renewals.clone();
-        let session = SemiontSession::new(SemiontSessionConfig {
+        let session = XynoplexSession::new(XynoplexSessionConfig {
             kb: KbTarget::http(KB, "Alpha", "localhost", 4000, HttpEndpointProtocol::Http),
             kept: kept_in(storage, KB),
             client: create_test_client(TestClientOptions::default()).client,
@@ -1015,7 +1015,7 @@ impl DiscoveryTransport for LauncherDocument {
             }
             let managed: DiscoveredKB = serde_json::from_value(json!({
                 "host": "localhost", "port": 4000, "placement": "local",
-                "managedBy": "semiont-launcher", "did": "did:web:example.org:kb-a",
+                "managedBy": "xynoplex-launcher", "did": "did:web:example.org:kb-a",
             }))
             .expect("a managed knowledge base");
             DiscoveryRead::State(DiscoveryState::Managed { kbs: vec![managed] })
@@ -1026,7 +1026,7 @@ impl DiscoveryTransport for LauncherDocument {
 fn discovery(_: Map<String, Value>) -> LocalBoxFuture<'static, Subject> {
     async move {
         let document = Arc::new(LauncherDocument::default());
-        let mut diffs = subscribe_discovery(document.clone(), semiont::timing::DISCOVERY_INTERVAL);
+        let mut diffs = subscribe_discovery(document.clone(), xynoplex::timing::DISCOVERY_INTERVAL);
         tokio::spawn(async move { while diffs.next().await.is_some() {} });
         Subject {
             counted: Box::new(move || document.reads.load(Ordering::SeqCst)),
@@ -1118,7 +1118,7 @@ fn save_debounce(_: Map<String, Value>) -> LocalBoxFuture<'static, Subject> {
                 Err(format!("a cache that is only written fetched {key}").into())
             },
             saves.clone(),
-            semiont::timing::SAVE_DEBOUNCE,
+            xynoplex::timing::SAVE_DEBOUNCE,
         );
         let changes = Cell::new(0);
         Subject {
@@ -1197,13 +1197,13 @@ fn job_follower(_: Map<String, Value>) -> LocalBoxFuture<'static, Subject> {
 }
 
 /// How a poll ended, once it has.
-type Polled = Arc<Mutex<Option<Result<JobStatusResponse, SemiontError>>>>;
+type Polled = Arc<Mutex<Option<Result<JobStatusResponse, XynoplexError>>>>;
 
 /// A client's `job.poll_until_complete` of `job-1`, naming no interval and no
 /// limit of its own, set going as the case begins, over a job queue that
 /// says the job is running whenever it is asked: the transport it asks over,
 /// the client, and how the poll ended, once it has.
-fn polling() -> (FaultyTransport, Arc<SemiontClient>, Polled) {
+fn polling() -> (FaultyTransport, Arc<XynoplexClient>, Polled) {
     let transport = FaultyTransport::answering(BRIDGED_CHANNELS, vec![], job_queue);
     let client = create_test_client(TestClientOptions {
         transport: Some(transport.clone()),
@@ -1251,7 +1251,7 @@ fn job_poll_timeout(_: Map<String, Value>) -> LocalBoxFuture<'static, Subject> {
         Subject {
             counted: Box::new(move || match &*ended.lock().expect("the outcome") {
                 None => 0,
-                Some(Err(SemiontError::Bus(failed)))
+                Some(Err(XynoplexError::Bus(failed)))
                     if failed.code == BusRequestErrorCode::Timeout =>
                 {
                     1

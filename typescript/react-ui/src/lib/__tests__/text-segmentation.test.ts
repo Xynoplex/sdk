@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { segmentTextWithAnnotations, _resetDegradedAnchorWarnings } from '../text-segmentation';
 import { getAnnotationDecorationMeta, computeAnnotationDecorations } from '../codemirror-logic';
-import { annotationId, resourceId, textOffsets, type Annotation, type Selector } from '@semiont/core';
+import { annotationId, resourceId, textOffsets, type Annotation, type Selector } from '@xynoplex/core';
 
-// Every helper segmentTextWithAnnotations calls is @semiont/core's own,
+// Every helper segmentTextWithAnnotations calls is @xynoplex/core's own,
 // anchorAnnotation's scorer included: these tests hold their integration.
 
 /** An annotation on `selector`, as the store holds it. */

@@ -9,7 +9,7 @@ import { clipboard } from '../../../lib/clipboard';
 import { jsonTheme, jsonHighlightStyle } from '../../../lib/codemirror-json-theme';
 import { useLineNumbers } from '../../../contexts/LineNumbersContext';
 import { useResourceGraph } from '../../../hooks/useResourceGraph';
-import type { ResourceId } from '@semiont/core';
+import type { ResourceId } from '@xynoplex/core';
 import './JsonLdPanel.css';
 
 interface Props {
@@ -79,16 +79,16 @@ export function JsonLdPanel({ resourceId }: Props) {
   };
 
   return (
-    <div className="semiont-jsonld-panel">
+    <div className="xynoplex-jsonld-panel">
       {/* Header with copy button */}
-      <div className="semiont-jsonld-panel__header">
-        <h3 className="semiont-jsonld-panel__title">
+      <div className="xynoplex-jsonld-panel__header">
+        <h3 className="xynoplex-jsonld-panel__title">
           JSON-LD
         </h3>
         {copyTo && (
           <button
             onClick={() => handleCopyToClipboard(copyTo)}
-            className="semiont-button semiont-button-icon"
+            className="xynoplex-button xynoplex-button-icon"
             title="Copy to clipboard"
             disabled={!graph}
           >
@@ -98,12 +98,12 @@ export function JsonLdPanel({ resourceId }: Props) {
       </div>
 
       {loading && (
-        <p className="semiont-jsonld-panel__status" role="status">
+        <p className="xynoplex-jsonld-panel__status" role="status">
           Loading JSON-LD…
         </p>
       )}
       {error && !loading && (
-        <p className="semiont-jsonld-panel__status semiont-jsonld-panel__status--error" role="alert">
+        <p className="xynoplex-jsonld-panel__status xynoplex-jsonld-panel__status--error" role="alert">
           Failed to load JSON-LD.
         </p>
       )}
@@ -111,7 +111,7 @@ export function JsonLdPanel({ resourceId }: Props) {
       {/* JSON-LD content rendered with CodeMirror */}
       <div
         ref={editorRef}
-        className="semiont-jsonld-panel__editor"
+        className="xynoplex-jsonld-panel__editor"
       />
     </div>
   );

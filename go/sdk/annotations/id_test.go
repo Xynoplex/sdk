@@ -9,7 +9,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
+	"github.com/Xynoplex/sdk/go/api"
 )
 
 func TestTheIdOfAnAnnotationIsTheTablesForWhatItIs(t *testing.T) {

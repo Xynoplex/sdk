@@ -1,5 +1,5 @@
 /**
- * makeTestClient — structurally-typed `SemiontClient` stand-in for state unit
+ * makeTestClient — structurally-typed `XynoplexClient` stand-in for state unit
  * factory tests. Exposes a real `EventBus` as `client.bus` (the same
  * shape production code reads), plus whatever HTTP namespaces the caller
  * supplies via `overrides`.
@@ -23,23 +23,23 @@
  * const stateUnit = createMarkStateUnit(client, resourceId);
  * ```
  *
- * The `client` is cast `as unknown as SemiontClient`, matching the
+ * The `client` is cast `as unknown as XynoplexClient`, matching the
  * established pattern for structural mocks in this codebase.
  */
 
 import { BehaviorSubject, Subject, type Observable, map as rxMap } from 'rxjs';
-import { EventBus } from '@semiont/core';
-import type { ConnectionState, SemiontError } from '@semiont/core';
-import type { CacheState } from '@semiont/sdk';
-import type { SemiontClient, SemiontSession } from '@semiont/sdk';
-import { SemiontSession as RealSemiontSession, httpKb, MemorySignIn } from '@semiont/sdk';
-import type { AccessToken } from '@semiont/core';
+import { EventBus } from '@xynoplex/core';
+import type { ConnectionState, XynoplexError } from '@xynoplex/core';
+import type { CacheState } from '@xynoplex/sdk';
+import type { XynoplexClient, XynoplexSession } from '@xynoplex/sdk';
+import { XynoplexSession as RealXynoplexSession, httpKb, MemorySignIn } from '@xynoplex/sdk';
+import type { AccessToken } from '@xynoplex/core';
 
 export interface TestClient {
   /** The real bus backing `client.bus` — exposed so tests can
    *  destroy() it in afterEach. Same instance as `client.bus`. */
   bus: EventBus;
-  client: SemiontClient;
+  client: XynoplexClient;
 }
 
 export function makeTestClient(
@@ -47,29 +47,29 @@ export function makeTestClient(
 ): TestClient {
   const bus = new EventBus();
   const client = {
-    // Surfaces a REAL `SemiontSession` reads at construction — present by
+    // Surfaces a REAL `XynoplexSession` reads at construction — present by
     // default so `makeTestSession` can wrap this client; overridable.
     state$: new BehaviorSubject<ConnectionState>('open').asObservable(),
-    transport: { errors$: new Subject<SemiontError>().asObservable() },
+    transport: { errors$: new Subject<XynoplexError>().asObservable() },
     ...overrides,
     bus,
-  } as unknown as SemiontClient;
+  } as unknown as XynoplexClient;
   return { bus, client };
 }
 
 export interface TestSession extends TestClient {
-  /** A REAL `SemiontSession` wrapping the structural client above — for
+  /** A REAL `XynoplexSession` wrapping the structural client above — for
    *  state-unit factories, which take a session rather than a client. The
    *  session machinery (id, kb, token$) is real; only the client seam is
    *  scripted. */
-  session: SemiontSession;
+  session: XynoplexSession;
 }
 
 export function makeTestSession(
   overrides: Record<string, unknown> = {},
 ): TestSession {
   const { bus, client } = makeTestClient(overrides);
-  const session = new RealSemiontSession({
+  const session = new RealXynoplexSession({
     kb: httpKb({
       id: 'test-kb',
       label: 'Test KB',
@@ -85,20 +85,20 @@ export function makeTestSession(
 }
 
 /**
- * Wrap a structural client mock in a REAL `SemiontSession` — the bridge for
+ * Wrap a structural client mock in a REAL `XynoplexSession` — the bridge for
  * factory tests whose subject is unit logic over a scripted client seam
  * (a state-unit factory takes a session, never a bare client). Supplies the
  * two surfaces the session constructor reads (`state$`, `transport.errors$`)
  * when the mock lacks them; the mock's own members win when present. Same
  * documented structural-mock cast this helper already uses.
  */
-export function sessionOf(client: SemiontClient): SemiontSession {
+export function sessionOf(client: XynoplexClient): XynoplexSession {
   const complete = {
     state$: new BehaviorSubject<ConnectionState>('open').asObservable(),
-    transport: { errors$: new Subject<SemiontError>().asObservable() },
+    transport: { errors$: new Subject<XynoplexError>().asObservable() },
     ...(client as unknown as Record<string, unknown>),
-  } as unknown as SemiontClient;
-  return new RealSemiontSession({
+  } as unknown as XynoplexClient;
+  return new RealXynoplexSession({
     kb: httpKb({
       id: 'test-kb',
       label: 'Test KB',

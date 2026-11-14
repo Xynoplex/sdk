@@ -6,10 +6,10 @@ import pytest
 from pydantic import BaseModel, Field, ValidationError
 from spec import SPEC, JsonObject
 
-from semiont._required import Fault, fault_of
-from semiont.model import written
-from semiont.resources import primary_media_type, primary_representation, resource_entity_types
-from semiont.types import Representation, ResourceDescriptor
+from xynoplex._required import Fault, fault_of
+from xynoplex.model import written
+from xynoplex.resources import primary_media_type, primary_representation, resource_entity_types
+from xynoplex.types import Representation, ResourceDescriptor
 
 
 class Case(BaseModel, frozen=True, extra="forbid"):

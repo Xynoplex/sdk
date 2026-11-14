@@ -2,7 +2,7 @@
 //
 // Regenerate: node packages/codegen/schemas/generate-encodings-go.mjs
 
-package semiont
+package xynoplex
 
 // labelsOfEncodings is every label of the Encoding Standard, 228 of them,
 // each with the encoding it names. A label is matched in lower case, with no

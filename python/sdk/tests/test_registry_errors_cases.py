@@ -28,33 +28,33 @@ from spec import SPEC, JsonObject, read, text
 from storages import Refusing
 from tokens import token
 
-from semiont.channels import BRIDGED_CHANNELS
-from semiont.error_codes import SemiontSessionErrorCode, TransportErrorCode
-from semiont.errors import SessionError, TransportError
-from semiont.events import Broadcast, Events
-from semiont.http.session import HttpSessionFactory
-from semiont.registry import (
-    SemiontBrowser,
-    SemiontBrowserConfig,
+from xynoplex.channels import BRIDGED_CHANNELS
+from xynoplex.error_codes import XynoplexSessionErrorCode, TransportErrorCode
+from xynoplex.errors import SessionError, TransportError
+from xynoplex.events import Broadcast, Events
+from xynoplex.http.session import HttpSessionFactory
+from xynoplex.registry import (
+    XynoplexBrowser,
+    XynoplexBrowserConfig,
     SessionFactory,
     SessionFactoryOptions,
     kept_in,
     save_knowledge_bases,
     store_session,
 )
-from semiont.session import SemiontSession
-from semiont.session_signals import PermissionDenied
-from semiont.storage import MemoryStorage, SessionStorage
-from semiont.stored import StoredSession, cache_key, person_key
-from semiont.testing import FaultyTransport, create_test_client
-from semiont.timing import ERRORS_KEPT_FOR_FIRST_READER_COUNT
-from semiont.transport import Transport
-from semiont.types import HttpEndpoint, KbTarget, KnowledgeBase
-from semiont.watched import Variable, reached
+from xynoplex.session import XynoplexSession
+from xynoplex.session_signals import PermissionDenied
+from xynoplex.storage import MemoryStorage, SessionStorage
+from xynoplex.stored import StoredSession, cache_key, person_key
+from xynoplex.testing import FaultyTransport, create_test_client
+from xynoplex.timing import ERRORS_KEPT_FOR_FIRST_READER_COUNT
+from xynoplex.transport import Transport
+from xynoplex.types import HttpEndpoint, KbTarget, KnowledgeBase
+from xynoplex.watched import Variable, reached
 
 
 class Own(BaseModel, frozen=True, extra="forbid"):
-    own: SemiontSessionErrorCode
+    own: XynoplexSessionErrorCode
 
 
 class Failure(BaseModel, frozen=True, extra="forbid"):
@@ -66,14 +66,14 @@ class Case(BaseModel, frozen=True, extra="forbid"):
     why: str
     while_: Literal["opening", "active"] = Field(alias="while")
     said: list[Own | Failure] = Field(min_length=1)
-    registry_errors: list[SemiontSessionErrorCode] = Field(alias="registryErrors")
+    registry_errors: list[XynoplexSessionErrorCode] = Field(alias="registryErrors")
     permission_denied: str | None = Field(default=None, alias="permissionDenied")
 
 
 class Closing(BaseModel, frozen=True, extra="forbid"):
     why: str
     owed: bool
-    registry_errors: list[SemiontSessionErrorCode] = Field(alias="registryErrors")
+    registry_errors: list[XynoplexSessionErrorCode] = Field(alias="registryErrors")
 
 
 class Table(BaseModel, frozen=True):
@@ -95,7 +95,7 @@ def test_every_section_of_the_table_is_run_here() -> None:
 
 def signed_in(token_endpoint: str) -> StoredSession:
     """A stored sign-in whose token is good for an hour, naming nobody until a gateway names them."""
-    return StoredSession(access=token(3600, 1), refresh="refresh-1", client_id="semiont-browser", token_endpoint=token_endpoint)
+    return StoredSession(access=token(3600, 1), refresh="refresh-1", client_id="xynoplex-browser", token_endpoint=token_endpoint)
 
 
 def holding_signed_in(storage: SessionStorage, kb: KnowledgeBase, token_endpoint: str) -> SessionStorage:
@@ -105,7 +105,7 @@ def holding_signed_in(storage: SessionStorage, kb: KnowledgeBase, token_endpoint
     return storage
 
 
-async def active_session(browser: SemiontBrowser) -> SemiontSession[Transport]:
+async def active_session(browser: XynoplexBrowser) -> XynoplexSession[Transport]:
     session = await soon(reached(browser.active_session, lambda session: session is not None), within=10)
     assert session is not None
     return session
@@ -130,7 +130,7 @@ def utterance(said: Own | Failure) -> SessionError | TransportError:
 class Speaking:
     """A session `Scripted` built, and what it says through: what keeps its client's, and its transport."""
 
-    def __init__(self, session: SemiontSession[FaultyTransport], keeping: Broadcast[SessionError]) -> None:
+    def __init__(self, session: XynoplexSession[FaultyTransport], keeping: Broadcast[SessionError]) -> None:
         self.session: Final = session
         self._keeping: Final = keeping
 
@@ -161,7 +161,7 @@ class Scripted(SessionFactory):
 
     @override
     @asynccontextmanager
-    async def session(self, options: SessionFactoryOptions) -> AsyncGenerator[SemiontSession[FaultyTransport]]:
+    async def session(self, options: SessionFactoryOptions) -> AsyncGenerator[XynoplexSession[FaultyTransport]]:
         transport = FaultyTransport(channels=BRIDGED_CHANNELS)
         client = create_test_client(transport=transport).client
         keeping = Broadcast[SessionError]()
@@ -170,7 +170,7 @@ class Scripted(SessionFactory):
             self.handed.append(holding)
             return self.renewed
 
-        session = SemiontSession(
+        session = XynoplexSession(
             kb=KbTarget(id=options.kb.id, label=options.kb.label, endpoint=options.kb.endpoint),
             client=client,
             token=Variable[str | None](None),
@@ -210,7 +210,7 @@ def test_a_registry_reads_what_its_session_says_as_the_table_states(case: Case) 
         last = said[-1]
         factory = Scripted(said if case.while_ == "opening" else [])
         storage = holding_signed_in(MemoryStorage(), scripted_kb(), "https://issuer.test/token")
-        browser = SemiontBrowser(SemiontBrowserConfig(storage=storage, session_factory=factory))
+        browser = XynoplexBrowser(XynoplexBrowserConfig(storage=storage, session_factory=factory))
         # Heard from before the registry is held: everything it says is heard.
         heard = Heard(browser.errors())
         async with browser:
@@ -245,7 +245,7 @@ LAST_WORD: Final = TransportError("forbidden", "refused for lack of permission, 
 """Said after what a case has the session say: once the registry has said it through the signals, it has read everything before it."""
 
 
-async def speaking_once_read(browser: SemiontBrowser, factory: Scripted, said: Sequence[SessionError]) -> None:
+async def speaking_once_read(browser: XynoplexBrowser, factory: Scripted, said: Sequence[SessionError]) -> None:
     """Have the active session say each of `said`, then `LAST_WORD`, and wait until the registry has read them all."""
     await active_session(browser)
     signals = browser.active_signals.value
@@ -266,7 +266,7 @@ def test_the_first_reader_of_a_registrys_errors_is_given_the_latest_said_before_
     async def scenario() -> None:
         factory = Scripted([])
         storage = holding_signed_in(MemoryStorage(), scripted_kb(), "https://issuer.test/token")
-        async with SemiontBrowser(SemiontBrowserConfig(storage=storage, session_factory=factory)) as browser:
+        async with XynoplexBrowser(XynoplexBrowserConfig(storage=storage, session_factory=factory)) as browser:
             await speaking_once_read(browser, factory, said)
             errors = browser.errors()
             given = [(await soon(anext(errors))).message for _ in range(ERRORS_KEPT_FOR_FIRST_READER_COUNT)]
@@ -279,7 +279,7 @@ def test_a_registry_drops_what_it_kept_for_a_first_reader_as_it_closes_so_a_read
     async def scenario() -> None:
         factory = Scripted([])
         storage = holding_signed_in(MemoryStorage(), scripted_kb(), "https://issuer.test/token")
-        browser = SemiontBrowser(SemiontBrowserConfig(storage=storage, session_factory=factory))
+        browser = XynoplexBrowser(XynoplexBrowserConfig(storage=storage, session_factory=factory))
         async with browser:
             await speaking_once_read(browser, factory, [SessionError("session.save-refused", "said before anyone read", kb_id=KB)])
         assert [error async for error in browser.errors()] == []
@@ -307,7 +307,7 @@ def registered(gateway: GatewayServer) -> KnowledgeBase:
     return KnowledgeBase(id=KB, label="KB A", did="did:web:example.org:kb-a", endpoint=endpoint)
 
 
-async def every_code(errors: Events[SessionError]) -> list[SemiontSessionErrorCode]:
+async def every_code(errors: Events[SessionError]) -> list[XynoplexSessionErrorCode]:
     """The code of everything `errors` gives, until it ends."""
     return [error.code async for error in errors]
 
@@ -321,7 +321,7 @@ def test_a_registrys_close_reads_its_sessions_errors_to_their_end_as_the_table_s
             # Every write of what the client keeps of the entity types is refused; the registry's own writes are taken.
             refusing = Refusing(cache_key(KB, ALICE_KEY, "entityTypes"), times=None)
             storage = holding_signed_in(refusing, registered(gateway), f"{gateway.origin}{TOKEN}")
-            browser = SemiontBrowser(SemiontBrowserConfig(storage=storage, session_factory=HttpSessionFactory()))
+            browser = XynoplexBrowser(XynoplexBrowserConfig(storage=storage, session_factory=HttpSessionFactory()))
             async with browser:
                 session = await active_session(browser)
                 # Ready once the gateway has named the person: what the client holds is kept for her from then on.

@@ -6,7 +6,7 @@
 
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { resourceId, type ResourceDescriptor } from '@semiont/core';
+import { resourceId, type ResourceDescriptor } from '@xynoplex/core';
 import { ResourceCard } from '../components/ResourceCard';
 
 const createMockResource = (overrides?: Partial<ResourceDescriptor>): ResourceDescriptor => ({

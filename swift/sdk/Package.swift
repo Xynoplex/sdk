@@ -2,11 +2,11 @@
 import PackageDescription
 
 let package = Package(
-  name: "Semiont",
+  name: "Xynoplex",
   platforms: [.macOS(.v15), .iOS(.v18)],
   products: [
-    .library(name: "Semiont", targets: ["Semiont"]),
-    .library(name: "SemiontTesting", targets: ["SemiontTesting"]),
+    .library(name: "Xynoplex", targets: ["Xynoplex"]),
+    .library(name: "XynoplexTesting", targets: ["XynoplexTesting"]),
   ],
   dependencies: [
     .package(url: "https://github.com/apple/swift-crypto.git", from: "5.0.3"),
@@ -17,16 +17,16 @@ let package = Package(
   ],
   targets: [
     .executableTarget(
-      name: "SemiontWireDriver",
+      name: "XynoplexWireDriver",
       dependencies: [
-        "Semiont",
+        "Xynoplex",
         .product(name: "AsyncHTTPClient", package: "async-http-client"),
         .product(name: "OpenTelemetrySdk", package: "opentelemetry-swift-core"),
         .product(name: "OpenTelemetryProtocolExporterHTTP", package: "opentelemetry-swift"),
       ], path: "Conformance", exclude: ["launch.sh"], swiftSettings: [.treatAllWarnings(as: .error)]
     ),
     .target(
-      name: "Semiont",
+      name: "Xynoplex",
       dependencies: [
         .product(name: "Crypto", package: "swift-crypto"),
         .product(name: "CryptoExtras", package: "swift-crypto"),
@@ -34,32 +34,32 @@ let package = Package(
         .product(name: "AsyncHTTPClient", package: "async-http-client"),
         .product(name: "OpenTelemetryApi", package: "opentelemetry-swift-core"),
       ], swiftSettings: [.treatAllWarnings(as: .error)],
-      plugins: ["GenerateSemiontPlugin"]),
+      plugins: ["GenerateXynoplexPlugin"]),
     .executableTarget(
-      name: "GenerateSemiont", dependencies: ["SemiontCodegen"],
+      name: "GenerateXynoplex", dependencies: ["XynoplexCodegen"],
       swiftSettings: [.treatAllWarnings(as: .error)]),
     .plugin(
-      name: "GenerateSemiontPlugin", capability: .buildTool(), dependencies: ["GenerateSemiont"]),
+      name: "GenerateXynoplexPlugin", capability: .buildTool(), dependencies: ["GenerateXynoplex"]),
     .target(
-      name: "SemiontTesting", dependencies: ["Semiont"],
+      name: "XynoplexTesting", dependencies: ["Xynoplex"],
       swiftSettings: [.treatAllWarnings(as: .error)]),
     .target(
-      name: "SemiontCodegen", exclude: ["required-schemas.json"],
+      name: "XynoplexCodegen", exclude: ["required-schemas.json"],
       swiftSettings: [.treatAllWarnings(as: .error)]),
     .testTarget(
-      name: "SemiontTests",
+      name: "XynoplexTests",
       dependencies: [
         .product(name: "CryptoExtras", package: "swift-crypto"),
-        "Semiont",
-        "SemiontTesting",
+        "Xynoplex",
+        "XynoplexTesting",
         .product(name: "AsyncHTTPClient", package: "async-http-client"),
         .product(name: "NIOPosix", package: "swift-nio"),
         .product(name: "NIOHTTP1", package: "swift-nio"),
         .product(name: "OpenTelemetrySdk", package: "opentelemetry-swift-core"),
       ],
-      swiftSettings: [.treatAllWarnings(as: .error)], plugins: ["GenerateSemiontPlugin"]),
+      swiftSettings: [.treatAllWarnings(as: .error)], plugins: ["GenerateXynoplexPlugin"]),
     .testTarget(
-      name: "SemiontCodegenTests", dependencies: ["SemiontCodegen"],
+      name: "XynoplexCodegenTests", dependencies: ["XynoplexCodegen"],
       swiftSettings: [.treatAllWarnings(as: .error)]),
   ],
   swiftLanguageModes: [.v6]

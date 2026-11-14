@@ -45,7 +45,7 @@ impl<T> Cached<T> {
     }
 
     /// The value now, from the service, or what its fetch failed with: for
-    /// a client's query, a `SemiontError`.
+    /// a client's query, a `XynoplexError`.
     pub async fn fresh(&self) -> Result<T, Arc<dyn std::error::Error + Send + Sync>> {
         self.source.fresh().await
     }

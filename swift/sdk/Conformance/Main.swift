@@ -1,6 +1,6 @@
 import AsyncHTTPClient
 import Foundation
-import Semiont
+import Xynoplex
 
 struct Misuse: Error, CustomStringConvertible { let description: String }
 extension Dictionary where Key == String, Value == JSONValue {

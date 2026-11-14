@@ -14,9 +14,9 @@
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { BehaviorSubject } from 'rxjs';
-import { BRIDGED_CHANNELS, EventBus, baseUrl, resourceId } from '@semiont/core';
+import { BRIDGED_CHANNELS, EventBus, baseUrl, resourceId } from '@xynoplex/core';
 import { mockFetch, mockSSEResponse, sseChunkId } from './helpers/mock-conn';
-import { RESOURCE_SCOPED_CHANNELS } from '@semiont/core';
+import { RESOURCE_SCOPED_CHANNELS } from '@xynoplex/core';
 import { HttpTransport } from '../http-transport';
 
 type MatrixBody = {

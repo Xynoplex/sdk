@@ -24,24 +24,24 @@ import Data.Text.Encoding (encodeUtf8, decodeUtf8)
 import Network.HTTP.Client (defaultManagerSettings, managerRawConnection, noProxy)
 import Network.HTTP.Client.Internal (makeConnection)
 import Network.HTTP.Types (parseQuery)
-import qualified Semiont.Http as Http
-import qualified Semiont.Client as Client
-import qualified Semiont.ClientAssertion as Assertion
-import qualified Semiont.ServiceToken as Service
-import qualified Semiont.Auth as Auth
-import qualified Semiont.Session as Session
-import qualified Semiont.SignIn as SignIn
-import qualified Semiont.StateValue as State
-import qualified Semiont.Transport as Transport
-import qualified Semiont.Issuer as Issuer
-import qualified Semiont.ErrorCodes as Code
-import Semiont.Errors (BusRequestError, SignInError(..), TransportError(..))
-import qualified Semiont.Retry as Retry
-import qualified Semiont.SessionStorage as Storage
-import qualified Semiont.Registry.Stored as Stored
-import qualified Semiont.Timing.Settings as Timing
-import qualified Semiont.Timing as Budget
-import Semiont.Types
+import qualified Xynoplex.Http as Http
+import qualified Xynoplex.Client as Client
+import qualified Xynoplex.ClientAssertion as Assertion
+import qualified Xynoplex.ServiceToken as Service
+import qualified Xynoplex.Auth as Auth
+import qualified Xynoplex.Session as Session
+import qualified Xynoplex.SignIn as SignIn
+import qualified Xynoplex.StateValue as State
+import qualified Xynoplex.Transport as Transport
+import qualified Xynoplex.Issuer as Issuer
+import qualified Xynoplex.ErrorCodes as Code
+import Xynoplex.Errors (BusRequestError, SignInError(..), TransportError(..))
+import qualified Xynoplex.Retry as Retry
+import qualified Xynoplex.SessionStorage as Storage
+import qualified Xynoplex.Registry.Stored as Stored
+import qualified Xynoplex.Timing.Settings as Timing
+import qualified Xynoplex.Timing as Budget
+import Xynoplex.Types
 import qualified Streaming.Prelude as Stream
 import qualified ControlledTime as Time
 -- Runs protocol/specs/src/client/clock-cases.json through the shared clock runner.
@@ -352,7 +352,7 @@ serviceTokenCases root = do
       pure (code,Object (KM.fromList ([ ("access_token",String ("opaque-"<>Text.pack (show count))) ]
         ++maybe [] (\seconds -> [("expires_in",Number (fromInteger seconds))]) lifetime)))
     _ -> ioError (userError "service token used an unrelated endpoint")
-  pem <- Bytes.readFile (root </> "packages/haskell/sdk/test/fixtures/client-assertion-test-only.pem")
+  pem <- Bytes.readFile (root </> "haskell/sdk/test/fixtures/client-assertion-test-only.pem")
   key <- either (ioError . userError . Text.unpack) pure (Assertion.privateKeyFromPem pem)
   bracket (Service.newServiceTokenKey options "http://issuer.test" "account" key (pure 1800000000)) Service.dispose $ \service -> do
     answers <- replicateConcurrently 20 (Service.token service)

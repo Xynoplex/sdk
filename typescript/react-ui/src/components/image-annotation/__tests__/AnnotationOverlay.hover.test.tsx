@@ -5,9 +5,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import type { SemiontSession } from '@semiont/sdk';
-import type { Annotation, AnnotationId } from '@semiont/core';
-import { resourceId } from '@semiont/core';
+import type { XynoplexSession } from '@xynoplex/sdk';
+import type { Annotation, AnnotationId } from '@xynoplex/core';
+import { resourceId } from '@xynoplex/core';
 import { AnnotationOverlay } from '../AnnotationOverlay';
 
 const rectAnnotation: Annotation = {
@@ -24,11 +24,11 @@ const rectAnnotation: Annotation = {
 
 function sessionDouble() {
   const hover = vi.fn();
-  const session = { client: { browse: { click: vi.fn() }, beckon: { hover } } } as unknown as SemiontSession;
+  const session = { client: { browse: { click: vi.fn() }, beckon: { hover } } } as unknown as XynoplexSession;
   return { session, hover };
 }
 
-function overlay(session: SemiontSession) {
+function overlay(session: XynoplexSession) {
   return (
     <AnnotationOverlay
       annotations={[rectAnnotation]}
@@ -49,7 +49,7 @@ describe('AnnotationOverlay — hover', () => {
   it('says a shape is hovered once the pointer has rested on it, and none when it leaves', () => {
     const { session, hover } = sessionDouble();
     const { container } = render(overlay(session));
-    const shape = container.querySelector('.semiont-annotation-overlay__shape');
+    const shape = container.querySelector('.xynoplex-annotation-overlay__shape');
     expect(shape).toBeInTheDocument();
 
     fireEvent.mouseEnter(shape!);
@@ -63,7 +63,7 @@ describe('AnnotationOverlay — hover', () => {
     const { session, hover } = sessionDouble();
     const { container, unmount } = render(overlay(session));
 
-    fireEvent.mouseEnter(container.querySelector('.semiont-annotation-overlay__shape')!);
+    fireEvent.mouseEnter(container.querySelector('.xynoplex-annotation-overlay__shape')!);
     unmount();
     vi.advanceTimersByTime(200);
 

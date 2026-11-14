@@ -10,8 +10,8 @@ from typing import final, override
 
 from aio import run, soon
 
-from semiont.session_signals import KbIdentityConflict, PermissionDenied, SessionEnded, SessionSignals
-from semiont.testing.axioms import AxiomSubject, Fresh, assert_state_unit_axioms
+from xynoplex.session_signals import KbIdentityConflict, PermissionDenied, SessionEnded, SessionSignals
+from xynoplex.testing.axioms import AxiomSubject, Fresh, assert_state_unit_axioms
 
 
 def test_a_second_occurrence_is_told_even_when_it_says_the_same() -> None:

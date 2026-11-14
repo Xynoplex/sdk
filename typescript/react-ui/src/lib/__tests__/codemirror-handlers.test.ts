@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { annotationId, resourceId, type Annotation } from '@semiont/core';
-import type { SemiontSession } from '@semiont/sdk';
-import { createTestSession } from '@semiont/sdk/testing';
+import { annotationId, resourceId, type Annotation } from '@xynoplex/core';
+import type { XynoplexSession } from '@xynoplex/sdk';
+import { createTestSession } from '@xynoplex/sdk/testing';
 import {
   handleAnnotationClick,
   handleWidgetClick,
@@ -28,7 +28,7 @@ function makeSegment(id: string, motivation: Annotation['motivation']): TextSegm
   };
 }
 
-const sessions: SemiontSession[] = [];
+const sessions: XynoplexSession[] = [];
 
 afterEach(() => {
   vi.restoreAllMocks();

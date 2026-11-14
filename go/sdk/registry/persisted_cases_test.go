@@ -20,11 +20,11 @@ import (
 	"testing"
 	"time"
 
-	semiont "github.com/The-AI-Alliance/semiont/packages/go/sdk"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/bus"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/registry"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/semionttest"
+	xynoplex "github.com/Xynoplex/sdk/go"
+	"github.com/Xynoplex/sdk/go/api"
+	"github.com/Xynoplex/sdk/go/bus"
+	"github.com/Xynoplex/sdk/go/registry"
+	"github.com/Xynoplex/sdk/go/xynoplextest"
 )
 
 type person struct {
@@ -206,20 +206,20 @@ func TestThePersistedCases(t *testing.T) {
 
 func runPersistedKeys(t *testing.T, table persistedCases) {
 	for name, each := range table.People {
-		if got := semiont.PersonKey(each.Did); got != each.PersonKey {
+		if got := xynoplex.PersonKey(each.Did); got != each.PersonKey {
 			t.Errorf("%s's key is %q; the table's is %q", name, got, each.PersonKey)
 		}
 	}
 	persisted := []string{}
-	for _, query := range semiont.PersistedCacheQueries {
+	for _, query := range xynoplex.PersistedCacheQueries {
 		persisted = append(persisted, string(query))
 	}
 	for _, row := range table.Keys {
 		t.Run(row.Why, func(t *testing.T) {
-			if got := semiont.PersonKey(row.Did); got != row.PersonKey {
+			if got := xynoplex.PersonKey(row.Did); got != row.PersonKey {
 				t.Errorf("the key of %s is %q; the table's is %q", row.Did, got, row.PersonKey)
 			}
-			if got := semiont.LastEventIDKey(row.KbID, row.PersonKey); got != row.LastEventIDKey {
+			if got := xynoplex.LastEventIDKey(row.KbID, row.PersonKey); got != row.LastEventIDKey {
 				t.Errorf("the stream's places are kept under %q; the table's key is %q", got, row.LastEventIDKey)
 			}
 			names, values := inOrder(t, row.CacheKeys)
@@ -227,7 +227,7 @@ func runPersistedKeys(t *testing.T, table persistedCases) {
 				t.Errorf("Go keeps %v; the table keeps %v", persisted, names)
 			}
 			for _, name := range names {
-				if got := semiont.CacheKey(row.KbID, row.PersonKey, semiont.CacheQuery(name)); got != values[name] {
+				if got := xynoplex.CacheKey(row.KbID, row.PersonKey, xynoplex.CacheQuery(name)); got != values[name] {
 					t.Errorf("%s is kept under %q; the table's key is %q", name, got, values[name])
 				}
 			}
@@ -240,11 +240,11 @@ func runPersistedKeys(t *testing.T, table persistedCases) {
 // key as it closes, as a client kept for them closing with a save pending
 // could. One built over another sign-in keeps nothing of them.
 type closingWrites struct {
-	*semionttest.ScriptedSessions
+	*xynoplextest.ScriptedSessions
 	personKey, key, value string
 }
 
-func (c closingWrites) Session(ctx context.Context, options registry.SessionFactoryOptions) (*semiont.Session, func(), error) {
+func (c closingWrites) Session(ctx context.Context, options registry.SessionFactoryOptions) (*xynoplex.Session, func(), error) {
 	session, end, err := c.ScriptedSessions.Session(ctx, options)
 	if err != nil || options.Kb.Id != kbA {
 		return session, end, err
@@ -303,7 +303,7 @@ func forgottenByTheRegistry(t *testing.T, table persistedCases, row forgetRow, j
 		}
 		must(t, w.storage.Set(registry.ActiveKey, active))
 		factory := closingWrites{ScriptedSessions: w.factory.sessions, personKey: jo, key: keyOf(t, table, kbA, jo, "resource"), value: `{"version":1,"writtenAt":1700000000001,"entries":[]}`}
-		browser, err := registry.NewSemiontBrowser(registry.SemiontBrowserConfig{Storage: w.storage, SessionFactory: factory})
+		browser, err := registry.NewXynoplexBrowser(registry.XynoplexBrowserConfig{Storage: w.storage, SessionFactory: factory})
 		must(t, err)
 		closedAtTheEnd(t, browser)
 		if live(t, browser).Kb().Id != active {
@@ -335,7 +335,7 @@ func forgottenByTheSession(t *testing.T, table persistedCases, row forgetRow, jo
 		t.Fatalf("a session that is not open ends by no %s", row.By)
 	}
 	s := newStage(t)
-	storage := semiont.NewMemoryStorage()
+	storage := xynoplex.NewMemoryStorage()
 	for key, value := range table.ForgetStorage {
 		must(t, storage.Set(key, value))
 	}
@@ -386,7 +386,7 @@ func forgottenByTheSession(t *testing.T, table persistedCases, row forgetRow, jo
 // leftAsTheRowSays holds storage, once kb-a's client has closed, to the row's
 // `removes`: jo's keys on kb-a gone, or none, and every other key of
 // `forgetStorage` holding what it held.
-func leftAsTheRowSays(t *testing.T, table persistedCases, row forgetRow, storage semiont.SessionStorage, jo string) {
+func leftAsTheRowSays(t *testing.T, table persistedCases, row forgetRow, storage xynoplex.SessionStorage, jo string) {
 	t.Helper()
 	removed := map[string]bool{}
 	switch row.Removes {
@@ -416,7 +416,7 @@ func leftAsTheRowSays(t *testing.T, table persistedCases, row forgetRow, storage
 // watchedStorage is a storage that records each key read and written under
 // it.
 type watchedStorage struct {
-	semiont.SessionStorage
+	xynoplex.SessionStorage
 
 	mu            sync.Mutex
 	read, written []string
@@ -486,7 +486,7 @@ func runPersistedStartup(t *testing.T, table persistedCases) {
 			}
 			s.mu.Unlock()
 
-			storage := &watchedStorage{SessionStorage: semiont.NewMemoryStorage()}
+			storage := &watchedStorage{SessionStorage: xynoplex.NewMemoryStorage()}
 			for key, value := range table.StartupStorage {
 				must(t, storage.Set(key, value))
 			}
@@ -538,7 +538,7 @@ func runPersistedStartup(t *testing.T, table persistedCases) {
 			go func() {
 				told := false
 				for state := range session.Client().Browse.Resource(id("res-1")).States(watching) {
-					if ready, ok := state.(semiont.Ready[api.ResourceDescriptor]); ok && !told {
+					if ready, ok := state.(xynoplex.Ready[api.ResourceDescriptor]); ok && !told {
 						given <- ready.Value.Name
 						told = true
 					}
@@ -594,14 +594,14 @@ func runPersistedCrossTab(t *testing.T, table persistedCases) {
 			s.mu.Lock()
 			s.who = table.WhoAmI
 			s.mu.Unlock()
-			shared := semionttest.NewSharedStorage()
+			shared := xynoplextest.NewSharedStorage()
 			must(t, registry.SaveKnowledgeBases(shared, []api.KnowledgeBase{s.registered(t, kbA)}))
 			must(t, registry.StoreSession(shared, kbA, naming(s.stored(jwt(time.Hour), "r1"), jo)))
 			issuer := s.issuerOf()
 			timing := issuer.Timing
 			// Nothing the client holds is written before it closes.
 			timing.SaveDebounce = time.Hour
-			browser, err := registry.NewSemiontBrowser(registry.SemiontBrowserConfig{Storage: shared, SessionFactory: registry.HttpSessionFactory{HTTP: issuer.HTTP, Timing: timing}})
+			browser, err := registry.NewXynoplexBrowser(registry.XynoplexBrowserConfig{Storage: shared, SessionFactory: registry.HttpSessionFactory{HTTP: issuer.HTTP, Timing: timing}})
 			must(t, err)
 			closedAtTheEnd(t, browser)
 			session := liveOver(t, browser)
@@ -633,7 +633,7 @@ func runPersistedCrossTab(t *testing.T, table persistedCases) {
 				t.Errorf("closing the registry: %v", err)
 			}
 
-			kept := semiont.NewStoragePersister[api.ResourceId, api.ResourceDescriptor](shared, resource, timing.MaxStoredBytesCount).Load()
+			kept := xynoplex.NewStoragePersister[api.ResourceId, api.ResourceDescriptor](shared, resource, timing.MaxStoredBytesCount).Load()
 			value, has := kept[id("res-1")]
 			if saved := has && same(t, value, held); saved != row.Saved {
 				t.Errorf("saved: %v; the table's is %v", saved, row.Saved)
@@ -657,14 +657,14 @@ func runPersistedHolder(t *testing.T, table persistedCases) {
 			s.mu.Unlock()
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
-			memory := &semiont.MemorySignIn{}
+			memory := &xynoplex.MemorySignIn{}
 			must(t, memory.Keep(ctx, s.heldSignIn(jwt(time.Hour), "r1", &jo)))
-			caches := semiont.NewMemoryStorage()
+			caches := xynoplex.NewMemoryStorage()
 			issuer := s.issuerOf()
 			timing := issuer.Timing
 			// Nothing the client holds is written before it closes.
 			timing.SaveDebounce = time.Hour
-			session, end, err := semiont.SessionFromKept(ctx, semiont.SessionFromKeptConfig{
+			session, end, err := xynoplex.SessionFromKept(ctx, xynoplex.SessionFromKeptConfig{
 				Kb:       api.KbTarget{Endpoint: s.registered(t, kbA).Endpoint, Id: kbA, Label: "KB A"},
 				Kept:     memory,
 				HTTP:     issuer.HTTP,
@@ -698,7 +698,7 @@ func runPersistedHolder(t *testing.T, table persistedCases) {
 			}
 			ended()
 
-			kept := semiont.NewStoragePersister[api.ResourceId, api.ResourceDescriptor](caches, resource, timing.MaxStoredBytesCount).Load()
+			kept := xynoplex.NewStoragePersister[api.ResourceId, api.ResourceDescriptor](caches, resource, timing.MaxStoredBytesCount).Load()
 			value, has := kept[id("res-1")]
 			if saved := has && same(t, value, held); saved != row.Saved {
 				t.Errorf("saved: %v; the table's is %v", saved, row.Saved)
@@ -718,7 +718,7 @@ func runPersistedResumeFrom(t *testing.T, table persistedCases) {
 			s.mu.Lock()
 			s.who = table.WhoAmI
 			s.mu.Unlock()
-			storage := semiont.NewMemoryStorage()
+			storage := xynoplex.NewMemoryStorage()
 			must(t, registry.SaveKnowledgeBases(storage, []api.KnowledgeBase{s.registered(t, kbA)}))
 			must(t, registry.StoreSession(storage, kbA, naming(s.stored(jwt(time.Hour), "r1"), jo)))
 			session := liveOver(t, s.browser(t, storage))
@@ -767,22 +767,22 @@ func runPersistedResumeFrom(t *testing.T, table persistedCases) {
 
 // heldSignIn is a sign-in of the stage's issuer as a script keeps it, naming
 // the person whose key is personKey, or nobody for nil.
-func (s *stage) heldSignIn(access, refresh string, personKey *string) semiont.HeldSignIn {
-	return semiont.HeldSignIn{Access: access, Refresh: refresh, ClientID: semiont.ScriptClientID, TokenEndpoint: s.issuer.URL + "/token", RevocationEndpoint: s.issuer.URL + "/revoke", PersonKey: personKey}
+func (s *stage) heldSignIn(access, refresh string, personKey *string) xynoplex.HeldSignIn {
+	return xynoplex.HeldSignIn{Access: access, Refresh: refresh, ClientID: xynoplex.ScriptClientID, TokenEndpoint: s.issuer.URL + "/token", RevocationEndpoint: s.issuer.URL + "/revoke", PersonKey: personKey}
 }
 
 // stalledWrite is a storage whose first write of key, once it has begun,
 // waits until release is closed: entered is closed when it begins, and landed
 // when it is done. deleted is closed when key is deleted.
 type stalledWrite struct {
-	semiont.SessionStorage
+	xynoplex.SessionStorage
 	key                               string
 	entered, release, landed, deleted chan struct{}
 	stallOnce, deleteOnce             sync.Once
 }
 
 func newStalledWrite(key string) *stalledWrite {
-	return &stalledWrite{SessionStorage: semiont.NewMemoryStorage(), key: key, entered: make(chan struct{}), release: make(chan struct{}), landed: make(chan struct{}), deleted: make(chan struct{})}
+	return &stalledWrite{SessionStorage: xynoplex.NewMemoryStorage(), key: key, entered: make(chan struct{}), release: make(chan struct{}), landed: make(chan struct{}), deleted: make(chan struct{})}
 }
 
 func (s *stalledWrite) Set(key, value string) error {
@@ -825,7 +825,7 @@ func TestASaveBeingWrittenDoesNotLandAfterTheSessionForgetsItsSignIn(t *testing.
 	issuer := s.issuerOf()
 	timing := issuer.Timing
 	timing.SaveDebounce = time.Millisecond
-	signals := semiont.NewSessionSignals()
+	signals := xynoplex.NewSessionSignals()
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	session, end, err := registry.HttpSessionFactory{HTTP: issuer.HTTP, Timing: timing}.Session(ctx, registry.SessionFactoryOptions{Kb: s.registered(t, kbA), Storage: storage, Signals: signals})
@@ -873,7 +873,7 @@ func TestASaveBeingWrittenDoesNotLandAfterTheSessionForgetsItsSignIn(t *testing.
 	case <-ctx.Done():
 		t.Fatal("the write never finished")
 	}
-	if told := signals.SessionEnded().Value(); told == nil || told.Reason != semiont.SessionEndExpired {
+	if told := signals.SessionEnded().Value(); told == nil || told.Reason != xynoplex.SessionEndExpired {
 		t.Fatalf("the session ended as %+v; its sign-in was not forgotten by an expiry", told)
 	}
 	ended()
@@ -888,13 +888,13 @@ func TestASaveBeingWrittenDoesNotLandAfterTheSessionForgetsItsSignIn(t *testing.
 // unreadableSignIn is a memory sign-in whose Held fails while unreadable
 // holds.
 type unreadableSignIn struct {
-	*semiont.MemorySignIn
+	*xynoplex.MemorySignIn
 	unreadable atomic.Bool
 }
 
-func (u *unreadableSignIn) Held(ctx context.Context) (semiont.HeldSignIn, bool, error) {
+func (u *unreadableSignIn) Held(ctx context.Context) (xynoplex.HeldSignIn, bool, error) {
 	if u.unreadable.Load() {
-		return semiont.HeldSignIn{}, false, errors.New("the sign-in cannot be read")
+		return xynoplex.HeldSignIn{}, false, errors.New("the sign-in cannot be read")
 	}
 	return u.MemorySignIn.Held(ctx)
 }
@@ -912,13 +912,13 @@ func TestASignInUnreadableAtASaveStopsTheClientKeepingAndIsSaidOnce(t *testing.T
 	s.mu.Unlock()
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	kept := &unreadableSignIn{MemorySignIn: &semiont.MemorySignIn{}}
+	kept := &unreadableSignIn{MemorySignIn: &xynoplex.MemorySignIn{}}
 	must(t, kept.Keep(ctx, s.heldSignIn(jwt(time.Hour), "r1", &jo)))
-	caches := &watchedStorage{SessionStorage: semiont.NewMemoryStorage()}
+	caches := &watchedStorage{SessionStorage: xynoplex.NewMemoryStorage()}
 	issuer := s.issuerOf()
 	timing := issuer.Timing
 	timing.SaveDebounce = time.Millisecond
-	session, end, err := semiont.SessionFromKept(ctx, semiont.SessionFromKeptConfig{
+	session, end, err := xynoplex.SessionFromKept(ctx, xynoplex.SessionFromKeptConfig{
 		Kb:       api.KbTarget{Endpoint: s.registered(t, kbA).Endpoint, Id: kbA, Label: "KB A"},
 		Kept:     kept,
 		HTTP:     issuer.HTTP,
@@ -943,7 +943,7 @@ func TestASignInUnreadableAtASaveStopsTheClientKeepingAndIsSaidOnce(t *testing.T
 	if written := caches.under(&caches.written, keyPrefixes(t)); len(written) > 0 {
 		t.Errorf("the client wrote %v", written)
 	}
-	if told := append([]*semiont.SessionError{first}, heard.rest(t)...); !keptFailedOnce(told) {
+	if told := append([]*xynoplex.SessionError{first}, heard.rest(t)...); !keptFailedOnce(told) {
 		t.Errorf("the session said %v; it says session.keep-failed of kb-a, once", codesOf(told))
 	}
 }
@@ -952,17 +952,17 @@ func TestASignInUnreadableAtASaveStopsTheClientKeepingAndIsSaidOnce(t *testing.T
 // session's own stream, read from as soon as it is made (hear), or its
 // registry's (hearRegistry).
 type hearing struct {
-	said  chan *semiont.SessionError
+	said  chan *xynoplex.SessionError
 	ended chan struct{}
 }
 
-func hear(session *semiont.Session) *hearing {
-	h := &hearing{said: make(chan *semiont.SessionError, 64), ended: make(chan struct{})}
+func hear(session *xynoplex.Session) *hearing {
+	h := &hearing{said: make(chan *xynoplex.SessionError, 64), ended: make(chan struct{})}
 	errs := session.Errors()
 	go func() {
 		defer close(h.ended)
 		for failure := range errs {
-			var own *semiont.SessionError
+			var own *xynoplex.SessionError
 			if errors.As(failure, &own) {
 				h.said <- own
 			}
@@ -973,7 +973,7 @@ func hear(session *semiont.Session) *hearing {
 
 // next is the next failure said, waited for up to ten seconds; what is the
 // failure the test waits for.
-func (h *hearing) next(t *testing.T, what string) *semiont.SessionError {
+func (h *hearing) next(t *testing.T, what string) *xynoplex.SessionError {
 	t.Helper()
 	select {
 	case said := <-h.said:
@@ -987,7 +987,7 @@ func (h *hearing) next(t *testing.T, what string) *semiont.SessionError {
 // rest is every failure said and not yet taken, until the stream ends, which
 // it does once the session, or the registry, is ended: waited for up to ten
 // seconds.
-func (h *hearing) rest(t *testing.T) []*semiont.SessionError {
+func (h *hearing) rest(t *testing.T) []*xynoplex.SessionError {
 	t.Helper()
 	select {
 	case <-h.ended:
@@ -998,8 +998,8 @@ func (h *hearing) rest(t *testing.T) []*semiont.SessionError {
 }
 
 // sofar is every failure said and not yet taken, without waiting for more.
-func (h *hearing) sofar() []*semiont.SessionError {
-	var said []*semiont.SessionError
+func (h *hearing) sofar() []*xynoplex.SessionError {
+	var said []*xynoplex.SessionError
 	for {
 		select {
 		case each := <-h.said:
@@ -1011,12 +1011,12 @@ func (h *hearing) sofar() []*semiont.SessionError {
 }
 
 // keptFailedOnce is whether told is one session.keep-failed, of kb-a.
-func keptFailedOnce(told []*semiont.SessionError) bool {
-	return slices.Equal(codesOf(told), []semiont.SessionErrorCode{semiont.SessionErrorCodeKeepFailed}) && told[0].KbID == kbA
+func keptFailedOnce(told []*xynoplex.SessionError) bool {
+	return slices.Equal(codesOf(told), []xynoplex.SessionErrorCode{xynoplex.SessionErrorCodeKeepFailed}) && told[0].KbID == kbA
 }
 
-func codesOf(told []*semiont.SessionError) []semiont.SessionErrorCode {
-	codes := []semiont.SessionErrorCode{}
+func codesOf(told []*xynoplex.SessionError) []xynoplex.SessionErrorCode {
+	codes := []xynoplex.SessionErrorCode{}
 	for _, each := range told {
 		codes = append(codes, each.Code)
 	}
@@ -1037,14 +1037,14 @@ func TestAKeepFailedOfTheClosingSaveIsSaidBeforeTheErrorsEnd(t *testing.T) {
 	s.mu.Unlock()
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	kept := &unreadableSignIn{MemorySignIn: &semiont.MemorySignIn{}}
+	kept := &unreadableSignIn{MemorySignIn: &xynoplex.MemorySignIn{}}
 	must(t, kept.Keep(ctx, s.heldSignIn(jwt(time.Hour), "r1", &jo)))
-	caches := &watchedStorage{SessionStorage: semiont.NewMemoryStorage()}
+	caches := &watchedStorage{SessionStorage: xynoplex.NewMemoryStorage()}
 	issuer := s.issuerOf()
 	timing := issuer.Timing
 	// Nothing the client holds is written before it closes.
 	timing.SaveDebounce = time.Hour
-	session, end, err := semiont.SessionFromKept(ctx, semiont.SessionFromKeptConfig{
+	session, end, err := xynoplex.SessionFromKept(ctx, xynoplex.SessionFromKeptConfig{
 		Kb:       api.KbTarget{Endpoint: s.registered(t, kbA).Endpoint, Id: kbA, Label: "KB A"},
 		Kept:     kept,
 		HTTP:     issuer.HTTP,
@@ -1075,7 +1075,7 @@ func TestAKeepFailedOfTheClosingSaveIsSaidBeforeTheErrorsEnd(t *testing.T) {
 
 // unrecordable is a memory sign-in that cannot record the person the gateway
 // names.
-type unrecordable struct{ *semiont.MemorySignIn }
+type unrecordable struct{ *xynoplex.MemorySignIn }
 
 func (unrecordable) RecordPersonKey(context.Context, string, string) (bool, error) {
 	return false, errors.New("the sign-in cannot be written")
@@ -1103,13 +1103,13 @@ func TestASignInThatCannotRecordThePersonStopsTheClientKeepingAndIsSaidOnce(t *t
 			s.mu.Unlock()
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
-			kept := unrecordable{&semiont.MemorySignIn{}}
+			kept := unrecordable{&xynoplex.MemorySignIn{}}
 			must(t, kept.Keep(ctx, s.heldSignIn(jwt(time.Hour), "r1", row.names)))
-			caches := &watchedStorage{SessionStorage: semiont.NewMemoryStorage()}
+			caches := &watchedStorage{SessionStorage: xynoplex.NewMemoryStorage()}
 			issuer := s.issuerOf()
 			timing := issuer.Timing
 			timing.SaveDebounce = time.Millisecond
-			session, end, err := semiont.SessionFromKept(ctx, semiont.SessionFromKeptConfig{
+			session, end, err := xynoplex.SessionFromKept(ctx, xynoplex.SessionFromKeptConfig{
 				Kb:       api.KbTarget{Endpoint: s.registered(t, kbA).Endpoint, Id: kbA, Label: "KB A"},
 				Kept:     kept,
 				HTTP:     issuer.HTTP,
@@ -1130,7 +1130,7 @@ func TestASignInThatCannotRecordThePersonStopsTheClientKeepingAndIsSaidOnce(t *t
 			must(t, err)
 			ended()
 
-			if told := append([]*semiont.SessionError{first}, heard.rest(t)...); !keptFailedOnce(told) {
+			if told := append([]*xynoplex.SessionError{first}, heard.rest(t)...); !keptFailedOnce(told) {
 				t.Errorf("the session said %v; it says session.keep-failed of kb-a, once", codesOf(told))
 			}
 			if written := caches.under(&caches.written, keyPrefixes(t)); len(written) > 0 {
@@ -1153,18 +1153,18 @@ func TestASessionEndedOnTheKeepFailedItSaidEnds(t *testing.T) {
 	s.mu.Unlock()
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	kept := &unreadableSignIn{MemorySignIn: &semiont.MemorySignIn{}}
+	kept := &unreadableSignIn{MemorySignIn: &xynoplex.MemorySignIn{}}
 	must(t, kept.Keep(ctx, s.heldSignIn(jwt(time.Hour), "r1", &jo)))
 	issuer := s.issuerOf()
 	timing := issuer.Timing
 	timing.SaveDebounce = time.Millisecond
-	session, end, err := semiont.SessionFromKept(ctx, semiont.SessionFromKeptConfig{
+	session, end, err := xynoplex.SessionFromKept(ctx, xynoplex.SessionFromKeptConfig{
 		Kb:       api.KbTarget{Endpoint: s.registered(t, kbA).Endpoint, Id: kbA, Label: "KB A"},
 		Kept:     kept,
 		HTTP:     issuer.HTTP,
 		Timing:   timing,
 		Channels: bus.BridgedChannels,
-		Storage:  semiont.NewMemoryStorage(),
+		Storage:  xynoplex.NewMemoryStorage(),
 	})
 	must(t, err)
 	ended := sync.OnceFunc(end)
@@ -1181,8 +1181,8 @@ func TestASessionEndedOnTheKeepFailedItSaidEnds(t *testing.T) {
 	}()
 	go func() {
 		for failure := range errs {
-			var said *semiont.SessionError
-			if errors.As(failure, &said) && said.Code == semiont.SessionErrorCodeKeepFailed {
+			var said *xynoplex.SessionError
+			if errors.As(failure, &said) && said.Code == xynoplex.SessionErrorCodeKeepFailed {
 				close(ending)
 				ended()
 				close(endedFromTheStream)
@@ -1209,7 +1209,7 @@ func TestASessionEndedOnTheKeepFailedItSaidEnds(t *testing.T) {
 // refusingSession is a session with kb-a over a sign-in that names jo,
 // keeping what its client holds for jo in caches, each save saveWait after
 // what it holds changed; and what ends it, once.
-func refusingSession(ctx context.Context, t *testing.T, caches *refusing, saveWait time.Duration) (persistedCases, *semiont.Session, func()) {
+func refusingSession(ctx context.Context, t *testing.T, caches *refusing, saveWait time.Duration) (persistedCases, *xynoplex.Session, func()) {
 	t.Helper()
 	table := readPersistedCases(t)
 	jo := personOf(t, table, "jo").PersonKey
@@ -1217,12 +1217,12 @@ func refusingSession(ctx context.Context, t *testing.T, caches *refusing, saveWa
 	s.mu.Lock()
 	s.who = table.WhoAmI
 	s.mu.Unlock()
-	kept := &semiont.MemorySignIn{}
+	kept := &xynoplex.MemorySignIn{}
 	must(t, kept.Keep(ctx, s.heldSignIn(jwt(time.Hour), "r1", &jo)))
 	issuer := s.issuerOf()
 	timing := issuer.Timing
 	timing.SaveDebounce = saveWait
-	session, end, err := semiont.SessionFromKept(ctx, semiont.SessionFromKeptConfig{
+	session, end, err := xynoplex.SessionFromKept(ctx, xynoplex.SessionFromKeptConfig{
 		Kb:       api.KbTarget{Endpoint: s.registered(t, kbA).Endpoint, Id: kbA, Label: "KB A"},
 		Kept:     kept,
 		HTTP:     issuer.HTTP,
@@ -1242,7 +1242,7 @@ func refusingSession(ctx context.Context, t *testing.T, caches *refusing, saveWa
 func TestAWriteTheStorageRefusesIsSaidOnceAndStaysOwed(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	caches := &refusing{SharedStorage: semionttest.NewSharedStorage()}
+	caches := &refusing{SharedStorage: xynoplextest.NewSharedStorage()}
 	caches.sets.Store(true)
 	table, session, ended := refusingSession(ctx, t, caches, time.Millisecond)
 	heard := hear(session)
@@ -1250,8 +1250,8 @@ func TestAWriteTheStorageRefusesIsSaidOnceAndStaysOwed(t *testing.T) {
 	_, err := session.Client().Browse.Resource(id("res-1")).Fresh(ctx)
 	must(t, err)
 	said := heard.next(t, "that the storage refused a write")
-	if said.Code != semiont.SessionErrorCodeSaveRefused || said.KbID != kbA || !strings.Contains(said.Message, errFull.Error()) {
-		t.Errorf("the session said %s of %s: %q; want %s of kb-a, with what the storage said", said.Code, said.KbID, said.Message, semiont.SessionErrorCodeSaveRefused)
+	if said.Code != xynoplex.SessionErrorCodeSaveRefused || said.KbID != kbA || !strings.Contains(said.Message, errFull.Error()) {
+		t.Errorf("the session said %s of %s: %q; want %s of kb-a, with what the storage said", said.Code, said.KbID, said.Message, xynoplex.SessionErrorCodeSaveRefused)
 	}
 	if session.Client().PersistenceSettled() {
 		t.Error("the refused save is not owed")
@@ -1276,7 +1276,7 @@ func TestAWriteTheStorageRefusesIsSaidOnceAndStaysOwed(t *testing.T) {
 func TestAClosingWriteTheStorageRefusesIsSaidBeforeTheErrorsEnd(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	caches := &refusing{SharedStorage: semionttest.NewSharedStorage()}
+	caches := &refusing{SharedStorage: xynoplextest.NewSharedStorage()}
 	// Nothing the client holds is written before it closes.
 	table, session, ended := refusingSession(ctx, t, caches, time.Hour)
 	heard := hear(session)
@@ -1290,7 +1290,7 @@ func TestAClosingWriteTheStorageRefusesIsSaidBeforeTheErrorsEnd(t *testing.T) {
 	ended()
 
 	told := heard.rest(t)
-	if codes := codesOf(told); !slices.Equal(codes, []semiont.SessionErrorCode{semiont.SessionErrorCodeSaveRefused}) || told[0].KbID != kbA {
+	if codes := codesOf(told); !slices.Equal(codes, []xynoplex.SessionErrorCode{xynoplex.SessionErrorCodeSaveRefused}) || told[0].KbID != kbA {
 		t.Errorf("by the end of its errors stream the session said %v; it says session.save-refused of kb-a, once", codes)
 	}
 	jo := personOf(t, table, "jo").PersonKey
@@ -1311,14 +1311,14 @@ func TestASessionThatDoesNotAskKeepsForThePersonItsSignInNames(t *testing.T) {
 	s.mu.Lock()
 	s.who = table.WhoAmI
 	s.mu.Unlock()
-	caches := semiont.NewMemoryStorage()
+	caches := xynoplex.NewMemoryStorage()
 	for key, value := range table.StartupStorage {
 		must(t, caches.Set(key, value))
 	}
-	kept := &semiont.MemorySignIn{}
+	kept := &xynoplex.MemorySignIn{}
 	must(t, kept.Keep(ctx, s.heldSignIn(jwt(time.Hour), "r1", &jo)))
 	issuer := s.issuerOf()
-	session, end, err := semiont.SessionFromKept(ctx, semiont.SessionFromKeptConfig{
+	session, end, err := xynoplex.SessionFromKept(ctx, xynoplex.SessionFromKeptConfig{
 		Kb:                   api.KbTarget{Endpoint: s.registered(t, kbA).Endpoint, Id: kbA, Label: "KB A"},
 		Kept:                 kept,
 		HTTP:                 issuer.HTTP,
@@ -1336,7 +1336,7 @@ func TestASessionThatDoesNotAskKeepsForThePersonItsSignInNames(t *testing.T) {
 	go func() {
 		told := false
 		for state := range session.Client().Browse.Resource(id("res-1")).States(watching) {
-			if ready, ok := state.(semiont.Ready[api.ResourceDescriptor]); ok && !told {
+			if ready, ok := state.(xynoplex.Ready[api.ResourceDescriptor]); ok && !told {
 				given <- ready.Value.Name
 				told = true
 			}

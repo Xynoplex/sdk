@@ -6,7 +6,7 @@ use crate::cache::Cache;
 use crate::cached::{Cached, Keyed};
 use crate::channels::{GatherReferencedByRequested, GatherRequested, GatherResourceRequested};
 use crate::client::Links;
-use crate::errors::SemiontError;
+use crate::errors::XynoplexError;
 use crate::running::Running;
 use crate::state_unit::StateUnit;
 use crate::types::{AnnotationId, ResourceId};
@@ -131,7 +131,7 @@ impl GatherNamespace {
         &self,
         resource_id: &ResourceId,
         mut options: GatherResourceRequestOptions,
-    ) -> Result<GatheredContext, SemiontError> {
+    ) -> Result<GatheredContext, XynoplexError> {
         if options
             .exclude_entity_types
             .as_ref()

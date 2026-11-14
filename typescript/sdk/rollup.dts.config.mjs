@@ -41,8 +41,8 @@ function isExternal(id) {
   return false;
 }
 
-// The testing entry must IMPORT the shared surface (`SemiontClient`,
-// `SemiontSession`, …) from '@semiont/sdk' rather than inline private copies:
+// The testing entry must IMPORT the shared surface (`XynoplexClient`,
+// `XynoplexSession`, …) from '@xynoplex/sdk' rather than inline private copies:
 // inlined classes are NOMINALLY distinct, so consumers holding index types
 // couldn't pass them where testing types are expected (found via react-ui's
 // welcome pilot; same fix as core's rollup.dts.config.mjs, same day).
@@ -56,7 +56,7 @@ function testingSelfExternal() {
         .split('/')
         .pop();
       if (base === 'testing') return null;
-      return { id: '@semiont/sdk', external: true };
+      return { id: '@xynoplex/sdk', external: true };
     },
   };
 }

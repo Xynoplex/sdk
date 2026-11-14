@@ -7,10 +7,10 @@ import pytest
 from pydantic import BaseModel
 from spec import SPEC, JsonObject, text
 
-from semiont._spans import nearest_stretch
-from semiont.annotations import AnchorMethod, MatchQuality, QuotedText, ReconciledSpan, annotation_of_span, reconcile, text_quote_selector
-from semiont.identifiers import ResourceId
-from semiont.types import AgentSoftware, AnnotationTarget
+from xynoplex._spans import nearest_stretch
+from xynoplex.annotations import AnchorMethod, MatchQuality, QuotedText, ReconciledSpan, annotation_of_span, reconcile, text_quote_selector
+from xynoplex.identifiers import ResourceId
+from xynoplex.types import AgentSoftware, AnnotationTarget
 
 
 class Case(BaseModel, frozen=True, extra="forbid"):

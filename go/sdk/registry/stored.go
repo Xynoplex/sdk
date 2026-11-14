@@ -13,25 +13,25 @@ import (
 	"errors"
 	"strings"
 
-	semiont "github.com/The-AI-Alliance/semiont/packages/go/sdk"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/internal/required"
+	xynoplex "github.com/Xynoplex/sdk/go"
+	"github.com/Xynoplex/sdk/go/api"
+	"github.com/Xynoplex/sdk/go/internal/required"
 )
 
-const sessionPrefix = "semiont.session."
+const sessionPrefix = "xynoplex.session."
 
 const (
 	// KnowledgeBasesKey is the key the registered knowledge bases are kept
 	// under.
-	KnowledgeBasesKey = "semiont.knowledgeBases"
+	KnowledgeBasesKey = "xynoplex.knowledgeBases"
 	// ActiveKey is the key the id of the active one is kept under.
-	ActiveKey = "semiont.activeKnowledgeBaseId"
+	ActiveKey = "xynoplex.activeKnowledgeBaseId"
 	// OpenResourcesByKbKey is the key each knowledge base's open resources are
 	// kept under, by its id.
-	OpenResourcesByKbKey = "semiont.openResourcesByKb"
+	OpenResourcesByKbKey = "xynoplex.openResourcesByKb"
 	// LastViewedResourceByKbKey is the key each knowledge base's last-viewed
 	// resource is kept under, by its id.
-	LastViewedResourceByKbKey = "semiont.lastViewedResourceByKb"
+	LastViewedResourceByKbKey = "xynoplex.lastViewedResourceByKb"
 )
 
 // SessionKey is the key a knowledge base's session is stored under.
@@ -52,7 +52,7 @@ type StoredSession struct {
 	// RevocationEndpoint is "" when the issuer has none.
 	RevocationEndpoint string `json:"revocationEndpoint,omitempty"`
 	// PersonKey is who the gateway said the sign-in's person is, as the key
-	// what is kept of them is kept under (semiont.PersonKey): nil until it
+	// what is kept of them is kept under (xynoplex.PersonKey): nil until it
 	// has said. A renewal keeps it; a new sign-in has none; forgetting the
 	// saved sign-in, however it is forgotten, a new sign-in kept in its place
 	// among the ways, deletes what is kept under it.
@@ -74,17 +74,17 @@ func (s StoredSession) written() string {
 	return string(written)
 }
 
-func (s StoredSession) held() semiont.HeldSignIn {
-	return semiont.HeldSignIn{Access: s.Access, Refresh: s.Refresh, ClientID: s.ClientID, TokenEndpoint: s.TokenEndpoint, RevocationEndpoint: s.RevocationEndpoint, PersonKey: s.PersonKey}
+func (s StoredSession) held() xynoplex.HeldSignIn {
+	return xynoplex.HeldSignIn{Access: s.Access, Refresh: s.Refresh, ClientID: s.ClientID, TokenEndpoint: s.TokenEndpoint, RevocationEndpoint: s.RevocationEndpoint, PersonKey: s.PersonKey}
 }
 
-func storedOf(held semiont.HeldSignIn) StoredSession {
+func storedOf(held xynoplex.HeldSignIn) StoredSession {
 	return StoredSession{Access: held.Access, Refresh: held.Refresh, ClientID: held.ClientID, TokenEndpoint: held.TokenEndpoint, RevocationEndpoint: held.RevocationEndpoint, PersonKey: held.PersonKey}
 }
 
 // StoredSessionOf is the session stored for a knowledge base; false when
 // none is.
-func StoredSessionOf(storage semiont.SessionStorage, kbID string) (StoredSession, bool) {
+func StoredSessionOf(storage xynoplex.SessionStorage, kbID string) (StoredSession, bool) {
 	stored, ok := storage.Get(SessionKey(kbID))
 	if !ok {
 		return StoredSession{}, false
@@ -97,21 +97,21 @@ func StoredSessionOf(storage semiont.SessionStorage, kbID string) (StoredSession
 // named (forgetKept): a new sign-in names nobody until its gateway names
 // them, whoever they turn out to be, so keeping one forgets the saved sign-in
 // it replaces. The error when the storage could not.
-func StoreSession(storage semiont.SessionStorage, kbID string, session StoredSession) error {
+func StoreSession(storage xynoplex.SessionStorage, kbID string, session StoredSession) error {
 	return replaceStoredSession(storage, kbID, &session)
 }
 
 // ClearStoredSession forgets a knowledge base's stored session, then what its
 // sessions kept of the person it named (forgetKept): forgetting a saved
 // sign-in deletes its person's entries. The error when the storage could not.
-func ClearStoredSession(storage semiont.SessionStorage, kbID string) error {
+func ClearStoredSession(storage xynoplex.SessionStorage, kbID string) error {
 	return replaceStoredSession(storage, kbID, nil)
 }
 
 // replaceStoredSession puts next in place of a knowledge base's stored
 // session, or nothing for nil, then forgets what was kept of the person the
 // one it replaced named (forgetKept).
-func replaceStoredSession(storage semiont.SessionStorage, kbID string, next *StoredSession) error {
+func replaceStoredSession(storage xynoplex.SessionStorage, kbID string, next *StoredSession) error {
 	replaced, _, err := swapStoredSession(storage, kbID, next)
 	if err != nil {
 		return err
@@ -122,7 +122,7 @@ func replaceStoredSession(storage semiont.SessionStorage, kbID string, next *Sto
 // LoadKnowledgeBases is the registered knowledge bases. Each entry is read on
 // its own, and one that is not a knowledge base with a did is dropped: whoever
 // it was is registered again.
-func LoadKnowledgeBases(storage semiont.SessionStorage) []api.KnowledgeBase {
+func LoadKnowledgeBases(storage xynoplex.SessionStorage) []api.KnowledgeBase {
 	stored, ok := storage.Get(KnowledgeBasesKey)
 	if !ok {
 		return []api.KnowledgeBase{}
@@ -164,7 +164,7 @@ func knowledgeBaseOf(entry json.RawMessage) (api.KnowledgeBase, bool) {
 
 // SaveKnowledgeBases stores the registered knowledge bases, in place of what
 // was stored; the error when the storage could not.
-func SaveKnowledgeBases(storage semiont.SessionStorage, kbs []api.KnowledgeBase) error {
+func SaveKnowledgeBases(storage xynoplex.SessionStorage, kbs []api.KnowledgeBase) error {
 	written, err := json.Marshal(kbs)
 	if err != nil {
 		// Each entry was read from the storage or built from a sign-in, and
@@ -180,25 +180,25 @@ func SaveKnowledgeBases(storage semiont.SessionStorage, kbs []api.KnowledgeBase)
 // stands, and keeps the person the sign-in names. Keeping a new sign-in, and
 // forgetting the sign-in, forget what was kept of the person the one stored
 // named (StoreSession, ClearStoredSession).
-func KeptIn(storage semiont.SessionStorage, kbID string) semiont.SignInKept {
+func KeptIn(storage xynoplex.SessionStorage, kbID string) xynoplex.SignInKept {
 	return keptIn{storage: storage, kbID: kbID}
 }
 
 type keptIn struct {
-	storage semiont.SessionStorage
+	storage xynoplex.SessionStorage
 	kbID    string
 }
 
-func (k keptIn) Held(context.Context) (semiont.HeldSignIn, bool, error) {
+func (k keptIn) Held(context.Context) (xynoplex.HeldSignIn, bool, error) {
 	stored, ok := StoredSessionOf(k.storage, k.kbID)
 	return stored.held(), ok, nil
 }
 
-func (k keptIn) Keep(_ context.Context, signIn semiont.HeldSignIn) error {
+func (k keptIn) Keep(_ context.Context, signIn xynoplex.HeldSignIn) error {
 	return StoreSession(k.storage, k.kbID, storedOf(signIn))
 }
 
-func (k keptIn) Renewed(_ context.Context, read semiont.HeldSignIn, access, refresh string) (string, bool, error) {
+func (k keptIn) Renewed(_ context.Context, read xynoplex.HeldSignIn, access, refresh string) (string, bool, error) {
 	var current string
 	var kept bool
 	err := k.storage.Update(SessionKey(k.kbID), func(stored string, has bool) (string, bool) {
@@ -219,7 +219,7 @@ func (k keptIn) Renewed(_ context.Context, read semiont.HeldSignIn, access, refr
 }
 
 // RecordPersonKey records personKey on the stored session, as
-// semiont.SignInKept says, in one update of the storage: only while it holds
+// xynoplex.SignInKept says, in one update of the storage: only while it holds
 // access and names no person.
 func (k keptIn) RecordPersonKey(_ context.Context, access, personKey string) (bool, error) {
 	var names bool
@@ -240,7 +240,7 @@ func (k keptIn) RecordPersonKey(_ context.Context, access, personKey string) (bo
 
 // Forget forgets the stored session, and what was kept of the person it named
 // (ClearStoredSession). A session whose sign-in is forgotten while its client
-// is open writes nothing more there (semiont.SessionFromKeptConfig's Storage).
+// is open writes nothing more there (xynoplex.SessionFromKeptConfig's Storage).
 func (k keptIn) Forget(context.Context) error {
 	return ClearStoredSession(k.storage, k.kbID)
 }
@@ -248,7 +248,7 @@ func (k keptIn) Forget(context.Context) error {
 // swapStoredSession puts next in place of a knowledge base's stored session,
 // or nothing for nil, as one step with reading what was stored: the session
 // it replaced, and false when nothing was.
-func swapStoredSession(storage semiont.SessionStorage, kbID string, next *StoredSession) (StoredSession, bool, error) {
+func swapStoredSession(storage xynoplex.SessionStorage, kbID string, next *StoredSession) (StoredSession, bool, error) {
 	var replaced StoredSession
 	var was bool
 	err := storage.Update(SessionKey(kbID), func(stored string, has bool) (string, bool) {
@@ -268,13 +268,13 @@ func swapStoredSession(storage semiont.SessionStorage, kbID string, next *Stored
 // the key of each persisted query and the stream's places', whether or not
 // each holds anything. A sign-in that named nobody (nil) deletes nothing.
 // Every delete of what forgetting a saved sign-in deletes goes through it.
-func forgetKept(storage semiont.SessionStorage, kbID string, personKey *string) error {
+func forgetKept(storage xynoplex.SessionStorage, kbID string, personKey *string) error {
 	if personKey == nil {
 		return nil
 	}
-	failed := []error{storage.Delete(semiont.LastEventIDKey(kbID, *personKey))}
-	for _, query := range semiont.PersistedCacheQueries {
-		failed = append(failed, storage.Delete(semiont.CacheKey(kbID, *personKey, query)))
+	failed := []error{storage.Delete(xynoplex.LastEventIDKey(kbID, *personKey))}
+	for _, query := range xynoplex.PersistedCacheQueries {
+		failed = append(failed, storage.Delete(xynoplex.CacheKey(kbID, *personKey, query)))
 	}
 	return errors.Join(failed...)
 }

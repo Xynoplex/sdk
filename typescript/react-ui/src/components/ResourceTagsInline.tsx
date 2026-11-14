@@ -39,10 +39,10 @@ export function ResourceTagsInline({
       return null;
     }
     return (
-      <div className="semiont-resource-tags-inline">
-        <div className="semiont-resource-tags-list">
+      <div className="xynoplex-resource-tags-inline">
+        <div className="xynoplex-resource-tags-list">
           {tags.map((tag) => (
-            <span key={tag} className="semiont-resource-tag">
+            <span key={tag} className="xynoplex-resource-tag">
               {tag}
             </span>
           ))}
@@ -68,14 +68,14 @@ export function ResourceTagsInline({
   };
 
   return (
-    <div className="semiont-resource-tags-inline semiont-resource-tags-inline--editing">
-      <div className="semiont-resource-tags-list">
+    <div className="xynoplex-resource-tags-inline xynoplex-resource-tags-inline--editing">
+      <div className="xynoplex-resource-tags-list">
         {tags.map((tag) => (
-          <span key={tag} className="semiont-resource-tag semiont-resource-tag--editable">
+          <span key={tag} className="xynoplex-resource-tag xynoplex-resource-tag--editable">
             {tag}
             <button
               type="button"
-              className="semiont-resource-tag__remove"
+              className="xynoplex-resource-tag__remove"
               aria-label={`Remove ${tag}`}
               disabled={inert}
               onClick={() => void commit(tags.filter((t) => t !== tag))}
@@ -87,7 +87,7 @@ export function ResourceTagsInline({
         {vocabulary && (
           <button
             type="button"
-            className="semiont-resource-tag semiont-resource-tag--add"
+            className="xynoplex-resource-tag xynoplex-resource-tag--add"
             aria-label="Add tag"
             aria-expanded={picking}
             disabled={inert || candidates.length === 0}
@@ -98,12 +98,12 @@ export function ResourceTagsInline({
         )}
       </div>
       {picking && candidates.length > 0 && (
-        <div className="semiont-form__entity-type-buttons">
+        <div className="xynoplex-form__entity-type-buttons">
           {candidates.map((entityType) => (
             <button
               key={entityType}
               type="button"
-              className="semiont-form__entity-type-button"
+              className="xynoplex-form__entity-type-button"
               disabled={inert}
               onClick={() => void commit([...tags, entityType])}
             >

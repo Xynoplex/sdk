@@ -8,7 +8,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import * as fc from 'fast-check';
-import { annotationId, resourceId, type Annotation } from '@semiont/core';
+import { annotationId, resourceId, type Annotation } from '@xynoplex/core';
 import { rectsForPage } from '../rects-for-page';
 
 const PAGES = 5;

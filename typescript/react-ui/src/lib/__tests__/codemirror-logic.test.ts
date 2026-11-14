@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import { annotationId, resourceId, textOffsets } from '@semiont/core';
-import type { Annotation } from '@semiont/core';
+import { annotationId, resourceId, textOffsets } from '@xynoplex/core';
+import type { Annotation } from '@xynoplex/core';
 import {
   documentPositions,
   convertSegmentPositions,
@@ -112,7 +112,7 @@ describe('getAnnotationTooltip', () => {
   });
 
   it('returns Annotation for unknown motivation', () => {
-    // @ts-expect-error — a W3C motivation Semiont does not support, for the fallback
+    // @ts-expect-error — a W3C motivation Xynoplex does not support, for the fallback
     expect(getAnnotationTooltip(makeAnnotation('1', 'bookmarking'))).toBe('Annotation');
   });
 });
@@ -151,7 +151,7 @@ describe('getAnnotationDecorationMeta', () => {
   });
 
   it('falls back to annotation-highlight for unknown motivation', () => {
-    // @ts-expect-error — a W3C motivation Semiont does not support, for the fallback
+    // @ts-expect-error — a W3C motivation Xynoplex does not support, for the fallback
     const meta = getAnnotationDecorationMeta(makeAnnotation('1', 'bookmarking'), false);
     expect(meta.className).toBe('annotation-highlight');
   });

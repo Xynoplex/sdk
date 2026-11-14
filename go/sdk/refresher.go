@@ -1,4 +1,4 @@
-package semiont
+package xynoplex
 
 // What keeps a client's queries true: protocol/specs/src/client/refresh.json
 // (refresh_gen.go), applied to the client's caches. Each event on the bus,
@@ -17,9 +17,9 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/bus"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/internal/required"
+	"github.com/Xynoplex/sdk/go/api"
+	"github.com/Xynoplex/sdk/go/bus"
+	"github.com/Xynoplex/sdk/go/internal/required"
 )
 
 // window is one key's B19 window: what asks again for its key, and whether

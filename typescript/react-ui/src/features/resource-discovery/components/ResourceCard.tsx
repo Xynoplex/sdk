@@ -7,7 +7,7 @@
 
 import React from 'react';
 
-import type { ResourceDescriptor } from '@semiont/core';
+import type { ResourceDescriptor } from '@xynoplex/core';
 
 export interface ResourceCardProps {
   resource: ResourceDescriptor;
@@ -35,34 +35,34 @@ export const ResourceCard = React.memo(({
     role="button"
     tabIndex={tabIndex}
     aria-label={`Open resource: ${resource.name}`}
-    className="semiont-resource-card"
+    className="xynoplex-resource-card"
   >
-    <div className="semiont-resource-card__header">
-      <h4 className="semiont-resource-card__title">
+    <div className="xynoplex-resource-card__header">
+      <h4 className="xynoplex-resource-card__title">
         {resource.name}
       </h4>
       {resource.archived && (
-        <span className="semiont-resource-card__badge" data-type="archived">
+        <span className="xynoplex-resource-card__badge" data-type="archived">
           {archivedLabel}
         </span>
       )}
     </div>
 
     {/* Resource Metadata */}
-    <div className="semiont-resource-card__metadata">
-      <span className="semiont-resource-card__date">{createdLabel} {resource.dateCreated ? new Date(resource.dateCreated).toLocaleDateString() : 'N/A'}</span>
+    <div className="xynoplex-resource-card__metadata">
+      <span className="xynoplex-resource-card__date">{createdLabel} {resource.dateCreated ? new Date(resource.dateCreated).toLocaleDateString() : 'N/A'}</span>
       {resource.entityTypes && resource.entityTypes.length > 0 && (
-        <div className="semiont-tags">
+        <div className="xynoplex-tags">
           {resource.entityTypes.slice(0, 2).map((type) => (
             <span
               key={type}
-              className="semiont-tag semiont-tag--secondary semiont-tag--compact semiont-tag--rounded-sm"
+              className="xynoplex-tag xynoplex-tag--secondary xynoplex-tag--compact xynoplex-tag--rounded-sm"
             >
               {type}
             </span>
           ))}
           {resource.entityTypes.length > 2 && (
-            <span className="semiont-tag semiont-tag--secondary semiont-tag--compact semiont-tag--rounded-sm">
+            <span className="xynoplex-tag xynoplex-tag--secondary xynoplex-tag--compact xynoplex-tag--rounded-sm">
               +{resource.entityTypes.length - 2}
             </span>
           )}

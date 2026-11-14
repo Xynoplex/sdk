@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import type { EngineWithLimits } from '@semiont/core';
-import type { SemiontClient } from '@semiont/sdk';
+import type { EngineWithLimits } from '@xynoplex/core';
+import type { XynoplexClient } from '@xynoplex/sdk';
 
 export interface UseEnginesResult {
   engines: EngineWithLimits[];
@@ -13,7 +13,7 @@ export interface UseEnginesResult {
  * Inference document has it used for and, when discovery could answer, its
  * context and output ceilings.
  *
- * Takes the client explicitly rather than reaching for `useSemiont()`, matching
+ * Takes the client explicitly rather than reaching for `useXynoplex()`, matching
  * `useMediaToken(client)`: a bring-your-own-session host can use it with a bare
  * session, and the batteries-included page passes `session.client`.
  *
@@ -27,7 +27,7 @@ export interface UseEnginesResult {
  * `error` is surfaced but empty-on-failure is the display contract: engines
  * that cannot be read show as no engines, never as a broken panel.
  */
-export function useEngines(client: SemiontClient | null): UseEnginesResult {
+export function useEngines(client: XynoplexClient | null): UseEnginesResult {
   const [engines, setEngines] = useState<EngineWithLimits[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);

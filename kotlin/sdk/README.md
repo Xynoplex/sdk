@@ -1,15 +1,15 @@
-# Semiont Kotlin SDK
+# Xynoplex Kotlin SDK
 
-[![codecov](https://codecov.io/gh/The-AI-Alliance/semiont/graph/badge.svg?component=kotlin-sdk)](https://app.codecov.io/gh/The-AI-Alliance/semiont/components)
+[![codecov](https://codecov.io/gh/Xynoplex/sdk/graph/badge.svg?component=kotlin-sdk)](https://app.codecov.io/gh/Xynoplex/sdk/components)
 
-The Semiont SDK for the JVM: one artifact, written in Kotlin, which Java programs call as first-class consumers. Every program below is a file the build compiles and runs (`src/test/kotlin/semiont/readme`, `src/javaTest/java/semiont/readme`), held to this page word for word.
+The Xynoplex SDK for the JVM: one artifact, written in Kotlin, which Java programs call as first-class consumers. Every program below is a file the build compiles and runs (`src/test/kotlin/xynoplex/readme`, `src/javaTest/java/xynoplex/readme`), held to this page word for word.
 
 ## Installing
 
 The SDK is not published yet. Build its jar from source, in a container whose JDK is the one `.java-version` names (Kotlin 2.4, JDK 25), and put it on your program's classpath with its dependencies:
 
 ```bash
-container run --rm -v "$PWD":/w -w /w/packages/kotlin/sdk eclipse-temurin:"$(packages/kotlin/scripts/jdk-version.sh)"-jdk ./gradlew --no-daemon jar
+container run --rm -v "$PWD":/w -w /w/kotlin/sdk eclipse-temurin:"$(kotlin/scripts/jdk-version.sh)"-jdk ./gradlew --no-daemon jar
 ```
 
 ## The verbs
@@ -33,12 +33,12 @@ Kotlin calls a `suspend` member and collects a `Flow`. Java calls the member's t
 
 ## Connecting
 
-A client of a knowledge base, over HTTP, signed in with a token. A transport is always given the channels its stream names on no scope, and assumes none of its own: a full client gives it `BRIDGED_CHANNELS` (`semiont.channels`; `ChannelsKt.getBRIDGED_CHANNELS()` from Java), the channels every client hears and every operation's replies. In Kotlin:
+A client of a knowledge base, over HTTP, signed in with a token. A transport is always given the channels its stream names on no scope, and assumes none of its own: a full client gives it `BRIDGED_CHANNELS` (`xynoplex.channels`; `ChannelsKt.getBRIDGED_CHANNELS()` from Java), the channels every client hears and every operation's replies. In Kotlin:
 
 <!-- readme: connect -->
 ```kotlin
 val transport = HttpTransport(baseUrl, MutableStateFlow(token), BRIDGED_CHANNELS)
-val client = SemiontClient(transport, HttpContentTransport(transport), transport)
+val client = XynoplexClient(transport, HttpContentTransport(transport), transport)
 ```
 
 In Java:
@@ -46,7 +46,7 @@ In Java:
 <!-- readme: connect-java -->
 ```java
 HttpTransport transport = new HttpTransport(baseUrl, StateFlowKt.MutableStateFlow(token), ChannelsKt.getBRIDGED_CHANNELS());
-SemiontClient client = new SemiontClient(transport, new HttpContentTransport(transport), transport);
+XynoplexClient client = new XynoplexClient(transport, new HttpContentTransport(transport), transport);
 ```
 
 Closing the client ends what it runs and its own bus; whoever made the transport closes it.
@@ -126,7 +126,7 @@ A client given a `CachePersistence(storage, kbId, personKey(did))` keeps its sma
 
 A worker claims jobs from a knowledge base's queue, does each one, and says what became of it. `client.job.claim(accepts)` is its side of the queue, given what the worker accepts, each a `JobFilter`: the `mark` jobs of one motivation, or the `yield` jobs. Its `Claims` hand out the jobs the worker comes to hold, one at a time: each `next()` the next, a `HeldMarkJob` or a `HeldYieldJob`.
 
-- **A worker is an agent.** Its process signs in at its issuer as its account, `AgentToken(gateway, ServiceToken(SecretCredential(...)))`, and the gateway names it by that account: `agent.did`, once `signIn()` has returned. The account needs two roles at the issuer: `semiont-service`, which marks a service's account, and `semiont-worker`, without which every claim is refused as `bus.unauthorized`.
+- **A worker is an agent.** Its process signs in at its issuer as its account, `AgentToken(gateway, ServiceToken(SecretCredential(...)))`, and the gateway names it by that account: `agent.did`, once `signIn()` has returned. The account needs two roles at the issuer: `xynoplex-service`, which marks a service's account, and `xynoplex-worker`, without which every claim is refused as `bus.unauthorized`.
 - **It says what it is called**, as itself: `client.wire.emit(Channels.PRINCIPAL_PROFILE, PrincipalProfileCommand(name = clientId))`, here its client id. Readers name it by the last name it said, as they name a person.
 - **Its stream names `JOB_CLAIM_CHANNELS`**, and `JOB_COMMIT_CHANNELS` when it commits, and the reply channels of whatever else it awaits: `HttpTransport(gateway, agent.token, JOB_CLAIM_CHANNELS + JOB_COMMIT_CHANNELS, refresher = agent)`. The announcements that wake an idle worker reach only a stream that names them, so one whose stream does not is refused at its first claim, as `bus.unsubscribed`.
 - **What it commits names its generator**: an `AgentSoftware` whose `id` is the agent's DID (`agent.did.value`), with the engine it ran (`provider`, `model`). It carries no name: readers name the agent by what it said it is called.
@@ -137,13 +137,13 @@ What a worker promises is protocol/contract/WORKER-CONTRACT.md, and the worker c
 
 ## Testing
 
-`semiont.testing` is what a program's tests are built on: `FaultyTransport`, a transport with no wire, given its channels as a real one is (`BRIDGED_CHANNELS` for a full client) and carrying only what a gateway would give a stream that names them, whose gateway answers what a test queued and refuses the rest by name, and whose wire delivers, drops, delays or doubles each reply as a schedule says; `InMemoryContent` and `StubGateway`; `TestClient`, a real client over the three, whose own transport names `BRIDGED_CHANNELS`; `createTestSession`, a real session over one; `ScriptedSessions` and `SharedStorage`, for a registry; and the liveness axioms (`assertLivenessAxioms`, `assertExactlyOnceDelivery`), which hold a composition to saying something and to delivering each event once under any behaviour of the wire. Each is usable from Java as from Kotlin.
+`xynoplex.testing` is what a program's tests are built on: `FaultyTransport`, a transport with no wire, given its channels as a real one is (`BRIDGED_CHANNELS` for a full client) and carrying only what a gateway would give a stream that names them, whose gateway answers what a test queued and refuses the rest by name, and whose wire delivers, drops, delays or doubles each reply as a schedule says; `InMemoryContent` and `StubGateway`; `TestClient`, a real client over the three, whose own transport names `BRIDGED_CHANNELS`; `createTestSession`, a real session over one; `ScriptedSessions` and `SharedStorage`, for a registry; and the liveness axioms (`assertLivenessAxioms`, `assertExactlyOnceDelivery`), which hold a composition to saying something and to delivering each event once under any behaviour of the wire. Each is usable from Java as from Kotlin.
 
 Every maker that waits takes the `context: CoroutineContext` its work runs on (`Dispatchers.Default` when none is given) and the `clock: TimeSource` its deadlines and intervals are measured by (`TimeSource.Monotonic`), and every maker that backs off takes the `random: Random` its jitter draws from (`Random.Default`). What a maker makes keeps them: a client's namespaces, caches and state units, a transport's stream and its content transport, a session's renewals, a registry's sessions and sign-ins. A suspending function waits on its caller's context. A Java future runs on its receiver's context, or, for a free function, on the `context` it takes. Under `runTest`, hand the SDK `StandardTestDispatcher(testScheduler)` and `testScheduler.timeSource`, and move the time with `advanceTimeBy`: its reconnect backoff, deadlines, debounces, renewals and polls end when the test says. Hand it a `Random` whose draws are fixed to make each jitter the same on every run.
 
 ## The protocol's types
 
-Every component schema of the spec is a type of `semiont.types`, and each kind of id a value class of `semiont.identifiers`. The build generates them from `protocol/specs/src` (the `generate` task, run before every compile); nothing generated is committed.
+Every component schema of the spec is a type of `xynoplex.types`, and each kind of id a value class of `xynoplex.identifiers`. The build generates them from `protocol/specs/src` (the `generate` task, run before every compile); nothing generated is committed.
 
 - An id is made only through its kind's check: `ResourceId("res-1")` throws `InvalidIdentifier` for text the rule refuses, and `ResourceId.parse(text)` gives `null` instead. Decoding goes through the same check.
 - A model is immutable, and written back as it was read: a property left out stays left out, and text the spec gives a format (a time, a URI) stays the text it was. A property that is optional and may be null is a `Stated`: `Absent`, `Null` or `Value`.
@@ -155,25 +155,25 @@ Every component schema of the spec is a type of `semiont.types`, and each kind o
   MarkDeleteCommand command = MarkDeleteCommand.builder(new AnnotationId("ann-1")).resourceId(new ResourceId("res-1")).build();
   ```
 
-Java reaches the ids as their own types, not as text, through Kotlin's `@JvmExposeBoxed`, which is still experimental in Kotlin 2.4. The SDK opts in to it where it declares the ids and the models; a program that calls the SDK needs no opt-in of its own. Five functions that only return an id give Java its text, as Kotlin exposes no typed form of an id a function only returns: `bodySource` and `targetSource` of `semiont.annotations`, and `kbDid`, `personDid` and `agentDid` of `semiont.identity`.
+Java reaches the ids as their own types, not as text, through Kotlin's `@JvmExposeBoxed`, which is still experimental in Kotlin 2.4. The SDK opts in to it where it declares the ids and the models; a program that calls the SDK needs no opt-in of its own. Five functions that only return an id give Java its text, as Kotlin exposes no typed form of an id a function only returns: `bodySource` and `targetSource` of `xynoplex.annotations`, and `kbDid`, `personDid` and `agentDid` of `xynoplex.identity`.
 
 ## The wire
 
-`semiont.http.HttpTransport` is the bus over HTTP: emits to `POST /bus/emit` and one event stream from `POST /bus/subscribe` (protocol/contract/TRANSPORT-HTTP.md). It reads its token from a `StateFlow` its owner feeds, and asks a `TokenRefresher` for another when the gateway refuses it, telling it the token refused: a session or an agent that holds another by then gives it and renews nothing. `HttpContentTransport` carries what never rides the bus: uploads, and a resource's bytes, description, annotations and anchored text.
+`xynoplex.http.HttpTransport` is the bus over HTTP: emits to `POST /bus/emit` and one event stream from `POST /bus/subscribe` (protocol/contract/TRANSPORT-HTTP.md). It reads its token from a `StateFlow` its owner feeds, and asks a `TokenRefresher` for another when the gateway refuses it, telling it the token refused: a session or an agent that holds another by then gives it and renews nothing. `HttpContentTransport` carries what never rides the bus: uploads, and a resource's bytes, description, annotations and anchored text.
 
-`semiont.bus.Bus` is the bus typed by channel. A channel is a constant of `Channels`, typed by the payload its frames carry, and an operation a constant of `Operations`, typed by what it sends and what each reply carries: `emit`, `frames` and `request` each take one, and the compiler refuses a payload that is not its channel's.
+`xynoplex.bus.Bus` is the bus typed by channel. A channel is a constant of `Channels`, typed by the payload its frames carry, and an operation a constant of `Operations`, typed by what it sends and what each reply carries: `emit`, `frames` and `request` each take one, and the compiler refuses a payload that is not its channel's.
 
 A read of a channel (`frames`, and the `job` namespace's events) gives each frame as a `Heard`: a `Delivered`, its payload decoded, or, in place of a frame its transport refused or whose payload is not the channel's, a `FrameRefusal` that names the channel and the frame's first fault, as every SDK names it: `member`, the way to the member it is at from the frame (`payload.` and the way within the payload, `payload` for the payload itself, or a member of the frame's own such as `correlationId`), and `reason`, `FrameRefusalReason.Lacks` for a member the frame does not carry or holds null where it may not, `Malformed` for one its schema does not allow (of another kind, a value it does not list, a form or a size it does not allow) or one a closed object does not name. It holds the payload as it came, and the frame's scope. The frames after a refusal follow it. Kotlin matches the two with `when`; Java tells them apart by `getStatus()`, `delivered` or `refused`, or with `instanceof`. A reply to `request`, and a payload read with `decoded`, is held to the same table before it is decoded: one that is not its channel's throws `TransportError` (`error`), saying `a payload on <channel> is not that channel's:` and its first fault.
 
 Every suspending member a program calls has a twin for Java that returns a `CompletableFuture` (`requestFuture`), and every stream reads as a `java.util.concurrent.Flow.Publisher` (`asPublisher()`). Cancelling a future gives the work up: a request's connection is closed. A twin that takes an id is called on a class, not through an interface: Java calls `HttpTransport`'s `emitFuture`, as Kotlin exposes no typed form of an interface's member.
 
-Five interfaces are implemented in Kotlin, not in Java, since their members suspend or take an id: `TokenRefresher`, `SignInKept`, `SessionFactory`, `DiscoveryTransport` and `Bookmarks`. A Java program uses the SDK's own: `AgentToken` and the sessions' refreshers; `SignInStore`, `MemorySignIn` and `keptIn`; `HttpSessionFactory`; `httpDiscovery` and `textDiscovery`; `CoupledBookmarks`. One that signs in its own way feeds its transport the token and gives it no refresher. Its tests build on `semiont.testing` rather than on a transport of their own.
+Five interfaces are implemented in Kotlin, not in Java, since their members suspend or take an id: `TokenRefresher`, `SignInKept`, `SessionFactory`, `DiscoveryTransport` and `Bookmarks`. A Java program uses the SDK's own: `AgentToken` and the sessions' refreshers; `SignInStore`, `MemorySignIn` and `keptIn`; `HttpSessionFactory`; `httpDiscovery` and `textDiscovery`; `CoupledBookmarks`. One that signs in its own way feeds its transport the token and gives it no refresher. Its tests build on `xynoplex.testing` rather than on a transport of their own.
 
-- **The bus log:** with `SEMIONT_BUS_LOG` set to anything but nothing, a line on standard output for each frame sent or received and each read and upload, in the form every Semiont SDK writes, with every credential's value withheld.
+- **The bus log:** with `XYNOPLEX_BUS_LOG` set to anything but nothing, a line on standard output for each frame sent or received and each read and upload, in the form every Xynoplex SDK writes, with every credential's value withheld.
 
 ## Signing in
 
-- **The sign-in store** (`semiont.signin`): `SignInStore` is the launcher's `tokens.json`, so a program and `semiont login` share their sign-ins. `stateDir` says where it is from the directories the application hands in; the SDK reads no environment variable for it. `MemorySignIn` keeps a sign-in for the life of the process. `renewKept` renews a kept sign-in at its issuer against what is kept then, so another program's renewal or sign-out in between stands.
+- **The sign-in store** (`xynoplex.signin`): `SignInStore` is the launcher's `tokens.json`, so a program and `xynoplex login` share their sign-ins. `stateDir` says where it is from the directories the application hands in; the SDK reads no environment variable for it. `MemorySignIn` keeps a sign-in for the life of the process. `renewKept` renews a kept sign-in at its issuer against what is kept then, so another program's renewal or sign-out in between stands.
 - **Its lock:** every writer of the store takes `flock` on `tokens.lock`, and on Windows `LockFileEx` on its one byte (protocol/specs/src/sign-in-store/README.md). The JDK's own file lock does not exclude `flock` on Linux, so the store calls `flock` through the foreign-function API. An application that uses the store enables native access for it, or the JVM warns when it is first taken:
 
   ```bash
@@ -181,12 +181,12 @@ Five interfaces are implemented in Kotlin, not in Java, since their members susp
   ```
 
 - **A person** signs in from a process with no browser through the device grant: `signInDevice(kb, kept) { code -> ... }` shows the code, and keeps the sign-in once it is approved. `signOut(kept)` revokes it at the issuer and forgets it.
-- **A service** signs in as itself with `ServiceToken(credential)`, proving itself with its client secret (`SecretCredential`) or with a key (`KeyCredential`). With a key, each grant carries an assertion signed for it alone (RFC 7523, `private_key_jwt`), which the issuer checks with the public half registered on the client, and no secret is sent. A worker signs in by key: the launcher hands it its client id in `SEMIONT_OIDC_CLIENT_ID` and its RSA key as PKCS#8 PEM in `SEMIONT_OIDC_CLIENT_KEY`, and the worker reads them itself, into `ServiceToken(KeyCredential.fromPem(issuer, clientId, pem))`. A PEM that is not an RSA key in PKCS#8 throws `IllegalArgumentException`, which never says the key.
+- **A service** signs in as itself with `ServiceToken(credential)`, proving itself with its client secret (`SecretCredential`) or with a key (`KeyCredential`). With a key, each grant carries an assertion signed for it alone (RFC 7523, `private_key_jwt`), which the issuer checks with the public half registered on the client, and no secret is sent. A worker signs in by key: the launcher hands it its client id in `XYNOPLEX_OIDC_CLIENT_ID` and its RSA key as PKCS#8 PEM in `XYNOPLEX_OIDC_CLIENT_KEY`, and the worker reads them itself, into `ServiceToken(KeyCredential.fromPem(issuer, clientId, pem))`. A PEM that is not an RSA key in PKCS#8 throws `IllegalArgumentException`, which never says the key.
 - **An agent** is an account, as a person is: `AgentToken` signs it in with its account's token, learns the DID the gateway names it by from `GET /api/users/me`, and renews by a new grant at its issuer, when the token is due and at once when the gateway refuses it. A transport takes it as its token and its refresher. An agent whose renewal fails keeps the token it has and tries again.
 
 ## What an application enables
 
-The SDK installs nothing and reads no setting of its own but `SEMIONT_BUS_LOG`. What it can use, the application turns on:
+The SDK installs nothing and reads no setting of its own but `XYNOPLEX_BUS_LOG`. What it can use, the application turns on:
 
 - **Telemetry:** the SDK tells OpenTelemetry's API what protocol/specs/src/sdk-telemetry/telemetry.json lists. Until the application installs its own OpenTelemetry as the global one, every call does nothing, and one installed after the SDK has begun is still told.
 - **The sign-in store's lock** needs native access: `java --enable-native-access=ALL-UNNAMED`.
@@ -214,7 +214,7 @@ Untested. The SDK is a JVM library, and nothing in it was built or run on Androi
 Nothing but a container runtime is needed. In the JDK image `.java-version` names:
 
 ```bash
-container run --rm -v "$PWD":/w -w /w/packages/kotlin/sdk eclipse-temurin:"$(packages/kotlin/scripts/jdk-version.sh)"-jdk ./gradlew --no-daemon check
+container run --rm -v "$PWD":/w -w /w/kotlin/sdk eclipse-temurin:"$(kotlin/scripts/jdk-version.sh)"-jdk ./gradlew --no-daemon check
 ```
 
 `check` runs, beside the build and the tests:
@@ -222,7 +222,7 @@ container run --rm -v "$PWD":/w -w /w/packages/kotlin/sdk eclipse-temurin:"$(pac
 - `checkKotlinAbi`: the public API written by hand against the committed dump, `api/sdk.api`. A change to that API is a change to the dump, made with `./gradlew updateKotlinAbi`. What the generator writes is the spec's, and is not in it.
 - `javaTest`: the tests under `src/javaTest/java`, which call the SDK as a Java program does. They are Java alone.
 - `refusals`: the programs under `src/refusals`, Kotlin and Java, that must not compile against the SDK. Each begins `// refused: <text>`, and the compiler must refuse it with a message holding that text.
-- `census`: no source suppresses a warning (every warning is an error, so a suppression is the one way an unchecked cast gets in), and the SDK reads no environment variable but `SEMIONT_BUS_LOG`.
+- `census`: no source suppresses a warning (every warning is an error, so a suppression is the one way an unchecked cast gets in), and the SDK reads no environment variable but `XYNOPLEX_BUS_LOG`.
 
 Every public declaration says it is public: the build runs Kotlin's explicit API mode.
 

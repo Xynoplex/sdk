@@ -23,32 +23,32 @@ use axum::routing::{get, post};
 use base64::Engine;
 use base64::engine::general_purpose::URL_SAFE_NO_PAD;
 use bytes::Bytes;
-use semiont::cache::CacheState;
-use semiont::cached::Observed;
-use semiont::channels::BRIDGED_CHANNELS;
-use semiont::client::{ClientOptions, SemiontClient};
-use semiont::errors::{BusRequestError, SessionError, TransportError};
-use semiont::event_bus::EventBus;
-use semiont::identity::kb_did;
-use semiont::refresh::CacheQuery;
-use semiont::session::{
-    SemiontBrowser, SemiontBrowserConfig, SemiontSession, SemiontSessionConfig, SessionFactory,
+use xynoplex::cache::CacheState;
+use xynoplex::cached::Observed;
+use xynoplex::channels::BRIDGED_CHANNELS;
+use xynoplex::client::{ClientOptions, XynoplexClient};
+use xynoplex::errors::{BusRequestError, SessionError, TransportError};
+use xynoplex::event_bus::EventBus;
+use xynoplex::identity::kb_did;
+use xynoplex::refresh::CacheQuery;
+use xynoplex::session::{
+    XynoplexBrowser, XynoplexBrowserConfig, XynoplexSession, XynoplexSessionConfig, SessionFactory,
     SessionFactoryOptions, SessionSignals, StoredSession, cache_key, clear_stored_session, kept_in,
     last_event_id_key, person_key, save_knowledge_bases, session_key, store_session,
     stored_session,
 };
-use semiont::state_unit::StateUnit;
-use semiont::storage::{SessionStorage, StorageChange, StorageSubscription};
-use semiont::testing::{FaultyTransport, InMemoryContent, SharedStorage, as_id};
-use semiont::transport::{
+use xynoplex::state_unit::StateUnit;
+use xynoplex::storage::{SessionStorage, StorageChange, StorageSubscription};
+use xynoplex::testing::{FaultyTransport, InMemoryContent, SharedStorage, as_id};
+use xynoplex::transport::{
     BoxFuture, ConnectionState, Envelope, FailureListener, Failures, Frames, PendingReply,
     ResourceHold, Transport,
 };
-use semiont::types::{
+use xynoplex::types::{
     HttpEndpoint, HttpEndpointProtocol, KbEndpoint, KnowledgeBase, LocalEndpoint,
     ResourceDescriptor, ResourceId,
 };
-use semiont_http_transport::session::HttpSessionFactory;
+use xynoplex_http_transport::session::HttpSessionFactory;
 use serde_json::{Map, Value, json};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
@@ -288,7 +288,7 @@ fn sign_in(n: u64, person_key: Option<&str>) -> StoredSession {
     StoredSession {
         access: jwt(n, in_an_hour()),
         refresh: format!("refresh-{n}"),
-        client_id: "semiont-browser".to_owned(),
+        client_id: "xynoplex-browser".to_owned(),
         token_endpoint: "http://127.0.0.1:9/token".to_owned(),
         revocation_endpoint: None,
         person_key: person_key.map(str::to_owned),
@@ -581,7 +581,7 @@ async fn settled(probe: impl Fn() -> bool) -> bool {
     true
 }
 
-async fn live(browser: &SemiontBrowser) -> Arc<SemiontSession> {
+async fn live(browser: &XynoplexBrowser) -> Arc<XynoplexSession> {
     let mut session = browser.active_session();
     let session = tokio::time::timeout(PATIENCE, session.wait_for(Option::is_some))
         .await
@@ -721,7 +721,7 @@ impl Transport for ClosingWrites {
 struct ClosingSessions;
 
 impl SessionFactory for ClosingSessions {
-    fn session(&self, options: SessionFactoryOptions) -> Result<SemiontSession, SessionError> {
+    fn session(&self, options: SessionFactoryOptions) -> Result<XynoplexSession, SessionError> {
         let kb_id = options.kb.id.clone();
         let kept_for = stored_session(options.storage.as_ref(), &kb_id)
             .and_then(|stored| stored.person_key)
@@ -731,13 +731,13 @@ impl SessionFactory for ClosingSessions {
             storage: options.storage.clone(),
             key: kept_for,
         };
-        let client = Arc::new(SemiontClient::new(
+        let client = Arc::new(XynoplexClient::new(
             Arc::new(transport),
             Arc::new(InMemoryContent::new()),
             None,
             ClientOptions::default(),
         ));
-        Ok(SemiontSession::new(SemiontSessionConfig {
+        Ok(XynoplexSession::new(XynoplexSessionConfig {
             kb: options.kb.target(),
             kept: kept_in(options.storage, &kb_id),
             client,
@@ -776,7 +776,7 @@ async fn forgotten_by_the_registry(
         (_, false) => Vec::new(),
     };
     save_knowledge_bases(storage.as_ref(), &registered).expect("stored");
-    let browser = SemiontBrowser::new(SemiontBrowserConfig {
+    let browser = XynoplexBrowser::new(XynoplexBrowserConfig {
         storage: storage.clone(),
         session_factory: Arc::new(ClosingSessions),
     })
@@ -830,7 +830,7 @@ async fn forgotten_by_the_session(
     )
     .expect("stored");
     save_knowledge_bases(storage.as_ref(), &[gateway.kb()]).expect("stored");
-    let browser = SemiontBrowser::new(SemiontBrowserConfig {
+    let browser = XynoplexBrowser::new(XynoplexBrowserConfig {
         storage: storage.clone(),
         session_factory: Arc::new(HttpSessionFactory::new(gateway.http.clone(), None)),
     })
@@ -1086,7 +1086,7 @@ async fn across(cases: &Value, row: &Value, changed: Changed) -> Vec<String> {
     let elsewhere = storage.context();
     save_knowledge_bases(storage.as_ref(), &[gateway.kb()]).expect("stored");
     store_session(storage.as_ref(), KB, &sign_in(1, Some(&jo))).expect("stored");
-    let browser = SemiontBrowser::new(SemiontBrowserConfig {
+    let browser = XynoplexBrowser::new(XynoplexBrowserConfig {
         storage: storage.clone(),
         session_factory: Arc::new(HttpSessionFactory::new(gateway.http.clone(), None)),
     })

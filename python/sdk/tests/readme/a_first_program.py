@@ -1,10 +1,10 @@
-from semiont.client import SemiontClient
-from semiont.identifiers import ResourceId
-from semiont.transport import PutBinaryRequest, Transport
-from semiont.types import GenerationJobParams, JobDeclined, LinkingJobParams
+from xynoplex.client import XynoplexClient
+from xynoplex.identifiers import ResourceId
+from xynoplex.transport import PutBinaryRequest, Transport
+from xynoplex.types import GenerationJobParams, JobDeclined, LinkingJobParams
 
 
-async def summarize(client: SemiontClient[Transport], paper: bytes) -> ResourceId | None:
+async def summarize(client: XynoplexClient[Transport], paper: bytes) -> ResourceId | None:
     # Ingest: the paper's bytes become a resource.
     created = await client.yield_.resource(
         PutBinaryRequest(

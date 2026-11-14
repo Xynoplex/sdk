@@ -1,5 +1,5 @@
 /**
- * Spec validation, and the spec's limits — `@semiont/core/openapi`.
+ * Spec validation, and the spec's limits — `@xynoplex/core/openapi`.
  *
  * The validators are GENERATED from `protocol/specs/openapi.json`
  * (`packages/codegen/schemas/generate-validators.mjs`), the same bundle `types.ts` and

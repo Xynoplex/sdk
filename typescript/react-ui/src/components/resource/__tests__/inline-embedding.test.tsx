@@ -9,14 +9,14 @@
  * overrides (height:auto / overflow:visible / padding drop). The visual
  * auto-height check is a manual, live smoke-test.
  */
-import { resourceId, EventBus } from '@semiont/core';
+import { resourceId, EventBus } from '@xynoplex/core';
 import { describe, it, expect, vi } from 'vitest';
 import { renderInEnglish, englishTranslationManager } from '../../../test-utils';
 import '@testing-library/jest-dom';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import type { SemiontSession } from '@semiont/sdk';
-import type { ResourceDescriptor as SemiontResource, ResourceId } from '@semiont/core';
+import type { XynoplexSession } from '@xynoplex/sdk';
+import type { ResourceDescriptor as XynoplexResource, ResourceId } from '@xynoplex/core';
 import { BrowseView } from '../BrowseView';
 import { ResourceViewer } from '../ResourceViewer';
 
@@ -26,13 +26,13 @@ vi.mock('remark-gfm', () => ({ default: () => ({}) }));
 
 const emptyAnnotations = { highlights: [], references: [], assessments: [], comments: [], tags: [] };
 
-function fakeSession(): SemiontSession {
+function fakeSession(): XynoplexSession {
   return {
     client: { bus: new EventBus(), browse: { click: vi.fn() }, beckon: { hover: vi.fn() } },
-  } as unknown as SemiontSession;
+  } as unknown as XynoplexSession;
 }
 
-const resource: SemiontResource & { content: string } = {
+const resource: XynoplexResource & { content: string } = {
   '@context': 'https://www.w3.org/ns/activitystreams',
   '@id': 'res-1' as ResourceId,
   name: 'Doc',
@@ -50,10 +50,10 @@ describe('inline embedding', () => {
       annotations: emptyAnnotations, annotateMode: false, session: fakeSession(),
     };
     const { container: pane } = renderInEnglish(<BrowseView translationManager={englishTranslationManager} {...props} />);
-    expect(pane.querySelector('.semiont-browse-view')).not.toHaveClass('semiont-browse-view--inline');
+    expect(pane.querySelector('.xynoplex-browse-view')).not.toHaveClass('xynoplex-browse-view--inline');
 
     const { container } = renderInEnglish(<BrowseView translationManager={englishTranslationManager} {...props} inline />);
-    expect(container.querySelector('.semiont-browse-view')).toHaveClass('semiont-browse-view--inline');
+    expect(container.querySelector('.xynoplex-browse-view')).toHaveClass('xynoplex-browse-view--inline');
   });
 
   it('ResourceViewer: `inline` marks its root and threads to BrowseView', () => {
@@ -64,17 +64,17 @@ describe('inline embedding', () => {
         session={fakeSession()} inline
       />,
     );
-    expect(container.querySelector('.semiont-resource-viewer')).toHaveClass('semiont-resource-viewer--inline');
-    expect(container.querySelector('.semiont-browse-view')).toHaveClass('semiont-browse-view--inline');
+    expect(container.querySelector('.xynoplex-resource-viewer')).toHaveClass('xynoplex-resource-viewer--inline');
+    expect(container.querySelector('.xynoplex-browse-view')).toHaveClass('xynoplex-browse-view--inline');
   });
 
   it('stylesheet carries the inline overrides (static gate — layout itself is the live check)', () => {
     // vitest runs with cwd = the package root (same in CI's per-workspace run).
     const css = readFileSync(resolve(process.cwd(), 'src/styles/features/resource-viewer.css'), 'utf8');
     // Auto-height roots, and the content area stops being a scroll container / drops the pane gutter.
-    expect(css).toMatch(/\.semiont-resource-viewer--inline\s*\{[^}]*height:\s*auto/);
-    expect(css).toMatch(/\.semiont-browse-view--inline\s*\{[^}]*height:\s*auto/);
-    expect(css).toMatch(/\.semiont-browse-view--inline\s+\.semiont-browse-view__content\s*\{[^}]*overflow:\s*visible/);
-    expect(css).toMatch(/\.semiont-browse-view--inline\s+\.semiont-browse-view__content\s*\{[^}]*padding:\s*0/);
+    expect(css).toMatch(/\.xynoplex-resource-viewer--inline\s*\{[^}]*height:\s*auto/);
+    expect(css).toMatch(/\.xynoplex-browse-view--inline\s*\{[^}]*height:\s*auto/);
+    expect(css).toMatch(/\.xynoplex-browse-view--inline\s+\.xynoplex-browse-view__content\s*\{[^}]*overflow:\s*visible/);
+    expect(css).toMatch(/\.xynoplex-browse-view--inline\s+\.xynoplex-browse-view__content\s*\{[^}]*padding:\s*0/);
   });
 });

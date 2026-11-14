@@ -14,10 +14,10 @@ const { execFileSync, spawn } = require('child_process');
 // Configuration
 const PACKAGES = [
   {
-    name: '@semiont/react-ui',
-    input: 'packages/typescript/react-ui/src/styles/index.css',
-    output: 'packages/typescript/react-ui/dist/styles/index.css',
-    watch: 'packages/typescript/react-ui/src/styles/**/*.css'
+    name: '@xynoplex/react-ui',
+    input: 'typescript/react-ui/src/styles/index.css',
+    output: 'typescript/react-ui/dist/styles/index.css',
+    watch: 'typescript/react-ui/src/styles/**/*.css'
   }
 ];
 

@@ -2,7 +2,7 @@
  * OpenResource — a single entry in the open-resources list (tabs) — and the
  * pure list operations over it.
  *
- * The list itself lives on `SemiontBrowser.openResources$`, and the CRUD
+ * The list itself lives on `XynoplexBrowser.openResources$`, and the CRUD
  * methods (`addOpenResource`, `removeOpenResource`, `updateOpenResourceName`,
  * `reorderOpenResources`) are its methods. What lives HERE is everything that
  * is a function of a list and nothing else — ordering, and the keep/drop
@@ -13,7 +13,7 @@
  * held by __tests__/stored-table.test.ts.
  */
 
-import type { ResourceId } from '@semiont/core';
+import type { ResourceId } from '@xynoplex/core';
 
 export interface OpenResource {
   /** The resource. */

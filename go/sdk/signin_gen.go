@@ -1,10 +1,10 @@
 // Code generated from protocol/specs/src/sign-in-store/SignIn.json — DO NOT EDIT.
 //
 // Regenerate: node packages/codegen/schemas/generate-sign-in-go.mjs
-// The Rust (semiont::sign_in_store) and Python (semiont.sign_in) SDKs generate
+// The Rust (xynoplex::sign_in_store) and Python (xynoplex.sign_in) SDKs generate
 // their entries from the same schema.
 
-package semiont
+package xynoplex
 
 import "time"
 

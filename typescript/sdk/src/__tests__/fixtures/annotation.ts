@@ -9,8 +9,8 @@
  * here; override the fields a test actually asserts on.
  */
 
-import { annotationId, resourceId } from '@semiont/core';
-import type { Annotation } from '@semiont/core';
+import { annotationId, resourceId } from '@xynoplex/core';
+import type { Annotation } from '@xynoplex/core';
 
 export function mockAnnotation(id: string, overrides: Partial<Annotation> = {}): Annotation {
   return {

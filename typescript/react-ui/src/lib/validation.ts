@@ -2,7 +2,7 @@
  * Image-URL validation for the browser, with security checks.
  */
 
-import type { ValidationResult } from '@semiont/core';
+import type { ValidationResult } from '@xynoplex/core';
 /**
  * Image URL validation with security checks (browser-specific)
  *

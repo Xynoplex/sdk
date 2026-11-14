@@ -1,4 +1,4 @@
-package semiont
+package xynoplex
 
 // Job: a job's lifecycle as it is announced, its status, its cancellation,
 // and, for a worker, the claiming of jobs. Creating a job is Mark.Delegate
@@ -10,8 +10,8 @@ import (
 	"iter"
 	"time"
 
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/bus"
+	"github.com/Xynoplex/sdk/go/api"
+	"github.com/Xynoplex/sdk/go/bus"
 )
 
 // JobNamespace is jobs: their lifecycle, their status, their cancellation,

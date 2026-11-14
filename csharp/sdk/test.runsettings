@@ -6,8 +6,8 @@
     <DataCollectors>
       <DataCollector friendlyName="XPlat Code Coverage">
         <Configuration>
-          <Include>[Semiont*]*</Include>
-          <Exclude>[Semiont.Tests]*</Exclude>
+          <Include>[Xynoplex*]*</Include>
+          <Exclude>[Xynoplex.Tests]*</Exclude>
         </Configuration>
       </DataCollector>
     </DataCollectors>

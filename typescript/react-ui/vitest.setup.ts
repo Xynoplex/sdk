@@ -78,7 +78,7 @@ afterEach(() => {
 });
 
 // Unit tests must never touch the network — they compose the SDK's in-memory
-// doubles (`@semiont/sdk/testing`), so any real request is a wiring mistake.
+// doubles (`@xynoplex/sdk/testing`), so any real request is a wiring mistake.
 // This refuses one loudly and names the URL, rather than letting it fail
 // against a server that is not there.
 //
@@ -92,7 +92,7 @@ const refuseNetwork: typeof fetch = (input) => {
   throw new Error(
     `Unit test attempted a network request: ${url}\n` +
       `Unit tests compose the SDK's in-memory doubles, never a real transport. ` +
-      `Build clients via test-utils (or @semiont/sdk/testing directly) and script ` +
+      `Build clients via test-utils (or @xynoplex/sdk/testing directly) and script ` +
       `the response, rather than issuing a request no server answers.`,
   );
 };

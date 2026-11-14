@@ -10,11 +10,11 @@ from typing import get_args
 from pydantic import BaseModel, JsonValue
 from spec import SPEC, objects, read, text
 
-from semiont import error_codes, refresh, stored, timing
-from semiont import types as wire
-from semiont.channels import CHANNELS
-from semiont.namespaces import live
-from semiont.retry import RetryPolicy
+from xynoplex import error_codes, refresh, stored, timing
+from xynoplex import types as wire
+from xynoplex.channels import CHANNELS
+from xynoplex.namespaces import live
+from xynoplex.retry import RetryPolicy
 
 CODES = read(SPEC / "errors/codes.json")
 
@@ -31,7 +31,7 @@ def test_each_vocabulary_is_its_table_s_codes_as_a_type_and_as_a_tuple() -> None
         "busRequest": (error_codes.BusRequestErrorCode, error_codes.BUS_REQUEST_ERROR_CODES),
         "transport": (error_codes.TransportErrorCode, error_codes.TRANSPORT_ERROR_CODES),
         "job": (error_codes.JobErrorCode, error_codes.JOB_ERROR_CODES),
-        "session": (error_codes.SemiontSessionErrorCode, error_codes.SEMIONT_SESSION_ERROR_CODES),
+        "session": (error_codes.XynoplexSessionErrorCode, error_codes.XYNOPLEX_SESSION_ERROR_CODES),
         "signIn": (error_codes.SignInErrorCode, error_codes.SIGN_IN_ERROR_CODES),
         "kbIdentity": (error_codes.IdentityUnverifiableReason, error_codes.IDENTITY_UNVERIFIABLE_REASONS),
         "spanRefusal": (error_codes.SpanRefusal, error_codes.SPAN_REFUSALS),
@@ -144,7 +144,7 @@ def test_the_kept_queries_are_one_list_and_it_is_those_the_refresh_table_marks_p
 
 
 def held_type(reference: str) -> object:
-    """The type a query's `value` names in `semiont.types`: a component's model, or a member of one (`#/properties/…`) by its wire name."""
+    """The type a query's `value` names in `xynoplex.types`: a component's model, or a member of one (`#/properties/…`) by its wire name."""
     component, _, pointer = reference.partition("#")
     named: object = getattr(wire, PurePosixPath(component).stem)
     steps = pointer.split("/")[1:]

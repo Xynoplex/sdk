@@ -31,8 +31,8 @@
 
 use super::{Held, Tasks, cancelled, said, signal};
 use crate::channels::{Channel, MarkCreateError, MarkDelegateTimeout, MarkRequested, MarkSubmit};
-use crate::client::SemiontClient;
-use crate::errors::SemiontError;
+use crate::client::XynoplexClient;
+use crate::errors::XynoplexError;
 use crate::event_bus::BusFrames;
 use crate::namespaces::JobEvent;
 use crate::state_unit::StateUnit;
@@ -58,19 +58,19 @@ pub struct PendingAnnotation {
 }
 
 struct Shared {
-    client: Arc<SemiontClient>,
+    client: Arc<XynoplexClient>,
     resource_id: ResourceId,
     pending: Held<Option<PendingAnnotation>>,
     delegating: Held<Option<Motivation>>,
     progress: Held<Option<JobProgress>>,
     progress_motivation: Held<Option<Motivation>>,
-    failure: Held<Option<SemiontError>>,
+    failure: Held<Option<XynoplexError>>,
     job_id: Held<Option<JobId>>,
     tasks: Tasks,
 }
 
 impl Shared {
-    fn failed<C: Channel<Payload = ResourceErrorEvent>>(&self, error: &SemiontError) {
+    fn failed<C: Channel<Payload = ResourceErrorEvent>>(&self, error: &XynoplexError) {
         signal::<C>(
             &self.client,
             &ResourceErrorEvent {
@@ -89,7 +89,7 @@ pub struct MarkStateUnit {
 
 impl MarkStateUnit {
     /// The marking of `resource_id`.
-    pub fn new(client: Arc<SemiontClient>, resource_id: &ResourceId) -> MarkStateUnit {
+    pub fn new(client: Arc<XynoplexClient>, resource_id: &ResourceId) -> MarkStateUnit {
         let heard = client
             .bus()
             .frames_among(&[MarkRequested::NAME, MarkSubmit::NAME]);
@@ -136,7 +136,7 @@ impl MarkStateUnit {
     /// Why the last delegated job ended without completing: it failed or was
     /// cancelled. None while one runs, after one that completed, and once
     /// dismissed.
-    pub fn failure(&self) -> watch::Receiver<Option<SemiontError>> {
+    pub fn failure(&self) -> watch::Receiver<Option<XynoplexError>> {
         self.shared.failure.read()
     }
 

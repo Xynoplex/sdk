@@ -14,22 +14,22 @@ package state
 import (
 	"context"
 
-	semiont "github.com/The-AI-Alliance/semiont/packages/go/sdk"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
+	xynoplex "github.com/Xynoplex/sdk/go"
+	"github.com/Xynoplex/sdk/go/api"
 )
 
 // gathering is one gather's state.
 type gathering struct {
-	context *semiont.Variable[*api.GatheredContext]
-	loading *semiont.Variable[bool]
-	err     *semiont.Variable[error]
+	context *xynoplex.Variable[*api.GatheredContext]
+	loading *xynoplex.Variable[bool]
+	err     *xynoplex.Variable[error]
 }
 
 func newGathering() gathering {
 	return gathering{
-		context: semiont.NewVariable[*api.GatheredContext](nil),
-		loading: semiont.NewVariable(false),
-		err:     semiont.NewVariable[error](nil),
+		context: xynoplex.NewVariable[*api.GatheredContext](nil),
+		loading: xynoplex.NewVariable(false),
+		err:     xynoplex.NewVariable[error](nil),
 	}
 }
 
@@ -51,58 +51,58 @@ func (g gathering) end() {
 // see the file's documentation. A state holding none is nil, or the zero
 // AnnotationId.
 type GatherStateUnit struct {
-	client     *semiont.Client
+	client     *xynoplex.Client
 	resourceID api.ResourceId
 	life
 
 	annotation   gathering
-	annotationID *semiont.Variable[api.AnnotationId]
+	annotationID *xynoplex.Variable[api.AnnotationId]
 	resource     gathering
 }
 
-var _ semiont.StateUnit = (*GatherStateUnit)(nil)
+var _ xynoplex.StateUnit = (*GatherStateUnit)(nil)
 
 // NewGatherStateUnit is a unit gathering the annotations of resourceID over
 // client.
-func NewGatherStateUnit(client *semiont.Client, resourceID api.ResourceId) *GatherStateUnit {
+func NewGatherStateUnit(client *xynoplex.Client, resourceID api.ResourceId) *GatherStateUnit {
 	return &GatherStateUnit{
 		client:       client,
 		resourceID:   resourceID,
 		life:         newLife(),
 		annotation:   newGathering(),
-		annotationID: semiont.NewVariable(api.AnnotationId{}),
+		annotationID: xynoplex.NewVariable(api.AnnotationId{}),
 		resource:     newGathering(),
 	}
 }
 
 // Context is the context around the annotation last asked about.
-func (u *GatherStateUnit) Context() semiont.Watched[*api.GatheredContext] {
+func (u *GatherStateUnit) Context() xynoplex.Watched[*api.GatheredContext] {
 	return u.annotation.context.Reading()
 }
 
 // Loading is whether the annotation's gather is under way.
-func (u *GatherStateUnit) Loading() semiont.Watched[bool] { return u.annotation.loading.Reading() }
+func (u *GatherStateUnit) Loading() xynoplex.Watched[bool] { return u.annotation.loading.Reading() }
 
 // Error is the failure the annotation's gather met.
-func (u *GatherStateUnit) Error() semiont.Watched[error] { return u.annotation.err.Reading() }
+func (u *GatherStateUnit) Error() xynoplex.Watched[error] { return u.annotation.err.Reading() }
 
 // AnnotationId is the annotation last asked about.
-func (u *GatherStateUnit) AnnotationId() semiont.Watched[api.AnnotationId] {
+func (u *GatherStateUnit) AnnotationId() xynoplex.Watched[api.AnnotationId] {
 	return u.annotationID.Reading()
 }
 
 // ResourceContext is the context around the resource last asked about.
-func (u *GatherStateUnit) ResourceContext() semiont.Watched[*api.GatheredContext] {
+func (u *GatherStateUnit) ResourceContext() xynoplex.Watched[*api.GatheredContext] {
 	return u.resource.context.Reading()
 }
 
 // ResourceLoading is whether the resource's gather is under way.
-func (u *GatherStateUnit) ResourceLoading() semiont.Watched[bool] {
+func (u *GatherStateUnit) ResourceLoading() xynoplex.Watched[bool] {
 	return u.resource.loading.Reading()
 }
 
 // ResourceError is the failure the resource's gather met.
-func (u *GatherStateUnit) ResourceError() semiont.Watched[error] { return u.resource.err.Reading() }
+func (u *GatherStateUnit) ResourceError() xynoplex.Watched[error] { return u.resource.err.Reading() }
 
 // GatherAnnotation gathers the context around an annotation of this unit's
 // resource, taking what Gather.Annotation takes.
@@ -121,7 +121,7 @@ func (u *GatherStateUnit) GatherAnnotation(annotationID api.AnnotationId, option
 }
 
 // GatherResource gathers the context around a whole resource, as
-// Gather.Resource does given options (semiont.GatherResourceDefaults, when
+// Gather.Resource does given options (xynoplex.GatherResourceDefaults, when
 // nothing else is to be stated).
 func (u *GatherStateUnit) GatherResource(resourceID api.ResourceId, options api.GatherResourceRequestOptions) {
 	u.mu.Lock()

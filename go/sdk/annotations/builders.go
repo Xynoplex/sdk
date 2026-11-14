@@ -12,8 +12,8 @@ import (
 	"strings"
 	"time"
 
-	semiont "github.com/The-AI-Alliance/semiont/packages/go/sdk"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
+	xynoplex "github.com/Xynoplex/sdk/go"
+	"github.com/Xynoplex/sdk/go/api"
 )
 
 // pdfFragments is what a PDF's fragment conforms to.
@@ -22,11 +22,11 @@ const pdfFragments = "http://tools.ietf.org/rfc/rfc3778"
 // SpanRefusedError is a span AnnotationOfSpan refused, which is not the
 // text's. Code names the refusal.
 type SpanRefusedError struct {
-	Code    semiont.SpanRefusal
+	Code    xynoplex.SpanRefusal
 	Message string
 }
 
-var _ semiont.Error = (*SpanRefusedError)(nil)
+var _ xynoplex.Error = (*SpanRefusedError)(nil)
 
 func (e *SpanRefusedError) Error() string     { return e.Message }
 func (e *SpanRefusedError) ErrorCode() string { return string(e.Code) }
@@ -34,7 +34,7 @@ func (e *SpanRefusedError) ErrorCode() string { return string(e.Code) }
 // Status is never stated: a span is refused where the annotation is built.
 func (e *SpanRefusedError) Status() (int, bool) { return 0, false }
 
-func refused(code semiont.SpanRefusal, format string, args ...any) *SpanRefusedError {
+func refused(code xynoplex.SpanRefusal, format string, args ...any) *SpanRefusedError {
 	return &SpanRefusedError{Code: code, Message: fmt.Sprintf(format, args...)}
 }
 
@@ -70,12 +70,12 @@ func isASpanOf(length, start, end int) bool { return 0 <= start && start <= end 
 func fragments(anchored api.AnchoredText, text offsets, span TextSpan) ([]api.Selector, error) {
 	overlapping, rectangles := locate(anchored, span.Start, span.End)
 	if len(rectangles) == 0 {
-		return nil, refused(semiont.SpanRefusalNothingLocated, "no item of the anchored text overlaps offsets %d to %d", span.Start, span.End)
+		return nil, refused(xynoplex.SpanRefusalNothingLocated, "no item of the anchored text overlaps offsets %d to %d", span.Start, span.End)
 	}
 	least := slices.MinFunc(overlapping, func(a, b api.PdfTextItem) int { return cmp.Compare(a.Start, b.Start) }).Start
 	greatest := slices.MaxFunc(overlapping, func(a, b api.PdfTextItem) int { return cmp.Compare(a.End, b.End) }).End
 	if !strings.Contains(collapsed(text.between(least, greatest)), collapsed(span.Exact)) {
-		return nil, refused(semiont.SpanRefusalExactNotCovered, "the items that overlap offsets %d to %d do not cover the span's words", span.Start, span.End)
+		return nil, refused(xynoplex.SpanRefusalExactNotCovered, "the items that overlap offsets %d to %d do not cover the span's words", span.Start, span.End)
 	}
 	conformsTo := pdfFragments
 	selectors := make([]api.Selector, len(rectangles))
@@ -103,7 +103,7 @@ func selectorsOf(of OfSpan) ([]api.Selector, error) {
 		// of the text refuses every span of it, whether this span touches that item or not.
 		for index, item := range of.Anchored.Items {
 			if !isASpanOf(text.length(), item.Start, item.End) {
-				return nil, refused(semiont.SpanRefusalItemOutOfRange,
+				return nil, refused(xynoplex.SpanRefusalItemOutOfRange,
 					"item %d of the anchored text is offsets %d to %d, which is no stretch of a text of %d code points",
 					index, item.Start, item.End, text.length())
 			}
@@ -111,12 +111,12 @@ func selectorsOf(of OfSpan) ([]api.Selector, error) {
 	}
 	span := of.Span
 	if !isASpanOf(text.length(), span.Start, span.End) {
-		return nil, refused(semiont.SpanRefusalSpanOutOfRange, "offsets %d to %d are not a span of a text of %d code points", span.Start, span.End, text.length())
+		return nil, refused(xynoplex.SpanRefusalSpanOutOfRange, "offsets %d to %d are not a span of a text of %d code points", span.Start, span.End, text.length())
 	}
 	var where []api.Selector
 	if of.Anchored == nil {
 		if text.between(span.Start, span.End) != span.Exact {
-			return nil, refused(semiont.SpanRefusalExactMismatch, "the text from offset %d to offset %d is not the span's words", span.Start, span.End)
+			return nil, refused(xynoplex.SpanRefusalExactMismatch, "the text from offset %d to offset %d is not the span's words", span.Start, span.End)
 		}
 		where = make([]api.Selector, 1)
 		if err := where[0].FromTextPositionSelector(api.TextPositionSelector{
@@ -132,10 +132,10 @@ func selectorsOf(of OfSpan) ([]api.Selector, error) {
 		where = located
 	}
 	if !strings.HasSuffix(text.between(0, span.Start), span.Prefix) {
-		return nil, refused(semiont.SpanRefusalPrefixMismatch, "the span's prefix is not the text just before offset %d", span.Start)
+		return nil, refused(xynoplex.SpanRefusalPrefixMismatch, "the span's prefix is not the text just before offset %d", span.Start)
 	}
 	if !strings.HasPrefix(text.between(span.End, text.length()), span.Suffix) {
-		return nil, refused(semiont.SpanRefusalSuffixMismatch, "the span's suffix is not the text just after offset %d", span.End)
+		return nil, refused(xynoplex.SpanRefusalSuffixMismatch, "the span's suffix is not the text just after offset %d", span.End)
 	}
 	quote := api.TextQuoteSelector{Type: api.TextQuoteSelectorTypeTextQuoteSelector, Exact: span.Exact}
 	if span.Prefix != "" {

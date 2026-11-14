@@ -1,5 +1,5 @@
 /**
- * SemiontClient lifecycle + namespace-routing tests.
+ * XynoplexClient lifecycle + namespace-routing tests.
  *
  * Covers the wiring on `client.ts` itself: bus bridge construction,
  * `state$` / `dispose` plumbing, and two results that reach a caller with no
@@ -7,7 +7,7 @@
  * request answered on the wire.
  *
  * Strategy: pass a recording mock `ITransport` (and a mock
- * `IContentTransport`) into `new SemiontClient(...)`. No HTTP, no real
+ * `IContentTransport`) into `new XynoplexClient(...)`. No HTTP, no real
  * bus, no real KS — unit tests of the client-level wiring. The transport
  * contract itself is exercised by `local-transport.test.ts` and
  * `http-transport.http-paths.test.ts`. Each namespace's behavior is
@@ -21,10 +21,10 @@ import {
   baseUrl,
   resourceId,
   annotationId,
-} from '@semiont/core';
+} from '@xynoplex/core';
 
-import { SemiontClient } from '../client';
-import type { ConnectionState, ITransport, IContentTransport } from '@semiont/core';
+import { XynoplexClient } from '../client';
+import type { ConnectionState, ITransport, IContentTransport } from '@xynoplex/core';
 import { inMemoryTransport, gatewayOperationSpies, contentTransportSpies } from './helpers/in-memory-transport';
 import { annotationContextFor } from './fixtures/gathered-context';
 
@@ -52,18 +52,18 @@ function makeMockContent(): IContentTransport {
   return contentTransportSpies();
 }
 
-describe('SemiontClient lifecycle + namespace routing', () => {
+describe('XynoplexClient lifecycle + namespace routing', () => {
   let transport: ITransport;
   /** What the transport delivers: a reply put here reaches the client as one off the wire does. */
   let wire: EventBus;
   let content: IContentTransport;
-  let client: SemiontClient;
+  let client: XynoplexClient;
 
   beforeEach(() => {
     wire = new EventBus();
     transport = makeMockTransport(wire);
     content = makeMockContent();
-    client = new SemiontClient(transport, content);
+    client = new XynoplexClient(transport, content);
   });
 
   // ── Lifecycle / connection ─────────────────────────────────────────────
@@ -202,7 +202,7 @@ describe('SemiontClient lifecycle + namespace routing', () => {
 
   // ── Connection state propagation through dispose semantics ──────────────
   describe('initialization', () => {
-    test('SemiontClient construction calls transport.bridgeInto with its bus', () => {
+    test('XynoplexClient construction calls transport.bridgeInto with its bus', () => {
       // bridgeInto is captured during construction (in beforeEach).
       expect(transport.bridgeInto).toHaveBeenCalledTimes(1);
       const arg = vi.mocked(transport.bridgeInto).mock.calls[0]![0];

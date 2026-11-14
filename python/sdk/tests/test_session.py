@@ -18,14 +18,14 @@ from aio import Heard, pass_time, run, soon, turns
 from spec import SPEC, JsonObject, objects, read, strings, text
 from tokens import expired, jwt, token
 
-from semiont.errors import BusRequestError, SemiontError, SessionError, SignInError, TransportError
-from semiont.events import Broadcast, Events
-from semiont.session import HeldSignIn, MemorySignIn, Refresh, SemiontSession, SessionEndReason, Validate
-from semiont.testing import FaultyTransport, create_test_client
-from semiont.testing.axioms import AxiomSubject, Fresh, assert_state_unit_axioms
-from semiont.timing import ERRORS_KEPT_FOR_FIRST_READER_COUNT, MAX_RECONNECT_MS, RECONNECT_MS
-from semiont.types import HttpEndpoint, KbTarget, UserResponse
-from semiont.watched import Variable
+from xynoplex.errors import BusRequestError, XynoplexError, SessionError, SignInError, TransportError
+from xynoplex.events import Broadcast, Events
+from xynoplex.session import HeldSignIn, MemorySignIn, Refresh, XynoplexSession, SessionEndReason, Validate
+from xynoplex.testing import FaultyTransport, create_test_client
+from xynoplex.testing.axioms import AxiomSubject, Fresh, assert_state_unit_axioms
+from xynoplex.timing import ERRORS_KEPT_FOR_FIRST_READER_COUNT, MAX_RECONNECT_MS, RECONNECT_MS
+from xynoplex.types import HttpEndpoint, KbTarget, UserResponse
+from xynoplex.watched import Variable
 
 TABLE = read(SPEC / "session/cases.json")
 
@@ -37,7 +37,7 @@ KB = "kb-alpha"
 TARGET = KbTarget(id=KB, label="Alpha", endpoint=HttpEndpoint(kind="http", host="localhost", port=4000, protocol="http"))
 
 type Renewal = str | SignInError | None
-type Validation = UserResponse | SemiontError
+type Validation = UserResponse | XynoplexError
 
 
 def alice() -> UserResponse:
@@ -51,7 +51,7 @@ def unauthorized() -> TransportError:
 
 
 def held(access: str) -> HeldSignIn:
-    return HeldSignIn(access=access, refresh="a-refresh-token", client_id="semiont-cli", token_endpoint="https://issuer.test/token")
+    return HeldSignIn(access=access, refresh="a-refresh-token", client_id="xynoplex-cli", token_endpoint="https://issuer.test/token")
 
 
 @final
@@ -74,7 +74,7 @@ class World:
         self.answered: UserResponse | None = None
         """Who the gateway last said a token is."""
         self.told: list[SessionEndReason] = []
-        self._heard: Heard[SemiontError] | None = None
+        self._heard: Heard[XynoplexError] | None = None
 
     async def refresh(self, holding: str | None) -> str | None:
         self.handed.append(holding)
@@ -88,15 +88,15 @@ class World:
     async def validate(self, asked: str) -> UserResponse:
         self.validated.append(asked)
         answer = self.validations.popleft() if self.validations else alice()
-        if isinstance(answer, SemiontError):
+        if isinstance(answer, XynoplexError):
             raise answer
         self.answered = answer
         return answer
 
     def session(
         self, *, refresh: Refresh | None, validate: Validate | None, said: Events[SessionError] | None = None
-    ) -> SemiontSession[FaultyTransport]:
-        session = SemiontSession(
+    ) -> XynoplexSession[FaultyTransport]:
+        session = XynoplexSession(
             kb=TARGET,
             client=create_test_client().client,
             token=self.token,
@@ -110,7 +110,7 @@ class World:
         self._heard = Heard(session.errors())
         return session
 
-    def its_session(self) -> SemiontSession[FaultyTransport]:
+    def its_session(self) -> XynoplexSession[FaultyTransport]:
         """A session that renews and asks as the world scripts."""
         return self.session(refresh=self.refresh, validate=self.validate)
 
@@ -207,14 +207,14 @@ def one_too_many() -> TransportError:
     return TransportError.of_status("asked more than the case allows", 500, None)
 
 
-def ends(session: SemiontSession[FaultyTransport]) -> str:
+def ends(session: XynoplexSession[FaultyTransport]) -> str:
     if session.token.value is None:
         return "signed-out"
     return "unconfirmed" if session.user.value is None else "signed-in"
 
 
 async def is_as_stated(
-    row: JsonObject, world: World, session: SemiontSession[FaultyTransport], asked_before: int, renews: str | None
+    row: JsonObject, world: World, session: XynoplexSession[FaultyTransport], asked_before: int, renews: str | None
 ) -> None:
     """The session ended as the row states, and one that ended signed out asks nobody anything afterwards, however long it is held.
 
@@ -327,7 +327,7 @@ def test_what_its_transport_met_before_the_session_was_made_is_said_first_since_
         client = create_test_client().client
         # Nobody reads the transport's failures yet: what it meets is kept for whoever reads them first.
         client.transport.fail(early)
-        session = SemiontSession(
+        session = XynoplexSession(
             kb=TARGET,
             client=client,
             token=world.token,
@@ -349,7 +349,7 @@ def test_what_its_transport_met_before_the_session_was_made_is_said_first_since_
     run(scenario())
 
 
-def say_each_in_turn(session: SemiontSession[FaultyTransport], keeping: Broadcast[SessionError]) -> list[tuple[str, str]]:
+def say_each_in_turn(session: XynoplexSession[FaultyTransport], keeping: Broadcast[SessionError]) -> list[tuple[str, str]]:
     """Say an own error and a transport failure, twice over, with no turn of the loop between: what was said, in order."""
     said: list[SessionError | TransportError] = [
         SessionError("session.keep-failed", "the sign-in could not be read", kb_id=KB),
@@ -408,7 +408,7 @@ def test_the_first_reader_of_a_session_nobody_has_read_is_given_the_latest_it_sa
 
     async def scenario() -> None:
         # Not the world's: it reads the session's errors as soon as it is made.
-        session = SemiontSession(
+        session = XynoplexSession(
             kb=TARGET,
             client=create_test_client().client,
             token=world.token,
@@ -436,7 +436,7 @@ def test_a_session_drops_what_it_kept_for_a_first_reader_as_it_ends_so_a_reader_
 
     async def scenario() -> None:
         # Not the world's: it reads the session's errors as soon as it is made.
-        session = SemiontSession(
+        session = XynoplexSession(
             kb=TARGET,
             client=create_test_client().client,
             token=world.token,
@@ -608,7 +608,7 @@ class Slowly:
         if asked == self.held_token:
             await self.release.wait()
             raise unauthorized()
-        if isinstance(self.of_others, SemiontError):
+        if isinstance(self.of_others, XynoplexError):
             raise self.of_others
         return self.of_others
 
@@ -1026,7 +1026,7 @@ def test_a_session_ended_while_it_starts_is_ready_and_says_nothing() -> None:
     run(scenario())
 
 
-class Sessions(AxiomSubject[SemiontSession[FaultyTransport]]):
+class Sessions(AxiomSubject[XynoplexSession[FaultyTransport]]):
     """How the axioms reach a session: its token and who is signed in, over a client it was given.
 
     Built and not started: starting is `async with`, which the harness does not
@@ -1034,12 +1034,12 @@ class Sessions(AxiomSubject[SemiontSession[FaultyTransport]]):
     """
 
     @override
-    def setup(self) -> Fresh[SemiontSession[FaultyTransport]]:
+    def setup(self) -> Fresh[XynoplexSession[FaultyTransport]]:
         client = create_test_client().client
-        return Fresh(SemiontSession(kb=TARGET, client=client, token=Variable[str | None](None), kept=MemorySignIn())).given(client)
+        return Fresh(XynoplexSession(kb=TARGET, client=client, token=Variable[str | None](None), kept=MemorySignIn())).given(client)
 
     @override
-    def surfaces(self, unit: SemiontSession[FaultyTransport]) -> Sequence[AsyncIterable[object]]:
+    def surfaces(self, unit: XynoplexSession[FaultyTransport]) -> Sequence[AsyncIterable[object]]:
         # Its stream state is its client's, and ends with it. Its errors are its own, and end with it.
         return (unit.token, unit.user, unit.errors())
 

@@ -1,7 +1,7 @@
 /**
- * The `semiont-worker` skill's complete worker, run.
+ * The `xynoplex-worker` skill's complete worker, run.
  *
- * The TypeScript block of docs/builder/skills/semiont-worker/SKILL.md that
+ * The TypeScript block of docs/builder/skills/xynoplex-worker/SKILL.md that
  * has `main` is a whole program. Node is given it here word for word, as
  * whoever copies it would run it, with a gateway and the issuer it trusts
  * standing in on this machine. What the program sends is read off them. The
@@ -9,8 +9,8 @@
  * a token only for an assertion the worker's key signed
  * (protocol/specs/src/session/client-assertion-cases.json).
  *
- * The program imports `@semiont/sdk` and `@semiont/core` by name, so what
- * runs is the built packages: `npm run build:packages -- @semiont/sdk` comes
+ * The program imports `@xynoplex/sdk` and `@xynoplex/core` by name, so what
+ * runs is the built packages: `npm run build:packages -- @xynoplex/sdk` comes
  * first, and a package that is not built fails this test by name.
  */
 import { spawn, type ChildProcessWithoutNullStreams } from 'node:child_process';
@@ -20,12 +20,12 @@ import { createServer, type ServerResponse } from 'node:http';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it } from 'vitest';
-import { isObject, isString } from '@semiont/core';
+import { isObject, isString } from '@xynoplex/core';
 import { JOB_CLAIM_CHANNELS, JOB_COMMIT_CHANNELS } from '../claims';
 
 const REPO = join(dirname(fileURLToPath(import.meta.url)), '../../../../..');
-const PACKAGE = join(REPO, 'packages/typescript/sdk');
-const SKILL = readFileSync(join(REPO, 'docs/builder/skills/semiont-worker/SKILL.md'), 'utf-8');
+const PACKAGE = join(REPO, 'typescript/sdk');
+const SKILL = readFileSync(join(REPO, 'docs/builder/skills/xynoplex-worker/SKILL.md'), 'utf-8');
 /** What a grant that proves an account by its key posts. */
 const ASSERTION: { form: string[]; grantType: string; assertionType: string } = JSON.parse(
   readFileSync(join(REPO, 'protocol/specs/src/session/client-assertion-cases.json'), 'utf-8'),
@@ -137,7 +137,7 @@ async function standIn(knows: Knows): Promise<StandIn> {
   const address = server.address();
   if (address === null || isString(address)) throw new Error('a listening server has a port');
   const origin = `http://127.0.0.1:${address.port}`;
-  const issuer = `${origin}/realms/semiont`;
+  const issuer = `${origin}/realms/xynoplex`;
 
   const json = (response: ServerResponse, status: number, body: unknown): void => {
     response.writeHead(status, { 'content-type': 'application/json' }).end(JSON.stringify(body));
@@ -159,9 +159,9 @@ async function standIn(knows: Knows): Promise<StandIn> {
       switch (`${method} ${path}`) {
         case 'GET /.well-known/oauth-protected-resource':
           return json(response, 200, { resource: 'https://kb.example.org', authorization_servers: [issuer], bearer_methods_supported: ['header'] });
-        case 'GET /realms/semiont/.well-known/openid-configuration':
+        case 'GET /realms/xynoplex/.well-known/openid-configuration':
           return json(response, 200, { issuer, authorization_endpoint: `${issuer}/auth`, token_endpoint: `${issuer}/token` });
-        case 'POST /realms/semiont/token':
+        case 'POST /realms/xynoplex/token':
           return proves(body, knows.account, `${issuer}/token`)
             ? json(response, 200, { access_token: knows.serviceToken, expires_in: 300 })
             : json(response, 401, { error: 'invalid_client' });
@@ -219,7 +219,7 @@ const JOB = {
   progress: {},
 };
 
-describe('the complete worker of the semiont-worker skill', () => {
+describe('the complete worker of the xynoplex-worker skill', () => {
   let gateway: StandIn | undefined;
   let worker: ChildProcessWithoutNullStreams | undefined;
 
@@ -231,9 +231,9 @@ describe('the complete worker of the semiont-worker skill', () => {
   it('says what it is called, claims as its agent, commits a highlight it built, says the job\'s lifecycle, claims again, and stops when it is told to', async () => {
     expect(PROGRAMS, 'the skill shows one TypeScript program').toHaveLength(1);
     const [program] = PROGRAMS;
-    for (const imported of program.matchAll(/from '@semiont\/([a-z-]+)'/g)) {
+    for (const imported of program.matchAll(/from '@xynoplex\/([a-z-]+)'/g)) {
       const built = join(REPO, 'packages', 'typescript', imported[1], 'dist/index.js');
-      if (!existsSync(built)) throw new Error(`${built} is missing: this test runs the built packages, so run \`npm run build --workspace=@semiont/sdk\` first`);
+      if (!existsSync(built)) throw new Error(`${built} is missing: this test runs the built packages, so run \`npm run build --workspace=@xynoplex/sdk\` first`);
     }
 
     // A case of the table the builders are held by: a text that is one sentence, and the highlight of all of it.
@@ -255,7 +255,7 @@ describe('the complete worker of the semiont-worker skill', () => {
 
     const running = spawn(process.execPath, ['--input-type=module-typescript', '-'], {
       cwd: PACKAGE,
-      env: { SEMIONT_API_URL: standing.origin, SEMIONT_OIDC_CLIENT_ID: admitted.clientId, SEMIONT_OIDC_CLIENT_KEY: pem },
+      env: { XYNOPLEX_API_URL: standing.origin, XYNOPLEX_OIDC_CLIENT_ID: admitted.clientId, XYNOPLEX_OIDC_CLIENT_KEY: pem },
     });
     worker = running;
     const said = { out: '', err: '' };
@@ -306,9 +306,9 @@ describe('the complete worker of the semiont-worker skill', () => {
     expect(complete).toEqual({ ...identity, result: { found: 1, persisted: 1 }, durability: 'acknowledged' });
 
     // It signed in as its account, by its key: the issuer's token is its bearer, and the gateway named it. Nothing is exchanged.
-    const grants = standing.asked.filter((request) => `${request.method} ${request.path}` === 'POST /realms/semiont/token');
+    const grants = standing.asked.filter((request) => `${request.method} ${request.path}` === 'POST /realms/xynoplex/token');
     expect(grants).toHaveLength(1);
-    expect(proves(grants[0].body, admitted, `${standing.origin}/realms/semiont/token`)).toBe(true);
+    expect(proves(grants[0].body, admitted, `${standing.origin}/realms/xynoplex/token`)).toBe(true);
     const whoAmI = standing.asked.filter((request) => request.path === '/api/users/me');
     expect(whoAmI.map((request) => `${request.method} ${request.authorization}`)).toEqual([`GET Bearer ${serviceToken}`]);
     expect(standing.asked.filter((request) => request.path.startsWith('/api/tokens/'))).toEqual([]);

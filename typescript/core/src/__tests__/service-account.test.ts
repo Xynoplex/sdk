@@ -10,7 +10,7 @@ import { ServiceToken } from '../service-account';
 import { SignInError } from '../sign-in-error';
 import { UnansweredError } from '../unanswered';
 
-const ACCOUNT = { issuer: 'https://issuer.test/realms/kb', clientId: 'semiont-worker', clientSecret: 'client-secret' };
+const ACCOUNT = { issuer: 'https://issuer.test/realms/kb', clientId: 'xynoplex-worker', clientSecret: 'client-secret' };
 
 interface Asked {
   url: string;
@@ -50,12 +50,12 @@ describe('ServiceToken', () => {
     await expect(new ServiceToken(ACCOUNT).token({ renewed: false })).resolves.toBe('service-account-token');
 
     expect(asked.map(({ url }) => url)).toEqual([`${ACCOUNT.issuer}/.well-known/openid-configuration`, 'https://issuer.test/token']);
-    expect(String(asked[1]!.init?.body)).toBe('grant_type=client_credentials&client_id=semiont-worker&client_secret=client-secret');
+    expect(String(asked[1]!.init?.body)).toBe('grant_type=client_credentials&client_id=xynoplex-worker&client_secret=client-secret');
   });
 
   it.each([
     ['the discovery', '/.well-known/openid-configuration', `OIDC discovery for ${ACCOUNT.issuer} got no answer: TimeoutError`],
-    ['the grant', '/token', `Client-credentials grant for semiont-worker at ${ACCOUNT.issuer} got no answer: TimeoutError`],
+    ['the grant', '/token', `Client-credentials grant for xynoplex-worker at ${ACCOUNT.issuer} got no answer: TimeoutError`],
   ])('bounds %s by the request deadline: one never answered has failed at it, and not before', async (_what, path, message) => {
     // An issuer that accepts a connection and never answers would otherwise
     // hold a process's start, and every renewal after it, for as long as the
@@ -87,7 +87,7 @@ describe('ServiceToken', () => {
 
     const refused = await new ServiceToken(ACCOUNT).token({ renewed: false }).catch((e: unknown) => e);
 
-    expect(String(refused)).toContain(`Client-credentials grant for semiont-worker at ${ACCOUNT.issuer} failed (HTTP 401)`);
+    expect(String(refused)).toContain(`Client-credentials grant for xynoplex-worker at ${ACCOUNT.issuer} failed (HTTP 401)`);
     expect(String(refused)).not.toContain('client-secret');
     // The status rides as a field: a refused account and a lost packet are told apart by it, not by the message.
     expect(refused).toBeInstanceOf(SignInError);

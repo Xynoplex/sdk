@@ -1518,7 +1518,7 @@ wheels = [
 ]
 
 [[package]]
-name = "semiont"
+name = "xynoplex"
 source = { editable = "." }
 default-groups = ["conformance", "dev"]
 dependencies = [

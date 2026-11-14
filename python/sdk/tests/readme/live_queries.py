@@ -1,13 +1,13 @@
 from typing import assert_never
 
-from semiont.cache import Failed, Pending, Ready
-from semiont.client import SemiontClient
-from semiont.errors import SemiontError
-from semiont.identifiers import ResourceId
-from semiont.transport import Transport
+from xynoplex.cache import Failed, Pending, Ready
+from xynoplex.client import XynoplexClient
+from xynoplex.errors import XynoplexError
+from xynoplex.identifiers import ResourceId
+from xynoplex.transport import Transport
 
 
-async def watch(client: SemiontClient[Transport], resource: ResourceId) -> None:
+async def watch(client: XynoplexClient[Transport], resource: ResourceId) -> None:
     async with client.browse.annotations(resource) as live:  # holds the resource's scope
         async for state in live:
             match state:
@@ -15,7 +15,7 @@ async def watch(client: SemiontClient[Transport], resource: ResourceId) -> None:
                     print("asking")
                 case Ready(value=annotations):
                     print(len(annotations), "annotations")
-                case Failed(error=SemiontError() as error):  # a state, not a raise: the query lives on
+                case Failed(error=XynoplexError() as error):  # a state, not a raise: the query lives on
                     print("failed:", error.code)
                 case Failed(error=error):  # whatever else the request failed with
                     print("failed:", error)

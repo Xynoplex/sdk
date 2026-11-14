@@ -1,10 +1,10 @@
 'use client';
 
-import type { AnnotationId } from '@semiont/core';
+import type { AnnotationId } from '@xynoplex/core';
 import React, { useRef, useCallback, useEffect } from 'react';
 import type { RouteBuilder, LinkComponentProps } from '../../contexts/RoutingContext';
-import type { Annotation, AttributedEvent, StoredEventLike } from '@semiont/core';
-import { getAnnotationIdFromEvent } from '@semiont/core';
+import type { Annotation, AttributedEvent, StoredEventLike } from '@xynoplex/core';
+import { getAnnotationIdFromEvent } from '@xynoplex/core';
 import {
   formatEventType,
   getEventEmoji,
@@ -89,11 +89,11 @@ export function HistoryEvent({
     type: 'button' as const,
     onClick: () => onEventClick?.(annotationId),
     'aria-label': t('viewAnnotation', { content: displayContent?.exact || formatEventType(event.type, t) }),
-    className: 'semiont-history-event',
+    className: 'xynoplex-history-event',
     'data-related': isRelated ? 'true' : 'false',
     'data-interactive': 'true'
   } : {
-    className: 'semiont-history-event',
+    className: 'xynoplex-history-event',
     'data-related': isRelated ? 'true' : 'false'
   };
 
@@ -106,9 +106,9 @@ export function HistoryEvent({
       }}
       {...eventWrapperProps}
     >
-      <div className="semiont-history-event__content">
+      <div className="xynoplex-history-event__content">
         <span
-          className="semiont-history-event__emoji"
+          className="xynoplex-history-event__emoji"
           onMouseEnter={handleEmojiMouseEnter}
           onMouseLeave={handleEmojiMouseLeave}
         >
@@ -116,38 +116,38 @@ export function HistoryEvent({
         </span>
         {displayContent ? (
           displayContent.isTag ? (
-            <span className="semiont-history-event__tag">
+            <span className="xynoplex-history-event__tag">
               {displayContent.exact}
             </span>
           ) : displayContent.isQuoted ? (
-            <span className="semiont-history-event__text semiont-history-event__text--quoted">
+            <span className="xynoplex-history-event__text xynoplex-history-event__text--quoted">
               &ldquo;{displayContent.exact}&rdquo;
             </span>
           ) : (
-            <span className="semiont-history-event__text">
+            <span className="xynoplex-history-event__text">
               {displayContent.exact}
             </span>
           )
         ) : (
-          <span className="semiont-history-event__text">
+          <span className="xynoplex-history-event__text">
             {formatEventType(event.type, t, event.payload)}
           </span>
         )}
         {actor && (
-          <span className="semiont-history-event__user">
+          <span className="xynoplex-history-event__user">
             {actor}
           </span>
         )}
-        <span className="semiont-history-event__timestamp">
+        <span className="xynoplex-history-event__timestamp">
           {formatRelativeTime(event.timestamp, t)}
         </span>
       </div>
       {entityTypes.length > 0 && (
-        <div className="semiont-history-event__entity-types">
+        <div className="xynoplex-history-event__entity-types">
           {entityTypes.map((type) => (
             <span
               key={type}
-              className="semiont-tag semiont-tag--small"
+              className="xynoplex-tag xynoplex-tag--small"
               data-variant="blue"
             >
               {type}
@@ -156,14 +156,14 @@ export function HistoryEvent({
         </div>
       )}
       {creationDetails && (
-        <div className="semiont-history-event__details">
-          <span className="semiont-history-event__detail">
-            {t('user')}: <span className="semiont-history-event__detail-value">{actor}</span>
+        <div className="xynoplex-history-event__details">
+          <span className="xynoplex-history-event__detail">
+            {t('user')}: <span className="xynoplex-history-event__detail-value">{actor}</span>
           </span>
           {creationDetails.type === 'cloned' && creationDetails.sourceDocId && (
             <Link
               href={routes.resourceDetail(creationDetails.sourceDocId)}
-              className="semiont-history-event__link"
+              className="xynoplex-history-event__link"
               onClick={(e) => e.stopPropagation()}
             >
               {t('viewOriginal')}

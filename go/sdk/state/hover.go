@@ -13,8 +13,8 @@ import (
 	"sync"
 	"time"
 
-	semiont "github.com/The-AI-Alliance/semiont/packages/go/sdk"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
+	xynoplex "github.com/Xynoplex/sdk/go"
+	"github.com/Xynoplex/sdk/go/api"
 )
 
 // HoverDwell is a pointer's dwell: see the file's documentation.
@@ -33,7 +33,7 @@ type HoverDwell struct {
 	rests   int
 }
 
-var _ semiont.StateUnit = (*HoverDwell)(nil)
+var _ xynoplex.StateUnit = (*HoverDwell)(nil)
 
 // NewHoverDwell is a dwell that tells say what is hovered once the pointer
 // has rested for delay. say is told with the dwell's lock held, so what it is

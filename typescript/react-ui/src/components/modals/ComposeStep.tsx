@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { LOCALES, proposeStoragePath } from '@semiont/core';
+import { LOCALES, proposeStoragePath } from '@xynoplex/core';
 import { CodeMirrorRenderer } from '../CodeMirrorRenderer';
 import { WizardFooter } from './WizardFooter';
 
@@ -114,10 +114,10 @@ export function ComposeStep({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="semiont-form">
+    <form onSubmit={handleSubmit} className="xynoplex-form">
       {/* Name */}
-      <div className="semiont-form__field">
-        <label htmlFor="compose-name" className="semiont-form__label">
+      <div className="xynoplex-form__field">
+        <label htmlFor="compose-name" className="xynoplex-form__label">
           {t.resourceTitle}
         </label>
         <input
@@ -127,18 +127,18 @@ export function ComposeStep({
           onChange={(e) => onDraftChange({ name: e.target.value })}
           placeholder={t.resourceTitlePlaceholder}
           required
-          className="semiont-input"
+          className="xynoplex-input"
           disabled={isCreating}
         />
       </div>
 
       {/* Storage URI */}
-      <div className="semiont-form__field">
-        <label htmlFor="compose-storagePath" className="semiont-form__label">
+      <div className="xynoplex-form__field">
+        <label htmlFor="compose-storagePath" className="xynoplex-form__label">
           {t.saveLocation}
         </label>
-        <div className="semiont-input-addon">
-          <span className="semiont-input-addon__prefix">file://</span>
+        <div className="xynoplex-input-addon">
+          <span className="xynoplex-input-addon__prefix">file://</span>
           <input
             id="compose-storagePath"
             type="text"
@@ -146,25 +146,25 @@ export function ComposeStep({
             onChange={(e) => onDraftChange({ storagePath: e.target.value })}
             placeholder="people/my-resource.md"
             required
-            className="semiont-input semiont-input--addon"
+            className="xynoplex-input xynoplex-input--addon"
             disabled={isCreating}
           />
         </div>
       </div>
 
       {/* Entity types: fixed at reference creation → tags; otherwise picker */}
-      <div className="semiont-form__field">
-        <div className="semiont-form__label">{t.entityTypes}</div>
+      <div className="xynoplex-form__field">
+        <div className="xynoplex-form__label">{t.entityTypes}</div>
         {fixedTypes ? (
-          <div className="semiont-form__entity-type-tags" role="list">
+          <div className="xynoplex-form__entity-type-tags" role="list">
             {referenceEntityTypes.map((type) => (
-              <span key={type} role="listitem" className="semiont-form__entity-type-tag">
+              <span key={type} role="listitem" className="xynoplex-form__entity-type-tag">
                 {type}
               </span>
             ))}
           </div>
         ) : (
-          <div className="semiont-form__entity-type-buttons" role="group">
+          <div className="xynoplex-form__entity-type-buttons" role="group">
             {entityTypeOptions.map((type) => {
               const isSelected = draft.entityTypes.includes(type);
               return (
@@ -176,7 +176,7 @@ export function ComposeStep({
                       ? draft.entityTypes.filter((x) => x !== type)
                       : [...draft.entityTypes, type],
                   })}
-                  className="semiont-form__entity-type-button"
+                  className="xynoplex-form__entity-type-button"
                   data-selected={isSelected}
                   aria-pressed={isSelected}
                   disabled={isCreating}
@@ -190,8 +190,8 @@ export function ComposeStep({
       </div>
 
       {/* Language */}
-      <div className="semiont-form__field">
-        <label htmlFor="compose-language" className="semiont-form__label">
+      <div className="xynoplex-form__field">
+        <label htmlFor="compose-language" className="xynoplex-form__label">
           {t.language}
         </label>
         <select
@@ -199,7 +199,7 @@ export function ComposeStep({
           value={draft.language}
           onChange={(e) => onDraftChange({ language: e.target.value })}
           disabled={isCreating}
-          className="semiont-select"
+          className="xynoplex-select"
         >
           {LOCALES.map((lang) => (
             <option key={lang.code} value={lang.code}>
@@ -210,9 +210,9 @@ export function ComposeStep({
       </div>
 
       {/* Content editor */}
-      <div className="semiont-form__field semiont-form__editor">
-        <label className="semiont-form__label">{t.contentLabel}</label>
-        <div className="semiont-form__editor-wrapper" lang={draft.language}>
+      <div className="xynoplex-form__field xynoplex-form__editor">
+        <label className="xynoplex-form__label">{t.contentLabel}</label>
+        <div className="xynoplex-form__editor-wrapper" lang={draft.language}>
           <CodeMirrorRenderer
             content={draft.content}
             editable={!isCreating}

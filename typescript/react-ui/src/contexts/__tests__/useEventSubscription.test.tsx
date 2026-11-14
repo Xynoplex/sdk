@@ -1,17 +1,17 @@
 import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { resourceId, userId, type EventBus, type EventOfType, type ResourceId, type StoredEvent } from '@semiont/core';
+import { resourceId, userId, type EventBus, type EventOfType, type ResourceId, type StoredEvent } from '@xynoplex/core';
 import { useEventSubscription, useEventSubscriptions, useResourceEventSubscriptions } from '../useEventSubscription';
-import { createTestSemiontWrapper } from '../../test-utils';
+import { createTestXynoplexWrapper } from '../../test-utils';
 import type { ReactNode } from 'react';
 
 function makeWrapper(): {
   wrapper: (props: { children: ReactNode }) => ReactNode;
   eventBus: EventBus;
 } {
-  const { SemiontWrapper, eventBus } = createTestSemiontWrapper();
+  const { XynoplexWrapper, eventBus } = createTestXynoplexWrapper();
   const wrapper = ({ children }: { children: ReactNode }) => (
-    <SemiontWrapper>{children}</SemiontWrapper>
+    <XynoplexWrapper>{children}</XynoplexWrapper>
   );
   return { wrapper, eventBus };
 }
@@ -257,7 +257,7 @@ describe('useResourceEventSubscriptions', () => {
   }
 
   it("holds the resource's scope while mounted, and is given that resource's events only", () => {
-    const { SemiontWrapper, client } = createTestSemiontWrapper();
+    const { XynoplexWrapper, client } = createTestXynoplexWrapper();
     // Another reader holds another resource's scope, so the wire carries its
     // events too, and the hook is the one that leaves them out.
     client.transport.subscribeToResource(OTHER);
@@ -274,7 +274,7 @@ describe('useResourceEventSubscriptions', () => {
 
     const { unmount } = renderHook(
       () => useResourceEventSubscriptions(RID, { 'mark:archived': (stored) => seen.push(stored.id) }),
-      { wrapper: ({ children }: { children: ReactNode }) => <SemiontWrapper>{children}</SemiontWrapper> },
+      { wrapper: ({ children }: { children: ReactNode }) => <XynoplexWrapper>{children}</XynoplexWrapper> },
     );
     expect(held).toHaveBeenCalledExactlyOnceWith(RID);
 

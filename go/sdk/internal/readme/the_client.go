@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 
-	semiont "github.com/The-AI-Alliance/semiont/packages/go/sdk"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
+	xynoplex "github.com/Xynoplex/sdk/go"
+	"github.com/Xynoplex/sdk/go/api"
 )
 
 // Annotate reads a resource, has it highlighted, and directs attention to
 // one of its annotations.
-func Annotate(ctx context.Context, client *semiont.Client, resource api.ResourceId, annotation api.AnnotationId) error {
+func Annotate(ctx context.Context, client *xynoplex.Client, resource api.ResourceId, annotation api.AnnotationId) error {
 	described, err := client.Browse.Resource(resource).Fresh(ctx) // a query, read once
 	if err != nil {
 		return err
@@ -30,13 +30,13 @@ func Annotate(ctx context.Context, client *semiont.Client, resource api.Resource
 			return err
 		}
 		switch event := event.(type) {
-		case semiont.JobCreated:
+		case xynoplex.JobCreated:
 			fmt.Println("to cancel it:", event.Data.JobId) // what client.Job.Cancel names
-		case semiont.JobProgressed:
+		case xynoplex.JobProgressed:
 			fmt.Println(event.Data.Percentage)
-		case semiont.JobAttemptFailed:
+		case xynoplex.JobAttemptFailed:
 			fmt.Println("trying again after:", event.Data.Error)
-		case semiont.JobCompleted[api.MarkJobCompleteCommand]:
+		case xynoplex.JobCompleted[api.MarkJobCompleteCommand]:
 			fmt.Println(event.Data.Result)
 		}
 	}

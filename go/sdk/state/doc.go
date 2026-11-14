@@ -9,7 +9,7 @@
 // said. What it does in answer to a signal it does on a goroutine of its own,
 // a moment later.
 //
-// Each is a semiont.StateUnit: Close ends it. What it had running is stopped,
+// Each is a xynoplex.StateUnit: Close ends it. What it had running is stopped,
 // every state it holds ends, and nothing it is told afterwards does
 // anything.
 package state

@@ -1,4 +1,4 @@
-package semiont
+package xynoplex
 
 // A service account's assertion of itself, held to
 // protocol/specs/src/session/client-assertion-cases.json: the thumbprint a key is

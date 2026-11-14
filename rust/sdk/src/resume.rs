@@ -27,7 +27,7 @@
 //! something is, since closing drops it. A place noted after that is of an
 //! event whose refetch closing drops, and is not kept.
 
-use crate::client::SemiontClient;
+use crate::client::XynoplexClient;
 use crate::locked;
 use crate::required::{fault_of, schema};
 use crate::storage::{SessionStorage, StorageChange, StorageSubscription};
@@ -157,12 +157,12 @@ impl CoupledBookmarks {
 
     /// Couple the places to `client`: it notes each place once it has taken
     /// in the event that reached it, a place noted rides a write of a cache
-    /// only while the client is at rest (`SemiontClient::persistence_settled`),
+    /// only while the client is at rest (`XynoplexClient::persistence_settled`),
     /// and the client's close takes the places once. A client that is gone
     /// is at rest for nobody, so nothing more is written. Places not coupled
     /// to a client ride every write of a cache. A client coupled to places
     /// already keeps them.
-    pub fn couple_to(&self, client: &Arc<SemiontClient>) {
+    pub fn couple_to(&self, client: &Arc<XynoplexClient>) {
         let at_rest = Arc::downgrade(client);
         *locked(&self.coupling.gate) = Some(Box::new(move || {
             at_rest
@@ -219,7 +219,7 @@ mod tests {
     use crate::testing::{FaultAction, FaultyTransport, TestClientOptions, create_test_client};
     use std::time::Duration;
 
-    const KEY: &str = "semiont.lastEventId.kb-a";
+    const KEY: &str = "xynoplex.lastEventId.kb-a";
 
     fn places(pairs: &[(&str, &str)]) -> HashMap<ResourceId, String> {
         pairs
@@ -241,10 +241,10 @@ mod tests {
         assert_eq!(storage.get(KEY), None);
 
         caches
-            .set("semiont.cache.kb-a.resource", "{}")
+            .set("xynoplex.cache.kb-a.resource", "{}")
             .expect("written");
         assert_eq!(
-            storage.get("semiont.cache.kb-a.resource").as_deref(),
+            storage.get("xynoplex.cache.kb-a.resource").as_deref(),
             Some("{}")
         );
         assert_eq!(
@@ -255,7 +255,7 @@ mod tests {
         // A later place of one scope leaves the other's as it was.
         bookmarks.save(&"res-2".parse().unwrap(), "p-res-2-4");
         caches
-            .update("semiont.cache.kb-a.resource", &mut |_| {
+            .update("xynoplex.cache.kb-a.resource", &mut |_| {
                 Some("{}".to_owned())
             })
             .expect("written");
@@ -290,7 +290,7 @@ mod tests {
 
         bookmarks.save(&"res-1".parse().unwrap(), "p-res-1-7");
         caches
-            .set("semiont.cache.kb-a.resource", "{}")
+            .set("xynoplex.cache.kb-a.resource", "{}")
             .expect("written");
         // Late, which is safe: the cache that was written may not be the one
         // still taking the event in.
@@ -299,7 +299,7 @@ mod tests {
         tokio::time::sleep(Duration::from_secs(11)).await;
         assert!(client.persistence_settled(), "the answer is in");
         caches
-            .set("semiont.cache.kb-a.annotations", "{}")
+            .set("xynoplex.cache.kb-a.annotations", "{}")
             .expect("written");
         assert_eq!(bookmarks.load(), places(&[("res-1", "p-res-1-7")]));
     }
@@ -331,7 +331,7 @@ mod tests {
         bookmarks.save(&"res-1".parse().unwrap(), "p-res-1-1");
         bookmarks
             .storage()
-            .set("semiont.cache.kb-a.resource", "{}")
+            .set("xynoplex.cache.kb-a.resource", "{}")
             .expect("written");
         let written: Value =
             serde_json::from_str(&storage.get(KEY).expect("places")).expect("JSON");
@@ -349,7 +349,7 @@ mod tests {
         bookmarks.save(&"res-2".parse().unwrap(), "p-7");
         bookmarks
             .storage()
-            .set("semiont.cache.kb-a.resource", "{}")
+            .set("xynoplex.cache.kb-a.resource", "{}")
             .expect("written");
         assert_eq!(storage.get(KEY), None);
     }
@@ -359,7 +359,7 @@ mod tests {
     #[derive(Default)]
     struct Full(InMemorySessionStorage);
 
-    const CACHE: &str = "semiont.cache.kb-a.resource";
+    const CACHE: &str = "xynoplex.cache.kb-a.resource";
 
     impl SessionStorage for Full {
         fn get(&self, key: &str) -> Option<String> {
@@ -413,7 +413,7 @@ mod tests {
         assert_eq!(storage.get(KEY), None);
         bookmarks
             .storage()
-            .set("semiont.cache.kb-a.annotations", "{}")
+            .set("xynoplex.cache.kb-a.annotations", "{}")
             .expect("written");
         assert_eq!(bookmarks.load(), places(&[("res-1", "p-res-1-7")]));
     }

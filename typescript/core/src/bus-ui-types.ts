@@ -4,7 +4,7 @@
 // registry: they are TypeScript shapes (DOM geometry, callbacks), not wire
 // vocabulary, so no OpenAPI schema describes them and no other language
 // needs them. bus-protocol.ts imports and re-exports these, so consumers
-// import them from @semiont/core.
+// import them from @xynoplex/core.
 
 /**
  * Viewport-space rectangle of a clicked annotation element — runtime-only

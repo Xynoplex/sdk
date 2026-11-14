@@ -10,11 +10,11 @@ use axum::response::{IntoResponse, Response};
 use axum::routing::post;
 use bytes::Bytes;
 use futures::StreamExt;
-use semiont::channels::BRIDGED_CHANNELS;
-use semiont::timing::REQUEST_RETRY_PAUSE;
-use semiont::transport::{BoxFuture, ContentTransport, PutBinaryRequest, UploadProgress};
-use semiont_http_transport::content::HttpContentTransport;
-use semiont_http_transport::transport::{
+use xynoplex::channels::BRIDGED_CHANNELS;
+use xynoplex::timing::REQUEST_RETRY_PAUSE;
+use xynoplex::transport::{BoxFuture, ContentTransport, PutBinaryRequest, UploadProgress};
+use xynoplex_http_transport::content::HttpContentTransport;
+use xynoplex_http_transport::transport::{
     HttpTransport, HttpTransportConfig, Timing, TokenRefresher,
 };
 use serde_json::json;

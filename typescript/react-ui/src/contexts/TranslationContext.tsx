@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, ReactNode, useState, useEffect, useMemo } from 'react';
-import type { LocaleCode } from '@semiont/core';
+import type { LocaleCode } from '@xynoplex/core';
 import type { TranslationManager } from '../types/TranslationManager';
 import { createTranslationManager, type Messages } from '../lib/translation-manager';
 

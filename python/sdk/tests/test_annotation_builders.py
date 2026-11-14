@@ -15,11 +15,11 @@ import pytest
 from pydantic import BaseModel, Field, JsonValue
 from spec import SPEC, JsonObject, objects, read, strings
 
-from semiont import annotations, error_codes, errors
-from semiont.annotations import SpanRefusedError, TextSpan, annotation_of_resource, annotation_of_span, reconcile, target_source
-from semiont.identifiers import ResourceId
-from semiont.model import written
-from semiont.types import Agent, AnchoredText, Annotation, AnnotationBodies, MarkCommitCommand, Motivation, TextualBody
+from xynoplex import annotations, error_codes, errors
+from xynoplex.annotations import SpanRefusedError, TextSpan, annotation_of_resource, annotation_of_span, reconcile, target_source
+from xynoplex.identifiers import ResourceId
+from xynoplex.model import written
+from xynoplex.types import Agent, AnchoredText, Annotation, AnnotationBodies, MarkCommitCommand, Motivation, TextualBody
 
 
 class SpanCase(BaseModel, frozen=True, extra="forbid"):
@@ -161,7 +161,7 @@ def test_a_span_that_is_not_the_text_s_is_refused_by_the_name_the_table_gives(ca
 
 
 def test_the_refusals_the_table_states_are_the_vocabulary_of_the_error_codes_and_no_other() -> None:
-    # `protocol/specs/src/errors/codes.json` names the refusals, and `semiont.error_codes` is generated from it.
+    # `protocol/specs/src/errors/codes.json` names the refusals, and `xynoplex.error_codes` is generated from it.
     assert sorted({case.refused for case in REFUSED if case.refused is not None}) == sorted(error_codes.SPAN_REFUSALS)
     # What the builders' module offers is that vocabulary and its failure, and no copy of either.
     assert annotations.SpanRefusal is error_codes.SpanRefusal

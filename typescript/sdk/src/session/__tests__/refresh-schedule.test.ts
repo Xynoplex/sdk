@@ -10,11 +10,11 @@
  *
  * The margin is a fraction of the token's OWN lifetime, so it cannot equal
  * the quantity it is subtracted from — no issuer's lifetime can produce the
- * loop, including issuers Semiont does not run and cannot configure.
+ * loop, including issuers Xynoplex does not run and cannot configure.
  */
 
 import { describe, it, expect } from 'vitest';
-import { MIN_REFRESH_DELAY_MS, REFRESH_BEFORE_EXP_MS } from '@semiont/core';
+import { MIN_REFRESH_DELAY_MS, REFRESH_BEFORE_EXP_MS } from '@xynoplex/core';
 import {
   refreshDelayMs,
   parseJwtExpiry,
@@ -134,8 +134,8 @@ describe('JWT payloads are base64URL, which is not base64', () => {
   // affected account hits it on every token it is ever issued.
   //
   // The damage is not a missing refresh. `isJwtExpired` answers TRUE when the
-  // parse fails, and it gates startup (`SemiontSession`) and the KB panel's
-  // status (`SemiontBrowser.getKbSessionStatus`) — so under a bare `atob` a
+  // parse fails, and it gates startup (`XynoplexSession`) and the KB panel's
+  // status (`XynoplexBrowser.getKbSessionStatus`) — so under a bare `atob` a
   // valid session reads as expired, forever, for those users.
 
   /** A token whose payload really does contain base64url's substitutions. */

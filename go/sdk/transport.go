@@ -1,4 +1,4 @@
-package semiont
+package xynoplex
 
 // The transport contract (protocol/contract/TRANSPORT-CONTRACT.md): what a client
 // needs of whatever carries the bus. The client holds it without naming what
@@ -9,8 +9,8 @@ import (
 	"fmt"
 	"iter"
 
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/bus"
+	"github.com/Xynoplex/sdk/go/api"
+	"github.com/Xynoplex/sdk/go/bus"
 )
 
 // Transport is the bus: an emit out, frames in, the connection's state, the

@@ -4,11 +4,11 @@
  * package.json (the `version` field + internal cross-dep pins). Run by
  * publish.sh before staging/publishing.
  *
- * Internal `@semiont/*` / `semiont-*` deps are declared `"*"` in source and
+ * Internal `@xynoplex/*` / `xynoplex-*` deps are declared `"*"` in source and
  * rewritten to the exact version here via the shared stampInternalDeps — the
  * single publish-time pin normalization (see docs/contributor/RELEASE.md).
  *
- * Usage: node packages/typescript/scripts/stamp-versions.mjs <version>
+ * Usage: node typescript/scripts/stamp-versions.mjs <version>
  */
 import { readFileSync, writeFileSync } from 'fs';
 import { resolve, dirname } from 'path';
@@ -18,7 +18,7 @@ import { stampInternalDeps } from './stamp-internal-deps.mjs';
 const rootDir = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
 const version = process.argv[2];
 if (!version) {
-  console.error('Usage: node packages/typescript/scripts/stamp-versions.mjs <version>');
+  console.error('Usage: node typescript/scripts/stamp-versions.mjs <version>');
   process.exit(1);
 }
 

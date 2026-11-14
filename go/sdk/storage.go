@@ -1,4 +1,4 @@
-package semiont
+package xynoplex
 
 // Where a client keeps what must outlive it: text under a key.
 //
@@ -15,7 +15,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/internal/required"
+	"github.com/Xynoplex/sdk/go/internal/required"
 )
 
 // SessionStorage is a store of text by key: the seam an application fills in
@@ -119,13 +119,13 @@ func PersonKey(did string) string { return sha256URLSafe(did) }
 // CacheKey is the key what a client keeps of query, for the person whose key
 // is personKey, is kept under in a knowledge base's storage.
 func CacheKey(kbID, personKey string, query CacheQuery) string {
-	return "semiont.cache." + kbID + "." + personKey + "." + string(query)
+	return "xynoplex.cache." + kbID + "." + personKey + "." + string(query)
 }
 
 // LastEventIDKey is the key where a knowledge base's stream was, for the
 // person whose key is personKey, is kept under.
 func LastEventIDKey(kbID, personKey string) string {
-	return "semiont.lastEventId." + kbID + "." + personKey
+	return "xynoplex.lastEventId." + kbID + "." + personKey
 }
 
 // keptVersion is the version of a kept document, as

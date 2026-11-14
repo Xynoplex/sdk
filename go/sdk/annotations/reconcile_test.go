@@ -9,7 +9,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/annotations"
+	"github.com/Xynoplex/sdk/go/annotations"
 )
 
 // asTheTableWritesIt is a reconciled span as the table writes one: each of

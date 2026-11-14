@@ -1,4 +1,4 @@
-package semiont
+package xynoplex
 
 // A person's sign-in by a page redirect, against the stand-in gateway and
 // issuer: the challenge, beginning a sign-in, and completing it once.
@@ -14,7 +14,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
+	"github.com/Xynoplex/sdk/go/api"
 )
 
 const redirectURI = "http://127.0.0.1:9/callback"
@@ -85,7 +85,7 @@ func TestBeginningASignInRemembersItAndBuildsTheURLAroundWhatItRemembered(t *tes
 	}
 	want := map[string]string{
 		"response_type":         "code",
-		"client_id":             "semiont-browser",
+		"client_id":             "xynoplex-browser",
 		"redirect_uri":          redirectURI,
 		"scope":                 "openid email profile offline_access",
 		"state":                 record.State,
@@ -160,7 +160,7 @@ func TestCompletingASignInExchangesTheCodeWithItsVerifierOnce(t *testing.T) {
 		"grant_type":    {"authorization_code"},
 		"code":          {"the-code"},
 		"redirect_uri":  {redirectURI},
-		"client_id":     {"semiont-browser"},
+		"client_id":     {"xynoplex-browser"},
 		"code_verifier": {record.Verifier},
 	}
 	if got := forms(); len(got) != 1 || !reflect.DeepEqual(got[0], want) {

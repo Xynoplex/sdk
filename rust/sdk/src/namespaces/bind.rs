@@ -2,7 +2,7 @@
 
 use crate::channels::{BindBodyError, BindInitiate, BindUpdateBody};
 use crate::client::Links;
-use crate::errors::SemiontError;
+use crate::errors::XynoplexError;
 use crate::transport::Envelope;
 use crate::types::{AnnotationId, ResourceId};
 use crate::types::{
@@ -25,7 +25,7 @@ impl BindNamespace {
         resource_id: &ResourceId,
         annotation_id: &AnnotationId,
         operations: Vec<BindBodyOperation>,
-    ) -> Result<(), SemiontError> {
+    ) -> Result<(), XynoplexError> {
         self.links
             .request::<BindUpdateBody>(&BindUpdateBodyCommand {
                 _user_id: None,

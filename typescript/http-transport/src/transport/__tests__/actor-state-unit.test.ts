@@ -1,9 +1,9 @@
 import util from 'node:util';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { firstValueFrom } from 'rxjs';
-import { EMIT_RETRY, EMIT_TIMEOUT_MS, HTTP_REQUEST_TIMEOUT_MS, RECONNECT_MS, STREAM_OPEN_TIMEOUT_MS, annotationId, resourceId, type SemiontError } from '@semiont/core';
+import { EMIT_RETRY, EMIT_TIMEOUT_MS, HTTP_REQUEST_TIMEOUT_MS, RECONNECT_MS, STREAM_OPEN_TIMEOUT_MS, annotationId, resourceId, type XynoplexError } from '@xynoplex/core';
 import { createActorStateUnit, type ActorStateUnit } from '../actor-state-unit';
-import { assertStateUnitAxioms } from '@semiont/core/testing/axioms';
+import { assertStateUnitAxioms } from '@xynoplex/core/testing/axioms';
 // The SSE/fetch harness lives in helpers/mock-conn.ts (shared with the
 // liveness property suite). Importing it stubs the global fetch.
 import {
@@ -345,7 +345,7 @@ describe('createActorStateUnit', () => {
       token: 'expired-but-real-tok',
       channels: ['beckon:hover'],
     });
-    const seen401: SemiontError[] = [];
+    const seen401: XynoplexError[] = [];
     rejected.errors$.subscribe((e) => seen401.push(e));
     rejected.start();
     await vi.waitFor(() => expect(seen401).toHaveLength(1));
@@ -358,7 +358,7 @@ describe('createActorStateUnit', () => {
       token: 'fine-tok',
       channels: ['beckon:hover'],
     });
-    const seen500: SemiontError[] = [];
+    const seen500: XynoplexError[] = [];
     erroring.errors$.subscribe((e) => seen500.push(e));
     erroring.start();
     await vi.waitFor(() => expect(seen500).toHaveLength(1));
@@ -833,7 +833,7 @@ describe('createActorStateUnit', () => {
     });
     const states: string[] = [];
     stateUnit.state$.subscribe((s) => states.push(s));
-    const refusals: SemiontError[] = [];
+    const refusals: XynoplexError[] = [];
     stateUnit.errors$.subscribe((e) => refusals.push(e));
 
     stateUnit.start();
@@ -1056,7 +1056,7 @@ describe('createActorStateUnit', () => {
       reconnectMs: 20,
     });
     const states: string[] = [];
-    const failures: SemiontError[] = [];
+    const failures: XynoplexError[] = [];
     stateUnit.state$.subscribe((s) => states.push(s));
     stateUnit.errors$.subscribe((e) => failures.push(e));
     stateUnit.start();

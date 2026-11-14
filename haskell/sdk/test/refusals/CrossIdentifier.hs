@@ -1,4 +1,4 @@
 module CrossIdentifier where
-import Semiont.Types
+import Xynoplex.Types
 value :: ResourceId -> AnnotationId
 value identifier = identifier

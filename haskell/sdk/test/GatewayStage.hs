@@ -23,11 +23,11 @@ import qualified Data.UUID.Types as UUID
 import Data.Word (Word32)
 import qualified ControlledTime as Time
 import IssuerCases (streamingPeer, jsonReply, route, bodyOf)
-import qualified Semiont.Channels as Channels
-import qualified Semiont.Http as Http
-import Semiont.Retry (RetryOptions(..))
-import qualified Semiont.Timing.Settings as Timing
-import Semiont.Types
+import qualified Xynoplex.Channels as Channels
+import qualified Xynoplex.Http as Http
+import Xynoplex.Retry (RetryOptions(..))
+import qualified Xynoplex.Timing.Settings as Timing
+import Xynoplex.Types
 
 data Stage = Stage
   { stageWho :: TVar (Maybe Value)

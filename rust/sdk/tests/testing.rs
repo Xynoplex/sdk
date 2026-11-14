@@ -1,4 +1,4 @@
-//! What a consumer's tests are built on (`semiont::testing`): a real client
+//! What a consumer's tests are built on (`xynoplex::testing`): a real client
 //! and a real session over doubles, and a factory of scripted sessions for a
 //! registry. A double answers what a test told it to and refuses the rest by
 //! name. It never answers with a value of its own making.
@@ -6,23 +6,23 @@
 use base64::Engine;
 use base64::engine::general_purpose::URL_SAFE_NO_PAD;
 use futures_core::Stream;
-use semiont::bus::{Bus, operation};
-use semiont::channels::BRIDGED_CHANNELS;
-use semiont::client::{ClientOptions, ClientTiming};
-use semiont::errors::{SemiontError, SessionError, SessionErrorCode, TransportError};
-use semiont::session::{
+use xynoplex::bus::{Bus, operation};
+use xynoplex::channels::BRIDGED_CHANNELS;
+use xynoplex::client::{ClientOptions, ClientTiming};
+use xynoplex::errors::{XynoplexError, SessionError, SessionErrorCode, TransportError};
+use xynoplex::session::{
     SessionFactory, SessionFactoryOptions, SessionSignals, StoredSession, store_session,
 };
-use semiont::state_unit::StateUnit;
-use semiont::storage::InMemorySessionStorage;
-use semiont::testing::as_id;
-use semiont::testing::{
+use xynoplex::state_unit::StateUnit;
+use xynoplex::storage::InMemorySessionStorage;
+use xynoplex::testing::as_id;
+use xynoplex::testing::{
     FaultyTransport, InMemoryContent, ScriptedSessions, StubGateway, TestClientOptions,
     TestSessionOptions, create_test_client, create_test_session,
 };
-use semiont::timing::ERRORS_KEPT_FOR_FIRST_READER_COUNT;
-use semiont::transport::{ConnectionState, Content, Events, Failures, Transport};
-use semiont::types::{
+use xynoplex::timing::ERRORS_KEPT_FOR_FIRST_READER_COUNT;
+use xynoplex::transport::{ConnectionState, Content, Events, Failures, Transport};
+use xynoplex::types::{
     AnchoredTextAnswer, GatherResourceRequestOptions, HttpEndpoint, HttpEndpointProtocol,
     KbEndpoint, KbTarget, KnowledgeBase, ResourceId, UserResponse,
 };
@@ -32,12 +32,12 @@ use std::sync::{Arc, Mutex};
 use std::task::{Context, Poll, Waker};
 use std::time::Duration;
 
-fn message(error: SemiontError) -> String {
+fn message(error: XynoplexError) -> String {
     match error {
-        SemiontError::Bus(error) => error.message,
-        SemiontError::Transport(error) => error.message,
-        SemiontError::Job(error) => error.message,
-        SemiontError::Session(error) => error.message,
+        XynoplexError::Bus(error) => error.message,
+        XynoplexError::Transport(error) => error.message,
+        XynoplexError::Job(error) => error.message,
+        XynoplexError::Session(error) => error.message,
     }
 }
 
@@ -127,7 +127,7 @@ async fn a_test_client_is_built_over_what_the_test_gives_it() {
     // on after three seconds, not the client's thirty.
     let silent = FaultyTransport::answering(
         BRIDGED_CHANNELS,
-        vec![semiont::testing::FaultAction::DropReply],
+        vec![xynoplex::testing::FaultAction::DropReply],
         |_, _| Ok(None),
     );
     let impatient = create_test_client(TestClientOptions {
@@ -225,7 +225,7 @@ async fn a_test_session_holds_the_token_its_storage_held_and_then_the_one_the_te
         &StoredSession {
             access: stored.clone(),
             refresh: "r".to_owned(),
-            client_id: "semiont-cli".to_owned(),
+            client_id: "xynoplex-cli".to_owned(),
             token_endpoint: "https://issuer.test/token".to_owned(),
             revocation_endpoint: None,
             person_key: None,
@@ -320,7 +320,7 @@ impl Asked {
             &StoredSession {
                 access: token(),
                 refresh: "r".to_owned(),
-                client_id: "semiont-browser".to_owned(),
+                client_id: "xynoplex-browser".to_owned(),
                 token_endpoint: "https://issuer.test/token".to_owned(),
                 revocation_endpoint: None,
                 person_key: None,
@@ -332,13 +332,13 @@ impl Asked {
 
 /// What a session has said of its own on its errors so far, in order. A
 /// stream that missed any of it fails the test.
-fn said_so_far(errors: &mut Events<SemiontError>) -> Vec<SessionError> {
+fn said_so_far(errors: &mut Events<XynoplexError>) -> Vec<SessionError> {
     let mut said = Vec::new();
     while let Poll::Ready(Some(item)) =
         Pin::new(&mut *errors).poll_next(&mut Context::from_waker(Waker::noop()))
     {
         match item {
-            Ok(SemiontError::Session(error)) => said.push(error),
+            Ok(XynoplexError::Session(error)) => said.push(error),
             Ok(_) => {}
             Err(missed) => panic!("the session's errors stream missed some: {missed}"),
         }
@@ -479,7 +479,7 @@ async fn scripted_sessions_can_refuse_to_build_and_keep_what_was_revoked() {
     let stored = StoredSession {
         access: "a".to_owned(),
         refresh: "r".to_owned(),
-        client_id: "semiont-browser".to_owned(),
+        client_id: "xynoplex-browser".to_owned(),
         token_endpoint: "https://issuer.test/token".to_owned(),
         revocation_endpoint: Some("https://issuer.test/revoke".to_owned()),
         person_key: None,

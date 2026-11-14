@@ -13,17 +13,17 @@ import qualified Data.Set as Set
 import qualified Data.Text as Text
 import qualified OpenTelemetry.Context as Context
 import OpenTelemetry.Context.ThreadLocal (getContext, attachContext, detachContext)
-import qualified Semiont.Internal.Running as Running
-import qualified Semiont.Bus as Bus
-import Semiont.Channels
-import qualified Semiont.ErrorCodes as Code
-import Semiont.Errors
-import qualified Semiont.EventBus as Local
-import qualified Semiont.StateValue as State
-import qualified Semiont.Timing as Timing
-import qualified Semiont.Transport as Transport
-import Semiont.Transport.Facts (traceField, userField)
-import Semiont.Types
+import qualified Xynoplex.Internal.Running as Running
+import qualified Xynoplex.Bus as Bus
+import Xynoplex.Channels
+import qualified Xynoplex.ErrorCodes as Code
+import Xynoplex.Errors
+import qualified Xynoplex.EventBus as Local
+import qualified Xynoplex.StateValue as State
+import qualified Xynoplex.Timing as Timing
+import qualified Xynoplex.Transport as Transport
+import Xynoplex.Transport.Facts (traceField, userField)
+import Xynoplex.Types
 import Streaming (Of, Stream)
 import qualified Streaming.Prelude as Stream
 import System.Timeout (timeout)

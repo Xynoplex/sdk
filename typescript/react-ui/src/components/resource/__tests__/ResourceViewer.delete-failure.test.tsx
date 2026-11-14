@@ -13,12 +13,12 @@
 import { describe, it, expect, vi } from 'vitest';
 import { screen, act, waitFor, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import type { Annotation, ResourceDescriptor as SemiontResource } from '@semiont/core';
-import { annotationId, resourceId } from '@semiont/core';
-import { createTestSemiontWrapper, renderInEnglish, englishTranslationManager } from '../../../test-utils';
+import type { Annotation, ResourceDescriptor as XynoplexResource } from '@xynoplex/core';
+import { annotationId, resourceId } from '@xynoplex/core';
+import { createTestXynoplexWrapper, renderInEnglish, englishTranslationManager } from '../../../test-utils';
 import { ResourceViewer } from '../ResourceViewer';
 
-const resource: SemiontResource & { content: string } = {
+const resource: XynoplexResource & { content: string } = {
   '@context': 'https://www.w3.org/ns/activitystreams',
   '@id': resourceId('res-1'),
   name: 'Doc',
@@ -42,7 +42,7 @@ const annotations = { highlights: [highlight], references: [], assessments: [], 
 
 describe('ResourceViewer — a refused delete', () => {
   it('reports mark:delete-error, stamped with the resource, instead of dropping the rejection', async () => {
-    const { session, eventBus, client } = createTestSemiontWrapper();
+    const { session, eventBus, client } = createTestXynoplexWrapper();
     vi.spyOn(client.mark, 'delete').mockRejectedValue(new Error('the knowledge base refused the delete'));
     const reported: unknown[] = [];
     const sub = eventBus.on('mark:delete-error').subscribe((e) => reported.push(e));

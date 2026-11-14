@@ -2,7 +2,7 @@
  * Keystone: the annotation panel family mounts provider-free with a session
  * PROP.
  *
- * ReferencesPanel rendered with a fake session prop and NO SemiontProvider /
+ * ReferencesPanel rendered with a fake session prop and NO XynoplexProvider /
  * routing contexts (Link/routes are props; translations come from the English
  * TranslationProvider the test mounts): lists a reference annotation, and an
  * entry click reaches session.client.browse.click — the same interaction the
@@ -12,11 +12,11 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, fireEvent } from '@testing-library/react';
 import { renderInEnglish } from '../../../../test-utils';
 import '@testing-library/jest-dom';
-import type { SemiontSession } from '@semiont/sdk';
-import type { Annotation, AnnotationId } from '@semiont/core';
+import type { XynoplexSession } from '@xynoplex/sdk';
+import type { Annotation, AnnotationId } from '@xynoplex/core';
 import type { RouteBuilder, LinkComponentProps } from '../../../../contexts/RoutingContext';
 import { ReferencesPanel } from '../ReferencesPanel';
-import { resourceId, EventBus } from '@semiont/core';
+import { resourceId, EventBus } from '@xynoplex/core';
 
 function fakeSession() {
   const client = {
@@ -27,7 +27,7 @@ function fakeSession() {
   };
   const session = {
     client,
-  } as unknown as SemiontSession;
+  } as unknown as XynoplexSession;
   return { session, client };
 }
 

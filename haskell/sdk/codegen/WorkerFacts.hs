@@ -32,7 +32,7 @@ quotedList source = do
 
 workerFacts :: FilePath -> (Text -> Text) -> IO [(FilePath, Text)]
 workerFacts root member = do
-  bytes <- Bytes.readFile (root </> "packages/typescript/sdk/src/claims.ts")
+  bytes <- Bytes.readFile (root </> "typescript/sdk/src/claims.ts")
   source <- either (ioError . userError . show) pure (decodeUtf8' bytes)
   either (ioError . userError) pure $ do
     claim <- between "export const JOB_CLAIM_CHANNELS: readonly (keyof EventMap)[] = [" "\n];" source
@@ -46,15 +46,15 @@ workerFacts root member = do
     unless (composition == "replyChannelsFor(COMMIT_OPERATIONS)") (Left "unsupported commit channel composition")
     let operations names = "replyChannelsFor [" <> T.intercalate ", " ["SomeOperation " <> member name <> "Operation" | name <- names] <> "]"
         code = T.unlines
-          [ "-- Generated from packages/typescript/sdk/src/claims.ts and bus descriptors. Do not edit."
-          , "module Semiont.Internal.Generated.WorkerChannels (jobClaimChannels, jobCommitChannels) where"
+          [ "-- Generated from typescript/sdk/src/claims.ts and bus descriptors. Do not edit."
+          , "module Xynoplex.Internal.Generated.WorkerChannels (jobClaimChannels, jobCommitChannels) where"
           , "import Data.Text (Text)"
-          , "import Semiont.Bus (replyChannelsFor)"
-          , "import Semiont.Channels"
+          , "import Xynoplex.Bus (replyChannelsFor)"
+          , "import Xynoplex.Channels"
           , "jobClaimChannels :: [Text]"
           , "jobClaimChannels = " <> operations claimOperations <> " ++ [" <> T.intercalate ", " ["channelName " <> member name | name <- claimExtras] <> "]"
           , "jobCommitChannels :: [Text]"
           , "jobCommitChannels = " <> operations commitOperations
           ]
     records <- workerTypes source
-    pure (("generated/Semiont/Internal/Generated/WorkerChannels.hs", code) : records)
+    pure (("generated/Xynoplex/Internal/Generated/WorkerChannels.hs", code) : records)

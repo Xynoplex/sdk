@@ -72,8 +72,8 @@ describe('LeftSidebar Component', () => {
         </LeftSidebar>
       );
 
-      // Real SemiontBranding renders "Semiont" text
-      expect(screen.getByText('Semiont')).toBeInTheDocument();
+      // Real XynoplexBranding renders "Xynoplex" text
+      expect(screen.getByText('Xynoplex')).toBeInTheDocument();
     });
 
     it('should render branding link', () => {
@@ -108,7 +108,7 @@ describe('LeftSidebar Component', () => {
       );
 
       const aside = container.querySelector('aside');
-      expect(aside).toHaveClass('semiont-left-sidebar');
+      expect(aside).toHaveClass('xynoplex-left-sidebar');
       expect(aside).toHaveAttribute('data-collapsed', 'false');
     });
 
@@ -153,7 +153,7 @@ describe('LeftSidebar Component', () => {
       );
 
       const aside = container.querySelector('aside');
-      expect(aside).toHaveClass('semiont-left-sidebar');
+      expect(aside).toHaveClass('xynoplex-left-sidebar');
       expect(aside).toHaveAttribute('data-collapsed', 'true');
     });
 
@@ -202,7 +202,7 @@ describe('LeftSidebar Component', () => {
       fireEvent.click(toggleButton);
 
       const aside = container.querySelector('aside');
-      expect(aside).toHaveClass('semiont-left-sidebar');
+      expect(aside).toHaveClass('xynoplex-left-sidebar');
       expect(aside).toHaveAttribute('data-collapsed', 'false'); // Still expanded
     });
 
@@ -252,7 +252,7 @@ describe('LeftSidebar Component', () => {
       expect(mockChildren).toHaveBeenCalled();
       // Real NavigationMenu renders navigation links
       const childrenContent = screen.getByTestId('children-content');
-      expect(childrenContent.querySelector('nav.semiont-navigation-menu')).toBeInTheDocument();
+      expect(childrenContent.querySelector('nav.xynoplex-navigation-menu')).toBeInTheDocument();
     });
 
     it('should pass onClose callback to NavigationMenu', () => {
@@ -295,7 +295,7 @@ describe('LeftSidebar Component', () => {
       );
 
       const aside = container.querySelector('aside');
-      expect(aside).toHaveClass('semiont-left-sidebar');
+      expect(aside).toHaveClass('xynoplex-left-sidebar');
     });
 
     it('should apply transition classes', () => {
@@ -312,7 +312,7 @@ describe('LeftSidebar Component', () => {
       );
 
       const aside = container.querySelector('aside');
-      expect(aside).toHaveClass('semiont-left-sidebar');
+      expect(aside).toHaveClass('xynoplex-left-sidebar');
     });
 
     it('should show "S" when collapsed', () => {
@@ -331,8 +331,8 @@ describe('LeftSidebar Component', () => {
       );
 
       expect(screen.getByText('S')).toBeInTheDocument();
-      // When collapsed, full "Semiont" branding is not shown
-      expect(screen.queryByText(/^Semiont$/)).not.toBeInTheDocument();
+      // When collapsed, full "Xynoplex" branding is not shown
+      expect(screen.queryByText(/^Xynoplex$/)).not.toBeInTheDocument();
     });
   });
 
@@ -384,7 +384,7 @@ describe('LeftSidebar Component', () => {
         </LeftSidebar>
       );
 
-      expect(screen.getByText('Semiont')).toBeInTheDocument();
+      expect(screen.getByText('Xynoplex')).toBeInTheDocument();
     });
 
     it('should default branding link to /', () => {
@@ -399,7 +399,7 @@ describe('LeftSidebar Component', () => {
         </LeftSidebar>
       );
 
-      expect(screen.getByText('Semiont')).toBeInTheDocument();
+      expect(screen.getByText('Xynoplex')).toBeInTheDocument();
     });
   });
 });

@@ -14,17 +14,17 @@ from pydantic import JsonValue, TypeAdapter, ValidationError
 from shown import CARRIED, parts_of, printed
 from spec import JsonObject
 
-from semiont.channels import BRIDGED_CHANNELS
-from semiont.client import ClientTiming, SemiontClient
-from semiont.errors import BusRequestError, JobError, SemiontError, TransportError
-from semiont.identifiers import ResourceId
-from semiont.namespaces.follow import Delegation, JobAttemptFailed, JobCompleted, JobCreated, JobEvent, JobProgressed, JobRefused
-from semiont.namespaces.yield_ import generation_stall_deadline_ms
-from semiont.running import Running
-from semiont.testing import FaultyTransport, InMemoryContent, StubGateway
-from semiont.timing import GENERATION_STALL_FLOOR_MS, JOB_SILENCE_MS, JOB_STATUS_POLL_MS
-from semiont.transport import Frame, FrameRefusal
-from semiont.types import (
+from xynoplex.channels import BRIDGED_CHANNELS
+from xynoplex.client import ClientTiming, XynoplexClient
+from xynoplex.errors import BusRequestError, JobError, XynoplexError, TransportError
+from xynoplex.identifiers import ResourceId
+from xynoplex.namespaces.follow import Delegation, JobAttemptFailed, JobCompleted, JobCreated, JobEvent, JobProgressed, JobRefused
+from xynoplex.namespaces.yield_ import generation_stall_deadline_ms
+from xynoplex.running import Running
+from xynoplex.testing import FaultyTransport, InMemoryContent, StubGateway
+from xynoplex.timing import GENERATION_STALL_FLOOR_MS, JOB_SILENCE_MS, JOB_STATUS_POLL_MS
+from xynoplex.transport import Frame, FrameRefusal
+from xynoplex.types import (
     CommentingJobParams,
     GatheredContext,
     GenerationJobParams,
@@ -51,7 +51,7 @@ CONTEXT: JsonObject = {
     "metadata": {},
 }
 
-type Client = SemiontClient[FaultyTransport]
+type Client = XynoplexClient[FaultyTransport]
 
 
 def world(*, answered: bool = True) -> tuple[Client, FaultyTransport]:
@@ -59,7 +59,7 @@ def world(*, answered: bool = True) -> tuple[Client, FaultyTransport]:
     transport = FaultyTransport(channels=BRIDGED_CHANNELS) if answered else silent()
     if answered:
         transport.queue_reply("job:create", [{"jobId": "job-1"}])
-    return SemiontClient(transport, InMemoryContent(), StubGateway()), transport
+    return XynoplexClient(transport, InMemoryContent(), StubGateway()), transport
 
 
 def highlighting(client: Client) -> Delegation[MarkJobCompleteCommand]:
@@ -120,7 +120,7 @@ async def collected[C: JobCompleteCommand](delegation: Delegation[C], seen: list
         async for event in delegation:
             seen.append(event)
             kinds.append(kind(event))
-    except SemiontError as error:
+    except XynoplexError as error:
         kinds.append(f"error {error.code}")
     return kinds
 
@@ -755,7 +755,7 @@ def test_a_client_told_other_waits_keeps_them() -> None:
         transport = FaultyTransport(channels=BRIDGED_CHANNELS)
         transport.queue_reply("job:create", [{"jobId": "job-1"}])
         transport.queue_reply("job:status-requested", [status("complete")])
-        client = SemiontClient(transport, InMemoryContent(), StubGateway(), timing=ClientTiming(job_silence_ms=50, job_status_poll_ms=20))
+        client = XynoplexClient(transport, InMemoryContent(), StubGateway(), timing=ClientTiming(job_silence_ms=50, job_status_poll_ms=20))
         assert (client.timing.job_silence_ms, client.timing.bus_request_ms) == (50, 30_000)
         # No clock is moved: a twentieth of a second is waited out.
         done = await soon(highlighting(client))

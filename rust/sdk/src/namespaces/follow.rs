@@ -39,7 +39,7 @@ use crate::channels::{
 };
 use crate::client::Links;
 use crate::errors::{
-    BusRequestError, BusRequestErrorCode, JobError, JobErrorCode, SemiontError, TransportError,
+    BusRequestError, BusRequestErrorCode, JobError, JobErrorCode, XynoplexError, TransportError,
     TransportErrorCode,
 };
 use crate::running::{Reporter, Running};
@@ -195,14 +195,14 @@ impl Heard {
 }
 
 enum Step {
-    Created(Result<JobCreatedResult, SemiontError>),
+    Created(Result<JobCreatedResult, XynoplexError>),
     Heard(Heard),
     /// The reader fell behind: some frames were missed.
     Missed,
     /// The client's bus ended.
     Ended,
     AskDue,
-    Status(Result<JobStatusResponse, SemiontError>),
+    Status(Result<JobStatusResponse, XynoplexError>),
     Stalled,
 }
 
@@ -230,7 +230,7 @@ fn heard<T>(item: Option<Result<T, StreamError>>, of: impl FnOnce(T) -> Heard) -
     }
 }
 
-fn failed(job_id: &JobId, message: String, failure_class: Option<FailureClass>) -> SemiontError {
+fn failed(job_id: &JobId, message: String, failure_class: Option<FailureClass>) -> XynoplexError {
     JobError {
         code: JobErrorCode::Failed,
         job_id: Some(job_id.clone()),
@@ -242,7 +242,7 @@ fn failed(job_id: &JobId, message: String, failure_class: Option<FailureClass>) 
 
 /// The knowledge base said the job completed, and what it said is not a
 /// completion of the verb that was delegated. Nothing says the job failed.
-fn not_the_verbs(job_id: &JobId, said_in: &str) -> SemiontError {
+fn not_the_verbs(job_id: &JobId, said_in: &str) -> XynoplexError {
     TransportError::without_response(
         format!("{said_in} of job {job_id} is not a completion of the verb that was delegated"),
         TransportErrorCode::Error,
@@ -254,7 +254,7 @@ async fn followed<C: Completion>(
     links: Links,
     following: Following,
     reporter: Reporter<JobEvent<C>>,
-) -> Result<C, SemiontError> {
+) -> Result<C, XynoplexError> {
     let Following {
         create,
         resource_id,
@@ -264,12 +264,12 @@ async fn followed<C: Completion>(
     let mut complete = links.own.stream::<JobComplete>();
     let mut fail = links.own.stream::<JobFail>();
 
-    let mut creating: Option<BoxFuture<'_, Result<JobCreatedResult, SemiontError>>> =
+    let mut creating: Option<BoxFuture<'_, Result<JobCreatedResult, XynoplexError>>> =
         Some(Box::pin(links.request::<JobCreate>(&create)));
     let mut job_id: Option<JobId> = None;
     let mut held: Vec<Heard> = Vec::new();
     let mut ask_at: Option<Instant> = None;
-    let mut asking: Option<BoxFuture<'static, Result<JobStatusResponse, SemiontError>>> = None;
+    let mut asking: Option<BoxFuture<'static, Result<JobStatusResponse, XynoplexError>>> = None;
     let mut stall_at = stall.map(|within| Instant::now() + within);
 
     loop {

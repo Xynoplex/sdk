@@ -14,26 +14,26 @@ import qualified Data.Set as Set
 import Data.Text (Text)
 import qualified Data.Text as Text
 import qualified ControlledTime as Time
-import qualified Semiont.Bus as Bus
-import qualified Semiont.Channels as Channel
-import qualified Semiont.Client as Client
-import qualified Semiont.Content as Content
-import qualified Semiont.Delegation as Delegation
-import qualified Semiont.ErrorCodes as Code
-import Semiont.Errors (BusRequestError(..),TransportError(..))
-import Semiont.Internal.Generated.Schemas (schemas)
-import qualified Semiont.Internal.StateTasks as Tasks
-import qualified Semiont.Internal.Transport as Local
-import qualified Semiont.State.Beckon as Beckon
-import qualified Semiont.State.Match as Match
-import qualified Semiont.State.Gather as Gather
-import qualified Semiont.State.Mark as Mark
-import qualified Semiont.State.Yield as Yield
-import qualified Semiont.StateValue as State
-import Semiont.Retry (RetryOptions(..))
-import qualified Semiont.Timing.Settings as Timing
-import qualified Semiont.Transport as Transport
-import Semiont.Types
+import qualified Xynoplex.Bus as Bus
+import qualified Xynoplex.Channels as Channel
+import qualified Xynoplex.Client as Client
+import qualified Xynoplex.Content as Content
+import qualified Xynoplex.Delegation as Delegation
+import qualified Xynoplex.ErrorCodes as Code
+import Xynoplex.Errors (BusRequestError(..),TransportError(..))
+import Xynoplex.Internal.Generated.Schemas (schemas)
+import qualified Xynoplex.Internal.StateTasks as Tasks
+import qualified Xynoplex.Internal.Transport as Local
+import qualified Xynoplex.State.Beckon as Beckon
+import qualified Xynoplex.State.Match as Match
+import qualified Xynoplex.State.Gather as Gather
+import qualified Xynoplex.State.Mark as Mark
+import qualified Xynoplex.State.Yield as Yield
+import qualified Xynoplex.StateValue as State
+import Xynoplex.Retry (RetryOptions(..))
+import qualified Xynoplex.Timing.Settings as Timing
+import qualified Xynoplex.Transport as Transport
+import Xynoplex.Types
 import qualified Streaming.Prelude as Stream
 import System.FilePath ((</>))
 import System.Timeout (timeout)

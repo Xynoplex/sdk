@@ -8,7 +8,7 @@ from pathlib import Path
 
 with tempfile.TemporaryDirectory() as output:
     command = [
-        "cabal", "exec", "--", "ghc", "-fno-code", "-package", "semiont",
+        "cabal", "exec", "--", "ghc", "-fno-code", "-package", "xynoplex",
         "-XGHC2021", "-Wall", "-Werror", "-outputdir", output,
     ]
     subprocess.run(command + ["test/refusals/Valid.hs"], check=True, timeout=30)

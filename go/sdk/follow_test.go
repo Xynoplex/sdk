@@ -1,4 +1,4 @@
-package semiont_test
+package xynoplex_test
 
 // Following a job (protocol/contract/JOBS.md § Following a job), through the two
 // methods that create one: Mark.Delegate and Yield.Delegate.
@@ -16,10 +16,10 @@ import (
 	"testing"
 	"time"
 
-	semiont "github.com/The-AI-Alliance/semiont/packages/go/sdk"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/bus"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/semionttest"
+	xynoplex "github.com/Xynoplex/sdk/go"
+	"github.com/Xynoplex/sdk/go/api"
+	"github.com/Xynoplex/sdk/go/bus"
+	"github.com/Xynoplex/sdk/go/xynoplextest"
 )
 
 // followContext is a gathered context whose focus is res-1.
@@ -39,23 +39,23 @@ var (
 
 // jobTiming is the client's waits, with a followed job's silence and status
 // poll as stated.
-func jobTiming(silence, poll time.Duration) semiont.Timing {
-	timing := semiont.DefaultTiming()
+func jobTiming(silence, poll time.Duration) xynoplex.Timing {
+	timing := xynoplex.DefaultTiming()
 	timing.JobSilence, timing.JobStatusPoll = silence, poll
 	return timing
 }
 
 // jobWorld is a client over a transport whose job:create is answered with
 // job-1, or by the test when it is not answered.
-func jobWorld(t *testing.T, answered bool, timing semiont.Timing) (*semiont.Client, *semionttest.FaultyTransport) {
+func jobWorld(t *testing.T, answered bool, timing xynoplex.Timing) (*xynoplex.Client, *xynoplextest.FaultyTransport) {
 	t.Helper()
 	if answered {
 		return creatingWorld(t, json.RawMessage(`{"jobId":"job-1"}`), timing)
 	}
 	// Each reply is lost on its way, and the test answers what it means to.
-	transport := semionttest.NewFaultyTransport(semionttest.FaultyConfig{
+	transport := xynoplextest.NewFaultyTransport(xynoplextest.FaultyConfig{
 		Channels:     bus.BridgedChannels,
-		Schedule:     []semionttest.FaultAction{semionttest.DropReply{}},
+		Schedule:     []xynoplextest.FaultAction{xynoplextest.DropReply{}},
 		MakeResponse: func(bus.Channel, json.RawMessage) (json.RawMessage, error) { return nil, nil },
 	})
 	return worldOver(t, transport, timing)
@@ -63,16 +63,16 @@ func jobWorld(t *testing.T, answered bool, timing semiont.Timing) (*semiont.Clie
 
 // creatingWorld is a client over a transport whose job:create is answered
 // with created.
-func creatingWorld(t *testing.T, created json.RawMessage, timing semiont.Timing) (*semiont.Client, *semionttest.FaultyTransport) {
+func creatingWorld(t *testing.T, created json.RawMessage, timing xynoplex.Timing) (*xynoplex.Client, *xynoplextest.FaultyTransport) {
 	t.Helper()
-	transport := semionttest.NewFaultyTransport(semionttest.FaultyConfig{Channels: bus.BridgedChannels})
+	transport := xynoplextest.NewFaultyTransport(xynoplextest.FaultyConfig{Channels: bus.BridgedChannels})
 	transport.QueueReply(jobCreate, created)
 	return worldOver(t, transport, timing)
 }
 
-func worldOver(t *testing.T, transport *semionttest.FaultyTransport, timing semiont.Timing) (*semiont.Client, *semionttest.FaultyTransport) {
+func worldOver(t *testing.T, transport *xynoplextest.FaultyTransport, timing xynoplex.Timing) (*xynoplex.Client, *xynoplextest.FaultyTransport) {
 	t.Helper()
-	made := semionttest.NewTestClient(semionttest.TestClientConfig{Transport: transport, Timing: timing})
+	made := xynoplextest.NewTestClient(xynoplextest.TestClientConfig{Transport: transport, Timing: timing})
 	t.Cleanup(func() {
 		made.Client.Close()
 		transport.Close()
@@ -80,7 +80,7 @@ func worldOver(t *testing.T, transport *semionttest.FaultyTransport, timing semi
 	return made.Client, transport
 }
 
-func highlighting(t *testing.T, c *semiont.Client) *semiont.Delegation[api.MarkJobCompleteCommand] {
+func highlighting(t *testing.T, c *xynoplex.Client) *xynoplex.Delegation[api.MarkJobCompleteCommand] {
 	t.Helper()
 	var params api.MarkJobParams
 	if err := params.FromHighlightingJobParams(api.HighlightingJobParams{Motivation: api.HighlightingJobParamsMotivationHighlighting}); err != nil {
@@ -89,7 +89,7 @@ func highlighting(t *testing.T, c *semiont.Client) *semiont.Delegation[api.MarkJ
 	return c.Mark.Delegate(resourceOf(t, "res-1"), params)
 }
 
-func generation(t *testing.T, c *semiont.Client, stall time.Duration, maxTokens *float64) *semiont.Delegation[api.YieldJobCompleteCommand] {
+func generation(t *testing.T, c *xynoplex.Client, stall time.Duration, maxTokens *float64) *xynoplex.Delegation[api.YieldJobCompleteCommand] {
 	t.Helper()
 	var params api.GenerationJobParams
 	if err := json.Unmarshal([]byte(`{"title":"A summary","storageUri":"file://a-summary.md","context":`+followContext+`}`), &params); err != nil {
@@ -110,7 +110,7 @@ func resourceOf(t *testing.T, text string) api.ResourceId {
 
 // say publishes a frame of the lifecycle of the job jobID, which is of that
 // type, on the client's own bus.
-func say(t *testing.T, c *semiont.Client, channel bus.Channel, jobID, of string, more map[string]any) {
+func say(t *testing.T, c *xynoplex.Client, channel bus.Channel, jobID, of string, more map[string]any) {
 	t.Helper()
 	payload := map[string]any{"resourceId": "res-1", "jobId": jobID, "jobType": of}
 	for name, value := range more {
@@ -120,7 +120,7 @@ func say(t *testing.T, c *semiont.Client, channel bus.Channel, jobID, of string,
 	if err != nil {
 		t.Fatal(err)
 	}
-	c.Bus.Deliver(semiont.Frame{Channel: channel, Payload: encoded})
+	c.Bus.Deliver(xynoplex.Frame{Channel: channel, Payload: encoded})
 }
 
 func progressOf(percentage float64) map[string]any {
@@ -147,8 +147,8 @@ func statuses(answer json.RawMessage, n int) []json.RawMessage {
 	return slices.Repeat([]json.RawMessage{answer}, n)
 }
 
-func requestsOn(transport *semionttest.FaultyTransport, channel bus.Channel) []semionttest.RequestLogEntry {
-	var on []semionttest.RequestLogEntry
+func requestsOn(transport *xynoplextest.FaultyTransport, channel bus.Channel) []xynoplextest.RequestLogEntry {
+	var on []xynoplextest.RequestLogEntry
 	for _, request := range transport.RequestLog() {
 		if request.Channel == channel {
 			on = append(on, request)
@@ -168,23 +168,23 @@ func waitUntil(t *testing.T, what string, limit time.Duration, done func() bool)
 }
 
 // created waits for the n-th job:create to have been sent.
-func created(t *testing.T, fake *semionttest.FaultyTransport, n int) semionttest.RequestLogEntry {
+func created(t *testing.T, fake *xynoplextest.FaultyTransport, n int) xynoplextest.RequestLogEntry {
 	t.Helper()
 	waitUntil(t, fmt.Sprintf("job:create number %d", n), time.Second, func() bool { return len(requestsOn(fake, jobCreate)) >= n })
 	return requestsOn(fake, jobCreate)[n-1]
 }
 
-func kindOf(event semiont.JobEvent) string {
+func kindOf(event xynoplex.JobEvent) string {
 	switch event := event.(type) {
-	case semiont.JobCreated:
+	case xynoplex.JobCreated:
 		return "created " + event.Data.JobId.String()
-	case semiont.JobProgressed:
+	case xynoplex.JobProgressed:
 		return fmt.Sprintf("progress %g", event.Data.Percentage)
-	case semiont.JobAttemptFailed:
+	case xynoplex.JobAttemptFailed:
 		return "failed"
-	case semiont.JobRefused:
+	case xynoplex.JobRefused:
 		return fmt.Sprintf("refused %s %s %s", event.Data.Channel, event.Data.Member, event.Data.Reason)
-	case semiont.JobCompleted[api.MarkJobCompleteCommand], semiont.JobCompleted[api.YieldJobCompleteCommand]:
+	case xynoplex.JobCompleted[api.MarkJobCompleteCommand], xynoplex.JobCompleted[api.YieldJobCompleteCommand]:
 		return "complete"
 	}
 	return fmt.Sprintf("an event of no kind: %T", event)
@@ -192,7 +192,7 @@ func kindOf(event semiont.JobEvent) string {
 
 // codeOf is an error's code, or its words when it has none.
 func codeOf(err error) string {
-	var coded semiont.Error
+	var coded xynoplex.Error
 	if errors.As(err, &coded) {
 		return coded.ErrorCode()
 	}
@@ -203,11 +203,11 @@ func codeOf(err error) string {
 // of the failure that ended it; and the events themselves.
 type followedJob struct {
 	kinds []string
-	seen  []semiont.JobEvent
+	seen  []xynoplex.JobEvent
 }
 
 // following ranges over events on a goroutine of its own.
-func following(events iter.Seq2[semiont.JobEvent, error]) <-chan followedJob {
+func following(events iter.Seq2[xynoplex.JobEvent, error]) <-chan followedJob {
 	out := make(chan followedJob, 1)
 	go func() {
 		var got followedJob
@@ -241,7 +241,7 @@ type waitedFor[C any] struct {
 	err  error
 }
 
-func waiting[C any](d *semiont.Delegation[C]) <-chan waitedFor[C] {
+func waiting[C any](d *xynoplex.Delegation[C]) <-chan waitedFor[C] {
 	out := make(chan waitedFor[C], 1)
 	go func() {
 		done, err := d.Wait(context.Background())
@@ -263,7 +263,7 @@ func waitedWithin[C any](t *testing.T, ch <-chan waitedFor[C], limit time.Durati
 
 func TestAJobReportsItsProgressAndEndsWithItsCompletion(t *testing.T) {
 	t.Parallel()
-	c, fake := jobWorld(t, true, semiont.DefaultTiming())
+	c, fake := jobWorld(t, true, xynoplex.DefaultTiming())
 	followed := following(highlighting(t, c).Events(context.Background()))
 	sent := created(t, fake, 1)
 	if want := map[string]any{"jobType": "mark", "resourceId": "res-1", "params": map[string]any{"motivation": "highlighting"}}; !reflect.DeepEqual(normal(t, sent.Payload), want) {
@@ -282,7 +282,7 @@ func TestAJobReportsItsProgressAndEndsWithItsCompletion(t *testing.T) {
 		t.Fatalf("the follower gave %v, want %v", got.kinds, want)
 	}
 	// Its completion is the last of its events.
-	last, ok := got.seen[len(got.seen)-1].(semiont.JobCompleted[api.MarkJobCompleteCommand])
+	last, ok := got.seen[len(got.seen)-1].(xynoplex.JobCompleted[api.MarkJobCompleteCommand])
 	if !ok {
 		t.Fatalf("the last event is a %T", got.seen[len(got.seen)-1])
 	}
@@ -301,7 +301,7 @@ func TestAJobReportsItsProgressAndEndsWithItsCompletion(t *testing.T) {
 // a follower's first event.
 func TestAJobIsNamedBeforeAnythingElseOfItIsGiven(t *testing.T) {
 	t.Parallel()
-	c, fake := jobWorld(t, true, semiont.DefaultTiming())
+	c, fake := jobWorld(t, true, xynoplex.DefaultTiming())
 	followed := following(highlighting(t, c).Events(context.Background()))
 	created(t, fake, 1)
 	say(t, c, jobComplete, "job-1", "mark", nil)
@@ -320,7 +320,7 @@ func TestAJobIsNamedBeforeAnythingElseOfItIsGiven(t *testing.T) {
 
 func TestWaitedForAJobGivesItsCompletion(t *testing.T) {
 	t.Parallel()
-	c, fake := jobWorld(t, true, semiont.DefaultTiming())
+	c, fake := jobWorld(t, true, xynoplex.DefaultTiming())
 	waited := waiting(highlighting(t, c))
 	created(t, fake, 1)
 	say(t, c, jobProgress, "job-1", "mark", progressOf(10))
@@ -346,7 +346,7 @@ func TestWhatAMarkJobReportsIsItsCountsOrADecline(t *testing.T) {
 	} {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			c, fake := jobWorld(t, true, semiont.DefaultTiming())
+			c, fake := jobWorld(t, true, xynoplex.DefaultTiming())
 			waited := waiting(highlighting(t, c))
 			created(t, fake, 1)
 			say(t, c, jobComplete, "job-1", "mark", map[string]any{"result": result})
@@ -364,7 +364,7 @@ func TestWhatAMarkJobReportsIsItsCountsOrADecline(t *testing.T) {
 
 func TestWaitedForAGenerationGivesTheResourceItMade(t *testing.T) {
 	t.Parallel()
-	c, fake := jobWorld(t, true, semiont.DefaultTiming())
+	c, fake := jobWorld(t, true, xynoplex.DefaultTiming())
 	waited := waiting(generation(t, c, 0, nil))
 	created(t, fake, 1)
 	var made map[string]any
@@ -383,7 +383,7 @@ func TestWaitedForAGenerationGivesTheResourceItMade(t *testing.T) {
 
 func TestADelegationIsWaitedForOrRangedOverAndOnce(t *testing.T) {
 	t.Parallel()
-	c, fake := jobWorld(t, true, semiont.DefaultTiming())
+	c, fake := jobWorld(t, true, xynoplex.DefaultTiming())
 	read := highlighting(t, c)
 	followed := following(read.Events(context.Background()))
 	created(t, fake, 1)
@@ -421,7 +421,7 @@ func TestADelegationIsWaitedForOrRangedOverAndOnce(t *testing.T) {
 
 func TestNothingIsSentUntilADelegationIsWaitedForOrRangedOver(t *testing.T) {
 	t.Parallel()
-	c, fake := jobWorld(t, true, semiont.DefaultTiming())
+	c, fake := jobWorld(t, true, xynoplex.DefaultTiming())
 	highlighting(t, c)
 	time.Sleep(50 * time.Millisecond)
 	if sent := fake.Emitted(); len(sent) != 0 {
@@ -431,7 +431,7 @@ func TestNothingIsSentUntilADelegationIsWaitedForOrRangedOver(t *testing.T) {
 
 func TestFramesThatArriveBeforeTheJobsIdIsKnownAreKeptAndHandledInTheOrderTheyCame(t *testing.T) {
 	t.Parallel()
-	c, fake := jobWorld(t, false, semiont.DefaultTiming())
+	c, fake := jobWorld(t, false, xynoplex.DefaultTiming())
 	followed := following(highlighting(t, c).Events(context.Background()))
 	request := created(t, fake, 1)
 	say(t, c, jobProgress, "job-1", "mark", progressOf(10))
@@ -443,7 +443,7 @@ func TestFramesThatArriveBeforeTheJobsIdIsKnownAreKeptAndHandledInTheOrderTheyCa
 		t.Fatalf("the follower ended before its job was named: %v", got.kinds)
 	default:
 	}
-	fake.Deliver(semiont.Frame{Channel: bus.JobCreate.Result().Channel(), Envelope: semiont.Envelope{CorrelationID: request.CorrelationID}, Payload: json.RawMessage(`{"response":{"jobId":"job-1"}}`)})
+	fake.Deliver(xynoplex.Frame{Channel: bus.JobCreate.Result().Channel(), Envelope: xynoplex.Envelope{CorrelationID: request.CorrelationID}, Payload: json.RawMessage(`{"response":{"jobId":"job-1"}}`)})
 	if got := followedWithin(t, followed, time.Second); !slices.Equal(got.kinds, []string{"created job-1", "progress 10", "complete"}) {
 		t.Fatalf("the follower gave %v", got.kinds)
 	}
@@ -477,7 +477,7 @@ func TestASilentJobIsAskedForItsStatusUntilItsStatusIsAnEnd(t *testing.T) {
 		t.Fatalf("the status was asked for %d times, want 2", len(asked))
 	}
 	// What the stream did not carry, from the status: which says what the job was, and the follower knows what it was about.
-	done, ok := got.seen[1].(semiont.JobCompleted[api.MarkJobCompleteCommand])
+	done, ok := got.seen[1].(xynoplex.JobCompleted[api.MarkJobCompleteCommand])
 	if !ok || done.Data.JobId.String() != "job-1" || done.Data.ResourceId.String() != "res-1" || done.Data.JobType != api.MarkJobCompleteCommandJobTypeMark || done.Data.Result != nil {
 		t.Fatalf("the completion learned from the status is %+v", got.seen[1])
 	}
@@ -500,7 +500,7 @@ func TestAStatusCarriesTheResultItsJobWasStoredWithAndAnEmptyOneIsNone(t *testin
 			if !slices.Equal(got.kinds, []string{"created job-1", "complete"}) {
 				t.Fatalf("the follower gave %v", got.kinds)
 			}
-			done := got.seen[1].(semiont.JobCompleted[api.MarkJobCompleteCommand])
+			done := got.seen[1].(xynoplex.JobCompleted[api.MarkJobCompleteCommand])
 			if (done.Data.Result != nil) != c.reads {
 				t.Fatalf("the completion's result is %v, want one: %v", done.Data.Result, c.reads)
 			}
@@ -515,7 +515,7 @@ func TestAStatusCarriesTheResultItsJobWasStoredWithAndAnEmptyOneIsNone(t *testin
 
 func TestACompletionHeardThatIsAnotherVerbsEndsTheFollowerAndIsNoFailureOfTheJob(t *testing.T) {
 	t.Parallel()
-	c, fake := jobWorld(t, true, semiont.DefaultTiming())
+	c, fake := jobWorld(t, true, xynoplex.DefaultTiming())
 	waited := waiting(highlighting(t, c))
 	created(t, fake, 1)
 	var made map[string]any
@@ -525,11 +525,11 @@ func TestACompletionHeardThatIsAnotherVerbsEndsTheFollowerAndIsNoFailureOfTheJob
 	// The job that was delegated is a mark job, and this says a yield job completed.
 	say(t, c, jobComplete, "job-1", "yield", map[string]any{"result": made})
 	got := waitedWithin(t, waited, time.Second)
-	var ended *semiont.TransportError
-	if !errors.As(got.err, &ended) || ended.Code != semiont.TransportErrorCodeError || !strings.Contains(ended.Message, "is a yield job's, and the job delegated is a mark job") {
+	var ended *xynoplex.TransportError
+	if !errors.As(got.err, &ended) || ended.Code != xynoplex.TransportErrorCodeError || !strings.Contains(ended.Message, "is a yield job's, and the job delegated is a mark job") {
 		t.Fatalf("the follower ended with %v", got.err)
 	}
-	var failed *semiont.JobError
+	var failed *xynoplex.JobError
 	if errors.As(got.err, &failed) {
 		t.Fatal("an answer that is not the protocol's is said to be the job's failure")
 	}
@@ -559,7 +559,7 @@ func TestAStatusWhoseCompletionIsNotTheVerbsEndsTheFollowerAndIsNoFailureOfTheJo
 			t.Parallel()
 			client, fake := jobWorld(t, true, jobTiming(50*time.Millisecond, 50*time.Millisecond))
 			fake.QueueReply(jobStatus, statusOf(t, "complete", c.said))
-			var events iter.Seq2[semiont.JobEvent, error]
+			var events iter.Seq2[xynoplex.JobEvent, error]
 			if c.delegated == api.JobTypeMark {
 				events = highlighting(t, client).Events(context.Background())
 			} else {
@@ -579,8 +579,8 @@ func TestAStatusWhoseCompletionIsNotTheVerbsIsToldAsWhatItIs(t *testing.T) {
 	c, fake := jobWorld(t, true, jobTiming(50*time.Millisecond, 50*time.Millisecond))
 	fake.QueueReply(jobStatus, statusOf(t, "complete", map[string]any{"result": map[string]any{"resourceId": "res-summary", "resourceName": carried, "truncated": false}}))
 	got := waitedWithin(t, waiting(highlighting(t, c)), 2*time.Second)
-	var ended *semiont.TransportError
-	if !errors.As(got.err, &ended) || ended.Code != semiont.TransportErrorCodeError {
+	var ended *xynoplex.TransportError
+	if !errors.As(got.err, &ended) || ended.Code != xynoplex.TransportErrorCodeError {
 		t.Fatalf("the follower ended with %v", got.err)
 	}
 	// It is said by what it lacks, and in none of the words of what the job made.
@@ -623,20 +623,20 @@ func TestAStatusThatIsAnEndAndNoCompletionEndsTheFollowerWithIt(t *testing.T) {
 	for _, c := range []struct {
 		name, of string
 		more     map[string]any
-		code     semiont.JobErrorCode
+		code     xynoplex.JobErrorCode
 		message  string
 	}{
-		{"failed", "failed", map[string]any{"error": "the worker gave up"}, semiont.JobErrorCodeFailed, "the worker gave up"},
-		{"failed, with no word why", "failed", nil, semiont.JobErrorCodeFailed, "Job failed"},
+		{"failed", "failed", map[string]any{"error": "the worker gave up"}, xynoplex.JobErrorCodeFailed, "the worker gave up"},
+		{"failed, with no word why", "failed", nil, xynoplex.JobErrorCodeFailed, "Job failed"},
 		// Nothing announces a cancellation: this is where its follower learns of one.
-		{"cancelled", "cancelled", nil, semiont.JobErrorCodeCancelled, "The job was cancelled"},
+		{"cancelled", "cancelled", nil, xynoplex.JobErrorCodeCancelled, "The job was cancelled"},
 	} {
 		t.Run(c.name, func(t *testing.T) {
 			t.Parallel()
 			client, fake := jobWorld(t, true, jobTiming(50*time.Millisecond, 50*time.Millisecond))
 			fake.QueueReply(jobStatus, statusOf(t, c.of, c.more))
 			got := waitedWithin(t, waiting(highlighting(t, client)), 2*time.Second)
-			var ended *semiont.JobError
+			var ended *xynoplex.JobError
 			if !errors.As(got.err, &ended) || ended.Code != c.code || ended.Message != c.message || ended.JobID.String() != "job-1" {
 				t.Fatalf("the follower ended with %v", got.err)
 			}
@@ -662,7 +662,7 @@ func TestAFailureTheQueueWillRetryIsReportedAndFollowedPast(t *testing.T) {
 	if !slices.Equal(got.kinds, []string{"created job-1", "failed", "progress 60", "complete"}) {
 		t.Fatalf("the follower gave %v", got.kinds)
 	}
-	if setback, ok := got.seen[1].(semiont.JobAttemptFailed); !ok || setback.Data.Error != "a blip" {
+	if setback, ok := got.seen[1].(xynoplex.JobAttemptFailed); !ok || setback.Data.Error != "a blip" {
 		t.Fatalf("the setback is %+v", got.seen[1])
 	}
 }
@@ -675,7 +675,7 @@ func TestAFailureThatIsFinalEndsTheFollowerAndOneThatDoesNotSayIsFinal(t *testin
 	} {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			c, fake := jobWorld(t, true, semiont.DefaultTiming())
+			c, fake := jobWorld(t, true, xynoplex.DefaultTiming())
 			waited := waiting(highlighting(t, c))
 			created(t, fake, 1)
 			failure := map[string]any{"error": "the budget is spent"}
@@ -684,8 +684,8 @@ func TestAFailureThatIsFinalEndsTheFollowerAndOneThatDoesNotSayIsFinal(t *testin
 			}
 			say(t, c, jobFail, "job-1", "mark", failure)
 			got := waitedWithin(t, waited, time.Second)
-			var ended *semiont.JobError
-			if !errors.As(got.err, &ended) || ended.Code != semiont.JobErrorCodeFailed || ended.Message != "the budget is spent" || ended.JobID.String() != "job-1" {
+			var ended *xynoplex.JobError
+			if !errors.As(got.err, &ended) || ended.Code != xynoplex.JobErrorCodeFailed || ended.Message != "the budget is spent" || ended.JobID.String() != "job-1" {
 				t.Fatalf("the follower ended with %v", got.err)
 			}
 		})
@@ -694,7 +694,7 @@ func TestAFailureThatIsFinalEndsTheFollowerAndOneThatDoesNotSayIsFinal(t *testin
 
 func TestAnOptionOfAJobGivenAsNothingIsNotSent(t *testing.T) {
 	t.Parallel()
-	c, fake := jobWorld(t, true, semiont.DefaultTiming())
+	c, fake := jobWorld(t, true, xynoplex.DefaultTiming())
 	fake.QueueReply(jobCreate, json.RawMessage(`{"jobId":"job-2"}`))
 	var params api.MarkJobParams
 	density := 1.5
@@ -738,7 +738,7 @@ func TestAnOptionOfAJobGivenAsNothingIsNotSent(t *testing.T) {
 
 func TestAJobWhoseCreationIsRefusedIsItsFollowersFailure(t *testing.T) {
 	t.Parallel()
-	c, fake := jobWorld(t, true, semiont.DefaultTiming())
+	c, fake := jobWorld(t, true, xynoplex.DefaultTiming())
 	fake.RefuseWhen(func(operation bus.Channel, _ json.RawMessage) json.RawMessage {
 		if operation == jobCreate {
 			return json.RawMessage(`{"message":"the queue refused it"}`)
@@ -746,8 +746,8 @@ func TestAJobWhoseCreationIsRefusedIsItsFollowersFailure(t *testing.T) {
 		return nil
 	})
 	got := waitedWithin(t, waiting(highlighting(t, c)), time.Second)
-	var refused *semiont.BusRequestError
-	if !errors.As(got.err, &refused) || refused.Code != semiont.BusRequestErrorCodeRejected {
+	var refused *xynoplex.BusRequestError
+	if !errors.As(got.err, &refused) || refused.Code != xynoplex.BusRequestErrorCodeRejected {
 		t.Fatalf("the follower ended with %v", got.err)
 	}
 }
@@ -757,10 +757,10 @@ func TestAJobWhoseCreationIsRefusedIsItsFollowersFailure(t *testing.T) {
 // would otherwise wait for a job it can never recognise.
 func TestACreationThatNamesNoJobIsItsFollowersFailure(t *testing.T) {
 	t.Parallel()
-	c, _ := creatingWorld(t, json.RawMessage(`{}`), semiont.DefaultTiming())
+	c, _ := creatingWorld(t, json.RawMessage(`{}`), xynoplex.DefaultTiming())
 	got := waitedWithin(t, waiting(highlighting(t, c)), time.Second)
-	var ended *semiont.TransportError
-	if !errors.As(got.err, &ended) || ended.Code != semiont.TransportErrorCodeError || !strings.Contains(ended.Message, "response.jobId") {
+	var ended *xynoplex.TransportError
+	if !errors.As(got.err, &ended) || ended.Code != xynoplex.TransportErrorCodeError || !strings.Contains(ended.Message, "response.jobId") {
 		t.Fatalf("the follower ended with %v", got.err)
 	}
 }
@@ -771,7 +771,7 @@ func TestACreationThatNamesNoJobIsItsFollowersFailure(t *testing.T) {
 // payload, and the job is followed past them.
 func TestAFrameThatIsNotItsChannelsIsReportedAsRefusedAndFollowedPast(t *testing.T) {
 	t.Parallel()
-	c, fake := jobWorld(t, true, semiont.DefaultTiming())
+	c, fake := jobWorld(t, true, xynoplex.DefaultTiming())
 	followed := following(highlighting(t, c).Events(context.Background()))
 	created(t, fake, 1)
 	var made map[string]any
@@ -783,14 +783,14 @@ func TestAFrameThatIsNotItsChannelsIsReportedAsRefusedAndFollowedPast(t *testing
 		t.Fatal(err)
 	}
 	// A completion with no resource, and one whose result is a generation's.
-	c.Bus.Deliver(semiont.Frame{Channel: jobComplete, Payload: encoded})
+	c.Bus.Deliver(xynoplex.Frame{Channel: jobComplete, Payload: encoded})
 	say(t, c, jobComplete, "job-1", "mark", map[string]any{"result": made})
 	say(t, c, jobComplete, "job-1", "mark", map[string]any{"result": map[string]any{"found": 1, "persisted": 1}})
 	got := followedWithin(t, followed, time.Second)
 	if want := []string{"created job-1", "refused job:complete payload.resourceId lacks", "refused job:complete payload.result.found lacks", "complete"}; !slices.Equal(got.kinds, want) {
 		t.Fatalf("the follower gave %v, want %v", got.kinds, want)
 	}
-	done := got.seen[3].(semiont.JobCompleted[api.MarkJobCompleteCommand])
+	done := got.seen[3].(xynoplex.JobCompleted[api.MarkJobCompleteCommand])
 	if counts, err := done.Data.Result.AsMarkJobDone(); err != nil || counts.Found != 1 {
 		t.Fatalf("the completion followed is %+v (%v)", counts, err)
 	}
@@ -802,22 +802,22 @@ func TestAFrameThatIsNotItsChannelsIsReportedAsRefusedAndFollowedPast(t *testing
 // comes after the job's end is not reported.
 func TestARefusedFrameOfTheLifecycleIsReportedOnceTheJobIsNamedInTheOrderItCame(t *testing.T) {
 	t.Parallel()
-	c, fake := jobWorld(t, false, semiont.DefaultTiming())
+	c, fake := jobWorld(t, false, xynoplex.DefaultTiming())
 	followed := following(highlighting(t, c).Events(context.Background()))
 	request := created(t, fake, 1)
 	// One its transport refused, and one whose payload is not its channel's.
-	c.Bus.DeliverRefusal(&semiont.FrameRefusal{Channel: jobFail, Member: "payload.error", Reason: bus.FrameRefusalReasonLacks, Payload: json.RawMessage(`{"jobId":"job-1"}`)})
+	c.Bus.DeliverRefusal(&xynoplex.FrameRefusal{Channel: jobFail, Member: "payload.error", Reason: bus.FrameRefusalReasonLacks, Payload: json.RawMessage(`{"jobId":"job-1"}`)})
 	say(t, c, jobProgress, "job-1", "mark", progressOf(10))
-	c.Bus.Deliver(semiont.Frame{Channel: jobProgress, Payload: json.RawMessage(`{"resourceId":"res-1","jobType":"mark","percentage":20}`)})
+	c.Bus.Deliver(xynoplex.Frame{Channel: jobProgress, Payload: json.RawMessage(`{"resourceId":"res-1","jobType":"mark","percentage":20}`)})
 	time.Sleep(50 * time.Millisecond)
 	select {
 	case got := <-followed:
 		t.Fatalf("the follower ended before its job was named: %v", got.kinds)
 	default:
 	}
-	fake.Deliver(semiont.Frame{Channel: bus.JobCreate.Result().Channel(), Envelope: semiont.Envelope{CorrelationID: request.CorrelationID}, Payload: json.RawMessage(`{"response":{"jobId":"job-1"}}`)})
+	fake.Deliver(xynoplex.Frame{Channel: bus.JobCreate.Result().Channel(), Envelope: xynoplex.Envelope{CorrelationID: request.CorrelationID}, Payload: json.RawMessage(`{"response":{"jobId":"job-1"}}`)})
 	say(t, c, jobComplete, "job-1", "mark", nil)
-	c.Bus.DeliverRefusal(&semiont.FrameRefusal{Channel: jobComplete, Member: "payload.jobId", Reason: bus.FrameRefusalReasonLacks})
+	c.Bus.DeliverRefusal(&xynoplex.FrameRefusal{Channel: jobComplete, Member: "payload.jobId", Reason: bus.FrameRefusalReasonLacks})
 	got := followedWithin(t, followed, time.Second)
 	if want := []string{"created job-1", "refused job:fail payload.error lacks", "progress 10", "refused job:report-progress payload.jobId lacks", "complete"}; !slices.Equal(got.kinds, want) {
 		t.Fatalf("the follower gave %v, want %v", got.kinds, want)
@@ -841,7 +841,7 @@ func TestARefusedFrameDoesNotStartTheSilenceAgain(t *testing.T) {
 	followed := following(highlighting(t, c).Events(context.Background()))
 	created(t, fake, 1)
 	time.Sleep(400 * time.Millisecond)
-	c.Bus.DeliverRefusal(&semiont.FrameRefusal{Channel: jobComplete, Member: "payload.jobId", Reason: bus.FrameRefusalReasonLacks})
+	c.Bus.DeliverRefusal(&xynoplex.FrameRefusal{Channel: jobComplete, Member: "payload.jobId", Reason: bus.FrameRefusalReasonLacks})
 	// Started again, the silence would end 600ms from here.
 	waitUntil(t, "the status ask the silence owes", 400*time.Millisecond, func() bool { return len(requestsOn(fake, jobStatus)) >= 1 })
 	if got := followedWithin(t, followed, time.Second); !slices.Equal(got.kinds, []string{"created job-1", "refused job:complete payload.jobId lacks", "complete"}) {
@@ -852,13 +852,13 @@ func TestARefusedFrameDoesNotStartTheSilenceAgain(t *testing.T) {
 // Nor does a refused frame start a generation's stall deadline again.
 func TestARefusedFrameDoesNotStartTheStallDeadlineAgain(t *testing.T) {
 	t.Parallel()
-	c, fake := jobWorld(t, true, semiont.DefaultTiming())
+	c, fake := jobWorld(t, true, xynoplex.DefaultTiming())
 	stall := 600 * time.Millisecond
 	followed := following(generation(t, c, stall, nil).Events(context.Background()))
 	created(t, fake, 1)
 	start := time.Now()
 	time.Sleep(400 * time.Millisecond)
-	c.Bus.DeliverRefusal(&semiont.FrameRefusal{Channel: jobProgress, Member: "payload.jobId", Reason: bus.FrameRefusalReasonLacks})
+	c.Bus.DeliverRefusal(&xynoplex.FrameRefusal{Channel: jobProgress, Member: "payload.jobId", Reason: bus.FrameRefusalReasonLacks})
 	got := followedWithin(t, followed, 2*time.Second)
 	if want := []string{"created job-1", "refused job:report-progress payload.jobId lacks", "error job.stalled"}; !slices.Equal(got.kinds, want) {
 		t.Fatalf("the follower gave %v, want %v", got.kinds, want)
@@ -901,8 +901,8 @@ func TestAGenerationThatSaysNothingIsCancelledAndGivenUpOn(t *testing.T) {
 		t.Fatalf("its cancellation was asked for before its deadline")
 	}
 	got := waitedWithin(t, waited, 2*time.Second)
-	var ended *semiont.JobError
-	if !errors.As(got.err, &ended) || ended.Code != semiont.JobErrorCodeStalled || ended.JobID.String() != "job-1" {
+	var ended *xynoplex.JobError
+	if !errors.As(got.err, &ended) || ended.Code != xynoplex.JobErrorCodeStalled || ended.JobID.String() != "job-1" {
 		t.Fatalf("the follower ended with %v", got.err)
 	}
 	if ended.Message != "The job stalled: nothing was heard of it within 600ms" {
@@ -916,10 +916,10 @@ func TestAGenerationThatSaysNothingIsCancelledAndGivenUpOn(t *testing.T) {
 
 func TestAGenerationThatStallsBeforeItsJobIsKnownHasNothingToCancel(t *testing.T) {
 	t.Parallel()
-	c, fake := jobWorld(t, false, semiont.DefaultTiming())
+	c, fake := jobWorld(t, false, xynoplex.DefaultTiming())
 	got := waitedWithin(t, waiting(generation(t, c, 200*time.Millisecond, nil)), 2*time.Second)
-	var ended *semiont.JobError
-	if !errors.As(got.err, &ended) || ended.Code != semiont.JobErrorCodeStalled || !ended.JobID.IsZero() {
+	var ended *xynoplex.JobError
+	if !errors.As(got.err, &ended) || ended.Code != xynoplex.JobErrorCodeStalled || !ended.JobID.IsZero() {
 		t.Fatalf("the follower ended with %v", got.err)
 	}
 	time.Sleep(50 * time.Millisecond)
@@ -930,7 +930,7 @@ func TestAGenerationThatStallsBeforeItsJobIsKnownHasNothingToCancel(t *testing.T
 
 func TestWhatAGenerationSaysStartsItsStallDeadlineAgainAndASetbackIsFollowedPast(t *testing.T) {
 	t.Parallel()
-	c, fake := jobWorld(t, true, semiont.DefaultTiming())
+	c, fake := jobWorld(t, true, xynoplex.DefaultTiming())
 	stall, step := 600*time.Millisecond, 350*time.Millisecond
 	followed := following(generation(t, c, stall, nil).Events(context.Background()))
 	created(t, fake, 1)
@@ -974,8 +974,8 @@ func TestAGenerationWaitsAsLongAsItsLengthAllowsWhenNoDeadlineIsStated(t *testin
 	default:
 	}
 	got := waitedWithin(t, waited, 2*time.Second)
-	var ended *semiont.JobError
-	if !errors.As(got.err, &ended) || ended.Code != semiont.JobErrorCodeStalled || ended.Message != "The job stalled: nothing was heard of it within 400ms" {
+	var ended *xynoplex.JobError
+	if !errors.As(got.err, &ended) || ended.Code != xynoplex.JobErrorCodeStalled || ended.Message != "The job stalled: nothing was heard of it within 400ms" {
 		t.Fatalf("the follower ended with %v", got.err)
 	}
 }
@@ -995,7 +995,7 @@ func TestAClientToldOtherWaitsKeepsThem(t *testing.T) {
 
 func TestAClientThatClosesEndsTheJobsItWasFollowing(t *testing.T) {
 	t.Parallel()
-	c, fake := jobWorld(t, true, semiont.DefaultTiming())
+	c, fake := jobWorld(t, true, xynoplex.DefaultTiming())
 	fake.QueueReply(jobCreate, json.RawMessage(`{"jobId":"job-2"}`))
 	followed := following(highlighting(t, c).Events(context.Background()))
 	created(t, fake, 1)
@@ -1008,8 +1008,8 @@ func TestAClientThatClosesEndsTheJobsItWasFollowing(t *testing.T) {
 		t.Fatalf("the follower gave %v", got.kinds)
 	}
 	got := waitedWithin(t, waited, time.Second)
-	var closed *semiont.BusRequestError
-	if !errors.As(got.err, &closed) || closed.Code != semiont.BusRequestErrorCodeClosed {
+	var closed *xynoplex.BusRequestError
+	if !errors.As(got.err, &closed) || closed.Code != xynoplex.BusRequestErrorCodeClosed {
 		t.Fatalf("the wait ended with %v", got.err)
 	}
 }

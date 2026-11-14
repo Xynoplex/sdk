@@ -6,7 +6,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
+	"github.com/Xynoplex/sdk/go/api"
 )
 
 // stored is a stored event of type kind, carrying payload.

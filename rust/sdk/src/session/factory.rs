@@ -3,7 +3,7 @@
 //! given a factory, and so manages sessions over any transport without
 //! knowing which.
 
-use super::semiont_session::SemiontSession;
+use super::xynoplex_session::XynoplexSession;
 use super::signals::SessionSignals;
 use super::stored::StoredSession;
 use crate::errors::SessionError;
@@ -29,7 +29,7 @@ pub trait SessionFactory: Send + Sync + 'static {
     /// It reads nothing of what the session says: the registry is the one
     /// reader of its errors. The caller owns both: it closes the client,
     /// then ends the session.
-    fn session(&self, options: SessionFactoryOptions) -> Result<SemiontSession, SessionError>;
+    fn session(&self, options: SessionFactoryOptions) -> Result<XynoplexSession, SessionError>;
 
     /// A stored session has been forgotten: tell whoever issued it, so its
     /// refresh token is good for nothing. Best effort: the sign-out has

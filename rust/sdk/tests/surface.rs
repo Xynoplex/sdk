@@ -9,17 +9,17 @@
 //! client's own bus.
 
 use bytes::Bytes;
-use semiont::channels::BRIDGED_CHANNELS;
-use semiont::claims::JOB_CLAIM_CHANNELS;
-use semiont::client::SemiontClient;
-use semiont::namespaces::{CreateFromTokenOptions, ResourceFilters};
-use semiont::testing::as_id;
-use semiont::testing::{
+use xynoplex::channels::BRIDGED_CHANNELS;
+use xynoplex::claims::JOB_CLAIM_CHANNELS;
+use xynoplex::client::XynoplexClient;
+use xynoplex::namespaces::{CreateFromTokenOptions, ResourceFilters};
+use xynoplex::testing::as_id;
+use xynoplex::testing::{
     ContentCall, FaultyTransport, InMemoryContent, StubGateway, TestClientOptions,
     create_test_client,
 };
-use semiont::transport::{Envelope, Frame, PutBinaryRequest};
-use semiont::types::GatherAnnotationOptions;
+use xynoplex::transport::{Envelope, Frame, PutBinaryRequest};
+use xynoplex::types::GatherAnnotationOptions;
 use serde::de::DeserializeOwned;
 use serde_json::{Map, Value, json};
 use std::sync::Arc;
@@ -86,7 +86,7 @@ fn object(value: &Value) -> Map<String, Value> {
 }
 
 struct World {
-    client: Arc<SemiontClient>,
+    client: Arc<XynoplexClient>,
     transport: FaultyTransport,
     content: InMemoryContent,
     gateway: StubGateway,
@@ -378,7 +378,7 @@ fn call(world: &World, namespace: &str, method: &str, args: Args) {
             ))
         }
         ("mark", "delegate") => {
-            let params: semiont::types::MarkJobParams = args.typed("params");
+            let params: xynoplex::types::MarkJobParams = args.typed("params");
             go!(client
                 .mark
                 .delegate(&as_id(&args.text("resourceId")), params)
@@ -432,7 +432,7 @@ fn call(world: &World, namespace: &str, method: &str, args: Args) {
             let resource_id = args.text("resourceId");
             // What the case does not state is what the SDK sends unasked.
             let mut options = object(
-                &serde_json::to_value(semiont::types::GatherResourceRequestOptions::default())
+                &serde_json::to_value(xynoplex::types::GatherResourceRequestOptions::default())
                     .expect("the options serialize"),
             );
             options.extend(args.options());
@@ -570,7 +570,7 @@ fn call(world: &World, namespace: &str, method: &str, args: Args) {
             // Claiming begins when the claims are first read.
             let claims = client
                 .job
-                .claim(semiont::claims::ClaimOptions::new(accepts));
+                .claim(xynoplex::claims::ClaimOptions::new(accepts));
             tokio::spawn(async move {
                 let _ = claims.next().await;
             });

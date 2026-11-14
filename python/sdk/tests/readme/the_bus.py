@@ -1,12 +1,12 @@
-from semiont.bus import Bus, Delivered
-from semiont.channels import BRIDGED_CHANNELS, MARK_ADDED
-from semiont.errors import BusRequestError
-from semiont.http import HttpTransport
-from semiont.identifiers import ResourceId
-from semiont.operations import BROWSE_RESOURCE_REQUESTED
-from semiont.transport import FrameRefusal
-from semiont.types import BrowseResourceRequest
-from semiont.watched import Variable
+from xynoplex.bus import Bus, Delivered
+from xynoplex.channels import BRIDGED_CHANNELS, MARK_ADDED
+from xynoplex.errors import BusRequestError
+from xynoplex.http import HttpTransport
+from xynoplex.identifiers import ResourceId
+from xynoplex.operations import BROWSE_RESOURCE_REQUESTED
+from xynoplex.transport import FrameRefusal
+from xynoplex.types import BrowseResourceRequest
+from xynoplex.watched import Variable
 
 
 async def read(origin: str, token: str, resource: ResourceId) -> None:

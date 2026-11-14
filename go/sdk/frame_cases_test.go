@@ -1,4 +1,4 @@
-package semiont
+package xynoplex
 
 // What a stream's reader takes for a frame, held to
 // protocol/specs/src/bus/frame-cases.json: the table every SDK's stream reader runs.
@@ -25,9 +25,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/bus"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/internal/required"
+	"github.com/Xynoplex/sdk/go/api"
+	"github.com/Xynoplex/sdk/go/bus"
+	"github.com/Xynoplex/sdk/go/internal/required"
 )
 
 type frameCase struct {

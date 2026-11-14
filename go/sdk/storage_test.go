@@ -1,4 +1,4 @@
-package semiont
+package xynoplex
 
 // Where a client keeps what must outlive it: text under a key, and one
 // cache's values as one document there.
@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
+	"github.com/Xynoplex/sdk/go/api"
 )
 
 var keptKey = CacheKey("kb", PersonKey("did:web:example.org:users:alice"), CacheQueryResource)

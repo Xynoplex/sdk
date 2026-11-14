@@ -7,15 +7,15 @@
 //! that must see a state reads the observer before it causes the next.
 
 use futures_core::Stream;
-use semiont::cache::{Cache, CachePersister, CacheState, StoragePersister};
-use semiont::errors::{BusRequestError, BusRequestErrorCode, SemiontError};
-use semiont::state_unit::StateUnit;
-use semiont::storage::{InMemorySessionStorage, SessionStorage};
-use semiont::testing::axioms::{
+use xynoplex::cache::{Cache, CachePersister, CacheState, StoragePersister};
+use xynoplex::errors::{BusRequestError, BusRequestErrorCode, XynoplexError};
+use xynoplex::state_unit::StateUnit;
+use xynoplex::storage::{InMemorySessionStorage, SessionStorage};
+use xynoplex::testing::axioms::{
     AxiomSubject, Fresh, StreamSurface, Surface, assert_state_unit_axioms,
 };
-use semiont::timing::{MAX_STORED_BYTES_COUNT, SAVE_DEBOUNCE};
-use semiont::transport::BoxFuture;
+use xynoplex::timing::{MAX_STORED_BYTES_COUNT, SAVE_DEBOUNCE};
+use xynoplex::transport::BoxFuture;
 use serde_json::{Value, json};
 use std::collections::{HashMap, VecDeque};
 use std::pin::Pin;
@@ -25,9 +25,9 @@ use std::time::Duration;
 use tokio::sync::oneshot;
 use tokio_stream::wrappers::WatchStream;
 
-type Answer = Result<String, SemiontError>;
+type Answer = Result<String, XynoplexError>;
 
-fn refused(why: &str) -> SemiontError {
+fn refused(why: &str) -> XynoplexError {
     BusRequestError::new(BusRequestErrorCode::Rejected, why).into()
 }
 
@@ -448,13 +448,13 @@ async fn b13a_the_answer_of_a_fetch_a_removal_let_go_of_is_not_written() {
     assert_eq!(service.asked(), 2);
     cache.remove(
         &key("a"),
-        SemiontError::from(BusRequestError::new(BusRequestErrorCode::NotFound, "gone")).into(),
+        XynoplexError::from(BusRequestError::new(BusRequestErrorCode::NotFound, "gone")).into(),
     );
     let CacheState::Failed(gone) = holds(&mut observer).await else {
         panic!("the removed key is failed");
     };
     assert_eq!(
-        gone.downcast_ref::<SemiontError>().map(SemiontError::code),
+        gone.downcast_ref::<XynoplexError>().map(XynoplexError::code),
         Some("bus.not-found")
     );
     tokio::time::sleep(SAVE_DEBOUNCE * 2).await;
@@ -847,7 +847,7 @@ async fn b14_b15_a_key_that_keeps_failing_is_failed_after_one_retry_and_no_more_
     assert!(!ended(&mut observer).await);
 }
 
-/// A failure of the host's own: no `SemiontError`.
+/// A failure of the host's own: no `XynoplexError`.
 #[derive(Debug)]
 struct Unreadable;
 
@@ -1009,8 +1009,8 @@ async fn b16_a_disposed_cache_asks_nothing_and_a_one_shot_read_of_it_fails_as_cl
     let refusal = cache.fetch(&key("a")).await.expect_err("it is closed");
     assert_eq!(
         refusal
-            .downcast_ref::<SemiontError>()
-            .map(SemiontError::code),
+            .downcast_ref::<XynoplexError>()
+            .map(XynoplexError::code),
         Some("bus.closed")
     );
     settle().await;
@@ -1196,7 +1196,7 @@ fn stored(
     storage: &Arc<InMemorySessionStorage>,
     max_bytes: usize,
 ) -> StoragePersister<String, String> {
-    StoragePersister::new(storage.clone(), "semiont.cache.kb.test", max_bytes)
+    StoragePersister::new(storage.clone(), "xynoplex.cache.kb.test", max_bytes)
 }
 
 fn entries(of: &[(&str, &str)]) -> HashMap<String, String> {
@@ -1216,7 +1216,7 @@ async fn a_stored_cache_is_one_document_and_is_read_back_as_it_was_written() {
         .expect("stored");
 
     let document: Value =
-        serde_json::from_str(&storage.get("semiont.cache.kb.test").expect("a document"))
+        serde_json::from_str(&storage.get("xynoplex.cache.kb.test").expect("a document"))
             .expect("it is JSON");
     assert_eq!(document["version"], json!(1));
     assert_eq!(document["entries"].as_array().map(Vec::len), Some(2));
@@ -1236,7 +1236,7 @@ fn a_document_of_another_version_or_one_that_is_not_a_document_reads_as_nothing_
         "[1, 2, 3]",
         r#"[1, [["a", "one", 1000]]]"#,
     ] {
-        storage.set("semiont.cache.kb.test", kept).expect("stored");
+        storage.set("xynoplex.cache.kb.test", kept).expect("stored");
         assert_eq!(
             stored(&storage, MAX_STORED_BYTES_COUNT).load(),
             None,
@@ -1276,7 +1276,7 @@ async fn a_document_over_its_size_loses_the_entries_longest_unwritten() {
     assert!(!kept.contains_key("oldest"), "{kept:?}");
     assert!(
         storage
-            .get("semiont.cache.kb.test")
+            .get("xynoplex.cache.kb.test")
             .expect("a document")
             .len()
             <= 400

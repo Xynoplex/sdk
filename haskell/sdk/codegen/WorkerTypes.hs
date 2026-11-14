@@ -93,15 +93,15 @@ workerTypes source = do
   failure <- between "export interface JobFailure extends Partial<JobCheckpoint> {\n" "\n}" clean >>= fields
   records <- concat <$> traverse (uncurry record) (declared ++ [("JobReached", [Field key typ True | Field key typ _ <- checkpoint]), ("JobFailure", [Field key typ True | Field key typ _ <- checkpoint] ++ failure)])
   let code = T.unlines
-        [ "-- Generated from packages/typescript/sdk/src/claims.ts. Do not edit."
+        [ "-- Generated from typescript/sdk/src/claims.ts. Do not edit."
         , "{-# LANGUAGE OverloadedStrings #-}"
-        , "module Semiont.Worker.Types where"
+        , "module Xynoplex.Worker.Types where"
         , "import Data.Aeson (FromJSON(..), ToJSON(..), Value(..), withObject, (.:))"
         , "import qualified Data.Aeson.KeyMap as KM"
         , "import Data.Scientific (Scientific)"
         , "import Data.Text (Text)"
-        , "import Semiont.ErrorCodes (BusRequestCode)"
-        , "import Semiont.Internal.Codec (optional, optionalPair)"
-        , "import Semiont.Types (JobId, JobType, UnitCursor, FailureClass)"
+        , "import Xynoplex.ErrorCodes (BusRequestCode)"
+        , "import Xynoplex.Internal.Codec (optional, optionalPair)"
+        , "import Xynoplex.Types (JobId, JobType, UnitCursor, FailureClass)"
         ] <> T.concat records
-  pure [("generated/Semiont/Worker/Types.hs",code)]
+  pure [("generated/Xynoplex/Worker/Types.hs",code)]

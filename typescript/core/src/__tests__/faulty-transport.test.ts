@@ -21,7 +21,7 @@ import { Bus } from '../bus';
 import { BUS_OPERATIONS, type BusOperationKey } from '../bus-operations';
 import { BRIDGED_CHANNELS } from '../bridged-channels';
 import { EventBus } from '../event-bus';
-import { SemiontError } from '../errors';
+import { XynoplexError } from '../errors';
 import { FaultyTransport } from '../faulty-transport';
 import { ERRORS_KEPT_FOR_FIRST_READER_COUNT } from '../generated/client-timing';
 import { annotationId, resourceId, userId, type ResourceId } from '../identifiers';
@@ -399,7 +399,7 @@ describe('what a reader is given', () => {
 });
 
 describe('what errors$ keeps for its first reader', () => {
-  const failure = (said: string): SemiontError => new SemiontError(said, 'unavailable');
+  const failure = (said: string): XynoplexError => new XynoplexError(said, 'unavailable');
 
   /** The message of every failure `transport` says on `errors$` from now on. */
   function heard(transport: FaultyTransport): string[] {

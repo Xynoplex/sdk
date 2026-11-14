@@ -23,8 +23,8 @@ from opentelemetry.trace import NonRecordingSpan, SpanContext, TraceFlags
 from pydantic import BaseModel, Field, JsonValue, TypeAdapter
 from spec import SPEC, JsonObject, objects, read, text
 
-from semiont import telemetry
-from semiont.claims import (
+from xynoplex import telemetry
+from xynoplex.claims import (
     JOB_CLAIM_CHANNELS,
     JOB_COMMIT_CHANNELS,
     ClaimRefusal,
@@ -34,11 +34,11 @@ from semiont.claims import (
     HeldYieldJob,
     will_retry_after,
 )
-from semiont.client import SemiontClient
-from semiont.errors import BusRequestError, TransportError
-from semiont.identifiers import ResourceId
-from semiont.job_filter import job_matches_filter
-from semiont.testing import (
+from xynoplex.client import XynoplexClient
+from xynoplex.errors import BusRequestError, TransportError
+from xynoplex.identifiers import ResourceId
+from xynoplex.job_filter import job_matches_filter
+from xynoplex.testing import (
     Delay,
     Deliver,
     DropReply,
@@ -49,9 +49,9 @@ from semiont.testing import (
     RequestLogEntry,
     StubGateway,
 )
-from semiont.timing import ERRORS_KEPT_FOR_FIRST_READER_COUNT, MARK_COMMIT_TIMEOUT_MS
-from semiont.transport import Frame, FrameRefusal, TraceContext
-from semiont.types import (
+from xynoplex.timing import ERRORS_KEPT_FOR_FIRST_READER_COUNT, MARK_COMMIT_TIMEOUT_MS
+from xynoplex.transport import Frame, FrameRefusal, TraceContext
+from xynoplex.types import (
     Annotation,
     DurabilityEvidence,
     FailureClass,
@@ -61,7 +61,7 @@ from semiont.types import (
     UnitCursor,
     YieldJobDone,
 )
-from semiont.watched import Watched
+from xynoplex.watched import Watched
 
 _FILTERS: Final = TypeAdapter[list[JobFilter]](list[JobFilter])
 EVERYTHING: Final = _FILTERS.validate_python(
@@ -159,7 +159,7 @@ class World:
         """The trace each claim was made in, in order: its id, or nothing for a claim made in none."""
         self.transport: Final = FaultyTransport(wire, make_response=self._answer, channels=channels)
         self.transport.refuse_when(self._refusal)
-        self.client: Final = SemiontClient(self.transport, InMemoryContent(), StubGateway())
+        self.client: Final = XynoplexClient(self.transport, InMemoryContent(), StubGateway())
 
     def _refusal(self, operation: str, payload: Mapping[str, JsonValue]) -> JsonObject | None:
         match operation:

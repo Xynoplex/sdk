@@ -10,11 +10,11 @@ from typing import final, override
 
 from aio import run, soon, turns
 
-from semiont.channels import BRIDGED_CHANNELS
-from semiont.identifiers import AnnotationId, ResourceId
-from semiont.state import BeckonStateUnit
-from semiont.testing import FaultyTransport, create_test_client
-from semiont.testing.axioms import AxiomSubject, Fresh, assert_state_unit_axioms
+from xynoplex.channels import BRIDGED_CHANNELS
+from xynoplex.identifiers import AnnotationId, ResourceId
+from xynoplex.state import BeckonStateUnit
+from xynoplex.testing import FaultyTransport, create_test_client
+from xynoplex.testing.axioms import AxiomSubject, Fresh, assert_state_unit_axioms
 
 RES, ANN = ResourceId("res-1"), AnnotationId("ann-1")
 

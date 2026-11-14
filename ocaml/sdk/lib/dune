@@ -1,6 +1,6 @@
 (library
- (name semiont)
- (public_name semiont)
+ (name xynoplex)
+ (public_name xynoplex)
  (private_modules
   annotation_id
   pattern

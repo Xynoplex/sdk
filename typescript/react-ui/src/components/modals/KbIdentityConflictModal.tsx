@@ -1,7 +1,7 @@
 'use client';
 
 import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react';
-import { useSemiont } from '../../session/SemiontProvider';
+import { useXynoplex } from '../../session/XynoplexProvider';
 import { useObservable } from '../../hooks/useObservable';
 import { useTranslations } from '../../contexts/TranslationContext';
 
@@ -24,22 +24,22 @@ import { useTranslations } from '../../contexts/TranslationContext';
  */
 export function KbIdentityConflictModal() {
   const t = useTranslations('KbIdentityConflictModal');
-  const semiont = useSemiont();
-  const signals = useObservable(semiont.activeSignals$);
+  const xynoplex = useXynoplex();
+  const signals = useObservable(xynoplex.activeSignals$);
   const conflict = useObservable(signals?.kbIdentityConflict$) ?? null;
-  const kb = useObservable(semiont.activeSession$)?.kb ?? null;
+  const kb = useObservable(xynoplex.activeSession$)?.kb ?? null;
 
   if (conflict === null) return null;
 
   const acknowledge = () => signals?.acknowledgeKbIdentityConflict();
   const handleReview = () => {
     acknowledge();
-    semiont.emit('panel:open', { panel: 'knowledge-base' });
+    xynoplex.emit('panel:open', { panel: 'knowledge-base' });
   };
 
   return (
     <Transition appear show>
-      <Dialog as="div" className="semiont-modal" onClose={acknowledge}>
+      <Dialog as="div" className="xynoplex-modal" onClose={acknowledge}>
         <TransitionChild
           enter="ease-out duration-200"
           enterFrom="opacity-0"
@@ -48,10 +48,10 @@ export function KbIdentityConflictModal() {
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="semiont-modal__backdrop" aria-hidden="true" />
+          <div className="xynoplex-modal__backdrop" aria-hidden="true" />
         </TransitionChild>
-        <div className="semiont-modal__container">
-          <div className="semiont-modal__wrapper">
+        <div className="xynoplex-modal__container">
+          <div className="xynoplex-modal__wrapper">
             <TransitionChild
               enter="ease-out duration-200"
               enterFrom="opacity-0 scale-95"
@@ -60,29 +60,29 @@ export function KbIdentityConflictModal() {
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <DialogPanel className="semiont-modal__panel semiont-modal__panel--medium">
-                <div className="semiont-modal__content">
-                  <DialogTitle className="semiont-modal__title semiont-modal__title--centered">
+              <DialogPanel className="xynoplex-modal__panel xynoplex-modal__panel--medium">
+                <div className="xynoplex-modal__content">
+                  <DialogTitle className="xynoplex-modal__title xynoplex-modal__title--centered">
                     {t('title')}
                   </DialogTitle>
-                  <div className="semiont-modal__description">
-                    <div className="semiont-kb-conflict__fact">
-                      <span className="semiont-kb-conflict__fact-label">{t('registeredIdentity')}</span>
-                      {kb?.label && <span className="semiont-kb-conflict__kb-name">{kb.label}</span>}
-                      <code className="semiont-kb-conflict__did">{conflict.expectedDid}</code>
+                  <div className="xynoplex-modal__description">
+                    <div className="xynoplex-kb-conflict__fact">
+                      <span className="xynoplex-kb-conflict__fact-label">{t('registeredIdentity')}</span>
+                      {kb?.label && <span className="xynoplex-kb-conflict__kb-name">{kb.label}</span>}
+                      <code className="xynoplex-kb-conflict__did">{conflict.expectedDid}</code>
                     </div>
-                    <div className="semiont-kb-conflict__fact">
-                      <span className="semiont-kb-conflict__fact-label">{t('answeringNow')}</span>
-                      <code className="semiont-kb-conflict__did">{conflict.observedDid}</code>
+                    <div className="xynoplex-kb-conflict__fact">
+                      <span className="xynoplex-kb-conflict__fact-label">{t('answeringNow')}</span>
+                      <code className="xynoplex-kb-conflict__did">{conflict.observedDid}</code>
                     </div>
                     <p>{t('stateCleared')}</p>
                   </div>
                 </div>
-                <div className="semiont-modal__actions">
-                  <button type="button" onClick={acknowledge} className="semiont-button--secondary semiont-button--flex">
+                <div className="xynoplex-modal__actions">
+                  <button type="button" onClick={acknowledge} className="xynoplex-button--secondary xynoplex-button--flex">
                     {t('dismiss')}
                   </button>
-                  <button type="button" onClick={handleReview} className="semiont-button--primary semiont-button--flex">
+                  <button type="button" onClick={handleReview} className="xynoplex-button--primary xynoplex-button--flex">
                     {t('reviewKnowledgeBases')}
                   </button>
                 </div>

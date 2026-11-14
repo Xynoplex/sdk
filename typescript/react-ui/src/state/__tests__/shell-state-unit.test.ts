@@ -1,22 +1,22 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import type { components } from '@semiont/core';
+import type { components } from '@xynoplex/core';
 import { createShellStateUnit, type ShellStateUnit } from '../shell-state-unit';
-import { assertStateUnitAxioms } from '@semiont/core/testing/axioms';
-import { SemiontBrowser } from '@semiont/sdk';
-import { createHttpSessionFactory } from '@semiont/sdk';
-import { InMemorySessionStorage } from '@semiont/sdk';
-import { annotationId } from '@semiont/core';
+import { assertStateUnitAxioms } from '@xynoplex/core/testing/axioms';
+import { XynoplexBrowser } from '@xynoplex/sdk';
+import { createHttpSessionFactory } from '@xynoplex/sdk';
+import { InMemorySessionStorage } from '@xynoplex/sdk';
+import { annotationId } from '@xynoplex/core';
 
 /**
  * Tests for ShellStateUnit — the app-scoped state unit that owns toolbar panel state.
- * Uses a real `SemiontBrowser` with an in-memory storage adapter because
+ * Uses a real `XynoplexBrowser` with an in-memory storage adapter because
  * the state unit is thin and the browser's own bus is what we're exercising.
  */
 describe('createShellStateUnit', () => {
-  let browser: SemiontBrowser;
+  let browser: XynoplexBrowser;
 
   beforeEach(() => {
-    browser = new SemiontBrowser({
+    browser = new XynoplexBrowser({
       storage: new InMemorySessionStorage(),
       sessionFactory: createHttpSessionFactory(),
     });
@@ -201,11 +201,11 @@ describe('createShellStateUnit', () => {
 
 describe('ShellStateUnit — StateUnit axioms', () => {
   it('satisfies the StateUnit axioms', () => {
-    // A fresh real SemiontBrowser per run (low numRuns to bound the cost). Two
+    // A fresh real XynoplexBrowser per run (low numRuns to bound the cost). Two
     // independent browsers in X3 give genuine instance isolation.
     assertStateUnitAxioms<ShellStateUnit>({
       setup: () => {
-        const b = new SemiontBrowser({ storage: new InMemorySessionStorage(), sessionFactory: createHttpSessionFactory() });
+        const b = new XynoplexBrowser({ storage: new InMemorySessionStorage(), sessionFactory: createHttpSessionFactory() });
         return { unit: createShellStateUnit(b), teardown: () => { void b.dispose(); } };
       },
       surfaces: (u) => [u.activePanel$, u.scrollToAnnotationId$, u.panelInitialTab$],

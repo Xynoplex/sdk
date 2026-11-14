@@ -13,7 +13,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { COMMON_PANELS, type ToolbarPanelType } from '../../../state/shell-state-unit';
 import { type ToolbarPanelsProps, type ToolbarProps } from '../../../components/Toolbar';
-import type { TagSchema } from '@semiont/sdk';
+import type { TagSchema } from '@xynoplex/sdk';
 export type { TagSchema };
 
 export interface TagSchemasPageProps {
@@ -45,9 +45,9 @@ const domainIcons: Record<string, React.ComponentType<{ className?: string }>> =
 };
 
 const domainClasses: Record<string, string> = {
-  legal: 'semiont-schema-domain--legal',
-  scientific: 'semiont-schema-domain--scientific',
-  general: 'semiont-schema-domain--general'
+  legal: 'xynoplex-schema-domain--legal',
+  scientific: 'xynoplex-schema-domain--scientific',
+  general: 'xynoplex-schema-domain--general'
 };
 
 export function TagSchemasPage({
@@ -62,26 +62,26 @@ export function TagSchemasPage({
 
   if (isLoading) {
     return (
-      <div className="semiont-page__loading">
-        <p className="semiont-page__loading-text">{t.loading}</p>
+      <div className="xynoplex-page__loading">
+        <p className="xynoplex-page__loading-text">{t.loading}</p>
       </div>
     );
   }
 
   return (
-    <div className={`semiont-page${activePanel && COMMON_PANELS.includes(activePanel) ? ' semiont-page--panel-open' : ''}`}>
+    <div className={`xynoplex-page${activePanel && COMMON_PANELS.includes(activePanel) ? ' xynoplex-page--panel-open' : ''}`}>
       {/* Main Content Area */}
-      <div className="semiont-page__content">
+      <div className="xynoplex-page__content">
         {/* Page Title */}
-        <div className="semiont-page__header">
-          <h1 className="semiont-page__title">{t.pageTitle}</h1>
-          <p className="semiont-page__subtitle">
+        <div className="xynoplex-page__header">
+          <h1 className="xynoplex-page__title">{t.pageTitle}</h1>
+          <p className="xynoplex-page__subtitle">
             {t.pageDescription}
           </p>
         </div>
 
         {/* Schemas Grid */}
-        <div className="semiont-card-grid semiont-card-grid--two-columns">
+        <div className="xynoplex-card-grid xynoplex-card-grid--two-columns">
           {schemas.map((schema) => {
             const Icon = domainIcons[schema.domain] || LightBulbIcon;
             const domainClass = domainClasses[schema.domain] || domainClasses.general!;
@@ -89,51 +89,51 @@ export function TagSchemasPage({
             return (
               <div
                 key={schema.id}
-                className="semiont-card"
+                className="xynoplex-card"
               >
                 {/* Schema Header */}
-                <div className="semiont-schema__header">
-                  <div className={`semiont-schema__icon-wrapper ${domainClass}`}>
-                    {Icon && <Icon className="semiont-schema__icon" />}
+                <div className="xynoplex-schema__header">
+                  <div className={`xynoplex-schema__icon-wrapper ${domainClass}`}>
+                    {Icon && <Icon className="xynoplex-schema__icon" />}
                   </div>
-                  <div className="semiont-schema__content">
-                    <h3 className="semiont-schema__title">{schema.name}</h3>
-                    <p className="semiont-schema__description">
+                  <div className="xynoplex-schema__content">
+                    <h3 className="xynoplex-schema__title">{schema.name}</h3>
+                    <p className="xynoplex-schema__description">
                       {schema.description}
                     </p>
-                    <span className={`semiont-schema__badge ${domainClass}`}>
+                    <span className={`xynoplex-schema__badge ${domainClass}`}>
                       {schema.domain}
                     </span>
                   </div>
                 </div>
 
                 {/* Categories */}
-                <div className="semiont-schema__categories">
-                  <h4 className="semiont-schema__categories-title">
+                <div className="xynoplex-schema__categories">
+                  <h4 className="xynoplex-schema__categories-title">
                     {t.categories}
                   </h4>
                   {schema.tags.map((tag) => (
                     <div
                       key={tag.name}
-                      className="semiont-schema__category"
+                      className="xynoplex-schema__category"
                     >
-                      <div className="semiont-schema__category-name">
+                      <div className="xynoplex-schema__category-name">
                         {tag.name}
                       </div>
-                      <div className="semiont-schema__category-description">
+                      <div className="xynoplex-schema__category-description">
                         {tag.description}
                       </div>
-                      <div className="semiont-schema__examples">
+                      <div className="xynoplex-schema__examples">
                         {tag.examples.slice(0, 2).map((example, idx) => (
                           <span
                             key={idx}
-                            className="semiont-schema__example"
+                            className="xynoplex-schema__example"
                           >
                             {example}
                           </span>
                         ))}
                         {tag.examples.length > 2 && (
-                          <span className="semiont-schema__example-more">
+                          <span className="xynoplex-schema__example-more">
                             +{tag.examples.length - 2} more
                           </span>
                         )}
@@ -148,7 +148,7 @@ export function TagSchemasPage({
       </div>
 
       {/* Right Sidebar - Panels and Toolbar */}
-      <div className="semiont-page__sidebar">
+      <div className="xynoplex-page__sidebar">
         <ToolbarPanels
           activePanel={activePanel}
           theme={theme}

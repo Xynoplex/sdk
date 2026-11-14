@@ -5,7 +5,7 @@
  * tags); the re-entering-loading case is the centrepiece here.
  */
 import { describe, it, expect } from 'vitest';
-import type { CacheState } from '@semiont/sdk';
+import type { CacheState } from '@xynoplex/sdk';
 import { BehaviorSubject, Subject, firstValueFrom, switchMap } from 'rxjs';
 import { trackList } from '../list-state';
 

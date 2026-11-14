@@ -1,5 +1,5 @@
 /**
- * SemiontClient — the verb-oriented namespace surface.
+ * XynoplexClient — the verb-oriented namespace surface.
  *
  * Thin coordinator over an injected transport pair. Owns a local
  * `EventBus` (`bus`) for UI-signal channels and bridges wire events into
@@ -12,8 +12,8 @@
  * is read from `client.bus`.
  */
 
-import type { BaseUrl, AccessToken, CacheQuery } from '@semiont/core';
-import { BRIDGED_CHANNELS, Bus, EventBus, accessToken, baseUrl } from '@semiont/core';
+import type { BaseUrl, AccessToken, CacheQuery } from '@xynoplex/core';
+import { BRIDGED_CHANNELS, Bus, EventBus, accessToken, baseUrl } from '@xynoplex/core';
 import { sealPlaces, type CachePersistence } from './cache-persister';
 import { BehaviorSubject } from 'rxjs';
 import { BrowseNamespace, type BROWSE_QUERIES } from './namespaces/browse';
@@ -27,17 +27,17 @@ import { FrameNamespace } from './namespaces/frame';
 import { JobNamespace } from './namespaces/job';
 import { AuthNamespace } from './namespaces/auth';
 import { SystemNamespace } from './namespaces/system';
-import type { IGatewayOperations, IContentTransport, ITransport } from '@semiont/core';
+import type { IGatewayOperations, IContentTransport, ITransport } from '@xynoplex/core';
 
-// Local imports of the HTTP adapters from @semiont/http-transport — needed
-// here so `SemiontClient.fromHttp(...)` can construct them. The same
+// Local imports of the HTTP adapters from @xynoplex/http-transport — needed
+// here so `XynoplexClient.fromHttp(...)` can construct them. The same
 // names are re-exported below for consumer convenience, so
-// `import { SemiontClient, HttpTransport } from '@semiont/sdk'` Just Works
+// `import { XynoplexClient, HttpTransport } from '@xynoplex/sdk'` Just Works
 // without a separate http-transport import.
 import {
   HttpTransport,
   HttpContentTransport,
-} from '@semiont/http-transport';
+} from '@xynoplex/http-transport';
 
 // Convenience re-exports of the HTTP adapters. Non-HTTP transports are
 // wired directly by callers; the sdk does not pre-bundle them.
@@ -47,7 +47,7 @@ export {
   HttpTransport,
   type HttpTransportConfig,
   HttpContentTransport,
-} from '@semiont/http-transport';
+} from '@xynoplex/http-transport';
 
 /**
  * Every live query of protocol/specs/src/client/refresh.json is answered by one of
@@ -67,7 +67,7 @@ type AnsweredTwice =
 type LiveQueryCensusDrift = Exclude<CacheQuery, AnsweredQuery> | AnsweredTwice;
 export const liveQueryCensus: [LiveQueryCensusDrift] extends [never] ? 'in-census' : LiveQueryCensusDrift = 'in-census';
 
-export class SemiontClient {
+export class XynoplexClient {
   /**
    * The wire-facing transport: the bus primitives, resource scopes, and the
    * connection's state and errors. What is sent and read over it goes
@@ -101,7 +101,7 @@ export class SemiontClient {
   // is the schema-layer flow's surface (eighth flow); the other eight are
   // content-layer flows plus `job`. `auth` and `system` are gateway-ops
   // namespaces — they're only constructed when the caller passes an
-  // `IGatewayOperations` instance to the constructor. A `SemiontClient`
+  // `IGatewayOperations` instance to the constructor. A `XynoplexClient`
   // over a transport-only setup has
   // `auth === undefined` / `system === undefined`.
   public readonly frame: FrameNamespace;
@@ -150,7 +150,7 @@ export class SemiontClient {
        * `Bus.request` timeout for the browse caches — threads through to
        * `BrowseNamespace`'s deterministic-time knob, there so the liveness
        * property suite can control time. Production omits it (30 s
-       * default); `@semiont/sdk/testing` passes small values so B14/B15
+       * default); `@xynoplex/sdk/testing` passes small values so B14/B15
        * chains run in test time.
        */
       busTimeoutMs?: number;
@@ -239,19 +239,19 @@ export class SemiontClient {
    * Convenience factory for the default HTTP setup. Constructs a
    * `BehaviorSubject<AccessToken | null>` internally, plus an
    * `HttpTransport` and `HttpContentTransport`, and returns the wired
-   * `SemiontClient`.
+   * `XynoplexClient`.
    *
    * Use this for one-shot scripts, CLI commands, or any consumer that
    * doesn't need to drive the token from outside (no manual refresh).
    * For long-running scripts that need refresh, use
-   * `SemiontSession.fromKept(...)` over a kept sign-in (one
-   * `SemiontSession.signInDevice(...)` kept, or `semiont login`'s) or
-   * `SemiontSession.fromHttp(...)` (with a token already on hand) instead —
+   * `XynoplexSession.fromKept(...)` over a kept sign-in (one
+   * `XynoplexSession.signInDevice(...)` kept, or `xynoplex login`'s) or
+   * `XynoplexSession.fromHttp(...)` (with a token already on hand) instead —
    * either owns the same transport/client wiring plus the proactive
    * refresh and the kept sign-in.
    *
    * Strings are accepted for `baseUrl` and `token`; they are branded
-   * via `baseUrl()` / `accessToken()` from `@semiont/core` automatically.
+   * via `baseUrl()` / `accessToken()` from `@xynoplex/core` automatically.
    * Pass the already-branded values if you have them.
    *
    * Omit `token` for unauthenticated usage (public endpoints only). Every
@@ -261,7 +261,7 @@ export class SemiontClient {
     baseUrl: BaseUrl | string;
     token?: AccessToken | string | null;
     fetch?: typeof fetch;
-  }): SemiontClient {
+  }): XynoplexClient {
     const url = typeof opts.baseUrl === 'string' ? baseUrl(opts.baseUrl) : opts.baseUrl;
     const tok = opts.token == null
       ? null
@@ -271,7 +271,7 @@ export class SemiontClient {
     const content = new HttpContentTransport(transport);
     // HttpTransport implements both ITransport and IGatewayOperations;
     // pass it twice so `client.auth` / `client.system` are wired.
-    return new SemiontClient(transport, content, transport);
+    return new XynoplexClient(transport, content, transport);
   }
 
 }

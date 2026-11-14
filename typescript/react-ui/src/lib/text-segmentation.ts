@@ -14,11 +14,11 @@
  * No React dependencies — safe to use in any JavaScript environment.
  */
 
-import { getTextPositionSelector, getTextQuoteSelector, getTargetSelector } from '@semiont/core';
-import { anchorAnnotation, type AnchorStrategy, type AnchorConfidence, type TextOffsets } from '@semiont/core';
+import { getTextPositionSelector, getTextQuoteSelector, getTargetSelector } from '@xynoplex/core';
+import { anchorAnnotation, type AnchorStrategy, type AnchorConfidence, type TextOffsets } from '@xynoplex/core';
 import type { TextSegment } from './codemirror-logic';
 
-import type { Annotation } from '@semiont/core';
+import type { Annotation } from '@xynoplex/core';
 
 // Re-export for consumers
 export type { TextSegment };

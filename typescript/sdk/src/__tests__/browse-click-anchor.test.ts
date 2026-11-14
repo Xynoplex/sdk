@@ -6,8 +6,8 @@
  * (equality matchers ignore those, so this pins the key itself).
  */
 import { describe, it, expect } from 'vitest';
-import { EventBus, annotationId } from '@semiont/core';
-import type { AnchorRect, IContentTransport, ITransport } from '@semiont/core';
+import { EventBus, annotationId } from '@xynoplex/core';
+import type { AnchorRect, IContentTransport, ITransport } from '@xynoplex/core';
 import { BrowseNamespace } from '../namespaces/browse';
 import { inMemoryTransport } from './helpers/in-memory-transport';
 

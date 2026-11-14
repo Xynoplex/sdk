@@ -44,44 +44,44 @@ export function RecentDocumentsPage({
 
   if (isLoading) {
     return (
-      <div className="semiont-page__loading">
-        <p className="semiont-page__loading-text">{t.loading}</p>
+      <div className="xynoplex-page__loading">
+        <p className="xynoplex-page__loading-text">{t.loading}</p>
       </div>
     );
   }
 
   return (
-    <div className={`semiont-page${activePanel && COMMON_PANELS.includes(activePanel) ? ' semiont-page--panel-open' : ''}`}>
+    <div className={`xynoplex-page${activePanel && COMMON_PANELS.includes(activePanel) ? ' xynoplex-page--panel-open' : ''}`}>
       {/* Main Content Area */}
-      <div className="semiont-page__content">
+      <div className="xynoplex-page__content">
         {/* Page Title */}
-        <div className="semiont-page__header">
-          <h1 className="semiont-page__title">{t.pageTitle}</h1>
-          <p className="semiont-page__subtitle">
+        <div className="xynoplex-page__header">
+          <h1 className="xynoplex-page__title">{t.pageTitle}</h1>
+          <p className="xynoplex-page__subtitle">
             {t.pageDescription}
           </p>
         </div>
 
         {/* Recent Documents Section */}
-        <div className="semiont-card">
-          <div className="semiont-recent-docs__header">
-            <div className="semiont-recent-docs__icon-box">
-              <ClockIcon className="semiont-recent-docs__icon" />
+        <div className="xynoplex-card">
+          <div className="xynoplex-recent-docs__header">
+            <div className="xynoplex-recent-docs__icon-box">
+              <ClockIcon className="xynoplex-recent-docs__icon" />
             </div>
-            <div className="semiont-recent-docs__content">
-              <h3 className="semiont-recent-docs__title">{t.sectionTitle}</h3>
-              <p className="semiont-recent-docs__description">
+            <div className="xynoplex-recent-docs__content">
+              <h3 className="xynoplex-recent-docs__title">{t.sectionTitle}</h3>
+              <p className="xynoplex-recent-docs__description">
                 {t.sectionDescription}
               </p>
             </div>
           </div>
 
-          <div className="semiont-recent-docs__empty-state">
-            <svg className="semiont-recent-docs__empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="xynoplex-recent-docs__empty-state">
+            <svg className="xynoplex-recent-docs__empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-            <p className="semiont-recent-docs__empty-message">{t.noDocuments}</p>
-            <p className="semiont-recent-docs__empty-hint">
+            <p className="xynoplex-recent-docs__empty-message">{t.noDocuments}</p>
+            <p className="xynoplex-recent-docs__empty-hint">
               {t.activityWillAppear}
             </p>
           </div>
@@ -89,7 +89,7 @@ export function RecentDocumentsPage({
       </div>
 
       {/* Right Sidebar - Panels and Toolbar */}
-      <div className="semiont-page__sidebar">
+      <div className="xynoplex-page__sidebar">
         <ToolbarPanels
           activePanel={activePanel}
           theme={theme}

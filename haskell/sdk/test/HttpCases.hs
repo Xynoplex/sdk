@@ -26,27 +26,27 @@ import Data.Text.Encoding (encodeUtf8)
 import Network.HTTP.Client
 import Network.URI (parseURI, uriAuthority, uriPort, uriRegName)
 import Text.Read (readMaybe)
-import qualified Semiont.Auth as Auth
-import qualified Semiont.Identity as Principal
-import qualified Semiont.Registry.Identity as Identity
-import qualified Semiont.Bus as Bus
-import Semiont.Channels (globalChannels, channelName, Channel(FrameEntityTypeAddOk))
-import qualified Semiont.Http.Routes as Routes
-import qualified Semiont.Timing as Timing
-import qualified Semiont.Timing.Settings as Settings
-import Semiont.Transport.Facts (traceField)
-import qualified Semiont.Client as Client
-import qualified Semiont.Content as Content
-import qualified Semiont.ErrorCodes as Code
-import Semiont.Errors
-import qualified Semiont.Frame as Frame
-import qualified Semiont.Gateway as Gateway
-import qualified Semiont.Http as Http
-import qualified Semiont.Retry as Retry
-import qualified Semiont.StateValue as State
-import qualified Semiont.System as System
-import qualified Semiont.Transport as Transport
-import Semiont.Types
+import qualified Xynoplex.Auth as Auth
+import qualified Xynoplex.Identity as Principal
+import qualified Xynoplex.Registry.Identity as Identity
+import qualified Xynoplex.Bus as Bus
+import Xynoplex.Channels (globalChannels, channelName, Channel(FrameEntityTypeAddOk))
+import qualified Xynoplex.Http.Routes as Routes
+import qualified Xynoplex.Timing as Timing
+import qualified Xynoplex.Timing.Settings as Settings
+import Xynoplex.Transport.Facts (traceField)
+import qualified Xynoplex.Client as Client
+import qualified Xynoplex.Content as Content
+import qualified Xynoplex.ErrorCodes as Code
+import Xynoplex.Errors
+import qualified Xynoplex.Frame as Frame
+import qualified Xynoplex.Gateway as Gateway
+import qualified Xynoplex.Http as Http
+import qualified Xynoplex.Retry as Retry
+import qualified Xynoplex.StateValue as State
+import qualified Xynoplex.System as System
+import qualified Xynoplex.Transport as Transport
+import Xynoplex.Types
 import System.Directory (removeFile, getTemporaryDirectory)
 import System.Environment (lookupEnv, setEnv, unsetEnv)
 import GHC.IO.Handle (hDuplicate, hDuplicateTo)
@@ -59,11 +59,11 @@ import qualified Streaming.Prelude as Stream
 withBusLogs :: IO () -> IO ()
 withBusLogs work = do
   temporary <- getTemporaryDirectory
-  bracket (openBinaryTempFile temporary "semiont-http-bus-log")
+  bracket (openBinaryTempFile temporary "xynoplex-http-bus-log")
     (\(filename,handle) -> do closed <- hIsClosed handle; unless closed (hClose handle); removeFile filename) $ \(filename,handle) -> do
-      bracket (lookupEnv "SEMIONT_BUS_LOG")
-        (maybe (unsetEnv "SEMIONT_BUS_LOG") (setEnv "SEMIONT_BUS_LOG")) (\_ -> do
-          setEnv "SEMIONT_BUS_LOG" "1"
+      bracket (lookupEnv "XYNOPLEX_BUS_LOG")
+        (maybe (unsetEnv "XYNOPLEX_BUS_LOG") (setEnv "XYNOPLEX_BUS_LOG")) (\_ -> do
+          setEnv "XYNOPLEX_BUS_LOG" "1"
           bracket (hDuplicate stderr) (\original -> hDuplicateTo original stderr >> hClose original) $ \_ -> do
             hDuplicateTo handle stderr
             work
@@ -489,13 +489,13 @@ withPeer :: FilePath -> Map.Map Text Value -> IORef String -> (Peer -> IO result
 withPeer root fixtures reached action = bracket
   (do
     temporary <- getTemporaryDirectory
-    (file, handle) <- openBinaryTempFile temporary "semiont-http-fixtures.json"
+    (file, handle) <- openBinaryTempFile temporary "xynoplex-http-fixtures.json"
     Lazy.hPut handle (encode fixtures)
     hClose handle
     pure file)
   removeFile $ \file -> bracket
     (do
-      process <- createProcess (proc python [root </> "packages/haskell/sdk/test/http-peer.py", root, file]) { std_in = CreatePipe, std_out = CreatePipe, std_err = UseHandle stderr }
+      process <- createProcess (proc python [root </> "haskell/sdk/test/http-peer.py", root, file]) { std_in = CreatePipe, std_out = CreatePipe, std_err = UseHandle stderr }
       case process of
         (Just input, Just output, _, peer) -> pure (input, output, peer)
         _ -> ioError (userError "HTTP peer pipes were not created"))

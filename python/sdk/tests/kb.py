@@ -7,14 +7,14 @@ from typing import Final, NoReturn, assert_never, final, override
 from pydantic import JsonValue
 from spec import JsonObject
 
-from semiont.cache import Runs
-from semiont.channels import BRIDGED_CHANNELS
-from semiont.identifiers import AnnotationId, ResourceId
-from semiont.operations import OPERATIONS
-from semiont.refresh import CacheQuery, CacheRefreshChannel, CacheRefreshWhen
-from semiont.testing import ContentCall, DropReply, FaultyTransport, GetAnnotations, InMemoryContent, Refuse, refuse_unscripted_operation
-from semiont.transport import Content, ContentStream, ContentTransport, Frame, PutBinaryRequest, Upload
-from semiont.types import AnchoredTextAnswer, GetAnnotationsResponse, GetResourceResponse
+from xynoplex.cache import Runs
+from xynoplex.channels import BRIDGED_CHANNELS
+from xynoplex.identifiers import AnnotationId, ResourceId
+from xynoplex.operations import OPERATIONS
+from xynoplex.refresh import CacheQuery, CacheRefreshChannel, CacheRefreshWhen
+from xynoplex.testing import ContentCall, DropReply, FaultyTransport, GetAnnotations, InMemoryContent, Refuse, refuse_unscripted_operation
+from xynoplex.transport import Content, ContentStream, ContentTransport, Frame, PutBinaryRequest, Upload
+from xynoplex.types import AnchoredTextAnswer, GetAnnotationsResponse, GetResourceResponse
 
 RESOURCE, OTHER = ResourceId("res-1"), ResourceId("res-2")
 ANNOTATION, ELSEWHERE = AnnotationId("ann-1"), AnnotationId("ann-2")

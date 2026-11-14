@@ -1,4 +1,4 @@
-package semiont
+package xynoplex
 
 // A client's own bus: frames published and read inside one process.
 
@@ -10,9 +10,9 @@ import (
 	"slices"
 	"sync"
 
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/bus"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/internal/kept"
+	"github.com/Xynoplex/sdk/go/api"
+	"github.com/Xynoplex/sdk/go/bus"
+	"github.com/Xynoplex/sdk/go/internal/kept"
 )
 
 // EventBus is a client's own bus. A client makes one and hands it to its

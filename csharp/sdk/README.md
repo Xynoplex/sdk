@@ -1,8 +1,8 @@
-# Semiont SDK for .NET
+# Xynoplex SDK for .NET
 
-[![codecov](https://codecov.io/gh/The-AI-Alliance/semiont/graph/badge.svg?component=csharp-sdk)](https://app.codecov.io/gh/The-AI-Alliance/semiont/components)
+[![codecov](https://codecov.io/gh/Xynoplex/sdk/graph/badge.svg?component=csharp-sdk)](https://app.codecov.io/gh/Xynoplex/sdk/components)
 
-Use the SDK to read and write a Semiont knowledge base, follow delegated jobs,
+Use the SDK to read and write a Xynoplex knowledge base, follow delegated jobs,
 or run a worker.
 
 [Install](#install) · [Signing in](#signing-in) · [Delegation](#delegation) ·
@@ -12,11 +12,11 @@ or run a worker.
 
 The SDK targets `net11.0`. Use the .NET SDK version pinned in
 [global.json](global.json) to build from source. From your application project
-directory, add a reference to [Semiont.csproj](src/Semiont/Semiont.csproj) in
-your Semiont checkout.
+directory, add a reference to [Xynoplex.csproj](src/Xynoplex/Xynoplex.csproj) in
+your Xynoplex checkout.
 
 ```sh
-dotnet reference add /path/to/semiont/packages/csharp/sdk/src/Semiont/Semiont.csproj
+dotnet reference add /path/to/xynoplex/csharp/sdk/src/Xynoplex/Xynoplex.csproj
 ```
 
 See [Building and verifying](#building-and-verifying) for the container command
@@ -32,14 +32,14 @@ or an [agent account](#signing-in-as-an-agent) for a worker.
 
 ### Using a kept sign-in
 
-`Semiont.SignIn.SignInStore` reads and updates the launcher's sign-ins. Give it an
+`Xynoplex.SignIn.SignInStore` reads and updates the launcher's sign-ins. Give it an
 explicit state directory; `StateDirectory` computes that path from values supplied by
 the application and reads no environment variables. `Entry(stackKey)` returns the kept
 sign-in for that stack; `MemorySignIn` keeps one in memory instead. Changes use the
 launcher's native lock and atomic rename, preserve unknown entries and fields, and
 keep the directory and credential files private to their owner.
 
-`SemiontSession.FromKeptAsync(kb, kept)` opens a session over a knowledge base's HTTP
+`XynoplexSession.FromKeptAsync(kb, kept)` opens a session over a knowledge base's HTTP
 endpoint and an `ISignInKept`, and gives it with the client it is made over as an
 `OpenedSession`. A kept sign-in that cannot be read fails the call. Await the session's
 `ReadyAsync()` for startup to settle, then read or enumerate `Token` and `User` for the
@@ -65,7 +65,7 @@ its closing. Disposing the `OpenedSession` disposes the client, waits for its cl
 save, and then ends the session and its errors, without signing out the kept
 credentials.
 
-Use `HttpSessionFactory` with `SemiontBrowser` to bind a registered knowledge base's
+Use `HttpSessionFactory` with `XynoplexBrowser` to bind a registered knowledge base's
 session to its client. Its session tells the knowledge base's signals why it ended, as
 it signs out. A factory reads none of the session's errors: the registry is their one
 reader, from the first thing the session said. It says each of the session's own errors
@@ -74,7 +74,7 @@ as a permission denied, with its message. A refusal for want of a valid token is
 renewed by the transport that met it, so the registry does nothing with it, nor with
 any other failure of the transport. A session from a factory you write is read the
 same way. Such a factory hands its options' `Signals.NotifySessionEnded` to
-`SemiontSession.FromKeptAsync` as `onAuthFailed`: the registry raises no session end
+`XynoplexSession.FromKeptAsync` as `onAuthFailed`: the registry raises no session end
 itself.
 
 `Issuer.RenewAsync(kept, holding)` exchanges the stored refresh token at its stored
@@ -94,7 +94,7 @@ trusts and begins a device sign-in. The callback receives the user code and veri
 address for the application to display. Polling follows the issuer's interval and
 slow-down replies, expires on the supplied clock, and stops on cancellation or issuer
 disposal. A successful grant saves the access and refresh tokens in `kept`.
-Pass that same entry to `SemiontSession.FromKeptAsync`.
+Pass that same entry to `XynoplexSession.FromKeptAsync`.
 `Issuer.SignOutAsync(kept)` attempts revocation and forgets the local credentials even
 when the issuer cannot be reached. Discovery rejects an issuer document that describes
 a different issuer or provides invalid endpoint addresses.
@@ -128,7 +128,7 @@ See the [builder sign-in guide](../../../docs/builder/SIGN-IN.md) for the shared
 
 ## Connect
 
-Construct `SemiontClient` with a gateway URL and a current access token.
+Construct `XynoplexClient` with a gateway URL and a current access token.
 The client disposes its transport, and a supplied HTTP client stays caller-owned.
 Use a [kept session](#using-a-kept-sign-in) if the client needs to renew credentials.
 
@@ -168,9 +168,9 @@ token to both operations.
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Semiont;
-using Semiont.Identifiers;
-using Semiont.Types;
+using Xynoplex;
+using Xynoplex.Identifiers;
+using Xynoplex.Types;
 
 public static class GatherAndDelegate
 {
@@ -178,7 +178,7 @@ public static class GatherAndDelegate
         string endpoint, string token, ResourceId source, string storageUri,
         HttpClient? http = null, CancellationToken cancellation = default)
     {
-        using var client = new SemiontClient(endpoint, token, http);
+        using var client = new XynoplexClient(endpoint, token, http);
         var context = await client.Gather.ResourceAsync(source, cancellation: cancellation);
         var generation = client.Yield.Delegate(new GenerationJobParams
         {
@@ -202,13 +202,13 @@ query when you need a new answer for a one-off read.
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Semiont;
-using Semiont.Identifiers;
-using Semiont.Types;
+using Xynoplex;
+using Xynoplex.Identifiers;
+using Xynoplex.Types;
 
 public static class WatchResource
 {
-    public static async Task RunAsync(SemiontClient client, ResourceId resourceId,
+    public static async Task RunAsync(XynoplexClient client, ResourceId resourceId,
         TextWriter output, CancellationToken cancellation = default)
     {
         await foreach (var state in client.Browse.Resource(resourceId).WithCancellation(cancellation))
@@ -236,7 +236,7 @@ project and import `System.Linq`. Then call
 Supply `CachePersistence(storage, kbId, RegistryStorage.PersonKey(did))` when
 constructing a client to keep its persisted queries and where its stream was
 across sessions for that person: one document per query, which a client in any
-Semiont SDK reads over the same storage. A registry's `HttpSessionFactory`
+Xynoplex SDK reads over the same storage. A registry's `HttpSessionFactory`
 keeps for the person from when the knowledge base's stored sign-in names them,
 and forgetting that sign-in, however it is forgotten, signing in again
 included, deletes what was kept. Such a session writes only while the sign-in
@@ -246,10 +246,10 @@ revalidated when first read.
 
 ## State units
 
-State units in `Semiont.State` expose read-only `StateValue<T>` properties.
+State units in `Xynoplex.State` expose read-only `StateValue<T>` properties.
 Read `Value` for a snapshot or enumerate the property to receive the current
 value followed by updates. Dispose the unit to stop its work and end its streams.
-`SemiontSession` owns the kept-session lifecycle and leaves its client with its caller.
+`XynoplexSession` owns the kept-session lifecycle and leaves its client with its caller.
 See the [state-unit contract](../../../docs/builder/STATE-UNITS.md).
 
 ## Running a worker
@@ -274,11 +274,11 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Semiont;
-using Semiont.Http;
-using Semiont.Jobs;
-using Semiont.SignIn;
-using Semiont.Types;
+using Xynoplex;
+using Xynoplex.Http;
+using Xynoplex.Jobs;
+using Xynoplex.SignIn;
+using Xynoplex.Types;
 
 public static class RunWorker
 {
@@ -293,7 +293,7 @@ public static class RunWorker
         var channels = commitsAnnotations
             ? WorkerRules.JobClaimChannels.Concat(WorkerRules.JobCommitChannels)
             : WorkerRules.JobClaimChannels;
-        using var client = new SemiontClient(new HttpTransport(agent.Gateway, agent.Token,
+        using var client = new XynoplexClient(new HttpTransport(agent.Gateway, agent.Token,
             channels, refresher: agent.RefreshAsync, httpClient: http));
         using var updates = new CancellationTokenSource();
         var following = FollowTokensAsync(agent, client.Transport, updates.Token);
@@ -348,9 +348,9 @@ format that can be authored, using plain text for other formats.
 
 ## Several knowledge bases
 
-`Semiont.Registry.SemiontBrowser` keeps registered knowledge bases, the active
+`Xynoplex.Registry.XynoplexBrowser` keeps registered knowledge bases, the active
 session, and open resources. Give it an `ISessionStorage` and a session factory,
-such as `HttpSessionFactory`, then hold it with `await using`. `SemiontBrowserConfig`
+such as `HttpSessionFactory`, then hold it with `await using`. `XynoplexBrowserConfig`
 and `HttpSessionFactory` take a `TimeProvider` and a `Random` for the sign-ins and
 sessions they make. `MemoryStorage`
 lasts for the process. A shared store implements atomic `Update` and sends
@@ -363,7 +363,7 @@ or a caller-provided text reader and streams changes by address.
 
 ## Annotations
 
-`Semiont.Annotations.AnnotationTools` reads annotation bodies and selectors,
+`Xynoplex.Annotations.AnnotationTools` reads annotation bodies and selectors,
 reconciles a quote against its source, and builds annotations from a whole resource,
 plain text, or PDF anchored text. Spans count Unicode code points. The builders
 derive the same ID when they are given the same resource, motivation, span, and body.
@@ -371,7 +371,7 @@ They stamp `created` from the `TimeProvider` they are given.
 
 ## Testing a composition
 
-`Semiont.Testing` is part of the SDK assembly. Use `TestSessions.CreateTestSessionAsync`
+`Xynoplex.Testing` is part of the SDK assembly. Use `TestSessions.CreateTestSessionAsync`
 for a real client and offline session. Call `SetToken` to simulate a live sign-in.
 `FaultyTransport` scripts the bus over HTTP and SSE, with a request log and faults
 for drops, delays, duplicates, and emit refusal. Queue responses by operation or
@@ -392,7 +392,7 @@ another view of the same storage that hears writes from other contexts.
 `client.Wire` accepts generated `BusChannels` and `BusOperations` values.
 An `HttpTransport` is always given its channels and assumes none of its own: a full
 client's is given `BusRegistry.BridgedChannels`, every channel delivered to everyone and
-every operation's replies, as `SemiontClient` and the sessions give theirs.
+every operation's replies, as `XynoplexClient` and the sessions give theirs.
 `BusRegistry.ReplyChannelsFor(requests)` names the result and failure channels of the
 given operations, each once: the channels of a transport that awaits only those.
 `BusRegistry.Unsubscribed(channel)` is the refusal of a request whose replies cannot
@@ -421,7 +421,7 @@ Read an existing resource scope through the local bus, or use
 Beckon hover and sparkle stay local. Beckon attention and its other remote
 signals return the gateway's subscriber count when it can count observers.
 
-`Semiont.Http.HttpTransport` carries SSE frames, emits, and correlated requests. It
+`Xynoplex.Http.HttpTransport` carries SSE frames, emits, and correlated requests. It
 supports resource holds, reconnects with per-resource watermarks, event deduplication,
 credential renewal, and cancellation. Each frame observer has its own queue; a view of
 several channels preserves their delivery order. It holds every frame to `BusFrame` before
@@ -444,7 +444,7 @@ jitter of a cap that doubles from `reconnectMs` to `maxReconnectMs`, and never s
 refusal's `Retry-After`; once it has been reconnecting for `degradedThresholdMs` its state is
 `Degraded`. Disposing the transport ends
 its observers and requests and leaves a caller-owned HTTP client usable. Errors share
-`Semiont.Errors.SemiontError`, with distinct transport and bus-request families.
+`Xynoplex.Errors.XynoplexError`, with distinct transport and bus-request families.
 
 HTTP response retries follow the shared boot, transport, and refresh rules.
 The transport rule calls a request repeatable when its method cannot cause a second
@@ -469,19 +469,19 @@ The incremental generator reads `protocol/specs/src` as compiler additional file
 records, closed record unions, wire enums, and checked identifier structs. Unknown schema
 keywords fail compilation with `SEMGEN001`. Generated code is not checked in.
 
-Use `Semiont.Types` for models and `Semiont.Identifiers` for identifier kinds. Optional
+Use `Xynoplex.Types` for models and `Xynoplex.Identifiers` for identifier kinds. Optional
 nullable members use `Stated<T>` to distinguish absence from explicit null. Open objects
 retain unknown members as `JsonElement`; dates and URIs retain their wire spelling.
 Tests round-trip resolved payloads from the shared wire, live, and worker corpora.
 
-`Semiont.Session.Identity` derives a knowledge base's DID and token audience
+`Xynoplex.Session.Identity` derives a knowledge base's DID and token audience
 from its domain. It also derives person and agent DIDs from issuer subjects,
 encoding each subject as one DID segment.
 
 ## Telemetry
 
 Telemetry uses BCL `ActivitySource` and `Meter`; the application chooses its exporter.
-`SEMIONT_BUS_LOG` enables payload logging to stderr, with credentials withheld according
+`XYNOPLEX_BUS_LOG` enables payload logging to stderr, with credentials withheld according
 to the shared bus-log table. See [the wire driver](conformance/README.md) for self-contained
 builds and black-box conformance.
 
@@ -494,15 +494,15 @@ tag from that version. No .NET installation on the host is required.
 From the repository root, build and check inside Apple `container`:
 
 ```sh
-container run --rm --memory 4g -v "$PWD":/work -w /work/packages/csharp/sdk \
-  "mcr.microsoft.com/dotnet/sdk:$(packages/csharp/scripts/dotnet-version.sh --image-tag)" \
+container run --rm --memory 4g -v "$PWD":/work -w /work/csharp/sdk \
+  "mcr.microsoft.com/dotnet/sdk:$(csharp/scripts/dotnet-version.sh --image-tag)" \
   sh -c 'dotnet build -p:RestoreLockedMode=true && dotnet test --no-build --settings test.runsettings && dotnet format --no-restore --verify-no-changes'
 ```
 
 The build enables nullable reference types, warnings as errors, analyzers, and explicit
 accessibility. Its Roslyn census analyzer covers generated code too. It refuses null
 forgiveness, task blocking, dynamic types, diagnostic suppression, skipped tests, and
-environment reads other than `SEMIONT_BUS_LOG`. The analyzer is a build-time dependency;
+environment reads other than `XYNOPLEX_BUS_LOG`. The analyzer is a build-time dependency;
 the SDK has no runtime package dependencies.
 
 Every build compiles each file in [refusals](refusals) separately and requires its stated

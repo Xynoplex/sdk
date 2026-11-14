@@ -3,14 +3,14 @@ import { screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { renderWithProviders } from '../../../../test-utils';
 
-import type { Annotation, AnnotationId } from '@semiont/core';
+import type { Annotation, AnnotationId } from '@xynoplex/core';
 
 // Stable mock functions defined outside vi.mock to avoid re-render loops
 const mockIsBodyResolved = vi.fn();
 const mockGetEntityTypes = vi.fn();
 
-vi.mock('@semiont/core', async () => {
-  const actual = await vi.importActual('@semiont/core');
+vi.mock('@xynoplex/core', async () => {
+  const actual = await vi.importActual('@xynoplex/core');
   return {
     ...actual,
     isBodyResolved: (...args: unknown[]) => mockIsBodyResolved(...args),
@@ -19,7 +19,7 @@ vi.mock('@semiont/core', async () => {
 });
 
 import { StatisticsPanel } from '../StatisticsPanel';
-import { resourceId } from '@semiont/core';
+import { resourceId } from '@xynoplex/core';
 
 const createMockAnnotation = (overrides?: Partial<Annotation>): Annotation => ({
   '@context': 'http://www.w3.org/ns/anno.jsonld',
@@ -125,9 +125,9 @@ describe('StatisticsPanel', () => {
       renderWithProviders(<StatisticsPanel {...emptyProps} references={refs} />);
 
       expect(screen.getByText('StatisticsPanel.references')).toBeInTheDocument();
-      // The references item has the total count as its direct .semiont-statistics-panel__value child
-      const referencesItem = screen.getByText('StatisticsPanel.references').closest('.semiont-statistics-panel__item');
-      const totalValue = referencesItem!.querySelector(':scope > .semiont-statistics-panel__value');
+      // The references item has the total count as its direct .xynoplex-statistics-panel__value child
+      const referencesItem = screen.getByText('StatisticsPanel.references').closest('.xynoplex-statistics-panel__item');
+      const totalValue = referencesItem!.querySelector(':scope > .xynoplex-statistics-panel__value');
       expect(totalValue!.textContent).toBe('2');
     });
   });
@@ -197,7 +197,7 @@ describe('StatisticsPanel', () => {
 
       const { container } = renderWithProviders(<StatisticsPanel {...emptyProps} />);
 
-      expect(container.querySelector('.semiont-statistics-panel__entity-types')).not.toBeInTheDocument();
+      expect(container.querySelector('.xynoplex-statistics-panel__entity-types')).not.toBeInTheDocument();
     });
 
     it('should render entity types with counts', () => {
@@ -235,12 +235,12 @@ describe('StatisticsPanel', () => {
 
       const { container } = renderWithProviders(<StatisticsPanel {...emptyProps} references={refs} />);
 
-      const entityItems = container.querySelectorAll('.semiont-statistics-panel__entity-item');
+      const entityItems = container.querySelectorAll('.xynoplex-statistics-panel__entity-item');
       expect(entityItems.length).toBe(2);
 
       // First should be Person (count 3), second Location (count 1)
-      expect(entityItems[0].querySelector('.semiont-statistics-panel__entity-name')!.textContent).toBe('Person');
-      expect(entityItems[1].querySelector('.semiont-statistics-panel__entity-name')!.textContent).toBe('Location');
+      expect(entityItems[0].querySelector('.xynoplex-statistics-panel__entity-name')!.textContent).toBe('Person');
+      expect(entityItems[1].querySelector('.xynoplex-statistics-panel__entity-name')!.textContent).toBe('Location');
     });
   });
 

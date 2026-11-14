@@ -1,28 +1,28 @@
 //! The README's examples, compiled and run over the testing doubles. Each
 //! fenced Rust block of README.md is one of the regions marked here, word
-//! for word (`semiont::testing::examples`).
+//! for word (`xynoplex::testing::examples`).
 
 use bytes::Bytes;
-use semiont::annotations::{QuotedText, annotation_of_span, reconcile};
-use semiont::bus::{operation, reply_names};
-use semiont::channels::BRIDGED_CHANNELS;
-use semiont::claims::{ClaimOptions, Held, HeldJob, JOB_CLAIM_CHANNELS, JOB_COMMIT_CHANNELS, Mark};
-use semiont::client::SemiontClient;
-use semiont::errors::SemiontError;
-use semiont::session::{
-    SemiontBrowser, SemiontBrowserConfig, SemiontSession, SessionFactory, SessionFactoryOptions,
+use xynoplex::annotations::{QuotedText, annotation_of_span, reconcile};
+use xynoplex::bus::{operation, reply_names};
+use xynoplex::channels::BRIDGED_CHANNELS;
+use xynoplex::claims::{ClaimOptions, Held, HeldJob, JOB_CLAIM_CHANNELS, JOB_COMMIT_CHANNELS, Mark};
+use xynoplex::client::XynoplexClient;
+use xynoplex::errors::XynoplexError;
+use xynoplex::session::{
+    XynoplexBrowser, XynoplexBrowserConfig, XynoplexSession, SessionFactory, SessionFactoryOptions,
     StoredSession, save_knowledge_bases,
 };
-use semiont::state::{MarkStateUnit, PendingAnnotation};
-use semiont::storage::SessionStorage;
-use semiont::testing::as_id;
-use semiont::testing::examples::assert_readme_shows;
-use semiont::testing::{
+use xynoplex::state::{MarkStateUnit, PendingAnnotation};
+use xynoplex::storage::SessionStorage;
+use xynoplex::testing::as_id;
+use xynoplex::testing::examples::assert_readme_shows;
+use xynoplex::testing::{
     ContentCall, FaultAction, FaultyTransport, RequestLogEntry, ScriptedSessions, SharedStorage,
     TestClientOptions, create_test_client,
 };
-use semiont::transport::{BoxFuture, Envelope, Frame, PutBinaryRequest};
-use semiont::types::{
+use xynoplex::transport::{BoxFuture, Envelope, Frame, PutBinaryRequest};
+use xynoplex::types::{
     Agent, GatherResourceRequestOptions, GenerationJobParams, HighlightingJobParams, HttpEndpoint,
     HttpEndpointProtocol, InvalidIdentifier, JobCompleteCommand, KbEndpoint, KnowledgeBase,
     LinkingJobParams, MarkJobCompleteCommand, MarkJobDone, Motivation, ResourceId, YieldJobResult,
@@ -47,9 +47,9 @@ fn ids() -> Result<ResourceId, InvalidIdentifier> {
 }
 
 async fn a_first_program(
-    client: &SemiontClient,
+    client: &XynoplexClient,
     paper: Bytes,
-) -> Result<Option<ResourceId>, SemiontError> {
+) -> Result<Option<ResourceId>, XynoplexError> {
     // <readme:story>
     // Ingest: the paper's bytes become a resource.
     let created = client
@@ -102,7 +102,7 @@ async fn a_first_program(
 }
 
 async fn a_script(
-    client: &SemiontClient,
+    client: &XynoplexClient,
     resource_id: ResourceId,
 ) -> Result<MarkJobCompleteCommand, Box<dyn std::error::Error + Send + Sync>> {
     // <readme:script>
@@ -123,7 +123,7 @@ async fn a_script(
     Ok(done)
 }
 
-async fn a_daemon(client: &SemiontClient, mut done: impl FnMut(JobCompleteCommand)) {
+async fn a_daemon(client: &XynoplexClient, mut done: impl FnMut(JobCompleteCommand)) {
     // <readme:daemon>
     // Every job that completes, from now on, until the client closes.
     let mut completed = client.job.complete();
@@ -182,7 +182,7 @@ async fn an_application(
     // <readme:application>
     // What an application holds: its knowledge bases, which one is active,
     // and the active one's session.
-    let browser = SemiontBrowser::new(SemiontBrowserConfig {
+    let browser = XynoplexBrowser::new(XynoplexBrowserConfig {
         storage,
         session_factory,
     })?;
@@ -202,7 +202,7 @@ async fn an_application(
     Ok(())
 }
 
-async fn a_test() -> Result<(), SemiontError> {
+async fn a_test() -> Result<(), XynoplexError> {
     // <readme:testing>
     // A real client over doubles: script the transport, observe the client.
     let test = create_test_client(TestClientOptions::default());
@@ -607,14 +607,14 @@ async fn the_worker_builds_an_annotation_of_each_quote_the_text_has_and_its_job_
 /// speaks on it.
 struct Keeping {
     sessions: ScriptedSessions,
-    clients: Arc<Mutex<Vec<Arc<SemiontClient>>>>,
+    clients: Arc<Mutex<Vec<Arc<XynoplexClient>>>>,
 }
 
 impl SessionFactory for Keeping {
     fn session(
         &self,
         options: SessionFactoryOptions,
-    ) -> Result<SemiontSession, semiont::errors::SessionError> {
+    ) -> Result<XynoplexSession, xynoplex::errors::SessionError> {
         let session = self.sessions.session(options)?;
         self.clients
             .lock()
@@ -643,7 +643,7 @@ async fn the_application_renders_the_annotation_being_composed_in_the_active_kno
         }],
     )
     .expect("stored");
-    let clients: Arc<Mutex<Vec<Arc<SemiontClient>>>> = Arc::default();
+    let clients: Arc<Mutex<Vec<Arc<XynoplexClient>>>> = Arc::default();
     let factory = Keeping {
         sessions: ScriptedSessions::answering(
             |_, operation, payload| a_knowledge_base(operation, payload),

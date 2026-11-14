@@ -16,14 +16,14 @@ from aio import run, settle, soon
 from gateway_server import Answer, GatewayServer
 from spec import JsonObject
 
-from semiont.channels import BRIDGED_CHANNELS
-from semiont.errors import SemiontError, SignInError, TransportError
-from semiont.events import Events
-from semiont.http import HttpTransport, Timing
-from semiont.identifiers import ResourceId
-from semiont.retry import RetryPolicy
-from semiont.transport import PutBinaryRequest, UploadProgress
-from semiont.watched import Variable, reached
+from xynoplex.channels import BRIDGED_CHANNELS
+from xynoplex.errors import XynoplexError, SignInError, TransportError
+from xynoplex.events import Events
+from xynoplex.http import HttpTransport, Timing
+from xynoplex.identifiers import ResourceId
+from xynoplex.retry import RetryPolicy
+from xynoplex.transport import PutBinaryRequest, UploadProgress
+from xynoplex.watched import Variable, reached
 
 QUICK = Timing(reconnect_ms=20, lazy_remove_ms=10, linger_ms=10, emit_retry=RetryPolicy(attempts=2, initial_delay_ms=1, max_delay_ms=1))
 REFUSED = Answer(status=401, body=b'{"error":"The token is not one this gateway admits"}')
@@ -71,7 +71,7 @@ async def state_is(transport: HttpTransport, wanted: str) -> None:
     await soon(reached(transport.state, lambda state: state == wanted))
 
 
-async def nothing_reported(failures: Events[SemiontError]) -> bool:
+async def nothing_reported(failures: Events[XynoplexError]) -> bool:
     """Whether the error stream has carried nothing more, once what was ready has run."""
     await settle()
     reported = asyncio.ensure_future(anext(failures))

@@ -1,6 +1,6 @@
 import AsyncHTTPClient
 import Foundation
-import Semiont
+import Xynoplex
 
 private struct Query: Sendable {
   let fresh: @Sendable () async throws -> JSONValue
@@ -54,7 +54,7 @@ private func resourceFilters(_ query: [String: JSONValue]) throws -> ResourceFil
     offset: filters["offset"] == nil ? 0 : filters.integer("offset"))
 }
 
-private func namedQuery(_ client: SemiontClient, _ query: [String: JSONValue]) throws -> Query {
+private func namedQuery(_ client: XynoplexClient, _ query: [String: JSONValue]) throws -> Query {
   switch try query.text("query") {
   case "resource": return try Query(client.browse.resource(ResourceId(query.text("resource"))))
   case "annotations":
@@ -89,7 +89,7 @@ actor LiveDriver {
   let output: Output
   let http: HTTPClient
   let storage = MemorySessionStorage()
-  var client: SemiontClient?
+  var client: XynoplexClient?
   /// Ends the failures the client's transport told, once it is disposed.
   var telling: AsyncStream<TransportError>.Continuation?
   var closed = true
@@ -101,7 +101,7 @@ actor LiveDriver {
     self.http = http
   }
 
-  private func current() throws -> SemiontClient {
+  private func current() throws -> XynoplexClient {
     guard let client else { throw Misuse(description: "No client is open") }
     return client
   }
@@ -139,7 +139,7 @@ actor LiveDriver {
       channels: bridgedChannels, timing: transportTiming)
     let (failures, telling) = failuresTold(by: transport)
     do {
-      client = try await SemiontClient(
+      client = try await XynoplexClient(
         transport: transport, gateway: transport,
         followTiming: FollowTiming(silenceMs: silence, statusPollMs: statusPoll),
         persistence: persistence, invalidationWindowMs: window, busRequestTimeoutMs: busRequest)

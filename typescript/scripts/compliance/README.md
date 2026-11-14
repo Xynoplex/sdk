@@ -1,6 +1,6 @@
 # Architecture Compliance Auditing System
 
-Automated TypeScript AST analysis for enforcing React Hooks architecture patterns across the Semiont codebase.
+Automated TypeScript AST analysis for enforcing React Hooks architecture patterns across the Xynoplex codebase.
 
 ## Overview
 
@@ -14,7 +14,7 @@ This system provides zero-configuration compliance auditing that:
 
 ### React-UI Package
 ```bash
-cd packages/typescript/react-ui
+cd typescript/react-ui
 ./scripts/generate-compliance-report.sh
 # Outputs: .compliance/REACT-UI-COMPLIANCE.md
 ```
@@ -29,7 +29,7 @@ cd images/browser
 ## Architecture
 
 ```
-packages/typescript/scripts/compliance/          # Shared core scripts (workspace-agnostic)
+typescript/scripts/compliance/          # Shared core scripts (workspace-agnostic)
 ├── discover-symbols.ts      # TypeScript AST analysis
 ├── batch-audit.ts           # Multi-file compliance checker
 ├── audit-dependency-arrays.ts  # React hooks pattern validator
@@ -37,7 +37,7 @@ packages/typescript/scripts/compliance/          # Shared core scripts (workspac
 └── docs/
     └── TENETS-REACT-UI.md   # React UI architecture rules
 
-packages/typescript/react-ui/scripts/   # React-UI thin wrapper
+typescript/react-ui/scripts/   # React-UI thin wrapper
 └── generate-compliance-report.sh
 
 images/browser/scripts/       # Browser thin wrapper
@@ -46,7 +46,7 @@ images/browser/scripts/       # Browser thin wrapper
 
 ### Design Principles
 
-1. **DRY**: Core logic lives in `packages/typescript/scripts/compliance/`, thin wrappers in workspaces
+1. **DRY**: Core logic lives in `typescript/scripts/compliance/`, thin wrappers in workspaces
 2. **Parameter-driven**: Scripts accept paths, never hardcode workspace assumptions
 3. **stdout by default**: Core scripts write to stdout, wrappers redirect to files
 4. **Zero manual maintenance**: Automatically discovers all symbols via AST analysis
@@ -59,7 +59,7 @@ images/browser/scripts/       # Browser thin wrapper
 
 **Usage**:
 ```bash
-npx tsx packages/typescript/scripts/compliance/discover-symbols.ts <src-dir> <output-json>
+npx tsx typescript/scripts/compliance/discover-symbols.ts <src-dir> <output-json>
 ```
 
 **What it discovers**:
@@ -92,7 +92,7 @@ npx tsx packages/typescript/scripts/compliance/discover-symbols.ts <src-dir> <ou
 
 **Usage**:
 ```bash
-npx tsx packages/typescript/scripts/compliance/batch-audit.ts <src-dir> <symbols-json>
+npx tsx typescript/scripts/compliance/batch-audit.ts <src-dir> <symbols-json>
 ```
 
 **Dual-mode input**:
@@ -130,11 +130,11 @@ const handler = useCallback(() => {
 
 ### audit-hooks-ordering.ts
 
-**Purpose**: Find a React hook called where React's rules forbid one, in `packages/typescript/react-ui/src` and `images/browser/src`.
+**Purpose**: Find a React hook called where React's rules forbid one, in `typescript/react-ui/src` and `images/browser/src`.
 
 **Usage**:
 ```bash
-npx tsx packages/typescript/scripts/compliance/audit-hooks-ordering.ts
+npx tsx typescript/scripts/compliance/audit-hooks-ordering.ts
 ```
 
 **What it checks**:
@@ -148,15 +148,15 @@ It takes no arguments and writes no report. It exits 1 on an error, and 0 with w
 
 Thin shell scripts that call shared core with workspace-specific paths.
 
-### Example: packages/typescript/react-ui/scripts/generate-compliance-report.sh
+### Example: typescript/react-ui/scripts/generate-compliance-report.sh
 ```bash
 #!/bin/bash
 REPO_ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
-SRC_DIR="$REPO_ROOT/packages/typescript/react-ui/src"
+SRC_DIR="$REPO_ROOT/typescript/react-ui/src"
 
 # Shared compliance scripts
-DISCOVER="$REPO_ROOT/packages/typescript/scripts/compliance/discover-symbols.ts"
-AUDIT="$REPO_ROOT/packages/typescript/scripts/compliance/batch-audit.ts"
+DISCOVER="$REPO_ROOT/typescript/scripts/compliance/discover-symbols.ts"
+AUDIT="$REPO_ROOT/typescript/scripts/compliance/batch-audit.ts"
 
 # Discover symbols
 npx tsx "$DISCOVER" "$SRC_DIR" symbols.json
@@ -274,12 +274,12 @@ jobs:
 
       # The audits can fail: each refuses a planted violation
       - name: Compliance Audits Can Fail
-        run: ./packages/typescript/scripts/compliance/audit-compliance-gate.sh
+        run: ./typescript/scripts/compliance/audit-compliance-gate.sh
 
       # Audit React-UI: the script exits non-zero on a failing symbol
       - name: React-UI Compliance
         run: |
-          cd packages/typescript/react-ui
+          cd typescript/react-ui
           ./scripts/generate-compliance-report.sh
 
       # Audit Browser
@@ -321,8 +321,8 @@ mkdir -p "$REPORT_DIR"
 REPORT_FILE="$REPORT_DIR/MY-APP-COMPLIANCE.md"
 
 # Shared compliance scripts
-DISCOVER="$REPO_ROOT/packages/typescript/scripts/compliance/discover-symbols.ts"
-AUDIT="$REPO_ROOT/packages/typescript/scripts/compliance/batch-audit.ts"
+DISCOVER="$REPO_ROOT/typescript/scripts/compliance/discover-symbols.ts"
+AUDIT="$REPO_ROOT/typescript/scripts/compliance/batch-audit.ts"
 
 echo "🔍 Discovering symbols in $SRC_DIR..."
 npx tsx "$DISCOVER" "$SRC_DIR" "$SYMBOLS_FILE"
@@ -344,10 +344,10 @@ needs a line of its own.
 
 ### Adding New Compliance Rules
 
-1. Edit `packages/typescript/scripts/compliance/audit-dependency-arrays.ts`
+1. Edit `typescript/scripts/compliance/audit-dependency-arrays.ts`
 2. Add detection logic in the AST analysis section
 3. Update output in the reporting section
-4. Document the new rule in `packages/typescript/scripts/compliance/docs/TENETS-REACT-UI.md`
+4. Document the new rule in `typescript/scripts/compliance/docs/TENETS-REACT-UI.md`
 
 ## Troubleshooting
 
@@ -376,8 +376,8 @@ needs a line of its own.
 - ❌ `.compliance/*-COMPLIANCE.md` (auto-generated, gitignored)
 
 **Update when adding new rules**:
-- ✅ `packages/typescript/scripts/compliance/audit-dependency-arrays.ts` (detection logic)
-- ✅ `packages/typescript/scripts/compliance/docs/TENETS-REACT-UI.md` (documentation)
+- ✅ `typescript/scripts/compliance/audit-dependency-arrays.ts` (detection logic)
+- ✅ `typescript/scripts/compliance/docs/TENETS-REACT-UI.md` (documentation)
 
 **Update when adding new workspaces**:
 - ✅ Add thin wrapper script in workspace

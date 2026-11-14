@@ -1,5 +1,5 @@
 /**
- * The sign-ins `semiont login` keeps, as protocol/specs/src/sign-in-store states
+ * The sign-ins `xynoplex login` keeps, as protocol/specs/src/sign-in-store states
  * them, over files a caller gives: where the launcher's state home is
  * (sign-in-store/cases.json, `cases`), what a renewal of a kept sign-in writes
  * and gives while other programs renew it and sign it out (`renewals`), run
@@ -23,10 +23,10 @@ import {
   SIGN_IN_STORE_LOCK,
   SIGN_IN_STORE_WINDOWS_OFFSET_HIGH,
   SignInError,
-} from '@semiont/core';
+} from '@xynoplex/core';
 import { renewKept } from '../oauth';
 import { httpKb } from '../knowledge-base';
-import { SemiontSession, type OpenedSession } from '../semiont-session';
+import { XynoplexSession, type OpenedSession } from '../xynoplex-session';
 import { MemorySignIn, type SignInKept } from '../sign-in-kept';
 import { SignInStore, stateDir, type SignInFiles, type System } from '../sign-in-store';
 import type { StoredSession } from '../storage';
@@ -71,7 +71,7 @@ const ownerOnly = JSON.parse(readFileSync(join(SPECS, 'owner-only.json'), 'utf-8
 
 /** A stack's key, as the launcher keys its sign-ins. */
 const KEY = 'local:example.org-my-kb';
-const ISSUER = 'https://issuer.test/realms/semiont';
+const ISSUER = 'https://issuer.test/realms/xynoplex';
 const EMAIL = 'alice@example.org';
 const TOKEN_ENDPOINT = `${ISSUER}/protocol/openid-connect/token`;
 const REVOCATION_ENDPOINT = `${ISSUER}/protocol/openid-connect/revoke`;
@@ -463,7 +463,7 @@ describe('an entry of the sign-in store', () => {
   });
 });
 
-describe('SemiontSession.fromKept over an entry of the sign-in store', () => {
+describe('XynoplexSession.fromKept over an entry of the sign-in store', () => {
   const kb = httpKb({ id: KEY, label: 'My KB', host: 'localhost', port: 4000, protocol: 'http' });
   let opened: OpenedSession | null = null;
 
@@ -475,7 +475,7 @@ describe('SemiontSession.fromKept over an entry of the sign-in store', () => {
   it('with nothing kept, the session is signed out', async () => {
     const entry = new SignInStore(new Directory().files$()).entry(KEY);
 
-    opened = await SemiontSession.fromKept({ kb, kept: entry });
+    opened = await XynoplexSession.fromKept({ kb, kept: entry });
 
     expect(opened.session.token$.getValue()).toBeNull();
   });
@@ -487,7 +487,7 @@ describe('SemiontSession.fromKept over an entry of the sign-in store', () => {
     const entry = new SignInStore(directory.files$()).entry(KEY);
     const issuer = issuerOf(tokens, { token: 'access-2', refreshToken: 'refresh-2' }, nothing);
 
-    opened = await SemiontSession.fromKept({ kb, kept: entry, fetch: issuer.fetch, validate: false });
+    opened = await XynoplexSession.fromKept({ kb, kept: entry, fetch: issuer.fetch, validate: false });
     expect(opened.session.token$.getValue()).toBe(tokens.of('access-1'));
 
     expect(await opened.session.refresh(tokens.of('access-1'))).toBe(tokens.of('access-2'));
@@ -502,7 +502,7 @@ describe('SemiontSession.fromKept over an entry of the sign-in store', () => {
     const entry = new SignInStore(directory.files$()).entry(KEY);
     const issuer = issuerOf(tokens, { token: 'access-2', refreshToken: 'refresh-2' }, nothing);
 
-    opened = await SemiontSession.fromKept({ kb, kept: entry, fetch: issuer.fetch, validate: false });
+    opened = await XynoplexSession.fromKept({ kb, kept: entry, fetch: issuer.fetch, validate: false });
 
     expect(issuer.spent).toEqual(['refresh-1']);
     expect(opened.session.token$.getValue()).toBe(tokens.of('access-2'));

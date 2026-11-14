@@ -66,7 +66,7 @@ type session_factory =
   session_factory_options ->
   (State_units.Session.t * connection_identity, string) result
 
-type semiont_browser_config = {
+type xynoplex_browser_config = {
   storage : storage;
   clock : Clock.t;
   fresh_id : unit -> string;
@@ -78,8 +78,8 @@ type connection = {
   signals : State_units.Session_signals.t;
 }
 
-type semiont_browser = {
-  config : semiont_browser_config;
+type xynoplex_browser = {
+  config : xynoplex_browser_config;
   lock : Eio.Mutex.t;
   atomic_storage : Storage.t option;
   said : Client.session_error Kept_for_first_reader.t;
@@ -206,7 +206,7 @@ let apply_tab_checks tabs checks =
       | _ -> Some tab)
     tabs
 
-let new_semiont_browser ?storage config =
+let new_xynoplex_browser ?storage config =
   let config =
     match storage with
     | None -> config

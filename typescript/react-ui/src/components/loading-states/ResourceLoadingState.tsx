@@ -6,8 +6,8 @@
 
 export function ResourceLoadingState() {
   return (
-    <div className="semiont-loading-state semiont-loading-state-resource">
-      <p className="semiont-loading-message">Loading resource...</p>
+    <div className="xynoplex-loading-state xynoplex-loading-state-resource">
+      <p className="xynoplex-loading-message">Loading resource...</p>
     </div>
   );
 }

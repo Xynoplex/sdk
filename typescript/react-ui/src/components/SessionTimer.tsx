@@ -10,7 +10,7 @@ export function SessionTimer() {
   if (!formattedTime) return null;
 
   return (
-    <div className="semiont-session-timer">
+    <div className="xynoplex-session-timer">
       Session: {formattedTime} remaining
     </div>
   );

@@ -1,14 +1,14 @@
-from semiont.channels import BRIDGED_CHANNELS
-from semiont.client import SemiontClient
-from semiont.http import HttpTransport
-from semiont.identifiers import AnnotationId, ResourceId
-from semiont.namespaces.follow import JobAttemptFailed, JobCompleted, JobCreated, JobProgressed, JobRefused
-from semiont.transport import Transport
-from semiont.types import HighlightingJobParams
-from semiont.watched import Variable
+from xynoplex.channels import BRIDGED_CHANNELS
+from xynoplex.client import XynoplexClient
+from xynoplex.http import HttpTransport
+from xynoplex.identifiers import AnnotationId, ResourceId
+from xynoplex.namespaces.follow import JobAttemptFailed, JobCompleted, JobCreated, JobProgressed, JobRefused
+from xynoplex.transport import Transport
+from xynoplex.types import HighlightingJobParams
+from xynoplex.watched import Variable
 
 
-async def annotate(client: SemiontClient[Transport], resource: ResourceId, annotation: AnnotationId) -> None:
+async def annotate(client: XynoplexClient[Transport], resource: ResourceId, annotation: AnnotationId) -> None:
     described = await client.browse.resource(resource).fresh()  # a query, read once
     text = await client.browse.resource_content(resource)  # asked once, answered once
     print(described.name, len(text))
@@ -34,6 +34,6 @@ async def annotate(client: SemiontClient[Transport], resource: ResourceId, annot
 async def over_http(origin: str, token: str, resource: ResourceId, annotation: AnnotationId) -> None:
     async with (
         HttpTransport(origin, token=Variable[str | None](token), channels=BRIDGED_CHANNELS) as transport,
-        SemiontClient(transport, transport.content, transport) as client,
+        XynoplexClient(transport, transport.content, transport) as client,
     ):
         await annotate(client, resource, annotation)

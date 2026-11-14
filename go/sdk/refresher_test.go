@@ -1,4 +1,4 @@
-package semiont_test
+package xynoplex_test
 
 // What keeps a client's queries true: each row of
 // protocol/specs/src/client/refresh.json, and the rules every row is applied under.
@@ -15,9 +15,9 @@ import (
 	"testing"
 	"time"
 
-	semiont "github.com/The-AI-Alliance/semiont/packages/go/sdk"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/bus"
+	xynoplex "github.com/Xynoplex/sdk/go"
+	"github.com/Xynoplex/sdk/go/api"
+	"github.com/Xynoplex/sdk/go/bus"
 )
 
 // recordedEvent is an event of the record, as the stream carries it; resource
@@ -38,44 +38,44 @@ func recordedEvent(kind, resource string, payload map[string]any) map[string]any
 	return event
 }
 
-func frameOf(t *testing.T, channel bus.Channel, payload any, envelope semiont.Envelope) semiont.Frame {
+func frameOf(t *testing.T, channel bus.Channel, payload any, envelope xynoplex.Envelope) xynoplex.Frame {
 	t.Helper()
 	encoded, err := json.Marshal(payload)
 	if err != nil {
 		t.Fatal(err)
 	}
-	return semiont.Frame{Channel: channel, Envelope: envelope, Payload: encoded}
+	return xynoplex.Frame{Channel: channel, Envelope: envelope, Payload: encoded}
 }
 
 // eventOf is an event that is trigger, about resource and its annotation of;
 // when is which way a split channel's event comes. An unreadable one is about
 // nothing. One on a channel a resource's scope carries comes on resource's
 // scope, as a gateway sends it.
-func eventOf(t *testing.T, trigger semiont.CacheRefreshTrigger, when semiont.CacheRefreshWhen, resource, of string) semiont.Frame {
+func eventOf(t *testing.T, trigger xynoplex.CacheRefreshTrigger, when xynoplex.CacheRefreshWhen, resource, of string) xynoplex.Frame {
 	t.Helper()
 	channel := bus.Channel(trigger)
 	var payload map[string]any
-	var envelope semiont.Envelope
+	var envelope xynoplex.Envelope
 	switch trigger {
-	case semiont.CacheRefreshUnreadable:
+	case xynoplex.CacheRefreshUnreadable:
 		channel, payload = bus.MarkAdded.Channel(), map[string]any{"not": "a recorded event"}
-	case semiont.CacheRefreshBusResumeGap:
+	case xynoplex.CacheRefreshBusResumeGap:
 		payload = map[string]any{"scope": resource, "lastSeenId": "p-" + resource + "-1", "reason": "retention-exceeded"}
-	case semiont.CacheRefreshMarkDeleteOk:
+	case xynoplex.CacheRefreshMarkDeleteOk:
 		payload = map[string]any{"response": map[string]any{"annotationId": of}}
 		envelope.CorrelationID = "cid-delete"
-	case semiont.CacheRefreshMarkRemoved:
+	case xynoplex.CacheRefreshMarkRemoved:
 		payload = recordedEvent(string(trigger), resource, map[string]any{"annotationId": of})
-	case semiont.CacheRefreshMarkBodyUpdated:
+	case xynoplex.CacheRefreshMarkBodyUpdated:
 		payload = recordedEvent(string(trigger), resource, map[string]any{"annotationId": of})
-		if when == semiont.CacheRefreshWhenEnriched {
+		if when == xynoplex.CacheRefreshWhenEnriched {
 			payload["annotation"] = json.RawMessage(annotating(of, resource, "2026-10-06T01:00:00.000Z"))
 		}
-	case semiont.CacheRefreshMarkAdded, semiont.CacheRefreshMarkEntityTagAdded, semiont.CacheRefreshMarkEntityTagRemoved,
-		semiont.CacheRefreshMarkArchived, semiont.CacheRefreshMarkUnarchived,
-		semiont.CacheRefreshYieldCreated, semiont.CacheRefreshYieldUpdated, semiont.CacheRefreshYieldCloned, semiont.CacheRefreshYieldMoved:
+	case xynoplex.CacheRefreshMarkAdded, xynoplex.CacheRefreshMarkEntityTagAdded, xynoplex.CacheRefreshMarkEntityTagRemoved,
+		xynoplex.CacheRefreshMarkArchived, xynoplex.CacheRefreshMarkUnarchived,
+		xynoplex.CacheRefreshYieldCreated, xynoplex.CacheRefreshYieldUpdated, xynoplex.CacheRefreshYieldCloned, xynoplex.CacheRefreshYieldMoved:
 		payload = recordedEvent(string(trigger), resource, map[string]any{})
-	case semiont.CacheRefreshFrameEntityTypeAdded, semiont.CacheRefreshFrameTagSchemaAdded:
+	case xynoplex.CacheRefreshFrameEntityTypeAdded, xynoplex.CacheRefreshFrameTagSchemaAdded:
 		payload = recordedEvent(string(trigger), "", map[string]any{})
 	default:
 		t.Fatalf("%s is no event this test can make", trigger)
@@ -88,18 +88,18 @@ func eventOf(t *testing.T, trigger semiont.CacheRefreshTrigger, when semiont.Cac
 
 // ofAResource is the queries everything holds two of: one of each resource,
 // or of an annotation of each.
-var ofAResource = []semiont.CacheQuery{semiont.CacheQueryResource, semiont.CacheQueryAnnotations, semiont.CacheQueryEvents, semiont.CacheQueryReferencedBy, semiont.CacheQueryAnnotation}
+var ofAResource = []xynoplex.CacheQuery{xynoplex.CacheQueryResource, xynoplex.CacheQueryAnnotations, xynoplex.CacheQueryEvents, xynoplex.CacheQueryReferencedBy, xynoplex.CacheQueryAnnotation}
 
 // expectedAsks is what asking again for queries asks, of everything that
 // everything holds, when the event is about res-1. A row that reaches its
 // subject asks for what is of that resource, and of its annotation: the one
 // the event names, or each one held of the resource when it names none, which
 // here is the same one.
-func expectedAsks(queries []semiont.CacheQuery, reach semiont.CacheRefreshReach) map[string]int {
+func expectedAsks(queries []xynoplex.CacheQuery, reach xynoplex.CacheRefreshReach) map[string]int {
 	asked := map[string]int{}
 	for _, query := range queries {
 		for _, channel := range asks[query] {
-			if reach == semiont.CacheRefreshReachHeld && slices.Contains(ofAResource, query) {
+			if reach == xynoplex.CacheRefreshReachHeld && slices.Contains(ofAResource, query) {
 				asked[channel] += 2
 			} else {
 				asked[channel]++
@@ -110,8 +110,8 @@ func expectedAsks(queries []semiont.CacheQuery, reach semiont.CacheRefreshReach)
 }
 
 func TestEachRowOfTheRefreshTableDoesWhatItStatesToWhatIsHeld(t *testing.T) {
-	for _, trigger := range slices.Sorted(maps.Keys(semiont.CacheRefreshTable)) {
-		for _, row := range semiont.CacheRefreshTable[trigger] {
+	for _, trigger := range slices.Sorted(maps.Keys(xynoplex.CacheRefreshTable)) {
+		for _, row := range xynoplex.CacheRefreshTable[trigger] {
 			name := string(trigger)
 			if row.When != "" {
 				name += " " + string(row.When)
@@ -129,7 +129,7 @@ func TestEachRowOfTheRefreshTableDoesWhatItStatesToWhatIsHeld(t *testing.T) {
 				untilReady(t, listed)
 
 				m := w.mark()
-				if trigger == semiont.CacheRefreshReopened {
+				if trigger == xynoplex.CacheRefreshReopened {
 					w.reopen()
 				} else {
 					w.transport.Deliver(eventOf(t, trigger, row.When, "res-1", "ann-1"))
@@ -137,31 +137,31 @@ func TestEachRowOfTheRefreshTableDoesWhatItStatesToWhatIsHeld(t *testing.T) {
 				w.asksCome(t, m, expectedAsks(row.Refetches, row.Reach))
 
 				const modified = "2026-10-06T01:00:00.000Z"
-				if slices.Contains(row.Writes, semiont.CacheQueryAnnotation) {
+				if slices.Contains(row.Writes, xynoplex.CacheQueryAnnotation) {
 					// The event carried the annotation: it is the value, and nobody was asked.
 					if written := valueIn[api.Annotation](t, one.now(t)); written.Id != ann1 || modifiedOf(written) != modified {
 						t.Fatalf("the annotation is %s modified %s", written.Id, modifiedOf(written))
 					}
 				}
-				if slices.Contains(row.Writes, semiont.CacheQueryAnnotations) {
+				if slices.Contains(row.Writes, xynoplex.CacheQueryAnnotations) {
 					if written := valueIn[[]api.Annotation](t, listed.now(t)); len(written) != 1 || written[0].Id != ann1 || modifiedOf(written[0]) != modified {
 						t.Fatalf("the annotations are %v", written)
 					}
 				}
-				if slices.Contains(row.Removes, semiont.CacheQueryAnnotation) {
-					failed, ok := one.now(t).(semiont.Failed)
-					if !ok || codeOf(failed.Err) != string(semiont.BusRequestErrorCodeNotFound) {
+				if slices.Contains(row.Removes, xynoplex.CacheQueryAnnotation) {
+					failed, ok := one.now(t).(xynoplex.Failed)
+					if !ok || codeOf(failed.Err) != string(xynoplex.BusRequestErrorCodeNotFound) {
 						t.Fatal("the annotation removed is not failed as not found")
 					}
 				}
 				// What this test checks of writes and removes is every one the table states.
 				for _, written := range row.Writes {
-					if written != semiont.CacheQueryAnnotation && written != semiont.CacheQueryAnnotations {
+					if written != xynoplex.CacheQueryAnnotation && written != xynoplex.CacheQueryAnnotations {
 						t.Fatalf("this test does not check a write of %s", written)
 					}
 				}
 				for _, removed := range row.Removes {
-					if removed != semiont.CacheQueryAnnotation {
+					if removed != xynoplex.CacheQueryAnnotation {
 						t.Fatalf("this test does not check a removal of %s", removed)
 					}
 				}
@@ -171,22 +171,22 @@ func TestEachRowOfTheRefreshTableDoesWhatItStatesToWhatIsHeld(t *testing.T) {
 }
 
 func TestEveryChannelOfTheRefreshTableIsOneAClientHearsAndEveryOtherTriggerIsOneTheRefresherApplies(t *testing.T) {
-	if len(semiont.CacheRefreshChannels) == 0 {
+	if len(xynoplex.CacheRefreshChannels) == 0 {
 		t.Fatal("the table has no event")
 	}
-	for _, trigger := range semiont.CacheRefreshChannels {
+	for _, trigger := range xynoplex.CacheRefreshChannels {
 		if channel := bus.Channel(trigger); !bus.Bridged(channel) && !slices.Contains(bus.ResourceScopedChannels, channel) {
 			t.Errorf("%s is no channel a client hears", trigger)
 		}
 	}
 	// The refresher applies the reopening and an unreadable event itself: a trigger the table gains that is no channel is one it never applies.
-	for trigger := range semiont.CacheRefreshTable {
-		if !slices.Contains(semiont.CacheRefreshChannels, trigger) && trigger != semiont.CacheRefreshReopened && trigger != semiont.CacheRefreshUnreadable {
+	for trigger := range xynoplex.CacheRefreshTable {
+		if !slices.Contains(xynoplex.CacheRefreshChannels, trigger) && trigger != xynoplex.CacheRefreshReopened && trigger != xynoplex.CacheRefreshUnreadable {
 			t.Errorf("%s is no channel, and the refresher never applies it", trigger)
 		}
 	}
 	// And these tests know what each live query asks: a query the table gains is one they must be told of.
-	if known, queries := slices.Sorted(maps.Keys(asks)), slices.Sorted(slices.Values(semiont.CacheQueries)); !slices.Equal(known, queries) {
+	if known, queries := slices.Sorted(maps.Keys(asks)), slices.Sorted(slices.Values(xynoplex.CacheQueries)); !slices.Equal(known, queries) {
 		t.Fatalf("these tests know what %v ask, the table names %v", known, queries)
 	}
 }
@@ -201,12 +201,12 @@ func TestB19TheRefetchesEventsAskOfOneKeyInsideAWindowAreOneRefetch(t *testing.T
 		return [2]int{len(requestsOn(w.transport, bus.BrowseResourcesRequested.Request().Channel())), len(requestsOn(w.transport, bus.MatchResourcesRequested.Request().Channel()))}
 	}
 	updated := func(resource string) {
-		w.transport.Deliver(eventOf(t, semiont.CacheRefreshYieldUpdated, "", resource, "ann-1"))
+		w.transport.Deliver(eventOf(t, xynoplex.CacheRefreshYieldUpdated, "", resource, "ann-1"))
 	}
 	untilReady(t, watch(t, c.Browse.Resource(resourceOf(t, "res-1"))))
 	untilReady(t, watch(t, c.Browse.Resource(resourceOf(t, "res-2"))))
-	untilReady(t, watch(t, c.Browse.Resources(semiont.ResourceFilters{})))
-	untilReady(t, watch(t, c.Match.Resources("text", semiont.ResourceFilters{})))
+	untilReady(t, watch(t, c.Browse.Resources(xynoplex.ResourceFilters{})))
+	untilReady(t, watch(t, c.Match.Resources("text", xynoplex.ResourceFilters{})))
 	if asked() != 2 || listsAndSearches() != [2]int{1, 1} {
 		t.Fatalf("asked %d resources, and %v lists and searches", asked(), listsAndSearches())
 	}
@@ -275,8 +275,8 @@ func TestB20AnEventAsksAgainOnlyForWhatTheCacheHolds(t *testing.T) {
 		t.Cleanup(w.transport.SubscribeToResource(resourceOf(t, resource)))
 	}
 	// Nothing is held: no event of any kind asks for anything.
-	for trigger := range semiont.CacheRefreshTable {
-		if trigger != semiont.CacheRefreshReopened {
+	for trigger := range xynoplex.CacheRefreshTable {
+		if trigger != xynoplex.CacheRefreshReopened {
 			w.transport.Deliver(eventOf(t, trigger, "", "res-1", "ann-1"))
 		}
 	}
@@ -289,9 +289,9 @@ func TestB20AnEventAsksAgainOnlyForWhatTheCacheHolds(t *testing.T) {
 	untilReady(t, watch(t, w.client.Browse.Events(resourceOf(t, "res-1"))))
 	m := w.mark()
 	// Of what mark:added names, the events are held and the annotations are not; and no other resource's are.
-	w.transport.Deliver(eventOf(t, semiont.CacheRefreshMarkAdded, "", "res-1", "ann-1"))
-	w.transport.Deliver(eventOf(t, semiont.CacheRefreshMarkAdded, "", "res-2", "ann-1"))
-	events := asks[semiont.CacheQueryEvents][0]
+	w.transport.Deliver(eventOf(t, xynoplex.CacheRefreshMarkAdded, "", "res-1", "ann-1"))
+	w.transport.Deliver(eventOf(t, xynoplex.CacheRefreshMarkAdded, "", "res-2", "ann-1"))
+	events := asks[xynoplex.CacheQueryEvents][0]
 	w.asksCome(t, m, map[string]int{events: 1})
 	if asked := payloadsOn(w.transport, bus.Channel(events)); asked[len(asked)-1] != `{"resourceId":"res-1"}` {
 		t.Fatalf("asked %s", asked[len(asked)-1])
@@ -306,7 +306,7 @@ func TestB20AKeyThatIsFailedOrBeingFetchedIsHeld(t *testing.T) {
 	failing := watch(t, w.client.Browse.Events(res1))
 	untilFailed(t, failing)
 	w.asksCome(t, askedMark{}, map[string]int{string(events): 2})
-	w.transport.Deliver(eventOf(t, semiont.CacheRefreshMarkAdded, "", "res-1", "ann-1"))
+	w.transport.Deliver(eventOf(t, xynoplex.CacheRefreshMarkAdded, "", "res-1", "ann-1"))
 	// Asked again, and once more when that failed.
 	untilFailed(t, failing)
 	w.asksCome(t, askedMark{}, map[string]int{string(events): 4})
@@ -315,33 +315,33 @@ func TestB20AKeyThatIsFailedOrBeingFetchedIsHeld(t *testing.T) {
 	unanswered := newLiveWorld(t, liveSetup{silent: true})
 	isPending(t, watch(t, unanswered.client.Browse.Events(res1)).now(t))
 	unanswered.asksCome(t, askedMark{}, map[string]int{string(events): 1})
-	unanswered.transport.Deliver(eventOf(t, semiont.CacheRefreshMarkAdded, "", "res-1", "ann-1"))
+	unanswered.transport.Deliver(eventOf(t, xynoplex.CacheRefreshMarkAdded, "", "res-1", "ann-1"))
 	unanswered.asksCome(t, askedMark{}, map[string]int{string(events): 2})
 }
 
 func TestAnEventThatCannotBeReadAsksAgainForEverythingHeld(t *testing.T) {
-	unreadable := semiont.CacheRefreshTable[semiont.CacheRefreshUnreadable][0]
-	removed := semiont.CacheRefreshTable[semiont.CacheRefreshMarkRemoved][0]
+	unreadable := xynoplex.CacheRefreshTable[xynoplex.CacheRefreshUnreadable][0]
+	removed := xynoplex.CacheRefreshTable[xynoplex.CacheRefreshMarkRemoved][0]
 	for _, each := range []struct {
 		name  string
 		frame func(t *testing.T, w *liveWorld)
 		asks  map[string]int
 	}{
 		{"a frame refused", func(t *testing.T, w *liveWorld) {
-			w.transport.DeliverRefusal(&semiont.FrameRefusal{Channel: bus.MarkAdded.Channel(), Member: "payload.resourceId", Reason: bus.FrameRefusalReasonMalformed, Envelope: semiont.Envelope{Scope: resourceOf(t, "res-1")}})
+			w.transport.DeliverRefusal(&xynoplex.FrameRefusal{Channel: bus.MarkAdded.Channel(), Member: "payload.resourceId", Reason: bus.FrameRefusalReasonMalformed, Envelope: xynoplex.Envelope{Scope: resourceOf(t, "res-1")}})
 		}, expectedAsks(unreadable.Refetches, unreadable.Reach)},
 		{"a payload that is not its channel's", func(t *testing.T, w *liveWorld) {
-			w.transport.Deliver(frameOf(t, bus.MarkAdded.Channel(), map[string]any{"not": "a recorded event"}, semiont.Envelope{Scope: resourceOf(t, "res-1")}))
+			w.transport.Deliver(frameOf(t, bus.MarkAdded.Channel(), map[string]any{"not": "a recorded event"}, xynoplex.Envelope{Scope: resourceOf(t, "res-1")}))
 		}, expectedAsks(unreadable.Refetches, unreadable.Reach)},
 		{"a member that is not what its row names", func(t *testing.T, w *liveWorld) {
-			w.transport.Deliver(frameOf(t, bus.MarkRemoved.Channel(), recordedEvent(string(semiont.CacheRefreshMarkRemoved), "res-1", map[string]any{"annotationId": "not an id!"}), semiont.Envelope{Scope: resourceOf(t, "res-1")}))
+			w.transport.Deliver(frameOf(t, bus.MarkRemoved.Channel(), recordedEvent(string(xynoplex.CacheRefreshMarkRemoved), "res-1", map[string]any{"annotationId": "not an id!"}), xynoplex.Envelope{Scope: resourceOf(t, "res-1")}))
 		}, expectedAsks(unreadable.Refetches, unreadable.Reach)},
 		// A member its row names that is absent names none: the event is read, and names no annotation.
 		{"a member its row names that is absent", func(t *testing.T, w *liveWorld) {
-			w.transport.Deliver(frameOf(t, bus.MarkRemoved.Channel(), recordedEvent(string(semiont.CacheRefreshMarkRemoved), "res-1", map[string]any{}), semiont.Envelope{Scope: resourceOf(t, "res-1")}))
+			w.transport.Deliver(frameOf(t, bus.MarkRemoved.Channel(), recordedEvent(string(xynoplex.CacheRefreshMarkRemoved), "res-1", map[string]any{}), xynoplex.Envelope{Scope: resourceOf(t, "res-1")}))
 		}, expectedAsks(removed.Refetches, removed.Reach)},
 		{"a frame on a channel that is no trigger", func(t *testing.T, w *liveWorld) {
-			w.transport.Deliver(frameOf(t, bus.BeckonFocus.Channel(), map[string]any{"resourceId": "res-1", "annotationId": "ann-1"}, semiont.Envelope{}))
+			w.transport.Deliver(frameOf(t, bus.BeckonFocus.Channel(), map[string]any{"resourceId": "res-1", "annotationId": "ann-1"}, xynoplex.Envelope{}))
 		}, map[string]int{}},
 	} {
 		t.Run(each.name, func(t *testing.T) {
@@ -356,8 +356,8 @@ func TestAnEventThatCannotBeReadAsksAgainForEverythingHeld(t *testing.T) {
 			each.frame(t, w)
 			w.asksCome(t, m, each.asks)
 			// A row that asks again for the annotation gives it its value again; any other gives it nothing.
-			if slices.ContainsFunc(asks[semiont.CacheQueryAnnotation], func(channel string) bool { return each.asks[channel] > 0 }) {
-				if _, failed := annotation.now(t).(semiont.Failed); failed {
+			if slices.ContainsFunc(asks[xynoplex.CacheQueryAnnotation], func(channel string) bool { return each.asks[channel] > 0 }) {
+				if _, failed := annotation.now(t).(xynoplex.Failed); failed {
 					t.Fatal("an event that names no annotation removed one")
 				}
 			} else {
@@ -375,12 +375,12 @@ func TestB13OnlyAStreamThatLeftOpenAndReturnedHasReopened(t *testing.T) {
 	// Its first opening is no reopening: nothing was missed. What was watched before it waits for it, and asks once.
 	live := watch(t, w.client.Browse.EntityTypes())
 	isPending(t, live.now(t))
-	w.transport.SetState(semiont.ConnectionStateConnecting)
+	w.transport.SetState(xynoplex.ConnectionStateConnecting)
 	time.Sleep(settling)
 	if asked() != 0 {
 		t.Fatalf("asked %d times before the stream opened", asked())
 	}
-	w.transport.SetState(semiont.ConnectionStateOpen)
+	w.transport.SetState(xynoplex.ConnectionStateOpen)
 	if types := valueIn[[]string](t, untilReady(t, live)); !slices.Equal(types, []string{"Person"}) {
 		t.Fatalf("the entity types are %v", types)
 	}
@@ -390,14 +390,14 @@ func TestB13OnlyAStreamThatLeftOpenAndReturnedHasReopened(t *testing.T) {
 	}
 
 	// Down, and a failed attempt to return, and then back: one reopening.
-	for _, state := range []semiont.ConnectionState{semiont.ConnectionStateReconnecting, semiont.ConnectionStateConnecting, semiont.ConnectionStateReconnecting, semiont.ConnectionStateConnecting} {
+	for _, state := range []xynoplex.ConnectionState{xynoplex.ConnectionStateReconnecting, xynoplex.ConnectionStateConnecting, xynoplex.ConnectionStateReconnecting, xynoplex.ConnectionStateConnecting} {
 		w.transport.SetState(state)
 		time.Sleep(settling)
 	}
 	if asked() != 1 {
 		t.Fatalf("asked %d times while the stream was down, want 1", asked())
 	}
-	w.transport.SetState(semiont.ConnectionStateOpen)
+	w.transport.SetState(xynoplex.ConnectionStateOpen)
 	waitUntil(t, "the reopening's refetch", time.Second, func() bool { return asked() == 2 })
 	time.Sleep(settling)
 	if asked() != 2 {
@@ -428,14 +428,14 @@ func TestB13bAnEventThatCarriesAnAnnotationWritesItWhereItWasOrAtTheEndAndAsksNo
 	}
 
 	// One the list does not hold is added at its end, and is then an annotation the client holds.
-	added := recordedEvent(string(semiont.CacheRefreshMarkBodyUpdated), "res-1", map[string]any{"annotationId": "ann-new"})
+	added := recordedEvent(string(xynoplex.CacheRefreshMarkBodyUpdated), "res-1", map[string]any{"annotationId": "ann-new"})
 	added["annotation"] = json.RawMessage(annotating("ann-new", "res-1", "2026-10-06T02:00:00.000Z"))
-	w.transport.Deliver(frameOf(t, bus.MarkBodyUpdated.Channel(), added, semiont.Envelope{Scope: res1}))
+	w.transport.Deliver(frameOf(t, bus.MarkBodyUpdated.Channel(), added, xynoplex.Envelope{Scope: res1}))
 	if shown := shownAs(valueIn[[]api.Annotation](t, listed.now(t))); !slices.Equal(shown, []string{"ann-1 never", "ann-new 2026-10-06T02:00:00.000Z"}) {
 		t.Fatalf("the list is %v", shown)
 	}
 	// One it holds is replaced where it was.
-	w.transport.Deliver(eventOf(t, semiont.CacheRefreshMarkBodyUpdated, semiont.CacheRefreshWhenEnriched, "res-1", "ann-1"))
+	w.transport.Deliver(eventOf(t, xynoplex.CacheRefreshMarkBodyUpdated, xynoplex.CacheRefreshWhenEnriched, "res-1", "ann-1"))
 	if shown := shownAs(valueIn[[]api.Annotation](t, listed.now(t))); !slices.Equal(shown, []string{"ann-1 2026-10-06T01:00:00.000Z", "ann-new 2026-10-06T02:00:00.000Z"}) {
 		t.Fatalf("the list is %v", shown)
 	}
@@ -450,7 +450,7 @@ func TestB13bAnEventThatCarriesAnAnnotationWritesItWhereItWasOrAtTheEndAndAsksNo
 
 	// And the annotation the first event carried is one of its resource's, though no query of it was ever named:
 	// what is asked again of the resource's annotations is asked of it too, by a request that names the resource.
-	w.transport.Deliver(eventOf(t, semiont.CacheRefreshBusResumeGap, "", "res-1", "ann-1"))
+	w.transport.Deliver(eventOf(t, xynoplex.CacheRefreshBusResumeGap, "", "res-1", "ann-1"))
 	annotation := bus.BrowseAnnotationRequested.Request().Channel()
 	waitUntil(t, "ann-new asked for again", time.Second, func() bool {
 		return slices.Contains(payloadsOn(w.transport, annotation), `{"annotationId":"ann-new","resourceId":"res-1"}`)
@@ -463,12 +463,12 @@ func TestB13bAnEventThatCarriesAnAnnotationWritesItWhereItWasOrAtTheEndAndAsksNo
 	// the client.
 	res2 := resourceOf(t, "res-2")
 	t.Cleanup(w.transport.SubscribeToResource(res2))
-	elsewhere := recordedEvent(string(semiont.CacheRefreshMarkBodyUpdated), "res-2", map[string]any{"annotationId": "ann-2"})
+	elsewhere := recordedEvent(string(xynoplex.CacheRefreshMarkBodyUpdated), "res-2", map[string]any{"annotationId": "ann-2"})
 	elsewhere["annotation"] = json.RawMessage(annotating("ann-2", "res-2", ""))
-	w.transport.Deliver(frameOf(t, bus.MarkBodyUpdated.Channel(), elsewhere, semiont.Envelope{Scope: res2}))
+	w.transport.Deliver(frameOf(t, bus.MarkBodyUpdated.Channel(), elsewhere, xynoplex.Envelope{Scope: res2}))
 	w.asksCome(t, before, map[string]int{})
 	// Its first watcher is shown what the knowledge base answers, never the annotation the event carried.
-	if ready, ok := watch(t, w.client.Browse.Annotations(res2)).now(t).(semiont.Ready[[]api.Annotation]); ok {
+	if ready, ok := watch(t, w.client.Browse.Annotations(res2)).now(t).(xynoplex.Ready[[]api.Annotation]); ok {
 		if shown := shownAs(ready.Value); slices.Contains(shown, "ann-2 never") {
 			t.Fatalf("the list of a resource whose list was not held is %v", shown)
 		}
@@ -484,10 +484,10 @@ func TestB13aAnAnnotationThatIsGoneEndsAsNotFoundAndItsNextWatcherAsksNamingItsR
 	asked := len(requestsOn(w.transport, annotation))
 
 	// One nobody holds is nobody's to end.
-	w.transport.Deliver(eventOf(t, semiont.CacheRefreshMarkDeleteOk, "", "res-1", "ann-2"))
-	w.transport.Deliver(eventOf(t, semiont.CacheRefreshMarkDeleteOk, "", "res-1", "ann-1"))
-	failed, ok := one.now(t).(semiont.Failed)
-	if !ok || codeOf(failed.Err) != string(semiont.BusRequestErrorCodeNotFound) || failed.Err.Error() != "Annotation ann-1 was removed" {
+	w.transport.Deliver(eventOf(t, xynoplex.CacheRefreshMarkDeleteOk, "", "res-1", "ann-2"))
+	w.transport.Deliver(eventOf(t, xynoplex.CacheRefreshMarkDeleteOk, "", "res-1", "ann-1"))
+	failed, ok := one.now(t).(xynoplex.Failed)
+	if !ok || codeOf(failed.Err) != string(xynoplex.BusRequestErrorCodeNotFound) || failed.Err.Error() != "Annotation ann-1 was removed" {
 		t.Fatalf("the annotation removed is %#v", failed)
 	}
 	time.Sleep(settling)
@@ -497,7 +497,7 @@ func TestB13aAnAnnotationThatIsGoneEndsAsNotFoundAndItsNextWatcherAsksNamingItsR
 
 	// Which resource it was of is kept, so the request an arriving watcher makes can name it.
 	watch(t, w.client.Browse.Annotation(res1, ann1)).now(t)
-	if _, failed := one.now(t).(semiont.Failed); failed {
+	if _, failed := one.now(t).(xynoplex.Failed); failed {
 		t.Fatal("the annotation is still failed once a watcher arrived")
 	}
 	waitUntil(t, "the arriving watcher's request", time.Second, func() bool { return len(requestsOn(w.transport, annotation)) == asked+1 })
@@ -535,7 +535,7 @@ func TestAnEventThatNamesAnAnnotationAsksForThatOneAndOneThatNamesNoneForEachHel
 
 	// Its body was updated, and the event does not carry it: that annotation is asked for, and no other.
 	since := settled()
-	w.transport.Deliver(eventOf(t, semiont.CacheRefreshMarkBodyUpdated, semiont.CacheRefreshWhenUnenriched, "res-1", "ann-1"))
+	w.transport.Deliver(eventOf(t, xynoplex.CacheRefreshMarkBodyUpdated, xynoplex.CacheRefreshWhenUnenriched, "res-1", "ann-1"))
 	waitUntil(t, "the annotation named asked for", time.Second, func() bool { return len(askedFor(since)) >= 1 })
 	time.Sleep(settling)
 	if named := askedFor(since); !slices.Equal(named, []string{"ann-1"}) {
@@ -544,7 +544,7 @@ func TestAnEventThatNamesAnAnnotationAsksForThatOneAndOneThatNamesNoneForEachHel
 
 	// The stream missed what was recorded of the resource: each annotation held of it is asked for, and no other resource's.
 	since = settled()
-	w.transport.Deliver(eventOf(t, semiont.CacheRefreshBusResumeGap, "", "res-1", "ann-1"))
+	w.transport.Deliver(eventOf(t, xynoplex.CacheRefreshBusResumeGap, "", "res-1", "ann-1"))
 	waitUntil(t, "the annotations held asked for", time.Second, func() bool { return len(askedFor(since)) >= 2 })
 	time.Sleep(settling)
 	if named := askedFor(since); !slices.Equal(named, []string{"ann-1", "ann-3"}) {
@@ -575,7 +575,7 @@ func TestClosingAClientEndsEveryQuerysWatcherAndFailsEveryReadStillWaitingAsClos
 	for i, read := range reads {
 		select {
 		case err := <-read:
-			if err == nil || codeOf(err) != string(semiont.BusRequestErrorCodeClosed) {
+			if err == nil || codeOf(err) != string(xynoplex.BusRequestErrorCodeClosed) {
 				t.Fatalf("the read of the %s ended with %v, want bus.closed", queries[i].name, err)
 			}
 		case <-time.After(2 * time.Second):
@@ -591,7 +591,7 @@ func TestClosingAClientEndsEveryQuerysWatcherAndFailsEveryReadStillWaitingAsClos
 	m := w.mark()
 	for _, each := range everything(t, w.client) {
 		watch(t, each.query).ended(t)
-		if err := each.read(context.Background()); err == nil || codeOf(err) != string(semiont.BusRequestErrorCodeClosed) {
+		if err := each.read(context.Background()); err == nil || codeOf(err) != string(xynoplex.BusRequestErrorCodeClosed) {
 			t.Fatalf("the read of the %s ended with %v, want bus.closed", each.name, err)
 		}
 	}

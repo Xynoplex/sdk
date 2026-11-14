@@ -1,4 +1,4 @@
-package semiont
+package xynoplex
 
 // Mark: annotations, a resource's own metadata, and the annotating of a
 // resource delegated as a job. Each write is confirmed: it returns when the
@@ -8,8 +8,8 @@ package semiont
 import (
 	"context"
 
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/bus"
+	"github.com/Xynoplex/sdk/go/api"
+	"github.com/Xynoplex/sdk/go/bus"
 )
 
 // MarkNamespace is annotations, a resource's own metadata, and the

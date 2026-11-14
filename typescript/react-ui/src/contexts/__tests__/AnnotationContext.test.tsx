@@ -3,8 +3,8 @@ import { render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 import { AnnotationProvider, useAnnotationManager } from '../AnnotationContext';
 import type { AnnotationManager, CreateAnnotationParams } from '../../types/AnnotationManager';
-import type { Annotation, AnnotationId } from '@semiont/core';
-import { resourceId } from '@semiont/core';
+import type { Annotation, AnnotationId } from '@xynoplex/core';
+import { resourceId } from '@xynoplex/core';
 
 // Test component that uses the hook
 function TestConsumer() {

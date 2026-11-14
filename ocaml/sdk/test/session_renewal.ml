@@ -1,5 +1,5 @@
 open Eio.Std
-module Session = Semiont.Session
+module Session = Xynoplex.Session
 
 let token claims =
   "header."
@@ -54,7 +54,7 @@ let proactive () =
   end in
   let monotonic = Eio.Resource.T ((), Eio.Time.Pi.clock (module Timer)) in
   let clock =
-    Semiont.Clock.make ~monotonic ~wall ~jitter:(Random.State.make [| 1 |])
+    Xynoplex.Clock.make ~monotonic ~wall ~jitter:(Random.State.make [| 1 |])
   in
   let initial = token {|{"iat":0,"exp":15}|} in
   let entered, enter = Promise.create () in
@@ -95,7 +95,7 @@ let proactive () =
   Session.await_closed session
 
 let backoff () =
-  let open Semiont in
+  let open Xynoplex in
   Eio_mock.Backend.run @@ fun () ->
   Switch.run @@ fun sw ->
   let mono = Eio_mock.Clock.Mono.make () in
@@ -141,7 +141,7 @@ let backoff () =
    so the session's timer runs before the renewal publishes its token, and the
    schedule only after it. *)
 let replaced_before_due () =
-  let open Semiont in
+  let open Xynoplex in
   Eio_mock.Backend.run @@ fun () ->
   Switch.run @@ fun sw ->
   let mono = Eio_mock.Clock.Mono.make () in
@@ -180,7 +180,7 @@ let replaced_before_due () =
   Session.await_closed session
 
 let replaced_before_backoff () =
-  let open Semiont in
+  let open Xynoplex in
   Eio_mock.Backend.run @@ fun () ->
   Switch.run @@ fun sw ->
   let mono = Eio_mock.Clock.Mono.make () in
@@ -231,7 +231,7 @@ let replaced_before_backoff () =
 (* The renewal's answer is let go and the session closed with no yield between,
    so the renewal takes its answer up only once the session is closed. *)
 let closed_before_answer_taken () =
-  let open Semiont in
+  let open Xynoplex in
   Eio_mock.Backend.run @@ fun () ->
   Switch.run @@ fun sw ->
   let mono = Eio_mock.Clock.Mono.make () in
@@ -282,7 +282,7 @@ let closed_before_answer_taken () =
 (* The issuer holds its answer to the kept sign-in's refresh while a refusal
    waits on it, and the session closes. *)
 let kept_renewal_runs_to_its_end () =
-  let open Semiont in
+  let open Xynoplex in
   Eio_mock.Backend.run @@ fun () ->
   Switch.run @@ fun sw ->
   let mono = Eio_mock.Clock.Mono.make () in
@@ -307,7 +307,7 @@ let kept_renewal_runs_to_its_end () =
     }
   in
   let browser =
-    Registry.new_semiont_browser
+    Registry.new_xynoplex_browser
       {
         storage;
         clock;
@@ -386,7 +386,7 @@ let kept_renewal_runs_to_its_end () =
   Alcotest.(check int) "the issuer is asked once" 1 !asked
 
 let lifecycle phase row =
-  let open Semiont in
+  let open Xynoplex in
   let open Yojson.Safe.Util in
   Eio_mock.Backend.run @@ fun () ->
   Switch.run @@ fun sw ->
@@ -413,7 +413,7 @@ let lifecycle phase row =
     }
   in
   let browser =
-    Registry.new_semiont_browser
+    Registry.new_xynoplex_browser
       {
         storage;
         clock;

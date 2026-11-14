@@ -1,5 +1,5 @@
 module IncompleteCacheState where
-import Semiont.Cache (CacheState(..))
+import Xynoplex.Cache (CacheState(..))
 
 value :: CacheState Int -> Maybe Int
 value Pending = Nothing

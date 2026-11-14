@@ -16,7 +16,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { SemiontError } from '../errors';
+import { XynoplexError } from '../errors';
 import { textSourceOf } from '../media-types';
 import { decodeRepresentation } from '../resource-utils';
 import { decodeWithCharset } from '../text-encoding';
@@ -47,7 +47,7 @@ function refused(reading: () => string, named: string): void {
   } catch (error) {
     refusal = error;
   }
-  if (!(refusal instanceof SemiontError)) throw new Error(`not refused as the reader's own failure: ${String(refusal)}`);
+  if (!(refusal instanceof XynoplexError)) throw new Error(`not refused as the reader's own failure: ${String(refusal)}`);
   expect(refusal.code).toBe('error');
   expect(refusal.message).toContain(named);
 }

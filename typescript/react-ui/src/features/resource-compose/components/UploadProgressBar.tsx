@@ -11,12 +11,12 @@
  *
  * Designed to live below the Save button in the compose form so the
  * visual association with the action that triggered the upload is
- * direct. Uses the existing `.semiont-progress` styles in
- * `packages/typescript/react-ui/src/styles/core/progress.css`.
+ * direct. Uses the existing `.xynoplex-progress` styles in
+ * `typescript/react-ui/src/styles/core/progress.css`.
  */
 
 import React from 'react';
-import type { UploadProgress } from '@semiont/sdk';
+import type { UploadProgress } from '@xynoplex/sdk';
 
 export interface UploadProgressBarProps {
   progress: UploadProgress | null;
@@ -36,12 +36,12 @@ export function UploadProgressBar({ progress, label }: UploadProgressBarProps): 
 
   if (progress.phase === 'started') {
     return (
-      <div className="semiont-progress-wrapper" role="status" aria-live="polite">
-        <div className="semiont-progress__label">
+      <div className="xynoplex-progress-wrapper" role="status" aria-live="polite">
+        <div className="xynoplex-progress__label">
           <span>{label}: starting…</span>
         </div>
-        <div className="semiont-progress semiont-progress--indeterminate">
-          <div className="semiont-progress__fill" />
+        <div className="xynoplex-progress xynoplex-progress--indeterminate">
+          <div className="xynoplex-progress__fill" />
         </div>
       </div>
     );
@@ -53,8 +53,8 @@ export function UploadProgressBar({ progress, label }: UploadProgressBarProps): 
       ? 0
       : Math.min(100, Math.round((progress.bytesUploaded / progress.totalBytes) * 100));
     return (
-      <div className="semiont-progress-wrapper" role="status" aria-live="polite">
-        <div className="semiont-progress__label">
+      <div className="xynoplex-progress-wrapper" role="status" aria-live="polite">
+        <div className="xynoplex-progress__label">
           {indeterminate ? (
             <span>{label}: {formatBytes(progress.bytesUploaded)}…</span>
           ) : (
@@ -65,14 +65,14 @@ export function UploadProgressBar({ progress, label }: UploadProgressBarProps): 
           )}
         </div>
         <div
-          className={`semiont-progress${indeterminate ? ' semiont-progress--indeterminate' : ''}`}
+          className={`xynoplex-progress${indeterminate ? ' xynoplex-progress--indeterminate' : ''}`}
           role="progressbar"
           aria-valuemin={0}
           aria-valuemax={indeterminate ? undefined : 100}
           aria-valuenow={indeterminate ? undefined : percentage}
         >
           <div
-            className="semiont-progress__fill"
+            className="xynoplex-progress__fill"
             style={indeterminate ? undefined : { width: `${percentage}%` }}
           />
         </div>
@@ -82,12 +82,12 @@ export function UploadProgressBar({ progress, label }: UploadProgressBarProps): 
 
   // phase === 'finished'
   return (
-    <div className="semiont-progress-wrapper" role="status" aria-live="polite">
-      <div className="semiont-progress__label">
+    <div className="xynoplex-progress-wrapper" role="status" aria-live="polite">
+      <div className="xynoplex-progress__label">
         <span>{label}: uploaded</span>
       </div>
-      <div className="semiont-progress" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={100}>
-        <div className="semiont-progress__fill semiont-progress__fill--success" style={{ width: '100%' }} />
+      <div className="xynoplex-progress" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={100}>
+        <div className="xynoplex-progress__fill xynoplex-progress__fill--success" style={{ width: '100%' }} />
       </div>
     </div>
   );

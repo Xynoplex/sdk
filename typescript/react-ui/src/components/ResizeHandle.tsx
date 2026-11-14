@@ -140,7 +140,7 @@ export function ResizeHandle({
   return (
     <button
       type="button"
-      className={`semiont-resize-handle semiont-resize-handle--${position} ${isDragging ? 'semiont-resize-handle--dragging' : ''}`}
+      className={`xynoplex-resize-handle xynoplex-resize-handle--${position} ${isDragging ? 'xynoplex-resize-handle--dragging' : ''}`}
       onMouseDown={handleMouseDown}
       onKeyDown={handleKeyDown}
       aria-label={ariaLabel}

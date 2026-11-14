@@ -11,23 +11,23 @@ import qualified Data.Set as Set
 import Data.Text (Text)
 import qualified OpenTelemetry.Context as Context
 import OpenTelemetry.Context.ThreadLocal (getContext, attachContext, detachContext)
-import qualified Semiont.Bus as Bus
-import qualified Semiont.Cache as Cache
-import qualified Semiont.Channels as Channel
-import qualified Semiont.ErrorCodes as Code
-import Semiont.Errors (BusRequestError(..))
-import qualified Semiont.Internal.Cache as Cache (fetching)
-import qualified Semiont.Internal.Coupled as Coupled
-import qualified Semiont.Internal.Generated.CacheRefresh as Fact
-import qualified Semiont.Internal.Generated.CachePersistence as Persisted
-import qualified Semiont.Internal.Kept as Kept
-import qualified Semiont.Internal.Persistence as Persistence
-import qualified Semiont.Internal.Refresh as Refresh
-import qualified Semiont.Internal.Transport as Internal
-import qualified Semiont.SessionStorage as Storage
-import qualified Semiont.Transport as Transport
-import qualified Semiont.Timing.Settings as Timing
-import Semiont.Types
+import qualified Xynoplex.Bus as Bus
+import qualified Xynoplex.Cache as Cache
+import qualified Xynoplex.Channels as Channel
+import qualified Xynoplex.ErrorCodes as Code
+import Xynoplex.Errors (BusRequestError(..))
+import qualified Xynoplex.Internal.Cache as Cache (fetching)
+import qualified Xynoplex.Internal.Coupled as Coupled
+import qualified Xynoplex.Internal.Generated.CacheRefresh as Fact
+import qualified Xynoplex.Internal.Generated.CachePersistence as Persisted
+import qualified Xynoplex.Internal.Kept as Kept
+import qualified Xynoplex.Internal.Persistence as Persistence
+import qualified Xynoplex.Internal.Refresh as Refresh
+import qualified Xynoplex.Internal.Transport as Internal
+import qualified Xynoplex.SessionStorage as Storage
+import qualified Xynoplex.Transport as Transport
+import qualified Xynoplex.Timing.Settings as Timing
+import Xynoplex.Types
 import System.Timeout (timeout)
 import qualified ControlledTime as Time
 

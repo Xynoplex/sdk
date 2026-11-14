@@ -45,14 +45,14 @@
 use super::factory::{SessionFactory, SessionFactoryOptions};
 use super::knowledge_base::KbSessionStatus;
 use super::open_resource::{OpenResource, TabCheck, apply_tab_checks, sort_open_resources};
-use super::semiont_session::SemiontSession;
+use super::xynoplex_session::XynoplexSession;
 use super::signals::{KbIdentityConflict, SessionSignals};
 use super::stored::{
     ACTIVE_KEY, LAST_VIEWED_RESOURCE_BY_KB_KEY, OPEN_RESOURCES_BY_KB_KEY, StoredSession,
     forget_kept, is_token_expired, load_knowledge_bases, replace_stored_session,
     save_knowledge_bases, store_session, stored_session,
 };
-use crate::errors::{BusRequestErrorCode, SemiontError, SessionError, TransportErrorCode};
+use crate::errors::{BusRequestErrorCode, XynoplexError, SessionError, TransportErrorCode};
 use crate::event_bus::EventBus;
 use crate::kept_for_first_reader::KeptForFirstReader;
 use crate::locked;
@@ -71,7 +71,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use tokio::sync::watch;
 use tokio::task::{JoinHandle, JoinSet};
 
-pub struct SemiontBrowserConfig {
+pub struct XynoplexBrowserConfig {
     /// Where everything the browser keeps is kept.
     pub storage: Arc<dyn SessionStorage>,
     /// What builds a knowledge base's session.
@@ -140,7 +140,7 @@ struct Inner {
     factory: Arc<dyn SessionFactory>,
     kbs: Held<Vec<KnowledgeBase>>,
     active_kb_id: Held<Option<String>>,
-    active_session: Held<Option<Arc<SemiontSession>>>,
+    active_session: Held<Option<Arc<XynoplexSession>>>,
     active_signals: Held<Option<Arc<SessionSignals>>>,
     /// The reading of the live session's errors (`Inner::read`).
     active_reading: Mutex<Option<JoinHandle<()>>>,
@@ -161,7 +161,7 @@ struct Inner {
 }
 
 /// See the module's documentation.
-pub struct SemiontBrowser {
+pub struct XynoplexBrowser {
     inner: Arc<Inner>,
 }
 
@@ -176,14 +176,14 @@ fn milliseconds(at: SystemTime) -> u64 {
         .map_or(0, |since| since.as_millis() as u64)
 }
 
-impl SemiontBrowser {
+impl XynoplexBrowser {
     /// A browser over what the storage holds. What was read is what is
     /// kept: an entry that did not read as a knowledge base is gone from the
     /// storage too. A storage that refuses those writes is the error, and no
     /// browser is made.
     pub fn new(
-        config: SemiontBrowserConfig,
-    ) -> Result<SemiontBrowser, Box<dyn std::error::Error + Send + Sync>> {
+        config: XynoplexBrowserConfig,
+    ) -> Result<XynoplexBrowser, Box<dyn std::error::Error + Send + Sync>> {
         let storage = config.storage;
         let kbs = load_knowledge_bases(storage.as_ref());
         let active = storage
@@ -229,7 +229,7 @@ impl SemiontBrowser {
             let starting = inner.clone();
             inner.spawn(async move { starting.set_active_kb(Some(active)).await });
         }
-        Ok(SemiontBrowser { inner })
+        Ok(XynoplexBrowser { inner })
     }
 
     // ── What it holds ───────────────────────────────────────────────────
@@ -246,7 +246,7 @@ impl SemiontBrowser {
     }
 
     /// The active knowledge base's session, when it has one.
-    pub fn active_session(&self) -> watch::Receiver<Option<Arc<SemiontSession>>> {
+    pub fn active_session(&self) -> watch::Receiver<Option<Arc<XynoplexSession>>> {
         self.inner.active_session.read()
     }
 
@@ -613,7 +613,7 @@ impl SemiontBrowser {
     }
 }
 
-impl Drop for SemiontBrowser {
+impl Drop for XynoplexBrowser {
     fn drop(&mut self) {
         self.inner.closed.store(true, Ordering::SeqCst);
         self.inner.end();
@@ -635,7 +635,7 @@ fn same_place(one: &KbEndpoint, other: &KbEndpoint) -> bool {
 /// A live session, what a host shows about it, and the browser's reading of
 /// its errors, taken out of the browser to be closed.
 struct Ended {
-    session: Arc<SemiontSession>,
+    session: Arc<XynoplexSession>,
     signals: Option<Arc<SessionSignals>>,
     reading: Option<JoinHandle<()>>,
 }
@@ -827,7 +827,7 @@ impl Inner {
     /// is put once, so what is open is checked once per session.
     fn put_session(
         self: &Arc<Self>,
-        session: Arc<SemiontSession>,
+        session: Arc<XynoplexSession>,
         signals: Arc<SessionSignals>,
         reading: JoinHandle<()>,
     ) {
@@ -928,7 +928,7 @@ impl Inner {
     /// either alive.
     fn read(
         self: &Arc<Self>,
-        session: &SemiontSession,
+        session: &XynoplexSession,
         signals: Arc<SessionSignals>,
     ) -> JoinHandle<()> {
         let mut errors = session.errors();
@@ -938,17 +938,17 @@ impl Inner {
                 // What was missed is not known, and is not acted on.
                 let Ok(said) = said else { continue };
                 match said {
-                    SemiontError::Session(error) => {
+                    XynoplexError::Session(error) => {
                         if let Some(inner) = saying.upgrade() {
                             inner.failed(error);
                         }
                     }
-                    SemiontError::Transport(failure) => {
+                    XynoplexError::Transport(failure) => {
                         if failure.code == TransportErrorCode::Forbidden {
                             signals.notify_permission_denied(Some(&failure.message));
                         }
                     }
-                    SemiontError::Bus(_) | SemiontError::Job(_) => {}
+                    XynoplexError::Bus(_) | XynoplexError::Job(_) => {}
                 }
             }
         })
@@ -1088,7 +1088,7 @@ impl Inner {
 
     async fn validate_open_resources(
         self: &Arc<Self>,
-        session: Arc<SemiontSession>,
+        session: Arc<XynoplexSession>,
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         // The session's own knowledge base: by the time this runs, another
         // may be the active one.
@@ -1160,7 +1160,7 @@ impl Inner {
     /// nothing about what is in it: that is each resource's own check.
     async fn read_kb(
         &self,
-        session: &SemiontSession,
+        session: &XynoplexSession,
         kb_id: &str,
     ) -> Result<KbReadVerdict, Box<dyn std::error::Error + Send + Sync>> {
         let Some(expected_did) = self
@@ -1227,7 +1227,7 @@ impl Inner {
 
 /// One open resource's verdict. Asking for it freshly also puts what it
 /// answered in the client's cache, where a viewer reads it.
-async fn check_open_resource(session: &SemiontSession, id: &ResourceId) -> TabCheck {
+async fn check_open_resource(session: &XynoplexSession, id: &ResourceId) -> TabCheck {
     match session.client().browse.resource(id).fresh().await {
         Ok(descriptor) => TabCheck::Ready {
             media_type: primary_media_type(&descriptor).map(str::to_owned),
@@ -1235,8 +1235,8 @@ async fn check_open_resource(session: &SemiontSession, id: &ResourceId) -> TabCh
         },
         Err(failure)
             if matches!(
-                failure.downcast_ref::<SemiontError>(),
-                Some(SemiontError::Bus(answer)) if answer.code == BusRequestErrorCode::NotFound
+                failure.downcast_ref::<XynoplexError>(),
+                Some(XynoplexError::Bus(answer)) if answer.code == BusRequestErrorCode::NotFound
             ) =>
         {
             TabCheck::Gone
@@ -1353,7 +1353,7 @@ mod tests {
     async fn replaced(
         gateways: &Gateways,
         kbs: [KnowledgeBase; 2],
-    ) -> (SemiontBrowser, Arc<SemiontSession>) {
+    ) -> (XynoplexBrowser, Arc<XynoplexSession>) {
         let storage = Arc::new(SharedStorage::new());
         save_knowledge_bases(storage.as_ref(), &kbs).expect("stored");
         storage.set(ACTIVE_KEY, B).expect("stored");
@@ -1370,7 +1370,7 @@ mod tests {
                 &json!({ A: "r1", B: "r1" }).to_string(),
             )
             .expect("stored");
-        let browser = SemiontBrowser::new(SemiontBrowserConfig {
+        let browser = XynoplexBrowser::new(XynoplexBrowserConfig {
             storage: storage.clone(),
             session_factory: Arc::new(gateways.sessions.clone()),
         })
@@ -1396,7 +1396,7 @@ mod tests {
         (browser, Arc::new(stale))
     }
 
-    fn shown(browser: &SemiontBrowser) -> (Vec<String>, Option<String>) {
+    fn shown(browser: &XynoplexBrowser) -> (Vec<String>, Option<String>) {
         (
             browser
                 .open_resources()
@@ -1500,8 +1500,8 @@ mod kept_for_first_reader {
     use crate::timing::ERRORS_KEPT_FOR_FIRST_READER_COUNT;
 
     /// A browser with no knowledge bases, so it brings up no session.
-    fn browser() -> SemiontBrowser {
-        SemiontBrowser::new(SemiontBrowserConfig {
+    fn browser() -> XynoplexBrowser {
+        XynoplexBrowser::new(XynoplexBrowserConfig {
             storage: Arc::new(SharedStorage::new()),
             session_factory: Arc::new(ScriptedSessions::new(None)),
         })

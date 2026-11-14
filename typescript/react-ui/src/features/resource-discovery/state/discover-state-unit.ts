@@ -1,10 +1,10 @@
 import { BehaviorSubject, Subject, combineLatest, of, type Observable } from 'rxjs';
-import { readyValue, type CacheState } from '@semiont/sdk';
+import { readyValue, type CacheState } from '@xynoplex/sdk';
 import { debounceTime, distinctUntilChanged, map, startWith, switchMap, shareReplay } from 'rxjs/operators';
-import type { ResourceDescriptor } from '@semiont/core';
-import type { SemiontSession } from '@semiont/sdk';
-import { SEARCH_DEBOUNCE_MS, type StateUnit } from '@semiont/core';
-import { createDisposer } from '@semiont/sdk';
+import type { ResourceDescriptor } from '@xynoplex/core';
+import type { XynoplexSession } from '@xynoplex/sdk';
+import { SEARCH_DEBOUNCE_MS, type StateUnit } from '@xynoplex/core';
+import { createDisposer } from '@xynoplex/sdk';
 import type { ShellStateUnit } from '../../../state/shell-state-unit';
 import { trackList, type ListState } from '../../../state/list-state';
 
@@ -40,7 +40,7 @@ export interface DiscoverStateUnit extends StateUnit {
 }
 
 export function createDiscoverStateUnit(
-  session: SemiontSession,
+  session: XynoplexSession,
   browse: ShellStateUnit,
 ): DiscoverStateUnit {
   const { client } = session;

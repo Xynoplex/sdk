@@ -6,7 +6,7 @@ npm packages; its supporting modules normalize internal dependencies and stage t
 Browser. `check-dist-imports.mjs` and `verify-nodenext-resolution.sh` check distributions.
 
 `compliance/` holds shared TypeScript architecture analysis. CSS tools and Stylelint
-plugins live in `packages/typescript/react-ui/scripts/`.
+plugins live in `typescript/react-ui/scripts/`.
 
 For the complete container-based local build, run `make local-build` from the
 repository root. See `images/LOCAL-BUILD.md` for options and usage.

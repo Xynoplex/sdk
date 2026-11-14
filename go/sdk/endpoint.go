@@ -1,4 +1,4 @@
-package semiont
+package xynoplex
 
 // A knowledge base's gateway as its HTTP endpoint names it. Its origin is what
 // a session sends its requests to and opens its stream at, and every SDK makes
@@ -9,7 +9,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
+	"github.com/Xynoplex/sdk/go/api"
 )
 
 var hostLabel = regexp.MustCompile(`^[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?$`)

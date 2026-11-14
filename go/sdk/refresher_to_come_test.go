@@ -1,4 +1,4 @@
-package semiont
+package xynoplex
 
 // A transport is built before the session that renews its token, and the
 // session sends that token before it is returned. A refusal that arrives in

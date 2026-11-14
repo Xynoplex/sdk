@@ -26,10 +26,10 @@ import {
 
 vi.mock('@headlessui/react', () => import('../../../__tests__/plain-headlessui'));
 
-vi.mock('../../../session/SemiontProvider', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../../../session/SemiontProvider')>();
+vi.mock('../../../session/XynoplexProvider', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../session/XynoplexProvider')>();
   const { searchBrowser } = await import('./search-modal-harness');
-  return { ...actual, useSemiont: () => searchBrowser };
+  return { ...actual, useXynoplex: () => searchBrowser };
 });
 
 // Mock search announcements

@@ -15,13 +15,13 @@ from aio import run, soon
 from gateway_server import NOT_FOUND, Answer, GatewayServer, Recording
 from pydantic import JsonValue, TypeAdapter
 
-from semiont.errors import SemiontError, TransportError
-from semiont.http import HttpTransport, Timing
-from semiont.http.content import form_of
-from semiont.identifiers import AnnotationId, JobId, ResourceId
-from semiont.transport import PutBinaryRequest, UploadProgress
-from semiont.types import AgentSoftware, ResourceUpload
-from semiont.watched import Variable
+from xynoplex.errors import XynoplexError, TransportError
+from xynoplex.http import HttpTransport, Timing
+from xynoplex.http.content import form_of
+from xynoplex.identifiers import AnnotationId, JobId, ResourceId
+from xynoplex.transport import PutBinaryRequest, UploadProgress
+from xynoplex.types import AgentSoftware, ResourceUpload
+from xynoplex.watched import Variable
 
 EVERY_BYTE = bytes(range(256)) * 600
 QUICK = Timing(reconnect_ms=10, http_request_ms=150)
@@ -111,7 +111,7 @@ def test_an_upload_is_awaited_once_and_its_progress_read_once() -> None:
 
 
 def test_an_upload_its_caller_abandons_closes_its_connection_reports_nothing_and_is_not_sent_again() -> None:
-    async def scenario() -> tuple[int, list[SemiontError]]:
+    async def scenario() -> tuple[int, list[XynoplexError]]:
         async with GatewayServer() as gateway:
             gateway.scripted[("POST", "/resources")] = [Answer(hold=True)]
             async with transport_to(gateway) as transport:
@@ -183,7 +183,7 @@ def test_an_upload_refused_as_it_stands_is_not_sent_again() -> None:
 
 
 def test_an_upload_its_caller_cancels_while_it_waits_to_be_sent_again_is_not_sent_again() -> None:
-    async def scenario() -> tuple[int, list[SemiontError]]:
+    async def scenario() -> tuple[int, list[XynoplexError]]:
         async with GatewayServer() as gateway:
             gateway.scripted[("POST", "/resources")] = [Answer(status=503, headers={"Retry-After": "60"}, body=b'{"error":"Not now"}')]
             async with transport_to(gateway) as transport:
@@ -271,7 +271,7 @@ def test_a_transport_over_its_caller_s_client_closed_under_an_upload_a_read_and_
 
 
 def test_a_read_gives_the_bytes_unchanged_whole_or_as_they_arrive_and_one_that_is_not_there_fails_as_not_found() -> None:
-    async def scenario() -> tuple[bytes, str, bytes, str, TransportError, list[SemiontError]]:
+    async def scenario() -> tuple[bytes, str, bytes, str, TransportError, list[XynoplexError]]:
         async with GatewayServer() as gateway, transport_to(gateway) as transport:
             gateway.stored[RESOURCE] = ("image/png", EVERY_BYTE)
             failures = transport.failures()
@@ -479,7 +479,7 @@ def test_a_request_safe_to_repeat_is_made_a_second_time_and_one_that_is_not_is_n
 
 
 def test_a_request_never_answered_fails_as_unavailable_at_its_deadline_and_is_not_made_again() -> None:
-    async def scenario() -> tuple[str, int | None, int, str, int, list[SemiontError]]:
+    async def scenario() -> tuple[str, int | None, int, str, int, list[XynoplexError]]:
         async with GatewayServer() as gateway, transport_to(gateway) as transport:
             failures = transport.failures()
             gateway.scripted[("GET", "/api/health")] = [Answer(hold=True)]

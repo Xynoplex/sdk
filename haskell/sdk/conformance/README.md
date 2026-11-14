@@ -1,14 +1,14 @@
 # Haskell conformance drivers
 
 `Main.hs` implements the shared [wire driver protocol](../../../../protocol/conformance/sdk/README.md#the-driver-protocol)
-using only the public `semiont` library. Operations run concurrently; subscriptions
+using only the public `xynoplex` library. Operations run concurrently; subscriptions
 register before their acknowledgements, cancellation joins abandoned work, and
 EOF closes the client and its reporters. The operation census compares the actual
 dispatcher with the protocol's complete operation table.
 
 With `--worker`, it implements the shared
 [worker driver protocol](../../../../protocol/conformance/worker/README.md#the-worker-driver)
-over `Semiont.Worker`. The transport subscribes to the generated worker channel
+over `Xynoplex.Worker`. The transport subscribes to the generated worker channel
 profiles. Claims, lifecycle messages, commit probes, cancellations, stalls and
 vitals all use the public SDK. Each job is run in a span parented by the carrier
 its claim reply brought. Explicit `close` stops the worker before its transport;
@@ -23,10 +23,10 @@ share protocol decoding and reply formatting in `DriverProtocol.hs`.
 Build them in Apple `container` from the repository root:
 
 ```sh
-bash packages/haskell/run-container.sh
+bash haskell/run-container.sh
 ```
 
-The runner copies both executables to `conformance/bin`. Semiont's implementations
+The runner copies both executables to `conformance/bin`. Xynoplex's implementations
 file registers wire, worker and live drivers; the live tier is `parity`. Follow their setup for
 the gateway, core package, Node dependencies and NATS. Run npm commands inside
 Apple `container` locally.

@@ -1,11 +1,11 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import type { StateUnit } from '@semiont/core';
-import type { SemiontSession } from '@semiont/sdk';
+import type { StateUnit } from '@xynoplex/core';
+import type { XynoplexSession } from '@xynoplex/sdk';
 
 /**
- * Construct a state unit whose lifetime is bound to a live `SemiontSession`
+ * Construct a state unit whose lifetime is bound to a live `XynoplexSession`
  * (the session gate as API shape).
  *
  * Contract, in the order the KB-switch bug family demands it:
@@ -20,7 +20,7 @@ import type { SemiontSession } from '@semiont/sdk';
  *
  * Keying is by session OBJECT identity, which coincides with `session.id`:
  * successive sessions are distinct objects with distinct ids by construction
- * (`SemiontSession`'s instance counter exists for exactly this).
+ * (`XynoplexSession`'s instance counter exists for exactly this).
  *
  * The unit is created inside the effect, not during render — render stays
  * pure (StrictMode-safe: its probe mount cleanly disposes the probe unit),
@@ -34,8 +34,8 @@ import type { SemiontSession } from '@semiont/sdk';
  * construction on every render.
  */
 export function useSessionStateUnit<T extends StateUnit>(
-  session: SemiontSession | undefined,
-  factory: (session: SemiontSession) => T,
+  session: XynoplexSession | undefined,
+  factory: (session: XynoplexSession) => T,
 ): T | undefined {
   const [unit, setUnit] = useState<T | undefined>(undefined);
   const factoryRef = useRef(factory);

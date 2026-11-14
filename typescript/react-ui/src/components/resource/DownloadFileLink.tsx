@@ -1,7 +1,7 @@
 'use client';
 
-import type { ResourceId } from '@semiont/core';
-import type { SemiontSession } from '@semiont/sdk';
+import type { ResourceId } from '@xynoplex/core';
+import type { XynoplexSession } from '@xynoplex/sdk';
 import { useMediaToken } from '../../hooks/useMediaToken';
 import { mediaUrl } from '../../lib/media-url';
 
@@ -9,7 +9,7 @@ interface Props {
   /** The '@id' of the resource whose bytes to offer. */
   resourceUri: ResourceId;
   /** Session for that resource — its client mints the media token and supplies the gateway origin. */
-  session: SemiontSession | null;
+  session: XynoplexSession | null;
 }
 
 /**
@@ -35,14 +35,14 @@ export function DownloadFileLink({ resourceUri, session }: Props) {
 
   if (!href) {
     return (
-      <button type="button" disabled className="semiont-button semiont-button--primary semiont-button--disabled">
+      <button type="button" disabled className="xynoplex-button xynoplex-button--primary xynoplex-button--disabled">
         Download File
       </button>
     );
   }
 
   return (
-    <a href={href} download className="semiont-button semiont-button--primary">
+    <a href={href} download className="xynoplex-button xynoplex-button--primary">
       Download File
     </a>
   );

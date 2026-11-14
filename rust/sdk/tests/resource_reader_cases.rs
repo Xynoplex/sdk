@@ -1,10 +1,10 @@
 //! What each reader of a resource's description answers is one table,
 //! protocol/specs/src/resources/reader-cases.json, which every SDK runs: this crate's
-//! `semiont::resources` gives, for each case's resource, what TypeScript's
+//! `xynoplex::resources` gives, for each case's resource, what TypeScript's
 //! and Python's readers give.
 
-use semiont::resources::{primary_media_type, primary_representation, resource_entity_types};
-use semiont::types::{Representation, ResourceDescriptor, ResourceDescriptorRepresentations};
+use xynoplex::resources::{primary_media_type, primary_representation, resource_entity_types};
+use xynoplex::types::{Representation, ResourceDescriptor, ResourceDescriptorRepresentations};
 use serde::de::DeserializeOwned;
 use serde_json::Value;
 

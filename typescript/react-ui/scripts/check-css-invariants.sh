@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Check CSS invariants for the Semiont project
+# Check CSS invariants for the Xynoplex project
 # This script enforces our CSS coding standards
 
 echo "🔍 Checking CSS invariants..."
@@ -36,7 +36,7 @@ check_tailwind_in_react_ui() {
     )
 
     for pattern in "${PATTERNS[@]}"; do
-        results=$(grep -r "$pattern" packages/typescript/react-ui/src --include="*.tsx" --include="*.jsx" 2>/dev/null | grep -v "// Allow" | grep -v ".test." | grep -v ".stories.")
+        results=$(grep -r "$pattern" typescript/react-ui/src --include="*.tsx" --include="*.jsx" 2>/dev/null | grep -v "// Allow" | grep -v ".test." | grep -v ".stories.")
         if [ ! -z "$results" ]; then
             echo -e "${RED}❌ Found Tailwind classes:${NC}"
             echo "$results" | head -5
@@ -49,13 +49,13 @@ check_tailwind_in_react_ui() {
     fi
 }
 
-# Function to check for semiont- prefix in react-ui CSS
-check_semiont_prefix() {
-    echo "Checking for proper semiont- prefix in react-ui CSS classes..."
+# Function to check for xynoplex- prefix in react-ui CSS
+check_xynoplex_prefix() {
+    echo "Checking for proper xynoplex- prefix in react-ui CSS classes..."
 
-    # Look for class definitions that don't start with semiont- or allowed exceptions
-    results=$(grep -r "^\." packages/typescript/react-ui/src/styles --include="*.css" |
-              grep -v "\.semiont-" |
+    # Look for class definitions that don't start with xynoplex- or allowed exceptions
+    results=$(grep -r "^\." typescript/react-ui/src/styles --include="*.css" |
+              grep -v "\.xynoplex-" |
               grep -v "\.annotation-" |
               grep -v "\.red-underline" |
               grep -v "\.cm-" |
@@ -66,9 +66,9 @@ check_semiont_prefix() {
               head -10)
 
     if [ ! -z "$results" ]; then
-        echo -e "${YELLOW}⚠ Found non-semiont classes (first 10):${NC}"
+        echo -e "${YELLOW}⚠ Found non-xynoplex classes (first 10):${NC}"
         echo "$results"
-        echo -e "${YELLOW}Consider using semiont- prefix for consistency${NC}"
+        echo -e "${YELLOW}Consider using xynoplex- prefix for consistency${NC}"
     else
         echo -e "${GREEN}✓ All CSS classes follow naming convention${NC}"
     fi
@@ -79,7 +79,7 @@ check_hardcoded_colors() {
     echo "Checking for hardcoded colors in CSS..."
 
     # Look for hex colors and named colors (except in comments)
-    hex_colors=$(grep -r "#[0-9a-fA-F]\{3,6\}" packages/typescript/react-ui/src/styles --include="*.css" |
+    hex_colors=$(grep -r "#[0-9a-fA-F]\{3,6\}" typescript/react-ui/src/styles --include="*.css" |
                  grep -v "^[[:space:]]*\*" |
                  grep -v "^[[:space:]]*\/\/" |
                  grep -v "rgba\|rgb\|hsl" |
@@ -92,7 +92,7 @@ check_hardcoded_colors() {
     fi
 
     # Check for named colors
-    named_colors=$(grep -r "\bcolor:[[:space:]]*\(red\|blue\|green\|yellow\|black\|white\|gray\)" packages/typescript/react-ui/src/styles --include="*.css" |
+    named_colors=$(grep -r "\bcolor:[[:space:]]*\(red\|blue\|green\|yellow\|black\|white\|gray\)" typescript/react-ui/src/styles --include="*.css" |
                    grep -v "var(--" |
                    head -5)
 
@@ -108,7 +108,7 @@ check_theme_selectors() {
     echo "Checking for problematic theme selectors..."
 
     # Look for the problematic :root:not pattern
-    bad_selectors=$(grep -r ":root:not(\[data-theme" packages/typescript/react-ui/src/styles --include="*.css")
+    bad_selectors=$(grep -r ":root:not(\[data-theme" typescript/react-ui/src/styles --include="*.css")
 
     if [ ! -z "$bad_selectors" ]; then
         echo -e "${RED}❌ Found problematic :root:not selectors:${NC}"
@@ -123,7 +123,7 @@ check_theme_selectors() {
 # Run all checks
 check_tailwind_in_react_ui
 echo ""
-check_semiont_prefix
+check_xynoplex_prefix
 echo ""
 check_hardcoded_colors
 echo ""
@@ -132,7 +132,7 @@ check_theme_selectors
 # Run Stylelint for comprehensive checking
 echo ""
 echo "Running Stylelint..."
-cd packages/typescript/react-ui
+cd typescript/react-ui
 npm run lint:css 2>/dev/null
 STYLELINT_EXIT=$?
 cd ../..

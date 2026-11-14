@@ -16,9 +16,9 @@ import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import { act, fireEvent, waitFor } from '@testing-library/react';
 import { renderInEnglish } from '../../../test-utils';
 import '@testing-library/jest-dom';
-import { resourceId } from '@semiont/core';
-import type { AnchoredTextAnswer } from '@semiont/core';
-import type { SemiontSession } from '@semiont/sdk';
+import { resourceId } from '@xynoplex/core';
+import type { AnchoredTextAnswer } from '@xynoplex/core';
+import type { XynoplexSession } from '@xynoplex/sdk';
 
 vi.mock('../../../lib/browser-pdfjs', () => ({
   loadPdfDocument: vi.fn().mockResolvedValue({
@@ -50,7 +50,7 @@ describe('PdfAnnotationCanvas — pixels before anchoring', () => {
     const resourceAnchoredText = vi.fn(() => new Promise(() => { /* never settles */ }));
     const session = {
       client: { browse: { resourceAnchoredText } },
-    } as unknown as SemiontSession;
+    } as unknown as XynoplexSession;
 
     renderInEnglish(
       <PdfAnnotationCanvas
@@ -76,7 +76,7 @@ describe('PdfAnnotationCanvas — pixels before anchoring', () => {
     const request = vi.fn();
     const session = {
       client: { browse: { resourceAnchoredText }, mark: { request }, beckon: { hover: vi.fn() } },
-    } as unknown as SemiontSession;
+    } as unknown as XynoplexSession;
 
     renderInEnglish(
       <PdfAnnotationCanvas
@@ -93,7 +93,7 @@ describe('PdfAnnotationCanvas — pixels before anchoring', () => {
     });
 
     // The page is drawn and the text is not held yet: annotating is off.
-    const canvas = document.querySelector('.semiont-pdf-annotation-canvas');
+    const canvas = document.querySelector('.xynoplex-pdf-annotation-canvas');
     expect(canvas).toHaveAttribute('data-annotate-deferred', 'true');
 
     // The late text must not be dropped: an answer after the render is the
@@ -121,7 +121,7 @@ describe('PdfAnnotationCanvas — pixels before anchoring', () => {
     Object.defineProperty(img, 'clientHeight', { value: 792, configurable: true });
     fireEvent.load(img);
 
-    const container = document.querySelector('.semiont-pdf-annotation-canvas__container')!;
+    const container = document.querySelector('.xynoplex-pdf-annotation-canvas__container')!;
     fireEvent.mouseDown(container, { clientX: 70, clientY: 78 });
     fireEvent.mouseMove(container, { clientX: 146, clientY: 96 });
     fireEvent.mouseUp(container, { clientX: 146, clientY: 96 });

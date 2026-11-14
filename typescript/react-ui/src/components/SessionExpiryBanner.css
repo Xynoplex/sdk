@@ -4,49 +4,49 @@
  * A warning that the session is about to end, shown above the app.
  */
 
-.semiont-session-expiry-banner {
+.xynoplex-session-expiry-banner {
   padding: 0.5rem 1rem;
-  background-color: var(--semiont-color-warning-light);
-  border-bottom: 1px solid var(--semiont-color-warning);
-  color: var(--semiont-color-warning-dark);
+  background-color: var(--xynoplex-color-warning-light);
+  border-bottom: 1px solid var(--xynoplex-color-warning);
+  color: var(--xynoplex-color-warning-dark);
 }
 
-[data-theme="dark"] .semiont-session-expiry-banner {
+[data-theme="dark"] .xynoplex-session-expiry-banner {
   /* The light fill is unreadable on a dark ground; the border and text carry
      the warning instead. */
   background-color: transparent;
-  color: var(--semiont-color-warning-light);
+  color: var(--xynoplex-color-warning-light);
 }
 
-.semiont-session-expiry-content {
+.xynoplex-session-expiry-content {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
 }
 
-.semiont-session-expiry-message {
+.xynoplex-session-expiry-message {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   min-width: 0;
 }
 
-.semiont-session-expiry-icon {
+.xynoplex-session-expiry-icon {
   display: inline-flex;
   flex-shrink: 0;
 }
 
-.semiont-session-expiry-text {
+.xynoplex-session-expiry-text {
   margin: 0;
-  font-size: var(--semiont-text-sm);
+  font-size: var(--xynoplex-text-sm);
 }
 
-.semiont-session-expiry-label {
+.xynoplex-session-expiry-label {
   font-weight: 600;
 }
 
-.semiont-session-expiry-dismiss {
+.xynoplex-session-expiry-dismiss {
   display: inline-flex;
   flex-shrink: 0;
   padding: 0.25rem;
@@ -54,14 +54,14 @@
   background: none;
   color: inherit;
   cursor: pointer;
-  border-radius: var(--semiont-radius-sm);
+  border-radius: var(--xynoplex-radius-sm);
 }
 
-.semiont-session-expiry-dismiss:hover {
-  background-color: var(--semiont-bg-hover);
+.xynoplex-session-expiry-dismiss:hover {
+  background-color: var(--xynoplex-bg-hover);
 }
 
-.semiont-session-expiry-dismiss:focus-visible {
-  outline: 2px solid var(--semiont-color-primary-500);
+.xynoplex-session-expiry-dismiss:focus-visible {
+  outline: 2px solid var(--xynoplex-color-primary-500);
   outline-offset: 2px;
 }

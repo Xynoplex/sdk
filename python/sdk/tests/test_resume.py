@@ -11,17 +11,17 @@ from kb import OTHER, RESOURCE, answer, asked_for, descriptor, knowing, knowing_
 from pydantic import JsonValue
 from spec import JsonObject
 
-from semiont.cache import Ready
-from semiont.channels import BRIDGED_CHANNELS
-from semiont.client import CachePersistence, SemiontClient
-from semiont.http import HttpTransport, Timing
-from semiont.identifiers import ResourceId
-from semiont.resume import CoupledBookmarks
-from semiont.storage import MemoryStorage, SessionStorage
-from semiont.stored import cache_key, last_event_id_key, person_key
-from semiont.testing import DropReply, FaultyTransport, StubGateway
-from semiont.timing import SAVE_DEBOUNCE_MS
-from semiont.watched import Variable, reached
+from xynoplex.cache import Ready
+from xynoplex.channels import BRIDGED_CHANNELS
+from xynoplex.client import CachePersistence, XynoplexClient
+from xynoplex.http import HttpTransport, Timing
+from xynoplex.identifiers import ResourceId
+from xynoplex.resume import CoupledBookmarks
+from xynoplex.storage import MemoryStorage, SessionStorage
+from xynoplex.stored import cache_key, last_event_id_key, person_key
+from xynoplex.testing import DropReply, FaultyTransport, StubGateway
+from xynoplex.timing import SAVE_DEBOUNCE_MS
+from xynoplex.watched import Variable, reached
 
 PERSON = person_key("did:web:example.org:users:alice")
 KEY = last_event_id_key("kb-a", PERSON)
@@ -72,7 +72,7 @@ def test_a_place_waits_for_the_client_it_is_coupled_to_to_be_at_rest() -> None:
         # The resource's answer is lost: its fetch is in flight until the test answers it.
         transport = FaultyTransport([DropReply()], channels=BRIDGED_CHANNELS, make_response=knowing)
         persistence = CachePersistence(storage=places.storage, kb_id="kb-a", person_key=PERSON)
-        client = SemiontClient(transport, knowing_content(), StubGateway(), persistence=persistence)
+        client = XynoplexClient(transport, knowing_content(), StubGateway(), persistence=persistence)
         places.couple_to(client)
 
         def settled() -> bool:
@@ -231,7 +231,7 @@ def test_a_place_is_noted_only_once_the_refresher_has_taken_its_event() -> None:
 
             gateway.on_emit = answering
             persistence = CachePersistence(storage=places.storage, kb_id="kb-a", person_key=PERSON)
-            client = SemiontClient(transport, transport.content, transport, persistence=persistence)
+            client = XynoplexClient(transport, transport.content, transport, persistence=persistence)
             places.couple_to(client)
             # A reader of the client's own bus, listening from before the client is held. The transport gives each event
             # to the refresher before the bus, so once this reader has one, the refresher has taken it, and the stream

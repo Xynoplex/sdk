@@ -3,15 +3,15 @@
  *
  * useToolbarPrefs() owns one shared prefs state, persists it to localStorage,
  * and feeds the same values/callbacks to every viewer it composes — the
- * Semiont Browser UX (global toolbar, persisted) as a visible page-layer hook.
+ * Xynoplex Browser UX (global toolbar, persisted) as a visible page-layer hook.
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { fireEvent, within, waitFor } from '@testing-library/react';
 import { renderInEnglish, englishTranslationManager } from '../../test-utils';
 import '@testing-library/jest-dom';
-import type { SemiontSession } from '@semiont/sdk';
-import { EventBus } from '@semiont/core';
-import type { ResourceDescriptor as SemiontResource, ResourceId } from '@semiont/core';
+import type { XynoplexSession } from '@xynoplex/sdk';
+import { EventBus } from '@xynoplex/core';
+import type { ResourceDescriptor as XynoplexResource, ResourceId } from '@xynoplex/core';
 import { ResourceViewer } from '../../components/resource/ResourceViewer';
 import { useToolbarPrefs } from '../useToolbarPrefs';
 
@@ -19,7 +19,7 @@ vi.mock('../../components/CodeMirrorRenderer', () => ({ CodeMirrorRenderer: () =
 vi.mock('react-markdown', () => ({ default: ({ children }: { children: string }) => <div>{children}</div> }));
 vi.mock('remark-gfm', () => ({ default: () => ({}) }));
 
-const resource: SemiontResource & { content: string } = {
+const resource: XynoplexResource & { content: string } = {
   '@context': 'https://www.w3.org/ns/activitystreams',
   '@id': 'res-1' as ResourceId,
   name: 'Doc',
@@ -31,7 +31,7 @@ const resource: SemiontResource & { content: string } = {
 };
 const annotations = { highlights: [], references: [], assessments: [], comments: [], tags: [] };
 
-function fakeSession(): SemiontSession {
+function fakeSession(): XynoplexSession {
   return {
     client: {
       bus: new EventBus(),
@@ -39,11 +39,11 @@ function fakeSession(): SemiontSession {
       beckon: { hover: vi.fn() },
       mark: { delete: vi.fn(), request: vi.fn() },
     },
-  } as unknown as SemiontSession;
+  } as unknown as XynoplexSession;
 }
 
 /** Two viewers composed under ONE useToolbarPrefs — the Browser-parity shape. */
-function TwoViewers({ session }: { session: SemiontSession }) {
+function TwoViewers({ session }: { session: XynoplexSession }) {
   const prefs = useToolbarPrefs();
   const controlled = {
     annotateMode: prefs.annotateMode,
@@ -63,7 +63,7 @@ function TwoViewers({ session }: { session: SemiontSession }) {
   );
 }
 
-const isAnnotate = (c: HTMLElement) => !!c.querySelector('.semiont-annotate-view');
+const isAnnotate = (c: HTMLElement) => !!c.querySelector('.xynoplex-annotate-view');
 
 async function pickMode(container: HTMLElement, option: 'Browse' | 'Annotate') {
   const trigger = within(container).getByLabelText('Mode');
@@ -108,9 +108,9 @@ describe('useToolbarPrefs — the policy layer (Browser parity)', () => {
   });
 
   it('initializes from existing keys (users’ saved prefs carry over)', () => {
-    localStorage.setItem('semiont-toolbar-click', 'follow');
+    localStorage.setItem('xynoplex-toolbar-click', 'follow');
     const { getByTestId } = renderInEnglish(<TwoViewers session={fakeSession()} />);
-    const bar = getByTestId('v1').querySelector('.semiont-annotate-toolbar') as HTMLElement;
+    const bar = getByTestId('v1').querySelector('.xynoplex-annotate-toolbar') as HTMLElement;
     expect(within(bar).getByText('Follow')).toBeInTheDocument();
   });
 });

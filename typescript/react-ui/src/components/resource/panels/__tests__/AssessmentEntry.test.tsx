@@ -1,22 +1,22 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { renderWithProviders, createTestSemiontWrapper } from '../../../../test-utils';
+import { renderWithProviders, createTestXynoplexWrapper } from '../../../../test-utils';
 import userEvent from '@testing-library/user-event';
 
-import type { Annotation, AnnotationId, EventBus } from '@semiont/core';
-import type { SemiontSession } from '@semiont/sdk';
+import type { Annotation, AnnotationId, EventBus } from '@xynoplex/core';
+import type { XynoplexSession } from '@xynoplex/sdk';
 
-// Mock @semiont/http-transport
-vi.mock('@semiont/core', async () => {
-  const actual = await vi.importActual('@semiont/core');
+// Mock @xynoplex/http-transport
+vi.mock('@xynoplex/core', async () => {
+  const actual = await vi.importActual('@xynoplex/core');
   return {
     ...actual,
     getAnnotationExactText: vi.fn(),
   };
 });
 
-import { getAnnotationExactText, resourceId } from '@semiont/core';
+import { getAnnotationExactText, resourceId } from '@xynoplex/core';
 import type { MockedFunction } from 'vitest';
 import { AssessmentEntry } from '../AssessmentEntry';
 
@@ -58,12 +58,12 @@ describe('AssessmentEntry', () => {
   // call would hand tests a client that test-utils disposes after the
   // first test). The `session` prop and the `eventBus` the interaction
   // test subscribes come from the SAME factory call.
-  let session: SemiontSession;
+  let session: XynoplexSession;
   let eventBus: EventBus;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    ({ session, eventBus } = createTestSemiontWrapper());
+    ({ session, eventBus } = createTestXynoplexWrapper());
     mockGetAnnotationExactText.mockReturnValue('Selected passage text');
   });
 
@@ -134,7 +134,7 @@ describe('AssessmentEntry', () => {
         <AssessmentEntry assessment={assessment} isFocused={false} session={session} />
       );
 
-      const metadata = container.querySelector('.semiont-annotation-entry__metadata');
+      const metadata = container.querySelector('.xynoplex-annotation-entry__metadata');
       expect(metadata).toBeInTheDocument();
       expect(metadata?.textContent).not.toMatch(/By|Unknown/);
     });
@@ -148,7 +148,7 @@ describe('AssessmentEntry', () => {
       );
 
       // Body section should not render
-      expect(container.querySelector('.semiont-annotation-entry__body')).not.toBeInTheDocument();
+      expect(container.querySelector('.xynoplex-annotation-entry__body')).not.toBeInTheDocument();
     });
 
     it('should not render quote section when selectedText is empty', () => {
@@ -156,7 +156,7 @@ describe('AssessmentEntry', () => {
 
       const { container } = renderWithProviders(<AssessmentEntry {...defaultProps} session={session} />);
 
-      expect(container.querySelector('.semiont-annotation-entry__quote')).not.toBeInTheDocument();
+      expect(container.querySelector('.xynoplex-annotation-entry__quote')).not.toBeInTheDocument();
     });
 
     it('should format relative time for recent assessments', () => {
@@ -200,7 +200,7 @@ describe('AssessmentEntry', () => {
       );
 
       const entry = container.firstChild as HTMLElement;
-      expect(entry).toHaveClass('semiont-annotation-pulse');
+      expect(entry).toHaveClass('xynoplex-annotation-pulse');
     });
 
     it('should not apply pulse class when isHovered is false', () => {
@@ -209,7 +209,7 @@ describe('AssessmentEntry', () => {
       );
 
       const entry = container.firstChild as HTMLElement;
-      expect(entry).not.toHaveClass('semiont-annotation-pulse');
+      expect(entry).not.toHaveClass('xynoplex-annotation-pulse');
     });
   });
 

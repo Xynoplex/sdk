@@ -5,7 +5,7 @@ The corpus holds it to the protocol against a real gateway
 on: the arithmetic of its backoff, the window of ids it remembers, what a
 closed transport leaves behind, what it does with a stream that carries
 something other than a frame, and each event delivered once wherever a handoff
-lands among the writes (L3, `semiont.testing.liveness`).
+lands among the writes (L3, `xynoplex.testing.liveness`).
 """
 
 import asyncio
@@ -18,18 +18,18 @@ import pytest
 from aio import run, soon
 from gateway_server import Answer, GatewayServer, Recording
 
-from semiont.bus import request
-from semiont.channels import BRIDGED_CHANNELS, RESOURCE_SCOPED_CHANNELS
-from semiont.errors import BusRequestError, SemiontError, TransportError
-from semiont.http import HttpTransport, Timing
-from semiont.http.stream import SeenIds, backoff_cap_ms
-from semiont.identifiers import ResourceId
-from semiont.operations import BROWSE_RESOURCE_REQUESTED
-from semiont.retry import RetryPolicy
-from semiont.testing.liveness import DeliverySubject, assert_exactly_once_delivery
-from semiont.timing import ERRORS_KEPT_FOR_FIRST_READER_COUNT, MAX_RECONNECT_MS, RECONNECT_MS
-from semiont.transport import ConnectionState, Frame, FrameRefusal, ResourceHold
-from semiont.watched import Variable, reached
+from xynoplex.bus import request
+from xynoplex.channels import BRIDGED_CHANNELS, RESOURCE_SCOPED_CHANNELS
+from xynoplex.errors import BusRequestError, XynoplexError, TransportError
+from xynoplex.http import HttpTransport, Timing
+from xynoplex.http.stream import SeenIds, backoff_cap_ms
+from xynoplex.identifiers import ResourceId
+from xynoplex.operations import BROWSE_RESOURCE_REQUESTED
+from xynoplex.retry import RetryPolicy
+from xynoplex.testing.liveness import DeliverySubject, assert_exactly_once_delivery
+from xynoplex.timing import ERRORS_KEPT_FOR_FIRST_READER_COUNT, MAX_RECONNECT_MS, RECONNECT_MS
+from xynoplex.transport import ConnectionState, Frame, FrameRefusal, ResourceHold
+from xynoplex.watched import Variable, reached
 
 QUICK = Timing(reconnect_ms=10, lazy_remove_ms=10, linger_ms=10, emit_retry=RetryPolicy(attempts=2, initial_delay_ms=1, max_delay_ms=1))
 CHANNELS = ("beckon:focus", "browse:resource-result", "browse:resource-failed")
@@ -63,7 +63,7 @@ async def opened(transport: HttpTransport) -> None:
 
 
 def test_a_frame_is_delivered_with_what_is_beside_its_payload_and_what_is_not_a_frame_is_refused() -> None:
-    async def scenario() -> tuple[list[Frame | FrameRefusal], list[SemiontError]]:
+    async def scenario() -> tuple[list[Frame | FrameRefusal], list[XynoplexError]]:
         async with (
             GatewayServer() as gateway,
             HttpTransport(gateway.origin, token=Variable[str | None]("t"), channels=CHANNELS, timing=QUICK) as transport,
@@ -128,7 +128,7 @@ def test_a_frame_is_delivered_with_what_is_beside_its_payload_and_what_is_not_a_
 
 
 def test_a_closed_transport_has_ended_everything_it_began() -> None:
-    async def scenario() -> tuple[list[ConnectionState], list[Frame | FrameRefusal], list[SemiontError], str, str, list[str]]:
+    async def scenario() -> tuple[list[ConnectionState], list[Frame | FrameRefusal], list[XynoplexError], str, str, list[str]]:
         async with GatewayServer() as gateway:
             transport = HttpTransport(gateway.origin, token=Variable[str | None]("t"), channels=CHANNELS, timing=QUICK)
             states: list[ConnectionState] = []
@@ -246,7 +246,7 @@ def test_the_first_listener_to_its_failures_is_given_the_latest_met_before_it_ca
 
 
 def test_what_a_transport_kept_for_a_first_listener_who_never_came_is_dropped_as_it_closes() -> None:
-    async def scenario() -> list[SemiontError]:
+    async def scenario() -> list[XynoplexError]:
         async with GatewayServer() as gateway:
             gateway.scripted[("POST", "/bus/emit")] = [refusal_of_emit(0)]
             transport = HttpTransport(gateway.origin, token=Variable[str | None]("t"), channels=CHANNELS, timing=QUICK)
@@ -301,7 +301,7 @@ def test_a_stream_that_cannot_open_is_tried_again_and_a_token_that_changes_reach
 
 
 def test_a_stream_whose_open_the_gateway_never_answers_has_failed_at_its_deadline_and_is_opened_again() -> None:
-    async def scenario() -> tuple[float, int, list[SemiontError]]:
+    async def scenario() -> tuple[float, int, list[XynoplexError]]:
         hasty = Timing(reconnect_ms=10, stream_open_ms=200)
         async with GatewayServer() as gateway:
             # The first open is taken and never answered; the next is answered with a stream.

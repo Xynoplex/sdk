@@ -3,21 +3,21 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { delegateProgressTranslations } from '../../../lib/delegate-progress-copy';
 import { useTranslations } from '../../../contexts/TranslationContext';
-import type { MarkStateUnit, SemiontSession } from '@semiont/sdk';
+import type { MarkStateUnit, XynoplexSession } from '@xynoplex/sdk';
 import { useSessionEventSubscriptions } from '../../../hooks/useSessionEventSubscriptions';
 import type { RouteBuilder, LinkComponentProps } from '../../../contexts/RoutingContext';
 import { markJobControls } from '../../../lib/delegated-job-controls';
 import { DelegateShell } from './DelegateShell';
 import { ItemFoundLog } from '../../ItemFoundLog';
 import { ReferenceEntry } from './ReferenceEntry';
-import type { components, JobId, ResourceId, Selector } from '@semiont/core';
-import { getTextPositionSelector, getTargetSelector } from '@semiont/core';
+import type { components, JobId, ResourceId, Selector } from '@xynoplex/core';
+import { getTextPositionSelector, getTargetSelector } from '@xynoplex/core';
 import { PanelHeader } from './PanelHeader';
 import './ReferencesPanel.css';
 
 type JobProgress = components['schemas']['JobProgress'];
 
-import type { Annotation } from '@semiont/core';
+import type { Annotation } from '@xynoplex/core';
 type Motivation = components['schemas']['Motivation'];
 type ReferencedBy = components['schemas']['GetReferencedByResponse']['referencedBy'][number];
 
@@ -46,7 +46,7 @@ function getSelectorDisplayText(selector: Selector | Selector[]): string | null 
 
 interface Props {
   /** Session carrying the client and event bus; null renders inert. */
-  session: SemiontSession | null;
+  session: XynoplexSession | null;
   /** The resource's mark unit, which delegations, cancels and dismissals are asked of; undefined renders inert. */
   mark: MarkStateUnit | undefined;
   /** Host-owned navigation: called with the resolved resource id when a reference entry opens. */
@@ -188,9 +188,9 @@ export function ReferencesPanel({
       containerRef.current.scrollTo({ top: scrollTo, behavior: 'smooth' });
 
       // Add pulse effect
-      element.classList.remove('semiont-annotation-pulse');
+      element.classList.remove('xynoplex-annotation-pulse');
       void element.offsetWidth; // Force reflow
-      element.classList.add('semiont-annotation-pulse');
+      element.classList.add('xynoplex-annotation-pulse');
 
       // Notify completion
       if (onScrollCompleted) {
@@ -319,13 +319,13 @@ export function ReferencesPanel({
   }, [pendingAnnotation, mark]);
 
   return (
-    <div className="semiont-panel">
+    <div className="xynoplex-panel">
       <PanelHeader count={annotations.length} title={t('title')} />
 
       {/* New reference creation - shown when there's a pending annotation with linking motivation */}
       {pendingAnnotation && pendingAnnotation.motivation === 'linking' && (
-        <div className="semiont-annotation-prompt" data-type="reference">
-          <div className="semiont-annotation-prompt__quote">
+        <div className="xynoplex-annotation-prompt" data-type="reference">
+          <div className="xynoplex-annotation-prompt__quote">
             {(() => {
               const displayText = getSelectorDisplayText(pendingAnnotation.selector);
               if (displayText) {
@@ -338,16 +338,16 @@ export function ReferencesPanel({
 
           {/* Entity Types Multi-Select */}
           {allEntityTypes.length > 0 && (
-            <div className="semiont-form-field">
-              <p className="semiont-form-field__label">
+            <div className="xynoplex-form-field">
+              <p className="xynoplex-form-field__label">
                 {t('entityTypesOptional')}
               </p>
-              <div className="semiont-tag-selector">
+              <div className="xynoplex-tag-selector">
                 {allEntityTypes.map((type: string) => (
                   <button
                     key={type}
                     onClick={() => togglePendingEntityType(type)}
-                    className="semiont-tag-selector__item"
+                    className="xynoplex-tag-selector__item"
                     data-selected={pendingEntityTypes.includes(type) ? 'true' : 'false'}
                   >
                     {type}
@@ -357,21 +357,21 @@ export function ReferencesPanel({
             </div>
           )}
 
-          <div className="semiont-annotation-prompt__footer">
-            <div className="semiont-annotation-prompt__actions">
+          <div className="xynoplex-annotation-prompt__footer">
+            <div className="xynoplex-annotation-prompt__actions">
               <button
                 onClick={() => {
                   mark?.cancelPending();
                   setPendingEntityTypes([]);
                 }}
-                className="semiont-button semiont-button--secondary"
+                className="xynoplex-button xynoplex-button--secondary"
                 data-type="reference"
               >
                 {t('cancel')}
               </button>
               <button
                 onClick={handleCreateReference}
-                className="semiont-button semiont-button--primary"
+                className="xynoplex-button xynoplex-button--primary"
                 data-type="reference"
               >
                 🔗 {t('createReference')}
@@ -382,7 +382,7 @@ export function ReferencesPanel({
       )}
 
       {/* Scrollable content area */}
-      <div ref={containerRef} className="semiont-panel__content">
+      <div ref={containerRef} className="xynoplex-panel__content">
         {/* Delegate section - only in Annotate mode; shown for any media type (AI detection is media-agnostic — text is resolved via the media-type registry, incl. PDF text layers) */}
         {annotateMode && (
           <DelegateShell
@@ -410,11 +410,11 @@ export function ReferencesPanel({
                 )}
 
                 {/* Entity Types Selection */}
-                <div className="semiont-delegate-widget__entity-types">
-                  <p className="semiont-delegate-widget__label">
+                <div className="xynoplex-delegate-widget__entity-types">
+                  <p className="xynoplex-delegate-widget__label">
                     {t('selectEntityTypes')}
                   </p>
-                  <div className="semiont-delegate-widget__chips">
+                  <div className="xynoplex-delegate-widget__chips">
                     {allEntityTypes.length > 0 ? (
                       allEntityTypes.map((type: string) => (
                         <button
@@ -428,14 +428,14 @@ export function ReferencesPanel({
                           }}
                           aria-pressed={selectedEntityTypes.includes(type)}
                           aria-label={`${selectedEntityTypes.includes(type) ? t('deselect') : t('select')} ${type}`}
-                          className="semiont-chip semiont-chip--selectable"
+                          className="xynoplex-chip xynoplex-chip--selectable"
                           data-selected={selectedEntityTypes.includes(type)}
                         >
                           {type}
                         </button>
                       ))
                     ) : (
-                      <p className="semiont-delegate-widget__no-types">
+                      <p className="xynoplex-delegate-widget__no-types">
                         {entityTypesError ? t('entityTypesFailed') : t('noEntityTypes')}
                       </p>
                     )}
@@ -444,23 +444,23 @@ export function ReferencesPanel({
 
                 {/* Selected Count */}
                 {selectedEntityTypes.length > 0 && (
-                  <p className="semiont-delegate-widget__count">
+                  <p className="xynoplex-delegate-widget__count">
                     {t('typesSelected', { count: selectedEntityTypes.length })}
                   </p>
                 )}
 
                 {/* Include Descriptive References Checkbox */}
-                <div className="semiont-delegate-widget__checkbox-group">
-                  <label className="semiont-delegate-widget__checkbox-label">
+                <div className="xynoplex-delegate-widget__checkbox-group">
+                  <label className="xynoplex-delegate-widget__checkbox-label">
                     <input
                       type="checkbox"
                       checked={includeDescriptiveReferences}
                       onChange={(e) => setIncludeDescriptiveReferences(e.target.checked)}
-                      className="semiont-delegate-widget__checkbox"
+                      className="xynoplex-delegate-widget__checkbox"
                     />
                     <span>{t('includeDescriptiveReferences')}</span>
                   </label>
-                  <p className="semiont-delegate-widget__checkbox-hint">
+                  <p className="xynoplex-delegate-widget__checkbox-hint">
                     {t('descriptiveReferencesTooltip')}
                   </p>
                 </div>
@@ -470,11 +470,11 @@ export function ReferencesPanel({
                   onClick={handleDelegate}
                   disabled={selectedEntityTypes.length === 0}
                   title={t('annotate')}
-                  className="semiont-button"
+                  className="xynoplex-button"
                   data-variant="delegate"
                   data-type="reference"
                 >
-                  <span className="semiont-button-icon">✨</span>
+                  <span className="xynoplex-button-icon">✨</span>
                   <span>{t('annotate')}</span>
                 </button>
               </>
@@ -484,15 +484,15 @@ export function ReferencesPanel({
 
         {/* References List Section */}
         <div>
-          <div className="semiont-panel__divider">
-            <h3 className="semiont-panel__subtitle">
+          <div className="xynoplex-panel__divider">
+            <h3 className="xynoplex-panel__subtitle">
               {t('outgoingReferences')} ({sortedAnnotations.length})
             </h3>
           </div>
 
-          <div className="semiont-panel__list">
+          <div className="xynoplex-panel__list">
             {sortedAnnotations.length === 0 ? (
-              <p className="semiont-panel__empty-message">
+              <p className="xynoplex-panel__empty-message">
                 {t('noReferences')}
               </p>
             ) : (
@@ -516,17 +516,17 @@ export function ReferencesPanel({
 
         {/* Referenced By Section */}
         <div>
-          <div className="semiont-panel__divider">
-            <h3 className="semiont-panel__subtitle">
+          <div className="xynoplex-panel__divider">
+            <h3 className="xynoplex-panel__subtitle">
               {t('incomingReferences')} ({referencedBy.length})
               {referencedByLoading && !referencedByError && (
-                <span className="semiont-panel__loading-indicator">({t('loading')})</span>
+                <span className="xynoplex-panel__loading-indicator">({t('loading')})</span>
               )}
             </h3>
           </div>
 
           {referencedByError ? (
-            <p className="semiont-panel__empty-message semiont-panel__empty-message--small">
+            <p className="xynoplex-panel__empty-message xynoplex-panel__empty-message--small">
               {t('incomingReferencesFailed')}
               {onRetryReferencedBy && (
                 <>
@@ -534,7 +534,7 @@ export function ReferencesPanel({
                   <button
                     type="button"
                     onClick={onRetryReferencedBy}
-                    className="semiont-panel__inline-action"
+                    className="xynoplex-panel__inline-action"
                   >
                     {t('retry')}
                   </button>
@@ -542,25 +542,25 @@ export function ReferencesPanel({
               )}
             </p>
           ) : referencedBy.length > 0 ? (
-            <div className="semiont-panel__list">
+            <div className="xynoplex-panel__list">
               {referencedBy.map((ref) => {
                 const resourceId = ref.target.source;
 
                 return (
-                  <div key={ref.id} className="semiont-reference-item semiont-reference-item--incoming">
-                    <div className="semiont-reference-item__header">
-                      <span className="semiont-reference-item__title">
+                  <div key={ref.id} className="xynoplex-reference-item xynoplex-reference-item--incoming">
+                    <div className="xynoplex-reference-item__header">
+                      <span className="xynoplex-reference-item__title">
                         {ref.resourceName || t('untitledResource')}
                       </span>
                       <Link
                         href={routes.resourceDetail(resourceId)}
-                        className="semiont-reference-item__link"
+                        className="xynoplex-reference-item__link"
                         title={t('open')}
                       >
                         🔗
                       </Link>
                     </div>
-                    <span className="semiont-reference-item__excerpt">
+                    <span className="xynoplex-reference-item__excerpt">
                       "{ref.target.selector?.exact || t('noText')}"
                     </span>
                   </div>
@@ -568,7 +568,7 @@ export function ReferencesPanel({
               })}
             </div>
           ) : (
-            <p className="semiont-panel__empty-message semiont-panel__empty-message--small">
+            <p className="xynoplex-panel__empty-message xynoplex-panel__empty-message--small">
               {referencedByLoading ? t('loadingEllipsis') : t('noIncomingReferences')}
             </p>
           )}

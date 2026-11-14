@@ -1,12 +1,12 @@
 'use client';
 
-import type { AnnotationId } from '@semiont/core';
+import type { AnnotationId } from '@xynoplex/core';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react';
-import type { GatheredContext, EngineWithLimits, ResourceId } from '@semiont/core';
-import { uuidV4 } from '@semiont/core';
-import { HOVER_DELAY_MS } from '@semiont/sdk';
-import { useSemiont } from '../../session/SemiontProvider';
+import type { GatheredContext, EngineWithLimits, ResourceId } from '@xynoplex/core';
+import { uuidV4 } from '@xynoplex/core';
+import { HOVER_DELAY_MS } from '@xynoplex/sdk';
+import { useXynoplex } from '../../session/XynoplexProvider';
 import { useObservable } from '../../hooks/useObservable';
 import { useEventSubscription } from '../../contexts/useEventSubscription';
 import { GatherContextStep } from './GatherContextStep';
@@ -152,7 +152,7 @@ export function ReferenceWizardModal({
   translations: t,
   generationEngine,
 }: ReferenceWizardModalProps) {
-  const session = useObservable(useSemiont().activeSession$);
+  const session = useObservable(useXynoplex().activeSession$);
   // The host's callbacks are read through refs, so a host that passes a new
   // function on every render does not re-create the handlers below.
   const onCloseRef = useRef(onClose);
@@ -348,7 +348,7 @@ export function ReferenceWizardModal({
 
   return (
     <Transition appear show={isOpen}>
-      <Dialog as="div" className="semiont-search-modal" onClose={handleDismiss}>
+      <Dialog as="div" className="xynoplex-search-modal" onClose={handleDismiss}>
         {/* Backdrop */}
         <TransitionChild
           enter="ease-out duration-200"
@@ -358,12 +358,12 @@ export function ReferenceWizardModal({
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="semiont-search-modal__backdrop" />
+          <div className="xynoplex-search-modal__backdrop" />
         </TransitionChild>
 
         {/* Modal panel */}
-        <div className="semiont-search-modal__wrapper">
-          <div className="semiont-search-modal__centering semiont-search-modal__centering--center">
+        <div className="xynoplex-search-modal__wrapper">
+          <div className="xynoplex-search-modal__centering xynoplex-search-modal__centering--center">
             <TransitionChild
               enter="ease-out duration-200"
               enterFrom="opacity-0 scale-95"
@@ -374,14 +374,14 @@ export function ReferenceWizardModal({
             >
               {/* Every step shows the evidence display, so every step is wide
                   and gets the gather layout (flex column, capped height). */}
-              <DialogPanel className="semiont-search-modal__panel semiont-search-modal__panel--with-border semiont-search-modal__panel--gather semiont-search-modal__panel--wide">
-                <div className="semiont-search-modal__header">
-                  <DialogTitle className="semiont-search-modal__title">
+              <DialogPanel className="xynoplex-search-modal__panel xynoplex-search-modal__panel--with-border xynoplex-search-modal__panel--gather xynoplex-search-modal__panel--wide">
+                <div className="xynoplex-search-modal__header">
+                  <DialogTitle className="xynoplex-search-modal__title">
                     {t.resolveTitle}
                   </DialogTitle>
                   <button
                     onClick={handleDismiss}
-                    className="semiont-search-modal__close-button"
+                    className="xynoplex-search-modal__close-button"
                     aria-label="Close"
                   >
                     ✕
@@ -425,7 +425,7 @@ export function ReferenceWizardModal({
                 )}
 
                 {wizardStep.step === 'compose' && context && (
-                  <div className="semiont-wizard__step-scroll" ref={stepScrollRef}>
+                  <div className="xynoplex-wizard__step-scroll" ref={stepScrollRef}>
                   <GatherContextStep
                     context={context}
                     contextLoading={contextLoading}
@@ -459,7 +459,7 @@ export function ReferenceWizardModal({
                 )}
 
                 {wizardStep.step === 'configure-generation' && context && (
-                  <div className="semiont-wizard__step-scroll" ref={stepScrollRef}>
+                  <div className="xynoplex-wizard__step-scroll" ref={stepScrollRef}>
                   <GatherContextStep
                     context={context}
                     contextLoading={contextLoading}
@@ -500,7 +500,7 @@ export function ReferenceWizardModal({
                 )}
 
                 {wizardStep.step === 'configure-search' && (
-                  <div className="semiont-wizard__step-scroll" ref={stepScrollRef}>
+                  <div className="xynoplex-wizard__step-scroll" ref={stepScrollRef}>
                   <GatherContextStep
                     context={context}
                     contextLoading={contextLoading}
@@ -530,7 +530,7 @@ export function ReferenceWizardModal({
                 )}
 
                 {wizardStep.step === 'search-results' && context && (
-                  <div className="semiont-wizard__step-scroll" ref={stepScrollRef}>
+                  <div className="xynoplex-wizard__step-scroll" ref={stepScrollRef}>
                   <GatherContextStep
                     context={context}
                     contextLoading={contextLoading}

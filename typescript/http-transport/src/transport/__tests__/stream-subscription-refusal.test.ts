@@ -13,7 +13,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { BusRequestError, PERSISTED_EVENT_TYPES, BRIDGED_CHANNELS, RESOURCE_SCOPED_CHANNELS, resourceId } from '@semiont/core';
+import { BusRequestError, PERSISTED_EVENT_TYPES, BRIDGED_CHANNELS, RESOURCE_SCOPED_CHANNELS, resourceId } from '@xynoplex/core';
 import { createActorStateUnit } from '../actor-state-unit';
 import { mockFetch, mockSSEResponse } from './helpers/mock-conn';
 

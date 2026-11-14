@@ -11,8 +11,8 @@ import pytest
 from aio import run
 from spec import SPEC, JsonObject, objects, read, text
 
-from semiont.errors import SemiontError, TransportError
-from semiont.retry import BOOT, RETRY_RULES, RetryFacts, RetryPolicy, equal_jitter, retry_after_ms, retry_with_backoff
+from xynoplex.errors import XynoplexError, TransportError
+from xynoplex.retry import BOOT, RETRY_RULES, RetryFacts, RetryPolicy, equal_jitter, retry_after_ms, retry_with_backoff
 
 TABLE = read(SPEC / "retry/cases.json")
 RULES = objects(TABLE["rules"], "rules")
@@ -64,7 +64,7 @@ def refused(status: int, retry_after: int | None = None) -> TransportError:
     return TransportError.of_status(f"refused {status}", status, retry_after)
 
 
-def worth_another(error: SemiontError) -> bool:
+def worth_another(error: XynoplexError) -> bool:
     return BOOT.retryable(RetryFacts(status=error.status))
 
 

@@ -166,7 +166,7 @@ export class TestFileAuditor {
     }
 
     // External APIs (fetch, axios, etc.)
-    if (target.match(/(fetch|axios|http-transport|@semiont\/http-transport)/)) {
+    if (target.match(/(fetch|axios|http-transport|@xynoplex\/http-transport)/)) {
       return 'api';
     }
 

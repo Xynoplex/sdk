@@ -1,5 +1,5 @@
 /**
- * Acceptance for `@semiont/sdk/testing`.
+ * Acceptance for `@xynoplex/sdk/testing`.
  *
  * The acceptance scenario is the one a hand-rolled mock gets wrong: a
  * two-state model of a three-outcome contract. Here it runs
@@ -9,7 +9,7 @@
  */
 
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { BusRequestError, resourceId } from '@semiont/core';
+import { BusRequestError, resourceId } from '@xynoplex/core';
 import { createTestClient, createTestSession } from '../testing';
 
 afterEach(() => {
@@ -98,7 +98,7 @@ describe('createTestClient', () => {
 });
 
 describe('createTestSession', () => {
-  it('wires a REAL SemiontSession over the same scriptable transport', async () => {
+  it('wires a REAL XynoplexSession over the same scriptable transport', async () => {
     const { session, client, transport, storage } = createTestSession();
 
     // Real session, real client, same transport instance — one scripting
@@ -110,7 +110,7 @@ describe('createTestSession', () => {
 
     // No stored token was seeded → the initial validation settles cleanly.
     await session.ready;
-    expect(storage.get(`semiont.session.${session.kb.id}`)).toBeNull();
+    expect(storage.get(`xynoplex.session.${session.kb.id}`)).toBeNull();
 
     client.dispose();
     session.dispose();

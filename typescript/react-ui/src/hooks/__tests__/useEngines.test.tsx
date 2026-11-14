@@ -12,8 +12,8 @@
 import { describe, it, expect, vi } from 'vitest';
 import { renderHook, waitFor, act } from '@testing-library/react';
 import { BehaviorSubject, Subject } from 'rxjs';
-import type { EngineWithLimits } from '@semiont/core';
-import type { SemiontClient } from '@semiont/sdk';
+import type { EngineWithLimits } from '@xynoplex/core';
+import type { XynoplexClient } from '@xynoplex/sdk';
 import { useEngines } from '../useEngines';
 
 type CacheState<T> =
@@ -30,7 +30,7 @@ const entry = (model: string): EngineWithLimits => ({
 /** A client whose `browse.engines()` replays whatever the given subject holds. */
 function makeClient(subject: Subject<CacheState<EngineWithLimits[]>>) {
   const engines = vi.fn(() => subject);
-  return { client: { browse: { engines } } as unknown as SemiontClient, engines };
+  return { client: { browse: { engines } } as unknown as XynoplexClient, engines };
 }
 
 describe('useEngines', () => {
@@ -103,7 +103,7 @@ describe('useEngines', () => {
     const { client, engines } = makeClient(subject);
 
     const { unmount, rerender } = renderHook(
-      ({ c }: { c: SemiontClient | null }) => useEngines(c),
+      ({ c }: { c: XynoplexClient | null }) => useEngines(c),
       { initialProps: { c: client } },
     );
     expect(engines).toHaveBeenCalledTimes(1);

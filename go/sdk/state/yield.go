@@ -13,60 +13,60 @@ package state
 import (
 	"time"
 
-	semiont "github.com/The-AI-Alliance/semiont/packages/go/sdk"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
+	xynoplex "github.com/Xynoplex/sdk/go"
+	"github.com/Xynoplex/sdk/go/api"
 )
 
 // YieldStateUnit is generation, as state: see the file's documentation. A
 // state holding none is nil, or the zero JobId.
 type YieldStateUnit struct {
-	client *semiont.Client
+	client *xynoplex.Client
 	locale string
 	life
 
-	generating *semiont.Variable[bool]
-	progress   *semiont.Variable[*api.JobProgress]
-	outcome    *semiont.Variable[*api.YieldJobDone]
-	failure    *semiont.Variable[error]
-	jobID      *semiont.Variable[api.JobId]
+	generating *xynoplex.Variable[bool]
+	progress   *xynoplex.Variable[*api.JobProgress]
+	outcome    *xynoplex.Variable[*api.YieldJobDone]
+	failure    *xynoplex.Variable[error]
+	jobID      *xynoplex.Variable[api.JobId]
 }
 
-var _ semiont.StateUnit = (*YieldStateUnit)(nil)
+var _ xynoplex.StateUnit = (*YieldStateUnit)(nil)
 
 // NewYieldStateUnit is a unit generating over client. locale is the language
 // a generation is written in when its request states none: BCP 47.
-func NewYieldStateUnit(client *semiont.Client, locale string) *YieldStateUnit {
+func NewYieldStateUnit(client *xynoplex.Client, locale string) *YieldStateUnit {
 	return &YieldStateUnit{
 		client:     client,
 		locale:     locale,
 		life:       newLife(),
-		generating: semiont.NewVariable(false),
-		progress:   semiont.NewVariable[*api.JobProgress](nil),
-		outcome:    semiont.NewVariable[*api.YieldJobDone](nil),
-		failure:    semiont.NewVariable[error](nil),
-		jobID:      semiont.NewVariable(api.JobId{}),
+		generating: xynoplex.NewVariable(false),
+		progress:   xynoplex.NewVariable[*api.JobProgress](nil),
+		outcome:    xynoplex.NewVariable[*api.YieldJobDone](nil),
+		failure:    xynoplex.NewVariable[error](nil),
+		jobID:      xynoplex.NewVariable(api.JobId{}),
 	}
 }
 
 // IsGenerating is whether a run is under way: from its first progress to its
 // end.
-func (u *YieldStateUnit) IsGenerating() semiont.Watched[bool] { return u.generating.Reading() }
+func (u *YieldStateUnit) IsGenerating() xynoplex.Watched[bool] { return u.generating.Reading() }
 
 // Progress is the run's progress, and the last run's until it is dismissed.
-func (u *YieldStateUnit) Progress() semiont.Watched[*api.JobProgress] { return u.progress.Reading() }
+func (u *YieldStateUnit) Progress() xynoplex.Watched[*api.JobProgress] { return u.progress.Reading() }
 
 // Outcome is what the last finished run produced; nil while one runs, and
 // once dismissed.
-func (u *YieldStateUnit) Outcome() semiont.Watched[*api.YieldJobDone] { return u.outcome.Reading() }
+func (u *YieldStateUnit) Outcome() xynoplex.Watched[*api.YieldJobDone] { return u.outcome.Reading() }
 
 // Failure is why the last run ended without a result: it failed, stalled or
 // was cancelled. Nil while one runs, after one that completed, and once
 // dismissed.
-func (u *YieldStateUnit) Failure() semiont.Watched[error] { return u.failure.Reading() }
+func (u *YieldStateUnit) Failure() xynoplex.Watched[error] { return u.failure.Reading() }
 
 // JobId is the generation job's id, from the queue's answer to its creation
 // to its end: what Job.Cancel names.
-func (u *YieldStateUnit) JobId() semiont.Watched[api.JobId] { return u.jobID.Reading() }
+func (u *YieldStateUnit) JobId() xynoplex.Watched[api.JobId] { return u.jobID.Reading() }
 
 // Generate generates a resource from a gathered context, as Yield.Delegate
 // does, given stallDeadline as it is. It is written in this unit's locale
@@ -105,7 +105,7 @@ func (u *YieldStateUnit) DismissProgress() {
 }
 
 // run follows a run to its end, once its turn comes.
-func (u *YieldStateUnit) run(run *semiont.Delegation[api.YieldJobCompleteCommand], before <-chan struct{}, answered func()) {
+func (u *YieldStateUnit) run(run *xynoplex.Delegation[api.YieldJobCompleteCommand], before <-chan struct{}, answered func()) {
 	defer answered()
 	if !u.inTurn(before) {
 		return
@@ -122,14 +122,14 @@ func (u *YieldStateUnit) run(run *semiont.Delegation[api.YieldJobCompleteCommand
 			return
 		}
 		switch event := event.(type) {
-		case semiont.JobCreated:
+		case xynoplex.JobCreated:
 			u.jobID.Set(event.Data.JobId)
 			created = event.Data.JobId
-		case semiont.JobProgressed:
+		case xynoplex.JobProgressed:
 			progress := event.Data
 			u.progress.Set(&progress)
 			u.generating.Set(true)
-		case semiont.JobCompleted[api.YieldJobCompleteCommand]:
+		case xynoplex.JobCompleted[api.YieldJobCompleteCommand]:
 			if done := generated(event.Data.Result); done != nil {
 				u.outcome.Set(done)
 			}

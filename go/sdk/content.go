@@ -1,4 +1,4 @@
-package semiont
+package xynoplex
 
 // Bytes over the gateway's HTTP transport, as ContentTransport: an upload
 // (POST /resources), a resource's bytes whole or as a stream
@@ -23,9 +23,9 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/internal/kept"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/internal/required"
+	"github.com/Xynoplex/sdk/go/api"
+	"github.com/Xynoplex/sdk/go/internal/kept"
+	"github.com/Xynoplex/sdk/go/internal/required"
 )
 
 // ContentTransport carries bytes, which never ride the bus, a resource's

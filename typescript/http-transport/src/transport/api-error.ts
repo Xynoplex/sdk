@@ -10,7 +10,7 @@
  * predicate could only agree with one of them.
  */
 
-import { SemiontError, isObject, isRetryableRequestError, isString, retryAfterMs, transportErrorCodeForStatus, whyUnanswered, type TransportErrorCode, type HttpStatusError, type components } from '@semiont/core';
+import { XynoplexError, isObject, isRetryableRequestError, isString, retryAfterMs, transportErrorCodeForStatus, whyUnanswered, type TransportErrorCode, type HttpStatusError, type components } from '@xynoplex/core';
 
 /**
  * The limit that answers only a request whose token has already failed
@@ -46,7 +46,7 @@ export function gatewayWords(body: unknown): string | undefined {
   return isObject(body) && isString(body['error']) ? body['error'] : undefined;
 }
 
-export class APIError extends SemiontError {
+export class APIError extends XynoplexError {
   declare code: TransportErrorCode;
   readonly status: number;
   readonly statusText: string;

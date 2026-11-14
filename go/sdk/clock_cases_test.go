@@ -1,4 +1,4 @@
-package semiont_test
+package xynoplex_test
 
 // The time a client keeps, against protocol/specs/src/client/clock-cases.json.
 //
@@ -35,11 +35,11 @@ import (
 	"time"
 	"unicode"
 
-	semiont "github.com/The-AI-Alliance/semiont/packages/go/sdk"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/bus"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/discovery"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/semionttest"
+	xynoplex "github.com/Xynoplex/sdk/go"
+	"github.com/Xynoplex/sdk/go/api"
+	"github.com/Xynoplex/sdk/go/bus"
+	"github.com/Xynoplex/sdk/go/discovery"
+	"github.com/Xynoplex/sdk/go/xynoplextest"
 )
 
 // clockCase is one case of the table.
@@ -80,7 +80,7 @@ func readClockCases(t *testing.T) []clockCase {
 // budget's member follows its budget and a ".", "emitRetry.initialDelayMs"
 // being Timing.EmitRetry.InitialDelay.
 func clockTiming(name string) (time.Duration, error) {
-	value := reflect.ValueOf(semiont.DefaultTiming())
+	value := reflect.ValueOf(xynoplex.DefaultTiming())
 	for _, part := range strings.Split(name, ".") {
 		runes := []rune(strings.TrimSuffix(part, "Ms"))
 		if len(runes) == 0 {
@@ -172,7 +172,7 @@ func background(t *testing.T, work func(ctx context.Context)) {
 // two changes between its reads are read as one: each count of a case comes
 // after the bubble has settled, in which the reader reads every change before
 // it.
-func tallied[T any](t *testing.T, watched semiont.Watched[T], counts func(T) bool) func() int {
+func tallied[T any](t *testing.T, watched xynoplex.Watched[T], counts func(T) bool) func() int {
 	var seen atomic.Int64
 	background(t, func(ctx context.Context) {
 		for value := range watched.Changes(ctx) {
@@ -318,13 +318,13 @@ func (g *fakeGateway) closedByClient() int {
 
 // transport is a transport to this gateway holding a token, so its stream is
 // set going.
-func (g *fakeGateway) transport(t *testing.T) *semiont.HTTPTransport {
-	transport := semiont.NewHTTPTransport(semiont.HTTPTransportConfig{
+func (g *fakeGateway) transport(t *testing.T) *xynoplex.HTTPTransport {
+	transport := xynoplex.NewHTTPTransport(xynoplex.HTTPTransportConfig{
 		BaseURL:  gatewayOrigin,
-		Token:    semiont.NewVariable("a-token"),
+		Token:    xynoplex.NewVariable("a-token"),
 		Channels: bus.BridgedChannels,
 		HTTP:     g.client,
-		Timing:   semiont.DefaultTiming(),
+		Timing:   xynoplex.DefaultTiming(),
 		Random:   lowest,
 	})
 	t.Cleanup(transport.Close)
@@ -346,7 +346,7 @@ func unansweredStream(t *testing.T, _ clockGiven) clockSubject {
 func degradedStream(t *testing.T, given clockGiven) clockSubject {
 	gateway := newFakeGateway(t, streamRefused, given.RetryAfterSeconds, nil)
 	transport := gateway.transport(t)
-	return clockSubject{counted: tallied(t, transport.State(), func(state semiont.ConnectionState) bool { return state == semiont.ConnectionStateDegraded })}
+	return clockSubject{counted: tallied(t, transport.State(), func(state xynoplex.ConnectionState) bool { return state == xynoplex.ConnectionStateDegraded })}
 }
 
 func scopeTaken(t *testing.T, _ clockGiven) clockSubject {
@@ -364,7 +364,7 @@ func scopeLetGo(t *testing.T, _ clockGiven) clockSubject {
 	gateway := newFakeGateway(t, streamHeld, nil, nil)
 	transport := gateway.transport(t)
 	synctest.Wait()
-	if state := transport.State().Value(); state != semiont.ConnectionStateOpen {
+	if state := transport.State().Value(); state != xynoplex.ConnectionStateOpen {
 		t.Fatalf("the stream is %s, not open", state)
 	}
 	release := transport.SubscribeToResource(resourceOf(t, "res-1"))
@@ -393,7 +393,7 @@ func unansweredRequest(t *testing.T, _ clockGiven) clockSubject {
 		if ctx.Err() != nil {
 			return
 		}
-		var refused *semiont.TransportError
+		var refused *xynoplex.TransportError
 		if !errors.As(err, &refused) {
 			t.Errorf("the health check ended otherwise: %v", err)
 			return
@@ -412,7 +412,7 @@ func unansweredEmit(t *testing.T, _ clockGiven) clockSubject {
 	transport := gateway.transport(t)
 	// Its attempts are cut before the transport closes.
 	background(t, func(ctx context.Context) {
-		_, _, err := transport.Emit(ctx, bus.BeckonHover.Channel(), map[string]any{"annotationId": "ann-1"}, semiont.Envelope{})
+		_, _, err := transport.Emit(ctx, bus.BeckonHover.Channel(), map[string]any{"annotationId": "ann-1"}, xynoplex.Envelope{})
 		if ctx.Err() == nil {
 			t.Errorf("the emit ended before the case did: %v", err)
 		}
@@ -425,9 +425,9 @@ func unansweredEmit(t *testing.T, _ clockGiven) clockSubject {
 // ended is told how it ended, unless the case was over first.
 func refusedRequest(t *testing.T, given clockGiven, ended func(err error)) *fakeGateway {
 	gateway := newFakeGateway(t, streamHeld, given.RetryAfterSeconds, []string{emitPath})
-	wire := semiont.NewWire(gateway.transport(t))
+	wire := xynoplex.NewWire(gateway.transport(t))
 	background(t, func(ctx context.Context) {
-		_, err := wire.RequestOf(ctx, bus.BrowseEventsRequested.Request().Channel(), map[string]any{"resourceId": "res-1"}, semiont.DefaultTiming().BusRequestTimeout)
+		_, err := wire.RequestOf(ctx, bus.BrowseEventsRequested.Request().Channel(), map[string]any{"resourceId": "res-1"}, xynoplex.DefaultTiming().BusRequestTimeout)
 		if ctx.Err() == nil {
 			ended(err)
 		}
@@ -448,8 +448,8 @@ func refusedBusRequest(t *testing.T, given clockGiven) clockSubject {
 func timedOutBusRequest(t *testing.T, given clockGiven) clockSubject {
 	var timedOut atomic.Int64
 	refusedRequest(t, given, func(err error) {
-		var failed *semiont.BusRequestError
-		if !errors.As(err, &failed) || failed.Code != semiont.BusRequestErrorCodeTimeout {
+		var failed *xynoplex.BusRequestError
+		if !errors.As(err, &failed) || failed.Code != xynoplex.BusRequestErrorCodeTimeout {
 			t.Errorf("the request ended otherwise: %v", err)
 			return
 		}
@@ -460,7 +460,7 @@ func timedOutBusRequest(t *testing.T, given clockGiven) clockSubject {
 
 // ── The issuer ──────────────────────────────────────────────────────────
 
-const issuerOrigin = "http://issuer.test/realms/semiont"
+const issuerOrigin = "http://issuer.test/realms/xynoplex"
 
 // fakeIssuer is a knowledge base that trusts an issuer, and the issuer, in
 // the bubble: what a device grant asks. It mints a code that lives 900
@@ -530,7 +530,7 @@ func deviceGrant(t *testing.T, given clockGiven) clockSubject {
 	issuer := &fakeIssuer{t: t, interval: given.IntervalSeconds, answers: given.Answers}
 	client := httptest.NewTestServer(t, issuer).Client()
 	background(t, func(ctx context.Context) {
-		_, err := semiont.SignInWithDevice(ctx, semiont.Issuer{HTTP: client, Timing: semiont.DefaultTiming(), Random: lowest}, gatewayOrigin, &semiont.MemorySignIn{}, func(semiont.DeviceCode) {})
+		_, err := xynoplex.SignInWithDevice(ctx, xynoplex.Issuer{HTTP: client, Timing: xynoplex.DefaultTiming(), Random: lowest}, gatewayOrigin, &xynoplex.MemorySignIn{}, func(xynoplex.DeviceCode) {})
 		if ctx.Err() == nil {
 			t.Errorf("the sign-in ended before the case did: %v", err)
 		}
@@ -546,21 +546,21 @@ func renewalSubject(t *testing.T, given clockGiven) clockSubject {
 	}
 	lifetime := time.Duration(*given.LifetimeSeconds) * time.Second
 	var renewals atomic.Int64
-	kept := &semiont.MemorySignIn{}
-	if err := kept.Keep(context.Background(), semiont.HeldSignIn{Access: tokenFor(lifetime, 0), Refresh: "a-refresh-token", ClientID: "semiont-cli", TokenEndpoint: issuerOrigin + "/token"}); err != nil {
+	kept := &xynoplex.MemorySignIn{}
+	if err := kept.Keep(context.Background(), xynoplex.HeldSignIn{Access: tokenFor(lifetime, 0), Refresh: "a-refresh-token", ClientID: "xynoplex-cli", TokenEndpoint: issuerOrigin + "/token"}); err != nil {
 		t.Fatal(err)
 	}
-	client := semionttest.NewTestClient(semionttest.TestClientConfig{Timing: semiont.DefaultTiming()})
-	session, err := semiont.StartSession(context.Background(), semiont.SessionConfig{
+	client := xynoplextest.NewTestClient(xynoplextest.TestClientConfig{Timing: xynoplex.DefaultTiming()})
+	session, err := xynoplex.StartSession(context.Background(), xynoplex.SessionConfig{
 		Kb:     api.KbTarget{Id: kb},
 		Client: client.Client,
-		Token:  semiont.NewVariable(""),
+		Token:  xynoplex.NewVariable(""),
 		Kept:   kept,
 		Refresh: func(context.Context, string) (string, error) {
 			return tokenFor(lifetime, int(renewals.Add(1))), nil
 		},
 		Validate: func(context.Context, string) (api.UserResponse, error) { return alice(), nil },
-		Timing:   semiont.DefaultTiming(),
+		Timing:   xynoplex.DefaultTiming(),
 		Random:   lowest,
 	})
 	if err != nil {
@@ -584,19 +584,19 @@ const claimedJob = `{"status":"running","metadata":{"id":"job-1","type":"mark","
 	`"startedAt":"2026-10-01T00:00:01.000Z","progress":{}}`
 
 func heldJobStall(t *testing.T, _ clockGiven) clockSubject {
-	transport := semionttest.NewFaultyTransport(semionttest.FaultyConfig{Channels: semiont.JobClaimChannels, MakeResponse: func(operation bus.Channel, payload json.RawMessage) (json.RawMessage, error) {
+	transport := xynoplextest.NewFaultyTransport(xynoplextest.FaultyConfig{Channels: xynoplex.JobClaimChannels, MakeResponse: func(operation bus.Channel, payload json.RawMessage) (json.RawMessage, error) {
 		if operation == bus.JobClaim.Request().Channel() {
 			return json.RawMessage(claimedJob), nil
 		}
-		return semionttest.RefuseUnscriptedOperation(operation, payload)
+		return xynoplextest.RefuseUnscriptedOperation(operation, payload)
 	}})
-	client, _ := worldOver(t, transport, semiont.DefaultTiming())
+	client, _ := worldOver(t, transport, xynoplex.DefaultTiming())
 	var marks []api.JobFilter
 	if err := json.Unmarshal([]byte(`[{"jobType":"mark","params":{"motivation":"highlighting"}}]`), &marks); err != nil {
 		t.Fatal(err)
 	}
 	claims := client.Job.Claim(marks)
-	held := make(chan semiont.HeldJob, 1)
+	held := make(chan xynoplex.HeldJob, 1)
 	ranged := make(chan struct{})
 	t.Cleanup(func() { <-ranged })
 	var stalls atomic.Int64
@@ -624,7 +624,7 @@ func heldJobStall(t *testing.T, _ clockGiven) clockSubject {
 		}
 	}()
 	synctest.Wait()
-	var job semiont.HeldJob
+	var job xynoplex.HeldJob
 	select {
 	case job = <-held:
 	default:
@@ -645,7 +645,7 @@ type launcherDocument struct{ reads atomic.Int64 }
 func (d *launcherDocument) Read(context.Context) discovery.DiscoveryRead {
 	if d.reads.Add(1) == 1 {
 		return discovery.Managed{KBs: []api.DiscoveredKB{{
-			Host: "localhost", Port: 4000, Placement: api.DiscoveredKBPlacementLocal, ManagedBy: "semiont-launcher", Did: "did:web:example.org:kb-a",
+			Host: "localhost", Port: 4000, Placement: api.DiscoveredKBPlacementLocal, ManagedBy: "xynoplex-launcher", Did: "did:web:example.org:kb-a",
 		}}}
 	}
 	return discovery.Unchanged{}
@@ -654,7 +654,7 @@ func (d *launcherDocument) Read(context.Context) discovery.DiscoveryRead {
 func discoverySubject(t *testing.T, _ clockGiven) clockSubject {
 	document := &launcherDocument{}
 	background(t, func(ctx context.Context) {
-		for range discovery.SubscribeDiscovery(ctx, document, semiont.DefaultTiming().DiscoveryInterval) {
+		for range discovery.SubscribeDiscovery(ctx, document, xynoplex.DefaultTiming().DiscoveryInterval) {
 		}
 	})
 	return clockSubject{counted: func() int { return int(document.reads.Load()) }}
@@ -663,14 +663,14 @@ func discoverySubject(t *testing.T, _ clockGiven) clockSubject {
 // ── A client's queries and caches ───────────────────────────────────────
 
 func invalidationWindow(t *testing.T, _ clockGiven) clockSubject {
-	transport := semionttest.NewFaultyTransport(semionttest.FaultyConfig{Channels: bus.BridgedChannels, MakeResponse: knowing()})
-	client, _ := worldOver(t, transport, semiont.DefaultTiming())
+	transport := xynoplextest.NewFaultyTransport(xynoplextest.FaultyConfig{Channels: bus.BridgedChannels, MakeResponse: knowing()})
+	client, _ := worldOver(t, transport, xynoplex.DefaultTiming())
 	observed := client.Browse.Events(resourceOf(t, "res-1"))
 	background(t, func(ctx context.Context) {
 		for range observed.States(ctx) {
 		}
 	})
-	added := eventOf(t, semiont.CacheRefreshMarkAdded, "", "res-1", "ann-1")
+	added := eventOf(t, xynoplex.CacheRefreshMarkAdded, "", "res-1", "ann-1")
 	requested := bus.BrowseEventsRequested.Request().Channel()
 	return clockSubject{
 		counted: func() int { return len(requestsOn(transport, requested)) },
@@ -691,13 +691,13 @@ func (r *recordedSaves) Save(map[string]int) error {
 
 func saveDebounce(t *testing.T, _ clockGiven) clockSubject {
 	storage := &recordedSaves{}
-	cache := semiont.NewCache(
+	cache := xynoplex.NewCache(
 		func(_ context.Context, key string) (int, error) {
 			return 0, fmt.Errorf("a cache that is only written fetched %s", key)
 		},
 		func(func(context.Context)) { t.Error("a cache that is only written fetched") },
-		semiont.CachePersister[string, int](storage),
-		semiont.DefaultTiming().SaveDebounce,
+		xynoplex.CachePersister[string, int](storage),
+		xynoplex.DefaultTiming().SaveDebounce,
 	)
 	t.Cleanup(cache.Close)
 	changes := 0
@@ -713,16 +713,16 @@ func saveDebounce(t *testing.T, _ clockGiven) clockSubject {
 
 func jobFollower(t *testing.T, _ clockGiven) clockSubject {
 	running := statusOf(t, "running", nil)
-	transport := semionttest.NewFaultyTransport(semionttest.FaultyConfig{Channels: bus.BridgedChannels, MakeResponse: func(operation bus.Channel, payload json.RawMessage) (json.RawMessage, error) {
+	transport := xynoplextest.NewFaultyTransport(xynoplextest.FaultyConfig{Channels: bus.BridgedChannels, MakeResponse: func(operation bus.Channel, payload json.RawMessage) (json.RawMessage, error) {
 		switch operation {
 		case jobCreate:
 			return json.RawMessage(`{"jobId":"job-1"}`), nil
 		case jobStatus:
 			return running, nil
 		}
-		return semionttest.RefuseUnscriptedOperation(operation, payload)
+		return xynoplextest.RefuseUnscriptedOperation(operation, payload)
 	}})
-	client, _ := worldOver(t, transport, semiont.DefaultTiming())
+	client, _ := worldOver(t, transport, xynoplex.DefaultTiming())
 	delegation := highlighting(t, client)
 	background(t, func(ctx context.Context) {
 		_, err := delegation.Wait(ctx)
@@ -732,7 +732,7 @@ func jobFollower(t *testing.T, _ clockGiven) clockSubject {
 	})
 	progressed := frameOf(t, jobProgress, map[string]any{
 		"resourceId": "res-1", "jobId": "job-1", "jobType": "mark", "percentage": 10, "progress": map[string]any{"percentage": 10},
-	}, semiont.Envelope{})
+	}, xynoplex.Envelope{})
 	return clockSubject{
 		counted: func() int { return len(requestsOn(transport, jobStatus)) },
 		act:     func() error { transport.Deliver(progressed); return nil },
@@ -743,15 +743,15 @@ func jobFollower(t *testing.T, _ clockGiven) clockSubject {
 // and no limit of its own, over a transport that answers every
 // job:status-requested with that job running; ended is told how the poll
 // ended, unless the case was over first.
-func polledJob(t *testing.T, ended func(err error)) *semionttest.FaultyTransport {
+func polledJob(t *testing.T, ended func(err error)) *xynoplextest.FaultyTransport {
 	running := statusOf(t, "running", nil)
-	transport := semionttest.NewFaultyTransport(semionttest.FaultyConfig{Channels: bus.BridgedChannels, MakeResponse: func(operation bus.Channel, payload json.RawMessage) (json.RawMessage, error) {
+	transport := xynoplextest.NewFaultyTransport(xynoplextest.FaultyConfig{Channels: bus.BridgedChannels, MakeResponse: func(operation bus.Channel, payload json.RawMessage) (json.RawMessage, error) {
 		if operation == jobStatus {
 			return running, nil
 		}
-		return semionttest.RefuseUnscriptedOperation(operation, payload)
+		return xynoplextest.RefuseUnscriptedOperation(operation, payload)
 	}})
-	client, _ := worldOver(t, transport, semiont.DefaultTiming())
+	client, _ := worldOver(t, transport, xynoplex.DefaultTiming())
 	job, err := api.ParseJobId("job-1")
 	if err != nil {
 		t.Fatal(err)
@@ -778,8 +778,8 @@ func jobPoll(t *testing.T, _ clockGiven) clockSubject {
 func jobPollTimeout(t *testing.T, _ clockGiven) clockSubject {
 	var timedOut atomic.Int64
 	polledJob(t, func(err error) {
-		var failed *semiont.BusRequestError
-		if !errors.As(err, &failed) || failed.Code != semiont.BusRequestErrorCodeTimeout {
+		var failed *xynoplex.BusRequestError
+		if !errors.As(err, &failed) || failed.Code != xynoplex.BusRequestErrorCodeTimeout {
 			t.Errorf("the poll ended otherwise: %v", err)
 			return
 		}

@@ -6,7 +6,7 @@ complete shared client surface. Their private libraries are not SDK exports.
 The dependency observations below are the 2026-11-06 checkpoint; exact selected
 versions live in the committed development lock.
 
-Run them with `bash packages/ocaml/run-container.sh` from the repository root.
+Run them with `bash ocaml/run-container.sh` from the repository root.
 The CI matrix runs the same Dune tests and external-consumer checks natively
 on Linux and macOS. Native Windows is outside the initial acceptance scope.
 
@@ -27,7 +27,7 @@ on Linux and macOS. Native Windows is outside the initial acceptance scope.
 | Public interface | Matching compiler-libs read installed `.cmi` signatures, resolving includes, aliases, nested modules and functors. Mutation controls detect missing/extra exports, renamed fields, enum growth, duplicate aliases and revealed constructors. Separate GADT consumers refuse wrong scopes/results. Full shared-surface census integration remains P1. |
 
 The clock instants and synthetic GADT operations here measure Eio/compiler
-mechanics. They are not restatements of Semiont's clock or operation contracts;
+mechanics. They are not restatements of Xynoplex's clock or operation contracts;
 the SDK still needs the shared contract cases through its production API.
 
 `check-source-package.sh` at the parent language directory builds an archive

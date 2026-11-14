@@ -16,7 +16,7 @@
 //! awaited it gives that, and as a stream its last item is that value as a
 //! report.
 
-use crate::errors::{BusRequestError, BusRequestErrorCode, SemiontError};
+use crate::errors::{BusRequestError, BusRequestErrorCode, XynoplexError};
 use crate::transport::BoxFuture;
 use futures_core::Stream;
 use std::future::{Future, IntoFuture};
@@ -41,8 +41,8 @@ impl<T> Reporter<T> {
 /// value: the same, unless the operation ends in something it never reports.
 pub struct Running<T, F = T> {
     reports: mpsc::UnboundedReceiver<T>,
-    work: Option<BoxFuture<'static, Result<F, SemiontError>>>,
-    outcome: Option<Result<F, SemiontError>>,
+    work: Option<BoxFuture<'static, Result<F, XynoplexError>>>,
+    outcome: Option<Result<F, XynoplexError>>,
 }
 
 // Nothing in it is pinned in place: the work is boxed, and a value is only
@@ -55,7 +55,7 @@ impl<T: Send + 'static, F: Send + 'static> Running<T, F> {
     pub fn new<W, Fut>(work: W) -> Running<T, F>
     where
         W: FnOnce(Reporter<T>) -> Fut,
-        Fut: Future<Output = Result<F, SemiontError>> + Send + 'static,
+        Fut: Future<Output = Result<F, XynoplexError>> + Send + 'static,
     {
         let (reports, receiver) = mpsc::unbounded_channel();
         Running {
@@ -78,7 +78,7 @@ impl<T: Send + 'static, F: Send + 'static> Running<T, F> {
 impl<T: Send + 'static, F: Into<T> + Send + 'static> Running<T, F> {
     /// The next report, the final value after the last of them, or the
     /// failure; `None` once one of the last two has been given.
-    pub async fn next(&mut self) -> Option<Result<T, SemiontError>> {
+    pub async fn next(&mut self) -> Option<Result<T, XynoplexError>> {
         std::future::poll_fn(|cx| Pin::new(&mut *self).poll_next(cx)).await
     }
 }
@@ -86,7 +86,7 @@ impl<T: Send + 'static, F: Into<T> + Send + 'static> Running<T, F> {
 impl<T: Send + 'static> Running<T> {
     /// Give every report and the final value to `on_each`, in order, then
     /// return the final value.
-    pub async fn run(mut self, mut on_each: impl FnMut(&T)) -> Result<T, SemiontError> {
+    pub async fn run(mut self, mut on_each: impl FnMut(&T)) -> Result<T, XynoplexError> {
         let mut last = None;
         while let Some(item) = self.next().await {
             let value = item?;
@@ -99,7 +99,7 @@ impl<T: Send + 'static> Running<T> {
     }
 }
 
-fn ended_without_a_value() -> SemiontError {
+fn ended_without_a_value() -> XynoplexError {
     BusRequestError::new(
         BusRequestErrorCode::Closed,
         "The operation ended before it gave a value",
@@ -108,7 +108,7 @@ fn ended_without_a_value() -> SemiontError {
 }
 
 impl<T: Send + 'static, F: Into<T> + Send + 'static> Stream for Running<T, F> {
-    type Item = Result<T, SemiontError>;
+    type Item = Result<T, XynoplexError>;
 
     fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
         self.drive(cx);
@@ -126,7 +126,7 @@ impl<T: Send + 'static, F: Into<T> + Send + 'static> Stream for Running<T, F> {
 }
 
 impl<T: Send + 'static, F: Send + 'static> IntoFuture for Running<T, F> {
-    type Output = Result<F, SemiontError>;
+    type Output = Result<F, XynoplexError>;
     type IntoFuture = BoxFuture<'static, Self::Output>;
 
     fn into_future(mut self) -> Self::IntoFuture {
@@ -147,7 +147,7 @@ impl<T: Send + 'static, F: Send + 'static> IntoFuture for Running<T, F> {
 mod tests {
     use super::*;
 
-    fn refused() -> SemiontError {
+    fn refused() -> XynoplexError {
         BusRequestError::new(BusRequestErrorCode::Rejected, "refused").into()
     }
 

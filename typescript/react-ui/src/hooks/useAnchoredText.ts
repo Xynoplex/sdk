@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ANCHORED_TEXT_REASK_MS } from '@semiont/core';
-import type { AnchoredText, ResourceId } from '@semiont/core';
-import type { SemiontSession } from '@semiont/sdk';
+import { ANCHORED_TEXT_REASK_MS } from '@xynoplex/core';
+import type { AnchoredText, ResourceId } from '@xynoplex/core';
+import type { XynoplexSession } from '@xynoplex/sdk';
 
 /**
  * What a viewer holds of a resource's anchored text.
@@ -33,7 +33,7 @@ const NO_TEXT: AnchoredTextState = { status: 'held', text: { text: '', items: []
 
 /** An answer that ends the asking, with the ask it answers. */
 interface Settled {
-  session: SemiontSession;
+  session: XynoplexSession;
   resourceUri: ResourceId;
   state: AnchoredTextState;
 }
@@ -52,7 +52,7 @@ interface Settled {
  * for the ask that was answered and for no other.
  */
 export function useAnchoredText(
-  session: SemiontSession | null | undefined,
+  session: XynoplexSession | null | undefined,
   resourceUri: ResourceId,
 ): AnchoredTextState {
   const [settled, setSettled] = useState<Settled | null>(null);

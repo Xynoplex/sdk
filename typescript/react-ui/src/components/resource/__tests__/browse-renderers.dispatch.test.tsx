@@ -15,10 +15,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { within } from '@testing-library/react';
 import { renderInEnglish, englishTranslationManager } from '../../../test-utils';
 import '@testing-library/jest-dom';
-import type { SemiontSession } from '@semiont/sdk';
-import type { Annotation, AnnotationId } from '@semiont/core';
+import type { XynoplexSession } from '@xynoplex/sdk';
+import type { Annotation, AnnotationId } from '@xynoplex/core';
 import { BrowseView } from '../BrowseView';
-import { resourceId, EventBus } from '@semiont/core';
+import { resourceId, EventBus } from '@xynoplex/core';
 
 const captured = vi.hoisted(() => ({
   svg: [] as Record<string, unknown>[],
@@ -28,7 +28,7 @@ const captured = vi.hoisted(() => ({
 vi.mock('../../image-annotation/SvgDrawingCanvas', () => ({
   SvgDrawingCanvas: (props: Record<string, unknown>) => {
     captured.svg.push(props);
-    return <div className="semiont-svg-drawing-canvas">svg-canvas-mock</div>;
+    return <div className="xynoplex-svg-drawing-canvas">svg-canvas-mock</div>;
   },
 }));
 vi.mock('../../pdf-annotation/PdfAnnotationCanvas.client', () => ({
@@ -41,10 +41,10 @@ vi.mock('../../annotation/AnnotateToolbar', () => ({ AnnotateToolbar: () => null
 vi.mock('react-markdown', () => ({ default: ({ children }: { children: string }) => <div>{children}</div> }));
 vi.mock('remark-gfm', () => ({ default: () => ({}) }));
 
-function fakeSession(): SemiontSession {
+function fakeSession(): XynoplexSession {
   return {
     client: { bus: new EventBus(), browse: { click: vi.fn() }, beckon: { hover: vi.fn() } },
-  } as unknown as SemiontSession;
+  } as unknown as XynoplexSession;
 }
 
 /** A shape annotation (SvgSelector region) — the image-annotation shape. */

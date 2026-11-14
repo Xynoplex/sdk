@@ -93,7 +93,7 @@ async function nowhere(): Promise<string> {
 }
 
 /** A service account at an issuer at `origin`. */
-const account = (origin: string) => ({ issuer: `${origin}/realms/kb`, clientId: 'semiont-worker', clientSecret: 'client-secret' });
+const account = (origin: string) => ({ issuer: `${origin}/realms/kb`, clientId: 'xynoplex-worker', clientSecret: 'client-secret' });
 
 /** The failure a sign-in ends in. */
 const failed = (signingIn: Promise<unknown>): Promise<Error> =>
@@ -131,7 +131,7 @@ describe('a service account whose issuer answers what is not HTTP', () => {
 
     expect(partsOf(CARRIED, printed(failure))).toEqual([]);
     expect(failure.message).toMatch(
-      new RegExp(`^Client-credentials grant for semiont-worker at ${credential.issuer} got no answer: [A-Za-z][A-Za-z0-9_]*$`),
+      new RegExp(`^Client-credentials grant for xynoplex-worker at ${credential.issuer} got no answer: [A-Za-z][A-Za-z0-9_]*$`),
     );
     expect(isRetryableRequestError(failure)).toBe(true);
   });

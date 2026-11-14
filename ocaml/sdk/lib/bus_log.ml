@@ -12,7 +12,7 @@ let rec shown = function
 
 let enabled =
   lazy
-    (match Sys.getenv_opt "SEMIONT_BUS_LOG" with
+    (match Sys.getenv_opt "XYNOPLEX_BUS_LOG" with
     | Some value -> value <> ""
     | None -> false)
 

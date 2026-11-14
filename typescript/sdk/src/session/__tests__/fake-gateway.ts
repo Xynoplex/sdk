@@ -14,7 +14,7 @@
  * delivers is said on every stream open, with its id.
  */
 
-import type { components } from '@semiont/core';
+import type { components } from '@xynoplex/core';
 import { freshJwt, TEST_TOKEN_ENDPOINT } from './test-storage-helpers';
 
 /** Where the gateway is: a knowledge base's endpoint names it so. */

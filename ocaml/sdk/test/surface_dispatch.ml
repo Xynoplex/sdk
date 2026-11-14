@@ -2,8 +2,8 @@
 
 [@@@ocamlformat "disable"]
 
-module B = Semiont.Bus_registry
-module C = Semiont.Client
+module B = Xynoplex.Bus_registry
+module C = Xynoplex.Client
 
 let decode channel payload = match B.decode channel (Yojson.Safe.to_string payload) with
   | Ok decoded -> decoded

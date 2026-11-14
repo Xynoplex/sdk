@@ -1,7 +1,7 @@
 """A closed vocabulary takes its own words and no other."""
 
-from semiont.error_codes import TransportErrorCode
-from semiont.types import Motivation
+from xynoplex.error_codes import TransportErrorCode
+from xynoplex.types import Motivation
 
 
 def a_motivation() -> Motivation:

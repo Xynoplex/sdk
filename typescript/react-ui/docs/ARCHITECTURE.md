@@ -1,6 +1,6 @@
 # Architecture
 
-Design principles and architectural decisions for `@semiont/react-ui`.
+Design principles and architectural decisions for `@xynoplex/react-ui`.
 
 ## Core Philosophy
 
@@ -15,12 +15,12 @@ Design principles and architectural decisions for `@semiont/react-ui`.
 - Provider Pattern for all cross-cutting concerns
 - Apps provide framework-specific implementations
 
-**Example:** a component takes `useTranslations` from `@semiont/react-ui`, never from a
+**Example:** a component takes `useTranslations` from `@xynoplex/react-ui`, never from a
 framework package such as `next-intl`:
 
 ```tsx
 // ✅ CORRECT - Framework-agnostic
-import { useTranslations } from '@semiont/react-ui';
+import { useTranslations } from '@xynoplex/react-ui';
 
 function SettingsButton() {
   const t = useTranslations('Toolbar');
@@ -82,19 +82,19 @@ export function list() { /* ... */ }
 ```tsx
 // ❌ WRONG - Unnecessary wrapper
 class ResourceService {
-  constructor(private readonly client: SemiontClient) {}
+  constructor(private readonly client: XynoplexClient) {}
   getAll() {
     return this.client.browse.resources();
   }
 }
 
 // ✅ CORRECT - Subscribe to the SDK live query directly
-import { useObservable, useSemiont } from '@semiont/react-ui';
-import { readyValue } from '@semiont/sdk';
+import { useObservable, useXynoplex } from '@xynoplex/react-ui';
+import { readyValue } from '@xynoplex/sdk';
 
 function ResourceNames() {
-  const browser = useSemiont();
-  const client = useObservable(browser.activeSession$)?.client; // SemiontClient | undefined
+  const browser = useXynoplex();
+  const client = useObservable(browser.activeSession$)?.client; // XynoplexClient | undefined
   // `client.browse.resources(...)` emits CacheState<ResourceList> from the
   // SDK's read-through cache. `useObservable` turns it into React state;
   // readyValue projects the ready envelope, whose array is `.resources`.
@@ -151,20 +151,20 @@ function DelegateStatus({ mark }: { mark: MarkStateUnit | undefined }) {
 **Setup:**
 
 ```tsx
-import { SemiontProvider } from '@semiont/react-ui';
+import { XynoplexProvider } from '@xynoplex/react-ui';
 
 export default function App({ children }: { children: React.ReactNode }) {
   return (
-    <SemiontProvider>
+    <XynoplexProvider>
       {children}
-    </SemiontProvider>
+    </XynoplexProvider>
   );
 }
 ```
 
-`SemiontProvider` puts the `SemiontBrowser` singleton into context. Both event
-buses (the app-scoped bus on `SemiontBrowser` and the per-session bus on the
-active `SemiontClient`) are reached through it, so `useEventSubscription` works
+`XynoplexProvider` puts the `XynoplexBrowser` singleton into context. Both event
+buses (the app-scoped bus on `XynoplexBrowser` and the per-session bus on the
+active `XynoplexClient`) are reached through it, so `useEventSubscription` works
 without any separate event-bus provider.
 
 **📖 Complete Documentation:**
@@ -279,14 +279,14 @@ See [SESSION.md](../../../../docs/builder/react-ui/SESSION.md) for details.
 ## Project Structure
 
 ```text
-packages/typescript/react-ui/
+typescript/react-ui/
 ├── src/
 │   ├── types/              # TypeScript interfaces
 │   │   ├── TranslationManager.ts
 │   │   ├── navigation.ts
 │   │   └── ...
 │   ├── session/            # Session provider + storage
-│   │   ├── SemiontProvider.tsx      # SemiontProvider + useSemiont()
+│   │   ├── XynoplexProvider.tsx      # XynoplexProvider + useXynoplex()
 │   │   └── web-browser-storage.ts
 │   ├── contexts/           # React Context providers
 │   │   ├── TranslationContext.tsx
@@ -344,7 +344,7 @@ Components that apps must provide:
 ```
 
 Data fetching is provided by the SDK, which ships as a regular dependency
-(`@semiont/sdk`) rather than a peer — apps don't supply it.
+(`@xynoplex/sdk`) rather than a peer — apps don't supply it.
 
 **Why peer dependencies:**
 - Ensures single React instance
@@ -385,7 +385,7 @@ read-through stale-while-revalidate cache, so server data flows as RxJS
 observables rather than imperative fetches:
 
 ```tsx
-const browser = useSemiont();
+const browser = useXynoplex();
 const client = useObservable(browser.activeSession$)?.client;
 const state = useObservable(client?.browse.resources({}));
 const resources = (state && readyValue(state)?.resources) ?? []; // CacheState → ResourceList → array
@@ -396,7 +396,7 @@ const resources = (state && readyValue(state)?.resources) ?? []; // CacheState �
 Use React Context for cross-cutting concerns:
 
 ```tsx
-const browser = useSemiont(); // SemiontBrowser from <SemiontProvider>
+const browser = useXynoplex(); // XynoplexBrowser from <XynoplexProvider>
 const t = useTranslations('Common');
 ```
 
@@ -420,7 +420,7 @@ A command is a request on the bus. It rejects with a `BusRequestError`, whose `c
 happened:
 
 ```tsx
-import { BusRequestError } from '@semiont/core';
+import { BusRequestError } from '@xynoplex/core';
 
 try {
   await client.mark.delete(rId, annotationId);
@@ -431,7 +431,7 @@ try {
 }
 ```
 
-An `APIError` (from `@semiont/http-transport`, with an HTTP `status`) comes only from the calls
+An `APIError` (from `@xynoplex/http-transport`, with an HTTP `status`) comes only from the calls
 that are HTTP routes: binary content and the gateway's own operations.
 
 ### Global Error Handlers
@@ -470,7 +470,7 @@ describe('formatTime', () => {
 Test components with providers:
 
 ```tsx
-import { renderWithProviders } from '@semiont/react-ui/test-utils';
+import { renderWithProviders } from '@xynoplex/react-ui/test-utils';
 import { screen } from '@testing-library/react';
 
 it('renders the document toolbar inside the providers', () => {
@@ -496,7 +496,7 @@ See [TESTING.md](TESTING.md) for details.
 ### SDK Read-Through Cache
 
 - The SDK's `browse.*` live queries are backed by a read-through
-  stale-while-revalidate (SWR) cache (`@semiont/sdk`)
+  stale-while-revalidate (SWR) cache (`@xynoplex/sdk`)
 - Stale entries are served to observers while a refetch is in flight; observers
   see the new value when it returns
 - Invalidation is implicit — bus events drive cache refreshes, so there are no
@@ -510,8 +510,8 @@ Components are exported individually for tree-shaking:
 
 ```tsx
 // Apps can import only what they need
-import { ResourceViewer } from '@semiont/react-ui';
-// Not: import ReactUI from '@semiont/react-ui';
+import { ResourceViewer } from '@xynoplex/react-ui';
+// Not: import ReactUI from '@xynoplex/react-ui';
 ```
 
 ### Memoization
@@ -717,7 +717,7 @@ Not breaking:
    ```
 
 5. **Browser processes everything:**
-   - Imports `@semiont/react-ui/styles`
+   - Imports `@xynoplex/react-ui/styles`
    - Vite resolves the `@import` statements
    - Bundles into single CSS file
 
@@ -732,9 +732,9 @@ Not breaking:
 The codebase enforces strict CSS quality standards via custom Stylelint plugins:
 
 **Custom Linter Rules:**
-- `semiont/invariants` - Enforces CSS variables instead of hardcoded colors, requires dark mode variants
-- `semiont/accessibility` - Ensures WCAG 2.1 AA compliance, reduced motion support, proper focus indicators
-- `semiont/theme-selectors` - Validates dark mode implementation patterns
+- `xynoplex/invariants` - Enforces CSS variables instead of hardcoded colors, requires dark mode variants
+- `xynoplex/accessibility` - Ensures WCAG 2.1 AA compliance, reduced motion support, proper focus indicators
+- `xynoplex/theme-selectors` - Validates dark mode implementation patterns
 
 **Reduced Motion Support:**
 - Global reduced-motion overrides in `src/styles/utilities/motion-overrides.css`

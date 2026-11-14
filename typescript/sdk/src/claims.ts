@@ -66,9 +66,9 @@ import {
   jobMatchesFilter,
   KeptForFirstReader,
   replyChannelsFor,
-} from '@semiont/core';
-import type { Annotation, AnnotationId, BusOperationKey, BusRequestErrorCode, BusPrimitive, EventMap, JobFilter, JobId, JobType, ResourceId, TraceCarrier, UnitCursor, components } from '@semiont/core';
-import { getActiveTraceparent, withTraceparent, withoutTrace } from '@semiont/observability';
+} from '@xynoplex/core';
+import type { Annotation, AnnotationId, BusOperationKey, BusRequestErrorCode, BusPrimitive, EventMap, JobFilter, JobId, JobType, ResourceId, TraceCarrier, UnitCursor, components } from '@xynoplex/core';
+import { getActiveTraceparent, withTraceparent, withoutTrace } from '@xynoplex/observability';
 
 /** The job a `job:claimed` reply carries, running under this worker: the spec's `JobRunning`. */
 type ClaimedJob = EventMap['job:claimed']['response'];
@@ -485,7 +485,7 @@ class HeldJobOf<T extends JobType, R> implements Held<T, R> {
       // channel. So the job says what was observed, and its reader judges.
       // Anything else (`bus.timeout`, `bus.closed`) means nobody answered.
       // Read from the code the error carries, never by its class: a second
-      // copy of @semiont/core anywhere in the tree makes a class check fail,
+      // copy of @xynoplex/core anywhere in the tree makes a class check fail,
       // and silently, so that a refusal is said as "nobody answered", the one
       // distinction this observation exists to make.
       const code = isObject(error) && isString(error.code) ? error.code : undefined;

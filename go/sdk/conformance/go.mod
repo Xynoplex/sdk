@@ -1,11 +1,11 @@
-module github.com/The-AI-Alliance/semiont/packages/go/sdk/conformance
+module github.com/Xynoplex/sdk/go/conformance
 
 go 1.27.0
 
 toolchain go1.27.4
 
 require (
-	github.com/The-AI-Alliance/semiont/packages/go/sdk v0.0.0
+	github.com/Xynoplex/sdk/go v0.0.0
 	go.opentelemetry.io/otel v1.47.0
 	go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp v1.47.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.47.0
@@ -38,4 +38,4 @@ require (
 )
 
 // The SDK the drivers put through the suite is the one in this checkout.
-replace github.com/The-AI-Alliance/semiont/packages/go/sdk => ../
+replace github.com/Xynoplex/sdk/go => ../

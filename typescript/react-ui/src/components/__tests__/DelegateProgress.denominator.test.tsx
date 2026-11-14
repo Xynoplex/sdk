@@ -15,13 +15,13 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import type { components } from '@semiont/core';
+import type { components } from '@xynoplex/core';
 import { DelegateProgress, type DelegateProgressTranslations } from '../DelegateProgress';
 
 type JobProgress = components['schemas']['JobProgress'];
 type JobProgressMessage = components['schemas']['JobProgressMessage'];
 
-const TALLY = 'semiont-delegate-tally';
+const TALLY = 'xynoplex-delegate-tally';
 
 const T = (over: Partial<DelegateProgressTranslations> = {}): DelegateProgressTranslations =>
   ({

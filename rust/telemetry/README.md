@@ -1,13 +1,13 @@
-# semiont-telemetry
+# xynoplex-telemetry
 
-[![crates.io](https://img.shields.io/crates/v/semiont-telemetry.svg)](https://crates.io/crates/semiont-telemetry)
-[![docs.rs](https://img.shields.io/docsrs/semiont-telemetry)](https://docs.rs/semiont-telemetry)
-[![CI](https://github.com/The-AI-Alliance/semiont/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/The-AI-Alliance/semiont/actions/workflows/ci.yml?query=branch%3Amain)
-[![License](https://img.shields.io/crates/l/semiont-telemetry.svg)](https://github.com/The-AI-Alliance/semiont/blob/main/LICENSE)
-[![codecov](https://codecov.io/gh/The-AI-Alliance/semiont/graph/badge.svg?component=rust-telemetry)](https://app.codecov.io/gh/The-AI-Alliance/semiont/components)
+[![crates.io](https://img.shields.io/crates/v/xynoplex-telemetry.svg)](https://crates.io/crates/xynoplex-telemetry)
+[![docs.rs](https://img.shields.io/docsrs/xynoplex-telemetry)](https://docs.rs/xynoplex-telemetry)
+[![CI](https://github.com/Xynoplex/sdk/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Xynoplex/sdk/actions/workflows/ci.yml?query=branch%3Amain)
+[![License](https://img.shields.io/crates/l/xynoplex-telemetry.svg)](https://github.com/Xynoplex/sdk/blob/main/LICENSE)
+[![codecov](https://codecov.io/gh/Xynoplex/sdk/graph/badge.svg?component=rust-telemetry)](https://app.codecov.io/gh/Xynoplex/sdk/components)
 
-The traces and counts of the [Semiont Rust SDK](../sdk/README.md), as
-[OpenTelemetry](https://opentelemetry.io). When a Semiont client sends to a
+The traces and counts of the [Xynoplex Rust SDK](../sdk/README.md), as
+[OpenTelemetry](https://opentelemetry.io). When a Xynoplex client sends to a
 knowledge base or receives from it, the transport says so through this
 crate, and this crate reports it to whatever OpenTelemetry the application
 installed.
@@ -18,18 +18,18 @@ recorded and no trace context leaves the process.
 ## Do you need it?
 
 - **To see the client's traces in your own telemetry**, you install your
-  OpenTelemetry as usual. [`semiont-http-transport`](../http-transport/README.md)
+  OpenTelemetry as usual. [`xynoplex-http-transport`](../http-transport/README.md)
   already depends on this crate, so its spans appear with yours. See
   [Turning it on](#turning-it-on).
 - **To write a transport** for the SDK, you report through the functions
   below. See [Writing a transport](#writing-a-transport).
 
 ```bash
-cargo add semiont-telemetry
+cargo add xynoplex-telemetry
 ```
 
 It is built with `opentelemetry` 0.33. Every function is documented on
-[docs.rs](https://docs.rs/semiont-telemetry).
+[docs.rs](https://docs.rs/xynoplex-telemetry).
 
 ## Turning it on
 
@@ -42,7 +42,7 @@ global::set_text_map_propagator(TraceContextPropagator::new());
 global::set_tracer_provider(tracer_provider);
 global::set_meter_provider(meter_provider.clone());
 // The bus log's `trace=` field is the active span's trace.
-semiont::bus_log::set_trace_id_provider(semiont_telemetry::active_trace_id);
+xynoplex::bus_log::set_trace_id_provider(xynoplex_telemetry::active_trace_id);
 ```
 
 - The application's `opentelemetry` is the version this crate is built with.
@@ -59,12 +59,12 @@ semiont::bus_log::set_trace_id_provider(semiont_telemetry::active_trace_id);
 
 The spans and the count are the rows of the SDK telemetry table
 ([telemetry.json](../../../protocol/specs/src/sdk-telemetry/telemetry.json)), which
-every Semiont SDK reports the same way.
+every Xynoplex SDK reports the same way.
 
 | Name | Kind | When |
 |---|---|---|
 | `bus.emit:{channel}` | producer span | The client sends on a channel |
-| `semiont.bus.sent` | counter | The same, counted |
+| `xynoplex.bus.sent` | counter | The same, counted |
 | `bus.recv:{channel}` | consumer span | A frame arrives, continuing the trace it was sent under |
 | `content.put` | client span | A resource's bytes are uploaded |
 | `content.get` | client span | A resource's bytes are read |
@@ -78,7 +78,7 @@ the gateway and the services behind it.
 ## Writing a transport
 
 One function per row of the table. A transport says what happened, in
-Semiont's terms, and names no span, kind or attribute of its own:
+Xynoplex's terms, and names no span, kind or attribute of its own:
 
 | Function | Row |
 |---|---|
@@ -102,7 +102,7 @@ A transport depends on this crate and on no OpenTelemetry crate.
 
 ## Writing a service
 
-Semiont's own services state spans of their own, the rows of the service
+Xynoplex's own services state spans of their own, the rows of the service
 telemetry table
 ([telemetry.json](../../../protocol/specs/src/service-telemetry/telemetry.json)), over
 four more functions:
@@ -118,9 +118,9 @@ four more functions:
 
 | Crate | |
 |---|---|
-| [`semiont`](../sdk/README.md) | The SDK's client. |
-| [`semiont-http-transport`](../http-transport/README.md) | The transport over a gateway, which reports through this crate. |
-| [`semiont-codegen`](../codegen/README.md) | The build-time generator of the SDK's types. Cargo builds it for you. |
+| [`xynoplex`](../sdk/README.md) | The SDK's client. |
+| [`xynoplex-http-transport`](../http-transport/README.md) | The transport over a gateway, which reports through this crate. |
+| [`xynoplex-codegen`](../codegen/README.md) | The build-time generator of the SDK's types. Cargo builds it for you. |
 
 ## Contributing
 

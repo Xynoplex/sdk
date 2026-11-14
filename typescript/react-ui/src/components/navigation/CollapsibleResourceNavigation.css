@@ -1,10 +1,10 @@
 /* Collapsible Resource Navigation Styles */
 
-.semiont-collapsible-nav {
+.xynoplex-collapsible-nav {
   height: 100%;
 }
 
 /* Container with padding */
-.semiont-collapsible-nav__container {
+.xynoplex-collapsible-nav__container {
   padding: 1rem; /* matches p-4 */
 }

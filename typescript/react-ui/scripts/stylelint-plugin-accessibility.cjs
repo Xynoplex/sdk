@@ -1,7 +1,7 @@
 const stylelint = require('stylelint');
 const { report, ruleMessages, validateOptions } = stylelint.utils;
 
-const ruleName = 'semiont/accessibility';
+const ruleName = 'xynoplex/accessibility';
 const messages = ruleMessages(ruleName, {
   missingFocusVisible: (selector) => `Missing :focus-visible styles for interactive element "${selector}". Add keyboard focus indicators.`,
   insufficientColorContrast: (property) => `Potential color contrast issue in "${property}". Ensure WCAG AA compliance (4.5:1 for normal text, 3:1 for large text).`,
@@ -29,17 +29,17 @@ const ANIMATION_PROPERTIES = [
 // Interactive selectors that need focus styles
 const INTERACTIVE_PATTERNS = [
   /button/i,
-  /\.semiont-[a-z-]*btn/,
-  /\.semiont-[a-z-]*button/,
-  /\.semiont-[a-z-]*link/,
+  /\.xynoplex-[a-z-]*btn/,
+  /\.xynoplex-[a-z-]*button/,
+  /\.xynoplex-[a-z-]*link/,
   // `tab` must END a name segment, or the `tab` inside `edi-tab-le` makes
-  // `.semiont-resource-tag--editable` an interactive element.
-  /\.semiont-[a-z-]*tabs?(?![a-z])/,
-  /\.semiont-chip/,
-  /\.semiont-[a-z-]*clickable/,
-  /\.semiont-[a-z-]*interactive/,
+  // `.xynoplex-resource-tag--editable` an interactive element.
+  /\.xynoplex-[a-z-]*tabs?(?![a-z])/,
+  /\.xynoplex-chip/,
+  /\.xynoplex-[a-z-]*clickable/,
+  /\.xynoplex-[a-z-]*interactive/,
   // Element selectors, so they must not match as substrings: `select` inside
-  // `.semiont-selected-text-display` is a past participle, not a form control.
+  // `.xynoplex-selected-text-display` is a past participle, not a form control.
   /\binput\b/,
   /\bselect\b/,
   /\btextarea\b/,
@@ -122,7 +122,7 @@ function hasFocusStyles(selector, root) {
 
   // If no direct focus, check if base class has focus styles (for variants/modifiers)
   if (!hasFocus && selector.includes('[')) {
-    // Extract base class from selector like .semiont-button[data-variant="primary"]
+    // Extract base class from selector like .xynoplex-button[data-variant="primary"]
     const baseClass = selector.split('[')[0];
     if (baseClass) {
       return hasFocusStyles(baseClass, root);
@@ -277,9 +277,9 @@ const plugin = stylelint.createPlugin(
           // Check for color contrast risks
           // Skip if we have global contrast utilities
           const hasGlobalContrastSupport =
-            filename.includes('packages/typescript/react-ui/src/styles') ||
-            filename.includes('packages/typescript/react-ui/src/components') ||
-            filename.includes('packages/typescript/react-ui/src/features');
+            filename.includes('typescript/react-ui/src/styles') ||
+            filename.includes('typescript/react-ui/src/components') ||
+            filename.includes('typescript/react-ui/src/features');
 
           if (!hasGlobalContrastSupport &&
               (prop === 'color' || prop === 'background-color') &&
@@ -301,8 +301,8 @@ const plugin = stylelint.createPlugin(
                 !selector.includes('::after') &&
                 !selector.includes('.sr-only') &&
                 !selector.includes('icon') &&
-                !selector.includes('.semiont-hidden') &&  // Utility class for programmatic hiding
-                !selector.includes('.semiont-form__upload-input')) {  // Hidden file input with accessible button
+                !selector.includes('.xynoplex-hidden') &&  // Utility class for programmatic hiding
+                !selector.includes('.xynoplex-form__upload-input')) {  // Hidden file input with accessible button
               report({
                 message: messages.hiddenContentWarning(selector),
                 node: decl,
@@ -333,9 +333,9 @@ const plugin = stylelint.createPlugin(
           // Check for color-only status indicators
           // Skip if we have global semantic indicators utilities
           const hasGlobalSemanticIndicators =
-            filename.includes('packages/typescript/react-ui/src/styles') ||
-            filename.includes('packages/typescript/react-ui/src/components') ||
-            filename.includes('packages/typescript/react-ui/src/features');
+            filename.includes('typescript/react-ui/src/styles') ||
+            filename.includes('typescript/react-ui/src/components') ||
+            filename.includes('typescript/react-ui/src/features');
 
           if (!hasGlobalSemanticIndicators &&
               (selector.includes('status') ||
@@ -373,26 +373,26 @@ const plugin = stylelint.createPlugin(
       interactiveSelectors.forEach((selector) => {
         // Skip checking for common elements that have global focus styles
         const hasGlobalFocusStyles =
-          selector.includes('.semiont-button') ||
-          selector.includes('.semiont-panel-button') ||
-          selector.includes('.semiont-signout-button') ||
-          selector.includes('.semiont-modal__selection') ||
-          selector.includes('.semiont-skip-link') ||
-          selector.includes('.semiont-form__upload-input') ||
-          selector.includes('.semiont-form__entity-type-button') ||
-          selector.includes('.semiont-language-select') ||
-          selector.includes('.semiont-tagging-panel__input') ||
-          selector.includes('.semiont-comments-panel__input') ||
-          selector.includes('.semiont-card__search-input') ||
-          selector.includes('.semiont-selection-indicator') ||
-          selector.includes('.semiont-highlight-panel__color') ||
-          selector.includes('.semiont-detect-button') ||
-          selector.includes('.semiont-detect-widget__button') ||
-          selector.includes('.semiont-reference-button') ||
-          selector.includes('.semiont-resource-button') ||
-          selector.includes('.semiont-toolbar-button') ||
-          selector.includes('.semiont-toolbar-menu-button') ||
-          selector.includes('.semiont-table') ||
+          selector.includes('.xynoplex-button') ||
+          selector.includes('.xynoplex-panel-button') ||
+          selector.includes('.xynoplex-signout-button') ||
+          selector.includes('.xynoplex-modal__selection') ||
+          selector.includes('.xynoplex-skip-link') ||
+          selector.includes('.xynoplex-form__upload-input') ||
+          selector.includes('.xynoplex-form__entity-type-button') ||
+          selector.includes('.xynoplex-language-select') ||
+          selector.includes('.xynoplex-tagging-panel__input') ||
+          selector.includes('.xynoplex-comments-panel__input') ||
+          selector.includes('.xynoplex-card__search-input') ||
+          selector.includes('.xynoplex-selection-indicator') ||
+          selector.includes('.xynoplex-highlight-panel__color') ||
+          selector.includes('.xynoplex-detect-button') ||
+          selector.includes('.xynoplex-detect-widget__button') ||
+          selector.includes('.xynoplex-reference-button') ||
+          selector.includes('.xynoplex-resource-button') ||
+          selector.includes('.xynoplex-toolbar-button') ||
+          selector.includes('.xynoplex-toolbar-menu-button') ||
+          selector.includes('.xynoplex-table') ||
           selector === 'input' ||
           selector === 'textarea' ||
           selector === 'select' ||
@@ -434,9 +434,9 @@ const plugin = stylelint.createPlugin(
       // This includes both src/styles/* and src/components/* since all are imported
       // into the main stylesheet which includes motion-overrides.css
       const hasGlobalMotionOverrides =
-        filename.includes('packages/typescript/react-ui/src/styles') ||
-        filename.includes('packages/typescript/react-ui/src/components') ||
-        filename.includes('packages/typescript/react-ui/src/features');
+        filename.includes('typescript/react-ui/src/styles') ||
+        filename.includes('typescript/react-ui/src/components') ||
+        filename.includes('typescript/react-ui/src/features');
 
       if (hasAnimations && !hasReducedMotionSupport(root) && !hasGlobalMotionOverrides) {
         animatedSelectors.forEach((selector) => {

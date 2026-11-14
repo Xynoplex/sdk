@@ -1,4 +1,4 @@
-package semiont
+package xynoplex
 
 import (
 	"reflect"

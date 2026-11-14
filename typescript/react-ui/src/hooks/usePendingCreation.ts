@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import type { EventMap, ResourceId } from '@semiont/core';
-import type { SemiontSession } from '@semiont/sdk';
+import type { EventMap, ResourceId } from '@xynoplex/core';
+import type { XynoplexSession } from '@xynoplex/sdk';
 import { useSessionEventSubscriptions } from './useSessionEventSubscriptions';
 
 /**
@@ -31,7 +31,7 @@ export type PendingCreation = EventMap['mark:requested'];
  * @param enabled  The host's annotate-mode gate — browse-mode viewers never claim.
  */
 export function usePendingCreation(
-  session: SemiontSession | null,
+  session: XynoplexSession | null,
   resourceId: ResourceId,
   enabled: boolean,
 ): { pending: PendingCreation | null; clearPending: () => void } {

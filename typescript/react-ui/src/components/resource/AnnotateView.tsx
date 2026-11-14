@@ -1,8 +1,8 @@
 'use client';
 
-import type { EventMap, ResourceId } from '@semiont/core';
+import type { EventMap, ResourceId } from '@xynoplex/core';
 import { useRef, useEffect, useCallback, useMemo } from 'react';
-import { capabilitiesOf, textOffsets } from '@semiont/core';
+import { capabilitiesOf, textOffsets } from '@xynoplex/core';
 import { ANNOTATORS } from '../../lib/annotation-registry';
 import { documentPositions } from '../../lib/codemirror-logic';
 import { buildTextSelectors, fallbackTextPosition } from '../../lib/text-selection-handler';
@@ -11,7 +11,7 @@ import { DownloadFileLink } from './DownloadFileLink';
 import { TranslationProvider, type TranslationSource } from '../../contexts/TranslationContext';
 import { translationSourceOf } from '../../lib/translation-source';
 import { EditorView } from '@codemirror/view';
-import { HOVER_DELAY_MS, type SemiontSession } from '@semiont/sdk';
+import { HOVER_DELAY_MS, type XynoplexSession } from '@xynoplex/sdk';
 import { useSessionEventSubscriptions } from '../../hooks/useSessionEventSubscriptions';
 import { scrollAnnotationIntoView } from '../../lib/scroll-utils';
 import { AnnotateToolbar, type SelectionMotivation, type ClickAction, type ShapeType } from '../annotation/AnnotateToolbar';
@@ -38,7 +38,7 @@ interface Props {
   hoverDelayMs?: number;
   annotateMode: boolean;
   /** Session for the shown resource — its client emits mark:* / mark.request; its bus feeds toolbar + beckon events. */
-  session: SemiontSession | null;
+  session: XynoplexSession | null;
   /** Recently-created annotation ids to sparkle (host-provided). */
   sparkleAnnotationIds?: Set<string>;
   /** The bar's Mode control reports the chosen mode here (the owner applies it). */
@@ -173,8 +173,8 @@ function AnnotateViewBody({
       // Skip if the mouseUp came from PDF or image canvas
       // (those components handle their own mark:requested events)
       const target = e.target as Element;
-      if (target.closest('.semiont-pdf-annotation-canvas') ||
-          target.closest('.semiont-svg-drawing-canvas')) {
+      if (target.closest('.xynoplex-pdf-annotation-canvas') ||
+          target.closest('.xynoplex-svg-drawing-canvas')) {
         return;
       }
 
@@ -253,9 +253,9 @@ function AnnotateViewBody({
   // absent in this branch.
   if (!Renderer) {
     return (
-      <div ref={containerRef} className="semiont-annotate-view semiont-annotate-view--unsupported" data-mime-type="unsupported">
-        <div className="semiont-annotate-view__empty">
-          <p className="semiont-annotate-view__empty-message">
+      <div ref={containerRef} className="xynoplex-annotate-view xynoplex-annotate-view--unsupported" data-mime-type="unsupported">
+        <div className="xynoplex-annotate-view__empty">
+          <p className="xynoplex-annotate-view__empty-message">
             Annotation not supported for {mimeType}
           </p>
           <DownloadFileLink resourceUri={resourceUri} session={session} />
@@ -265,7 +265,7 @@ function AnnotateViewBody({
   }
 
   return (
-    <div className="semiont-annotate-view" data-mime-type={render} ref={containerRef}>
+    <div className="xynoplex-annotate-view" data-mime-type={render} ref={containerRef}>
       {showToolbar && (
         <AnnotateToolbar
           selectedMotivation={selectedMotivation}
@@ -280,7 +280,7 @@ function AnnotateViewBody({
           onShapeChange={handleToolbarShapeChange}
         />
       )}
-      <div className="semiont-annotate-view__content" ref={contentRef}>
+      <div className="xynoplex-annotate-view__content" ref={contentRef}>
         <div style={render === 'pdf' ? undefined : { zoom }}>
           <Renderer
             content={content}

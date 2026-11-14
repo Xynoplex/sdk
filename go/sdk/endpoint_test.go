@@ -1,4 +1,4 @@
-package semiont_test
+package xynoplex_test
 
 // A knowledge base's gateway, made from its HTTP endpoint as every SDK makes
 // it (protocol/specs/src/session/gateway-url-cases.json).
@@ -9,8 +9,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	semiont "github.com/The-AI-Alliance/semiont/packages/go/sdk"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
+	xynoplex "github.com/Xynoplex/sdk/go"
+	"github.com/Xynoplex/sdk/go/api"
 )
 
 func TestTheGatewaysOriginIsTheTables(t *testing.T) {
@@ -32,7 +32,7 @@ func TestTheGatewaysOriginIsTheTables(t *testing.T) {
 		t.Fatal("the table states no cases")
 	}
 	for _, row := range table.Cases {
-		origin, err := semiont.GatewayURL(row.Endpoint)
+		origin, err := xynoplex.GatewayURL(row.Endpoint)
 		switch {
 		case row.Origin == nil && err == nil:
 			t.Errorf("%s: made %q of a host that is no name", row.Why, origin)

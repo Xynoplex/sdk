@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import type { EngineWithLimits } from '@semiont/core';
+import type { EngineWithLimits } from '@xynoplex/core';
 import { CollaborationPanel } from '../CollaborationPanel';
 
 // Mock TranslationContext
@@ -73,7 +73,7 @@ describe('CollaborationPanel Component', () => {
       render(<CollaborationPanel {...defaultProps} engines={[engineEntry()]} />);
 
       expect(screen.getByText('Engines')).toBeInTheDocument();
-      const row = screen.getByTestId('semiont-engine-row');
+      const row = screen.getByTestId('xynoplex-engine-row');
       expect(row.textContent).toContain('anthropic');
       expect(row.textContent).toContain('claude-sonnet-5');
       expect(row.textContent).toContain('yield');
@@ -90,7 +90,7 @@ describe('CollaborationPanel Component', () => {
       });
       render(<CollaborationPanel {...defaultProps} engines={[shared]} />);
 
-      const row = screen.getByTestId('semiont-engine-row');
+      const row = screen.getByTestId('xynoplex-engine-row');
       expect(row.textContent).toContain('128K window');
       expect(row.textContent).not.toContain('in /');
     });
@@ -100,7 +100,7 @@ describe('CollaborationPanel Component', () => {
       delete noLimits.limits;
       render(<CollaborationPanel {...defaultProps} engines={[noLimits]} />);
 
-      const row = screen.getByTestId('semiont-engine-row');
+      const row = screen.getByTestId('xynoplex-engine-row');
       expect(row.textContent).toContain('claude-sonnet-5');
       expect(row.textContent).not.toContain('in /');
       expect(row.textContent).not.toContain('window');
@@ -110,7 +110,7 @@ describe('CollaborationPanel Component', () => {
       render(<CollaborationPanel {...defaultProps} />);
 
       expect(screen.queryByText('Engines')).not.toBeInTheDocument();
-      expect(screen.queryByTestId('semiont-engine-row')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('xynoplex-engine-row')).not.toBeInTheDocument();
       // The other sections render regardless.
       expect(screen.getByText('Connection Status')).toBeInTheDocument();
     });
@@ -121,7 +121,7 @@ describe('CollaborationPanel Component', () => {
       delete llama.limits;
       render(<CollaborationPanel {...defaultProps} engines={[engineEntry(), llama]} />);
 
-      const rows = screen.getAllByTestId('semiont-engine-row');
+      const rows = screen.getAllByTestId('xynoplex-engine-row');
       expect(rows).toHaveLength(2);
       expect(rows[1]!.textContent).toContain('llama3');
     });
@@ -163,7 +163,7 @@ describe('CollaborationPanel Component', () => {
     it('should show indicator when disconnected', () => {
       const { container } = render(<CollaborationPanel {...defaultProps} state="degraded" />);
 
-      const indicator = container.querySelector('.semiont-collaboration-panel__dot');
+      const indicator = container.querySelector('.xynoplex-collaboration-panel__dot');
       expect(indicator).toBeInTheDocument();
       expect(indicator).toHaveAttribute('data-connected', 'false');
     });
@@ -171,7 +171,7 @@ describe('CollaborationPanel Component', () => {
     it('should show indicator when connected', () => {
       const { container } = render(<CollaborationPanel {...defaultProps} state="open" />);
 
-      const indicator = container.querySelector('.semiont-collaboration-panel__dot');
+      const indicator = container.querySelector('.xynoplex-collaboration-panel__dot');
       expect(indicator).toBeInTheDocument();
       expect(indicator).toHaveAttribute('data-connected', 'true');
     });
@@ -180,7 +180,7 @@ describe('CollaborationPanel Component', () => {
       render(<CollaborationPanel {...defaultProps} state="degraded" />);
 
       const statusText = screen.getByText('Disconnected');
-      expect(statusText).toHaveClass('semiont-collaboration-panel__status-text');
+      expect(statusText).toHaveClass('xynoplex-collaboration-panel__status-text');
       expect(statusText).toHaveAttribute('data-connected', 'false');
     });
 
@@ -188,7 +188,7 @@ describe('CollaborationPanel Component', () => {
       render(<CollaborationPanel {...defaultProps} state="open" />);
 
       const statusText = screen.getByText('Live');
-      expect(statusText).toHaveClass('semiont-collaboration-panel__status-text');
+      expect(statusText).toHaveClass('xynoplex-collaboration-panel__status-text');
       expect(statusText).toHaveAttribute('data-connected', 'true');
     });
 
@@ -495,20 +495,20 @@ describe('CollaborationPanel Component', () => {
       const { container } = render(<CollaborationPanel {...defaultProps} />);
 
       const panel = container.firstChild as HTMLElement;
-      expect(panel).toHaveClass('semiont-collaboration-panel');
+      expect(panel).toHaveClass('xynoplex-collaboration-panel');
     });
 
     it('should have semantic class names', () => {
       const { container } = render(<CollaborationPanel {...defaultProps} />);
 
       const panel = container.firstChild as HTMLElement;
-      expect(panel).toHaveClass('semiont-collaboration-panel');
+      expect(panel).toHaveClass('xynoplex-collaboration-panel');
     });
 
     it('should have proper section divider', () => {
       const { container } = render(<CollaborationPanel {...defaultProps} />);
 
-      const section = container.querySelector('.semiont-collaboration-panel__section--bordered');
+      const section = container.querySelector('.xynoplex-collaboration-panel__section--bordered');
       expect(section).toBeInTheDocument();
     });
 
@@ -516,14 +516,14 @@ describe('CollaborationPanel Component', () => {
       render(<CollaborationPanel {...defaultProps} />);
 
       const heading = screen.getByText('Connection Status');
-      expect(heading).toHaveClass('semiont-collaboration-panel__heading');
+      expect(heading).toHaveClass('xynoplex-collaboration-panel__heading');
     });
 
     it('should have proper status container', () => {
       render(<CollaborationPanel {...defaultProps} />);
 
       const statusText = screen.getByText('Disconnected');
-      const statusContainer = statusText.closest('.semiont-collaboration-panel__status-text');
+      const statusContainer = statusText.closest('.xynoplex-collaboration-panel__status-text');
       expect(statusContainer).toBeInTheDocument();
     });
   });
@@ -532,15 +532,15 @@ describe('CollaborationPanel Component', () => {
     it('should have semantic heading structure', () => {
       render(<CollaborationPanel {...defaultProps} />);
 
-      expect(screen.getByText('Connection Status')).toHaveClass('semiont-collaboration-panel__heading');
-      expect(screen.getByText('Sharing')).toHaveClass('semiont-collaboration-panel__heading');
+      expect(screen.getByText('Connection Status')).toHaveClass('xynoplex-collaboration-panel__heading');
+      expect(screen.getByText('Sharing')).toHaveClass('xynoplex-collaboration-panel__heading');
     });
 
     it('should have visible status indicators', () => {
       const { container } = render(<CollaborationPanel {...defaultProps} state="open" />);
 
       // Should have a visible status dot
-      const indicator = container.querySelector('.semiont-collaboration-panel__dot');
+      const indicator = container.querySelector('.xynoplex-collaboration-panel__dot');
       expect(indicator).toBeInTheDocument();
       expect(indicator).toHaveAttribute('data-connected', 'true');
     });
@@ -549,7 +549,7 @@ describe('CollaborationPanel Component', () => {
       render(<CollaborationPanel {...defaultProps} />);
 
       const section = screen.getByText('Connection Status').closest('div');
-      expect(section?.querySelector('.semiont-collaboration-panel__details')).toBeInTheDocument();
+      expect(section?.querySelector('.xynoplex-collaboration-panel__details')).toBeInTheDocument();
     });
   });
 

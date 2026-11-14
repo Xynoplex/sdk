@@ -12,10 +12,10 @@ interface PanelHeaderProps {
  */
 export function PanelHeader({ count, title }: PanelHeaderProps) {
   return (
-    <div className="semiont-panel-header">
-      <h2 className="semiont-panel-header__title">
-        <span className="semiont-panel-header__text">{title}</span>
-        <span className="semiont-panel-header__count">({count})</span>
+    <div className="xynoplex-panel-header">
+      <h2 className="xynoplex-panel-header__title">
+        <span className="xynoplex-panel-header__text">{title}</span>
+        <span className="xynoplex-panel-header__count">({count})</span>
       </h2>
     </div>
   );

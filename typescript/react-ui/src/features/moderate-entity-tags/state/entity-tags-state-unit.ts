@@ -1,9 +1,9 @@
 import { BehaviorSubject, type Observable } from 'rxjs';
-import { createDisposer } from '@semiont/sdk';
-import type { StateUnit } from '@semiont/core';
+import { createDisposer } from '@xynoplex/sdk';
+import type { StateUnit } from '@xynoplex/core';
 import type { ShellStateUnit } from '../../../state/shell-state-unit';
 import { trackList, type ListState } from '../../../state/list-state';
-import type { SemiontSession } from '@semiont/sdk';
+import type { XynoplexSession } from '@xynoplex/sdk';
 
 export interface EntityTagsStateUnit extends StateUnit {
   browse: ShellStateUnit;
@@ -19,7 +19,7 @@ export interface EntityTagsStateUnit extends StateUnit {
  * @emits frame:add-entity-type - Add the tag typed to the vocabulary. Payload: { tag: string }
  */
 export function createEntityTagsStateUnit(
-  session: SemiontSession,
+  session: XynoplexSession,
   browse: ShellStateUnit,
 ): EntityTagsStateUnit {
   const { client } = session;

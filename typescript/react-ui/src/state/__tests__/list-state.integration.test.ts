@@ -13,7 +13,7 @@
 import { describe, it, expect } from 'vitest';
 import { BehaviorSubject, switchMap } from 'rxjs';
 import { firstValueFrom } from 'rxjs';
-import { createCache, type Cache } from '@semiont/sdk';
+import { createCache, type Cache } from '@xynoplex/sdk';
 import { trackList } from '../list-state';
 
 interface Deferred {

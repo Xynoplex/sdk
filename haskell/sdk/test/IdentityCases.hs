@@ -8,7 +8,7 @@ import qualified Data.Aeson.KeyMap as KM
 import qualified Data.ByteString as Bytes
 import Data.Foldable (toList)
 import Data.Text (Text)
-import qualified Semiont.Identity as Identity
+import qualified Xynoplex.Identity as Identity
 import System.FilePath ((</>))
 
 require :: String -> Bool -> IO ()

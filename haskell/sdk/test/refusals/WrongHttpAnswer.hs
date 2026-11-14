@@ -1,5 +1,5 @@
 module WrongHttpAnswer where
-import Semiont.Gateway (GatewayOperations, healthCheck)
-import Semiont.Types (UserResponse)
+import Xynoplex.Gateway (GatewayOperations, healthCheck)
+import Xynoplex.Types (UserResponse)
 wrong :: GatewayOperations -> IO UserResponse
 wrong = healthCheck

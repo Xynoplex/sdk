@@ -5,7 +5,7 @@
 //! `callback` for the URL they came back to.
 //!
 //! The issuer sends a person back only to an address its registration of
-//! the client lists. The realm a Semiont launcher renders lists the loopback
+//! the client lists. The realm a Xynoplex launcher renders lists the loopback
 //! address for the browser client with no port, which admits any port
 //! (RFC 8252 §7.3).
 

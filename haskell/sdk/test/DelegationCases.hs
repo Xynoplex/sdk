@@ -10,19 +10,19 @@ import qualified Data.Map.Strict as Map
 import qualified Data.Set as Set
 import Data.Text (Text)
 import qualified Data.Text as Text
-import qualified Semiont.Bus as Bus
-import qualified Semiont.Channels as Channel
-import qualified Semiont.Client as Client
-import qualified Semiont.Content as Content
-import qualified Semiont.Delegation as Report
-import qualified Semiont.ErrorCodes as Code
-import Semiont.Errors (TransportError(..), BusRequestError(..))
-import qualified Semiont.Mark as Mark
-import qualified Semiont.Running as Running
-import qualified Semiont.Timing.Settings as Timing
-import qualified Semiont.Transport as Transport
-import Semiont.Types
-import qualified Semiont.Yield as Yield
+import qualified Xynoplex.Bus as Bus
+import qualified Xynoplex.Channels as Channel
+import qualified Xynoplex.Client as Client
+import qualified Xynoplex.Content as Content
+import qualified Xynoplex.Delegation as Report
+import qualified Xynoplex.ErrorCodes as Code
+import Xynoplex.Errors (TransportError(..), BusRequestError(..))
+import qualified Xynoplex.Mark as Mark
+import qualified Xynoplex.Running as Running
+import qualified Xynoplex.Timing.Settings as Timing
+import qualified Xynoplex.Transport as Transport
+import Xynoplex.Types
+import qualified Xynoplex.Yield as Yield
 import qualified Streaming.Prelude as Stream
 import qualified ControlledTime as Time
 import ClockCases (clockCasesFor, Scenario(..))

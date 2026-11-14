@@ -4,11 +4,11 @@
  * Covers the discriminated `code` field's status-to-code mapping
  * (`transportErrorCodeForStatus`), the caller-stated code of an exchange that
  * got no response, and the inheritance/details wiring that lets consumers
- * catch broadly on `SemiontError` or narrowly on `APIError`.
+ * catch broadly on `XynoplexError` or narrowly on `APIError`.
  */
 
 import { describe, it, expect } from 'vitest';
-import { SemiontError, type TransportErrorCode } from '@semiont/core';
+import { XynoplexError, type TransportErrorCode } from '@xynoplex/core';
 
 import { APIError, refusalBody } from '../api-error';
 
@@ -139,18 +139,18 @@ describe('APIError', () => {
   });
 
   describe('hierarchy', () => {
-    it('extends SemiontError', () => {
+    it('extends XynoplexError', () => {
       const err = APIError.fromStatus('m', 401, 'Unauthorized', undefined, undefined);
       expect(err).toBeInstanceOf(APIError);
-      expect(err).toBeInstanceOf(SemiontError);
+      expect(err).toBeInstanceOf(XynoplexError);
       expect(err).toBeInstanceOf(Error);
     });
 
-    it('catches as SemiontError', () => {
+    it('catches as XynoplexError', () => {
       try {
         throw APIError.fromStatus('m', 403, 'Forbidden', undefined, undefined);
       } catch (err) {
-        if (!(err instanceof SemiontError)) throw err;
+        if (!(err instanceof XynoplexError)) throw err;
         expect(err.code).toBe('forbidden');
       }
     });

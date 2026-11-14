@@ -10,20 +10,20 @@ import { describe, it, expect } from 'vitest';
 import { asStates } from '../../__tests__/test-client';
 import { renderHook, act } from '@testing-library/react';
 import { BehaviorSubject } from 'rxjs';
-import { resourceId } from '@semiont/core';
-import type { SemiontClient } from '@semiont/sdk';
+import { resourceId } from '@xynoplex/core';
+import type { XynoplexClient } from '@xynoplex/sdk';
 import { useResourceLoader } from '../useResourceLoader';
 
 const RES = { '@id': 'res-1', name: 'Doc' };
 
-function makeClient(resource$: BehaviorSubject<unknown>, annotations$: BehaviorSubject<unknown>): SemiontClient {
+function makeClient(resource$: BehaviorSubject<unknown>, annotations$: BehaviorSubject<unknown>): XynoplexClient {
   // Hooks consume CacheState — the value-typed fixtures adapt at the seam.
   return {
     browse: {
       resource: () => asStates(resource$),
       annotations: () => asStates(annotations$),
     },
-  } as unknown as SemiontClient;
+  } as unknown as XynoplexClient;
 }
 
 describe('useResourceLoader', () => {

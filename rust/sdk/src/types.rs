@@ -10,7 +10,7 @@
 //! and decoded through that constructor.
 //!
 //! ```
-//! use semiont::types::{AnnotationId, ResourceId};
+//! use xynoplex::types::{AnnotationId, ResourceId};
 //!
 //! fn of(_resource: &ResourceId, _annotation: &AnnotationId) {}
 //!
@@ -18,21 +18,21 @@
 //! let annotation: AnnotationId = "a-1".parse()?;
 //! of(&resource, &annotation);
 //! assert!("https://kb.example/resources/res-one".parse::<ResourceId>().is_err());
-//! # Ok::<(), semiont::types::InvalidIdentifier>(())
+//! # Ok::<(), xynoplex::types::InvalidIdentifier>(())
 //! ```
 //!
 //! One kind is not taken for another: the same call with its two ids
 //! exchanged does not compile.
 //!
 //! ```compile_fail,E0308
-//! use semiont::types::{AnnotationId, ResourceId};
+//! use xynoplex::types::{AnnotationId, ResourceId};
 //!
 //! fn of(_resource: &ResourceId, _annotation: &AnnotationId) {}
 //!
 //! let resource: ResourceId = "res-one".parse()?;
 //! let annotation: AnnotationId = "a-1".parse()?;
 //! of(&annotation, &resource);
-//! # Ok::<(), semiont::types::InvalidIdentifier>(())
+//! # Ok::<(), xynoplex::types::InvalidIdentifier>(())
 //! ```
 
 #![allow(clippy::enum_variant_names, clippy::large_enum_variant)]

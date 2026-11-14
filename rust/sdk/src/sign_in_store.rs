@@ -1,4 +1,4 @@
-//! The sign-ins `semiont login` keeps (protocol/specs/src/sign-in-store):
+//! The sign-ins `xynoplex login` keeps (protocol/specs/src/sign-in-store):
 //! one sign-in serves the launcher's verbs and an application built on this
 //! SDK.
 //!
@@ -287,14 +287,14 @@ pub fn state_dir(
         PathBuf::from(dir)
     };
     Some(match system {
-        System::MacOs => under('/', home, &["Library", "Application Support", "semiont"]),
+        System::MacOs => under('/', home, &["Library", "Application Support", "xynoplex"]),
         System::Windows => match local_app_data.filter(|local| !local.is_empty()) {
-            Some(local) => under('\\', local, &["semiont"]),
-            None => under('\\', home, &["AppData", "Local", "semiont"]),
+            Some(local) => under('\\', local, &["xynoplex"]),
+            None => under('\\', home, &["AppData", "Local", "xynoplex"]),
         },
         System::Other => match xdg_state_home.filter(|state| !state.is_empty()) {
-            Some(state) => under('/', state, &["semiont"]),
-            None => under('/', home, &[".local", "state", "semiont"]),
+            Some(state) => under('/', state, &["xynoplex"]),
+            None => under('/', home, &[".local", "state", "xynoplex"]),
         },
     })
 }
@@ -492,7 +492,7 @@ impl SignInKept for Entry {
         self.off_the_runtime(|file, key| file.held(key))
     }
 
-    /// Kept as `semiont login` keeps one: the entry states who signed in,
+    /// Kept as `xynoplex login` keeps one: the entry states who signed in,
     /// when the access token names an address, and at which issuer, whoever
     /// the entry before it was of. What another client was issued is not
     /// kept, and nor is a sign-in whose token names no issuer: each is the

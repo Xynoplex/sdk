@@ -1,4 +1,4 @@
-package semiont
+package xynoplex
 
 // How a token is held: what its claims say, when it expires, and when it is
 // renewed (protocol/specs/src/session/cases.json, refreshSchedule and tokenExpiry).

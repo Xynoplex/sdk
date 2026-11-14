@@ -21,15 +21,15 @@ from pydantic import JsonValue, TypeAdapter
 from spec import SPEC, read, strings, text
 from tokens import token
 
-from semiont.errors import SignInError
-from semiont.http import KeyCredential, NotAnRsaKey, ServiceToken, UnreadableKey, private_key_from_pem
-from semiont.http._client_assertion import JWT_BEARER, LIFETIME_SECONDS, thumbprint
+from xynoplex.errors import SignInError
+from xynoplex.http import KeyCredential, NotAnRsaKey, ServiceToken, UnreadableKey, private_key_from_pem
+from xynoplex.http._client_assertion import JWT_BEARER, LIFETIME_SECONDS, thumbprint
 
 _JSON = TypeAdapter[JsonValue](JsonValue)
 TABLE = read(SPEC / "session/client-assertion-cases.json")
 FORM = strings(TABLE["form"], "form")
 GRANT = text(TABLE["grantType"], "grantType")
-CLIENT = "semiont-worker-alice-laptop"
+CLIENT = "xynoplex-worker-alice-laptop"
 
 
 def form(asked: Asked) -> dict[str, str]:

@@ -5,31 +5,31 @@ import (
 	"fmt"
 	"net/http"
 
-	semiont "github.com/The-AI-Alliance/semiont/packages/go/sdk"
+	xynoplex "github.com/Xynoplex/sdk/go"
 )
 
 // Work signs the agent in, and opens a stream as it.
 func Work(ctx context.Context, gateway, issuer, secret string) error {
-	timing := semiont.DefaultTiming()
-	service := semiont.NewServiceToken(
-		semiont.SecretCredential{Issuer: issuer, ClientID: "semiont-smelter", ClientSecret: secret},
-		semiont.Issuer{HTTP: http.DefaultClient, Timing: timing},
+	timing := xynoplex.DefaultTiming()
+	service := xynoplex.NewServiceToken(
+		xynoplex.SecretCredential{Issuer: issuer, ClientID: "xynoplex-smelter", ClientSecret: secret},
+		xynoplex.Issuer{HTTP: http.DefaultClient, Timing: timing},
 	)
-	agent, err := semiont.SignInAgent(ctx, semiont.AgentConfig{
+	agent, err := xynoplex.SignInAgent(ctx, xynoplex.AgentConfig{
 		Gateway: gateway, Service: service, HTTP: http.DefaultClient, Timing: timing,
 	})
 	if err != nil {
 		return err
 	}
 	defer agent.Close()
-	transport := semiont.NewHTTPTransport(semiont.HTTPTransportConfig{
-		BaseURL: gateway, Token: agent.Token(), Refresher: agent, Channels: semiont.JobClaimChannels,
+	transport := xynoplex.NewHTTPTransport(xynoplex.HTTPTransportConfig{
+		BaseURL: gateway, Token: agent.Token(), Refresher: agent, Channels: xynoplex.JobClaimChannels,
 		HTTP: http.DefaultClient, Timing: timing,
 	})
 	defer transport.Close()
 	fmt.Println("working as", agent.DID()) // who its work is attributed to: its account, as the gateway names it
 	for state := range transport.State().Changes(ctx) {
-		if state == semiont.ConnectionStateOpen {
+		if state == xynoplex.ConnectionStateOpen {
 			fmt.Println("its stream is open, as the agent")
 			return nil
 		}

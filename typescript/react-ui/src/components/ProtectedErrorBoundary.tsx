@@ -51,39 +51,39 @@ function ProtectedErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
   const message = error instanceof Error ? error.message : String(error);
   const stack = error instanceof Error ? error.stack : undefined;
   return (
-    <div className="semiont-protected-error-boundary-container">
-      <div className="semiont-protected-error-boundary-card">
-        <div className="semiont-protected-error-boundary-header">
-          <div className="semiont-protected-error-boundary-icon-wrapper">
-            <svg className="semiont-protected-error-boundary-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div className="xynoplex-protected-error-boundary-container">
+      <div className="xynoplex-protected-error-boundary-card">
+        <div className="xynoplex-protected-error-boundary-header">
+          <div className="xynoplex-protected-error-boundary-icon-wrapper">
+            <svg className="xynoplex-protected-error-boundary-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
           </div>
-          <h2 className="semiont-protected-error-boundary-title">
+          <h2 className="xynoplex-protected-error-boundary-title">
             Something went wrong
           </h2>
         </div>
 
-        <p className="semiont-protected-error-boundary-message">
+        <p className="xynoplex-protected-error-boundary-message">
           An unexpected error occurred. Try again, or refresh the page.
         </p>
 
         {process.env.NODE_ENV === 'development' && (
-          <details className="semiont-protected-error-boundary-details">
-            <summary className="semiont-protected-error-boundary-summary">
+          <details className="xynoplex-protected-error-boundary-details">
+            <summary className="xynoplex-protected-error-boundary-summary">
               Error details (development only)
             </summary>
-            <pre className="semiont-protected-error-boundary-stack">
+            <pre className="xynoplex-protected-error-boundary-stack">
               {message}
               {stack}
             </pre>
           </details>
         )}
 
-        <div className="semiont-protected-error-boundary-actions">
+        <div className="xynoplex-protected-error-boundary-actions">
           <button
             onClick={resetErrorBoundary}
-            className="semiont-button"
+            className="xynoplex-button"
             data-variant="secondary"
             data-size="md"
           >
@@ -91,7 +91,7 @@ function ProtectedErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
           </button>
           <button
             onClick={() => window.location.reload()}
-            className="semiont-button"
+            className="xynoplex-button"
             data-variant="primary"
             data-size="md"
           >

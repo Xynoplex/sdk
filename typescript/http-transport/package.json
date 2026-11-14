@@ -1,7 +1,7 @@
 {
-  "name": "@semiont/http-transport",
+  "name": "@xynoplex/http-transport",
   "version": "0.7.3",
-  "description": "HTTP transport adapters for the Semiont SDK",
+  "description": "HTTP transport adapters for the Xynoplex SDK",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -24,8 +24,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/The-AI-Alliance/semiont.git",
-    "directory": "packages/typescript/http-transport"
+    "url": "git+https://github.com/Xynoplex/sdk.git",
+    "directory": "typescript/http-transport"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
@@ -38,8 +38,8 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@semiont/core": "*",
-    "@semiont/observability": "*",
+    "@xynoplex/core": "*",
+    "@xynoplex/observability": "*",
     "ky": "^2.2.0",
     "rxjs": "^7.8.1"
   },
@@ -53,12 +53,12 @@
     "vitest": "^5.1.0"
   },
   "keywords": [
-    "semiont",
+    "xynoplex",
     "http",
     "transport",
     "sse",
     "sdk"
   ],
-  "author": "Semiont Team",
+  "author": "Xynoplex Team",
   "license": "Apache-2.0"
 }

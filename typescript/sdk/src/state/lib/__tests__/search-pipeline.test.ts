@@ -4,12 +4,12 @@
  * Pure RxJS — no React, no jsdom, no act warnings. The pipeline is a plain
  * object: instantiate it with a stub fetch, push values via setQuery, assert
  * on emissions from state$ and query$. Its meaning is the Rust SDK's
- * `SearchPipeline` (packages/rust/sdk/src/state/search.rs).
+ * `SearchPipeline` (rust/sdk/src/state/search.rs).
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { BehaviorSubject, of } from 'rxjs';
-import { assertStateUnitAxioms } from '@semiont/core/testing/axioms';
+import { assertStateUnitAxioms } from '@xynoplex/core/testing/axioms';
 import { createSearchPipeline, type SearchPipeline, type SearchState } from '../search-pipeline';
 
 describe('createSearchPipeline', () => {

@@ -24,15 +24,15 @@
 use crate::sse::SseParser;
 use crate::transport::{MALFORMED, Shared, gateway_words, locked, refusal};
 use futures::StreamExt;
-use semiont::bus_log::{bus_log, bus_note};
-use semiont::channels::{RESOURCE_SCOPED_CHANNELS, TRACE_FIELD};
-use semiont::errors::{TransportError, TransportErrorCode};
-use semiont::resume::is_persisted_event_id;
-use semiont::retry::{equal_jitter, retry_after};
-use semiont::timing::{DEGRADED_THRESHOLD, MAX_RECONNECT, RECONNECT_DEBOUNCE};
-use semiont::transport::{ConnectionState, Frame, FrameRefusal, StreamId, TraceCarrier};
-use semiont::types::ResourceId;
-use semiont::types::{BusFrame, BusSubscribeRequest, BusSubscribeRequestScopedItem};
+use xynoplex::bus_log::{bus_log, bus_note};
+use xynoplex::channels::{RESOURCE_SCOPED_CHANNELS, TRACE_FIELD};
+use xynoplex::errors::{TransportError, TransportErrorCode};
+use xynoplex::resume::is_persisted_event_id;
+use xynoplex::retry::{equal_jitter, retry_after};
+use xynoplex::timing::{DEGRADED_THRESHOLD, MAX_RECONNECT, RECONNECT_DEBOUNCE};
+use xynoplex::transport::{ConnectionState, Frame, FrameRefusal, StreamId, TraceCarrier};
+use xynoplex::types::ResourceId;
+use xynoplex::types::{BusFrame, BusSubscribeRequest, BusSubscribeRequestScopedItem};
 use serde_json::Value;
 use std::collections::{BTreeMap, HashMap, HashSet, VecDeque};
 use std::sync::Arc;
@@ -417,7 +417,7 @@ impl Actor {
             _ => None,
         };
         let frame = Frame {
-            trace: semiont_telemetry::bus_recv(&channel, scope.as_deref(), trace),
+            trace: xynoplex_telemetry::bus_recv(&channel, scope.as_deref(), trace),
             channel,
             payload,
             correlation_id,
@@ -428,7 +428,7 @@ impl Actor {
         self.shared.router.route(Ok(&frame));
         // The client's own bus is given the frame globally, with where on
         // the stream it was delivered: its client notes the place once it
-        // has taken the frame in (`semiont::resume`).
+        // has taken the frame in (`xynoplex::resume`).
         if self.bridged(&frame.channel) {
             for bus in locked(&self.shared.bridges).iter() {
                 bus.emit_frame(Frame {
@@ -715,7 +715,7 @@ fn carried(data: &str) -> Line {
                 Err(error) => panic!("serde refused a frame BusFrame allows: {error}"),
             },
         },
-        None => match semiont::fault_said::<BusFrame>(&mut value) {
+        None => match xynoplex::fault_said::<BusFrame>(&mut value) {
             Some(said) => Line::Unread(said),
             None => match serde_json::from_value(value) {
                 Ok(frame) => Line::Frame(frame),
@@ -875,13 +875,13 @@ mod tests {
     use super::*;
     use crate::transport::{HttpTransportConfig, Timing};
     use futures::{FutureExt, Stream};
-    use semiont::bus::StreamError;
-    use semiont::channels::{
+    use xynoplex::bus::StreamError;
+    use xynoplex::channels::{
         BRIDGED_CHANNELS, BeckonFocus, BrowseResourceFailed, BrowseResourceRequested, Channel,
         GatherFailed, Request,
     };
-    use semiont::event_bus::EventBus;
-    use semiont::transport::{FrameRefusalReason, Lagged};
+    use xynoplex::event_bus::EventBus;
+    use xynoplex::transport::{FrameRefusalReason, Lagged};
     use serde_json::json;
 
     #[test]

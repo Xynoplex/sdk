@@ -7,18 +7,18 @@ import pytest
 from pydantic import ValidationError
 from spec import SPEC, JsonObject, objects, read, strings, text
 
-import semiont.identifiers
-import semiont.types
-from semiont.identifiers import AnnotationId, JobId, ResourceId, UserId
-from semiont.model import WireModel
-from semiont.types import Annotation, MarkDeleteCommand, ResourceDescriptor
+import xynoplex.identifiers
+import xynoplex.types
+from xynoplex.identifiers import AnnotationId, JobId, ResourceId, UserId
+from xynoplex.model import WireModel
+from xynoplex.types import Annotation, MarkDeleteCommand, ResourceDescriptor
 
 KINDS: dict[str, type[str]] = {"ResourceId": ResourceId, "AnnotationId": AnnotationId, "JobId": JobId, "UserId": UserId}
 
 MODELS = [
     model
-    for _, model in inspect.getmembers(semiont.types, inspect.isclass)
-    if issubclass(model, WireModel) and model.__module__ == semiont.types.__name__
+    for _, model in inspect.getmembers(xynoplex.types, inspect.isclass)
+    if issubclass(model, WireModel) and model.__module__ == xynoplex.types.__name__
 ]
 
 
@@ -35,10 +35,10 @@ def test_every_schema_the_spec_names_is_a_type_here() -> None:
     """The drift gate compares the generator with itself; this is what holds it to the spec."""
     stated = sorted(path.stem for path in (SPEC / "components/schemas").glob("*.json"))
     assert len(stated) > 250
-    missing = [name for name in stated if name not in KINDS and not hasattr(semiont.types, name)]
+    missing = [name for name in stated if name not in KINDS and not hasattr(xynoplex.types, name)]
     assert missing == []
-    assert all(hasattr(semiont.identifiers, name) for name in KINDS)
-    unexported = [name for name in stated if name not in KINDS and name not in semiont.types.__all__]
+    assert all(hasattr(xynoplex.identifiers, name) for name in KINDS)
+    unexported = [name for name in stated if name not in KINDS and name not in xynoplex.types.__all__]
     assert unexported == []
 
 
@@ -113,7 +113,7 @@ def test_what_a_model_reads_it_writes_back_as_it_came() -> None:
 
 
 def test_no_shape_is_typed_by_something_that_rewrites_what_it_reads() -> None:
-    source = inspect.getsource(semiont.types)
+    source = inspect.getsource(xynoplex.types)
     imported = {
         name.strip()
         for line in source.splitlines()
@@ -128,7 +128,7 @@ def test_a_property_the_spec_says_may_be_null_may_be_null() -> None:
     refusing: list[str] = []
     for path in sorted((SPEC / "components/schemas").glob("*.json")):
         properties = read(path).get("properties")
-        model = getattr(semiont.types, path.stem, None)
+        model = getattr(xynoplex.types, path.stem, None)
         if not isinstance(properties, dict) or not (inspect.isclass(model) and issubclass(model, WireModel)):
             continue
         by_wire = {field.alias or name: field for name, field in model.model_fields.items()}

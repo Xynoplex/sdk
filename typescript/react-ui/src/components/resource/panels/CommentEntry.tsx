@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useRef, useImperativeHandle, type Ref } from 'react';
 import { useTranslations } from '../../../contexts/TranslationContext';
-import type { Annotation, components } from '@semiont/core';
-import { getAnnotationExactText, getCommentText, getTargetSource } from '@semiont/core';
-import type { SemiontSession } from '@semiont/sdk';
+import type { Annotation, components } from '@xynoplex/core';
+import { getAnnotationExactText, getCommentText, getTargetSource } from '@xynoplex/core';
+import type { XynoplexSession } from '@xynoplex/sdk';
 import { useHoverEmitter } from '../../../hooks/useHoverEmitter';
 import { creatorName, renderAgentLabels } from './agent-label';
 
@@ -12,13 +12,13 @@ type TextualBody = components['schemas']['TextualBody'];
 
 /** An edit in progress: the session it is saved through, and its text. */
 interface Edit {
-  session: SemiontSession;
+  session: XynoplexSession;
   text: string;
 }
 
 interface CommentEntryProps {
   /** Session for interaction routing (browse.click etc.); the panel threads it. */
-  session: SemiontSession | null;
+  session: XynoplexSession | null;
   comment: Annotation;
   isFocused: boolean;
   isHovered?: boolean;
@@ -85,7 +85,7 @@ export function CommentEntry({
     }
   }, [isFocused]);
 
-  const handleEditClick = (editSession: SemiontSession) => {
+  const handleEditClick = (editSession: XynoplexSession) => {
     setSaveError(null);
     setEdit({ session: editSession, text: commentText });
   };
@@ -120,7 +120,7 @@ export function CommentEntry({
   return (
     <div
       ref={internalRef}
-      className={`semiont-annotation-entry${isHovered ? ' semiont-annotation-pulse' : ''}`}
+      className={`xynoplex-annotation-entry${isHovered ? ' xynoplex-annotation-pulse' : ''}`}
       data-type="comment"
       data-focused={isFocused ? 'true' : 'false'}
       onClick={() => {
@@ -130,41 +130,41 @@ export function CommentEntry({
     >
       {/* Selected text quote - only for text annotations */}
       {selectedText && (
-        <div className="semiont-annotation-entry__quote" data-type="comment">
+        <div className="xynoplex-annotation-entry__quote" data-type="comment">
           "{selectedText.substring(0, 100)}{selectedText.length > 100 ? '...' : ''}"
         </div>
       )}
 
       {/* Comment body */}
       {edit && commentBody ? (
-        <div className="semiont-annotation-entry__edit" onClick={(e) => e.stopPropagation()}>
+        <div className="xynoplex-annotation-entry__edit" onClick={(e) => e.stopPropagation()}>
           <textarea
             value={edit.text}
             onChange={(e) => setEdit({ ...edit, text: e.target.value })}
-            className="semiont-textarea"
+            className="xynoplex-textarea"
             rows={3}
             autoFocus
             maxLength={2000}
           />
           {saveError && (
-            <p className="semiont-error-message" role="alert">{saveError}</p>
+            <p className="xynoplex-error-message" role="alert">{saveError}</p>
           )}
-          <div className="semiont-annotation-entry__edit-footer">
-            <span className="semiont-annotation-entry__char-count">
+          <div className="xynoplex-annotation-entry__edit-footer">
+            <span className="xynoplex-annotation-entry__char-count">
               {edit.text.length}/2000
             </span>
-            <div className="semiont-annotation-entry__button-group">
+            <div className="xynoplex-annotation-entry__button-group">
               <button
                 onClick={() => handleSave(edit, commentBody)}
                 disabled={saving}
-                className="semiont-button semiont-button--primary"
+                className="xynoplex-button xynoplex-button--primary"
                 data-type="comment"
               >
                 {t('save')}
               </button>
               <button
                 onClick={handleCancel}
-                className="semiont-button semiont-button--secondary"
+                className="xynoplex-button xynoplex-button--secondary"
               >
                 {t('cancel')}
               </button>
@@ -172,25 +172,25 @@ export function CommentEntry({
           </div>
         </div>
       ) : (
-        <div className="semiont-annotation-entry__body">{commentText}</div>
+        <div className="xynoplex-annotation-entry__body">{commentText}</div>
       )}
 
       {/* Metadata and actions */}
       {!(edit && commentBody) && (
-        <div className="semiont-annotation-entry__footer">
-          <div className="semiont-annotation-entry__metadata">
+        <div className="xynoplex-annotation-entry__footer">
+          <div className="xynoplex-annotation-entry__metadata">
             {creatorName(comment.creator) && <>By {creatorName(comment.creator)} • </>}{formatRelativeTime(comment.created || new Date().toISOString())}
           </div>
           {comment.generator && renderAgentLabels(comment.generator) && (
-            <div className="semiont-annotation-entry__metadata">
+            <div className="xynoplex-annotation-entry__metadata">
               Via {renderAgentLabels(comment.generator)}
             </div>
           )}
           {annotateMode && session && commentBody && (
-            <div className="semiont-annotation-entry__actions" onClick={(e) => e.stopPropagation()}>
+            <div className="xynoplex-annotation-entry__actions" onClick={(e) => e.stopPropagation()}>
               <button
                 onClick={() => handleEditClick(session)}
-                className="semiont-text-button"
+                className="xynoplex-text-button"
                 data-variant="comment"
               >
                 {t('edit')}

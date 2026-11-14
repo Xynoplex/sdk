@@ -5,7 +5,7 @@ import Control.Concurrent.Async (async, wait)
 import Control.Concurrent.MVar
 import Control.Concurrent.STM
 import Control.Exception (bracket, try, IOException, catch, displayException)
-import Semiont.Errors (BusRequestError(..))
+import Xynoplex.Errors (BusRequestError(..))
 import Control.Monad (forM_, unless, void)
 import Data.Aeson (FromJSON, ToJSON, Value(..), eitherDecodeStrict', toJSON, withObject, (.:))
 import qualified Data.Aeson.Key as Key
@@ -18,31 +18,31 @@ import qualified Data.Map.Strict as Map
 import qualified Data.Set as Set
 import Data.Text (Text)
 import qualified Data.Text as T
-import qualified Semiont.Auth as Auth
-import qualified Semiont.Beckon as Beckon
-import qualified Semiont.Bind as Bind
-import qualified Semiont.Browse as Browse
-import qualified Semiont.Gather as Gather
-import qualified Semiont.Match as Match
-import qualified Semiont.Mark as Mark
-import qualified Semiont.Yield as Yield
-import qualified Semiont.Cache as Cache
-import qualified Semiont.Running as Running
-import qualified Semiont.Bus as Bus
-import Semiont.Channels
-import qualified Semiont.Channels as Channel
-import qualified Semiont.Client as Client
-import qualified Semiont.Content as Content
-import qualified Semiont.EventBus as Local
-import qualified Semiont.Frame as Frame
-import qualified Semiont.Gateway as Gateway
-import qualified Semiont.Job as Job
-import qualified Semiont.System as System
-import qualified Semiont.Timing.Settings as Timing
-import qualified Semiont.Transport as Transport
-import Semiont.Types
-import qualified Semiont.Types as Types
-import qualified Semiont.Worker as Worker
+import qualified Xynoplex.Auth as Auth
+import qualified Xynoplex.Beckon as Beckon
+import qualified Xynoplex.Bind as Bind
+import qualified Xynoplex.Browse as Browse
+import qualified Xynoplex.Gather as Gather
+import qualified Xynoplex.Match as Match
+import qualified Xynoplex.Mark as Mark
+import qualified Xynoplex.Yield as Yield
+import qualified Xynoplex.Cache as Cache
+import qualified Xynoplex.Running as Running
+import qualified Xynoplex.Bus as Bus
+import Xynoplex.Channels
+import qualified Xynoplex.Channels as Channel
+import qualified Xynoplex.Client as Client
+import qualified Xynoplex.Content as Content
+import qualified Xynoplex.EventBus as Local
+import qualified Xynoplex.Frame as Frame
+import qualified Xynoplex.Gateway as Gateway
+import qualified Xynoplex.Job as Job
+import qualified Xynoplex.System as System
+import qualified Xynoplex.Timing.Settings as Timing
+import qualified Xynoplex.Transport as Transport
+import Xynoplex.Types
+import qualified Xynoplex.Types as Types
+import qualified Xynoplex.Worker as Worker
 import Streaming (Of, Stream)
 import qualified Streaming.Prelude as Stream
 import System.FilePath ((</>))
@@ -138,11 +138,11 @@ surfaceCases root fixtures = do
           Array values -> Array (fmap expand values)
           _ -> value
         table=expand rawTable
-    inventory <- readJSON (root </> "packages/haskell/sdk/public-api.json")
+    inventory <- readJSON (root </> "haskell/sdk/public-api.json")
     modules <- field "modules" inventory
-    client <- field "Semiont.Client" modules
+    client <- field "Xynoplex.Client" modules
     values <- field "values" client :: IO (Map.Map Text Text)
-    let reached = Set.fromList [name | (name,signature) <- Map.toList values, T.isPrefixOf "Semiont.Client.Client -> " signature, T.isSuffixOf "Namespace" signature]
+    let reached = Set.fromList [name | (name,signature) <- Map.toList values, T.isPrefixOf "Xynoplex.Client.Client -> " signature, T.isSuffixOf "Namespace" signature]
     namespaces <- field "namespaces" table :: IO [Value]
     forM_ namespaces $ \namespace -> do
       name <- field "namespace" namespace

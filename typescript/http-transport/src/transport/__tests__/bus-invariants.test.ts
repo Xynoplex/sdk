@@ -1,9 +1,9 @@
 /**
- * @semiont/http-transport channel-set invariants — the transport half of the
- * bus channel-classification contract (see @semiont/core's
+ * @xynoplex/http-transport channel-set invariants — the transport half of the
+ * bus channel-classification contract (see @xynoplex/core's
  * src/__tests__/bus-invariants.test.ts for the full picture).
  *
- * `RESOURCE_SCOPED_CHANNELS` (generated into @semiont/core from the registry's
+ * `RESOURCE_SCOPED_CHANNELS` (generated into @xynoplex/core from the registry's
  * `audience: scoped`) is the per-resource set this transport subscribes to
  * *on top of* the global `BRIDGED_CHANNELS`. The two MUST be disjoint: a
  * channel in both is forwarded twice — once globally, once scoped — with
@@ -13,7 +13,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { BRIDGED_CHANNELS, RESOURCE_SCOPED_CHANNELS } from '@semiont/core';
+import { BRIDGED_CHANNELS, RESOURCE_SCOPED_CHANNELS } from '@xynoplex/core';
 
 describe('http-transport channel-set invariants', () => {
   it('BRIDGED_CHANNELS and RESOURCE_SCOPED_CHANNELS are disjoint', () => {

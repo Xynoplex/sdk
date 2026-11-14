@@ -11,10 +11,10 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { renderInEnglish } from '../../../test-utils';
-import type { SemiontSession } from '@semiont/sdk';
-import type { Annotation, AnnotationId } from '@semiont/core';
+import type { XynoplexSession } from '@xynoplex/sdk';
+import type { Annotation, AnnotationId } from '@xynoplex/core';
 import { SvgDrawingCanvas } from '../SvgDrawingCanvas';
-import { resourceId } from '@semiont/core';
+import { resourceId } from '@xynoplex/core';
 
 // jsdom's Image never fires onload; the canvas loads natural dimensions via a
 // detached `new Image()`. Stub it to report 100×100 synchronously-ish.
@@ -51,7 +51,7 @@ function sessionDouble() {
       browse: { click, resourceAnchoredText: vi.fn().mockResolvedValue({ kind: 'no-map' }) },
       beckon: { hover: vi.fn() },
     },
-  } as unknown as SemiontSession;
+  } as unknown as XynoplexSession;
   return { session, click };
 }
 
@@ -80,25 +80,25 @@ describe('SvgDrawingCanvas — drawing-path hit-test anchorRect', () => {
 
     // Wait for the stubbed Image load to land imageDimensions (overlay mounts).
     await waitFor(() => {
-      expect(container.querySelector('.semiont-svg-drawing-canvas__overlay-container')).toBeInTheDocument();
+      expect(container.querySelector('.xynoplex-svg-drawing-canvas__overlay-container')).toBeInTheDocument();
     });
 
     // jsdom has no layout: give the rendered <img> display dimensions and let
     // the resize listener re-read them (display 200×200 over natural 100×100
     // → scale 2, so the 10,10,20,20 annotation displays at 20,20,40,40).
-    const img = container.querySelector('.semiont-svg-drawing-canvas__image') as HTMLImageElement;
+    const img = container.querySelector('.xynoplex-svg-drawing-canvas__image') as HTMLImageElement;
     Object.defineProperty(img, 'clientWidth', { value: 200, configurable: true });
     Object.defineProperty(img, 'clientHeight', { value: 200, configurable: true });
     fireEvent(window, new Event('resize'));
 
     await waitFor(() => {
-      const overlay = container.querySelector('.semiont-svg-drawing-canvas__overlay') as HTMLElement;
+      const overlay = container.querySelector('.xynoplex-svg-drawing-canvas__overlay') as HTMLElement;
       expect(overlay?.style.width).toBe('200px');
     });
 
     // Sub-10px gesture inside the displayed annotation (image rect is zeros
     // in jsdom, so client coordinates are display coordinates).
-    const canvas = container.querySelector('.semiont-svg-drawing-canvas')!;
+    const canvas = container.querySelector('.xynoplex-svg-drawing-canvas')!;
     await waitFor(() => expect(canvas).toHaveAttribute('data-annotate-deferred', 'false'));
     fireEvent.mouseDown(canvas, { clientX: 30, clientY: 30 });
     fireEvent.mouseUp(canvas, { clientX: 30, clientY: 30 });
@@ -125,9 +125,9 @@ describe('SvgDrawingCanvas — drawing-path hit-test anchorRect', () => {
     );
 
     await waitFor(() => {
-      expect(container.querySelector('.semiont-svg-drawing-canvas__overlay-container')).toBeInTheDocument();
+      expect(container.querySelector('.xynoplex-svg-drawing-canvas__overlay-container')).toBeInTheDocument();
     });
-    const img = container.querySelector('.semiont-svg-drawing-canvas__image') as HTMLImageElement;
+    const img = container.querySelector('.xynoplex-svg-drawing-canvas__image') as HTMLImageElement;
     Object.defineProperty(img, 'clientWidth', { value: 200, configurable: true });
     Object.defineProperty(img, 'clientHeight', { value: 200, configurable: true });
     vi.spyOn(img, 'getBoundingClientRect').mockReturnValue({
@@ -135,7 +135,7 @@ describe('SvgDrawingCanvas — drawing-path hit-test anchorRect', () => {
     });
     fireEvent(window, new Event('resize'));
 
-    const canvas = container.querySelector('.semiont-svg-drawing-canvas')!;
+    const canvas = container.querySelector('.xynoplex-svg-drawing-canvas')!;
     await waitFor(() => expect(canvas).toHaveAttribute('data-annotate-deferred', 'false'));
     // The logical annotation box is 20..60; at 2× it occupies 40..120.
     fireEvent.mouseDown(canvas, { clientX: 60, clientY: 60 });

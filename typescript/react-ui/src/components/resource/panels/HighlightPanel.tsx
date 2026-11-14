@@ -2,15 +2,15 @@
 
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useTranslations } from '../../../contexts/TranslationContext';
-import type { MarkStateUnit, SemiontSession } from '@semiont/sdk';
+import type { MarkStateUnit, XynoplexSession } from '@xynoplex/sdk';
 import { useSessionEventSubscriptions } from '../../../hooks/useSessionEventSubscriptions';
-import type { components, JobId, ResourceId, Selector } from '@semiont/core';
-import { getTextPositionSelector, getTargetSelector } from '@semiont/core';
+import type { components, JobId, ResourceId, Selector } from '@xynoplex/core';
+import { getTextPositionSelector, getTargetSelector } from '@xynoplex/core';
 import { HighlightEntry } from './HighlightEntry';
 import { DelegateSection } from './DelegateSection';
 import { PanelHeader } from './PanelHeader';
 
-import type { Annotation } from '@semiont/core';
+import type { Annotation } from '@xynoplex/core';
 type Motivation = components['schemas']['Motivation'];
 type JobProgress = components['schemas']['JobProgress'];
 
@@ -22,7 +22,7 @@ interface PendingAnnotation {
 
 interface HighlightPanelProps {
   /** Session carrying the client and event bus; null renders inert. */
-  session: SemiontSession | null;
+  session: XynoplexSession | null;
   /** The resource's mark unit, which delegations, cancels and dismissals are asked of; undefined renders inert. */
   mark: MarkStateUnit | undefined;
   /** The '@id' of the panel's resource — stamped as `source` on mark:submit (multi-viewer routing). */
@@ -109,9 +109,9 @@ export function HighlightPanel({
       const elementHeight = element.offsetHeight;
       const scrollTo = elementTop - (containerHeight / 2) + (elementHeight / 2);
       containerRef.current.scrollTo({ top: scrollTo, behavior: 'smooth' });
-      element.classList.remove('semiont-annotation-pulse');
+      element.classList.remove('xynoplex-annotation-pulse');
       void element.offsetWidth;
-      element.classList.add('semiont-annotation-pulse');
+      element.classList.add('xynoplex-annotation-pulse');
       if (onScrollCompleted) onScrollCompleted();
     }
   }, [scrollToAnnotationId]);
@@ -163,11 +163,11 @@ export function HighlightPanel({
   }, [pendingAnnotation, session]);
 
   return (
-    <div className="semiont-panel">
+    <div className="xynoplex-panel">
       <PanelHeader count={annotations.length} title={t('title')} />
 
       {/* Scrollable content area */}
-      <div ref={containerRef} className="semiont-panel__content">
+      <div ref={containerRef} className="xynoplex-panel__content">
         {/* Delegate section - only in Annotate mode; shown for any media type (AI detection is media-agnostic — text is resolved via the media-type registry, incl. PDF text layers) */}
         {annotateMode && (
           <DelegateSection
@@ -183,9 +183,9 @@ export function HighlightPanel({
         )}
 
         {/* Highlights list */}
-        <div className="semiont-panel__list">
+        <div className="xynoplex-panel__list">
           {sortedAnnotations.length === 0 ? (
-            <p className="semiont-panel__empty">
+            <p className="xynoplex-panel__empty">
               {t('noHighlights')}
             </p>
           ) : (

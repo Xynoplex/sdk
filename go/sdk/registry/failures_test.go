@@ -10,31 +10,31 @@ import (
 	"slices"
 	"testing"
 
-	semiont "github.com/The-AI-Alliance/semiont/packages/go/sdk"
+	xynoplex "github.com/Xynoplex/sdk/go"
 )
 
 // noSessions is the factory of a registry with no knowledge bases, which asks
 // it for none.
 type noSessions struct{}
 
-func (noSessions) Session(context.Context, SessionFactoryOptions) (*semiont.Session, func(), error) {
+func (noSessions) Session(context.Context, SessionFactoryOptions) (*xynoplex.Session, func(), error) {
 	panic("a registry with no knowledge bases asks for no session")
 }
 
 func (noSessions) Revoke(context.Context, StoredSession) {}
 
 // unread is a registry with no knowledge bases, so it brings up no session.
-func unread(t *testing.T) *SemiontBrowser {
+func unread(t *testing.T) *XynoplexBrowser {
 	t.Helper()
-	b, err := NewSemiontBrowser(SemiontBrowserConfig{Storage: semiont.NewMemoryStorage(), SessionFactory: noSessions{}})
+	b, err := NewXynoplexBrowser(XynoplexBrowserConfig{Storage: xynoplex.NewMemoryStorage(), SessionFactory: noSessions{}})
 	if err != nil {
 		t.Fatal(err)
 	}
 	return b
 }
 
-func failure(n int) *semiont.SessionError {
-	return &semiont.SessionError{Code: semiont.SessionErrorCodeConstructFailed, Message: fmt.Sprintf("failure %d", n), KbID: "kb-a"}
+func failure(n int) *xynoplex.SessionError {
+	return &xynoplex.SessionError{Code: xynoplex.SessionErrorCodeConstructFailed, Message: fmt.Sprintf("failure %d", n), KbID: "kb-a"}
 }
 
 // Of what a registry says before anyone reads its errors, its first reader is
@@ -42,7 +42,7 @@ func failure(n int) *semiont.SessionError {
 func TestARegistryNobodyHasReadKeepsTheLatestOfWhatItSaysForItsFirstReader(t *testing.T) {
 	b := unread(t)
 	beyond := 5
-	said := make([]*semiont.SessionError, semiont.DefaultTiming().ErrorsKeptForFirstReaderCount+beyond)
+	said := make([]*xynoplex.SessionError, xynoplex.DefaultTiming().ErrorsKeptForFirstReaderCount+beyond)
 	for n := range said {
 		said[n] = failure(n)
 		b.failed(said[n])
@@ -52,7 +52,7 @@ func TestARegistryNobodyHasReadKeepsTheLatestOfWhatItSaysForItsFirstReader(t *te
 		t.Fatal(err)
 	}
 
-	var heard []*semiont.SessionError
+	var heard []*xynoplex.SessionError
 	for err := range errs {
 		heard = append(heard, err)
 	}
@@ -66,7 +66,7 @@ func TestARegistryNobodyHasReadKeepsTheLatestOfWhatItSaysForItsFirstReader(t *te
 func TestEachReaderOfARegistrysErrorsHearsEverythingSaidFromWhenItReadsHoweverFarBehindItFalls(t *testing.T) {
 	b := unread(t)
 	first, later := b.Errors(context.Background()), b.Errors(context.Background())
-	said := make([]*semiont.SessionError, semiont.DefaultTiming().ErrorsKeptForFirstReaderCount+5)
+	said := make([]*xynoplex.SessionError, xynoplex.DefaultTiming().ErrorsKeptForFirstReaderCount+5)
 	for n := range said {
 		said[n] = failure(n)
 		b.failed(said[n])
@@ -92,7 +92,7 @@ func TestAFirstReaderWhoComesAfterTheRegistryHasClosedHearsNothing(t *testing.T)
 		t.Fatal(err)
 	}
 
-	var heard []*semiont.SessionError
+	var heard []*xynoplex.SessionError
 	for err := range b.Errors(context.Background()) {
 		heard = append(heard, err)
 	}

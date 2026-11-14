@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import type { EngineWithLimits, GatheredContext } from '@semiont/core';
-import type { ResourceGatherOptions } from '@semiont/sdk';
+import type { EngineWithLimits, GatheredContext } from '@xynoplex/core';
+import type { ResourceGatherOptions } from '@xynoplex/sdk';
 import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react';
 import { ConfigureGatherStep, type ResourceGatherConfig } from './ConfigureGatherStep';
 import { DiscardPrompt } from './DiscardPrompt';
@@ -248,7 +248,7 @@ export function ResourceGenerateModal({
 
   return (
     <Transition appear show={isOpen}>
-      <Dialog as="div" className="semiont-search-modal" onClose={handleDismiss}>
+      <Dialog as="div" className="xynoplex-search-modal" onClose={handleDismiss}>
         <TransitionChild
           enter="ease-out duration-200"
           enterFrom="opacity-0"
@@ -257,11 +257,11 @@ export function ResourceGenerateModal({
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="semiont-search-modal__backdrop" />
+          <div className="xynoplex-search-modal__backdrop" />
         </TransitionChild>
 
-        <div className="semiont-search-modal__wrapper">
-          <div className="semiont-search-modal__centering semiont-search-modal__centering--center">
+        <div className="xynoplex-search-modal__wrapper">
+          <div className="xynoplex-search-modal__centering xynoplex-search-modal__centering--center">
             <TransitionChild
               enter="ease-out duration-200"
               enterFrom="opacity-0 scale-95"
@@ -270,10 +270,10 @@ export function ResourceGenerateModal({
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <DialogPanel className="semiont-search-modal__panel semiont-search-modal__panel--with-border semiont-search-modal__panel--gather semiont-search-modal__panel--wide">
-                <div className="semiont-search-modal__header">
-                  <DialogTitle className="semiont-search-modal__title">{t.title}</DialogTitle>
-                  <button onClick={handleDismiss} className="semiont-search-modal__close-button" aria-label="Close">
+              <DialogPanel className="xynoplex-search-modal__panel xynoplex-search-modal__panel--with-border xynoplex-search-modal__panel--gather xynoplex-search-modal__panel--wide">
+                <div className="xynoplex-search-modal__header">
+                  <DialogTitle className="xynoplex-search-modal__title">{t.title}</DialogTitle>
+                  <button onClick={handleDismiss} className="xynoplex-search-modal__close-button" aria-label="Close">
                     ✕
                   </button>
                 </div>
@@ -288,7 +288,7 @@ export function ResourceGenerateModal({
                   />
                 )}
 
-                <div className="semiont-wizard__step-scroll" ref={stepScrollRef}>
+                <div className="xynoplex-wizard__step-scroll" ref={stepScrollRef}>
                   {/* Once fired, the spent controls fold into a receipt of
                       what THIS gather asked for — the evidence leads the
                       pane, the parameters stay visible and revisable. The
@@ -297,7 +297,7 @@ export function ResourceGenerateModal({
                   {gatherFired && !editingGather && lastGather && (
                     <button
                       type="button"
-                      className="semiont-gather-receipt"
+                      className="xynoplex-gather-receipt"
                       title={t.editGather}
                       onClick={() => setEditingGather(true)}
                     >
@@ -326,20 +326,20 @@ export function ResourceGenerateModal({
                     }}
                   >
                     {entityTypeOptions.length > 0 && (
-                      <div className="semiont-form__field semiont-form__entity-types">
-                        <label className="semiont-form__label">{t.recallLabel}</label>
+                      <div className="xynoplex-form__field xynoplex-form__entity-types">
+                        <label className="xynoplex-form__label">{t.recallLabel}</label>
                         {/* Recall chips — the exclude wire, inverted for the
                             UI: every type is IN the recall until crossed off,
                             so the state is still the exclude list and a chip
                             is included when absent from it. */}
-                        <div className="semiont-form__recall-chips">
+                        <div className="xynoplex-form__recall-chips">
                           {entityTypeOptions.map((et) => {
                             const isIncluded = !excludeEntityTypes.includes(et);
                             return (
                               <button
                                 key={et}
                                 type="button"
-                                className="semiont-form__recall-chip"
+                                className="xynoplex-form__recall-chip"
                                 data-included={isIncluded}
                                 aria-pressed={isIncluded}
                                 onClick={() => setExcludeEntityTypes(prev => prev.includes(et) ? prev.filter(x => x !== et) : [...prev, et])}

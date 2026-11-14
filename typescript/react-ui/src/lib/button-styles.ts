@@ -8,29 +8,29 @@
 export const buttonStyles = {
   // Primary button - cyan/blue gradient (used for main CTAs like "New Document", "Sign In", "Sign Up")
   primary: {
-    base: "semiont-button semiont-button--primary",
-    large: "semiont-button semiont-button--primary semiont-button--large",
+    base: "xynoplex-button xynoplex-button--primary",
+    large: "xynoplex-button xynoplex-button--primary xynoplex-button--large",
   },
 
   // Secondary button - gray with subtle outline (used for "Search", "Cancel", etc.)
   secondary: {
-    base: "semiont-button semiont-button--secondary",
-    withScale: "semiont-button semiont-button--secondary semiont-button--scale",
+    base: "xynoplex-button xynoplex-button--secondary",
+    withScale: "xynoplex-button xynoplex-button--secondary xynoplex-button--scale",
   },
 
   // Tertiary button - minimal style for less important actions
   tertiary: {
-    base: "semiont-button semiont-button--tertiary",
+    base: "xynoplex-button xynoplex-button--tertiary",
   },
 
   // Danger button - for destructive actions
   danger: {
-    base: "semiont-button semiont-button--danger",
+    base: "xynoplex-button xynoplex-button--danger",
   },
 
   // Warning/Yellow button - for highlight actions
   warning: {
-    base: "semiont-button semiont-button--warning",
+    base: "xynoplex-button xynoplex-button--warning",
   },
 
   // Utility function to combine classes

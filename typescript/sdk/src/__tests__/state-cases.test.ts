@@ -15,7 +15,7 @@ import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Subject, type Observable } from 'rxjs';
 import {
-  SemiontError,
+  XynoplexError,
   annotationId,
   resourceId,
   type AnnotationId,
@@ -25,8 +25,8 @@ import {
   type MarkJobParams,
   type StateUnit,
   type Watched,
-} from '@semiont/core';
-import type { SemiontClient } from '../client';
+} from '@xynoplex/core';
+import type { XynoplexClient } from '../client';
 import { createTestClient, refuseUnscriptedOperation, type FaultAction, type FaultyTransport, type TestClientOptions } from '../testing';
 import { createBeckonStateUnit, createHoverDwell, type BeckonStateUnit, type HoverDwell } from '../state/flows/beckon-state-unit';
 import { createGatherStateUnit, type GatherStateUnit } from '../state/flows/gather-state-unit';
@@ -160,7 +160,7 @@ interface Played {
   states: Readonly<Record<string, Watched<unknown>>>;
 }
 
-type Make = (client: SemiontClient, searches: Searches, made: JsonObject) => Played;
+type Make = (client: XynoplexClient, searches: Searches, made: JsonObject) => Played;
 
 const annotationOf = (args: Args): AnnotationId => annotationId(text(args['annotationId'], 'annotationId'));
 
@@ -343,7 +343,7 @@ function transportOf(stated: JsonObject): NonNullable<TestClientOptions['transpo
 
 /** What a state holds, as the wire writes it. An error is its code and its message. */
 function wire(held: unknown): Json {
-  if (held instanceof SemiontError) return { code: held.code, message: held.message };
+  if (held instanceof XynoplexError) return { code: held.code, message: held.message };
   if (held instanceof Error) return { message: held.message };
   if (held === undefined) throw new Error('it holds undefined, where none is null');
   return JSON.parse(JSON.stringify(held)) as Json;
@@ -419,7 +419,7 @@ const envelopeOf = (correlation: Json | undefined): { correlationId: string } | 
   correlation === undefined ? undefined : { correlationId: text(correlation, 'correlationId') };
 
 interface World {
-  client: SemiontClient;
+  client: XynoplexClient;
   transport: FaultyTransport;
   searches: Searches;
   units: Record<string, Played>;

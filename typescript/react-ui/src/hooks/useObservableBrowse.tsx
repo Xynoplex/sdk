@@ -1,8 +1,8 @@
 'use client';
 
 import { useCallback } from 'react';
-import type { ResourceId } from '@semiont/core';
-import { useSemiont } from '../session/SemiontProvider';
+import type { ResourceId } from '@xynoplex/core';
+import { useXynoplex } from '../session/XynoplexProvider';
 
 /**
  * Generic router interface - works with any router that has push/replace methods
@@ -37,32 +37,32 @@ interface Router {
  * ```
  */
 export function useObservableRouter<T extends Router>(baseRouter: T): T {
-  const semiont = useSemiont();
+  const xynoplex = useXynoplex();
 
   const push = useCallback((path: string, options?: { reason?: string }) => {
     // Emit event for observability
-    semiont.emit('nav:push', {
+    xynoplex.emit('nav:push', {
       path,
       reason: options?.reason
     });
 
     // Perform actual navigation
     baseRouter.push(path);
-  }, [semiont, baseRouter]);
+  }, [xynoplex, baseRouter]);
 
   const replace = useCallback((path: string, options?: { reason?: string }) => {
     // Only wrap replace if the router has it
     if (!baseRouter.replace) return;
 
     // Emit event for observability
-    semiont.emit('nav:push', {
+    xynoplex.emit('nav:push', {
       path,
       reason: options?.reason ? `replace:${options.reason}` : 'replace'
     });
 
     // Perform actual navigation
     baseRouter.replace(path);
-  }, [semiont, baseRouter]);
+  }, [xynoplex, baseRouter]);
 
   return {
     ...baseRouter,
@@ -104,7 +104,7 @@ export function useObservableRouter<T extends Router>(baseRouter: T): T {
  * ```
  */
 export function useObservableExternalNavigation() {
-  const semiont = useSemiont();
+  const xynoplex = useXynoplex();
 
   return useCallback((url: string, metadata?: { resourceId?: ResourceId }) => {
     // Fallback: If no subscriber cancels within 10ms, use window.location
@@ -118,10 +118,10 @@ export function useObservableExternalNavigation() {
       window.location.href = url;
     }, 10);
 
-    semiont.emit('nav:external', {
+    xynoplex.emit('nav:external', {
       url,
       resourceId: metadata?.resourceId,
       cancelFallback: () => clearTimeout(fallbackTimer),
     });
-  }, [semiont]);
+  }, [xynoplex]);
 }

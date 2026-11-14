@@ -1,4 +1,4 @@
-package semiont_test
+package xynoplex_test
 
 // What text a resource's bytes are, and what the readers of a resource's
 // description answer, held to the tables every SDK runs:
@@ -23,12 +23,12 @@ import (
 	"strings"
 	"testing"
 
-	semiont "github.com/The-AI-Alliance/semiont/packages/go/sdk"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/bus"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/internal/required"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/mediatypes"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/semionttest"
+	xynoplex "github.com/Xynoplex/sdk/go"
+	"github.com/Xynoplex/sdk/go/api"
+	"github.com/Xynoplex/sdk/go/bus"
+	"github.com/Xynoplex/sdk/go/internal/required"
+	"github.com/Xynoplex/sdk/go/mediatypes"
+	"github.com/Xynoplex/sdk/go/xynoplextest"
 )
 
 // strictly decodes data into into, refusing a member into does not read: a
@@ -64,12 +64,12 @@ func bytesOf(t *testing.T, hexadecimal string) []byte {
 // whose code is error, and that it names what it refuses.
 func refusedNaming(t *testing.T, why string, err error, named string) {
 	t.Helper()
-	var refusal *semiont.TransportError
+	var refusal *xynoplex.TransportError
 	if !errors.As(err, &refusal) {
 		t.Errorf("%s: read, or failed as %v, and the table says it is refused, naming %q", why, err, named)
 		return
 	}
-	if refusal.Code != semiont.TransportErrorCodeError || !strings.Contains(refusal.Message, named) {
+	if refusal.Code != xynoplex.TransportErrorCodeError || !strings.Contains(refusal.Message, named) {
 		t.Errorf("%s: refused as %s %q, and the table says the refusal is an error naming %q", why, refusal.Code, refusal.Message, named)
 	}
 }
@@ -79,14 +79,14 @@ func refusedNaming(t *testing.T, why string, err error, named string) {
 // Rust runners read it, through the client's content transport.
 func reading(t *testing.T) func(data []byte, contentType string) (string, error) {
 	t.Helper()
-	made := semionttest.NewTestClient(semionttest.TestClientConfig{Timing: semiont.DefaultTiming()})
+	made := xynoplextest.NewTestClient(xynoplextest.TestClientConfig{Timing: xynoplex.DefaultTiming()})
 	t.Cleanup(func() {
 		made.Client.Close()
 		made.Transport.Close()
 	})
 	resource := resourceOf(t, "res-1")
 	return func(data []byte, contentType string) (string, error) {
-		made.Content.Seed(resource, semiont.Content{Bytes: data, ContentType: contentType})
+		made.Content.Seed(resource, xynoplex.Content{Bytes: data, ContentType: contentType})
 		return made.Client.Browse.ResourceContent(context.Background(), resource)
 	}
 }
@@ -258,9 +258,9 @@ func TestEveryReaderOfAResourceGivesWhatTheTableSays(t *testing.T) {
 				if err := json.Unmarshal(stated.Resource, &resource); err != nil {
 					t.Fatalf("%s: the resource does not decode: %v", stated.Why, err)
 				}
-				_, _, err := semiont.PrimaryRepresentation(resource)
+				_, _, err := xynoplex.PrimaryRepresentation(resource)
 				refusedNaming(t, stated.Why+": PrimaryRepresentation", err, "representation")
-				_, _, err = semiont.PrimaryMediaType(resource)
+				_, _, err = xynoplex.PrimaryMediaType(resource)
 				refusedNaming(t, stated.Why+": PrimaryMediaType", err, "representation")
 			}
 			continue
@@ -272,7 +272,7 @@ func TestEveryReaderOfAResourceGivesWhatTheTableSays(t *testing.T) {
 		if err := json.Unmarshal(stated.Resource, &resource); err != nil {
 			t.Fatalf("%s: the resource does not decode: %v", stated.Why, err)
 		}
-		representation, ok, err := semiont.PrimaryRepresentation(resource)
+		representation, ok, err := xynoplex.PrimaryRepresentation(resource)
 		if err != nil {
 			t.Errorf("%s: refused as %v, and the table says the resource is one", stated.Why, err)
 		}
@@ -290,11 +290,11 @@ func TestEveryReaderOfAResourceGivesWhatTheTableSays(t *testing.T) {
 				t.Errorf("%s: the primary representation is %s, and the table says %s", stated.Why, written, stated.PrimaryRepresentation)
 			}
 		}
-		mediaType, ok, err := semiont.PrimaryMediaType(resource)
+		mediaType, ok, err := xynoplex.PrimaryMediaType(resource)
 		if err != nil || (stated.PrimaryMediaType == nil) == ok || (ok && mediaType != *stated.PrimaryMediaType) {
 			t.Errorf("%s: the primary media type is (%q, %v), and the table says %v", stated.Why, mediaType, ok, stated.PrimaryMediaType)
 		}
-		if got := semiont.ResourceEntityTypes(resource); !reflect.DeepEqual(got, stated.EntityTypes) {
+		if got := xynoplex.ResourceEntityTypes(resource); !reflect.DeepEqual(got, stated.EntityTypes) {
 			t.Errorf("%s: the entity types are %q, and the table says %q", stated.Why, got, stated.EntityTypes)
 		}
 		// What the cases must tell apart: one representation from a list of

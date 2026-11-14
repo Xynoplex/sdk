@@ -1,9 +1,9 @@
 'use client';
 
 import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
-import { useSemiont } from '../session/SemiontProvider';
+import { useXynoplex } from '../session/XynoplexProvider';
 import { useObservable } from '../hooks/useObservable';
-import type { Annotation, AnnotationId, ResourceId, Selector } from '@semiont/core';
+import type { Annotation, AnnotationId, ResourceId, Selector } from '@xynoplex/core';
 import { useLiveRegion } from '../components/LiveRegion';
 // Create annotation request type - narrow target to only the object form (not string)
 type CreateAnnotationRequest = Omit<Annotation, 'id' | 'created' | 'modified' | 'creator' | '@context' | 'type' | 'target'> & {
@@ -42,7 +42,7 @@ export function ResourceAnnotationsProvider({ children }: { children: React.Reac
   // Live region announcements
   const { announce } = useLiveRegion();
 
-  const semiont = useObservable(useSemiont().activeSession$)?.client;
+  const xynoplex = useObservable(useXynoplex().activeSession$)?.client;
 
   const markAnnotation = useCallback(async (
     rUri: ResourceId,
@@ -50,7 +50,7 @@ export function ResourceAnnotationsProvider({ children }: { children: React.Reac
     selector: Selector | Selector[],
     body?: Annotation['body']
   ): Promise<string | undefined> => {
-    if (!semiont) throw new Error('Not authenticated');
+    if (!xynoplex) throw new Error('Not authenticated');
     try {
       const createData: CreateAnnotationRequest = {
         motivation,
@@ -61,7 +61,7 @@ export function ResourceAnnotationsProvider({ children }: { children: React.Reac
         body,
       };
 
-      const result = await semiont.mark.annotation(createData);
+      const result = await xynoplex.mark.annotation(createData);
 
       // Track this as a new annotation for sparkle animation
       if (result.annotationId) {
@@ -86,7 +86,7 @@ export function ResourceAnnotationsProvider({ children }: { children: React.Reac
       announce('Failed to create annotation', 'assertive');
       throw err;
     }
-  }, [semiont, announce]);
+  }, [xynoplex, announce]);
 
   const clearSparkle = useCallback((id: AnnotationId) => {
     setSparkleAnnotationIds(prev => {

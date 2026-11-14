@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, type ReactNode } from 'react';
-import type { components } from '@semiont/core';
+import type { components } from '@xynoplex/core';
 import { DelegateProgress, type DelegateProgressProps, type DelegateDataType } from '../../DelegateProgress';
 import type { DelegatedJobControls } from '../../../lib/delegated-job-controls';
 
@@ -62,21 +62,21 @@ export function DelegateShell({ delegateType, title, isDelegating, cancelled, pr
   }, [isExpanded, delegateType]);
 
   return (
-    <div className="semiont-panel__section">
+    <div className="xynoplex-panel__section">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="semiont-panel__section-title semiont-panel__section-title--collapsible"
+        className="xynoplex-panel__section-title xynoplex-panel__section-title--collapsible"
         aria-expanded={isExpanded}
         type="button"
       >
         <span>{title}</span>
-        <span className="semiont-panel__section-chevron" data-expanded={isExpanded}>
+        <span className="xynoplex-panel__section-chevron" data-expanded={isExpanded}>
           ›
         </span>
       </button>
       {isExpanded && (
         <div
-          className="semiont-delegate-widget"
+          className="xynoplex-delegate-widget"
           data-delegating={isDelegating && progress ? 'true' : 'false'}
           data-type={delegateType}
         >

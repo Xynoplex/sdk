@@ -1,6 +1,6 @@
-"""The bus log: with `SEMIONT_BUS_LOG` set, a line on stdout for each frame a transport sends or receives, each read and each upload.
+"""The bus log: with `XYNOPLEX_BUS_LOG` set, a line on stdout for each frame a transport sends or receives, each read and each upload.
 
-Every Semiont SDK writes it, in one form, so that the lines of several
+Every Xynoplex SDK writes it, in one form, so that the lines of several
 processes read as one timeline (`protocol/contract/EVENT-BUS.md` § Wire format).
 The form is held here, and so is each place a transport writes one. A line
 never holds a credential: what a line shows of a payload is the table every
@@ -19,16 +19,16 @@ from pydantic import JsonValue, TypeAdapter
 from shown import CARRIED, parts_of
 from spec import PACKAGE, SPEC, JsonObject, objects, read, strings, text
 
-from semiont import model, telemetry
-from semiont._bus_log import bus_log, bus_note, enabled
-from semiont.channels import CHANNELS
-from semiont.errors import SemiontError
-from semiont.http import HttpTransport, Timing
-from semiont.identifiers import ResourceId
-from semiont.model import WireModel
-from semiont.retry import RetryPolicy
-from semiont.transport import PutBinaryRequest, TraceContext
-from semiont.watched import Variable, reached
+from xynoplex import model, telemetry
+from xynoplex._bus_log import bus_log, bus_note, enabled
+from xynoplex.channels import CHANNELS
+from xynoplex.errors import XynoplexError
+from xynoplex.http import HttpTransport, Timing
+from xynoplex.identifiers import ResourceId
+from xynoplex.model import WireModel
+from xynoplex.retry import RetryPolicy
+from xynoplex.transport import PutBinaryRequest, TraceContext
+from xynoplex.watched import Variable, reached
 
 QUICK: Final = Timing(
     reconnect_ms=10, lazy_remove_ms=10, linger_ms=10, emit_retry=RetryPolicy(attempts=2, initial_delay_ms=1, max_delay_ms=1)
@@ -41,7 +41,7 @@ TRACE: Final = TraceContext(traceparent="00-8f3ca4ed5a6b7c8d9e0f112233445566-b7a
 @pytest.fixture
 def logging_the_bus(monkeypatch: pytest.MonkeyPatch) -> Generator[None]:
     """The variable set, for a process that has not yet read it."""
-    monkeypatch.setenv("SEMIONT_BUS_LOG", "1")
+    monkeypatch.setenv("XYNOPLEX_BUS_LOG", "1")
     enabled.cache_clear()
     yield
     enabled.cache_clear()
@@ -50,7 +50,7 @@ def logging_the_bus(monkeypatch: pytest.MonkeyPatch) -> Generator[None]:
 @pytest.fixture
 def not_logging_the_bus(monkeypatch: pytest.MonkeyPatch) -> Generator[None]:
     """The variable not set, for a process that has not yet read it."""
-    monkeypatch.delenv("SEMIONT_BUS_LOG", raising=False)
+    monkeypatch.delenv("XYNOPLEX_BUS_LOG", raising=False)
     enabled.cache_clear()
     yield
     enabled.cache_clear()
@@ -117,7 +117,7 @@ def test_unset_nothing_is_written(capsys: pytest.CaptureFixture[str]) -> None:
 def test_set_is_any_value_that_is_not_empty(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str], value: str, lines: int
 ) -> None:
-    monkeypatch.setenv("SEMIONT_BUS_LOG", value)
+    monkeypatch.setenv("XYNOPLEX_BUS_LOG", value)
     enabled.cache_clear()
     try:
         bus_log("EMIT", "beckon:focus", {"resourceId": "res-1"})
@@ -129,12 +129,12 @@ def test_set_is_any_value_that_is_not_empty(
 def test_the_variable_is_read_once_when_the_first_line_would_be_written(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    monkeypatch.setenv("SEMIONT_BUS_LOG", "1")
+    monkeypatch.setenv("XYNOPLEX_BUS_LOG", "1")
     enabled.cache_clear()
     try:
         bus_log("EMIT", "beckon:focus", {"resourceId": "res-1"})
         # What the process is started with decides: the variable changed afterwards changes nothing.
-        monkeypatch.delenv("SEMIONT_BUS_LOG")
+        monkeypatch.delenv("XYNOPLEX_BUS_LOG")
         bus_log("EMIT", "beckon:focus", {"resourceId": "res-1"})
         assert len(written(capsys)) == 2
     finally:
@@ -320,7 +320,7 @@ def test_an_emit_the_gateway_refuses_is_a_line_all_the_same_and_one_however_many
         async with GatewayServer() as gateway, transport_to(gateway) as transport:
             await opened(transport)
             gateway.scripted["POST", "/bus/emit"] = [Answer(status=503, body=b"{}"), Answer(status=503, body=b"{}")]
-            with pytest.raises(SemiontError):
+            with pytest.raises(XynoplexError):
                 await transport.emit("beckon:focus", {"resourceId": "res-1", "annotationId": "a-1"})
             assert len(gateway.emits) == 2
 
@@ -415,7 +415,7 @@ def test_a_read_of_content_and_an_upload_are_each_a_line_that_says_what_was_aske
                 assert b"".join([piece async for piece in stream]) == b"what the resource says"
             assert (await transport.content.get_anchored_text(RESOURCE)).kind == "not-yet"
             # A read that is refused was asked for all the same.
-            with pytest.raises(SemiontError):
+            with pytest.raises(XynoplexError):
                 await transport.content.get_resource_graph(ResourceId("res-absent"))
 
     run(scenario())

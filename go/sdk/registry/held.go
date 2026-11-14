@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"sync"
 
-	semiont "github.com/The-AI-Alliance/semiont/packages/go/sdk"
+	xynoplex "github.com/Xynoplex/sdk/go"
 )
 
 // held is a value the registry holds and anyone may watch, of a type Go
@@ -21,7 +21,7 @@ type held[T any] struct {
 	changed chan struct{}
 }
 
-var _ semiont.Watched[[]OpenResource] = (*held[[]OpenResource])(nil)
+var _ xynoplex.Watched[[]OpenResource] = (*held[[]OpenResource])(nil)
 
 func newHeld[T any](value T) *held[T] {
 	return &held[T]{value: value, changed: make(chan struct{})}

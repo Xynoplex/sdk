@@ -11,22 +11,22 @@
 use opentelemetry::Context;
 use opentelemetry::context::FutureExt;
 use opentelemetry::trace::{SpanContext, SpanId, TraceContextExt, TraceFlags, TraceId, TraceState};
-use semiont::bus::reply_channels_for;
-use semiont::claims::{
+use xynoplex::bus::reply_channels_for;
+use xynoplex::claims::{
     ClaimOptions, ClaimRefusal, ClaimTiming, Claims, HeldJob, HeldJobStall, JOB_CLAIM_CHANNELS,
     JOB_COMMIT_CHANNELS, JobFailure,
 };
-use semiont::client::SemiontClient;
-use semiont::errors::{BusRequestError, BusRequestErrorCode, SemiontError};
-use semiont::testing::{FaultAction, FaultyTransport, TestClientOptions, create_test_client};
-use semiont::timing::ERRORS_KEPT_FOR_FIRST_READER_COUNT;
-use semiont::transport::{
+use xynoplex::client::XynoplexClient;
+use xynoplex::errors::{BusRequestError, BusRequestErrorCode, XynoplexError};
+use xynoplex::testing::{FaultAction, FaultyTransport, TestClientOptions, create_test_client};
+use xynoplex::timing::ERRORS_KEPT_FOR_FIRST_READER_COUNT;
+use xynoplex::transport::{
     ConnectionState, Events, Frame, FrameRefusal, FrameRefusalReason, TraceCarrier,
 };
-use semiont::types::DurabilityEvidence::{
+use xynoplex::types::DurabilityEvidence::{
     Acknowledged, ProbeConfirmed, ProbeRefused, ProbeUnreachable,
 };
-use semiont::types::{
+use xynoplex::types::{
     Annotation, DurabilityEvidence, FailureClass, JobFilter, JobProgress, JobType, MarkJobDone,
     ResourceId, YieldJobResult,
 };
@@ -77,7 +77,7 @@ fn current_trace() -> Option<String> {
 }
 
 struct World {
-    client: Arc<SemiontClient>,
+    client: Arc<XynoplexClient>,
     transport: FaultyTransport,
     queue: Arc<Queue>,
 }
@@ -357,7 +357,7 @@ impl World {
         job: &HeldJob,
         how: DurabilityEvidence,
         id: &str,
-    ) -> Result<(), SemiontError> {
+    ) -> Result<(), XynoplexError> {
         self.answer_questions(
             (how == ProbeRefused).then(|| json!({ "message": "Annotation not found" })),
         );
@@ -400,7 +400,7 @@ async fn held(claims: &Claims) -> HeldJob {
     }
 }
 
-fn found(found: u64, persisted: u64) -> semiont::types::MarkJobResult {
+fn found(found: u64, persisted: u64) -> xynoplex::types::MarkJobResult {
     MarkJobDone::new(found, persisted).into()
 }
 
@@ -442,8 +442,8 @@ fn world_observing(observed: &[DurabilityEvidence]) -> World {
 }
 
 /// The failure of a `mark:commit` nobody acknowledged within `waited`.
-fn unacknowledged(waited: Duration) -> SemiontError {
-    SemiontError::Bus(BusRequestError::new(
+fn unacknowledged(waited: Duration) -> XynoplexError {
+    XynoplexError::Bus(BusRequestError::new(
         BusRequestErrorCode::Timeout,
         format!(
             "Bus request timed out after {}ms on mark:commit-ok",
@@ -1331,7 +1331,7 @@ async fn a_commit_the_record_refuses_fails_with_the_records_reason_and_nothing_i
 
     assert_eq!(
         refused,
-        Err(SemiontError::Bus(BusRequestError {
+        Err(XynoplexError::Bus(BusRequestError {
             code: BusRequestErrorCode::Rejected,
             message: "the record could not append".to_owned(),
             failure: Some(object(json!({ "message": "the record could not append" }))),

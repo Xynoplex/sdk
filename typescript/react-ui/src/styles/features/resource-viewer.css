@@ -5,90 +5,90 @@
  */
 
 /* ResourceViewer Component */
-.semiont-resource-viewer {
+.xynoplex-resource-viewer {
   height: 100%;
   display: flex;
   flex-direction: column;
 }
 
 /* Delete Confirmation Modal */
-.semiont-delete-confirmation {
+.xynoplex-delete-confirmation {
   padding: 1.5rem;
-  background: var(--semiont-bg-primary);
-  border-radius: var(--semiont-radius-lg);
+  background: var(--xynoplex-bg-primary);
+  border-radius: var(--xynoplex-radius-lg);
   max-width: 28rem;
   width: 100%;
 }
 
-[data-theme="dark"] .semiont-delete-confirmation {
-  background: var(--semiont-bg-secondary);
+[data-theme="dark"] .xynoplex-delete-confirmation {
+  background: var(--xynoplex-bg-secondary);
 }
 
-.semiont-delete-confirmation__header {
+.xynoplex-delete-confirmation__header {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   margin-bottom: 1rem;
 }
 
-.semiont-delete-confirmation__icon {
+.xynoplex-delete-confirmation__icon {
   font-size: 1.5rem;
 }
 
-.semiont-delete-confirmation__title {
+.xynoplex-delete-confirmation__title {
   font-size: 1.125rem;
   font-weight: 600;
-  color: var(--semiont-color-gray-900);
+  color: var(--xynoplex-color-gray-900);
   margin: 0;
 }
 
-[data-theme="dark"] .semiont-delete-confirmation__title {
-  color: var(--semiont-color-gray-100);
+[data-theme="dark"] .xynoplex-delete-confirmation__title {
+  color: var(--xynoplex-color-gray-100);
 }
 
-.semiont-delete-confirmation__quote {
+.xynoplex-delete-confirmation__quote {
   padding: 0.75rem;
-  background: var(--semiont-bg-tertiary);
-  border-radius: var(--semiont-radius-md);
+  background: var(--xynoplex-bg-tertiary);
+  border-radius: var(--xynoplex-radius-md);
   margin-bottom: 1rem;
   font-style: italic;
-  color: var(--semiont-color-gray-700);
+  color: var(--xynoplex-color-gray-700);
   font-size: 0.875rem;
   max-height: 10rem;
   overflow-y: auto;
 }
 
-[data-theme="dark"] .semiont-delete-confirmation__quote {
-  background: var(--semiont-color-gray-700);
-  color: var(--semiont-color-gray-200);
+[data-theme="dark"] .xynoplex-delete-confirmation__quote {
+  background: var(--xynoplex-color-gray-700);
+  color: var(--xynoplex-color-gray-200);
 }
 
-.semiont-delete-confirmation__message {
-  color: var(--semiont-color-gray-700);
+.xynoplex-delete-confirmation__message {
+  color: var(--xynoplex-color-gray-700);
   font-size: 0.875rem;
   margin-bottom: 1rem;
 }
 
-[data-theme="dark"] .semiont-delete-confirmation__message {
-  color: var(--semiont-color-gray-300);
+[data-theme="dark"] .xynoplex-delete-confirmation__message {
+  color: var(--xynoplex-color-gray-300);
 }
 
-.semiont-delete-confirmation__actions {
+.xynoplex-delete-confirmation__actions {
   display: flex;
   gap: 0.75rem;
   justify-content: flex-end;
 }
 
 /* BrowseView Component */
-.semiont-browse-view {
+.xynoplex-browse-view {
   padding: 0;
-  background-color: var(--semiont-bg-primary);
+  background-color: var(--xynoplex-bg-primary);
   display: flex;
   flex-direction: column;
   height: 100%; /* Fill parent to enable flexbox children sizing */
 }
 
-.semiont-browse-view__content {
+.xynoplex-browse-view__content {
   flex: 1; /* Take remaining space after toolbar */
   min-height: 0; /* Allow flexbox shrinking */
   overflow: auto; /* This becomes the scroll container */
@@ -98,12 +98,12 @@
 /* The PDF renderer owns its scrollport so page virtualization, its rail and
    zoom all observe and move the same viewport. Keep the browse shell as a
    clipping flex item and let the renderer fill it. */
-.semiont-browse-view__content[data-scroll-owner="renderer"] {
+.xynoplex-browse-view__content[data-scroll-owner="renderer"] {
   overflow: hidden;
   padding: 0;
 }
 
-.semiont-browse-view__content[data-scroll-owner="renderer"] > div {
+.xynoplex-browse-view__content[data-scroll-owner="renderer"] > div {
   width: 100%;
   height: 100%;
   min-height: 0;
@@ -113,16 +113,16 @@
  * Auto-height to content, no inner scroll container, no pane chrome — the
  * viewer drops into a chat bubble / card / list item and the HOST page
  * scrolls. Default (no modifier) keeps the fill-the-pane behavior above. */
-.semiont-resource-viewer--inline {
+.xynoplex-resource-viewer--inline {
   height: auto;
 }
 
-.semiont-browse-view--inline {
+.xynoplex-browse-view--inline {
   height: auto;
   background-color: transparent; /* the host container owns the background */
 }
 
-.semiont-browse-view--inline .semiont-browse-view__content {
+.xynoplex-browse-view--inline .xynoplex-browse-view__content {
   flex: none; /* size to content, not to a pane */
   overflow: visible; /* no inner scrollbar — the host page is the scroll context */
   padding: 0; /* no pane gutter — the host owns spacing */
@@ -133,211 +133,211 @@
  * removes list styles. Re-apply semantic typographic defaults scoped to the
  * browse-view content area so that ReactMarkdown output renders correctly.
  */
-.semiont-browse-view__content h1,
-.semiont-browse-view__content h2,
-.semiont-browse-view__content h3,
-.semiont-browse-view__content h4,
-.semiont-browse-view__content h5,
-.semiont-browse-view__content h6 {
-  color: var(--semiont-text-primary);
-  font-weight: var(--semiont-font-bold);
-  line-height: var(--semiont-leading-tight);
+.xynoplex-browse-view__content h1,
+.xynoplex-browse-view__content h2,
+.xynoplex-browse-view__content h3,
+.xynoplex-browse-view__content h4,
+.xynoplex-browse-view__content h5,
+.xynoplex-browse-view__content h6 {
+  color: var(--xynoplex-text-primary);
+  font-weight: var(--xynoplex-font-bold);
+  line-height: var(--xynoplex-leading-tight);
   margin-top: 1.5em;
   margin-bottom: 0.5em;
 }
 
-[data-theme="dark"] .semiont-browse-view__content h1,
-[data-theme="dark"] .semiont-browse-view__content h2,
-[data-theme="dark"] .semiont-browse-view__content h3,
-[data-theme="dark"] .semiont-browse-view__content h4,
-[data-theme="dark"] .semiont-browse-view__content h5,
-[data-theme="dark"] .semiont-browse-view__content h6 {
-  color: var(--semiont-text-primary);
+[data-theme="dark"] .xynoplex-browse-view__content h1,
+[data-theme="dark"] .xynoplex-browse-view__content h2,
+[data-theme="dark"] .xynoplex-browse-view__content h3,
+[data-theme="dark"] .xynoplex-browse-view__content h4,
+[data-theme="dark"] .xynoplex-browse-view__content h5,
+[data-theme="dark"] .xynoplex-browse-view__content h6 {
+  color: var(--xynoplex-text-primary);
 }
 
-.semiont-browse-view__content h1:first-child,
-.semiont-browse-view__content h2:first-child,
-.semiont-browse-view__content h3:first-child {
+.xynoplex-browse-view__content h1:first-child,
+.xynoplex-browse-view__content h2:first-child,
+.xynoplex-browse-view__content h3:first-child {
   margin-top: 1rem; /* Less top space when heading opens the document */
 }
 
-.semiont-browse-view__content h1 { font-size: var(--semiont-text-3xl); }
-.semiont-browse-view__content h2 { font-size: var(--semiont-text-2xl); }
-.semiont-browse-view__content h3 { font-size: var(--semiont-text-xl); }
-.semiont-browse-view__content h4 { font-size: var(--semiont-text-lg); }
-.semiont-browse-view__content h5 { font-size: var(--semiont-text-base); }
-.semiont-browse-view__content h6 {
-  font-size: var(--semiont-text-sm);
-  color: var(--semiont-text-secondary);
+.xynoplex-browse-view__content h1 { font-size: var(--xynoplex-text-3xl); }
+.xynoplex-browse-view__content h2 { font-size: var(--xynoplex-text-2xl); }
+.xynoplex-browse-view__content h3 { font-size: var(--xynoplex-text-xl); }
+.xynoplex-browse-view__content h4 { font-size: var(--xynoplex-text-lg); }
+.xynoplex-browse-view__content h5 { font-size: var(--xynoplex-text-base); }
+.xynoplex-browse-view__content h6 {
+  font-size: var(--xynoplex-text-sm);
+  color: var(--xynoplex-text-secondary);
 }
 
-.semiont-browse-view__content p {
+.xynoplex-browse-view__content p {
   margin-bottom: 1em;
-  line-height: var(--semiont-leading-relaxed);
-  color: var(--semiont-text-primary);
+  line-height: var(--xynoplex-leading-relaxed);
+  color: var(--xynoplex-text-primary);
 }
 
-.semiont-browse-view__content ul,
-.semiont-browse-view__content ol {
+.xynoplex-browse-view__content ul,
+.xynoplex-browse-view__content ol {
   margin-bottom: 1em;
   padding-left: 1.75em;
 }
 
-.semiont-browse-view__content ul {
+.xynoplex-browse-view__content ul {
   list-style: disc;
 }
 
-.semiont-browse-view__content ol {
+.xynoplex-browse-view__content ol {
   list-style: decimal;
 }
 
-.semiont-browse-view__content li {
+.xynoplex-browse-view__content li {
   margin-bottom: 0.25em;
-  line-height: var(--semiont-leading-relaxed);
-  color: var(--semiont-text-primary);
+  line-height: var(--xynoplex-leading-relaxed);
+  color: var(--xynoplex-text-primary);
 }
 
 /* Nested lists */
-.semiont-browse-view__content ul ul,
-.semiont-browse-view__content ol ol,
-.semiont-browse-view__content ul ol,
-.semiont-browse-view__content ol ul {
+.xynoplex-browse-view__content ul ul,
+.xynoplex-browse-view__content ol ol,
+.xynoplex-browse-view__content ul ol,
+.xynoplex-browse-view__content ol ul {
   margin-top: 0.25em;
   margin-bottom: 0;
 }
 
-.semiont-browse-view__content blockquote {
-  border-left: 4px solid var(--semiont-color-gray-300);
+.xynoplex-browse-view__content blockquote {
+  border-left: 4px solid var(--xynoplex-color-gray-300);
   margin: 1em 0;
   padding: 0.5em 0 0.5em 1.25em;
-  color: var(--semiont-text-secondary);
+  color: var(--xynoplex-text-secondary);
   font-style: italic;
 }
 
-[data-theme="dark"] .semiont-browse-view__content blockquote {
-  border-left-color: var(--semiont-color-gray-600);
+[data-theme="dark"] .xynoplex-browse-view__content blockquote {
+  border-left-color: var(--xynoplex-color-gray-600);
 }
 
-.semiont-browse-view__content code {
-  font-family: var(--semiont-font-mono);
+.xynoplex-browse-view__content code {
+  font-family: var(--xynoplex-font-mono);
   font-size: 0.875em;
-  background: var(--semiont-bg-tertiary);
-  border-radius: var(--semiont-radius-base);
+  background: var(--xynoplex-bg-tertiary);
+  border-radius: var(--xynoplex-radius-base);
   padding: 0.125em 0.3em;
 }
 
-[data-theme="dark"] .semiont-browse-view__content code {
-  background: var(--semiont-color-gray-700);
+[data-theme="dark"] .xynoplex-browse-view__content code {
+  background: var(--xynoplex-color-gray-700);
 }
 
-.semiont-browse-view__content pre {
-  background: var(--semiont-bg-tertiary);
-  border-radius: var(--semiont-radius-md);
+.xynoplex-browse-view__content pre {
+  background: var(--xynoplex-bg-tertiary);
+  border-radius: var(--xynoplex-radius-md);
   padding: 1em 1.25em;
   overflow-x: auto;
   margin-bottom: 1em;
 }
 
-[data-theme="dark"] .semiont-browse-view__content pre {
-  background: var(--semiont-color-gray-800);
+[data-theme="dark"] .xynoplex-browse-view__content pre {
+  background: var(--xynoplex-color-gray-800);
 }
 
-.semiont-browse-view__content pre code {
+.xynoplex-browse-view__content pre code {
   background: none;
   padding: 0;
   font-size: 0.875rem;
 }
 
-.semiont-browse-view__content hr {
+.xynoplex-browse-view__content hr {
   border: none;
-  border-top: 1px solid var(--semiont-color-gray-200);
+  border-top: 1px solid var(--xynoplex-color-gray-200);
   margin: 1.5em 0;
 }
 
-[data-theme="dark"] .semiont-browse-view__content hr {
-  border-top-color: var(--semiont-color-gray-700);
+[data-theme="dark"] .xynoplex-browse-view__content hr {
+  border-top-color: var(--xynoplex-color-gray-700);
 }
 
-.semiont-browse-view__content a {
-  color: var(--semiont-color-primary-600);
+.xynoplex-browse-view__content a {
+  color: var(--xynoplex-color-primary-600);
   text-decoration: underline;
 }
 
-[data-theme="dark"] .semiont-browse-view__content a {
-  color: var(--semiont-color-primary-400);
+[data-theme="dark"] .xynoplex-browse-view__content a {
+  color: var(--xynoplex-color-primary-400);
 }
 
-.semiont-browse-view__content a:hover {
-  color: var(--semiont-color-primary-700);
+.xynoplex-browse-view__content a:hover {
+  color: var(--xynoplex-color-primary-700);
 }
 
-[data-theme="dark"] .semiont-browse-view__content a:hover {
-  color: var(--semiont-color-primary-300);
+[data-theme="dark"] .xynoplex-browse-view__content a:hover {
+  color: var(--xynoplex-color-primary-300);
 }
 
 /* GFM tables */
-.semiont-browse-view__content table {
+.xynoplex-browse-view__content table {
   border-collapse: collapse;
   width: 100%;
   margin-bottom: 1em;
-  font-size: var(--semiont-text-sm);
+  font-size: var(--xynoplex-text-sm);
 }
 
-.semiont-browse-view__content th,
-.semiont-browse-view__content td {
-  border: 1px solid var(--semiont-color-gray-200);
+.xynoplex-browse-view__content th,
+.xynoplex-browse-view__content td {
+  border: 1px solid var(--xynoplex-color-gray-200);
   padding: 0.5em 0.75em;
   text-align: left;
 }
 
-[data-theme="dark"] .semiont-browse-view__content th,
-[data-theme="dark"] .semiont-browse-view__content td {
-  border-color: var(--semiont-color-gray-700);
+[data-theme="dark"] .xynoplex-browse-view__content th,
+[data-theme="dark"] .xynoplex-browse-view__content td {
+  border-color: var(--xynoplex-color-gray-700);
 }
 
-.semiont-browse-view__content th {
-  background: var(--semiont-bg-secondary);
-  font-weight: var(--semiont-font-semibold);
-  color: var(--semiont-text-primary);
+.xynoplex-browse-view__content th {
+  background: var(--xynoplex-bg-secondary);
+  font-weight: var(--xynoplex-font-semibold);
+  color: var(--xynoplex-text-primary);
 }
 
-[data-theme="dark"] .semiont-browse-view__content th {
-  background: var(--semiont-color-gray-800);
+[data-theme="dark"] .xynoplex-browse-view__content th {
+  background: var(--xynoplex-color-gray-800);
 }
 
-.semiont-browse-view__content tr:nth-child(even) td {
-  background: var(--semiont-bg-secondary);
+.xynoplex-browse-view__content tr:nth-child(even) td {
+  background: var(--xynoplex-bg-secondary);
 }
 
-[data-theme="dark"] .semiont-browse-view__content tr:nth-child(even) td {
-  background: var(--semiont-color-gray-800);
+[data-theme="dark"] .xynoplex-browse-view__content tr:nth-child(even) td {
+  background: var(--xynoplex-color-gray-800);
 }
 
 /* GFM task list checkboxes */
-.semiont-browse-view__content input[type="checkbox"] {
+.xynoplex-browse-view__content input[type="checkbox"] {
   margin-right: 0.4em;
-  accent-color: var(--semiont-color-primary-500);
+  accent-color: var(--xynoplex-color-primary-500);
 }
 
-[data-theme="dark"] .semiont-browse-view {
-  background-color: var(--semiont-bg-primary);
+[data-theme="dark"] .xynoplex-browse-view {
+  background-color: var(--xynoplex-bg-primary);
 }
 
 /* AnnotateView Component */
-.semiont-annotate-view {
+.xynoplex-annotate-view {
   position: relative;
   padding: 0;
-  background: var(--semiont-bg-primary);
+  background: var(--xynoplex-bg-primary);
   display: flex;
   flex-direction: column;
   height: 100%; /* Fill parent to enable flexbox children sizing */
 }
 
-[data-theme="dark"] .semiont-annotate-view {
-  background: var(--semiont-bg-primary);
+[data-theme="dark"] .xynoplex-annotate-view {
+  background: var(--xynoplex-bg-primary);
 }
 
-.semiont-annotate-view__content {
+.xynoplex-annotate-view__content {
   position: relative;
   max-width: 100%;
   flex: 1; /* Take remaining space after toolbar */
@@ -359,43 +359,43 @@
 }
 
 /* CodeMirrorRenderer Component */
-.semiont-codemirror {
+.xynoplex-codemirror {
   /* No height: 100% — content expands naturally */
   overflow: hidden;
 }
 
 /* CodeMirror Theme Overrides */
-.semiont-codemirror .cm-editor {
+.xynoplex-codemirror .cm-editor {
   height: 100%;
 }
 
-.semiont-codemirror .cm-scroller {
-  font-family: var(--semiont-font-mono);
+.xynoplex-codemirror .cm-scroller {
+  font-family: var(--xynoplex-font-mono);
   font-size: 0.875rem;
   line-height: 1.5;
 }
 
-.semiont-codemirror .cm-content {
+.xynoplex-codemirror .cm-content {
   padding: 1rem 0;
 }
 
-.semiont-codemirror .cm-line {
+.xynoplex-codemirror .cm-line {
   padding: 0 1.5rem;
 }
 
 /* Page Layout Classes */
-.semiont-page {
+.xynoplex-page {
   display: flex;
   height: 100vh;
   overflow: hidden;
-  background-color: var(--semiont-bg-secondary);
+  background-color: var(--xynoplex-bg-secondary);
 }
 
-[data-theme="dark"] .semiont-page {
-  background-color: var(--semiont-bg-secondary);
+[data-theme="dark"] .xynoplex-page {
+  background-color: var(--xynoplex-bg-secondary);
 }
 
-.semiont-page__content {
+.xynoplex-page__content {
   flex: 1;
   overflow-y: auto;
   padding: 2rem;
@@ -404,11 +404,11 @@
 }
 
 /* When a panel is open, adjust content margin */
-.semiont-page--panel-open .semiont-page__content {
+.xynoplex-page--panel-open .xynoplex-page__content {
   margin-right: 23rem; /* 3rem toolbar + 20rem panel */
 }
 
-.semiont-page__sidebar {
+.xynoplex-page__sidebar {
   display: flex;
   flex-direction: row;
   position: fixed;
@@ -420,24 +420,24 @@
   overflow: hidden;
 }
 
-.semiont-page__header {
+.xynoplex-page__header {
   margin-bottom: 2rem;
 }
 
-.semiont-page__title {
+.xynoplex-page__title {
   font-size: 1.875rem;
   font-weight: 700;
-  color: var(--semiont-text-primary);
+  color: var(--xynoplex-text-primary);
   margin-bottom: 0.5rem;
 }
 
-.semiont-page__subtitle {
-  color: var(--semiont-text-secondary);
+.xynoplex-page__subtitle {
+  color: var(--xynoplex-text-secondary);
   font-size: 1rem;
 }
 
 /* Image Annotation Canvas */
-.semiont-svg-drawing-canvas {
+.xynoplex-svg-drawing-canvas {
   position: relative;
   display: inline-block;
   cursor: crosshair;
@@ -445,18 +445,18 @@
 
 /* No tool, or no text held to annotate with: a drag draws nothing, and the
    cursor does not say it would. */
-.semiont-svg-drawing-canvas[data-drawing-mode="none"] {
+.xynoplex-svg-drawing-canvas[data-drawing-mode="none"] {
   cursor: default;
 }
 
-.semiont-svg-drawing-canvas__image {
+.xynoplex-svg-drawing-canvas__image {
   display: block;
   max-width: 100%;
   height: auto;
   user-select: none;
 }
 
-.semiont-svg-drawing-canvas__overlay-container {
+.xynoplex-svg-drawing-canvas__overlay-container {
   position: absolute;
   top: 0;
   left: 0;
@@ -465,18 +465,18 @@
   pointer-events: none;
 }
 
-.semiont-svg-drawing-canvas__overlay {
+.xynoplex-svg-drawing-canvas__overlay {
   position: relative;
   width: 100%;
   height: 100%;
 }
 
 /* Re-enable pointer events on annotation overlay so shapes can be hovered/clicked */
-.semiont-annotation-overlay {
+.xynoplex-annotation-overlay {
   pointer-events: auto;
 }
 
-.semiont-svg-drawing-canvas__preview {
+.xynoplex-svg-drawing-canvas__preview {
   position: absolute;
   top: 0;
   left: 0;
@@ -486,7 +486,7 @@
 
 /* The line shown while a viewer may not annotate for want of the resource's
    text: above the pages of a PDF, and above an image. */
-.semiont-anchored-text-notice {
+.xynoplex-anchored-text-notice {
   margin: 0.25rem auto;
   padding: 0.25rem 0.75rem;
   border-radius: 9999px;
@@ -494,7 +494,7 @@
   width: fit-content;
   overflow: hidden;
   font-size: 0.75rem;
-  color: var(--semiont-text-secondary);
+  color: var(--xynoplex-text-secondary);
 }
 
 /*
@@ -504,13 +504,13 @@
  * stylesheet's, so the viewer keeps no timer for it. The other line is an
  * answer, and is shown at once.
  */
-.semiont-anchored-text-notice[data-anchored-text="waiting"] {
-  animation: semiont-anchored-text-notice-held-back 0s linear 1s backwards;
+.xynoplex-anchored-text-notice[data-anchored-text="waiting"] {
+  animation: xynoplex-anchored-text-notice-held-back 0s linear 1s backwards;
 }
 
-@keyframes semiont-anchored-text-notice-held-back {
+@keyframes xynoplex-anchored-text-notice-held-back {
   from {
-    visibility: hidden; /* stylelint-disable-line semiont/accessibility */
+    visibility: hidden; /* stylelint-disable-line xynoplex/accessibility */
     max-height: 0;
     margin-block: 0;
     padding-block: 0;
@@ -519,7 +519,7 @@
 }
 
 /* Card Grid Layouts */
-.semiont-card-grid {
+.xynoplex-card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1.5rem;
@@ -530,10 +530,10 @@
  * Empty, loading and unsupported states
  * ────────────────────────────────────────────────────────────────────────── */
 
-.semiont-annotate-view__empty,
-.semiont-browse-view__empty,
-.semiont-annotate-view__loading,
-.semiont-browse-view__loading {
+.xynoplex-annotate-view__empty,
+.xynoplex-browse-view__empty,
+.xynoplex-annotate-view__loading,
+.xynoplex-browse-view__loading {
   display: flex;
   flex: 1;
   align-items: center;
@@ -542,43 +542,43 @@
   text-align: center;
 }
 
-.semiont-annotate-view__empty-message,
-.semiont-browse-view__empty-message {
+.xynoplex-annotate-view__empty-message,
+.xynoplex-browse-view__empty-message {
   margin: 0;
-  color: var(--semiont-text-secondary);
-  font-size: var(--semiont-text-sm);
+  color: var(--xynoplex-text-secondary);
+  font-size: var(--xynoplex-text-sm);
 }
 
 /* A renderer exists for the media type but cannot annotate it — the view is
    still readable, so this says so quietly rather than replacing the content. */
-.semiont-annotate-view--unsupported {
+.xynoplex-annotate-view--unsupported {
   opacity: 0.85;
 }
 
 /* SVG children. The stroke and opacity are set inline per hover/selected
    state; what belongs here is the affordance. */
-.semiont-annotation-overlay__shape {
+.xynoplex-annotation-overlay__shape {
   cursor: pointer;
 }
 
-.semiont-annotation-overlay__status-indicator {
+.xynoplex-annotation-overlay__status-indicator {
   cursor: pointer;
 }
 
 /* A grid that wants exactly two columns rather than the auto-fill default,
    collapsing to one when there is no room for two. */
-.semiont-card-grid--two-columns {
+.xynoplex-card-grid--two-columns {
   grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
 }
 
-.semiont-delete-confirmation__text {
+.xynoplex-delete-confirmation__text {
   margin: 0 0 1.5rem;
-  color: var(--semiont-text-secondary);
-  font-size: var(--semiont-text-sm);
+  color: var(--xynoplex-text-secondary);
+  font-size: var(--xynoplex-text-sm);
 }
 
 /* Page-level loading: the whole route, before any panel exists. */
-.semiont-page__loading {
+.xynoplex-page__loading {
   display: flex;
   flex: 1;
   align-items: center;
@@ -586,23 +586,23 @@
   padding: 4rem 1.5rem;
 }
 
-.semiont-page__loading-text {
+.xynoplex-page__loading-text {
   margin: 0;
-  color: var(--semiont-text-secondary);
-  font-size: var(--semiont-text-sm);
+  color: var(--xynoplex-text-secondary);
+  font-size: var(--xynoplex-text-sm);
 }
 
 /* An image resource fills its viewport without overflowing it. */
-.semiont-image-viewer {
+.xynoplex-image-viewer {
   display: flex;
   align-items: center;
   justify-content: center;
   height: 100%;
   overflow: auto;
-  background-color: var(--semiont-bg-secondary);
+  background-color: var(--xynoplex-bg-secondary);
 }
 
-.semiont-image-viewer__image {
+.xynoplex-image-viewer__image {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;

@@ -8,26 +8,26 @@
 use base64::Engine;
 use base64::engine::general_purpose::URL_SAFE_NO_PAD;
 use futures_core::Stream;
-use semiont::channels::BRIDGED_CHANNELS;
-use semiont::client::SemiontClient;
-use semiont::errors::{
-    SemiontError, SessionError, SessionErrorCode, SignInError, SignInErrorCode, TransportError,
+use xynoplex::channels::BRIDGED_CHANNELS;
+use xynoplex::client::XynoplexClient;
+use xynoplex::errors::{
+    XynoplexError, SessionError, SessionErrorCode, SignInError, SignInErrorCode, TransportError,
 };
-use semiont::session::{
-    OpenedSession, SemiontSession, SemiontSessionConfig, SessionEndReason, SessionSignals,
+use xynoplex::session::{
+    OpenedSession, XynoplexSession, XynoplexSessionConfig, SessionEndReason, SessionSignals,
     SignInKept, StoredSession, kept_in, store_session, stored_session,
 };
-use semiont::state_unit::StateUnit;
-use semiont::testing::axioms::{
+use xynoplex::state_unit::StateUnit;
+use xynoplex::testing::axioms::{
     AxiomSubject, Fresh, StreamSurface, Surface, assert_state_unit_axioms,
 };
-use semiont::testing::{
+use xynoplex::testing::{
     FaultyTransport, SharedStorage, TestClientOptions, TestSessionOptions, create_test_client,
     create_test_session,
 };
-use semiont::timing::{MAX_RECONNECT, RECONNECT};
-use semiont::transport::{BoxFuture, Events};
-use semiont::types::{HttpEndpointProtocol, KbTarget, UserResponse};
+use xynoplex::timing::{MAX_RECONNECT, RECONNECT};
+use xynoplex::transport::{BoxFuture, Events};
+use xynoplex::types::{HttpEndpointProtocol, KbTarget, UserResponse};
 use serde_json::{Value, json};
 use std::collections::VecDeque;
 use std::pin::Pin;
@@ -71,7 +71,7 @@ fn stored(access: &str) -> StoredSession {
     StoredSession {
         access: access.to_owned(),
         refresh: "a-refresh-token".to_owned(),
-        client_id: "semiont-browser".to_owned(),
+        client_id: "xynoplex-browser".to_owned(),
         token_endpoint: "https://issuer.test/token".to_owned(),
         revocation_endpoint: None,
         person_key: None,
@@ -95,7 +95,7 @@ fn answering(n: usize) -> UserResponse {
     }
 }
 
-fn unauthorized() -> SemiontError {
+fn unauthorized() -> XynoplexError {
     TransportError::of_status("HTTP 401", 401, None).into()
 }
 
@@ -115,13 +115,13 @@ fn unanswered_by_the_issuer() -> SignInError {
 }
 
 type Renewal = Result<Option<String>, SignInError>;
-type Validation = Result<UserResponse, SemiontError>;
+type Validation = Result<UserResponse, XynoplexError>;
 
 /// A session's environment, and a record of what the session did to it.
 struct World {
     storage: Arc<SharedStorage>,
     transport: FaultyTransport,
-    client: Arc<SemiontClient>,
+    client: Arc<XynoplexClient>,
     /// What `refresh` answers, in order; `Ok(None)` once it is spent.
     renewals: Arc<Mutex<VecDeque<Renewal>>>,
     renewed: Arc<Mutex<usize>>,
@@ -137,7 +137,7 @@ struct World {
     auth_failed: Arc<Mutex<Vec<String>>>,
     /// The errors stream of each session made here, taken before the
     /// session starts.
-    heard: Mutex<Vec<Events<SemiontError>>>,
+    heard: Mutex<Vec<Events<XynoplexError>>>,
     /// What the sessions said of their own on it so far, in order.
     said: Mutex<Vec<SessionError>>,
 }
@@ -185,13 +185,13 @@ impl World {
         self
     }
 
-    fn config(&self) -> SemiontSessionConfig {
+    fn config(&self) -> XynoplexSessionConfig {
         let (renewals, renewed) = (self.renewals.clone(), self.renewed.clone());
         let (renewed_at, handed) = (self.renewed_at.clone(), self.handed.clone());
         let (validations, validated) = (self.validations.clone(), self.validated.clone());
         let answered = self.answered.clone();
         let auth_failed = self.auth_failed.clone();
-        SemiontSessionConfig {
+        XynoplexSessionConfig {
             kb: KbTarget::http(KB, "Alpha", "localhost", 4000, HttpEndpointProtocol::Http),
             kept: kept_in(self.storage.clone(), KB),
             client: self.client.clone(),
@@ -238,13 +238,13 @@ impl World {
 
     /// A session over `config`, whose errors stream is read from before it
     /// starts: the session's start runs once the test first waits.
-    fn session_of(&self, config: SemiontSessionConfig) -> SemiontSession {
-        let session = SemiontSession::new(config);
+    fn session_of(&self, config: XynoplexSessionConfig) -> XynoplexSession {
+        let session = XynoplexSession::new(config);
         self.heard.lock().expect("heard").push(session.errors());
         session
     }
 
-    fn session(&self) -> SemiontSession {
+    fn session(&self) -> XynoplexSession {
         self.session_of(self.config())
     }
 
@@ -288,7 +288,7 @@ impl World {
                 Pin::new(&mut *errors).poll_next(&mut Context::from_waker(Waker::noop()))
             {
                 match item {
-                    Ok(SemiontError::Session(error)) => said.push(error),
+                    Ok(XynoplexError::Session(error)) => said.push(error),
                     Ok(_) => {}
                     Err(missed) => panic!("a session's errors stream missed some: {missed}"),
                 }
@@ -309,7 +309,7 @@ impl World {
 }
 
 /// A session that never becomes ready fails its test, and does not hang it.
-async fn ready(session: &SemiontSession) {
+async fn ready(session: &XynoplexSession) {
     tokio::time::timeout(Duration::from_secs(60), session.ready())
         .await
         .expect("the session becomes ready");
@@ -320,7 +320,7 @@ async fn settle() {
 }
 
 /// The token the session holds: what a refusal of that token names.
-fn held_by(session: &SemiontSession) -> Option<String> {
+fn held_by(session: &XynoplexSession) -> Option<String> {
     session.token().borrow().clone()
 }
 
@@ -357,7 +357,7 @@ async fn a_stored_token_that_is_still_good_is_the_sessions_from_its_start_and_sa
 async fn a_token_the_session_was_given_is_not_replaced_by_the_stored_one() {
     let world = World::new().storing(&token(3600, 1));
     let given = token(3600, 2);
-    let session = world.session_of(SemiontSessionConfig {
+    let session = world.session_of(XynoplexSessionConfig {
         token: watch::channel(Some(given.clone())).0,
         ..world.config()
     });
@@ -370,7 +370,7 @@ async fn a_token_the_session_was_given_is_not_replaced_by_the_stored_one() {
 async fn a_session_of_a_service_asks_nobody_who_it_is() {
     let access = token(3600, 1);
     let world = World::new().storing(&access);
-    let session = world.session_of(SemiontSessionConfig {
+    let session = world.session_of(XynoplexSessionConfig {
         validate: None,
         ..world.config()
     });
@@ -551,7 +551,7 @@ async fn an_expired_token_the_storage_will_not_forget_is_said_at_the_start() {
     let world = World::new()
         .storing(&expired())
         .renewing([Err(refused_by_the_issuer())]);
-    let session = world.session_of(SemiontSessionConfig {
+    let session = world.session_of(XynoplexSessionConfig {
         kept: Arc::new(Unforgetting(kept_in(world.storage.clone(), KB))),
         ..world.config()
     });
@@ -635,7 +635,7 @@ fn then(case: &Value) -> Option<&Value> {
 }
 
 /// The session stood as `later` states once the reconnect wait passed.
-fn then_ends_as_stated(why: &str, later: &Value, world: &World, session: &SemiontSession) {
+fn then_ends_as_stated(why: &str, later: &Value, world: &World, session: &XynoplexSession) {
     let ends = match (
         session.token().borrow().is_some(),
         session.user().borrow().is_some(),
@@ -951,14 +951,14 @@ fn starting_slowly(
     stored_token: &str,
     of_renewed: Validation,
 ) -> (
-    SemiontSession,
+    XynoplexSession,
     Arc<Mutex<Vec<String>>>,
     Arc<tokio::sync::Notify>,
 ) {
     let asked: Arc<Mutex<Vec<String>>> = Arc::default();
     let release = Arc::new(tokio::sync::Notify::new());
     let (asking, held, stored_token) = (asked.clone(), release.clone(), stored_token.to_owned());
-    let session = world.session_of(SemiontSessionConfig {
+    let session = world.session_of(XynoplexSessionConfig {
         validate: Some(Arc::new(move |token| {
             asking.lock().expect("asked").push(token.clone());
             let (held, stored_token, of_renewed) =
@@ -1032,7 +1032,7 @@ async fn the_start_does_the_asking_when_it_and_the_stream_are_both_waiting_on_on
     let renewals = Arc::new(Mutex::new(0usize));
     let (issuing, renewing, issued) = (issue.clone(), renewals.clone(), renewed.clone());
     let (asking, holding, held_token) = (asked.clone(), release.clone(), renewed.clone());
-    let session = world.session_of(SemiontSessionConfig {
+    let session = world.session_of(XynoplexSessionConfig {
         refresh: Some(Arc::new(move |_holding| {
             *renewing.lock().expect("renewals") += 1;
             let (issuing, issued) = (issuing.clone(), issued.clone());
@@ -1118,7 +1118,7 @@ async fn refusals_that_arrive_together_cost_one_renewal_and_one_ask() {
     // An issuer that takes a moment, as one does: the refusals overlap.
     let renewals = Arc::new(Mutex::new(0usize));
     let (renewing, issued) = (renewals.clone(), renewed.clone());
-    let session = world.session_of(SemiontSessionConfig {
+    let session = world.session_of(XynoplexSessionConfig {
         refresh: Some(Arc::new(move |_holding| {
             *renewing.lock().expect("renewals") += 1;
             let issued = issued.clone();
@@ -1165,7 +1165,7 @@ async fn a_session_is_not_ended_by_the_refusal_of_a_token_it_no_longer_holds() {
     let release = Arc::new(tokio::sync::Notify::new());
     let (holding, held_token) = (release.clone(), renewed.clone());
     let sends = watch::channel(None).0;
-    let session = world.session_of(SemiontSessionConfig {
+    let session = world.session_of(XynoplexSessionConfig {
         token: sends.clone(),
         validate: Some(Arc::new(move |token| {
             let (holding, held_token) = (holding.clone(), held_token.clone());
@@ -1259,7 +1259,7 @@ async fn a_token_that_falls_due_while_a_refusal_renews_it_is_renewed_once() {
     let release = Arc::new(tokio::sync::Notify::new());
     let renewals = Arc::new(Mutex::new(0usize));
     let (renewing, holding, issued) = (renewals.clone(), release.clone(), renewed.clone());
-    let session = world.session_of(SemiontSessionConfig {
+    let session = world.session_of(XynoplexSessionConfig {
         refresh: Some(Arc::new(move |_holding| {
             *renewing.lock().expect("renewals") += 1;
             let (holding, issued) = (holding.clone(), issued.clone());
@@ -1319,7 +1319,7 @@ async fn a_session_that_cannot_be_renewed_is_over_and_says_so_once() {
 #[tokio::test(start_paused = true)]
 async fn a_session_whose_credential_the_storage_will_not_forget_says_so_as_it_ends() {
     let world = World::new().storing(&token(3600, 1));
-    let session = world.session_of(SemiontSessionConfig {
+    let session = world.session_of(XynoplexSessionConfig {
         kept: Arc::new(Unforgetting(kept_in(world.storage.clone(), KB))),
         ..world.config()
     });
@@ -1463,7 +1463,7 @@ async fn a_renewal_whose_sign_in_cannot_be_read_got_no_answer_and_is_tried_again
         .storing(&token(3600, 1))
         .renewing([Err(unanswered_by_the_issuer()), Ok(Some(renewed.clone()))]);
     let kept = Unreadable::over(kept_in(world.storage.clone(), KB));
-    let session = world.session_of(SemiontSessionConfig {
+    let session = world.session_of(XynoplexSessionConfig {
         kept: kept.clone(),
         ..world.config()
     });
@@ -1496,7 +1496,7 @@ async fn a_start_whose_renewals_find_the_sign_in_unreadable_goes_on_renewing_on_
         Ok(Some(renewed.clone())),
     ]);
     let kept = Unreadable::over(kept_in(world.storage.clone(), KB));
-    let session = world.session_of(SemiontSessionConfig {
+    let session = world.session_of(XynoplexSessionConfig {
         kept: kept.clone(),
         ..world.config()
     });
@@ -1541,7 +1541,7 @@ async fn a_session_that_never_signed_in_cannot_expire() {
 async fn a_session_given_no_way_to_renew_asks_nothing_and_ends_nothing() {
     let access = token(3600, 1);
     let world = World::new().storing(&access);
-    let session = world.session_of(SemiontSessionConfig {
+    let session = world.session_of(XynoplexSessionConfig {
         refresh: None,
         ..world.config()
     });
@@ -1624,7 +1624,7 @@ async fn a_session_closed_while_renewing_gives_the_refusal_no_token_and_keeps_th
     let renewals = Arc::new(Mutex::new(0usize));
     let (renewing, holding) = (renewals.clone(), release.clone());
     let (storage, issued) = (world.storage.clone(), renewed.clone());
-    let session = world.session_of(SemiontSessionConfig {
+    let session = world.session_of(XynoplexSessionConfig {
         refresh: Some(Arc::new(move |_holding| {
             *renewing.lock().expect("renewals") += 1;
             let (holding, storage, issued) = (holding.clone(), storage.clone(), issued.clone());
@@ -1736,9 +1736,9 @@ fn the_signals_keep_the_state_unit_axioms() {
 struct Sessions;
 
 impl AxiomSubject for Sessions {
-    type Unit = SemiontSession;
+    type Unit = XynoplexSession;
 
-    fn setup(&self) -> Fresh<SemiontSession> {
+    fn setup(&self) -> Fresh<XynoplexSession> {
         let test = create_test_session(TestSessionOptions::default());
         Fresh::of(test.session).given(test.client)
     }
@@ -1746,7 +1746,7 @@ impl AxiomSubject for Sessions {
     // Its stream state is its client's, and ends with the client. Its errors
     // are its own, its transport's failures among them, and end with the
     // session.
-    fn surfaces(&self, unit: &SemiontSession) -> Vec<Box<dyn Surface>> {
+    fn surfaces(&self, unit: &XynoplexSession) -> Vec<Box<dyn Surface>> {
         vec![
             Box::new(unit.token()),
             Box::new(unit.user()),

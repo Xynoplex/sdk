@@ -2,12 +2,12 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowseView } from '../BrowseView';
-import type { EventBus, EventMap } from '@semiont/core';
-import type { SemiontClient, SemiontSession } from '@semiont/sdk';
-import { createTestSemiontWrapper, renderInEnglish, englishTranslationManager } from '../../../test-utils';
+import type { EventBus, EventMap } from '@xynoplex/core';
+import type { XynoplexClient, XynoplexSession } from '@xynoplex/sdk';
+import { createTestXynoplexWrapper, renderInEnglish, englishTranslationManager } from '../../../test-utils';
 
-import type { Annotation, AnnotationId } from '@semiont/core';
-import { FrameRefusal, annotationId, resourceId } from '@semiont/core';
+import type { Annotation, AnnotationId } from '@xynoplex/core';
+import { FrameRefusal, annotationId, resourceId } from '@xynoplex/core';
 
 /** What the bus said, as its channel's payload: nothing bridges into this test's bus, so a refusal on it is the test's own fault. */
 function told<T>(payload: T | FrameRefusal): T {
@@ -16,16 +16,16 @@ function told<T>(payload: T | FrameRefusal): T {
 }
 
 // BrowseView takes its `session` + `sparkleAnnotationIds` as props — no
-// ResourceAnnotationsContext / SemiontProvider reach-in. `makeSession` (below)
+// ResourceAnnotationsContext / XynoplexProvider reach-in. `makeSession` (below)
 // wraps the fake client so browse:click / beckon:hover land on the bus the
 // trackers listen on, the bus BrowseView's event hooks read beckon:* on.
 
-// Mock @semiont/core utilities. The media-type registry (`capabilitiesOf`)
+// Mock @xynoplex/core utilities. The media-type registry (`capabilitiesOf`)
 // is NOT mocked — BrowseView dispatches on the real registry's render mode,
 // so the tested types (text/markdown, image/png, application/octet-stream)
 // resolve through the real source of truth.
-vi.mock('@semiont/core', async () => {
-  const actual = await vi.importActual('@semiont/core');
+vi.mock('@xynoplex/core', async () => {
+  const actual = await vi.importActual('@xynoplex/core');
   return {
     ...actual,
     resourceId: vi.fn((id: string) => id),
@@ -122,8 +122,8 @@ function createEventTracker() {
 // BrowseView takes its session as a prop. Wrap the fake client so
 // browse:click / beckon:hover emit on the SAME bus the trackers listen on, and
 // BrowseView's event hooks read beckon:* there (mirrors test-utils' fake session).
-function makeSession(client: SemiontClient): SemiontSession {
-  return { client } as unknown as SemiontSession;
+function makeSession(client: XynoplexClient): XynoplexSession {
+  return { client } as unknown as XynoplexSession;
 }
 
 // Under translations, as a host mounts a view: the image canvas shows a
@@ -133,9 +133,9 @@ const renderWithProviders = (
   component: React.ReactElement<React.ComponentProps<typeof BrowseView>>,
   options: { sparkleAnnotationIds?: Set<string> } = {}
 ) => {
-  const { SemiontWrapper, client } = createTestSemiontWrapper();
+  const { XynoplexWrapper, client } = createTestXynoplexWrapper();
   const Wrapper = ({ children }: { children: React.ReactNode }) => (
-    <SemiontWrapper>{children}</SemiontWrapper>
+    <XynoplexWrapper>{children}</XynoplexWrapper>
   );
   return renderInEnglish(
     React.cloneElement(component, { session: makeSession(client), sparkleAnnotationIds: options.sparkleAnnotationIds }),
@@ -148,10 +148,10 @@ const renderWithEventTracking = (
   tracker: ReturnType<typeof createEventTracker>,
   options: { sparkleAnnotationIds?: Set<string> } = {}
 ) => {
-  const { SemiontWrapper, eventBus, client } = createTestSemiontWrapper();
+  const { XynoplexWrapper, eventBus, client } = createTestXynoplexWrapper();
   tracker._attach(eventBus);
   const Wrapper = ({ children }: { children: React.ReactNode }) => (
-    <SemiontWrapper>{children}</SemiontWrapper>
+    <XynoplexWrapper>{children}</XynoplexWrapper>
   );
   return render(
     React.cloneElement(component, { session: makeSession(client), sparkleAnnotationIds: options.sparkleAnnotationIds }),
@@ -194,7 +194,7 @@ describe('BrowseView Component', () => {
     annotateMode: false,
     // Placeholder — the render helpers override this with a session bound to the
     // fake client's bus (so emits/subscriptions land where the trackers listen).
-    session: null as SemiontSession | null,
+    session: null as XynoplexSession | null,
   };
 
   beforeEach(() => {
@@ -231,7 +231,7 @@ describe('BrowseView Component', () => {
       // marks would never paint in browse mode.
       const { container } = renderWithProviders(<BrowseView translationManager={englishTranslationManager} {...defaultProps} mimeType="image/png" />);
 
-      expect(container.querySelector('.semiont-svg-drawing-canvas')).toBeInTheDocument();
+      expect(container.querySelector('.xynoplex-svg-drawing-canvas')).toBeInTheDocument();
     });
 
     it('should render unsupported message for unsupported mime types', () => {
@@ -253,7 +253,7 @@ describe('BrowseView Component', () => {
     it('should attach single click handler to container on mount', () => {
       const { container } = renderWithProviders(<BrowseView translationManager={englishTranslationManager} {...defaultProps} />);
 
-      const browseContainer = container.querySelector('.semiont-browse-view__content');
+      const browseContainer = container.querySelector('.xynoplex-browse-view__content');
       expect(browseContainer).toBeInTheDocument();
 
       // Verify handler is attached by checking if the element exists
@@ -282,7 +282,7 @@ describe('BrowseView Component', () => {
         closest: vi.fn(() => mockAnnotationElement),
       };
 
-      const browseContainer = container.querySelector('.semiont-browse-view__content');
+      const browseContainer = container.querySelector('.xynoplex-browse-view__content');
 
       // Simulate mouseover event (fires once on enter)
       fireEvent.mouseOver(browseContainer!, { target: mockTarget });
@@ -306,7 +306,7 @@ describe('BrowseView Component', () => {
         tracker
       );
 
-      const browseContainer = container.querySelector('.semiont-browse-view__content');
+      const browseContainer = container.querySelector('.xynoplex-browse-view__content');
 
       const mockAnnotationElement = document.createElement('span');
       mockAnnotationElement.setAttribute('data-annotation-id', 'ref-1');
@@ -336,7 +336,7 @@ describe('BrowseView Component', () => {
         closest: vi.fn(() => null),
       };
 
-      const browseContainer = container.querySelector('.semiont-browse-view__content');
+      const browseContainer = container.querySelector('.xynoplex-browse-view__content');
 
       tracker.clear();
 
@@ -372,7 +372,7 @@ describe('BrowseView Component', () => {
       const mockTarget1 = { closest: vi.fn(() => mockAnnotation1) };
       const mockTarget2 = { closest: vi.fn(() => mockAnnotation2) };
 
-      const browseContainer = container.querySelector('.semiont-browse-view__content');
+      const browseContainer = container.querySelector('.xynoplex-browse-view__content');
 
       tracker.clear();
 
@@ -425,7 +425,7 @@ describe('BrowseView Component', () => {
         tracker
       );
 
-      const browseContainer = container.querySelector('.semiont-browse-view__content');
+      const browseContainer = container.querySelector('.xynoplex-browse-view__content');
 
       const clickCases = [
         { id: 'ref-1', type: 'reference', motivation: 'linking' },
@@ -477,7 +477,7 @@ describe('BrowseView Component', () => {
       el.getBoundingClientRect = () => RECT;
       const mockTarget = { closest: vi.fn(() => el) } as unknown as EventTarget;
 
-      const browseContainer = container.querySelector('.semiont-browse-view__content');
+      const browseContainer = container.querySelector('.xynoplex-browse-view__content');
       tracker.clear();
       fireEvent.click(browseContainer!, { target: mockTarget });
 
@@ -516,7 +516,7 @@ describe('BrowseView Component', () => {
         isCollapsed: false,
       } as Selection);
 
-      const browseContainer = container.querySelector('.semiont-browse-view__content');
+      const browseContainer = container.querySelector('.xynoplex-browse-view__content');
       tracker.clear();
       fireEvent.click(browseContainer!, { target: mockTarget });
 
@@ -576,7 +576,7 @@ describe('BrowseView Component', () => {
         tags: [],
       };
 
-      const { SemiontWrapper, eventBus, client } = createTestSemiontWrapper();
+      const { XynoplexWrapper, eventBus, client } = createTestXynoplexWrapper();
       eventBus.on('beckon:hover').subscribe((payload) => {
         eventTracker.push({ event: 'beckon:hover', annotationId: told(payload)?.annotationId ?? null });
       });
@@ -585,12 +585,12 @@ describe('BrowseView Component', () => {
       });
 
       const { container } = render(
-        <SemiontWrapper>
+        <XynoplexWrapper>
           <BrowseView translationManager={englishTranslationManager} {...defaultProps} annotations={manyAnnotations} session={makeSession(client)} />
-        </SemiontWrapper>
+        </XynoplexWrapper>
       );
 
-      const browseContainer = container.querySelector('.semiont-browse-view__content');
+      const browseContainer = container.querySelector('.xynoplex-browse-view__content');
       expect(browseContainer).toBeInTheDocument();
 
       // Create mock annotation elements
@@ -634,7 +634,7 @@ describe('BrowseView Component', () => {
     it('should remove event listeners on unmount', () => {
       const { unmount, container } = renderWithProviders(<BrowseView translationManager={englishTranslationManager} {...defaultProps} />);
 
-      const browseContainer = container.querySelector('.semiont-browse-view__content');
+      const browseContainer = container.querySelector('.xynoplex-browse-view__content');
 
       // Mock removeEventListener to verify cleanup
       const mockRemoveEventListener = vi.fn();
@@ -657,7 +657,7 @@ describe('BrowseView Component', () => {
 // ─────────────────────────────────────────────────────────────────────
 describe('BrowseView — beckon:focus is guarded by resourceId', () => {
   it('ignores a focus aimed at a different resource, honours one that matches', () => {
-    const { session, client } = createTestSemiontWrapper();
+    const { session, client } = createTestXynoplexWrapper();
     const { container } = render(
       <BrowseView
         translationManager={englishTranslationManager}
@@ -678,7 +678,7 @@ describe('BrowseView — beckon:focus is guarded by resourceId', () => {
   });
 
   it('scrolls its content to the top on a focus naming this resource and no annotation, and on no other', () => {
-    const { session, client } = createTestSemiontWrapper();
+    const { session, client } = createTestXynoplexWrapper();
     const { container } = render(
       <BrowseView
         translationManager={englishTranslationManager}
@@ -691,7 +691,7 @@ describe('BrowseView — beckon:focus is guarded by resourceId', () => {
       />,
     );
     // jsdom lays nothing out and gives an element no scrollTo of its own.
-    const content = container.querySelector<HTMLElement>('.semiont-browse-view__content');
+    const content = container.querySelector<HTMLElement>('.xynoplex-browse-view__content');
     if (!content) throw new Error('the view rendered no content to scroll');
     const scrollTo = vi.fn();
     content.scrollTo = scrollTo;

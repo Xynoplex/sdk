@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Publish all @semiont/* packages to a registry.
+# Publish all @xynoplex/* packages to a registry.
 #
 # Usage:
-#   ./packages/typescript/scripts/publish.sh [options]
+#   ./typescript/scripts/publish.sh [options]
 #
 # Options:
 #   --registry <url>   Target registry (default: https://registry.npmjs.org)
@@ -64,12 +64,12 @@ banner "STAMP VERSIONS"
 echo -e "  Version: ${BOLD}$VERSION${RESET}  Tag: ${BOLD}$TAG${RESET}  Registry: ${DIM}$REGISTRY${RESET}"
 echo ""
 
-node packages/typescript/scripts/stamp-versions.mjs "$VERSION"
+node typescript/scripts/stamp-versions.mjs "$VERSION"
 
 # --- Stage app packages ---
 
 banner "STAGE APPS"
-node packages/typescript/scripts/publish-npm-apps.mjs
+node typescript/scripts/publish-npm-apps.mjs
 
 # --- Build npmrc args ---
 

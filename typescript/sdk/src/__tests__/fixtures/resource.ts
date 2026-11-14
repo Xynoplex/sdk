@@ -6,12 +6,12 @@
  * doubles' `as unknown as` casts.
  */
 
-import { resourceId } from '@semiont/core';
-import type { ResourceDescriptor } from '@semiont/core';
+import { resourceId } from '@xynoplex/core';
+import type { ResourceDescriptor } from '@xynoplex/core';
 
 export function mockResource(id: string, overrides: Partial<ResourceDescriptor> = {}): ResourceDescriptor {
   return {
-    '@context': 'https://semiont.dev/context/v1',
+    '@context': 'https://xynoplex.dev/context/v1',
     '@id': resourceId(id),
     name: `Resource ${id}`,
     representations: [],

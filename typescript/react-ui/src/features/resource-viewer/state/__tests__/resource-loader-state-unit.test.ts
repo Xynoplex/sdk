@@ -3,14 +3,14 @@ import { asStates } from '../../../../__tests__/test-client';
 import { sessionOf } from '../../../../__tests__/test-client';
 import { BehaviorSubject, Subject, firstValueFrom } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { resourceId as makeResourceId } from '@semiont/core';
-import type { SemiontClient } from '@semiont/sdk';
+import { resourceId as makeResourceId } from '@xynoplex/core';
+import type { XynoplexClient } from '@xynoplex/sdk';
 import { createResourceLoaderStateUnit, type ResourceLoaderStateUnit } from '../resource-loader-state-unit';
-import { assertStateUnitAxioms } from '@semiont/core/testing/axioms';
+import { assertStateUnitAxioms } from '@xynoplex/core/testing/axioms';
 
 const RID = makeResourceId('res-1');
 
-function mockClient(resource$?: BehaviorSubject<unknown>): SemiontClient {
+function mockClient(resource$?: BehaviorSubject<unknown>): XynoplexClient {
   const subject = resource$ ?? new BehaviorSubject<unknown>({ '@id': 'res-1', name: 'Test' });
   const invalidate = vi.fn();
   return {
@@ -18,7 +18,7 @@ function mockClient(resource$?: BehaviorSubject<unknown>): SemiontClient {
       resource: () => asStates(subject.asObservable()),
       invalidateResourceDetail: invalidate,
     },
-  } as unknown as SemiontClient;
+  } as unknown as XynoplexClient;
 }
 
 /**
@@ -39,7 +39,7 @@ function failingClient() {
       },
       invalidateResourceDetail: invalidate,
     },
-  } as unknown as SemiontClient;
+  } as unknown as XynoplexClient;
   return {
     client,
     invalidate,

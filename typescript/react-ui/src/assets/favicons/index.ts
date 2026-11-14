@@ -11,4 +11,4 @@ export const faviconPaths = {
 } as const;
 
 // Export React component for inline use
-export { SemiontFavicon } from './SemiontFavicon';
+export { XynoplexFavicon } from './XynoplexFavicon';

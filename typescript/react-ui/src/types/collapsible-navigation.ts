@@ -1,6 +1,6 @@
 import { ComponentType, ReactNode } from 'react';
-import type { ResourceId } from '@semiont/core';
-import type { OpenResource } from '@semiont/sdk';
+import type { ResourceId } from '@xynoplex/core';
+import type { OpenResource } from '@xynoplex/sdk';
 import type { LinkComponentProps } from '../contexts/RoutingContext';
 /**
  * Props for the sortable resource tab component

@@ -15,14 +15,14 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, fireEvent, within, act } from '@testing-library/react';
 import { renderInEnglish, englishTranslationManager } from '../../test-utils';
 import '@testing-library/jest-dom';
-import { resourceId, EventBus } from '@semiont/core';
-import type { EventMap, ResourceDescriptor as SemiontResource, ResourceId } from '@semiont/core';
-import type { SemiontSession } from '@semiont/sdk';
+import { resourceId, EventBus } from '@xynoplex/core';
+import type { EventMap, ResourceDescriptor as XynoplexResource, ResourceId } from '@xynoplex/core';
+import type { XynoplexSession } from '@xynoplex/sdk';
 import { usePendingCreation } from '../usePendingCreation';
 import { ResourceViewer } from '../../components/resource/ResourceViewer';
 
 vi.mock('../../components/CodeMirrorRenderer', () => ({
-  CodeMirrorRenderer: ({ content }: { content: string }) => <div className="semiont-codemirror">{content}</div>,
+  CodeMirrorRenderer: ({ content }: { content: string }) => <div className="xynoplex-codemirror">{content}</div>,
 }));
 vi.mock('react-markdown', () => ({ default: ({ children }: { children: string }) => <div>{children}</div> }));
 vi.mock('remark-gfm', () => ({ default: () => ({}) }));
@@ -46,7 +46,7 @@ function liveSession() {
         fire('mark:requested', { source, selector, motivation })),
     },
   };
-  const session = { client } as unknown as SemiontSession;
+  const session = { client } as unknown as XynoplexSession;
   return { session, client, fire };
 }
 
@@ -102,7 +102,7 @@ describe('usePendingCreation — the exported creation seam', () => {
   it('integration: viewer selection capture → hook claim, end to end', () => {
     const { session } = liveSession();
     const CONTENT = 'hello world selectme end';
-    const resource: SemiontResource & { content: string } = {
+    const resource: XynoplexResource & { content: string } = {
       '@context': 'https://www.w3.org/ns/activitystreams',
       '@id': 'res-1' as ResourceId,
       name: 'Doc',

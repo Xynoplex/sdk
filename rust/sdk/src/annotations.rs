@@ -16,8 +16,8 @@
 //! a text is given as the `&str` it is: no caller converts one.
 //!
 //! ```
-//! use semiont::annotations::{QuotedText, annotation_of_span, reconcile};
-//! use semiont::types::{Agent, AgentSoftware, Motivation, ResourceId};
+//! use xynoplex::annotations::{QuotedText, annotation_of_span, reconcile};
+//! use xynoplex::types::{Agent, AgentSoftware, Motivation, ResourceId};
 //!
 //! let text = "Ada Lovelace wrote the first algorithm.";
 //! let resource_id: ResourceId = "res-1".parse()?;

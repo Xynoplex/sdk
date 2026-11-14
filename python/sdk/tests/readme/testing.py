@@ -1,10 +1,10 @@
-from semiont.client import SemiontClient
-from semiont.identifiers import ResourceId
-from semiont.testing import create_test_client
-from semiont.transport import Transport
+from xynoplex.client import XynoplexClient
+from xynoplex.identifiers import ResourceId
+from xynoplex.testing import create_test_client
+from xynoplex.transport import Transport
 
 
-async def title_of(client: SemiontClient[Transport], resource: ResourceId) -> str:
+async def title_of(client: XynoplexClient[Transport], resource: ResourceId) -> str:
     return (await client.browse.resource(resource).fresh()).name.title()
 
 

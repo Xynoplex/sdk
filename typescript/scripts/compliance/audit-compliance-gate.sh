@@ -14,7 +14,7 @@ set -euo pipefail
 # case is what tells a refusal apart from an audit that merely crashed.
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)"
-COMPLIANCE_DIR="$REPO_ROOT/packages/typescript/scripts/compliance"
+COMPLIANCE_DIR="$REPO_ROOT/typescript/scripts/compliance"
 
 scratch="$(mktemp -d)"
 trap 'rm -rf "$scratch"' EXIT

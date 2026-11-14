@@ -11,9 +11,9 @@ use opentelemetry_sdk::metrics::data::{AggregatedMetrics, MetricData};
 use opentelemetry_sdk::metrics::{InMemoryMetricExporter, SdkMeterProvider};
 use opentelemetry_sdk::propagation::TraceContextPropagator;
 use opentelemetry_sdk::trace::{InMemorySpanExporter, SdkTracerProvider, SpanData};
-use semiont::testing::examples::assert_readme_shows;
-use semiont::transport::TraceCarrier;
-use semiont_telemetry::{
+use xynoplex::testing::examples::assert_readme_shows;
+use xynoplex::transport::TraceCarrier;
+use xynoplex_telemetry::{
     active_trace, active_trace_id, bus_emit, bus_recv, content_get, content_get_anchored_text,
     content_get_annotations, content_get_graph, content_put, continued, continuing, in_span_now,
 };
@@ -88,7 +88,7 @@ async fn every_row_of_the_sdk_telemetry_table_is_what_a_function_here_records() 
     global::set_tracer_provider(tracer_provider);
     global::set_meter_provider(meter_provider.clone());
     // The bus log's `trace=` field is the active span's trace.
-    semiont::bus_log::set_trace_id_provider(semiont_telemetry::active_trace_id);
+    xynoplex::bus_log::set_trace_id_provider(xynoplex_telemetry::active_trace_id);
     // </readme:install>
 
     // Each function, with and without what its row lists as conditional.

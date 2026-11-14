@@ -1,7 +1,7 @@
 (test
  (name transport)
  (modules transport subscription_timing)
- (libraries semiont eio_main eio.mock cohttp-eio tls-eio mirage-crypto-rng.unix
+ (libraries xynoplex eio_main eio.mock cohttp-eio tls-eio mirage-crypto-rng.unix
   x509 uri mtime ptime cstruct domain-name alcotest)
  (deps peer-cert.pem peer-key.pem))
 
@@ -35,7 +35,7 @@
 (test
  (name runtime)
  (modules runtime)
- (libraries semiont eio_main eio.mock mtime alcotest))
+ (libraries xynoplex eio_main eio.mock mtime alcotest))
 
 (executable
  (name api_inventory)
@@ -52,7 +52,7 @@
 (test
  (name json_boundary)
  (modules json_boundary)
- (libraries semiont yojson uutf qcheck alcotest))
+ (libraries xynoplex yojson uutf qcheck alcotest))
 
 (test
  (name body_lifetime)

@@ -5,12 +5,12 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import { CommentsPanel } from '../CommentsPanel';
-import { FrameRefusal, type EventBus, type EventMap } from '@semiont/core';
+import { FrameRefusal, type EventBus, type EventMap } from '@xynoplex/core';
 import type { CommentEntry } from '../CommentEntry';
-import { createMarkStateUnit, type MarkStateUnit, type SemiontSession } from '@semiont/sdk';
-import { createTestSemiontWrapper } from '../../../../test-utils';
+import { createMarkStateUnit, type MarkStateUnit, type XynoplexSession } from '@xynoplex/sdk';
+import { createTestXynoplexWrapper } from '../../../../test-utils';
 
-import type { Annotation, AnnotationId } from '@semiont/core';
+import type { Annotation, AnnotationId } from '@xynoplex/core';
 
 // Composition-based event tracker
 interface TrackedEvent {
@@ -39,20 +39,20 @@ function createEventTracker() {
 // Per-test session/bus/wrapper — created in beforeEach because test-utils
 // disposes every created client after each test (a module-scope wrapper
 // would hand later tests a disposed client).
-let session: SemiontSession;
+let session: XynoplexSession;
 let mark: MarkStateUnit;
 let eventBus: EventBus;
-let SemiontWrapper: React.ComponentType<{ children: React.ReactNode }>;
+let XynoplexWrapper: React.ComponentType<{ children: React.ReactNode }>;
 
 beforeEach(() => {
-  ({ session, eventBus, SemiontWrapper } = createTestSemiontWrapper());
+  ({ session, eventBus, XynoplexWrapper } = createTestXynoplexWrapper());
   mark = createMarkStateUnit(session.client, resourceId('res-1'));
 });
 
 const renderWithEventBus = (component: React.ReactElement, tracker?: ReturnType<typeof createEventTracker>) => {
   if (tracker) tracker._attach(eventBus);
   const Wrapper = ({ children }: { children: React.ReactNode }) => (
-    <SemiontWrapper>{children}</SemiontWrapper>
+    <XynoplexWrapper>{children}</XynoplexWrapper>
   );
   return render(component, { wrapper: Wrapper });
 };
@@ -72,9 +72,9 @@ vi.mock('../../../../contexts/TranslationContext', () => ({
   TranslationProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
-// Mock @semiont/http-transport utilities
-vi.mock('@semiont/core', async () => {
-  const actual = await vi.importActual('@semiont/core');
+// Mock @xynoplex/http-transport utilities
+vi.mock('@xynoplex/core', async () => {
+  const actual = await vi.importActual('@xynoplex/core');
   return {
     ...actual,
     getTextPositionSelector: vi.fn(),
@@ -91,7 +91,7 @@ vi.mock('../CommentEntry', () => ({
   ),
 }));
 
-import { getTextPositionSelector, getTargetSelector, resourceId } from '@semiont/core';
+import { getTextPositionSelector, getTargetSelector, resourceId } from '@xynoplex/core';
 const mockGetTextPositionSelector = getTextPositionSelector as MockedFunction<typeof getTextPositionSelector>;
 const mockGetTargetSelector = getTargetSelector as MockedFunction<typeof getTargetSelector>;
 
@@ -204,7 +204,7 @@ describe('CommentsPanel Component', () => {
 
       // Find the root panel div (first child of the container)
       const panel = container.firstChild as HTMLElement;
-      expect(panel).toHaveClass('semiont-panel');
+      expect(panel).toHaveClass('xynoplex-panel');
     });
 
     it('should have scrollable comments list', () => {
@@ -212,7 +212,7 @@ describe('CommentsPanel Component', () => {
         <CommentsPanel session={session} mark={mark} {...defaultProps} annotations={mockComments.many} />
       );
 
-      const commentsList = container.querySelector('.semiont-panel__list');
+      const commentsList = container.querySelector('.xynoplex-panel__list');
       expect(commentsList).toBeInTheDocument();
     });
   });
@@ -489,7 +489,7 @@ describe('CommentsPanel Component', () => {
         />
       );
 
-      const newCommentArea = container.querySelector('.semiont-annotation-prompt');
+      const newCommentArea = container.querySelector('.xynoplex-annotation-prompt');
       expect(newCommentArea).toBeInTheDocument();
       expect(newCommentArea).toHaveAttribute('data-type', 'comment');
     });
@@ -548,14 +548,14 @@ describe('CommentsPanel Component', () => {
 
       const headers = screen.getAllByText(/Comments/);
       const header = headers[0].closest('div');
-      expect(header).toHaveClass('semiont-panel-header');
+      expect(header).toHaveClass('xynoplex-panel-header');
     });
 
     it('should support dark mode', () => {
       const { container } = renderWithEventBus(<CommentsPanel session={session} mark={mark} {...defaultProps} />);
 
       const panel = container.firstChild as HTMLElement;
-      expect(panel).toHaveClass('semiont-panel');
+      expect(panel).toHaveClass('xynoplex-panel');
     });
 
     it('should have proper spacing between comments', () => {
@@ -563,7 +563,7 @@ describe('CommentsPanel Component', () => {
         <CommentsPanel session={session} mark={mark} {...defaultProps} annotations={mockComments.multiple} />
       );
 
-      const commentsList = container.querySelector('.semiont-panel__list');
+      const commentsList = container.querySelector('.xynoplex-panel__list');
       expect(commentsList).toBeInTheDocument();
     });
 
@@ -572,7 +572,7 @@ describe('CommentsPanel Component', () => {
 
       const headers = screen.getAllByText(/Comments/);
       const header = headers[0].closest('div');
-      expect(header).toHaveClass('semiont-panel-header');
+      expect(header).toHaveClass('xynoplex-panel-header');
     });
   });
 
@@ -663,7 +663,7 @@ describe('CommentsPanel Component', () => {
       renderWithEventBus(<CommentsPanel session={session} mark={mark} {...defaultProps} />);
 
       const headings = screen.getAllByText(/Comments/);
-      expect(headings[0]).toHaveClass('semiont-panel-header__text');
+      expect(headings[0]).toHaveClass('xynoplex-panel-header__text');
     });
 
     it('should have proper textarea attributes for new comments', () => {
@@ -693,7 +693,7 @@ describe('CommentsPanel Component', () => {
       );
 
       // Panel should be a properly structured div hierarchy
-      expect(container.querySelector('.semiont-panel')).toBeInTheDocument();
+      expect(container.querySelector('.xynoplex-panel')).toBeInTheDocument();
     });
   });
 });

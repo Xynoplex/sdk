@@ -1,4 +1,4 @@
-package semiont_test
+package xynoplex_test
 
 // A list a schema requires is Go's slice, and a slice Go holds as nil is the
 // empty list: a generated type writes it as [], never as null, so the
@@ -11,11 +11,11 @@ import (
 	"testing"
 	"time"
 
-	semiont "github.com/The-AI-Alliance/semiont/packages/go/sdk"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/bus"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/internal/required"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/semionttest"
+	xynoplex "github.com/Xynoplex/sdk/go"
+	"github.com/Xynoplex/sdk/go/api"
+	"github.com/Xynoplex/sdk/go/bus"
+	"github.com/Xynoplex/sdk/go/internal/required"
+	"github.com/Xynoplex/sdk/go/xynoplextest"
 )
 
 func TestARequiredListLeftNilIsPublishedOnTheClientsOwnBusAsTheEmptyList(t *testing.T) {
@@ -23,10 +23,10 @@ func TestARequiredListLeftNilIsPublishedOnTheClientsOwnBusAsTheEmptyList(t *test
 	if err != nil {
 		t.Fatal(err)
 	}
-	b := semiont.NewEventBus()
+	b := xynoplex.NewEventBus()
 	channel := bus.MarkUpdateEntityTypes.Request()
-	read := semiont.Published(context.Background(), b, channel)
-	if err := semiont.Publish(b, channel, api.MarkUpdateEntityTypesCommand{ResourceId: resource}, semiont.Envelope{}); err != nil {
+	read := xynoplex.Published(context.Background(), b, channel)
+	if err := xynoplex.Publish(b, channel, api.MarkUpdateEntityTypesCommand{ResourceId: resource}, xynoplex.Envelope{}); err != nil {
 		t.Fatal(err)
 	}
 	b.Close()
@@ -54,12 +54,12 @@ func TestARequiredListLeftNilIsEmittedAsTheEmptyList(t *testing.T) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	w := semiont.NewWire(semionttest.NewFaultyTransport(semionttest.FaultyConfig{Channels: []bus.Channel{bus.BindInitiate.Channel()}}))
-	read, err := semiont.Frames(ctx, w, bus.BindInitiate)
+	w := xynoplex.NewWire(xynoplextest.NewFaultyTransport(xynoplextest.FaultyConfig{Channels: []bus.Channel{bus.BindInitiate.Channel()}}))
+	read, err := xynoplex.Frames(ctx, w, bus.BindInitiate)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, _, err := semiont.Emit(ctx, w, bus.BindInitiate, api.BindInitiateCommand{AnnotationId: annotation, ResourceId: resource, DefaultTitle: "A title"}, semiont.Envelope{}); err != nil {
+	if _, _, err := xynoplex.Emit(ctx, w, bus.BindInitiate, api.BindInitiateCommand{AnnotationId: annotation, ResourceId: resource, DefaultTitle: "A title"}, xynoplex.Envelope{}); err != nil {
 		t.Fatal(err)
 	}
 	want := api.BindInitiateCommand{AnnotationId: annotation, ResourceId: resource, DefaultTitle: "A title", EntityTypes: []string{}}

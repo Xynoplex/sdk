@@ -21,57 +21,57 @@ use bytes::Bytes;
 use futures::FutureExt;
 use quick_clock::QuickClock;
 use ring::signature::{RSA_PKCS1_2048_8192_SHA256, RsaPublicKeyComponents};
-use semiont::annotations::{QuotedText, annotation_of_span, reconcile};
-use semiont::cache::CacheState;
-use semiont::channels::{BRIDGED_CHANNELS, PrincipalProfile};
-use semiont::claims::{ClaimOptions, HeldJob, JOB_CLAIM_CHANNELS, JOB_COMMIT_CHANNELS, JobFailure};
-use semiont::client::ClientOptions;
-use semiont::discovery::{
+use xynoplex::annotations::{QuotedText, annotation_of_span, reconcile};
+use xynoplex::cache::CacheState;
+use xynoplex::channels::{BRIDGED_CHANNELS, PrincipalProfile};
+use xynoplex::claims::{ClaimOptions, HeldJob, JOB_CLAIM_CHANNELS, JOB_COMMIT_CHANNELS, JobFailure};
+use xynoplex::client::ClientOptions;
+use xynoplex::discovery::{
     DiscoveryAbsentReason, DiscoveryRead, DiscoveryState, DiscoveryTransport,
 };
-use semiont::errors::{
-    BusRequestErrorCode, IdentityUnverifiable, IdentityUnverifiableReason, SemiontError,
+use xynoplex::errors::{
+    BusRequestErrorCode, IdentityUnverifiable, IdentityUnverifiableReason, XynoplexError,
     SessionError, SessionErrorCode, SignInError, SignInErrorCode,
 };
-use semiont::identity::agent_did;
-use semiont::refresh::CacheQuery;
-use semiont::roles::{AGENT_KIND, KIND_CLAIM, is_agent};
-use semiont::session::{
-    MemorySignIn, OpenedSession, SemiontBrowser, SemiontBrowserConfig, SemiontSession,
+use xynoplex::identity::agent_did;
+use xynoplex::refresh::CacheQuery;
+use xynoplex::roles::{AGENT_KIND, KIND_CLAIM, is_agent};
+use xynoplex::session::{
+    MemorySignIn, OpenedSession, XynoplexBrowser, XynoplexBrowserConfig, XynoplexSession,
     SessionEndReason, SignInKept, StoredSession, cache_key, kept_in, last_event_id_key, person_key,
     save_knowledge_bases, store_session, stored_session,
 };
-use semiont::sign_in_store::{FILE_NAME, SignInStore};
-use semiont::storage::{
+use xynoplex::sign_in_store::{FILE_NAME, SignInStore};
+use xynoplex::storage::{
     InMemorySessionStorage, SessionStorage, StorageChange, StorageSubscription,
 };
-use semiont::testing::as_id;
-use semiont::testing::examples::{assert_blocks_are_examples, assert_readme_shows};
-use semiont::timing::{DEVICE_SLOW_DOWN, HTTP_REQUEST_TIMEOUT, REFRESH_RETRY, SAVE_DEBOUNCE};
-use semiont::transport::{BoxFuture, Envelope, Events, Lagged, PutBinaryRequest};
-use semiont::types::{
+use xynoplex::testing::as_id;
+use xynoplex::testing::examples::{assert_blocks_are_examples, assert_readme_shows};
+use xynoplex::timing::{DEVICE_SLOW_DOWN, HTTP_REQUEST_TIMEOUT, REFRESH_RETRY, SAVE_DEBOUNCE};
+use xynoplex::transport::{BoxFuture, Envelope, Events, Lagged, PutBinaryRequest};
+use xynoplex::types::{
     AgentSoftware, Annotation, FailureClass, HttpEndpoint, HttpEndpointProtocol,
     JobCompleteCommand, JobProgress, KbEndpoint, KbTarget, KnowledgeBase, LocalEndpoint,
     MarkJobDone, MarkJobFilter, MarkJobFilterParams, Motivation, PrincipalProfileCommand,
 };
-use semiont_http_transport::agent::{AgentSignInError, AgentToken};
-use semiont_http_transport::client::client;
-use semiont_http_transport::client_assertion::{JWT_BEARER, LIFETIME_SECONDS, thumbprint};
-use semiont_http_transport::discovery::http_discovery;
-use semiont_http_transport::loopback::LoopbackRedirect;
-use semiont_http_transport::oauth::{
+use xynoplex_http_transport::agent::{AgentSignInError, AgentToken};
+use xynoplex_http_transport::client::client;
+use xynoplex_http_transport::client_assertion::{JWT_BEARER, LIFETIME_SECONDS, thumbprint};
+use xynoplex_http_transport::discovery::http_discovery;
+use xynoplex_http_transport::loopback::LoopbackRedirect;
+use xynoplex_http_transport::oauth::{
     BeginAuthorization, DeviceCode, PENDING_AUTHORIZATION_KEY, PendingAuthorization,
     begin_authorization, code_challenge, complete_authorization, discover_issuer,
     refresh_at_issuer, renew_kept, revoke_at_issuer, sign_in_with_device_grant,
 };
-use semiont_http_transport::service_account::{
+use xynoplex_http_transport::service_account::{
     Credential, KeyCredential, KeyError, SecretCredential, ServiceToken, private_key_from_pem,
 };
-use semiont_http_transport::session::{
+use xynoplex_http_transport::session::{
     HttpSessionFactory, SessionFromKept, begin_sign_in, complete_sign_in, describe_connection,
     session_from_kept, sign_in_device, sign_out,
 };
-use semiont_http_transport::transport::{HttpTransportConfig, Timing, TokenRefresher};
+use xynoplex_http_transport::transport::{HttpTransportConfig, Timing, TokenRefresher};
 use serde_json::{Value, json};
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::error::Error;
@@ -201,7 +201,7 @@ async fn resource_metadata(State(staged): State<Arc<Staged>>) -> Response {
 async fn openid_configuration(State(staged): State<Arc<Staged>>) -> Response {
     staged.held("issuer").await;
     let origin = staged.origin.lock().unwrap().clone();
-    let issuer = format!("{origin}/realms/semiont");
+    let issuer = format!("{origin}/realms/xynoplex");
     let mut document = json!({
         "issuer": staged.names_itself.lock().unwrap().clone().unwrap_or(issuer.clone()),
         "authorization_endpoint": format!("{issuer}/auth"),
@@ -466,7 +466,7 @@ impl World {
         let origin = format!("http://127.0.0.1:{port}");
         let staged = Arc::new(Staged {
             origin: Mutex::new(origin.clone()),
-            trusts: Mutex::new(Some(vec![format!("{origin}/realms/semiont")])),
+            trusts: Mutex::new(Some(vec![format!("{origin}/realms/xynoplex")])),
             names_itself: Mutex::new(None),
             offers_device: Mutex::new(true),
             token_answers: Mutex::default(),
@@ -514,12 +514,12 @@ impl World {
             .route("/bus/subscribe", post(subscribe))
             .route("/bus/emit", post(emit))
             .route(
-                "/realms/semiont/.well-known/openid-configuration",
+                "/realms/xynoplex/.well-known/openid-configuration",
                 get(openid_configuration),
             )
-            .route("/realms/semiont/token", post(token))
-            .route("/realms/semiont/device", post(device))
-            .route("/realms/semiont/revoke", post(revoke))
+            .route("/realms/xynoplex/token", post(token))
+            .route("/realms/xynoplex/device", post(device))
+            .route("/realms/xynoplex/revoke", post(revoke))
             .route("/discovery/kbs.json", get(discovery))
             .with_state(staged.clone());
         let server = tokio::spawn(async move {
@@ -536,7 +536,7 @@ impl World {
     }
 
     fn issuer(&self) -> String {
-        format!("{}/realms/semiont", self.origin)
+        format!("{}/realms/xynoplex", self.origin)
     }
 
     fn target(&self) -> HttpEndpoint {
@@ -565,7 +565,7 @@ impl World {
         StoredSession {
             access: access.to_owned(),
             refresh: refresh.to_owned(),
-            client_id: "semiont-browser".to_owned(),
+            client_id: "xynoplex-browser".to_owned(),
             token_endpoint: format!("{}/token", self.issuer()),
             revocation_endpoint: Some(format!("{}/revoke", self.issuer())),
             person_key: None,
@@ -742,7 +742,7 @@ async fn beginning_a_sign_in_remembers_it_and_builds_the_url_around_what_it_reme
         HashMap::from(
             [
                 ("response_type", "code"),
-                ("client_id", "semiont-browser"),
+                ("client_id", "xynoplex-browser"),
                 ("redirect_uri", "http://127.0.0.1:9/callback"),
                 ("scope", "openid email profile offline_access"),
                 ("state", record.state.as_str()),
@@ -795,7 +795,7 @@ async fn completing_a_sign_in_exchanges_the_code_with_its_verifier_once() {
                 ("grant_type", "authorization_code"),
                 ("code", "the-code"),
                 ("redirect_uri", "http://127.0.0.1:9/callback"),
-                ("client_id", "semiont-browser"),
+                ("client_id", "xynoplex-browser"),
                 ("code_verifier", record.verifier.as_str()),
             ]
             .map(|(name, value)| (name.to_owned(), value.to_owned()))
@@ -882,10 +882,10 @@ async fn a_renewal_takes_a_rotated_refresh_token_and_keeps_the_one_held_otherwis
     let endpoint = format!("{}/token", world.issuer());
     world.answers([granted("a2", None), granted("a3", Some("r3"))]);
 
-    let kept = refresh_at_issuer(&world.http, &endpoint, "semiont-browser", "r1")
+    let kept = refresh_at_issuer(&world.http, &endpoint, "xynoplex-browser", "r1")
         .await
         .expect("tokens");
-    let rotated = refresh_at_issuer(&world.http, &endpoint, "semiont-browser", "r1")
+    let rotated = refresh_at_issuer(&world.http, &endpoint, "xynoplex-browser", "r1")
         .await
         .expect("tokens");
 
@@ -900,7 +900,7 @@ async fn a_renewal_takes_a_rotated_refresh_token_and_keeps_the_one_held_otherwis
             [
                 ("grant_type", "refresh_token"),
                 ("refresh_token", "r1"),
-                ("client_id", "semiont-browser"),
+                ("client_id", "xynoplex-browser"),
             ]
             .map(|(name, value)| (name.to_owned(), value.to_owned()))
         )
@@ -918,7 +918,7 @@ async fn a_refused_renewal_says_what_the_issuer_said_and_the_status_it_answered(
     let refused = refresh_at_issuer(
         &world.http,
         &format!("{}/token", world.issuer()),
-        "semiont-browser",
+        "xynoplex-browser",
         "r1",
     )
     .await
@@ -940,7 +940,7 @@ fn sign_in_error(failure: Box<dyn Error + Send + Sync>) -> SignInError {
 }
 
 /// The key a pending sign-in is kept under is protocol/specs/src/session/stored.json's;
-/// semiont's tests hold the table's other keys.
+/// xynoplex's tests hold the table's other keys.
 #[test]
 fn a_pending_sign_in_is_kept_under_the_tables_key() {
     let table: Value = serde_json::from_str(include_str!(
@@ -1042,7 +1042,7 @@ async fn revoking_tells_the_issuer_as_the_client_the_token_was_issued_to() {
     let endpoint = format!("{}/revoke", world.issuer());
 
     assert_eq!(
-        revoke_at_issuer(&world.http, &endpoint, "semiont-cli", "r1").await,
+        revoke_at_issuer(&world.http, &endpoint, "xynoplex-cli", "r1").await,
         Ok(())
     );
     assert_eq!(
@@ -1051,14 +1051,14 @@ async fn revoking_tells_the_issuer_as_the_client_the_token_was_issued_to() {
             [
                 ("token", "r1"),
                 ("token_type_hint", "refresh_token"),
-                ("client_id", "semiont-cli"),
+                ("client_id", "xynoplex-cli"),
             ]
             .map(|(name, value)| (name.to_owned(), value.to_owned()))
         )]
     );
 
     *world.staged.revoke_status.lock().unwrap() = 503;
-    let refused = revoke_at_issuer(&world.http, &endpoint, "semiont-cli", "r1")
+    let refused = revoke_at_issuer(&world.http, &endpoint, "xynoplex-cli", "r1")
         .await
         .expect_err("the issuer refused");
     assert_eq!(code(&refused), (SignInErrorCode::Exchange, Some(503)));
@@ -1106,7 +1106,7 @@ async fn the_device_grant_shows_the_code_and_asks_until_the_person_approves() {
         *world.staged.device_forms.lock().unwrap(),
         [HashMap::from(
             [
-                ("client_id", "semiont-cli"),
+                ("client_id", "xynoplex-cli"),
                 ("scope", "openid email profile offline_access"),
             ]
             .map(|(name, value)| (name.to_owned(), value.to_owned()))
@@ -1119,7 +1119,7 @@ async fn the_device_grant_shows_the_code_and_asks_until_the_person_approves() {
             [
                 ("grant_type", "urn:ietf:params:oauth:grant-type:device_code"),
                 ("device_code", "a-device-code"),
-                ("client_id", "semiont-cli"),
+                ("client_id", "xynoplex-cli"),
             ]
             .map(|(name, value)| (name.to_owned(), value.to_owned()))
         )
@@ -1179,7 +1179,7 @@ async fn an_issuer_with_no_device_endpoint_is_refused_naming_the_client() {
         .expect_err("there is no device endpoint");
 
     assert_eq!(refused.code, SignInErrorCode::Discovery);
-    assert!(refused.message.contains("semiont-cli"), "{refused}");
+    assert!(refused.message.contains("xynoplex-cli"), "{refused}");
     assert!(world.staged.device_forms.lock().unwrap().is_empty());
 }
 
@@ -1251,7 +1251,7 @@ fn from_kept(world: &World, kept: Arc<dyn SignInKept>) -> SessionFromKept {
 /// failures it carries beside them are other tests' to read. A reader that
 /// missed any of it fails its test.
 struct Said {
-    errors: Events<SemiontError>,
+    errors: Events<XynoplexError>,
     said: Vec<SessionError>,
 }
 
@@ -1259,16 +1259,16 @@ impl Said {
     /// What `session` says from here on, and what it said before anyone
     /// read its errors: a session opened from a kept sign-in is given once
     /// it is ready, after its start has said what it says.
-    fn by(session: &SemiontSession) -> Said {
+    fn by(session: &XynoplexSession) -> Said {
         Said {
             errors: session.errors(),
             said: Vec::new(),
         }
     }
 
-    fn heard(&mut self, item: Result<SemiontError, Lagged>) {
+    fn heard(&mut self, item: Result<XynoplexError, Lagged>) {
         match item {
-            Ok(SemiontError::Session(error)) => self.said.push(error),
+            Ok(XynoplexError::Session(error)) => self.said.push(error),
             Ok(_) => {}
             Err(missed) => panic!("the session's errors stream missed some: {missed}"),
         }
@@ -1884,7 +1884,7 @@ async fn a_script_renews_a_sign_in_it_keeps_at_the_issuer_the_sign_in_names() {
     assert_eq!(forms.len(), 1);
     assert_eq!(forms[0]["grant_type"], "refresh_token");
     assert_eq!(forms[0]["refresh_token"], "r1");
-    assert_eq!(forms[0]["client_id"], "semiont-browser");
+    assert_eq!(forms[0]["client_id"], "xynoplex-browser");
     assert_eq!(
         held_by(kept.as_ref()).await,
         Some(world.stored(&second, "r2"))
@@ -2185,7 +2185,7 @@ async fn a_session_renews_through_the_sign_in_it_was_built_from() {
     assert_eq!(session.refresh(Some(&first)).await, Some(second.clone()));
 
     assert_eq!(world.token_forms()[0]["refresh_token"], "r1");
-    assert_eq!(world.token_forms()[0]["client_id"], "semiont-browser");
+    assert_eq!(world.token_forms()[0]["client_id"], "xynoplex-browser");
     assert_eq!(
         held_by(kept.as_ref()).await,
         Some(world.stored(&second, "r2"))
@@ -2279,7 +2279,7 @@ async fn a_script_signs_in_by_the_device_grant_and_keeps_the_sign_in() {
         Some(StoredSession {
             access: access.clone(),
             refresh: "a-refresh-token".to_owned(),
-            client_id: "semiont-cli".to_owned(),
+            client_id: "xynoplex-cli".to_owned(),
             token_endpoint: format!("{}/token", world.issuer()),
             revocation_endpoint: Some(format!("{}/revoke", world.issuer())),
             person_key: None,
@@ -2317,7 +2317,7 @@ async fn a_script_signs_in_by_the_device_grant_and_keeps_the_sign_in() {
     );
 }
 
-/// A sign-in by the device grant kept in the file `semiont login` keeps is
+/// A sign-in by the device grant kept in the file `xynoplex login` keeps is
 /// the launcher's: written as the launcher writes one, and held by a store
 /// of its own.
 #[tokio::test(start_paused = true)]
@@ -2376,7 +2376,7 @@ async fn a_script_signs_out_by_revoking_at_the_issuer_and_forgetting_the_sign_in
     let revoked = world.staged.revoke_forms.lock().unwrap().clone();
     assert_eq!(revoked.len(), 1);
     assert_eq!(revoked[0]["token"], "r1");
-    assert_eq!(revoked[0]["client_id"], "semiont-browser");
+    assert_eq!(revoked[0]["client_id"], "xynoplex-browser");
     assert_eq!(held_by(kept.as_ref()).await, None);
 }
 
@@ -2459,15 +2459,15 @@ fn registered(world: &World, id: &str, did: &str) -> KnowledgeBase {
     }
 }
 
-fn browser(world: &World, storage: Arc<InMemorySessionStorage>) -> SemiontBrowser {
-    SemiontBrowser::new(SemiontBrowserConfig {
+fn browser(world: &World, storage: Arc<InMemorySessionStorage>) -> XynoplexBrowser {
+    XynoplexBrowser::new(XynoplexBrowserConfig {
         storage,
         session_factory: Arc::new(HttpSessionFactory::new(world.http.clone(), None)),
     })
     .expect("a browser")
 }
 
-async fn live(browser: &SemiontBrowser) -> Arc<SemiontSession> {
+async fn live(browser: &XynoplexBrowser) -> Arc<XynoplexSession> {
     let mut session = browser.active_session();
     let session = tokio::time::timeout(Duration::from_secs(10), session.wait_for(Option::is_some))
         .await
@@ -2588,7 +2588,7 @@ async fn signing_out_of_a_registry_revokes_the_refresh_token_at_its_issuer() {
     assert_eq!(world.staged.revoke_forms.lock().unwrap()[0]["token"], "r1");
     assert_eq!(
         world.staged.revoke_forms.lock().unwrap()[0]["client_id"],
-        "semiont-browser"
+        "xynoplex-browser"
     );
     assert_eq!(stored_session(storage.as_ref(), "kb-a"), None);
     browser.close().await.expect("closed");
@@ -2596,7 +2596,7 @@ async fn signing_out_of_a_registry_revokes_the_refresh_token_at_its_issuer() {
 
 /// Begin a sign-in through the registry and give the callback URL the
 /// issuer would send the person back to.
-async fn sent_back(world: &World, browser: &SemiontBrowser, options: BeginAuthorization) -> String {
+async fn sent_back(world: &World, browser: &XynoplexBrowser, options: BeginAuthorization) -> String {
     let url = begin_sign_in(browser, options, &world.http)
         .await
         .expect("a URL");
@@ -2654,7 +2654,7 @@ async fn a_registrys_sign_in_registers_the_knowledge_base_under_what_it_says_it_
         Some(StoredSession {
             access: access.clone(),
             refresh: "a-refresh-token".to_owned(),
-            client_id: "semiont-browser".to_owned(),
+            client_id: "xynoplex-browser".to_owned(),
             token_endpoint: format!("{}/token", world.issuer()),
             revocation_endpoint: Some(format!("{}/revoke", world.issuer())),
             person_key: Some(person_key(ALICE)),
@@ -2840,7 +2840,7 @@ async fn a_document_that_has_not_changed_is_not_read_again() {
     let world = World::start().await;
     let document = json!({ "version": 1, "kbs": [{
         "host": "localhost", "port": 4000, "placement": "local",
-        "managedBy": "semiont-launcher", "did": DID_A,
+        "managedBy": "xynoplex-launcher", "did": DID_A,
     }] })
     .to_string();
     serving(&world, 200, "application/json", &document, Some("\"v1\""));
@@ -2962,7 +2962,7 @@ async fn the_loopback_redirect_gives_the_url_the_person_was_sent_back_to() {
 // bearer at the gateway, and the gateway names it by that account.
 
 /// The subject the issuer asserts for the indexer's account.
-const INDEXER: &str = "service-account-semiont-indexer";
+const INDEXER: &str = "service-account-xynoplex-indexer";
 
 impl World {
     /// An agent signed in at the gateway as the account `client_id` names.
@@ -2994,13 +2994,13 @@ async fn an_agent_signs_in_as_its_account_and_carries_the_did_its_gateway_names(
     world.answers([granted(&token, None)]);
 
     let agent = world
-        .sign_agent_in("semiont-indexer")
+        .sign_agent_in("xynoplex-indexer")
         .await
         .expect("signed in");
 
     assert_eq!(
         agent.did().as_str(),
-        "did:web:example.org:agents:service-account-semiont-indexer"
+        "did:web:example.org:agents:service-account-xynoplex-indexer"
     );
     assert!(
         !world.origin.contains("example.org"),
@@ -3013,7 +3013,7 @@ async fn an_agent_signs_in_as_its_account_and_carries_the_did_its_gateway_names(
     let grants = world.token_forms();
     assert_eq!(grants.len(), 1);
     assert_eq!(grants[0]["grant_type"], "client_credentials");
-    assert_eq!(grants[0]["client_id"], "semiont-indexer");
+    assert_eq!(grants[0]["client_id"], "xynoplex-indexer");
 }
 
 // A refused token is renewed by a new grant, though the one held is not yet
@@ -3025,7 +3025,7 @@ async fn a_refusal_of_the_agents_token_is_answered_by_a_new_grant() {
     let (first, second) = (agent_jwt(3600, 1, INDEXER), agent_jwt(3600, 2, INDEXER));
     world.answers([granted(&first, None), granted(&second, None)]);
     let agent = world
-        .sign_agent_in("semiont-indexer")
+        .sign_agent_in("xynoplex-indexer")
         .await
         .expect("signed in");
 
@@ -3056,7 +3056,7 @@ async fn refusals_of_the_agents_token_that_overlap_cost_one_grant() {
         granted(&agent_jwt(3600, 3, INDEXER), None),
     ]);
     let agent = world
-        .sign_agent_in("semiont-indexer")
+        .sign_agent_in("xynoplex-indexer")
         .await
         .expect("signed in");
 
@@ -3090,7 +3090,7 @@ async fn an_agents_token_that_falls_due_while_a_refusal_renews_it_costs_one_gran
         granted(&agent_jwt(3600, 3, INDEXER), None),
     ]);
     let agent = world
-        .sign_agent_in("semiont-indexer")
+        .sign_agent_in("xynoplex-indexer")
         .await
         .expect("signed in");
 
@@ -3125,7 +3125,7 @@ async fn an_agent_whose_token_the_gateway_refuses_is_not_signed_in() {
     world.staged.refused.lock().unwrap().push(token);
 
     let refused = world
-        .sign_agent_in("semiont-indexer")
+        .sign_agent_in("xynoplex-indexer")
         .await
         .err()
         .expect("the gateway refused the token");
@@ -3246,7 +3246,7 @@ fn example_key() -> String {
 }
 
 /// The client id of the account that proves itself with the example key.
-const KEYED: &str = "semiont-worker-alice-laptop";
+const KEYED: &str = "xynoplex-worker-alice-laptop";
 
 impl World {
     fn keyed(&self, key: &str) -> KeyCredential {
@@ -3462,7 +3462,7 @@ impl World {
     }
 
     /// A client of the gateway, signed in with `token`.
-    fn client(&self, token: &str) -> semiont::client::SemiontClient {
+    fn client(&self, token: &str) -> xynoplex::client::XynoplexClient {
         client(
             HttpTransportConfig {
                 base_url: self.origin.clone(),
@@ -3486,12 +3486,12 @@ async fn ends<T>(waited: impl std::future::Future<Output = T>) -> T {
         .expect("it ends")
 }
 
-fn message(error: semiont::errors::SemiontError) -> String {
+fn message(error: xynoplex::errors::XynoplexError) -> String {
     match error {
-        semiont::errors::SemiontError::Bus(error) => error.message,
-        semiont::errors::SemiontError::Transport(error) => error.message,
-        semiont::errors::SemiontError::Job(error) => error.message,
-        semiont::errors::SemiontError::Session(error) => error.message,
+        xynoplex::errors::XynoplexError::Bus(error) => error.message,
+        xynoplex::errors::XynoplexError::Transport(error) => error.message,
+        xynoplex::errors::XynoplexError::Job(error) => error.message,
+        xynoplex::errors::XynoplexError::Session(error) => error.message,
     }
 }
 
@@ -3670,7 +3670,7 @@ async fn an_issuer_that_never_answers_fails_each_request_at_the_deadline() {
     let grant = ends(refresh_at_issuer(
         &world.http,
         &format!("{}/token", world.issuer()),
-        "semiont-browser",
+        "xynoplex-browser",
         "r1",
     ))
     .await
@@ -3688,7 +3688,7 @@ async fn an_issuer_that_never_answers_fails_each_request_at_the_deadline() {
     let revocation = ends(revoke_at_issuer(
         &world.http,
         &format!("{}/revoke", world.issuer()),
-        "semiont-browser",
+        "xynoplex-browser",
         "r1",
     ))
     .await
@@ -3740,7 +3740,7 @@ async fn a_service_whose_sign_in_is_never_answered_fails_at_the_deadline() {
     world.answers([granted(&agent_jwt(3600, 1, INDEXER), None)]);
     world.never_answers("who");
     let started = tokio::time::Instant::now();
-    let named = ends(world.sign_agent_in("semiont-indexer"))
+    let named = ends(world.sign_agent_in("xynoplex-indexer"))
         .await
         .err()
         .expect("nobody answered");
@@ -3757,7 +3757,7 @@ async fn a_service_whose_sign_in_is_never_answered_fails_at_the_deadline() {
     // The issuer's grant to the account.
     world.never_answers("token");
     let started = tokio::time::Instant::now();
-    let grant = ends(world.sign_agent_in("semiont-indexer"))
+    let grant = ends(world.sign_agent_in("xynoplex-indexer"))
         .await
         .err()
         .expect("nobody answered");
@@ -3774,7 +3774,7 @@ async fn a_service_whose_sign_in_is_never_answered_fails_at_the_deadline() {
     // The issuer's own description.
     world.never_answers("issuer");
     let started = tokio::time::Instant::now();
-    let discovery = ends(world.sign_agent_in("semiont-indexer"))
+    let discovery = ends(world.sign_agent_in("xynoplex-indexer"))
         .await
         .err()
         .expect("nobody answered");
@@ -3827,11 +3827,11 @@ async fn a_script(
     http: reqwest::Client,
 ) -> Result<String, Box<dyn Error + Send + Sync>> {
     // <readme:script>
-    // The sign-in `semiont login` made for the knowledge base running here. Its key
+    // The sign-in `xynoplex login` made for the knowledge base running here. Its key
     // is the knowledge base's id.
     let kept = SignInStore::at(state_home.join(FILE_NAME)).entry("local");
     if kept.held().await?.is_none() {
-        return Err("Not signed in. Run `semiont login`.".into());
+        return Err("Not signed in. Run `xynoplex login`.".into());
     }
     let opened = session_from_kept(SessionFromKept {
         kb: KbTarget::http(
@@ -3947,7 +3947,7 @@ async fn a_worker(
 ) -> Result<(), Box<dyn Error>> {
     // <readme:worker>
     // Its account at the issuer proves itself with the worker's key, the
-    // PKCS#8 PEM in `SEMIONT_OIDC_CLIENT_KEY`: each grant carries an
+    // PKCS#8 PEM in `XYNOPLEX_OIDC_CLIENT_KEY`: each grant carries an
     // assertion signed with it, and no secret.
     let credential = KeyCredential {
         issuer,
@@ -4084,7 +4084,7 @@ async fn an_application(
 ) -> Result<KnowledgeBase, Box<dyn Error + Send + Sync>> {
     // <readme:application>
     // The registry an application holds, with its sessions over HTTP.
-    let browser = SemiontBrowser::new(SemiontBrowserConfig {
+    let browser = XynoplexBrowser::new(XynoplexBrowserConfig {
         storage,
         session_factory: Arc::new(HttpSessionFactory::new(http.clone(), None)),
     })?;
@@ -4119,7 +4119,7 @@ struct StateHome(std::path::PathBuf);
 
 impl StateHome {
     fn new() -> StateHome {
-        let dir = std::env::temp_dir().join(format!("semiont-readme-{}", uuid::Uuid::new_v4()));
+        let dir = std::env::temp_dir().join(format!("xynoplex-readme-{}", uuid::Uuid::new_v4()));
         std::fs::create_dir_all(&dir).expect("a directory");
         StateHome(dir)
     }
@@ -4139,11 +4139,11 @@ async fn the_script_uses_the_sign_in_the_launcher_kept_and_says_so_when_there_is
     let none = a_script(&home.0, &world.target(), world.http.clone()).await;
     assert_eq!(
         none.err().map(|refused| refused.to_string()),
-        Some("Not signed in. Run `semiont login`.".to_owned())
+        Some("Not signed in. Run `xynoplex login`.".to_owned())
     );
     assert!(world.staged.asked_who.lock().unwrap().is_empty());
 
-    // As `semiont login` writes it: issued to the script client.
+    // As `xynoplex login` writes it: issued to the script client.
     let access = jwt(3600, 1);
     std::fs::write(
         home.0.join(FILE_NAME),
@@ -4233,7 +4233,7 @@ async fn the_daemon_signs_in_as_an_agent_and_is_given_each_completion() {
                 &gateway,
                 Credential::Secret(SecretCredential {
                     issuer,
-                    client_id: "semiont-indexer".to_owned(),
+                    client_id: "xynoplex-indexer".to_owned(),
                     client_secret: "a-secret".to_owned(),
                 }),
                 http,
@@ -4427,12 +4427,12 @@ fn every_rust_block_of_the_readme_is_an_example_that_ran_here() {
         .unwrap_or_else(|odd| panic!("{odd}"));
 }
 
-/// The `semiont-worker` skill shows a worker in Rust. What it shows is the
+/// The `xynoplex-worker` skill shows a worker in Rust. What it shows is the
 /// worker that ran here.
 #[test]
 fn every_rust_block_of_the_worker_skill_is_an_example_that_ran_here() {
     assert_blocks_are_examples(
-        include_str!("../../../../docs/builder/skills/semiont-worker/SKILL.md"),
+        include_str!("../../../../docs/builder/skills/xynoplex-worker/SKILL.md"),
         &[include_str!("sign_in.rs")],
     )
     .unwrap_or_else(|odd| panic!("{odd}"));

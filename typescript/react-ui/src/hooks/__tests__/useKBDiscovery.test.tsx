@@ -8,14 +8,14 @@
  */
 import { describe, it, expect, afterEach } from 'vitest';
 import { renderHook, waitFor, act } from '@testing-library/react';
-import type { DiscoveryReadResult, DiscoveryTransport } from '@semiont/sdk';
+import type { DiscoveryReadResult, DiscoveryTransport } from '@xynoplex/sdk';
 import { useKBDiscovery } from '../useKBDiscovery';
 
 const KB = {
   host: 'localhost',
   port: 4001,
   placement: 'local' as const,
-  managedBy: 'semiont-launcher',
+  managedBy: 'xynoplex-launcher',
   did: 'did:web:example',
   siteName: 'Example KB',
 };

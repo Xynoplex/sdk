@@ -17,10 +17,10 @@
 //! it. So this run is also the check of the generated table, which is made
 //! from another implementation, against that one.
 
-use semiont::errors::{SemiontError, TransportErrorCode};
-use semiont::media_types::{TextSource, text_source_of};
-use semiont::testing::{InMemoryContent, TestClientOptions, as_id, create_test_client};
-use semiont::transport::Content;
+use xynoplex::errors::{XynoplexError, TransportErrorCode};
+use xynoplex::media_types::{TextSource, text_source_of};
+use xynoplex::testing::{InMemoryContent, TestClientOptions, as_id, create_test_client};
+use xynoplex::transport::Content;
 use serde_json::Value;
 
 fn table(text: &str) -> Value {
@@ -45,7 +45,7 @@ fn bytes_of(hexadecimal: &str) -> Vec<u8> {
 }
 
 /// What a client reads of some bytes, served with a content type.
-async fn read(content_type: &str, bytes: Vec<u8>) -> Result<String, SemiontError> {
+async fn read(content_type: &str, bytes: Vec<u8>) -> Result<String, XynoplexError> {
     let resource_id = as_id("res-1");
     let content = InMemoryContent::new();
     content.seed(
@@ -63,7 +63,7 @@ async fn read(content_type: &str, bytes: Vec<u8>) -> Result<String, SemiontError
 }
 
 /// What is wrong with an answer that should be this text, if anything is.
-fn is_text(answer: Result<String, SemiontError>, text: &str) -> Option<String> {
+fn is_text(answer: Result<String, XynoplexError>, text: &str) -> Option<String> {
     match answer {
         Ok(read) if read == text => None,
         Ok(read) => Some(format!("read as {read:?}, which should be {text:?}")),
@@ -74,16 +74,16 @@ fn is_text(answer: Result<String, SemiontError>, text: &str) -> Option<String> {
 /// What is wrong with an answer that should be a refusal, if anything is: a
 /// transport's failure, which names what the case says is refused, a
 /// charset's label or a media type.
-fn is_refused(answer: Result<String, SemiontError>, label: &str) -> Option<String> {
+fn is_refused(answer: Result<String, XynoplexError>, label: &str) -> Option<String> {
     match answer {
-        Err(SemiontError::Transport(refusal)) if refusal.code != TransportErrorCode::Error => {
+        Err(XynoplexError::Transport(refusal)) if refusal.code != TransportErrorCode::Error => {
             Some(format!("refused as {:?}", refusal.code))
         }
-        Err(SemiontError::Transport(refusal)) if !refusal.message.contains(label) => Some(format!(
+        Err(XynoplexError::Transport(refusal)) if !refusal.message.contains(label) => Some(format!(
             "the refusal does not name {label}: {}",
             refusal.message
         )),
-        Err(SemiontError::Transport(_)) => None,
+        Err(XynoplexError::Transport(_)) => None,
         Err(other) => Some(format!("failed as something else: {other}")),
         Ok(read) => Some(format!("read as {read:?}, which should be refused")),
     }

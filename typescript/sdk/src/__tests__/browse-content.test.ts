@@ -13,8 +13,8 @@
  */
 
 import { describe, it, expect, afterEach, vi } from 'vitest';
-import { EventBus, SemiontError, resourceId as makeResourceId } from '@semiont/core';
-import type { AnchoredTextAnswer, IContentTransport, ITransport, ResourceId } from '@semiont/core';
+import { EventBus, XynoplexError, resourceId as makeResourceId } from '@xynoplex/core';
+import type { AnchoredTextAnswer, IContentTransport, ITransport, ResourceId } from '@xynoplex/core';
 import { BrowseNamespace } from '../namespaces/browse';
 import { inMemoryTransport } from './helpers/in-memory-transport';
 
@@ -73,7 +73,7 @@ describe('browse content reads — pure pipe', () => {
     // refused with.
     const refusal = makeBrowse(content).resourceContent(makeResourceId('r1'));
     await expect(refusal).rejects.toThrow('application/pdf');
-    await expect(refusal).rejects.toBeInstanceOf(SemiontError);
+    await expect(refusal).rejects.toBeInstanceOf(XynoplexError);
     await expect(refusal).rejects.toMatchObject({ code: 'error' });
   });
 

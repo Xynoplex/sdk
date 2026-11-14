@@ -68,38 +68,38 @@ export function EntityTagsPage({
   };
 
   return (
-    <div className={`semiont-page${activePanel && COMMON_PANELS.includes(activePanel) ? ' semiont-page--panel-open' : ''}`}>
+    <div className={`xynoplex-page${activePanel && COMMON_PANELS.includes(activePanel) ? ' xynoplex-page--panel-open' : ''}`}>
       {/* Main Content Area */}
-      <div className="semiont-page__content">
+      <div className="xynoplex-page__content">
         {/* Page Title */}
-        <div className="semiont-page__header">
-          <h1 className="semiont-page__title">{t.pageTitle}</h1>
-          <p className="semiont-page__subtitle">
+        <div className="xynoplex-page__header">
+          <h1 className="xynoplex-page__title">{t.pageTitle}</h1>
+          <p className="xynoplex-page__subtitle">
             {t.pageDescription}
           </p>
         </div>
 
         {/* Entity Tags Management */}
-        <div className="semiont-card">
-          <div className="semiont-entity-tags__header">
-            <div className="semiont-entity-tags__icon-box">
-              <TagIcon className="semiont-entity-tags__icon" />
+        <div className="xynoplex-card">
+          <div className="xynoplex-entity-tags__header">
+            <div className="xynoplex-entity-tags__icon-box">
+              <TagIcon className="xynoplex-entity-tags__icon" />
             </div>
-            <div className="semiont-entity-tags__content">
-              <h3 className="semiont-entity-tags__title">{t.sectionTitle}</h3>
-              <p className="semiont-entity-tags__description">
+            <div className="xynoplex-entity-tags__content">
+              <h3 className="xynoplex-entity-tags__title">{t.sectionTitle}</h3>
+              <p className="xynoplex-entity-tags__description">
                 {t.sectionDescription}
               </p>
             </div>
           </div>
 
           {/* Existing tags */}
-          <div className="semiont-entity-tags__tags-section">
-            <div className="semiont-tags">
+          <div className="xynoplex-entity-tags__tags-section">
+            <div className="xynoplex-tags">
               {entityTypes.map((tag: string) => (
                 <span
                   key={tag}
-                  className="semiont-tag semiont-tag--info semiont-tag--rounded-md"
+                  className="xynoplex-tag xynoplex-tag--info xynoplex-tag--rounded-md"
                 >
                   {tag}
                 </span>
@@ -108,26 +108,26 @@ export function EntityTagsPage({
           </div>
 
           {/* Add new tag */}
-          <div className="semiont-entity-tags__input-group">
+          <div className="xynoplex-entity-tags__input-group">
             <input
               type="text"
               value={newTag}
               onChange={(e) => onNewTagChange(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder={t.inputPlaceholder}
-              className="semiont-entity-tags__input"
+              className="xynoplex-entity-tags__input"
               disabled={isAddingTag}
             />
             <button
               onClick={onAddTag}
               disabled={isAddingTag || !newTag.trim()}
-              className="semiont-button semiont-button--primary"
+              className="xynoplex-button xynoplex-button--primary"
             >
               {isAddingTag ? (
                 t.adding
               ) : (
                 <>
-                  <PlusIcon className="semiont-icon semiont-icon--small semiont-icon--inline" />
+                  <PlusIcon className="xynoplex-icon xynoplex-icon--small xynoplex-icon--inline" />
                   {t.addTag}
                 </>
               )}
@@ -136,8 +136,8 @@ export function EntityTagsPage({
 
           {/* Error message */}
           {error && (
-            <div className="semiont-entity-tags__error">
-              <ExclamationCircleIcon className="semiont-entity-tags__error-icon" />
+            <div className="xynoplex-entity-tags__error">
+              <ExclamationCircleIcon className="xynoplex-entity-tags__error-icon" />
               {error}
             </div>
           )}
@@ -145,7 +145,7 @@ export function EntityTagsPage({
       </div>
 
       {/* Right Sidebar - Panels and Toolbar */}
-      <div className="semiont-page__sidebar">
+      <div className="xynoplex-page__sidebar">
         <ToolbarPanels
           activePanel={activePanel}
           theme={theme}

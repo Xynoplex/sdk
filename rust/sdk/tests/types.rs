@@ -3,8 +3,8 @@
 //! job is held with, a job description and the three results a job reports,
 //! and the registry's operations.
 
-use semiont::bus::operation;
-use semiont::types::{
+use xynoplex::bus::operation;
+use xynoplex::types::{
     HighlightingJobParams, Job, JobCreateCommand, JobFilter, JobQueuedEvent, JobResult,
     JobStoredProgress, JobStoredResult, LinkingJobParams, MarkJobCreateCommand, MarkJobFilter,
     MarkJobFilterParams, MarkJobParams, Motivation, TaggingJobParams, YieldJobFilter,

@@ -19,10 +19,10 @@ import {
 import { SortableResourceTab } from './SortableResourceTab';
 import { useDragAnnouncements } from '../../hooks/useDragAnnouncements';
 import { useTranslations } from '../../contexts/TranslationContext';
-import { useSemiont } from '../../session/SemiontProvider';
+import { useXynoplex } from '../../session/XynoplexProvider';
 import type { CollapsibleResourceNavigationProps } from '../../types/collapsible-navigation';
 import './CollapsibleResourceNavigation.css';
-import type { ResourceId } from '@semiont/core';
+import type { ResourceId } from '@xynoplex/core';
 
 /**
  * A comprehensive collapsible navigation component with fixed items and dynamic resource tabs.
@@ -54,7 +54,7 @@ export function CollapsibleResourceNavigation({
 
   const { announcePickup, announceDrop, announceKeyboardReorder, announceCannotMove } = useDragAnnouncements();
   const t = useTranslations('CollapsibleResourceNavigation');
-  const semiont = useSemiont();
+  const xynoplex = useXynoplex();
 
   // A translation passed as a prop overrides the one from context
   const mergedTranslations = {
@@ -111,12 +111,12 @@ export function CollapsibleResourceNavigation({
     }
 
     // Emit event
-    semiont.emit('tabs:reorder', { oldIndex: currentIndex, newIndex });
+    xynoplex.emit('tabs:reorder', { oldIndex: currentIndex, newIndex });
 
     // Announce the change
     const resource = resources[currentIndex];
     announceKeyboardReorder(resource.name, direction, newIndex + 1, resources.length);
-  }, [resources, semiont]);
+  }, [resources, xynoplex]);
 
   // Handle resource close
   const handleResourceClose = (resourceId: ResourceId, e: React.MouseEvent) => {
@@ -124,7 +124,7 @@ export function CollapsibleResourceNavigation({
     e.stopPropagation();
 
     // Emit event
-    semiont.emit('tabs:close', { resourceId });
+    xynoplex.emit('tabs:close', { resourceId });
 
     // If we're closing the currently viewed resource, navigate to first fixed item or trigger callback
     const resourceHref = getResourceHref(resourceId);
@@ -152,7 +152,7 @@ export function CollapsibleResourceNavigation({
       const newIndex = resources.findIndex((resource) => resource.id === over.id);
       if (oldIndex !== -1 && newIndex !== -1) {
         // Emit event
-        semiont.emit('tabs:reorder', { oldIndex, newIndex });
+        xynoplex.emit('tabs:reorder', { oldIndex, newIndex });
         const resource = resources[oldIndex];
         announceDrop(resource.name, newIndex + 1, resources.length);
       }
@@ -160,7 +160,7 @@ export function CollapsibleResourceNavigation({
   };
 
   return (
-    <div className={`semiont-collapsible-nav ${className}`}>
+    <div className={`xynoplex-collapsible-nav ${className}`}>
       {/* Screen reader instructions for drag and drop */}
       <div id="drag-instructions" className="sr-only" aria-live="polite">
         {mergedTranslations.dragInstructions}
@@ -171,14 +171,14 @@ export function CollapsibleResourceNavigation({
         Resources can be reordered using Alt+Up or Alt+Down arrow keys.
       </div>
 
-      <div className="semiont-collapsible-nav__container">
+      <div className="xynoplex-collapsible-nav__container">
         {/* Section header with collapse/expand button and optional dropdown */}
         <div style={{ position: 'relative' }} ref={navigationMenu ? dropdownRef : undefined}>
-          <div className="semiont-nav-section__header">
+          <div className="xynoplex-nav-section__header">
             {!isCollapsed && navigationMenu && (
               <button
                 onClick={toggleDropdown}
-                className="semiont-nav-section__header-text"
+                className="xynoplex-nav-section__header-text"
                 aria-expanded={isDropdownOpen}
                 aria-haspopup="true"
                 type="button"
@@ -187,11 +187,11 @@ export function CollapsibleResourceNavigation({
               </button>
             )}
             {!isCollapsed && !navigationMenu && (
-              <span className="semiont-nav-section__header-text">{mergedTranslations.title}</span>
+              <span className="xynoplex-nav-section__header-text">{mergedTranslations.title}</span>
             )}
             <button
-              onClick={() => semiont.emit('shell:sidebar-toggle', undefined)}
-              className="semiont-nav-section__header-icon"
+              onClick={() => xynoplex.emit('shell:sidebar-toggle', undefined)}
+              className="xynoplex-nav-section__header-icon"
               title={isCollapsed ? mergedTranslations.expandSidebar : mergedTranslations.collapseSidebar}
               aria-label={isCollapsed ? mergedTranslations.expandSidebar : mergedTranslations.collapseSidebar}
               type="button"
@@ -201,7 +201,7 @@ export function CollapsibleResourceNavigation({
           </div>
 
           {isDropdownOpen && navigationMenu && !isCollapsed && (
-            <div className="semiont-nav-section__dropdown">
+            <div className="xynoplex-nav-section__dropdown">
               {navigationMenu(closeDropdown)}
             </div>
           )}
@@ -209,19 +209,19 @@ export function CollapsibleResourceNavigation({
 
         {/* Fixed navigation tabs */}
         {!isCollapsed && (
-          <nav className="semiont-nav-tabs">
+          <nav className="xynoplex-nav-tabs">
             {fixedItems.map((item) => {
               const isActive = currentPath === item.href;
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`semiont-nav-tab ${isActive ? 'semiont-nav-tab--active' : ''}`}
+                  className={`xynoplex-nav-tab ${isActive ? 'xynoplex-nav-tab--active' : ''}`}
                   title={item.description || item.name}
                   aria-current={isActive ? 'page' : undefined}
                 >
-                  <item.icon className="semiont-nav-tab__icon" aria-hidden="true" />
-                  <span className="semiont-nav-tab__text">{item.name}</span>
+                  <item.icon className="xynoplex-nav-tab__icon" aria-hidden="true" />
+                  <span className="xynoplex-nav-tab__text">{item.name}</span>
                 </Link>
               );
             })}
@@ -230,19 +230,19 @@ export function CollapsibleResourceNavigation({
 
         {/* Collapsed state - show fixed items as icon-only */}
         {isCollapsed && (
-          <nav className="semiont-nav-tabs">
+          <nav className="xynoplex-nav-tabs">
             {fixedItems.map((item) => {
               const isActive = currentPath === item.href;
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`semiont-nav-tab ${isActive ? 'semiont-nav-tab--active' : ''}`}
+                  className={`xynoplex-nav-tab ${isActive ? 'xynoplex-nav-tab--active' : ''}`}
                   title={item.description || item.name}
                   aria-current={isActive ? 'page' : undefined}
                   aria-label={item.name}
                 >
-                  <item.icon className="semiont-nav-tab__icon" aria-hidden="true" />
+                  <item.icon className="xynoplex-nav-tab__icon" aria-hidden="true" />
                 </Link>
               );
             })}
@@ -250,7 +250,7 @@ export function CollapsibleResourceNavigation({
         )}
 
         {/* Resource tabs with drag and drop */}
-        <div className="semiont-resource-tabs" role="tablist" aria-label="Open resources">
+        <div className="xynoplex-resource-tabs" role="tablist" aria-label="Open resources">
                 {isCollapsed ? (
                   // When collapsed, dragging is disabled - just render simple tabs
                   resources.map((resource) => {

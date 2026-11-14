@@ -3,13 +3,13 @@
 
 use proptest::prelude::Just;
 use proptest::strategy::Strategy;
-use semiont::bus::{Bus, Operation, operation};
-use semiont::testing::liveness::{
+use xynoplex::bus::{Bus, Operation, operation};
+use xynoplex::testing::liveness::{
     DeliveryOp, DeliverySubject, LivenessScenario, LivenessSpec, Respond,
     assert_exactly_once_delivery, assert_liveness_axioms,
 };
-use semiont::testing::{FaultAction, FaultyTransport};
-use semiont::transport::{BoxFuture, Envelope, Transport};
+use xynoplex::testing::{FaultAction, FaultyTransport};
+use xynoplex::transport::{BoxFuture, Envelope, Transport};
 use serde_json::{Map, Value, json};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;

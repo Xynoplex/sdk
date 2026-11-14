@@ -2,9 +2,9 @@
 # Build the Python SDK's distributions, and hold them to what a published one
 # must be, before anything is uploaded.
 #
-#   packages/python/sdk/scripts/build-python-sdk.sh
+#   python/sdk/scripts/build-python-sdk.sh
 #
-# Leaves a source distribution and a wheel in packages/python/sdk/dist, at
+# Leaves a source distribution and a wheel in python/sdk/dist, at
 # version.json's version. CI runs it on every change, so a release is not the
 # first place a packaging break is seen; publish-pypi.yml runs it and uploads
 # what it leaves.
@@ -26,13 +26,13 @@
 
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "$0")/../../../.." && pwd)"
-PACKAGE="$ROOT/packages/python/sdk"
+ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
+PACKAGE="$ROOT/python/sdk"
 
 NAME=$(sed -n 's/^name = "\(.*\)"$/\1/p' "$PACKAGE/pyproject.toml")
 VERSION=$(jq -r .version "$ROOT/version.json")
 if [ -z "$NAME" ] || [ -z "$VERSION" ] || [ "$VERSION" = "null" ]; then
-  echo "::error::no name in packages/python/sdk/pyproject.toml, or no version in version.json" >&2
+  echo "::error::no name in python/sdk/pyproject.toml, or no version in version.json" >&2
   exit 1
 fi
 
@@ -52,7 +52,7 @@ fi
 
 # The source distribution holds the package, its README, its LICENSE and its
 # metadata.
-strays=$(tar -tzf "dist/$SDIST" | sed "s#^$NAME-$VERSION/##" | grep -v -e '^$' -e '^src/semiont/' -e '^README\.md$' -e '^LICENSE$' -e '^pyproject\.toml$' -e '^PKG-INFO$' -e '^\.gitignore$' || true)
+strays=$(tar -tzf "dist/$SDIST" | sed "s#^$NAME-$VERSION/##" | grep -v -e '^$' -e '^src/xynoplex/' -e '^README\.md$' -e '^LICENSE$' -e '^pyproject\.toml$' -e '^PKG-INFO$' -e '^\.gitignore$' || true)
 if [ -n "$strays" ]; then
   echo "::error::the source distribution holds more than the package:" >&2
   echo "$strays" >&2

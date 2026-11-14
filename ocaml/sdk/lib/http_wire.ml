@@ -218,7 +218,7 @@ let emit t ~client_id ?scope ?correlation_id ?trace channel source =
         (fun (sink : Telemetry.t) ->
           sink.increment
             {
-              name = semiont_bus_sent;
+              name = xynoplex_bus_sent;
               attributes;
               time = Clock.wall_now t.clock;
             })

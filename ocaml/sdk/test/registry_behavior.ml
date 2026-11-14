@@ -1,5 +1,5 @@
 open Eio.Std
-open Semiont
+open Xynoplex
 module R = Registry
 module D = Discovery
 module J = Yojson.Safe.Util
@@ -70,7 +70,7 @@ let discovery () =
   assert (parse {|{"version":1,"kbs":[{}]}|} = D.Absent D.Invalid);
   let entry port name =
     Printf.sprintf
-      {|{"host":"localhost","port":%d,"did":"did:web:kb.example","managedBy":"semiont-launcher","placement":"local","siteName":"%s"}|}
+      {|{"host":"localhost","port":%d,"did":"did:web:kb.example","managedBy":"xynoplex-launcher","placement":"local","siteName":"%s"}|}
       port name
   in
   let document entries =
@@ -563,7 +563,7 @@ let sign_in () =
   in
   let serial = ref 0 in
   let browser =
-    R.new_semiont_browser
+    R.new_xynoplex_browser
       {
         storage;
         clock;
@@ -645,7 +645,7 @@ let redirect () =
             storage.remove key)
       ()
   in
-  let config : R.semiont_browser_config =
+  let config : R.xynoplex_browser_config =
     {
       storage;
       clock;
@@ -686,13 +686,13 @@ let redirect () =
       String.make length (Char.chr !count)
     in
     R.begin_sign_in
-      (R.new_semiont_browser ~storage:atomic_storage config)
+      (R.new_xynoplex_browser ~storage:atomic_storage config)
       ~http ~issuer:"https://issuer.example" ~random ~redirect_uri:origin
       ~target ~expected_did:"did:web:expected.example" ()
     |> Result.get_ok |> Uri.of_string
   in
   let complete callback =
-    R.complete_sign_in (R.new_semiont_browser ~storage:atomic_storage config)
+    R.complete_sign_in (R.new_xynoplex_browser ~storage:atomic_storage config)
       ~http ~callback ~describe:(fun endpoint ~access ->
         assert (R.same_place endpoint target && access = "access");
         Ok description)
@@ -731,7 +731,7 @@ let session_unit startup () =
     }
   in
   let browser =
-    R.new_semiont_browser
+    R.new_xynoplex_browser
       {
         storage;
         clock;
@@ -1124,7 +1124,7 @@ let errors_browser ~clock factory =
     }
   in
   R.save_knowledge_bases storage [ errors_kb ];
-  R.new_semiont_browser
+  R.new_xynoplex_browser
     { storage; clock; fresh_id = (fun () -> "kb-fresh"); factory }
 
 (* The knowledge base's session over the testing transport: the gateway names

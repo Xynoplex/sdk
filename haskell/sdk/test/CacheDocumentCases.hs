@@ -18,15 +18,15 @@ import Data.Scientific (floatingOrInteger)
 import Data.Text (Text)
 import qualified Data.Text as Text
 import Data.Text.Encoding (decodeUtf8, encodeUtf8)
-import qualified Semiont.Cache as Cache
-import qualified Semiont.Internal.Coupled as Coupled
-import qualified Semiont.Internal.Persistence as Persistence
-import Semiont.Internal.Generated.CachePersistence (KeptQuery(..), Whole, keptQueryName)
-import qualified Semiont.Internal.Generated.CacheRefresh as Fact
-import qualified Semiont.Internal.Kept as Kept
-import qualified Semiont.SessionStorage as Storage
-import qualified Semiont.Timing.Settings as Timing
-import Semiont.Types (AnnotationId, ResourceId, resourceIdValue)
+import qualified Xynoplex.Cache as Cache
+import qualified Xynoplex.Internal.Coupled as Coupled
+import qualified Xynoplex.Internal.Persistence as Persistence
+import Xynoplex.Internal.Generated.CachePersistence (KeptQuery(..), Whole, keptQueryName)
+import qualified Xynoplex.Internal.Generated.CacheRefresh as Fact
+import qualified Xynoplex.Internal.Kept as Kept
+import qualified Xynoplex.SessionStorage as Storage
+import qualified Xynoplex.Timing.Settings as Timing
+import Xynoplex.Types (AnnotationId, ResourceId, resourceIdValue)
 import System.FilePath ((</>))
 import System.Timeout (timeout)
 

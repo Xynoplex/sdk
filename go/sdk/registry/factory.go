@@ -9,9 +9,9 @@ import (
 	"math/rand/v2"
 	"net/http"
 
-	semiont "github.com/The-AI-Alliance/semiont/packages/go/sdk"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/bus"
+	xynoplex "github.com/Xynoplex/sdk/go"
+	"github.com/Xynoplex/sdk/go/api"
+	"github.com/Xynoplex/sdk/go/bus"
 )
 
 // SessionFactoryOptions is what a session is built from.
@@ -19,24 +19,24 @@ type SessionFactoryOptions struct {
 	// Kb is the knowledge base the session is for.
 	Kb api.KnowledgeBase
 	// Storage is where its tokens are kept: the registry's own storage.
-	Storage semiont.SessionStorage
+	Storage xynoplex.SessionStorage
 	// Signals is where the session says it is over, for a host to show.
-	Signals *semiont.SessionSignals
+	Signals *xynoplex.SessionSignals
 }
 
 // SessionFactory builds the sessions a registry activates. A factory reads
-// none of a session's errors (semiont.Session's Errors): the registry is
+// none of a session's errors (xynoplex.Session's Errors): the registry is
 // their one reader.
 type SessionFactory interface {
 	// Session builds the session of a knowledge base, and the client it
 	// uses, and starts it. end closes the client, waiting for its closing
 	// flush, then ends the session, whose errors end then, and then closes
 	// what they were built on. A knowledge base this factory cannot reach is
-	// refused with a *semiont.SessionError of code
+	// refused with a *xynoplex.SessionError of code
 	// session.construct-failed. ctx ends when the registry is closed: the
 	// registry stops waiting then, and ends a session handed back afterwards
 	// at once.
-	Session(ctx context.Context, options SessionFactoryOptions) (session *semiont.Session, end func(), err error)
+	Session(ctx context.Context, options SessionFactoryOptions) (session *xynoplex.Session, end func(), err error)
 	// Revoke tells whoever issued a stored session that it has been
 	// forgotten, so its refresh token is good for nothing. Best effort: the
 	// sign-out has happened whether or not the issuer hears of it, and the
@@ -50,22 +50,22 @@ type SessionFactory interface {
 // gateway names, under the knowledge base's id and their key, which the
 // stored session records; and its token is renewed at the issuer its stored
 // session names. Each is written only while the stored session names that
-// person (semiont.SessionFromKeptConfig's Storage): one forgotten, here or by
+// person (xynoplex.SessionFromKeptConfig's Storage): one forgotten, here or by
 // another context, or replaced with a sign-in that names nobody or another
 // person, has its session write nothing more.
 type HttpSessionFactory struct {
 	// HTTP is what every request of a gateway and an issuer is made with.
 	HTTP   *http.Client
-	Timing semiont.Timing
+	Timing xynoplex.Timing
 	// Random is what the jitter of every backoff of its sessions is drawn
-	// from, as semiont.EqualJitter draws it.
+	// from, as xynoplex.EqualJitter draws it.
 	Random *rand.Rand
 }
 
 var _ SessionFactory = HttpSessionFactory{}
 
-func (f HttpSessionFactory) Session(ctx context.Context, options SessionFactoryOptions) (*semiont.Session, func(), error) {
-	return semiont.SessionFromKept(ctx, semiont.SessionFromKeptConfig{
+func (f HttpSessionFactory) Session(ctx context.Context, options SessionFactoryOptions) (*xynoplex.Session, func(), error) {
+	return xynoplex.SessionFromKept(ctx, xynoplex.SessionFromKeptConfig{
 		Kb:           api.KbTarget{Endpoint: options.Kb.Endpoint, Id: options.Kb.Id, Label: options.Kb.Label},
 		Kept:         KeptIn(options.Storage, options.Kb.Id),
 		HTTP:         f.HTTP,
@@ -82,5 +82,5 @@ func (f HttpSessionFactory) Revoke(ctx context.Context, stored StoredSession) {
 		return
 	}
 	// Best effort, as the interface says: the sign-out stands either way.
-	_ = semiont.Issuer{HTTP: f.HTTP, Timing: f.Timing, Random: f.Random}.Revoke(ctx, stored.RevocationEndpoint, stored.ClientID, stored.Refresh)
+	_ = xynoplex.Issuer{HTTP: f.HTTP, Timing: f.Timing, Random: f.Random}.Revoke(ctx, stored.RevocationEndpoint, stored.ClientID, stored.Refresh)
 }

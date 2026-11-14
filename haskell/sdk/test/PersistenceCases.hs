@@ -10,25 +10,25 @@ import qualified Data.ByteString.Lazy as Lazy
 import qualified Data.Map.Strict as Map
 import qualified Data.Set as Set
 import Data.List (find)
-import qualified Semiont.Client as Client
-import qualified Semiont.Browse as Browse
-import qualified Semiont.Content as Content
-import qualified Semiont.Bus as Bus
-import qualified Semiont.Transport as Transport
-import qualified Semiont.Channels as Channel
-import qualified Semiont.Timing.Settings as Timing
+import qualified Xynoplex.Client as Client
+import qualified Xynoplex.Browse as Browse
+import qualified Xynoplex.Content as Content
+import qualified Xynoplex.Bus as Bus
+import qualified Xynoplex.Transport as Transport
+import qualified Xynoplex.Channels as Channel
+import qualified Xynoplex.Timing.Settings as Timing
 import qualified Streaming.Prelude as Stream
 import Data.Scientific (Scientific)
 import Data.Text (Text)
 import qualified Data.Text as Text
 import Data.Text.Encoding (encodeUtf8)
-import qualified Semiont.Cache as Cache
-import qualified Semiont.StoragePersister as Stored
-import qualified Semiont.SessionStorage as Storage
-import qualified Semiont.Internal.Coupled as Coupled
-import Semiont.Internal.Generated.CachePersistence (CacheDocument(..))
-import qualified Semiont.Internal.Kept as Kept
-import Semiont.Types
+import qualified Xynoplex.Cache as Cache
+import qualified Xynoplex.StoragePersister as Stored
+import qualified Xynoplex.SessionStorage as Storage
+import qualified Xynoplex.Internal.Coupled as Coupled
+import Xynoplex.Internal.Generated.CachePersistence (CacheDocument(..))
+import qualified Xynoplex.Internal.Kept as Kept
+import Xynoplex.Types
 import qualified ControlledTime as Time
 
 require :: String -> Bool -> IO ()

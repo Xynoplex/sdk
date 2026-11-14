@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import { LOCALES } from '@semiont/core';
+import { LOCALES } from '@xynoplex/core';
 import { useTranslations } from '../../contexts/TranslationContext';
 import { useLanguageChangeAnnouncements } from '../LiveRegion';
-import { useSemiont } from '../../session/SemiontProvider';
+import { useXynoplex } from '../../session/XynoplexProvider';
 import { useLineNumbers } from '../../contexts/LineNumbersContext';
 import './SettingsPanel.css';
 
@@ -44,7 +44,7 @@ export function SettingsPanel({
   onOpenKeyboardHelp
 }: SettingsPanelProps) {
   const t = useTranslations('Settings');
-  const semiont = useSemiont();
+  const xynoplex = useXynoplex();
   // The switch renders the SHARED line-numbers state, not a prop snapshot:
   // its toggle is applied by a bus subscriber in ToolbarPanels, so a prop
   // fed from any per-route source is a second copy that never updates.
@@ -58,7 +58,7 @@ export function SettingsPanel({
   const handleLocaleChange = (newLocale: string) => {
     const localeName = LOCALES.find(l => l.code === newLocale)?.nativeName || newLocale;
     announceLanguageChanging(localeName);
-    semiont.emit('settings:locale-changed', { locale: newLocale });
+    xynoplex.emit('settings:locale-changed', { locale: newLocale });
   };
 
   // Announce when language has successfully changed
@@ -71,74 +71,74 @@ export function SettingsPanel({
   }, [locale, previousLocale, isPendingLocaleChange]);
 
   return (
-    <div className="semiont-settings-panel">
-      <h3 className="semiont-settings-panel__title">
+    <div className="xynoplex-settings-panel">
+      <h3 className="xynoplex-settings-panel__title">
         {t('title')}
       </h3>
 
-      <div className="semiont-settings-panel__content">
+      <div className="xynoplex-settings-panel__content">
         {/* Line Numbers Toggle */}
-        <div className="semiont-settings-panel__field">
-          <label className="semiont-toggle-label">
-            <span className="semiont-toggle-label__text">
+        <div className="xynoplex-settings-panel__field">
+          <label className="xynoplex-toggle-label">
+            <span className="xynoplex-toggle-label__text">
               {t('lineNumbers')}
             </span>
             <button
               type="button"
               role="switch"
               aria-checked={showLineNumbers}
-              onClick={() => semiont.emit('settings:line-numbers-toggled', undefined)}
-              className={`semiont-toggle ${
-                showLineNumbers ? 'semiont-toggle--active' : ''
+              onClick={() => xynoplex.emit('settings:line-numbers-toggled', undefined)}
+              className={`xynoplex-toggle ${
+                showLineNumbers ? 'xynoplex-toggle--active' : ''
               }`}
             >
               <span
-                className={`semiont-toggle__slider ${
-                  showLineNumbers ? 'semiont-toggle__slider--active' : ''
+                className={`xynoplex-toggle__slider ${
+                  showLineNumbers ? 'xynoplex-toggle__slider--active' : ''
                 }`}
               />
             </button>
           </label>
-          <p className="semiont-form__help">
+          <p className="xynoplex-form__help">
             {showLineNumbers ? t('lineNumbersVisible') : t('lineNumbersHidden')}
           </p>
         </div>
 
         {/* Theme Selection */}
-        <div className="semiont-settings-panel__field">
-          <label className="semiont-form__label">
+        <div className="xynoplex-settings-panel__field">
+          <label className="xynoplex-form__label">
             {t('theme')}
           </label>
-          <div className="semiont-settings-panel__button-group">
+          <div className="xynoplex-settings-panel__button-group">
             <button
-              onClick={() => semiont.emit('settings:theme-changed', { theme: 'light' })}
-              className={`semiont-panel-button ${
-                theme === 'light' ? 'semiont-panel-button-active' : ''
+              onClick={() => xynoplex.emit('settings:theme-changed', { theme: 'light' })}
+              className={`xynoplex-panel-button ${
+                theme === 'light' ? 'xynoplex-panel-button-active' : ''
               }`}
               aria-pressed={theme === 'light'}
             >
               ☀️ {t('themeLight')}
             </button>
             <button
-              onClick={() => semiont.emit('settings:theme-changed', { theme: 'dark' })}
-              className={`semiont-panel-button ${
-                theme === 'dark' ? 'semiont-panel-button-active' : ''
+              onClick={() => xynoplex.emit('settings:theme-changed', { theme: 'dark' })}
+              className={`xynoplex-panel-button ${
+                theme === 'dark' ? 'xynoplex-panel-button-active' : ''
               }`}
               aria-pressed={theme === 'dark'}
             >
               🌙 {t('themeDark')}
             </button>
             <button
-              onClick={() => semiont.emit('settings:theme-changed', { theme: 'system' })}
-              className={`semiont-panel-button ${
-                theme === 'system' ? 'semiont-panel-button-active' : ''
+              onClick={() => xynoplex.emit('settings:theme-changed', { theme: 'system' })}
+              className={`xynoplex-panel-button ${
+                theme === 'system' ? 'xynoplex-panel-button-active' : ''
               }`}
               aria-pressed={theme === 'system'}
             >
               💻 {t('themeSystem')}
             </button>
           </div>
-          <p className="semiont-form__help" aria-live="polite">
+          <p className="xynoplex-form__help" aria-live="polite">
             {theme === 'system'
               ? t('themeSystemActive')
               : t('themeModeActive', { mode: theme.charAt(0).toUpperCase() + theme.slice(1) })}
@@ -146,8 +146,8 @@ export function SettingsPanel({
         </div>
 
         {/* Language Selection */}
-        <div className="semiont-settings-panel__field">
-          <label htmlFor="language-select" className="semiont-form__label">
+        <div className="xynoplex-settings-panel__field">
+          <label htmlFor="language-select" className="xynoplex-form__label">
             {t('language')}
           </label>
           <select
@@ -155,7 +155,7 @@ export function SettingsPanel({
             value={locale}
             onChange={(e) => handleLocaleChange(e.target.value)}
             disabled={isPendingLocaleChange}
-            className="semiont-select"
+            className="xynoplex-select"
             aria-busy={isPendingLocaleChange}
             aria-describedby="language-hint"
           >
@@ -165,19 +165,19 @@ export function SettingsPanel({
               </option>
             ))}
           </select>
-          <p id="language-hint" className="semiont-form__help">
+          <p id="language-hint" className="xynoplex-form__help">
             {t('languageHint')}
           </p>
           {isPendingLocaleChange && (
-            <p className="semiont-settings-panel__loading" role="status" aria-live="polite">
+            <p className="xynoplex-settings-panel__loading" role="status" aria-live="polite">
               {t('languageChanging')}
             </p>
           )}
         </div>
 
         {/* Hover Delay Slider */}
-        <div className="semiont-settings-panel__field">
-          <label htmlFor="hover-delay-slider" className="semiont-form__label">
+        <div className="xynoplex-settings-panel__field">
+          <label htmlFor="hover-delay-slider" className="xynoplex-form__label">
             {t('hoverDelay')}
           </label>
           <input
@@ -187,31 +187,31 @@ export function SettingsPanel({
             max="500"
             step="50"
             value={hoverDelayMs}
-            onChange={(e) => semiont.emit('settings:hover-delay-changed', { hoverDelayMs: Number(e.target.value) })}
-            className="semiont-slider"
+            onChange={(e) => xynoplex.emit('settings:hover-delay-changed', { hoverDelayMs: Number(e.target.value) })}
+            className="xynoplex-slider"
             aria-describedby="hover-delay-description"
           />
-          <div className="semiont-slider__labels">
+          <div className="xynoplex-slider__labels">
             <span>{t('hoverDelayFast')}</span>
             <span>{t('hoverDelaySlow')}</span>
           </div>
-          <p id="hover-delay-description" className="semiont-form__help">
+          <p id="hover-delay-description" className="xynoplex-form__help">
             {t('hoverDelayDescription', { delay: hoverDelayMs })}
           </p>
         </div>
 
         {/* About */}
-        <div className="semiont-settings-panel__field semiont-settings-panel__about">
-          <h4 className="semiont-settings-panel__about-name">Semiont</h4>
-          <p className="semiont-settings-panel__about-tagline">{t('tagline')}</p>
-          <p className="semiont-settings-panel__about-version">
+        <div className="xynoplex-settings-panel__field xynoplex-settings-panel__about">
+          <h4 className="xynoplex-settings-panel__about-name">Xynoplex</h4>
+          <p className="xynoplex-settings-panel__about-tagline">{t('tagline')}</p>
+          <p className="xynoplex-settings-panel__about-version">
             {t('version', { version })}
           </p>
-          <div className="semiont-settings-panel__about-links">
+          <div className="xynoplex-settings-panel__about-links">
             <button
               type="button"
               onClick={onOpenKeyboardHelp}
-              className="semiont-settings-panel__about-link"
+              className="xynoplex-settings-panel__about-link"
             >
               {t('keyboardShortcuts')}
             </button>
@@ -219,7 +219,7 @@ export function SettingsPanel({
               href={sourceCodeUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="semiont-settings-panel__about-link"
+              className="xynoplex-settings-panel__about-link"
             >
               {t('sourceCode')}
             </a>

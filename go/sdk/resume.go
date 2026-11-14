@@ -1,4 +1,4 @@
-package semiont
+package xynoplex
 
 // A stream's place in each scope, kept so the next client of the same
 // knowledge base resumes from it. What that client kept of a scope is then
@@ -9,8 +9,8 @@ import (
 	"maps"
 	"sync"
 
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/internal/required"
+	"github.com/Xynoplex/sdk/go/api"
+	"github.com/Xynoplex/sdk/go/internal/required"
 )
 
 // Bookmarks is where a stream's place in each scope was kept across a
@@ -45,9 +45,9 @@ type Bookmarks interface {
 // A pair kept under the key that is not a resource's id and a
 // PersistedEventId is skipped; what is no object is no places.
 //
-//	places := semiont.NewCoupledBookmarks(storage, semiont.LastEventIDKey(kb.Id, personKey))
-//	transport := semiont.NewHTTPTransport(semiont.HTTPTransportConfig{..., Bookmarks: places})
-//	client := semiont.NewClient(semiont.ClientConfig{..., Persistence: &semiont.CachePersistence{Storage: places.Storage(), KbID: kb.Id, PersonKey: personKey}})
+//	places := xynoplex.NewCoupledBookmarks(storage, xynoplex.LastEventIDKey(kb.Id, personKey))
+//	transport := xynoplex.NewHTTPTransport(xynoplex.HTTPTransportConfig{..., Bookmarks: places})
+//	client := xynoplex.NewClient(xynoplex.ClientConfig{..., Persistence: &xynoplex.CachePersistence{Storage: places.Storage(), KbID: kb.Id, PersonKey: personKey}})
 //	places.CoupleTo(client)
 type CoupledBookmarks struct {
 	storage SessionStorage

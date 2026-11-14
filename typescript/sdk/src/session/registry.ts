@@ -1,5 +1,5 @@
 /**
- * Process-wide accessor for `SemiontBrowser`. Constructed lazily on the
+ * Process-wide accessor for `XynoplexBrowser`. Constructed lazily on the
  * first `getBrowser()` call and held for the host's lifetime — a single
  * instance owns the KB list, identity token, and active-session state,
  * so callers throughout the host get the same view of "which KB am I
@@ -14,22 +14,22 @@
  * instance regardless of the options passed.
  */
 
-import { SemiontBrowser } from './semiont-browser';
+import { XynoplexBrowser } from './xynoplex-browser';
 import type { SessionStorage } from './session-storage';
 import type { SessionFactory } from './session-factory';
 
-let instance: SemiontBrowser | null = null;
+let instance: XynoplexBrowser | null = null;
 
 export interface GetBrowserOptions {
   /** Persistence adapter used to construct the singleton on first call. */
   storage: SessionStorage;
-  /** Session factory used to build a `SemiontSession` per active KB. */
+  /** Session factory used to build a `XynoplexSession` per active KB. */
   sessionFactory: SessionFactory;
 }
 
-export function getBrowser(options: GetBrowserOptions): SemiontBrowser {
+export function getBrowser(options: GetBrowserOptions): XynoplexBrowser {
   if (!instance) {
-    instance = new SemiontBrowser({
+    instance = new XynoplexBrowser({
       storage: options.storage,
       sessionFactory: options.sessionFactory,
     });

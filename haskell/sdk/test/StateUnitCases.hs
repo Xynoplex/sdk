@@ -11,8 +11,8 @@ import qualified Data.ByteString as Bytes
 import Data.Foldable (toList)
 import qualified Data.Map.Strict as Map
 import Data.Text (Text)
-import qualified Semiont.State.SessionSignals as Signals
-import qualified Semiont.StateValue as State
+import qualified Xynoplex.State.SessionSignals as Signals
+import qualified Xynoplex.StateValue as State
 import qualified Streaming.Prelude as Stream
 import System.FilePath ((</>))
 

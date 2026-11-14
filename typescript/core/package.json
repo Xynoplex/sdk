@@ -1,7 +1,7 @@
 {
-  "name": "@semiont/core",
+  "name": "@xynoplex/core",
   "version": "0.7.3",
-  "description": "Core types and domain logic for Semiont - Resource, Annotation, and Graph models",
+  "description": "Core types and domain logic for Xynoplex - Resource, Annotation, and Graph models",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -44,8 +44,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/The-AI-Alliance/semiont.git",
-    "directory": "packages/typescript/core"
+    "url": "git+https://github.com/Xynoplex/sdk.git",
+    "directory": "typescript/core"
   },
   "scripts": {
     "bundle-spec": "cd ../../.. && npm run openapi:bundle",
@@ -78,9 +78,9 @@
     "resource",
     "annotation",
     "graph",
-    "semiont"
+    "xynoplex"
   ],
-  "author": "Semiont Team",
+  "author": "Xynoplex Team",
   "sideEffects": false,
   "license": "Apache-2.0",
   "devDependencies": {

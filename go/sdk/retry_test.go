@@ -1,4 +1,4 @@
-package semiont_test
+package xynoplex_test
 
 // Trying again, held to the cases every SDK runs (protocol/specs/src/retry/cases.json).
 // The table states four rules. This SDK keeps the ones it has a use for, and
@@ -13,7 +13,7 @@ import (
 	"testing"
 	"time"
 
-	semiont "github.com/The-AI-Alliance/semiont/packages/go/sdk"
+	xynoplex "github.com/Xynoplex/sdk/go"
 )
 
 // notKept is each rule of the table this SDK does not keep, with why.
@@ -57,9 +57,9 @@ func readRetryTable(t *testing.T) (rules []retryRow, waits []statedWait) {
 	return table.Rules, table.RetryAfter
 }
 
-func keptRules() map[string]semiont.RetryRule {
-	kept := map[string]semiont.RetryRule{}
-	for _, rule := range semiont.RetryRules() {
+func keptRules() map[string]xynoplex.RetryRule {
+	kept := map[string]xynoplex.RetryRule{}
+	for _, rule := range xynoplex.RetryRules() {
 		kept[rule.Name] = rule
 	}
 	return kept
@@ -105,7 +105,7 @@ func TestARuleAnswersAsTheTableDoes(t *testing.T) {
 		if !isKept {
 			continue
 		}
-		facts := semiont.RetryFacts{Status: row.Status, Method: row.Method, Keyed: row.Keyed}
+		facts := xynoplex.RetryFacts{Status: row.Status, Method: row.Method, Keyed: row.Keyed}
 		if got := rule.Retryable(facts); got != row.Retries {
 			t.Errorf("%s: %s retries %v; the table says %v", row.Rule, row.Why, got, row.Retries)
 		}
@@ -119,7 +119,7 @@ func TestARetryAfterHeaderStatesTheWaitTheTableGives(t *testing.T) {
 		if row.Header != nil {
 			header = *row.Header
 		}
-		wait, ok := semiont.RetryAfter(header)
+		wait, ok := xynoplex.RetryAfter(header)
 		switch {
 		case row.Ms == nil && ok:
 			t.Errorf("%s: %q states a wait of %v; the table says none", row.Why, header, wait)
@@ -131,7 +131,7 @@ func TestARetryAfterHeaderStatesTheWaitTheTableGives(t *testing.T) {
 
 func TestJitterStaysBetweenHalfTheCapAndTheCap(t *testing.T) {
 	for range 1000 {
-		if wait := semiont.EqualJitter(time.Second, nil); wait < 500*time.Millisecond || wait > time.Second {
+		if wait := xynoplex.EqualJitter(time.Second, nil); wait < 500*time.Millisecond || wait > time.Second {
 			t.Fatalf("a jittered wait of %v, for a cap of 1s", wait)
 		}
 	}

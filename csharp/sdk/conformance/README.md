@@ -14,8 +14,8 @@ OpenTelemetry provider. The SDK itself takes no OpenTelemetry package dependency
 From the repository root on an arm64 Mac:
 
 ```sh
-container run --rm --memory 4g -v "$PWD":/work -w /work/packages/csharp/sdk \
-  "mcr.microsoft.com/dotnet/sdk:$(packages/csharp/scripts/dotnet-version.sh --image-tag)" \
+container run --rm --memory 4g -v "$PWD":/work -w /work/csharp/sdk \
+  "mcr.microsoft.com/dotnet/sdk:$(csharp/scripts/dotnet-version.sh --image-tag)" \
   dotnet publish conformance/WireDriver -c Release --self-contained \
   -r linux-arm64 -o conformance/bin -p:RestoreLockedMode=true
 ```

@@ -1,4 +1,4 @@
-package semiont
+package xynoplex
 
 // What a client keeps of its queries and of its stream, against
 // protocol/specs/src/session/cache-cases.json. Each case runs through the

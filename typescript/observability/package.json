@@ -1,7 +1,7 @@
 {
-  "name": "@semiont/observability",
+  "name": "@xynoplex/observability",
   "version": "0.7.3",
-  "description": "OpenTelemetry tracing and metrics for Semiont's TypeScript transport. Node process-init helpers, a withSpan wrapper, W3C trace-context propagation across the bus, and the count of the emits a client sent. No-op when no exporter is configured.",
+  "description": "OpenTelemetry tracing and metrics for Xynoplex's TypeScript transport. Node process-init helpers, a withSpan wrapper, W3C trace-context propagation across the bus, and the count of the emits a client sent. No-op when no exporter is configured.",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -29,8 +29,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/The-AI-Alliance/semiont.git",
-    "directory": "packages/typescript/observability"
+    "url": "git+https://github.com/Xynoplex/sdk.git",
+    "directory": "typescript/observability"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
@@ -41,7 +41,7 @@
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest"
   },
-  "author": "Semiont Team",
+  "author": "Xynoplex Team",
   "license": "Apache-2.0",
   "devDependencies": {
     "@vitest/coverage-v8": "^5.0.5",
@@ -61,6 +61,6 @@
     "@opentelemetry/sdk-metrics": "^3.0.0",
     "@opentelemetry/sdk-trace": "^3.0.0",
     "@opentelemetry/semantic-conventions": "^1.44.0",
-    "@semiont/core": "*"
+    "@xynoplex/core": "*"
   }
 }

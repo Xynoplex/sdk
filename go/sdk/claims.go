@@ -1,4 +1,4 @@
-package semiont
+package xynoplex
 
 // A worker's side of the job queue: Job.Claim.
 //
@@ -48,14 +48,14 @@ package semiont
 //	claims := client.Job.Claim(accepts)
 //	defer claims.Close()
 //	for job, err := range claims.All() {
-//		var refused *semiont.ClaimRefusal
+//		var refused *xynoplex.ClaimRefusal
 //		if errors.As(err, &refused) {
 //			continue // the host judges: bus.unauthorized means stop
 //		}
 //		...
 //		job.Start(ctx)
 //		switch held := job.(type) {
-//		case *semiont.HeldMarkJob:
+//		case *xynoplex.HeldMarkJob:
 //			held.Complete(ctx, result)
 //		}
 //	}
@@ -77,9 +77,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/bus"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/internal/kept"
+	"github.com/Xynoplex/sdk/go/api"
+	"github.com/Xynoplex/sdk/go/bus"
+	"github.com/Xynoplex/sdk/go/internal/kept"
 )
 
 // JobClaimChannels is what a worker's stream names for its claims: the

@@ -3,8 +3,8 @@
 import { useState, useCallback } from 'react';
 import { delegateProgressCopy, delegateSubjectCopy, delegateParamLabel } from '../../../lib/delegate-progress-copy';
 import { useTranslations } from '../../../contexts/TranslationContext';
-import type { MarkStateUnit, SemiontSession } from '@semiont/sdk';
-import type { JobId, MarkJobParams, components } from '@semiont/core';
+import type { MarkStateUnit, XynoplexSession } from '@xynoplex/sdk';
+import type { JobId, MarkJobParams, components } from '@xynoplex/core';
 import type { AnnotatorKey } from '../../../lib/annotation-registry';
 import { markJobControls } from '../../../lib/delegated-job-controls';
 import { DelegateShell } from './DelegateShell';
@@ -28,7 +28,7 @@ type Subset<Whole, Part extends Whole> = Part;
 
 interface DelegateSectionProps {
   /** Session carrying the client and event bus; null renders inert. */
-  session: SemiontSession | null;
+  session: XynoplexSession | null;
   /** The resource's mark unit, which delegations, cancels and dismissals are asked of; undefined renders inert. */
   mark: MarkStateUnit | undefined;
   annotationType: Subset<AnnotatorKey, 'highlight' | 'assessment' | 'comment'>;
@@ -122,33 +122,33 @@ export function DelegateSection({
       }}
       form={
         <>
-          <div className="semiont-form-field">
-            <label className="semiont-form-field__label">
+          <div className="xynoplex-form-field">
+            <label className="xynoplex-form-field__label">
               {t('instructions')} {t('optional')}
             </label>
             <textarea
               value={instructions}
               onChange={(e) => setInstructions(e.target.value)}
-              className="semiont-textarea"
+              className="xynoplex-textarea"
               rows={3}
               placeholder={t('instructionsPlaceholder')}
               maxLength={500}
             />
-            <div className="semiont-form-field__char-count">
+            <div className="xynoplex-form-field__char-count">
               {instructions.length}/500
             </div>
           </div>
 
           {/* Tone selector - for comments and assessments */}
           {(annotationType === 'comment' || annotationType === 'assessment') && (
-            <div className="semiont-form-field">
-              <label className="semiont-form-field__label">
+            <div className="xynoplex-form-field">
+              <label className="xynoplex-form-field__label">
                 {t('toneLabel')} {t('toneOptional')}
               </label>
               <select
                 value={tone}
                 onChange={(e) => setTone(e.target.value)}
-                className="semiont-select"
+                className="xynoplex-select"
               >
                 <option value="">Default</option>
                 {annotationType === 'comment' && (
@@ -172,21 +172,21 @@ export function DelegateSection({
           )}
 
           {/* Density selector — applies to all three motivations */}
-          <div className="semiont-form-field">
+          <div className="xynoplex-form-field">
             {/* Header with toggle */}
-            <div className="semiont-form-field__header">
-              <label className="semiont-form-field__label semiont-form-field__label--with-checkbox">
+            <div className="xynoplex-form-field__header">
+              <label className="xynoplex-form-field__label xynoplex-form-field__label--with-checkbox">
                 <input
                   type="checkbox"
                   checked={useDensity}
                   onChange={(e) => setUseDensity(e.target.checked)}
-                  className="semiont-checkbox"
+                  className="xynoplex-checkbox"
                   data-variant={annotationType}
                 />
                 <span>{t('densityLabel')}</span>
               </label>
               {useDensity && (
-                <span className="semiont-form-field__info">{t('densityPerWords', { density })}</span>
+                <span className="xynoplex-form-field__info">{t('densityPerWords', { density })}</span>
               )}
             </div>
 
@@ -199,9 +199,9 @@ export function DelegateSection({
                   max={annotationType === 'comment' ? '12' : annotationType === 'assessment' ? '10' : '15'}
                   value={density}
                   onChange={(e) => setDensity(Number(e.target.value))}
-                  className="semiont-slider"
+                  className="xynoplex-slider"
                 />
-                <div className="semiont-slider__labels">
+                <div className="xynoplex-slider__labels">
                   <span>{t('densitySparse')}</span>
                   <span>{t('densityDense')}</span>
                 </div>
@@ -211,11 +211,11 @@ export function DelegateSection({
 
           <button
             onClick={handleDelegate}
-            className="semiont-button"
+            className="xynoplex-button"
             data-variant="delegate"
             data-type={annotationType}
           >
-            <span className="semiont-button-icon">✨</span>
+            <span className="xynoplex-button-icon">✨</span>
             <span>{t('annotate')}</span>
           </button>
         </>

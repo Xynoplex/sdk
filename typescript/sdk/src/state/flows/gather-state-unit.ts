@@ -1,6 +1,6 @@
 import { BehaviorSubject, type Subscription } from 'rxjs';
-import type { SemiontClient } from '../../client';
-import { watched, type AnnotationId, type GatheredContext, type ResourceId, type StateUnit, type Watched } from '@semiont/core';
+import type { XynoplexClient } from '../../client';
+import { watched, type AnnotationId, type GatheredContext, type ResourceId, type StateUnit, type Watched } from '@xynoplex/core';
 import type { GatherNamespace } from '../../namespaces/types';
 
 /** The options `client.gather.annotation` takes — one shape, referenced not duplicated. */
@@ -33,7 +33,7 @@ export interface GatherStateUnit extends StateUnit {
 }
 
 export function createGatherStateUnit(
-  client: SemiontClient,
+  client: XynoplexClient,
   resourceId: ResourceId,
 ): GatherStateUnit {
   const subs: Subscription[] = [];

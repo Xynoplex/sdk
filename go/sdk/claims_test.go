@@ -1,4 +1,4 @@
-package semiont
+package xynoplex
 
 // Job.Claim: a worker's claims and the jobs it comes to hold.
 //
@@ -24,8 +24,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/bus"
+	"github.com/Xynoplex/sdk/go/api"
+	"github.com/Xynoplex/sdk/go/bus"
 )
 
 // workerWire is a transport a test answers by hand: every request goes to

@@ -57,12 +57,12 @@ describe('ConfigureGatherStep', () => {
     // Dismissal lives on the modal's corner ✕/Esc/backdrop, never in a step
     // footer; this is the first step, so no retreat either.
     const { container } = render(<ConfigureGatherStep onGather={vi.fn()} translations={t} />);
-    const footer = container.querySelector('.semiont-modal__actions--wizard');
+    const footer = container.querySelector('.xynoplex-modal__actions--wizard');
     expect(footer).not.toBeNull();
     const buttons = Array.from(footer!.querySelectorAll('button'));
     expect(buttons).toHaveLength(1);
     expect(buttons[0]!.textContent).not.toMatch(/cancel|✕/i);
-    expect(buttons[0]!.className).not.toContain('semiont-button--flex');
+    expect(buttons[0]!.className).not.toContain('xynoplex-button--flex');
   });
 
   it('renders the children slot (exclusion picker)', () => {

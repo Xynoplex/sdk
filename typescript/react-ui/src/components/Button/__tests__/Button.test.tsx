@@ -17,7 +17,7 @@ describe('Button Component', () => {
 
       const button = screen.getByRole('button', { name: 'Click Me' });
       expect(button).toBeInTheDocument();
-      expect(button).toHaveClass('semiont-button');
+      expect(button).toHaveClass('xynoplex-button');
     });
 
     it('should render without children', () => {
@@ -39,7 +39,7 @@ describe('Button Component', () => {
       render(<Button className="custom-class">Button</Button>);
 
       const button = screen.getByRole('button');
-      expect(button).toHaveClass('semiont-button', 'custom-class');
+      expect(button).toHaveClass('xynoplex-button', 'custom-class');
     });
 
     it('should pass through HTML button props', () => {
@@ -129,7 +129,7 @@ describe('Button Component', () => {
       expect(button).toHaveAttribute('data-disabled', 'true');
 
       // Loading spinner should be present
-      const spinner = button.querySelector('.semiont-button-spinner');
+      const spinner = button.querySelector('.xynoplex-button-spinner');
       expect(spinner).toBeInTheDocument();
       expect(spinner).toHaveAttribute('aria-label', 'Loading');
 
@@ -161,7 +161,7 @@ describe('Button Component', () => {
       const iconWrapper = leftIcon.parentElement;
 
       expect(leftIcon).toBeInTheDocument();
-      expect(iconWrapper).toHaveClass('semiont-button-icon', 'semiont-button-icon-left');
+      expect(iconWrapper).toHaveClass('xynoplex-button-icon', 'xynoplex-button-icon-left');
     });
 
     it('should render right icon', () => {
@@ -172,7 +172,7 @@ describe('Button Component', () => {
       const iconWrapper = rightIcon.parentElement;
 
       expect(rightIcon).toBeInTheDocument();
-      expect(iconWrapper).toHaveClass('semiont-button-icon', 'semiont-button-icon-right');
+      expect(iconWrapper).toHaveClass('xynoplex-button-icon', 'xynoplex-button-icon-right');
     });
 
     it('should render both icons', () => {
@@ -207,14 +207,14 @@ describe('Button Component', () => {
       expect(button).toHaveAttribute('data-icon-only', 'true');
       expect(icon).toBeInTheDocument();
       // Content wrapper should not exist in icon-only mode
-      expect(button.querySelector('.semiont-button-content')).not.toBeInTheDocument();
+      expect(button.querySelector('.xynoplex-button-content')).not.toBeInTheDocument();
     });
 
     it('should wrap regular content in span', () => {
       render(<Button>Text Content</Button>);
 
       const button = screen.getByRole('button');
-      const content = button.querySelector('.semiont-button-content');
+      const content = button.querySelector('.xynoplex-button-content');
 
       expect(content).toBeInTheDocument();
       expect(content).toHaveTextContent('Text Content');
@@ -248,18 +248,18 @@ describe('Button Component', () => {
     it('should render spinner SVG with correct structure', () => {
       const { container } = render(<Button loading>Loading</Button>);
 
-      const spinner = container.querySelector('.semiont-button-spinner');
+      const spinner = container.querySelector('.xynoplex-button-spinner');
       expect(spinner).toBeInTheDocument();
 
       const svg = spinner?.querySelector('svg');
       expect(svg).toBeInTheDocument();
-      expect(svg).toHaveClass('semiont-spinner-svg');
+      expect(svg).toHaveClass('xynoplex-spinner-svg');
       expect(svg).toHaveAttribute('viewBox', '0 0 24 24');
 
-      const circle = svg?.querySelector('.semiont-spinner-circle');
+      const circle = svg?.querySelector('.xynoplex-spinner-circle');
       expect(circle).toBeInTheDocument();
 
-      const path = svg?.querySelector('.semiont-spinner-path');
+      const path = svg?.querySelector('.xynoplex-spinner-path');
       expect(path).toBeInTheDocument();
     });
   });
@@ -331,7 +331,7 @@ describe('ButtonGroup Component', () => {
 
     const group = screen.getByRole('group');
     expect(group).toBeInTheDocument();
-    expect(group).toHaveClass('semiont-button-group');
+    expect(group).toHaveClass('xynoplex-button-group');
 
     expect(screen.getByText('First')).toBeInTheDocument();
     expect(screen.getByText('Second')).toBeInTheDocument();
@@ -396,7 +396,7 @@ describe('ButtonGroup Component', () => {
     );
 
     const group = screen.getByRole('group');
-    expect(group).toHaveClass('semiont-button-group', 'custom-group');
+    expect(group).toHaveClass('xynoplex-button-group', 'custom-group');
   });
 
   it('should use default values', () => {

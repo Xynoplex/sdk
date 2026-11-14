@@ -1,7 +1,7 @@
 'use client';
 
 import { createShellStateUnit, type ShellStateUnit, type ToolbarPanelType } from '../state/shell-state-unit';
-import { useSemiont } from '../session/SemiontProvider';
+import { useXynoplex } from '../session/XynoplexProvider';
 import { useStateUnit } from './useStateUnit';
 
 function readPanel(): ToolbarPanelType | null {
@@ -18,13 +18,13 @@ function persistPanel(panel: ToolbarPanelType | null): void {
 
 /**
  * `ShellStateUnit` is app-scoped — it owns toolbar panel state and lives on
- * the `SemiontBrowser`'s own bus. Unlike session-scoped VMs, this hook
- * does not need to wait for an active KB session; `useSemiont()`
- * always returns the module-scoped `SemiontBrowser` singleton.
+ * the `XynoplexBrowser`'s own bus. Unlike session-scoped VMs, this hook
+ * does not need to wait for an active KB session; `useXynoplex()`
+ * always returns the module-scoped `XynoplexBrowser` singleton.
  */
 export function useShellStateUnit(): ShellStateUnit {
-  const semiont = useSemiont();
-  return useStateUnit(() => createShellStateUnit(semiont, {
+  const xynoplex = useXynoplex();
+  return useStateUnit(() => createShellStateUnit(xynoplex, {
     initialPanel: readPanel(),
     onPanelChange: persistPanel,
   }));

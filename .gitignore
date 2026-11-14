@@ -1,0 +1,11 @@
+# Language build outputs
+node_modules/
+**/node_modules/
+**/dist/
+**/target/
+**/.gradle/
+**/build/
+**/.coverage
+**/coverage/
+**/__pycache__/
+**/.pytest_cache/

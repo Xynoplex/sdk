@@ -1,7 +1,7 @@
 """Text is not an id until a kind's rule has passed it."""
 
-from semiont.identifiers import ResourceId
-from semiont.types import MarkDeleteCommand
+from xynoplex.identifiers import ResourceId
+from xynoplex.types import MarkDeleteCommand
 
 
 def as_a_field() -> MarkDeleteCommand:

@@ -9,9 +9,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { resourceId } from '@semiont/core';
-import type { ResourceDescriptor, ResourceId } from '@semiont/core';
-import type { SemiontClient } from '@semiont/sdk';
+import { resourceId } from '@xynoplex/core';
+import type { ResourceDescriptor, ResourceId } from '@xynoplex/core';
+import type { XynoplexClient } from '@xynoplex/sdk';
 import { useResourceContent, type UseResourceContentResult } from '../useResourceContent';
 
 const mockResourceRepresentation = vi.fn();
@@ -19,7 +19,7 @@ const client = {
   browse: {
     get resourceRepresentation() { return mockResourceRepresentation; },
   },
-} as unknown as SemiontClient;
+} as unknown as XynoplexClient;
 
 const resource = {
   representations: [{ mediaType: 'text/plain', byteSize: 11 }],

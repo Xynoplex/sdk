@@ -20,22 +20,22 @@ interface ToastProps {
 
 const icons = {
   success: (
-    <svg className="semiont-toast-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <svg className="xynoplex-toast-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
     </svg>
   ),
   error: (
-    <svg className="semiont-toast-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <svg className="xynoplex-toast-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
     </svg>
   ),
   warning: (
-    <svg className="semiont-toast-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <svg className="xynoplex-toast-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
     </svg>
   ),
   info: (
-    <svg className="semiont-toast-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <svg className="xynoplex-toast-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
     </svg>
   ),
@@ -52,18 +52,18 @@ function Toast({ toast, onClose }: ToastProps) {
 
   return (
     <div
-      className="semiont-toast"
+      className="xynoplex-toast"
       data-variant={toast.type}
       role="alert"
     >
-      <div className="semiont-toast-icon-wrapper">{icons[toast.type]}</div>
-      <p className="semiont-toast-message">{toast.message}</p>
+      <div className="xynoplex-toast-icon-wrapper">{icons[toast.type]}</div>
+      <p className="xynoplex-toast-message">{toast.message}</p>
       <button
         onClick={() => onClose(toast.id)}
-        className="semiont-toast-close"
+        className="xynoplex-toast-close"
         aria-label="Close"
       >
-        <svg className="semiont-toast-close-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="xynoplex-toast-close-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
         </svg>
       </button>
@@ -87,7 +87,7 @@ export function ToastContainer({ toasts, onClose }: ToastContainerProps) {
   if (!mounted) return null;
 
   return createPortal(
-    <div className="semiont-toast-container">
+    <div className="xynoplex-toast-container">
       {toasts.map((toast) => (
         <Toast key={toast.id} toast={toast} onClose={onClose} />
       ))}

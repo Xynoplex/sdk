@@ -1,4 +1,4 @@
-package semiont_test
+package xynoplex_test
 
 // A reply with a fault, a member it lacks or one that is malformed, is
 // refused before it is decoded, wherever the fault is, as every SDK refuses
@@ -16,10 +16,10 @@ import (
 	"testing"
 	"time"
 
-	semiont "github.com/The-AI-Alliance/semiont/packages/go/sdk"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/bus"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/semionttest"
+	xynoplex "github.com/Xynoplex/sdk/go"
+	"github.com/Xynoplex/sdk/go/api"
+	"github.com/Xynoplex/sdk/go/bus"
+	"github.com/Xynoplex/sdk/go/xynoplextest"
 )
 
 // aResource is a resource that states what its schema requires.
@@ -29,12 +29,12 @@ const aResource = `{"@context":"https://schema.org/","@id":"res-1","name":"A res
 // said.
 func refusedAs(t *testing.T, why string, err error, said string) {
 	t.Helper()
-	var refused *semiont.TransportError
+	var refused *xynoplex.TransportError
 	if !errors.As(err, &refused) {
 		t.Errorf("%s: read, or failed as %v, and it has a fault", why, err)
 		return
 	}
-	if refused.Code != semiont.TransportErrorCodeError || refused.Message != said {
+	if refused.Code != xynoplex.TransportErrorCodeError || refused.Message != said {
 		t.Errorf("%s: refused as %s %q, not as an error saying %q", why, refused.Code, refused.Message, said)
 	}
 }
@@ -43,14 +43,14 @@ func refusedAs(t *testing.T, why string, err error, said string) {
 // is response.
 func asked(t *testing.T, response string) (api.BrowseResourceResult, error) {
 	t.Helper()
-	transport := semionttest.NewFaultyTransport(semionttest.FaultyConfig{Channels: bus.ReplyChannelsFor(bus.BrowseResourceRequested.Request().Channel())})
+	transport := xynoplextest.NewFaultyTransport(xynoplextest.FaultyConfig{Channels: bus.ReplyChannelsFor(bus.BrowseResourceRequested.Request().Channel())})
 	transport.QueueReply(bus.BrowseResourceRequested.Request().Channel(), json.RawMessage(response))
 	defer transport.Close()
 	resource, err := api.ParseResourceId("res-1")
 	if err != nil {
 		t.Fatal(err)
 	}
-	return semiont.Request(context.Background(), semiont.NewWire(transport), bus.BrowseResourceRequested, api.BrowseResourceRequest{ResourceId: resource}, semiont.DefaultTiming().BusRequestTimeout)
+	return xynoplex.Request(context.Background(), xynoplex.NewWire(transport), bus.BrowseResourceRequested, api.BrowseResourceRequest{ResourceId: resource}, xynoplex.DefaultTiming().BusRequestTimeout)
 }
 
 func TestAReplyWithAFaultIsRefusedNamingIt(t *testing.T) {
@@ -104,17 +104,17 @@ func TestAReplyThatCarriesWhatItsSchemaRequiresIsRead(t *testing.T) {
 // A reply whose response its registry entry wraps is held to what the
 // response's schema requires, from the response.
 func TestAWrappedResponseIsHeldToItsSchemaFromTheResponse(t *testing.T) {
-	transport := semionttest.NewFaultyTransport(semionttest.FaultyConfig{Channels: bus.ReplyChannelsFor(bus.JobCancelRequested.Request().Channel())})
+	transport := xynoplextest.NewFaultyTransport(xynoplextest.FaultyConfig{Channels: bus.ReplyChannelsFor(bus.JobCancelRequested.Request().Channel())})
 	defer transport.Close()
 	transport.QueueReply(bus.JobCancelRequested.Request().Channel(), json.RawMessage(`{}`))
 	job, err := api.ParseJobId("job-1")
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = semiont.Request(context.Background(), semiont.NewWire(transport), bus.JobCancelRequested, api.JobCancelRequest{JobId: job}, semiont.DefaultTiming().BusRequestTimeout)
+	_, err = xynoplex.Request(context.Background(), xynoplex.NewWire(transport), bus.JobCancelRequested, api.JobCancelRequest{JobId: job}, xynoplex.DefaultTiming().BusRequestTimeout)
 	refusedAs(t, "an empty response", err, "a payload on job:cancel-ok is not that channel's: it has no `response.cancelled`")
 	transport.QueueReply(bus.JobCancelRequested.Request().Channel(), nil)
-	_, err = semiont.Request(context.Background(), semiont.NewWire(transport), bus.JobCancelRequested, api.JobCancelRequest{JobId: job}, semiont.DefaultTiming().BusRequestTimeout)
+	_, err = xynoplex.Request(context.Background(), xynoplex.NewWire(transport), bus.JobCancelRequested, api.JobCancelRequest{JobId: job}, xynoplex.DefaultTiming().BusRequestTimeout)
 	refusedAs(t, "no response", err, "a payload on job:cancel-ok is not that channel's: it has no `response`")
 }
 
@@ -122,16 +122,16 @@ func TestAWrappedResponseIsHeldToItsSchemaFromTheResponse(t *testing.T) {
 // fails with: asked by type, and asked by its request channel.
 func failed(t *testing.T, failure string) (byType, byChannel error) {
 	t.Helper()
-	transport := semionttest.NewFaultyTransport(semionttest.FaultyConfig{Channels: bus.ReplyChannelsFor(bus.BrowseResourceRequested.Request().Channel())})
+	transport := xynoplextest.NewFaultyTransport(xynoplextest.FaultyConfig{Channels: bus.ReplyChannelsFor(bus.BrowseResourceRequested.Request().Channel())})
 	defer transport.Close()
 	transport.RefuseWhen(func(bus.Channel, json.RawMessage) json.RawMessage { return json.RawMessage(failure) })
 	resource, err := api.ParseResourceId("res-1")
 	if err != nil {
 		t.Fatal(err)
 	}
-	within := semiont.DefaultTiming().BusRequestTimeout
-	wire := semiont.NewWire(transport)
-	_, byType = semiont.Request(context.Background(), wire, bus.BrowseResourceRequested, api.BrowseResourceRequest{ResourceId: resource}, within)
+	within := xynoplex.DefaultTiming().BusRequestTimeout
+	wire := xynoplex.NewWire(transport)
+	_, byType = xynoplex.Request(context.Background(), wire, bus.BrowseResourceRequested, api.BrowseResourceRequest{ResourceId: resource}, within)
 	_, byChannel = wire.RequestOf(context.Background(), bus.BrowseResourceRequested.Request().Channel(), map[string]any{"resourceId": "res-1"}, within)
 	return byType, byChannel
 }
@@ -156,8 +156,8 @@ func TestAFailureWithAFaultIsRefusedNamingIt(t *testing.T) {
 func TestAFailureWhoseCodeTheWireDoesNotListIsRejectedInItsOwnWords(t *testing.T) {
 	byType, byChannel := failed(t, `{"message":"a code from a later peer","code":"not-a-code-yet"}`)
 	for _, err := range []error{byType, byChannel} {
-		var rejected *semiont.BusRequestError
-		if !errors.As(err, &rejected) || rejected.Code != semiont.BusRequestErrorCodeRejected || rejected.Message != "a code from a later peer" {
+		var rejected *xynoplex.BusRequestError
+		if !errors.As(err, &rejected) || rejected.Code != xynoplex.BusRequestErrorCodeRejected || rejected.Message != "a code from a later peer" {
 			t.Errorf("failed with %v, not as a rejection in the failure's words", err)
 		}
 	}
@@ -173,10 +173,10 @@ func TestAnAnswerWithAFaultIsRefusedNamingIt(t *testing.T) {
 			w.Header().Set("Content-Type", "application/json")
 			_, _ = w.Write([]byte(c.answer))
 		}))
-		transport := semiont.NewHTTPTransport(semiont.HTTPTransportConfig{BaseURL: gateway.URL, Token: semiont.NewVariable(""), HTTP: &http.Client{}, Timing: semiont.DefaultTiming()})
+		transport := xynoplex.NewHTTPTransport(xynoplex.HTTPTransportConfig{BaseURL: gateway.URL, Token: xynoplex.NewVariable(""), HTTP: &http.Client{}, Timing: xynoplex.DefaultTiming()})
 		_, err := transport.GetCurrentUser(context.Background())
 		refusedAs(t, c.why, err, "GET /api/users/me answered what is not its declared body: "+c.said)
-		var refused *semiont.TransportError
+		var refused *xynoplex.TransportError
 		if errors.As(err, &refused) {
 			if status, ok := refused.Status(); !ok || status != http.StatusOK {
 				t.Errorf("%s: the refusal states status %d (%v), not the answer's", c.why, status, ok)
@@ -193,7 +193,7 @@ func TestAnAnswerWithAFaultIsRefusedNamingIt(t *testing.T) {
 // is said in. A refusal that carries no correlation id reaches no request.
 func TestARequestIsToldAtOnceOfAReplyItsTransportRefused(t *testing.T) {
 	// The reply the gateway answers with is lost on its way, and the refusals are delivered by hand.
-	transport := semionttest.NewFaultyTransport(semionttest.FaultyConfig{Channels: bus.ReplyChannelsFor(bus.BrowseResourceRequested.Request().Channel()), Schedule: []semionttest.FaultAction{semionttest.DropReply{}}})
+	transport := xynoplextest.NewFaultyTransport(xynoplextest.FaultyConfig{Channels: bus.ReplyChannelsFor(bus.BrowseResourceRequested.Request().Channel()), Schedule: []xynoplextest.FaultAction{xynoplextest.DropReply{}}})
 	defer transport.Close()
 	transport.QueueReply(bus.BrowseResourceRequested.Request().Channel(), json.RawMessage(`{"resource":`+aResource+`,"lastSequence":1}`))
 	resource, err := api.ParseResourceId("res-1")
@@ -202,7 +202,7 @@ func TestARequestIsToldAtOnceOfAReplyItsTransportRefused(t *testing.T) {
 	}
 	asked := make(chan error, 1)
 	go func() {
-		_, err := semiont.Request(context.Background(), semiont.NewWire(transport), bus.BrowseResourceRequested, api.BrowseResourceRequest{ResourceId: resource}, time.Minute)
+		_, err := xynoplex.Request(context.Background(), xynoplex.NewWire(transport), bus.BrowseResourceRequested, api.BrowseResourceRequest{ResourceId: resource}, time.Minute)
 		asked <- err
 	}()
 	deadline := time.Now().Add(time.Second)
@@ -215,14 +215,14 @@ func TestARequestIsToldAtOnceOfAReplyItsTransportRefused(t *testing.T) {
 	awaited := transport.PendingReplies()[0]
 	result := bus.BrowseResourceRequested.Result().Channel()
 
-	transport.DeliverRefusal(&semiont.FrameRefusal{Channel: result, Member: "correlationId", Reason: bus.FrameRefusalReasonMalformed})
+	transport.DeliverRefusal(&xynoplex.FrameRefusal{Channel: result, Member: "correlationId", Reason: bus.FrameRefusalReasonMalformed})
 	select {
 	case err := <-asked:
 		t.Fatalf("a refusal that carries no correlation id ended the request: %v", err)
 	case <-time.After(50 * time.Millisecond):
 	}
 
-	transport.DeliverRefusal(&semiont.FrameRefusal{Channel: result, Member: "addedByALaterGateway", Reason: bus.FrameRefusalReasonMalformed, Envelope: semiont.Envelope{CorrelationID: awaited}})
+	transport.DeliverRefusal(&xynoplex.FrameRefusal{Channel: result, Member: "addedByALaterGateway", Reason: bus.FrameRefusalReasonMalformed, Envelope: xynoplex.Envelope{CorrelationID: awaited}})
 	select {
 	case err := <-asked:
 		refusedAs(t, "a reply its transport refused", err, "a frame on browse:resource-result is not that channel's: its `addedByALaterGateway` is malformed")

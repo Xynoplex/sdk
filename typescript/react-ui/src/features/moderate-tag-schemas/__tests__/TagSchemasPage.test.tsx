@@ -151,7 +151,7 @@ describe('TagSchemasPage', () => {
       const props = createMockProps();
       const { container } = render(<TagSchemasPage {...props} />);
 
-      const purpleIcon = container.querySelector('.semiont-schema-domain--legal');
+      const purpleIcon = container.querySelector('.xynoplex-schema-domain--legal');
       expect(purpleIcon).toBeInTheDocument();
     });
 
@@ -159,7 +159,7 @@ describe('TagSchemasPage', () => {
       const props = createMockProps();
       const { container } = render(<TagSchemasPage {...props} />);
 
-      const greenIcon = container.querySelector('.semiont-schema-domain--scientific');
+      const greenIcon = container.querySelector('.xynoplex-schema-domain--scientific');
       expect(greenIcon).toBeInTheDocument();
     });
 
@@ -167,7 +167,7 @@ describe('TagSchemasPage', () => {
       const props = createMockProps();
       const { container } = render(<TagSchemasPage {...props} />);
 
-      const orangeIcon = container.querySelector('.semiont-schema-domain--general');
+      const orangeIcon = container.querySelector('.xynoplex-schema-domain--general');
       expect(orangeIcon).toBeInTheDocument();
     });
 
@@ -175,9 +175,9 @@ describe('TagSchemasPage', () => {
       const props = createMockProps();
       const { container } = render(<TagSchemasPage {...props} />);
 
-      const legalBadge = container.querySelector('.semiont-schema__badge.semiont-schema-domain--legal');
-      const scientificBadge = container.querySelector('.semiont-schema__badge.semiont-schema-domain--scientific');
-      const generalBadge = container.querySelector('.semiont-schema__badge.semiont-schema-domain--general');
+      const legalBadge = container.querySelector('.xynoplex-schema__badge.xynoplex-schema-domain--legal');
+      const scientificBadge = container.querySelector('.xynoplex-schema__badge.xynoplex-schema-domain--scientific');
+      const generalBadge = container.querySelector('.xynoplex-schema__badge.xynoplex-schema-domain--general');
 
       expect(legalBadge).toBeInTheDocument();
       expect(scientificBadge).toBeInTheDocument();
@@ -232,7 +232,7 @@ describe('TagSchemasPage', () => {
       const props = createMockProps();
       render(<TagSchemasPage {...props} />);
 
-      const ruleSection = screen.getByText('Rule').closest('.semiont-schema__category');
+      const ruleSection = screen.getByText('Rule').closest('.xynoplex-schema__category');
       expect(ruleSection).toBeInTheDocument();
       expect(ruleSection?.textContent).not.toContain('more');
     });
@@ -293,7 +293,7 @@ describe('TagSchemasPage', () => {
       const props = createMockProps();
       const { container } = render(<TagSchemasPage {...props} />);
 
-      const mainContainer = container.querySelector('.semiont-page');
+      const mainContainer = container.querySelector('.xynoplex-page');
       expect(mainContainer).toBeInTheDocument();
     });
 
@@ -301,7 +301,7 @@ describe('TagSchemasPage', () => {
       const props = createMockProps();
       const { container } = render(<TagSchemasPage {...props} />);
 
-      const scrollArea = container.querySelector('.semiont-page__content');
+      const scrollArea = container.querySelector('.xynoplex-page__content');
       expect(scrollArea).toBeInTheDocument();
     });
 
@@ -309,7 +309,7 @@ describe('TagSchemasPage', () => {
       const props = createMockProps();
       const { container } = render(<TagSchemasPage {...props} />);
 
-      const grid = container.querySelector('.semiont-card-grid--two-columns');
+      const grid = container.querySelector('.xynoplex-card-grid--two-columns');
       expect(grid).toBeInTheDocument();
     });
 
@@ -317,7 +317,7 @@ describe('TagSchemasPage', () => {
       const props = createMockProps();
       const { container } = render(<TagSchemasPage {...props} />);
 
-      const contentArea = container.querySelector('.semiont-page__content');
+      const contentArea = container.querySelector('.xynoplex-page__content');
       expect(contentArea).toBeInTheDocument();
     });
   });
@@ -334,7 +334,7 @@ describe('TagSchemasPage', () => {
       const props = createMockProps({ theme: 'dark' });
       const { container } = render(<TagSchemasPage {...props} />);
 
-      const card = container.querySelector('.semiont-card');
+      const card = container.querySelector('.xynoplex-card');
       expect(card).toBeInTheDocument();
       // Dark mode is handled by CSS, not inline classes
     });
@@ -343,7 +343,7 @@ describe('TagSchemasPage', () => {
       const props = createMockProps({ theme: 'dark' });
       const { container } = render(<TagSchemasPage {...props} />);
 
-      const categoryContainer = container.querySelector('.semiont-schema__categories');
+      const categoryContainer = container.querySelector('.xynoplex-schema__categories');
       expect(categoryContainer).toBeInTheDocument();
       // Dark mode is handled by CSS, not inline classes
     });

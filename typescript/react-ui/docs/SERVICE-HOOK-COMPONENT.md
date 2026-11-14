@@ -4,7 +4,7 @@
 
 ## Overview
 
-Semiont uses a strict three-layer architecture to separate concerns and maintain clean, testable code:
+Xynoplex uses a strict three-layer architecture to separate concerns and maintain clean, testable code:
 
 1. **Service Layer** - SSE stream management (EventBus-native)
 2. **Hook Layer** - Reads state-unit observables (`useObservable`) and subscribes to bus side effects (`useEventSubscriptions`)
@@ -39,7 +39,7 @@ across all of them), and the last unsubscribe releases it. There is no
 explicit `subscribeToResource` call.
 
 ```typescript
-// The live queries packages/typescript/react-ui/src/features/resource-viewer/state/resource-viewer-page-state-unit.ts
+// The live queries typescript/react-ui/src/features/resource-viewer/state/resource-viewer-page-state-unit.ts
 // tracks, each through trackList, which exposes it as a ListState (value$, loading$, error$):
 const annotations = client.browse.annotations(resourceId);     // CacheObservable<Annotation[]>
 const events = client.browse.events(resourceId);               // CacheObservable<AttributedEvent[]>
@@ -76,7 +76,7 @@ channel in the local EventBus. Application code never calls
 **Example**: reading the `mark` state unit's delegation observables
 
 The page state unit (`resource-viewer-page-state-unit`) owns a session-scoped
-`MarkStateUnit` (`createMarkStateUnit`, in `@semiont/sdk`). When the user delegates
+`MarkStateUnit` (`createMarkStateUnit`, in `@xynoplex/sdk`). When the user delegates
 an annotation job, the SDK runs it and the mark state unit drives four observables:
 
 - `mark.delegatingMotivation$` — the in-progress motivation (or `null` when idle)
@@ -144,9 +144,9 @@ export function useDelegateToasts(resourceId: ResourceId) {
 **Example**: the page reads the mark state unit; the panel it renders delegates the job
 
 ```tsx
-// packages/typescript/react-ui/src/features/resource-viewer/components/ResourceViewerPage.tsx, condensed
+// typescript/react-ui/src/features/resource-viewer/components/ResourceViewerPage.tsx, condensed
 export function ResourceViewerPage({ rUri, locale, Link, routes }: ResourceViewerPageProps) {
-  const browser = useSemiont();
+  const browser = useXynoplex();
   const session = useObservable(browser.activeSession$);
 
   // Layer 1: the page state unit owns the mark/browse observables, one per
@@ -170,7 +170,7 @@ export function ResourceViewerPage({ rUri, locale, Link, routes }: ResourceViewe
   // are handed — mark.requestDelegate(...) — which runs the job as
   // client.mark.delegate(...) for its own resource.
   return (
-    <div className="semiont-document-viewer">
+    <div className="xynoplex-document-viewer">
       {activePanel === 'annotations' && (
         <UnifiedAnnotationsPanel
           session={session ?? null}
@@ -275,7 +275,7 @@ export function useMarkDelegate(mark: MarkStateUnit | undefined) {
 
 // ❌ WRONG: re-deriving state from raw bus events with useState
 export function useMarkDelegateFromBus() {
-  const session = useObservable(useSemiont().activeSession$);
+  const session = useObservable(useXynoplex().activeSession$);
   const [delegating, setDelegating] = useState(null);
 
   useEffect(() => {
@@ -340,7 +340,7 @@ These violations will cause the compliance audit to fail:
    - Detection: AST analysis finds JSX return statements in hook files
 
 5. **Global eventBus imports**
-   - Should use: `useSemiont()` (emit via `session.client`)
+   - Should use: `useXynoplex()` (emit via `session.client`)
    - Detection: AST analysis finds `import { eventBus }` statements
 
 ### Compliance Report
@@ -351,9 +351,9 @@ The automated compliance checker generates detailed reports:
 Layer Separation Violations (❌)
 - Components using eventBus.on(): 0 (should use useEventSubscriptions)
 - Components using eventBus.off(): 0 (useEventSubscriptions handles cleanup)
-- Components creating EventSource: 0 (bus connection managed by SemiontClient)
+- Components creating EventSource: 0 (bus connection managed by XynoplexClient)
 - Hooks returning JSX: 0 (hooks should return data, not JSX)
-- Global eventBus imports: 0 (should use useSemiont())
+- Global eventBus imports: 0 (should use useXynoplex())
 ```
 
 ---
@@ -363,10 +363,10 @@ Layer Separation Violations (❌)
 ### Layer 1: State Unit Tests
 
 Test the mark state unit's observables directly, over the SDK's test client
-(a real `SemiontClient` on a scriptable in-memory transport):
+(a real `XynoplexClient` on a scriptable in-memory transport):
 
 ```typescript
-import { createTestClient } from '@semiont/sdk/testing';
+import { createTestClient } from '@xynoplex/sdk/testing';
 
 it('sets delegatingMotivation$ on a delegate request', () => {
   const { client } = createTestClient();
@@ -387,7 +387,7 @@ it('sets delegatingMotivation$ on a delegate request', () => {
 Test that a hook reads state-unit observables:
 
 ```typescript
-import { createTestClient } from '@semiont/sdk/testing';
+import { createTestClient } from '@xynoplex/sdk/testing';
 
 it('reflects the mark state unit in React state', () => {
   const { client } = createTestClient();
@@ -411,9 +411,9 @@ Test UI rendering and operation triggering. The panels take the session and the
 resource's mark unit as props, so a test hands them real ones:
 
 ```tsx
-import { createTestSession } from '@semiont/sdk/testing';
+import { createTestSession } from '@xynoplex/sdk/testing';
 import { screen } from '@testing-library/react';
-import { renderInEnglish } from '@semiont/react-ui/test-utils';
+import { renderInEnglish } from '@xynoplex/react-ui/test-utils';
 
 it('asks the mark unit to delegate when Annotate is clicked', () => {
   const { session } = createTestSession();
@@ -481,7 +481,7 @@ event library.
 
 - **Components**: Call hooks, emit events, render JSX
 - **Hooks**: Read state-unit observables with `useObservable`, use `useEventSubscriptions` for side effects, return data objects
-- **Service**: Bus connection managed by `SemiontClient` (one ActorStateUnit per client; resource-scoped channels acquired by subscribing to `client.browse.*(resourceId)` live queries — freshness follows observation)
+- **Service**: Bus connection managed by `XynoplexClient` (one ActorStateUnit per client; resource-scoped channels acquired by subscribing to `client.browse.*(resourceId)` live queries — freshness follows observation)
 
 ### ❌ DON'T
 
@@ -491,11 +491,11 @@ event library.
 
 ### Key Hooks
 
-- `useSemiont()` - Access the Semiont browser; `useObservable(browser.activeSession$)` → `session.client`
+- `useXynoplex()` - Access the Xynoplex browser; `useObservable(browser.activeSession$)` → `session.client`
 - `useObservable()` - Read a state-unit observable into React state
 - `useEventSubscriptions()` - Subscribe to bus events (for side effects)
 - `client.browse.*(resourceId)` - Resource-scoped live queries; subscribing acquires the resource's bus scope (freshness follows observation), the last unsubscribe releases it
-- `createMarkStateUnit()` - Mark/delegation state (`delegatingMotivation$`, `progress$`, `jobId$`, `pendingAnnotation$`), asked to `requestDelegate`, `cancelPending` and `dismissProgress`; driven off the unified job channels (in `@semiont/sdk`)
+- `createMarkStateUnit()` - Mark/delegation state (`delegatingMotivation$`, `progress$`, `jobId$`, `pendingAnnotation$`), asked to `requestDelegate`, `cancelPending` and `dismissProgress`; driven off the unified job channels (in `@xynoplex/sdk`)
 - `mark.requestDelegate(params)` on the mark unit / `client.mark.delegate(resourceId, params)` - Delegate a `mark` job with its params; the job streams on `job:report-progress` / `job:complete` / `job:fail`
-- `createGatherStateUnit()` - Context correlation for generation (in `@semiont/sdk`)
+- `createGatherStateUnit()` - Context correlation for generation (in `@xynoplex/sdk`)
 - `useShellStateUnit()` - App-scoped panel state (`activePanel$`, `openPanel`/`closePanel`/`togglePanel`)

@@ -1,7 +1,7 @@
 /**
- * @semiont/core
+ * @xynoplex/core
  *
- * Core domain logic and utilities for the Semiont semantic knowledge platform.
+ * Core domain logic and utilities for the Xynoplex semantic knowledge platform.
  * OpenAPI types are generated here and exported for use across the monorepo.
  */
 
@@ -238,7 +238,7 @@ export {
   type BusRequestErrorCode,
   type TransportErrorCode,
   type JobErrorCode,
-  type SemiontSessionErrorCode,
+  type XynoplexSessionErrorCode,
   type SignInErrorCode,
   type IdentityUnverifiableReason,
   type SpanRefusal,
@@ -334,11 +334,11 @@ export type { TagSchema, TagCategory } from './tag-schemas';
 export { uuidV4 } from './id-generation';
 
 // State-unit pattern — the disposable contract shared by every layer (sdk,
-// http-transport, react-ui, …). The axiom harness lives in `@semiont/core/testing`.
+// http-transport, react-ui, …). The axiom harness lives in `@xynoplex/core/testing`.
 export type { StateUnit } from './state-unit';
 export { watched, type Watched } from './watched';
 // What a stream of errors keeps for its first reader: a transport's failures
-// (@semiont/http-transport), and a session's, a registry's and a worker's (@semiont/sdk).
+// (@xynoplex/http-transport), and a session's, a registry's and a worker's (@xynoplex/sdk).
 export { KeptForFirstReader } from './kept-for-first-reader';
 
 // Utility functions
@@ -354,7 +354,7 @@ export { withinDeadline } from './deadline';
 export { faultOf, said, type Fault } from './required';
 
 // Knowledge-graph view derivation — pure fn over the KnowledgeGraph type,
-// run by @semiont/react-ui.
+// run by @xynoplex/react-ui.
 export { deriveViews } from './knowledge-graph-views';
 export type { GraphViews } from './knowledge-graph-views';
 

@@ -2,8 +2,8 @@
  * PDF Canvas Coordinate Transform Tests
  *
  * Property-based tests for the canvas↔PDF coordinate transforms (Y-flip + scale).
- * The viewrect FragmentSelector codec is in @semiont/core; its tests live in
- * packages/typescript/core/src/__tests__/pdf-coordinates.test.ts.
+ * The viewrect FragmentSelector codec is in @xynoplex/core; its tests live in
+ * typescript/core/src/__tests__/pdf-coordinates.test.ts.
  *
  * AXIOMS FOR PDF COORDINATE TRANSFORMATIONS:
  *
@@ -27,7 +27,7 @@ import {
   pdfToCanvasCoordinates,
   type CanvasRectangle
 } from '../pdf-coordinates';
-import type { PdfCoordinate } from '@semiont/core';
+import type { PdfCoordinate } from '@xynoplex/core';
 
 describe('PDF Coordinate Transformations', () => {
   // AXIOM 1: Round-Trip Preservation

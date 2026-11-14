@@ -1,4 +1,4 @@
-package semiont
+package xynoplex
 
 // Yield: creating resources, by upload, by a generation delegated as a job,
 // and by cloning.
@@ -9,9 +9,9 @@ import (
 	"math"
 	"time"
 
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/bus"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/mediatypes"
+	"github.com/Xynoplex/sdk/go/api"
+	"github.com/Xynoplex/sdk/go/bus"
+	"github.com/Xynoplex/sdk/go/mediatypes"
 )
 
 // generationStallDeadline is how long a followed generation may say nothing

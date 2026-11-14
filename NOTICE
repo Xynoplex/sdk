@@ -1,0 +1,8 @@
+Xynoplex SDKs
+Copyright 2026 Xynoplex
+
+The source snapshot through 2026-08-26 derives from the AI Alliance monorepo and
+remains under the Apache License, Version 2.0.
+Changes made from 2026-08-27 onward are by Xynoplex. The source history records
+that boundary with a single snapshot commit. Third-party notices remain with the
+files or dependencies to which they apply.

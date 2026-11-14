@@ -16,12 +16,12 @@ from typing import Final, final, override
 import pytest
 from aio import run, turns
 
-from semiont.channels import BRIDGED_CHANNELS
-from semiont.identifiers import AnnotationId, ResourceId
-from semiont.namespaces.gather import GatherNamespace
-from semiont.state import GatherStateUnit
-from semiont.testing import FaultyTransport, create_test_client
-from semiont.testing.axioms import AxiomSubject, Fresh, assert_state_unit_axioms
+from xynoplex.channels import BRIDGED_CHANNELS
+from xynoplex.identifiers import AnnotationId, ResourceId
+from xynoplex.namespaces.gather import GatherNamespace
+from xynoplex.state import GatherStateUnit
+from xynoplex.testing import FaultyTransport, create_test_client
+from xynoplex.testing.axioms import AxiomSubject, Fresh, assert_state_unit_axioms
 
 RESOURCE = ResourceId("res-1")
 ANNOTATION = AnnotationId("ann-1")

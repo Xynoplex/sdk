@@ -17,7 +17,7 @@ const ANN = 'oJXMBS_YgRdGkRGgoRP3a1gD4T1VeD9aCS3GlygJEOM';
 const signIn = (access: string, refresh: string): StoredSession => ({
   access,
   refresh,
-  clientId: 'semiont-browser',
+  clientId: 'xynoplex-browser',
   tokenEndpoint: 'https://issuer.test/token',
 });
 
@@ -107,7 +107,7 @@ describe('signOut', () => {
 
     await signOut(kept, fetch);
 
-    expect(asked).toEqual([{ token: 'r1', token_type_hint: 'refresh_token', client_id: 'semiont-browser' }]);
+    expect(asked).toEqual([{ token: 'r1', token_type_hint: 'refresh_token', client_id: 'xynoplex-browser' }]);
     expect(kept.held()).toBeNull();
   });
 

@@ -19,7 +19,7 @@ def inputs():
 
 
 def public_modules():
-    manifest = (ROOT / "semiont.cabal").read_text()
+    manifest = (ROOT / "xynoplex.cabal").read_text()
     public = re.search(r"^library\n(.*?)(?=^\S|\Z)", manifest, re.M | re.S)
     if public is None:
         raise ValueError("no public Cabal library")
@@ -40,14 +40,14 @@ def canonical_units(declaration):
 
 
 def declarations(module):
-    commands = f'Prelude.putStrLn "SEMIONT_API_BEGIN"\n:browse! {module}\nPrelude.putStrLn "SEMIONT_API_END"\n:quit\n'
+    commands = f'Prelude.putStrLn "XYNOPLEX_API_BEGIN"\n:browse! {module}\nPrelude.putStrLn "XYNOPLEX_API_END"\n:quit\n'
     result = subprocess.run(
-        ["cabal", "exec", "-v0", "--", "ghci", "-package", "semiont", "-ignore-dot-ghci", "-v0"],
+        ["cabal", "exec", "-v0", "--", "ghci", "-package", "xynoplex", "-ignore-dot-ghci", "-v0"],
         input=commands, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, cwd=ROOT, timeout=60,
     )
-    if result.stderr.strip() or result.stdout.count("SEMIONT_API_BEGIN\n") != 1 or result.stdout.count("SEMIONT_API_END\n") != 1:
+    if result.stderr.strip() or result.stdout.count("XYNOPLEX_API_BEGIN\n") != 1 or result.stdout.count("XYNOPLEX_API_END\n") != 1:
         raise ValueError(f"compiler inventory failed for {module}: {result.stdout}\n{result.stderr}")
-    body = canonical_units(result.stdout.split("SEMIONT_API_BEGIN\n")[1].split("SEMIONT_API_END\n")[0])
+    body = canonical_units(result.stdout.split("XYNOPLEX_API_BEGIN\n")[1].split("XYNOPLEX_API_END\n")[0])
     groups = []
     for line in body.splitlines():
         if not line.strip() or line.startswith("--"):

@@ -16,11 +16,11 @@ import pytest
 from hypothesis import strategies as st
 from spec import JsonObject
 
-from semiont.bus import request
-from semiont.errors import SemiontError
-from semiont.operations import BROWSE_RESOURCE_REQUESTED
-from semiont.testing import Deliver, DropReply, FaultAction, FaultyTransport, RejectEmit
-from semiont.testing.liveness import (
+from xynoplex.bus import request
+from xynoplex.errors import XynoplexError
+from xynoplex.operations import BROWSE_RESOURCE_REQUESTED
+from xynoplex.testing import Deliver, DropReply, FaultAction, FaultyTransport, RejectEmit
+from xynoplex.testing.liveness import (
     DeliveryOp,
     DeliverySubject,
     LivenessScenario,
@@ -80,7 +80,7 @@ def test_a_request_sent_again_past_its_budget_breaks_l2() -> None:
             for _ in range(3):
                 try:
                     await request(transport, READ, ASKING, timeout_ms=TIMEOUT_MS)
-                except SemiontError:
+                except XynoplexError:
                     continue
                 return
 
@@ -116,7 +116,7 @@ def test_a_swallowed_failure_breaks_l2() -> None:
         async def told_only_of_success() -> None:
             try:
                 await request(transport, READ, ASKING, timeout_ms=TIMEOUT_MS)
-            except SemiontError:
+            except XynoplexError:
                 # The failure goes nowhere: the output is told only of success.
                 await asyncio.Event().wait()
 

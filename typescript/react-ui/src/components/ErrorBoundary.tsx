@@ -76,44 +76,44 @@ export class ErrorBoundary extends Component<Props, State> {
  */
 function DefaultErrorFallback({ error, reset }: { error: Error; reset: () => void }) {
   return (
-    <div className="semiont-error-boundary-container">
-      <div className="semiont-error-boundary-content">
-        <div className="semiont-error-boundary-header">
-          <h2 className="semiont-error-boundary-title">
+    <div className="xynoplex-error-boundary-container">
+      <div className="xynoplex-error-boundary-content">
+        <div className="xynoplex-error-boundary-header">
+          <h2 className="xynoplex-error-boundary-title">
             Oops! Something went wrong
           </h2>
-          <p className="semiont-error-boundary-message">
+          <p className="xynoplex-error-boundary-message">
             We encountered an unexpected error. Please try again.
           </p>
         </div>
 
         {process.env.NODE_ENV === 'development' && (
-          <div className="semiont-error-boundary-details">
-            <h3 className="semiont-error-boundary-details-title">
+          <div className="xynoplex-error-boundary-details">
+            <h3 className="xynoplex-error-boundary-details-title">
               Error Details (Development Only)
             </h3>
-            <p className="semiont-error-boundary-details-message">
+            <p className="xynoplex-error-boundary-details-message">
               {error.message}
             </p>
             {error.stack && (
-              <pre className="semiont-error-boundary-stack">
+              <pre className="xynoplex-error-boundary-stack">
                 {error.stack}
               </pre>
             )}
           </div>
         )}
 
-        <div className="semiont-error-boundary-actions">
+        <div className="xynoplex-error-boundary-actions">
           <button
             onClick={reset}
-            className="semiont-button"
+            className="xynoplex-button"
             data-variant="primary"
           >
             Try Again
           </button>
           <button
             onClick={() => window.location.href = '/'}
-            className="semiont-button"
+            className="xynoplex-button"
             data-variant="secondary"
           >
             Go Home
@@ -131,23 +131,23 @@ export function AsyncErrorBoundary({ children }: { children: ReactNode }) {
   return (
     <ErrorBoundary
       fallback={(error, reset) => (
-        <div className="semiont-async-error-boundary">
-          <div className="semiont-async-error-content">
-            <div className="semiont-async-error-icon">
-              <svg className="semiont-icon-warning" viewBox="0 0 20 20" fill="currentColor">
+        <div className="xynoplex-async-error-boundary">
+          <div className="xynoplex-async-error-content">
+            <div className="xynoplex-async-error-icon">
+              <svg className="xynoplex-icon-warning" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
               </svg>
             </div>
-            <div className="semiont-async-error-details">
-              <h3 className="semiont-async-error-title">
+            <div className="xynoplex-async-error-details">
+              <h3 className="xynoplex-async-error-title">
                 Failed to load this section
               </h3>
-              <p className="semiont-async-error-message">
+              <p className="xynoplex-async-error-message">
                 {error.message}
               </p>
               <button
                 onClick={reset}
-                className="semiont-async-error-retry"
+                className="xynoplex-async-error-retry"
               >
                 Retry
               </button>

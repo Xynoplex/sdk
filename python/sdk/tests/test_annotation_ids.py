@@ -6,9 +6,9 @@ import pytest
 from pydantic import BaseModel, Field, JsonValue
 from spec import SPEC
 
-from semiont._annotation_id import annotation_id_for
-from semiont.identifiers import AnnotationId, ResourceId
-from semiont.types import Motivation
+from xynoplex._annotation_id import annotation_id_for
+from xynoplex.identifiers import AnnotationId, ResourceId
+from xynoplex.types import Motivation
 
 
 class Case(BaseModel, frozen=True, extra="forbid"):

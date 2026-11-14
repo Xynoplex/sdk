@@ -1,5 +1,5 @@
-from semiont.identifiers import AnnotationId, InvalidIdentifier, ResourceId
-from semiont.types import MarkDeleteCommand
+from xynoplex.identifiers import AnnotationId, InvalidIdentifier, ResourceId
+from xynoplex.types import MarkDeleteCommand
 
 resource = ResourceId("5bcd259ab1464cf68a556bbad21f513f")
 assert ResourceId.parse("not an id") is None  # where text that is not an id is an ordinary answer

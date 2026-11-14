@@ -1,5 +1,5 @@
 /**
- * Tests for the universal `@semiont/observability` surface.
+ * Tests for the universal `@xynoplex/observability` surface.
  *
  * Wires a `TracerProvider` + `InMemorySpanExporter` and a
  * `MeterProvider` + `InMemoryMetricExporter` for the duration of the
@@ -300,9 +300,9 @@ describe('recordBusSent', () => {
     await flushMetrics();
 
     const metricsByName = collectMetrics();
-    // Not `semiont.bus.emit`: that is the gateway's count of what it accepted.
-    expect(metricsByName.has('semiont.bus.emit')).toBe(false);
-    const counter = metricsByName.get('semiont.bus.sent');
+    // Not `xynoplex.bus.emit`: that is the gateway's count of what it accepted.
+    expect(metricsByName.has('xynoplex.bus.emit')).toBe(false);
+    const counter = metricsByName.get('xynoplex.bus.sent');
     expect(counter).toBeDefined();
     const withScope = counter!.find((d) => d.attributes['bus.scope'] === 'res-1');
     expect(withScope?.value).toBe(1);

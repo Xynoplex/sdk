@@ -17,7 +17,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { filter, firstValueFrom, map } from 'rxjs';
-import { EventBus, annotationId, resourceId as makeResourceId } from '@semiont/core';
+import { EventBus, annotationId, resourceId as makeResourceId } from '@xynoplex/core';
 import type {
   EventMap,
   EventMetadata,
@@ -25,12 +25,12 @@ import type {
   ResourceId,
   StoredEvent,
   UserId,
-} from '@semiont/core';
+} from '@xynoplex/core';
 import type { BrowseNamespace } from '../browse';
 import { createTestClient, refuseUnscriptedOperation } from '../../testing';
 import { isReady, readyValue } from '../../cache';
 
-import type { Annotation } from '@semiont/core';
+import type { Annotation } from '@xynoplex/core';
 
 const TEST_USER = 'did:web:test:users:test' as UserId;
 const TEST_META = { sequenceNumber: 1 } as EventMetadata;

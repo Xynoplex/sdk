@@ -8,9 +8,9 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
-import { resourceId, type KbEndpoint } from '@semiont/core';
+import { resourceId, type KbEndpoint } from '@xynoplex/core';
 import { sortOpenResources, type OpenResource } from '../open-resource';
-import { samePlace } from '../semiont-browser';
+import { samePlace } from '../xynoplex-browser';
 
 interface RegistryCase {
   why: string;

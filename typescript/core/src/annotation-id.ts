@@ -4,7 +4,7 @@
  * rule, for this and for every other implementation.
  *
  * The builders (`annotation-builders.ts`) are its callers, and no one else
- * is: it is no part of what `@semiont/core` or `@semiont/sdk` exports.
+ * is: it is no part of what `@xynoplex/core` or `@xynoplex/sdk` exports.
  */
 
 import { base64url } from './base64url';
@@ -96,7 +96,7 @@ function canonical(value: unknown): string {
  *
  * The derivation is cached per content checksum, but the entry is gated by a stamp
  * over the Smelter's version, its PDF reader and its OCR engine
- * (`semiont_smelter.stamp`, in images/smelter), and that stamp is deliberately
+ * (`xynoplex_smelter.stamp`, in images/smelter), and that stamp is deliberately
  * over-eager — **a release busts it and the same bytes are re-extracted by
  * different code.** So the honest statement is: the PDF path's guarantee holds
  * *per stamp generation*, and a release is the event that could end one.

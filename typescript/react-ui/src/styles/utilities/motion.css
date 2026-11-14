@@ -144,18 +144,18 @@
 
 @media (prefers-reduced-motion: reduce) {
   /* Loading spinners - keep visible but static */
-  .semiont-spinner {
+  .xynoplex-spinner {
     animation: none !important;
     opacity: 0.6;
   }
 
   /* Progress bars - instant updates */
-  .semiont-progress__fill {
+  .xynoplex-progress__fill {
     transition: none !important;
   }
 
   /* Toasts - appear instantly */
-  .semiont-toast {
+  .xynoplex-toast {
     animation: none !important;
     transition: none !important;
     opacity: 1 !important;
@@ -163,21 +163,21 @@
   }
 
   /* Modals - no slide/fade effects */
-  .semiont-modal,
-  .semiont-modal__backdrop,
-  .semiont-modal__content {
+  .xynoplex-modal,
+  .xynoplex-modal__backdrop,
+  .xynoplex-modal__content {
     animation: none !important;
     transition: opacity 0.01ms !important;
   }
 
   /* Accordions/Collapsibles - instant expand/collapse */
-  .semiont-collapsible {
+  .xynoplex-collapsible {
     transition: none !important;
     animation: none !important;
   }
 
   /* Dropdowns - instant open/close */
-  .semiont-dropdown {
+  .xynoplex-dropdown {
     transition: none !important;
     animation: none !important;
   }

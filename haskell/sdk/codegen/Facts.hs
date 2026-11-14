@@ -125,7 +125,7 @@ vocabularies authority moduleName testName source = do
         <> "import Data.Aeson (FromJSON(..), ToJSON(..), Value(..), withText)\nimport Data.Text (Text)\n"
         <> T.intercalate "\n" [body | (_, _, _, body) <- generated]
       tests = header authority <> T.unlines
-        [ "module Semiont.Internal.Generated." <> testName <> " (roundTripError) where"
+        [ "module Xynoplex.Internal.Generated." <> testName <> " (roundTripError) where"
         , "import Data.Aeson (Value, parseJSON, toJSON)"
         , "import Data.Aeson.Types (parseEither)"
         , "import Data.Text (Text)"
@@ -134,7 +134,7 @@ vocabularies authority moduleName testName source = do
         , "roundTripError family value = case family of"
         ] <> T.unlines ["  " <> quoted family <> " -> toJSON <$> (parseEither parseJSON value :: Either String " <> typ <> ")" | (typ, family, _, _) <- generated]
         <> "  _ -> Left \"unknown error-code family\"\n"
-  pure [("src/" ++ T.unpack (T.replace "." "/" moduleName) ++ ".hs", code), ("test/Semiont/Internal/Generated/" ++ T.unpack testName ++ ".hs", tests)]
+  pure [("src/" ++ T.unpack (T.replace "." "/" moduleName) ++ ".hs", code), ("test/Xynoplex/Internal/Generated/" ++ T.unpack testName ++ ".hs", tests)]
 
 discoveryReasons :: Value -> Either String [(FilePath, Text)]
 discoveryReasons source = do
@@ -145,7 +145,7 @@ discoveryReasons source = do
     unless (all (`elem` ["reason", "docs"]) (KM.keys row)) (Left "unsupported discovery reason row")
     reason <- required "reason" row >>= text
     pure (Object (KM.insert "code" (String reason) (KM.delete "reason" row)))
-  vocabularies "protocol/specs/src/client/discovery-absent.json" "Semiont.Discovery.Reasons" "DiscoveryReasonRoundTrip"
+  vocabularies "protocol/specs/src/client/discovery-absent.json" "Xynoplex.Discovery.Reasons" "DiscoveryReasonRoundTrip"
     (Object (KM.singleton "discoveryAbsent" (Object (KM.singleton "codes" (Array (V.fromList codes))))))
 
 data TimingValue = Scalar Integer | Budget (Map.Map Key.Key Integer)
@@ -179,24 +179,24 @@ timing source = do
         <> "    unless (all (>= 0) [" <> T.intercalate ", " [field key <> " value" | key <- keys] <> "]) (fail \"Negative retry budget member\")\n    pure value\n"
       valueCode (Budget fields') = "RetryBudget { " <> T.intercalate ", " [field key <> " = " <> T.pack (show number) | (key, number) <- Map.toAscList fields'] <> " }"
       valueCode (Scalar number) = T.pack (show number)
-      code = header "protocol/specs/src/client/timing.json" <> "module Semiont.Timing (RetryBudget(..), " <> T.intercalate ", " (map fst pairs) <> ") where\n"
+      code = header "protocol/specs/src/client/timing.json" <> "module Xynoplex.Timing (RetryBudget(..), " <> T.intercalate ", " (map fst pairs) <> ") where\n"
         <> "import Control.Monad (unless)\nimport Data.Aeson (FromJSON(..), ToJSON(..), withObject, object, (.:), (.=))\nimport qualified Data.Aeson.KeyMap as KM\n" <> definition
         <> T.intercalate "\n" [named <> " :: " <> (case value of Budget _ -> "RetryBudget"; _ -> "Integer") <> "\n" <> named <> " = " <> valueCode value <> "\n" | (named, value) <- pairs]
       tests = header "protocol/specs/src/client/timing.json" <> T.unlines
-        [ "module Semiont.Internal.Generated.TimingValues (timingValues) where"
+        [ "module Xynoplex.Internal.Generated.TimingValues (timingValues) where"
         , "import Data.Aeson (Value, toJSON)"
         , "import Data.Text (Text)"
         , "import qualified Data.Map.Strict as Map"
-        , "import Semiont.Timing"
+        , "import Xynoplex.Timing"
         , "timingValues :: Map.Map Text Value"
         , "timingValues = Map.fromList [" <> T.intercalate ", " ["(" <> quoted named <> ", toJSON " <> named <> ")" | (named, _) <- pairs] <> "]"
         ]
       settings = header "protocol/specs/src/client/timing.json" <> T.unlines
-        [ "module Semiont.Timing.Settings (Settings(..), protocolSettings, withOverrides) where"
+        [ "module Xynoplex.Timing.Settings (Settings(..), protocolSettings, withOverrides) where"
         , "import Control.Monad (unless)"
         , "import Data.Aeson (FromJSON(..), ToJSON(..), Result(..), Value(..), fromJSON, withObject, object, (.:), (.=))"
         , "import qualified Data.Aeson.KeyMap as KM"
-        , "import qualified Semiont.Timing as Base"
+        , "import qualified Xynoplex.Timing as Base"
         , "data Settings = Settings { " <> T.intercalate ", " [named <> " :: " <> (case value of Budget _ -> "Base.RetryBudget"; _ -> "Integer") | (named,value) <- pairs] <> " } deriving (Eq, Show)"
         , "protocolSettings :: Settings"
         , "protocolSettings = Settings { " <> T.intercalate ", " [named <> " = Base." <> named | (named,_) <- pairs] <> " }"
@@ -213,11 +213,11 @@ timing source = do
         , "  _ -> Left \"Protocol timing is not an object\""
         , "withOverrides _ = Left \"Timing overrides are not an object\""
         ]
-  pure [("src/Semiont/Timing.hs", code), ("src/Semiont/Timing/Settings.hs", settings), ("test/Semiont/Internal/Generated/TimingValues.hs", tests)]
+  pure [("src/Xynoplex/Timing.hs", code), ("src/Xynoplex/Timing/Settings.hs", settings), ("test/Xynoplex/Internal/Generated/TimingValues.hs", tests)]
 
 generateFacts :: FilePath -> IO [(FilePath, Text)]
 generateFacts root = fmap concat $ forM
-  [("errors/codes.json", vocabularies "protocol/specs/src/errors/codes.json" "Semiont.ErrorCodes" "ErrorRoundTrip")
+  [("errors/codes.json", vocabularies "protocol/specs/src/errors/codes.json" "Xynoplex.ErrorCodes" "ErrorRoundTrip")
   , ("client/timing.json", timing), ("client/discovery-absent.json", discoveryReasons)] $ \(path, generate) -> do
   bytes <- Bytes.readFile (root </> "protocol/specs/src" </> path)
   value <- either (ioError . userError) pure (eitherDecodeStrict' bytes)

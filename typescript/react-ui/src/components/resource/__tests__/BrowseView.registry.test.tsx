@@ -7,20 +7,20 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import type { SemiontSession } from '@semiont/sdk';
+import type { XynoplexSession } from '@xynoplex/sdk';
 import { BrowseView } from '../BrowseView';
 import type { MediaRendererProps } from '../browse-renderers';
-import { resourceId, EventBus } from '@semiont/core';
+import { resourceId, EventBus } from '@xynoplex/core';
 import { englishTranslationManager } from '../../../test-utils';
 
 vi.mock('../../annotation/AnnotateToolbar', () => ({ AnnotateToolbar: () => null }));
 
 const emptyAnnotations = { highlights: [], references: [], assessments: [], comments: [], tags: [] };
 
-function fakeSession(): SemiontSession {
+function fakeSession(): XynoplexSession {
   return {
     client: { bus: new EventBus(), browse: { click: vi.fn() }, beckon: { hover: vi.fn() } },
-  } as unknown as SemiontSession;
+  } as unknown as XynoplexSession;
 }
 
 describe('BrowseView — media-renderer registry', () => {

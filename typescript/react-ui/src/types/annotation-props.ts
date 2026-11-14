@@ -8,7 +8,7 @@
  */
 
 
-import type { Annotation } from '@semiont/core';
+import type { Annotation } from '@xynoplex/core';
 
 /**
  * Collection of all annotation types for a resource.
@@ -42,13 +42,13 @@ export interface AnnotationHandlers {
  */
 export interface AnnotationUIState {
   /** Currently selected annotation motivation (linking, highlighting, etc.) */
-  selectedMotivation: import('@semiont/react-ui').SelectionMotivation | null;
+  selectedMotivation: import('@xynoplex/react-ui').SelectionMotivation | null;
 
   /** Currently selected click mode (detail, follow, delete, jsonld) */
-  selectedClick: import('@semiont/react-ui').ClickAction;
+  selectedClick: import('@xynoplex/react-ui').ClickAction;
 
   /** Currently selected shape for image annotations */
-  selectedShape: import('@semiont/react-ui').ShapeType;
+  selectedShape: import('@xynoplex/react-ui').ShapeType;
 
   /** ID of currently hovered annotation (optional - only set when hovering) */
   hoveredAnnotationId?: string | null;

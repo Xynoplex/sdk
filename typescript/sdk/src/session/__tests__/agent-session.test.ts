@@ -35,7 +35,7 @@
  * `exp` arithmetic is deterministic.
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import type { ServiceAccountCredential } from '@semiont/core';
+import type { ServiceAccountCredential } from '@xynoplex/core';
 import { startAgentSession, type AgentSession } from '../agent-session';
 
 /** The client-credentials grant, as each test scripts it: answered at once, or held open until the test answers it. */
@@ -50,8 +50,8 @@ const routed: typeof fetch = async (input, init) => {
 };
 
 const NOW = new Date('2026-09-21T12:00:00Z');
-const DID = 'did:web:kb.test:agents:service-account-semiont-dispatcher';
-const credential: ServiceAccountCredential = { issuer: 'https://issuer.test/realms/kb', clientId: 'semiont-dispatcher', clientSecret: 'shh' };
+const DID = 'did:web:kb.test:agents:service-account-xynoplex-dispatcher';
+const credential: ServiceAccountCredential = { issuer: 'https://issuer.test/realms/kb', clientId: 'xynoplex-dispatcher', clientSecret: 'shh' };
 
 /** A structurally valid JWT whose payload is the only thing `parseJwtExpiry` reads. */
 function jwt(payload: Record<string, unknown>): string {
@@ -131,7 +131,7 @@ describe('startAgentSession', () => {
   it('an account the issuer refuses fails the first attempt loudly, and the gateway is never asked', async () => {
     grant.mockReturnValueOnce(new Response('{}', { status: 401 }));
 
-    await expect(start()).rejects.toThrow(`Client-credentials grant for semiont-dispatcher at ${credential.issuer} failed (HTTP 401)`);
+    await expect(start()).rejects.toThrow(`Client-credentials grant for xynoplex-dispatcher at ${credential.issuer} failed (HTTP 401)`);
     expect(grant).toHaveBeenCalledTimes(1);
     expect(gateway).not.toHaveBeenCalled();
   });
@@ -257,7 +257,7 @@ describe('startAgentSession', () => {
     expect(runtimes).not.toHaveBeenCalled();
   });
 
-  // The schedule is `refreshDelayMs`, shared with `SemiontSession`. The margin
+  // The schedule is `refreshDelayMs`, shared with `XynoplexSession`. The margin
   // is a fraction of the token's OWN lifetime — a fixed margin as long as a
   // token's whole lifetime fires the refresh at zero delay, in a loop — so
   // for these short-lived fixtures the half-life governs. The arithmetic
@@ -336,7 +336,7 @@ describe('startAgentSession', () => {
     await vi.advanceTimersByTimeAsync(200_000);
     expect(grant).toHaveBeenCalledTimes(2);
     expect(logger.error).toHaveBeenCalledWith('Proactive re-authentication failed', {
-      error: `Client-credentials grant for semiont-dispatcher at ${credential.issuer} failed (HTTP 503)`,
+      error: `Client-credentials grant for xynoplex-dispatcher at ${credential.issuer} failed (HTTP 503)`,
     });
     expect(session.token$.getValue(), 'a still-valid token is not thrown away over one bad round trip').toBe(first);
 

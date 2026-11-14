@@ -1,4 +1,4 @@
-module github.com/The-AI-Alliance/semiont/packages/go/sdk
+module github.com/Xynoplex/sdk/go
 
 go 1.27.0
 

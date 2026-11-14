@@ -12,156 +12,156 @@
    ============================================ */
 :root {
   /* Light theme colors */
-  --semiont-motivation-reference-primary: var(--semiont-color-cyan-600);
-  --semiont-motivation-reference-secondary: var(--semiont-color-blue-600);
-  --semiont-motivation-reference-bg: linear-gradient(to right, var(--semiont-color-cyan-200), var(--semiont-color-blue-200));
-  --semiont-motivation-reference-bg-hover: linear-gradient(to right, var(--semiont-color-cyan-300), var(--semiont-color-blue-300));
-  --semiont-motivation-reference-border: rgba(6, 182, 212, 0.3);
-  --semiont-motivation-reference-border-hover: rgba(6, 182, 212, 0.5);
-  --semiont-motivation-reference-text: var(--semiont-color-gray-900);
+  --xynoplex-motivation-reference-primary: var(--xynoplex-color-cyan-600);
+  --xynoplex-motivation-reference-secondary: var(--xynoplex-color-blue-600);
+  --xynoplex-motivation-reference-bg: linear-gradient(to right, var(--xynoplex-color-cyan-200), var(--xynoplex-color-blue-200));
+  --xynoplex-motivation-reference-bg-hover: linear-gradient(to right, var(--xynoplex-color-cyan-300), var(--xynoplex-color-blue-300));
+  --xynoplex-motivation-reference-border: rgba(6, 182, 212, 0.3);
+  --xynoplex-motivation-reference-border-hover: rgba(6, 182, 212, 0.5);
+  --xynoplex-motivation-reference-text: var(--xynoplex-color-gray-900);
 
   /* Dark theme colors */
-  --semiont-motivation-reference-dark-bg: linear-gradient(to right, rgba(30, 58, 138, 0.5), rgba(8, 51, 68, 0.5));
-  --semiont-motivation-reference-dark-bg-hover: linear-gradient(to right, rgba(30, 58, 138, 0.6), rgba(8, 51, 68, 0.6));
-  --semiont-motivation-reference-dark-text: var(--semiont-color-white);
-  --semiont-motivation-reference-dark-outline: rgba(6, 182, 212, 0.6);
-  --semiont-motivation-reference-dark-primary: var(--semiont-color-cyan-400);
+  --xynoplex-motivation-reference-dark-bg: linear-gradient(to right, rgba(30, 58, 138, 0.5), rgba(8, 51, 68, 0.5));
+  --xynoplex-motivation-reference-dark-bg-hover: linear-gradient(to right, rgba(30, 58, 138, 0.6), rgba(8, 51, 68, 0.6));
+  --xynoplex-motivation-reference-dark-text: var(--xynoplex-color-white);
+  --xynoplex-motivation-reference-dark-outline: rgba(6, 182, 212, 0.6);
+  --xynoplex-motivation-reference-dark-primary: var(--xynoplex-color-cyan-400);
 
   /* Button gradients */
-  --semiont-motivation-reference-button-bg: linear-gradient(to right, var(--semiont-color-cyan-600), var(--semiont-color-blue-500));
-  --semiont-motivation-reference-button-bg-hover: linear-gradient(to right, var(--semiont-color-cyan-500), var(--semiont-color-blue-500));
+  --xynoplex-motivation-reference-button-bg: linear-gradient(to right, var(--xynoplex-color-cyan-600), var(--xynoplex-color-blue-500));
+  --xynoplex-motivation-reference-button-bg-hover: linear-gradient(to right, var(--xynoplex-color-cyan-500), var(--xynoplex-color-blue-500));
 }
 
 /* ============================================
    Inline Text Annotations
    ============================================ */
-.semiont-motivation-reference,
+.xynoplex-motivation-reference,
 .annotation-reference {
   border-radius: 0.25rem;
   padding: 0 0.125rem;
   cursor: pointer;
   transition: all 200ms;
-  background: var(--semiont-motivation-reference-bg);
-  color: var(--semiont-motivation-reference-text);
+  background: var(--xynoplex-motivation-reference-bg);
+  color: var(--xynoplex-motivation-reference-text);
 }
 
-.semiont-motivation-reference:hover,
+.xynoplex-motivation-reference:hover,
 .annotation-reference:hover {
-  background: var(--semiont-motivation-reference-bg-hover);
+  background: var(--xynoplex-motivation-reference-bg-hover);
 }
 
-[data-theme="dark"] .semiont-motivation-reference,
+[data-theme="dark"] .xynoplex-motivation-reference,
 [data-theme="dark"] .annotation-reference {
-  background: var(--semiont-motivation-reference-dark-bg);
-  color: var(--semiont-motivation-reference-dark-text);
-  outline: 2px dashed var(--semiont-motivation-reference-dark-outline);
+  background: var(--xynoplex-motivation-reference-dark-bg);
+  color: var(--xynoplex-motivation-reference-dark-text);
+  outline: 2px dashed var(--xynoplex-motivation-reference-dark-outline);
   outline-offset: 1px;
 }
 
-[data-theme="dark"] .semiont-motivation-reference:hover,
+[data-theme="dark"] .xynoplex-motivation-reference:hover,
 [data-theme="dark"] .annotation-reference:hover {
-  background: var(--semiont-motivation-reference-dark-bg-hover);
+  background: var(--xynoplex-motivation-reference-dark-bg-hover);
 }
 
 /* ============================================
    Panel Entry Styling
    ============================================ */
-.semiont-annotation-entry[data-type="reference"] {
-  border-color: var(--semiont-motivation-reference-border);
+.xynoplex-annotation-entry[data-type="reference"] {
+  border-color: var(--xynoplex-motivation-reference-border);
 }
 
-.semiont-annotation-entry[data-type="reference"]:hover {
+.xynoplex-annotation-entry[data-type="reference"]:hover {
   background: linear-gradient(to right, rgba(165, 243, 252, 0.1), rgba(191, 219, 254, 0.1));
-  border-color: var(--semiont-motivation-reference-border-hover);
+  border-color: var(--xynoplex-motivation-reference-border-hover);
 }
 
-[data-theme="dark"] .semiont-annotation-entry[data-type="reference"] {
-  border-color: var(--semiont-motivation-reference-border);
+[data-theme="dark"] .xynoplex-annotation-entry[data-type="reference"] {
+  border-color: var(--xynoplex-motivation-reference-border);
 }
 
-[data-theme="dark"] .semiont-annotation-entry[data-type="reference"]:hover {
+[data-theme="dark"] .xynoplex-annotation-entry[data-type="reference"]:hover {
   background: linear-gradient(to right, rgba(30, 58, 138, 0.2), rgba(8, 51, 68, 0.2));
 }
 
 /* ============================================
    Quote/Excerpt Styling in Panels
    ============================================ */
-.semiont-annotation-entry__quote[data-type="reference"] {
+.xynoplex-annotation-entry__quote[data-type="reference"] {
   background: linear-gradient(to right, rgba(165, 243, 252, 0.2), rgba(191, 219, 254, 0.2));
-  color: var(--semiont-color-cyan-700);
+  color: var(--xynoplex-color-cyan-700);
 }
 
-[data-theme="dark"] .semiont-annotation-entry__quote[data-type="reference"] {
+[data-theme="dark"] .xynoplex-annotation-entry__quote[data-type="reference"] {
   background: linear-gradient(to right, rgba(30, 58, 138, 0.3), rgba(8, 51, 68, 0.3));
-  color: var(--semiont-color-cyan-300);
+  color: var(--xynoplex-color-cyan-300);
 }
 
 /* ============================================
    Button Styling
    ============================================ */
-.semiont-button[data-variant="delegate"][data-type="reference"] {
-  background: linear-gradient(to right, var(--semiont-color-cyan-600), var(--semiont-color-blue-500)) !important;
-  color: var(--semiont-color-white) !important;
-  border: 1px solid var(--semiont-motivation-reference-border);
+.xynoplex-button[data-variant="delegate"][data-type="reference"] {
+  background: linear-gradient(to right, var(--xynoplex-color-cyan-600), var(--xynoplex-color-blue-500)) !important;
+  color: var(--xynoplex-color-white) !important;
+  border: 1px solid var(--xynoplex-motivation-reference-border);
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
-.semiont-button[data-variant="delegate"][data-type="reference"]:hover {
-  background: var(--semiont-motivation-reference-button-bg-hover);
-  border-color: var(--semiont-motivation-reference-primary);
+.xynoplex-button[data-variant="delegate"][data-type="reference"]:hover {
+  background: var(--xynoplex-motivation-reference-button-bg-hover);
+  border-color: var(--xynoplex-motivation-reference-primary);
 }
 
-[data-theme="dark"] .semiont-button[data-variant="delegate"][data-type="reference"] {
-  border-color: var(--semiont-motivation-reference-dark-outline);
+[data-theme="dark"] .xynoplex-button[data-variant="delegate"][data-type="reference"] {
+  border-color: var(--xynoplex-motivation-reference-dark-outline);
 }
 
-[data-theme="dark"] .semiont-button[data-variant="delegate"][data-type="reference"]:hover {
-  border-color: var(--semiont-motivation-reference-dark-primary);
+[data-theme="dark"] .xynoplex-button[data-variant="delegate"][data-type="reference"]:hover {
+  border-color: var(--xynoplex-motivation-reference-dark-primary);
 }
 
-.semiont-button[data-variant="delegate"][data-type="reference"]:focus-visible {
-  outline: 2px solid var(--semiont-motivation-reference-primary);
+.xynoplex-button[data-variant="delegate"][data-type="reference"]:focus-visible {
+  outline: 2px solid var(--xynoplex-motivation-reference-primary);
   outline-offset: 2px;
 }
 
-[data-theme="dark"] .semiont-button[data-variant="delegate"][data-type="reference"]:focus-visible {
-  outline: 2px solid var(--semiont-motivation-reference-dark-primary);
+[data-theme="dark"] .xynoplex-button[data-variant="delegate"][data-type="reference"]:focus-visible {
+  outline: 2px solid var(--xynoplex-motivation-reference-dark-primary);
   outline-offset: 2px;
 }
 
 /* ============================================
    Reference-specific Elements
    ============================================ */
-.semiont-reference-icon {
+.xynoplex-reference-icon {
   font-size: 1.25rem;
   flex-shrink: 0;
-  color: var(--semiont-motivation-reference-primary);
+  color: var(--xynoplex-motivation-reference-primary);
 }
 
-[data-theme="dark"] .semiont-reference-icon {
-  color: var(--semiont-motivation-reference-dark-primary);
+[data-theme="dark"] .xynoplex-reference-icon {
+  color: var(--xynoplex-motivation-reference-dark-primary);
 }
 
-.semiont-reference-link {
-  font-size: var(--semiont-text-sm);
-  color: var(--semiont-motivation-reference-primary);
+.xynoplex-reference-link {
+  font-size: var(--xynoplex-text-sm);
+  color: var(--xynoplex-motivation-reference-primary);
   display: flex;
   align-items: center;
   gap: 0.25rem;
   margin-top: 0.25rem;
 }
 
-[data-theme="dark"] .semiont-reference-link {
-  color: var(--semiont-motivation-reference-dark-primary);
+[data-theme="dark"] .xynoplex-reference-link {
+  color: var(--xynoplex-motivation-reference-dark-primary);
 }
 
-.semiont-reference-link:focus-visible {
-  outline: 2px solid var(--semiont-motivation-reference-primary);
+.xynoplex-reference-link:focus-visible {
+  outline: 2px solid var(--xynoplex-motivation-reference-primary);
   outline-offset: 2px;
   border-radius: 2px;
 }
 
-[data-theme="dark"] .semiont-reference-link:focus-visible {
-  outline-color: var(--semiont-motivation-reference-dark-primary);
+[data-theme="dark"] .xynoplex-reference-link:focus-visible {
+  outline-color: var(--xynoplex-motivation-reference-dark-primary);
 }

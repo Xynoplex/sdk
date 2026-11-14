@@ -1,4 +1,4 @@
-package semiont
+package xynoplex
 
 // The sign-in store (protocol/specs/src/sign-in-store): tokens.json is written by the
 // launcher and by applications on every SDK, so every change is a read, a
@@ -27,7 +27,7 @@ import (
 
 func storeIn(t *testing.T) *SignInStore {
 	t.Helper()
-	return NewSignInStore(filepath.Join(t.TempDir(), "semiont", SignInFile))
+	return NewSignInStore(filepath.Join(t.TempDir(), "xynoplex", SignInFile))
 }
 
 // signedTokenExpiry is an hour after the tests began. Every signedToken shares
@@ -39,7 +39,7 @@ var signedTokenExpiry = time.Now().Add(time.Hour).Unix()
 // by n.
 func signedToken(n int) string {
 	claims, _ := json.Marshal(map[string]any{
-		"email": "a@example.com", "iss": "http://issuer.example/realms/semiont",
+		"email": "a@example.com", "iss": "http://issuer.example/realms/xynoplex",
 		"exp": signedTokenExpiry, "n": n,
 	})
 	return "eyJhbGciOiJub25lIn0." + base64.RawURLEncoding.EncodeToString(claims) + ".c2lnbmF0dXJl"
@@ -54,7 +54,7 @@ func heldFor(n int) HeldSignIn {
 // read, and one stack's tokens would be lost under the other's.
 func TestTwoWritersOfTheSignInStoreLoseNothingOfEachOthers(t *testing.T) {
 	const writes = 100
-	path := filepath.Join(t.TempDir(), "semiont", SignInFile)
+	path := filepath.Join(t.TempDir(), "xynoplex", SignInFile)
 	keys := []string{"local", "codespace:owner/name"}
 	var wg sync.WaitGroup
 	for _, key := range keys {
@@ -278,7 +278,7 @@ func TestASignInIsKeptAsItsTokenNamesIt(t *testing.T) {
 	if err != nil || !ok {
 		t.Fatalf("nothing was kept (%v)", err)
 	}
-	if signIn.Email != "a@example.com" || signIn.Issuer != "http://issuer.example/realms/semiont" || signIn.RevocationEndpoint != held.RevocationEndpoint {
+	if signIn.Email != "a@example.com" || signIn.Issuer != "http://issuer.example/realms/xynoplex" || signIn.RevocationEndpoint != held.RevocationEndpoint {
 		t.Errorf("kept %+v", signIn)
 	}
 	expiry, _ := TokenExpiry(held.Access)
@@ -335,7 +335,7 @@ func TestATokenThatNamesNoIssuerIsNotKept(t *testing.T) {
 func TestATokenThatNamesNoAddressIsKeptWithoutOne(t *testing.T) {
 	store := storeIn(t)
 	entry := store.Entry("local")
-	payload, _ := json.Marshal(map[string]any{"iss": "http://issuer.example/realms/semiont", "sub": "an-account"})
+	payload, _ := json.Marshal(map[string]any{"iss": "http://issuer.example/realms/xynoplex", "sub": "an-account"})
 	held := heldFor(1)
 	held.Access = "eyJhbGciOiJub25lIn0." + base64.RawURLEncoding.EncodeToString(payload) + ".c2ln"
 	if err := entry.Keep(context.Background(), held); err != nil {
@@ -349,7 +349,7 @@ func TestATokenThatNamesNoAddressIsKeptWithoutOne(t *testing.T) {
 	if err := json.Unmarshal(document["local"], &kept); err != nil {
 		t.Fatal(err)
 	}
-	if _, named := kept["email"]; named || kept["issuer"] != "http://issuer.example/realms/semiont" {
+	if _, named := kept["email"]; named || kept["issuer"] != "http://issuer.example/realms/xynoplex" {
 		t.Errorf("kept as %s, want its issuer and no address", document["local"])
 	}
 	if back, ok, err := entry.Held(context.Background()); err != nil || !ok || back.Access != held.Access {
@@ -384,7 +384,7 @@ func TestARenewalKeepsWhoSignedInAndWhere(t *testing.T) {
 	if signIn.Token != renewed || signIn.RefreshToken != "refresh-2" {
 		t.Errorf("the renewal kept tokens %q and %q", signIn.Token, signIn.RefreshToken)
 	}
-	if signIn.Email != "a@example.com" || signIn.Issuer != "http://issuer.example/realms/semiont" {
+	if signIn.Email != "a@example.com" || signIn.Issuer != "http://issuer.example/realms/xynoplex" {
 		t.Errorf("the renewal kept %s at %s, want who signed in and where", signIn.Email, signIn.Issuer)
 	}
 }
@@ -451,7 +451,7 @@ func renewalCases(t *testing.T) []renewalCase {
 // the tokens the store holds for the stack.
 var renewalStores = map[string]func(t *testing.T) (renewer, another SignInKept, holds func() (access, refresh string, ok bool)){
 	"SignInStore": func(t *testing.T) (SignInKept, SignInKept, func() (string, string, bool)) {
-		path := filepath.Join(t.TempDir(), "semiont", SignInFile)
+		path := filepath.Join(t.TempDir(), "xynoplex", SignInFile)
 		return NewSignInStore(path).Entry("local"), NewSignInStore(path).Entry("local"), func() (string, string, bool) {
 			signIn, ok, err := NewSignInStore(path).SignIn("local")
 			if err != nil {
@@ -488,7 +488,7 @@ func TestEveryRenewalIsTheTables(t *testing.T) {
 					if slices.Contains(c.Expired, name) {
 						expiry = now.Add(-time.Hour)
 					}
-					claims, _ := json.Marshal(map[string]any{"email": "a@example.com", "iss": "http://issuer.example/realms/semiont", "exp": expiry.Unix(), "jti": name})
+					claims, _ := json.Marshal(map[string]any{"email": "a@example.com", "iss": "http://issuer.example/realms/xynoplex", "exp": expiry.Unix(), "jti": name})
 					return "eyJhbGciOiJub25lIn0." + base64.RawURLEncoding.EncodeToString(claims) + ".c2ln"
 				}
 				signIn := func(row tableSignIn) HeldSignIn {

@@ -1,5 +1,5 @@
 import { Subscription } from 'rxjs';
-import type { StateUnit } from '@semiont/core';
+import type { StateUnit } from '@xynoplex/core';
 
 /**
  * Compose multiple disposers into a single `dispose()` call. Accepts either

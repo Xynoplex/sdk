@@ -9,11 +9,11 @@ import Data.Aeson (encode)
 import qualified Data.ByteString as Bytes
 import qualified Data.ByteString.Char8 as Char8
 import qualified Data.ByteString.Lazy as Lazy
-import qualified Semiont.Discovery as D
-import qualified Semiont.Http.Discovery as Http
-import qualified Semiont.Retry as Retry
-import qualified Semiont.Timing.Settings as Timing
-import Semiont.Types (DiscoveryDocument(..))
+import qualified Xynoplex.Discovery as D
+import qualified Xynoplex.Http.Discovery as Http
+import qualified Xynoplex.Retry as Retry
+import qualified Xynoplex.Timing.Settings as Timing
+import Xynoplex.Types (DiscoveryDocument(..))
 import qualified ControlledTime as Time
 import IssuerCases (httpPeer, route)
 

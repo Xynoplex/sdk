@@ -10,12 +10,12 @@ use axum::extract::State;
 use axum::http::{HeaderMap, StatusCode, Uri, header};
 use axum::response::{IntoResponse, Response};
 use bytes::Bytes;
-use semiont::testing::as_id;
-use semiont::transport::{
+use xynoplex::testing::as_id;
+use xynoplex::transport::{
     ConnectionState, ContentTransport, Envelope, GatewayOperations, Transport,
 };
-use semiont_http_transport::content::HttpContentTransport;
-use semiont_http_transport::transport::{HttpTransport, HttpTransportConfig, Timing};
+use xynoplex_http_transport::content::HttpContentTransport;
+use xynoplex_http_transport::transport::{HttpTransport, HttpTransportConfig, Timing};
 use serde_json::json;
 use std::convert::Infallible;
 use std::sync::{Arc, Mutex};

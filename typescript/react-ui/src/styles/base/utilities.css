@@ -10,19 +10,19 @@
    ============================================ */
 
 /* Font Sizes */
-.semiont-text-xs {
-  font-size: var(--semiont-text-xs);
+.xynoplex-text-xs {
+  font-size: var(--xynoplex-text-xs);
 }
 
-.semiont-text-sm {
-  font-size: var(--semiont-text-sm);
+.xynoplex-text-sm {
+  font-size: var(--xynoplex-text-sm);
 }
 
 /* ============================================
    Screen Reader Only
    ============================================ */
 
-.semiont-sr-only {
+.xynoplex-sr-only {
   position: absolute;
   width: 1px;
   height: 1px;

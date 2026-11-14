@@ -1,4 +1,4 @@
-package semiont
+package xynoplex
 
 // Gather: assembling the context a model is given, and what refers to a
 // resource.
@@ -6,8 +6,8 @@ package semiont
 import (
 	"context"
 
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/bus"
+	"github.com/Xynoplex/sdk/go/api"
+	"github.com/Xynoplex/sdk/go/bus"
 )
 
 // What a caller that states nothing is given. Every SDK sends the same: the

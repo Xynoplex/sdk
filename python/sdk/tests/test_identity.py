@@ -9,8 +9,8 @@ configuration is the launcher's and the gateway's.
 import pytest
 from spec import SPEC, JsonObject, objects, read, text
 
-from semiont.identifiers import UserId
-from semiont.identity import agent_did, kb_did, kb_resource, person_did
+from xynoplex.identifiers import UserId
+from xynoplex.identity import agent_did, kb_did, kb_resource, person_did
 
 PRINCIPALS = read(SPEC / "principals/cases.json")
 PEOPLE = objects(PRINCIPALS["people"], "people")

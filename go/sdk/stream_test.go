@@ -1,4 +1,4 @@
-package semiont
+package xynoplex
 
 // What the conformance suite cannot stage: the window of ids remembered, the
 // transitions the state may make, the backoff's bounds, a listener that falls
@@ -20,8 +20,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/bus"
+	"github.com/Xynoplex/sdk/go/api"
+	"github.com/Xynoplex/sdk/go/bus"
 )
 
 func TestTheIdsRememberedAreTheLastOnesDelivered(t *testing.T) {

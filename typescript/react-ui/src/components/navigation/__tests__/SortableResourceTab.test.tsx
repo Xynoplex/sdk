@@ -5,7 +5,7 @@ import { renderWithProviders } from '../../../test-utils';
 import type { SortableResourceTabProps } from '../../../types/collapsible-navigation';
 import type { LinkComponentProps } from '../../../contexts/RoutingContext';
 import type { Transform } from '@dnd-kit/utilities';
-import { resourceId } from '@semiont/core';
+import { resourceId } from '@xynoplex/core';
 
 // Mock @dnd-kit/sortable
 const mockSetNodeRef = vi.fn();
@@ -154,8 +154,8 @@ describe('SortableResourceTab', () => {
         <SortableResourceTab {...defaultProps} isActive={true} />
       );
 
-      const tab = container.querySelector('.semiont-resource-tab');
-      expect(tab).toHaveClass('semiont-resource-tab--active');
+      const tab = container.querySelector('.xynoplex-resource-tab');
+      expect(tab).toHaveClass('xynoplex-resource-tab--active');
     });
 
     it('should not have active class when isActive is false', () => {
@@ -163,8 +163,8 @@ describe('SortableResourceTab', () => {
         <SortableResourceTab {...defaultProps} isActive={false} />
       );
 
-      const tab = container.querySelector('.semiont-resource-tab');
-      expect(tab).not.toHaveClass('semiont-resource-tab--active');
+      const tab = container.querySelector('.xynoplex-resource-tab');
+      expect(tab).not.toHaveClass('xynoplex-resource-tab--active');
     });
 
     it('should set aria-selected based on isActive', () => {
@@ -183,8 +183,8 @@ describe('SortableResourceTab', () => {
         <SortableResourceTab {...defaultProps} isDragging={true} />
       );
 
-      const tab = container.querySelector('.semiont-resource-tab');
-      expect(tab).toHaveClass('semiont-resource-tab--dragging');
+      const tab = container.querySelector('.xynoplex-resource-tab');
+      expect(tab).toHaveClass('xynoplex-resource-tab--dragging');
     });
 
     it('should have dragging class when useSortable reports dragging', () => {
@@ -197,8 +197,8 @@ describe('SortableResourceTab', () => {
         <SortableResourceTab {...defaultProps} />
       );
 
-      const tab = container.querySelector('.semiont-resource-tab');
-      expect(tab).toHaveClass('semiont-resource-tab--dragging');
+      const tab = container.querySelector('.xynoplex-resource-tab');
+      expect(tab).toHaveClass('xynoplex-resource-tab--dragging');
     });
 
     it('should not have dragging class when not dragging', () => {
@@ -206,8 +206,8 @@ describe('SortableResourceTab', () => {
         <SortableResourceTab {...defaultProps} isDragging={false} />
       );
 
-      const tab = container.querySelector('.semiont-resource-tab');
-      expect(tab).not.toHaveClass('semiont-resource-tab--dragging');
+      const tab = container.querySelector('.xynoplex-resource-tab');
+      expect(tab).not.toHaveClass('xynoplex-resource-tab--dragging');
     });
   });
 
@@ -333,7 +333,7 @@ describe('SortableResourceTab', () => {
         <SortableResourceTab {...defaultProps} />
       );
 
-      const icon = container.querySelector('.semiont-resource-tab__icon');
+      const icon = container.querySelector('.xynoplex-resource-tab__icon');
       expect(icon).toHaveAttribute('aria-hidden', 'true');
     });
 
@@ -351,7 +351,7 @@ describe('SortableResourceTab', () => {
         <SortableResourceTab {...defaultProps} />
       );
 
-      expect(container.querySelector('.semiont-resource-tab')).toBeInTheDocument();
+      expect(container.querySelector('.xynoplex-resource-tab')).toBeInTheDocument();
     });
 
     it('should have proper link class', () => {
@@ -359,7 +359,7 @@ describe('SortableResourceTab', () => {
         <SortableResourceTab {...defaultProps} />
       );
 
-      expect(container.querySelector('.semiont-resource-tab__link')).toBeInTheDocument();
+      expect(container.querySelector('.xynoplex-resource-tab__link')).toBeInTheDocument();
     });
 
     it('should have proper icon class', () => {
@@ -367,7 +367,7 @@ describe('SortableResourceTab', () => {
         <SortableResourceTab {...defaultProps} />
       );
 
-      expect(container.querySelector('.semiont-resource-tab__icon')).toBeInTheDocument();
+      expect(container.querySelector('.xynoplex-resource-tab__icon')).toBeInTheDocument();
     });
 
     it('should have proper text class', () => {
@@ -375,7 +375,7 @@ describe('SortableResourceTab', () => {
         <SortableResourceTab {...defaultProps} />
       );
 
-      expect(container.querySelector('.semiont-resource-tab__text')).toBeInTheDocument();
+      expect(container.querySelector('.xynoplex-resource-tab__text')).toBeInTheDocument();
     });
 
     it('should have proper close button class', () => {
@@ -383,7 +383,7 @@ describe('SortableResourceTab', () => {
         <SortableResourceTab {...defaultProps} />
       );
 
-      expect(container.querySelector('.semiont-resource-tab__close')).toBeInTheDocument();
+      expect(container.querySelector('.xynoplex-resource-tab__close')).toBeInTheDocument();
     });
   });
 

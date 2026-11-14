@@ -1,8 +1,8 @@
 //! Signing in as a service account: the issuer's OIDC discovery, then its
 //! client-credentials grant, proved by the account's secret or by an
 //! assertion signed with its key (`client_assertion`). The token is kept
-//! until it is due for renewal by the schedule every Semiont client keeps
-//! (`semiont::session`): half its lifetime before it expires, at most
+//! until it is due for renewal by the schedule every Xynoplex client keeps
+//! (`xynoplex::session`): half its lifetime before it expires, at most
 //! `REFRESH_BEFORE_EXP`. A service reaches another as itself with this
 //! token.
 
@@ -11,10 +11,10 @@ use crate::transport::why_unanswered;
 use base64::Engine;
 use base64::engine::general_purpose::STANDARD;
 use ring::signature::RsaKeyPair;
-use semiont::identity::encode_uri_component;
-use semiont::retry::RetryFacts;
-use semiont::session::{refresh_delay, renewal_delay};
-use semiont::timing::HTTP_REQUEST_TIMEOUT;
+use xynoplex::identity::encode_uri_component;
+use xynoplex::retry::RetryFacts;
+use xynoplex::session::{refresh_delay, renewal_delay};
+use xynoplex::timing::HTTP_REQUEST_TIMEOUT;
 use serde_json::Value;
 use std::fmt;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
@@ -162,7 +162,7 @@ const PEM_BEGIN: &str = "-----BEGIN PRIVATE KEY-----";
 const PEM_END: &str = "-----END PRIVATE KEY-----";
 
 /// The RSA key of an unencrypted PKCS#8 PEM, `-----BEGIN PRIVATE KEY-----`:
-/// how a worker is handed its key, as `SEMIONT_OIDC_CLIENT_KEY`.
+/// how a worker is handed its key, as `XYNOPLEX_OIDC_CLIENT_KEY`.
 pub fn private_key_from_pem(pem: &str) -> Result<RsaKeyPair, KeyError> {
     let armoured = pem
         .trim()

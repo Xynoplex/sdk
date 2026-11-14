@@ -8,7 +8,7 @@ import (
 	"cmp"
 	"slices"
 
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
+	"github.com/Xynoplex/sdk/go/api"
 )
 
 // OpenResource is one resource open in a knowledge base.

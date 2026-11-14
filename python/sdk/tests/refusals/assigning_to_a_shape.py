@@ -1,7 +1,7 @@
 """A shape of the protocol is immutable."""
 
-from semiont.identifiers import AnnotationId
-from semiont.types import MarkDeleteCommand
+from xynoplex.identifiers import AnnotationId
+from xynoplex.types import MarkDeleteCommand
 
 
 def to_a_field(command: MarkDeleteCommand) -> None:

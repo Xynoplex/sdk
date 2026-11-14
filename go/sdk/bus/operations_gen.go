@@ -7,7 +7,7 @@ package bus
 import (
 	"reflect"
 
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
+	"github.com/Xynoplex/sdk/go/api"
 )
 
 // Every operation, named for its request channel and typed by what it sends

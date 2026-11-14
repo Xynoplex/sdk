@@ -24,13 +24,13 @@ from aio import run, soon
 from pydantic import JsonValue, TypeAdapter
 from spec import SPEC, JsonObject, objects, read, text
 
-from semiont.bus import Typed
-from semiont.channels import BRIDGED_CHANNELS
-from semiont.claims import JOB_CLAIM_CHANNELS
-from semiont.client import SemiontClient
-from semiont.identifiers import AnnotationId, JobId, ResourceId
-from semiont.model import WireModel, written
-from semiont.testing import (
+from xynoplex.bus import Typed
+from xynoplex.channels import BRIDGED_CHANNELS
+from xynoplex.claims import JOB_CLAIM_CHANNELS
+from xynoplex.client import XynoplexClient
+from xynoplex.identifiers import AnnotationId, JobId, ResourceId
+from xynoplex.model import WireModel, written
+from xynoplex.testing import (
     ContentCall,
     FaultyTransport,
     GetAnchoredText,
@@ -42,8 +42,8 @@ from semiont.testing import (
     PutBinary,
     StubGateway,
 )
-from semiont.transport import Frame, FrameRefusal, PutBinaryRequest
-from semiont.types import (
+from xynoplex.transport import Frame, FrameRefusal, PutBinaryRequest
+from xynoplex.types import (
     AnnotationSelector,
     BindBodyOperation,
     BindInitiateCommand,
@@ -74,7 +74,7 @@ def fixtures() -> JsonObject:
 
 FIXTURES: Final = fixtures()
 
-type Client = SemiontClient[FaultyTransport]
+type Client = XynoplexClient[FaultyTransport]
 type Args = Mapping[str, JsonValue]
 
 _MOTIVATION = TypeAdapter[Motivation](Motivation)
@@ -414,7 +414,7 @@ class World:
         self.transport = FaultyTransport(channels=(*BRIDGED_CHANNELS, *JOB_CLAIM_CHANNELS))
         self.content = InMemoryContent()
         self.gateway = StubGateway()
-        self.client: Client = SemiontClient(self.transport, self.content, self.gateway)
+        self.client: Client = XynoplexClient(self.transport, self.content, self.gateway)
         self.calls: list[asyncio.Task[object]] = []
 
     def call(self, namespace: str, method: str, args: Args) -> None:

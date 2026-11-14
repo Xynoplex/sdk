@@ -1,7 +1,7 @@
 import { merge } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
-import type { EventBus, EventMap, ITransport, ResourceId, TransportErrorCode, components } from '@semiont/core';
-import { Bus, SemiontError } from '@semiont/core';
+import type { EventBus, EventMap, ITransport, ResourceId, TransportErrorCode, components } from '@xynoplex/core';
+import { Bus, XynoplexError } from '@xynoplex/core';
 import { DelegationObservable, type JobCompletion } from '../awaitable';
 import { GenerationStallError } from './generation-stall';
 import { JobCancelledError, JobFailedError, JobFrames, JobStatusPoll, type JobFollowTiming } from './job-status-poll';
@@ -71,7 +71,7 @@ export function delegated<C extends JobCompletion>(
     // The end: the job's completion, read as the verb's.
     const completed = (completion: C | undefined, from: string) => {
       if (completion === undefined) {
-        subscriber.error(new SemiontError(`${from} is not a completed ${verb.jobType} job's`, 'error' satisfies TransportErrorCode));
+        subscriber.error(new XynoplexError(`${from} is not a completed ${verb.jobType} job's`, 'error' satisfies TransportErrorCode));
         return;
       }
       subscriber.next({ kind: 'complete', data: completion });

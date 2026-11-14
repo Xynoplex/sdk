@@ -6,9 +6,9 @@
     "dune-project",
     "dune-workspace",
     ".ocamlformat",
-    "semiont.opam",
+    "xynoplex.opam",
     "probes/api_inventory.ml",
     "probes/dune"
   ],
-  "roots": ["semiont"]
+  "roots": ["xynoplex"]
 }

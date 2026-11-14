@@ -28,19 +28,19 @@ describe('SelectedTextDisplay', () => {
   it('should have proper container class', () => {
     const { container } = renderWithProviders(<SelectedTextDisplay exact="test" />);
 
-    expect(container.querySelector('.semiont-selected-text-display')).toBeInTheDocument();
+    expect(container.querySelector('.xynoplex-selected-text-display')).toBeInTheDocument();
   });
 
   it('should have proper label class', () => {
     const { container } = renderWithProviders(<SelectedTextDisplay exact="test" />);
 
-    expect(container.querySelector('.semiont-selected-text-display__label')).toBeInTheDocument();
+    expect(container.querySelector('.xynoplex-selected-text-display__label')).toBeInTheDocument();
   });
 
   it('should have proper content class', () => {
     const { container } = renderWithProviders(<SelectedTextDisplay exact="test" />);
 
-    expect(container.querySelector('.semiont-selected-text-display__content')).toBeInTheDocument();
+    expect(container.querySelector('.xynoplex-selected-text-display__content')).toBeInTheDocument();
   });
 
   it('should handle empty string', () => {
@@ -82,13 +82,13 @@ describe('EntityTypeBadges', () => {
   it('should return null for empty string', () => {
     const { container } = renderWithProviders(<EntityTypeBadges entityTypes="" />);
 
-    expect(container.querySelector('.semiont-entity-type-badges')).not.toBeInTheDocument();
+    expect(container.querySelector('.xynoplex-entity-type-badges')).not.toBeInTheDocument();
   });
 
   it('should have proper container class', () => {
     const { container } = renderWithProviders(<EntityTypeBadges entityTypes="Person" />);
 
-    expect(container.querySelector('.semiont-entity-type-badges')).toBeInTheDocument();
+    expect(container.querySelector('.xynoplex-entity-type-badges')).toBeInTheDocument();
   });
 
   it('should have proper badge class on each badge', () => {
@@ -96,7 +96,7 @@ describe('EntityTypeBadges', () => {
       <EntityTypeBadges entityTypes="Person,Organization" />
     );
 
-    const badges = container.querySelectorAll('.semiont-entity-type-badges__badge');
+    const badges = container.querySelectorAll('.xynoplex-entity-type-badges__badge');
     expect(badges).toHaveLength(2);
   });
 });
@@ -123,7 +123,7 @@ describe('PopupHeader', () => {
       <PopupHeader title="Details" onClose={vi.fn()} />
     );
 
-    expect(container.querySelector('.semiont-popup-header__subtitle')).not.toBeInTheDocument();
+    expect(container.querySelector('.xynoplex-popup-header__subtitle')).not.toBeInTheDocument();
   });
 
   it('should render close button', () => {
@@ -150,7 +150,7 @@ describe('PopupHeader', () => {
       <PopupHeader title="Details" onClose={vi.fn()} />
     );
 
-    expect(container.querySelector('.semiont-popup-header')).toBeInTheDocument();
+    expect(container.querySelector('.xynoplex-popup-header')).toBeInTheDocument();
   });
 
   it('should have proper title class', () => {
@@ -158,7 +158,7 @@ describe('PopupHeader', () => {
       <PopupHeader title="Details" onClose={vi.fn()} />
     );
 
-    expect(container.querySelector('.semiont-popup-header__title')).toBeInTheDocument();
+    expect(container.querySelector('.xynoplex-popup-header__title')).toBeInTheDocument();
   });
 
   it('should have proper close button class', () => {
@@ -166,7 +166,7 @@ describe('PopupHeader', () => {
       <PopupHeader title="Details" onClose={vi.fn()} />
     );
 
-    expect(container.querySelector('.semiont-popup-header__close-button')).toBeInTheDocument();
+    expect(container.querySelector('.xynoplex-popup-header__close-button')).toBeInTheDocument();
   });
 });
 
@@ -214,7 +214,7 @@ describe('PopupContainer', () => {
       </PopupContainer>
     );
 
-    expect(container.querySelector('.semiont-popup-backdrop')).toBeInTheDocument();
+    expect(container.querySelector('.xynoplex-popup-backdrop')).toBeInTheDocument();
   });
 
   it('should set data-wide to false by default', () => {
@@ -224,7 +224,7 @@ describe('PopupContainer', () => {
       </PopupContainer>
     );
 
-    const panel = container.querySelector('.semiont-popup-panel');
+    const panel = container.querySelector('.xynoplex-popup-panel');
     expect(panel).toHaveAttribute('data-wide', 'false');
   });
 
@@ -235,7 +235,7 @@ describe('PopupContainer', () => {
       </PopupContainer>
     );
 
-    const panel = container.querySelector('.semiont-popup-panel');
+    const panel = container.querySelector('.xynoplex-popup-panel');
     expect(panel).toHaveAttribute('data-wide', 'true');
   });
 
@@ -246,7 +246,7 @@ describe('PopupContainer', () => {
       </PopupContainer>
     );
 
-    const panel = container.querySelector('.semiont-popup-panel') as HTMLElement;
+    const panel = container.querySelector('.xynoplex-popup-panel') as HTMLElement;
     expect(panel?.style.position).toBe('fixed');
   });
 });

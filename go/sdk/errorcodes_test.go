@@ -1,4 +1,4 @@
-package semiont_test
+package xynoplex_test
 
 // The failure vocabularies' two mappings, held to protocol/specs/src/errors/codes.json:
 // the code an HTTP status becomes, and the bus code a peer's wire code becomes.
@@ -12,8 +12,8 @@ import (
 	"strings"
 	"testing"
 
-	semiont "github.com/The-AI-Alliance/semiont/packages/go/sdk"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
+	xynoplex "github.com/Xynoplex/sdk/go"
+	"github.com/Xynoplex/sdk/go/api"
 )
 
 type codeEntry struct {
@@ -54,28 +54,28 @@ func TestAStatusBecomesTheTransportCodeTheTableGivesIt(t *testing.T) {
 	table := readCodes(t)
 	stated := map[int]bool{}
 	for _, entry := range table.Transport.Codes {
-		want := semiont.TransportErrorCode(entry.Code)
+		want := xynoplex.TransportErrorCode(entry.Code)
 		switch {
 		case entry.Status != nil:
 			stated[*entry.Status] = true
-			if got := semiont.TransportErrorCodeOfStatus(*entry.Status); got != want {
+			if got := xynoplex.TransportErrorCodeOfStatus(*entry.Status); got != want {
 				t.Errorf("status %d becomes %q; the table says %q", *entry.Status, got, want)
 			}
 		case entry.StatusFrom != nil:
 			for _, status := range []int{*entry.StatusFrom, *entry.StatusFrom + 3, *entry.StatusFrom + 99} {
 				stated[status] = true
-				if got := semiont.TransportErrorCodeOfStatus(status); got != want {
+				if got := xynoplex.TransportErrorCodeOfStatus(status); got != want {
 					t.Errorf("status %d, at or above %d, becomes %q; the table says %q", status, *entry.StatusFrom, got, want)
 				}
 			}
 		}
 	}
-	unclassified := semiont.TransportErrorCode(table.Transport.Unclassified)
+	unclassified := xynoplex.TransportErrorCode(table.Transport.Unclassified)
 	for _, status := range []int{302, 418, 422} {
 		if stated[status] {
 			continue
 		}
-		if got := semiont.TransportErrorCodeOfStatus(status); got != unclassified {
+		if got := xynoplex.TransportErrorCodeOfStatus(status); got != unclassified {
 			t.Errorf("status %d, which the table maps to nothing, becomes %q; the table says %q", status, got, unclassified)
 		}
 	}
@@ -83,9 +83,9 @@ func TestAStatusBecomesTheTransportCodeTheTableGivesIt(t *testing.T) {
 
 func TestAWireCodeBecomesTheBusCodeThatRestatesIt(t *testing.T) {
 	table := readCodes(t)
-	unrecognized := semiont.BusRequestErrorCode(table.BusRequest.UnrecognizedFailure)
+	unrecognized := xynoplex.BusRequestErrorCode(table.BusRequest.UnrecognizedFailure)
 	for _, entry := range table.BusRequest.Codes {
-		code := semiont.BusRequestErrorCode(entry.Code)
+		code := xynoplex.BusRequestErrorCode(entry.Code)
 		wire, restates := code.Wire()
 		if entry.Wire == "" {
 			if restates {
@@ -97,11 +97,11 @@ func TestAWireCodeBecomesTheBusCodeThatRestatesIt(t *testing.T) {
 			t.Errorf("%q restates %q (%v); the table says %q", code, wire, restates, entry.Wire)
 		}
 		stated := api.CommandErrorCode(entry.Wire)
-		if got := semiont.BusRequestErrorCodeOfWire(&stated); got != code {
+		if got := xynoplex.BusRequestErrorCodeOfWire(&stated); got != code {
 			t.Errorf("the wire code %q becomes %q; the table says %q", entry.Wire, got, code)
 		}
 	}
-	if got := semiont.BusRequestErrorCodeOfWire(nil); got != unrecognized {
+	if got := xynoplex.BusRequestErrorCodeOfWire(nil); got != unrecognized {
 		t.Errorf("a failure that states no code becomes %q; the table says %q", got, unrecognized)
 	}
 }
@@ -119,7 +119,7 @@ func TestACodeCommandErrorCodeDoesNotNameBecomesNoBusCode(t *testing.T) {
 				said = refused
 			}
 		}()
-		return semiont.BusRequestErrorCodeOfWire(&unknown)
+		return xynoplex.BusRequestErrorCodeOfWire(&unknown)
 	}()
 	if message, ok := said.(string); !ok || !strings.Contains(message, `"a-code-no-table-names" is none of CommandErrorCode's`) {
 		t.Errorf("a code CommandErrorCode does not name is mapped to %v", said)

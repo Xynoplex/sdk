@@ -28,17 +28,17 @@ describe('ResourceTagsInline', () => {
     it('should render with correct classes', () => {
       const { container } = render(<ResourceTagsInline {...defaultProps} />);
 
-      const wrapper = container.querySelector('.semiont-resource-tags-inline');
+      const wrapper = container.querySelector('.xynoplex-resource-tags-inline');
       expect(wrapper).toBeInTheDocument();
 
-      const list = container.querySelector('.semiont-resource-tags-list');
+      const list = container.querySelector('.xynoplex-resource-tags-list');
       expect(list).toBeInTheDocument();
     });
 
     it('should render individual tags with correct class', () => {
       const { container } = render(<ResourceTagsInline {...defaultProps} />);
 
-      const tags = container.querySelectorAll('.semiont-resource-tag');
+      const tags = container.querySelectorAll('.xynoplex-resource-tag');
       expect(tags).toHaveLength(3);
     });
 
@@ -96,7 +96,7 @@ describe('ResourceTagsInline', () => {
         <ResourceTagsInline {...defaultProps} tags={['first', 'second', 'third']} />
       );
 
-      const tagElements = container.querySelectorAll('.semiont-resource-tag');
+      const tagElements = container.querySelectorAll('.xynoplex-resource-tag');
       expect(tagElements[0].textContent).toBe('first');
       expect(tagElements[1].textContent).toBe('second');
       expect(tagElements[2].textContent).toBe('third');
@@ -126,7 +126,7 @@ describe('ResourceTagsInline', () => {
       );
 
       // All tags render, even empty ones
-      const tagElements = container.querySelectorAll('.semiont-resource-tag');
+      const tagElements = container.querySelectorAll('.xynoplex-resource-tag');
       expect(tagElements).toHaveLength(3);
     });
 
@@ -145,7 +145,7 @@ describe('ResourceTagsInline', () => {
       );
 
       // Note: React will warn about duplicate keys, but component still renders
-      const tagElements = container.querySelectorAll('.semiont-resource-tag');
+      const tagElements = container.querySelectorAll('.xynoplex-resource-tag');
       expect(tagElements).toHaveLength(3);
     });
 

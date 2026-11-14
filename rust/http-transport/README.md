@@ -1,17 +1,17 @@
-# semiont-http-transport
+# xynoplex-http-transport
 
-[![crates.io](https://img.shields.io/crates/v/semiont-http-transport.svg)](https://crates.io/crates/semiont-http-transport)
-[![docs.rs](https://img.shields.io/docsrs/semiont-http-transport)](https://docs.rs/semiont-http-transport)
-[![CI](https://github.com/The-AI-Alliance/semiont/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/The-AI-Alliance/semiont/actions/workflows/ci.yml?query=branch%3Amain)
-[![License](https://img.shields.io/crates/l/semiont-http-transport.svg)](https://github.com/The-AI-Alliance/semiont/blob/main/LICENSE)
-[![codecov](https://codecov.io/gh/The-AI-Alliance/semiont/graph/badge.svg?component=rust-http-transport)](https://app.codecov.io/gh/The-AI-Alliance/semiont/components)
+[![crates.io](https://img.shields.io/crates/v/xynoplex-http-transport.svg)](https://crates.io/crates/xynoplex-http-transport)
+[![docs.rs](https://img.shields.io/docsrs/xynoplex-http-transport)](https://docs.rs/xynoplex-http-transport)
+[![CI](https://github.com/Xynoplex/sdk/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Xynoplex/sdk/actions/workflows/ci.yml?query=branch%3Amain)
+[![License](https://img.shields.io/crates/l/xynoplex-http-transport.svg)](https://github.com/Xynoplex/sdk/blob/main/LICENSE)
+[![codecov](https://codecov.io/gh/Xynoplex/sdk/graph/badge.svg?component=rust-http-transport)](https://app.codecov.io/gh/Xynoplex/sdk/components)
 
-The HTTP transport of the [Semiont Rust SDK](../sdk/README.md). It
-connects a [`semiont`](https://crates.io/crates/semiont) client to a
+The HTTP transport of the [Xynoplex Rust SDK](../sdk/README.md). It
+connects a [`xynoplex`](https://crates.io/crates/xynoplex) client to a
 knowledge base's gateway, and signs in the person or the service that uses
 it.
 
-[Semiont](../../../README.md) is an open platform for building trusted AI
+[Xynoplex](../../../README.md) is an open platform for building trusted AI
 knowledge bases. The SDK's client does no networking of its own: this crate
 is how it reaches a knowledge base. Start with the
 [SDK's README](../sdk/README.md) for what the client does, and come
@@ -20,8 +20,8 @@ here for how to connect it.
 ## Install
 
 ```bash
-cargo add semiont
-cargo add semiont-http-transport --features sign-in
+cargo add xynoplex
+cargo add xynoplex-http-transport --features sign-in
 ```
 
 | Feature | What it adds |
@@ -30,7 +30,7 @@ cargo add semiont-http-transport --features sign-in
 
 It is used inside a [Tokio](https://tokio.rs) runtime. Every type and
 function is documented on
-[docs.rs](https://docs.rs/semiont-http-transport).
+[docs.rs](https://docs.rs/xynoplex-http-transport).
 
 ### TLS
 
@@ -42,7 +42,7 @@ the proxy are that client's, as its builder set them (`add_root_certificate`,
 `proxy`). It turns on none of `reqwest`'s TLS features itself: which TLS
 library carries the connection is the application's choice. An
 application that reaches a gateway over `https` adds `reqwest` at the version
-this crate is built with, 0.13, with a TLS feature. Semiont's own services
+this crate is built with, 0.13, with a TLS feature. Xynoplex's own services
 use rustls with the `ring` provider:
 
 ```toml
@@ -64,16 +64,16 @@ program, a script, a daemon or an application, as in the SDK's
 
 | Who | Signs in with | Gives |
 |---|---|---|
-| A script, after `semiont login` | `session_from_kept`, over `SignInStore::entry` | an `OpenedSession` |
+| A script, after `xynoplex login` | `session_from_kept`, over `SignInStore::entry` | an `OpenedSession` |
 | A script on its own | `sign_in_device`, then `session_from_kept` | an `OpenedSession` |
-| A daemon | `AgentToken::sign_in`, then `client` | a `SemiontClient` |
-| An application | `begin_sign_in`, `complete_sign_in` | a session in its `SemiontBrowser` |
+| A daemon | `AgentToken::sign_in`, then `client` | a `XynoplexClient` |
+| An application | `begin_sign_in`, `complete_sign_in` | a session in its `XynoplexBrowser` |
 
 An `OpenedSession` is a session and the client it was built with. A session
 only uses its client, so the two end together: `session()` is the session,
 and `close().await` closes the client, waiting for the saves it owes, and
 then ends the session, so what those saves meet is said before the
-session's errors end. An application's `SemiontBrowser` does the same for
+session's errors end. An application's `XynoplexBrowser` does the same for
 the sessions it holds.
 
 In the examples:
@@ -83,29 +83,29 @@ In the examples:
   (host, port and protocol), or its origin as text for a daemon.
 - `kb` is a `KbTarget`: a knowledge base's id, its name and its endpoint.
 - `kept` is an `Arc<dyn SignInKept>`: where a script's sign-in is kept. An
-  entry of the file `semiont login` keeps (`SignInStore::entry`), memory
+  entry of the file `xynoplex login` keeps (`SignInStore::entry`), memory
   (`MemorySignIn`), a registry's storage (`kept_in`), or a keeper of the
   script's own.
 - `storage` is an `Arc<dyn SessionStorage>`: where an application's
   registry keeps its knowledge bases, their sign-ins and what its clients
   keep.
 
-### A script, after `semiont login`
+### A script, after `xynoplex login`
 
-The [launcher](../../../apps/launcher/README.md)'s `semiont login` signs a
+The [launcher](../../../apps/launcher/README.md)'s `xynoplex login` signs a
 person in and keeps the sign-in on disk
 ([sign-in store](../../../protocol/specs/src/sign-in-store/README.md)). A script reuses
 it. `state_home` is the directory that holds it:
-`semiont::sign_in_store::state_dir` of what the script read of its own
+`xynoplex::sign_in_store::state_dir` of what the script read of its own
 environment. The crates read none themselves. The session renews the
-sign-in, and keeps the renewal in the file, as `semiont login` does.
+sign-in, and keeps the renewal in the file, as `xynoplex login` does.
 
 ```rust
-// The sign-in `semiont login` made for the knowledge base running here. Its key
+// The sign-in `xynoplex login` made for the knowledge base running here. Its key
 // is the knowledge base's id.
 let kept = SignInStore::at(state_home.join(FILE_NAME)).entry("local");
 if kept.held().await?.is_none() {
-    return Err("Not signed in. Run `semiont login`.".into());
+    return Err("Not signed in. Run `xynoplex login`.".into());
 }
 let opened = session_from_kept(SessionFromKept {
     kb: KbTarget::http(
@@ -220,7 +220,7 @@ while let Some(event) = completed.next().await {
 | `refresher` | Asked for a new token when the gateway refuses the one a request carries: a 401, or a 429 whose `code` is `refusal-rate`. It is told the token refused. With none, such a refusal is final. |
 | `channels` | The global channels the stream names. A transport assumes none of its own: a full client names `BRIDGED_CHANNELS`, every channel a client hears. A process that awaits only some operations names their reply channels, and is not sent every other client's replies. |
 | `http` | The application's `reqwest::Client`. |
-| `timing` | The deadlines. `Timing::default()` is the ones every Semiont SDK keeps. |
+| `timing` | The deadlines. `Timing::default()` is the ones every Xynoplex SDK keeps. |
 | `random` | What the jitter of the stream's reconnects and of each emit's retries is drawn from. With none, the system's source. |
 
 **A worker** is a daemon whose agent claims jobs from the knowledge base's
@@ -229,7 +229,7 @@ hands it each job it comes to hold.
 
 ```rust
 // Its account at the issuer proves itself with the worker's key, the
-// PKCS#8 PEM in `SEMIONT_OIDC_CLIENT_KEY`: each grant carries an
+// PKCS#8 PEM in `XYNOPLEX_OIDC_CLIENT_KEY`: each grant carries an
 // assertion signed with it, and no secret.
 let credential = KeyCredential {
     issuer,
@@ -358,28 +358,28 @@ claims.stop().await;
 
 A worker proves itself with its key. `issuer` is the issuer the knowledge
 base trusts, `client_id` is the worker's client there
-(`SEMIONT_OIDC_CLIENT_ID`), and `key` is the PKCS#8 PEM the launcher hands the
-worker as `SEMIONT_OIDC_CLIENT_KEY`. `private_key_from_pem` reads it, and
+(`XYNOPLEX_OIDC_CLIENT_ID`), and `key` is the PKCS#8 PEM the launcher hands the
+worker as `XYNOPLEX_OIDC_CLIENT_KEY`. `private_key_from_pem` reads it, and
 refuses one that is not an unencrypted RSA PKCS#8 key. `passages` stands for
 the worker's model: given the text, the passages it would highlight, each as
 the words it quoted (a `Vec<QuotedText>`).
 
 Its account at the issuer is an agent's: the realm stamps `"kind": "agent"`
 on its tokens, and the gateway names a token without it a person. It carries
-the role `semiont-worker`, without which every claim is refused.
+the role `xynoplex-worker`, without which every claim is refused.
 What claiming does, what a held job is, and what `reconcile` and
 `annotation_of_span` do with a model's words are in the SDK's
 [A worker](../sdk/README.md#a-worker).
 
 ### An application
 
-An application holds a `SemiontBrowser` whose sessions are built by
+An application holds a `XynoplexBrowser` whose sessions are built by
 `HttpSessionFactory`, and signs a person in at the issuer through a redirect
 to this machine. `open` shows the person the URL.
 
 ```rust
 // The registry an application holds, with its sessions over HTTP.
-let browser = SemiontBrowser::new(SemiontBrowserConfig {
+let browser = XynoplexBrowser::new(XynoplexBrowserConfig {
     storage,
     session_factory: Arc::new(HttpSessionFactory::new(http.clone(), None)),
 })?;
@@ -407,7 +407,7 @@ let signed_in = complete_sign_in(&browser, &callback, &http, None).await?;
 ```
 
 The issuer sends a person back only to an address its registration of the
-client lists. The realm a Semiont launcher sets up lists the loopback
+client lists. The realm a Xynoplex launcher sets up lists the loopback
 address for the browser client, at any port. What an issuer of your own has
 to provide is in
 [Authentication](../../../docs/operator/administration/AUTHENTICATION.md).
@@ -415,7 +415,7 @@ to provide is in
 ## What it implements
 
 The SDK states three contracts a client needs of the wire
-(`semiont::transport`), and this crate implements each over a gateway
+(`xynoplex::transport`), and this crate implements each over a gateway
 ([HTTP transport](../../../protocol/contract/TRANSPORT-HTTP.md),
 [transport contract](../../../protocol/contract/TRANSPORT-CONTRACT.md)):
 
@@ -425,7 +425,7 @@ The SDK states three contracts a client needs of the wire
 | `ContentTransport` | `HttpContentTransport` | A resource's bytes, up and down, its description as linked data and its anchored text |
 | `GatewayOperations` | `HttpTransport` | The gateway's plain operations: who a token is, which issuer the knowledge base trusts, its health and status |
 
-`client(config, options)` is the SDK's `SemiontClient` over all three, so
+`client(config, options)` is the SDK's `XynoplexClient` over all three, so
 its `auth` and `system` namespaces are there.
 
 ## How it behaves
@@ -466,11 +466,11 @@ its `auth` and `system` namespaces are there.
 
 Each emit and each content request runs in a span, and each frame received
 is delivered with the trace it was sent under. The spans are made by
-[`semiont-telemetry`](../telemetry/README.md) and reported to whatever
+[`xynoplex-telemetry`](../telemetry/README.md) and reported to whatever
 OpenTelemetry the application installed. Its README says how to turn that
 on. With none installed, nothing is recorded and no `traceparent` is sent.
 
-With `SEMIONT_BUS_LOG` set, each emit, each frame received and each read or
+With `XYNOPLEX_BUS_LOG` set, each emit, each frame received and each read or
 upload of content is also a line on stderr. A line shows the payload, and
 never a credential in it: the value of a member whose name is one a
 credential goes by (`token`, `password`, `apiKey` and the rest of the list in
@@ -480,7 +480,7 @@ credential goes by (`token`, `password`, `apiKey` and the rest of the list in
 
 | Module | What it holds |
 |---|---|
-| `client` | `client(config, options)`: a `SemiontClient` over this transport |
+| `client` | `client(config, options)`: a `XynoplexClient` over this transport |
 | `transport` | `HttpTransport`, `HttpTransportConfig`, `Timing` |
 | `content` | `HttpContentTransport` |
 | `service_account`, `agent` | A service's sign-in: `Credential` (`SecretCredential` or `KeyCredential`), `private_key_from_pem`, `ServiceToken`, `AgentToken` |
@@ -494,16 +494,16 @@ credential goes by (`token`, `password`, `apiKey` and the rest of the list in
 
 | Crate | |
 |---|---|
-| [`semiont`](../sdk/README.md) | The client this crate carries, and the contracts it implements. |
-| [`semiont-telemetry`](../telemetry/README.md) | The spans and counts this crate reports, and how an application turns tracing on. |
-| [`semiont-codegen`](../codegen/README.md) | The build-time generator of the SDK's types. Cargo builds it for you. |
+| [`xynoplex`](../sdk/README.md) | The client this crate carries, and the contracts it implements. |
+| [`xynoplex-telemetry`](../telemetry/README.md) | The spans and counts this crate reports, and how an application turns tracing on. |
+| [`xynoplex-codegen`](../codegen/README.md) | The build-time generator of the SDK's types. Cargo builds it for you. |
 
 ## Contributing
 
 Every Rust block on this page is a region of
 [tests/sign_in.rs](tests/sign_in.rs), compiled and run there against a
 stand-in gateway and issuer. The Rust block of the
-[`semiont-worker` skill](../../../docs/builder/skills/semiont-worker/SKILL.md)
+[`xynoplex-worker` skill](../../../docs/builder/skills/xynoplex-worker/SKILL.md)
 is held to the same regions. [tests/stream.rs](tests/stream.rs) holds the
 stream's behaviour against a gateway that misbehaves on cue.
 [conformance/](conformance) holds the two drivers the

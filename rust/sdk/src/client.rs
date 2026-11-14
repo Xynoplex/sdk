@@ -20,7 +20,7 @@
 
 use crate::bus::{Bus, payload_of};
 use crate::channels::{Channel, Request};
-use crate::errors::{SemiontError, SessionErrorCode};
+use crate::errors::{XynoplexError, SessionErrorCode};
 use crate::event_bus::EventBus;
 use crate::namespaces::{
     AuthNamespace, BeckonNamespace, BindNamespace, BrowseNamespace, FrameNamespace,
@@ -76,7 +76,7 @@ pub struct CachePersistence {
     pub person_key: String,
 }
 
-/// The session a client is owned by (`SemiontClient::owned_by`): the
+/// The session a client is owned by (`XynoplexClient::owned_by`): the
 /// sign-in what the client keeps is written for, and how the session says
 /// what goes wrong with it.
 pub(crate) struct Owner {
@@ -89,7 +89,7 @@ pub(crate) struct Owner {
 pub struct ClientOptions {
     pub timing: ClientTiming,
     /// Absent, the client's caches live as long as it does, until it is
-    /// given one (`SemiontClient::attach_persistence`).
+    /// given one (`XynoplexClient::attach_persistence`).
     pub cache_persistence: Option<CachePersistence>,
 }
 
@@ -110,7 +110,7 @@ impl Links {
     pub async fn request<R: Request>(
         &self,
         payload: &R::Payload,
-    ) -> Result<<R::Result as Channel>::Payload, SemiontError> {
+    ) -> Result<<R::Result as Channel>::Payload, XynoplexError> {
         self.wire
             .request::<R>(payload, self.timing.bus_request)
             .await
@@ -121,7 +121,7 @@ impl Links {
     pub async fn drive<C: Channel>(
         &self,
         payload: &C::Payload,
-    ) -> Result<Option<u64>, SemiontError> {
+    ) -> Result<Option<u64>, XynoplexError> {
         Ok(self.wire.emit::<C>(payload, Envelope::default()).await?)
     }
 
@@ -146,7 +146,7 @@ impl Links {
 }
 
 /// See the module's documentation.
-pub struct SemiontClient {
+pub struct XynoplexClient {
     transport: Arc<dyn Transport>,
     /// The bus over the transport.
     wire: Bus,
@@ -182,7 +182,7 @@ pub struct SemiontClient {
     pub system: Option<SystemNamespace>,
 }
 
-impl SemiontClient {
+impl XynoplexClient {
     /// A client over `transport` and `content`, with `auth` and `system`
     /// when there is a `gateway`.
     pub fn new(
@@ -190,7 +190,7 @@ impl SemiontClient {
         content: Arc<dyn ContentTransport>,
         gateway: Option<Arc<dyn GatewayOperations>>,
         options: ClientOptions,
-    ) -> SemiontClient {
+    ) -> XynoplexClient {
         let own = EventBus::new();
         transport.bridge_into(Arc::new(own.clone()));
         let wire = Bus::new(transport.clone());
@@ -207,7 +207,7 @@ impl SemiontClient {
         );
         let gather = GatherNamespace::new(links.clone());
         let match_ = MatchNamespace::new(links.clone());
-        SemiontClient {
+        XynoplexClient {
             transport,
             wire,
             own,
@@ -345,7 +345,7 @@ impl SemiontClient {
     }
 }
 
-impl Drop for SemiontClient {
+impl Drop for XynoplexClient {
     fn drop(&mut self) {
         self.own.destroy();
     }

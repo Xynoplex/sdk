@@ -5,7 +5,7 @@
  * No React dependencies - safe to use in any JavaScript environment.
  */
 
-import type { Annotation, StoredEventLike, TextQuoteSelector, components } from '@semiont/core';
+import type { Annotation, StoredEventLike, TextQuoteSelector, components } from '@xynoplex/core';
 import {
   getAnnotationIdFromEvent,
   getEntityTypes,
@@ -14,7 +14,7 @@ import {
   isArray,
   isObject,
   isString,
-} from '@semiont/core';
+} from '@xynoplex/core';
 import { ANNOTATORS } from '../../lib/annotation-registry';
 
 type TranslateFn = (key: string, params?: Record<string, string | number>) => string;

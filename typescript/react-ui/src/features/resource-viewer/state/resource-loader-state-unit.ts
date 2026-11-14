@@ -1,4 +1,4 @@
-import { readyValue } from '@semiont/sdk';
+import { readyValue } from '@xynoplex/sdk';
 import {
   BehaviorSubject,
   combineLatest,
@@ -7,9 +7,9 @@ import {
   type Observable,
   type Subscription,
 } from 'rxjs';
-import type { ResourceDescriptor, ResourceId } from '@semiont/core';
-import type { StateUnit } from '@semiont/core';
-import type { SemiontSession } from '@semiont/sdk';
+import type { ResourceDescriptor, ResourceId } from '@xynoplex/core';
+import type { StateUnit } from '@xynoplex/core';
+import type { XynoplexSession } from '@xynoplex/sdk';
 
 export interface ResourceLoaderStateUnit extends StateUnit {
   resource$: Observable<ResourceDescriptor | undefined>;
@@ -31,7 +31,7 @@ export interface ResourceLoaderStateUnit extends StateUnit {
  * escapes to RxJS as an unhandled rethrow.
  */
 export function createResourceLoaderStateUnit(
-  session: SemiontSession,
+  session: XynoplexSession,
   resourceId: ResourceId,
 ): ResourceLoaderStateUnit {
   const { client } = session;

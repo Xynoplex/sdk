@@ -17,7 +17,7 @@ from typing import Final, final
 
 from pydantic import JsonValue, TypeAdapter, ValidationError
 
-from semiont.errors import JobError, SemiontError
+from xynoplex.errors import JobError, XynoplexError
 
 __all__ = [
     "Arguments",
@@ -108,7 +108,7 @@ def texts(args: Arguments, name: str) -> list[str]:
 def failure(error: BaseException) -> dict[str, JsonValue]:
     """A failure as the protocol carries it: the SDK's code, a server's status, and a job failure's class, each where there is one."""
     detail = f"{type(error).__name__}: {error}"
-    if not isinstance(error, SemiontError):
+    if not isinstance(error, XynoplexError):
         return {"detail": detail}
     stated: dict[str, JsonValue] = {"code": error.code}
     if error.status is not None:
@@ -133,7 +133,7 @@ def exporting() -> Callable[[], None] | None:
     from opentelemetry.sdk.trace import TracerProvider
     from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
-    resource = Resource.create({"service.name": "semiont-conformance-driver"})
+    resource = Resource.create({"service.name": "xynoplex-conformance-driver"})
     spans = TracerProvider(resource=resource)
     spans.add_span_processor(BatchSpanProcessor(OTLPSpanExporter()))
     meters = MeterProvider(resource=resource, metric_readers=[PeriodicExportingMetricReader(OTLPMetricExporter())])

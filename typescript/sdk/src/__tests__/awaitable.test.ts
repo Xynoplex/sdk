@@ -19,7 +19,7 @@
 import { describe, expect, it } from 'vitest';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { jobId as toJobId, resourceId as toResourceId } from '@semiont/core';
+import { jobId as toJobId, resourceId as toResourceId } from '@xynoplex/core';
 import type { CacheState } from '../cache';
 import { CacheObservable, DelegationObservable, StreamObservable, UploadObservable } from '../awaitable';
 

@@ -1,4 +1,4 @@
-package semiont
+package xynoplex
 
 // What a completed sign-in learns: who the knowledge base at the address
 // says it is. It describes itself only to a caller that is signed in, so this
@@ -11,8 +11,8 @@ import (
 	"math/rand/v2"
 	"net/http"
 
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/bus"
+	"github.com/Xynoplex/sdk/go/api"
+	"github.com/Xynoplex/sdk/go/bus"
 )
 
 // ConnectionIdentity is who the knowledge base at an address says it is.

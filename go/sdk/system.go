@@ -1,11 +1,11 @@
-package semiont
+package xynoplex
 
 // System: what the knowledge base says about itself.
 
 import (
 	"context"
 
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
+	"github.com/Xynoplex/sdk/go/api"
 )
 
 // SystemNamespace is what the knowledge base says about itself.

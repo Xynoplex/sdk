@@ -72,20 +72,20 @@ export function SortableResourceTab({
       aria-selected={isActive}
       onKeyDown={handleKeyDown}
       aria-label={`${resource.name}, position ${index !== undefined ? index + 1 : ''} of ${totalCount || ''}`}
-      className={`semiont-resource-tab ${isActive ? 'semiont-resource-tab--active' : ''} ${isCurrentlyDragging ? 'semiont-resource-tab--dragging' : ''}`}
+      className={`xynoplex-resource-tab ${isActive ? 'xynoplex-resource-tab--active' : ''} ${isCurrentlyDragging ? 'xynoplex-resource-tab--dragging' : ''}`}
       role="tab"
     >
       {/* Document Link with Icon */}
       <Link
         href={href}
-        className="semiont-resource-tab__link"
+        className="xynoplex-resource-tab__link"
         title={tooltipText}
       >
-        <span className="semiont-resource-tab__icon" aria-hidden="true">
+        <span className="xynoplex-resource-tab__icon" aria-hidden="true">
           {iconEmoji}
         </span>
         {!isCollapsed && (
-          <span className="semiont-resource-tab__text">{resource.name}</span>
+          <span className="xynoplex-resource-tab__text">{resource.name}</span>
         )}
       </Link>
 
@@ -93,7 +93,7 @@ export function SortableResourceTab({
       {!isCollapsed && (
         <button
           onClick={(e) => onClose(resource.id, e)}
-          className="semiont-resource-tab__close"
+          className="xynoplex-resource-tab__close"
           title={translations.closeResource}
           aria-label={`Close ${resource.name}`}
           type="button"

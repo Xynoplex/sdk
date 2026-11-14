@@ -213,67 +213,67 @@ impl std::error::Error for SpanRefusal {}
 /// send it, or the failure of a job it was following; and, on a session's
 /// errors stream, what the session says of its own.
 #[derive(Debug, Clone, PartialEq)]
-pub enum SemiontError {
+pub enum XynoplexError {
     Bus(BusRequestError),
     Transport(TransportError),
     Job(JobError),
     Session(SessionError),
 }
 
-impl SemiontError {
+impl XynoplexError {
     /// The code, as protocol/specs/src/errors/codes.json lists it.
     pub fn code(&self) -> &'static str {
         match self {
-            SemiontError::Bus(error) => error.code.as_str(),
-            SemiontError::Transport(error) => error.code.as_str(),
-            SemiontError::Job(error) => error.code.as_str(),
-            SemiontError::Session(error) => error.code.as_str(),
+            XynoplexError::Bus(error) => error.code.as_str(),
+            XynoplexError::Transport(error) => error.code.as_str(),
+            XynoplexError::Job(error) => error.code.as_str(),
+            XynoplexError::Session(error) => error.code.as_str(),
         }
     }
 
     /// The HTTP status, when a server stated one.
     pub fn status(&self) -> Option<u16> {
         match self {
-            SemiontError::Bus(_) | SemiontError::Job(_) | SemiontError::Session(_) => None,
-            SemiontError::Transport(error) => error.status,
+            XynoplexError::Bus(_) | XynoplexError::Job(_) | XynoplexError::Session(_) => None,
+            XynoplexError::Transport(error) => error.status,
         }
     }
 }
 
-impl fmt::Display for SemiontError {
+impl fmt::Display for XynoplexError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            SemiontError::Bus(error) => error.fmt(f),
-            SemiontError::Transport(error) => error.fmt(f),
-            SemiontError::Job(error) => error.fmt(f),
-            SemiontError::Session(error) => error.fmt(f),
+            XynoplexError::Bus(error) => error.fmt(f),
+            XynoplexError::Transport(error) => error.fmt(f),
+            XynoplexError::Job(error) => error.fmt(f),
+            XynoplexError::Session(error) => error.fmt(f),
         }
     }
 }
 
-impl std::error::Error for SemiontError {}
+impl std::error::Error for XynoplexError {}
 
-impl From<JobError> for SemiontError {
-    fn from(error: JobError) -> SemiontError {
-        SemiontError::Job(error)
+impl From<JobError> for XynoplexError {
+    fn from(error: JobError) -> XynoplexError {
+        XynoplexError::Job(error)
     }
 }
 
-impl From<BusRequestError> for SemiontError {
-    fn from(error: BusRequestError) -> SemiontError {
-        SemiontError::Bus(error)
+impl From<BusRequestError> for XynoplexError {
+    fn from(error: BusRequestError) -> XynoplexError {
+        XynoplexError::Bus(error)
     }
 }
 
-impl From<TransportError> for SemiontError {
-    fn from(error: TransportError) -> SemiontError {
-        SemiontError::Transport(error)
+impl From<TransportError> for XynoplexError {
+    fn from(error: TransportError) -> XynoplexError {
+        XynoplexError::Transport(error)
     }
 }
 
-impl From<SessionError> for SemiontError {
-    fn from(error: SessionError) -> SemiontError {
-        SemiontError::Session(error)
+impl From<SessionError> for XynoplexError {
+    fn from(error: SessionError) -> XynoplexError {
+        XynoplexError::Session(error)
     }
 }
 
@@ -282,9 +282,9 @@ impl From<SessionError> for SemiontError {
 /// depended on reaches the caller as `peer-unavailable`. A failure only this
 /// side knows — a timeout, a closed bus, an emit the gateway refused — states
 /// none.
-pub fn relayed_failure_code(error: &SemiontError) -> Option<crate::types::CommandErrorCode> {
+pub fn relayed_failure_code(error: &XynoplexError) -> Option<crate::types::CommandErrorCode> {
     match error {
-        SemiontError::Bus(error) => error.code.wire(),
-        SemiontError::Transport(_) | SemiontError::Job(_) | SemiontError::Session(_) => None,
+        XynoplexError::Bus(error) => error.code.wire(),
+        XynoplexError::Transport(_) | XynoplexError::Job(_) | XynoplexError::Session(_) => None,
     }
 }

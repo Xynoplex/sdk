@@ -1,15 +1,15 @@
 'use client';
 
 import type { Ref } from 'react';
-import type { Annotation } from '@semiont/core';
-import { getAnnotationExactText } from '@semiont/core';
-import type { SemiontSession } from '@semiont/sdk';
+import type { Annotation } from '@xynoplex/core';
+import { getAnnotationExactText } from '@xynoplex/core';
+import type { XynoplexSession } from '@xynoplex/sdk';
 import { useHoverEmitter } from '../../../hooks/useHoverEmitter';
 import { creatorName, renderAgentLabels } from './agent-label';
 
 interface HighlightEntryProps {
   /** Session for interaction routing (browse.click etc.); the panel threads it. */
-  session: SemiontSession | null;
+  session: XynoplexSession | null;
   highlight: Annotation;
   isFocused: boolean;
   isHovered?: boolean;
@@ -50,7 +50,7 @@ export function HighlightEntry({
   return (
     <div
       ref={ref}
-      className={`semiont-annotation-entry${isHovered ? ' semiont-annotation-pulse' : ''}`}
+      className={`xynoplex-annotation-entry${isHovered ? ' xynoplex-annotation-pulse' : ''}`}
       data-type="highlight"
       data-focused={isFocused ? 'true' : 'false'}
       onClick={() => {
@@ -60,17 +60,17 @@ export function HighlightEntry({
     >
       {/* Highlighted text */}
       {selectedText && (
-        <div className="semiont-annotation-entry__quote" data-type="highlight">
+        <div className="xynoplex-annotation-entry__quote" data-type="highlight">
           "{selectedText.substring(0, 200)}{selectedText.length > 200 ? '...' : ''}"
         </div>
       )}
 
       {/* Metadata */}
-      <div className="semiont-annotation-entry__metadata">
+      <div className="xynoplex-annotation-entry__metadata">
         {creatorName(highlight.creator) && <>By {creatorName(highlight.creator)} • </>}{formatRelativeTime(highlight.created || new Date().toISOString())}
       </div>
       {highlight.generator && renderAgentLabels(highlight.generator) && (
-        <div className="semiont-annotation-entry__metadata">
+        <div className="xynoplex-annotation-entry__metadata">
           Via {renderAgentLabels(highlight.generator)}
         </div>
       )}

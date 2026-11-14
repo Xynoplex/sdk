@@ -12,8 +12,8 @@
  */
 
 import { describe, it, expect, afterEach } from 'vitest';
-import { EventBus, annotationId, resourceId } from '@semiont/core';
-import type { EventMap } from '@semiont/core';
+import { EventBus, annotationId, resourceId } from '@xynoplex/core';
+import type { EventMap } from '@xynoplex/core';
 import { MarkNamespace } from '../namespaces/mark';
 import type { CreateAnnotationInput } from '../namespaces/types';
 import { inMemoryTransport } from './helpers/in-memory-transport';

@@ -1,5 +1,5 @@
-//! Semiont's HTTP transport: a knowledge base's bus over its gateway's HTTP
-//! surface, as `semiont::transport::Transport` (`transport`, with its stream
+//! Xynoplex's HTTP transport: a knowledge base's bus over its gateway's HTTP
+//! surface, as `xynoplex::transport::Transport` (`transport`, with its stream
 //! in `actor` and the stream's framing in `sse`); its bytes, as
 //! `ContentTransport` (`content`); the gateway's own operations, as
 //! `GatewayOperations`; and the SDK's client over the three (`client`).

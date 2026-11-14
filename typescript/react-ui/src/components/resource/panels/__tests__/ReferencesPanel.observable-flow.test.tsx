@@ -17,12 +17,12 @@ import React from 'react';
 import { render, screen, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { BehaviorSubject } from 'rxjs';
-import type { SemiontSession } from '@semiont/sdk';
+import type { XynoplexSession } from '@xynoplex/sdk';
 import type { RouteBuilder } from '../../../../contexts/RoutingContext';
 import { ReferencesPanel } from '../ReferencesPanel';
-import { createTestSemiontWrapper } from '../../../../test-utils';
+import { createTestXynoplexWrapper } from '../../../../test-utils';
 import { useObservable } from '../../../../hooks/useObservable';
-import { resourceId } from '@semiont/core';
+import { resourceId } from '@xynoplex/core';
 
 // Match ReferencesPanel.test.tsx's i18n mocking so the test doesn't
 // depend on a real translation setup.
@@ -65,7 +65,7 @@ const mockRoutes: RouteBuilder = { resourceDetail: (id: string) => `/resource/${
  * same hook ResourceViewerPage uses for vm.entityTypes$) and forwards
  * its value into ReferencesPanel as `allEntityTypes`.
  */
-function ObservableHarness({ source$, session }: { source$: BehaviorSubject<string[]>; session: SemiontSession | null }) {
+function ObservableHarness({ source$, session }: { source$: BehaviorSubject<string[]>; session: XynoplexSession | null }) {
   const entityTypes = useObservable(source$) ?? [];
   return (
     <ReferencesPanel session={session} mark={undefined}
@@ -90,9 +90,9 @@ function ObservableHarness({ source$, session }: { source$: BehaviorSubject<stri
 // provider-free ReferencesPanel only sees the `session` prop, which must be
 // the fake session from this call (test-utils disposes each created client
 // in a module-scope afterEach, so no module-scope session either).
-const renderWithBus = (ui: (session: SemiontSession) => React.ReactElement) => {
-  const { SemiontWrapper, session } = createTestSemiontWrapper();
-  return render(<SemiontWrapper>{ui(session)}</SemiontWrapper>);
+const renderWithBus = (ui: (session: XynoplexSession) => React.ReactElement) => {
+  const { XynoplexWrapper, session } = createTestXynoplexWrapper();
+  return render(<XynoplexWrapper>{ui(session)}</XynoplexWrapper>);
 };
 
 describe('Layer 5-6 — state-unit observable → useObservable → ReferencesPanel chips', () => {
@@ -102,7 +102,7 @@ describe('Layer 5-6 — state-unit observable → useObservable → ReferencesPa
 
     // Wait for useEffect in useObservable to run and commit the value.
     const chips = await screen.findAllByRole('button', { name: (_, el) =>
-      el.classList.contains('semiont-tag-selector__item') ?? false,
+      el.classList.contains('xynoplex-tag-selector__item') ?? false,
     });
     expect(chips).toHaveLength(NINE_TYPES.length);
   });
@@ -115,7 +115,7 @@ describe('Layer 5-6 — state-unit observable → useObservable → ReferencesPa
     renderWithBus((session) => <ObservableHarness source$={source$} session={session} />);
 
     // Initially: no chips (the gate is allEntityTypes.length > 0).
-    expect(document.querySelectorAll('.semiont-tag-selector__item').length).toBe(0);
+    expect(document.querySelectorAll('.xynoplex-tag-selector__item').length).toBe(0);
 
     await act(async () => {
       source$.next(NINE_TYPES);
@@ -123,7 +123,7 @@ describe('Layer 5-6 — state-unit observable → useObservable → ReferencesPa
       await new Promise((r) => setTimeout(r, 0));
     });
 
-    expect(document.querySelectorAll('.semiont-tag-selector__item').length).toBe(NINE_TYPES.length);
+    expect(document.querySelectorAll('.xynoplex-tag-selector__item').length).toBe(NINE_TYPES.length);
   });
 
   it('[9 strings] with duplicate emissions (simulating SSE-duplicate deliveries) renders 9 chips', async () => {
@@ -140,7 +140,7 @@ describe('Layer 5-6 — state-unit observable → useObservable → ReferencesPa
       await new Promise((r) => setTimeout(r, 0));
     });
 
-    expect(document.querySelectorAll('.semiont-tag-selector__item').length).toBe(NINE_TYPES.length);
+    expect(document.querySelectorAll('.xynoplex-tag-selector__item').length).toBe(NINE_TYPES.length);
   });
 
   it('control: [] renders "No entity types available"', () => {

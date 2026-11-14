@@ -16,7 +16,7 @@ import Data.List (sort)
 import Data.Text (Text)
 import qualified Data.Text as Text
 import Data.Text.Encoding (encodeUtf8)
-import qualified Semiont.ClientAssertion as Assertion
+import qualified Xynoplex.ClientAssertion as Assertion
 import System.FilePath ((</>))
 
 require :: String -> Bool -> IO ()
@@ -49,9 +49,9 @@ clientAssertionCases root = do
     key <- public (member "jwk" row)
     expected <- decode (member "thumbprint" row)
     require "RSA thumbprint differs from RFC 7638" (Assertion.thumbprint key==expected)
-  pem <- Bytes.readFile (root </> "packages/haskell/sdk/test/fixtures/client-assertion-test-only.pem")
+  pem <- Bytes.readFile (root </> "haskell/sdk/test/fixtures/client-assertion-test-only.pem")
   private <- either (ioError . userError . Text.unpack) pure (Assertion.privateKeyFromPem pem)
-  nonRsa <- Bytes.readFile (root </> "packages/haskell/sdk/test/fixtures/non-rsa-test-only.pem")
+  nonRsa <- Bytes.readFile (root </> "haskell/sdk/test/fixtures/non-rsa-test-only.pem")
   forM_ [Bytes.empty,"not a key",nonRsa,pem<>pem,"unexpected prefix"<>pem,pem<>"unexpected suffix"] $ \bad ->
     require "PKCS#8 reader accepted an invalid or non-RSA document" (case Assertion.privateKeyFromPem bad of Left message -> not (Text.null message); Right _ -> False)
   forM_ cases $ \row -> do

@@ -1,6 +1,6 @@
 """The live driver: this SDK's client, its live queries and their cache, as `protocol/conformance/sdk/live` drives it.
 
-It reaches the SDK only as an application does, through what `semiont`
+It reaches the SDK only as an application does, through what `xynoplex`
 exports, so what the suite observes is what a caller of the SDK gets.
 """
 
@@ -13,23 +13,23 @@ from typing import Final, assert_never, final
 from protocol import Arguments, Misuse, Operation, count, failure, object_of, say, serve, text
 from pydantic import JsonValue, TypeAdapter, ValidationError
 
-from semiont.cache import CacheState, Failed, Pending, Ready
-from semiont.cached import Cached
-from semiont.channels import BRIDGED_CHANNELS
-from semiont.client import CachePersistence, ClientTiming, SemiontClient
-from semiont.errors import SemiontError
-from semiont.events import Events
-from semiont.http import HttpTransport, Timing
-from semiont.identifiers import AnnotationId, InvalidIdentifier, ResourceId
-from semiont.model import WireModel
-from semiont.namespaces.browse import EngineWithLimits
-from semiont.namespaces.follow import Delegation, JobRefused
-from semiont.refresh import CACHE_QUERIES, CacheQuery
-from semiont.storage import MemoryStorage
-from semiont.stored import person_key
-from semiont.transport import ConnectionState
-from semiont.types import GenerationJobParams, JobCompleteCommand, MarkJobParams
-from semiont.watched import Variable
+from xynoplex.cache import CacheState, Failed, Pending, Ready
+from xynoplex.cached import Cached
+from xynoplex.channels import BRIDGED_CHANNELS
+from xynoplex.client import CachePersistence, ClientTiming, XynoplexClient
+from xynoplex.errors import XynoplexError
+from xynoplex.events import Events
+from xynoplex.http import HttpTransport, Timing
+from xynoplex.identifiers import AnnotationId, InvalidIdentifier, ResourceId
+from xynoplex.model import WireModel
+from xynoplex.namespaces.browse import EngineWithLimits
+from xynoplex.namespaces.follow import Delegation, JobRefused
+from xynoplex.refresh import CACHE_QUERIES, CacheQuery
+from xynoplex.storage import MemoryStorage
+from xynoplex.stored import person_key
+from xynoplex.transport import ConnectionState
+from xynoplex.types import GenerationJobParams, JobCompleteCommand, MarkJobParams
+from xynoplex.watched import Variable
 
 type _Shown = WireModel | EngineWithLimits | str | Sequence[_Shown]
 """What a live query's value is made of."""
@@ -113,7 +113,7 @@ def _entity_type(filters: Arguments) -> str | None:
     return text(filters, "entityType") if "entityType" in filters else None
 
 
-def _query(client: SemiontClient[HttpTransport], query: Arguments) -> Cached[_Shown]:
+def _query(client: XynoplexClient[HttpTransport], query: Arguments) -> Cached[_Shown]:
     """The live query a case names. A query of the table with no arm does not pass a type checker."""
     named = _named(query)
     match named:
@@ -196,14 +196,14 @@ class Live:
         self._storage: Final = MemoryStorage()
         """What a cache is kept in, across `close` and the next `open`: a reload, to the client."""
         self._transport: HttpTransport | None = None
-        self._client: SemiontClient[HttpTransport] | None = None
+        self._client: XynoplexClient[HttpTransport] | None = None
         """The client, kept once closed: what a closed client does is part of what the suite asks."""
         self._closed = False
         self._observers: Final[dict[str, asyncio.Task[None]]] = {}
         """Each observer's task, by the name the suite gave it."""
         self._reported: ConnectionState | None = None
 
-    def _opened(self) -> SemiontClient[HttpTransport]:
+    def _opened(self) -> XynoplexClient[HttpTransport]:
         if self._client is None:
             raise Misuse("no client is open")
         return self._client
@@ -217,7 +217,7 @@ class Live:
         async for state in transport.state:
             self._report(state)
 
-    async def _failures(self, failures: Events[SemiontError]) -> None:
+    async def _failures(self, failures: Events[XynoplexError]) -> None:
         async for error in failures:
             say({"error": failure(error)})
 
@@ -231,7 +231,7 @@ class Live:
         persistence = CachePersistence(storage=self._storage, kb_id=_KB_ID, person_key=_PERSON) if args.get("persist") is True else None
         self._transport = await self._held.enter_async_context(transport)
         self._client = await self._held.enter_async_context(
-            SemiontClient(transport, transport.content, transport, timing=timing, persistence=persistence)
+            XynoplexClient(transport, transport.content, transport, timing=timing, persistence=persistence)
         )
         self._closed = False
         self._observers.clear()
@@ -312,7 +312,7 @@ class Live:
                         data = event.data.model_dump(mode="json", exclude_unset=True)
                 value: dict[str, JsonValue] = {"kind": event.kind, "data": data}
                 say({"emission": {"observer": name, "state": {"status": "ready", "value": value}}})
-        except SemiontError as error:
+        except XynoplexError as error:
             say({"emission": {"observer": name, "state": {"status": "failed", "error": failure(error)}}})
         say({"completed": name})
 

@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Build Semiont packages and apps.
+# Build Xynoplex packages and apps.
 #
 # Usage:
-#   ./packages/typescript/scripts/build.sh                        # build everything
-#   ./packages/typescript/scripts/build.sh --package core,browser  # build only core and browser
-#   ./packages/typescript/scripts/build.sh --start-from react-ui   # skip packages before react-ui
+#   ./typescript/scripts/build.sh                        # build everything
+#   ./typescript/scripts/build.sh --package core,browser  # build only core and browser
+#   ./typescript/scripts/build.sh --start-from react-ui   # skip packages before react-ui
 #
 # The list of packages and the build order come from `version.json`
 # (the workspace's single source of truth for the package manifest).
@@ -16,7 +16,7 @@ set -euo pipefail
 # Library packages (under `packages/`) are built first, in the order
 # version.json lists them; apps (`browser`) follow.
 # App staging (.npm-stage/) is the publish flow's job — see
-# packages/typescript/scripts/publish.sh, which runs publish-npm-apps.mjs itself.
+# typescript/scripts/publish.sh, which runs publish-npm-apps.mjs itself.
 #
 # Dependencies are always installed. OpenAPI spec is always bundled.
 
@@ -94,7 +94,7 @@ if [[ -n "$START_FROM" ]]; then
 elif [[ -n "$PACKAGES" ]]; then
   IFS=',' read -ra TARGETS <<< "$PACKAGES"
   # Validate, exactly as --start-from above does. Without this an unmatched
-  # name — a typo, or the SCOPED form `@semiont/react-ui` when this script
+  # name — a typo, or the SCOPED form `@xynoplex/react-ui` when this script
   # wants the bare `react-ui` — silently selects nothing: both build sections
   # run empty, "BUILD COMPLETE ✓" prints, publish pushes the PREVIOUS dist,
   # and the resulting image is stale in a way that only shows up as "my change
@@ -113,8 +113,8 @@ elif [[ -n "$PACKAGES" ]]; then
     echo "Valid packages: ${ALL[*]}" >&2
     echo "" >&2
     for u in "${UNKNOWN[@]}"; do
-      if [[ "$u" == @semiont/* ]]; then
-        echo "  '$u' looks scoped — this flag takes BARE names: '${u#@semiont/}'" >&2
+      if [[ "$u" == @xynoplex/* ]]; then
+        echo "  '$u' looks scoped — this flag takes BARE names: '${u#@xynoplex/}'" >&2
       fi
     done
     echo "" >&2

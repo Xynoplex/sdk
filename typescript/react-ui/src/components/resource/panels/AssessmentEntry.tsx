@@ -1,9 +1,9 @@
 'use client';
 
 import type { Ref } from 'react';
-import type { Annotation } from '@semiont/core';
-import { getAnnotationExactText } from '@semiont/core';
-import type { SemiontSession } from '@semiont/sdk';
+import type { Annotation } from '@xynoplex/core';
+import { getAnnotationExactText } from '@xynoplex/core';
+import type { XynoplexSession } from '@xynoplex/sdk';
 import { useHoverEmitter } from '../../../hooks/useHoverEmitter';
 import { creatorName, renderAgentLabels } from './agent-label';
 
@@ -17,7 +17,7 @@ interface TextualBody {
 
 interface AssessmentEntryProps {
   /** Session for interaction routing (browse.click etc.); the panel threads it. */
-  session: SemiontSession | null;
+  session: XynoplexSession | null;
   assessment: Annotation;
   isFocused: boolean;
   isHovered?: boolean;
@@ -87,7 +87,7 @@ export function AssessmentEntry({
   return (
     <div
       ref={ref}
-      className={`semiont-annotation-entry${isHovered ? ' semiont-annotation-pulse' : ''}`}
+      className={`xynoplex-annotation-entry${isHovered ? ' xynoplex-annotation-pulse' : ''}`}
       data-type="assessment"
       data-focused={isFocused ? 'true' : 'false'}
       onClick={() => {
@@ -97,24 +97,24 @@ export function AssessmentEntry({
     >
       {/* Selected text quote */}
       {selectedText && (
-        <div className="semiont-annotation-entry__quote" data-type="assessment">
+        <div className="xynoplex-annotation-entry__quote" data-type="assessment">
           "{selectedText.substring(0, 100)}{selectedText.length > 100 ? '...' : ''}"
         </div>
       )}
 
       {/* Assessment body */}
       {assessmentText && (
-        <div className="semiont-annotation-entry__body" data-type="assessment">
+        <div className="xynoplex-annotation-entry__body" data-type="assessment">
           {assessmentText}
         </div>
       )}
 
       {/* Metadata */}
-      <div className="semiont-annotation-entry__metadata">
+      <div className="xynoplex-annotation-entry__metadata">
         {creatorName(assessment.creator) && <>By {creatorName(assessment.creator)} • </>}{formatRelativeTime(assessment.created || new Date().toISOString())}
       </div>
       {assessment.generator && renderAgentLabels(assessment.generator) && (
-        <div className="semiont-annotation-entry__metadata">
+        <div className="xynoplex-annotation-entry__metadata">
           Via {renderAgentLabels(assessment.generator)}
         </div>
       )}

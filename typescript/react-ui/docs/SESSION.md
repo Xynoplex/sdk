@@ -7,12 +7,12 @@ file layout and the invariants the implementation keeps.
 ## Package layout
 
 ```text
-@semiont/sdk
-├── client.ts                    ← SemiontClient (transport + its EventBus)
+@xynoplex/sdk
+├── client.ts                    ← XynoplexClient (transport + its EventBus)
 ├── session/                     ← per-KB session, app-level browser, storage
 │   ├── session-storage.ts       ← SessionStorage interface + InMemorySessionStorage
-│   ├── semiont-session.ts       ← SemiontSession (per-KB)
-│   ├── semiont-browser.ts       ← SemiontBrowser (app singleton)
+│   ├── xynoplex-session.ts       ← XynoplexSession (per-KB)
+│   ├── xynoplex-browser.ts       ← XynoplexBrowser (app singleton)
 │   ├── session-signals.ts       ← SessionSignals (the modals' state)
 │   ├── session-factory.ts       ← SessionFactory type
 │   ├── http-session-factory.ts  ← createHttpSessionFactory()
@@ -20,23 +20,23 @@ file layout and the invariants the implementation keeps.
 │   ├── oauth.ts                 ← issuer discovery, PKCE / device grants, refresh, revoke
 │   ├── connect.ts               ← what a completed sign-in learns about the KB
 │   ├── storage.ts               ← pure helpers + adapter-fed loaders
-│   ├── errors.ts                ← SemiontSessionError
+│   ├── errors.ts                ← XynoplexSessionError
 │   ├── knowledge-base.ts        ← KnowledgeBase, KbSessionStatus types
 │   └── open-resource.ts         ← OpenResource type
 └── state/                       ← state-unit factories; take `client`, not a bus
     ├── flows/                   ← beckon, gather, mark, match, yield
     └── lib/                     ← createDisposer, search pipeline
 
-@semiont/react-ui
+@xynoplex/react-ui
 ├── session/
-│   ├── SemiontProvider.tsx      ← React context provider + useSemiont hook
+│   ├── XynoplexProvider.tsx      ← React context provider + useXynoplex hook
 │   └── web-browser-storage.ts   ← WebBrowserStorage (localStorage + storage event)
 └── state/
     └── shell-state-unit.ts      ← ShellStateUnit (toolbar panel state)
 ```
 
-No session logic lives in `@semiont/react-ui`. Its session surface is
-`SemiontProvider` / `useSemiont` (context) and `WebBrowserStorage` (the
+No session logic lives in `@xynoplex/react-ui`. Its session surface is
+`XynoplexProvider` / `useXynoplex` (context) and `WebBrowserStorage` (the
 browser-backed `SessionStorage` implementation).
 
 ## Invariants
@@ -52,12 +52,12 @@ browser-backed `SessionStorage` implementation).
 4. **State-unit factories never construct an `EventBus`.** They take the
    client or browser that owns one.
 5. **Every channel belongs to exactly one bus.** `EventMap` in
-   `@semiont/core/bus-protocol.ts` is the source of truth. Don't
+   `@xynoplex/core/bus-protocol.ts` is the source of truth. Don't
    split a channel across buses; don't emit to both.
 6. **`sessionActivating$` is the only valid loading indicator.** UIs
    that want to show a spinner while the session is under
    construction must AND-gate on `sessionActivating$`; otherwise
    they get stuck spinning after `signOut`.
 7. **React layer is provider + hook only.** All session types live in
-   `@semiont/sdk`; the React package's session surface is `SemiontProvider`,
-   `useSemiont`, and `WebBrowserStorage`.
+   `@xynoplex/sdk`; the React package's session surface is `XynoplexProvider`,
+   `useXynoplex`, and `WebBrowserStorage`.

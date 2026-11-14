@@ -1,4 +1,4 @@
-"""Generate `semiont/types.py`, the protocol's shapes, from the bundled OpenAPI spec.
+"""Generate `xynoplex/types.py`, the protocol's shapes, from the bundled OpenAPI spec.
 
     uv run python scripts/generate_models.py            write it
     uv run python scripts/generate_models.py --check    compare, and fail on a difference
@@ -11,7 +11,7 @@ Before, on a copy of the spec:
 
 - **A kind of id is this SDK's own type.** Wherever the spec refers to one of
   the kinds `protocol/specs/src/identifiers/kinds.json` names, the generator is handed
-  the type `semiont.identifiers` holds for it, so a field that carries an id is
+  the type `xynoplex.identifiers` holds for it, so a field that carries an id is
   of its kind and of no other.
 - **A schema that extends another and restates one of its properties is written
   out whole.** As a subclass it would narrow a field its base declares, which a
@@ -31,7 +31,7 @@ Before, on a copy of the spec:
   named the same way (`BrowseDirectoryRequestSort`), so a function that takes
   one names its type and does not restate its words; a set of one word is
   what tells a union's members apart, and stays where it is. It is the rule
-  Rust's generator names them by (`packages/rust/codegen`), so a shape has
+  Rust's generator names them by (`rust/codegen`), so a shape has
   one name in both.
 
 After, on what it wrote:
@@ -55,11 +55,11 @@ from typing import Never
 from pydantic import JsonValue, TypeAdapter
 
 PACKAGE = Path(__file__).resolve().parents[1]
-ROOT = PACKAGE.parents[2]
+ROOT = PACKAGE.parents[1]
 SPEC = ROOT / "protocol/specs/openapi.json"
 KINDS = ROOT / "protocol/specs/src/identifiers/kinds.json"
-OUT = PACKAGE / "src/semiont/types.py"
-FLOOR = ROOT / "packages/python/scripts/python-floor.sh"
+OUT = PACKAGE / "src/xynoplex/types.py"
+FLOOR = ROOT / "python/scripts/python-floor.sh"
 
 SCHEMA_REF = "#/components/schemas/"
 
@@ -69,7 +69,7 @@ KEPT_AS_TEXT = frozenset({"date-time", "uri"})
 BYTES = "binary"
 BANNER = (
     "# Generated from protocol/specs/openapi.json, the bundled spec; do not edit.\n"
-    "# Regenerate: uv run python scripts/generate_models.py (in packages/python/sdk)\n"
+    "# Regenerate: uv run python scripts/generate_models.py (in python/sdk)\n"
 )
 
 type JsonObject = dict[str, JsonValue]
@@ -85,7 +85,7 @@ def refuse(message: str) -> Never:
 def read(path: Path) -> JsonObject:
     """The JSON object a file holds."""
     if not path.exists():
-        refuse(f"{path.relative_to(ROOT)} does not exist. Bundle the spec first: npm run generate:openapi --workspace=@semiont/core")
+        refuse(f"{path.relative_to(ROOT)} does not exist. Bundle the spec first: npm run generate:openapi --workspace=@xynoplex/core")
     value = _JSON.validate_json(path.read_bytes())
     if not isinstance(value, dict):
         refuse(f"{path.relative_to(ROOT)} is not a JSON object")
@@ -127,7 +127,7 @@ def with_kinds(node: JsonValue, kinds: frozenset[str]) -> JsonValue:
             rest = {key: value for key, value in node.items() if key != "allOf"}
     if kind is None:
         return {key: with_kinds(value, kinds) for key, value in node.items()}
-    return {**rest, "type": "string", "customTypePath": f"semiont.identifiers.{kind}"}
+    return {**rest, "type": "string", "customTypePath": f"xynoplex.identifiers.{kind}"}
 
 
 def names_a_kind(node: JsonValue, kinds: frozenset[str]) -> bool:
@@ -427,7 +427,7 @@ def generated(spec: JsonObject) -> str:
                 "--target-python-version",
                 floor(),
                 "--base-class",
-                "semiont.model.WireModel",
+                "xynoplex.model.WireModel",
                 "--use-type-alias",
                 "--use-annotated",
                 "--field-constraints",
@@ -532,7 +532,7 @@ def finished(source: str, named: frozenset[str]) -> str:
 
 
 def main() -> int:
-    """Write `semiont/types.py`, or with `--check` say whether it is what the spec generates."""
+    """Write `xynoplex/types.py`, or with `--check` say whether it is what the spec generates."""
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--check", action="store_true", help="compare without writing")
     check: bool = parser.parse_args().check

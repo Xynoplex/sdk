@@ -12,13 +12,13 @@ import { renderHook } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import type { ReactNode } from 'react';
 import { useResourceViewedReport } from '../useResourceViewedReport';
-import { createTestSemiontWrapper } from '../../../../test-utils';
-import { resourceId } from '@semiont/core';
+import { createTestXynoplexWrapper } from '../../../../test-utils';
+import { resourceId } from '@xynoplex/core';
 
 function makeWrapper() {
-  const { SemiontWrapper, client } = createTestSemiontWrapper();
+  const { XynoplexWrapper, client } = createTestXynoplexWrapper();
   const wrapper = ({ children }: { children: ReactNode }) => (
-    <SemiontWrapper>{children}</SemiontWrapper>
+    <XynoplexWrapper>{children}</XynoplexWrapper>
   );
   const viewed = vi.spyOn(client.browse, 'resourceViewed').mockImplementation(() => {});
   return { wrapper, viewed };

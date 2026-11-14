@@ -16,7 +16,7 @@
 import util from 'node:util';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { BehaviorSubject } from 'rxjs';
-import { BRIDGED_CHANNELS, accessToken, baseUrl, resourceId, type AccessToken, type SemiontError } from '@semiont/core';
+import { BRIDGED_CHANNELS, accessToken, baseUrl, resourceId, type AccessToken, type XynoplexError } from '@xynoplex/core';
 import { HttpContentTransport } from '../http-content-transport';
 import { HttpTransport, currentUserOf } from '../http-transport';
 
@@ -82,7 +82,7 @@ const REQUESTS: ReadonlyArray<readonly [string, Asking]> = [
 describe('a request of a token that is no header value', () => {
   it.each(REQUESTS)('%s got no answer: it says the kind of error, and none of the token', async (request, asking) => {
     const transport = transportWith(BROKEN);
-    const reported: SemiontError[] = [];
+    const reported: XynoplexError[] = [];
     transport.errors$.subscribe((error) => reported.push(error));
 
     const failure: unknown = await asking(transport, new HttpContentTransport(transport)).catch((e: unknown) => e);

@@ -1,4 +1,4 @@
-import type { components } from '@semiont/core';
+import type { components } from '@xynoplex/core';
 import type { DelegateProgressTranslations } from '../components/DelegateProgress';
 import type en from '../../translations/en.json';
 

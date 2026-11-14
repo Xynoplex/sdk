@@ -3,9 +3,9 @@ import { screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { renderWithProviders } from '../../test-utils';
 
-// Mock the hooks and utilities that SessionExpiryBanner imports from @semiont/react-ui
-vi.mock('@semiont/react-ui', async () => {
-  const actual = await vi.importActual('@semiont/react-ui');
+// Mock the hooks and utilities that SessionExpiryBanner imports from @xynoplex/react-ui
+vi.mock('@xynoplex/react-ui', async () => {
+  const actual = await vi.importActual('@xynoplex/react-ui');
   return {
     ...actual,
     useSessionExpiry: vi.fn(),
@@ -13,7 +13,7 @@ vi.mock('@semiont/react-ui', async () => {
   };
 });
 
-import { useSessionExpiry, formatTime } from '@semiont/react-ui';
+import { useSessionExpiry, formatTime } from '@xynoplex/react-ui';
 import type { MockedFunction } from 'vitest';
 import { SessionExpiryBanner } from '../SessionExpiryBanner';
 

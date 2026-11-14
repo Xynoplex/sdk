@@ -1,17 +1,17 @@
 /**
- * @semiont/http-transport
+ * @xynoplex/http-transport
  *
- * HTTP-specific transport adapters for the Semiont SDK. The dev-facing
- * surface (`SemiontClient`, namespaces, session, state units, helpers)
- * lives in `@semiont/sdk`. The shared transport contract
+ * HTTP-specific transport adapters for the Xynoplex SDK. The dev-facing
+ * surface (`XynoplexClient`, namespaces, session, state units, helpers)
+ * lives in `@xynoplex/sdk`. The shared transport contract
  * (`ITransport`, `IContentTransport`, `BRIDGED_CHANNELS`,
- * `ConnectionState`, response types) lives in `@semiont/core`.
+ * `ConnectionState`, response types) lives in `@xynoplex/core`.
  *
- * Most consumers do not import from this package directly — `@semiont/sdk`
+ * Most consumers do not import from this package directly — `@xynoplex/sdk`
  * re-exports the HTTP adapters so a typical app does:
  *
  * ```ts
- * import { SemiontClient, HttpTransport, HttpContentTransport } from '@semiont/sdk';
+ * import { XynoplexClient, HttpTransport, HttpContentTransport } from '@xynoplex/sdk';
  * ```
  *
  * Direct imports are appropriate when constructing the transport stack

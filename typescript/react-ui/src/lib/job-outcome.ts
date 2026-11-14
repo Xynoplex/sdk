@@ -1,5 +1,5 @@
-import { isObject, isString } from '@semiont/core';
-import type { components } from '@semiont/core';
+import { isObject, isString } from '@xynoplex/core';
+import type { components } from '@xynoplex/core';
 
 type DeclineReason = components['schemas']['JobDeclined']['reason'];
 

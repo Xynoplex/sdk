@@ -1,0 +1,602 @@
+cabal-version: 3.0
+name: xynoplex
+version: 0.7.3
+synopsis: Typed Xynoplex SDK for Haskell
+description: Protocol-derived models for the Xynoplex knowledge platform.
+license: Apache-2.0
+license-file: LICENSE
+category: Network
+author: Xynoplex
+maintainer: Xynoplex contributors
+build-type: Simple
+extra-source-files: codegen/annotation-adapters.json, test/store-owner-policy.py, test/store-owner-policy.ps1, test/store-lock-peer.py, generated/Xynoplex/Internal/Generated/xynoplex_store_policy.h, test/fixtures/*.pem, codegen/session-adapters.json, xynoplex.cabal.in, README.md, run.sh, api.py, public-api.inputs.json, public-api.json, test/refusals.py, test/refusals/*.hs, test/http-peer.py, conformance/README.md, conformance/launch.sh
+
+common settings
+  default-language: GHC2021
+  ghc-options: -Wall -Wincomplete-patterns -Wincomplete-record-updates
+  build-depends:
+    base >=4.20 && <4.21,
+    aeson >=2.3 && <2.4,
+    async >=2.2 && <2.3,
+    bytestring >=0.12 && <0.13,
+    base64-bytestring >=1.2 && <1.3,
+    containers >=0.7 && <0.8,
+    regex-tdfa >=1.3 && <1.4,
+    scientific >=0.3 && <0.4,
+    stm >=2.5 && <2.6,
+    streaming >=0.2 && <0.3,
+    text >=2.1 && <2.2,
+    vector >=0.13 && <0.14,
+    QuickCheck >=2.19 && <2.20
+
+common context-propagation
+  build-depends: hs-opentelemetry-api >=1.0 && <1.1, http-client >=0.7 && <0.8, http-types >=0.12 && <0.13, case-insensitive >=1.2 && <1.3, network-uri >=2.6 && <2.7, uuid-types >=1.0 && <1.1, unordered-containers >=0.2 && <0.3
+
+common crypto
+  build-depends: crypton >=2.2 && <2.3, ram >=0.22 && <0.23, crypton-pem >=0.3 && <0.4, crypton-x509 >=1.10 && <1.11, crypton-x509-store >=1.10 && <1.11
+
+library
+  default-language: GHC2021
+  build-depends: base >=4.20 && <4.21, xynoplex:internal
+  reexported-modules: Xynoplex.Types, Xynoplex.Types.Presence, Xynoplex.Channels, Xynoplex.Running, Xynoplex.ErrorCodes, Xynoplex.Timing, Xynoplex.Timing.Settings, Xynoplex.Retry, Xynoplex.Discovery, Xynoplex.Discovery.Reasons, Xynoplex.Transport, Xynoplex.Transport.Facts, Xynoplex.StateValue, Xynoplex.Errors, Xynoplex.EventBus, Xynoplex.Bus, Xynoplex.Http, Xynoplex.Http.Discovery, Xynoplex.Content, Xynoplex.Gateway, Xynoplex.Frame, Xynoplex.Auth, Xynoplex.System, Xynoplex.Client, Xynoplex.JobFilter, Xynoplex.Claims, Xynoplex.HostName, Xynoplex.Worker, Xynoplex.Worker.Types, Xynoplex.Bind, Xynoplex.Beckon, Xynoplex.Job, Xynoplex.Cache, Xynoplex.Resources, Xynoplex.MediaTypes, Xynoplex.Browse, Xynoplex.Gather, Xynoplex.Match, Xynoplex.Delegation, Xynoplex.Mark, Xynoplex.Yield, Xynoplex.Tokens, Xynoplex.SessionStorage, Xynoplex.Session, Xynoplex.Issuer, Xynoplex.Registry.Stored, Xynoplex.ClientAssertion, Xynoplex.ServiceToken, Xynoplex.SignIn, Xynoplex.SignInStore, Xynoplex.Annotations, Xynoplex.Identity, Xynoplex.StoragePersister, Xynoplex.State.SessionSignals, Xynoplex.Registry.Identity, Xynoplex.Registry.Factory, Xynoplex.Registry.Resources, Xynoplex.Registry, Xynoplex.State.HoverDwell, Xynoplex.State.Search, Xynoplex.State.Beckon, Xynoplex.State.Match, Xynoplex.State.Gather, Xynoplex.State.Mark, Xynoplex.State.Yield, Xynoplex.Testing, Xynoplex.Testing.Client, Xynoplex.Testing.Transport, Xynoplex.Testing.Storage, Xynoplex.Testing.Sessions, Xynoplex.Testing.Liveness
+
+library internal
+  import: settings, context-propagation, crypto
+  build-depends: directory >=1.3 && <1.4, filepath >=1.5 && <1.6, time >=1.12 && <1.13
+  visibility: private
+  hs-source-dirs: src, internal, generated
+  c-sources: internal/Xynoplex/Internal/NativeStore.c
+  include-dirs: generated/Xynoplex/Internal/Generated
+  cc-options: -Wall -Wextra -Werror
+  if os(windows)
+    extra-libraries: advapi32, bcrypt
+  exposed-modules:
+    Xynoplex.Types
+    Xynoplex.Types.Presence
+    Xynoplex.Channels
+    Xynoplex.Running
+    Xynoplex.ErrorCodes
+    Xynoplex.Timing
+    Xynoplex.Timing.Settings
+    Xynoplex.Retry
+    Xynoplex.Discovery
+    Xynoplex.Discovery.Reasons
+    Xynoplex.Transport
+    Xynoplex.Transport.Facts
+    Xynoplex.StateValue
+    Xynoplex.Errors
+    Xynoplex.EventBus
+    Xynoplex.Bus
+    Xynoplex.Internal.Schema
+    Xynoplex.Internal.Required
+    Xynoplex.Internal.Cache
+    Xynoplex.Internal.Queries
+    Xynoplex.Internal.Delegation
+    Xynoplex.Internal.DelegatedVerbs
+    Xynoplex.Internal.Mark
+    Xynoplex.Internal.Yield
+    Xynoplex.Internal.Generated.OperationReports
+    Xynoplex.Internal.Browse
+    Xynoplex.Internal.Gather
+    Xynoplex.Internal.Match
+    Xynoplex.Internal.Refresh
+    Xynoplex.Internal.Text
+    Xynoplex.Internal.Utf8
+    Xynoplex.Internal.StreamFrame
+    Xynoplex.Internal.Broadcast
+    Xynoplex.Internal.Sse
+    Xynoplex.Internal.Running
+    Xynoplex.Internal.Delivery
+    Xynoplex.Internal.StateValue
+    Xynoplex.Internal.Transport
+    Xynoplex.Registry
+    Xynoplex.Registry.Resources
+    Xynoplex.Registry.Factory
+    Xynoplex.Internal.Generated.SessionFactoryOptions
+    Xynoplex.Registry.Identity
+    Xynoplex.State.SessionSignals
+    Xynoplex.State.Beckon
+    Xynoplex.State.Match
+    Xynoplex.State.Gather
+    Xynoplex.State.Mark
+    Xynoplex.State.Yield
+    Xynoplex.Testing
+    Xynoplex.Testing.Client
+    Xynoplex.Testing.Transport
+    Xynoplex.Testing.Storage
+    Xynoplex.Testing.Sessions
+    Xynoplex.Testing.Liveness
+    Xynoplex.Internal.Generated.Testing
+    Xynoplex.Internal.Generated.PendingAnnotation
+    Xynoplex.Internal.Generated.MarkMotivation
+    Xynoplex.State.HoverDwell
+    Xynoplex.State.Search
+    Xynoplex.Internal.Generated.SearchState
+    Xynoplex.Internal.StateTasks
+    Xynoplex.StoragePersister
+    Xynoplex.Internal.Coupled
+    Xynoplex.Internal.Persistence
+    Xynoplex.Internal.Kept
+    Xynoplex.Internal.Generated.CachePersistence
+    Xynoplex.Internal.Generated.Stored
+    Xynoplex.Identity
+    Xynoplex.Internal.Generated.Principals
+    Xynoplex.Internal.Generated.BusLog
+    Xynoplex.Internal.BusLog
+    Xynoplex.Internal.Generated.UnicodeCase
+    Xynoplex.Annotations
+    Xynoplex.Internal.Annotations.Id
+    Xynoplex.Internal.Annotations.Pdf
+    Xynoplex.Internal.Annotations.Spans
+    Xynoplex.Http
+    Xynoplex.Http.Discovery
+    Xynoplex.Content
+    Xynoplex.Gateway
+    Xynoplex.Frame
+    Xynoplex.Auth
+    Xynoplex.System
+    Xynoplex.Client
+    Xynoplex.JobFilter
+    Xynoplex.Claims
+    Xynoplex.HostName
+    Xynoplex.Worker
+    Xynoplex.Worker.Types
+    Xynoplex.Bind
+    Xynoplex.Beckon
+    Xynoplex.Job
+    Xynoplex.Cache
+    Xynoplex.Resources
+    Xynoplex.MediaTypes
+    Xynoplex.Browse
+    Xynoplex.Gather
+    Xynoplex.Match
+    Xynoplex.Delegation
+    Xynoplex.Mark
+    Xynoplex.Yield
+    Xynoplex.Tokens
+    Xynoplex.SessionStorage
+    Xynoplex.Session
+    Xynoplex.Issuer
+    Xynoplex.ClientAssertion
+    Xynoplex.ServiceToken
+    Xynoplex.SignIn
+    Xynoplex.SignInStore
+    Xynoplex.Registry.Stored
+    Xynoplex.Internal.Http
+    Xynoplex.Internal.HttpActor
+    Xynoplex.Internal.HttpContent
+    Xynoplex.Internal.Lifetime
+    Xynoplex.Http.Routes
+    Xynoplex.Internal.Generated.Text
+    Xynoplex.Internal.Generated.CacheRefresh
+    Xynoplex.Internal.Generated.Required
+    Xynoplex.Internal.Generated.Schemas
+  other-modules:
+    Paths_xynoplex
+    Xynoplex.Internal.Telemetry
+    Xynoplex.Internal.Codec
+    Xynoplex.Internal.Bus
+    Xynoplex.Internal.Local
+    Xynoplex.Internal.RetryPolicy
+    Xynoplex.Internal.Generated.OperationFailure
+    Xynoplex.Internal.Generated.OAuth
+    Xynoplex.Internal.Generated.SignInStore
+    Xynoplex.Internal.NativeStore
+    Xynoplex.Internal.SignIn
+    Xynoplex.Internal.Stored
+    Xynoplex.Internal.Generated.ClientAssertion
+    Xynoplex.Internal.Generated.ServiceProof
+    Xynoplex.Internal.Issuer
+    Xynoplex.Internal.Digest
+    Xynoplex.Internal.Generated.WorkerChannels
+    Xynoplex.Internal.Generated.Models.YieldJobFilter
+    Xynoplex.Internal.Generated.Models.YieldCloneResourceRequest
+    Xynoplex.Internal.Generated.Models.VoyageEmbeddingConfig
+    Xynoplex.Internal.Generated.Models.UserId
+    Xynoplex.Internal.Generated.Models.UserResponse
+    Xynoplex.Internal.Generated.Models.UploadResourceHeader0
+    Xynoplex.Internal.Generated.Models.UnitCursor
+    Xynoplex.Internal.Generated.Models.TraceCarrier
+    Xynoplex.Internal.Generated.Models.TextSpan
+    Xynoplex.Internal.Generated.Models.TextQuoteSelector
+    Xynoplex.Internal.Generated.Models.TextPositionSelector
+    Xynoplex.Internal.Generated.Models.TaggingJobParams
+    Xynoplex.Internal.Generated.Models.TagCategory
+    Xynoplex.Internal.Generated.Models.TagSchema
+    Xynoplex.Internal.Generated.Models.TagSchemaAddedPayload
+    Xynoplex.Internal.Generated.Models.TagSchemasProjection
+    Xynoplex.Internal.Generated.Models.TabVerdict
+    Xynoplex.Internal.Generated.Models.TabCheck
+    Xynoplex.Internal.Generated.Models.SvgSelector
+    Xynoplex.Internal.Generated.Models.SupportedMediaType
+    Xynoplex.Internal.Generated.Models.StoredSession
+    Xynoplex.Internal.Generated.Models.StatusResponse
+    Xynoplex.Internal.Generated.Models.SignIn
+    Xynoplex.Internal.Generated.Models.SettingsThemeChangedEvent
+    Xynoplex.Internal.Generated.Models.SettingsLocaleChangedEvent
+    Xynoplex.Internal.Generated.Models.SettingsHoverDelayChangedEvent
+    Xynoplex.Internal.Generated.Models.SessionLeftEvent
+    Xynoplex.Internal.Generated.Models.SessionJoinedEvent
+    Xynoplex.Internal.Generated.Models.SessionEndReason
+    Xynoplex.Internal.Generated.Models.SessionEnded
+    Xynoplex.Internal.Generated.Models.ResourceUpdatedPayload
+    Xynoplex.Internal.Generated.Models.ResourceUnarchivedPayload
+    Xynoplex.Internal.Generated.Models.ResourceMovedPayload
+    Xynoplex.Internal.Generated.Models.ResourceId
+    Xynoplex.Internal.Generated.Models.SmeltRebuildAnchorsCommand
+    Xynoplex.Internal.Generated.Models.SmeltSettled
+    Xynoplex.Internal.Generated.Models.StorageUriEntry
+    Xynoplex.Internal.Generated.Models.WeaveApplied
+    Xynoplex.Internal.Generated.Models.WeaveRebuildCommand
+    Xynoplex.Internal.Generated.Models.YieldCloneCreated
+    Xynoplex.Internal.Generated.Models.YieldClonePersistOk
+    Xynoplex.Internal.Generated.Models.YieldCloneTokenRequest
+    Xynoplex.Internal.Generated.Models.YieldCreateOk
+    Xynoplex.Internal.Generated.Models.YieldJobDone
+    Xynoplex.Internal.Generated.Models.YieldUpdateCommand
+    Xynoplex.Internal.Generated.Models.YieldUpdateOk
+    Xynoplex.Internal.Generated.Models.ResourceErrorEvent
+    Xynoplex.Internal.Generated.Models.ResourceArchivedPayload
+    Xynoplex.Internal.Generated.Models.RepresentationRemovedPayload
+    Xynoplex.Internal.Generated.Models.RepresentationNotFound
+    Xynoplex.Internal.Generated.Models.Representation
+    Xynoplex.Internal.Generated.Models.RepresentationAddedPayload
+    Xynoplex.Internal.Generated.Models.ReplyEventId
+    Xynoplex.Internal.Generated.Models.QuotedText
+    Xynoplex.Internal.Generated.Models.QdrantVectorsConfig
+    Xynoplex.Internal.Generated.Models.ProtectedResourceMetadata
+    Xynoplex.Internal.Generated.Models.Profile
+    Xynoplex.Internal.Generated.Models.ProfilesProjection
+    Xynoplex.Internal.Generated.Models.PrincipalProfiledPayload
+    Xynoplex.Internal.Generated.Models.PrincipalProfileCommand
+    Xynoplex.Internal.Generated.Models.PersistedEventId
+    Xynoplex.Internal.Generated.Models.PermissionDenied
+    Xynoplex.Internal.Generated.Models.PdfTextItem
+    Xynoplex.Internal.Generated.Models.PdfCoordinate
+    Xynoplex.Internal.Generated.Models.OpenResource
+    Xynoplex.Internal.Generated.Models.OllamaEmbeddingConfig
+    Xynoplex.Internal.Generated.Models.NeptuneGraphConfig
+    Xynoplex.Internal.Generated.Models.Neo4jGraphConfig
+    Xynoplex.Internal.Generated.Models.Motivation
+    Xynoplex.Internal.Generated.Models.MemoryVectorsConfig
+    Xynoplex.Internal.Generated.Models.VectorsConfig
+    Xynoplex.Internal.Generated.Models.MemoryGraphConfig
+    Xynoplex.Internal.Generated.Models.MediaTokenResponse
+    Xynoplex.Internal.Generated.Models.MediaTokenRequest
+    Xynoplex.Internal.Generated.Models.MatchSearchOptions
+    Xynoplex.Internal.Generated.Models.MatchResourcesRequest
+    Xynoplex.Internal.Generated.Models.MatchQuality
+    Xynoplex.Internal.Generated.Models.MarkUpdateEntityTypesCommand
+    Xynoplex.Internal.Generated.Models.MarkUnarchiveCommand
+    Xynoplex.Internal.Generated.Models.MarkJobFilter
+    Xynoplex.Internal.Generated.Models.MarkJobDone
+    Xynoplex.Internal.Generated.Models.MarkDelegateTimeoutEvent
+    Xynoplex.Internal.Generated.Models.MarkArchiveCommand
+    Xynoplex.Internal.Generated.Models.LogLevel
+    Xynoplex.Internal.Generated.Models.LogFormat
+    Xynoplex.Internal.Generated.Models.LocalEndpoint
+    Xynoplex.Internal.Generated.Models.LinkingJobParams
+    Xynoplex.Internal.Generated.Models.LimitRefusal
+    Xynoplex.Internal.Generated.Models.KbSessionStatus
+    Xynoplex.Internal.Generated.Models.KbReadKind
+    Xynoplex.Internal.Generated.Models.KbReadVerdict
+    Xynoplex.Internal.Generated.Models.KbRead
+    Xynoplex.Internal.Generated.Models.KbIdentityConflict
+    Xynoplex.Internal.Generated.Models.KbIdentity
+    Xynoplex.Internal.Generated.Models.KbDescription
+    Xynoplex.Internal.Generated.Models.JobType
+    Xynoplex.Internal.Generated.Models.JobProgressLoading
+    Xynoplex.Internal.Generated.Models.JobProgressGeneratingResource
+    Xynoplex.Internal.Generated.Models.JobProgressDetectingEntities
+    Xynoplex.Internal.Generated.Models.JobProgressCreatingTagAnnotations
+    Xynoplex.Internal.Generated.Models.JobProgressCreatingResource
+    Xynoplex.Internal.Generated.Models.JobProgressCreatingAnnotations
+    Xynoplex.Internal.Generated.Models.JobProgressCompleteGenerated
+    Xynoplex.Internal.Generated.Models.JobProgressCompleteCreated
+    Xynoplex.Internal.Generated.Models.JobProgressAnalyzingTags
+    Xynoplex.Internal.Generated.Models.JobProgressAnalyzing
+    Xynoplex.Internal.Generated.Models.JobProgressMessage
+    Xynoplex.Internal.Generated.Models.JobParams
+    Xynoplex.Internal.Generated.Models.JobId
+    Xynoplex.Internal.Generated.Models.JobMetadata
+    Xynoplex.Internal.Generated.Models.JobPending
+    Xynoplex.Internal.Generated.Models.JobStatusRequest
+    Xynoplex.Internal.Generated.Models.JobFilter
+    Xynoplex.Internal.Generated.Models.JobDeclined
+    Xynoplex.Internal.Generated.Models.JobResult
+    Xynoplex.Internal.Generated.Models.JobStoredResult
+    Xynoplex.Internal.Generated.Models.MarkJobResult
+    Xynoplex.Internal.Generated.Models.YieldJobResult
+    Xynoplex.Internal.Generated.Models.JobCreatedResultResponse
+    Xynoplex.Internal.Generated.Models.JobCreatedResult
+    Xynoplex.Internal.Generated.Models.JobComplete
+    Xynoplex.Internal.Generated.Models.JobClaimCommand
+    Xynoplex.Internal.Generated.Models.JobCheckpointCommand
+    Xynoplex.Internal.Generated.Models.JobCancelled
+    Xynoplex.Internal.Generated.Models.JobCancelResult
+    Xynoplex.Internal.Generated.Models.JobCancelResultBusEnvelope
+    Xynoplex.Internal.Generated.Models.JobCancelRequest
+    Xynoplex.Internal.Generated.Models.JobAssignedPayload
+    Xynoplex.Internal.Generated.Models.JobAssignCommand
+    Xynoplex.Internal.Generated.Models.JanusGraphConfig
+    Xynoplex.Internal.Generated.Models.IssuerEndpoints
+    Xynoplex.Internal.Generated.Models.IssuedTokens
+    Xynoplex.Internal.Generated.Models.InferenceLimitsRequest
+    Xynoplex.Internal.Generated.Models.InferenceLimits
+    Xynoplex.Internal.Generated.Models.HttpEndpoint
+    Xynoplex.Internal.Generated.Models.KbEndpoint
+    Xynoplex.Internal.Generated.Models.KbTarget
+    Xynoplex.Internal.Generated.Models.KnowledgeBase
+    Xynoplex.Internal.Generated.Models.NewKnowledgeBase
+    Xynoplex.Internal.Generated.Models.SignedIn
+    Xynoplex.Internal.Generated.Models.PendingAuthorization
+    Xynoplex.Internal.Generated.Models.HighlightingJobParams
+    Xynoplex.Internal.Generated.Models.HealthResponse
+    Xynoplex.Internal.Generated.Models.GraphResourceNode
+    Xynoplex.Internal.Generated.Models.GraphConfig
+    Xynoplex.Internal.Generated.Models.GetTagSchemasResponse
+    Xynoplex.Internal.Generated.Models.GetOpenApiDocumentResponse
+    Xynoplex.Internal.Generated.Models.GetEntityTypesResponse
+    Xynoplex.Internal.Generated.Models.GenerationJobRequest
+    Xynoplex.Internal.Generated.Models.YieldJobQueuedEvent
+    Xynoplex.Internal.Generated.Models.GatherResourceRequestOptions
+    Xynoplex.Internal.Generated.Models.GatherResourceRequest
+    Xynoplex.Internal.Generated.Models.GatherResourceOptions
+    Xynoplex.Internal.Generated.Models.GatherResourceFailed
+    Xynoplex.Internal.Generated.Models.GatherReferencedByRequest
+    Xynoplex.Internal.Generated.Models.GatherAnnotationOptions
+    Xynoplex.Internal.Generated.Models.GatewayConfig
+    Xynoplex.Internal.Generated.Models.FrameAddTagSchemaCommand
+    Xynoplex.Internal.Generated.Models.FrameAddEntityTypeCommand
+    Xynoplex.Internal.Generated.Models.FragmentSelector
+    Xynoplex.Internal.Generated.Models.Selector
+    Xynoplex.Internal.Generated.Models.FileEntry
+    Xynoplex.Internal.Generated.Models.FailureClass
+    Xynoplex.Internal.Generated.Models.JobFailed
+    Xynoplex.Internal.Generated.Models.ExtractionDeclined
+    Xynoplex.Internal.Generated.Models.ExtractedText
+    Xynoplex.Internal.Generated.Models.ExtractionOutcome
+    Xynoplex.Internal.Generated.Models.Expected
+    Xynoplex.Internal.Generated.Models.SignInOutcome
+    Xynoplex.Internal.Generated.Models.EventMetadata
+    Xynoplex.Internal.Generated.Models.StoredEventResponse
+    Xynoplex.Internal.Generated.Models.ErrorResponse
+    Xynoplex.Internal.Generated.Models.EphemeralEventId
+    Xynoplex.Internal.Generated.Models.EntityTypesProjection
+    Xynoplex.Internal.Generated.Models.EntityTypeAddedPayload
+    Xynoplex.Internal.Generated.Models.EntityTagChangedPayload
+    Xynoplex.Internal.Generated.Models.Engine
+    Xynoplex.Internal.Generated.Models.EngineEntry
+    Xynoplex.Internal.Generated.Models.EngineLimits
+    Xynoplex.Internal.Generated.Models.InferenceLimitsResult
+    Xynoplex.Internal.Generated.Models.EngineWithLimits
+    Xynoplex.Internal.Generated.Models.LibrarianEngineConfig
+    Xynoplex.Internal.Generated.Models.WorkerEngineConfig
+    Xynoplex.Internal.Generated.Models.WorkerKnowledgeBaseConfig
+    Xynoplex.Internal.Generated.Models.WorkerConfig
+    Xynoplex.Internal.Generated.Models.WorkerEngineHealth
+    Xynoplex.Internal.Generated.Models.WorkerKnowledgeBaseHealth
+    Xynoplex.Internal.Generated.Models.WorkerHealth
+    Xynoplex.Internal.Generated.Models.EmptyBusPayload
+    Xynoplex.Internal.Generated.Models.EmitOnBusHeader0
+    Xynoplex.Internal.Generated.Models.EmbeddingConfig
+    Xynoplex.Internal.Generated.Models.LibrarianConfig
+    Xynoplex.Internal.Generated.Models.DurabilityEvidence
+    Xynoplex.Internal.Generated.Models.MarkJobCompleteCommand
+    Xynoplex.Internal.Generated.Models.DispatcherHealth
+    Xynoplex.Internal.Generated.Models.DispatcherConfig
+    Xynoplex.Internal.Generated.Models.DiscoveredKB
+    Xynoplex.Internal.Generated.Models.DiscoveryDocument
+    Xynoplex.Internal.Generated.Models.DirEntry
+    Xynoplex.Internal.Generated.Models.DirectoryEntry
+    Xynoplex.Internal.Generated.Models.DeviceCode
+    Xynoplex.Internal.Generated.Models.CursorsPath
+    Xynoplex.Internal.Generated.Models.SmelterConfig
+    Xynoplex.Internal.Generated.Models.WeaverConfig
+    Xynoplex.Internal.Generated.Models.CreateResourceResponse
+    Xynoplex.Internal.Generated.Models.ContextualSummaryResponse
+    Xynoplex.Internal.Generated.Models.ContextualSummaryResponseBusEnvelope
+    Xynoplex.Internal.Generated.Models.ContentFormat
+    Xynoplex.Internal.Generated.Models.YieldCloneCreateCommand
+    Xynoplex.Internal.Generated.Models.YieldClonePersistCommand
+    Xynoplex.Internal.Generated.Models.ConnectionIdentity
+    Xynoplex.Internal.Generated.Models.CommentingJobParams
+    Xynoplex.Internal.Generated.Models.CommandError
+    Xynoplex.Internal.Generated.Models.BusSubscribeRequest
+    Xynoplex.Internal.Generated.Models.BusResumeGap
+    Xynoplex.Internal.Generated.Models.BusPingMessage
+    Xynoplex.Internal.Generated.Models.BusFrame
+    Xynoplex.Internal.Generated.Models.BusEventMessage
+    Xynoplex.Internal.Generated.Models.BusStreamMessage
+    Xynoplex.Internal.Generated.Models.BusEmitRequest
+    Xynoplex.Internal.Generated.Models.BusEmitAccepted
+    Xynoplex.Internal.Generated.Models.BrowseTagSchemasResult
+    Xynoplex.Internal.Generated.Models.BrowseTagSchemasRequest
+    Xynoplex.Internal.Generated.Models.BrowseRouterPushEvent
+    Xynoplex.Internal.Generated.Models.BrowseResourcesRequest
+    Xynoplex.Internal.Generated.Models.BrowseResourceViewedEvent
+    Xynoplex.Internal.Generated.Models.BrowseResourceRequest
+    Xynoplex.Internal.Generated.Models.BrowseResourceReorderEvent
+    Xynoplex.Internal.Generated.Models.BrowseResourceOpenEvent
+    Xynoplex.Internal.Generated.Models.BrowseResourceCloseEvent
+    Xynoplex.Internal.Generated.Models.BrowseProfilesResult
+    Xynoplex.Internal.Generated.Models.BrowseProfilesRequest
+    Xynoplex.Internal.Generated.Models.BrowsePanelToggleEvent
+    Xynoplex.Internal.Generated.Models.BrowseLinkClickedEvent
+    Xynoplex.Internal.Generated.Models.BrowseKbResult
+    Xynoplex.Internal.Generated.Models.BrowseKbRequest
+    Xynoplex.Internal.Generated.Models.BrowseFilesResponse
+    Xynoplex.Internal.Generated.Models.BrowseExternalNavigateEvent
+    Xynoplex.Internal.Generated.Models.BrowseEventsRequest
+    Xynoplex.Internal.Generated.Models.BrowseEntityTypesResult
+    Xynoplex.Internal.Generated.Models.BrowseEntityTypesRequest
+    Xynoplex.Internal.Generated.Models.BrowseEntityTypeClickedEvent
+    Xynoplex.Internal.Generated.Models.BrowseEnginesResult
+    Xynoplex.Internal.Generated.Models.BrowseEnginesRequest
+    Xynoplex.Internal.Generated.Models.BrowseDirectoryResultResponse
+    Xynoplex.Internal.Generated.Models.BrowseDirectoryResult
+    Xynoplex.Internal.Generated.Models.BrowseDirectoryRequest
+    Xynoplex.Internal.Generated.Models.BrowseDirectoryFailed
+    Xynoplex.Internal.Generated.Models.BodyPurpose
+    Xynoplex.Internal.Generated.Models.SpecificResource
+    Xynoplex.Internal.Generated.Models.TextualBody
+    Xynoplex.Internal.Generated.Models.BodyOperationReplace
+    Xynoplex.Internal.Generated.Models.BodyOperationRemove
+    Xynoplex.Internal.Generated.Models.BodyOperationAdd
+    Xynoplex.Internal.Generated.Models.UpdateAnnotationBodyRequest
+    Xynoplex.Internal.Generated.Models.BindBodyUpdated
+    Xynoplex.Internal.Generated.Models.BeginAuthorizationOptions
+    Xynoplex.Internal.Generated.Models.AssessingJobParams
+    Xynoplex.Internal.Generated.Models.MarkJobParams
+    Xynoplex.Internal.Generated.Models.MarkJobCreateCommand
+    Xynoplex.Internal.Generated.Models.MarkJobQueuedEvent
+    Xynoplex.Internal.Generated.Models.JobQueuedEvent
+    Xynoplex.Internal.Generated.Models.ArchivistStream
+    Xynoplex.Internal.Generated.Models.ArchivistStreamsResponse
+    Xynoplex.Internal.Generated.Models.ArchivistHealth
+    Xynoplex.Internal.Generated.Models.ArchivistEventsResponse
+    Xynoplex.Internal.Generated.Models.ArchivistEngines
+    Xynoplex.Internal.Generated.Models.ArchivistConfig
+    Xynoplex.Internal.Generated.Models.AnnotationSelector
+    Xynoplex.Internal.Generated.Models.AnnotationTarget
+    Xynoplex.Internal.Generated.Models.MarkRequestedEvent
+    Xynoplex.Internal.Generated.Models.AnnotationId
+    Xynoplex.Internal.Generated.Models.AnnotationRemovedPayload
+    Xynoplex.Internal.Generated.Models.BeckonFocusEvent
+    Xynoplex.Internal.Generated.Models.BeckonHoverEvent
+    Xynoplex.Internal.Generated.Models.BeckonSparkleEvent
+    Xynoplex.Internal.Generated.Models.BindInitiateCommand
+    Xynoplex.Internal.Generated.Models.BrowseAnnotationHistoryRequest
+    Xynoplex.Internal.Generated.Models.BrowseAnnotationRequest
+    Xynoplex.Internal.Generated.Models.BrowseClickEvent
+    Xynoplex.Internal.Generated.Models.BrowsePanelOpenEvent
+    Xynoplex.Internal.Generated.Models.GatherAnnotationRequest
+    Xynoplex.Internal.Generated.Models.GatherFailed
+    Xynoplex.Internal.Generated.Models.GatherSummaryRequest
+    Xynoplex.Internal.Generated.Models.GetReferencedByResponseReferencedByItem
+    Xynoplex.Internal.Generated.Models.GetReferencedByResponse
+    Xynoplex.Internal.Generated.Models.GatherReferencedByResult
+    Xynoplex.Internal.Generated.Models.JobCancelCommand
+    Xynoplex.Internal.Generated.Models.JobCompletedPayload
+    Xynoplex.Internal.Generated.Models.JobFailCommand
+    Xynoplex.Internal.Generated.Models.JobFailedPayload
+    Xynoplex.Internal.Generated.Models.JobProgress
+    Xynoplex.Internal.Generated.Models.JobStoredProgress
+    Xynoplex.Internal.Generated.Models.JobRunning
+    Xynoplex.Internal.Generated.Models.Job
+    Xynoplex.Internal.Generated.Models.JobRecord
+    Xynoplex.Internal.Generated.Models.JobClaimedResult
+    Xynoplex.Internal.Generated.Models.JobStatusResponse
+    Xynoplex.Internal.Generated.Models.JobStatusResult
+    Xynoplex.Internal.Generated.Models.JobReportProgressCommand
+    Xynoplex.Internal.Generated.Models.JobStartCommand
+    Xynoplex.Internal.Generated.Models.JobStartedPayload
+    Xynoplex.Internal.Generated.Models.MarkCommitOk
+    Xynoplex.Internal.Generated.Models.MarkCreateOkResponse
+    Xynoplex.Internal.Generated.Models.MarkCreateOk
+    Xynoplex.Internal.Generated.Models.MarkDeleteCommand
+    Xynoplex.Internal.Generated.Models.MarkDeleteOk
+    Xynoplex.Internal.Generated.Models.MarkUpdateBodyCommand
+    Xynoplex.Internal.Generated.Models.MatchSearchFailed
+    Xynoplex.Internal.Generated.Models.ResourceUpload
+    Xynoplex.Internal.Generated.Models.ResourceUploadMetadata
+    Xynoplex.Internal.Generated.Models.SemanticMatch
+    Xynoplex.Internal.Generated.Models.YieldJobCompleteCommand
+    Xynoplex.Internal.Generated.Models.JobCompleteCommand
+    Xynoplex.Internal.Generated.Models.AnnotationBodyUpdatedPayload
+    Xynoplex.Internal.Generated.Models.AnnotationBody
+    Xynoplex.Internal.Generated.Models.BindBodyOperation
+    Xynoplex.Internal.Generated.Models.BindUpdateBodyCommand
+    Xynoplex.Internal.Generated.Models.AnnotationBodies
+    Xynoplex.Internal.Generated.Models.CreateAnnotationRequest
+    Xynoplex.Internal.Generated.Models.MarkCreateRequest
+    Xynoplex.Internal.Generated.Models.MarkSubmitEvent
+    Xynoplex.Internal.Generated.Models.AnchoredTextStamp
+    Xynoplex.Internal.Generated.Models.AnchoredTextExtractedEntry
+    Xynoplex.Internal.Generated.Models.AnchoredTextEntries
+    Xynoplex.Internal.Generated.Models.AnchoredTextDeclinedEntry
+    Xynoplex.Internal.Generated.Models.AnchoredTextEntry
+    Xynoplex.Internal.Generated.Models.AnchoredTextWrite
+    Xynoplex.Internal.Generated.Models.AnchoredTextAbsent
+    Xynoplex.Internal.Generated.Models.AnchoredTextAnswer
+    Xynoplex.Internal.Generated.Models.AnchoredText
+    Xynoplex.Internal.Generated.Models.AnchorMethod
+    Xynoplex.Internal.Generated.Models.ReconciledSpan
+    Xynoplex.Internal.Generated.Models.AgentSoftware
+    Xynoplex.Internal.Generated.Models.AgentPerson
+    Xynoplex.Internal.Generated.Models.AgentOrganization
+    Xynoplex.Internal.Generated.Models.Agent
+    Xynoplex.Internal.Generated.Models.Annotation
+    Xynoplex.Internal.Generated.Models.AnnotationAddedPayload
+    Xynoplex.Internal.Generated.Models.EnrichedResourceEvent
+    Xynoplex.Internal.Generated.Models.GetAnnotationsResponse
+    Xynoplex.Internal.Generated.Models.GraphAnnotationNode
+    Xynoplex.Internal.Generated.Models.KnowledgeGraph
+    Xynoplex.Internal.Generated.Models.MarkCommitCommand
+    Xynoplex.Internal.Generated.Models.ResourceAnnotations
+    Xynoplex.Internal.Generated.Models.AttributedEvent
+    Xynoplex.Internal.Generated.Models.GetAnnotationHistoryResponse
+    Xynoplex.Internal.Generated.Models.BrowseAnnotationHistoryResult
+    Xynoplex.Internal.Generated.Models.GetEventsResponse
+    Xynoplex.Internal.Generated.Models.BrowseEventsResult
+    Xynoplex.Internal.Generated.Models.ResourceClonedPayload
+    Xynoplex.Internal.Generated.Models.ResourceCreatedPayload
+    Xynoplex.Internal.Generated.Models.ResourceDescriptor
+    Xynoplex.Internal.Generated.Models.BrowseResourceResult
+    Xynoplex.Internal.Generated.Models.CloneResourceWithTokenResponse
+    Xynoplex.Internal.Generated.Models.CloneResourceWithTokenResponseBusEnvelope
+    Xynoplex.Internal.Generated.Models.GatheredContext
+    Xynoplex.Internal.Generated.Models.GatherAnnotationComplete
+    Xynoplex.Internal.Generated.Models.GatherResourceComplete
+    Xynoplex.Internal.Generated.Models.GenerationJobParams
+    Xynoplex.Internal.Generated.Models.YieldJobCreateCommand
+    Xynoplex.Internal.Generated.Models.JobCreateCommand
+    Xynoplex.Internal.Generated.Models.MatchSearchRequest
+    Xynoplex.Internal.Generated.Models.GetAnnotationResponse
+    Xynoplex.Internal.Generated.Models.BrowseAnnotationResult
+    Xynoplex.Internal.Generated.Models.GetResourceByTokenResponse
+    Xynoplex.Internal.Generated.Models.GetResourceByTokenResponseBusEnvelope
+    Xynoplex.Internal.Generated.Models.GetResourceResponse
+    Xynoplex.Internal.Generated.Models.ListResourcesResponse
+    Xynoplex.Internal.Generated.Models.BrowseResourcesResult
+    Xynoplex.Internal.Generated.Models.MatchResourcesResponse
+    Xynoplex.Internal.Generated.Models.MatchResourcesResult
+    Xynoplex.Internal.Generated.Models.ResourceView
+    Xynoplex.Internal.Generated.Models.ScoredResource
+    Xynoplex.Internal.Generated.Models.MatchSearchResult
+    Xynoplex.Internal.Generated.Models.YieldCreateCommand
+  autogen-modules: Paths_xynoplex
+
+executable xynoplex-codegen
+  import: settings
+  main-is: Main.hs
+  hs-source-dirs: codegen, internal
+  other-modules: Xynoplex.Internal.Schema, Facts, TransportFacts, HttpFacts, WorkerFacts, WorkerTypes
+  ghc-options: -threaded
+  build-depends: mtl >=2.3 && <2.4, directory >=1.3 && <1.4, filepath >=1.5 && <1.6
+
+test-suite schema-cases
+  import: settings, context-propagation, crypto
+  build-tool-depends: hpc-codecov:hpc-codecov ==0.6.4.1
+  type: exitcode-stdio-1.0
+  main-is: Main.hs
+  hs-source-dirs: test
+  other-modules: Xynoplex.Internal.Generated.RoundTrip, Xynoplex.Internal.Generated.ChannelRoundTrip, Xynoplex.Internal.Generated.ErrorRoundTrip, Xynoplex.Internal.Generated.TimingValues, Xynoplex.Internal.Generated.DiscoveryReasonRoundTrip, Runtime, Discovery, BusCases, SchemaCases, HttpCases, HttpDiscoveryCases, AnnotationCases, IdentityCases, BusLogCases, PersistenceCases, PersistedCases, GatewayStage, CacheDocumentCases, StateUnitCases, FlowCases, ActorCases, TestingCases, RegistryCases, OpenResourceCases, RegistryErrorsCases, RegistryRuntimeCases, LifetimeCases, WorkerCases, GatewayCases, HeldCases, SurfaceCases, CacheCases, ControlledTime, ClockCases, ResourceCases, FrameCases, RefreshCases, TextCases, DelegationCases, TokenStorageCases, SessionCases, IssuerCases, ClientAssertionCases, SignInStoreCases, TestProcess
+  ghc-options: -threaded
+  build-depends: xynoplex:internal, process >=1.6 && <1.7, directory >=1.3 && <1.4, filepath >=1.5 && <1.6, time >=1.12 && <1.13
+
+executable xynoplex-haskell-wire-driver
+  import: settings, context-propagation
+  main-is: Main.hs
+  other-modules: DriverProtocol
+  hs-source-dirs: conformance
+  ghc-options: -threaded
+  build-depends: xynoplex, http-client >=0.7 && <0.8, uuid >=1.3 && <1.4, uuid-types >=1.0 && <1.1, random >=1.3 && <1.4, time >=1.12 && <1.13, hs-opentelemetry-sdk >=1.0 && <1.1
+
+executable xynoplex-haskell-live-driver
+  import: settings, context-propagation
+  main-is: LiveMain.hs
+  other-modules: DriverProtocol, LiveQueries
+  hs-source-dirs: conformance
+  ghc-options: -threaded
+  build-depends: xynoplex, http-client >=0.7 && <0.8, uuid >=1.3 && <1.4, uuid-types >=1.0 && <1.1, random >=1.3 && <1.4, time >=1.12 && <1.13

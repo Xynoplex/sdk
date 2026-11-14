@@ -1,7 +1,7 @@
 /**
  * The locale registry's generator refuses a registry that cannot be meant.
  *
- * protocol/specs/src/locales/registry.json is the authority for which languages Semiont
+ * protocol/specs/src/locales/registry.json is the authority for which languages Xynoplex
  * supports and what each is called, so a generated row cannot drift from it.
  * What is left to hold is the registry itself: each case hands the generator
  * the committed one with one fault and expects a refusal that names it.

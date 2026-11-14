@@ -1,4 +1,4 @@
-package semiont
+package xynoplex
 
 // Following a job from its creation to its end (protocol/contract/JOBS.md §
 // Following a job).
@@ -42,9 +42,9 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/bus"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/internal/required"
+	"github.com/Xynoplex/sdk/go/api"
+	"github.com/Xynoplex/sdk/go/bus"
+	"github.com/Xynoplex/sdk/go/internal/required"
 )
 
 // JobEvent is what a followed job reports, and how it ends: a JobCreated

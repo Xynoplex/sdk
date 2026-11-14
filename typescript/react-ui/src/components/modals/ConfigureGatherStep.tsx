@@ -42,25 +42,25 @@ export function ConfigureGatherStep({ onGather, translations: t, children }: Con
   };
 
   return (
-    <form onSubmit={handleSubmit} className="semiont-form">
-      <p className="semiont-form__helper-text">{t.intro}</p>
+    <form onSubmit={handleSubmit} className="xynoplex-form">
+      <p className="xynoplex-form__helper-text">{t.intro}</p>
 
-      <div className="semiont-form__checkbox-field">
-        <label className="semiont-form__checkbox-label">
+      <div className="xynoplex-form__checkbox-field">
+        <label className="xynoplex-form__checkbox-label">
           <input type="checkbox" checked={includeContent} onChange={(e) => setIncludeContent(e.target.checked)} />
           {t.includeContent}
         </label>
       </div>
-      <div className="semiont-form__checkbox-field">
-        <label className="semiont-form__checkbox-label">
+      <div className="xynoplex-form__checkbox-field">
+        <label className="xynoplex-form__checkbox-label">
           <input type="checkbox" checked={includeSummary} onChange={(e) => setIncludeSummary(e.target.checked)} />
           {t.includeSummary}
         </label>
       </div>
 
-      <div className="semiont-form__inline-row">
-        <div className="semiont-form__field semiont-form__field--inline semiont-form__field--narrow">
-          <label htmlFor="gather-depth" className="semiont-form__label">{t.depth}</label>
+      <div className="xynoplex-form__inline-row">
+        <div className="xynoplex-form__field xynoplex-form__field--inline xynoplex-form__field--narrow">
+          <label htmlFor="gather-depth" className="xynoplex-form__label">{t.depth}</label>
           <input
             id="gather-depth"
             type="number"
@@ -68,11 +68,11 @@ export function ConfigureGatherStep({ onGather, translations: t, children }: Con
             max="3"
             value={depth}
             onChange={(e) => setDepth(parseInt(e.target.value))}
-            className="semiont-input"
+            className="xynoplex-input"
           />
         </div>
-        <div className="semiont-form__field semiont-form__field--inline semiont-form__field--narrow">
-          <label htmlFor="gather-max" className="semiont-form__label">{t.maxResources}</label>
+        <div className="xynoplex-form__field xynoplex-form__field--inline xynoplex-form__field--narrow">
+          <label htmlFor="gather-max" className="xynoplex-form__label">{t.maxResources}</label>
           <input
             id="gather-max"
             type="number"
@@ -80,7 +80,7 @@ export function ConfigureGatherStep({ onGather, translations: t, children }: Con
             max="50"
             value={maxResources}
             onChange={(e) => setMaxResources(parseInt(e.target.value))}
-            className="semiont-input"
+            className="xynoplex-input"
           />
         </div>
       </div>

@@ -1,11 +1,11 @@
-"""The registry of knowledge bases an application holds (`semiont.registry`).
+"""The registry of knowledge bases an application holds (`xynoplex.registry`).
 
 The list, the active one and its session, a sign-in landing on the entry for
 the knowledge base that answered, what is open in each, what a session's
 arrival checks, what its transport fails at, and how a registry ends; and
 what it keeps in its storage.
 
-Sessions are built by `semiont.testing.ScriptedSessions`, each over a
+Sessions are built by `xynoplex.testing.ScriptedSessions`, each over a
 scripted transport: a test says what each knowledge base answers when asked
 who it is and what of each resource, and reads what was asked. The storage is
 a `SharedStorage`, so a second context can write it as another window would.
@@ -24,13 +24,13 @@ from pydantic import JsonValue
 from spec import SPEC, JsonObject, objects, read, strings, text
 from tokens import expired, token
 
-from semiont.errors import TransportError
-from semiont.identifiers import ResourceId
-from semiont.registry import (
+from xynoplex.errors import TransportError
+from xynoplex.identifiers import ResourceId
+from xynoplex.registry import (
     Expected,
     KbReadVerdict,
-    SemiontBrowser,
-    SemiontBrowserConfig,
+    XynoplexBrowser,
+    XynoplexBrowserConfig,
     SessionFactory,
     SessionFactoryOptions,
     SignedIn,
@@ -43,10 +43,10 @@ from semiont.registry import (
     store_session,
     stored_session,
 )
-from semiont.session import HeldSignIn, MemorySignIn, SemiontSession, SignInKept
-from semiont.session_signals import KbIdentityConflict, PermissionDenied, SessionEnded, SessionSignals
-from semiont.storage import MemoryStorage, SessionStorage
-from semiont.stored import (
+from xynoplex.session import HeldSignIn, MemorySignIn, XynoplexSession, SignInKept
+from xynoplex.session_signals import KbIdentityConflict, PermissionDenied, SessionEnded, SessionSignals
+from xynoplex.storage import MemoryStorage, SessionStorage
+from xynoplex.stored import (
     ACTIVE_KEY,
     KEPT_QUERIES,
     KNOWLEDGE_BASES_KEY,
@@ -60,10 +60,10 @@ from semiont.stored import (
     person_key,
     session_key,
 )
-from semiont.testing import FaultyTransport, ScriptedSessions, SharedStorage
-from semiont.transport import Transport
-from semiont.types import HttpEndpoint, KbDescription, KbRead, KnowledgeBase, NewKnowledgeBase, UserResponse
-from semiont.watched import Watched, reached
+from xynoplex.testing import FaultyTransport, ScriptedSessions, SharedStorage
+from xynoplex.transport import Transport
+from xynoplex.types import HttpEndpoint, KbDescription, KbRead, KnowledgeBase, NewKnowledgeBase, UserResponse
+from xynoplex.watched import Watched, reached
 
 KB_A: Final = "kb-a"
 KB_B: Final = "kb-b"
@@ -185,7 +185,7 @@ def tokens(refresh: str, person: str | None = None) -> StoredSession:
     return StoredSession(
         access=token(3600, 1),
         refresh=refresh,
-        client_id="semiont-browser",
+        client_id="xynoplex-browser",
         token_endpoint="https://issuer.test/token",
         revocation_endpoint="https://issuer.test/revoke",
         person_key=person,
@@ -216,10 +216,10 @@ class World:
             self.storage.set(ACTIVE_KEY, kbs[0].id)
         return self
 
-    def browser(self, storage: SessionStorage | None = None) -> SemiontBrowser:
+    def browser(self, storage: SessionStorage | None = None) -> XynoplexBrowser:
         """A registry over `storage`, or this world's."""
-        return SemiontBrowser(
-            SemiontBrowserConfig(storage=self.storage if storage is None else storage, session_factory=self.factory.sessions)
+        return XynoplexBrowser(
+            XynoplexBrowserConfig(storage=self.storage if storage is None else storage, session_factory=self.factory.sessions)
         )
 
     def stored(self, key: str) -> JsonValue:
@@ -254,7 +254,7 @@ async def settle() -> None:
     await turns(200)
 
 
-async def live(browser: SemiontBrowser) -> SemiontSession[Transport]:
+async def live(browser: XynoplexBrowser) -> XynoplexSession[Transport]:
     """The registry's live session, once it has one, with what its arrival starts let run: who it is, and what is open."""
     session = await soon(reached(browser.active_session, lambda session: session is not None))
     assert session is not None
@@ -266,36 +266,36 @@ async def live(browser: SemiontBrowser) -> SemiontSession[Transport]:
 # reading of it across the awaits that change it.
 
 
-def kbs_of(browser: SemiontBrowser) -> tuple[KnowledgeBase, ...]:
+def kbs_of(browser: XynoplexBrowser) -> tuple[KnowledgeBase, ...]:
     return browser.kbs.value
 
 
-def active_of(browser: SemiontBrowser) -> str | None:
+def active_of(browser: XynoplexBrowser) -> str | None:
     return browser.active_kb_id.value
 
 
-def activating(browser: SemiontBrowser) -> bool:
+def activating(browser: XynoplexBrowser) -> bool:
     return browser.session_activating.value
 
 
-def signals_of(browser: SemiontBrowser) -> SessionSignals | None:
+def signals_of(browser: XynoplexBrowser) -> SessionSignals | None:
     return browser.active_signals.value
 
 
-def viewed(browser: SemiontBrowser) -> ResourceId | None:
+def viewed(browser: XynoplexBrowser) -> ResourceId | None:
     return browser.last_viewed_resource.value
 
 
-def identity_of(browser: SemiontBrowser) -> str | None:
+def identity_of(browser: XynoplexBrowser) -> str | None:
     return browser.identity_token.value
 
 
-def session_of(browser: SemiontBrowser) -> str | None:
+def session_of(browser: XynoplexBrowser) -> str | None:
     session = browser.active_session.value
     return None if session is None else session.kb.id
 
 
-def shown(browser: SemiontBrowser) -> list[str]:
+def shown(browser: XynoplexBrowser) -> list[str]:
     return [str(tab.id) for tab in browser.open_resources.value]
 
 
@@ -307,17 +307,17 @@ def signed_in(at: HttpEndpoint, said: JsonObject, refresh: str) -> SignedIn:
     return SignedIn(endpoint=at, description=KbDescription.model_validate(said), session=tokens(refresh))
 
 
-def conflict(browser: SemiontBrowser) -> KbIdentityConflict | None:
+def conflict(browser: XynoplexBrowser) -> KbIdentityConflict | None:
     signals = signals_of(browser)
     return None if signals is None else signals.kb_identity_conflict.value
 
 
-def session_ended(browser: SemiontBrowser) -> SessionEnded | None:
+def session_ended(browser: XynoplexBrowser) -> SessionEnded | None:
     signals = signals_of(browser)
     return None if signals is None else signals.session_ended.value
 
 
-def denied(browser: SemiontBrowser) -> PermissionDenied | None:
+def denied(browser: XynoplexBrowser) -> PermissionDenied | None:
     signals = signals_of(browser)
     return None if signals is None else signals.permission_denied.value
 
@@ -334,7 +334,7 @@ async def ended[T](watched: Watched[T]) -> bool:
     return seen == 1
 
 
-async def watch_sessions(browser: SemiontBrowser, seen: list[str | None]) -> None:
+async def watch_sessions(browser: XynoplexBrowser, seen: list[str | None]) -> None:
     """Record the knowledge base of each session the registry shows, none for none."""
     async for session in browser.active_session:
         seen.append(None if session is None else session.kb.id)
@@ -358,7 +358,7 @@ def test_a_stored_value_that_lacks_a_member_of_a_session_is_none() -> None:
     storage = MemoryStorage()
     storage.set(session_key(KB_A), '{"access":"a","refresh":"r","tokenEndpoint":"https://issuer.test/token"}')
     assert stored_session(storage, KB_A) is None
-    storage.set(session_key(KB_A), '{"access":"a","refresh":"r","clientId":"semiont-browser","tokenEndpoint":"https://issuer.test/token"}')
+    storage.set(session_key(KB_A), '{"access":"a","refresh":"r","clientId":"xynoplex-browser","tokenEndpoint":"https://issuer.test/token"}')
     read = stored_session(storage, KB_A)
     assert read is not None
     assert read.revocation_endpoint is None
@@ -397,7 +397,7 @@ def test_a_renewal_is_kept_against_what_is_stored_then() -> None:
     async def scenario() -> None:
         storage = MemoryStorage()
         kept = kept_in(storage, KB_A)
-        read = HeldSignIn(access="a1", refresh="r1", client_id="semiont-browser", token_endpoint="https://issuer.test/token")
+        read = HeldSignIn(access="a1", refresh="r1", client_id="xynoplex-browser", token_endpoint="https://issuer.test/token")
 
         # A renewal of nothing stored is not kept, and writes nothing.
         assert await kept.renewed(read, "a2", "r2") is None
@@ -442,12 +442,12 @@ def test_a_new_sign_in_kept_in_a_registrys_storage_forgets_what_was_kept_for_the
 
         # Over a sign-in that names nobody, no entry is known to be anyone's: none is deleted.
         store_session(storage, KB_A, tokens("r"))
-        await kept.keep(HeldSignIn(access="a1", refresh="r1", client_id="semiont-browser", token_endpoint="https://issuer.test/token"))
+        await kept.keep(HeldSignIn(access="a1", refresh="r1", client_id="xynoplex-browser", token_endpoint="https://issuer.test/token"))
         assert held_now() == {key: f"kept under {key}" for key in (*theirs, *others)}
 
         # Over one that names jo, every entry of jo's on the knowledge base goes, and no other person's, nor jo's on another.
         store_session(storage, KB_A, tokens("r", JO))
-        new = HeldSignIn(access="b1", refresh="s1", client_id="semiont-browser", token_endpoint="https://issuer.test/token")
+        new = HeldSignIn(access="b1", refresh="s1", client_id="xynoplex-browser", token_endpoint="https://issuer.test/token")
         await kept.keep(new)
         assert held_now() == {**dict.fromkeys(theirs), **{key: f"kept under {key}" for key in others}}
         # The new sign-in is the one kept, and names nobody until a gateway names its person.
@@ -466,7 +466,7 @@ def kept_where(where: str) -> tuple[SignInKept, MemoryStorage]:
 def test_the_person_the_gateway_named_is_recorded_on_the_sign_in_it_was_asked_about_and_on_no_other(where: str) -> None:
     async def scenario() -> None:
         kept, storage = kept_where(where)
-        signed_in = HeldSignIn(access="a1", refresh="r1", client_id="semiont-browser", token_endpoint="https://issuer.test/token")
+        signed_in = HeldSignIn(access="a1", refresh="r1", client_id="xynoplex-browser", token_endpoint="https://issuer.test/token")
 
         # Nothing kept: nobody is recorded.
         assert not await kept.record_person_key("a1", JO)
@@ -483,7 +483,7 @@ def test_the_person_the_gateway_named_is_recorded_on_the_sign_in_it_was_asked_ab
         held = await kept.held()
         assert held is not None
         assert held == HeldSignIn(
-            access="a1", refresh="r1", client_id="semiont-browser", token_endpoint="https://issuer.test/token", person_key=JO
+            access="a1", refresh="r1", client_id="xynoplex-browser", token_endpoint="https://issuer.test/token", person_key=JO
         )
         if where == "kept_in":
             assert written_session(storage)["personKey"] == JO
@@ -496,7 +496,7 @@ def test_the_person_the_gateway_named_is_recorded_on_the_sign_in_it_was_asked_ab
         assert held.person_key == JO
 
         # A sign-in kept in its place is a new one: it names nobody until a gateway names its person.
-        await kept.keep(HeldSignIn(access="b1", refresh="s1", client_id="semiont-browser", token_endpoint="https://issuer.test/token"))
+        await kept.keep(HeldSignIn(access="b1", refresh="s1", client_id="xynoplex-browser", token_endpoint="https://issuer.test/token"))
         held = await kept.held()
         assert held is not None
         assert held.person_key is None
@@ -1532,16 +1532,16 @@ class ClosingAsItBuilds(SessionFactory):
 
     def __init__(self, sessions: ScriptedSessions) -> None:
         self.sessions: Final = sessions
-        self.browser: Final[asyncio.Future[SemiontBrowser]] = asyncio.get_running_loop().create_future()
+        self.browser: Final[asyncio.Future[XynoplexBrowser]] = asyncio.get_running_loop().create_future()
         self.closed: Final = asyncio.Event()
 
     @override
     @asynccontextmanager
-    async def session(self, options: SessionFactoryOptions) -> AsyncGenerator[SemiontSession[FaultyTransport]]:
+    async def session(self, options: SessionFactoryOptions) -> AsyncGenerator[XynoplexSession[FaultyTransport]]:
         await (await self.browser).close()
         self.closed.set()
         # Closing ended the work that closed it, and no session is ever built.
-        never: asyncio.Future[SemiontSession[FaultyTransport]] = asyncio.get_running_loop().create_future()
+        never: asyncio.Future[XynoplexSession[FaultyTransport]] = asyncio.get_running_loop().create_future()
         yield await never
 
     @override
@@ -1553,7 +1553,7 @@ def test_closing_from_within_the_registrys_own_work_ends_it_without_waiting_for_
     async def scenario() -> None:
         world = World().with_(kb_of_a())
         factory = ClosingAsItBuilds(world.factory.sessions)
-        browser = SemiontBrowser(SemiontBrowserConfig(storage=world.storage, session_factory=factory))
+        browser = XynoplexBrowser(XynoplexBrowserConfig(storage=world.storage, session_factory=factory))
         factory.browser.set_result(browser)
         async with browser:
             await soon(factory.closed.wait())

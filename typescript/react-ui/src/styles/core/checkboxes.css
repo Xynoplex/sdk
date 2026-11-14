@@ -2,40 +2,40 @@
    Checkboxes - Core UI Element
 
    This is the authoritative source for all checkbox styles.
-   Usage: Apply .semiont-checkbox to <input type="checkbox"> elements.
+   Usage: Apply .xynoplex-checkbox to <input type="checkbox"> elements.
    ============================================ */
 
 /* Base Checkbox Styling */
-.semiont-checkbox {
+.xynoplex-checkbox {
   width: 1.125rem;
   height: 1.125rem;
-  border: 2px solid var(--semiont-color-gray-400);
-  border-radius: var(--semiont-radius-sm);
+  border: 2px solid var(--xynoplex-color-gray-400);
+  border-radius: var(--xynoplex-radius-sm);
   cursor: pointer;
   flex-shrink: 0;
   appearance: none;
-  background-color: var(--semiont-bg-primary);
+  background-color: var(--xynoplex-bg-primary);
   transition: all 0.2s ease;
 }
 
-[data-theme="dark"] .semiont-checkbox {
-  border-color: var(--semiont-color-gray-600);
-  background-color: var(--semiont-bg-primary);
+[data-theme="dark"] .xynoplex-checkbox {
+  border-color: var(--xynoplex-color-gray-600);
+  background-color: var(--xynoplex-bg-primary);
 }
 
 /* Checked State */
-.semiont-checkbox:checked {
-  background-color: var(--semiont-color-primary-500);
-  border-color: var(--semiont-color-primary-500);
+.xynoplex-checkbox:checked {
+  background-color: var(--xynoplex-color-primary-500);
+  border-color: var(--xynoplex-color-primary-500);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' d='M3 8l3.5 3.5L13 4.5'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: center;
   background-size: 75%;
 }
 
-[data-theme="dark"] .semiont-checkbox:checked {
-  background-color: var(--semiont-color-primary-400);
-  border-color: var(--semiont-color-primary-400);
+[data-theme="dark"] .xynoplex-checkbox:checked {
+  background-color: var(--xynoplex-color-primary-400);
+  border-color: var(--xynoplex-color-primary-400);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' d='M3 8l3.5 3.5L13 4.5'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: center;
@@ -43,43 +43,43 @@
 }
 
 /* Focus State */
-.semiont-checkbox:focus {
+.xynoplex-checkbox:focus {
   outline: none;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-.semiont-checkbox:focus-visible {
-  outline: 2px solid var(--semiont-color-primary-500);
+.xynoplex-checkbox:focus-visible {
+  outline: 2px solid var(--xynoplex-color-primary-500);
   outline-offset: 2px;
 }
 
-[data-theme="dark"] .semiont-checkbox:focus-visible {
-  outline-color: var(--semiont-color-primary-400);
+[data-theme="dark"] .xynoplex-checkbox:focus-visible {
+  outline-color: var(--xynoplex-color-primary-400);
 }
 
 /* Hover State */
-.semiont-checkbox:hover:not(:disabled) {
-  border-color: var(--semiont-color-primary-500);
+.xynoplex-checkbox:hover:not(:disabled) {
+  border-color: var(--xynoplex-color-primary-500);
 }
 
-[data-theme="dark"] .semiont-checkbox:hover:not(:disabled) {
-  border-color: var(--semiont-color-primary-400);
+[data-theme="dark"] .xynoplex-checkbox:hover:not(:disabled) {
+  border-color: var(--xynoplex-color-primary-400);
 }
 
 /* Disabled State */
-.semiont-checkbox:disabled {
+.xynoplex-checkbox:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  background-color: var(--semiont-color-gray-100);
+  background-color: var(--xynoplex-color-gray-100);
 }
 
-[data-theme="dark"] .semiont-checkbox:disabled {
-  background-color: var(--semiont-color-gray-800);
+[data-theme="dark"] .xynoplex-checkbox:disabled {
+  background-color: var(--xynoplex-color-gray-800);
 }
 
 /* Accessibility - Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
-  .semiont-checkbox {
+  .xynoplex-checkbox {
     transition: none;
   }
 }

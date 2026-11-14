@@ -7,13 +7,13 @@ import { InMemorySessionStorage, type SessionStorage } from '../session-storage'
 import { MemorySignIn } from '../sign-in-kept';
 import type { StoredSession } from '../storage';
 
-const PREFIX = 'semiont.session.';
+const PREFIX = 'xynoplex.session.';
 
 export const SESSION_PREFIX_RE = new RegExp(`^${PREFIX.replace('.', '\\.')}`);
 
 /** The issuer every seeded session came from; refresh tests point their fetch stub here. */
-export const TEST_TOKEN_ENDPOINT = 'https://issuer.test/realms/semiont/protocol/openid-connect/token';
-export const TEST_REVOCATION_ENDPOINT = 'https://issuer.test/realms/semiont/protocol/openid-connect/revoke';
+export const TEST_TOKEN_ENDPOINT = 'https://issuer.test/realms/xynoplex/protocol/openid-connect/token';
+export const TEST_REVOCATION_ENDPOINT = 'https://issuer.test/realms/xynoplex/protocol/openid-connect/revoke';
 
 export function storageKey(kbId: string): string {
   return `${PREFIX}${kbId}`;
@@ -39,7 +39,7 @@ export function testSession(access: string, refresh: string): StoredSession {
   return {
     access,
     refresh,
-    clientId: 'semiont-browser',
+    clientId: 'xynoplex-browser',
     tokenEndpoint: TEST_TOKEN_ENDPOINT,
     revocationEndpoint: TEST_REVOCATION_ENDPOINT,
   };

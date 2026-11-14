@@ -1,4 +1,4 @@
-package semiont
+package xynoplex
 
 // What a transport delivers, and to whom: frames by channel, and the failures
 // it met. Each listener of frames has a queue of its own (kept.Queue), and
@@ -14,10 +14,10 @@ import (
 	"slices"
 	"sync"
 
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/bus"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/internal/kept"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/internal/required"
+	"github.com/Xynoplex/sdk/go/api"
+	"github.com/Xynoplex/sdk/go/bus"
+	"github.com/Xynoplex/sdk/go/internal/kept"
+	"github.com/Xynoplex/sdk/go/internal/required"
 )
 
 // Envelope is the routing beside a payload, never inside it: the correlation

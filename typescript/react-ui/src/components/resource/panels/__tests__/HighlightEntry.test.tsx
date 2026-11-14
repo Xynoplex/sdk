@@ -1,22 +1,22 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { renderWithProviders, createTestSemiontWrapper } from '../../../../test-utils';
+import { renderWithProviders, createTestXynoplexWrapper } from '../../../../test-utils';
 import userEvent from '@testing-library/user-event';
-import type { SemiontSession } from '@semiont/sdk';
+import type { XynoplexSession } from '@xynoplex/sdk';
 
-import type { Annotation, AnnotationId, EventBus } from '@semiont/core';
+import type { Annotation, AnnotationId, EventBus } from '@xynoplex/core';
 
-// Mock @semiont/http-transport
-vi.mock('@semiont/core', async () => {
-  const actual = await vi.importActual('@semiont/core');
+// Mock @xynoplex/http-transport
+vi.mock('@xynoplex/core', async () => {
+  const actual = await vi.importActual('@xynoplex/core');
   return {
     ...actual,
     getAnnotationExactText: vi.fn(),
   };
 });
 
-import { getAnnotationExactText, resourceId } from '@semiont/core';
+import { getAnnotationExactText, resourceId } from '@xynoplex/core';
 import type { MockedFunction } from 'vitest';
 import { HighlightEntry } from '../HighlightEntry';
 
@@ -53,13 +53,13 @@ describe('HighlightEntry', () => {
   // Created per-test: test-utils disposes every created client in a
   // module-scope afterEach, so a module-scope session would be dead
   // after the first test.
-  let session: SemiontSession;
+  let session: XynoplexSession;
   let eventBus: EventBus;
 
   beforeEach(() => {
     vi.clearAllMocks();
     mockGetAnnotationExactText.mockReturnValue('This is the highlighted text');
-    ({ session, eventBus } = createTestSemiontWrapper());
+    ({ session, eventBus } = createTestXynoplexWrapper());
   });
 
   describe('Rendering', () => {
@@ -86,7 +86,7 @@ describe('HighlightEntry', () => {
 
       const { container } = renderWithProviders(<HighlightEntry {...defaultProps} session={session} />);
 
-      const quote = container.querySelector('.semiont-annotation-entry__quote');
+      const quote = container.querySelector('.xynoplex-annotation-entry__quote');
       expect(quote).toBeInTheDocument();
       expect(quote!.textContent).not.toContain('...');
     });
@@ -105,7 +105,7 @@ describe('HighlightEntry', () => {
         <HighlightEntry highlight={highlight} isFocused={false} session={session} />
       );
 
-      const metadata = container.querySelector('.semiont-annotation-entry__metadata');
+      const metadata = container.querySelector('.xynoplex-annotation-entry__metadata');
       expect(metadata).toBeInTheDocument();
       expect(metadata?.textContent).not.toMatch(/By|Unknown/);
     });
@@ -127,7 +127,7 @@ describe('HighlightEntry', () => {
 
       const { container } = renderWithProviders(<HighlightEntry {...defaultProps} session={session} />);
 
-      expect(container.querySelector('.semiont-annotation-entry__quote')).not.toBeInTheDocument();
+      expect(container.querySelector('.xynoplex-annotation-entry__quote')).not.toBeInTheDocument();
     });
   });
 
@@ -162,7 +162,7 @@ describe('HighlightEntry', () => {
       );
 
       const entry = container.firstChild as HTMLElement;
-      expect(entry).toHaveClass('semiont-annotation-pulse');
+      expect(entry).toHaveClass('xynoplex-annotation-pulse');
     });
 
     it('should not apply pulse class when isHovered is false', () => {
@@ -171,7 +171,7 @@ describe('HighlightEntry', () => {
       );
 
       const entry = container.firstChild as HTMLElement;
-      expect(entry).not.toHaveClass('semiont-annotation-pulse');
+      expect(entry).not.toHaveClass('xynoplex-annotation-pulse');
     });
   });
 

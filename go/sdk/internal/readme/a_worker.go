@@ -6,14 +6,14 @@ import (
 	"fmt"
 	"strings"
 
-	semiont "github.com/The-AI-Alliance/semiont/packages/go/sdk"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
+	xynoplex "github.com/Xynoplex/sdk/go"
+	"github.com/Xynoplex/sdk/go/api"
 )
 
 // Count is your work: read the resource, and say how many lines it has. A
 // worker that annotates builds each api.Annotation it finds and commits them
 // with job.Commit before it completes.
-func Count(ctx context.Context, client *semiont.Client, job *semiont.HeldMarkJob) (api.MarkJobResult, error) {
+func Count(ctx context.Context, client *xynoplex.Client, job *xynoplex.HeldMarkJob) (api.MarkJobResult, error) {
 	var result api.MarkJobResult
 	text, err := client.Browse.ResourceContent(ctx, job.ResourceId())
 	if err != nil {
@@ -28,7 +28,7 @@ func Count(ctx context.Context, client *semiont.Client, job *semiont.HeldMarkJob
 
 // Run claims the highlighting jobs of the knowledge base client reaches, one
 // at a time, until ctx is done or the credential can never claim.
-func Run(ctx context.Context, client *semiont.Client) error {
+func Run(ctx context.Context, client *xynoplex.Client) error {
 	var highlights api.MarkJobFilter
 	highlights.JobType = api.MarkJobFilterJobTypeMark
 	highlights.Params.Motivation = api.MotivationHighlighting
@@ -44,8 +44,8 @@ func Run(ctx context.Context, client *semiont.Client) error {
 	deterministic := api.FailureClassDeterministic
 	// Each job the worker comes to hold, one at a time. The next is claimed when this one settles.
 	for held, err := range claims.All() {
-		var refused *semiont.ClaimRefusal
-		if errors.As(err, &refused) && refused.Code != nil && *refused.Code == semiont.BusRequestErrorCodeUnauthorized {
+		var refused *xynoplex.ClaimRefusal
+		if errors.As(err, &refused) && refused.Code != nil && *refused.Code == xynoplex.BusRequestErrorCodeUnauthorized {
 			// This credential can never claim. Stop, so that whoever runs the worker sees it.
 			return refused
 		}
@@ -54,17 +54,17 @@ func Run(ctx context.Context, client *semiont.Client) error {
 			continue
 		}
 		switch job := held.(type) {
-		case *semiont.HeldYieldJob:
-			if err := job.Fail(ctx, "this worker runs no yield job", semiont.JobFailure{FailureClass: &deterministic}); err != nil {
+		case *xynoplex.HeldYieldJob:
+			if err := job.Fail(ctx, "this worker runs no yield job", xynoplex.JobFailure{FailureClass: &deterministic}); err != nil {
 				return err
 			}
-		case *semiont.HeldMarkJob:
+		case *xynoplex.HeldMarkJob:
 			if err := job.Start(ctx); err != nil {
 				return err
 			}
 			result, err := Count(ctx, client, job)
 			if err != nil {
-				err = job.Fail(ctx, err.Error(), semiont.JobFailure{})
+				err = job.Fail(ctx, err.Error(), xynoplex.JobFailure{})
 			} else {
 				err = job.Complete(ctx, result)
 			}

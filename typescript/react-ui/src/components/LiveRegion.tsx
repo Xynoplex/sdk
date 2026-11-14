@@ -3,7 +3,7 @@
 import React, { useState, createContext, useContext, useCallback } from 'react';
 import type { Annotator } from '../lib/annotation-registry';
 
-import type { Annotation } from '@semiont/core';
+import type { Annotation } from '@xynoplex/core';
 
 interface LiveRegionContextType {
   announce: (message: string, priority?: 'polite' | 'assertive') => void;
@@ -48,7 +48,7 @@ export function LiveRegionProvider({ children }: LiveRegionProviderProps) {
         role="status"
         aria-live="polite"
         aria-atomic="true"
-        className="semiont-sr-only"
+        className="xynoplex-sr-only"
       >
         {politeMessage}
       </div>
@@ -57,7 +57,7 @@ export function LiveRegionProvider({ children }: LiveRegionProviderProps) {
         role="alert"
         aria-live="assertive"
         aria-atomic="true"
-        className="semiont-sr-only"
+        className="xynoplex-sr-only"
       >
         {assertiveMessage}
       </div>

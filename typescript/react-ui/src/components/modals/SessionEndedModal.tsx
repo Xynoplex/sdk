@@ -1,8 +1,8 @@
 'use client';
 
 import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react';
-import type { SessionEndReason } from '@semiont/sdk';
-import { useSemiont } from '../../session/SemiontProvider';
+import type { SessionEndReason } from '@xynoplex/sdk';
+import { useXynoplex } from '../../session/XynoplexProvider';
 import { useObservable } from '../../hooks/useObservable';
 import { useTranslations } from '../../contexts/TranslationContext';
 
@@ -33,7 +33,7 @@ function whyEnded(reason: SessionEndReason, t: (key: string) => string): string 
  */
 export function SessionEndedModal() {
   const t = useTranslations('SessionEndedModal');
-  const signals = useObservable(useSemiont().activeSignals$);
+  const signals = useObservable(useXynoplex().activeSignals$);
   const sessionEnded = useObservable(signals?.sessionEnded$) ?? null;
   const acknowledgeSessionEnded = () => signals?.acknowledgeSessionEnded();
   const showModal = sessionEnded !== null;
@@ -50,7 +50,7 @@ export function SessionEndedModal() {
 
   return (
     <Transition appear show={showModal}>
-      <Dialog as="div" className="semiont-modal" onClose={handleClose}>
+      <Dialog as="div" className="xynoplex-modal" onClose={handleClose}>
         <TransitionChild
           enter="ease-out duration-200"
           enterFrom="opacity-0"
@@ -59,11 +59,11 @@ export function SessionEndedModal() {
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="semiont-modal__backdrop" />
+          <div className="xynoplex-modal__backdrop" />
         </TransitionChild>
 
-        <div className="semiont-modal__container">
-          <div className="semiont-modal__wrapper">
+        <div className="xynoplex-modal__container">
+          <div className="xynoplex-modal__wrapper">
             <TransitionChild
               enter="ease-out duration-200"
               enterFrom="opacity-0 scale-95"
@@ -72,40 +72,40 @@ export function SessionEndedModal() {
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <DialogPanel className="semiont-modal__panel semiont-modal__panel--medium">
-                <div className="semiont-modal__icon-wrapper">
-                  <div className="semiont-modal__icon" style={{
-                    background: 'linear-gradient(to bottom right, var(--semiont-color-red-100, #fee2e2), var(--semiont-color-red-300, #fca5a5))',
+              <DialogPanel className="xynoplex-modal__panel xynoplex-modal__panel--medium">
+                <div className="xynoplex-modal__icon-wrapper">
+                  <div className="xynoplex-modal__icon" style={{
+                    background: 'linear-gradient(to bottom right, var(--xynoplex-color-red-100, #fee2e2), var(--xynoplex-color-red-300, #fca5a5))',
                   }}>
-                    <svg style={{ width: '1.5rem', height: '1.5rem', color: 'var(--semiont-color-red-600, #dc2626)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <svg style={{ width: '1.5rem', height: '1.5rem', color: 'var(--xynoplex-color-red-600, #dc2626)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
                 </div>
 
-                <div className="semiont-modal__content">
-                  <DialogTitle className="semiont-modal__title semiont-modal__title--centered">
+                <div className="xynoplex-modal__content">
+                  <DialogTitle className="xynoplex-modal__title xynoplex-modal__title--centered">
                     {t('title')}
                   </DialogTitle>
                   {sessionEnded && (
-                    <p className="semiont-modal__description">
+                    <p className="xynoplex-modal__description">
                       {whyEnded(sessionEnded.reason, t)}
                     </p>
                   )}
                 </div>
 
-                <div className="semiont-modal__actions">
+                <div className="xynoplex-modal__actions">
                   <button
                     type="button"
                     onClick={handleClose}
-                    className="semiont-button--secondary semiont-button--flex"
+                    className="xynoplex-button--secondary xynoplex-button--flex"
                   >
                     {t('goHome')}
                   </button>
                   <button
                     type="button"
                     onClick={handleSignIn}
-                    className="semiont-button--primary semiont-button--flex"
+                    className="xynoplex-button--primary xynoplex-button--flex"
                   >
                     {t('signInAgain')}
                   </button>

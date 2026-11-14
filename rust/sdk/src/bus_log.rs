@@ -1,4 +1,4 @@
-//! `SEMIONT_BUS_LOG`: with any non-empty value, one line per frame a process
+//! `XYNOPLEX_BUS_LOG`: with any non-empty value, one line per frame a process
 //! sends or receives, and per read or upload of content, grep-able alike across
 //! processes:
 //! `[bus <op>] <channel> scope=<resource> cid=<first 8> trace=<first 8> <payload>`,
@@ -73,7 +73,7 @@ fn enabled() -> bool {
         return true;
     }
     *ENABLED
-        .get_or_init(|| std::env::var_os("SEMIONT_BUS_LOG").is_some_and(|value| !value.is_empty()))
+        .get_or_init(|| std::env::var_os("XYNOPLEX_BUS_LOG").is_some_and(|value| !value.is_empty()))
 }
 
 fn write(line: String) {

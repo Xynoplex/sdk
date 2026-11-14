@@ -1,17 +1,17 @@
 'use client';
 
-import type { Annotation } from '@semiont/core';
-import { getSvgSelector, isHighlight, isReference, isAssessment, isComment, isTag, isBodyResolved, isResolvedReference } from '@semiont/core';
+import type { Annotation } from '@xynoplex/core';
+import { getSvgSelector, isHighlight, isReference, isAssessment, isComment, isTag, isBodyResolved, isResolvedReference } from '@xynoplex/core';
 import { useHoverDwell } from '../../hooks/useHoverDwell';
-import { parseSvgSelector } from '@semiont/core';
-import type { SemiontSession } from '@semiont/sdk';
+import { parseSvgSelector } from '@xynoplex/core';
+import type { XynoplexSession } from '@xynoplex/sdk';
 interface AnnotationOverlayProps {
   annotations: Annotation[];
   imageWidth: number;
   imageHeight: number;
   displayWidth: number;
   displayHeight: number;
-  session?: SemiontSession | null | undefined;
+  session?: XynoplexSession | null | undefined;
   hoveredAnnotationId?: string | null;
   selectedAnnotationId?: string | null;
   hoverDelayMs: number;
@@ -79,7 +79,7 @@ export function AnnotationOverlay({
 
   return (
     <svg
-      className="semiont-annotation-overlay"
+      className="xynoplex-annotation-overlay"
       style={{ width: displayWidth, height: displayHeight }}
     >
       {annotations.map(annotation => {
@@ -120,7 +120,7 @@ export function AnnotationOverlay({
                   stroke={colors.stroke}
                   strokeWidth={isHovered || isSelected ? 3 : 2}
                   opacity={isHovered || isSelected ? 1 : 0.7}
-                  className="semiont-annotation-overlay__shape"
+                  className="xynoplex-annotation-overlay__shape"
                   data-hovered={isHovered ? 'true' : 'false'}
                   data-selected={isSelected ? 'true' : 'false'}
                   onClick={(e) => session?.client.browse.click(annotation.id, e.currentTarget.getBoundingClientRect())}
@@ -132,7 +132,7 @@ export function AnnotationOverlay({
                     x={indicatorX}
                     y={indicatorY}
                     fontSize="16"
-                    className="semiont-annotation-overlay__status-indicator"
+                    className="xynoplex-annotation-overlay__status-indicator"
                     style={{ userSelect: 'none' }}
                     onClick={(e) => {
                       e.stopPropagation();
@@ -167,7 +167,7 @@ export function AnnotationOverlay({
                   stroke={colors.stroke}
                   strokeWidth={isHovered || isSelected ? 3 : 2}
                   opacity={isHovered || isSelected ? 1 : 0.7}
-                  className="semiont-annotation-overlay__shape"
+                  className="xynoplex-annotation-overlay__shape"
                   data-hovered={isHovered ? 'true' : 'false'}
                   data-selected={isSelected ? 'true' : 'false'}
                   onClick={(e) => session?.client.browse.click(annotation.id, e.currentTarget.getBoundingClientRect())}
@@ -179,7 +179,7 @@ export function AnnotationOverlay({
                     x={indicatorX}
                     y={indicatorY}
                     fontSize="16"
-                    className="semiont-annotation-overlay__status-indicator"
+                    className="xynoplex-annotation-overlay__status-indicator"
                     style={{ userSelect: 'none' }}
                     onClick={(e) => {
                       e.stopPropagation();
@@ -227,7 +227,7 @@ export function AnnotationOverlay({
                   stroke={colors.stroke}
                   strokeWidth={isHovered || isSelected ? 3 : 2}
                   opacity={isHovered || isSelected ? 1 : 0.7}
-                  className="semiont-annotation-overlay__shape"
+                  className="xynoplex-annotation-overlay__shape"
                   data-hovered={isHovered ? 'true' : 'false'}
                   data-selected={isSelected ? 'true' : 'false'}
                   onClick={(e) => session?.client.browse.click(annotation.id, e.currentTarget.getBoundingClientRect())}
@@ -239,7 +239,7 @@ export function AnnotationOverlay({
                     x={indicatorX}
                     y={indicatorY}
                     fontSize="16"
-                    className="semiont-annotation-overlay__status-indicator"
+                    className="xynoplex-annotation-overlay__status-indicator"
                     style={{ userSelect: 'none' }}
                     onClick={(e) => {
                       e.stopPropagation();

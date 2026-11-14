@@ -20,24 +20,24 @@ import qualified Data.UUID.Types as UUID
 import qualified Data.Set as Set
 import Network.HTTP.Client (defaultManagerSettings, managerRawConnection, noProxy)
 import Network.HTTP.Client.Internal (makeConnection)
-import qualified Semiont.Browse as Browse
-import qualified Semiont.Client as Client
-import qualified Semiont.Content as Content
-import qualified Semiont.Bus as Bus
-import qualified Semiont.Cache as Cache
-import qualified Semiont.Channels as Channel
-import qualified Semiont.Discovery as Discovery
-import qualified Semiont.ErrorCodes as Code
-import Semiont.Errors (BusRequestError(..))
-import qualified Semiont.Gateway as Gateway
-import qualified Semiont.Http as Http
-import qualified Semiont.Http.Routes as Route
-import qualified Semiont.Job as Job
-import qualified Semiont.Retry as Retry
-import qualified Semiont.StateValue as State
-import qualified Semiont.Timing.Settings as Timing
-import qualified Semiont.Transport as Transport
-import Semiont.Types
+import qualified Xynoplex.Browse as Browse
+import qualified Xynoplex.Client as Client
+import qualified Xynoplex.Content as Content
+import qualified Xynoplex.Bus as Bus
+import qualified Xynoplex.Cache as Cache
+import qualified Xynoplex.Channels as Channel
+import qualified Xynoplex.Discovery as Discovery
+import qualified Xynoplex.ErrorCodes as Code
+import Xynoplex.Errors (BusRequestError(..))
+import qualified Xynoplex.Gateway as Gateway
+import qualified Xynoplex.Http as Http
+import qualified Xynoplex.Http.Routes as Route
+import qualified Xynoplex.Job as Job
+import qualified Xynoplex.Retry as Retry
+import qualified Xynoplex.StateValue as State
+import qualified Xynoplex.Timing.Settings as Timing
+import qualified Xynoplex.Transport as Transport
+import Xynoplex.Types
 import qualified Streaming.Prelude as Stream
 import System.FilePath ((</>))
 import System.Timeout (timeout)

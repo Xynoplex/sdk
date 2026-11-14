@@ -3,12 +3,12 @@
  * knowledge base's own services.
  *
  * An agent is an account, as a person is. Every such process signs in the
- * same way (`agentToken`, `@semiont/http-transport`): its account's token
+ * same way (`agentToken`, `@xynoplex/http-transport`): its account's token
  * from the trusted issuer is its bearer at the gateway, and the gateway names
  * it by that account. The session holds that token and keeps it fresh for as
  * long as the process runs, by a new grant at the issuer.
  *
- * It is not a `SemiontSession`. A person whose token cannot be renewed is
+ * It is not a `XynoplexSession`. A person whose token cannot be renewed is
  * signed out, and signs in again. An agent whose renewal fails keeps the
  * token it has and tries again: a process holding a token that still works
  * does not stop working over one bad round trip.
@@ -21,7 +21,7 @@
  *
  * So the lifetime is not restated here. When a token expires is that token's
  * own `exp` claim, and how long before expiry to renew is `refreshDelayMs`
- * — the same derivation `SemiontSession` schedules from. One refresh policy,
+ * — the same derivation `XynoplexSession` schedules from. One refresh policy,
  * read from the credential itself.
  *
  * That policy derives its margin from the token's own lifetime, never a fixed
@@ -46,9 +46,9 @@
  */
 
 import { BehaviorSubject } from 'rxjs';
-import { accessToken as makeAccessToken, RETRY_RULES, ServiceToken, SignInError, watched } from '@semiont/core';
-import type { AccessToken, ServiceAccountCredential, UserId, Watched } from '@semiont/core';
-import { agentToken } from '@semiont/http-transport';
+import { accessToken as makeAccessToken, RETRY_RULES, ServiceToken, SignInError, watched } from '@xynoplex/core';
+import type { AccessToken, ServiceAccountCredential, UserId, Watched } from '@xynoplex/core';
+import { agentToken } from '@xynoplex/http-transport';
 import { sharedRenewal, type SharedRenewal } from './shared-renewal';
 import { parseJwtExpiry, refreshDelayMs } from './storage';
 

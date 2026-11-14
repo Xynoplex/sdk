@@ -14,7 +14,7 @@ import (
 	"strings"
 	"sync"
 
-	semiont "github.com/The-AI-Alliance/semiont/packages/go/sdk"
+	xynoplex "github.com/Xynoplex/sdk/go"
 )
 
 type httpDiscovery struct {
@@ -29,7 +29,7 @@ type httpDiscovery struct {
 func (h *httpDiscovery) Read(ctx context.Context) DiscoveryRead {
 	// With a deadline: a read that is never answered would hold the poll that
 	// awaits it, and every poll after it, for good.
-	deadline := semiont.DefaultTiming().HttpRequestTimeout
+	deadline := xynoplex.DefaultTiming().HttpRequestTimeout
 	asking, cancel := context.WithTimeout(ctx, deadline)
 	defer cancel()
 	unreadable := func(err error) Absent {
@@ -80,7 +80,7 @@ func (h *httpDiscovery) Read(ctx context.Context) DiscoveryRead {
 
 // HttpDiscovery is a transport that reads the discovery document at url, each
 // read within the timing table's request deadline
-// (semiont.DefaultTiming().HttpRequestTimeout).
+// (xynoplex.DefaultTiming().HttpRequestTimeout).
 func HttpDiscovery(url string, client *http.Client) DiscoveryTransport {
 	return &httpDiscovery{url: url, http: client}
 }

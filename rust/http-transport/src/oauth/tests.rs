@@ -1,7 +1,7 @@
 //! The renewal of a kept sign-in (`renew_kept`), which is the crate's own:
 //! how it rides out an issuer, and every renewal of
 //! protocol/specs/src/sign-in-store/cases.json over each sign-in kept here:
-//! an entry of the file `semiont login` keeps, one kept in memory, and one a
+//! an entry of the file `xynoplex login` keeps, one kept in memory, and one a
 //! registry keeps in its storage.
 
 #[path = "../../tests/quick_clock/mod.rs"]
@@ -16,12 +16,12 @@ use axum::routing::post;
 use base64::Engine;
 use base64::engine::general_purpose::URL_SAFE_NO_PAD;
 use quick_clock::QuickClock;
-use semiont::errors::SignInError;
-use semiont::session::{MemorySignIn, SignInKept, StoredSession, kept_in, person_key};
-use semiont::sign_in_store::{FILE_NAME, SignInStore};
-use semiont::storage::{InMemorySessionStorage, SessionStorage};
-use semiont::timing::{HTTP_REQUEST_TIMEOUT, REFRESH_RETRY};
-use semiont::transport::BoxFuture;
+use xynoplex::errors::SignInError;
+use xynoplex::session::{MemorySignIn, SignInKept, StoredSession, kept_in, person_key};
+use xynoplex::sign_in_store::{FILE_NAME, SignInStore};
+use xynoplex::storage::{InMemorySessionStorage, SessionStorage};
+use xynoplex::timing::{HTTP_REQUEST_TIMEOUT, REFRESH_RETRY};
+use xynoplex::transport::BoxFuture;
 use serde_json::{Value, json};
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::error::Error;
@@ -145,7 +145,7 @@ impl Issuer {
         StoredSession {
             access: access.to_owned(),
             refresh: refresh.to_owned(),
-            client_id: "semiont-browser".to_owned(),
+            client_id: "xynoplex-browser".to_owned(),
             token_endpoint: self.token_endpoint(),
             revocation_endpoint: Some(format!("{}/revoke", self.origin)),
             person_key: None,
@@ -396,7 +396,7 @@ struct Home(std::path::PathBuf);
 
 impl Home {
     fn new() -> Home {
-        let dir = std::env::temp_dir().join(format!("semiont-renewal-{}", uuid::Uuid::new_v4()));
+        let dir = std::env::temp_dir().join(format!("xynoplex-renewal-{}", uuid::Uuid::new_v4()));
         std::fs::create_dir_all(&dir).expect("a directory");
         Home(dir)
     }
@@ -462,7 +462,7 @@ fn stated_sign_in(
             .as_str()
             .expect("a refresh token")
             .to_owned(),
-        client_id: "semiont-cli".to_owned(),
+        client_id: "xynoplex-cli".to_owned(),
         token_endpoint: issuer.token_endpoint(),
         revocation_endpoint: None,
         person_key: None,

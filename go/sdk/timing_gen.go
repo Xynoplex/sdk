@@ -4,11 +4,11 @@
 // The TypeScript and Python constants are generated from the same table, and
 // Rust's by its SDK's build script.
 
-package semiont
+package xynoplex
 
 import "time"
 
-// Timing is the timing a Semiont client keeps: its deadlines, its retry
+// Timing is the timing a Xynoplex client keeps: its deadlines, its retry
 // budgets, the cadence of its stream, and what it keeps count of, as
 // protocol/specs/src/client/timing.json states them for every SDK. It holds one field
 // per entry, under the entry's name. DefaultTiming is the table's values; a

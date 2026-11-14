@@ -34,12 +34,12 @@ const url = `${client.baseUrl}/api/resources/${resourceId}?token=${token}`;
 
 ## React hook
 
-`useMediaToken` from `@semiont/react-ui` is a `useState`/`useEffect` hook that refreshes on a 4-minute interval:
+`useMediaToken` from `@xynoplex/react-ui` is a `useState`/`useEffect` hook that refreshes on a 4-minute interval:
 
 ```typescript
-import { useMediaToken } from '@semiont/react-ui';
+import { useMediaToken } from '@xynoplex/react-ui';
 
-// Takes the SemiontClient explicitly; pass null to skip fetching.
+// Takes the XynoplexClient explicitly; pass null to skip fetching.
 const { token, loading } = useMediaToken(client, resourceId);
 ```
 
@@ -47,7 +47,7 @@ const { token, loading } = useMediaToken(client, resourceId);
 - One hook holds the token of one resource.
 - `token` is `undefined` while the first fetch is in flight, and when it failed.
 
-`ResourceViewerPage` in `@semiont/react-ui` calls this hook for any resource whose media type renders as `'image'` or `'pdf'` (the `render` mode `capabilitiesOf` from `@semiont/core` reports), and its download link calls it for every resource. Callers of `ResourceViewerPage` do not manage media tokens.
+`ResourceViewerPage` in `@xynoplex/react-ui` calls this hook for any resource whose media type renders as `'image'` or `'pdf'` (the `render` mode `capabilitiesOf` from `@xynoplex/core` reports), and its download link calls it for every resource. Callers of `ResourceViewerPage` do not manage media tokens.
 
 ## Data flow for binary resources
 

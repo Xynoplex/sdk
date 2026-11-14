@@ -1,16 +1,16 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { screen, act } from '@testing-library/react';
 import { BehaviorSubject } from 'rxjs';
-import type { CacheState } from '@semiont/sdk';
-import type { ResourceDescriptor } from '@semiont/core';
+import type { CacheState } from '@xynoplex/sdk';
+import type { ResourceDescriptor } from '@xynoplex/core';
 import { getResourceIcon } from '../../../../lib/resource-utils';
 import '@testing-library/jest-dom';
 import type { ComponentProps } from 'react';
-import { renderWithProviders, createTestSemiontWrapper } from '../../../../test-utils';
+import { renderWithProviders, createTestXynoplexWrapper } from '../../../../test-utils';
 import userEvent from '@testing-library/user-event';
-import { BindNamespace } from '@semiont/sdk';
+import { BindNamespace } from '@xynoplex/sdk';
 
-import type { Annotation, AnnotationId } from '@semiont/core';
+import type { Annotation, AnnotationId } from '@xynoplex/core';
 
 // Stable mock functions defined outside vi.mock to avoid re-render loops
 const mockGetAnnotationExactText = vi.fn();
@@ -22,8 +22,8 @@ const mockGetTargetSelector = vi.fn();
 const mockGetEntityTypes = vi.fn();
 const mockHoverProps = { onMouseEnter: vi.fn(), onMouseLeave: vi.fn() };
 
-vi.mock('@semiont/core', async () => {
-  const actual = await vi.importActual('@semiont/core');
+vi.mock('@xynoplex/core', async () => {
+  const actual = await vi.importActual('@xynoplex/core');
   return {
     ...actual,
     getAnnotationExactText: (...args: unknown[]) => mockGetAnnotationExactText(...args),
@@ -45,7 +45,7 @@ vi.mock('../../../../hooks/useHoverEmitter', () => ({
 }));
 
 import { ReferenceEntry } from '../ReferenceEntry';
-import { resourceId } from '@semiont/core';
+import { resourceId } from '@xynoplex/core';
 
 const createMockReference = (overrides?: Partial<Annotation>): Annotation => ({
   '@context': 'http://www.w3.org/ns/anno.jsonld',
@@ -71,8 +71,8 @@ const createMockReference = (overrides?: Partial<Annotation>): Annotation => ({
 describe('ReferenceEntry', () => {
   // Provider-free component: the session prop is the only session it sees.
   // Created per-test — test-utils disposes registered clients in afterEach.
-  let session: ReturnType<typeof createTestSemiontWrapper>['session'];
-  let eventBus: ReturnType<typeof createTestSemiontWrapper>['eventBus'];
+  let session: ReturnType<typeof createTestXynoplexWrapper>['session'];
+  let eventBus: ReturnType<typeof createTestXynoplexWrapper>['eventBus'];
 
   const renderEntry = (props: Partial<ComponentProps<typeof ReferenceEntry>> = {}) =>
     renderWithProviders(
@@ -101,7 +101,7 @@ describe('ReferenceEntry', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    ({ session, eventBus } = createTestSemiontWrapper());
+    ({ session, eventBus } = createTestXynoplexWrapper());
     mockGetAnnotationExactText.mockReturnValue('referenced text');
     mockIsBodyResolved.mockReturnValue(false);
     mockGetBodySource.mockReturnValue(null);
@@ -119,13 +119,13 @@ describe('ReferenceEntry', () => {
     it('carries the sparkle animation on the icon when sparkle is set', () => {
       const { container } = renderEntry({ sparkle: true });
 
-      expect(container.querySelector('.semiont-reference-icon')).toHaveClass('annotation-sparkle');
+      expect(container.querySelector('.xynoplex-reference-icon')).toHaveClass('annotation-sparkle');
     });
 
     it('does not sparkle by default', () => {
       const { container } = renderEntry();
 
-      expect(container.querySelector('.semiont-reference-icon')).not.toHaveClass('annotation-sparkle');
+      expect(container.querySelector('.xynoplex-reference-icon')).not.toHaveClass('annotation-sparkle');
     });
   });
 
@@ -151,7 +151,7 @@ describe('ReferenceEntry', () => {
 
       const { container } = renderEntry();
 
-      const icon = container.querySelector('.semiont-reference-icon');
+      const icon = container.querySelector('.xynoplex-reference-icon');
       expect(icon).toBeInTheDocument();
       expect(icon!.textContent).toContain('❓');
     });
@@ -162,7 +162,7 @@ describe('ReferenceEntry', () => {
 
       const { container } = renderEntry();
 
-      const icon = container.querySelector('.semiont-reference-icon');
+      const icon = container.querySelector('.xynoplex-reference-icon');
       expect(icon).toBeInTheDocument();
       expect(icon!.textContent).toContain('🔗');
     });
@@ -238,7 +238,7 @@ describe('ReferenceEntry', () => {
 
       const { container } = renderEntry();
 
-      expect(container.querySelector('.semiont-annotation-entry__tags')).not.toBeInTheDocument();
+      expect(container.querySelector('.xynoplex-annotation-entry__tags')).not.toBeInTheDocument();
     });
   });
 
@@ -261,14 +261,14 @@ describe('ReferenceEntry', () => {
       const { container } = renderEntry({ isHovered: true });
 
       const entry = container.firstChild as HTMLElement;
-      expect(entry).toHaveClass('semiont-annotation-pulse');
+      expect(entry).toHaveClass('xynoplex-annotation-pulse');
     });
 
     it('should not apply pulse class when isHovered is false', () => {
       const { container } = renderEntry({ isHovered: false });
 
       const entry = container.firstChild as HTMLElement;
-      expect(entry).not.toHaveClass('semiont-annotation-pulse');
+      expect(entry).not.toHaveClass('xynoplex-annotation-pulse');
     });
   });
 
@@ -299,7 +299,7 @@ describe('ReferenceEntry', () => {
 
       const { container } = renderEntry({ onOpenResource });
 
-      const icon = container.querySelector('.semiont-reference-icon')!;
+      const icon = container.querySelector('.xynoplex-reference-icon')!;
       await userEvent.click(icon);
 
       expect(onOpenResource).toHaveBeenCalledWith('linked-doc');
@@ -311,8 +311,8 @@ describe('ReferenceEntry', () => {
 
       const { container } = renderEntry();
 
-      const icon = container.querySelector('.semiont-reference-icon');
-      expect(icon).toHaveClass('semiont-reference-icon--clickable');
+      const icon = container.querySelector('.xynoplex-reference-icon');
+      expect(icon).toHaveClass('xynoplex-reference-icon--clickable');
     });
 
     it('should show hover-reveal unlink button in annotate mode', () => {
@@ -321,7 +321,7 @@ describe('ReferenceEntry', () => {
 
       const { container } = renderEntry({ annotateMode: true });
 
-      const unlinkButton = container.querySelector('.semiont-reference-unlink');
+      const unlinkButton = container.querySelector('.xynoplex-reference-unlink');
       expect(unlinkButton).toBeInTheDocument();
     });
 
@@ -331,7 +331,7 @@ describe('ReferenceEntry', () => {
 
       const { container } = renderEntry({ annotateMode: false });
 
-      const unlinkButton = container.querySelector('.semiont-reference-unlink');
+      const unlinkButton = container.querySelector('.xynoplex-reference-unlink');
       expect(unlinkButton).not.toBeInTheDocument();
     });
 
@@ -343,7 +343,7 @@ describe('ReferenceEntry', () => {
 
       const { container } = renderEntry({ annotateMode: true });
 
-      const unlinkButton = container.querySelector('.semiont-reference-unlink')!;
+      const unlinkButton = container.querySelector('.xynoplex-reference-unlink')!;
       await userEvent.click(unlinkButton);
 
       expect(bindSpy).toHaveBeenCalledWith(
@@ -367,7 +367,7 @@ describe('ReferenceEntry', () => {
       eventBus.on('bind:body-error').subscribe(e => errors.push(e));
 
       const { container } = renderEntry({ annotateMode: true });
-      await userEvent.click(container.querySelector('.semiont-reference-unlink')!);
+      await userEvent.click(container.querySelector('.xynoplex-reference-unlink')!);
 
       await vi.waitFor(() => expect(errors).toHaveLength(1));
       expect(errors[0]).toEqual({ resourceId: 'resource-1', message: 'link is load-bearing' });
@@ -386,7 +386,7 @@ describe('ReferenceEntry', () => {
 
       const subscription = eventBus.on('bind:initiate').subscribe(initiateHandler);
 
-      const icon = container.querySelector('.semiont-reference-icon')!;
+      const icon = container.querySelector('.xynoplex-reference-icon')!;
       await userEvent.click(icon);
 
       expect(initiateHandler).toHaveBeenCalledWith({
@@ -404,8 +404,8 @@ describe('ReferenceEntry', () => {
 
       const { container } = renderEntry({ annotateMode: true });
 
-      const icon = container.querySelector('.semiont-reference-icon');
-      expect(icon).toHaveClass('semiont-reference-icon--clickable');
+      const icon = container.querySelector('.xynoplex-reference-icon');
+      expect(icon).toHaveClass('xynoplex-reference-icon--clickable');
     });
 
     it('should not be clickable in browse mode', () => {
@@ -413,8 +413,8 @@ describe('ReferenceEntry', () => {
 
       const { container } = renderEntry({ annotateMode: false });
 
-      const icon = container.querySelector('.semiont-reference-icon');
-      expect(icon).not.toHaveClass('semiont-reference-icon--clickable');
+      const icon = container.querySelector('.xynoplex-reference-icon');
+      expect(icon).not.toHaveClass('xynoplex-reference-icon--clickable');
     });
 
     it('should not emit bind:initiate on ❓ icon click in browse mode', async () => {
@@ -425,7 +425,7 @@ describe('ReferenceEntry', () => {
 
       const subscription = eventBus.on('bind:initiate').subscribe(initiateHandler);
 
-      const icon = container.querySelector('.semiont-reference-icon')!;
+      const icon = container.querySelector('.xynoplex-reference-icon')!;
       await userEvent.click(icon);
 
       expect(initiateHandler).not.toHaveBeenCalled();

@@ -18,7 +18,7 @@
  *       by drain, never by abort (TRANSPORT-HTTP.md, Abort discipline).
  *
  * Framework-agnostic on purpose — only `rxjs` + `fast-check`, no `vitest` — so
- * it ships through `@semiont/core/testing` and any package's test runner can
+ * it ships through `@xynoplex/core/testing` and any package's test runner can
  * invoke it. An L1/L2 case waits out its whole bound in real time before it
  * judges, so a request sent again after every output has spoken is counted;
  * properties keep the bound small by passing a small explicit `timeoutMs` to

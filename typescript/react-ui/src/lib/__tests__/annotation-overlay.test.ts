@@ -9,7 +9,7 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { textOffsets } from '@semiont/core';
+import { textOffsets } from '@xynoplex/core';
 import {
   buildSourceToRenderedMap,
   buildTextNodeIndex,

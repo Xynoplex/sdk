@@ -9,11 +9,11 @@ import pytest
 from pydantic import BaseModel, Field
 from spec import SPEC
 
-from semiont._endpoints import same_place
-from semiont.identifiers import ResourceId
-from semiont.registry import sort_open_resources
-from semiont.stored import OpenResource
-from semiont.types import KbEndpoint
+from xynoplex._endpoints import same_place
+from xynoplex.identifiers import ResourceId
+from xynoplex.registry import sort_open_resources
+from xynoplex.stored import OpenResource
+from xynoplex.types import KbEndpoint
 
 
 class Case(BaseModel, frozen=True, extra="forbid"):

@@ -16,8 +16,8 @@ export interface ItemFoundLogProps {
  * "✓ Person: 5 found" — the completed-items log.
  *
  * One markup for one concept. This was two class families a single panel
- * apart: the live progress display used `semiont-annotation-log*` while
- * ReferencesPanel's post-run form log used `semiont-delegate-widget__log*`, with
+ * apart: the live progress display used `xynoplex-annotation-log*` while
+ * ReferencesPanel's post-run form log used `xynoplex-delegate-widget__log*`, with
  * the same rows rendered by hand in both. Presentational and provider-free,
  * like DelegateProgress — the caller brings the formatter.
  *
@@ -29,11 +29,11 @@ export function ItemFoundLog({ entries, formatFound }: ItemFoundLogProps) {
   if (entries.length === 0) return null;
 
   return (
-    <div className="semiont-annotation-log">
+    <div className="xynoplex-annotation-log">
       {entries.map((item, index) => (
-        <div key={index} className="semiont-annotation-log-item">
-          <span className="semiont-annotation-check">✓</span>
-          <span className="semiont-annotation-entity-type">{item.value}:</span>
+        <div key={index} className="xynoplex-annotation-log-item">
+          <span className="xynoplex-annotation-check">✓</span>
+          <span className="xynoplex-annotation-entity-type">{item.value}:</span>
           <span>{formatFound(item.foundCount)}</span>
         </div>
       ))}

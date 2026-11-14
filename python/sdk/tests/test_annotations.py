@@ -7,7 +7,7 @@ import pytest
 from pydantic import BaseModel, JsonValue
 from spec import SPEC, JsonObject
 
-from semiont.annotations import (
+from xynoplex.annotations import (
     annotation_exact_text,
     body_source,
     comment_text,
@@ -27,8 +27,8 @@ from semiont.annotations import (
     target_source,
     text_quote_selector,
 )
-from semiont.model import WireModel, written
-from semiont.types import Annotation, AnnotationSelector
+from xynoplex.model import WireModel, written
+from xynoplex.types import Annotation, AnnotationSelector
 
 
 class Case(BaseModel, frozen=True, extra="forbid"):

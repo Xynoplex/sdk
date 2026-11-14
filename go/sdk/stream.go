@@ -1,4 +1,4 @@
-package semiont
+package xynoplex
 
 // The stream (protocol/contract/TRANSPORT-HTTP.md § The client): one goroutine
 // that owns the subscription, the connections that carry it, and the state
@@ -38,9 +38,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/bus"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/internal/required"
+	"github.com/Xynoplex/sdk/go/api"
+	"github.com/Xynoplex/sdk/go/bus"
+	"github.com/Xynoplex/sdk/go/internal/required"
 )
 
 type commandKind int

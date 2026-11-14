@@ -1,4 +1,4 @@
-package semiont
+package xynoplex
 
 // A live query: one of a client's reads that answers from its cache and stays
 // true as the knowledge base changes.
@@ -7,7 +7,7 @@ import (
 	"context"
 	"iter"
 
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
+	"github.com/Xynoplex/sdk/go/api"
 )
 
 // Cached is a live query. Building it touches nothing, so a query is made

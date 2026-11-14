@@ -1,5 +1,5 @@
 /**
- * makeTestClient — structurally-typed `SemiontClient` stand-in for state unit
+ * makeTestClient — structurally-typed `XynoplexClient` stand-in for state unit
  * factory tests. Exposes a real `EventBus` as `client.bus` (the same
  * shape production code reads), plus whatever HTTP namespaces the caller
  * supplies via `overrides`.
@@ -23,18 +23,18 @@
  * const stateUnit = createMarkStateUnit(client, resourceId);
  * ```
  *
- * The `client` is cast `as unknown as SemiontClient`, matching the
+ * The `client` is cast `as unknown as XynoplexClient`, matching the
  * established pattern for structural mocks in this codebase.
  */
 
-import { EventBus } from '@semiont/core';
-import type { SemiontClient } from '../client';
+import { EventBus } from '@xynoplex/core';
+import type { XynoplexClient } from '../client';
 
 export interface TestClient {
   /** The real bus backing `client.bus` — exposed so tests can
    *  destroy() it in afterEach. Same instance as `client.bus`. */
   bus: EventBus;
-  client: SemiontClient;
+  client: XynoplexClient;
 }
 
 export function makeTestClient(
@@ -44,6 +44,6 @@ export function makeTestClient(
   const client = {
     ...overrides,
     bus,
-  } as unknown as SemiontClient;
+  } as unknown as XynoplexClient;
   return { bus, client };
 }

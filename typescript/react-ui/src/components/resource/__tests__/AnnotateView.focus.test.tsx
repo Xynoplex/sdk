@@ -9,7 +9,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import '@testing-library/jest-dom';
 import type { AnnotationUIState } from '../../../types/annotation-props';
-import { createTestSemiontWrapper, renderInEnglish, englishTranslationManager } from '../../../test-utils';
+import { createTestXynoplexWrapper, renderInEnglish, englishTranslationManager } from '../../../test-utils';
 
 const scrollSpy = vi.hoisted(() => vi.fn());
 vi.mock('../../../lib/scroll-utils', () => ({
@@ -20,7 +20,7 @@ vi.mock('../../CodeMirrorRenderer', () => ({
 }));
 
 import { AnnotateView } from '../AnnotateView';
-import { annotationId, resourceId } from '@semiont/core';
+import { annotationId, resourceId } from '@xynoplex/core';
 
 const emptyAnnotations = { highlights: [], references: [], assessments: [], comments: [], tags: [] };
 const uiState: AnnotationUIState = {
@@ -35,7 +35,7 @@ describe('AnnotateView — beckon:focus scrolls the content', () => {
   beforeEach(() => { scrollSpy.mockClear(); });
 
   it('scrolls to the annotation when the session emits beckon:focus', () => {
-    const { session, client } = createTestSemiontWrapper();
+    const { session, client } = createTestXynoplexWrapper();
 
     renderInEnglish(
       <AnnotateView
@@ -70,7 +70,7 @@ describe('AnnotateView — beckon:focus is guarded by resourceId', () => {
   beforeEach(() => { scrollSpy.mockClear(); });
 
   const renderAt = (resourceUri: string) => {
-    const { session, client } = createTestSemiontWrapper();
+    const { session, client } = createTestXynoplexWrapper();
     const { container } = renderInEnglish(
       <AnnotateView
         translationManager={englishTranslationManager}
@@ -84,7 +84,7 @@ describe('AnnotateView — beckon:focus is guarded by resourceId', () => {
       />,
     );
     // jsdom lays nothing out and gives an element no scrollTo of its own.
-    const content = container.querySelector<HTMLElement>('.semiont-annotate-view__content');
+    const content = container.querySelector<HTMLElement>('.xynoplex-annotate-view__content');
     if (!content) throw new Error('the view rendered no content to scroll');
     const scrollTo = vi.fn();
     content.scrollTo = scrollTo;

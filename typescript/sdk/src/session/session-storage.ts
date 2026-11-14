@@ -1,13 +1,13 @@
 /**
  * SessionStorage — environment-agnostic persistence adapter for the
- * Semiont session layer. Decouples `SemiontSession` / `SemiontBrowser`
+ * Xynoplex session layer. Decouples `XynoplexSession` / `XynoplexBrowser`
  * from `localStorage` / `window` so the same classes can run in a
  * browser, a CLI process, or tests without environment guards.
  *
  * Implementations shipped here:
  *  - `InMemorySessionStorage` — map-backed, for scripts and tests.
  *
- * Browser-backed (`WebBrowserStorage`) lives in `@semiont/react-ui`
+ * Browser-backed (`WebBrowserStorage`) lives in `@xynoplex/react-ui`
  * because it touches browser-only globals.
  */
 

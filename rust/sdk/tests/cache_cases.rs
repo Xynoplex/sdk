@@ -10,18 +10,18 @@
 //! refuses the first write of the query's document. A query the table keeps
 //! that this SDK does not fails here.
 
-use semiont::cache::{CachePersister, StoragePersister};
-use semiont::channels::BRIDGED_CHANNELS;
-use semiont::client::{CachePersistence, ClientOptions, SemiontClient};
-use semiont::namespaces::WholeKey;
-use semiont::refresh::CacheQuery;
-use semiont::resume::CoupledBookmarks;
-use semiont::storage::{
+use xynoplex::cache::{CachePersister, StoragePersister};
+use xynoplex::channels::BRIDGED_CHANNELS;
+use xynoplex::client::{CachePersistence, ClientOptions, XynoplexClient};
+use xynoplex::namespaces::WholeKey;
+use xynoplex::refresh::CacheQuery;
+use xynoplex::resume::CoupledBookmarks;
+use xynoplex::storage::{
     InMemorySessionStorage, SessionStorage, StorageChange, StorageSubscription,
 };
-use semiont::testing::{FaultyTransport, InMemoryContent, TestClientOptions, create_test_client};
-use semiont::timing::MAX_STORED_BYTES_COUNT;
-use semiont::types::{
+use xynoplex::testing::{FaultyTransport, InMemoryContent, TestClientOptions, create_test_client};
+use xynoplex::timing::MAX_STORED_BYTES_COUNT;
+use xynoplex::types::{
     Annotation, AnnotationId, GetAnnotationsResponse, ResourceDescriptor, ResourceId, TagSchema,
 };
 use serde::Serialize;
@@ -223,7 +223,7 @@ fn decoded<T: DeserializeOwned>(of: &Value) -> T {
 /// `PERSON_KEY`, with the stream's places coupled to it as a session's are,
 /// and what it reads over.
 struct Keeping {
-    client: Arc<SemiontClient>,
+    client: Arc<XynoplexClient>,
     transport: FaultyTransport,
     content: InMemoryContent,
 }

@@ -1,6 +1,6 @@
 //! Where one knowledge base's sign-in is kept (`SignInKept`): what a
 //! session is built from, renews through and forgets. A registry keeps its
-//! sign-ins in its storage (`super::kept_in`), `semiont login` in its file
+//! sign-ins in its storage (`super::kept_in`), `xynoplex login` in its file
 //! (`crate::sign_in_store::SignInStore::entry`), and a script that keeps
 //! nothing past its process in memory (`MemorySignIn`).
 

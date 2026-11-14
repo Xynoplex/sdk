@@ -12,9 +12,9 @@ import (
 	"testing/synctest"
 	"time"
 
-	semiont "github.com/The-AI-Alliance/semiont/packages/go/sdk"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/discovery"
+	xynoplex "github.com/Xynoplex/sdk/go"
+	"github.com/Xynoplex/sdk/go/api"
+	"github.com/Xynoplex/sdk/go/discovery"
 )
 
 // served is the discovery document a launcher stand-in serves: its status,
@@ -77,7 +77,7 @@ func TestADocumentThatHasNotChangedIsNotReadAgain(t *testing.T) {
 	document, reader := launcher(t)
 	document.serve(http.StatusOK, "application/json", written(t, map[string]any{"version": 1, "kbs": []any{map[string]any{
 		"host": "localhost", "port": 4000, "placement": "local",
-		"managedBy": "semiont-launcher", "did": a,
+		"managedBy": "xynoplex-launcher", "did": a,
 	}}}), `"v1"`)
 	ctx := context.Background()
 
@@ -145,7 +145,7 @@ func TestALaunchersDocumentThatIsNeverServedIsUnreadableAtTheDeadline(t *testing
 
 		read := reader.Read(context.Background())
 
-		deadline := semiont.DefaultTiming().HttpRequestTimeout
+		deadline := xynoplex.DefaultTiming().HttpRequestTimeout
 		if took := time.Since(started); took < deadline || took >= deadline+2*time.Second {
 			t.Errorf("took %s", took)
 		}

@@ -1,4 +1,4 @@
-import type { components } from '@semiont/core';
+import type { components } from '@xynoplex/core';
 
 type Agent = components['schemas']['Agent'];
 

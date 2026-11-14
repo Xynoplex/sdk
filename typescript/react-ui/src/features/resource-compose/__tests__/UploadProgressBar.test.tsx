@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import type { UploadProgress } from '@semiont/sdk';
-import type { ResourceId } from '@semiont/core';
+import type { UploadProgress } from '@xynoplex/sdk';
+import type { ResourceId } from '@xynoplex/core';
 import { UploadProgressBar } from '../components/UploadProgressBar';
 
 describe('UploadProgressBar', () => {
@@ -37,7 +37,7 @@ describe('UploadProgressBar', () => {
       const { container } = render(<UploadProgressBar progress={started} label="Upload" />);
       expect(screen.getByRole('status')).toBeInTheDocument();
       expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
-      expect(container.querySelector('.semiont-progress--indeterminate')).not.toBeNull();
+      expect(container.querySelector('.xynoplex-progress--indeterminate')).not.toBeNull();
     });
 
     it('marks the live region polite for assistive tech', () => {
@@ -102,7 +102,7 @@ describe('UploadProgressBar', () => {
         totalBytes: 1000,
       };
       const { container } = render(<UploadProgressBar progress={progress} label="Upload" />);
-      const fill = container.querySelector('.semiont-progress__fill') as HTMLElement;
+      const fill = container.querySelector('.xynoplex-progress__fill') as HTMLElement;
       expect(fill).not.toBeNull();
       expect(fill.style.width).toBe('75%');
     });
@@ -114,7 +114,7 @@ describe('UploadProgressBar', () => {
         totalBytes: 1000,
       };
       const { container } = render(<UploadProgressBar progress={progress} label="Upload" />);
-      expect(container.querySelector('.semiont-progress--indeterminate')).toBeNull();
+      expect(container.querySelector('.xynoplex-progress--indeterminate')).toBeNull();
     });
 
     it('uses the custom label in determinate mode', () => {
@@ -170,8 +170,8 @@ describe('UploadProgressBar', () => {
         totalBytes: 0,
       };
       const { container } = render(<UploadProgressBar progress={progress} label="Upload" />);
-      expect(container.querySelector('.semiont-progress--indeterminate')).not.toBeNull();
-      const fill = container.querySelector('.semiont-progress__fill') as HTMLElement;
+      expect(container.querySelector('.xynoplex-progress--indeterminate')).not.toBeNull();
+      const fill = container.querySelector('.xynoplex-progress__fill') as HTMLElement;
       expect(fill.style.width).toBe('');
     });
   });
@@ -202,7 +202,7 @@ describe('UploadProgressBar', () => {
 
     it('applies the success fill modifier and full width', () => {
       const { container } = render(<UploadProgressBar progress={finished} label="Upload" />);
-      const fill = container.querySelector('.semiont-progress__fill--success') as HTMLElement;
+      const fill = container.querySelector('.xynoplex-progress__fill--success') as HTMLElement;
       expect(fill).not.toBeNull();
       expect(fill.style.width).toBe('100%');
     });

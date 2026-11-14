@@ -9,8 +9,8 @@
 //! nowhere else.
 
 use super::{Held, Tasks, cancelled};
-use crate::client::SemiontClient;
-use crate::errors::SemiontError;
+use crate::client::XynoplexClient;
+use crate::errors::XynoplexError;
 use crate::namespaces::JobEvent;
 use crate::state_unit::StateUnit;
 use crate::types::{GenerationJobParams, JobId, JobProgress, YieldJobDone, YieldJobResult};
@@ -19,12 +19,12 @@ use std::time::Duration;
 use tokio::sync::watch;
 
 struct Shared {
-    client: Arc<SemiontClient>,
+    client: Arc<XynoplexClient>,
     locale: String,
     generating: Held<bool>,
     progress: Held<Option<JobProgress>>,
     outcome: Held<Option<YieldJobDone>>,
-    failure: Held<Option<SemiontError>>,
+    failure: Held<Option<XynoplexError>>,
     job_id: Held<Option<JobId>>,
     tasks: Tasks,
 }
@@ -37,7 +37,7 @@ pub struct YieldStateUnit {
 impl YieldStateUnit {
     /// `locale` is the language a generation is written in when its request
     /// states none. BCP 47.
-    pub fn new(client: Arc<SemiontClient>, locale: &str) -> YieldStateUnit {
+    pub fn new(client: Arc<XynoplexClient>, locale: &str) -> YieldStateUnit {
         YieldStateUnit {
             shared: Arc::new(Shared {
                 client,
@@ -70,7 +70,7 @@ impl YieldStateUnit {
     /// Why the last run ended without a result: it failed, stalled or was
     /// cancelled. None while one runs, after one that completed, and once
     /// dismissed.
-    pub fn failure(&self) -> watch::Receiver<Option<SemiontError>> {
+    pub fn failure(&self) -> watch::Receiver<Option<XynoplexError>> {
         self.shared.failure.read()
     }
 

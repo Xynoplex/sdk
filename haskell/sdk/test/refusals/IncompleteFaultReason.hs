@@ -1,5 +1,5 @@
 module IncompleteFaultReason where
-import Semiont.Bus (FaultReason(..))
+import Xynoplex.Bus (FaultReason(..))
 
 missing :: FaultReason -> Bool
 missing Lacks = True

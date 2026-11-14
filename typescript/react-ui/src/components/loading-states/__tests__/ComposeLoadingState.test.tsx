@@ -25,13 +25,13 @@ describe('ComposeLoadingState', () => {
     render(<ComposeLoadingState message="Loading..." />);
 
     const container = screen.getByText('Loading...').parentElement;
-    expect(container).toHaveClass('semiont-loading-state');
+    expect(container).toHaveClass('xynoplex-loading-state');
   });
 
   it('renders text with correct styling', () => {
     render(<ComposeLoadingState message="Loading..." />);
 
     const text = screen.getByText('Loading...');
-    expect(text).toHaveClass('semiont-loading-message');
+    expect(text).toHaveClass('xynoplex-loading-message');
   });
 });

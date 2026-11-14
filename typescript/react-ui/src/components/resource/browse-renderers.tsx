@@ -1,11 +1,11 @@
 'use client';
 
-import type { ResourceId } from '@semiont/core';
+import type { ResourceId } from '@xynoplex/core';
 import { lazy, Suspense, memo, type ComponentType } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import type { Annotation } from '@semiont/core';
-import type { SemiontSession } from '@semiont/sdk';
+import type { Annotation } from '@xynoplex/core';
+import type { XynoplexSession } from '@xynoplex/sdk';
 import { SvgDrawingCanvas } from '../image-annotation/SvgDrawingCanvas';
 import { useTranslations } from '../../contexts/TranslationContext';
 
@@ -39,7 +39,7 @@ export interface MediaRendererProps {
    * → the annotations still PAINT, but are inert (paint-only). Threaded by
    * BrowseView's dispatch; custom renderers may ignore it.
    */
-  session?: SemiontSession | null;
+  session?: XynoplexSession | null;
 }
 
 /** Read-only media dispatch, keyed by the registry render mode. */
@@ -73,7 +73,7 @@ export function ImageBrowseRenderer({ content, resourceUri, annotations, session
 
 export function PdfBrowseRenderer({ content, resourceUri, annotations, session, zoom = 1, ownsScrollport = true }: MediaRendererProps) {
   return (
-    <Suspense fallback={<div className="semiont-browse-view__loading"><PdfViewerLoading /></div>}>
+    <Suspense fallback={<div className="xynoplex-browse-view__loading"><PdfViewerLoading /></div>}>
       <PdfAnnotationCanvas
         pdfUrl={content}
         resourceUri={resourceUri}

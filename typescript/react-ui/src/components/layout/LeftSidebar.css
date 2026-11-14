@@ -2,85 +2,85 @@
    LeftSidebar Component
    ============================================ */
 
-.semiont-left-sidebar {
+.xynoplex-left-sidebar {
   display: flex;
   flex-direction: column;
-  background: var(--semiont-bg-primary);
-  border-right: 1px solid var(--semiont-border-primary);
-  transition: width var(--semiont-duration-base);
+  background: var(--xynoplex-bg-primary);
+  border-right: 1px solid var(--xynoplex-border-primary);
+  transition: width var(--xynoplex-duration-base);
   overflow: hidden visible;
 }
 
-.semiont-left-sidebar[data-collapsed="false"] {
+.xynoplex-left-sidebar[data-collapsed="false"] {
   /* Width is set by inline style from the usePanelWidth hook */
   /* Fallback for non-JS scenarios */
   width: 16rem;
 }
 
-.semiont-left-sidebar[data-collapsed="true"] {
+.xynoplex-left-sidebar[data-collapsed="true"] {
   width: 4rem;
 }
 
-.semiont-left-sidebar__header {
+.xynoplex-left-sidebar__header {
   position: relative;
   padding: 1rem;
-  border-bottom: 1px solid var(--semiont-color-gray-200);
+  border-bottom: 1px solid var(--xynoplex-color-gray-200);
 }
 
-[data-theme="dark"] .semiont-left-sidebar__header {
-  border-bottom-color: var(--semiont-color-gray-800);
+[data-theme="dark"] .xynoplex-left-sidebar__header {
+  border-bottom-color: var(--xynoplex-color-gray-800);
 }
 
-.semiont-left-sidebar__branding-button {
+.xynoplex-left-sidebar__branding-button {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   width: 100%;
   padding: 0.5rem;
-  border-radius: var(--semiont-radius-lg);
-  transition: background var(--semiont-duration-base);
+  border-radius: var(--xynoplex-radius-lg);
+  transition: background var(--xynoplex-duration-base);
   text-decoration: none;
   color: inherit;
 }
 
-.semiont-left-sidebar__branding-button:hover {
-  background: var(--semiont-bg-tertiary);
+.xynoplex-left-sidebar__branding-button:hover {
+  background: var(--xynoplex-bg-tertiary);
 }
 
-[data-theme="dark"] .semiont-left-sidebar__branding-button {
-  color: var(--semiont-text-primary);
+[data-theme="dark"] .xynoplex-left-sidebar__branding-button {
+  color: var(--xynoplex-text-primary);
 }
 
-.semiont-left-sidebar__branding-button:focus-visible {
-  outline: 2px solid var(--semiont-color-primary-500);
+.xynoplex-left-sidebar__branding-button:focus-visible {
+  outline: 2px solid var(--xynoplex-color-primary-500);
   outline-offset: 2px;
 }
 
-[data-theme="dark"] .semiont-left-sidebar__branding-button:focus-visible {
-  outline-color: var(--semiont-color-primary-400);
+[data-theme="dark"] .xynoplex-left-sidebar__branding-button:focus-visible {
+  outline-color: var(--xynoplex-color-primary-400);
 }
 
-.semiont-left-sidebar__branding-button:focus:not(:focus-visible) {
+.xynoplex-left-sidebar__branding-button:focus:not(:focus-visible) {
   outline: none;
 }
 
-.semiont-left-sidebar__logo-collapsed {
+.xynoplex-left-sidebar__logo-collapsed {
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Match the natural height of the SEMIONT branding */
+  /* Match the natural height of the XYNOPLEX branding */
   line-height: 1;
   flex-shrink: 0;
 }
 
-.semiont-left-sidebar__logo-text {
-  font-family: 'Orbitron', var(--semiont-font-sans);
+.xynoplex-left-sidebar__logo-text {
+  font-family: 'Orbitron', var(--xynoplex-font-sans);
   font-size: 1.5rem; /* Match size="sm" branding - mobile */
   font-weight: bold;
   text-transform: uppercase;
   letter-spacing: -0.025em;
   line-height: 1;
-  background: linear-gradient(to right, var(--semiont-color-black), var(--semiont-color-primary-600), var(--semiont-color-black));
+  background: linear-gradient(to right, var(--xynoplex-color-black), var(--xynoplex-color-primary-600), var(--xynoplex-color-black));
   background-clip: text;
   -webkit-text-fill-color: transparent;
   white-space: nowrap;
@@ -89,24 +89,24 @@
 }
 
 @media (min-width: 640px) {
-  .semiont-left-sidebar__logo-text {
+  .xynoplex-left-sidebar__logo-text {
     font-size: 1.875rem; /* Match size="sm" branding - small screens */
   }
 }
 
 @media (min-width: 768px) {
-  .semiont-left-sidebar__logo-text {
+  .xynoplex-left-sidebar__logo-text {
     font-size: 2.25rem; /* Match size="sm" branding - medium screens */
   }
 }
 
-[data-theme="dark"] .semiont-left-sidebar__logo-text {
-  background: linear-gradient(to right, var(--semiont-color-white), var(--semiont-color-primary-400), var(--semiont-color-white));
+[data-theme="dark"] .xynoplex-left-sidebar__logo-text {
+  background: linear-gradient(to right, var(--xynoplex-color-white), var(--xynoplex-color-primary-400), var(--xynoplex-color-white));
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-.semiont-left-sidebar__content {
+.xynoplex-left-sidebar__content {
   flex: 1;
   overflow-y: auto;
   padding: 1rem;

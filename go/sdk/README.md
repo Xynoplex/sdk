@@ -1,9 +1,9 @@
-# Semiont Go SDK
+# Xynoplex Go SDK
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/The-AI-Alliance/semiont/packages/go/sdk.svg)](https://pkg.go.dev/github.com/The-AI-Alliance/semiont/packages/go/sdk)
-[![codecov](https://codecov.io/gh/The-AI-Alliance/semiont/graph/badge.svg?component=go-sdk)](https://app.codecov.io/gh/The-AI-Alliance/semiont/components)
+[![Go Reference](https://pkg.go.dev/badge/github.com/Xynoplex/sdk/go.svg)](https://pkg.go.dev/github.com/Xynoplex/sdk/go)
+[![codecov](https://codecov.io/gh/Xynoplex/sdk/graph/badge.svg?component=go-sdk)](https://app.codecov.io/gh/Xynoplex/sdk/components)
 
-The Go SDK for [Semiont][semiont], an open platform for building trusted AI
+The Go SDK for [Xynoplex][xynoplex], an open platform for building trusted AI
 knowledge bases: a shared workspace where humans and AI agents annotate,
 connect and govern a corpus of documents.
 
@@ -16,26 +16,26 @@ tell them apart.
 It has the same namespaces, methods, live queries and state units as the
 [TypeScript][sdk-typescript], [Rust][sdk-rust], [Python][sdk-python] and [Kotlin][sdk-kotlin] SDKs,
 and is held to the same [conformance suite][conformance]: its wire, its live
-queries and its worker, case by case. The [`semiont` launcher][launcher] is
-built on it. New to Semiont? The [Introduction][introduction] explains the
+queries and its worker, case by case. The [`xynoplex` launcher][launcher] is
+built on it. New to Xynoplex? The [Introduction][introduction] explains the
 domain and the ideas the API falls out of. Its code is TypeScript, and the
 ideas are this module's too.
 
 ## Install
 
-The module is `github.com/The-AI-Alliance/semiont/packages/go/sdk`, package
-`semiont`:
+The module is `github.com/Xynoplex/sdk/go`, package
+`xynoplex`:
 
 ```bash
-go get github.com/The-AI-Alliance/semiont/packages/go/sdk
+go get github.com/Xynoplex/sdk/go
 ```
 
 ```text
-import semiont "github.com/The-AI-Alliance/semiont/packages/go/sdk"
+import xynoplex "github.com/Xynoplex/sdk/go"
 ```
 
-Each release of Semiont publishes it at the release's version, by the tag
-`packages/go/sdk/v<version>`, and its documentation is on
+Each release of Xynoplex publishes it at the release's version, by the tag
+`go/sdk/v<version>`, and its documentation is on
 [pkg.go.dev][pkg-go-dev]. `@main` takes main's latest commit between releases.
 
 A program in this repository requires it by a `replace` directive on its
@@ -43,15 +43,15 @@ relative path instead, as the launcher's `go.mod` does, so it builds against
 the tree:
 
 ```text
-require github.com/The-AI-Alliance/semiont/packages/go/sdk v0.0.0-00010101000000-000000000000
+require github.com/Xynoplex/sdk/go v0.0.0-00010101000000-000000000000
 
-replace github.com/The-AI-Alliance/semiont/packages/go/sdk => ../../packages/go/sdk
+replace github.com/Xynoplex/sdk/go => ../../go/sdk
 ```
 
 It requires the Go toolchain its `go.mod` names. One module holds all of it:
 the client, the transport that carries it over HTTP to a knowledge base's
 gateway, signing in, the state units (package `state`) and the doubles a test
-is built on (package `semionttest`). Its dependencies are `oapi-codegen`'s
+is built on (package `xynoplextest`). Its dependencies are `oapi-codegen`'s
 runtime, `google/uuid`, OpenTelemetry's API and `golang.org/x/text`.
 
 A client speaks to a running knowledge base. The [Quick Start][quick-start]
@@ -76,31 +76,31 @@ import (
 	"fmt"
 	"net/http"
 
-	semiont "github.com/The-AI-Alliance/semiont/packages/go/sdk"
+	xynoplex "github.com/Xynoplex/sdk/go"
 )
 
 // Work signs the agent in, and opens a stream as it.
 func Work(ctx context.Context, gateway, issuer, secret string) error {
-	timing := semiont.DefaultTiming()
-	service := semiont.NewServiceToken(
-		semiont.SecretCredential{Issuer: issuer, ClientID: "semiont-smelter", ClientSecret: secret},
-		semiont.Issuer{HTTP: http.DefaultClient, Timing: timing},
+	timing := xynoplex.DefaultTiming()
+	service := xynoplex.NewServiceToken(
+		xynoplex.SecretCredential{Issuer: issuer, ClientID: "xynoplex-smelter", ClientSecret: secret},
+		xynoplex.Issuer{HTTP: http.DefaultClient, Timing: timing},
 	)
-	agent, err := semiont.SignInAgent(ctx, semiont.AgentConfig{
+	agent, err := xynoplex.SignInAgent(ctx, xynoplex.AgentConfig{
 		Gateway: gateway, Service: service, HTTP: http.DefaultClient, Timing: timing,
 	})
 	if err != nil {
 		return err
 	}
 	defer agent.Close()
-	transport := semiont.NewHTTPTransport(semiont.HTTPTransportConfig{
-		BaseURL: gateway, Token: agent.Token(), Refresher: agent, Channels: semiont.JobClaimChannels,
+	transport := xynoplex.NewHTTPTransport(xynoplex.HTTPTransportConfig{
+		BaseURL: gateway, Token: agent.Token(), Refresher: agent, Channels: xynoplex.JobClaimChannels,
 		HTTP: http.DefaultClient, Timing: timing,
 	})
 	defer transport.Close()
 	fmt.Println("working as", agent.DID()) // who its work is attributed to: its account, as the gateway names it
 	for state := range transport.State().Changes(ctx) {
-		if state == semiont.ConnectionStateOpen {
+		if state == xynoplex.ConnectionStateOpen {
 			fmt.Println("its stream is open, as the agent")
 			return nil
 		}
@@ -109,10 +109,10 @@ func Work(ctx context.Context, gateway, issuer, secret string) error {
 }
 ```
 
-That account proves itself with a secret, as each of Semiont's own services
+That account proves itself with a secret, as each of Xynoplex's own services
 does. A worker's proves itself with a key: the launcher hands the worker its
-RSA key, a PKCS#8 PEM, as `SEMIONT_OIDC_CLIENT_KEY`, and a
-`semiont.KeyCredential` holding it goes to `NewServiceToken` in place of the
+RSA key, a PKCS#8 PEM, as `XYNOPLEX_OIDC_CLIENT_KEY`, and a
+`xynoplex.KeyCredential` holding it goes to `NewServiceToken` in place of the
 `SecretCredential`. Each grant then carries an assertion signed with the key
 for that grant alone (RFC 7523), and no secret; the issuer checks it with the
 public half registered on the worker's client.
@@ -122,22 +122,22 @@ import (
 	"fmt"
 	"os"
 
-	semiont "github.com/The-AI-Alliance/semiont/packages/go/sdk"
+	xynoplex "github.com/Xynoplex/sdk/go"
 )
 
 // WorkerCredential is a worker's account at issuer, which proves itself with
 // the key the launcher handed it.
-func WorkerCredential(issuer, clientID string) (semiont.KeyCredential, error) {
-	key, err := semiont.ParsePrivateKeyPEM(os.Getenv("SEMIONT_OIDC_CLIENT_KEY"))
+func WorkerCredential(issuer, clientID string) (xynoplex.KeyCredential, error) {
+	key, err := xynoplex.ParsePrivateKeyPEM(os.Getenv("XYNOPLEX_OIDC_CLIENT_KEY"))
 	if err != nil {
-		return semiont.KeyCredential{}, fmt.Errorf("SEMIONT_OIDC_CLIENT_KEY: %w", err)
+		return xynoplex.KeyCredential{}, fmt.Errorf("XYNOPLEX_OIDC_CLIENT_KEY: %w", err)
 	}
-	return semiont.KeyCredential{Issuer: issuer, ClientID: clientID, PrivateKey: key}, nil
+	return xynoplex.KeyCredential{Issuer: issuer, ClientID: clientID, PrivateKey: key}, nil
 }
 ```
 
 **A person** is signed in at the issuer the knowledge base trusts, and the
-sign-in is kept. [`semiont login`][launcher] keeps one for each stack, and a
+sign-in is kept. [`xynoplex login`][launcher] keeps one for each stack, and a
 session here is built over it; a program on a machine with no launcher makes
 its own by the device grant, which shows a code to approve in any browser. No
 password passes through this process. A session is given the knowledge base's
@@ -152,25 +152,25 @@ import (
 	"net/http"
 	"path/filepath"
 
-	semiont "github.com/The-AI-Alliance/semiont/packages/go/sdk"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/bus"
+	xynoplex "github.com/Xynoplex/sdk/go"
+	"github.com/Xynoplex/sdk/go/api"
+	"github.com/Xynoplex/sdk/go/bus"
 )
 
-func show(code semiont.DeviceCode) {
+func show(code xynoplex.DeviceCode) {
 	fmt.Printf("Open %s and enter %s\n", code.VerificationURI, code.UserCode)
 }
 
-// AsMe is a session as the person signed in to kb, by `semiont login` or by
+// AsMe is a session as the person signed in to kb, by `xynoplex login` or by
 // the device grant here.
 func AsMe(ctx context.Context, kb api.KbTarget, home string) error {
-	directory, ok := semiont.StateDir(semiont.ThisSystem(), home, "", "")
+	directory, ok := xynoplex.StateDir(xynoplex.ThisSystem(), home, "", "")
 	if !ok {
 		return errors.New("this system keeps no sign-ins")
 	}
-	// The sign-in of the stack `semiont login` keys as the knowledge base's id.
-	kept := semiont.NewSignInStore(filepath.Join(directory, semiont.SignInFile)).Entry(kb.Id)
-	timing := semiont.DefaultTiming()
+	// The sign-in of the stack `xynoplex login` keys as the knowledge base's id.
+	kept := xynoplex.NewSignInStore(filepath.Join(directory, xynoplex.SignInFile)).Entry(kb.Id)
+	timing := xynoplex.DefaultTiming()
 	if _, held, err := kept.Held(ctx); err != nil {
 		return err
 	} else if !held {
@@ -178,16 +178,16 @@ func AsMe(ctx context.Context, kb api.KbTarget, home string) error {
 		if err != nil {
 			return err
 		}
-		gateway, err := semiont.GatewayURL(endpoint)
+		gateway, err := xynoplex.GatewayURL(endpoint)
 		if err != nil {
 			return err
 		}
-		issuer := semiont.Issuer{HTTP: http.DefaultClient, Timing: timing}
-		if _, err := semiont.SignInWithDevice(ctx, issuer, gateway, kept, show); err != nil {
+		issuer := xynoplex.Issuer{HTTP: http.DefaultClient, Timing: timing}
+		if _, err := xynoplex.SignInWithDevice(ctx, issuer, gateway, kept, show); err != nil {
 			return err
 		}
 	}
-	session, end, err := semiont.SessionFromKept(ctx, semiont.SessionFromKeptConfig{
+	session, end, err := xynoplex.SessionFromKept(ctx, xynoplex.SessionFromKeptConfig{
 		Kb: kb, Kept: kept, HTTP: http.DefaultClient, Timing: timing, Channels: bus.BridgedChannels,
 	})
 	if err != nil {
@@ -229,7 +229,7 @@ func AsMe(ctx context.Context, kb api.KbTarget, home string) error {
   here serves the launcher's verbs, and one it renewed serves this session.
   `MemorySignIn` keeps one for the life of the process instead, and `SignOut`
   revokes one at its issuer and forgets it.
-- **`SEMIONT_BUS_LOG` is the only environment variable the SDK reads**
+- **`XYNOPLEX_BUS_LOG` is the only environment variable the SDK reads**
   ([Telemetry](#telemetry)). Everything else it needs, it is given: an
   application reads its own environment (`HOME`, a secret, an address) and
   says what it found.
@@ -250,7 +250,7 @@ func AsMe(ctx context.Context, kb api.KbTarget, home string) error {
   `SessionConfig`, `ResumeConfig`, `SessionFromKeptConfig`, `Issuer`,
   `AgentConfig` and `registry.HttpSessionFactory`, and the source
   `DescribeConnection`, `RetryWithBackoff`, `EqualJitter` and
-  `semionttest.NewScriptedSessions` take; with none, math/rand/v2's own. One
+  `xynoplextest.NewScriptedSessions` take; with none, math/rand/v2's own. One
   source may be given to all of them, since the SDK draws from it one draw at a
   time; an application that draws from it too does so while nothing it gave it
   to runs.
@@ -259,7 +259,7 @@ func AsMe(ctx context.Context, kb api.KbTarget, home string) error {
 
 Every operation belongs to one of eight flows: verbs for what a participant
 does with a shared corpus. Four write, three read, and one directs
-attention. Each is a namespace of the client, a field of `*semiont.Client`.
+attention. Each is a namespace of the client, a field of `*xynoplex.Client`.
 
 | | Verb | What it does | Among its methods |
 |---|---|---|---|
@@ -287,16 +287,16 @@ client comes to be signed in.
 import (
 	"context"
 
-	semiont "github.com/The-AI-Alliance/semiont/packages/go/sdk"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
+	xynoplex "github.com/Xynoplex/sdk/go"
+	"github.com/Xynoplex/sdk/go/api"
 )
 
 // Summarize ingests a paper, has a model mark the concepts it mentions,
 // gathers the context around it, and generates a summary grounded in it. ok
 // is false when the job declined, and made nothing.
-func Summarize(ctx context.Context, client *semiont.Client, paper []byte) (summary api.ResourceId, ok bool, err error) {
+func Summarize(ctx context.Context, client *xynoplex.Client, paper []byte) (summary api.ResourceId, ok bool, err error) {
 	// Ingest: the paper's bytes become a resource.
-	created, err := client.Yield.Resource(ctx, semiont.PutBinaryRequest{
+	created, err := client.Yield.Resource(ctx, xynoplex.PutBinaryRequest{
 		Name:       "Attention Is All You Need",
 		Bytes:      paper,
 		Format:     "application/pdf",
@@ -362,7 +362,7 @@ Where to go from here:
 A client is eleven namespaces over one transport: the
 [eight verbs](#eight-verbs), one per [flow of the protocol][protocol], and
 `Job`, `Auth` and `System` beside them. Each method is a row of
-[`protocol/specs/src/client/surface.json`][surface], the table every Semiont SDK is
+[`protocol/specs/src/client/surface.json`][surface], the table every Xynoplex SDK is
 held to.
 
 ```go
@@ -370,13 +370,13 @@ import (
 	"context"
 	"fmt"
 
-	semiont "github.com/The-AI-Alliance/semiont/packages/go/sdk"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
+	xynoplex "github.com/Xynoplex/sdk/go"
+	"github.com/Xynoplex/sdk/go/api"
 )
 
 // Annotate reads a resource, has it highlighted, and directs attention to
 // one of its annotations.
-func Annotate(ctx context.Context, client *semiont.Client, resource api.ResourceId, annotation api.AnnotationId) error {
+func Annotate(ctx context.Context, client *xynoplex.Client, resource api.ResourceId, annotation api.AnnotationId) error {
 	described, err := client.Browse.Resource(resource).Fresh(ctx) // a query, read once
 	if err != nil {
 		return err
@@ -396,13 +396,13 @@ func Annotate(ctx context.Context, client *semiont.Client, resource api.Resource
 			return err
 		}
 		switch event := event.(type) {
-		case semiont.JobCreated:
+		case xynoplex.JobCreated:
 			fmt.Println("to cancel it:", event.Data.JobId) // what client.Job.Cancel names
-		case semiont.JobProgressed:
+		case xynoplex.JobProgressed:
 			fmt.Println(event.Data.Percentage)
-		case semiont.JobAttemptFailed:
+		case xynoplex.JobAttemptFailed:
 			fmt.Println("trying again after:", event.Data.Error)
-		case semiont.JobCompleted[api.MarkJobCompleteCommand]:
+		case xynoplex.JobCompleted[api.MarkJobCompleteCommand]:
 			fmt.Println(event.Data.Result)
 		}
 	}
@@ -452,10 +452,10 @@ Every method returns one of nine shapes, and the table says which:
 - **`client.Bus`** is the client's own bus: every frame its transport
   delivered, and every signal its own parts gave each other.
   **`client.Wire`** is the bus over the transport, typed by channel.
-- **A client is made over three things** (`semiont.NewClient`, with a
+- **A client is made over three things** (`xynoplex.NewClient`, with a
   `ClientConfig`): a transport, a content transport and the gateway's own
   operations. Over HTTP all three are one `*HTTPTransport`, its content being
-  `semiont.NewHTTPContentTransport(transport)`. `Close` ends what the client
+  `xynoplex.NewHTTPContentTransport(transport)`. `Close` ends what the client
   started. It does not close its transport: whoever opened that closes it,
   after the client. A session holds one as `session.Client()`.
 - **What it sends unasked is the table's**: a list's first hundred, a
@@ -478,19 +478,19 @@ import (
 	"context"
 	"fmt"
 
-	semiont "github.com/The-AI-Alliance/semiont/packages/go/sdk"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
+	xynoplex "github.com/Xynoplex/sdk/go"
+	"github.com/Xynoplex/sdk/go/api"
 )
 
 // Watch shows a resource's annotations as they change, until ctx is done.
-func Watch(ctx context.Context, client *semiont.Client, resource api.ResourceId) {
+func Watch(ctx context.Context, client *xynoplex.Client, resource api.ResourceId) {
 	for state := range client.Browse.Annotations(resource).States(ctx) { // holds the resource's scope
 		switch state := state.(type) {
-		case semiont.Pending:
+		case xynoplex.Pending:
 			fmt.Println("asking")
-		case semiont.Ready[[]api.Annotation]:
+		case xynoplex.Ready[[]api.Annotation]:
 			fmt.Println(len(state.Value), "annotations")
-		case semiont.Failed: // a state, not the end: the query lives on
+		case xynoplex.Failed: // a state, not the end: the query lives on
 			fmt.Println("failed:", state.Err)
 		}
 	}
@@ -543,7 +543,7 @@ The behaviours every SDK's live queries are held to are numbered in
 A state unit holds one flow as state, for an application to read and watch:
 a terminal, a daemon and an agent read one alike. It is built over a client it
 never closes, and it hears the client's own bus from the moment it exists.
-Each thing it holds is a `semiont.Watched[T]`: `Value()` is its value now, and
+Each thing it holds is a `xynoplex.Watched[T]`: `Value()` is its value now, and
 `Changes(ctx)` gives that value and then each change, until the unit ends. A
 new session has a new client, so a unit lasts as long as the session it was
 built from. `Close()` ends a unit: what it had running has stopped, and every
@@ -558,9 +558,9 @@ built from. `Close()` ends a unit: what it had running has stopped, and every
 | `state.BeckonStateUnit` (one resource) | the annotation hovered | `client.Beckon.Hover`; an annotation opened, here or by another participant; `Focus` |
 | `state.HoverDwell` | nothing: it says an annotation is hovered once the pointer has rested on it for a delay, and none the moment the pointer leaves | `Enter`, `Leave` |
 | `state.SearchPipeline[T]` | a query and the results of the query it settled on | `SetQuery` |
-| `semiont.SessionSignals` | that the session ended, that a request was refused for lack of permission, that another knowledge base answers at a registered address | `Notify…`, `Acknowledge…` |
+| `xynoplex.SessionSignals` | that the session ended, that a request was refused for lack of permission, that another knowledge base answers at a registered address | `Notify…`, `Acknowledge…` |
 
-`semiont.Session` and `semiont.Cache` are state units too: a session's token,
+`xynoplex.Session` and `xynoplex.Cache` are state units too: a session's token,
 who is signed in and its stream's state; and the values a client's queries
 answer from.
 
@@ -571,7 +571,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/state"
+	"github.com/Xynoplex/sdk/go/state"
 )
 
 // ShowHover shows what is hovered as it changes.
@@ -606,14 +606,14 @@ import (
 	"fmt"
 	"strings"
 
-	semiont "github.com/The-AI-Alliance/semiont/packages/go/sdk"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
+	xynoplex "github.com/Xynoplex/sdk/go"
+	"github.com/Xynoplex/sdk/go/api"
 )
 
 // Count is your work: read the resource, and say how many lines it has. A
 // worker that annotates builds each api.Annotation it finds and commits them
 // with job.Commit before it completes.
-func Count(ctx context.Context, client *semiont.Client, job *semiont.HeldMarkJob) (api.MarkJobResult, error) {
+func Count(ctx context.Context, client *xynoplex.Client, job *xynoplex.HeldMarkJob) (api.MarkJobResult, error) {
 	var result api.MarkJobResult
 	text, err := client.Browse.ResourceContent(ctx, job.ResourceId())
 	if err != nil {
@@ -628,7 +628,7 @@ func Count(ctx context.Context, client *semiont.Client, job *semiont.HeldMarkJob
 
 // Run claims the highlighting jobs of the knowledge base client reaches, one
 // at a time, until ctx is done or the credential can never claim.
-func Run(ctx context.Context, client *semiont.Client) error {
+func Run(ctx context.Context, client *xynoplex.Client) error {
 	var highlights api.MarkJobFilter
 	highlights.JobType = api.MarkJobFilterJobTypeMark
 	highlights.Params.Motivation = api.MotivationHighlighting
@@ -644,8 +644,8 @@ func Run(ctx context.Context, client *semiont.Client) error {
 	deterministic := api.FailureClassDeterministic
 	// Each job the worker comes to hold, one at a time. The next is claimed when this one settles.
 	for held, err := range claims.All() {
-		var refused *semiont.ClaimRefusal
-		if errors.As(err, &refused) && refused.Code != nil && *refused.Code == semiont.BusRequestErrorCodeUnauthorized {
+		var refused *xynoplex.ClaimRefusal
+		if errors.As(err, &refused) && refused.Code != nil && *refused.Code == xynoplex.BusRequestErrorCodeUnauthorized {
 			// This credential can never claim. Stop, so that whoever runs the worker sees it.
 			return refused
 		}
@@ -654,17 +654,17 @@ func Run(ctx context.Context, client *semiont.Client) error {
 			continue
 		}
 		switch job := held.(type) {
-		case *semiont.HeldYieldJob:
-			if err := job.Fail(ctx, "this worker runs no yield job", semiont.JobFailure{FailureClass: &deterministic}); err != nil {
+		case *xynoplex.HeldYieldJob:
+			if err := job.Fail(ctx, "this worker runs no yield job", xynoplex.JobFailure{FailureClass: &deterministic}); err != nil {
 				return err
 			}
-		case *semiont.HeldMarkJob:
+		case *xynoplex.HeldMarkJob:
 			if err := job.Start(ctx); err != nil {
 				return err
 			}
 			result, err := Count(ctx, client, job)
 			if err != nil {
-				err = job.Fail(ctx, err.Error(), semiont.JobFailure{})
+				err = job.Fail(ctx, err.Error(), xynoplex.JobFailure{})
 			} else {
 				err = job.Complete(ctx, result)
 			}
@@ -680,15 +680,15 @@ func Run(ctx context.Context, client *semiont.Client) error {
 - **A worker is an agent.** Its process signs in with a service account
   ([Signing in](#signing-in)), and the gateway gives it the agent its work is
   attributed to. The account needs two roles at the issuer:
-  `semiont-service`, to be given an agent, and `semiont-worker`, without
+  `xynoplex-service`, to be given an agent, and `xynoplex-worker`, without
   which every claim is refused as `bus.unauthorized`.
-- **Its stream names `semiont.JobClaimChannels`**, and the reply channels of
+- **Its stream names `xynoplex.JobClaimChannels`**, and the reply channels of
   whatever else it awaits. The announcements that wake an idle worker reach
   only a stream that names them, so claims over a transport whose stream does
   not are refused at once, as `bus.unsubscribed`.
 - **A held job commits for itself**: `job.Commit(ctx, resourceID, annotations)`
   sends the batch as `mark:commit`, citing the job, and returns once the
-  record has it. A worker that commits names `semiont.JobCommitChannels` in
+  record has it. A worker that commits names `xynoplex.JobCommitChannels` in
   its stream as well.
 - **It claims when it is idle**: when its stream opens, each time a job
   settles, when a job it accepts is announced (or an announcement its
@@ -717,7 +717,7 @@ func Run(ctx context.Context, client *semiont.Client) error {
   cancellation names the held job: the work stops where it can, and says
   `job.Cancel`.
 - **Each job has a trace of its own.** `job.Trace()` is the trace its reply
-  arrived in, and `semiont.Continuing(ctx, job.Trace())` is a context whose
+  arrived in, and `xynoplex.Continuing(ctx, job.Trace())` is a context whose
   spans continue it.
 - **`claims.Vitals()`** is what the worker can say of itself: when it last
   heard an announcement, claimed, was active and settled, the job it holds,
@@ -802,7 +802,7 @@ one that manages nothing, and what changed since it was last read
 
 ## Testing what is built on it
 
-Package `semionttest` gives a real client over doubles. Its namespaces, its
+Package `xynoplextest` gives a real client over doubles. Its namespaces, its
 cache and its deadlines are the client's own; only what it speaks through is
 scripted. A test says what the knowledge base answers, runs the code under
 test, and reads what that code asked.
@@ -815,21 +815,21 @@ import (
 	"strings"
 	"testing"
 
-	semiont "github.com/The-AI-Alliance/semiont/packages/go/sdk"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/bus"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/semionttest"
+	xynoplex "github.com/Xynoplex/sdk/go"
+	"github.com/Xynoplex/sdk/go/api"
+	"github.com/Xynoplex/sdk/go/bus"
+	"github.com/Xynoplex/sdk/go/xynoplextest"
 )
 
 // TitleOf is the code under test: a resource's name, in capitals.
-func TitleOf(ctx context.Context, client *semiont.Client, resource api.ResourceId) (string, error) {
+func TitleOf(ctx context.Context, client *xynoplex.Client, resource api.ResourceId) (string, error) {
 	described, err := client.Browse.Resource(resource).Fresh(ctx)
 	return strings.ToUpper(described.Name), err
 }
 
 // ATitleIsItsResourcesNameInCapitals is the test of it.
 func ATitleIsItsResourcesNameInCapitals(t *testing.T) {
-	made := semionttest.NewTestClient(semionttest.TestClientConfig{Timing: semiont.DefaultTiming()})
+	made := xynoplextest.NewTestClient(xynoplextest.TestClientConfig{Timing: xynoplex.DefaultTiming()})
 	defer made.Transport.Close()
 	defer made.Client.Close()
 	asked := bus.BrowseResourceRequested.Request().Channel()
@@ -845,7 +845,7 @@ func ATitleIsItsResourcesNameInCapitals(t *testing.T) {
 
 	// What the code under test asked of the knowledge base, as it was sent.
 	sent := made.Transport.RequestLog()
-	if !slices.EqualFunc(sent, []string{`{"resourceId":"res-1"}`}, func(entry semionttest.RequestLogEntry, payload string) bool {
+	if !slices.EqualFunc(sent, []string{`{"resourceId":"res-1"}`}, func(entry xynoplextest.RequestLogEntry, payload string) bool {
 		return entry.Channel == asked && string(entry.Payload) == payload
 	}) {
 		t.Fatalf("asked %v", sent)
@@ -856,7 +856,7 @@ func ATitleIsItsResourcesNameInCapitals(t *testing.T) {
 - **`FaultyTransport`** is a transport with no wire. Its `Channels` are the
   global channels its stream names, as a real transport's are, and with none
   named it names none: a client's stream names `bus.BridgedChannels`, a
-  worker's `semiont.JobClaimChannels`, and the one `NewTestClient` makes
+  worker's `xynoplex.JobClaimChannels`, and the one `NewTestClient` makes
   when it is given none names `bus.BridgedChannels`. A frame on a resource's
   scope arrives only while that scope is held (`SubscribeToResource`), and
   what its stream does not carry is dropped, whether it is delivered, a
@@ -879,7 +879,7 @@ func ATitleIsItsResourcesNameInCapitals(t *testing.T) {
 - **Every double works inside a `testing/synctest` bubble**: a test can let
   what is ready run (`synctest.Wait`) and move the clock (`time.Sleep`).
 - **`AssertStateUnitAxioms`** holds a state unit to what every unit promises.
-- **`NewTestSession`** is a real `semiont.Session` over a test client, ready
+- **`NewTestSession`** is a real `xynoplex.Session` over a test client, ready
   at once, holding a token only if its sign-in held one.
 - **`ScriptedSessions`** is a `registry.SessionFactory` of real sessions over
   scripted transports, one a knowledge base, for a test of a registry: a test
@@ -903,22 +903,22 @@ import (
 	"fmt"
 	"net/http"
 
-	semiont "github.com/The-AI-Alliance/semiont/packages/go/sdk"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/bus"
+	xynoplex "github.com/Xynoplex/sdk/go"
+	"github.com/Xynoplex/sdk/go/api"
+	"github.com/Xynoplex/sdk/go/bus"
 )
 
 // Read asks for a resource on the bus, then hears what is added to it.
 func Read(ctx context.Context, origin, token string, resource api.ResourceId) error {
-	timing := semiont.DefaultTiming()
-	transport := semiont.NewHTTPTransport(semiont.HTTPTransportConfig{
-		BaseURL: origin, Token: semiont.NewVariable(token), Channels: bus.BridgedChannels, HTTP: http.DefaultClient, Timing: timing,
+	timing := xynoplex.DefaultTiming()
+	transport := xynoplex.NewHTTPTransport(xynoplex.HTTPTransportConfig{
+		BaseURL: origin, Token: xynoplex.NewVariable(token), Channels: bus.BridgedChannels, HTTP: http.DefaultClient, Timing: timing,
 	})
 	defer transport.Close()
-	wire := semiont.NewWire(transport)
+	wire := xynoplex.NewWire(transport)
 
-	reply, err := semiont.Request(ctx, wire, bus.BrowseResourceRequested, api.BrowseResourceRequest{ResourceId: resource}, timing.BusRequestTimeout)
-	var refused *semiont.BusRequestError
+	reply, err := xynoplex.Request(ctx, wire, bus.BrowseResourceRequested, api.BrowseResourceRequest{ResourceId: resource}, timing.BusRequestTimeout)
+	var refused *xynoplex.BusRequestError
 	if errors.As(err, &refused) {
 		fmt.Println(refused.Code) // "bus.not-found", "bus.timeout", …: a closed vocabulary
 		return nil
@@ -929,7 +929,7 @@ func Read(ctx context.Context, origin, token string, resource api.ResourceId) er
 	fmt.Println(reply.Response.Resource.Name)
 
 	// A resource's channel is read for the resource: the read holds its scope, and lets go when the loop stops or ctx is done.
-	added, err := semiont.FramesOf(ctx, wire, bus.MarkAdded, resource)
+	added, err := xynoplex.FramesOf(ctx, wire, bus.MarkAdded, resource)
 	if err != nil {
 		return err
 	}
@@ -945,8 +945,8 @@ func Read(ctx context.Context, origin, token string, resource api.ResourceId) er
 ```
 
 - **The bus is typed by channel.** A channel of package `bus` is a value that
-  carries its payload's type: `semiont.Emit`, `semiont.Frames`,
-  `semiont.FramesOf` and `semiont.Request` refuse another channel's payload,
+  carries its payload's type: `xynoplex.Emit`, `xynoplex.Frames`,
+  `xynoplex.FramesOf` and `xynoplex.Request` refuse another channel's payload,
   and a request's reply is its operation's result. By name, with JSON
   objects, it is the `Wire`'s `EmitOn`, `FramesOn` and `RequestOf`.
 - **A request** waits for the stream to be open before it is sent, is
@@ -955,13 +955,13 @@ func Read(ctx context.Context, origin, token string, resource api.ResourceId) er
   far behind it falls, until its loop stops or its context is done.
 - **A resource's channel is read for the resource.** `mark:added` and the
   other events of the record are delivered on their resource's scope, and
-  their channels are `bus.Scoped`. `semiont.FramesOf(ctx, wire, bus.MarkAdded, resource)`
+  their channels are `bus.Scoped`. `xynoplex.FramesOf(ctx, wire, bus.MarkAdded, resource)`
   holds that scope until the loop stops or `ctx` is done, and gives that
-  resource's frames and no other's. `semiont.Frames` takes only a channel delivered to everyone.
+  resource's frames and no other's. `xynoplex.Frames` takes only a channel delivered to everyone.
 - **The connection's state** (`transport.State()`) is a `Watched` value: what
   it is now, and each thing it becomes. A dropped stream is a state, never an
   error, and opens again by itself.
-- **Failures** are `semiont.Error`s under the codes of
+- **Failures** are `xynoplex.Error`s under the codes of
   [`protocol/specs/src/errors/codes.json`][codes]: `*TransportError`,
   `*BusRequestError`, `*SessionError`, `*SignInError` and `*JobError`. What a
   server refused is also told to each listener of `transport.Failures(told)`,
@@ -998,15 +998,15 @@ import (
 	"context"
 	"fmt"
 
-	semiont "github.com/The-AI-Alliance/semiont/packages/go/sdk"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
+	xynoplex "github.com/Xynoplex/sdk/go"
+	"github.com/Xynoplex/sdk/go/api"
 )
 
 // Store uploads a page, reads it back, and asks the gateway who is signed in
 // and whether it is serving. Over HTTP, content is
-// semiont.NewHTTPContentTransport(transport), and gateway is the transport.
-func Store(ctx context.Context, content semiont.ContentTransport, gateway semiont.GatewayOperations, page []byte) (api.ResourceId, error) {
-	upload := content.PutBinary(ctx, semiont.PutBinaryRequest{
+// xynoplex.NewHTTPContentTransport(transport), and gateway is the transport.
+func Store(ctx context.Context, content xynoplex.ContentTransport, gateway xynoplex.GatewayOperations, page []byte) (api.ResourceId, error) {
+	upload := content.PutBinary(ctx, xynoplex.PutBinaryRequest{
 		Name: "A page", Bytes: page, Format: "text/markdown", StorageURI: "file://pages/a.md", EntityTypes: []string{"Note"},
 	})
 	for progress := range upload.Progress() {
@@ -1048,8 +1048,8 @@ func Store(ctx context.Context, content semiont.ContentTransport, gateway semion
   `client.Browse.ResourceGraph` and `client.Browse.ResourceAnchoredText`
   call.
 - **The text of a resource** (`client.Browse.ResourceContent`) is its bytes
-  read as a browser reads them, by [the rule every Semiont reader
-  keeps][resource-text]. `semiont.DecodeRepresentation(data, mediaType)` is
+  read as a browser reads them, by [the rule every Xynoplex reader
+  keeps][resource-text]. `xynoplex.DecodeRepresentation(data, mediaType)` is
   the same reading, of bytes a program already holds.
 
 ## Ids, and the protocol's shapes
@@ -1064,7 +1064,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
+	"github.com/Xynoplex/sdk/go/api"
 )
 
 // Ids makes ids from text, and a command of them.
@@ -1094,15 +1094,15 @@ func Ids() error {
 
 The SDK takes OpenTelemetry's API and installs nothing: it does nothing until
 the application it runs in installs a provider. With one, it exports what
-[`protocol/specs/src/sdk-telemetry/telemetry.json`][telemetry] lists, as every Semiont
+[`protocol/specs/src/sdk-telemetry/telemetry.json`][telemetry] lists, as every Xynoplex
 SDK does: a span for each frame sent and each received, a span for each upload
 and each read, and a count of the emits sent. A request carries the trace it
 is made in, and a frame continues the trace it was sent under (`Frame.Trace`).
 A job a worker holds states the trace it is run in (`job.Trace()`).
-`semiont.Continuing(ctx, trace)` is a context whose spans continue either.
+`xynoplex.Continuing(ctx, trace)` is a context whose spans continue either.
 
-With `SEMIONT_BUS_LOG` set to any value that is not empty, a transport over
-HTTP also writes the [bus log][bus-log], as every Semiont SDK does: one line
+With `XYNOPLEX_BUS_LOG` set to any value that is not empty, a transport over
+HTTP also writes the [bus log][bus-log], as every Xynoplex SDK does: one line
 for each frame it sends and each it receives, and for each read and each
 upload of content. A line says the channel, the resource's scope, the first
 eight characters of the correlation id and of the trace's id, and the payload
@@ -1125,14 +1125,14 @@ log keeps) is written as `[withheld]`.
 
 | Package | Holds | Generated from |
 |---|---|---|
-| `semiont` | The client (`Client`, `NewClient`) and its eleven namespaces; `Cached`, `Running`, `Delegation` and `Upload`; the cache, its refresher and what it keeps (`Cache`, `CachePersistence`, `SessionStorage`, `MemoryStorage`, `CoupledBookmarks`); `Claims` and the held jobs; `HTTPTransport`, `HTTPContentTransport`, `Wire` and the client's own `EventBus`; signing in (`SessionFromKept`, `ResumeSession`, `SignInWithDevice`, `SignOut`, `SignInAgent`, `NewServiceToken`, with a `SecretCredential` or a `KeyCredential`) and `Session`; a person's sign-in by a page redirect (`BeginAuthorization`, `CompleteAuthorization`, `DescribeConnection`); the sign-in store (`SignInStore`, `StateDir`); `SessionSignals`, `StateUnit`, `Variable` and `Watched`; the readers of a resource (`PrimaryRepresentation`, `PrimaryMediaType`, `ResourceEntityTypes`, `DecodeRepresentation`); how a knowledge base and its principals are named (`KbDid`, `PersonDid`, `AgentDid` and the rest); `GatewayURL`; the retry rules; and the generated tables: the failure codes (`errorcodes_gen.go`), the timing (`timing_gen.go`), the refresh table (`refresh_gen.go`), the telemetry names (`telemetry_gen.go`), the sign-in store's entry (`signin_gen.go`), the OAuth clients (`oauthclients_gen.go`) and the Encoding Standard's labels (`encodings_gen.go`) | hand-written; [`protocol/specs/src/errors/codes.json`][codes]; [`protocol/specs/src/client/timing.json`](../../../protocol/specs/src/client/timing.json); [`protocol/specs/src/client/refresh.json`][refresh]; [`protocol/specs/src/sdk-telemetry/telemetry.json`][telemetry]; [`protocol/specs/src/sign-in-store/SignIn.json`](../../../protocol/specs/src/sign-in-store/SignIn.json); [`protocol/specs/src/session/oauth.json`](../../../protocol/specs/src/session/oauth.json) |
+| `xynoplex` | The client (`Client`, `NewClient`) and its eleven namespaces; `Cached`, `Running`, `Delegation` and `Upload`; the cache, its refresher and what it keeps (`Cache`, `CachePersistence`, `SessionStorage`, `MemoryStorage`, `CoupledBookmarks`); `Claims` and the held jobs; `HTTPTransport`, `HTTPContentTransport`, `Wire` and the client's own `EventBus`; signing in (`SessionFromKept`, `ResumeSession`, `SignInWithDevice`, `SignOut`, `SignInAgent`, `NewServiceToken`, with a `SecretCredential` or a `KeyCredential`) and `Session`; a person's sign-in by a page redirect (`BeginAuthorization`, `CompleteAuthorization`, `DescribeConnection`); the sign-in store (`SignInStore`, `StateDir`); `SessionSignals`, `StateUnit`, `Variable` and `Watched`; the readers of a resource (`PrimaryRepresentation`, `PrimaryMediaType`, `ResourceEntityTypes`, `DecodeRepresentation`); how a knowledge base and its principals are named (`KbDid`, `PersonDid`, `AgentDid` and the rest); `GatewayURL`; the retry rules; and the generated tables: the failure codes (`errorcodes_gen.go`), the timing (`timing_gen.go`), the refresh table (`refresh_gen.go`), the telemetry names (`telemetry_gen.go`), the sign-in store's entry (`signin_gen.go`), the OAuth clients (`oauthclients_gen.go`) and the Encoding Standard's labels (`encodings_gen.go`) | hand-written; [`protocol/specs/src/errors/codes.json`][codes]; [`protocol/specs/src/client/timing.json`](../../../protocol/specs/src/client/timing.json); [`protocol/specs/src/client/refresh.json`][refresh]; [`protocol/specs/src/sdk-telemetry/telemetry.json`][telemetry]; [`protocol/specs/src/sign-in-store/SignIn.json`](../../../protocol/specs/src/sign-in-store/SignIn.json); [`protocol/specs/src/session/oauth.json`](../../../protocol/specs/src/session/oauth.json) |
 | `api` | `client_gen.go`: a Go type for every schema of the spec, and a typed HTTP call for every operation. `ids_gen.go`: the kinds of id, each a type made only through its kind's rule (`ParseResourceId` and the others). `required_lists_gen.go`: each type that holds a list its schema requires writes it as `[]` where Go holds it as nil, so a caller may leave an empty list nil | [`protocol/specs/src/openapi.json`](../../../protocol/specs/src/openapi.json), bundled; [`protocol/specs/src/identifiers/kinds.json`](../../../protocol/specs/src/identifiers/kinds.json); each component schema's `required` |
 | `bus` | The bus's channels, each typed by its payload, its request and reply operations, and the channels a transport delivers | [`protocol/specs/src/bus/registry.json`](../../../protocol/specs/src/bus/registry.json) |
 | `state` | The state units a client's bus moves | hand-written |
 | `annotations` | Reading an annotation, building one of a span or of a resource, and `Reconcile`; and the generated table of Unicode's Cased and Case_Ignorable properties (`unicodecase_gen.go`), which decide whether a capital sigma ends a word | hand-written; Node's Unicode data, by [`generate-unicode-case.mjs`](../../codegen/schemas/generate-unicode-case.mjs) |
-| `registry` | Several knowledge bases: `SemiontBrowser`, its storage and its keys, `HttpSessionFactory`, and a person's sign-in landing on the knowledge base that answered | hand-written |
+| `registry` | Several knowledge bases: `XynoplexBrowser`, its storage and its keys, `HttpSessionFactory`, and a person's sign-in landing on the knowledge base that answered | hand-written |
 | `discovery` | The document a launcher publishes of the knowledge bases it manages, read and followed | [`protocol/specs/src/discovery/DiscoveryDocument.json`](../../../protocol/specs/src/discovery/DiscoveryDocument.json), through `api` |
-| `semionttest` | What a consumer's tests are built on: `NewTestClient`, a real client over `FaultyTransport`, `InMemoryContent` and `StubGateway`; `NewTestSession`; `ScriptedSessions` and `SharedStorage`, for a registry; `AssertStateUnitAxioms`; and the liveness axioms | hand-written |
+| `xynoplextest` | What a consumer's tests are built on: `NewTestClient`, a real client over `FaultyTransport`, `InMemoryContent` and `StubGateway`; `NewTestSession`; `ScriptedSessions` and `SharedStorage`, for a registry; `AssertStateUnitAxioms`; and the liveness axioms | hand-written |
 | `mediatypes` | The media types a knowledge base admits, and `ForExtension` | [`protocol/specs/src/media-types/registry.json`](../../../protocol/specs/src/media-types/registry.json) |
 | `internal/readme` | The programs this page shows, each run by its tests. It is internal, so no program outside the module can import it | hand-written |
 
@@ -1146,7 +1146,7 @@ differs from what the spec generates.
 Nothing regenerates by itself. When the spec changes, the client:
 
 ```sh
-cd packages/go/sdk && go generate ./...
+cd go/sdk && go generate ./...
 ```
 
 That runs the pinned generator (`oapi-codegen@v2.6.0`) in a `golang`
@@ -1164,7 +1164,7 @@ complete typed call for every operation. The file sets `skip-prune`, because
 oapi-codegen otherwise drops every schema no HTTP path reaches, which is the
 whole of the bus's payload vocabulary. The drift check compares the generator
 with itself and cannot see that kind of gap, so a second check in CI
-(`packages/go/sdk/scripts/check-go-schema-coverage.mjs`) holds the count of generated types
+(`go/sdk/scripts/check-go-schema-coverage.mjs`) holds the count of generated types
 to the count of schemas in the spec.
 
 The file also sets `always-prefix-enum-values`: every enum constant is named
@@ -1186,7 +1186,7 @@ Each has a `:check` form that verifies without writing, as CI does.
 
 ## Working on it
 
-The module is [`packages/go/sdk`][package] of the [Semiont repository][semiont],
+The module is [`go/sdk`][package] of the [Xynoplex repository][xynoplex],
 and [Testing][testing] says how its checks and its tests are run. Go runs in a
 `golang` container at the toolchain its `go.mod` names. The programs this page
 shows are files of package `readme`, in `internal/readme`, word for word: the
@@ -1196,8 +1196,8 @@ compiler checks them, and its tests run each one.
 
 Apache-2.0. See [LICENSE](../../../LICENSE).
 
-[semiont]: https://github.com/The-AI-Alliance/semiont
-[pkg-go-dev]: https://pkg.go.dev/github.com/The-AI-Alliance/semiont/packages/go/sdk
+[xynoplex]: https://github.com/Xynoplex/sdk
+[pkg-go-dev]: https://pkg.go.dev/github.com/Xynoplex/sdk/go
 [introduction]: ../../../docs/builder/INTRODUCTION.md
 [quick-start]: ../../../docs/builder/QUICK-START.md
 [developer-guide]: ../../../docs/builder/DEVELOPER-GUIDE.md

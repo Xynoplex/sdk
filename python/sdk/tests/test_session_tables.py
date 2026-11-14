@@ -9,7 +9,7 @@ import pytest
 from spec import SPEC, JsonObject, objects, read, text
 from tokens import jwt
 
-from semiont.session import refresh_delay, token_expiry
+from xynoplex.session import refresh_delay, token_expiry
 
 TABLE = read(SPEC / "session/cases.json")
 SCHEDULE = objects(TABLE["refreshSchedule"], "refreshSchedule")

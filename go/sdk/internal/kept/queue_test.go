@@ -4,7 +4,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/internal/kept"
+	"github.com/Xynoplex/sdk/go/internal/kept"
 )
 
 // A queue's reader is given every item pushed, in order, however far behind

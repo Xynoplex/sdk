@@ -1,18 +1,18 @@
-# @semiont/http-transport
+# @xynoplex/http-transport
 
-[![Tests](https://github.com/The-AI-Alliance/semiont/actions/workflows/ci.yml/badge.svg)](https://github.com/The-AI-Alliance/semiont/actions/workflows/ci.yml?query=branch%3Amain+is%3Asuccess+job%3A%22Test+http-transport%22)
-[![codecov](https://codecov.io/gh/The-AI-Alliance/semiont/graph/badge.svg?component=typescript-http-transport)](https://app.codecov.io/gh/The-AI-Alliance/semiont/components)
-[![npm version](https://img.shields.io/npm/v/@semiont/http-transport.svg)](https://www.npmjs.com/package/@semiont/http-transport)
-[![npm downloads](https://img.shields.io/npm/dm/@semiont/http-transport.svg)](https://www.npmjs.com/package/@semiont/http-transport)
-[![License](https://img.shields.io/npm/l/@semiont/http-transport.svg)](https://github.com/The-AI-Alliance/semiont/blob/main/LICENSE)
+[![Tests](https://github.com/Xynoplex/sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/Xynoplex/sdk/actions/workflows/ci.yml?query=branch%3Amain+is%3Asuccess+job%3A%22Test+http-transport%22)
+[![codecov](https://codecov.io/gh/Xynoplex/sdk/graph/badge.svg?component=typescript-http-transport)](https://app.codecov.io/gh/Xynoplex/sdk/components)
+[![npm version](https://img.shields.io/npm/v/@xynoplex/http-transport.svg)](https://www.npmjs.com/package/@xynoplex/http-transport)
+[![npm downloads](https://img.shields.io/npm/dm/@xynoplex/http-transport.svg)](https://www.npmjs.com/package/@xynoplex/http-transport)
+[![License](https://img.shields.io/npm/l/@xynoplex/http-transport.svg)](https://github.com/Xynoplex/sdk/blob/main/LICENSE)
 
-How the TypeScript SDK reaches a knowledge base over HTTP. It implements the three transport contracts [`@semiont/core`](../core/README.md) states (`ITransport`, `IContentTransport`, `IGatewayOperations`) against a knowledge base's gateway.
+How the TypeScript SDK reaches a knowledge base over HTTP. It implements the three transport contracts [`@xynoplex/core`](../core/README.md) states (`ITransport`, `IContentTransport`, `IGatewayOperations`) against a knowledge base's gateway.
 
 ## Who uses it
 
-- **[`@semiont/sdk`](../sdk/README.md)** builds one for every session, and re-exports `HttpTransport` and `HttpContentTransport`.
+- **[`@xynoplex/sdk`](../sdk/README.md)** builds one for every session, and re-exports `HttpTransport` and `HttpContentTransport`.
 
-**Building an application?** Import from [`@semiont/sdk`](../sdk/README.md), not from here. A session gives you a connected client, and the two transport classes are re-exported there for the rare program that wires its own.
+**Building an application?** Import from [`@xynoplex/sdk`](../sdk/README.md), not from here. A session gives you a connected client, and the two transport classes are re-exported there for the rare program that wires its own.
 
 ## What is in it
 
@@ -29,16 +29,16 @@ How the TypeScript SDK reaches a knowledge base over HTTP. It implements the thr
 The stack wired by hand. A session does this for you.
 
 ```typescript
-import { SemiontClient } from '@semiont/sdk';
-import { HttpTransport, HttpContentTransport } from '@semiont/http-transport';
-import { BRIDGED_CHANNELS, baseUrl } from '@semiont/core';
+import { XynoplexClient } from '@xynoplex/sdk';
+import { HttpTransport, HttpContentTransport } from '@xynoplex/http-transport';
+import { BRIDGED_CHANNELS, baseUrl } from '@xynoplex/core';
 
 // A full client's stream names every channel a client hears.
 const transport = new HttpTransport({ baseUrl: baseUrl('https://kb.example/'), channels: BRIDGED_CHANNELS });
 
 // HttpTransport is also the gateway's plain operations: passed third, it
 // gives the client its `auth` and `system` namespaces.
-const client = new SemiontClient(transport, new HttpContentTransport(transport), transport);
+const client = new XynoplexClient(transport, new HttpContentTransport(transport), transport);
 ```
 
 ## The fetch it sends with
@@ -49,8 +49,8 @@ Every request of a transport is sent with the `fetch` its config gives, or with 
 - **In a browser page**, the browser decides what every request trusts, whatever `fetch` is given. An upload that asks for progress or gives a `signal` there goes through `XMLHttpRequest`, the one way a page can count the bytes it sends, and not through the `fetch` given.
 
 ```typescript
-import { HttpTransport } from '@semiont/http-transport';
-import { BRIDGED_CHANNELS, baseUrl } from '@semiont/core';
+import { HttpTransport } from '@xynoplex/http-transport';
+import { BRIDGED_CHANNELS, baseUrl } from '@xynoplex/core';
 
 // A fetch that trusts the gateway's certificate authority.
 declare const trusting: typeof fetch;
@@ -64,9 +64,9 @@ const transport = new HttpTransport({ baseUrl: baseUrl('https://kb.example/'), c
 - **One token source.** A transport reads the current token from `token$`. `tokenRefresher` is the only way a token is renewed, for a refused request, emit and stream alike, and it is told the token refused.
 - **Timing is the spec's.** The reconnect, linger and retry values are [`protocol/specs/src/client/timing.json`](../../../protocol/specs/src/client/timing.json)'s. The config fields that override them are for a test or the conformance driver, which cannot wait them out.
 - **A narrowed stream still hears its replies.** A process that passes `channels` names the reply channels of every operation it awaits. A request whose replies are outside the set fails at once with `bus.unsubscribed`, rather than timing out.
-- **Wire shapes are generated.** Requests and responses are `@semiont/core`'s types, from the spec. None is retyped here.
+- **Wire shapes are generated.** Requests and responses are `@xynoplex/core`'s types, from the spec. None is retyped here.
 
-A transport that is not HTTP implements `ITransport` and `IContentTransport` from `@semiont/core` and inherits nothing from this package.
+A transport that is not HTTP implements `ITransport` and `IContentTransport` from `@xynoplex/core` and inherits nothing from this package.
 
 ## Documentation
 

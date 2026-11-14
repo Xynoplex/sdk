@@ -27,23 +27,23 @@ from pydantic import JsonValue, TypeAdapter
 from spec import SPEC, JsonObject, objects, read, strings, text
 from tokens import token
 
-from semiont import retry, timing
-from semiont.bus import request
-from semiont.cache import Cache, CachePersister
-from semiont.channels import BRIDGED_CHANNELS
-from semiont.claims import JOB_CLAIM_CHANNELS, ClaimRefusal
-from semiont.client import SemiontClient
-from semiont.discovery import DiscoveryRead, DiscoveryTransport, Managed, Unchanged, subscribe_discovery
-from semiont.errors import BusRequestError, TransportError
-from semiont.http.oauth import sign_in_with_device_grant
-from semiont.http.transport import HttpTransport
-from semiont.identifiers import JobId
-from semiont.operations import BROWSE_EVENTS_REQUESTED
-from semiont.session import HeldSignIn, MemorySignIn, SemiontSession
-from semiont.testing import FaultyTransport, InMemoryContent, StubGateway, create_test_client, refuse_unscripted_operation
-from semiont.transport import Frame
-from semiont.types import DiscoveredKB, HighlightingJobParams, HttpEndpoint, JobFilter, JobProgress, KbTarget, UserResponse
-from semiont.watched import Variable
+from xynoplex import retry, timing
+from xynoplex.bus import request
+from xynoplex.cache import Cache, CachePersister
+from xynoplex.channels import BRIDGED_CHANNELS
+from xynoplex.claims import JOB_CLAIM_CHANNELS, ClaimRefusal
+from xynoplex.client import XynoplexClient
+from xynoplex.discovery import DiscoveryRead, DiscoveryTransport, Managed, Unchanged, subscribe_discovery
+from xynoplex.errors import BusRequestError, TransportError
+from xynoplex.http.oauth import sign_in_with_device_grant
+from xynoplex.http.transport import HttpTransport
+from xynoplex.identifiers import JobId
+from xynoplex.operations import BROWSE_EVENTS_REQUESTED
+from xynoplex.session import HeldSignIn, MemorySignIn, XynoplexSession
+from xynoplex.testing import FaultyTransport, InMemoryContent, StubGateway, create_test_client, refuse_unscripted_operation
+from xynoplex.transport import Frame
+from xynoplex.types import DiscoveredKB, HighlightingJobParams, HttpEndpoint, JobFilter, JobProgress, KbTarget, UserResponse
+from xynoplex.watched import Variable
 
 TABLE: Final = read(SPEC / "client/clock-cases.json")
 CASES: Final = objects(TABLE["cases"], "cases")
@@ -407,7 +407,7 @@ async def timed_out_bus_request(given: JsonObject, held: AsyncExitStack) -> Subj
 
 # ── The issuer ──────────────────────────────────────────────────────────
 
-ISSUER: Final = "http://issuer.test/realms/semiont"
+ISSUER: Final = "http://issuer.test/realms/xynoplex"
 
 
 @final
@@ -487,9 +487,9 @@ async def renewal(given: JsonObject, held: AsyncExitStack) -> Subject:
         return ALICE
 
     kept = MemorySignIn(
-        HeldSignIn(access=token(lifetime, 0), refresh="a-refresh-token", client_id="semiont-cli", token_endpoint=f"{ISSUER}/token")
+        HeldSignIn(access=token(lifetime, 0), refresh="a-refresh-token", client_id="xynoplex-cli", token_endpoint=f"{ISSUER}/token")
     )
-    session = SemiontSession(
+    session = XynoplexSession(
         kb=KB, client=create_test_client().client, token=Variable[str | None](None), kept=kept, refresh=renew, validate=accepted
     )
     await held.enter_async_context(session)
@@ -527,7 +527,7 @@ def dispatcher(operation: str, asked: Mapping[str, JsonValue]) -> JsonValue:
 async def held_job_stall(given: JsonObject, held: AsyncExitStack) -> Subject:
     transport = FaultyTransport(channels=JOB_CLAIM_CHANNELS, make_response=dispatcher)
     held.push_async_callback(transport.close)
-    client = SemiontClient(transport, InMemoryContent(), StubGateway())
+    client = XynoplexClient(transport, InMemoryContent(), StubGateway())
     held.push_async_callback(client.close)
     claims = await held.enter_async_context(client.job.claim(MARK_JOBS))
     job = await anext(claims)
@@ -544,7 +544,7 @@ async def held_job_stall(given: JsonObject, held: AsyncExitStack) -> Subject:
 MANAGED: Final = Managed(
     kbs=(
         DiscoveredKB.model_validate(
-            {"host": "localhost", "port": 4000, "placement": "local", "managedBy": "semiont-launcher", "did": "did:web:example.org:kb-a"}
+            {"host": "localhost", "port": 4000, "placement": "local", "managedBy": "xynoplex-launcher", "did": "did:web:example.org:kb-a"}
         ),
     )
 )
@@ -584,7 +584,7 @@ async def drained(values: AsyncIterator[object]) -> None:
 
 async def invalidation_window(given: JsonObject, held: AsyncExitStack) -> Subject:
     transport = FaultyTransport(channels=BRIDGED_CHANNELS, make_response=knowing)
-    client = SemiontClient(transport, knowing_content(), StubGateway())
+    client = XynoplexClient(transport, knowing_content(), StubGateway())
     await held.enter_async_context(client)
     running(held, drained(await held.enter_async_context(client.browse.events(RESOURCE))))
 
@@ -646,7 +646,7 @@ def job_queue(operation: str, asked: Mapping[str, JsonValue]) -> JsonValue:
 
 async def job_follower(given: JsonObject, held: AsyncExitStack) -> Subject:
     transport = FaultyTransport(make_response=job_queue, channels=BRIDGED_CHANNELS)
-    client = SemiontClient(transport, InMemoryContent(), StubGateway())
+    client = XynoplexClient(transport, InMemoryContent(), StubGateway())
     await held.enter_async_context(client)
 
     async def follow() -> None:
@@ -665,7 +665,7 @@ async def job_follower(given: JsonObject, held: AsyncExitStack) -> Subject:
 async def polled(held: AsyncExitStack) -> tuple[FaultyTransport, asyncio.Task[object]]:
     """A client's `job.poll_until_complete` of `job-1`, naming no interval and no limit, set going as the case begins."""
     transport = FaultyTransport(make_response=job_queue, channels=BRIDGED_CHANNELS)
-    client = SemiontClient(transport, InMemoryContent(), StubGateway())
+    client = XynoplexClient(transport, InMemoryContent(), StubGateway())
     await held.enter_async_context(client)
     return transport, running(held, client.job.poll_until_complete(JobId("job-1")))
 

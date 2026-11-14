@@ -3,11 +3,11 @@
  *
  * These functions handle click and hover interactions on annotations
  * and widgets within the CodeMirror editor. They operate on plain DOM
- * elements and a SemiontSession — no CodeMirror API dependency.
+ * elements and a XynoplexSession — no CodeMirror API dependency.
  */
 
-import { annotationId as toAnnotationId, resourceId as toResourceId } from '@semiont/core';
-import type { SemiontSession } from '@semiont/sdk';
+import { annotationId as toAnnotationId, resourceId as toResourceId } from '@xynoplex/core';
+import type { XynoplexSession } from '@xynoplex/sdk';
 import type { TextSegment } from './codemirror-logic';
 
 /**
@@ -21,7 +21,7 @@ import type { TextSegment } from './codemirror-logic';
 export function handleAnnotationClick(
   target: HTMLElement,
   segmentsById: Map<string, TextSegment>,
-  session: SemiontSession
+  session: XynoplexSession
 ): boolean {
   const annotationElement = target.closest('[data-annotation-id]');
   const annotationId = annotationElement?.getAttribute('data-annotation-id');
@@ -83,7 +83,7 @@ export function handleWidgetClick(target: HTMLElement): WidgetClickResult {
  * @emits browse:resource-open - Open the resource a resolved reference's widget names. Payload: { resourceId: string }
  * @emits browse:click - The annotation whose widget was clicked. Payload: { annotationId: string }
  */
-export function dispatchWidgetClick(result: WidgetClickResult, session: SemiontSession): void {
+export function dispatchWidgetClick(result: WidgetClickResult, session: XynoplexSession): void {
   if (!result.handled) return;
 
   if (result.action === 'navigate' && result.resourceId) {

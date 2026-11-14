@@ -21,7 +21,7 @@ const table: { form: string[]; grantType: string } = JSON.parse(
   readFileSync(new URL('../../../../../protocol/specs/src/session/client-assertion-cases.json', import.meta.url), 'utf8'),
 );
 
-const CLIENT = 'semiont-worker-alice-laptop';
+const CLIENT = 'xynoplex-worker-alice-laptop';
 
 const ISSUER = 'https://issuer.test/realms/kb';
 

@@ -2163,7 +2163,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "semiont"
+name = "xynoplex"
 version = "0.7.3"
 dependencies = [
  "base64 0.23.1",
@@ -2177,8 +2177,8 @@ dependencies = [
  "proptest",
  "rand_core 0.10.1",
  "ring",
- "semiont",
- "semiont-codegen",
+ "xynoplex",
+ "xynoplex-codegen",
  "serde",
  "serde_json",
  "tokio",
@@ -2188,7 +2188,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "semiont-archivist"
+name = "xynoplex-archivist"
 version = "0.0.0"
 dependencies = [
  "axum",
@@ -2199,14 +2199,14 @@ dependencies = [
  "reqwest",
  "ring",
  "rustls",
- "semiont",
- "semiont-archivist-record",
- "semiont-archivist-staging",
- "semiont-core",
- "semiont-http-service",
- "semiont-http-transport",
- "semiont-observability",
- "semiont-telemetry",
+ "xynoplex",
+ "xynoplex-archivist-record",
+ "xynoplex-archivist-staging",
+ "xynoplex-core",
+ "xynoplex-http-service",
+ "xynoplex-http-transport",
+ "xynoplex-observability",
+ "xynoplex-telemetry",
  "serde_json",
  "tikv-jemallocator",
  "tokio",
@@ -2214,13 +2214,13 @@ dependencies = [
 ]
 
 [[package]]
-name = "semiont-archivist-record"
+name = "xynoplex-archivist-record"
 version = "0.0.0"
 dependencies = [
  "chrono",
  "jsonschema",
  "ring",
- "semiont",
+ "xynoplex",
  "serde",
  "serde-saphyr",
  "serde_json",
@@ -2229,24 +2229,24 @@ dependencies = [
 ]
 
 [[package]]
-name = "semiont-archivist-staging"
+name = "xynoplex-archivist-staging"
 version = "0.0.0"
 dependencies = [
  "opentelemetry",
- "semiont-observability",
+ "xynoplex-observability",
  "serde_json",
  "tokio",
 ]
 
 [[package]]
-name = "semiont-codegen"
+name = "xynoplex-codegen"
 version = "0.7.3"
 dependencies = [
  "serde_json",
 ]
 
 [[package]]
-name = "semiont-conformance-drivers"
+name = "xynoplex-conformance-drivers"
 version = "0.0.0"
 dependencies = [
  "base64 0.23.1",
@@ -2256,33 +2256,33 @@ dependencies = [
  "opentelemetry",
  "reqwest",
  "rustls",
- "semiont",
- "semiont-http-transport",
- "semiont-observability",
- "semiont-telemetry",
+ "xynoplex",
+ "xynoplex-http-transport",
+ "xynoplex-observability",
+ "xynoplex-telemetry",
  "serde",
  "serde_json",
  "tokio",
 ]
 
 [[package]]
-name = "semiont-core"
+name = "xynoplex-core"
 version = "0.0.0"
 dependencies = [
  "async-nats",
  "bytes",
  "futures",
  "jsonschema",
- "semiont",
- "semiont-codegen",
- "semiont-observability",
+ "xynoplex",
+ "xynoplex-codegen",
+ "xynoplex-observability",
  "serde",
  "serde_json",
  "tokio",
 ]
 
 [[package]]
-name = "semiont-dispatcher"
+name = "xynoplex-dispatcher"
 version = "0.0.0"
 dependencies = [
  "axum",
@@ -2290,13 +2290,13 @@ dependencies = [
  "opentelemetry",
  "reqwest",
  "rustls",
- "semiont",
- "semiont-core",
- "semiont-dispatcher-handlers",
- "semiont-dispatcher-jetstream",
- "semiont-http-transport",
- "semiont-observability",
- "semiont-telemetry",
+ "xynoplex",
+ "xynoplex-core",
+ "xynoplex-dispatcher-handlers",
+ "xynoplex-dispatcher-jetstream",
+ "xynoplex-http-transport",
+ "xynoplex-observability",
+ "xynoplex-telemetry",
  "serde",
  "serde_json",
  "tikv-jemallocator",
@@ -2304,12 +2304,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "semiont-dispatcher-handlers"
+name = "xynoplex-dispatcher-handlers"
 version = "0.0.0"
 dependencies = [
  "chrono",
- "semiont",
- "semiont-observability",
+ "xynoplex",
+ "xynoplex-observability",
  "serde",
  "serde_json",
  "tokio",
@@ -2317,23 +2317,23 @@ dependencies = [
 ]
 
 [[package]]
-name = "semiont-dispatcher-jetstream"
+name = "xynoplex-dispatcher-jetstream"
 version = "0.0.0"
 dependencies = [
  "async-nats",
  "bytes",
  "chrono",
  "futures",
- "semiont",
- "semiont-core",
- "semiont-dispatcher-handlers",
- "semiont-observability",
+ "xynoplex",
+ "xynoplex-core",
+ "xynoplex-dispatcher-handlers",
+ "xynoplex-observability",
  "serde_json",
  "tokio",
 ]
 
 [[package]]
-name = "semiont-gateway"
+name = "xynoplex-gateway"
 version = "0.0.0"
 dependencies = [
  "async-nats",
@@ -2351,12 +2351,12 @@ dependencies = [
  "reqwest",
  "ring",
  "rustls",
- "semiont",
- "semiont-core",
- "semiont-http-service",
- "semiont-http-transport",
- "semiont-observability",
- "semiont-telemetry",
+ "xynoplex",
+ "xynoplex-core",
+ "xynoplex-http-service",
+ "xynoplex-http-transport",
+ "xynoplex-observability",
+ "xynoplex-telemetry",
  "serde",
  "serde_json",
  "socket2",
@@ -2367,7 +2367,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "semiont-http-service"
+name = "xynoplex-http-service"
 version = "0.0.0"
 dependencies = [
  "axum",
@@ -2382,7 +2382,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "semiont-http-transport"
+name = "xynoplex-http-transport"
 version = "0.7.3"
 dependencies = [
  "axum",
@@ -2397,9 +2397,9 @@ dependencies = [
  "reqwest",
  "ring",
  "rustls",
- "semiont",
- "semiont-http-transport",
- "semiont-telemetry",
+ "xynoplex",
+ "xynoplex-http-transport",
+ "xynoplex-telemetry",
  "serde",
  "serde_json",
  "tokio",
@@ -2408,7 +2408,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "semiont-observability"
+name = "xynoplex-observability"
 version = "0.0.0"
 dependencies = [
  "chrono",
@@ -2416,20 +2416,20 @@ dependencies = [
  "opentelemetry-otlp",
  "opentelemetry-stdout",
  "opentelemetry_sdk",
- "semiont",
- "semiont-telemetry",
+ "xynoplex",
+ "xynoplex-telemetry",
  "serde_json",
  "tikv-jemalloc-ctl",
  "tokio",
 ]
 
 [[package]]
-name = "semiont-telemetry"
+name = "xynoplex-telemetry"
 version = "0.7.3"
 dependencies = [
  "opentelemetry",
  "opentelemetry_sdk",
- "semiont",
+ "xynoplex",
  "serde_json",
  "tokio",
 ]

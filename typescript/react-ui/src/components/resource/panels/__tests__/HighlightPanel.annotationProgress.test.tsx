@@ -14,12 +14,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import React from 'react';
 import { screen } from '@testing-library/react';
-import { renderWithProviders, createTestSemiontWrapper } from '../../../../test-utils';
+import { renderWithProviders, createTestXynoplexWrapper } from '../../../../test-utils';
 import { HighlightPanel } from '../HighlightPanel';
-import { createMarkStateUnit, type MarkStateUnit, type SemiontSession } from '@semiont/sdk';
+import { createMarkStateUnit, type MarkStateUnit, type XynoplexSession } from '@xynoplex/sdk';
 
-import type { Annotation, AnnotationId } from '@semiont/core';
-import { resourceId } from '@semiont/core';
+import type { Annotation, AnnotationId } from '@xynoplex/core';
+import { resourceId } from '@xynoplex/core';
 
 // Mock translations - simulates useTranslations('HighlightPanel')
 // The mock receives keys like 'title', 'noHighlights', etc. and returns translated strings
@@ -76,12 +76,12 @@ describe('HighlightPanel + DelegateSection Integration', () => {
   // Created per-test: test-utils disposes every created client in a
   // module-scope afterEach, so a module-scope session would be dead
   // after the first test.
-  let session: SemiontSession;
+  let session: XynoplexSession;
   let mark: MarkStateUnit;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    ({ session } = createTestSemiontWrapper());
+    ({ session } = createTestXynoplexWrapper());
     mark = createMarkStateUnit(session.client, resourceId('res-1'));
 
     mockAnnotations = [
@@ -194,7 +194,7 @@ describe('HighlightPanel + DelegateSection Integration', () => {
         />
       );
 
-      expect(screen.getByTestId('semiont-delegate-params')).toBeInTheDocument();
+      expect(screen.getByTestId('xynoplex-delegate-params')).toBeInTheDocument();
       expect(screen.getByText('Find important points')).toBeInTheDocument();
       expect(screen.getByText('5')).toBeInTheDocument();
     });
@@ -313,7 +313,7 @@ describe('HighlightPanel + DelegateSection Integration', () => {
 
       // Stage is the observable across non-terminal updates: the status text
       // is a single translated string (the wire carries codes).
-      expect(document.querySelector('.semiont-delegate-progress')).toHaveAttribute('data-ended', 'false');
+      expect(document.querySelector('.xynoplex-delegate-progress')).toHaveAttribute('data-ended', 'false');
 
       // Update to analyzing
       rerender(
@@ -328,7 +328,7 @@ describe('HighlightPanel + DelegateSection Integration', () => {
         />
       );
 
-      expect(document.querySelector('.semiont-delegate-progress')).toHaveAttribute('data-ended', 'false');
+      expect(document.querySelector('.xynoplex-delegate-progress')).toHaveAttribute('data-ended', 'false');
       expect(screen.getByText('Annotating...')).toBeInTheDocument();
 
       // Update to complete

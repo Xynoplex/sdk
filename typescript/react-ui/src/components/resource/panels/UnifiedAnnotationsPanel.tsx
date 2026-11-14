@@ -2,10 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { useTranslations } from '../../../contexts/TranslationContext';
-import type { components, JobId, ResourceId, Selector } from '@semiont/core';
+import type { components, JobId, ResourceId, Selector } from '@xynoplex/core';
 type JobProgress = components['schemas']['JobProgress'];
 import type { RouteBuilder, LinkComponentProps } from '../../../contexts/RoutingContext';
-import type { MarkStateUnit, SemiontSession } from '@semiont/sdk';
+import type { MarkStateUnit, XynoplexSession } from '@xynoplex/sdk';
 import { annotatorKeyForMotivation, type Annotator, type AnnotatorKey } from '../../../lib/annotation-registry';
 import { StatisticsPanel } from './StatisticsPanel';
 import { HighlightPanel } from './HighlightPanel';
@@ -15,7 +15,7 @@ import { CommentsPanel } from './CommentsPanel';
 import { TaggingPanel } from './TaggingPanel';
 import './UnifiedAnnotationsPanel.css';
 
-import type { Annotation } from '@semiont/core';
+import type { Annotation } from '@xynoplex/core';
 type Motivation = components['schemas']['Motivation'];
 // Derived from the annotator registry (the single motivation↔annotator
 // source) — a hand-written union here could drift from it.
@@ -36,7 +36,7 @@ const TAB_ORDER: TabKey[] = ['statistics', 'reference', 'highlight', 'assessment
  */
 interface UnifiedAnnotationsPanelProps {
   /** Session carrying the client and event bus; null renders inert. */
-  session: SemiontSession | null;
+  session: XynoplexSession | null;
   /** The resource's mark unit, which delegations, cancels and dismissals are asked of; undefined renders inert. */
   mark: MarkStateUnit | undefined;
 
@@ -192,18 +192,18 @@ export function UnifiedAnnotationsPanel(props: UnifiedAnnotationsPanelProps) {
   // Tab button styling (matches AnnotateToolbar button style)
   const tabButtonClass = (tab: TabKey) => {
     const isActive = activeTab === tab;
-    return `semiont-unified-panel__tab-button${isActive ? ' semiont-unified-panel__tab-button--active' : ''}`;
+    return `xynoplex-unified-panel__tab-button${isActive ? ' xynoplex-unified-panel__tab-button--active' : ''}`;
   };
 
   if (props.annotationsError) {
     // The tabs below all read one array; an empty one after a failed load is
     // not "no annotations", it is "we do not know".
     return (
-      <div className="semiont-unified-panel">
-        <h3 className="semiont-unified-panel__title">
+      <div className="xynoplex-unified-panel">
+        <h3 className="xynoplex-unified-panel__title">
           {t('title')}
         </h3>
-        <p className="semiont-unified-panel__error">
+        <p className="xynoplex-unified-panel__error">
           {t('annotationsFailed')}
           {props.onRetryAnnotations && (
             <>
@@ -211,7 +211,7 @@ export function UnifiedAnnotationsPanel(props: UnifiedAnnotationsPanelProps) {
               <button
                 type="button"
                 onClick={props.onRetryAnnotations}
-                className="semiont-panel__inline-action"
+                className="xynoplex-panel__inline-action"
               >
                 {t('retry')}
               </button>
@@ -223,14 +223,14 @@ export function UnifiedAnnotationsPanel(props: UnifiedAnnotationsPanelProps) {
   }
 
   return (
-    <div className="semiont-unified-panel">
+    <div className="xynoplex-unified-panel">
       {/* Panel Title */}
-      <h3 className="semiont-unified-panel__title">
+      <h3 className="xynoplex-unified-panel__title">
         {t('title')}
       </h3>
 
       {/* Tab Navigation */}
-      <div className="semiont-unified-panel__tabs">
+      <div className="xynoplex-unified-panel__tabs">
         {TAB_ORDER.map(key => {
           // Statistics tab (special case - not in annotators)
           if (key === 'statistics') {
@@ -242,7 +242,7 @@ export function UnifiedAnnotationsPanel(props: UnifiedAnnotationsPanelProps) {
                 title={t(key)}
                 aria-pressed={activeTab === key}
               >
-                <span className="semiont-unified-panel__tab-icon">📊</span>
+                <span className="xynoplex-unified-panel__tab-icon">📊</span>
               </button>
             );
           }
@@ -259,14 +259,14 @@ export function UnifiedAnnotationsPanel(props: UnifiedAnnotationsPanelProps) {
               title={t(key)}
               aria-pressed={activeTab === key}
             >
-              <span className="semiont-unified-panel__tab-icon">{annotator.iconEmoji}</span>
+              <span className="xynoplex-unified-panel__tab-icon">{annotator.iconEmoji}</span>
             </button>
           );
         })}
       </div>
 
       {/* Tab Content */}
-      <div className="semiont-unified-panel__content">
+      <div className="xynoplex-unified-panel__content">
         {(() => {
           // Statistics panel (special case - doesn't use annotators)
           if (activeTab === 'statistics') {

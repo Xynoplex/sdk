@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { textOffsets } from '@semiont/core';
+import { textOffsets } from '@xynoplex/core';
 import { buildTextSelectors, fallbackTextPosition } from '../text-selection-handler';
 
 describe('buildTextSelectors', () => {

@@ -3,11 +3,11 @@ import type {
   EventBus,
   GenerationJobParams,
   components,
-} from '@semiont/core';
-import { cloneFormat, deriveStorageUri, getPrimaryRepresentation } from '@semiont/core';
+} from '@xynoplex/core';
+import { cloneFormat, deriveStorageUri, getPrimaryRepresentation } from '@xynoplex/core';
 
-import type { ITransport, IContentTransport } from '@semiont/core';
-import { Bus, isReportedJobResult, isYieldJobResult } from '@semiont/core';
+import type { ITransport, IContentTransport } from '@xynoplex/core';
+import { Bus, isReportedJobResult, isYieldJobResult } from '@xynoplex/core';
 import { UploadObservable, type DelegationObservable, type YieldJobCompletion } from '../awaitable';
 import { delegated, type DelegatedVerb } from './delegation';
 import { deriveStallDeadlineMs } from './generation-stall';
@@ -18,7 +18,7 @@ import type {
   CreateFromTokenOptions,
 } from './types';
 
-import type { ResourceDescriptor } from '@semiont/core';
+import type { ResourceDescriptor } from '@xynoplex/core';
 
 type CloneResourceWithTokenResponse = components['schemas']['CloneResourceWithTokenResponse'];
 

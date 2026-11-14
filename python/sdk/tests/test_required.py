@@ -2,8 +2,8 @@
 
 from pydantic import JsonValue
 
-from semiont._required import Fault, fault_of
-from semiont.types import BrowseProfilesRequest, BusPingMessage, GatherAnnotationOptions
+from xynoplex._required import Fault, fault_of
+from xynoplex.types import BrowseProfilesRequest, BusPingMessage, GatherAnnotationOptions
 
 
 def malformed(member: str) -> Fault:

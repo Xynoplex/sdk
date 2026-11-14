@@ -9,7 +9,7 @@
  * that would mask token leaks.
  */
 
-import type { SessionStorage } from '@semiont/sdk';
+import type { SessionStorage } from '@xynoplex/sdk';
 export class WebBrowserStorage implements SessionStorage {
   constructor() {
     if (typeof window === 'undefined') {

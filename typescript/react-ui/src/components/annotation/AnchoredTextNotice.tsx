@@ -21,7 +21,7 @@ export function AnchoredTextNotice({ status }: { status: AnchoredTextState['stat
 function AnchoredTextLine({ status }: { status: 'waiting' | 'never' }) {
   const t = useTranslations('PdfViewer');
   return (
-    <div className="semiont-anchored-text-notice" data-anchored-text={status} role="status">
+    <div className="xynoplex-anchored-text-notice" data-anchored-text={status} role="status">
       {t(status === 'waiting' ? 'preparingTextLayer' : 'textLayerUnreadable')}
     </div>
   );

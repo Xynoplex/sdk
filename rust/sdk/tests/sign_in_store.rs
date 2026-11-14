@@ -1,16 +1,16 @@
-//! The sign-ins `semiont login` keeps (protocol/specs/src/sign-in-store):
+//! The sign-ins `xynoplex login` keeps (protocol/specs/src/sign-in-store):
 //! where the file is, and each of its entries as a sign-in kept
 //! (`SignInStore::entry`): a launcher's entry held as a sign-in, a sign-in
 //! kept and renewed as the launcher keeps one, and two writers that lose
 //! nothing of each other's. Where the file is, is the `cases` of
 //! protocol/specs/src/sign-in-store/cases.json; its `renewals` are run where the
-//! renewal is, in semiont-http-transport's tests/sign_in.rs.
+//! renewal is, in xynoplex-http-transport's tests/sign_in.rs.
 
 use base64::Engine;
 use base64::engine::general_purpose::URL_SAFE_NO_PAD;
-use semiont::errors::{SignInError, SignInErrorCode};
-use semiont::session::{SignInKept, StoredSession, person_key};
-use semiont::sign_in_store::{SignInStore, System, state_dir};
+use xynoplex::errors::{SignInError, SignInErrorCode};
+use xynoplex::session::{SignInKept, StoredSession, person_key};
+use xynoplex::sign_in_store::{SignInStore, System, state_dir};
 use serde_json::{Value, json};
 use std::error::Error;
 use std::path::PathBuf;
@@ -56,7 +56,7 @@ impl Drop for Home {
 impl Home {
     fn new() -> Home {
         Home {
-            dir: std::env::temp_dir().join(format!("semiont-sign-ins-{}", uuid::Uuid::new_v4())),
+            dir: std::env::temp_dir().join(format!("xynoplex-sign-ins-{}", uuid::Uuid::new_v4())),
         }
     }
 
@@ -110,7 +110,7 @@ fn jwt(claims: Value) -> String {
     )
 }
 
-const ISSUER: &str = "https://issuer.test/realms/semiont";
+const ISSUER: &str = "https://issuer.test/realms/xynoplex";
 
 /// An access token as an issuer the gateway trusts issues one: it names who
 /// it is for and who issued it. `tag` tells one from another.
@@ -118,7 +118,7 @@ fn issued(tag: &str) -> String {
     jwt(json!({ "iss": ISSUER, "email": "bob@example.org", "tag": tag }))
 }
 
-/// An entry as `semiont login` writes one.
+/// An entry as `xynoplex login` writes one.
 fn launchers(token: &str, refresh: &str) -> Value {
     json!({
         "token": token,
@@ -127,8 +127,8 @@ fn launchers(token: &str, refresh: &str) -> Value {
         "obtainedAt": "2026-10-01T12:00:00Z",
         "expiresAt": "2026-10-01T12:05:00Z",
         "issuer": ISSUER,
-        "tokenEndpoint": "https://issuer.test/realms/semiont/token",
-        "revocationEndpoint": "https://issuer.test/realms/semiont/revoke",
+        "tokenEndpoint": "https://issuer.test/realms/xynoplex/token",
+        "revocationEndpoint": "https://issuer.test/realms/xynoplex/revoke",
     })
 }
 
@@ -136,9 +136,9 @@ fn script(access: &str, refresh: &str) -> StoredSession {
     StoredSession {
         access: access.to_owned(),
         refresh: refresh.to_owned(),
-        client_id: "semiont-cli".to_owned(),
-        token_endpoint: "https://issuer.test/realms/semiont/token".to_owned(),
-        revocation_endpoint: Some("https://issuer.test/realms/semiont/revoke".to_owned()),
+        client_id: "xynoplex-cli".to_owned(),
+        token_endpoint: "https://issuer.test/realms/xynoplex/token".to_owned(),
+        revocation_endpoint: Some("https://issuer.test/realms/xynoplex/revoke".to_owned()),
         person_key: None,
     }
 }
@@ -223,7 +223,7 @@ async fn a_renewal_is_written_as_the_launcher_keeps_it_and_keeps_what_the_sign_i
     let kept = home.entry("local");
     // The renewed token names another address and another issuer.
     let renewed = jwt(json!({
-        "iss": "https://elsewhere.test/realms/semiont",
+        "iss": "https://elsewhere.test/realms/xynoplex",
         "email": "alice@elsewhere.example",
         "exp": 4_102_444_799u64,
     }));
@@ -240,7 +240,7 @@ async fn a_renewal_is_written_as_the_launcher_keeps_it_and_keeps_what_the_sign_i
     assert_eq!(entry["refreshToken"], "r1-rotated");
     // Who signed in, and where, are the sign-in's, and a renewal keeps them.
     assert_eq!(entry["email"], "alice@example.org");
-    assert_eq!(entry["issuer"], "https://issuer.test/realms/semiont");
+    assert_eq!(entry["issuer"], "https://issuer.test/realms/xynoplex");
     assert_eq!(entry["expiresAt"], "2099-12-31T23:59:59Z");
     assert_ne!(entry["obtainedAt"], "2026-10-01T12:00:00Z");
     assert!(
@@ -428,8 +428,8 @@ async fn a_new_sign_in_states_who_signed_in_and_at_which_issuer() {
             "obtainedAt": home.document()["local"]["obtainedAt"],
             "expiresAt": "2099-12-31T23:59:59Z",
             "issuer": ISSUER,
-            "tokenEndpoint": "https://issuer.test/realms/semiont/token",
-            "revocationEndpoint": "https://issuer.test/realms/semiont/revoke",
+            "tokenEndpoint": "https://issuer.test/realms/xynoplex/token",
+            "revocationEndpoint": "https://issuer.test/realms/xynoplex/revoke",
         })
     );
     // A token that names no lifetime leaves the expiry unsaid.
@@ -450,7 +450,7 @@ async fn a_sign_in_over_another_persons_states_who_signed_in_now_and_at_which_is
     kept.keep(script(&alices, "r-alice")).await.expect("kept");
     assert_eq!(home.document()["local"]["email"], "alice@example.org");
 
-    let elsewhere = "https://elsewhere.test/realms/semiont";
+    let elsewhere = "https://elsewhere.test/realms/xynoplex";
     let bobs = jwt(json!({ "iss": elsewhere, "email": "bob@example.org" }));
     kept.keep(script(&bobs, "r-bob")).await.expect("kept");
 
@@ -527,13 +527,13 @@ async fn what_another_client_was_issued_is_not_kept() {
     let home = Home::holding(json!({ "local": launchers("a1", "r1") }));
     let kept = home.entry("local");
     let browsers = StoredSession {
-        client_id: "semiont-browser".to_owned(),
+        client_id: "xynoplex-browser".to_owned(),
         ..script(&issued("b1"), "rb")
     };
 
     let refused = kept.keep(browsers).await.expect_err("it is not kept");
 
-    assert!(refused.to_string().contains("semiont-browser"), "{refused}");
+    assert!(refused.to_string().contains("xynoplex-browser"), "{refused}");
     assert_eq!(home.document()["local"], launchers("a1", "r1"));
     assert_eq!(held(kept.as_ref()).await, Some(script("a1", "r1")));
 }

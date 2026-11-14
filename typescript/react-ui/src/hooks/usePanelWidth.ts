@@ -14,7 +14,7 @@ interface UsePanelWidthOptions {
  * @param options.defaultWidth Default width in pixels (default: 384px / 24rem)
  * @param options.minWidth Minimum allowed width in pixels (default: 256px / 16rem)
  * @param options.maxWidth Maximum allowed width in pixels (default: 800px / 50rem)
- * @param options.storageKey localStorage key for persistence (default: 'semiont-panel-width')
+ * @param options.storageKey localStorage key for persistence (default: 'xynoplex-panel-width')
  *
  * @returns Object containing current width, setter function, and constraints
  *
@@ -31,7 +31,7 @@ export function usePanelWidth({
   defaultWidth = 384, // 24rem
   minWidth = 256,     // 16rem
   maxWidth = 800,     // 50rem
-  storageKey = 'semiont-panel-width'
+  storageKey = 'xynoplex-panel-width'
 }: UsePanelWidthOptions = {}) {
   // Always initialize with defaultWidth to avoid hydration mismatch
   // localStorage value will be synced in useEffect

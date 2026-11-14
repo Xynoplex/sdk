@@ -3,7 +3,7 @@
    ============================================ */
 
 /* PageLayout Component */
-.semiont-page-layout {
+.xynoplex-page-layout {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -11,18 +11,18 @@
 
 /* Page wrapper for standalone pages (auth, etc) */
 
-.semiont-page-layout__header {
+.xynoplex-page-layout__header {
   position: sticky;
   top: 0;
   z-index: 40;
 }
 
-.semiont-page-layout__header-container {
+.xynoplex-page-layout__header-container {
   width: 100%;
-  background: var(--semiont-bg-primary);
-  border-bottom: 1px solid var(--semiont-border-primary);
+  background: var(--xynoplex-bg-primary);
+  border-bottom: 1px solid var(--xynoplex-border-primary);
 }
 
-.semiont-page-layout__main {
+.xynoplex-page-layout__main {
   flex: 1;
 }

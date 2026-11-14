@@ -1,5 +1,5 @@
 // expect: SEM008
-namespace Semiont;
+namespace Xynoplex;
 
 internal static class Spawning
 {

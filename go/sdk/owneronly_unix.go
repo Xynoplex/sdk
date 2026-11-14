@@ -1,6 +1,6 @@
 //go:build unix
 
-package semiont
+package xynoplex
 
 import "os"
 

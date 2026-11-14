@@ -10,7 +10,7 @@ import pytest
 from pydantic import TypeAdapter, ValidationError
 from spec import SPEC, objects, read, text
 
-from semiont.identifiers import AnnotationId, InvalidIdentifier, JobId, ResourceId, UserId
+from xynoplex.identifiers import AnnotationId, InvalidIdentifier, JobId, ResourceId, UserId
 
 type Kind = type[ResourceId] | type[AnnotationId] | type[JobId] | type[UserId]
 

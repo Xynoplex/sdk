@@ -5,7 +5,7 @@ from typing import get_args
 import pytest
 from spec import SPEC, JsonObject, objects, read, strings, text
 
-from semiont.media_types import (
+from xynoplex.media_types import (
     base_media_type,
     capabilities_of,
     clone_format,
@@ -15,7 +15,7 @@ from semiont.media_types import (
     text_source_of,
     yields_geometry_of,
 )
-from semiont.media_types_table import MEDIA_TYPES, TextSource
+from xynoplex.media_types_table import MEDIA_TYPES, TextSource
 
 TABLE = read(SPEC / "media-types/cases.json")
 REGISTRY = read(SPEC / "media-types/registry.json")

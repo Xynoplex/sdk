@@ -1,14 +1,14 @@
 //! A client's sessions with knowledge bases.
 //!
-//! - `SemiontSession` is one session: the token its client's transport
+//! - `XynoplexSession` is one session: the token its client's transport
 //!   sends, and who is signed in. It runs anywhere and shows nobody
 //!   anything. It only uses its client: `OpenedSession` is a session and
 //!   the client it was built with, ended together, as a script's sign-in
 //!   gives them. It is built from where its sign-in is kept (`SignInKept`),
 //!   which it renews through and forgets: a registry's storage
-//!   (`kept_in`), the file `semiont login` keeps, or memory
+//!   (`kept_in`), the file `xynoplex login` keeps, or memory
 //!   (`MemorySignIn`).
-//! - `SemiontBrowser` is what an application holds: the knowledge bases it
+//! - `XynoplexBrowser` is what an application holds: the knowledge bases it
 //!   has registered, which of them is active, the active one's session, and
 //!   what a person has open in each. It builds sessions through the
 //!   `SessionFactory` it is given, and so knows nothing of how a knowledge
@@ -33,19 +33,19 @@ mod factory;
 mod kept;
 mod knowledge_base;
 mod open_resource;
-mod semiont_session;
+mod xynoplex_session;
 mod signals;
 mod stored;
 
 pub use browser::{
-    Expected, KbReadVerdict, SemiontBrowser, SemiontBrowserConfig, SignInOutcome, SignedIn,
+    Expected, KbReadVerdict, XynoplexBrowser, XynoplexBrowserConfig, SignInOutcome, SignedIn,
 };
 pub use factory::{SessionFactory, SessionFactoryOptions};
 pub use kept::{MemorySignIn, SignInKept};
 pub use knowledge_base::{KbSessionStatus, is_valid_hostname};
 pub use open_resource::{OpenResource, TabCheck, apply_tab_checks, sort_open_resources};
-pub use semiont_session::{
-    OnAuthFailed, OpenedSession, Refresh, SemiontSession, SemiontSessionConfig, SessionRenewer,
+pub use xynoplex_session::{
+    OnAuthFailed, OpenedSession, Refresh, XynoplexSession, XynoplexSessionConfig, SessionRenewer,
     Validate,
 };
 pub use signals::{

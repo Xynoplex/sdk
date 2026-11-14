@@ -7,7 +7,7 @@
  * `peerDependencies`, or `optionalDependencies` — or be a Node builtin. A bare
  * import that isn't declared resolves only via monorepo hoisting and then
  * **breaks external consumers** who install the package from npm (e.g.
- * `@semiont/react-ui` leaking `use-sync-external-store`).
+ * `@xynoplex/react-ui` leaking `use-sync-external-store`).
  *
  * Run after the packages are built (`build:packages`). No args; exits 1 on any
  * undeclared import.

@@ -1,13 +1,13 @@
 import { BehaviorSubject, type Subscription } from 'rxjs';
-import type { SemiontClient } from '../../client';
-import { FrameRefusal, watched, type AnnotationId, type ResourceId, type StateUnit, type Watched } from '@semiont/core';
+import type { XynoplexClient } from '../../client';
+import { FrameRefusal, watched, type AnnotationId, type ResourceId, type StateUnit, type Watched } from '@xynoplex/core';
 
 export interface BeckonStateUnit extends StateUnit {
   hoveredAnnotationId$: Watched<AnnotationId | null>;
   focus(annotationId: AnnotationId): void;
 }
 
-export function createBeckonStateUnit(client: SemiontClient, resourceId: ResourceId): BeckonStateUnit {
+export function createBeckonStateUnit(client: XynoplexClient, resourceId: ResourceId): BeckonStateUnit {
   const subs: Subscription[] = [];
   const hovered$ = new BehaviorSubject<AnnotationId | null>(null);
   let disposed = false;

@@ -23,14 +23,14 @@ import Data.Text.Encoding (decodeUtf8)
 import Data.Time (getCurrentTime)
 import Data.Time.Clock.POSIX (posixSecondsToUTCTime, getPOSIXTime)
 import GHC.Clock (getMonotonicTimeNSec)
-import qualified Semiont.Issuer as Issuer
-import qualified Semiont.Registry.Stored as Stored
-import qualified Semiont.Retry as Retry
-import qualified Semiont.SessionStorage as Storage
-import qualified Semiont.SignIn as SignIn
-import qualified Semiont.SignInStore as Store
-import Semiont.Errors (SignInError)
-import Semiont.Types
+import qualified Xynoplex.Issuer as Issuer
+import qualified Xynoplex.Registry.Stored as Stored
+import qualified Xynoplex.Retry as Retry
+import qualified Xynoplex.SessionStorage as Storage
+import qualified Xynoplex.SignIn as SignIn
+import qualified Xynoplex.SignInStore as Store
+import Xynoplex.Errors (SignInError)
+import Xynoplex.Types
 import qualified ControlledTime as Time
 import IssuerCases (peer, route, form)
 import System.Directory (getTemporaryDirectory, createDirectory, removePathForcibly, removeFile, listDirectory)
@@ -59,7 +59,7 @@ withDirectory :: (FilePath -> IO result) -> IO result
 withDirectory = bracket make removePathForcibly
   where make = do
           parent <- getTemporaryDirectory
-          (name,handle) <- openBinaryTempFile parent "semiont-haskell-sign-ins"
+          (name,handle) <- openBinaryTempFile parent "xynoplex-haskell-sign-ins"
           hClose handle
           removeFile name
           createDirectory name
@@ -194,13 +194,13 @@ nativeFileCases root = withDirectory $ \directory -> do
 nativeOwnerPolicy :: FilePath -> Store.SignInStore -> IO ()
 nativeOwnerPolicy root store = do
   (exit,_,failure) <- readProcessWithExitCode python
-    [root </> "packages/haskell/sdk/test/store-owner-policy.py",root </> "protocol/specs/src/sign-in-store/owner-only.json",
+    [root </> "haskell/sdk/test/store-owner-policy.py",root </> "protocol/specs/src/sign-in-store/owner-only.json",
       takeDirectory (Store.path store),Store.path store] ""
   require ("native owner policy differs: "++failure) (exit==ExitSuccess)
 
 nativeLockCases :: FilePath -> Store.SignInStore -> StoredSession -> Time.ControlledTime -> IO ()
 nativeLockCases root store credential time = do
-  let command=(proc python ["-u",root </> "packages/haskell/sdk/test/store-lock-peer.py",
+  let command=(proc python ["-u",root </> "haskell/sdk/test/store-lock-peer.py",
         takeDirectory (Store.path store) </> "tokens.lock",root </> "protocol/specs/src/sign-in-store/owner-only.json",
         root </> "protocol/specs/src/sign-in-store/README.md"])
         { std_in=CreatePipe,std_out=CreatePipe }

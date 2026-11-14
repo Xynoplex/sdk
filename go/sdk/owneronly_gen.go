@@ -1,9 +1,9 @@
 // Code generated from protocol/specs/src/sign-in-store/owner-only.json — DO NOT EDIT.
 //
 // Regenerate: node packages/codegen/schemas/generate-sign-in-go.mjs
-// The launcher (packages/go/launcher/owneronly_gen.go) and the Rust, Python and Kotlin SDKs generate theirs from the same file.
+// The launcher (go/launcher/owneronly_gen.go) and the Rust, Python and Kotlin SDKs generate theirs from the same file.
 
-package semiont
+package xynoplex
 
 import "os"
 

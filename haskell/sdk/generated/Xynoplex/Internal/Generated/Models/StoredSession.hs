@@ -1,0 +1,19 @@
+-- Generated from protocol/specs/src. Run xynoplex-codegen; do not edit.
+{-# LANGUAGE OverloadedStrings #-}
+
+{-# OPTIONS_GHC -Wno-unused-imports #-}
+module Xynoplex.Internal.Generated.Models.StoredSession
+  ( StoredSession(..)
+  ) where
+import Control.Applicative ((<|>))
+import Data.Aeson (FromJSON(..), ToJSON(..), Value(..), withObject, (.:))
+import Data.Aeson.Types (parseEither)
+import qualified Data.Aeson.KeyMap as KM
+import Data.Scientific (Scientific)
+import Data.Text (Text)
+import Xynoplex.Internal.Codec
+import Xynoplex.Types.Presence (Presence)
+data StoredSession = StoredSession { storedSessionAccess :: Text, storedSessionClientId :: Text, storedSessionPersonKey :: Maybe (Text), storedSessionRefresh :: Text, storedSessionRevocationEndpoint :: Maybe (Text), storedSessionTokenEndpoint :: Text, storedSessionAdditionalProperties :: KM.KeyMap (Value) } deriving (Eq, Show)
+instance FromJSON StoredSession where
+  parseJSON = checked "StoredSession" $ withObject "StoredSession" (\fields -> StoredSession <$> fields .: "access" <*> fields .: "clientId" <*> optional fields "personKey" <*> fields .: "refresh" <*> optional fields "revocationEndpoint" <*> fields .: "tokenEndpoint" <*> traverse parseJSON (withoutFields ["access", "clientId", "personKey", "refresh", "revocationEndpoint", "tokenEndpoint"] fields))
+instance ToJSON StoredSession where toJSON value = Object (KM.fromList (concat [[("access", toJSON (storedSessionAccess value))], [("clientId", toJSON (storedSessionClientId value))], optionalPair "personKey" (storedSessionPersonKey value), [("refresh", toJSON (storedSessionRefresh value))], optionalPair "revocationEndpoint" (storedSessionRevocationEndpoint value), [("tokenEndpoint", toJSON (storedSessionTokenEndpoint value))]]) <> fmap toJSON (withoutFields ["access", "clientId", "personKey", "refresh", "revocationEndpoint", "tokenEndpoint"] (storedSessionAdditionalProperties value)))

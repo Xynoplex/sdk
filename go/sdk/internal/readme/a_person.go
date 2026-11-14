@@ -7,25 +7,25 @@ import (
 	"net/http"
 	"path/filepath"
 
-	semiont "github.com/The-AI-Alliance/semiont/packages/go/sdk"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/bus"
+	xynoplex "github.com/Xynoplex/sdk/go"
+	"github.com/Xynoplex/sdk/go/api"
+	"github.com/Xynoplex/sdk/go/bus"
 )
 
-func show(code semiont.DeviceCode) {
+func show(code xynoplex.DeviceCode) {
 	fmt.Printf("Open %s and enter %s\n", code.VerificationURI, code.UserCode)
 }
 
-// AsMe is a session as the person signed in to kb, by `semiont login` or by
+// AsMe is a session as the person signed in to kb, by `xynoplex login` or by
 // the device grant here.
 func AsMe(ctx context.Context, kb api.KbTarget, home string) error {
-	directory, ok := semiont.StateDir(semiont.ThisSystem(), home, "", "")
+	directory, ok := xynoplex.StateDir(xynoplex.ThisSystem(), home, "", "")
 	if !ok {
 		return errors.New("this system keeps no sign-ins")
 	}
-	// The sign-in of the stack `semiont login` keys as the knowledge base's id.
-	kept := semiont.NewSignInStore(filepath.Join(directory, semiont.SignInFile)).Entry(kb.Id)
-	timing := semiont.DefaultTiming()
+	// The sign-in of the stack `xynoplex login` keys as the knowledge base's id.
+	kept := xynoplex.NewSignInStore(filepath.Join(directory, xynoplex.SignInFile)).Entry(kb.Id)
+	timing := xynoplex.DefaultTiming()
 	if _, held, err := kept.Held(ctx); err != nil {
 		return err
 	} else if !held {
@@ -33,16 +33,16 @@ func AsMe(ctx context.Context, kb api.KbTarget, home string) error {
 		if err != nil {
 			return err
 		}
-		gateway, err := semiont.GatewayURL(endpoint)
+		gateway, err := xynoplex.GatewayURL(endpoint)
 		if err != nil {
 			return err
 		}
-		issuer := semiont.Issuer{HTTP: http.DefaultClient, Timing: timing}
-		if _, err := semiont.SignInWithDevice(ctx, issuer, gateway, kept, show); err != nil {
+		issuer := xynoplex.Issuer{HTTP: http.DefaultClient, Timing: timing}
+		if _, err := xynoplex.SignInWithDevice(ctx, issuer, gateway, kept, show); err != nil {
 			return err
 		}
 	}
-	session, end, err := semiont.SessionFromKept(ctx, semiont.SessionFromKeptConfig{
+	session, end, err := xynoplex.SessionFromKept(ctx, xynoplex.SessionFromKeptConfig{
 		Kb: kb, Kept: kept, HTTP: http.DefaultClient, Timing: timing, Channels: bus.BridgedChannels,
 	})
 	if err != nil {

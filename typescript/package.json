@@ -1,0 +1,14 @@
+{
+  "name": "@xynoplex/sdk-typescript-workspace",
+  "private": true,
+  "workspaces": [
+    "./core",
+    "./http-transport",
+    "./observability",
+    "./sdk",
+    "./react-ui"
+  ],
+  "scripts": {
+    "build:packages": "npm run build --workspaces --if-present"
+  }
+}

@@ -1,4 +1,4 @@
-package semiont
+package xynoplex
 
 // What a session and a sign-in by a page redirect keep in a SessionStorage,
 // held to protocol/specs/src/session/stored.json: the keys of a stream's places
@@ -19,7 +19,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
+	"github.com/Xynoplex/sdk/go/api"
 )
 
 // objectShape is an object schema of the table: the members it names, and

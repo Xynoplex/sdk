@@ -3,8 +3,8 @@
 //! dispatcher's claims and each SDK's reading of an announcement answer
 //! through this crate's `job_matches_filter`.
 
-use semiont::job_filter::job_matches_filter;
-use semiont::types::JobFilter;
+use xynoplex::job_filter::job_matches_filter;
+use xynoplex::types::JobFilter;
 use serde_json::Value;
 
 fn cases() -> Vec<Value> {

@@ -149,7 +149,7 @@ func YieldsGeometryOf(format string) bool {
 // DerivesTextOf is whether the text of a resource of format is derived from
 // its bytes, by the Smelter, and not decoded from them. A reader of a
 // resource's text asks this to know where to read it: a derived text is the
-// anchored text's, and a decoded one is semiont.DecodeRepresentation's, which
+// anchored text's, and a decoded one is xynoplex.DecodeRepresentation's, which
 // refuses every other type. It is another question than YieldsGeometryOf,
 // though no text source yet answers the two differently: a text transcribed
 // from a recording would be derived, and on no page.

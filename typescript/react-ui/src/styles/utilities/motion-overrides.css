@@ -24,13 +24,13 @@
      Button Components
      ======================================== */
 
-  .semiont-button,
-  .semiont-button[data-variant],
-  .semiont-button[data-size],
-  .semiont-panel-button,
-  .semiont-toolbar-button,
-  .semiont-signout-button,
-  .semiont-resource-button {
+  .xynoplex-button,
+  .xynoplex-button[data-variant],
+  .xynoplex-button[data-size],
+  .xynoplex-panel-button,
+  .xynoplex-toolbar-button,
+  .xynoplex-signout-button,
+  .xynoplex-resource-button {
     transition: none !important;
     animation: none !important;
   }
@@ -39,26 +39,26 @@
      Loading & Spinner Components
      ======================================== */
 
-  .semiont-spinner {
+  .xynoplex-spinner {
     animation: none !important;
     opacity: 0.6; /* Keep visible but static */
   }
 
   /* Skeleton loading effects */
-  .semiont-skeleton {
+  .xynoplex-skeleton {
     animation: none !important;
-    background: var(--semiont-color-gray-200) !important;
+    background: var(--xynoplex-color-gray-200) !important;
   }
 
-  [data-theme="dark"] .semiont-skeleton {
-    background: var(--semiont-color-gray-700) !important;
+  [data-theme="dark"] .xynoplex-skeleton {
+    background: var(--xynoplex-color-gray-700) !important;
   }
 
   /* ========================================
      Toast & Notification Components
      ======================================== */
 
-  .semiont-toast {
+  .xynoplex-toast {
     animation: none !important;
     transition: opacity 0.01ms !important;
     transform: none !important;
@@ -69,9 +69,9 @@
      Modal & Dialog Components
      ======================================== */
 
-  .semiont-modal,
-  .semiont-modal__backdrop,
-  .semiont-modal__content {
+  .xynoplex-modal,
+  .xynoplex-modal__backdrop,
+  .xynoplex-modal__content {
     animation: none !important;
     transition: opacity 0.01ms !important;
     transform: none !important;
@@ -81,8 +81,8 @@
      Panel & Sidebar Components
      ======================================== */
 
-  .semiont-panel,
-  .semiont-panel__content {
+  .xynoplex-panel,
+  .xynoplex-panel__content {
     transition: none !important;
     animation: none !important;
     transform: none !important;
@@ -92,7 +92,7 @@
      Dropdown & Select Components
      ======================================== */
 
-  .semiont-dropdown {
+  .xynoplex-dropdown {
     transition: none !important;
     animation: none !important;
     transform: none !important;
@@ -102,7 +102,7 @@
      Tab & Accordion Components
      ======================================== */
 
-  .semiont-collapsible {
+  .xynoplex-collapsible {
     transition: none !important;
     animation: none !important;
   }
@@ -111,7 +111,7 @@
      Progress & Status Components
      ======================================== */
 
-  .semiont-progress__fill {
+  .xynoplex-progress__fill {
     transition: none !important;
     animation: none !important;
   }
@@ -120,7 +120,7 @@
      Card & List Components
      ======================================== */
 
-  .semiont-card {
+  .xynoplex-card {
     transition: none !important;
     transform: none !important;
   }
@@ -129,11 +129,11 @@
      Form Components
      ======================================== */
 
-  .semiont-form__field,
-  .semiont-input,
-  .semiont-textarea,
-  .semiont-checkbox,
-  .semiont-toggle {
+  .xynoplex-form__field,
+  .xynoplex-input,
+  .xynoplex-textarea,
+  .xynoplex-checkbox,
+  .xynoplex-toggle {
     transition: none !important;
   }
 
@@ -141,8 +141,8 @@
      Annotation & Highlight Components
      ======================================== */
 
-  .semiont-annotation,
-  .semiont-annotation-entry {
+  .xynoplex-annotation,
+  .xynoplex-annotation-entry {
     transition: none !important;
     animation: none !important;
   }
@@ -151,7 +151,7 @@
      Branding & Logo Components
      ======================================== */
 
-  .semiont-brand {
+  .xynoplex-brand {
     animation: none !important;
     transform: none !important;
     opacity: 1 !important;
@@ -161,8 +161,8 @@
      Resource Discovery Components
      ======================================== */
 
-  .semiont-resource-card,
-  .semiont-search-result {
+  .xynoplex-resource-card,
+  .xynoplex-search-result {
     transition: none !important;
     animation: none !important;
   }
@@ -171,8 +171,8 @@
      Toolbar Components
      ======================================== */
 
-  .semiont-toolbar-menu,
-  .semiont-toolbar-panel {
+  .xynoplex-toolbar-menu,
+  .xynoplex-toolbar-panel {
     transition: none !important;
     animation: none !important;
   }
@@ -278,7 +278,7 @@
     }
   }
 
-  @keyframes semiont-sparkle-infinite {
+  @keyframes xynoplex-sparkle-infinite {
     from, to {
       transform: none;
       opacity: 1;

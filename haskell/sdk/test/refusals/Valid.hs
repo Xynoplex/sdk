@@ -1,12 +1,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Valid where
 import Data.Text (Text)
-import qualified Semiont.Channels as Channels
-import Semiont.Types (ResourceId, mkResourceId, FrameAddEntityTypeCommand, EmptyBusPayload)
+import qualified Xynoplex.Channels as Channels
+import Xynoplex.Types (ResourceId, mkResourceId, FrameAddEntityTypeCommand, EmptyBusPayload)
 import qualified Data.Text.IO as Text
-import Semiont.Discovery (DiscoveryRead, readDiscovery, textDiscovery)
-import qualified Semiont.Bus as Bus
-import qualified Semiont.Timing as Timing
+import Xynoplex.Discovery (DiscoveryRead, readDiscovery, textDiscovery)
+import qualified Xynoplex.Bus as Bus
+import qualified Xynoplex.Timing as Timing
 identifier :: Either String ResourceId
 identifier = mkResourceId "probe"
 channel :: Text

@@ -1,11 +1,11 @@
 'use client';
 
-import type { AnnotationId } from '@semiont/core';
+import type { AnnotationId } from '@xynoplex/core';
 import React, { useEffect, useRef } from 'react';
 import { useTranslations } from '../../contexts/TranslationContext';
 import type { RouteBuilder, LinkComponentProps } from '../../contexts/RoutingContext';
-import type { Annotation } from '@semiont/core';
-import { getAnnotationIdFromEvent, type AttributedEvent } from '@semiont/core';
+import type { Annotation } from '@xynoplex/core';
+import { getAnnotationIdFromEvent, type AttributedEvent } from '@xynoplex/core';
 import { HistoryEvent } from './HistoryEvent';
 
 interface Props {
@@ -91,16 +91,16 @@ export function AnnotationHistory({
 
   if (error) {
     return (
-      <div className="semiont-history-panel">
-        <h3 className="semiont-history-panel__title">
+      <div className="xynoplex-history-panel">
+        <h3 className="xynoplex-history-panel__title">
           {t('history')}
         </h3>
-        <p className="semiont-history-panel__error">
+        <p className="xynoplex-history-panel__error">
           {t('failed')}
           {onRetryEvents && (
             <>
               {' '}
-              <button type="button" onClick={onRetryEvents} className="semiont-panel__inline-action">
+              <button type="button" onClick={onRetryEvents} className="xynoplex-panel__inline-action">
                 {t('retry')}
               </button>
             </>
@@ -112,11 +112,11 @@ export function AnnotationHistory({
 
   if (loading) {
     return (
-      <div className="semiont-history-panel">
-        <h3 className="semiont-history-panel__title">
+      <div className="xynoplex-history-panel">
+        <h3 className="xynoplex-history-panel__title">
           {t('history')}
         </h3>
-        <div className="semiont-history-panel__loading">{t('loading')}</div>
+        <div className="xynoplex-history-panel__loading">{t('loading')}</div>
       </div>
     );
   }
@@ -126,11 +126,11 @@ export function AnnotationHistory({
   }
 
   return (
-    <div className="semiont-history-panel">
-      <h3 className="semiont-history-panel__title">
+    <div className="xynoplex-history-panel">
+      <h3 className="xynoplex-history-panel__title">
         {t('history')}
       </h3>
-      <div ref={containerRef} className="semiont-history-panel__list">
+      <div ref={containerRef} className="xynoplex-history-panel__list">
         {events.map((stored) => {
           const isRelated = Boolean(hoveredAnnotationId) && getAnnotationIdFromEvent(stored) === hoveredAnnotationId;
 

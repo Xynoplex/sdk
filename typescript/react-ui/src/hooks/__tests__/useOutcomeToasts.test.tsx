@@ -1,10 +1,10 @@
 import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import type { EventBus } from '@semiont/core';
+import type { EventBus } from '@xynoplex/core';
 import { useOutcomeToasts } from '../useOutcomeToasts';
-import { createTestSemiontWrapper } from '../../test-utils';
+import { createTestXynoplexWrapper } from '../../test-utils';
 import type { ReactNode } from 'react';
-import { resourceId } from '@semiont/core';
+import { resourceId } from '@xynoplex/core';
 
 // The hook's only dependencies are the toast surface and the bus — spy on the
 // former, drive the latter through the real subscription path (the wiring:
@@ -31,9 +31,9 @@ vi.mock('../../components/Toast', () => ({
 const RID = 'res-1';
 
 function setup(): { eventBus: EventBus } {
-  const { SemiontWrapper, eventBus } = createTestSemiontWrapper();
+  const { XynoplexWrapper, eventBus } = createTestXynoplexWrapper();
   const wrapper = ({ children }: { children: ReactNode }) => (
-    <SemiontWrapper>{children}</SemiontWrapper>
+    <XynoplexWrapper>{children}</XynoplexWrapper>
   );
   renderHook(() => useOutcomeToasts(RID), { wrapper });
   return { eventBus };

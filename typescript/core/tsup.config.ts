@@ -8,20 +8,20 @@ export default defineConfig({
   silent: true,
   // Two test-only subpaths, split so the optional `fast-check` peer is really
   // optional:
-  //   `src/testing.ts`        → `@semiont/core/testing`        — doubles, fc-FREE
-  //   `src/testing/axioms.ts` → `@semiont/core/testing/axioms` — needs fc
+  //   `src/testing.ts`        → `@xynoplex/core/testing`        — doubles, fc-FREE
+  //   `src/testing/axioms.ts` → `@xynoplex/core/testing/axioms` — needs fc
   // `fast-check` is externalized either way (consumers provide it), and neither
   // enters the runtime `.` entry, which imports no testing module.
   entry: [
     'src/index.ts',
-    // `@semiont/core/openapi` — generated spec validators (~1.3 MB). A subpath
+    // `@xynoplex/core/openapi` — generated spec validators (~1.3 MB). A subpath
     // precisely so it never enters `.`, which every browser consumer imports.
     'src/openapi.ts',
     'src/testing.ts',
     'src/testing/axioms.ts',
-    // `@semiont/core/testing/issuer` — the in-process OIDC issuer double. Its
+    // `@xynoplex/core/testing/issuer` — the in-process OIDC issuer double. Its
     // own entry so neither `.` nor the `testing` barrel pulls `jose` in behind it.
-    // `packages/typescript/core/scripts/check-core-subpath-isolation.mjs` fails if `.` re-exports it.
+    // `typescript/core/scripts/check-core-subpath-isolation.mjs` fails if `.` re-exports it.
     'src/testing/issuer.ts',
   ],
   external: ['fast-check'],

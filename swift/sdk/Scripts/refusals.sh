@@ -2,11 +2,11 @@
 set -eu
 mkdir -p .build/refusals
 clean() { sed -E 's/\[[0-9;]*[mK]//g; s/\]8;;[^]*\\//g'; }
-if swift build --jobs 4 --force-resolved-versions -Xswiftc -DSEMIONT_SENDABLE_CANARY --scratch-path .build/canary > .build/refusals/canary.log 2>&1; then
+if swift build --jobs 4 --force-resolved-versions -Xswiftc -DXYNOPLEX_SENDABLE_CANARY --scratch-path .build/canary > .build/refusals/canary.log 2>&1; then
   echo "Sendable canary compiled" >&2; exit 1
 fi
 clean < .build/refusals/canary.log > .build/refusals/clean.log
-expected=$(sed -n '1s@// refused: @@p' Sources/Semiont/SendableCanary.swift)
+expected=$(sed -n '1s@// refused: @@p' Sources/Xynoplex/SendableCanary.swift)
 sed -n 's/^.*error: //p' .build/refusals/clean.log | grep -F "$expected" > /dev/null
 if grep -F '; this is an error in the Swift 6 language mode' .build/refusals/clean.log; then exit 1; fi
 bin=$(swift build --force-resolved-versions --show-bin-path)

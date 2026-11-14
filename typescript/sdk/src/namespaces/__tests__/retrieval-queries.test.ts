@@ -8,8 +8,8 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { BehaviorSubject, filter, firstValueFrom, map, type Observable } from 'rxjs';
-import { EventBus, resourceId } from '@semiont/core';
-import type { ConnectionState, EventMap, EventMetadata, EventOfType, ResourceDescriptor, ResourceId, StoredEvent, UserId } from '@semiont/core';
+import { EventBus, resourceId } from '@xynoplex/core';
+import type { ConnectionState, EventMap, EventMetadata, EventOfType, ResourceDescriptor, ResourceId, StoredEvent, UserId } from '@xynoplex/core';
 import { isReady, type CacheState } from '../../cache';
 import { GatherNamespace } from '../gather';
 import { MatchNamespace } from '../match';

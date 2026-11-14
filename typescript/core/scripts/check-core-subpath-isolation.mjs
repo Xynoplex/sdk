@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * @semiont/core's heavy subpaths must stay out of the root entry.
+ * @xynoplex/core's heavy subpaths must stay out of the root entry.
  *
  * `.` is what every browser consumer imports. Two modules are deliberately
  * reachable only by their own subpath because of what they drag in:
@@ -15,10 +15,10 @@
  */
 import { readFileSync } from 'fs';
 
-const ROOT_INDEX = 'packages/typescript/core/src/index.ts';
+const ROOT_INDEX = 'typescript/core/src/index.ts';
 const FORBIDDEN = [
-  { module: './openapi', subpath: '@semiont/core/openapi', why: 'pulls ~1.3 MB of generated validators' },
-  { module: './testing/issuer', subpath: '@semiont/core/testing/issuer', why: 'pulls `jose` into every browser bundle' },
+  { module: './openapi', subpath: '@xynoplex/core/openapi', why: 'pulls ~1.3 MB of generated validators' },
+  { module: './testing/issuer', subpath: '@xynoplex/core/testing/issuer', why: 'pulls `jose` into every browser bundle' },
 ];
 
 const source = readFileSync(ROOT_INDEX, 'utf8');

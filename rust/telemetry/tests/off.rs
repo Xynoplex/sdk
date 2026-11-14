@@ -3,8 +3,8 @@
 //! process installed is the process's.
 
 use opentelemetry::trace::TraceContextExt;
-use semiont::transport::TraceCarrier;
-use semiont_telemetry::{
+use xynoplex::transport::TraceCarrier;
+use xynoplex_telemetry::{
     active_trace, active_trace_id, bus_emit, bus_recv, content_get, content_get_anchored_text,
     content_get_annotations, content_get_graph, content_put, continued, continuing,
 };

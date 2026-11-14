@@ -1,4 +1,4 @@
-package semiont_test
+package xynoplex_test
 
 import (
 	"encoding/json"
@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	semiont "github.com/The-AI-Alliance/semiont/packages/go/sdk"
+	xynoplex "github.com/Xynoplex/sdk/go"
 )
 
 // The state home, as every program that finds tokens.json computes it
@@ -39,17 +39,17 @@ func TestTheStateHomeIsTheTables(t *testing.T) {
 		}
 		return *s
 	}
-	system := func(name string) semiont.System {
+	system := func(name string) xynoplex.System {
 		switch name {
 		case "macos":
-			return semiont.SystemMacOS
+			return xynoplex.SystemMacOS
 		case "windows":
-			return semiont.SystemWindows
+			return xynoplex.SystemWindows
 		}
-		return semiont.SystemOther
+		return xynoplex.SystemOther
 	}
 	for _, c := range table.Cases {
-		dir, ok := semiont.StateDir(system(c.OS), set(c.Home), set(c.XDGStateHome), set(c.LocalAppData))
+		dir, ok := xynoplex.StateDir(system(c.OS), set(c.Home), set(c.XDGStateHome), set(c.LocalAppData))
 		switch {
 		case c.Dir == nil && ok:
 			t.Errorf("%s: a state home %q, want none", c.Why, dir)

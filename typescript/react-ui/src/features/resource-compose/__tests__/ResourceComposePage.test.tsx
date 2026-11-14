@@ -8,12 +8,12 @@
 import { describe, it, expect, vi } from 'vitest';
 import type { ComponentProps } from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { resourceId, type ResourceDescriptor } from '@semiont/core';
+import { resourceId, type ResourceDescriptor } from '@xynoplex/core';
 import { ResourceComposePage } from '../components/ResourceComposePage';
 import type { ResourceComposePageProps } from '../components/ResourceComposePage';
 import type { CodeMirrorRenderer } from '../../../components/CodeMirrorRenderer';
 import type { ToolbarPanelsProps } from '../../../components/Toolbar';
-import { createTestSemiontWrapper } from '../../../test-utils';
+import { createTestXynoplexWrapper } from '../../../test-utils';
 import { LineNumbersProvider } from '../../../contexts/LineNumbersContext';
 
 // Mock CodeMirrorRenderer to avoid CodeMirror dependencies
@@ -82,12 +82,12 @@ const createMockProps = (overrides?: Partial<ResourceComposePageProps>): Resourc
 });
 
 // Helper to render with a session-capable tree (provides the event bus the
-// component reaches for via useSemiont/useObservable).
+// component reaches for via useXynoplex/useObservable).
 const renderWithProviders = (ui: React.ReactElement) => {
-  const { SemiontWrapper } = createTestSemiontWrapper();
+  const { XynoplexWrapper } = createTestXynoplexWrapper();
   return render(
     <LineNumbersProvider>
-      <SemiontWrapper>{ui}</SemiontWrapper>
+      <XynoplexWrapper>{ui}</XynoplexWrapper>
     </LineNumbersProvider>,
   );
 };
@@ -260,7 +260,7 @@ describe('ResourceComposePage', () => {
       const { container } = renderWithProviders(<ResourceComposePage {...props} />);
 
       fireEvent.click(screen.getByText('Upload File').closest('button')!);
-      const dropzone = container.querySelector('.semiont-form__upload-dropzone')!;
+      const dropzone = container.querySelector('.xynoplex-form__upload-dropzone')!;
 
       // fireEvent returns false when the event was preventDefault-ed.
       expect(fireEvent.dragOver(dropzone, { dataTransfer: { files: [] } })).toBe(false);
@@ -271,7 +271,7 @@ describe('ResourceComposePage', () => {
       const { container } = renderWithProviders(<ResourceComposePage {...props} />);
 
       fireEvent.click(screen.getByText('Upload File').closest('button')!);
-      const dropzone = container.querySelector('.semiont-form__upload-dropzone')!;
+      const dropzone = container.querySelector('.xynoplex-form__upload-dropzone')!;
 
       const file = new File(['# notes'], 'field-notes.md', { type: 'text/markdown' });
       fireEvent.drop(dropzone, { dataTransfer: { files: [file] } });

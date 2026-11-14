@@ -22,7 +22,7 @@
 
 import { Observable, EmptyError, firstValueFrom, lastValueFrom } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import type { FrameRefusal, ResourceId, components } from '@semiont/core';
+import type { FrameRefusal, ResourceId, components } from '@xynoplex/core';
 import type { CacheState } from './cache';
 
 /**

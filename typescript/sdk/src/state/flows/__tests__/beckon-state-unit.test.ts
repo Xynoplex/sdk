@@ -1,8 +1,8 @@
 import { describe, it } from 'vitest';
-import { annotationId, resourceId } from '@semiont/core';
+import { annotationId, resourceId } from '@xynoplex/core';
 import { createBeckonStateUnit, createHoverDwell, type BeckonStateUnit, type HoverDwell } from '../beckon-state-unit';
 import { makeTestClient } from '../../../__tests__/test-client';
-import { assertStateUnitAxioms } from '@semiont/core/testing/axioms';
+import { assertStateUnitAxioms } from '@xynoplex/core/testing/axioms';
 
 describe('HoverDwell — StateUnit axioms', () => {
   it('satisfies the StateUnit axioms', () => {

@@ -5,15 +5,15 @@ import (
 	"slices"
 	"testing"
 
-	semiont "github.com/The-AI-Alliance/semiont/packages/go/sdk"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/internal/kept"
+	xynoplex "github.com/Xynoplex/sdk/go"
+	"github.com/Xynoplex/sdk/go/internal/kept"
 )
 
 // The first listener is told, of what was reported before it listened, the
 // latest ErrorsKeptForFirstReaderCount, in order, and then what follows; a
 // later listener is told only what follows it.
 func TestTheFirstListenerIsToldTheLatestReportedBeforeItAndALaterOneOnlyWhatFollows(t *testing.T) {
-	most := semiont.DefaultTiming().ErrorsKeptForFirstReaderCount
+	most := xynoplex.DefaultTiming().ErrorsKeptForFirstReaderCount
 	telling := kept.NewTelling[string](most)
 	beyond := 5
 	reported := make([]string, most+beyond)
@@ -40,7 +40,7 @@ func TestTheFirstListenerIsToldTheLatestReportedBeforeItAndALaterOneOnlyWhatFoll
 // A first listener who comes after the close is told nothing: what was kept
 // for it was let go of at the close.
 func TestAFirstListenerWhoComesAfterTheCloseIsToldNothing(t *testing.T) {
-	telling := kept.NewTelling[string](semiont.DefaultTiming().ErrorsKeptForFirstReaderCount)
+	telling := kept.NewTelling[string](xynoplex.DefaultTiming().ErrorsKeptForFirstReaderCount)
 	telling.Report("HTTP 503")
 	telling.Close()
 	telling.Report("after the close")

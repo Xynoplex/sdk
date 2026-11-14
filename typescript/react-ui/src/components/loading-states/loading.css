@@ -5,28 +5,28 @@
  */
 
 /* Loading States */
-.semiont-loading-state {
+.xynoplex-loading-state {
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 5rem 0;
 }
 
-.semiont-loading-state-wrapper {
+.xynoplex-loading-state-wrapper {
   padding: 1rem 2rem;
 }
 
-.semiont-loading-message {
-  color: var(--semiont-color-gray-600);
-  font-size: var(--semiont-text-base);
+.xynoplex-loading-message {
+  color: var(--xynoplex-color-gray-600);
+  font-size: var(--xynoplex-text-base);
 }
 
-[data-theme="dark"] .semiont-loading-message {
-  color: var(--semiont-color-gray-300);
+[data-theme="dark"] .xynoplex-loading-message {
+  color: var(--xynoplex-color-gray-300);
 }
 
-.semiont-loading-state-compose,
-.semiont-loading-state-resource {
+.xynoplex-loading-state-compose,
+.xynoplex-loading-state-resource {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
@@ -35,8 +35,8 @@
 
 /* A skeleton drawn as an outline rather than a filled block, for places where
    a solid bar would read as real content. */
-.semiont-skeleton-outline {
-  border: 1px dashed var(--semiont-border-secondary);
-  border-radius: var(--semiont-radius-sm);
+.xynoplex-skeleton-outline {
+  border: 1px dashed var(--xynoplex-border-secondary);
+  border-radius: var(--xynoplex-radius-sm);
   background: none;
 }

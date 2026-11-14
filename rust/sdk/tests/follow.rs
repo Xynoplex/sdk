@@ -2,15 +2,15 @@
 //! methods that delegate one: `mark.delegate` and `yield_.delegate`. And a
 //! client's end.
 
-use semiont::channels::BRIDGED_CHANNELS;
-use semiont::client::SemiontClient;
-use semiont::errors::SemiontError;
-use semiont::namespaces::{Delegation, JobEvent, stall_deadline};
-use semiont::testing::as_id;
-use semiont::testing::{FaultAction, FaultyTransport, TestClientOptions, create_test_client};
-use semiont::timing::{JOB_SILENCE, JOB_STATUS_POLL};
-use semiont::transport::{ConnectionState, Envelope, FrameRefusal, FrameRefusalReason};
-use semiont::types::{
+use xynoplex::channels::BRIDGED_CHANNELS;
+use xynoplex::client::XynoplexClient;
+use xynoplex::errors::XynoplexError;
+use xynoplex::namespaces::{Delegation, JobEvent, stall_deadline};
+use xynoplex::testing::as_id;
+use xynoplex::testing::{FaultAction, FaultyTransport, TestClientOptions, create_test_client};
+use xynoplex::timing::{JOB_SILENCE, JOB_STATUS_POLL};
+use xynoplex::transport::{ConnectionState, Envelope, FrameRefusal, FrameRefusalReason};
+use xynoplex::types::{
     HighlightingJobParams, JobDeclinedReason, LinkingJobParams, MarkJobCompleteCommand,
     MarkJobDone, MarkJobResult, TaggingJobParams, YieldJobCompleteCommand, YieldJobResult,
 };
@@ -25,7 +25,7 @@ fn object(value: Value) -> Map<String, Value> {
     value.as_object().cloned().expect("an object")
 }
 
-fn client_over(transport: &FaultyTransport) -> Arc<SemiontClient> {
+fn client_over(transport: &FaultyTransport) -> Arc<XynoplexClient> {
     create_test_client(TestClientOptions {
         transport: Some(transport.clone()),
         ..TestClientOptions::default()
@@ -34,7 +34,7 @@ fn client_over(transport: &FaultyTransport) -> Arc<SemiontClient> {
 }
 
 /// A client whose `job:create` is answered with `job-1`.
-fn world() -> (Arc<SemiontClient>, FaultyTransport) {
+fn world() -> (Arc<XynoplexClient>, FaultyTransport) {
     let transport = FaultyTransport::new(BRIDGED_CHANNELS, vec![]);
     transport.queue_reply("job:create", [Some(json!({ "jobId": "job-1" }))]);
     (client_over(&transport), transport)
@@ -48,7 +48,7 @@ async fn settle() {
 /// Everything a follower gives, on a task of its own.
 fn collected<C: Send + 'static>(
     mut running: Delegation<C>,
-) -> JoinHandle<Vec<Result<JobEvent<C>, SemiontError>>> {
+) -> JoinHandle<Vec<Result<JobEvent<C>, XynoplexError>>> {
     tokio::spawn(async move {
         let mut seen = Vec::new();
         while let Some(item) = running.next().await {
@@ -67,7 +67,7 @@ async fn ended<T>(following: JoinHandle<T>) -> T {
         .expect("the follower ran")
 }
 
-fn highlighting(client: &SemiontClient) -> Delegation<MarkJobCompleteCommand> {
+fn highlighting(client: &XynoplexClient) -> Delegation<MarkJobCompleteCommand> {
     client
         .mark
         .delegate(&as_id("res-1"), HighlightingJobParams::new())
@@ -83,7 +83,7 @@ fn frame(job_id: &str, more: Value) -> Map<String, Value> {
     frame
 }
 
-fn say(client: &SemiontClient, channel: &str, job_id: &str, more: Value) {
+fn say(client: &XynoplexClient, channel: &str, job_id: &str, more: Value) {
     client
         .bus()
         .emit(channel, frame(job_id, more), Envelope::default());
@@ -113,7 +113,7 @@ fn asked(transport: &FaultyTransport, channel: &str) -> usize {
         .count()
 }
 
-fn kinds<C>(seen: &[Result<JobEvent<C>, SemiontError>]) -> Vec<String> {
+fn kinds<C>(seen: &[Result<JobEvent<C>, XynoplexError>]) -> Vec<String> {
     seen.iter()
         .map(|item| match item {
             Ok(JobEvent::Created(created)) => format!("created {}", created.job_id),
@@ -231,7 +231,7 @@ async fn a_completion_frame_of_another_verb_ends_the_follower_and_not_as_a_faile
             kinds(&seen),
             ["created job-1", "progress 25", "error error"]
         );
-        let Some(Err(SemiontError::Transport(error))) = seen.last() else {
+        let Some(Err(XynoplexError::Transport(error))) = seen.last() else {
             panic!(
                 "a transport error was expected, not {:?}",
                 seen.last().map(|item| item.is_ok())
@@ -303,7 +303,7 @@ async fn a_completion_learned_from_the_status_is_read_as_the_verbs_or_ends_the_f
     ] {
         let seen = learned(answer).await;
         assert_eq!(kinds(&seen), ["created job-1", "error error"], "{why}");
-        let Some(Err(SemiontError::Transport(error))) = seen.last() else {
+        let Some(Err(XynoplexError::Transport(error))) = seen.last() else {
             panic!("{why}: a transport error was expected");
         };
         assert_eq!(
@@ -432,7 +432,7 @@ async fn frames_that_arrive_before_the_jobs_id_is_known_are_kept() {
 
 /// What the client's own bus is given in place of a frame on `channel` its
 /// reading refused for lacking `member`: it names no job.
-fn refused(client: &SemiontClient, channel: &str, member: &str, payload: Value) {
+fn refused(client: &XynoplexClient, channel: &str, member: &str, payload: Value) {
     client.bus().emit_refusal(FrameRefusal {
         channel: channel.to_owned(),
         member: member.to_owned(),
@@ -613,7 +613,7 @@ async fn a_status_of_failed_ends_the_follower_as_a_failed_job() {
 
     assert_eq!(kinds(&seen), ["created job-1", "error job.failed"]);
     match &seen[1] {
-        Err(SemiontError::Job(failure)) => {
+        Err(XynoplexError::Job(failure)) => {
             assert_eq!(failure.message, "the worker gave up");
             assert_eq!(failure.job_id.as_deref(), Some("job-1"));
         }
@@ -674,7 +674,7 @@ async fn a_reader_that_fell_behind_asks_at_once_for_what_it_missed() {
     settle().await;
 
     // More frames than a reader may fall behind by, before it reads any.
-    for _ in 0..(semiont::transport::STREAM_BACKLOG + 10) {
+    for _ in 0..(xynoplex::transport::STREAM_BACKLOG + 10) {
         say(&client, "job:report-progress", "job-2", progress(1.0));
     }
     let seen = ended(following).await;
@@ -685,7 +685,7 @@ async fn a_reader_that_fell_behind_asks_at_once_for_what_it_missed() {
     );
 }
 
-fn generation(max_tokens: Option<u64>) -> semiont::types::GenerationJobParams {
+fn generation(max_tokens: Option<u64>) -> xynoplex::types::GenerationJobParams {
     let mut params = object(json!({
         "title": "A summary",
         "storageUri": "file://a-summary.md",
@@ -737,7 +737,7 @@ async fn a_generation_that_says_nothing_is_cancelled_and_given_up_on() {
         "five seconds after the last frame, not {took:?}"
     );
     match &seen[2] {
-        Err(SemiontError::Job(stalled)) => assert_eq!(stalled.job_id.as_deref(), Some("job-1")),
+        Err(XynoplexError::Job(stalled)) => assert_eq!(stalled.job_id.as_deref(), Some("job-1")),
         other => panic!("a stalled job was expected, not {other:?}"),
     }
 
@@ -780,7 +780,7 @@ async fn a_status_of_cancelled_ends_the_follower_as_a_cancelled_job() {
 
     assert_eq!(kinds(&seen), ["created job-1", "error job.cancelled"]);
     match &seen[1] {
-        Err(SemiontError::Job(cancelled)) => {
+        Err(XynoplexError::Job(cancelled)) => {
             assert_eq!(cancelled.message, "The job was cancelled");
             assert_eq!(cancelled.job_id.as_deref(), Some("job-1"));
         }
@@ -854,7 +854,7 @@ async fn a_generation_that_ends_in_time_is_not_cancelled() {
 
 #[test]
 fn how_long_a_generation_may_be_silent_grows_with_what_was_asked_of_it() {
-    use semiont::timing::GENERATION_STALL_FLOOR;
+    use xynoplex::timing::GENERATION_STALL_FLOOR;
     // Unstated, and short: the floor decides.
     assert_eq!(stall_deadline(None), GENERATION_STALL_FLOOR);
     assert_eq!(stall_deadline(Some(100.0)), GENERATION_STALL_FLOOR);

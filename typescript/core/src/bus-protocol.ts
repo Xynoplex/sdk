@@ -2,7 +2,7 @@
 //
 // Authority:   protocol/specs/src/bus/registry.json  (channels, payloads, operations)
 // Regenerate:  node packages/codegen/bus/generate-ts.mjs
-// Go counterpart: node packages/codegen/bus/generate-go.mjs → packages/go/sdk/bus
+// Go counterpart: node packages/codegen/bus/generate-go.mjs → go/sdk/bus
 //
 // Payload schemas themselves live in the OpenAPI components; the registry
 // names which one each channel carries, and every payload type here is
@@ -354,7 +354,7 @@ export type EventMap = {
   'browse:entity-type-clicked': components['schemas']['BrowseEntityTypeClickedEvent'];
 
   // ========================================================================
-  // SHELL — app-scoped UI events (fire on SemiontBrowser's bus, not the
+  // SHELL — app-scoped UI events (fire on XynoplexBrowser's bus, not the
   // per-session client bus). These must work regardless of whether a
   // KB session is active: panel toggles, sidebar, tab bar, routing.
   // ========================================================================
@@ -688,7 +688,7 @@ export const CHANNEL_SCHEMAS = {
   'browse:resource-viewed':           'BrowseResourceViewedEvent',
   'browse:entity-type-clicked':       'BrowseEntityTypeClickedEvent',
 
-  // ── SHELL (app-scoped UI events, fire on SemiontBrowser bus) ────
+  // ── SHELL (app-scoped UI events, fire on XynoplexBrowser bus) ────
   'panel:toggle':                     'BrowsePanelToggleEvent',
   'panel:open':                       null, // includes runtime `anchorRect?: AnchorRect`
   'panel:close':                      null, // void

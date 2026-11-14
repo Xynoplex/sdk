@@ -2,13 +2,13 @@
 
 from typing import assert_never
 
-from semiont.cache import CacheState, Failed, Pending, Ready
-from semiont.client import SemiontClient
-from semiont.http import HttpTransport
-from semiont.identifiers import AnnotationId, ResourceId
-from semiont.types import Annotation, ResourceDescriptor
+from xynoplex.cache import CacheState, Failed, Pending, Ready
+from xynoplex.client import XynoplexClient
+from xynoplex.http import HttpTransport
+from xynoplex.identifiers import AnnotationId, ResourceId
+from xynoplex.types import Annotation, ResourceDescriptor
 
-type Client = SemiontClient[HttpTransport]
+type Client = XynoplexClient[HttpTransport]
 
 
 def a_failure_left_unhandled(state: CacheState[list[Annotation]]) -> int:

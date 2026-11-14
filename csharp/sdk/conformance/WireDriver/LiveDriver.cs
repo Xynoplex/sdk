@@ -1,12 +1,12 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Semiont;
-using Semiont.Errors;
-using Semiont.Http;
-using Semiont.Identifiers;
-using Semiont.Registry;
-using Semiont.Storage;
-using Semiont.Types;
+using Xynoplex;
+using Xynoplex.Errors;
+using Xynoplex.Http;
+using Xynoplex.Identifiers;
+using Xynoplex.Registry;
+using Xynoplex.Storage;
+using Xynoplex.Types;
 
 internal sealed class LiveDriver : IDisposable
 {
@@ -14,10 +14,10 @@ internal sealed class LiveDriver : IDisposable
     private readonly Dictionary<string, Observation> observations = new(StringComparer.Ordinal);
     private static readonly string DriverKey = RegistryStorage.PersonKey(UserId.Parse("did:web:conformance.example:users:driver"));
     private readonly MemoryStorage kept = new();
-    private SemiontClient? client;
+    private XynoplexClient? client;
     private ConnectionState? reported;
 
-    private SemiontClient Client => client ?? throw new InvalidOperationException("No client is open");
+    private XynoplexClient Client => client ?? throw new InvalidOperationException("No client is open");
 
     internal async Task RunAsync(JsonElement args)
     {
@@ -54,7 +54,7 @@ internal sealed class LiveDriver : IDisposable
             }
             WireDriver.Say(new JsonObject { ["id"] = id, ["ok"] = JsonSerializer.SerializeToNode(answer) });
         }
-        catch (SemiontError error) { WireDriver.Say(new { id, error = Failure(error) }); }
+        catch (XynoplexError error) { WireDriver.Say(new { id, error = Failure(error) }); }
         catch (Exception error) { WireDriver.Say(new { id, misuse = error.Message }); }
     }
 
@@ -65,7 +65,7 @@ internal sealed class LiveDriver : IDisposable
             ? new CachePersistence(kept, "conformance", DriverKey) : null;
         var timing = args.TryGetProperty("timing", out var values)
             ? values.Deserialize<Timing>(new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) : null;
-        var opened = new SemiontClient(Text(args, "baseUrl"), Text(args, "token"), timing: timing, persistence: persistence);
+        var opened = new XynoplexClient(Text(args, "baseUrl"), Text(args, "token"), timing: timing, persistence: persistence);
         lock (gate)
         {
             reported = null;
@@ -75,12 +75,12 @@ internal sealed class LiveDriver : IDisposable
         _ = ReportErrorsAsync(opened);
     }
 
-    private async Task ReportStatesAsync(SemiontClient opened)
+    private async Task ReportStatesAsync(XynoplexClient opened)
     {
         await foreach (var state in opened.Transport.States().ConfigureAwait(false)) Report(opened, state);
     }
 
-    private void Report(SemiontClient opened, ConnectionState state)
+    private void Report(XynoplexClient opened, ConnectionState state)
     {
         lock (gate)
         {
@@ -90,7 +90,7 @@ internal sealed class LiveDriver : IDisposable
         }
     }
 
-    private static async Task ReportErrorsAsync(SemiontClient opened)
+    private static async Task ReportErrorsAsync(XynoplexClient opened)
     {
         await foreach (var error in opened.Transport.Errors().ConfigureAwait(false)) WireDriver.Say(new { error = Failure(error) });
     }
@@ -195,7 +195,7 @@ internal sealed class LiveDriver : IDisposable
     private static object Failure(Exception error)
     {
         var failure = new JsonObject { ["detail"] = error.Message };
-        if (error is SemiontError semiont) failure["code"] = semiont.Code;
+        if (error is XynoplexError xynoplex) failure["code"] = xynoplex.Code;
         if (error is JobError { FailureClass: { } kind }) failure["failureClass"] = JsonSerializer.SerializeToNode(kind);
         if (error is TransportError { Status: { } status }) failure["status"] = status;
         return failure;

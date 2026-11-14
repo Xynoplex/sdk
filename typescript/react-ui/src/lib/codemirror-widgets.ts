@@ -10,8 +10,8 @@
  */
 
 import { WidgetType } from '@codemirror/view';
-import { isResolvedReference, getBodySource } from '@semiont/core';
-import type { Annotation } from '@semiont/core';
+import { isResolvedReference, getBodySource } from '@xynoplex/core';
+import type { Annotation } from '@xynoplex/core';
 
 /**
  * Reference Resolution Widget

@@ -19,12 +19,12 @@ import { readFileSync } from 'fs';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import { filter, firstValueFrom } from 'rxjs';
-import { PERSISTED_QUERIES, isObject, resourceId, type PersistedQuery } from '@semiont/core';
-import { validators } from '@semiont/core/openapi';
+import { PERSISTED_QUERIES, isObject, resourceId, type PersistedQuery } from '@xynoplex/core';
+import { validators } from '@xynoplex/core/openapi';
 import { KEPT_QUERIES, WHOLE_KEY, coupledLastEventId, keptPersister } from '../../cache-persister';
 import { createTestSession } from '../../testing';
 import { PENDING_AUTHORIZATION_KEY } from '../oauth';
-import { SemiontBrowser } from '../semiont-browser';
+import { XynoplexBrowser } from '../xynoplex-browser';
 import { InMemorySessionStorage } from '../session-storage';
 import {
   ACTIVE_KEY,
@@ -113,7 +113,7 @@ async function writtenOpenResources(): Promise<Record<string, object>> {
   const { session, storage } = createTestSession({ kb });
   storage.set(STORAGE_KEY, JSON.stringify([kb]));
   storage.set(ACTIVE_KEY, kb.id);
-  const browser = new SemiontBrowser({ storage, sessionFactory: () => session });
+  const browser = new XynoplexBrowser({ storage, sessionFactory: () => session });
   await firstValueFrom(browser.activeSession$.pipe(filter((live) => live !== null)));
 
   browser.addOpenResource(resourceId('whole'), 'Whole', 'text/markdown', 'file://docs/whole.md');
@@ -178,7 +178,7 @@ describe('what a registry keeps, as protocol/specs/src/session/stored.json state
   const whole: StoredSession = {
     access: 'a',
     refresh: 'r',
-    clientId: 'semiont-browser',
+    clientId: 'xynoplex-browser',
     tokenEndpoint: 'https://issuer.test/token',
     revocationEndpoint: 'https://issuer.test/revoke',
     personKey: 'gqB898gk4Ww_orAHhzDCSVl7yHP9UEsX0DA_xbGbq-I',

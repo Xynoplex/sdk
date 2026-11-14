@@ -1,4 +1,4 @@
-package semiont
+package xynoplex
 
 // Reading a resource: its description, and the text its bytes are.
 //
@@ -20,8 +20,8 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/mediatypes"
+	"github.com/Xynoplex/sdk/go/api"
+	"github.com/Xynoplex/sdk/go/mediatypes"
 )
 
 // PrimaryRepresentation is a resource's primary representation: its one, or

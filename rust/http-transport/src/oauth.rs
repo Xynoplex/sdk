@@ -20,18 +20,18 @@ use base64::Engine;
 use base64::engine::general_purpose::URL_SAFE_NO_PAD;
 use rand_core::Rng;
 use ring::rand::SecureRandom;
-use semiont::errors::{SignInError, SignInErrorCode, TransportError};
-use semiont::identity::encode_uri_component;
-use semiont::retry::{self, RetryFacts, retry_with_backoff};
-use semiont::session::{
+use xynoplex::errors::{SignInError, SignInErrorCode, TransportError};
+use xynoplex::identity::encode_uri_component;
+use xynoplex::retry::{self, RetryFacts, retry_with_backoff};
+use xynoplex::session::{
     BROWSER_CLIENT_ID, SCRIPT_CLIENT_ID, SIGN_IN_SCOPE, SignInKept, is_token_expired,
 };
-use semiont::storage::SessionStorage;
-use semiont::timing::{
+use xynoplex::storage::SessionStorage;
+use xynoplex::timing::{
     DEVICE_POLL, DEVICE_POLL_FLOOR, DEVICE_SLOW_DOWN, HTTP_REQUEST_TIMEOUT, REFRESH_RETRY,
 };
-use semiont::transport::{GatewayOperations, Transport};
-use semiont::types::HttpEndpoint;
+use xynoplex::transport::{GatewayOperations, Transport};
+use xynoplex::types::HttpEndpoint;
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
 use std::sync::Mutex;
@@ -40,7 +40,7 @@ use tokio::sync::watch;
 use tokio::time::Instant;
 
 /// Where a sign-in that is under way is remembered.
-pub const PENDING_AUTHORIZATION_KEY: &str = "semiont.pendingAuthorization";
+pub const PENDING_AUTHORIZATION_KEY: &str = "xynoplex.pendingAuthorization";
 const DEVICE_GRANT: &str = "urn:ietf:params:oauth:grant-type:device_code";
 
 /// An issuer, and the endpoints of it a client uses.

@@ -3,7 +3,7 @@
 //! - `types.rs`: the body of every request and response the API declares but
 //!   the ones a service only passes through (`PASSED_THROUGH`), the schemas
 //!   of the job protocol's channels, and the reads a job's admission makes,
-//!   with every schema they reach (semiont-codegen);
+//!   with every schema they reach (xynoplex-codegen);
 //! - `operations.rs`: the bus registry's operations, which reply and which
 //!   failure answer each request, and which of them report inference limits;
 //! - `channels.rs`: the channels every client hears and the channels a
@@ -21,7 +21,7 @@
 //!   (errors/codes.json);
 //! - `oauth_clients.rs`: the ids a client signs in under at an issuer, and
 //!   the scope it asks for (session/oauth.json);
-//! - `sign_in.rs`: an entry of the store `semiont login` keeps
+//! - `sign_in.rs`: an entry of the store `xynoplex login` keeps
 //!   (sign-in-store/SignIn.json);
 //! - `owner_only.rs`: the modes and the access list the store's directory and
 //!   files are kept to their owner with (sign-in-store/owner-only.json);
@@ -42,8 +42,8 @@
 //!   labels every reader of a resource's text refuses, which the reader
 //!   refuses with the `charsets` feature (text/encoding-cases.json).
 
-use semiont_codegen::bundle::{Bundle, draft7_definitions, read_json};
-use semiont_codegen::types::{Generation, generate, pascal, snake};
+use xynoplex_codegen::bundle::{Bundle, draft7_definitions, read_json};
+use xynoplex_codegen::types::{Generation, generate, pascal, snake};
 use serde_json::Value;
 use std::fmt::Write as _;
 use std::fs;
@@ -72,7 +72,7 @@ const BESIDE: [&str; 11] = [
 ];
 
 /// A body that is not JSON: an upload is a multipart form, whose fields
-/// `semiont::transport::PutBinaryRequest` carries.
+/// `xynoplex::transport::PutBinaryRequest` carries.
 const PASSED_THROUGH: [&str; 1] = ["ResourceUpload"];
 
 /// Every component schema a request or response body of `document`'s paths names.

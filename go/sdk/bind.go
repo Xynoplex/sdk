@@ -1,12 +1,12 @@
-package semiont
+package xynoplex
 
 // Bind: linking a reference to what it refers to.
 
 import (
 	"context"
 
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/bus"
+	"github.com/Xynoplex/sdk/go/api"
+	"github.com/Xynoplex/sdk/go/bus"
 )
 
 // BindNamespace is linking a reference to what it refers to.

@@ -1,7 +1,7 @@
 """How a held job's commits were established is the job's own to say: no settle is told it."""
 
-from semiont.claims import HeldMarkJob, HeldYieldJob
-from semiont.types import MarkJobDone, YieldJobDone
+from xynoplex.claims import HeldMarkJob, HeldYieldJob
+from xynoplex.types import MarkJobDone, YieldJobDone
 
 
 async def a_mark_job_s_completion_told(job: HeldMarkJob, result: MarkJobDone) -> None:

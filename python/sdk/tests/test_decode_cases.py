@@ -9,7 +9,7 @@ Encoding Standard, and every byte of each of its single-byte encodings.
 A worker reads a resource's text with `browse.resource_content` and counts its
 offsets in what that gives. So each case is read through a client, from bytes
 its content transport serves with the case's content type. What the client
-reads with is `semiont.resources.decode_representation`.
+reads with is `xynoplex.resources.decode_representation`.
 """
 
 from typing import Annotated, Final, Literal
@@ -19,11 +19,11 @@ from aio import run
 from pydantic import BaseModel, Field
 from spec import SPEC
 
-from semiont.errors import TransportError
-from semiont.identifiers import ResourceId
-from semiont.media_types import text_source_of
-from semiont.testing import create_test_client
-from semiont.transport import Content
+from xynoplex.errors import TransportError
+from xynoplex.identifiers import ResourceId
+from xynoplex.media_types import text_source_of
+from xynoplex.testing import create_test_client
+from xynoplex.transport import Content
 
 RESOURCE: Final = ResourceId("res-1")
 EVERY_BYTE: Final = bytes(range(256))

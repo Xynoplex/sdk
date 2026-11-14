@@ -1,9 +1,9 @@
 import { describe, it, vi } from 'vitest';
 import { Observable } from 'rxjs';
-import { annotationId, resourceId as makeResourceId } from '@semiont/core';
+import { annotationId, resourceId as makeResourceId } from '@xynoplex/core';
 import { createGatherStateUnit, type GatherStateUnit } from '../gather-state-unit';
 import { makeTestClient, type TestClient } from '../../../__tests__/test-client';
-import { assertStateUnitAxioms } from '@semiont/core/testing/axioms';
+import { assertStateUnitAxioms } from '@xynoplex/core/testing/axioms';
 
 const RID = makeResourceId('res-1');
 

@@ -1,7 +1,7 @@
 /**
  * Verb Namespace Interfaces
  *
- * These interfaces define the public API of `@semiont/sdk`, organized by
+ * These interfaces define the public API of `@xynoplex/sdk`, organized by
  * the eight flows (Browse, Mark, Bind, Gather, Match, Yield, Beckon, Frame)
  * plus the `job`, `auth` and `system` namespaces.
  *
@@ -45,7 +45,7 @@ import type {
   UploadObservable,
   YieldJobCompletion,
 } from '../awaitable';
-import type { components, EventMap, FrameRefusal, paths } from '@semiont/core';
+import type { components, EventMap, FrameRefusal, paths } from '@xynoplex/core';
 import type { ClaimOptions, ClaimsObservable } from '../claims';
 import type {
   ResourceId,
@@ -61,13 +61,13 @@ import type {
   TagSchema,
   EngineWithLimits,
   KbDescription,
-} from '@semiont/core';
+} from '@xynoplex/core';
 
 // ── OpenAPI schema type aliases ─────────────────────────────────────────────
 
-import type { Annotation } from '@semiont/core';
-import type { AnchoredTextAnswer } from '@semiont/core';
-import type { ResourceDescriptor } from '@semiont/core';
+import type { Annotation } from '@xynoplex/core';
+import type { AnchoredTextAnswer } from '@xynoplex/core';
+import type { ResourceDescriptor } from '@xynoplex/core';
 type GetResourceResponse = components['schemas']['GetResourceResponse'];
 type MatchSearchResult = components['schemas']['MatchSearchResult'];
 export type GatherAnnotationComplete = components['schemas']['GatherAnnotationComplete'];

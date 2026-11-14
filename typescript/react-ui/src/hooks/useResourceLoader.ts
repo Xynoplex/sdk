@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { readyValue } from '@semiont/sdk';
-import type { Annotation, ResourceDescriptor, ResourceId } from '@semiont/core';
-import type { SemiontClient } from '@semiont/sdk';
+import { readyValue } from '@xynoplex/sdk';
+import type { Annotation, ResourceDescriptor, ResourceId } from '@xynoplex/core';
+import type { XynoplexClient } from '@xynoplex/sdk';
 import { groupAnnotations } from '../lib/annotation-groups';
 import type { AnnotationsCollection } from '../types/annotation-props';
 
@@ -26,7 +26,7 @@ const EMPTY: AnnotationsCollection = { highlights: [], references: [], assessmen
  * emitted; `annotations` is bucketed via the shared `groupAnnotations`. A null
  * client subscribes to nothing (stays loading) and re-subscribes when one arrives.
  */
-export function useResourceLoader(client: SemiontClient | null, resourceId: ResourceId): UseResourceLoaderResult {
+export function useResourceLoader(client: XynoplexClient | null, resourceId: ResourceId): UseResourceLoaderResult {
   const [resource, setResource] = useState<ResourceDescriptor | undefined>(undefined);
   const [rawAnnotations, setRawAnnotations] = useState<Annotation[] | undefined>(undefined);
   const [error, setError] = useState<Error | null>(null);

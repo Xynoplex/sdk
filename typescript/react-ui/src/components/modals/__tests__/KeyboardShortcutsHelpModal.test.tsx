@@ -49,7 +49,7 @@ describe('KeyboardShortcutsHelpModal', () => {
 
   it('renders kbd elements for shortcuts', () => {
     renderWithProviders(<KeyboardShortcutsHelpModal {...defaultProps} />);
-    const kbdElements = document.querySelectorAll('kbd.semiont-shortcuts__key');
+    const kbdElements = document.querySelectorAll('kbd.xynoplex-shortcuts__key');
     expect(kbdElements.length).toBeGreaterThan(0);
   });
 

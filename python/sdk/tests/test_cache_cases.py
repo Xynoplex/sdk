@@ -2,7 +2,7 @@
 
 Every SDK's persister runs that table. Each case runs through the persister
 a client keeps the case's query with (`KeptPersisters`), over a storage in
-memory, under the key `semiont.stored` gives it. What a load keeps is read
+memory, under the key `xynoplex.stored` gives it. What a load keeps is read
 back by that persister's own save, so each value is compared as the document
 writes it. A refused write runs through the cache that saves with that
 persister, over a storage that refuses its first write.
@@ -18,15 +18,15 @@ from pydantic import BaseModel, Field, JsonValue, TypeAdapter
 from spec import SPEC
 from storages import Refusing
 
-from semiont.cache import Cache
-from semiont.client import CachePersistence
-from semiont.identifiers import AnnotationId, ResourceId
-from semiont.namespaces.live import KeptPersisters
-from semiont.resume import CoupledBookmarks
-from semiont.storage import MemoryStorage, SessionStorage, StoragePersister
-from semiont.stored import KeptQuery, WholeKey, cache_key, last_event_id_key, person_key
-from semiont.timing import SAVE_DEBOUNCE_MS
-from semiont.types import Annotation, GetAnnotationsResponse, ResourceDescriptor, TagSchema
+from xynoplex.cache import Cache
+from xynoplex.client import CachePersistence
+from xynoplex.identifiers import AnnotationId, ResourceId
+from xynoplex.namespaces.live import KeptPersisters
+from xynoplex.resume import CoupledBookmarks
+from xynoplex.storage import MemoryStorage, SessionStorage, StoragePersister
+from xynoplex.stored import KeptQuery, WholeKey, cache_key, last_event_id_key, person_key
+from xynoplex.timing import SAVE_DEBOUNCE_MS
+from xynoplex.types import Annotation, GetAnnotationsResponse, ResourceDescriptor, TagSchema
 
 type Entry = tuple[JsonValue, JsonValue]
 """An entry as the table states it: its key as the document writes it, and its value."""

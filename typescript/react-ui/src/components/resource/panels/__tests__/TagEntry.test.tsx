@@ -3,16 +3,16 @@ import { cloneElement, type ReactElement } from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { of } from 'rxjs';
-import { CacheObservable, type SemiontSession } from '@semiont/sdk';
-import { renderWithProviders, createTestSemiontWrapper } from '../../../../test-utils';
+import { CacheObservable, type XynoplexSession } from '@xynoplex/sdk';
+import { renderWithProviders, createTestXynoplexWrapper } from '../../../../test-utils';
 import userEvent from '@testing-library/user-event';
-import type { TagSchema } from '@semiont/core';
+import type { TagSchema } from '@xynoplex/core';
 
-import type { Annotation, AnnotationId } from '@semiont/core';
+import type { Annotation, AnnotationId } from '@xynoplex/core';
 
-// Mock @semiont/http-transport
-vi.mock('@semiont/core', async () => {
-  const actual = await vi.importActual('@semiont/core');
+// Mock @xynoplex/http-transport
+vi.mock('@xynoplex/core', async () => {
+  const actual = await vi.importActual('@xynoplex/core');
   return {
     ...actual,
     getAnnotationExactText: vi.fn(),
@@ -21,7 +21,7 @@ vi.mock('@semiont/core', async () => {
   };
 });
 
-import { getAnnotationExactText, getTagCategory, getTagSchemaId, resourceId } from '@semiont/core';
+import { getAnnotationExactText, getTagCategory, getTagSchemaId, resourceId } from '@xynoplex/core';
 import type { MockedFunction } from 'vitest';
 import { TagEntry } from '../TagEntry';
 
@@ -69,8 +69,8 @@ describe('TagEntry', () => {
 
   // The component is provider-free: hand it a fresh per-test fake session as
   // the `session` prop. renderWithProviders still supplies translations/toasts.
-  const renderTagEntry = (element: ReactElement<{ session: SemiontSession | null }>) => {
-    const { session } = createTestSemiontWrapper();
+  const renderTagEntry = (element: ReactElement<{ session: XynoplexSession | null }>) => {
+    const { session } = createTestXynoplexWrapper();
     return renderWithProviders(cloneElement(element, { session }));
   };
 
@@ -110,7 +110,7 @@ describe('TagEntry', () => {
 
       const { container } = renderTagEntry(<TagEntry {...defaultProps} />);
 
-      const quote = container.querySelector('.semiont-annotation-entry__quote');
+      const quote = container.querySelector('.xynoplex-annotation-entry__quote');
       expect(quote).toBeInTheDocument();
       expect(quote!.textContent).not.toContain('...');
     });
@@ -128,11 +128,11 @@ describe('TagEntry', () => {
       // Stub the cache to resolve immediately with the test schema —
       // exercises the rendering path without round-tripping through the
       // transport's HTTP plumbing.
-      const { SemiontWrapper, client, session } = createTestSemiontWrapper();
+      const { XynoplexWrapper, client, session } = createTestXynoplexWrapper();
       vi.spyOn(client.browse, 'tagSchemas').mockReturnValue(
         CacheObservable.from(of({ status: 'ready' as const, value: [NER_SCHEMA] }))
       );
-      render(<TagEntry {...defaultProps} session={session} />, { wrapper: SemiontWrapper });
+      render(<TagEntry {...defaultProps} session={session} />, { wrapper: XynoplexWrapper });
 
       expect(screen.getByText('Named Entity Recognition')).toBeInTheDocument();
     });
@@ -142,19 +142,19 @@ describe('TagEntry', () => {
 
       // Stub the cache to resolve to an empty list — the schema lookup
       // misses, the schema-name `<span>` is not rendered.
-      const { SemiontWrapper, client, session } = createTestSemiontWrapper();
+      const { XynoplexWrapper, client, session } = createTestXynoplexWrapper();
       vi.spyOn(client.browse, 'tagSchemas').mockReturnValue(
         CacheObservable.from(of({ status: 'ready' as const, value: [] }))
       );
-      const { container } = render(<TagEntry {...defaultProps} session={session} />, { wrapper: SemiontWrapper });
+      const { container } = render(<TagEntry {...defaultProps} session={session} />, { wrapper: XynoplexWrapper });
 
-      expect(container.querySelector('.semiont-annotation-entry__meta')).not.toBeInTheDocument();
+      expect(container.querySelector('.xynoplex-annotation-entry__meta')).not.toBeInTheDocument();
     });
 
     it('should render category badge with correct data-variant', () => {
       const { container } = renderTagEntry(<TagEntry {...defaultProps} />);
 
-      const badge = container.querySelector('.semiont-tag-badge');
+      const badge = container.querySelector('.xynoplex-tag-badge');
       expect(badge).toBeInTheDocument();
       expect(badge).toHaveAttribute('data-variant', 'tag');
     });
@@ -166,7 +166,7 @@ describe('TagEntry', () => {
 
       // The session prop is the only session the provider-free component
       // sees — subscribe on the SAME factory's bus that backs it.
-      const { session, eventBus } = createTestSemiontWrapper();
+      const { session, eventBus } = createTestXynoplexWrapper();
       const subscription = eventBus.on('browse:click').subscribe(clickHandler);
 
       const { container } = renderWithProviders(
@@ -191,7 +191,7 @@ describe('TagEntry', () => {
       );
 
       const entry = container.firstChild as HTMLElement;
-      expect(entry).toHaveClass('semiont-annotation-pulse');
+      expect(entry).toHaveClass('xynoplex-annotation-pulse');
     });
 
     it('should not apply pulse class when isHovered is false', () => {
@@ -200,7 +200,7 @@ describe('TagEntry', () => {
       );
 
       const entry = container.firstChild as HTMLElement;
-      expect(entry).not.toHaveClass('semiont-annotation-pulse');
+      expect(entry).not.toHaveClass('xynoplex-annotation-pulse');
     });
   });
 

@@ -17,14 +17,14 @@ import (
 	"testing/synctest"
 	"time"
 
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/discovery"
+	"github.com/Xynoplex/sdk/go/api"
+	"github.com/Xynoplex/sdk/go/discovery"
 )
 
 func entry(host string, port int, did string) map[string]any {
 	return map[string]any{
 		"host": host, "port": port, "placement": "local",
-		"managedBy": "semiont-launcher", "did": did,
+		"managedBy": "xynoplex-launcher", "did": did,
 	}
 }
 
@@ -73,7 +73,7 @@ const (
 
 func TestADocumentOfKnowledgeBasesIsManagedAndOneOfNoneIsManagedToo(t *testing.T) {
 	codespace := map[string]any{
-		"host": "localhost", "port": 4100, "placement": "codespace", "managedBy": "semiont-launcher",
+		"host": "localhost", "port": 4100, "placement": "codespace", "managedBy": "xynoplex-launcher",
 		"did": b, "repo": "owner/name", "siteName": "A site",
 	}
 	got := discovery.ParseDiscoveryDocument(document(t, entry("localhost", 4000, a), codespace))
@@ -252,7 +252,7 @@ func TestTheFirstReadingIsToldWholeAndEachOneAfterByWhatChanged(t *testing.T) {
 	synctest.Test(t, func(t *testing.T) {
 		renamed := map[string]any{
 			"host": "localhost", "port": 4000, "placement": "local",
-			"managedBy": "semiont-launcher", "did": a, "siteName": "Renamed",
+			"managedBy": "xynoplex-launcher", "did": a, "siteName": "Renamed",
 		}
 		s := scriptOf(
 			parsed(document(t, entry("localhost", 4000, a))),
@@ -315,7 +315,7 @@ func TestAReadingThatChangedNothingIsNotTold(t *testing.T) {
 func TestAnEntryWithOptionalMembersReadAgainUnchangedIsNotTold(t *testing.T) {
 	synctest.Test(t, func(t *testing.T) {
 		codespace := document(t, map[string]any{
-			"host": "localhost", "port": 4100, "placement": "codespace", "managedBy": "semiont-launcher",
+			"host": "localhost", "port": 4100, "placement": "codespace", "managedBy": "xynoplex-launcher",
 			"did": b, "repo": "owner/name", "siteName": "A site",
 		})
 		s := scriptOf(parsed(codespace), parsed(codespace))

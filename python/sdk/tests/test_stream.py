@@ -21,11 +21,11 @@ import httpx
 import pytest
 from aio import run, soon
 
-from semiont._kept_for_first_reader import KeptForFirstReader
-from semiont.errors import SemiontError
-from semiont.http.stream import Stream, Timing
-from semiont.transport import FrameHub, ReplyRouter
-from semiont.watched import Variable
+from xynoplex._kept_for_first_reader import KeptForFirstReader
+from xynoplex.errors import XynoplexError
+from xynoplex.http.stream import Stream, Timing
+from xynoplex.transport import FrameHub, ReplyRouter
+from xynoplex.watched import Variable
 
 QUICK: Final = Timing(reconnect_ms=10)
 
@@ -82,7 +82,7 @@ def test_a_stream_that_is_stopped_ends_a_connection_whose_first_cancellation_was
                 timing=QUICK,
                 hub=FrameHub(),
                 router=ReplyRouter(),
-                failures=KeptForFirstReader[SemiontError](),
+                failures=KeptForFirstReader[XynoplexError](),
                 bookmarks=None,
             )
             running = asyncio.ensure_future(stream.run())

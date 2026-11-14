@@ -16,9 +16,9 @@ import {
   GENERATION_STALL_ASSUMED_TOKENS_COUNT,
   GENERATION_STALL_FLOOR_MS,
   GENERATION_STALL_PER_TOKEN_MS,
-  SemiontError,
-} from '@semiont/core';
-import type { JobErrorCode } from '@semiont/core';
+  XynoplexError,
+} from '@xynoplex/core';
+import type { JobErrorCode } from '@xynoplex/core';
 
 /**
  * The single derivation site: a floor, and a wait that grows with the
@@ -37,7 +37,7 @@ export function deriveStallDeadlineMs(maxTokens: number | undefined): number {
  * when `jobId` is null and there was nothing to cancel. Consumers word their
  * own user-facing message — the SDK ships no copy.
  */
-export class GenerationStallError extends SemiontError {
+export class GenerationStallError extends XynoplexError {
   declare code: JobErrorCode;
 
   constructor(

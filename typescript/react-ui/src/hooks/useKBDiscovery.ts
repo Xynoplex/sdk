@@ -13,9 +13,9 @@
  */
 
 import { useEffect, useMemo, useState } from 'react';
-import { httpDiscovery, subscribeDiscovery } from '@semiont/sdk';
-import type { DiscoveryState, DiscoveryTransport } from '@semiont/sdk';
-import type { DiscoveredKB } from '@semiont/core';
+import { httpDiscovery, subscribeDiscovery } from '@xynoplex/sdk';
+import type { DiscoveryState, DiscoveryTransport } from '@xynoplex/sdk';
+import type { DiscoveredKB } from '@xynoplex/core';
 
 export interface KBDiscoveryOptions {
   /** Pause entirely (e.g. the KB panel is closed). Default true. */

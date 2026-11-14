@@ -5,7 +5,7 @@
  */
 
 /* Error States */
-.semiont-error-state {
+.xynoplex-error-state {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -14,16 +14,16 @@
   gap: 1rem;
 }
 
-.semiont-error-message {
-  color: var(--semiont-color-error);
-  font-size: var(--semiont-text-base);
+.xynoplex-error-message {
+  color: var(--xynoplex-color-error);
+  font-size: var(--xynoplex-text-base);
 }
 
-[data-theme="dark"] .semiont-error-message {
-  color: var(--semiont-color-error-light);
+[data-theme="dark"] .xynoplex-error-message {
+  color: var(--xynoplex-color-error-light);
 }
 
-.semiont-error-state-resource {
+.xynoplex-error-state-resource {
   display: flex;
   flex-direction: column;
   align-items: center;

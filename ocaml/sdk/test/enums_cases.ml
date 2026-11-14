@@ -3,7 +3,7 @@
 [@@@ocamlformat "disable"]
 
 let () =
-  let module Model = Semiont.Enums.Body_purpose in
+  let module Model = Xynoplex.Enums.Body_purpose in
   Alcotest.(check string) "Body_purpose encode" "assessing" (Model.to_string Model.Assessing);
   Alcotest.(check bool) "Body_purpose decode" true (Model.of_string "assessing" = Some Model.Assessing);
   Alcotest.(check string) "Body_purpose encode" "bookmarking" (Model.to_string Model.Bookmarking);
@@ -31,7 +31,7 @@ let () =
   Alcotest.(check string) "Body_purpose encode" "tagging" (Model.to_string Model.Tagging);
   Alcotest.(check bool) "Body_purpose decode" true (Model.of_string "tagging" = Some Model.Tagging);
   Alcotest.(check bool) "Body_purpose rejects unknown values" true (Model.of_string "" = None);
-  let module Model = Semiont.Enums.Durability_evidence in
+  let module Model = Xynoplex.Enums.Durability_evidence in
   Alcotest.(check string) "Durability_evidence encode" "acknowledged" (Model.to_string Model.Acknowledged);
   Alcotest.(check bool) "Durability_evidence decode" true (Model.of_string "acknowledged" = Some Model.Acknowledged);
   Alcotest.(check string) "Durability_evidence encode" "probe-confirmed" (Model.to_string Model.Probe_confirmed);
@@ -41,7 +41,7 @@ let () =
   Alcotest.(check string) "Durability_evidence encode" "probe-unreachable" (Model.to_string Model.Probe_unreachable);
   Alcotest.(check bool) "Durability_evidence decode" true (Model.of_string "probe-unreachable" = Some Model.Probe_unreachable);
   Alcotest.(check bool) "Durability_evidence rejects unknown values" true (Model.of_string "" = None);
-  let module Model = Semiont.Enums.Failure_class in
+  let module Model = Xynoplex.Enums.Failure_class in
   Alcotest.(check string) "Failure_class encode" "transient" (Model.to_string Model.Transient);
   Alcotest.(check bool) "Failure_class decode" true (Model.of_string "transient" = Some Model.Transient);
   Alcotest.(check string) "Failure_class encode" "deterministic" (Model.to_string Model.Deterministic);
@@ -49,19 +49,19 @@ let () =
   Alcotest.(check string) "Failure_class encode" "withheld" (Model.to_string Model.Withheld);
   Alcotest.(check bool) "Failure_class decode" true (Model.of_string "withheld" = Some Model.Withheld);
   Alcotest.(check bool) "Failure_class rejects unknown values" true (Model.of_string "" = None);
-  let module Model = Semiont.Enums.Job_type in
+  let module Model = Xynoplex.Enums.Job_type in
   Alcotest.(check string) "Job_type encode" "mark" (Model.to_string Model.Mark);
   Alcotest.(check bool) "Job_type decode" true (Model.of_string "mark" = Some Model.Mark);
   Alcotest.(check string) "Job_type encode" "yield" (Model.to_string Model.Yield);
   Alcotest.(check bool) "Job_type decode" true (Model.of_string "yield" = Some Model.Yield);
   Alcotest.(check bool) "Job_type rejects unknown values" true (Model.of_string "" = None);
-  let module Model = Semiont.Enums.Log_format in
+  let module Model = Xynoplex.Enums.Log_format in
   Alcotest.(check string) "Log_format encode" "json" (Model.to_string Model.Json);
   Alcotest.(check bool) "Log_format decode" true (Model.of_string "json" = Some Model.Json);
   Alcotest.(check string) "Log_format encode" "simple" (Model.to_string Model.Simple);
   Alcotest.(check bool) "Log_format decode" true (Model.of_string "simple" = Some Model.Simple);
   Alcotest.(check bool) "Log_format rejects unknown values" true (Model.of_string "" = None);
-  let module Model = Semiont.Enums.Log_level in
+  let module Model = Xynoplex.Enums.Log_level in
   Alcotest.(check string) "Log_level encode" "error" (Model.to_string Model.Error);
   Alcotest.(check bool) "Log_level decode" true (Model.of_string "error" = Some Model.Error);
   Alcotest.(check string) "Log_level encode" "warn" (Model.to_string Model.Warn);
@@ -73,7 +73,7 @@ let () =
   Alcotest.(check string) "Log_level encode" "debug" (Model.to_string Model.Debug);
   Alcotest.(check bool) "Log_level decode" true (Model.of_string "debug" = Some Model.Debug);
   Alcotest.(check bool) "Log_level rejects unknown values" true (Model.of_string "" = None);
-  let module Model = Semiont.Enums.Motivation in
+  let module Model = Xynoplex.Enums.Motivation in
   Alcotest.(check string) "Motivation encode" "assessing" (Model.to_string Model.Assessing);
   Alcotest.(check bool) "Motivation decode" true (Model.of_string "assessing" = Some Model.Assessing);
   Alcotest.(check string) "Motivation encode" "commenting" (Model.to_string Model.Commenting);
@@ -85,7 +85,7 @@ let () =
   Alcotest.(check string) "Motivation encode" "tagging" (Model.to_string Model.Tagging);
   Alcotest.(check bool) "Motivation decode" true (Model.of_string "tagging" = Some Model.Tagging);
   Alcotest.(check bool) "Motivation rejects unknown values" true (Model.of_string "" = None);
-  let module Model = Semiont.Enums.Supported_media_type in
+  let module Model = Xynoplex.Enums.Supported_media_type in
   Alcotest.(check string) "Supported_media_type encode" "text/plain" (Model.to_string Model.Text_plain);
   Alcotest.(check bool) "Supported_media_type decode" true (Model.of_string "text/plain" = Some Model.Text_plain);
   Alcotest.(check string) "Supported_media_type encode" "text/markdown" (Model.to_string Model.Text_markdown);

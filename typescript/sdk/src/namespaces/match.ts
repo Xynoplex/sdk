@@ -1,6 +1,6 @@
-import type { AnnotationId, CacheQuery, CacheValues, ResourceDescriptor, ResourceId, GatheredContext, EventBus, components } from '@semiont/core';
-import type { ITransport } from '@semiont/core';
-import { Bus } from '@semiont/core';
+import type { AnnotationId, CacheQuery, CacheValues, ResourceDescriptor, ResourceId, GatheredContext, EventBus, components } from '@xynoplex/core';
+import type { ITransport } from '@xynoplex/core';
+import { Bus } from '@xynoplex/core';
 import { CacheObservable, StreamObservable } from '../awaitable';
 import { createCache, type Cache } from '../cache';
 import { CacheRefresher } from '../cache-refresh';

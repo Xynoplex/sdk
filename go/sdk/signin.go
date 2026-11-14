@@ -1,8 +1,8 @@
-package semiont
+package xynoplex
 
 // A person's sign-in and session with a knowledge base over its gateway.
 // ResumeSession starts a session over a sign-in kept somewhere: the one
-// `semiont login` made, kept in a SignInStore, or one this program kept
+// `xynoplex login` made, kept in a SignInStore, or one this program kept
 // earlier, over a client its caller made. SessionFromKept makes the client
 // too, over HTTP. SignInWithDevice makes a sign-in to keep, from a process
 // with no browser. SignOut ends one.
@@ -19,9 +19,9 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/bus"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/internal/kept"
+	"github.com/Xynoplex/sdk/go/api"
+	"github.com/Xynoplex/sdk/go/bus"
+	"github.com/Xynoplex/sdk/go/internal/kept"
 )
 
 // renewing is a kept sign-in's renewals, one at a time: a renewal asked for

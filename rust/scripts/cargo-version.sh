@@ -13,7 +13,7 @@
 # published crate at any other version.
 set -euo pipefail
 cd "$(dirname "$0")/../../.."
-trap 'rm -f packages/rust/Cargo.toml.tmp packages/rust/Cargo.lock.tmp' EXIT
+trap 'rm -f rust/Cargo.toml.tmp rust/Cargo.lock.tmp' EXIT
 
 version=${1:-}
 if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
@@ -24,7 +24,7 @@ fi
 published=""
 while IFS= read -r crate; do
   published="$published $crate"
-done < <(packages/rust/scripts/published-crates.sh)
+done < <(rust/scripts/published-crates.sh)
 if [[ -z "$published" ]]; then
   echo "cargo-version.sh: no member of the workspace takes the workspace's version" >&2
   exit 1
@@ -36,15 +36,15 @@ awk -v v="$version" '
   section == "[workspace.dependencies]" && /path = / && /version = "/ { sub(/version = "[^"]*"/, "version = \"" v "\""); paths++ }
   { print }
   END { if (package != 1 || paths == 0) { print "cargo-version.sh: Cargo.toml has no [workspace.package] version, or no path beside a version" > "/dev/stderr"; exit 1 } }
-' packages/rust/Cargo.toml > packages/rust/Cargo.toml.tmp
-mv packages/rust/Cargo.toml.tmp packages/rust/Cargo.toml
+' rust/Cargo.toml > rust/Cargo.toml.tmp
+mv rust/Cargo.toml.tmp rust/Cargo.toml
 
 awk -v v="$version" -v published="$published " '
   /^name = / { name = $3; gsub(/"/, "", name); ours = index(published, " " name " ") > 0 }
   ours && /^version = / { $0 = "version = \"" v "\""; ours = 0; entries++ }
   { print }
   END { if (entries != split(published, _, " ")) { print "cargo-version.sh: Cargo.lock does not hold an entry for each of:" published > "/dev/stderr"; exit 1 } }
-' packages/rust/Cargo.lock > packages/rust/Cargo.lock.tmp
-mv packages/rust/Cargo.lock.tmp packages/rust/Cargo.lock
+' rust/Cargo.lock > rust/Cargo.lock.tmp
+mv rust/Cargo.lock.tmp rust/Cargo.lock
 
-echo "  packages/rust/Cargo.toml, Cargo.lock:$published -> $version"
+echo "  rust/Cargo.toml, Cargo.lock:$published -> $version"

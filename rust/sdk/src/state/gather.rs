@@ -10,8 +10,8 @@
 //! by the next: each lands when it is answered.
 
 use super::{Held, Tasks};
-use crate::client::SemiontClient;
-use crate::errors::SemiontError;
+use crate::client::XynoplexClient;
+use crate::errors::XynoplexError;
 use crate::state_unit::StateUnit;
 use crate::types::AnnotationId;
 use crate::types::{
@@ -24,7 +24,7 @@ use tokio::sync::watch;
 struct Slot {
     context: Held<Option<GatheredContext>>,
     loading: Held<bool>,
-    error: Held<Option<SemiontError>>,
+    error: Held<Option<XynoplexError>>,
 }
 
 impl Slot {
@@ -44,7 +44,7 @@ impl Slot {
 
     /// The context is there before the gather is said to be over, so a
     /// reader told it is over finds what it gathered.
-    fn land(&self, gathered: Result<GatheredContext, SemiontError>) {
+    fn land(&self, gathered: Result<GatheredContext, XynoplexError>) {
         match gathered {
             Ok(context) => self.context.set(Some(context)),
             Err(error) => self.error.set(Some(error)),
@@ -60,7 +60,7 @@ impl Slot {
 }
 
 struct Shared {
-    client: Arc<SemiontClient>,
+    client: Arc<XynoplexClient>,
     resource_id: ResourceId,
     annotation: Slot,
     annotation_id: Held<Option<AnnotationId>>,
@@ -75,7 +75,7 @@ pub struct GatherStateUnit {
 
 impl GatherStateUnit {
     /// The gathers of `resource_id`'s annotations, and of any resource.
-    pub fn new(client: Arc<SemiontClient>, resource_id: &ResourceId) -> GatherStateUnit {
+    pub fn new(client: Arc<XynoplexClient>, resource_id: &ResourceId) -> GatherStateUnit {
         GatherStateUnit {
             shared: Arc::new(Shared {
                 client,
@@ -97,7 +97,7 @@ impl GatherStateUnit {
         self.shared.annotation.loading.read()
     }
 
-    pub fn error(&self) -> watch::Receiver<Option<SemiontError>> {
+    pub fn error(&self) -> watch::Receiver<Option<XynoplexError>> {
         self.shared.annotation.error.read()
     }
 
@@ -115,7 +115,7 @@ impl GatherStateUnit {
         self.shared.resource.loading.read()
     }
 
-    pub fn resource_error(&self) -> watch::Receiver<Option<SemiontError>> {
+    pub fn resource_error(&self) -> watch::Receiver<Option<XynoplexError>> {
         self.shared.resource.error.read()
     }
 

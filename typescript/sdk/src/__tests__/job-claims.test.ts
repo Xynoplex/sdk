@@ -19,9 +19,9 @@ import { BehaviorSubject, map } from 'rxjs';
 import { ROOT_CONTEXT, context, propagation, trace as otelTrace } from '@opentelemetry/api';
 import { AsyncLocalStorageContextManager } from '@opentelemetry/context-async-hooks';
 import { W3CTraceContextPropagator } from '@opentelemetry/core';
-import { getActiveTraceparent, withTraceparent } from '@semiont/observability';
-import type { Annotation, BusPrimitive } from '@semiont/core';
-import { BusRequestError, ERRORS_KEPT_FOR_FIRST_READER_COUNT, EventBus, FrameRefusal, type BusEnvelope, type ConnectionState, type EventMap, annotationId, jobId as makeJobId, userId, resourceId } from '@semiont/core';
+import { getActiveTraceparent, withTraceparent } from '@xynoplex/observability';
+import type { Annotation, BusPrimitive } from '@xynoplex/core';
+import { BusRequestError, ERRORS_KEPT_FOR_FIRST_READER_COUNT, EventBus, FrameRefusal, type BusEnvelope, type ConnectionState, type EventMap, annotationId, jobId as makeJobId, userId, resourceId } from '@xynoplex/core';
 import { ClaimsObservable, JOB_CLAIM_CHANNELS, JOB_COMMIT_CHANNELS, willRetryAfter, type ClaimOptions, type ClaimRefusal, type HeldJob, type HeldJobStall, type HeldMarkJob, type HeldYieldJob, type JobFailure } from '../claims';
 
 /** The job a `job:claimed` reply carries: running, under the claimant. */

@@ -1,4 +1,4 @@
-open Semiont
+open Xynoplex
 
 let read_resource client resource =
   Client.fresh (Client.Browse.resource client resource)

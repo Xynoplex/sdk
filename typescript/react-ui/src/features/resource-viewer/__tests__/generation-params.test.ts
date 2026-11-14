@@ -8,7 +8,7 @@
  * added later is covered without a change here.
  */
 import { describe, it, expect } from 'vitest';
-import type { GatheredContext } from '@semiont/core';
+import type { GatheredContext } from '@xynoplex/core';
 import { toGenerationParams } from '../generation-params';
 import type { GenerationConfig } from '../../../components/modals/ConfigureGenerationStep';
 

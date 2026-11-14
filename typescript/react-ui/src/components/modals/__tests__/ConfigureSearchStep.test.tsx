@@ -60,7 +60,7 @@ describe('ConfigureSearchStep', () => {
         hintEcho={{ label: 'Hint', value: 'the ancient city, not the modern province' }}
       />,
     );
-    const echo = container.querySelector('.semiont-wizard__hint-echo');
+    const echo = container.querySelector('.xynoplex-wizard__hint-echo');
     expect(echo).not.toBeNull();
     expect(echo!.textContent).toContain('the ancient city, not the modern province');
 
@@ -70,7 +70,7 @@ describe('ConfigureSearchStep', () => {
         translations={T}
       />,
     );
-    expect(container.querySelector('.semiont-wizard__hint-echo')).toBeNull();
+    expect(container.querySelector('.xynoplex-wizard__hint-echo')).toBeNull();
   });
 
   it('submits whatever the owner currently holds, not a default', async () => {

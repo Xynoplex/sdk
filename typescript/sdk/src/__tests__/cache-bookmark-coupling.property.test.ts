@@ -14,7 +14,7 @@
  * axioms (event-sourcing) hold server-side; this invariant is client-side.
  *
  * Everything here is the REAL machinery — InMemorySessionStorage,
- * coupledLastEventId, a SemiontClient and its kept caches — driven by a
+ * coupledLastEventId, a XynoplexClient and its kept caches — driven by a
  * command interpreter: `deliver` (event arrives: bookmark stashed + cache A
  * invalidated), `complete` (A's oldest in-flight fetch answers with CURRENT
  * server truth — the V1/V2 read-your-writes guarantee), `writeB` (bystander
@@ -30,7 +30,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import fc from 'fast-check';
 import { InMemorySessionStorage } from '../session/session-storage';
-import { SAVE_DEBOUNCE_MS, resourceId } from '@semiont/core';
+import { SAVE_DEBOUNCE_MS, resourceId } from '@xynoplex/core';
 import { BOOKMARK_KEY, bookmarkSeq, buildRig, persistedAUpTo } from './helpers/persisted-cache-rig';
 
 type Command = 'deliver' | 'complete' | 'writeB' | 'settleA';

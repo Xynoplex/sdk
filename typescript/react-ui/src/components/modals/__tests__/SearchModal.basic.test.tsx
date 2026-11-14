@@ -11,10 +11,10 @@ import { renderWithProviders } from '../../../test-utils';
 import { SearchModal } from '../SearchModal';
 import { matchResourcesMock, resetSearch, searchTranslations } from './search-modal-harness';
 
-vi.mock('../../../session/SemiontProvider', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../../../session/SemiontProvider')>();
+vi.mock('../../../session/XynoplexProvider', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../session/XynoplexProvider')>();
   const { searchBrowser } = await import('./search-modal-harness');
-  return { ...actual, useSemiont: () => searchBrowser };
+  return { ...actual, useXynoplex: () => searchBrowser };
 });
 
 const box = () => screen.getByRole('textbox', { name: searchTranslations.title });

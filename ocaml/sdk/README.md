@@ -1,20 +1,20 @@
-# Semiont OCaml SDK
+# Xynoplex OCaml SDK
 
-[![codecov](https://codecov.io/gh/The-AI-Alliance/semiont/graph/badge.svg?component=ocaml-sdk)](https://app.codecov.io/gh/The-AI-Alliance/semiont/components)
+[![codecov](https://codecov.io/gh/Xynoplex/sdk/graph/badge.svg?component=ocaml-sdk)](https://app.codecov.io/gh/Xynoplex/sdk/components)
 
-Build an Eio application, script, or worker that talks to a Semiont knowledge base. The SDK includes typed bus operations, sign-in, delegation, and live queries.
+Build an Eio application, script, or worker that talks to a Xynoplex knowledge base. The SDK includes typed bus operations, sign-in, delegation, and live queries.
 
 ## Install
 
-Build the `semiont` package from `packages/ocaml/sdk` in this checkout. The compiler and Dune versions are pinned in [toolchain.json](../toolchain.json).
+Build the `xynoplex` package from `ocaml/sdk` in this checkout. The compiler and Dune versions are pinned in [toolchain.json](../toolchain.json).
 
 ```sh
-cd packages/ocaml/sdk
+cd ocaml/sdk
 dune build @install
 dune install --pkg=disabled --prefix "$PWD/_installed"
 ```
 
-Add `semiont` to your application's Dune `libraries` stanza and make the installed library available on its OCaml package path. The [builder guide](../../../docs/builder/OCAML.md) shows how the client fits into an application.
+Add `xynoplex` to your application's Dune `libraries` stanza and make the installed library available on its OCaml package path. The [builder guide](../../../docs/builder/OCAML.md) shows how the client fits into an application.
 
 ## Sign in and connect
 
@@ -43,8 +43,8 @@ Use `Client.Job.claim` and `Claims.next` to take a job, then use `Worker` to sta
 ## Develop and verify
 
 ```sh
-bash packages/ocaml/run-container.sh
-bash packages/ocaml/check-source-package.sh
+bash ocaml/run-container.sh
+bash ocaml/check-source-package.sh
 ```
 
 The first command builds the pinned toolchain in Apple `container` and runs the development checks. The second builds and installs an isolated source archive and verifies the installed compiler interface. Regenerate protocol-derived sources with `make generate-ocaml` and verify them with `make check-generated-ocaml`.

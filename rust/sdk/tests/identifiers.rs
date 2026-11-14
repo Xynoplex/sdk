@@ -3,7 +3,7 @@
 //! value of its type and each it refuses does not, whether a caller makes it
 //! or a peer sent it.
 
-use semiont::types::{AnnotationId, InvalidIdentifier, JobId, ResourceId, UserId};
+use xynoplex::types::{AnnotationId, InvalidIdentifier, JobId, ResourceId, UserId};
 use serde::Serialize;
 use serde::de::DeserializeOwned;
 use serde_json::{Value, json};
@@ -91,7 +91,7 @@ fn each_kind_of_id_is_held_to_the_cases_every_sdk_runs() {
 
 #[test]
 fn a_reply_carrying_an_id_its_kind_refuses_does_not_decode() {
-    use semiont::types::BeckonFocusEvent;
+    use xynoplex::types::BeckonFocusEvent;
     let good: BeckonFocusEvent =
         serde_json::from_value(json!({ "annotationId": "a-1", "resourceId": "res-one" }))
             .expect("ids their kinds accept");

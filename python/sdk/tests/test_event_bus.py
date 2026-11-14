@@ -5,14 +5,14 @@ import logging
 import pytest
 from aio import run, soon
 
-from semiont.bus import Delivered
-from semiont.channels import BECKON_HOVER, PANEL_CLOSE
-from semiont.event_bus import EventBus
-from semiont.events import Events
-from semiont.identifiers import AnnotationId, ResourceId
-from semiont.testing import FaultyTransport
-from semiont.transport import Frame, FrameHub, FrameRefusal
-from semiont.types import BeckonHoverEvent
+from xynoplex.bus import Delivered
+from xynoplex.channels import BECKON_HOVER, PANEL_CLOSE
+from xynoplex.event_bus import EventBus
+from xynoplex.events import Events
+from xynoplex.identifiers import AnnotationId, ResourceId
+from xynoplex.testing import FaultyTransport
+from xynoplex.transport import Frame, FrameHub, FrameRefusal
+from xynoplex.types import BeckonHoverEvent
 
 ONE, OTHER = ResourceId("res-1"), ResourceId("res-2")
 
@@ -137,7 +137,7 @@ def test_by_type_a_frame_is_published_as_its_channel_writes_it_and_read_as_its_c
         assert [frame.payload if isinstance(frame, Frame) else frame async for frame in nothing] == [{}]
         assert PANEL_CLOSE.name == "panel:close"
 
-    with caplog.at_level(logging.WARNING, logger="semiont.bus"):
+    with caplog.at_level(logging.WARNING, logger="xynoplex.bus"):
         run(scenario())
     assert caplog.records == []
 

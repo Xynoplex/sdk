@@ -7,21 +7,21 @@ import (
 	"strings"
 	"testing"
 
-	semiont "github.com/The-AI-Alliance/semiont/packages/go/sdk"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/bus"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/semionttest"
+	xynoplex "github.com/Xynoplex/sdk/go"
+	"github.com/Xynoplex/sdk/go/api"
+	"github.com/Xynoplex/sdk/go/bus"
+	"github.com/Xynoplex/sdk/go/xynoplextest"
 )
 
 // TitleOf is the code under test: a resource's name, in capitals.
-func TitleOf(ctx context.Context, client *semiont.Client, resource api.ResourceId) (string, error) {
+func TitleOf(ctx context.Context, client *xynoplex.Client, resource api.ResourceId) (string, error) {
 	described, err := client.Browse.Resource(resource).Fresh(ctx)
 	return strings.ToUpper(described.Name), err
 }
 
 // ATitleIsItsResourcesNameInCapitals is the test of it.
 func ATitleIsItsResourcesNameInCapitals(t *testing.T) {
-	made := semionttest.NewTestClient(semionttest.TestClientConfig{Timing: semiont.DefaultTiming()})
+	made := xynoplextest.NewTestClient(xynoplextest.TestClientConfig{Timing: xynoplex.DefaultTiming()})
 	defer made.Transport.Close()
 	defer made.Client.Close()
 	asked := bus.BrowseResourceRequested.Request().Channel()
@@ -37,7 +37,7 @@ func ATitleIsItsResourcesNameInCapitals(t *testing.T) {
 
 	// What the code under test asked of the knowledge base, as it was sent.
 	sent := made.Transport.RequestLog()
-	if !slices.EqualFunc(sent, []string{`{"resourceId":"res-1"}`}, func(entry semionttest.RequestLogEntry, payload string) bool {
+	if !slices.EqualFunc(sent, []string{`{"resourceId":"res-1"}`}, func(entry xynoplextest.RequestLogEntry, payload string) bool {
 		return entry.Channel == asked && string(entry.Payload) == payload
 	}) {
 		t.Fatalf("asked %v", sent)

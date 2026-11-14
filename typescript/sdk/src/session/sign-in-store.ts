@@ -1,10 +1,10 @@
 /**
- * The sign-ins `semiont login` keeps (protocol/specs/src/sign-in-store): one
+ * The sign-ins `xynoplex login` keeps (protocol/specs/src/sign-in-store): one
  * sign-in serves the launcher's verbs and a program built on this SDK.
  *
  * The launcher keeps one sign-in per stack, under the stack's key. A program
  * reaches one through `entry(key)`, where it is kept: a session over that
- * entry (`SemiontSession.fromKept`) starts with its tokens and renews them
+ * entry (`XynoplexSession.fromKept`) starts with its tokens and renews them
  * there.
  *
  * What is in the file was issued to the script client and is renewed as it:
@@ -33,7 +33,7 @@ import {
   isSignIn,
   ownerOnlyAccessList,
   type SignIn,
-} from '@semiont/core';
+} from '@xynoplex/core';
 import type { SignInKept } from './sign-in-kept';
 import { parseJwtExpiry, textClaim, type StoredSession } from './storage';
 
@@ -56,11 +56,11 @@ export function stateDir(
   if (!isSet(home)) return null;
   switch (system) {
     case 'macos':
-      return under('/', home, 'Library', 'Application Support', 'semiont');
+      return under('/', home, 'Library', 'Application Support', 'xynoplex');
     case 'windows':
-      return isSet(localAppData) ? under('\\', localAppData, 'semiont') : under('\\', home, 'AppData', 'Local', 'semiont');
+      return isSet(localAppData) ? under('\\', localAppData, 'xynoplex') : under('\\', home, 'AppData', 'Local', 'xynoplex');
     case 'other':
-      return isSet(xdgStateHome) ? under('/', xdgStateHome, 'semiont') : under('/', home, '.local', 'state', 'semiont');
+      return isSet(xdgStateHome) ? under('/', xdgStateHome, 'xynoplex') : under('/', home, '.local', 'state', 'xynoplex');
   }
 }
 

@@ -24,9 +24,9 @@ export function PageLayout({
   className = '',
 }: PageLayoutProps) {
   return (
-    <div className="semiont-page-layout">
-      <header role="banner" className="semiont-page-layout__header">
-        <div className="semiont-page-layout__header-container">
+    <div className="xynoplex-page-layout">
+      <header role="banner" className="xynoplex-page-layout__header">
+        <div className="xynoplex-page-layout__header-container">
           <UnifiedHeader
             Link={Link}
             routes={routes}
@@ -38,7 +38,7 @@ export function PageLayout({
         </div>
       </header>
 
-      <MainContent className={`semiont-page-layout__main ${className}`}>
+      <MainContent className={`xynoplex-page-layout__main ${className}`}>
         {children}
       </MainContent>
     </div>

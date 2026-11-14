@@ -21,17 +21,17 @@ use std::error::Error;
 use std::sync::Arc;
 use std::time::SystemTime;
 
-const SESSION_PREFIX: &str = "semiont.session.";
-const LAST_EVENT_ID_PREFIX: &str = "semiont.lastEventId.";
-const CACHE_PREFIX: &str = "semiont.cache.";
+const SESSION_PREFIX: &str = "xynoplex.session.";
+const LAST_EVENT_ID_PREFIX: &str = "xynoplex.lastEventId.";
+const CACHE_PREFIX: &str = "xynoplex.cache.";
 /// The registered knowledge bases.
-pub const KNOWLEDGE_BASES_KEY: &str = "semiont.knowledgeBases";
+pub const KNOWLEDGE_BASES_KEY: &str = "xynoplex.knowledgeBases";
 /// The id of the active one.
-pub const ACTIVE_KEY: &str = "semiont.activeKnowledgeBaseId";
+pub const ACTIVE_KEY: &str = "xynoplex.activeKnowledgeBaseId";
 /// Each knowledge base's open resources, by its id.
-pub const OPEN_RESOURCES_BY_KB_KEY: &str = "semiont.openResourcesByKb";
+pub const OPEN_RESOURCES_BY_KB_KEY: &str = "xynoplex.openResourcesByKb";
 /// Each knowledge base's last-viewed resource, by its id.
-pub const LAST_VIEWED_RESOURCE_BY_KB_KEY: &str = "semiont.lastViewedResourceByKb";
+pub const LAST_VIEWED_RESOURCE_BY_KB_KEY: &str = "xynoplex.lastViewedResourceByKb";
 
 /// The key a knowledge base's session is stored under.
 pub fn session_key(kb_id: &str) -> String {

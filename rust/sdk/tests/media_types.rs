@@ -2,11 +2,11 @@
 //! holds it, and the rules read from it, run as protocol/specs/src/media-types/cases.json
 //! states them: the cases every SDK runs.
 
-use semiont::media_types::{
+use xynoplex::media_types::{
     MEDIA_TYPES, PLAIN_TEXT, base_media_type, capabilities_of, clone_format, derive_storage_uri,
     derives_text_of, storage_file_name, text_source_of, yields_geometry_of,
 };
-use semiont::types::SupportedMediaType;
+use xynoplex::types::SupportedMediaType;
 use serde_json::{Value, json};
 
 fn cases(of: &str) -> Vec<Value> {

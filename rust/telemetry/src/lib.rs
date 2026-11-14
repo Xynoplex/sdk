@@ -1,10 +1,10 @@
-//! The telemetry a Semiont transport and a Semiont service share, reported to
+//! The telemetry a Xynoplex transport and a Xynoplex service share, reported to
 //! whatever OpenTelemetry the process installed: nothing here exports, and
 //! with nothing installed no span is recorded and no trace context travels.
 //!
 //! A transport reports through one function per row of the SDK telemetry
 //! table (protocol/specs/src/sdk-telemetry/telemetry.json): [`bus_emit`], which is
-//! also the `semiont.bus.sent` count, [`bus_recv`], [`content_put`],
+//! also the `xynoplex.bus.sent` count, [`bus_recv`], [`content_put`],
 //! [`content_get`], [`content_get_graph`], [`content_get_annotations`] and
 //! [`content_get_anchored_text`].
 //! It names no span, kind or attribute of its own, and puts [`active_trace`]
@@ -26,21 +26,21 @@
 use opentelemetry::context::FutureExt;
 use opentelemetry::trace::{SpanKind, TraceContextExt, Tracer};
 use opentelemetry::{Context, KeyValue, global};
-use semiont::transport::TraceCarrier;
+use xynoplex::transport::TraceCarrier;
 use std::collections::HashMap;
 use std::future::Future;
 
 /// The instrumentation scope every span and count here is made under.
-const SCOPE: &str = "semiont";
+const SCOPE: &str = "xynoplex";
 
 // ── The SDK telemetry table ──────────────────────────────────────────────
 
-/// `bus.emit:{channel}` and `semiont.bus.sent`: an emit a client sent, counted
+/// `bus.emit:{channel}` and `xynoplex.bus.sent`: an emit a client sent, counted
 /// and run in a span of the trace that sent it.
 pub async fn bus_emit<T>(channel: &str, scope: Option<&str>, send: impl Future<Output = T>) -> T {
     let attributes = on_the_bus(channel, scope);
     global::meter(SCOPE)
-        .u64_counter("semiont.bus.sent")
+        .u64_counter("xynoplex.bus.sent")
         .with_description("Emits sent")
         .build()
         .add(1, &attributes);
@@ -202,7 +202,7 @@ pub fn active_trace() -> Option<TraceCarrier> {
 }
 
 /// The active span's trace id, when a span is active: what the bus log's
-/// `trace=` field reads (`semiont::bus_log::set_trace_id_provider`).
+/// `trace=` field reads (`xynoplex::bus_log::set_trace_id_provider`).
 pub fn active_trace_id() -> Option<String> {
     let context = Context::current();
     let span = context.span();

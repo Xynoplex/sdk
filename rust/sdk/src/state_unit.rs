@@ -13,7 +13,7 @@
 //! - no state outside its instances: two units never move each other.
 //!
 //! A unit's `Drop` calls `dispose`, so one that is simply dropped leaks
-//! nothing. `semiont::testing::axioms` checks each of these against a unit.
+//! nothing. `xynoplex::testing::axioms` checks each of these against a unit.
 
 pub trait StateUnit {
     fn dispose(&self);

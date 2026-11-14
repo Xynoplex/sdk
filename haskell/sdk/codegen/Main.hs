@@ -24,7 +24,7 @@ import Facts (generateFacts, wireClassifier)
 import HttpFacts (httpFacts)
 import TransportFacts (transportFacts)
 import WorkerFacts (workerFacts)
-import Semiont.Internal.Schema (Schemas, checkSchema, normalize)
+import Xynoplex.Internal.Schema (Schemas, checkSchema, normalize)
 import System.Directory (createDirectoryIfMissing, doesDirectoryExist, doesFileExist, listDirectory, removeFile)
 import System.Environment (getArgs)
 import System.FilePath ((</>), normalise, takeBaseName, takeDirectory, takeExtension)
@@ -265,16 +265,16 @@ generate schemas ids = do
     modify' (\current -> current { currentOwner = name })
     declare name value) (Generation schemas ids Map.empty "" Map.empty)
   let declared = Map.toAscList (declarations state)
-      header = "-- Generated from protocol/specs/src. Run semiont-codegen; do not edit.\n{-# LANGUAGE OverloadedStrings #-}\n\n"
+      header = "-- Generated from protocol/specs/src. Run xynoplex-codegen; do not edit.\n{-# LANGUAGE OverloadedStrings #-}\n\n"
       groups = map (sort . flattenSCC) (stronglyConnComp [(name, name, Set.toList (Map.findWithDefault Set.empty name (dependencies state))) | name <- Map.keys schemas])
-      moduleName names = "Semiont.Internal.Generated.Models." <> case names of
+      moduleName names = "Xynoplex.Internal.Generated.Models." <> case names of
         first : _ -> first
         [] -> error "empty strongly connected component"
       modules = Map.fromList [(root, moduleName roots) | roots <- groups, root <- roots]
       moduleNames = map moduleName groups
       imports = T.unlines ["import Control.Applicative ((<|>))", "import Data.Aeson (FromJSON(..), ToJSON(..), Value(..), withObject, (.:))"
           , "import Data.Aeson.Types (parseEither)", "import qualified Data.Aeson.KeyMap as KM", "import Data.Scientific (Scientific)", "import Data.Text (Text)"
-          , "import Semiont.Internal.Codec", "import Semiont.Types.Presence (Presence)"]
+          , "import Xynoplex.Internal.Codec", "import Xynoplex.Types.Presence (Presence)"]
       modelFiles = [
         ("generated/" ++ T.unpack (T.replace "." "/" (moduleName roots)) ++ ".hs",
           header <> "{-# OPTIONS_GHC -Wno-unused-imports #-}\nmodule " <> moduleName roots <> "\n  ( "
@@ -282,18 +282,18 @@ generate schemas ids = do
           <> "\n  ) where\n" <> imports
           <> T.unlines ["import " <> target | target <- Set.toList (Set.fromList [moduleValue | root <- roots, dependency <- Set.toList (Map.findWithDefault Set.empty root (dependencies state)), Just moduleValue <- [Map.lookup dependency modules], moduleValue /= moduleName roots])]
           <> T.unlines [declarationCode value | (_, value) <- declared, declarationOwner value `elem` roots]) | roots <- groups]
-      models = header <> "module Semiont.Types (" <> T.intercalate ", " (map ("module " <>) moduleNames) <> ") where\n"
+      models = header <> "module Xynoplex.Types (" <> T.intercalate ", " (map ("module " <>) moduleNames) <> ") where\n"
         <> T.unlines (map ("import " <>) moduleNames)
       schemaCode = header <> T.unlines
-        ["module Semiont.Internal.Generated.Schemas (schemas) where", "import Data.Aeson (Value(..))", "import qualified Data.Aeson.KeyMap as KM"
-        , "import qualified Data.Map.Strict as Map", "import qualified Data.Vector as V", "import Semiont.Internal.Schema (Schemas)", "schemas :: Schemas"
+        ["module Xynoplex.Internal.Generated.Schemas (schemas) where", "import Data.Aeson (Value(..))", "import qualified Data.Aeson.KeyMap as KM"
+        , "import qualified Data.Map.Strict as Map", "import qualified Data.Vector as V", "import Xynoplex.Internal.Schema (Schemas)", "schemas :: Schemas"
         , "schemas = Map.fromList [" <> T.intercalate "\n  , " ["(" <> literal name <> ", " <> valueCode (runtimeSchema value) <> ")" | (name, value) <- Map.toAscList (definitions state)] <> "]"]
       roundTrips = header <> T.unlines
-        ["module Semiont.Internal.Generated.RoundTrip (roundTrip) where", "import Data.Aeson (Value, parseJSON, toJSON)", "import Data.Aeson.Types (parseEither)", "import Data.Text (Text)"
-        , "import Semiont.Types", "roundTrip :: Text -> Value -> Either String Value", "roundTrip name value = case name of"]
+        ["module Xynoplex.Internal.Generated.RoundTrip (roundTrip) where", "import Data.Aeson (Value, parseJSON, toJSON)", "import Data.Aeson.Types (parseEither)", "import Data.Text (Text)"
+        , "import Xynoplex.Types", "roundTrip :: Text -> Value -> Either String Value", "roundTrip name value = case name of"]
         <> T.unlines ["  " <> literal name <> " -> toJSON <$> (parseEither parseJSON value :: Either String " <> name <> ")" | name <- Map.keys (definitions state)]
         <> "  _ -> Left \"unknown schema in round-trip dispatcher\"\n"
-  let files = modelFiles ++ [("src/Semiont/Types.hs", models), ("generated/Semiont/Internal/Generated/Schemas.hs", schemaCode), ("test/Semiont/Internal/Generated/RoundTrip.hs", roundTrips)]
+  let files = modelFiles ++ [("src/Xynoplex/Types.hs", models), ("generated/Xynoplex/Internal/Generated/Schemas.hs", schemaCode), ("test/Xynoplex/Internal/Generated/RoundTrip.hs", roundTrips)]
   pure (moduleNames, [(path, T.stripEnd code <> "\n") | (path, code) <- files])
 
 runtimeSchema :: Value -> Value
@@ -371,12 +371,12 @@ busDescriptors (wires, unrecognized) original registry = do
   unless (sort limits == sort namedLimits) (Left "inference limits operations changed shape")
   let header = "-- Generated from protocol/specs/src/bus/registry.json. Do not edit.\n{-# LANGUAGE DataKinds, GADTs, KindSignatures, OverloadedStrings #-}\n"
       code = header <> T.unlines
-        [ "module Semiont.Channels (Scope(..), ScopeArg(..), Channel(..), Operation(..), SomeOperation(..), allOperations, limitsOperations, channelName, channelNames, globalChannels, scopedChannels, channelSchema, channelIsScoped, encodePayload, decodePayload, operationChannels, persistedEventTypes) where"
+        [ "module Xynoplex.Channels (Scope(..), ScopeArg(..), Channel(..), Operation(..), SomeOperation(..), allOperations, limitsOperations, channelName, channelNames, globalChannels, scopedChannels, channelSchema, channelIsScoped, encodePayload, decodePayload, operationChannels, persistedEventTypes) where"
         , "import Data.Aeson (Value(..), toJSON, parseJSON)"
         , "import Data.Aeson.Types (parseEither)"
         , "import Data.Text (Text)"
-        , "import qualified Semiont.Internal.Required as Required"
-        , "import qualified Semiont.Types as Types"
+        , "import qualified Xynoplex.Internal.Required as Required"
+        , "import qualified Xynoplex.Types as Types"
         , "data Scope = Global | Scoped"
         , "data ScopeArg (scope :: Scope) where"
         , "  NoScope :: ScopeArg 'Global"
@@ -406,10 +406,10 @@ busDescriptors (wires, unrecognized) original registry = do
         <> "operationChannels :: Operation input output failure -> (Channel 'Global input, Channel 'Global output, Channel 'Global failure)\n"
         <> T.unlines ["operationChannels " <> request <> "Operation = (" <> request <> ", " <> result <> ", " <> failure <> ")" | ((request, _, _), (result, _, _), (failure, _, _)) <- ops]
       roundTrips = header <> T.unlines
-        [ "module Semiont.Internal.Generated.ChannelRoundTrip (roundTripChannel, channelMetadata, operationMetadata) where"
+        [ "module Xynoplex.Internal.Generated.ChannelRoundTrip (roundTripChannel, channelMetadata, operationMetadata) where"
         , "import Data.Aeson (Value)"
         , "import Data.Text (Text)"
-        , "import Semiont.Channels"
+        , "import Xynoplex.Channels"
         , "roundTripChannel :: Text -> Value -> Either String Value"
         , "roundTripChannel name value = case name of"
         ] <> T.unlines ["  " <> literal name <> " -> encodePayload " <> constructor <> " <$> decodePayload " <> constructor <> " value" | (name, constructor, _, _, _) <- typed]
@@ -422,11 +422,11 @@ busDescriptors (wires, unrecognized) original registry = do
       failures = T.unlines
         [ "-- Generated from protocol/specs/src/bus/registry.json and protocol/specs/src/errors/codes.json. Do not edit."
         , "{-# LANGUAGE DataKinds, GADTs, KindSignatures, OverloadedStrings #-}"
-        , "module Semiont.Internal.Generated.OperationFailure (message, code) where"
+        , "module Xynoplex.Internal.Generated.OperationFailure (message, code) where"
         , "import Data.Text (Text)"
-        , "import Semiont.Channels"
-        , "import Semiont.ErrorCodes (BusRequestCode(..))"
-        , "import qualified Semiont.Types as Types"
+        , "import Xynoplex.Channels"
+        , "import Xynoplex.ErrorCodes (BusRequestCode(..))"
+        , "import qualified Xynoplex.Types as Types"
         , "message :: Operation input output failure -> failure -> Text"
         ] <> T.unlines ["message " <> request <> "Operation = Types." <> accessor | (request,accessor,_,_) <- failureReaders]
         <> "-- | The bus request code of an operation's failure: the one its code is read as, and for no code the\n-- unrecognized failure's.\ncode :: Operation input output failure -> failure -> BusRequestCode\n"
@@ -434,7 +434,7 @@ busDescriptors (wires, unrecognized) original registry = do
         <> T.concat [reader typ <> " :: Maybe Types." <> typ <> identifier "code" <> " -> BusRequestCode\n" <> reader typ <> " value = case value of\n  Nothing -> " <> unrecognized <> "\n"
             <> T.unlines ["  Just Types." <> typ <> identifier "code" <> identifier wire <> " -> " <> busCode | (wire, busCode) <- mapped]
           | (typ, mapped) <- nub [(typ, mapped) | (_,_,typ,mapped) <- failureReaders]]
-  pure (schemas', [("generated/Semiont/Internal/Generated/OperationFailure.hs", failures), ("src/Semiont/Channels.hs", code), ("test/Semiont/Internal/Generated/ChannelRoundTrip.hs", roundTrips)])
+  pure (schemas', [("generated/Xynoplex/Internal/Generated/OperationFailure.hs", failures), ("src/Xynoplex/Channels.hs", code), ("test/Xynoplex/Internal/Generated/ChannelRoundTrip.hs", roundTrips)])
   where
     required key fields = maybe (Left ("missing bus field: " ++ show key)) Right (textAt key fields)
     arrayAt key fields = case KM.lookup key fields of Just (Array values) -> Right (toList values); _ -> Left ("missing bus array: " ++ show key)
@@ -454,7 +454,7 @@ main = do
   args <- getArgs
   (root, checkOnly) <- case args of [directory] -> pure (directory, False); ["--check", directory] -> pure (directory, True); _ -> ioError (userError "expected [--check] repository-root")
   let source = root </> "protocol/specs/src"
-      output = root </> "packages/haskell/sdk"
+      output = root </> "haskell/sdk"
   spec <- readJSON (source </> "openapi.json") >>= either (ioError . userError) pure . fieldsOf
   components <- maybe (ioError (userError "OpenAPI has no components")) pure (KM.lookup "components" spec)
     >>= either (ioError . userError) pure . fieldsOf
@@ -491,7 +491,7 @@ main = do
     _ -> ioError (userError "ResourceUpload has no required list")
   let metadata = Object (KM.insert "properties" (Object (KM.delete "file" properties))
         (KM.insert "required" (Array (V.filter (/= String "file") requiredUpload)) upload))
-  payloadTypes <- T.filter (`notElem` (" \n\r\t" :: String)) <$> readUTF8 (root </> "packages/typescript/core/src/payload-types.ts")
+  payloadTypes <- T.filter (`notElem` (" \n\r\t" :: String)) <$> readUTF8 (root </> "typescript/core/src/payload-types.ts")
   unless ("exporttypeEngineWithLimits=EngineEntry&{limits?:components['schemas']['InferenceLimits']};" `T.isInfixOf` payloadTypes)
     (ioError (userError "EngineWithLimits changed: update its derived Haskell adapter"))
   engine <- maybe (ioError (userError "EngineEntry schema missing")) pure (Map.lookup "EngineEntry" schemas)
@@ -602,13 +602,13 @@ main = do
   withheldNames <- case KM.lookup "names" busLog of
     Just (Array values) -> forM (toList values) $ \value -> case value of String name->pure name; _->ioError (userError "bus-log name is not text")
     _ -> ioError (userError "bus-log authority has no names")
-  let principalFile = ("generated/Semiont/Internal/Generated/Principals.hs",T.unlines
+  let principalFile = ("generated/Xynoplex/Internal/Generated/Principals.hs",T.unlines
         (["-- Generated from principals/cases.json; do not edit.","{-# LANGUAGE OverloadedStrings #-}"
-         ,"module Semiont.Internal.Generated.Principals where","import Data.Text (Text)"]
+         ,"module Xynoplex.Internal.Generated.Principals where","import Data.Text (Text)"]
          ++ concat [[name<>" :: Text",name<>" = "<>literal value] | (name,value)<-principalValues]))
-      busLogFile = ("generated/Semiont/Internal/Generated/BusLog.hs",T.unlines
+      busLogFile = ("generated/Xynoplex/Internal/Generated/BusLog.hs",T.unlines
         ["-- Generated from bus/log-cases.json; do not edit.","{-# LANGUAGE OverloadedStrings #-}"
-        ,"module Semiont.Internal.Generated.BusLog (withheldNames) where","import Data.Text (Text)"
+        ,"module Xynoplex.Internal.Generated.BusLog (withheldNames) where","import Data.Text (Text)"
         ,"withheldNames :: [Text]","withheldNames = ["<>T.intercalate "," (map literal withheldNames)<>"]"])
   ownerOnly <- readJSON (root </> "protocol/specs/src/sign-in-store/owner-only.json") >>= either (ioError . userError) pure . fieldsOf
   ownerValues <- forM ["directoryMode","fileMode","accessList"] $ \name -> do
@@ -625,37 +625,37 @@ main = do
   storeContract <- readUTF8 (root </> "protocol/specs/src/sign-in-store/README.md")
   forM_ ["<stateDir>/tokens.json","<stateDir>/tokens.lock","on one byte of the lock file","OffsetHigh: 0x40000000"] $ \fact ->
     unless (fact `T.isInfixOf` storeContract) (ioError (userError "native sign-in file/lock policy changed: update its native binding"))
-  let storePolicy = ("generated/Semiont/Internal/Generated/semiont_store_policy.h",T.unlines
+  let storePolicy = ("generated/Xynoplex/Internal/Generated/xynoplex_store_policy.h",T.unlines
         ["/* Generated from sign-in-store/owner-only.json; lock range gated against its README. */"
-        ,"#define SEMIONT_DIRECTORY_MODE "<>directoryMode
-        ,"#define SEMIONT_FILE_MODE "<>fileMode
-        ,"#define SEMIONT_ACCESS_LIST "<>literal accessList
-        ,"#define SEMIONT_LOCK_HIGH 0x40000000"
-        ,"#define SEMIONT_LOCK_BYTES 1"])
-      storeNames = ("generated/Semiont/Internal/Generated/SignInStore.hs",T.unlines
+        ,"#define XYNOPLEX_DIRECTORY_MODE "<>directoryMode
+        ,"#define XYNOPLEX_FILE_MODE "<>fileMode
+        ,"#define XYNOPLEX_ACCESS_LIST "<>literal accessList
+        ,"#define XYNOPLEX_LOCK_HIGH 0x40000000"
+        ,"#define XYNOPLEX_LOCK_BYTES 1"])
+      storeNames = ("generated/Xynoplex/Internal/Generated/SignInStore.hs",T.unlines
         ["-- File names gated against sign-in-store/README.md; do not edit."
-        ,"module Semiont.Internal.Generated.SignInStore where"
+        ,"module Xynoplex.Internal.Generated.SignInStore where"
         ,"signInFileName, signInLockName :: FilePath"
         ,"signInFileName = "<>literal "tokens.json"
         ,"signInLockName = "<>literal "tokens.lock"])
-      assertionFile = ("generated/Semiont/Internal/Generated/ClientAssertion.hs",T.unlines
+      assertionFile = ("generated/Xynoplex/Internal/Generated/ClientAssertion.hs",T.unlines
         (["-- Generated from session/client-assertion-cases.json; do not edit.","{-# LANGUAGE OverloadedStrings #-}"
-         ,"module Semiont.Internal.Generated.ClientAssertion where","import Data.Text (Text)"]
+         ,"module Xynoplex.Internal.Generated.ClientAssertion where","import Data.Text (Text)"]
          ++ concat [[name<>" :: Text",name<>" = "<>literal value] | (name,value) <- assertionStrings]
          ++ ["lifetimeSeconds :: Integer","lifetimeSeconds = "<>T.pack (show lifetime)]))
-  let oauthFile = ("generated/Semiont/Internal/Generated/OAuth.hs", T.unlines
+  let oauthFile = ("generated/Xynoplex/Internal/Generated/OAuth.hs", T.unlines
         (["-- Generated from session/oauth.json; do not edit.","{-# LANGUAGE OverloadedStrings #-}"
-         ,"module Semiont.Internal.Generated.OAuth where","import Data.Text (Text)"]
+         ,"module Xynoplex.Internal.Generated.OAuth where","import Data.Text (Text)"]
           ++ concat [[name<>" :: Text",name<>" = "<>literal value] | (name,value) <- clients++[("signInScope",scope)]]))
-      storedFile = ("generated/Semiont/Internal/Generated/Stored.hs", T.unlines
+      storedFile = ("generated/Xynoplex/Internal/Generated/Stored.hs", T.unlines
         (["-- Generated from session/stored.json; do not edit."
-         ,"{-# LANGUAGE OverloadedStrings #-}","module Semiont.Internal.Generated.Stored where","import Data.Text (Text)"]
+         ,"{-# LANGUAGE OverloadedStrings #-}","module Xynoplex.Internal.Generated.Stored where","import Data.Text (Text)"]
          ++ concat [[name<>" :: Text",name<>" = "<>literal value] | (name,value) <- storedKeys++storedPrefixes]))
-      factoryFile = ("generated/Semiont/Internal/Generated/SessionFactoryOptions.hs", T.unlines
+      factoryFile = ("generated/Xynoplex/Internal/Generated/SessionFactoryOptions.hs", T.unlines
         (["-- Generated from client/surface.json; do not edit."
-         ,"module Semiont.Internal.Generated.SessionFactoryOptions where"
-         ,"import Semiont.Types (KnowledgeBase)"
-         ,"import qualified Semiont.SessionStorage as Storage","import qualified Semiont.State.SessionSignals as Signals"
+         ,"module Xynoplex.Internal.Generated.SessionFactoryOptions where"
+         ,"import Xynoplex.Types (KnowledgeBase)"
+         ,"import qualified Xynoplex.SessionStorage as Storage","import qualified Xynoplex.State.SessionSignals as Signals"
          ,"data SessionFactoryOptions = SessionFactoryOptions"]
          ++ [(if index == (0 :: Int) then "  { " else "  , ")<>"sessionFactoryOptions"<>identifier field<>" :: "<>typ | (index,(field,typ)) <- zip [0..] factoryMembers]
          ++ ["  }"]))
@@ -668,15 +668,15 @@ main = do
   wires <- readJSON (root </> "protocol/specs/src/errors/codes.json") >>= either (ioError . userError) pure . wireClassifier
   (busSchemas, busFiles) <- either (ioError . userError) pure (busDescriptors wires (Map.insert "TraceCarrier" carrier (Map.insert "ResourceUploadMetadata" metadata (Map.fromList (storedSchemas ++ optionSchemas ++ httpSchemas) <> schemas))) registry)
   (moduleNames, models) <- either (ioError . userError) pure (generate busSchemas (Set.fromList ids))
-  template <- readUTF8 (output </> "semiont.cabal.in")
+  template <- readUTF8 (output </> "xynoplex.cabal.in")
   forM_ ["@VERSION@", "@MODEL_MODULES@"] $ \marker ->
     unless (T.count marker template == 1) (ioError (userError ("manifest template must contain exactly one " ++ T.unpack marker)))
   package <- readJSON (root </> "package.json") >>= either (ioError . userError) pure . fieldsOf
   version <- maybe (ioError (userError "root package.json has no version")) pure (textAt "version" package)
   license <- readUTF8 (root </> "LICENSE")
   let manifest = T.replace "@VERSION@" version $ T.replace "@MODEL_MODULES@" (T.intercalate "\n" (map ("    " <>) moduleNames)) template
-      generated = ("LICENSE", license) : ("semiont.cabal", manifest) : [storedFile,factoryFile,oauthFile,assertionFile,storePolicy,storeNames,principalFile,busLogFile] ++ busFiles ++ models ++ facts ++ transportFiles ++ httpFiles ++ workerFiles
-      modelsDirectory = output </> "generated/Semiont/Internal/Generated/Models"
+      generated = ("LICENSE", license) : ("xynoplex.cabal", manifest) : [storedFile,factoryFile,oauthFile,assertionFile,storePolicy,storeNames,principalFile,busLogFile] ++ busFiles ++ models ++ facts ++ transportFiles ++ httpFiles ++ workerFiles
+      modelsDirectory = output </> "generated/Xynoplex/Internal/Generated/Models"
       expected = Set.fromList (map (normalise . (output </>)) (map fst generated))
   existsModels <- doesDirectoryExist modelsDirectory
   when existsModels $ do

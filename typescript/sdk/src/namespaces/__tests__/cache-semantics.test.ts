@@ -11,19 +11,19 @@
 
 import { describe, it, expect, vi } from 'vitest';
 import { map, firstValueFrom, filter, BehaviorSubject } from 'rxjs';
-import { EventBus, FrameRefusal, INVALIDATION_WINDOW_MS, SAVE_DEBOUNCE_MS, resourceId, annotationId } from '@semiont/core';
-import type { components, StoredEvent, EventOfType, EventMetadata, UserId, ResourceId, EventMap } from '@semiont/core';
-import type { ConnectionState } from '@semiont/core';
+import { EventBus, FrameRefusal, INVALIDATION_WINDOW_MS, SAVE_DEBOUNCE_MS, resourceId, annotationId } from '@xynoplex/core';
+import type { components, StoredEvent, EventOfType, EventMetadata, UserId, ResourceId, EventMap } from '@xynoplex/core';
+import type { ConnectionState } from '@xynoplex/core';
 import { BrowseNamespace } from '../browse';
 import { isReady, readyValue, type CacheState } from '../../cache';
 import { coupledLastEventId } from '../../cache-persister';
-import { SemiontClient } from '../../client';
+import { XynoplexClient } from '../../client';
 import { InMemorySessionStorage } from '../../session/session-storage';
 import { cacheKey, lastEventIdKey, personKey } from '../../session/storage';
-import type { IContentTransport } from '@semiont/core';
+import type { IContentTransport } from '@xynoplex/core';
 
-import type { Annotation } from '@semiont/core';
-import type { ResourceDescriptor } from '@semiont/core';
+import type { Annotation } from '@xynoplex/core';
+import type { ResourceDescriptor } from '@xynoplex/core';
 import { inMemoryTransport } from '../../__tests__/helpers/in-memory-transport';
 
 const TEST_USER_ID = 'did:web:test:users:test' as UserId;
@@ -986,7 +986,7 @@ describe('Cache semantics — behaviors B1–B16, B19 and B20 against BrowseName
       const storage = new InMemorySessionStorage();
       const places = coupledLastEventId(storage, lastEventIdKey('kb-1', PERSON));
       const { transport, content, getAnnotations, state } = createWire(options);
-      const client = new SemiontClient(transport, content, undefined, {
+      const client = new XynoplexClient(transport, content, undefined, {
         cachePersistence: { storage: places.storage, kbId: 'kb-1', personKey: PERSON },
         ...(options.busTimeoutMs !== undefined ? { busTimeoutMs: options.busTimeoutMs } : {}),
       });

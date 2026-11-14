@@ -10,9 +10,9 @@
  * lives in one place. No aliasing, wrappers, or compatibility layers elsewhere.
  */
 
-import type { components } from '@semiont/core';
-import { isHighlight, isComment, isReference, isTag } from '@semiont/core';
-import type { Annotation } from '@semiont/core';
+import type { components } from '@xynoplex/core';
+import { isHighlight, isComment, isReference, isTag } from '@xynoplex/core';
+import type { Annotation } from '@xynoplex/core';
 type Motivation = components['schemas']['Motivation'];
 
 /**

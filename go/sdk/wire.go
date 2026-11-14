@@ -1,4 +1,4 @@
-package semiont
+package xynoplex
 
 // A client's bus over its transport: emits, frames and requests, by the
 // channel's name. A request is an emit that expects a correlated reply
@@ -16,9 +16,9 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/api"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/bus"
-	"github.com/The-AI-Alliance/semiont/packages/go/sdk/internal/required"
+	"github.com/Xynoplex/sdk/go/api"
+	"github.com/Xynoplex/sdk/go/bus"
+	"github.com/Xynoplex/sdk/go/internal/required"
 )
 
 // Wire is the bus over a transport.

@@ -1,6 +1,6 @@
 """An offset is a whole number: a fraction is neither where a span starts nor where it ends."""
 
-from semiont.annotations import TextSpan
+from xynoplex.annotations import TextSpan
 
 
 def as_a_start() -> TextSpan:

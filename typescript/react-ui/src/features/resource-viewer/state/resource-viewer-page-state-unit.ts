@@ -1,20 +1,20 @@
-import { FrameRefusal, type AnnotationId } from '@semiont/core';
+import { FrameRefusal, type AnnotationId } from '@xynoplex/core';
 import { BehaviorSubject, type Observable, map } from 'rxjs';
-import type { AttributedEvent, ResourceId } from '@semiont/core';
-import { createDisposer } from '@semiont/sdk';
-import type { StateUnit } from '@semiont/core';
+import type { AttributedEvent, ResourceId } from '@xynoplex/core';
+import { createDisposer } from '@xynoplex/sdk';
+import type { StateUnit } from '@xynoplex/core';
 import type { ShellStateUnit } from '../../../state/shell-state-unit';
 import { trackList, type ListState } from '../../../state/list-state';
-import { createBeckonStateUnit, type BeckonStateUnit } from '@semiont/sdk';
-import { createMarkStateUnit, type MarkStateUnit } from '@semiont/sdk';
-import { createGatherStateUnit, type GatherStateUnit } from '@semiont/sdk';
-import { createMatchStateUnit } from '@semiont/sdk';
-import { createYieldStateUnit, type YieldStateUnit } from '@semiont/sdk';
-import type { SemiontSession } from '@semiont/sdk';
+import { createBeckonStateUnit, type BeckonStateUnit } from '@xynoplex/sdk';
+import { createMarkStateUnit, type MarkStateUnit } from '@xynoplex/sdk';
+import { createGatherStateUnit, type GatherStateUnit } from '@xynoplex/sdk';
+import { createMatchStateUnit } from '@xynoplex/sdk';
+import { createYieldStateUnit, type YieldStateUnit } from '@xynoplex/sdk';
+import type { XynoplexSession } from '@xynoplex/sdk';
 import { groupAnnotations } from '../../../lib/annotation-groups';
-import type { ReferencedByEntry } from '@semiont/sdk';
+import type { ReferencedByEntry } from '@xynoplex/sdk';
 
-import type { Annotation } from '@semiont/core';
+import type { Annotation } from '@xynoplex/core';
 
 export interface AnnotationGroups {
   highlights: Annotation[];
@@ -59,7 +59,7 @@ export interface ResourceViewerPageStateUnit extends StateUnit {
 // THIS unit's disposer, which is session-bound; that is layering, not a
 // loophole.
 export function createResourceViewerPageStateUnit(
-  session: SemiontSession,
+  session: XynoplexSession,
   resourceId: ResourceId,
   locale: string,
   browse: ShellStateUnit,

@@ -1,5 +1,5 @@
-import type { Annotation, PdfCoordinate } from '@semiont/core';
-import { getTargetSelector, parseFragmentSelector } from '@semiont/core';
+import type { Annotation, PdfCoordinate } from '@xynoplex/core';
+import { getTargetSelector, parseFragmentSelector } from '@xynoplex/core';
 
 /** One FragmentSelector rectangle to paint on a PDF page. */
 export interface PageRect {

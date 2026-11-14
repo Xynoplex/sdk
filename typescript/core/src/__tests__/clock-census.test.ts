@@ -16,7 +16,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { REPO, stripComments, typeScriptFiles } from './repository-files';
 
-const PRODUCT_SOURCE = ['packages/typescript/core/src', 'packages/typescript/http-transport/src', 'packages/typescript/sdk/src'];
+const PRODUCT_SOURCE = ['typescript/core/src', 'typescript/http-transport/src', 'typescript/sdk/src'];
 
 const TEST_FILE = /(?:^|\/)__tests__\/|\.test\.tsx?$/;
 
@@ -33,8 +33,8 @@ const OWN_DRAW = /\b(?:getRandomValues|randomUUID|randomBytes|randomInt|randomFi
 
 /** The files that draw from the platform's cryptographic source, and what for. Neither is a jitter. */
 const SECRETS_AND_IDS = new Map<string, string>([
-  ['packages/typescript/core/src/id-generation.ts', "ids, a client assertion's jti among them"],
-  ['packages/typescript/sdk/src/session/oauth.ts', "a PKCE verifier and a sign-in's state"],
+  ['typescript/core/src/id-generation.ts', "ids, a client assertion's jti among them"],
+  ['typescript/sdk/src/session/oauth.ts', "a PKCE verifier and a sign-in's state"],
 ]);
 
 /** Each place in `source` that waits, reads or draws outside the clock and the random source a test controls. */
@@ -73,7 +73,7 @@ describe('the SDK waits and draws only on what a test controls', () => {
       'sample.ts:5 getRandomValues: a generator of its own',
       'sample.ts:6 randomInt: a generator of its own',
     ]);
-    expect(escapes('packages/typescript/sdk/src/session/oauth.ts', 'crypto.getRandomValues(buffer);')).toEqual([]);
+    expect(escapes('typescript/sdk/src/session/oauth.ts', 'crypto.getRandomValues(buffer);')).toEqual([]);
   });
 
   test('nothing in the product source waits, reads or draws outside them', () => {

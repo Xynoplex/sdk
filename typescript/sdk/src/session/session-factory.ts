@@ -1,5 +1,5 @@
 /**
- * SessionFactory — the injection point that lets `SemiontBrowser` stay
+ * SessionFactory — the injection point that lets `XynoplexBrowser` stay
  * transport-agnostic.
  *
  * The browser knows how to manage the *lifecycle* of an active session
@@ -19,10 +19,10 @@
  * The HTTP factory is provided by `createHttpSessionFactory`.
  */
 
-import type { KnowledgeBase } from '@semiont/core';
+import type { KnowledgeBase } from '@xynoplex/core';
 import type { SessionSignals } from './session-signals';
 import type { SessionStorage } from './session-storage';
-import type { SemiontSession } from './semiont-session';
+import type { XynoplexSession } from './xynoplex-session';
 
 export interface SessionFactoryOptions {
   /** The KB the session is being constructed for. */
@@ -33,4 +33,4 @@ export interface SessionFactoryOptions {
   signals: SessionSignals;
 }
 
-export type SessionFactory = (opts: SessionFactoryOptions) => SemiontSession;
+export type SessionFactory = (opts: SessionFactoryOptions) => XynoplexSession;

@@ -56,7 +56,7 @@ describe('EntityTagsPage', () => {
       const props = createMockProps();
       const { container } = render(<EntityTagsPage {...props} />);
 
-      const icon = container.querySelector('.semiont-entity-tags__icon');
+      const icon = container.querySelector('.xynoplex-entity-tags__icon');
       expect(icon).toBeInTheDocument();
     });
   });
@@ -75,7 +75,7 @@ describe('EntityTagsPage', () => {
       const props = createMockProps();
       const { container } = render(<EntityTagsPage {...props} />);
 
-      const tagBadge = container.querySelector('.semiont-tag');
+      const tagBadge = container.querySelector('.xynoplex-tag');
       expect(tagBadge).toBeInTheDocument();
       expect(tagBadge).toHaveTextContent('Document');
     });
@@ -84,7 +84,7 @@ describe('EntityTagsPage', () => {
       const props = createMockProps({ entityTypes: [] });
       const { container } = render(<EntityTagsPage {...props} />);
 
-      const tags = container.querySelectorAll('.semiont-tag');
+      const tags = container.querySelectorAll('.xynoplex-tag');
       expect(tags.length).toBe(0);
     });
 
@@ -217,7 +217,7 @@ describe('EntityTagsPage', () => {
       const props = createMockProps();
       const { container } = render(<EntityTagsPage {...props} />);
 
-      const plusIcon = container.querySelector('.semiont-icon--small');
+      const plusIcon = container.querySelector('.xynoplex-icon--small');
       expect(plusIcon).toBeInTheDocument();
     });
   });
@@ -234,7 +234,7 @@ describe('EntityTagsPage', () => {
       const props = createMockProps({ error: 'Error occurred' });
       const { container } = render(<EntityTagsPage {...props} />);
 
-      const errorIcon = container.querySelector('.semiont-entity-tags__error-icon');
+      const errorIcon = container.querySelector('.xynoplex-entity-tags__error-icon');
       expect(errorIcon).toBeInTheDocument();
     });
 
@@ -242,7 +242,7 @@ describe('EntityTagsPage', () => {
       const props = createMockProps({ error: '' });
       const { container } = render(<EntityTagsPage {...props} />);
 
-      const errorMessage = container.querySelector('.semiont-entity-tags__error');
+      const errorMessage = container.querySelector('.xynoplex-entity-tags__error');
       expect(errorMessage).not.toBeInTheDocument();
     });
 
@@ -250,7 +250,7 @@ describe('EntityTagsPage', () => {
       const props = createMockProps({ error: 'Test error' });
       const { container } = render(<EntityTagsPage {...props} />);
 
-      const errorDiv = container.querySelector('.semiont-entity-tags__error');
+      const errorDiv = container.querySelector('.xynoplex-entity-tags__error');
       expect(errorDiv).toBeInTheDocument();
     });
   });
@@ -298,7 +298,7 @@ describe('EntityTagsPage', () => {
       const props = createMockProps();
       const { container } = render(<EntityTagsPage {...props} />);
 
-      const mainContainer = container.querySelector('.semiont-page');
+      const mainContainer = container.querySelector('.xynoplex-page');
       expect(mainContainer).toBeInTheDocument();
     });
 
@@ -306,7 +306,7 @@ describe('EntityTagsPage', () => {
       const props = createMockProps();
       const { container } = render(<EntityTagsPage {...props} />);
 
-      const scrollArea = container.querySelector('.semiont-page__content');
+      const scrollArea = container.querySelector('.xynoplex-page__content');
       expect(scrollArea).toBeInTheDocument();
     });
 
@@ -314,7 +314,7 @@ describe('EntityTagsPage', () => {
       const props = createMockProps();
       const { container } = render(<EntityTagsPage {...props} />);
 
-      const contentArea = container.querySelector('.semiont-page__content');
+      const contentArea = container.querySelector('.xynoplex-page__content');
       expect(contentArea).toBeInTheDocument();
     });
   });
@@ -332,7 +332,7 @@ describe('EntityTagsPage', () => {
       const { container } = render(<EntityTagsPage {...props} />);
 
       const input = container.querySelector('input');
-      expect(input).toHaveClass('semiont-entity-tags__input');
+      expect(input).toHaveClass('xynoplex-entity-tags__input');
     });
   });
 

@@ -16,11 +16,11 @@ from aio import run, soon
 from pydantic import JsonValue
 from spec import ROOT, SPEC, objects, read, text
 
-from semiont.bus import request
-from semiont.errors import BusRequestError, TransportError
-from semiont.operations import BROWSE_RESOURCE_REQUESTED
-from semiont.testing import DropReply, FaultyTransport, RejectEmit
-from semiont.transport import (
+from xynoplex.bus import request
+from xynoplex.errors import BusRequestError, TransportError
+from xynoplex.operations import BROWSE_RESOURCE_REQUESTED
+from xynoplex.testing import DropReply, FaultyTransport, RejectEmit
+from xynoplex.transport import (
     CONNECTION_STATE_MAY_BECOME,
     CONNECTION_STATES,
     ConnectionState,

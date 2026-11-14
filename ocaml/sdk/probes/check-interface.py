@@ -16,17 +16,17 @@ def checked(*args):
     return result.stdout
 
 checked('dune', 'build', '@install', 'probes/api_inventory.exe')
-installed = root / '_build/install/default/lib/semiont'
+installed = root / '_build/install/default/lib/xynoplex'
 inventory = root / '_build/default/probes/api_inventory.exe'
 
 def inspect(path, includes):
     return json.loads(checked(str(inventory), str(path), *map(str, includes)))
 
-sdk = inspect(installed / 'semiont.cmi', [installed])
-assert sdk == inspect(installed / 'semiont.cmi', [installed]), 'inventory is not deterministic'
+sdk = inspect(installed / 'xynoplex.cmi', [installed])
+assert sdk == inspect(installed / 'xynoplex.cmi', [installed]), 'inventory is not deterministic'
 sdk_entries = {entry['path']: entry for entry in sdk['entries']}
-assert sdk_entries['Semiont.Identifiers.Resource_id.t']['representation'] == 'abstract'
-assert 'Semiont.Pattern' not in sdk_entries
+assert sdk_entries['Xynoplex.Identifiers.Resource_id.t']['representation'] == 'abstract'
+assert 'Xynoplex.Pattern' not in sdk_entries
 
 source = '''
 module Id : sig type t val parse : string -> t end

@@ -1,8 +1,8 @@
 /**
- * @semiont/observability — public API.
+ * @xynoplex/observability — public API.
  *
  * Universal surface (works in Node + browser). A Node process initializes
- * the SDK from `@semiont/observability/node` at its entry point; the Browser
+ * the SDK from `@xynoplex/observability/node` at its entry point; the Browser
  * initializes its own tracer (`images/browser/src/lib/tracing.ts`). Everything
  * else uses this module.
  *
@@ -13,7 +13,7 @@
  *     `options` carries `kind` and `attrs`.
  *   - `extractTraceparent(payload)` — W3C trace-context propagation across
  *     the SSE channel (a bus frame the gateway relays carries its trace in
- *     the payload field `TRACE_FIELD` names, from `@semiont/core`).
+ *     the payload field `TRACE_FIELD` names, from `@xynoplex/core`).
  *   - `withTraceparent(carrier, fn)` — run `fn` with the incoming
  *     traceparent as the parent context.
  *   - `withoutTrace(fn)` — run `fn` in no trace, so that what it starts
@@ -22,7 +22,7 @@
  *     an outbound request's `traceparent` header.
  *   - `recordBusSent(channel, scope?)` — count an emit a client sent.
  *   - `SpanKind`, re-exported from `@opentelemetry/api`. The type of the
- *     trace field, `TraceCarrier`, is `@semiont/core`'s.
+ *     trace field, `TraceCarrier`, is `@xynoplex/core`'s.
  *
  * No-op when no exporter is configured: `@opentelemetry/api`'s default
  * tracer and meter are no-ops, so `withSpan` and the recorder are
@@ -42,7 +42,7 @@ import {
   type Counter,
   type Span,
 } from '@opentelemetry/api';
-import { setBusLogTraceIdProvider, TRACE_FIELD, type TraceCarrier } from '@semiont/core';
+import { setBusLogTraceIdProvider, TRACE_FIELD, type TraceCarrier } from '@xynoplex/core';
 
 // Wire `busLog`'s trace-id provider once at module load. When an OTel
 // SDK is initialized (and a span is active when `busLog` fires), the
@@ -56,7 +56,7 @@ setBusLogTraceIdProvider(() => {
   return ctx.traceId;
 });
 
-const TRACER_NAME = 'semiont';
+const TRACER_NAME = 'xynoplex';
 
 const tracer = () => trace.getTracer(TRACER_NAME);
 
@@ -152,7 +152,7 @@ export function withoutTrace<T>(fn: () => T): T {
 
 // ── Metrics ────────────────────────────────────────────────────────────
 
-const METER_NAME = 'semiont';
+const METER_NAME = 'xynoplex';
 
 const meter = () => metrics.getMeter(METER_NAME);
 
@@ -160,7 +160,7 @@ let _busSentCounter: Counter | undefined;
 
 function busSentCounter(): Counter {
   if (!_busSentCounter) {
-    _busSentCounter = meter().createCounter('semiont.bus.sent', {
+    _busSentCounter = meter().createCounter('xynoplex.bus.sent', {
       description: 'Emits a client sent, by channel and scope',
     });
   }
@@ -168,9 +168,9 @@ function busSentCounter(): Counter {
 }
 
 /**
- * Count an emit a client sent (`semiont.bus.sent`,
+ * Count an emit a client sent (`xynoplex.bus.sent`,
  * protocol/specs/src/sdk-telemetry/telemetry.json). Called at every transport `emit`
- * site. Its own name, apart from `semiont.bus.emit`, the gateway's count of
+ * site. Its own name, apart from `xynoplex.bus.emit`, the gateway's count of
  * the emits it accepted.
  */
 export function recordBusSent(channel: string, scope?: string): void {

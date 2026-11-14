@@ -8,8 +8,8 @@
  * repository.)
  *
  * Usage:
- *   node packages/typescript/scripts/publish-npm-apps.mjs                # Stage the browser
- *   node packages/typescript/scripts/publish-npm-apps.mjs --dry-run      # Show what would be staged
+ *   node typescript/scripts/publish-npm-apps.mjs                # Stage the browser
+ *   node typescript/scripts/publish-npm-apps.mjs --dry-run      # Show what would be staged
  */
 
 import { mkdirSync, readFileSync, writeFileSync, rmSync, existsSync, mkdtempSync } from 'fs';
@@ -25,7 +25,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const rootDir = resolve(__dirname, '../../..');
 const DRY_RUN = process.argv.includes('--dry-run');
 const VERIFY = process.argv.includes('--verify');
-const VERIFY_DIR = VERIFY ? mkdtempSync(resolve(tmpdir(), 'semiont-npm-verify-')) : null;
+const VERIFY_DIR = VERIFY ? mkdtempSync(resolve(tmpdir(), 'xynoplex-npm-verify-')) : null;
 const STAGE_DIR = VERIFY_DIR ?? resolve(rootDir, '.npm-stage');
 
 function getVersion() {
@@ -38,7 +38,7 @@ function log(msg) {
 }
 
 function stageBrowser(version) {
-  log('\n=== Staging @semiont/browser ===\n');
+  log('\n=== Staging @xynoplex/browser ===\n');
 
   const browserDir = resolve(rootDir, 'images/browser');
   const stageDir = resolve(STAGE_DIR, 'browser');
@@ -86,7 +86,7 @@ function stageBrowser(version) {
   execFileSync('cp', [resolve(browserDir, 'README.npm.md'), resolve(stageDir, 'README.md')]);
 
   verifyPublication(stageDir, publishPkg, 'images/browser');
-  log(`  Staged @semiont/browser@${version} to ${stageDir}`);
+  log(`  Staged @xynoplex/browser@${version} to ${stageDir}`);
   log(`  Files: dist/, server.js, package.json, README.md`);
 
   return stageDir;

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useCallback, useRef, useEffect } from 'react';
-import { useSemiont } from '../../session/SemiontProvider';
+import { useXynoplex } from '../../session/XynoplexProvider';
 
 /**
  * Props for ObservableLink component
@@ -60,7 +60,7 @@ export function ObservableLink({
   children,
   ...anchorProps
 }: ObservableLinkProps) {
-  const semiont = useSemiont();
+  const xynoplex = useXynoplex();
 
   // Store callback in ref to avoid including in dependency arrays
   const onClickRef = useRef(onClick);
@@ -70,14 +70,14 @@ export function ObservableLink({
 
   const handleClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
     // Emit event for observability
-    semiont.emit('nav:link-clicked', {
+    xynoplex.emit('nav:link-clicked', {
       href,
       label
     });
 
     // Call original onClick if provided
     onClickRef.current?.(e);
-  }, [href, label, semiont]);
+  }, [href, label, xynoplex]);
 
   return (
     <a

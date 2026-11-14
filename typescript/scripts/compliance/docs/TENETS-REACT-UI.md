@@ -1,7 +1,7 @@
 # React UI Architecture Tenets
 
 **Scope**: This document defines the architecture patterns enforced in:
-- `packages/typescript/react-ui` - Shared React UI components and hooks
+- `typescript/react-ui` - Shared React UI components and hooks
 - `images/browser` - Next.js Browser application
 
 These rules are enforced via automated compliance auditing (see [../README.md](../README.md)).
@@ -239,7 +239,7 @@ These patterns are enforced via automated AST analysis:
 **Run compliance audit**:
 ```bash
 # React-UI
-cd packages/typescript/react-ui && ./scripts/generate-compliance-report.sh
+cd typescript/react-ui && ./scripts/generate-compliance-report.sh
 
 # Browser
 cd images/browser && ./scripts/generate-compliance-report.sh

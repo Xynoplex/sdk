@@ -31,10 +31,10 @@ article, aside, footer, header, nav, section {
 
 /* Set default font */
 body {
-  font-family: var(--semiont-font-sans);
+  font-family: var(--xynoplex-font-sans);
   line-height: 1.5;
-  color: var(--semiont-text-primary);
-  background-color: var(--semiont-bg-primary);
+  color: var(--xynoplex-text-primary);
+  background-color: var(--xynoplex-bg-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -95,7 +95,7 @@ input[type="number"] {
 
 /* Focus visible for accessibility */
 :focus-visible {
-  outline: 2px solid var(--semiont-color-primary-500);
+  outline: 2px solid var(--xynoplex-color-primary-500);
   outline-offset: 2px;
 }
 

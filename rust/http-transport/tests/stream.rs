@@ -19,13 +19,13 @@ use proptest::collection::vec;
 use proptest::prelude::{Just, prop_oneof};
 use proptest::strategy::Strategy;
 use proptest::test_runner::{Config, TestCaseError, TestRunner};
-use semiont::bus::{Bus, operation};
-use semiont::errors::{TransportError, TransportErrorCode};
-use semiont::retry::RetryPolicy;
-use semiont::testing::as_id;
-use semiont::testing::liveness::{DeliverySubject, assert_exactly_once_delivery_on};
-use semiont::transport::{BoxFuture, ConnectionState, ResourceHold, Transport};
-use semiont_http_transport::transport::{HttpTransport, HttpTransportConfig, Timing};
+use xynoplex::bus::{Bus, operation};
+use xynoplex::errors::{TransportError, TransportErrorCode};
+use xynoplex::retry::RetryPolicy;
+use xynoplex::testing::as_id;
+use xynoplex::testing::liveness::{DeliverySubject, assert_exactly_once_delivery_on};
+use xynoplex::transport::{BoxFuture, ConnectionState, ResourceHold, Transport};
+use xynoplex_http_transport::transport::{HttpTransport, HttpTransportConfig, Timing};
 use serde_json::{Value, json};
 use std::collections::VecDeque;
 use std::sync::{Arc, Mutex};
@@ -418,7 +418,7 @@ fn an_event_written_to_a_live_stream_is_delivered_once_wherever_a_handoff_lands(
 
 #[tokio::test]
 async fn a_frame_from_a_superseded_connection_leaves_a_breadcrumb() {
-    semiont::bus_log::capture();
+    xynoplex::bus_log::capture();
     let gateway = Gateway::start().await;
     let transport = gateway.client(Duration::from_secs(5));
     let delivered = deliveries(&transport);
@@ -434,7 +434,7 @@ async fn a_frame_from_a_superseded_connection_leaves_a_breadcrumb() {
     );
     until("the frame", || delivered.lock().unwrap().len() == 1).await;
 
-    let lines = semiont::bus_log::captured();
+    let lines = xynoplex::bus_log::captured();
     assert!(
         lines
             .iter()

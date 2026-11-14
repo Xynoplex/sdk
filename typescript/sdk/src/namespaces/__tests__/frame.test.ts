@@ -15,8 +15,8 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { FrameNamespace } from '../frame';
-import { EventBus } from '@semiont/core';
-import type { EventMap, ITransport, TagSchema } from '@semiont/core';
+import { EventBus } from '@xynoplex/core';
+import type { EventMap, ITransport, TagSchema } from '@xynoplex/core';
 import { inMemoryTransport } from '../../__tests__/helpers/in-memory-transport';
 
 // command channel → its confirmed-write reply channels
