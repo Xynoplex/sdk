@@ -10,7 +10,7 @@ updates:
           - "*"
 
   - package-ecosystem: gomod
-    directory: /go/sdk
+    directory: /go
     schedule:
       interval: weekly
     groups:
@@ -19,7 +19,7 @@ updates:
           - "*"
 
   - package-ecosystem: gomod
-    directory: /go/sdk/conformance
+    directory: /go/conformance
     schedule:
       interval: weekly
 

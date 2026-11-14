@@ -14,7 +14,7 @@ comment:
 flags:
   go-sdk:
     paths:
-      - go/sdk/
+      - go/
 
 ignore:
   - "**/*_test.go"

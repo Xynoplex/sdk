@@ -19,7 +19,7 @@ tell them apart.
 It has the same namespaces, methods and behaviour as the
 [Rust SDK](https://github.com/Xynoplex/sdk/tree/main/rust/sdk) ([`xynoplex`](https://crates.io/crates/xynoplex) on crates.io)
 the [Python SDK](https://github.com/Xynoplex/sdk/tree/main/python/sdk) ([`xynoplex`](https://pypi.org/project/xynoplex/) on PyPI)
-the [Go SDK](https://github.com/Xynoplex/sdk/tree/main/go/sdk) ([`github.com/Xynoplex/sdk/go`](https://pkg.go.dev/github.com/Xynoplex/sdk/go) on pkg.go.dev)
+the [Go SDK](https://github.com/Xynoplex/sdk/tree/main/go) ([`github.com/Xynoplex/sdk/go`](https://pkg.go.dev/github.com/Xynoplex/sdk/go) on pkg.go.dev)
 and the [Kotlin SDK](https://github.com/Xynoplex/sdk/tree/main/kotlin/sdk), for Kotlin and Java programs,
 and the five are held to the same [conformance suite](https://github.com/Xynoplex/sdk/tree/main/protocol/conformance/sdk).
 New to Xynoplex? The [Introduction](https://github.com/Xynoplex/sdk/blob/main/docs/builder/INTRODUCTION.md)
@@ -398,7 +398,7 @@ who the SDK is for, where it goes, and the docs in reading order.
 
 - [`xynoplex`](https://github.com/Xynoplex/sdk/tree/main/rust/sdk) — the Rust SDK, a full peer of this one, on [crates.io](https://crates.io/crates/xynoplex)
 - [`xynoplex`](https://github.com/Xynoplex/sdk/tree/main/python/sdk) — the Python SDK, on [PyPI](https://pypi.org/project/xynoplex/)
-- [`github.com/Xynoplex/sdk/go`](https://github.com/Xynoplex/sdk/tree/main/go/sdk) — the Go SDK, on [pkg.go.dev](https://pkg.go.dev/github.com/Xynoplex/sdk/go), which the `xynoplex` launcher is built on
+- [`github.com/Xynoplex/sdk/go`](https://github.com/Xynoplex/sdk/tree/main/go) — the Go SDK, on [pkg.go.dev](https://pkg.go.dev/github.com/Xynoplex/sdk/go), which the `xynoplex` launcher is built on
 - [`@xynoplex/core`](https://github.com/Xynoplex/sdk/tree/main/typescript/core) — domain types, `ITransport` contract, `Bus`, OpenAPI-derived schemas
 - [`@xynoplex/http-transport`](https://github.com/Xynoplex/sdk/tree/main/typescript/http-transport) — HTTP transport (`HttpTransport`, `HttpContentTransport`)
 - [`@xynoplex/observability`](https://github.com/Xynoplex/sdk/tree/main/typescript/observability) — OpenTelemetry tracing the SDK propagates across the bus
