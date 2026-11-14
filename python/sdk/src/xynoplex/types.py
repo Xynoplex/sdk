@@ -828,7 +828,7 @@ class BusEmitAccepted(WireModel, frozen=True):
 
 class BusEmitRequest(WireModel, frozen=True):
     """
-    One event for the bus. `channel` names a channel of the bus registry (protocol/specs/src/bus/registry.json) and `payload` must match the schema the registry's `validate` names for it. `scope` publishes a resource-bound broadcast to that resource's subscribers only; everything else is unscoped. `clientId` and `correlationId` are routing facts beside the payload, never inside it.
+    One event for the bus. `channel` names a channel of the bus registry (specs/src/bus/registry.json) and `payload` must match the schema the registry's `validate` names for it. `scope` publishes a resource-bound broadcast to that resource's subscribers only; everything else is unscoped. `clientId` and `correlationId` are routing facts beside the payload, never inside it.
     """
 
     channel: Annotated[str, Field(description="A channel of the bus registry.", min_length=1)]
@@ -1463,24 +1463,24 @@ type JobType = Annotated[
 
 class KbDescription(WireModel, frozen=True):
     """
-    What a knowledge base says about itself, answered by the Archivist from the committed .xynoplex/config.yaml and the working tree it holds. The only source clients use for a knowledge base's name and domain.
+    What a knowledge base says about itself, answered by the Archivist from the committed .semiont/config.yaml and the working tree it holds. The only source clients use for a knowledge base's name and domain.
     """
 
     name: Annotated[
         str,
-        Field(description="The committed project.name, or the knowledge base directory's name when it commits no .xynoplex/config.yaml."),
+        Field(description="The committed project.name, or the knowledge base directory's name when it commits no .semiont/config.yaml."),
     ]
     domain: Annotated[
         str,
         Field(
-            description="The committed site.domain: the knowledge base's permanent identity. Its did is 'did:web:' + this domain (kbDid in @xynoplex/core). It names WHICH knowledge base this is, not which running copy: a local clone and a codespace of one repo report the same domain, so use it to verify what you connected to, never to select among copies. A knowledge base that commits no .xynoplex/config.yaml declares none, and is refused with browse:kb-failed."
+            description="The committed site.domain: the knowledge base's permanent identity. Its did is 'did:web:' + this domain (kbDid in @xynoplex/core). It names WHICH knowledge base this is, not which running copy: a local clone and a codespace of one repo report the same domain, so use it to verify what you connected to, never to select among copies. A knowledge base that commits no .semiont/config.yaml declares none, and is refused with browse:kb-failed."
         ),
     ]
     git_branch: Annotated[
         str | None,
         Field(
             alias="gitBranch",
-            description="The working tree's current git branch. Absent when the knowledge base does not sync git (`git.sync` in its committed .xynoplex/config.yaml), and when its tree is not a git checkout.",
+            description="The working tree's current git branch. Absent when the knowledge base does not sync git (`git.sync` in its committed .semiont/config.yaml), and when its tree is not a git checkout.",
         ),
     ] = None
 
@@ -1641,7 +1641,7 @@ class MediaTokenResponse(WireModel, frozen=True):
 
 type Motivation = Annotated[
     Literal["assessing", "commenting", "highlighting", "linking", "tagging"],
-    Field(description="Xynoplex-supported W3C Web Annotation motivations - https://www.w3.org/TR/annotation-vocab/#motivation"),
+    Field(description="Semiont-supported W3C Web Annotation motivations - https://www.w3.org/TR/annotation-vocab/#motivation"),
 ]
 
 
@@ -1892,7 +1892,7 @@ type SupportedMediaType = Annotated[
         "font/otf",
     ],
     Field(
-        description="Base MIME types (no parameters) admitted by Xynoplex. Membership is the create/yield gate — every member is storable, nameable, and uploadable. What more the system can do with a type (render, annotate, extract text, author) is curated per type in @xynoplex/core's media-type registry, which is keyed by this enum."
+        description="Base MIME types (no parameters) admitted by Semiont. Membership is the create/yield gate — every member is storable, nameable, and uploadable. What more the system can do with a type (render, annotate, extract text, author) is curated per type in @xynoplex/core's media-type registry, which is keyed by this enum."
     ),
 ]
 
@@ -2163,7 +2163,7 @@ class BusFrame(WireModel, frozen=True, extra="forbid"):
     channel: Annotated[
         str,
         Field(
-            description="A channel of the bus registry (protocol/specs/src/bus/registry.json).",
+            description="A channel of the bus registry (specs/src/bus/registry.json).",
             min_length=1,
         ),
     ]
@@ -2191,7 +2191,7 @@ class BusFrame(WireModel, frozen=True, extra="forbid"):
 
 class BusPingMessage(WireModel, frozen=True, extra="forbid"):
     """
-    The heartbeat: `event: ping` with an empty `data:` line. The first is written once the stream has caught up (after any replay), then one every `x-xynoplex-limits.heartbeatSeconds`. It carries no id, so it never disturbs a client's last-seen ids.
+    The heartbeat: `event: ping` with an empty `data:` line. The first is written once the stream has caught up (after any replay), then one every `x-semiont-limits.heartbeatSeconds`. It carries no id, so it never disturbs a client's last-seen ids.
     """
 
     event: Literal["ping"]
@@ -2227,7 +2227,7 @@ type ReplyEventId = Annotated[
 
 class KbIdentity(WireModel, frozen=True, extra="forbid"):
     """
-    A knowledge base's committed identity (`project.name` and `site.domain` in its .xynoplex/config.yaml), as a service's document names the knowledge base it serves. Its telemetry names it by its DID (`xynoplex.kb`, protocol/specs/src/service-telemetry/telemetry.json).
+    A knowledge base's committed identity (`project.name` and `site.domain` in its .semiont/config.yaml), as a service's document names the knowledge base it serves. Its telemetry names it by its DID (`semiont.kb`, specs/src/service-telemetry/telemetry.json).
     """
 
     name: Annotated[
@@ -2698,7 +2698,7 @@ type LogFormat = Annotated[
 type CursorsPath = Annotated[
     str,
     Field(
-        description="The file a follower of the record keeps its cursors in: for each log of the record it follows, the sequence number of the last event of it taken (protocol/contract/TRANSPORT-CONTRACT.md § What repairs a passing frame). A file of the service's own disk, never of the knowledge base: a service that finds none starts each log as it starts one with no cursor, so losing it costs time and never correctness.",
+        description="The file a follower of the record keeps its cursors in: for each log of the record it follows, the sequence number of the last event of it taken (contract/TRANSPORT-CONTRACT.md § What repairs a passing frame). A file of the service's own disk, never of the knowledge base: a service that finds none starts each log as it starts one with no cursor, so losing it costs time and never correctness.",
         min_length=1,
     ),
 ]
@@ -3362,7 +3362,7 @@ type GatewayConfigSignalType = Literal["in-process", "nats"]
 
 class GatewayConfigCapacity(WireModel, frozen=True, extra="forbid"):
     """
-    What this gateway process can hold, from the memory its deployment gives it. `queuedBytes`: the bytes queued for all its streams together; at it, a new stream is refused with 503 (`AtCapacity`, code `capacity`) until the queues drain — each stream's own bound is `x-xynoplex-limits.pendingWriteBytes`. `connections`: the connections it holds open at once; one past it is closed unanswered. The launcher derives both from the memory it gives the gateway's container.
+    What this gateway process can hold, from the memory its deployment gives it. `queuedBytes`: the bytes queued for all its streams together; at it, a new stream is refused with 503 (`AtCapacity`, code `capacity`) until the queues drain — each stream's own bound is `x-semiont-limits.pendingWriteBytes`. `connections`: the connections it holds open at once; one past it is closed unanswered. The launcher derives both from the memory it gives the gateway's container.
     """
 
     queued_bytes: Annotated[int, Field(alias="queuedBytes", ge=1)]
@@ -3375,7 +3375,7 @@ type RepresentationNotFoundCode = Literal["resource", "representation"]
 type LimitRefusalCode = Annotated[
     Literal["streams", "emit-rate", "unanswered-requests", "capacity", "refusal-rate"],
     Field(
-        description="`streams`: the principal already holds as many streams as its coefficient of `x-xynoplex-limits.streamsPerPrincipal` allows. `emit-rate`: the principal's emits have used its bucket, whose rate and burst are its coefficient of `x-xynoplex-limits.emitsPerPrincipal`, per gateway process. `unanswered-requests`: the client already awaits as many replies as `BusSubscribeRequest.pendingReplies` may name. `capacity`: the gateway holds as many queued bytes as it can. `refusal-rate`: the request's credential was refused, and the requests its holder has had refused have used their allowance; it answers only a request whose token has already failed verification, so it says what a 401 says, and a client that can renew its token renews it and sends the request again rather than waiting (protocol/contract/TRANSPORT-CONTRACT.md § A refused credential)."
+        description="`streams`: the principal already holds as many streams as its coefficient of `x-semiont-limits.streamsPerPrincipal` allows. `emit-rate`: the principal's emits have used its bucket, whose rate and burst are its coefficient of `x-semiont-limits.emitsPerPrincipal`, per gateway process. `unanswered-requests`: the client already awaits as many replies as `BusSubscribeRequest.pendingReplies` may name. `capacity`: the gateway holds as many queued bytes as it can. `refusal-rate`: the request's credential was refused, and the requests its holder has had refused have used their allowance; it answers only a request whose token has already failed verification, so it says what a 401 says, and a client that can renew its token renews it and sends the request again rather than waiting (contract/TRANSPORT-CONTRACT.md § A refused credential)."
     ),
 ]
 
@@ -3418,7 +3418,7 @@ class DispatcherConfigIdentity(WireModel, frozen=True, extra="forbid"):
 
 class DispatcherConfigQueue(WireModel, frozen=True, extra="forbid"):
     """
-    The JetStream broker holding the job queue, whose layout is protocol/specs/src/jobs/storage.json.
+    The JetStream broker holding the job queue, whose layout is specs/src/jobs/storage.json.
     """
 
     servers: Annotated[
@@ -3938,7 +3938,7 @@ type DirectoryEntry = Annotated[
 
 class DiscoveredKB(WireModel, frozen=True):
     """
-    One knowledge base the Xynoplex launcher manages on this machine, as published in the discovery document (see DiscoveryDocument). Endpoints and identity only — never credentials; login remains the consumer's per-KB business.
+    One knowledge base the Semiont launcher manages on this machine, as published in the discovery document (see DiscoveryDocument). Endpoints and identity only — never credentials; login remains the consumer's per-KB business.
     """
 
     host: Annotated[
@@ -3961,28 +3961,28 @@ class DiscoveredKB(WireModel, frozen=True):
     did: Annotated[
         str,
         Field(
-            description='The KB\'s did:web identifier, from its committed .xynoplex/config.yaml — "did:web:" + its site.domain, verbatim. REQUIRED: a KB that declares no domain has no identity to publish, and the launcher refuses to start it rather than inventing or defaulting one. NOT unique within a document: a did names the knowledge base, not a running copy of it, so a local clone and a codespace of the same repo legitimately share one and both are published. host:port is the unique field (at most one entry per address), so consumers look up by ADDRESS and use the did to VERIFY that the copy they reached is the KB they meant — an address alone cannot say which KB is which, and an identity alone cannot say which copy.'
+            description='The KB\'s did:web identifier, from its committed .semiont/config.yaml — "did:web:" + its site.domain, verbatim. REQUIRED: a KB that declares no domain has no identity to publish, and the launcher refuses to start it rather than inventing or defaulting one. NOT unique within a document: a did names the knowledge base, not a running copy of it, so a local clone and a codespace of the same repo legitimately share one and both are published. host:port is the unique field (at most one entry per address), so consumers look up by ADDRESS and use the did to VERIFY that the copy they reached is the KB they meant — an address alone cannot say which KB is which, and an identity alone cannot say which copy.'
         ),
     ]
     site_name: Annotated[
         str | None,
         Field(
             alias="siteName",
-            description="Human-readable site name from the KB's .xynoplex/config.yaml (site.siteName), for display",
+            description="Human-readable site name from the KB's .semiont/config.yaml (site.siteName), for display",
         ),
     ] = None
     managed_by: Annotated[
         str,
         Field(
             alias="managedBy",
-            description='The agent that owns this entry\'s lifecycle (the launcher writes "xynoplex-launcher"). Consumers treat managed entries as authoritative for themselves — upsert on appearance, remove on disappearance — and never touch entries they did not write.',
+            description='The agent that owns this entry\'s lifecycle (the launcher writes "semiont-launcher"). Consumers treat managed entries as authoritative for themselves — upsert on appearance, remove on disappearance — and never touch entries they did not write.',
         ),
     ]
 
 
 class DiscoveryDocument(WireModel, frozen=True):
     """
-    The launcher's KB discovery document — the schema authority for <stateDir>/discovery/kbs.json, which the xynoplex launcher (Go, apps/launcher) regenerates on every stack mutation and the Browser container mounts read-only at /discovery. NOT an API endpoint: a static document fetched same-origin by browsers (via the Browser's static server). An empty kbs list is meaningful ("the launcher manages nothing right now") and distinct from an absent file.
+    The launcher's KB discovery document — the schema authority for <stateDir>/discovery/kbs.json, which the Xynoplex CLI (Xynoplex/cli) regenerates on every stack mutation and the Browser container mounts read-only at /discovery. NOT an API endpoint: a static document fetched same-origin by browsers (via the Browser's static server). An empty kbs list is meaningful ("the launcher manages nothing right now") and distinct from an absent file.
     """
 
     version: Annotated[
@@ -4150,7 +4150,7 @@ class JobCompletedPayload(WireModel, frozen=True):
     attempt: Annotated[
         int | None,
         Field(
-            description="Which attempt produced this event, 1-based (a first run is 1). ALWAYS present: the queue re-runs a failed job silently, so an operator reading progress or a terminal record has no other way to tell a re-run from a first run — and provider spend, already counted in xynoplex_inference_tokens_total, cannot be attributed to a repeated document without it. Stated rather than inferred from absence, because 'attempt 1' is a fact the emitter always knows."
+            description="Which attempt produced this event, 1-based (a first run is 1). ALWAYS present: the queue re-runs a failed job silently, so an operator reading progress or a terminal record has no other way to tell a re-run from a first run — and provider spend, already counted in semiont_inference_tokens_total, cannot be attributed to a repeated document without it. Stated rather than inferred from absence, because 'attempt 1' is a fact the emitter always knows."
         ),
     ] = None
     annotation_id: Annotated[
@@ -4209,7 +4209,7 @@ class JobFailCommand(WireModel, frozen=True):
     attempt: Annotated[
         int | None,
         Field(
-            description="Which attempt produced this event, 1-based (a first run is 1). ALWAYS present: the queue re-runs a failed job silently, so an operator reading progress or a terminal record has no other way to tell a re-run from a first run — and provider spend, already counted in xynoplex_inference_tokens_total, cannot be attributed to a repeated document without it. Stated rather than inferred from absence, because 'attempt 1' is a fact the emitter always knows."
+            description="Which attempt produced this event, 1-based (a first run is 1). ALWAYS present: the queue re-runs a failed job silently, so an operator reading progress or a terminal record has no other way to tell a re-run from a first run — and provider spend, already counted in semiont_inference_tokens_total, cannot be attributed to a repeated document without it. Stated rather than inferred from absence, because 'attempt 1' is a fact the emitter always knows."
         ),
     ] = None
     annotation_id: Annotated[
@@ -4239,7 +4239,7 @@ class JobFailCommand(WireModel, frozen=True):
         bool | None,
         Field(
             alias="willRetry",
-            description="Whether the queue will re-queue this job for another attempt. Computed by the worker from the SAME rule the queue applies when it takes the failure (protocol/specs/src/jobs/retry-cases.json, which every SDK and the dispatcher run) using the retry budget carried on the claimed record. FALSE (or absent) means this failure is TERMINAL: a client's job-watch stream ends here. TRUE means the work continues on a fresh attempt — the failure is an event, not the end, and a stream that terminated on it would report a recovering run as a failed one.",
+            description="Whether the queue will re-queue this job for another attempt. Computed by the worker from the SAME rule the queue applies when it takes the failure (specs/src/jobs/retry-cases.json, which every SDK and the dispatcher run) using the retry budget carried on the claimed record. FALSE (or absent) means this failure is TERMINAL: a client's job-watch stream ends here. TRUE means the work continues on a fresh attempt — the failure is an event, not the end, and a stream that terminated on it would report a recovering run as a failed one.",
         ),
     ] = None
     durability: DurabilityEvidence | None = None
@@ -4296,7 +4296,7 @@ class JobFailedPayload(WireModel, frozen=True):
     attempt: Annotated[
         int | None,
         Field(
-            description="Which attempt produced this event, 1-based (a first run is 1). ALWAYS present: the queue re-runs a failed job silently, so an operator reading progress or a terminal record has no other way to tell a re-run from a first run — and provider spend, already counted in xynoplex_inference_tokens_total, cannot be attributed to a repeated document without it. Stated rather than inferred from absence, because 'attempt 1' is a fact the emitter always knows."
+            description="Which attempt produced this event, 1-based (a first run is 1). ALWAYS present: the queue re-runs a failed job silently, so an operator reading progress or a terminal record has no other way to tell a re-run from a first run — and provider spend, already counted in semiont_inference_tokens_total, cannot be attributed to a repeated document without it. Stated rather than inferred from absence, because 'attempt 1' is a fact the emitter always knows."
         ),
     ] = None
     annotation_id: Annotated[
@@ -4364,7 +4364,7 @@ class JobStartCommand(WireModel, frozen=True):
     attempt: Annotated[
         int | None,
         Field(
-            description="Which attempt produced this event, 1-based (a first run is 1). ALWAYS present: the queue re-runs a failed job silently, so an operator reading progress or a terminal record has no other way to tell a re-run from a first run — and provider spend, already counted in xynoplex_inference_tokens_total, cannot be attributed to a repeated document without it. Stated rather than inferred from absence, because 'attempt 1' is a fact the emitter always knows."
+            description="Which attempt produced this event, 1-based (a first run is 1). ALWAYS present: the queue re-runs a failed job silently, so an operator reading progress or a terminal record has no other way to tell a re-run from a first run — and provider spend, already counted in semiont_inference_tokens_total, cannot be attributed to a repeated document without it. Stated rather than inferred from absence, because 'attempt 1' is a fact the emitter always knows."
         ),
     ] = None
 
@@ -4451,7 +4451,7 @@ class JobAssignedPayload(WireModel, frozen=True):
 
 class HttpEndpoint(WireModel, frozen=True):
     """
-    A knowledge base reached through its gateway, over HTTP. The gateway's origin is the protocol, the host in lowercase and the port; a host that is not a host's name is refused before it is put into a URL (protocol/specs/src/session/gateway-url-cases.json).
+    A knowledge base reached through its gateway, over HTTP. The gateway's origin is the protocol, the host in lowercase and the port; a host that is not a host's name is refused before it is put into a URL (specs/src/session/gateway-url-cases.json).
     """
 
     kind: Annotated[
@@ -5078,7 +5078,7 @@ class MarkJobCompleteCommand(WireModel, frozen=True):
     attempt: Annotated[
         int | None,
         Field(
-            description="Which attempt produced this event, 1-based (a first run is 1). ALWAYS present: the queue re-runs a failed job silently, so an operator reading progress or a terminal record has no other way to tell a re-run from a first run — and provider spend, already counted in xynoplex_inference_tokens_total, cannot be attributed to a repeated document without it. Stated rather than inferred from absence, because 'attempt 1' is a fact the emitter always knows."
+            description="Which attempt produced this event, 1-based (a first run is 1). ALWAYS present: the queue re-runs a failed job silently, so an operator reading progress or a terminal record has no other way to tell a re-run from a first run — and provider spend, already counted in semiont_inference_tokens_total, cannot be attributed to a repeated document without it. Stated rather than inferred from absence, because 'attempt 1' is a fact the emitter always knows."
         ),
     ] = None
     result: MarkJobResult | None = None
@@ -5103,7 +5103,7 @@ class YieldJobCompleteCommand(WireModel, frozen=True):
     attempt: Annotated[
         int | None,
         Field(
-            description="Which attempt produced this event, 1-based (a first run is 1). ALWAYS present: the queue re-runs a failed job silently, so an operator reading progress or a terminal record has no other way to tell a re-run from a first run — and provider spend, already counted in xynoplex_inference_tokens_total, cannot be attributed to a repeated document without it. Stated rather than inferred from absence, because 'attempt 1' is a fact the emitter always knows."
+            description="Which attempt produced this event, 1-based (a first run is 1). ALWAYS present: the queue re-runs a failed job silently, so an operator reading progress or a terminal record has no other way to tell a re-run from a first run — and provider spend, already counted in semiont_inference_tokens_total, cannot be attributed to a repeated document without it. Stated rather than inferred from absence, because 'attempt 1' is a fact the emitter always knows."
         ),
     ] = None
     annotation_id: Annotated[
@@ -5152,7 +5152,7 @@ class JobComplete(WireModel, frozen=True, extra="forbid"):
 
 class DispatcherConfig(WireModel, frozen=True, extra="forbid"):
     """
-    Everything the dispatcher reads at boot: nothing in it is defaulted by the dispatcher. The launcher writes it for the dispatcher it starts, from the knowledge base's stack documents, and the dispatcher reads it from the path its `--config` flag names (its image passes `/etc/xynoplex/dispatcher.json`). Started without `--config`, or with a path that names no file, the dispatcher refuses to start and says which. Secrets are never values here: a field that needs one names the environment variable holding it. The dispatcher's other inputs are the environment variables protocol/specs/src/service-environment/variables.json lists for it, and the ones this document names. A document that does not validate is refused at boot, naming each failing field.
+    Everything the dispatcher reads at boot: nothing in it is defaulted by the dispatcher. The launcher writes it for the dispatcher it starts, from the knowledge base's stack documents, and the dispatcher reads it from the path its `--config` flag names (its image passes `/etc/semiont/dispatcher.json`). Started without `--config`, or with a path that names no file, the dispatcher refuses to start and says which. Secrets are never values here: a field that needs one names the environment variable holding it. The dispatcher's other inputs are the environment variables specs/src/service-environment/variables.json lists for it, and the ones this document names. A document that does not validate is refused at boot, naming each failing field.
     """
 
     kb: KbIdentity
@@ -5178,7 +5178,7 @@ class DispatcherConfig(WireModel, frozen=True, extra="forbid"):
 type GraphConfig = Annotated[
     Neo4jGraphConfig | JanusGraphConfig | NeptuneGraphConfig | MemoryGraphConfig,
     Field(
-        description="The graph database a service writes or reads, and what that kind of database needs to be reached: one of the kinds `xynoplex-graph` has a store for, told apart by `type`. A secret is never a value here: a database's password is named by the environment variable that holds it.",
+        description="The graph database a service writes or reads, and what that kind of database needs to be reached: one of the kinds `semiont-graph` has a store for, told apart by `type`. A secret is never a value here: a database's password is named by the environment variable that holds it.",
         discriminator="type",
     ),
 ]
@@ -5187,7 +5187,7 @@ type GraphConfig = Annotated[
 type EmbeddingConfig = Annotated[
     OllamaEmbeddingConfig | VoyageEmbeddingConfig,
     Field(
-        description="The embedding provider a service asks for vectors, and what that kind of provider needs to be asked: one of the providers `xynoplex-vectors` has, told apart by `type`. Two services that share an index name the same provider and the same model: a vector is compared only with vectors of the model that made it. A secret is never a value here: a provider's key is named by the environment variable that holds it.",
+        description="The embedding provider a service asks for vectors, and what that kind of provider needs to be asked: one of the providers `semiont-vectors` has, told apart by `type`. Two services that share an index name the same provider and the same model: a vector is compared only with vectors of the model that made it. A secret is never a value here: a provider's key is named by the environment variable that holds it.",
         discriminator="type",
     ),
 ]
@@ -5196,7 +5196,7 @@ type EmbeddingConfig = Annotated[
 type VectorsConfig = Annotated[
     QdrantVectorsConfig | MemoryVectorsConfig,
     Field(
-        description="The vector index a service writes or searches, and what that kind of index needs to be reached: one of the kinds `xynoplex-vectors` has a store for, told apart by `type`.",
+        description="The vector index a service writes or searches, and what that kind of index needs to be reached: one of the kinds `semiont-vectors` has a store for, told apart by `type`.",
         discriminator="type",
     ),
 ]
@@ -5576,7 +5576,7 @@ class BusSubscribeRequest(WireModel, frozen=True, extra="forbid"):
         list[BusSubscribeRequestPendingRepliesItem] | None,
         Field(
             alias="pendingReplies",
-            description="Correlation ids of requests this client still awaits a reply to. The gateway writes every reply it still retains for them (for `x-xynoplex-limits.replyRetentionSeconds` after it was published) as an ordinary frame with its ReplyEventId, so a reply that also arrived live dedups client-side. A client can have no more pending than it may have unanswered requests, so this bound is also the number of unanswered requests `POST /bus/emit` allows a client.",
+            description="Correlation ids of requests this client still awaits a reply to. The gateway writes every reply it still retains for them (for `x-semiont-limits.replyRetentionSeconds` after it was published) as an ordinary frame with its ReplyEventId, so a reply that also arrived live dedups client-side. A client can have no more pending than it may have unanswered requests, so this bound is also the number of unanswered requests `POST /bus/emit` allows a client.",
             max_length=256,
         ),
     ] = None
@@ -5668,7 +5668,7 @@ type JobProgressMessage = Annotated[
     | JobProgressCreatingTagAnnotations
     | JobProgressCompleteCreated,
     Field(
-        description="What a running job is doing right now, as a code plus typed params — never a prose sentence. The producer reports what happened; each client renders it in the user's language (react-ui from its translations, the Go launcher from its English map). One named schema per code, discriminated on `code`, so generated clients get typed variants and copy-map completeness is statically checkable. The vocabulary is every report Xynoplex's worker makes (protocol/contract/WORKER-SERVICE.md, D16 to D19 and Y8); extending it means adding a named variant here and copy in every client, gated by the locale-completeness check.",
+        description="What a running job is doing right now, as a code plus typed params — never a prose sentence. The producer reports what happened; each client renders it in the user's language (react-ui from its translations, the Go launcher from its English map). One named schema per code, discriminated on `code`, so generated clients get typed variants and copy-map completeness is statically checkable. The vocabulary is every report Xynoplex's worker makes (contract/WORKER-SERVICE.md, D16 to D19 and Y8); extending it means adding a named variant here and copy in every client, gated by the locale-completeness check.",
         discriminator="code",
     ),
 ]
@@ -5806,7 +5806,7 @@ class UpdateAnnotationBodyRequest(WireModel, frozen=True):
 
 class GatewayConfig(WireModel, frozen=True, extra="forbid"):
     """
-    Everything the gateway reads at boot: nothing in it is defaulted by the gateway. The launcher writes it for the gateway it starts — from the knowledge base's committed identity and its stack documents — and a gateway started any other way is given the same document at the path its `--config` flag names (the image passes `/etc/xynoplex/gateway.json`). Started without `--config`, or with a path that names no file, the gateway refuses to start and says which. Secrets are never values here: a field that needs one names the environment variable holding it. The gateway's other inputs are the environment variables protocol/specs/src/service-environment/variables.json lists for it, and the ones this document names. A document that does not validate is refused at boot — the gateway exits without serving — and the refusal names each failing field by its JSON pointer.
+    Everything the gateway reads at boot: nothing in it is defaulted by the gateway. The launcher writes it for the gateway it starts — from the knowledge base's committed identity and its stack documents — and a gateway started any other way is given the same document at the path its `--config` flag names (the image passes `/etc/semiont/gateway.json`). Started without `--config`, or with a path that names no file, the gateway refuses to start and says which. Secrets are never values here: a field that needs one names the environment variable holding it. The gateway's other inputs are the environment variables specs/src/service-environment/variables.json lists for it, and the ones this document names. A document that does not validate is refused at boot — the gateway exits without serving — and the refusal names each failing field by its JSON pointer.
     """
 
     kb: KbIdentity
@@ -6006,7 +6006,7 @@ class WorkerEngineHealth(WireModel, frozen=True, extra="forbid"):
 
 class WeaverConfig(WireModel, frozen=True, extra="forbid"):
     """
-    Everything a Weaver reads at boot: nothing in it is defaulted by the Weaver. The launcher writes it for the Weaver it starts, from the knowledge base's stack documents, and the Weaver reads it from the path its `--config` flag names (its image passes `/etc/xynoplex/weaver.json`). Whoever starts a Weaver another way writes the same document: this schema is the contract, and a Weaver needs no launcher. Started without `--config`, or with a path that names no file, the Weaver refuses to start and says which. No secret is a value here: the graph database's password is named by the environment variable that holds it, and the Weaver's own service account is `XYNOPLEX_OIDC_CLIENT_ID` and `XYNOPLEX_OIDC_CLIENT_SECRET` in its environment. A document that does not validate is refused at boot, naming each failing field.
+    Everything a Weaver reads at boot: nothing in it is defaulted by the Weaver. The launcher writes it for the Weaver it starts, from the knowledge base's stack documents, and the Weaver reads it from the path its `--config` flag names (its image passes `/etc/semiont/weaver.json`). Whoever starts a Weaver another way writes the same document: this schema is the contract, and a Weaver needs no launcher. Started without `--config`, or with a path that names no file, the Weaver refuses to start and says which. No secret is a value here: the graph database's password is named by the environment variable that holds it, and the Weaver's own service account is `SEMIONT_OIDC_CLIENT_ID` and `SEMIONT_OIDC_CLIENT_SECRET` in its environment. A document that does not validate is refused at boot, naming each failing field.
     """
 
     kb: KbIdentity
@@ -6032,7 +6032,7 @@ class WeaverConfig(WireModel, frozen=True, extra="forbid"):
 
 class SmelterConfig(WireModel, frozen=True, extra="forbid"):
     """
-    Everything a Smelter reads at boot: nothing in it is defaulted by the Smelter. Whoever starts a Smelter writes it, from the knowledge base's stack documents, and the Smelter reads it from the path its `--config` flag names. This schema is the contract, and a Smelter needs no launcher. Started without `--config`, or with a path that names no file, the Smelter refuses to start and says which. No secret is a value here: an embedding provider's key is named by the environment variable that holds it, and the Smelter's own service account is `XYNOPLEX_OIDC_CLIENT_ID` and `XYNOPLEX_OIDC_CLIENT_SECRET` in its environment. A document that does not validate is refused at boot, naming each failing field.
+    Everything a Smelter reads at boot: nothing in it is defaulted by the Smelter. Whoever starts a Smelter writes it, from the knowledge base's stack documents, and the Smelter reads it from the path its `--config` flag names. This schema is the contract, and a Smelter needs no launcher. Started without `--config`, or with a path that names no file, the Smelter refuses to start and says which. No secret is a value here: an embedding provider's key is named by the environment variable that holds it, and the Smelter's own service account is `SEMIONT_OIDC_CLIENT_ID` and `SEMIONT_OIDC_CLIENT_SECRET` in its environment. A document that does not validate is refused at boot, naming each failing field.
     """
 
     kb: KbIdentity
@@ -6404,7 +6404,7 @@ class JobReportProgressCommand(WireModel, frozen=True):
     attempt: Annotated[
         int | None,
         Field(
-            description="Which attempt produced this event, 1-based (a first run is 1). ALWAYS present: the queue re-runs a failed job silently, so an operator reading progress or a terminal record has no other way to tell a re-run from a first run — and provider spend, already counted in xynoplex_inference_tokens_total, cannot be attributed to a repeated document without it. Stated rather than inferred from absence, because 'attempt 1' is a fact the emitter always knows."
+            description="Which attempt produced this event, 1-based (a first run is 1). ALWAYS present: the queue re-runs a failed job silently, so an operator reading progress or a terminal record has no other way to tell a re-run from a first run — and provider spend, already counted in semiont_inference_tokens_total, cannot be attributed to a repeated document without it. Stated rather than inferred from absence, because 'attempt 1' is a fact the emitter always knows."
         ),
     ] = None
     annotation_id: Annotated[
@@ -6496,7 +6496,7 @@ type Job = Annotated[
 
 class JobRecord(WireModel, frozen=True, extra="forbid"):
     """
-    One job as the queue stores it: the job, and when it last showed life. The dead-worker sweep reads `lastProgressAt`: a running job whose worker has reported nothing for the configured interval is presumed dead. Where the queue keeps these records is the job storage layout, protocol/specs/src/jobs/storage.json.
+    One job as the queue stores it: the job, and when it last showed life. The dead-worker sweep reads `lastProgressAt`: a running job whose worker has reported nothing for the configured interval is presumed dead. Where the queue keeps these records is the job storage layout, specs/src/jobs/storage.json.
     """
 
     job: Job
@@ -6519,14 +6519,14 @@ class JobClaimedResult(WireModel, frozen=True, extra="forbid"):
 
 class WorkerConfig(WireModel, frozen=True, extra="forbid"):
     """
-    Everything a worker reads at boot: nothing in it is defaulted by the worker. The launcher writes it for the machine's worker, from the knowledge bases on that worker's list: each local knowledge base as its start places it, from its stack documents, and each added by `xynoplex worker kb add`, offered the engines of the local one it was added from. The worker reads it from the path its `--config` flag names (its image passes `/etc/xynoplex/worker.json`). Whoever starts a worker another way writes the same document: this schema is the contract, and a worker needs no launcher. Started without `--config`, or with a path that names no file, the worker refuses to start and says which. No secret is a value here: a provider's key is named by the environment variable that holds it, and the key the worker signs in with at every knowledge base is `XYNOPLEX_OIDC_CLIENT_KEY` in its environment, an RSA private key; each knowledge base names the client that holds its public half there. A document that does not validate is refused at boot, naming each failing field.
+    Everything a worker reads at boot: nothing in it is defaulted by the worker. The launcher writes it for the machine's worker, from the knowledge bases on that worker's list: each local knowledge base as its start places it, from its stack documents, and each added by `semiont worker kb add`, offered the engines of the local one it was added from. The worker reads it from the path its `--config` flag names (its image passes `/etc/semiont/worker.json`). Whoever starts a worker another way writes the same document: this schema is the contract, and a worker needs no launcher. Started without `--config`, or with a path that names no file, the worker refuses to start and says which. No secret is a value here: a provider's key is named by the environment variable that holds it, and the key the worker signs in with at every knowledge base is `SEMIONT_OIDC_CLIENT_KEY` in its environment, an RSA private key; each knowledge base names the client that holds its public half there. A document that does not validate is refused at boot, naming each failing field.
     """
 
     knowledge_bases: Annotated[
         list[WorkerKnowledgeBaseConfig],
         Field(
             alias="knowledgeBases",
-            description="The knowledge bases this worker does jobs for. At each it signs in, confirms which knowledge base it reached and claims for its engines, apart from every other: one knowledge base's trouble stops that knowledge base's work alone (`protocol/contract/WORKER-SERVICE.md` § Knowledge bases). No two name one `domain`, which the worker refuses at boot.",
+            description="The knowledge bases this worker does jobs for. At each it signs in, confirms which knowledge base it reached and claims for its engines, apart from every other: one knowledge base's trouble stops that knowledge base's work alone (`contract/WORKER-SERVICE.md` § Knowledge bases). No two name one `domain`, which the worker refuses at boot.",
             min_length=1,
         ),
     ]
@@ -6571,7 +6571,7 @@ class WorkerKnowledgeBaseHealth(WireModel, frozen=True, extra="forbid"):
 
 class LibrarianConfig(WireModel, frozen=True, extra="forbid"):
     """
-    Everything a Librarian reads at boot: nothing in it is defaulted by the Librarian. Whoever starts a Librarian writes it, from the knowledge base's stack documents, and the Librarian reads it from the path its `--config` flag names. This schema is the contract, and a Librarian needs no launcher. Started without `--config`, or with a path that names no file, the Librarian refuses to start and says which. No secret is a value here: the graph database's password, an embedding provider's key and a model provider's key are each named by the environment variable that holds it, and the Librarian's own service account is `XYNOPLEX_OIDC_CLIENT_ID` and `XYNOPLEX_OIDC_CLIENT_SECRET` in its environment. A document that does not validate is refused at boot, naming each failing field.
+    Everything a Librarian reads at boot: nothing in it is defaulted by the Librarian. Whoever starts a Librarian writes it, from the knowledge base's stack documents, and the Librarian reads it from the path its `--config` flag names. This schema is the contract, and a Librarian needs no launcher. Started without `--config`, or with a path that names no file, the Librarian refuses to start and says which. No secret is a value here: the graph database's password, an embedding provider's key and a model provider's key are each named by the environment variable that holds it, and the Librarian's own service account is `SEMIONT_OIDC_CLIENT_ID` and `SEMIONT_OIDC_CLIENT_SECRET` in its environment. A document that does not validate is refused at boot, naming each failing field.
     """
 
     kb: KbIdentity
@@ -6798,7 +6798,7 @@ class WorkerHealth(WireModel, frozen=True, extra="forbid"):
 
 class ArchivistConfig(WireModel, frozen=True, extra="forbid"):
     """
-    Everything the Archivist reads at boot: nothing in it is defaulted by the Archivist. The launcher writes it for the Archivist it starts, from the knowledge base's stack documents, and the Archivist reads it from the path its `--config` flag names (its image passes `/etc/xynoplex/archivist.json`). Started without `--config`, or with a path that names no file, the Archivist refuses to start and says which. No secret is a value here. What the knowledge base says of itself is not here either: its name, its `site.domain` and its `git.sync` are read from the committed `.xynoplex/config.yaml` of the tree at `root`. The Archivist's other inputs are the environment variables protocol/specs/src/service-environment/variables.json lists for it. A document that does not validate is refused at boot, naming each failing field.
+    Everything the Archivist reads at boot: nothing in it is defaulted by the Archivist. The launcher writes it for the Archivist it starts, from the knowledge base's stack documents, and the Archivist reads it from the path its `--config` flag names (its image passes `/etc/semiont/archivist.json`). Started without `--config`, or with a path that names no file, the Archivist refuses to start and says which. No secret is a value here. What the knowledge base says of itself is not here either: its name, its `site.domain` and its `git.sync` are read from the committed `.semiont/config.yaml` of the tree at `root`. The Archivist's other inputs are the environment variables specs/src/service-environment/variables.json lists for it. A document that does not validate is refused at boot, naming each failing field.
     """
 
     gateway_url: Annotated[
@@ -6813,7 +6813,7 @@ class ArchivistConfig(WireModel, frozen=True, extra="forbid"):
     root: Annotated[
         str,
         Field(
-            description="The knowledge base's working tree: the directory holding `.xynoplex/`. The event log, the content and the committed config are under it.",
+            description="The knowledge base's working tree: the directory holding `.semiont/`. The event log, the content and the committed config are under it.",
             min_length=1,
         ),
     ]

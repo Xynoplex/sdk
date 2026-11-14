@@ -1,0 +1,51 @@
+name: Publish SDK artifact bundle
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  bundle:
+    name: Build and release immutable SDK artifacts
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Check out source and pinned Protocol
+        uses: actions/checkout@v7.0.1
+        with:
+          submodules: recursive
+
+      - name: Verify tag matches SDK package version
+        shell: bash
+        run: |
+          version="$(python3 -c 'import json; print(json.load(open("version.json"))["version"])')"
+          test "$GITHUB_REF_NAME" = "v$version"
+
+      - name: Build native packages and bundle
+        shell: bash
+        run: |
+          make local
+          SDK_ARTIFACTS="$RUNNER_TEMP/sdk-artifacts" python3 scripts/create-artifact-bundle.py all
+          python3 scripts/verify-artifact-bundle.py "$RUNNER_TEMP/sdk-artifacts"
+
+      - name: Create deterministic release archive
+        shell: bash
+        run: |
+          tar --sort=name --mtime='@0' --owner=0 --group=0 --numeric-owner \
+            -cf - -C "$RUNNER_TEMP" sdk-artifacts | gzip -n > "$RUNNER_TEMP/xynoplex-sdk-artifacts-${GITHUB_REF_NAME}.tar.gz"
+          cd "$RUNNER_TEMP"
+          shasum -a 256 "xynoplex-sdk-artifacts-${GITHUB_REF_NAME}.tar.gz" > "xynoplex-sdk-artifacts-${GITHUB_REF_NAME}.tar.gz.sha256"
+
+      - name: Publish the bundle as versioned release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            "$RUNNER_TEMP/xynoplex-sdk-artifacts-${GITHUB_REF_NAME}.tar.gz" \
+            "$RUNNER_TEMP/xynoplex-sdk-artifacts-${GITHUB_REF_NAME}.tar.gz.sha256" \
+            --verify-tag \
+            --title "Xynoplex SDK ${GITHUB_REF_NAME}" \
+            --generate-notes

@@ -397,7 +397,7 @@ def prepared(spec: JsonObject, kinds: frozenset[str]) -> JsonObject:
 
 def floor() -> str:
     """The oldest Python the package supports (`requires-python`): the one the classes are written for."""
-    asked = subprocess.run([str(FLOOR)], capture_output=True, text=True, check=False)
+    asked = subprocess.run(["bash", str(FLOOR)], capture_output=True, text=True, check=False)
     if asked.returncode != 0:
         refuse(f"{FLOOR.relative_to(ROOT)} names no Python: {asked.stderr.strip()}")
     return asked.stdout.strip()

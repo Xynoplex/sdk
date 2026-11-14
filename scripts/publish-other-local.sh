@@ -2,26 +2,24 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd -P)"
 source "$ROOT/scripts/container-runtime.sh"
+source "$ROOT/scripts/require-protocol-pin.sh"
 RUNTIME="$(detect_container_runtime)"
 STATE_ROOT="${XDG_CACHE_HOME:-$HOME/.cache}/xynoplex-sdk/local"
-PROTOCOL="$ROOT/../protocol"
-[[ -d "$PROTOCOL/specs/src" ]] || PROTOCOL="$ROOT/protocol"
+PROTOCOL="$ROOT/protocol"
 LANGUAGE="${1:-all}"
 case "$LANGUAGE" in
   all|go|csharp|haskell|kotlin|ocaml|swift) ;;
   *) echo "Unsupported language for this artifact script: $LANGUAGE" >&2; exit 2 ;;
 esac
+PROTOCOL_REVISION="$(require_protocol_pin "$ROOT")"
 mkdir -p "$STATE_ROOT"/{go-proxy,nuget,nuget-cache,haskell,cabal-cache,haskell-build,kotlin-maven,gradle-cache,opam-repo,swift,swift-cache,swift-build,go-mod-cache,go-build-cache}
 OPAM_VOLUME=xynoplex-sdk-opam-5-5
 VERSION="$(sed -n 's/.*"version": "\([^"]*\)".*/\1/p' "$ROOT/version.json" | head -n1)"
+SDK_SOURCE_TIME="$(git -C "$ROOT" log -1 --format=%cI)"
 
 case "$LANGUAGE" in
   all|go|csharp|kotlin)
-    if [[ ! -d "$PROTOCOL/specs/src" ]]; then
-  echo "Protocol schemas were not found at $PROTOCOL/specs/src." >&2
-  echo 'Initialize the pinned protocol submodule before publishing.' >&2
-  exit 1
-    fi
+    [[ -d "$PROTOCOL/specs/src" ]] || exit 1
     ;;
 esac
 
@@ -31,20 +29,29 @@ run_container_quietly "$RUNTIME" run --rm \
   --volume "$ROOT:/source:ro" --volume "$PROTOCOL:/protocol:ro" \
   --volume "$STATE_ROOT/go-proxy:/out" --volume "$STATE_ROOT/go-mod-cache:/go/pkg/mod" \
   --volume "$STATE_ROOT/go-build-cache:/root/.cache/go-build" \
+  --env "SDK_SOURCE_TIME=$SDK_SOURCE_TIME" \
   --workdir /tmp golang:1.27.4-bookworm bash -euc '
     apt-get update -qq && apt-get install -y -qq --no-install-recommends zip >/dev/null
     version=$(sed -n "s/.*\"version\": \"\([^\"]*\)\".*/\1/p" /source/version.json | head -n1)
     mkdir -p /tmp/sdk && cp -a /source/. /tmp/sdk/ && rm -rf /tmp/sdk/protocol && cp -a /protocol /tmp/sdk/protocol && cd /tmp/sdk/go && go build ./...
-    module="github.com/!xynoplex/sdk/go"
-    escaped="$module"
+    module="github.com/Xynoplex/sdk/go"
+    escaped="github.com/!xynoplex/sdk/go"
     mkdir -p "/out/$escaped/@v" /tmp/go-proxy-package
-    printf "{\"Version\":\"v%s\",\"Time\":\"%s\"}\n" "$version" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "/out/$escaped/@v/v$version.info"
+    printf "{\"Version\":\"v%s\",\"Time\":\"%s\"}\n" "$version" "$SDK_SOURCE_TIME" > "/out/$escaped/@v/v$version.info"
     cp /source/go/go.mod "/out/$escaped/@v/v$version.mod"
     printf "v%s\\n" "$version" > "/out/$escaped/@v/list"
     mkdir -p "/tmp/go-proxy-package/$module@v$version"
     cp -a /tmp/sdk/go/. "/tmp/go-proxy-package/$module@v$version/"
     rm -f "/tmp/go-proxy-package/$module@v$version/go.sum"
-    (cd /tmp/go-proxy-package && zip -qr "/out/$escaped/@v/v$version.zip" .)
+    find /tmp/go-proxy-package -exec touch -h -d "$SDK_SOURCE_TIME" {} +
+    archive_dir=$(mktemp -d /tmp/xynoplex-go-proxy.XXXXXX)
+    zip_excludes=()
+    while IFS= read -r nested_go_mod; do
+      nested_module="${nested_go_mod%/go.mod}"
+      zip_excludes+=("${nested_module#/tmp/go-proxy-package/}/*")
+    done < <(find "/tmp/go-proxy-package/$module@v$version" -mindepth 2 -name go.mod -print)
+    (cd /tmp/go-proxy-package && zip -X -qrD "$archive_dir/module.zip" "$module@v$version" -x "${zip_excludes[@]}")
+    mv "$archive_dir/module.zip" "/out/$escaped/@v/v$version.zip"
   '
 fi
 if [[ "$LANGUAGE" == all || "$LANGUAGE" == csharp ]]; then
@@ -153,12 +160,15 @@ run_container_quietly "$RUNTIME" run --rm --memory 4g --volume "$ROOT/swift/sdk:
   --volume "$STATE_ROOT/swift:/out" --volume "$STATE_ROOT/swift-cache:/root/.cache" \
   --volume "$STATE_ROOT/swift-build:/build" --env "XYNOPLEX_SDK_VERSION=$VERSION" --workdir /tmp "swift:$swift_version" bash -euc '
     apt-get update -qq && apt-get install -y -qq --no-install-recommends zip >/dev/null
-    mkdir -p /tmp/sdk /tmp/archive/sdk && cp -a /source/. /tmp/sdk/ && cd /tmp/sdk
-    find .build -depth -delete 2>/dev/null || true
+    mkdir -p /tmp/sdk/swift/sdk /tmp/protocol /tmp/archive/sdk/swift/sdk /tmp/archive/protocol
+    cp -a /source/. /tmp/sdk/swift/sdk/
+    cp -a /protocol/. /tmp/protocol/
+    cd /tmp/sdk/swift/sdk
     if ! swift build --build-path /build --jobs 4 --force-resolved-versions --product Xynoplex > /out/build.log 2>&1; then tail -n 100 /out/build.log; exit 1; fi
-    cp -a /source/. /tmp/archive/sdk/
+    cp -a /source/. /tmp/archive/sdk/swift/sdk/
+    cp -a /protocol/. /tmp/archive/protocol/
     cd /tmp/archive
     rm -f "/out/xynoplex-$XYNOPLEX_SDK_VERSION.zip"
-    zip -qr "/out/xynoplex-$XYNOPLEX_SDK_VERSION.zip" sdk -x "sdk/.build/" "sdk/.build/*"
+    zip -qr "/out/xynoplex-$XYNOPLEX_SDK_VERSION.zip" sdk protocol
   '
 fi

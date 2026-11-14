@@ -1,4 +1,4 @@
-name: Go SDK CI
+name: Xynoplex SDK CI
 
 on:
   push:
@@ -12,6 +12,21 @@ permissions:
   contents: read
 
 jobs:
+  protocol-derived-packages:
+    name: Build SDK artifacts from pinned Protocol
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Check out source and pinned Protocol
+        uses: actions/checkout@v7.0.1
+        with:
+          submodules: recursive
+
+      - name: Build all language artifacts and verify the bundle
+        run: |
+          make local
+          SDK_ARTIFACTS="$(python3 scripts/create-artifact-bundle.py --path all)" make verify-artifacts
+
   go-sdk:
     name: Go SDK tests and coverage
     runs-on: ubuntu-latest

@@ -3,10 +3,10 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd -P)"
 source "$ROOT/scripts/container-runtime.sh"
+source "$ROOT/scripts/require-protocol-pin.sh"
 RUNTIME="$(detect_container_runtime)"
 STATE_ROOT="${XDG_CACHE_HOME:-$HOME/.cache}/xynoplex-sdk/local"
 PROTOCOL="$ROOT/protocol"
-[[ -d "$PROTOCOL/specs/src" ]] || PROTOCOL="$ROOT/../protocol"
 OLD_NPM_CONTAINER=xynoplex-sdk-local-npm
 OLD_PYPI_CONTAINER=xynoplex-sdk-local-pypi
 OLD_CARGO_CONTAINER=xynoplex-sdk-local-cargo
@@ -47,32 +47,59 @@ if [[ "${1:-}" == --stop ]]; then
   stop_old_registry_containers
   echo "Cached package artifacts are retained at $STATE_ROOT."
   exit 0
-elif [[ $# -gt 1 ]]; then
-  echo 'Usage: scripts/publish-local.sh [all|typescript|python|rust|go|csharp|haskell|kotlin|ocaml|swift|--stop]' >&2
-  exit 2
 fi
 
 LANGUAGE="${1:-all}"
-case "$LANGUAGE" in
-  all|typescript|python|rust|go|csharp|haskell|kotlin|ocaml|swift) ;;
-  *) echo "Unknown SDK language: $LANGUAGE" >&2; exit 2 ;;
-esac
+if [[ "$LANGUAGE" == all ]]; then
+  LANGUAGES=(typescript python rust go csharp haskell kotlin ocaml swift)
+else
+  IFS=, read -r -a LANGUAGES <<< "$LANGUAGE"
+fi
+for language in "${LANGUAGES[@]}"; do
+  case "$language" in
+    typescript|python|rust|go|csharp|haskell|kotlin|ocaml|swift) ;;
+    *) echo "Unknown SDK language: $language" >&2; exit 2 ;;
+  esac
+done
+if [[ " ${LANGUAGES[*]} " == *" all "* ]]; then
+  echo 'Use all by itself or list SDK languages separated by commas.' >&2
+  exit 2
+fi
+for ((index = 0; index < ${#LANGUAGES[@]}; index++)); do
+  for ((previous = 0; previous < index; previous++)); do
+    if [[ "${LANGUAGES[$index]}" == "${LANGUAGES[$previous]}" ]]; then
+      echo 'Do not repeat SDK languages.' >&2
+      exit 2
+    fi
+  done
+done
+has_language() {
+  [[ " ${LANGUAGES[*]} " == *" $1 "* ]]
+}
+ALL_LANGUAGES=false
+[[ "$LANGUAGE" == all ]] && ALL_LANGUAGES=true
+
+PROTOCOL_REVISION="$(require_protocol_pin "$ROOT")"
 
 # Retire registry processes left by older versions of this script. New artifact
 # builds only write files under STATE_ROOT.
 stop_old_registry_containers
 
-case "$LANGUAGE" in
-  all|typescript|rust|go|csharp|kotlin)
-    if [[ ! -d "$PROTOCOL/specs/src" ]]; then
-      echo "Protocol specs were not found at $PROTOCOL/specs/src." >&2
-      echo 'Check out the xynoplex/protocol repository beside this SDK repository.' >&2
-      exit 1
-    fi
-    ;;
-esac
 
-if [[ "$LANGUAGE" == all || "$LANGUAGE" == typescript ]]; then
+echo "Building protocol bundles from pinned revision ${PROTOCOL_REVISION}…"
+run_container_quietly "$RUNTIME" run --rm \
+  --volume "$PROTOCOL:/protocol" \
+  --workdir /tmp \
+  node:26-bookworm bash -euc '
+    cp -a /protocol /tmp/protocol
+    cd /tmp/protocol
+    npm ci
+    npm run specs:bundle
+    cp -f specs/openapi.json /protocol/specs/openapi.json
+    cp -f specs/archivist.openapi.json /protocol/specs/archivist.openapi.json
+  '
+
+if has_language typescript; then
   echo 'Building TypeScript packages and packing npm artifacts in a Node container…'
   run_container_quietly "$RUNTIME" run --rm \
     --volume "$ROOT:/source:ro" \
@@ -94,10 +121,11 @@ if [[ "$LANGUAGE" == all || "$LANGUAGE" == typescript ]]; then
     '
 fi
 
-if [[ "$LANGUAGE" == all || "$LANGUAGE" == python ]]; then
+if has_language python; then
   echo 'Building Python source and wheel archives in a Python container…'
   run_container_quietly "$RUNTIME" run --rm \
     --volume "$ROOT:/source:ro" \
+    --volume "$PROTOCOL:/protocol:ro" \
     --volume "$STATE_ROOT/uv-cache:/root/.cache/uv" \
     --volume "$STATE_ROOT/python/packages:/artifacts" \
     --workdir /source \
@@ -109,7 +137,7 @@ if [[ "$LANGUAGE" == all || "$LANGUAGE" == python ]]; then
     '
 fi
 
-if [[ "$LANGUAGE" == all || "$LANGUAGE" == rust ]]; then
+if has_language rust; then
   echo 'Building and packaging Rust crates in a Rust container…'
   run_container_quietly "$RUNTIME" run --rm --memory 4g \
     --volume "$ROOT:/source:ro" \
@@ -123,23 +151,15 @@ if [[ "$LANGUAGE" == all || "$LANGUAGE" == rust ]]; then
     rust:1.99.1-bookworm bash /source/scripts/publish-rust-local.sh
 fi
 
-if [[ "$LANGUAGE" == all || "$LANGUAGE" == go || "$LANGUAGE" == csharp || "$LANGUAGE" == haskell || "$LANGUAGE" == kotlin || "$LANGUAGE" == ocaml || "$LANGUAGE" == swift ]]; then
-  if [[ "$LANGUAGE" == all ]]; then
-    echo 'Building the Go, .NET, Haskell, Kotlin, OCaml, and Swift local artifacts…'
-  else
-    case "$LANGUAGE" in
-      go) echo 'Building Go local artifacts…' ;;
-      csharp) echo 'Building .NET local artifacts…' ;;
-      haskell) echo 'Building Haskell local artifacts…' ;;
-      kotlin) echo 'Building Kotlin local artifacts…' ;;
-      ocaml) echo 'Building OCaml local artifacts…' ;;
-      swift) echo 'Building Swift local artifacts…' ;;
-    esac
+for language in go csharp haskell kotlin ocaml swift; do
+  if has_language "$language"; then
+    bash "$ROOT/scripts/publish-other-local.sh" "$language"
   fi
-  bash "$ROOT/scripts/publish-other-local.sh" "$LANGUAGE"
-fi
+done
 
-if [[ "$LANGUAGE" == all ]]; then
+python3 "$ROOT/scripts/create-artifact-bundle.py" "${LANGUAGES[@]}"
+
+if [[ "$ALL_LANGUAGES" == true ]]; then
   cat <<EOF
 
 SDK artifacts are ready under:
@@ -155,6 +175,7 @@ SDK artifacts are ready under:
 
 EOF
 else
+  printf 'Native SDK artifacts staged for: %s\n' "${LANGUAGES[*]}"
   case "$LANGUAGE" in
     typescript) echo "TypeScript npm archives are ready under: $STATE_ROOT/npm/packages" ;;
     python) echo "Python archives are ready under: $STATE_ROOT/python/packages" ;;

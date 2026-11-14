@@ -13,7 +13,8 @@
 # With no floor it prints nothing and fails, so a build that cannot name its
 # Python stops. It is plain sh: an image with no bash can run it.
 set -eu
-cd "$(dirname "$0")/../../.."
+script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+cd "$script_dir/../.."
 
 floor=$(sed -n 's/^requires-python = ">=\([0-9][0-9.]*\)"$/\1/p' python/sdk/pyproject.toml)
 if [ -z "$floor" ]; then
