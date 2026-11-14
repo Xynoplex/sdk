@@ -74,7 +74,7 @@ esac
 
 if [[ "$LANGUAGE" == all || "$LANGUAGE" == typescript ]]; then
   echo 'Building TypeScript packages and packing npm artifacts in a Node container…'
-  "$RUNTIME" run --rm \
+  run_container_quietly "$RUNTIME" run --rm \
     --volume "$ROOT:/source:ro" \
     --volume "$PROTOCOL:/protocol:ro" \
     --volume "$STATE_ROOT/npm/packages:/artifacts" \
@@ -96,7 +96,7 @@ fi
 
 if [[ "$LANGUAGE" == all || "$LANGUAGE" == python ]]; then
   echo 'Building Python source and wheel archives in a Python container…'
-  "$RUNTIME" run --rm \
+  run_container_quietly "$RUNTIME" run --rm \
     --volume "$ROOT:/source:ro" \
     --volume "$STATE_ROOT/uv-cache:/root/.cache/uv" \
     --volume "$STATE_ROOT/python/packages:/artifacts" \
@@ -111,7 +111,7 @@ fi
 
 if [[ "$LANGUAGE" == all || "$LANGUAGE" == rust ]]; then
   echo 'Building and packaging Rust crates in a Rust container…'
-  "$RUNTIME" run --rm --memory 4g \
+  run_container_quietly "$RUNTIME" run --rm --memory 4g \
     --volume "$ROOT:/source:ro" \
     --volume "$PROTOCOL:/protocol:ro" \
     --volume "$STATE_ROOT/rust/packages:/artifacts" \
@@ -124,7 +124,18 @@ if [[ "$LANGUAGE" == all || "$LANGUAGE" == rust ]]; then
 fi
 
 if [[ "$LANGUAGE" == all || "$LANGUAGE" == go || "$LANGUAGE" == csharp || "$LANGUAGE" == haskell || "$LANGUAGE" == kotlin || "$LANGUAGE" == ocaml || "$LANGUAGE" == swift ]]; then
-  echo 'Building the Go, .NET, Haskell, Kotlin, OCaml, and Swift local artifacts…'
+  if [[ "$LANGUAGE" == all ]]; then
+    echo 'Building the Go, .NET, Haskell, Kotlin, OCaml, and Swift local artifacts…'
+  else
+    case "$LANGUAGE" in
+      go) echo 'Building Go local artifacts…' ;;
+      csharp) echo 'Building .NET local artifacts…' ;;
+      haskell) echo 'Building Haskell local artifacts…' ;;
+      kotlin) echo 'Building Kotlin local artifacts…' ;;
+      ocaml) echo 'Building OCaml local artifacts…' ;;
+      swift) echo 'Building Swift local artifacts…' ;;
+    esac
+  fi
   bash "$ROOT/scripts/publish-other-local.sh" "$LANGUAGE"
 fi
 

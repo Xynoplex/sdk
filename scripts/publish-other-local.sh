@@ -27,7 +27,7 @@ esac
 
 if [[ "$LANGUAGE" == all || "$LANGUAGE" == go ]]; then
 echo 'Building the Go module proxy package in a Go container…'
-"$RUNTIME" run --rm \
+run_container_quietly "$RUNTIME" run --rm \
   --volume "$ROOT:/source:ro" --volume "$PROTOCOL:/protocol:ro" \
   --volume "$STATE_ROOT/go-proxy:/out" --volume "$STATE_ROOT/go-mod-cache:/go/pkg/mod" \
   --volume "$STATE_ROOT/go-build-cache:/root/.cache/go-build" \
@@ -51,7 +51,7 @@ fi
 if [[ "$LANGUAGE" == all || "$LANGUAGE" == csharp ]]; then
 echo 'Packing the .NET SDK in a .NET container…'
 dotnet_version="$(sed -n 's/.*"version": "\([^"]*\)".*/\1/p' "$ROOT/csharp/sdk/global.json" | sed -E 's/(-(preview|rc)\.[0-9]+)\.[0-9]+\.[0-9]+$/\1/')"
-"$RUNTIME" run --rm \
+run_container_quietly "$RUNTIME" run --rm \
   --volume "$ROOT:/source:ro" --volume "$PROTOCOL:/protocol:ro" \
   --volume "$STATE_ROOT/nuget:/out" --volume "$STATE_ROOT/nuget-cache:/root/.nuget/packages" --workdir /tmp \
   "mcr.microsoft.com/dotnet/sdk:$dotnet_version" bash -euc '
@@ -59,7 +59,7 @@ dotnet_version="$(sed -n 's/.*"version": "\([^"]*\)".*/\1/p' "$ROOT/csharp/sdk/g
     cp -a /source /tmp/sdk
     rm -rf /tmp/sdk/protocol
     cp -a /protocol /tmp/protocol
-    dotnet pack /tmp/sdk/csharp/sdk/src/Xynoplex/Xynoplex.csproj -c Release \
+    dotnet pack /tmp/sdk/csharp/sdk/src/Xynoplex/Xynoplex.csproj -c Release --verbosity quiet \
       -p:IsPackable=true -p:PackageId=Xynoplex -p:PackageVersion="$version" \
       -p:CheckRefusals=false -o /out
   '
@@ -67,7 +67,7 @@ fi
 
 if [[ "$LANGUAGE" == all || "$LANGUAGE" == haskell ]]; then
 echo 'Creating the Haskell source distribution in a GHC container…'
-"$RUNTIME" run --rm --memory 4g --volume "$ROOT/haskell/sdk:/source:ro" \
+run_container_quietly "$RUNTIME" run --rm --memory 4g --volume "$ROOT/haskell/sdk:/source:ro" \
   --volume "$STATE_ROOT/haskell:/out" --volume "$STATE_ROOT/cabal-cache:/root/.cabal" \
   --volume "$STATE_ROOT/haskell-build:/tmp/sdk/dist-newstyle" --workdir /tmp \
   haskell:9.10.3 bash -euc 'mkdir -p /tmp/sdk && cp -a /source/. /tmp/sdk/ && cd /tmp/sdk && printf "packages: .\\n" > cabal.project && test -f /root/.cabal/packages/hackage.haskell.org/01-index.cache || cabal update; cabal build lib:xynoplex && cabal sdist --output-directory=/out'
@@ -98,7 +98,7 @@ allprojects {
   }
 }
 GRADLE
-"$RUNTIME" run --rm --memory 4g --volume "$ROOT:/source:ro" \
+run_container_quietly "$RUNTIME" run --rm --memory 4g --volume "$ROOT:/source:ro" \
   --volume "$PROTOCOL:/protocol:ro" --volume "$STATE_ROOT/kotlin-maven:/out" \
   --volume "$STATE_ROOT/gradle-cache:/root/.gradle" \
   --volume "$STATE_ROOT/kotlin-publish.init.gradle:/tmp/publish.init.gradle:ro" \
@@ -117,13 +117,13 @@ opam_archive_uri="${opam_archive_uri// /%20}"
 if ! "$RUNTIME" volume inspect "$OPAM_VOLUME" >/dev/null 2>&1; then
   "$RUNTIME" volume create "$OPAM_VOLUME" >/dev/null
 fi
-if ! "$RUNTIME" run --rm --volume "$OPAM_VOLUME:/cache" \
+if ! run_container_quietly "$RUNTIME" run --rm --volume "$OPAM_VOLUME:/cache" \
   ocaml/opam:debian-13-ocaml-5.5 bash -euc 'test -s /cache/config'; then
   echo 'Seeding the pinned OCaml switch cache…'
-  "$RUNTIME" run --rm --volume "$OPAM_VOLUME:/cache" \
+  run_container_quietly "$RUNTIME" run --rm --volume "$OPAM_VOLUME:/cache" \
     ocaml/opam:debian-13-ocaml-5.5 bash -euc 'cp -R /home/opam/.opam/. /cache/'
 fi
-"$RUNTIME" run --rm --memory 4g --volume "$ROOT/ocaml/sdk:/source:ro" \
+run_container_quietly "$RUNTIME" run --rm --memory 4g --volume "$ROOT/ocaml/sdk:/source:ro" \
   --volume "$STATE_ROOT/opam-repo:/out" \
   --volume "$OPAM_VOLUME:/home/opam/.opam" \
   --env "XYNOPLEX_SDK_VERSION=$VERSION" --env "XYNOPLEX_OPAM_ARCHIVE_URI=$opam_archive_uri" \
@@ -150,7 +150,7 @@ fi
 if [[ "$LANGUAGE" == all || "$LANGUAGE" == swift ]]; then
 echo 'Building and archiving the Swift package in a Swift container…'
 swift_version="$(cat "$ROOT/swift/sdk/.swift-version")"
-"$RUNTIME" run --rm --memory 4g --volume "$ROOT/swift/sdk:/source:ro" --volume "$PROTOCOL:/protocol:ro" \
+run_container_quietly "$RUNTIME" run --rm --memory 4g --volume "$ROOT/swift/sdk:/source:ro" --volume "$PROTOCOL:/protocol:ro" \
   --volume "$STATE_ROOT/swift:/out" --volume "$STATE_ROOT/swift-cache:/root/.cache" \
   --volume "$STATE_ROOT/swift-build:/build" --env "XYNOPLEX_SDK_VERSION=$VERSION" --workdir /tmp "swift:$swift_version" bash -euc '
     apt-get update -qq && apt-get install -y -qq --no-install-recommends zip >/dev/null
@@ -176,13 +176,4 @@ Additional local SDK artifacts are ready under:
   Swift archive:   $STATE_ROOT/swift
 
 EOF
-else
-  case "$LANGUAGE" in
-    go) echo "Go module proxy artifacts are ready under: $STATE_ROOT/go-proxy" ;;
-    csharp) echo "NuGet package artifacts are ready under: $STATE_ROOT/nuget" ;;
-    haskell) echo "Haskell source distribution is ready under: $STATE_ROOT/haskell" ;;
-    kotlin) echo "Kotlin Maven artifacts are ready under: $STATE_ROOT/kotlin-maven" ;;
-    ocaml) echo "OCaml package repository is ready under: $STATE_ROOT/opam-repo/repo" ;;
-    swift) echo "Swift package archive is ready under: $STATE_ROOT/swift" ;;
-  esac
 fi

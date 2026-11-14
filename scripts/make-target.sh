@@ -10,7 +10,8 @@ PROTOCOL="$ROOT/protocol"
 
 case "${1:-}" in
   go-build)
-    "$RUNTIME" run --rm \
+    echo 'Building the Go SDK in a container…'
+    run_container_quietly "$RUNTIME" run --rm \
       --volume "$ROOT:/workspace" \
       --workdir /workspace/go \
       golang:1.27.4-bookworm go build ./...
@@ -34,7 +35,8 @@ case "${1:-}" in
     cp "$COVERAGE_DIR/out/coverage.txt" "$ROOT/coverage.txt"
     ;;
   clean)
-    "$RUNTIME" run --rm \
+    echo 'Cleaning Go build outputs in a container…'
+    run_container_quietly "$RUNTIME" run --rm \
       --volume "$ROOT:/workspace" \
       --workdir /workspace/go \
       golang:1.27.4-bookworm sh -eu -c 'go clean; rm -f /workspace/coverage.txt'

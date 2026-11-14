@@ -3,8 +3,10 @@
     <Description>The Xynoplex SDK for .NET.</Description>
     <IsPackable>false</IsPackable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="../../README.md" Pack="true" PackagePath="/" />
     <ProjectReference Include="../../generators/Xynoplex.Generator/Xynoplex.Generator.csproj" GlobalPropertiesToRemove="$(XynoplexBuildToolGlobalPropertiesToRemove)" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <AdditionalFiles Include="../../../../../protocol/specs/src/**/*.json" />
     <AdditionalFiles Include="../../../../../protocol/specs/src/sign-in-store/README.md" />
