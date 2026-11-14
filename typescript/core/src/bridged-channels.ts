@@ -2,7 +2,7 @@
 //
 // Authority:   protocol/specs/src/bus/registry.json  (channels, payloads, operations)
 // Regenerate:  node packages/codegen/bus/generate-ts.mjs
-// Go counterpart: node packages/codegen/bus/generate-go.mjs → go/sdk/bus
+// Go counterpart: node packages/codegen/bus/generate-go.mjs → go/bus
 //
 // Payload schemas themselves live in the OpenAPI components; the registry
 // names which one each channel carries, and every payload type here is

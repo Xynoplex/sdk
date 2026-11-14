@@ -1,7 +1,7 @@
 /**
  * The first fault of a value as one of the spec's schemas, as every SDK names
  * it: the table generated from the spec (packages/codegen/schemas/required-shapes.mjs),
- * read as Go's is (go/sdk/internal/required/required_test.go).
+ * read as Go's is (go/internal/required/required_test.go).
  */
 
 import { describe, it, expect } from 'vitest';

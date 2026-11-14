@@ -3,7 +3,7 @@
  *
  * The validators are GENERATED from `protocol/specs/openapi.json`
  * (`packages/codegen/schemas/generate-validators.mjs`), the same bundle `types.ts` and
- * `go/sdk/api/client_gen.go` come from. One authority, four artifacts.
+ * `go/api/client_gen.go` come from. One authority, four artifacts.
  *
  * Compiled at BUILD time, deliberately. Ajv's `addSchema` does not compile;
  * runtime setups defer it to the first validation, so a schema Ajv cannot

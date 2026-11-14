@@ -1142,7 +1142,7 @@ Apache-2.0. See [LICENSE][license].
 [worker-conformance]: https://github.com/Xynoplex/sdk/blob/main/protocol/conformance/worker/README.md
 [sdk-typescript]: https://github.com/Xynoplex/sdk/blob/main/typescript/sdk/README.md
 [sdk-rust]: https://github.com/Xynoplex/sdk/blob/main/rust/sdk/README.md
-[sdk-go]: https://github.com/Xynoplex/sdk/blob/main/go/sdk/README.md
+[sdk-go]: https://github.com/Xynoplex/sdk/blob/main/go/README.md
 [sdk-kotlin]: https://github.com/Xynoplex/sdk/blob/main/kotlin/sdk/README.md
 [launcher]: https://github.com/Xynoplex/sdk/blob/main/apps/launcher/README.md
 [specs]: https://github.com/Xynoplex/sdk/blob/main/protocol/specs/README.md

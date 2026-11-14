@@ -16,15 +16,15 @@ build: go-build
 test: go-test
 
 go-build:
-	cd go/sdk && go build ./...
+	cd go && go build ./...
 
 go-test:
 	@test -f protocol/specs/src/graph/codec-cases.json || { \
 	  echo 'Protocol specs are missing. Clone with --recurse-submodules or run: git submodule update --init --recursive' >&2; \
 	  exit 1; \
 	}
-	cd go/sdk && go test -race -coverprofile=../../coverage.txt -covermode=atomic ./...
+	cd go && go test -race -coverprofile=../coverage.txt -covermode=atomic ./...
 
 clean:
 	rm -f coverage.txt
-	cd go/sdk && go clean
+	cd go && go clean
