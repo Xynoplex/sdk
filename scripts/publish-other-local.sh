@@ -126,8 +126,8 @@ fi
 if ! run_container_quietly "$RUNTIME" run --rm --volume "$OPAM_VOLUME:/cache" \
   ocaml/opam:debian-13-ocaml-5.5 bash -euc 'test -s /cache/config'; then
   echo 'Seeding the pinned OCaml switch cache…'
-  run_container_quietly "$RUNTIME" run --rm --volume "$OPAM_VOLUME:/cache" \
-    ocaml/opam:debian-13-ocaml-5.5 bash -euc 'cp -R /home/opam/.opam/. /cache/'
+  run_container_quietly "$RUNTIME" run --rm --user 0:0 --volume "$OPAM_VOLUME:/cache" \
+    ocaml/opam:debian-13-ocaml-5.5 bash -euc 'cp -R /home/opam/.opam/. /cache/ && chown -R opam:opam /cache'
 fi
 run_container_quietly "$RUNTIME" run --rm --memory 4g --volume "$ROOT/ocaml/sdk:/source:ro" \
   --volume "$STATE_ROOT/opam-repo:/out" \
