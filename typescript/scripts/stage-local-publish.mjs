@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
 import { verifyPublication } from './publication-inputs.mjs';
 
-const root = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
+const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const version = JSON.parse(readFileSync(join(root, 'version.json'), 'utf8'));
 const [operation, destination] = process.argv.slice(2);
 if (!['verify', 'stage'].includes(operation) || (operation === 'stage' && !destination)) {

@@ -9,6 +9,12 @@
     "./react-ui"
   ],
   "scripts": {
-    "build:packages": "npm run build --workspaces --if-present"
+    "build:packages": "npm run build --workspace=@xynoplex/core && npm run build --workspace=@xynoplex/observability && npm run build --workspace=@xynoplex/http-transport && npm run build --workspace=@xynoplex/sdk && npm run build --workspace=@xynoplex/react-ui"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "stylelint": "^17.0.0",
+    "stylelint-config-standard": "^40.0.0",
+    "stylelint-order": "^8.1.1"
   }
 }

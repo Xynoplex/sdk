@@ -49,7 +49,7 @@ extension HttpTransport {
   func sent(channel: String, scope: ResourceId?) {
     if sentCounter == nil {
       sentCounter = OpenTelemetry.instance.meterProvider.get(name: "Xynoplex").counterBuilder(
-        name: TransportMetric.xynoplexBusSent.rawValue
+        name: TransportMetric.semiontBusSent.rawValue
       ).build()
     }
     var attributes: [String: AttributeValue] = ["bus.channel": .string(channel)]

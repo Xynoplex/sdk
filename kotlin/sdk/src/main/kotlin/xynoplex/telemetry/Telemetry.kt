@@ -84,7 +84,7 @@ internal object Telemetry {
     /** One emit: counted as sent, and run in its span. */
     suspend fun <T> emitting(channel: String, scope: ResourceId?, work: suspend () -> T): T {
         val attributes = onTheBus(channel, scope)
-        val sent = TelemetryTable.XYNOPLEX_BUS_SENT
+        val sent = TelemetryTable.SEMIONT_BUS_SENT
         otel().getMeter(SCOPE).counterBuilder(sent.name).setDescription(sent.meaning).build().add(1, attributes)
         return within(TelemetryTable.BUS_EMIT, attributes, channel, work)
     }

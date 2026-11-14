@@ -15,7 +15,7 @@ import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { stampInternalDeps } from './stamp-internal-deps.mjs';
 
-const rootDir = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
+const rootDir = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const version = process.argv[2];
 if (!version) {
   console.error('Usage: node typescript/scripts/stamp-versions.mjs <version>');

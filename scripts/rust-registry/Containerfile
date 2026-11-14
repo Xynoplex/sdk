@@ -1,0 +1,29 @@
+FROM rust:1.99.1-bookworm
+
+ARG KELLNR_VERSION=6.0.0
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates curl unzip \
+    && rm -rf /var/lib/apt/lists/* \
+    && case "$(dpkg --print-architecture)" in \
+         amd64) kellnr_arch=x86_64 ;; \
+         arm64) kellnr_arch=aarch64 ;; \
+         *) echo "Unsupported Kellnr architecture: $(dpkg --print-architecture)" >&2; exit 1 ;; \
+       esac \
+    && curl --fail --location --retry 3 \
+         "https://github.com/kellnr/kellnr/releases/download/v${KELLNR_VERSION}/kellnr-${kellnr_arch}-unknown-linux-gnu.zip" \
+         --output /tmp/kellnr.zip \
+    && unzip -q /tmp/kellnr.zip -d /tmp/kellnr \
+    && install -m 0755 /tmp/kellnr/kellnr /usr/local/bin/kellnr \
+    && rm -rf /tmp/kellnr /tmp/kellnr.zip
+
+ENV CARGO_HOME=/var/lib/cargo \
+    CARGO_TARGET_DIR=/var/lib/cargo/target \
+    KELLNR_REGISTRY__DATA_DIR=/var/lib/kellnr \
+    KELLNR_LOCAL__IP=0.0.0.0 \
+    KELLNR_LOCAL__PORT=8000 \
+    KELLNR_ORIGIN__HOSTNAME=localhost \
+    KELLNR_ORIGIN__PORT=8000
+
+RUN mkdir -p /var/lib/kellnr /var/lib/cargo
+EXPOSE 8000
+ENTRYPOINT ["kellnr", "start", "--registry-data-dir", "/var/lib/kellnr", "--local-port", "8000"]

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Publish all @xynoplex/* packages to a registry.
+# Publish all @xynoplex/* packages to a registry, or pack them as local tarballs.
 #
 # Usage:
 #   ./typescript/scripts/publish.sh [options]
@@ -10,14 +10,15 @@ set -euo pipefail
 #   --registry <url>   Target registry (default: https://registry.npmjs.org)
 #   --tag <tag>        Dist tag: latest or dev (default: latest)
 #   --version <ver>    Override publish version (default: read from version.json)
-#   --clean            Unpublish existing versions before publishing (for Verdaccio)
+#   --clean            Unpublish existing versions before publishing (for local registries)
 #   --npmrc <path>     Path to .npmrc for registry auth
+#   --pack-dir <path>  Write npm package tarballs to a directory instead
 #   --dry-run          Stage but do not publish
 
 # The repository root, found from where this script lives rather than asked of
 # git: in a container that runs as root over a checkout owned by another user,
 # git refuses the repository ("dubious ownership").
-cd "$(dirname "${BASH_SOURCE[0]}")/../../.."
+cd "$(dirname "${BASH_SOURCE[0]}")/../.."
 
 # --- Colors ---
 
@@ -40,6 +41,7 @@ TAG="latest"
 VERSION=""
 CLEAN=false
 NPMRC=""
+PACK_DIR=""
 DRY_RUN=false
 
 while [[ $# -gt 0 ]]; do
@@ -49,6 +51,7 @@ while [[ $# -gt 0 ]]; do
     --version) VERSION="$2"; shift 2 ;;
     --clean) CLEAN=true; shift ;;
     --npmrc) NPMRC="$2"; shift 2 ;;
+    --pack-dir) PACK_DIR="$2"; shift 2 ;;
     --dry-run) DRY_RUN=true; shift ;;
     *) echo -e "${RED}Unknown argument: $1${RESET}" >&2; exit 1 ;;
   esac
@@ -61,7 +64,11 @@ if [[ -z "$VERSION" ]]; then
 fi
 
 banner "STAMP VERSIONS"
-echo -e "  Version: ${BOLD}$VERSION${RESET}  Tag: ${BOLD}$TAG${RESET}  Registry: ${DIM}$REGISTRY${RESET}"
+if [[ -n "$PACK_DIR" ]]; then
+  echo -e "  Version: ${BOLD}$VERSION${RESET}  Artifact directory: ${DIM}$PACK_DIR${RESET}"
+else
+  echo -e "  Version: ${BOLD}$VERSION${RESET}  Tag: ${BOLD}$TAG${RESET}  Registry: ${DIM}$REGISTRY${RESET}"
+fi
 echo ""
 
 node typescript/scripts/stamp-versions.mjs "$VERSION"
@@ -89,7 +96,14 @@ publish_pkg() {
   pkg_name=$(node -p "require('./$dir/package.json').name")
   pkg_version=$(node -p "require('./$dir/package.json').version")
 
-  if [[ "$CLEAN" == "true" ]]; then
+  if [[ -n "$PACK_DIR" ]]; then
+    # npm packs a LICENSE only from the directory it packs, and this repository
+    # keeps the license at its root.
+    cp LICENSE "$dir/LICENSE"
+    (cd "$dir" && npm pack --loglevel=warn --pack-destination "$PACK_DIR")
+    ok "$pkg_name@$pkg_version packed"
+    return 0
+  elif [[ "$CLEAN" == "true" ]]; then
     echo -e "  ${DIM}unpublish${RESET} $pkg_name@$pkg_version"
     npm unpublish "$pkg_name@$pkg_version" --registry "$REGISTRY" "${NPMRC_ARGS[@]}" --force 2>/dev/null || true
   fi
@@ -103,7 +117,7 @@ publish_pkg() {
     # Announced, never silent: a skip is a decision the log has to show.
     echo -e "  ${DIM}exists${RESET}   $pkg_name@$pkg_version${label:+ ($label)} — already published, skipping"
   else
-    # npm packs a LICENSE only from the directory it publishes, and the
+    # npm publishes a LICENSE only from the directory it publishes, and the
     # repository has one LICENSE, at its root.
     cp LICENSE "$dir/LICENSE"
     # --loglevel=warn drops npm's per-file "Tarball Contents" listing, which for
