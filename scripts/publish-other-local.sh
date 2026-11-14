@@ -6,16 +6,26 @@ RUNTIME="$(detect_container_runtime)"
 STATE_ROOT="${XDG_CACHE_HOME:-$HOME/.cache}/xynoplex-sdk/local"
 PROTOCOL="$ROOT/../protocol"
 [[ -d "$PROTOCOL/specs/src" ]] || PROTOCOL="$ROOT/protocol"
+LANGUAGE="${1:-all}"
+case "$LANGUAGE" in
+  all|go|csharp|haskell|kotlin|ocaml|swift) ;;
+  *) echo "Unsupported language for this artifact script: $LANGUAGE" >&2; exit 2 ;;
+esac
 mkdir -p "$STATE_ROOT"/{go-proxy,nuget,nuget-cache,haskell,cabal-cache,haskell-build,kotlin-maven,gradle-cache,opam-repo,swift,swift-cache,swift-build,go-mod-cache,go-build-cache}
 OPAM_VOLUME=xynoplex-sdk-opam-5-5
 VERSION="$(sed -n 's/.*"version": "\([^"]*\)".*/\1/p' "$ROOT/version.json" | head -n1)"
 
-if [[ ! -d "$PROTOCOL/specs/src" ]]; then
+case "$LANGUAGE" in
+  all|go|csharp|kotlin)
+    if [[ ! -d "$PROTOCOL/specs/src" ]]; then
   echo "Protocol schemas were not found at $PROTOCOL/specs/src." >&2
   echo 'Initialize the pinned protocol submodule before publishing.' >&2
   exit 1
-fi
+    fi
+    ;;
+esac
 
+if [[ "$LANGUAGE" == all || "$LANGUAGE" == go ]]; then
 echo 'Building the Go module proxy package in a Go container…'
 "$RUNTIME" run --rm \
   --volume "$ROOT:/source:ro" --volume "$PROTOCOL:/protocol:ro" \
@@ -36,7 +46,9 @@ echo 'Building the Go module proxy package in a Go container…'
     rm -f "/tmp/go-proxy-package/$module@v$version/go.sum"
     (cd /tmp/go-proxy-package && zip -qr "/out/$escaped/@v/v$version.zip" .)
   '
+fi
 
+if [[ "$LANGUAGE" == all || "$LANGUAGE" == csharp ]]; then
 echo 'Packing the .NET SDK in a .NET container…'
 dotnet_version="$(sed -n 's/.*"version": "\([^"]*\)".*/\1/p' "$ROOT/csharp/sdk/global.json" | sed -E 's/(-(preview|rc)\.[0-9]+)\.[0-9]+\.[0-9]+$/\1/')"
 "$RUNTIME" run --rm \
@@ -51,13 +63,17 @@ dotnet_version="$(sed -n 's/.*"version": "\([^"]*\)".*/\1/p' "$ROOT/csharp/sdk/g
       -p:IsPackable=true -p:PackageId=Xynoplex -p:PackageVersion="$version" \
       -p:CheckRefusals=false -o /out
   '
+fi
 
+if [[ "$LANGUAGE" == all || "$LANGUAGE" == haskell ]]; then
 echo 'Creating the Haskell source distribution in a GHC container…'
 "$RUNTIME" run --rm --memory 4g --volume "$ROOT/haskell/sdk:/source:ro" \
   --volume "$STATE_ROOT/haskell:/out" --volume "$STATE_ROOT/cabal-cache:/root/.cabal" \
   --volume "$STATE_ROOT/haskell-build:/tmp/sdk/dist-newstyle" --workdir /tmp \
   haskell:9.10.3 bash -euc 'mkdir -p /tmp/sdk && cp -a /source/. /tmp/sdk/ && cd /tmp/sdk && printf "packages: .\\n" > cabal.project && test -f /root/.cabal/packages/hackage.haskell.org/01-index.cache || cabal update; cabal build lib:xynoplex && cabal sdist --output-directory=/out'
+fi
 
+if [[ "$LANGUAGE" == all || "$LANGUAGE" == kotlin ]]; then
 # Gradle's standard Maven publication is injected only for this local publish;
 # the SDK build itself stays unchanged and its locked dependencies stay intact.
 echo 'Building and publishing the Kotlin SDK to a local Maven repository in a JDK container…'
@@ -92,7 +108,9 @@ GRADLE
     cd /tmp/sdk/kotlin/sdk
     ./gradlew --no-daemon -I /tmp/publish.init.gradle assemble -x checkKotlinAbi publishMavenJavaPublicationToXynoplexLocalRepository
   '
+fi
 
+if [[ "$LANGUAGE" == all || "$LANGUAGE" == ocaml ]]; then
 echo 'Building and archiving the OCaml SDK in an OCaml container…'
 opam_archive_uri="file://$STATE_ROOT/opam-repo/repo/archives/xynoplex.$VERSION.tar.gz"
 opam_archive_uri="${opam_archive_uri// /%20}"
@@ -127,7 +145,9 @@ fi
     printf "opam-version: \"2.0\"\n" > /out/repo/repo
     cd /out/repo && opam admin index
   '
+fi
 
+if [[ "$LANGUAGE" == all || "$LANGUAGE" == swift ]]; then
 echo 'Building and archiving the Swift package in a Swift container…'
 swift_version="$(cat "$ROOT/swift/sdk/.swift-version")"
 "$RUNTIME" run --rm --memory 4g --volume "$ROOT/swift/sdk:/source:ro" --volume "$PROTOCOL:/protocol:ro" \
@@ -142,7 +162,9 @@ swift_version="$(cat "$ROOT/swift/sdk/.swift-version")"
     rm -f "/out/xynoplex-$XYNOPLEX_SDK_VERSION.zip"
     zip -qr "/out/xynoplex-$XYNOPLEX_SDK_VERSION.zip" sdk -x "sdk/.build/" "sdk/.build/*"
   '
+fi
 
+if [[ "$LANGUAGE" == all ]]; then
 cat <<EOF
 
 Additional local SDK artifacts are ready under:
@@ -154,3 +176,13 @@ Additional local SDK artifacts are ready under:
   Swift archive:   $STATE_ROOT/swift
 
 EOF
+else
+  case "$LANGUAGE" in
+    go) echo "Go module proxy artifacts are ready under: $STATE_ROOT/go-proxy" ;;
+    csharp) echo "NuGet package artifacts are ready under: $STATE_ROOT/nuget" ;;
+    haskell) echo "Haskell source distribution is ready under: $STATE_ROOT/haskell" ;;
+    kotlin) echo "Kotlin Maven artifacts are ready under: $STATE_ROOT/kotlin-maven" ;;
+    ocaml) echo "OCaml package repository is ready under: $STATE_ROOT/opam-repo/repo" ;;
+    swift) echo "Swift package archive is ready under: $STATE_ROOT/swift" ;;
+  esac
+fi

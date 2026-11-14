@@ -12,7 +12,7 @@ cp "$ROOT/version.json" "$ROOT/LICENSE" "$SCRATCH/"
 cd "$SCRATCH"
 python/sdk/scripts/build-python-sdk.sh
 
-mkdir -p /repo/packages
-cp -f python/sdk/dist/* /repo/packages/
+mkdir -p /artifacts
+cp -f python/sdk/dist/* /artifacts/
 
-printf '\nPython SDK published to %s\n' "$PYPI_INDEX_URL"
+printf '\nPython SDK distribution files are ready under /artifacts\n'

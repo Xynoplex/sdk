@@ -14,32 +14,14 @@ if [[ -z "$version" ]]; then
   exit 1
 fi
 
-# Internal path dependencies need to resolve from the selected local registry
-# after Cargo packages each crate for publication. Keep this adaptation in the
-# disposable build tree; the public manifests continue to target crates.io.
-sed -i \
-  -e "s/xynoplex = { path = \"sdk\", version = \"$version\" }/xynoplex = { path = \"sdk\", version = \"$version\", registry = \"xynoplex-local\" }/" \
-  -e "s/xynoplex-codegen = { path = \"codegen\", version = \"$version\" }/xynoplex-codegen = { path = \"codegen\", version = \"$version\", registry = \"xynoplex-local\" }/" \
-  -e "s/xynoplex-telemetry = { path = \"telemetry\", version = \"$version\" }/xynoplex-telemetry = { path = \"telemetry\", version = \"$version\", registry = \"xynoplex-local\" }/" \
-  "$SCRATCH/rust/Cargo.toml"
-
 cd "$SCRATCH/rust"
 
-echo 'Building the Rust workspace in the local-registry container…'
+echo 'Building the Rust workspace and creating crate archives…'
 # The extracted SDK repository's lockfile can lag the independently-versioned
 # protocol/workspace graph. Resolve in this disposable container copy, then
-# use that same resolved lockfile for every crate publication below.
-cargo build --workspace
-
-index_entry() {
-  local crate="$1"
-  case "${#crate}" in
-    1) printf '1/%s' "$crate" ;;
-    2) printf '2/%s' "$crate" ;;
-    3) printf '3/%s/%s' "${crate:0:1}" "$crate" ;;
-    *) printf '%s/%s/%s' "${crate:0:2}" "${crate:2:2}" "$crate" ;;
-  esac
-}
+# use that same resolved lockfile for every archive below. Build all features
+# so the optional sign-in code is checked too, and reject every lint warning.
+RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-D warnings" cargo build --workspace --all-features
 
 version="$(awk '/^\[workspace.package\]$/ { in_workspace=1; next } /^\[/ { in_workspace=0 } in_workspace && /^version = / { gsub(/"/, "", $3); print $3; exit }' Cargo.toml)"
 if [[ -z "$version" ]]; then
@@ -47,16 +29,49 @@ if [[ -z "$version" ]]; then
   exit 1
 fi
 
-# Publish transitive build/runtime dependencies before their consumers. The
-# shared version comes from [workspace.package], and these are the workspace
-# crates declared publishable by rust/scripts/published-crates.sh.
+# Package dependencies before consumers. Cargo writes one .crate archive per
+# publishable workspace crate to target/package; no registry is involved.
 for crate in xynoplex-codegen xynoplex xynoplex-telemetry xynoplex-http-transport; do
-  url="http://127.0.0.1:8000/api/v1/crates/$(index_entry "$crate")"
-  if curl --connect-timeout 3 --max-time 15 --fail --silent "$url" | grep -Fq "\"vers\":\"$version\""; then
-    printf 'Already in local Cargo registry: %s %s\n' "$crate" "$version"
-    continue
+  config=""
+  case "$crate" in
+    xynoplex)
+      mkdir -p .cargo
+      cat > .cargo/config.toml <<EOF
+[patch.crates-io]
+xynoplex-codegen = { path = "$SCRATCH/rust/codegen" }
+EOF
+      config=.cargo/config.toml
+      ;;
+    xynoplex-telemetry)
+      mkdir -p .cargo
+      cat > .cargo/config.toml <<EOF
+[patch.crates-io]
+xynoplex = { path = "$SCRATCH/rust/sdk" }
+EOF
+      config=.cargo/config.toml
+      ;;
+    xynoplex-http-transport)
+      mkdir -p .cargo
+      cat > .cargo/config.toml <<EOF
+[patch.crates-io]
+xynoplex = { path = "$SCRATCH/rust/sdk" }
+xynoplex-telemetry = { path = "$SCRATCH/rust/telemetry" }
+EOF
+      config=.cargo/config.toml
+      ;;
+  esac
+  if [[ -n "$config" ]]; then
+    cargo --config "$config" package --locked --no-verify --all-features --package "$crate"
+  else
+    cargo package --locked --no-verify --all-features --package "$crate"
   fi
-  cargo publish --locked --no-verify --package "$crate" --registry xynoplex-local
+  archive="$CARGO_TARGET_DIR/package/${crate}-${version}.crate"
+  if [[ ! -f "$archive" ]]; then
+    echo "Cargo did not create the expected archive: $archive" >&2
+    exit 1
+  fi
+  cp -f "$archive" /artifacts/
+  printf 'Created %s %s\n' "$crate" "$version"
 done
 
-echo 'Rust SDK crates published to http://localhost:8000.'
+echo 'Rust crate archives are ready under /artifacts.'
