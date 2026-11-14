@@ -1,0 +1,34 @@
+name: Download Xynoplex SDK artifact bundle
+description: Download and verify an immutable SDK release bundle
+inputs:
+  version:
+    description: SDK release version, without the v prefix
+    required: true
+  commit:
+    description: Full SDK source commit recorded in the bundle
+    required: true
+  protocol-commit:
+    description: Full Protocol submodule commit expected in the bundle
+    required: true
+  sha256:
+    description: SHA-256 of the versioned SDK bundle archive
+    required: true
+  languages:
+    description: Comma-separated SDK languages required by the consumer
+    required: true
+outputs:
+  path:
+    description: Absolute path to the verified SDK artifact bundle
+    value: ${{ steps.download.outputs.path }}
+runs:
+  using: composite
+  steps:
+    - id: download
+      shell: bash
+      env:
+        INPUT_VERSION: ${{ inputs.version }}
+        INPUT_COMMIT: ${{ inputs.commit }}
+        INPUT_PROTOCOL_COMMIT: ${{ inputs.protocol-commit }}
+        INPUT_SHA256: ${{ inputs.sha256 }}
+        INPUT_LANGUAGES: ${{ inputs.languages }}
+      run: node "$GITHUB_ACTION_PATH/download-bundle.mjs"
