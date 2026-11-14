@@ -18,13 +18,8 @@ jobs:
     steps:
       - name: Check out source
         uses: actions/checkout@v7.0.1
-
-      - name: Check out protocol specs
-        uses: actions/checkout@v7.0.1
         with:
-          repository: The-AI-Alliance/semiont
-          ref: main
-          path: protocol-source
+          submodules: recursive
 
       - name: Set up Go
         uses: actions/setup-go@v7.0.0
@@ -33,8 +28,6 @@ jobs:
           cache-dependency-path: go/sdk/go.sum
 
       - name: Test with coverage
-        env:
-          MONOREPO_ROOT: ${{ github.workspace }}/protocol-source
         run: make test
 
       - name: Upload coverage to Codecov
