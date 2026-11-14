@@ -1,4 +1,4 @@
-.DEFAULT_GOAL := build
+.DEFAULT_GOAL := local
 
 .PHONY: help build test local local-stop go-build go-test clean
 
