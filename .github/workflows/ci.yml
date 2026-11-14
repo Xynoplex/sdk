@@ -1,0 +1,45 @@
+name: Go SDK CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  merge_group:
+    types: [checks_requested]
+
+permissions:
+  contents: read
+
+jobs:
+  go-sdk:
+    name: Go SDK tests and coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7.0.1
+
+      - name: Check out protocol specs
+        uses: actions/checkout@v7.0.1
+        with:
+          repository: The-AI-Alliance/semiont
+          ref: main
+          path: protocol-source
+
+      - name: Set up Go
+        uses: actions/setup-go@v7.0.0
+        with:
+          go-version-file: go/sdk/go.mod
+          cache-dependency-path: go/sdk/go.sum
+
+      - name: Test with coverage
+        env:
+          MONOREPO_ROOT: ${{ github.workspace }}/protocol-source
+        run: make test
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: coverage.txt
+          flags: go-sdk
+          fail_ci_if_error: true

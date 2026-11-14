@@ -7,5 +7,6 @@ node_modules/
 **/build/
 **/.coverage
 **/coverage/
+coverage.txt
 **/__pycache__/
 **/.pytest_cache/
