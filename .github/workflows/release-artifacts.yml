@@ -48,8 +48,9 @@ jobs:
             release_tag="sdk-$GITHUB_SHA"
           fi
           echo "release_tag=$release_tag" >> "$GITHUB_ENV"
-          tar --sort=name --mtime='@0' --owner=0 --group=0 --numeric-owner \
-            -cf - -C "$RUNNER_TEMP/sdk-artifacts" . | gzip -n > "$RUNNER_TEMP/xynoplex-sdk-artifacts-${release_tag}.tar.gz"
+          python3 scripts/create-artifact-archive.py \
+            "$RUNNER_TEMP/sdk-artifacts" \
+            "$RUNNER_TEMP/xynoplex-sdk-artifacts-${release_tag}.tar.gz"
           cd "$RUNNER_TEMP"
           shasum -a 256 "xynoplex-sdk-artifacts-${release_tag}.tar.gz" > "xynoplex-sdk-artifacts-${release_tag}.tar.gz.sha256"
 
