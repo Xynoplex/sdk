@@ -5,15 +5,16 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd -P)"
 source "$ROOT/scripts/container-runtime.sh"
 RUNTIME="$(detect_container_runtime)"
 STATE_ROOT="${XDG_CACHE_HOME:-$HOME/.cache}/xynoplex-sdk/local"
-PROTOCOL="$ROOT/../protocol"
-NPM_CONTAINER=xynoplex-sdk-local-npm
+PROTOCOL="$ROOT/protocol"
+[[ -d "$PROTOCOL/specs/src" ]] || PROTOCOL="$ROOT/../protocol"
+LEGACY_NPM_CONTAINER=xynoplex-sdk-local-npm
 PYPI_CONTAINER=xynoplex-sdk-local-pypi
 CARGO_CONTAINER=xynoplex-sdk-local-cargo
 CARGO_IMAGE=xynoplex-sdk-local-cargo:6.0.0-v2
 
-mkdir -p "$STATE_ROOT/npm/storage" "$STATE_ROOT/pypi/packages" \
+mkdir -p "$STATE_ROOT/npm/packages" "$STATE_ROOT/pypi/packages" \
   "$STATE_ROOT/cargo-home" "$STATE_ROOT/kellnr" "$STATE_ROOT/uv-cache"
-chmod 0777 "$STATE_ROOT/npm/storage" "$STATE_ROOT/pypi/packages" \
+chmod 0777 "$STATE_ROOT/npm/packages" "$STATE_ROOT/pypi/packages" \
   "$STATE_ROOT/cargo-home" "$STATE_ROOT/kellnr"
 
 container_exists() {
@@ -76,13 +77,22 @@ wait_for_url() {
 
 stop_local() {
   local name
-  for name in "$NPM_CONTAINER" "$PYPI_CONTAINER" "$CARGO_CONTAINER"; do
+  for name in "$LEGACY_NPM_CONTAINER" "$PYPI_CONTAINER" "$CARGO_CONTAINER"; do
     if container_exists "$name" && container_running "$name"; then
       echo "Stopping ${name}…"
       "$RUNTIME" stop "$name" >/dev/null
     fi
   done
   echo "Local registry data is retained at $STATE_ROOT."
+}
+
+# Stop the npm registry created by older versions of this script. Leave its
+# package data untouched, but free :4873 now that npm tarballs are local files.
+stop_legacy_npm_registry() {
+  if container_exists "$LEGACY_NPM_CONTAINER" && container_running "$LEGACY_NPM_CONTAINER"; then
+    echo "Stopping retired npm registry ${LEGACY_NPM_CONTAINER}…"
+    "$RUNTIME" stop "$LEGACY_NPM_CONTAINER" >/dev/null
+  fi
 }
 
 if [[ "${1:-}" == --stop ]]; then
@@ -93,20 +103,16 @@ elif [[ $# -gt 0 ]]; then
   exit 2
 fi
 
+stop_legacy_npm_registry
+
 if [[ ! -d "$PROTOCOL/specs/src" ]]; then
   echo "Protocol specs were not found at $PROTOCOL/specs/src." >&2
   echo 'Check out the xynoplex/protocol repository beside this SDK repository.' >&2
   exit 1
 fi
 
-# Keep the three ecosystem-native registries on predictable local ports. Their
+# Keep the PyPI- and Cargo-compatible registries on predictable local ports. Their
 # package data survives `make local-stop` and subsequent runs.
-ensure_container "$NPM_CONTAINER" verdaccio/verdaccio:6 \
-  --publish 4873:4873 \
-  --volume "$STATE_ROOT/npm/storage:/verdaccio/storage" \
-  --volume "$ROOT/scripts/verdaccio.yaml:/verdaccio/conf/config.yaml:ro"
-wait_for_url http://localhost:4873/-/ping 'Verdaccio' "$NPM_CONTAINER"
-
 ensure_container "$PYPI_CONTAINER" pypiserver/pypiserver:v2.4.3 \
   --publish 8081:8080 \
   --volume "$STATE_ROOT/pypi/packages:/data/packages" \
@@ -160,39 +166,13 @@ if ! container_exists "$CARGO_CONTAINER"; then
 fi
 wait_for_url http://localhost:8000/ 'Local Cargo registry (Kellnr)' "$CARGO_CONTAINER"
 
-# Verdaccio creates local credentials through its npm-compatible registry API.
-# npm itself and every package build/publish command remain container-only.
-if [[ ! -s "$STATE_ROOT/npm-token" ]]; then
-  username="xynoplex-local-$(openssl rand -hex 6)"
-  password="$(openssl rand -hex 24)"
-  response="$(curl --silent --show-error --fail-with-body \
-    --request PUT \
-    --header 'Content-Type: application/json' \
-    --data "{\"name\":\"$username\",\"password\":\"$password\",\"email\":\"local@xynoplex.invalid\"}" \
-    http://localhost:4873/-/user/org.couchdb.user:"$username")" || {
-      echo 'Could not create a local Verdaccio publisher account.' >&2
-      echo "$response" >&2
-      exit 1
-    }
-  token="$(printf '%s' "$response" | sed -n 's/.*"token"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')"
-  if [[ -z "$token" ]]; then
-    echo 'Verdaccio did not return a publisher token.' >&2
-    exit 1
-  fi
-  (umask 077; printf '%s\n' "$token" > "$STATE_ROOT/npm-token")
-fi
-
-echo 'Building and publishing TypeScript packages in a Node container…'
+echo 'Building TypeScript packages and packing npm artifacts in a Node container…'
 "$RUNTIME" run --rm \
   --volume "$ROOT:/source:ro" \
   --volume "$PROTOCOL:/protocol:ro" \
-  --volume "$STATE_ROOT/npm-token:/run/secrets/npm-token:ro" \
+  --volume "$STATE_ROOT/npm/packages:/artifacts" \
   --workdir /source \
   node:26-bookworm bash -euc '
-    apt-get update -qq
-    apt-get install -y -qq --no-install-recommends iproute2 ca-certificates >/dev/null
-    host_addr=$(ip route | awk "/^default / { print \$3; exit }")
-    test -n "$host_addr"
     mkdir -p /tmp/sdk/typescript
     cp -a /source/version.json /source/LICENSE /tmp/sdk/
     cp -a /source/typescript/. /tmp/sdk/typescript/
@@ -202,10 +182,8 @@ echo 'Building and publishing TypeScript packages in a Node container…'
     npm run build:packages
     node scripts/stage-local-publish.mjs verify
     node scripts/stage-local-publish.mjs stage /tmp/local-publish
-    token=$(cat /run/secrets/npm-token)
-    printf "registry=http://%s:4873/\n//%s:4873/:_authToken=%s\n" "$host_addr" "$host_addr" "$token" > /tmp/local-publish/.npmrc
     cd /tmp/local-publish
-    bash typescript/scripts/publish.sh --registry "http://$host_addr:4873" --npmrc /tmp/local-publish/.npmrc --clean
+    bash typescript/scripts/publish.sh --pack-dir /artifacts
   '
 
 echo 'Building and publishing the Python distribution in a Python container…'
@@ -238,11 +216,10 @@ bash "$ROOT/scripts/publish-other-local.sh"
 
 cat <<EOF
 
-Local SDK registries are ready:
-  npm:    http://localhost:4873
+Local SDK feeds and archives are ready:
   Python: http://localhost:8081/simple/
   Cargo:  sparse+http://127.0.0.1:8000/api/v1/crates/
-  Other SDK feeds and source archives: $STATE_ROOT
+  npm tarballs and other SDK feeds/source archives: $STATE_ROOT
 
 Run 'make local-stop' to stop registry containers. Their packages remain in:
   $STATE_ROOT

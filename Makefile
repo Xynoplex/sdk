@@ -14,7 +14,7 @@ help:
 	  '  make build    Build the Go SDK in a container' \
 	  '  make test     Run Go SDK tests with coverage in a container' \
 	  '  make local    Build and stage all nine SDKs locally' \
-	  '  make local-stop Stop local package registries' \
+	  '  make local-stop Stop the local PyPI and Cargo registries' \
 	  '  make clean    Remove Go build outputs'
 
 build: go-build

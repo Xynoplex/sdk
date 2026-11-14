@@ -12,7 +12,7 @@ case "${1:-}" in
   go-build)
     "$RUNTIME" run --rm \
       --volume "$ROOT:/workspace" \
-      --workdir /workspace/go/sdk \
+      --workdir /workspace/go \
       golang:1.27.4-bookworm go build ./...
     ;;
   go-test)
@@ -30,13 +30,13 @@ case "${1:-}" in
       --volume "$COVERAGE_DIR/out:/coverage" \
       --workdir /tmp \
       golang:1.27.4-bookworm \
-      bash -euc 'cp -a /source /tmp/sdk && cp -a /protocol /tmp/sdk/protocol && cd /tmp/sdk/go/sdk && go test -race -coverprofile=/coverage/coverage.txt -covermode=atomic ./...'
+      bash -euc 'cp -a /source /tmp/sdk && mkdir -p /tmp/sdk/protocol && cp -a /protocol/. /tmp/sdk/protocol/ && cd /tmp/sdk/go && go test -race -coverprofile=/coverage/coverage.txt -covermode=atomic ./...'
     cp "$COVERAGE_DIR/out/coverage.txt" "$ROOT/coverage.txt"
     ;;
   clean)
     "$RUNTIME" run --rm \
       --volume "$ROOT:/workspace" \
-      --workdir /workspace/go/sdk \
+      --workdir /workspace/go \
       golang:1.27.4-bookworm sh -eu -c 'go clean; rm -f /workspace/coverage.txt'
     ;;
   *)
