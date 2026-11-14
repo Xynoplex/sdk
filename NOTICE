@@ -1,8 +1,27 @@
 Xynoplex SDKs
 Copyright 2026 Xynoplex
 
-The source snapshot through 2026-08-26 derives from the AI Alliance monorepo and
-remains under the Apache License, Version 2.0.
-Changes made from 2026-08-27 onward are by Xynoplex. The source history records
-that boundary with a single snapshot commit. Third-party notices remain with the
-files or dependencies to which they apply.
+Carried-forward SDKs
+
+The TypeScript SDK packages carry forward source from The AI Alliance's Semiont
+monorepo as it stood through 2026-08-26. This historical source is distributed
+under the Apache License, Version 2.0. The upstream project is named to identify
+the source and provenance of that material.
+
+SDKs newly implemented after the boundary
+
+An earlier Go SDK existed in the monorepo at `packages/sdk-go` on 2026-08-26.
+The current Go SDK is a post-boundary rewrite of that earlier implementation.
+The Rust, Python, C#, Kotlin, Swift, Haskell, and OCaml SDK packages were also
+introduced after 2026-08-26 and were absent from the historical SDK package
+tree. The earlier Go implementation remains only in the historical snapshot.
+
+Xynoplex work
+
+All work in these SDKs made on or after 2026-08-27, including the rewritten Go
+SDK, the newly introduced language SDKs, and subsequent work on the carried-
+forward TypeScript packages, is owned by Xynoplex. The repository history
+records the pre-boundary source as a single snapshot commit, followed by the
+post-boundary changes.
+
+Third-party notices remain with the files or dependencies to which they apply.
