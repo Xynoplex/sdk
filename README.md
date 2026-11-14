@@ -48,6 +48,8 @@ Run `make local` to build and stage all nine SDKs in local, ecosystem-native for
 
 `make local-stop` stops retired registry containers from older versions of the local build and retains cached package artifacts.
 
+`make clean` removes generated build directories and local package artifacts for all nine SDK languages, their SDK-scoped compiler and dependency caches, cached artifact bundles, and the retired local registry containers. Use `make rust-clean` (or another `<language>-clean` target) to clean one language. It leaves downloaded container images and any bundle written to an external `SDK_ARTIFACTS` path untouched.
+
 ## License
 
 Apache-2.0. See [LICENSE](./LICENSE) and [NOTICE](./NOTICE) for attribution.

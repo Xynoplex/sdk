@@ -30,15 +30,8 @@ case "${1:-}" in
       bash -euc 'cp -a /source /tmp/sdk && mkdir -p /tmp/sdk/protocol && cp -a /protocol/. /tmp/sdk/protocol/ && cd /tmp/sdk/go && go test -race -coverprofile=/coverage/coverage.txt -covermode=atomic ./...'
     cp "$COVERAGE_DIR/out/coverage.txt" "$ROOT/coverage.txt"
     ;;
-  clean)
-    echo 'Cleaning Go build outputs in a container…'
-    run_container_quietly "$RUNTIME" run --rm \
-      --volume "$ROOT:/workspace" \
-      --workdir /workspace/go \
-      golang:1.27.4-bookworm sh -eu -c 'go clean; rm -f /workspace/coverage.txt'
-    ;;
   *)
-    echo 'Usage: make-target.sh {go-build|go-test|clean}' >&2
+    echo 'Usage: make-target.sh {go-build|go-test}' >&2
     exit 2
     ;;
 esac

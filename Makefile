@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := local
 
-.PHONY: help build test local local-stop verify-artifacts images cli desktop typescript python rust go csharp haskell kotlin ocaml swift go-build go-test clean
+.PHONY: help build test local local-stop verify-artifacts images cli desktop typescript python rust go csharp haskell kotlin ocaml swift go-build go-test clean clean-local typescript-clean python-clean rust-clean go-clean csharp-clean haskell-clean kotlin-clean ocaml-clean swift-clean
 
 CONTAINER_RUNTIME ?=
 export CONTAINER_RUNTIME
@@ -22,7 +22,9 @@ help:
 	  '                haskell, kotlin, ocaml, or swift' \
 	  '  make build    Build the Go SDK' \
 	  '  make test     Run Go SDK tests with coverage' \
-	  '  make clean    Remove Go build outputs' \
+	  '  make clean    Remove all language build outputs, local artifacts, caches, and bundles' \
+	  '  make <sdk>-clean Clean one SDK language (typescript, python, rust, go, csharp,' \
+	  '                  haskell, kotlin, ocaml, or swift)' \
 	  '  make local-stop Stop retired registry containers; keep cached artifacts'
 
 build: go-build
@@ -58,4 +60,10 @@ go-test:
 	bash scripts/make-target.sh go-test
 
 clean:
-	bash scripts/make-target.sh clean
+	bash scripts/clean-sdk.sh all
+
+clean-local:
+	bash scripts/clean-sdk.sh local
+
+typescript-clean python-clean rust-clean go-clean csharp-clean haskell-clean kotlin-clean ocaml-clean swift-clean:
+	bash scripts/clean-sdk.sh $(@:-clean=)

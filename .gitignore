@@ -2,9 +2,14 @@
 node_modules/
 **/node_modules/
 **/dist/
+**/dist-newstyle/
 **/target/
 **/.gradle/
 **/build/
+**/obj/
+**/.build/
+**/_build/
+**/.venv/
 **/.coverage
 **/coverage/
 coverage.txt
