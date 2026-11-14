@@ -29,7 +29,7 @@ try {
   if (actualArchiveSha256 !== archiveSha256) fail(`Bundle archive checksum mismatch: expected ${archiveSha256}, got ${actualArchiveSha256}`);
   execFileSync('tar', ['-xzf', archive, '-C', outputDir], { stdio: 'inherit' });
 
-  const bundle = resolve(outputDir, 'sdk-artifacts');
+  const bundle = outputDir;
   const manifest = JSON.parse(readFileSync(join(bundle, 'artifacts.json'), 'utf8'));
   if (manifest.schema !== 'xynoplex-sdk-artifacts/v2') fail(`Unsupported bundle schema: ${manifest.schema}`);
   if (manifest.sdk.commit !== sdkCommit) fail(`SDK commit mismatch: expected ${sdkCommit}, got ${manifest.sdk.commit}`);
