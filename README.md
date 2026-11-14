@@ -12,11 +12,13 @@ This repository contains the language SDKs and consumer-facing packages for buil
 
 Each SDK subdirectory has a README with its package contents and development notes. Public packages use the Xynoplex names and scopes.
 
-The shared wire protocol, specifications, and portable conformance kit live in the pinned [`protocol` submodule](https://github.com/Xynoplex/protocol). The Go SDK tests read the protocol's language-neutral case tables from that revision. SDK-specific generators and implementations remain in this repository.
+The shared wire protocol, specifications, and portable conformance kit live in the pinned [`protocol` submodule](https://github.com/Xynoplex/protocol). SDK-specific generators and implementations remain in this repository.
 
 ## Development
 
-Run `git clone --recurse-submodules https://github.com/Xynoplex/sdk.git` (or initialize submodules after cloning), then run `make` at the repository root to build the Go SDK, or `make test` to run its tests and write a Codecov report. The other SDKs' build and test commands are documented in each language directory. GitHub Actions checks the Go SDK against the pinned protocol revision and uploads its coverage. Dependabot checks the supported manifests for Go, Rust and its toolchain, TypeScript, Python (uv), .NET, Kotlin, Swift, and GitHub Actions; Dependabot does not currently support the Haskell or OCaml package manifests.
+Run `git clone --recurse-submodules https://github.com/Xynoplex/sdk.git` (or initialize submodules after cloning), then run `make` at the repository root to build the Go SDK, or `make test` to run its tests and write a Codecov report. Build, test, clean, local publish, and local registry stop targets use the runtime selected by `CONTAINER_RUNTIME`, or auto-detect `container`, `docker`, then `podman`. GitHub Actions checks the SDKs and uploads coverage. Dependabot checks the supported manifests for Go, Rust and its toolchain, TypeScript, Python (uv), .NET, Kotlin, Swift, and GitHub Actions; Dependabot does not currently support the Haskell or OCaml package manifests.
+
+Run `make local` to build and publish the TypeScript, Python, and Rust SDK packages to local registries. It starts Verdaccio at `http://localhost:4873`, a PyPI-compatible index at `http://localhost:8081/simple/`, and Kellnr at `http://localhost:8000`. Node/npm, Python build tools, and Cargo all run in containers. Package data persists in `${XDG_CACHE_HOME:-~/.cache}/xynoplex-sdk/local`; `make local-stop` stops the registries without deleting their data.
 
 ## License
 

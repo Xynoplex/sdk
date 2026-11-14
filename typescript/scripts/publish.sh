@@ -17,7 +17,7 @@ set -euo pipefail
 # The repository root, found from where this script lives rather than asked of
 # git: in a container that runs as root over a checkout owned by another user,
 # git refuses the repository ("dubious ownership").
-cd "$(dirname "${BASH_SOURCE[0]}")/../../.."
+cd "$(dirname "${BASH_SOURCE[0]}")/../.."
 
 # --- Colors ---
 

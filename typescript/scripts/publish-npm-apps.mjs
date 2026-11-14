@@ -22,9 +22,18 @@ import { stampInternalDeps } from './stamp-internal-deps.mjs';
 
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const rootDir = resolve(__dirname, '../../..');
+const rootDir = resolve(__dirname, '../..');
 const DRY_RUN = process.argv.includes('--dry-run');
 const VERIFY = process.argv.includes('--verify');
+
+// The SDK repository publishes libraries only. The Browser's npm package is
+// owned by the images repository, so this shared publisher has no app to stage
+// when the Browser sources are absent.
+if (!existsSync(resolve(rootDir, 'images/browser'))) {
+  console.log('No app packages to stage in this repository.');
+  process.exit(0);
+}
+
 const VERIFY_DIR = VERIFY ? mkdtempSync(resolve(tmpdir(), 'xynoplex-npm-verify-')) : null;
 const STAGE_DIR = VERIFY_DIR ?? resolve(rootDir, '.npm-stage');
 
