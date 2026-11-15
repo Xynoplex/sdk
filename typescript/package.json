@@ -8,6 +8,9 @@
     "./sdk",
     "./react-ui"
   ],
+  "allowScripts": {
+    "esbuild@0.28.2": true
+  },
   "scripts": {
     "build:packages": "npm run build --workspace=@xynoplex/core && npm run build --workspace=@xynoplex/observability && npm run build --workspace=@xynoplex/http-transport && npm run build --workspace=@xynoplex/sdk && npm run build --workspace=@xynoplex/react-ui"
   },

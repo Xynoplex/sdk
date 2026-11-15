@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# The persistent uv cache is a mounted volume while builds run under /tmp, so
+# cached files and the environment live on different filesystems. Copying is
+# therefore the supported link mode; making it explicit avoids uv's fallback
+# warning without changing the resulting environment.
+export UV_LINK_MODE=copy
+
 ROOT=/source
 SCRATCH="$(mktemp -d /tmp/xynoplex-sdk-python.XXXXXX)"
 trap 'rm -rf "$SCRATCH"' EXIT
