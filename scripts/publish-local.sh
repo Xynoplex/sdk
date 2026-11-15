@@ -7,47 +7,12 @@ source "$ROOT/scripts/require-protocol-pin.sh"
 RUNTIME="$(detect_container_runtime)"
 STATE_ROOT="${XDG_CACHE_HOME:-$HOME/.cache}/xynoplex-sdk/local"
 PROTOCOL="$ROOT/protocol"
-OLD_NPM_CONTAINER=xynoplex-sdk-local-npm
-OLD_PYPI_CONTAINER=xynoplex-sdk-local-pypi
-OLD_CARGO_CONTAINER=xynoplex-sdk-local-cargo
 
 mkdir -p "$STATE_ROOT/npm/packages" "$STATE_ROOT/python/packages" \
   "$STATE_ROOT/rust/packages" "$STATE_ROOT/uv-cache" \
   "$STATE_ROOT/rust/cargo-home" "$STATE_ROOT/rust/target"
 chmod 0777 "$STATE_ROOT/npm/packages" "$STATE_ROOT/python/packages" \
   "$STATE_ROOT/rust/packages" "$STATE_ROOT/rust/cargo-home" "$STATE_ROOT/rust/target"
-
-container_exists() {
-  if [[ "$RUNTIME" == container ]]; then
-    "$RUNTIME" list --all --format table | awk -v name="$1" '$1 == name { found=1 } END { exit !found }'
-  else
-    "$RUNTIME" inspect "$1" >/dev/null 2>&1
-  fi
-}
-
-container_running() {
-  if [[ "$RUNTIME" == container ]]; then
-    "$RUNTIME" list --all --format table | awk -v name="$1" '$1 == name && $6 == "running" { found=1 } END { exit !found }'
-  else
-    [[ "$("$RUNTIME" inspect --format '{{.State.Running}}' "$1" 2>/dev/null || true)" == true ]]
-  fi
-}
-
-stop_old_registry_containers() {
-  local name
-  for name in "$OLD_NPM_CONTAINER" "$OLD_PYPI_CONTAINER" "$OLD_CARGO_CONTAINER"; do
-    if container_exists "$name" && container_running "$name"; then
-      echo "Stopping old registry container ${name}…"
-      "$RUNTIME" stop "$name" >/dev/null
-    fi
-  done
-}
-
-if [[ "${1:-}" == --stop ]]; then
-  stop_old_registry_containers
-  echo "Cached package artifacts are retained at $STATE_ROOT."
-  exit 0
-fi
 
 LANGUAGE="${1:-all}"
 if [[ "$LANGUAGE" == all ]]; then
@@ -80,11 +45,6 @@ ALL_LANGUAGES=false
 [[ "$LANGUAGE" == all ]] && ALL_LANGUAGES=true
 
 PROTOCOL_REVISION="$(require_protocol_pin "$ROOT")"
-
-# Retire registry processes left by older versions of this script. New artifact
-# builds only write files under STATE_ROOT.
-stop_old_registry_containers
-
 
 echo "Building protocol bundles from pinned revision ${PROTOCOL_REVISION}…"
 run_container_quietly "$RUNTIME" run --rm \

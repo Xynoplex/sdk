@@ -5,7 +5,7 @@ revision is part of every SDK source revision. SDK builds reject an uninitialize
 mismatched, or modified submodule. They never select a sibling checkout or a
 branch tip.
 
-Before producing language artifacts, `make local` bundles both OpenAPI documents
+Before producing language artifacts, `make build` bundles both OpenAPI documents
 from `protocol/specs/src/` using the Protocol repository's locked toolchain. The
 language generators then read those bundles or the same pinned `specs/src/`
 files. Generated SDK code belongs to this repository, not Protocol.

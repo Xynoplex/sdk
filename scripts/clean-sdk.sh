@@ -2,6 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd -P)"
+source "$ROOT/scripts/container-runtime.sh"
 CACHE_ROOT="${XDG_CACHE_HOME:-$HOME/.cache}/xynoplex-sdk"
 STATE_ROOT="$CACHE_ROOT/local"
 OPAM_VOLUME=xynoplex-sdk-opam-5-5
@@ -58,7 +59,7 @@ clean_language() {
 
 remove_named_volume() {
   local name="$1" runtime
-  runtime="$(available_runtime 2>/dev/null || true)"
+  runtime="$(detect_container_runtime 2>/dev/null || true)"
   [[ -n "$runtime" ]] || return 0
   if "$runtime" volume inspect "$name" >/dev/null 2>&1; then
     printf '    Removing container volume %s\n' "$name"
@@ -66,54 +67,10 @@ remove_named_volume() {
   fi
 }
 
-available_runtime() {
-  local candidate
-  if [[ -n "${CONTAINER_RUNTIME:-}" ]]; then
-    command -v "$CONTAINER_RUNTIME" >/dev/null 2>&1 || return 1
-    candidate="$CONTAINER_RUNTIME"
-    case "$(basename "$candidate")" in
-      container) "$candidate" system status >/dev/null 2>&1 || return 1 ;;
-      *) "$candidate" info >/dev/null 2>&1 || return 1 ;;
-    esac
-    printf '%s\n' "$candidate"
-    return
-  fi
-  for candidate in container docker podman; do
-    command -v "$candidate" >/dev/null 2>&1 || continue
-    if [[ "$candidate" == container ]]; then
-      "$candidate" system status >/dev/null 2>&1 || continue
-    else
-      "$candidate" info >/dev/null 2>&1 || continue
-    fi
-    printf '%s\n' "$candidate"
-    return
-  done
-  return 1
-}
-
 clean_local_artifacts() {
-  local runtime name
   printf '==> Cleaning shared local artifact state and cached bundles\n'
   remove_path "$STATE_ROOT"
   remove_path "$CACHE_ROOT/bundles"
-
-  runtime="$(available_runtime 2>/dev/null || true)"
-  if [[ -z "$runtime" ]]; then
-    echo '    Container runtime unavailable; skipped removal of retired registry containers.'
-    return
-  fi
-  for name in xynoplex-sdk-local-npm xynoplex-sdk-local-pypi xynoplex-sdk-local-cargo; do
-    if [[ "$(basename "$runtime")" == container ]]; then
-      if "$runtime" list --all --format table | awk -v name="$name" '$1 == name { found=1 } END { exit !found }'; then
-        printf '    Removing retired registry container %s\n' "$name"
-        "$runtime" stop "$name" >/dev/null 2>&1 || true
-        "$runtime" rm "$name" >/dev/null
-      fi
-    elif "$runtime" inspect "$name" >/dev/null 2>&1; then
-      printf '    Removing retired registry container %s\n' "$name"
-      "$runtime" rm --force "$name" >/dev/null
-    fi
-  done
   remove_named_volume "$OPAM_VOLUME"
 }
 

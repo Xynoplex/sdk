@@ -8,5 +8,5 @@ Browser. `check-dist-imports.mjs` and `verify-nodenext-resolution.sh` check dist
 `compliance/` holds shared TypeScript architecture analysis. CSS tools and Stylelint
 plugins live in `typescript/react-ui/scripts/`.
 
-For the complete container-based local build, run `make local-build` from the
-repository root. See `images/LOCAL-BUILD.md` for options and usage.
+For the complete container-based local build, run `make build` from the
+repository root; `make help` lists the other targets.

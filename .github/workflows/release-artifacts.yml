@@ -32,7 +32,7 @@ jobs:
       - name: Build native packages and bundle
         shell: bash
         run: |
-          make local
+          make build
           SDK_ARTIFACTS="$RUNNER_TEMP/sdk-artifacts" python3 scripts/create-artifact-bundle.py all
           python3 scripts/verify-artifact-bundle.py "$RUNNER_TEMP/sdk-artifacts"
 

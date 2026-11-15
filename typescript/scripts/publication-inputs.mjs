@@ -11,7 +11,7 @@ function targets(value) {
 
 export function verifyPublication(directory, manifest, label) {
   const fail = (path, reason) => {
-    throw new Error(`${label}/${path}: ${reason}. Build the TypeScript workspaces with make local, or see typescript/README.md for package build instructions.`);
+    throw new Error(`${label}/${path}: ${reason}. Build the TypeScript workspaces with make build, or see typescript/README.md for package build instructions.`);
   };
   const local = (path) => {
     if (path.startsWith('/') || normalize(path).split('/').includes('..')) fail(path, 'publication path escapes the package');

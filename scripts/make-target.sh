@@ -9,14 +9,6 @@ PROTOCOL="$ROOT/protocol"
 require_protocol_pin "$ROOT" >/dev/null
 
 case "${1:-}" in
-  go-build)
-    echo 'Building the Go SDK in a container…'
-    run_container_quietly "$RUNTIME" run --rm \
-      --volume "$ROOT:/source:ro" \
-      --volume "$PROTOCOL:/protocol:ro" \
-      --workdir /tmp \
-      golang:1.27.4-bookworm bash -euc 'mkdir -p /tmp/sdk && cp -a /source/. /tmp/sdk/ && rm -rf /tmp/sdk/protocol && mkdir -p /tmp/sdk/protocol && cp -a /protocol/. /tmp/sdk/protocol/ && cd /tmp/sdk/go && go build ./...'
-    ;;
   go-test)
     COVERAGE_DIR="$(mktemp -d "${TMPDIR:-/tmp}/xynoplex-sdk-coverage.XXXXXX")"
     trap 'rm -rf "$COVERAGE_DIR"' EXIT
@@ -31,7 +23,7 @@ case "${1:-}" in
     cp "$COVERAGE_DIR/out/coverage.txt" "$ROOT/coverage.txt"
     ;;
   *)
-    echo 'Usage: make-target.sh {go-build|go-test}' >&2
+    echo 'Usage: make-target.sh go-test' >&2
     exit 2
     ;;
 esac

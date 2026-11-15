@@ -25,9 +25,12 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4.4.1
 
+      - name: Make help lists every public target
+        run: python3 scripts/test_make_help.py
+
       - name: Build all language artifacts and verify the bundle
         run: |
-          make local
+          make build
           SDK_ARTIFACTS="$(python3 scripts/create-artifact-bundle.py --path all)" make verify-artifacts
 
   go-sdk:
