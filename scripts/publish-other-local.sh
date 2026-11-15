@@ -48,7 +48,7 @@ run_container_quietly "$RUNTIME" run --rm \
     cp /source/go/go.mod "/out/$escaped/@v/v$version.mod"
     printf "v%s\\n" "$version" > "/out/$escaped/@v/list"
     # Go packages a module from a commit: commit the staged tree in a scratch repository.
-    cp -a /module-source /tmp/module-repository
+    cp -R /module-source /tmp/module-repository
     git -C /tmp/module-repository init -q
     git -C /tmp/module-repository add -A -f
     git -C /tmp/module-repository -c user.name=go-module-zip -c user.email=go-module-zip@localhost commit -q -m "go-module-zip"
