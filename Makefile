@@ -10,22 +10,27 @@ export SDK_ARTIFACTS
 # CONTAINER_RUNTIME, or detects container, docker, then podman.
 help:
 	@printf '%s\n' \
-	  'Xynoplex SDK repository' \
+	  'Xynoplex SDK' \
 	  '' \
-	  '  make          Build and stage all nine SDKs from the pinned protocol submodule' \
-	  '  make local    Build and stage all nine SDKs from the pinned protocol submodule' \
-	  '  make images   Build TypeScript, Python, and Rust SDK artifacts' \
-	  '  make cli      Build Go SDK artifacts' \
-	  '  make desktop  Build TypeScript and Go artifacts used by Desktop and its Xynaut sidecar' \
+	  'Build and stage:' \
+	  '  make                  Build and stage all nine SDKs (default target)' \
+	  '  make local            Same as make' \
+	  '  make <language>       Build one SDK: typescript, python, rust, go, csharp,' \
+	  '                       haskell, kotlin, ocaml, or swift' \
+	  '  make images           Build TypeScript, Python, and Rust artifacts' \
+	  '  make cli              Build Go artifacts' \
+	  '  make desktop          Build TypeScript and Go artifacts for Desktop and Xynaut' \
 	  '  make verify-artifacts SDK_ARTIFACTS=/path/to/bundle' \
-	  '  make <sdk>    Build one SDK: typescript, python, rust, go, csharp,' \
-	  '                haskell, kotlin, ocaml, or swift' \
-	  '  make build    Build the Go SDK' \
-	  '  make test     Run Go SDK tests with coverage' \
-	  '  make clean    Remove all language build outputs, local artifacts, caches, and bundles' \
-	  '  make <sdk>-clean Clean one SDK language (typescript, python, rust, go, csharp,' \
-	  '                  haskell, kotlin, ocaml, or swift)' \
-	  '  make local-stop Stop retired registry containers; keep cached artifacts'
+	  '' \
+	  'Build and test Go:' \
+	  '  make build            Build the Go SDK' \
+	  '  make test             Run Go SDK tests with coverage' \
+	  '' \
+	  'Clean:' \
+	  '  make clean            Remove all language outputs, local artifacts, caches, and bundles' \
+	  '  make clean-local      Remove local artifacts, caches, bundles, and retired containers' \
+	  '  make <language>-clean Clean one language and its local package/compiler caches' \
+	  '  make local-stop       Stop retired registry containers; preserve cached artifacts'
 
 build: go-build
 
