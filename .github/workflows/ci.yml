@@ -34,9 +34,10 @@ jobs:
           # A pull request checks out its merge commit: the first parent is
           # the base, so HEAD^1..HEAD is the pull request's change.
           fetch-depth: 2
+          submodules: true
 
       - name: Make help lists every public target
-        run: python3 scripts/test_make_help.py
+        run: python3 build-tools/test_make_help.py --root . --list '<language>=LANGUAGES'
 
       - name: The source archive holds no broken symlink
         run: |

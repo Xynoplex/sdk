@@ -4,7 +4,7 @@ LANGUAGES := typescript python rust go csharp haskell kotlin ocaml swift
 
 .PHONY: help build test verify-artifacts clean clean-local $(LANGUAGES) $(addsuffix -clean,$(LANGUAGES))
 
-# `make help` prints the `##` lines below, in order (scripts/make-help.awk).
+# `make help` prints the `##` lines below, in order (build-tools/make-help.awk).
 ##@ Xynoplex SDK: make [target] [VARIABLE=value ...]
 ##@ Variables
 ## CONTAINER_RUNTIME=name: container|docker|podman; else the first to respond
@@ -14,7 +14,7 @@ export CONTAINER_RUNTIME
 export SDK_ARTIFACTS
 
 help:
-	@awk -v list="$(LANGUAGES)" -f scripts/make-help.awk Makefile Makefile
+	@awk -v list="$(LANGUAGES)" -f build-tools/make-help.awk Makefile Makefile
 
 ##@ Build and stage
 ## build: Every SDK, as local artifacts and an artifact bundle

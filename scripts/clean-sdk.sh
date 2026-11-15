@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd -P)"
-source "$ROOT/scripts/container-runtime.sh"
+source "$ROOT/build-tools/container-runtime.sh"
 CACHE_ROOT="${XDG_CACHE_HOME:-$HOME/.cache}/xynoplex-sdk"
 STATE_ROOT="$CACHE_ROOT/local"
 OPAM_VOLUME=xynoplex-sdk-opam-5-5
