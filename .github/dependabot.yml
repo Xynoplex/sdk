@@ -15,6 +15,7 @@ multi-ecosystem-groups:
 
 updates:
   - package-ecosystem: github-actions
+    labels: ["dependencies"]
     directory: /
     schedule:
       interval: cron
@@ -27,6 +28,7 @@ updates:
         patterns: ["*"]
 
   - package-ecosystem: gomod
+    labels: ["dependencies"]
     directories:
       - /go
       - /go/conformance
@@ -43,6 +45,7 @@ updates:
         patterns: ["*"]
 
   - package-ecosystem: cargo
+    labels: ["dependencies"]
     directory: /rust
     multi-ecosystem-group: rust
     patterns: ["*"]
@@ -51,11 +54,13 @@ updates:
       semver-major-days: 30
 
   - package-ecosystem: rust-toolchain
+    labels: ["dependencies"]
     directory: /rust
     multi-ecosystem-group: rust
     patterns: ["*"]
 
   - package-ecosystem: npm
+    labels: ["dependencies"]
     directory: /typescript
     schedule:
       interval: cron
@@ -74,6 +79,7 @@ updates:
         update-types: ["version-update:semver-major"]
 
   - package-ecosystem: uv
+    labels: ["dependencies"]
     directory: /python/sdk
     schedule:
       interval: cron
@@ -87,6 +93,7 @@ updates:
         patterns: ["*"]
 
   - package-ecosystem: nuget
+    labels: ["dependencies"]
     directory: /csharp/sdk
     schedule:
       interval: cron
@@ -100,6 +107,7 @@ updates:
         patterns: ["*"]
 
   - package-ecosystem: gradle
+    labels: ["dependencies"]
     directory: /kotlin/sdk
     schedule:
       interval: cron
@@ -113,6 +121,7 @@ updates:
         patterns: ["*"]
 
   - package-ecosystem: swift
+    labels: ["dependencies"]
     directory: /swift/sdk
     schedule:
       interval: cron
