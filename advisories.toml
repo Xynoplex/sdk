@@ -1,3 +1,11 @@
 # Published advisories for this repository's dependencies, each judged and
 # ignored with why. build-tools/advisories.py, in CI, fails on any finding not
 # ignored here and on any ignore that no longer matches a finding.
+
+[[ignore]]
+id = "HSEC-2023-0007"
+reason = "base's Numeric.readFloat, and read of a fractional type, take time and memory in proportion to the number a string denotes, so a huge exponent exhausts memory. No base release fixes it. The Haskell SDK's library calls neither: it reads JSON numbers through aeson's Scientific, and its only readMaybe is a test's, of a port as an Int."
+
+[[ignore]]
+id = "HSEC-2026-0006"
+reason = "Cabal's configure deletes a source header when the build directory holds a header of the same name. No Cabal release fixes it. It acts only while the Haskell SDK is built, never in what it ships, and only on such a duplicate: the package is build-type Simple, names its generated headers through include-dirs alone, with no install-includes, and nothing writes a header into dist-newstyle."
