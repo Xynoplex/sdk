@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 # Select a responding engine without starting services or pulling images.
+
+# How long an engine has to answer. A CI runner's Docker, just started and
+# busy with other jobs' pulls, can take well over five seconds.
+RUNTIME_READY_SECONDS=30
+
 runtime_ready() {
   local runtime="$1" probe watcher result
   if [[ "$runtime" == container ]]; then
@@ -8,7 +13,7 @@ runtime_ready() {
     "$runtime" info >/dev/null 2>&1 &
   fi
   probe=$!
-  (sleep 5; kill -KILL "$probe" >/dev/null 2>&1) >/dev/null 2>&1 &
+  (sleep "$RUNTIME_READY_SECONDS"; kill -KILL "$probe" >/dev/null 2>&1) >/dev/null 2>&1 &
   watcher=$!
   result=0
   wait "$probe" 2>/dev/null || result=$?
@@ -40,7 +45,7 @@ detect_container_runtime() {
       return 1
     fi
     if ! runtime_ready "$CONTAINER_RUNTIME"; then
-      echo "Selected runtime '$CONTAINER_RUNTIME' is not responding (readiness checks allow 5 seconds)." >&2
+      echo "Selected runtime '$CONTAINER_RUNTIME' is not responding (readiness checks allow $RUNTIME_READY_SECONDS seconds)." >&2
       runtime_start_instruction "$CONTAINER_RUNTIME" >&2
       return 1
     fi

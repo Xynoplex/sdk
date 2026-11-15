@@ -108,7 +108,7 @@ if has_language rust; then
     --env CARGO_HOME=/cargo-home \
     --env CARGO_TARGET_DIR=/cargo-target \
     --workdir /source \
-    rust:1.99.1-bookworm bash /source/scripts/publish-rust-local.sh
+    rust:1.100.0-bookworm bash /source/scripts/publish-rust-local.sh
 fi
 
 for language in go csharp haskell kotlin ocaml swift; do
