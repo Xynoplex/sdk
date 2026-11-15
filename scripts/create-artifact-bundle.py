@@ -161,7 +161,7 @@ def write_bundle(languages: list[str], tree_digest: str, output: Path, staged: P
     toolchains = {
         "typescript": "node:26-bookworm",
         "python": "python:3.12-bookworm",
-        "rust": "rust:1.99.1-bookworm",
+        "rust": "rust:1.100.0-bookworm",
         "go": "golang:1.27.4-bookworm",
         "csharp": "mcr.microsoft.com/dotnet/sdk (version from csharp/sdk/global.json)",
         "haskell": "haskell:9.10.3",
