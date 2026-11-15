@@ -33,7 +33,7 @@ jobs:
       - name: List the Makefile's SDK languages
         id: languages
         run: |
-          languages="$(make -pRrq -f Makefile : | sed -n 's/^LANGUAGES := //p')"
+          languages="$(printf 'print-%%:\n\t@echo $($*)\n' | make -s --no-print-directory -f Makefile -f - print-LANGUAGES)"
           echo "languages=$(python3 -c 'import json, sys; print(json.dumps(sys.argv[1].split()))' "$languages")" >> "$GITHUB_OUTPUT"
 
   artifacts:
