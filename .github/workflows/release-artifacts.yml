@@ -5,13 +5,15 @@ on:
     tags: ["v*"]
   workflow_dispatch:
 
-permissions:
-  contents: write
+permissions: {}
 
 jobs:
   bundle:
     name: Build and release immutable SDK artifacts
     runs-on: ubuntu-latest
+    # It creates the release and uploads its assets.
+    permissions:
+      contents: write
     timeout-minutes: 90
     steps:
       - name: Check out source and pinned Protocol
