@@ -18,6 +18,11 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Every commit of a pull request is signed off by its author (the org's
+  # CONTRIBUTING.md).
+  dco:
+    uses: xynolog/.github/.github/workflows/dco.yml@a0c8f43b045ec70558c62080a36d2057f9dc3126
+
   checks:
     name: Make help, the source archive, and the SDK languages
     runs-on: ubuntu-latest
@@ -114,7 +119,7 @@ jobs:
   gate:
     name: CI Gate
     if: always()
-    needs: [checks, artifacts, go-sdk]
+    needs: [dco, checks, artifacts, go-sdk]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7.0.1
