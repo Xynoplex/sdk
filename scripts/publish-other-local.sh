@@ -25,33 +25,34 @@ esac
 
 if [[ "$LANGUAGE" == all || "$LANGUAGE" == go ]]; then
 echo 'Building the Go module proxy package in a Go container…'
+# What a commit of this tree would hold of the module and what Go's packager
+# reads beside it: go/, LICENSE and .gitattributes, tracked or new and not ignored.
+GO_MODULE_SOURCE="$(mktemp -d)"
+trap 'rm -rf "$GO_MODULE_SOURCE"' EXIT
+git -C "$ROOT" ls-files -z --cached --others --exclude-standard -- go LICENSE .gitattributes \
+  | while IFS= read -r -d '' path; do if [[ -e "$ROOT/$path" ]]; then printf '%s\0' "$path"; fi; done \
+  | tar -C "$ROOT" --null -T - -cf - | tar -C "$GO_MODULE_SOURCE" -xf -
 run_container_quietly "$RUNTIME" run --rm \
   --volume "$ROOT:/source:ro" --volume "$PROTOCOL:/protocol:ro" \
+  --volume "$GO_MODULE_SOURCE:/module-source:ro" \
   --volume "$STATE_ROOT/go-proxy:/out" --volume "$STATE_ROOT/go-mod-cache:/go/pkg/mod" \
   --volume "$STATE_ROOT/go-build-cache:/root/.cache/go-build" \
   --env "SDK_SOURCE_TIME=$SDK_SOURCE_TIME" \
   --workdir /tmp golang:1.27.4-bookworm bash -euc '
-    apt-get update -qq && apt-get install -y -qq --no-install-recommends zip >/dev/null
     version=$(sed -n "s/.*\"version\": \"\([^\"]*\)\".*/\1/p" /source/version.json | head -n1)
     mkdir -p /tmp/sdk && cp -a /source/. /tmp/sdk/ && rm -rf /tmp/sdk/protocol && cp -a /protocol /tmp/sdk/protocol && cd /tmp/sdk/go && go build ./...
     module="github.com/Xynoplex/sdk/go"
     escaped="github.com/!xynoplex/sdk/go"
-    mkdir -p "/out/$escaped/@v" /tmp/go-proxy-package
+    mkdir -p "/out/$escaped/@v"
     printf "{\"Version\":\"v%s\",\"Time\":\"%s\"}\n" "$version" "$SDK_SOURCE_TIME" > "/out/$escaped/@v/v$version.info"
     cp /source/go/go.mod "/out/$escaped/@v/v$version.mod"
     printf "v%s\\n" "$version" > "/out/$escaped/@v/list"
-    mkdir -p "/tmp/go-proxy-package/$module@v$version"
-    cp -a /tmp/sdk/go/. "/tmp/go-proxy-package/$module@v$version/"
-    rm -f "/tmp/go-proxy-package/$module@v$version/go.sum"
-    find /tmp/go-proxy-package -exec touch -h -d "$SDK_SOURCE_TIME" {} +
-    archive_dir=$(mktemp -d /tmp/xynoplex-go-proxy.XXXXXX)
-    zip_excludes=()
-    while IFS= read -r nested_go_mod; do
-      nested_module="${nested_go_mod%/go.mod}"
-      zip_excludes+=("${nested_module#/tmp/go-proxy-package/}/*")
-    done < <(find "/tmp/go-proxy-package/$module@v$version" -mindepth 2 -name go.mod -print)
-    (cd /tmp/go-proxy-package && zip -X -qrD "$archive_dir/module.zip" "$module@v$version" -x "${zip_excludes[@]}")
-    mv "$archive_dir/module.zip" "/out/$escaped/@v/v$version.zip"
+    # Go packages a module from a commit: commit the staged tree in a scratch repository.
+    cp -a /module-source /tmp/module-repository
+    git -C /tmp/module-repository init -q
+    git -C /tmp/module-repository add -A -f
+    git -C /tmp/module-repository -c user.name=go-module-zip -c user.email=go-module-zip@localhost commit -q -m "go-module-zip"
+    (cd /source/scripts/go-module-zip && go run . "$module" "v$version" /tmp/module-repository HEAD go "/out/$escaped/@v/v$version.zip")
   '
 fi
 if [[ "$LANGUAGE" == all || "$LANGUAGE" == csharp ]]; then

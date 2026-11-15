@@ -23,6 +23,11 @@ updates:
     schedule:
       interval: weekly
 
+  - package-ecosystem: gomod
+    directory: /scripts/go-module-zip
+    schedule:
+      interval: weekly
+
   - package-ecosystem: cargo
     directory: /rust
     schedule:
