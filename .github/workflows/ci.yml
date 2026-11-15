@@ -11,6 +11,12 @@ on:
 permissions:
   contents: read
 
+# A pull request's newer push supersedes its older run; main and the merge
+# queue keep every run.
+concurrency:
+  group: ci-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   checks:
     name: Make help, the source archive, and the SDK languages
@@ -19,6 +25,10 @@ jobs:
       languages: ${{ steps.languages.outputs.languages }}
     steps:
       - uses: actions/checkout@v7.0.1
+        with:
+          # A pull request checks out its merge commit: the first parent is
+          # the base, so HEAD^1..HEAD is the pull request's change.
+          fetch-depth: 2
 
       - name: Make help lists every public target
         run: python3 scripts/test_make_help.py
@@ -30,15 +40,27 @@ jobs:
           broken="$(find "$archive" -xtype l)"
           test -z "$broken" || { printf 'Broken in the source archive GitHub serves to action users:\n%s\n' "$broken" >&2; exit 1; }
 
-      - name: List the Makefile's SDK languages
+      # A pull request builds the languages its change touches; main and the
+      # merge queue build every language, so a read the search misses still
+      # fails before a release.
+      - name: List the SDK languages to build
         id: languages
+        env:
+          EVENT: ${{ github.event_name }}
         run: |
           languages="$(printf 'print-%%:\n\t@echo $($*)\n' | make -s --no-print-directory -f Makefile -f - print-LANGUAGES)"
-          echo "languages=$(python3 -c 'import json, sys; print(json.dumps(sys.argv[1].split()))' "$languages")" >> "$GITHUB_OUTPUT"
+          if [[ "$EVENT" == pull_request ]]; then
+            selected="$(python3 scripts/changed-languages.py HEAD^1 HEAD $languages)"
+          else
+            selected="$(python3 -c 'import json, sys; print(json.dumps(sys.argv[1:]))' $languages)"
+          fi
+          echo "Building: $selected"
+          echo "languages=$selected" >> "$GITHUB_OUTPUT"
 
   artifacts:
     name: ${{ matrix.language }} SDK artifacts from pinned Protocol
     needs: checks
+    if: needs.checks.outputs.languages != '[]'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     strategy:
@@ -60,6 +82,8 @@ jobs:
 
   go-sdk:
     name: Go SDK tests and coverage
+    needs: checks
+    if: contains(fromJSON(needs.checks.outputs.languages), 'go')
     runs-on: ubuntu-latest
     steps:
       - name: Check out source
