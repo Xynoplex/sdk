@@ -9,6 +9,7 @@ import shutil
 import subprocess
 import sys
 import tarfile
+import tempfile
 import zipfile
 from pathlib import Path
 
@@ -118,14 +119,16 @@ def main() -> None:
         print(output)
         return
 
-    selected_files = [source for language in languages for source, _, _ in files(language)]
-    subprocess.run(
-        [sys.executable, str(ROOT / "scripts/normalize-local-artifacts.py"), *map(str, selected_files)],
-        check=True,
-    )
+    with tempfile.TemporaryDirectory(prefix="xynoplex-sdk-bundle.") as scratch:
+        write_bundle(languages, tree_digest, output, Path(scratch))
 
-    artifacts = []
-    copied = []
+
+def write_bundle(languages: list[str], tree_digest: str, output: Path, staged: Path) -> None:
+    """Bundle copies of the selected packages, normalized in `staged`.
+
+    The build containers own the cache they write the packages to; the copies are this host's to rewrite.
+    """
+    selected = []
     for language in languages:
         for source, ecosystem, package in files(language):
             if not source.is_file():
@@ -134,15 +137,26 @@ def main() -> None:
                 relative = Path(language) / source.relative_to(STATE)
             else:
                 relative = Path(language) / source.name
-            version = package_version(language, source)
-            artifacts.append({
-                "ecosystem": ecosystem,
-                "package": package,
-                "version": version,
-                "path": relative.as_posix(),
-                "sha256": digest(source),
-            })
-            copied.append((source, relative))
+            copy = staged / relative
+            copy.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(source, copy)
+            selected.append((language, ecosystem, package, copy, relative))
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts/normalize-local-artifacts.py"), *(str(copy) for *_, copy, _ in selected)],
+        check=True,
+    )
+
+    artifacts = []
+    copied = []
+    for language, ecosystem, package, copy, relative in selected:
+        artifacts.append({
+            "ecosystem": ecosystem,
+            "package": package,
+            "version": package_version(language, copy),
+            "path": relative.as_posix(),
+            "sha256": digest(copy),
+        })
+        copied.append((copy, relative))
 
     toolchains = {
         "typescript": "node:26-bookworm",
