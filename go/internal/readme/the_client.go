@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
-	"github.com/Xynoplex/sdk/go/api"
+	xynolog "github.com/xynolog/sdk/go"
+	"github.com/xynolog/sdk/go/api"
 )
 
 // Annotate reads a resource, has it highlighted, and directs attention to
 // one of its annotations.
-func Annotate(ctx context.Context, client *xynoplex.Client, resource api.ResourceId, annotation api.AnnotationId) error {
+func Annotate(ctx context.Context, client *xynolog.Client, resource api.ResourceId, annotation api.AnnotationId) error {
 	described, err := client.Browse.Resource(resource).Fresh(ctx) // a query, read once
 	if err != nil {
 		return err
@@ -30,13 +30,13 @@ func Annotate(ctx context.Context, client *xynoplex.Client, resource api.Resourc
 			return err
 		}
 		switch event := event.(type) {
-		case xynoplex.JobCreated:
+		case xynolog.JobCreated:
 			fmt.Println("to cancel it:", event.Data.JobId) // what client.Job.Cancel names
-		case xynoplex.JobProgressed:
+		case xynolog.JobProgressed:
 			fmt.Println(event.Data.Percentage)
-		case xynoplex.JobAttemptFailed:
+		case xynolog.JobAttemptFailed:
 			fmt.Println("trying again after:", event.Data.Error)
-		case xynoplex.JobCompleted[api.MarkJobCompleteCommand]:
+		case xynolog.JobCompleted[api.MarkJobCompleteCommand]:
 			fmt.Println(event.Data.Result)
 		}
 	}

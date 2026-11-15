@@ -5,7 +5,7 @@
  */
 
 /* Error States */
-.xynoplex-error-state {
+.xynolog-error-state {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -14,16 +14,16 @@
   gap: 1rem;
 }
 
-.xynoplex-error-message {
-  color: var(--xynoplex-color-error);
-  font-size: var(--xynoplex-text-base);
+.xynolog-error-message {
+  color: var(--xynolog-color-error);
+  font-size: var(--xynolog-text-base);
 }
 
-[data-theme="dark"] .xynoplex-error-message {
-  color: var(--xynoplex-color-error-light);
+[data-theme="dark"] .xynolog-error-message {
+  color: var(--xynolog-color-error-light);
 }
 
-.xynoplex-error-state-resource {
+.xynolog-error-state-resource {
   display: flex;
   flex-direction: column;
   align-items: center;

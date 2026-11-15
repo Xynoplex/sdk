@@ -1,12 +1,12 @@
 //! What each reader of a resource's description answers is one table,
 //! protocol/specs/src/resources/reader-cases.json, which every SDK runs: this crate's
-//! `xynoplex::resources` gives, for each case's resource, what TypeScript's
+//! `xynolog::resources` gives, for each case's resource, what TypeScript's
 //! and Python's readers give.
 
-use xynoplex::resources::{primary_media_type, primary_representation, resource_entity_types};
-use xynoplex::types::{Representation, ResourceDescriptor, ResourceDescriptorRepresentations};
 use serde::de::DeserializeOwned;
 use serde_json::Value;
+use xynolog::resources::{primary_media_type, primary_representation, resource_entity_types};
+use xynolog::types::{Representation, ResourceDescriptor, ResourceDescriptorRepresentations};
 
 /// The members of a case this runner reads. A case with any other fails: a
 /// member nothing reads holds nothing.

@@ -1,7 +1,7 @@
 /**
  * The single source of truth for pinning internal cross-dependencies at publish.
  *
- * Source `package.json` files declare internal `@xynoplex/*` / `xynoplex-*`
+ * Source `package.json` files declare internal `@xynolog/*` / `xynolog-*`
  * dependencies as `"*"` — that links the local workspace in dev and can never
  * drift. This function is the publish-time normalization: it rewrites every
  * internal dependency (the `"*"` ranges, and anything else) to the *exact*
@@ -21,7 +21,7 @@ export function stampInternalDeps(json, version) {
     const deps = json[section];
     if (!deps) continue;
     for (const name of Object.keys(deps)) {
-      if (!(name.startsWith('@xynoplex/') || name.startsWith('xynoplex-'))) continue;
+      if (!(name.startsWith('@xynolog/') || name.startsWith('xynolog-'))) continue;
       if (deps[name] !== version) {
         deps[name] = version;
         changed = true;

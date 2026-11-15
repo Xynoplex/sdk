@@ -1,10 +1,10 @@
 'use client';
 
-import type { AnnotationId } from '@xynoplex/core';
+import type { AnnotationId } from '@xynolog/core';
 import React, { useRef, useCallback, useEffect } from 'react';
 import type { RouteBuilder, LinkComponentProps } from '../../contexts/RoutingContext';
-import type { Annotation, AttributedEvent, StoredEventLike } from '@xynoplex/core';
-import { getAnnotationIdFromEvent } from '@xynoplex/core';
+import type { Annotation, AttributedEvent, StoredEventLike } from '@xynolog/core';
+import { getAnnotationIdFromEvent } from '@xynolog/core';
 import {
   formatEventType,
   getEventEmoji,
@@ -89,11 +89,11 @@ export function HistoryEvent({
     type: 'button' as const,
     onClick: () => onEventClick?.(annotationId),
     'aria-label': t('viewAnnotation', { content: displayContent?.exact || formatEventType(event.type, t) }),
-    className: 'xynoplex-history-event',
+    className: 'xynolog-history-event',
     'data-related': isRelated ? 'true' : 'false',
     'data-interactive': 'true'
   } : {
-    className: 'xynoplex-history-event',
+    className: 'xynolog-history-event',
     'data-related': isRelated ? 'true' : 'false'
   };
 
@@ -106,9 +106,9 @@ export function HistoryEvent({
       }}
       {...eventWrapperProps}
     >
-      <div className="xynoplex-history-event__content">
+      <div className="xynolog-history-event__content">
         <span
-          className="xynoplex-history-event__emoji"
+          className="xynolog-history-event__emoji"
           onMouseEnter={handleEmojiMouseEnter}
           onMouseLeave={handleEmojiMouseLeave}
         >
@@ -116,38 +116,38 @@ export function HistoryEvent({
         </span>
         {displayContent ? (
           displayContent.isTag ? (
-            <span className="xynoplex-history-event__tag">
+            <span className="xynolog-history-event__tag">
               {displayContent.exact}
             </span>
           ) : displayContent.isQuoted ? (
-            <span className="xynoplex-history-event__text xynoplex-history-event__text--quoted">
+            <span className="xynolog-history-event__text xynolog-history-event__text--quoted">
               &ldquo;{displayContent.exact}&rdquo;
             </span>
           ) : (
-            <span className="xynoplex-history-event__text">
+            <span className="xynolog-history-event__text">
               {displayContent.exact}
             </span>
           )
         ) : (
-          <span className="xynoplex-history-event__text">
+          <span className="xynolog-history-event__text">
             {formatEventType(event.type, t, event.payload)}
           </span>
         )}
         {actor && (
-          <span className="xynoplex-history-event__user">
+          <span className="xynolog-history-event__user">
             {actor}
           </span>
         )}
-        <span className="xynoplex-history-event__timestamp">
+        <span className="xynolog-history-event__timestamp">
           {formatRelativeTime(event.timestamp, t)}
         </span>
       </div>
       {entityTypes.length > 0 && (
-        <div className="xynoplex-history-event__entity-types">
+        <div className="xynolog-history-event__entity-types">
           {entityTypes.map((type) => (
             <span
               key={type}
-              className="xynoplex-tag xynoplex-tag--small"
+              className="xynolog-tag xynolog-tag--small"
               data-variant="blue"
             >
               {type}
@@ -156,14 +156,14 @@ export function HistoryEvent({
         </div>
       )}
       {creationDetails && (
-        <div className="xynoplex-history-event__details">
-          <span className="xynoplex-history-event__detail">
-            {t('user')}: <span className="xynoplex-history-event__detail-value">{actor}</span>
+        <div className="xynolog-history-event__details">
+          <span className="xynolog-history-event__detail">
+            {t('user')}: <span className="xynolog-history-event__detail-value">{actor}</span>
           </span>
           {creationDetails.type === 'cloned' && creationDetails.sourceDocId && (
             <Link
               href={routes.resourceDetail(creationDetails.sourceDocId)}
-              className="xynoplex-history-event__link"
+              className="xynolog-history-event__link"
               onClick={(e) => e.stopPropagation()}
             >
               {t('viewOriginal')}

@@ -1,10 +1,10 @@
-from xynoplex.client import XynoplexClient
-from xynoplex.identifiers import ResourceId
-from xynoplex.testing import create_test_client
-from xynoplex.transport import Transport
+from xynolog.client import XynologClient
+from xynolog.identifiers import ResourceId
+from xynolog.testing import create_test_client
+from xynolog.transport import Transport
 
 
-async def title_of(client: XynoplexClient[Transport], resource: ResourceId) -> str:
+async def title_of(client: XynologClient[Transport], resource: ResourceId) -> str:
     return (await client.browse.resource(resource).fresh()).name.title()
 
 

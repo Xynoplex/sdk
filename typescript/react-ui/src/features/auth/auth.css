@@ -8,17 +8,17 @@
  */
 
 /* Icon styles */
-.xynoplex-icon {
+.xynolog-icon {
   display: inline-block;
   vertical-align: middle;
 }
 
-.xynoplex-icon--small {
+.xynolog-icon--small {
   width: 1.25rem;
   height: 1.25rem;
 }
 
-.xynoplex-icon--inline {
+.xynolog-icon--inline {
   margin-right: 0.5rem;
 }
 
@@ -39,82 +39,82 @@
  * Auth error display — the classes `AuthErrorDisplay` renders.
  * ────────────────────────────────────────────────────────────────────────── */
 
-.xynoplex-auth-error-display {
+.xynolog-auth-error-display {
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 3rem 1rem;
 }
 
-.xynoplex-auth-error-display__container {
+.xynolog-auth-error-display__container {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
   width: 100%;
   max-width: 28rem;
   padding: 2rem;
-  background-color: var(--xynoplex-bg-primary);
-  border: 1px solid var(--xynoplex-border-primary);
-  border-radius: var(--xynoplex-radius-lg);
+  background-color: var(--xynolog-bg-primary);
+  border: 1px solid var(--xynolog-border-primary);
+  border-radius: var(--xynolog-radius-lg);
   text-align: center;
 }
 
-.xynoplex-auth-error-display__title {
+.xynolog-auth-error-display__title {
   margin: 0;
-  font-size: var(--xynoplex-text-2xl);
-  color: var(--xynoplex-text-primary);
+  font-size: var(--xynolog-text-2xl);
+  color: var(--xynolog-text-primary);
 }
 
 /* The error is the reason the reader is here: tinted, not merely bordered. */
-.xynoplex-auth-error-display__error-box {
+.xynolog-auth-error-display__error-box {
   padding: 1rem;
-  background-color: var(--xynoplex-color-error-light);
-  border: 1px solid var(--xynoplex-color-error);
-  border-radius: var(--xynoplex-radius-base);
+  background-color: var(--xynolog-color-error-light);
+  border: 1px solid var(--xynolog-color-error);
+  border-radius: var(--xynolog-radius-base);
 }
 
-.xynoplex-auth-error-display__error-message {
-  color: var(--xynoplex-color-error-dark);
-  font-size: var(--xynoplex-text-base);
+.xynolog-auth-error-display__error-message {
+  color: var(--xynolog-color-error-dark);
+  font-size: var(--xynolog-text-base);
 }
 
-[data-theme="dark"] .xynoplex-auth-error-display__error-box {
+[data-theme="dark"] .xynolog-auth-error-display__error-box {
   /* The light tint is unreadable on a dark ground; carry the hue in the
      border and the text instead of the fill. */
   background-color: transparent;
 }
 
-[data-theme="dark"] .xynoplex-auth-error-display__error-message {
-  color: var(--xynoplex-color-error-light);
+[data-theme="dark"] .xynolog-auth-error-display__error-message {
+  color: var(--xynolog-color-error-light);
 }
 
-.xynoplex-auth-error-display__actions {
+.xynolog-auth-error-display__actions {
   display: flex;
   justify-content: center;
 }
 
-.xynoplex-auth-error-display__link {
+.xynolog-auth-error-display__link {
   display: inline-block;
   padding: 0.625rem 1.25rem;
-  background-color: var(--xynoplex-color-primary-600);
-  color: var(--xynoplex-text-inverse);
-  border-radius: var(--xynoplex-radius-base);
-  font-size: var(--xynoplex-text-sm);
+  background-color: var(--xynolog-color-primary-600);
+  color: var(--xynolog-text-inverse);
+  border-radius: var(--xynolog-radius-base);
+  font-size: var(--xynolog-text-sm);
   text-decoration: none;
 }
 
-.xynoplex-auth-error-display__link:hover {
-  background-color: var(--xynoplex-color-primary-700);
+.xynolog-auth-error-display__link:hover {
+  background-color: var(--xynolog-color-primary-700);
 }
 
-.xynoplex-auth-error-display__link:focus-visible {
-  outline: 2px solid var(--xynoplex-color-primary-500);
+.xynolog-auth-error-display__link:focus-visible {
+  outline: 2px solid var(--xynolog-color-primary-500);
   outline-offset: 2px;
 }
 
-[data-theme="dark"] .xynoplex-auth-error-display__link {
-  /* `--xynoplex-text-inverse` FLIPS between themes, so on a dark ground the
+[data-theme="dark"] .xynolog-auth-error-display__link {
+  /* `--xynolog-text-inverse` FLIPS between themes, so on a dark ground the
      label would turn dark on a blue button. The fill stays blue in both
      themes, so the label must be pinned, not inherited. */
-  color: var(--xynoplex-color-white);
+  color: var(--xynolog-color-white);
 }

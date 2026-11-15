@@ -33,9 +33,9 @@ package state
 import (
 	"time"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/bus"
+	xynolog "github.com/xynolog/sdk/go"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/bus"
 )
 
 // PendingAnnotation is an annotation being composed: where it is, and why it
@@ -48,35 +48,35 @@ type PendingAnnotation struct {
 // MarkStateUnit marks one resource: see the file's documentation. A state
 // holding none is nil, or the zero value of an id or a motivation.
 type MarkStateUnit struct {
-	client     *xynoplex.Client
+	client     *xynolog.Client
 	resourceID api.ResourceId
 	silence    time.Duration
 	life
 
-	pending            *xynoplex.Variable[*PendingAnnotation]
-	delegating         *xynoplex.Variable[api.Motivation]
-	progress           *xynoplex.Variable[*api.JobProgress]
-	progressMotivation *xynoplex.Variable[api.Motivation]
-	failure            *xynoplex.Variable[error]
-	jobID              *xynoplex.Variable[api.JobId]
+	pending            *xynolog.Variable[*PendingAnnotation]
+	delegating         *xynolog.Variable[api.Motivation]
+	progress           *xynolog.Variable[*api.JobProgress]
+	progressMotivation *xynolog.Variable[api.Motivation]
+	failure            *xynolog.Variable[error]
+	jobID              *xynolog.Variable[api.JobId]
 }
 
-var _ xynoplex.StateUnit = (*MarkStateUnit)(nil)
+var _ xynolog.StateUnit = (*MarkStateUnit)(nil)
 
 // NewMarkStateUnit is a unit marking resourceID over client. It hears the
 // client's own bus from now on.
-func NewMarkStateUnit(client *xynoplex.Client, resourceID api.ResourceId) *MarkStateUnit {
+func NewMarkStateUnit(client *xynolog.Client, resourceID api.ResourceId) *MarkStateUnit {
 	u := &MarkStateUnit{
 		client:             client,
 		resourceID:         resourceID,
-		silence:            xynoplex.DefaultTiming().DelegateSilence,
+		silence:            xynolog.DefaultTiming().DelegateSilence,
 		life:               newLife(),
-		pending:            xynoplex.NewVariable[*PendingAnnotation](nil),
-		delegating:         xynoplex.NewVariable[api.Motivation](""),
-		progress:           xynoplex.NewVariable[*api.JobProgress](nil),
-		progressMotivation: xynoplex.NewVariable[api.Motivation](""),
-		failure:            xynoplex.NewVariable[error](nil),
-		jobID:              xynoplex.NewVariable(api.JobId{}),
+		pending:            xynolog.NewVariable[*PendingAnnotation](nil),
+		delegating:         xynolog.NewVariable[api.Motivation](""),
+		progress:           xynolog.NewVariable[*api.JobProgress](nil),
+		progressMotivation: xynolog.NewVariable[api.Motivation](""),
+		failure:            xynolog.NewVariable[error](nil),
+		jobID:              xynolog.NewVariable(api.JobId{}),
 	}
 	// One reader of every signal it hears, taken now, so what is said from here on is acted on in the order it was said.
 	u.listen(client.Bus.FramesAmong(u.alive, bus.MarkRequested.Channel(), bus.MarkSubmit.Channel()), u.heard)
@@ -84,33 +84,33 @@ func NewMarkStateUnit(client *xynoplex.Client, resourceID api.ResourceId) *MarkS
 }
 
 // PendingAnnotation is the annotation being composed, or nil.
-func (u *MarkStateUnit) PendingAnnotation() xynoplex.Watched[*PendingAnnotation] {
+func (u *MarkStateUnit) PendingAnnotation() xynolog.Watched[*PendingAnnotation] {
 	return u.pending.Reading()
 }
 
 // DelegatingMotivation is the motivation of the delegated job that is
 // running, or none.
-func (u *MarkStateUnit) DelegatingMotivation() xynoplex.Watched[api.Motivation] {
+func (u *MarkStateUnit) DelegatingMotivation() xynolog.Watched[api.Motivation] {
 	return u.delegating.Reading()
 }
 
 // Progress is the progress of the delegated job that is running, or of the
 // last one until it is dismissed.
-func (u *MarkStateUnit) Progress() xynoplex.Watched[*api.JobProgress] { return u.progress.Reading() }
+func (u *MarkStateUnit) Progress() xynolog.Watched[*api.JobProgress] { return u.progress.Reading() }
 
 // ProgressMotivation is the motivation of the run whose progress Progress
 // holds, until the progress is dismissed or cleared by a failure.
-func (u *MarkStateUnit) ProgressMotivation() xynoplex.Watched[api.Motivation] {
+func (u *MarkStateUnit) ProgressMotivation() xynolog.Watched[api.Motivation] {
 	return u.progressMotivation.Reading()
 }
 
 // Failure is why the last delegated job ended without completing, until it
 // is dismissed or the next job begins.
-func (u *MarkStateUnit) Failure() xynoplex.Watched[error] { return u.failure.Reading() }
+func (u *MarkStateUnit) Failure() xynolog.Watched[error] { return u.failure.Reading() }
 
 // JobId is the delegated job's id, from the queue's answer to its creation
 // to its end: what Job.Cancel names.
-func (u *MarkStateUnit) JobId() xynoplex.Watched[api.JobId] { return u.jobID.Reading() }
+func (u *MarkStateUnit) JobId() xynolog.Watched[api.JobId] { return u.jobID.Reading() }
 
 // RequestDelegate delegates the annotating of this unit's resource, as the
 // mark job of params: what Mark.Delegate takes. Jobs are asked for in the
@@ -169,15 +169,15 @@ func (u *MarkStateUnit) DismissProgress() {
 
 // heard acts on a signal of the client's own bus. A frame that is not its
 // channel's, or was refused, is nobody's to act on.
-func (u *MarkStateUnit) heard(frame xynoplex.Frame, refused error) {
+func (u *MarkStateUnit) heard(frame xynolog.Frame, refused error) {
 	switch frame.Channel {
 	case bus.MarkRequested.Channel():
-		request, err := xynoplex.Decoded(bus.MarkRequested, frame, refused)
+		request, err := xynolog.Decoded(bus.MarkRequested, frame, refused)
 		if err == nil && request.Payload.Source == u.resourceID {
 			u.pending.Set(&PendingAnnotation{Selector: request.Payload.Selector, Motivation: request.Payload.Motivation})
 		}
 	case bus.MarkSubmit.Channel():
-		submission, err := xynoplex.Decoded(bus.MarkSubmit, frame, refused)
+		submission, err := xynolog.Decoded(bus.MarkSubmit, frame, refused)
 		if err == nil && submission.Payload.Source == u.resourceID {
 			go u.create(submission.Payload)
 		}
@@ -202,7 +202,7 @@ func (u *MarkStateUnit) create(submission api.MarkSubmitEvent) {
 		return
 	}
 	if err != nil {
-		_ = xynoplex.Publish(u.client.Bus, bus.MarkCreateError, api.ResourceErrorEvent{ResourceId: u.resourceID, Message: err.Error()}, xynoplex.Envelope{})
+		_ = xynolog.Publish(u.client.Bus, bus.MarkCreateError, api.ResourceErrorEvent{ResourceId: u.resourceID, Message: err.Error()}, xynolog.Envelope{})
 		return
 	}
 	u.pending.Set(nil)
@@ -210,12 +210,12 @@ func (u *MarkStateUnit) create(submission api.MarkSubmitEvent) {
 
 // jobHeard is what a delegated job said, or how it ended.
 type jobHeard struct {
-	event xynoplex.JobEvent
+	event xynolog.JobEvent
 	err   error
 }
 
 // follow follows a delegated job to its end, once its turn comes.
-func (u *MarkStateUnit) follow(run *xynoplex.Delegation[api.MarkJobCompleteCommand], motivation api.Motivation, before <-chan struct{}, answered func()) {
+func (u *MarkStateUnit) follow(run *xynolog.Delegation[api.MarkJobCompleteCommand], motivation api.Motivation, before <-chan struct{}, answered func()) {
 	defer answered()
 	if !u.inTurn(before) {
 		return
@@ -261,7 +261,7 @@ func (u *MarkStateUnit) follow(run *xynoplex.Delegation[api.MarkJobCompleteComma
 				return
 			}
 			// A frame refused names no job: it is no word of this one, and the silence goes on being counted.
-			if _, refused := said.event.(xynoplex.JobRefused); !refused {
+			if _, refused := said.event.(xynolog.JobRefused); !refused {
 				silence.Reset(u.silence)
 				listening = true
 			}
@@ -271,10 +271,10 @@ func (u *MarkStateUnit) follow(run *xynoplex.Delegation[api.MarkJobCompleteComma
 				return
 			}
 			switch event := said.event.(type) {
-			case xynoplex.JobCreated:
+			case xynolog.JobCreated:
 				u.jobID.Set(event.Data.JobId)
 				created = event.Data.JobId
-			case xynoplex.JobProgressed:
+			case xynolog.JobProgressed:
 				progress := event.Data
 				u.progress.Set(&progress)
 			}
@@ -317,7 +317,7 @@ func (u *MarkStateUnit) goneQuiet(motivation api.Motivation) {
 	if u.progress.Value() == nil {
 		u.progress.Set(&api.JobProgress{Percentage: 0})
 	}
-	_ = xynoplex.Publish(u.client.Bus, bus.MarkDelegateTimeout, api.MarkDelegateTimeoutEvent{ResourceId: u.resourceID, Motivation: motivation}, xynoplex.Envelope{})
+	_ = xynolog.Publish(u.client.Bus, bus.MarkDelegateTimeout, api.MarkDelegateTimeoutEvent{ResourceId: u.resourceID, Motivation: motivation}, xynolog.Envelope{})
 }
 
 // Close ends the unit: what it had running stops, the delegated job it was

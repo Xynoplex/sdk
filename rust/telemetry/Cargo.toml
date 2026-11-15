@@ -1,22 +1,22 @@
 [package]
-name = "xynoplex-telemetry"
+name = "xynolog-telemetry"
 version.workspace = true
 edition = "2024"
 license = "Apache-2.0"
 repository.workspace = true
-description = "The telemetry a Xynoplex transport and a Xynoplex service share: the spans and the count of the SDK telemetry table, and the trace context they travel in, reported to whatever OpenTelemetry the process installed."
-documentation = "https://docs.rs/xynoplex-telemetry"
-keywords = ["xynoplex", "opentelemetry", "tracing", "telemetry"]
+description = "The telemetry a Xynolog transport and a Xynolog service share: the spans and the count of the SDK telemetry table, and the trace context they travel in, reported to whatever OpenTelemetry the process installed."
+documentation = "https://docs.rs/xynolog-telemetry"
+keywords = ["xynolog", "opentelemetry", "tracing", "telemetry"]
 categories = ["development-tools::debugging", "development-tools::profiling"]
 
 [dependencies]
 opentelemetry = { workspace = true, features = ["trace", "metrics"] }
-xynoplex.workspace = true
+xynolog.workspace = true
 
 [dev-dependencies]
 # The tests install an OpenTelemetry of their own, as an application does.
 opentelemetry_sdk = { workspace = true, features = ["trace", "metrics", "testing"] }
 # What holds this crate's README to source that runs.
-xynoplex = { workspace = true, features = ["testing"] }
+xynolog = { workspace = true, features = ["testing"] }
 serde_json.workspace = true
 tokio = { workspace = true, features = ["rt", "macros"] }

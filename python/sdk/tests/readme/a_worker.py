@@ -1,10 +1,10 @@
-from xynoplex.annotations import QuotedText, annotation_of_span, reconcile
-from xynoplex.channels import PRINCIPAL_PROFILE
-from xynoplex.claims import JOB_CLAIM_CHANNELS, JOB_COMMIT_CHANNELS, ClaimRefusal, HeldMarkJob, HeldYieldJob
-from xynoplex.client import XynoplexClient
-from xynoplex.http import AgentToken, HttpTransport, KeyCredential, ServiceToken, private_key_from_pem
-from xynoplex.identifiers import AnnotationId
-from xynoplex.types import (
+from xynolog.annotations import QuotedText, annotation_of_span, reconcile
+from xynolog.channels import PRINCIPAL_PROFILE
+from xynolog.claims import JOB_CLAIM_CHANNELS, JOB_COMMIT_CHANNELS, ClaimRefusal, HeldMarkJob, HeldYieldJob
+from xynolog.client import XynologClient
+from xynolog.http import AgentToken, HttpTransport, KeyCredential, ServiceToken, private_key_from_pem
+from xynolog.identifiers import AnnotationId
+from xynolog.types import (
     Agent,
     AgentSoftware,
     Annotation,
@@ -23,7 +23,7 @@ async def passages(text: str) -> list[QuotedText]:
     return [QuotedText(exact=text.partition("\n")[0])]
 
 
-async def highlight(client: XynoplexClient[HttpTransport], job: HeldMarkJob, generator: Agent) -> MarkJobDone:
+async def highlight(client: XynologClient[HttpTransport], job: HeldMarkJob, generator: Agent) -> MarkJobDone:
     """Your work: read the resource, have its passages quoted, and commit a highlight of each one the text has."""
     text = await client.browse.resource_content(job.resource_id)
     quoted = await passages(text)
@@ -50,7 +50,7 @@ async def work(gateway: str, issuer: str, client_id: str, key: str) -> None:
         HttpTransport(
             gateway, token=agent.token, refresher=agent.refresh, channels=(*JOB_CLAIM_CHANNELS, *JOB_COMMIT_CHANNELS)
         ) as transport,
-        XynoplexClient(transport, transport.content, transport) as client,
+        XynologClient(transport, transport.content, transport) as client,
     ):
         print(f"working as {agent.did}")
         # It says what it is called, as itself: here, its client id. Readers name it by the last name it said, as they name a person.

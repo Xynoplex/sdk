@@ -1,4 +1,4 @@
-package xynoplex
+package xynolog
 
 // A program as an OAuth public client of the issuer a knowledge base trusts:
 // finding the issuer from the knowledge base's resource metadata (RFC 9728),

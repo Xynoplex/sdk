@@ -1,10 +1,10 @@
 import type { Subscription } from 'rxjs';
-import type { XynoplexClient } from '../../client';
-import { FrameRefusal, type StateUnit } from '@xynoplex/core';
+import type { XynologClient } from '../../client';
+import { FrameRefusal, type StateUnit } from '@xynolog/core';
 
 export interface MatchStateUnit extends StateUnit {}
 
-export function createMatchStateUnit(client: XynoplexClient): MatchStateUnit {
+export function createMatchStateUnit(client: XynologClient): MatchStateUnit {
   const subs: Subscription[] = [];
 
   subs.push(client.bus.frames('match:search-requested').subscribe(({ payload: event, correlationId }) => {

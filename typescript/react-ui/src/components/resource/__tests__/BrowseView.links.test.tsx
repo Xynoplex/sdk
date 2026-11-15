@@ -12,19 +12,19 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import type { XynoplexSession } from '@xynoplex/sdk';
+import type { XynologSession } from '@xynolog/sdk';
 import { BrowseView } from '../BrowseView';
-import { resourceId, EventBus } from '@xynoplex/core';
+import { resourceId, EventBus } from '@xynolog/core';
 import { englishTranslationManager } from '../../../test-utils';
 
 vi.mock('../../annotation/AnnotateToolbar', () => ({ AnnotateToolbar: () => null }));
 
 const emptyAnnotations = { highlights: [], references: [], assessments: [], comments: [], tags: [] };
 
-function fakeSession(): XynoplexSession {
+function fakeSession(): XynologSession {
   return {
     client: { bus: new EventBus(), browse: { click: vi.fn() }, beckon: { hover: vi.fn() } },
-  } as unknown as XynoplexSession;
+  } as unknown as XynologSession;
 }
 
 const MD = 'see [the link](https://example.test/x) here';

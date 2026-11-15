@@ -1,4 +1,4 @@
-module github.com/Xynoplex/sdk/scripts/go-module-zip
+module github.com/xynolog/sdk/scripts/go-module-zip
 
 go 1.27.0
 

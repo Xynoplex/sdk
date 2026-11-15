@@ -10,19 +10,19 @@
    ============================================ */
 
 /* Font Sizes */
-.xynoplex-text-xs {
-  font-size: var(--xynoplex-text-xs);
+.xynolog-text-xs {
+  font-size: var(--xynolog-text-xs);
 }
 
-.xynoplex-text-sm {
-  font-size: var(--xynoplex-text-sm);
+.xynolog-text-sm {
+  font-size: var(--xynolog-text-sm);
 }
 
 /* ============================================
    Screen Reader Only
    ============================================ */
 
-.xynoplex-sr-only {
+.xynolog-sr-only {
   position: absolute;
   width: 1px;
   height: 1px;

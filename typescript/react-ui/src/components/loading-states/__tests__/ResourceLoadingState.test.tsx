@@ -19,13 +19,13 @@ describe('ResourceLoadingState', () => {
     render(<ResourceLoadingState />);
 
     const container = screen.getByText('Loading resource...').parentElement;
-    expect(container).toHaveClass('xynoplex-loading-state');
+    expect(container).toHaveClass('xynolog-loading-state');
   });
 
   it('renders text with correct styling', () => {
     render(<ResourceLoadingState />);
 
     const text = screen.getByText('Loading resource...');
-    expect(text).toHaveClass('xynoplex-loading-message');
+    expect(text).toHaveClass('xynolog-loading-message');
   });
 });

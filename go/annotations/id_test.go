@@ -9,7 +9,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/Xynoplex/sdk/go/api"
+	"github.com/xynolog/sdk/go/api"
 )
 
 func TestTheIdOfAnAnnotationIsTheTablesForWhatItIs(t *testing.T) {

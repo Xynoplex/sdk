@@ -1,4 +1,4 @@
-package xynoplex_test
+package xynolog_test
 
 // How a knowledge base and its principals are named, held to the tables every
 // implementation runs: protocol/specs/src/principals/cases.json for a person and a
@@ -12,7 +12,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
+	xynolog "github.com/xynolog/sdk/go"
 )
 
 func readTable(t *testing.T, into any, path ...string) {
@@ -42,7 +42,7 @@ func TestAPersonIsNamedAsTheTableNamesOne(t *testing.T) {
 		t.Fatalf("the table names %d people: a runner that reads too few passes on silence", len(table.People))
 	}
 	for _, row := range table.People {
-		did, err := xynoplex.PersonDid(row.Domain, row.Subject)
+		did, err := xynolog.PersonDid(row.Domain, row.Subject)
 		if err != nil || did.String() != row.Did {
 			t.Errorf("%s: PersonDid(%q, %q) = %q, %v; want %q", row.Why, row.Domain, row.Subject, did, err, row.Did)
 		}
@@ -56,7 +56,7 @@ func TestAnAgentIsNamedAsTheTableNamesOne(t *testing.T) {
 		t.Fatalf("the table names %d agents: a runner that reads too few passes on silence", len(table.Agents))
 	}
 	for _, row := range table.Agents {
-		did, err := xynoplex.AgentDid(row.Domain, row.Subject)
+		did, err := xynolog.AgentDid(row.Domain, row.Subject)
 		if err != nil || did.String() != row.Did {
 			t.Errorf("%s: AgentDid(%q, %q) = %q, %v; want %q", row.Why, row.Domain, row.Subject, did, err, row.Did)
 		}
@@ -82,11 +82,11 @@ func TestAKnowledgeBaseIsNamedByItsDomain(t *testing.T) {
 		if row.Did == nil || row.Resource == nil {
 			t.Fatalf("%s: states a domain and no did or resource", row.Why)
 		}
-		did, err := xynoplex.KbDid(*row.Domain)
+		did, err := xynolog.KbDid(*row.Domain)
 		if err != nil || did.String() != *row.Did {
 			t.Errorf("%s: KbDid(%q) = %q, %v; want %q", row.Why, *row.Domain, did, err, *row.Did)
 		}
-		if resource := xynoplex.KbResource(*row.Domain); resource != *row.Resource {
+		if resource := xynolog.KbResource(*row.Domain); resource != *row.Resource {
 			t.Errorf("%s: KbResource(%q) = %q, want %q", row.Why, *row.Domain, resource, *row.Resource)
 		}
 	}

@@ -15,13 +15,13 @@ let domain_affinity () =
           match guard () with () -> false | exception Wrong_domain -> true
         in
         ( refused,
-          Xynoplex.Identifiers.Resource_id.of_string
+          Xynolog.Identifiers.Resource_id.of_string
             "resource-from-another-domain" ))
   in
   check "effectful candidate guard refuses the wrong domain" true refused;
   Alcotest.(check string)
     "immutable typed IDs cross domains" "resource-from-another-domain"
-    (Xynoplex.Identifiers.Resource_id.to_string (Result.get_ok immutable_id))
+    (Xynolog.Identifiers.Resource_id.to_string (Result.get_ok immutable_id))
 
 let shared_renewal () =
   Eio_main.run @@ fun _ ->
@@ -164,7 +164,7 @@ let caller_clock () =
   let wall = Eio_mock.Clock.make () in
   let jitter = Random.State.make [| 19 |] in
   let expected = Random.State.copy jitter in
-  let module Clock = Xynoplex.Clock in
+  let module Clock = Xynolog.Clock in
   let clock = Clock.make ~monotonic ~wall ~jitter in
   let start = Clock.monotonic_now clock in
   let due = Option.get (Mtime.add_span start (Mtime.Span.of_uint64_ns 2L)) in

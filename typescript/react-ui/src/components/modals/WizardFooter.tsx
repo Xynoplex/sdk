@@ -41,12 +41,12 @@ export function WizardFooter({ backLabel, onBack, primary }: WizardFooterProps) 
   const pending = primary?.pending ?? false;
 
   return (
-    <div className="xynoplex-modal__actions xynoplex-modal__actions--wizard">
+    <div className="xynolog-modal__actions xynolog-modal__actions--wizard">
       {onBack && backLabel && (
         <button
           type="button"
           onClick={onBack}
-          className="xynoplex-button--secondary xynoplex-wizard-footer__back"
+          className="xynolog-button--secondary xynolog-wizard-footer__back"
           disabled={pending}
         >
           ◀ {backLabel}
@@ -56,7 +56,7 @@ export function WizardFooter({ backLabel, onBack, primary }: WizardFooterProps) 
         <button
           type={primary.type}
           {...(primary.onClick ? { onClick: primary.onClick } : {})}
-          className="xynoplex-button--primary"
+          className="xynolog-button--primary"
           disabled={pending || (primary.disabled ?? false)}
           data-pending={pending ? 'true' : 'false'}
         >

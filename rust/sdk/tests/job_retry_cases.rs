@@ -4,10 +4,10 @@
 //! `job:fail` as `willRetry`, so the two must never disagree. In Rust both
 //! answer through this crate's `will_retry_after`.
 
-use xynoplex::claims::will_retry_after;
-use xynoplex::testing::as_id;
-use xynoplex::types::{FailureClass, JobMetadata, JobType};
 use serde_json::Value;
+use xynolog::claims::will_retry_after;
+use xynolog::testing::as_id;
+use xynolog::types::{FailureClass, JobMetadata, JobType};
 
 #[test]
 fn retry_cases() {

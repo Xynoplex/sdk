@@ -24,21 +24,21 @@
 use crate::sse::SseParser;
 use crate::transport::{MALFORMED, Shared, gateway_words, locked, refusal};
 use futures::StreamExt;
-use xynoplex::bus_log::{bus_log, bus_note};
-use xynoplex::channels::{RESOURCE_SCOPED_CHANNELS, TRACE_FIELD};
-use xynoplex::errors::{TransportError, TransportErrorCode};
-use xynoplex::resume::is_persisted_event_id;
-use xynoplex::retry::{equal_jitter, retry_after};
-use xynoplex::timing::{DEGRADED_THRESHOLD, MAX_RECONNECT, RECONNECT_DEBOUNCE};
-use xynoplex::transport::{ConnectionState, Frame, FrameRefusal, StreamId, TraceCarrier};
-use xynoplex::types::ResourceId;
-use xynoplex::types::{BusFrame, BusSubscribeRequest, BusSubscribeRequestScopedItem};
 use serde_json::Value;
 use std::collections::{BTreeMap, HashMap, HashSet, VecDeque};
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::sync::{mpsc, oneshot, watch};
 use tokio::time::Instant;
+use xynolog::bus_log::{bus_log, bus_note};
+use xynolog::channels::{RESOURCE_SCOPED_CHANNELS, TRACE_FIELD};
+use xynolog::errors::{TransportError, TransportErrorCode};
+use xynolog::resume::is_persisted_event_id;
+use xynolog::retry::{equal_jitter, retry_after};
+use xynolog::timing::{DEGRADED_THRESHOLD, MAX_RECONNECT, RECONNECT_DEBOUNCE};
+use xynolog::transport::{ConnectionState, Frame, FrameRefusal, StreamId, TraceCarrier};
+use xynolog::types::ResourceId;
+use xynolog::types::{BusFrame, BusSubscribeRequest, BusSubscribeRequestScopedItem};
 
 pub(crate) enum Command {
     /// A resource's scope got its first hold.
@@ -417,7 +417,7 @@ impl Actor {
             _ => None,
         };
         let frame = Frame {
-            trace: xynoplex_telemetry::bus_recv(&channel, scope.as_deref(), trace),
+            trace: xynolog_telemetry::bus_recv(&channel, scope.as_deref(), trace),
             channel,
             payload,
             correlation_id,
@@ -428,7 +428,7 @@ impl Actor {
         self.shared.router.route(Ok(&frame));
         // The client's own bus is given the frame globally, with where on
         // the stream it was delivered: its client notes the place once it
-        // has taken the frame in (`xynoplex::resume`).
+        // has taken the frame in (`xynolog::resume`).
         if self.bridged(&frame.channel) {
             for bus in locked(&self.shared.bridges).iter() {
                 bus.emit_frame(Frame {
@@ -715,7 +715,7 @@ fn carried(data: &str) -> Line {
                 Err(error) => panic!("serde refused a frame BusFrame allows: {error}"),
             },
         },
-        None => match xynoplex::fault_said::<BusFrame>(&mut value) {
+        None => match xynolog::fault_said::<BusFrame>(&mut value) {
             Some(said) => Line::Unread(said),
             None => match serde_json::from_value(value) {
                 Ok(frame) => Line::Frame(frame),
@@ -875,14 +875,14 @@ mod tests {
     use super::*;
     use crate::transport::{HttpTransportConfig, Timing};
     use futures::{FutureExt, Stream};
-    use xynoplex::bus::StreamError;
-    use xynoplex::channels::{
+    use serde_json::json;
+    use xynolog::bus::StreamError;
+    use xynolog::channels::{
         BRIDGED_CHANNELS, BeckonFocus, BrowseResourceFailed, BrowseResourceRequested, Channel,
         GatherFailed, Request,
     };
-    use xynoplex::event_bus::EventBus;
-    use xynoplex::transport::{FrameRefusalReason, Lagged};
-    use serde_json::json;
+    use xynolog::event_bus::EventBus;
+    use xynolog::transport::{FrameRefusalReason, Lagged};
 
     #[test]
     fn the_ids_remembered_are_the_last_ones_delivered() {

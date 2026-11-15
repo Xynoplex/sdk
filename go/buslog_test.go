@@ -1,4 +1,4 @@
-package xynoplex
+package xynolog
 
 // What a bus log shows of a payload, held to protocol/specs/src/bus/log-cases.json: the
 // table every bus log runs. A runner compares values, never text.
@@ -13,7 +13,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Xynoplex/sdk/go/api"
+	"github.com/xynolog/sdk/go/api"
 	"go.opentelemetry.io/otel/trace"
 )
 

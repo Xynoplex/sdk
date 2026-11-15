@@ -13,7 +13,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { XynoplexError } from '../errors';
+import { XynologError } from '../errors';
 import type { ResourceDescriptor } from '../graph';
 import { formatErrors, validators } from '../openapi';
 import { faultOf, type Fault } from '../required';
@@ -58,8 +58,8 @@ function refusedNamingRepresentations(reading: () => unknown, why: string): void
   } catch (thrown) {
     refusal = thrown;
   }
-  expect(refusal, why).toBeInstanceOf(XynoplexError);
-  if (refusal instanceof XynoplexError) {
+  expect(refusal, why).toBeInstanceOf(XynologError);
+  if (refusal instanceof XynologError) {
     expect(refusal.code, why).toBe('error');
     expect(refusal.message, why).toContain('representations');
   }

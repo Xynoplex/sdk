@@ -30,7 +30,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import fc from 'fast-check';
 import { InMemorySessionStorage } from '../session/session-storage';
-import { SAVE_DEBOUNCE_MS, resourceId } from '@xynoplex/core';
+import { SAVE_DEBOUNCE_MS, resourceId } from '@xynolog/core';
 import { BOOKMARK_KEY, bookmarkSeq, buildRig, persistedAUpTo } from './helpers/persisted-cache-rig';
 
 /**

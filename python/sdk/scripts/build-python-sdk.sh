@@ -52,7 +52,7 @@ fi
 
 # The source distribution holds the package, its README, its LICENSE and its
 # metadata.
-strays=$(tar -tzf "dist/$SDIST" | sed "s#^$NAME-$VERSION/##" | grep -v -e '^$' -e '^src/xynoplex/' -e '^README\.md$' -e '^LICENSE$' -e '^pyproject\.toml$' -e '^PKG-INFO$' -e '^\.gitignore$' || true)
+strays=$(tar -tzf "dist/$SDIST" | sed "s#^$NAME-$VERSION/##" | grep -v -e '^$' -e '^src/xynolog/' -e '^README\.md$' -e '^LICENSE$' -e '^pyproject\.toml$' -e '^PKG-INFO$' -e '^\.gitignore$' || true)
 if [ -n "$strays" ]; then
   echo "::error::the source distribution holds more than the package:" >&2
   echo "$strays" >&2

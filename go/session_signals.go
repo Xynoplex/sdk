@@ -1,4 +1,4 @@
-package xynoplex
+package xynolog
 
 // What a host shows about a session, apart from the session: that it ended,
 // that a request was refused for lack of permission, that a different

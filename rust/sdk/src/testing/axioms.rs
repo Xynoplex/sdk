@@ -18,7 +18,7 @@
 //! spawns tasks or keeps timers is given the chance to act on what the
 //! harness did before the harness looks.
 
-use crate::client::XynoplexClient;
+use crate::client::XynologClient;
 use crate::state_unit::StateUnit;
 use futures_core::Stream;
 use proptest::collection::vec;
@@ -116,7 +116,7 @@ pub trait Given {
 }
 
 /// A client is disposed when it is closed, and closing it ends its own bus.
-impl Given for Arc<XynoplexClient> {
+impl Given for Arc<XynologClient> {
     fn disposed(&self) -> bool {
         self.bus().destroyed()
     }
@@ -532,7 +532,7 @@ mod tests {
     }
 
     /// A unit over a client, which it closes when it is disposed.
-    struct ClosesItsClient(Arc<XynoplexClient>);
+    struct ClosesItsClient(Arc<XynologClient>);
 
     impl StateUnit for ClosesItsClient {
         fn dispose(&self) {

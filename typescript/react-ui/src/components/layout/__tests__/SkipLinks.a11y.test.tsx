@@ -149,7 +149,7 @@ describe('SkipLinks - Accessibility', () => {
         </div>
       );
 
-      const skipLinks = container.querySelector('.xynoplex-skip-links');
+      const skipLinks = container.querySelector('.xynolog-skip-links');
       const wrapper = container.firstElementChild;
       const firstElement = wrapper?.firstElementChild;
 
@@ -185,7 +185,7 @@ describe('SkipLinks - Accessibility', () => {
     it('should carry the class that hides it until focused', () => {
       renderInEnglish(<SkipLinks />);
 
-      expect(screen.getByRole('link')).toHaveClass('xynoplex-skip-link');
+      expect(screen.getByRole('link')).toHaveClass('xynolog-skip-link');
     });
   });
 

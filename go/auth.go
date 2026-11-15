@@ -1,11 +1,11 @@
-package xynoplex
+package xynolog
 
 // Auth: the gateway's view of who is signed in.
 
 import (
 	"context"
 
-	"github.com/Xynoplex/sdk/go/api"
+	"github.com/xynolog/sdk/go/api"
 )
 
 // AuthNamespace is the gateway's view of who is signed in.

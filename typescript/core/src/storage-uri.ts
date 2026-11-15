@@ -6,7 +6,7 @@
  * registry; formats are validated upstream at the create/yield boundary, so
  * the lookup is strict — no fallback.
  *
- * Lives in `@xynoplex/core` because the generation form proposes a default
+ * Lives in `@xynolog/core` because the generation form proposes a default
  * path, and react-ui depends on no package that needs Node. This module
  * imports only the registry, so it is browser-safe.
  */

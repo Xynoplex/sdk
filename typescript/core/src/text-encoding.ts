@@ -14,7 +14,7 @@
  * parsing, the byte-order mark's deciding, and the refusal.
  */
 
-import { XynoplexError } from './errors';
+import { XynologError } from './errors';
 import { REFUSED_ENCODINGS } from './generated/encodings';
 import type { TransportErrorCode } from './generated/error-codes';
 
@@ -112,8 +112,8 @@ export function extractCharset(mediaType: string): string {
 }
 
 /** The reader's own refusal of a charset, which names it. */
-function undecoded(label: string): XynoplexError {
-  return new XynoplexError(
+function undecoded(label: string): XynologError {
+  return new XynologError(
     `The resource's text is ${label}, which is no charset this reader decodes: read its bytes instead`,
     'error' satisfies TransportErrorCode,
   );
@@ -155,7 +155,7 @@ function encodingOfMark(bytes: Uint8Array): 'utf-8' | 'utf-16be' | 'utf-16le' | 
  *
  * @param buffer - The bytes
  * @param mediaType - The content type they came with (e.g. "text/plain; charset=iso-8859-1")
- * @throws A `XynoplexError` whose code is `error`, naming the charset, for one that is not decoded
+ * @throws A `XynologError` whose code is `error`, naming the charset, for one that is not decoded
  *
  * @example
  * const text = decodeWithCharset(bytes, "text/plain; charset=iso-8859-1");

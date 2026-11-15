@@ -7,7 +7,7 @@ set -euo pipefail
 # factory, `createXStateUnit(...)`, which returns a closure-backed plain object
 # with a `dispose()` method. It is a convention of how TypeScript writes its
 # units, not one of the axioms, which say how a unit behaves and are the same in
-# every SDK: a unit elsewhere may be a class (`XynoplexSession`).
+# every SDK: a unit elsewhere may be a class (`XynologSession`).
 #
 # Scope: `*-state-unit.ts` factories + the core `state-unit.ts` interface file.
 # Allowlist: empty (no class declarations expected in any state-unit file).

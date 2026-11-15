@@ -3,7 +3,7 @@ import { Observable } from 'rxjs';
 import { createYieldStateUnit, type YieldStateUnit } from '../yield-state-unit';
 import { makeTestClient, type TestClient } from '../../../__tests__/test-client';
 import { resourceContextFor, annotationContextFor } from '../../../__tests__/fixtures/gathered-context';
-import { assertStateUnitAxioms } from '@xynoplex/core/testing/axioms';
+import { assertStateUnitAxioms } from '@xynolog/core/testing/axioms';
 
 // The job's resource is derived FROM the focus — the state unit passes the
 // context through untouched, so these fixtures are the whole identity story.

@@ -1,11 +1,11 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import type { StateUnit } from '@xynoplex/core';
-import type { XynoplexSession } from '@xynoplex/sdk';
+import type { StateUnit } from '@xynolog/core';
+import type { XynologSession } from '@xynolog/sdk';
 
 /**
- * Construct a state unit whose lifetime is bound to a live `XynoplexSession`
+ * Construct a state unit whose lifetime is bound to a live `XynologSession`
  * (the session gate as API shape).
  *
  * Contract, in the order the KB-switch bug family demands it:
@@ -20,7 +20,7 @@ import type { XynoplexSession } from '@xynoplex/sdk';
  *
  * Keying is by session OBJECT identity, which coincides with `session.id`:
  * successive sessions are distinct objects with distinct ids by construction
- * (`XynoplexSession`'s instance counter exists for exactly this).
+ * (`XynologSession`'s instance counter exists for exactly this).
  *
  * The unit is created inside the effect, not during render — render stays
  * pure (StrictMode-safe: its probe mount cleanly disposes the probe unit),
@@ -34,8 +34,8 @@ import type { XynoplexSession } from '@xynoplex/sdk';
  * construction on every render.
  */
 export function useSessionStateUnit<T extends StateUnit>(
-  session: XynoplexSession | undefined,
-  factory: (session: XynoplexSession) => T,
+  session: XynologSession | undefined,
+  factory: (session: XynologSession) => T,
 ): T | undefined {
   const [unit, setUnit] = useState<T | undefined>(undefined);
   const factoryRef = useRef(factory);

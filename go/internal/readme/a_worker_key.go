@@ -4,15 +4,15 @@ import (
 	"fmt"
 	"os"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
+	xynolog "github.com/xynolog/sdk/go"
 )
 
 // WorkerCredential is a worker's account at issuer, which proves itself with
 // the key the launcher handed it.
-func WorkerCredential(issuer, clientID string) (xynoplex.KeyCredential, error) {
-	key, err := xynoplex.ParsePrivateKeyPEM(os.Getenv("XYNOPLEX_OIDC_CLIENT_KEY"))
+func WorkerCredential(issuer, clientID string) (xynolog.KeyCredential, error) {
+	key, err := xynolog.ParsePrivateKeyPEM(os.Getenv("XYNOLOG_OIDC_CLIENT_KEY"))
 	if err != nil {
-		return xynoplex.KeyCredential{}, fmt.Errorf("XYNOPLEX_OIDC_CLIENT_KEY: %w", err)
+		return xynolog.KeyCredential{}, fmt.Errorf("XYNOLOG_OIDC_CLIENT_KEY: %w", err)
 	}
-	return xynoplex.KeyCredential{Issuer: issuer, ClientID: clientID, PrivateKey: key}, nil
+	return xynolog.KeyCredential{Issuer: issuer, ClientID: clientID, PrivateKey: key}, nil
 }

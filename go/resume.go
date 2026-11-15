@@ -1,4 +1,4 @@
-package xynoplex
+package xynolog
 
 // A stream's place in each scope, kept so the next client of the same
 // knowledge base resumes from it. What that client kept of a scope is then
@@ -9,8 +9,8 @@ import (
 	"maps"
 	"sync"
 
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/internal/required"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/internal/required"
 )
 
 // Bookmarks is where a stream's place in each scope was kept across a
@@ -45,9 +45,9 @@ type Bookmarks interface {
 // A pair kept under the key that is not a resource's id and a
 // PersistedEventId is skipped; what is no object is no places.
 //
-//	places := xynoplex.NewCoupledBookmarks(storage, xynoplex.LastEventIDKey(kb.Id, personKey))
-//	transport := xynoplex.NewHTTPTransport(xynoplex.HTTPTransportConfig{..., Bookmarks: places})
-//	client := xynoplex.NewClient(xynoplex.ClientConfig{..., Persistence: &xynoplex.CachePersistence{Storage: places.Storage(), KbID: kb.Id, PersonKey: personKey}})
+//	places := xynolog.NewCoupledBookmarks(storage, xynolog.LastEventIDKey(kb.Id, personKey))
+//	transport := xynolog.NewHTTPTransport(xynolog.HTTPTransportConfig{..., Bookmarks: places})
+//	client := xynolog.NewClient(xynolog.ClientConfig{..., Persistence: &xynolog.CachePersistence{Storage: places.Storage(), KbID: kb.Id, PersonKey: personKey}})
 //	places.CoupleTo(client)
 type CoupledBookmarks struct {
 	storage SessionStorage

@@ -5,13 +5,13 @@
  * and PDF space (points, bottom-left origin, Y increases upward) — the Y-flip and
  * scale. UI-only: the server has no canvas.
  *
- * `PdfCoordinate` and the viewrect FragmentSelector codec live in `@xynoplex/core`.
+ * `PdfCoordinate` and the viewrect FragmentSelector codec live in `@xynolog/core`.
  *
  * Based on RFC 3778 PDF Fragment Identifiers:
  * https://tools.ietf.org/html/rfc3778
  */
 
-import type { PdfCoordinate } from '@xynoplex/core';
+import type { PdfCoordinate } from '@xynolog/core';
 
 export interface Rectangle {
   x: number;

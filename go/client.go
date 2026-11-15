@@ -1,4 +1,4 @@
-package xynoplex
+package xynolog
 
 // A client of one knowledge base: its eleven namespaces over a transport, the
 // bytes that never ride the bus, and the gateway's own answers.
@@ -8,7 +8,7 @@ import (
 	"errors"
 	"sync"
 
-	"github.com/Xynoplex/sdk/go/bus"
+	"github.com/xynolog/sdk/go/bus"
 )
 
 // ClientConfig is what a client is made over. Every field is required.

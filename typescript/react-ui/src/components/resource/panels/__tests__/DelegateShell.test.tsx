@@ -8,9 +8,9 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
-import { jobId } from '@xynoplex/core';
-import type { XynoplexSession } from '@xynoplex/sdk';
-import { createTestSession } from '@xynoplex/sdk/testing';
+import { jobId } from '@xynolog/core';
+import type { XynologSession } from '@xynolog/sdk';
+import { createTestSession } from '@xynolog/sdk/testing';
 import { DelegateShell } from '../DelegateShell';
 import { delegatedJobControls, markJobControls } from '../../../../lib/delegated-job-controls';
 
@@ -29,7 +29,7 @@ const TR = {
   paramLabel: (c: string) => `tr.param(${c})`,
 };
 
-const sessions: XynoplexSession[] = [];
+const sessions: XynologSession[] = [];
 
 describe('DelegateShell', () => {
   beforeEach(() => {
@@ -81,7 +81,7 @@ describe('DelegateShell', () => {
         form={<span>form</span>} controls={delegatedJobControls(null, null, onDismiss)} progressProps={{ translations: TR }} />,
     );
     expect(screen.queryByText('form')).not.toBeInTheDocument();
-    expect(screen.getByTestId('xynoplex-delegate-status').textContent).toBe('tr.cancelled');
+    expect(screen.getByTestId('xynolog-delegate-status').textContent).toBe('tr.cancelled');
     await userEvent.click(screen.getByLabelText('tr.close'));
     expect(onDismiss).toHaveBeenCalledOnce();
   });
@@ -95,12 +95,12 @@ describe('DelegateShell', () => {
         form={null} controls={markJobControls(session, undefined, jobId(job))} progressProps={{ translations: TR }} />
     );
     const { rerender } = render(running('job-1'));
-    await userEvent.click(screen.getByTestId('xynoplex-delegate-control'));
-    expect(screen.getByTestId('xynoplex-delegate-control')).toBeDisabled();
+    await userEvent.click(screen.getByTestId('xynolog-delegate-control'));
+    expect(screen.getByTestId('xynolog-delegate-control')).toBeDisabled();
 
     rerender(running('job-2'));
-    expect(screen.getByTestId('xynoplex-delegate-control')).toBeEnabled();
-    expect(screen.getByTestId('xynoplex-delegate-control')).toHaveAccessibleName('tr.cancel');
+    expect(screen.getByTestId('xynolog-delegate-control')).toBeEnabled();
+    expect(screen.getByTestId('xynolog-delegate-control')).toHaveAccessibleName('tr.cancel');
   });
 
   it('does not compile when it names no job: a panel cannot leave the control out', () => {

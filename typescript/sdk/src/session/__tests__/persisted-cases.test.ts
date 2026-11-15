@@ -16,7 +16,7 @@
  * frames `resumeFrom` delivers are res-1's scope's, and where it resumes is
  * read from the next connect, made for another resource's scope. `holder`
  * changes kb-a's sign-in through what holds it: for a registry's session,
- * `keptIn`; for the session `XynoplexSession.fromKept` makes over a storage,
+ * `keptIn`; for the session `XynologSession.fromKept` makes over a storage,
  * the memory sign-in it is given. Either way the sign-in is forgotten, a new
  * one kept in its place, or renewed with other tokens.
  */
@@ -26,14 +26,14 @@ import { readFileSync } from 'fs';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import { BehaviorSubject, filter, firstValueFrom, map, take } from 'rxjs';
-import { PERSISTED_QUERIES, resourceId } from '@xynoplex/core';
-import type { AccessToken, KnowledgeBase, components } from '@xynoplex/core';
+import { PERSISTED_QUERIES, resourceId } from '@xynolog/core';
+import type { AccessToken, KnowledgeBase, components } from '@xynolog/core';
 import { isReady } from '../../cache';
 import { mockAnnotation } from '../../__tests__/fixtures/annotation';
 import { createTestClient } from '../../testing';
 import { createHttpSessionFactory } from '../http-session-factory';
-import { XynoplexBrowser } from '../xynoplex-browser';
-import { XynoplexSession } from '../xynoplex-session';
+import { XynologBrowser } from '../xynolog-browser';
+import { XynologSession } from '../xynolog-session';
 import { createSessionSignals } from '../session-signals';
 import type { SessionFactory } from '../session-factory';
 import type { SessionStorage } from '../session-storage';
@@ -175,18 +175,18 @@ const heldGateway = (says: StartupRow['gateway']): { gateway: FakeGateway; relea
 };
 
 /** A session of `kb` the HTTP session factory makes over `storage`, as a registry has it made. */
-const sessionOver = (gateway: FakeGateway, kb: KnowledgeBase, storage: SessionStorage): XynoplexSession =>
+const sessionOver = (gateway: FakeGateway, kb: KnowledgeBase, storage: SessionStorage): XynologSession =>
   createHttpSessionFactory(gateway.fetch)({ kb, storage, signals: createSessionSignals() });
 
 /** End `session` as a registry does, the client it was made with and then the session, and then the gateway. */
-const end = (session: XynoplexSession, gateway: FakeGateway): void => {
+const end = (session: XynologSession, gateway: FakeGateway): void => {
   session.client.dispose();
   session.dispose();
   gateway.close();
 };
 
 /** The name of the first value the client gives for `id`. */
-const firstName = (session: XynoplexSession, id: string): Promise<string> =>
+const firstName = (session: XynologSession, id: string): Promise<string> =>
   firstValueFrom(session.client.browse.resource(resourceId(id)).pipe(filter(isReady), map((state) => state.value.name), take(1)));
 
 type ScopeEntry = NonNullable<StreamConnect['scoped']>[number];
@@ -253,7 +253,7 @@ describe('protocol/specs/src/session/persisted-cases.json', () => {
           storage.set(cacheKey(KB_A.id, jo.personKey, 'resource'), CLOSING);
         };
       }
-      return new XynoplexSession({ kb, kept: keptIn(storage, kb.id), client, token$: new BehaviorSubject<AccessToken | null>(null) });
+      return new XynologSession({ kb, kept: keptIn(storage, kb.id), client, token$: new BehaviorSubject<AccessToken | null>(null) });
     };
 
     /** The sign-in the registry signs in to kb-a with: new, so naming nobody. */
@@ -261,7 +261,7 @@ describe('protocol/specs/src/session/persisted-cases.json', () => {
 
     /** The registry forgets kb-a's sign-in as it is asked to, with the stand-in for an open client. */
     const forgetByRegistry = async (storage: SessionStorage, row: ForgetRow): Promise<void> => {
-      const browser = new XynoplexBrowser({
+      const browser = new XynologBrowser({
         storage,
         sessionFactory: closingWrites,
         fetch: async () => new Response(null, { status: 200 }),
@@ -285,7 +285,7 @@ describe('protocol/specs/src/session/persisted-cases.json', () => {
         issuer: row.by === 'refusal' ? renews : refuses,
         resourceName: 'fresh',
       });
-      const browser = new XynoplexBrowser({ storage, sessionFactory: createHttpSessionFactory(gateway.fetch), fetch: gateway.fetch });
+      const browser = new XynologBrowser({ storage, sessionFactory: createHttpSessionFactory(gateway.fetch), fetch: gateway.fetch });
       try {
         await vi.waitFor(() => expect(getStoredSession(storage, KB_A.id)).toBeNull());
       } finally {
@@ -373,7 +373,7 @@ describe('protocol/specs/src/session/persisted-cases.json', () => {
         issuer: renews,
         resourceName: 'fresh',
       });
-      const opened = await XynoplexSession.fromKept({
+      const opened = await XynologSession.fromKept({
         kb: KB_A,
         kept: keptIn(storage, KB_A.id),
         storage,
@@ -480,7 +480,7 @@ describe('protocol/specs/src/session/persisted-cases.json', () => {
       const kept = new MemorySignIn({ ...testSession(freshJwt(), 'refresh-1'), personKey: jo.personKey });
       const { gateway, release } = heldGateway('names');
       release();
-      const opened = await XynoplexSession.fromKept({ kb: KB_A, kept, storage: here, fetch: gateway.fetch });
+      const opened = await XynologSession.fromKept({ kb: KB_A, kept, storage: here, fetch: gateway.fetch });
       try {
         // The gateway's answer, which reaches the cache now and is written
         // only once the save's wait is over: the change comes first.

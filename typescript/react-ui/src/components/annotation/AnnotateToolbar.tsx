@@ -80,7 +80,7 @@ function DropdownGroup({
 
   return (
     <div
-      className="xynoplex-dropdown-group"
+      className="xynolog-dropdown-group"
       onMouseEnter={() => onHoverChange(true)}
       onMouseLeave={() => onHoverChange(false)}
     >
@@ -91,7 +91,7 @@ function DropdownGroup({
         aria-haspopup="true"
         aria-expanded={isExpanded}
         aria-label={label}
-        className="xynoplex-dropdown-trigger"
+        className="xynolog-dropdown-trigger"
         onClick={onPin}
         onKeyDown={handleKeyDown}
       >
@@ -105,10 +105,10 @@ function DropdownGroup({
           ref={dropdownRef}
           role="menu"
           aria-orientation="vertical"
-          className="xynoplex-dropdown-menu"
+          className="xynolog-dropdown-menu"
         >
-          <div className="xynoplex-dropdown-content">
-            <div className="xynoplex-dropdown-header">
+          <div className="xynolog-dropdown-content">
+            <div className="xynolog-dropdown-header">
               {label}
             </div>
             {expandedContent}
@@ -260,14 +260,14 @@ export function AnnotateToolbar({
           e.stopPropagation(); // Prevent click from bubbling to parent container
           onClick();
         }}
-        className="xynoplex-toolbar-menu-button"
+        className="xynolog-toolbar-menu-button"
         data-selected={isSelected}
         data-delete={isDelete}
         aria-pressed={isSelected}
         aria-label={label}
       >
-        <span className="xynoplex-toolbar-menu-icon" aria-hidden="true">{icon}</span>
-        <span className="xynoplex-toolbar-menu-label">{label}</span>
+        <span className="xynolog-toolbar-menu-icon" aria-hidden="true">{icon}</span>
+        <span className="xynolog-toolbar-menu-label">{label}</span>
       </button>
     );
   };
@@ -310,7 +310,7 @@ export function AnnotateToolbar({
   const showShape = parts.includes('shape') && shapeTypes.length > 0;
 
   return (
-    <div className={`xynoplex-annotate-toolbar${compact ? ' xynoplex-annotate-toolbar--compact' : ''}`}>
+    <div className={`xynolog-annotate-toolbar${compact ? ' xynolog-annotate-toolbar--compact' : ''}`}>
       {/* Click Group */}
       {showClick && (
       <DropdownGroup
@@ -321,13 +321,13 @@ export function AnnotateToolbar({
         containerRef={clickRef}
         collapsedContent={
           <div
-            className="xynoplex-dropdown-display"
+            className="xynolog-dropdown-display"
             data-delete={clickActions.find(a => a.action === selectedClick)?.isDelete ? 'true' : 'false'}
           >
-            <span className="xynoplex-dropdown-icon">
+            <span className="xynolog-dropdown-icon">
               {clickActions.find(a => a.action === selectedClick)?.icon}
             </span>
-            <span className="xynoplex-dropdown-label">
+            <span className="xynolog-dropdown-label">
               {clickActions.find(a => a.action === selectedClick)?.label}
             </span>
           </div>
@@ -345,7 +345,7 @@ export function AnnotateToolbar({
       )}
 
       {/* Separator */}
-      {showMode && showClick && <div className="xynoplex-toolbar-separator" />}
+      {showMode && showClick && <div className="xynolog-toolbar-separator" />}
 
       {/* Mode Group */}
       {showMode && (
@@ -356,9 +356,9 @@ export function AnnotateToolbar({
         onPin={() => setModePinned(!modePinned)}
         containerRef={modeRef}
         collapsedContent={
-          <div className="xynoplex-dropdown-display">
-            <span className="xynoplex-dropdown-icon">{annotateMode ? '✏️' : '📖'}</span>
-            <span className="xynoplex-dropdown-label">
+          <div className="xynolog-dropdown-display">
+            <span className="xynolog-dropdown-icon">{annotateMode ? '✏️' : '📖'}</span>
+            <span className="xynolog-dropdown-label">
               {annotateMode ? t('annotate') : t('browse')}
             </span>
           </div>
@@ -373,7 +373,7 @@ export function AnnotateToolbar({
       )}
 
       {/* Separator */}
-      {showSelection && (showClick || showMode) && <div className="xynoplex-toolbar-separator" />}
+      {showSelection && (showClick || showMode) && <div className="xynolog-toolbar-separator" />}
 
       {/* Selection Group */}
       {showSelection && (
@@ -384,9 +384,9 @@ export function AnnotateToolbar({
           onPin={() => setSelectionPinned(!selectionPinned)}
           containerRef={selectionRef}
           collapsedContent={
-            <div className="xynoplex-dropdown-display">
-              <span className="xynoplex-dropdown-icon">{selectedMotivation ? getMotivationEmoji(selectedMotivation) : '—'}</span>
-              <span className="xynoplex-dropdown-label">
+            <div className="xynolog-dropdown-display">
+              <span className="xynolog-dropdown-icon">{selectedMotivation ? getMotivationEmoji(selectedMotivation) : '—'}</span>
+              <span className="xynolog-dropdown-label">
                 {selectedMotivation
                   ? selectionMotivations.find(m => m.motivation === selectedMotivation)?.label
                   : t('none')
@@ -419,7 +419,7 @@ export function AnnotateToolbar({
       )}
 
       {/* Separator */}
-      {showShape && (showClick || showMode || showSelection) && <div className="xynoplex-toolbar-separator" />}
+      {showShape && (showClick || showMode || showSelection) && <div className="xynolog-toolbar-separator" />}
 
       {/* Shape Group */}
       {showShape && (
@@ -430,11 +430,11 @@ export function AnnotateToolbar({
           onPin={() => setShapePinned(!shapePinned)}
           containerRef={shapeRef}
           collapsedContent={
-            <div className="xynoplex-dropdown-display">
-              <span className="xynoplex-dropdown-icon">
+            <div className="xynolog-dropdown-display">
+              <span className="xynolog-dropdown-icon">
                 {shapeTypes.find(s => s.shape === selectedShape)?.icon}
               </span>
-              <span className="xynoplex-dropdown-label">
+              <span className="xynolog-dropdown-label">
                 {shapeTypes.find(s => s.shape === selectedShape)?.label}
               </span>
             </div>

@@ -9,9 +9,9 @@
 //                                                           each Go type writes a required list held as nil
 //   typescript/scripts/generators/generate-required.mjs        → rust/sdk/src/required-schemas.json,
 //                                                           kotlin/sdk/src/codegen/required-schemas.json,
-//                                                           swift/sdk/Sources/SemiontCodegen/required-schemas.json and
-//                                                           csharp/sdk/generators/Semiont.Generator/required-schemas.json
-//   typescript/scripts/generators/generate-required-python.mjs → python/sdk/src/semiont/_required_table.py
+//                                                           swift/sdk/Sources/XynologCodegen/required-schemas.json and
+//                                                           csharp/sdk/generators/Xynolog.Generator/required-schemas.json
+//   typescript/scripts/generators/generate-required-python.mjs → python/sdk/src/xynolog/_required_table.py
 //
 // Each SDK walks a payload by this table before it decodes it, so every SDK
 // finds the same first FAULT in it, names it the same way, and refuses it.

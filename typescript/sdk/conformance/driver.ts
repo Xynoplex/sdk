@@ -4,24 +4,24 @@
  * driven one operation per line on stdin, reporting each observer's states on
  * stdout. protocol/conformance/sdk/README.md is the protocol.
  *
- * It reaches the SDK only as an application does, through what `@xynoplex/sdk`
- * and `@xynoplex/core` export. Node runs this file as it is (types stripped);
+ * It reaches the SDK only as an application does, through what `@xynolog/sdk`
+ * and `@xynolog/core` export. Node runs this file as it is (types stripped);
  * `npm run typecheck:conformance` is its type check.
  */
 import { createInterface } from 'node:readline';
 import { BehaviorSubject, type Subscription } from 'rxjs';
-import { BRIDGED_CHANNELS, XynoplexError, accessToken, annotationId, baseUrl, resourceId, type AccessToken, type GenerationJobParams, type MarkJobParams } from '@xynoplex/core';
+import { BRIDGED_CHANNELS, XynologError, accessToken, annotationId, baseUrl, resourceId, type AccessToken, type GenerationJobParams, type MarkJobParams } from '@xynolog/core';
 import type { Observable } from 'rxjs';
 import {
   HttpContentTransport,
   HttpTransport,
   InMemorySessionStorage,
   JobFailedError,
-  XynoplexClient,
+  XynologClient,
   personKey,
   type CacheObservable,
   type CacheState,
-} from '@xynoplex/sdk';
+} from '@xynolog/sdk';
 
 type Arguments = Record<string, unknown>;
 
@@ -53,7 +53,7 @@ function object(args: Arguments, name: string): Arguments {
 /** A failure as the protocol carries it: the SDK's code, the status when a server stated one, and a job failure's class when it has one. */
 function failure(error: unknown): { code?: string; status?: number; failureClass?: string; detail: string } {
   const detail = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
-  if (!(error instanceof XynoplexError)) return { detail };
+  if (!(error instanceof XynologError)) return { detail };
   const status = (error as { status?: unknown }).status;
   const failureClass = error instanceof JobFailedError ? error.failureClass : undefined;
   return {
@@ -69,12 +69,12 @@ const storage = new InMemorySessionStorage();
 /** The person a persisting client keeps its caches for: one fixed did, the same in every SDK's driver. */
 const DRIVER_PERSON = personKey('did:web:conformance.example:users:driver');
 /** The client, kept once closed: what a closed client does is part of what the suite asks. */
-let client: XynoplexClient | undefined;
+let client: XynologClient | undefined;
 let closed = false;
 /** Each observer's subscription, by the name the suite gave it. */
 const observers = new Map<string, Subscription>();
 
-function opened(): XynoplexClient {
+function opened(): XynologClient {
   if (!client) throw new Misuse('no client is open');
   return client;
 }
@@ -151,7 +151,7 @@ const operations: Record<string, (args: Arguments) => Promise<unknown> | unknown
       ...(lazyRemoveMs === undefined ? {} : { lazyRemoveMs }),
       ...(lingerMs === undefined ? {} : { lingerMs }),
     });
-    client = new XynoplexClient(transport, new HttpContentTransport(transport), transport, {
+    client = new XynologClient(transport, new HttpContentTransport(transport), transport, {
       ...(busTimeoutMs === undefined ? {} : { busTimeoutMs }),
       ...(invalidationWindowMs === undefined ? {} : { invalidationWindowMs }),
       ...(jobSilenceMs === undefined ? {} : { jobSilenceMs }),

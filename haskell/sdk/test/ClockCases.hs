@@ -20,24 +20,24 @@ import qualified Data.UUID.Types as UUID
 import qualified Data.Set as Set
 import Network.HTTP.Client (defaultManagerSettings, managerRawConnection, noProxy)
 import Network.HTTP.Client.Internal (makeConnection)
-import qualified Xynoplex.Browse as Browse
-import qualified Xynoplex.Client as Client
-import qualified Xynoplex.Content as Content
-import qualified Xynoplex.Bus as Bus
-import qualified Xynoplex.Cache as Cache
-import qualified Xynoplex.Channels as Channel
-import qualified Xynoplex.Discovery as Discovery
-import qualified Xynoplex.ErrorCodes as Code
-import Xynoplex.Errors (BusRequestError(..))
-import qualified Xynoplex.Gateway as Gateway
-import qualified Xynoplex.Http as Http
-import qualified Xynoplex.Http.Routes as Route
-import qualified Xynoplex.Job as Job
-import qualified Xynoplex.Retry as Retry
-import qualified Xynoplex.StateValue as State
-import qualified Xynoplex.Timing.Settings as Timing
-import qualified Xynoplex.Transport as Transport
-import Xynoplex.Types
+import qualified Xynolog.Browse as Browse
+import qualified Xynolog.Client as Client
+import qualified Xynolog.Content as Content
+import qualified Xynolog.Bus as Bus
+import qualified Xynolog.Cache as Cache
+import qualified Xynolog.Channels as Channel
+import qualified Xynolog.Discovery as Discovery
+import qualified Xynolog.ErrorCodes as Code
+import Xynolog.Errors (BusRequestError(..))
+import qualified Xynolog.Gateway as Gateway
+import qualified Xynolog.Http as Http
+import qualified Xynolog.Http.Routes as Route
+import qualified Xynolog.Job as Job
+import qualified Xynolog.Retry as Retry
+import qualified Xynolog.StateValue as State
+import qualified Xynolog.Timing.Settings as Timing
+import qualified Xynolog.Transport as Transport
+import Xynolog.Types
 import qualified Streaming.Prelude as Stream
 import System.FilePath ((</>))
 import System.Timeout (timeout)

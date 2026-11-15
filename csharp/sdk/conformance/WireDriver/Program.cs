@@ -1,5 +1,5 @@
-using Xynoplex;
-using Xynoplex.Errors;
+using Xynolog;
+using Xynolog.Errors;
 using OpenTelemetry;
 using OpenTelemetry.Trace;
 using OpenTelemetry.Metrics;
@@ -7,12 +7,12 @@ using OpenTelemetry.Exporter;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
-using Xynoplex.Http;
-using Xynoplex.Identifiers;
-using Xynoplex.Types;
+using Xynolog.Http;
+using Xynolog.Identifiers;
+using Xynolog.Types;
 
-using var traces = Sdk.CreateTracerProviderBuilder().AddSource("xynoplex").AddOtlpExporter(options => options.Protocol = OtlpExportProtocol.HttpProtobuf).Build();
-using var metrics = Sdk.CreateMeterProviderBuilder().AddMeter("xynoplex").AddOtlpExporter(options => options.Protocol = OtlpExportProtocol.HttpProtobuf).Build();
+using var traces = Sdk.CreateTracerProviderBuilder().AddSource("xynolog").AddOtlpExporter(options => options.Protocol = OtlpExportProtocol.HttpProtobuf).Build();
+using var metrics = Sdk.CreateMeterProviderBuilder().AddMeter("xynolog").AddOtlpExporter(options => options.Protocol = OtlpExportProtocol.HttpProtobuf).Build();
 var driver = new WireDriver();
 using var live = args.Contains("--live", StringComparer.Ordinal) ? new LiveDriver() : null;
 using var worker = args.Contains("--worker", StringComparer.Ordinal) ? new WorkerDriver() : null;
@@ -141,12 +141,12 @@ internal sealed class WireDriver : IDisposable
             Say(new JsonObject { ["id"] = id, ["ok"] = JsonSerializer.SerializeToNode(answer, Json) });
         }
         catch (OperationCanceledException) when (cancellation.IsCancellationRequested) { Say(new { id, abandoned = true }); }
-        catch (XynoplexError error) { Say(new { id, error = Failure(error) }); }
+        catch (XynologError error) { Say(new { id, error = Failure(error) }); }
         catch (Exception error) { Say(new { id, misuse = error.Message }); }
         finally { lock (gate) { callers.Remove(id); } }
     }
 
-    private static object Failure(XynoplexError error) => new { code = error.Code, status = error.Status, detail = error.Message };
+    private static object Failure(XynologError error) => new { code = error.Code, status = error.Status, detail = error.Message };
 
     private async Task ReportStatesAsync(HttpTransport transport)
     {

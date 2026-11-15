@@ -10,13 +10,6 @@ use axum::response::{IntoResponse, Response};
 use axum::routing::post;
 use bytes::Bytes;
 use futures::StreamExt;
-use xynoplex::channels::BRIDGED_CHANNELS;
-use xynoplex::timing::REQUEST_RETRY_PAUSE;
-use xynoplex::transport::{BoxFuture, ContentTransport, PutBinaryRequest, UploadProgress};
-use xynoplex_http_transport::content::HttpContentTransport;
-use xynoplex_http_transport::transport::{
-    HttpTransport, HttpTransportConfig, Timing, TokenRefresher,
-};
 use serde_json::json;
 use std::collections::VecDeque;
 use std::future::IntoFuture;
@@ -24,6 +17,13 @@ use std::sync::{Arc, Mutex};
 use tokio::io::{AsyncBufReadExt, AsyncReadExt, AsyncWriteExt, BufReader};
 use tokio::net::TcpStream;
 use tokio::sync::{Notify, watch};
+use xynolog::channels::BRIDGED_CHANNELS;
+use xynolog::timing::REQUEST_RETRY_PAUSE;
+use xynolog::transport::{BoxFuture, ContentTransport, PutBinaryRequest, UploadProgress};
+use xynolog_http_transport::content::HttpContentTransport;
+use xynolog_http_transport::transport::{
+    HttpTransport, HttpTransportConfig, Timing, TokenRefresher,
+};
 
 /// Each upload that arrived: the credential it carried, its key, and its
 /// body.

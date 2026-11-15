@@ -1,10 +1,10 @@
 //! Where the words a model quoted are in a text is one table,
 //! protocol/specs/src/annotations/reconcile-cases.json, which every SDK runs: this
-//! crate's `xynoplex::annotations::reconcile` answers, for each case's text
+//! crate's `xynolog::annotations::reconcile` answers, for each case's text
 //! and quote, what TypeScript's and Python's answer.
 
-use xynoplex::annotations::{AnchorMethod, QuotedText, ReconciledSpan, reconcile};
 use serde_json::{Value, json};
+use xynolog::annotations::{AnchorMethod, QuotedText, ReconciledSpan, reconcile};
 
 fn table() -> Value {
     serde_json::from_str(include_str!("../specs/annotations/reconcile-cases.json"))

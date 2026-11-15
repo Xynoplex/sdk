@@ -11,9 +11,9 @@ import qualified Data.Aeson.KeyMap as KM
 import qualified Data.ByteString as Bytes
 import qualified Data.ByteString.Lazy as Lazy
 import Data.Text.Encoding (decodeUtf8, decodeUtf8')
-import qualified Xynoplex.Discovery as D
-import qualified Xynoplex.Timing as Timing
-import Xynoplex.Types (DiscoveryDocument(..), DiscoveredKB(..))
+import qualified Xynolog.Discovery as D
+import qualified Xynolog.Timing as Timing
+import Xynolog.Types (DiscoveryDocument(..), DiscoveredKB(..))
 import qualified Streaming.Prelude as Stream
 import System.IO.Error (doesNotExistErrorType, mkIOError)
 import System.Timeout (timeout)

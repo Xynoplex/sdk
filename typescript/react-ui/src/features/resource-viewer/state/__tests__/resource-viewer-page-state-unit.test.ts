@@ -2,10 +2,10 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 import { asStates } from '../../../../__tests__/test-client';
 import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { annotationId, resourceId as makeResourceId } from '@xynoplex/core';
+import { annotationId, resourceId as makeResourceId } from '@xynolog/core';
 import type { ShellStateUnit } from '../../../../state/shell-state-unit';
 import { createResourceViewerPageStateUnit, type ResourceViewerPageStateUnit } from '../resource-viewer-page-state-unit';
-import { assertStateUnitAxioms, disposeProbe } from '@xynoplex/core/testing/axioms';
+import { assertStateUnitAxioms, disposeProbe } from '@xynolog/core/testing/axioms';
 import { makeTestSession, type TestSession } from '../../../../__tests__/test-client';
 
 const RID = makeResourceId('res-1');

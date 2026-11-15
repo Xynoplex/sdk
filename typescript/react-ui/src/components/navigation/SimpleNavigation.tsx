@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { useXynoplex } from '../../session/XynoplexProvider';
+import { useXynolog } from '../../session/XynologProvider';
 import type { LinkComponentProps } from '../../contexts/RoutingContext';
 
 export interface SimpleNavigationItem {
@@ -48,7 +48,7 @@ export function SimpleNavigation({
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const xynoplex = useXynoplex();
+  const xynolog = useXynolog();
 
   const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
   const closeDropdown = () => setIsDropdownOpen(false);
@@ -69,26 +69,26 @@ export function SimpleNavigation({
   }, [isDropdownOpen]);
 
   return (
-    <div className="xynoplex-simple-nav">
+    <div className="xynolog-simple-nav">
       {/* Section header with collapse/expand button and optional dropdown */}
       <div style={{ position: 'relative' }} ref={dropdownContent ? dropdownRef : undefined}>
-        <div className="xynoplex-nav-section__header">
+        <div className="xynolog-nav-section__header">
           {dropdownContent ? (
             <button
               onClick={toggleDropdown}
-              className="xynoplex-nav-section__header-button"
+              className="xynolog-nav-section__header-button"
               aria-expanded={isDropdownOpen}
               aria-haspopup="true"
               type="button"
             >
-              {!isCollapsed && <span className="xynoplex-nav-section__header-text">{title}</span>}
+              {!isCollapsed && <span className="xynolog-nav-section__header-text">{title}</span>}
             </button>
           ) : (
-            !isCollapsed && <span className="xynoplex-nav-section__header-text">{title}</span>
+            !isCollapsed && <span className="xynolog-nav-section__header-text">{title}</span>
           )}
           <button
-            onClick={() => xynoplex.emit('shell:sidebar-toggle', undefined)}
-            className="xynoplex-nav-section__header-icon"
+            onClick={() => xynolog.emit('shell:sidebar-toggle', undefined)}
+            className="xynolog-nav-section__header-icon"
             title={isCollapsed ? expandSidebarLabel : collapseSidebarLabel}
             aria-label={isCollapsed ? expandSidebarLabel : collapseSidebarLabel}
             type="button"
@@ -98,7 +98,7 @@ export function SimpleNavigation({
         </div>
 
         {isDropdownOpen && dropdownContent && !isCollapsed && (
-          <div className="xynoplex-nav-section__dropdown">
+          <div className="xynolog-nav-section__dropdown">
             {dropdownContent(closeDropdown)}
           </div>
         )}
@@ -106,19 +106,19 @@ export function SimpleNavigation({
 
       {/* Static navigation tabs */}
       {!isCollapsed && (
-        <nav className="xynoplex-nav-tabs">
+        <nav className="xynolog-nav-tabs">
           {items.map((item) => {
             const isActive = currentPath === item.href;
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`xynoplex-nav-tab ${isActive ? 'xynoplex-nav-tab--active' : ''}`}
+                className={`xynolog-nav-tab ${isActive ? 'xynolog-nav-tab--active' : ''}`}
                 title={item.description || item.name}
                 aria-current={isActive ? 'page' : undefined}
               >
-                <item.icon className="xynoplex-nav-tab__icon" aria-hidden="true" />
-                <span className="xynoplex-nav-tab__text">{item.name}</span>
+                <item.icon className="xynolog-nav-tab__icon" aria-hidden="true" />
+                <span className="xynolog-nav-tab__text">{item.name}</span>
               </Link>
             );
           })}
@@ -127,19 +127,19 @@ export function SimpleNavigation({
 
       {/* Collapsed state - show icon-only tabs */}
       {isCollapsed && (
-        <nav className="xynoplex-nav-tabs">
+        <nav className="xynolog-nav-tabs">
           {items.map((item) => {
             const isActive = currentPath === item.href;
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`xynoplex-nav-tab ${isActive ? 'xynoplex-nav-tab--active' : ''}`}
+                className={`xynolog-nav-tab ${isActive ? 'xynolog-nav-tab--active' : ''}`}
                 title={item.description || item.name}
                 aria-current={isActive ? 'page' : undefined}
                 aria-label={item.name}
               >
-                <item.icon className="xynoplex-nav-tab__icon" aria-hidden="true" />
+                <item.icon className="xynolog-nav-tab__icon" aria-hidden="true" />
               </Link>
             );
           })}

@@ -1,6 +1,6 @@
 'use client';
 
-import type { ResourceId } from '@xynoplex/core';
+import type { ResourceId } from '@xynolog/core';
 import React, { useState, useCallback, useRef, useMemo } from 'react';
 import { TranslationProvider, useTranslations, type TranslationSource } from '../../contexts/TranslationContext';
 import { translationSourceOf } from '../../lib/translation-source';
@@ -10,9 +10,9 @@ import { BrowseView, type ReferenceHover } from './BrowseView';
 import type { BrowseMediaRenderers } from './browse-renderers';
 import { PopupContainer } from '../annotation-popups/SharedPopupElements';
 import { JsonLdView } from '../annotation-popups/JsonLdView';
-import type { Annotation, AnnotationId, ResourceDescriptor as XynoplexResource, EventMap, AnchorRect } from '@xynoplex/core';
-import { getExactText, getTargetSelector, getPrimaryMediaType, isHighlight, isAssessment, isReference, isComment, isTag, getBodySource, annotationId as makeAnnotationId } from '@xynoplex/core';
-import type { XynoplexSession } from '@xynoplex/sdk';
+import type { Annotation, AnnotationId, ResourceDescriptor as XynologResource, EventMap, AnchorRect } from '@xynolog/core';
+import { getExactText, getTargetSelector, getPrimaryMediaType, isHighlight, isAssessment, isReference, isComment, isTag, getBodySource, annotationId as makeAnnotationId } from '@xynolog/core';
+import type { XynologSession } from '@xynolog/sdk';
 import { useSessionEventSubscriptions } from '../../hooks/useSessionEventSubscriptions';
 import { ANNOTATORS } from '../../lib/annotation-registry';
 import type { AnnotationsCollection } from '../../types/annotation-props';
@@ -27,8 +27,8 @@ import type { AnnotationsCollection } from '../../types/annotation-props';
  * refresh on their own. The viewer subscribes only to `browse:click`
  * (annotation-click routing).
  *
- * Bring-your-own-session: the `session` (XynoplexSession) and the host's
- * navigation / panel callbacks come in as props — no XynoplexProvider required.
+ * Bring-your-own-session: the `session` (XynologSession) and the host's
+ * navigation / panel callbacks come in as props — no XynologProvider required.
  * Every event it subscribes to is session-scoped and reaches it on
  * `session.client`. Its language is a required prop, a `locale` or the host's
  * `translationManager`: react-ui assumes none, and the viewer mounts its own
@@ -38,10 +38,10 @@ import type { AnnotationsCollection } from '../../types/annotation-props';
  *   Archivist → event log → SSE → EventBus → sdk cache invalidation → live queries
  */
 interface Props {
-  resource: XynoplexResource & { content: string };
+  resource: XynologResource & { content: string };
   annotations: AnnotationsCollection;
   /** Session for the shown resource — its client mutates/invalidates, its bus feeds annotation events. */
-  session: XynoplexSession | null;
+  session: XynologSession | null;
   /** Host-owned navigation: a resolved reference was followed. Omit for a view with no follow behavior. */
   onOpenResource?: (resourceId: ResourceId) => void;
   /** Host-owned panel control (annotation clicks open a panel). Omit for hosts without side panels. */
@@ -378,7 +378,7 @@ function ResourceViewerBody({
   }, [references]);
 
   return (
-    <div ref={documentViewerRef} className={`xynoplex-resource-viewer${inline ? ' xynoplex-resource-viewer--inline' : ''}`}>
+    <div ref={documentViewerRef} className={`xynolog-resource-viewer${inline ? ' xynolog-resource-viewer--inline' : ''}`}>
       {/* Content */}
       {activeView === 'annotate' ? (
         <AnnotateView
@@ -462,29 +462,29 @@ function ResourceViewerBody({
             onClose={() => setDeleteConfirmation(null)}
             position={deleteConfirmation.position}
           >
-            <div className="xynoplex-delete-confirmation">
-              <div className="xynoplex-delete-confirmation__header">
-                <span className="xynoplex-delete-confirmation__icon">{motivationEmoji}</span>
-                <h3 className="xynoplex-delete-confirmation__title">
+            <div className="xynolog-delete-confirmation">
+              <div className="xynolog-delete-confirmation__header">
+                <span className="xynolog-delete-confirmation__icon">{motivationEmoji}</span>
+                <h3 className="xynolog-delete-confirmation__title">
                   {t('deleteConfirmationTitle')}
                 </h3>
               </div>
 
               {selectedText && (
-                <div className="xynoplex-delete-confirmation__quote">
-                  <p className="xynoplex-delete-confirmation__text">
+                <div className="xynolog-delete-confirmation__quote">
+                  <p className="xynolog-delete-confirmation__text">
                     "{selectedText.length > 100 ? selectedText.substring(0, 100) + '...' : selectedText}"
                   </p>
                 </div>
               )}
 
-              <p className="xynoplex-delete-confirmation__message">
+              <p className="xynolog-delete-confirmation__message">
                 {t('deleteConfirmationMessage')}
               </p>
-              <div className="xynoplex-delete-confirmation__actions">
+              <div className="xynolog-delete-confirmation__actions">
               <button
                 onClick={() => setDeleteConfirmation(null)}
-                className="xynoplex-button xynoplex-button--secondary"
+                className="xynolog-button xynolog-button--secondary"
               >
                 {t('deleteConfirmationCancel')}
               </button>
@@ -493,7 +493,7 @@ function ResourceViewerBody({
                   handleDeleteAnnotation(deleteConfirmation.annotation.id);
                   setDeleteConfirmation(null);
                 }}
-                className="xynoplex-button xynoplex-button--danger"
+                className="xynolog-button xynolog-button--danger"
               >
                 {t('deleteConfirmationDelete')}
               </button>

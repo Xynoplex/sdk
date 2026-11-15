@@ -14,9 +14,9 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { renderInEnglish } from '../../../test-utils';
-import { ANCHORED_TEXT_REASK_MS, resourceId } from '@xynoplex/core';
-import type { AnchoredTextAnswer } from '@xynoplex/core';
-import type { XynoplexSession } from '@xynoplex/sdk';
+import { ANCHORED_TEXT_REASK_MS, resourceId } from '@xynolog/core';
+import type { AnchoredTextAnswer } from '@xynolog/core';
+import type { XynologSession } from '@xynolog/sdk';
 import { SvgDrawingCanvas } from '../SvgDrawingCanvas';
 
 // jsdom's Image never fires onload; the canvas reads an image's own size from
@@ -33,16 +33,16 @@ class FakeImage {
 
 const IMAGE = resourceId('image-1');
 
-const canvas = () => document.querySelector('.xynoplex-svg-drawing-canvas');
-const notice = () => document.querySelector('.xynoplex-anchored-text-notice');
+const canvas = () => document.querySelector('.xynolog-svg-drawing-canvas');
+const notice = () => document.querySelector('.xynolog-anchored-text-notice');
 
 /** The canvas with a tool chosen, over a session whose anchored-text read is
  *  `ask`. `request` is where a drawn shape arrives. */
-function mount(ask: XynoplexSession['client']['browse']['resourceAnchoredText']) {
+function mount(ask: XynologSession['client']['browse']['resourceAnchoredText']) {
   const request = vi.fn();
   const session = {
     client: { browse: { resourceAnchoredText: ask, click: vi.fn() }, mark: { request }, beckon: { hover: vi.fn() } },
-  } as unknown as XynoplexSession;
+  } as unknown as XynologSession;
   renderInEnglish(
     <SvgDrawingCanvas
       imageUrl="http://test/image.png"
@@ -58,7 +58,7 @@ function mount(ask: XynoplexSession['client']['browse']['resourceAnchoredText'])
 /** jsdom lays nothing out: show the image at 200×200, twice its own size, and
  *  let the canvas read that. */
 function layOutImage() {
-  const img = document.querySelector('.xynoplex-svg-drawing-canvas__image') as HTMLImageElement;
+  const img = document.querySelector('.xynolog-svg-drawing-canvas__image') as HTMLImageElement;
   Object.defineProperty(img, 'clientWidth', { value: 200, configurable: true });
   Object.defineProperty(img, 'clientHeight', { value: 200, configurable: true });
   fireEvent(window, new Event('resize'));
@@ -87,7 +87,7 @@ describe('SvgDrawingCanvas — annotating waits for the text', () => {
     const { request } = mount(ask);
 
     await waitFor(() => {
-      expect(document.querySelector('.xynoplex-svg-drawing-canvas__overlay-container')).toBeInTheDocument();
+      expect(document.querySelector('.xynolog-svg-drawing-canvas__overlay-container')).toBeInTheDocument();
     });
     layOutImage();
 
@@ -156,7 +156,7 @@ describe('SvgDrawingCanvas — annotating waits for the text', () => {
     const ask = vi.fn().mockResolvedValue({ kind: 'no-map' });
     const session = {
       client: { browse: { resourceAnchoredText: ask, click: vi.fn() }, beckon: { hover: vi.fn() } },
-    } as unknown as XynoplexSession;
+    } as unknown as XynologSession;
     renderInEnglish(
       <SvgDrawingCanvas
         imageUrl="http://test/image.png"

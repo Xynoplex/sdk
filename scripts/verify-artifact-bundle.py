@@ -28,7 +28,7 @@ def main() -> None:
     if not manifest_path.is_file():
         sys.exit(f"SDK artifact manifest not found: {manifest_path}")
     manifest = json.loads(manifest_path.read_text())
-    if manifest.get("schema") != "xynoplex-sdk-artifacts/v2":
+    if manifest.get("schema") != "xynolog-sdk-artifacts/v2":
         sys.exit("Unsupported SDK artifact manifest schema")
     if args.sdk_commit and manifest["sdk"]["commit"] != args.sdk_commit:
         sys.exit(f"SDK commit mismatch: expected {args.sdk_commit}, got {manifest['sdk']['commit']}")

@@ -7,28 +7,28 @@
  * and not-yet-asked render NO row — no claim, no invented state. A bridged
  * `smelt:settled` for THIS resource refreshes the row in place.
  */
-import { resourceId } from '@xynoplex/core';
-import type { AnchoredTextAnswer } from '@xynoplex/core';
+import { resourceId } from '@xynolog/core';
+import type { AnchoredTextAnswer } from '@xynolog/core';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import React from 'react';
 import { screen, act, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { createTestXynoplexWrapper, renderInEnglish } from '../../../../test-utils';
+import { createTestXynologWrapper, renderInEnglish } from '../../../../test-utils';
 import { ResourceInfoPanel } from '../ResourceInfoPanel';
-import type { XynoplexSession } from '@xynoplex/sdk';
+import type { XynologSession } from '@xynolog/sdk';
 
 const props = {
   resourceId: resourceId('res-tl'),
   documentEntityTypes: [],
-  session: null as XynoplexSession | null,
+  session: null as XynologSession | null,
 };
 
 const EXTRACTED: AnchoredTextAnswer = { kind: 'extracted', method: 'pdf-text-layer', text: '', items: [] };
 
 function mountWithAnswer(answer: AnchoredTextAnswer) {
-  const { XynoplexWrapper, eventBus, client, session } = createTestXynoplexWrapper();
+  const { XynologWrapper, eventBus, client, session } = createTestXynologWrapper();
   const ask = vi.spyOn(client.browse, 'resourceAnchoredText').mockResolvedValue(answer);
-  renderInEnglish(React.cloneElement(<ResourceInfoPanel {...props} />, { session }), { wrapper: XynoplexWrapper });
+  renderInEnglish(React.cloneElement(<ResourceInfoPanel {...props} />, { session }), { wrapper: XynologWrapper });
   return { eventBus, ask };
 }
 

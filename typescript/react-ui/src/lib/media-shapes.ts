@@ -6,7 +6,7 @@
  */
 
 import type { ShapeType } from '../components/annotation/AnnotateToolbar';
-import { capabilitiesOf } from '@xynoplex/core';
+import { capabilitiesOf } from '@xynolog/core';
 /**
  * Selector types that support shape selection
  */
@@ -111,7 +111,7 @@ export function getSelectedShapeForSelectorType(selectorType: SelectorType): Sha
 
   // SVG selector: check localStorage
   if (typeof window !== 'undefined') {
-    const stored = localStorage.getItem('xynoplex-toolbar-shape-svg');
+    const stored = localStorage.getItem('xynolog-toolbar-shape-svg');
     if (stored && ['rectangle', 'circle', 'polygon'].includes(stored)) {
       return stored as ShapeType;
     }
@@ -130,6 +130,6 @@ export function getSelectedShapeForSelectorType(selectorType: SelectorType): Sha
 export function saveSelectedShapeForSelectorType(selectorType: SelectorType, shape: ShapeType): void {
   // Only save for SVG selector (fragment is always rectangle, text doesn't use shapes)
   if (selectorType === 'svg' && typeof window !== 'undefined') {
-    localStorage.setItem('xynoplex-toolbar-shape-svg', shape);
+    localStorage.setItem('xynolog-toolbar-shape-svg', shape);
   }
 }

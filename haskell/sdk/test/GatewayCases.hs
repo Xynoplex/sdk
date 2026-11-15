@@ -8,9 +8,9 @@ import Data.Aeson.Types (Parser, parseEither)
 import qualified Data.Aeson.KeyMap as KM
 import qualified Data.ByteString as Bytes
 import qualified Data.Text as T
-import Xynoplex.Gateway (gatewayUrl)
-import Xynoplex.HostName (isValidHostname)
-import Xynoplex.Types (HttpEndpoint(..))
+import Xynolog.Gateway (gatewayUrl)
+import Xynolog.HostName (isValidHostname)
+import Xynolog.Types (HttpEndpoint(..))
 import System.FilePath ((</>))
 
 gatewayCases :: FilePath -> IO ()

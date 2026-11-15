@@ -319,9 +319,9 @@ describe('ErrorBoundary Component', () => {
         </ErrorBoundary>
       );
 
-      const wrapper = container.querySelector('.xynoplex-error-boundary-container');
+      const wrapper = container.querySelector('.xynolog-error-boundary-container');
       expect(wrapper).toBeInTheDocument();
-      expect(wrapper).toHaveClass('xynoplex-error-boundary-container');
+      expect(wrapper).toHaveClass('xynolog-error-boundary-container');
     });
 
     it('should have proper button styling', () => {
@@ -332,11 +332,11 @@ describe('ErrorBoundary Component', () => {
       );
 
       const tryAgainButton = screen.getByText('Try Again');
-      expect(tryAgainButton).toHaveClass('xynoplex-button');
+      expect(tryAgainButton).toHaveClass('xynolog-button');
       expect(tryAgainButton).toHaveAttribute('data-variant', 'primary');
 
       const goHomeButton = screen.getByText('Go Home');
-      expect(goHomeButton).toHaveClass('xynoplex-button');
+      expect(goHomeButton).toHaveClass('xynolog-button');
       expect(goHomeButton).toHaveAttribute('data-variant', 'secondary');
     });
   });
@@ -451,7 +451,7 @@ describe('AsyncErrorBoundary Component', () => {
       );
 
       expect(screen.getByText('Retry')).toBeInTheDocument();
-      expect(container.querySelector('.xynoplex-async-error-message')).toBeEmptyDOMElement();
+      expect(container.querySelector('.xynolog-async-error-message')).toBeEmptyDOMElement();
     });
   });
 
@@ -489,9 +489,9 @@ describe('AsyncErrorBoundary Component', () => {
         </AsyncErrorBoundary>
       );
 
-      const wrapper = container.querySelector('.xynoplex-async-error-boundary');
+      const wrapper = container.querySelector('.xynolog-async-error-boundary');
       expect(wrapper).toBeInTheDocument();
-      expect(wrapper).toHaveClass('xynoplex-async-error-boundary');
+      expect(wrapper).toHaveClass('xynolog-async-error-boundary');
     });
 
     it('should display warning icon', () => {
@@ -503,7 +503,7 @@ describe('AsyncErrorBoundary Component', () => {
 
       const icon = container.querySelector('svg');
       expect(icon).toBeInTheDocument();
-      expect(icon).toHaveClass('xynoplex-icon-warning');
+      expect(icon).toHaveClass('xynolog-icon-warning');
     });
   });
 

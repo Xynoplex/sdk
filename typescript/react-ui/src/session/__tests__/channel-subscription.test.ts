@@ -2,12 +2,12 @@
  * subscribeChannel — a channel of no scope read by name, on the client's own
  * bus, which carries the client's in-process signals and the wire's events
  * alike. A channel of a resource's scope is read on the client's wire, for
- * one resource (`Bus.frames(channel, resourceId)`, in @xynoplex/core); read
+ * one resource (`Bus.frames(channel, resourceId)`, in @xynolog/core); read
  * here, it is refused, by the types and by the call.
  */
 
 import { describe, it, expect, vi } from 'vitest';
-import { createTestClient } from '@xynoplex/sdk/testing';
+import { createTestClient } from '@xynolog/sdk/testing';
 import { subscribeChannel } from '../channel-subscription';
 
 describe('a channel read by name', () => {

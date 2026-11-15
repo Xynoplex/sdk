@@ -82,7 +82,7 @@ const generation: GenerationJobParams = {
   title: 'Ouranos',
   storageUri: 'file://generated/ouranos.md',
   context: {
-    focus: { kind: 'resource', resource: { '@context': 'https://xynoplex.dev/context/v1', '@id': R, name: 'Source', representations: [] } },
+    focus: { kind: 'resource', resource: { '@context': 'https://xynolog.dev/context/v1', '@id': R, name: 'Source', representations: [] } },
     graph: { nodes: [], edges: [] },
     metadata: {},
   },

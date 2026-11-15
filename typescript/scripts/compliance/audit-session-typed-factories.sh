@@ -5,14 +5,14 @@ set -euo pipefail
 # never via `useStateUnit` with a non-null-asserted client.
 #
 # A state-unit factory's parameter is the
-# lifetime it must not outlive — a `XynoplexSession`. The `useSessionStateUnit`
+# lifetime it must not outlive — a `XynologSession`. The `useSessionStateUnit`
 # hook constructs only under a live session and rebuilds (dispose-first) on
 # session swap, so a `!` assertion on a client or session inside a factory
 # closure is the tell of a call site that constructs outside that guarantee,
 # and crashes a page rendered with no session.
 #
 # Rule 1: no `!`-asserted identifier inside a `useStateUnit`/`useSessionStateUnit`
-#         call line (catches `createX(xynoplex!, …)`).
+#         call line (catches `createX(xynolog!, …)`).
 # Rule 2: `useStateUnit(` appears ONLY in the allowlist below — everything
 #         session-bound uses `useSessionStateUnit`.
 #

@@ -4,11 +4,11 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import { ReferencesPanel } from '../ReferencesPanel';
-import type { Annotation, AnnotationId, EventBus, EventMap } from '@xynoplex/core';
+import type { Annotation, AnnotationId, EventBus, EventMap } from '@xynolog/core';
 import type { LinkComponentProps, RouteBuilder } from '../../../../contexts/RoutingContext';
-import { createMarkStateUnit, type MarkStateUnit, type XynoplexSession } from '@xynoplex/sdk';
-import { createTestXynoplexWrapper } from '../../../../test-utils';
-import { FrameRefusal, jobId, resourceId } from '@xynoplex/core';
+import { createMarkStateUnit, type MarkStateUnit, type XynologSession } from '@xynolog/sdk';
+import { createTestXynologWrapper } from '../../../../test-utils';
+import { FrameRefusal, jobId, resourceId } from '@xynolog/core';
 
 // Composition-based event tracker
 interface TrackedEvent {
@@ -39,20 +39,20 @@ function createEventTracker() {
 // would hand tests after the first a disposed client. The component is
 // provider-free: the `session` passed as a prop (same factory call as the
 // eventBus the tracker attaches to) is the only session it sees.
-let session: XynoplexSession;
+let session: XynologSession;
 let mark: MarkStateUnit;
 let eventBus: EventBus;
-let XynoplexWrapper: React.ComponentType<{ children: React.ReactNode }>;
+let XynologWrapper: React.ComponentType<{ children: React.ReactNode }>;
 
 beforeEach(() => {
-  ({ session, eventBus, XynoplexWrapper } = createTestXynoplexWrapper());
+  ({ session, eventBus, XynologWrapper } = createTestXynologWrapper());
   mark = createMarkStateUnit(session.client, resourceId('res-1'));
 });
 
 const renderWithEventBus = (component: React.ReactElement, tracker?: ReturnType<typeof createEventTracker>) => {
   if (tracker) tracker._attach(eventBus);
   const Wrapper = ({ children }: { children: React.ReactNode }) => (
-    <XynoplexWrapper>{children}</XynoplexWrapper>
+    <XynologWrapper>{children}</XynologWrapper>
   );
   return render(component, { wrapper: Wrapper });
 };
@@ -154,9 +154,9 @@ describe('ReferencesPanel Component', () => {
         />,
       );
 
-      const sparkling = container.querySelectorAll('.xynoplex-reference-icon.annotation-sparkle');
+      const sparkling = container.querySelectorAll('.xynolog-reference-icon.annotation-sparkle');
       expect(sparkling).toHaveLength(1);
-      expect(sparkling[0]!.closest('.xynoplex-annotation-entry')).toHaveTextContent('text of ann-lit');
+      expect(sparkling[0]!.closest('.xynolog-annotation-entry')).toHaveTextContent('text of ann-lit');
     });
   });
 
@@ -209,7 +209,7 @@ describe('ReferencesPanel Component', () => {
         <ReferencesPanel {...panelProps()} pendingAnnotation={pendingLinking} />,
         tracker,
       );
-      return within(container.querySelector('.xynoplex-annotation-prompt') as HTMLElement);
+      return within(container.querySelector('.xynolog-annotation-prompt') as HTMLElement);
     };
 
     it('omits body entirely when no entity type is selected', async () => {
@@ -316,7 +316,7 @@ describe('ReferencesPanel Component', () => {
       const personButton = screen.getByText('Person');
 
       // Before selection
-      expect(personButton).toHaveClass('xynoplex-chip', 'xynoplex-chip--selectable');
+      expect(personButton).toHaveClass('xynolog-chip', 'xynolog-chip--selectable');
       expect(personButton).toHaveAttribute('data-selected', 'false');
 
       await userEvent.click(personButton);
@@ -339,7 +339,7 @@ describe('ReferencesPanel Component', () => {
 
       const personButton = screen.getByText('Person');
 
-      expect(personButton).toHaveClass('xynoplex-chip', 'xynoplex-chip--selectable');
+      expect(personButton).toHaveClass('xynolog-chip', 'xynolog-chip--selectable');
     });
   });
 
@@ -407,7 +407,7 @@ describe('ReferencesPanel Component', () => {
         <ReferencesPanel {...panelProps()} isDelegating={true} jobId={jobId('job-1')} progress={{ percentage: 0, completedItems: [] }} />,
       );
 
-      await userEvent.click(screen.getByTestId('xynoplex-delegate-control'));
+      await userEvent.click(screen.getByTestId('xynolog-delegate-control'));
       expect(cancelSpy).toHaveBeenCalledExactlyOnceWith('job-1');
     });
 
@@ -416,7 +416,7 @@ describe('ReferencesPanel Component', () => {
         <ReferencesPanel {...panelProps()} isDelegating={true} jobId={null} cancelled={false} progress={{ percentage: 0, completedItems: [] }} />,
       );
 
-      expect(screen.queryByTestId('xynoplex-delegate-control')).toBeNull();
+      expect(screen.queryByTestId('xynolog-delegate-control')).toBeNull();
     });
 
     it('shows how many of the priced entities a running job has found', () => {
@@ -428,7 +428,7 @@ describe('ReferencesPanel Component', () => {
           progress={{ percentage: 40, entitiesFound: 3, entitiesExpected: 10 }} />,
       );
 
-      expect(screen.getByTestId('xynoplex-delegate-tally')).toBeInTheDocument();
+      expect(screen.getByTestId('xynolog-delegate-tally')).toBeInTheDocument();
     });
 
     it('should clear selected types after detection starts', async () => {
@@ -469,7 +469,7 @@ describe('ReferencesPanel Component', () => {
 
       const startButton = screen.getByTitle('Annotate');
 
-      expect(startButton).toHaveClass('xynoplex-button');
+      expect(startButton).toHaveClass('xynolog-button');
       expect(startButton).toHaveAttribute('data-variant', 'delegate');
       expect(startButton).toHaveAttribute('data-type', 'reference');
       expect(startButton).toBeDisabled();
@@ -482,7 +482,7 @@ describe('ReferencesPanel Component', () => {
 
       const startButton = screen.getByTitle('Annotate');
 
-      expect(startButton).toHaveClass('xynoplex-button');
+      expect(startButton).toHaveClass('xynolog-button');
       expect(startButton).toHaveAttribute('data-variant', 'delegate');
       expect(startButton).toHaveAttribute('data-type', 'reference');
       expect(startButton).not.toBeDisabled();
@@ -526,8 +526,8 @@ describe('ReferencesPanel Component', () => {
 
     it('renders the entity log with the SAME markup the progress display uses', () => {
       // This form-side log and DelegateProgress's completed-entity log are the
-      // same concept, so both use the xynoplex-annotation-log* classes and
-      // neither has a xynoplex-delegate-widget__log* family of its own — one
+      // same concept, so both use the xynolog-annotation-log* classes and
+      // neither has a xynolog-delegate-widget__log* family of its own — one
       // concept, one markup.
       const { container, rerender } = renderWithEventBus(
         <ReferencesPanel
@@ -543,9 +543,9 @@ describe('ReferencesPanel Component', () => {
         <ReferencesPanel {...panelProps()} isDelegating={false} progress={null} />
       );
 
-      expect(container.querySelector('.xynoplex-annotation-log')).toBeInTheDocument();
-      expect(container.querySelector('.xynoplex-annotation-log-item')).toBeInTheDocument();
-      expect(container.querySelector('.xynoplex-delegate-widget__log')).not.toBeInTheDocument();
+      expect(container.querySelector('.xynolog-annotation-log')).toBeInTheDocument();
+      expect(container.querySelector('.xynolog-annotation-log-item')).toBeInTheDocument();
+      expect(container.querySelector('.xynolog-delegate-widget__log')).not.toBeInTheDocument();
     });
 
     it('should hide entity type selection during detection', () => {
@@ -886,14 +886,14 @@ describe('ReferencesPanel Component', () => {
       const { container } = renderWithEventBus(<ReferencesPanel {...panelProps()} />);
 
       const panel = container.firstChild as HTMLElement;
-      expect(panel).toHaveClass('xynoplex-panel');
+      expect(panel).toHaveClass('xynolog-panel');
     });
 
     it('should support dark mode', () => {
       const { container } = renderWithEventBus(<ReferencesPanel {...panelProps()} />);
 
       const panel = container.firstChild as HTMLElement;
-      expect(panel).toHaveClass('xynoplex-panel');
+      expect(panel).toHaveClass('xynolog-panel');
     });
 
     it('should have title without emoji', () => {
@@ -909,7 +909,7 @@ describe('ReferencesPanel Component', () => {
       renderWithEventBus(<ReferencesPanel {...panelProps()} />);
 
       const buttonContainer = screen.getByText('Person').parentElement;
-      expect(buttonContainer).toHaveClass('xynoplex-delegate-widget__chips');
+      expect(buttonContainer).toHaveClass('xynolog-delegate-widget__chips');
     });
   });
 

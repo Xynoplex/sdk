@@ -23,14 +23,14 @@ import Data.Text.Encoding (decodeUtf8)
 import Data.Time (getCurrentTime)
 import Data.Time.Clock.POSIX (posixSecondsToUTCTime, getPOSIXTime)
 import GHC.Clock (getMonotonicTimeNSec)
-import qualified Xynoplex.Issuer as Issuer
-import qualified Xynoplex.Registry.Stored as Stored
-import qualified Xynoplex.Retry as Retry
-import qualified Xynoplex.SessionStorage as Storage
-import qualified Xynoplex.SignIn as SignIn
-import qualified Xynoplex.SignInStore as Store
-import Xynoplex.Errors (SignInError)
-import Xynoplex.Types
+import qualified Xynolog.Issuer as Issuer
+import qualified Xynolog.Registry.Stored as Stored
+import qualified Xynolog.Retry as Retry
+import qualified Xynolog.SessionStorage as Storage
+import qualified Xynolog.SignIn as SignIn
+import qualified Xynolog.SignInStore as Store
+import Xynolog.Errors (SignInError)
+import Xynolog.Types
 import qualified ControlledTime as Time
 import IssuerCases (peer, route, form)
 import System.Directory (getTemporaryDirectory, createDirectory, removePathForcibly, removeFile, listDirectory)
@@ -59,7 +59,7 @@ withDirectory :: (FilePath -> IO result) -> IO result
 withDirectory = bracket make removePathForcibly
   where make = do
           parent <- getTemporaryDirectory
-          (name,handle) <- openBinaryTempFile parent "xynoplex-haskell-sign-ins"
+          (name,handle) <- openBinaryTempFile parent "xynolog-haskell-sign-ins"
           hClose handle
           removeFile name
           createDirectory name

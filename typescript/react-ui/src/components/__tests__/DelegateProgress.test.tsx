@@ -2,7 +2,7 @@
  * DelegateProgress — the ONE job-progress renderer, for every delegate section and
  * the resource-generate flow.
  *
- * Contract: presentational and provider-free — no XynoplexProvider, no session;
+ * Contract: presentational and provider-free — no XynologProvider, no session;
  * cancel/dismiss arrive as callbacks the caller wires (job.cancel /
  * mark.dismissProgress). Feature blocks are data-presence-driven: a call
  * site gets a block by passing the data for it.
@@ -17,7 +17,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
-import type { components } from '@xynoplex/core';
+import type { components } from '@xynolog/core';
 import { DelegateProgress, type DelegateProgressTranslations } from '../DelegateProgress';
 
 type JobProgress = components['schemas']['JobProgress'];
@@ -30,7 +30,7 @@ describe('DelegateProgress', () => {
     const { container } = render(
       <DelegateProgress ended={false} progress={detecting()} dataType="reference" translations={T3()} />,
     );
-    expect(container.querySelector('.xynoplex-delegate-progress')).toBeInTheDocument();
+    expect(container.querySelector('.xynolog-delegate-progress')).toBeInTheDocument();
     expect(container.querySelector('[data-type="reference"]')).toBeInTheDocument();
   });
 
@@ -82,14 +82,14 @@ describe('DelegateProgress', () => {
 
   it('offers no control at all when the caller wires neither callback', () => {
     render(<DelegateProgress ended={false} progress={detecting()} dataType="reference" translations={T3()} />);
-    expect(screen.queryByTestId('xynoplex-delegate-control')).toBeNull();
+    expect(screen.queryByTestId('xynolog-delegate-control')).toBeNull();
   });
 
   it('falls back to the generic in-progress copy when no code has arrived', () => {
     // `JobProgress.message` is optional: a pure liveness heartbeat carries none.
     const noCode = { percentage: 5 } as JobProgress;
     render(<DelegateProgress ended={false} progress={noCode} dataType="comment" translations={T3()} />);
-    expect(screen.getByTestId('xynoplex-delegate-status').textContent).toBe('tr.inProgress');
+    expect(screen.getByTestId('xynolog-delegate-status').textContent).toBe('tr.inProgress');
   });
 });
 
@@ -101,11 +101,11 @@ describe('DelegateProgress', () => {
 // beneath) was chosen by hand and it will be revised from use. A test pinned to
 // a sentence rots on the first edit and teaches the next reader to weaken it.
 // ─────────────────────────────────────────────────────────────────────────────
-const STATUS = 'xynoplex-delegate-status';
-const SUBJECT = 'xynoplex-delegate-subject';
-const CONTROL = 'xynoplex-delegate-control';
-const BAR = 'xynoplex-delegate-bar';
-const PARAMS = 'xynoplex-delegate-params';
+const STATUS = 'xynolog-delegate-status';
+const SUBJECT = 'xynolog-delegate-subject';
+const CONTROL = 'xynolog-delegate-control';
+const BAR = 'xynolog-delegate-bar';
+const PARAMS = 'xynolog-delegate-params';
 
 /** The widget's translations: one function for the coded copy, plus structure keys. */
 const T3 = (over: Partial<DelegateProgressTranslations> = {}): DelegateProgressTranslations =>
@@ -298,7 +298,7 @@ describe('DelegateProgress — the honest ended frame', () => {
     const { container } = render(
       <DelegateProgress ended="completed" progress={detecting({ percentage: 95 })} dataType="generation" translations={T3()} />,
     );
-    const fill = container.querySelector('.xynoplex-progress-bar__fill') as HTMLElement;
+    const fill = container.querySelector('.xynolog-progress-bar__fill') as HTMLElement;
     expect(fill.style.width).toBe('100%');
   });
 
@@ -306,7 +306,7 @@ describe('DelegateProgress — the honest ended frame', () => {
     const { container } = render(
       <DelegateProgress ended={false} progress={detecting({ percentage: 95 })} dataType="generation" translations={T3()} />,
     );
-    const fill = container.querySelector('.xynoplex-progress-bar__fill') as HTMLElement;
+    const fill = container.querySelector('.xynolog-progress-bar__fill') as HTMLElement;
     expect(fill.style.width).toBe('95%');
   });
 
@@ -342,7 +342,7 @@ describe('DelegateProgress — the cancelled ending', () => {
     const { container } = render(
       <DelegateProgress ended="cancelled" progress={detecting({ percentage: 40 })} dataType="reference" translations={T3()} />,
     );
-    const fill = container.querySelector('.xynoplex-progress-bar__fill') as HTMLElement;
+    const fill = container.querySelector('.xynolog-progress-bar__fill') as HTMLElement;
     expect(fill.style.width).toBe('40%');
     expect(container.textContent).not.toContain('✅');
   });
@@ -352,7 +352,7 @@ describe('DelegateProgress — the cancelled ending', () => {
       <DelegateProgress ended="cancelled" outcome={{ label: 'A summary', onOpen: vi.fn() }}
         progress={detecting()} dataType="generation" translations={T3()} />,
     );
-    expect(screen.queryByTestId('xynoplex-delegate-outcome')).toBeNull();
+    expect(screen.queryByTestId('xynolog-delegate-outcome')).toBeNull();
   });
 
   it('keeps where the run stopped: the subject of its last report', () => {

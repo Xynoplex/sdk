@@ -23,28 +23,28 @@ use crate::transport::{HttpTransport, HttpTransportConfig, Timing, TokenRefreshe
 use futures::FutureExt;
 use futures::future::Shared;
 use rand_core::Rng;
-use xynoplex::bus::reply_channels_for;
-use xynoplex::channels::{BRIDGED_CHANNELS, BrowseKbRequested, Channel};
-use xynoplex::client::{CachePersistence, ClientOptions, XynoplexClient};
-use xynoplex::errors::{
-    BusRequestErrorCode, IdentityUnverifiable, IdentityUnverifiableReason, XynoplexError,
-    SessionError, SessionErrorCode, SignInError, SignInErrorCode,
-};
-use xynoplex::resume::CoupledBookmarks;
-use xynoplex::session::{
-    BROWSER_CLIENT_ID, OnAuthFailed, OpenedSession, Refresh, SCRIPT_CLIENT_ID, XynoplexBrowser,
-    XynoplexSession, XynoplexSessionConfig, SessionFactory, SessionFactoryOptions, SessionRenewer,
-    SignInKept, SignInOutcome, SignedIn, StoredSession, Validate, kept_in, last_event_id_key,
-    person_key, stored_session,
-};
-use xynoplex::storage::SessionStorage;
-use xynoplex::transport::BoxFuture;
-use xynoplex::types::{HttpEndpoint, KbDescription, KbEndpoint, KbTarget, UserId};
 use std::collections::HashMap;
 use std::error::Error;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, OnceLock, Weak};
 use tokio::sync::watch;
+use xynolog::bus::reply_channels_for;
+use xynolog::channels::{BRIDGED_CHANNELS, BrowseKbRequested, Channel};
+use xynolog::client::{CachePersistence, ClientOptions, XynologClient};
+use xynolog::errors::{
+    BusRequestErrorCode, IdentityUnverifiable, IdentityUnverifiableReason, SessionError,
+    SessionErrorCode, SignInError, SignInErrorCode, XynologError,
+};
+use xynolog::resume::CoupledBookmarks;
+use xynolog::session::{
+    BROWSER_CLIENT_ID, OnAuthFailed, OpenedSession, Refresh, SCRIPT_CLIENT_ID, SessionFactory,
+    SessionFactoryOptions, SessionRenewer, SignInKept, SignInOutcome, SignedIn, StoredSession,
+    Validate, XynologBrowser, XynologSession, XynologSessionConfig, kept_in, last_event_id_key,
+    person_key, stored_session,
+};
+use xynolog::storage::SessionStorage;
+use xynolog::transport::BoxFuture;
+use xynolog::types::{HttpEndpoint, KbDescription, KbEndpoint, KbTarget, UserId};
 
 /// What a session over a gateway is built with.
 pub struct HttpSession {
@@ -89,8 +89,8 @@ impl TokenRefresher for Renews {
 /// transport and the session never hold different ones.
 fn built_over_http(
     options: HttpSession,
-    built: impl FnOnce(&Arc<HttpTransport>, &Arc<XynoplexClient>),
-) -> XynoplexSession {
+    built: impl FnOnce(&Arc<HttpTransport>, &Arc<XynologClient>),
+) -> XynologSession {
     let (token, sent) = watch::channel(None);
     let (renewer, renews) = watch::channel(None);
     let transport = Arc::new(HttpTransport::new(HttpTransportConfig {
@@ -103,14 +103,14 @@ fn built_over_http(
         random: options.random.clone(),
     }));
     let content = Arc::new(HttpContentTransport::new(&transport));
-    let client = Arc::new(XynoplexClient::new(
+    let client = Arc::new(XynologClient::new(
         transport.clone(),
         content,
         Some(transport.clone()),
         options.client,
     ));
     built(&transport, &client);
-    let session = XynoplexSession::new(XynoplexSessionConfig {
+    let session = XynologSession::new(XynologSessionConfig {
         kb: options.kb,
         kept: options.kept,
         client,
@@ -219,10 +219,10 @@ async fn revoked(sign_in: &StoredSession, http: &reqwest::Client) {
 /// A script's session of a knowledge base, and where its sign-in is kept.
 pub struct SessionFromKept {
     pub kb: KbTarget,
-    /// Where the sign-in is kept: the file `xynoplex login` keeps
-    /// (`xynoplex::sign_in_store::SignInStore::entry`), memory
-    /// (`xynoplex::session::MemorySignIn`), a registry's storage
-    /// (`xynoplex::session::kept_in`), or anywhere else.
+    /// Where the sign-in is kept: the file `xynolog login` keeps
+    /// (`xynolog::sign_in_store::SignInStore::entry`), memory
+    /// (`xynolog::session::MemorySignIn`), a registry's storage
+    /// (`xynolog::session::kept_in`), or anywhere else.
     pub kept: Arc<dyn SignInKept>,
     /// Whether the gateway is asked who the token is: how the session
     /// learns whose caches its client keeps when the sign-in names nobody
@@ -344,7 +344,7 @@ pub async fn sign_in_device(
 /// issuer says where, and kept no more. It is forgotten whatever the issuer
 /// answers: a person who signs out is signed out here, and an issuer that
 /// could not be told forgets the token when it expires. Forgetting a sign-in
-/// a registry keeps (`xynoplex::session::kept_in`) deletes what was kept for
+/// a registry keeps (`xynolog::session::kept_in`) deletes what was kept for
 /// the person it named too; one kept anywhere else deletes nothing. With
 /// nothing kept, nothing is asked. What the sign-in kept could not read or
 /// forget is its own error.
@@ -368,14 +368,14 @@ pub async fn sign_out(
 /// the person is known: from the start when the kept sign-in names them,
 /// or once the gateway names them and the sign-in records it. Each write is
 /// made only while the session's sign-in names the person, and what goes
-/// wrong with it is the session's to say (`XynoplexClient::record_person_key`).
+/// wrong with it is the session's to say (`XynologClient::record_person_key`).
 struct Keeping {
     storage: Arc<dyn SessionStorage>,
     kb_id: String,
     /// Whether the client keeps for a person: it does for one in its life.
     attached: AtomicBool,
     /// The transport and the client, once they are built.
-    built: OnceLock<(Weak<HttpTransport>, Weak<XynoplexClient>)>,
+    built: OnceLock<(Weak<HttpTransport>, Weak<XynologClient>)>,
 }
 
 impl Keeping {
@@ -384,7 +384,7 @@ impl Keeping {
     fn built(
         &self,
         transport: &Arc<HttpTransport>,
-        client: &Arc<XynoplexClient>,
+        client: &Arc<XynologClient>,
         named: Option<&str>,
     ) {
         let _ = self
@@ -397,7 +397,7 @@ impl Keeping {
 
     /// Record on the session's sign-in that the gateway named the person
     /// whose key is `person_key` as who `access` is
-    /// (`XynoplexClient::record_person_key`). Whether it names them now.
+    /// (`XynologClient::record_person_key`). Whether it names them now.
     async fn record(&self, access: &str, person_key: &str) -> bool {
         let Some(client) = self.built.get().and_then(|(_, client)| client.upgrade()) else {
             return false;
@@ -458,7 +458,7 @@ fn asking_and_keeping(asking: Validate, keeping: Arc<Keeping>) -> Validate {
     })
 }
 
-/// Builds the session of each knowledge base a `XynoplexBrowser` activates,
+/// Builds the session of each knowledge base a `XynologBrowser` activates,
 /// over its gateway, from the sign-in the registry keeps in its storage
 /// (`kept_in`). What the session's client keeps of its person is kept in
 /// the registry's storage too (`Keeping`). The renewals under way are the
@@ -485,7 +485,7 @@ impl HttpSessionFactory {
 }
 
 impl SessionFactory for HttpSessionFactory {
-    fn session(&self, options: SessionFactoryOptions) -> Result<XynoplexSession, SessionError> {
+    fn session(&self, options: SessionFactoryOptions) -> Result<XynologSession, SessionError> {
         let kb = options.kb.target();
         let base_url = gateway_of(&kb)?;
         let kept = kept_in(options.storage.clone(), &kb.id);
@@ -573,7 +573,7 @@ pub async fn describe_connection(
         timing: Timing::default(),
         random,
     }));
-    let client = XynoplexClient::new(
+    let client = XynologClient::new(
         transport.clone(),
         Arc::new(HttpContentTransport::new(&transport)),
         Some(transport),
@@ -585,7 +585,7 @@ pub async fn describe_connection(
         Ok(description) => description,
         // A refusal is the knowledge base answering that it cannot say what
         // it is. Anything else is not having reached it.
-        Err(XynoplexError::Bus(refusal)) if refusal.code == BusRequestErrorCode::Rejected => {
+        Err(XynologError::Bus(refusal)) if refusal.code == BusRequestErrorCode::Rejected => {
             return Err(unverifiable(
                 IdentityUnverifiableReason::NotReported,
                 refusal.to_string(),
@@ -599,7 +599,7 @@ pub async fn describe_connection(
         }
     };
     // A domain no did can hold says nothing of who this is.
-    let did = xynoplex::identity::kb_did(&description.domain)
+    let did = xynolog::identity::kb_did(&description.domain)
         .parse::<UserId>()
         .map_err(|invalid| {
             unverifiable(IdentityUnverifiableReason::NotReported, invalid.to_string())
@@ -614,7 +614,7 @@ pub async fn describe_connection(
 /// to send the person to. A failure is a `SignInError`, or the storage's own
 /// error when it would not keep the pending sign-in.
 pub async fn begin_sign_in(
-    browser: &XynoplexBrowser,
+    browser: &XynologBrowser,
     options: BeginAuthorization,
     http: &reqwest::Client,
 ) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
@@ -624,13 +624,13 @@ pub async fn begin_sign_in(
 /// Finish a sign-in from the URL the issuer sent the person back to:
 /// exchange the code, ask the knowledge base who it is, and have the
 /// registry land the sign-in on the entry for the knowledge base that
-/// answered (`XynoplexBrowser::signed_in`). A knowledge base that cannot say
+/// answered (`XynologBrowser::signed_in`). A knowledge base that cannot say
 /// who it is is not registered, and nothing is stored. A failure is a
 /// `SignInError` when the grant failed, an `IdentityUnverifiable` when the
 /// knowledge base could not say who it is, or the storage's own error. The
 /// knowledge base is asked as `describe_connection` asks, with `random`.
 pub async fn complete_sign_in(
-    browser: &XynoplexBrowser,
+    browser: &XynologBrowser,
     callback_url: &str,
     http: &reqwest::Client,
     random: Option<Arc<Mutex<dyn Rng + Send>>>,
@@ -660,14 +660,14 @@ pub async fn complete_sign_in(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use xynoplex::session::MemorySignIn;
-    use xynoplex::testing::{TestClientOptions, create_test_client};
-    use xynoplex::types::LocalEndpoint;
     use std::sync::atomic::{AtomicUsize, Ordering};
+    use xynolog::session::MemorySignIn;
+    use xynolog::testing::{TestClientOptions, create_test_client};
+    use xynolog::types::LocalEndpoint;
 
     /// A session whose renewal answers `renewed`, counted each time it is asked.
-    fn renewing(asked: Arc<AtomicUsize>) -> XynoplexSession {
-        XynoplexSession::new(XynoplexSessionConfig {
+    fn renewing(asked: Arc<AtomicUsize>) -> XynologSession {
+        XynologSession::new(XynologSessionConfig {
             kb: KbTarget {
                 id: "kb".to_owned(),
                 label: "KB".to_owned(),

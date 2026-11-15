@@ -1,22 +1,22 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { renderWithProviders, createTestXynoplexWrapper } from '../../../../test-utils';
+import { renderWithProviders, createTestXynologWrapper } from '../../../../test-utils';
 import userEvent from '@testing-library/user-event';
-import type { XynoplexSession } from '@xynoplex/sdk';
+import type { XynologSession } from '@xynolog/sdk';
 
-import type { Annotation, AnnotationId, EventBus } from '@xynoplex/core';
+import type { Annotation, AnnotationId, EventBus } from '@xynolog/core';
 
-// Mock @xynoplex/http-transport
-vi.mock('@xynoplex/core', async () => {
-  const actual = await vi.importActual('@xynoplex/core');
+// Mock @xynolog/http-transport
+vi.mock('@xynolog/core', async () => {
+  const actual = await vi.importActual('@xynolog/core');
   return {
     ...actual,
     getAnnotationExactText: vi.fn(),
   };
 });
 
-import { getAnnotationExactText, resourceId } from '@xynoplex/core';
+import { getAnnotationExactText, resourceId } from '@xynolog/core';
 import type { MockedFunction } from 'vitest';
 import { HighlightEntry } from '../HighlightEntry';
 
@@ -53,13 +53,13 @@ describe('HighlightEntry', () => {
   // Created per-test: test-utils disposes every created client in a
   // module-scope afterEach, so a module-scope session would be dead
   // after the first test.
-  let session: XynoplexSession;
+  let session: XynologSession;
   let eventBus: EventBus;
 
   beforeEach(() => {
     vi.clearAllMocks();
     mockGetAnnotationExactText.mockReturnValue('This is the highlighted text');
-    ({ session, eventBus } = createTestXynoplexWrapper());
+    ({ session, eventBus } = createTestXynologWrapper());
   });
 
   describe('Rendering', () => {
@@ -86,7 +86,7 @@ describe('HighlightEntry', () => {
 
       const { container } = renderWithProviders(<HighlightEntry {...defaultProps} session={session} />);
 
-      const quote = container.querySelector('.xynoplex-annotation-entry__quote');
+      const quote = container.querySelector('.xynolog-annotation-entry__quote');
       expect(quote).toBeInTheDocument();
       expect(quote!.textContent).not.toContain('...');
     });
@@ -105,7 +105,7 @@ describe('HighlightEntry', () => {
         <HighlightEntry highlight={highlight} isFocused={false} session={session} />
       );
 
-      const metadata = container.querySelector('.xynoplex-annotation-entry__metadata');
+      const metadata = container.querySelector('.xynolog-annotation-entry__metadata');
       expect(metadata).toBeInTheDocument();
       expect(metadata?.textContent).not.toMatch(/By|Unknown/);
     });
@@ -127,7 +127,7 @@ describe('HighlightEntry', () => {
 
       const { container } = renderWithProviders(<HighlightEntry {...defaultProps} session={session} />);
 
-      expect(container.querySelector('.xynoplex-annotation-entry__quote')).not.toBeInTheDocument();
+      expect(container.querySelector('.xynolog-annotation-entry__quote')).not.toBeInTheDocument();
     });
   });
 
@@ -162,7 +162,7 @@ describe('HighlightEntry', () => {
       );
 
       const entry = container.firstChild as HTMLElement;
-      expect(entry).toHaveClass('xynoplex-annotation-pulse');
+      expect(entry).toHaveClass('xynolog-annotation-pulse');
     });
 
     it('should not apply pulse class when isHovered is false', () => {
@@ -171,7 +171,7 @@ describe('HighlightEntry', () => {
       );
 
       const entry = container.firstChild as HTMLElement;
-      expect(entry).not.toHaveClass('xynoplex-annotation-pulse');
+      expect(entry).not.toHaveClass('xynolog-annotation-pulse');
     });
   });
 

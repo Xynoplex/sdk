@@ -9,9 +9,9 @@ import qualified Data.ByteString as Bytes
 import Data.Foldable (toList)
 import Data.Text (Text)
 import qualified Data.Text as Text
-import qualified Xynoplex.Internal.Required as Required
-import qualified Xynoplex.Resources as Resources
-import Xynoplex.Types (ResourceDescriptor)
+import qualified Xynolog.Internal.Required as Required
+import qualified Xynolog.Resources as Resources
+import Xynolog.Types (ResourceDescriptor)
 import System.FilePath ((</>))
 
 member :: Text -> Value -> Value

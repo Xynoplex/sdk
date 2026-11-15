@@ -50,7 +50,7 @@ describe('RecentDocumentsPage', () => {
       const props = createMockProps();
       const { container } = render(<RecentDocumentsPage {...props} />);
 
-      const icon = container.querySelector('.xynoplex-recent-docs__icon');
+      const icon = container.querySelector('.xynolog-recent-docs__icon');
       expect(icon).toBeInTheDocument();
     });
 
@@ -83,7 +83,7 @@ describe('RecentDocumentsPage', () => {
       const props = createMockProps();
       const { container } = render(<RecentDocumentsPage {...props} />);
 
-      const svg = container.querySelector('.xynoplex-recent-docs__empty-icon');
+      const svg = container.querySelector('.xynolog-recent-docs__empty-icon');
       expect(svg).toBeInTheDocument();
     });
 
@@ -91,7 +91,7 @@ describe('RecentDocumentsPage', () => {
       const props = createMockProps();
       const { container } = render(<RecentDocumentsPage {...props} />);
 
-      const noDocsText = container.querySelector('.xynoplex-recent-docs__empty-message');
+      const noDocsText = container.querySelector('.xynolog-recent-docs__empty-message');
       expect(noDocsText).toBeInTheDocument();
       expect(noDocsText).toHaveTextContent('No documents found');
     });
@@ -100,7 +100,7 @@ describe('RecentDocumentsPage', () => {
       const props = createMockProps();
       const { container } = render(<RecentDocumentsPage {...props} />);
 
-      const hintText = container.querySelector('.xynoplex-recent-docs__empty-hint');
+      const hintText = container.querySelector('.xynolog-recent-docs__empty-hint');
       expect(hintText).toBeInTheDocument();
       expect(hintText).toHaveTextContent('Activity will appear here');
     });
@@ -111,7 +111,7 @@ describe('RecentDocumentsPage', () => {
       const props = createMockProps();
       const { container } = render(<RecentDocumentsPage {...props} />);
 
-      const card = container.querySelector('.xynoplex-card');
+      const card = container.querySelector('.xynolog-card');
       expect(card).toBeInTheDocument();
     });
 
@@ -119,7 +119,7 @@ describe('RecentDocumentsPage', () => {
       const props = createMockProps();
       const { container } = render(<RecentDocumentsPage {...props} />);
 
-      const card = container.querySelector('.xynoplex-card');
+      const card = container.querySelector('.xynolog-card');
       expect(card).toBeInTheDocument();
     });
 
@@ -127,7 +127,7 @@ describe('RecentDocumentsPage', () => {
       const props = createMockProps();
       const { container } = render(<RecentDocumentsPage {...props} />);
 
-      const card = container.querySelector('.xynoplex-card');
+      const card = container.querySelector('.xynolog-card');
       expect(card).toBeInTheDocument();
     });
 
@@ -135,7 +135,7 @@ describe('RecentDocumentsPage', () => {
       const props = createMockProps();
       const { container } = render(<RecentDocumentsPage {...props} />);
 
-      const card = container.querySelector('.xynoplex-card');
+      const card = container.querySelector('.xynolog-card');
       expect(card).toBeInTheDocument();
     });
   });
@@ -145,7 +145,7 @@ describe('RecentDocumentsPage', () => {
       const props = createMockProps();
       const { container } = render(<RecentDocumentsPage {...props} />);
 
-      const iconContainer = container.querySelector('.xynoplex-recent-docs__icon-box');
+      const iconContainer = container.querySelector('.xynolog-recent-docs__icon-box');
       expect(iconContainer).toBeInTheDocument();
     });
 
@@ -153,7 +153,7 @@ describe('RecentDocumentsPage', () => {
       const props = createMockProps();
       const { container } = render(<RecentDocumentsPage {...props} />);
 
-      const icon = container.querySelector('.xynoplex-recent-docs__icon');
+      const icon = container.querySelector('.xynolog-recent-docs__icon');
       expect(icon).toBeInTheDocument();
     });
 
@@ -161,7 +161,7 @@ describe('RecentDocumentsPage', () => {
       const props = createMockProps();
       const { container } = render(<RecentDocumentsPage {...props} />);
 
-      const icon = container.querySelector('.xynoplex-recent-docs__icon');
+      const icon = container.querySelector('.xynolog-recent-docs__icon');
       expect(icon).toBeInTheDocument();
     });
   });
@@ -232,7 +232,7 @@ describe('RecentDocumentsPage', () => {
       const props = createMockProps();
       const { container } = render(<RecentDocumentsPage {...props} />);
 
-      const mainContainer = container.querySelector('.xynoplex-page');
+      const mainContainer = container.querySelector('.xynolog-page');
       expect(mainContainer).toBeInTheDocument();
     });
 
@@ -240,7 +240,7 @@ describe('RecentDocumentsPage', () => {
       const props = createMockProps();
       const { container } = render(<RecentDocumentsPage {...props} />);
 
-      const scrollArea = container.querySelector('.xynoplex-page__content');
+      const scrollArea = container.querySelector('.xynolog-page__content');
       expect(scrollArea).toBeInTheDocument();
     });
 
@@ -248,7 +248,7 @@ describe('RecentDocumentsPage', () => {
       const props = createMockProps();
       const { container } = render(<RecentDocumentsPage {...props} />);
 
-      const contentArea = container.querySelector('.xynoplex-page__content');
+      const contentArea = container.querySelector('.xynolog-page__content');
       expect(contentArea).toBeInTheDocument();
     });
 
@@ -256,7 +256,7 @@ describe('RecentDocumentsPage', () => {
       const props = createMockProps();
       const { container } = render(<RecentDocumentsPage {...props} />);
 
-      const emptyState = container.querySelector('.xynoplex-recent-docs__empty-state');
+      const emptyState = container.querySelector('.xynolog-recent-docs__empty-state');
       expect(emptyState).toBeInTheDocument();
     });
   });
@@ -273,7 +273,7 @@ describe('RecentDocumentsPage', () => {
       const props = createMockProps({ theme: 'dark' });
       const { container } = render(<RecentDocumentsPage {...props} />);
 
-      const title = container.querySelector('.xynoplex-page__title');
+      const title = container.querySelector('.xynolog-page__title');
       expect(title).toBeInTheDocument();
     });
 
@@ -281,7 +281,7 @@ describe('RecentDocumentsPage', () => {
       const props = createMockProps({ theme: 'dark' });
       const { container } = render(<RecentDocumentsPage {...props} />);
 
-      const card = container.querySelector('.xynoplex-card');
+      const card = container.querySelector('.xynolog-card');
       expect(card).toBeInTheDocument();
       // Dark mode is handled by CSS, not inline classes
     });
@@ -290,7 +290,7 @@ describe('RecentDocumentsPage', () => {
       const props = createMockProps({ theme: 'dark' });
       const { container } = render(<RecentDocumentsPage {...props} />);
 
-      const iconBg = container.querySelector('.xynoplex-recent-docs__icon-box');
+      const iconBg = container.querySelector('.xynolog-recent-docs__icon-box');
       expect(iconBg).toBeInTheDocument();
       // Dark mode is handled by CSS, not inline classes
     });
@@ -299,7 +299,7 @@ describe('RecentDocumentsPage', () => {
       const props = createMockProps({ theme: 'dark' });
       const { container } = render(<RecentDocumentsPage {...props} />);
 
-      const svg = container.querySelector('.xynoplex-recent-docs__empty-icon');
+      const svg = container.querySelector('.xynolog-recent-docs__empty-icon');
       expect(svg).toBeInTheDocument();
       // Dark mode is handled by CSS, not inline classes
     });
@@ -383,7 +383,7 @@ describe('RecentDocumentsPage', () => {
       const props = createMockProps();
       const { container } = render(<RecentDocumentsPage {...props} />);
 
-      const titleSection = container.querySelector('.xynoplex-page__header');
+      const titleSection = container.querySelector('.xynolog-page__header');
       expect(titleSection).toBeInTheDocument();
       // Spacing is handled by CSS, not utility classes
     });
@@ -392,7 +392,7 @@ describe('RecentDocumentsPage', () => {
       const props = createMockProps();
       const { container } = render(<RecentDocumentsPage {...props} />);
 
-      const card = container.querySelector('.xynoplex-card');
+      const card = container.querySelector('.xynolog-card');
       expect(card).toBeInTheDocument();
       // Padding is handled by CSS, not utility classes
     });
@@ -401,7 +401,7 @@ describe('RecentDocumentsPage', () => {
       const props = createMockProps();
       const { container } = render(<RecentDocumentsPage {...props} />);
 
-      const header = container.querySelector('.xynoplex-recent-docs__header');
+      const header = container.querySelector('.xynolog-recent-docs__header');
       expect(header).toBeInTheDocument();
       // Margins are handled by CSS, not utility classes
     });

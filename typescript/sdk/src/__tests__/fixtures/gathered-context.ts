@@ -1,5 +1,5 @@
-import type { GatheredContext } from '@xynoplex/core';
-import { resourceId, annotationId } from '@xynoplex/core';
+import type { GatheredContext } from '@xynolog/core';
+import { resourceId, annotationId } from '@xynolog/core';
 
 /**
  * Minimal HONEST GatheredContext fixtures: every field satisfies the
@@ -12,7 +12,7 @@ export function resourceContextFor(rid: string): GatheredContext {
     focus: {
       kind: 'resource',
       resource: {
-        '@context': 'https://xynoplex.dev/context/v1',
+        '@context': 'https://xynolog.dev/context/v1',
         '@id': resourceId(rid),
         name: 'Source',
         representations: [],
@@ -36,7 +36,7 @@ export function annotationContextFor(rid: string, aid: string): GatheredContext 
         target: { source: resourceId(rid) },
       },
       sourceResource: {
-        '@context': 'https://xynoplex.dev/context/v1',
+        '@context': 'https://xynolog.dev/context/v1',
         '@id': resourceId(rid),
         name: 'Source',
         representations: [],

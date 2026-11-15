@@ -1,19 +1,19 @@
 'use client';
 
 import { useMemo } from 'react';
-import { isReady } from '@xynoplex/sdk';
+import { isReady } from '@xynolog/sdk';
 import type { Ref } from 'react';
-import type { Annotation } from '@xynoplex/core';
-import { getAnnotationExactText } from '@xynoplex/core';
-import { getTagCategory, getTagSchemaId } from '@xynoplex/core';
+import type { Annotation } from '@xynolog/core';
+import { getAnnotationExactText } from '@xynolog/core';
+import { getTagCategory, getTagSchemaId } from '@xynolog/core';
 import { useObservable } from '../../../hooks/useObservable';
-import type { XynoplexSession } from '@xynoplex/sdk';
+import type { XynologSession } from '@xynolog/sdk';
 import { useHoverEmitter } from '../../../hooks/useHoverEmitter';
 import { renderAgentLabels } from './agent-label';
 
 interface TagEntryProps {
   /** Session for interaction routing (browse.click, tag schemas); the panel threads it. */
-  session: XynoplexSession | null;
+  session: XynologSession | null;
   tag: Annotation;
   isFocused: boolean;
   isHovered?: boolean;
@@ -58,28 +58,28 @@ export function TagEntry({
         session?.client.browse.click(tag.id);
       }}
       {...hoverProps}
-      className={`xynoplex-annotation-entry${isHovered ? ' xynoplex-annotation-pulse' : ''}`}
+      className={`xynolog-annotation-entry${isHovered ? ' xynolog-annotation-pulse' : ''}`}
       data-type="tag"
       data-focused={isFocused ? 'true' : 'false'}
     >
       {/* Category badge */}
-      <div className="xynoplex-annotation-entry__header">
-        <span className="xynoplex-tag-badge" data-variant="tag">
+      <div className="xynolog-annotation-entry__header">
+        <span className="xynolog-tag-badge" data-variant="tag">
           {category}
         </span>
         {schema && (
-          <span className="xynoplex-annotation-entry__meta">
+          <span className="xynolog-annotation-entry__meta">
             {schema.name}
           </span>
         )}
       </div>
 
       {/* Selected text */}
-      <div className="xynoplex-annotation-entry__quote" data-type="tag">
+      <div className="xynolog-annotation-entry__quote" data-type="tag">
         "{selectedText.substring(0, 150)}{selectedText.length > 150 ? '...' : ''}"
       </div>
       {tag.generator && renderAgentLabels(tag.generator) && (
-        <div className="xynoplex-annotation-entry__metadata">
+        <div className="xynolog-annotation-entry__metadata">
           Via {renderAgentLabels(tag.generator)}
         </div>
       )}

@@ -2,7 +2,7 @@
 
 ## Overview
 
-`@xynoplex/react-ui` uses CodeMirror 6 for **AnnotateView** (curation mode) to render markdown documents with annotations. BrowseView uses a completely different approach (ReactMarkdown + DOM overlay) documented in [RENDERING-ARCHITECTURE.md](./RENDERING-ARCHITECTURE.md).
+`@xynolog/react-ui` uses CodeMirror 6 for **AnnotateView** (curation mode) to render markdown documents with annotations. BrowseView uses a completely different approach (ReactMarkdown + DOM overlay) documented in [RENDERING-ARCHITECTURE.md](./RENDERING-ARCHITECTURE.md).
 
 ## Why CodeMirror?
 
@@ -92,7 +92,7 @@ const annotationDecorationsField = StateField.define<DecorationSet>({
 
 ### Anchor Strategy & Confidence
 
-`segmentTextWithAnnotations()` anchors each annotation via `anchorAnnotation` (from `@xynoplex/core`), and each segment carries the `strategy` and `confidence` that placed it (see [Utilities.md](../../core/docs/Utilities.md#render-time-anchoring)). Anchoring is **verbatim-only**: it re-anchors on an exact `TextQuoteSelector` match (recovering positional drift) and otherwise renders at the stored `TextPositionSelector` offset, flagged. It never fuzzy-matches at render time — fuzzy reconciliation happens once, at write time, in `reconcile`.
+`segmentTextWithAnnotations()` anchors each annotation via `anchorAnnotation` (from `@xynolog/core`), and each segment carries the `strategy` and `confidence` that placed it (see [Utilities.md](../../core/docs/Utilities.md#render-time-anchoring)). Anchoring is **verbatim-only**: it re-anchors on an exact `TextQuoteSelector` match (recovering positional drift) and otherwise renders at the stored `TextPositionSelector` offset, flagged. It never fuzzy-matches at render time — fuzzy reconciliation happens once, at write time, in `reconcile`.
 
 The decoration layer surfaces the classification:
 
@@ -109,7 +109,7 @@ A segment's `start` and `end`, like a `TextPositionSelector`'s, are offsets into
 - it is indexed in UTF-16 code units, where a character outside the Basic Multilingual Plane (an emoji, a mathematical letter, some CJK) is two;
 - it holds every line break as one unit, whatever the content ends its lines with, where the content's CRLF is two code points.
 
-`documentPositions(content, offsets)` (`src/lib/codemirror-logic.ts`) is the one place the two counts meet, in both directions. `offsets` is the content's `textOffsets(content)` from `@xynoplex/core`, made once for a content.
+`documentPositions(content, offsets)` (`src/lib/codemirror-logic.ts`) is the one place the two counts meet, in both directions. `offsets` is the content's `textOffsets(content)` from `@xynolog/core`, made once for a content.
 
 - `positionAt(offset)` is display: `convertSegmentPositions(segments, positions)` places each segment in the document before the decorations are built.
 - `offsetAt(position)` is capture: `AnnotateView` takes each end of a selection from `posAtDOM()`'s position to an offset.
@@ -139,7 +139,7 @@ All event handling uses container-level delegation — no per-annotation or per-
 When `hoveredAnnotationId` changes, the component:
 
 1. Finds the annotation element via `querySelector('[data-annotation-id="..."]')`
-2. Finds the scroll container (`.xynoplex-annotate-view__content` or `.xynoplex-document-viewer__scrollable-body`)
+2. Finds the scroll container (`.xynolog-annotate-view__content` or `.xynolog-document-viewer__scrollable-body`)
 3. Checks visibility within the container
 4. Scrolls smoothly if not visible
 5. Applies `annotation-pulse` CSS class after 100ms delay
@@ -150,7 +150,7 @@ When `hoveredAnnotationId` changes, the component:
 
 AnnotateView provides:
 
-- **Text segmentation**: its text renderer, `TextAnnotateRenderer`, calls `segmentTextWithAnnotations()`, which anchors each annotation via `anchorAnnotation` (from `@xynoplex/core`) — verbatim-only, carrying a `strategy`/`confidence` onto each segment
+- **Text segmentation**: its text renderer, `TextAnnotateRenderer`, calls `segmentTextWithAnnotations()`, which anchors each annotation via `anchorAnnotation` (from `@xynolog/core`) — verbatim-only, carrying a `strategy`/`confidence` onto each segment
 - **Selection capture**: `EditorView.posAtDOM()` gives the position in the editor's document of each end of the DOM selection, and `documentPositions(...).offsetAt()` its offset into the content. The quote is the content's own text between the two offsets
 - **Annotation creation**: `session.client.mark.request(...)` emits `mark:requested` with dual selectors (`TextPositionSelector` + `TextQuoteSelector` with prefix/suffix context)
 - **MIME routing**: `defaultAnnotateRenderers` (overridable through the `renderers` prop) routes to `CodeMirrorRenderer` (text), `PdfAnnotationCanvas` (PDF), or `SvgDrawingCanvas` (image)

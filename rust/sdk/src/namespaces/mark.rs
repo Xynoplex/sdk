@@ -9,7 +9,7 @@ use crate::channels::{
     MarkSubmit, MarkUnarchive, MarkUpdateEntityTypes,
 };
 use crate::client::Links;
-use crate::errors::XynoplexError;
+use crate::errors::XynologError;
 use crate::transport::Envelope;
 use crate::types::{AnnotationId, ResourceId};
 use crate::types::{
@@ -32,7 +32,7 @@ impl MarkNamespace {
     pub async fn annotation(
         &self,
         input: CreateAnnotationRequest,
-    ) -> Result<MarkCreateOkResponse, XynoplexError> {
+    ) -> Result<MarkCreateOkResponse, XynologError> {
         let created = self
             .links
             .request::<CreateRequest>(&MarkCreateRequest {
@@ -47,7 +47,7 @@ impl MarkNamespace {
         &self,
         resource_id: &ResourceId,
         annotation_id: &AnnotationId,
-    ) -> Result<(), XynoplexError> {
+    ) -> Result<(), XynologError> {
         self.links
             .request::<MarkDelete>(&MarkDeleteCommand {
                 _user_id: None,
@@ -58,7 +58,7 @@ impl MarkNamespace {
         Ok(())
     }
 
-    pub async fn archive(&self, resource_id: &ResourceId) -> Result<(), XynoplexError> {
+    pub async fn archive(&self, resource_id: &ResourceId) -> Result<(), XynologError> {
         self.links
             .request::<MarkArchive>(&MarkArchiveCommand {
                 _user_id: None,
@@ -70,7 +70,7 @@ impl MarkNamespace {
         Ok(())
     }
 
-    pub async fn unarchive(&self, resource_id: &ResourceId) -> Result<(), XynoplexError> {
+    pub async fn unarchive(&self, resource_id: &ResourceId) -> Result<(), XynologError> {
         self.links
             .request::<MarkUnarchive>(&MarkUnarchiveCommand {
                 _user_id: None,
@@ -88,7 +88,7 @@ impl MarkNamespace {
         resource_id: &ResourceId,
         current: Vec<String>,
         updated: Vec<String>,
-    ) -> Result<(), XynoplexError> {
+    ) -> Result<(), XynologError> {
         self.links
             .request::<MarkUpdateEntityTypes>(&MarkUpdateEntityTypesCommand {
                 resource_id: resource_id.clone(),
@@ -109,7 +109,7 @@ impl MarkNamespace {
     /// others.
     ///
     /// ```
-    /// use xynoplex::types::{LinkingJobParams, MarkJobParams};
+    /// use xynolog::types::{LinkingJobParams, MarkJobParams};
     ///
     /// let params: MarkJobParams = LinkingJobParams {
     ///     include_descriptive_references: Some(true),
@@ -123,7 +123,7 @@ impl MarkNamespace {
     /// job given instructions does not compile.
     ///
     /// ```compile_fail,E0560
-    /// use xynoplex::types::LinkingJobParams;
+    /// use xynolog::types::LinkingJobParams;
     ///
     /// let params = LinkingJobParams {
     ///     instructions: Some("who is related to whom".to_owned()),
@@ -135,7 +135,7 @@ impl MarkNamespace {
     /// its schema and its categories.
     ///
     /// ```compile_fail,E0061
-    /// use xynoplex::types::TaggingJobParams;
+    /// use xynolog::types::TaggingJobParams;
     ///
     /// let params = TaggingJobParams::new();
     /// ```

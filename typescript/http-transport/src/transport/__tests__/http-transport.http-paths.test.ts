@@ -3,7 +3,7 @@
  *
  * Pins the URL paths, methods, headers, and multipart shape that the
  * gateway's routes expect. Mocks `ky` at the module boundary; no
- * XynoplexClient involvement.
+ * XynologClient involvement.
  *
  * Covers:
  *   - Auth / status / health endpoints
@@ -18,7 +18,7 @@
 
 import { describe, test, expect, beforeEach, vi } from 'vitest';
 import type { KyInstance } from 'ky';
-import { BRIDGED_CHANNELS, HTTP_REQUEST_TIMEOUT_MS, baseUrl, resourceId } from '@xynoplex/core';
+import { BRIDGED_CHANNELS, HTTP_REQUEST_TIMEOUT_MS, baseUrl, resourceId } from '@xynolog/core';
 
 vi.mock('ky', () => ({
   default: {
@@ -133,7 +133,7 @@ describe('HttpTransport — HTTP wire shape', () => {
       vi.mocked(mockKy.get).mockReturnValue({
         json: vi.fn().mockResolvedValue({
           resource: testBaseUrl,
-          authorization_servers: ['http://localhost:8080/realms/xynoplex'],
+          authorization_servers: ['http://localhost:8080/realms/xynolog'],
           bearer_methods_supported: ['header'],
         }),
       } as never);
@@ -161,7 +161,7 @@ describe('HttpTransport — HTTP wire shape', () => {
           status: 'ok',
           version: '1.0.0',
           features: { semanticContent: 'enabled', collaboration: 'enabled' },
-          message: 'Xynoplex is running',
+          message: 'Xynolog is running',
         }),
       } as never);
       const result = await transport.getStatus();
@@ -171,7 +171,7 @@ describe('HttpTransport — HTTP wire shape', () => {
 
     test('healthCheck gets /api/health', async () => {
       vi.mocked(mockKy.get).mockReturnValue({
-        json: vi.fn().mockResolvedValue({ status: 'ok', message: 'Xynoplex is running', version: '1.0.0', timestamp: '2026-10-31T00:00:00.000Z' }),
+        json: vi.fn().mockResolvedValue({ status: 'ok', message: 'Xynolog is running', version: '1.0.0', timestamp: '2026-10-31T00:00:00.000Z' }),
       } as never);
       await transport.healthCheck();
       expect(mockKy.get).toHaveBeenCalledWith(`${testBaseUrl}/api/health`, { headers: {} });
@@ -422,7 +422,7 @@ describe('HttpTransport — HTTP wire shape', () => {
     test('appends the full set of generation-provenance fields', async () => {
       const agent = {
         '@type': 'Software' as const,
-        '@id': 'did:web:example.com:agents:xynoplex-worker',
+        '@id': 'did:web:example.com:agents:xynolog-worker',
         name: 'ollama gemma4:26b',
         provider: 'ollama',
         model: 'gemma4:26b',
@@ -555,7 +555,7 @@ describe('HttpTransport — HTTP wire shape', () => {
     });
 
     test('one scoped SSE event reaches a bridged bus exactly ONCE with several scopes subscribed (singleton fan-in)', async () => {
-      const { EventBus } = await import('@xynoplex/core');
+      const { EventBus } = await import('@xynolog/core');
       const bus = new EventBus();
       transport.bridgeInto(bus);
 
@@ -592,7 +592,7 @@ describe('HttpTransport — HTTP wire shape', () => {
 
   describe('bridgeInto', () => {
     test("a bridged bus is given each payload as its channel types it, while the transport's own frames are the wire's", async () => {
-      const { EventBus } = await import('@xynoplex/core');
+      const { EventBus } = await import('@xynolog/core');
       const bus = new EventBus();
       transport.bridgeInto(bus);
 
@@ -603,16 +603,16 @@ describe('HttpTransport — HTTP wire shape', () => {
 
       // job:fail's payload declares `_userId` and not `_roles`.
       const failed = { resourceId: 'res-1', jobId: 'job-1', jobType: 'mark', error: 'the model did not answer', _userId: 'did:web:example.org:agents:worker' };
-      actorHarness.pushEvent('job:fail', { ...failed, _roles: ['xynoplex-service'] });
+      actorHarness.pushEvent('job:fail', { ...failed, _roles: ['xynolog-service'] });
 
-      expect(wire).toEqual([{ ...failed, _roles: ['xynoplex-service'] }]);
+      expect(wire).toEqual([{ ...failed, _roles: ['xynolog-service'] }]);
       expect(bridged).toEqual([failed]);
 
       bus.destroy();
     });
 
     test("a payload that lacks a member its channel's schema requires is published as a refusal in its place, and said nowhere else", async () => {
-      const { EventBus, FrameRefusal } = await import('@xynoplex/core');
+      const { EventBus, FrameRefusal } = await import('@xynolog/core');
       const bus = new EventBus();
       transport.bridgeInto(bus);
       const warned = vi.spyOn(console, 'warn');

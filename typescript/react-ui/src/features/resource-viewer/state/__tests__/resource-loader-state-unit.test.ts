@@ -3,14 +3,14 @@ import { asStates } from '../../../../__tests__/test-client';
 import { sessionOf } from '../../../../__tests__/test-client';
 import { BehaviorSubject, Subject, firstValueFrom } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { resourceId as makeResourceId } from '@xynoplex/core';
-import type { XynoplexClient } from '@xynoplex/sdk';
+import { resourceId as makeResourceId } from '@xynolog/core';
+import type { XynologClient } from '@xynolog/sdk';
 import { createResourceLoaderStateUnit, type ResourceLoaderStateUnit } from '../resource-loader-state-unit';
-import { assertStateUnitAxioms } from '@xynoplex/core/testing/axioms';
+import { assertStateUnitAxioms } from '@xynolog/core/testing/axioms';
 
 const RID = makeResourceId('res-1');
 
-function mockClient(resource$?: BehaviorSubject<unknown>): XynoplexClient {
+function mockClient(resource$?: BehaviorSubject<unknown>): XynologClient {
   const subject = resource$ ?? new BehaviorSubject<unknown>({ '@id': 'res-1', name: 'Test' });
   const invalidate = vi.fn();
   return {
@@ -18,7 +18,7 @@ function mockClient(resource$?: BehaviorSubject<unknown>): XynoplexClient {
       resource: () => asStates(subject.asObservable()),
       invalidateResourceDetail: invalidate,
     },
-  } as unknown as XynoplexClient;
+  } as unknown as XynologClient;
 }
 
 /**
@@ -39,7 +39,7 @@ function failingClient() {
       },
       invalidateResourceDetail: invalidate,
     },
-  } as unknown as XynoplexClient;
+  } as unknown as XynologClient;
   return {
     client,
     invalidate,

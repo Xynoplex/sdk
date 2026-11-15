@@ -1,4 +1,4 @@
-//! What a consumer's tests are built on (`xynoplex::testing`): a real client
+//! What a consumer's tests are built on (`xynolog::testing`): a real client
 //! and a real session over doubles, and a factory of scripted sessions for a
 //! registry. A double answers what a test told it to and refuses the rest by
 //! name. It never answers with a value of its own making.
@@ -6,38 +6,38 @@
 use base64::Engine;
 use base64::engine::general_purpose::URL_SAFE_NO_PAD;
 use futures_core::Stream;
-use xynoplex::bus::{Bus, operation};
-use xynoplex::channels::BRIDGED_CHANNELS;
-use xynoplex::client::{ClientOptions, ClientTiming};
-use xynoplex::errors::{XynoplexError, SessionError, SessionErrorCode, TransportError};
-use xynoplex::session::{
-    SessionFactory, SessionFactoryOptions, SessionSignals, StoredSession, store_session,
-};
-use xynoplex::state_unit::StateUnit;
-use xynoplex::storage::InMemorySessionStorage;
-use xynoplex::testing::as_id;
-use xynoplex::testing::{
-    FaultyTransport, InMemoryContent, ScriptedSessions, StubGateway, TestClientOptions,
-    TestSessionOptions, create_test_client, create_test_session,
-};
-use xynoplex::timing::ERRORS_KEPT_FOR_FIRST_READER_COUNT;
-use xynoplex::transport::{ConnectionState, Content, Events, Failures, Transport};
-use xynoplex::types::{
-    AnchoredTextAnswer, GatherResourceRequestOptions, HttpEndpoint, HttpEndpointProtocol,
-    KbEndpoint, KbTarget, KnowledgeBase, ResourceId, UserResponse,
-};
 use serde_json::{Value, json};
 use std::pin::Pin;
 use std::sync::{Arc, Mutex};
 use std::task::{Context, Poll, Waker};
 use std::time::Duration;
+use xynolog::bus::{Bus, operation};
+use xynolog::channels::BRIDGED_CHANNELS;
+use xynolog::client::{ClientOptions, ClientTiming};
+use xynolog::errors::{SessionError, SessionErrorCode, TransportError, XynologError};
+use xynolog::session::{
+    SessionFactory, SessionFactoryOptions, SessionSignals, StoredSession, store_session,
+};
+use xynolog::state_unit::StateUnit;
+use xynolog::storage::InMemorySessionStorage;
+use xynolog::testing::as_id;
+use xynolog::testing::{
+    FaultyTransport, InMemoryContent, ScriptedSessions, StubGateway, TestClientOptions,
+    TestSessionOptions, create_test_client, create_test_session,
+};
+use xynolog::timing::ERRORS_KEPT_FOR_FIRST_READER_COUNT;
+use xynolog::transport::{ConnectionState, Content, Events, Failures, Transport};
+use xynolog::types::{
+    AnchoredTextAnswer, GatherResourceRequestOptions, HttpEndpoint, HttpEndpointProtocol,
+    KbEndpoint, KbTarget, KnowledgeBase, ResourceId, UserResponse,
+};
 
-fn message(error: XynoplexError) -> String {
+fn message(error: XynologError) -> String {
     match error {
-        XynoplexError::Bus(error) => error.message,
-        XynoplexError::Transport(error) => error.message,
-        XynoplexError::Job(error) => error.message,
-        XynoplexError::Session(error) => error.message,
+        XynologError::Bus(error) => error.message,
+        XynologError::Transport(error) => error.message,
+        XynologError::Job(error) => error.message,
+        XynologError::Session(error) => error.message,
     }
 }
 
@@ -127,7 +127,7 @@ async fn a_test_client_is_built_over_what_the_test_gives_it() {
     // on after three seconds, not the client's thirty.
     let silent = FaultyTransport::answering(
         BRIDGED_CHANNELS,
-        vec![xynoplex::testing::FaultAction::DropReply],
+        vec![xynolog::testing::FaultAction::DropReply],
         |_, _| Ok(None),
     );
     let impatient = create_test_client(TestClientOptions {
@@ -225,7 +225,7 @@ async fn a_test_session_holds_the_token_its_storage_held_and_then_the_one_the_te
         &StoredSession {
             access: stored.clone(),
             refresh: "r".to_owned(),
-            client_id: "xynoplex-cli".to_owned(),
+            client_id: "xynolog-cli".to_owned(),
             token_endpoint: "https://issuer.test/token".to_owned(),
             revocation_endpoint: None,
             person_key: None,
@@ -320,7 +320,7 @@ impl Asked {
             &StoredSession {
                 access: token(),
                 refresh: "r".to_owned(),
-                client_id: "xynoplex-browser".to_owned(),
+                client_id: "xynolog-browser".to_owned(),
                 token_endpoint: "https://issuer.test/token".to_owned(),
                 revocation_endpoint: None,
                 person_key: None,
@@ -332,13 +332,13 @@ impl Asked {
 
 /// What a session has said of its own on its errors so far, in order. A
 /// stream that missed any of it fails the test.
-fn said_so_far(errors: &mut Events<XynoplexError>) -> Vec<SessionError> {
+fn said_so_far(errors: &mut Events<XynologError>) -> Vec<SessionError> {
     let mut said = Vec::new();
     while let Poll::Ready(Some(item)) =
         Pin::new(&mut *errors).poll_next(&mut Context::from_waker(Waker::noop()))
     {
         match item {
-            Ok(XynoplexError::Session(error)) => said.push(error),
+            Ok(XynologError::Session(error)) => said.push(error),
             Ok(_) => {}
             Err(missed) => panic!("the session's errors stream missed some: {missed}"),
         }
@@ -479,7 +479,7 @@ async fn scripted_sessions_can_refuse_to_build_and_keep_what_was_revoked() {
     let stored = StoredSession {
         access: "a".to_owned(),
         refresh: "r".to_owned(),
-        client_id: "xynoplex-browser".to_owned(),
+        client_id: "xynolog-browser".to_owned(),
         token_endpoint: "https://issuer.test/token".to_owned(),
         revocation_endpoint: Some("https://issuer.test/revoke".to_owned()),
         person_key: None,

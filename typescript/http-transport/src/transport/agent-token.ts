@@ -31,7 +31,7 @@ import {
   type RetryAttemptInfo,
   type ServiceToken,
   type UserId,
-} from '@xynoplex/core';
+} from '@xynolog/core';
 import { APIError, retryableUnlessRefused } from './api-error';
 import { fetchOf } from './fetch-of';
 

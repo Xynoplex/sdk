@@ -1,7 +1,7 @@
 """A client's live queries: what watching one holds, what a read gives its watchers, and what a client keeps of them.
 
 Under any behaviour of the wire, a watcher is told something (L1, L2:
-`xynoplex.testing.liveness`).
+`xynolog.testing.liveness`).
 
 What each query asks is `test_surface.py`'s, the cache's own rules are
 `test_cache.py`'s, and what an event does to a query is `test_refresher.py`'s.
@@ -33,21 +33,21 @@ from kb import (
 from pydantic import JsonValue, TypeAdapter
 from spec import JsonObject
 
-from xynoplex.cache import CacheState, Failed, Pending, Ready
-from xynoplex.channels import BRIDGED_CHANNELS
-from xynoplex.client import CachePersistence, ClientTiming, XynoplexClient
-from xynoplex.errors import BusRequestError
-from xynoplex.identifiers import ResourceId
-from xynoplex.namespaces.browse import EngineWithLimits
-from xynoplex.refresh import CACHE_QUERIES, CacheQuery
-from xynoplex.resume import CoupledBookmarks
-from xynoplex.storage import MemoryStorage
-from xynoplex.stored import KEPT_QUERIES, KeptQuery, cache_key, last_event_id_key, person_key
-from xynoplex.testing import DropReply, FaultyTransport, SharedStorage, StubGateway, create_test_client, refuse_unscripted_operation
-from xynoplex.testing.liveness import LivenessScenario, LivenessSpec, assert_liveness_axioms
-from xynoplex.timing import INVALIDATION_WINDOW_MS, SAVE_DEBOUNCE_MS
+from xynolog.cache import CacheState, Failed, Pending, Ready
+from xynolog.channels import BRIDGED_CHANNELS
+from xynolog.client import CachePersistence, ClientTiming, XynologClient
+from xynolog.errors import BusRequestError
+from xynolog.identifiers import ResourceId
+from xynolog.namespaces.browse import EngineWithLimits
+from xynolog.refresh import CACHE_QUERIES, CacheQuery
+from xynolog.resume import CoupledBookmarks
+from xynolog.storage import MemoryStorage
+from xynolog.stored import KEPT_QUERIES, KeptQuery, cache_key, last_event_id_key, person_key
+from xynolog.testing import DropReply, FaultyTransport, SharedStorage, StubGateway, create_test_client, refuse_unscripted_operation
+from xynolog.testing.liveness import LivenessScenario, LivenessSpec, assert_liveness_axioms
+from xynolog.timing import INVALIDATION_WINDOW_MS, SAVE_DEBOUNCE_MS
 
-type Client = XynoplexClient[FaultyTransport]
+type Client = XynologClient[FaultyTransport]
 
 ALICE = person_key("did:web:example.org:users:alice")
 BOB = person_key("did:web:example.org:users:bob")
@@ -59,7 +59,7 @@ def world(persistence: CachePersistence | None = None, *, answered: bool = True)
     """A client over doubles that answer every read a live query makes, or, when it is not `answered`, that answer none: the test does."""
     transport = FaultyTransport(channels=BRIDGED_CHANNELS, make_response=knowing) if answered else silent()
     content = knowing_content() if answered else SilentContent()
-    client: Client = XynoplexClient(transport, content, StubGateway(), persistence=persistence)
+    client: Client = XynologClient(transport, content, StubGateway(), persistence=persistence)
     return client, transport
 
 
@@ -466,7 +466,7 @@ def test_a_close_keeps_the_place_only_when_nothing_was_in_flight_or_owed_as_it_b
         """A client whose kept caches carry its stream's places."""
         places = CoupledBookmarks(storage, places_key)
         persistence = CachePersistence(storage=places.storage, kb_id="kb", person_key=ALICE)
-        client: Client = XynoplexClient(transport, knowing_content(), StubGateway(), persistence=persistence)
+        client: Client = XynologClient(transport, knowing_content(), StubGateway(), persistence=persistence)
         places.couple_to(client)
         return client, places
 

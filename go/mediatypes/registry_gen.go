@@ -2,7 +2,7 @@
 //
 // Regenerate: node packages/codegen/schemas/generate-media-types-go.mjs
 // The TypeScript side (typescript/core/src/generated/media-types.ts) and the
-// Rust side (xynoplex::media_types) generate from the same registry.
+// Rust side (xynolog::media_types) generate from the same registry.
 
 package mediatypes
 

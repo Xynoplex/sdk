@@ -1,4 +1,4 @@
-// Generate the OAuth client ids and the scope a Xynoplex client signs in with
+// Generate the OAuth client ids and the scope a Xynolog client signs in with
 // from protocol/specs/src/session/oauth.json.
 //
 // The realm registers the clients, so an id is not this code's to choose: it
@@ -24,7 +24,7 @@ writeFileSync(
   OUT,
   `// ⚠ GENERATED FILE — do not edit.
 // Source: protocol/specs/src/session/oauth.json → typescript/scripts/generators/generate-oauth-clients.mjs
-// Rebuilt by \`npm run prebuild\` in @xynoplex/core; gitignored on purpose.
+// Rebuilt by \`npm run prebuild\` in @xynolog/core; gitignored on purpose.
 
 ${clients.map(({ name, id, docs }) => `${doc(docs)}\nexport const ${name.toUpperCase()}_CLIENT_ID = ${JSON.stringify(id)};\n`).join('\n')}
 ${doc(scope.docs)}

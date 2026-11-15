@@ -17,13 +17,13 @@ import {
   setBrowseResults,
 } from './search-modal-harness';
 
-vi.mock('../../../session/XynoplexProvider', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../../../session/XynoplexProvider')>();
+vi.mock('../../../session/XynologProvider', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../session/XynologProvider')>();
   const { searchBrowser } = await import('./search-modal-harness');
-  return { ...actual, useXynoplex: () => searchBrowser };
+  return { ...actual, useXynolog: () => searchBrowser };
 });
 
-const SELECTED = 'xynoplex-search-modal__result--selected';
+const SELECTED = 'xynolog-search-modal__result--selected';
 
 /** The row of the result named `name`. */
 const row = (name: string) => screen.getByText(name).closest('button')!;

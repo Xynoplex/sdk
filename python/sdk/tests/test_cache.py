@@ -13,10 +13,10 @@ from typing import final, override
 import pytest
 from aio import pass_time, run, soon, turns
 
-from xynoplex.cache import Cache, CachePersister, CacheState, Failed, Pending, Ready, Runs
-from xynoplex.errors import BusRequestError, XynoplexError
-from xynoplex.testing.axioms import AxiomSubject, Fresh, assert_state_unit_axioms
-from xynoplex.timing import SAVE_DEBOUNCE_MS
+from xynolog.cache import Cache, CachePersister, CacheState, Failed, Pending, Ready, Runs
+from xynolog.errors import BusRequestError, XynologError
+from xynolog.testing.axioms import AxiomSubject, Fresh, assert_state_unit_axioms
+from xynolog.timing import SAVE_DEBOUNCE_MS
 
 KEY = "k"
 
@@ -1015,7 +1015,7 @@ def test_a_cache_that_keeps_nothing_owes_nothing() -> None:
 
 
 def test_a_failure_nobody_waited_for_is_not_said_to_be_unheard(caplog: pytest.LogCaptureFixture) -> None:
-    async def scenario() -> XynoplexError:
+    async def scenario() -> XynologError:
         cache, service, tasks = world()
         cache.observe(KEY)
         await turns()

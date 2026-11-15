@@ -7,7 +7,7 @@
  * answer is not its declared body and names the fault.
  */
 
-import { faultOf, said, type components } from '@xynoplex/core';
+import { faultOf, said, type components } from '@xynolog/core';
 import { APIError } from './api-error';
 
 type Schemas = components['schemas'];

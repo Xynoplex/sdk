@@ -1,4 +1,4 @@
-package xynoplex
+package xynolog
 
 // A service account that proves itself with a key: each grant carries an
 // assertion signed for it alone, and no secret. What an issuer does with the
@@ -31,7 +31,7 @@ import (
 	"time"
 )
 
-const keyClient = "xynoplex-worker-alice-laptop"
+const keyClient = "xynolog-worker-alice-laptop"
 
 // keyIssuer is an issuer that answers each grant with status, and keeps the
 // form each grant posted. A refusal echoes the assertion it was sent, as an

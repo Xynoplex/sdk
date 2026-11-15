@@ -2,8 +2,8 @@
 
 import React, { useEffect } from 'react';
 import { WizardFooter } from './WizardFooter';
-import type { EngineWithLimits, GatheredContext, GenerationJobParams, SupportedMediaType } from '@xynoplex/core';
-import { LOCALES, GENERATABLE_MEDIA_TYPES, capabilitiesOf, proposeStoragePath } from '@xynoplex/core';
+import type { EngineWithLimits, GatheredContext, GenerationJobParams, SupportedMediaType } from '@xynolog/core';
+import { LOCALES, GENERATABLE_MEDIA_TYPES, capabilitiesOf, proposeStoragePath } from '@xynolog/core';
 
 /**
  * Bounds for the max-length control when no ceiling is known — the fallback
@@ -237,15 +237,15 @@ export function ConfigureGenerationStep({
     // No --scrollable: this form renders below the evidence display inside the
     // host's single step-scroll pane — an independent scroll region here
     // squeezes the parameters out of view.
-    <form onSubmit={handleSubmit} className="xynoplex-form">
+    <form onSubmit={handleSubmit} className="xynolog-form">
       {hintEcho && (
-        <p className="xynoplex-wizard__hint-echo">
+        <p className="xynolog-wizard__hint-echo">
           {hintEcho.label}: {hintEcho.value}
         </p>
       )}
       {/* Resource Title */}
-      <div className="xynoplex-form__field">
-        <label htmlFor="wizard-title" className="xynoplex-form__label">
+      <div className="xynolog-form__field">
+        <label htmlFor="wizard-title" className="xynolog-form__label">
           {t.resourceTitle}
         </label>
         <input
@@ -254,18 +254,18 @@ export function ConfigureGenerationStep({
           value={title}
           onChange={(e) => set({ title: e.target.value })}
           required
-          className="xynoplex-input"
+          className="xynolog-input"
           placeholder={t.resourceTitlePlaceholder}
         />
       </div>
 
       {/* Storage URI */}
-      <div className="xynoplex-form__field">
-        <label htmlFor="wizard-storagePath" className="xynoplex-form__label">
+      <div className="xynolog-form__field">
+        <label htmlFor="wizard-storagePath" className="xynolog-form__label">
           {t.saveLocation}
         </label>
-        <div className="xynoplex-input-addon">
-          <span className="xynoplex-input-addon__prefix">file://</span>
+        <div className="xynolog-input-addon">
+          <span className="xynolog-input-addon__prefix">file://</span>
           <input
             id="wizard-storagePath"
             type="text"
@@ -274,14 +274,14 @@ export function ConfigureGenerationStep({
             required
             aria-invalid={extensionMismatch}
             {...(extensionMismatch ? { 'aria-describedby': 'wizard-format-mismatch' } : {})}
-            className="xynoplex-input xynoplex-input--addon"
+            className="xynolog-input xynolog-input--addon"
             placeholder="generated/my-resource.md"
           />
         </div>
         {/* The reason sits with the field, not on the button: the message
             belongs where the fix is. */}
         {extensionMismatch && (
-          <p id="wizard-format-mismatch" className="xynoplex-form__error" role="alert">
+          <p id="wizard-format-mismatch" className="xynolog-form__error" role="alert">
             {t.formatExtensionMismatch.replace('{{extension}}', requiredExtension)}
           </p>
         )}
@@ -291,15 +291,15 @@ export function ConfigureGenerationStep({
           among the model knobs below. The options are DERIVED from the
           registry: promote a fourth row to `generatable` and it appears
           here, with no list to forget to update. */}
-      <div className="xynoplex-form__field">
-        <label htmlFor="wizard-outputFormat" className="xynoplex-form__label">
+      <div className="xynolog-form__field">
+        <label htmlFor="wizard-outputFormat" className="xynolog-form__label">
           {t.outputFormat}
         </label>
         <select
           id="wizard-outputFormat"
           value={outputMediaType}
           onChange={(e) => set({ outputMediaType: e.target.value as SupportedMediaType })}
-          className="xynoplex-select"
+          className="xynolog-select"
         >
           {GENERATABLE_MEDIA_TYPES.map((format) => (
             <option key={format} value={format}>
@@ -310,8 +310,8 @@ export function ConfigureGenerationStep({
       </div>
 
       {/* Additional Instructions */}
-      <div className="xynoplex-form__field">
-        <label htmlFor="wizard-prompt" className="xynoplex-form__label">
+      <div className="xynolog-form__field">
+        <label htmlFor="wizard-prompt" className="xynolog-form__label">
           {t.additionalInstructions}
         </label>
         <textarea
@@ -319,22 +319,22 @@ export function ConfigureGenerationStep({
           value={prompt}
           onChange={(e) => set({ prompt: e.target.value })}
           rows={2}
-          className="xynoplex-textarea"
+          className="xynolog-textarea"
           placeholder={t.additionalInstructionsPlaceholder}
         />
       </div>
 
       {/* Language / Creativity / Max Length — compact inline row */}
-      <div className="xynoplex-form__inline-row">
-        <div className="xynoplex-form__field xynoplex-form__field--inline">
-          <label htmlFor="wizard-language" className="xynoplex-form__label">
+      <div className="xynolog-form__inline-row">
+        <div className="xynolog-form__field xynolog-form__field--inline">
+          <label htmlFor="wizard-language" className="xynolog-form__label">
             {t.language}
           </label>
           <select
             id="wizard-language"
             value={language}
             onChange={(e) => set({ language: e.target.value })}
-            className="xynoplex-select"
+            className="xynolog-select"
           >
             {LOCALES.map((lang) => (
               <option key={lang.code} value={lang.code}>
@@ -345,8 +345,8 @@ export function ConfigureGenerationStep({
         </div>
 
         {temperatureAccepted && (
-        <div className="xynoplex-form__field xynoplex-form__field--inline xynoplex-form__field--slider">
-          <label htmlFor="wizard-temperature" className="xynoplex-form__label">
+        <div className="xynolog-form__field xynolog-form__field--inline xynolog-form__field--slider">
+          <label htmlFor="wizard-temperature" className="xynolog-form__label">
             {t.creativity} ({temperature.toFixed(1)})
           </label>
           <input
@@ -357,17 +357,17 @@ export function ConfigureGenerationStep({
             step="0.1"
             value={temperature}
             onChange={(e) => set({ temperature: parseFloat(e.target.value) })}
-            className="xynoplex-slider"
+            className="xynolog-slider"
           />
-          <div className="xynoplex-slider__labels xynoplex-slider__labels--small">
+          <div className="xynolog-slider__labels xynolog-slider__labels--small">
             <span>{t.creativityFocused}</span>
             <span>{t.creativityCreative}</span>
           </div>
         </div>
         )}
 
-        <div className="xynoplex-form__field xynoplex-form__field--inline xynoplex-form__field--narrow xynoplex-form__field--end">
-          <label htmlFor="wizard-maxTokens" className="xynoplex-form__label">
+        <div className="xynolog-form__field xynolog-form__field--inline xynolog-form__field--narrow xynolog-form__field--end">
+          <label htmlFor="wizard-maxTokens" className="xynolog-form__label">
             {t.maxLength}
           </label>
           <input
@@ -388,7 +388,7 @@ export function ConfigureGenerationStep({
               // enterable at all, so the clamp lives here.
               set({ maxTokensText: String(Math.min(n, ceiling)) });
             }}
-            className="xynoplex-input"
+            className="xynolog-input"
           />
         </div>
       </div>
@@ -396,7 +396,7 @@ export function ConfigureGenerationStep({
       {/* The bound, as a full sentence — which is why it lives UNDER the row,
           never inside the 5.5rem Max Length column: a sentence in that box
           wraps one word per line and its height taxes the whole flex row. */}
-      <p className="xynoplex-form__help xynoplex-form__help--row">
+      <p className="xynolog-form__help xynolog-form__help--row">
         {generationEngine?.limits
           ? t.maxLengthCeiling
               .replace('{{maxOutputTokens}}', String(ceiling))

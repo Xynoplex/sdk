@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { annotationId, resourceId, type Annotation, type StoredEventLike } from '@xynoplex/core';
+import { annotationId, resourceId, type Annotation, type StoredEventLike } from '@xynolog/core';
 import {
   formatEventType,
   getEventEmoji,

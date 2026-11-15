@@ -1,7 +1,7 @@
 /**
  * Verb Namespace Interfaces
  *
- * These interfaces define the public API of `@xynoplex/sdk`, organized by
+ * These interfaces define the public API of `@xynolog/sdk`, organized by
  * the eight flows (Browse, Mark, Bind, Gather, Match, Yield, Beckon, Frame)
  * plus the `job`, `auth` and `system` namespaces.
  *
@@ -45,7 +45,7 @@ import type {
   UploadObservable,
   YieldJobCompletion,
 } from '../awaitable';
-import type { components, EventMap, FrameRefusal, paths } from '@xynoplex/core';
+import type { components, EventMap, FrameRefusal, paths } from '@xynolog/core';
 import type { ClaimOptions, ClaimsObservable } from '../claims';
 import type {
   ResourceId,
@@ -61,13 +61,13 @@ import type {
   TagSchema,
   EngineWithLimits,
   KbDescription,
-} from '@xynoplex/core';
+} from '@xynolog/core';
 
 // ── OpenAPI schema type aliases ─────────────────────────────────────────────
 
-import type { Annotation } from '@xynoplex/core';
-import type { AnchoredTextAnswer } from '@xynoplex/core';
-import type { ResourceDescriptor } from '@xynoplex/core';
+import type { Annotation } from '@xynolog/core';
+import type { AnchoredTextAnswer } from '@xynolog/core';
+import type { ResourceDescriptor } from '@xynolog/core';
 type GetResourceResponse = components['schemas']['GetResourceResponse'];
 type MatchSearchResult = components['schemas']['MatchSearchResult'];
 export type GatherAnnotationComplete = components['schemas']['GatherAnnotationComplete'];

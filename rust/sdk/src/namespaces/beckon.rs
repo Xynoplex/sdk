@@ -5,7 +5,7 @@
 
 use crate::channels::{BeckonFocus, BeckonHover, BeckonSparkle, BrowseClick, BrowseResourceOpen};
 use crate::client::Links;
-use crate::errors::XynoplexError;
+use crate::errors::XynologError;
 use crate::transport::Envelope;
 use crate::types::{AnnotationId, ResourceId};
 use crate::types::{
@@ -28,7 +28,7 @@ impl BeckonNamespace {
         &self,
         resource_id: &ResourceId,
         annotation_id: Option<&AnnotationId>,
-    ) -> Result<Option<u64>, XynoplexError> {
+    ) -> Result<Option<u64>, XynologError> {
         self.links
             .drive::<BeckonFocus>(&BeckonFocusEvent {
                 annotation_id: annotation_id.cloned(),
@@ -38,7 +38,7 @@ impl BeckonNamespace {
     }
 
     /// Open an annotation on the other participants' screens.
-    pub async fn click(&self, annotation_id: &AnnotationId) -> Result<Option<u64>, XynoplexError> {
+    pub async fn click(&self, annotation_id: &AnnotationId) -> Result<Option<u64>, XynologError> {
         self.links
             .drive::<BrowseClick>(&BrowseClickEvent {
                 annotation_id: annotation_id.clone(),
@@ -50,7 +50,7 @@ impl BeckonNamespace {
     pub async fn open_resource(
         &self,
         resource_id: &ResourceId,
-    ) -> Result<Option<u64>, XynoplexError> {
+    ) -> Result<Option<u64>, XynologError> {
         self.links
             .drive::<BrowseResourceOpen>(&BrowseResourceOpenEvent {
                 resource_id: resource_id.clone(),
@@ -62,7 +62,7 @@ impl BeckonNamespace {
     pub async fn sparkle_all(
         &self,
         annotation_id: &AnnotationId,
-    ) -> Result<Option<u64>, XynoplexError> {
+    ) -> Result<Option<u64>, XynologError> {
         self.links
             .drive::<BeckonSparkle>(&BeckonSparkleEvent {
                 annotation_id: annotation_id.clone(),

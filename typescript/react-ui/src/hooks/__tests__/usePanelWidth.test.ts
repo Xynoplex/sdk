@@ -30,7 +30,7 @@ describe('usePanelWidth', () => {
   });
 
   it('loads width from localStorage on mount', async () => {
-    localStorage.setItem('xynoplex-panel-width', '500');
+    localStorage.setItem('xynolog-panel-width', '500');
 
     const { result } = renderHook(() => usePanelWidth());
 
@@ -49,7 +49,7 @@ describe('usePanelWidth', () => {
     expect(result.current.width).toBe(600);
 
     await waitFor(() => {
-      expect(localStorage.getItem('xynoplex-panel-width')).toBe('600');
+      expect(localStorage.getItem('xynolog-panel-width')).toBe('600');
     });
   });
 
@@ -63,7 +63,7 @@ describe('usePanelWidth', () => {
     expect(result.current.width).toBe(256);
 
     await waitFor(() => {
-      expect(localStorage.getItem('xynoplex-panel-width')).toBe('256');
+      expect(localStorage.getItem('xynolog-panel-width')).toBe('256');
     });
   });
 
@@ -77,12 +77,12 @@ describe('usePanelWidth', () => {
     expect(result.current.width).toBe(800);
 
     await waitFor(() => {
-      expect(localStorage.getItem('xynoplex-panel-width')).toBe('800');
+      expect(localStorage.getItem('xynolog-panel-width')).toBe('800');
     });
   });
 
   it('constrains localStorage value on mount', async () => {
-    localStorage.setItem('xynoplex-panel-width', '1500'); // Above maxWidth
+    localStorage.setItem('xynolog-panel-width', '1500'); // Above maxWidth
 
     const { result } = renderHook(() => usePanelWidth());
 
@@ -157,12 +157,12 @@ describe('usePanelWidth', () => {
     expect(result.current.width).toBe(500);
 
     await waitFor(() => {
-      expect(localStorage.getItem('xynoplex-panel-width')).toBe('500');
+      expect(localStorage.getItem('xynolog-panel-width')).toBe('500');
     });
   });
 
   it('does not persist initial mount from localStorage', async () => {
-    localStorage.setItem('xynoplex-panel-width', '450');
+    localStorage.setItem('xynolog-panel-width', '450');
 
     const { result } = renderHook(() => usePanelWidth());
 
@@ -171,6 +171,6 @@ describe('usePanelWidth', () => {
     });
 
     // localStorage should still have the original value (not re-persisted)
-    expect(localStorage.getItem('xynoplex-panel-width')).toBe('450');
+    expect(localStorage.getItem('xynolog-panel-width')).toBe('450');
   });
 });

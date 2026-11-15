@@ -17,18 +17,18 @@ interface DiscardPromptProps {
 
 export function DiscardPrompt({ prompt, discardLabel, keepLabel, onDiscard, onKeepEditing }: DiscardPromptProps) {
   return (
-    <div className="xynoplex-wizard__discard-prompt" role="alert">
-      <span className="xynoplex-wizard__discard-prompt-text">{prompt}</span>
+    <div className="xynolog-wizard__discard-prompt" role="alert">
+      <span className="xynolog-wizard__discard-prompt-text">{prompt}</span>
       <button
         type="button"
-        className="xynoplex-button--danger"
+        className="xynolog-button--danger"
         onClick={onDiscard}
       >
         {discardLabel}
       </button>
       <button
         type="button"
-        className="xynoplex-button--secondary"
+        className="xynolog-button--secondary"
         onClick={onKeepEditing}
       >
         {keepLabel}

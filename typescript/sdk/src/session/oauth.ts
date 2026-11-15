@@ -8,7 +8,7 @@
  * and no password ever passes through this module.
  */
 
-import { APIError, HttpTransport } from '@xynoplex/http-transport';
+import { APIError, HttpTransport } from '@xynolog/http-transport';
 import {
   BROWSER_CLIENT_ID,
   DEVICE_POLL_FLOOR_MS,
@@ -27,9 +27,9 @@ import {
   retryWithBackoff,
   whyUnanswered,
   withinDeadline,
-} from '@xynoplex/core';
-import type { SignInErrorCode } from '@xynoplex/core';
-import type { HttpEndpoint } from '@xynoplex/core';
+} from '@xynolog/core';
+import type { SignInErrorCode } from '@xynolog/core';
+import type { HttpEndpoint } from '@xynolog/core';
 import { fetchOf } from '../fetch-of';
 import type { SessionStorage } from './session-storage';
 import { sha256 } from './sha256';
@@ -44,7 +44,7 @@ declare const crypto: { getRandomValues<T extends ArrayBufferView>(array: T): T 
 
 export { BROWSER_CLIENT_ID, SCRIPT_CLIENT_ID };
 export type { SignInErrorCode };
-export const PENDING_AUTHORIZATION_KEY = 'xynoplex.pendingAuthorization';
+export const PENDING_AUTHORIZATION_KEY = 'xynolog.pendingAuthorization';
 const DEVICE_GRANT = 'urn:ietf:params:oauth:grant-type:device_code';
 
 export interface IssuerEndpoints {

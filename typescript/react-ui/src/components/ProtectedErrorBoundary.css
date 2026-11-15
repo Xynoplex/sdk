@@ -2,120 +2,120 @@
    ProtectedErrorBoundary Component Styles
    ============================================ */
 
-.xynoplex-protected-error-boundary-container {
+.xynolog-protected-error-boundary-container {
   min-height: 400px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--xynoplex-spacing-md);
+  padding: var(--xynolog-spacing-md);
 }
 
-.xynoplex-protected-error-boundary-card {
+.xynolog-protected-error-boundary-card {
   max-width: 28rem;
   width: 100%;
-  background-color: var(--xynoplex-color-white);
-  border-radius: var(--xynoplex-radius-lg);
-  box-shadow: var(--xynoplex-shadow-lg);
-  padding: var(--xynoplex-spacing-lg);
+  background-color: var(--xynolog-color-white);
+  border-radius: var(--xynolog-radius-lg);
+  box-shadow: var(--xynolog-shadow-lg);
+  padding: var(--xynolog-spacing-lg);
 }
 
-[data-theme="dark"] .xynoplex-protected-error-boundary-card {
-  background-color: var(--xynoplex-color-gray-800);
+[data-theme="dark"] .xynolog-protected-error-boundary-card {
+  background-color: var(--xynolog-color-gray-800);
 }
 
-.xynoplex-protected-error-boundary-header {
+.xynolog-protected-error-boundary-header {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  margin-bottom: var(--xynoplex-spacing-md);
+  margin-bottom: var(--xynolog-spacing-md);
 }
 
-.xynoplex-protected-error-boundary-icon-wrapper {
+.xynolog-protected-error-boundary-icon-wrapper {
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 2.5rem;
   height: 2.5rem;
-  border-radius: var(--xynoplex-radius-full);
-  background-color: var(--xynoplex-color-red-100);
+  border-radius: var(--xynolog-radius-full);
+  background-color: var(--xynolog-color-red-100);
 }
 
-[data-theme="dark"] .xynoplex-protected-error-boundary-icon-wrapper {
+[data-theme="dark"] .xynolog-protected-error-boundary-icon-wrapper {
   background-color: rgba(127, 29, 29, 0.3);
 }
 
-.xynoplex-protected-error-boundary-icon {
+.xynolog-protected-error-boundary-icon {
   width: 1.5rem;
   height: 1.5rem;
-  color: var(--xynoplex-color-red-600);
+  color: var(--xynolog-color-red-600);
 }
 
-[data-theme="dark"] .xynoplex-protected-error-boundary-icon {
-  color: var(--xynoplex-color-red-400);
+[data-theme="dark"] .xynolog-protected-error-boundary-icon {
+  color: var(--xynolog-color-red-400);
 }
 
-.xynoplex-protected-error-boundary-title {
-  font-size: var(--xynoplex-text-xl);
-  font-weight: var(--xynoplex-font-semibold);
-  color: var(--xynoplex-color-gray-900);
+.xynolog-protected-error-boundary-title {
+  font-size: var(--xynolog-text-xl);
+  font-weight: var(--xynolog-font-semibold);
+  color: var(--xynolog-color-gray-900);
 }
 
-[data-theme="dark"] .xynoplex-protected-error-boundary-title {
-  color: var(--xynoplex-color-white);
+[data-theme="dark"] .xynolog-protected-error-boundary-title {
+  color: var(--xynolog-color-white);
 }
 
-.xynoplex-protected-error-boundary-message {
-  color: var(--xynoplex-color-gray-600);
-  margin-bottom: var(--xynoplex-spacing-lg);
+.xynolog-protected-error-boundary-message {
+  color: var(--xynolog-color-gray-600);
+  margin-bottom: var(--xynolog-spacing-lg);
 }
 
-[data-theme="dark"] .xynoplex-protected-error-boundary-message {
-  color: var(--xynoplex-color-gray-300);
+[data-theme="dark"] .xynolog-protected-error-boundary-message {
+  color: var(--xynolog-color-gray-300);
 }
 
-.xynoplex-protected-error-boundary-details {
-  margin-bottom: var(--xynoplex-spacing-md);
+.xynolog-protected-error-boundary-details {
+  margin-bottom: var(--xynolog-spacing-md);
 }
 
-.xynoplex-protected-error-boundary-summary {
-  font-size: var(--xynoplex-text-sm);
-  color: var(--xynoplex-color-gray-500);
+.xynolog-protected-error-boundary-summary {
+  font-size: var(--xynolog-text-sm);
+  color: var(--xynolog-color-gray-500);
   cursor: pointer;
 }
 
-.xynoplex-protected-error-boundary-summary:hover {
-  color: var(--xynoplex-color-gray-700);
+.xynolog-protected-error-boundary-summary:hover {
+  color: var(--xynolog-color-gray-700);
 }
 
 /* gray-500 is thin for this size on a near-black surface, and the hover below
    already lifts to gray-300 — resting darker than its own hover target. */
-[data-theme="dark"] .xynoplex-protected-error-boundary-summary {
-  color: var(--xynoplex-color-gray-400);
+[data-theme="dark"] .xynolog-protected-error-boundary-summary {
+  color: var(--xynolog-color-gray-400);
 }
 
-[data-theme="dark"] .xynoplex-protected-error-boundary-summary:hover {
-  color: var(--xynoplex-color-gray-300);
+[data-theme="dark"] .xynolog-protected-error-boundary-summary:hover {
+  color: var(--xynolog-color-gray-300);
 }
 
-.xynoplex-protected-error-boundary-stack {
-  margin-top: var(--xynoplex-spacing-sm);
-  font-size: var(--xynoplex-text-xs);
-  background-color: var(--xynoplex-color-gray-100);
-  padding: var(--xynoplex-spacing-sm);
-  border-radius: var(--xynoplex-radius-sm);
+.xynolog-protected-error-boundary-stack {
+  margin-top: var(--xynolog-spacing-sm);
+  font-size: var(--xynolog-text-xs);
+  background-color: var(--xynolog-color-gray-100);
+  padding: var(--xynolog-spacing-sm);
+  border-radius: var(--xynolog-radius-sm);
   overflow: auto;
 }
 
-[data-theme="dark"] .xynoplex-protected-error-boundary-stack {
-  background-color: var(--xynoplex-color-gray-900);
+[data-theme="dark"] .xynolog-protected-error-boundary-stack {
+  background-color: var(--xynolog-color-gray-900);
 }
 
-.xynoplex-protected-error-boundary-actions {
+.xynolog-protected-error-boundary-actions {
   display: flex;
   gap: 0.75rem;
 }
 
-.xynoplex-protected-error-boundary-actions .xynoplex-button {
+.xynolog-protected-error-boundary-actions .xynolog-button {
   flex: 1 1 0;
 }

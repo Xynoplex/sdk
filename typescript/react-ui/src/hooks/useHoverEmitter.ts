@@ -1,8 +1,8 @@
 'use client';
 
 import { useCallback } from 'react';
-import type { AnnotationId } from '@xynoplex/core';
-import { HOVER_DELAY_MS, type XynoplexSession } from '@xynoplex/sdk';
+import type { AnnotationId } from '@xynolog/core';
+import { HOVER_DELAY_MS, type XynologSession } from '@xynolog/sdk';
 import { useHoverDwell } from './useHoverDwell';
 
 export interface HoverEmitterProps {
@@ -11,7 +11,7 @@ export interface HoverEmitterProps {
 }
 
 /** The pointer's dwell on one annotation's entry, as the entry's mouse handlers. */
-export function useHoverEmitter(session: XynoplexSession | null, annotationId: AnnotationId, hoverDelayMs: number = HOVER_DELAY_MS): HoverEmitterProps {
+export function useHoverEmitter(session: XynologSession | null, annotationId: AnnotationId, hoverDelayMs: number = HOVER_DELAY_MS): HoverEmitterProps {
   const dwell = useHoverDwell(session, hoverDelayMs);
   const onMouseEnter = useCallback(() => dwell?.enter(annotationId), [dwell, annotationId]);
   const onMouseLeave = useCallback(() => dwell?.leave(), [dwell]);

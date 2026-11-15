@@ -1,4 +1,4 @@
-package xynoplex
+package xynolog
 
 // Browse: reads, and this viewer's own signals. The queries (Cached) are
 // read once with Fresh. The one-shot reads are asked once. The signals are
@@ -7,8 +7,8 @@ package xynoplex
 import (
 	"context"
 
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/bus"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/bus"
 )
 
 // EngineWithLimits is one of the knowledge base's engines: its entry, and

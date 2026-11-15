@@ -3,7 +3,7 @@
    ============================================ */
 
 /* PageLayout Component */
-.xynoplex-page-layout {
+.xynolog-page-layout {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -11,18 +11,18 @@
 
 /* Page wrapper for standalone pages (auth, etc) */
 
-.xynoplex-page-layout__header {
+.xynolog-page-layout__header {
   position: sticky;
   top: 0;
   z-index: 40;
 }
 
-.xynoplex-page-layout__header-container {
+.xynolog-page-layout__header-container {
   width: 100%;
-  background: var(--xynoplex-bg-primary);
-  border-bottom: 1px solid var(--xynoplex-border-primary);
+  background: var(--xynolog-bg-primary);
+  border-bottom: 1px solid var(--xynolog-border-primary);
 }
 
-.xynoplex-page-layout__main {
+.xynolog-page-layout__main {
   flex: 1;
 }

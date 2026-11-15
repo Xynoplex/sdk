@@ -9,8 +9,8 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import util from 'node:util';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { HTTP_REQUEST_TIMEOUT_MS, REFRESH_RETRY, SignInError } from '@xynoplex/core';
-import { APIError, HttpTransport } from '@xynoplex/http-transport';
+import { HTTP_REQUEST_TIMEOUT_MS, REFRESH_RETRY, SignInError } from '@xynolog/core';
+import { APIError, HttpTransport } from '@xynolog/http-transport';
 import { keptIn, renewKept } from '../../index';
 import { InMemorySessionStorage } from '../session-storage';
 import {
@@ -27,7 +27,7 @@ import {
 } from '../oauth';
 
 const TARGET = { kind: 'http' as const, host: 'localhost', port: 4000, protocol: 'http' as const };
-const ISSUER = 'https://issuer.test/realms/xynoplex';
+const ISSUER = 'https://issuer.test/realms/xynolog';
 const DISCOVERY = {
   issuer: ISSUER,
   authorization_endpoint: `${ISSUER}/auth`,
@@ -351,7 +351,7 @@ describe('refresh and revocation', () => {
 
     function seeded() {
       const storage = new InMemorySessionStorage();
-      storage.set(`xynoplex.session.${KB}`, JSON.stringify({
+      storage.set(`xynolog.session.${KB}`, JSON.stringify({
         access: 'acc-1',
         refresh: 'ref-1',
         clientId: BROWSER_CLIENT_ID,
@@ -362,13 +362,13 @@ describe('refresh and revocation', () => {
     }
 
     const stored = (storage: InMemorySessionStorage) =>
-      JSON.parse(storage.get(`xynoplex.session.${KB}`) ?? 'null') as { access: string } | null;
+      JSON.parse(storage.get(`xynolog.session.${KB}`) ?? 'null') as { access: string } | null;
 
     it('does not write back a session that was signed out while it was being renewed, and gives its token to nobody', async () => {
       const storage = seeded();
       fetchMock.mockImplementation(async () => {
         // The sign-out lands while the grant is on its way.
-        storage.delete(`xynoplex.session.${KB}`);
+        storage.delete(`xynolog.session.${KB}`);
         return reply({ access_token: 'acc-2', refresh_token: 'ref-2' });
       });
 
@@ -389,12 +389,12 @@ describe('refresh and revocation', () => {
       });
       fetchMock.mockImplementation(async () => {
         // Another context's renewal lands while the grant is on its way.
-        storage.set(`xynoplex.session.${KB}`, renewedElsewhere);
+        storage.set(`xynolog.session.${KB}`, renewedElsewhere);
         return reply({ access_token: 'acc-2', refresh_token: 'ref-2' });
       });
 
       expect(await renewKept(keptIn(storage, KB), 'acc-1')).toBe('acc-elsewhere');
-      expect(storage.get(`xynoplex.session.${KB}`)).toBe(renewedElsewhere);
+      expect(storage.get(`xynolog.session.${KB}`)).toBe(renewedElsewhere);
     });
 
     it('a renewal keeps the person the stored session names: it is the same sign-in, with new tokens', async () => {
@@ -406,11 +406,11 @@ describe('refresh and revocation', () => {
         tokenEndpoint: `${ISSUER}/token`,
         personKey: 'gqB898gk4Ww_orAHhzDCSVl7yHP9UEsX0DA_xbGbq-I',
       };
-      storage.set(`xynoplex.session.${KB}`, JSON.stringify(signIn));
+      storage.set(`xynolog.session.${KB}`, JSON.stringify(signIn));
       fetchMock.mockImplementation(async () => reply({ access_token: 'acc-2', refresh_token: 'ref-2' }));
 
       expect(await renewKept(keptIn(storage, KB), 'acc-1')).toBe('acc-2');
-      expect(JSON.parse(storage.get(`xynoplex.session.${KB}`) ?? 'null')).toEqual({ ...signIn, access: 'acc-2', refresh: 'ref-2' });
+      expect(JSON.parse(storage.get(`xynolog.session.${KB}`) ?? 'null')).toEqual({ ...signIn, access: 'acc-2', refresh: 'ref-2' });
     });
 
     it('rides out a 503 and returns the renewed token', async () => {
@@ -501,7 +501,7 @@ describe('refresh and revocation', () => {
     const KB = 'kb-alpha';
     function seeded() {
       const storage = new InMemorySessionStorage();
-      storage.set(`xynoplex.session.${KB}`, JSON.stringify({
+      storage.set(`xynolog.session.${KB}`, JSON.stringify({
         access: 'acc-1', refresh: 'ref-1', clientId: BROWSER_CLIENT_ID,
         tokenEndpoint: `${ISSUER}/token`, issuer: ISSUER,
       }));
@@ -683,7 +683,7 @@ describe('a request to the issuer has a deadline', () => {
   it('a renewal the issuer never answers is tried again inside the budget, and then says how hard it tried', async () => {
     vi.useFakeTimers();
     const storage = new InMemorySessionStorage();
-    storage.set('xynoplex.session.kb-1', JSON.stringify({
+    storage.set('xynolog.session.kb-1', JSON.stringify({
       access: 'a1', refresh: 'r1', clientId: BROWSER_CLIENT_ID, tokenEndpoint: `${ISSUER}/token`,
     }));
     // What a request rejects with when its deadline passes.

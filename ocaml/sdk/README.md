@@ -1,12 +1,12 @@
-# Xynoplex OCaml SDK
+# Xynolog OCaml SDK
 
-[![codecov](https://codecov.io/gh/Xynoplex/sdk/graph/badge.svg?component=ocaml-sdk)](https://app.codecov.io/gh/Xynoplex/sdk/components)
+[![codecov](https://codecov.io/gh/xynolog/sdk/graph/badge.svg?component=ocaml-sdk)](https://app.codecov.io/gh/xynolog/sdk/components)
 
-Build an Eio application, script, or worker that talks to a Xynoplex knowledge base. The SDK includes typed bus operations, sign-in, delegation, and live queries.
+Build an Eio application, script, or worker that talks to a Xynolog knowledge base. The SDK includes typed bus operations, sign-in, delegation, and live queries.
 
 ## Install
 
-Build the `xynoplex` package from `ocaml/sdk` in this checkout. The compiler and Dune versions are pinned in [toolchain.json](../toolchain.json).
+Build the `xynolog` package from `ocaml/sdk` in this checkout. The compiler and Dune versions are pinned in [toolchain.json](../toolchain.json).
 
 ```sh
 cd ocaml/sdk
@@ -14,7 +14,7 @@ dune build @install
 dune install --pkg=disabled --prefix "$PWD/_installed"
 ```
 
-Add `xynoplex` to your application's Dune `libraries` stanza and make the installed library available on its OCaml package path. The [builder guide](../../../docs/builder/OCAML.md) shows how the client fits into an application.
+Add `xynolog` to your application's Dune `libraries` stanza and make the installed library available on its OCaml package path. The [builder guide](../../../docs/builder/OCAML.md) shows how the client fits into an application.
 
 ## Sign in and connect
 

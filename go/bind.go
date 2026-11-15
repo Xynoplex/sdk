@@ -1,12 +1,12 @@
-package xynoplex
+package xynolog
 
 // Bind: linking a reference to what it refers to.
 
 import (
 	"context"
 
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/bus"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/bus"
 )
 
 // BindNamespace is linking a reference to what it refers to.

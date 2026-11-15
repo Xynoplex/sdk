@@ -1,5 +1,5 @@
 import { BehaviorSubject, type Observable, type Subscription } from 'rxjs';
-import type { CacheState } from '@xynoplex/sdk';
+import type { CacheState } from '@xynolog/sdk';
 
 /**
  * A cache-backed list in its real states.

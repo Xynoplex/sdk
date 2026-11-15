@@ -3,7 +3,7 @@ open Eio.Std
 let check = Alcotest.(check bool)
 
 let directory use =
-  let path = Filename.temp_file "xynoplex-native-lock-" "" in
+  let path = Filename.temp_file "xynolog-native-lock-" "" in
   Unix.unlink path;
   Unix.mkdir path Store_policy.directory_mode;
   Fun.protect

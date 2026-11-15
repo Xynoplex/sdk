@@ -6,7 +6,7 @@ source "$ROOT/build-tools/container-runtime.sh"
 source "$ROOT/scripts/run-container-quietly.sh"
 source "$ROOT/scripts/require-protocol-pin.sh"
 RUNTIME="$(detect_container_runtime)"
-STATE_ROOT="${XDG_CACHE_HOME:-$HOME/.cache}/xynoplex-sdk/local"
+STATE_ROOT="${XDG_CACHE_HOME:-$HOME/.cache}/xynolog-sdk/local"
 PROTOCOL="$ROOT/protocol"
 
 mkdir -p "$STATE_ROOT/npm/packages" "$STATE_ROOT/python/packages" \

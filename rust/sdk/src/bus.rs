@@ -16,20 +16,20 @@
 //! own, so a wrong payload for a channel does not compile:
 //!
 //! ```
-//! # use xynoplex::bus::Bus;
-//! # use xynoplex::channels::BeckonFocus;
-//! # use xynoplex::transport::Envelope;
-//! # use xynoplex::types::BeckonFocusEvent;
+//! # use xynolog::bus::Bus;
+//! # use xynolog::channels::BeckonFocus;
+//! # use xynolog::transport::Envelope;
+//! # use xynolog::types::BeckonFocusEvent;
 //! # async fn focus(bus: &Bus, event: BeckonFocusEvent) {
 //! let _ = bus.emit::<BeckonFocus>(&event, Envelope::default()).await;
 //! # }
 //! ```
 //!
 //! ```compile_fail
-//! # use xynoplex::bus::Bus;
-//! # use xynoplex::channels::JobCreate;
-//! # use xynoplex::transport::Envelope;
-//! # use xynoplex::types::BeckonFocusEvent;
+//! # use xynolog::bus::Bus;
+//! # use xynolog::channels::JobCreate;
+//! # use xynolog::transport::Envelope;
+//! # use xynolog::types::BeckonFocusEvent;
 //! # async fn focus(bus: &Bus, event: BeckonFocusEvent) {
 //! let _ = bus.emit::<JobCreate>(&event, Envelope::default()).await;
 //! # }
@@ -41,7 +41,7 @@
 
 use crate::channels::{Channel, Request, Scoped, Unscoped, payload_shape, payload_stamps};
 use crate::errors::{
-    BusRequestError, BusRequestErrorCode, XynoplexError, TransportError, TransportErrorCode,
+    BusRequestError, BusRequestErrorCode, TransportError, TransportErrorCode, XynologError,
 };
 use crate::required::{Fault, fault_of};
 use crate::transport::{
@@ -160,7 +160,7 @@ impl Bus {
         operation: &Operation,
         payload: Map<String, Value>,
         within: Duration,
-    ) -> Result<Option<Value>, XynoplexError> {
+    ) -> Result<Option<Value>, XynologError> {
         let mut result = self.result_of(operation, payload, within).await?;
         Ok(result.payload.remove("response"))
     }
@@ -174,7 +174,7 @@ impl Bus {
         operation: &Operation,
         payload: Map<String, Value>,
         within: Duration,
-    ) -> Result<Frame, XynoplexError> {
+    ) -> Result<Frame, XynologError> {
         let deadline = Instant::now() + within;
         for channel in [operation.result, operation.failure] {
             if !self.transport.is_subscribed(channel) {
@@ -234,7 +234,7 @@ impl Bus {
             self.transport
                 .emit(operation.request, payload, envelope)
                 .await?;
-            Ok::<_, XynoplexError>(pending.frame().await)
+            Ok::<_, XynologError>(pending.frame().await)
         };
         // The whole request is under its deadline: the wait for the stream,
         // the emit with its retries and the waits between them, and the wait
@@ -273,7 +273,7 @@ impl Bus {
 /// failure channel, as it is read (`held_to`): under the code its own code
 /// becomes, in its own words. A failure with a fault as its channel's is
 /// refused, as a result with one is.
-fn answered(channel: &str, failure: Map<String, Value>) -> XynoplexError {
+fn answered(channel: &str, failure: Map<String, Value>) -> XynologError {
     let fault = match held_to(channel, failure) {
         Err(fault) => fault,
         Ok(read) => match serde_json::from_value::<CommandError>(read.clone()) {
@@ -478,8 +478,8 @@ impl Bus {
     /// here, where nothing would ever be delivered to it:
     ///
     /// ```compile_fail,E0277
-    /// use xynoplex::bus::Bus;
-    /// use xynoplex::channels::MarkAdded;
+    /// use xynolog::bus::Bus;
+    /// use xynolog::channels::MarkAdded;
     ///
     /// fn read(bus: &Bus) {
     ///     let _ = bus.frames::<MarkAdded>();
@@ -497,9 +497,9 @@ impl Bus {
     /// and no other's.
     ///
     /// ```
-    /// use xynoplex::bus::Bus;
-    /// use xynoplex::channels::MarkAdded;
-    /// use xynoplex::types::ResourceId;
+    /// use xynolog::bus::Bus;
+    /// use xynolog::channels::MarkAdded;
+    /// use xynolog::types::ResourceId;
     ///
     /// async fn follow(bus: &Bus, resource: &ResourceId) {
     ///     let Ok(mut added) = bus.frames_of::<MarkAdded>(resource) else {
@@ -528,7 +528,7 @@ impl Bus {
         &self,
         payload: &R::Payload,
         within: Duration,
-    ) -> Result<<R::Result as Channel>::Payload, XynoplexError> {
+    ) -> Result<<R::Result as Channel>::Payload, XynologError> {
         Ok(self.result::<R>(payload, within).await?.payload)
     }
 
@@ -540,7 +540,7 @@ impl Bus {
         &self,
         payload: &R::Payload,
         within: Duration,
-    ) -> Result<Delivered<R::Result>, XynoplexError> {
+    ) -> Result<Delivered<R::Result>, XynologError> {
         let result = self
             .result_of(&Operation::of::<R>(), payload_of(payload)?, within)
             .await?;

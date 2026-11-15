@@ -1,6 +1,6 @@
 /**
  * createHttpSessionFactory — the default `SessionFactory` for HTTP-backed
- * KBs. Owns every HTTP-specific construction concern, so `XynoplexBrowser`
+ * KBs. Owns every HTTP-specific construction concern, so `XynologBrowser`
  * has none: building `HttpTransport`/`HttpContentTransport`,
  * wiring the `tokenRefresher` callback, deduplicating concurrent 401
  * refresh round trips, renewing the session at its issuer, and asking the
@@ -17,12 +17,12 @@
  */
 
 import { BehaviorSubject } from 'rxjs';
-import { HttpTransport, HttpContentTransport, currentUserOf } from '@xynoplex/http-transport';
-import { BRIDGED_CHANNELS, baseUrl, type AccessToken } from '@xynoplex/core';
-import { XynoplexClient } from '../client';
+import { HttpTransport, HttpContentTransport, currentUserOf } from '@xynolog/http-transport';
+import { BRIDGED_CHANNELS, baseUrl, type AccessToken } from '@xynolog/core';
+import { XynologClient } from '../client';
 import { personKeeping } from '../cache-persister';
-import { XynoplexSession, sayOn, type UserInfo } from './xynoplex-session';
-import { XynoplexSessionError } from './errors';
+import { XynologSession, sayOn, type UserInfo } from './xynolog-session';
+import { XynologSessionError } from './errors';
 import { kbGatewayUrl, keptIn } from './storage';
 import { renewKept } from './oauth';
 import type { SessionFactory, SessionFactoryOptions } from './session-factory';
@@ -30,12 +30,12 @@ import type { SessionFactory, SessionFactoryOptions } from './session-factory';
 export function createHttpSessionFactory(fetch?: typeof globalThis.fetch): SessionFactory {
   const inFlightRefreshes = new Map<string, Promise<string | null>>();
 
-  return (opts: SessionFactoryOptions): XynoplexSession => {
+  return (opts: SessionFactoryOptions): XynologSession => {
     const { kb, storage, signals } = opts;
-    let session!: XynoplexSession;
+    let session!: XynologSession;
 
     if (kb.endpoint.kind !== 'http') {
-      throw new XynoplexSessionError(
+      throw new XynologSessionError(
         'session.construct-failed',
         `HTTP session factory cannot construct a session for endpoint kind "${kb.endpoint.kind}"`,
         kb.id,
@@ -87,7 +87,7 @@ export function createHttpSessionFactory(fetch?: typeof globalThis.fetch): Sessi
       ...(fetch ? { fetch } : {}),
     });
     const content = new HttpContentTransport(transport);
-    const client = new XynoplexClient(transport, content, transport, keeps.fromStart === null ? {} : { cachePersistence: keeps.fromStart.persistence });
+    const client = new XynologClient(transport, content, transport, keeps.fromStart === null ? {} : { cachePersistence: keeps.fromStart.persistence });
     // B17-Q (C1): the places wait for what the client keeps to be at rest —
     // a bystander document write must not carry an id whose event some other
     // cache is still absorbing (mid-refetch, mid-debounce, or a refetch the
@@ -114,7 +114,7 @@ export function createHttpSessionFactory(fetch?: typeof globalThis.fetch): Sessi
       return user;
     };
 
-    session = new XynoplexSession({
+    session = new XynologSession({
       kb,
       kept: signIn,
       client,

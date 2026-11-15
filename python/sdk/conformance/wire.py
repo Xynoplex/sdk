@@ -1,6 +1,6 @@
 """The wire driver: this SDK's transport, as `protocol/conformance/sdk/wire` drives it.
 
-It reaches the transport only as an application does, through what `xynoplex`
+It reaches the transport only as an application does, through what `xynolog`
 exports, so what the suite observes is what a caller of the SDK gets.
 
 Started with `OTEL_EXPORTER_OTLP_ENDPOINT` in its environment, it exports the
@@ -19,16 +19,16 @@ from typing import final
 from protocol import Arguments, Misuse, Operation, count, exporting, failure, object_of, optional_text, say, serve, text, texts
 from pydantic import JsonValue
 
-from xynoplex.bus import request
-from xynoplex.errors import XynoplexError
-from xynoplex.events import Events
-from xynoplex.http import HttpTransport, Timing, TokenRefresher
-from xynoplex.identifiers import AnnotationId, InvalidIdentifier, JobId, ResourceId
-from xynoplex.model import WireModel
-from xynoplex.operations import OPERATIONS
-from xynoplex.retry import RetryPolicy
-from xynoplex.transport import ConnectionState, Frame, FrameRefusal, PutBinaryRequest, ResourceHold
-from xynoplex.watched import Variable
+from xynolog.bus import request
+from xynolog.errors import XynologError
+from xynolog.events import Events
+from xynolog.http import HttpTransport, Timing, TokenRefresher
+from xynolog.identifiers import AnnotationId, InvalidIdentifier, JobId, ResourceId
+from xynolog.model import WireModel
+from xynolog.operations import OPERATIONS
+from xynolog.retry import RetryPolicy
+from xynolog.transport import ConnectionState, Frame, FrameRefusal, PutBinaryRequest, ResourceHold
+from xynolog.watched import Variable
 
 
 def _resource(args: Arguments, name: str) -> ResourceId:
@@ -124,7 +124,7 @@ class Wire:
         async for state in transport.state:
             self._report(state)
 
-    async def _failures(self, failures: Events[XynoplexError]) -> None:
+    async def _failures(self, failures: Events[XynologError]) -> None:
         async for error in failures:
             say({"error": failure(error)})
 

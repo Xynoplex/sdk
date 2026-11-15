@@ -1,4 +1,4 @@
-package xynoplex
+package xynolog
 
 // The transport over HTTP (protocol/contract/TRANSPORT-HTTP.md): POST /bus/emit
 // for each frame out, and one held POST /bus/subscribe stream for frames in,
@@ -21,9 +21,9 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/bus"
-	"github.com/Xynoplex/sdk/go/internal/kept"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/bus"
+	"github.com/xynolog/sdk/go/internal/kept"
 )
 
 // TokenRefresher renews a token the gateway refused. It is asked once for a

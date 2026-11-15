@@ -1,4 +1,4 @@
-import type { components } from '@xynoplex/core';
+import type { components } from '@xynolog/core';
 
 type Agent = components['schemas']['Agent'];
 

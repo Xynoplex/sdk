@@ -13,8 +13,8 @@
  */
 import { describe, it, expect, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import type { Annotation, AnnotationId, YieldJobDone } from '@xynoplex/core';
-import { resourceId as makeResourceId } from '@xynoplex/core';
+import type { Annotation, AnnotationId, YieldJobDone } from '@xynolog/core';
+import { resourceId as makeResourceId } from '@xynolog/core';
 import { useGenerationArrival } from '../useGenerationArrival';
 
 const outcomeFor = (target: string): YieldJobDone => ({

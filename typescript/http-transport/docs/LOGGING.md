@@ -4,11 +4,11 @@ What `HttpTransport` writes about what it does, and where. There are two logs: t
 
 ## The logger
 
-Pass a `logger` in `HttpTransportConfig` and the transport logs its plain requests to it. Pass none and it logs nothing. The logger is [`@xynoplex/core`](../../core/README.md)'s `Logger`: `debug`, `info`, `warn`, `error`, each taking a message and an object of fields, and `child`. Anything of that shape will do.
+Pass a `logger` in `HttpTransportConfig` and the transport logs its plain requests to it. Pass none and it logs nothing. The logger is [`@xynolog/core`](../../core/README.md)'s `Logger`: `debug`, `info`, `warn`, `error`, each taking a message and an object of fields, and `child`. Anything of that shape will do.
 
 ```typescript
-import { HttpTransport } from '@xynoplex/http-transport';
-import { BRIDGED_CHANNELS, baseUrl, type Logger } from '@xynoplex/core';
+import { HttpTransport } from '@xynolog/http-transport';
+import { BRIDGED_CHANNELS, baseUrl, type Logger } from '@xynolog/core';
 
 const logger: Logger = {
   debug: (message, fields) => console.debug(message, fields),
@@ -59,7 +59,7 @@ The bus log is one line for everything that crosses the wire, in the same form i
 
 It is off until switched on, for the whole process:
 
-- **Node:** `XYNOPLEX_BUS_LOG` set to anything, in the environment the process starts with.
-- **A browser:** `window.__XYNOPLEX_BUS_LOG__ = true`, in the console.
+- **Node:** `XYNOLOG_BUS_LOG` set to anything, in the environment the process starts with.
+- **A browser:** `window.__XYNOLOG_BUS_LOG__ = true`, in the console.
 
 It is written with `console.debug`, not to the logger. Unlike the logger's lines, it shows payloads: a tool for following one action across processes, not something to leave on.

@@ -7,12 +7,12 @@ file layout and the invariants the implementation keeps.
 ## Package layout
 
 ```text
-@xynoplex/sdk
-├── client.ts                    ← XynoplexClient (transport + its EventBus)
+@xynolog/sdk
+├── client.ts                    ← XynologClient (transport + its EventBus)
 ├── session/                     ← per-KB session, app-level browser, storage
 │   ├── session-storage.ts       ← SessionStorage interface + InMemorySessionStorage
-│   ├── xynoplex-session.ts       ← XynoplexSession (per-KB)
-│   ├── xynoplex-browser.ts       ← XynoplexBrowser (app singleton)
+│   ├── xynolog-session.ts       ← XynologSession (per-KB)
+│   ├── xynolog-browser.ts       ← XynologBrowser (app singleton)
 │   ├── session-signals.ts       ← SessionSignals (the modals' state)
 │   ├── session-factory.ts       ← SessionFactory type
 │   ├── http-session-factory.ts  ← createHttpSessionFactory()
@@ -20,23 +20,23 @@ file layout and the invariants the implementation keeps.
 │   ├── oauth.ts                 ← issuer discovery, PKCE / device grants, refresh, revoke
 │   ├── connect.ts               ← what a completed sign-in learns about the KB
 │   ├── storage.ts               ← pure helpers + adapter-fed loaders
-│   ├── errors.ts                ← XynoplexSessionError
+│   ├── errors.ts                ← XynologSessionError
 │   ├── knowledge-base.ts        ← KnowledgeBase, KbSessionStatus types
 │   └── open-resource.ts         ← OpenResource type
 └── state/                       ← state-unit factories; take `client`, not a bus
     ├── flows/                   ← beckon, gather, mark, match, yield
     └── lib/                     ← createDisposer, search pipeline
 
-@xynoplex/react-ui
+@xynolog/react-ui
 ├── session/
-│   ├── XynoplexProvider.tsx      ← React context provider + useXynoplex hook
+│   ├── XynologProvider.tsx      ← React context provider + useXynolog hook
 │   └── web-browser-storage.ts   ← WebBrowserStorage (localStorage + storage event)
 └── state/
     └── shell-state-unit.ts      ← ShellStateUnit (toolbar panel state)
 ```
 
-No session logic lives in `@xynoplex/react-ui`. Its session surface is
-`XynoplexProvider` / `useXynoplex` (context) and `WebBrowserStorage` (the
+No session logic lives in `@xynolog/react-ui`. Its session surface is
+`XynologProvider` / `useXynolog` (context) and `WebBrowserStorage` (the
 browser-backed `SessionStorage` implementation).
 
 ## Invariants
@@ -52,12 +52,12 @@ browser-backed `SessionStorage` implementation).
 4. **State-unit factories never construct an `EventBus`.** They take the
    client or browser that owns one.
 5. **Every channel belongs to exactly one bus.** `EventMap` in
-   `@xynoplex/core/bus-protocol.ts` is the source of truth. Don't
+   `@xynolog/core/bus-protocol.ts` is the source of truth. Don't
    split a channel across buses; don't emit to both.
 6. **`sessionActivating$` is the only valid loading indicator.** UIs
    that want to show a spinner while the session is under
    construction must AND-gate on `sessionActivating$`; otherwise
    they get stuck spinning after `signOut`.
 7. **React layer is provider + hook only.** All session types live in
-   `@xynoplex/sdk`; the React package's session surface is `XynoplexProvider`,
-   `useXynoplex`, and `WebBrowserStorage`.
+   `@xynolog/sdk`; the React package's session surface is `XynologProvider`,
+   `useXynolog`, and `WebBrowserStorage`.

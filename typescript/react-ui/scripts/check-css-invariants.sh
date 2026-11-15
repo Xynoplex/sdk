@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Check CSS invariants for the Xynoplex project
+# Check CSS invariants for the Xynolog project
 # This script enforces our CSS coding standards
 
 echo "🔍 Checking CSS invariants..."
@@ -49,13 +49,13 @@ check_tailwind_in_react_ui() {
     fi
 }
 
-# Function to check for xynoplex- prefix in react-ui CSS
-check_xynoplex_prefix() {
-    echo "Checking for proper xynoplex- prefix in react-ui CSS classes..."
+# Function to check for xynolog- prefix in react-ui CSS
+check_xynolog_prefix() {
+    echo "Checking for proper xynolog- prefix in react-ui CSS classes..."
 
-    # Look for class definitions that don't start with xynoplex- or allowed exceptions
+    # Look for class definitions that don't start with xynolog- or allowed exceptions
     results=$(grep -r "^\." typescript/react-ui/src/styles --include="*.css" |
-              grep -v "\.xynoplex-" |
+              grep -v "\.xynolog-" |
               grep -v "\.annotation-" |
               grep -v "\.red-underline" |
               grep -v "\.cm-" |
@@ -66,9 +66,9 @@ check_xynoplex_prefix() {
               head -10)
 
     if [ ! -z "$results" ]; then
-        echo -e "${YELLOW}⚠ Found non-xynoplex classes (first 10):${NC}"
+        echo -e "${YELLOW}⚠ Found non-xynolog classes (first 10):${NC}"
         echo "$results"
-        echo -e "${YELLOW}Consider using xynoplex- prefix for consistency${NC}"
+        echo -e "${YELLOW}Consider using xynolog- prefix for consistency${NC}"
     else
         echo -e "${GREEN}✓ All CSS classes follow naming convention${NC}"
     fi
@@ -123,7 +123,7 @@ check_theme_selectors() {
 # Run all checks
 check_tailwind_in_react_ui
 echo ""
-check_xynoplex_prefix
+check_xynolog_prefix
 echo ""
 check_hardcoded_colors
 echo ""

@@ -22,9 +22,9 @@ from pydantic import JsonValue, TypeAdapter
 from spec import SPEC, JsonObject, read, strings, text
 from tokens import expired, token
 
-from xynoplex.cache import Ready
-from xynoplex.errors import IdentityUnverifiableError, SignInError
-from xynoplex.http.oauth import (
+from xynolog.cache import Ready
+from xynolog.errors import IdentityUnverifiableError, SignInError
+from xynolog.http.oauth import (
     BeginAuthorizationOptions,
     IssuedTokens,
     PendingAuthorization,
@@ -32,15 +32,15 @@ from xynoplex.http.oauth import (
     code_challenge,
     complete_authorization,
 )
-from xynoplex.http.session import HttpSessionFactory, begin_sign_in, complete_sign_in, describe_connection
-from xynoplex.identifiers import ResourceId
-from xynoplex.registry import XynoplexBrowser, XynoplexBrowserConfig, save_knowledge_bases, store_session, stored_session
-from xynoplex.session import XynoplexSession
-from xynoplex.storage import MemoryStorage, SessionStorage
-from xynoplex.stored import PENDING_AUTHORIZATION_KEY, StoredSession, last_event_id_key, person_key
-from xynoplex.transport import Transport
-from xynoplex.types import HttpEndpoint, KnowledgeBase, LocalEndpoint
-from xynoplex.watched import reached
+from xynolog.http.session import HttpSessionFactory, begin_sign_in, complete_sign_in, describe_connection
+from xynolog.identifiers import ResourceId
+from xynolog.registry import XynologBrowser, XynologBrowserConfig, save_knowledge_bases, store_session, stored_session
+from xynolog.session import XynologSession
+from xynolog.storage import MemoryStorage, SessionStorage
+from xynolog.stored import PENDING_AUTHORIZATION_KEY, StoredSession, last_event_id_key, person_key
+from xynolog.transport import Transport
+from xynolog.types import HttpEndpoint, KnowledgeBase, LocalEndpoint
+from xynolog.watched import reached
 
 _JSON = TypeAdapter[JsonValue](JsonValue)
 
@@ -102,7 +102,7 @@ def stored(gateway: GatewayServer, access: str, refresh: str, person: str | None
     return StoredSession(
         access=access,
         refresh=refresh,
-        client_id="xynoplex-browser",
+        client_id="xynolog-browser",
         token_endpoint=f"{gateway.origin}{TOKEN}",
         revocation_endpoint=f"{gateway.origin}{REVOKE}",
         person_key=person,
@@ -126,11 +126,11 @@ def query(address: str) -> dict[str, str]:
     return {name: values[0] for name, values in parse_qs(urlsplit(address).query, keep_blank_values=True).items()}
 
 
-def browser_over(storage: SessionStorage) -> XynoplexBrowser:
-    return XynoplexBrowser(XynoplexBrowserConfig(storage=storage, session_factory=HttpSessionFactory()))
+def browser_over(storage: SessionStorage) -> XynologBrowser:
+    return XynologBrowser(XynologBrowserConfig(storage=storage, session_factory=HttpSessionFactory()))
 
 
-async def live(browser: XynoplexBrowser) -> XynoplexSession[Transport]:
+async def live(browser: XynologBrowser) -> XynologSession[Transport]:
     """The registry's live session, once it has one."""
     session = await soon(reached(browser.active_session, lambda session: session is not None), within=10)
     assert session is not None
@@ -146,7 +146,7 @@ async def until(what: str, seen: Callable[[], bool]) -> None:
     raise AssertionError(f"{what} did not happen")
 
 
-async def sent_back(gateway: GatewayServer, browser: XynoplexBrowser, options: BeginAuthorizationOptions) -> str:
+async def sent_back(gateway: GatewayServer, browser: XynologBrowser, options: BeginAuthorizationOptions) -> str:
     """Begin a sign-in through the registry, and give the address the issuer would send the person back to."""
     address = await soon(begin_sign_in(browser, options))
     return f"{REDIRECT}?state={query(address)['state']}&code=the-code"
@@ -178,7 +178,7 @@ def test_a_registry_brings_up_a_session_that_says_who_it_is_and_renews_an_expire
                 assert fields(gateway.of("POST", TOKEN)[0]) == {
                     "grant_type": "refresh_token",
                     "refresh_token": "r1",
-                    "client_id": "xynoplex-browser",
+                    "client_id": "xynolog-browser",
                 }
                 # The renewal kept, and the person the gateway named recorded on it.
                 assert stored_session(storage, "kb-a") == stored(gateway, renewed, "r2", ALICE_KEY)
@@ -263,7 +263,7 @@ def test_signing_out_of_a_registry_revokes_the_refresh_token_at_its_issuer() -> 
                 assert fields(gateway.of("POST", REVOKE)[0]) == {
                     "token": "r1",
                     "token_type_hint": "refresh_token",
-                    "client_id": "xynoplex-browser",
+                    "client_id": "xynolog-browser",
                 }
                 assert stored_session(storage, "kb-a") is None
                 assert browser.active_session.value is None
@@ -346,7 +346,7 @@ def test_a_registrys_sign_in_registers_the_knowledge_base_under_what_it_says_it_
                 exchanged = fields(gateway.of("POST", TOKEN)[0])
                 assert (exchanged["grant_type"], exchanged["client_id"], exchanged["code"]) == (
                     "authorization_code",
-                    "xynoplex-browser",
+                    "xynolog-browser",
                     "the-code",
                 )
 
@@ -440,7 +440,7 @@ def test_a_registry_given_a_client_signs_in_holds_its_session_and_signs_out_thro
             granting(gateway, (token(3600, 1), "a-refresh-token"))
             factory = HttpSessionFactory(http=http)
 
-            async with XynoplexBrowser(XynoplexBrowserConfig(storage=MemoryStorage(), session_factory=factory)) as browser:
+            async with XynologBrowser(XynologBrowserConfig(storage=MemoryStorage(), session_factory=factory)) as browser:
                 options = BeginAuthorizationOptions(target=endpoint_of(gateway), redirect_uri=REDIRECT)
                 address = await soon(begin_sign_in(browser, options, http=http))
                 callback = f"{REDIRECT}?state={query(address)['state']}&code=the-code"
@@ -502,7 +502,7 @@ def test_beginning_a_sign_in_remembers_it_and_builds_the_url_around_what_it_reme
             assert address.startswith(f"{issuer_of(gateway)}/auth?")
             assert query(address) == {
                 "response_type": "code",
-                "client_id": "xynoplex-browser",
+                "client_id": "xynolog-browser",
                 "redirect_uri": REDIRECT,
                 "scope": "openid email profile offline_access",
                 "state": record.state,
@@ -612,7 +612,7 @@ def test_completing_a_sign_in_exchanges_the_code_with_its_verifier_once() -> Non
                     "grant_type": "authorization_code",
                     "code": "the-code",
                     "redirect_uri": REDIRECT,
-                    "client_id": "xynoplex-browser",
+                    "client_id": "xynolog-browser",
                     "code_verifier": record.verifier,
                 }
             ]

@@ -5,7 +5,7 @@
  * crosses the wire in remote mode: the bus actor (SSE + POST /bus/emit),
  * auth/admin/exchange/system HTTP endpoints, and connection-state plumbing.
  *
- * Does NOT own the local coordination bus — that lives on `XynoplexClient`.
+ * Does NOT own the local coordination bus — that lives on `XynologClient`.
  * `bridgeInto(bus)` wires SSE-received events into the caller-supplied bus
  * once at construction.
  */
@@ -20,14 +20,14 @@ import type {
   Logger,
   ResourceId,
   components,
-} from '@xynoplex/core';
+} from '@xynolog/core';
 import {
   KeptForFirstReader,
-  XynoplexError,
+  XynologError,
   busLog,
   relayFrames,
-} from '@xynoplex/core';
-import { SpanKind, recordBusSent, withSpan } from '@xynoplex/observability';
+} from '@xynolog/core';
+import { SpanKind, recordBusSent, withSpan } from '@xynolog/observability';
 import { createActorStateUnit, renewedToken, type ActorStateUnit } from './actor-state-unit';
 import { APIError, refusalBody, refusesCredential } from './api-error';
 import { declaredBody } from './declared-body';
@@ -39,9 +39,9 @@ import type {
   HealthCheckResponse,
   StatusResponse,
   UserResponse,
-} from '@xynoplex/core';
-import { asDeclared, HTTP_REQUEST_TIMEOUT_MS, REQUEST_RETRY_PAUSE_MS, RETRY_RULES, RESOURCE_SCOPED_CHANNELS, watched, type RetryPolicy, type Watched } from '@xynoplex/core';
-import type { BusEnvelope, BusFrame, FrameRefusal } from '@xynoplex/core';
+} from '@xynolog/core';
+import { asDeclared, HTTP_REQUEST_TIMEOUT_MS, REQUEST_RETRY_PAUSE_MS, RETRY_RULES, RESOURCE_SCOPED_CHANNELS, watched, type RetryPolicy, type Watched } from '@xynolog/core';
+import type { BusEnvelope, BusFrame, FrameRefusal } from '@xynolog/core';
 
 type ProtectedResourceMetadata = components['schemas']['ProtectedResourceMetadata'];
 
@@ -272,16 +272,16 @@ export class HttpTransport implements ITransport, IGatewayOperations {
   private readonly http: KyInstance;
   private readonly token$: Watched<AccessToken | null>;
   private readonly logger?: Logger;
-  private readonly failures = new KeptForFirstReader<XynoplexError>();
+  private readonly failures = new KeptForFirstReader<XynologError>();
   /**
    * Stream of `APIError` instances surfaced from any HTTP request just
    * before the transport throws to the caller. Satisfies the `ITransport`
-   * `errors$` contract — see `@xynoplex/core/transport.ts`. Of the failures
+   * `errors$` contract — see `@xynolog/core/transport.ts`. Of the failures
    * met before its first reader, the latest
    * `ERRORS_KEPT_FOR_FIRST_READER_COUNT` are kept for it, in the order met;
    * what is still kept when the transport is disposed is dropped.
    */
-  readonly errors$: Observable<XynoplexError> = this.failures.said$;
+  readonly errors$: Observable<XynologError> = this.failures.said$;
 
   private _actor: ActorStateUnit | null = null;
   private _actorStarted = false;
@@ -481,7 +481,7 @@ export class HttpTransport implements ITransport, IGatewayOperations {
           // A refused emit is a transport failure like any other, so it is
           // reported where the others are before its caller hears it. One
           // its caller gave up is not the transport's failure.
-          if (error instanceof XynoplexError && !signal?.aborted) this.pushError(error);
+          if (error instanceof XynologError && !signal?.aborted) this.pushError(error);
           throw error;
         }
       },
@@ -598,7 +598,7 @@ export class HttpTransport implements ITransport, IGatewayOperations {
    * through the `ky` `beforeError` hook and need to surface failures on the
    * same stream the rest of the transport publishes to.
    */
-  pushError(error: XynoplexError): void {
+  pushError(error: XynologError): void {
     if (this.disposed) return;
     this.failures.say(error);
   }
@@ -678,4 +678,4 @@ export class HttpTransport implements ITransport, IGatewayOperations {
 }
 
 // Re-export for convenience
-export type { ConnectionState } from '@xynoplex/core';
+export type { ConnectionState } from '@xynolog/core';

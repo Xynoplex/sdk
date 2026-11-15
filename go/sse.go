@@ -1,4 +1,4 @@
-package xynoplex
+package xynolog
 
 // The stream's framing (protocol/contract/TRANSPORT-HTTP.md § Wire framing and
 // client parser obligations): text/event-stream, each event an `event` line,

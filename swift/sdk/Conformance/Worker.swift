@@ -1,6 +1,6 @@
 import AsyncHTTPClient
 import Foundation
-import Xynoplex
+import Xynolog
 
 extension Dictionary where Key == String, Value == JSONValue {
   fileprivate func decoded<T: Decodable>(_ key: String, as type: T.Type) throws -> T {
@@ -27,7 +27,7 @@ actor WorkerDriver {
 
   let output: Output
   let http: HTTPClient
-  var client: XynoplexClient?
+  var client: XynologClient?
   var transport: HttpTransport?
   /// Ends the failures `transport` told, once it is disposed.
   var telling: AsyncStream<TransportError>.Continuation?
@@ -75,7 +75,7 @@ actor WorkerDriver {
       channels: channels.sorted(), timing: transportTiming)
     let (failures, telling) = failuresTold(by: transport)
     do {
-      client = try await XynoplexClient(transport: transport)
+      client = try await XynologClient(transport: transport)
     } catch {
       transport.dispose()
       throw error

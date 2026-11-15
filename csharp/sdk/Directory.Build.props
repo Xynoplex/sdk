@@ -3,7 +3,7 @@
     <TargetFramework>net11.0</TargetFramework>
     <!-- Locked restore covers both self-contained driver deployment graphs. -->
     <RuntimeIdentifiers>linux-x64;linux-arm64</RuntimeIdentifiers>
-    <XynoplexBuildToolGlobalPropertiesToRemove>RuntimeIdentifier;SelfContained;PublishSingleFile;PublishTrimmed;PublishReadyToRun;PublishAot</XynoplexBuildToolGlobalPropertiesToRemove>
+    <XynologBuildToolGlobalPropertiesToRemove>RuntimeIdentifier;SelfContained;PublishSingleFile;PublishTrimmed;PublishReadyToRun;PublishAot</XynologBuildToolGlobalPropertiesToRemove>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
@@ -12,9 +12,9 @@
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <Deterministic>true</Deterministic>
   </PropertyGroup>
-  <ItemGroup Condition="'$(MSBuildProjectName)' != 'Xynoplex.Analyzers'">
+  <ItemGroup Condition="'$(MSBuildProjectName)' != 'Xynolog.Analyzers'">
     <!-- Analyzers execute on the build host, not the application deployment target. -->
-    <ProjectReference Include="$(MSBuildThisFileDirectory)analyzers/Xynoplex.Analyzers/Xynoplex.Analyzers.csproj" GlobalPropertiesToRemove="$(XynoplexBuildToolGlobalPropertiesToRemove)" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)analyzers/Xynolog.Analyzers/Xynolog.Analyzers.csproj" GlobalPropertiesToRemove="$(XynologBuildToolGlobalPropertiesToRemove)" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <!-- SEM007 holds product code to the caller's clock; a test project keeps its own time. -->
     <CompilerVisibleProperty Include="IsTestProject" />
   </ItemGroup>

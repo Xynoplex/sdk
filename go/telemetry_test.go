@@ -1,4 +1,4 @@
-package xynoplex
+package xynolog
 
 // What the conformance suite's telemetry case cannot see: the trace a frame
 // brings, taken off its payload, and the trace the work done for it
@@ -15,8 +15,8 @@ import (
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
 
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/bus"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/bus"
 )
 
 const (

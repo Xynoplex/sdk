@@ -1,4 +1,4 @@
-package xynoplex
+package xynolog
 
 // The transport contract (protocol/contract/TRANSPORT-CONTRACT.md): what a client
 // needs of whatever carries the bus. The client holds it without naming what
@@ -9,8 +9,8 @@ import (
 	"fmt"
 	"iter"
 
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/bus"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/bus"
 )
 
 // Transport is the bus: an emit out, frames in, the connection's state, the

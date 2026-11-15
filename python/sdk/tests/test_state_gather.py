@@ -16,12 +16,12 @@ from typing import Final, final, override
 import pytest
 from aio import run, turns
 
-from xynoplex.channels import BRIDGED_CHANNELS
-from xynoplex.identifiers import AnnotationId, ResourceId
-from xynoplex.namespaces.gather import GatherNamespace
-from xynoplex.state import GatherStateUnit
-from xynoplex.testing import FaultyTransport, create_test_client
-from xynoplex.testing.axioms import AxiomSubject, Fresh, assert_state_unit_axioms
+from xynolog.channels import BRIDGED_CHANNELS
+from xynolog.identifiers import AnnotationId, ResourceId
+from xynolog.namespaces.gather import GatherNamespace
+from xynolog.state import GatherStateUnit
+from xynolog.testing import FaultyTransport, create_test_client
+from xynolog.testing.axioms import AxiomSubject, Fresh, assert_state_unit_axioms
 
 RESOURCE = ResourceId("res-1")
 ANNOTATION = AnnotationId("ann-1")

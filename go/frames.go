@@ -1,4 +1,4 @@
-package xynoplex
+package xynolog
 
 // What a transport delivers, and to whom: frames by channel, and the failures
 // it met. Each listener of frames has a queue of its own (kept.Queue), and
@@ -14,10 +14,10 @@ import (
 	"slices"
 	"sync"
 
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/bus"
-	"github.com/Xynoplex/sdk/go/internal/kept"
-	"github.com/Xynoplex/sdk/go/internal/required"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/bus"
+	"github.com/xynolog/sdk/go/internal/kept"
+	"github.com/xynolog/sdk/go/internal/required"
 )
 
 // Envelope is the routing beside a payload, never inside it: the correlation

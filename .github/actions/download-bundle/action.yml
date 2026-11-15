@@ -1,4 +1,4 @@
-name: Download Xynoplex SDK artifact bundle
+name: Download Xynolog SDK artifact bundle
 description: Download and verify an immutable SDK release bundle
 inputs:
   tag:

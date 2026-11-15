@@ -1,5 +1,5 @@
-import type { JobId } from '@xynoplex/core';
-import type { MarkStateUnit, XynoplexSession } from '@xynoplex/sdk';
+import type { JobId } from '@xynolog/core';
+import type { MarkStateUnit, XynologSession } from '@xynolog/sdk';
 
 /**
  * What a delegated job's progress display does when its one control is
@@ -47,7 +47,7 @@ export type DelegatedJobControls = Controls;
  * @emits job:cancel-requested - Cancel the delegated job, by its id: pending, it is cancelled; running, the worker that holds it stops its work and settles it as cancelled. Payload: { jobId: JobId }
  */
 export function delegatedJobControls(
-  session: XynoplexSession | null,
+  session: XynologSession | null,
   jobId: JobId | null,
   onDismiss: (() => void) | undefined,
 ): DelegatedJobControls {
@@ -64,6 +64,6 @@ export function delegatedJobControls(
  * The controls of a `mark` job's display: its dismiss clears the progress
  * of the resource's mark unit.
  */
-export function markJobControls(session: XynoplexSession | null, mark: MarkStateUnit | undefined, jobId: JobId | null): DelegatedJobControls {
+export function markJobControls(session: XynologSession | null, mark: MarkStateUnit | undefined, jobId: JobId | null): DelegatedJobControls {
   return delegatedJobControls(session, jobId, () => mark?.dismissProgress());
 }

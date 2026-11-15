@@ -95,13 +95,13 @@ workerTypes source = do
   let code = T.unlines
         [ "-- Generated from typescript/sdk/src/claims.ts. Do not edit."
         , "{-# LANGUAGE OverloadedStrings #-}"
-        , "module Xynoplex.Worker.Types where"
+        , "module Xynolog.Worker.Types where"
         , "import Data.Aeson (FromJSON(..), ToJSON(..), Value(..), withObject, (.:))"
         , "import qualified Data.Aeson.KeyMap as KM"
         , "import Data.Scientific (Scientific)"
         , "import Data.Text (Text)"
-        , "import Xynoplex.ErrorCodes (BusRequestCode)"
-        , "import Xynoplex.Internal.Codec (optional, optionalPair)"
-        , "import Xynoplex.Types (JobId, JobType, UnitCursor, FailureClass)"
+        , "import Xynolog.ErrorCodes (BusRequestCode)"
+        , "import Xynolog.Internal.Codec (optional, optionalPair)"
+        , "import Xynolog.Types (JobId, JobType, UnitCursor, FailureClass)"
         ] <> T.concat records
-  pure [("generated/Xynoplex/Worker/Types.hs",code)]
+  pure [("generated/Xynolog/Worker/Types.hs",code)]

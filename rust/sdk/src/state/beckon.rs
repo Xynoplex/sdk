@@ -8,7 +8,7 @@
 
 use super::{Held, Tasks, said, signal};
 use crate::channels::{BeckonFocus, BeckonHover, BrowseClick, Channel};
-use crate::client::XynoplexClient;
+use crate::client::XynologClient;
 use crate::event_bus::BusFrames;
 use crate::state_unit::StateUnit;
 use crate::transport::Envelope;
@@ -18,7 +18,7 @@ use std::sync::Arc;
 use tokio::sync::watch;
 
 struct Shared {
-    client: Arc<XynoplexClient>,
+    client: Arc<XynologClient>,
     resource_id: ResourceId,
     hovered: Held<Option<AnnotationId>>,
     tasks: Tasks,
@@ -44,7 +44,7 @@ pub struct BeckonStateUnit {
 
 impl BeckonStateUnit {
     /// The attention of a viewer of `resource_id`.
-    pub fn new(client: Arc<XynoplexClient>, resource_id: &ResourceId) -> BeckonStateUnit {
+    pub fn new(client: Arc<XynologClient>, resource_id: &ResourceId) -> BeckonStateUnit {
         let heard = client
             .bus()
             .frames_among(&[BeckonHover::NAME, BrowseClick::NAME]);

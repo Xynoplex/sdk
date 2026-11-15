@@ -1,5 +1,5 @@
 /**
- * The languages Xynoplex supports, and lookups over them. The table is
+ * The languages Xynolog supports, and lookups over them. The table is
  * generated from protocol/specs/src/locales/registry.json.
  */
 

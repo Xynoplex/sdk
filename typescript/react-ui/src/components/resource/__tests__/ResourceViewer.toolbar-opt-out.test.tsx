@@ -10,14 +10,14 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { fireEvent, screen, within } from '@testing-library/react';
 import { renderInEnglish, englishTranslationManager } from '../../../test-utils';
 import '@testing-library/jest-dom';
-import type { XynoplexSession } from '@xynoplex/sdk';
-import { EventBus } from '@xynoplex/core';
-import type { ResourceDescriptor as XynoplexResource, ResourceId } from '@xynoplex/core';
+import type { XynologSession } from '@xynolog/sdk';
+import { EventBus } from '@xynolog/core';
+import type { ResourceDescriptor as XynologResource, ResourceId } from '@xynolog/core';
 import { ResourceViewer } from '../ResourceViewer';
 
 // Render the real content so jsdom text selection can target it.
 vi.mock('../../CodeMirrorRenderer', () => ({
-  CodeMirrorRenderer: ({ content }: { content: string }) => <div className="xynoplex-codemirror">{content}</div>,
+  CodeMirrorRenderer: ({ content }: { content: string }) => <div className="xynolog-codemirror">{content}</div>,
 }));
 vi.mock('../../image-annotation/SvgDrawingCanvas', () => ({ SvgDrawingCanvas: () => <div>svg-mock</div> }));
 vi.mock('../../pdf-annotation/PdfAnnotationCanvas.client', () => ({ PdfAnnotationCanvas: () => <div>pdf-mock</div> }));
@@ -26,7 +26,7 @@ vi.mock('remark-gfm', () => ({ default: () => ({}) }));
 
 const CONTENT = 'hello world selectme end';
 
-function makeResource(mediaType = 'text/plain'): XynoplexResource & { content: string } {
+function makeResource(mediaType = 'text/plain'): XynologResource & { content: string } {
   return {
     '@context': 'https://www.w3.org/ns/activitystreams',
     '@id': 'res-1' as ResourceId,
@@ -47,10 +47,10 @@ function fakeSession() {
     beckon: { hover: vi.fn() },
     mark: { request: vi.fn(), delete: vi.fn() },
   };
-  return { session: { client: { ...client, bus: new EventBus() } } as unknown as XynoplexSession, client };
+  return { session: { client: { ...client, bus: new EventBus() } } as unknown as XynologSession, client };
 }
 
-const bars = (c: HTMLElement) => c.querySelectorAll('.xynoplex-annotate-toolbar').length;
+const bars = (c: HTMLElement) => c.querySelectorAll('.xynolog-annotate-toolbar').length;
 
 describe('ResourceViewer — showToolbar opt-out', () => {
   beforeEach(() => {

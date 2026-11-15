@@ -48,7 +48,7 @@ writeFileSync(
   OUT,
   `// ⚠ GENERATED FILE — do not edit.
 // Source: protocol/specs/src/client/timing.json → typescript/scripts/generators/generate-client-timing.mjs
-// Rebuilt by \`npm run prebuild\` in @xynoplex/core; gitignored on purpose.
+// Rebuilt by \`npm run prebuild\` in @xynolog/core; gitignored on purpose.
 
 import type { RetryPolicy } from '../retry';
 

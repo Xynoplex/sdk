@@ -1,4 +1,4 @@
-package xynoplex
+package xynolog
 
 // What of following a job an outside test cannot reach: a delegation made
 // of a follower that ends early, the stall a generation is allowed, and each
@@ -13,8 +13,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/internal/required"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/internal/required"
 )
 
 func TestAFollowerThatEndsOnAnythingButACompletionIsNoCompletion(t *testing.T) {

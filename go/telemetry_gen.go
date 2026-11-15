@@ -3,7 +3,7 @@
 // Regenerate: node packages/codegen/schemas/generate-sdk-telemetry-go.mjs
 // The Python table is generated from the same table.
 
-package xynoplex
+package xynolog
 
 import (
 	"go.opentelemetry.io/otel/attribute"
@@ -50,7 +50,7 @@ var spanContentGetAnchoredText = telemetrySpan{name: "content.get_anchored_text"
 var spanContentGetAnnotations = telemetrySpan{name: "content.get_annotations", kind: trace.SpanKindClient}
 
 // Emits the client sent. A counter.
-var metricXynoplexBusSent = telemetryMetric{name: "xynoplex.bus.sent", meaning: "Emits the client sent."}
+var metricXynologBusSent = telemetryMetric{name: "xynolog.bus.sent", meaning: "Emits the client sent."}
 
 // The attributes the rows carry.
 

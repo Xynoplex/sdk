@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
 module UncheckedIdentifier where
-import Xynoplex.Types
+import Xynolog.Types
 value :: ResourceId
 value = ResourceId "unchecked"

@@ -6,22 +6,22 @@ import (
 	"fmt"
 	"net/http"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/bus"
+	xynolog "github.com/xynolog/sdk/go"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/bus"
 )
 
 // Read asks for a resource on the bus, then hears what is added to it.
 func Read(ctx context.Context, origin, token string, resource api.ResourceId) error {
-	timing := xynoplex.DefaultTiming()
-	transport := xynoplex.NewHTTPTransport(xynoplex.HTTPTransportConfig{
-		BaseURL: origin, Token: xynoplex.NewVariable(token), Channels: bus.BridgedChannels, HTTP: http.DefaultClient, Timing: timing,
+	timing := xynolog.DefaultTiming()
+	transport := xynolog.NewHTTPTransport(xynolog.HTTPTransportConfig{
+		BaseURL: origin, Token: xynolog.NewVariable(token), Channels: bus.BridgedChannels, HTTP: http.DefaultClient, Timing: timing,
 	})
 	defer transport.Close()
-	wire := xynoplex.NewWire(transport)
+	wire := xynolog.NewWire(transport)
 
-	reply, err := xynoplex.Request(ctx, wire, bus.BrowseResourceRequested, api.BrowseResourceRequest{ResourceId: resource}, timing.BusRequestTimeout)
-	var refused *xynoplex.BusRequestError
+	reply, err := xynolog.Request(ctx, wire, bus.BrowseResourceRequested, api.BrowseResourceRequest{ResourceId: resource}, timing.BusRequestTimeout)
+	var refused *xynolog.BusRequestError
 	if errors.As(err, &refused) {
 		fmt.Println(refused.Code) // "bus.not-found", "bus.timeout", …: a closed vocabulary
 		return nil
@@ -32,7 +32,7 @@ func Read(ctx context.Context, origin, token string, resource api.ResourceId) er
 	fmt.Println(reply.Response.Resource.Name)
 
 	// A resource's channel is read for the resource: the read holds its scope, and lets go when the loop stops or ctx is done.
-	added, err := xynoplex.FramesOf(ctx, wire, bus.MarkAdded, resource)
+	added, err := xynolog.FramesOf(ctx, wire, bus.MarkAdded, resource)
 	if err != nil {
 		return err
 	}

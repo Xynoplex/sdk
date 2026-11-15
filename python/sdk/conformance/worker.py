@@ -31,18 +31,18 @@ from opentelemetry.trace import Span, SpanKind
 from protocol import Arguments, Misuse, Operation, count, exporting, failure, object_of, say, serve, text, texts
 from pydantic import JsonValue, TypeAdapter, ValidationError
 
-from xynoplex import telemetry
-from xynoplex.claims import JOB_CLAIM_CHANNELS, JOB_COMMIT_CHANNELS, ClaimRefusal, Claims, HeldJob, HeldJobStall
-from xynoplex.client import XynoplexClient
-from xynoplex.errors import XynoplexError
-from xynoplex.events import Events
-from xynoplex.http import HttpTransport, Timing
-from xynoplex.identifiers import InvalidIdentifier, ResourceId
-from xynoplex.model import written
-from xynoplex.timing import HELD_JOB_STALL_CHECK_MS, HELD_JOB_STALL_MS, JOB_CLAIM_TIMEOUT_MS, MARK_COMMIT_TIMEOUT_MS
-from xynoplex.transport import ConnectionState, ResourceHold
-from xynoplex.types import Annotation, FailureClass, JobFilter, JobProgress, MarkJobResult, UnitCursor, YieldJobResult
-from xynoplex.watched import Variable
+from xynolog import telemetry
+from xynolog.claims import JOB_CLAIM_CHANNELS, JOB_COMMIT_CHANNELS, ClaimRefusal, Claims, HeldJob, HeldJobStall
+from xynolog.client import XynologClient
+from xynolog.errors import XynologError
+from xynolog.events import Events
+from xynolog.http import HttpTransport, Timing
+from xynolog.identifiers import InvalidIdentifier, ResourceId
+from xynolog.model import written
+from xynolog.timing import HELD_JOB_STALL_CHECK_MS, HELD_JOB_STALL_MS, JOB_CLAIM_TIMEOUT_MS, MARK_COMMIT_TIMEOUT_MS
+from xynolog.transport import ConnectionState, ResourceHold
+from xynolog.types import Annotation, FailureClass, JobFilter, JobProgress, MarkJobResult, UnitCursor, YieldJobResult
+from xynolog.watched import Variable
 
 _FILTERS: Final = TypeAdapter[list[JobFilter]](list[JobFilter])
 _CURSORS: Final = TypeAdapter[dict[str, UnitCursor]](dict[str, UnitCursor])
@@ -145,7 +145,7 @@ class Worker:
         self._held: Final = held
         self._reporters: Final = reporters
         self._transport: HttpTransport | None = None
-        self._client: XynoplexClient[HttpTransport] | None = None
+        self._client: XynologClient[HttpTransport] | None = None
         self._waits = _Waits()
         self._claims: Claims | None = None
         self._job: HeldJob | None = None
@@ -157,7 +157,7 @@ class Worker:
         """The tasks that say what the worker's claims hand out and tell it: ended when the driver is done."""
         self._reported: ConnectionState | None = None
 
-    def _opened(self) -> XynoplexClient[HttpTransport]:
+    def _opened(self) -> XynologClient[HttpTransport]:
         if self._client is None:
             raise Misuse("no transport is open")
         return self._client
@@ -170,7 +170,7 @@ class Worker:
     def _hold(self, job: HeldJob) -> None:
         """Hold `job`, and open the span it is run in: in the trace the job states."""
         with telemetry.continuing(job.trace):
-            span = otel_trace.get_tracer("xynoplex-conformance-driver").start_span(
+            span = otel_trace.get_tracer("xynolog-conformance-driver").start_span(
                 f"job:{job.job_type}", kind=SpanKind.CONSUMER, attributes={"job.id": job.job_id}
             )
             self._job = job
@@ -204,7 +204,7 @@ class Worker:
                 self._reported = state
                 say({"state": state})
 
-    async def _failures(self, failures: Events[XynoplexError]) -> None:
+    async def _failures(self, failures: Events[XynologError]) -> None:
         async for error in failures:
             say({"error": failure(error)})
 
@@ -220,7 +220,7 @@ class Worker:
         channels = [*JOB_CLAIM_CHANNELS, *JOB_COMMIT_CHANNELS] if commits else list(JOB_CLAIM_CHANNELS)
         transport = HttpTransport(text(args, "baseUrl"), token=Variable[str | None](text(args, "token")), channels=channels, timing=wire)
         self._transport = await self._held.enter_async_context(transport)
-        self._client = await self._held.enter_async_context(XynoplexClient(transport, transport.content, transport))
+        self._client = await self._held.enter_async_context(XynologClient(transport, transport.content, transport))
         self._reporters.create_task(self._states(transport))
         self._reporters.create_task(self._failures(transport.failures()))
         return None

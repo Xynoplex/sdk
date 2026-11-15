@@ -53,7 +53,7 @@ import { PERSISTED_EVENT_TYPES } from '../persisted-events';
  *
  * `job:queued` is deliberately absent: its audience is `declared`, so it
  * reaches only a client whose manifest names it — a worker
- * (`JOB_CLAIM_CHANNELS` in @xynoplex/sdk).
+ * (`JOB_CLAIM_CHANNELS` in @xynolog/sdk).
  */
 const FROZEN_BRIDGED = [
   'browse:resources-result', 'browse:resources-failed',
@@ -169,7 +169,7 @@ describe('bus channel-classification invariants', () => {
     // ids, which dedup cannot collapse. It is legitimate only for KB-global
     // events (every client wants them; no single resource owns them), which
     // RESOURCE_SCOPED_CHANNELS must not hold (enforced by
-    // @xynoplex/http-transport's bus-invariants test).
+    // @xynolog/http-transport's bus-invariants test).
     //
     // A NEW entry here is a conscious design decision, not an oversight: confirm
     // the channel is genuinely KB-global, confirm it is absent from

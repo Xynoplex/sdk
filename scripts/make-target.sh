@@ -10,7 +10,7 @@ require_protocol_pin "$ROOT" >/dev/null
 
 case "${1:-}" in
   go-test)
-    COVERAGE_DIR="$(mktemp -d "${TMPDIR:-/tmp}/xynoplex-sdk-coverage.XXXXXX")"
+    COVERAGE_DIR="$(mktemp -d "${TMPDIR:-/tmp}/xynolog-sdk-coverage.XXXXXX")"
     trap 'rm -rf "$COVERAGE_DIR"' EXIT
     mkdir -p "$COVERAGE_DIR/out"
     "$RUNTIME" run --rm \

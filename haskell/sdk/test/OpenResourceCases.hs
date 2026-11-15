@@ -21,19 +21,19 @@ import qualified Data.UUID.Types as UUID
 import Network.HTTP.Client (defaultManagerSettings, noProxy)
 import qualified ControlledTime as Time
 import SessionCases (jwt)
-import qualified Xynoplex.Bus as Bus
-import qualified Xynoplex.Content as Content
-import qualified Xynoplex.ErrorCodes as Code
-import Xynoplex.Errors (TransportError(..))
-import qualified Xynoplex.Http as Http
-import qualified Xynoplex.Registry as Browser
-import Xynoplex.Retry (RetryOptions(..))
-import qualified Xynoplex.SessionStorage as Storage
-import qualified Xynoplex.StateValue as State
-import qualified Xynoplex.Testing.Sessions as Sessions
-import qualified Xynoplex.Testing.Transport as Faulty
-import qualified Xynoplex.Timing.Settings as Timing
-import Xynoplex.Types
+import qualified Xynolog.Bus as Bus
+import qualified Xynolog.Content as Content
+import qualified Xynolog.ErrorCodes as Code
+import Xynolog.Errors (TransportError(..))
+import qualified Xynolog.Http as Http
+import qualified Xynolog.Registry as Browser
+import Xynolog.Retry (RetryOptions(..))
+import qualified Xynolog.SessionStorage as Storage
+import qualified Xynolog.StateValue as State
+import qualified Xynolog.Testing.Sessions as Sessions
+import qualified Xynolog.Testing.Transport as Faulty
+import qualified Xynolog.Timing.Settings as Timing
+import Xynolog.Types
 import System.FilePath ((</>))
 import System.Timeout (timeout)
 
@@ -130,7 +130,7 @@ runCase fixtures row = do
   pool <- Http.newHttpClient noProxy defaultManagerSettings
   let http = Http.HttpOptions "http://unused.test:1" pool (pure Nothing) (const (pure Nothing)) clock Timing.protocolSettings
         (UUID.fromWords 0 0 0 . fromInteger <$> fresh) Set.empty (pure Map.empty) (\_ _ -> pure ())
-  bracket (Browser.newXynoplexBrowser (Browser.XynoplexBrowserConfig store (Sessions.factory scripted) http (pure 1800000000))) Browser.dispose $ \browser -> do
+  bracket (Browser.newXynologBrowser (Browser.XynologBrowserConfig store (Sessions.factory scripted) http (pure 1800000000))) Browser.dispose $ \browser -> do
     Time.settle
     requests <- Sessions.transports scripted kbId >>= fmap concat . mapM Faulty.requestLog
     askedAbout <- forM [entry | entry <- requests, Faulty.requestLogEntryChannel entry == "browse:resource-requested"]

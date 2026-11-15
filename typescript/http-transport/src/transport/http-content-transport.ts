@@ -40,13 +40,13 @@
  * `protocol/specs/src/client/timing.json`): how long it takes is how large it is.
  */
 
-import type { AccessToken, AnchoredTextAnswer, ResourceId, PutBinaryOptions, PutBinaryProgress, components } from '@xynoplex/core';
-import { REQUEST_RETRY_PAUSE_MS, RETRY_RULES, busLog, uuidV4 } from '@xynoplex/core';
-import { SpanKind, getActiveTraceparent, withSpan } from '@xynoplex/observability';
+import type { AccessToken, AnchoredTextAnswer, ResourceId, PutBinaryOptions, PutBinaryProgress, components } from '@xynolog/core';
+import { REQUEST_RETRY_PAUSE_MS, RETRY_RULES, busLog, uuidV4 } from '@xynolog/core';
+import { SpanKind, getActiveTraceparent, withSpan } from '@xynolog/observability';
 import type { HttpTransport } from './http-transport';
 import { APIError, refusalBody } from './api-error';
 import { declaredBody } from './declared-body';
-import type { IContentTransport, PutBinaryRequest } from '@xynoplex/core';
+import type { IContentTransport, PutBinaryRequest } from '@xynolog/core';
 
 type GetResourceResponse = components['schemas']['GetResourceResponse'];
 type GetAnnotationsResponse = components['schemas']['GetAnnotationsResponse'];

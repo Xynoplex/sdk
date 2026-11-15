@@ -18,11 +18,11 @@ import (
 	"testing/synctest"
 	"time"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/bus"
-	"github.com/Xynoplex/sdk/go/xynoplextest"
-	"github.com/Xynoplex/sdk/go/state"
+	xynolog "github.com/xynolog/sdk/go"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/bus"
+	"github.com/xynolog/sdk/go/state"
+	"github.com/xynolog/sdk/go/xynologtest"
 )
 
 func idOf[T any](t *testing.T, text string) T {
@@ -36,9 +36,9 @@ func idOf[T any](t *testing.T, text string) T {
 
 // clientOf is a client over a transport whose stream carries what a client's
 // does, closed when the case is over.
-func clientOf(t *testing.T, config xynoplextest.FaultyConfig) *xynoplex.Client {
+func clientOf(t *testing.T, config xynologtest.FaultyConfig) *xynolog.Client {
 	config.Channels = bus.BridgedChannels
-	made := xynoplextest.NewTestClient(xynoplextest.TestClientConfig{Transport: xynoplextest.NewFaultyTransport(config), Timing: xynoplex.DefaultTiming()})
+	made := xynologtest.NewTestClient(xynologtest.TestClientConfig{Transport: xynologtest.NewFaultyTransport(config), Timing: xynolog.DefaultTiming()})
 	t.Cleanup(func() {
 		made.Client.Close()
 		made.Transport.Close()
@@ -54,20 +54,20 @@ func TestMarkKeepsTheStateUnitAxioms(t *testing.T) {
 	if err := json.Unmarshal([]byte(`{"motivation":"highlighting"}`), &params); err != nil {
 		t.Fatal(err)
 	}
-	xynoplextest.AssertStateUnitAxioms(t, xynoplextest.AxiomSubject[*state.MarkStateUnit]{
-		Setup: func(t *testing.T) xynoplextest.Fresh[*state.MarkStateUnit] {
-			client := clientOf(t, xynoplextest.FaultyConfig{})
+	xynologtest.AssertStateUnitAxioms(t, xynologtest.AxiomSubject[*state.MarkStateUnit]{
+		Setup: func(t *testing.T) xynologtest.Fresh[*state.MarkStateUnit] {
+			client := clientOf(t, xynologtest.FaultyConfig{})
 			unit := state.NewMarkStateUnit(client, resource)
-			return xynoplextest.Fresh[*state.MarkStateUnit]{Unit: unit}.With(xynoplextest.TheClient(client))
+			return xynologtest.Fresh[*state.MarkStateUnit]{Unit: unit}.With(xynologtest.TheClient(client))
 		},
-		Surfaces: func(unit *state.MarkStateUnit) []xynoplextest.Surface {
-			return []xynoplextest.Surface{
-				xynoplextest.Watching(unit.PendingAnnotation()),
-				xynoplextest.Watching(unit.DelegatingMotivation()),
-				xynoplextest.Watching(unit.Progress()),
-				xynoplextest.Watching(unit.ProgressMotivation()),
-				xynoplextest.Watching(unit.Failure()),
-				xynoplextest.Watching(unit.JobId()),
+		Surfaces: func(unit *state.MarkStateUnit) []xynologtest.Surface {
+			return []xynologtest.Surface{
+				xynologtest.Watching(unit.PendingAnnotation()),
+				xynologtest.Watching(unit.DelegatingMotivation()),
+				xynologtest.Watching(unit.Progress()),
+				xynologtest.Watching(unit.ProgressMotivation()),
+				xynologtest.Watching(unit.Failure()),
+				xynologtest.Watching(unit.JobId()),
 			}
 		},
 		Invocations: func(unit *state.MarkStateUnit) []func() {
@@ -85,19 +85,19 @@ func TestYieldKeepsTheStateUnitAxioms(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	xynoplextest.AssertStateUnitAxioms(t, xynoplextest.AxiomSubject[*state.YieldStateUnit]{
-		Setup: func(t *testing.T) xynoplextest.Fresh[*state.YieldStateUnit] {
-			client := clientOf(t, xynoplextest.FaultyConfig{})
+	xynologtest.AssertStateUnitAxioms(t, xynologtest.AxiomSubject[*state.YieldStateUnit]{
+		Setup: func(t *testing.T) xynologtest.Fresh[*state.YieldStateUnit] {
+			client := clientOf(t, xynologtest.FaultyConfig{})
 			unit := state.NewYieldStateUnit(client, "en")
-			return xynoplextest.Fresh[*state.YieldStateUnit]{Unit: unit}.With(xynoplextest.TheClient(client))
+			return xynologtest.Fresh[*state.YieldStateUnit]{Unit: unit}.With(xynologtest.TheClient(client))
 		},
-		Surfaces: func(unit *state.YieldStateUnit) []xynoplextest.Surface {
-			return []xynoplextest.Surface{
-				xynoplextest.Watching(unit.IsGenerating()),
-				xynoplextest.Watching(unit.Progress()),
-				xynoplextest.Watching(unit.Outcome()),
-				xynoplextest.Watching(unit.Failure()),
-				xynoplextest.Watching(unit.JobId()),
+		Surfaces: func(unit *state.YieldStateUnit) []xynologtest.Surface {
+			return []xynologtest.Surface{
+				xynologtest.Watching(unit.IsGenerating()),
+				xynologtest.Watching(unit.Progress()),
+				xynologtest.Watching(unit.Outcome()),
+				xynologtest.Watching(unit.Failure()),
+				xynologtest.Watching(unit.JobId()),
 			}
 		},
 		Invocations: func(unit *state.YieldStateUnit) []func() {
@@ -109,39 +109,39 @@ func TestYieldKeepsTheStateUnitAxioms(t *testing.T) {
 func TestGatherKeepsTheStateUnitAxioms(t *testing.T) {
 	annotation := idOf[api.AnnotationId](t, "ann-1")
 	resource := idOf[api.ResourceId](t, "res-1")
-	xynoplextest.AssertStateUnitAxioms(t, xynoplextest.AxiomSubject[*state.GatherStateUnit]{
-		Setup: func(t *testing.T) xynoplextest.Fresh[*state.GatherStateUnit] {
-			client := clientOf(t, xynoplextest.FaultyConfig{})
+	xynologtest.AssertStateUnitAxioms(t, xynologtest.AxiomSubject[*state.GatherStateUnit]{
+		Setup: func(t *testing.T) xynologtest.Fresh[*state.GatherStateUnit] {
+			client := clientOf(t, xynologtest.FaultyConfig{})
 			unit := state.NewGatherStateUnit(client, resource)
-			return xynoplextest.Fresh[*state.GatherStateUnit]{Unit: unit}.With(xynoplextest.TheClient(client))
+			return xynologtest.Fresh[*state.GatherStateUnit]{Unit: unit}.With(xynologtest.TheClient(client))
 		},
-		Surfaces: func(unit *state.GatherStateUnit) []xynoplextest.Surface {
-			return []xynoplextest.Surface{
-				xynoplextest.Watching(unit.Context()),
-				xynoplextest.Watching(unit.Loading()),
-				xynoplextest.Watching(unit.Error()),
-				xynoplextest.Watching(unit.AnnotationId()),
-				xynoplextest.Watching(unit.ResourceContext()),
-				xynoplextest.Watching(unit.ResourceLoading()),
-				xynoplextest.Watching(unit.ResourceError()),
+		Surfaces: func(unit *state.GatherStateUnit) []xynologtest.Surface {
+			return []xynologtest.Surface{
+				xynologtest.Watching(unit.Context()),
+				xynologtest.Watching(unit.Loading()),
+				xynologtest.Watching(unit.Error()),
+				xynologtest.Watching(unit.AnnotationId()),
+				xynologtest.Watching(unit.ResourceContext()),
+				xynologtest.Watching(unit.ResourceLoading()),
+				xynologtest.Watching(unit.ResourceError()),
 			}
 		},
 		Invocations: func(unit *state.GatherStateUnit) []func() {
 			return []func(){
 				func() { unit.GatherAnnotation(annotation, api.GatherAnnotationOptions{}) },
-				func() { unit.GatherResource(resource, xynoplex.GatherResourceDefaults()) },
+				func() { unit.GatherResource(resource, xynolog.GatherResourceDefaults()) },
 			}
 		},
 	})
 }
 
 func TestMatchKeepsTheStateUnitAxioms(t *testing.T) {
-	xynoplextest.AssertStateUnitAxioms(t, xynoplextest.AxiomSubject[*state.MatchStateUnit]{
-		Setup: func(t *testing.T) xynoplextest.Fresh[*state.MatchStateUnit] {
+	xynologtest.AssertStateUnitAxioms(t, xynologtest.AxiomSubject[*state.MatchStateUnit]{
+		Setup: func(t *testing.T) xynologtest.Fresh[*state.MatchStateUnit] {
 			// Over a client's stream, where nothing answers.
-			client := clientOf(t, xynoplextest.FaultyConfig{Schedule: []xynoplextest.FaultAction{xynoplextest.DropReply{}}, MakeResponse: never})
+			client := clientOf(t, xynologtest.FaultyConfig{Schedule: []xynologtest.FaultAction{xynologtest.DropReply{}}, MakeResponse: never})
 			unit := state.NewMatchStateUnit(client)
-			return xynoplextest.Fresh[*state.MatchStateUnit]{Unit: unit}.With(xynoplextest.TheClient(client))
+			return xynologtest.Fresh[*state.MatchStateUnit]{Unit: unit}.With(xynologtest.TheClient(client))
 		},
 	})
 }
@@ -149,14 +149,14 @@ func TestMatchKeepsTheStateUnitAxioms(t *testing.T) {
 func TestBeckonKeepsTheStateUnitAxioms(t *testing.T) {
 	annotation := idOf[api.AnnotationId](t, "ann-1")
 	resource := idOf[api.ResourceId](t, "res-1")
-	xynoplextest.AssertStateUnitAxioms(t, xynoplextest.AxiomSubject[*state.BeckonStateUnit]{
-		Setup: func(t *testing.T) xynoplextest.Fresh[*state.BeckonStateUnit] {
-			client := clientOf(t, xynoplextest.FaultyConfig{})
+	xynologtest.AssertStateUnitAxioms(t, xynologtest.AxiomSubject[*state.BeckonStateUnit]{
+		Setup: func(t *testing.T) xynologtest.Fresh[*state.BeckonStateUnit] {
+			client := clientOf(t, xynologtest.FaultyConfig{})
 			unit := state.NewBeckonStateUnit(client, resource)
-			return xynoplextest.Fresh[*state.BeckonStateUnit]{Unit: unit}.With(xynoplextest.TheClient(client))
+			return xynologtest.Fresh[*state.BeckonStateUnit]{Unit: unit}.With(xynologtest.TheClient(client))
 		},
-		Surfaces: func(unit *state.BeckonStateUnit) []xynoplextest.Surface {
-			return []xynoplextest.Surface{xynoplextest.Watching(unit.HoveredAnnotationId())}
+		Surfaces: func(unit *state.BeckonStateUnit) []xynologtest.Surface {
+			return []xynologtest.Surface{xynologtest.Watching(unit.HoveredAnnotationId())}
 		},
 		Invocations: func(unit *state.BeckonStateUnit) []func() {
 			return []func(){func() { unit.Focus(annotation) }}
@@ -166,10 +166,10 @@ func TestBeckonKeepsTheStateUnitAxioms(t *testing.T) {
 
 func TestTheDwellKeepsTheStateUnitAxioms(t *testing.T) {
 	annotation := idOf[api.AnnotationId](t, "ann-1")
-	xynoplextest.AssertStateUnitAxioms(t, xynoplextest.AxiomSubject[*state.HoverDwell]{
-		Setup: func(t *testing.T) xynoplextest.Fresh[*state.HoverDwell] {
+	xynologtest.AssertStateUnitAxioms(t, xynologtest.AxiomSubject[*state.HoverDwell]{
+		Setup: func(t *testing.T) xynologtest.Fresh[*state.HoverDwell] {
 			// What it says is said to nobody.
-			return xynoplextest.Fresh[*state.HoverDwell]{Unit: state.NewHoverDwell(func(*api.AnnotationId) {}, xynoplex.DefaultTiming().HoverDelay)}
+			return xynologtest.Fresh[*state.HoverDwell]{Unit: state.NewHoverDwell(func(*api.AnnotationId) {}, xynolog.DefaultTiming().HoverDelay)}
 		},
 		Invocations: func(unit *state.HoverDwell) []func() {
 			return []func(){func() { unit.Enter(annotation) }, unit.Leave}
@@ -183,12 +183,12 @@ func neverAnswered(ctx context.Context, _ string) iter.Seq2[[]string, bool] {
 }
 
 func TestTheSearchPipelineKeepsTheStateUnitAxioms(t *testing.T) {
-	xynoplextest.AssertStateUnitAxioms(t, xynoplextest.AxiomSubject[*state.SearchPipeline[string]]{
-		Setup: func(t *testing.T) xynoplextest.Fresh[*state.SearchPipeline[string]] {
-			return xynoplextest.Fresh[*state.SearchPipeline[string]]{Unit: state.NewSearchPipeline(neverAnswered, xynoplex.DefaultTiming().SearchDebounce, "")}
+	xynologtest.AssertStateUnitAxioms(t, xynologtest.AxiomSubject[*state.SearchPipeline[string]]{
+		Setup: func(t *testing.T) xynologtest.Fresh[*state.SearchPipeline[string]] {
+			return xynologtest.Fresh[*state.SearchPipeline[string]]{Unit: state.NewSearchPipeline(neverAnswered, xynolog.DefaultTiming().SearchDebounce, "")}
 		},
-		Surfaces: func(unit *state.SearchPipeline[string]) []xynoplextest.Surface {
-			return []xynoplextest.Surface{xynoplextest.Watching(unit.Query()), xynoplextest.Watching(unit.State())}
+		Surfaces: func(unit *state.SearchPipeline[string]) []xynologtest.Surface {
+			return []xynologtest.Surface{xynologtest.Watching(unit.Query()), xynologtest.Watching(unit.State())}
 		},
 		Invocations: func(unit *state.SearchPipeline[string]) []func() {
 			return []func(){func() { unit.SetQuery("paris") }, func() { unit.SetQuery("rome") }}
@@ -200,7 +200,7 @@ func TestTheSearchPipelineKeepsTheStateUnitAxioms(t *testing.T) {
 
 func TestAStateSetToWhatItAlreadyHoldsWakesNobody(t *testing.T) {
 	synctest.Test(t, func(t *testing.T) {
-		client := clientOf(t, xynoplextest.FaultyConfig{})
+		client := clientOf(t, xynologtest.FaultyConfig{})
 		unit := state.NewBeckonStateUnit(client, idOf[api.ResourceId](t, "res-1"))
 		defer unit.Close()
 		annotation := idOf[api.AnnotationId](t, "ann-1")
@@ -253,8 +253,8 @@ func TestASearchThatIsAbandonedIsLetGo(t *testing.T) {
 			defer mu.Unlock()
 			return slices.Clone(letGo)
 		}
-		settled := xynoplex.DefaultTiming().SearchDebounce + 2*time.Millisecond
-		pipeline := state.NewSearchPipeline(remembered, xynoplex.DefaultTiming().SearchDebounce, "paris")
+		settled := xynolog.DefaultTiming().SearchDebounce + 2*time.Millisecond
+		pipeline := state.NewSearchPipeline(remembered, xynolog.DefaultTiming().SearchDebounce, "paris")
 		time.Sleep(settled)
 		if got := released(); len(got) != 0 {
 			t.Fatalf("a search under way was let go: %v", got)
@@ -283,7 +283,7 @@ func TestMarkParamsThatStateNoMotivationTheUnionMapsAreNoJobs(t *testing.T) {
 				if err := json.Unmarshal([]byte(stated.params), &params); err != nil {
 					t.Fatal(err)
 				}
-				made := xynoplextest.NewTestClient(xynoplextest.TestClientConfig{Transport: xynoplextest.NewFaultyTransport(xynoplextest.FaultyConfig{Channels: bus.BridgedChannels}), Timing: xynoplex.DefaultTiming()})
+				made := xynologtest.NewTestClient(xynologtest.TestClientConfig{Transport: xynologtest.NewFaultyTransport(xynologtest.FaultyConfig{Channels: bus.BridgedChannels}), Timing: xynolog.DefaultTiming()})
 				defer made.Transport.Close()
 				defer made.Client.Close()
 				unit := state.NewMarkStateUnit(made.Client, idOf[api.ResourceId](t, "res-1"))
@@ -325,10 +325,10 @@ func TestWhatAUnitTakesIsWhatTheNamespaceItCallsTakes(t *testing.T) {
 		unit, namespace []reflect.Type
 	}{
 		// Each after the receiver; the namespace's after its context, or after the resource that is the unit's own.
-		{"GatherStateUnit.GatherResource and GatherNamespace.Resource", parameters((*state.GatherStateUnit).GatherResource, 1), parameters((*xynoplex.GatherNamespace).Resource, 2)},
-		{"GatherStateUnit.GatherAnnotation and GatherNamespace.Annotation", parameters((*state.GatherStateUnit).GatherAnnotation, 1), parameters((*xynoplex.GatherNamespace).Annotation, 2)},
-		{"YieldStateUnit.Generate and YieldNamespace.Delegate", parameters((*state.YieldStateUnit).Generate, 1), parameters((*xynoplex.YieldNamespace).Delegate, 1)},
-		{"MarkStateUnit.RequestDelegate and MarkNamespace.Delegate", parameters((*state.MarkStateUnit).RequestDelegate, 1), parameters((*xynoplex.MarkNamespace).Delegate, 2)},
+		{"GatherStateUnit.GatherResource and GatherNamespace.Resource", parameters((*state.GatherStateUnit).GatherResource, 1), parameters((*xynolog.GatherNamespace).Resource, 2)},
+		{"GatherStateUnit.GatherAnnotation and GatherNamespace.Annotation", parameters((*state.GatherStateUnit).GatherAnnotation, 1), parameters((*xynolog.GatherNamespace).Annotation, 2)},
+		{"YieldStateUnit.Generate and YieldNamespace.Delegate", parameters((*state.YieldStateUnit).Generate, 1), parameters((*xynolog.YieldNamespace).Delegate, 1)},
+		{"MarkStateUnit.RequestDelegate and MarkNamespace.Delegate", parameters((*state.MarkStateUnit).RequestDelegate, 1), parameters((*xynolog.MarkNamespace).Delegate, 2)},
 	} {
 		if slices.Contains(gate.namespace, contextType) {
 			t.Errorf("%s: the namespace's context is not skipped", gate.name)

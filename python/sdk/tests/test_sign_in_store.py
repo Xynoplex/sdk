@@ -1,4 +1,4 @@
-"""The sign-ins `xynoplex login` keeps (`protocol/specs/src/sign-in-store/README.md`), as this package reads and writes them.
+"""The sign-ins `xynolog login` keeps (`protocol/specs/src/sign-in-store/README.md`), as this package reads and writes them.
 
 Where the file is, is `test_state_dir.py`'s. Here: what an entry holds, what
 a renewal keeps while other programs renew and sign out (every renewal of
@@ -28,15 +28,15 @@ from pydantic import JsonValue
 from spec import SPEC, JsonObject, objects, read, strings, text
 from tokens import jwt, token
 
-from xynoplex.errors import SignInError
-from xynoplex.http.oauth import renew_kept
-from xynoplex.session import HeldSignIn, MemorySignIn, SignInKept
-from xynoplex.sign_in import SignIn
-from xynoplex.sign_in_store import FILE_NAME, SignInStore
+from xynolog.errors import SignInError
+from xynolog.http.oauth import renew_kept
+from xynolog.session import HeldSignIn, MemorySignIn, SignInKept
+from xynolog.sign_in import SignIn
+from xynolog.sign_in_store import FILE_NAME, SignInStore
 
 SCHEMA = read(SPEC / "sign-in-store/SignIn.json")
 RENEWALS = objects(read(SPEC / "sign-in-store/cases.json")["renewals"], "renewals")
-ISSUER = "https://issuer.test/realms/xynoplex"
+ISSUER = "https://issuer.test/realms/xynolog"
 
 
 def signed_in(n: int, *, email: str = "alice@example.org") -> str:
@@ -45,7 +45,7 @@ def signed_in(n: int, *, email: str = "alice@example.org") -> str:
 
 def held(access: str, refresh: str = "refresh-1", *, revocation: str | None = f"{ISSUER}/revoke") -> HeldSignIn:
     return HeldSignIn(
-        access=access, refresh=refresh, client_id="xynoplex-cli", token_endpoint=f"{ISSUER}/token", revocation_endpoint=revocation
+        access=access, refresh=refresh, client_id="xynolog-cli", token_endpoint=f"{ISSUER}/token", revocation_endpoint=revocation
     )
 
 
@@ -176,8 +176,8 @@ def test_what_is_no_sign_in_is_not_kept(tmp_path: Path) -> None:
     kept = SignInStore(path).entry("local")
 
     # What another client was issued would be renewed here as the wrong client.
-    with pytest.raises(ValueError, match="xynoplex-browser"):
-        run(kept.keep(HeldSignIn(access=signed_in(1), refresh="r", client_id="xynoplex-browser", token_endpoint=f"{ISSUER}/token")))
+    with pytest.raises(ValueError, match="xynolog-browser"):
+        run(kept.keep(HeldSignIn(access=signed_in(1), refresh="r", client_id="xynolog-browser", token_endpoint=f"{ISSUER}/token")))
     # A gateway admits no token from an issuer it does not trust.
     with pytest.raises(SignInError, match="names no issuer") as lacking:
         run(kept.keep(held(jwt({"email": "alice@example.org"}))))
@@ -372,7 +372,7 @@ def test_every_renewal_is_the_tables(store: str, row: JsonObject, tmp_path: Path
                 assert isinstance(stated, dict), what
                 access, refresh = tokens_of(stated, what)
                 assert refresh is not None, what
-                return HeldSignIn(access=named(access), refresh=refresh, client_id="xynoplex-cli", token_endpoint=f"{gateway.origin}{TOKEN}")
+                return HeldSignIn(access=named(access), refresh=refresh, client_id="xynolog-cli", token_endpoint=f"{gateway.origin}{TOKEN}")
 
             await another.keep(sign_in(row["kept"], "kept"))
             meanwhile = row["meanwhile"]
@@ -515,7 +515,7 @@ def test_the_event_loop_turns_while_a_change_waits_for_the_lock(tmp_path: Path) 
 # A program that adds its own members to the store's document, one change at a time.
 WRITER = """
 import sys
-from xynoplex.sign_in_store import SignInStore
+from xynolog.sign_in_store import SignInStore
 store = SignInStore(sys.argv[1])
 def put(key, value):
     def change(document):

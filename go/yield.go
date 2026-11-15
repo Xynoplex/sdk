@@ -1,4 +1,4 @@
-package xynoplex
+package xynolog
 
 // Yield: creating resources, by upload, by a generation delegated as a job,
 // and by cloning.
@@ -9,9 +9,9 @@ import (
 	"math"
 	"time"
 
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/bus"
-	"github.com/Xynoplex/sdk/go/mediatypes"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/bus"
+	"github.com/xynolog/sdk/go/mediatypes"
 )
 
 // generationStallDeadline is how long a followed generation may say nothing

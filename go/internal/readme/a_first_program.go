@@ -3,16 +3,16 @@ package readme
 import (
 	"context"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
-	"github.com/Xynoplex/sdk/go/api"
+	xynolog "github.com/xynolog/sdk/go"
+	"github.com/xynolog/sdk/go/api"
 )
 
 // Summarize ingests a paper, has a model mark the concepts it mentions,
 // gathers the context around it, and generates a summary grounded in it. ok
 // is false when the job declined, and made nothing.
-func Summarize(ctx context.Context, client *xynoplex.Client, paper []byte) (summary api.ResourceId, ok bool, err error) {
+func Summarize(ctx context.Context, client *xynolog.Client, paper []byte) (summary api.ResourceId, ok bool, err error) {
 	// Ingest: the paper's bytes become a resource.
-	created, err := client.Yield.Resource(ctx, xynoplex.PutBinaryRequest{
+	created, err := client.Yield.Resource(ctx, xynolog.PutBinaryRequest{
 		Name:       "Attention Is All You Need",
 		Bytes:      paper,
 		Format:     "application/pdf",

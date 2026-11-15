@@ -11,7 +11,7 @@ import pytest
 from pydantic import BaseModel, Field
 from spec import SPEC
 
-from xynoplex._spans import places
+from xynolog._spans import places
 
 
 class StatedSpan(BaseModel, frozen=True, extra="forbid"):

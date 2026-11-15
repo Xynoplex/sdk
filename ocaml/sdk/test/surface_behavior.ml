@@ -1,5 +1,5 @@
 open Eio.Std
-open Xynoplex
+open Xynolog
 module C = Client
 module B = Bus_registry
 module J = Yojson.Safe.Util

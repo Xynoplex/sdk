@@ -1,7 +1,7 @@
 /**
- * @xynoplex/react-ui
+ * @xynolog/react-ui
  *
- * React components and hooks for Xynoplex applications
+ * React components and hooks for Xynolog applications
  */
 
 // Types
@@ -18,7 +18,7 @@ export * from './lib/codemirror-json-theme';
 export * from './lib/codemirror-widgets';
 export * from './lib/media-shapes';
 export * from './lib/media-url';
-export { createSearchPipeline, type SearchPipeline, type SearchPipelineOptions, type SearchState } from '@xynoplex/sdk';
+export { createSearchPipeline, type SearchPipeline, type SearchPipelineOptions, type SearchState } from '@xynolog/sdk';
 export * from './lib/annotation-overlay';
 export * from './lib/resource-utils';
 export { interpolateTranslation } from './lib/translation-interpolation';
@@ -51,11 +51,11 @@ export * from './hooks/usePendingCreation';
 export * from './hooks/useKBDiscovery';
 
 // Session (the React layer — provider + hook + browser storage adapter).
-// All session classes (`XynoplexSession`, `XynoplexBrowser`, `SessionSignals`,
-// `XynoplexSessionError`, `SessionStorage`, `InMemorySessionStorage`, the
-// `KnowledgeBase` / `OpenResource` types, etc.) live in `@xynoplex/sdk`.
+// All session classes (`XynologSession`, `XynologBrowser`, `SessionSignals`,
+// `XynologSessionError`, `SessionStorage`, `InMemorySessionStorage`, the
+// `KnowledgeBase` / `OpenResource` types, etc.) live in `@xynolog/sdk`.
 // Callers import them from there directly.
-export { XynoplexProvider, useXynoplex, type XynoplexProviderProps } from './session/XynoplexProvider';
+export { XynologProvider, useXynolog, type XynologProviderProps } from './session/XynologProvider';
 export { WebBrowserStorage } from './session/web-browser-storage';
 
 // Contexts
@@ -160,13 +160,13 @@ export * from './components/SessionExpiryBanner';
 export * from './components/UserMenuSkeleton';
 
 // Components - Branding & Layout
-export * from './components/branding/XynoplexBranding';
+export * from './components/branding/XynologBranding';
 export * from './components/layout/UnifiedHeader';
 export * from './components/layout/LeftSidebar';
 export * from './components/layout/PageLayout';
 
 // Favicon components and assets
-export { XynoplexFavicon } from './assets/favicons/XynoplexFavicon';
+export { XynologFavicon } from './assets/favicons/XynologFavicon';
 export { faviconPaths } from './assets/favicons';
 
 // CSS-agnostic components
@@ -199,21 +199,21 @@ export * from './features/resource-discovery/components/ResourceDiscoveryPage';
 export * from './features/resource-discovery/components/ResourceCard';
 export * from './features/resource-viewer/components/ResourceViewerPage';
 export * from './hooks/useHoverEmitter';
-// Flow VMs live in `@xynoplex/sdk` (UI-shape-agnostic state machines that
+// Flow VMs live in `@xynolog/sdk` (UI-shape-agnostic state machines that
 // any consumer — web, terminal, mobile, daemon — can reach for).
 // React-ui re-exports them so consumers of this package don't need a
 // second import line.
-export { createBeckonStateUnit, type BeckonStateUnit, createHoverDwell, type HoverDwell, HOVER_DELAY_MS } from '@xynoplex/sdk';
-export { createMarkStateUnit, type MarkStateUnit, type PendingAnnotation } from '@xynoplex/sdk';
-export { createYieldStateUnit, type YieldStateUnit } from '@xynoplex/sdk';
-export { createGatherStateUnit, type GatherStateUnit } from '@xynoplex/sdk';
-export { createMatchStateUnit, type MatchStateUnit } from '@xynoplex/sdk';
-// A worker's claiming (`job.claim`) is `@xynoplex/sdk`'s and the
-// `BusPrimitive` interface is `@xynoplex/core`'s; both are
+export { createBeckonStateUnit, type BeckonStateUnit, createHoverDwell, type HoverDwell, HOVER_DELAY_MS } from '@xynolog/sdk';
+export { createMarkStateUnit, type MarkStateUnit, type PendingAnnotation } from '@xynolog/sdk';
+export { createYieldStateUnit, type YieldStateUnit } from '@xynolog/sdk';
+export { createGatherStateUnit, type GatherStateUnit } from '@xynolog/sdk';
+export { createMatchStateUnit, type MatchStateUnit } from '@xynolog/sdk';
+// A worker's claiming (`job.claim`) is `@xynolog/sdk`'s and the
+// `BusPrimitive` interface is `@xynolog/core`'s; both are
 // worker-process machinery, not re-exported here.
 
-// Page-shaped state machines live here in `@xynoplex/react-ui` because they
-// model the Xynoplex web frontend's specific page taxonomy and shell. They
+// Page-shaped state machines live here in `@xynolog/react-ui` because they
+// model the Xynolog web frontend's specific page taxonomy and shell. They
 // are framework-neutral (pure RxJS, no React inside) but not portable to a
 // non-web UI shape.
 export { createShellStateUnit, type ShellStateUnit, type ShellStateUnitOptions, type ToolbarPanelType, COMMON_PANELS, RESOURCE_PANELS } from './state/shell-state-unit';

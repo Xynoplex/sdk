@@ -1,5 +1,5 @@
-import type { ResourceId } from '@xynoplex/core';
-import type { XynoplexClient } from '@xynoplex/sdk';
+import type { ResourceId } from '@xynolog/core';
+import type { XynologClient } from '@xynolog/sdk';
 
 /**
  * The URL for a resource's raw bytes — the one shape `GET /api/resources/:id`
@@ -21,7 +21,7 @@ import type { XynoplexClient } from '@xynoplex/sdk';
  * callers show a not-yet-ready affordance instead of a known-bad link.
  */
 export function mediaUrl(
-  client: XynoplexClient | null | undefined,
+  client: XynologClient | null | undefined,
   id: ResourceId,
   token: string | undefined,
 ): string | undefined {

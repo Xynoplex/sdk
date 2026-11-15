@@ -24,24 +24,24 @@ import Data.Text.Encoding (encodeUtf8, decodeUtf8)
 import Network.HTTP.Client (defaultManagerSettings, managerRawConnection, noProxy)
 import Network.HTTP.Client.Internal (makeConnection)
 import Network.HTTP.Types (parseQuery)
-import qualified Xynoplex.Http as Http
-import qualified Xynoplex.Client as Client
-import qualified Xynoplex.ClientAssertion as Assertion
-import qualified Xynoplex.ServiceToken as Service
-import qualified Xynoplex.Auth as Auth
-import qualified Xynoplex.Session as Session
-import qualified Xynoplex.SignIn as SignIn
-import qualified Xynoplex.StateValue as State
-import qualified Xynoplex.Transport as Transport
-import qualified Xynoplex.Issuer as Issuer
-import qualified Xynoplex.ErrorCodes as Code
-import Xynoplex.Errors (BusRequestError, SignInError(..), TransportError(..))
-import qualified Xynoplex.Retry as Retry
-import qualified Xynoplex.SessionStorage as Storage
-import qualified Xynoplex.Registry.Stored as Stored
-import qualified Xynoplex.Timing.Settings as Timing
-import qualified Xynoplex.Timing as Budget
-import Xynoplex.Types
+import qualified Xynolog.Http as Http
+import qualified Xynolog.Client as Client
+import qualified Xynolog.ClientAssertion as Assertion
+import qualified Xynolog.ServiceToken as Service
+import qualified Xynolog.Auth as Auth
+import qualified Xynolog.Session as Session
+import qualified Xynolog.SignIn as SignIn
+import qualified Xynolog.StateValue as State
+import qualified Xynolog.Transport as Transport
+import qualified Xynolog.Issuer as Issuer
+import qualified Xynolog.ErrorCodes as Code
+import Xynolog.Errors (BusRequestError, SignInError(..), TransportError(..))
+import qualified Xynolog.Retry as Retry
+import qualified Xynolog.SessionStorage as Storage
+import qualified Xynolog.Registry.Stored as Stored
+import qualified Xynolog.Timing.Settings as Timing
+import qualified Xynolog.Timing as Budget
+import Xynolog.Types
 import qualified Streaming.Prelude as Stream
 import qualified ControlledTime as Time
 -- Runs protocol/specs/src/client/clock-cases.json through the shared clock runner.

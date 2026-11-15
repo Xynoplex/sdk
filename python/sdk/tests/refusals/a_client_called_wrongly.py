@@ -2,14 +2,14 @@
 
 from typing import assert_never
 
-from xynoplex.bus import Delivered, Heard
-from xynoplex.channels import BECKON_FOCUS, MARK_ADDED
-from xynoplex.client import XynoplexClient
-from xynoplex.http import HttpTransport
-from xynoplex.identifiers import AnnotationId, ResourceId
-from xynoplex.namespaces.follow import Delegation, JobCompleted, JobEvent, JobProgressed
-from xynoplex.operations import MARK_DELETE
-from xynoplex.types import (
+from xynolog.bus import Delivered, Heard
+from xynolog.channels import BECKON_FOCUS, MARK_ADDED
+from xynolog.client import XynologClient
+from xynolog.http import HttpTransport
+from xynolog.identifiers import AnnotationId, ResourceId
+from xynolog.namespaces.follow import Delegation, JobCompleted, JobEvent, JobProgressed
+from xynolog.operations import MARK_DELETE
+from xynolog.types import (
     Annotation,
     BeckonFocusEvent,
     BeckonHoverEvent,
@@ -25,7 +25,7 @@ from xynoplex.types import (
     YieldJobDone,
 )
 
-type Client = XynoplexClient[HttpTransport]
+type Client = XynologClient[HttpTransport]
 
 
 async def ids_the_wrong_way_round(client: Client, resource: ResourceId, annotation: AnnotationId) -> None:

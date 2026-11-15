@@ -1,14 +1,14 @@
 'use client';
 
-import type { ResourceId } from '@xynoplex/core';
+import type { ResourceId } from '@xynolog/core';
 import React, { useRef, useState, useEffect, useCallback } from 'react';
-import type { Annotation, AnchorRect } from '@xynoplex/core';
-import { createRectangleSvg, createCircleSvg, createPolygonSvg, scaleSvgToNative, parseSvgSelector, Point } from '@xynoplex/core';
+import type { Annotation, AnchorRect } from '@xynolog/core';
+import { createRectangleSvg, createCircleSvg, createPolygonSvg, scaleSvgToNative, parseSvgSelector, Point } from '@xynolog/core';
 import { toViewportAnchorRect } from '../../lib/anchor-rect';
 import { AnnotationOverlay } from './AnnotationOverlay';
 import { AnchoredTextNotice } from '../annotation/AnchoredTextNotice';
 import type { SelectionMotivation } from '../annotation/AnnotateToolbar';
-import type { XynoplexSession } from '@xynoplex/sdk';
+import type { XynologSession } from '@xynolog/sdk';
 import { useAnchoredText } from '../../hooks/useAnchoredText';
 import { useHoverDelay } from '../../hooks/useHoverDelay';
 
@@ -44,7 +44,7 @@ interface SvgDrawingCanvasProps {
   existingAnnotations?: Annotation[];
   drawingMode: DrawingMode;
   selectedMotivation?: SelectionMotivation | null;
-  session?: XynoplexSession | null | undefined;
+  session?: XynologSession | null | undefined;
   hoveredAnnotationId?: string | null;
   selectedAnnotationId?: string | null;
   hoverDelayMs?: number;
@@ -332,7 +332,7 @@ export function SvgDrawingCanvas({
     <AnchoredTextNotice status={anchoredText.status} />
     <div
       ref={containerRef}
-      className="xynoplex-svg-drawing-canvas"
+      className="xynolog-svg-drawing-canvas"
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
@@ -345,17 +345,17 @@ export function SvgDrawingCanvas({
         ref={imageRef}
         src={imageUrl}
         alt="Annotatable content"
-        className="xynoplex-svg-drawing-canvas__image"
+        className="xynolog-svg-drawing-canvas__image"
         draggable={false}
       />
 
       {/* Overlay for annotations and drawing */}
       {displayDimensions && imageDimensions && (
         <div
-          className="xynoplex-svg-drawing-canvas__overlay-container"
+          className="xynolog-svg-drawing-canvas__overlay-container"
         >
           <div
-            className="xynoplex-svg-drawing-canvas__overlay"
+            className="xynolog-svg-drawing-canvas__overlay"
             style={{
               width: displayDimensions.width,
               height: displayDimensions.height
@@ -379,7 +379,7 @@ export function SvgDrawingCanvas({
               const colors = getMotivationColor(selectedMotivation || null);
               return (
                 <svg
-                  className="xynoplex-svg-drawing-canvas__preview"
+                  className="xynolog-svg-drawing-canvas__preview"
                   style={{ width: displayDimensions.width, height: displayDimensions.height }}
                 >
                   {drawing === 'circle' && (() => {

@@ -7,15 +7,15 @@
  */
 
 import { describe, it, expect, vi } from 'vitest';
-import { EventBus, annotationId, resourceId } from '@xynoplex/core';
-import type { EventMap } from '@xynoplex/core';
+import { EventBus, annotationId, resourceId } from '@xynolog/core';
+import type { EventMap } from '@xynolog/core';
 import { BeckonNamespace } from '../beckon';
 import { BindNamespace } from '../bind';
 import { BrowseNamespace } from '../browse';
 import { MarkNamespace } from '../mark';
 import { MatchNamespace } from '../match';
 import { YieldNamespace } from '../yield';
-import type { ITransport, IContentTransport } from '@xynoplex/core';
+import type { ITransport, IContentTransport } from '@xynolog/core';
 import { inMemoryTransport, gatewayOperationSpies, contentTransportSpies } from '../../__tests__/helpers/in-memory-transport';
 
 function makeMockTransport(): ITransport {

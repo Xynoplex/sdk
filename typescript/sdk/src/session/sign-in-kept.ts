@@ -8,11 +8,11 @@
  *
  * Three hold one: `keptIn`, a registry's storage, under the knowledge base's
  * session key; `MemorySignIn`, the life of the process; and an entry of the
- * `SignInStore`, the sign-in `xynoplex login` keeps. Every member runs as one
+ * `SignInStore`, the sign-in `xynolog login` keeps. Every member runs as one
  * step, so a check of what is kept and the write it guards are never apart.
  */
 
-import { SignInError } from '@xynoplex/core';
+import { SignInError } from '@xynolog/core';
 import { revokeAtIssuer } from './oauth';
 import type { StoredSession } from './storage';
 

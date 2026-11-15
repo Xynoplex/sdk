@@ -12,8 +12,8 @@ import Data.Text (Text)
 import qualified Data.Text as Text
 import Data.Text.Encoding (encodeUtf8)
 import Data.IORef
-import qualified Xynoplex.Internal.BusLog as Log
-import Xynoplex.Internal.Generated.ChannelRoundTrip (roundTripChannel)
+import qualified Xynolog.Internal.BusLog as Log
+import Xynolog.Internal.Generated.ChannelRoundTrip (roundTripChannel)
 import System.FilePath ((</>))
 
 require :: String -> Bool -> IO ()

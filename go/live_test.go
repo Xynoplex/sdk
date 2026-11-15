@@ -1,4 +1,4 @@
-package xynoplex_test
+package xynolog_test
 
 // A client's live queries: what watching one holds, what a read gives its
 // watchers, and what a client keeps of them.
@@ -19,10 +19,10 @@ import (
 	"testing"
 	"time"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/bus"
-	"github.com/Xynoplex/sdk/go/xynoplextest"
+	xynolog "github.com/xynolog/sdk/go"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/bus"
+	"github.com/xynolog/sdk/go/xynologtest"
 )
 
 // settling is long enough for what a test waits not to happen.
@@ -34,22 +34,22 @@ const annotationsRead = "getAnnotations"
 
 // asks is what each live query asks: the requests it makes, by channel, or the
 // read of the content transport it makes.
-var asks = func() map[xynoplex.CacheQuery][]string {
+var asks = func() map[xynolog.CacheQuery][]string {
 	engines := []string{string(bus.BrowseEnginesRequested.Request().Channel())}
 	for _, holder := range bus.LimitsOperations {
 		engines = append(engines, string(holder.Request().Channel()))
 	}
-	return map[xynoplex.CacheQuery][]string{
-		xynoplex.CacheQueryResource:         {string(bus.BrowseResourceRequested.Request().Channel())},
-		xynoplex.CacheQueryAnnotations:      {annotationsRead},
-		xynoplex.CacheQueryAnnotation:       {string(bus.BrowseAnnotationRequested.Request().Channel())},
-		xynoplex.CacheQueryEvents:           {string(bus.BrowseEventsRequested.Request().Channel())},
-		xynoplex.CacheQueryReferencedBy:     {string(bus.GatherReferencedByRequested.Request().Channel())},
-		xynoplex.CacheQueryResources:        {string(bus.BrowseResourcesRequested.Request().Channel())},
-		xynoplex.CacheQueryMatchedResources: {string(bus.MatchResourcesRequested.Request().Channel())},
-		xynoplex.CacheQueryEntityTypes:      {string(bus.BrowseEntityTypesRequested.Request().Channel())},
-		xynoplex.CacheQueryTagSchemas:       {string(bus.BrowseTagSchemasRequested.Request().Channel())},
-		xynoplex.CacheQueryEngines:          engines,
+	return map[xynolog.CacheQuery][]string{
+		xynolog.CacheQueryResource:         {string(bus.BrowseResourceRequested.Request().Channel())},
+		xynolog.CacheQueryAnnotations:      {annotationsRead},
+		xynolog.CacheQueryAnnotation:       {string(bus.BrowseAnnotationRequested.Request().Channel())},
+		xynolog.CacheQueryEvents:           {string(bus.BrowseEventsRequested.Request().Channel())},
+		xynolog.CacheQueryReferencedBy:     {string(bus.GatherReferencedByRequested.Request().Channel())},
+		xynolog.CacheQueryResources:        {string(bus.BrowseResourcesRequested.Request().Channel())},
+		xynolog.CacheQueryMatchedResources: {string(bus.MatchResourcesRequested.Request().Channel())},
+		xynolog.CacheQueryEntityTypes:      {string(bus.BrowseEntityTypesRequested.Request().Channel())},
+		xynolog.CacheQueryTagSchemas:       {string(bus.BrowseTagSchemasRequested.Request().Channel())},
+		xynolog.CacheQueryEngines:          engines,
 	}
 }()
 
@@ -82,7 +82,7 @@ func resourceAnswer(name string) json.RawMessage {
 
 // knowing is how a small knowledge base answers each request a live query
 // makes, as often as it is asked: a resource or an annotation is res-1's.
-func knowing() xynoplextest.MakeResponse {
+func knowing() xynologtest.MakeResponse {
 	page := `"resources":[],"total":0,"offset":0,"limit":100`
 	answers := map[bus.Channel]string{
 		bus.BrowseResourceRequested.Request().Channel():     `{"resource":` + describing("res-1", "A resource") + `,"lastSequence":1}`,
@@ -101,7 +101,7 @@ func knowing() xynoplextest.MakeResponse {
 	return func(operation bus.Channel, payload json.RawMessage) (json.RawMessage, error) {
 		answer, known := answers[operation]
 		if !known {
-			return xynoplextest.RefuseUnscriptedOperation(operation, payload)
+			return xynologtest.RefuseUnscriptedOperation(operation, payload)
 		}
 		return json.RawMessage(answer), nil
 	}
@@ -117,7 +117,7 @@ func refusal(channel bus.Channel) json.RawMessage {
 // silent, answers none, the read waiting until it is let go. A live query
 // makes no other call of it.
 type annotatedContent struct {
-	*xynoplextest.InMemoryContent
+	*xynologtest.InMemoryContent
 	silent bool
 
 	mu    sync.Mutex
@@ -147,7 +147,7 @@ type liveSetup struct {
 	saveWait time.Duration
 	// persistence is where the client keeps its queries; nil for a client
 	// that keeps nothing.
-	persistence *xynoplex.CachePersistence
+	persistence *xynolog.CachePersistence
 	// silent is a knowledge base that answers no request and no read: the
 	// test answers each one itself.
 	silent bool
@@ -158,9 +158,9 @@ type liveSetup struct {
 
 // liveWorld is a client over a scripted knowledge base.
 type liveWorld struct {
-	transport *xynoplextest.FaultyTransport
+	transport *xynologtest.FaultyTransport
 	content   *annotatedContent
-	client    *xynoplex.Client
+	client    *xynolog.Client
 
 	mu sync.Mutex
 	// refused is the requests the knowledge base refuses, by channel.
@@ -169,24 +169,24 @@ type liveWorld struct {
 
 func newLiveWorld(t *testing.T, setup liveSetup) *liveWorld {
 	t.Helper()
-	config := xynoplextest.FaultyConfig{Channels: bus.BridgedChannels, MakeResponse: knowing()}
+	config := xynologtest.FaultyConfig{Channels: bus.BridgedChannels, MakeResponse: knowing()}
 	if setup.silent {
 		// Every reply is lost on its way: the test answers each request itself.
-		config = xynoplextest.FaultyConfig{
+		config = xynologtest.FaultyConfig{
 			Channels:     bus.BridgedChannels,
-			Schedule:     []xynoplextest.FaultAction{xynoplextest.DropReply{}},
+			Schedule:     []xynologtest.FaultAction{xynologtest.DropReply{}},
 			MakeResponse: func(bus.Channel, json.RawMessage) (json.RawMessage, error) { return nil, nil },
 		}
 	}
-	transport := xynoplextest.NewFaultyTransport(config)
+	transport := xynologtest.NewFaultyTransport(config)
 	if setup.opening {
-		transport.SetState(xynoplex.ConnectionStateInitial)
+		transport.SetState(xynolog.ConnectionStateInitial)
 	}
-	content := &annotatedContent{InMemoryContent: xynoplextest.NewInMemoryContent(), silent: setup.silent}
-	timing := xynoplex.DefaultTiming()
+	content := &annotatedContent{InMemoryContent: xynologtest.NewInMemoryContent(), silent: setup.silent}
+	timing := xynolog.DefaultTiming()
 	timing.InvalidationWindow = setup.window
 	timing.SaveDebounce = setup.saveWait
-	client := xynoplex.NewClient(xynoplex.ClientConfig{Transport: transport, Content: content, Gateway: &xynoplextest.StubGateway{}, Timing: timing, Persistence: setup.persistence})
+	client := xynolog.NewClient(xynolog.ClientConfig{Transport: transport, Content: content, Gateway: &xynologtest.StubGateway{}, Timing: timing, Persistence: setup.persistence})
 	w := &liveWorld{transport: transport, content: content, client: client, refused: map[bus.Channel]bool{}}
 	transport.RefuseWhen(func(operation bus.Channel, _ json.RawMessage) json.RawMessage {
 		w.mu.Lock()
@@ -273,27 +273,27 @@ func (w *liveWorld) everyHolderAsked(t *testing.T) {
 // reopen drops the stream and opens it again. The refresher reads only the
 // latest state, so it is given a while to see the drop.
 func (w *liveWorld) reopen() {
-	w.transport.SetState(xynoplex.ConnectionStateReconnecting)
+	w.transport.SetState(xynolog.ConnectionStateReconnecting)
 	time.Sleep(settling)
-	w.transport.SetState(xynoplex.ConnectionStateOpen)
+	w.transport.SetState(xynolog.ConnectionStateOpen)
 }
 
 // answerRequest answers request as the service that answers its operation
 // would.
-func answerRequest(fake *xynoplextest.FaultyTransport, request xynoplextest.RequestLogEntry, response string) {
+func answerRequest(fake *xynologtest.FaultyTransport, request xynologtest.RequestLogEntry, response string) {
 	replies := bus.Operations[request.Channel]
-	fake.Deliver(xynoplex.Frame{Channel: replies.Result, Envelope: xynoplex.Envelope{CorrelationID: request.CorrelationID}, Payload: json.RawMessage(`{"response":` + response + `}`)})
+	fake.Deliver(xynolog.Frame{Channel: replies.Result, Envelope: xynolog.Envelope{CorrelationID: request.CorrelationID}, Payload: json.RawMessage(`{"response":` + response + `}`)})
 }
 
 // refuseRequest answers request with a failure.
-func refuseRequest(fake *xynoplextest.FaultyTransport, request xynoplextest.RequestLogEntry) {
+func refuseRequest(fake *xynologtest.FaultyTransport, request xynologtest.RequestLogEntry) {
 	replies := bus.Operations[request.Channel]
-	fake.Deliver(xynoplex.Frame{Channel: replies.Failure, Envelope: xynoplex.Envelope{CorrelationID: request.CorrelationID}, Payload: refusal(request.Channel)})
+	fake.Deliver(xynolog.Frame{Channel: replies.Failure, Envelope: xynolog.Envelope{CorrelationID: request.CorrelationID}, Payload: refusal(request.Channel)})
 }
 
 // liveQuery is a live query, whatever it shows.
 type liveQuery interface {
-	States(ctx context.Context) iter.Seq[xynoplex.CacheState]
+	States(ctx context.Context) iter.Seq[xynolog.CacheState]
 }
 
 // aQuery is a live query, whatever it shows, and a read of it.
@@ -303,7 +303,7 @@ type aQuery struct {
 	read  func(ctx context.Context) error
 }
 
-func queryOf[T any](name string, q *xynoplex.Cached[T]) aQuery {
+func queryOf[T any](name string, q *xynolog.Cached[T]) aQuery {
 	return aQuery{name: name, query: q, read: func(ctx context.Context) error {
 		_, err := q.Fresh(ctx)
 		return err
@@ -312,7 +312,7 @@ func queryOf[T any](name string, q *xynoplex.Cached[T]) aQuery {
 
 // everything is every live query: of both resources and an annotation of
 // each, and of the knowledge base.
-func everything(t *testing.T, c *xynoplex.Client) []aQuery {
+func everything(t *testing.T, c *xynolog.Client) []aQuery {
 	t.Helper()
 	var all []aQuery
 	for _, resource := range []string{"res-1", "res-2"} {
@@ -327,8 +327,8 @@ func everything(t *testing.T, c *xynoplex.Client) []aQuery {
 	return append(all,
 		queryOf("annotation ann-1", c.Browse.Annotation(resourceOf(t, "res-1"), annotationIdOf(t, "ann-1"))),
 		queryOf("annotation ann-2", c.Browse.Annotation(resourceOf(t, "res-2"), annotationIdOf(t, "ann-2"))),
-		queryOf("resources", c.Browse.Resources(xynoplex.ResourceFilters{})),
-		queryOf("a search", c.Match.Resources("a search", xynoplex.ResourceFilters{})),
+		queryOf("resources", c.Browse.Resources(xynolog.ResourceFilters{})),
+		queryOf("a search", c.Match.Resources("a search", xynolog.ResourceFilters{})),
 		queryOf("entity types", c.Browse.EntityTypes()),
 		queryOf("tag schemas", c.Browse.TagSchemas()),
 		queryOf("engines", c.Browse.Engines()),
@@ -337,32 +337,32 @@ func everything(t *testing.T, c *xynoplex.Client) []aQuery {
 
 // eachQuery is one query of each live query the table names, of res-1 and
 // its annotation ann-1.
-func eachQuery(t *testing.T, c *xynoplex.Client) map[xynoplex.CacheQuery]aQuery {
+func eachQuery(t *testing.T, c *xynolog.Client) map[xynolog.CacheQuery]aQuery {
 	t.Helper()
 	resource, annotation := resourceOf(t, "res-1"), annotationIdOf(t, "ann-1")
-	return map[xynoplex.CacheQuery]aQuery{
-		xynoplex.CacheQueryResource:         queryOf("resource", c.Browse.Resource(resource)),
-		xynoplex.CacheQueryAnnotations:      queryOf("annotations", c.Browse.Annotations(resource)),
-		xynoplex.CacheQueryAnnotation:       queryOf("annotation", c.Browse.Annotation(resource, annotation)),
-		xynoplex.CacheQueryEvents:           queryOf("events", c.Browse.Events(resource)),
-		xynoplex.CacheQueryReferencedBy:     queryOf("references", c.Gather.ReferencedBy(resource)),
-		xynoplex.CacheQueryResources:        queryOf("resources", c.Browse.Resources(xynoplex.ResourceFilters{})),
-		xynoplex.CacheQueryMatchedResources: queryOf("a search", c.Match.Resources("text", xynoplex.ResourceFilters{})),
-		xynoplex.CacheQueryEntityTypes:      queryOf("entity types", c.Browse.EntityTypes()),
-		xynoplex.CacheQueryTagSchemas:       queryOf("tag schemas", c.Browse.TagSchemas()),
-		xynoplex.CacheQueryEngines:          queryOf("engines", c.Browse.Engines()),
+	return map[xynolog.CacheQuery]aQuery{
+		xynolog.CacheQueryResource:         queryOf("resource", c.Browse.Resource(resource)),
+		xynolog.CacheQueryAnnotations:      queryOf("annotations", c.Browse.Annotations(resource)),
+		xynolog.CacheQueryAnnotation:       queryOf("annotation", c.Browse.Annotation(resource, annotation)),
+		xynolog.CacheQueryEvents:           queryOf("events", c.Browse.Events(resource)),
+		xynolog.CacheQueryReferencedBy:     queryOf("references", c.Gather.ReferencedBy(resource)),
+		xynolog.CacheQueryResources:        queryOf("resources", c.Browse.Resources(xynolog.ResourceFilters{})),
+		xynolog.CacheQueryMatchedResources: queryOf("a search", c.Match.Resources("text", xynolog.ResourceFilters{})),
+		xynolog.CacheQueryEntityTypes:      queryOf("entity types", c.Browse.EntityTypes()),
+		xynolog.CacheQueryTagSchemas:       queryOf("tag schemas", c.Browse.TagSchemas()),
+		xynolog.CacheQueryEngines:          queryOf("engines", c.Browse.Engines()),
 	}
 }
 
 // stateOrEnd is what one pull of a watcher gave.
 type stateOrEnd struct {
-	state xynoplex.CacheState
+	state xynolog.CacheState
 	ok    bool
 }
 
 // watcher is one watcher of a live query: its states, pulled one at a time.
 type watcher struct {
-	next    func() (xynoplex.CacheState, bool)
+	next    func() (xynolog.CacheState, bool)
 	stop    func()
 	cancel  context.CancelFunc
 	pending chan stateOrEnd
@@ -393,7 +393,7 @@ func (w *watcher) pull() chan stateOrEnd {
 
 // now is the state the watcher is given next, which is to be there already or
 // soon.
-func (w *watcher) now(t *testing.T) xynoplex.CacheState {
+func (w *watcher) now(t *testing.T) xynolog.CacheState {
 	t.Helper()
 	select {
 	case got := <-w.pull():
@@ -446,12 +446,12 @@ func (w *watcher) close() {
 
 // untilReady is the watcher's next value: Pending states before it are passed
 // over, and a failure fails the test.
-func untilReady(t *testing.T, w *watcher) xynoplex.CacheState {
+func untilReady(t *testing.T, w *watcher) xynolog.CacheState {
 	t.Helper()
 	for {
 		switch state := w.now(t).(type) {
-		case xynoplex.Pending:
-		case xynoplex.Failed:
+		case xynolog.Pending:
+		case xynolog.Failed:
 			t.Fatalf("the query failed: %v", state.Err)
 		default:
 			return state
@@ -461,12 +461,12 @@ func untilReady(t *testing.T, w *watcher) xynoplex.CacheState {
 
 // untilFailed is the watcher's next failure: Pending states before it are
 // passed over, and a value fails the test.
-func untilFailed(t *testing.T, w *watcher) xynoplex.Failed {
+func untilFailed(t *testing.T, w *watcher) xynolog.Failed {
 	t.Helper()
 	for {
 		switch state := w.now(t).(type) {
-		case xynoplex.Pending:
-		case xynoplex.Failed:
+		case xynolog.Pending:
+		case xynolog.Failed:
 			return state
 		default:
 			t.Fatalf("the query has a value, %#v, where a failure was to be", state)
@@ -474,16 +474,16 @@ func untilFailed(t *testing.T, w *watcher) xynoplex.Failed {
 	}
 }
 
-func isPending(t *testing.T, state xynoplex.CacheState) {
+func isPending(t *testing.T, state xynolog.CacheState) {
 	t.Helper()
-	if _, ok := state.(xynoplex.Pending); !ok {
+	if _, ok := state.(xynolog.Pending); !ok {
 		t.Fatalf("the state is %#v, not pending", state)
 	}
 }
 
-func valueIn[T any](t *testing.T, state xynoplex.CacheState) T {
+func valueIn[T any](t *testing.T, state xynolog.CacheState) T {
 	t.Helper()
-	ready, ok := state.(xynoplex.Ready[T])
+	ready, ok := state.(xynolog.Ready[T])
 	if !ok {
 		t.Fatalf("the state is %#v, not a value of %T", state, ready.Value)
 	}
@@ -499,7 +499,7 @@ func modifiedOf(annotation api.Annotation) string {
 }
 
 // payloadsOn is the payload of each request of channel, as JSON, in order.
-func payloadsOn(fake *xynoplextest.FaultyTransport, channel bus.Channel) []string {
+func payloadsOn(fake *xynologtest.FaultyTransport, channel bus.Channel) []string {
 	var payloads []string
 	for _, request := range requestsOn(fake, channel) {
 		payloads = append(payloads, string(request.Payload))
@@ -522,7 +522,7 @@ func TestWatchingAQueryOfAResourceHoldsItsScopeUntilTheWatcherLeaves(t *testing.
 	if holds := w.transport.Holds(res1); holds != 1 {
 		t.Fatalf("a watcher holds the scope %d times", holds)
 	}
-	w.asksCome(t, askedMark{}, map[string]int{asks[xynoplex.CacheQueryEvents][0]: 1})
+	w.asksCome(t, askedMark{}, map[string]int{asks[xynolog.CacheQueryEvents][0]: 1})
 
 	// A second watcher, of the same query or of another of the resource, is a second hold.
 	more := []*watcher{watch(t, query), watch(t, c.Browse.Annotation(res1, annotationIdOf(t, "ann-1"))), watch(t, c.Gather.ReferencedBy(res2))}
@@ -564,8 +564,8 @@ func TestWatchingAQueryOfAResourceHoldsItsScopeUntilTheWatcherLeaves(t *testing.
 
 	// A query of the knowledge base holds no scope, and neither does a read of any query.
 	for _, of := range []aQuery{
-		queryOf("resources", c.Browse.Resources(xynoplex.ResourceFilters{})),
-		queryOf("a search", c.Match.Resources("text", xynoplex.ResourceFilters{})),
+		queryOf("resources", c.Browse.Resources(xynolog.ResourceFilters{})),
+		queryOf("a search", c.Match.Resources("text", xynolog.ResourceFilters{})),
 		queryOf("entity types", c.Browse.EntityTypes()),
 		queryOf("tag schemas", c.Browse.TagSchemas()),
 		queryOf("engines", c.Browse.Engines()),
@@ -627,7 +627,7 @@ func TestAReadGivesWhatTheServiceAnswersNowAndEveryWatcherIsGivenItToo(t *testin
 	}
 	// And fails with the failure it meets, which no watcher is shown: the value stays.
 	w.refuse(channel)
-	var refused *xynoplex.BusRequestError
+	var refused *xynolog.BusRequestError
 	if _, err := w.client.Browse.Resource(res1).Fresh(context.Background()); !errors.As(err, &refused) {
 		t.Fatalf("the read failed with %v, want the service's refusal", err)
 	}
@@ -663,7 +663,7 @@ func TestAResourcesAnnotationsAreTheListAndAListOrASearchIsOneQueryPerSetOfFilte
 	}
 
 	archived, person := true, "Person"
-	for _, filters := range []xynoplex.ResourceFilters{{}, {Limit: 100}, {Archived: &archived}, {EntityType: &person}, {Limit: 5}} {
+	for _, filters := range []xynolog.ResourceFilters{{}, {Limit: 100}, {Archived: &archived}, {EntityType: &person}, {Limit: 5}} {
 		watch(t, c.Browse.Resources(filters)).now(t)
 	}
 	lists := bus.BrowseResourcesRequested.Request().Channel()
@@ -679,10 +679,10 @@ func TestAResourcesAnnotationsAreTheListAndAListOrASearchIsOneQueryPerSetOfFilte
 
 	searches := bus.MatchResourcesRequested.Request().Channel()
 	notArchived := false
-	watch(t, c.Match.Resources("a", xynoplex.ResourceFilters{})).now(t)
+	watch(t, c.Match.Resources("a", xynolog.ResourceFilters{})).now(t)
 	waitUntil(t, "the first search", 2*time.Second, func() bool { return len(requestsOn(w.transport, searches)) == 1 })
-	watch(t, c.Match.Resources("a", xynoplex.ResourceFilters{})).now(t)
-	watch(t, c.Match.Resources("b", xynoplex.ResourceFilters{Archived: &notArchived})).now(t)
+	watch(t, c.Match.Resources("a", xynolog.ResourceFilters{})).now(t)
+	watch(t, c.Match.Resources("b", xynolog.ResourceFilters{Archived: &notArchived})).now(t)
 	waitUntil(t, "the second search", 2*time.Second, func() bool { return len(requestsOn(w.transport, searches)) >= 2 })
 	time.Sleep(settling)
 	searched := payloadsOn(w.transport, searches)
@@ -692,7 +692,7 @@ func TestAResourcesAnnotationsAreTheListAndAListOrASearchIsOneQueryPerSetOfFilte
 }
 
 // namesOf is each engine as "<provider> <model>".
-func namesOf(t *testing.T, engines []xynoplex.EngineWithLimits) []string {
+func namesOf(t *testing.T, engines []xynolog.EngineWithLimits) []string {
 	t.Helper()
 	var names []string
 	for _, each := range engines {
@@ -703,7 +703,7 @@ func namesOf(t *testing.T, engines []xynoplex.EngineWithLimits) []string {
 
 // limitsOf is the context each engine was reported to hold; "none" for one
 // with no report.
-func limitsOf(engines []xynoplex.EngineWithLimits) []string {
+func limitsOf(engines []xynolog.EngineWithLimits) []string {
 	var limits []string
 	for _, each := range engines {
 		if each.Limits == nil {
@@ -723,12 +723,12 @@ func TestTheEnginesAreShownAsTheirRequestIsAnsweredAndEachHoldersLimitsAsItRepor
 	isPending(t, live.now(t))
 	// The engines are asked for, and each key holder. The holders are asked as the engines' request is sent, so which reaches the transport first is not stated.
 	once := map[string]int{}
-	for _, channel := range asks[xynoplex.CacheQueryEngines] {
+	for _, channel := range asks[xynolog.CacheQueryEngines] {
 		once[channel] = 1
 	}
 	w.asksCome(t, askedMark{}, once)
 	requests := w.transport.RequestLog()
-	byChannel := map[bus.Channel]xynoplextest.RequestLogEntry{}
+	byChannel := map[bus.Channel]xynologtest.RequestLogEntry{}
 	for _, request := range requests {
 		byChannel[request.Channel] = request
 	}
@@ -743,14 +743,14 @@ func TestTheEnginesAreShownAsTheirRequestIsAnsweredAndEachHoldersLimitsAsItRepor
 
 	// The engines are shown when their request is answered, with what has been reported so far: they wait for no holder.
 	answerRequest(w.transport, engines, `{"engines":[{"engine":`+gemma+`},{"engine":`+claude+`}]}`)
-	shown := valueIn[[]xynoplex.EngineWithLimits](t, live.now(t))
+	shown := valueIn[[]xynolog.EngineWithLimits](t, live.now(t))
 	if names, limits := namesOf(t, shown), limitsOf(shown); !slices.Equal(names, []string{"ollama gemma2:27b", "anthropic claude-opus-5-5"}) || !slices.Equal(limits, []string{"8192", "none"}) {
 		t.Fatalf("shown %v with limits %v", names, limits)
 	}
 
 	// A holder that reports later delays only its own engines' limits.
 	answerRequest(w.transport, gather, `{"limits":[{"engine":`+claude+`,"limits":{"contextTokens":9,"maxOutputTokens":1}}]}`)
-	if limits := limitsOf(valueIn[[]xynoplex.EngineWithLimits](t, live.now(t))); !slices.Equal(limits, []string{"8192", "9"}) {
+	if limits := limitsOf(valueIn[[]xynolog.EngineWithLimits](t, live.now(t))); !slices.Equal(limits, []string{"8192", "9"}) {
 		t.Fatalf("shown limits %v", limits)
 	}
 
@@ -764,7 +764,7 @@ func TestTheEnginesAreShownAsTheirRequestIsAnsweredAndEachHoldersLimitsAsItRepor
 	w.client.Browse.Engines().Invalidate()
 	w.asksCome(t, again, once)
 	live.nothingMore(t)
-	var reasked xynoplextest.RequestLogEntry
+	var reasked xynologtest.RequestLogEntry
 	requests = w.transport.RequestLog()
 	for _, request := range requests[again.requests:] {
 		if request.Channel == engines.Channel {
@@ -772,7 +772,7 @@ func TestTheEnginesAreShownAsTheirRequestIsAnsweredAndEachHoldersLimitsAsItRepor
 		}
 	}
 	answerRequest(w.transport, reasked, `{"engines":[{"engine":`+claude+`}]}`)
-	shown = valueIn[[]xynoplex.EngineWithLimits](t, live.now(t))
+	shown = valueIn[[]xynolog.EngineWithLimits](t, live.now(t))
 	if names, limits := namesOf(t, shown), limitsOf(shown); !slices.Equal(names, []string{"anthropic claude-opus-5-5"}) || !slices.Equal(limits, []string{"9"}) {
 		t.Fatalf("shown %v with limits %v", names, limits)
 	}
@@ -782,11 +782,11 @@ func TestEnginesThatFailAreAFailedStateWhateverTheirHoldersReportAndAReadOfThemF
 	w := newLiveWorld(t, liveSetup{})
 	engines := bus.BrowseEnginesRequested.Request().Channel()
 	w.refuse(engines)
-	if _, err := w.client.Browse.Engines().Fresh(context.Background()); err == nil || codeOf(err) != string(xynoplex.BusRequestErrorCodeRejected) {
+	if _, err := w.client.Browse.Engines().Fresh(context.Background()); err == nil || codeOf(err) != string(xynolog.BusRequestErrorCodeRejected) {
 		t.Fatalf("the read failed with %v, want the engines' refusal", err)
 	}
 	live := watch(t, w.client.Browse.Engines())
-	if failed := untilFailed(t, live); codeOf(failed.Err) != string(xynoplex.BusRequestErrorCodeRejected) {
+	if failed := untilFailed(t, live); codeOf(failed.Err) != string(xynolog.BusRequestErrorCodeRejected) {
 		t.Fatalf("the engines failed with %v, want their refusal", failed.Err)
 	}
 	live.close()
@@ -797,7 +797,7 @@ func TestEnginesThatFailAreAFailedStateWhateverTheirHoldersReportAndAReadOfThemF
 
 // keptForAlice is the key of the person a live world's client keeps its
 // queries for.
-var keptForAlice = xynoplex.PersonKey("did:web:example.org:users:alice")
+var keptForAlice = xynolog.PersonKey("did:web:example.org:users:alice")
 
 // wholeKeyOf is the key protocol/specs/src/session/stored.json says a kept
 // query of one value keeps its entry under, as JSON.
@@ -823,9 +823,9 @@ func wholeKeyOf(t *testing.T) json.RawMessage {
 
 // keptOf is the one entry of the document a client keeps of query for Alice
 // on kb: its key, and its value.
-func keptOf(t *testing.T, storage xynoplex.SessionStorage, query xynoplex.CacheQuery) (key, value json.RawMessage) {
+func keptOf(t *testing.T, storage xynolog.SessionStorage, query xynolog.CacheQuery) (key, value json.RawMessage) {
 	t.Helper()
-	text, ok := storage.Get(xynoplex.CacheKey("kb", keptForAlice, query))
+	text, ok := storage.Get(xynolog.CacheKey("kb", keptForAlice, query))
 	if !ok {
 		t.Fatalf("nothing is kept of %s", query)
 	}
@@ -843,8 +843,8 @@ func keptOf(t *testing.T, storage xynoplex.SessionStorage, query xynoplex.CacheQ
 }
 
 func TestAClientKeepsItsSmallQueriesAndTheNextClientShowsThemAtOnceAndAsksForThemAnew(t *testing.T) {
-	storage := xynoplex.NewMemoryStorage()
-	persistence := &xynoplex.CachePersistence{Storage: storage, KbID: "kb", PersonKey: keptForAlice}
+	storage := xynolog.NewMemoryStorage()
+	persistence := &xynolog.CachePersistence{Storage: storage, KbID: "kb", PersonKey: keptForAlice}
 	// Long enough that every read below is made before the first save is.
 	const saveWait = 300 * time.Millisecond
 	first := newLiveWorld(t, liveSetup{saveWait: saveWait, persistence: persistence})
@@ -861,13 +861,13 @@ func TestAClientKeepsItsSmallQueriesAndTheNextClientShowsThemAtOnceAndAsksForThe
 	if c.PersistenceSettled() {
 		t.Fatal("a client that owes a save is settled")
 	}
-	if _, ok := storage.Get(xynoplex.CacheKey("kb", keptForAlice, xynoplex.CacheQueryResource)); ok {
+	if _, ok := storage.Get(xynolog.CacheKey("kb", keptForAlice, xynolog.CacheQueryResource)); ok {
 		t.Fatal("a save was made before the values stopped changing")
 	}
 	waitUntil(t, "the client settled", 2*time.Second, c.PersistenceSettled)
 
 	// An event about an annotation nobody holds changes nothing the client keeps: nothing is owed.
-	first.transport.Deliver(eventOf(t, xynoplex.CacheRefreshMarkDeleteOk, "", "res-1", "ann-nobody-holds"))
+	first.transport.Deliver(eventOf(t, xynolog.CacheRefreshMarkDeleteOk, "", "res-1", "ann-nobody-holds"))
 	time.Sleep(settling)
 	if !c.PersistenceSettled() {
 		t.Fatal("an event about an annotation nobody holds owes a save")
@@ -875,9 +875,9 @@ func TestAClientKeepsItsSmallQueriesAndTheNextClientShowsThemAtOnceAndAsksForThe
 	c.Close()
 
 	// Each query the refresh table persists, a document under its own key for the person; no other query is kept.
-	for _, query := range xynoplex.CacheQueries {
-		_, kept := storage.Get(xynoplex.CacheKey("kb", keptForAlice, query))
-		if persisted := slices.Contains(xynoplex.PersistedCacheQueries, query); kept != persisted {
+	for _, query := range xynolog.CacheQueries {
+		_, kept := storage.Get(xynolog.CacheKey("kb", keptForAlice, query))
+		if persisted := slices.Contains(xynolog.PersistedCacheQueries, query); kept != persisted {
 			t.Fatalf("%s is kept: %v; the refresh table persists it: %v", query, kept, persisted)
 		}
 		if kept {
@@ -885,15 +885,15 @@ func TestAClientKeepsItsSmallQueriesAndTheNextClientShowsThemAtOnceAndAsksForThe
 		}
 	}
 	// As the wire had it: by the wire's names, and without what the knowledge base never said.
-	if key, value := keptOf(t, storage, xynoplex.CacheQueryResource); !sameJSON(t, key, []byte(`"res-1"`)) || !sameJSON(t, value, []byte(describing("res-1", "A resource"))) {
+	if key, value := keptOf(t, storage, xynolog.CacheQueryResource); !sameJSON(t, key, []byte(`"res-1"`)) || !sameJSON(t, value, []byte(describing("res-1", "A resource"))) {
 		t.Fatalf("the resource is kept as %s: %s", key, value)
 	}
 	listed := `{"annotations":[` + annotating("ann-1", "res-1", "") + `],"total":1}`
-	if key, value := keptOf(t, storage, xynoplex.CacheQueryAnnotations); !sameJSON(t, key, []byte(`"res-1"`)) || !sameJSON(t, value, []byte(listed)) {
+	if key, value := keptOf(t, storage, xynolog.CacheQueryAnnotations); !sameJSON(t, key, []byte(`"res-1"`)) || !sameJSON(t, value, []byte(listed)) {
 		t.Fatalf("the annotations are kept as %s: %s", key, value)
 	}
 	wholeKey := wholeKeyOf(t)
-	if key, _ := keptOf(t, storage, xynoplex.CacheQueryEntityTypes); !sameJSON(t, key, wholeKey) {
+	if key, _ := keptOf(t, storage, xynolog.CacheQueryEntityTypes); !sameJSON(t, key, wholeKey) {
 		t.Fatalf("the entity types are kept under %s; the table's key is %s", key, wholeKey)
 	}
 
@@ -905,7 +905,7 @@ func TestAClientKeepsItsSmallQueriesAndTheNextClientShowsThemAtOnceAndAsksForThe
 	if shown := valueIn[api.ResourceDescriptor](t, live.now(t)); shown.Name != "A resource" {
 		t.Fatalf("the kept resource is shown as %q", shown.Name)
 	}
-	resource, entityTypes, annotation := asks[xynoplex.CacheQueryResource][0], asks[xynoplex.CacheQueryEntityTypes][0], asks[xynoplex.CacheQueryAnnotation][0]
+	resource, entityTypes, annotation := asks[xynolog.CacheQueryResource][0], asks[xynolog.CacheQueryEntityTypes][0], asks[xynolog.CacheQueryAnnotation][0]
 	again.asksCome(t, askedMark{}, map[string]int{resource: 1})
 	types := watch(t, again.client.Browse.EntityTypes())
 	if shown := valueIn[[]string](t, types.now(t)); !slices.Equal(shown, []string{"Person"}) {
@@ -921,9 +921,9 @@ func TestAClientKeepsItsSmallQueriesAndTheNextClientShowsThemAtOnceAndAsksForThe
 	}
 
 	// A client of another knowledge base, or for another person, over the same storage, begins with nothing of this one's.
-	other := newLiveWorld(t, liveSetup{saveWait: saveWait, persistence: &xynoplex.CachePersistence{Storage: storage, KbID: "another", PersonKey: keptForAlice}, silent: true})
+	other := newLiveWorld(t, liveSetup{saveWait: saveWait, persistence: &xynolog.CachePersistence{Storage: storage, KbID: "another", PersonKey: keptForAlice}, silent: true})
 	isPending(t, watch(t, other.client.Browse.Resource(res1)).now(t))
-	someoneElse := newLiveWorld(t, liveSetup{saveWait: saveWait, persistence: &xynoplex.CachePersistence{Storage: storage, KbID: "kb", PersonKey: xynoplex.PersonKey("did:web:example.org:users:bob")}, silent: true})
+	someoneElse := newLiveWorld(t, liveSetup{saveWait: saveWait, persistence: &xynolog.CachePersistence{Storage: storage, KbID: "kb", PersonKey: xynolog.PersonKey("did:web:example.org:users:bob")}, silent: true})
 	isPending(t, watch(t, someoneElse.client.Browse.Resource(res1)).now(t))
 }
 
@@ -952,19 +952,19 @@ func TestAClientThatKeepsNothingIsAlwaysSettled(t *testing.T) {
 
 func TestAClientIsSettledUnlessAQueryItKeepsIsBeingFetchedOrIsOwedToStorage(t *testing.T) {
 	census := newLiveWorld(t, liveSetup{silent: true})
-	if named := slices.Sorted(maps.Keys(eachQuery(t, census.client))); !slices.Equal(named, slices.Sorted(slices.Values(xynoplex.CacheQueries))) {
-		t.Fatalf("this test names %v, the table %v", named, xynoplex.CacheQueries)
+	if named := slices.Sorted(maps.Keys(eachQuery(t, census.client))); !slices.Equal(named, slices.Sorted(slices.Values(xynolog.CacheQueries))) {
+		t.Fatalf("this test names %v, the table %v", named, xynolog.CacheQueries)
 	}
-	for _, query := range xynoplex.CacheQueries {
+	for _, query := range xynolog.CacheQueries {
 		t.Run(string(query), func(t *testing.T) {
-			w := newLiveWorld(t, liveSetup{persistence: &xynoplex.CachePersistence{Storage: xynoplex.NewMemoryStorage(), KbID: "kb", PersonKey: keptForAlice}, silent: true})
+			w := newLiveWorld(t, liveSetup{persistence: &xynolog.CachePersistence{Storage: xynolog.NewMemoryStorage(), KbID: "kb", PersonKey: keptForAlice}, silent: true})
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
 			reading := eachQuery(t, w.client)[query]
 			go func() { _ = reading.read(ctx) }()
 			waitUntil(t, "the read asked", 2*time.Second, func() bool { return w.askedSince(askedMark{})[asks[query][0]] > 0 })
 			// Fetching what it keeps, it is not at rest; fetching what it does not keep, it is.
-			if settled, want := w.client.PersistenceSettled(), !slices.Contains(xynoplex.PersistedCacheQueries, query); settled != want {
+			if settled, want := w.client.PersistenceSettled(), !slices.Contains(xynolog.PersistedCacheQueries, query); settled != want {
 				t.Fatalf("settled is %v while %s is fetched, want %v", settled, query, want)
 			}
 		})
@@ -976,11 +976,11 @@ func TestAClientIsSettledUnlessAQueryItKeepsIsBeingFetchedOrIsOwedToStorage(t *t
 // save.
 func TestAClientIsNotSettledWhileItsRefresherOwesARefetch(t *testing.T) {
 	const window = time.Second
-	w := newLiveWorld(t, liveSetup{window: window, saveWait: 10 * time.Millisecond, persistence: &xynoplex.CachePersistence{Storage: xynoplex.NewMemoryStorage(), KbID: "kb", PersonKey: keptForAlice}})
+	w := newLiveWorld(t, liveSetup{window: window, saveWait: 10 * time.Millisecond, persistence: &xynolog.CachePersistence{Storage: xynolog.NewMemoryStorage(), KbID: "kb", PersonKey: keptForAlice}})
 	c := w.client
 	resources := bus.BrowseResourceRequested.Request().Channel()
 	asked := func() int { return len(requestsOn(w.transport, resources)) }
-	updated := func() { w.transport.Deliver(eventOf(t, xynoplex.CacheRefreshYieldUpdated, "", "res-1", "ann-1")) }
+	updated := func() { w.transport.Deliver(eventOf(t, xynolog.CacheRefreshYieldUpdated, "", "res-1", "ann-1")) }
 	untilReady(t, watch(t, c.Browse.Resource(resourceOf(t, "res-1"))))
 	waitUntil(t, "the client settled", 2*time.Second, c.PersistenceSettled)
 
@@ -1004,7 +1004,7 @@ func TestAClientIsNotSettledWhileItsRefresherOwesARefetch(t *testing.T) {
 
 // notingStorage is storage where a write under key first calls note.
 type notingStorage struct {
-	xynoplex.SessionStorage
+	xynolog.SessionStorage
 	key  string
 	note func()
 }
@@ -1024,20 +1024,20 @@ func TestCloseReadsWhetherWhatIsKeptIsAtRestBeforeItDisposesAnything(t *testing.
 	const placesKey = "places"
 	// Long enough that Close comes before either ends.
 	const window, saveWait = 5 * time.Second, 5 * time.Second
-	closed := func(t *testing.T, owing bool) xynoplex.SessionStorage {
-		storage := xynoplex.NewMemoryStorage()
-		underneath := &notingStorage{SessionStorage: storage, key: xynoplex.CacheKey("kb", keptForAlice, xynoplex.CacheQueryResource)}
-		places := xynoplex.NewCoupledBookmarks(underneath, placesKey)
+	closed := func(t *testing.T, owing bool) xynolog.SessionStorage {
+		storage := xynolog.NewMemoryStorage()
+		underneath := &notingStorage{SessionStorage: storage, key: xynolog.CacheKey("kb", keptForAlice, xynolog.CacheQueryResource)}
+		places := xynolog.NewCoupledBookmarks(underneath, placesKey)
 		// A place noted after Close read the gate: as Close saves the resources.
 		noted := false
 		underneath.note = func() {
 			places.Save(resourceOf(t, "res-2"), "p-res-2-3")
 			noted = true
 		}
-		w := newLiveWorld(t, liveSetup{window: window, saveWait: saveWait, persistence: &xynoplex.CachePersistence{Storage: places.Storage(), KbID: "kb", PersonKey: keptForAlice}})
+		w := newLiveWorld(t, liveSetup{window: window, saveWait: saveWait, persistence: &xynolog.CachePersistence{Storage: places.Storage(), KbID: "kb", PersonKey: keptForAlice}})
 		places.CoupleTo(w.client)
 		resources := bus.BrowseResourceRequested.Request().Channel()
-		updated := func() { w.transport.Deliver(eventOf(t, xynoplex.CacheRefreshYieldUpdated, "", "res-1", "ann-1")) }
+		updated := func() { w.transport.Deliver(eventOf(t, xynolog.CacheRefreshYieldUpdated, "", "res-1", "ann-1")) }
 		watched := watch(t, w.client.Browse.Resource(resourceOf(t, "res-1")))
 		untilReady(t, watched)
 		if owing {
@@ -1062,14 +1062,14 @@ func TestCloseReadsWhetherWhatIsKeptIsAtRestBeforeItDisposesAnything(t *testing.
 
 	t.Run("a refetch owed holds the places back", func(t *testing.T) {
 		storage := closed(t, true)
-		keptOf(t, storage, xynoplex.CacheQueryResource)
+		keptOf(t, storage, xynolog.CacheQueryResource)
 		if kept, ok := storage.Get(placesKey); ok {
 			t.Fatalf("the places were written while a refetch was owed: %s", kept)
 		}
 	})
 	t.Run("with nothing in flight or owed the places noted before are written", func(t *testing.T) {
 		storage := closed(t, false)
-		keptOf(t, storage, xynoplex.CacheQueryResource)
+		keptOf(t, storage, xynolog.CacheQueryResource)
 		kept, ok := storage.Get(placesKey)
 		if !ok || !sameJSON(t, []byte(kept), []byte(`{"res-1":"p-res-1-7"}`)) {
 			t.Fatalf("the places kept are %q, %v: only res-1's was noted before Close read the gate", kept, ok)

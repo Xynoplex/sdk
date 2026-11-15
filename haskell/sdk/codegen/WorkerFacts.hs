@@ -47,14 +47,14 @@ workerFacts root member = do
     let operations names = "replyChannelsFor [" <> T.intercalate ", " ["SomeOperation " <> member name <> "Operation" | name <- names] <> "]"
         code = T.unlines
           [ "-- Generated from typescript/sdk/src/claims.ts and bus descriptors. Do not edit."
-          , "module Xynoplex.Internal.Generated.WorkerChannels (jobClaimChannels, jobCommitChannels) where"
+          , "module Xynolog.Internal.Generated.WorkerChannels (jobClaimChannels, jobCommitChannels) where"
           , "import Data.Text (Text)"
-          , "import Xynoplex.Bus (replyChannelsFor)"
-          , "import Xynoplex.Channels"
+          , "import Xynolog.Bus (replyChannelsFor)"
+          , "import Xynolog.Channels"
           , "jobClaimChannels :: [Text]"
           , "jobClaimChannels = " <> operations claimOperations <> " ++ [" <> T.intercalate ", " ["channelName " <> member name | name <- claimExtras] <> "]"
           , "jobCommitChannels :: [Text]"
           , "jobCommitChannels = " <> operations commitOperations
           ]
     records <- workerTypes source
-    pure (("generated/Xynoplex/Internal/Generated/WorkerChannels.hs", code) : records)
+    pure (("generated/Xynolog/Internal/Generated/WorkerChannels.hs", code) : records)

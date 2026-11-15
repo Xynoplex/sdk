@@ -1,11 +1,11 @@
-package xynoplex_test
+package xynolog_test
 
 // Nothing in the SDK waits or draws a jitter outside what its caller
 // controls. Every wait is package time's, which testing/synctest moves for a
 // caller whose call started the goroutine that waits; a deadline is one of
 // those waits, never the HTTP client's own; and every jitter is drawn from the
 // *rand.Rand the caller gave, or from the system's source where it gave none.
-// The census reads the SDK's source, its test doubles in xynoplextest among
+// The census reads the SDK's source, its test doubles in xynologtest among
 // it, and refuses:
 //   - an http.Client built with a Timeout, which keeps a deadline of the HTTP
 //     client's own;
@@ -14,7 +14,7 @@ package xynoplex_test
 //     source or a generator of the SDK's own, unless it is in the branch of
 //     an `if source == nil` whose source is a *rand.Rand its function is
 //     given. That branch is the one place the system's source is drawn from.
-//     In xynoplextest alone, a generator built as rand.New(rand.NewPCG(a, b))
+//     In xynologtest alone, a generator built as rand.New(rand.NewPCG(a, b))
 //     with a and b written as numbers is no escape: it makes a test double's
 //     fault schedule, the same every run, and backs no wait of the SDK.
 
@@ -281,7 +281,7 @@ func TestNothingInTheSDKWaitsOrDrawsOutsideWhatItsCallerControls(t *testing.T) {
 		if err != nil {
 			return err
 		}
-		escapes, drawn := clockEscapes(fset, file, filepath.Dir(path) == "xynoplextest")
+		escapes, drawn := clockEscapes(fset, file, filepath.Dir(path) == "xynologtest")
 		for _, escape := range escapes {
 			found = append(found, path+":"+escape)
 		}

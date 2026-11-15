@@ -10,9 +10,9 @@ export interface ComposeLoadingStateProps {
 
 export function ComposeLoadingState({ message }: ComposeLoadingStateProps) {
   return (
-    <div className="xynoplex-loading-state-wrapper">
-      <div className="xynoplex-loading-state xynoplex-loading-state-compose">
-        <p className="xynoplex-loading-message">{message}</p>
+    <div className="xynolog-loading-state-wrapper">
+      <div className="xynolog-loading-state xynolog-loading-state-compose">
+        <p className="xynolog-loading-message">{message}</p>
       </div>
     </div>
   );

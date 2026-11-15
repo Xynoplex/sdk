@@ -1,7 +1,7 @@
 /**
  * The typed bus over a transport: what a client hands out as `client.wire`,
- * as Rust's `xynoplex::bus::Bus` (`client.wire()`) and Python's
- * `xynoplex.bus.Bus` (`client.wire`) are. What it emits goes over the wire,
+ * as Rust's `xynolog::bus::Bus` (`client.wire()`) and Python's
+ * `xynolog.bus.Bus` (`client.wire`) are. What it emits goes over the wire,
  * and what it reads is what the wire delivers. A client's own in-process
  * signals (`beckon:hover`, `mark:requested`, the selections) never cross the
  * wire: they are on the client's own bus, `client.bus`.
@@ -28,7 +28,7 @@ import type { BusEnvelope, BusFrame, TraceCarrier } from './event-bus';
 import type { ConnectionState } from './transport';
 import { BUS_OPERATIONS, type BusOperationKey } from './bus-operations';
 import { BusRequestError, classifyFailureCode, type BusReply } from './bus-request';
-import { XynoplexError } from './errors';
+import { XynologError } from './errors';
 import { readOfShape, said, within, type Fault, type Shape } from './required';
 import type { components } from './types';
 import { BUS_REQUEST_TIMEOUT_MS } from './generated/client-timing';
@@ -333,7 +333,7 @@ export class Bus {
    * `correlationId` and whose payload is `{ response: T }` (data) or `{}`
    * (void); the request matches on the envelope and reads `payload.response`.
    * A result or a failure that lacks a member its schema requires
-   * (`CHANNEL_PAYLOADS`) rejects, as a `XynoplexError` coded `error` naming
+   * (`CHANNEL_PAYLOADS`) rejects, as a `XynologError` coded `error` naming
    * the member; a failure's code that is none CommandError recognizes is
    * read as absent, and a failure read with no code is `bus.rejected`, in the
    * failure's words. So does a reply its transport refused that carries the
@@ -389,7 +389,7 @@ export class Bus {
       filter((payload): payload is FrameRefusal => payload instanceof FrameRefusal && payload.correlationId === correlationId),
       map((refusal) => ({
         ok: false as const,
-        error: new XynoplexError(notTheFrames(refusal), 'error', { channel: refusal.channel, correlationId }),
+        error: new XynologError(notTheFrames(refusal), 'error', { channel: refusal.channel, correlationId }),
       })),
     );
     const settled$ = merge(
@@ -402,7 +402,7 @@ export class Bus {
           return 'fault' in read
             ? {
                 ok: false as const,
-                error: new XynoplexError(notTheChannels(resultChannel, read.fault), 'error', {
+                error: new XynologError(notTheChannels(resultChannel, read.fault), 'error', {
                   channel: resultChannel,
                   correlationId,
                 }),
@@ -418,7 +418,7 @@ export class Bus {
           if ('fault' in read) {
             return {
               ok: false as const,
-              error: new XynoplexError(notTheChannels(failureChannel, read.fault), 'error', {
+              error: new XynologError(notTheChannels(failureChannel, read.fault), 'error', {
                 channel: failureChannel,
                 correlationId,
               }),
@@ -439,7 +439,7 @@ export class Bus {
     ).pipe(
       take(1),
       // If the stream completes with no value — the bus was disposed before a
-      // reply (e.g. during `xynoplex.dispose()` with a request in flight) —
+      // reply (e.g. during `xynolog.dispose()` with a request in flight) —
       // resolve to a typed `bus.closed` result instead of letting
       // `firstValueFrom` throw rxjs `EmptyError`. An awaited caller then gets
       // a clean BusRequestError; an in-flight promise nobody is awaiting

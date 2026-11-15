@@ -7,12 +7,12 @@ axioms: they hold its six states, its three methods and its end.
 from collections.abc import AsyncIterable, Callable, Sequence
 from typing import final, override
 
-from xynoplex.channels import BRIDGED_CHANNELS
-from xynoplex.identifiers import ResourceId
-from xynoplex.state import MarkStateUnit
-from xynoplex.testing import FaultyTransport, create_test_client
-from xynoplex.testing.axioms import AxiomSubject, Fresh, assert_state_unit_axioms
-from xynoplex.types import HighlightingJobParams
+from xynolog.channels import BRIDGED_CHANNELS
+from xynolog.identifiers import ResourceId
+from xynolog.state import MarkStateUnit
+from xynolog.testing import FaultyTransport, create_test_client
+from xynolog.testing.axioms import AxiomSubject, Fresh, assert_state_unit_axioms
+from xynolog.types import HighlightingJobParams
 
 PARAMS = HighlightingJobParams(motivation="highlighting")
 

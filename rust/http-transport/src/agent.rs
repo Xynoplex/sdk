@@ -7,7 +7,7 @@
 //!
 //! It is a transport's token source, as a person's stored sign-in is: it
 //! gives the current token and each one after it, renews the token by the
-//! schedule every Xynoplex client keeps (`xynoplex::session`), and renews it at
+//! schedule every Xynolog client keeps (`xynolog::session`), and renews it at
 //! once when the gateway refuses it (`TokenRefresher`). It renews one token
 //! once: whatever asks for the renewal of a token while it is being renewed
 //! is given the token that renewal makes.
@@ -20,15 +20,15 @@
 use crate::service_account::{ServiceToken, SignInError};
 use crate::transport::{TokenRefresher, declared, refuses_credential, why_unanswered};
 use rand_core::Rng;
-use xynoplex::retry::{self, RetryFacts, retry_with_backoff};
-use xynoplex::session::renew_when_due;
-use xynoplex::timing::{HTTP_REQUEST_TIMEOUT, REFRESH_RETRY};
-use xynoplex::transport::BoxFuture;
-use xynoplex::types::{UserId, UserResponse};
 use serde_json::Value;
 use std::fmt;
 use std::sync::{Arc, Mutex, Weak};
 use tokio::sync::watch;
+use xynolog::retry::{self, RetryFacts, retry_with_backoff};
+use xynolog::session::renew_when_due;
+use xynolog::timing::{HTTP_REQUEST_TIMEOUT, REFRESH_RETRY};
+use xynolog::transport::BoxFuture;
+use xynolog::types::{UserId, UserResponse};
 
 /// Why the agent could not be signed in.
 #[derive(Debug, Clone, PartialEq, Eq)]

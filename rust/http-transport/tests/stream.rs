@@ -19,13 +19,6 @@ use proptest::collection::vec;
 use proptest::prelude::{Just, prop_oneof};
 use proptest::strategy::Strategy;
 use proptest::test_runner::{Config, TestCaseError, TestRunner};
-use xynoplex::bus::{Bus, operation};
-use xynoplex::errors::{TransportError, TransportErrorCode};
-use xynoplex::retry::RetryPolicy;
-use xynoplex::testing::as_id;
-use xynoplex::testing::liveness::{DeliverySubject, assert_exactly_once_delivery_on};
-use xynoplex::transport::{BoxFuture, ConnectionState, ResourceHold, Transport};
-use xynoplex_http_transport::transport::{HttpTransport, HttpTransportConfig, Timing};
 use serde_json::{Value, json};
 use std::collections::VecDeque;
 use std::sync::{Arc, Mutex};
@@ -33,6 +26,13 @@ use std::time::Duration;
 use tokio::sync::{mpsc, oneshot, watch};
 use tokio_stream::StreamExt;
 use tokio_stream::wrappers::UnboundedReceiverStream;
+use xynolog::bus::{Bus, operation};
+use xynolog::errors::{TransportError, TransportErrorCode};
+use xynolog::retry::RetryPolicy;
+use xynolog::testing::as_id;
+use xynolog::testing::liveness::{DeliverySubject, assert_exactly_once_delivery_on};
+use xynolog::transport::{BoxFuture, ConnectionState, ResourceHold, Transport};
+use xynolog_http_transport::transport::{HttpTransport, HttpTransportConfig, Timing};
 
 const CHANNEL: &str = "beckon:focus";
 const READ: &str = "browse:resource-requested";
@@ -418,7 +418,7 @@ fn an_event_written_to_a_live_stream_is_delivered_once_wherever_a_handoff_lands(
 
 #[tokio::test]
 async fn a_frame_from_a_superseded_connection_leaves_a_breadcrumb() {
-    xynoplex::bus_log::capture();
+    xynolog::bus_log::capture();
     let gateway = Gateway::start().await;
     let transport = gateway.client(Duration::from_secs(5));
     let delivered = deliveries(&transport);
@@ -434,7 +434,7 @@ async fn a_frame_from_a_superseded_connection_leaves_a_breadcrumb() {
     );
     until("the frame", || delivered.lock().unwrap().len() == 1).await;
 
-    let lines = xynoplex::bus_log::captured();
+    let lines = xynolog::bus_log::captured();
     assert!(
         lines
             .iter()

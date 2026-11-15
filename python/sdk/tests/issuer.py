@@ -4,12 +4,12 @@ from gateway_server import Answer, GatewayServer
 from pydantic import JsonValue, TypeAdapter
 from spec import JsonObject
 
-from xynoplex.http import SecretCredential
-from xynoplex.identity import agent_did
+from xynolog.http import SecretCredential
+from xynolog.identity import agent_did
 
 _JSON = TypeAdapter[JsonValue](JsonValue)
 
-REALM = "/realms/xynoplex"
+REALM = "/realms/xynolog"
 CONFIGURATION = f"{REALM}/.well-known/openid-configuration"
 TOKEN, DEVICE, REVOKE = f"{REALM}/token", f"{REALM}/device", f"{REALM}/revoke"
 METADATA = "/.well-known/oauth-protected-resource"
@@ -73,7 +73,7 @@ SECRET = "s3cr3t &=+/"
 
 
 def account(gateway: GatewayServer) -> SecretCredential:
-    return SecretCredential(issuer=issuer_of(gateway), client_id="xynoplex-smelter", client_secret=SECRET)
+    return SecretCredential(issuer=issuer_of(gateway), client_id="xynolog-smelter", client_secret=SECRET)
 
 
 def agent_named(subject: str) -> JsonObject:

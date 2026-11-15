@@ -23,32 +23,6 @@ use axum::routing::{get, post};
 use base64::Engine;
 use base64::engine::general_purpose::URL_SAFE_NO_PAD;
 use bytes::Bytes;
-use xynoplex::cache::CacheState;
-use xynoplex::cached::Observed;
-use xynoplex::channels::BRIDGED_CHANNELS;
-use xynoplex::client::{ClientOptions, XynoplexClient};
-use xynoplex::errors::{BusRequestError, SessionError, TransportError};
-use xynoplex::event_bus::EventBus;
-use xynoplex::identity::kb_did;
-use xynoplex::refresh::CacheQuery;
-use xynoplex::session::{
-    XynoplexBrowser, XynoplexBrowserConfig, XynoplexSession, XynoplexSessionConfig, SessionFactory,
-    SessionFactoryOptions, SessionSignals, StoredSession, cache_key, clear_stored_session, kept_in,
-    last_event_id_key, person_key, save_knowledge_bases, session_key, store_session,
-    stored_session,
-};
-use xynoplex::state_unit::StateUnit;
-use xynoplex::storage::{SessionStorage, StorageChange, StorageSubscription};
-use xynoplex::testing::{FaultyTransport, InMemoryContent, SharedStorage, as_id};
-use xynoplex::transport::{
-    BoxFuture, ConnectionState, Envelope, FailureListener, Failures, Frames, PendingReply,
-    ResourceHold, Transport,
-};
-use xynoplex::types::{
-    HttpEndpoint, HttpEndpointProtocol, KbEndpoint, KnowledgeBase, LocalEndpoint,
-    ResourceDescriptor, ResourceId,
-};
-use xynoplex_http_transport::session::HttpSessionFactory;
 use serde_json::{Map, Value, json};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
@@ -56,6 +30,32 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use tokio::sync::{mpsc, watch};
 use tokio_stream::StreamExt;
 use tokio_stream::wrappers::UnboundedReceiverStream;
+use xynolog::cache::CacheState;
+use xynolog::cached::Observed;
+use xynolog::channels::BRIDGED_CHANNELS;
+use xynolog::client::{ClientOptions, XynologClient};
+use xynolog::errors::{BusRequestError, SessionError, TransportError};
+use xynolog::event_bus::EventBus;
+use xynolog::identity::kb_did;
+use xynolog::refresh::CacheQuery;
+use xynolog::session::{
+    SessionFactory, SessionFactoryOptions, SessionSignals, StoredSession, XynologBrowser,
+    XynologBrowserConfig, XynologSession, XynologSessionConfig, cache_key, clear_stored_session,
+    kept_in, last_event_id_key, person_key, save_knowledge_bases, session_key, store_session,
+    stored_session,
+};
+use xynolog::state_unit::StateUnit;
+use xynolog::storage::{SessionStorage, StorageChange, StorageSubscription};
+use xynolog::testing::{FaultyTransport, InMemoryContent, SharedStorage, as_id};
+use xynolog::transport::{
+    BoxFuture, ConnectionState, Envelope, FailureListener, Failures, Frames, PendingReply,
+    ResourceHold, Transport,
+};
+use xynolog::types::{
+    HttpEndpoint, HttpEndpointProtocol, KbEndpoint, KnowledgeBase, LocalEndpoint,
+    ResourceDescriptor, ResourceId,
+};
+use xynolog_http_transport::session::HttpSessionFactory;
 
 fn table() -> Value {
     serde_json::from_str(include_str!(
@@ -288,7 +288,7 @@ fn sign_in(n: u64, person_key: Option<&str>) -> StoredSession {
     StoredSession {
         access: jwt(n, in_an_hour()),
         refresh: format!("refresh-{n}"),
-        client_id: "xynoplex-browser".to_owned(),
+        client_id: "xynolog-browser".to_owned(),
         token_endpoint: "http://127.0.0.1:9/token".to_owned(),
         revocation_endpoint: None,
         person_key: person_key.map(str::to_owned),
@@ -581,7 +581,7 @@ async fn settled(probe: impl Fn() -> bool) -> bool {
     true
 }
 
-async fn live(browser: &XynoplexBrowser) -> Arc<XynoplexSession> {
+async fn live(browser: &XynologBrowser) -> Arc<XynologSession> {
     let mut session = browser.active_session();
     let session = tokio::time::timeout(PATIENCE, session.wait_for(Option::is_some))
         .await
@@ -721,7 +721,7 @@ impl Transport for ClosingWrites {
 struct ClosingSessions;
 
 impl SessionFactory for ClosingSessions {
-    fn session(&self, options: SessionFactoryOptions) -> Result<XynoplexSession, SessionError> {
+    fn session(&self, options: SessionFactoryOptions) -> Result<XynologSession, SessionError> {
         let kb_id = options.kb.id.clone();
         let kept_for = stored_session(options.storage.as_ref(), &kb_id)
             .and_then(|stored| stored.person_key)
@@ -731,13 +731,13 @@ impl SessionFactory for ClosingSessions {
             storage: options.storage.clone(),
             key: kept_for,
         };
-        let client = Arc::new(XynoplexClient::new(
+        let client = Arc::new(XynologClient::new(
             Arc::new(transport),
             Arc::new(InMemoryContent::new()),
             None,
             ClientOptions::default(),
         ));
-        Ok(XynoplexSession::new(XynoplexSessionConfig {
+        Ok(XynologSession::new(XynologSessionConfig {
             kb: options.kb.target(),
             kept: kept_in(options.storage, &kb_id),
             client,
@@ -776,7 +776,7 @@ async fn forgotten_by_the_registry(
         (_, false) => Vec::new(),
     };
     save_knowledge_bases(storage.as_ref(), &registered).expect("stored");
-    let browser = XynoplexBrowser::new(XynoplexBrowserConfig {
+    let browser = XynologBrowser::new(XynologBrowserConfig {
         storage: storage.clone(),
         session_factory: Arc::new(ClosingSessions),
     })
@@ -830,7 +830,7 @@ async fn forgotten_by_the_session(
     )
     .expect("stored");
     save_knowledge_bases(storage.as_ref(), &[gateway.kb()]).expect("stored");
-    let browser = XynoplexBrowser::new(XynoplexBrowserConfig {
+    let browser = XynologBrowser::new(XynologBrowserConfig {
         storage: storage.clone(),
         session_factory: Arc::new(HttpSessionFactory::new(gateway.http.clone(), None)),
     })
@@ -1086,7 +1086,7 @@ async fn across(cases: &Value, row: &Value, changed: Changed) -> Vec<String> {
     let elsewhere = storage.context();
     save_knowledge_bases(storage.as_ref(), &[gateway.kb()]).expect("stored");
     store_session(storage.as_ref(), KB, &sign_in(1, Some(&jo))).expect("stored");
-    let browser = XynoplexBrowser::new(XynoplexBrowserConfig {
+    let browser = XynologBrowser::new(XynologBrowserConfig {
         storage: storage.clone(),
         session_factory: Arc::new(HttpSessionFactory::new(gateway.http.clone(), None)),
     })

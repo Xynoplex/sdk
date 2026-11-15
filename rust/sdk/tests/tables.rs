@@ -3,15 +3,15 @@
 //! principals. And what a registry keeps in its storage, held to
 //! protocol/specs/src/session/stored.json.
 
-use xynoplex::identity;
-use xynoplex::refresh::CacheQuery;
-use xynoplex::session::{
+use serde_json::{Map, Value};
+use std::collections::BTreeMap;
+use xynolog::identity;
+use xynolog::refresh::CacheQuery;
+use xynolog::session::{
     ACTIVE_KEY, KNOWLEDGE_BASES_KEY, LAST_VIEWED_RESOURCE_BY_KB_KEY, OPEN_RESOURCES_BY_KB_KEY,
     OpenResource, StoredSession, cache_key, last_event_id_key, person_key, session_key,
 };
-use xynoplex::testing::as_id;
-use serde_json::{Map, Value};
-use std::collections::BTreeMap;
+use xynolog::testing::as_id;
 
 fn table(text: &str) -> Value {
     serde_json::from_str(text).expect("the table is JSON")
@@ -179,7 +179,7 @@ fn what_a_registry_keeps_is_the_tables() {
     let whole = StoredSession {
         access: "a".to_owned(),
         refresh: "r".to_owned(),
-        client_id: "xynoplex-browser".to_owned(),
+        client_id: "xynolog-browser".to_owned(),
         token_endpoint: "https://issuer.test/token".to_owned(),
         revocation_endpoint: Some("https://issuer.test/revoke".to_owned()),
         person_key: Some("a-person-key".to_owned()),

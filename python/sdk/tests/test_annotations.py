@@ -7,7 +7,7 @@ import pytest
 from pydantic import BaseModel, JsonValue
 from spec import SPEC, JsonObject
 
-from xynoplex.annotations import (
+from xynolog.annotations import (
     annotation_exact_text,
     body_source,
     comment_text,
@@ -27,8 +27,8 @@ from xynoplex.annotations import (
     target_source,
     text_quote_selector,
 )
-from xynoplex.model import WireModel, written
-from xynoplex.types import Annotation, AnnotationSelector
+from xynolog.model import WireModel, written
+from xynolog.types import Annotation, AnnotationSelector
 
 
 class Case(BaseModel, frozen=True, extra="forbid"):

@@ -8,7 +8,7 @@ import { syntaxHighlighting } from '@codemirror/language';
 import { clipboard } from '../../lib/clipboard';
 import { jsonTheme, jsonHighlightStyle } from '../../lib/codemirror-json-theme';
 
-import type { Annotation } from '@xynoplex/core';
+import type { Annotation } from '@xynolog/core';
 
 interface JsonLdViewProps {
   annotation: Annotation;
@@ -94,23 +94,23 @@ export function JsonLdView({ annotation, onBack, showLineNumbers }: JsonLdViewPr
   };
 
   return (
-    <div className="xynoplex-jsonld-view">
+    <div className="xynolog-jsonld-view">
       {/* Header with back and copy buttons */}
-      <div className="xynoplex-jsonld-view__header">
+      <div className="xynolog-jsonld-view__header">
         <button
           onClick={onBack}
-          className="xynoplex-jsonld-view__back-button"
+          className="xynolog-jsonld-view__back-button"
           title="Go back (Escape)"
         >
           &lt;
         </button>
-        <h3 className="xynoplex-jsonld-view__title">
+        <h3 className="xynolog-jsonld-view__title">
           JSON-LD
         </h3>
         {copyTo && (
           <button
             onClick={() => handleCopyToClipboard(copyTo)}
-            className="xynoplex-jsonld-view__copy-button"
+            className="xynolog-jsonld-view__copy-button"
             title="Copy to clipboard"
           >
             📋 Copy
@@ -121,7 +121,7 @@ export function JsonLdView({ annotation, onBack, showLineNumbers }: JsonLdViewPr
       {/* JSON-LD content rendered with CodeMirror */}
       <div
         ref={editorRef}
-        className="xynoplex-jsonld-view__editor"
+        className="xynolog-jsonld-view__editor"
       />
     </div>
   );

@@ -1,6 +1,6 @@
 (library
- (name xynoplex)
- (public_name xynoplex)
+ (name xynolog)
+ (public_name xynolog)
  (private_modules
   annotation_id
   pattern

@@ -35,10 +35,10 @@ describe('PanelHeader', () => {
       <PanelHeader count={1} title="Highlights" />
     );
 
-    expect(container.querySelector('.xynoplex-panel-header')).toBeInTheDocument();
-    expect(container.querySelector('.xynoplex-panel-header__title')).toBeInTheDocument();
-    expect(container.querySelector('.xynoplex-panel-header__text')).toBeInTheDocument();
-    expect(container.querySelector('.xynoplex-panel-header__count')).toBeInTheDocument();
+    expect(container.querySelector('.xynolog-panel-header')).toBeInTheDocument();
+    expect(container.querySelector('.xynolog-panel-header__title')).toBeInTheDocument();
+    expect(container.querySelector('.xynolog-panel-header__text')).toBeInTheDocument();
+    expect(container.querySelector('.xynolog-panel-header__count')).toBeInTheDocument();
   });
 
   it('should render title inside an h2 element', () => {

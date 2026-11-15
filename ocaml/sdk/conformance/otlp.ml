@@ -1,4 +1,4 @@
-module T = Xynoplex.Telemetry
+module T = Xynolog.Telemetry
 
 let text value = `String value
 

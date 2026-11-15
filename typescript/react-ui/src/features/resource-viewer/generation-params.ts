@@ -1,4 +1,4 @@
-import type { GenerationJobParams } from '@xynoplex/core';
+import type { GenerationJobParams } from '@xynolog/core';
 import type { GenerationConfig } from '../../components/modals/ConfigureGenerationStep';
 
 /**

@@ -2,84 +2,84 @@
    Settings Panel Component
    ============================================ */
 
-.xynoplex-settings-panel {
-  padding: var(--xynoplex-panel-padding);
-  background: var(--xynoplex-bg-primary);
-  border-radius: var(--xynoplex-panel-border-radius);
+.xynolog-settings-panel {
+  padding: var(--xynolog-panel-padding);
+  background: var(--xynolog-bg-primary);
+  border-radius: var(--xynolog-panel-border-radius);
 }
 
-.xynoplex-settings-panel__title {
-  margin: 0 0 var(--xynoplex-panel-header-margin-bottom);
-  font-size: var(--xynoplex-panel-title-size);
-  font-weight: var(--xynoplex-panel-title-weight);
-  color: var(--xynoplex-text-primary);
+.xynolog-settings-panel__title {
+  margin: 0 0 var(--xynolog-panel-header-margin-bottom);
+  font-size: var(--xynolog-panel-title-size);
+  font-weight: var(--xynolog-panel-title-weight);
+  color: var(--xynolog-text-primary);
 }
 
-.xynoplex-settings-panel__content {
+.xynolog-settings-panel__content {
   display: flex;
   flex-direction: column;
-  gap: var(--xynoplex-panel-section-gap);
+  gap: var(--xynolog-panel-section-gap);
 }
 
 /* Field Container */
-.xynoplex-settings-panel__field {
+.xynolog-settings-panel__field {
   display: flex;
   flex-direction: column;
-  gap: var(--xynoplex-panel-field-gap);
+  gap: var(--xynolog-panel-field-gap);
 }
 
-/* Button Group - layout only, buttons use .xynoplex-panel-button from core/buttons.css */
-.xynoplex-settings-panel__button-group {
+/* Button Group - layout only, buttons use .xynolog-panel-button from core/buttons.css */
+.xynolog-settings-panel__button-group {
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
 }
 
 /* Loading State */
-.xynoplex-settings-panel__loading {
+.xynolog-settings-panel__loading {
   margin: 0;
   padding: 0.5rem;
-  background: var(--xynoplex-bg-secondary);
-  border-left: 3px solid var(--xynoplex-color-primary-500);
-  border-radius: var(--xynoplex-radius-sm);
-  font-size: var(--xynoplex-text-sm);
-  color: var(--xynoplex-text-primary);
+  background: var(--xynolog-bg-secondary);
+  border-left: 3px solid var(--xynolog-color-primary-500);
+  border-radius: var(--xynolog-radius-sm);
+  font-size: var(--xynolog-text-sm);
+  color: var(--xynolog-text-primary);
 }
 
-[data-theme="dark"] .xynoplex-settings-panel__loading {
-  background: var(--xynoplex-bg-secondary);
-  border-left-color: var(--xynoplex-color-primary-400);
+[data-theme="dark"] .xynolog-settings-panel__loading {
+  background: var(--xynolog-bg-secondary);
+  border-left-color: var(--xynolog-color-primary-400);
 }
 
 /* About — the product name, tagline, version and links. */
-.xynoplex-settings-panel__about {
-  border-top: 1px solid var(--xynoplex-border-primary);
+.xynolog-settings-panel__about {
+  border-top: 1px solid var(--xynolog-border-primary);
   padding-top: 0.75rem;
 }
 
-.xynoplex-settings-panel__about-name {
+.xynolog-settings-panel__about-name {
   margin: 0;
-  font-size: var(--xynoplex-text-sm);
+  font-size: var(--xynolog-text-sm);
   font-weight: 600;
-  color: var(--xynoplex-text-primary);
+  color: var(--xynolog-text-primary);
 }
 
-.xynoplex-settings-panel__about-tagline,
-.xynoplex-settings-panel__about-version {
+.xynolog-settings-panel__about-tagline,
+.xynolog-settings-panel__about-version {
   margin: 0.15rem 0 0;
-  font-size: var(--xynoplex-text-xs);
-  color: var(--xynoplex-text-secondary);
+  font-size: var(--xynolog-text-xs);
+  color: var(--xynolog-text-secondary);
 }
 
-.xynoplex-settings-panel__about-links {
+.xynolog-settings-panel__about-links {
   display: flex;
   gap: 0.75rem;
   margin-top: 0.5rem;
 }
 
-.xynoplex-settings-panel__about-link {
-  font-size: var(--xynoplex-text-xs);
-  color: var(--xynoplex-color-primary-500);
+.xynolog-settings-panel__about-link {
+  font-size: var(--xynolog-text-xs);
+  color: var(--xynolog-color-primary-500);
   background: none;
   border: none;
   padding: 0;
@@ -87,6 +87,6 @@
   text-decoration: underline;
 }
 
-[data-theme="dark"] .xynoplex-settings-panel__about-link {
-  color: var(--xynoplex-color-primary-400);
+[data-theme="dark"] .xynolog-settings-panel__about-link {
+  color: var(--xynolog-color-primary-400);
 }

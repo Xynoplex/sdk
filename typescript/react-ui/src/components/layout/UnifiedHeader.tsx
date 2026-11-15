@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { XynoplexBranding } from '../branding/XynoplexBranding';
+import { XynologBranding } from '../branding/XynologBranding';
 import { NavigationMenu } from '../navigation/NavigationMenu';
 import { useDropdown } from '../../hooks/useUI';
 import type { LinkComponentProps, RouteBuilder } from '../../contexts/RoutingContext';
@@ -37,26 +37,26 @@ export function UnifiedHeader({
   if (variant === 'floating' && showBranding) {
     return (
       <div
-        className="xynoplex-unified-header xynoplex-unified-header--floating"
+        className="xynolog-unified-header xynolog-unified-header--floating"
         data-variant="floating"
         ref={dropdownRef}
       >
         <button
           onClick={toggle}
-          className="xynoplex-unified-header__branding-button"
+          className="xynolog-unified-header__branding-button"
           aria-label="Navigation menu"
           aria-expanded={isOpen}
           aria-controls="nav-menu-dropdown-1"
           aria-haspopup="true"
           id="nav-menu-button-1"
         >
-          <XynoplexBranding
+          <XynologBranding
             t={tHome}
             size="sm"
             showTagline={true}
             animated={false}
             compactTagline={true}
-            className="xynoplex-unified-header__branding"
+            className="xynolog-unified-header__branding"
           />
         </button>
 
@@ -64,7 +64,7 @@ export function UnifiedHeader({
         {isOpen && isAuthenticated && (
           <div
             id="nav-menu-dropdown-1"
-            className="xynoplex-unified-header__dropdown"
+            className="xynolog-unified-header__dropdown"
             role="menu"
             aria-orientation="vertical"
             aria-labelledby="nav-menu-button-1"
@@ -85,27 +85,27 @@ export function UnifiedHeader({
 
   const content = (
     <div
-      className="xynoplex-unified-header__content"
+      className="xynolog-unified-header__content"
       data-variant={variant}
     >
       {showBranding && (
-        <div className="xynoplex-unified-header__branding-wrapper" ref={dropdownRef}>
+        <div className="xynolog-unified-header__branding-wrapper" ref={dropdownRef}>
           <button
             onClick={toggle}
-            className="xynoplex-unified-header__branding-button"
+            className="xynolog-unified-header__branding-button"
             aria-label="Navigation menu"
             aria-expanded={isOpen}
             aria-controls="nav-menu-dropdown-2"
             aria-haspopup="true"
             id="nav-menu-button-2"
           >
-            <XynoplexBranding
+            <XynologBranding
               t={tHome}
               size="sm"
               showTagline={true}
               animated={false}
               compactTagline={true}
-              className="xynoplex-unified-header__branding"
+              className="xynolog-unified-header__branding"
             />
           </button>
 
@@ -113,7 +113,7 @@ export function UnifiedHeader({
           {isOpen && isAuthenticated && (
             <div
               id="nav-menu-dropdown-2"
-              className="xynoplex-unified-header__dropdown"
+              className="xynolog-unified-header__dropdown"
               role="menu"
               aria-orientation="vertical"
               aria-labelledby="nav-menu-button-2"
@@ -136,10 +136,10 @@ export function UnifiedHeader({
   if (variant === 'standalone') {
     return (
       <header
-        className="xynoplex-unified-header xynoplex-unified-header--standalone"
+        className="xynolog-unified-header xynolog-unified-header--standalone"
         data-variant="standalone"
       >
-        <div className="xynoplex-unified-header__container">
+        <div className="xynolog-unified-header__container">
           {content}
         </div>
       </header>

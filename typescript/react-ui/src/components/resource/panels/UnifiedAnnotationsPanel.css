@@ -3,118 +3,118 @@
    Unified annotations panel with tabs
    ============================================ */
 
-.xynoplex-unified-panel {
+.xynolog-unified-panel {
   height: 100%;
   display: flex;
   flex-direction: column;
 }
 
-.xynoplex-unified-panel__title {
-  margin: 0 0 var(--xynoplex-panel-header-margin-bottom);
-  padding: var(--xynoplex-panel-padding);
+.xynolog-unified-panel__title {
+  margin: 0 0 var(--xynolog-panel-header-margin-bottom);
+  padding: var(--xynolog-panel-padding);
   padding-bottom: 0;
-  font-size: var(--xynoplex-panel-title-size);
-  font-weight: var(--xynoplex-panel-title-weight);
-  color: var(--xynoplex-text-primary);
+  font-size: var(--xynolog-panel-title-size);
+  font-weight: var(--xynolog-panel-title-weight);
+  color: var(--xynolog-text-primary);
 }
 
-.xynoplex-unified-panel__tabs {
+.xynolog-unified-panel__tabs {
   display: flex;
   gap: 0;
   padding: 0;
-  background: var(--xynoplex-bg-secondary);
-  border-bottom: 1px solid var(--xynoplex-color-gray-300);
+  background: var(--xynolog-bg-secondary);
+  border-bottom: 1px solid var(--xynolog-color-gray-300);
 }
 
-[data-theme="dark"] .xynoplex-unified-panel__tabs {
-  background: var(--xynoplex-bg-tertiary);
-  border-bottom-color: var(--xynoplex-color-gray-700);
+[data-theme="dark"] .xynolog-unified-panel__tabs {
+  background: var(--xynolog-bg-tertiary);
+  border-bottom-color: var(--xynolog-color-gray-700);
 }
 
-.xynoplex-unified-panel__tab-button {
+.xynolog-unified-panel__tab-button {
   flex: 1;
-  padding: var(--xynoplex-panel-padding-sm);
+  padding: var(--xynolog-panel-padding-sm);
   background: transparent;
   border: none;
-  border-right: 1px solid var(--xynoplex-color-gray-300);
-  font-size: var(--xynoplex-text-sm);
-  font-weight: var(--xynoplex-font-medium);
-  color: var(--xynoplex-text-secondary);
+  border-right: 1px solid var(--xynolog-color-gray-300);
+  font-size: var(--xynolog-text-sm);
+  font-weight: var(--xynolog-font-medium);
+  color: var(--xynolog-text-secondary);
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: calc(var(--xynoplex-panel-padding-xs) * 1.5);
+  gap: calc(var(--xynolog-panel-padding-xs) * 1.5);
   position: relative;
 }
 
-.xynoplex-unified-panel__tab-button:last-child {
+.xynolog-unified-panel__tab-button:last-child {
   border-right: none;
 }
 
-.xynoplex-unified-panel__tab-button:last-child:focus-visible {
-  outline: 2px solid var(--xynoplex-color-primary-500);
+.xynolog-unified-panel__tab-button:last-child:focus-visible {
+  outline: 2px solid var(--xynolog-color-primary-500);
   outline-offset: -2px;
   z-index: 1;
 }
 
-[data-theme="dark"] .xynoplex-unified-panel__tab-button:last-child:focus-visible {
-  outline-color: var(--xynoplex-color-primary-400);
+[data-theme="dark"] .xynolog-unified-panel__tab-button:last-child:focus-visible {
+  outline-color: var(--xynolog-color-primary-400);
 }
 
-[data-theme="dark"] .xynoplex-unified-panel__tab-button {
-  color: var(--xynoplex-text-secondary);
-  border-right-color: var(--xynoplex-color-gray-700);
+[data-theme="dark"] .xynolog-unified-panel__tab-button {
+  color: var(--xynolog-text-secondary);
+  border-right-color: var(--xynolog-color-gray-700);
 }
 
-.xynoplex-unified-panel__tab-button:hover {
-  background: var(--xynoplex-bg-tertiary);
-  color: var(--xynoplex-text-primary);
+.xynolog-unified-panel__tab-button:hover {
+  background: var(--xynolog-bg-tertiary);
+  color: var(--xynolog-text-primary);
 }
 
-[data-theme="dark"] .xynoplex-unified-panel__tab-button:hover {
-  background: var(--xynoplex-color-gray-700);
-  color: var(--xynoplex-text-primary);
+[data-theme="dark"] .xynolog-unified-panel__tab-button:hover {
+  background: var(--xynolog-color-gray-700);
+  color: var(--xynolog-text-primary);
 }
 
-.xynoplex-unified-panel__tab-button:focus-visible {
-  outline: 2px solid var(--xynoplex-color-primary-500);
+.xynolog-unified-panel__tab-button:focus-visible {
+  outline: 2px solid var(--xynolog-color-primary-500);
   outline-offset: -2px;
   z-index: 1;
 }
 
-[data-theme="dark"] .xynoplex-unified-panel__tab-button:focus-visible {
-  outline-color: var(--xynoplex-color-primary-400);
+[data-theme="dark"] .xynolog-unified-panel__tab-button:focus-visible {
+  outline-color: var(--xynolog-color-primary-400);
 }
 
-.xynoplex-unified-panel__tab-button--active {
-  background: var(--xynoplex-bg-primary);
-  color: var(--xynoplex-text-primary);
-  font-weight: var(--xynoplex-font-semibold);
-  border-bottom: 2px solid var(--xynoplex-color-primary-500);
+.xynolog-unified-panel__tab-button--active {
+  background: var(--xynolog-bg-primary);
+  color: var(--xynolog-text-primary);
+  font-weight: var(--xynolog-font-semibold);
+  border-bottom: 2px solid var(--xynolog-color-primary-500);
 }
 
-[data-theme="dark"] .xynoplex-unified-panel__tab-button--active {
-  background: var(--xynoplex-bg-primary);
-  color: var(--xynoplex-text-primary);
-  border-bottom-color: var(--xynoplex-color-primary-400);
+[data-theme="dark"] .xynolog-unified-panel__tab-button--active {
+  background: var(--xynolog-bg-primary);
+  color: var(--xynolog-text-primary);
+  border-bottom-color: var(--xynolog-color-primary-400);
 }
 
-.xynoplex-unified-panel__tab-button--active:focus-visible {
-  outline: 2px solid var(--xynoplex-color-primary-500);
+.xynolog-unified-panel__tab-button--active:focus-visible {
+  outline: 2px solid var(--xynolog-color-primary-500);
   outline-offset: 2px;
 }
 
-[data-theme="dark"] .xynoplex-unified-panel__tab-button--active:focus-visible {
-  outline-color: var(--xynoplex-color-primary-400);
+[data-theme="dark"] .xynolog-unified-panel__tab-button--active:focus-visible {
+  outline-color: var(--xynolog-color-primary-400);
 }
 
-.xynoplex-unified-panel__tab-icon {
-  font-size: var(--xynoplex-panel-icon-size);
+.xynolog-unified-panel__tab-icon {
+  font-size: var(--xynolog-panel-icon-size);
 }
 
-.xynoplex-unified-panel__content {
+.xynolog-unified-panel__content {
   flex: 1;
   overflow: hidden;
   display: flex;
@@ -122,7 +122,7 @@
 }
 
 /* Ensure child panels fill and scroll properly */
-.xynoplex-unified-panel__content > .xynoplex-panel {
+.xynolog-unified-panel__content > .xynolog-panel {
   height: 100%;
 }
 

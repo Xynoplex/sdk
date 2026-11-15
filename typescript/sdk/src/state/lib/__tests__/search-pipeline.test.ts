@@ -9,7 +9,7 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { BehaviorSubject, of } from 'rxjs';
-import { assertStateUnitAxioms } from '@xynoplex/core/testing/axioms';
+import { assertStateUnitAxioms } from '@xynolog/core/testing/axioms';
 import { createSearchPipeline, type SearchPipeline, type SearchState } from '../search-pipeline';
 
 describe('createSearchPipeline', () => {

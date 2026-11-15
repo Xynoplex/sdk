@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import type { ResourceId, components } from '@xynoplex/core';
-import { useXynoplex } from '../session/XynoplexProvider';
+import type { ResourceId, components } from '@xynolog/core';
+import { useXynolog } from '../session/XynologProvider';
 import { useObservable } from './useObservable';
 
 type GetResourceResponse = components['schemas']['GetResourceResponse'];
@@ -21,17 +21,17 @@ export interface UseResourceGraphResult {
  * cancellation-guarded; refetches when `id` changes.
  */
 export function useResourceGraph(id: ResourceId): UseResourceGraphResult {
-  const xynoplex = useObservable(useXynoplex().activeSession$)?.client;
+  const xynolog = useObservable(useXynolog().activeSession$)?.client;
   const [graph, setGraph] = useState<GetResourceResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    if (!xynoplex || !id) { setLoading(false); return; }
+    if (!xynolog || !id) { setLoading(false); return; }
     let cancelled = false;
     setLoading(true);
     setError(null);
-    xynoplex.browse.resourceGraph(id)
+    xynolog.browse.resourceGraph(id)
       .then((g) => {
         if (cancelled) return;
         setGraph(g);
@@ -44,7 +44,7 @@ export function useResourceGraph(id: ResourceId): UseResourceGraphResult {
       });
 
     return () => { cancelled = true; };
-  }, [xynoplex, id]);
+  }, [xynolog, id]);
 
   return { graph, loading, error };
 }

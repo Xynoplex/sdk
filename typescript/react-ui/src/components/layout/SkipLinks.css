@@ -5,12 +5,12 @@
  * The link is visually hidden but becomes visible when focused
  */
 
-.xynoplex-skip-links {
+.xynolog-skip-links {
   position: relative;
   z-index: 9999; /* Ensure skip links are always on top */
 }
 
-.xynoplex-skip-links-container {
+.xynolog-skip-links-container {
   position: absolute;
   top: 0;
   left: 0;
@@ -20,7 +20,7 @@
   pointer-events: none; /* Allow clicks to pass through when not focused */
 }
 
-.xynoplex-skip-link {
+.xynolog-skip-link {
   /* Hidden by default */
   position: absolute;
   left: -9999px;
@@ -29,56 +29,56 @@
 
   /* Styling */
   padding: 0.75rem 1.5rem;
-  background: var(--xynoplex-color-primary-600);
-  color: var(--xynoplex-color-white);
+  background: var(--xynolog-color-primary-600);
+  color: var(--xynolog-color-white);
   text-decoration: none;
   font-weight: 500;
   font-size: 0.875rem;
-  border-radius: 0 0 var(--xynoplex-radius-md) var(--xynoplex-radius-md);
-  box-shadow: var(--xynoplex-shadow-lg);
+  border-radius: 0 0 var(--xynolog-radius-md) var(--xynolog-radius-md);
+  box-shadow: var(--xynolog-shadow-lg);
   white-space: nowrap;
 
   /* Animation */
-  transition: all var(--xynoplex-duration-base);
+  transition: all var(--xynolog-duration-base);
   pointer-events: auto; /* Re-enable pointer events for the link itself */
 }
 
 /* Visible when focused */
-.xynoplex-skip-link:focus,
-.xynoplex-skip-link:focus-visible {
+.xynolog-skip-link:focus,
+.xynolog-skip-link:focus-visible {
   position: relative;
   left: auto;
   top: 0;
-  outline: 2px solid var(--xynoplex-color-primary-300);
+  outline: 2px solid var(--xynolog-color-primary-300);
   outline-offset: 2px;
 }
 
 /* Hover state (when visible) */
-.xynoplex-skip-link:focus:hover,
-.xynoplex-skip-link:focus-visible:hover {
-  background: var(--xynoplex-color-primary-700);
+.xynolog-skip-link:focus:hover,
+.xynolog-skip-link:focus-visible:hover {
+  background: var(--xynolog-color-primary-700);
   transform: translateY(2px);
 }
 
 /* Dark mode adjustments */
-[data-theme="dark"] .xynoplex-skip-link {
-  background: var(--xynoplex-color-primary-500);
-  color: var(--xynoplex-color-white);
+[data-theme="dark"] .xynolog-skip-link {
+  background: var(--xynolog-color-primary-500);
+  color: var(--xynolog-color-white);
 }
 
-[data-theme="dark"] .xynoplex-skip-link:focus,
-[data-theme="dark"] .xynoplex-skip-link:focus-visible {
-  outline-color: var(--xynoplex-color-primary-400);
+[data-theme="dark"] .xynolog-skip-link:focus,
+[data-theme="dark"] .xynolog-skip-link:focus-visible {
+  outline-color: var(--xynolog-color-primary-400);
 }
 
-[data-theme="dark"] .xynoplex-skip-link:focus:hover,
-[data-theme="dark"] .xynoplex-skip-link:focus-visible:hover {
-  background: var(--xynoplex-color-primary-600);
+[data-theme="dark"] .xynolog-skip-link:focus:hover,
+[data-theme="dark"] .xynolog-skip-link:focus-visible:hover {
+  background: var(--xynolog-color-primary-600);
 }
 
 /* Ensure links work well with reduced motion preference */
 @media (prefers-reduced-motion: reduce) {
-  .xynoplex-skip-link {
+  .xynolog-skip-link {
     transition: none;
   }
 }

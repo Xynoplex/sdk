@@ -18,7 +18,7 @@ import (
 	"slices"
 	"strconv"
 
-	"github.com/Xynoplex/sdk/go/api"
+	"github.com/xynolog/sdk/go/api"
 )
 
 // sameLine is how many points of the first item of a line an item's y may be

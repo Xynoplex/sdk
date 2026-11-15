@@ -1,4 +1,4 @@
-package xynoplex
+package xynolog
 
 // The cache a client's live queries answer from, held to
 // protocol/contract/CACHE-SEMANTICS.md clause by clause. Each test names the

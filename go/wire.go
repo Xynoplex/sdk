@@ -1,4 +1,4 @@
-package xynoplex
+package xynolog
 
 // A client's bus over its transport: emits, frames and requests, by the
 // channel's name. A request is an emit that expects a correlated reply
@@ -16,9 +16,9 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/bus"
-	"github.com/Xynoplex/sdk/go/internal/required"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/bus"
+	"github.com/xynolog/sdk/go/internal/required"
 )
 
 // Wire is the bus over a transport.

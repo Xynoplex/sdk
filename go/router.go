@@ -1,4 +1,4 @@
-package xynoplex
+package xynolog
 
 // The replies a transport's requests still await. A reply is routed by its
 // correlation id to the one request that awaits it, on a channel of its own,
@@ -12,7 +12,7 @@ import (
 	"slices"
 	"sync"
 
-	"github.com/Xynoplex/sdk/go/bus"
+	"github.com/xynolog/sdk/go/bus"
 )
 
 type awaitedReply struct {

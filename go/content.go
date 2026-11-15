@@ -1,4 +1,4 @@
-package xynoplex
+package xynolog
 
 // Bytes over the gateway's HTTP transport, as ContentTransport: an upload
 // (POST /resources), a resource's bytes whole or as a stream
@@ -23,9 +23,9 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/internal/kept"
-	"github.com/Xynoplex/sdk/go/internal/required"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/internal/kept"
+	"github.com/xynolog/sdk/go/internal/required"
 )
 
 // ContentTransport carries bytes, which never ride the bus, a resource's

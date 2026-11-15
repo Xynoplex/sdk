@@ -14,8 +14,8 @@ import httpx
 from pydantic import JsonValue, TypeAdapter
 from spec import JsonObject
 
-from xynoplex.types import HttpEndpoint, KbTarget
-from xynoplex.watched import Variable, reached
+from xynolog.types import HttpEndpoint, KbTarget
+from xynolog.watched import Variable, reached
 
 _OBJECT = TypeAdapter[dict[str, JsonValue]](dict[str, JsonValue])
 _JSON = TypeAdapter[JsonValue](JsonValue)

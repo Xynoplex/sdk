@@ -127,12 +127,12 @@ describe('media-shapes', () => {
     });
 
     it('returns stored shape from localStorage for svg', () => {
-      localStorage.setItem('xynoplex-toolbar-shape-svg', 'circle');
+      localStorage.setItem('xynolog-toolbar-shape-svg', 'circle');
       expect(getSelectedShapeForSelectorType('svg')).toBe('circle');
     });
 
     it('ignores invalid stored values', () => {
-      localStorage.setItem('xynoplex-toolbar-shape-svg', 'triangle');
+      localStorage.setItem('xynolog-toolbar-shape-svg', 'triangle');
       expect(getSelectedShapeForSelectorType('svg')).toBe('rectangle');
     });
   });
@@ -140,17 +140,17 @@ describe('media-shapes', () => {
   describe('saveSelectedShapeForSelectorType', () => {
     it('saves shape to localStorage for svg selector', () => {
       saveSelectedShapeForSelectorType('svg', 'polygon');
-      expect(localStorage.getItem('xynoplex-toolbar-shape-svg')).toBe('polygon');
+      expect(localStorage.getItem('xynolog-toolbar-shape-svg')).toBe('polygon');
     });
 
     it('does not save for fragment selector', () => {
       saveSelectedShapeForSelectorType('fragment', 'circle');
-      expect(localStorage.getItem('xynoplex-toolbar-shape-svg')).toBeNull();
+      expect(localStorage.getItem('xynolog-toolbar-shape-svg')).toBeNull();
     });
 
     it('does not save for text selector', () => {
       saveSelectedShapeForSelectorType('text', 'circle');
-      expect(localStorage.getItem('xynoplex-toolbar-shape-svg')).toBeNull();
+      expect(localStorage.getItem('xynolog-toolbar-shape-svg')).toBeNull();
     });
   });
 });

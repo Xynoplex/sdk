@@ -20,27 +20,27 @@ use base64::Engine;
 use base64::engine::general_purpose::URL_SAFE_NO_PAD;
 use rand_core::Rng;
 use ring::rand::SecureRandom;
-use xynoplex::errors::{SignInError, SignInErrorCode, TransportError};
-use xynoplex::identity::encode_uri_component;
-use xynoplex::retry::{self, RetryFacts, retry_with_backoff};
-use xynoplex::session::{
-    BROWSER_CLIENT_ID, SCRIPT_CLIENT_ID, SIGN_IN_SCOPE, SignInKept, is_token_expired,
-};
-use xynoplex::storage::SessionStorage;
-use xynoplex::timing::{
-    DEVICE_POLL, DEVICE_POLL_FLOOR, DEVICE_SLOW_DOWN, HTTP_REQUEST_TIMEOUT, REFRESH_RETRY,
-};
-use xynoplex::transport::{GatewayOperations, Transport};
-use xynoplex::types::HttpEndpoint;
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
 use std::sync::Mutex;
 use std::time::{Duration, SystemTime};
 use tokio::sync::watch;
 use tokio::time::Instant;
+use xynolog::errors::{SignInError, SignInErrorCode, TransportError};
+use xynolog::identity::encode_uri_component;
+use xynolog::retry::{self, RetryFacts, retry_with_backoff};
+use xynolog::session::{
+    BROWSER_CLIENT_ID, SCRIPT_CLIENT_ID, SIGN_IN_SCOPE, SignInKept, is_token_expired,
+};
+use xynolog::storage::SessionStorage;
+use xynolog::timing::{
+    DEVICE_POLL, DEVICE_POLL_FLOOR, DEVICE_SLOW_DOWN, HTTP_REQUEST_TIMEOUT, REFRESH_RETRY,
+};
+use xynolog::transport::{GatewayOperations, Transport};
+use xynolog::types::HttpEndpoint;
 
 /// Where a sign-in that is under way is remembered.
-pub const PENDING_AUTHORIZATION_KEY: &str = "xynoplex.pendingAuthorization";
+pub const PENDING_AUTHORIZATION_KEY: &str = "xynolog.pendingAuthorization";
 const DEVICE_GRANT: &str = "urn:ietf:params:oauth:grant-type:device_code";
 
 /// An issuer, and the endpoints of it a client uses.

@@ -34,27 +34,27 @@ from pydantic import JsonValue, TypeAdapter
 from spec import SPEC, JsonObject, objects, read, strings, text
 from tokens import expired, token
 
-from xynoplex.cache import CacheState, Pending, Ready
-from xynoplex.channels import BRIDGED_CHANNELS
-from xynoplex.http.session import HttpSessionFactory, session_from_kept
-from xynoplex.identifiers import ResourceId
-from xynoplex.registry import (
-    XynoplexBrowser,
-    XynoplexBrowserConfig,
+from xynolog.cache import CacheState, Pending, Ready
+from xynolog.channels import BRIDGED_CHANNELS
+from xynolog.http.session import HttpSessionFactory, session_from_kept
+from xynolog.identifiers import ResourceId
+from xynolog.registry import (
     SessionFactory,
     SessionFactoryOptions,
+    XynologBrowser,
+    XynologBrowserConfig,
     kept_in,
     save_knowledge_bases,
     store_session,
     stored_session,
 )
-from xynoplex.session import HeldSignIn, MemorySignIn, XynoplexSession
-from xynoplex.session_signals import SessionSignals
-from xynoplex.storage import MemoryStorage, SessionStorage
-from xynoplex.stored import ACTIVE_KEY, KEPT_QUERIES, StoredSession, cache_key, last_event_id_key, person_key, session_key
-from xynoplex.testing import FaultyTransport, ScriptedSessions, SharedStorage
-from xynoplex.types import HttpEndpoint, KnowledgeBase, ResourceDescriptor, UserResponse
-from xynoplex.watched import reached
+from xynolog.session import HeldSignIn, MemorySignIn, XynologSession
+from xynolog.session_signals import SessionSignals
+from xynolog.storage import MemoryStorage, SessionStorage
+from xynolog.stored import ACTIVE_KEY, KEPT_QUERIES, StoredSession, cache_key, last_event_id_key, person_key, session_key
+from xynolog.testing import FaultyTransport, ScriptedSessions, SharedStorage
+from xynolog.types import HttpEndpoint, KnowledgeBase, ResourceDescriptor, UserResponse
+from xynolog.watched import reached
 
 _JSON: Final = TypeAdapter[JsonValue](JsonValue)
 
@@ -103,7 +103,7 @@ def signed_in(person: str | None, n: int = 1) -> StoredSession:
     return StoredSession(
         access=token(3600, n),
         refresh=f"refresh-{n}",
-        client_id="xynoplex-browser",
+        client_id="xynolog-browser",
         token_endpoint="https://issuer.test/token",
         person_key=person,
     )
@@ -155,7 +155,7 @@ class ClosingWrites(SessionFactory):
 
     @override
     @asynccontextmanager
-    async def session(self, options: SessionFactoryOptions) -> AsyncGenerator[XynoplexSession[FaultyTransport]]:
+    async def session(self, options: SessionFactoryOptions) -> AsyncGenerator[XynologSession[FaultyTransport]]:
         stored = stored_session(options.storage, options.kb.id)
         keeps_for_jo = options.kb.id == KB and stored is not None and stored.person_key == JO
         try:
@@ -213,7 +213,7 @@ async def forgotten_by_the_registry(row: JsonObject, new: StoredSession) -> Sess
     active = KB if row["open"] is True else "kb-b"
     storage.set(ACTIVE_KEY, active)
 
-    async with XynoplexBrowser(XynoplexBrowserConfig(storage=storage, session_factory=ClosingWrites())) as browser:
+    async with XynologBrowser(XynologBrowserConfig(storage=storage, session_factory=ClosingWrites())) as browser:
         session = await soon(reached(browser.active_session, lambda session: session is not None))
         assert session is not None
         assert session.kb.id == active
@@ -266,7 +266,7 @@ async def forgotten_by_the_session(row: JsonObject) -> SessionStorage:
             lambda person: StoredSession(
                 access=access,
                 refresh="r1",
-                client_id="xynoplex-browser",
+                client_id="xynolog-browser",
                 token_endpoint=f"{gateway.origin}{TOKEN}",
                 person_key=person,
             ),
@@ -274,7 +274,7 @@ async def forgotten_by_the_session(row: JsonObject) -> SessionStorage:
         if stored is not None:
             store_session(storage, KB, stored)
 
-        async with XynoplexBrowser(XynoplexBrowserConfig(storage=storage, session_factory=HttpSessionFactory())) as browser:
+        async with XynologBrowser(XynologBrowserConfig(storage=storage, session_factory=HttpSessionFactory())) as browser:
             session = await soon(reached(browser.active_session, lambda session: session is not None), within=10)
             assert session is not None
             # Ended as the row says, with its client still open.
@@ -492,7 +492,7 @@ def test_a_session_whose_stored_sign_in_another_context_changes_writes_what_the_
             save_knowledge_bases(storage, [registered(gateway)])
             store_session(storage, KB, signed_in(JO))
 
-            async with XynoplexBrowser(XynoplexBrowserConfig(storage=storage, session_factory=HttpSessionFactory())) as browser:
+            async with XynologBrowser(XynologBrowserConfig(storage=storage, session_factory=HttpSessionFactory())) as browser:
                 session = await soon(reached(browser.active_session, lambda session: session is not None), within=10)
                 assert session is not None
                 client = session.client
@@ -528,7 +528,7 @@ def held_by(gateway: GatewayServer, person: str | None, n: int) -> HeldSignIn:
     return HeldSignIn(
         access=token(3600, n),
         refresh=f"refresh-{n}",
-        client_id="xynoplex-browser",
+        client_id="xynolog-browser",
         token_endpoint=f"{gateway.origin}{TOKEN}",
         person_key=person,
     )
@@ -582,7 +582,7 @@ def test_a_scope_resumes_from_the_place_the_table_says(row: JsonObject) -> None:
             save_knowledge_bases(storage, [registered(gateway)])
             store_session(storage, KB, signed_in(JO))
 
-            async with XynoplexBrowser(XynoplexBrowserConfig(storage=storage, session_factory=HttpSessionFactory())) as browser:
+            async with XynologBrowser(XynologBrowserConfig(storage=storage, session_factory=HttpSessionFactory())) as browser:
                 session = await soon(reached(browser.active_session, lambda session: session is not None), within=10)
                 assert session is not None
                 await soon(session.ready())

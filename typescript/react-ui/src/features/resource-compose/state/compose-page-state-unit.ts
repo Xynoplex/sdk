@@ -1,12 +1,12 @@
 import { BehaviorSubject, type Observable } from 'rxjs';
-import type { AccessToken, ResourceDescriptor, ResourceId } from '@xynoplex/core';
-import { createDisposer } from '@xynoplex/sdk';
-import type { StateUnit } from '@xynoplex/core';
+import type { AccessToken, ResourceDescriptor, ResourceId } from '@xynolog/core';
+import { createDisposer } from '@xynolog/sdk';
+import type { StateUnit } from '@xynolog/core';
 import type { ShellStateUnit } from '../../../state/shell-state-unit';
 import { trackList, type ListState } from '../../../state/list-state';
-import type { XynoplexSession } from '@xynoplex/sdk';
-import { decodeWithCharset, extensionForMediaType } from '@xynoplex/core';
-import type { UploadProgress } from '@xynoplex/sdk';
+import type { XynologSession } from '@xynolog/sdk';
+import { decodeWithCharset, extensionForMediaType } from '@xynolog/core';
+import type { UploadProgress } from '@xynolog/sdk';
 
 export type ComposeMode = 'new' | 'clone';
 
@@ -50,7 +50,7 @@ export interface ComposePageStateUnit extends StateUnit {
 }
 
 export function createComposePageStateUnit(
-  session: XynoplexSession,
+  session: XynologSession,
   browse: ShellStateUnit,
   params: ComposeParams,
   auth?: AccessToken,

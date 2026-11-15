@@ -71,7 +71,7 @@ describe('Bus.frames: a channel of no scope', () => {
     const { seen } = collect(new Bus(transport).frames('job:fail'));
 
     const failed = { resourceId: RID, jobId: jobId('job-1'), jobType: 'mark', error: 'the model did not answer' } as const;
-    const stamped: EventMap['job:fail'] & { _roles: string[] } = { ...failed, _userId: ALICE, _roles: ['xynoplex-service'] };
+    const stamped: EventMap['job:fail'] & { _roles: string[] } = { ...failed, _userId: ALICE, _roles: ['xynolog-service'] };
     void transport.emit('job:fail', stamped);
 
     expect(seen.map(delivered).map((frame) => frame.payload)).toEqual([{ ...failed, _userId: ALICE }]);

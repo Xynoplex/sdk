@@ -2,17 +2,17 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import React from 'react';
 import { renderHook, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { resourceId } from '@xynoplex/core';
-import type { EventMap } from '@xynoplex/core';
-import type { XynoplexBrowser } from '@xynoplex/sdk';
+import { resourceId } from '@xynolog/core';
+import type { EventMap } from '@xynolog/core';
+import type { XynologBrowser } from '@xynolog/sdk';
 import { useObservableRouter, useObservableExternalNavigation } from '../useObservableBrowse';
-import { createTestXynoplexWrapper } from '../../test-utils';
+import { createTestXynologWrapper } from '../../test-utils';
 
-function makeWrapper(): { Wrapper: React.ComponentType<{ children: React.ReactNode }>; browser: XynoplexBrowser } {
+function makeWrapper(): { Wrapper: React.ComponentType<{ children: React.ReactNode }>; browser: XynologBrowser } {
   // useObservableRouter/ExternalNavigation emit nav:* on the app-scoped
-  // (XynoplexBrowser) bus; `browser.stream(channel)` is its published reader.
-  const { XynoplexWrapper, browser } = createTestXynoplexWrapper();
-  const Wrapper = ({ children }: { children: React.ReactNode }) => <XynoplexWrapper>{children}</XynoplexWrapper>;
+  // (XynologBrowser) bus; `browser.stream(channel)` is its published reader.
+  const { XynologWrapper, browser } = createTestXynologWrapper();
+  const Wrapper = ({ children }: { children: React.ReactNode }) => <XynologWrapper>{children}</XynologWrapper>;
   return { Wrapper, browser };
 }
 

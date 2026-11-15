@@ -1,10 +1,10 @@
 'use client';
 
-import type { ResourceId } from '@xynoplex/core';
+import type { ResourceId } from '@xynolog/core';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import type { Annotation, AnchorRect, AnchoredText } from '@xynoplex/core';
-import { createFragmentSelector, textUnder } from '@xynoplex/core';
-import type { XynoplexSession } from '@xynoplex/sdk';
+import type { Annotation, AnchorRect, AnchoredText } from '@xynolog/core';
+import { createFragmentSelector, textUnder } from '@xynolog/core';
+import type { XynologSession } from '@xynolog/sdk';
 import { useHoverDwell } from '../../hooks/useHoverDwell';
 import { toViewportAnchorRect } from '../../lib/anchor-rect';
 import { rectsForPage } from './rects-for-page';
@@ -65,7 +65,7 @@ interface PdfPageViewProps {
    *  document's text. */
   drawing: PageDrawing | null;
   selectedMotivation?: SelectionMotivation | null;
-  session?: XynoplexSession | null | undefined;
+  session?: XynologSession | null | undefined;
   hoveredAnnotationId?: string | null;
   selectedAnnotationId?: string | null;
   hoverDelayMs: number;
@@ -83,7 +83,7 @@ interface PdfPageViewProps {
  * drag can no more span pages than a rectangle can.
  *
  * pdf.js draws the page and is never asked for its text. The text comes from
- * Xynoplex, for every page: the Smelter derived it, and reading it a second
+ * Xynolog, for every page: the Smelter derived it, and reading it a second
  * way here would be a second answer to what a rectangle quotes. The canvas
  * holds it once for the document and hands it to each page with the drawing
  * mode.
@@ -342,12 +342,12 @@ export function PdfPageView({
   const { stroke, fill } = getMotivationColor(selectedMotivation ?? null);
 
   if (errorKey) {
-    return <div className="xynoplex-pdf-annotation-canvas__error">{t(errorKey)}</div>;
+    return <div className="xynolog-pdf-annotation-canvas__error">{t(errorKey)}</div>;
   }
 
   return (
     <div
-      className="xynoplex-pdf-annotation-canvas__container"
+      className="xynolog-pdf-annotation-canvas__container"
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
@@ -365,7 +365,7 @@ export function PdfPageView({
           ref={imageRef}
           src={pageImageUrl}
           alt={`PDF page ${pageNumber}`}
-          className="xynoplex-pdf-annotation-canvas__image"
+          className="xynolog-pdf-annotation-canvas__image"
           draggable={false}
           style={{ pointerEvents: 'none' }}
           onLoad={() => {
@@ -386,10 +386,10 @@ export function PdfPageView({
 
       {/* SVG overlay for annotations */}
       {displayDimensions && pageDimensions && (
-        <div className="xynoplex-pdf-annotation-canvas__overlay-container">
-          <div className="xynoplex-pdf-annotation-canvas__overlay">
+        <div className="xynolog-pdf-annotation-canvas__overlay-container">
+          <div className="xynolog-pdf-annotation-canvas__overlay">
             <svg
-              className="xynoplex-pdf-annotation-canvas__svg"
+              className="xynolog-pdf-annotation-canvas__svg"
               width={displayDimensions.width}
               height={displayDimensions.height}
             >

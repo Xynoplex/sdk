@@ -11,7 +11,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { fileURLToPath } from 'node:url';
-import { CACHE_QUERIES, CACHE_VALUES, type CacheQuery, type CacheValues } from '@xynoplex/core';
+import { CACHE_QUERIES, CACHE_VALUES, type CacheQuery, type CacheValues } from '@xynolog/core';
 import type { CacheObservable } from '../awaitable';
 import type { BrowseNamespace, GatherNamespace, MatchNamespace } from '../namespaces/types';
 

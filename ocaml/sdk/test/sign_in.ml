@@ -1,4 +1,4 @@
-open Xynoplex
+open Xynolog
 module O = OAuth
 module Store = Sign_in_store
 
@@ -39,7 +39,7 @@ let pkce () =
   let http (request : O.request) =
     incr calls;
     assert (request.url = endpoint);
-    assert (List.assoc "client_id" request.form = "xynoplex-browser");
+    assert (List.assoc "client_id" request.form = "xynolog-browser");
     assert (
       List.assoc "code_verifier" request.form
       = "AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE");
@@ -78,7 +78,7 @@ let token_response label =
 
 let store () =
   Eio_main.run @@ fun env ->
-  let directory = Filename.temp_file "xynoplex-sign-in" "" in
+  let directory = Filename.temp_file "xynolog-sign-in" "" in
   Unix.unlink directory;
   Unix.mkdir directory 0o700;
   Fun.protect
@@ -182,7 +182,7 @@ let renewals () =
       ~jitter:(Random.State.make [| 1 |])
   in
   let run row =
-    let dir = Filename.temp_file "xynoplex-renewal" "" in
+    let dir = Filename.temp_file "xynolog-renewal" "" in
     Unix.unlink dir;
     Unix.mkdir dir 0o700;
     let file = Filename.concat dir "tokens.json" in
@@ -364,7 +364,7 @@ let revoke () =
   let http (request : O.request) =
     assert (request.url = issuer_url ^ "/revoke");
     assert (request.meth = "POST");
-    assert (List.assoc "client_id" request.form = "xynoplex-cli");
+    assert (List.assoc "client_id" request.form = "xynolog-cli");
     assert (List.assoc "token_type_hint" request.form = "refresh_token");
     assert (List.assoc "token" request.form = "kept");
     (200, "")

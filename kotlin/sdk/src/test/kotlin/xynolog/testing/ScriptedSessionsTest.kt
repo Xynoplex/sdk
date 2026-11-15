@@ -1,0 +1,27 @@
+package xynolog.testing
+
+import kotlinx.coroutines.test.runTest
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
+import xynolog.registry.SessionFactoryOptions
+import xynolog.session.SessionSignals
+import xynolog.storage.MemoryStorage
+import xynolog.types.KnowledgeBase
+import xynolog.types.LocalEndpoint
+import kotlin.time.Duration.Companion.seconds
+
+class ScriptedSessionsTest {
+    @Test
+    fun aRenewalASessionAsksForIsTheOneScriptedAndIsCounted() = runTest(timeout = 10.seconds) {
+        val sessions = ScriptedSessions()
+        sessions.queueRenewals("renewed-1")
+        val signals = SessionSignals()
+        val kb = KnowledgeBase(id = "kb-a", label = "KB A", endpoint = LocalEndpoint(kbId = "kb-a"), did = "did:web:kb.example")
+        val opened = sessions.session(SessionFactoryOptions(kb, MemoryStorage(), signals))
+        assertEquals(0, sessions.renewed)
+        assertEquals("renewed-1", opened.session.refresh(opened.session.token.value))
+        assertEquals(1, sessions.renewed)
+        opened.close()
+        signals.close()
+    }
+}

@@ -5,17 +5,17 @@
  * The rule the canvases keep is that a person may annotate only while the
  * viewer holds the text. This is the one place that holds it, so every answer
  * the read can give is driven here, on fake timers, over a REAL
- * `XynoplexSession` from `@xynoplex/sdk/testing`. The one read the hook makes,
+ * `XynologSession` from `@xynolog/sdk/testing`. The one read the hook makes,
  * `browse.resourceAnchoredText`, is answered by a spy on the session's own
  * client: the hook depends on that method's answer, not on what carries it.
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { createTestSession } from '@xynoplex/sdk/testing';
-import type { XynoplexSession } from '@xynoplex/sdk';
-import { ANCHORED_TEXT_REASK_MS, resourceId } from '@xynoplex/core';
-import type { AnchoredTextAnswer } from '@xynoplex/core';
+import { createTestSession } from '@xynolog/sdk/testing';
+import type { XynologSession } from '@xynolog/sdk';
+import { ANCHORED_TEXT_REASK_MS, resourceId } from '@xynolog/core';
+import type { AnchoredTextAnswer } from '@xynolog/core';
 import { useAnchoredText } from '../useAnchoredText';
 
 const RESOURCE = resourceId('res-anchored-1');
@@ -194,8 +194,8 @@ describe('useAnchoredText', () => {
   it('asks nothing with no session, and asks when one arrives', async () => {
     const { session, ask } = sessionAnswering([HELLO]);
     const { result, rerender } = renderHook(
-      ({ current }: { current: XynoplexSession | null }) => useAnchoredText(current, RESOURCE),
-      { initialProps: { current: null as XynoplexSession | null } },
+      ({ current }: { current: XynologSession | null }) => useAnchoredText(current, RESOURCE),
+      { initialProps: { current: null as XynologSession | null } },
     );
 
     expect(result.current).toEqual({ status: 'unasked' });

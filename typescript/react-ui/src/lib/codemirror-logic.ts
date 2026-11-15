@@ -7,8 +7,8 @@
  */
 
 import { ANNOTATORS } from './annotation-registry';
-import { isHighlight, isReference, isResolvedReference, isComment, isAssessment, isTag, getBodySource } from '@xynoplex/core';
-import type { Annotation, AnchorStrategy, AnchorConfidence, TextOffsets } from '@xynoplex/core';
+import { isHighlight, isReference, isResolvedReference, isComment, isAssessment, isTag, getBodySource } from '@xynolog/core';
+import type { Annotation, AnchorStrategy, AnchorConfidence, TextOffsets } from '@xynolog/core';
 
 export interface TextSegment {
   exact: string;

@@ -1,5 +1,5 @@
-from xynoplex.identifiers import AnnotationId, InvalidIdentifier, ResourceId
-from xynoplex.types import MarkDeleteCommand
+from xynolog.identifiers import AnnotationId, InvalidIdentifier, ResourceId
+from xynolog.types import MarkDeleteCommand
 
 resource = ResourceId("5bcd259ab1464cf68a556bbad21f513f")
 assert ResourceId.parse("not an id") is None  # where text that is not an id is an ordinary answer

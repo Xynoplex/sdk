@@ -104,16 +104,16 @@ describe('ComposeStep — the from-reference slice, and nothing else', () => {
 
   it('carries NONE of the page-only machinery: no upload, no format, no encoding', () => {
     const { container } = renderStep();
-    expect(container.querySelector('.xynoplex-form__upload-dropzone')).toBeNull();
-    expect(container.querySelector('.xynoplex-form__content-source-toggle')).toBeNull();
+    expect(container.querySelector('.xynolog-form__upload-dropzone')).toBeNull();
+    expect(container.querySelector('.xynolog-form__content-source-toggle')).toBeNull();
     expect(container.querySelector('#format-select')).toBeNull();
     expect(container.querySelector('#charset-select')).toBeNull();
   });
 
   it('renders no context of its own — the evidence is host-stacked', () => {
     const { container } = renderStep();
-    expect(container.querySelector('.xynoplex-gather-pane')).toBeNull();
-    expect(container.querySelector('.xynoplex-gather__outer')).toBeNull();
+    expect(container.querySelector('.xynolog-gather-pane')).toBeNull();
+    expect(container.querySelector('.xynolog-gather__outer')).toBeNull();
   });
 
   it('submit emits the full params with the file:// prefix applied at the seam', async () => {
@@ -134,7 +134,7 @@ describe('ComposeStep — the from-reference slice, and nothing else', () => {
     const onCompose = vi.fn(() => new Promise<void>((_, r) => { reject = r; }));
     const { container } = renderStep({ onCompose });
 
-    expect(container.querySelector('.xynoplex-modal__actions--wizard')).not.toBeNull();
+    expect(container.querySelector('.xynolog-modal__actions--wizard')).not.toBeNull();
     fireEvent.click(screen.getByRole('button', { name: T.createAndLink }));
     expect(await screen.findByRole('button', { name: T.creatingAndLinking })).toBeDisabled();
 
@@ -145,7 +145,7 @@ describe('ComposeStep — the from-reference slice, and nothing else', () => {
   it('Back is the only retreat and dismissal never lives in the footer', () => {
     const { container, onBack } = renderStep();
     const footerButtons = Array.from(
-      container.querySelectorAll('.xynoplex-modal__actions button'),
+      container.querySelectorAll('.xynolog-modal__actions button'),
     ).map((b) => b.textContent ?? '');
     expect(footerButtons.filter((l) => /cancel|✕/i.test(l))).toEqual([]);
     fireEvent.click(screen.getByRole('button', { name: `◀ ${T.back}` }));

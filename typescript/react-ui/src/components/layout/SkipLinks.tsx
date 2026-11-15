@@ -15,9 +15,9 @@ export function SkipLinks() {
   const t = useTranslations('SkipLinks');
 
   return (
-    <div className="xynoplex-skip-links">
-      <div className="xynoplex-skip-links-container">
-        <a href={`#${MAIN_CONTENT_ID}`} className="xynoplex-skip-link">
+    <div className="xynolog-skip-links">
+      <div className="xynolog-skip-links-container">
+        <a href={`#${MAIN_CONTENT_ID}`} className="xynolog-skip-link">
           {t('mainContent')}
         </a>
       </div>

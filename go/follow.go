@@ -1,4 +1,4 @@
-package xynoplex
+package xynolog
 
 // Following a job from its creation to its end (protocol/contract/JOBS.md §
 // Following a job).
@@ -42,9 +42,9 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/bus"
-	"github.com/Xynoplex/sdk/go/internal/required"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/bus"
+	"github.com/xynolog/sdk/go/internal/required"
 )
 
 // JobEvent is what a followed job reports, and how it ends: a JobCreated

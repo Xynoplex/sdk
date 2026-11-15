@@ -5,90 +5,90 @@
  */
 
 /* ResourceViewer Component */
-.xynoplex-resource-viewer {
+.xynolog-resource-viewer {
   height: 100%;
   display: flex;
   flex-direction: column;
 }
 
 /* Delete Confirmation Modal */
-.xynoplex-delete-confirmation {
+.xynolog-delete-confirmation {
   padding: 1.5rem;
-  background: var(--xynoplex-bg-primary);
-  border-radius: var(--xynoplex-radius-lg);
+  background: var(--xynolog-bg-primary);
+  border-radius: var(--xynolog-radius-lg);
   max-width: 28rem;
   width: 100%;
 }
 
-[data-theme="dark"] .xynoplex-delete-confirmation {
-  background: var(--xynoplex-bg-secondary);
+[data-theme="dark"] .xynolog-delete-confirmation {
+  background: var(--xynolog-bg-secondary);
 }
 
-.xynoplex-delete-confirmation__header {
+.xynolog-delete-confirmation__header {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   margin-bottom: 1rem;
 }
 
-.xynoplex-delete-confirmation__icon {
+.xynolog-delete-confirmation__icon {
   font-size: 1.5rem;
 }
 
-.xynoplex-delete-confirmation__title {
+.xynolog-delete-confirmation__title {
   font-size: 1.125rem;
   font-weight: 600;
-  color: var(--xynoplex-color-gray-900);
+  color: var(--xynolog-color-gray-900);
   margin: 0;
 }
 
-[data-theme="dark"] .xynoplex-delete-confirmation__title {
-  color: var(--xynoplex-color-gray-100);
+[data-theme="dark"] .xynolog-delete-confirmation__title {
+  color: var(--xynolog-color-gray-100);
 }
 
-.xynoplex-delete-confirmation__quote {
+.xynolog-delete-confirmation__quote {
   padding: 0.75rem;
-  background: var(--xynoplex-bg-tertiary);
-  border-radius: var(--xynoplex-radius-md);
+  background: var(--xynolog-bg-tertiary);
+  border-radius: var(--xynolog-radius-md);
   margin-bottom: 1rem;
   font-style: italic;
-  color: var(--xynoplex-color-gray-700);
+  color: var(--xynolog-color-gray-700);
   font-size: 0.875rem;
   max-height: 10rem;
   overflow-y: auto;
 }
 
-[data-theme="dark"] .xynoplex-delete-confirmation__quote {
-  background: var(--xynoplex-color-gray-700);
-  color: var(--xynoplex-color-gray-200);
+[data-theme="dark"] .xynolog-delete-confirmation__quote {
+  background: var(--xynolog-color-gray-700);
+  color: var(--xynolog-color-gray-200);
 }
 
-.xynoplex-delete-confirmation__message {
-  color: var(--xynoplex-color-gray-700);
+.xynolog-delete-confirmation__message {
+  color: var(--xynolog-color-gray-700);
   font-size: 0.875rem;
   margin-bottom: 1rem;
 }
 
-[data-theme="dark"] .xynoplex-delete-confirmation__message {
-  color: var(--xynoplex-color-gray-300);
+[data-theme="dark"] .xynolog-delete-confirmation__message {
+  color: var(--xynolog-color-gray-300);
 }
 
-.xynoplex-delete-confirmation__actions {
+.xynolog-delete-confirmation__actions {
   display: flex;
   gap: 0.75rem;
   justify-content: flex-end;
 }
 
 /* BrowseView Component */
-.xynoplex-browse-view {
+.xynolog-browse-view {
   padding: 0;
-  background-color: var(--xynoplex-bg-primary);
+  background-color: var(--xynolog-bg-primary);
   display: flex;
   flex-direction: column;
   height: 100%; /* Fill parent to enable flexbox children sizing */
 }
 
-.xynoplex-browse-view__content {
+.xynolog-browse-view__content {
   flex: 1; /* Take remaining space after toolbar */
   min-height: 0; /* Allow flexbox shrinking */
   overflow: auto; /* This becomes the scroll container */
@@ -98,12 +98,12 @@
 /* The PDF renderer owns its scrollport so page virtualization, its rail and
    zoom all observe and move the same viewport. Keep the browse shell as a
    clipping flex item and let the renderer fill it. */
-.xynoplex-browse-view__content[data-scroll-owner="renderer"] {
+.xynolog-browse-view__content[data-scroll-owner="renderer"] {
   overflow: hidden;
   padding: 0;
 }
 
-.xynoplex-browse-view__content[data-scroll-owner="renderer"] > div {
+.xynolog-browse-view__content[data-scroll-owner="renderer"] > div {
   width: 100%;
   height: 100%;
   min-height: 0;
@@ -113,16 +113,16 @@
  * Auto-height to content, no inner scroll container, no pane chrome — the
  * viewer drops into a chat bubble / card / list item and the HOST page
  * scrolls. Default (no modifier) keeps the fill-the-pane behavior above. */
-.xynoplex-resource-viewer--inline {
+.xynolog-resource-viewer--inline {
   height: auto;
 }
 
-.xynoplex-browse-view--inline {
+.xynolog-browse-view--inline {
   height: auto;
   background-color: transparent; /* the host container owns the background */
 }
 
-.xynoplex-browse-view--inline .xynoplex-browse-view__content {
+.xynolog-browse-view--inline .xynolog-browse-view__content {
   flex: none; /* size to content, not to a pane */
   overflow: visible; /* no inner scrollbar — the host page is the scroll context */
   padding: 0; /* no pane gutter — the host owns spacing */
@@ -133,211 +133,211 @@
  * removes list styles. Re-apply semantic typographic defaults scoped to the
  * browse-view content area so that ReactMarkdown output renders correctly.
  */
-.xynoplex-browse-view__content h1,
-.xynoplex-browse-view__content h2,
-.xynoplex-browse-view__content h3,
-.xynoplex-browse-view__content h4,
-.xynoplex-browse-view__content h5,
-.xynoplex-browse-view__content h6 {
-  color: var(--xynoplex-text-primary);
-  font-weight: var(--xynoplex-font-bold);
-  line-height: var(--xynoplex-leading-tight);
+.xynolog-browse-view__content h1,
+.xynolog-browse-view__content h2,
+.xynolog-browse-view__content h3,
+.xynolog-browse-view__content h4,
+.xynolog-browse-view__content h5,
+.xynolog-browse-view__content h6 {
+  color: var(--xynolog-text-primary);
+  font-weight: var(--xynolog-font-bold);
+  line-height: var(--xynolog-leading-tight);
   margin-top: 1.5em;
   margin-bottom: 0.5em;
 }
 
-[data-theme="dark"] .xynoplex-browse-view__content h1,
-[data-theme="dark"] .xynoplex-browse-view__content h2,
-[data-theme="dark"] .xynoplex-browse-view__content h3,
-[data-theme="dark"] .xynoplex-browse-view__content h4,
-[data-theme="dark"] .xynoplex-browse-view__content h5,
-[data-theme="dark"] .xynoplex-browse-view__content h6 {
-  color: var(--xynoplex-text-primary);
+[data-theme="dark"] .xynolog-browse-view__content h1,
+[data-theme="dark"] .xynolog-browse-view__content h2,
+[data-theme="dark"] .xynolog-browse-view__content h3,
+[data-theme="dark"] .xynolog-browse-view__content h4,
+[data-theme="dark"] .xynolog-browse-view__content h5,
+[data-theme="dark"] .xynolog-browse-view__content h6 {
+  color: var(--xynolog-text-primary);
 }
 
-.xynoplex-browse-view__content h1:first-child,
-.xynoplex-browse-view__content h2:first-child,
-.xynoplex-browse-view__content h3:first-child {
+.xynolog-browse-view__content h1:first-child,
+.xynolog-browse-view__content h2:first-child,
+.xynolog-browse-view__content h3:first-child {
   margin-top: 1rem; /* Less top space when heading opens the document */
 }
 
-.xynoplex-browse-view__content h1 { font-size: var(--xynoplex-text-3xl); }
-.xynoplex-browse-view__content h2 { font-size: var(--xynoplex-text-2xl); }
-.xynoplex-browse-view__content h3 { font-size: var(--xynoplex-text-xl); }
-.xynoplex-browse-view__content h4 { font-size: var(--xynoplex-text-lg); }
-.xynoplex-browse-view__content h5 { font-size: var(--xynoplex-text-base); }
-.xynoplex-browse-view__content h6 {
-  font-size: var(--xynoplex-text-sm);
-  color: var(--xynoplex-text-secondary);
+.xynolog-browse-view__content h1 { font-size: var(--xynolog-text-3xl); }
+.xynolog-browse-view__content h2 { font-size: var(--xynolog-text-2xl); }
+.xynolog-browse-view__content h3 { font-size: var(--xynolog-text-xl); }
+.xynolog-browse-view__content h4 { font-size: var(--xynolog-text-lg); }
+.xynolog-browse-view__content h5 { font-size: var(--xynolog-text-base); }
+.xynolog-browse-view__content h6 {
+  font-size: var(--xynolog-text-sm);
+  color: var(--xynolog-text-secondary);
 }
 
-.xynoplex-browse-view__content p {
+.xynolog-browse-view__content p {
   margin-bottom: 1em;
-  line-height: var(--xynoplex-leading-relaxed);
-  color: var(--xynoplex-text-primary);
+  line-height: var(--xynolog-leading-relaxed);
+  color: var(--xynolog-text-primary);
 }
 
-.xynoplex-browse-view__content ul,
-.xynoplex-browse-view__content ol {
+.xynolog-browse-view__content ul,
+.xynolog-browse-view__content ol {
   margin-bottom: 1em;
   padding-left: 1.75em;
 }
 
-.xynoplex-browse-view__content ul {
+.xynolog-browse-view__content ul {
   list-style: disc;
 }
 
-.xynoplex-browse-view__content ol {
+.xynolog-browse-view__content ol {
   list-style: decimal;
 }
 
-.xynoplex-browse-view__content li {
+.xynolog-browse-view__content li {
   margin-bottom: 0.25em;
-  line-height: var(--xynoplex-leading-relaxed);
-  color: var(--xynoplex-text-primary);
+  line-height: var(--xynolog-leading-relaxed);
+  color: var(--xynolog-text-primary);
 }
 
 /* Nested lists */
-.xynoplex-browse-view__content ul ul,
-.xynoplex-browse-view__content ol ol,
-.xynoplex-browse-view__content ul ol,
-.xynoplex-browse-view__content ol ul {
+.xynolog-browse-view__content ul ul,
+.xynolog-browse-view__content ol ol,
+.xynolog-browse-view__content ul ol,
+.xynolog-browse-view__content ol ul {
   margin-top: 0.25em;
   margin-bottom: 0;
 }
 
-.xynoplex-browse-view__content blockquote {
-  border-left: 4px solid var(--xynoplex-color-gray-300);
+.xynolog-browse-view__content blockquote {
+  border-left: 4px solid var(--xynolog-color-gray-300);
   margin: 1em 0;
   padding: 0.5em 0 0.5em 1.25em;
-  color: var(--xynoplex-text-secondary);
+  color: var(--xynolog-text-secondary);
   font-style: italic;
 }
 
-[data-theme="dark"] .xynoplex-browse-view__content blockquote {
-  border-left-color: var(--xynoplex-color-gray-600);
+[data-theme="dark"] .xynolog-browse-view__content blockquote {
+  border-left-color: var(--xynolog-color-gray-600);
 }
 
-.xynoplex-browse-view__content code {
-  font-family: var(--xynoplex-font-mono);
+.xynolog-browse-view__content code {
+  font-family: var(--xynolog-font-mono);
   font-size: 0.875em;
-  background: var(--xynoplex-bg-tertiary);
-  border-radius: var(--xynoplex-radius-base);
+  background: var(--xynolog-bg-tertiary);
+  border-radius: var(--xynolog-radius-base);
   padding: 0.125em 0.3em;
 }
 
-[data-theme="dark"] .xynoplex-browse-view__content code {
-  background: var(--xynoplex-color-gray-700);
+[data-theme="dark"] .xynolog-browse-view__content code {
+  background: var(--xynolog-color-gray-700);
 }
 
-.xynoplex-browse-view__content pre {
-  background: var(--xynoplex-bg-tertiary);
-  border-radius: var(--xynoplex-radius-md);
+.xynolog-browse-view__content pre {
+  background: var(--xynolog-bg-tertiary);
+  border-radius: var(--xynolog-radius-md);
   padding: 1em 1.25em;
   overflow-x: auto;
   margin-bottom: 1em;
 }
 
-[data-theme="dark"] .xynoplex-browse-view__content pre {
-  background: var(--xynoplex-color-gray-800);
+[data-theme="dark"] .xynolog-browse-view__content pre {
+  background: var(--xynolog-color-gray-800);
 }
 
-.xynoplex-browse-view__content pre code {
+.xynolog-browse-view__content pre code {
   background: none;
   padding: 0;
   font-size: 0.875rem;
 }
 
-.xynoplex-browse-view__content hr {
+.xynolog-browse-view__content hr {
   border: none;
-  border-top: 1px solid var(--xynoplex-color-gray-200);
+  border-top: 1px solid var(--xynolog-color-gray-200);
   margin: 1.5em 0;
 }
 
-[data-theme="dark"] .xynoplex-browse-view__content hr {
-  border-top-color: var(--xynoplex-color-gray-700);
+[data-theme="dark"] .xynolog-browse-view__content hr {
+  border-top-color: var(--xynolog-color-gray-700);
 }
 
-.xynoplex-browse-view__content a {
-  color: var(--xynoplex-color-primary-600);
+.xynolog-browse-view__content a {
+  color: var(--xynolog-color-primary-600);
   text-decoration: underline;
 }
 
-[data-theme="dark"] .xynoplex-browse-view__content a {
-  color: var(--xynoplex-color-primary-400);
+[data-theme="dark"] .xynolog-browse-view__content a {
+  color: var(--xynolog-color-primary-400);
 }
 
-.xynoplex-browse-view__content a:hover {
-  color: var(--xynoplex-color-primary-700);
+.xynolog-browse-view__content a:hover {
+  color: var(--xynolog-color-primary-700);
 }
 
-[data-theme="dark"] .xynoplex-browse-view__content a:hover {
-  color: var(--xynoplex-color-primary-300);
+[data-theme="dark"] .xynolog-browse-view__content a:hover {
+  color: var(--xynolog-color-primary-300);
 }
 
 /* GFM tables */
-.xynoplex-browse-view__content table {
+.xynolog-browse-view__content table {
   border-collapse: collapse;
   width: 100%;
   margin-bottom: 1em;
-  font-size: var(--xynoplex-text-sm);
+  font-size: var(--xynolog-text-sm);
 }
 
-.xynoplex-browse-view__content th,
-.xynoplex-browse-view__content td {
-  border: 1px solid var(--xynoplex-color-gray-200);
+.xynolog-browse-view__content th,
+.xynolog-browse-view__content td {
+  border: 1px solid var(--xynolog-color-gray-200);
   padding: 0.5em 0.75em;
   text-align: left;
 }
 
-[data-theme="dark"] .xynoplex-browse-view__content th,
-[data-theme="dark"] .xynoplex-browse-view__content td {
-  border-color: var(--xynoplex-color-gray-700);
+[data-theme="dark"] .xynolog-browse-view__content th,
+[data-theme="dark"] .xynolog-browse-view__content td {
+  border-color: var(--xynolog-color-gray-700);
 }
 
-.xynoplex-browse-view__content th {
-  background: var(--xynoplex-bg-secondary);
-  font-weight: var(--xynoplex-font-semibold);
-  color: var(--xynoplex-text-primary);
+.xynolog-browse-view__content th {
+  background: var(--xynolog-bg-secondary);
+  font-weight: var(--xynolog-font-semibold);
+  color: var(--xynolog-text-primary);
 }
 
-[data-theme="dark"] .xynoplex-browse-view__content th {
-  background: var(--xynoplex-color-gray-800);
+[data-theme="dark"] .xynolog-browse-view__content th {
+  background: var(--xynolog-color-gray-800);
 }
 
-.xynoplex-browse-view__content tr:nth-child(even) td {
-  background: var(--xynoplex-bg-secondary);
+.xynolog-browse-view__content tr:nth-child(even) td {
+  background: var(--xynolog-bg-secondary);
 }
 
-[data-theme="dark"] .xynoplex-browse-view__content tr:nth-child(even) td {
-  background: var(--xynoplex-color-gray-800);
+[data-theme="dark"] .xynolog-browse-view__content tr:nth-child(even) td {
+  background: var(--xynolog-color-gray-800);
 }
 
 /* GFM task list checkboxes */
-.xynoplex-browse-view__content input[type="checkbox"] {
+.xynolog-browse-view__content input[type="checkbox"] {
   margin-right: 0.4em;
-  accent-color: var(--xynoplex-color-primary-500);
+  accent-color: var(--xynolog-color-primary-500);
 }
 
-[data-theme="dark"] .xynoplex-browse-view {
-  background-color: var(--xynoplex-bg-primary);
+[data-theme="dark"] .xynolog-browse-view {
+  background-color: var(--xynolog-bg-primary);
 }
 
 /* AnnotateView Component */
-.xynoplex-annotate-view {
+.xynolog-annotate-view {
   position: relative;
   padding: 0;
-  background: var(--xynoplex-bg-primary);
+  background: var(--xynolog-bg-primary);
   display: flex;
   flex-direction: column;
   height: 100%; /* Fill parent to enable flexbox children sizing */
 }
 
-[data-theme="dark"] .xynoplex-annotate-view {
-  background: var(--xynoplex-bg-primary);
+[data-theme="dark"] .xynolog-annotate-view {
+  background: var(--xynolog-bg-primary);
 }
 
-.xynoplex-annotate-view__content {
+.xynolog-annotate-view__content {
   position: relative;
   max-width: 100%;
   flex: 1; /* Take remaining space after toolbar */
@@ -359,43 +359,43 @@
 }
 
 /* CodeMirrorRenderer Component */
-.xynoplex-codemirror {
+.xynolog-codemirror {
   /* No height: 100% — content expands naturally */
   overflow: hidden;
 }
 
 /* CodeMirror Theme Overrides */
-.xynoplex-codemirror .cm-editor {
+.xynolog-codemirror .cm-editor {
   height: 100%;
 }
 
-.xynoplex-codemirror .cm-scroller {
-  font-family: var(--xynoplex-font-mono);
+.xynolog-codemirror .cm-scroller {
+  font-family: var(--xynolog-font-mono);
   font-size: 0.875rem;
   line-height: 1.5;
 }
 
-.xynoplex-codemirror .cm-content {
+.xynolog-codemirror .cm-content {
   padding: 1rem 0;
 }
 
-.xynoplex-codemirror .cm-line {
+.xynolog-codemirror .cm-line {
   padding: 0 1.5rem;
 }
 
 /* Page Layout Classes */
-.xynoplex-page {
+.xynolog-page {
   display: flex;
   height: 100vh;
   overflow: hidden;
-  background-color: var(--xynoplex-bg-secondary);
+  background-color: var(--xynolog-bg-secondary);
 }
 
-[data-theme="dark"] .xynoplex-page {
-  background-color: var(--xynoplex-bg-secondary);
+[data-theme="dark"] .xynolog-page {
+  background-color: var(--xynolog-bg-secondary);
 }
 
-.xynoplex-page__content {
+.xynolog-page__content {
   flex: 1;
   overflow-y: auto;
   padding: 2rem;
@@ -404,11 +404,11 @@
 }
 
 /* When a panel is open, adjust content margin */
-.xynoplex-page--panel-open .xynoplex-page__content {
+.xynolog-page--panel-open .xynolog-page__content {
   margin-right: 23rem; /* 3rem toolbar + 20rem panel */
 }
 
-.xynoplex-page__sidebar {
+.xynolog-page__sidebar {
   display: flex;
   flex-direction: row;
   position: fixed;
@@ -420,24 +420,24 @@
   overflow: hidden;
 }
 
-.xynoplex-page__header {
+.xynolog-page__header {
   margin-bottom: 2rem;
 }
 
-.xynoplex-page__title {
+.xynolog-page__title {
   font-size: 1.875rem;
   font-weight: 700;
-  color: var(--xynoplex-text-primary);
+  color: var(--xynolog-text-primary);
   margin-bottom: 0.5rem;
 }
 
-.xynoplex-page__subtitle {
-  color: var(--xynoplex-text-secondary);
+.xynolog-page__subtitle {
+  color: var(--xynolog-text-secondary);
   font-size: 1rem;
 }
 
 /* Image Annotation Canvas */
-.xynoplex-svg-drawing-canvas {
+.xynolog-svg-drawing-canvas {
   position: relative;
   display: inline-block;
   cursor: crosshair;
@@ -445,18 +445,18 @@
 
 /* No tool, or no text held to annotate with: a drag draws nothing, and the
    cursor does not say it would. */
-.xynoplex-svg-drawing-canvas[data-drawing-mode="none"] {
+.xynolog-svg-drawing-canvas[data-drawing-mode="none"] {
   cursor: default;
 }
 
-.xynoplex-svg-drawing-canvas__image {
+.xynolog-svg-drawing-canvas__image {
   display: block;
   max-width: 100%;
   height: auto;
   user-select: none;
 }
 
-.xynoplex-svg-drawing-canvas__overlay-container {
+.xynolog-svg-drawing-canvas__overlay-container {
   position: absolute;
   top: 0;
   left: 0;
@@ -465,18 +465,18 @@
   pointer-events: none;
 }
 
-.xynoplex-svg-drawing-canvas__overlay {
+.xynolog-svg-drawing-canvas__overlay {
   position: relative;
   width: 100%;
   height: 100%;
 }
 
 /* Re-enable pointer events on annotation overlay so shapes can be hovered/clicked */
-.xynoplex-annotation-overlay {
+.xynolog-annotation-overlay {
   pointer-events: auto;
 }
 
-.xynoplex-svg-drawing-canvas__preview {
+.xynolog-svg-drawing-canvas__preview {
   position: absolute;
   top: 0;
   left: 0;
@@ -486,7 +486,7 @@
 
 /* The line shown while a viewer may not annotate for want of the resource's
    text: above the pages of a PDF, and above an image. */
-.xynoplex-anchored-text-notice {
+.xynolog-anchored-text-notice {
   margin: 0.25rem auto;
   padding: 0.25rem 0.75rem;
   border-radius: 9999px;
@@ -494,7 +494,7 @@
   width: fit-content;
   overflow: hidden;
   font-size: 0.75rem;
-  color: var(--xynoplex-text-secondary);
+  color: var(--xynolog-text-secondary);
 }
 
 /*
@@ -504,13 +504,13 @@
  * stylesheet's, so the viewer keeps no timer for it. The other line is an
  * answer, and is shown at once.
  */
-.xynoplex-anchored-text-notice[data-anchored-text="waiting"] {
-  animation: xynoplex-anchored-text-notice-held-back 0s linear 1s backwards;
+.xynolog-anchored-text-notice[data-anchored-text="waiting"] {
+  animation: xynolog-anchored-text-notice-held-back 0s linear 1s backwards;
 }
 
-@keyframes xynoplex-anchored-text-notice-held-back {
+@keyframes xynolog-anchored-text-notice-held-back {
   from {
-    visibility: hidden; /* stylelint-disable-line xynoplex/accessibility */
+    visibility: hidden; /* stylelint-disable-line xynolog/accessibility */
     max-height: 0;
     margin-block: 0;
     padding-block: 0;
@@ -519,7 +519,7 @@
 }
 
 /* Card Grid Layouts */
-.xynoplex-card-grid {
+.xynolog-card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1.5rem;
@@ -530,10 +530,10 @@
  * Empty, loading and unsupported states
  * ────────────────────────────────────────────────────────────────────────── */
 
-.xynoplex-annotate-view__empty,
-.xynoplex-browse-view__empty,
-.xynoplex-annotate-view__loading,
-.xynoplex-browse-view__loading {
+.xynolog-annotate-view__empty,
+.xynolog-browse-view__empty,
+.xynolog-annotate-view__loading,
+.xynolog-browse-view__loading {
   display: flex;
   flex: 1;
   align-items: center;
@@ -542,43 +542,43 @@
   text-align: center;
 }
 
-.xynoplex-annotate-view__empty-message,
-.xynoplex-browse-view__empty-message {
+.xynolog-annotate-view__empty-message,
+.xynolog-browse-view__empty-message {
   margin: 0;
-  color: var(--xynoplex-text-secondary);
-  font-size: var(--xynoplex-text-sm);
+  color: var(--xynolog-text-secondary);
+  font-size: var(--xynolog-text-sm);
 }
 
 /* A renderer exists for the media type but cannot annotate it — the view is
    still readable, so this says so quietly rather than replacing the content. */
-.xynoplex-annotate-view--unsupported {
+.xynolog-annotate-view--unsupported {
   opacity: 0.85;
 }
 
 /* SVG children. The stroke and opacity are set inline per hover/selected
    state; what belongs here is the affordance. */
-.xynoplex-annotation-overlay__shape {
+.xynolog-annotation-overlay__shape {
   cursor: pointer;
 }
 
-.xynoplex-annotation-overlay__status-indicator {
+.xynolog-annotation-overlay__status-indicator {
   cursor: pointer;
 }
 
 /* A grid that wants exactly two columns rather than the auto-fill default,
    collapsing to one when there is no room for two. */
-.xynoplex-card-grid--two-columns {
+.xynolog-card-grid--two-columns {
   grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
 }
 
-.xynoplex-delete-confirmation__text {
+.xynolog-delete-confirmation__text {
   margin: 0 0 1.5rem;
-  color: var(--xynoplex-text-secondary);
-  font-size: var(--xynoplex-text-sm);
+  color: var(--xynolog-text-secondary);
+  font-size: var(--xynolog-text-sm);
 }
 
 /* Page-level loading: the whole route, before any panel exists. */
-.xynoplex-page__loading {
+.xynolog-page__loading {
   display: flex;
   flex: 1;
   align-items: center;
@@ -586,23 +586,23 @@
   padding: 4rem 1.5rem;
 }
 
-.xynoplex-page__loading-text {
+.xynolog-page__loading-text {
   margin: 0;
-  color: var(--xynoplex-text-secondary);
-  font-size: var(--xynoplex-text-sm);
+  color: var(--xynolog-text-secondary);
+  font-size: var(--xynolog-text-sm);
 }
 
 /* An image resource fills its viewport without overflowing it. */
-.xynoplex-image-viewer {
+.xynolog-image-viewer {
   display: flex;
   align-items: center;
   justify-content: center;
   height: 100%;
   overflow: auto;
-  background-color: var(--xynoplex-bg-secondary);
+  background-color: var(--xynolog-bg-secondary);
 }
 
-.xynoplex-image-viewer__image {
+.xynolog-image-viewer__image {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;

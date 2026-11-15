@@ -28,7 +28,7 @@ writeFileSync(
   `// ⚠ GENERATED FILE — do not edit.
 // Source: the component schemas of protocol/specs/src/openapi.json → typescript/scripts/generators/generate-required-ts.mjs,
 // by the rules of typescript/scripts/generators/required-shapes.mjs.
-// Rebuilt by \`npm run prebuild\` in @xynoplex/core; gitignored on purpose.
+// Rebuilt by \`npm run prebuild\` in @xynolog/core; gitignored on purpose.
 
 import type { Shape } from '../required';
 import type { components } from '../types';

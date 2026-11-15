@@ -5,95 +5,95 @@
  */
 
 /* Page Layout */
-.xynoplex-page__compose {
+.xynolog-page__compose {
   /* Use full width like the Discover page instead of centering */
 }
 
-.xynoplex-form__location-picker {
+.xynolog-form__location-picker {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   min-width: 0;
 }
 
-.xynoplex-form__location-picker code {
+.xynolog-form__location-picker code {
   flex: 1;
   min-width: 0;
   overflow: hidden;
   padding: 0.625rem 0.75rem;
-  border: 1px solid var(--xynoplex-color-gray-300);
+  border: 1px solid var(--xynolog-color-gray-300);
   border-radius: 0.375rem;
-  color: var(--xynoplex-color-gray-700);
-  background: var(--xynoplex-bg-primary);
+  color: var(--xynolog-color-gray-700);
+  background: var(--xynolog-bg-primary);
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-[data-theme="dark"] .xynoplex-form__location-picker code {
-  border-color: var(--xynoplex-color-gray-600);
-  color: var(--xynoplex-color-gray-200);
+[data-theme="dark"] .xynolog-form__location-picker code {
+  border-color: var(--xynolog-color-gray-600);
+  color: var(--xynolog-color-gray-200);
 }
 
-.xynoplex-form__location-button {
+.xynolog-form__location-button {
   flex: none;
   padding: 0.625rem 0.875rem;
-  border: 1px solid var(--xynoplex-color-gray-300);
+  border: 1px solid var(--xynolog-color-gray-300);
   border-radius: 0.375rem;
-  color: var(--xynoplex-color-gray-800);
-  background: var(--xynoplex-bg-primary);
+  color: var(--xynolog-color-gray-800);
+  background: var(--xynolog-bg-primary);
 }
 
-.xynoplex-form__location-button:hover:not(:disabled) {
-  border-color: var(--xynoplex-color-blue-500);
-  color: var(--xynoplex-color-blue-600);
+.xynolog-form__location-button:hover:not(:disabled) {
+  border-color: var(--xynolog-color-blue-500);
+  color: var(--xynolog-color-blue-600);
 }
 
-.xynoplex-form__location-button:focus-visible {
-  outline: 2px solid var(--xynoplex-focus-ring);
+.xynolog-form__location-button:focus-visible {
+  outline: 2px solid var(--xynolog-focus-ring);
   outline-offset: 2px;
 }
 
-[data-theme="dark"] .xynoplex-form__location-button {
-  border-color: var(--xynoplex-color-gray-600);
-  color: var(--xynoplex-color-gray-100);
-  background: var(--xynoplex-bg-secondary);
+[data-theme="dark"] .xynolog-form__location-button {
+  border-color: var(--xynolog-color-gray-600);
+  color: var(--xynolog-color-gray-100);
+  background: var(--xynolog-bg-secondary);
 }
 
-.xynoplex-form__location-error {
+.xynolog-form__location-error {
   margin: 0.35rem 0 0;
-  color: var(--xynoplex-color-red-600);
+  color: var(--xynolog-color-red-600);
   font-size: 0.875rem;
 }
 
-[data-theme="dark"] .xynoplex-form__location-error {
-  color: var(--xynoplex-color-red-400);
+[data-theme="dark"] .xynolog-form__location-error {
+  color: var(--xynolog-color-red-400);
 }
 
-.xynoplex-form__location-hint {
+.xynolog-form__location-hint {
   margin: 0.35rem 0 0;
-  color: var(--xynoplex-color-gray-600);
+  color: var(--xynolog-color-gray-600);
   font-size: 0.8rem;
 }
 
-[data-theme="dark"] .xynoplex-form__location-hint {
-  color: var(--xynoplex-color-gray-400);
+[data-theme="dark"] .xynolog-form__location-hint {
+  color: var(--xynolog-color-gray-400);
 }
 
 /* Two-column compose grid: metadata left, content right on wide screens */
-.xynoplex-compose-grid {
+.xynolog-compose-grid {
   display: grid;
   grid-template-columns: 1fr;
   gap: 1rem;
 }
 
-.xynoplex-compose-grid__meta {
+.xynolog-compose-grid__meta {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
-.xynoplex-compose-grid__content {
+.xynolog-compose-grid__content {
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -101,241 +101,241 @@
 }
 
 /* Let the editor fill remaining vertical space */
-.xynoplex-compose-grid__content .xynoplex-form__editor {
+.xynolog-compose-grid__content .xynolog-form__editor {
   flex: 1;
   display: flex;
   flex-direction: column;
 }
 
-.xynoplex-compose-grid__content .xynoplex-form__editor-wrapper {
+.xynolog-compose-grid__content .xynolog-form__editor-wrapper {
   flex: 1;
   min-height: 200px;
 }
 
 /* On screens wider than 768px, split into two columns */
 @media (min-width: 768px) {
-  .xynoplex-compose-grid {
+  .xynolog-compose-grid {
     grid-template-columns: 280px 1fr;
     grid-template-rows: 1fr auto;
   }
 
-  .xynoplex-compose-grid__meta {
+  .xynolog-compose-grid__meta {
     grid-column: 1;
     grid-row: 1;
   }
 
-  .xynoplex-compose-grid__content {
+  .xynolog-compose-grid__content {
     grid-column: 2;
     grid-row: 1;
   }
 
   /* Action buttons span full width below both columns */
-  .xynoplex-compose-grid ~ .xynoplex-form__actions,
-  .xynoplex-form__actions {
+  .xynolog-compose-grid ~ .xynolog-form__actions,
+  .xynolog-form__actions {
     grid-column: 1 / -1;
   }
 }
 
 /* On very wide screens, give metadata more room */
 @media (min-width: 1200px) {
-  .xynoplex-compose-grid {
+  .xynolog-compose-grid {
     grid-template-columns: 320px 1fr;
   }
 }
 
 /* Form Upload Section */
-.xynoplex-form__upload-section {
+.xynolog-form__upload-section {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
-.xynoplex-form__upload-container {
+.xynolog-form__upload-container {
   display: flex;
   align-items: center;
   gap: 1rem;
 }
 
-.xynoplex-form__upload-dropzone {
+.xynolog-form__upload-dropzone {
   flex: 1;
   cursor: pointer;
 }
 
-.xynoplex-form__upload-area {
-  border: 2px dashed var(--xynoplex-color-gray-300);
+.xynolog-form__upload-area {
+  border: 2px dashed var(--xynolog-color-gray-300);
   border-radius: 0.5rem;
   padding: 1.5rem;
   text-align: center;
   transition: border-color 0.15s;
 }
 
-[data-theme="dark"] .xynoplex-form__upload-area {
-  border-color: var(--xynoplex-color-gray-600);
+[data-theme="dark"] .xynolog-form__upload-area {
+  border-color: var(--xynolog-color-gray-600);
 }
 
-.xynoplex-form__upload-area:hover {
-  border-color: var(--xynoplex-color-blue-500);
+.xynolog-form__upload-area:hover {
+  border-color: var(--xynolog-color-blue-500);
 }
 
-[data-theme="dark"] .xynoplex-form__upload-area:hover {
-  border-color: var(--xynoplex-color-blue-400);
+[data-theme="dark"] .xynolog-form__upload-area:hover {
+  border-color: var(--xynolog-color-blue-400);
 }
 
-.xynoplex-form__upload-input {
+.xynolog-form__upload-input {
   display: none;
 }
 
 /* The label owns drag-and-drop (the input above can't receive native drops);
    highlight while a drag hovers. */
-.xynoplex-form__upload-dropzone[data-drag-over="true"] {
-  border-color: var(--xynoplex-color-primary-500);
-  background: var(--xynoplex-color-primary-50);
+.xynolog-form__upload-dropzone[data-drag-over="true"] {
+  border-color: var(--xynolog-color-primary-500);
+  background: var(--xynolog-color-primary-50);
 }
 
 /* Dark mode needs its own tint: primary-50 is a near-white wash that would
    glare inside a dark dropzone. Lighter border for contrast, translucent
    fill — matching the upload-area hover treatment above. */
-[data-theme="dark"] .xynoplex-form__upload-dropzone[data-drag-over="true"] {
-  border-color: var(--xynoplex-color-blue-400);
+[data-theme="dark"] .xynolog-form__upload-dropzone[data-drag-over="true"] {
+  border-color: var(--xynolog-color-blue-400);
   background: rgba(59, 130, 246, 0.15);
 }
 
-.xynoplex-form__upload-text {
+.xynolog-form__upload-text {
   font-size: 0.875rem;
-  color: var(--xynoplex-color-gray-600);
+  color: var(--xynolog-color-gray-600);
 }
 
-[data-theme="dark"] .xynoplex-form__upload-text {
-  color: var(--xynoplex-color-gray-400);
+[data-theme="dark"] .xynolog-form__upload-text {
+  color: var(--xynolog-color-gray-400);
 }
 
-.xynoplex-form__upload-hint {
+.xynolog-form__upload-hint {
   font-size: 0.75rem;
-  color: var(--xynoplex-color-gray-500);
+  color: var(--xynolog-color-gray-500);
   margin-top: 0.25rem;
 }
 
-[data-theme="dark"] .xynoplex-form__upload-hint {
-  color: var(--xynoplex-color-gray-400);
+[data-theme="dark"] .xynolog-form__upload-hint {
+  color: var(--xynolog-color-gray-400);
 }
 
 /* Media Type Display */
-.xynoplex-form__media-type {
+.xynolog-form__media-type {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   font-size: 0.875rem;
 }
 
-.xynoplex-form__media-type-label {
-  color: var(--xynoplex-color-gray-600);
+.xynolog-form__media-type-label {
+  color: var(--xynolog-color-gray-600);
 }
 
-[data-theme="dark"] .xynoplex-form__media-type-label {
-  color: var(--xynoplex-color-gray-400);
+[data-theme="dark"] .xynolog-form__media-type-label {
+  color: var(--xynolog-color-gray-400);
 }
 
-.xynoplex-form__media-type-value {
+.xynolog-form__media-type-value {
   padding: 0.125rem 0.5rem;
-  background-color: var(--xynoplex-color-gray-100);
+  background-color: var(--xynolog-color-gray-100);
   border-radius: 0.25rem;
-  color: var(--xynoplex-color-gray-900);
+  color: var(--xynolog-color-gray-900);
 }
 
-[data-theme="dark"] .xynoplex-form__media-type-value {
-  background-color: var(--xynoplex-bg-secondary);
-  color: var(--xynoplex-color-gray-100);
+[data-theme="dark"] .xynolog-form__media-type-value {
+  background-color: var(--xynolog-bg-secondary);
+  color: var(--xynolog-color-gray-100);
 }
 
-.xynoplex-form__media-type-lock {
-  color: var(--xynoplex-color-gray-500);
+.xynolog-form__media-type-lock {
+  color: var(--xynolog-color-gray-500);
 }
 
-[data-theme="dark"] .xynoplex-form__media-type-lock {
-  color: var(--xynoplex-color-gray-400);
+[data-theme="dark"] .xynolog-form__media-type-lock {
+  color: var(--xynolog-color-gray-400);
 }
 
 /* Image Preview */
-.xynoplex-form__image-preview {
-  border: 1px solid var(--xynoplex-color-gray-300);
+.xynolog-form__image-preview {
+  border: 1px solid var(--xynolog-color-gray-300);
   border-radius: 0.5rem;
   padding: 1rem;
 }
 
-[data-theme="dark"] .xynoplex-form__image-preview {
-  border-color: var(--xynoplex-color-gray-600);
+[data-theme="dark"] .xynolog-form__image-preview {
+  border-color: var(--xynolog-color-gray-600);
 }
 
-.xynoplex-form__image-preview-label {
+.xynolog-form__image-preview-label {
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--xynoplex-color-gray-700);
+  color: var(--xynolog-color-gray-700);
   margin-bottom: 0.5rem;
 }
 
-[data-theme="dark"] .xynoplex-form__image-preview-label {
-  color: var(--xynoplex-color-gray-300);
+[data-theme="dark"] .xynolog-form__image-preview-label {
+  color: var(--xynolog-color-gray-300);
 }
 
-.xynoplex-form__image-preview-container {
+.xynolog-form__image-preview-container {
   max-height: 24rem;
   overflow: hidden;
   border-radius: 0.25rem;
 }
 
-.xynoplex-form__image-preview-img {
+.xynolog-form__image-preview-img {
   max-width: 100%;
   height: auto;
 }
 
 /* Button Variants */
-.xynoplex-button--danger {
-  background-color: var(--xynoplex-color-red-600);
-  color: var(--xynoplex-color-white);
+.xynolog-button--danger {
+  background-color: var(--xynolog-color-red-600);
+  color: var(--xynolog-color-white);
 }
 
-.xynoplex-button--danger:hover {
-  background-color: var(--xynoplex-color-red-700);
+.xynolog-button--danger:hover {
+  background-color: var(--xynolog-color-red-700);
 }
 
-[data-theme="dark"] .xynoplex-button--danger {
-  background-color: var(--xynoplex-color-red-700);
-  color: var(--xynoplex-color-white);
+[data-theme="dark"] .xynolog-button--danger {
+  background-color: var(--xynolog-color-red-700);
+  color: var(--xynolog-color-white);
 }
 
-[data-theme="dark"] .xynoplex-button--danger:hover {
-  background-color: var(--xynoplex-color-red-600);
+[data-theme="dark"] .xynolog-button--danger:hover {
+  background-color: var(--xynolog-color-red-600);
 }
 
 /* Focus styles for danger button */
-.xynoplex-button--danger:focus-visible {
-  outline: 2px solid var(--xynoplex-color-red-500);
+.xynolog-button--danger:focus-visible {
+  outline: 2px solid var(--xynolog-color-red-500);
   outline-offset: 2px;
 }
 
-[data-theme="dark"] .xynoplex-button--danger:focus-visible {
-  outline-color: var(--xynoplex-color-red-400);
+[data-theme="dark"] .xynolog-button--danger:focus-visible {
+  outline-color: var(--xynolog-color-red-400);
 }
 
-.xynoplex-button--danger:focus:not(:focus-visible) {
+.xynolog-button--danger:focus:not(:focus-visible) {
   outline: none;
 }
 
-.xynoplex-button--small {
+.xynolog-button--small {
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
 }
 
 /* Focus styles for small button */
-.xynoplex-button--small:focus-visible {
-  outline: 2px solid var(--xynoplex-color-primary-500);
+.xynolog-button--small:focus-visible {
+  outline: 2px solid var(--xynolog-color-primary-500);
   outline-offset: 2px;
 }
 
-[data-theme="dark"] .xynoplex-button--small:focus-visible {
-  outline-color: var(--xynoplex-color-primary-400);
+[data-theme="dark"] .xynolog-button--small:focus-visible {
+  outline-color: var(--xynolog-color-primary-400);
 }
 
-.xynoplex-button--small:focus:not(:focus-visible) {
+.xynolog-button--small:focus:not(:focus-visible) {
   outline: none;
 }

@@ -16,9 +16,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { annotationId, resourceId, type Annotation } from '@xynoplex/core';
+import { annotationId, resourceId, type Annotation } from '@xynolog/core';
 import type { AnnotationUIState } from '../../../types/annotation-props';
-import { createTestXynoplexWrapper, renderInEnglish, englishTranslationManager } from '../../../test-utils';
+import { createTestXynologWrapper, renderInEnglish, englishTranslationManager } from '../../../test-utils';
 import { AnnotateView } from '../AnnotateView';
 
 /** One line. 199 code points and 204 UTF-16 code units: five characters are outside the basic plane. */
@@ -43,7 +43,7 @@ const UI_STATE: AnnotationUIState = {
 };
 
 function mount(content: string, highlights: Annotation[] = [], showToolbar = false) {
-  const { session, client } = createTestXynoplexWrapper();
+  const { session, client } = createTestXynologWrapper();
   const request = vi.spyOn(client.mark, 'request');
   const view = renderInEnglish(
     <AnnotateView
@@ -101,7 +101,7 @@ function pointIn(lineElement: Element, units: number): [Node, number] {
 
 /** The text the toolbar shows. */
 function toolbarText(container: HTMLElement): Text[] {
-  const toolbar = container.querySelector('.xynoplex-annotate-toolbar');
+  const toolbar = container.querySelector('.xynolog-annotate-toolbar');
   if (!toolbar) throw new Error('no toolbar is shown');
   return textNodes(toolbar);
 }

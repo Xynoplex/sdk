@@ -7,10 +7,10 @@ axioms: it holds no state, so they hold its end and its methods afterwards.
 from collections.abc import Callable, Sequence
 from typing import final, override
 
-from xynoplex.identifiers import AnnotationId
-from xynoplex.state import HoverDwell
-from xynoplex.testing.axioms import AxiomSubject, Fresh, assert_state_unit_axioms
-from xynoplex.timing import HOVER_DELAY_MS
+from xynolog.identifiers import AnnotationId
+from xynolog.state import HoverDwell
+from xynolog.testing.axioms import AxiomSubject, Fresh, assert_state_unit_axioms
+from xynolog.timing import HOVER_DELAY_MS
 
 
 @final

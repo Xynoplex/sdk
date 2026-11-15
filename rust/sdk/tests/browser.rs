@@ -12,28 +12,6 @@
 use base64::Engine;
 use base64::engine::general_purpose::URL_SAFE_NO_PAD;
 use futures_core::Stream;
-use xynoplex::channels::BRIDGED_CHANNELS;
-use xynoplex::client::{CachePersistence, ClientOptions};
-use xynoplex::errors::{SessionError, SessionErrorCode, TransportError, TransportErrorCode};
-use xynoplex::session::{
-    ACTIVE_KEY, Expected, KNOWLEDGE_BASES_KEY, KbIdentityConflict, KbReadVerdict, KbSessionStatus,
-    LAST_VIEWED_RESOURCE_BY_KB_KEY, MemorySignIn, OPEN_RESOURCES_BY_KB_KEY, OpenResource,
-    PermissionDenied, XynoplexBrowser, XynoplexBrowserConfig, XynoplexSession, XynoplexSessionConfig,
-    SessionEnded, SessionFactory, SessionFactoryOptions, SignInKept, SignedIn, StoredSession,
-    load_knowledge_bases, person_key, save_knowledge_bases, session_key, store_session,
-    stored_session,
-};
-use xynoplex::storage::{SessionStorage, StorageChange, StorageSubscription};
-use xynoplex::testing::as_id;
-use xynoplex::testing::{
-    FaultyTransport, ScriptedSessions, SharedStorage, TestClientOptions, create_test_client,
-};
-use xynoplex::timing::SAVE_DEBOUNCE;
-use xynoplex::transport::{BoxFuture, ConnectionState, Events, Transport};
-use xynoplex::types::{
-    HttpEndpoint, HttpEndpointProtocol, KbEndpoint, KbRead, KnowledgeBase, NewKnowledgeBase,
-    UserResponse,
-};
 use serde_json::{Value, json};
 use std::collections::{BTreeSet, HashMap, HashSet};
 use std::pin::Pin;
@@ -43,6 +21,28 @@ use std::sync::{Arc, Mutex, OnceLock, Weak};
 use std::task::{Context, Poll, Waker};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use tokio::sync::watch;
+use xynolog::channels::BRIDGED_CHANNELS;
+use xynolog::client::{CachePersistence, ClientOptions};
+use xynolog::errors::{SessionError, SessionErrorCode, TransportError, TransportErrorCode};
+use xynolog::session::{
+    ACTIVE_KEY, Expected, KNOWLEDGE_BASES_KEY, KbIdentityConflict, KbReadVerdict, KbSessionStatus,
+    LAST_VIEWED_RESOURCE_BY_KB_KEY, MemorySignIn, OPEN_RESOURCES_BY_KB_KEY, OpenResource,
+    PermissionDenied, SessionEnded, SessionFactory, SessionFactoryOptions, SignInKept, SignedIn,
+    StoredSession, XynologBrowser, XynologBrowserConfig, XynologSession, XynologSessionConfig,
+    load_knowledge_bases, person_key, save_knowledge_bases, session_key, store_session,
+    stored_session,
+};
+use xynolog::storage::{SessionStorage, StorageChange, StorageSubscription};
+use xynolog::testing::as_id;
+use xynolog::testing::{
+    FaultyTransport, ScriptedSessions, SharedStorage, TestClientOptions, create_test_client,
+};
+use xynolog::timing::SAVE_DEBOUNCE;
+use xynolog::transport::{BoxFuture, ConnectionState, Events, Transport};
+use xynolog::types::{
+    HttpEndpoint, HttpEndpointProtocol, KbEndpoint, KbRead, KnowledgeBase, NewKnowledgeBase,
+    UserResponse,
+};
 
 // ── The knowledge bases behind the factory ──────────────────────────────
 
@@ -215,7 +215,7 @@ fn tokens(refresh: &str) -> StoredSession {
     StoredSession {
         access: jwt(3600),
         refresh: refresh.to_owned(),
-        client_id: "xynoplex-browser".to_owned(),
+        client_id: "xynolog-browser".to_owned(),
         token_endpoint: "https://issuer.test/token".to_owned(),
         revocation_endpoint: Some("https://issuer.test/revoke".to_owned()),
         person_key: None,
@@ -250,12 +250,12 @@ impl World {
         world
     }
 
-    fn browser(&self) -> XynoplexBrowser {
+    fn browser(&self) -> XynologBrowser {
         self.browser_over(self.storage.clone())
     }
 
-    fn browser_over(&self, storage: Arc<dyn SessionStorage>) -> XynoplexBrowser {
-        XynoplexBrowser::new(XynoplexBrowserConfig {
+    fn browser_over(&self, storage: Arc<dyn SessionStorage>) -> XynologBrowser {
+        XynologBrowser::new(XynologBrowserConfig {
             storage,
             session_factory: Arc::new(self.factory.sessions.clone()),
         })
@@ -288,7 +288,7 @@ async fn settle() {
 }
 
 /// The browser's live session, once it has one.
-async fn live(browser: &XynoplexBrowser) -> Arc<XynoplexSession> {
+async fn live(browser: &XynologBrowser) -> Arc<XynologSession> {
     let mut session = browser.active_session();
     let session = tokio::time::timeout(Duration::from_secs(60), session.wait_for(Option::is_some))
         .await
@@ -300,7 +300,7 @@ async fn live(browser: &XynoplexBrowser) -> Arc<XynoplexSession> {
     session.expect("a session")
 }
 
-fn session_of(browser: &XynoplexBrowser) -> Option<String> {
+fn session_of(browser: &XynologBrowser) -> Option<String> {
     browser
         .active_session()
         .borrow()
@@ -308,7 +308,7 @@ fn session_of(browser: &XynoplexBrowser) -> Option<String> {
         .map(|session| session.kb().id.clone())
 }
 
-fn open(browser: &XynoplexBrowser) -> Vec<String> {
+fn open(browser: &XynologBrowser) -> Vec<String> {
     browser
         .open_resources()
         .borrow()
@@ -1306,7 +1306,7 @@ async fn a_resource_another_context_opened_while_the_checks_ran_is_left_open() {
     assert_eq!(world.stored_open(A), ["sibling"]);
 }
 
-fn conflict(browser: &XynoplexBrowser) -> Option<KbIdentityConflict> {
+fn conflict(browser: &XynologBrowser) -> Option<KbIdentityConflict> {
     let signals = browser.active_signals().borrow().clone()?;
     signals.kb_identity_conflict().borrow().clone()
 }
@@ -1567,12 +1567,12 @@ fn refusal(status: u16) -> TransportError {
     TransportError::of_status(format!("HTTP {status}"), status, None)
 }
 
-fn ended(browser: &XynoplexBrowser) -> Option<SessionEnded> {
+fn ended(browser: &XynologBrowser) -> Option<SessionEnded> {
     let signals = browser.active_signals().borrow().clone()?;
     signals.session_ended().borrow().clone()
 }
 
-fn denied(browser: &XynoplexBrowser) -> Option<PermissionDenied> {
+fn denied(browser: &XynologBrowser) -> Option<PermissionDenied> {
     let signals = browser.active_signals().borrow().clone()?;
     signals.permission_denied().borrow().clone()
 }
@@ -1677,7 +1677,7 @@ async fn a_browser_over_a_storage_that_refuses_what_it_read_is_not_made() {
     let storage = Refusing::over(&world);
     storage.sets.store(true, Ordering::SeqCst);
 
-    let made = XynoplexBrowser::new(XynoplexBrowserConfig {
+    let made = XynologBrowser::new(XynologBrowserConfig {
         storage,
         session_factory: Arc::new(world.factory.sessions.clone()),
     });
@@ -1793,10 +1793,10 @@ async fn a_check_the_storage_will_not_keep_is_what_closing_says() {
 
 /// A factory that hands back the one session it was given, built before
 /// the registry asked for it. It reads nothing of what the session says.
-struct Prebuilt(Mutex<Option<XynoplexSession>>);
+struct Prebuilt(Mutex<Option<XynologSession>>);
 
 impl SessionFactory for Prebuilt {
-    fn session(&self, _: SessionFactoryOptions) -> Result<XynoplexSession, SessionError> {
+    fn session(&self, _: SessionFactoryOptions) -> Result<XynologSession, SessionError> {
         Ok(self
             .0
             .lock()
@@ -1811,8 +1811,8 @@ impl SessionFactory for Prebuilt {
 }
 
 /// A registry over the world's storage, whose one session is `session`.
-fn over_prebuilt(world: &World, session: XynoplexSession) -> XynoplexBrowser {
-    XynoplexBrowser::new(XynoplexBrowserConfig {
+fn over_prebuilt(world: &World, session: XynologSession) -> XynologBrowser {
+    XynologBrowser::new(XynologBrowserConfig {
         storage: world.storage.clone(),
         session_factory: Arc::new(Prebuilt(Mutex::new(Some(session)))),
     })
@@ -1876,7 +1876,7 @@ impl SignInKept for Unrecording {
 /// a case holds that the registry made none. Nobody is asked who its token
 /// is.
 struct Tabled {
-    session: XynoplexSession,
+    session: XynologSession,
     transport: FaultyTransport,
     /// The token each renewal was handed, in order.
     handed: Arc<Mutex<Vec<Option<String>>>>,
@@ -1917,7 +1917,7 @@ impl Tabled {
         .client;
         let handed: Arc<Mutex<Vec<Option<String>>>> = Arc::default();
         let handing = handed.clone();
-        let session = XynoplexSession::new(XynoplexSessionConfig {
+        let session = XynologSession::new(XynologSessionConfig {
             kb: kb_a().target(),
             kept: Arc::new(Unrecording(kept)),
             client,
@@ -1981,7 +1981,7 @@ fn transport_code(named: &str) -> TransportErrorCode {
 /// Have `session` say each of `said` in turn, each once the one before it
 /// is said: one of its own errors by what makes a session say it, and a
 /// failure of its transport as `transport`'s, with its code and message.
-async fn say(session: &XynoplexSession, transport: &FaultyTransport, said: &[Value], why: &str) {
+async fn say(session: &XynologSession, transport: &FaultyTransport, said: &[Value], why: &str) {
     for item in said {
         match (item["own"].as_str(), item["transport"].as_str()) {
             (Some("session.keep-failed"), None) => {
@@ -2229,13 +2229,13 @@ async fn registry_errors_closing_cases() {
 /// sessions for: a close made from inside the browser's own work.
 struct ClosingOnRevoke {
     sessions: ScriptedSessions,
-    browser: Arc<OnceLock<Weak<XynoplexBrowser>>>,
+    browser: Arc<OnceLock<Weak<XynologBrowser>>>,
     /// What the close said, once it returned.
     closing: Arc<Mutex<Option<Option<String>>>>,
 }
 
 impl SessionFactory for ClosingOnRevoke {
-    fn session(&self, options: SessionFactoryOptions) -> Result<XynoplexSession, SessionError> {
+    fn session(&self, options: SessionFactoryOptions) -> Result<XynologSession, SessionError> {
         self.sessions.session(options)
     }
 
@@ -2260,7 +2260,7 @@ async fn a_browser_closed_from_inside_its_own_work_ends_everything_and_its_close
     };
     let (registered, closing) = (factory.browser.clone(), factory.closing.clone());
     let browser = Arc::new(
-        XynoplexBrowser::new(XynoplexBrowserConfig {
+        XynologBrowser::new(XynologBrowserConfig {
             storage: world.storage.clone(),
             session_factory: Arc::new(factory),
         })

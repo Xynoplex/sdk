@@ -39,7 +39,7 @@
 //! of the cache may wait for it (a client's close does); none is begun
 //! after it.
 
-use crate::errors::{BusRequestError, BusRequestErrorCode, XynoplexError};
+use crate::errors::{BusRequestError, BusRequestErrorCode, XynologError};
 use crate::locked;
 use crate::state_unit::StateUnit;
 use crate::storage::SessionStorage;
@@ -133,7 +133,7 @@ pub(crate) type Refused = Arc<dyn Fn(&(dyn std::error::Error + Send + Sync)) + S
 
 /// A save refused that nobody else is told of: a warning.
 pub(crate) fn warned(unsaved: &(dyn std::error::Error + Send + Sync)) {
-    log::warn!("xynoplex: the cache's values were not kept: {unsaved}");
+    log::warn!("xynolog: the cache's values were not kept: {unsaved}");
 }
 
 /// Where a cache keeps its values, and who is told of a save refused there.
@@ -256,7 +256,7 @@ where
 }
 
 fn closed() -> Arc<dyn std::error::Error + Send + Sync> {
-    Arc::new(XynoplexError::from(BusRequestError::new(
+    Arc::new(XynologError::from(BusRequestError::new(
         BusRequestErrorCode::Closed,
         "The client is closed",
     )))
@@ -502,7 +502,7 @@ fn begun(save: impl Future<Output = ()> + Send + 'static) -> Option<JoinHandle<(
     }
     let Ok(runtime) = tokio::runtime::Handle::try_current() else {
         log::warn!(
-            "xynoplex: the cache's values were not kept: no Tokio runtime ran to write them on"
+            "xynolog: the cache's values were not kept: no Tokio runtime ran to write them on"
         );
         return None;
     };

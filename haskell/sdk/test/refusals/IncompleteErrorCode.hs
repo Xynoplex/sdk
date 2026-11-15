@@ -1,4 +1,4 @@
 module IncompleteErrorCode where
-import Xynoplex.ErrorCodes (BusRequestCode(..))
+import Xynolog.ErrorCodes (BusRequestCode(..))
 incomplete :: BusRequestCode -> Bool
 incomplete BusRequestTimeout = True

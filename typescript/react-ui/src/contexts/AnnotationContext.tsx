@@ -18,7 +18,7 @@ export interface AnnotationProviderProps {
  *
  * Example usage:
  * ```typescript
- * function useAnnotationManager(client: XynoplexClient): AnnotationManager {
+ * function useAnnotationManager(client: XynologClient): AnnotationManager {
  *   return {
  *     markAnnotation: async (params) => {
  *       const result = await client.mark.annotation({

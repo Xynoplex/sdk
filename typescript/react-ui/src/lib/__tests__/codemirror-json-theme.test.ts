@@ -13,7 +13,7 @@ import { describe, it, expect } from 'vitest';
 const theme = readFileSync(resolve(process.cwd(), 'src/lib/codemirror-json-theme.ts'), 'utf8');
 const variables = readFileSync(resolve(process.cwd(), 'src/styles/variables.css'), 'utf8');
 
-const used = [...new Set([...theme.matchAll(/var\((--xynoplex-[a-z0-9-]+)\)/g)].map((match) => match[1]!))];
+const used = [...new Set([...theme.matchAll(/var\((--xynolog-[a-z0-9-]+)\)/g)].map((match) => match[1]!))];
 
 /** The text of the stylesheet's block that `opening` opens, to its closing brace. */
 function block(opening: string): string {

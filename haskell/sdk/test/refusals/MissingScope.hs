@@ -1,6 +1,6 @@
 {-# LANGUAGE GADTs #-}
 module MissingScope where
-import Xynoplex.Channels
+import Xynolog.Channels
 accept :: ScopeArg scope -> Channel scope payload -> Bool
 accept _ = channelIsScoped
 value :: Bool

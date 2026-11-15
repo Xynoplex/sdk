@@ -13,11 +13,11 @@ import qualified Data.Map.Strict as Map
 import Data.Text (Text)
 import qualified Data.Text as Text
 import qualified ControlledTime as Time
-import Xynoplex.Retry (RetryOptions(..))
-import qualified Xynoplex.State.HoverDwell as Hover
-import qualified Xynoplex.State.Search as Search
-import qualified Xynoplex.StateValue as State
-import qualified Xynoplex.Timing.Settings as Timing
+import Xynolog.Retry (RetryOptions(..))
+import qualified Xynolog.State.HoverDwell as Hover
+import qualified Xynolog.State.Search as Search
+import qualified Xynolog.StateValue as State
+import qualified Xynolog.Timing.Settings as Timing
 import qualified Streaming.Prelude as Stream
 import System.FilePath ((</>))
 import System.Timeout (timeout)

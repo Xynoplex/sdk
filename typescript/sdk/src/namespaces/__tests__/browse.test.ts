@@ -1,12 +1,12 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { map, firstValueFrom, filter, BehaviorSubject } from 'rxjs';
-import { EventBus, resourceId, annotationId, userId } from '@xynoplex/core';
+import { EventBus, resourceId, annotationId, userId } from '@xynolog/core';
 import { BrowseNamespace } from '../browse';
 import { isReady } from '../../cache';
-import type { AnchoredTextAnswer, ConnectionState, ITransport, IContentTransport } from '@xynoplex/core';
+import type { AnchoredTextAnswer, ConnectionState, ITransport, IContentTransport } from '@xynolog/core';
 
-import type { Annotation } from '@xynoplex/core';
-import type { ResourceDescriptor } from '@xynoplex/core';
+import type { Annotation } from '@xynolog/core';
+import type { ResourceDescriptor } from '@xynolog/core';
 import { inMemoryTransport } from '../../__tests__/helpers/in-memory-transport';
 
 /** What every stored event carries beside its type, resource and payload. */

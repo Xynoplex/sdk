@@ -2,7 +2,7 @@
  * Knowledge-graph view derivation: the flattened neighborhood views are derived from the graph,
  * not kept as separately built intermediates.
  *
- * A pure function over the core `KnowledgeGraph` type. `@xynoplex/react-ui` (the context summary) runs
+ * A pure function over the core `KnowledgeGraph` type. `@xynolog/react-ui` (the context summary) runs
  * it, and protocol/specs/src/librarian/derive-views-cases.json holds it to the derivation the Librarian runs. It
  * only transforms a graph the Librarian has already built.
  *

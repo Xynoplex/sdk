@@ -1,13 +1,13 @@
 /**
- * `@xynoplex/sdk/testing` — the SDK's contract double, exported where
+ * `@xynolog/sdk/testing` — the SDK's contract double, exported where
  * consumers already look.
  *
  * One scriptable, REAL-pathway test client: `createTestClient` wires a real
- * `XynoplexClient` — real `createCache`, real `Bus.request`, real namespaces —
+ * `XynologClient` — real `createCache`, real `Bus.request`, real namespaces —
  * over a `FaultyTransport` (re-exported below; its home stays
- * `@xynoplex/core/testing`). Script the transport, observe through the
+ * `@xynolog/core/testing`). Script the transport, observe through the
  * client. `createTestSession` wraps the same stack in a real
- * `XynoplexSession` for state-unit factories, which take a session.
+ * `XynologSession` for state-unit factories, which take a session.
  *
  * Why this exists: a hand-rolled mock encodes its author's model of the
  * contract instead of the contract, so a wrong belief about the SDK passes
@@ -27,13 +27,13 @@ import type {
   PutBinaryRequest,
   ResourceId,
   components,
-} from '@xynoplex/core';
+} from '@xynolog/core';
 import type { CachePersistence } from './cache-persister';
-import { BRIDGED_CHANNELS, resourceId as makeResourceId } from '@xynoplex/core';
-import { FaultyTransport, type FaultyTransportConfig } from '@xynoplex/core/testing';
-import { XynoplexClient } from './client';
-import { XynoplexSession } from './session/xynoplex-session';
-import type { KbTarget } from '@xynoplex/core';
+import { BRIDGED_CHANNELS, resourceId as makeResourceId } from '@xynolog/core';
+import { FaultyTransport, type FaultyTransportConfig } from '@xynolog/core/testing';
+import { XynologClient } from './client';
+import { XynologSession } from './session/xynolog-session';
+import type { KbTarget } from '@xynolog/core';
 import { httpKb } from './session/knowledge-base';
 import { keptIn } from './session/storage';
 import { InMemorySessionStorage } from './session/session-storage';
@@ -42,7 +42,7 @@ type GetResourceResponse = components['schemas']['GetResourceResponse'];
 type GetAnnotationsResponse = components['schemas']['GetAnnotationsResponse'];
 
 // The transport double's scripting surface, so a consumer test imports ONE
-// module. `FaultyTransport`'s home remains `@xynoplex/core/testing` — this is
+// module. `FaultyTransport`'s home remains `@xynolog/core/testing` — this is
 // the consumer-facing barrel, not a second home.
 export {
   FaultyTransport,
@@ -51,7 +51,7 @@ export {
   type FaultAction,
   type FaultyTransportConfig,
   type RequestLogEntry,
-} from '@xynoplex/core/testing';
+} from '@xynolog/core/testing';
 
 /**
  * Minimal in-memory `IContentTransport`. Stores what `putBinary` receives;
@@ -105,7 +105,7 @@ export function inMemoryContent(): IContentTransport {
     },
     async getResourceGraph(rId: ResourceId): Promise<GetResourceResponse> {
       return {
-        resource: { '@context': 'https://xynoplex.dev/context/v1', '@id': rId, name: String(rId), representations: [] },
+        resource: { '@context': 'https://xynolog.dev/context/v1', '@id': rId, name: String(rId), representations: [] },
         annotations: [],
       };
     },
@@ -169,7 +169,7 @@ export function stubGateway(): IGatewayOperations {
 }
 
 /**
- * A real `XynoplexClient` over a scriptable `FaultyTransport`.
+ * A real `XynologClient` over a scriptable `FaultyTransport`.
  *
  * The returned `transport` IS the `FaultyTransport` instance, given a full
  * client's channels (`BRIDGED_CHANNELS`) — script faults via its config,
@@ -177,11 +177,11 @@ export function stubGateway(): IGatewayOperations {
  * requests via `transport.requestLog`.
  */
 export function createTestClient(options: TestClientOptions = {}): {
-  client: XynoplexClient;
+  client: XynologClient;
   transport: FaultyTransport;
 } {
   const transport = new FaultyTransport({ ...options.transport, channels: BRIDGED_CHANNELS });
-  const client = new XynoplexClient(transport, options.content ?? inMemoryContent(), options.gateway, {
+  const client = new XynologClient(transport, options.content ?? inMemoryContent(), options.gateway, {
     ...(options.busTimeoutMs !== undefined ? { busTimeoutMs: options.busTimeoutMs } : {}),
     ...(options.cachePersistence ? { cachePersistence: options.cachePersistence } : {}),
   });
@@ -194,7 +194,7 @@ export interface TestSessionOptions extends TestClientOptions {
 }
 
 /**
- * A real `XynoplexSession` over the same scriptable stack — for testing
+ * A real `XynologSession` over the same scriptable stack — for testing
  * state-unit factories, which take a session. Its sign-in is kept in
  * `storage`, as a registry's session's is (`keptIn`).
  * No token is seeded and no
@@ -203,8 +203,8 @@ export interface TestSessionOptions extends TestClientOptions {
  * The caller ends the client and then the session: the session only uses it.
  */
 export function createTestSession(options: TestSessionOptions = {}): {
-  session: XynoplexSession;
-  client: XynoplexClient;
+  session: XynologSession;
+  client: XynologClient;
   transport: FaultyTransport;
   storage: InMemorySessionStorage;
   token$: BehaviorSubject<AccessToken | null>;
@@ -221,6 +221,6 @@ export function createTestSession(options: TestSessionOptions = {}): {
       port: 4000,
       protocol: 'http',
     });
-  const session = new XynoplexSession({ kb, kept: keptIn(storage, kb.id), client, token$ });
+  const session = new XynologSession({ kb, kept: keptIn(storage, kb.id), client, token$ });
   return { session, client, transport, storage, token$ };
 }

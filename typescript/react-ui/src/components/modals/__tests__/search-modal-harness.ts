@@ -3,9 +3,9 @@
  * client answers `match.resources` from results the test gives, and the
  * strings the modal is given.
  *
- * The browser is ONE object for a whole file. `useXynoplex` is called on every
+ * The browser is ONE object for a whole file. `useXynolog` is called on every
  * render, and a browser made per render would restart the modal's search
- * pipeline on every keystroke. A suite mocks `useXynoplex` to return
+ * pipeline on every keystroke. A suite mocks `useXynolog` to return
  * `searchBrowser`.
  */
 import { vi } from 'vitest';

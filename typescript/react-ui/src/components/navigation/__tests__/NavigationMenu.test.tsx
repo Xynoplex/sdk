@@ -209,7 +209,7 @@ describe('NavigationMenu Component', () => {
         />
       );
 
-      expect(container.firstChild).toHaveClass('xynoplex-navigation-menu');
+      expect(container.firstChild).toHaveClass('xynolog-navigation-menu');
     });
 
     it('should apply custom className with base className to container', () => {
@@ -222,7 +222,7 @@ describe('NavigationMenu Component', () => {
         />
       );
 
-      expect(container.firstChild).toHaveClass('xynoplex-navigation-menu');
+      expect(container.firstChild).toHaveClass('xynolog-navigation-menu');
       expect(container.firstChild).toHaveClass('custom-nav');
     });
 
@@ -237,7 +237,7 @@ describe('NavigationMenu Component', () => {
 
       const links = container.querySelectorAll('a');
       links.forEach(link => {
-        expect(link).toHaveClass('xynoplex-navigation-menu__link');
+        expect(link).toHaveClass('xynolog-navigation-menu__link');
       });
     });
 
@@ -252,7 +252,7 @@ describe('NavigationMenu Component', () => {
 
       const dividers = container.querySelectorAll('hr');
       dividers.forEach(divider => {
-        expect(divider).toHaveClass('xynoplex-navigation-menu__divider');
+        expect(divider).toHaveClass('xynolog-navigation-menu__divider');
       });
     });
   });

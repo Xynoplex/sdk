@@ -7,80 +7,80 @@
    appropriate modifiers.
 
    Usage Examples:
-   - Default tag: .xynoplex-tag
-   - Gray tag: .xynoplex-tag.xynoplex-tag--secondary
-   - Small gray tag: .xynoplex-tag.xynoplex-tag--secondary.xynoplex-tag--small
-   - Compact rounded tag: .xynoplex-tag.xynoplex-tag--compact.xynoplex-tag--rounded-sm
-   - Info tag with border: .xynoplex-tag.xynoplex-tag--info
+   - Default tag: .xynolog-tag
+   - Gray tag: .xynolog-tag.xynolog-tag--secondary
+   - Small gray tag: .xynolog-tag.xynolog-tag--secondary.xynolog-tag--small
+   - Compact rounded tag: .xynolog-tag.xynolog-tag--compact.xynolog-tag--rounded-sm
+   - Info tag with border: .xynolog-tag.xynolog-tag--info
    ============================================ */
 
 /* Tags Container */
-.xynoplex-tags {
+.xynolog-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--xynoplex-panel-padding-xs);
+  gap: var(--xynolog-panel-padding-xs);
 }
 
 /* Individual Tag */
-.xynoplex-tag {
+.xynolog-tag {
   display: inline-flex;
   align-items: center;
-  gap: var(--xynoplex-panel-padding-xs);
-  padding: var(--xynoplex-panel-padding-xs) var(--xynoplex-panel-padding-sm);
-  background: var(--xynoplex-color-primary-100);
-  color: var(--xynoplex-color-primary-700);
-  border-radius: var(--xynoplex-radius-full);
-  font-size: var(--xynoplex-text-xs);
-  font-weight: var(--xynoplex-font-medium);
+  gap: var(--xynolog-panel-padding-xs);
+  padding: var(--xynolog-panel-padding-xs) var(--xynolog-panel-padding-sm);
+  background: var(--xynolog-color-primary-100);
+  color: var(--xynolog-color-primary-700);
+  border-radius: var(--xynolog-radius-full);
+  font-size: var(--xynolog-text-xs);
+  font-weight: var(--xynolog-font-medium);
   transition: all 0.2s ease;
 }
 
-[data-theme="dark"] .xynoplex-tag {
+[data-theme="dark"] .xynolog-tag {
   background: rgba(59, 130, 246, 0.2);
-  color: var(--xynoplex-color-primary-300);
+  color: var(--xynolog-color-primary-300);
 }
 
 /* Tag Variants */
-.xynoplex-tag--secondary {
-  background: var(--xynoplex-color-gray-100);
-  color: var(--xynoplex-color-gray-700);
+.xynolog-tag--secondary {
+  background: var(--xynolog-color-gray-100);
+  color: var(--xynolog-color-gray-700);
 }
 
-[data-theme="dark"] .xynoplex-tag--secondary {
+[data-theme="dark"] .xynolog-tag--secondary {
   background: rgba(156, 163, 175, 0.2);
-  color: var(--xynoplex-color-gray-300);
+  color: var(--xynolog-color-gray-300);
 }
 
 /* Small Tag Variant */
-.xynoplex-tag--small {
-  padding: calc(var(--xynoplex-panel-padding-xs) * 0.5) calc(var(--xynoplex-panel-padding-xs) * 1.5);
-  font-size: var(--xynoplex-text-2xs);
+.xynolog-tag--small {
+  padding: calc(var(--xynolog-panel-padding-xs) * 0.5) calc(var(--xynolog-panel-padding-xs) * 1.5);
+  font-size: var(--xynolog-text-2xs);
 }
 
 /* Compact Tag Variant (for resource cards) */
-.xynoplex-tag--compact {
+.xynolog-tag--compact {
   padding: 0.25rem 0.5rem;
   font-size: 0.75rem;
 }
 
 /* Rounded Corner Variants */
-.xynoplex-tag--rounded-sm {
-  border-radius: var(--xynoplex-radius-sm);
+.xynolog-tag--rounded-sm {
+  border-radius: var(--xynolog-radius-sm);
 }
 
-.xynoplex-tag--rounded-md {
-  border-radius: var(--xynoplex-radius-md);
+.xynolog-tag--rounded-md {
+  border-radius: var(--xynolog-radius-md);
 }
 
 /* Info Tag Variant (subtle blue background) */
-.xynoplex-tag--info {
+.xynolog-tag--info {
   background: rgba(59, 130, 246, 0.05);
-  color: var(--xynoplex-color-blue-700);
-  border: 1px solid var(--xynoplex-color-blue-200);
+  color: var(--xynolog-color-blue-700);
+  border: 1px solid var(--xynolog-color-blue-200);
 }
 
-[data-theme="dark"] .xynoplex-tag--info {
+[data-theme="dark"] .xynolog-tag--info {
   background: rgba(30, 58, 138, 0.3);
-  color: var(--xynoplex-color-blue-300);
-  border-color: var(--xynoplex-color-blue-800);
+  color: var(--xynolog-color-blue-300);
+  border-color: var(--xynolog-color-blue-800);
 }

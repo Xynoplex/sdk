@@ -18,17 +18,17 @@ from gateway_server import GatewayServer
 from pydantic import BaseModel, Field
 from spec import SPEC, JsonObject
 
-from xynoplex.bus import Bus, Delivered, Heard, Typed
-from xynoplex.channels import BECKON_FOCUS, GATHER_FAILED
-from xynoplex.errors import XynoplexError
-from xynoplex.http import HttpTransport, Timing
-from xynoplex.identifiers import ResourceId
-from xynoplex.model import written
-from xynoplex.operations import BROWSE_RESOURCE_REQUESTED
-from xynoplex.retry import RetryPolicy
-from xynoplex.transport import Frame, FrameRefusal
-from xynoplex.types import BeckonFocusEvent, BrowseResourceResult, CommandError, GatherFailed
-from xynoplex.watched import Variable, reached
+from xynolog.bus import Bus, Delivered, Heard, Typed
+from xynolog.channels import BECKON_FOCUS, GATHER_FAILED
+from xynolog.errors import XynologError
+from xynolog.http import HttpTransport, Timing
+from xynolog.identifiers import ResourceId
+from xynolog.model import written
+from xynolog.operations import BROWSE_RESOURCE_REQUESTED
+from xynolog.retry import RetryPolicy
+from xynolog.transport import Frame, FrameRefusal
+from xynolog.types import BeckonFocusEvent, BrowseResourceResult, CommandError, GatherFailed
+from xynolog.watched import Variable, reached
 
 type Told = Literal["readers", "failure-report"]
 type Reason = Literal["lacks", "malformed"]
@@ -171,7 +171,7 @@ def test_a_frame_busframe_allows_is_delivered_as_it_states_it(case: DeliveredFra
     # What is read by type is held to the case on a failure's channel, and a case on another states none.
     assert on_a_failure or case.read is None, f"this runner reads no frame on {channel} by type"
 
-    async def scenario() -> tuple[JsonObject, JsonObject | None, list[XynoplexError]]:
+    async def scenario() -> tuple[JsonObject, JsonObject | None, list[XynologError]]:
         async with (
             GatewayServer() as gateway,
             HttpTransport(gateway.origin, token=Variable[str | None]("t"), channels=CHANNELS, timing=QUICK) as transport,
@@ -202,7 +202,7 @@ def test_a_refused_frame_is_told_to_whom_the_table_states_for_its_first_fault_an
 ) -> None:
     channel = read_on(case)
 
-    async def scenario() -> tuple[list[Heard[BeckonFocusEvent] | Heard[BrowseResourceResult]], list[XynoplexError]]:
+    async def scenario() -> tuple[list[Heard[BeckonFocusEvent] | Heard[BrowseResourceResult]], list[XynologError]]:
         async with (
             GatewayServer() as gateway,
             HttpTransport(gateway.origin, token=Variable[str | None]("t"), channels=CHANNELS, timing=QUICK) as transport,

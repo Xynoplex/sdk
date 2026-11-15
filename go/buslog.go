@@ -1,11 +1,11 @@
-package xynoplex
+package xynolog
 
-// The bus log: with XYNOPLEX_BUS_LOG set, a line on standard error for each
+// The bus log: with XYNOLOG_BUS_LOG set, a line on standard error for each
 // frame a transport sends or receives, each read of content and each upload.
 //
 //	[bus EMIT] mark:create-request scope=res-1 cid=a89a670a trace=8f3ca4ed {"resourceId":"res-1"}
 //
-// Every Xynoplex SDK writes it, in one form, so that the lines of several
+// Every Xynolog SDK writes it, in one form, so that the lines of several
 // processes read as one timeline (protocol/contract/EVENT-BUS.md § Wire format). A
 // line is what was sent or asked for, written when it is: the frame's
 // channel, or `content` for a read or an upload; the resource's scope, the
@@ -62,7 +62,7 @@ var credentials = map[string]bool{
 
 // busLogged is whether the bus log is written: what the process's
 // environment said when this was first asked.
-var busLogged = sync.OnceValue(func() bool { return os.Getenv("XYNOPLEX_BUS_LOG") != "" })
+var busLogged = sync.OnceValue(func() bool { return os.Getenv("XYNOLOG_BUS_LOG") != "" })
 
 // busOp is what a line says was done: a frame sent or received, an upload or
 // a read of content, or a frame delivered on a connection a handoff retired.

@@ -140,7 +140,7 @@ export function ResizeHandle({
   return (
     <button
       type="button"
-      className={`xynoplex-resize-handle xynoplex-resize-handle--${position} ${isDragging ? 'xynoplex-resize-handle--dragging' : ''}`}
+      className={`xynolog-resize-handle xynolog-resize-handle--${position} ${isDragging ? 'xynolog-resize-handle--dragging' : ''}`}
       onMouseDown={handleMouseDown}
       onKeyDown={handleKeyDown}
       aria-label={ariaLabel}

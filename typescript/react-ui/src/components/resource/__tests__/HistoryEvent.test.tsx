@@ -1,14 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, fireEvent, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import type { AttributedEvent } from '@xynoplex/core';
+import type { AttributedEvent } from '@xynolog/core';
 import type { LinkComponentProps, RouteBuilder } from '../../../contexts/RoutingContext';
 import { HistoryEvent } from '../HistoryEvent';
 import { renderWithProviders } from '../../../test-utils';
 
-// Mock @xynoplex/core - must use importOriginal to preserve EventBus etc.
-vi.mock('@xynoplex/core', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@xynoplex/core')>();
+// Mock @xynolog/core - must use importOriginal to preserve EventBus etc.
+vi.mock('@xynolog/core', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@xynolog/core')>();
   return {
     ...actual,
     getAnnotationIdFromEvent: vi.fn(() => null),
@@ -33,7 +33,7 @@ vi.mock('../event-formatting', () => ({
   getResourceCreationDetails: vi.fn(() => mockCreationDetails),
 }));
 
-import { getAnnotationIdFromEvent, resourceId, userId } from '@xynoplex/core';
+import { getAnnotationIdFromEvent, resourceId, userId } from '@xynolog/core';
 import {
   formatEventType,
   getEventDisplayContent,
@@ -49,7 +49,7 @@ const mockFormatEventType = formatEventType as ReturnType<typeof vi.fn>;
 
 const KB = 'did:web:xynoplex.github.io:xynoplex-template-kb';
 const PERSON = `${KB}:users:59523dd4-a0e3-4c1c-8c2d-7fcbe3d789dd`;
-const WORKER = `${KB}:agents:xynoplex-worker`;
+const WORKER = `${KB}:agents:xynolog-worker`;
 
 /** An event as a history reply carries it: the stored event and its actor's agent. */
 function makeStoredEvent(overrides: Partial<AttributedEvent> = {}): AttributedEvent {
@@ -134,7 +134,7 @@ describe('HistoryEvent', () => {
       />
     );
 
-    const wrapper = container.querySelector('.xynoplex-history-event');
+    const wrapper = container.querySelector('.xynolog-history-event');
     expect(wrapper?.tagName).toBe('DIV');
   });
 
@@ -153,7 +153,7 @@ describe('HistoryEvent', () => {
       />
     );
 
-    const wrapper = container.querySelector('.xynoplex-history-event');
+    const wrapper = container.querySelector('.xynolog-history-event');
     expect(wrapper?.tagName).toBe('BUTTON');
   });
 
@@ -195,7 +195,7 @@ describe('HistoryEvent', () => {
       />
     );
 
-    const wrapper = container.querySelector('.xynoplex-history-event');
+    const wrapper = container.querySelector('.xynolog-history-event');
     expect(wrapper).toHaveAttribute('data-related', 'true');
   });
 
@@ -213,7 +213,7 @@ describe('HistoryEvent', () => {
       />
     );
 
-    const wrapper = container.querySelector('.xynoplex-history-event');
+    const wrapper = container.querySelector('.xynolog-history-event');
     expect(wrapper).toHaveAttribute('data-related', 'false');
   });
 
@@ -254,7 +254,7 @@ describe('HistoryEvent', () => {
   it("names a software peer's row by its name, then its provider and model", () => {
     const event = makeStoredEvent({
       userId: userId(WORKER),
-      agent: { '@type': 'Software', '@id': WORKER, name: 'xynoplex-worker', provider: 'anthropic', model: 'claude-haiku-4-5' },
+      agent: { '@type': 'Software', '@id': WORKER, name: 'xynolog-worker', provider: 'anthropic', model: 'claude-haiku-4-5' },
     });
     renderWithProviders(
       <HistoryEvent
@@ -268,7 +268,7 @@ describe('HistoryEvent', () => {
       />
     );
 
-    expect(screen.getByText('xynoplex-worker (anthropic claude-haiku-4-5)')).toBeInTheDocument();
+    expect(screen.getByText('xynolog-worker (anthropic claude-haiku-4-5)')).toBeInTheDocument();
   });
 
   it('renders tag content with tag class', () => {
@@ -286,7 +286,7 @@ describe('HistoryEvent', () => {
       />
     );
 
-    const tagEl = container.querySelector('.xynoplex-history-event__tag');
+    const tagEl = container.querySelector('.xynolog-history-event__tag');
     expect(tagEl).toBeInTheDocument();
     expect(tagEl).toHaveTextContent('Person');
   });
@@ -306,7 +306,7 @@ describe('HistoryEvent', () => {
       />
     );
 
-    const quotedEl = container.querySelector('.xynoplex-history-event__text--quoted');
+    const quotedEl = container.querySelector('.xynolog-history-event__text--quoted');
     expect(quotedEl).toBeInTheDocument();
   });
 
@@ -346,7 +346,7 @@ describe('HistoryEvent', () => {
 
     expect(screen.getByText('Person')).toBeInTheDocument();
     expect(screen.getByText('Organization')).toBeInTheDocument();
-    const tags = container.querySelectorAll('.xynoplex-tag--small');
+    const tags = container.querySelectorAll('.xynolog-tag--small');
     expect(tags).toHaveLength(2);
   });
 
@@ -365,7 +365,7 @@ describe('HistoryEvent', () => {
       />
     );
 
-    expect(container.querySelector('.xynoplex-history-event__detail-value')).toHaveTextContent('Adam Pingel');
+    expect(container.querySelector('.xynolog-history-event__detail-value')).toHaveTextContent('Adam Pingel');
   });
 
   it('renders "View Original" link for cloned resources', () => {
@@ -433,7 +433,7 @@ describe('HistoryEvent', () => {
       />
     );
 
-    const emoji = container.querySelector('.xynoplex-history-event__emoji')!;
+    const emoji = container.querySelector('.xynolog-history-event__emoji')!;
     fireEvent.mouseEnter(emoji);
 
     // Should not fire immediately
@@ -466,7 +466,7 @@ describe('HistoryEvent', () => {
       />
     );
 
-    const emoji = container.querySelector('.xynoplex-history-event__emoji')!;
+    const emoji = container.querySelector('.xynolog-history-event__emoji')!;
     fireEvent.mouseEnter(emoji);
 
     // Leave before 300ms timeout fires
@@ -498,7 +498,7 @@ describe('HistoryEvent', () => {
       />
     );
 
-    const wrapper = container.querySelector('.xynoplex-history-event');
+    const wrapper = container.querySelector('.xynolog-history-event');
     expect(wrapper).toHaveAttribute('data-interactive', 'true');
   });
 
@@ -517,7 +517,7 @@ describe('HistoryEvent', () => {
       />
     );
 
-    const wrapper = container.querySelector('.xynoplex-history-event');
+    const wrapper = container.querySelector('.xynolog-history-event');
     expect(wrapper).not.toHaveAttribute('data-interactive');
   });
 });

@@ -2,15 +2,15 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import React from 'react';
 import { screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import type { AttributedEvent } from '@xynoplex/core';
+import type { AttributedEvent } from '@xynolog/core';
 import type { LinkComponentProps, RouteBuilder } from '../../../contexts/RoutingContext';
 import { AnnotationHistory } from '../AnnotationHistory';
 import type { HistoryEvent } from '../HistoryEvent';
 import { renderWithProviders } from '../../../test-utils';
 
-// Mock @xynoplex/core - must use importOriginal to preserve EventBus etc.
-vi.mock('@xynoplex/core', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@xynoplex/core')>();
+// Mock @xynolog/core - must use importOriginal to preserve EventBus etc.
+vi.mock('@xynolog/core', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@xynolog/core')>();
   return {
     ...actual,
     getAnnotationIdFromEvent: vi.fn(() => null),
@@ -42,7 +42,7 @@ vi.mock('../HistoryEvent', () => ({
   HistoryEvent: (props: React.ComponentProps<typeof HistoryEvent>) => MockHistoryEvent(props),
 }));
 
-import { getAnnotationIdFromEvent, resourceId, userId } from '@xynoplex/core';
+import { getAnnotationIdFromEvent, resourceId, userId } from '@xynolog/core';
 const mockGetAnnotationId = getAnnotationIdFromEvent as ReturnType<typeof vi.fn>;
 
 const USER = 'did:web:example.org:users:user-1';
@@ -229,8 +229,8 @@ describe('AnnotationHistory', () => {
       />
     );
 
-    expect(container.querySelector('.xynoplex-history-panel')).toBeInTheDocument();
-    expect(container.querySelector('.xynoplex-history-panel__title')).toBeInTheDocument();
-    expect(container.querySelector('.xynoplex-history-panel__list')).toBeInTheDocument();
+    expect(container.querySelector('.xynolog-history-panel')).toBeInTheDocument();
+    expect(container.querySelector('.xynolog-history-panel__title')).toBeInTheDocument();
+    expect(container.querySelector('.xynolog-history-panel__list')).toBeInTheDocument();
   });
 });

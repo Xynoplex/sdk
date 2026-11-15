@@ -5,13 +5,13 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import { of } from 'rxjs';
-import { CacheObservable, createMarkStateUnit, type MarkStateUnit, type XynoplexSession } from '@xynoplex/sdk';
+import { CacheObservable, createMarkStateUnit, type MarkStateUnit, type XynologSession } from '@xynolog/sdk';
 import { TaggingPanel } from '../TaggingPanel';
-import { FrameRefusal, type EventBus, type EventMap, type TagSchema } from '@xynoplex/core';
+import { FrameRefusal, type EventBus, type EventMap, type TagSchema } from '@xynolog/core';
 import type { TagEntry } from '../TagEntry';
-import { createTestXynoplexWrapper } from '../../../../test-utils';
+import { createTestXynologWrapper } from '../../../../test-utils';
 
-import type { Annotation, AnnotationId } from '@xynoplex/core';
+import type { Annotation, AnnotationId } from '@xynolog/core';
 
 // Composition-based event tracker
 interface TrackedEvent {
@@ -56,7 +56,7 @@ const TEST_TAG_SCHEMAS: TagSchema[] = [
   },
 ];
 
-type SessionProps = { session: XynoplexSession | null; mark: MarkStateUnit | undefined };
+type SessionProps = { session: XynologSession | null; mark: MarkStateUnit | undefined };
 
 // The mark units the render helpers make, disposed after each test.
 const markUnits: MarkStateUnit[] = [];
@@ -65,7 +65,7 @@ afterEach(() => {
 });
 
 const renderWithEventBus = (component: React.ReactElement<SessionProps>, tracker?: ReturnType<typeof createEventTracker>) => {
-  const { XynoplexWrapper, eventBus, client, session } = createTestXynoplexWrapper();
+  const { XynologWrapper, eventBus, client, session } = createTestXynologWrapper();
   const mark = createMarkStateUnit(client, resourceId('res-1'));
   markUnits.push(mark);
   vi.spyOn(client.browse, 'tagSchemas').mockReturnValue(
@@ -73,7 +73,7 @@ const renderWithEventBus = (component: React.ReactElement<SessionProps>, tracker
   );
   if (tracker) tracker._attach(eventBus);
   const Wrapper = ({ children }: { children: React.ReactNode }) => (
-    <XynoplexWrapper>{children}</XynoplexWrapper>
+    <XynologWrapper>{children}</XynologWrapper>
   );
   // The component is provider-free: the `session` prop is the only session it
   // sees. Inject the factory session here so it is the SAME session whose
@@ -85,14 +85,14 @@ const renderWithEventBus = (component: React.ReactElement<SessionProps>, tracker
 // (post-bootstrap, no schemas registered). Distinct from the still-
 // loading case where the observable yields `undefined`.
 const renderWithEmptyRegistry = (component: React.ReactElement<SessionProps>) => {
-  const { XynoplexWrapper, client, session } = createTestXynoplexWrapper();
+  const { XynologWrapper, client, session } = createTestXynologWrapper();
   const mark = createMarkStateUnit(client, resourceId('res-1'));
   markUnits.push(mark);
   vi.spyOn(client.browse, 'tagSchemas').mockReturnValue(
     CacheObservable.from(of({ status: 'ready' as const, value: [] }))
   );
   const Wrapper = ({ children }: { children: React.ReactNode }) => (
-    <XynoplexWrapper>{children}</XynoplexWrapper>
+    <XynologWrapper>{children}</XynologWrapper>
   );
   return render(React.cloneElement(component, { session, mark }), { wrapper: Wrapper });
 };
@@ -129,9 +129,9 @@ vi.mock('../../../../contexts/TranslationContext', () => ({
   TranslationProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
-// Mock @xynoplex/http-transport utilities
-vi.mock('@xynoplex/core', async () => {
-  const actual = await vi.importActual('@xynoplex/core');
+// Mock @xynolog/http-transport utilities
+vi.mock('@xynolog/core', async () => {
+  const actual = await vi.importActual('@xynolog/core');
   return {
     ...actual,
     getTextPositionSelector: vi.fn(),
@@ -148,7 +148,7 @@ vi.mock('../TagEntry', () => ({
   ),
 }));
 
-import { getTextPositionSelector, getTargetSelector, resourceId } from '@xynoplex/core';
+import { getTextPositionSelector, getTargetSelector, resourceId } from '@xynolog/core';
 const mockGetTextPositionSelector = getTextPositionSelector as MockedFunction<typeof getTextPositionSelector>;
 const mockGetTargetSelector = getTargetSelector as MockedFunction<typeof getTargetSelector>;
 
@@ -266,7 +266,7 @@ describe('TaggingPanel Component', () => {
       const { container } = renderWithEventBus(<TaggingPanel {...defaultProps} />);
 
       const panel = container.firstChild as HTMLElement;
-      expect(panel).toHaveClass('xynoplex-panel');
+      expect(panel).toHaveClass('xynolog-panel');
     });
   });
 
@@ -447,7 +447,7 @@ describe('TaggingPanel Component', () => {
         />
       );
 
-      const tagForm = container.querySelector('.xynoplex-annotation-prompt');
+      const tagForm = container.querySelector('.xynolog-annotation-prompt');
       expect(tagForm).toBeInTheDocument();
       expect(tagForm).toHaveAttribute('data-type', 'tag');
     });
@@ -616,7 +616,7 @@ describe('TaggingPanel Component', () => {
       renderWithEventBus(<TaggingPanel {...defaultProps} />);
 
       const headings = screen.getAllByText(/Tags/);
-      expect(headings[0]).toHaveClass('xynoplex-panel-header__text');
+      expect(headings[0]).toHaveClass('xynolog-panel-header__text');
     });
 
     it('should have proper checkbox labels', async () => {

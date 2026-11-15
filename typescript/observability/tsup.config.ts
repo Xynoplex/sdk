@@ -13,6 +13,6 @@ export default defineConfig({
   sourcemap: true,
   splitting: false,
   treeshake: true,
-  // All deps (OTel SDKs, @xynoplex/core) stay external — tsup
+  // All deps (OTel SDKs, @xynolog/core) stay external — tsup
   // excludes package.json dependencies from the bundle by default.
 });

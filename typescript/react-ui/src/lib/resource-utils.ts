@@ -3,7 +3,7 @@
  * Shared helper functions for resource display and metadata
  */
 
-import { baseMediaType, capabilitiesOf } from '@xynoplex/core';
+import { baseMediaType, capabilitiesOf } from '@xynolog/core';
 
 /**
  * Get icon emoji based on media type.

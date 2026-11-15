@@ -7,7 +7,7 @@
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render } from '@testing-library/react';
-import type { GatheredContext } from '@xynoplex/core';
+import type { GatheredContext } from '@xynolog/core';
 import { GatherContextStep } from '../GatherContextStep';
 import { ContextSummary } from '../ContextSummary';
 
@@ -122,8 +122,8 @@ describe('GatheredContext display — resource focus', () => {
     expect(container.textContent).toContain('Related Resource'); // graph view via ContextSummary
     // annotation-only controls are gated out for a resource focus
     expect(container.textContent).not.toContain('Strategy');
-    expect(container.querySelector('.xynoplex-gather__footer')).toBeNull();
-    expect(container.querySelector('.xynoplex-gather__hint-textarea')).toBeNull();
+    expect(container.querySelector('.xynolog-gather__footer')).toBeNull();
+    expect(container.querySelector('.xynolog-gather__hint-textarea')).toBeNull();
   });
 
   it('GatherContextStep still shows the footer for an annotation focus', () => {
@@ -136,7 +136,7 @@ describe('GatheredContext display — resource focus', () => {
         translations={t}
       />,
     );
-    expect(container.querySelector('.xynoplex-gather__footer')).not.toBeNull();
+    expect(container.querySelector('.xynolog-gather__footer')).not.toBeNull();
     expect(container.textContent).toContain('Strategy');
   });
 
@@ -153,7 +153,7 @@ describe('GatheredContext display — resource focus', () => {
         translations={t}
       />,
     );
-    const quote = container.querySelector('.xynoplex-gather__source-context');
+    const quote = container.querySelector('.xynolog-gather__source-context');
     expect(quote).not.toBeNull();
     expect(quote!.textContent).toBe('a term b'); // before + text + after, verbatim
     // Quoted document prose, not code.
@@ -170,19 +170,19 @@ describe('GatheredContext display — resource focus', () => {
         translations={t}
       />,
     );
-    const strip = container.querySelector('.xynoplex-gather__source-strip')!;
+    const strip = container.querySelector('.xynolog-gather__source-strip')!;
 
     // Entity chips are tokens — they live on the label row, outside the quotation.
-    const chips = Array.from(strip.querySelectorAll('.xynoplex-chip'));
+    const chips = Array.from(strip.querySelectorAll('.xynolog-chip'));
     const topicChip = chips.find((c) => c.textContent === 'Topic');
     expect(topicChip).toBeDefined();
-    expect(topicChip!.closest('.xynoplex-gather__source-context')).toBeNull();
+    expect(topicChip!.closest('.xynolog-gather__source-context')).toBeNull();
 
     // Motivation is WORN, never labeled: no chip says 'linking' —
     expect(chips.filter((c) => c.textContent === 'linking')).toEqual([]);
     // — the selected span carries the viewer's own class for the motivation
     // (the registry's applied name; the motivation stylesheets declare it as a
-    // synonym of `xynoplex-motivation-reference`), with no inline highlight
+    // synonym of `xynolog-motivation-reference`), with no inline highlight
     // style of its own.
     const span = strip.querySelector('.annotation-reference') as HTMLElement | null;
     expect(span).not.toBeNull();
@@ -213,9 +213,9 @@ describe('GatheredContext display — resource focus', () => {
     const item = Array.from(container.querySelectorAll('li'))
       .find((el) => el.textContent === 'Suggested Topic');
     expect(item).toBeDefined();
-    expect(item!.className).not.toContain('xynoplex-chip');
+    expect(item!.className).not.toContain('xynolog-chip');
     // The entity-type tokens beside the summary stay chips.
-    const chipTexts = Array.from(container.querySelectorAll('.xynoplex-chip')).map((el) => el.textContent);
+    const chipTexts = Array.from(container.querySelectorAll('.xynolog-chip')).map((el) => el.textContent);
     expect(chipTexts).toContain('Topic');
     expect(chipTexts).not.toContain('Suggested Topic');
   });
@@ -229,7 +229,7 @@ describe('GatheredContext display — resource focus', () => {
         contextLoading={false} contextError={null} translations={t}
       />,
     );
-    const pane = container.querySelector('.xynoplex-gather-pane--graph');
+    const pane = container.querySelector('.xynolog-gather-pane--graph');
     expect(pane).not.toBeNull();
     expect(pane!.textContent).toContain('In the graph');
     expect(pane!.textContent).toContain('Cedar County sits inside the Black Hawk Purchase.');
@@ -242,10 +242,10 @@ describe('GatheredContext display — resource focus', () => {
         contextLoading={false} contextError={null} translations={t}
       />,
     );
-    const cards = Array.from(container.querySelectorAll('.xynoplex-corpus__card'));
+    const cards = Array.from(container.querySelectorAll('.xynolog-corpus__card'));
     expect(cards).toHaveLength(3);
     // Descending by score, whatever order the wire delivered.
-    expect(cards.map((c) => c.querySelector('.xynoplex-corpus__source')!.textContent))
+    expect(cards.map((c) => c.querySelector('.xynolog-corpus__source')!.textContent))
       .toEqual(['Best Doc', 'Middling Doc', 'Weak Doc']);
     // The card names its source (`resourceName`, required on every match),
     // shows the snippet, and formats the 0–1 cosine to two places (the search
@@ -253,7 +253,7 @@ describe('GatheredContext display — resource focus', () => {
     expect(cards[0]!.textContent).toContain('the best passage');
     expect(cards[0]!.textContent).toContain('0.91');
     // Match-level entityTypes are tokens — chips on the card.
-    expect(cards[0]!.querySelector('.xynoplex-chip')!.textContent).toBe('Battle');
+    expect(cards[0]!.querySelector('.xynolog-chip')!.textContent).toBe('Battle');
     // machineRead is a trust marker that appears ONLY when the flag travels.
     expect(cards[0]!.textContent).toContain('OCR');
     expect(cards[1]!.textContent).not.toContain('OCR');
@@ -266,7 +266,7 @@ describe('GatheredContext display — resource focus', () => {
         contextLoading={false} contextError={null} translations={t}
       />,
     );
-    expect(container.querySelector('.xynoplex-corpus__receipt')!.textContent)
+    expect(container.querySelector('.xynolog-corpus__receipt')!.textContent)
       .toContain('Question excluded from this recall');
 
     rerender(
@@ -275,7 +275,7 @@ describe('GatheredContext display — resource focus', () => {
         contextLoading={false} contextError={null} translations={t}
       />,
     );
-    expect(container.querySelector('.xynoplex-corpus__receipt')).toBeNull();
+    expect(container.querySelector('.xynolog-corpus__receipt')).toBeNull();
   });
 
   it('emptiness is evidence: each pane renders its empty-state copy', () => {
@@ -288,9 +288,9 @@ describe('GatheredContext display — resource focus', () => {
     const { container } = render(
       <GatherContextStep context={empty} contextLoading={false} contextError={null} translations={t} />,
     );
-    expect(container.querySelector('.xynoplex-gather-pane--graph')!.textContent)
+    expect(container.querySelector('.xynolog-gather-pane--graph')!.textContent)
       .toContain('No links yet');
-    expect(container.querySelector('.xynoplex-gather-pane--corpus')!.textContent)
+    expect(container.querySelector('.xynolog-gather-pane--corpus')!.textContent)
       .toContain('Nothing similar in the corpus.');
   });
 
@@ -302,10 +302,10 @@ describe('GatheredContext display — resource focus', () => {
         annotate={annotate} translations={t}
       />,
     );
-    const textarea = container.querySelector('.xynoplex-gather__hint-textarea');
+    const textarea = container.querySelector('.xynolog-gather__hint-textarea');
     expect(textarea).not.toBeNull();
-    expect(textarea!.closest('.xynoplex-gather__body')).toBeNull(); // out of the grid
-    expect(container.querySelector('.xynoplex-gather__hint-row')).not.toBeNull();
+    expect(textarea!.closest('.xynolog-gather__body')).toBeNull(); // out of the grid
+    expect(container.querySelector('.xynolog-gather__hint-row')).not.toBeNull();
   });
 
   // ── The graph pane's body is an actual graph ────────────────────────────────
@@ -356,17 +356,17 @@ describe('GatheredContext display — resource focus', () => {
 
   it('draws the neighborhood as SVG, with no lists', () => {
     const { container } = renderViz();
-    const pane = container.querySelector('.xynoplex-gather-pane--graph')!;
+    const pane = container.querySelector('.xynolog-gather-pane--graph')!;
     expect(pane.querySelector('svg')).not.toBeNull();
     // focal + peer + citer + sibling; the citing annotation collapses into its edge
-    expect(pane.querySelectorAll('.xynoplex-graph__node')).toHaveLength(4);
-    expect(pane.querySelectorAll('.xynoplex-graph__edge')).toHaveLength(3);
+    expect(pane.querySelectorAll('.xynolog-graph__node')).toHaveLength(4);
+    expect(pane.querySelectorAll('.xynolog-graph__edge')).toHaveLength(3);
     expect(pane.querySelector('ul')).toBeNull(); // no list beside the graph
   });
 
   it('the focal node is visually distinct, and there is exactly one', () => {
     const { container } = renderViz();
-    const focal = container.querySelectorAll('.xynoplex-graph__node--focal');
+    const focal = container.querySelectorAll('.xynolog-graph__node--focal');
     expect(focal).toHaveLength(1);
     expect(focal[0]!.textContent).toContain('My Resource');
   });
@@ -427,7 +427,7 @@ describe('GatheredContext display — resource focus', () => {
   it('layout is deterministic — same context, same positions', () => {
     const positions = () => {
       const { container, unmount } = renderViz();
-      const snap = Array.from(container.querySelectorAll('.xynoplex-graph__node rect'))
+      const snap = Array.from(container.querySelectorAll('.xynolog-graph__node rect'))
         .map((r) => `${r.closest('[data-node-id]')!.getAttribute('data-node-id')}@${r.getAttribute('x')},${r.getAttribute('y')}`)
         .join('|');
       unmount();
@@ -483,15 +483,15 @@ describe('GatheredContext display — resource focus', () => {
       const svg = container.querySelector('svg')!;
       // Three columns, three rows (focal + two sibling rows) — not six rows.
       expect(svg.getAttribute('viewBox')).toBe('0 0 628 172');
-      const rects = Array.from(container.querySelectorAll('.xynoplex-graph__node--annotation rect'));
+      const rects = Array.from(container.querySelectorAll('.xynolog-graph__node--annotation rect'));
       expect(new Set(rects.map((r) => r.getAttribute('x')))).toEqual(new Set(['8', '224', '440']));
       expect(Math.max(...rects.map((r) => Number(r.getAttribute('y'))))).toBe(112); // row 2
     });
 
     it('wrap compacts, never clips — every sibling and edge still draws', () => {
       const { container } = render(<ContextSummary context={middleOnlyContext(11)} translations={t} />);
-      expect(container.querySelectorAll('.xynoplex-graph__node--annotation')).toHaveLength(11);
-      expect(container.querySelectorAll('.xynoplex-graph__edge--annotation-of')).toHaveLength(11);
+      expect(container.querySelectorAll('.xynolog-graph__node--annotation')).toHaveLength(11);
+      expect(container.querySelectorAll('.xynolog-graph__edge--annotation-of')).toHaveLength(11);
     });
 
     it('a fully populated graph keeps the three-layer full-width shape', () => {
@@ -504,9 +504,9 @@ describe('GatheredContext display — resource focus', () => {
 
     it('there is no floating cited-line caption — the drawn citer nodes ARE the count', () => {
       const { container } = renderViz();
-      const pane = container.querySelector('.xynoplex-gather-pane--graph')!;
+      const pane = container.querySelector('.xynolog-gather-pane--graph')!;
       expect(container.querySelector('[data-node-id="res-3"]')).not.toBeNull(); // citer drawn
-      expect(pane.querySelector('.xynoplex-graph__cited-line')).toBeNull();
+      expect(pane.querySelector('.xynolog-graph__cited-line')).toBeNull();
       expect(pane.textContent).not.toContain('Cited by (1)');
     });
   });
@@ -523,8 +523,8 @@ describe('GatheredContext display — resource focus', () => {
         translations={t}
       />,
     );
-    expect(container.querySelector('.xynoplex-gather__footer')).toBeNull();
-    expect(container.querySelector('.xynoplex-gather__hint-textarea')).toBeNull();
+    expect(container.querySelector('.xynolog-gather__footer')).toBeNull();
+    expect(container.querySelector('.xynolog-gather__hint-textarea')).toBeNull();
   });
 });
 

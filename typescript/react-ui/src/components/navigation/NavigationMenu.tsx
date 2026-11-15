@@ -23,7 +23,7 @@ export function NavigationMenu({
   className = "",
   currentPath
 }: NavigationMenuProps) {
-  const navClassName = className ? `xynoplex-navigation-menu ${className}` : "xynoplex-navigation-menu";
+  const navClassName = className ? `xynolog-navigation-menu ${className}` : "xynolog-navigation-menu";
 
   // Helper to check if a path is current
   const isCurrentPage = (path: string) => {
@@ -37,17 +37,17 @@ export function NavigationMenu({
       <Link
         href={routes.knowledge?.() || '/know'}
         {...(onItemClick && { onClick: onItemClick })}
-        className="xynoplex-navigation-menu__link"
+        className="xynolog-navigation-menu__link"
         aria-current={isCurrentPage(routes.knowledge?.() || '/know') ? 'page' : undefined}
       >
         {t('know')}
       </Link>
 
-      <hr className="xynoplex-navigation-menu__divider" />
+      <hr className="xynolog-navigation-menu__divider" />
       <Link
         href={routes.moderate?.() || '/moderate'}
         {...(onItemClick && { onClick: onItemClick })}
-        className="xynoplex-navigation-menu__link"
+        className="xynolog-navigation-menu__link"
         aria-current={isCurrentPage(routes.moderate?.() || '/moderate') ? 'page' : undefined}
       >
         {t('moderate')}

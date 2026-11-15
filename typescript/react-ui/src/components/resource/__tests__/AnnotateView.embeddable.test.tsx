@@ -9,10 +9,10 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { englishTranslationManager } from '../../../test-utils';
 import '@testing-library/jest-dom';
-import type { XynoplexSession } from '@xynoplex/sdk';
+import type { XynologSession } from '@xynolog/sdk';
 import type { AnnotationUIState } from '../../../types/annotation-props';
 import { AnnotateView } from '../AnnotateView';
-import { resourceId, EventBus } from '@xynoplex/core';
+import { resourceId, EventBus } from '@xynolog/core';
 
 vi.mock('../../CodeMirrorRenderer', () => ({ CodeMirrorRenderer: () => <div>cm-mock</div> }));
 
@@ -25,13 +25,13 @@ const uiState: AnnotationUIState = {
   scrollToAnnotationId: null,
 };
 
-function fakeSession(): XynoplexSession {
+function fakeSession(): XynologSession {
   return {
     client: {
       bus: new EventBus(),
       mark: { request: vi.fn() },
     },
-  } as unknown as XynoplexSession;
+  } as unknown as XynologSession;
 }
 
 describe('AnnotateView — embeddable (session prop, no session provider)', () => {

@@ -22,7 +22,7 @@ import (
 	"strings"
 	"time"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
+	xynolog "github.com/xynolog/sdk/go"
 )
 
 // SearchState is what a search shows: its results, and whether more are on
@@ -38,8 +38,8 @@ type SearchPipeline[T any] struct {
 	search   func(ctx context.Context, query string) iter.Seq2[[]T, bool]
 	debounce time.Duration
 
-	query *xynoplex.Variable[string]
-	state *xynoplex.Variable[*SearchState[T]]
+	query *xynolog.Variable[string]
+	state *xynolog.Variable[*SearchState[T]]
 
 	life
 	// waiting is the debounce under way, and settling counts them, so one
@@ -53,7 +53,7 @@ type SearchPipeline[T any] struct {
 	abandon context.CancelFunc
 }
 
-var _ xynoplex.StateUnit = (*SearchPipeline[string])(nil)
+var _ xynolog.StateUnit = (*SearchPipeline[string])(nil)
 
 // NewSearchPipeline is a pipeline searching with search, once a query has
 // stayed the same for debounce (Timing.SearchDebounce, unless the caller says
@@ -62,8 +62,8 @@ func NewSearchPipeline[T any](search func(ctx context.Context, query string) ite
 	p := &SearchPipeline[T]{
 		search:   search,
 		debounce: debounce,
-		query:    xynoplex.NewVariable(initialQuery),
-		state:    xynoplex.NewVariable(&SearchState[T]{Results: []T{}}),
+		query:    xynolog.NewVariable(initialQuery),
+		state:    xynolog.NewVariable(&SearchState[T]{Results: []T{}}),
 		life:     newLife(),
 	}
 	p.mu.Lock()
@@ -74,11 +74,11 @@ func NewSearchPipeline[T any](search func(ctx context.Context, query string) ite
 }
 
 // Query is the query as it was last set.
-func (p *SearchPipeline[T]) Query() xynoplex.Watched[string] { return p.query.Reading() }
+func (p *SearchPipeline[T]) Query() xynolog.Watched[string] { return p.query.Reading() }
 
 // State is the results of the query it last settled on, and whether more are
 // on their way.
-func (p *SearchPipeline[T]) State() xynoplex.Watched[*SearchState[T]] { return p.state.Reading() }
+func (p *SearchPipeline[T]) State() xynolog.Watched[*SearchState[T]] { return p.state.Reading() }
 
 // SetQuery sets the query. The same query again is no change, and waits no
 // longer.

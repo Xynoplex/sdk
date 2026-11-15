@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Xynoplex/sdk/go/state"
+	"github.com/xynolog/sdk/go/state"
 )
 
 // ShowHover shows what is hovered as it changes.

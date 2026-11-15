@@ -5,7 +5,7 @@ import asyncio
 import pytest
 from aio import run, soon
 
-from xynoplex.watched import NeverReached, Variable, reached
+from xynolog.watched import NeverReached, Variable, reached
 
 
 def test_a_reader_is_given_the_value_as_it_is_then_each_change() -> None:

@@ -12,29 +12,29 @@
    ============================================ */
 :root {
   /* Light theme colors */
-  --xynoplex-motivation-comment-primary: var(--xynoplex-color-gray-700);
-  --xynoplex-motivation-comment-secondary: var(--xynoplex-color-gray-600);
-  --xynoplex-motivation-comment-bg: var(--xynoplex-color-gray-100);
-  --xynoplex-motivation-comment-bg-hover: var(--xynoplex-color-gray-200);
-  --xynoplex-motivation-comment-border: rgba(107, 114, 128, 0.3);
-  --xynoplex-motivation-comment-border-hover: rgba(107, 114, 128, 0.5);
-  --xynoplex-motivation-comment-text: var(--xynoplex-color-gray-700);
-  --xynoplex-motivation-comment-outline: var(--xynoplex-color-gray-900);
+  --xynolog-motivation-comment-primary: var(--xynolog-color-gray-700);
+  --xynolog-motivation-comment-secondary: var(--xynolog-color-gray-600);
+  --xynolog-motivation-comment-bg: var(--xynolog-color-gray-100);
+  --xynolog-motivation-comment-bg-hover: var(--xynolog-color-gray-200);
+  --xynolog-motivation-comment-border: rgba(107, 114, 128, 0.3);
+  --xynolog-motivation-comment-border-hover: rgba(107, 114, 128, 0.5);
+  --xynolog-motivation-comment-text: var(--xynolog-color-gray-700);
+  --xynolog-motivation-comment-outline: var(--xynolog-color-gray-900);
 
   /* Dark theme colors */
-  --xynoplex-motivation-comment-dark-bg: rgba(55, 65, 81, 0.3);
-  --xynoplex-motivation-comment-dark-bg-hover: var(--xynoplex-bg-secondary);
-  --xynoplex-motivation-comment-dark-text: var(--xynoplex-color-gray-300);
-  --xynoplex-motivation-comment-dark-outline: var(--xynoplex-color-gray-100);
-  --xynoplex-motivation-comment-dark-primary: var(--xynoplex-color-gray-400);
+  --xynolog-motivation-comment-dark-bg: rgba(55, 65, 81, 0.3);
+  --xynolog-motivation-comment-dark-bg-hover: var(--xynolog-bg-secondary);
+  --xynolog-motivation-comment-dark-text: var(--xynolog-color-gray-300);
+  --xynolog-motivation-comment-dark-outline: var(--xynolog-color-gray-100);
+  --xynolog-motivation-comment-dark-primary: var(--xynolog-color-gray-400);
 
   /* Panel backgrounds */
-  --xynoplex-motivation-comment-panel-bg: rgba(243, 244, 246, 0.5);
-  --xynoplex-motivation-comment-panel-bg-dark: rgba(55, 65, 81, 0.2);
+  --xynolog-motivation-comment-panel-bg: rgba(243, 244, 246, 0.5);
+  --xynolog-motivation-comment-panel-bg-dark: rgba(55, 65, 81, 0.2);
 
   /* Button gradients */
-  --xynoplex-motivation-comment-button-bg: linear-gradient(to right, var(--xynoplex-color-purple-600), var(--xynoplex-color-blue-600));
-  --xynoplex-motivation-comment-button-bg-hover: linear-gradient(to right, var(--xynoplex-color-purple-700), var(--xynoplex-color-blue-700));
+  --xynolog-motivation-comment-button-bg: linear-gradient(to right, var(--xynolog-color-purple-600), var(--xynolog-color-blue-600));
+  --xynolog-motivation-comment-button-bg-hover: linear-gradient(to right, var(--xynolog-color-purple-700), var(--xynolog-color-blue-700));
 }
 
 /* ============================================
@@ -45,120 +45,120 @@
   padding: 0 0.125rem;
   cursor: pointer;
   transition: all 200ms;
-  outline: 2px dashed var(--xynoplex-motivation-comment-outline);
+  outline: 2px dashed var(--xynolog-motivation-comment-outline);
   outline-offset: 1px;
 }
 
 .annotation-comment:hover {
-  background: var(--xynoplex-motivation-comment-bg);
+  background: var(--xynolog-motivation-comment-bg);
 }
 
 [data-theme="dark"] .annotation-comment {
-  outline: 2px dashed var(--xynoplex-motivation-comment-dark-outline);
+  outline: 2px dashed var(--xynolog-motivation-comment-dark-outline);
 }
 
 [data-theme="dark"] .annotation-comment:hover {
-  background: var(--xynoplex-motivation-comment-dark-bg-hover);
+  background: var(--xynolog-motivation-comment-dark-bg-hover);
 }
 
 /* ============================================
    Panel Entry Styling
    ============================================ */
-.xynoplex-annotation-entry[data-type="comment"] {
-  border-color: var(--xynoplex-motivation-comment-border);
+.xynolog-annotation-entry[data-type="comment"] {
+  border-color: var(--xynolog-motivation-comment-border);
 }
 
-[data-theme="dark"] .xynoplex-annotation-entry[data-type="comment"] {
-  border-color: var(--xynoplex-motivation-comment-border);
+[data-theme="dark"] .xynolog-annotation-entry[data-type="comment"] {
+  border-color: var(--xynolog-motivation-comment-border);
 }
 
-.xynoplex-annotation-entry[data-type="comment"]:hover {
-  background: var(--xynoplex-motivation-comment-panel-bg);
-  border-color: var(--xynoplex-motivation-comment-border-hover);
+.xynolog-annotation-entry[data-type="comment"]:hover {
+  background: var(--xynolog-motivation-comment-panel-bg);
+  border-color: var(--xynolog-motivation-comment-border-hover);
 }
 
-[data-theme="dark"] .xynoplex-annotation-entry[data-type="comment"]:hover {
-  background: var(--xynoplex-motivation-comment-panel-bg-dark);
+[data-theme="dark"] .xynolog-annotation-entry[data-type="comment"]:hover {
+  background: var(--xynolog-motivation-comment-panel-bg-dark);
 }
 
 /* ============================================
    Quote/Excerpt Styling in Panels
    ============================================ */
-.xynoplex-annotation-entry__quote[data-type="comment"] {
-  background: var(--xynoplex-motivation-comment-bg);
-  color: var(--xynoplex-motivation-comment-text);
+.xynolog-annotation-entry__quote[data-type="comment"] {
+  background: var(--xynolog-motivation-comment-bg);
+  color: var(--xynolog-motivation-comment-text);
   padding: 0.375rem 0.5rem;
-  border-radius: var(--xynoplex-radius-sm);
-  border-left: 3px dashed var(--xynoplex-motivation-comment-border-hover);
+  border-radius: var(--xynolog-radius-sm);
+  border-left: 3px dashed var(--xynolog-motivation-comment-border-hover);
 }
 
-[data-theme="dark"] .xynoplex-annotation-entry__quote[data-type="comment"] {
-  background: var(--xynoplex-motivation-comment-dark-bg);
-  color: var(--xynoplex-motivation-comment-dark-text);
-  border-left-color: var(--xynoplex-motivation-comment-dark-primary);
+[data-theme="dark"] .xynolog-annotation-entry__quote[data-type="comment"] {
+  background: var(--xynolog-motivation-comment-dark-bg);
+  color: var(--xynolog-motivation-comment-dark-text);
+  border-left-color: var(--xynolog-motivation-comment-dark-primary);
 }
 
 /* ============================================
    Button Styling
    ============================================ */
-.xynoplex-button[data-variant="delegate"][data-type="comment"] {
-  background: linear-gradient(to right, var(--xynoplex-color-gray-800), var(--xynoplex-color-gray-700)) !important;
-  color: var(--xynoplex-color-white) !important;
-  border: 1px solid var(--xynoplex-motivation-comment-border);
+.xynolog-button[data-variant="delegate"][data-type="comment"] {
+  background: linear-gradient(to right, var(--xynolog-color-gray-800), var(--xynolog-color-gray-700)) !important;
+  color: var(--xynolog-color-white) !important;
+  border: 1px solid var(--xynolog-motivation-comment-border);
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
-.xynoplex-button[data-variant="delegate"][data-type="comment"]:hover:not(:disabled) {
-  background: linear-gradient(to right, var(--xynoplex-color-gray-900), var(--xynoplex-color-gray-800)) !important;
-  border-color: var(--xynoplex-color-gray-600);
+.xynolog-button[data-variant="delegate"][data-type="comment"]:hover:not(:disabled) {
+  background: linear-gradient(to right, var(--xynolog-color-gray-900), var(--xynolog-color-gray-800)) !important;
+  border-color: var(--xynolog-color-gray-600);
 }
 
-[data-theme="dark"] .xynoplex-button[data-variant="delegate"][data-type="comment"] {
-  background: linear-gradient(to right, var(--xynoplex-color-gray-600), var(--xynoplex-color-gray-500)) !important;
-  color: var(--xynoplex-color-white) !important;
-  border-color: var(--xynoplex-motivation-comment-dark-primary);
+[data-theme="dark"] .xynolog-button[data-variant="delegate"][data-type="comment"] {
+  background: linear-gradient(to right, var(--xynolog-color-gray-600), var(--xynolog-color-gray-500)) !important;
+  color: var(--xynolog-color-white) !important;
+  border-color: var(--xynolog-motivation-comment-dark-primary);
 }
 
-[data-theme="dark"] .xynoplex-button[data-variant="delegate"][data-type="comment"]:hover:not(:disabled) {
-  background: linear-gradient(to right, var(--xynoplex-color-gray-500), var(--xynoplex-color-gray-400)) !important;
-  border-color: var(--xynoplex-color-gray-400);
+[data-theme="dark"] .xynolog-button[data-variant="delegate"][data-type="comment"]:hover:not(:disabled) {
+  background: linear-gradient(to right, var(--xynolog-color-gray-500), var(--xynolog-color-gray-400)) !important;
+  border-color: var(--xynolog-color-gray-400);
 }
 
-.xynoplex-button[data-variant="delegate"][data-type="comment"]:focus-visible {
-  outline: 2px solid var(--xynoplex-motivation-comment-primary);
+.xynolog-button[data-variant="delegate"][data-type="comment"]:focus-visible {
+  outline: 2px solid var(--xynolog-motivation-comment-primary);
   outline-offset: 2px;
 }
 
-[data-theme="dark"] .xynoplex-button[data-variant="delegate"][data-type="comment"]:focus-visible {
-  outline: 2px solid var(--xynoplex-color-purple-400);
+[data-theme="dark"] .xynolog-button[data-variant="delegate"][data-type="comment"]:focus-visible {
+  outline: 2px solid var(--xynolog-color-purple-400);
   outline-offset: 2px;
 }
 
 /* ============================================
    Comment Input Areas
    ============================================ */
-.xynoplex-annotation-prompt[data-type="comment"] {
-  background: var(--xynoplex-motivation-comment-bg);
-  padding: var(--xynoplex-panel-padding);
-  border-radius: var(--xynoplex-radius-md);
-  border: 2px dashed var(--xynoplex-motivation-comment-border);
+.xynolog-annotation-prompt[data-type="comment"] {
+  background: var(--xynolog-motivation-comment-bg);
+  padding: var(--xynolog-panel-padding);
+  border-radius: var(--xynolog-radius-md);
+  border: 2px dashed var(--xynolog-motivation-comment-border);
 }
 
-[data-theme="dark"] .xynoplex-annotation-prompt[data-type="comment"] {
-  background: var(--xynoplex-motivation-comment-dark-bg);
-  border-color: var(--xynoplex-motivation-comment-dark-primary);
+[data-theme="dark"] .xynolog-annotation-prompt[data-type="comment"] {
+  background: var(--xynolog-motivation-comment-dark-bg);
+  border-color: var(--xynolog-motivation-comment-dark-primary);
 }
 
-.xynoplex-annotation-prompt__quote {
-  background: var(--xynoplex-bg-primary);
-  padding: var(--xynoplex-panel-padding-sm);
-  border-radius: var(--xynoplex-radius-sm);
-  border-left: 3px solid var(--xynoplex-motivation-comment-primary);
-  margin-bottom: var(--xynoplex-panel-gap-sm);
+.xynolog-annotation-prompt__quote {
+  background: var(--xynolog-bg-primary);
+  padding: var(--xynolog-panel-padding-sm);
+  border-radius: var(--xynolog-radius-sm);
+  border-left: 3px solid var(--xynolog-motivation-comment-primary);
+  margin-bottom: var(--xynolog-panel-gap-sm);
 }
 
-[data-theme="dark"] .xynoplex-annotation-prompt__quote {
-  background: var(--xynoplex-bg-secondary);
-  border-left-color: var(--xynoplex-motivation-comment-dark-primary);
+[data-theme="dark"] .xynolog-annotation-prompt__quote {
+  background: var(--xynolog-bg-secondary);
+  border-left-color: var(--xynolog-motivation-comment-dark-primary);
 }

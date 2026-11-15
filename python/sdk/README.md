@@ -1,8 +1,8 @@
-# xynoplex
+# xynolog
 
-[![codecov](https://codecov.io/gh/Xynoplex/sdk/graph/badge.svg?component=python-sdk)](https://app.codecov.io/gh/Xynoplex/sdk/components)
+[![codecov](https://codecov.io/gh/xynolog/sdk/graph/badge.svg?component=python-sdk)](https://app.codecov.io/gh/xynolog/sdk/components)
 
-The Python SDK for [Xynoplex][xynoplex], an open platform for building trusted
+The Python SDK for [Xynolog][xynolog], an open platform for building trusted
 AI knowledge bases: a shared workspace where humans and AI agents annotate,
 connect and govern a corpus of documents.
 
@@ -14,14 +14,14 @@ tell them apart.
 
 It has the same namespaces, methods and live queries as the
 [TypeScript SDK][sdk-typescript], the [Rust SDK][sdk-rust], the
-[Go SDK][sdk-go] and the [Kotlin SDK][sdk-kotlin], and is held to the same [conformance suite][conformance]. New to Xynoplex? The
+[Go SDK][sdk-go] and the [Kotlin SDK][sdk-kotlin], and is held to the same [conformance suite][conformance]. New to Xynolog? The
 [Introduction][introduction] explains the domain and the ideas the API falls
 out of. Its code is TypeScript, and the ideas are this package's too.
 
 ## Install
 
 ```bash
-pip install xynoplex
+pip install xynolog
 ```
 
 It requires Python 3.12 or later, and runs on asyncio. It is checked by
@@ -50,14 +50,14 @@ The gateway names it by its account; that DID, which the gateway answers at
 signed in. The engine it runs is no part of it: each write names that.
 
 ```python
-from xynoplex.bus import reply_channels_for
-from xynoplex.http import AgentToken, HttpTransport, SecretCredential, ServiceToken
-from xynoplex.operations import JOB_CLAIM
-from xynoplex.watched import reached
+from xynolog.bus import reply_channels_for
+from xynolog.http import AgentToken, HttpTransport, SecretCredential, ServiceToken
+from xynolog.operations import JOB_CLAIM
+from xynolog.watched import reached
 
 
 async def work(gateway: str, issuer: str, secret: str) -> None:
-    service = ServiceToken(SecretCredential(issuer=issuer, client_id="xynoplex-smelter", client_secret=secret))
+    service = ServiceToken(SecretCredential(issuer=issuer, client_id="xynolog-smelter", client_secret=secret))
     async with (
         AgentToken(gateway, service=service) as agent,
         HttpTransport(gateway, token=agent.token, refresher=agent.refresh, channels=reply_channels_for(JOB_CLAIM)) as transport,
@@ -69,17 +69,17 @@ async def work(gateway: str, issuer: str, secret: str) -> None:
 A service account proves itself to its issuer with its client secret
 (`SecretCredential`), or with a key (`KeyCredential`, whose `private_key` is an
 RSA key from `cryptography`; `private_key_from_pem` reads one from its PKCS#8
-PEM, as a worker is handed it in `XYNOPLEX_OIDC_CLIENT_KEY`): each grant then
+PEM, as a worker is handed it in `XYNOLOG_OIDC_CLIENT_KEY`): each grant then
 carries an assertion signed for it alone (RFC 7523, `private_key_jwt`), which
 the issuer checks with the public half registered on the client, and no secret
-is sent. A worker signs in by its key; Xynoplex's own services by their secrets.
+is sent. A worker signs in by its key; Xynolog's own services by their secrets.
 
 **A person** is signed in at the issuer the knowledge base trusts, and the
-sign-in is kept. [`xynoplex login`][launcher] keeps one for each stack, and a
+sign-in is kept. [`xynolog login`][launcher] keeps one for each stack, and a
 session here is built over it; a script on a machine with no launcher makes
 its own by the device grant, which shows a code to approve in any browser. No
 password passes through this process. Both are given the knowledge base's
-target (`xynoplex.types.KbTarget`: its id, its label and its endpoint), as the
+target (`xynolog.types.KbTarget`: its id, its label and its endpoint), as the
 other SDKs' are, and reach the gateway its HTTP endpoint names. An
 application a person uses signs them in by a page redirect instead
 ([Several knowledge bases](#several-knowledge-bases)).
@@ -87,10 +87,10 @@ application a person uses signs them in by a page redirect instead
 ```python
 from pathlib import Path
 
-from xynoplex.channels import BRIDGED_CHANNELS
-from xynoplex.http import DeviceCode, session_from_kept, sign_in_device
-from xynoplex.sign_in_store import FILE_NAME, SignInStore, state_dir, this_system
-from xynoplex.types import KbTarget
+from xynolog.channels import BRIDGED_CHANNELS
+from xynolog.http import DeviceCode, session_from_kept, sign_in_device
+from xynolog.sign_in_store import FILE_NAME, SignInStore, state_dir, this_system
+from xynolog.types import KbTarget
 
 
 def show(code: DeviceCode) -> None:
@@ -101,7 +101,7 @@ async def as_me(kb: KbTarget, home: str) -> None:
     directory = state_dir(this_system(), home=home, xdg_state_home=None, local_app_data=None)
     if directory is None:
         return
-    # The sign-in of the stack `xynoplex login` keys as the knowledge base's id.
+    # The sign-in of the stack `xynolog login` keys as the knowledge base's id.
     kept = SignInStore(Path(directory) / FILE_NAME).entry(kb.id)
     if await kept.held() is None:
         await sign_in_device(kb, kept, show)
@@ -148,7 +148,7 @@ async def as_me(kb: KbTarget, home: str) -> None:
   stays signed out, as the store's `renewals` say, row for row.
   `MemorySignIn` keeps one for the life of the process instead, and
   `sign_out` revokes one at its issuer and forgets it.
-- **`XYNOPLEX_BUS_LOG` is the only environment variable the package reads**
+- **`XYNOLOG_BUS_LOG` is the only environment variable the package reads**
   ([Telemetry](#telemetry)). Everything else it needs, it is given: an
   application reads its own environment (`HOME`, a secret, an address) and
   says what it found.
@@ -193,13 +193,13 @@ from code, and the two that come next. [Signing in](#signing-in) is how a
 client comes to be signed in.
 
 ```python
-from xynoplex.client import XynoplexClient
-from xynoplex.identifiers import ResourceId
-from xynoplex.transport import PutBinaryRequest, Transport
-from xynoplex.types import GenerationJobParams, JobDeclined, LinkingJobParams
+from xynolog.client import XynologClient
+from xynolog.identifiers import ResourceId
+from xynolog.transport import PutBinaryRequest, Transport
+from xynolog.types import GenerationJobParams, JobDeclined, LinkingJobParams
 
 
-async def summarize(client: XynoplexClient[Transport], paper: bytes) -> ResourceId | None:
+async def summarize(client: XynologClient[Transport], paper: bytes) -> ResourceId | None:
     # Ingest: the paper's bytes become a resource.
     created = await client.yield_.resource(
         PutBinaryRequest(
@@ -249,22 +249,22 @@ Where to go from here:
 A client is eleven namespaces over one transport: the
 [eight verbs](#eight-verbs), one per [flow of the protocol][protocol], and
 `job`, `auth` and `system` beside them. Each method is a
-row of [`protocol/specs/src/client/surface.json`][surface], the table every Xynoplex SDK
+row of [`protocol/specs/src/client/surface.json`][surface], the table every Xynolog SDK
 is held to. `HttpTransport` is the transport this package ships: it reaches a
 knowledge base's gateway, and sends the token it is given.
 
 ```python
-from xynoplex.channels import BRIDGED_CHANNELS
-from xynoplex.client import XynoplexClient
-from xynoplex.http import HttpTransport
-from xynoplex.identifiers import AnnotationId, ResourceId
-from xynoplex.namespaces.follow import JobAttemptFailed, JobCompleted, JobCreated, JobProgressed, JobRefused
-from xynoplex.transport import Transport
-from xynoplex.types import HighlightingJobParams
-from xynoplex.watched import Variable
+from xynolog.channels import BRIDGED_CHANNELS
+from xynolog.client import XynologClient
+from xynolog.http import HttpTransport
+from xynolog.identifiers import AnnotationId, ResourceId
+from xynolog.namespaces.follow import JobAttemptFailed, JobCompleted, JobCreated, JobProgressed, JobRefused
+from xynolog.transport import Transport
+from xynolog.types import HighlightingJobParams
+from xynolog.watched import Variable
 
 
-async def annotate(client: XynoplexClient[Transport], resource: ResourceId, annotation: AnnotationId) -> None:
+async def annotate(client: XynologClient[Transport], resource: ResourceId, annotation: AnnotationId) -> None:
     described = await client.browse.resource(resource).fresh()  # a query, read once
     text = await client.browse.resource_content(resource)  # asked once, answered once
     print(described.name, len(text))
@@ -290,7 +290,7 @@ async def annotate(client: XynoplexClient[Transport], resource: ResourceId, anno
 async def over_http(origin: str, token: str, resource: ResourceId, annotation: AnnotationId) -> None:
     async with (
         HttpTransport(origin, token=Variable[str | None](token), channels=BRIDGED_CHANNELS) as transport,
-        XynoplexClient(transport, transport.content, transport) as client,
+        XynologClient(transport, transport.content, transport) as client,
     ):
         await annotate(client, resource, annotation)
 ```
@@ -335,7 +335,7 @@ Every method returns one of nine shapes, and the table says which:
   close its transport: whoever opened that closes it, after the client. A
   session (`session_from_kept`) holds one as `session.client`.
 - **A client is generic in its transport.** Code that takes a
-  `XynoplexClient[Transport]` runs over HTTP and over a test's doubles alike.
+  `XynologClient[Transport]` runs over HTTP and over a test's doubles alike.
 - **What it sends unasked is the table's**: a list's first hundred, a
   search's ten candidates, a context's two thousand characters. An option
   given as `None` is an option not given, and is not sent.
@@ -354,14 +354,14 @@ the client closes.
 ```python
 from typing import assert_never
 
-from xynoplex.cache import Failed, Pending, Ready
-from xynoplex.client import XynoplexClient
-from xynoplex.errors import XynoplexError
-from xynoplex.identifiers import ResourceId
-from xynoplex.transport import Transport
+from xynolog.cache import Failed, Pending, Ready
+from xynolog.client import XynologClient
+from xynolog.errors import XynologError
+from xynolog.identifiers import ResourceId
+from xynolog.transport import Transport
 
 
-async def watch(client: XynoplexClient[Transport], resource: ResourceId) -> None:
+async def watch(client: XynologClient[Transport], resource: ResourceId) -> None:
     async with client.browse.annotations(resource) as live:  # holds the resource's scope
         async for state in live:
             match state:
@@ -369,7 +369,7 @@ async def watch(client: XynoplexClient[Transport], resource: ResourceId) -> None
                     print("asking")
                 case Ready(value=annotations):
                     print(len(annotations), "annotations")
-                case Failed(error=XynoplexError() as error):  # a state, not a raise: the query lives on
+                case Failed(error=XynologError() as error):  # a state, not a raise: the query lives on
                     print("failed:", error.code)
                 case Failed(error=error):  # whatever else the request failed with
                     print("failed:", error)
@@ -400,8 +400,8 @@ async def watch(client: XynoplexClient[Transport], resource: ResourceId) -> None
   listens for the events. After the client closes, a watcher is given
   nothing and a read is refused as `bus.closed`.
 - **A client can keep what its small queries hold**
-  (`XynoplexClient(..., persistence=CachePersistence(storage=..., kb_id=...,
-  person_key=person_key(did)))`), in a `xynoplex.storage.SessionStorage` the
+  (`XynologClient(..., persistence=CachePersistence(storage=..., kb_id=...,
+  person_key=person_key(did)))`), in a `xynolog.storage.SessionStorage` the
   application supplies, for one person, one key per query: a resource's
   description, its annotations, one annotation, the entity types, the tag
   schemas. The next client of the same knowledge base and person shows them
@@ -410,7 +410,7 @@ async def watch(client: XynoplexClient[Transport], resource: ResourceId) -> None
   start when its kept sign-in names its person, asked or not (`validate`),
   and otherwise once the gateway names them and the sign-in records them; a
   session that does not ask keeps for nobody then. It keeps the
-  stream's place in each resource's scope with it (`xynoplex.resume`), so the
+  stream's place in each resource's scope with it (`xynolog.resume`), so the
   next session is sent what was recorded since. Forgetting a registry's
   stored sign-in, however it is forgotten, signing in again included, deletes
   what was kept for its person. A session the SDK builds writes only while
@@ -447,7 +447,7 @@ session it was built from. `dispose()` ends a unit, and so does leaving
 This shows what is hovered as it changes:
 
 ```python
-from xynoplex.state import BeckonStateUnit
+from xynolog.state import BeckonStateUnit
 
 
 async def show_hover(beckon: BeckonStateUnit) -> None:
@@ -473,13 +473,13 @@ motivation, or the `yield` jobs. What it returns hands out the jobs the worker
 comes to hold, one at a time, and a held job says its own lifecycle.
 
 ```python
-from xynoplex.annotations import QuotedText, annotation_of_span, reconcile
-from xynoplex.channels import PRINCIPAL_PROFILE
-from xynoplex.claims import JOB_CLAIM_CHANNELS, JOB_COMMIT_CHANNELS, ClaimRefusal, HeldMarkJob, HeldYieldJob
-from xynoplex.client import XynoplexClient
-from xynoplex.http import AgentToken, HttpTransport, KeyCredential, ServiceToken, private_key_from_pem
-from xynoplex.identifiers import AnnotationId
-from xynoplex.types import (
+from xynolog.annotations import QuotedText, annotation_of_span, reconcile
+from xynolog.channels import PRINCIPAL_PROFILE
+from xynolog.claims import JOB_CLAIM_CHANNELS, JOB_COMMIT_CHANNELS, ClaimRefusal, HeldMarkJob, HeldYieldJob
+from xynolog.client import XynologClient
+from xynolog.http import AgentToken, HttpTransport, KeyCredential, ServiceToken, private_key_from_pem
+from xynolog.identifiers import AnnotationId
+from xynolog.types import (
     Agent,
     AgentSoftware,
     Annotation,
@@ -498,7 +498,7 @@ async def passages(text: str) -> list[QuotedText]:
     return [QuotedText(exact=text.partition("\n")[0])]
 
 
-async def highlight(client: XynoplexClient[HttpTransport], job: HeldMarkJob, generator: Agent) -> MarkJobDone:
+async def highlight(client: XynologClient[HttpTransport], job: HeldMarkJob, generator: Agent) -> MarkJobDone:
     """Your work: read the resource, have its passages quoted, and commit a highlight of each one the text has."""
     text = await client.browse.resource_content(job.resource_id)
     quoted = await passages(text)
@@ -525,7 +525,7 @@ async def work(gateway: str, issuer: str, client_id: str, key: str) -> None:
         HttpTransport(
             gateway, token=agent.token, refresher=agent.refresh, channels=(*JOB_CLAIM_CHANNELS, *JOB_COMMIT_CHANNELS)
         ) as transport,
-        XynoplexClient(transport, transport.content, transport) as client,
+        XynologClient(transport, transport.content, transport) as client,
     ):
         print(f"working as {agent.did}")
         # It says what it is called, as itself: here, its client id. Readers name it by the last name it said, as they name a person.
@@ -558,8 +558,8 @@ async def work(gateway: str, issuer: str, client_id: str, key: str) -> None:
 
 - **A worker is an agent.** Its process signs in at its issuer as its account,
   and the gateway names it by that account: the agent its work is attributed
-  to. The account needs two roles at the issuer: `xynoplex-service`, which marks
-  a service's account, and `xynoplex-worker`, without which every claim is
+  to. The account needs two roles at the issuer: `xynolog-service`, which marks
+  a service's account, and `xynolog-worker`, without which every claim is
   refused as `bus.unauthorized`.
 - **Its stream names `JOB_CLAIM_CHANNELS`**, and the reply channels of
   whatever else it awaits. The announcements that wake an idle worker reach
@@ -609,7 +609,7 @@ async def work(gateway: str, issuer: str, client_id: str, key: str) -> None:
   `TraceContext` (`traceparent`, and `tracestate` when there is one) or
   `None` for a reply that arrived in none: for what is done for the job
   where its block does not reach, such as another task, which enters it with
-  `with xynoplex.telemetry.continuing(job.trace):`.
+  `with xynolog.telemetry.continuing(job.trace):`.
 - **`claims.vitals()`** is what the worker can say of itself: when it last
   heard an announcement, claimed, was active and settled, the job it holds,
   and how many it has completed. **`claims.stalled()`** tells of each held
@@ -623,8 +623,8 @@ and [its conformance suite][worker-conformance] holds this package to it.
 
 ## Building annotations
 
-What a worker commits is annotations, and `xynoplex.annotations` builds them.
-It has three builders, the same three in every Xynoplex SDK, so that a
+What a worker commits is annotations, and `xynolog.annotations` builds them.
+It has three builders, the same three in every Xynolog SDK, so that a
 highlight recorded by a worker in Python is the annotation a worker in
 TypeScript or in Rust records, with the same id.
 
@@ -635,7 +635,7 @@ TypeScript or in Rust records, with the same id.
 | `annotation_of_resource(resource_id, motivation=…, generator=…, body=…)` | Builds an annotation of a resource as a whole, which has no selector. The link from a resource to one generated from it is one |
 
 ```python
-from xynoplex.annotations import (
+from xynolog.annotations import (
     QuotedText,
     annotation_exact_text,
     annotation_of_resource,
@@ -645,8 +645,8 @@ from xynoplex.annotations import (
     reconcile,
     target_source,
 )
-from xynoplex.identifiers import ResourceId
-from xynoplex.types import Agent, AnchoredText, Annotation, SpecificResource
+from xynolog.identifiers import ResourceId
+from xynolog.types import Agent, AnchoredText, Annotation, SpecificResource
 
 
 def highlight(text: str, quoted: QuotedText, resource: ResourceId, generator: Agent) -> Annotation | None:
@@ -699,14 +699,14 @@ def describe(annotation: Annotation) -> str:
   by: `text[span.start:span.end]` is `span.exact`.
 - **The text it is counted in is `client.browse.resource_content`'s**: the
   resource's bytes read as a browser reads them, by
-  [the rule every Xynoplex reader keeps][resource-text]. The charset is the one
+  [the rule every Xynolog reader keeps][resource-text]. The charset is the one
   the content type states and a label of the Encoding Standard, a byte-order
   mark decides over it, and what the encoding does not have is U+FFFD. A
   charset that is not decoded raises `TransportError`, and
   `client.browse.resource_representation` gives the bytes. A media type
   whose text is not its bytes raises it too: a PDF's text is its anchored
   text, and an image has none.
-  `xynoplex.resources.decode_representation(data, media_type)` is the same
+  `xynolog.resources.decode_representation(data, media_type)` is the same
   reading, of bytes a program already holds.
 - **A span is checked before anything is built.** One that is not the
   text's raises `SpanRefusedError`, and its `code` says which of seven
@@ -734,7 +734,7 @@ and [`id-cases.json`][id-cases].
 
 ## Several knowledge bases
 
-`xynoplex.registry` is what an application a person uses holds beside its
+`xynolog.registry` is what an application a person uses holds beside its
 knowledge bases: the list it has registered, which one is active and that
 one's session, and what the person has open in each. It keeps all of it in a
 `SessionStorage`, under the keys every SDK's registry uses
@@ -742,15 +742,15 @@ one's session, and what the person has open in each. It keeps all of it in a
 picks up where the last one was.
 
 ```python
-from xynoplex.identifiers import ResourceId
-from xynoplex.registry import XynoplexBrowser, XynoplexBrowserConfig, SessionFactory
-from xynoplex.storage import SessionStorage
-from xynoplex.watched import reached
+from xynolog.identifiers import ResourceId
+from xynolog.registry import XynologBrowser, XynologBrowserConfig, SessionFactory
+from xynolog.storage import SessionStorage
+from xynolog.watched import reached
 
 
 async def pick_up_where_i_was(storage: SessionStorage, sessions: SessionFactory) -> None:
-    config = XynoplexBrowserConfig(storage=storage, session_factory=sessions)
-    async with XynoplexBrowser(config) as browser:
+    config = XynologBrowserConfig(storage=storage, session_factory=sessions)
+    async with XynologBrowser(config) as browser:
         for kb in browser.kbs.value:
             print(kb.label, kb.did, browser.kb_session_status(kb.id))
         # Held, the registry brings up the active knowledge base's session.
@@ -763,17 +763,17 @@ async def pick_up_where_i_was(storage: SessionStorage, sessions: SessionFactory)
   session and brings up the next: its readers see no session, then the new
   one. `session_activating` says a session is on its way. A session is built
   by the `SessionFactory` the registry is given;
-  `xynoplex.http.session.HttpSessionFactory` builds one over a knowledge base's
+  `xynolog.http.session.HttpSessionFactory` builds one over a knowledge base's
   gateway, renewing its token at the issuer its stored sign-in names, and
   keeping its caches in the registry's storage.
 - **A sign-in lands on the knowledge base that answered.**
-  `xynoplex.http.session.begin_sign_in` remembers a pending sign-in and gives
+  `xynolog.http.session.begin_sign_in` remembers a pending sign-in and gives
   the address to send the person to; `complete_sign_in`, given the address the
   issuer sent them back to, exchanges the code, asks the knowledge base who it
   is, and registers it under what it says. Its did is what an entry is matched
   by, never the address a person typed or the row they clicked; what they
   believed is said back (`SignInOutcome.expected`) for the application to set
-  against it. The grant itself is `xynoplex.http.oauth`'s:
+  against it. The grant itself is `xynolog.http.oauth`'s:
   `begin_authorization` and `complete_authorization`, the authorization-code
   grant with PKCE, and `describe_connection`, the question a completed sign-in
   asks.
@@ -797,28 +797,28 @@ async def pick_up_where_i_was(storage: SessionStorage, sessions: SessionFactory)
   a storage that hears what another window or process writes
   (`SessionStorage.subscribe`) has the registry show it.
 
-`xynoplex.discovery` reads the document a launcher publishes of the knowledge
+`xynolog.discovery` reads the document a launcher publishes of the knowledge
 bases it manages: whole or not at all, a launcher that is not there told from
 one that manages nothing, and what changed since it was last read
 (`subscribe_discovery`). `text_discovery` reads it from wherever the text
-comes from, and `xynoplex.http.discovery.http_discovery` from a URL. It is a
+comes from, and `xynolog.http.discovery.http_discovery` from a URL. It is a
 registry's list of what can be signed in to.
 
 ## Testing what is built on it
 
-`xynoplex.testing` gives a real client over doubles. Its namespaces, its cache
+`xynolog.testing` gives a real client over doubles. Its namespaces, its cache
 and its deadlines are the client's own; only what it speaks through is
 scripted. A test says what the knowledge base answers, runs the code under
 test, and reads what that code asked.
 
 ```python
-from xynoplex.client import XynoplexClient
-from xynoplex.identifiers import ResourceId
-from xynoplex.testing import create_test_client
-from xynoplex.transport import Transport
+from xynolog.client import XynologClient
+from xynolog.identifiers import ResourceId
+from xynolog.testing import create_test_client
+from xynolog.transport import Transport
 
 
-async def title_of(client: XynoplexClient[Transport], resource: ResourceId) -> str:
+async def title_of(client: XynologClient[Transport], resource: ResourceId) -> str:
     return (await client.browse.resource(resource).fresh()).name.title()
 
 
@@ -867,18 +867,18 @@ async def a_title_is_its_resources_name_in_title_case() -> None:
 - **`create_test_client`** takes the doubles a test built, or makes ones
   nothing is scripted on, its transport given a full client's channels,
   `BRIDGED_CHANNELS`; and the client's own timing and persistence.
-- **`create_test_session`** gives a real `XynoplexSession` over a test client,
+- **`create_test_session`** gives a real `XynologSession` over a test client,
   ready as soon as it is held, holding a token only if its sign-in was kept.
-- **`xynoplex.testing.axioms`** holds a state unit, a program's own too, to the
-  rules every unit keeps. **`xynoplex.testing.liveness`** holds a composition
+- **`xynolog.testing.axioms`** holds a state unit, a program's own too, to the
+  rules every unit keeps. **`xynolog.testing.liveness`** holds a composition
   over the bus to the liveness rules: under generated fault schedules every
   output says something and every awaited path settles, within a bound
   (`assert_liveness_axioms`), and anything shaped like a connection delivers
   each event exactly once, wherever a transition lands among the writes
   (`assert_exactly_once_delivery`). This package's own transport and client
   are held to them. Both draw their cases with Hypothesis, which the extra
-  `xynoplex[axioms]` installs.
-- **`ScriptedSessions`** is a `xynoplex.registry.SessionFactory` of real
+  `xynolog[axioms]` installs.
+- **`ScriptedSessions`** is a `xynolog.registry.SessionFactory` of real
   sessions over scripted transports, one a knowledge base, for a test of a
   registry: a test says what each knowledge base answers, who a token is and
   what a renewal gives. **`SharedStorage`** is a storage several contexts
@@ -891,15 +891,15 @@ transport is held with `async with`. Its stream opens inside, once there is
 a token, and everything it started has ended on the way out.
 
 ```python
-from xynoplex.bus import Bus, Delivered
-from xynoplex.channels import BRIDGED_CHANNELS, MARK_ADDED
-from xynoplex.errors import BusRequestError
-from xynoplex.http import HttpTransport
-from xynoplex.identifiers import ResourceId
-from xynoplex.operations import BROWSE_RESOURCE_REQUESTED
-from xynoplex.transport import FrameRefusal
-from xynoplex.types import BrowseResourceRequest
-from xynoplex.watched import Variable
+from xynolog.bus import Bus, Delivered
+from xynolog.channels import BRIDGED_CHANNELS, MARK_ADDED
+from xynolog.errors import BusRequestError
+from xynolog.http import HttpTransport
+from xynolog.identifiers import ResourceId
+from xynolog.operations import BROWSE_RESOURCE_REQUESTED
+from xynolog.transport import FrameRefusal
+from xynolog.types import BrowseResourceRequest
+from xynolog.watched import Variable
 
 
 async def read(origin: str, token: str, resource: ResourceId) -> None:
@@ -925,13 +925,13 @@ async def read(origin: str, token: str, resource: ResourceId) -> None:
 - **The bus is typed by channel.** A channel is a constant that carries its
   payload's type: a request is refused another operation's payload, its reply
   is that operation's result, and a frame's payload is its channel's. By
-  name, with JSON objects, it is `xynoplex.bus.request` and the transport's
+  name, with JSON objects, it is `xynolog.bus.request` and the transport's
   own `emit` and `frames`.
 - **A request** waits for the stream to be open before it is sent, is answered
   once, and is abandoned by cancelling the task that awaits it.
 - **Frames** are a sequence: each reader is given every one, in order, however
   far behind it falls. Each is a `Heard`: a `Delivered`, its payload its
-  channel's, or a `FrameRefusal` (`xynoplex.transport`) in place of a frame
+  channel's, or a `FrameRefusal` (`xynolog.transport`) in place of a frame
   the transport refused or whose payload is not its channel's. It names the
   channel and the frame's first fault, as every SDK names it: `member`, the
   way to the member it is at from the frame (`payload` for the payload
@@ -956,7 +956,7 @@ async def read(origin: str, token: str, resource: ResourceId) -> None:
 - **The connection's state** (`transport.state`) is a value: what it is now,
   and each thing it becomes. A dropped stream is a state, never an error, and
   opens again by itself.
-- **Failures** are `XynoplexError`s under the codes of
+- **Failures** are `XynologError`s under the codes of
   [`protocol/specs/src/errors/codes.json`][codes]. What a server refused is also on
   `transport.failures()`, whose first reader is given the latest
   `ERRORS_KEPT_FOR_FIRST_READER_COUNT` met before it came, in the order met;
@@ -983,9 +983,9 @@ back, and the transport itself asks the gateway what a gateway answers for
 itself.
 
 ```python
-from xynoplex.http import HttpTransport
-from xynoplex.identifiers import ResourceId
-from xynoplex.transport import PutBinaryRequest
+from xynolog.http import HttpTransport
+from xynolog.identifiers import ResourceId
+from xynolog.transport import PutBinaryRequest
 
 
 async def store(transport: HttpTransport, page: bytes) -> ResourceId:
@@ -1031,8 +1031,8 @@ from text that is one, and a type checker refuses one kind where a shape
 names another.
 
 ```python
-from xynoplex.identifiers import AnnotationId, InvalidIdentifier, ResourceId
-from xynoplex.types import MarkDeleteCommand
+from xynolog.identifiers import AnnotationId, InvalidIdentifier, ResourceId
+from xynolog.types import MarkDeleteCommand
 
 resource = ResourceId("5bcd259ab1464cf68a556bbad21f513f")
 assert ResourceId.parse("not an id") is None  # where text that is not an id is an ordinary answer
@@ -1052,16 +1052,16 @@ print(command.model_dump(mode="json", exclude_unset=True))
 
 The SDK takes OpenTelemetry's API and installs nothing: it does nothing until
 the application it runs in installs a provider. With one, it exports what
-[`protocol/specs/src/sdk-telemetry/telemetry.json`][telemetry] lists, as every Xynoplex
+[`protocol/specs/src/sdk-telemetry/telemetry.json`][telemetry] lists, as every Xynolog
 SDK does: a span for each frame sent and each received, a span for each upload
 and each read, and a count of the emits sent. A request carries the trace it
 is made in, and a frame continues the trace it was sent under (`frame.trace`).
 A job a worker holds states the trace it is run in (`job.trace`), and runs
-the block that holds it in that trace. `xynoplex.telemetry.continuing(trace)`
+the block that holds it in that trace. `xynolog.telemetry.continuing(trace)`
 holds either for as long as its `with` block lasts.
 
-With `XYNOPLEX_BUS_LOG` set to any value that is not empty, a transport over
-HTTP also writes the [bus log][bus-log], as every Xynoplex SDK does: one line
+With `XYNOLOG_BUS_LOG` set to any value that is not empty, a transport over
+HTTP also writes the [bus log][bus-log], as every Xynolog SDK does: one line
 on stdout for each frame it sends and each it receives, and for each read and
 each upload of content. A line says the channel, the resource's scope, the
 first eight characters of the correlation id and of the trace's id, and the
@@ -1082,30 +1082,30 @@ resource is cloned by, `password`, `apiKey` and the rest of the
 
 | Module | What it holds |
 |---|---|
-| `xynoplex.client` | `XynoplexClient`, and the timing it keeps to |
-| `xynoplex.namespaces` | The methods of each namespace; and in `xynoplex.namespaces.follow`, `Delegation[C]`, what a delegated job returns, with the events of a job |
-| `xynoplex.running`, `xynoplex.cached` | `Running[T]` and `Cached[T]`: what long-running operations and queries return |
-| `xynoplex.annotations` | The readers of an annotation: the resource it is on and the one it links to, the text it quotes, its entity types, its tag, and what kind it is, whatever shape its target, its selector and its body take. And the builders of one: `reconcile`, `annotation_of_span` and `annotation_of_resource`, with `QuotedText`, `TextSpan`, `ReconciledSpan` and `SpanRefusedError` |
-| `xynoplex.claims`, `xynoplex.job_filter` | `Claims`, what `job.claim` returns, with the jobs a worker holds, the channels its stream names and the retry rule; and whether a job matches a filter |
-| `xynoplex.cache`, `xynoplex.refresh`, `xynoplex.resume` | The cache queries answer from and its three states, which queries each event asks again, and where a stream resumes after a restart |
-| `xynoplex.storage` | Where a client keeps what must outlive it: `SessionStorage`, and `MemoryStorage` |
-| `xynoplex.session` | `XynoplexSession`, and `MemorySignIn` |
-| `xynoplex.http` | `HttpTransport`, and signing in: `ServiceToken`, `AgentToken`, `sign_in_device`, `session_from_kept`, `sign_out`; a gateway's origin from its endpoint, `gateway_url`. And in `xynoplex.http.oauth`, the redirect sign-in (`begin_authorization`, `complete_authorization`); in `xynoplex.http.session`, a registry's sessions and sign-in over HTTP (`HttpSessionFactory`, `begin_sign_in`, `complete_sign_in`, `describe_connection`); in `xynoplex.http.discovery`, a launcher's document over HTTP |
-| `xynoplex.registry`, `xynoplex.stored` | A registry of knowledge bases, `XynoplexBrowser`: the ones registered, the active one's session, what is open in each; and what it keeps in its storage, under which keys |
-| `xynoplex.discovery` | The knowledge bases a launcher manages, as it publishes them, and what changed since they were last read |
-| `xynoplex.sign_in_store` | The sign-ins `xynoplex login` keeps, and where each system keeps them |
-| `xynoplex.identifiers`, `xynoplex.types` | The kinds of id, and every request, response and event |
-| `xynoplex.channels`, `xynoplex.operations` | The bus's channels and its operations, each a constant that carries its payload's type |
-| `xynoplex.bus`, `xynoplex.event_bus` | The typed client of the bus over a transport, and a client's own in-process bus |
-| `xynoplex.transport` | The contract a transport implements: `Transport`, `ContentTransport`, `GatewayOperations` |
-| `xynoplex.errors`, `xynoplex.timing`, `xynoplex.retry` | The failure codes, the deadlines and the retry rules every Xynoplex SDK shares |
-| `xynoplex.watched`, `xynoplex.events` | A value that changes and a sequence of events: what a state and a channel's frames are read as |
-| `xynoplex.state`, `xynoplex.state_unit`, `xynoplex.session_signals` | The state units, what every unit commits to, and the session's signals: that it ended, that a request was refused for lack of permission, that another knowledge base answers at a registered address |
-| `xynoplex.media_types` | The media types a knowledge base admits, with where the text of each comes from and whether it can be authored or generated, and the rules read from them: the format a clone takes and the name content is stored under; and, of any media type, where its text comes from (`text_source_of`), whether that text comes with where each run of it is on a page (`yields_geometry_of`), and whether it is derived from the bytes and not decoded from them (`derives_text_of`) |
-| `xynoplex.resources` | The readers of a resource, whether its representations are one or a list: `primary_representation`, `primary_media_type` and `resource_entity_types`. And `decode_representation`, which makes a text of the bytes of a resource whose bytes are its text, and refuses any other |
-| `xynoplex.identity` | How a knowledge base is named, and the principals who act in it |
-| `xynoplex.telemetry` | What the transports tell OpenTelemetry, and `continuing`, which holds the trace a frame or a held job brought |
-| `xynoplex.testing` | The doubles: `FaultyTransport`, `InMemoryContent`, `StubGateway`, `create_test_client`, `create_test_session`; a registry's, `ScriptedSessions` and `SharedStorage`; and, in `axioms` and `liveness`, the harnesses that hold a state unit and a composition to their axioms |
+| `xynolog.client` | `XynologClient`, and the timing it keeps to |
+| `xynolog.namespaces` | The methods of each namespace; and in `xynolog.namespaces.follow`, `Delegation[C]`, what a delegated job returns, with the events of a job |
+| `xynolog.running`, `xynolog.cached` | `Running[T]` and `Cached[T]`: what long-running operations and queries return |
+| `xynolog.annotations` | The readers of an annotation: the resource it is on and the one it links to, the text it quotes, its entity types, its tag, and what kind it is, whatever shape its target, its selector and its body take. And the builders of one: `reconcile`, `annotation_of_span` and `annotation_of_resource`, with `QuotedText`, `TextSpan`, `ReconciledSpan` and `SpanRefusedError` |
+| `xynolog.claims`, `xynolog.job_filter` | `Claims`, what `job.claim` returns, with the jobs a worker holds, the channels its stream names and the retry rule; and whether a job matches a filter |
+| `xynolog.cache`, `xynolog.refresh`, `xynolog.resume` | The cache queries answer from and its three states, which queries each event asks again, and where a stream resumes after a restart |
+| `xynolog.storage` | Where a client keeps what must outlive it: `SessionStorage`, and `MemoryStorage` |
+| `xynolog.session` | `XynologSession`, and `MemorySignIn` |
+| `xynolog.http` | `HttpTransport`, and signing in: `ServiceToken`, `AgentToken`, `sign_in_device`, `session_from_kept`, `sign_out`; a gateway's origin from its endpoint, `gateway_url`. And in `xynolog.http.oauth`, the redirect sign-in (`begin_authorization`, `complete_authorization`); in `xynolog.http.session`, a registry's sessions and sign-in over HTTP (`HttpSessionFactory`, `begin_sign_in`, `complete_sign_in`, `describe_connection`); in `xynolog.http.discovery`, a launcher's document over HTTP |
+| `xynolog.registry`, `xynolog.stored` | A registry of knowledge bases, `XynologBrowser`: the ones registered, the active one's session, what is open in each; and what it keeps in its storage, under which keys |
+| `xynolog.discovery` | The knowledge bases a launcher manages, as it publishes them, and what changed since they were last read |
+| `xynolog.sign_in_store` | The sign-ins `xynolog login` keeps, and where each system keeps them |
+| `xynolog.identifiers`, `xynolog.types` | The kinds of id, and every request, response and event |
+| `xynolog.channels`, `xynolog.operations` | The bus's channels and its operations, each a constant that carries its payload's type |
+| `xynolog.bus`, `xynolog.event_bus` | The typed client of the bus over a transport, and a client's own in-process bus |
+| `xynolog.transport` | The contract a transport implements: `Transport`, `ContentTransport`, `GatewayOperations` |
+| `xynolog.errors`, `xynolog.timing`, `xynolog.retry` | The failure codes, the deadlines and the retry rules every Xynolog SDK shares |
+| `xynolog.watched`, `xynolog.events` | A value that changes and a sequence of events: what a state and a channel's frames are read as |
+| `xynolog.state`, `xynolog.state_unit`, `xynolog.session_signals` | The state units, what every unit commits to, and the session's signals: that it ended, that a request was refused for lack of permission, that another knowledge base answers at a registered address |
+| `xynolog.media_types` | The media types a knowledge base admits, with where the text of each comes from and whether it can be authored or generated, and the rules read from them: the format a clone takes and the name content is stored under; and, of any media type, where its text comes from (`text_source_of`), whether that text comes with where each run of it is on a page (`yields_geometry_of`), and whether it is derived from the bytes and not decoded from them (`derives_text_of`) |
+| `xynolog.resources` | The readers of a resource, whether its representations are one or a list: `primary_representation`, `primary_media_type` and `resource_entity_types`. And `decode_representation`, which makes a text of the bytes of a resource whose bytes are its text, and refuses any other |
+| `xynolog.identity` | How a knowledge base is named, and the principals who act in it |
+| `xynolog.telemetry` | What the transports tell OpenTelemetry, and `continuing`, which holds the trace a frame or a held job brought |
+| `xynolog.testing` | The doubles: `FaultyTransport`, `InMemoryContent`, `StubGateway`, `create_test_client`, `create_test_session`; a registry's, `ScriptedSessions` and `SharedStorage`; and, in `axioms` and `liveness`, the harnesses that hold a state unit and a composition to their axioms |
 
 Nothing here restates the protocol by hand. `identifiers`, `types`,
 `channels`, `operations`, `error_codes`, `timing`, `refresh`,
@@ -1118,7 +1118,7 @@ what the specification generates.
 ## Working on it
 
 The package is [`python/sdk`][package] of the
-[Xynoplex repository][xynoplex], and [Testing][testing] says how its checks and
+[Xynolog repository][xynolog], and [Testing][testing] says how its checks and
 its tests are run. The programs this page shows are files of its tests, word
 for word: both type checkers check them, and each one is run.
 
@@ -1126,40 +1126,40 @@ for word: both type checkers check them, and each one is run.
 
 Apache-2.0. See [LICENSE][license].
 
-[xynoplex]: https://github.com/Xynoplex/sdk
-[introduction]: https://github.com/Xynoplex/sdk/blob/main/docs/builder/INTRODUCTION.md
-[quick-start]: https://github.com/Xynoplex/sdk/blob/main/docs/builder/QUICK-START.md
-[developer-guide]: https://github.com/Xynoplex/sdk/blob/main/docs/builder/DEVELOPER-GUIDE.md
-[skills]: https://github.com/Xynoplex/sdk/tree/main/docs/builder/skills
-[flows]: https://github.com/Xynoplex/sdk/blob/main/protocol/contract/flows/README.md
-[reactive-model]: https://github.com/Xynoplex/sdk/blob/main/docs/builder/REACTIVE-MODEL.md
-[protocol]: https://github.com/Xynoplex/sdk/blob/main/protocol/contract/README.md
-[transport-contract]: https://github.com/Xynoplex/sdk/blob/main/protocol/contract/TRANSPORT-CONTRACT.md
-[transport-http]: https://github.com/Xynoplex/sdk/blob/main/protocol/contract/TRANSPORT-HTTP.md
-[cache-semantics]: https://github.com/Xynoplex/sdk/blob/main/protocol/contract/CACHE-SEMANTICS.md
-[conformance]: https://github.com/Xynoplex/sdk/blob/main/protocol/conformance/sdk/README.md
-[worker-contract]: https://github.com/Xynoplex/sdk/blob/main/protocol/contract/WORKER-CONTRACT.md
-[worker-conformance]: https://github.com/Xynoplex/sdk/blob/main/protocol/conformance/worker/README.md
-[sdk-typescript]: https://github.com/Xynoplex/sdk/blob/main/typescript/sdk/README.md
-[sdk-rust]: https://github.com/Xynoplex/sdk/blob/main/rust/sdk/README.md
-[sdk-go]: https://github.com/Xynoplex/sdk/blob/main/go/README.md
-[sdk-kotlin]: https://github.com/Xynoplex/sdk/blob/main/kotlin/sdk/README.md
-[launcher]: https://github.com/Xynoplex/sdk/blob/main/apps/launcher/README.md
-[specs]: https://github.com/Xynoplex/sdk/blob/main/protocol/specs/README.md
-[surface]: https://github.com/Xynoplex/sdk/blob/main/protocol/specs/src/client/surface.json
-[refresh]: https://github.com/Xynoplex/sdk/blob/main/protocol/specs/src/client/refresh.json
-[codes]: https://github.com/Xynoplex/sdk/blob/main/protocol/specs/src/errors/codes.json
-[session-cases]: https://github.com/Xynoplex/sdk/blob/main/protocol/specs/src/session/cases.json
-[reconcile-cases]: https://github.com/Xynoplex/sdk/blob/main/protocol/specs/src/annotations/reconcile-cases.json
-[builder-cases]: https://github.com/Xynoplex/sdk/blob/main/protocol/specs/src/annotations/builder-cases.json
-[id-cases]: https://github.com/Xynoplex/sdk/blob/main/protocol/specs/src/annotations/id-cases.json
-[resource-text]: https://github.com/Xynoplex/sdk/blob/main/protocol/contract/W3C-SELECTORS.md#the-text-of-a-resource
-[sign-in-store]: https://github.com/Xynoplex/sdk/blob/main/protocol/specs/src/sign-in-store/README.md
-[stored-keys]: https://github.com/Xynoplex/sdk/blob/main/protocol/specs/src/session/stored.json
-[telemetry]: https://github.com/Xynoplex/sdk/blob/main/protocol/specs/src/sdk-telemetry/telemetry.json
-[bus-log]: https://github.com/Xynoplex/sdk/blob/main/protocol/contract/EVENT-BUS.md#wire-format-the-bus-log
-[package]: https://github.com/Xynoplex/sdk/tree/main/python/sdk
-[testing]: https://github.com/Xynoplex/sdk/blob/main/docs/contributor/TESTING.md
-[state-units]: https://github.com/Xynoplex/sdk/blob/main/docs/builder/STATE-UNITS.md
-[state-units-cases]: https://github.com/Xynoplex/sdk/blob/main/protocol/specs/src/client/state-units.json
-[license]: https://github.com/Xynoplex/sdk/blob/main/LICENSE
+[xynolog]: https://github.com/xynolog/sdk
+[introduction]: https://github.com/xynolog/sdk/blob/main/docs/builder/INTRODUCTION.md
+[quick-start]: https://github.com/xynolog/sdk/blob/main/docs/builder/QUICK-START.md
+[developer-guide]: https://github.com/xynolog/sdk/blob/main/docs/builder/DEVELOPER-GUIDE.md
+[skills]: https://github.com/xynolog/sdk/tree/main/docs/builder/skills
+[flows]: https://github.com/xynolog/sdk/blob/main/protocol/contract/flows/README.md
+[reactive-model]: https://github.com/xynolog/sdk/blob/main/docs/builder/REACTIVE-MODEL.md
+[protocol]: https://github.com/xynolog/sdk/blob/main/protocol/contract/README.md
+[transport-contract]: https://github.com/xynolog/sdk/blob/main/protocol/contract/TRANSPORT-CONTRACT.md
+[transport-http]: https://github.com/xynolog/sdk/blob/main/protocol/contract/TRANSPORT-HTTP.md
+[cache-semantics]: https://github.com/xynolog/sdk/blob/main/protocol/contract/CACHE-SEMANTICS.md
+[conformance]: https://github.com/xynolog/sdk/blob/main/protocol/conformance/sdk/README.md
+[worker-contract]: https://github.com/xynolog/sdk/blob/main/protocol/contract/WORKER-CONTRACT.md
+[worker-conformance]: https://github.com/xynolog/sdk/blob/main/protocol/conformance/worker/README.md
+[sdk-typescript]: https://github.com/xynolog/sdk/blob/main/typescript/sdk/README.md
+[sdk-rust]: https://github.com/xynolog/sdk/blob/main/rust/sdk/README.md
+[sdk-go]: https://github.com/xynolog/sdk/blob/main/go/README.md
+[sdk-kotlin]: https://github.com/xynolog/sdk/blob/main/kotlin/sdk/README.md
+[launcher]: https://github.com/xynolog/sdk/blob/main/apps/launcher/README.md
+[specs]: https://github.com/xynolog/sdk/blob/main/protocol/specs/README.md
+[surface]: https://github.com/xynolog/sdk/blob/main/protocol/specs/src/client/surface.json
+[refresh]: https://github.com/xynolog/sdk/blob/main/protocol/specs/src/client/refresh.json
+[codes]: https://github.com/xynolog/sdk/blob/main/protocol/specs/src/errors/codes.json
+[session-cases]: https://github.com/xynolog/sdk/blob/main/protocol/specs/src/session/cases.json
+[reconcile-cases]: https://github.com/xynolog/sdk/blob/main/protocol/specs/src/annotations/reconcile-cases.json
+[builder-cases]: https://github.com/xynolog/sdk/blob/main/protocol/specs/src/annotations/builder-cases.json
+[id-cases]: https://github.com/xynolog/sdk/blob/main/protocol/specs/src/annotations/id-cases.json
+[resource-text]: https://github.com/xynolog/sdk/blob/main/protocol/contract/W3C-SELECTORS.md#the-text-of-a-resource
+[sign-in-store]: https://github.com/xynolog/sdk/blob/main/protocol/specs/src/sign-in-store/README.md
+[stored-keys]: https://github.com/xynolog/sdk/blob/main/protocol/specs/src/session/stored.json
+[telemetry]: https://github.com/xynolog/sdk/blob/main/protocol/specs/src/sdk-telemetry/telemetry.json
+[bus-log]: https://github.com/xynolog/sdk/blob/main/protocol/contract/EVENT-BUS.md#wire-format-the-bus-log
+[package]: https://github.com/xynolog/sdk/tree/main/python/sdk
+[testing]: https://github.com/xynolog/sdk/blob/main/docs/contributor/TESTING.md
+[state-units]: https://github.com/xynolog/sdk/blob/main/docs/builder/STATE-UNITS.md
+[state-units-cases]: https://github.com/xynolog/sdk/blob/main/protocol/specs/src/client/state-units.json
+[license]: https://github.com/xynolog/sdk/blob/main/LICENSE

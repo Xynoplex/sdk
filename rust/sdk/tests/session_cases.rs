@@ -4,9 +4,9 @@
 
 use base64::Engine;
 use base64::engine::general_purpose::URL_SAFE_NO_PAD;
-use xynoplex::session::{refresh_delay, token_expiry};
 use serde_json::Value;
 use std::time::{Duration, UNIX_EPOCH};
+use xynolog::session::{refresh_delay, token_expiry};
 
 fn table() -> Value {
     serde_json::from_str(include_str!("../specs/session/cases.json")).expect("the table is JSON")

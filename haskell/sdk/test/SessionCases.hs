@@ -18,21 +18,21 @@ import Data.Scientific (Scientific)
 import Data.Text (Text)
 import qualified Data.Text as Text
 import Data.Text.Encoding (decodeUtf8)
-import qualified Xynoplex.Bus as Bus
-import qualified Xynoplex.Client as Client
-import qualified Xynoplex.Content as Content
-import qualified Xynoplex.ErrorCodes as Code
-import Xynoplex.Errors
-import qualified Xynoplex.Retry as Retry
-import qualified Xynoplex.Session as Session
-import qualified Xynoplex.SignIn as SignIn
-import qualified Xynoplex.SessionStorage as Storage
-import qualified Xynoplex.Registry.Stored as Stored
-import qualified Xynoplex.StateValue as State
-import Xynoplex.Timing (errorsKeptForFirstReaderCount)
-import qualified Xynoplex.Timing.Settings as Timing
-import qualified Xynoplex.Transport as Transport
-import Xynoplex.Types
+import qualified Xynolog.Bus as Bus
+import qualified Xynolog.Client as Client
+import qualified Xynolog.Content as Content
+import qualified Xynolog.ErrorCodes as Code
+import Xynolog.Errors
+import qualified Xynolog.Retry as Retry
+import qualified Xynolog.Session as Session
+import qualified Xynolog.SignIn as SignIn
+import qualified Xynolog.SessionStorage as Storage
+import qualified Xynolog.Registry.Stored as Stored
+import qualified Xynolog.StateValue as State
+import Xynolog.Timing (errorsKeptForFirstReaderCount)
+import qualified Xynolog.Timing.Settings as Timing
+import qualified Xynolog.Transport as Transport
+import Xynolog.Types
 import qualified Streaming.Prelude as Stream
 import qualified ControlledTime as Time
 -- Runs protocol/specs/src/client/clock-cases.json through the shared clock runner.

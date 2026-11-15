@@ -5,13 +5,13 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import { annotationId } from '@xynoplex/core';
-import type { HoverDwell, XynoplexSession } from '@xynoplex/sdk';
+import { annotationId } from '@xynolog/core';
+import type { HoverDwell, XynologSession } from '@xynolog/sdk';
 import { useHoverDwell } from '../useHoverDwell';
 
 function sessionDouble() {
   const hover = vi.fn();
-  const session = { client: { beckon: { hover } } } as unknown as XynoplexSession;
+  const session = { client: { beckon: { hover } } } as unknown as XynologSession;
   return { session, hover };
 }
 

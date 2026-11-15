@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 
-import type { Annotation, AnnotationId } from '@xynoplex/core';
+import type { Annotation, AnnotationId } from '@xynolog/core';
 import type { EditorView } from '@codemirror/view';
 
 // Mock CodeMirror modules
@@ -48,7 +48,7 @@ import { EditorState } from '@codemirror/state';
 import { lineNumbers } from '@codemirror/view';
 import { jsonTheme } from '../../../lib/codemirror-json-theme';
 import { JsonLdView } from '../JsonLdView';
-import { resourceId } from '@xynoplex/core';
+import { resourceId } from '@xynolog/core';
 
 /** The extensions the most recent editor was built with. */
 function editorExtensions(): readonly unknown[] {
@@ -124,7 +124,7 @@ describe('JsonLdView', () => {
         <JsonLdView annotation={annotation} onBack={vi.fn()} showLineNumbers={false} />
       );
 
-      const editorDiv = container.querySelector('.xynoplex-jsonld-view__editor');
+      const editorDiv = container.querySelector('.xynolog-jsonld-view__editor');
       expect(editorDiv).toBeInTheDocument();
     });
   });
@@ -256,7 +256,7 @@ describe('JsonLdView', () => {
       );
 
       const view = container.firstChild as HTMLElement;
-      expect(view).toHaveClass('xynoplex-jsonld-view');
+      expect(view).toHaveClass('xynolog-jsonld-view');
     });
 
     it('should have proper header class', () => {
@@ -265,7 +265,7 @@ describe('JsonLdView', () => {
         <JsonLdView annotation={annotation} onBack={vi.fn()} showLineNumbers={false} />
       );
 
-      const header = container.querySelector('.xynoplex-jsonld-view__header');
+      const header = container.querySelector('.xynolog-jsonld-view__header');
       expect(header).toBeInTheDocument();
     });
 
@@ -274,7 +274,7 @@ describe('JsonLdView', () => {
       render(<JsonLdView annotation={annotation} onBack={vi.fn()} showLineNumbers={false} />);
 
       const backButton = screen.getByTitle('Go back (Escape)');
-      expect(backButton).toHaveClass('xynoplex-jsonld-view__back-button');
+      expect(backButton).toHaveClass('xynolog-jsonld-view__back-button');
     });
 
     it('should have proper copy button class', () => {
@@ -282,7 +282,7 @@ describe('JsonLdView', () => {
       render(<JsonLdView annotation={annotation} onBack={vi.fn()} showLineNumbers={false} />);
 
       const copyButton = screen.getByTitle('Copy to clipboard');
-      expect(copyButton).toHaveClass('xynoplex-jsonld-view__copy-button');
+      expect(copyButton).toHaveClass('xynolog-jsonld-view__copy-button');
     });
   });
 

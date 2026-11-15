@@ -2497,7 +2497,7 @@ type Annotation struct {
 	Id       AnnotationId `json:"id"`
 	Modified *string      `json:"modified,omitempty"`
 
-	// Motivation Xynoplex-supported W3C Web Annotation motivations - https://www.w3.org/TR/annotation-vocab/#motivation
+	// Motivation Xynolog-supported W3C Web Annotation motivations - https://www.w3.org/TR/annotation-vocab/#motivation
 	Motivation Motivation `json:"motivation"`
 
 	// Target W3C Web Annotation target: the id of the resource annotated, when the whole of it is, or an object with source and optional selector (fragment)
@@ -2599,7 +2599,7 @@ type AnnotationTarget struct {
 // AnnotationTargetType Stated by the annotation of a span: the target is a part of its source, which the selector picks out. An annotation of a resource as a whole states none.
 type AnnotationTargetType string
 
-// ArchivistConfig Everything the Archivist reads at boot: nothing in it is defaulted by the Archivist. The launcher writes it for the Archivist it starts, from the knowledge base's stack documents, and the Archivist reads it from the path its `--config` flag names (its image passes `/etc/xynoplex/archivist.json`). Started without `--config`, or with a path that names no file, the Archivist refuses to start and says which. No secret is a value here. What the knowledge base says of itself is not here either: its name, its `site.domain` and its `git.sync` are read from the committed `.xynoplex/config.yaml` of the tree at `root`. The Archivist's other inputs are the environment variables protocol/specs/src/service-environment/variables.json lists for it. A document that does not validate is refused at boot, naming each failing field.
+// ArchivistConfig Everything the Archivist reads at boot: nothing in it is defaulted by the Archivist. The launcher writes it for the Archivist it starts, from the knowledge base's stack documents, and the Archivist reads it from the path its `--config` flag names (its image passes `/etc/xynolog/archivist.json`). Started without `--config`, or with a path that names no file, the Archivist refuses to start and says which. No secret is a value here. What the knowledge base says of itself is not here either: its name, its `site.domain` and its `git.sync` are read from the committed `.xynolog/config.yaml` of the tree at `root`. The Archivist's other inputs are the environment variables specs/src/service-environment/variables.json lists for it. A document that does not validate is refused at boot, naming each failing field.
 type ArchivistConfig struct {
 	// AnchoredTextDir The anchored-text store, which only the Archivist mounts: the Smelter stores each entry in it over HTTP, and the Archivist serves it.
 	AnchoredTextDir string `json:"anchoredTextDir"`
@@ -2625,7 +2625,7 @@ type ArchivistConfig struct {
 	// Port The port the Archivist's HTTP surface answers on, `/health` included.
 	Port int `json:"port"`
 
-	// Root The knowledge base's working tree: the directory holding `.xynoplex/`. The event log, the content and the committed config are under it.
+	// Root The knowledge base's working tree: the directory holding `.xynolog/`. The event log, the content and the committed config are under it.
 	Root string `json:"root"`
 
 	// SkipRebuild Whether the Archivist serves the views it finds at boot instead of rebuilding them from the event log first.
@@ -3021,7 +3021,7 @@ type BrowseKbRequest = map[string]interface{}
 
 // BrowseKbResult Result of browse:kb-requested
 type BrowseKbResult struct {
-	// Response What a knowledge base says about itself, answered by the Archivist from the committed .xynoplex/config.yaml and the working tree it holds. The only source clients use for a knowledge base's name and domain.
+	// Response What a knowledge base says about itself, answered by the Archivist from the committed .xynolog/config.yaml and the working tree it holds. The only source clients use for a knowledge base's name and domain.
 	Response KbDescription `json:"response"`
 }
 
@@ -3033,7 +3033,7 @@ type BrowseLinkClickedEvent struct {
 
 // BrowsePanelOpenEvent Emitted when a browse panel is opened
 type BrowsePanelOpenEvent struct {
-	// Motivation Xynoplex-supported W3C Web Annotation motivations - https://www.w3.org/TR/annotation-vocab/#motivation
+	// Motivation Xynolog-supported W3C Web Annotation motivations - https://www.w3.org/TR/annotation-vocab/#motivation
 	Motivation *Motivation `json:"motivation,omitempty"`
 	Panel      string      `json:"panel"`
 
@@ -3138,7 +3138,7 @@ type BusEmitAccepted struct {
 	Subscribers *int `json:"subscribers,omitempty"`
 }
 
-// BusEmitRequest One event for the bus. `channel` names a channel of the bus registry (protocol/specs/src/bus/registry.json) and `payload` must match the schema the registry's `validate` names for it. `scope` publishes a resource-bound broadcast to that resource's subscribers only; everything else is unscoped. `clientId` and `correlationId` are routing facts beside the payload, never inside it.
+// BusEmitRequest One event for the bus. `channel` names a channel of the bus registry (specs/src/bus/registry.json) and `payload` must match the schema the registry's `validate` names for it. `scope` publishes a resource-bound broadcast to that resource's subscribers only; everything else is unscoped. `clientId` and `correlationId` are routing facts beside the payload, never inside it.
 type BusEmitRequest struct {
 	// Channel A channel of the bus registry.
 	Channel string `json:"channel"`
@@ -3174,7 +3174,7 @@ type BusEventMessage_Id struct {
 
 // BusFrame One frame of the bus stream, as the `data` line of a `bus-event` message carries it (JSON-serialised on one line). `payload` is the channel's payload as its registry entry declares it. A frame on a scoped subscription carries the scope it was published on; a correlated reply carries the `correlationId` of the request it answers.
 type BusFrame struct {
-	// Channel A channel of the bus registry (protocol/specs/src/bus/registry.json).
+	// Channel A channel of the bus registry (specs/src/bus/registry.json).
 	Channel string `json:"channel"`
 
 	// CorrelationId The request this frame answers. Present on correlated replies; absent otherwise.
@@ -3187,7 +3187,7 @@ type BusFrame struct {
 	Scope *ResourceId `json:"scope,omitempty"`
 }
 
-// BusPingMessage The heartbeat: `event: ping` with an empty `data:` line. The first is written once the stream has caught up (after any replay), then one every `x-xynoplex-limits.heartbeatSeconds`. It carries no id, so it never disturbs a client's last-seen ids.
+// BusPingMessage The heartbeat: `event: ping` with an empty `data:` line. The first is written once the stream has caught up (after any replay), then one every `x-xynolog-limits.heartbeatSeconds`. It carries no id, so it never disturbs a client's last-seen ids.
 type BusPingMessage struct {
 	Data  string              `json:"data"`
 	Event BusPingMessageEvent `json:"event"`
@@ -3224,7 +3224,7 @@ type BusSubscribeRequest struct {
 	// Global Unscoped channels to subscribe to.
 	Global *[]string `json:"global,omitempty"`
 
-	// PendingReplies Correlation ids of requests this client still awaits a reply to. The gateway writes every reply it still retains for them (for `x-xynoplex-limits.replyRetentionSeconds` after it was published) as an ordinary frame with its ReplyEventId, so a reply that also arrived live dedups client-side. A client can have no more pending than it may have unanswered requests, so this bound is also the number of unanswered requests `POST /bus/emit` allows a client.
+	// PendingReplies Correlation ids of requests this client still awaits a reply to. The gateway writes every reply it still retains for them (for `x-xynolog-limits.replyRetentionSeconds` after it was published) as an ordinary frame with its ReplyEventId, so a reply that also arrived live dedups client-side. A client can have no more pending than it may have unanswered requests, so this bound is also the number of unanswered requests `POST /bus/emit` allows a client.
 	PendingReplies *[]string `json:"pendingReplies,omitempty"`
 
 	// Scoped Per-resource-scope subscriptions, at most 512 on one connection. Scopes must be unique across entries.
@@ -3319,7 +3319,7 @@ type CreateAnnotationRequest struct {
 	// Body Optional body. Omit for annotations whose motivation alone is meaningful (highlighting) or whose user-supplied content is empty. Shape matches Annotation.body.
 	Body *AnnotationBodies `json:"body,omitempty"`
 
-	// Motivation Xynoplex-supported W3C Web Annotation motivations - https://www.w3.org/TR/annotation-vocab/#motivation
+	// Motivation Xynolog-supported W3C Web Annotation motivations - https://www.w3.org/TR/annotation-vocab/#motivation
 	Motivation Motivation `json:"motivation"`
 
 	// Target W3C Web Annotation target object - source is required, selector is optional
@@ -3332,7 +3332,7 @@ type CreateResourceResponse struct {
 	ResourceId ResourceId `json:"resourceId"`
 }
 
-// CursorsPath The file a follower of the record keeps its cursors in: for each log of the record it follows, the sequence number of the last event of it taken (protocol/contract/TRANSPORT-CONTRACT.md § What repairs a passing frame). A file of the service's own disk, never of the knowledge base: a service that finds none starts each log as it starts one with no cursor, so losing it costs time and never correctness.
+// CursorsPath The file a follower of the record keeps its cursors in: for each log of the record it follows, the sequence number of the last event of it taken (contract/TRANSPORT-CONTRACT.md § What repairs a passing frame). A file of the service's own disk, never of the knowledge base: a service that finds none starts each log as it starts one with no cursor, so losing it costs time and never correctness.
 type CursorsPath = string
 
 // DirEntry defines model for DirEntry.
@@ -3356,15 +3356,15 @@ type DirectoryEntry struct {
 	union json.RawMessage
 }
 
-// DiscoveredKB One knowledge base the Xynoplex launcher manages on this machine, as published in the discovery document (see DiscoveryDocument). Endpoints and identity only — never credentials; login remains the consumer's per-KB business.
+// DiscoveredKB One knowledge base the Xynolog launcher manages on this machine, as published in the discovery document (see DiscoveryDocument). Endpoints and identity only — never credentials; login remains the consumer's per-KB business.
 type DiscoveredKB struct {
-	// Did The KB's did:web identifier, from its committed .xynoplex/config.yaml — "did:web:" + its site.domain, verbatim. REQUIRED: a KB that declares no domain has no identity to publish, and the launcher refuses to start it rather than inventing or defaulting one. NOT unique within a document: a did names the knowledge base, not a running copy of it, so a local clone and a codespace of the same repo legitimately share one and both are published. host:port is the unique field (at most one entry per address), so consumers look up by ADDRESS and use the did to VERIFY that the copy they reached is the KB they meant — an address alone cannot say which KB is which, and an identity alone cannot say which copy.
+	// Did The KB's did:web identifier, from its committed .xynolog/config.yaml — "did:web:" + its site.domain, verbatim. REQUIRED: a KB that declares no domain has no identity to publish, and the launcher refuses to start it rather than inventing or defaulting one. NOT unique within a document: a did names the knowledge base, not a running copy of it, so a local clone and a codespace of the same repo legitimately share one and both are published. host:port is the unique field (at most one entry per address), so consumers look up by ADDRESS and use the did to VERIFY that the copy they reached is the KB they meant — an address alone cannot say which KB is which, and an identity alone cannot say which copy.
 	Did string `json:"did"`
 
 	// Host Hostname the KB is reachable on from this machine (always "localhost" — local stacks bind locally and codespace KBs arrive through a local port forward)
 	Host string `json:"host"`
 
-	// ManagedBy The agent that owns this entry's lifecycle (the launcher writes "xynoplex-launcher"). Consumers treat managed entries as authoritative for themselves — upsert on appearance, remove on disappearance — and never touch entries they did not write.
+	// ManagedBy The agent that owns this entry's lifecycle (the launcher writes "xynolog-launcher"). Consumers treat managed entries as authoritative for themselves — upsert on appearance, remove on disappearance — and never touch entries they did not write.
 	ManagedBy string `json:"managedBy"`
 
 	// Placement Where the stack actually runs. "local": containers on this machine. "codespace": a GitHub-hosted VM whose KB is port-forwarded here.
@@ -3376,14 +3376,14 @@ type DiscoveredKB struct {
 	// Repo owner/name GitHub slug — present for codespace placements, where the repo is the stack's identity
 	Repo *string `json:"repo,omitempty"`
 
-	// SiteName Human-readable site name from the KB's .xynoplex/config.yaml (site.siteName), for display
+	// SiteName Human-readable site name from the KB's .xynolog/config.yaml (site.siteName), for display
 	SiteName *string `json:"siteName,omitempty"`
 }
 
 // DiscoveredKBPlacement Where the stack actually runs. "local": containers on this machine. "codespace": a GitHub-hosted VM whose KB is port-forwarded here.
 type DiscoveredKBPlacement string
 
-// DiscoveryDocument The launcher's KB discovery document — the schema authority for <stateDir>/discovery/kbs.json, which the xynoplex launcher (Go, apps/launcher) regenerates on every stack mutation and the Browser container mounts read-only at /discovery. NOT an API endpoint: a static document fetched same-origin by browsers (via the Browser's static server). An empty kbs list is meaningful ("the launcher manages nothing right now") and distinct from an absent file.
+// DiscoveryDocument The launcher's KB discovery document — the schema authority for <stateDir>/discovery/kbs.json, which the Xynolog CLI (xynolog/cli) regenerates on every stack mutation and the Browser container mounts read-only at /discovery. NOT an API endpoint: a static document fetched same-origin by browsers (via the Browser's static server). An empty kbs list is meaningful ("the launcher manages nothing right now") and distinct from an absent file.
 type DiscoveryDocument struct {
 	// Kbs Every KB the launcher currently manages, local and forwarded
 	Kbs []DiscoveredKB `json:"kbs"`
@@ -3395,7 +3395,7 @@ type DiscoveryDocument struct {
 // DiscoveryDocumentVersion Document schema version. Consumers MUST check it and ignore documents they do not understand.
 type DiscoveryDocumentVersion int
 
-// DispatcherConfig Everything the dispatcher reads at boot: nothing in it is defaulted by the dispatcher. The launcher writes it for the dispatcher it starts, from the knowledge base's stack documents, and the dispatcher reads it from the path its `--config` flag names (its image passes `/etc/xynoplex/dispatcher.json`). Started without `--config`, or with a path that names no file, the dispatcher refuses to start and says which. Secrets are never values here: a field that needs one names the environment variable holding it. The dispatcher's other inputs are the environment variables protocol/specs/src/service-environment/variables.json lists for it, and the ones this document names. A document that does not validate is refused at boot, naming each failing field.
+// DispatcherConfig Everything the dispatcher reads at boot: nothing in it is defaulted by the dispatcher. The launcher writes it for the dispatcher it starts, from the knowledge base's stack documents, and the dispatcher reads it from the path its `--config` flag names (its image passes `/etc/xynolog/dispatcher.json`). Started without `--config`, or with a path that names no file, the dispatcher refuses to start and says which. Secrets are never values here: a field that needs one names the environment variable holding it. The dispatcher's other inputs are the environment variables specs/src/service-environment/variables.json lists for it, and the ones this document names. A document that does not validate is refused at boot, naming each failing field.
 type DispatcherConfig struct {
 	// GatewayUrl The URL the dispatcher reaches the gateway at: its only route to the bus.
 	GatewayUrl string `json:"gatewayUrl"`
@@ -3406,7 +3406,7 @@ type DispatcherConfig struct {
 		Issuer string `json:"issuer"`
 	} `json:"identity"`
 
-	// Kb A knowledge base's committed identity (`project.name` and `site.domain` in its .xynoplex/config.yaml), as a service's document names the knowledge base it serves. Its telemetry names it by its DID (`xynoplex.kb`, protocol/specs/src/service-telemetry/telemetry.json).
+	// Kb A knowledge base's committed identity (`project.name` and `site.domain` in its .xynolog/config.yaml), as a service's document names the knowledge base it serves. Its telemetry names it by its DID (`xynolog.kb`, specs/src/service-telemetry/telemetry.json).
 	Kb KbIdentity `json:"kb"`
 
 	// LogFormat How each log line is written to stdout: `json`, one JSON object per line carrying the active trace's `trace_id` and `span_id`; or `simple`, `<timestamp> [<LEVEL>] <message>` followed by any metadata as JSON.
@@ -3418,7 +3418,7 @@ type DispatcherConfig struct {
 	// Port The port the dispatcher answers `/health` on.
 	Port int `json:"port"`
 
-	// Queue The JetStream broker holding the job queue, whose layout is protocol/specs/src/jobs/storage.json.
+	// Queue The JetStream broker holding the job queue, whose layout is specs/src/jobs/storage.json.
 	Queue struct {
 		// PasswordEnv The environment variable holding the broker password, when the broker requires one.
 		PasswordEnv *string `json:"passwordEnv,omitempty"`
@@ -3471,7 +3471,7 @@ type DispatcherHealthStatus string
 // DurabilityEvidence How a job's annotations were established as durable — the OBSERVATION, never a conclusion drawn from it. 'acknowledged': the event log confirmed the batch (mark:commit-ok). 'probe-confirmed': the acknowledgement was lost and a later read found the batch's last annotation present — true, but a weaker claim than an ack, since it rests on the log appending a batch in order and stopping at the first failure. 'probe-refused': the read returned a failure reply; note this does NOT assert the annotations are absent, because a read that failed for its own reasons answers on the same channel. 'probe-unreachable': no answer came at all, so nothing was established either way. ABSENT means the question never arose — a job that committed no annotations. Never defaulted: a manufactured value here is a claim nobody made, in a log nobody can rewrite.
 type DurabilityEvidence string
 
-// EmbeddingConfig The embedding provider a service asks for vectors, and what that kind of provider needs to be asked: one of the providers `xynoplex-vectors` has, told apart by `type`. Two services that share an index name the same provider and the same model: a vector is compared only with vectors of the model that made it. A secret is never a value here: a provider's key is named by the environment variable that holds it.
+// EmbeddingConfig The embedding provider a service asks for vectors, and what that kind of provider needs to be asked: one of the providers `xynolog-vectors` has, told apart by `type`. Two services that share an index name the same provider and the same model: a vector is compared only with vectors of the model that made it. A secret is never a value here: a provider's key is named by the environment variable that holds it.
 type EmbeddingConfig struct {
 	union json.RawMessage
 }
@@ -3700,7 +3700,7 @@ type FrameAddTagSchemaCommand struct {
 	Schema TagSchema `json:"schema"`
 }
 
-// GatewayConfig Everything the gateway reads at boot: nothing in it is defaulted by the gateway. The launcher writes it for the gateway it starts — from the knowledge base's committed identity and its stack documents — and a gateway started any other way is given the same document at the path its `--config` flag names (the image passes `/etc/xynoplex/gateway.json`). Started without `--config`, or with a path that names no file, the gateway refuses to start and says which. Secrets are never values here: a field that needs one names the environment variable holding it. The gateway's other inputs are the environment variables protocol/specs/src/service-environment/variables.json lists for it, and the ones this document names. A document that does not validate is refused at boot — the gateway exits without serving — and the refusal names each failing field by its JSON pointer.
+// GatewayConfig Everything the gateway reads at boot: nothing in it is defaulted by the gateway. The launcher writes it for the gateway it starts — from the knowledge base's committed identity and its stack documents — and a gateway started any other way is given the same document at the path its `--config` flag names (the image passes `/etc/xynolog/gateway.json`). Started without `--config`, or with a path that names no file, the gateway refuses to start and says which. Secrets are never values here: a field that needs one names the environment variable holding it. The gateway's other inputs are the environment variables specs/src/service-environment/variables.json lists for it, and the ones this document names. A document that does not validate is refused at boot — the gateway exits without serving — and the refusal names each failing field by its JSON pointer.
 type GatewayConfig struct {
 	// Archivist Where the Archivist listens.
 	Archivist struct {
@@ -3708,7 +3708,7 @@ type GatewayConfig struct {
 		Port int    `json:"port"`
 	} `json:"archivist"`
 
-	// Capacity What this gateway process can hold, from the memory its deployment gives it. `queuedBytes`: the bytes queued for all its streams together; at it, a new stream is refused with 503 (`AtCapacity`, code `capacity`) until the queues drain — each stream's own bound is `x-xynoplex-limits.pendingWriteBytes`. `connections`: the connections it holds open at once; one past it is closed unanswered. The launcher derives both from the memory it gives the gateway's container.
+	// Capacity What this gateway process can hold, from the memory its deployment gives it. `queuedBytes`: the bytes queued for all its streams together; at it, a new stream is refused with 503 (`AtCapacity`, code `capacity`) until the queues drain — each stream's own bound is `x-xynolog-limits.pendingWriteBytes`. `connections`: the connections it holds open at once; one past it is closed unanswered. The launcher derives both from the memory it gives the gateway's container.
 	Capacity struct {
 		Connections int `json:"connections"`
 		QueuedBytes int `json:"queuedBytes"`
@@ -3723,7 +3723,7 @@ type GatewayConfig struct {
 		SubjectClaim string `json:"subjectClaim"`
 	} `json:"identity"`
 
-	// Kb A knowledge base's committed identity (`project.name` and `site.domain` in its .xynoplex/config.yaml), as a service's document names the knowledge base it serves. Its telemetry names it by its DID (`xynoplex.kb`, protocol/specs/src/service-telemetry/telemetry.json).
+	// Kb A knowledge base's committed identity (`project.name` and `site.domain` in its .xynolog/config.yaml), as a service's document names the knowledge base it serves. Its telemetry names it by its DID (`xynolog.kb`, specs/src/service-telemetry/telemetry.json).
 	Kb KbIdentity `json:"kb"`
 
 	// LogFormat How each log line is written to stdout: `json`, one JSON object per line carrying the active trace's `trace_id` and `span_id`; or `simple`, `<timestamp> [<LEVEL>] <message>` followed by any metadata as JSON.
@@ -4171,7 +4171,7 @@ type GraphAnnotationNode struct {
 // GraphAnnotationNodeType defines model for GraphAnnotationNode.Type.
 type GraphAnnotationNodeType string
 
-// GraphConfig The graph database a service writes or reads, and what that kind of database needs to be reached: one of the kinds `xynoplex-graph` has a store for, told apart by `type`. A secret is never a value here: a database's password is named by the environment variable that holds it.
+// GraphConfig The graph database a service writes or reads, and what that kind of database needs to be reached: one of the kinds `xynolog-graph` has a store for, told apart by `type`. A secret is never a value here: a database's password is named by the environment variable that holds it.
 type GraphConfig struct {
 	union json.RawMessage
 }
@@ -4217,7 +4217,7 @@ type HighlightingJobParams struct {
 // HighlightingJobParamsMotivation defines model for HighlightingJobParams.Motivation.
 type HighlightingJobParamsMotivation string
 
-// HttpEndpoint A knowledge base reached through its gateway, over HTTP. The gateway's origin is the protocol, the host in lowercase and the port; a host that is not a host's name is refused before it is put into a URL (protocol/specs/src/session/gateway-url-cases.json).
+// HttpEndpoint A knowledge base reached through its gateway, over HTTP. The gateway's origin is the protocol, the host in lowercase and the port; a host that is not a host's name is refused before it is put into a URL (specs/src/session/gateway-url-cases.json).
 type HttpEndpoint struct {
 	// Host The gateway's host, as a person or a discovery document gave it.
 	Host string `json:"host"`
@@ -4440,7 +4440,7 @@ type JobCompletedPayload struct {
 	// AnnotationUri For generation: URI of annotation that triggered generation
 	AnnotationUri *string `json:"annotationUri,omitempty"`
 
-	// Attempt Which attempt produced this event, 1-based (a first run is 1). ALWAYS present: the queue re-runs a failed job silently, so an operator reading progress or a terminal record has no other way to tell a re-run from a first run — and provider spend, already counted in xynoplex_inference_tokens_total, cannot be attributed to a repeated document without it. Stated rather than inferred from absence, because 'attempt 1' is a fact the emitter always knows.
+	// Attempt Which attempt produced this event, 1-based (a first run is 1). ALWAYS present: the queue re-runs a failed job silently, so an operator reading progress or a terminal record has no other way to tell a re-run from a first run — and provider spend, already counted in xynolog_inference_tokens_total, cannot be attributed to a repeated document without it. Stated rather than inferred from absence, because 'attempt 1' is a fact the emitter always knows.
 	Attempt *int `json:"attempt,omitempty"`
 
 	// Durability How a job's annotations were established as durable — the OBSERVATION, never a conclusion drawn from it. 'acknowledged': the event log confirmed the batch (mark:commit-ok). 'probe-confirmed': the acknowledgement was lost and a later read found the batch's last annotation present — true, but a weaker claim than an ack, since it rests on the log appending a batch in order and stopping at the first failure. 'probe-refused': the read returned a failure reply; note this does NOT assert the annotations are absent, because a read that failed for its own reasons answers on the same channel. 'probe-unreachable': no answer came at all, so nothing was established either way. ABSENT means the question never arose — a job that committed no annotations. Never defaulted: a manufactured value here is a claim nobody made, in a log nobody can rewrite.
@@ -4502,7 +4502,7 @@ type JobFailCommand struct {
 	// AnnotationId Annotation this job is attached to, when applicable. Lets the UI route failure feedback (error toast, revert state) to a specific annotation.
 	AnnotationId *AnnotationId `json:"annotationId,omitempty"`
 
-	// Attempt Which attempt produced this event, 1-based (a first run is 1). ALWAYS present: the queue re-runs a failed job silently, so an operator reading progress or a terminal record has no other way to tell a re-run from a first run — and provider spend, already counted in xynoplex_inference_tokens_total, cannot be attributed to a repeated document without it. Stated rather than inferred from absence, because 'attempt 1' is a fact the emitter always knows.
+	// Attempt Which attempt produced this event, 1-based (a first run is 1). ALWAYS present: the queue re-runs a failed job silently, so an operator reading progress or a terminal record has no other way to tell a re-run from a first run — and provider spend, already counted in xynolog_inference_tokens_total, cannot be attributed to a repeated document without it. Stated rather than inferred from absence, because 'attempt 1' is a fact the emitter always knows.
 	Attempt *int `json:"attempt,omitempty"`
 
 	// CompletedUnits Entity-type units whose annotations were fully emitted before this failure (checkpointed resume). The queue records them on the retried job's metadata; a retried claim skips them so completed work is neither redone nor duplicated.
@@ -4527,7 +4527,7 @@ type JobFailCommand struct {
 	// UnitCursors The furthest each unit begun got, keyed by unit, with what it had counted there — the grain `completedUnits` cannot express. A unit named in `completedUnits` is stated here too, by the cursor it ended at: a later attempt skips it whole and counts it by that cursor. A cursor never says a unit is finished; only `completedUnits` does. Merged monotonically per unit, finished or not: a stale snapshot must never move a cursor backward.
 	UnitCursors *map[string]UnitCursor `json:"unitCursors,omitempty"`
 
-	// WillRetry Whether the queue will re-queue this job for another attempt. Computed by the worker from the SAME rule the queue applies when it takes the failure (protocol/specs/src/jobs/retry-cases.json, which every SDK and the dispatcher run) using the retry budget carried on the claimed record. FALSE (or absent) means this failure is TERMINAL: a client's job-watch stream ends here. TRUE means the work continues on a fresh attempt — the failure is an event, not the end, and a stream that terminated on it would report a recovering run as a failed one.
+	// WillRetry Whether the queue will re-queue this job for another attempt. Computed by the worker from the SAME rule the queue applies when it takes the failure (specs/src/jobs/retry-cases.json, which every SDK and the dispatcher run) using the retry budget carried on the claimed record. FALSE (or absent) means this failure is TERMINAL: a client's job-watch stream ends here. TRUE means the work continues on a fresh attempt — the failure is an event, not the end, and a stream that terminated on it would report a recovering run as a failed one.
 	WillRetry *bool `json:"willRetry,omitempty"`
 }
 
@@ -4561,7 +4561,7 @@ type JobFailedPayload struct {
 	// AnnotationId Annotation this job was attached to, when applicable
 	AnnotationId *AnnotationId `json:"annotationId,omitempty"`
 
-	// Attempt Which attempt produced this event, 1-based (a first run is 1). ALWAYS present: the queue re-runs a failed job silently, so an operator reading progress or a terminal record has no other way to tell a re-run from a first run — and provider spend, already counted in xynoplex_inference_tokens_total, cannot be attributed to a repeated document without it. Stated rather than inferred from absence, because 'attempt 1' is a fact the emitter always knows.
+	// Attempt Which attempt produced this event, 1-based (a first run is 1). ALWAYS present: the queue re-runs a failed job silently, so an operator reading progress or a terminal record has no other way to tell a re-run from a first run — and provider spend, already counted in xynolog_inference_tokens_total, cannot be attributed to a repeated document without it. Stated rather than inferred from absence, because 'attempt 1' is a fact the emitter always knows.
 	Attempt *int `json:"attempt,omitempty"`
 
 	// Durability How a job's annotations were established as durable — the OBSERVATION, never a conclusion drawn from it. 'acknowledged': the event log confirmed the batch (mark:commit-ok). 'probe-confirmed': the acknowledgement was lost and a later read found the batch's last annotation present — true, but a weaker claim than an ack, since it rests on the log appending a batch in order and stopping at the first failure. 'probe-refused': the read returned a failure reply; note this does NOT assert the annotations are absent, because a read that failed for its own reasons answers on the same channel. 'probe-unreachable': no answer came at all, so nothing was established either way. ABSENT means the question never arose — a job that committed no annotations. Never defaulted: a manufactured value here is a claim nobody made, in a log nobody can rewrite.
@@ -4681,7 +4681,7 @@ type JobProgress struct {
 	// EntitiesFound Entities found so far (a linking job)
 	EntitiesFound *int `json:"entitiesFound,omitempty"`
 
-	// Message What a running job is doing right now, as a code plus typed params — never a prose sentence. The producer reports what happened; each client renders it in the user's language (react-ui from its translations, the Go launcher from its English map). One named schema per code, discriminated on `code`, so generated clients get typed variants and copy-map completeness is statically checkable. The vocabulary is every report Xynoplex's worker makes (protocol/contract/WORKER-SERVICE.md, D16 to D19 and Y8); extending it means adding a named variant here and copy in every client, gated by the locale-completeness check.
+	// Message What a running job is doing right now, as a code plus typed params — never a prose sentence. The producer reports what happened; each client renders it in the user's language (react-ui from its translations, the Go launcher from its English map). One named schema per code, discriminated on `code`, so generated clients get typed variants and copy-map completeness is statically checkable. The vocabulary is every report Xynolog's worker makes (contract/WORKER-SERVICE.md, D16 to D19 and Y8); extending it means adding a named variant here and copy in every client, gated by the locale-completeness check.
 	Message *JobProgressMessage `json:"message,omitempty"`
 
 	// Percentage Completion percentage (0-100)
@@ -4807,7 +4807,7 @@ type JobProgressLoading struct {
 // JobProgressLoadingCode defines model for JobProgressLoading.Code.
 type JobProgressLoadingCode string
 
-// JobProgressMessage What a running job is doing right now, as a code plus typed params — never a prose sentence. The producer reports what happened; each client renders it in the user's language (react-ui from its translations, the Go launcher from its English map). One named schema per code, discriminated on `code`, so generated clients get typed variants and copy-map completeness is statically checkable. The vocabulary is every report Xynoplex's worker makes (protocol/contract/WORKER-SERVICE.md, D16 to D19 and Y8); extending it means adding a named variant here and copy in every client, gated by the locale-completeness check.
+// JobProgressMessage What a running job is doing right now, as a code plus typed params — never a prose sentence. The producer reports what happened; each client renders it in the user's language (react-ui from its translations, the Go launcher from its English map). One named schema per code, discriminated on `code`, so generated clients get typed variants and copy-map completeness is statically checkable. The vocabulary is every report Xynolog's worker makes (contract/WORKER-SERVICE.md, D16 to D19 and Y8); extending it means adding a named variant here and copy in every client, gated by the locale-completeness check.
 type JobProgressMessage struct {
 	union json.RawMessage
 }
@@ -4817,7 +4817,7 @@ type JobQueuedEvent struct {
 	union json.RawMessage
 }
 
-// JobRecord One job as the queue stores it: the job, and when it last showed life. The dead-worker sweep reads `lastProgressAt`: a running job whose worker has reported nothing for the configured interval is presumed dead. Where the queue keeps these records is the job storage layout, protocol/specs/src/jobs/storage.json.
+// JobRecord One job as the queue stores it: the job, and when it last showed life. The dead-worker sweep reads `lastProgressAt`: a running job whose worker has reported nothing for the configured interval is presumed dead. Where the queue keeps these records is the job storage layout, specs/src/jobs/storage.json.
 type JobRecord struct {
 	// Job A job as the dispatcher holds it. Its `status` decides which timestamps and outcome fields it carries. It is what a claim returns (`job:claimed`, always `running`) and what the queue stores, inside a JobRecord.
 	Job Job `json:"job"`
@@ -4834,7 +4834,7 @@ type JobReportProgressCommand struct {
 	// AnnotationId Annotation this job is attached to, when applicable. Lets the UI attach progress visuals to a specific annotation (e.g. a reference whose generation is running).
 	AnnotationId *AnnotationId `json:"annotationId,omitempty"`
 
-	// Attempt Which attempt produced this event, 1-based (a first run is 1). ALWAYS present: the queue re-runs a failed job silently, so an operator reading progress or a terminal record has no other way to tell a re-run from a first run — and provider spend, already counted in xynoplex_inference_tokens_total, cannot be attributed to a repeated document without it. Stated rather than inferred from absence, because 'attempt 1' is a fact the emitter always knows.
+	// Attempt Which attempt produced this event, 1-based (a first run is 1). ALWAYS present: the queue re-runs a failed job silently, so an operator reading progress or a terminal record has no other way to tell a re-run from a first run — and provider spend, already counted in xynolog_inference_tokens_total, cannot be attributed to a repeated document without it. Stated rather than inferred from absence, because 'attempt 1' is a fact the emitter always knows.
 	Attempt *int `json:"attempt,omitempty"`
 
 	// JobId A job's id. 1 to 128 of the letters `A`–`Z` and `a`–`z`, the digits, `_` and `-`. It is one segment of a URL and one name in a file system, and it is held to that wherever it enters: a gateway refuses a payload that carries anything else. How one is made is no part of the rule.
@@ -4883,7 +4883,7 @@ type JobStartCommand struct {
 	// AnnotationId Annotation this job is attached to, when applicable. Set for annotation-scoped jobs like generation (from a specific reference). Unset for resource-scoped jobs like bulk reference/tag/highlight detection.
 	AnnotationId *AnnotationId `json:"annotationId,omitempty"`
 
-	// Attempt Which attempt produced this event, 1-based (a first run is 1). ALWAYS present: the queue re-runs a failed job silently, so an operator reading progress or a terminal record has no other way to tell a re-run from a first run — and provider spend, already counted in xynoplex_inference_tokens_total, cannot be attributed to a repeated document without it. Stated rather than inferred from absence, because 'attempt 1' is a fact the emitter always knows.
+	// Attempt Which attempt produced this event, 1-based (a first run is 1). ALWAYS present: the queue re-runs a failed job silently, so an operator reading progress or a terminal record has no other way to tell a re-run from a first run — and provider spend, already counted in xynolog_inference_tokens_total, cannot be attributed to a repeated document without it. Stated rather than inferred from absence, because 'attempt 1' is a fact the emitter always knows.
 	Attempt *int `json:"attempt,omitempty"`
 
 	// JobId A job's id. 1 to 128 of the letters `A`–`Z` and `a`–`z`, the digits, `_` and `-`. It is one segment of a URL and one name in a file system, and it is held to that wherever it enters: a gateway refuses a payload that carries anything else. How one is made is no part of the rule.
@@ -4969,15 +4969,15 @@ type JobStoredResult1 = map[string]interface{}
 // JobType What a job does, as the verb that asks for it: `mark` annotates a resource, `yield` makes one. A job description is its `jobType` and the parameters that verb takes; a `mark` job's parameters state its motivation.
 type JobType string
 
-// KbDescription What a knowledge base says about itself, answered by the Archivist from the committed .xynoplex/config.yaml and the working tree it holds. The only source clients use for a knowledge base's name and domain.
+// KbDescription What a knowledge base says about itself, answered by the Archivist from the committed .xynolog/config.yaml and the working tree it holds. The only source clients use for a knowledge base's name and domain.
 type KbDescription struct {
-	// Domain The committed site.domain: the knowledge base's permanent identity. Its did is 'did:web:' + this domain (kbDid in @xynoplex/core). It names WHICH knowledge base this is, not which running copy: a local clone and a codespace of one repo report the same domain, so use it to verify what you connected to, never to select among copies. A knowledge base that commits no .xynoplex/config.yaml declares none, and is refused with browse:kb-failed.
+	// Domain The committed site.domain: the knowledge base's permanent identity. Its did is 'did:web:' + this domain (kbDid in @xynolog/core). It names WHICH knowledge base this is, not which running copy: a local clone and a codespace of one repo report the same domain, so use it to verify what you connected to, never to select among copies. A knowledge base that commits no .xynolog/config.yaml declares none, and is refused with browse:kb-failed.
 	Domain string `json:"domain"`
 
-	// GitBranch The working tree's current git branch. Absent when the knowledge base does not sync git (`git.sync` in its committed .xynoplex/config.yaml), and when its tree is not a git checkout.
+	// GitBranch The working tree's current git branch. Absent when the knowledge base does not sync git (`git.sync` in its committed .xynolog/config.yaml), and when its tree is not a git checkout.
 	GitBranch *string `json:"gitBranch,omitempty"`
 
-	// Name The committed project.name, or the knowledge base directory's name when it commits no .xynoplex/config.yaml.
+	// Name The committed project.name, or the knowledge base directory's name when it commits no .xynolog/config.yaml.
 	Name string `json:"name"`
 }
 
@@ -4986,7 +4986,7 @@ type KbEndpoint struct {
 	union json.RawMessage
 }
 
-// KbIdentity A knowledge base's committed identity (`project.name` and `site.domain` in its .xynoplex/config.yaml), as a service's document names the knowledge base it serves. Its telemetry names it by its DID (`xynoplex.kb`, protocol/specs/src/service-telemetry/telemetry.json).
+// KbIdentity A knowledge base's committed identity (`project.name` and `site.domain` in its .xynolog/config.yaml), as a service's document names the knowledge base it serves. Its telemetry names it by its DID (`xynolog.kb`, specs/src/service-telemetry/telemetry.json).
 type KbIdentity struct {
 	// Domain Its did:web domain: its permanent identity, the source of the audience its tokens must carry, and the authority its people and agents are named under.
 	Domain string `json:"domain"`
@@ -5057,7 +5057,7 @@ type KnowledgeGraph_Nodes_Item struct {
 	union json.RawMessage
 }
 
-// LibrarianConfig Everything a Librarian reads at boot: nothing in it is defaulted by the Librarian. Whoever starts a Librarian writes it, from the knowledge base's stack documents, and the Librarian reads it from the path its `--config` flag names. This schema is the contract, and a Librarian needs no launcher. Started without `--config`, or with a path that names no file, the Librarian refuses to start and says which. No secret is a value here: the graph database's password, an embedding provider's key and a model provider's key are each named by the environment variable that holds it, and the Librarian's own service account is `XYNOPLEX_OIDC_CLIENT_ID` and `XYNOPLEX_OIDC_CLIENT_SECRET` in its environment. A document that does not validate is refused at boot, naming each failing field.
+// LibrarianConfig Everything a Librarian reads at boot: nothing in it is defaulted by the Librarian. Whoever starts a Librarian writes it, from the knowledge base's stack documents, and the Librarian reads it from the path its `--config` flag names. This schema is the contract, and a Librarian needs no launcher. Started without `--config`, or with a path that names no file, the Librarian refuses to start and says which. No secret is a value here: the graph database's password, an embedding provider's key and a model provider's key are each named by the environment variable that holds it, and the Librarian's own service account is `XYNOLOG_OIDC_CLIENT_ID` and `XYNOLOG_OIDC_CLIENT_SECRET` in its environment. A document that does not validate is refused at boot, naming each failing field.
 type LibrarianConfig struct {
 	// Archivist Where the Archivist listens. The Librarian reads a resource's bytes from it, as its service account.
 	Archivist struct {
@@ -5065,7 +5065,7 @@ type LibrarianConfig struct {
 		Port int    `json:"port"`
 	} `json:"archivist"`
 
-	// Embedding The embedding provider a service asks for vectors, and what that kind of provider needs to be asked: one of the providers `xynoplex-vectors` has, told apart by `type`. Two services that share an index name the same provider and the same model: a vector is compared only with vectors of the model that made it. A secret is never a value here: a provider's key is named by the environment variable that holds it.
+	// Embedding The embedding provider a service asks for vectors, and what that kind of provider needs to be asked: one of the providers `xynolog-vectors` has, told apart by `type`. Two services that share an index name the same provider and the same model: a vector is compared only with vectors of the model that made it. A secret is never a value here: a provider's key is named by the environment variable that holds it.
 	Embedding EmbeddingConfig `json:"embedding"`
 
 	// GatewayUrl The URL the Librarian reaches the gateway at: its route to the bus.
@@ -5080,7 +5080,7 @@ type LibrarianConfig struct {
 	// Gatherer The engine a Librarian actor asks: which it is, and where its provider is reached.
 	Gatherer LibrarianEngineConfig `json:"gatherer"`
 
-	// Graph The graph database a service writes or reads, and what that kind of database needs to be reached: one of the kinds `xynoplex-graph` has a store for, told apart by `type`. A secret is never a value here: a database's password is named by the environment variable that holds it.
+	// Graph The graph database a service writes or reads, and what that kind of database needs to be reached: one of the kinds `xynolog-graph` has a store for, told apart by `type`. A secret is never a value here: a database's password is named by the environment variable that holds it.
 	Graph GraphConfig `json:"graph"`
 
 	// Identity The issuer the Librarian's service account signs in at.
@@ -5089,7 +5089,7 @@ type LibrarianConfig struct {
 		Issuer string `json:"issuer"`
 	} `json:"identity"`
 
-	// Kb A knowledge base's committed identity (`project.name` and `site.domain` in its .xynoplex/config.yaml), as a service's document names the knowledge base it serves. Its telemetry names it by its DID (`xynoplex.kb`, protocol/specs/src/service-telemetry/telemetry.json).
+	// Kb A knowledge base's committed identity (`project.name` and `site.domain` in its .xynolog/config.yaml), as a service's document names the knowledge base it serves. Its telemetry names it by its DID (`xynolog.kb`, specs/src/service-telemetry/telemetry.json).
 	Kb KbIdentity `json:"kb"`
 
 	// LogFormat How each log line is written to stdout: `json`, one JSON object per line carrying the active trace's `trace_id` and `span_id`; or `simple`, `<timestamp> [<LEVEL>] <message>` followed by any metadata as JSON.
@@ -5113,7 +5113,7 @@ type LibrarianConfig struct {
 		SemanticFloor float64 `json:"semanticFloor"`
 	} `json:"search"`
 
-	// Vectors The vector index a service writes or searches, and what that kind of index needs to be reached: one of the kinds `xynoplex-vectors` has a store for, told apart by `type`.
+	// Vectors The vector index a service writes or searches, and what that kind of index needs to be reached: one of the kinds `xynolog-vectors` has a store for, told apart by `type`.
 	Vectors VectorsConfig `json:"vectors"`
 }
 
@@ -5131,7 +5131,7 @@ type LibrarianEngineConfig struct {
 
 // LimitRefusal defines model for LimitRefusal.
 type LimitRefusal struct {
-	// Code `streams`: the principal already holds as many streams as its coefficient of `x-xynoplex-limits.streamsPerPrincipal` allows. `emit-rate`: the principal's emits have used its bucket, whose rate and burst are its coefficient of `x-xynoplex-limits.emitsPerPrincipal`, per gateway process. `unanswered-requests`: the client already awaits as many replies as `BusSubscribeRequest.pendingReplies` may name. `capacity`: the gateway holds as many queued bytes as it can. `refusal-rate`: the request's credential was refused, and the requests its holder has had refused have used their allowance; it answers only a request whose token has already failed verification, so it says what a 401 says, and a client that can renew its token renews it and sends the request again rather than waiting (protocol/contract/TRANSPORT-CONTRACT.md § A refused credential).
+	// Code `streams`: the principal already holds as many streams as its coefficient of `x-xynolog-limits.streamsPerPrincipal` allows. `emit-rate`: the principal's emits have used its bucket, whose rate and burst are its coefficient of `x-xynolog-limits.emitsPerPrincipal`, per gateway process. `unanswered-requests`: the client already awaits as many replies as `BusSubscribeRequest.pendingReplies` may name. `capacity`: the gateway holds as many queued bytes as it can. `refusal-rate`: the request's credential was refused, and the requests its holder has had refused have used their allowance; it answers only a request whose token has already failed verification, so it says what a 401 says, and a client that can renew its token renews it and sends the request again rather than waiting (contract/TRANSPORT-CONTRACT.md § A refused credential).
 	Code    LimitRefusalCode `json:"code"`
 	Details interface{}      `json:"details,omitempty"`
 
@@ -5142,7 +5142,7 @@ type LimitRefusal struct {
 	Hint *string `json:"hint,omitempty"`
 }
 
-// LimitRefusalCode `streams`: the principal already holds as many streams as its coefficient of `x-xynoplex-limits.streamsPerPrincipal` allows. `emit-rate`: the principal's emits have used its bucket, whose rate and burst are its coefficient of `x-xynoplex-limits.emitsPerPrincipal`, per gateway process. `unanswered-requests`: the client already awaits as many replies as `BusSubscribeRequest.pendingReplies` may name. `capacity`: the gateway holds as many queued bytes as it can. `refusal-rate`: the request's credential was refused, and the requests its holder has had refused have used their allowance; it answers only a request whose token has already failed verification, so it says what a 401 says, and a client that can renew its token renews it and sends the request again rather than waiting (protocol/contract/TRANSPORT-CONTRACT.md § A refused credential).
+// LimitRefusalCode `streams`: the principal already holds as many streams as its coefficient of `x-xynolog-limits.streamsPerPrincipal` allows. `emit-rate`: the principal's emits have used its bucket, whose rate and burst are its coefficient of `x-xynolog-limits.emitsPerPrincipal`, per gateway process. `unanswered-requests`: the client already awaits as many replies as `BusSubscribeRequest.pendingReplies` may name. `capacity`: the gateway holds as many queued bytes as it can. `refusal-rate`: the request's credential was refused, and the requests its holder has had refused have used their allowance; it answers only a request whose token has already failed verification, so it says what a 401 says, and a client that can renew its token renews it and sends the request again rather than waiting (contract/TRANSPORT-CONTRACT.md § A refused credential).
 type LimitRefusalCode string
 
 // LinkingJobParams What a linking job takes: mentions of the named entity types are marked as references, each unresolved until it is bound to a resource.
@@ -5255,7 +5255,7 @@ type MarkCreateRequest struct {
 
 // MarkDelegateTimeoutEvent The payload of `mark:delegate-timeout`, a client-local signal: a delegated job went silent past its deadline, with no progress, no completion and no `job:fail`. A real job failure arrives as `job:fail` and never produces this.
 type MarkDelegateTimeoutEvent struct {
-	// Motivation Xynoplex-supported W3C Web Annotation motivations - https://www.w3.org/TR/annotation-vocab/#motivation
+	// Motivation Xynolog-supported W3C Web Annotation motivations - https://www.w3.org/TR/annotation-vocab/#motivation
 	Motivation Motivation `json:"motivation"`
 
 	// ResourceId The resource the job was delegated for.
@@ -5288,7 +5288,7 @@ type MarkJobCompleteCommand struct {
 	// UnderscoreUserId Authenticated user's DID, injected by the /bus/emit gateway. Clients do not set this.
 	UnderscoreUserId *UserId `json:"_userId,omitempty"`
 
-	// Attempt Which attempt produced this event, 1-based (a first run is 1). ALWAYS present: the queue re-runs a failed job silently, so an operator reading progress or a terminal record has no other way to tell a re-run from a first run — and provider spend, already counted in xynoplex_inference_tokens_total, cannot be attributed to a repeated document without it. Stated rather than inferred from absence, because 'attempt 1' is a fact the emitter always knows.
+	// Attempt Which attempt produced this event, 1-based (a first run is 1). ALWAYS present: the queue re-runs a failed job silently, so an operator reading progress or a terminal record has no other way to tell a re-run from a first run — and provider spend, already counted in xynolog_inference_tokens_total, cannot be attributed to a repeated document without it. Stated rather than inferred from absence, because 'attempt 1' is a fact the emitter always knows.
 	Attempt *int `json:"attempt,omitempty"`
 
 	// Durability How a job's annotations were established as durable — the OBSERVATION, never a conclusion drawn from it. 'acknowledged': the event log confirmed the batch (mark:commit-ok). 'probe-confirmed': the acknowledgement was lost and a later read found the batch's last annotation present — true, but a weaker claim than an ack, since it rests on the log appending a batch in order and stopping at the first failure. 'probe-refused': the read returned a failure reply; note this does NOT assert the annotations are absent, because a read that failed for its own reasons answers on the same channel. 'probe-unreachable': no answer came at all, so nothing was established either way. ABSENT means the question never arose — a job that committed no annotations. Never defaulted: a manufactured value here is a claim nobody made, in a log nobody can rewrite.
@@ -5352,7 +5352,7 @@ type MarkJobDone struct {
 type MarkJobFilter struct {
 	JobType MarkJobFilterJobType `json:"jobType"`
 	Params  struct {
-		// Motivation Xynoplex-supported W3C Web Annotation motivations - https://www.w3.org/TR/annotation-vocab/#motivation
+		// Motivation Xynolog-supported W3C Web Annotation motivations - https://www.w3.org/TR/annotation-vocab/#motivation
 		Motivation Motivation `json:"motivation"`
 	} `json:"params"`
 }
@@ -5391,7 +5391,7 @@ type MarkJobResult struct {
 
 // MarkRequestedEvent Emitted when the user requests a new mark (annotation) on a resource
 type MarkRequestedEvent struct {
-	// Motivation Xynoplex-supported W3C Web Annotation motivations - https://www.w3.org/TR/annotation-vocab/#motivation
+	// Motivation Xynolog-supported W3C Web Annotation motivations - https://www.w3.org/TR/annotation-vocab/#motivation
 	Motivation Motivation `json:"motivation"`
 
 	// Selector One or more W3C selectors
@@ -5406,7 +5406,7 @@ type MarkSubmitEvent struct {
 	// Body Optional body. Omit for annotations whose motivation alone is meaningful (e.g. highlighting) or whose user-supplied content is empty (e.g. an assessing annotation saved without comment text). Shape matches Annotation.body.
 	Body *AnnotationBodies `json:"body,omitempty"`
 
-	// Motivation Xynoplex-supported W3C Web Annotation motivations - https://www.w3.org/TR/annotation-vocab/#motivation
+	// Motivation Xynolog-supported W3C Web Annotation motivations - https://www.w3.org/TR/annotation-vocab/#motivation
 	Motivation Motivation `json:"motivation"`
 
 	// Selector One or more W3C selectors
@@ -5570,7 +5570,7 @@ type MemoryVectorsConfig struct {
 // MemoryVectorsConfigType defines model for MemoryVectorsConfig.Type.
 type MemoryVectorsConfigType string
 
-// Motivation Xynoplex-supported W3C Web Annotation motivations - https://www.w3.org/TR/annotation-vocab/#motivation
+// Motivation Xynolog-supported W3C Web Annotation motivations - https://www.w3.org/TR/annotation-vocab/#motivation
 type Motivation string
 
 // Neo4jGraphConfig A graph kept in a Neo4j database.
@@ -6459,7 +6459,7 @@ type SmeltSettledOutcome string
 // SmeltSettledReason Why the content was skipped.
 type SmeltSettledReason string
 
-// SmelterConfig Everything a Smelter reads at boot: nothing in it is defaulted by the Smelter. Whoever starts a Smelter writes it, from the knowledge base's stack documents, and the Smelter reads it from the path its `--config` flag names. This schema is the contract, and a Smelter needs no launcher. Started without `--config`, or with a path that names no file, the Smelter refuses to start and says which. No secret is a value here: an embedding provider's key is named by the environment variable that holds it, and the Smelter's own service account is `XYNOPLEX_OIDC_CLIENT_ID` and `XYNOPLEX_OIDC_CLIENT_SECRET` in its environment. A document that does not validate is refused at boot, naming each failing field.
+// SmelterConfig Everything a Smelter reads at boot: nothing in it is defaulted by the Smelter. Whoever starts a Smelter writes it, from the knowledge base's stack documents, and the Smelter reads it from the path its `--config` flag names. This schema is the contract, and a Smelter needs no launcher. Started without `--config`, or with a path that names no file, the Smelter refuses to start and says which. No secret is a value here: an embedding provider's key is named by the environment variable that holds it, and the Smelter's own service account is `XYNOLOG_OIDC_CLIENT_ID` and `XYNOLOG_OIDC_CLIENT_SECRET` in its environment. A document that does not validate is refused at boot, naming each failing field.
 type SmelterConfig struct {
 	// Archivist Where the Archivist listens. The Smelter reads a resource's bytes from it, and keeps the anchored-text store there, as its service account.
 	Archivist struct {
@@ -6476,10 +6476,10 @@ type SmelterConfig struct {
 		Overlap int `json:"overlap"`
 	} `json:"chunking"`
 
-	// CursorsPath The file a follower of the record keeps its cursors in: for each log of the record it follows, the sequence number of the last event of it taken (protocol/contract/TRANSPORT-CONTRACT.md § What repairs a passing frame). A file of the service's own disk, never of the knowledge base: a service that finds none starts each log as it starts one with no cursor, so losing it costs time and never correctness.
+	// CursorsPath The file a follower of the record keeps its cursors in: for each log of the record it follows, the sequence number of the last event of it taken (contract/TRANSPORT-CONTRACT.md § What repairs a passing frame). A file of the service's own disk, never of the knowledge base: a service that finds none starts each log as it starts one with no cursor, so losing it costs time and never correctness.
 	CursorsPath CursorsPath `json:"cursorsPath"`
 
-	// Embedding The embedding provider a service asks for vectors, and what that kind of provider needs to be asked: one of the providers `xynoplex-vectors` has, told apart by `type`. Two services that share an index name the same provider and the same model: a vector is compared only with vectors of the model that made it. A secret is never a value here: a provider's key is named by the environment variable that holds it.
+	// Embedding The embedding provider a service asks for vectors, and what that kind of provider needs to be asked: one of the providers `xynolog-vectors` has, told apart by `type`. Two services that share an index name the same provider and the same model: a vector is compared only with vectors of the model that made it. A secret is never a value here: a provider's key is named by the environment variable that holds it.
 	Embedding EmbeddingConfig `json:"embedding"`
 
 	// GatewayUrl The URL the Smelter reaches the gateway at: its route to the bus.
@@ -6491,7 +6491,7 @@ type SmelterConfig struct {
 		Issuer string `json:"issuer"`
 	} `json:"identity"`
 
-	// Kb A knowledge base's committed identity (`project.name` and `site.domain` in its .xynoplex/config.yaml), as a service's document names the knowledge base it serves. Its telemetry names it by its DID (`xynoplex.kb`, protocol/specs/src/service-telemetry/telemetry.json).
+	// Kb A knowledge base's committed identity (`project.name` and `site.domain` in its .xynolog/config.yaml), as a service's document names the knowledge base it serves. Its telemetry names it by its DID (`xynolog.kb`, specs/src/service-telemetry/telemetry.json).
 	Kb KbIdentity `json:"kb"`
 
 	// LogFormat How each log line is written to stdout: `json`, one JSON object per line carrying the active trace's `trace_id` and `span_id`; or `simple`, `<timestamp> [<LEVEL>] <message>` followed by any metadata as JSON.
@@ -6506,7 +6506,7 @@ type SmelterConfig struct {
 	// Port The port the Smelter answers `/health` on.
 	Port int `json:"port"`
 
-	// Vectors The vector index a service writes or searches, and what that kind of index needs to be reached: one of the kinds `xynoplex-vectors` has a store for, told apart by `type`.
+	// Vectors The vector index a service writes or searches, and what that kind of index needs to be reached: one of the kinds `xynolog-vectors` has a store for, told apart by `type`.
 	Vectors VectorsConfig `json:"vectors"`
 }
 
@@ -6571,7 +6571,7 @@ type StoredEventResponse struct {
 	Version int `json:"version"`
 }
 
-// SupportedMediaType Base MIME types (no parameters) admitted by Xynoplex. Membership is the create/yield gate — every member is storable, nameable, and uploadable. What more the system can do with a type (render, annotate, extract text, author) is curated per type in @xynoplex/core's media-type registry, which is keyed by this enum.
+// SupportedMediaType Base MIME types (no parameters) admitted by Xynolog. Membership is the create/yield gate — every member is storable, nameable, and uploadable. What more the system can do with a type (render, annotate, extract text, author) is curated per type in @xynolog/core's media-type registry, which is keyed by this enum.
 type SupportedMediaType string
 
 // SvgSelector defines model for SvgSelector.
@@ -6731,7 +6731,7 @@ type UserResponse struct {
 	Name  *string `json:"name"`
 }
 
-// VectorsConfig The vector index a service writes or searches, and what that kind of index needs to be reached: one of the kinds `xynoplex-vectors` has a store for, told apart by `type`.
+// VectorsConfig The vector index a service writes or searches, and what that kind of index needs to be reached: one of the kinds `xynolog-vectors` has a store for, told apart by `type`.
 type VectorsConfig struct {
 	union json.RawMessage
 }
@@ -6770,7 +6770,7 @@ type WeaveRebuildCommand struct {
 	ResourceId *ResourceId `json:"resourceId,omitempty"`
 }
 
-// WeaverConfig Everything a Weaver reads at boot: nothing in it is defaulted by the Weaver. The launcher writes it for the Weaver it starts, from the knowledge base's stack documents, and the Weaver reads it from the path its `--config` flag names (its image passes `/etc/xynoplex/weaver.json`). Whoever starts a Weaver another way writes the same document: this schema is the contract, and a Weaver needs no launcher. Started without `--config`, or with a path that names no file, the Weaver refuses to start and says which. No secret is a value here: the graph database's password is named by the environment variable that holds it, and the Weaver's own service account is `XYNOPLEX_OIDC_CLIENT_ID` and `XYNOPLEX_OIDC_CLIENT_SECRET` in its environment. A document that does not validate is refused at boot, naming each failing field.
+// WeaverConfig Everything a Weaver reads at boot: nothing in it is defaulted by the Weaver. The launcher writes it for the Weaver it starts, from the knowledge base's stack documents, and the Weaver reads it from the path its `--config` flag names (its image passes `/etc/xynolog/weaver.json`). Whoever starts a Weaver another way writes the same document: this schema is the contract, and a Weaver needs no launcher. Started without `--config`, or with a path that names no file, the Weaver refuses to start and says which. No secret is a value here: the graph database's password is named by the environment variable that holds it, and the Weaver's own service account is `XYNOLOG_OIDC_CLIENT_ID` and `XYNOLOG_OIDC_CLIENT_SECRET` in its environment. A document that does not validate is refused at boot, naming each failing field.
 type WeaverConfig struct {
 	// Archivist Where the Archivist listens. The Weaver reads the record by position from it, and a resource's annotations, as its service account.
 	Archivist struct {
@@ -6778,13 +6778,13 @@ type WeaverConfig struct {
 		Port int    `json:"port"`
 	} `json:"archivist"`
 
-	// CursorsPath The file a follower of the record keeps its cursors in: for each log of the record it follows, the sequence number of the last event of it taken (protocol/contract/TRANSPORT-CONTRACT.md § What repairs a passing frame). A file of the service's own disk, never of the knowledge base: a service that finds none starts each log as it starts one with no cursor, so losing it costs time and never correctness.
+	// CursorsPath The file a follower of the record keeps its cursors in: for each log of the record it follows, the sequence number of the last event of it taken (contract/TRANSPORT-CONTRACT.md § What repairs a passing frame). A file of the service's own disk, never of the knowledge base: a service that finds none starts each log as it starts one with no cursor, so losing it costs time and never correctness.
 	CursorsPath CursorsPath `json:"cursorsPath"`
 
 	// GatewayUrl The URL the Weaver reaches the gateway at: its route to the bus.
 	GatewayUrl string `json:"gatewayUrl"`
 
-	// Graph The graph database a service writes or reads, and what that kind of database needs to be reached: one of the kinds `xynoplex-graph` has a store for, told apart by `type`. A secret is never a value here: a database's password is named by the environment variable that holds it.
+	// Graph The graph database a service writes or reads, and what that kind of database needs to be reached: one of the kinds `xynolog-graph` has a store for, told apart by `type`. A secret is never a value here: a database's password is named by the environment variable that holds it.
 	Graph GraphConfig `json:"graph"`
 
 	// Identity The issuer the Weaver's service account signs in at.
@@ -6793,7 +6793,7 @@ type WeaverConfig struct {
 		Issuer string `json:"issuer"`
 	} `json:"identity"`
 
-	// Kb A knowledge base's committed identity (`project.name` and `site.domain` in its .xynoplex/config.yaml), as a service's document names the knowledge base it serves. Its telemetry names it by its DID (`xynoplex.kb`, protocol/specs/src/service-telemetry/telemetry.json).
+	// Kb A knowledge base's committed identity (`project.name` and `site.domain` in its .xynolog/config.yaml), as a service's document names the knowledge base it serves. Its telemetry names it by its DID (`xynolog.kb`, specs/src/service-telemetry/telemetry.json).
 	Kb KbIdentity `json:"kb"`
 
 	// LogFormat How each log line is written to stdout: `json`, one JSON object per line carrying the active trace's `trace_id` and `span_id`; or `simple`, `<timestamp> [<LEVEL>] <message>` followed by any metadata as JSON.
@@ -6806,9 +6806,9 @@ type WeaverConfig struct {
 	Port int `json:"port"`
 }
 
-// WorkerConfig Everything a worker reads at boot: nothing in it is defaulted by the worker. The launcher writes it for the machine's worker, from the knowledge bases on that worker's list: each local knowledge base as its start places it, from its stack documents, and each added by `xynoplex worker kb add`, offered the engines of the local one it was added from. The worker reads it from the path its `--config` flag names (its image passes `/etc/xynoplex/worker.json`). Whoever starts a worker another way writes the same document: this schema is the contract, and a worker needs no launcher. Started without `--config`, or with a path that names no file, the worker refuses to start and says which. No secret is a value here: a provider's key is named by the environment variable that holds it, and the key the worker signs in with at every knowledge base is `XYNOPLEX_OIDC_CLIENT_KEY` in its environment, an RSA private key; each knowledge base names the client that holds its public half there. A document that does not validate is refused at boot, naming each failing field.
+// WorkerConfig Everything a worker reads at boot: nothing in it is defaulted by the worker. The launcher writes it for the machine's worker, from the knowledge bases on that worker's list: each local knowledge base as its start places it, from its stack documents, and each added by `xynolog worker kb add`, offered the engines of the local one it was added from. The worker reads it from the path its `--config` flag names (its image passes `/etc/xynolog/worker.json`). Whoever starts a worker another way writes the same document: this schema is the contract, and a worker needs no launcher. Started without `--config`, or with a path that names no file, the worker refuses to start and says which. No secret is a value here: a provider's key is named by the environment variable that holds it, and the key the worker signs in with at every knowledge base is `XYNOLOG_OIDC_CLIENT_KEY` in its environment, an RSA private key; each knowledge base names the client that holds its public half there. A document that does not validate is refused at boot, naming each failing field.
 type WorkerConfig struct {
-	// KnowledgeBases The knowledge bases this worker does jobs for. At each it signs in, confirms which knowledge base it reached and claims for its engines, apart from every other: one knowledge base's trouble stops that knowledge base's work alone (`protocol/contract/WORKER-SERVICE.md` § Knowledge bases). No two name one `domain`, which the worker refuses at boot.
+	// KnowledgeBases The knowledge bases this worker does jobs for. At each it signs in, confirms which knowledge base it reached and claims for its engines, apart from every other: one knowledge base's trouble stops that knowledge base's work alone (`contract/WORKER-SERVICE.md` § Knowledge bases). No two name one `domain`, which the worker refuses at boot.
 	KnowledgeBases []WorkerKnowledgeBaseConfig `json:"knowledgeBases"`
 
 	// LogFormat How each log line is written to stdout: `json`, one JSON object per line carrying the active trace's `trace_id` and `span_id`; or `simple`, `<timestamp> [<LEVEL>] <message>` followed by any metadata as JSON.
@@ -7057,7 +7057,7 @@ type YieldJobCompleteCommand struct {
 	// AnnotationId The annotation the job's context was focused on, when it was focused on one. Lets a client route the completion to that annotation.
 	AnnotationId *AnnotationId `json:"annotationId,omitempty"`
 
-	// Attempt Which attempt produced this event, 1-based (a first run is 1). ALWAYS present: the queue re-runs a failed job silently, so an operator reading progress or a terminal record has no other way to tell a re-run from a first run — and provider spend, already counted in xynoplex_inference_tokens_total, cannot be attributed to a repeated document without it. Stated rather than inferred from absence, because 'attempt 1' is a fact the emitter always knows.
+	// Attempt Which attempt produced this event, 1-based (a first run is 1). ALWAYS present: the queue re-runs a failed job silently, so an operator reading progress or a terminal record has no other way to tell a re-run from a first run — and provider spend, already counted in xynolog_inference_tokens_total, cannot be attributed to a repeated document without it. Stated rather than inferred from absence, because 'attempt 1' is a fact the emitter always knows.
 	Attempt *int `json:"attempt,omitempty"`
 
 	// Durability How a job's annotations were established as durable — the OBSERVATION, never a conclusion drawn from it. 'acknowledged': the event log confirmed the batch (mark:commit-ok). 'probe-confirmed': the acknowledgement was lost and a later read found the batch's last annotation present — true, but a weaker claim than an ack, since it rests on the log appending a batch in order and stopping at the first failure. 'probe-refused': the read returned a failure reply; note this does NOT assert the annotations are absent, because a read that failed for its own reasons answers on the same channel. 'probe-unreachable': no answer came at all, so nothing was established either way. ABSENT means the question never arose — a job that committed no annotations. Never defaulted: a manufactured value here is a claim nobody made, in a log nobody can rewrite.

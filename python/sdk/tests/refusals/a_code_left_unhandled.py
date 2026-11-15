@@ -2,7 +2,7 @@
 
 from typing import assert_never
 
-from xynoplex.error_codes import JobErrorCode
+from xynolog.error_codes import JobErrorCode
 
 
 def said(code: JobErrorCode) -> str:

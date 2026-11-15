@@ -2,7 +2,7 @@
  * The embeddable resource viewer — keystone acceptance spec.
  *
  * The chat client's actual requirement: render + interact with a resource
- * fed ONLY a `XynoplexSession` and a language, with NO provider of any kind
+ * fed ONLY a `XynologSession` and a language, with NO provider of any kind
  * mounted. react-ui assumes no language, so the language is a required prop: a
  * locale, or the host's own translation manager. The viewer mounts its own
  * translation provider from it. These tests render the viewer as an embedder
@@ -16,15 +16,15 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, act, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import type { XynoplexSession } from '@xynoplex/sdk';
-import type { Annotation, ResourceDescriptor as XynoplexResource, ResourceId } from '@xynoplex/core';
-import { annotationId, resourceId, EventBus } from '@xynoplex/core';
-import { createTestXynoplexWrapper, englishTranslationManager } from '../../../test-utils';
+import type { XynologSession } from '@xynolog/sdk';
+import type { Annotation, ResourceDescriptor as XynologResource, ResourceId } from '@xynolog/core';
+import { annotationId, resourceId, EventBus } from '@xynolog/core';
+import { createTestXynologWrapper, englishTranslationManager } from '../../../test-utils';
 import { ResourceViewer } from '../ResourceViewer';
 
 // Minimal bring-your-own-session double: just the surface ResourceViewer + its
 // subtree touch — `client.browse` / `client.mark` and the bus its event hooks read.
-function fakeSession(): XynoplexSession {
+function fakeSession(): XynologSession {
   const client = {
     bus: new EventBus(),
     baseUrl: 'http://localhost:4000',
@@ -33,10 +33,10 @@ function fakeSession(): XynoplexSession {
   };
   return {
     client,
-  } as unknown as XynoplexSession;
+  } as unknown as XynologSession;
 }
 
-const resource: XynoplexResource & { content: string } = {
+const resource: XynologResource & { content: string } = {
   '@context': 'https://www.w3.org/ns/activitystreams',
   '@id': 'res-1' as ResourceId,
   name: 'Doc',
@@ -111,7 +111,7 @@ describe('ResourceViewer — embeddable (bring-your-own-session, no session prov
   // anchorRect arriving on browse:click reaches the host's onOpenPanel
   // untouched (detail routing, the default click action).
   it('forwards the browse:click anchorRect into onOpenPanel', async () => {
-    const { session, eventBus } = createTestXynoplexWrapper();
+    const { session, eventBus } = createTestXynologWrapper();
     const onOpenPanel = vi.fn();
 
     render(
@@ -150,7 +150,7 @@ describe('ResourceViewer — embeddable (bring-your-own-session, no session prov
   // The viewer reads the host's callbacks through refs. A host that passes a
   // new function on each render must be called with the one it passed last.
   it('calls the onOpenPanel of the latest render', async () => {
-    const { session, eventBus } = createTestXynoplexWrapper();
+    const { session, eventBus } = createTestXynologWrapper();
     const first = vi.fn();
     const latest = vi.fn();
 
@@ -187,7 +187,7 @@ describe('ResourceViewer — embeddable (bring-your-own-session, no session prov
     // A remote drive can arrive while the participant is looking at something
     // else. Resolving the annotation FIRST makes that a no-op by construction,
     // which is why the channel carries no resourceId guard.
-    const { session, eventBus } = createTestXynoplexWrapper();
+    const { session, eventBus } = createTestXynologWrapper();
     const onOpenPanel = vi.fn();
 
     render(

@@ -15,7 +15,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/Xynoplex/sdk/go/api"
+	"github.com/xynolog/sdk/go/api"
 )
 
 type kindCase struct {

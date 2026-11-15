@@ -10,19 +10,19 @@ import qualified Data.Map.Strict as Map
 import qualified Data.Set as Set
 import Data.Text (Text)
 import qualified Data.Text as Text
-import qualified Xynoplex.Bus as Bus
-import qualified Xynoplex.Channels as Channel
-import qualified Xynoplex.Client as Client
-import qualified Xynoplex.Content as Content
-import qualified Xynoplex.Delegation as Report
-import qualified Xynoplex.ErrorCodes as Code
-import Xynoplex.Errors (TransportError(..), BusRequestError(..))
-import qualified Xynoplex.Mark as Mark
-import qualified Xynoplex.Running as Running
-import qualified Xynoplex.Timing.Settings as Timing
-import qualified Xynoplex.Transport as Transport
-import Xynoplex.Types
-import qualified Xynoplex.Yield as Yield
+import qualified Xynolog.Bus as Bus
+import qualified Xynolog.Channels as Channel
+import qualified Xynolog.Client as Client
+import qualified Xynolog.Content as Content
+import qualified Xynolog.Delegation as Report
+import qualified Xynolog.ErrorCodes as Code
+import Xynolog.Errors (TransportError(..), BusRequestError(..))
+import qualified Xynolog.Mark as Mark
+import qualified Xynolog.Running as Running
+import qualified Xynolog.Timing.Settings as Timing
+import qualified Xynolog.Transport as Transport
+import Xynolog.Types
+import qualified Xynolog.Yield as Yield
 import qualified Streaming.Prelude as Stream
 import qualified ControlledTime as Time
 import ClockCases (clockCasesFor, Scenario(..))

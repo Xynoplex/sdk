@@ -4,102 +4,102 @@
  * Styles for toolbar including annotation toolbar and dropdown groups
  */
 
-.xynoplex-annotate-toolbar {
+.xynolog-annotate-toolbar {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem;
-  background: var(--xynoplex-bg-primary);
-  border-bottom: 1px solid var(--xynoplex-color-gray-200);
+  background: var(--xynolog-bg-primary);
+  border-bottom: 1px solid var(--xynolog-color-gray-200);
   flex-shrink: 0; /* Don't shrink - stay fixed size */
 }
 
-[data-theme="dark"] .xynoplex-annotate-toolbar {
-  background: var(--xynoplex-bg-primary);
-  border-bottom-color: var(--xynoplex-color-gray-700);
+[data-theme="dark"] .xynolog-annotate-toolbar {
+  background: var(--xynolog-bg-primary);
+  border-bottom-color: var(--xynolog-color-gray-700);
 }
 
-.xynoplex-toolbar-separator {
+.xynolog-toolbar-separator {
   height: 2rem;
   width: 1px;
-  background: var(--xynoplex-color-gray-300);
+  background: var(--xynolog-color-gray-300);
 }
 
-[data-theme="dark"] .xynoplex-toolbar-separator {
-  background: var(--xynoplex-color-gray-600);
+[data-theme="dark"] .xynolog-toolbar-separator {
+  background: var(--xynolog-color-gray-600);
 }
 
-.xynoplex-dropdown-group {
+.xynolog-dropdown-group {
   position: relative;
 }
 
-.xynoplex-dropdown-trigger {
+.xynolog-dropdown-trigger {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   cursor: pointer;
   padding: 0.375rem 0.75rem;
-  border-radius: var(--xynoplex-radius-md);
-  transition: all var(--xynoplex-duration-base);
+  border-radius: var(--xynolog-radius-md);
+  transition: all var(--xynolog-duration-base);
   border: 1px solid transparent;
 }
 
-.xynoplex-dropdown-trigger:hover {
-  background: var(--xynoplex-color-primary-100);
-  border-color: var(--xynoplex-color-primary-400);
+.xynolog-dropdown-trigger:hover {
+  background: var(--xynolog-color-primary-100);
+  border-color: var(--xynolog-color-primary-400);
 }
 
-[data-theme="dark"] .xynoplex-dropdown-trigger:hover {
-  background: var(--xynoplex-color-primary-900);
-  border-color: var(--xynoplex-color-primary-600);
+[data-theme="dark"] .xynolog-dropdown-trigger:hover {
+  background: var(--xynolog-color-primary-900);
+  border-color: var(--xynolog-color-primary-600);
 }
 
-.xynoplex-dropdown-trigger:focus-visible {
-  outline: 2px solid var(--xynoplex-color-primary-500);
+.xynolog-dropdown-trigger:focus-visible {
+  outline: 2px solid var(--xynolog-color-primary-500);
   outline-offset: 2px;
 }
 
-.xynoplex-dropdown-display {
+.xynolog-dropdown-display {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-.xynoplex-dropdown-icon {
+.xynolog-dropdown-icon {
   font-size: 1.125rem;
 }
 
-.xynoplex-dropdown-label {
+.xynolog-dropdown-label {
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--xynoplex-color-gray-700);
+  color: var(--xynolog-color-gray-700);
 }
 
-[data-theme="dark"] .xynoplex-dropdown-label {
-  color: var(--xynoplex-color-gray-300);
+[data-theme="dark"] .xynolog-dropdown-label {
+  color: var(--xynolog-color-gray-300);
 }
 
-.xynoplex-dropdown-display[data-delete="true"] {
-  background: var(--xynoplex-color-error);
-  color: var(--xynoplex-color-white);
-  border-radius: var(--xynoplex-radius-sm);
+.xynolog-dropdown-display[data-delete="true"] {
+  background: var(--xynolog-color-error);
+  color: var(--xynolog-color-white);
+  border-radius: var(--xynolog-radius-sm);
   padding: 0.125rem 0.375rem;
 }
 
-.xynoplex-dropdown-display[data-delete="true"] .xynoplex-dropdown-label {
-  color: var(--xynoplex-color-white);
+.xynolog-dropdown-display[data-delete="true"] .xynolog-dropdown-label {
+  color: var(--xynolog-color-white);
 }
 
-[data-theme="dark"] .xynoplex-dropdown-display[data-delete="true"] {
-  background: var(--xynoplex-color-error-dark);
-  color: var(--xynoplex-color-error-light);
+[data-theme="dark"] .xynolog-dropdown-display[data-delete="true"] {
+  background: var(--xynolog-color-error-dark);
+  color: var(--xynolog-color-error-light);
 }
 
-[data-theme="dark"] .xynoplex-dropdown-display[data-delete="true"] .xynoplex-dropdown-label {
-  color: var(--xynoplex-color-error-light);
+[data-theme="dark"] .xynolog-dropdown-display[data-delete="true"] .xynolog-dropdown-label {
+  color: var(--xynolog-color-error-light);
 }
 
-.xynoplex-dropdown-menu {
+.xynolog-dropdown-menu {
   position: absolute;
   top: 100%;
   left: 0;
@@ -107,11 +107,11 @@
   z-index: 50;
 }
 
-.xynoplex-dropdown-content {
-  background: var(--xynoplex-bg-primary);
-  border: 1px solid var(--xynoplex-color-gray-200);
-  border-radius: var(--xynoplex-radius-lg);
-  box-shadow: var(--xynoplex-shadow-lg);
+.xynolog-dropdown-content {
+  background: var(--xynolog-bg-primary);
+  border: 1px solid var(--xynolog-color-gray-200);
+  border-radius: var(--xynolog-radius-lg);
+  box-shadow: var(--xynolog-shadow-lg);
   padding: 0.5rem;
   min-width: max-content;
   display: flex;
@@ -119,32 +119,32 @@
   gap: 0.25rem;
 }
 
-[data-theme="dark"] .xynoplex-dropdown-content {
-  border-color: var(--xynoplex-color-gray-700);
+[data-theme="dark"] .xynolog-dropdown-content {
+  border-color: var(--xynolog-color-gray-700);
 }
 
-.xynoplex-dropdown-header {
+.xynolog-dropdown-header {
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--xynoplex-color-gray-600);
+  color: var(--xynolog-color-gray-600);
   padding: 0.25rem 0.5rem;
-  border-bottom: 1px solid var(--xynoplex-color-gray-200);
+  border-bottom: 1px solid var(--xynolog-color-gray-200);
 }
 
-[data-theme="dark"] .xynoplex-dropdown-header {
-  color: var(--xynoplex-color-gray-300);
-  border-bottom-color: var(--xynoplex-color-gray-700);
+[data-theme="dark"] .xynolog-dropdown-header {
+  color: var(--xynolog-color-gray-300);
+  border-bottom-color: var(--xynolog-color-gray-700);
 }
 
-.xynoplex-toolbar-menu-button {
+.xynolog-toolbar-menu-button {
   display: flex;
   align-items: center;
   gap: 0.375rem;
   padding: 0.25rem 0.5rem;
-  border-radius: var(--xynoplex-radius-md);
-  transition: all var(--xynoplex-duration-base);
+  border-radius: var(--xynolog-radius-md);
+  transition: all var(--xynolog-duration-base);
   border: none;
   background: transparent;
   cursor: pointer;
@@ -153,75 +153,75 @@
   white-space: nowrap;
 }
 
-.xynoplex-toolbar-menu-button:focus-visible {
-  outline: 2px solid var(--xynoplex-color-primary-500);
+.xynolog-toolbar-menu-button:focus-visible {
+  outline: 2px solid var(--xynolog-color-primary-500);
   outline-offset: 2px;
 }
 
-.xynoplex-toolbar-menu-button[data-selected="false"] {
-  color: var(--xynoplex-color-gray-700);
+.xynolog-toolbar-menu-button[data-selected="false"] {
+  color: var(--xynolog-color-gray-700);
 }
 
-.xynoplex-toolbar-menu-button[data-selected="false"]:hover {
-  background: var(--xynoplex-color-gray-50);
+.xynolog-toolbar-menu-button[data-selected="false"]:hover {
+  background: var(--xynolog-color-gray-50);
 }
 
-.xynoplex-toolbar-menu-button[data-selected="true"] {
-  background: var(--xynoplex-color-gray-300);
-  color: var(--xynoplex-color-gray-900);
+.xynolog-toolbar-menu-button[data-selected="true"] {
+  background: var(--xynolog-color-gray-300);
+  color: var(--xynolog-color-gray-900);
 }
 
-[data-theme="dark"] .xynoplex-toolbar-menu-button[data-selected="false"] {
-  color: var(--xynoplex-color-gray-300);
+[data-theme="dark"] .xynolog-toolbar-menu-button[data-selected="false"] {
+  color: var(--xynolog-color-gray-300);
 }
 
-[data-theme="dark"] .xynoplex-toolbar-menu-button[data-selected="false"]:hover {
-  background: var(--xynoplex-bg-secondary);
+[data-theme="dark"] .xynolog-toolbar-menu-button[data-selected="false"]:hover {
+  background: var(--xynolog-bg-secondary);
 }
 
-[data-theme="dark"] .xynoplex-toolbar-menu-button[data-selected="true"] {
-  background: var(--xynoplex-color-gray-700);
-  color: var(--xynoplex-color-gray-100);
+[data-theme="dark"] .xynolog-toolbar-menu-button[data-selected="true"] {
+  background: var(--xynolog-color-gray-700);
+  color: var(--xynolog-color-gray-100);
 }
 
-.xynoplex-toolbar-menu-button[data-delete="true"][data-selected="false"] {
-  color: var(--xynoplex-color-error-dark);
+.xynolog-toolbar-menu-button[data-delete="true"][data-selected="false"] {
+  color: var(--xynolog-color-error-dark);
 }
 
-.xynoplex-toolbar-menu-button[data-delete="true"][data-selected="false"]:hover {
-  background: var(--xynoplex-color-error-light);
+.xynolog-toolbar-menu-button[data-delete="true"][data-selected="false"]:hover {
+  background: var(--xynolog-color-error-light);
 }
 
-.xynoplex-toolbar-menu-button[data-delete="true"][data-selected="true"] {
-  background: var(--xynoplex-color-error);
-  color: var(--xynoplex-color-white);
+.xynolog-toolbar-menu-button[data-delete="true"][data-selected="true"] {
+  background: var(--xynolog-color-error);
+  color: var(--xynolog-color-white);
 }
 
-[data-theme="dark"] .xynoplex-toolbar-menu-button[data-delete="true"][data-selected="false"] {
-  color: var(--xynoplex-color-error-light);
+[data-theme="dark"] .xynolog-toolbar-menu-button[data-delete="true"][data-selected="false"] {
+  color: var(--xynolog-color-error-light);
 }
 
-[data-theme="dark"] .xynoplex-toolbar-menu-button[data-delete="true"][data-selected="false"]:hover {
+[data-theme="dark"] .xynolog-toolbar-menu-button[data-delete="true"][data-selected="false"]:hover {
   background: rgba(239, 68, 68, 0.1);
 }
 
-[data-theme="dark"] .xynoplex-toolbar-menu-button[data-delete="true"][data-selected="true"] {
-  background: var(--xynoplex-color-error-dark);
-  color: var(--xynoplex-color-error-light);
+[data-theme="dark"] .xynolog-toolbar-menu-button[data-delete="true"][data-selected="true"] {
+  background: var(--xynolog-color-error-dark);
+  color: var(--xynolog-color-error-light);
 }
 
-.xynoplex-toolbar-menu-icon {
+.xynolog-toolbar-menu-icon {
   font-size: 1.125rem;
 }
 
-.xynoplex-toolbar-menu-label {
+.xynolog-toolbar-menu-label {
   font-size: 0.875rem;
 }
 
 /* ── Compact display form ────────────────────────────────────────────────────
  * Display-only variant for inline embeds: icon-only, tight, chromeless. The
  * bar's functionality is identical — only its form changes. */
-.xynoplex-annotate-toolbar--compact {
+.xynolog-annotate-toolbar--compact {
   gap: 0.375rem;
   padding: 0.25rem 0;
   background: transparent; /* the host container owns the background */
@@ -231,8 +231,8 @@
 /* Icon-only collapsed triggers — but the label stays in the accessibility
    tree rather than `display: none`. Its sibling is a bare emoji span with no
    accessible name, so hiding the label outright would leave the trigger
-   unnamed for screen readers. Same technique as .xynoplex-sr-only. */
-.xynoplex-annotate-toolbar--compact .xynoplex-dropdown-label {
+   unnamed for screen readers. Same technique as .xynolog-sr-only. */
+.xynolog-annotate-toolbar--compact .xynolog-dropdown-label {
   position: absolute;
   width: 1px;
   height: 1px;

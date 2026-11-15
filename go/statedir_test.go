@@ -1,4 +1,4 @@
-package xynoplex_test
+package xynolog_test
 
 import (
 	"encoding/json"
@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
+	xynolog "github.com/xynolog/sdk/go"
 )
 
 // The state home, as every program that finds tokens.json computes it
@@ -39,17 +39,17 @@ func TestTheStateHomeIsTheTables(t *testing.T) {
 		}
 		return *s
 	}
-	system := func(name string) xynoplex.System {
+	system := func(name string) xynolog.System {
 		switch name {
 		case "macos":
-			return xynoplex.SystemMacOS
+			return xynolog.SystemMacOS
 		case "windows":
-			return xynoplex.SystemWindows
+			return xynolog.SystemWindows
 		}
-		return xynoplex.SystemOther
+		return xynolog.SystemOther
 	}
 	for _, c := range table.Cases {
-		dir, ok := xynoplex.StateDir(system(c.OS), set(c.Home), set(c.XDGStateHome), set(c.LocalAppData))
+		dir, ok := xynolog.StateDir(system(c.OS), set(c.Home), set(c.XDGStateHome), set(c.LocalAppData))
 		switch {
 		case c.Dir == nil && ok:
 			t.Errorf("%s: a state home %q, want none", c.Why, dir)

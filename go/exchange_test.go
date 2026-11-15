@@ -1,4 +1,4 @@
-package xynoplex_test
+package xynolog_test
 
 import (
 	"bytes"
@@ -12,8 +12,8 @@ import (
 	"testing"
 	"time"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
-	"github.com/Xynoplex/sdk/go/api"
+	xynolog "github.com/xynolog/sdk/go"
+	"github.com/xynolog/sdk/go/api"
 )
 
 // A refusal whose body is begun and never finished is reported once
@@ -30,9 +30,9 @@ func TestARefusalWhoseBodyNeverEndsIsReportedAtTheRequestDeadline(t *testing.T) 
 	defer gateway.Close()
 	ctx, abandon := context.WithCancel(context.Background())
 	defer abandon()
-	timing := xynoplex.DefaultTiming()
+	timing := xynolog.DefaultTiming()
 	timing.HttpRequestTimeout = 200 * time.Millisecond
-	transport := xynoplex.NewHTTPTransport(xynoplex.HTTPTransportConfig{BaseURL: gateway.URL, Token: xynoplex.NewVariable(""), HTTP: &http.Client{}, Timing: timing})
+	transport := xynolog.NewHTTPTransport(xynolog.HTTPTransportConfig{BaseURL: gateway.URL, Token: xynolog.NewVariable(""), HTTP: &http.Client{}, Timing: timing})
 	defer transport.Close()
 
 	answered := make(chan error, 1)
@@ -42,7 +42,7 @@ func TestARefusalWhoseBodyNeverEndsIsReportedAtTheRequestDeadline(t *testing.T) 
 	}()
 	select {
 	case err := <-answered:
-		var refused *xynoplex.TransportError
+		var refused *xynolog.TransportError
 		if !errors.As(err, &refused) {
 			t.Fatalf("the refusal is %v", err)
 		}
@@ -144,20 +144,20 @@ func hold(arrived chan<- struct{}) func(http.ResponseWriter, *http.Request) {
 
 // uploader is content over a transport to gateway, with a short wait before
 // a resend.
-func uploader(t *testing.T, gateway *uploadGateway) *xynoplex.HTTPContentTransport {
-	timing := xynoplex.DefaultTiming()
+func uploader(t *testing.T, gateway *uploadGateway) *xynolog.HTTPContentTransport {
+	timing := xynolog.DefaultTiming()
 	timing.RequestRetryPause = 10 * time.Millisecond
-	transport := xynoplex.NewHTTPTransport(xynoplex.HTTPTransportConfig{BaseURL: gateway.URL, Token: xynoplex.NewVariable("a-token"), HTTP: &http.Client{Transport: &http.Transport{}}, Timing: timing})
+	transport := xynolog.NewHTTPTransport(xynolog.HTTPTransportConfig{BaseURL: gateway.URL, Token: xynolog.NewVariable("a-token"), HTTP: &http.Client{Transport: &http.Transport{}}, Timing: timing})
 	t.Cleanup(transport.Close)
-	return xynoplex.NewHTTPContentTransport(transport)
+	return xynolog.NewHTTPContentTransport(transport)
 }
 
-func anUpload() xynoplex.PutBinaryRequest {
-	return xynoplex.PutBinaryRequest{Name: "notes.txt", Bytes: []byte("hello"), Format: "text/plain", StorageURI: "file://notes.txt"}
+func anUpload() xynolog.PutBinaryRequest {
+	return xynolog.PutBinaryRequest{Name: "notes.txt", Bytes: []byte("hello"), Format: "text/plain", StorageURI: "file://notes.txt"}
 }
 
 // waitFor is what upload is answered, within ten seconds.
-func waitFor(t *testing.T, upload *xynoplex.Upload) (api.CreateResourceResponse, error) {
+func waitFor(t *testing.T, upload *xynolog.Upload) (api.CreateResourceResponse, error) {
 	t.Helper()
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -210,15 +210,15 @@ func TestAnUploadThatGotNoAnswerIsSentOnceMore(t *testing.T) {
 func TestARefusedUploadIsNotSentAgain(t *testing.T) {
 	for _, refusal := range []struct {
 		status int
-		code   xynoplex.TransportErrorCode
+		code   xynolog.TransportErrorCode
 	}{
-		{http.StatusBadRequest, xynoplex.TransportErrorCodeBadRequest},
-		{http.StatusUnprocessableEntity, xynoplex.TransportErrorCodeUnprocessable},
+		{http.StatusBadRequest, xynolog.TransportErrorCodeBadRequest},
+		{http.StatusUnprocessableEntity, xynolog.TransportErrorCodeUnprocessable},
 	} {
 		t.Run(http.StatusText(refusal.status), func(t *testing.T) {
 			gateway := newUploadGateway(t, refuse(refusal.status))
 			_, err := waitFor(t, uploader(t, gateway).PutBinary(context.Background(), anUpload()))
-			var refused *xynoplex.TransportError
+			var refused *xynolog.TransportError
 			if !errors.As(err, &refused) || refused.Code != refusal.code {
 				t.Errorf("the upload failed with %v, want the code %q", err, refusal.code)
 			}
@@ -259,8 +259,8 @@ func TestAnAbandonedUploadIsNotSentAgain(t *testing.T) {
 func TestAnUploadIsSentOnceMoreAtMost(t *testing.T) {
 	gateway := newUploadGateway(t, refuse(http.StatusServiceUnavailable), hangUp(t))
 	_, err := waitFor(t, uploader(t, gateway).PutBinary(context.Background(), anUpload()))
-	var unanswered *xynoplex.TransportError
-	if !errors.As(err, &unanswered) || unanswered.Code != xynoplex.TransportErrorCodeUnavailable {
+	var unanswered *xynolog.TransportError
+	if !errors.As(err, &unanswered) || unanswered.Code != xynolog.TransportErrorCodeUnavailable {
 		t.Errorf("the upload failed with %v, want it unavailable", err)
 	}
 	sentTwiceWithOneKey(t, gateway)

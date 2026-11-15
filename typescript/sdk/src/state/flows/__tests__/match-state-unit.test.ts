@@ -1,7 +1,7 @@
 import { describe, it, vi } from 'vitest';
 import { createMatchStateUnit, type MatchStateUnit } from '../match-state-unit';
 import { makeTestClient, type TestClient } from '../../../__tests__/test-client';
-import { assertStateUnitAxioms } from '@xynoplex/core/testing/axioms';
+import { assertStateUnitAxioms } from '@xynolog/core/testing/axioms';
 
 function withMatch(searchFn: ReturnType<typeof vi.fn>): TestClient {
   return makeTestClient({ match: { search: searchFn } });

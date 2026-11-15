@@ -1,8 +1,8 @@
 'use client';
 
 import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react';
-import type { SessionEndReason } from '@xynoplex/sdk';
-import { useXynoplex } from '../../session/XynoplexProvider';
+import type { SessionEndReason } from '@xynolog/sdk';
+import { useXynolog } from '../../session/XynologProvider';
 import { useObservable } from '../../hooks/useObservable';
 import { useTranslations } from '../../contexts/TranslationContext';
 
@@ -33,7 +33,7 @@ function whyEnded(reason: SessionEndReason, t: (key: string) => string): string 
  */
 export function SessionEndedModal() {
   const t = useTranslations('SessionEndedModal');
-  const signals = useObservable(useXynoplex().activeSignals$);
+  const signals = useObservable(useXynolog().activeSignals$);
   const sessionEnded = useObservable(signals?.sessionEnded$) ?? null;
   const acknowledgeSessionEnded = () => signals?.acknowledgeSessionEnded();
   const showModal = sessionEnded !== null;
@@ -50,7 +50,7 @@ export function SessionEndedModal() {
 
   return (
     <Transition appear show={showModal}>
-      <Dialog as="div" className="xynoplex-modal" onClose={handleClose}>
+      <Dialog as="div" className="xynolog-modal" onClose={handleClose}>
         <TransitionChild
           enter="ease-out duration-200"
           enterFrom="opacity-0"
@@ -59,11 +59,11 @@ export function SessionEndedModal() {
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="xynoplex-modal__backdrop" />
+          <div className="xynolog-modal__backdrop" />
         </TransitionChild>
 
-        <div className="xynoplex-modal__container">
-          <div className="xynoplex-modal__wrapper">
+        <div className="xynolog-modal__container">
+          <div className="xynolog-modal__wrapper">
             <TransitionChild
               enter="ease-out duration-200"
               enterFrom="opacity-0 scale-95"
@@ -72,40 +72,40 @@ export function SessionEndedModal() {
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <DialogPanel className="xynoplex-modal__panel xynoplex-modal__panel--medium">
-                <div className="xynoplex-modal__icon-wrapper">
-                  <div className="xynoplex-modal__icon" style={{
-                    background: 'linear-gradient(to bottom right, var(--xynoplex-color-red-100, #fee2e2), var(--xynoplex-color-red-300, #fca5a5))',
+              <DialogPanel className="xynolog-modal__panel xynolog-modal__panel--medium">
+                <div className="xynolog-modal__icon-wrapper">
+                  <div className="xynolog-modal__icon" style={{
+                    background: 'linear-gradient(to bottom right, var(--xynolog-color-red-100, #fee2e2), var(--xynolog-color-red-300, #fca5a5))',
                   }}>
-                    <svg style={{ width: '1.5rem', height: '1.5rem', color: 'var(--xynoplex-color-red-600, #dc2626)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <svg style={{ width: '1.5rem', height: '1.5rem', color: 'var(--xynolog-color-red-600, #dc2626)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
                 </div>
 
-                <div className="xynoplex-modal__content">
-                  <DialogTitle className="xynoplex-modal__title xynoplex-modal__title--centered">
+                <div className="xynolog-modal__content">
+                  <DialogTitle className="xynolog-modal__title xynolog-modal__title--centered">
                     {t('title')}
                   </DialogTitle>
                   {sessionEnded && (
-                    <p className="xynoplex-modal__description">
+                    <p className="xynolog-modal__description">
                       {whyEnded(sessionEnded.reason, t)}
                     </p>
                   )}
                 </div>
 
-                <div className="xynoplex-modal__actions">
+                <div className="xynolog-modal__actions">
                   <button
                     type="button"
                     onClick={handleClose}
-                    className="xynoplex-button--secondary xynoplex-button--flex"
+                    className="xynolog-button--secondary xynolog-button--flex"
                   >
                     {t('goHome')}
                   </button>
                   <button
                     type="button"
                     onClick={handleSignIn}
-                    className="xynoplex-button--primary xynoplex-button--flex"
+                    className="xynolog-button--primary xynolog-button--flex"
                   >
                     {t('signInAgain')}
                   </button>

@@ -5,7 +5,7 @@
  * from stdout; protocol/conformance/worker/README.md is the protocol.
  *
  * It reaches the worker's surface only as a worker's author does, through
- * what `@xynoplex/sdk` and `@xynoplex/core` export: `job.claim`, the claims it
+ * what `@xynolog/sdk` and `@xynolog/core` export: `job.claim`, the claims it
  * returns, and the held jobs they hand out. Node runs this file as it is
  * (types stripped); `npm run typecheck:conformance` is its type check.
  *
@@ -16,25 +16,25 @@
  */
 import { createInterface } from 'node:readline';
 import { BehaviorSubject } from 'rxjs';
-import { XynoplexError, accessToken, baseUrl, resourceId, type AccessToken, type JobFilter } from '@xynoplex/core';
-import { formatErrors, validators } from '@xynoplex/core/openapi';
-import type { TraceCarrier } from '@xynoplex/core';
-import { SpanKind, getActiveTraceparent, withSpan, withTraceparent } from '@xynoplex/observability';
-import { initObservabilityNode, shutdownObservabilityNode } from '@xynoplex/observability/node';
+import { XynologError, accessToken, baseUrl, resourceId, type AccessToken, type JobFilter } from '@xynolog/core';
+import { formatErrors, validators } from '@xynolog/core/openapi';
+import type { TraceCarrier } from '@xynolog/core';
+import { SpanKind, getActiveTraceparent, withSpan, withTraceparent } from '@xynolog/observability';
+import { initObservabilityNode, shutdownObservabilityNode } from '@xynolog/observability/node';
 import manifest from '../package.json' with { type: 'json' };
 import {
   HttpContentTransport,
   HttpTransport,
   JOB_CLAIM_CHANNELS,
   JOB_COMMIT_CHANNELS,
-  XynoplexClient,
+  XynologClient,
   type ClaimsObservable,
   type HeldJob,
   type HeldMarkJob,
   type HeldYieldJob,
   type JobCheckpoint,
   type JobFailure,
-} from '@xynoplex/sdk';
+} from '@xynolog/sdk';
 
 type Arguments = Record<string, unknown>;
 
@@ -66,7 +66,7 @@ function object(args: Arguments, name: string): Arguments {
 /** A failure as the protocol carries it: the SDK's code, and the status when a server stated one. */
 function failure(error: unknown): { code?: string; status?: number; detail: string } {
   const detail = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
-  if (!(error instanceof XynoplexError)) return { detail };
+  if (!(error instanceof XynologError)) return { detail };
   const status = (error as { status?: unknown }).status;
   return { code: error.code, ...(typeof status === 'number' && status > 0 ? { status } : {}), detail };
 }
@@ -76,7 +76,7 @@ const TRANSPORT_TIMING = ['reconnectMs', 'lazyRemoveMs', 'lingerMs'] as const;
 const WORKER_TIMING = ['jobClaimTimeoutMs', 'heldJobStallMs', 'heldJobStallCheckMs', 'markCommitTimeoutMs'] as const;
 
 let transport: HttpTransport | undefined;
-let client: XynoplexClient | undefined;
+let client: XynologClient | undefined;
 let timing: Arguments = {};
 let claims: ClaimsObservable | undefined;
 /** The job the worker last came to hold, as its claims handed it out. */
@@ -84,7 +84,7 @@ let held: HeldJob | undefined;
 /** The span the held job is run in: its trace, for what is done in it, and what ends it. */
 let span: { trace: TraceCarrier | undefined; end: () => void } | undefined;
 
-function opened(): XynoplexClient {
+function opened(): XynologClient {
   if (!client) throw new Misuse('no transport is open');
   return client;
 }
@@ -146,7 +146,7 @@ const operations: Record<string, (args: Arguments) => Promise<unknown> | unknown
       ...(timing['lazyRemoveMs'] === undefined ? {} : { lazyRemoveMs: count(timing, 'lazyRemoveMs') }),
       ...(timing['lingerMs'] === undefined ? {} : { lingerMs: count(timing, 'lingerMs') }),
     });
-    client = new XynoplexClient(transport, new HttpContentTransport(transport), transport);
+    client = new XynologClient(transport, new HttpContentTransport(transport), transport);
     transport.state$.subscribe((state) => say({ state }));
     transport.errors$.subscribe((error) => say({ error: failure(error) }));
   },
@@ -271,7 +271,7 @@ async function run(line: string): Promise<void> {
 
 // Exports only when the suite names an OTLP endpoint in the environment. The
 // driver is the SDK's, so it reports the SDK's version.
-initObservabilityNode({ serviceName: 'xynoplex-conformance-driver', serviceVersion: manifest.version });
+initObservabilityNode({ serviceName: 'xynolog-conformance-driver', serviceVersion: manifest.version });
 
 const lines = createInterface({ input: process.stdin });
 lines.on('line', (line) => void run(line));

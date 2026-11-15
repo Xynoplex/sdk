@@ -1,5 +1,5 @@
 /**
- * Pure helpers and storage-adapter-driven loaders for the Xynoplex
+ * Pure helpers and storage-adapter-driven loaders for the Xynolog
  * session layer.
  *
  * Contains:
@@ -14,28 +14,28 @@
  * whatever the passed-in `SessionStorage` does.
  */
 
-import { MIN_REFRESH_DELAY_MS, PERSISTED_QUERIES, REFRESH_BEFORE_EXP_MS, isObject, isString, uuidV4 } from '@xynoplex/core';
+import { MIN_REFRESH_DELAY_MS, PERSISTED_QUERIES, REFRESH_BEFORE_EXP_MS, isObject, isString, uuidV4 } from '@xynolog/core';
 
-import type { HttpEndpoint, KbRead, KnowledgeBase, PersistedQuery } from '@xynoplex/core';
+import type { HttpEndpoint, KbRead, KnowledgeBase, PersistedQuery } from '@xynolog/core';
 import type { SessionStorage } from './session-storage';
 import type { SignInKept } from './sign-in-kept';
 import { sha256 } from './sha256';
 
 // ---------- Storage keys ----------
 
-const SESSION_PREFIX = 'xynoplex.session.';
-const LAST_EVENT_ID_PREFIX = 'xynoplex.lastEventId.';
-const CACHE_PREFIX = 'xynoplex.cache.';
-export const STORAGE_KEY = 'xynoplex.knowledgeBases';
-export const ACTIVE_KEY = 'xynoplex.activeKnowledgeBaseId';
+const SESSION_PREFIX = 'xynolog.session.';
+const LAST_EVENT_ID_PREFIX = 'xynolog.lastEventId.';
+const CACHE_PREFIX = 'xynolog.cache.';
+export const STORAGE_KEY = 'xynolog.knowledgeBases';
+export const ACTIVE_KEY = 'xynolog.activeKnowledgeBaseId';
 /** Per-KB open-resource tabs: Record<kbId, OpenResource[]>. */
-export const OPEN_RESOURCES_BY_KB_KEY = 'xynoplex.openResourcesByKb';
+export const OPEN_RESOURCES_BY_KB_KEY = 'xynolog.openResourcesByKb';
 /**
  * Per-KB "where was I": Record<kbId, resourceId>. Scoped like the tabs it
  * sits beside — a global last-viewed id sends the landing redirect into the
  * previously active KB's resource, which the new gateway 404s.
  */
-export const LAST_VIEWED_RESOURCE_BY_KB_KEY = 'xynoplex.lastViewedResourceByKb';
+export const LAST_VIEWED_RESOURCE_BY_KB_KEY = 'xynolog.lastViewedResourceByKb';
 
 /**
  * How long to wait before proactively refreshing `token`, or `null` when it
@@ -46,7 +46,7 @@ export const LAST_VIEWED_RESOURCE_BY_KB_KEY = 'xynoplex.lastViewedResourceByKb';
  * equal — or exceed — the lifetime of a token some issuer mints, and when it
  * does, the subtraction yields a moment already past. Half the lifetime cannot,
  * for any lifetime, so no issuer's configuration can produce a refresh loop. This
- * matters beyond the realm Xynoplex runs: for `type = "oidc"` the launcher
+ * matters beyond the realm Xynolog runs: for `type = "oidc"` the launcher
  * deliberately refuses to set a lifespan at all, so an external issuer's
  * lifetime is not ours to correct and the client is the only place that can be
  * right for every issuer.

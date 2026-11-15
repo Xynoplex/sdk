@@ -1572,7 +1572,7 @@ wheels = [
 ]
 
 [[package]]
-name = "xynoplex"
+name = "xynolog"
 source = { editable = "." }
 default-groups = ["conformance", "dev"]
 dependencies = [

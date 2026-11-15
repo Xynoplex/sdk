@@ -1,12 +1,12 @@
-# xynoplex
+# xynolog
 
-[![crates.io](https://img.shields.io/crates/v/xynoplex.svg)](https://crates.io/crates/xynoplex)
-[![docs.rs](https://img.shields.io/docsrs/xynoplex)](https://docs.rs/xynoplex)
-[![CI](https://github.com/Xynoplex/sdk/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Xynoplex/sdk/actions/workflows/ci.yml?query=branch%3Amain)
-[![License](https://img.shields.io/crates/l/xynoplex.svg)](https://github.com/Xynoplex/sdk/blob/main/LICENSE)
-[![codecov](https://codecov.io/gh/Xynoplex/sdk/graph/badge.svg?component=rust-sdk)](https://app.codecov.io/gh/Xynoplex/sdk/components)
+[![crates.io](https://img.shields.io/crates/v/xynolog.svg)](https://crates.io/crates/xynolog)
+[![docs.rs](https://img.shields.io/docsrs/xynolog)](https://docs.rs/xynolog)
+[![CI](https://github.com/xynolog/sdk/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/xynolog/sdk/actions/workflows/ci.yml?query=branch%3Amain)
+[![License](https://img.shields.io/crates/l/xynolog.svg)](https://github.com/xynolog/sdk/blob/main/LICENSE)
+[![codecov](https://codecov.io/gh/xynolog/sdk/graph/badge.svg?component=rust-sdk)](https://app.codecov.io/gh/xynolog/sdk/components)
 
-The Rust SDK for [Xynoplex](../../../README.md), an open platform for building
+The Rust SDK for [Xynolog](../../../README.md), an open platform for building
 trusted AI knowledge bases: a shared workspace where humans and AI agents
 annotate, connect and govern a corpus of documents.
 
@@ -19,7 +19,7 @@ tell them apart.
 It has the same namespaces, methods and behaviour as the
 [TypeScript SDK](../../typescript/sdk/README.md), the [Python SDK](../../python/sdk/README.md)
 the [Go SDK](../../go/README.md) and the [Kotlin SDK](../../kotlin/sdk/README.md), and the five are held to the same
-[conformance suite](../../../protocol/conformance/sdk/README.md). New to Xynoplex?
+[conformance suite](../../../protocol/conformance/sdk/README.md). New to Xynolog?
 The [Introduction](../../../docs/builder/INTRODUCTION.md) explains the domain
 and the ideas the API falls out of. Its code is TypeScript, and the ideas
 are this crate's too.
@@ -27,15 +27,15 @@ are this crate's too.
 ## Install
 
 ```bash
-cargo add xynoplex
-cargo add xynoplex-http-transport --features sign-in
+cargo add xynolog
+cargo add xynolog-http-transport --features sign-in
 ```
 
 Two crates, because the client does no networking of its own:
 
-- **`xynoplex`** is the client, the protocol's types, and what an application
+- **`xynolog`** is the client, the protocol's types, and what an application
   holds: sessions, state, storage. It links no HTTP library.
-- **[`xynoplex-http-transport`](../http-transport/README.md)** carries
+- **[`xynolog-http-transport`](../http-transport/README.md)** carries
   it to a knowledge base's gateway and signs people and services in. Its
   README covers TLS and each way to sign in.
 
@@ -46,10 +46,10 @@ machine.
 
 | Feature | What it adds |
 |---|---|
-| `charsets` | A resource's text in every encoding of the Encoding Standard that every reader decodes, read as a browser reads it: by [the rule every Xynoplex reader keeps](../../../protocol/contract/W3C-SELECTORS.md#the-text-of-a-resource), which refuses the standard's seven legacy multi-byte encodings by name. Without the feature, `browse.resource_content` reads UTF-8 alone, by the same rule, and refuses by name any other charset and bytes that begin with UTF-16's mark. With it or without, a resource whose text is not its bytes is refused by its media type: a PDF, whose text is `browse.resource_anchored_text`'s, and an image, which has none. `browse.resource_representation` gives the bytes either way. |
+| `charsets` | A resource's text in every encoding of the Encoding Standard that every reader decodes, read as a browser reads it: by [the rule every Xynolog reader keeps](../../../protocol/contract/W3C-SELECTORS.md#the-text-of-a-resource), which refuses the standard's seven legacy multi-byte encodings by name. Without the feature, `browse.resource_content` reads UTF-8 alone, by the same rule, and refuses by name any other charset and bytes that begin with UTF-16's mark. With it or without, a resource whose text is not its bytes is refused by its media type: a PDF, whose text is `browse.resource_anchored_text`'s, and an image, which has none. `browse.resource_representation` gives the bytes either way. |
 | `testing` | Doubles and harnesses for the tests of code built on the client. See [Testing your code](#testing-your-code). |
 
-Every type and method is documented on [docs.rs](https://docs.rs/xynoplex).
+Every type and method is documented on [docs.rs](https://docs.rs/xynolog).
 
 ## Connect
 
@@ -60,7 +60,7 @@ is the transport crate's:
 
 | Who | Signs in with | |
 |---|---|---|
-| A script, after `xynoplex login` | `session_from_kept` | The launcher's sign-in, reused. |
+| A script, after `xynolog login` | `session_from_kept` | The launcher's sign-in, reused. |
 | A script on its own | `sign_in_device`, then `session_from_kept` | The person approves a code in any browser. |
 | An application | `begin_sign_in`, `complete_sign_in` | The person is sent to the issuer and back to this machine. |
 | A daemon | `AgentToken::sign_in` | A service account. It needs no `sign-in` feature. |
@@ -68,7 +68,7 @@ is the transport crate's:
 Each is shown, compiled and run, in
 [the transport's README](../http-transport/README.md#signing-in).
 A script's sign-in gives an `OpenedSession`: `opened.session()` is its
-`XynoplexSession`, and `session.client()` is the `XynoplexClient` the examples
+`XynologSession`, and `session.client()` is the `XynologClient` the examples
 below start from. A daemon builds its client
 directly, with `client(config, options)`.
 
@@ -174,7 +174,7 @@ Where to go from here:
 
 ## Three ways to use it
 
-One client, `XynoplexClient`, serves all three. What differs is what its
+One client, `XynologClient`, serves all three. What differs is what its
 caller waits on.
 
 **A script** asks, awaits and uses `?`. A query is read once with `.fresh()`,
@@ -211,7 +211,7 @@ while let Some(event) = completed.next().await {
 }
 ```
 
-**An application** holds state. A `XynoplexBrowser` keeps the knowledge bases
+**An application** holds state. A `XynologBrowser` keeps the knowledge bases
 a person has registered and the active one's session. A state unit holds one
 flow over that session's client. Each is read through a
 `tokio::sync::watch` receiver: the value now, and each value after it.
@@ -219,7 +219,7 @@ flow over that session's client. Each is read through a
 ```rust
 // What an application holds: its knowledge bases, which one is active,
 // and the active one's session.
-let browser = XynoplexBrowser::new(XynoplexBrowserConfig {
+let browser = XynologBrowser::new(XynologBrowserConfig {
     storage,
     session_factory,
 })?;
@@ -349,7 +349,7 @@ builders to the same answers.
   claim's: a `TraceCarrier` (`traceparent`, and `tracestate` when there is
   one), or `None` for a reply that arrived in none. A worker that exports
   telemetry runs the job in it with one call,
-  `xynoplex_telemetry::continuing(job.trace(), work).await`, and the spans
+  `xynolog_telemetry::continuing(job.trace(), work).await`, and the spans
   `work` opens, and what the job sends from inside it, continue that trace.
   The carrier is a value: it can be handed to whatever else the worker
   starts for the job.
@@ -371,13 +371,13 @@ A method's return type says how to use it.
 
 | A method that returns | is | used as |
 |---|---|---|
-| `async fn … -> Result<T, XynoplexError>` | asked once, answered once | `.await?` |
+| `async fn … -> Result<T, XynologError>` | asked once, answered once | `.await?` |
 | `Running<T>` | a long-running operation | `.await` for its final value; `.next()` for each report and then the final value; `.run(f)` for both |
 | `Delegation<C>` | a job another party does | `.await` for its completion, a `C`: its verb's, `MarkJobCompleteCommand` or `YieldJobCompleteCommand`; `.next()` for each of the job's events: the queue's answer that names the job first (its id is what `job.cancel` takes), the completion last |
 | `Upload` | an upload in flight | `.await` for the resource created; as a stream, its progress; dropped, cancelled |
 | `Cached<T>` | a query, built without touching the wire | `.watch()` for its state now and as it changes; `.fresh().await?` for one read; `.invalidate()` to ask again |
 | nothing, from a plain `fn` | a signal to the client's own parts | called |
-| `async fn … -> Result<Option<u64>, XynoplexError>` | a drive at the other participants | `.await?`: how many the gateway reached, `None` when it kept no count |
+| `async fn … -> Result<Option<u64>, XynologError>` | a drive at the other participants | `.await?`: how many the gateway reached, `None` when it kept no count |
 | `Typed<C, BusFrames>` | one channel's events, from now on | `.next()` |
 | `Claims` | a worker's claims, from `job.claim` | `.next().await` for the next job the worker holds, or the next claim it was refused; a held job says its own lifecycle, and `complete`, `fail` and `cancel` take it by value |
 
@@ -390,7 +390,7 @@ A watched query (`Observed<T>`) gives `CacheState<T>`: `Pending`,
 stream: the next watcher, or `invalidate`, tries again. Its `error`, and the
 error of `.fresh()`, is what the query's fetch failed with, an
 `Arc<dyn std::error::Error + Send + Sync>`: of a client's query, a
-`XynoplexError`, which `downcast_ref` finds. While a query of one
+`XynologError`, which `downcast_ref` finds. While a query of one
 resource is watched, the client holds that resource's scope, which is what
 brings it that resource's events, and lets go of it when the watcher is
 dropped. A watcher that falls behind is given the latest state, not each one
@@ -400,14 +400,14 @@ it missed. The rules a query keeps are
 A stream of events never drops frames silently. A reader that falls behind
 is given `Lagged(n)` in place of what it missed, and reads on.
 
-A failure the client reports is a `XynoplexError`, and `.code()` is the code
-every Xynoplex SDK shares for it.
+A failure the client reports is a `XynologError`, and `.code()` is the code
+every Xynolog SDK shares for it.
 
 ## Ids
 
 A resource, an annotation, a job and whoever did something are each named by
 an id of its own type: `ResourceId`, `AnnotationId`, `JobId`, `UserId`
-(`xynoplex::types`). The rule each is held to is the spec's
+(`xynolog::types`). The rule each is held to is the spec's
 ([`protocol/specs/src/identifiers/kinds.json`](../../../protocol/specs/src/identifiers/kinds.json)):
 the first three are a name of 1 to 128 letters, digits, `_` and `-`, never a
 URI or a path, and the last is a DID.
@@ -428,7 +428,7 @@ another: `mark.delete(&annotation_id, &resource_id)` does not compile.
 
 ## Sessions
 
-- **`XynoplexSession`** is one session with one knowledge base: the token its
+- **`XynologSession`** is one session with one knowledge base: the token its
   client's transport sends, and who is signed in. It renews its token
   before the token expires, and again when the gateway refuses it. A session
   whose issuer refuses to renew it clears its token and what it stored, and
@@ -441,7 +441,7 @@ another: `mark.delete(&annotation_id, &resource_id)` does not compile.
   end together: what a script's sign-in gives. `close` closes the client,
   waiting for the saves it owes, and then ends the session, so what those
   saves meet is said before the session's errors end.
-- **`XynoplexBrowser`** is what an application holds: the knowledge bases a
+- **`XynologBrowser`** is what an application holds: the knowledge bases a
   person has registered, which one is active, the active one's session, and
   what the person has open in each. One session is live at a time. It is the
   one reader of each session's errors: it says the session's own on its
@@ -457,25 +457,25 @@ another: `mark.delete(&annotation_id, &resource_id)` does not compile.
 - **`SessionFactory`** builds a knowledge base's session. A browser is given
   one, and so knows nothing of how a knowledge base is reached. A factory
   reads nothing of what its sessions say, so a factory of your own is read
-  the same way. `xynoplex-http-transport` has the one over a gateway.
+  the same way. `xynolog-http-transport` has the one over a gateway.
 
 What must outlive a client is kept in a `SessionStorage`
-(`xynoplex::storage`). A write it could not make is its own error, a
+(`xynolog::storage`). A write it could not make is its own error, a
 `Box<dyn std::error::Error + Send + Sync>`; a cache's save that fails is a
 warning through the `log` facade, and the cache goes on as it was.
 A session's sign-in is kept wherever a `SignInKept` keeps it: a session is
 built from it, renews through it and forgets it. A registry keeps its
 sign-ins in its storage (`kept_in`), and a script that keeps nothing past
 its process keeps one in memory (`MemorySignIn`).
-`xynoplex::sign_in_store` is the sign-ins
-`xynoplex login` keeps ([sign-in store](../../../protocol/specs/src/sign-in-store/README.md)),
+`xynolog::sign_in_store` is the sign-ins
+`xynolog login` keeps ([sign-in store](../../../protocol/specs/src/sign-in-store/README.md)),
 each an entry kept (`SignInStore::entry`), so one sign-in serves the
 launcher and a script built on this SDK.
 
 ## State units
 
 A state unit holds one flow as state, for an application to read and watch.
-It is built over an `Arc<XynoplexClient>` it never closes, and is read through
+It is built over an `Arc<XynologClient>` it never closes, and is read through
 `tokio::sync::watch` receivers. A new session has a new client, so a unit
 lasts as long as the session it was built from. `dispose` ends a unit, and
 so does dropping it.
@@ -499,10 +499,10 @@ dropping cannot do: wait.
 
 | | `close().await` | dropped |
 |---|---|---|
-| `XynoplexClient` | Its queries end, its transport closes so that every request still pending fails as closed, and its own bus ends. | Its queries and its own bus end. The transport is left to whoever else holds it. |
-| `XynoplexSession` | It is a state unit: `dispose()`, which is not async, stops its renewal and ends what it holds. Its client is left open. | The same. |
+| `XynologClient` | Its queries end, its transport closes so that every request still pending fails as closed, and its own bus ends. | Its queries and its own bus end. The transport is left to whoever else holds it. |
+| `XynologSession` | It is a state unit: `dispose()`, which is not async, stops its renewal and ends what it holds. Its client is left open. | The same. |
 | `OpenedSession` | Its client is closed, then its session ends. | Its session ends. The client is dropped with it, not closed. |
-| `XynoplexBrowser` | The active session's client is closed, then the session ends, and everything it holds ends. The first failure of what it ran in the background is its error. | Everything it holds ends. The active session is dropped, and its client with it, not closed. |
+| `XynologBrowser` | The active session's client is closed, then the session ends, and everything it holds ends. The first failure of what it ran in the background is its error. | Everything it holds ends. The active session is dropped, and its client with it, not closed. |
 | a state unit | `dispose()`, which is not async: it is inert and its readers have ended. | The same. |
 | `Running<T>`, `Delegation<C>`, `Upload` | | The operation is abandoned; an upload is cancelled. |
 | a watcher of a query | | The resource's scope it held is let go. |
@@ -532,9 +532,9 @@ let refused = test.client.browse.entity_types().fresh().await;
 assert!(refused.is_err());
 ```
 
-- `create_test_client` gives a real `XynoplexClient` over a `FaultyTransport`
+- `create_test_client` gives a real `XynologClient` over a `FaultyTransport`
   and an `InMemoryContent`. `create_test_session` gives a real
-  `XynoplexSession` over one, ready at once.
+  `XynologSession` over one, ready at once.
 - `FaultyTransport` fails as a test scripts it: what the wire does to each
   request, and what the gateway answers. It is given the global channels its
   stream names, as a wire transport is, and carries only those, and a
@@ -545,7 +545,7 @@ assert!(refused.is_err());
   response alone. `InMemoryContent` keeps what is
   uploaded and fails a read of what nobody stored. `StubGateway` answers
   only what it was told to.
-- `ScriptedSessions` is a `SessionFactory` for a `XynoplexBrowser`: each
+- `ScriptedSessions` is a `SessionFactory` for a `XynologBrowser`: each
   session is real, over a transport of its own, and a test scripts what each
   knowledge base answers, who a token is and what a renewal gives.
   `SharedStorage` is a storage several contexts share, each hearing what the
@@ -564,7 +564,7 @@ and the same case tables. What differs is how each language says "later".
 
 | TypeScript | Rust | |
 |---|---|---|
-| `Promise<T>` | `async fn … -> Result<T, XynoplexError>` | `.await?` |
+| `Promise<T>` | `async fn … -> Result<T, XynologError>` | `.await?` |
 | an `Observable` of events | a `Stream` | A reader that falls behind is given `Lagged(n)` in place of what it missed. Nothing is dropped silently. |
 | a `BehaviorSubject` of state | a `watch::Receiver` | The value now, and each value after it. A slow reader sees the latest value and not each one between: state is what is true now. What must be seen in sequence, such as a job's progress, is a stream. |
 | `StreamObservable<T>` | `Running<T>` | `.await` for the final value, `.next()` for each report. It is consumed by value, so one operation is never started twice. |
@@ -573,24 +573,24 @@ and the same case tables. What differs is how each language says "later".
 | a method returning `void` | a plain `fn` | A signal. One that fails is said on the transport's failure stream. |
 | `client.yield`, `client.match` | `client.yield_`, `client.match_` | `yield` and `match` are Rust's own words. |
 | RxJS operators | `futures::StreamExt`, `tokio-stream` | The crate brings no operator library. |
-| `@xynoplex/sdk/testing` | `xynoplex::testing`, behind the `testing` feature | |
+| `@xynolog/sdk/testing` | `xynolog::testing`, behind the `testing` feature | |
 
 ## What is in the crate
 
-Each module is documented on [docs.rs](https://docs.rs/xynoplex).
+Each module is documented on [docs.rs](https://docs.rs/xynolog).
 
 | Module | What it holds |
 |---|---|
-| `client` | `XynoplexClient` and its options |
+| `client` | `XynologClient` and its options |
 | `namespaces` | The methods of each namespace, and the options they take |
 | `running`, `cached` | `Running<T>`, `Upload` and `Cached<T>`: what long-running operations and queries return |
 | `types` | The protocol's types, generated from the spec when the crate is built: the ids, and every request, response and event |
 | `channels` | The bus's channels, one type each, naming its payload. A channel the protocol does not have, or a payload that is not that channel's, does not compile. Each is `Scoped`, carried by a resource's scope, or `Unscoped`. |
-| `errors`, `timing`, `retry` | The failure codes, the deadlines and the retry rules every Xynoplex SDK shares |
+| `errors`, `timing`, `retry` | The failure codes, the deadlines and the retry rules every Xynolog SDK shares |
 | `annotations` | The readers of an annotation: the resource it is on and the one it links to, the text it quotes, its entity types, its tag, and what kind it is. Its target is an id or an object, its selector one or a list, its body absent, one item or a list, and these read each. [`reader-cases.json`](../../../protocol/specs/src/annotations/reader-cases.json) holds every SDK's readers to the same answers. And the builders of one, which [a worker](#a-worker) uses: `reconcile`, `annotation_of_span` and `annotation_of_resource`, held by [`reconcile-cases.json`](../../../protocol/specs/src/annotations/reconcile-cases.json) and [`builder-cases.json`](../../../protocol/specs/src/annotations/builder-cases.json). |
 | `claims`, `job_filter` | A worker's side of the job queue: its claims, the jobs it holds, whether a failed job is retried, and whether a job is one a claim takes. What a worker promises is the [worker contract](../../../protocol/contract/WORKER-CONTRACT.md) |
-| `session` | `XynoplexSession`, `XynoplexBrowser`, `SessionFactory`, `SessionSignals`, and where a session's sign-in is kept: `SignInKept`, `MemorySignIn`, `kept_in` |
-| `storage`, `sign_in_store` | Where a client keeps what must outlive it, and the sign-ins `xynoplex login` keeps, each an entry (`SignInStore::entry`) |
+| `session` | `XynologSession`, `XynologBrowser`, `SessionFactory`, `SessionSignals`, and where a session's sign-in is kept: `SignInKept`, `MemorySignIn`, `kept_in` |
+| `storage`, `sign_in_store` | Where a client keeps what must outlive it, and the sign-ins `xynolog login` keeps, each an entry (`SignInStore::entry`) |
 | `state`, `state_unit` | The state units, and what every unit commits to |
 | `cache`, `refresh`, `resume` | The cache queries answer from, what each event does to it, and where a stream resumes after a restart |
 | `transport` | The contract a transport implements: `Transport`, `ContentTransport`, `GatewayOperations` |
@@ -599,10 +599,10 @@ Each module is documented on [docs.rs](https://docs.rs/xynoplex).
 | `resources` | The readers of a resource's description: its first representation (`primary_representation`), that representation's media type (`primary_media_type`), and its entity types (`resource_entity_types`). Its representations are one or a list, and these read either. [`reader-cases.json`](../../../protocol/specs/src/resources/reader-cases.json) holds every SDK's readers to the same answers. And `decode_representation(bytes, media_type)`, a representation's bytes as the text they are, which `browse.resource_content` reads with. It refuses by name a media type whose text is not its bytes, and a charset it does not decode. |
 | `discovery` | The knowledge bases a launcher manages |
 | `identity`, `roles` | How a knowledge base names its principals, persons and agents, and its engines, and the realm's roles |
-| `bus_log` | With `XYNOPLEX_BUS_LOG` set, one line on stderr per frame the process sends or receives, and per read or upload of content. A line shows the frame's payload, and never a credential in it: the value of a member whose name is one a credential goes by (`token`, `password`, `apiKey` and the rest of the list in [`protocol/specs/src/bus/log-cases.json`](../../../protocol/specs/src/bus/log-cases.json)) is written as `[withheld]` |
+| `bus_log` | With `XYNOLOG_BUS_LOG` set, one line on stderr per frame the process sends or receives, and per read or upload of content. A line shows the frame's payload, and never a credential in it: the value of a member whose name is one a credential goes by (`token`, `password`, `apiKey` and the rest of the list in [`protocol/specs/src/bus/log-cases.json`](../../../protocol/specs/src/bus/log-cases.json)) is written as `[withheld]` |
 | `testing` | The doubles and harnesses, behind the `testing` feature |
 
-`XYNOPLEX_BUS_LOG` is the only environment variable the crate reads.
+`XYNOLOG_BUS_LOG` is the only environment variable the crate reads.
 Everything else it needs, it is given: an application reads its own
 environment and says what it found.
 
@@ -610,9 +610,9 @@ environment and says what it found.
 
 | Crate | |
 |---|---|
-| [`xynoplex-http-transport`](../http-transport/README.md) | The transport over a gateway, and signing in. A program that reaches a knowledge base uses it. |
-| [`xynoplex-telemetry`](../telemetry/README.md) | The spans and counts the transport reports, to whatever OpenTelemetry an application installs. Its README says how to turn tracing on. |
-| [`xynoplex-codegen`](../codegen/README.md) | The build-time generator of `xynoplex::types`. Cargo builds it for you. |
+| [`xynolog-http-transport`](../http-transport/README.md) | The transport over a gateway, and signing in. A program that reaches a knowledge base uses it. |
+| [`xynolog-telemetry`](../telemetry/README.md) | The spans and counts the transport reports, to whatever OpenTelemetry an application installs. Its README says how to turn tracing on. |
+| [`xynolog-codegen`](../codegen/README.md) | The build-time generator of `xynolog::types`. Cargo builds it for you. |
 
 ## License
 

@@ -1,4 +1,4 @@
 // refused: extraneous argument label 'value:' in call
-import Xynoplex
+import Xynolog
 
 let forged = ResourceId(value: "a/b")

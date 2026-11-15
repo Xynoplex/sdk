@@ -1,4 +1,4 @@
-package xynoplex
+package xynolog
 
 // A client's own bus: frames published and read inside one process.
 
@@ -10,9 +10,9 @@ import (
 	"slices"
 	"sync"
 
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/bus"
-	"github.com/Xynoplex/sdk/go/internal/kept"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/bus"
+	"github.com/xynolog/sdk/go/internal/kept"
 )
 
 // EventBus is a client's own bus. A client makes one and hands it to its

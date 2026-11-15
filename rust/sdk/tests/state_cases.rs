@@ -15,22 +15,6 @@
 //! method a case invokes and each member it reads has an adapter here, and a
 //! census holds the adapters to the table both ways.
 
-use xynoplex::channels::BRIDGED_CHANNELS;
-use xynoplex::client::XynoplexClient;
-use xynoplex::errors::XynoplexError;
-use xynoplex::session::{KbIdentityConflict, SessionEndReason, SessionSignals};
-use xynoplex::state::{
-    BeckonStateUnit, GatherStateUnit, HoverDwell, MarkStateUnit, MatchStateUnit, SearchPipeline,
-    SearchPipelineOptions, YieldStateUnit,
-};
-use xynoplex::state_unit::StateUnit;
-use xynoplex::testing::{
-    FaultAction, FaultyTransport, RequestLogEntry, TestClientOptions, create_test_client,
-};
-use xynoplex::transport::{Envelope, Frame, FrameRefusal, Lagged};
-use xynoplex::types::{
-    GatherAnnotationOptions, GatherResourceRequestOptions, GenerationJobParams, MarkJobParams,
-};
 use serde::Serialize;
 use serde_json::{Map, Value, json};
 use std::any::Any;
@@ -42,6 +26,22 @@ use std::sync::{Arc, LazyLock, Mutex, MutexGuard, PoisonError};
 use std::time::Duration;
 use tokio::sync::{mpsc, watch};
 use tokio_stream::wrappers::UnboundedReceiverStream;
+use xynolog::channels::BRIDGED_CHANNELS;
+use xynolog::client::XynologClient;
+use xynolog::errors::XynologError;
+use xynolog::session::{KbIdentityConflict, SessionEndReason, SessionSignals};
+use xynolog::state::{
+    BeckonStateUnit, GatherStateUnit, HoverDwell, MarkStateUnit, MatchStateUnit, SearchPipeline,
+    SearchPipelineOptions, YieldStateUnit,
+};
+use xynolog::state_unit::StateUnit;
+use xynolog::testing::{
+    FaultAction, FaultyTransport, RequestLogEntry, TestClientOptions, create_test_client,
+};
+use xynolog::transport::{Envelope, Frame, FrameRefusal, Lagged};
+use xynolog::types::{
+    GatherAnnotationOptions, GatherResourceRequestOptions, GenerationJobParams, MarkJobParams,
+};
 
 /// The SDK this runner is, as the names table's `absent` names it.
 const SDK: &str = "rust";
@@ -381,7 +381,7 @@ impl Unit {
     }
 }
 
-type Make = fn(&Arc<XynoplexClient>, &Searches, &Map<String, Value>) -> Result<Unit, String>;
+type Make = fn(&Arc<XynologClient>, &Searches, &Map<String, Value>) -> Result<Unit, String>;
 
 /// How this SDK makes a unit it has, from the client and what the case makes
 /// it from.
@@ -761,16 +761,16 @@ fn model<T: Serialize>(held: &T) -> Result<Reading, String> {
         .map_err(|wrong| format!("it holds what the wire cannot write: {wrong}"))
 }
 
-fn message_of(error: &XynoplexError) -> &str {
+fn message_of(error: &XynologError) -> &str {
     match error {
-        XynoplexError::Bus(error) => &error.message,
-        XynoplexError::Transport(error) => &error.message,
-        XynoplexError::Job(error) => &error.message,
-        XynoplexError::Session(error) => &error.message,
+        XynologError::Bus(error) => &error.message,
+        XynologError::Transport(error) => &error.message,
+        XynologError::Job(error) => &error.message,
+        XynologError::Session(error) => &error.message,
     }
 }
 
-fn failure(held: &Option<XynoplexError>) -> Result<Reading, String> {
+fn failure(held: &Option<XynologError>) -> Result<Reading, String> {
     Ok(match held {
         None => Reading::Value(Value::Null),
         Some(error) => Reading::Error {
@@ -1058,7 +1058,7 @@ type Heard = Arc<Mutex<Vec<Result<Result<Frame, FrameRefusal>, Lagged>>>>;
 
 struct World {
     kind: String,
-    client: Arc<XynoplexClient>,
+    client: Arc<XynologClient>,
     transport: FaultyTransport,
     searches: Searches,
     units: BTreeMap<String, Unit>,

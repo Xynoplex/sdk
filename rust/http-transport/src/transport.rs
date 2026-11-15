@@ -1,34 +1,18 @@
 //! A knowledge base's bus over its gateway's HTTP transport
-//! (protocol/contract/TRANSPORT-HTTP.md), as `xynoplex::transport::Transport`: one
+//! (protocol/contract/TRANSPORT-HTTP.md), as `xynolog::transport::Transport`: one
 //! stream, `POST /bus/subscribe`, naming the client's global channels and an
 //! entry per resource scope it holds, and `POST /bus/emit` for what it sends.
 //! The gateway's own operations ride plain request and response.
 //!
 //! The stream is `crate::actor`'s. What crosses the wire is observed here, as
-//! every Xynoplex transport observes it: each emit is logged (`[bus EMIT]`),
-//! counted (`xynoplex.bus.sent`) and sent in a `bus.emit` span whose trace
+//! every Xynolog transport observes it: each emit is logged (`[bus EMIT]`),
+//! counted (`xynolog.bus.sent`) and sent in a `bus.emit` span whose trace
 //! context travels as `traceparent`; each frame received is logged
 //! (`[bus RECV]`), its trace lifted off the payload (`TRACE_FIELD`), and
 //! marked by a `bus.recv` span in the trace it was sent under.
 
 use crate::actor::{self, Command};
 use rand_core::Rng;
-use xynoplex::bus_log::bus_log;
-use xynoplex::channels::RESOURCE_SCOPED_CHANNELS;
-use xynoplex::errors::{BusRequestError, TransportError, TransportErrorCode};
-use xynoplex::event_bus::EventBus;
-use xynoplex::retry::{self, RetryFacts, RetryPolicy, retry_after, retry_with_backoff};
-use xynoplex::timing;
-use xynoplex::transport::{
-    BoxFuture, ConnectionState, Envelope, Events, FailureListener, FailureStream, Failures,
-    FrameHub, Frames, GatewayOperations, PendingReply, ReplyRouter, ResourceHold, TraceCarrier,
-    Transport, unsubscribed,
-};
-use xynoplex::types::{
-    BusEmitAccepted, BusEmitRequest, ErrorResponse, HealthResponse, LimitRefusal, LimitRefusalCode,
-    MediaTokenRequest, MediaTokenResponse, ProtectedResourceMetadata, StatusResponse, UserResponse,
-};
-use xynoplex::types::{ResourceId, Schema};
 use serde::Deserialize;
 use serde::de::DeserializeOwned;
 use serde_json::{Map, Value};
@@ -37,6 +21,22 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, MutexGuard};
 use std::time::Duration;
 use tokio::sync::{broadcast, mpsc, oneshot, watch};
+use xynolog::bus_log::bus_log;
+use xynolog::channels::RESOURCE_SCOPED_CHANNELS;
+use xynolog::errors::{BusRequestError, TransportError, TransportErrorCode};
+use xynolog::event_bus::EventBus;
+use xynolog::retry::{self, RetryFacts, RetryPolicy, retry_after, retry_with_backoff};
+use xynolog::timing;
+use xynolog::transport::{
+    BoxFuture, ConnectionState, Envelope, Events, FailureListener, FailureStream, Failures,
+    FrameHub, Frames, GatewayOperations, PendingReply, ReplyRouter, ResourceHold, TraceCarrier,
+    Transport, unsubscribed,
+};
+use xynolog::types::{
+    BusEmitAccepted, BusEmitRequest, ErrorResponse, HealthResponse, LimitRefusal, LimitRefusalCode,
+    MediaTokenRequest, MediaTokenResponse, ProtectedResourceMetadata, StatusResponse, UserResponse,
+};
+use xynolog::types::{ResourceId, Schema};
 
 /// The header that names an emit or an upload: a new key for each, and the
 /// same on every attempt at it, so a request sent again is not carried out
@@ -60,7 +60,7 @@ fn unanswered(method: &reqwest::Method, path: &str, deadline: Duration) -> Trans
 }
 
 /// What every SDK says of a declared body or a frame that is no JSON, or
-/// that serde refuses with no fault the table states (`xynoplex::fault_said`
+/// that serde refuses with no fault the table states (`xynolog::fault_said`
 /// says the rest).
 pub(crate) const MALFORMED: &str = "it is malformed";
 
@@ -69,7 +69,7 @@ pub(crate) const MALFORMED: &str = "it is malformed";
 /// being one.
 pub(crate) fn declared<T: DeserializeOwned + Schema>(body: &[u8]) -> Result<T, String> {
     let mut value: Value = serde_json::from_slice(body).map_err(|_| MALFORMED.to_owned())?;
-    if let Some(said) = xynoplex::fault_said::<T>(&mut value) {
+    if let Some(said) = xynolog::fault_said::<T>(&mut value) {
         return Err(said);
     }
     serde_json::from_value(value).map_err(|_| MALFORMED.to_owned())
@@ -139,7 +139,7 @@ pub struct HttpTransportConfig {
     /// `refusal-rate`. With none, a refused credential is final at once.
     pub refresher: Option<Arc<dyn TokenRefresher>>,
     /// The global channels the stream names: a full client names every
-    /// channel a client hears (`xynoplex::channels::BRIDGED_CHANNELS`); a
+    /// channel a client hears (`xynolog::channels::BRIDGED_CHANNELS`); a
     /// process that awaits only some operations names their reply channels,
     /// and is not sent every other client's replies. Nothing is assumed: a
     /// transport hears what it is given.
@@ -283,7 +283,7 @@ impl Shared {
             if let Some(TraceCarrier {
                 traceparent,
                 tracestate,
-            }) = xynoplex_telemetry::active_trace()
+            }) = xynolog_telemetry::active_trace()
             {
                 request = request.header("traceparent", traceparent);
                 if let Some(tracestate) = tracestate {
@@ -450,7 +450,7 @@ impl Shared {
     /// `Idempotency-Key`.
     async fn emit(&self, body: &BusEmitRequest) -> Result<Option<u64>, TransportError> {
         let url = format!("{}/bus/emit", self.base_url);
-        let trace = xynoplex_telemetry::active_trace();
+        let trace = xynolog_telemetry::active_trace();
         let key = idempotency_key();
         let mut token = self.current_token();
         let mut renewed = false;
@@ -664,7 +664,7 @@ impl Transport for HttpTransport {
                 client_id: Some(shared.client_id.clone()),
                 correlation_id: envelope.correlation_id,
             };
-            xynoplex_telemetry::bus_emit(channel, body.scope.as_deref(), shared.emit(&body)).await
+            xynolog_telemetry::bus_emit(channel, body.scope.as_deref(), shared.emit(&body)).await
         })
     }
 

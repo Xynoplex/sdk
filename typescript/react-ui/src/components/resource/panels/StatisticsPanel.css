@@ -3,125 +3,125 @@
    Statistics and metrics display panel
    ============================================ */
 
-.xynoplex-statistics-panel {
+.xynolog-statistics-panel {
   display: flex;
   flex-direction: column;
   height: 100%;
 }
 
-.xynoplex-statistics-panel__content {
+.xynolog-statistics-panel__content {
   display: flex;
   flex-direction: column;
-  gap: var(--xynoplex-panel-gap);
-  padding: var(--xynoplex-panel-padding);
+  gap: var(--xynolog-panel-gap);
+  padding: var(--xynolog-panel-padding);
 }
 
 /* Title */
-.xynoplex-statistics-panel__title {
-  margin: 0 0 var(--xynoplex-panel-gap-sm);
-  font-size: var(--xynoplex-text-lg);
-  font-weight: var(--xynoplex-font-semibold);
-  color: var(--xynoplex-text-primary);
+.xynolog-statistics-panel__title {
+  margin: 0 0 var(--xynolog-panel-gap-sm);
+  font-size: var(--xynolog-text-lg);
+  font-weight: var(--xynolog-font-semibold);
+  color: var(--xynolog-text-primary);
 }
 
-[data-theme="dark"] .xynoplex-statistics-panel__title {
-  color: var(--xynoplex-text-primary);
+[data-theme="dark"] .xynolog-statistics-panel__title {
+  color: var(--xynolog-text-primary);
 }
 
 /* List of statistics */
-.xynoplex-statistics-panel__list {
+.xynolog-statistics-panel__list {
   display: flex;
   flex-direction: column;
-  gap: var(--xynoplex-panel-gap-sm);
+  gap: var(--xynolog-panel-gap-sm);
 }
 
 /* Individual statistic item */
-.xynoplex-statistics-panel__item {
+.xynolog-statistics-panel__item {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  padding: var(--xynoplex-panel-padding-sm);
-  background: var(--xynoplex-bg-secondary);
-  border-radius: var(--xynoplex-radius-md);
+  padding: var(--xynolog-panel-padding-sm);
+  background: var(--xynolog-bg-secondary);
+  border-radius: var(--xynolog-radius-md);
   flex-wrap: wrap;
-  gap: var(--xynoplex-panel-gap-sm);
+  gap: var(--xynolog-panel-gap-sm);
 }
 
-[data-theme="dark"] .xynoplex-statistics-panel__item {
-  background: var(--xynoplex-bg-tertiary);
+[data-theme="dark"] .xynolog-statistics-panel__item {
+  background: var(--xynolog-bg-tertiary);
 }
 
-.xynoplex-statistics-panel__label {
-  font-size: var(--xynoplex-text-sm);
-  font-weight: var(--xynoplex-font-medium);
-  color: var(--xynoplex-text-secondary);
+.xynolog-statistics-panel__label {
+  font-size: var(--xynolog-text-sm);
+  font-weight: var(--xynolog-font-medium);
+  color: var(--xynolog-text-secondary);
 }
 
-.xynoplex-statistics-panel__value {
-  font-size: var(--xynoplex-text-lg);
-  font-weight: var(--xynoplex-font-semibold);
-  color: var(--xynoplex-text-primary);
+.xynolog-statistics-panel__value {
+  font-size: var(--xynolog-text-lg);
+  font-weight: var(--xynolog-font-semibold);
+  color: var(--xynolog-text-primary);
   margin-left: auto;
 }
 
 /* Sub-items (indented) */
-.xynoplex-statistics-panel__subitems {
+.xynolog-statistics-panel__subitems {
   width: 100%;
-  margin-top: var(--xynoplex-panel-gap-xs);
-  padding-left: var(--xynoplex-panel-padding);
+  margin-top: var(--xynolog-panel-gap-xs);
+  padding-left: var(--xynolog-panel-padding);
   display: flex;
   flex-direction: column;
-  gap: var(--xynoplex-panel-gap-xs);
+  gap: var(--xynolog-panel-gap-xs);
 }
 
-.xynoplex-statistics-panel__subitem {
+.xynolog-statistics-panel__subitem {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
 }
 
-.xynoplex-statistics-panel__sublabel {
-  font-size: var(--xynoplex-text-xs);
-  color: var(--xynoplex-text-tertiary);
+.xynolog-statistics-panel__sublabel {
+  font-size: var(--xynolog-text-xs);
+  color: var(--xynolog-text-tertiary);
 }
 
-.xynoplex-statistics-panel__subvalue {
-  font-size: var(--xynoplex-text-sm);
-  font-weight: var(--xynoplex-font-medium);
-  color: var(--xynoplex-text-secondary);
+.xynolog-statistics-panel__subvalue {
+  font-size: var(--xynolog-text-sm);
+  font-weight: var(--xynolog-font-medium);
+  color: var(--xynolog-text-secondary);
 }
 
 /* Entity Types */
-.xynoplex-statistics-panel__entity-types {
+.xynolog-statistics-panel__entity-types {
   display: flex;
   flex-direction: column;
-  gap: var(--xynoplex-panel-gap-sm);
-  padding: var(--xynoplex-panel-padding-sm);
-  background: var(--xynoplex-bg-secondary);
-  border-radius: var(--xynoplex-radius-md);
+  gap: var(--xynolog-panel-gap-sm);
+  padding: var(--xynolog-panel-padding-sm);
+  background: var(--xynolog-bg-secondary);
+  border-radius: var(--xynolog-radius-md);
 }
 
-[data-theme="dark"] .xynoplex-statistics-panel__entity-types {
-  background: var(--xynoplex-bg-tertiary);
+[data-theme="dark"] .xynolog-statistics-panel__entity-types {
+  background: var(--xynolog-bg-tertiary);
 }
 
-.xynoplex-statistics-panel__entity-list {
+.xynolog-statistics-panel__entity-list {
   display: flex;
   flex-direction: column;
-  gap: var(--xynoplex-panel-gap-xs);
+  gap: var(--xynolog-panel-gap-xs);
 }
 
-.xynoplex-statistics-panel__entity-item {
+.xynolog-statistics-panel__entity-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: var(--xynoplex-panel-gap-sm);
+  gap: var(--xynolog-panel-gap-sm);
 }
 
-.xynoplex-statistics-panel__entity-name {
-  font-size: var(--xynoplex-text-sm);
-  color: var(--xynoplex-text-primary);
+.xynolog-statistics-panel__entity-name {
+  font-size: var(--xynolog-text-sm);
+  color: var(--xynolog-text-primary);
   flex: 1;
 }
 
-/* Tags use .xynoplex-tag from core/tags.css */
+/* Tags use .xynolog-tag from core/tags.css */

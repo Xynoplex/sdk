@@ -1,4 +1,4 @@
-package xynoplex
+package xynolog
 
 // A long-running operation: what it reports as it goes, then its final
 // value.

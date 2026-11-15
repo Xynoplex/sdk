@@ -11,7 +11,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useHoverDelay } from '../useHoverDelay';
-import { HOVER_DELAY_MS } from '@xynoplex/sdk';
+import { HOVER_DELAY_MS } from '@xynolog/sdk';
 
 describe('useHoverDelay', () => {
   beforeEach(() => {

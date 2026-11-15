@@ -57,7 +57,7 @@
  *     stale-beats-error.
  */
 
-import { BusRequestError, SAVE_DEBOUNCE_MS, type StateUnit } from '@xynoplex/core';
+import { BusRequestError, SAVE_DEBOUNCE_MS, type StateUnit } from '@xynolog/core';
 import {
   BehaviorSubject,
   Observable,

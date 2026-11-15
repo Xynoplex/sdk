@@ -12,27 +12,27 @@
    ============================================ */
 :root {
   /* Light theme colors */
-  --xynoplex-motivation-assessment-primary: var(--xynoplex-color-red-500);
-  --xynoplex-motivation-assessment-secondary: var(--xynoplex-color-red-700);
-  --xynoplex-motivation-assessment-bg: rgba(254, 226, 226, 0.5);
-  --xynoplex-motivation-assessment-bg-hover: rgba(254, 226, 226, 0.7);
-  --xynoplex-motivation-assessment-border: rgba(239, 68, 68, 0.3);
-  --xynoplex-motivation-assessment-border-hover: rgba(239, 68, 68, 0.5);
-  --xynoplex-motivation-assessment-text: var(--xynoplex-color-red-700);
+  --xynolog-motivation-assessment-primary: var(--xynolog-color-red-500);
+  --xynolog-motivation-assessment-secondary: var(--xynolog-color-red-700);
+  --xynolog-motivation-assessment-bg: rgba(254, 226, 226, 0.5);
+  --xynolog-motivation-assessment-bg-hover: rgba(254, 226, 226, 0.7);
+  --xynolog-motivation-assessment-border: rgba(239, 68, 68, 0.3);
+  --xynolog-motivation-assessment-border-hover: rgba(239, 68, 68, 0.5);
+  --xynolog-motivation-assessment-text: var(--xynolog-color-red-700);
 
   /* Dark theme colors */
-  --xynoplex-motivation-assessment-dark-bg: rgba(127, 29, 29, 0.3);
-  --xynoplex-motivation-assessment-dark-bg-hover: rgba(127, 29, 29, 0.4);
-  --xynoplex-motivation-assessment-dark-text: var(--xynoplex-color-red-300);
-  --xynoplex-motivation-assessment-dark-primary: var(--xynoplex-color-red-400);
+  --xynolog-motivation-assessment-dark-bg: rgba(127, 29, 29, 0.3);
+  --xynolog-motivation-assessment-dark-bg-hover: rgba(127, 29, 29, 0.4);
+  --xynolog-motivation-assessment-dark-text: var(--xynolog-color-red-300);
+  --xynolog-motivation-assessment-dark-primary: var(--xynolog-color-red-400);
 
   /* Panel backgrounds */
-  --xynoplex-motivation-assessment-panel-bg: rgba(254, 226, 226, 0.3);
-  --xynoplex-motivation-assessment-panel-bg-dark: rgba(127, 29, 29, 0.2);
+  --xynolog-motivation-assessment-panel-bg: rgba(254, 226, 226, 0.3);
+  --xynolog-motivation-assessment-panel-bg-dark: rgba(127, 29, 29, 0.2);
 
   /* Button gradients - using red gradient for assessment */
-  --xynoplex-motivation-assessment-button-bg: linear-gradient(to right, var(--xynoplex-color-red-500), var(--xynoplex-color-red-600));
-  --xynoplex-motivation-assessment-button-bg-hover: linear-gradient(to right, var(--xynoplex-color-red-600), var(--xynoplex-color-red-700));
+  --xynolog-motivation-assessment-button-bg: linear-gradient(to right, var(--xynolog-color-red-500), var(--xynolog-color-red-600));
+  --xynolog-motivation-assessment-button-bg-hover: linear-gradient(to right, var(--xynolog-color-red-600), var(--xynolog-color-red-700));
 }
 
 /* ============================================
@@ -43,7 +43,7 @@
   cursor: pointer;
   transition: all 200ms;
   text-decoration: underline wavy;
-  text-decoration-color: var(--xynoplex-motivation-assessment-primary);
+  text-decoration-color: var(--xynolog-motivation-assessment-primary);
   text-decoration-thickness: 1.2px;
   text-underline-offset: 0.8px;
 }
@@ -58,7 +58,7 @@
 @supports not (text-decoration-style: wavy) {
   .annotation-assessment,
   .red-underline {
-    border-bottom: 1.2px solid var(--xynoplex-motivation-assessment-primary);
+    border-bottom: 1.2px solid var(--xynolog-motivation-assessment-primary);
     text-decoration: none;
   }
 
@@ -71,109 +71,109 @@
 /* ============================================
    Panel Entry Styling
    ============================================ */
-.xynoplex-annotation-entry[data-type="assessment"] {
-  border-color: var(--xynoplex-motivation-assessment-border);
+.xynolog-annotation-entry[data-type="assessment"] {
+  border-color: var(--xynolog-motivation-assessment-border);
 }
 
-[data-theme="dark"] .xynoplex-annotation-entry[data-type="assessment"] {
-  border-color: var(--xynoplex-motivation-assessment-border);
+[data-theme="dark"] .xynolog-annotation-entry[data-type="assessment"] {
+  border-color: var(--xynolog-motivation-assessment-border);
 }
 
-.xynoplex-annotation-entry[data-type="assessment"]:hover {
-  background: var(--xynoplex-motivation-assessment-panel-bg);
-  border-color: var(--xynoplex-motivation-assessment-border-hover);
+.xynolog-annotation-entry[data-type="assessment"]:hover {
+  background: var(--xynolog-motivation-assessment-panel-bg);
+  border-color: var(--xynolog-motivation-assessment-border-hover);
 }
 
-[data-theme="dark"] .xynoplex-annotation-entry[data-type="assessment"]:hover {
-  background: var(--xynoplex-motivation-assessment-panel-bg-dark);
+[data-theme="dark"] .xynolog-annotation-entry[data-type="assessment"]:hover {
+  background: var(--xynolog-motivation-assessment-panel-bg-dark);
 }
 
 /* ============================================
    Quote/Excerpt Styling in Panels
    ============================================ */
-.xynoplex-annotation-entry__quote[data-type="assessment"] {
-  background: var(--xynoplex-motivation-assessment-bg);
-  color: var(--xynoplex-motivation-assessment-text);
+.xynolog-annotation-entry__quote[data-type="assessment"] {
+  background: var(--xynolog-motivation-assessment-bg);
+  color: var(--xynolog-motivation-assessment-text);
   padding: 0.375rem 0.5rem;
-  border-radius: var(--xynoplex-radius-sm);
+  border-radius: var(--xynolog-radius-sm);
 }
 
-[data-theme="dark"] .xynoplex-annotation-entry__quote[data-type="assessment"] {
-  background: var(--xynoplex-motivation-assessment-dark-bg);
-  color: var(--xynoplex-motivation-assessment-dark-text);
+[data-theme="dark"] .xynolog-annotation-entry__quote[data-type="assessment"] {
+  background: var(--xynolog-motivation-assessment-dark-bg);
+  color: var(--xynolog-motivation-assessment-dark-text);
 }
 
 /* ============================================
    Body Content (Rating Stars)
    ============================================ */
-.xynoplex-annotation-entry__body[data-type="assessment"] {
+.xynolog-annotation-entry__body[data-type="assessment"] {
   display: flex;
   gap: 0.25rem;
-  color: var(--xynoplex-color-warning);
+  color: var(--xynolog-color-warning);
 }
 
-[data-theme="dark"] .xynoplex-annotation-entry__body[data-type="assessment"] {
-  color: var(--xynoplex-color-warning);
+[data-theme="dark"] .xynolog-annotation-entry__body[data-type="assessment"] {
+  color: var(--xynolog-color-warning);
 }
 
 /* ============================================
    Annotation Prompt (Pending State)
    ============================================ */
-.xynoplex-annotation-prompt[data-type="assessment"] {
-  background: var(--xynoplex-motivation-assessment-panel-bg);
-  padding: var(--xynoplex-panel-padding);
-  border-radius: var(--xynoplex-radius-md);
-  border: 2px dashed var(--xynoplex-motivation-assessment-border);
+.xynolog-annotation-prompt[data-type="assessment"] {
+  background: var(--xynolog-motivation-assessment-panel-bg);
+  padding: var(--xynolog-panel-padding);
+  border-radius: var(--xynolog-radius-md);
+  border: 2px dashed var(--xynolog-motivation-assessment-border);
 }
 
-[data-theme="dark"] .xynoplex-annotation-prompt[data-type="assessment"] {
-  background: var(--xynoplex-motivation-assessment-panel-bg-dark);
-  border-color: var(--xynoplex-motivation-assessment-border);
+[data-theme="dark"] .xynolog-annotation-prompt[data-type="assessment"] {
+  background: var(--xynolog-motivation-assessment-panel-bg-dark);
+  border-color: var(--xynolog-motivation-assessment-border);
 }
 
-.xynoplex-annotation-prompt__quote[data-type="assessment"] {
-  background: var(--xynoplex-bg-primary);
-  padding: var(--xynoplex-panel-padding-sm);
-  border-radius: var(--xynoplex-radius-sm);
-  border-left: 3px solid var(--xynoplex-motivation-assessment-primary);
-  margin-bottom: var(--xynoplex-panel-gap-sm);
+.xynolog-annotation-prompt__quote[data-type="assessment"] {
+  background: var(--xynolog-bg-primary);
+  padding: var(--xynolog-panel-padding-sm);
+  border-radius: var(--xynolog-radius-sm);
+  border-left: 3px solid var(--xynolog-motivation-assessment-primary);
+  margin-bottom: var(--xynolog-panel-gap-sm);
 }
 
-[data-theme="dark"] .xynoplex-annotation-prompt__quote[data-type="assessment"] {
-  background: var(--xynoplex-bg-secondary);
-  border-left-color: var(--xynoplex-motivation-assessment-dark-primary);
+[data-theme="dark"] .xynolog-annotation-prompt__quote[data-type="assessment"] {
+  background: var(--xynolog-bg-secondary);
+  border-left-color: var(--xynolog-motivation-assessment-dark-primary);
 }
 
 /* ============================================
    Button Styling
    ============================================ */
-.xynoplex-button[data-variant="delegate"][data-type="assessment"] {
-  background: var(--xynoplex-motivation-assessment-button-bg) !important;
-  color: var(--xynoplex-color-white) !important;
-  border: 1px solid var(--xynoplex-motivation-assessment-border);
+.xynolog-button[data-variant="delegate"][data-type="assessment"] {
+  background: var(--xynolog-motivation-assessment-button-bg) !important;
+  color: var(--xynolog-color-white) !important;
+  border: 1px solid var(--xynolog-motivation-assessment-border);
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
-.xynoplex-button[data-variant="delegate"][data-type="assessment"]:hover {
-  background: var(--xynoplex-motivation-assessment-button-bg-hover);
-  border-color: var(--xynoplex-motivation-assessment-primary);
+.xynolog-button[data-variant="delegate"][data-type="assessment"]:hover {
+  background: var(--xynolog-motivation-assessment-button-bg-hover);
+  border-color: var(--xynolog-motivation-assessment-primary);
 }
 
-[data-theme="dark"] .xynoplex-button[data-variant="delegate"][data-type="assessment"] {
-  border-color: var(--xynoplex-motivation-assessment-border);
+[data-theme="dark"] .xynolog-button[data-variant="delegate"][data-type="assessment"] {
+  border-color: var(--xynolog-motivation-assessment-border);
 }
 
-[data-theme="dark"] .xynoplex-button[data-variant="delegate"][data-type="assessment"]:hover {
-  border-color: var(--xynoplex-motivation-assessment-dark-primary);
+[data-theme="dark"] .xynolog-button[data-variant="delegate"][data-type="assessment"]:hover {
+  border-color: var(--xynolog-motivation-assessment-dark-primary);
 }
 
-.xynoplex-button[data-variant="delegate"][data-type="assessment"]:focus-visible {
-  outline: 2px solid var(--xynoplex-motivation-assessment-primary);
+.xynolog-button[data-variant="delegate"][data-type="assessment"]:focus-visible {
+  outline: 2px solid var(--xynolog-motivation-assessment-primary);
   outline-offset: 2px;
 }
 
-[data-theme="dark"] .xynoplex-button[data-variant="delegate"][data-type="assessment"]:focus-visible {
-  outline: 2px solid var(--xynoplex-motivation-assessment-dark-primary);
+[data-theme="dark"] .xynolog-button[data-variant="delegate"][data-type="assessment"]:focus-visible {
+  outline: 2px solid var(--xynolog-motivation-assessment-dark-primary);
   outline-offset: 2px;
 }

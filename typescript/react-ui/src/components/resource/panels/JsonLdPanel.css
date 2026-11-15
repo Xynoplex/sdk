@@ -3,35 +3,35 @@
    JSON-LD editor panel styles
    ============================================ */
 
-.xynoplex-jsonld-panel {
+.xynolog-jsonld-panel {
   height: 100%;
   display: flex;
   flex-direction: column;
 }
 
-.xynoplex-jsonld-panel__header {
+.xynolog-jsonld-panel__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--xynoplex-panel-padding);
-  padding-bottom: var(--xynoplex-panel-gap);
+  padding: var(--xynolog-panel-padding);
+  padding-bottom: var(--xynolog-panel-gap);
 }
 
-.xynoplex-jsonld-panel__title {
+.xynolog-jsonld-panel__title {
   margin: 0;
-  font-size: var(--xynoplex-panel-title-size);
-  font-weight: var(--xynoplex-panel-title-weight);
-  color: var(--xynoplex-text-primary);
+  font-size: var(--xynolog-panel-title-size);
+  font-weight: var(--xynolog-panel-title-weight);
+  color: var(--xynolog-text-primary);
 }
 
-.xynoplex-jsonld-panel__editor {
+.xynolog-jsonld-panel__editor {
   flex: 1;
   overflow: hidden;
-  background: var(--xynoplex-bg-secondary);
-  border-radius: var(--xynoplex-radius-md);
-  padding: var(--xynoplex-panel-padding);
+  background: var(--xynolog-bg-secondary);
+  border-radius: var(--xynolog-radius-md);
+  padding: var(--xynolog-panel-padding);
 }
 
-[data-theme="dark"] .xynoplex-jsonld-panel__editor {
-  background: var(--xynoplex-bg-tertiary);
+[data-theme="dark"] .xynolog-jsonld-panel__editor {
+  background: var(--xynolog-bg-tertiary);
 }

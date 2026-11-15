@@ -5,7 +5,7 @@ import gc
 
 from aio import run, soon
 
-from xynoplex.events import Broadcast
+from xynolog.events import Broadcast
 
 
 def test_a_reader_that_falls_behind_loses_nothing_and_delays_nobody() -> None:

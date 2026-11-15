@@ -2,7 +2,7 @@
  * useSessionExpiry Hook Tests
  *
  * Tests the useSessionExpiry hook which calculates time remaining until session expiry.
- * Drives the hook via a minimal fake XynoplexBrowser whose activeSession$ carries a
+ * Drives the hook via a minimal fake XynologBrowser whose activeSession$ carries a
  * session-like object with a controllable `expiresAt` getter.
  */
 
@@ -11,8 +11,8 @@ import { renderHook, act } from '@testing-library/react';
 import React, { type ReactNode } from 'react';
 import { BehaviorSubject } from 'rxjs';
 import { useSessionExpiry } from '../useSessionExpiry';
-import { XynoplexProvider } from '../../session/XynoplexProvider';
-import type { XynoplexBrowser } from '@xynoplex/sdk';
+import { XynologProvider } from '../../session/XynologProvider';
+import type { XynologBrowser } from '@xynolog/sdk';
 
 interface FakeSession {
   expiresAt: Date | null;
@@ -20,7 +20,7 @@ interface FakeSession {
 }
 
 function buildBrowser(initialExpiresAt: Date | null): {
-  browser: XynoplexBrowser;
+  browser: XynologBrowser;
   setExpiresAt: (d: Date | null) => void;
 } {
   const token$ = new BehaviorSubject<unknown>(
@@ -38,14 +38,14 @@ function buildBrowser(initialExpiresAt: Date | null): {
     token$.next(d ? `token-${d.getTime()}` : null);
   };
   return {
-    browser: { activeSession$ } as unknown as XynoplexBrowser,
+    browser: { activeSession$ } as unknown as XynologBrowser,
     setExpiresAt,
   };
 }
 
-function makeWrapper(browser: XynoplexBrowser) {
+function makeWrapper(browser: XynologBrowser) {
   return ({ children }: { children: ReactNode }) =>
-    React.createElement(XynoplexProvider, { browser, children });
+    React.createElement(XynologProvider, { browser, children });
 }
 
 describe('useSessionExpiry', () => {

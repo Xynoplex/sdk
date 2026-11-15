@@ -10,11 +10,11 @@ from typing import final, override
 
 from aio import run, soon, turns
 
-from xynoplex.channels import BRIDGED_CHANNELS
-from xynoplex.identifiers import AnnotationId, ResourceId
-from xynoplex.state import BeckonStateUnit
-from xynoplex.testing import FaultyTransport, create_test_client
-from xynoplex.testing.axioms import AxiomSubject, Fresh, assert_state_unit_axioms
+from xynolog.channels import BRIDGED_CHANNELS
+from xynolog.identifiers import AnnotationId, ResourceId
+from xynolog.state import BeckonStateUnit
+from xynolog.testing import FaultyTransport, create_test_client
+from xynolog.testing.axioms import AxiomSubject, Fresh, assert_state_unit_axioms
 
 RES, ANN = ResourceId("res-1"), AnnotationId("ann-1")
 

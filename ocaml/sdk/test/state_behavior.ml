@@ -1,5 +1,5 @@
 open Eio.Std
-open Xynoplex
+open Xynolog
 module U = State_units
 module V = State_value
 module B = Bus_registry

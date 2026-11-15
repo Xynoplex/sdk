@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { kbDid, kbResource } from '../did-utils';
 
-describe('@xynoplex/core - did-utils', () => {
+describe('@xynolog/core - did-utils', () => {
   /**
    * The KB's own identity — not a person's, not an agent's. The launcher
    * mints the identical string in Go (`kbconfig.go` didWeb():

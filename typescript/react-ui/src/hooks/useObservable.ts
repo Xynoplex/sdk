@@ -12,12 +12,12 @@ import type { Observable } from 'rxjs';
  *
  *   We duck-type on `.getValue` rather than using `instanceof BehaviorSubject`
  *   because rxjs can be loaded through multiple module realms in tests (e.g.
- *   a bundled CJS copy inside `@xynoplex/react-ui/dist` vs a fresh ESM import
+ *   a bundled CJS copy inside `@xynolog/react-ui/dist` vs a fresh ESM import
  *   in the test file), which makes `instanceof` unreliable.
  * - For non-BehaviorSubject Observables, starts at `undefined` and emits
  *   asynchronously after the subscribe.
  * - Accepts `undefined`/`null` for cases where the observable's source isn't
- *   ready yet (e.g. `xynoplex?.browse.events(rUri)` when the active session is
+ *   ready yet (e.g. `xynolog?.browse.events(rUri)` when the active session is
  *   still loading). In that case the hook is a no-op and returns undefined.
  * - Unsubscribes automatically on unmount or when `obs$` changes.
  * - A source ERROR is terminal absence: the hook keeps its last value and

@@ -7,9 +7,9 @@
  * (closure-based identity, Observable public surface, internal Subjects
  * exposed as `.asObservable()` views, no leaked subscriptions, composition
  * by parameter rather than ownership) is convention, made executable by the
- * axiom harness in `@xynoplex/core/testing` (`assertStateUnitAxioms`).
+ * axiom harness in `@xynolog/core/testing` (`assertStateUnitAxioms`).
  *
- * Lives in `@xynoplex/core` (not sdk) so every layer can share one definition
+ * Lives in `@xynolog/core` (not sdk) so every layer can share one definition
  * without dependency cycles — `http-transport`'s `ActorStateUnit` sits below
  * sdk and would otherwise have to re-declare it. See
  * `docs/builder/STATE-UNITS.md` for the full pattern and rationale.

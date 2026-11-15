@@ -4,9 +4,9 @@
  * Build the packages in dependency order, each once.
  *
  * With no arguments it builds every one. Given names, as version.json lists them
- * (`@xynoplex/sdk`, `xynoplex-browser`), it builds each and every package of the
+ * (`@xynolog/sdk`, `xynolog-browser`), it builds each and every package of the
  * repository it is built on, as its package.json's dependencies name them, and
- * no other: `npm run build:packages -- @xynoplex/sdk`. A package's own build
+ * no other: `npm run build:packages -- @xynolog/sdk`. A package's own build
  * builds nothing under it, so this is the one way to build a package from a
  * clean checkout.
  *
@@ -15,7 +15,7 @@
  * package manifest. Adding a new package means editing version.json
  * once, not five different scripts.
  *
- * SPEC-FIRST: @xynoplex/core's prebuild bundles openapi.json and
+ * SPEC-FIRST: @xynolog/core's prebuild bundles openapi.json and
  * regenerates types from it; this script bundles the spec once up
  * front so all packages see the same generated types.
  *
@@ -32,7 +32,7 @@ const ROOT = path.resolve(__dirname, '../../..');
 
 // SPEC-FIRST: bundle OpenAPI spec from protocol/specs/src/ before any package builds.
 // protocol/specs/src/openapi.json is the source of truth; protocol/specs/openapi.json is the
-// bundled artifact that @xynoplex/core's prebuild script copies and reads.
+// bundled artifact that @xynolog/core's prebuild script copies and reads.
 console.log('📦 Bundling OpenAPI spec from protocol/specs/src/...');
 try {
   execFileSync('npm', ['run', 'openapi:bundle'], { stdio: 'inherit', cwd: ROOT });

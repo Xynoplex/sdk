@@ -14,15 +14,15 @@ members = [
 # another.
 [workspace.package]
 version = "0.7.3"
-repository = "https://github.com/Xynoplex/sdk"
+repository = "https://github.com/xynolog/sdk"
 
 # Every crate a member uses, by version, once: a member names the ones it uses
 # with `.workspace = true` and adds the features it needs.
 [workspace.dependencies]
-xynoplex = { path = "sdk", version = "0.7.3" }
-xynoplex-codegen = { path = "codegen", version = "0.7.3" }
-xynoplex-http-transport = { path = "http-transport" }
-xynoplex-telemetry = { path = "telemetry", version = "0.7.3" }
+xynolog = { path = "sdk", version = "0.7.3" }
+xynolog-codegen = { path = "codegen", version = "0.7.3" }
+xynolog-http-transport = { path = "http-transport" }
+xynolog-telemetry = { path = "telemetry", version = "0.7.3" }
 async-nats = { version = "0.50.0", default-features = false }
 axum = { version = "0.8.9", default-features = false }
 base64 = "0.23.1"

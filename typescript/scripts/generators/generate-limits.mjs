@@ -1,5 +1,5 @@
 // Generate the protocol's limits from the bundled OpenAPI spec: every
-// operation's `x-semiont-limits`, and every schema property's `maxItems`.
+// operation's `x-xynolog-limits`, and every schema property's `maxItems`.
 //
 // The spec states the limits a gateway enforces and a client plans around;
 // an implementation reads them from here rather than restating the numbers,
@@ -21,7 +21,7 @@ const spec = JSON.parse(readFileSync(SPEC, 'utf8'));
 const operationLimits = {};
 for (const [path, item] of Object.entries(spec.paths)) {
   for (const [method, op] of Object.entries(item)) {
-    const limits = op?.['x-semiont-limits'];
+    const limits = op?.['x-xynolog-limits'];
     if (limits) operationLimits[`${method.toUpperCase()} ${path}`] = limits;
   }
 }
@@ -38,9 +38,9 @@ writeFileSync(
   OUT,
   `// ⚠ GENERATED FILE — do not edit.
 // Source: protocol/specs/openapi.json → typescript/scripts/generators/generate-limits.mjs
-// Rebuilt by \`npm run prebuild\` in @xynoplex/core; gitignored on purpose.
+// Rebuilt by \`npm run prebuild\` in @xynolog/core; gitignored on purpose.
 
-/** Each operation's \`x-semiont-limits\`, by \`METHOD path\`. */
+/** Each operation's \`x-xynolog-limits\`, by \`METHOD path\`. */
 export const operationLimits = ${JSON.stringify(operationLimits, null, 2)} as const;
 
 /** Each schema property's \`maxItems\`, by \`Schema.property\`. */

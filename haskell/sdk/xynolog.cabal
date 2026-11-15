@@ -1,0 +1,602 @@
+cabal-version: 3.0
+name: xynolog
+version: 0.7.3
+synopsis: Typed Xynolog SDK for Haskell
+description: Protocol-derived models for the Xynolog knowledge platform.
+license: Apache-2.0
+license-file: LICENSE
+category: Network
+author: Xynolog
+maintainer: Xynolog contributors
+build-type: Simple
+extra-source-files: codegen/annotation-adapters.json, test/store-owner-policy.py, test/store-owner-policy.ps1, test/store-lock-peer.py, generated/Xynolog/Internal/Generated/xynolog_store_policy.h, test/fixtures/*.pem, codegen/session-adapters.json, xynolog.cabal.in, README.md, run.sh, api.py, public-api.inputs.json, public-api.json, test/refusals.py, test/refusals/*.hs, test/http-peer.py, conformance/README.md, conformance/launch.sh
+
+common settings
+  default-language: GHC2021
+  ghc-options: -Wall -Wincomplete-patterns -Wincomplete-record-updates
+  build-depends:
+    base >=4.20 && <4.21,
+    aeson >=2.3 && <2.4,
+    async >=2.2 && <2.3,
+    bytestring >=0.12 && <0.13,
+    base64-bytestring >=1.2 && <1.3,
+    containers >=0.7 && <0.8,
+    regex-tdfa >=1.3 && <1.4,
+    scientific >=0.3 && <0.4,
+    stm >=2.5 && <2.6,
+    streaming >=0.2 && <0.3,
+    text >=2.1 && <2.2,
+    vector >=0.13 && <0.14,
+    QuickCheck >=2.19 && <2.20
+
+common context-propagation
+  build-depends: hs-opentelemetry-api >=1.0 && <1.1, http-client >=0.7 && <0.8, http-types >=0.12 && <0.13, case-insensitive >=1.2 && <1.3, network-uri >=2.6 && <2.7, uuid-types >=1.0 && <1.1, unordered-containers >=0.2 && <0.3
+
+common crypto
+  build-depends: crypton >=2.2 && <2.3, ram >=0.22 && <0.23, crypton-pem >=0.3 && <0.4, crypton-x509 >=1.10 && <1.11, crypton-x509-store >=1.10 && <1.11
+
+library
+  default-language: GHC2021
+  build-depends: base >=4.20 && <4.21, xynolog:internal
+  reexported-modules: Xynolog.Types, Xynolog.Types.Presence, Xynolog.Channels, Xynolog.Running, Xynolog.ErrorCodes, Xynolog.Timing, Xynolog.Timing.Settings, Xynolog.Retry, Xynolog.Discovery, Xynolog.Discovery.Reasons, Xynolog.Transport, Xynolog.Transport.Facts, Xynolog.StateValue, Xynolog.Errors, Xynolog.EventBus, Xynolog.Bus, Xynolog.Http, Xynolog.Http.Discovery, Xynolog.Content, Xynolog.Gateway, Xynolog.Frame, Xynolog.Auth, Xynolog.System, Xynolog.Client, Xynolog.JobFilter, Xynolog.Claims, Xynolog.HostName, Xynolog.Worker, Xynolog.Worker.Types, Xynolog.Bind, Xynolog.Beckon, Xynolog.Job, Xynolog.Cache, Xynolog.Resources, Xynolog.MediaTypes, Xynolog.Browse, Xynolog.Gather, Xynolog.Match, Xynolog.Delegation, Xynolog.Mark, Xynolog.Yield, Xynolog.Tokens, Xynolog.SessionStorage, Xynolog.Session, Xynolog.Issuer, Xynolog.Registry.Stored, Xynolog.ClientAssertion, Xynolog.ServiceToken, Xynolog.SignIn, Xynolog.SignInStore, Xynolog.Annotations, Xynolog.Identity, Xynolog.StoragePersister, Xynolog.State.SessionSignals, Xynolog.Registry.Identity, Xynolog.Registry.Factory, Xynolog.Registry.Resources, Xynolog.Registry, Xynolog.State.HoverDwell, Xynolog.State.Search, Xynolog.State.Beckon, Xynolog.State.Match, Xynolog.State.Gather, Xynolog.State.Mark, Xynolog.State.Yield, Xynolog.Testing, Xynolog.Testing.Client, Xynolog.Testing.Transport, Xynolog.Testing.Storage, Xynolog.Testing.Sessions, Xynolog.Testing.Liveness
+
+library internal
+  import: settings, context-propagation, crypto
+  build-depends: directory >=1.3 && <1.4, filepath >=1.5 && <1.6, time >=1.12 && <1.13
+  visibility: private
+  hs-source-dirs: src, internal, generated
+  c-sources: internal/Xynolog/Internal/NativeStore.c
+  include-dirs: generated/Xynolog/Internal/Generated
+  cc-options: -Wall -Wextra -Werror
+  if os(windows)
+    extra-libraries: advapi32, bcrypt
+  exposed-modules:
+    Xynolog.Types
+    Xynolog.Types.Presence
+    Xynolog.Channels
+    Xynolog.Running
+    Xynolog.ErrorCodes
+    Xynolog.Timing
+    Xynolog.Timing.Settings
+    Xynolog.Retry
+    Xynolog.Discovery
+    Xynolog.Discovery.Reasons
+    Xynolog.Transport
+    Xynolog.Transport.Facts
+    Xynolog.StateValue
+    Xynolog.Errors
+    Xynolog.EventBus
+    Xynolog.Bus
+    Xynolog.Internal.Schema
+    Xynolog.Internal.Required
+    Xynolog.Internal.Cache
+    Xynolog.Internal.Queries
+    Xynolog.Internal.Delegation
+    Xynolog.Internal.DelegatedVerbs
+    Xynolog.Internal.Mark
+    Xynolog.Internal.Yield
+    Xynolog.Internal.Generated.OperationReports
+    Xynolog.Internal.Browse
+    Xynolog.Internal.Gather
+    Xynolog.Internal.Match
+    Xynolog.Internal.Refresh
+    Xynolog.Internal.Text
+    Xynolog.Internal.Utf8
+    Xynolog.Internal.StreamFrame
+    Xynolog.Internal.Broadcast
+    Xynolog.Internal.Sse
+    Xynolog.Internal.Running
+    Xynolog.Internal.Delivery
+    Xynolog.Internal.StateValue
+    Xynolog.Internal.Transport
+    Xynolog.Registry
+    Xynolog.Registry.Resources
+    Xynolog.Registry.Factory
+    Xynolog.Internal.Generated.SessionFactoryOptions
+    Xynolog.Registry.Identity
+    Xynolog.State.SessionSignals
+    Xynolog.State.Beckon
+    Xynolog.State.Match
+    Xynolog.State.Gather
+    Xynolog.State.Mark
+    Xynolog.State.Yield
+    Xynolog.Testing
+    Xynolog.Testing.Client
+    Xynolog.Testing.Transport
+    Xynolog.Testing.Storage
+    Xynolog.Testing.Sessions
+    Xynolog.Testing.Liveness
+    Xynolog.Internal.Generated.Testing
+    Xynolog.Internal.Generated.PendingAnnotation
+    Xynolog.Internal.Generated.MarkMotivation
+    Xynolog.State.HoverDwell
+    Xynolog.State.Search
+    Xynolog.Internal.Generated.SearchState
+    Xynolog.Internal.StateTasks
+    Xynolog.StoragePersister
+    Xynolog.Internal.Coupled
+    Xynolog.Internal.Persistence
+    Xynolog.Internal.Kept
+    Xynolog.Internal.Generated.CachePersistence
+    Xynolog.Internal.Generated.Stored
+    Xynolog.Identity
+    Xynolog.Internal.Generated.Principals
+    Xynolog.Internal.Generated.BusLog
+    Xynolog.Internal.BusLog
+    Xynolog.Internal.Generated.UnicodeCase
+    Xynolog.Annotations
+    Xynolog.Internal.Annotations.Id
+    Xynolog.Internal.Annotations.Pdf
+    Xynolog.Internal.Annotations.Spans
+    Xynolog.Http
+    Xynolog.Http.Discovery
+    Xynolog.Content
+    Xynolog.Gateway
+    Xynolog.Frame
+    Xynolog.Auth
+    Xynolog.System
+    Xynolog.Client
+    Xynolog.JobFilter
+    Xynolog.Claims
+    Xynolog.HostName
+    Xynolog.Worker
+    Xynolog.Worker.Types
+    Xynolog.Bind
+    Xynolog.Beckon
+    Xynolog.Job
+    Xynolog.Cache
+    Xynolog.Resources
+    Xynolog.MediaTypes
+    Xynolog.Browse
+    Xynolog.Gather
+    Xynolog.Match
+    Xynolog.Delegation
+    Xynolog.Mark
+    Xynolog.Yield
+    Xynolog.Tokens
+    Xynolog.SessionStorage
+    Xynolog.Session
+    Xynolog.Issuer
+    Xynolog.ClientAssertion
+    Xynolog.ServiceToken
+    Xynolog.SignIn
+    Xynolog.SignInStore
+    Xynolog.Registry.Stored
+    Xynolog.Internal.Http
+    Xynolog.Internal.HttpActor
+    Xynolog.Internal.HttpContent
+    Xynolog.Internal.Lifetime
+    Xynolog.Http.Routes
+    Xynolog.Internal.Generated.Text
+    Xynolog.Internal.Generated.CacheRefresh
+    Xynolog.Internal.Generated.Required
+    Xynolog.Internal.Generated.Schemas
+  other-modules:
+    Paths_xynolog
+    Xynolog.Internal.Telemetry
+    Xynolog.Internal.Codec
+    Xynolog.Internal.Bus
+    Xynolog.Internal.Local
+    Xynolog.Internal.RetryPolicy
+    Xynolog.Internal.Generated.OperationFailure
+    Xynolog.Internal.Generated.OAuth
+    Xynolog.Internal.Generated.SignInStore
+    Xynolog.Internal.NativeStore
+    Xynolog.Internal.SignIn
+    Xynolog.Internal.Stored
+    Xynolog.Internal.Generated.ClientAssertion
+    Xynolog.Internal.Generated.ServiceProof
+    Xynolog.Internal.Issuer
+    Xynolog.Internal.Digest
+    Xynolog.Internal.Generated.WorkerChannels
+    Xynolog.Internal.Generated.Models.YieldJobFilter
+    Xynolog.Internal.Generated.Models.YieldCloneResourceRequest
+    Xynolog.Internal.Generated.Models.VoyageEmbeddingConfig
+    Xynolog.Internal.Generated.Models.UserId
+    Xynolog.Internal.Generated.Models.UserResponse
+    Xynolog.Internal.Generated.Models.UploadResourceHeader0
+    Xynolog.Internal.Generated.Models.UnitCursor
+    Xynolog.Internal.Generated.Models.TraceCarrier
+    Xynolog.Internal.Generated.Models.TextSpan
+    Xynolog.Internal.Generated.Models.TextQuoteSelector
+    Xynolog.Internal.Generated.Models.TextPositionSelector
+    Xynolog.Internal.Generated.Models.TaggingJobParams
+    Xynolog.Internal.Generated.Models.TagCategory
+    Xynolog.Internal.Generated.Models.TagSchema
+    Xynolog.Internal.Generated.Models.TagSchemaAddedPayload
+    Xynolog.Internal.Generated.Models.TagSchemasProjection
+    Xynolog.Internal.Generated.Models.TabVerdict
+    Xynolog.Internal.Generated.Models.TabCheck
+    Xynolog.Internal.Generated.Models.SvgSelector
+    Xynolog.Internal.Generated.Models.SupportedMediaType
+    Xynolog.Internal.Generated.Models.StoredSession
+    Xynolog.Internal.Generated.Models.StatusResponse
+    Xynolog.Internal.Generated.Models.SignIn
+    Xynolog.Internal.Generated.Models.SettingsThemeChangedEvent
+    Xynolog.Internal.Generated.Models.SettingsLocaleChangedEvent
+    Xynolog.Internal.Generated.Models.SettingsHoverDelayChangedEvent
+    Xynolog.Internal.Generated.Models.SessionLeftEvent
+    Xynolog.Internal.Generated.Models.SessionJoinedEvent
+    Xynolog.Internal.Generated.Models.SessionEndReason
+    Xynolog.Internal.Generated.Models.SessionEnded
+    Xynolog.Internal.Generated.Models.ResourceUpdatedPayload
+    Xynolog.Internal.Generated.Models.ResourceUnarchivedPayload
+    Xynolog.Internal.Generated.Models.ResourceMovedPayload
+    Xynolog.Internal.Generated.Models.ResourceId
+    Xynolog.Internal.Generated.Models.SmeltRebuildAnchorsCommand
+    Xynolog.Internal.Generated.Models.SmeltSettled
+    Xynolog.Internal.Generated.Models.StorageUriEntry
+    Xynolog.Internal.Generated.Models.WeaveApplied
+    Xynolog.Internal.Generated.Models.WeaveRebuildCommand
+    Xynolog.Internal.Generated.Models.YieldCloneCreated
+    Xynolog.Internal.Generated.Models.YieldClonePersistOk
+    Xynolog.Internal.Generated.Models.YieldCloneTokenRequest
+    Xynolog.Internal.Generated.Models.YieldCreateOk
+    Xynolog.Internal.Generated.Models.YieldJobDone
+    Xynolog.Internal.Generated.Models.YieldUpdateCommand
+    Xynolog.Internal.Generated.Models.YieldUpdateOk
+    Xynolog.Internal.Generated.Models.ResourceErrorEvent
+    Xynolog.Internal.Generated.Models.ResourceArchivedPayload
+    Xynolog.Internal.Generated.Models.RepresentationRemovedPayload
+    Xynolog.Internal.Generated.Models.RepresentationNotFound
+    Xynolog.Internal.Generated.Models.Representation
+    Xynolog.Internal.Generated.Models.RepresentationAddedPayload
+    Xynolog.Internal.Generated.Models.ReplyEventId
+    Xynolog.Internal.Generated.Models.QuotedText
+    Xynolog.Internal.Generated.Models.QdrantVectorsConfig
+    Xynolog.Internal.Generated.Models.ProtectedResourceMetadata
+    Xynolog.Internal.Generated.Models.Profile
+    Xynolog.Internal.Generated.Models.ProfilesProjection
+    Xynolog.Internal.Generated.Models.PrincipalProfiledPayload
+    Xynolog.Internal.Generated.Models.PrincipalProfileCommand
+    Xynolog.Internal.Generated.Models.PersistedEventId
+    Xynolog.Internal.Generated.Models.PermissionDenied
+    Xynolog.Internal.Generated.Models.PdfTextItem
+    Xynolog.Internal.Generated.Models.PdfCoordinate
+    Xynolog.Internal.Generated.Models.OpenResource
+    Xynolog.Internal.Generated.Models.OllamaEmbeddingConfig
+    Xynolog.Internal.Generated.Models.NeptuneGraphConfig
+    Xynolog.Internal.Generated.Models.Neo4jGraphConfig
+    Xynolog.Internal.Generated.Models.Motivation
+    Xynolog.Internal.Generated.Models.MemoryVectorsConfig
+    Xynolog.Internal.Generated.Models.VectorsConfig
+    Xynolog.Internal.Generated.Models.MemoryGraphConfig
+    Xynolog.Internal.Generated.Models.MediaTokenResponse
+    Xynolog.Internal.Generated.Models.MediaTokenRequest
+    Xynolog.Internal.Generated.Models.MatchSearchOptions
+    Xynolog.Internal.Generated.Models.MatchResourcesRequest
+    Xynolog.Internal.Generated.Models.MatchQuality
+    Xynolog.Internal.Generated.Models.MarkUpdateEntityTypesCommand
+    Xynolog.Internal.Generated.Models.MarkUnarchiveCommand
+    Xynolog.Internal.Generated.Models.MarkJobFilter
+    Xynolog.Internal.Generated.Models.MarkJobDone
+    Xynolog.Internal.Generated.Models.MarkDelegateTimeoutEvent
+    Xynolog.Internal.Generated.Models.MarkArchiveCommand
+    Xynolog.Internal.Generated.Models.LogLevel
+    Xynolog.Internal.Generated.Models.LogFormat
+    Xynolog.Internal.Generated.Models.LocalEndpoint
+    Xynolog.Internal.Generated.Models.LinkingJobParams
+    Xynolog.Internal.Generated.Models.LimitRefusal
+    Xynolog.Internal.Generated.Models.KbSessionStatus
+    Xynolog.Internal.Generated.Models.KbReadKind
+    Xynolog.Internal.Generated.Models.KbReadVerdict
+    Xynolog.Internal.Generated.Models.KbRead
+    Xynolog.Internal.Generated.Models.KbIdentityConflict
+    Xynolog.Internal.Generated.Models.KbIdentity
+    Xynolog.Internal.Generated.Models.KbDescription
+    Xynolog.Internal.Generated.Models.JobType
+    Xynolog.Internal.Generated.Models.JobProgressLoading
+    Xynolog.Internal.Generated.Models.JobProgressGeneratingResource
+    Xynolog.Internal.Generated.Models.JobProgressDetectingEntities
+    Xynolog.Internal.Generated.Models.JobProgressCreatingTagAnnotations
+    Xynolog.Internal.Generated.Models.JobProgressCreatingResource
+    Xynolog.Internal.Generated.Models.JobProgressCreatingAnnotations
+    Xynolog.Internal.Generated.Models.JobProgressCompleteGenerated
+    Xynolog.Internal.Generated.Models.JobProgressCompleteCreated
+    Xynolog.Internal.Generated.Models.JobProgressAnalyzingTags
+    Xynolog.Internal.Generated.Models.JobProgressAnalyzing
+    Xynolog.Internal.Generated.Models.JobProgressMessage
+    Xynolog.Internal.Generated.Models.JobParams
+    Xynolog.Internal.Generated.Models.JobId
+    Xynolog.Internal.Generated.Models.JobMetadata
+    Xynolog.Internal.Generated.Models.JobPending
+    Xynolog.Internal.Generated.Models.JobStatusRequest
+    Xynolog.Internal.Generated.Models.JobFilter
+    Xynolog.Internal.Generated.Models.JobDeclined
+    Xynolog.Internal.Generated.Models.JobResult
+    Xynolog.Internal.Generated.Models.JobStoredResult
+    Xynolog.Internal.Generated.Models.MarkJobResult
+    Xynolog.Internal.Generated.Models.YieldJobResult
+    Xynolog.Internal.Generated.Models.JobCreatedResultResponse
+    Xynolog.Internal.Generated.Models.JobCreatedResult
+    Xynolog.Internal.Generated.Models.JobComplete
+    Xynolog.Internal.Generated.Models.JobClaimCommand
+    Xynolog.Internal.Generated.Models.JobCheckpointCommand
+    Xynolog.Internal.Generated.Models.JobCancelled
+    Xynolog.Internal.Generated.Models.JobCancelResult
+    Xynolog.Internal.Generated.Models.JobCancelResultBusEnvelope
+    Xynolog.Internal.Generated.Models.JobCancelRequest
+    Xynolog.Internal.Generated.Models.JobAssignedPayload
+    Xynolog.Internal.Generated.Models.JobAssignCommand
+    Xynolog.Internal.Generated.Models.JanusGraphConfig
+    Xynolog.Internal.Generated.Models.IssuerEndpoints
+    Xynolog.Internal.Generated.Models.IssuedTokens
+    Xynolog.Internal.Generated.Models.InferenceLimitsRequest
+    Xynolog.Internal.Generated.Models.InferenceLimits
+    Xynolog.Internal.Generated.Models.HttpEndpoint
+    Xynolog.Internal.Generated.Models.KbEndpoint
+    Xynolog.Internal.Generated.Models.KbTarget
+    Xynolog.Internal.Generated.Models.KnowledgeBase
+    Xynolog.Internal.Generated.Models.NewKnowledgeBase
+    Xynolog.Internal.Generated.Models.SignedIn
+    Xynolog.Internal.Generated.Models.PendingAuthorization
+    Xynolog.Internal.Generated.Models.HighlightingJobParams
+    Xynolog.Internal.Generated.Models.HealthResponse
+    Xynolog.Internal.Generated.Models.GraphResourceNode
+    Xynolog.Internal.Generated.Models.GraphConfig
+    Xynolog.Internal.Generated.Models.GetTagSchemasResponse
+    Xynolog.Internal.Generated.Models.GetOpenApiDocumentResponse
+    Xynolog.Internal.Generated.Models.GetEntityTypesResponse
+    Xynolog.Internal.Generated.Models.GenerationJobRequest
+    Xynolog.Internal.Generated.Models.YieldJobQueuedEvent
+    Xynolog.Internal.Generated.Models.GatherResourceRequestOptions
+    Xynolog.Internal.Generated.Models.GatherResourceRequest
+    Xynolog.Internal.Generated.Models.GatherResourceOptions
+    Xynolog.Internal.Generated.Models.GatherResourceFailed
+    Xynolog.Internal.Generated.Models.GatherReferencedByRequest
+    Xynolog.Internal.Generated.Models.GatherAnnotationOptions
+    Xynolog.Internal.Generated.Models.GatewayConfig
+    Xynolog.Internal.Generated.Models.FrameAddTagSchemaCommand
+    Xynolog.Internal.Generated.Models.FrameAddEntityTypeCommand
+    Xynolog.Internal.Generated.Models.FragmentSelector
+    Xynolog.Internal.Generated.Models.Selector
+    Xynolog.Internal.Generated.Models.FileEntry
+    Xynolog.Internal.Generated.Models.FailureClass
+    Xynolog.Internal.Generated.Models.JobFailed
+    Xynolog.Internal.Generated.Models.ExtractionDeclined
+    Xynolog.Internal.Generated.Models.ExtractedText
+    Xynolog.Internal.Generated.Models.ExtractionOutcome
+    Xynolog.Internal.Generated.Models.Expected
+    Xynolog.Internal.Generated.Models.SignInOutcome
+    Xynolog.Internal.Generated.Models.EventMetadata
+    Xynolog.Internal.Generated.Models.StoredEventResponse
+    Xynolog.Internal.Generated.Models.ErrorResponse
+    Xynolog.Internal.Generated.Models.EphemeralEventId
+    Xynolog.Internal.Generated.Models.EntityTypesProjection
+    Xynolog.Internal.Generated.Models.EntityTypeAddedPayload
+    Xynolog.Internal.Generated.Models.EntityTagChangedPayload
+    Xynolog.Internal.Generated.Models.Engine
+    Xynolog.Internal.Generated.Models.EngineEntry
+    Xynolog.Internal.Generated.Models.EngineLimits
+    Xynolog.Internal.Generated.Models.InferenceLimitsResult
+    Xynolog.Internal.Generated.Models.EngineWithLimits
+    Xynolog.Internal.Generated.Models.LibrarianEngineConfig
+    Xynolog.Internal.Generated.Models.WorkerEngineConfig
+    Xynolog.Internal.Generated.Models.WorkerKnowledgeBaseConfig
+    Xynolog.Internal.Generated.Models.WorkerConfig
+    Xynolog.Internal.Generated.Models.WorkerEngineHealth
+    Xynolog.Internal.Generated.Models.WorkerKnowledgeBaseHealth
+    Xynolog.Internal.Generated.Models.WorkerHealth
+    Xynolog.Internal.Generated.Models.EmptyBusPayload
+    Xynolog.Internal.Generated.Models.EmitOnBusHeader0
+    Xynolog.Internal.Generated.Models.EmbeddingConfig
+    Xynolog.Internal.Generated.Models.LibrarianConfig
+    Xynolog.Internal.Generated.Models.DurabilityEvidence
+    Xynolog.Internal.Generated.Models.MarkJobCompleteCommand
+    Xynolog.Internal.Generated.Models.DispatcherHealth
+    Xynolog.Internal.Generated.Models.DispatcherConfig
+    Xynolog.Internal.Generated.Models.DiscoveredKB
+    Xynolog.Internal.Generated.Models.DiscoveryDocument
+    Xynolog.Internal.Generated.Models.DirEntry
+    Xynolog.Internal.Generated.Models.DirectoryEntry
+    Xynolog.Internal.Generated.Models.DeviceCode
+    Xynolog.Internal.Generated.Models.CursorsPath
+    Xynolog.Internal.Generated.Models.SmelterConfig
+    Xynolog.Internal.Generated.Models.WeaverConfig
+    Xynolog.Internal.Generated.Models.CreateResourceResponse
+    Xynolog.Internal.Generated.Models.ContextualSummaryResponse
+    Xynolog.Internal.Generated.Models.ContextualSummaryResponseBusEnvelope
+    Xynolog.Internal.Generated.Models.ContentFormat
+    Xynolog.Internal.Generated.Models.YieldCloneCreateCommand
+    Xynolog.Internal.Generated.Models.YieldClonePersistCommand
+    Xynolog.Internal.Generated.Models.ConnectionIdentity
+    Xynolog.Internal.Generated.Models.CommentingJobParams
+    Xynolog.Internal.Generated.Models.CommandError
+    Xynolog.Internal.Generated.Models.BusSubscribeRequest
+    Xynolog.Internal.Generated.Models.BusResumeGap
+    Xynolog.Internal.Generated.Models.BusPingMessage
+    Xynolog.Internal.Generated.Models.BusFrame
+    Xynolog.Internal.Generated.Models.BusEventMessage
+    Xynolog.Internal.Generated.Models.BusStreamMessage
+    Xynolog.Internal.Generated.Models.BusEmitRequest
+    Xynolog.Internal.Generated.Models.BusEmitAccepted
+    Xynolog.Internal.Generated.Models.BrowseTagSchemasResult
+    Xynolog.Internal.Generated.Models.BrowseTagSchemasRequest
+    Xynolog.Internal.Generated.Models.BrowseRouterPushEvent
+    Xynolog.Internal.Generated.Models.BrowseResourcesRequest
+    Xynolog.Internal.Generated.Models.BrowseResourceViewedEvent
+    Xynolog.Internal.Generated.Models.BrowseResourceRequest
+    Xynolog.Internal.Generated.Models.BrowseResourceReorderEvent
+    Xynolog.Internal.Generated.Models.BrowseResourceOpenEvent
+    Xynolog.Internal.Generated.Models.BrowseResourceCloseEvent
+    Xynolog.Internal.Generated.Models.BrowseProfilesResult
+    Xynolog.Internal.Generated.Models.BrowseProfilesRequest
+    Xynolog.Internal.Generated.Models.BrowsePanelToggleEvent
+    Xynolog.Internal.Generated.Models.BrowseLinkClickedEvent
+    Xynolog.Internal.Generated.Models.BrowseKbResult
+    Xynolog.Internal.Generated.Models.BrowseKbRequest
+    Xynolog.Internal.Generated.Models.BrowseFilesResponse
+    Xynolog.Internal.Generated.Models.BrowseExternalNavigateEvent
+    Xynolog.Internal.Generated.Models.BrowseEventsRequest
+    Xynolog.Internal.Generated.Models.BrowseEntityTypesResult
+    Xynolog.Internal.Generated.Models.BrowseEntityTypesRequest
+    Xynolog.Internal.Generated.Models.BrowseEntityTypeClickedEvent
+    Xynolog.Internal.Generated.Models.BrowseEnginesResult
+    Xynolog.Internal.Generated.Models.BrowseEnginesRequest
+    Xynolog.Internal.Generated.Models.BrowseDirectoryResultResponse
+    Xynolog.Internal.Generated.Models.BrowseDirectoryResult
+    Xynolog.Internal.Generated.Models.BrowseDirectoryRequest
+    Xynolog.Internal.Generated.Models.BrowseDirectoryFailed
+    Xynolog.Internal.Generated.Models.BodyPurpose
+    Xynolog.Internal.Generated.Models.SpecificResource
+    Xynolog.Internal.Generated.Models.TextualBody
+    Xynolog.Internal.Generated.Models.BodyOperationReplace
+    Xynolog.Internal.Generated.Models.BodyOperationRemove
+    Xynolog.Internal.Generated.Models.BodyOperationAdd
+    Xynolog.Internal.Generated.Models.UpdateAnnotationBodyRequest
+    Xynolog.Internal.Generated.Models.BindBodyUpdated
+    Xynolog.Internal.Generated.Models.BeginAuthorizationOptions
+    Xynolog.Internal.Generated.Models.AssessingJobParams
+    Xynolog.Internal.Generated.Models.MarkJobParams
+    Xynolog.Internal.Generated.Models.MarkJobCreateCommand
+    Xynolog.Internal.Generated.Models.MarkJobQueuedEvent
+    Xynolog.Internal.Generated.Models.JobQueuedEvent
+    Xynolog.Internal.Generated.Models.ArchivistStream
+    Xynolog.Internal.Generated.Models.ArchivistStreamsResponse
+    Xynolog.Internal.Generated.Models.ArchivistHealth
+    Xynolog.Internal.Generated.Models.ArchivistEventsResponse
+    Xynolog.Internal.Generated.Models.ArchivistEngines
+    Xynolog.Internal.Generated.Models.ArchivistConfig
+    Xynolog.Internal.Generated.Models.AnnotationSelector
+    Xynolog.Internal.Generated.Models.AnnotationTarget
+    Xynolog.Internal.Generated.Models.MarkRequestedEvent
+    Xynolog.Internal.Generated.Models.AnnotationId
+    Xynolog.Internal.Generated.Models.AnnotationRemovedPayload
+    Xynolog.Internal.Generated.Models.BeckonFocusEvent
+    Xynolog.Internal.Generated.Models.BeckonHoverEvent
+    Xynolog.Internal.Generated.Models.BeckonSparkleEvent
+    Xynolog.Internal.Generated.Models.BindInitiateCommand
+    Xynolog.Internal.Generated.Models.BrowseAnnotationHistoryRequest
+    Xynolog.Internal.Generated.Models.BrowseAnnotationRequest
+    Xynolog.Internal.Generated.Models.BrowseClickEvent
+    Xynolog.Internal.Generated.Models.BrowsePanelOpenEvent
+    Xynolog.Internal.Generated.Models.GatherAnnotationRequest
+    Xynolog.Internal.Generated.Models.GatherFailed
+    Xynolog.Internal.Generated.Models.GatherSummaryRequest
+    Xynolog.Internal.Generated.Models.GetReferencedByResponseReferencedByItem
+    Xynolog.Internal.Generated.Models.GetReferencedByResponse
+    Xynolog.Internal.Generated.Models.GatherReferencedByResult
+    Xynolog.Internal.Generated.Models.JobCancelCommand
+    Xynolog.Internal.Generated.Models.JobCompletedPayload
+    Xynolog.Internal.Generated.Models.JobFailCommand
+    Xynolog.Internal.Generated.Models.JobFailedPayload
+    Xynolog.Internal.Generated.Models.JobProgress
+    Xynolog.Internal.Generated.Models.JobStoredProgress
+    Xynolog.Internal.Generated.Models.JobRunning
+    Xynolog.Internal.Generated.Models.Job
+    Xynolog.Internal.Generated.Models.JobRecord
+    Xynolog.Internal.Generated.Models.JobClaimedResult
+    Xynolog.Internal.Generated.Models.JobStatusResponse
+    Xynolog.Internal.Generated.Models.JobStatusResult
+    Xynolog.Internal.Generated.Models.JobReportProgressCommand
+    Xynolog.Internal.Generated.Models.JobStartCommand
+    Xynolog.Internal.Generated.Models.JobStartedPayload
+    Xynolog.Internal.Generated.Models.MarkCommitOk
+    Xynolog.Internal.Generated.Models.MarkCreateOkResponse
+    Xynolog.Internal.Generated.Models.MarkCreateOk
+    Xynolog.Internal.Generated.Models.MarkDeleteCommand
+    Xynolog.Internal.Generated.Models.MarkDeleteOk
+    Xynolog.Internal.Generated.Models.MarkUpdateBodyCommand
+    Xynolog.Internal.Generated.Models.MatchSearchFailed
+    Xynolog.Internal.Generated.Models.ResourceUpload
+    Xynolog.Internal.Generated.Models.ResourceUploadMetadata
+    Xynolog.Internal.Generated.Models.SemanticMatch
+    Xynolog.Internal.Generated.Models.YieldJobCompleteCommand
+    Xynolog.Internal.Generated.Models.JobCompleteCommand
+    Xynolog.Internal.Generated.Models.AnnotationBodyUpdatedPayload
+    Xynolog.Internal.Generated.Models.AnnotationBody
+    Xynolog.Internal.Generated.Models.BindBodyOperation
+    Xynolog.Internal.Generated.Models.BindUpdateBodyCommand
+    Xynolog.Internal.Generated.Models.AnnotationBodies
+    Xynolog.Internal.Generated.Models.CreateAnnotationRequest
+    Xynolog.Internal.Generated.Models.MarkCreateRequest
+    Xynolog.Internal.Generated.Models.MarkSubmitEvent
+    Xynolog.Internal.Generated.Models.AnchoredTextStamp
+    Xynolog.Internal.Generated.Models.AnchoredTextExtractedEntry
+    Xynolog.Internal.Generated.Models.AnchoredTextEntries
+    Xynolog.Internal.Generated.Models.AnchoredTextDeclinedEntry
+    Xynolog.Internal.Generated.Models.AnchoredTextEntry
+    Xynolog.Internal.Generated.Models.AnchoredTextWrite
+    Xynolog.Internal.Generated.Models.AnchoredTextAbsent
+    Xynolog.Internal.Generated.Models.AnchoredTextAnswer
+    Xynolog.Internal.Generated.Models.AnchoredText
+    Xynolog.Internal.Generated.Models.AnchorMethod
+    Xynolog.Internal.Generated.Models.ReconciledSpan
+    Xynolog.Internal.Generated.Models.AgentSoftware
+    Xynolog.Internal.Generated.Models.AgentPerson
+    Xynolog.Internal.Generated.Models.AgentOrganization
+    Xynolog.Internal.Generated.Models.Agent
+    Xynolog.Internal.Generated.Models.Annotation
+    Xynolog.Internal.Generated.Models.AnnotationAddedPayload
+    Xynolog.Internal.Generated.Models.EnrichedResourceEvent
+    Xynolog.Internal.Generated.Models.GetAnnotationsResponse
+    Xynolog.Internal.Generated.Models.GraphAnnotationNode
+    Xynolog.Internal.Generated.Models.KnowledgeGraph
+    Xynolog.Internal.Generated.Models.MarkCommitCommand
+    Xynolog.Internal.Generated.Models.ResourceAnnotations
+    Xynolog.Internal.Generated.Models.AttributedEvent
+    Xynolog.Internal.Generated.Models.GetAnnotationHistoryResponse
+    Xynolog.Internal.Generated.Models.BrowseAnnotationHistoryResult
+    Xynolog.Internal.Generated.Models.GetEventsResponse
+    Xynolog.Internal.Generated.Models.BrowseEventsResult
+    Xynolog.Internal.Generated.Models.ResourceClonedPayload
+    Xynolog.Internal.Generated.Models.ResourceCreatedPayload
+    Xynolog.Internal.Generated.Models.ResourceDescriptor
+    Xynolog.Internal.Generated.Models.BrowseResourceResult
+    Xynolog.Internal.Generated.Models.CloneResourceWithTokenResponse
+    Xynolog.Internal.Generated.Models.CloneResourceWithTokenResponseBusEnvelope
+    Xynolog.Internal.Generated.Models.GatheredContext
+    Xynolog.Internal.Generated.Models.GatherAnnotationComplete
+    Xynolog.Internal.Generated.Models.GatherResourceComplete
+    Xynolog.Internal.Generated.Models.GenerationJobParams
+    Xynolog.Internal.Generated.Models.YieldJobCreateCommand
+    Xynolog.Internal.Generated.Models.JobCreateCommand
+    Xynolog.Internal.Generated.Models.MatchSearchRequest
+    Xynolog.Internal.Generated.Models.GetAnnotationResponse
+    Xynolog.Internal.Generated.Models.BrowseAnnotationResult
+    Xynolog.Internal.Generated.Models.GetResourceByTokenResponse
+    Xynolog.Internal.Generated.Models.GetResourceByTokenResponseBusEnvelope
+    Xynolog.Internal.Generated.Models.GetResourceResponse
+    Xynolog.Internal.Generated.Models.ListResourcesResponse
+    Xynolog.Internal.Generated.Models.BrowseResourcesResult
+    Xynolog.Internal.Generated.Models.MatchResourcesResponse
+    Xynolog.Internal.Generated.Models.MatchResourcesResult
+    Xynolog.Internal.Generated.Models.ResourceView
+    Xynolog.Internal.Generated.Models.ScoredResource
+    Xynolog.Internal.Generated.Models.MatchSearchResult
+    Xynolog.Internal.Generated.Models.YieldCreateCommand
+  autogen-modules: Paths_xynolog
+
+executable xynolog-codegen
+  import: settings
+  main-is: Main.hs
+  hs-source-dirs: codegen, internal
+  other-modules: Xynolog.Internal.Schema, Facts, TransportFacts, HttpFacts, WorkerFacts, WorkerTypes
+  ghc-options: -threaded
+  build-depends: mtl >=2.3 && <2.4, directory >=1.3 && <1.4, filepath >=1.5 && <1.6
+
+test-suite schema-cases
+  import: settings, context-propagation, crypto
+  build-tool-depends: hpc-codecov:hpc-codecov ==0.6.4.1
+  type: exitcode-stdio-1.0
+  main-is: Main.hs
+  hs-source-dirs: test
+  other-modules: Xynolog.Internal.Generated.RoundTrip, Xynolog.Internal.Generated.ChannelRoundTrip, Xynolog.Internal.Generated.ErrorRoundTrip, Xynolog.Internal.Generated.TimingValues, Xynolog.Internal.Generated.DiscoveryReasonRoundTrip, Runtime, Discovery, BusCases, SchemaCases, HttpCases, HttpDiscoveryCases, AnnotationCases, IdentityCases, BusLogCases, PersistenceCases, PersistedCases, GatewayStage, CacheDocumentCases, StateUnitCases, FlowCases, ActorCases, TestingCases, RegistryCases, OpenResourceCases, RegistryErrorsCases, RegistryRuntimeCases, LifetimeCases, WorkerCases, GatewayCases, HeldCases, SurfaceCases, CacheCases, ControlledTime, ClockCases, ResourceCases, FrameCases, RefreshCases, TextCases, DelegationCases, TokenStorageCases, SessionCases, IssuerCases, ClientAssertionCases, SignInStoreCases, TestProcess
+  ghc-options: -threaded
+  build-depends: xynolog:internal, process >=1.6 && <1.7, directory >=1.3 && <1.4, filepath >=1.5 && <1.6, time >=1.12 && <1.13
+
+executable xynolog-haskell-wire-driver
+  import: settings, context-propagation
+  main-is: Main.hs
+  other-modules: DriverProtocol
+  hs-source-dirs: conformance
+  ghc-options: -threaded
+  build-depends: xynolog, http-client >=0.7 && <0.8, uuid >=1.3 && <1.4, uuid-types >=1.0 && <1.1, random >=1.3 && <1.4, time >=1.12 && <1.13, hs-opentelemetry-sdk >=1.0 && <1.1
+
+executable xynolog-haskell-live-driver
+  import: settings, context-propagation
+  main-is: LiveMain.hs
+  other-modules: DriverProtocol, LiveQueries
+  hs-source-dirs: conformance
+  ghc-options: -threaded
+  build-depends: xynolog, http-client >=0.7 && <0.8, uuid >=1.3 && <1.4, uuid-types >=1.0 && <1.1, random >=1.3 && <1.4, time >=1.12 && <1.13

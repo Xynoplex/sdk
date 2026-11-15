@@ -4,79 +4,79 @@
    ============================================ */
 
 /* Toggle Label Container */
-.xynoplex-toggle-label {
+.xynolog-toggle-label {
   display: flex;
   align-items: center;
   justify-content: space-between;
   cursor: pointer;
 }
 
-.xynoplex-toggle-label__text {
-  font-size: var(--xynoplex-text-sm);
+.xynolog-toggle-label__text {
+  font-size: var(--xynolog-text-sm);
   font-weight: 500;
-  color: var(--xynoplex-text-primary);
+  color: var(--xynolog-text-primary);
 }
 
 /* Toggle Switch */
-.xynoplex-toggle {
+.xynolog-toggle {
   position: relative;
   width: 2.75rem;
   height: 1.5rem;
-  background: var(--xynoplex-color-gray-300);
+  background: var(--xynolog-color-gray-300);
   border: none;
   border-radius: 9999px;
   cursor: pointer;
-  transition: background-color var(--xynoplex-duration-base);
+  transition: background-color var(--xynolog-duration-base);
 }
 
-[data-theme="dark"] .xynoplex-toggle {
-  background: var(--xynoplex-color-gray-700);
+[data-theme="dark"] .xynolog-toggle {
+  background: var(--xynolog-color-gray-700);
 }
 
-.xynoplex-toggle--active {
-  background: var(--xynoplex-color-primary-600);
+.xynolog-toggle--active {
+  background: var(--xynolog-color-primary-600);
 }
 
-[data-theme="dark"] .xynoplex-toggle--active {
-  background: var(--xynoplex-color-primary-500);
+[data-theme="dark"] .xynolog-toggle--active {
+  background: var(--xynolog-color-primary-500);
 }
 
-.xynoplex-toggle:focus-visible {
-  outline: 2px solid var(--xynoplex-color-primary-500);
+.xynolog-toggle:focus-visible {
+  outline: 2px solid var(--xynolog-color-primary-500);
   outline-offset: 2px;
 }
 
-[data-theme="dark"] .xynoplex-toggle:focus-visible {
-  outline-color: var(--xynoplex-color-primary-400);
+[data-theme="dark"] .xynolog-toggle:focus-visible {
+  outline-color: var(--xynolog-color-primary-400);
 }
 
 /* Toggle Slider */
-.xynoplex-toggle__slider {
+.xynolog-toggle__slider {
   position: absolute;
   top: 0.125rem;
   left: 0.125rem;
   width: 1.25rem;
   height: 1.25rem;
-  background: var(--xynoplex-color-white);
+  background: var(--xynolog-color-white);
   border-radius: 9999px;
-  transition: transform var(--xynoplex-duration-base);
+  transition: transform var(--xynolog-duration-base);
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
 }
 
-[data-theme="dark"] .xynoplex-toggle__slider {
-  background: var(--xynoplex-color-white);
+[data-theme="dark"] .xynolog-toggle__slider {
+  background: var(--xynolog-color-white);
 }
 
-.xynoplex-toggle__slider--active {
+.xynolog-toggle__slider--active {
   transform: translateX(1.25rem);
 }
 
 /* Disabled state */
-.xynoplex-toggle:disabled {
+.xynolog-toggle:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.xynoplex-toggle:disabled .xynoplex-toggle__slider {
+.xynolog-toggle:disabled .xynolog-toggle__slider {
   box-shadow: none;
 }

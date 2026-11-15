@@ -57,7 +57,7 @@ writeFileSync(
   OUT,
   `// ⚠ GENERATED FILE — do not edit.
 // Source: protocol/specs/src/sign-in-store (SignIn.json, owner-only.json, README.md) → typescript/scripts/generators/generate-sign-in.mjs
-// Rebuilt by \`npm run prebuild\` in @xynoplex/core; gitignored on purpose.
+// Rebuilt by \`npm run prebuild\` in @xynolog/core; gitignored on purpose.
 
 import { isObject, isString } from '../type-guards';
 

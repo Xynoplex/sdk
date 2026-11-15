@@ -4,7 +4,7 @@ let refuse_extensions () =
       Alcotest.(check bool)
         ("refuse " ^ String.escaped source)
         true
-        (Result.is_error (Xynoplex.Json.parse source)))
+        (Result.is_error (Xynolog.Json.parse source)))
     [
       "NaN";
       "Infinity";
@@ -38,11 +38,11 @@ let refuse_extensions () =
 let valid_literals () =
   List.iter
     (fun source ->
-      let value = Result.get_ok (Xynoplex.Json.parse source) in
+      let value = Result.get_ok (Xynolog.Json.parse source) in
       Alcotest.(check bool)
         "strict literal round trip" true
         (Yojson.Raw.equal value
-           (Result.get_ok (Xynoplex.Json.parse (Yojson.Raw.to_string value)))))
+           (Result.get_ok (Xynolog.Json.parse (Yojson.Raw.to_string value)))))
     [
       "null";
       "false";
@@ -70,7 +70,7 @@ let arbitrary_integers () =
   in
   let test =
     QCheck.Test.make ~count:200 (QCheck.make generator) (fun literal ->
-        match Xynoplex.Json.parse literal with
+        match Xynolog.Json.parse literal with
         | Ok (`Intlit retained) -> literal = retained
         | _ -> false)
   in

@@ -5,10 +5,10 @@
  */
 
 import { BehaviorSubject } from 'rxjs';
-import { HttpContentTransport, HttpTransport } from '@xynoplex/http-transport';
-import { accessToken, baseUrl, BusRequestError, kbDid, isUserId, replyChannelsFor, type AccessToken, type IdentityUnverifiableReason, type KbDescription, type UserId } from '@xynoplex/core';
-import { XynoplexClient } from '../client';
-import type { HttpEndpoint } from '@xynoplex/core';
+import { HttpContentTransport, HttpTransport } from '@xynolog/http-transport';
+import { accessToken, baseUrl, BusRequestError, kbDid, isUserId, replyChannelsFor, type AccessToken, type IdentityUnverifiableReason, type KbDescription, type UserId } from '@xynolog/core';
+import { XynologClient } from '../client';
+import type { HttpEndpoint } from '@xynolog/core';
 import { kbGatewayUrl } from './storage';
 
 /**
@@ -43,7 +43,7 @@ export async function describeConnection(target: HttpEndpoint, access: string, f
     channels: replyChannelsFor(['browse:kb-requested']),
     ...(fetch ? { fetch } : {}),
   });
-  const client = new XynoplexClient(transport, new HttpContentTransport(transport), transport);
+  const client = new XynologClient(transport, new HttpContentTransport(transport), transport);
   try {
     let description: KbDescription;
     try {

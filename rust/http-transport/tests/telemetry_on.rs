@@ -12,8 +12,8 @@ use opentelemetry_sdk::metrics::data::{AggregatedMetrics, MetricData};
 use opentelemetry_sdk::metrics::{InMemoryMetricExporter, SdkMeterProvider};
 use opentelemetry_sdk::propagation::TraceContextPropagator;
 use opentelemetry_sdk::trace::{InMemorySpanExporter, SdkTracerProvider, SpanData};
-use xynoplex::transport::{Envelope, Transport};
 use telemetry_gateway::{Gateway, HEARD, SENT, sparkle};
+use xynolog::transport::{Envelope, Transport};
 
 const SENDER: &str = "00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01";
 const EMITS: usize = 3;
@@ -118,11 +118,11 @@ async fn telemetry_installed_after_the_client_opened_is_what_the_transport_repor
     let sent: Vec<_> = latest
         .scope_metrics()
         .flat_map(|scope| scope.metrics())
-        .filter(|metric| metric.name() == "xynoplex.bus.sent")
+        .filter(|metric| metric.name() == "xynolog.bus.sent")
         .collect();
-    assert_eq!(sent.len(), 1, "one xynoplex.bus.sent stream");
+    assert_eq!(sent.len(), 1, "one xynolog.bus.sent stream");
     let AggregatedMetrics::U64(MetricData::Sum(sum)) = sent[0].data() else {
-        panic!("xynoplex.bus.sent is not a count: {:?}", sent[0].data());
+        panic!("xynolog.bus.sent is not a count: {:?}", sent[0].data());
     };
     let points: Vec<(u64, Vec<(String, String)>)> = sum
         .data_points()

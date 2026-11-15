@@ -10,11 +10,11 @@
  * embedding it resolves against the HOST app's origin rather than the
  * gateway's.
  */
-import { resourceId, EventBus } from '@xynoplex/core';
+import { resourceId, EventBus } from '@xynolog/core';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import type { XynoplexSession } from '@xynoplex/sdk';
+import type { XynologSession } from '@xynolog/sdk';
 import type { AnnotationUIState } from '../../../types/annotation-props';
 import { AnnotateView } from '../AnnotateView';
 import { BrowseView } from '../BrowseView';
@@ -39,24 +39,24 @@ const uiState: AnnotationUIState = {
 };
 
 /** A session whose client mints `token` — the batteries-included case. */
-function sessionMinting(token: string): XynoplexSession {
+function sessionMinting(token: string): XynologSession {
   return fakeSession({ auth: { mediaToken: vi.fn(async () => ({ token })) } });
 }
 
 /** A session whose token request never settles — the in-flight case. */
-function sessionPending(): XynoplexSession {
+function sessionPending(): XynologSession {
   return fakeSession({ auth: { mediaToken: vi.fn(() => new Promise<never>(() => {})) } });
 }
 
 /**
- * A transport-only client: `XynoplexClient.auth` is `AuthNamespace | undefined`,
+ * A transport-only client: `XynologClient.auth` is `AuthNamespace | undefined`,
  * and a host wiring a bare transport (no `IGatewayOperations`) has no `auth`.
  */
-function sessionWithoutAuth(): XynoplexSession {
+function sessionWithoutAuth(): XynologSession {
   return fakeSession({});
 }
 
-function fakeSession(clientExtras: Record<string, unknown>): XynoplexSession {
+function fakeSession(clientExtras: Record<string, unknown>): XynologSession {
   return {
     client: {
       bus: new EventBus(),
@@ -66,10 +66,10 @@ function fakeSession(clientExtras: Record<string, unknown>): XynoplexSession {
       beckon: { hover: vi.fn() },
       ...clientExtras,
     },
-  } as unknown as XynoplexSession;
+  } as unknown as XynologSession;
 }
 
-const annotateProps = (session: XynoplexSession) => ({
+const annotateProps = (session: XynologSession) => ({
   content: '',
   mimeType: UNSUPPORTED,
   resourceUri: resourceId('res-1'),
@@ -79,7 +79,7 @@ const annotateProps = (session: XynoplexSession) => ({
   session,
 });
 
-const browseProps = (session: XynoplexSession) => ({
+const browseProps = (session: XynologSession) => ({
   content: '',
   mimeType: UNSUPPORTED,
   resourceUri: resourceId('res-1'),
@@ -89,8 +89,8 @@ const browseProps = (session: XynoplexSession) => ({
 });
 
 const VIEWS = [
-  { name: 'AnnotateView', render: (s: XynoplexSession) => render(<AnnotateView translationManager={englishTranslationManager} {...annotateProps(s)} />) },
-  { name: 'BrowseView', render: (s: XynoplexSession) => render(<BrowseView translationManager={englishTranslationManager} {...browseProps(s)} />) },
+  { name: 'AnnotateView', render: (s: XynologSession) => render(<AnnotateView translationManager={englishTranslationManager} {...annotateProps(s)} />) },
+  { name: 'BrowseView', render: (s: XynologSession) => render(<BrowseView translationManager={englishTranslationManager} {...browseProps(s)} />) },
 ] as const;
 
 describe.each(VIEWS)('$name — unsupported-media download link', ({ render: renderView }) => {

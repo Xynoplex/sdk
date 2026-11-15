@@ -24,7 +24,7 @@
 
 import { vi } from 'vitest';
 import { BehaviorSubject, Observable, Subject, map } from 'rxjs';
-import { EventBus, baseUrl } from '@xynoplex/core';
+import { EventBus, baseUrl } from '@xynolog/core';
 import type {
   ConnectionState,
   EventMap,
@@ -34,8 +34,8 @@ import type {
   IContentTransport,
   IGatewayOperations,
   ITransport,
-  XynoplexError,
-} from '@xynoplex/core';
+  XynologError,
+} from '@xynolog/core';
 
 export interface InMemoryTransportOptions {
   /** The bus `stream`/`on` read from. Defaults to a fresh one. */
@@ -59,7 +59,7 @@ export interface InMemoryTransportOptions {
    */
   subscribeToResource?: ITransport['subscribeToResource'];
   state$?: Observable<ConnectionState>;
-  errors$?: Observable<XynoplexError>;
+  errors$?: Observable<XynologError>;
 }
 
 export function inMemoryTransport(options: InMemoryTransportOptions = {}): ITransport {
@@ -69,7 +69,7 @@ export function inMemoryTransport(options: InMemoryTransportOptions = {}): ITran
     observers = 1,
     subscribeToResource = () => () => {},
     state$ = new BehaviorSubject<ConnectionState>('open').asObservable(),
-    errors$ = new Subject<XynoplexError>().asObservable(),
+    errors$ = new Subject<XynologError>().asObservable(),
   } = options;
 
   // The bus is this transport's wire: what it gives is what was emitted on it,
@@ -102,7 +102,7 @@ export function inMemoryTransport(options: InMemoryTransportOptions = {}): ITran
 }
 
 /**
- * The gateway-operations half, for the doubles that serve `XynoplexClient`'s
+ * The gateway-operations half, for the doubles that serve `XynologClient`'s
  * third constructor argument as well as its transport.
  *
  * Each member is a spy TYPED as the interface's own method, so a test can

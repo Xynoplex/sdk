@@ -13,13 +13,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { BehaviorSubject } from 'rxjs';
 import { ResourceViewer } from '../ResourceViewer';
-import { createTestXynoplexWrapper } from '../../../test-utils';
+import { createTestXynologWrapper } from '../../../test-utils';
 import { ResourceAnnotationsProvider } from '../../../contexts/ResourceAnnotationsContext';
-import { EventBus } from '@xynoplex/core';
-import type { ResourceDescriptor as XynoplexResource, ResourceId } from '@xynoplex/core';
+import { EventBus } from '@xynolog/core';
+import type { ResourceDescriptor as XynologResource, ResourceId } from '@xynolog/core';
 
 // ResourceViewer takes its session as a prop; ResourceAnnotationsContext
-// resolves the client via useXynoplex(). Mock useXynoplex to emit a minimal
+// resolves the client via useXynolog(). Mock useXynolog to emit a minimal
 // session carrying a stub client with the methods it touches, and the bus
 // its event hooks read.
 const stubClient = {
@@ -38,17 +38,17 @@ const stubBrowser = {
   stream: vi.fn(() => ({ subscribe: () => ({ unsubscribe: () => {} }) })),
 };
 
-vi.mock('../../../session/XynoplexProvider', async () => {
-  const actual = await vi.importActual<typeof import('../../../session/XynoplexProvider')>(
-    '../../../session/XynoplexProvider'
+vi.mock('../../../session/XynologProvider', async () => {
+  const actual = await vi.importActual<typeof import('../../../session/XynologProvider')>(
+    '../../../session/XynologProvider'
   );
   return {
     ...actual,
-    useXynoplex: () => stubBrowser,
+    useXynolog: () => stubBrowser,
   };
 });
 
-const mockResource: XynoplexResource & { content: string } = {
+const mockResource: XynologResource & { content: string } = {
   '@context': 'https://www.w3.org/ns/activitystreams',
   '@id': 'test-123' as ResourceId,
   name: 'Test Document',
@@ -79,13 +79,13 @@ const mockTranslationManager = {
 };
 
 function TestWrapper({ children }: { children: React.ReactNode }) {
-  const { XynoplexWrapper } = createTestXynoplexWrapper();
+  const { XynologWrapper } = createTestXynologWrapper();
   return (
-    <XynoplexWrapper>
+    <XynologWrapper>
       <ResourceAnnotationsProvider>
         {children}
       </ResourceAnnotationsProvider>
-    </XynoplexWrapper>
+    </XynologWrapper>
   );
 }
 

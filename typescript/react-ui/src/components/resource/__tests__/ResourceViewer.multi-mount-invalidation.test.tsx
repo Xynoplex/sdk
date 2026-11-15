@@ -20,14 +20,14 @@
 import { describe, it, expect, vi } from 'vitest';
 import { act, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import type { ResourceDescriptor as XynoplexResource, ResourceId, StoredEvent, EventOfType, UserId, EventMetadata, Annotation } from '@xynoplex/core';
-import { annotationId, resourceId as makeResourceId } from '@xynoplex/core';
-import { createTestXynoplexWrapper, renderInEnglish, englishTranslationManager } from '../../../test-utils';
+import type { ResourceDescriptor as XynologResource, ResourceId, StoredEvent, EventOfType, UserId, EventMetadata, Annotation } from '@xynolog/core';
+import { annotationId, resourceId as makeResourceId } from '@xynolog/core';
+import { createTestXynologWrapper, renderInEnglish, englishTranslationManager } from '../../../test-utils';
 import { ResourceViewer } from '../ResourceViewer';
 
 const TEST_USER = 'did:web:test:users:test' as UserId;
 
-function makeResource(id: string): XynoplexResource & { content: string } {
+function makeResource(id: string): XynologResource & { content: string } {
   return {
     '@context': 'https://www.w3.org/ns/activitystreams',
     '@id': id as ResourceId,
@@ -68,7 +68,7 @@ function fakeMarkAdded(rIdStr: string): StoredEvent<EventOfType<'mark:added'>> {
 const annotations = { highlights: [], references: [], assessments: [], comments: [], tags: [] };
 
 function mountTwoViewers() {
-  const wrapper = createTestXynoplexWrapper();
+  const wrapper = createTestXynologWrapper();
   const spy = vi.spyOn(wrapper.client.browse, 'invalidateAnnotationList');
   renderInEnglish(
     <>

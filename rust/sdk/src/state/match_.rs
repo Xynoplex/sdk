@@ -8,7 +8,7 @@
 
 use super::{Tasks, said, signal};
 use crate::channels::{Channel, MatchSearchFailed, MatchSearchRequested, MatchSearchResults};
-use crate::client::XynoplexClient;
+use crate::client::XynologClient;
 use crate::event_bus::BusFrames;
 use crate::state_unit::StateUnit;
 use crate::transport::Envelope;
@@ -16,7 +16,7 @@ use crate::types;
 use std::sync::Arc;
 
 struct Shared {
-    client: Arc<XynoplexClient>,
+    client: Arc<XynologClient>,
     tasks: Tasks,
 }
 
@@ -26,7 +26,7 @@ pub struct MatchStateUnit {
 }
 
 impl MatchStateUnit {
-    pub fn new(client: Arc<XynoplexClient>) -> MatchStateUnit {
+    pub fn new(client: Arc<XynologClient>) -> MatchStateUnit {
         let heard = client.bus().frames(MatchSearchRequested::NAME);
         let shared = Arc::new(Shared {
             client,

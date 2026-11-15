@@ -22,15 +22,15 @@
  * Cost when disabled: one property read per call, zero allocations.
  *
  * Enable:
- *   - Browser:  `window.__XYNOPLEX_BUS_LOG__ = true` (DevTools or e2e init)
- *   - Node:     `XYNOPLEX_BUS_LOG=1` in the process env (read at module load)
+ *   - Browser:  `window.__XYNOLOG_BUS_LOG__ = true` (DevTools or e2e init)
+ *   - Node:     `XYNOLOG_BUS_LOG=1` in the process env (read at module load)
  */
 
 import { BRIDGED_CHANNELS, RESOURCE_SCOPED_CHANNELS } from './bridged-channels';
 import { isObject } from './type-guards';
 
 const NODE_BUS_LOG =
-  typeof process !== 'undefined' && !!process.env?.XYNOPLEX_BUS_LOG;
+  typeof process !== 'undefined' && !!process.env?.XYNOLOG_BUS_LOG;
 
 const IS_NODE =
   typeof process !== 'undefined' && !!process.versions?.node;
@@ -38,19 +38,19 @@ const IS_NODE =
 export type BusOp = 'EMIT' | 'RECV' | 'SSE' | 'PUT' | 'GET';
 
 export function busLogEnabled(): boolean {
-  const g = globalThis as { __XYNOPLEX_BUS_LOG__?: boolean };
-  if (g.__XYNOPLEX_BUS_LOG__) return true;
+  const g = globalThis as { __XYNOLOG_BUS_LOG__?: boolean };
+  if (g.__XYNOLOG_BUS_LOG__) return true;
   return NODE_BUS_LOG;
 }
 
 /**
  * Optional active-span trace-id provider. When a Tier 2 OTel SDK is
- * initialized, `@xynoplex/observability` registers a provider here that
+ * initialized, `@xynolog/observability` registers a provider here that
  * returns the active span's W3C `trace_id`. busLog appends it to each
  * emitted line so the grep-timeline correlates with the span tree in
  * an APM UI.
  *
- * Decoupling: `@xynoplex/core` does not depend on `@opentelemetry/api`.
+ * Decoupling: `@xynolog/core` does not depend on `@opentelemetry/api`.
  * If no provider is registered (Tier 1-only deployments, or before
  * `initObservabilityNode` runs), the field is omitted from the line.
  */

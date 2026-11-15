@@ -2,8 +2,8 @@
 
 [@@@ocamlformat "disable"]
 
-module B = Xynoplex.Bus_registry
-module C = Xynoplex.Client
+module B = Xynolog.Bus_registry
+module C = Xynolog.Client
 
 let decode channel payload = match B.decode channel (Yojson.Safe.to_string payload) with
   | Ok decoded -> decoded

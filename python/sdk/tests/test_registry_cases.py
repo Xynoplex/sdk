@@ -9,11 +9,11 @@ import pytest
 from pydantic import BaseModel, Field
 from spec import SPEC
 
-from xynoplex._endpoints import same_place
-from xynoplex.identifiers import ResourceId
-from xynoplex.registry import sort_open_resources
-from xynoplex.stored import OpenResource
-from xynoplex.types import KbEndpoint
+from xynolog._endpoints import same_place
+from xynolog.identifiers import ResourceId
+from xynolog.registry import sort_open_resources
+from xynolog.stored import OpenResource
+from xynolog.types import KbEndpoint
 
 
 class Case(BaseModel, frozen=True, extra="forbid"):

@@ -1,7 +1,7 @@
 {
-  "name": "@xynoplex/http-transport",
+  "name": "@xynolog/http-transport",
   "version": "0.7.3",
-  "description": "HTTP transport adapters for the Xynoplex SDK",
+  "description": "HTTP transport adapters for the Xynolog SDK",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -24,7 +24,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Xynoplex/sdk.git",
+    "url": "git+https://github.com/xynolog/sdk.git",
     "directory": "typescript/http-transport"
   },
   "scripts": {
@@ -38,8 +38,8 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@xynoplex/core": "*",
-    "@xynoplex/observability": "*",
+    "@xynolog/core": "*",
+    "@xynolog/observability": "*",
     "ky": "^2.2.0",
     "rxjs": "^7.8.1"
   },
@@ -53,12 +53,12 @@
     "vitest": "^5.1.0"
   },
   "keywords": [
-    "xynoplex",
+    "xynolog",
     "http",
     "transport",
     "sse",
     "sdk"
   ],
-  "author": "Xynoplex Team",
+  "author": "Xynolog Team",
   "license": "Apache-2.0"
 }

@@ -1,4 +1,4 @@
-package xynoplex
+package xynolog
 
 // A read-through cache: what a client's live queries answer from
 // (protocol/contract/CACHE-SEMANTICS.md, B1 to B20).
@@ -249,7 +249,7 @@ func (c *Cache[K, V]) oweASave() {
 // keeps for. Keeping them is a convenience: the cache goes on as it was, and
 // the save stays owed.
 func unsaved(err error) {
-	slog.Warn("xynoplex: the cache's values were not kept", "error", err)
+	slog.Warn("xynolog: the cache's values were not kept", "error", err)
 }
 
 // fetching starts a fetch for key, or joins the one in flight. Called with mu

@@ -1,19 +1,19 @@
 /**
  * Session-level media token.
  *
- * `useMediaToken` takes the client explicitly (not `useXynoplex()`), so a
+ * `useMediaToken` takes the client explicitly (not `useXynolog()`), so a
  * bring-your-own-session host can mint authed `<img>` / PDF URLs from a bare
  * session — no provider.
  */
 import { describe, it, expect, vi } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
-import { resourceId } from '@xynoplex/core';
-import type { ResourceId } from '@xynoplex/core';
-import type { XynoplexClient } from '@xynoplex/sdk';
+import { resourceId } from '@xynolog/core';
+import type { ResourceId } from '@xynolog/core';
+import type { XynologClient } from '@xynolog/sdk';
 import { useMediaToken, type UseMediaTokenResult } from '../useMediaToken';
 
-function makeClient(token: string): XynoplexClient {
-  return { auth: { mediaToken: vi.fn(async () => ({ token })) } } as unknown as XynoplexClient;
+function makeClient(token: string): XynologClient {
+  return { auth: { mediaToken: vi.fn(async () => ({ token })) } } as unknown as XynologClient;
 }
 
 describe('useMediaToken', () => {
@@ -38,12 +38,12 @@ describe('useMediaToken', () => {
     // that cannot mint or refresh — they would all break 5 minutes later,
     // with nothing in the UI explaining why.
     const { result, rerender } = renderHook(
-      ({ client }: { client: XynoplexClient | null }) => useMediaToken(client, resourceId('res-1')),
+      ({ client }: { client: XynologClient | null }) => useMediaToken(client, resourceId('res-1')),
       { initialProps: { client: makeClient('tok-1') } },
     );
     await waitFor(() => expect(result.current.token).toBe('tok-1'));
 
-    rerender({ client: {} as unknown as XynoplexClient }); // bare transport: no auth namespace
+    rerender({ client: {} as unknown as XynologClient }); // bare transport: no auth namespace
 
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.token).toBeUndefined();
@@ -59,7 +59,7 @@ describe('useMediaToken', () => {
     };
     const client = {
       auth: { mediaToken: vi.fn((id: string) => byId[String(id)]) },
-    } as unknown as XynoplexClient;
+    } as unknown as XynologClient;
 
     const { result, rerender } = renderHook(
       ({ id }) => useMediaToken(client, id),
@@ -80,11 +80,11 @@ describe('useMediaToken', () => {
 // returned, so a single stale frame shows.
 describe('useMediaToken — every render answers for its own inputs', () => {
   interface Inputs {
-    client: XynoplexClient | null;
+    client: XynologClient | null;
     id: ResourceId;
   }
 
-  function renderRecording(initialClient: XynoplexClient) {
+  function renderRecording(initialClient: XynologClient) {
     const renders: Array<Inputs & UseMediaTokenResult> = [];
     const initialProps: Inputs = { client: initialClient, id: resourceId('res-1') };
     const hook = renderHook(
@@ -105,7 +105,7 @@ describe('useMediaToken — every render answers for its own inputs', () => {
     };
     const client = {
       auth: { mediaToken: vi.fn((id: string) => byId[String(id)]) },
-    } as unknown as XynoplexClient;
+    } as unknown as XynologClient;
     const { result, rerender, renders } = renderRecording(client);
     await waitFor(() => expect(result.current.token).toBe('tok-1'));
 
@@ -122,7 +122,7 @@ describe('useMediaToken — every render answers for its own inputs', () => {
     const { result, rerender, renders } = renderRecording(makeClient('tok-1'));
     await waitFor(() => expect(result.current.token).toBe('tok-1'));
 
-    const bare = {} as unknown as XynoplexClient; // bare transport: no auth namespace
+    const bare = {} as unknown as XynologClient; // bare transport: no auth namespace
     rerender({ client: bare, id: resourceId('res-1') });
 
     const forBare = renders.filter((r) => r.client === bare);
@@ -139,7 +139,7 @@ describe('useMediaToken — every render answers for its own inputs', () => {
     const mediaToken = vi.fn()
       .mockResolvedValueOnce({ token: 'tok-1' })
       .mockReturnValueOnce(new Promise(() => {})); // the re-mint, still in flight
-    const client = { auth: { mediaToken } } as unknown as XynoplexClient;
+    const client = { auth: { mediaToken } } as unknown as XynologClient;
     const id = resourceId('res-1');
     const { result, rerender, renders } = renderRecording(client);
     await waitFor(() => expect(result.current.token).toBe('tok-1'));

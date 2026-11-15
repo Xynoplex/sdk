@@ -1,4 +1,4 @@
-package xynoplex
+package xynolog
 
 // A stream's place in each scope, kept with what the caches keep: never ahead
 // of them.
@@ -15,8 +15,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/bus"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/bus"
 )
 
 var (

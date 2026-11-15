@@ -17,9 +17,9 @@ import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import { act, fireEvent } from '@testing-library/react';
 import { renderInEnglish } from '../../../test-utils';
 import '@testing-library/jest-dom';
-import { ANCHORED_TEXT_REASK_MS, resourceId } from '@xynoplex/core';
-import type { AnchoredTextAnswer } from '@xynoplex/core';
-import type { XynoplexSession } from '@xynoplex/sdk';
+import { ANCHORED_TEXT_REASK_MS, resourceId } from '@xynolog/core';
+import type { AnchoredTextAnswer } from '@xynolog/core';
+import type { XynologSession } from '@xynolog/sdk';
 
 vi.mock('../../../lib/browser-pdfjs', () => ({
   loadPdfDocument: vi.fn().mockResolvedValue({
@@ -42,9 +42,9 @@ import { PdfAnnotationCanvas } from '../PdfAnnotationCanvas';
 const answered = () => act(() => vi.advanceTimersByTimeAsync(0));
 const pass = (ms: number) => act(() => vi.advanceTimersByTimeAsync(ms));
 
-const root = () => document.querySelector('.xynoplex-pdf-annotation-canvas');
-const page = () => document.querySelector('.xynoplex-pdf-annotation-canvas__container');
-const notice = () => document.querySelector('.xynoplex-anchored-text-notice');
+const root = () => document.querySelector('.xynolog-pdf-annotation-canvas');
+const page = () => document.querySelector('.xynolog-pdf-annotation-canvas__container');
+const notice = () => document.querySelector('.xynolog-anchored-text-notice');
 
 /** "Hello world" on one line of page 1, at y=700 in PDF points — canvas
  *  y=80..92 on this 792pt page. */
@@ -60,11 +60,11 @@ const HELLO_WORLD: AnchoredTextAnswer = {
 
 /** The canvas with a tool chosen, over a session whose anchored-text read is
  *  `ask`. `request` is where a drawn rectangle arrives. */
-function mount(ask: XynoplexSession['client']['browse']['resourceAnchoredText']) {
+function mount(ask: XynologSession['client']['browse']['resourceAnchoredText']) {
   const request = vi.fn();
   const session = {
     client: { browse: { resourceAnchoredText: ask }, mark: { request }, beckon: { hover: vi.fn() } },
-  } as unknown as XynoplexSession;
+  } as unknown as XynologSession;
   const view = renderInEnglish(
     <PdfAnnotationCanvas
       resourceUri={resourceId('123')}
@@ -81,7 +81,7 @@ function mount(ask: XynoplexSession['client']['browse']['resourceAnchoredText'])
  *  out, so the image is first given the page's own size: display pixels are
  *  then PDF points, and the drag's coordinates the canvas's. */
 function dragAroundHelloWorld() {
-  const img = document.querySelector('.xynoplex-pdf-annotation-canvas__image') as HTMLImageElement;
+  const img = document.querySelector('.xynolog-pdf-annotation-canvas__image') as HTMLImageElement;
   expect(img).toBeInTheDocument();
   Object.defineProperty(img, 'clientWidth', { value: 612, configurable: true });
   Object.defineProperty(img, 'clientHeight', { value: 792, configurable: true });
@@ -253,7 +253,7 @@ describe('PdfAnnotationCanvas — annotating waits for the text', () => {
     // The overlay is there to draw on, and the drag leaves nothing on it: not
     // even the dashed outline a rectangle keeps once it is drawn.
     dragAroundHelloWorld();
-    const overlay = document.querySelector('.xynoplex-pdf-annotation-canvas__svg');
+    const overlay = document.querySelector('.xynolog-pdf-annotation-canvas__svg');
     expect(overlay).toBeInTheDocument();
     expect(overlay?.querySelectorAll('rect')).toHaveLength(0);
   });

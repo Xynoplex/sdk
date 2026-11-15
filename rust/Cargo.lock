@@ -1659,7 +1659,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3ad82d2a33cdc9674dc7465672f271e096168fcdbe0f799d9e6db8c5892679dc"
 
 [[package]]
-name = "xynoplex"
+name = "xynolog"
 version = "0.7.3"
 dependencies = [
  "base64",
@@ -1679,19 +1679,19 @@ dependencies = [
  "tokio-stream",
  "uuid",
  "windows-sys 0.61.2",
- "xynoplex",
- "xynoplex-codegen",
+ "xynolog",
+ "xynolog-codegen",
 ]
 
 [[package]]
-name = "xynoplex-codegen"
+name = "xynolog-codegen"
 version = "0.7.3"
 dependencies = [
  "serde_json",
 ]
 
 [[package]]
-name = "xynoplex-http-transport"
+name = "xynolog-http-transport"
 version = "0.7.3"
 dependencies = [
  "axum",
@@ -1711,20 +1711,20 @@ dependencies = [
  "tokio",
  "tokio-stream",
  "uuid",
- "xynoplex",
- "xynoplex-http-transport",
- "xynoplex-telemetry",
+ "xynolog",
+ "xynolog-http-transport",
+ "xynolog-telemetry",
 ]
 
 [[package]]
-name = "xynoplex-telemetry"
+name = "xynolog-telemetry"
 version = "0.7.3"
 dependencies = [
  "opentelemetry",
  "opentelemetry_sdk",
  "serde_json",
  "tokio",
- "xynoplex",
+ "xynolog",
 ]
 
 [[package]]

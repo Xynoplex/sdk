@@ -4,9 +4,9 @@
 // The TypeScript and Python vocabularies are generated from the same table,
 // and Rust's by its SDK's build script.
 
-package xynoplex
+package xynolog
 
-import "github.com/Xynoplex/sdk/go/api"
+import "github.com/xynolog/sdk/go/api"
 
 // Why a bus request did not resolve. Some members restate a failure the
 // answering peer declared on the wire (`wire` names its `CommandError.code`);

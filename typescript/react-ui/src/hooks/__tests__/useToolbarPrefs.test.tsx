@@ -3,15 +3,15 @@
  *
  * useToolbarPrefs() owns one shared prefs state, persists it to localStorage,
  * and feeds the same values/callbacks to every viewer it composes — the
- * Xynoplex Browser UX (global toolbar, persisted) as a visible page-layer hook.
+ * Xynolog Browser UX (global toolbar, persisted) as a visible page-layer hook.
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { fireEvent, within, waitFor } from '@testing-library/react';
 import { renderInEnglish, englishTranslationManager } from '../../test-utils';
 import '@testing-library/jest-dom';
-import type { XynoplexSession } from '@xynoplex/sdk';
-import { EventBus } from '@xynoplex/core';
-import type { ResourceDescriptor as XynoplexResource, ResourceId } from '@xynoplex/core';
+import type { XynologSession } from '@xynolog/sdk';
+import { EventBus } from '@xynolog/core';
+import type { ResourceDescriptor as XynologResource, ResourceId } from '@xynolog/core';
 import { ResourceViewer } from '../../components/resource/ResourceViewer';
 import { useToolbarPrefs } from '../useToolbarPrefs';
 
@@ -19,7 +19,7 @@ vi.mock('../../components/CodeMirrorRenderer', () => ({ CodeMirrorRenderer: () =
 vi.mock('react-markdown', () => ({ default: ({ children }: { children: string }) => <div>{children}</div> }));
 vi.mock('remark-gfm', () => ({ default: () => ({}) }));
 
-const resource: XynoplexResource & { content: string } = {
+const resource: XynologResource & { content: string } = {
   '@context': 'https://www.w3.org/ns/activitystreams',
   '@id': 'res-1' as ResourceId,
   name: 'Doc',
@@ -31,7 +31,7 @@ const resource: XynoplexResource & { content: string } = {
 };
 const annotations = { highlights: [], references: [], assessments: [], comments: [], tags: [] };
 
-function fakeSession(): XynoplexSession {
+function fakeSession(): XynologSession {
   return {
     client: {
       bus: new EventBus(),
@@ -39,11 +39,11 @@ function fakeSession(): XynoplexSession {
       beckon: { hover: vi.fn() },
       mark: { delete: vi.fn(), request: vi.fn() },
     },
-  } as unknown as XynoplexSession;
+  } as unknown as XynologSession;
 }
 
 /** Two viewers composed under ONE useToolbarPrefs — the Browser-parity shape. */
-function TwoViewers({ session }: { session: XynoplexSession }) {
+function TwoViewers({ session }: { session: XynologSession }) {
   const prefs = useToolbarPrefs();
   const controlled = {
     annotateMode: prefs.annotateMode,
@@ -63,7 +63,7 @@ function TwoViewers({ session }: { session: XynoplexSession }) {
   );
 }
 
-const isAnnotate = (c: HTMLElement) => !!c.querySelector('.xynoplex-annotate-view');
+const isAnnotate = (c: HTMLElement) => !!c.querySelector('.xynolog-annotate-view');
 
 async function pickMode(container: HTMLElement, option: 'Browse' | 'Annotate') {
   const trigger = within(container).getByLabelText('Mode');
@@ -108,9 +108,9 @@ describe('useToolbarPrefs — the policy layer (Browser parity)', () => {
   });
 
   it('initializes from existing keys (users’ saved prefs carry over)', () => {
-    localStorage.setItem('xynoplex-toolbar-click', 'follow');
+    localStorage.setItem('xynolog-toolbar-click', 'follow');
     const { getByTestId } = renderInEnglish(<TwoViewers session={fakeSession()} />);
-    const bar = getByTestId('v1').querySelector('.xynoplex-annotate-toolbar') as HTMLElement;
+    const bar = getByTestId('v1').querySelector('.xynolog-annotate-toolbar') as HTMLElement;
     expect(within(bar).getByText('Follow')).toBeInTheDocument();
   });
 });

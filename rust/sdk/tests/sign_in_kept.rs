@@ -2,13 +2,13 @@
 //! lives: held until it is forgotten, renewed against what it holds, and
 //! naming the person the gateway said its token is, recorded as one step.
 
-use xynoplex::session::{MemorySignIn, SignInKept, StoredSession, person_key};
+use xynolog::session::{MemorySignIn, SignInKept, StoredSession, person_key};
 
 fn signed_in(access: &str, refresh: &str) -> StoredSession {
     StoredSession {
         access: access.to_owned(),
         refresh: refresh.to_owned(),
-        client_id: "xynoplex-cli".to_owned(),
+        client_id: "xynolog-cli".to_owned(),
         token_endpoint: "https://issuer.test/token".to_owned(),
         revocation_endpoint: None,
         person_key: None,

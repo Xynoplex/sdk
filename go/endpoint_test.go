@@ -1,4 +1,4 @@
-package xynoplex_test
+package xynolog_test
 
 // A knowledge base's gateway, made from its HTTP endpoint as every SDK makes
 // it (protocol/specs/src/session/gateway-url-cases.json).
@@ -9,8 +9,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
-	"github.com/Xynoplex/sdk/go/api"
+	xynolog "github.com/xynolog/sdk/go"
+	"github.com/xynolog/sdk/go/api"
 )
 
 func TestTheGatewaysOriginIsTheTables(t *testing.T) {
@@ -32,7 +32,7 @@ func TestTheGatewaysOriginIsTheTables(t *testing.T) {
 		t.Fatal("the table states no cases")
 	}
 	for _, row := range table.Cases {
-		origin, err := xynoplex.GatewayURL(row.Endpoint)
+		origin, err := xynolog.GatewayURL(row.Endpoint)
 		switch {
 		case row.Origin == nil && err == nil:
 			t.Errorf("%s: made %q of a host that is no name", row.Why, origin)

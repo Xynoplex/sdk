@@ -1,5 +1,5 @@
-import type { Annotation } from '@xynoplex/core';
-import { isHighlight, isComment, isAssessment, isReference, isTag } from '@xynoplex/core';
+import type { Annotation } from '@xynolog/core';
+import { isHighlight, isComment, isAssessment, isReference, isTag } from '@xynolog/core';
 import type { AnnotationsCollection } from '../types/annotation-props';
 
 /**

@@ -36,9 +36,9 @@ export function scrollAnnotationIntoView(
 
   // Find the scroll container - try multiple possible container classes
   const scrollContainer = (
-    element.closest('.xynoplex-browse-view__content') ||
-    element.closest('.xynoplex-annotate-view__content') ||
-    element.closest('.xynoplex-document-viewer__scrollable-body')
+    element.closest('.xynolog-browse-view__content') ||
+    element.closest('.xynolog-annotate-view__content') ||
+    element.closest('.xynolog-document-viewer__scrollable-body')
   ) as HTMLElement;
 
   if (scrollContainer) {

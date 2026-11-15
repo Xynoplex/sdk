@@ -2,20 +2,20 @@
 
 ## Overview
 
-This document explains how user interactions with annotations flow through the Xynoplex React UI architecture. It covers both click interactions (opening panels and scrolling to entries) and hover interactions (highlighting annotations and entries bidirectionally).
+This document explains how user interactions with annotations flow through the Xynolog React UI architecture. It covers both click interactions (opening panels and scrolling to entries) and hover interactions (highlighting annotations and entries bidirectionally).
 
 **Key Architectural Principle**: Events flow UP (user actions) → State flows DOWN (rendering)
 
 ## Three-Layer Architecture
 
-### Layer 1: Data Layer (`@xynoplex/core` + `@xynoplex/sdk`)
+### Layer 1: Data Layer (`@xynolog/core` + `@xynolog/sdk`)
 
 **Responsibility**: Owns annotation data and provides TypeScript types from OpenAPI spec.
 
 **What it does**:
 - CRUD operations for annotations (via the SDK)
-- TypeScript types generated from the OpenAPI spec, `protocol/specs/src/openapi.json` (in `@xynoplex/core`)
-- Utility functions for annotation manipulation (e.g., `getAnnotationExactText`, `getBodySource`) (in `@xynoplex/core`)
+- TypeScript types generated from the OpenAPI spec, `protocol/specs/src/openapi.json` (in `@xynolog/core`)
+- Utility functions for annotation manipulation (e.g., `getAnnotationExactText`, `getBodySource`) (in `@xynolog/core`)
 
 **What it does NOT do**:
 - NO knowledge of React, DOM, or UI state
@@ -23,7 +23,7 @@ This document explains how user interactions with annotations flow through the X
 
 **Key Types**:
 ```typescript
-import type { components } from '@xynoplex/core';
+import type { components } from '@xynolog/core';
 
 type Annotation = components['schemas']['Annotation'];
 type Motivation = components['schemas']['Motivation'];
@@ -86,7 +86,7 @@ session's channels; the browser holds a second, app-scoped one for shell channel
 
 ## Event Catalog
 
-All events are typed by `EventMap` in `@xynoplex/core`, generated from the spec. The ids they
+All events are typed by `EventMap` in `@xynolog/core`, generated from the spec. The ids they
 carry are typed (`AnnotationId`, `ResourceId`), not `string`:
 
 ```typescript
@@ -135,7 +135,7 @@ sequenceDiagram
     participant Bus as Session bus
     participant Coord as ResourceViewer<br/>(Coordinator)
     participant Page as ResourceViewerPage
-    participant App as App bus<br/>(XynoplexBrowser)
+    participant App as App bus<br/>(XynologBrowser)
     participant Shell as ShellStateUnit
     participant Panel as UnifiedAnnotationsPanel
     participant Specific as ReferencesPanel
@@ -217,7 +217,7 @@ sequenceDiagram
     Note over Specific: Pulse handled by isHovered prop
 
     Specific->>Entry: props: {<br/>  isHovered: true<br/>}
-    Entry->>Entry: className includes 'xynoplex-annotation-pulse'<br/>(via isHovered prop)
+    Entry->>Entry: className includes 'xynolog-annotation-pulse'<br/>(via isHovered prop)
 
     Note over Entry: CSS animation plays
 
@@ -286,7 +286,7 @@ sequenceDiagram
 
 ```tsx
 // ReferencesPanel.tsx — the ref, scroll and focus handling
-import { getTargetSelector, getTextPositionSelector } from '@xynoplex/core';
+import { getTargetSelector, getTextPositionSelector } from '@xynolog/core';
 
 function ReferencesPanelExcerpt({
   session,
@@ -334,9 +334,9 @@ function ReferencesPanelExcerpt({
       containerRef.current.scrollTo({ top: scrollTo, behavior: 'smooth' });
 
       // Pulse effect
-      element.classList.remove('xynoplex-annotation-pulse');
+      element.classList.remove('xynolog-annotation-pulse');
       void element.offsetWidth; // Force reflow
-      element.classList.add('xynoplex-annotation-pulse');
+      element.classList.add('xynolog-annotation-pulse');
 
       // Notify parent
       if (onScrollCompleted) {
@@ -383,7 +383,7 @@ function ReferencesPanelExcerpt({
   });
 
   return (
-    <div ref={containerRef} className="xynoplex-panel__content">
+    <div ref={containerRef} className="xynolog-panel__content">
       {sortedAnnotations.map((reference) => (
         <ReferenceEntry
           session={session}
@@ -419,7 +419,7 @@ function ReferenceEntryExcerpt({
   return (
     <div
       ref={ref}
-      className={`xynoplex-annotation-entry${isHovered ? ' xynoplex-annotation-pulse' : ''}`}
+      className={`xynolog-annotation-entry${isHovered ? ' xynolog-annotation-pulse' : ''}`}
       data-type="reference"
       data-focused={isFocused ? 'true' : 'false'}
       onClick={() => {
@@ -444,7 +444,7 @@ events, and the page reads their observables and passes the values down.
 ```tsx
 // ResourceViewerPage.tsx — the coordination
 function ResourceViewerPageExcerpt() {
-  const browser = useXynoplex();
+  const browser = useXynolog();
   const session = useObservable(browser.activeSession$) ?? null;
 
   // The page state unit composes the flow units: beckon (hover), mark
@@ -465,7 +465,7 @@ function ResourceViewerPageExcerpt() {
   const panelInitialTab = useObservable(stateUnit?.browse.panelInitialTab$) ?? null;
 
   return (
-    <div className="xynoplex-document-viewer">
+    <div className="xynolog-document-viewer">
       <ResourceViewer
         locale="en"
         resource={{ ...resource, content }}
@@ -524,12 +524,12 @@ function Panel({ hoveredAnnotationId }: { hoveredAnnotationId: string | null }) 
     if (!element) return undefined;
 
     const timeoutId = setTimeout(() => {
-      element.classList.add('xynoplex-annotation-pulse');  // DOM manipulation
+      element.classList.add('xynolog-annotation-pulse');  // DOM manipulation
     }, 100);
 
     return () => {
       clearTimeout(timeoutId);
-      element.classList.remove('xynoplex-annotation-pulse');
+      element.classList.remove('xynolog-annotation-pulse');
     };
   }, [hoveredAnnotationId]);
   // ...
@@ -540,7 +540,7 @@ function Entry({ isHovered, ref }: { isHovered: boolean; ref: React.Ref<HTMLDivE
   return (
     <div
       ref={ref}
-      className={`xynoplex-annotation-entry${isHovered ? ' xynoplex-annotation-pulse' : ''}`}
+      className={`xynolog-annotation-entry${isHovered ? ' xynolog-annotation-pulse' : ''}`}
     />
   );
 }
@@ -586,7 +586,7 @@ function Entry({ isHovered, ref }: { isHovered: boolean; ref: React.Ref<HTMLDivE
   return (
     <div
       ref={ref}
-      className={`xynoplex-annotation-entry${isHovered ? ' xynoplex-annotation-pulse' : ''}`}
+      className={`xynolog-annotation-entry${isHovered ? ' xynolog-annotation-pulse' : ''}`}
     />
   );
 }
@@ -605,7 +605,7 @@ function Entry({ isHovered, ref }: { isHovered: boolean; ref: React.Ref<HTMLDivE
 These rules MUST be followed:
 
 1. **Data Layer has NO React knowledge**
-   - `@xynoplex/core` (types and annotation utilities) and `@xynoplex/sdk` cannot import React, DOM types, or UI state
+   - `@xynolog/core` (types and annotation utilities) and `@xynolog/sdk` cannot import React, DOM types, or UI state
    - Only TypeScript types and pure functions
 
 2. **Event Bus is for coordination ONLY**

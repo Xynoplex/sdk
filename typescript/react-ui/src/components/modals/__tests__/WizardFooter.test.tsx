@@ -16,13 +16,13 @@ import { ConfigureGenerationStep, freshGenerationDraft } from '../ConfigureGener
 import { SearchResultsStep } from '../SearchResultsStep';
 import { ConfigureGatherStep } from '../ConfigureGatherStep';
 import { GatherContextStep } from '../GatherContextStep';
-import type { GatheredContext } from '@xynoplex/core';
+import type { GatheredContext } from '@xynolog/core';
 
 /** Anything that reads as "get me out of here" belongs in the corner, not the footer. */
 const DISMISSAL = /cancel|close|dismiss|✕|✖|×/i;
 
 const footerOf = (container: HTMLElement) =>
-  container.querySelector('.xynoplex-modal__actions') as HTMLElement | null;
+  container.querySelector('.xynolog-modal__actions') as HTMLElement | null;
 
 const buttonsIn = (footer: HTMLElement) => Array.from(footer.querySelectorAll('button'));
 
@@ -61,7 +61,7 @@ describe('WizardFooter', () => {
       <WizardFooter backLabel="Back" onBack={vi.fn()} primary={{ label: 'Go', type: 'button', onClick: vi.fn() }} />,
     );
     for (const button of buttonsIn(footerOf(container)!)) {
-      expect(button.className).not.toContain('xynoplex-button--flex');
+      expect(button.className).not.toContain('xynolog-button--flex');
     }
   });
 
@@ -222,7 +222,7 @@ describe('the resolution chooser (GatherContextStep) — the named exception', (
   };
 
   const chooserButtons = (container: HTMLElement) =>
-    Array.from(container.querySelectorAll('.xynoplex-gather__actions button'));
+    Array.from(container.querySelectorAll('.xynolog-gather__actions button'));
 
   it('three equal-width peers, one of them quiet, none of them dismissal', () => {
     const { container } = render(
@@ -235,10 +235,10 @@ describe('the resolution chooser (GatherContextStep) — the named exception', (
     expect(buttons).toHaveLength(3);
     // Equal width is HONEST here — these are actual peers. This is the same
     // `--flex` the shared footer bans for making retreat read as advance's peer.
-    for (const b of buttons) expect(b.className).toContain('xynoplex-button--flex');
+    for (const b of buttons) expect(b.className).toContain('xynolog-button--flex');
     // The AI paths are primary; the manual path's demotion to secondary is the
     // recorded convention, not drift.
-    const secondary = buttons.filter((b) => b.className.includes('xynoplex-button--secondary'));
+    const secondary = buttons.filter((b) => b.className.includes('xynolog-button--secondary'));
     expect(secondary).toHaveLength(1);
     expect(secondary[0]!.textContent).toContain('Compose');
     // Dismissal stays in the corner, as on every footer.

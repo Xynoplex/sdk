@@ -42,12 +42,12 @@ from spec import JsonObject, text
 from storages import Refusing
 from tokens import expired, token
 
-from xynoplex.bus import reply_channels_for
-from xynoplex.cache import Pending, Ready
-from xynoplex.channels import BRIDGED_CHANNELS
-from xynoplex.errors import XynoplexError, SessionError, SignInError, TransportError
-from xynoplex.http import AgentToken, DeviceCode, HttpTransport, ServiceToken, session_from_kept, sign_in_device, sign_out
-from xynoplex.http.oauth import (
+from xynolog.bus import reply_channels_for
+from xynolog.cache import Pending, Ready
+from xynolog.channels import BRIDGED_CHANNELS
+from xynolog.errors import SessionError, SignInError, TransportError, XynologError
+from xynolog.http import AgentToken, DeviceCode, HttpTransport, ServiceToken, session_from_kept, sign_in_device, sign_out
+from xynolog.http.oauth import (
     IssuedTokens,
     discover_issuer,
     issuer_client,
@@ -56,18 +56,18 @@ from xynoplex.http.oauth import (
     revoke_at_issuer,
     sign_in_with_device_grant,
 )
-from xynoplex.identifiers import ResourceId, UserId
-from xynoplex.identity import agent_did
-from xynoplex.operations import BROWSE_RESOURCE_REQUESTED, MARK_DELETE
-from xynoplex.registry import kept_in
-from xynoplex.session import HeldSignIn, MemorySignIn, XynoplexSession, SessionEndReason, SignInKept
-from xynoplex.sign_in_store import FILE_NAME, SignInStore
-from xynoplex.storage import MemoryStorage, SessionStorage
-from xynoplex.stored import KEPT_QUERIES, cache_key, last_event_id_key, person_key
-from xynoplex.testing import create_test_client
-from xynoplex.timing import DEVICE_POLL_MS, DEVICE_SLOW_DOWN_MS, MAX_RECONNECT_MS, MIN_REFRESH_DELAY_MS
-from xynoplex.types import HttpEndpoint, KbTarget, LocalEndpoint, UserResponse
-from xynoplex.watched import Variable, Watched, reached
+from xynolog.identifiers import ResourceId, UserId
+from xynolog.identity import agent_did
+from xynolog.operations import BROWSE_RESOURCE_REQUESTED, MARK_DELETE
+from xynolog.registry import kept_in
+from xynolog.session import HeldSignIn, MemorySignIn, SessionEndReason, SignInKept, XynologSession
+from xynolog.sign_in_store import FILE_NAME, SignInStore
+from xynolog.storage import MemoryStorage, SessionStorage
+from xynolog.stored import KEPT_QUERIES, cache_key, last_event_id_key, person_key
+from xynolog.testing import create_test_client
+from xynolog.timing import DEVICE_POLL_MS, DEVICE_SLOW_DOWN_MS, MAX_RECONNECT_MS, MIN_REFRESH_DELAY_MS
+from xynolog.types import HttpEndpoint, KbTarget, LocalEndpoint, UserResponse
+from xynolog.watched import Variable, Watched, reached
 
 _JSON = TypeAdapter[JsonValue](JsonValue)
 
@@ -91,7 +91,7 @@ def held(gateway: GatewayServer, access_token: str, refresh: str = "refresh-1") 
     return HeldSignIn(
         access=access_token,
         refresh=refresh,
-        client_id="xynoplex-cli",
+        client_id="xynolog-cli",
         token_endpoint=f"{gateway.origin}{TOKEN}",
         revocation_endpoint=f"{gateway.origin}{REVOKE}",
     )
@@ -208,16 +208,16 @@ def test_the_refresh_grant_is_one_form_and_an_issuer_that_does_not_rotate_leaves
                 # An answer that carries no access token is no grant, whatever its status.
                 says({"token_type": "Bearer"}),
             ]
-            assert await soon(refresh_at_issuer(http, endpoint, "xynoplex-cli", "refresh 1&=")) == IssuedTokens(
+            assert await soon(refresh_at_issuer(http, endpoint, "xynolog-cli", "refresh 1&=")) == IssuedTokens(
                 access="access-2", refresh="refresh-2"
             )
             asked = gateway.of("POST", TOKEN)[0]
-            assert form(asked) == {"grant_type": "refresh_token", "refresh_token": "refresh 1&=", "client_id": "xynoplex-cli"}
-            # Written as every Xynoplex client writes a form: a space is `%20`.
+            assert form(asked) == {"grant_type": "refresh_token", "refresh_token": "refresh 1&=", "client_id": "xynolog-cli"}
+            # Written as every Xynolog client writes a form: a space is `%20`.
             assert b"refresh_token=refresh%201%26%3D" in asked.body
             assert asked.headers["accept"] == "application/json"
 
-            assert await soon(refresh_at_issuer(http, endpoint, "xynoplex-cli", "refresh-2")) == IssuedTokens(
+            assert await soon(refresh_at_issuer(http, endpoint, "xynolog-cli", "refresh-2")) == IssuedTokens(
                 access="access-3", refresh="refresh-2"
             )
 
@@ -228,13 +228,13 @@ def test_the_refresh_grant_is_one_form_and_an_issuer_that_does_not_rotate_leaves
                 ("HTTP 200", 200),
             ]:
                 with pytest.raises(SignInError) as refused:
-                    await soon(refresh_at_issuer(http, endpoint, "xynoplex-cli", "refresh-2"))
+                    await soon(refresh_at_issuer(http, endpoint, "xynolog-cli", "refresh-2"))
                 assert (refused.value.code, refused.value.status) == ("exchange", status)
                 assert refused.value.message == f"The issuer refused the token request ({said})"
 
             gateway.scripted[("POST", TOKEN)] = [Answer(hang_up=True)]
             with pytest.raises(SignInError, match="The issuer did not answer") as silent:
-                await soon(refresh_at_issuer(http, endpoint, "xynoplex-cli", "refresh-2"))
+                await soon(refresh_at_issuer(http, endpoint, "xynolog-cli", "refresh-2"))
             assert (silent.value.code, silent.value.status) == ("exchange", None)
 
     run(scenario())
@@ -289,14 +289,14 @@ def test_revocation_is_one_form_and_a_refusal_is_said() -> None:
             endpoint = f"{gateway.origin}{REVOKE}"
             gateway.scripted[("POST", REVOKE)] = [Answer(), Answer(status=503)]
 
-            await soon(revoke_at_issuer(http, endpoint, "xynoplex-cli", "refresh-1"))
+            await soon(revoke_at_issuer(http, endpoint, "xynolog-cli", "refresh-1"))
             assert form(gateway.of("POST", REVOKE)[0]) == {
                 "token": "refresh-1",
                 "token_type_hint": "refresh_token",
-                "client_id": "xynoplex-cli",
+                "client_id": "xynolog-cli",
             }
             with pytest.raises(SignInError, match=r"refused the revocation \(HTTP 503\)") as refused:
-                await soon(revoke_at_issuer(http, endpoint, "xynoplex-cli", "refresh-1"))
+                await soon(revoke_at_issuer(http, endpoint, "xynolog-cli", "refresh-1"))
             assert refused.value.status == 503
 
     run(scenario())
@@ -334,7 +334,7 @@ def test_the_device_grant_shows_the_code_and_asks_at_the_issuers_interval_until_
                     expires_in=900,
                 )
             ]
-            assert form(gateway.of("POST", DEVICE)[0]) == {"client_id": "xynoplex-cli", "scope": "openid email profile offline_access"}
+            assert form(gateway.of("POST", DEVICE)[0]) == {"client_id": "xynolog-cli", "scope": "openid email profile offline_access"}
             assert polls() == 0
 
             # Not before the interval the issuer stated.
@@ -347,7 +347,7 @@ def test_the_device_grant_shows_the_code_and_asks_at_the_issuers_interval_until_
             assert form(gateway.of("POST", TOKEN)[0]) == {
                 "grant_type": "urn:ietf:params:oauth:grant-type:device_code",
                 "device_code": "the-device-code",
-                "client_id": "xynoplex-cli",
+                "client_id": "xynolog-cli",
             }
 
             await pass_time(2.1)
@@ -466,7 +466,7 @@ def test_a_device_grant_the_issuer_does_not_offer_or_will_not_begin_shows_nobody
         async with GatewayServer() as gateway:
             shown: list[DeviceCode] = []
             trusting(gateway, device=False)
-            with pytest.raises(SignInError, match=r"offers no device authorization endpoint.*xynoplex-cli") as absent:
+            with pytest.raises(SignInError, match=r"offers no device authorization endpoint.*xynolog-cli") as absent:
                 await soon(sign_in_with_device_grant(gateway.origin, shown.append))
             assert absent.value.code == "discovery"
 
@@ -506,7 +506,7 @@ def test_a_service_account_signs_in_once_and_its_token_is_used_until_it_is_due()
             assert len(gateway.of("POST", TOKEN)) == 1
             assert form(gateway.of("POST", TOKEN)[0]) == {
                 "grant_type": "client_credentials",
-                "client_id": "xynoplex-smelter",
+                "client_id": "xynolog-smelter",
                 "client_secret": SECRET,
             }
 
@@ -565,9 +565,9 @@ def test_a_service_account_that_cannot_sign_in_says_where_and_as_whom_and_never_
             trusting(gateway)
             # An error body can echo the secret: the status is said, never the body.
             gateway.scripted[("POST", TOKEN)] = [says({"error": "invalid_client", "error_description": f"bad secret {SECRET}"}, 401)]
-            await fails("exchange", 401, r"Client-credentials grant for xynoplex-smelter at .* failed \(HTTP 401\)")
+            await fails("exchange", 401, r"Client-credentials grant for xynolog-smelter at .* failed \(HTTP 401\)")
             gateway.scripted[("POST", TOKEN)] = [Answer(hang_up=True)]
-            await fails("exchange", None, "Client-credentials grant for xynoplex-smelter at .* got no answer")
+            await fails("exchange", None, "Client-credentials grant for xynolog-smelter at .* got no answer")
             gateway.scripted[("POST", TOKEN)] = [says({"token_type": "Bearer"})]
             await fails("exchange", 200, "returned no `access_token`")
 
@@ -585,7 +585,7 @@ def test_an_agent_is_signed_in_as_its_account_and_feeds_a_transport() -> None:
             trusting(gateway)
             first, second = token(3600, 1), token(3600, 2)
             gateway.scripted[("POST", TOKEN)] = [says({"access_token": first}), says({"access_token": second})]
-            gateway.answers[ME] = agent_named("xynoplex-smelter")
+            gateway.answers[ME] = agent_named("xynolog-smelter")
 
             agent = AgentToken(f"{gateway.origin}/", service=ServiceToken(account(gateway)))
             assert now(agent.token) is None
@@ -593,7 +593,7 @@ def test_an_agent_is_signed_in_as_its_account_and_feeds_a_transport() -> None:
                 assert agent.gateway == gateway.origin
                 # The issuer's token is the agent's bearer, and the gateway names the agent by its account. Nothing is exchanged.
                 assert agent.token.value == first
-                assert agent.did == agent_did("example.org", "xynoplex-smelter")
+                assert agent.did == agent_did("example.org", "xynolog-smelter")
                 assert [(asked.method, asked.path) for asked in gateway.asked] == [("GET", CONFIGURATION), ("POST", TOKEN), ("GET", ME)]
                 assert sent_with(gateway, "GET", ME) == [f"Bearer {first}"]
 
@@ -642,7 +642,7 @@ def test_an_agent_that_cannot_be_signed_in_says_so_on_the_way_in() -> None:
             assert (refused.value.code, refused.value.status) == ("unauthorized", 401)
 
             unsigned = agent()
-            gateway.scripted[("GET", ME)] = [says({"did": "did:web:example.org:agents:xynoplex-smelter"})]
+            gateway.scripted[("GET", ME)] = [says({"did": "did:web:example.org:agents:xynolog-smelter"})]
             with pytest.raises(TransportError, match="did not answer who the agent is") as malformed:
                 async with unsigned:
                     pass
@@ -673,12 +673,12 @@ def test_an_agent_that_cannot_be_signed_in_says_so_on_the_way_in() -> None:
     ("answer", "fault"),
     [
         (says({"email": CARRIED, "name": None, "image": None, "domain": "example.org"}), "it has no `did`"),
-        (says({**agent_named("xynoplex-smelter"), "did": [CARRIED]}), "its `did` is malformed"),
-        (says({**agent_named("xynoplex-smelter"), "name": [CARRIED]}), "its `name` is malformed"),
+        (says({**agent_named("xynolog-smelter"), "did": [CARRIED]}), "its `did` is malformed"),
+        (says({**agent_named("xynolog-smelter"), "name": [CARRIED]}), "its `name` is malformed"),
         (says({}), "it has no `did`"),
         # A DID of no DID's form: the table states a DID's form, so the refusal names the `did`.
-        (says({**agent_named("xynoplex-smelter"), "did": CARRIED}), "its `did` is malformed"),
-        (says([{**agent_named("xynoplex-smelter"), "name": CARRIED}]), "it is malformed"),
+        (says({**agent_named("xynolog-smelter"), "did": CARRIED}), "its `did` is malformed"),
+        (says([{**agent_named("xynolog-smelter"), "name": CARRIED}]), "it is malformed"),
         (Answer(body=f"did={CARRIED}".encode()), "it is malformed"),
     ],
     ids=["no DID", "a DID that is no text", "a name that is none", "nothing", "a DID that is none", "not an object", "not JSON"],
@@ -722,7 +722,7 @@ def test_a_grant_that_fails_while_its_answer_carries_a_token_says_no_part_of_the
             # The refresh grant, answered a token under a status that is no grant.
             gateway.scripted[("POST", TOKEN)] = [says({"access_token": CARRIED, "refresh_token": CARRIED}, 500)]
             with pytest.raises(SignInError, match=r"refused the token request \(HTTP 500\)") as failed:
-                await soon(refresh_at_issuer(http, endpoint, "xynoplex-cli", "refresh-1"))
+                await soon(refresh_at_issuer(http, endpoint, "xynolog-cli", "refresh-1"))
             failures.append(failed.value)
 
             # The device grant, answered an access token and no refresh token.
@@ -779,7 +779,7 @@ def test_an_agent_renews_its_token_when_it_is_due_and_keeps_the_one_it_has_when_
     async def scenario() -> None:
         async with GatewayServer() as gateway:
             trusting(gateway)
-            gateway.answers[ME] = agent_named("xynoplex-smelter")
+            gateway.answers[ME] = agent_named("xynolog-smelter")
             gateway.scripted[("POST", TOKEN)] = [says({"access_token": token(300, 1)}), says({"access_token": token(30, 2)})]
 
             async with AgentToken(gateway.origin, service=ServiceToken(account(gateway))) as agent:
@@ -825,7 +825,7 @@ def test_refusals_of_an_agents_token_while_it_is_renewed_are_answered_by_that_on
     async def scenario() -> None:
         async with GatewayServer() as gateway:
             trusting(gateway)
-            gateway.answers[ME] = agent_named("xynoplex-smelter")
+            gateway.answers[ME] = agent_named("xynolog-smelter")
             first, second, third = token(3600, 1), token(300, 2), token(3600, 3)
             granting, granting_when_due = asyncio.Event(), asyncio.Event()
             gateway.scripted[("POST", TOKEN)] = [says({"access_token": first}), replace(says({"access_token": second}), after=granting)]
@@ -857,7 +857,7 @@ def test_an_agents_due_renewal_tried_again_renews_nothing_once_a_refusal_has_ren
     async def scenario() -> None:
         async with GatewayServer() as gateway:
             trusting(gateway)
-            gateway.answers[ME] = agent_named("xynoplex-smelter")
+            gateway.answers[ME] = agent_named("xynolog-smelter")
             first, second = token(300, 1), token(3600, 2)
             gateway.scripted[("POST", TOKEN)] = [says({"access_token": first}), Answer(status=503), says({"access_token": second})]
 
@@ -883,7 +883,7 @@ def test_an_agent_that_closes_while_its_token_is_renewed_gives_the_refusal_no_to
     async def scenario() -> None:
         async with GatewayServer() as gateway:
             trusting(gateway)
-            gateway.answers[ME] = agent_named("xynoplex-smelter")
+            gateway.answers[ME] = agent_named("xynolog-smelter")
             first, second, third = token(3600, 1), token(3600, 2), token(3600, 3)
             granting = asyncio.Event()
             gateway.scripted[("POST", TOKEN)] = [
@@ -939,7 +939,7 @@ def test_an_agent_the_gateway_refuses_to_name_by_its_refusal_rate_limit_is_refus
 # ── A person's session over a kept sign-in ──────────────────────────────
 
 
-def test_a_session_over_what_xynoplex_login_kept_is_ready_and_renews_through_the_store(tmp_path: Path) -> None:
+def test_a_session_over_what_xynolog_login_kept_is_ready_and_renews_through_the_store(tmp_path: Path) -> None:
     async def scenario() -> None:
         async with GatewayServer() as gateway:
             trusting(gateway)
@@ -967,7 +967,7 @@ def test_a_session_over_what_xynoplex_login_kept_is_ready_and_renews_through_the
                 assert form(gateway.of("POST", TOKEN)[0]) == {
                     "grant_type": "refresh_token",
                     "refresh_token": "refresh-1",
-                    "client_id": "xynoplex-cli",
+                    "client_id": "xynolog-cli",
                 }
                 assert sent_with(gateway, "GET", ME) == [f"Bearer {first}", f"Bearer {second}"]
                 # What the issuer rotated is in the store, for the launcher's next verb and this session's next renewal.
@@ -1248,7 +1248,7 @@ def test_a_session_that_closes_while_its_sign_in_is_renewed_gives_the_refusal_no
                 replace(says({"access_token": third, "refresh_token": "refresh-3"}), after=granting),
             ]
             told: list[SessionEndReason] = []
-            opened: asyncio.Future[XynoplexSession[HttpTransport]] = asyncio.get_running_loop().create_future()
+            opened: asyncio.Future[XynologSession[HttpTransport]] = asyncio.get_running_loop().create_future()
             leave = asyncio.Event()
 
             async def held_open() -> None:
@@ -1286,7 +1286,7 @@ def test_a_session_that_closes_while_its_sign_in_is_renewed_gives_the_refusal_no
 # ── Signing in by the device grant, and signing out ─────────────────────
 
 
-def test_a_person_signs_in_by_the_device_grant_and_the_sign_in_is_kept_as_xynoplex_login_keeps_one(tmp_path: Path) -> None:
+def test_a_person_signs_in_by_the_device_grant_and_the_sign_in_is_kept_as_xynolog_login_keeps_one(tmp_path: Path) -> None:
     async def scenario() -> None:
         async with GatewayServer() as gateway:
             trusting(gateway)
@@ -1338,7 +1338,7 @@ def test_signing_out_revokes_the_refresh_token_and_forgets_the_sign_in_whatever_
             assert form(gateway.of("POST", REVOKE)[0]) == {
                 "token": "refresh-1",
                 "token_type_hint": "refresh_token",
-                "client_id": "xynoplex-cli",
+                "client_id": "xynolog-cli",
             }
             assert await kept.held() is None
 
@@ -1354,7 +1354,7 @@ def test_signing_out_revokes_the_refresh_token_and_forgets_the_sign_in_whatever_
 
             # An issuer that named no revocation endpoint is told nothing, and the sign-in is forgotten all the same.
             asked = len(gateway.of("POST", REVOKE))
-            await kept.keep(HeldSignIn(access=access(3), refresh="r", client_id="xynoplex-cli", token_endpoint=f"{gateway.origin}{TOKEN}"))
+            await kept.keep(HeldSignIn(access=access(3), refresh="r", client_id="xynolog-cli", token_endpoint=f"{gateway.origin}{TOKEN}"))
             await soon(sign_out(kept))
             assert await kept.held() is None
             assert len(gateway.of("POST", REVOKE)) == asked
@@ -1377,7 +1377,7 @@ def test_an_issuer_and_an_agent_given_a_client_are_asked_through_it_and_it_is_le
             gateway.scripted[("POST", TOKEN)] = [says({"access_token": access(2)}), says({"access_token": token(3600, 3)})]
             await soon(discover_issuer(gateway.origin, http=http))
             await soon(renew_kept(MemorySignIn(held(gateway, first)), first, http=http))
-            gateway.answers[ME] = agent_named("xynoplex-smelter")
+            gateway.answers[ME] = agent_named("xynolog-smelter")
             async with AgentToken(gateway.origin, service=ServiceToken(account(gateway), http=http), http=http):
                 pass
             return recording.seen, gateway.came_through(recording), http.is_closed
@@ -1731,19 +1731,19 @@ async def renewed_on_the_backoff(token: Watched[str | None], renewed: str) -> st
     return await soon(hurried(reached(token, lambda held_token: held_token == renewed)), within=MAX_RECONNECT_MS / 1000)
 
 
-def said_by_the_session(said: Sequence[XynoplexError]) -> list[tuple[str, str]]:
+def said_by_the_session(said: Sequence[XynologError]) -> list[tuple[str, str]]:
     """What a session said of itself on its errors stream: each of its own failures' code and knowledge base, in order."""
     return [(error.code, error.kb_id) for error in said if isinstance(error, SessionError)]
 
 
-async def closed_before_it_ended(session: XynoplexSession[HttpTransport]) -> bool:
+async def closed_before_it_ended(session: XynologSession[HttpTransport]) -> bool:
     """Whether a session's client had closed by the time the session ended, when its token stopped changing."""
     async for _ in session.token:
         pass
     return session.client.bus.destroyed
 
 
-def refusals_said(said: Sequence[XynoplexError]) -> int:
+def refusals_said(said: Sequence[XynologError]) -> int:
     """How many writes a session of `kb` said its storage refused: each in what the storage said, and with it as the cause."""
     refused = [error for error in said if isinstance(error, SessionError) and error.code == "session.save-refused"]
     for error in refused:
@@ -1780,7 +1780,7 @@ def test_a_renewal_at_the_start_that_cannot_read_the_sign_in_got_no_answer_says_
             async def who(_token: str) -> UserResponse:
                 return UserResponse.model_validate(ALICE)
 
-            session = XynoplexSession(
+            session = XynologSession(
                 kb=gateway.target("kb"),
                 client=create_test_client().client,
                 token=Variable[str | None](None),

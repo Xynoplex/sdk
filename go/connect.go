@@ -1,4 +1,4 @@
-package xynoplex
+package xynolog
 
 // What a completed sign-in learns: who the knowledge base at the address
 // says it is. It describes itself only to a caller that is signed in, so this
@@ -11,8 +11,8 @@ import (
 	"math/rand/v2"
 	"net/http"
 
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/bus"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/bus"
 )
 
 // ConnectionIdentity is who the knowledge base at an address says it is.

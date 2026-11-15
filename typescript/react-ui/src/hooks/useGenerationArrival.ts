@@ -1,7 +1,7 @@
-import type { AnnotationId, YieldJobDone } from '@xynoplex/core';
+import type { AnnotationId, YieldJobDone } from '@xynolog/core';
 import { useEffect, useRef } from 'react';
-import type { Annotation } from '@xynoplex/core';
-import { getBodySource } from '@xynoplex/core';
+import type { Annotation } from '@xynolog/core';
+import { getBodySource } from '@xynolog/core';
 
 /**
  * The reveal's arming logic.

@@ -12,7 +12,7 @@
  */
 
 import { describe, test, expect, beforeEach, vi } from 'vitest';
-import { BRIDGED_CHANNELS, REQUEST_RETRY_PAUSE_MS, accessToken, baseUrl, resourceId } from '@xynoplex/core';
+import { BRIDGED_CHANNELS, REQUEST_RETRY_PAUSE_MS, accessToken, baseUrl, resourceId } from '@xynolog/core';
 import { HttpTransport, currentUserOf } from '../http-transport';
 import { APIError } from '../api-error';
 

@@ -3,7 +3,7 @@
  * protocol/specs/src/annotations/pdf-locate-cases.json: the table every implementation
  * runs, so that a span is anchored to the same rectangles and written as the
  * same selectors, whoever does it. The table's `claims` are the rule of
- * Xynoplex's worker alone, and are run there.
+ * Xynolog's worker alone, and are run there.
  */
 
 import { describe, it, expect } from 'vitest';

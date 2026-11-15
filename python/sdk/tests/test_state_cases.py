@@ -21,15 +21,15 @@ from aio import pass_time, run_still, turns
 from pydantic import JsonValue, TypeAdapter
 from spec import SPEC, JsonObject, objects, read, strings, text
 
-from xynoplex import timing
-from xynoplex.channels import BRIDGED_CHANNELS
-from xynoplex.client import XynoplexClient
-from xynoplex.errors import XynoplexError
-from xynoplex.events import Events
-from xynoplex.identifiers import ResourceId
-from xynoplex.model import WireModel, written
-from xynoplex.session_signals import SessionSignals
-from xynoplex.state import (
+from xynolog import timing
+from xynolog.channels import BRIDGED_CHANNELS
+from xynolog.client import XynologClient
+from xynolog.errors import XynologError
+from xynolog.events import Events
+from xynolog.identifiers import ResourceId
+from xynolog.model import WireModel, written
+from xynolog.session_signals import SessionSignals
+from xynolog.state import (
     BeckonStateUnit,
     GatherStateUnit,
     HoverDwell,
@@ -38,10 +38,10 @@ from xynoplex.state import (
     SearchPipeline,
     YieldStateUnit,
 )
-from xynoplex.state_unit import StateUnit
-from xynoplex.testing import Delay, DropReply, FaultAction, FaultyTransport, create_test_client, refuse_unscripted_operation
-from xynoplex.transport import Frame, FrameRefusal, Transport
-from xynoplex.watched import Watched
+from xynolog.state_unit import StateUnit
+from xynolog.testing import Delay, DropReply, FaultAction, FaultyTransport, create_test_client, refuse_unscripted_operation
+from xynolog.transport import Frame, FrameRefusal, Transport
+from xynolog.watched import Watched
 
 # The SDK this runner is, as the names table's `absent` names it.
 SDK: Final = "python"
@@ -58,7 +58,7 @@ async def settle() -> None:
 TABLE: Final = read(SPEC / "client/state-units.json")
 NAMES: Final = read(SPEC / "client/surface.json")
 
-type Client = XynoplexClient[Transport]
+type Client = XynologClient[Transport]
 
 
 @final
@@ -229,7 +229,7 @@ def wire(held: object) -> JsonValue:
     """What a state holds, as the wire writes it. An error is its code and its message."""
     if isinstance(held, WireModel):
         return written(held)
-    if isinstance(held, XynoplexError):
+    if isinstance(held, XynologError):
         return {"code": held.code, "message": held.message}
     if held is None or isinstance(held, str | bool | int | float):
         return held
@@ -261,7 +261,7 @@ def matches(expected: JsonValue, actual: JsonValue) -> bool:
 
 def holds(expected: JsonValue, held: object) -> bool:
     """Whether a state holds what `expected` states. An error is compared on what the case states of it."""
-    if isinstance(held, XynoplexError):
+    if isinstance(held, XynologError):
         assert isinstance(expected, dict), f"the state holds an error, {held!r}, and the case states {expected!r}"
         written_error = wire(held)
         assert isinstance(written_error, dict)

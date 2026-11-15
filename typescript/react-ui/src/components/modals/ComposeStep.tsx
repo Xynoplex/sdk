@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { LOCALES, proposeStoragePath } from '@xynoplex/core';
+import { LOCALES, proposeStoragePath } from '@xynolog/core';
 import { CodeMirrorRenderer } from '../CodeMirrorRenderer';
 import { WizardFooter } from './WizardFooter';
 
@@ -114,10 +114,10 @@ export function ComposeStep({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="xynoplex-form">
+    <form onSubmit={handleSubmit} className="xynolog-form">
       {/* Name */}
-      <div className="xynoplex-form__field">
-        <label htmlFor="compose-name" className="xynoplex-form__label">
+      <div className="xynolog-form__field">
+        <label htmlFor="compose-name" className="xynolog-form__label">
           {t.resourceTitle}
         </label>
         <input
@@ -127,18 +127,18 @@ export function ComposeStep({
           onChange={(e) => onDraftChange({ name: e.target.value })}
           placeholder={t.resourceTitlePlaceholder}
           required
-          className="xynoplex-input"
+          className="xynolog-input"
           disabled={isCreating}
         />
       </div>
 
       {/* Storage URI */}
-      <div className="xynoplex-form__field">
-        <label htmlFor="compose-storagePath" className="xynoplex-form__label">
+      <div className="xynolog-form__field">
+        <label htmlFor="compose-storagePath" className="xynolog-form__label">
           {t.saveLocation}
         </label>
-        <div className="xynoplex-input-addon">
-          <span className="xynoplex-input-addon__prefix">file://</span>
+        <div className="xynolog-input-addon">
+          <span className="xynolog-input-addon__prefix">file://</span>
           <input
             id="compose-storagePath"
             type="text"
@@ -146,25 +146,25 @@ export function ComposeStep({
             onChange={(e) => onDraftChange({ storagePath: e.target.value })}
             placeholder="people/my-resource.md"
             required
-            className="xynoplex-input xynoplex-input--addon"
+            className="xynolog-input xynolog-input--addon"
             disabled={isCreating}
           />
         </div>
       </div>
 
       {/* Entity types: fixed at reference creation → tags; otherwise picker */}
-      <div className="xynoplex-form__field">
-        <div className="xynoplex-form__label">{t.entityTypes}</div>
+      <div className="xynolog-form__field">
+        <div className="xynolog-form__label">{t.entityTypes}</div>
         {fixedTypes ? (
-          <div className="xynoplex-form__entity-type-tags" role="list">
+          <div className="xynolog-form__entity-type-tags" role="list">
             {referenceEntityTypes.map((type) => (
-              <span key={type} role="listitem" className="xynoplex-form__entity-type-tag">
+              <span key={type} role="listitem" className="xynolog-form__entity-type-tag">
                 {type}
               </span>
             ))}
           </div>
         ) : (
-          <div className="xynoplex-form__entity-type-buttons" role="group">
+          <div className="xynolog-form__entity-type-buttons" role="group">
             {entityTypeOptions.map((type) => {
               const isSelected = draft.entityTypes.includes(type);
               return (
@@ -176,7 +176,7 @@ export function ComposeStep({
                       ? draft.entityTypes.filter((x) => x !== type)
                       : [...draft.entityTypes, type],
                   })}
-                  className="xynoplex-form__entity-type-button"
+                  className="xynolog-form__entity-type-button"
                   data-selected={isSelected}
                   aria-pressed={isSelected}
                   disabled={isCreating}
@@ -190,8 +190,8 @@ export function ComposeStep({
       </div>
 
       {/* Language */}
-      <div className="xynoplex-form__field">
-        <label htmlFor="compose-language" className="xynoplex-form__label">
+      <div className="xynolog-form__field">
+        <label htmlFor="compose-language" className="xynolog-form__label">
           {t.language}
         </label>
         <select
@@ -199,7 +199,7 @@ export function ComposeStep({
           value={draft.language}
           onChange={(e) => onDraftChange({ language: e.target.value })}
           disabled={isCreating}
-          className="xynoplex-select"
+          className="xynolog-select"
         >
           {LOCALES.map((lang) => (
             <option key={lang.code} value={lang.code}>
@@ -210,9 +210,9 @@ export function ComposeStep({
       </div>
 
       {/* Content editor */}
-      <div className="xynoplex-form__field xynoplex-form__editor">
-        <label className="xynoplex-form__label">{t.contentLabel}</label>
-        <div className="xynoplex-form__editor-wrapper" lang={draft.language}>
+      <div className="xynolog-form__field xynolog-form__editor">
+        <label className="xynolog-form__label">{t.contentLabel}</label>
+        <div className="xynolog-form__editor-wrapper" lang={draft.language}>
           <CodeMirrorRenderer
             content={draft.content}
             editable={!isCreating}

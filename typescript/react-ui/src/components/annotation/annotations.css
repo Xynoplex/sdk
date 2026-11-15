@@ -30,7 +30,7 @@
 
 /* Active/selected annotation */
 .annotation-active {
-  outline: 2px solid var(--xynoplex-color-primary-500);
+  outline: 2px solid var(--xynolog-color-primary-500);
   outline-offset: 2px;
   z-index: 10;
   position: relative;
@@ -45,7 +45,7 @@
  * or a position-fallback. The hover tooltip (added by
  * `getAnnotationDecorationMeta`) names the strategy. */
 .annotation-low-confidence {
-  text-decoration: underline dotted var(--xynoplex-color-amber-500);
+  text-decoration: underline dotted var(--xynolog-color-amber-500);
   text-decoration-thickness: 2px;
   text-underline-offset: 2px;
 }
@@ -65,29 +65,29 @@
 }
 
 /* The running log of what a delegated job found, one line per item. */
-.xynoplex-annotation-log {
+.xynolog-annotation-log {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
 }
 
-.xynoplex-annotation-log-item {
+.xynolog-annotation-log-item {
   display: flex;
   align-items: baseline;
   gap: 0.375rem;
-  font-size: var(--xynoplex-text-xs);
-  color: var(--xynoplex-text-secondary);
+  font-size: var(--xynolog-text-xs);
+  color: var(--xynolog-text-secondary);
 }
 
-.xynoplex-annotation-check {
-  color: var(--xynoplex-color-success);
+.xynolog-annotation-check {
+  color: var(--xynolog-color-success);
   flex-shrink: 0;
 }
 
-.xynoplex-annotation-entity-type {
-  color: var(--xynoplex-text-tertiary);
+.xynolog-annotation-entity-type {
+  color: var(--xynolog-text-tertiary);
 }
 
-[data-theme="dark"] .xynoplex-annotation-check {
-  color: var(--xynoplex-color-success-light);
+[data-theme="dark"] .xynolog-annotation-check {
+  color: var(--xynolog-color-success-light);
 }

@@ -1,5 +1,5 @@
 /**
- * SessionFactory — the injection point that lets `XynoplexBrowser` stay
+ * SessionFactory — the injection point that lets `XynologBrowser` stay
  * transport-agnostic.
  *
  * The browser knows how to manage the *lifecycle* of an active session
@@ -19,10 +19,10 @@
  * The HTTP factory is provided by `createHttpSessionFactory`.
  */
 
-import type { KnowledgeBase } from '@xynoplex/core';
+import type { KnowledgeBase } from '@xynolog/core';
 import type { SessionSignals } from './session-signals';
 import type { SessionStorage } from './session-storage';
-import type { XynoplexSession } from './xynoplex-session';
+import type { XynologSession } from './xynolog-session';
 
 export interface SessionFactoryOptions {
   /** The KB the session is being constructed for. */
@@ -33,4 +33,4 @@ export interface SessionFactoryOptions {
   signals: SessionSignals;
 }
 
-export type SessionFactory = (opts: SessionFactoryOptions) => XynoplexSession;
+export type SessionFactory = (opts: SessionFactoryOptions) => XynologSession;

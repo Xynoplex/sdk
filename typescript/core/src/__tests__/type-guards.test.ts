@@ -10,7 +10,7 @@ import {
 } from '../type-guards';
 import { resourceId } from '../identifiers';
 
-describe('@xynoplex/core - type-guards', () => {
+describe('@xynolog/core - type-guards', () => {
   describe('isString', () => {
     it('should return true for strings', () => {
       expect(isString('')).toBe(true);

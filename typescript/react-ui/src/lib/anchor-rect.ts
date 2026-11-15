@@ -1,4 +1,4 @@
-import type { AnchorRect } from '@xynoplex/core';
+import type { AnchorRect } from '@xynolog/core';
 
 /**
  * Convert a rect in element-local display coordinates to a viewport-space

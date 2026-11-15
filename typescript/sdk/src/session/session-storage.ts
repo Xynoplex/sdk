@@ -1,13 +1,13 @@
 /**
  * SessionStorage — environment-agnostic persistence adapter for the
- * Xynoplex session layer. Decouples `XynoplexSession` / `XynoplexBrowser`
+ * Xynolog session layer. Decouples `XynologSession` / `XynologBrowser`
  * from `localStorage` / `window` so the same classes can run in a
  * browser, a CLI process, or tests without environment guards.
  *
  * Implementations shipped here:
  *  - `InMemorySessionStorage` — map-backed, for scripts and tests.
  *
- * Browser-backed (`WebBrowserStorage`) lives in `@xynoplex/react-ui`
+ * Browser-backed (`WebBrowserStorage`) lives in `@xynolog/react-ui`
  * because it touches browser-only globals.
  */
 

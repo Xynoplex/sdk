@@ -13,13 +13,13 @@ import userEvent from '@testing-library/user-event';
 import { PdfAnnotationCanvas } from '../PdfAnnotationCanvas';
 import { TranslationProvider } from '../../../contexts/TranslationContext';
 import { defaultMocks, renderInEnglish } from '../../../test-utils';
-import { resourceId, annotationId, parseFragmentSelector } from '@xynoplex/core';
+import { resourceId, annotationId, parseFragmentSelector } from '@xynolog/core';
 import { pdfToCanvasCoordinates } from '../../../lib/pdf-coordinates';
 import { loadPdfDocument, renderPdfPageToDataUrl } from '../../../lib/browser-pdfjs';
 
-import type { Annotation, AnchoredTextAnswer } from '@xynoplex/core';
+import type { Annotation, AnchoredTextAnswer } from '@xynolog/core';
 
-// The document's anchored text, as Xynoplex serves it: the canvas asks for it
+// The document's anchored text, as Xynolog serves it: the canvas asks for it
 // and reads no page's text itself. Geometry is PDF points, bottom-left origin:
 // "Hello world" sits on one line of page 1 at y=700, "elsewhere" a hundred
 // points below it.
@@ -293,18 +293,18 @@ describe('PdfAnnotationCanvas', () => {
     // jsdom doesn't fire image onLoad or provide clientWidth/clientHeight.
     // Wait for the image element to appear, then simulate load with dimensions.
     await waitFor(() => {
-      const img = document.querySelector('.xynoplex-pdf-annotation-canvas__image') as HTMLImageElement;
+      const img = document.querySelector('.xynolog-pdf-annotation-canvas__image') as HTMLImageElement;
       expect(img).toBeInTheDocument();
     });
 
-    const img = document.querySelector('.xynoplex-pdf-annotation-canvas__image') as HTMLImageElement;
+    const img = document.querySelector('.xynolog-pdf-annotation-canvas__image') as HTMLImageElement;
     Object.defineProperty(img, 'clientWidth', { value: 612, configurable: true });
     Object.defineProperty(img, 'clientHeight', { value: 792, configurable: true });
     fireEvent.load(img);
 
     await waitFor(() => {
       // Annotation should be rendered in SVG
-      const svg = document.querySelector('.xynoplex-pdf-annotation-canvas__svg');
+      const svg = document.querySelector('.xynolog-pdf-annotation-canvas__svg');
       expect(svg).toBeInTheDocument();
 
       const rects = svg?.querySelectorAll('rect');
@@ -319,7 +319,7 @@ describe('PdfAnnotationCanvas', () => {
         browse: { click, resourceAnchoredText: vi.fn().mockResolvedValue(SERVED_TEXT) },
         beckon: { hover: vi.fn() },
       },
-    } as unknown as import('@xynoplex/sdk').XynoplexSession;
+    } as unknown as import('@xynolog/sdk').XynologSession;
 
     const mockAnnotations: Annotation[] = [
       {
@@ -349,21 +349,21 @@ describe('PdfAnnotationCanvas', () => {
     );
 
     await waitFor(() => {
-      const img = document.querySelector('.xynoplex-pdf-annotation-canvas__image') as HTMLImageElement;
+      const img = document.querySelector('.xynolog-pdf-annotation-canvas__image') as HTMLImageElement;
       expect(img).toBeInTheDocument();
     });
 
-    const img = document.querySelector('.xynoplex-pdf-annotation-canvas__image') as HTMLImageElement;
+    const img = document.querySelector('.xynolog-pdf-annotation-canvas__image') as HTMLImageElement;
     Object.defineProperty(img, 'clientWidth', { value: 612, configurable: true });
     Object.defineProperty(img, 'clientHeight', { value: 792, configurable: true });
     fireEvent.load(img);
 
     await waitFor(() => {
-      const rects = document.querySelector('.xynoplex-pdf-annotation-canvas__svg')?.querySelectorAll('rect');
+      const rects = document.querySelector('.xynolog-pdf-annotation-canvas__svg')?.querySelectorAll('rect');
       expect(rects?.length).toBeGreaterThan(0);
     });
 
-    const annotationRect = document.querySelector('.xynoplex-pdf-annotation-canvas__svg')!.querySelector('rect')!;
+    const annotationRect = document.querySelector('.xynolog-pdf-annotation-canvas__svg')!.querySelector('rect')!;
     fireEvent.click(annotationRect);
 
     expect(click).toHaveBeenCalledTimes(1);
@@ -384,7 +384,7 @@ describe('PdfAnnotationCanvas', () => {
         browse: { click, resourceAnchoredText: vi.fn().mockResolvedValue(SERVED_TEXT) },
         beckon: { hover: vi.fn() },
       },
-    } as unknown as import('@xynoplex/sdk').XynoplexSession;
+    } as unknown as import('@xynolog/sdk').XynologSession;
 
     const fragmentValue = 'page=1&viewrect=100,200,150,100';
     const mockAnnotations: Annotation[] = [
@@ -416,23 +416,23 @@ describe('PdfAnnotationCanvas', () => {
     );
 
     await waitFor(() => {
-      const img = document.querySelector('.xynoplex-pdf-annotation-canvas__image') as HTMLImageElement;
+      const img = document.querySelector('.xynolog-pdf-annotation-canvas__image') as HTMLImageElement;
       expect(img).toBeInTheDocument();
     });
 
-    const img = document.querySelector('.xynoplex-pdf-annotation-canvas__image') as HTMLImageElement;
+    const img = document.querySelector('.xynolog-pdf-annotation-canvas__image') as HTMLImageElement;
     Object.defineProperty(img, 'clientWidth', { value: 612, configurable: true });
     Object.defineProperty(img, 'clientHeight', { value: 792, configurable: true });
     fireEvent.load(img);
 
     await waitFor(() => {
-      const rects = document.querySelector('.xynoplex-pdf-annotation-canvas__svg')?.querySelectorAll('rect');
+      const rects = document.querySelector('.xynolog-pdf-annotation-canvas__svg')?.querySelectorAll('rect');
       expect(rects?.length).toBeGreaterThan(0);
     });
     // The hit-test runs on a gesture the canvas takes, and it takes one only
     // while it holds the document's text.
     await waitFor(() => {
-      expect(document.querySelector('.xynoplex-pdf-annotation-canvas')).toHaveAttribute('data-annotate-deferred', 'false');
+      expect(document.querySelector('.xynolog-pdf-annotation-canvas')).toHaveAttribute('data-annotate-deferred', 'false');
     });
 
     const pdfCoord = parseFragmentSelector(fragmentValue)!;
@@ -440,7 +440,7 @@ describe('PdfAnnotationCanvas', () => {
 
     // Sub-10px gesture at the annotation's display-rect center (image rect is
     // zeros in jsdom, so client coordinates are display coordinates).
-    const canvasContainer = document.querySelector('.xynoplex-pdf-annotation-canvas__container')!;
+    const canvasContainer = document.querySelector('.xynolog-pdf-annotation-canvas__container')!;
     const clickX = displayRect.x + displayRect.width / 2;
     const clickY = displayRect.y + displayRect.height / 2;
     fireEvent.mouseDown(canvasContainer, { clientX: clickX, clientY: clickY });
@@ -458,7 +458,7 @@ describe('PdfAnnotationCanvas', () => {
 
   /**
    * Drives the drag → mark.request path far enough to inspect the selector,
-   * on a document for which Xynoplex answers `answer`: an answer that gives
+   * on a document for which Xynolog answers `answer`: an answer that gives
    * the canvas the text, since the drag waits until the canvas holds it.
    * `drag` is in canvas pixels; at scale 1 with a 612×792 page these are also
    * display coordinates, since jsdom's getBoundingClientRect returns zeros.
@@ -475,7 +475,7 @@ describe('PdfAnnotationCanvas', () => {
         beckon: { hover: vi.fn() },
         browse: { resourceAnchoredText: vi.fn().mockResolvedValue(answer) },
       },
-    } as unknown as import('@xynoplex/sdk').XynoplexSession;
+    } as unknown as import('@xynolog/sdk').XynologSession;
 
     renderInEnglish(
       <PdfAnnotationCanvas resourceUri={resourceId("res-1")}
@@ -494,7 +494,7 @@ describe('PdfAnnotationCanvas', () => {
     }
 
     const pageImage = () =>
-      document.querySelector(`.xynoplex-pdf-annotation-canvas__image[alt="PDF page ${onPage}"]`);
+      document.querySelector(`.xynolog-pdf-annotation-canvas__image[alt="PDF page ${onPage}"]`);
     await waitFor(() => {
       expect(pageImage()).toBeInTheDocument();
     });
@@ -505,10 +505,10 @@ describe('PdfAnnotationCanvas', () => {
     fireEvent.load(img);
 
     await waitFor(() => {
-      expect(document.querySelector('.xynoplex-pdf-annotation-canvas')).toHaveAttribute('data-annotate-deferred', 'false');
+      expect(document.querySelector('.xynolog-pdf-annotation-canvas')).toHaveAttribute('data-annotate-deferred', 'false');
     });
 
-    const container = document.querySelector('.xynoplex-pdf-annotation-canvas__container')!;
+    const container = document.querySelector('.xynolog-pdf-annotation-canvas__container')!;
     fireEvent.mouseDown(container, { clientX: drag.fromX, clientY: drag.fromY });
     fireEvent.mouseMove(container, { clientX: drag.toX, clientY: drag.toY });
     fireEvent.mouseUp(container, { clientX: drag.toX, clientY: drag.toY });
@@ -553,7 +553,7 @@ describe('PdfAnnotationCanvas', () => {
 
   // A PDF's text has one producer. This page has a text layer pdf.js could
   // read, and it says something ELSE: a canvas that read it would quote the
-  // layer's words, or never ask Xynoplex at all.
+  // layer's words, or never ask Xynolog at all.
   test('the quote is cut from the served text — pdf.js is never asked for the page\'s text', async () => {
     const getTextContent = vi.fn().mockResolvedValue({
       items: [
@@ -627,7 +627,7 @@ describe('PdfAnnotationCanvas', () => {
     const resourceAnchoredText = vi.fn().mockResolvedValue(SERVED_TEXT);
     const session = {
       client: { beckon: { hover: vi.fn() }, browse: { resourceAnchoredText } },
-    } as unknown as import('@xynoplex/sdk').XynoplexSession;
+    } as unknown as import('@xynolog/sdk').XynologSession;
 
     renderInEnglish(
       <PdfAnnotationCanvas resourceUri={resourceId("res-1")}
@@ -671,7 +671,7 @@ describe('PdfAnnotationCanvas', () => {
       } as unknown as Awaited<ReturnType<typeof loadPdfDocument>>);
 
     const mountedPages = () =>
-      [...document.querySelectorAll('.xynoplex-pdf-annotation-canvas__image')]
+      [...document.querySelectorAll('.xynolog-pdf-annotation-canvas__image')]
         .map((img) => Number((img as HTMLImageElement).alt.replace(/\D+/g, '')))
         .sort((a, b) => a - b);
 
@@ -695,7 +695,7 @@ describe('PdfAnnotationCanvas', () => {
 
       io.fire([1, 2]);
       await waitFor(() => expect(mountedPages()).toEqual([1, 2]));
-      expect(document.querySelectorAll('.xynoplex-pdf-annotation-canvas__slot')).toHaveLength(5);
+      expect(document.querySelectorAll('.xynolog-pdf-annotation-canvas__slot')).toHaveLength(5);
     });
 
     test('releases a page that scrolls out of the window', async () => {
@@ -758,7 +758,7 @@ describe('PdfAnnotationCanvas', () => {
       const resourceAnchoredText = vi.fn().mockResolvedValue(SERVED_TEXT);
       const session = {
         client: { beckon: { hover: vi.fn() }, browse: { resourceAnchoredText } },
-      } as unknown as import('@xynoplex/sdk').XynoplexSession;
+      } as unknown as import('@xynolog/sdk').XynologSession;
 
       renderInEnglish(
         <PdfAnnotationCanvas resourceUri={resourceId("res-1")}
@@ -800,7 +800,7 @@ describe('PdfAnnotationCanvas', () => {
       });
 
       const slotOf = (page: number) =>
-        document.querySelector(`.xynoplex-pdf-annotation-canvas__slot[data-page="${page}"]`) as HTMLElement;
+        document.querySelector(`.xynolog-pdf-annotation-canvas__slot[data-page="${page}"]`) as HTMLElement;
 
       // Read whichever property expresses the reservation, so the pin is
       // about the CONTRACT (space is reserved, and mounting does not release
@@ -831,7 +831,7 @@ describe('PdfAnnotationCanvas', () => {
           beckon: { hover: vi.fn() },
           browse: { resourceAnchoredText: vi.fn().mockResolvedValue(SERVED_TEXT) },
         },
-      } as unknown as import('@xynoplex/sdk').XynoplexSession;
+      } as unknown as import('@xynolog/sdk').XynologSession;
 
       renderInEnglish(
         <PdfAnnotationCanvas resourceUri={resourceId("res-1")}
@@ -849,17 +849,17 @@ describe('PdfAnnotationCanvas', () => {
       io.fire([2, 3]);
       await waitFor(() => expect(mountedPages()).toEqual([2, 3]));
       await waitFor(() => {
-        expect(document.querySelector('.xynoplex-pdf-annotation-canvas')).toHaveAttribute('data-annotate-deferred', 'false');
+        expect(document.querySelector('.xynolog-pdf-annotation-canvas')).toHaveAttribute('data-annotate-deferred', 'false');
       });
 
       // Draw on page 3's container, not page 2's.
-      const slot3 = document.querySelector('.xynoplex-pdf-annotation-canvas__slot[data-page="3"]')!;
-      const img = slot3.querySelector('.xynoplex-pdf-annotation-canvas__image') as HTMLImageElement;
+      const slot3 = document.querySelector('.xynolog-pdf-annotation-canvas__slot[data-page="3"]')!;
+      const img = slot3.querySelector('.xynolog-pdf-annotation-canvas__image') as HTMLImageElement;
       Object.defineProperty(img, 'clientWidth', { value: 612, configurable: true });
       Object.defineProperty(img, 'clientHeight', { value: 792, configurable: true });
       fireEvent.load(img);
 
-      const container = slot3.querySelector('.xynoplex-pdf-annotation-canvas__container')!;
+      const container = slot3.querySelector('.xynolog-pdf-annotation-canvas__container')!;
       fireEvent.mouseDown(container, { clientX: 40, clientY: 40 });
       fireEvent.mouseMove(container, { clientX: 200, clientY: 160 });
       fireEvent.mouseUp(container, { clientX: 200, clientY: 160 });
@@ -878,7 +878,7 @@ describe('PdfAnnotationCanvas', () => {
           beckon: { hover: vi.fn() },
           browse: { resourceAnchoredText: vi.fn().mockResolvedValue(SERVED_TEXT) },
         },
-      } as unknown as import('@xynoplex/sdk').XynoplexSession;
+      } as unknown as import('@xynolog/sdk').XynologSession;
 
       renderInEnglish(
         <PdfAnnotationCanvas resourceUri={resourceId("res-1")}
@@ -897,7 +897,7 @@ describe('PdfAnnotationCanvas', () => {
       await waitFor(() => expect(mountedPages()).toEqual([1]));
       // Drawing still works in the column: the container is the page's own.
       await waitFor(() => {
-        expect(document.querySelector('.xynoplex-pdf-annotation-canvas__container'))
+        expect(document.querySelector('.xynolog-pdf-annotation-canvas__container'))
           .toHaveAttribute('data-drawing-mode', 'rectangle');
       });
     });
@@ -923,7 +923,7 @@ describe('PdfAnnotationCanvas', () => {
         expect(io.observedPages()).toHaveLength(5);
       });
 
-      const ticks = () => document.querySelectorAll('.xynoplex-pdf-annotation-canvas__strip-page');
+      const ticks = () => document.querySelectorAll('.xynolog-pdf-annotation-canvas__strip-page');
       await waitFor(() => expect(ticks()).toHaveLength(5));
 
       io.fire([3, 4]);
@@ -947,16 +947,16 @@ describe('PdfAnnotationCanvas', () => {
         />,
         { container: host },
       );
-      const viewer = host.querySelector('.xynoplex-pdf-annotation-canvas') as HTMLElement;
+      const viewer = host.querySelector('.xynolog-pdf-annotation-canvas') as HTMLElement;
       Object.defineProperty(viewer, 'clientHeight', { value: 513, configurable: true });
       window.dispatchEvent(new Event('resize'));
       await waitFor(() => {
         expect(io.observedPages()).toHaveLength(5);
-        expect(document.querySelectorAll('.xynoplex-pdf-annotation-canvas__strip-page')).toHaveLength(5);
+        expect(document.querySelectorAll('.xynolog-pdf-annotation-canvas__strip-page')).toHaveLength(5);
       });
       io.fire([1]);
 
-      const strip = document.querySelector('.xynoplex-pdf-annotation-canvas__strip') as HTMLElement;
+      const strip = document.querySelector('.xynolog-pdf-annotation-canvas__strip') as HTMLElement;
       await waitFor(() => expect(strip.style.maxHeight).toBe('513px'));
     });
 
@@ -976,11 +976,11 @@ describe('PdfAnnotationCanvas', () => {
       );
       await waitFor(() => {
         expect(io.observedPages()).toHaveLength(5);
-        expect(document.querySelectorAll('.xynoplex-pdf-annotation-canvas__strip-page')).toHaveLength(5);
+        expect(document.querySelectorAll('.xynolog-pdf-annotation-canvas__strip-page')).toHaveLength(5);
       });
       io.fire([1]);
 
-      const tick4 = document.querySelector('.xynoplex-pdf-annotation-canvas__strip-page[data-page="4"]')!;
+      const tick4 = document.querySelector('.xynolog-pdf-annotation-canvas__strip-page[data-page="4"]')!;
       fireEvent.click(tick4);
 
       expect(scrollIntoView).toHaveBeenCalled();
@@ -1092,13 +1092,13 @@ describe('PdfAnnotationCanvas', () => {
       );
       await waitFor(() => {
         expect(io.observedPages()).toHaveLength(5);
-        expect(document.querySelectorAll('.xynoplex-pdf-annotation-canvas__strip-page')).toHaveLength(5);
+        expect(document.querySelectorAll('.xynolog-pdf-annotation-canvas__strip-page')).toHaveLength(5);
       });
       io.fire([1]);
       await waitFor(() => expect(mountedPages()).toEqual([1]));
 
       const tick = (page: number) =>
-        document.querySelector(`.xynoplex-pdf-annotation-canvas__strip-page[data-page="${page}"]`) as HTMLButtonElement;
+        document.querySelector(`.xynolog-pdf-annotation-canvas__strip-page[data-page="${page}"]`) as HTMLButtonElement;
 
       tick(2).focus();
       fireEvent.click(tick(2));
@@ -1125,11 +1125,11 @@ describe('PdfAnnotationCanvas', () => {
       );
       await waitFor(() => {
         expect(io.observedPages()).toHaveLength(5);
-        expect(document.querySelectorAll('.xynoplex-pdf-annotation-canvas__strip-page')).toHaveLength(5);
+        expect(document.querySelectorAll('.xynolog-pdf-annotation-canvas__strip-page')).toHaveLength(5);
       });
       io.fire([1]);
 
-      const tabbable = [...document.querySelectorAll('.xynoplex-pdf-annotation-canvas__strip-page')]
+      const tabbable = [...document.querySelectorAll('.xynolog-pdf-annotation-canvas__strip-page')]
         .filter((el) => (el as HTMLElement).tabIndex === 0);
       expect(tabbable).toHaveLength(1);
       expect(tabbable[0]).toHaveAttribute('data-page', '1');
@@ -1153,12 +1153,12 @@ describe('PdfAnnotationCanvas', () => {
       );
       await waitFor(() => {
         expect(io.observedPages()).toHaveLength(5);
-        expect(document.querySelectorAll('.xynoplex-pdf-annotation-canvas__strip-page')).toHaveLength(5);
+        expect(document.querySelectorAll('.xynolog-pdf-annotation-canvas__strip-page')).toHaveLength(5);
       });
       io.fire([1]);
 
-      const column = document.querySelector('.xynoplex-pdf-annotation-canvas__column')!;
-      const strip = document.querySelector('.xynoplex-pdf-annotation-canvas__strip')!;
+      const column = document.querySelector('.xynolog-pdf-annotation-canvas__column')!;
+      const strip = document.querySelector('.xynolog-pdf-annotation-canvas__strip')!;
 
       // One axis, declared in one place, read by both.
       expect(column).toHaveAttribute('data-axis', 'vertical');
@@ -1169,7 +1169,7 @@ describe('PdfAnnotationCanvas', () => {
       // conventional place for a page rail (Preview, Acrobat), and the
       // reader's eye finds it before the page rather than after it.
       expect(strip.nextElementSibling).toBe(column);
-      expect(strip.parentElement).toHaveClass('xynoplex-pdf-annotation-canvas__viewport');
+      expect(strip.parentElement).toHaveClass('xynolog-pdf-annotation-canvas__viewport');
     });
 
     test('each strip rectangle shows its page number', async () => {
@@ -1189,12 +1189,12 @@ describe('PdfAnnotationCanvas', () => {
       );
       await waitFor(() => {
         expect(io.observedPages()).toHaveLength(5);
-        expect(document.querySelectorAll('.xynoplex-pdf-annotation-canvas__strip-page')).toHaveLength(5);
+        expect(document.querySelectorAll('.xynolog-pdf-annotation-canvas__strip-page')).toHaveLength(5);
       });
       io.fire([1]);
 
       const tick = (page: number) =>
-        document.querySelector(`.xynoplex-pdf-annotation-canvas__strip-page[data-page="${page}"]`)!;
+        document.querySelector(`.xynolog-pdf-annotation-canvas__strip-page[data-page="${page}"]`)!;
       expect(tick(1)).toHaveTextContent('1');
       expect(tick(5)).toHaveTextContent('5');
 
@@ -1217,8 +1217,8 @@ describe('PdfAnnotationCanvas', () => {
       );
       await waitFor(() => expect(io.observedPages()).toHaveLength(5));
 
-      const column = document.querySelector('.xynoplex-pdf-annotation-canvas__column') as HTMLElement;
-      const strip = document.querySelector('.xynoplex-pdf-annotation-canvas__strip') as HTMLElement;
+      const column = document.querySelector('.xynolog-pdf-annotation-canvas__column') as HTMLElement;
+      const strip = document.querySelector('.xynolog-pdf-annotation-canvas__strip') as HTMLElement;
       expect(column.style.zoom).toBe('1.75');
       expect(strip.style.zoom).toBe('');
     });
@@ -1247,11 +1247,11 @@ describe('PdfAnnotationCanvas', () => {
 
       // jsdom applies no stylesheet, so assert the CONTRACT the CSS keys off:
       // the column declares the axis but claims no scroll role of its own.
-      const column = document.querySelector('.xynoplex-pdf-annotation-canvas__column')!;
+      const column = document.querySelector('.xynolog-pdf-annotation-canvas__column')!;
       expect(column).toHaveAttribute('data-axis', 'vertical');
       expect(column).not.toHaveAttribute('data-scroller');
       // The strip is the one that scrolls independently, and silently.
-      expect(document.querySelector('.xynoplex-pdf-annotation-canvas__strip'))
+      expect(document.querySelector('.xynolog-pdf-annotation-canvas__strip'))
         .toHaveAttribute('data-scroller', 'true');
     });
 
@@ -1306,14 +1306,14 @@ describe('PdfAnnotationCanvas', () => {
       );
 
       await waitFor(() => {
-        expect(document.querySelector('.xynoplex-pdf-annotation-canvas__error')).toBeInTheDocument();
+        expect(document.querySelector('.xynolog-pdf-annotation-canvas__error')).toBeInTheDocument();
       });
 
       fireEvent.click(screen.getByRole('button', { name: /next/i }));
 
       // Page 2 loads fine; the failure belonged to page 1 and must not persist.
       await waitFor(() => {
-        expect(document.querySelector('.xynoplex-pdf-annotation-canvas__error')).not.toBeInTheDocument();
+        expect(document.querySelector('.xynolog-pdf-annotation-canvas__error')).not.toBeInTheDocument();
       });
     });
 
@@ -1331,7 +1331,7 @@ describe('PdfAnnotationCanvas', () => {
       );
 
       await waitFor(() => {
-        expect(document.querySelectorAll('.xynoplex-pdf-annotation-canvas__image')).toHaveLength(5);
+        expect(document.querySelectorAll('.xynolog-pdf-annotation-canvas__image')).toHaveLength(5);
       });
     });
 
@@ -1377,7 +1377,7 @@ describe('PdfAnnotationCanvas', () => {
       await waitFor(() => {
         expect(screen.getByText(/page 1 of 3/i)).toBeInTheDocument();
       });
-      expect(document.querySelectorAll('.xynoplex-pdf-annotation-canvas__slot')).toHaveLength(0);
+      expect(document.querySelectorAll('.xynolog-pdf-annotation-canvas__slot')).toHaveLength(0);
       expect(screen.getByRole('button', { name: /next/i })).toBeInTheDocument();
     });
   });
@@ -1410,9 +1410,9 @@ describe('PdfAnnotationCanvas', () => {
       );
 
       await waitFor(() => {
-        expect(document.querySelector('.xynoplex-pdf-annotation-canvas__page-info')).toBeInTheDocument();
+        expect(document.querySelector('.xynolog-pdf-annotation-canvas__page-info')).toBeInTheDocument();
       });
-      const indicator = document.querySelector('.xynoplex-pdf-annotation-canvas__page-info')!;
+      const indicator = document.querySelector('.xynolog-pdf-annotation-canvas__page-info')!;
       expect(indicator).toHaveAttribute('aria-live', 'polite');
       // The pager is a navigation landmark, not loose buttons in the page.
       expect(screen.getByRole('navigation')).toBeInTheDocument();

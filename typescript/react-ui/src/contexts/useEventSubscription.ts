@@ -1,15 +1,15 @@
 import { useEffect, useRef, useMemo } from 'react';
-import type { EventMap, ResourceId, ResourceScopedChannel, UnscopedChannel } from '@xynoplex/core';
-import { useXynoplex } from '../session/XynoplexProvider';
+import type { EventMap, ResourceId, ResourceScopedChannel, UnscopedChannel } from '@xynolog/core';
+import { useXynolog } from '../session/XynologProvider';
 import { useObservable } from '../hooks/useObservable';
 import { subscribeChannel } from '../session/channel-subscription';
 
 /**
  * Subscribe to a bus event with automatic cleanup.
  *
- * Two buses exist: the app-scoped bus on `XynoplexBrowser` (panel, shell,
+ * Two buses exist: the app-scoped bus on `XynologBrowser` (panel, shell,
  * tabs, nav, settings — events that must work without a KB session) and
- * the per-session bus on `XynoplexClient` (mark, beckon, gather,
+ * the per-session bus on `XynologClient` (mark, beckon, gather,
  * match, bind, yield, browse — events tied to a live KB). This hook
  * subscribes to BOTH so components don't need to know which scope a
  * channel is on. Each channel only fires on one bus, so there's no
@@ -33,27 +33,27 @@ export function useEventSubscription<K extends UnscopedChannel>(
   eventName: K,
   handler: (payload: EventMap[K]) => void,
 ): void {
-  const xynoplex = useXynoplex();
-  const session = useObservable(xynoplex.activeSession$);
+  const xynolog = useXynolog();
+  const session = useObservable(xynolog.activeSession$);
 
   const handlerRef = useRef(handler);
   useEffect(() => { handlerRef.current = handler; });
 
   useEffect(() => {
     const unsubs: Array<() => void> = [];
-    unsubs.push(xynoplex.on(eventName, (payload) => handlerRef.current(payload)));
+    unsubs.push(xynolog.on(eventName, (payload) => handlerRef.current(payload)));
     if (session) {
       unsubs.push(subscribeChannel(session.client, eventName, (payload) => handlerRef.current(payload)));
     }
     return () => { for (const u of unsubs) u(); };
-  }, [eventName, xynoplex, session]);
+  }, [eventName, xynolog, session]);
 }
 
 /**
  * Subscribe to multiple bus events at once. Same semantics as
  * `useEventSubscription`, batched — each channel is subscribed on both
- * the app bus (`XynoplexBrowser`) and the session bus
- * (`XynoplexClient`, when a session is active).
+ * the app bus (`XynologBrowser`) and the session bus
+ * (`XynologClient`, when a session is active).
  *
  * @example
  * ```tsx
@@ -68,8 +68,8 @@ export function useEventSubscriptions(
     [K in UnscopedChannel]?: (payload: EventMap[K]) => void;
   },
 ): void {
-  const xynoplex = useXynoplex();
-  const session = useObservable(xynoplex.activeSession$);
+  const xynolog = useXynolog();
+  const session = useObservable(xynolog.activeSession$);
 
   const handlersRef = useRef(subscriptions);
   useEffect(() => { handlersRef.current = subscriptions; });
@@ -90,13 +90,13 @@ export function useEventSubscriptions(
         const current = handlersRef.current[channel];
         if (current) (current as (p: EventMap[UnscopedChannel]) => void)(payload);
       };
-      unsubs.push(xynoplex.on(channel, fan));
+      unsubs.push(xynolog.on(channel, fan));
       if (session) {
         unsubs.push(subscribeChannel(session.client, channel, fan));
       }
     }
     return () => { for (const unsub of unsubs) unsub(); };
-  }, [eventNames, xynoplex, session]);
+  }, [eventNames, xynolog, session]);
 }
 
 /**
@@ -122,8 +122,8 @@ export function useResourceEventSubscriptions(
     [K in ResourceScopedChannel]?: (payload: EventMap[K]) => void;
   },
 ): void {
-  const xynoplex = useXynoplex();
-  const session = useObservable(xynoplex.activeSession$);
+  const xynolog = useXynolog();
+  const session = useObservable(xynolog.activeSession$);
 
   const handlersRef = useRef(subscriptions);
   useEffect(() => { handlersRef.current = subscriptions; });

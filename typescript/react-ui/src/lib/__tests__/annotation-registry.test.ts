@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { annotationId, resourceId, type Annotation } from '@xynoplex/core';
+import { annotationId, resourceId, type Annotation } from '@xynolog/core';
 import { ANNOTATORS, annotatorKeyForMotivation } from '../annotation-registry';
 
 /** An annotation of `motivation` on a whole resource. */

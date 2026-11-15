@@ -3,8 +3,8 @@
  * only; no bus. Signing in happens at the issuer (`session/oauth.ts`).
  */
 
-import type { ResourceId, components } from '@xynoplex/core';
-import type { IGatewayOperations } from '@xynoplex/core';
+import type { ResourceId, components } from '@xynolog/core';
+import type { IGatewayOperations } from '@xynolog/core';
 import type { AuthNamespace as IAuthNamespace, User } from './types';
 
 type ProtectedResourceMetadata = components['schemas']['ProtectedResourceMetadata'];

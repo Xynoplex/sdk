@@ -1,4 +1,4 @@
-package xynoplex
+package xynolog
 
 // A service account's assertion of itself, signed with its own key (RFC 7523
 // §2.2, OpenID Connect's private_key_jwt). The issuer holds the key's public
@@ -40,7 +40,7 @@ func JWKThumbprint(key *rsa.PublicKey) string {
 
 // ParsePrivateKeyPEM is the RSA key a PKCS#8 PEM holds (-----BEGIN PRIVATE
 // KEY-----), as the launcher hands a worker its key in
-// XYNOPLEX_OIDC_CLIENT_KEY. A PEM of another kind, or a key that is not RSA,
+// XYNOLOG_OIDC_CLIENT_KEY. A PEM of another kind, or a key that is not RSA,
 // is refused.
 func ParsePrivateKeyPEM(text string) (*rsa.PrivateKey, error) {
 	block, _ := pem.Decode([]byte(text))

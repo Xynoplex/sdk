@@ -1,5 +1,5 @@
 /**
- * Xynoplex CSS Variables
+ * Xynolog CSS Variables
  *
  * Design tokens exposed as CSS custom properties.
  * These variables provide the foundation for all component styling.
@@ -7,404 +7,404 @@
 
 :root {
   /* Primary Colors */
-  --xynoplex-color-primary-50: #eff6ff;
-  --xynoplex-color-primary-100: #dbeafe;
-  --xynoplex-color-primary-200: #bfdbfe;
-  --xynoplex-color-primary-300: #93c5fd;
-  --xynoplex-color-primary-400: #60a5fa;
-  --xynoplex-color-primary-500: #0080ff;
-  --xynoplex-color-primary-600: #0066cc;
-  --xynoplex-color-primary-700: #0052a3;
-  --xynoplex-color-primary-800: #1e40af;
-  --xynoplex-color-primary-900: #1e3a8a;
+  --xynolog-color-primary-50: #eff6ff;
+  --xynolog-color-primary-100: #dbeafe;
+  --xynolog-color-primary-200: #bfdbfe;
+  --xynolog-color-primary-300: #93c5fd;
+  --xynolog-color-primary-400: #60a5fa;
+  --xynolog-color-primary-500: #0080ff;
+  --xynolog-color-primary-600: #0066cc;
+  --xynolog-color-primary-700: #0052a3;
+  --xynolog-color-primary-800: #1e40af;
+  --xynolog-color-primary-900: #1e3a8a;
 
   /* Blue Colors (Tailwind palette for toolbar) */
-  --xynoplex-color-blue-50: #eff6ff;
-  --xynoplex-color-blue-100: #dbeafe;
-  --xynoplex-color-blue-200: #bfdbfe;
-  --xynoplex-color-blue-300: #93c5fd;
-  --xynoplex-color-blue-400: #60a5fa;
-  --xynoplex-color-blue-500: #3b82f6;
-  --xynoplex-color-blue-600: #2563eb;
-  --xynoplex-color-blue-700: #1d4ed8;
-  --xynoplex-color-blue-800: #1e40af;
-  --xynoplex-color-blue-900: #1e3a8a;
+  --xynolog-color-blue-50: #eff6ff;
+  --xynolog-color-blue-100: #dbeafe;
+  --xynolog-color-blue-200: #bfdbfe;
+  --xynolog-color-blue-300: #93c5fd;
+  --xynolog-color-blue-400: #60a5fa;
+  --xynolog-color-blue-500: #3b82f6;
+  --xynolog-color-blue-600: #2563eb;
+  --xynolog-color-blue-700: #1d4ed8;
+  --xynolog-color-blue-800: #1e40af;
+  --xynolog-color-blue-900: #1e3a8a;
 
   /* Cyan Colors (Tailwind palette for gradient accents) */
-  --xynoplex-color-cyan-50: #ecfeff;
-  --xynoplex-color-cyan-100: #cffafe;
-  --xynoplex-color-cyan-200: #a5f3fc;
-  --xynoplex-color-cyan-300: #67e8f9;
-  --xynoplex-color-cyan-400: #22d3ee;
-  --xynoplex-color-cyan-500: #06b6d4;
-  --xynoplex-color-cyan-600: #0891b2;
-  --xynoplex-color-cyan-700: #0e7490;
-  --xynoplex-color-cyan-800: #155e75;
-  --xynoplex-color-cyan-900: #164e63;
+  --xynolog-color-cyan-50: #ecfeff;
+  --xynolog-color-cyan-100: #cffafe;
+  --xynolog-color-cyan-200: #a5f3fc;
+  --xynolog-color-cyan-300: #67e8f9;
+  --xynolog-color-cyan-400: #22d3ee;
+  --xynolog-color-cyan-500: #06b6d4;
+  --xynolog-color-cyan-600: #0891b2;
+  --xynolog-color-cyan-700: #0e7490;
+  --xynolog-color-cyan-800: #155e75;
+  --xynolog-color-cyan-900: #164e63;
 
   /* Gray Colors (Tailwind palette for consistency) */
-  --xynoplex-color-gray-50: #f9fafb;
-  --xynoplex-color-gray-100: #f3f4f6;
-  --xynoplex-color-gray-200: #e5e7eb;
-  --xynoplex-color-gray-300: #d1d5db;
-  --xynoplex-color-gray-400: #9ca3af;
-  --xynoplex-color-gray-500: #6b7280;
-  --xynoplex-color-gray-600: #4b5563;
-  --xynoplex-color-gray-700: #374151;
-  --xynoplex-color-gray-800: #1f2937;
-  --xynoplex-color-gray-900: #111827;
+  --xynolog-color-gray-50: #f9fafb;
+  --xynolog-color-gray-100: #f3f4f6;
+  --xynolog-color-gray-200: #e5e7eb;
+  --xynolog-color-gray-300: #d1d5db;
+  --xynolog-color-gray-400: #9ca3af;
+  --xynolog-color-gray-500: #6b7280;
+  --xynolog-color-gray-600: #4b5563;
+  --xynolog-color-gray-700: #374151;
+  --xynolog-color-gray-800: #1f2937;
+  --xynolog-color-gray-900: #111827;
 
   /* Purple/Violet Colors (Tailwind palette for schemas) */
-  --xynoplex-color-purple-50: #faf5ff;
-  --xynoplex-color-purple-100: #f3e8ff;
-  --xynoplex-color-purple-200: #e9d5ff;
-  --xynoplex-color-purple-300: #d8b4fe;
-  --xynoplex-color-purple-400: #c084fc;
-  --xynoplex-color-purple-500: #a855f7;
-  --xynoplex-color-purple-600: #9333ea;
-  --xynoplex-color-purple-700: #7e22ce;
-  --xynoplex-color-purple-800: #6b21a8;
-  --xynoplex-color-purple-900: #581c87;
+  --xynolog-color-purple-50: #faf5ff;
+  --xynolog-color-purple-100: #f3e8ff;
+  --xynolog-color-purple-200: #e9d5ff;
+  --xynolog-color-purple-300: #d8b4fe;
+  --xynolog-color-purple-400: #c084fc;
+  --xynolog-color-purple-500: #a855f7;
+  --xynolog-color-purple-600: #9333ea;
+  --xynolog-color-purple-700: #7e22ce;
+  --xynolog-color-purple-800: #6b21a8;
+  --xynolog-color-purple-900: #581c87;
 
   /* Green Colors (Tailwind palette for success states) */
-  --xynoplex-color-green-50: #f0fdf4;
-  --xynoplex-color-green-100: #dcfce7;
-  --xynoplex-color-green-200: #bbf7d0;
-  --xynoplex-color-green-300: #86efac;
-  --xynoplex-color-green-400: #4ade80;
-  --xynoplex-color-green-500: #22c55e;
-  --xynoplex-color-green-600: #16a34a;
-  --xynoplex-color-green-700: #15803d;
-  --xynoplex-color-green-800: #166534;
-  --xynoplex-color-green-900: #14532d;
+  --xynolog-color-green-50: #f0fdf4;
+  --xynolog-color-green-100: #dcfce7;
+  --xynolog-color-green-200: #bbf7d0;
+  --xynolog-color-green-300: #86efac;
+  --xynolog-color-green-400: #4ade80;
+  --xynolog-color-green-500: #22c55e;
+  --xynolog-color-green-600: #16a34a;
+  --xynolog-color-green-700: #15803d;
+  --xynolog-color-green-800: #166534;
+  --xynolog-color-green-900: #14532d;
 
   /* Orange/Amber Colors (Tailwind palette for warnings) */
-  --xynoplex-color-orange-50: #fff7ed;
-  --xynoplex-color-orange-100: #ffedd5;
-  --xynoplex-color-orange-200: #fed7aa;
-  --xynoplex-color-orange-300: #fdba74;
-  --xynoplex-color-orange-400: #fb923c;
-  --xynoplex-color-orange-500: #f97316;
-  --xynoplex-color-orange-600: #ea580c;
-  --xynoplex-color-orange-700: #c2410c;
-  --xynoplex-color-orange-800: #9a3412;
-  --xynoplex-color-orange-900: #7c2d12;
+  --xynolog-color-orange-50: #fff7ed;
+  --xynolog-color-orange-100: #ffedd5;
+  --xynolog-color-orange-200: #fed7aa;
+  --xynolog-color-orange-300: #fdba74;
+  --xynolog-color-orange-400: #fb923c;
+  --xynolog-color-orange-500: #f97316;
+  --xynolog-color-orange-600: #ea580c;
+  --xynolog-color-orange-700: #c2410c;
+  --xynolog-color-orange-800: #9a3412;
+  --xynolog-color-orange-900: #7c2d12;
 
   /* Yellow Colors (Tailwind palette for highlighting) */
-  --xynoplex-color-yellow-50: #fefce8;
-  --xynoplex-color-yellow-100: #fef9c3;
-  --xynoplex-color-yellow-200: #fef08a;
-  --xynoplex-color-yellow-300: #fde047;
-  --xynoplex-color-yellow-400: #facc15;
-  --xynoplex-color-yellow-500: #eab308;
-  --xynoplex-color-yellow-600: #ca8a04;
-  --xynoplex-color-yellow-700: #a16207;
-  --xynoplex-color-yellow-800: #854d0e;
-  --xynoplex-color-yellow-900: #713f12;
+  --xynolog-color-yellow-50: #fefce8;
+  --xynolog-color-yellow-100: #fef9c3;
+  --xynolog-color-yellow-200: #fef08a;
+  --xynolog-color-yellow-300: #fde047;
+  --xynolog-color-yellow-400: #facc15;
+  --xynolog-color-yellow-500: #eab308;
+  --xynolog-color-yellow-600: #ca8a04;
+  --xynolog-color-yellow-700: #a16207;
+  --xynolog-color-yellow-800: #854d0e;
+  --xynolog-color-yellow-900: #713f12;
 
   /* Amber Colors (Alternative warning palette) */
-  --xynoplex-color-amber-50: #fffbeb;
-  --xynoplex-color-amber-100: #fef3c7;
-  --xynoplex-color-amber-200: #fde68a;
-  --xynoplex-color-amber-300: #fcd34d;
-  --xynoplex-color-amber-400: #fbbf24;
-  --xynoplex-color-amber-500: #f59e0b;
-  --xynoplex-color-amber-600: #d97706;
-  --xynoplex-color-amber-700: #b45309;
-  --xynoplex-color-amber-800: #92400e;
-  --xynoplex-color-amber-900: #78350f;
+  --xynolog-color-amber-50: #fffbeb;
+  --xynolog-color-amber-100: #fef3c7;
+  --xynolog-color-amber-200: #fde68a;
+  --xynolog-color-amber-300: #fcd34d;
+  --xynolog-color-amber-400: #fbbf24;
+  --xynolog-color-amber-500: #f59e0b;
+  --xynolog-color-amber-600: #d97706;
+  --xynolog-color-amber-700: #b45309;
+  --xynolog-color-amber-800: #92400e;
+  --xynolog-color-amber-900: #78350f;
 
   /* Red Colors (Tailwind palette for errors) */
-  --xynoplex-color-red-50: #fef2f2;
-  --xynoplex-color-red-100: #fee2e2;
-  --xynoplex-color-red-200: #fecaca;
-  --xynoplex-color-red-300: #fca5a5;
-  --xynoplex-color-red-400: #f87171;
-  --xynoplex-color-red-500: #ef4444;
-  --xynoplex-color-red-600: #dc2626;
-  --xynoplex-color-red-700: #b91c1c;
-  --xynoplex-color-red-800: #991b1b;
-  --xynoplex-color-red-900: #7f1d1d;
+  --xynolog-color-red-50: #fef2f2;
+  --xynolog-color-red-100: #fee2e2;
+  --xynolog-color-red-200: #fecaca;
+  --xynolog-color-red-300: #fca5a5;
+  --xynolog-color-red-400: #f87171;
+  --xynolog-color-red-500: #ef4444;
+  --xynolog-color-red-600: #dc2626;
+  --xynolog-color-red-700: #b91c1c;
+  --xynolog-color-red-800: #991b1b;
+  --xynolog-color-red-900: #7f1d1d;
 
   /* Secondary Colors */
-  --xynoplex-color-secondary-50: #f0fffe;
-  --xynoplex-color-secondary-100: #e0fffd;
-  --xynoplex-color-secondary-200: #b3fffa;
-  --xynoplex-color-secondary-300: #66fff6;
-  --xynoplex-color-secondary-400: #1afff1;
-  --xynoplex-color-secondary-500: #00ffff;
-  --xynoplex-color-secondary-600: #00cccc;
-  --xynoplex-color-secondary-700: #00a3a3;
-  --xynoplex-color-secondary-800: #007a7a;
-  --xynoplex-color-secondary-900: #005252;
+  --xynolog-color-secondary-50: #f0fffe;
+  --xynolog-color-secondary-100: #e0fffd;
+  --xynolog-color-secondary-200: #b3fffa;
+  --xynolog-color-secondary-300: #66fff6;
+  --xynolog-color-secondary-400: #1afff1;
+  --xynolog-color-secondary-500: #00ffff;
+  --xynolog-color-secondary-600: #00cccc;
+  --xynolog-color-secondary-700: #00a3a3;
+  --xynolog-color-secondary-800: #007a7a;
+  --xynolog-color-secondary-900: #005252;
 
   /* Semantic Colors */
-  --xynoplex-color-error: #ef4444;
-  --xynoplex-color-error-light: #fca5a5;
-  --xynoplex-color-error-dark: #b91c1c;
-  --xynoplex-color-warning: #f59e0b;
-  --xynoplex-color-warning-light: #fcd34d;
-  --xynoplex-color-warning-dark: #d97706;
-  --xynoplex-color-success: #10b981;
-  --xynoplex-color-success-light: #6ee7b7;
-  --xynoplex-color-success-dark: #047857;
-  --xynoplex-color-info: #3b82f6;
-  --xynoplex-color-info-light: #93c5fd;
-  --xynoplex-color-info-dark: #1d4ed8;
+  --xynolog-color-error: #ef4444;
+  --xynolog-color-error-light: #fca5a5;
+  --xynolog-color-error-dark: #b91c1c;
+  --xynolog-color-warning: #f59e0b;
+  --xynolog-color-warning-light: #fcd34d;
+  --xynolog-color-warning-dark: #d97706;
+  --xynolog-color-success: #10b981;
+  --xynolog-color-success-light: #6ee7b7;
+  --xynolog-color-success-dark: #047857;
+  --xynolog-color-info: #3b82f6;
+  --xynolog-color-info-light: #93c5fd;
+  --xynolog-color-info-dark: #1d4ed8;
 
   /* Base Colors */
-  --xynoplex-color-white: #ffffff;
-  --xynoplex-color-black: #000000;
+  --xynolog-color-white: #ffffff;
+  --xynolog-color-black: #000000;
 
   /* Neutral Colors */
-  --xynoplex-color-neutral-0: #ffffff;
-  --xynoplex-color-neutral-50: #f9fafb;
-  --xynoplex-color-neutral-100: #f3f4f6;
-  --xynoplex-color-neutral-200: #e5e7eb;
-  --xynoplex-color-neutral-300: #d1d5db;
-  --xynoplex-color-neutral-400: #9ca3af;
-  --xynoplex-color-neutral-500: #6b7280;
-  --xynoplex-color-neutral-600: #4b5563;
-  --xynoplex-color-neutral-700: #374151;
-  --xynoplex-color-neutral-800: #1f2937;
-  --xynoplex-color-neutral-900: #111827;
-  --xynoplex-color-neutral-950: #030712;
-  --xynoplex-color-neutral-1000: #000000;
+  --xynolog-color-neutral-0: #ffffff;
+  --xynolog-color-neutral-50: #f9fafb;
+  --xynolog-color-neutral-100: #f3f4f6;
+  --xynolog-color-neutral-200: #e5e7eb;
+  --xynolog-color-neutral-300: #d1d5db;
+  --xynolog-color-neutral-400: #9ca3af;
+  --xynolog-color-neutral-500: #6b7280;
+  --xynolog-color-neutral-600: #4b5563;
+  --xynolog-color-neutral-700: #374151;
+  --xynolog-color-neutral-800: #1f2937;
+  --xynolog-color-neutral-900: #111827;
+  --xynolog-color-neutral-950: #030712;
+  --xynolog-color-neutral-1000: #000000;
 
   /* Background Colors */
-  --xynoplex-bg-primary: var(--xynoplex-color-neutral-0);
-  --xynoplex-bg-secondary: var(--xynoplex-color-neutral-50);
-  --xynoplex-bg-tertiary: var(--xynoplex-color-neutral-100);
-  --xynoplex-bg-inverse: var(--xynoplex-color-neutral-900);
+  --xynolog-bg-primary: var(--xynolog-color-neutral-0);
+  --xynolog-bg-secondary: var(--xynolog-color-neutral-50);
+  --xynolog-bg-tertiary: var(--xynolog-color-neutral-100);
+  --xynolog-bg-inverse: var(--xynolog-color-neutral-900);
 
   /* Borders — the panel/card border every pattern file reaches for. */
-  --xynoplex-border-primary: var(--xynoplex-color-neutral-200);
-  --xynoplex-border-secondary: var(--xynoplex-color-neutral-100);
+  --xynolog-border-primary: var(--xynolog-color-neutral-200);
+  --xynolog-border-secondary: var(--xynolog-color-neutral-100);
 
   /* Interaction */
-  --xynoplex-bg-hover: var(--xynoplex-color-neutral-100);
-  --xynoplex-focus-ring: var(--xynoplex-color-blue-500);
+  --xynolog-bg-hover: var(--xynolog-color-neutral-100);
+  --xynolog-focus-ring: var(--xynolog-color-blue-500);
 
   /* Text Colors */
-  --xynoplex-text-primary: var(--xynoplex-color-neutral-900);
-  --xynoplex-text-secondary: var(--xynoplex-color-neutral-600);
-  --xynoplex-text-tertiary: var(--xynoplex-color-neutral-500);
-  --xynoplex-text-disabled: var(--xynoplex-color-neutral-400);
-  --xynoplex-text-inverse: var(--xynoplex-color-neutral-0);
+  --xynolog-text-primary: var(--xynolog-color-neutral-900);
+  --xynolog-text-secondary: var(--xynolog-color-neutral-600);
+  --xynolog-text-tertiary: var(--xynolog-color-neutral-500);
+  --xynolog-text-disabled: var(--xynolog-color-neutral-400);
+  --xynolog-text-inverse: var(--xynolog-color-neutral-0);
 
   /* Spacing */
-  --xynoplex-spacing-0: 0;
-  --xynoplex-panel-gap-xs: 0.25rem;
-  --xynoplex-text-2xs: 0.625rem;
-  --xynoplex-spacing-xs: 0.25rem;
-  --xynoplex-spacing-sm: 0.5rem;
-  --xynoplex-spacing-md: 1rem;
-  --xynoplex-spacing-lg: 1.5rem;
-  --xynoplex-spacing-xl: 2rem;
-  --xynoplex-spacing-2xl: 2.5rem;
-  --xynoplex-spacing-3xl: 3rem;
-  --xynoplex-spacing-4xl: 4rem;
-  --xynoplex-spacing-5xl: 5rem;
+  --xynolog-spacing-0: 0;
+  --xynolog-panel-gap-xs: 0.25rem;
+  --xynolog-text-2xs: 0.625rem;
+  --xynolog-spacing-xs: 0.25rem;
+  --xynolog-spacing-sm: 0.5rem;
+  --xynolog-spacing-md: 1rem;
+  --xynolog-spacing-lg: 1.5rem;
+  --xynolog-spacing-xl: 2rem;
+  --xynolog-spacing-2xl: 2.5rem;
+  --xynolog-spacing-3xl: 3rem;
+  --xynolog-spacing-4xl: 4rem;
+  --xynolog-spacing-5xl: 5rem;
 
   /* Font Families */
-  --xynoplex-font-sans: inter, system-ui, -apple-system, blinkmacsystemfont, "Segoe UI", roboto, "Helvetica Neue", arial, sans-serif;
-  --xynoplex-font-mono: jetbrains mono, "SF Mono", monaco, consolas, "Liberation Mono", "Courier New", monospace;
+  --xynolog-font-sans: inter, system-ui, -apple-system, blinkmacsystemfont, "Segoe UI", roboto, "Helvetica Neue", arial, sans-serif;
+  --xynolog-font-mono: jetbrains mono, "SF Mono", monaco, consolas, "Liberation Mono", "Courier New", monospace;
 
   /* Font Sizes */
-  --xynoplex-text-xs: 0.75rem;
-  --xynoplex-text-sm: 0.875rem;
-  --xynoplex-text-base: 1rem;
-  --xynoplex-text-lg: 1.125rem;
-  --xynoplex-text-xl: 1.25rem;
-  --xynoplex-text-2xl: 1.5rem;
-  --xynoplex-text-3xl: 1.875rem;
-  --xynoplex-text-4xl: 2.25rem;
-  --xynoplex-text-5xl: 3rem;
+  --xynolog-text-xs: 0.75rem;
+  --xynolog-text-sm: 0.875rem;
+  --xynolog-text-base: 1rem;
+  --xynolog-text-lg: 1.125rem;
+  --xynolog-text-xl: 1.25rem;
+  --xynolog-text-2xl: 1.5rem;
+  --xynolog-text-3xl: 1.875rem;
+  --xynolog-text-4xl: 2.25rem;
+  --xynolog-text-5xl: 3rem;
 
   /* Font Weights */
-  --xynoplex-font-thin: 100;
-  --xynoplex-font-light: 300;
-  --xynoplex-font-normal: 400;
-  --xynoplex-font-medium: 500;
-  --xynoplex-font-semibold: 600;
-  --xynoplex-font-bold: 700;
-  --xynoplex-font-black: 900;
+  --xynolog-font-thin: 100;
+  --xynolog-font-light: 300;
+  --xynolog-font-normal: 400;
+  --xynolog-font-medium: 500;
+  --xynolog-font-semibold: 600;
+  --xynolog-font-bold: 700;
+  --xynolog-font-black: 900;
 
   /* Line Heights */
-  --xynoplex-leading-none: 1;
-  --xynoplex-leading-tight: 1.25;
-  --xynoplex-leading-snug: 1.375;
-  --xynoplex-leading-normal: 1.5;
-  --xynoplex-leading-relaxed: 1.625;
-  --xynoplex-leading-loose: 2;
+  --xynolog-leading-none: 1;
+  --xynolog-leading-tight: 1.25;
+  --xynolog-leading-snug: 1.375;
+  --xynolog-leading-normal: 1.5;
+  --xynolog-leading-relaxed: 1.625;
+  --xynolog-leading-loose: 2;
 
   /* Border Radius */
-  --xynoplex-radius-none: 0;
-  --xynoplex-radius-sm: 0.125rem;
-  --xynoplex-radius-base: 0.25rem;
-  --xynoplex-radius-md: 0.375rem;
-  --xynoplex-radius-lg: 0.5rem;
-  --xynoplex-radius-xl: 0.75rem;
-  --xynoplex-radius-2xl: 1rem;
-  --xynoplex-radius-3xl: 1.5rem;
-  --xynoplex-radius-full: 9999px;
+  --xynolog-radius-none: 0;
+  --xynolog-radius-sm: 0.125rem;
+  --xynolog-radius-base: 0.25rem;
+  --xynolog-radius-md: 0.375rem;
+  --xynolog-radius-lg: 0.5rem;
+  --xynolog-radius-xl: 0.75rem;
+  --xynolog-radius-2xl: 1rem;
+  --xynolog-radius-3xl: 1.5rem;
+  --xynolog-radius-full: 9999px;
 
   /* Shadows */
-  --xynoplex-shadow-none: none;
-  --xynoplex-shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --xynoplex-shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-  --xynoplex-shadow-base: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --xynoplex-shadow-md: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --xynoplex-shadow-lg: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-  --xynoplex-shadow-xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
-  --xynoplex-shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
+  --xynolog-shadow-none: none;
+  --xynolog-shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --xynolog-shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --xynolog-shadow-base: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --xynolog-shadow-md: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --xynolog-shadow-lg: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --xynolog-shadow-xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  --xynolog-shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
 
   /* Transition Durations */
-  --xynoplex-duration-fast: 150ms;
-  --xynoplex-duration-base: 250ms;
-  --xynoplex-duration-slow: 350ms;
-  --xynoplex-duration-slower: 500ms;
+  --xynolog-duration-fast: 150ms;
+  --xynolog-duration-base: 250ms;
+  --xynolog-duration-slow: 350ms;
+  --xynolog-duration-slower: 500ms;
 
   /* Transition Timing Functions */
-  --xynoplex-ease-linear: linear;
-  --xynoplex-ease: cubic-bezier(0.4, 0, 0.2, 1);
-  --xynoplex-ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --xynolog-ease-linear: linear;
+  --xynolog-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --xynolog-ease-in: cubic-bezier(0.4, 0, 1, 1);
 
   /* Button Gradient Colors */
-  --xynoplex-gradient-cyan-20: rgba(6, 182, 212, 0.2);  /* cyan-500 at 20% */
-  --xynoplex-gradient-cyan-30: rgba(6, 182, 212, 0.3);  /* cyan-500 at 30% */
-  --xynoplex-gradient-blue-20: rgba(59, 130, 246, 0.2); /* blue-500 at 20% */
-  --xynoplex-gradient-cyan-dark-20: rgba(8, 145, 178, 0.2); /* cyan-600 at 20% */
-  --xynoplex-gradient-blue-dark-20: rgba(37, 99, 235, 0.2); /* blue-600 at 20% */
+  --xynolog-gradient-cyan-20: rgba(6, 182, 212, 0.2);  /* cyan-500 at 20% */
+  --xynolog-gradient-cyan-30: rgba(6, 182, 212, 0.3);  /* cyan-500 at 30% */
+  --xynolog-gradient-blue-20: rgba(59, 130, 246, 0.2); /* blue-500 at 20% */
+  --xynolog-gradient-cyan-dark-20: rgba(8, 145, 178, 0.2); /* cyan-600 at 20% */
+  --xynolog-gradient-blue-dark-20: rgba(37, 99, 235, 0.2); /* blue-600 at 20% */
 
   /* Button gradients */
-  --xynoplex-gradient-primary: linear-gradient(to right, var(--xynoplex-gradient-cyan-20), var(--xynoplex-gradient-blue-20));
-  --xynoplex-gradient-primary-dark: linear-gradient(to right, var(--xynoplex-gradient-cyan-dark-20), var(--xynoplex-gradient-blue-dark-20));
-  --xynoplex-gradient-primary-hover: linear-gradient(to right, var(--xynoplex-color-cyan-600), var(--xynoplex-color-blue-600));
-  --xynoplex-gradient-primary-hover-dark: linear-gradient(to right, var(--xynoplex-color-cyan-500), var(--xynoplex-color-blue-500));
-  --xynoplex-ease-out: cubic-bezier(0, 0, 0.2, 1);
-  --xynoplex-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --xynolog-gradient-primary: linear-gradient(to right, var(--xynolog-gradient-cyan-20), var(--xynolog-gradient-blue-20));
+  --xynolog-gradient-primary-dark: linear-gradient(to right, var(--xynolog-gradient-cyan-dark-20), var(--xynolog-gradient-blue-dark-20));
+  --xynolog-gradient-primary-hover: linear-gradient(to right, var(--xynolog-color-cyan-600), var(--xynolog-color-blue-600));
+  --xynolog-gradient-primary-hover-dark: linear-gradient(to right, var(--xynolog-color-cyan-500), var(--xynolog-color-blue-500));
+  --xynolog-ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --xynolog-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
 
   /* Z-Index Scale */
-  --xynoplex-z-0: 0;
-  --xynoplex-z-10: 10;
-  --xynoplex-z-20: 20;
-  --xynoplex-z-30: 30;
-  --xynoplex-z-40: 40;
-  --xynoplex-z-50: 50;
-  --xynoplex-z-60: 60;
-  --xynoplex-z-70: 70;
-  --xynoplex-z-80: 80;
-  --xynoplex-z-90: 90;
-  --xynoplex-z-100: 100;
+  --xynolog-z-0: 0;
+  --xynolog-z-10: 10;
+  --xynolog-z-20: 20;
+  --xynolog-z-30: 30;
+  --xynolog-z-40: 40;
+  --xynolog-z-50: 50;
+  --xynolog-z-60: 60;
+  --xynolog-z-70: 70;
+  --xynolog-z-80: 80;
+  --xynolog-z-90: 90;
+  --xynolog-z-100: 100;
 
   /* Panel Component Tokens */
   /* These define the standard sizing for all panels */
-  --xynoplex-panel-padding: 1rem;
-  --xynoplex-panel-padding-sm: 0.5rem;
-  --xynoplex-panel-padding-md: 0.75rem;
-  --xynoplex-panel-padding-xs: 0.25rem;
-  --xynoplex-panel-gap: 1rem;
-  --xynoplex-panel-gap-sm: 0.5rem;
-  --xynoplex-panel-gap-md: 0.75rem;
-  --xynoplex-panel-header-margin-bottom: 0.75rem;
-  --xynoplex-panel-title-size: var(--xynoplex-text-lg);
-  --xynoplex-panel-title-weight: var(--xynoplex-font-semibold);
-  --xynoplex-panel-section-gap: 1.5rem;
-  --xynoplex-panel-field-gap: 0.5rem;
-  --xynoplex-panel-border-radius: var(--xynoplex-radius-lg);
-  --xynoplex-panel-icon-size: 1.125rem;
-  --xynoplex-panel-icon-size-sm: 1rem;
-  --xynoplex-panel-icon-size-lg: 1.5rem;
+  --xynolog-panel-padding: 1rem;
+  --xynolog-panel-padding-sm: 0.5rem;
+  --xynolog-panel-padding-md: 0.75rem;
+  --xynolog-panel-padding-xs: 0.25rem;
+  --xynolog-panel-gap: 1rem;
+  --xynolog-panel-gap-sm: 0.5rem;
+  --xynolog-panel-gap-md: 0.75rem;
+  --xynolog-panel-header-margin-bottom: 0.75rem;
+  --xynolog-panel-title-size: var(--xynolog-text-lg);
+  --xynolog-panel-title-weight: var(--xynolog-font-semibold);
+  --xynolog-panel-section-gap: 1.5rem;
+  --xynolog-panel-field-gap: 0.5rem;
+  --xynolog-panel-border-radius: var(--xynolog-radius-lg);
+  --xynolog-panel-icon-size: 1.125rem;
+  --xynolog-panel-icon-size-sm: 1rem;
+  --xynolog-panel-icon-size-lg: 1.5rem;
 
   /* The JSON views' syntax (lib/codemirror-json-theme.ts) */
-  --xynoplex-json-string: var(--xynoplex-color-blue-900);
-  --xynoplex-json-number: var(--xynoplex-color-blue-700);
-  --xynoplex-json-literal: var(--xynoplex-color-purple-600);
-  --xynoplex-json-property: var(--xynoplex-color-green-800);
-  --xynoplex-json-punctuation: var(--xynoplex-color-neutral-600);
+  --xynolog-json-string: var(--xynolog-color-blue-900);
+  --xynolog-json-number: var(--xynolog-color-blue-700);
+  --xynolog-json-literal: var(--xynolog-color-purple-600);
+  --xynolog-json-property: var(--xynolog-color-green-800);
+  --xynolog-json-punctuation: var(--xynolog-color-neutral-600);
 }
 
 /* Dark Mode Support */
 @media (prefers-color-scheme: dark) {
   :root {
     /* Override for dark mode */
-    --xynoplex-bg-primary: var(--xynoplex-color-neutral-900);
-    --xynoplex-bg-secondary: var(--xynoplex-color-neutral-800);
-    --xynoplex-bg-tertiary: var(--xynoplex-color-neutral-700);
-    --xynoplex-bg-inverse: var(--xynoplex-color-neutral-0);
+    --xynolog-bg-primary: var(--xynolog-color-neutral-900);
+    --xynolog-bg-secondary: var(--xynolog-color-neutral-800);
+    --xynolog-bg-tertiary: var(--xynolog-color-neutral-700);
+    --xynolog-bg-inverse: var(--xynolog-color-neutral-0);
 
-    --xynoplex-text-primary: var(--xynoplex-color-neutral-50);
-    --xynoplex-text-secondary: var(--xynoplex-color-neutral-300);
-    --xynoplex-text-tertiary: var(--xynoplex-color-neutral-400);
-    --xynoplex-text-disabled: var(--xynoplex-color-neutral-600);
-    --xynoplex-text-inverse: var(--xynoplex-color-neutral-900);
+    --xynolog-text-primary: var(--xynolog-color-neutral-50);
+    --xynolog-text-secondary: var(--xynolog-color-neutral-300);
+    --xynolog-text-tertiary: var(--xynolog-color-neutral-400);
+    --xynolog-text-disabled: var(--xynolog-color-neutral-600);
+    --xynolog-text-inverse: var(--xynolog-color-neutral-900);
 
-    --xynoplex-border-primary: var(--xynoplex-color-neutral-700);
-    --xynoplex-border-secondary: var(--xynoplex-color-neutral-800);
-    --xynoplex-bg-hover: var(--xynoplex-color-neutral-800);
-    --xynoplex-focus-ring: var(--xynoplex-color-blue-400);
+    --xynolog-border-primary: var(--xynolog-color-neutral-700);
+    --xynolog-border-secondary: var(--xynolog-color-neutral-800);
+    --xynolog-bg-hover: var(--xynolog-color-neutral-800);
+    --xynolog-focus-ring: var(--xynolog-color-blue-400);
 
     /* The JSON views' syntax (lib/codemirror-json-theme.ts) */
-    --xynoplex-json-string: var(--xynoplex-color-green-400);
-    --xynoplex-json-number: var(--xynoplex-color-orange-300);
-    --xynoplex-json-literal: var(--xynoplex-color-purple-400);
-    --xynoplex-json-property: var(--xynoplex-color-red-400);
-    --xynoplex-json-punctuation: var(--xynoplex-color-neutral-400);
+    --xynolog-json-string: var(--xynolog-color-green-400);
+    --xynolog-json-number: var(--xynolog-color-orange-300);
+    --xynolog-json-literal: var(--xynolog-color-purple-400);
+    --xynolog-json-property: var(--xynolog-color-red-400);
+    --xynolog-json-punctuation: var(--xynolog-color-neutral-400);
   }
 }
 
 /* Explicit light mode */
 [data-theme="light"] {
-  --xynoplex-bg-primary: var(--xynoplex-color-neutral-0);
-  --xynoplex-bg-secondary: var(--xynoplex-color-neutral-50);
-  --xynoplex-bg-tertiary: var(--xynoplex-color-neutral-100);
-  --xynoplex-bg-inverse: var(--xynoplex-color-neutral-900);
+  --xynolog-bg-primary: var(--xynolog-color-neutral-0);
+  --xynolog-bg-secondary: var(--xynolog-color-neutral-50);
+  --xynolog-bg-tertiary: var(--xynolog-color-neutral-100);
+  --xynolog-bg-inverse: var(--xynolog-color-neutral-900);
 
-  --xynoplex-text-primary: var(--xynoplex-color-neutral-900);
-  --xynoplex-text-secondary: var(--xynoplex-color-neutral-600);
-  --xynoplex-text-tertiary: var(--xynoplex-color-neutral-500);
-  --xynoplex-text-disabled: var(--xynoplex-color-neutral-400);
-  --xynoplex-text-inverse: var(--xynoplex-color-neutral-0);
+  --xynolog-text-primary: var(--xynolog-color-neutral-900);
+  --xynolog-text-secondary: var(--xynolog-color-neutral-600);
+  --xynolog-text-tertiary: var(--xynolog-color-neutral-500);
+  --xynolog-text-disabled: var(--xynolog-color-neutral-400);
+  --xynolog-text-inverse: var(--xynolog-color-neutral-0);
 
   /* Borders — the panel/card border every pattern file reaches for. */
-  --xynoplex-border-primary: var(--xynoplex-color-neutral-200);
-  --xynoplex-border-secondary: var(--xynoplex-color-neutral-100);
+  --xynolog-border-primary: var(--xynolog-color-neutral-200);
+  --xynolog-border-secondary: var(--xynolog-color-neutral-100);
 
   /* Interaction */
-  --xynoplex-bg-hover: var(--xynoplex-color-neutral-100);
-  --xynoplex-focus-ring: var(--xynoplex-color-blue-500);
+  --xynolog-bg-hover: var(--xynolog-color-neutral-100);
+  --xynolog-focus-ring: var(--xynolog-color-blue-500);
 
   /* The JSON views' syntax (lib/codemirror-json-theme.ts) */
-  --xynoplex-json-string: var(--xynoplex-color-blue-900);
-  --xynoplex-json-number: var(--xynoplex-color-blue-700);
-  --xynoplex-json-literal: var(--xynoplex-color-purple-600);
-  --xynoplex-json-property: var(--xynoplex-color-green-800);
-  --xynoplex-json-punctuation: var(--xynoplex-color-neutral-600);
+  --xynolog-json-string: var(--xynolog-color-blue-900);
+  --xynolog-json-number: var(--xynolog-color-blue-700);
+  --xynolog-json-literal: var(--xynolog-color-purple-600);
+  --xynolog-json-property: var(--xynolog-color-green-800);
+  --xynolog-json-punctuation: var(--xynolog-color-neutral-600);
 }
 
 /* Allow manual dark mode override */
 [data-theme="dark"] {
-  --xynoplex-bg-primary: var(--xynoplex-color-neutral-900);
-  --xynoplex-bg-secondary: var(--xynoplex-color-neutral-800);
-  --xynoplex-bg-tertiary: var(--xynoplex-color-neutral-700);
-  --xynoplex-bg-inverse: var(--xynoplex-color-neutral-0);
+  --xynolog-bg-primary: var(--xynolog-color-neutral-900);
+  --xynolog-bg-secondary: var(--xynolog-color-neutral-800);
+  --xynolog-bg-tertiary: var(--xynolog-color-neutral-700);
+  --xynolog-bg-inverse: var(--xynolog-color-neutral-0);
 
-  --xynoplex-text-primary: var(--xynoplex-color-neutral-50);
-  --xynoplex-text-secondary: var(--xynoplex-color-neutral-300);
-  --xynoplex-text-tertiary: var(--xynoplex-color-neutral-400);
-  --xynoplex-text-disabled: var(--xynoplex-color-neutral-600);
-  --xynoplex-text-inverse: var(--xynoplex-color-neutral-900);
+  --xynolog-text-primary: var(--xynolog-color-neutral-50);
+  --xynolog-text-secondary: var(--xynolog-color-neutral-300);
+  --xynolog-text-tertiary: var(--xynolog-color-neutral-400);
+  --xynolog-text-disabled: var(--xynolog-color-neutral-600);
+  --xynolog-text-inverse: var(--xynolog-color-neutral-900);
 
-  --xynoplex-border-primary: var(--xynoplex-color-neutral-700);
-  --xynoplex-border-secondary: var(--xynoplex-color-neutral-800);
-  --xynoplex-bg-hover: var(--xynoplex-color-neutral-800);
-  --xynoplex-focus-ring: var(--xynoplex-color-blue-400);
+  --xynolog-border-primary: var(--xynolog-color-neutral-700);
+  --xynolog-border-secondary: var(--xynolog-color-neutral-800);
+  --xynolog-bg-hover: var(--xynolog-color-neutral-800);
+  --xynolog-focus-ring: var(--xynolog-color-blue-400);
 
   /* The JSON views' syntax (lib/codemirror-json-theme.ts) */
-  --xynoplex-json-string: var(--xynoplex-color-green-400);
-  --xynoplex-json-number: var(--xynoplex-color-orange-300);
-  --xynoplex-json-literal: var(--xynoplex-color-purple-400);
-  --xynoplex-json-property: var(--xynoplex-color-red-400);
-  --xynoplex-json-punctuation: var(--xynoplex-color-neutral-400);
+  --xynolog-json-string: var(--xynolog-color-green-400);
+  --xynolog-json-number: var(--xynolog-color-orange-300);
+  --xynolog-json-literal: var(--xynolog-color-purple-400);
+  --xynolog-json-property: var(--xynolog-color-red-400);
+  --xynolog-json-punctuation: var(--xynolog-color-neutral-400);
 }

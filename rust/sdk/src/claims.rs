@@ -58,7 +58,7 @@ use crate::channels::{
     BrowseAnnotationRequested, Channel, JobCancel, JobCancelRequested, JobCheckpoint, JobClaim,
     JobComplete, JobFail, JobQueued, JobReportProgress, JobStart, MarkCommit, Request,
 };
-use crate::errors::{BusRequestErrorCode, XynoplexError, TransportError, TransportErrorCode};
+use crate::errors::{BusRequestErrorCode, TransportError, TransportErrorCode, XynologError};
 use crate::job_filter::job_matches_filter;
 use crate::kept_for_first_reader::KeptForFirstReader;
 use crate::locked;
@@ -262,7 +262,7 @@ const DROPPED_UNSETTLED: &str = "The worker let go of the job without settling i
 
 /// A failure this side made: nothing was sent, or what was sent got no
 /// further.
-fn here(message: String) -> XynoplexError {
+fn here(message: String) -> XynologError {
     TransportError::without_response(message, TransportErrorCode::Error).into()
 }
 
@@ -371,7 +371,7 @@ impl Inner {
     /// bus request fails. What answers it is not read: that an answer came
     /// on its result channel is all a commit asks, so the answer is not held
     /// to its type here.
-    async fn ask<R: Request>(&self, payload: &R::Payload) -> Result<(), XynoplexError> {
+    async fn ask<R: Request>(&self, payload: &R::Payload) -> Result<(), XynologError> {
         self.wire
             .request_of(
                 &Operation::of::<R>(),
@@ -412,7 +412,7 @@ impl Inner {
             // annotation is absent": a read that failed for its own reasons
             // answers on the same channel. So the job says what was observed,
             // and its reader judges.
-            Err(XynoplexError::Bus(answered)) if answered.code == BusRequestErrorCode::Rejected => {
+            Err(XynologError::Bus(answered)) if answered.code == BusRequestErrorCode::Rejected => {
                 DurabilityEvidence::ProbeRefused
             }
             // Anything else (a timeout, a closed bus) means nobody answered.
@@ -543,7 +543,7 @@ struct Core {
 }
 
 impl Core {
-    fn unsettled(&self, saying: &str) -> Result<(), XynoplexError> {
+    fn unsettled(&self, saying: &str) -> Result<(), XynologError> {
         if self.holding.settled.load(Ordering::SeqCst) {
             return Err(here(format!(
                 "Job {} is already settled: it cannot say {saying}",
@@ -561,7 +561,7 @@ impl Core {
         self,
         payload: C::Payload,
         completed: bool,
-    ) -> Result<(), XynoplexError> {
+    ) -> Result<(), XynologError> {
         if self.holding.settled.swap(true, Ordering::SeqCst) {
             // Its worker stopped, and failed it, while the work went on.
             return Err(here(format!(
@@ -576,7 +576,7 @@ impl Core {
             .emit::<C>(&payload, Envelope::default())
             .await;
         self.inner.released(&self.holding, completed);
-        sent.map(|_| ()).map_err(XynoplexError::from)
+        sent.map(|_| ()).map_err(XynologError::from)
     }
 }
 
@@ -688,7 +688,7 @@ impl<V> Held<V> {
     }
 
     /// `job:start`: the job's first message, said once.
-    pub async fn start(&self) -> Result<(), XynoplexError> {
+    pub async fn start(&self) -> Result<(), XynologError> {
         self.core.unsettled(JobStart::NAME)?;
         if self.core.begun.swap(true, Ordering::SeqCst) {
             return Err(here(format!(
@@ -715,7 +715,7 @@ impl<V> Held<V> {
     }
 
     /// `job:report-progress`. Counts as activity.
-    pub async fn progress(&self, progress: JobProgress) -> Result<(), XynoplexError> {
+    pub async fn progress(&self, progress: JobProgress) -> Result<(), XynologError> {
         self.core.unsettled(JobReportProgress::NAME)?;
         self.core.begun.store(true, Ordering::SeqCst);
         self.core.inner.active();
@@ -753,7 +753,7 @@ impl<V> Held<V> {
         &self,
         completed_units: Vec<String>,
         unit_cursors: Option<BTreeMap<String, UnitCursor>>,
-    ) -> Result<(), XynoplexError> {
+    ) -> Result<(), XynologError> {
         self.core.unsettled(JobCheckpoint::NAME)?;
         self.core.begun.store(true, Ordering::SeqCst);
         self.core.inner.active();
@@ -794,7 +794,7 @@ impl<V> Held<V> {
         &self,
         resource_id: &ResourceId,
         annotations: Vec<Annotation>,
-    ) -> Result<(), XynoplexError> {
+    ) -> Result<(), XynologError> {
         self.core.unsettled(MarkCommit::NAME)?;
         // A batch of no annotations is no commit: there is nothing to establish.
         let Some(last) = annotations.last().map(|last| last.id.clone()) else {
@@ -813,7 +813,7 @@ impl<V> Held<V> {
             // The record's refusal, and every other failure of the request,
             // is the commit's failure as it is. Only an acknowledgement that
             // did not arrive leaves what the record holds unknown.
-            Err(XynoplexError::Bus(unanswered))
+            Err(XynologError::Bus(unanswered))
                 if unanswered.code == BusRequestErrorCode::Timeout =>
             {
                 unanswered
@@ -836,7 +836,7 @@ impl<V> Held<V> {
         self,
         error: impl Into<String>,
         failure: JobFailure,
-    ) -> Result<(), XynoplexError> {
+    ) -> Result<(), XynologError> {
         let failed = self.core.holding.fail(&error.into(), failure);
         self.core.settle::<JobFail>(failed, false).await
     }
@@ -848,7 +848,7 @@ impl<V> Held<V> {
         self,
         completed_units: Option<Vec<String>>,
         unit_cursors: Option<BTreeMap<String, UnitCursor>>,
-    ) -> Result<(), XynoplexError> {
+    ) -> Result<(), XynologError> {
         let holding = &self.core.holding;
         let cancelled = JobCancelCommand {
             annotation_id: holding.annotation_id.clone(),
@@ -867,7 +867,7 @@ impl<V> Held<V> {
 impl Held<Mark> {
     /// Settle: `job:complete`, with what a `mark` job reports, and how its
     /// commits were established.
-    pub async fn complete(self, result: MarkJobResult) -> Result<(), XynoplexError> {
+    pub async fn complete(self, result: MarkJobResult) -> Result<(), XynologError> {
         let holding = &self.core.holding;
         let completed = MarkJobCompleteCommand {
             attempt: Some(holding.attempt),
@@ -884,7 +884,7 @@ impl Held<Mark> {
 impl Held<Yield> {
     /// Settle: `job:complete`, with what a `yield` job reports, and how its
     /// commits were established.
-    pub async fn complete(self, result: YieldJobResult) -> Result<(), XynoplexError> {
+    pub async fn complete(self, result: YieldJobResult) -> Result<(), XynologError> {
         let holding = &self.core.holding;
         let completed = YieldJobCompleteCommand {
             attempt: Some(holding.attempt),
@@ -972,11 +972,11 @@ impl HeldJob {
         either!(self, job => job.cancelled())
     }
 
-    pub async fn start(&self) -> Result<(), XynoplexError> {
+    pub async fn start(&self) -> Result<(), XynologError> {
         either!(self, job => job.start().await)
     }
 
-    pub async fn progress(&self, progress: JobProgress) -> Result<(), XynoplexError> {
+    pub async fn progress(&self, progress: JobProgress) -> Result<(), XynologError> {
         either!(self, job => job.progress(progress).await)
     }
 
@@ -984,7 +984,7 @@ impl HeldJob {
         &self,
         completed_units: Vec<String>,
         unit_cursors: Option<BTreeMap<String, UnitCursor>>,
-    ) -> Result<(), XynoplexError> {
+    ) -> Result<(), XynologError> {
         either!(self, job => job.checkpoint(completed_units, unit_cursors).await)
     }
 
@@ -992,7 +992,7 @@ impl HeldJob {
         &self,
         resource_id: &ResourceId,
         annotations: Vec<Annotation>,
-    ) -> Result<(), XynoplexError> {
+    ) -> Result<(), XynologError> {
         either!(self, job => job.commit(resource_id, annotations).await)
     }
 
@@ -1000,7 +1000,7 @@ impl HeldJob {
         self,
         error: impl Into<String>,
         failure: JobFailure,
-    ) -> Result<(), XynoplexError> {
+    ) -> Result<(), XynologError> {
         either!(self, job => job.fail(error, failure).await)
     }
 
@@ -1008,7 +1008,7 @@ impl HeldJob {
         self,
         completed_units: Option<Vec<String>>,
         unit_cursors: Option<BTreeMap<String, UnitCursor>>,
-    ) -> Result<(), XynoplexError> {
+    ) -> Result<(), XynologError> {
         either!(self, job => job.cancel(completed_units, unit_cursors).await)
     }
 }
@@ -1096,10 +1096,10 @@ async fn claim_next(inner: Arc<Inner>) -> ClaimOutcome {
             let (holding, job) = held(&inner, claimed.payload.response, claimed.trace);
             ClaimOutcome::Job(holding, Box::new(job))
         }
-        Err(XynoplexError::Bus(refused)) if refused.code == BusRequestErrorCode::NonePending => {
+        Err(XynologError::Bus(refused)) if refused.code == BusRequestErrorCode::NonePending => {
             ClaimOutcome::Declined
         }
-        Err(XynoplexError::Bus(refused)) => ClaimOutcome::Refused(ClaimRefusal {
+        Err(XynologError::Bus(refused)) => ClaimOutcome::Refused(ClaimRefusal {
             code: Some(refused.code),
             message: refused.message,
         }),

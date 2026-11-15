@@ -14,7 +14,7 @@ import { screen, fireEvent } from '@testing-library/react';
 import { renderInEnglish } from '../../../test-utils';
 import '@testing-library/jest-dom';
 import { BehaviorSubject } from 'rxjs';
-import { createSessionSignals } from '@xynoplex/sdk';
+import { createSessionSignals } from '@xynolog/sdk';
 
 const harness = vi.hoisted(() => ({
   browser: null as unknown as {
@@ -24,11 +24,11 @@ const harness = vi.hoisted(() => ({
   },
 }));
 
-vi.mock('../../../session/XynoplexProvider', async () => {
-  const actual = await vi.importActual<typeof import('../../../session/XynoplexProvider')>(
-    '../../../session/XynoplexProvider',
+vi.mock('../../../session/XynologProvider', async () => {
+  const actual = await vi.importActual<typeof import('../../../session/XynologProvider')>(
+    '../../../session/XynologProvider',
   );
-  return { ...actual, useXynoplex: () => harness.browser };
+  return { ...actual, useXynolog: () => harness.browser };
 });
 
 import { KbIdentityConflictModal } from '../KbIdentityConflictModal';

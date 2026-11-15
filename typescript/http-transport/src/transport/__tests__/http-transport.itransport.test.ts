@@ -13,7 +13,7 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { BehaviorSubject } from 'rxjs';
-import { BRIDGED_CHANNELS, accessToken, baseUrl, type AccessToken, type EventMap, type FrameRefusal, annotationId, resourceId } from '@xynoplex/core';
+import { BRIDGED_CHANNELS, accessToken, baseUrl, type AccessToken, type EventMap, type FrameRefusal, annotationId, resourceId } from '@xynolog/core';
 import { HttpContentTransport } from '../http-content-transport';
 import { HttpTransport, currentUserOf } from '../http-transport';
 import { createSSEStream, mockFetch, mockSSEResponse, sseChunk } from './helpers/mock-conn';

@@ -1,4 +1,4 @@
-package xynoplex
+package xynolog
 
 // A plain request to the gateway and its answer, as the content transport and
 // the gateway's own operations make them: the transport's token, its retry
@@ -17,7 +17,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/Xynoplex/sdk/go/internal/required"
+	"github.com/xynolog/sdk/go/internal/required"
 )
 
 // request is what one request is made of.

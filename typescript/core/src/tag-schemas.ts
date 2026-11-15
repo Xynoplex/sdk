@@ -2,7 +2,7 @@
  * Tag-schema type aliases.
  *
  * These are type-only re-exports of the OpenAPI `TagSchema` and `TagCategory`
- * shapes. The schemas themselves do not live in `@xynoplex/core` — they're
+ * shapes. The schemas themselves do not live in `@xynolog/core` — they're
  * registered at runtime per-KB via `frame.addTagSchema(...)` against a
  * per-KB projection. This module just exposes the shape so KB authors and
  * skill code can type their schema literals without the OpenAPI lookup

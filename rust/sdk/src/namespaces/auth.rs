@@ -1,7 +1,7 @@
 //! Auth: the gateway's view of who is signed in. Signing in happens at the
 //! issuer; this only asks the gateway what it sees.
 
-use crate::errors::XynoplexError;
+use crate::errors::XynologError;
 use crate::transport::GatewayOperations;
 use crate::types::{MediaTokenResponse, ProtectedResourceMetadata, ResourceId, UserResponse};
 use std::sync::Arc;
@@ -16,7 +16,7 @@ impl AuthNamespace {
     }
 
     /// The signed-in principal.
-    pub async fn me(&self) -> Result<UserResponse, XynoplexError> {
+    pub async fn me(&self) -> Result<UserResponse, XynologError> {
         Ok(self.gateway.get_current_user().await?)
     }
 
@@ -24,14 +24,14 @@ impl AuthNamespace {
     pub async fn media_token(
         &self,
         resource_id: &ResourceId,
-    ) -> Result<MediaTokenResponse, XynoplexError> {
+    ) -> Result<MediaTokenResponse, XynologError> {
         Ok(self.gateway.get_media_token(resource_id).await?)
     }
 
     /// Which issuer the knowledge base trusts: where to send someone to sign in.
     pub async fn protected_resource_metadata(
         &self,
-    ) -> Result<ProtectedResourceMetadata, XynoplexError> {
+    ) -> Result<ProtectedResourceMetadata, XynologError> {
         Ok(self.gateway.get_protected_resource_metadata().await?)
     }
 }

@@ -43,7 +43,7 @@ const OUT_DTS = resolve(OUT_DIR, 'openapi-validators.d.cts');
 
 const BANNER = `// ⚠ GENERATED FILE — do not edit.
 // Source: protocol/specs/openapi.json → typescript/scripts/generators/generate-validators.mjs
-// Rebuilt by \`npm run prebuild\` in @xynoplex/core; gitignored on purpose.
+// Rebuilt by \`npm run prebuild\` in @xynolog/core; gitignored on purpose.
 `;
 
 const spec = JSON.parse(readFileSync(SPEC, 'utf8'));

@@ -14,25 +14,25 @@ import qualified Test.QuickCheck as QC
 import qualified Test.QuickCheck.Random as QR
 import qualified ControlledTime as Time
 import SessionCases (jwt)
-import qualified Xynoplex.Bus as Bus
-import qualified Xynoplex.Channels as Channel
-import qualified Xynoplex.Client as Client
-import qualified Xynoplex.Content as Content
-import qualified Xynoplex.Registry.Factory as Factory
-import qualified Xynoplex.Registry.Stored as Stored
-import qualified Xynoplex.Session as Session
-import qualified Xynoplex.SessionStorage as Storage
-import qualified Xynoplex.State.SessionSignals as Signals
-import qualified Xynoplex.StateValue as State
-import Xynoplex.Retry (RetryOptions(..))
-import qualified Xynoplex.Testing.Client as Testing
-import qualified Xynoplex.Testing.Liveness as Live
-import qualified Xynoplex.Testing.Sessions as Sessions
-import qualified Xynoplex.Testing.Storage as Shared
-import qualified Xynoplex.Testing.Transport as Faulty
-import qualified Xynoplex.Timing.Settings as Timing
-import qualified Xynoplex.Transport as Transport
-import Xynoplex.Types
+import qualified Xynolog.Bus as Bus
+import qualified Xynolog.Channels as Channel
+import qualified Xynolog.Client as Client
+import qualified Xynolog.Content as Content
+import qualified Xynolog.Registry.Factory as Factory
+import qualified Xynolog.Registry.Stored as Stored
+import qualified Xynolog.Session as Session
+import qualified Xynolog.SessionStorage as Storage
+import qualified Xynolog.State.SessionSignals as Signals
+import qualified Xynolog.StateValue as State
+import Xynolog.Retry (RetryOptions(..))
+import qualified Xynolog.Testing.Client as Testing
+import qualified Xynolog.Testing.Liveness as Live
+import qualified Xynolog.Testing.Sessions as Sessions
+import qualified Xynolog.Testing.Storage as Shared
+import qualified Xynolog.Testing.Transport as Faulty
+import qualified Xynolog.Timing.Settings as Timing
+import qualified Xynolog.Transport as Transport
+import Xynolog.Types
 import System.Timeout (timeout)
 
 require :: String -> Bool -> IO ()

@@ -1,7 +1,7 @@
 'use client';
 import { WizardFooter } from './WizardFooter';
 
-import type { ResourceDescriptor, ResourceId } from '@xynoplex/core';
+import type { ResourceDescriptor, ResourceId } from '@xynolog/core';
 
 export type ScoredResult = ResourceDescriptor & {
   score?: number;
@@ -34,9 +34,9 @@ export function SearchResultsStep({
 }: SearchResultsStepProps) {
   return (
     <>
-      <div className="xynoplex-search-results">
+      <div className="xynolog-search-results">
         {results.length === 0 ? (
-          <div className="xynoplex-modal__empty-state" style={{ textAlign: 'center', padding: '2rem 0' }}>
+          <div className="xynolog-modal__empty-state" style={{ textAlign: 'center', padding: '2rem 0' }}>
             {t.noResults}
           </div>
         ) : (
@@ -47,7 +47,7 @@ export function SearchResultsStep({
                 key={id}
                 style={{
                   padding: '0.75rem',
-                  borderBottom: '1px solid var(--xynoplex-border-primary)',
+                  borderBottom: '1px solid var(--xynolog-border-primary)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
@@ -55,13 +55,13 @@ export function SearchResultsStep({
                 }}
               >
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 500, color: 'var(--xynoplex-text-primary)' }}>
+                  <div style={{ fontWeight: 500, color: 'var(--xynolog-text-primary)' }}>
                     {result.name}
                   </div>
                   {result.description && (
                     <div style={{
-                      fontSize: 'var(--xynoplex-text-sm)',
-                      color: 'var(--xynoplex-text-secondary)',
+                      fontSize: 'var(--xynolog-text-sm)',
+                      color: 'var(--xynolog-text-secondary)',
                       marginTop: '0.25rem',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
@@ -70,7 +70,7 @@ export function SearchResultsStep({
                       {result.description}
                     </div>
                   )}
-                  <div style={{ fontSize: 'var(--xynoplex-text-xs)', color: 'var(--xynoplex-text-tertiary)', marginTop: '0.25rem', display: 'flex', gap: '0.5rem' }}>
+                  <div style={{ fontSize: 'var(--xynolog-text-xs)', color: 'var(--xynolog-text-tertiary)', marginTop: '0.25rem', display: 'flex', gap: '0.5rem' }}>
                     {result.score !== undefined && (
                       <span>{t.score}: {result.score}</span>
                     )}
@@ -82,7 +82,7 @@ export function SearchResultsStep({
                 <button
                   type="button"
                   onClick={() => onLink(id)}
-                  className="xynoplex-button--primary"
+                  className="xynolog-button--primary"
                   style={{ flexShrink: 0 }}
                 >
                   🔗 {t.link}

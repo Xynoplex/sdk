@@ -1,5 +1,5 @@
-//! A `SessionFactory` for tests of a registry (`XynoplexBrowser`) and of what
-//! is built on one. Each session it builds is a real `XynoplexSession` over a
+//! A `SessionFactory` for tests of a registry (`XynologBrowser`) and of what
+//! is built on one. Each session it builds is a real `XynologSession` over a
 //! `FaultyTransport` of its own, whose stream names what a full client's
 //! does (`BRIDGED_CHANNELS`), and the factory keeps every transport it
 //! built, by knowledge base. As every factory, it reads nothing of what
@@ -16,12 +16,12 @@
 use super::{FaultyTransport, TestClientOptions, create_test_client};
 use crate::channels::BRIDGED_CHANNELS;
 use crate::errors::{
-    XynoplexError, SessionError, SessionErrorCode, SignInError, SignInErrorCode, TransportError,
-    TransportErrorCode,
+    SessionError, SessionErrorCode, SignInError, SignInErrorCode, TransportError,
+    TransportErrorCode, XynologError,
 };
 use crate::locked;
 use crate::session::{
-    XynoplexSession, XynoplexSessionConfig, SessionFactory, SessionFactoryOptions, StoredSession,
+    SessionFactory, SessionFactoryOptions, StoredSession, XynologSession, XynologSessionConfig,
     kept_in,
 };
 use crate::transport::BoxFuture;
@@ -160,7 +160,7 @@ impl ScriptedSessions {
 }
 
 impl SessionFactory for ScriptedSessions {
-    fn session(&self, options: SessionFactoryOptions) -> Result<XynoplexSession, SessionError> {
+    fn session(&self, options: SessionFactoryOptions) -> Result<XynologSession, SessionError> {
         let kb_id = options.kb.id.clone();
         if let Some(why) = locked(&self.inner.scripted).refuses_to_build.clone() {
             return Err(SessionError::new(
@@ -193,7 +193,7 @@ impl SessionFactory for ScriptedSessions {
         };
         let (renewing, renews_for) = (self.inner.clone(), kb_id.clone());
         let signals = options.signals;
-        Ok(XynoplexSession::new(XynoplexSessionConfig {
+        Ok(XynologSession::new(XynologSessionConfig {
             kb: options.kb.target(),
             kept: kept_in(options.storage, &kb_id),
             client,
@@ -219,7 +219,7 @@ impl SessionFactory for ScriptedSessions {
             })),
             validate: Some(Arc::new(move |_| {
                 let answer = user.clone().ok_or_else(|| {
-                    XynoplexError::Transport(TransportError::without_response(
+                    XynologError::Transport(TransportError::without_response(
                         format!(
                             "ScriptedSessions: not scripted: who a token of \"{kb_id}\" is. Script it with says_who."
                         ),

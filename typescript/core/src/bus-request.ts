@@ -1,4 +1,4 @@
-import { XynoplexError } from './errors';
+import { XynologError } from './errors';
 import type { EventMap, EventName } from './bus-protocol';
 import { BUS_OPERATIONS, type BusOperationKey } from './bus-operations';
 import type { CommandErrorCode } from './payload-types';
@@ -53,7 +53,7 @@ export function classifyFailureCode(code: CommandErrorCode | undefined): BusRequ
   return code === undefined ? unrecognizedFailureCode : WIRE_CODES[code];
 }
 
-export class BusRequestError extends XynoplexError {
+export class BusRequestError extends XynologError {
   declare code: BusRequestErrorCode;
 
   constructor(message: string, code: BusRequestErrorCode, details?: Record<string, unknown>) {

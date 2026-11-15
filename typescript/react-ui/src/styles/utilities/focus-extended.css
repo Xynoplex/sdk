@@ -9,56 +9,56 @@
    Button Variants and States
    ======================================== */
 
-.xynoplex-button:focus-visible,
-.xynoplex-button[data-variant="primary"]:focus-visible,
-.xynoplex-button[data-variant="secondary"]:focus-visible,
-.xynoplex-button[data-variant="tertiary"]:focus-visible,
-.xynoplex-button[data-variant="danger"]:focus-visible,
-.xynoplex-button[data-variant="warning"]:focus-visible,
-.xynoplex-button[data-variant="ghost"]:focus-visible,
-.xynoplex-button[data-size="xs"]:focus-visible,
-.xynoplex-button[data-size="sm"]:focus-visible,
-.xynoplex-button[data-size="md"]:focus-visible,
-.xynoplex-button[data-size="lg"]:focus-visible,
-.xynoplex-button[data-size="xl"]:focus-visible,
-.xynoplex-button[data-icon-only="true"]:focus-visible,
-.xynoplex-button[data-full-width="true"]:focus-visible,
-.xynoplex-button--flex:focus-visible,
-.xynoplex-button-icon:focus-visible,
-.xynoplex-button-icon-left:focus-visible,
-.xynoplex-button-icon-right:focus-visible {
-  outline: 2px solid var(--xynoplex-color-primary-500);
+.xynolog-button:focus-visible,
+.xynolog-button[data-variant="primary"]:focus-visible,
+.xynolog-button[data-variant="secondary"]:focus-visible,
+.xynolog-button[data-variant="tertiary"]:focus-visible,
+.xynolog-button[data-variant="danger"]:focus-visible,
+.xynolog-button[data-variant="warning"]:focus-visible,
+.xynolog-button[data-variant="ghost"]:focus-visible,
+.xynolog-button[data-size="xs"]:focus-visible,
+.xynolog-button[data-size="sm"]:focus-visible,
+.xynolog-button[data-size="md"]:focus-visible,
+.xynolog-button[data-size="lg"]:focus-visible,
+.xynolog-button[data-size="xl"]:focus-visible,
+.xynolog-button[data-icon-only="true"]:focus-visible,
+.xynolog-button[data-full-width="true"]:focus-visible,
+.xynolog-button--flex:focus-visible,
+.xynolog-button-icon:focus-visible,
+.xynolog-button-icon-left:focus-visible,
+.xynolog-button-icon-right:focus-visible {
+  outline: 2px solid var(--xynolog-color-primary-500);
   outline-offset: 2px;
   position: relative;
   z-index: 1;
 }
 
-[data-theme="dark"] .xynoplex-button:focus-visible,
-[data-theme="dark"] .xynoplex-button[data-variant="primary"]:focus-visible,
-[data-theme="dark"] .xynoplex-button[data-variant="secondary"]:focus-visible,
-[data-theme="dark"] .xynoplex-button[data-variant="tertiary"]:focus-visible,
-[data-theme="dark"] .xynoplex-button[data-variant="danger"]:focus-visible,
-[data-theme="dark"] .xynoplex-button[data-variant="warning"]:focus-visible,
-[data-theme="dark"] .xynoplex-button[data-variant="ghost"]:focus-visible {
-  outline-color: var(--xynoplex-color-primary-400);
+[data-theme="dark"] .xynolog-button:focus-visible,
+[data-theme="dark"] .xynolog-button[data-variant="primary"]:focus-visible,
+[data-theme="dark"] .xynolog-button[data-variant="secondary"]:focus-visible,
+[data-theme="dark"] .xynolog-button[data-variant="tertiary"]:focus-visible,
+[data-theme="dark"] .xynolog-button[data-variant="danger"]:focus-visible,
+[data-theme="dark"] .xynolog-button[data-variant="warning"]:focus-visible,
+[data-theme="dark"] .xynolog-button[data-variant="ghost"]:focus-visible {
+  outline-color: var(--xynolog-color-primary-400);
 }
 
-.xynoplex-button:focus:not(:focus-visible),
-.xynoplex-button[data-variant="primary"]:focus:not(:focus-visible),
-.xynoplex-button[data-variant="secondary"]:focus:not(:focus-visible),
-.xynoplex-button[data-variant="tertiary"]:focus:not(:focus-visible),
-.xynoplex-button[data-variant="danger"]:focus:not(:focus-visible),
-.xynoplex-button[data-variant="warning"]:focus:not(:focus-visible),
-.xynoplex-button[data-variant="ghost"]:focus:not(:focus-visible),
-.xynoplex-button[data-size="sm"]:focus:not(:focus-visible),
-.xynoplex-button[data-size="md"]:focus:not(:focus-visible),
-.xynoplex-button[data-size="lg"]:focus:not(:focus-visible),
-.xynoplex-button[data-full-width="true"]:focus:not(:focus-visible),
-.xynoplex-button[data-icon-only="true"]:focus:not(:focus-visible),
-.xynoplex-button--flex:focus:not(:focus-visible),
-.xynoplex-button-icon:focus:not(:focus-visible),
-.xynoplex-button-icon-left:focus:not(:focus-visible),
-.xynoplex-button-icon-right:focus:not(:focus-visible) {
+.xynolog-button:focus:not(:focus-visible),
+.xynolog-button[data-variant="primary"]:focus:not(:focus-visible),
+.xynolog-button[data-variant="secondary"]:focus:not(:focus-visible),
+.xynolog-button[data-variant="tertiary"]:focus:not(:focus-visible),
+.xynolog-button[data-variant="danger"]:focus:not(:focus-visible),
+.xynolog-button[data-variant="warning"]:focus:not(:focus-visible),
+.xynolog-button[data-variant="ghost"]:focus:not(:focus-visible),
+.xynolog-button[data-size="sm"]:focus:not(:focus-visible),
+.xynolog-button[data-size="md"]:focus:not(:focus-visible),
+.xynolog-button[data-size="lg"]:focus:not(:focus-visible),
+.xynolog-button[data-full-width="true"]:focus:not(:focus-visible),
+.xynolog-button[data-icon-only="true"]:focus:not(:focus-visible),
+.xynolog-button--flex:focus:not(:focus-visible),
+.xynolog-button-icon:focus:not(:focus-visible),
+.xynolog-button-icon-left:focus:not(:focus-visible),
+.xynolog-button-icon-right:focus:not(:focus-visible) {
   outline: none;
 }
 
@@ -66,21 +66,21 @@
    Panel Components
    ======================================== */
 
-.xynoplex-panel-button:focus-visible,
-.xynoplex-panel-button-active:focus-visible {
-  outline: 2px solid var(--xynoplex-color-primary-500);
+.xynolog-panel-button:focus-visible,
+.xynolog-panel-button-active:focus-visible {
+  outline: 2px solid var(--xynolog-color-primary-500);
   outline-offset: 2px;
   position: relative;
   z-index: 1;
 }
 
-[data-theme="dark"] .xynoplex-panel-button:focus-visible,
-[data-theme="dark"] .xynoplex-panel-button-active:focus-visible {
-  outline-color: var(--xynoplex-color-primary-400);
+[data-theme="dark"] .xynolog-panel-button:focus-visible,
+[data-theme="dark"] .xynolog-panel-button-active:focus-visible {
+  outline-color: var(--xynolog-color-primary-400);
 }
 
-.xynoplex-panel-button:focus:not(:focus-visible),
-.xynoplex-panel-button-active:focus:not(:focus-visible) {
+.xynolog-panel-button:focus:not(:focus-visible),
+.xynolog-panel-button-active:focus:not(:focus-visible) {
   outline: none;
 }
 
@@ -88,19 +88,19 @@
    Chip Components
    ======================================== */
 
-.xynoplex-chip--selectable[data-selected="false"]:focus-visible,
-.xynoplex-chip--selectable[data-selected="true"]:focus-visible,
-.xynoplex-chip[data-selected="true"]:focus-visible,
-.xynoplex-chip[data-selected="false"]:focus-visible {
-  outline: 2px solid var(--xynoplex-color-primary-500);
+.xynolog-chip--selectable[data-selected="false"]:focus-visible,
+.xynolog-chip--selectable[data-selected="true"]:focus-visible,
+.xynolog-chip[data-selected="true"]:focus-visible,
+.xynolog-chip[data-selected="false"]:focus-visible {
+  outline: 2px solid var(--xynolog-color-primary-500);
   outline-offset: 2px;
 }
 
-[data-theme="dark"] .xynoplex-chip--selectable[data-selected="false"]:focus-visible,
-[data-theme="dark"] .xynoplex-chip--selectable[data-selected="true"]:focus-visible,
-[data-theme="dark"] .xynoplex-chip[data-selected="true"]:focus-visible,
-[data-theme="dark"] .xynoplex-chip[data-selected="false"]:focus-visible {
-  outline-color: var(--xynoplex-color-primary-400);
+[data-theme="dark"] .xynolog-chip--selectable[data-selected="false"]:focus-visible,
+[data-theme="dark"] .xynolog-chip--selectable[data-selected="true"]:focus-visible,
+[data-theme="dark"] .xynolog-chip[data-selected="true"]:focus-visible,
+[data-theme="dark"] .xynolog-chip[data-selected="false"]:focus-visible {
+  outline-color: var(--xynolog-color-primary-400);
 }
 
 /* ========================================
@@ -112,16 +112,16 @@ input:focus-visible,
 textarea:focus-visible,
 select:focus-visible,
 input[type="number"]:focus-visible {
-  outline: 2px solid var(--xynoplex-color-primary-500);
+  outline: 2px solid var(--xynolog-color-primary-500);
   outline-offset: -1px;
-  border-color: var(--xynoplex-color-primary-500);
+  border-color: var(--xynolog-color-primary-500);
 }
 
 [data-theme="dark"] input:focus-visible,
 [data-theme="dark"] textarea:focus-visible,
 [data-theme="dark"] select:focus-visible {
-  outline-color: var(--xynoplex-color-primary-400);
-  border-color: var(--xynoplex-color-primary-400);
+  outline-color: var(--xynolog-color-primary-400);
+  border-color: var(--xynolog-color-primary-400);
 }
 
 input:focus:not(:focus-visible),
@@ -131,57 +131,57 @@ select:focus:not(:focus-visible) {
 }
 
 /* Specific form inputs */
-.xynoplex-form__upload-input:focus-visible,
-.xynoplex-card__search-input:focus-visible {
-  outline: 2px solid var(--xynoplex-color-primary-500);
+.xynolog-form__upload-input:focus-visible,
+.xynolog-card__search-input:focus-visible {
+  outline: 2px solid var(--xynolog-color-primary-500);
   outline-offset: -1px;
-  border-color: var(--xynoplex-color-primary-500);
+  border-color: var(--xynolog-color-primary-500);
 }
 
-[data-theme="dark"] .xynoplex-form__upload-input:focus-visible,
-[data-theme="dark"] .xynoplex-card__search-input:focus-visible {
-  outline-color: var(--xynoplex-color-primary-400);
-  border-color: var(--xynoplex-color-primary-400);
+[data-theme="dark"] .xynolog-form__upload-input:focus-visible,
+[data-theme="dark"] .xynolog-card__search-input:focus-visible {
+  outline-color: var(--xynolog-color-primary-400);
+  border-color: var(--xynolog-color-primary-400);
 }
 
-.xynoplex-form__upload-input:focus:not(:focus-visible),
-.xynoplex-card__search-input:focus:not(:focus-visible) {
+.xynolog-form__upload-input:focus:not(:focus-visible),
+.xynolog-card__search-input:focus:not(:focus-visible) {
   outline: none;
 }
 
 /* Entity type button (selected state) */
-.xynoplex-form__entity-type-button[data-selected="true"]:focus-visible {
-  outline: 2px solid var(--xynoplex-color-white);
+.xynolog-form__entity-type-button[data-selected="true"]:focus-visible {
+  outline: 2px solid var(--xynolog-color-white);
   outline-offset: 2px;
-  box-shadow: 0 0 0 4px var(--xynoplex-color-primary-700);
+  box-shadow: 0 0 0 4px var(--xynolog-color-primary-700);
 }
 
-[data-theme="dark"] .xynoplex-form__entity-type-button[data-selected="true"]:focus-visible {
-  outline-color: var(--xynoplex-color-white);
-  box-shadow: 0 0 0 4px var(--xynoplex-color-primary-400);
+[data-theme="dark"] .xynolog-form__entity-type-button[data-selected="true"]:focus-visible {
+  outline-color: var(--xynolog-color-white);
+  box-shadow: 0 0 0 4px var(--xynolog-color-primary-400);
 }
 
 /* ========================================
    Resource & Reference Components
    ======================================== */
 
-.xynoplex-resource-button:focus-visible,
-.xynoplex-resource-button--secondary:focus-visible,
-.xynoplex-resource-button--archive:focus-visible {
-  outline: 2px solid var(--xynoplex-color-primary-500);
+.xynolog-resource-button:focus-visible,
+.xynolog-resource-button--secondary:focus-visible,
+.xynolog-resource-button--archive:focus-visible {
+  outline: 2px solid var(--xynolog-color-primary-500);
   outline-offset: 2px;
   position: relative;
   z-index: 1;
 }
 
-[data-theme="dark"] .xynoplex-resource-button--secondary:focus-visible,
-[data-theme="dark"] .xynoplex-resource-button--archive:focus-visible {
-  outline-color: var(--xynoplex-color-primary-400);
+[data-theme="dark"] .xynolog-resource-button--secondary:focus-visible,
+[data-theme="dark"] .xynolog-resource-button--archive:focus-visible {
+  outline-color: var(--xynolog-color-primary-400);
 }
 
-.xynoplex-resource-button:focus:not(:focus-visible),
-.xynoplex-resource-button--secondary:focus:not(:focus-visible),
-.xynoplex-resource-button--archive:focus:not(:focus-visible) {
+.xynolog-resource-button:focus:not(:focus-visible),
+.xynolog-resource-button--secondary:focus:not(:focus-visible),
+.xynolog-resource-button--archive:focus:not(:focus-visible) {
   outline: none;
 }
 
@@ -189,36 +189,36 @@ select:focus:not(:focus-visible) {
    Toolbar Components
    ======================================== */
 
-.xynoplex-toolbar-button:focus-visible,
-.xynoplex-toolbar-menu-button:focus-visible,
-.xynoplex-toolbar-menu-button[data-selected="false"]:focus-visible,
-.xynoplex-toolbar-menu-button[data-selected="true"]:focus-visible,
-.xynoplex-toolbar-menu-button[data-delete="true"]:focus-visible,
-.xynoplex-toolbar-menu-button[data-delete="true"][data-selected="false"]:focus-visible,
-.xynoplex-toolbar-menu-button[data-delete="true"][data-selected="true"]:focus-visible {
-  outline: 2px solid var(--xynoplex-color-primary-500);
+.xynolog-toolbar-button:focus-visible,
+.xynolog-toolbar-menu-button:focus-visible,
+.xynolog-toolbar-menu-button[data-selected="false"]:focus-visible,
+.xynolog-toolbar-menu-button[data-selected="true"]:focus-visible,
+.xynolog-toolbar-menu-button[data-delete="true"]:focus-visible,
+.xynolog-toolbar-menu-button[data-delete="true"][data-selected="false"]:focus-visible,
+.xynolog-toolbar-menu-button[data-delete="true"][data-selected="true"]:focus-visible {
+  outline: 2px solid var(--xynolog-color-primary-500);
   outline-offset: 2px;
   position: relative;
   z-index: 1;
 }
 
-[data-theme="dark"] .xynoplex-toolbar-button:focus-visible,
-[data-theme="dark"] .xynoplex-toolbar-menu-button:focus-visible,
-[data-theme="dark"] .xynoplex-toolbar-menu-button[data-selected="false"]:focus-visible,
-[data-theme="dark"] .xynoplex-toolbar-menu-button[data-selected="true"]:focus-visible,
-[data-theme="dark"] .xynoplex-toolbar-menu-button[data-delete="true"]:focus-visible,
-[data-theme="dark"] .xynoplex-toolbar-menu-button[data-delete="true"][data-selected="false"]:focus-visible,
-[data-theme="dark"] .xynoplex-toolbar-menu-button[data-delete="true"][data-selected="true"]:focus-visible {
-  outline-color: var(--xynoplex-color-primary-400);
+[data-theme="dark"] .xynolog-toolbar-button:focus-visible,
+[data-theme="dark"] .xynolog-toolbar-menu-button:focus-visible,
+[data-theme="dark"] .xynolog-toolbar-menu-button[data-selected="false"]:focus-visible,
+[data-theme="dark"] .xynolog-toolbar-menu-button[data-selected="true"]:focus-visible,
+[data-theme="dark"] .xynolog-toolbar-menu-button[data-delete="true"]:focus-visible,
+[data-theme="dark"] .xynolog-toolbar-menu-button[data-delete="true"][data-selected="false"]:focus-visible,
+[data-theme="dark"] .xynolog-toolbar-menu-button[data-delete="true"][data-selected="true"]:focus-visible {
+  outline-color: var(--xynolog-color-primary-400);
 }
 
-.xynoplex-toolbar-button:focus:not(:focus-visible),
-.xynoplex-toolbar-menu-button:focus:not(:focus-visible),
-.xynoplex-toolbar-menu-button[data-selected="true"]:focus:not(:focus-visible),
-.xynoplex-toolbar-menu-button[data-delete="true"]:focus:not(:focus-visible),
-.xynoplex-toolbar-menu-button[data-selected="false"]:focus:not(:focus-visible),
-.xynoplex-toolbar-menu-button[data-delete="true"][data-selected="false"]:focus:not(:focus-visible),
-.xynoplex-toolbar-menu-button[data-delete="true"][data-selected="true"]:focus:not(:focus-visible) {
+.xynolog-toolbar-button:focus:not(:focus-visible),
+.xynolog-toolbar-menu-button:focus:not(:focus-visible),
+.xynolog-toolbar-menu-button[data-selected="true"]:focus:not(:focus-visible),
+.xynolog-toolbar-menu-button[data-delete="true"]:focus:not(:focus-visible),
+.xynolog-toolbar-menu-button[data-selected="false"]:focus:not(:focus-visible),
+.xynolog-toolbar-menu-button[data-delete="true"][data-selected="false"]:focus:not(:focus-visible),
+.xynolog-toolbar-menu-button[data-delete="true"][data-selected="true"]:focus:not(:focus-visible) {
   outline: none;
 }
 
@@ -227,18 +227,18 @@ select:focus:not(:focus-visible) {
    ======================================== */
 
 /* Signout button */
-.xynoplex-signout-button:focus-visible {
-  outline: 2px solid var(--xynoplex-color-primary-500);
+.xynolog-signout-button:focus-visible {
+  outline: 2px solid var(--xynolog-color-primary-500);
   outline-offset: 2px;
   position: relative;
   z-index: 1;
 }
 
-[data-theme="dark"] .xynoplex-signout-button:focus-visible {
-  outline-color: var(--xynoplex-color-primary-400);
+[data-theme="dark"] .xynolog-signout-button:focus-visible {
+  outline-color: var(--xynolog-color-primary-400);
 }
 
-.xynoplex-signout-button:focus:not(:focus-visible) {
+.xynolog-signout-button:focus:not(:focus-visible) {
   outline: none;
 }
 
@@ -248,19 +248,19 @@ select:focus:not(:focus-visible) {
 
 @media (prefers-contrast: more) {
   /* All interactive elements get stronger focus indicators in high contrast mode */
-  .xynoplex-button:focus-visible,
-  .xynoplex-button[data-variant]:focus-visible,
-  .xynoplex-button[data-size]:focus-visible,
-  .xynoplex-button[data-icon-only]:focus-visible,
-  .xynoplex-button[data-full-width]:focus-visible,
-  .xynoplex-panel-button:focus-visible,
-  .xynoplex-panel-button-active:focus-visible,
-  .xynoplex-chip--selectable:focus-visible,
-  .xynoplex-chip[data-selected]:focus-visible,
-  .xynoplex-toolbar-button:focus-visible,
-  .xynoplex-toolbar-menu-button:focus-visible,
-  .xynoplex-resource-button:focus-visible,
-  .xynoplex-signout-button:focus-visible,
+  .xynolog-button:focus-visible,
+  .xynolog-button[data-variant]:focus-visible,
+  .xynolog-button[data-size]:focus-visible,
+  .xynolog-button[data-icon-only]:focus-visible,
+  .xynolog-button[data-full-width]:focus-visible,
+  .xynolog-panel-button:focus-visible,
+  .xynolog-panel-button-active:focus-visible,
+  .xynolog-chip--selectable:focus-visible,
+  .xynolog-chip[data-selected]:focus-visible,
+  .xynolog-toolbar-button:focus-visible,
+  .xynolog-toolbar-menu-button:focus-visible,
+  .xynolog-resource-button:focus-visible,
+  .xynolog-signout-button:focus-visible,
   input:focus-visible,
   textarea:focus-visible,
   select:focus-visible {

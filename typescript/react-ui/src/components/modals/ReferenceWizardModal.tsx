@@ -1,12 +1,12 @@
 'use client';
 
-import type { AnnotationId } from '@xynoplex/core';
+import type { AnnotationId } from '@xynolog/core';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react';
-import type { GatheredContext, EngineWithLimits, ResourceId } from '@xynoplex/core';
-import { uuidV4 } from '@xynoplex/core';
-import { HOVER_DELAY_MS } from '@xynoplex/sdk';
-import { useXynoplex } from '../../session/XynoplexProvider';
+import type { GatheredContext, EngineWithLimits, ResourceId } from '@xynolog/core';
+import { uuidV4 } from '@xynolog/core';
+import { HOVER_DELAY_MS } from '@xynolog/sdk';
+import { useXynolog } from '../../session/XynologProvider';
 import { useObservable } from '../../hooks/useObservable';
 import { useEventSubscription } from '../../contexts/useEventSubscription';
 import { GatherContextStep } from './GatherContextStep';
@@ -152,7 +152,7 @@ export function ReferenceWizardModal({
   translations: t,
   generationEngine,
 }: ReferenceWizardModalProps) {
-  const session = useObservable(useXynoplex().activeSession$);
+  const session = useObservable(useXynolog().activeSession$);
   // The host's callbacks are read through refs, so a host that passes a new
   // function on every render does not re-create the handlers below.
   const onCloseRef = useRef(onClose);
@@ -348,7 +348,7 @@ export function ReferenceWizardModal({
 
   return (
     <Transition appear show={isOpen}>
-      <Dialog as="div" className="xynoplex-search-modal" onClose={handleDismiss}>
+      <Dialog as="div" className="xynolog-search-modal" onClose={handleDismiss}>
         {/* Backdrop */}
         <TransitionChild
           enter="ease-out duration-200"
@@ -358,12 +358,12 @@ export function ReferenceWizardModal({
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="xynoplex-search-modal__backdrop" />
+          <div className="xynolog-search-modal__backdrop" />
         </TransitionChild>
 
         {/* Modal panel */}
-        <div className="xynoplex-search-modal__wrapper">
-          <div className="xynoplex-search-modal__centering xynoplex-search-modal__centering--center">
+        <div className="xynolog-search-modal__wrapper">
+          <div className="xynolog-search-modal__centering xynolog-search-modal__centering--center">
             <TransitionChild
               enter="ease-out duration-200"
               enterFrom="opacity-0 scale-95"
@@ -374,14 +374,14 @@ export function ReferenceWizardModal({
             >
               {/* Every step shows the evidence display, so every step is wide
                   and gets the gather layout (flex column, capped height). */}
-              <DialogPanel className="xynoplex-search-modal__panel xynoplex-search-modal__panel--with-border xynoplex-search-modal__panel--gather xynoplex-search-modal__panel--wide">
-                <div className="xynoplex-search-modal__header">
-                  <DialogTitle className="xynoplex-search-modal__title">
+              <DialogPanel className="xynolog-search-modal__panel xynolog-search-modal__panel--with-border xynolog-search-modal__panel--gather xynolog-search-modal__panel--wide">
+                <div className="xynolog-search-modal__header">
+                  <DialogTitle className="xynolog-search-modal__title">
                     {t.resolveTitle}
                   </DialogTitle>
                   <button
                     onClick={handleDismiss}
-                    className="xynoplex-search-modal__close-button"
+                    className="xynolog-search-modal__close-button"
                     aria-label="Close"
                   >
                     ✕
@@ -425,7 +425,7 @@ export function ReferenceWizardModal({
                 )}
 
                 {wizardStep.step === 'compose' && context && (
-                  <div className="xynoplex-wizard__step-scroll" ref={stepScrollRef}>
+                  <div className="xynolog-wizard__step-scroll" ref={stepScrollRef}>
                   <GatherContextStep
                     context={context}
                     contextLoading={contextLoading}
@@ -459,7 +459,7 @@ export function ReferenceWizardModal({
                 )}
 
                 {wizardStep.step === 'configure-generation' && context && (
-                  <div className="xynoplex-wizard__step-scroll" ref={stepScrollRef}>
+                  <div className="xynolog-wizard__step-scroll" ref={stepScrollRef}>
                   <GatherContextStep
                     context={context}
                     contextLoading={contextLoading}
@@ -500,7 +500,7 @@ export function ReferenceWizardModal({
                 )}
 
                 {wizardStep.step === 'configure-search' && (
-                  <div className="xynoplex-wizard__step-scroll" ref={stepScrollRef}>
+                  <div className="xynolog-wizard__step-scroll" ref={stepScrollRef}>
                   <GatherContextStep
                     context={context}
                     contextLoading={contextLoading}
@@ -530,7 +530,7 @@ export function ReferenceWizardModal({
                 )}
 
                 {wizardStep.step === 'search-results' && context && (
-                  <div className="xynoplex-wizard__step-scroll" ref={stepScrollRef}>
+                  <div className="xynolog-wizard__step-scroll" ref={stepScrollRef}>
                   <GatherContextStep
                     context={context}
                     contextLoading={contextLoading}

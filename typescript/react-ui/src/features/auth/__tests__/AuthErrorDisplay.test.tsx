@@ -68,7 +68,7 @@ describe('AuthErrorDisplay', () => {
 
       const errorText = screen.getByText('Your account is not permitted to sign in.');
 
-      expect(errorText).toHaveClass('xynoplex-auth-error-display__error-message');
+      expect(errorText).toHaveClass('xynolog-auth-error-display__error-message');
     });
 
     it('renders try again link', () => {

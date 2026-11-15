@@ -1,19 +1,19 @@
-# @xynoplex/observability
+# @xynolog/observability
 
-[![Tests](https://github.com/Xynoplex/sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/Xynoplex/sdk/actions/workflows/ci.yml?query=branch%3Amain+is%3Asuccess+job%3A%22Test+observability%22)
-[![codecov](https://codecov.io/gh/Xynoplex/sdk/graph/badge.svg?component=typescript-observability)](https://app.codecov.io/gh/Xynoplex/sdk/components)
-[![npm version](https://img.shields.io/npm/v/@xynoplex/observability.svg)](https://www.npmjs.com/package/@xynoplex/observability)
-[![npm downloads](https://img.shields.io/npm/dm/@xynoplex/observability.svg)](https://www.npmjs.com/package/@xynoplex/observability)
-[![License](https://img.shields.io/npm/l/@xynoplex/observability.svg)](https://github.com/Xynoplex/sdk/blob/main/LICENSE)
+[![Tests](https://github.com/xynolog/sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/xynolog/sdk/actions/workflows/ci.yml?query=branch%3Amain+is%3Asuccess+job%3A%22Test+observability%22)
+[![codecov](https://codecov.io/gh/xynolog/sdk/graph/badge.svg?component=typescript-observability)](https://app.codecov.io/gh/xynolog/sdk/components)
+[![npm version](https://img.shields.io/npm/v/@xynolog/observability.svg)](https://www.npmjs.com/package/@xynolog/observability)
+[![npm downloads](https://img.shields.io/npm/dm/@xynolog/observability.svg)](https://www.npmjs.com/package/@xynolog/observability)
+[![License](https://img.shields.io/npm/l/@xynolog/observability.svg)](https://github.com/xynolog/sdk/blob/main/LICENSE)
 
-Tracing and metrics for Xynoplex's TypeScript transport and for a Node program built on it, on [OpenTelemetry](https://opentelemetry.io). It is off unless a process is given somewhere to export to: with no endpoint configured, every function here does nothing.
+Tracing and metrics for Xynolog's TypeScript transport and for a Node program built on it, on [OpenTelemetry](https://opentelemetry.io). It is off unless a process is given somewhere to export to: with no endpoint configured, every function here does nothing.
 
 ## Who uses it
 
-- **[`@xynoplex/http-transport`](../http-transport/README.md)** runs each request in a span and carries the trace across the wire. That is how this package comes to be in the Browser's bundle.
-- **[`@xynoplex/sdk`](../sdk/README.md)** carries the trace of a job from the request that made it to the worker that claims it.
+- **[`@xynolog/http-transport`](../http-transport/README.md)** runs each request in a span and carries the trace across the wire. That is how this package comes to be in the Browser's bundle.
+- **[`@xynolog/sdk`](../sdk/README.md)** carries the trace of a job from the request that made it to the worker that claims it.
 
-No Xynoplex service is a Node process. The gateway, the dispatcher and the Archivist are Rust and have a crate of their own for this; the Python services have `xynoplex_service`.
+No Xynolog service is a Node process. The gateway, the dispatcher and the Archivist are Rust and have a crate of their own for this; the Python services have `xynolog_service`.
 
 **Building an application?** You do not need this package. The SDK's transport reports through OpenTelemetry's global API, so an application that registers a tracer of its own sees the transport's spans in its traces.
 
@@ -21,16 +21,16 @@ No Xynoplex service is a Node process. The gateway, the dispatcher and the Archi
 
 | Import | |
 |---|---|
-| `@xynoplex/observability` | Runs in Node and in a browser. Spans: `withSpan`. Trace context across the bus: `getActiveTraceparent`, `extractTraceparent`, `withTraceparent`; and `withoutTrace`, for work that begins a trace of its own. `recordBusSent`, the count of the emits a client sent |
-| `@xynoplex/observability/node` | `initObservabilityNode` and `shutdownObservabilityNode`: the tracer, the meter, the exporter and the context manager of a Node process |
+| `@xynolog/observability` | Runs in Node and in a browser. Spans: `withSpan`. Trace context across the bus: `getActiveTraceparent`, `extractTraceparent`, `withTraceparent`; and `withoutTrace`, for work that begins a trace of its own. `recordBusSent`, the count of the emits a client sent |
+| `@xynolog/observability/node` | `initObservabilityNode` and `shutdownObservabilityNode`: the tracer, the meter, the exporter and the context manager of a Node process |
 
 Each says what it does where it is defined, in [src/index.ts](src/index.ts).
 
 ## Example
 
 ```typescript
-import { initObservabilityNode } from '@xynoplex/observability/node';
-import { withSpan } from '@xynoplex/observability';
+import { initObservabilityNode } from '@xynolog/observability/node';
+import { withSpan } from '@xynolog/observability';
 
 // Once, at the entry point, before anything that makes a span.
 initObservabilityNode({ serviceName: 'my-program', serviceVersion: '1.0.0' });
@@ -45,7 +45,7 @@ const length = await withSpan('read-document', async (span) => {
 
 - **Off by default, and free when off.** With no exporter configured, the tracer and the meter are OpenTelemetry's own no-ops. Nothing here may do work, or fail, because telemetry is not set up.
 - **The main import runs in a browser.** It imports no Node builtin. What needs Node is in `/node`.
-- **One trace across the bus.** A request carries the active span as a W3C `traceparent` header, and a frame relayed over the stream carries it in its payload's trace field (`TRACE_FIELD` in `@xynoplex/core`, generated from the bus registry). A handler continues that trace rather than starting one.
+- **One trace across the bus.** A request carries the active span as a W3C `traceparent` header, and a frame relayed over the stream carries it in its payload's trace field (`TRACE_FIELD` in `@xynolog/core`, generated from the bus registry). A handler continues that trace rather than starting one.
 - **No domain logic.** The package gives the helpers and the recorder. What is worth a span or a count is decided where the work happens.
 - **Initialized once.** `initObservabilityNode` is called at a process's entry point. A second call does nothing and returns `false`.
 

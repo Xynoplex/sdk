@@ -1,4 +1,4 @@
-package xynoplex
+package xynolog
 
 import (
 	"reflect"

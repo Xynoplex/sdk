@@ -13,9 +13,9 @@ vi.mock('../../LiveRegion', () => ({
   })),
 }));
 
-// Mock LOCALES (lives in @xynoplex/core)
-vi.mock('@xynoplex/core', async () => {
-  const actual = await vi.importActual('@xynoplex/core');
+// Mock LOCALES (lives in @xynolog/core)
+vi.mock('@xynolog/core', async () => {
+  const actual = await vi.importActual('@xynolog/core');
   return {
     ...actual,
     LOCALES: [
@@ -33,7 +33,7 @@ describe('SettingsPanel', () => {
     locale: 'en',
     hoverDelayMs: 150,
     version: '9.9.9',
-    sourceCodeUrl: 'https://example.invalid/xynoplex',
+    sourceCodeUrl: 'https://example.invalid/xynolog',
     onOpenKeyboardHelp: openKeyboardHelp,
   };
 
@@ -218,7 +218,7 @@ describe('SettingsPanel', () => {
     it('names the app, its tagline and the running version', () => {
       renderWithProviders(<SettingsPanel {...defaultProps} />);
 
-      expect(screen.getByText('Xynoplex')).toBeInTheDocument();
+      expect(screen.getByText('Xynolog')).toBeInTheDocument();
       expect(screen.getByText('Settings.tagline')).toBeInTheDocument();
       expect(screen.getByText('Settings.version')).toBeInTheDocument();
     });
@@ -227,7 +227,7 @@ describe('SettingsPanel', () => {
       renderWithProviders(<SettingsPanel {...defaultProps} />);
 
       const link = screen.getByText('Settings.sourceCode');
-      expect(link).toHaveAttribute('href', 'https://example.invalid/xynoplex');
+      expect(link).toHaveAttribute('href', 'https://example.invalid/xynolog');
       expect(link).toHaveAttribute('rel', 'noopener noreferrer');
     });
 

@@ -1,12 +1,12 @@
 open Eio.Std
-module B = Xynoplex.Bus_registry
-module S = Xynoplex.Subscription
-module Session = Xynoplex.Session
+module B = Xynolog.Bus_registry
+module S = Xynolog.Subscription
+module Session = Xynolog.Session
 module J = Yojson.Safe.Util
-module H = Xynoplex.Http_wire
-module L = Xynoplex.Live_query
-module D = Xynoplex.Delegation
-module W = Xynoplex.Worker
+module H = Xynolog.Http_wire
+module L = Xynolog.Live_query
+module D = Xynolog.Delegation
+module W = Xynolog.Worker
 
 exception Misuse of string
 
@@ -36,7 +36,7 @@ let operation name =
   | None -> raise (Misuse ("unknown operation " ^ name))
 
 let resource_of_name value =
-  match Xynoplex.Identifiers.Resource_id.of_string value with
+  match Xynolog.Identifiers.Resource_id.of_string value with
   | Ok value -> value
   | Error _ -> raise (Misuse "invalid resource ID")
 
@@ -75,7 +75,7 @@ type client = {
   session : Session.t;
   client_id : string;
   http : H.t;
-  clock : Xynoplex.Clock.t;
+  clock : Xynolog.Clock.t;
 }
 
 type mode = Wire | Worker | Live
@@ -153,7 +153,7 @@ let run mode env =
     | None -> raise (Misuse "open first")
   in
   let report_frame = function
-    | Ok (Xynoplex.Wire_stream.Frame { route; payload = Ok payload; _ })
+    | Ok (Xynolog.Wire_stream.Frame { route; payload = Ok payload; _ })
       when Hashtbl.mem listens route.channel ->
         let fields =
           [
@@ -164,7 +164,7 @@ let run mode env =
               route.correlation_id;
             Option.map
               (fun value ->
-                ("scope", text (Xynoplex.Identifiers.Resource_id.to_string value)))
+                ("scope", text (Xynolog.Identifiers.Resource_id.to_string value)))
               route.scope;
           ]
           |> List.filter_map Fun.id
@@ -261,7 +261,7 @@ let run mode env =
            ~default:[])
     in
     let clock =
-      Xynoplex.Clock.make
+      Xynolog.Clock.make
         ~monotonic:(Eio.Stdenv.mono_clock env)
         ~wall:(Eio.Stdenv.clock env)
         ~jitter:(Random.State.make_self_init ())
@@ -308,7 +308,7 @@ let run mode env =
             | _ -> ()
           in
           let facade =
-            Xynoplex.Client.connect ~timing:subscription_timing ~http_timing
+            Xynolog.Client.connect ~timing:subscription_timing ~http_timing
               ?telemetry ~restore ~save
               ?invalidation_window_ms:
                 (optional J.to_int "invalidationWindowMs" timing)
@@ -317,18 +317,18 @@ let run mode env =
               ~sw ~clock ~session ~client_id ~key ~call ~global ~on_event ()
           in
           let _release =
-            Xynoplex.Client.errors facade
+            Xynolog.Client.errors facade
               ~on_value:(function
-                | Xynoplex.Client.Transport_failure failure -> on_error failure
-                | Xynoplex.Client.Own { code; _ } ->
+                | Xynolog.Client.Transport_failure failure -> on_error failure
+                | Xynolog.Client.Own { code; _ } ->
                     output_json (`Assoc [ ("error", error code) ]))
               ~on_close:ignore
           in
           if mode = Worker then worker_facade := Some facade
           else (
             live := Some facade;
-            delegation := Some (Xynoplex.Client.delegation facade));
-          (Xynoplex.Client.http facade, Xynoplex.Client.subscription facade)
+            delegation := Some (Xynolog.Client.delegation facade));
+          (Xynolog.Client.http facade, Xynolog.Client.subscription facade)
       | Wire ->
           let http =
             H.make ?telemetry ~clock ~session ~timing:http_timing ~key ~on_error
@@ -341,7 +341,7 @@ let run mode env =
               ~on_refused:(fun status ->
                 on_error
                   {
-                    code = Xynoplex.Error_codes.Transport.unauthorized;
+                    code = Xynolog.Error_codes.Transport.unauthorized;
                     status = Some status;
                     message = "The gateway refused the stream's credential";
                   })
@@ -383,7 +383,7 @@ let run mode env =
   in
   let live_query value =
     let client = facade () in
-    let module Browse = Xynoplex.Client.Browse in
+    let module Browse = Xynolog.Client.Browse in
     let name, resource, argument = query_key value in
     let resource () = resource_of_name (Option.get resource) in
     match name with
@@ -392,11 +392,11 @@ let run mode env =
     | "annotation" ->
         let annotation =
           Result.get_ok
-            (Xynoplex.Identifiers.Annotation_id.of_string (Option.get argument))
+            (Xynolog.Identifiers.Annotation_id.of_string (Option.get argument))
         in
         Browse.annotation client (resource ()) annotation
     | "events" -> Browse.events client (resource ())
-    | "referencedBy" -> Xynoplex.Client.Gather.referenced_by client (resource ())
+    | "referencedBy" -> Xynolog.Client.Gather.referenced_by client (resource ())
     | "entityTypes" -> Browse.entity_types client
     | "tagSchemas" -> Browse.tag_schemas client
     | "engines" -> Browse.engines client
@@ -404,7 +404,7 @@ let run mode env =
         Browse.resources client
           (decode B.Channels.browse_resources_requested (Option.get argument))
     | "matchedResources" ->
-        Xynoplex.Client.Match.resources client
+        Xynolog.Client.Match.resources client
           (decode B.Channels.match_resources_requested (Option.get argument))
     | _ -> raise (Misuse "unknown live query")
   in
@@ -444,7 +444,7 @@ let run mode env =
           (Option.map
              (fun value ->
                ( "failureClass",
-                 text (Xynoplex.Enums.Failure_class.to_string value) ))
+                 text (Xynolog.Enums.Failure_class.to_string value) ))
              failure.failure_class)
       in
       output
@@ -464,7 +464,7 @@ let run mode env =
     in
     let params descriptor =
       match
-        Xynoplex.Models.decode descriptor
+        Xynolog.Models.decode descriptor
           (Yojson.Safe.to_string (field "params" input))
       with
       | Ok value -> value
@@ -472,14 +472,14 @@ let run mode env =
     in
     let release =
       if verb = "mark" then
-        Xynoplex.Mark.delegate follower
+        Xynolog.Mark.delegate follower
           ~resource:(resource_of_name (string "resource" input))
-          ~params:(params Xynoplex.Models.mark_job_params)
+          ~params:(params Xynolog.Models.mark_job_params)
           ~on_report ~on_failure ~on_close ()
       else
-        Xynoplex.Yield.delegate follower
+        Xynolog.Yield.delegate follower
           ?stall_ms:(optional J.to_int "stallDeadlineMs" input)
-          ~params:(params Xynoplex.Models.generation_job_request)
+          ~params:(params Xynolog.Models.generation_job_request)
           ~on_report ~on_failure ~on_close ()
     in
     Hashtbl.replace delegates observer release;
@@ -491,7 +491,7 @@ let run mode env =
       J.to_list accepts
       |> List.map (fun value ->
           match
-            Xynoplex.Models.decode Xynoplex.Models.job_filter
+            Xynolog.Models.decode Xynolog.Models.job_filter
               (Yojson.Safe.to_string value)
           with
           | Ok filter -> filter
@@ -502,7 +502,7 @@ let run mode env =
         (fun _ ->
           let hex () = String.concat "" (String.split_on_char '-' (uuid env)) in
           {
-            Xynoplex.Wire_stream.parent =
+            Xynolog.Wire_stream.parent =
               "00-" ^ hex () ^ "-" ^ String.sub (hex ()) 0 16 ^ "-01";
             state = None;
           })
@@ -522,35 +522,35 @@ let run mode env =
       output_json (`Assoc [ ("stalled", text (W.id job)) ])
     in
     let stream =
-      Xynoplex.Client.Job.claim
+      Xynolog.Client.Job.claim
         (Option.get !worker_facade)
         ?timeout_ms:!claim_timeout ?stall_ms:!stall_ms
         ?stall_check_ms:!stall_check_ms ~trace ~on_cancel filters
     in
     let _release =
-      Xynoplex.Claims.refused stream ~on_value:on_refused ~on_close:ignore
+      Xynolog.Claims.refused stream ~on_value:on_refused ~on_close:ignore
     in
     let _release =
-      Xynoplex.Claims.stalled stream ~on_value:on_stalled ~on_close:ignore
+      Xynolog.Claims.stalled stream ~on_value:on_stalled ~on_close:ignore
     in
     claims := Some stream;
     Fiber.fork ~sw (fun () ->
         let rec consume () =
-          match Xynoplex.Claims.next stream with
+          match Xynolog.Claims.next stream with
           | Some job when not !stopping ->
               held := Some job;
               let view =
                 `Assoc
                   [
                     ( "jobId",
-                      text (Xynoplex.Identifiers.Job_id.to_string (W.job_id job))
+                      text (Xynolog.Identifiers.Job_id.to_string (W.job_id job))
                     );
                     ( "jobType",
-                      text (Xynoplex.Enums.Job_type.to_string (W.job_type job))
+                      text (Xynolog.Enums.Job_type.to_string (W.job_type job))
                     );
                     ( "resourceId",
                       text
-                        (Xynoplex.Identifiers.Resource_id.to_string
+                        (Xynolog.Identifiers.Resource_id.to_string
                            (W.resource_id job)) );
                     ("params", W.params job);
                     ( "completedUnits",
@@ -571,25 +571,25 @@ let run mode env =
   in
   let settle action =
     let job = job () in
-    Xynoplex.Telemetry.around ?trace:(W.trace job) telemetry
+    Xynolog.Telemetry.around ?trace:(W.trace job) telemetry
       ~clock:(get_client ()).clock
-      ("worker.run", Xynoplex.Telemetry.Consumer)
-      [ ("job.id", Xynoplex.Telemetry.String (W.id job)) ]
+      ("worker.run", Xynolog.Telemetry.Consumer)
+      [ ("job.id", Xynolog.Telemetry.String (W.id job)) ]
       (fun () -> action job);
     held := None
   in
   let close ?(settle_worker = false) () =
     stopping := true;
-    Option.iter Xynoplex.Client.close !live;
+    Option.iter Xynolog.Client.close !live;
     live := None;
     Hashtbl.to_seq_keys delegates
     |> List.of_seq
     |> List.iter (fun key ->
         Option.iter (fun finish -> finish ()) (Hashtbl.find_opt observers key));
     Hashtbl.clear observers;
-    Option.iter (Xynoplex.Claims.stop ~settle:settle_worker) !claims;
+    Option.iter (Xynolog.Claims.stop ~settle:settle_worker) !claims;
     claims := None;
-    Option.iter Xynoplex.Client.close !worker_facade;
+    Option.iter Xynolog.Client.close !worker_facade;
     worker_facade := None;
     held := None;
     Option.iter
@@ -618,20 +618,20 @@ let run mode env =
         start_claims (field "accepts" input);
         done_
     | "vitals" when mode = Worker ->
-        let vitals = Option.map Xynoplex.Claims.vitals !claims in
+        let vitals = Option.map Xynolog.Claims.vitals !claims in
         let value get encode =
           Option.fold ~none:`Null ~some:encode (Option.bind vitals get)
         in
         let stamp get = value get (fun time -> `Float time) in
         let active_job =
           value
-            (fun v -> v.Xynoplex.Claims.active_job)
+            (fun v -> v.Xynolog.Claims.active_job)
             (fun (job, since) ->
               `Assoc
                 [
                   ("jobId", text (W.id job));
                   ( "type",
-                    text (Xynoplex.Enums.Job_type.to_string (W.job_type job)) );
+                    text (Xynolog.Enums.Job_type.to_string (W.job_type job)) );
                   ("since", `Float since);
                 ])
         in
@@ -646,7 +646,7 @@ let run mode env =
                ( "jobsCompleted",
                  `Int
                    (Option.fold ~none:0
-                      ~some:(fun v -> v.Xynoplex.Claims.jobs_completed)
+                      ~some:(fun v -> v.Xynolog.Claims.jobs_completed)
                       vitals) );
              ])
     | "start" when mode = Worker ->
@@ -685,7 +685,7 @@ let run mode env =
         let failure_class =
           Option.bind
             (optional J.to_string "failureClass" input)
-            Xynoplex.Enums.Failure_class.of_string
+            Xynolog.Enums.Failure_class.of_string
         in
         settle (fun job ->
             W.fail job ~error:(string "error" input) ~failure_class
@@ -702,13 +702,13 @@ let run mode env =
           |> Yojson.Safe.to_string
           |> decode B.Channels.mark_delete
         in
-        match Xynoplex.Client.Mark.delete (facade ()) payload with
+        match Xynolog.Client.Mark.delete (facade ()) payload with
         | Ok _ -> done_
-        | Error (Xynoplex.Client.Refused code) -> ("error", error code)
-        | Error (Xynoplex.Client.Http failure) ->
+        | Error (Xynolog.Client.Refused code) -> ("error", error code)
+        | Error (Xynolog.Client.Http failure) ->
             ("error", error ?status:failure.status failure.code)
-        | Error (Xynoplex.Client.Transport _) ->
-            ("error", error Xynoplex.Error_codes.Bus_request.closed))
+        | Error (Xynolog.Client.Transport _) ->
+            ("error", error Xynolog.Error_codes.Bus_request.closed))
     | "markDelegate" when mode = Live ->
         delegate ~verb:"mark" input;
         done_
@@ -723,7 +723,7 @@ let run mode env =
         if Hashtbl.mem observers observer then
           raise (Misuse "duplicate observer");
         let release =
-          Xynoplex.Client.observe
+          Xynolog.Client.observe
             (live_query (field "query" input))
             ~on_state:(fun state ->
               output_json
@@ -749,13 +749,13 @@ let run mode env =
         Hashtbl.remove observers observer;
         done_
     | "fresh" when mode = Live && !stopping ->
-        ("error", error Xynoplex.Error_codes.Bus_request.closed)
+        ("error", error Xynolog.Error_codes.Bus_request.closed)
     | "fresh" when mode = Live -> (
-        match Xynoplex.Client.fresh (live_query (field "query" input)) with
+        match Xynolog.Client.fresh (live_query (field "query" input)) with
         | Ok value -> ok (`Assoc [ ("value", value) ])
         | Error code -> ("error", error code))
     | "invalidate" when mode = Live ->
-        Xynoplex.Client.invalidate (live_query (field "query" input));
+        Xynolog.Client.invalidate (live_query (field "query" input));
         done_
     | "listen" ->
         Hashtbl.replace listens (string "channel" input) ();
@@ -797,7 +797,7 @@ let run mode env =
              ?correlation_id:(optional J.to_string "correlationId" input)
              channel (field "payload" input))
     | "request" when !stopping ->
-        ("error", error Xynoplex.Error_codes.Bus_request.closed)
+        ("error", error Xynolog.Error_codes.Bus_request.closed)
     | "request" -> (
         let (B.Operation operation) = operation (string "operation" input) in
         let client = get_client () in
@@ -820,14 +820,14 @@ let run mode env =
               (`Assoc (List.filter (fun (name, _) -> name = "response") fields))
         | Ok (S.Failure payload) -> ("error", error (H.bus_failure payload))
         | Error S.Timeout ->
-            ("error", error Xynoplex.Error_codes.Bus_request.timeout)
+            ("error", error Xynolog.Error_codes.Bus_request.timeout)
         | Error S.Transport_closed ->
-            ("error", error Xynoplex.Error_codes.Bus_request.closed)
+            ("error", error Xynolog.Error_codes.Bus_request.closed)
         | Error S.Unsubscribed ->
-            ("error", error Xynoplex.Error_codes.Bus_request.unsubscribed)
+            ("error", error Xynolog.Error_codes.Bus_request.unsubscribed)
         | Error S.Unrecognized_failure ->
-            ("error", error Xynoplex.Error_codes.Bus_request.rejected)
-        | Error _ -> ("error", error Xynoplex.Error_codes.Transport.error))
+            ("error", error Xynolog.Error_codes.Bus_request.rejected)
+        | Error _ -> ("error", error Xynolog.Error_codes.Transport.error))
     | "health" -> ok (Yojson.Safe.from_string (H.health (get_client ()).http))
     | "status" -> ok (Yojson.Safe.from_string (H.status (get_client ()).http))
     | "current-user" ->
@@ -921,7 +921,7 @@ let run mode env =
                   ("misuse", text message)
               | H.Failed failure ->
                   ("error", error ?status:failure.status failure.code)
-              | Eio.Io _ -> ("error", error Xynoplex.Error_codes.Transport.error)
+              | Eio.Io _ -> ("error", error Xynolog.Error_codes.Transport.error)
             in
             output_json (`Assoc [ ("id", `Int id); answer ]));
         loop ()

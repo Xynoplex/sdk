@@ -1,6 +1,6 @@
 # Architecture Compliance Auditing System
 
-Automated TypeScript AST analysis for enforcing React Hooks architecture patterns across the Xynoplex codebase.
+Automated TypeScript AST analysis for enforcing React Hooks architecture patterns across the Xynolog codebase.
 
 ## Overview
 

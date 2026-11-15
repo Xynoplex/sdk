@@ -1,4 +1,4 @@
-package xynoplex
+package xynolog
 
 // How a token is held, by the session table every SDK runs
 // (protocol/specs/src/session/cases.json): reading a token's expiry, and how long to

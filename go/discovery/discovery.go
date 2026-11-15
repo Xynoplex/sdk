@@ -32,14 +32,14 @@ import (
 	"reflect"
 	"time"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/internal/required"
+	xynolog "github.com/xynolog/sdk/go"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/internal/required"
 )
 
 // DiscoveryInterval is how often a launcher's document is read again, unless
 // a caller says otherwise.
-var DiscoveryInterval = xynoplex.DefaultTiming().DiscoveryInterval
+var DiscoveryInterval = xynolog.DefaultTiming().DiscoveryInterval
 
 // DiscoveryAbsentReason is why no launcher was found.
 type DiscoveryAbsentReason string

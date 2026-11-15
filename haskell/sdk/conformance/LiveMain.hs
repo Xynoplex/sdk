@@ -20,23 +20,23 @@ import Data.Time.Clock.POSIX (getPOSIXTime)
 import DriverProtocol
 import LiveQueries
 import Network.HTTP.Client (defaultManagerSettings, noProxy)
-import qualified Xynoplex.Browse as Browse
-import qualified Xynoplex.Cache as Cache
-import qualified Xynoplex.Channels as Channels
-import qualified Xynoplex.Client as Client
-import qualified Xynoplex.Delegation as Delegation
-import qualified Xynoplex.Gather as Gather
-import qualified Xynoplex.Http as Http
-import qualified Xynoplex.Mark as Mark
-import qualified Xynoplex.Match as Match
-import qualified Xynoplex.Retry as Retry
-import qualified Xynoplex.Running as Running
-import qualified Xynoplex.SessionStorage as Storage
-import qualified Xynoplex.StateValue as State
-import qualified Xynoplex.Timing.Settings as Timing
-import qualified Xynoplex.Transport as Transport
-import Xynoplex.Transport.Facts (connectionStateName)
-import qualified Xynoplex.Yield as Yield
+import qualified Xynolog.Browse as Browse
+import qualified Xynolog.Cache as Cache
+import qualified Xynolog.Channels as Channels
+import qualified Xynolog.Client as Client
+import qualified Xynolog.Delegation as Delegation
+import qualified Xynolog.Gather as Gather
+import qualified Xynolog.Http as Http
+import qualified Xynolog.Mark as Mark
+import qualified Xynolog.Match as Match
+import qualified Xynolog.Retry as Retry
+import qualified Xynolog.Running as Running
+import qualified Xynolog.SessionStorage as Storage
+import qualified Xynolog.StateValue as State
+import qualified Xynolog.Timing.Settings as Timing
+import qualified Xynolog.Transport as Transport
+import Xynolog.Transport.Facts (connectionStateName)
+import qualified Xynolog.Yield as Yield
 import qualified Streaming.Prelude as Stream
 import System.IO
 import System.Random (randomRIO)

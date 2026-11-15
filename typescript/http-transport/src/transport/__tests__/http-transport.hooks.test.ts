@@ -13,7 +13,7 @@
  */
 
 import { describe, test, expect, beforeEach, vi } from 'vitest';
-import { BRIDGED_CHANNELS, ERRORS_KEPT_FOR_FIRST_READER_COUNT, baseUrl, resourceId, type XynoplexError } from '@xynoplex/core';
+import { BRIDGED_CHANNELS, ERRORS_KEPT_FOR_FIRST_READER_COUNT, baseUrl, resourceId, type XynologError } from '@xynolog/core';
 
 // Mock `ky` with a real `HTTPError` class — defined *inside* the factory to
 // avoid vitest's mock-hoisting TDZ — so the hook's `error instanceof HTTPError`
@@ -42,7 +42,7 @@ vi.mock('ky', () => {
 });
 
 import ky, { HTTPError, NetworkError, TimeoutError } from 'ky';
-import { RETRY_RULES } from '@xynoplex/core';
+import { RETRY_RULES } from '@xynolog/core';
 import { HttpTransport } from '../http-transport';
 import { APIError } from '../api-error';
 
@@ -87,7 +87,7 @@ describe('HttpTransport ky hooks', () => {
       { error: 'Resource missing' },
     );
 
-    const emitted: XynoplexError[] = [];
+    const emitted: XynologError[] = [];
     const sub = transport.errors$.subscribe((e) => emitted.push(e));
 
     const state = {
@@ -117,7 +117,7 @@ describe('HttpTransport ky hooks', () => {
       undefined,
     );
 
-    const emitted: XynoplexError[] = [];
+    const emitted: XynologError[] = [];
     const sub = transport.errors$.subscribe((e) => emitted.push(e));
 
     await expect(
@@ -139,7 +139,7 @@ describe('HttpTransport ky hooks', () => {
   ])('beforeError reports a request the gateway never answered (%s) as unavailable, on errors$, and throws it', async (_why, unanswered) => {
     const beforeError = hooks.beforeError![0]!;
     type State = Parameters<typeof beforeError>[0];
-    const emitted: XynoplexError[] = [];
+    const emitted: XynologError[] = [];
     const sub = transport.errors$.subscribe((e) => emitted.push(e));
 
     const thrown = await Promise.resolve(
@@ -166,7 +166,7 @@ describe('HttpTransport ky hooks', () => {
     type State = Parameters<typeof beforeError>[0];
 
     const plain = new Error('socket hang up');
-    const emitted: XynoplexError[] = [];
+    const emitted: XynologError[] = [];
     const sub = transport.errors$.subscribe((e) => emitted.push(e));
 
     const returned = await beforeError({
@@ -481,7 +481,7 @@ describe('HttpTransport afterResponse — a refused credential is renewed once, 
 // harness; the ky mock above is irrelevant to the SSE path).
 
 import { BehaviorSubject } from 'rxjs';
-import { Bus, accessToken, type AccessToken, type ConnectionState } from '@xynoplex/core';
+import { Bus, accessToken, type AccessToken, type ConnectionState } from '@xynolog/core';
 import { mockFetch } from './helpers/mock-conn';
 
 describe('HttpTransport errors$ bridge (SSE connect refusals)', () => {
@@ -495,7 +495,7 @@ describe('HttpTransport errors$ bridge (SSE connect refusals)', () => {
       timeout: 10_000,
       token$: new BehaviorSubject<AccessToken | null>(accessToken('real-but-refused-tok')),
     });
-    const seen: XynoplexError[] = [];
+    const seen: XynologError[] = [];
     transport.errors$.subscribe((e) => seen.push(e));
 
     // The transport was made with a token, and opened its stream then.
@@ -525,7 +525,7 @@ describe('HttpTransport errors$ bridge (SSE connect refusals)', () => {
     // The stream is refused its credential, and waits for another: the refusal has been met.
     await vi.waitFor(() => expect(states).toContain('unauthenticated'));
 
-    const seen: XynoplexError[] = [];
+    const seen: XynologError[] = [];
     transport.errors$.subscribe((e) => seen.push(e));
     expect(seen).toHaveLength(1);
     expect(seen[0]).toBeInstanceOf(APIError);
@@ -548,7 +548,7 @@ describe('HttpTransport errors$ bridge (refused emits)', () => {
 
     // No token: the stream never opens, so the only request is the emit.
     const transport = new HttpTransport({ baseUrl: testBaseUrl, channels: BRIDGED_CHANNELS, timeout: 10_000 });
-    const seen: XynoplexError[] = [];
+    const seen: XynologError[] = [];
     transport.errors$.subscribe((e) => seen.push(e));
 
     const thrown = await transport.emit('beckon:focus', { resourceId: resourceId('res-1') }).catch((error: unknown) => error);

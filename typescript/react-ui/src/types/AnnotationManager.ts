@@ -1,4 +1,4 @@
-import type { Annotation, ResourceId, Selector } from '@xynoplex/core';
+import type { Annotation, ResourceId, Selector } from '@xynolog/core';
 
 /**
  * Parameters for creating an annotation
@@ -26,7 +26,7 @@ export interface DeleteAnnotationParams {
  *
  * Example implementation:
  * ```typescript
- * function useAnnotationManager(client: XynoplexClient): AnnotationManager {
+ * function useAnnotationManager(client: XynologClient): AnnotationManager {
  *   return {
  *     markAnnotation: async (params) => {
  *       const result = await client.mark.annotation({ target: { source: params.rUri, ... }, ... });

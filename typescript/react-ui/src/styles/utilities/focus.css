@@ -11,7 +11,7 @@ select:focus-visible,
 [role="button"]:focus-visible,
 [role="link"]:focus-visible,
 [tabindex]:focus-visible {
-  outline: 2px solid var(--xynoplex-color-primary-500);
+  outline: 2px solid var(--xynolog-color-primary-500);
   outline-offset: 2px;
 }
 
@@ -23,7 +23,7 @@ select:focus-visible,
 [data-theme="dark"] [role="button"]:focus-visible,
 [data-theme="dark"] [role="link"]:focus-visible,
 [data-theme="dark"] [tabindex]:focus-visible {
-  outline-color: var(--xynoplex-color-primary-400);
+  outline-color: var(--xynolog-color-primary-400);
 }
 
 /* Form fields need special handling */
@@ -31,11 +31,11 @@ input:focus-visible,
 textarea:focus-visible,
 select:focus-visible {
   outline-offset: -1px;
-  border-color: var(--xynoplex-color-primary-500);
+  border-color: var(--xynolog-color-primary-500);
 }
 
 [data-theme="dark"] input:focus-visible,
 [data-theme="dark"] textarea:focus-visible,
 [data-theme="dark"] select:focus-visible {
-  border-color: var(--xynoplex-color-primary-400);
+  border-color: var(--xynolog-color-primary-400);
 }

@@ -1,15 +1,15 @@
 'use client';
 
 import type { Ref } from 'react';
-import type { Annotation } from '@xynoplex/core';
-import { getAnnotationExactText } from '@xynoplex/core';
-import type { XynoplexSession } from '@xynoplex/sdk';
+import type { Annotation } from '@xynolog/core';
+import { getAnnotationExactText } from '@xynolog/core';
+import type { XynologSession } from '@xynolog/sdk';
 import { useHoverEmitter } from '../../../hooks/useHoverEmitter';
 import { creatorName, renderAgentLabels } from './agent-label';
 
 interface HighlightEntryProps {
   /** Session for interaction routing (browse.click etc.); the panel threads it. */
-  session: XynoplexSession | null;
+  session: XynologSession | null;
   highlight: Annotation;
   isFocused: boolean;
   isHovered?: boolean;
@@ -50,7 +50,7 @@ export function HighlightEntry({
   return (
     <div
       ref={ref}
-      className={`xynoplex-annotation-entry${isHovered ? ' xynoplex-annotation-pulse' : ''}`}
+      className={`xynolog-annotation-entry${isHovered ? ' xynolog-annotation-pulse' : ''}`}
       data-type="highlight"
       data-focused={isFocused ? 'true' : 'false'}
       onClick={() => {
@@ -60,17 +60,17 @@ export function HighlightEntry({
     >
       {/* Highlighted text */}
       {selectedText && (
-        <div className="xynoplex-annotation-entry__quote" data-type="highlight">
+        <div className="xynolog-annotation-entry__quote" data-type="highlight">
           "{selectedText.substring(0, 200)}{selectedText.length > 200 ? '...' : ''}"
         </div>
       )}
 
       {/* Metadata */}
-      <div className="xynoplex-annotation-entry__metadata">
+      <div className="xynolog-annotation-entry__metadata">
         {creatorName(highlight.creator) && <>By {creatorName(highlight.creator)} • </>}{formatRelativeTime(highlight.created || new Date().toISOString())}
       </div>
       {highlight.generator && renderAgentLabels(highlight.generator) && (
-        <div className="xynoplex-annotation-entry__metadata">
+        <div className="xynolog-annotation-entry__metadata">
           Via {renderAgentLabels(highlight.generator)}
         </div>
       )}

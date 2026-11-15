@@ -4,11 +4,11 @@ cd "$(dirname "$0")"
 root=${1:?expected repository root}
 bash ../probes/toolchain.sh --check
 cabal check
-cabal run xynoplex-codegen -- --check "$root"
+cabal run xynolog-codegen -- --check "$root"
 cabal build all --enable-tests --enable-coverage -j1
 mkdir -p conformance/bin
 for role in wire live; do
-  name="xynoplex-haskell-$role-driver"
+  name="xynolog-haskell-$role-driver"
   cp "$(cabal list-bin "$name")" "conformance/bin/$name.native"
   cp conformance/launch.sh "conformance/bin/$name"
   chmod +x "conformance/bin/$name"

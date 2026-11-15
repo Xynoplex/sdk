@@ -10,8 +10,8 @@
  */
 
 import { WidgetType } from '@codemirror/view';
-import { isResolvedReference, getBodySource } from '@xynoplex/core';
-import type { Annotation } from '@xynoplex/core';
+import { isResolvedReference, getBodySource } from '@xynolog/core';
+import type { Annotation } from '@xynolog/core';
 
 /**
  * Reference Resolution Widget

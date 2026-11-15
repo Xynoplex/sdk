@@ -3,11 +3,11 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { BehaviorSubject } from 'rxjs';
-import type { EventBus, EventMap, ResourceDescriptor, ResourceId } from '@xynoplex/core';
-import { FrameRefusal, jobId, resourceId as makeResourceId } from '@xynoplex/core';
-import type { CacheObservable, CacheState, XynoplexClient, XynoplexSession } from '@xynoplex/sdk';
+import type { EventBus, EventMap, ResourceDescriptor, ResourceId } from '@xynolog/core';
+import { FrameRefusal, jobId, resourceId as makeResourceId } from '@xynolog/core';
+import type { CacheObservable, CacheState, XynologClient, XynologSession } from '@xynolog/sdk';
 import { ResourceInfoPanel } from '../ResourceInfoPanel';
-import { createTestXynoplexWrapper } from '../../../../test-utils';
+import { createTestXynologWrapper } from '../../../../test-utils';
 
 // Mock TranslationContext
 vi.mock('../../../../contexts/TranslationContext', () => ({
@@ -39,9 +39,9 @@ vi.mock('../../../../contexts/TranslationContext', () => ({
   TranslationProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
-// Mock @xynoplex/http-transport utilities
-vi.mock('@xynoplex/core', async () => {
-  const actual = await vi.importActual('@xynoplex/core');
+// Mock @xynolog/http-transport utilities
+vi.mock('@xynolog/core', async () => {
+  const actual = await vi.importActual('@xynolog/core');
   return {
     ...actual,
     formatLocaleDisplay: vi.fn((locale: string) => `Language: ${locale}`),
@@ -67,7 +67,7 @@ function createEventTracker() {
   return {
     events,
     clear: () => { events.length = 0; },
-    _attach(eventBus: EventBus, client: XynoplexClient) {
+    _attach(eventBus: EventBus, client: XynologClient) {
       // `yield:clone` is a local-bus UI signal emitted by `client.yield.clone()`.
       eventBus.on('yield:clone').subscribe((payload) => {
         // Nothing bridges into this test's bus: a refusal on it is the test's own fault.
@@ -90,11 +90,11 @@ function createEventTracker() {
   };
 }
 
-const renderWithEventBus = (component: React.ReactElement<{ session: XynoplexSession | null }>, tracker?: ReturnType<typeof createEventTracker>) => {
-  const { XynoplexWrapper, eventBus, client, session } = createTestXynoplexWrapper();
+const renderWithEventBus = (component: React.ReactElement<{ session: XynologSession | null }>, tracker?: ReturnType<typeof createEventTracker>) => {
+  const { XynologWrapper, eventBus, client, session } = createTestXynologWrapper();
   if (tracker) tracker._attach(eventBus, client);
   const Wrapper = ({ children }: { children: React.ReactNode }) => (
-    <XynoplexWrapper>{children}</XynoplexWrapper>
+    <XynologWrapper>{children}</XynologWrapper>
   );
   // The component is provider-free: inject the factory session so it is the
   // SAME session whose client the tracker spies on / whose bus it subscribes.
@@ -221,7 +221,7 @@ describe('ResourceInfoPanel Component', () => {
   describe('Styling and Appearance', () => {
     it('should have proper panel structure', () => {
       const { container } = renderWithEventBus(<ResourceInfoPanel {...defaultProps} />);
-      expect(container.querySelector('.xynoplex-resource-info-panel')).toBeInTheDocument();
+      expect(container.querySelector('.xynolog-resource-info-panel')).toBeInTheDocument();
     });
 
     it('should style entity type tags appropriately', () => {
@@ -233,7 +233,7 @@ describe('ResourceInfoPanel Component', () => {
       );
 
       const tag = screen.getByText('TestType');
-      expect(tag).toHaveClass('xynoplex-tag');
+      expect(tag).toHaveClass('xynolog-tag');
       expect(tag).toHaveAttribute('data-variant', 'blue');
     });
   });
@@ -315,7 +315,7 @@ describe('ResourceInfoPanel Component', () => {
         <ResourceInfoPanel {...defaultProps} onGenerate={() => {}}
           isGenerating={false} generationProgress={null} />
       );
-      const shell = container.querySelector('.xynoplex-delegate-widget[data-type="generation"]');
+      const shell = container.querySelector('.xynolog-delegate-widget[data-type="generation"]');
       expect(shell).not.toBeNull();
       expect(shell!.querySelector('button')).not.toBeNull(); // the form IS the Generate control
     });
@@ -326,7 +326,7 @@ describe('ResourceInfoPanel Component', () => {
           isGenerating
           generationProgress={{ percentage: 40, message: { code: 'generating-resource' } }} />
       );
-      expect(container.querySelector('.xynoplex-delegate-progress')).not.toBeNull();
+      expect(container.querySelector('.xynolog-delegate-progress')).not.toBeNull();
       expect(screen.queryByRole('button', { name: '✨ Generate' })).toBeNull();
     });
 
@@ -339,7 +339,7 @@ describe('ResourceInfoPanel Component', () => {
       );
       const cancelSpy = vi.spyOn(client.job, 'cancel').mockResolvedValue(true);
 
-      fireEvent.click(screen.getByTestId('xynoplex-delegate-control'));
+      fireEvent.click(screen.getByTestId('xynolog-delegate-control'));
       expect(cancelSpy).toHaveBeenCalledExactlyOnceWith('job-1');
     });
 
@@ -354,10 +354,10 @@ describe('ResourceInfoPanel Component', () => {
       );
 
       // The mocked translator answers a key it does not list with the key.
-      expect(screen.getByTestId('xynoplex-delegate-status').textContent).toBe('cancelled');
-      expect(screen.queryByTestId('xynoplex-delegate-outcome')).toBeNull();
+      expect(screen.getByTestId('xynolog-delegate-status').textContent).toBe('cancelled');
+      expect(screen.queryByTestId('xynolog-delegate-outcome')).toBeNull();
       expect(screen.queryByRole('button', { name: '✨ Generate' })).toBeNull();
-      fireEvent.click(screen.getByTestId('xynoplex-delegate-control'));
+      fireEvent.click(screen.getByTestId('xynolog-delegate-control'));
       expect(onDismissProgress).toHaveBeenCalledTimes(1);
     });
 
@@ -368,7 +368,7 @@ describe('ResourceInfoPanel Component', () => {
           generationProgress={{ percentage: 40, message: { code: 'generating-resource' } }} />
       );
 
-      expect(screen.queryByTestId('xynoplex-delegate-control')).toBeNull();
+      expect(screen.queryByTestId('xynolog-delegate-control')).toBeNull();
     });
 
     it('the ended frame links the generated resource by name, and dismisses', () => {
@@ -390,7 +390,7 @@ describe('ResourceInfoPanel Component', () => {
       expect(openSpy).toHaveBeenCalledTimes(1);
       expect(String(openSpy.mock.calls[0]![0])).toBe('res-new1');
 
-      fireEvent.click(screen.getByTestId('xynoplex-delegate-control'));
+      fireEvent.click(screen.getByTestId('xynolog-delegate-control'));
       expect(onDismissProgress).toHaveBeenCalledTimes(1);
     });
 
@@ -402,7 +402,7 @@ describe('ResourceInfoPanel Component', () => {
         <ResourceInfoPanel {...base}
           generationProgress={{ percentage: 100, message: { code: 'complete-generated', truncated: true } }} />
       );
-      expect(screen.getByTestId('xynoplex-delegate-status').textContent)
+      expect(screen.getByTestId('xynolog-delegate-status').textContent)
         .toContain('codeCompleteGeneratedTruncated');
       unmount();
 
@@ -410,9 +410,9 @@ describe('ResourceInfoPanel Component', () => {
         <ResourceInfoPanel {...base}
           generationProgress={{ percentage: 100, message: { code: 'complete-generated', truncated: false } }} />
       );
-      expect(screen.getByTestId('xynoplex-delegate-status').textContent)
+      expect(screen.getByTestId('xynolog-delegate-status').textContent)
         .toContain('codeCompleteGenerated');
-      expect(screen.getByTestId('xynoplex-delegate-status').textContent)
+      expect(screen.getByTestId('xynolog-delegate-status').textContent)
         .not.toContain('Truncated');
     });
 
@@ -430,7 +430,7 @@ describe('ResourceInfoPanel Component', () => {
             truncated: false,
           }} />
       );
-      expect(screen.getByTestId('xynoplex-delegate-status').textContent).toBe('codeCompleteGenerated');
+      expect(screen.getByTestId('xynolog-delegate-status').textContent).toBe('codeCompleteGenerated');
     });
 
     it('a truncated outcome says so — the bit rides the outcome, not the racing frame', () => {
@@ -444,7 +444,7 @@ describe('ResourceInfoPanel Component', () => {
             truncated: true,
           }} />
       );
-      expect(screen.getByTestId('xynoplex-delegate-status').textContent).toBe('codeCompleteGeneratedTruncated');
+      expect(screen.getByTestId('xynolog-delegate-status').textContent).toBe('codeCompleteGeneratedTruncated');
     });
 
     it('no outcome, no link: the ended frame renders without one until job:complete arrives', () => {
@@ -542,7 +542,7 @@ describe('ResourceInfoPanel Component', () => {
       // The id is wire identity, not presentation. Once `browse.resource`
       // serves the source's descriptor, the link wears its name — the raw
       // hash only survives while the descriptor is unresolved (pin below).
-      const { XynoplexWrapper, session, client } = createTestXynoplexWrapper();
+      const { XynologWrapper, session, client } = createTestXynologWrapper();
       vi.spyOn(client.browse, 'resource').mockReturnValue(
         new BehaviorSubject<CacheState<ResourceDescriptor>>({
           status: 'ready',
@@ -556,7 +556,7 @@ describe('ResourceInfoPanel Component', () => {
           session={session}
           wasDerivedFrom={makeResourceId("res-abc123")}
         />,
-        { wrapper: ({ children }) => <XynoplexWrapper>{children}</XynoplexWrapper> },
+        { wrapper: ({ children }) => <XynologWrapper>{children}</XynologWrapper> },
       );
 
       expect(screen.getByText('Source Doc')).toBeInTheDocument();
@@ -583,11 +583,11 @@ describe('ResourceInfoPanel Component', () => {
       renderWithEventBus(
         <ResourceInfoPanel
           {...defaultProps}
-          generator={{ '@type': 'Software', name: 'Xynoplex AI' } as never}
+          generator={{ '@type': 'Software', name: 'Xynolog AI' } as never}
         />
       );
       expect(screen.getByText('Attributed to')).toBeInTheDocument();
-      expect(screen.getByText('Xynoplex AI')).toBeInTheDocument();
+      expect(screen.getByText('Xynolog AI')).toBeInTheDocument();
     });
 
     it('renders a Software peer by its name, then its provider and model', () => {
@@ -596,7 +596,7 @@ describe('ResourceInfoPanel Component', () => {
           {...defaultProps}
           generator={{
             '@type': 'Software',
-            '@id': 'did:web:example.com:agents:xynoplex-worker',
+            '@id': 'did:web:example.com:agents:xynolog-worker',
             name: 'my-highlighter',
             provider: 'ollama',
             model: 'gemma2:27b',

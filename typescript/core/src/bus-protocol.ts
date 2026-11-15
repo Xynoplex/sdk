@@ -354,7 +354,7 @@ export type EventMap = {
   'browse:entity-type-clicked': components['schemas']['BrowseEntityTypeClickedEvent'];
 
   // ========================================================================
-  // SHELL — app-scoped UI events (fire on XynoplexBrowser's bus, not the
+  // SHELL — app-scoped UI events (fire on XynologBrowser's bus, not the
   // per-session client bus). These must work regardless of whether a
   // KB session is active: panel toggles, sidebar, tab bar, routing.
   // ========================================================================
@@ -688,7 +688,7 @@ export const CHANNEL_SCHEMAS = {
   'browse:resource-viewed':           'BrowseResourceViewedEvent',
   'browse:entity-type-clicked':       'BrowseEntityTypeClickedEvent',
 
-  // ── SHELL (app-scoped UI events, fire on XynoplexBrowser bus) ────
+  // ── SHELL (app-scoped UI events, fire on XynologBrowser bus) ────
   'panel:toggle':                     'BrowsePanelToggleEvent',
   'panel:open':                       null, // includes runtime `anchorRect?: AnchorRect`
   'panel:close':                      null, // void

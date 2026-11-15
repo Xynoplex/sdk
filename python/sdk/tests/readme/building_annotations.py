@@ -1,4 +1,4 @@
-from xynoplex.annotations import (
+from xynolog.annotations import (
     QuotedText,
     annotation_exact_text,
     annotation_of_resource,
@@ -8,8 +8,8 @@ from xynoplex.annotations import (
     reconcile,
     target_source,
 )
-from xynoplex.identifiers import ResourceId
-from xynoplex.types import Agent, AnchoredText, Annotation, SpecificResource
+from xynolog.identifiers import ResourceId
+from xynolog.types import Agent, AnchoredText, Annotation, SpecificResource
 
 
 def highlight(text: str, quoted: QuotedText, resource: ResourceId, generator: Agent) -> Annotation | None:

@@ -6,7 +6,7 @@ import (
 	"iter"
 	"sync"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
+	xynolog "github.com/xynolog/sdk/go"
 )
 
 // life is a unit's: whether it is closed, and the context its work runs
@@ -69,7 +69,7 @@ func (l *life) close() bool {
 // frame's place, in order, on a goroutine of its own, until the unit is
 // closed. heard is called with mu held, and not once
 // the unit is closed.
-func (l *life) listen(frames iter.Seq2[xynoplex.Frame, error], heard func(xynoplex.Frame, error)) {
+func (l *life) listen(frames iter.Seq2[xynolog.Frame, error], heard func(xynolog.Frame, error)) {
 	go func() {
 		for frame, refused := range frames {
 			l.mu.Lock()
@@ -86,6 +86,6 @@ func (l *life) listen(frames iter.Seq2[xynoplex.Frame, error], heard func(xynopl
 // cancelled reports whether a job ended because it was cancelled: its
 // commits stand, and its display stays to say so.
 func cancelled(err error) bool {
-	var ended *xynoplex.JobError
-	return errors.As(err, &ended) && ended.Code == xynoplex.JobErrorCodeCancelled
+	var ended *xynolog.JobError
+	return errors.As(err, &ended) && ended.Code == xynolog.JobErrorCodeCancelled
 }

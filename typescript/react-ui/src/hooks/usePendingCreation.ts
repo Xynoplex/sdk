@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import type { EventMap, ResourceId } from '@xynoplex/core';
-import type { XynoplexSession } from '@xynoplex/sdk';
+import type { EventMap, ResourceId } from '@xynolog/core';
+import type { XynologSession } from '@xynolog/sdk';
 import { useSessionEventSubscriptions } from './useSessionEventSubscriptions';
 
 /**
@@ -31,7 +31,7 @@ export type PendingCreation = EventMap['mark:requested'];
  * @param enabled  The host's annotate-mode gate — browse-mode viewers never claim.
  */
 export function usePendingCreation(
-  session: XynoplexSession | null,
+  session: XynologSession | null,
   resourceId: ResourceId,
   enabled: boolean,
 ): { pending: PendingCreation | null; clearPending: () => void } {

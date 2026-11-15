@@ -1,4 +1,4 @@
-package xynoplex
+package xynolog
 
 // The gateway's own operations: its liveness, where a success status is alive
 // and the body is detail; and a transport held only for them opens no stream.
@@ -28,7 +28,7 @@ func TestAServingGatewayIsAliveAndReportsItself(t *testing.T) {
 		if r.URL.Path != "/api/health" {
 			t.Errorf("asked %s", r.URL.Path)
 		}
-		writeJSON(w, http.StatusOK, map[string]any{"status": "operational", "message": "Xynoplex API is running", "version": "0.7.0", "timestamp": "2026-10-26T00:00:00.000Z"})
+		writeJSON(w, http.StatusOK, map[string]any{"status": "operational", "message": "Xynolog API is running", "version": "0.7.0", "timestamp": "2026-10-26T00:00:00.000Z"})
 	})
 	if err != nil || !ok || status != "operational" {
 		t.Errorf("got %q, %v, %v", status, ok, err)

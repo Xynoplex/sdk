@@ -10,20 +10,6 @@
 //! refuses the first write of the query's document. A query the table keeps
 //! that this SDK does not fails here.
 
-use xynoplex::cache::{CachePersister, StoragePersister};
-use xynoplex::channels::BRIDGED_CHANNELS;
-use xynoplex::client::{CachePersistence, ClientOptions, XynoplexClient};
-use xynoplex::namespaces::WholeKey;
-use xynoplex::refresh::CacheQuery;
-use xynoplex::resume::CoupledBookmarks;
-use xynoplex::storage::{
-    InMemorySessionStorage, SessionStorage, StorageChange, StorageSubscription,
-};
-use xynoplex::testing::{FaultyTransport, InMemoryContent, TestClientOptions, create_test_client};
-use xynoplex::timing::MAX_STORED_BYTES_COUNT;
-use xynoplex::types::{
-    Annotation, AnnotationId, GetAnnotationsResponse, ResourceDescriptor, ResourceId, TagSchema,
-};
 use serde::Serialize;
 use serde::de::DeserializeOwned;
 use serde_json::{Value, json};
@@ -32,6 +18,20 @@ use std::hash::Hash;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
+use xynolog::cache::{CachePersister, StoragePersister};
+use xynolog::channels::BRIDGED_CHANNELS;
+use xynolog::client::{CachePersistence, ClientOptions, XynologClient};
+use xynolog::namespaces::WholeKey;
+use xynolog::refresh::CacheQuery;
+use xynolog::resume::CoupledBookmarks;
+use xynolog::storage::{
+    InMemorySessionStorage, SessionStorage, StorageChange, StorageSubscription,
+};
+use xynolog::testing::{FaultyTransport, InMemoryContent, TestClientOptions, create_test_client};
+use xynolog::timing::MAX_STORED_BYTES_COUNT;
+use xynolog::types::{
+    Annotation, AnnotationId, GetAnnotationsResponse, ResourceDescriptor, ResourceId, TagSchema,
+};
 
 const STORED: &str = include_str!("../specs/session/stored.json");
 const REFRESH: &str = include_str!("../specs/client/refresh.json");
@@ -223,7 +223,7 @@ fn decoded<T: DeserializeOwned>(of: &Value) -> T {
 /// `PERSON_KEY`, with the stream's places coupled to it as a session's are,
 /// and what it reads over.
 struct Keeping {
-    client: Arc<XynoplexClient>,
+    client: Arc<XynologClient>,
     transport: FaultyTransport,
     content: InMemoryContent,
 }

@@ -1,18 +1,18 @@
-# @xynoplex/core
+# @xynolog/core
 
-[![Tests](https://github.com/Xynoplex/sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/Xynoplex/sdk/actions/workflows/ci.yml?query=branch%3Amain+is%3Asuccess+job%3A%22Test+core%22)
-[![codecov](https://codecov.io/gh/Xynoplex/sdk/graph/badge.svg?component=typescript-core)](https://app.codecov.io/gh/Xynoplex/sdk/components)
-[![npm version](https://img.shields.io/npm/v/@xynoplex/core.svg)](https://www.npmjs.com/package/@xynoplex/core)
-[![npm downloads](https://img.shields.io/npm/dm/@xynoplex/core.svg)](https://www.npmjs.com/package/@xynoplex/core)
-[![License](https://img.shields.io/npm/l/@xynoplex/core.svg)](https://github.com/Xynoplex/sdk/blob/main/LICENSE)
+[![Tests](https://github.com/xynolog/sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/xynolog/sdk/actions/workflows/ci.yml?query=branch%3Amain+is%3Asuccess+job%3A%22Test+core%22)
+[![codecov](https://codecov.io/gh/xynolog/sdk/graph/badge.svg?component=typescript-core)](https://app.codecov.io/gh/xynolog/sdk/components)
+[![npm version](https://img.shields.io/npm/v/@xynolog/core.svg)](https://www.npmjs.com/package/@xynolog/core)
+[![npm downloads](https://img.shields.io/npm/dm/@xynolog/core.svg)](https://www.npmjs.com/package/@xynolog/core)
+[![License](https://img.shields.io/npm/l/@xynolog/core.svg)](https://github.com/xynolog/sdk/blob/main/LICENSE)
 
-What every TypeScript package in Xynoplex stands on: the protocol's types, generated from the [spec](../../../protocol/specs/README.md), and the logic that has to be the same wherever it runs. That is ids, the event bus and its channels, the transport contract, annotations and how they are anchored, and identities.
+What every TypeScript package in Xynolog stands on: the protocol's types, generated from the [spec](../../../protocol/specs/README.md), and the logic that has to be the same wherever it runs. That is ids, the event bus and its channels, the transport contract, annotations and how they are anchored, and identities.
 
 ## Who uses it
 
-Every other TypeScript package, the Browser, and the conformance and end-to-end suites. It depends on no other Xynoplex package.
+Every other TypeScript package, the Browser, and the conformance and end-to-end suites. It depends on no other Xynolog package.
 
-**Building an application?** Use [`@xynoplex/sdk`](../sdk/README.md). It re-exports what an application needs from here, the id constructors and the error types among them, and an application rarely imports this package by name.
+**Building an application?** Use [`@xynolog/sdk`](../sdk/README.md). It re-exports what an application needs from here, the id constructors and the error types among them, and an application rarely imports this package by name.
 
 ## What is in it
 
@@ -33,15 +33,15 @@ The main import runs in a browser. What cannot is on a subpath:
 
 | Import | |
 |---|---|
-| `@xynoplex/core/openapi` | The spec's validators, compiled when the package is built, and its limits |
-| `@xynoplex/core/testing` | The test doubles every layer shares |
-| `@xynoplex/core/testing/axioms` | Property-based harnesses for state units and transports. They need `fast-check` |
-| `@xynoplex/core/testing/issuer` | An OIDC issuer in one process, for tests that verify tokens |
+| `@xynolog/core/openapi` | The spec's validators, compiled when the package is built, and its limits |
+| `@xynolog/core/testing` | The test doubles every layer shares |
+| `@xynolog/core/testing/axioms` | Property-based harnesses for state units and transports. They need `fast-check` |
+| `@xynolog/core/testing/issuer` | An OIDC issuer in one process, for tests that verify tokens |
 
 ## Example
 
 ```typescript
-import { resourceId, isResourceId, kbDid, kbResource } from '@xynoplex/core';
+import { resourceId, isResourceId, kbDid, kbResource } from '@xynolog/core';
 
 // An id is made by its constructor, which throws for text its rule refuses.
 const id = resourceId('5bcd259ab1464cf68a556bbad21f513f');
@@ -56,9 +56,9 @@ const audience = kbResource('xynoplex.github.io:xynoplex-caselaw-kb'); // 'https
 
 ## What a change must keep
 
-- **The spec is the source.** `src/types.ts`, [src/bus-protocol.ts](src/bus-protocol.ts) and everything in `src/generated/` are generated from [`protocol/specs/src`](../../../protocol/specs/src/), and never edited. Only `bus-protocol.ts` is committed; the rest is made when the package is built. Change the spec, then run `npm run generate:openapi --workspace=@xynoplex/core`. A type written by hand that restates a schema is a second copy that nothing keeps true: use the spec's type, under the spec's name.
+- **The spec is the source.** `src/types.ts`, [src/bus-protocol.ts](src/bus-protocol.ts) and everything in `src/generated/` are generated from [`protocol/specs/src`](../../../protocol/specs/src/), and never edited. Only `bus-protocol.ts` is committed; the rest is made when the package is built. Change the spec, then run `npm run generate:openapi --workspace=@xynolog/core`. A type written by hand that restates a schema is a second copy that nothing keeps true: use the spec's type, under the spec's name.
 - **The main import runs in a browser.** It uses no Node builtin. The validators and the test issuer are reachable only by their subpaths, because of the weight they would add to every bundle, and `npm run lint:core-subpaths` fails a re-export of either from the root.
-- **It depends on no other Xynoplex package.** Everything else depends on it.
+- **It depends on no other Xynolog package.** Everything else depends on it.
 - **An id is made only by its constructor or its guard.** One kind is never assignable to another.
 - **Its tests read every package.** Three census tests here walk the source of all of `packages/`, `apps/` and `images/`, tests included, so a change somewhere else can fail this package's suite.
 

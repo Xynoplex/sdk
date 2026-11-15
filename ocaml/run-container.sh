@@ -8,8 +8,8 @@ base=$(python3 -c 'import json; print(json.load(open("toolchain.json"))["baseIma
 node_image="node:$(../typescript/scripts/node-version.sh)-bookworm"
 container run --rm --volume "$root:/work" --workdir /work "$node_image" \
   npm run generate:ocaml:check
-container build --build-arg "BASE_IMAGE=$base" --tag xynoplex-ocaml-development --file Dockerfile .
-for volume in xynoplex-ocaml-sdk-build xynoplex-ocaml-sdk-downloads; do
+container build --build-arg "BASE_IMAGE=$base" --tag xynolog-ocaml-development --file Dockerfile .
+for volume in xynolog-ocaml-sdk-build xynolog-ocaml-sdk-downloads; do
   if ! container volume inspect "$volume" >/dev/null 2>&1; then
     container volume create "$volume"
   fi
@@ -17,7 +17,7 @@ done
 container run --rm --memory 4g --volume "$root:/work" \
   --mount "type=bind,source=$common,target=$common,readonly" \
   --env GIT_CONFIG_COUNT=1 --env GIT_CONFIG_KEY_0=safe.directory --env GIT_CONFIG_VALUE_0=/work \
-  --mount type=volume,source=xynoplex-ocaml-sdk-build,target=/work/ocaml/sdk/_build \
-  --mount type=volume,source=xynoplex-ocaml-sdk-downloads,target=/home/opam/.cache/dune \
-  --workdir /work/ocaml/sdk xynoplex-ocaml-development bash -c \
+  --mount type=volume,source=xynolog-ocaml-sdk-build,target=/work/ocaml/sdk/_build \
+  --mount type=volume,source=xynolog-ocaml-sdk-downloads,target=/home/opam/.cache/dune \
+  --workdir /work/ocaml/sdk xynolog-ocaml-development bash -c \
   'dune build @all @opam && python3 test/check-format.py && dune runtest && python3 test/check-installed-api.py && python3 probes/check-interface.py && python3 api.py && python3 probes/check-api-controls.py'

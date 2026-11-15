@@ -26,27 +26,27 @@ import Data.Text.Encoding (encodeUtf8)
 import Network.HTTP.Client
 import Network.URI (parseURI, uriAuthority, uriPort, uriRegName)
 import Text.Read (readMaybe)
-import qualified Xynoplex.Auth as Auth
-import qualified Xynoplex.Identity as Principal
-import qualified Xynoplex.Registry.Identity as Identity
-import qualified Xynoplex.Bus as Bus
-import Xynoplex.Channels (globalChannels, channelName, Channel(FrameEntityTypeAddOk))
-import qualified Xynoplex.Http.Routes as Routes
-import qualified Xynoplex.Timing as Timing
-import qualified Xynoplex.Timing.Settings as Settings
-import Xynoplex.Transport.Facts (traceField)
-import qualified Xynoplex.Client as Client
-import qualified Xynoplex.Content as Content
-import qualified Xynoplex.ErrorCodes as Code
-import Xynoplex.Errors
-import qualified Xynoplex.Frame as Frame
-import qualified Xynoplex.Gateway as Gateway
-import qualified Xynoplex.Http as Http
-import qualified Xynoplex.Retry as Retry
-import qualified Xynoplex.StateValue as State
-import qualified Xynoplex.System as System
-import qualified Xynoplex.Transport as Transport
-import Xynoplex.Types
+import qualified Xynolog.Auth as Auth
+import qualified Xynolog.Identity as Principal
+import qualified Xynolog.Registry.Identity as Identity
+import qualified Xynolog.Bus as Bus
+import Xynolog.Channels (globalChannels, channelName, Channel(FrameEntityTypeAddOk))
+import qualified Xynolog.Http.Routes as Routes
+import qualified Xynolog.Timing as Timing
+import qualified Xynolog.Timing.Settings as Settings
+import Xynolog.Transport.Facts (traceField)
+import qualified Xynolog.Client as Client
+import qualified Xynolog.Content as Content
+import qualified Xynolog.ErrorCodes as Code
+import Xynolog.Errors
+import qualified Xynolog.Frame as Frame
+import qualified Xynolog.Gateway as Gateway
+import qualified Xynolog.Http as Http
+import qualified Xynolog.Retry as Retry
+import qualified Xynolog.StateValue as State
+import qualified Xynolog.System as System
+import qualified Xynolog.Transport as Transport
+import Xynolog.Types
 import System.Directory (removeFile, getTemporaryDirectory)
 import System.Environment (lookupEnv, setEnv, unsetEnv)
 import GHC.IO.Handle (hDuplicate, hDuplicateTo)
@@ -59,11 +59,11 @@ import qualified Streaming.Prelude as Stream
 withBusLogs :: IO () -> IO ()
 withBusLogs work = do
   temporary <- getTemporaryDirectory
-  bracket (openBinaryTempFile temporary "xynoplex-http-bus-log")
+  bracket (openBinaryTempFile temporary "xynolog-http-bus-log")
     (\(filename,handle) -> do closed <- hIsClosed handle; unless closed (hClose handle); removeFile filename) $ \(filename,handle) -> do
-      bracket (lookupEnv "XYNOPLEX_BUS_LOG")
-        (maybe (unsetEnv "XYNOPLEX_BUS_LOG") (setEnv "XYNOPLEX_BUS_LOG")) (\_ -> do
-          setEnv "XYNOPLEX_BUS_LOG" "1"
+      bracket (lookupEnv "XYNOLOG_BUS_LOG")
+        (maybe (unsetEnv "XYNOLOG_BUS_LOG") (setEnv "XYNOLOG_BUS_LOG")) (\_ -> do
+          setEnv "XYNOLOG_BUS_LOG" "1"
           bracket (hDuplicate stderr) (\original -> hDuplicateTo original stderr >> hClose original) $ \_ -> do
             hDuplicateTo handle stderr
             work
@@ -489,7 +489,7 @@ withPeer :: FilePath -> Map.Map Text Value -> IORef String -> (Peer -> IO result
 withPeer root fixtures reached action = bracket
   (do
     temporary <- getTemporaryDirectory
-    (file, handle) <- openBinaryTempFile temporary "xynoplex-http-fixtures.json"
+    (file, handle) <- openBinaryTempFile temporary "xynolog-http-fixtures.json"
     Lazy.hPut handle (encode fixtures)
     hClose handle
     pure file)

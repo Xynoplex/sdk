@@ -1,14 +1,14 @@
 'use client';
 
-import type { ResourceId } from '@xynoplex/core';
+import type { ResourceId } from '@xynolog/core';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { Annotation } from '@xynoplex/core';
+import type { Annotation } from '@xynolog/core';
 import { estimateSlotHeight } from './estimate-slot-height';
 import { useAnchoredText } from '../../hooks/useAnchoredText';
 import { AnchoredTextNotice } from '../annotation/AnchoredTextNotice';
 import { PdfPageView, type PageDrawing } from './PdfPageView';
 import { useTranslations } from '../../contexts/TranslationContext';
-import { HOVER_DELAY_MS, type XynoplexSession } from '@xynoplex/sdk';
+import { HOVER_DELAY_MS, type XynologSession } from '@xynolog/sdk';
 import type { SelectionMotivation } from '../annotation/AnnotateToolbar';
 import { loadPdfDocument, type PDFDocumentProxy } from '../../lib/browser-pdfjs';
 import './PdfAnnotationCanvas.css';
@@ -87,7 +87,7 @@ interface PdfAnnotationCanvasProps {
   existingAnnotations?: Annotation[];
   drawingMode: DrawingMode;
   selectedMotivation?: SelectionMotivation | null;
-  session?: XynoplexSession | null | undefined;
+  session?: XynologSession | null | undefined;
   hoveredAnnotationId?: string | null;
   selectedAnnotationId?: string | null;
   hoverDelayMs?: number;
@@ -195,7 +195,7 @@ export function PdfAnnotationCanvas({
   }, [pdfUrl, scale]);
 
   /**
-   * The document's text as Xynoplex serves it — every PDF's, since a rectangle
+   * The document's text as Xynolog serves it — every PDF's, since a rectangle
    * on any page is quoted from it and from nowhere else. It is WHOLE-RESOURCE,
    * one artifact covering every page, so it is held here, once for the
    * document, and handed to each page: a 400-page document is asked for and
@@ -435,25 +435,25 @@ export function PdfAnnotationCanvas({
   };
 
   if (errorKey) {
-    return <div className="xynoplex-pdf-annotation-canvas__error">{t(errorKey)}</div>;
+    return <div className="xynolog-pdf-annotation-canvas__error">{t(errorKey)}</div>;
   }
 
   return (
     <div
       ref={scrollportRef}
-      className="xynoplex-pdf-annotation-canvas"
+      className="xynolog-pdf-annotation-canvas"
       data-page-layout={pageLayout}
       data-resource-scrollport={pageLayout === 'scroll' && ownsScrollport ? '' : undefined}
       data-annotate-deferred={anchoredText.status === 'held' ? 'false' : 'true'}
     >
-      {isLoading && <div className="xynoplex-pdf-annotation-canvas__loading">{t('loading')}</div>}
+      {isLoading && <div className="xynolog-pdf-annotation-canvas__loading">{t('loading')}</div>}
       <AnchoredTextNotice status={anchoredText.status} />
 
       {pdfDoc && pageLayout === 'scroll' ? (
-        <div className="xynoplex-pdf-annotation-canvas__viewport" data-axis={SCROLL_AXIS}>
+        <div className="xynolog-pdf-annotation-canvas__viewport" data-axis={SCROLL_AXIS}>
         {numPages > 0 && pageShape && (
           <div
-            className="xynoplex-pdf-annotation-canvas__strip"
+            className="xynolog-pdf-annotation-canvas__strip"
             data-axis={SCROLL_AXIS}
             data-scroller="true"
             aria-orientation={SCROLL_AXIS}
@@ -464,7 +464,7 @@ export function PdfAnnotationCanvas({
                 key={page}
                 type="button"
                 data-page={page}
-                className="xynoplex-pdf-annotation-canvas__strip-page"
+                className="xynolog-pdf-annotation-canvas__strip-page"
                 style={{ height: `${Math.round(STRIP_PAGE_WIDTH * pageShape.aspect)}px` }}
                 aria-label={t('pageOf', { page, total: numPages })}
                 tabIndex={page === currentPage ? 0 : -1}
@@ -477,13 +477,13 @@ export function PdfAnnotationCanvas({
             ))}
           </div>
         )}
-        <div className="xynoplex-pdf-annotation-canvas__column" data-axis={SCROLL_AXIS} ref={columnRef} style={{ zoom }}>
+        <div className="xynolog-pdf-annotation-canvas__column" data-axis={SCROLL_AXIS} ref={columnRef} style={{ zoom }}>
           {Array.from({ length: numPages }, (_, i) => i + 1).map((page) => (
             <div
               key={page}
               ref={registerSlot}
               data-page={page}
-              className="xynoplex-pdf-annotation-canvas__slot"
+              className="xynolog-pdf-annotation-canvas__slot"
               // min-height, and applied whether or not the page is mounted:
               // releasing it on mount would make the scrollbar jump. `min`
               // rather than a fixed height so a page that renders slightly
@@ -513,11 +513,11 @@ export function PdfAnnotationCanvas({
 
       {/* Page navigation controls */}
       {numPages > 0 && (
-        <nav className="xynoplex-pdf-annotation-canvas__controls" aria-label={t('pagination')}>
+        <nav className="xynolog-pdf-annotation-canvas__controls" aria-label={t('pagination')}>
           <button
             disabled={currentPage <= 1}
             onClick={() => (pageLayout === 'scroll' ? scrollToPage(currentPage - 1) : setPageNumber(pageNumber - 1))}
-            className="xynoplex-pdf-annotation-canvas__button"
+            className="xynolog-pdf-annotation-canvas__button"
           >
             {t('previous')}
           </button>
@@ -527,13 +527,13 @@ export function PdfAnnotationCanvas({
             activated at all — so a screen-reader user who scrolls would
             otherwise get silence.
           */}
-          <span className="xynoplex-pdf-annotation-canvas__page-info" aria-live="polite">
+          <span className="xynolog-pdf-annotation-canvas__page-info" aria-live="polite">
             {t('pageOf', { page: currentPage, total: numPages })}
           </span>
           <button
             disabled={currentPage >= numPages}
             onClick={() => (pageLayout === 'scroll' ? scrollToPage(currentPage + 1) : setPageNumber(pageNumber + 1))}
-            className="xynoplex-pdf-annotation-canvas__button"
+            className="xynolog-pdf-annotation-canvas__button"
           >
             {t('next')}
           </button>

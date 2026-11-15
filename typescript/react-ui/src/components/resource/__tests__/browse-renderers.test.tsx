@@ -7,7 +7,7 @@
  * markdown. This spec uses the real renderer and guards against raw/source
  * rendering.
  */
-import { resourceId } from '@xynoplex/core';
+import { resourceId } from '@xynolog/core';
 import { describe, it, expect } from 'vitest';
 import { render } from '@testing-library/react';
 import '@testing-library/jest-dom';

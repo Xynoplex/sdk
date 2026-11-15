@@ -11,8 +11,8 @@
 
 import { describe, it, expect, vi } from 'vitest';
 import { map, firstValueFrom, filter } from 'rxjs';
-import { BusRequestError, SAVE_DEBOUNCE_MS } from '@xynoplex/core';
-import { assertStateUnitAxioms } from '@xynoplex/core/testing/axioms';
+import { BusRequestError, SAVE_DEBOUNCE_MS } from '@xynolog/core';
+import { assertStateUnitAxioms } from '@xynolog/core/testing/axioms';
 import { createCache, createPersistableCache, isReady, type Cache, type CachePersister, type CacheState } from '../cache';
 
 /**

@@ -9,8 +9,8 @@ import pytest
 from pydantic import BaseModel
 from spec import SPEC
 
-from xynoplex.http import gateway_url
-from xynoplex.types import HttpEndpoint
+from xynolog.http import gateway_url
+from xynolog.types import HttpEndpoint
 
 
 class Case(BaseModel, frozen=True, extra="forbid"):

@@ -3,10 +3,10 @@ import { asStates } from '../../../../__tests__/test-client';
 import { sessionOf } from '../../../../__tests__/test-client';
 import { BehaviorSubject, firstValueFrom } from 'rxjs';
 import { filter, map, skip, take, toArray } from 'rxjs/operators';
-import type { XynoplexClient } from '@xynoplex/sdk';
+import type { XynologClient } from '@xynolog/sdk';
 import type { ShellStateUnit } from '../../../../state/shell-state-unit';
 import { createDiscoverStateUnit, type DiscoverStateUnit } from '../discover-state-unit';
-import { assertStateUnitAxioms, disposeProbe } from '@xynoplex/core/testing/axioms';
+import { assertStateUnitAxioms, disposeProbe } from '@xynolog/core/testing/axioms';
 
 function mockBrowse(): ShellStateUnit {
   return { dispose: vi.fn() } as unknown as ShellStateUnit;
@@ -26,7 +26,7 @@ function mockClient(overrides: {
   resourcesFn?: (filters: BrowseFilters) => BehaviorSubject<unknown[] | undefined>;
   /** What the stubbed search envelope reports as its match kind. */
   matchKind?: 'lexical' | 'semantic';
-} = {}): { client: XynoplexClient; resourceCalls: BrowseFilters[] } {
+} = {}): { client: XynologClient; resourceCalls: BrowseFilters[] } {
   const resourceCalls: BrowseFilters[] = [];
   const defaultResources$ =
     overrides.resources$ ?? new BehaviorSubject<unknown[] | undefined>([{ '@id': 'r1' }]);
@@ -52,7 +52,7 @@ function mockClient(overrides: {
       resources: (search: string, filters: Omit<BrowseFilters, 'search'> = {}) =>
         asked({ search, ...filters }, (page) => ({ resources: page, total: page.length, offset: 0, limit: 20, matchKind: overrides.matchKind ?? 'lexical' })),
     },
-  } as unknown as XynoplexClient;
+  } as unknown as XynologClient;
 
   return { client, resourceCalls };
 }

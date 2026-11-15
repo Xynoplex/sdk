@@ -4,7 +4,7 @@
  * package.json (the `version` field + internal cross-dep pins). Run by
  * publish.sh before staging/publishing.
  *
- * Internal `@xynoplex/*` / `xynoplex-*` deps are declared `"*"` in source and
+ * Internal `@xynolog/*` / `xynolog-*` deps are declared `"*"` in source and
  * rewritten to the exact version here via the shared stampInternalDeps — the
  * single publish-time pin normalization (see docs/contributor/RELEASE.md).
  *

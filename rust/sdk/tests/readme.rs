@@ -1,36 +1,36 @@
 //! The README's examples, compiled and run over the testing doubles. Each
 //! fenced Rust block of README.md is one of the regions marked here, word
-//! for word (`xynoplex::testing::examples`).
+//! for word (`xynolog::testing::examples`).
 
 use bytes::Bytes;
-use xynoplex::annotations::{QuotedText, annotation_of_span, reconcile};
-use xynoplex::bus::{operation, reply_names};
-use xynoplex::channels::BRIDGED_CHANNELS;
-use xynoplex::claims::{ClaimOptions, Held, HeldJob, JOB_CLAIM_CHANNELS, JOB_COMMIT_CHANNELS, Mark};
-use xynoplex::client::XynoplexClient;
-use xynoplex::errors::XynoplexError;
-use xynoplex::session::{
-    XynoplexBrowser, XynoplexBrowserConfig, XynoplexSession, SessionFactory, SessionFactoryOptions,
-    StoredSession, save_knowledge_bases,
-};
-use xynoplex::state::{MarkStateUnit, PendingAnnotation};
-use xynoplex::storage::SessionStorage;
-use xynoplex::testing::as_id;
-use xynoplex::testing::examples::assert_readme_shows;
-use xynoplex::testing::{
-    ContentCall, FaultAction, FaultyTransport, RequestLogEntry, ScriptedSessions, SharedStorage,
-    TestClientOptions, create_test_client,
-};
-use xynoplex::transport::{BoxFuture, Envelope, Frame, PutBinaryRequest};
-use xynoplex::types::{
-    Agent, GatherResourceRequestOptions, GenerationJobParams, HighlightingJobParams, HttpEndpoint,
-    HttpEndpointProtocol, InvalidIdentifier, JobCompleteCommand, KbEndpoint, KnowledgeBase,
-    LinkingJobParams, MarkJobCompleteCommand, MarkJobDone, Motivation, ResourceId, YieldJobResult,
-};
 use serde_json::{Map, Value, json};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use tokio::sync::mpsc;
+use xynolog::annotations::{QuotedText, annotation_of_span, reconcile};
+use xynolog::bus::{operation, reply_names};
+use xynolog::channels::BRIDGED_CHANNELS;
+use xynolog::claims::{ClaimOptions, Held, HeldJob, JOB_CLAIM_CHANNELS, JOB_COMMIT_CHANNELS, Mark};
+use xynolog::client::XynologClient;
+use xynolog::errors::XynologError;
+use xynolog::session::{
+    SessionFactory, SessionFactoryOptions, StoredSession, XynologBrowser, XynologBrowserConfig,
+    XynologSession, save_knowledge_bases,
+};
+use xynolog::state::{MarkStateUnit, PendingAnnotation};
+use xynolog::storage::SessionStorage;
+use xynolog::testing::as_id;
+use xynolog::testing::examples::assert_readme_shows;
+use xynolog::testing::{
+    ContentCall, FaultAction, FaultyTransport, RequestLogEntry, ScriptedSessions, SharedStorage,
+    TestClientOptions, create_test_client,
+};
+use xynolog::transport::{BoxFuture, Envelope, Frame, PutBinaryRequest};
+use xynolog::types::{
+    Agent, GatherResourceRequestOptions, GenerationJobParams, HighlightingJobParams, HttpEndpoint,
+    HttpEndpointProtocol, InvalidIdentifier, JobCompleteCommand, KbEndpoint, KnowledgeBase,
+    LinkingJobParams, MarkJobCompleteCommand, MarkJobDone, Motivation, ResourceId, YieldJobResult,
+};
 
 // ── The examples ────────────────────────────────────────────────────────
 
@@ -47,9 +47,9 @@ fn ids() -> Result<ResourceId, InvalidIdentifier> {
 }
 
 async fn a_first_program(
-    client: &XynoplexClient,
+    client: &XynologClient,
     paper: Bytes,
-) -> Result<Option<ResourceId>, XynoplexError> {
+) -> Result<Option<ResourceId>, XynologError> {
     // <readme:story>
     // Ingest: the paper's bytes become a resource.
     let created = client
@@ -102,7 +102,7 @@ async fn a_first_program(
 }
 
 async fn a_script(
-    client: &XynoplexClient,
+    client: &XynologClient,
     resource_id: ResourceId,
 ) -> Result<MarkJobCompleteCommand, Box<dyn std::error::Error + Send + Sync>> {
     // <readme:script>
@@ -123,7 +123,7 @@ async fn a_script(
     Ok(done)
 }
 
-async fn a_daemon(client: &XynoplexClient, mut done: impl FnMut(JobCompleteCommand)) {
+async fn a_daemon(client: &XynologClient, mut done: impl FnMut(JobCompleteCommand)) {
     // <readme:daemon>
     // Every job that completes, from now on, until the client closes.
     let mut completed = client.job.complete();
@@ -182,7 +182,7 @@ async fn an_application(
     // <readme:application>
     // What an application holds: its knowledge bases, which one is active,
     // and the active one's session.
-    let browser = XynoplexBrowser::new(XynoplexBrowserConfig {
+    let browser = XynologBrowser::new(XynologBrowserConfig {
         storage,
         session_factory,
     })?;
@@ -202,7 +202,7 @@ async fn an_application(
     Ok(())
 }
 
-async fn a_test() -> Result<(), XynoplexError> {
+async fn a_test() -> Result<(), XynologError> {
     // <readme:testing>
     // A real client over doubles: script the transport, observe the client.
     let test = create_test_client(TestClientOptions::default());
@@ -607,14 +607,14 @@ async fn the_worker_builds_an_annotation_of_each_quote_the_text_has_and_its_job_
 /// speaks on it.
 struct Keeping {
     sessions: ScriptedSessions,
-    clients: Arc<Mutex<Vec<Arc<XynoplexClient>>>>,
+    clients: Arc<Mutex<Vec<Arc<XynologClient>>>>,
 }
 
 impl SessionFactory for Keeping {
     fn session(
         &self,
         options: SessionFactoryOptions,
-    ) -> Result<XynoplexSession, xynoplex::errors::SessionError> {
+    ) -> Result<XynologSession, xynolog::errors::SessionError> {
         let session = self.sessions.session(options)?;
         self.clients
             .lock()
@@ -643,7 +643,7 @@ async fn the_application_renders_the_annotation_being_composed_in_the_active_kno
         }],
     )
     .expect("stored");
-    let clients: Arc<Mutex<Vec<Arc<XynoplexClient>>>> = Arc::default();
+    let clients: Arc<Mutex<Vec<Arc<XynologClient>>>> = Arc::default();
     let factory = Keeping {
         sessions: ScriptedSessions::answering(
             |_, operation, payload| a_knowledge_base(operation, payload),

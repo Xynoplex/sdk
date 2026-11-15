@@ -3,10 +3,10 @@ import { asStates } from '../../../../__tests__/test-client';
 import { sessionOf } from '../../../../__tests__/test-client';
 import { BehaviorSubject, firstValueFrom } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import type { XynoplexClient } from '@xynoplex/sdk';
+import type { XynologClient } from '@xynolog/sdk';
 import type { ShellStateUnit } from '../../../../state/shell-state-unit';
 import { createEntityTagsStateUnit, type EntityTagsStateUnit } from '../entity-tags-state-unit';
-import { assertStateUnitAxioms, disposeProbe } from '@xynoplex/core/testing/axioms';
+import { assertStateUnitAxioms, disposeProbe } from '@xynolog/core/testing/axioms';
 
 function mockBrowse(): ShellStateUnit {
   return { dispose: vi.fn() } as unknown as ShellStateUnit;
@@ -15,7 +15,7 @@ function mockBrowse(): ShellStateUnit {
 function mockClient(overrides: {
   entityTypes$?: BehaviorSubject<string[] | undefined>;
   addEntityType?: ReturnType<typeof vi.fn>;
-} = {}): XynoplexClient {
+} = {}): XynologClient {
   const entityTypes$ = overrides.entityTypes$ ?? new BehaviorSubject<string[] | undefined>(['Person', 'Place']);
   return {
     browse: {
@@ -24,7 +24,7 @@ function mockClient(overrides: {
     frame: {
       addEntityType: overrides.addEntityType ?? vi.fn().mockResolvedValue(undefined),
     },
-  } as unknown as XynoplexClient;
+  } as unknown as XynologClient;
 }
 
 describe('createEntityTagsStateUnit', () => {

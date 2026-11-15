@@ -13,7 +13,7 @@
  */
 
 import { describe, it, expect, vi } from 'vitest';
-import { EventBus, resourceId as makeResourceId, annotationId } from '@xynoplex/core';
+import { EventBus, resourceId as makeResourceId, annotationId } from '@xynolog/core';
 import type {
   EventMetadata,
   EventOfType,
@@ -21,7 +21,7 @@ import type {
   ResourceId,
   StoredEvent,
   UserId,
-} from '@xynoplex/core';
+} from '@xynolog/core';
 import { BrowseNamespace } from '../namespaces/browse';
 import { inMemoryTransport, contentTransportSpies } from './helpers/in-memory-transport';
 import { mockResource } from './fixtures/resource';

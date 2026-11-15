@@ -5,7 +5,7 @@ LANGUAGES := typescript python rust go csharp haskell kotlin ocaml swift
 .PHONY: help build test verify-artifacts clean clean-local $(LANGUAGES) $(addsuffix -clean,$(LANGUAGES))
 
 # `make help` prints the `##` lines below, in order (build-tools/make-help.awk).
-##@ Xynoplex SDK: make [target] [VARIABLE=value ...]
+##@ Xynolog SDK: make [target] [VARIABLE=value ...]
 ##@ Variables
 ## CONTAINER_RUNTIME=name: container|docker|podman; else the first to respond
 CONTAINER_RUNTIME ?=

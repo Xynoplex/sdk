@@ -1,5 +1,5 @@
 // Generate the locale table from protocol/specs/src/locales/registry.json: the languages
-// Xynoplex supports, and what each is called.
+// Xynolog supports, and what each is called.
 //
 // The registry is the authority. The interface is read in one of its languages
 // and a resource is written in one of them, so the frontend and the workers
@@ -59,7 +59,7 @@ writeFileSync(
 //
 // Source:    protocol/specs/src/locales/registry.json (the AUTHORITY)
 // Generator: typescript/scripts/generators/generate-locales.mjs
-// Regen:     npm run generate:locales --workspace=@xynoplex/core
+// Regen:     npm run generate:locales --workspace=@xynolog/core
 
 /** The code of every supported language, in the registry's order. */
 export const LOCALE_CODES = [${rows.map((row) => text(row.code)).join(', ')}] as const;

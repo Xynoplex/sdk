@@ -3,10 +3,10 @@ import { asStates } from '../../../../__tests__/test-client';
 import { sessionOf } from '../../../../__tests__/test-client';
 import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import type { XynoplexClient } from '@xynoplex/sdk';
+import type { XynologClient } from '@xynolog/sdk';
 import type { ShellStateUnit } from '../../../../state/shell-state-unit';
 import { createComposePageStateUnit, type ComposePageStateUnit } from '../compose-page-state-unit';
-import { assertStateUnitAxioms, disposeProbe } from '@xynoplex/core/testing/axioms';
+import { assertStateUnitAxioms, disposeProbe } from '@xynolog/core/testing/axioms';
 
 /** Build an `UploadObservable`-shaped mock that emits started → finished. */
 function mockUpload(resourceId: string) {
@@ -30,7 +30,7 @@ function mockClient(overrides: {
   createFromToken?: ReturnType<typeof vi.fn>;
   resource?: ReturnType<typeof vi.fn>;
   body?: ReturnType<typeof vi.fn>;
-} = {}): XynoplexClient {
+} = {}): XynologClient {
   const entityTypes$ = overrides.entityTypes$ ?? new BehaviorSubject<string[] | undefined>(['Person']);
   return {
     browse: {
@@ -48,7 +48,7 @@ function mockClient(overrides: {
       data: new TextEncoder().encode('source content').buffer,
       contentType: 'text/plain',
     }),
-  } as unknown as XynoplexClient;
+  } as unknown as XynologClient;
 }
 
 describe('createComposePageStateUnit', () => {

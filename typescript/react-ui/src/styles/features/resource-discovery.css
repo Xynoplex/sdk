@@ -5,81 +5,81 @@
  */
 
 /* Card Component */
-.xynoplex-card {
-  background: var(--xynoplex-bg-primary);
-  border: 1px solid var(--xynoplex-color-gray-200);
-  border-radius: var(--xynoplex-radius-lg);
+.xynolog-card {
+  background: var(--xynolog-bg-primary);
+  border: 1px solid var(--xynolog-color-gray-200);
+  border-radius: var(--xynolog-radius-lg);
   padding: 1.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-[data-theme="dark"] .xynoplex-card {
-  background: var(--xynoplex-bg-secondary);
-  border-color: var(--xynoplex-color-gray-700);
+[data-theme="dark"] .xynolog-card {
+  background: var(--xynolog-bg-secondary);
+  border-color: var(--xynolog-color-gray-700);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 /* Resource Discovery Specific */
-.xynoplex-card__search-form {
+.xynolog-card__search-form {
   margin-bottom: 2rem;
 }
 
-.xynoplex-card__search-wrapper {
+.xynolog-card__search-wrapper {
   display: flex;
   gap: 0.75rem;
   margin-bottom: 1.5rem;
 }
 
-.xynoplex-card__search-input {
+.xynolog-card__search-input {
   flex: 1;
   padding: 0.75rem 1rem;
-  border: 1px solid var(--xynoplex-color-gray-300);
-  border-radius: var(--xynoplex-radius-md);
+  border: 1px solid var(--xynolog-color-gray-300);
+  border-radius: var(--xynolog-radius-md);
   font-size: 1rem;
-  background: var(--xynoplex-bg-primary);
-  color: var(--xynoplex-text-primary);
+  background: var(--xynolog-bg-primary);
+  color: var(--xynolog-text-primary);
 }
 
-[data-theme="dark"] .xynoplex-card__search-input {
-  background: var(--xynoplex-color-gray-900);
-  color: var(--xynoplex-color-gray-100);
-  border-color: var(--xynoplex-color-gray-600);
+[data-theme="dark"] .xynolog-card__search-input {
+  background: var(--xynolog-color-gray-900);
+  color: var(--xynolog-color-gray-100);
+  border-color: var(--xynolog-color-gray-600);
 }
 
-.xynoplex-card__search-input:focus {
+.xynolog-card__search-input:focus {
   outline: none;
-  border-color: var(--xynoplex-color-primary-500);
+  border-color: var(--xynolog-color-primary-500);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 /* Focus styles for search button */
 
-.xynoplex-card__filters {
+.xynolog-card__filters {
   margin-bottom: 1.5rem;
 }
 
-.xynoplex-card__filters-label {
+.xynolog-card__filters-label {
   display: block;
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--xynoplex-color-gray-700);
+  color: var(--xynolog-color-gray-700);
   margin-bottom: 0.5rem;
 }
 
-[data-theme="dark"] .xynoplex-card__filters-label {
-  color: var(--xynoplex-color-gray-300);
+[data-theme="dark"] .xynolog-card__filters-label {
+  color: var(--xynolog-color-gray-300);
 }
 
-.xynoplex-card__filter-buttons {
+.xynolog-card__filter-buttons {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
 }
 
-.xynoplex-card__filter-button {
+.xynolog-card__filter-button {
   padding: 0.5rem 1rem;
   background: rgba(0, 0, 0, 0.1);
-  color: var(--xynoplex-color-gray-900);
+  color: var(--xynolog-color-gray-900);
   border: 1px solid rgba(0, 0, 0, 0.2);
   border-radius: 0.5rem;
   font-size: 0.875rem;
@@ -90,123 +90,123 @@
   justify-content: center;
 }
 
-[data-theme="dark"] .xynoplex-card__filter-button {
+[data-theme="dark"] .xynolog-card__filter-button {
   background: rgba(255, 255, 255, 0.1);
-  color: var(--xynoplex-color-neutral-0);
+  color: var(--xynolog-color-neutral-0);
   border-color: rgba(255, 255, 255, 0.2);
 }
 
-.xynoplex-card__filter-button:hover {
+.xynolog-card__filter-button:hover {
   background: rgba(0, 0, 0, 0.2);
 }
 
-[data-theme="dark"] .xynoplex-card__filter-button:hover {
+[data-theme="dark"] .xynolog-card__filter-button:hover {
   background: rgba(255, 255, 255, 0.2);
 }
 
 /* Focus styles for filter buttons */
-.xynoplex-card__filter-button:focus-visible {
-  outline: 2px solid var(--xynoplex-color-primary-500);
+.xynolog-card__filter-button:focus-visible {
+  outline: 2px solid var(--xynolog-color-primary-500);
   outline-offset: 2px;
 }
 
-[data-theme="dark"] .xynoplex-card__filter-button:focus-visible {
-  outline-color: var(--xynoplex-color-primary-400);
+[data-theme="dark"] .xynolog-card__filter-button:focus-visible {
+  outline-color: var(--xynolog-color-primary-400);
 }
 
-.xynoplex-card__filter-button:focus:not(:focus-visible) {
+.xynolog-card__filter-button:focus:not(:focus-visible) {
   outline: none;
 }
 
 @media (prefers-contrast: more) {
-  .xynoplex-card__filter-button:focus-visible {
+  .xynolog-card__filter-button:focus-visible {
     outline-width: 3px;
   }
 }
 
-.xynoplex-card__filter-button[data-active="true"] {
-  background: var(--xynoplex-gradient-primary);
-  color: var(--xynoplex-color-primary-700);
-  border-color: var(--xynoplex-color-primary-300);
+.xynolog-card__filter-button[data-active="true"] {
+  background: var(--xynolog-gradient-primary);
+  color: var(--xynolog-color-primary-700);
+  border-color: var(--xynolog-color-primary-300);
 }
 
-[data-theme="dark"] .xynoplex-card__filter-button[data-active="true"] {
-  background: var(--xynoplex-gradient-primary-dark);
-  color: var(--xynoplex-color-primary-400);
-  border-color: var(--xynoplex-color-primary-500);
+[data-theme="dark"] .xynolog-card__filter-button[data-active="true"] {
+  background: var(--xynolog-gradient-primary-dark);
+  color: var(--xynolog-color-primary-400);
+  border-color: var(--xynolog-color-primary-500);
 }
 
-.xynoplex-card__documents {
+.xynolog-card__documents {
   margin-bottom: 1.5rem;
 }
 
-.xynoplex-card__documents-label {
+.xynolog-card__documents-label {
   display: block;
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--xynoplex-color-gray-700);
+  color: var(--xynolog-color-gray-700);
   margin-bottom: 0.5rem;
 }
 
-[data-theme="dark"] .xynoplex-card__documents-label {
-  color: var(--xynoplex-color-gray-300);
+[data-theme="dark"] .xynolog-card__documents-label {
+  color: var(--xynolog-color-gray-300);
 }
 
 /* Semantic-fallback caption: explains WHY these results, without competing
    with them. Quieter than the heading it sits under. */
-.xynoplex-card__documents-note {
+.xynolog-card__documents-note {
   margin: -0.25rem 0 0.75rem;
   font-size: 0.8125rem;
   font-style: italic;
-  color: var(--xynoplex-color-gray-600);
+  color: var(--xynolog-color-gray-600);
 }
 
-[data-theme="dark"] .xynoplex-card__documents-note {
-  color: var(--xynoplex-color-gray-400);
+[data-theme="dark"] .xynolog-card__documents-note {
+  color: var(--xynolog-color-gray-400);
 }
 
-.xynoplex-card__warning {
+.xynolog-card__warning {
   padding: 1rem;
-  background: var(--xynoplex-color-yellow-50);
-  border: 1px solid var(--xynoplex-color-yellow-200);
-  border-radius: var(--xynoplex-radius-md);
+  background: var(--xynolog-color-yellow-50);
+  border: 1px solid var(--xynolog-color-yellow-200);
+  border-radius: var(--xynolog-radius-md);
   margin-bottom: 1.5rem;
 }
 
-[data-theme="dark"] .xynoplex-card__warning {
+[data-theme="dark"] .xynolog-card__warning {
   background: rgba(251, 191, 36, 0.1);
-  border-color: var(--xynoplex-color-yellow-700);
+  border-color: var(--xynolog-color-yellow-700);
 }
 
-.xynoplex-card__warning-text {
-  color: var(--xynoplex-color-yellow-800);
+.xynolog-card__warning-text {
+  color: var(--xynolog-color-yellow-800);
   font-size: 0.875rem;
 }
 
-[data-theme="dark"] .xynoplex-card__warning-text {
-  color: var(--xynoplex-color-yellow-400);
+[data-theme="dark"] .xynolog-card__warning-text {
+  color: var(--xynolog-color-yellow-400);
 }
 
-.xynoplex-card__empty {
+.xynolog-card__empty {
   text-align: center;
   padding: 3rem 1rem;
 }
 
-.xynoplex-card__empty-text {
-  color: var(--xynoplex-color-gray-500);
+.xynolog-card__empty-text {
+  color: var(--xynolog-color-gray-500);
   font-size: 1rem;
   margin-bottom: 1rem;
 }
 
-[data-theme="dark"] .xynoplex-card__empty-text {
-  color: var(--xynoplex-color-gray-400);
+[data-theme="dark"] .xynolog-card__empty-text {
+  color: var(--xynolog-color-gray-400);
 }
 
-.xynoplex-card__empty-button {
+.xynolog-card__empty-button {
   padding: 0.5rem 1.5rem;
-  background: var(--xynoplex-gradient-primary);
-  color: var(--xynoplex-color-primary-700);
-  border: 1px solid var(--xynoplex-color-primary-300);
+  background: var(--xynolog-gradient-primary);
+  color: var(--xynolog-color-primary-700);
+  border: 1px solid var(--xynolog-color-primary-300);
   border-radius: 0.5rem;
   font-weight: 500;
   cursor: pointer;
@@ -218,132 +218,132 @@
   gap: 0.5rem;
 }
 
-[data-theme="dark"] .xynoplex-card__empty-button {
-  background: var(--xynoplex-gradient-primary-dark);
-  color: var(--xynoplex-color-primary-400);
-  border-color: var(--xynoplex-color-primary-500);
+[data-theme="dark"] .xynolog-card__empty-button {
+  background: var(--xynolog-gradient-primary-dark);
+  color: var(--xynolog-color-primary-400);
+  border-color: var(--xynolog-color-primary-500);
 }
 
-.xynoplex-card__empty-button:hover {
-  background: var(--xynoplex-gradient-primary-hover);
-  color: var(--xynoplex-color-neutral-0);
-  border-color: var(--xynoplex-color-primary-600);
+.xynolog-card__empty-button:hover {
+  background: var(--xynolog-gradient-primary-hover);
+  color: var(--xynolog-color-neutral-0);
+  border-color: var(--xynolog-color-primary-600);
 }
 
-[data-theme="dark"] .xynoplex-card__empty-button:hover {
-  background: var(--xynoplex-gradient-primary-hover-dark);
-  color: var(--xynoplex-color-neutral-0);
-  border-color: var(--xynoplex-color-primary-400);
+[data-theme="dark"] .xynolog-card__empty-button:hover {
+  background: var(--xynolog-gradient-primary-hover-dark);
+  color: var(--xynolog-color-neutral-0);
+  border-color: var(--xynolog-color-primary-400);
 }
 
 /* Focus styles for empty button */
-.xynoplex-card__empty-button:focus-visible {
-  outline: 2px solid var(--xynoplex-color-primary-500);
+.xynolog-card__empty-button:focus-visible {
+  outline: 2px solid var(--xynolog-color-primary-500);
   outline-offset: 2px;
 }
 
-[data-theme="dark"] .xynoplex-card__empty-button:focus-visible {
-  outline-color: var(--xynoplex-color-primary-400);
+[data-theme="dark"] .xynolog-card__empty-button:focus-visible {
+  outline-color: var(--xynolog-color-primary-400);
 }
 
-.xynoplex-card__empty-button:focus:not(:focus-visible) {
+.xynolog-card__empty-button:focus:not(:focus-visible) {
   outline: none;
 }
 
 @media (prefers-contrast: more) {
-  .xynoplex-card__empty-button:focus-visible {
+  .xynolog-card__empty-button:focus-visible {
     outline-width: 3px;
   }
 }
 
 /* Resource Card Component */
-.xynoplex-resource-card {
+.xynolog-resource-card {
   display: flex;
   flex-direction: column;
-  background: var(--xynoplex-bg-primary);
-  border: 1px solid var(--xynoplex-color-gray-200);
-  border-radius: var(--xynoplex-radius-lg);
+  background: var(--xynolog-bg-primary);
+  border: 1px solid var(--xynolog-color-gray-200);
+  border-radius: var(--xynolog-radius-lg);
   padding: 1.25rem;
-  transition: all var(--xynoplex-duration-base);
+  transition: all var(--xynolog-duration-base);
   cursor: pointer;
   height: 100%;
 }
 
-[data-theme="dark"] .xynoplex-resource-card {
-  background: var(--xynoplex-color-gray-800);
-  border-color: var(--xynoplex-color-gray-700);
+[data-theme="dark"] .xynolog-resource-card {
+  background: var(--xynolog-color-gray-800);
+  border-color: var(--xynolog-color-gray-700);
 }
 
-.xynoplex-resource-card:hover {
+.xynolog-resource-card:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   transform: translateY(-2px);
 }
 
-[data-theme="dark"] .xynoplex-resource-card:hover {
+[data-theme="dark"] .xynolog-resource-card:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-.xynoplex-resource-card__header {
+.xynolog-resource-card__header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 0.75rem;
 }
 
-.xynoplex-resource-card__title {
+.xynolog-resource-card__title {
   font-size: 1.125rem;
   font-weight: 600;
-  color: var(--xynoplex-text-primary);
+  color: var(--xynolog-text-primary);
   line-height: 1.4;
   flex: 1;
   margin-right: 0.75rem;
 }
 
-[data-theme="dark"] .xynoplex-resource-card__title {
-  color: var(--xynoplex-color-gray-100);
+[data-theme="dark"] .xynolog-resource-card__title {
+  color: var(--xynolog-color-gray-100);
 }
 
-.xynoplex-resource-card__badge {
+.xynolog-resource-card__badge {
   padding: 0.25rem 0.75rem;
-  border-radius: var(--xynoplex-radius-full);
+  border-radius: var(--xynolog-radius-full);
   font-size: 0.75rem;
   font-weight: 500;
   white-space: nowrap;
 }
 
-.xynoplex-resource-card__badge[data-type="document"] {
-  background: var(--xynoplex-color-blue-100);
-  color: var(--xynoplex-color-blue-700);
+.xynolog-resource-card__badge[data-type="document"] {
+  background: var(--xynolog-color-blue-100);
+  color: var(--xynolog-color-blue-700);
 }
 
-[data-theme="dark"] .xynoplex-resource-card__badge[data-type="document"] {
+[data-theme="dark"] .xynolog-resource-card__badge[data-type="document"] {
   background: rgba(59, 130, 246, 0.15);
-  color: var(--xynoplex-color-blue-300);
+  color: var(--xynolog-color-blue-300);
 }
 
-.xynoplex-resource-card__badge[data-type="image"] {
-  background: var(--xynoplex-color-green-100);
-  color: var(--xynoplex-color-green-700);
+.xynolog-resource-card__badge[data-type="image"] {
+  background: var(--xynolog-color-green-100);
+  color: var(--xynolog-color-green-700);
 }
 
-[data-theme="dark"] .xynoplex-resource-card__badge[data-type="image"] {
+[data-theme="dark"] .xynolog-resource-card__badge[data-type="image"] {
   background: rgba(74, 222, 128, 0.15);
-  color: var(--xynoplex-color-green-300);
+  color: var(--xynolog-color-green-300);
 }
 
-.xynoplex-resource-card__metadata {
+.xynolog-resource-card__metadata {
   font-size: 0.875rem;
-  color: var(--xynoplex-color-gray-600);
+  color: var(--xynolog-color-gray-600);
   margin-bottom: 0.75rem;
 }
 
-[data-theme="dark"] .xynoplex-resource-card__metadata {
-  color: var(--xynoplex-color-gray-400);
+[data-theme="dark"] .xynolog-resource-card__metadata {
+  color: var(--xynolog-color-gray-400);
 }
 
-.xynoplex-resource-card__date {
+.xynolog-resource-card__date {
   margin-bottom: 0.25rem;
 }
 
 /* Tags use the centralized styles in core/tags.css
-   Resource cards use: .xynoplex-tag.xynoplex-tag--secondary.xynoplex-tag--compact.xynoplex-tag--rounded-sm */
+   Resource cards use: .xynolog-tag.xynolog-tag--secondary.xynolog-tag--compact.xynolog-tag--rounded-sm */

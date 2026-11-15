@@ -1,11 +1,11 @@
 'use client';
 
-import type { AnchoredTextAnswer, JobId, ResourceId, YieldJobDone } from '@xynoplex/core';
+import type { AnchoredTextAnswer, JobId, ResourceId, YieldJobDone } from '@xynolog/core';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslations } from '../../../contexts/TranslationContext';
-import { readyValue, type XynoplexSession } from '@xynoplex/sdk';
-import { formatLocaleDisplay } from '@xynoplex/core';
-import { type components } from '@xynoplex/core';
+import { readyValue, type XynologSession } from '@xynolog/sdk';
+import { formatLocaleDisplay } from '@xynolog/core';
+import { type components } from '@xynolog/core';
 import { useEventSubscription } from '../../../contexts/useEventSubscription';
 import { useObservable } from '../../../hooks/useObservable';
 import { renderAgentLabel } from './agent-label';
@@ -19,7 +19,7 @@ type JobProgress = components['schemas']['JobProgress'];
 
 interface Props {
   /** Session carrying the client and event bus; null renders inert. */
-  session: XynoplexSession | null;
+  session: XynologSession | null;
   resourceId: ResourceId;
   documentEntityTypes: string[];
   documentLocale?: string | undefined;
@@ -124,21 +124,21 @@ export function ResourceInfoPanel({
     : (generator ? (Array.isArray(generator) ? generator : [generator]) : []);
 
   return (
-    <div className="xynoplex-resource-info-panel">
+    <div className="xynolog-resource-info-panel">
       {/* Panel Title */}
-      <h3 className="xynoplex-resource-info-panel__title">
+      <h3 className="xynolog-resource-info-panel__title">
         {t('title')}
       </h3>
 
       {/* Locale Section */}
-      <div className="xynoplex-resource-info-panel__section">
-        <h3 className="xynoplex-resource-info-panel__heading">{t('locale')}</h3>
+      <div className="xynolog-resource-info-panel__section">
+        <h3 className="xynolog-resource-info-panel__heading">{t('locale')}</h3>
         {documentLocale ? (
-          <div className="xynoplex-resource-info-panel__value">
+          <div className="xynolog-resource-info-panel__value">
             {formatLocaleDisplay(documentLocale)}
           </div>
         ) : (
-          <div className="xynoplex-resource-info-panel__value xynoplex-resource-info-panel__value--empty">
+          <div className="xynolog-resource-info-panel__value xynolog-resource-info-panel__value--empty">
             {t('notSpecified')}
           </div>
         )}
@@ -146,29 +146,29 @@ export function ResourceInfoPanel({
 
       {/* Representation Section */}
       {(primaryMediaType || primaryByteSize !== undefined || showTextLayerRow) && (
-        <div className="xynoplex-resource-info-panel__section">
-          <h3 className="xynoplex-resource-info-panel__heading">{t('representation')}</h3>
-          <div className="xynoplex-resource-info-panel__field-group">
+        <div className="xynolog-resource-info-panel__section">
+          <h3 className="xynolog-resource-info-panel__heading">{t('representation')}</h3>
+          <div className="xynolog-resource-info-panel__field-group">
             {primaryMediaType && (
               <div>
-                <span className="xynoplex-resource-info-panel__label">{t('mediaType')}</span>
-                <span className="xynoplex-resource-info-panel__value">
+                <span className="xynolog-resource-info-panel__label">{t('mediaType')}</span>
+                <span className="xynolog-resource-info-panel__value">
                   {primaryMediaType}
                 </span>
               </div>
             )}
             {primaryByteSize !== undefined && (
               <div>
-                <span className="xynoplex-resource-info-panel__label">{t('byteSize')}</span>
-                <span className="xynoplex-resource-info-panel__value">
+                <span className="xynolog-resource-info-panel__label">{t('byteSize')}</span>
+                <span className="xynolog-resource-info-panel__value">
                   {primaryByteSize.toLocaleString()} bytes
                 </span>
               </div>
             )}
             {showTextLayerRow && (
               <div>
-                <span className="xynoplex-resource-info-panel__label">{t('textLayer')}</span>
-                <span className="xynoplex-resource-info-panel__value" data-kind={textLayerKind}>
+                <span className="xynolog-resource-info-panel__label">{t('textLayer')}</span>
+                <span className="xynolog-resource-info-panel__value" data-kind={textLayerKind}>
                   {textLayerKind === 'extracted' ? t('textLayerReady')
                     : textLayerKind === 'not-yet' ? t('textLayerPreparing')
                     : textLayerKind === 'declined' ? t('textLayerNone')
@@ -178,8 +178,8 @@ export function ResourceInfoPanel({
             )}
             {storageUri && (
               <div>
-                <span className="xynoplex-resource-info-panel__label">{t('storageUri')}</span>
-                <span className="xynoplex-resource-info-panel__value">
+                <span className="xynolog-resource-info-panel__label">{t('storageUri')}</span>
+                <span className="xynolog-resource-info-panel__value">
                   {storageUri}
                 </span>
               </div>
@@ -190,37 +190,37 @@ export function ResourceInfoPanel({
 
       {/* Provenance Section */}
       {(dateCreated || dateModified || attribution.length > 0 || wasDerivedFrom) && (
-        <div className="xynoplex-resource-info-panel__section">
-          <h3 className="xynoplex-resource-info-panel__heading">{t('provenance')}</h3>
-          <div className="xynoplex-resource-info-panel__field-group">
+        <div className="xynolog-resource-info-panel__section">
+          <h3 className="xynolog-resource-info-panel__heading">{t('provenance')}</h3>
+          <div className="xynolog-resource-info-panel__field-group">
             {dateCreated && (
               <div>
-                <span className="xynoplex-resource-info-panel__label">{t('createdAt')}</span>
-                <span className="xynoplex-resource-info-panel__value">
+                <span className="xynolog-resource-info-panel__label">{t('createdAt')}</span>
+                <span className="xynolog-resource-info-panel__value">
                   {new Date(dateCreated).toLocaleString()}
                 </span>
               </div>
             )}
             {dateModified && (
               <div>
-                <span className="xynoplex-resource-info-panel__label">{t('modifiedAt')}</span>
-                <span className="xynoplex-resource-info-panel__value">
+                <span className="xynolog-resource-info-panel__label">{t('modifiedAt')}</span>
+                <span className="xynolog-resource-info-panel__value">
                   {new Date(dateModified).toLocaleString()}
                 </span>
               </div>
             )}
             {attribution.length > 0 && (
               <div>
-                <span className="xynoplex-resource-info-panel__label">{t('attributedTo')}</span>
-                <span className="xynoplex-resource-info-panel__value">
+                <span className="xynolog-resource-info-panel__label">{t('attributedTo')}</span>
+                <span className="xynolog-resource-info-panel__value">
                   {attribution.map(renderAgentLabel).join(', ')}
                 </span>
               </div>
             )}
             {wasDerivedFrom && (
               <div>
-                <span className="xynoplex-resource-info-panel__label">{t('derivedFrom')}</span>
-                <span className="xynoplex-resource-info-panel__value">
+                <span className="xynolog-resource-info-panel__label">{t('derivedFrom')}</span>
+                <span className="xynolog-resource-info-panel__value">
                   {(Array.isArray(wasDerivedFrom) ? wasDerivedFrom : [wasDerivedFrom]).map((id, i) => (
                     <DerivedFromLink key={id} session={session} id={id} first={i === 0} />
                   ))}
@@ -233,13 +233,13 @@ export function ResourceInfoPanel({
 
       {/* Entity Type Tags Section */}
       {documentEntityTypes.length > 0 && (
-        <div className="xynoplex-resource-info-panel__section">
-          <h3 className="xynoplex-resource-info-panel__heading">{t('entityTypeTags')}</h3>
-          <div className="xynoplex-resource-info-panel__tag-list">
+        <div className="xynolog-resource-info-panel__section">
+          <h3 className="xynolog-resource-info-panel__heading">{t('entityTypeTags')}</h3>
+          <div className="xynolog-resource-info-panel__tag-list">
             {documentEntityTypes.map((tag) => (
               <span
                 key={tag}
-                className="xynoplex-tag"
+                className="xynolog-tag"
                 data-variant="blue"
               >
                 {tag}
@@ -279,11 +279,11 @@ export function ResourceInfoPanel({
             <>
               <button
                 onClick={onGenerate}
-                className="xynoplex-resource-button xynoplex-resource-button--secondary"
+                className="xynolog-resource-button xynolog-resource-button--secondary"
               >
                 ✨ {t('generate')}
               </button>
-              <p className="xynoplex-resource-info-panel__description">
+              <p className="xynolog-resource-info-panel__description">
                 {t('generateDescription')}
               </p>
             </>
@@ -292,29 +292,29 @@ export function ResourceInfoPanel({
       )}
 
       {/* Clone Action */}
-      <div className="xynoplex-resource-info-panel__action-section">
+      <div className="xynolog-resource-info-panel__action-section">
         <button
           onClick={() => session?.client.yield.clone()}
-          className="xynoplex-resource-button xynoplex-resource-button--secondary"
+          className="xynolog-resource-button xynolog-resource-button--secondary"
         >
           🔗 {t('clone')}
         </button>
-        <p className="xynoplex-resource-info-panel__description">
+        <p className="xynolog-resource-info-panel__description">
           {t('cloneDescription')}
         </p>
       </div>
 
       {/* Archive/Unarchive Actions */}
-      <div className="xynoplex-resource-info-panel__action-section">
+      <div className="xynolog-resource-info-panel__action-section">
         {isArchived ? (
           <>
             <button
               onClick={() => session?.client.mark.unarchive(resourceId)}
-              className="xynoplex-resource-button xynoplex-resource-button--secondary"
+              className="xynolog-resource-button xynolog-resource-button--secondary"
             >
               📤 {t('unarchive')}
             </button>
-            <p className="xynoplex-resource-info-panel__description">
+            <p className="xynolog-resource-info-panel__description">
               {t('unarchiveDescription')}
             </p>
           </>
@@ -322,11 +322,11 @@ export function ResourceInfoPanel({
           <>
             <button
               onClick={() => session?.client.mark.archive(resourceId)}
-              className="xynoplex-resource-button xynoplex-resource-button--archive"
+              className="xynolog-resource-button xynolog-resource-button--archive"
             >
               📦 {t('archive')}
             </button>
-            <p className="xynoplex-resource-info-panel__description">
+            <p className="xynolog-resource-info-panel__description">
               {t('archiveDescription')}
             </p>
           </>
@@ -346,7 +346,7 @@ export function ResourceInfoPanel({
  * @emits browse:resource-open - Open the source resource. Payload: { resourceId: string }
  */
 function DerivedFromLink({ session, id, first }: {
-  session: XynoplexSession | null;
+  session: XynologSession | null;
   id: ResourceId;
   first: boolean;
 }) {
@@ -357,7 +357,7 @@ function DerivedFromLink({ session, id, first }: {
   const name = descriptor ? readyValue(descriptor)?.name : undefined;
   return (
     <button
-      className="xynoplex-resource-info-panel__link"
+      className="xynolog-resource-info-panel__link"
       onClick={() => session?.client.browse.openResource(id)}
     >
       {!first && ', '}{name ?? id}

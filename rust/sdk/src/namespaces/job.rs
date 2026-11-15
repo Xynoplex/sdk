@@ -8,7 +8,7 @@ use crate::channels::{
 };
 use crate::claims::{ClaimOptions, Claims};
 use crate::client::Links;
-use crate::errors::{BusRequestError, BusRequestErrorCode, XynoplexError};
+use crate::errors::{BusRequestError, BusRequestErrorCode, XynologError};
 use crate::event_bus::BusFrames;
 use crate::timing::{JOB_POLL, JOB_POLL_TIMEOUT};
 use crate::types::JobId;
@@ -49,7 +49,7 @@ impl JobNamespace {
         self.links.own.stream::<JobFail>()
     }
 
-    pub async fn status(&self, job_id: &JobId) -> Result<JobStatusResponse, XynoplexError> {
+    pub async fn status(&self, job_id: &JobId) -> Result<JobStatusResponse, XynologError> {
         let status = self
             .links
             .request::<JobStatusRequested>(&JobStatusRequest {
@@ -71,11 +71,11 @@ impl JobNamespace {
         every: Option<Duration>,
         within: Option<Duration>,
         mut on_status: impl FnMut(&JobStatusResponse),
-    ) -> Result<JobStatusResponse, XynoplexError> {
+    ) -> Result<JobStatusResponse, XynologError> {
         let every = every.unwrap_or(JOB_POLL);
         let within = within.unwrap_or(JOB_POLL_TIMEOUT);
         let deadline = Instant::now() + within;
-        let timed_out = || -> XynoplexError {
+        let timed_out = || -> XynologError {
             BusRequestError::new(
                 BusRequestErrorCode::Timeout,
                 format!("Job polling timeout after {}ms", within.as_millis()),
@@ -105,7 +105,7 @@ impl JobNamespace {
     /// cancelled outright; a running one is left to its worker, so true
     /// means accepted, not stopped. False is a job the queue does not know,
     /// or one already over.
-    pub async fn cancel(&self, job_id: &JobId) -> Result<bool, XynoplexError> {
+    pub async fn cancel(&self, job_id: &JobId) -> Result<bool, XynologError> {
         let request = JobCancelRequest {
             job_id: job_id.clone(),
         };

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import type { ResourceId } from '@xynoplex/core';
-import type { XynoplexClient } from '@xynoplex/sdk';
+import type { ResourceId } from '@xynolog/core';
+import type { XynologClient } from '@xynolog/sdk';
 
 export interface UseMediaTokenResult {
   token: string | undefined;
@@ -9,7 +9,7 @@ export interface UseMediaTokenResult {
 
 /** A settled mint, held with the inputs it was made for. No token: the mint failed. */
 interface Minted {
-  client: XynoplexClient;
+  client: XynologClient;
   id: ResourceId;
   token: string | undefined;
 }
@@ -17,10 +17,10 @@ interface Minted {
 /**
  * Mint (and periodically refresh) a short-lived authed media token for a
  * resource — the query param that makes `<img>` / PDF URLs load. Takes the
- * client explicitly (not `useXynoplex()`), so a bring-your-own-session host can
+ * client explicitly (not `useXynolog()`), so a bring-your-own-session host can
  * use it with a bare session; the batteries-included page passes `session.client`.
  */
-export function useMediaToken(client: XynoplexClient | null, id: ResourceId): UseMediaTokenResult {
+export function useMediaToken(client: XynologClient | null, id: ResourceId): UseMediaTokenResult {
   const [minted, setMinted] = useState<Minted | null>(null);
   // `auth` is only constructed when the client was given an IGatewayOperations
   // — a host on a bare transport has none, and cannot mint tokens at all.

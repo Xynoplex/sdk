@@ -8,7 +8,7 @@
  *   - timeout: the request's deadline falls due, as a `BusRequestError` with
  *     code `bus.timeout` and structured `details`
  *   - refusal: a result or a failure that lacks a member its schema requires
- *     rejects as a `XynoplexError` coded `error`
+ *     rejects as a `XynologError` coded `error`
  *
  * Plus correlation hygiene: a request writes a fresh `correlationId` onto
  * the emitted envelope, ignores result/failure events on the same channels
@@ -18,7 +18,7 @@
 
 import { describe, it, expect, vi } from 'vitest';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
-import { XynoplexError } from '../errors';
+import { XynologError } from '../errors';
 import type { EventMap } from '../bus-protocol';
 import type { ConnectionState } from '../transport';
 
@@ -278,7 +278,7 @@ describe('Bus.request', () => {
     bus.failureSubject.next({ correlationId: cid, payload });
 
     const err = await captured;
-    expect(err).toBeInstanceOf(XynoplexError);
+    expect(err).toBeInstanceOf(XynologError);
     expect(err).not.toBeInstanceOf(BusRequestError);
     expect(err).toMatchObject({ code: 'error', message: `a payload on ${FAILURE} is not that channel's: ${said}` });
   });
@@ -348,7 +348,7 @@ describe('Bus.request', () => {
     // `bus.emit()`. If emit throws, control leaves Bus.request without
     // ever awaiting the result promise. Its subscription stays open
     // until the underlying stream completes (in production: during
-    // `xynoplex.dispose()`), at which point an unguarded firstValueFrom
+    // `xynolog.dispose()`), at which point an unguarded firstValueFrom
     // throws EmptyError with no consumer — an uncaught rejection that
     // surfaces after the caller has finished.
     //
@@ -368,7 +368,7 @@ describe('Bus.request', () => {
         new Bus(bus).request(EMIT, {}),
       ).rejects.toThrow('emit failed');
 
-      // Now complete the result stream, as `xynoplex.dispose()` would —
+      // Now complete the result stream, as `xynolog.dispose()` would —
       // the point where a dangling EmptyError would fire.
       bus.resultSubject.complete();
       bus.failureSubject.complete();
@@ -402,7 +402,7 @@ describe('Bus.request', () => {
       void new Bus(bus).request(EMIT, {});
       await Promise.resolve();
 
-      // Dispose: complete the underlying subjects, as `xynoplex.dispose()` does.
+      // Dispose: complete the underlying subjects, as `xynolog.dispose()` does.
       bus.resultSubject.complete();
       bus.failureSubject.complete();
 
@@ -574,10 +574,10 @@ describe('Bus.request attach gate', () => {
 });
 
 describe('BusRequestError', () => {
-  it('is a XynoplexError with the structured code on `code`', () => {
+  it('is a XynologError with the structured code on `code`', () => {
     const err = new BusRequestError('boom', 'bus.timeout', { foo: 'bar' });
     expect(err).toBeInstanceOf(BusRequestError);
-    expect(err).toBeInstanceOf(XynoplexError);
+    expect(err).toBeInstanceOf(XynologError);
     expect(err.code).toBe('bus.timeout');
     expect(err.name).toBe('BusRequestError');
     expect(err.message).toBe('boom');
@@ -847,7 +847,7 @@ describe('Bus.request abandoned by its caller', () => {
 /**
  * A result that lacks a member its schema requires is refused, wherever the
  * member is missing, as Rust, Python, Kotlin and Go refuse it as they decode
- * it: a `XynoplexError` coded `error` that says the payload is not its
+ * it: a `XynologError` coded `error` that says the payload is not its
  * channel's and names its first fault: the way to a member it lacks, or to
  * one of a kind its schema does not allow.
  */
@@ -901,7 +901,7 @@ describe('Bus.request holds a result to what its schema requires', () => {
         () => undefined,
         (thrown: unknown) => thrown,
       );
-      expect(refusal).toBeInstanceOf(XynoplexError);
+      expect(refusal).toBeInstanceOf(XynologError);
       expect(refusal).toMatchObject({
         code: 'error',
         message: `a payload on ${RESULT} is not that channel's: ${said}`,

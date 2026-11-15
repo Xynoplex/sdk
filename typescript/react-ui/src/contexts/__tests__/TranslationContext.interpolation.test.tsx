@@ -1,7 +1,7 @@
 import { Component, type ReactElement, type ReactNode } from 'react';
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import type { LocaleCode } from '@xynoplex/core';
+import type { LocaleCode } from '@xynolog/core';
 import { TranslationProvider, useTranslations } from '../TranslationContext';
 
 const ITEMS = '{count, plural, =1 {# item} other {# items}}';

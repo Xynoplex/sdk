@@ -26,8 +26,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/bus"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/bus"
 )
 
 // shape is what a value must be: packages/codegen/schemas/required-shapes.mjs states

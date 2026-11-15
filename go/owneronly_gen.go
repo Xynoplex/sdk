@@ -3,7 +3,7 @@
 // Regenerate: node packages/codegen/schemas/generate-sign-in-go.mjs
 // The launcher (go/launcher/owneronly_gen.go) and the Rust, Python and Kotlin SDKs generate theirs from the same file.
 
-package xynoplex
+package xynolog
 
 import "os"
 

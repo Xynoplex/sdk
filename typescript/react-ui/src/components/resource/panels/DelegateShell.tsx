@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, type ReactNode } from 'react';
-import type { components } from '@xynoplex/core';
+import type { components } from '@xynolog/core';
 import { DelegateProgress, type DelegateProgressProps, type DelegateDataType } from '../../DelegateProgress';
 import type { DelegatedJobControls } from '../../../lib/delegated-job-controls';
 
@@ -62,21 +62,21 @@ export function DelegateShell({ delegateType, title, isDelegating, cancelled, pr
   }, [isExpanded, delegateType]);
 
   return (
-    <div className="xynoplex-panel__section">
+    <div className="xynolog-panel__section">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="xynoplex-panel__section-title xynoplex-panel__section-title--collapsible"
+        className="xynolog-panel__section-title xynolog-panel__section-title--collapsible"
         aria-expanded={isExpanded}
         type="button"
       >
         <span>{title}</span>
-        <span className="xynoplex-panel__section-chevron" data-expanded={isExpanded}>
+        <span className="xynolog-panel__section-chevron" data-expanded={isExpanded}>
           ›
         </span>
       </button>
       {isExpanded && (
         <div
-          className="xynoplex-delegate-widget"
+          className="xynolog-delegate-widget"
           data-delegating={isDelegating && progress ? 'true' : 'false'}
           data-type={delegateType}
         >
