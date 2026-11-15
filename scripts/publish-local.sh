@@ -98,6 +98,7 @@ if has_language python; then
 fi
 
 if has_language rust; then
+  rust_toolchain="$(sh "$ROOT/rust/scripts/rust-toolchain.sh")"
   echo 'Building and packaging Rust crates in a Rust container…'
   run_container_quietly "$RUNTIME" run --rm --memory 4g \
     --volume "$ROOT:/source:ro" \
@@ -108,7 +109,7 @@ if has_language rust; then
     --env CARGO_HOME=/cargo-home \
     --env CARGO_TARGET_DIR=/cargo-target \
     --workdir /source \
-    rust:1.100.0-bookworm bash /source/scripts/publish-rust-local.sh
+    "rust:$rust_toolchain-bookworm" bash /source/scripts/publish-rust-local.sh
 fi
 
 for language in go csharp haskell kotlin ocaml swift; do

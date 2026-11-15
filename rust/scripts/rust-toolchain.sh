@@ -4,13 +4,12 @@
 #
 # rustup reads that file itself. What cannot, a Rust image's tag
 # (rust:<channel>-<variant>), asks here, so the file is read in one place and
-# one way: images/scripts/build-session.sh, apps/desktop/build.sh,
-# publish-service-images.yml and images/scripts/build-images.js.
+# one way: scripts/publish-local.sh and scripts/create-artifact-bundle.py.
 #
 # With no channel it prints nothing and fails, so a build that cannot name its
 # compiler stops. It is plain sh: an image with no bash can run it.
 set -eu
-cd "$(dirname "$0")/../../.."
+cd "$(dirname "$0")/../.."
 
 channel=$(sed -n 's/^channel = "\(.*\)"$/\1/p' rust/rust-toolchain.toml)
 if [ -z "$channel" ]; then
