@@ -1,0 +1,3 @@
+# Published advisories for this repository's dependencies, each judged and
+# ignored with why. build-tools/advisories.py, in CI, fails on any finding not
+# ignored here and on any ignore that no longer matches a finding.
