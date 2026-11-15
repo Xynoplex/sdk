@@ -1,6 +1,6 @@
-import { Bus } from '@xynoplex/core';
-import type { AnnotationId, EventBus, ResourceId } from '@xynoplex/core';
-import type { ITransport } from '@xynoplex/core';
+import { Bus } from '@xynolog/core';
+import type { AnnotationId, EventBus, ResourceId } from '@xynolog/core';
+import type { ITransport } from '@xynolog/core';
 import type { BeckonNamespace as IBeckonNamespace } from './types';
 
 export class BeckonNamespace implements IBeckonNamespace {

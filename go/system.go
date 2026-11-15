@@ -1,11 +1,11 @@
-package xynoplex
+package xynolog
 
 // System: what the knowledge base says about itself.
 
 import (
 	"context"
 
-	"github.com/Xynoplex/sdk/go/api"
+	"github.com/xynolog/sdk/go/api"
 )
 
 // SystemNamespace is what the knowledge base says about itself.

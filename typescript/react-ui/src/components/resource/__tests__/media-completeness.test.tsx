@@ -12,9 +12,9 @@ import { describe, it, expect, vi } from 'vitest';
 import { screen } from '@testing-library/react';
 import { renderInEnglish, englishTranslationManager } from '../../../test-utils';
 import '@testing-library/jest-dom';
-import type { XynoplexSession } from '@xynoplex/sdk';
-import { EventBus } from '@xynoplex/core';
-import type { ResourceDescriptor as XynoplexResource, ResourceId } from '@xynoplex/core';
+import type { XynologSession } from '@xynolog/sdk';
+import { EventBus } from '@xynolog/core';
+import type { ResourceDescriptor as XynologResource, ResourceId } from '@xynolog/core';
 import { ResourceViewer } from '../ResourceViewer';
 
 vi.mock('react-markdown', () => ({ default: ({ children }: { children: string }) => <div data-testid="md">{children}</div> }));
@@ -26,7 +26,7 @@ vi.mock('../../pdf-annotation/PdfAnnotationCanvas.client', () => ({
 
 const emptyAnnotations = { highlights: [], references: [], assessments: [], comments: [], tags: [] };
 
-function fakeSession(): XynoplexSession {
+function fakeSession(): XynologSession {
   return {
     client: {
       bus: new EventBus(),
@@ -34,10 +34,10 @@ function fakeSession(): XynoplexSession {
       browse: { click: vi.fn(), resourceAnchoredText: vi.fn().mockResolvedValue({ kind: 'no-map' }) },
       beckon: { hover: vi.fn() },
     },
-  } as unknown as XynoplexSession;
+  } as unknown as XynologSession;
 }
 
-function makeResource(mediaType: string, content: string): XynoplexResource & { content: string } {
+function makeResource(mediaType: string, content: string): XynologResource & { content: string } {
   return {
     '@context': 'https://www.w3.org/ns/activitystreams',
     '@id': 'res-1' as ResourceId,
@@ -68,22 +68,22 @@ describe('media-completeness sweep — one component, all types, inline, default
     ['text/markdown', '# md body'],
   ])('%s renders via the text default with the overlay container', (mt, content) => {
     const { container } = mount(mt, content);
-    expect(container.querySelector('.xynoplex-browse-view[data-mime-type="text"]')).toBeInTheDocument();
+    expect(container.querySelector('.xynolog-browse-view[data-mime-type="text"]')).toBeInTheDocument();
     expect(screen.getByTestId('md')).toHaveTextContent(content.replace('# ', '# ').trim());
-    expect(container.querySelector('.xynoplex-browse-view__content')).toBeInTheDocument(); // overlay anchor
-    expect(container.querySelector('.xynoplex-browse-view')).toHaveClass('xynoplex-browse-view--inline');
+    expect(container.querySelector('.xynolog-browse-view__content')).toBeInTheDocument(); // overlay anchor
+    expect(container.querySelector('.xynolog-browse-view')).toHaveClass('xynolog-browse-view--inline');
   });
 
   it('image/png renders via the image default', () => {
     const { container } = mount('image/png', 'https://media.test/img.png?token=t');
-    expect(container.querySelector('.xynoplex-browse-view[data-mime-type="image"]')).toBeInTheDocument();
+    expect(container.querySelector('.xynolog-browse-view[data-mime-type="image"]')).toBeInTheDocument();
     expect(container.querySelector('img')).toBeInTheDocument();
-    expect(container.querySelector('.xynoplex-browse-view__content')).toBeInTheDocument();
+    expect(container.querySelector('.xynolog-browse-view__content')).toBeInTheDocument();
   });
 
   it('application/pdf routes to the pdf default', async () => {
     const { container } = mount('application/pdf', 'https://media.test/doc.pdf?token=t');
-    expect(container.querySelector('.xynoplex-browse-view[data-mime-type="pdf"]')).toBeInTheDocument();
+    expect(container.querySelector('.xynolog-browse-view[data-mime-type="pdf"]')).toBeInTheDocument();
     expect(await screen.findByTestId('pdf-canvas')).toHaveTextContent('https://media.test/doc.pdf?token=t');
   });
 

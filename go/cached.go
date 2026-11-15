@@ -1,4 +1,4 @@
-package xynoplex
+package xynolog
 
 // A live query: one of a client's reads that answers from its cache and stays
 // true as the knowledge base changes.
@@ -7,7 +7,7 @@ import (
 	"context"
 	"iter"
 
-	"github.com/Xynoplex/sdk/go/api"
+	"github.com/xynolog/sdk/go/api"
 )
 
 // Cached is a live query. Building it touches nothing, so a query is made

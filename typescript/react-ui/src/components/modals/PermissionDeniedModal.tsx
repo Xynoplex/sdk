@@ -1,7 +1,7 @@
 'use client';
 
 import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react';
-import { useXynoplex } from '../../session/XynoplexProvider';
+import { useXynolog } from '../../session/XynologProvider';
 import { useObservable } from '../../hooks/useObservable';
 import { useTranslations } from '../../contexts/TranslationContext';
 
@@ -20,7 +20,7 @@ import { useTranslations } from '../../contexts/TranslationContext';
  */
 export function PermissionDeniedModal() {
   const t = useTranslations('PermissionDeniedModal');
-  const signals = useObservable(useXynoplex().activeSignals$);
+  const signals = useObservable(useXynolog().activeSignals$);
   const permissionDenied = useObservable(signals?.permissionDenied$) ?? null;
   const acknowledgePermissionDenied = () => signals?.acknowledgePermissionDenied();
   const showModal = permissionDenied !== null;
@@ -43,7 +43,7 @@ export function PermissionDeniedModal() {
 
   return (
     <Transition appear show={showModal}>
-      <Dialog as="div" className="xynoplex-modal" onClose={handleGoBack}>
+      <Dialog as="div" className="xynolog-modal" onClose={handleGoBack}>
         <TransitionChild
           enter="ease-out duration-200"
           enterFrom="opacity-0"
@@ -52,11 +52,11 @@ export function PermissionDeniedModal() {
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="xynoplex-modal__backdrop" />
+          <div className="xynolog-modal__backdrop" />
         </TransitionChild>
 
-        <div className="xynoplex-modal__container">
-          <div className="xynoplex-modal__wrapper">
+        <div className="xynolog-modal__container">
+          <div className="xynolog-modal__wrapper">
             <TransitionChild
               enter="ease-out duration-200"
               enterFrom="opacity-0 scale-95"
@@ -65,36 +65,36 @@ export function PermissionDeniedModal() {
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <DialogPanel className="xynoplex-modal__panel xynoplex-modal__panel--medium">
-                <div className="xynoplex-modal__icon-wrapper">
-                  <div className="xynoplex-modal__icon">
-                    <svg style={{ width: '1.5rem', height: '1.5rem', color: 'var(--xynoplex-color-amber-600, #d97706)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <DialogPanel className="xynolog-modal__panel xynolog-modal__panel--medium">
+                <div className="xynolog-modal__icon-wrapper">
+                  <div className="xynolog-modal__icon">
+                    <svg style={{ width: '1.5rem', height: '1.5rem', color: 'var(--xynolog-color-amber-600, #d97706)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
                   </div>
                 </div>
 
-                <div className="xynoplex-modal__content">
-                  <DialogTitle className="xynoplex-modal__title xynoplex-modal__title--centered">
+                <div className="xynolog-modal__content">
+                  <DialogTitle className="xynolog-modal__title xynolog-modal__title--centered">
                     {t('title')}
                   </DialogTitle>
                 </div>
 
                 <div style={{
                   padding: '0.75rem',
-                  backgroundColor: 'var(--xynoplex-bg-secondary)',
-                  borderRadius: 'var(--xynoplex-radius-md, 0.375rem)',
-                  border: '1px solid var(--xynoplex-border-primary)',
-                  fontSize: 'var(--xynoplex-text-sm, 0.875rem)',
+                  backgroundColor: 'var(--xynolog-bg-secondary)',
+                  borderRadius: 'var(--xynolog-radius-md, 0.375rem)',
+                  border: '1px solid var(--xynolog-border-primary)',
+                  fontSize: 'var(--xynolog-text-sm, 0.875rem)',
                   marginBottom: '1rem',
                 }}>
-                  <p style={{ color: 'var(--xynoplex-text-secondary)', marginBottom: '0.5rem' }}>
+                  <p style={{ color: 'var(--xynolog-text-secondary)', marginBottom: '0.5rem' }}>
                     {t('reasonsIntro')}
                   </p>
                   <ul style={{
                     listStyle: 'disc',
                     listStylePosition: 'inside',
-                    color: 'var(--xynoplex-text-tertiary)',
+                    color: 'var(--xynolog-text-tertiary)',
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '0.25rem',
@@ -108,44 +108,44 @@ export function PermissionDeniedModal() {
                 {detail !== null && (
                   <figure style={{
                     margin: '0 0 1rem',
-                    fontSize: 'var(--xynoplex-text-sm, 0.875rem)',
+                    fontSize: 'var(--xynolog-text-sm, 0.875rem)',
                   }}>
-                    <figcaption style={{ color: 'var(--xynoplex-text-secondary)', marginBottom: '0.25rem' }}>
+                    <figcaption style={{ color: 'var(--xynolog-text-secondary)', marginBottom: '0.25rem' }}>
                       {t('detailLabel')}
                     </figcaption>
                     <blockquote style={{
                       margin: 0,
                       paddingLeft: '0.75rem',
-                      borderLeft: '2px solid var(--xynoplex-border-primary)',
-                      color: 'var(--xynoplex-text-primary)',
+                      borderLeft: '2px solid var(--xynolog-border-primary)',
+                      color: 'var(--xynolog-text-primary)',
                     }}>
                       {detail}
                     </blockquote>
                   </figure>
                 )}
 
-                <div className="xynoplex-modal__actions">
+                <div className="xynolog-modal__actions">
                   <button
                     type="button"
                     onClick={handleGoBack}
-                    className="xynoplex-button--primary xynoplex-button--flex"
+                    className="xynolog-button--primary xynolog-button--flex"
                   >
                     {t('goBack')}
                   </button>
                   <button
                     type="button"
                     onClick={handleGoHome}
-                    className="xynoplex-button--secondary xynoplex-button--flex"
+                    className="xynolog-button--secondary xynolog-button--flex"
                   >
                     {t('goHome')}
                   </button>
                 </div>
-                <div className="xynoplex-modal__actions" style={{ marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid var(--xynoplex-border-primary)' }}>
+                <div className="xynolog-modal__actions" style={{ marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid var(--xynolog-border-primary)' }}>
                   <button
                     type="button"
                     onClick={handleSwitchAccount}
-                    className="xynoplex-button--secondary xynoplex-button--flex"
-                    style={{ fontSize: 'var(--xynoplex-text-sm, 0.875rem)' }}
+                    className="xynolog-button--secondary xynolog-button--flex"
+                    style={{ fontSize: 'var(--xynolog-text-sm, 0.875rem)' }}
                   >
                     {t('switchAccount')}
                   </button>

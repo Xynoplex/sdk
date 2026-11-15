@@ -1,16 +1,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 module DriverProtocol (Misuse(..), need, decode, optional, failure, answerValue, now, waitUntil) where
 import Control.Concurrent.Async (AsyncCancelled(..))
-import qualified Xynoplex.Worker as Worker
+import qualified Xynolog.Worker as Worker
 import Control.Concurrent (threadDelay)
 import Control.Exception (Exception, SomeException, fromException, throwIO)
 import Control.Monad (when)
 import Data.Aeson hiding (decode)
 import qualified Data.Aeson.KeyMap as KM
 import GHC.Clock (getMonotonicTimeNSec)
-import qualified Xynoplex.ErrorCodes as Code
-import qualified Xynoplex.Delegation as Delegation
-import Xynoplex.Errors
+import qualified Xynolog.ErrorCodes as Code
+import qualified Xynolog.Delegation as Delegation
+import Xynolog.Errors
 data Misuse = Misuse String deriving Show
 instance Exception Misuse
 

@@ -10,11 +10,11 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import React from 'react';
-import { renderWithProviders, createTestXynoplexWrapper } from '../../../../test-utils';
+import { renderWithProviders, createTestXynologWrapper } from '../../../../test-utils';
 import { HighlightPanel } from '../HighlightPanel';
-import { createMarkStateUnit, type MarkStateUnit, type XynoplexSession } from '@xynoplex/sdk';
-import type { Annotation, AnnotationId } from '@xynoplex/core';
-import { resourceId } from '@xynoplex/core';
+import { createMarkStateUnit, type MarkStateUnit, type XynologSession } from '@xynolog/sdk';
+import type { Annotation, AnnotationId } from '@xynolog/core';
+import { resourceId } from '@xynolog/core';
 
 const mockT = vi.fn((key: string) => key);
 vi.mock('../../../../contexts/TranslationContext', () => ({
@@ -43,16 +43,16 @@ function highlightAt(id: string, start: number, exact: string): Annotation {
 }
 
 function renderedQuotes(): string[] {
-  return Array.from(document.querySelectorAll('.xynoplex-annotation-entry__quote'))
+  return Array.from(document.querySelectorAll('.xynolog-annotation-entry__quote'))
     .map((el) => el.textContent?.replace(/^"|"$/g, '').trim() ?? '');
 }
 
 describe('HighlightPanel — arrival order is invisible; list order is document order', () => {
-  let session: XynoplexSession;
+  let session: XynologSession;
   let mark: MarkStateUnit;
   beforeEach(() => {
     vi.clearAllMocks();
-    ({ session } = createTestXynoplexWrapper());
+    ({ session } = createTestXynologWrapper());
     mark = createMarkStateUnit(session.client, resourceId('res-1'));
   });
   afterEach(() => {

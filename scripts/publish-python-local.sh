@@ -8,7 +8,7 @@ set -euo pipefail
 export UV_LINK_MODE=copy
 
 ROOT=/source
-SCRATCH="$(mktemp -d /tmp/xynoplex-sdk-python.XXXXXX)"
+SCRATCH="$(mktemp -d /tmp/xynolog-sdk-python.XXXXXX)"
 trap 'rm -rf "$SCRATCH"' EXIT
 
 mkdir -p "$SCRATCH/python"

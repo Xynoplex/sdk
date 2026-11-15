@@ -1,4 +1,4 @@
-name: Xynoplex SDK CI
+name: Xynolog SDK CI
 
 on:
   push:

@@ -7,7 +7,7 @@
 
 import React from 'react';
 
-import type { ResourceDescriptor } from '@xynoplex/core';
+import type { ResourceDescriptor } from '@xynolog/core';
 
 export interface ResourceCardProps {
   resource: ResourceDescriptor;
@@ -35,34 +35,34 @@ export const ResourceCard = React.memo(({
     role="button"
     tabIndex={tabIndex}
     aria-label={`Open resource: ${resource.name}`}
-    className="xynoplex-resource-card"
+    className="xynolog-resource-card"
   >
-    <div className="xynoplex-resource-card__header">
-      <h4 className="xynoplex-resource-card__title">
+    <div className="xynolog-resource-card__header">
+      <h4 className="xynolog-resource-card__title">
         {resource.name}
       </h4>
       {resource.archived && (
-        <span className="xynoplex-resource-card__badge" data-type="archived">
+        <span className="xynolog-resource-card__badge" data-type="archived">
           {archivedLabel}
         </span>
       )}
     </div>
 
     {/* Resource Metadata */}
-    <div className="xynoplex-resource-card__metadata">
-      <span className="xynoplex-resource-card__date">{createdLabel} {resource.dateCreated ? new Date(resource.dateCreated).toLocaleDateString() : 'N/A'}</span>
+    <div className="xynolog-resource-card__metadata">
+      <span className="xynolog-resource-card__date">{createdLabel} {resource.dateCreated ? new Date(resource.dateCreated).toLocaleDateString() : 'N/A'}</span>
       {resource.entityTypes && resource.entityTypes.length > 0 && (
-        <div className="xynoplex-tags">
+        <div className="xynolog-tags">
           {resource.entityTypes.slice(0, 2).map((type) => (
             <span
               key={type}
-              className="xynoplex-tag xynoplex-tag--secondary xynoplex-tag--compact xynoplex-tag--rounded-sm"
+              className="xynolog-tag xynolog-tag--secondary xynolog-tag--compact xynolog-tag--rounded-sm"
             >
               {type}
             </span>
           ))}
           {resource.entityTypes.length > 2 && (
-            <span className="xynoplex-tag xynoplex-tag--secondary xynoplex-tag--compact xynoplex-tag--rounded-sm">
+            <span className="xynolog-tag xynolog-tag--secondary xynolog-tag--compact xynolog-tag--rounded-sm">
               +{resource.entityTypes.length - 2}
             </span>
           )}

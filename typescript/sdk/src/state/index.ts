@@ -1,4 +1,4 @@
-// State units in `@xynoplex/sdk` — RxJS-shaped state machines that any
+// State units in `@xynolog/sdk` — RxJS-shaped state machines that any
 // consumer (web, terminal, mobile, daemon, AI agent) can subscribe to.
 // None presume a UI. See docs/builder/STATE-UNITS.md for the pattern.
 //
@@ -13,7 +13,7 @@
 // A worker's claiming is `job.claim` (`../claims`).
 //
 // Page-shaped state (admin tables, page routing, web shell) lives in
-// `@xynoplex/react-ui` next to the components that render it.
+// `@xynolog/react-ui` next to the components that render it.
 
 export { createDisposer } from './lib/state-unit';
 export {
@@ -31,7 +31,7 @@ export {
   createHoverDwell,
   type HoverDwell,
 } from './flows/beckon-state-unit';
-export { HOVER_DELAY_MS } from '@xynoplex/core';
+export { HOVER_DELAY_MS } from '@xynolog/core';
 export {
   createGatherStateUnit,
   type GatherStateUnit,
@@ -51,4 +51,4 @@ export {
   type PendingAnnotation,
 } from './flows/mark-state-unit';
 
-export type { ConnectionState } from '@xynoplex/core';
+export type { ConnectionState } from '@xynolog/core';

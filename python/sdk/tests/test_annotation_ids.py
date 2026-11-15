@@ -6,9 +6,9 @@ import pytest
 from pydantic import BaseModel, Field, JsonValue
 from spec import SPEC
 
-from xynoplex._annotation_id import annotation_id_for
-from xynoplex.identifiers import AnnotationId, ResourceId
-from xynoplex.types import Motivation
+from xynolog._annotation_id import annotation_id_for
+from xynolog.identifiers import AnnotationId, ResourceId
+from xynolog.types import Motivation
 
 
 class Case(BaseModel, frozen=True, extra="forbid"):

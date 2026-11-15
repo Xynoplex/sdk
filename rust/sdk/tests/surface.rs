@@ -9,21 +9,21 @@
 //! client's own bus.
 
 use bytes::Bytes;
-use xynoplex::channels::BRIDGED_CHANNELS;
-use xynoplex::claims::JOB_CLAIM_CHANNELS;
-use xynoplex::client::XynoplexClient;
-use xynoplex::namespaces::{CreateFromTokenOptions, ResourceFilters};
-use xynoplex::testing::as_id;
-use xynoplex::testing::{
-    ContentCall, FaultyTransport, InMemoryContent, StubGateway, TestClientOptions,
-    create_test_client,
-};
-use xynoplex::transport::{Envelope, Frame, PutBinaryRequest};
-use xynoplex::types::GatherAnnotationOptions;
 use serde::de::DeserializeOwned;
 use serde_json::{Map, Value, json};
 use std::sync::Arc;
 use std::time::Duration;
+use xynolog::channels::BRIDGED_CHANNELS;
+use xynolog::claims::JOB_CLAIM_CHANNELS;
+use xynolog::client::XynologClient;
+use xynolog::namespaces::{CreateFromTokenOptions, ResourceFilters};
+use xynolog::testing::as_id;
+use xynolog::testing::{
+    ContentCall, FaultyTransport, InMemoryContent, StubGateway, TestClientOptions,
+    create_test_client,
+};
+use xynolog::transport::{Envelope, Frame, PutBinaryRequest};
+use xynolog::types::GatherAnnotationOptions;
 
 /// The SDK this runner is, as the table's `absent` names it.
 const SDK: &str = "rust";
@@ -86,7 +86,7 @@ fn object(value: &Value) -> Map<String, Value> {
 }
 
 struct World {
-    client: Arc<XynoplexClient>,
+    client: Arc<XynologClient>,
     transport: FaultyTransport,
     content: InMemoryContent,
     gateway: StubGateway,
@@ -378,7 +378,7 @@ fn call(world: &World, namespace: &str, method: &str, args: Args) {
             ))
         }
         ("mark", "delegate") => {
-            let params: xynoplex::types::MarkJobParams = args.typed("params");
+            let params: xynolog::types::MarkJobParams = args.typed("params");
             go!(client
                 .mark
                 .delegate(&as_id(&args.text("resourceId")), params)
@@ -432,7 +432,7 @@ fn call(world: &World, namespace: &str, method: &str, args: Args) {
             let resource_id = args.text("resourceId");
             // What the case does not state is what the SDK sends unasked.
             let mut options = object(
-                &serde_json::to_value(xynoplex::types::GatherResourceRequestOptions::default())
+                &serde_json::to_value(xynolog::types::GatherResourceRequestOptions::default())
                     .expect("the options serialize"),
             );
             options.extend(args.options());
@@ -570,7 +570,7 @@ fn call(world: &World, namespace: &str, method: &str, args: Args) {
             // Claiming begins when the claims are first read.
             let claims = client
                 .job
-                .claim(xynoplex::claims::ClaimOptions::new(accepts));
+                .claim(xynolog::claims::ClaimOptions::new(accepts));
             tokio::spawn(async move {
                 let _ = claims.next().await;
             });

@@ -13,20 +13,20 @@
    Annotation Prompt (Pending Annotation Forms)
    Shared footer and char-count styles
    ============================================ */
-.xynoplex-annotation-prompt__footer {
+.xynolog-annotation-prompt__footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-top: 0.5rem;
 }
 
-.xynoplex-annotation-prompt__char-count {
-  font-size: var(--xynoplex-text-xs);
-  color: var(--xynoplex-text-tertiary);
+.xynolog-annotation-prompt__char-count {
+  font-size: var(--xynolog-text-xs);
+  color: var(--xynolog-text-tertiary);
   margin-left: 0.5rem;
 }
 
-.xynoplex-annotation-prompt__actions {
+.xynolog-annotation-prompt__actions {
   display: flex;
   gap: 0.5rem;
 }

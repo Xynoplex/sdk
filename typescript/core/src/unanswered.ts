@@ -14,7 +14,7 @@
  * none of the runtime's words.
  */
 
-import { XynoplexError } from './errors';
+import { XynologError } from './errors';
 import { isObject } from './type-guards';
 
 /** A code or a name as a runtime writes one: an identifier, and so not words. */
@@ -44,7 +44,7 @@ export function whyUnanswered(error: unknown): string {
  * `unavailable` as every such failure is. Wherever a status that says "not
  * now" is worth another attempt, so is this (`isRetryableRequestError`).
  */
-export class UnansweredError extends XynoplexError {
+export class UnansweredError extends XynologError {
   declare code: 'unavailable';
 
   /** `what` names the request. `error` is what `fetch`, or the read of its answer's body, rejected with. */

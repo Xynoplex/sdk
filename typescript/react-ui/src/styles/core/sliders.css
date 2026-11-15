@@ -2,179 +2,179 @@
    Sliders/Range Inputs - Core UI Element
 
    This is the authoritative source for all slider/range input styles.
-   Usage: Apply .xynoplex-slider to <input type="range"> elements.
+   Usage: Apply .xynolog-slider to <input type="range"> elements.
    ============================================ */
 
 /* Base Slider Reset and Styling */
-.xynoplex-slider {
+.xynolog-slider {
   appearance: none;
   width: 100%;
   height: 0.5rem;
-  background: var(--xynoplex-color-gray-300);
-  border-radius: var(--xynoplex-radius-full);
-  border: 1px solid var(--xynoplex-color-gray-400);
+  background: var(--xynolog-color-gray-300);
+  border-radius: var(--xynolog-radius-full);
+  border: 1px solid var(--xynolog-color-gray-400);
   cursor: pointer;
 }
 
-[data-theme="dark"] .xynoplex-slider {
-  background: var(--xynoplex-bg-tertiary);
-  border-color: var(--xynoplex-color-gray-600);
+[data-theme="dark"] .xynolog-slider {
+  background: var(--xynolog-bg-tertiary);
+  border-color: var(--xynolog-color-gray-600);
 }
 
 /* Track Styling */
-.xynoplex-slider::-webkit-slider-track {
+.xynolog-slider::-webkit-slider-track {
   width: 100%;
   height: 0.5rem;
-  background: var(--xynoplex-bg-secondary);
-  border-radius: var(--xynoplex-radius-full);
-  border: 1px solid var(--xynoplex-color-gray-300);
+  background: var(--xynolog-bg-secondary);
+  border-radius: var(--xynolog-radius-full);
+  border: 1px solid var(--xynolog-color-gray-300);
 }
 
-.xynoplex-slider::-moz-range-track {
+.xynolog-slider::-moz-range-track {
   width: 100%;
   height: 0.5rem;
-  background: var(--xynoplex-bg-secondary);
-  border-radius: var(--xynoplex-radius-full);
-  border: 1px solid var(--xynoplex-color-gray-300);
+  background: var(--xynolog-bg-secondary);
+  border-radius: var(--xynolog-radius-full);
+  border: 1px solid var(--xynolog-color-gray-300);
 }
 
-[data-theme="dark"] .xynoplex-slider::-webkit-slider-track {
-  background: var(--xynoplex-bg-tertiary);
-  border-color: var(--xynoplex-color-gray-600);
+[data-theme="dark"] .xynolog-slider::-webkit-slider-track {
+  background: var(--xynolog-bg-tertiary);
+  border-color: var(--xynolog-color-gray-600);
 }
 
-[data-theme="dark"] .xynoplex-slider::-moz-range-track {
-  background: var(--xynoplex-bg-tertiary);
-  border-color: var(--xynoplex-color-gray-600);
+[data-theme="dark"] .xynolog-slider::-moz-range-track {
+  background: var(--xynolog-bg-tertiary);
+  border-color: var(--xynolog-color-gray-600);
 }
 
 /* Thumb/Handle Styling */
-.xynoplex-slider::-webkit-slider-thumb {
+.xynolog-slider::-webkit-slider-thumb {
   appearance: none;
   width: 1.25rem;
   height: 1.25rem;
-  background: var(--xynoplex-color-primary-500);
-  border: 2px solid var(--xynoplex-color-white);
+  background: var(--xynolog-color-primary-500);
+  border: 2px solid var(--xynolog-color-white);
   border-radius: 50%;
   cursor: pointer;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   transition: all 0.2s ease;
 }
 
-.xynoplex-slider::-moz-range-thumb {
+.xynolog-slider::-moz-range-thumb {
   width: 1.25rem;
   height: 1.25rem;
-  background: var(--xynoplex-color-primary-500);
-  border: 2px solid var(--xynoplex-color-white);
+  background: var(--xynolog-color-primary-500);
+  border: 2px solid var(--xynolog-color-white);
   border-radius: 50%;
   cursor: pointer;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   transition: all 0.2s ease;
 }
 
-[data-theme="dark"] .xynoplex-slider::-webkit-slider-thumb {
-  background: var(--xynoplex-color-primary-400);
-  border-color: var(--xynoplex-bg-primary);
+[data-theme="dark"] .xynolog-slider::-webkit-slider-thumb {
+  background: var(--xynolog-color-primary-400);
+  border-color: var(--xynolog-bg-primary);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 }
 
-[data-theme="dark"] .xynoplex-slider::-moz-range-thumb {
-  background: var(--xynoplex-color-primary-400);
-  border-color: var(--xynoplex-bg-primary);
+[data-theme="dark"] .xynolog-slider::-moz-range-thumb {
+  background: var(--xynolog-color-primary-400);
+  border-color: var(--xynolog-bg-primary);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
 }
 
 /* Hover State */
-.xynoplex-slider:hover::-webkit-slider-thumb {
-  background: var(--xynoplex-color-primary-600);
+.xynolog-slider:hover::-webkit-slider-thumb {
+  background: var(--xynolog-color-primary-600);
   transform: scale(1.1);
 }
 
-.xynoplex-slider:hover::-moz-range-thumb {
-  background: var(--xynoplex-color-primary-600);
+.xynolog-slider:hover::-moz-range-thumb {
+  background: var(--xynolog-color-primary-600);
   transform: scale(1.1);
 }
 
-[data-theme="dark"] .xynoplex-slider:hover::-webkit-slider-thumb {
-  background: var(--xynoplex-color-primary-300);
+[data-theme="dark"] .xynolog-slider:hover::-webkit-slider-thumb {
+  background: var(--xynolog-color-primary-300);
 }
 
-[data-theme="dark"] .xynoplex-slider:hover::-moz-range-thumb {
-  background: var(--xynoplex-color-primary-300);
+[data-theme="dark"] .xynolog-slider:hover::-moz-range-thumb {
+  background: var(--xynolog-color-primary-300);
 }
 
 /* Focus State */
-.xynoplex-slider:focus::-webkit-slider-thumb {
+.xynolog-slider:focus::-webkit-slider-thumb {
   box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2), 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-.xynoplex-slider:focus::-moz-range-thumb {
+.xynolog-slider:focus::-moz-range-thumb {
   box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2), 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-.xynoplex-slider:focus-visible::-webkit-slider-thumb {
-  outline: 2px solid var(--xynoplex-color-primary-500);
+.xynolog-slider:focus-visible::-webkit-slider-thumb {
+  outline: 2px solid var(--xynolog-color-primary-500);
   outline-offset: 2px;
 }
 
-.xynoplex-slider:focus-visible::-moz-range-thumb {
-  outline: 2px solid var(--xynoplex-color-primary-500);
+.xynolog-slider:focus-visible::-moz-range-thumb {
+  outline: 2px solid var(--xynolog-color-primary-500);
   outline-offset: 2px;
 }
 
 /* Active/Dragging State */
-.xynoplex-slider:active::-webkit-slider-thumb {
-  background: var(--xynoplex-color-primary-700);
+.xynolog-slider:active::-webkit-slider-thumb {
+  background: var(--xynolog-color-primary-700);
   transform: scale(0.95);
 }
 
-.xynoplex-slider:active::-moz-range-thumb {
-  background: var(--xynoplex-color-primary-700);
+.xynolog-slider:active::-moz-range-thumb {
+  background: var(--xynolog-color-primary-700);
   transform: scale(0.95);
 }
 
 /* Disabled State */
-.xynoplex-slider:disabled {
+.xynolog-slider:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.xynoplex-slider:disabled::-webkit-slider-track {
-  background: var(--xynoplex-color-gray-200);
+.xynolog-slider:disabled::-webkit-slider-track {
+  background: var(--xynolog-color-gray-200);
 }
 
-.xynoplex-slider:disabled::-moz-range-track {
-  background: var(--xynoplex-color-gray-200);
+.xynolog-slider:disabled::-moz-range-track {
+  background: var(--xynolog-color-gray-200);
 }
 
-.xynoplex-slider:disabled::-webkit-slider-thumb {
-  background: var(--xynoplex-color-gray-400);
+.xynolog-slider:disabled::-webkit-slider-thumb {
+  background: var(--xynolog-color-gray-400);
   cursor: not-allowed;
 }
 
-.xynoplex-slider:disabled::-moz-range-thumb {
-  background: var(--xynoplex-color-gray-400);
+.xynolog-slider:disabled::-moz-range-thumb {
+  background: var(--xynolog-color-gray-400);
   cursor: not-allowed;
 }
 
 /* Slider Container with Labels */
 
-.xynoplex-slider__labels {
+.xynolog-slider__labels {
   display: flex;
   justify-content: space-between;
-  font-size: var(--xynoplex-text-xs);
-  color: var(--xynoplex-text-secondary);
+  font-size: var(--xynolog-text-xs);
+  color: var(--xynolog-text-secondary);
 }
 
 /* Small labels variant — reduced font size for compact inline contexts */
-.xynoplex-slider__labels--small {
+.xynolog-slider__labels--small {
   font-size: 0.6875rem;
 }
 
 /* Accessibility - Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
-  .xynoplex-slider::-webkit-slider-thumb,
-  .xynoplex-slider::-moz-range-thumb {
+  .xynolog-slider::-webkit-slider-thumb,
+  .xynolog-slider::-moz-range-thumb {
     transition: none;
   }
 }

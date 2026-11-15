@@ -3,7 +3,7 @@
 from collections.abc import Callable
 from typing import Final, final, override
 
-from xynoplex.storage import MemoryStorage, SessionStorage
+from xynolog.storage import MemoryStorage, SessionStorage
 
 
 @final

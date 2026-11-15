@@ -10,25 +10,25 @@ import qualified Data.ByteString.Lazy as Lazy
 import qualified Data.Map.Strict as Map
 import qualified Data.Set as Set
 import Data.List (find)
-import qualified Xynoplex.Client as Client
-import qualified Xynoplex.Browse as Browse
-import qualified Xynoplex.Content as Content
-import qualified Xynoplex.Bus as Bus
-import qualified Xynoplex.Transport as Transport
-import qualified Xynoplex.Channels as Channel
-import qualified Xynoplex.Timing.Settings as Timing
+import qualified Xynolog.Client as Client
+import qualified Xynolog.Browse as Browse
+import qualified Xynolog.Content as Content
+import qualified Xynolog.Bus as Bus
+import qualified Xynolog.Transport as Transport
+import qualified Xynolog.Channels as Channel
+import qualified Xynolog.Timing.Settings as Timing
 import qualified Streaming.Prelude as Stream
 import Data.Scientific (Scientific)
 import Data.Text (Text)
 import qualified Data.Text as Text
 import Data.Text.Encoding (encodeUtf8)
-import qualified Xynoplex.Cache as Cache
-import qualified Xynoplex.StoragePersister as Stored
-import qualified Xynoplex.SessionStorage as Storage
-import qualified Xynoplex.Internal.Coupled as Coupled
-import Xynoplex.Internal.Generated.CachePersistence (CacheDocument(..))
-import qualified Xynoplex.Internal.Kept as Kept
-import Xynoplex.Types
+import qualified Xynolog.Cache as Cache
+import qualified Xynolog.StoragePersister as Stored
+import qualified Xynolog.SessionStorage as Storage
+import qualified Xynolog.Internal.Coupled as Coupled
+import Xynolog.Internal.Generated.CachePersistence (CacheDocument(..))
+import qualified Xynolog.Internal.Kept as Kept
+import Xynolog.Types
 import qualified ControlledTime as Time
 
 require :: String -> Bool -> IO ()

@@ -11,14 +11,14 @@ import qualified Data.Aeson.KeyMap as KM
 import Data.List (mapAccumL)
 import Data.Text.Encoding (encodeUtf8)
 import qualified Data.Set as Set
-import qualified Xynoplex.Channels as Channels
-import qualified Xynoplex.Internal.Broadcast as Broadcast
-import qualified Xynoplex.Internal.Delivery as Delivery
-import qualified Xynoplex.Internal.Running as Running
-import qualified Xynoplex.Retry as Retry
-import qualified Xynoplex.Timing as Timing
-import Xynoplex.Internal.Sse
-import Xynoplex.Types (BusFrame(..), BusFramePayload(..))
+import qualified Xynolog.Channels as Channels
+import qualified Xynolog.Internal.Broadcast as Broadcast
+import qualified Xynolog.Internal.Delivery as Delivery
+import qualified Xynolog.Internal.Running as Running
+import qualified Xynolog.Retry as Retry
+import qualified Xynolog.Timing as Timing
+import Xynolog.Internal.Sse
+import Xynolog.Types (BusFrame(..), BusFramePayload(..))
 import System.Timeout (timeout)
 import Streaming (Of(..))
 import qualified Streaming.Prelude as Stream

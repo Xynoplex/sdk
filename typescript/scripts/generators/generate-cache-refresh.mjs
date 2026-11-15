@@ -67,7 +67,7 @@ writeFileSync(
   OUT,
   `// ⚠ GENERATED FILE — do not edit.
 // Source: protocol/specs/src/client/refresh.json → typescript/scripts/generators/generate-cache-refresh.mjs
-// Rebuilt by \`npm run prebuild\` in @xynoplex/core; gitignored on purpose.
+// Rebuilt by \`npm run prebuild\` in @xynolog/core; gitignored on purpose.
 
 import type { components } from '../types';
 

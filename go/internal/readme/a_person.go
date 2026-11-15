@@ -7,25 +7,25 @@ import (
 	"net/http"
 	"path/filepath"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/bus"
+	xynolog "github.com/xynolog/sdk/go"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/bus"
 )
 
-func show(code xynoplex.DeviceCode) {
+func show(code xynolog.DeviceCode) {
 	fmt.Printf("Open %s and enter %s\n", code.VerificationURI, code.UserCode)
 }
 
-// AsMe is a session as the person signed in to kb, by `xynoplex login` or by
+// AsMe is a session as the person signed in to kb, by `xynolog login` or by
 // the device grant here.
 func AsMe(ctx context.Context, kb api.KbTarget, home string) error {
-	directory, ok := xynoplex.StateDir(xynoplex.ThisSystem(), home, "", "")
+	directory, ok := xynolog.StateDir(xynolog.ThisSystem(), home, "", "")
 	if !ok {
 		return errors.New("this system keeps no sign-ins")
 	}
-	// The sign-in of the stack `xynoplex login` keys as the knowledge base's id.
-	kept := xynoplex.NewSignInStore(filepath.Join(directory, xynoplex.SignInFile)).Entry(kb.Id)
-	timing := xynoplex.DefaultTiming()
+	// The sign-in of the stack `xynolog login` keys as the knowledge base's id.
+	kept := xynolog.NewSignInStore(filepath.Join(directory, xynolog.SignInFile)).Entry(kb.Id)
+	timing := xynolog.DefaultTiming()
 	if _, held, err := kept.Held(ctx); err != nil {
 		return err
 	} else if !held {
@@ -33,16 +33,16 @@ func AsMe(ctx context.Context, kb api.KbTarget, home string) error {
 		if err != nil {
 			return err
 		}
-		gateway, err := xynoplex.GatewayURL(endpoint)
+		gateway, err := xynolog.GatewayURL(endpoint)
 		if err != nil {
 			return err
 		}
-		issuer := xynoplex.Issuer{HTTP: http.DefaultClient, Timing: timing}
-		if _, err := xynoplex.SignInWithDevice(ctx, issuer, gateway, kept, show); err != nil {
+		issuer := xynolog.Issuer{HTTP: http.DefaultClient, Timing: timing}
+		if _, err := xynolog.SignInWithDevice(ctx, issuer, gateway, kept, show); err != nil {
 			return err
 		}
 	}
-	session, end, err := xynoplex.SessionFromKept(ctx, xynoplex.SessionFromKeptConfig{
+	session, end, err := xynolog.SessionFromKept(ctx, xynolog.SessionFromKeptConfig{
 		Kb: kb, Kept: kept, HTTP: http.DefaultClient, Timing: timing, Channels: bus.BridgedChannels,
 	})
 	if err != nil {

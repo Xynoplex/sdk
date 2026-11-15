@@ -6,9 +6,9 @@ use serde_json::{Map, Value};
 
 pub const ROLES_CLAIM: &str = "roles";
 /// Carried by every service's account: admits it to the services' own routes.
-pub const SERVICE_ROLE: &str = "xynoplex-service";
+pub const SERVICE_ROLE: &str = "xynolog-service";
 /// Carried by a worker: it may claim jobs.
-pub const WORKER_ROLE: &str = "xynoplex-worker";
+pub const WORKER_ROLE: &str = "xynolog-worker";
 
 /// The claim that marks an agent's account, and what it holds there: every
 /// service's account and every worker's carries it, and a person's never

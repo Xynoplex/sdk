@@ -23,8 +23,8 @@ from opentelemetry.trace import NonRecordingSpan, SpanContext, TraceFlags
 from pydantic import BaseModel, Field, JsonValue, TypeAdapter
 from spec import SPEC, JsonObject, objects, read, text
 
-from xynoplex import telemetry
-from xynoplex.claims import (
+from xynolog import telemetry
+from xynolog.claims import (
     JOB_CLAIM_CHANNELS,
     JOB_COMMIT_CHANNELS,
     ClaimRefusal,
@@ -34,11 +34,11 @@ from xynoplex.claims import (
     HeldYieldJob,
     will_retry_after,
 )
-from xynoplex.client import XynoplexClient
-from xynoplex.errors import BusRequestError, TransportError
-from xynoplex.identifiers import ResourceId
-from xynoplex.job_filter import job_matches_filter
-from xynoplex.testing import (
+from xynolog.client import XynologClient
+from xynolog.errors import BusRequestError, TransportError
+from xynolog.identifiers import ResourceId
+from xynolog.job_filter import job_matches_filter
+from xynolog.testing import (
     Delay,
     Deliver,
     DropReply,
@@ -49,9 +49,9 @@ from xynoplex.testing import (
     RequestLogEntry,
     StubGateway,
 )
-from xynoplex.timing import ERRORS_KEPT_FOR_FIRST_READER_COUNT, MARK_COMMIT_TIMEOUT_MS
-from xynoplex.transport import Frame, FrameRefusal, TraceContext
-from xynoplex.types import (
+from xynolog.timing import ERRORS_KEPT_FOR_FIRST_READER_COUNT, MARK_COMMIT_TIMEOUT_MS
+from xynolog.transport import Frame, FrameRefusal, TraceContext
+from xynolog.types import (
     Annotation,
     DurabilityEvidence,
     FailureClass,
@@ -61,7 +61,7 @@ from xynoplex.types import (
     UnitCursor,
     YieldJobDone,
 )
-from xynoplex.watched import Watched
+from xynolog.watched import Watched
 
 _FILTERS: Final = TypeAdapter[list[JobFilter]](list[JobFilter])
 EVERYTHING: Final = _FILTERS.validate_python(
@@ -159,7 +159,7 @@ class World:
         """The trace each claim was made in, in order: its id, or nothing for a claim made in none."""
         self.transport: Final = FaultyTransport(wire, make_response=self._answer, channels=channels)
         self.transport.refuse_when(self._refusal)
-        self.client: Final = XynoplexClient(self.transport, InMemoryContent(), StubGateway())
+        self.client: Final = XynologClient(self.transport, InMemoryContent(), StubGateway())
 
     def _refusal(self, operation: str, payload: Mapping[str, JsonValue]) -> JsonObject | None:
         match operation:

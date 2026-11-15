@@ -2,7 +2,7 @@ package readme_test
 
 // The README's programs: each Go block go/README.md shows is one
 // file of this package, word for word below its package clause, and each is
-// run here. What takes a client runs over xynoplextest's doubles; what needs a
+// run here. What takes a client runs over xynologtest's doubles; what needs a
 // gateway or an issuer runs against a stand-in one, on this machine.
 
 import (
@@ -28,12 +28,12 @@ import (
 	"testing"
 	"time"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/bus"
-	"github.com/Xynoplex/sdk/go/internal/readme"
-	"github.com/Xynoplex/sdk/go/xynoplextest"
-	"github.com/Xynoplex/sdk/go/state"
+	xynolog "github.com/xynolog/sdk/go"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/bus"
+	"github.com/xynolog/sdk/go/internal/readme"
+	"github.com/xynolog/sdk/go/state"
+	"github.com/xynolog/sdk/go/xynologtest"
 )
 
 // goBlock is a Go block of a Markdown text: what is between its fences.
@@ -98,7 +98,7 @@ func TestEachGoBlockOfTheREADMEIsAProgramOfThisPackageWordForWord(t *testing.T) 
 // signedToken is a JWT an issuer signed for alice, which expires in an hour,
 // n telling one from another.
 func signedToken(n int) string {
-	claims, err := json.Marshal(map[string]any{"iss": "https://kb.example/realms/xynoplex", "email": "alice@example.org", "exp": time.Now().Add(time.Hour).Unix(), "n": n})
+	claims, err := json.Marshal(map[string]any{"iss": "https://kb.example/realms/xynolog", "email": "alice@example.org", "exp": time.Now().Add(time.Hour).Unix(), "n": n})
 	if err != nil {
 		panic(err)
 	}
@@ -113,21 +113,21 @@ func writeJSON(w http.ResponseWriter, status int, body string) {
 
 const (
 	alice       = `{"did":"did:web:kb.example:users:alice","domain":"kb.example","email":"alice@example.org","name":"Alice","image":null}`
-	statusOK    = `{"status":"ok","version":"0.7.0","message":"Xynoplex is running","features":{"collaboration":"enabled","semanticContent":"enabled"}}`
+	statusOK    = `{"status":"ok","version":"0.7.0","message":"Xynolog is running","features":{"collaboration":"enabled","semanticContent":"enabled"}}`
 	aResource   = `{"@context":"https://schema.org","@id":"res-1","name":"A page of notes","representations":[]}`
 	markAddedOn = `{"id":"e-1","type":"mark:added","userId":"did:web:kb.example:users:alice","version":1,"timestamp":"2026-10-26T00:00:00.000Z","payload":{},"metadata":{"sequenceNumber":1}}`
 )
 
 // newIssuer is an issuer that grants a service account whose secret is
-// s3cret a token, at <origin>/realms/xynoplex.
+// s3cret a token, at <origin>/realms/xynolog.
 func newIssuer(t *testing.T) *httptest.Server {
 	t.Helper()
 	var issuer *httptest.Server
 	issuer = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
-		case "/realms/xynoplex/.well-known/openid-configuration":
-			writeJSON(w, http.StatusOK, fmt.Sprintf(`{"token_endpoint":%q}`, issuer.URL+"/realms/xynoplex/token"))
-		case "/realms/xynoplex/token":
+		case "/realms/xynolog/.well-known/openid-configuration":
+			writeJSON(w, http.StatusOK, fmt.Sprintf(`{"token_endpoint":%q}`, issuer.URL+"/realms/xynolog/token"))
+		case "/realms/xynolog/token":
 			if r.FormValue("grant_type") != "client_credentials" || r.FormValue("client_secret") != "s3cret" {
 				writeJSON(w, http.StatusUnauthorized, `{"error":"invalid_client"}`)
 				return
@@ -263,16 +263,16 @@ func idOf(t *testing.T, text string) api.ResourceId {
 
 // jobTiming is the client's waits, with a followed job asked for its status
 // soon after it falls silent.
-func jobTiming() xynoplex.Timing {
-	timing := xynoplex.DefaultTiming()
+func jobTiming() xynolog.Timing {
+	timing := xynolog.DefaultTiming()
 	timing.JobSilence, timing.JobStatusPoll = 50*time.Millisecond, 50*time.Millisecond
 	return timing
 }
 
 // testClient is a client over doubles, closed when the test ends.
-func testClient(t *testing.T, timing xynoplex.Timing) xynoplextest.TestClient {
+func testClient(t *testing.T, timing xynolog.Timing) xynologtest.TestClient {
 	t.Helper()
-	made := xynoplextest.NewTestClient(xynoplextest.TestClientConfig{Timing: timing})
+	made := xynologtest.NewTestClient(xynologtest.TestClientConfig{Timing: timing})
 	t.Cleanup(func() {
 		made.Client.Close()
 		made.Transport.Close()
@@ -294,7 +294,7 @@ var (
 
 func TestAnAgent(t *testing.T) {
 	issuer, kb := newIssuer(t), newGateway(t)
-	if err := readme.Work(within(t), kb.URL, issuer.URL+"/realms/xynoplex", "s3cret"); err != nil {
+	if err := readme.Work(within(t), kb.URL, issuer.URL+"/realms/xynolog", "s3cret"); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -310,16 +310,16 @@ func TestAWorkerKey(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Setenv("XYNOPLEX_OIDC_CLIENT_KEY", string(pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: der})))
-	credential, err := readme.WorkerCredential("https://kb.example/realms/xynoplex", "xynoplex-worker-local")
+	t.Setenv("XYNOLOG_OIDC_CLIENT_KEY", string(pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: der})))
+	credential, err := readme.WorkerCredential("https://kb.example/realms/xynolog", "xynolog-worker-local")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !credential.PrivateKey.Equal(key) || credential.ClientID != "xynoplex-worker-local" || credential.Issuer != "https://kb.example/realms/xynoplex" {
+	if !credential.PrivateKey.Equal(key) || credential.ClientID != "xynolog-worker-local" || credential.Issuer != "https://kb.example/realms/xynolog" {
 		t.Errorf("the credential is not the worker's: %v", credential)
 	}
-	t.Setenv("XYNOPLEX_OIDC_CLIENT_KEY", "")
-	if _, err := readme.WorkerCredential("https://kb.example/realms/xynoplex", "xynoplex-worker-local"); err == nil || !strings.Contains(err.Error(), "XYNOPLEX_OIDC_CLIENT_KEY") {
+	t.Setenv("XYNOLOG_OIDC_CLIENT_KEY", "")
+	if _, err := readme.WorkerCredential("https://kb.example/realms/xynolog", "xynolog-worker-local"); err == nil || !strings.Contains(err.Error(), "XYNOLOG_OIDC_CLIENT_KEY") {
 		t.Errorf("a worker handed no key made a credential, or did not say which variable lacks it: %v", err)
 	}
 }
@@ -327,13 +327,13 @@ func TestAWorkerKey(t *testing.T) {
 func TestAPerson(t *testing.T) {
 	kb := newGateway(t)
 	home := t.TempDir()
-	directory, ok := xynoplex.StateDir(xynoplex.ThisSystem(), home, "", "")
+	directory, ok := xynolog.StateDir(xynolog.ThisSystem(), home, "", "")
 	if !ok {
 		t.Fatal("this system keeps no sign-ins")
 	}
-	// What `xynoplex login` would have kept for the stack.
-	kept := xynoplex.NewSignInStore(filepath.Join(directory, xynoplex.SignInFile)).Entry("kb-test")
-	if err := kept.Keep(context.Background(), xynoplex.HeldSignIn{Access: signedToken(1), Refresh: "refresh-1", ClientID: xynoplex.ScriptClientID, TokenEndpoint: kb.URL + "/token"}); err != nil {
+	// What `xynolog login` would have kept for the stack.
+	kept := xynolog.NewSignInStore(filepath.Join(directory, xynolog.SignInFile)).Entry("kb-test")
+	if err := kept.Keep(context.Background(), xynolog.HeldSignIn{Access: signedToken(1), Refresh: "refresh-1", ClientID: xynolog.ScriptClientID, TokenEndpoint: kb.URL + "/token"}); err != nil {
 		t.Fatal(err)
 	}
 	if err := readme.AsMe(within(t), kb.target(t, "kb-test"), home); err != nil {
@@ -363,7 +363,7 @@ func TestTheClient(t *testing.T) {
 	made.Transport.QueueReply(jobStatus, completed("job-1", "mark", `{"found":1,"persisted":1}`))
 	made.Transport.Counted(2)
 	resource := idOf(t, "res-1")
-	made.Content.Seed(resource, xynoplex.Content{Bytes: []byte("Some notes.\n"), ContentType: "text/plain; charset=utf-8"})
+	made.Content.Seed(resource, xynolog.Content{Bytes: []byte("Some notes.\n"), ContentType: "text/plain; charset=utf-8"})
 	annotation, err := api.ParseAnnotationId("ann-1")
 	if err != nil {
 		t.Fatal(err)
@@ -374,13 +374,13 @@ func TestTheClient(t *testing.T) {
 }
 
 func TestLiveQueries(t *testing.T) {
-	made := testClient(t, xynoplex.DefaultTiming())
+	made := testClient(t, xynolog.DefaultTiming())
 	resource := idOf(t, "res-1")
 	made.Content.SeedAnnotations(resource, api.GetAnnotationsResponse{Annotations: []api.Annotation{}, Total: 0})
 	watching, stop := context.WithTimeout(context.Background(), 300*time.Millisecond)
 	defer stop()
 	readme.Watch(watching, made.Client, resource)
-	if !slices.ContainsFunc(made.Content.Calls(), func(call xynoplextest.ContentCall) bool { return call.Operation == "getAnnotations" }) {
+	if !slices.ContainsFunc(made.Content.Calls(), func(call xynologtest.ContentCall) bool { return call.Operation == "getAnnotations" }) {
 		t.Fatalf("the annotations were never asked for: %v", made.Content.Calls())
 	}
 	if holds := made.Transport.Holds(resource); holds != 0 {
@@ -389,7 +389,7 @@ func TestLiveQueries(t *testing.T) {
 }
 
 func TestStateUnits(t *testing.T) {
-	made := testClient(t, xynoplex.DefaultTiming())
+	made := testClient(t, xynolog.DefaultTiming())
 	beckon := state.NewBeckonStateUnit(made.Client, idOf(t, "res-1"))
 	done := make(chan struct{})
 	go func() {
@@ -411,9 +411,9 @@ func TestStateUnits(t *testing.T) {
 
 func TestAWorker(t *testing.T) {
 	// A worker's stream names what its claims need, as the agent's does.
-	made := xynoplextest.NewTestClient(xynoplextest.TestClientConfig{
-		Transport: xynoplextest.NewFaultyTransport(xynoplextest.FaultyConfig{Channels: xynoplex.JobClaimChannels}),
-		Timing:    xynoplex.DefaultTiming(),
+	made := xynologtest.NewTestClient(xynologtest.TestClientConfig{
+		Transport: xynologtest.NewFaultyTransport(xynologtest.FaultyConfig{Channels: xynolog.JobClaimChannels}),
+		Timing:    xynolog.DefaultTiming(),
 	})
 	t.Cleanup(func() {
 		made.Client.Close()
@@ -426,8 +426,8 @@ func TestAWorker(t *testing.T) {
 		return nil
 	})
 	err := readme.Run(within(t), made.Client)
-	var refused *xynoplex.ClaimRefusal
-	if !errors.As(err, &refused) || refused.Code == nil || *refused.Code != xynoplex.BusRequestErrorCodeUnauthorized {
+	var refused *xynolog.ClaimRefusal
+	if !errors.As(err, &refused) || refused.Code == nil || *refused.Code != xynolog.BusRequestErrorCodeUnauthorized {
 		t.Fatalf("the worker stopped with %v", err)
 	}
 }
@@ -444,14 +444,14 @@ func TestTheBus(t *testing.T) {
 }
 
 func TestContent(t *testing.T) {
-	gateway := &xynoplextest.StubGateway{}
+	gateway := &xynologtest.StubGateway{}
 	var user api.UserResponse
 	if err := json.Unmarshal([]byte(alice), &user); err != nil {
 		t.Fatal(err)
 	}
 	gateway.CurrentUser(user)
-	gateway.Health(api.HealthResponse{Status: "operational", Message: "Xynoplex is running", Version: "0.7.0", Timestamp: "2026-10-26T00:00:00.000Z"})
-	created, err := readme.Store(within(t), xynoplextest.NewInMemoryContent(), gateway, []byte("# A page\n"))
+	gateway.Health(api.HealthResponse{Status: "operational", Message: "Xynolog is running", Version: "0.7.0", Timestamp: "2026-10-26T00:00:00.000Z"})
+	created, err := readme.Store(within(t), xynologtest.NewInMemoryContent(), gateway, []byte("# A page\n"))
 	if err != nil || created.IsZero() {
 		t.Fatalf("stored as %q (%v)", created, err)
 	}

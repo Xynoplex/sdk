@@ -1,9 +1,9 @@
 'use client';
 
-import type { ResourceId } from '@xynoplex/core';
+import type { ResourceId } from '@xynolog/core';
 import { lazy, Suspense, useMemo, type ComponentType } from 'react';
-import { textOffsets, type Annotation } from '@xynoplex/core';
-import { HOVER_DELAY_MS, type XynoplexSession } from '@xynoplex/sdk';
+import { textOffsets, type Annotation } from '@xynolog/core';
+import { HOVER_DELAY_MS, type XynologSession } from '@xynolog/sdk';
 import { SvgDrawingCanvas } from '../image-annotation/SvgDrawingCanvas';
 import { CodeMirrorRenderer } from '../CodeMirrorRenderer';
 import { segmentTextWithAnnotations } from '../../lib/text-segmentation';
@@ -42,7 +42,7 @@ export interface AnnotateMediaRendererProps {
   resourceUri: ResourceId;
   annotations: Annotation[];
   /** Session for interaction routing — the canvases emit via `session.client`. */
-  session: XynoplexSession | null;
+  session: XynologSession | null;
 
   /** Active drawing tool, or null when nothing is selected (read-only paint). */
   drawingMode: ShapeType | null;
@@ -142,7 +142,7 @@ export function PdfAnnotateRenderer({
 }: AnnotateMediaRendererProps) {
   if (!content) return null;
   return (
-    <Suspense fallback={<div className="xynoplex-annotate-view__loading"><PdfViewerLoading /></div>}>
+    <Suspense fallback={<div className="xynolog-annotate-view__loading"><PdfViewerLoading /></div>}>
       <PdfAnnotationCanvas
         pdfUrl={content}
         resourceUri={resourceUri}

@@ -73,7 +73,7 @@ transportFacts root registry identifiers = do
         code = T.unlines
           [ "-- Generated from TRANSPORT-HTTP.md, bus/registry.json and identifiers/kinds.json. Do not edit."
           , "{-# LANGUAGE OverloadedStrings #-}"
-          , "module Xynoplex.Transport.Facts (ConnectionState(..), connectionStateName, connectionTransitions, traceField, traceCarrierFields, userField) where"
+          , "module Xynolog.Transport.Facts (ConnectionState(..), connectionStateName, connectionTransitions, traceField, traceCarrierFields, userField) where"
           , "import Data.Text (Text)"
           , "data ConnectionState = " <> T.intercalate " | " (map constructor states) <> " deriving (Eq, Ord, Show, Enum, Bounded)"
           , "connectionStateName :: ConnectionState -> Text"
@@ -81,4 +81,4 @@ transportFacts root registry identifiers = do
             <> "connectionTransitions :: ConnectionState -> [ConnectionState]\n"
             <> T.unlines ["connectionTransitions " <> constructor source <> " = [" <> T.intercalate ", " (map constructor targets) <> "]" | (source, targets) <- edges]
             <> "traceField :: Text\ntraceField = " <> quote traceField <> "\ntraceCarrierFields :: [Text]\ntraceCarrierFields = [" <> T.intercalate ", " [quote key | (key,_) <- fields] <> "]\nuserField :: Text\nuserField = " <> quote userField <> "\n"
-    pure (schema, [("src/Xynoplex/Transport/Facts.hs", code)])
+    pure (schema, [("src/Xynolog/Transport/Facts.hs", code)])

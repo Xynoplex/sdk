@@ -1,20 +1,20 @@
-# Xynoplex Swift SDK
+# Xynolog Swift SDK
 
-[![codecov](https://codecov.io/gh/Xynoplex/sdk/graph/badge.svg?component=swift-sdk)](https://app.codecov.io/gh/Xynoplex/sdk/components)
+[![codecov](https://codecov.io/gh/xynolog/sdk/graph/badge.svg?component=swift-sdk)](https://app.codecov.io/gh/xynolog/sdk/components)
 
 The Swift SDK for Apple apps and Linux services. Use it to read and write a
-Xynoplex knowledge base, observe changes as they happen, and delegate jobs to
+Xynolog knowledge base, observe changes as they happen, and delegate jobs to
 workers. The SDK shares the other languages' [protocol][protocol] and
 [conformance suite][conformance]. The [Developer Guide][guide] shows how
 those capabilities fit together.
 
 ## Install
 
-The SDK is available as a local Swift package in a Xynoplex checkout. In Xcode,
+The SDK is available as a local Swift package in a Xynolog checkout. In Xcode,
 add `swift/sdk` from that checkout as a local package and link the
-`Xynoplex` product to your target. With SwiftPM, add a
-`.package(path: "../xynoplex/swift/sdk")` dependency, adjusting the path
-for your project, and add `.product(name: "Xynoplex", package: "sdk")` to the
+`Xynolog` product to your target. With SwiftPM, add a
+`.package(path: "../xynolog/swift/sdk")` dependency, adjusting the path
+for your project, and add `.product(name: "Xynolog", package: "sdk")` to the
 target's dependencies. Add the `AsyncHTTPClient` product from
 [AsyncHTTPClient][http-client] to targets that create the HTTP client.
 
@@ -39,7 +39,7 @@ and give it an ID and label. Your `showCode` callback can print the code's
 
 ```swift
 import AsyncHTTPClient
-import Xynoplex
+import Xynolog
 
 func readFirstResource(
   _ resource: ResourceId, in kb: KbTarget,
@@ -95,7 +95,7 @@ needs a worker that handles generation jobs.
 
 ```swift
 func generate(
-  from resource: ResourceId, using client: XynoplexClient
+  from resource: ResourceId, using client: XynologClient
 ) async throws -> YieldJobCompleteCommand {
   let context = try await client.gather.resource(resource)
   let run = try client.yield.delegate(
@@ -113,7 +113,7 @@ client.
 
 ```swift
 func watchResource(
-  _ resource: ResourceId, using client: XynoplexClient,
+  _ resource: ResourceId, using client: XynologClient,
   show: (CacheState<ResourceDescriptor>) -> Void
 ) async {
   for await state in client.browse.resource(resource) {
@@ -135,11 +135,11 @@ ends the sequences.
 Pass `CachePersistence(storage:kbId:personKey:)` (the key from `personKey(_:)`)
 as the client's `persistence` option to keep resource details, annotations, and
 vocabulary in application-provided `SessionStorage` for one person. Each kept
-query is one document under `xynoplex.cache.<kbId>.<personKey>.<query>`, in the
-form every Xynoplex SDK reads, so a client in another language finds what this
+query is one document under `xynolog.cache.<kbId>.<personKey>.<query>`, in the
+form every Xynolog SDK reads, so a client in another language finds what this
 one kept. The first observation shows the saved value while asking for a
 current one. Where the stream was is kept under
-`xynoplex.lastEventId.<kbId>.<personKey>`, and the HTTP transport resumes each
+`xynolog.lastEventId.<kbId>.<personKey>`, and the HTTP transport resumes each
 resource scope from it; it is written beside a cache's document only while
 nothing kept is still being fetched or saved. Disposal flushes pending settled
 values. A registry's session keeps for the person once its stored sign-in names
@@ -181,7 +181,7 @@ another attempt. The transport tells the session the token refused:
 a refusal of a token the session has already replaced is given the token it holds, and renews nothing. Session token and
 user state are read-only, and their sequences finish on disposal.
 
-Use `XynoplexClient.fromHttp(baseUrl:httpClient:token:)` for a short-lived
+Use `XynologClient.fromHttp(baseUrl:httpClient:token:)` for a short-lived
 program that already holds an access token. Use a session when the program
 needs renewal. See [Signing in][sign-in] for the available flows.
 
@@ -226,7 +226,7 @@ end when the claims end.
 
 ## Registry and state units
 
-Use `newXynoplexBrowser` with a `SessionStorage` and an `HttpSessionFactory`
+Use `newXynologBrowser` with a `SessionStorage` and an `HttpSessionFactory`
 to remember knowledge bases, activate a session, and keep open resources
 for each knowledge base. `beginSignIn` returns the issuer URL for the
 authorization-code flow with PKCE. Pass the redirect callback to
@@ -252,7 +252,7 @@ search input. `SessionSignals` carries session notices. `Cache` offers the
 same read-through queries for app data, with an optional `StoragePersister`.
 
 Call `dispose()` on a state unit to cancel its work and finish its streams.
-The app owns the client it handed the unit. Await `XynoplexBrowser.close()`
+The app owns the client it handed the unit. Await `XynologBrowser.close()`
 to end the active session and wait for registry work before shutting down
 the HTTP client.
 
@@ -273,7 +273,7 @@ or derived. Shared annotation, offset and media-type cases run in the unit suite
 
 ## Testing a consumer
 
-Link `XynoplexTesting` in a test target. Use `ScriptedTransport` for typed
+Link `XynologTesting` in a test target. Use `ScriptedTransport` for typed
 requests and frames, `createTestSession` for a real session over a scripted
 transport, and `ScriptedSessions` with `SharedStorage` for registry tests.
 `assertLivenessAxioms` checks outputs, settlements, and retry budgets over
@@ -304,8 +304,8 @@ order they slept.
 
 ## Transports, the bus, and telemetry
 
-`XynoplexClient.fromHttp(baseUrl:httpClient:token:)` constructs the HTTP client
-surface. `XynoplexClient(transport:gateway:content:)` takes another `Transport`, with
+`XynologClient.fromHttp(baseUrl:httpClient:token:)` constructs the HTTP client
+surface. `XynologClient(transport:gateway:content:)` takes another `Transport`, with
 `auth` and `system` present only when a `GatewayOperations` is supplied. Browse
 content and annotation list reads and Yield uploads use the supplied `ContentTransport` or the
 client transport itself when it conforms. Custom content transports supply
@@ -321,7 +321,7 @@ references.
 
 `client.wire` sends typed generated `Channels` and `Operations`. A request
 has, from the call, its emit included, `busRequestTimeoutMs`
-(`XynoplexClient(busRequestTimeoutMs:)`, the timing table's value when none is
+(`XynologClient(busRequestTimeoutMs:)`, the timing table's value when none is
 given), or the `timeoutMs:` its caller gives, on the client's clock and over any
 transport, to be answered; then it fails as `busTimeout`, and an emit still in
 flight is given up, with no attempt after it. A worker's claim waits its `claimTimeoutMs`, and a held job's
@@ -346,9 +346,9 @@ once and finishes listeners. Custom transports can supply read-only state via
 `request(operation:payload:)` keeps no deadline: the bus that asks keeps it, and
 gives a request up by cancelling its task, which the transport ends.
 
-The HTTP transport uses the caller's AsyncHTTPClient `HTTPClient` for every request. Its default proxy setting is `nil`; it does not read proxy environment variables. Callers configure trust and proxies on that client and shut it down after disposing the transport. The SDK reads only `XYNOPLEX_BUS_LOG`.
+The HTTP transport uses the caller's AsyncHTTPClient `HTTPClient` for every request. Its default proxy setting is `nil`; it does not read proxy environment variables. Callers configure trust and proxies on that client and shut it down after disposing the transport. The SDK reads only `XYNOLOG_BUS_LOG`.
 
-`HttpTransport` is always given the global channels its stream names, and assumes none of its own: a full client's transport is given `bridgedChannels`, which `XynoplexClient.fromHttp` and `sessionFromKept` pass. A request whose reply channels it was not given fails at once as `bus.unsubscribed`. It exposes connection state, independent lossless `frames` sequences of `Carried` (several channels can share one ordered sequence), scoped holds, correlated requests, uploads and content reads. `dispose()` synchronously cancels owned work and finishes sequences. A second iterator on an events, upload or content stream throws `MultipleConsumers`. Each frame is held to `BusFrame`: one it allows is `Carried.frame`, one it does not that names its channel's readers is `Carried.refused`, and anything else is a failure. Each failure a transport meets (a refusal, a request the gateway never answered, a line no reader can read) is told to every listener taken with `tellFailures(to:)` before the call that met it returns, so in the order met; the first listener is told at once the latest `errorsKeptForFirstReaderCount` met before it came, and one taken after the transport is disposed is told nothing. A listener must not wait. Incoming trace carriers are lifted out of payloads into `ReceivedFrame.trace`. OpenTelemetry's API is the library's only telemetry dependency; the application selects its provider and exporters.
+`HttpTransport` is always given the global channels its stream names, and assumes none of its own: a full client's transport is given `bridgedChannels`, which `XynologClient.fromHttp` and `sessionFromKept` pass. A request whose reply channels it was not given fails at once as `bus.unsubscribed`. It exposes connection state, independent lossless `frames` sequences of `Carried` (several channels can share one ordered sequence), scoped holds, correlated requests, uploads and content reads. `dispose()` synchronously cancels owned work and finishes sequences. A second iterator on an events, upload or content stream throws `MultipleConsumers`. Each frame is held to `BusFrame`: one it allows is `Carried.frame`, one it does not that names its channel's readers is `Carried.refused`, and anything else is a failure. Each failure a transport meets (a refusal, a request the gateway never answered, a line no reader can read) is told to every listener taken with `tellFailures(to:)` before the call that met it returns, so in the order met; the first listener is told at once the latest `errorsKeptForFirstReaderCount` met before it came, and one taken after the transport is disposed is told nothing. A listener must not wait. Incoming trace carriers are lifted out of payloads into `ReceivedFrame.trace`. OpenTelemetry's API is the library's only telemetry dependency; the application selects its provider and exporters.
 
 ## Working on the SDK
 
@@ -365,7 +365,7 @@ Run the Linux checks from the repository root.
 container run --rm --memory 8g -e HOME=/tmp/swift-home -v "$PWD":/w -w /w/swift/sdk "swift:$(swift/scripts/swift-version.sh)" sh -c 'mkdir -p "$HOME" && Scripts/test.sh && Scripts/coverage.sh && swift format lint --strict --recursive . && Scripts/census.sh && Scripts/refusals.sh'
 ```
 
-Swift 6 language mode and warnings as errors apply to every target. The canary must fail with the concurrency diagnostic. Each future `Refusals/*.swift` program begins `// refused: <text>` and must fail with that message. The census forbids unchecked concurrency escapes, environment reads beyond `XYNOPLEX_BUS_LOG`, and a test wait bounded by anything but `testDeadlineMs`: every test starts at once, and on a small runner a second can pass before a test's tasks are scheduled. The formatter forbids force unwraps, force casts, force tries and implicitly unwrapped optionals throughout the package.
+Swift 6 language mode and warnings as errors apply to every target. The canary must fail with the concurrency diagnostic. Each future `Refusals/*.swift` program begins `// refused: <text>` and must fail with that message. The census forbids unchecked concurrency escapes, environment reads beyond `XYNOLOG_BUS_LOG`, and a test wait bounded by anything but `testDeadlineMs`: every test starts at once, and on a small runner a second can pass before a test's tasks are scheduled. The formatter forbids force unwraps, force casts, force tries and implicitly unwrapped optionals throughout the package.
 
 The tests round-trip payloads from the three conformance corpora, run every identifier case, and verify nullable members, open objects, table generation and refused schema shapes.
 

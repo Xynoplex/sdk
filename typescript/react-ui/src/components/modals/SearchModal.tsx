@@ -1,13 +1,13 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { readyValue } from '@xynoplex/sdk';
+import { readyValue } from '@xynolog/sdk';
 import { Dialog, DialogPanel, Transition, TransitionChild } from '@headlessui/react';
 import { map } from 'rxjs/operators';
-import { SEARCH_DEBOUNCE_MS, getResourceId } from '@xynoplex/core';
-import { createSearchPipeline } from '@xynoplex/sdk';
+import { SEARCH_DEBOUNCE_MS, getResourceId } from '@xynolog/core';
+import { createSearchPipeline } from '@xynolog/sdk';
 import { useSearchAnnouncements } from '../../hooks/useSearchAnnouncements';
-import { useXynoplex } from '../../session/XynoplexProvider';
+import { useXynolog } from '../../session/XynologProvider';
 import { useObservable } from '../../hooks/useObservable';
 import './SearchModal.css';
 
@@ -48,12 +48,12 @@ export function SearchModal({
   translations,
 }: SearchModalProps) {
   const { announceSearchResults, announceSearching } = useSearchAnnouncements();
-  const xynoplex = useObservable(useXynoplex().activeSession$)?.client;
-  // Pipeline factory captures `xynoplex` once via useState; if xynoplex is
+  const xynolog = useObservable(useXynolog().activeSession$)?.client;
+  // Pipeline factory captures `xynolog` once via useState; if xynolog is
   // still loading at first render the captured value would be undefined.
   // Route through a ref so the fetch closure reads the latest client.
-  const xynoplexRef = useRef(xynoplex);
-  xynoplexRef.current = xynoplex;
+  const xynologRef = useRef(xynolog);
+  xynologRef.current = xynolog;
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   // ── Search pipeline ─────────────────────────────────────────────────────
@@ -62,7 +62,7 @@ export function SearchModal({
   const [pipeline] = useState(() =>
     createSearchPipeline<SearchResult>(
       (q) =>
-        xynoplexRef.current!.match.resources(q, { limit: SEARCH_LIMIT }).pipe(
+        xynologRef.current!.match.resources(q, { limit: SEARCH_LIMIT }).pipe(
           map((st) => {
             const resources = readyValue(st)?.resources;
             if (resources === undefined) return undefined;
@@ -135,7 +135,7 @@ export function SearchModal({
 
   return (
     <Transition appear show={isOpen}>
-      <Dialog as="div" className="xynoplex-search-modal" onClose={onClose} aria-label={translations.title}>
+      <Dialog as="div" className="xynolog-search-modal" onClose={onClose} aria-label={translations.title}>
         {/* Backdrop */}
         <TransitionChild
                    enter="ease-out duration-200"
@@ -145,12 +145,12 @@ export function SearchModal({
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="xynoplex-search-modal__backdrop" />
+          <div className="xynolog-search-modal__backdrop" />
         </TransitionChild>
 
         {/* Modal */}
-        <div className="xynoplex-search-modal__wrapper">
-          <div className="xynoplex-search-modal__centering">
+        <div className="xynolog-search-modal__wrapper">
+          <div className="xynolog-search-modal__centering">
             <TransitionChild
                            enter="ease-out duration-200"
               enterFrom="opacity-0 scale-95"
@@ -159,11 +159,11 @@ export function SearchModal({
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <DialogPanel className="xynoplex-search-modal__panel">
+              <DialogPanel className="xynolog-search-modal__panel">
                 {/* Search Input */}
-                <div className="xynoplex-search-modal__input-container">
-                  <div className="xynoplex-search-modal__search-icon-wrapper">
-                    <svg className="xynoplex-search-modal__search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="xynolog-search-modal__input-container">
+                  <div className="xynolog-search-modal__search-icon-wrapper">
+                    <svg className="xynolog-search-modal__search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                   </div>
@@ -174,72 +174,72 @@ export function SearchModal({
                     onKeyDown={handleKeyDown}
                     aria-label={translations.title}
                     placeholder={translations.placeholder}
-                    className="xynoplex-search-modal__input"
+                    className="xynolog-search-modal__input"
                     autoFocus
                   />
-                  <div className="xynoplex-search-modal__esc-wrapper">
-                    <kbd className="xynoplex-search-modal__kbd">
+                  <div className="xynolog-search-modal__esc-wrapper">
+                    <kbd className="xynolog-search-modal__kbd">
                       {translations.esc}
                     </kbd>
                   </div>
                 </div>
 
                 {/* Results */}
-                <div className="xynoplex-search-modal__results">
+                <div className="xynolog-search-modal__results">
                   {loading && (
-                    <div className="xynoplex-search-modal__empty">
+                    <div className="xynolog-search-modal__empty">
                       {translations.searching}
                     </div>
                   )}
 
                   {!loading && query && results.length === 0 && (
-                    <div className="xynoplex-search-modal__empty">
+                    <div className="xynolog-search-modal__empty">
                       {translations.noResults} "{query}"
                     </div>
                   )}
 
                   {!loading && results.length > 0 && (
-                    <div className="xynoplex-search-modal__results-list">
+                    <div className="xynolog-search-modal__results-list">
                       {results.map((result, index) => (
                         <button
                           key={`${result.type}-${result.id}`}
                           onClick={() => navigateToResult(result)}
                           onMouseEnter={() => setSelectedIndex(index)}
-                          className={`xynoplex-search-modal__result ${
-                            index === selectedIndex ? 'xynoplex-search-modal__result--selected' : ''
+                          className={`xynolog-search-modal__result ${
+                            index === selectedIndex ? 'xynolog-search-modal__result--selected' : ''
                           }`}
                         >
-                          <div className="xynoplex-search-modal__result-icon-wrapper">
+                          <div className="xynolog-search-modal__result-icon-wrapper">
                             {result.type === 'resource' ? (
-                              <svg className="xynoplex-search-modal__result-icon xynoplex-search-modal__result-icon--resource" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <svg className="xynolog-search-modal__result-icon xynolog-search-modal__result-icon--resource" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                               </svg>
                             ) : (
-                              <svg className="xynoplex-search-modal__result-icon xynoplex-search-modal__result-icon--entity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <svg className="xynolog-search-modal__result-icon xynolog-search-modal__result-icon--entity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                               </svg>
                             )}
                           </div>
-                          <div className="xynoplex-search-modal__result-content">
-                            <div className="xynoplex-search-modal__result-header">
-                              <span className="xynoplex-search-modal__result-name">
+                          <div className="xynolog-search-modal__result-content">
+                            <div className="xynolog-search-modal__result-header">
+                              <span className="xynolog-search-modal__result-name">
                                 {result.name}
                               </span>
                               {result.type === 'entity' && result.entityType && (
-                                <span className="xynoplex-search-modal__result-badge">
+                                <span className="xynolog-search-modal__result-badge">
                                   {result.entityType}
                                 </span>
                               )}
                             </div>
                             {result.description && (
-                              <p className="xynoplex-search-modal__result-description">
+                              <p className="xynolog-search-modal__result-description">
                                 {result.description}
                               </p>
                             )}
                           </div>
                           {index === selectedIndex && (
-                            <div className="xynoplex-search-modal__result-action">
-                              <kbd className="xynoplex-search-modal__kbd">
+                            <div className="xynolog-search-modal__result-action">
+                              <kbd className="xynolog-search-modal__kbd">
                                 {translations.enter}
                               </kbd>
                             </div>
@@ -250,21 +250,21 @@ export function SearchModal({
                   )}
 
                   {!loading && !query && (
-                    <div className="xynoplex-search-modal__help">
-                      <div className="xynoplex-search-modal__help-text">
+                    <div className="xynolog-search-modal__help">
+                      <div className="xynolog-search-modal__help-text">
                         {translations.startTyping}
                       </div>
-                      <div className="xynoplex-search-modal__shortcuts">
-                        <div className="xynoplex-search-modal__shortcut">
-                          <kbd className="xynoplex-search-modal__kbd xynoplex-search-modal__kbd--small">↑↓</kbd>
+                      <div className="xynolog-search-modal__shortcuts">
+                        <div className="xynolog-search-modal__shortcut">
+                          <kbd className="xynolog-search-modal__kbd xynolog-search-modal__kbd--small">↑↓</kbd>
                           {translations.navigate}
                         </div>
-                        <div className="xynoplex-search-modal__shortcut">
-                          <kbd className="xynoplex-search-modal__kbd xynoplex-search-modal__kbd--small">{translations.enter}</kbd>
+                        <div className="xynolog-search-modal__shortcut">
+                          <kbd className="xynolog-search-modal__kbd xynolog-search-modal__kbd--small">{translations.enter}</kbd>
                           {translations.select}
                         </div>
-                        <div className="xynoplex-search-modal__shortcut">
-                          <kbd className="xynoplex-search-modal__kbd xynoplex-search-modal__kbd--small">{translations.esc}</kbd>
+                        <div className="xynolog-search-modal__shortcut">
+                          <kbd className="xynolog-search-modal__kbd xynolog-search-modal__kbd--small">{translations.esc}</kbd>
                           {translations.close}
                         </div>
                       </div>

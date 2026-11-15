@@ -1,7 +1,7 @@
 import { Observable, combineLatest, map } from 'rxjs';
 import { CacheObservable } from '../awaitable';
-import { decodeRepresentation } from '@xynoplex/core';
-import type { AnchoredTextAnswer } from '@xynoplex/core';
+import { decodeRepresentation } from '@xynolog/core';
+import type { AnchoredTextAnswer } from '@xynolog/core';
 import type {
   Annotation,
   EventBus,
@@ -16,10 +16,10 @@ import type {
   KbDescription,
   LimitsOperation,
   components,
-} from '@xynoplex/core';
-import type { ITransport, IContentTransport } from '@xynoplex/core';
-import { Bus, BusRequestError, LIMITS_OPERATIONS } from '@xynoplex/core';
-import { PERSISTED_QUERIES, type CacheQuery, type CacheRefresh, type CacheValues, type PersistedQuery } from '@xynoplex/core';
+} from '@xynolog/core';
+import type { ITransport, IContentTransport } from '@xynolog/core';
+import { Bus, BusRequestError, LIMITS_OPERATIONS } from '@xynolog/core';
+import { PERSISTED_QUERIES, type CacheQuery, type CacheRefresh, type CacheValues, type PersistedQuery } from '@xynolog/core';
 import { CacheRefresher, ScopedSources, type QueryActs, type RefreshSubject } from '../cache-refresh';
 import { createCache, createPersistableCache, type CacheState, type Cache, type PersistableCache } from '../cache';
 import { WHOLE_KEY, keptPersister, refusedSaveOf, type CachePersistence, type KeptKey, type WholeKey } from '../cache-persister';
@@ -456,7 +456,7 @@ export class BrowseNamespace implements IBrowseNamespace {
   resourceViewed(resourceId: ResourceId): void {
     // REPORT, over the wire (the beckon:focus idiom): the viewer announces
     // arrival — however the user got here — so a remote listener (the tour
-    // guide's `xynoplex listen`) can branch on it. Deliberately a different
+    // guide's `xynolog listen`) can branch on it. Deliberately a different
     // channel from the imperative `browse:resource-open`, so one viewer's
     // own navigation cannot drive another's page.
     // Best-effort: a refused/failed emit (transport rejects on non-2xx and on
@@ -578,7 +578,7 @@ export class BrowseNamespace implements IBrowseNamespace {
    * them: the A7-owned rule). Every per-key observable completes, so
    * subscribers detach cleanly; a fetch/retry chain straddling disposal
    * dies quietly in the cache's own disposed guard. Idempotent. Called by
-   * `XynoplexClient.dispose()`.
+   * `XynologClient.dispose()`.
    *
    * A client that holds coupled places sealed them before this (B17-Q), so
    * the flushes write the places noted then, whatever the caches report now.

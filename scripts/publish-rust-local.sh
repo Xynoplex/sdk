@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SCRATCH=/tmp/xynoplex-sdk-rust
+SCRATCH=/tmp/xynolog-sdk-rust
 rm -rf "$SCRATCH"
 mkdir -p "$SCRATCH"
 cp -a /source/rust "$SCRATCH/rust"
@@ -31,31 +31,31 @@ fi
 
 # Package dependencies before consumers. Cargo writes one .crate archive per
 # publishable workspace crate to target/package; no registry is involved.
-for crate in xynoplex-codegen xynoplex xynoplex-telemetry xynoplex-http-transport; do
+for crate in xynolog-codegen xynolog xynolog-telemetry xynolog-http-transport; do
   config=""
   case "$crate" in
-    xynoplex)
+    xynolog)
       mkdir -p .cargo
       cat > .cargo/config.toml <<EOF
 [patch.crates-io]
-xynoplex-codegen = { path = "$SCRATCH/rust/codegen" }
+xynolog-codegen = { path = "$SCRATCH/rust/codegen" }
 EOF
       config=.cargo/config.toml
       ;;
-    xynoplex-telemetry)
+    xynolog-telemetry)
       mkdir -p .cargo
       cat > .cargo/config.toml <<EOF
 [patch.crates-io]
-xynoplex = { path = "$SCRATCH/rust/sdk" }
+xynolog = { path = "$SCRATCH/rust/sdk" }
 EOF
       config=.cargo/config.toml
       ;;
-    xynoplex-http-transport)
+    xynolog-http-transport)
       mkdir -p .cargo
       cat > .cargo/config.toml <<EOF
 [patch.crates-io]
-xynoplex = { path = "$SCRATCH/rust/sdk" }
-xynoplex-telemetry = { path = "$SCRATCH/rust/telemetry" }
+xynolog = { path = "$SCRATCH/rust/sdk" }
+xynolog-telemetry = { path = "$SCRATCH/rust/telemetry" }
 EOF
       config=.cargo/config.toml
       ;;

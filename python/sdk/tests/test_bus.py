@@ -10,16 +10,16 @@ from aio import run, soon, turns
 from kb import recorded, refusing, silent
 from pydantic import JsonValue, ValidationError
 
-from xynoplex.bus import Bus, Delivered, decoded, reply_channels_for
-from xynoplex.channel import Empty
-from xynoplex.channels import BECKON_FOCUS, BECKON_HOVER, JOB_CREATE, JOB_QUEUED, MARK_ARCHIVED, MARK_DELETE, PANEL_CLOSE
-from xynoplex.errors import BusRequestError, TransportError
-from xynoplex.identifiers import AnnotationId, JobId, ResourceId
-from xynoplex.model import stated, written
-from xynoplex.operations import BROWSE_KB_REQUESTED, FRAME_ADD_ENTITY_TYPE, JOB_STATUS_REQUESTED, MARK_CREATE_REQUEST
-from xynoplex.testing import FaultyTransport
-from xynoplex.transport import Frame, FrameRefusal
-from xynoplex.types import (
+from xynolog.bus import Bus, Delivered, decoded, reply_channels_for
+from xynolog.channel import Empty
+from xynolog.channels import BECKON_FOCUS, BECKON_HOVER, JOB_CREATE, JOB_QUEUED, MARK_ARCHIVED, MARK_DELETE, PANEL_CLOSE
+from xynolog.errors import BusRequestError, TransportError
+from xynolog.identifiers import AnnotationId, JobId, ResourceId
+from xynolog.model import stated, written
+from xynolog.operations import BROWSE_KB_REQUESTED, FRAME_ADD_ENTITY_TYPE, JOB_STATUS_REQUESTED, MARK_CREATE_REQUEST
+from xynolog.testing import FaultyTransport
+from xynolog.transport import Frame, FrameRefusal
+from xynolog.types import (
     BeckonFocusEvent,
     BeckonHoverEvent,
     BrowseKbRequest,
@@ -198,7 +198,7 @@ def test_frames_by_type_carry_their_payload_decoded_and_who_emitted_them(caplog:
             Bus(transport).frames(BECKON_HOVER)
         assert unsubscribed.value.code == "bus.unsubscribed"
 
-    with caplog.at_level(logging.WARNING, logger="xynoplex.bus"):
+    with caplog.at_level(logging.WARNING, logger="xynolog.bus"):
         run(scenario())
     # The reader is told, and nothing is logged in its place.
     assert caplog.records == []

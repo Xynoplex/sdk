@@ -18,8 +18,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { EventBus, FrameRefusal, resourceId as makeResourceId, jobId } from '@xynoplex/core';
-import type { ResourceId } from '@xynoplex/core';
+import { EventBus, FrameRefusal, resourceId as makeResourceId, jobId } from '@xynolog/core';
+import type { ResourceId } from '@xynolog/core';
 import { MarkNamespace } from '../mark';
 import { JobNamespace } from '../job';
 import type { JobEvent } from '../../awaitable';

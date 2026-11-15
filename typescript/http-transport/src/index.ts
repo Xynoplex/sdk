@@ -1,17 +1,17 @@
 /**
- * @xynoplex/http-transport
+ * @xynolog/http-transport
  *
- * HTTP-specific transport adapters for the Xynoplex SDK. The dev-facing
- * surface (`XynoplexClient`, namespaces, session, state units, helpers)
- * lives in `@xynoplex/sdk`. The shared transport contract
+ * HTTP-specific transport adapters for the Xynolog SDK. The dev-facing
+ * surface (`XynologClient`, namespaces, session, state units, helpers)
+ * lives in `@xynolog/sdk`. The shared transport contract
  * (`ITransport`, `IContentTransport`, `BRIDGED_CHANNELS`,
- * `ConnectionState`, response types) lives in `@xynoplex/core`.
+ * `ConnectionState`, response types) lives in `@xynolog/core`.
  *
- * Most consumers do not import from this package directly — `@xynoplex/sdk`
+ * Most consumers do not import from this package directly — `@xynolog/sdk`
  * re-exports the HTTP adapters so a typical app does:
  *
  * ```ts
- * import { XynoplexClient, HttpTransport, HttpContentTransport } from '@xynoplex/sdk';
+ * import { XynologClient, HttpTransport, HttpContentTransport } from '@xynolog/sdk';
  * ```
  *
  * Direct imports are appropriate when constructing the transport stack

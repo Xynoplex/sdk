@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { components } from '@xynoplex/core';
+import type { components } from '@xynolog/core';
 import type { AnnotatorKey } from '../lib/annotation-registry';
 import { ItemFoundLog } from './ItemFoundLog';
 
@@ -185,14 +185,14 @@ export function DelegateProgress({
   // exists.
 
   return (
-    <div className="xynoplex-delegate-progress" data-type={dataType} data-ended={ended}>
+    <div className="xynolog-delegate-progress" data-type={dataType} data-ended={ended}>
       {params && params.length > 0 && (
-        <div className="xynoplex-delegate-progress__params" data-testid="xynoplex-delegate-params">
+        <div className="xynolog-delegate-progress__params" data-testid="xynolog-delegate-params">
           {/* No block heading, but every parameter keeps its label: a bare
               "5" for Density says nothing. */}
           {params.map((param, idx) => (
-            <span key={idx} className="xynoplex-delegate-progress__param">
-              <span className="xynoplex-delegate-progress__param-label">
+            <span key={idx} className="xynolog-delegate-progress__param">
+              <span className="xynolog-delegate-progress__param-label">
                 {tr.paramLabel(param.label)}:
               </span>{' '}
               <span>{param.value}</span>
@@ -206,11 +206,11 @@ export function DelegateProgress({
         <ItemFoundLog entries={progress.completedItems} formatFound={tr.found} />
       )}
 
-      <div className="xynoplex-delegate-progress__status">
-        <span className="xynoplex-delegate-progress__icon" aria-hidden="true">
+      <div className="xynolog-delegate-progress__status">
+        <span className="xynolog-delegate-progress__icon" aria-hidden="true">
           {ended === 'cancelled' ? '⏹️' : ended ? '✅' : '✨'}
         </span>
-        <span data-testid="xynoplex-delegate-status">
+        <span data-testid="xynolog-delegate-status">
           {ended === 'cancelled'
             ? tr.cancelled
             : ended && endedMessage
@@ -222,14 +222,14 @@ export function DelegateProgress({
       {/* The honest denominator. Present only when the count-verifier
           priced one — both counts from the wire, zero manufactured. */}
       {tr.tally && progress.entitiesFound !== undefined && progress.entitiesExpected !== undefined && (
-        <div className="xynoplex-delegate-progress__tally" data-testid="xynoplex-delegate-tally">
+        <div className="xynolog-delegate-progress__tally" data-testid="xynolog-delegate-tally">
           {tr.tally(progress.entitiesFound, progress.entitiesExpected)}
         </div>
       )}
 
       {/* Stage above, subject beneath. */}
       {current && (
-        <div className="xynoplex-delegate-progress__subject" data-testid="xynoplex-delegate-subject">
+        <div className="xynolog-delegate-progress__subject" data-testid="xynolog-delegate-subject">
           {tr.subject(current, done, total)}
         </div>
       )}
@@ -239,8 +239,8 @@ export function DelegateProgress({
         <button
           type="button"
           onClick={outcome.onOpen}
-          className="xynoplex-delegate-progress__outcome"
-          data-testid="xynoplex-delegate-outcome"
+          className="xynolog-delegate-progress__outcome"
+          data-testid="xynolog-delegate-outcome"
         >
           {outcome.label}
         </button>
@@ -249,9 +249,9 @@ export function DelegateProgress({
       {/* A completed run is 100% done by definition — the last payload's
           number is a mid-run fact and must not survive the ending. A cancelled
           run stopped where its last report says. */}
-      <div className="xynoplex-progress-bar" data-testid="xynoplex-delegate-bar">
+      <div className="xynolog-progress-bar" data-testid="xynolog-delegate-bar">
         <div
-          className="xynoplex-progress-bar__fill"
+          className="xynolog-progress-bar__fill"
           data-type={dataType}
           style={{ width: `${ended === 'completed' ? 100 : progress.percentage}%` }}
         />
@@ -262,8 +262,8 @@ export function DelegateProgress({
         <button
           onClick={ended ? onDismiss : cancel}
           disabled={pressed}
-          className="xynoplex-delegate-progress__control"
-          data-testid="xynoplex-delegate-control"
+          className="xynolog-delegate-progress__control"
+          data-testid="xynolog-delegate-control"
           title={ended ? tr.close : pressed ? tr.cancelling : tr.cancel}
           aria-label={ended ? tr.close : pressed ? tr.cancelling : tr.cancel}
           type="button"

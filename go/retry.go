@@ -1,4 +1,4 @@
-package xynoplex
+package xynolog
 
 // Trying again: which failures are worth another attempt, and how long to keep
 // at it.

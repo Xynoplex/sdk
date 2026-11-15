@@ -1,24 +1,24 @@
 //! The bus typed by channel: what the typed methods put on the wire and read
 //! off it, and the shapes the annotation model's types decode.
 
-use xynoplex::bus::{Bus, StreamError};
-use xynoplex::channels::{
-    BRIDGED_CHANNELS, BeckonFocus, BrowseEntityTypesRequested, BrowseEntityTypesResult, Channel,
-    JobCreate, MarkAdded, MarkArchived, MarkEntityTagAdded, MarkEntityTagRemoved, Recorded,
-    Request, YieldCreate,
-};
-use xynoplex::errors::{XynoplexError, TransportErrorCode};
-use xynoplex::testing::as_id;
-use xynoplex::testing::{FaultAction, FaultyTransport};
-use xynoplex::transport::{Envelope, Frame, FrameRefusal, FrameRefusalReason, Transport};
-use xynoplex::types::{
-    Annotation, AnnotationBodies, AnnotationTargetValue, BeckonFocusEvent,
-    BrowseEntityTypesRequest, GetAnnotationsResponse, ResourceId,
-};
 use serde_json::{Map, Value, json};
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::time::Instant;
+use xynolog::bus::{Bus, StreamError};
+use xynolog::channels::{
+    BRIDGED_CHANNELS, BeckonFocus, BrowseEntityTypesRequested, BrowseEntityTypesResult, Channel,
+    JobCreate, MarkAdded, MarkArchived, MarkEntityTagAdded, MarkEntityTagRemoved, Recorded,
+    Request, YieldCreate,
+};
+use xynolog::errors::{TransportErrorCode, XynologError};
+use xynolog::testing::as_id;
+use xynolog::testing::{FaultAction, FaultyTransport};
+use xynolog::transport::{Envelope, Frame, FrameRefusal, FrameRefusalReason, Transport};
+use xynolog::types::{
+    Annotation, AnnotationBodies, AnnotationTargetValue, BeckonFocusEvent,
+    BrowseEntityTypesRequest, GetAnnotationsResponse, ResourceId,
+};
 
 fn object(value: Value) -> Map<String, Value> {
     value.as_object().cloned().expect("an object")
@@ -179,7 +179,7 @@ async fn a_request_whose_reply_is_refused_fails_at_once_saying_so() {
         "at once, not at its timeout"
     );
     match error {
-        XynoplexError::Transport(error) => assert_eq!(
+        XynologError::Transport(error) => assert_eq!(
             (error.code, error.message.as_str()),
             (
                 TransportErrorCode::Error,
@@ -213,7 +213,7 @@ async fn a_typed_request_resolves_with_its_results_payload() {
         .request::<BrowseEntityTypesRequested>(&BrowseEntityTypesRequest {}, Duration::from_secs(5))
         .await
         .expect_err("it does not decode");
-    assert!(matches!(error, XynoplexError::Transport(_)), "{error:?}");
+    assert!(matches!(error, XynologError::Transport(_)), "{error:?}");
 }
 
 fn annotation(body: Value, target: Value) -> Value {

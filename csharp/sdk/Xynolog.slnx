@@ -1,0 +1,8 @@
+<Solution>
+  <Project Path="analyzers/Xynolog.Analyzers/Xynolog.Analyzers.csproj" />
+  <Project Path="src/Xynolog/Xynolog.csproj" />
+  <Project Path="tests/Xynolog.Tests/Xynolog.Tests.csproj" />
+  <Project Path="tools/RefusalRunner/RefusalRunner.csproj" />
+  <Project Path="generators/Xynolog.Generator/Xynolog.Generator.csproj" />
+  <Project Path="conformance/WireDriver/WireDriver.csproj" />
+</Solution>

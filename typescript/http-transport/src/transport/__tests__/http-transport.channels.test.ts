@@ -8,7 +8,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { BRIDGED_CHANNELS, baseUrl } from '@xynoplex/core';
+import { BRIDGED_CHANNELS, baseUrl } from '@xynolog/core';
 import { HttpTransport } from '../http-transport';
 
 const BASE = baseUrl('http://localhost:4000');

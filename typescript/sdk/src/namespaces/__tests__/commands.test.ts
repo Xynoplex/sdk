@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { resourceContextFor, annotationContextFor } from '../../__tests__/fixtures/gathered-context';
 import { mockResource } from '../../__tests__/fixtures/resource';
-import { BUS_REQUEST_TIMEOUT_MS, EventBus, FrameRefusal, JOB_SILENCE_MS, JOB_STATUS_POLL_MS, resourceId, annotationId, jobId, userId } from '@xynoplex/core';
+import { BUS_REQUEST_TIMEOUT_MS, EventBus, FrameRefusal, JOB_SILENCE_MS, JOB_STATUS_POLL_MS, resourceId, annotationId, jobId, userId } from '@xynolog/core';
 import { MarkNamespace } from '../mark';
 import { BindNamespace } from '../bind';
 import { GatherNamespace } from '../gather';
@@ -10,7 +10,7 @@ import { YieldNamespace } from '../yield';
 import { JobNamespace } from '../job';
 import { JobFailedError } from '../job-status-poll';
 import type { JobEvent, UploadProgress } from '../../awaitable';
-import type { EventMap, IGatewayOperations, ITransport, IContentTransport, GatheredContext } from '@xynoplex/core';
+import type { EventMap, IGatewayOperations, ITransport, IContentTransport, GatheredContext } from '@xynolog/core';
 import { inMemoryTransport, gatewayOperationSpies } from '../../__tests__/helpers/in-memory-transport';
 
 const RID = resourceId('res-1');
@@ -581,7 +581,7 @@ describe('MarkNamespace', () => {
     await vi.advanceTimersByTimeAsync(100);
     await vi.advanceTimersByTimeAsync(16_000);
 
-    // A refused ask is a XynoplexError: the job is still followed, and asked about again.
+    // A refused ask is a XynologError: the job is still followed, and asked about again.
     expect(mock.emitSpy.mock.calls.filter(([channel]) => channel === 'job:status-requested')).toHaveLength(2);
     expect(ended).toBe(false);
     bus.destroy();
@@ -611,7 +611,7 @@ describe('MarkNamespace', () => {
     vi.useRealTimers();
   });
 
-  it('delegate() ends with what a status ask failed with when that is no XynoplexError', async () => {
+  it('delegate() ends with what a status ask failed with when that is no XynologError', async () => {
     vi.useFakeTimers();
     const bus = new EventBus();
     const broken = new TypeError('the transport broke');
@@ -1179,7 +1179,7 @@ describe('YieldNamespace', () => {
 //                flag set by cleanup()
 //
 // Without the guards, a rejection that arrived after consumer disposal
-// (e.g. `xynoplex.dispose()` completing the actor's `events$` Subject
+// (e.g. `xynolog.dispose()` completing the actor's `events$` Subject
 // while a fire-and-forget bus call is still pending) lands as an
 // uncaught exception via RxJS's host-error machinery. With the guards,
 // the rejection is silently dropped — the consumer is gone and there's

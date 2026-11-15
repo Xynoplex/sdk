@@ -8,9 +8,9 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { capabilitiesOf, AUTHORABLE_MEDIA_TYPES, MEDIA_TYPES, mediaTypeForExtension, isSupportedMediaType, LOCALES, folderOf, proposeStoragePath, getStorageUri } from '@xynoplex/core';
-import type { SupportedMediaType } from '@xynoplex/core';
-import type { UploadProgress } from '@xynoplex/sdk';
+import { capabilitiesOf, AUTHORABLE_MEDIA_TYPES, MEDIA_TYPES, mediaTypeForExtension, isSupportedMediaType, LOCALES, folderOf, proposeStoragePath, getStorageUri } from '@xynolog/core';
+import type { SupportedMediaType } from '@xynolog/core';
+import type { UploadProgress } from '@xynolog/sdk';
 import { type CloneData } from '../state/compose-page-state-unit';
 import { COMMON_PANELS, type ToolbarPanelType } from '../../../state/shell-state-unit';
 import { type ToolbarPanelsProps, type ToolbarProps } from '../../../components/Toolbar';
@@ -313,29 +313,29 @@ export function ResourceComposePage({
   const isClone = mode === 'clone';
 
   return (
-    <div className={`xynoplex-page${activePanel && COMMON_PANELS.includes(activePanel) ? ' xynoplex-page--panel-open' : ''}`}>
+    <div className={`xynolog-page${activePanel && COMMON_PANELS.includes(activePanel) ? ' xynolog-page--panel-open' : ''}`}>
       {/* Main Content Area */}
-      <div className="xynoplex-page__content xynoplex-page__compose">
+      <div className="xynolog-page__content xynolog-page__compose">
         {/* Page Title */}
-        <div className="xynoplex-page__header">
-          <h1 className="xynoplex-page__title">
+        <div className="xynolog-page__header">
+          <h1 className="xynolog-page__title">
             {isClone ? t.titleEditClone : t.title}
           </h1>
           {isClone && (
-            <p className="xynoplex-page__subtitle">
+            <p className="xynolog-page__subtitle">
               {t.subtitleClone}
             </p>
           )}
         </div>
 
         {/* Create Form */}
-        <div className="xynoplex-form">
-        <form onSubmit={handleSaveResource} className="xynoplex-form__fields xynoplex-compose-grid">
+        <div className="xynolog-form">
+        <form onSubmit={handleSaveResource} className="xynolog-form__fields xynolog-compose-grid">
           {/* Left column: metadata */}
-          <div className="xynoplex-compose-grid__meta">
+          <div className="xynolog-compose-grid__meta">
           {/* Name */}
-          <div className="xynoplex-form__field">
-            <label htmlFor="docName" className="xynoplex-form__label">
+          <div className="xynolog-form__field">
+            <label htmlFor="docName" className="xynolog-form__label">
               {t.resourceName}
             </label>
             <input
@@ -344,23 +344,23 @@ export function ResourceComposePage({
               value={newResourceName}
               onChange={(e) => setNewResourceName(e.target.value)}
               placeholder={t.resourceNamePlaceholder}
-              className="xynoplex-input"
+              className="xynolog-input"
               required
               disabled={isCreating}
             />
           </div>
 
           {/* Storage URI */}
-          <div className="xynoplex-form__field">
+          <div className="xynolog-form__field">
             {onChooseStorageDirectory
-              ? <div className="xynoplex-form__label">Location in Knowledge Base</div>
-              : <label htmlFor="storagePath" className="xynoplex-form__label">Save location</label>}
+              ? <div className="xynolog-form__label">Location in Knowledge Base</div>
+              : <label htmlFor="storagePath" className="xynolog-form__label">Save location</label>}
             {onChooseStorageDirectory ? (
-              <div className="xynoplex-form__location-picker">
+              <div className="xynolog-form__location-picker">
                 <code id="storagePath" title={effectivePath}>file://{effectivePath}</code>
                 <button
                   type="button"
-                  className="xynoplex-form__location-button"
+                  className="xynolog-form__location-button"
                   onClick={() => void chooseStorageDirectory()}
                   disabled={isCreating || choosingStorageDirectory}
                 >
@@ -368,8 +368,8 @@ export function ResourceComposePage({
                 </button>
               </div>
             ) : (
-              <div className="xynoplex-input-addon">
-                <span className="xynoplex-input-addon__prefix">file://</span>
+              <div className="xynolog-input-addon">
+                <span className="xynolog-input-addon__prefix">file://</span>
                 <input
                   id="storagePath"
                   type="text"
@@ -377,27 +377,27 @@ export function ResourceComposePage({
                   onChange={(e) => setStoragePath(e.target.value)}
                   placeholder="docs/my-resource.md"
                   required
-                  className="xynoplex-input xynoplex-input--addon"
+                  className="xynolog-input xynolog-input--addon"
                   disabled={isCreating}
                 />
               </div>
             )}
             {onChooseStorageDirectory && (
-              <p className="xynoplex-form__location-hint">
+              <p className="xynolog-form__location-hint">
                 {t.locationHint ?? 'The resource name determines the filename. Choose a folder within this Knowledge Base.'}
               </p>
             )}
-            {storageLocationError && <p className="xynoplex-form__location-error" role="alert">{storageLocationError}</p>}
+            {storageLocationError && <p className="xynolog-form__location-error" role="alert">{storageLocationError}</p>}
           </div>
 
           {/* Entity Types Selection */}
           {(
-            <div className="xynoplex-form__field xynoplex-form__entity-types">
-              <div className="xynoplex-form__label">
+            <div className="xynolog-form__field xynolog-form__entity-types">
+              <div className="xynolog-form__label">
                 {t.entityTypes}
               </div>
               <div
-                className="xynoplex-form__entity-type-buttons"
+                className="xynolog-form__entity-type-buttons"
                 role="group"
                 aria-describedby="entity-types-description"
               >
@@ -414,7 +414,7 @@ export function ResourceComposePage({
                             : [...prev, type]
                         );
                       }}
-                      className="xynoplex-form__entity-type-button"
+                      className="xynolog-form__entity-type-button"
                       data-selected={isSelected}
                       disabled={isCreating}
                       aria-pressed={isSelected}
@@ -438,8 +438,8 @@ export function ResourceComposePage({
           )}
 
           {/* Language Selector */}
-          <div className="xynoplex-form__field">
-            <label htmlFor="language-select" className="xynoplex-form__label">
+          <div className="xynolog-form__field">
+            <label htmlFor="language-select" className="xynolog-form__label">
               {t.language}
             </label>
             <select
@@ -447,7 +447,7 @@ export function ResourceComposePage({
               value={selectedLanguage}
               onChange={(e) => setSelectedLanguage(e.target.value)}
               disabled={isCreating}
-              className="xynoplex-select"
+              className="xynolog-select"
             >
               {LOCALES.map((lang) => (
                 <option key={lang.code} value={lang.code}>
@@ -457,30 +457,30 @@ export function ResourceComposePage({
             </select>
           </div>
 
-          </div>{/* end xynoplex-compose-grid__meta */}
+          </div>{/* end xynolog-compose-grid__meta */}
 
           {/* Right column: content */}
-          <div className="xynoplex-compose-grid__content">
+          <div className="xynolog-compose-grid__content">
 
           {/* Content Source Toggle - only show for new resources */}
           {!isClone && (
-            <div className="xynoplex-form__field">
-              <label className="xynoplex-form__label">
+            <div className="xynolog-form__field">
+              <label className="xynolog-form__label">
                 {t.contentSource}
               </label>
-              <div className="xynoplex-form__content-source-toggle">
+              <div className="xynolog-form__content-source-toggle">
                 <button
                   type="button"
                   onClick={() => setInputMethod('upload')}
                   disabled={isCreating}
-                  className="xynoplex-form__content-source-button"
+                  className="xynolog-form__content-source-button"
                   data-active={inputMethod === 'upload'}
                 >
-                  <div className="xynoplex-form__content-source-icon-wrapper">
-                    <span className="xynoplex-form__content-source-icon">📎</span>
-                    <span className="xynoplex-form__content-source-label">{t.uploadFile}</span>
+                  <div className="xynolog-form__content-source-icon-wrapper">
+                    <span className="xynolog-form__content-source-icon">📎</span>
+                    <span className="xynolog-form__content-source-label">{t.uploadFile}</span>
                   </div>
-                  <div className="xynoplex-form__content-source-description">
+                  <div className="xynolog-form__content-source-description">
                     {t.uploadFileDescription}
                   </div>
                 </button>
@@ -489,14 +489,14 @@ export function ResourceComposePage({
                   type="button"
                   onClick={() => setInputMethod('write')}
                   disabled={isCreating}
-                  className="xynoplex-form__content-source-button"
+                  className="xynolog-form__content-source-button"
                   data-active={inputMethod === 'write'}
                 >
-                  <div className="xynoplex-form__content-source-icon-wrapper">
-                    <span className="xynoplex-form__content-source-icon">✍️</span>
-                    <span className="xynoplex-form__content-source-label">{t.writeContent}</span>
+                  <div className="xynolog-form__content-source-icon-wrapper">
+                    <span className="xynolog-form__content-source-icon">✍️</span>
+                    <span className="xynolog-form__content-source-label">{t.writeContent}</span>
                   </div>
-                  <div className="xynoplex-form__content-source-description">
+                  <div className="xynolog-form__content-source-description">
                     {t.writeContentDescription}
                   </div>
                 </button>
@@ -506,11 +506,11 @@ export function ResourceComposePage({
 
           {/* Upload File Section */}
           {!isClone && inputMethod === 'upload' && (
-            <div className="xynoplex-form__upload-section">
+            <div className="xynolog-form__upload-section">
               <div>
-                <div className="xynoplex-form__upload-container">
+                <div className="xynolog-form__upload-container">
                   <label
-                    className="xynoplex-form__upload-dropzone"
+                    className="xynolog-form__upload-dropzone"
                     data-drag-over={isDragOver ? 'true' : 'false'}
                     onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
                     onDragLeave={() => setIsDragOver(false)}
@@ -521,18 +521,18 @@ export function ResourceComposePage({
                       if (file && !isCreating) applyUploadedFile(file);
                     }}
                   >
-                    <div className="xynoplex-form__upload-area">
+                    <div className="xynolog-form__upload-area">
                       <input
                         type="file"
                         accept={UPLOAD_ACCEPT}
                         onChange={handleFileUpload}
-                        className="xynoplex-form__upload-input"
+                        className="xynolog-form__upload-input"
                         disabled={isCreating}
                       />
-                      <p className="xynoplex-form__upload-text">
+                      <p className="xynolog-form__upload-text">
                         {uploadedFile ? uploadedFile.name : t.dropFileOrClick}
                       </p>
-                      <p className="xynoplex-form__upload-hint">
+                      <p className="xynolog-form__upload-hint">
                         {t.supportedFormats}
                       </p>
                     </div>
@@ -545,7 +545,7 @@ export function ResourceComposePage({
                         setFilePreviewUrl(null);
                         setFileMimeType('text/markdown');
                       }}
-                      className="xynoplex-button xynoplex-button--danger xynoplex-button--small"
+                      className="xynolog-button xynolog-button--danger xynolog-button--small"
                       disabled={isCreating}
                     >
                       Clear
@@ -556,24 +556,24 @@ export function ResourceComposePage({
 
               {/* Media Type Display - Auto-detected */}
               {uploadedFile && (
-                <div className="xynoplex-form__media-type">
-                  <span className="xynoplex-form__media-type-label">{t.mediaType}:</span>
-                  <code className="xynoplex-form__media-type-value">
+                <div className="xynolog-form__media-type">
+                  <span className="xynolog-form__media-type-label">{t.mediaType}:</span>
+                  <code className="xynolog-form__media-type-value">
                     {fileMimeType}
                   </code>
-                  <span className="xynoplex-form__media-type-lock" title={t.autoDetected}>🔒</span>
+                  <span className="xynolog-form__media-type-lock" title={t.autoDetected}>🔒</span>
                 </div>
               )}
 
               {/* Image Preview */}
               {uploadedFile && filePreviewUrl && capabilitiesOf(fileMimeType)?.render === 'image' && (
-                <div className="xynoplex-form__image-preview">
-                  <p className="xynoplex-form__image-preview-label">Preview:</p>
-                  <div className="xynoplex-form__image-preview-container">
+                <div className="xynolog-form__image-preview">
+                  <p className="xynolog-form__image-preview-label">Preview:</p>
+                  <div className="xynolog-form__image-preview-container">
                     <img
                       src={filePreviewUrl}
                       alt="Upload preview"
-                      className="xynoplex-form__image-preview-img"
+                      className="xynolog-form__image-preview-img"
                     />
                   </div>
                 </div>
@@ -583,11 +583,11 @@ export function ResourceComposePage({
 
           {/* Write Content Section */}
           {(isClone || inputMethod === 'write') && (
-            <div className="xynoplex-form__write-section">
+            <div className="xynolog-form__write-section">
               {/* Format Selector - only for manual entry, not clones */}
               {!isClone && (
-                <div className="xynoplex-form__field">
-                  <label htmlFor="format-select" className="xynoplex-form__label">
+                <div className="xynolog-form__field">
+                  <label htmlFor="format-select" className="xynolog-form__label">
                     {t.format}
                   </label>
                   <select
@@ -595,7 +595,7 @@ export function ResourceComposePage({
                     value={selectedFormat}
                     onChange={(e) => setSelectedFormat(e.target.value)}
                     disabled={isCreating}
-                    className="xynoplex-select"
+                    className="xynolog-select"
                   >
                     {AUTHORABLE_MEDIA_TYPES.map((mt) => (
                       <option key={mt} value={mt}>
@@ -607,11 +607,11 @@ export function ResourceComposePage({
               )}
 
               {/* Content Editor */}
-              <div className="xynoplex-form__field xynoplex-form__editor">
-                <label className="xynoplex-form__label">
+              <div className="xynolog-form__field xynolog-form__editor">
+                <label className="xynolog-form__label">
                   {isClone ? t.resourceContent : t.content}
                 </label>
-                <div className="xynoplex-form__editor-wrapper" lang={selectedLanguage}>
+                <div className="xynolog-form__editor-wrapper" lang={selectedLanguage}>
                   <CodeMirrorRenderer
                     content={newResourceContent}
                     editable={!isCreating}
@@ -625,8 +625,8 @@ export function ResourceComposePage({
 
               {/* Encoding Selector - only for manual text entry */}
               {!isClone && (
-                <div className="xynoplex-form__field">
-                  <label htmlFor="charset-select" className="xynoplex-form__label">
+                <div className="xynolog-form__field">
+                  <label htmlFor="charset-select" className="xynolog-form__label">
                     {t.encoding}
                   </label>
                   <select
@@ -634,7 +634,7 @@ export function ResourceComposePage({
                     value={selectedCharset}
                     onChange={(e) => setSelectedCharset(e.target.value)}
                     disabled={isCreating}
-                    className="xynoplex-select"
+                    className="xynolog-select"
                   >
                     <option value="">UTF-8 (default)</option>
                     <option value="iso-8859-1">ISO-8859-1 (Latin-1)</option>
@@ -649,25 +649,25 @@ export function ResourceComposePage({
 
           {/* Archive Original Checkbox (for clones only) */}
           {isClone && (
-            <div className="xynoplex-form__checkbox-field">
+            <div className="xynolog-form__checkbox-field">
               <input
                 id="archiveOriginal"
                 type="checkbox"
                 checked={archiveOriginal}
                 onChange={(e) => setArchiveOriginal(e.target.checked)}
-                className="xynoplex-checkbox"
+                className="xynolog-checkbox"
                 disabled={isCreating}
               />
-              <label htmlFor="archiveOriginal" className="xynoplex-form__checkbox-label">
+              <label htmlFor="archiveOriginal" className="xynolog-form__checkbox-label">
                 {t.archiveOriginal}
               </label>
             </div>
           )}
 
-          </div>{/* end xynoplex-compose-grid__content */}
+          </div>{/* end xynolog-compose-grid__content */}
 
           {/* Action Buttons */}
-          <div className="xynoplex-form__actions">
+          <div className="xynolog-form__actions">
             <button
               type="button"
               onClick={onCancel}
@@ -695,7 +695,7 @@ export function ResourceComposePage({
       </div>
 
       {/* Right Sidebar - Panels and Toolbar */}
-      <div className="xynoplex-page__sidebar">
+      <div className="xynolog-page__sidebar">
         {/* Panels Container */}
         <ToolbarPanels
           activePanel={activePanel}

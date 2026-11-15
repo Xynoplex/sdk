@@ -1,5 +1,5 @@
-import { isObject, isString } from '@xynoplex/core';
-import type { components } from '@xynoplex/core';
+import { isObject, isString } from '@xynolog/core';
+import type { components } from '@xynolog/core';
 
 type DeclineReason = components['schemas']['JobDeclined']['reason'];
 

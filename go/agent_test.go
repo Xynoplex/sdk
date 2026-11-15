@@ -1,4 +1,4 @@
-package xynoplex
+package xynolog
 
 // An agent's token: its account's token from its issuer, its bearer at the
 // gateway, which names it; kept until it is due and renewed when refused.
@@ -28,21 +28,21 @@ type agentWorld struct {
 }
 
 // agentDID is the DID the gateway names the worker's account by.
-const agentDID = "did:web:kb.example:agents:service-account-xynoplex-worker"
+const agentDID = "did:web:kb.example:agents:service-account-xynolog-worker"
 
 func newAgentWorld(t *testing.T) *agentWorld {
 	t.Helper()
 	w := &agentWorld{}
 	w.issuer = httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
-		case "/realms/xynoplex/.well-known/openid-configuration":
-			writeJSON(rw, http.StatusOK, map[string]any{"token_endpoint": w.issuer.URL + "/realms/xynoplex/token"})
-		case "/realms/xynoplex/token":
+		case "/realms/xynolog/.well-known/openid-configuration":
+			writeJSON(rw, http.StatusOK, map[string]any{"token_endpoint": w.issuer.URL + "/realms/xynolog/token"})
+		case "/realms/xynolog/token":
 			w.mu.Lock()
 			refuse, takes := w.refuse, w.takes
 			w.mu.Unlock()
 			time.Sleep(takes)
-			if refuse || r.FormValue("grant_type") != "client_credentials" || r.FormValue("client_id") != "xynoplex-worker" || r.FormValue("client_secret") != "s3cret" {
+			if refuse || r.FormValue("grant_type") != "client_credentials" || r.FormValue("client_id") != "xynolog-worker" || r.FormValue("client_secret") != "s3cret" {
 				writeJSON(rw, http.StatusUnauthorized, map[string]any{"error": "invalid_client", "error_description": "s3cret is wrong"})
 				return
 			}
@@ -73,7 +73,7 @@ func newAgentWorld(t *testing.T) *agentWorld {
 func (w *agentWorld) signIn(t *testing.T, secret string) (*AgentToken, error) {
 	t.Helper()
 	issuer := Issuer{HTTP: &http.Client{}, Timing: quickTiming()}
-	service := NewServiceToken(SecretCredential{Issuer: w.issuer.URL + "/realms/xynoplex", ClientID: "xynoplex-worker", ClientSecret: secret}, issuer)
+	service := NewServiceToken(SecretCredential{Issuer: w.issuer.URL + "/realms/xynolog", ClientID: "xynolog-worker", ClientSecret: secret}, issuer)
 	return SignInAgent(context.Background(), AgentConfig{Gateway: w.gateway.URL, Service: service, HTTP: &http.Client{}, Timing: quickTiming()})
 }
 
@@ -191,9 +191,9 @@ func TestADueRenewalTriedAgainRenewsNothingOnceTheAgentsTokenIsRenewedSomeOtherW
 		// grants every ask after that.
 		client := httptest.NewTestServer(t, http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 			switch r.URL.Path {
-			case "/realms/xynoplex/.well-known/openid-configuration":
-				writeJSON(rw, http.StatusOK, map[string]any{"token_endpoint": "http://issuer.test/realms/xynoplex/token"})
-			case "/realms/xynoplex/token":
+			case "/realms/xynolog/.well-known/openid-configuration":
+				writeJSON(rw, http.StatusOK, map[string]any{"token_endpoint": "http://issuer.test/realms/xynolog/token"})
+			case "/realms/xynolog/token":
 				mu.Lock()
 				asks++
 				n := asks
@@ -214,7 +214,7 @@ func TestADueRenewalTriedAgainRenewsNothingOnceTheAgentsTokenIsRenewedSomeOtherW
 		// The renewal waits a minute or more to try again: the refusal is
 		// answered before it does.
 		timing.RefreshRetry = RetryPolicy{Attempts: 3, InitialDelay: time.Minute, MaxDelay: time.Minute}
-		service := NewServiceToken(SecretCredential{Issuer: "http://issuer.test/realms/xynoplex", ClientID: "xynoplex-worker", ClientSecret: "s3cret"}, Issuer{HTTP: client, Timing: timing})
+		service := NewServiceToken(SecretCredential{Issuer: "http://issuer.test/realms/xynolog", ClientID: "xynolog-worker", ClientSecret: "s3cret"}, Issuer{HTTP: client, Timing: timing})
 		agent, err := SignInAgent(context.Background(), AgentConfig{Gateway: "http://gateway.test", Service: service, HTTP: client, Timing: timing})
 		if err != nil {
 			t.Fatal(err)
@@ -254,8 +254,8 @@ type grantHeld struct {
 }
 
 func (g *grantHeld) RoundTrip(request *http.Request) (*http.Response, error) {
-	answer := `{"token_endpoint":"http://issuer.test/realms/xynoplex/token"}`
-	if request.URL.Path == "/realms/xynoplex/token" {
+	answer := `{"token_endpoint":"http://issuer.test/realms/xynolog/token"}`
+	if request.URL.Path == "/realms/xynolog/token" {
 		g.mu.Lock()
 		g.grants++
 		n := g.grants
@@ -276,7 +276,7 @@ func (g *grantHeld) RoundTrip(request *http.Request) (*http.Response, error) {
 func TestAnAgentThatClosesWhileItsTokenIsRenewedGivesTheRefusalNoTokenAndRenewsNothingAfter(t *testing.T) {
 	w := newAgentWorld(t)
 	issuer := &grantHeld{arrived: make(chan struct{}), release: make(chan struct{})}
-	service := NewServiceToken(SecretCredential{Issuer: "http://issuer.test/realms/xynoplex", ClientID: "xynoplex-worker", ClientSecret: "s3cret"}, Issuer{HTTP: &http.Client{Transport: issuer}, Timing: quickTiming()})
+	service := NewServiceToken(SecretCredential{Issuer: "http://issuer.test/realms/xynolog", ClientID: "xynolog-worker", ClientSecret: "s3cret"}, Issuer{HTTP: &http.Client{Transport: issuer}, Timing: quickTiming()})
 	agent, err := SignInAgent(context.Background(), AgentConfig{Gateway: w.gateway.URL, Service: service, HTTP: &http.Client{}, Timing: quickTiming()})
 	if err != nil {
 		t.Fatal(err)
@@ -340,7 +340,7 @@ func TestARefusedServiceAccountNamesNoSecret(t *testing.T) {
 	if strings.Contains(err.Error(), "s3cret") || strings.Contains(err.Error(), "wrong") {
 		t.Errorf("the failure says the secret: %v", err)
 	}
-	credential := SecretCredential{Issuer: "https://issuer.example", ClientID: "xynoplex-worker", ClientSecret: "s3cret"}
+	credential := SecretCredential{Issuer: "https://issuer.example", ClientID: "xynolog-worker", ClientSecret: "s3cret"}
 	for _, shown := range []string{fmt.Sprint(credential), fmt.Sprintf("%+v", credential), fmt.Sprintf("%#v", credential)} {
 		if strings.Contains(shown, "s3cret") {
 			t.Errorf("a credential printed its secret: %s", shown)

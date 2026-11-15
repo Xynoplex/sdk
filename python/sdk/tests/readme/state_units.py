@@ -1,4 +1,4 @@
-from xynoplex.state import BeckonStateUnit
+from xynolog.state import BeckonStateUnit
 
 
 async def show_hover(beckon: BeckonStateUnit) -> None:

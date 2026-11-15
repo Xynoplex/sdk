@@ -1,21 +1,21 @@
 using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Xynoplex;
-using Xynoplex.Errors;
-using Xynoplex.Http;
-using Xynoplex.Identifiers;
-using Xynoplex.Jobs;
-using Xynoplex.Types;
+using Xynolog;
+using Xynolog.Errors;
+using Xynolog.Http;
+using Xynolog.Identifiers;
+using Xynolog.Jobs;
+using Xynolog.Types;
 
 internal sealed class WorkerDriver : IDisposable
 {
-    private static readonly ActivitySource Activities = new("xynoplex");
+    private static readonly ActivitySource Activities = new("xynolog");
     private static readonly JsonSerializerOptions TimingJson = new() { PropertyNameCaseInsensitive = true };
     private static readonly JsonSerializerOptions CamelJson = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
     private readonly object gate = new();
     private readonly List<IDisposable> scopes = [];
-    private XynoplexClient? client;
+    private XynologClient? client;
     private Claims? claims;
     private Held? held;
 
@@ -33,7 +33,7 @@ internal sealed class WorkerDriver : IDisposable
                     var commits = args.TryGetProperty("commits", out var enabled) && enabled.GetBoolean();
                     var channels = commits ? WorkerRules.JobClaimChannels.Concat(WorkerRules.JobCommitChannels) : WorkerRules.JobClaimChannels;
                     var transport = new HttpTransport(Text(args, "baseUrl"), Text(args, "token"), channels, timing);
-                    client = new XynoplexClient(transport);
+                    client = new XynologClient(transport);
                     _ = ReportStatesAsync(transport);
                     _ = ReportErrorsAsync(transport);
                     break;
@@ -60,7 +60,7 @@ internal sealed class WorkerDriver : IDisposable
             }
             WireDriver.Say(new JsonObject { ["id"] = id, ["ok"] = JsonSerializer.SerializeToNode(answer, CamelJson) });
         }
-        catch (XynoplexError error) { WireDriver.Say(new { id, error = new { code = error.Code, status = error.Status, detail = error.Message } }); }
+        catch (XynologError error) { WireDriver.Say(new { id, error = new { code = error.Code, status = error.Status, detail = error.Message } }); }
         catch (Exception error) { WireDriver.Say(new { id, misuse = error.Message }); }
     }
 

@@ -22,12 +22,12 @@ from opentelemetry.sdk.trace.export import SimpleSpanProcessor
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
 from opentelemetry.trace import SpanKind
 
-from xynoplex import telemetry
-from xynoplex.http import HttpTransport
-from xynoplex.identifiers import ResourceId
-from xynoplex.telemetry_table import METRICS, SPANS, SpanKindName, SpanRow
-from xynoplex.transport import Frame, PutBinaryRequest, TraceContext
-from xynoplex.watched import Variable, reached
+from xynolog import telemetry
+from xynolog.http import HttpTransport
+from xynolog.identifiers import ResourceId
+from xynolog.telemetry_table import METRICS, SPANS, SpanKindName, SpanRow
+from xynolog.transport import Frame, PutBinaryRequest, TraceContext
+from xynolog.watched import Variable, reached
 
 KINDS: dict[SpanKindName, SpanKind] = {"client": SpanKind.CLIENT, "consumer": SpanKind.CONSUMER, "producer": SpanKind.PRODUCER}
 RESOURCE = ResourceId("res-1")

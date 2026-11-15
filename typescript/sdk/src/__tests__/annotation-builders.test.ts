@@ -8,7 +8,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
-import * as core from '@xynoplex/core';
+import * as core from '@xynolog/core';
 import { annotationOfResource, annotationOfSpan, reconcile, SpanRefusedError } from '../index';
 
 const table: { builders: string[] } = JSON.parse(

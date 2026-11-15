@@ -1,6 +1,6 @@
 import { BehaviorSubject, type Subscription } from 'rxjs';
-import type { XynoplexClient } from '../../client';
-import { watched, type GenerationJobParams, type JobId, type StateUnit, type Watched, type YieldJobDone, type components } from '@xynoplex/core';
+import type { XynologClient } from '../../client';
+import { watched, type GenerationJobParams, type JobId, type StateUnit, type Watched, type YieldJobDone, type components } from '@xynolog/core';
 import type { DelegationObservable, YieldJobCompletion } from '../../awaitable';
 import { JobCancelledError } from '../../namespaces/job-status-poll';
 
@@ -24,7 +24,7 @@ export interface YieldStateUnit extends StateUnit {
   outcome$: Watched<YieldJobDone | null>;
   /**
    * Why the last run ended without a result: it failed, stalled or was
-   * cancelled. A `XynoplexError`'s `code` says which. Null while a run is
+   * cancelled. A `XynologError`'s `code` says which. Null while a run is
    * under way, after one that completed, and once dismissed. A stall is said
    * nowhere else.
    */
@@ -52,7 +52,7 @@ export interface YieldStateUnit extends StateUnit {
 }
 
 export function createYieldStateUnit(
-  client: XynoplexClient,
+  client: XynologClient,
   locale: string,
 ): YieldStateUnit {
   const subs: Subscription[] = [];

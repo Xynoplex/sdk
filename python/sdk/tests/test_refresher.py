@@ -30,13 +30,13 @@ from kb import (
 )
 from pydantic import JsonValue
 
-from xynoplex.cache import CacheState, Failed, Pending, Ready
-from xynoplex.cached import Cached
-from xynoplex.channels import BRIDGED_CHANNELS, CHANNELS, RESOURCE_SCOPED_CHANNELS
-from xynoplex.client import ClientTiming, XynoplexClient
-from xynoplex.errors import BusRequestError
-from xynoplex.identifiers import AnnotationId
-from xynoplex.refresh import (
+from xynolog.cache import CacheState, Failed, Pending, Ready
+from xynolog.cached import Cached
+from xynolog.channels import BRIDGED_CHANNELS, CHANNELS, RESOURCE_SCOPED_CHANNELS
+from xynolog.client import ClientTiming, XynologClient
+from xynolog.errors import BusRequestError
+from xynolog.identifiers import AnnotationId
+from xynolog.refresh import (
     CACHE_QUERIES,
     CACHE_REFRESH,
     CACHE_REFRESH_CHANNELS,
@@ -46,11 +46,11 @@ from xynoplex.refresh import (
     CacheRefreshTrigger,
     CacheRefreshWhen,
 )
-from xynoplex.testing import ContentCall, FaultyTransport, GetAnnotations, InMemoryContent, StubGateway
-from xynoplex.transport import Frame, FrameRefusal
-from xynoplex.types import Annotation
+from xynolog.testing import ContentCall, FaultyTransport, GetAnnotations, InMemoryContent, StubGateway
+from xynolog.transport import Frame, FrameRefusal
+from xynolog.types import Annotation
 
-type Client = XynoplexClient[FaultyTransport]
+type Client = XynologClient[FaultyTransport]
 
 WINDOW_MS = 1000
 
@@ -60,7 +60,7 @@ def world(window_ms: int = WINDOW_MS, *, answered: bool = True) -> tuple[Client,
     transport = FaultyTransport(channels=BRIDGED_CHANNELS, make_response=knowing) if answered else silent()
     content = knowing_content() if answered else SilentContent()
     timing = ClientTiming(invalidation_window_ms=window_ms)
-    client: Client = XynoplexClient(transport, content, StubGateway(), timing=timing)
+    client: Client = XynologClient(transport, content, StubGateway(), timing=timing)
     return client, transport, content
 
 

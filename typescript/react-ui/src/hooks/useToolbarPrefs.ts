@@ -5,8 +5,8 @@ import type { SelectionMotivation, ClickAction, ShapeType } from '../components/
 import { getSelectedShapeForSelectorType, saveSelectedShapeForSelectorType, type SelectorType } from '../lib/media-shapes';
 
 const MODE_KEY = 'annotateMode';
-const CLICK_KEY = 'xynoplex-toolbar-click';
-const SELECTION_KEY = 'xynoplex-toolbar-selection';
+const CLICK_KEY = 'xynolog-toolbar-click';
+const SELECTION_KEY = 'xynolog-toolbar-selection';
 
 export interface ToolbarPrefs {
   annotateMode: boolean;
@@ -21,7 +21,7 @@ export interface ToolbarPrefs {
 
 /**
  * The POLICY layer for toolbar preferences: one shared, localStorage-persisted
- * prefs state — the Xynoplex Browser's global-toolbar UX, relocated from inside
+ * prefs state — the Xynolog Browser's global-toolbar UX, relocated from inside
  * the components to a visible page-layer hook. Feed the returned values/setters
  * to every viewer you compose (as its controlled props) and they stay in
  * lockstep and survive remounts. The components themselves hold no persistence

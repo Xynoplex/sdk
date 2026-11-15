@@ -19,11 +19,11 @@
  *   whatever a full-map re-save touched last).
  */
 
-import { CACHE_VALUES, MAX_STORED_BYTES_COUNT, faultOf, isAnnotationId, isObject, isResourceId, isString } from '@xynoplex/core';
-import type { AnnotationId, CachePer, CacheValues, PersistedQuery, ResourceId } from '@xynoplex/core';
+import { CACHE_VALUES, MAX_STORED_BYTES_COUNT, faultOf, isAnnotationId, isObject, isResourceId, isString } from '@xynolog/core';
+import type { AnnotationId, CachePer, CacheValues, PersistedQuery, ResourceId } from '@xynolog/core';
 import { warnRefusedSave, type CachePersister } from './cache';
-import type { XynoplexClient } from './client';
-import { XynoplexSessionError } from './session/errors';
+import type { XynologClient } from './client';
+import { XynologSessionError } from './session/errors';
 import type { SessionStorage } from './session/session-storage';
 import type { SignInKept } from './session/sign-in-kept';
 import { cacheKey, lastEventIdKey, personKey, type StoredSession } from './session/storage';
@@ -181,7 +181,7 @@ export interface CoupledPlaces {
    * was fetching and the refresher owed no refetch. Uncoupled, every
    * cache-document write carries the places.
    */
-  coupleTo(client: XynoplexClient): void;
+  coupleTo(client: XynologClient): void;
 }
 
 /**
@@ -189,7 +189,7 @@ export interface CoupledPlaces {
  * `coupleTo`, read by `sealPlaces`. Held here rather than on the client, so
  * that coupling is no part of the client's surface.
  */
-const sealsOf = new WeakMap<XynoplexClient, (atRest: boolean) => void>();
+const sealsOf = new WeakMap<XynologClient, (atRest: boolean) => void>();
 
 /**
  * B17 — `client`'s disposal reads once whether what it keeps is at rest,
@@ -197,7 +197,7 @@ const sealsOf = new WeakMap<XynoplexClient, (atRest: boolean) => void>();
  * with that reading. The places noted then are all that is written after,
  * and none at all unless it was at rest.
  */
-export function sealPlaces(client: XynoplexClient, atRest: boolean): void {
+export function sealPlaces(client: XynologClient, atRest: boolean): void {
   const seal = sealsOf.get(client);
   if (seal !== undefined) seal(atRest);
 }
@@ -320,7 +320,7 @@ export interface PersonKeeping {
   named(
     token: string,
     did: string,
-    client: XynoplexClient,
+    client: XynologClient,
     transport: { restoreLastEventIds(places: ReadonlyMap<ResourceId, string>): void },
   ): void;
 }
@@ -339,10 +339,10 @@ export function personKeeping(
   storage: SessionStorage,
   kbId: string,
   kept: SignInKept,
-  say: (error: XynoplexSessionError) => void,
+  say: (error: XynologSessionError) => void,
 ): PersonKeeping {
   const said = (code: 'session.keep-failed' | 'session.save-refused', what: string, cause: unknown): void => {
-    say(new XynoplexSessionError(code, `${what}: ${cause instanceof Error ? cause.message : String(cause)}`, kbId));
+    say(new XynologSessionError(code, `${what}: ${cause instanceof Error ? cause.message : String(cause)}`, kbId));
   };
   /** Whether the client keeps nothing more for the rest of its life, as `session.keep-failed` said once. */
   let keepsNothingMore = false;

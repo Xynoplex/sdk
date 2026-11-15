@@ -1,5 +1,5 @@
 // expect: SEM008
-namespace Xynoplex;
+namespace Xynolog;
 
 internal static class Spawning
 {

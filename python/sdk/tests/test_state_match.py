@@ -6,10 +6,10 @@ axioms: it holds no state, and is given its client.
 
 from typing import final, override
 
-from xynoplex.channels import BRIDGED_CHANNELS
-from xynoplex.state import MatchStateUnit
-from xynoplex.testing import DropReply, FaultyTransport, create_test_client
-from xynoplex.testing.axioms import AxiomSubject, Fresh, assert_state_unit_axioms
+from xynolog.channels import BRIDGED_CHANNELS
+from xynolog.state import MatchStateUnit
+from xynolog.testing import DropReply, FaultyTransport, create_test_client
+from xynolog.testing.axioms import AxiomSubject, Fresh, assert_state_unit_axioms
 
 
 @final

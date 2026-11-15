@@ -6,9 +6,9 @@ import type {
   EventMap,
   MarkJobParams,
   components,
-} from '@xynoplex/core';
-import type { ITransport } from '@xynoplex/core';
-import { Bus, isMarkJobResult, isReportedJobResult } from '@xynoplex/core';
+} from '@xynolog/core';
+import type { ITransport } from '@xynolog/core';
+import { Bus, isMarkJobResult, isReportedJobResult } from '@xynolog/core';
 import type { DelegationObservable, MarkJobCompletion } from '../awaitable';
 import { delegated, type DelegatedVerb } from './delegation';
 import type { JobFollowTiming } from './job-status-poll';

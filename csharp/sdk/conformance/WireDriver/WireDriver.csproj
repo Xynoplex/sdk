@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <AssemblyName>xynoplex-csharp-wire-driver</AssemblyName>
+    <AssemblyName>xynolog-csharp-wire-driver</AssemblyName>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.21.0" />
-    <ProjectReference Include="../../src/Xynoplex/Xynoplex.csproj" />
+    <ProjectReference Include="../../src/Xynolog/Xynolog.csproj" />
   </ItemGroup>
 </Project>

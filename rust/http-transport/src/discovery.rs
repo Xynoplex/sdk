@@ -1,17 +1,17 @@
-//! A launcher's discovery document over HTTP, as `xynoplex::discovery`'s
+//! A launcher's discovery document over HTTP, as `xynolog::discovery`'s
 //! transport: read with the tag of the last good document, so a document
 //! that has not changed is not sent again, and read as absent when what is
 //! at the URL is not JSON, which is what a server that answers every path
 //! with its own page gives.
 
 use crate::transport::locked;
-use xynoplex::discovery::{
+use std::sync::Mutex;
+use xynolog::discovery::{
     DiscoveryAbsentReason, DiscoveryRead, DiscoveryState, DiscoveryTransport,
     parse_discovery_document,
 };
-use xynoplex::timing::HTTP_REQUEST_TIMEOUT;
-use xynoplex::transport::BoxFuture;
-use std::sync::Mutex;
+use xynolog::timing::HTTP_REQUEST_TIMEOUT;
+use xynolog::transport::BoxFuture;
 
 struct HttpDiscovery {
     url: String,

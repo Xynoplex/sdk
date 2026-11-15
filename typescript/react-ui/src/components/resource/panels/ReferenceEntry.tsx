@@ -1,20 +1,20 @@
 'use client';
 
-import type { ResourceId } from '@xynoplex/core';
+import type { ResourceId } from '@xynolog/core';
 import type { Ref } from 'react';
 import { useTranslations } from '../../../contexts/TranslationContext';
-import type { Annotation } from '@xynoplex/core';
-import { getAnnotationExactText, isBodyResolved, getBodySource, getTargetSource, getFragmentSelector, getSvgSelector, getTargetSelector, getPrimaryMediaType } from '@xynoplex/core';
-import { getEntityTypes } from '@xynoplex/core';
+import type { Annotation } from '@xynolog/core';
+import { getAnnotationExactText, isBodyResolved, getBodySource, getTargetSource, getFragmentSelector, getSvgSelector, getTargetSelector, getPrimaryMediaType } from '@xynolog/core';
+import { getEntityTypes } from '@xynolog/core';
 import { getResourceIcon } from '../../../lib/resource-utils';
-import { readyValue, type XynoplexSession } from '@xynoplex/sdk';
+import { readyValue, type XynologSession } from '@xynolog/sdk';
 import { useObservable } from '../../../hooks/useObservable';
 import { renderAgentLabels } from './agent-label';
 import { useHoverEmitter } from '../../../hooks/useHoverEmitter';
 
 interface ReferenceEntryProps {
   /** Session for interaction routing (browse.click etc.); the panel threads it. */
-  session: XynoplexSession | null;
+  session: XynologSession | null;
   reference: Annotation;
   isFocused: boolean;
   isHovered?: boolean;
@@ -45,7 +45,7 @@ export function ReferenceEntry({
   ref,
 }: ReferenceEntryProps) {
   const t = useTranslations('ReferencesPanel');
-  const xynoplex = session?.client;
+  const xynolog = session?.client;
   const hoverProps = useHoverEmitter(session, reference.id);
 
   const selectedText = getAnnotationExactText(reference) || '';
@@ -68,7 +68,7 @@ export function ReferenceEntry({
   // stub has no resolved body and requests nothing; and unlike a value stapled
   // onto the annotation, the name follows a rename of the target.
   const targetState = useObservable(
-    xynoplex && resolvedResourceUri ? xynoplex.browse.resource(resolvedResourceUri) : null,
+    xynolog && resolvedResourceUri ? xynolog.browse.resource(resolvedResourceUri) : null,
   );
   const target = targetState ? readyValue(targetState) : undefined;
   const resolvedDocumentName = target?.name;
@@ -84,15 +84,15 @@ export function ReferenceEntry({
   const source = getTargetSource(reference.target);
 
   const handleUnlink = () => {
-    if (resolvedResourceUri && xynoplex) {
-      xynoplex.bind.body(
+    if (resolvedResourceUri && xynolog) {
+      xynolog.bind.body(
         source,
         reference.id,
         [{ op: 'remove', item: { type: 'SpecificResource', source: resolvedResourceUri, purpose: 'linking' } }],
       ).catch((error: unknown) => {
         // This component has no toast surface — report the client-local,
         // resource-stamped bind error; useOutcomeToasts surfaces it.
-        xynoplex.bind.reportBodyError({
+        xynolog.bind.reportBodyError({
           resourceId: source,
           message: error instanceof Error ? error.message : String(error),
         });
@@ -124,7 +124,7 @@ export function ReferenceEntry({
   return (
     <div
       ref={ref}
-      className={`xynoplex-annotation-entry${isHovered ? ' xynoplex-annotation-pulse' : ''}`}
+      className={`xynolog-annotation-entry${isHovered ? ' xynolog-annotation-pulse' : ''}`}
       data-type="reference"
       data-focused={isFocused ? 'true' : 'false'}
       onClick={() => {
@@ -133,10 +133,10 @@ export function ReferenceEntry({
       {...hoverProps}
     >
       {/* Status indicator and text quote */}
-      <div className="xynoplex-annotation-entry__header">
-        <div className="xynoplex-reference-icon-group">
+      <div className="xynolog-annotation-entry__header">
+        <div className="xynolog-reference-icon-group">
           <button
-            className={`xynoplex-reference-icon${iconIsClickable ? ' xynoplex-reference-icon--clickable' : ''}${sparkle ? ' annotation-sparkle' : ''}`}
+            className={`xynolog-reference-icon${iconIsClickable ? ' xynolog-reference-icon--clickable' : ''}${sparkle ? ' annotation-sparkle' : ''}`}
             title={isResolved ? t('open') : annotateMode ? t('resolve') : t('stub')}
             onClick={iconIsClickable ? handleIconClick : undefined}
             data-generating={!isResolved && isGenerating ? 'true' : 'false'}
@@ -146,7 +146,7 @@ export function ReferenceEntry({
           </button>
           {annotateMode && isResolved && (
             <button
-              className="xynoplex-reference-unlink"
+              className="xynolog-reference-unlink"
               title={t('unlink')}
               onClick={(e) => { e.stopPropagation(); handleUnlink(); }}
             >
@@ -154,14 +154,14 @@ export function ReferenceEntry({
             </button>
           )}
         </div>
-        <div className="xynoplex-annotation-entry__content">
+        <div className="xynolog-annotation-entry__content">
           {selectedText && (
-            <div className="xynoplex-annotation-entry__quote" data-type="reference">
+            <div className="xynolog-annotation-entry__quote" data-type="reference">
               "{selectedText.substring(0, 100)}{selectedText.length > 100 ? '...' : ''}"
             </div>
           )}
           {!selectedText && (
-            <div className="xynoplex-annotation-entry__meta">
+            <div className="xynolog-annotation-entry__meta">
               {/* A resource-level annotation with a RESOLVED body is a
                   derivation (the shape generation mints — the vocabulary
                   deliberately has no 'deriving' purpose). Keyed off the fact
@@ -172,7 +172,7 @@ export function ReferenceEntry({
             </div>
           )}
           {resolvedDocumentName && (
-            <div className="xynoplex-reference-link">
+            <div className="xynolog-reference-link">
               <span>→ {resourceIcon} {resolvedDocumentName}</span>
             </div>
           )}
@@ -181,11 +181,11 @@ export function ReferenceEntry({
 
       {/* Entity type badges */}
       {entityTypes.length > 0 && (
-        <div className="xynoplex-annotation-entry__tags">
+        <div className="xynolog-annotation-entry__tags">
           {entityTypes.map((type, index) => (
             <span
               key={index}
-              className="xynoplex-tag"
+              className="xynolog-tag"
               data-variant="blue"
             >
               {type}
@@ -194,7 +194,7 @@ export function ReferenceEntry({
         </div>
       )}
       {reference.generator && renderAgentLabels(reference.generator) && (
-        <div className="xynoplex-annotation-entry__metadata">
+        <div className="xynolog-annotation-entry__metadata">
           Via {renderAgentLabels(reference.generator)}
         </div>
       )}

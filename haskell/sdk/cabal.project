@@ -1,5 +1,5 @@
 import: ../probes/cabal.project
 packages: .
 
-package xynoplex
+package xynolog
   ghc-options: -Werror

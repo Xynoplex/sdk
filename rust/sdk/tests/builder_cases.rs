@@ -1,15 +1,15 @@
 //! The annotation a worker commits is one table,
 //! protocol/specs/src/annotations/builder-cases.json, which every SDK runs: this
-//! crate's `xynoplex::annotations` builds, from each case, the annotation
+//! crate's `xynolog::annotations` builds, from each case, the annotation
 //! TypeScript's and Python's builders build, or refuses the span as they do.
 
-use xynoplex::annotations::{Spanned, TextSpan, annotation_of_resource, annotation_of_span};
-use xynoplex::errors::SpanRefusal;
-use xynoplex::types::{Agent, AnchoredText, Annotation, ResourceId};
 use serde::de::DeserializeOwned;
 use serde_json::Value;
 use std::ops::RangeInclusive;
 use std::time::{SystemTime, UNIX_EPOCH};
+use xynolog::annotations::{Spanned, TextSpan, annotation_of_resource, annotation_of_span};
+use xynolog::errors::SpanRefusal;
+use xynolog::types::{Agent, AnchoredText, Annotation, ResourceId};
 
 fn table() -> Value {
     serde_json::from_str(include_str!("../specs/annotations/builder-cases.json"))

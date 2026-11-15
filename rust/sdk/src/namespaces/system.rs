@@ -1,6 +1,6 @@
 //! System: what the knowledge base says about itself.
 
-use crate::errors::XynoplexError;
+use crate::errors::XynologError;
 use crate::transport::GatewayOperations;
 use crate::types::{HealthResponse, StatusResponse};
 use std::sync::Arc;
@@ -15,12 +15,12 @@ impl SystemNamespace {
     }
 
     /// Whether the gateway is up.
-    pub async fn health_check(&self) -> Result<HealthResponse, XynoplexError> {
+    pub async fn health_check(&self) -> Result<HealthResponse, XynologError> {
         Ok(self.gateway.health_check().await?)
     }
 
     /// The knowledge base's version and features, and who the caller is to it.
-    pub async fn status(&self) -> Result<StatusResponse, XynoplexError> {
+    pub async fn status(&self) -> Result<StatusResponse, XynologError> {
         Ok(self.gateway.get_status().await?)
     }
 }

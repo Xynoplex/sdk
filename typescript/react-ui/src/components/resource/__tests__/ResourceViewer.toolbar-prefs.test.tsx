@@ -15,9 +15,9 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { fireEvent, within, waitFor } from '@testing-library/react';
 import { renderInEnglish, englishTranslationManager } from '../../../test-utils';
 import '@testing-library/jest-dom';
-import type { XynoplexSession } from '@xynoplex/sdk';
-import { EventBus } from '@xynoplex/core';
-import type { ResourceDescriptor as XynoplexResource, ResourceId } from '@xynoplex/core';
+import type { XynologSession } from '@xynolog/sdk';
+import { EventBus } from '@xynolog/core';
+import type { ResourceDescriptor as XynologResource, ResourceId } from '@xynolog/core';
 import { ResourceViewer } from '../ResourceViewer';
 
 vi.mock('../../CodeMirrorRenderer', () => ({ CodeMirrorRenderer: () => <div>cm-mock</div> }));
@@ -25,7 +25,7 @@ vi.mock('../../image-annotation/SvgDrawingCanvas', () => ({ SvgDrawingCanvas: ()
 vi.mock('react-markdown', () => ({ default: ({ children }: { children: string }) => <div>{children}</div> }));
 vi.mock('remark-gfm', () => ({ default: () => ({}) }));
 
-function makeResource(mediaType = 'text/plain'): XynoplexResource & { content: string } {
+function makeResource(mediaType = 'text/plain'): XynologResource & { content: string } {
   return {
     '@context': 'https://www.w3.org/ns/activitystreams',
     '@id': 'res-1' as ResourceId,
@@ -51,7 +51,7 @@ function sessionDouble() {
     mark: { delete: vi.fn(), request: vi.fn() },
   };
   // The bus its event hooks read rides beside the spies, out of `emitted`'s sight.
-  const session = { client: { ...client, bus: new EventBus() } } as unknown as XynoplexSession;
+  const session = { client: { ...client, bus: new EventBus() } } as unknown as XynologSession;
   const emitted = (): string[] =>
     Object.entries(client).flatMap(([namespace, methods]) =>
       Object.entries(methods)
@@ -60,8 +60,8 @@ function sessionDouble() {
   return { session, emitted };
 }
 
-const isAnnotate = (c: HTMLElement) => !!c.querySelector('.xynoplex-annotate-view');
-const isBrowse = (c: HTMLElement) => !!c.querySelector('.xynoplex-browse-view');
+const isAnnotate = (c: HTMLElement) => !!c.querySelector('.xynolog-annotate-view');
+const isBrowse = (c: HTMLElement) => !!c.querySelector('.xynolog-browse-view');
 
 /** Open a bar dropdown group by aria-label and click an option in its menu. */
 async function pick(container: HTMLElement, group: string, option: string) {
@@ -73,7 +73,7 @@ async function pick(container: HTMLElement, group: string, option: string) {
   });
 }
 
-const PREF_KEYS = ['annotateMode', 'xynoplex-toolbar-click', 'xynoplex-toolbar-selection'];
+const PREF_KEYS = ['annotateMode', 'xynolog-toolbar-click', 'xynolog-toolbar-selection'];
 let getSpy: ReturnType<typeof vi.spyOn>;
 let setSpy: ReturnType<typeof vi.spyOn>;
 const prefKeyTouched = (spy: ReturnType<typeof vi.spyOn>) =>
@@ -146,7 +146,7 @@ describe('ResourceViewer — toolbar prefs as props', () => {
       <ResourceViewer translationManager={englishTranslationManager} session={session} resource={makeResource()} annotations={annotations}
         clickAction="follow" onClickActionChange={onChange} />,
     );
-    const bar = v.container.querySelector('.xynoplex-annotate-toolbar') as HTMLElement;
+    const bar = v.container.querySelector('.xynolog-annotate-toolbar') as HTMLElement;
     expect(within(bar).getByText('Follow')).toBeInTheDocument();  // renders the prop value
 
     await pick(v.container, 'Click', 'Detail');
@@ -164,7 +164,7 @@ describe('ResourceViewer — toolbar prefs as props', () => {
         annotateMode={true} onAnnotateModeChange={vi.fn()}
         selectionMotivation="highlighting" onSelectionMotivationChange={onChange} />,
     );
-    const bar = v.container.querySelector('.xynoplex-annotate-toolbar') as HTMLElement;
+    const bar = v.container.querySelector('.xynolog-annotate-toolbar') as HTMLElement;
     expect(within(bar).getByText('Highlight')).toBeInTheDocument(); // renders the prop value
 
     await pick(v.container, 'Motivation', 'Comment');
@@ -184,7 +184,7 @@ describe('ResourceViewer — toolbar prefs as props', () => {
         annotateMode={true} onAnnotateModeChange={vi.fn()}
         shape="circle" onShapeChange={onChange} />,
     );
-    const bar = v.container.querySelector('.xynoplex-annotate-toolbar') as HTMLElement;
+    const bar = v.container.querySelector('.xynolog-annotate-toolbar') as HTMLElement;
     expect(within(bar).getByText('Circle')).toBeInTheDocument();    // renders the prop value
 
     await pick(v.container, 'Shape', 'Polygon');

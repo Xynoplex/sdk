@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Check for utility-class frameworks in @xynoplex/react-ui
+ * Check for utility-class frameworks in @xynolog/react-ui
  *
  * This script scans TSX/JSX files in typescript/react-ui/src for utility-class patterns from:
  * - Tailwind CSS
@@ -11,7 +11,7 @@
  * - Windi CSS
  *
  * It's designed to enforce the "NO UTILITY FRAMEWORKS in react-ui" policy.
- * Only semantic BEM CSS classes (prefixed with xynoplex-) are allowed.
+ * Only semantic BEM CSS classes (prefixed with xynolog-) are allowed.
  *
  * Exit codes:
  *   0 - No utility classes found
@@ -116,8 +116,8 @@ function checkFileForUtilityClasses(filePath) {
       const classes = className.split(/\s+/).filter(c => c.trim());
 
       for (const cls of classes) {
-        // Skip xynoplex- prefixed classes (our BEM classes)
-        if (cls.startsWith('xynoplex-')) continue;
+        // Skip xynolog- prefixed classes (our BEM classes)
+        if (cls.startsWith('xynolog-')) continue;
 
         // Check each utility-class pattern
         for (const { pattern, name } of UTILITY_CLASS_PATTERNS) {
@@ -165,7 +165,7 @@ function findReactUIFiles() {
  * Main execution
  */
 function main() {
-  console.log('🔍 Checking for utility-class frameworks in @xynoplex/react-ui...\n');
+  console.log('🔍 Checking for utility-class frameworks in @xynolog/react-ui...\n');
 
   const files = findReactUIFiles();
   console.log(`Scanning ${files.length} files...`);
@@ -203,8 +203,8 @@ function main() {
     console.log('');
   }
 
-  console.log('⚠️  Utility-class frameworks (Tailwind, UnoCSS, Bootstrap utilities, etc.) are NOT allowed in @xynoplex/react-ui');
-  console.log('   Policy: use semantic BEM classes prefixed with "xynoplex-", styled in a CSS file');
+  console.log('⚠️  Utility-class frameworks (Tailwind, UnoCSS, Bootstrap utilities, etc.) are NOT allowed in @xynolog/react-ui');
+  console.log('   Policy: use semantic BEM classes prefixed with "xynolog-", styled in a CSS file');
   console.log('   co-located with the component, using the CSS variables from');
   console.log('   typescript/react-ui/src/styles/variables.css (add [data-theme="dark"] variants');
   console.log('   for theme-sensitive properties). Good examples: Toast.css, ErrorBoundary.tsx.');

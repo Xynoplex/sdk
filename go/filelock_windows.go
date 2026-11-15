@@ -1,6 +1,6 @@
 //go:build windows
 
-package xynoplex
+package xynolog
 
 import (
 	"os"

@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import { CACHE_REFRESH, CACHE_REFRESH_CHANNELS, FrameRefusal, INVALIDATION_WINDOW_MS, faultOf, isAnnotationId, isObject, isResourceId } from '@xynoplex/core';
+import { CACHE_REFRESH, CACHE_REFRESH_CHANNELS, FrameRefusal, INVALIDATION_WINDOW_MS, faultOf, isAnnotationId, isObject, isResourceId } from '@xynolog/core';
 import type {
   Annotation,
   AnnotationId,
@@ -12,7 +12,7 @@ import type {
   EventBus,
   ITransport,
   ResourceId,
-} from '@xynoplex/core';
+} from '@xynolog/core';
 
 /**
  * B19 — per key, the first invalidation runs at once and opens a window; any

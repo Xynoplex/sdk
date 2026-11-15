@@ -6,7 +6,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/Xynoplex/sdk/go/api"
+	"github.com/xynolog/sdk/go/api"
 )
 
 // stored is a stored event of type kind, carrying payload.

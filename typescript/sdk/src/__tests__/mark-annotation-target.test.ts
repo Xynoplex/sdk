@@ -12,8 +12,8 @@
  */
 
 import { describe, it, expect, afterEach } from 'vitest';
-import { EventBus, annotationId, resourceId } from '@xynoplex/core';
-import type { EventMap } from '@xynoplex/core';
+import { EventBus, annotationId, resourceId } from '@xynolog/core';
+import type { EventMap } from '@xynolog/core';
 import { MarkNamespace } from '../namespaces/mark';
 import type { CreateAnnotationInput } from '../namespaces/types';
 import { inMemoryTransport } from './helpers/in-memory-transport';

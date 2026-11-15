@@ -4,14 +4,14 @@
    ============================================ */
 
 /* Reference Icon Group — status icon + hover-reveal unlink */
-.xynoplex-reference-icon-group {
+.xynolog-reference-icon-group {
   position: relative;
   display: inline-flex;
   align-items: center;
   flex-shrink: 0;
 }
 
-.xynoplex-reference-icon {
+.xynolog-reference-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -19,63 +19,63 @@
   height: 1.75rem;
   font-size: 0.875rem;
   line-height: 1;
-  border-radius: var(--xynoplex-radius-md);
-  border: 1px solid var(--xynoplex-color-gray-300);
-  background: var(--xynoplex-bg-secondary);
-  color: var(--xynoplex-text-secondary);
+  border-radius: var(--xynolog-radius-md);
+  border: 1px solid var(--xynolog-color-gray-300);
+  background: var(--xynolog-bg-secondary);
+  color: var(--xynolog-text-secondary);
   transition: all 0.15s ease;
 }
 
-[data-theme="dark"] .xynoplex-reference-icon {
-  border-color: var(--xynoplex-color-gray-600);
-  background: var(--xynoplex-color-gray-700);
+[data-theme="dark"] .xynolog-reference-icon {
+  border-color: var(--xynolog-color-gray-600);
+  background: var(--xynolog-color-gray-700);
 }
 
-.xynoplex-reference-icon--clickable {
+.xynolog-reference-icon--clickable {
   cursor: pointer;
 }
 
-.xynoplex-reference-icon--clickable:hover {
-  background: var(--xynoplex-gradient-primary);
-  border-color: var(--xynoplex-color-primary-300);
+.xynolog-reference-icon--clickable:hover {
+  background: var(--xynolog-gradient-primary);
+  border-color: var(--xynolog-color-primary-300);
   transform: scale(1.1);
 }
 
-[data-theme="dark"] .xynoplex-reference-icon--clickable:hover {
-  background: var(--xynoplex-gradient-primary-dark);
-  border-color: var(--xynoplex-color-primary-500);
+[data-theme="dark"] .xynolog-reference-icon--clickable:hover {
+  background: var(--xynolog-gradient-primary-dark);
+  border-color: var(--xynolog-color-primary-500);
 }
 
-.xynoplex-reference-icon--clickable:focus-visible {
-  outline: 2px solid var(--xynoplex-color-primary-500);
+.xynolog-reference-icon--clickable:focus-visible {
+  outline: 2px solid var(--xynolog-color-primary-500);
   outline-offset: 2px;
 }
 
-[data-theme="dark"] .xynoplex-reference-icon--clickable:focus-visible {
-  outline-color: var(--xynoplex-color-primary-400);
+[data-theme="dark"] .xynolog-reference-icon--clickable:focus-visible {
+  outline-color: var(--xynolog-color-primary-400);
 }
 
 /* Generating state pulse on stub icon */
-.xynoplex-reference-icon[data-generating="true"] {
-  animation: xynoplex-icon-pulse 1.5s ease-in-out infinite;
+.xynolog-reference-icon[data-generating="true"] {
+  animation: xynolog-icon-pulse 1.5s ease-in-out infinite;
 }
 
-[data-theme="dark"] .xynoplex-reference-icon[data-generating="true"] {
-  animation: xynoplex-icon-pulse-dark 1.5s ease-in-out infinite;
+[data-theme="dark"] .xynolog-reference-icon[data-generating="true"] {
+  animation: xynolog-icon-pulse-dark 1.5s ease-in-out infinite;
 }
 
-@keyframes xynoplex-icon-pulse {
+@keyframes xynolog-icon-pulse {
   0%, 100% { transform: scale(1); box-shadow: 0 0 8px 2px rgba(59, 130, 246, 0.5); }
   50% { transform: scale(1.2); box-shadow: 0 0 16px 4px rgba(59, 130, 246, 0.8); }
 }
 
-@keyframes xynoplex-icon-pulse-dark {
+@keyframes xynolog-icon-pulse-dark {
   0%, 100% { transform: scale(1); box-shadow: 0 0 8px 2px rgba(96, 165, 250, 0.6); }
   50% { transform: scale(1.2); box-shadow: 0 0 16px 4px rgba(96, 165, 250, 0.9); }
 }
 
 /* Hover-reveal unlink button */
-.xynoplex-reference-unlink {
+.xynolog-reference-unlink {
   position: absolute;
   right: -1.25rem;
   top: 50%;
@@ -90,19 +90,19 @@
   transition: opacity 0.15s ease;
 }
 
-.xynoplex-annotation-entry:hover .xynoplex-reference-unlink {
+.xynolog-annotation-entry:hover .xynolog-reference-unlink {
   opacity: 1;
   pointer-events: auto;
 }
 
-.xynoplex-reference-unlink:hover {
+.xynolog-reference-unlink:hover {
   transform: translateY(-50%) scale(1.2);
 }
 
-.xynoplex-reference-unlink:focus-visible {
+.xynolog-reference-unlink:focus-visible {
   opacity: 1;
   pointer-events: auto;
-  outline: 2px solid var(--xynoplex-color-primary-500);
+  outline: 2px solid var(--xynolog-color-primary-500);
   outline-offset: 2px;
   border-radius: 2px;
 }

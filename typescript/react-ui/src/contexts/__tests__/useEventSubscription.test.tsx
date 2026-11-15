@@ -1,17 +1,17 @@
 import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { resourceId, userId, type EventBus, type EventOfType, type ResourceId, type StoredEvent } from '@xynoplex/core';
+import { resourceId, userId, type EventBus, type EventOfType, type ResourceId, type StoredEvent } from '@xynolog/core';
 import { useEventSubscription, useEventSubscriptions, useResourceEventSubscriptions } from '../useEventSubscription';
-import { createTestXynoplexWrapper } from '../../test-utils';
+import { createTestXynologWrapper } from '../../test-utils';
 import type { ReactNode } from 'react';
 
 function makeWrapper(): {
   wrapper: (props: { children: ReactNode }) => ReactNode;
   eventBus: EventBus;
 } {
-  const { XynoplexWrapper, eventBus } = createTestXynoplexWrapper();
+  const { XynologWrapper, eventBus } = createTestXynologWrapper();
   const wrapper = ({ children }: { children: ReactNode }) => (
-    <XynoplexWrapper>{children}</XynoplexWrapper>
+    <XynologWrapper>{children}</XynologWrapper>
   );
   return { wrapper, eventBus };
 }
@@ -257,7 +257,7 @@ describe('useResourceEventSubscriptions', () => {
   }
 
   it("holds the resource's scope while mounted, and is given that resource's events only", () => {
-    const { XynoplexWrapper, client } = createTestXynoplexWrapper();
+    const { XynologWrapper, client } = createTestXynologWrapper();
     // Another reader holds another resource's scope, so the wire carries its
     // events too, and the hook is the one that leaves them out.
     client.transport.subscribeToResource(OTHER);
@@ -274,7 +274,7 @@ describe('useResourceEventSubscriptions', () => {
 
     const { unmount } = renderHook(
       () => useResourceEventSubscriptions(RID, { 'mark:archived': (stored) => seen.push(stored.id) }),
-      { wrapper: ({ children }: { children: ReactNode }) => <XynoplexWrapper>{children}</XynoplexWrapper> },
+      { wrapper: ({ children }: { children: ReactNode }) => <XynologWrapper>{children}</XynologWrapper> },
     );
     expect(held).toHaveBeenCalledExactlyOnceWith(RID);
 

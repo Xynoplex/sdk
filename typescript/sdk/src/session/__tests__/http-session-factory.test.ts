@@ -11,15 +11,15 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { filter, firstValueFrom, map, take } from 'rxjs';
-import { PERSISTED_QUERIES, resourceId } from '@xynoplex/core';
+import { PERSISTED_QUERIES, resourceId } from '@xynolog/core';
 import { isReady } from '../../cache';
 import { keptPersister } from '../../cache-persister';
 import { mockAnnotation } from '../../__tests__/fixtures/annotation';
 import { mockResource } from '../../__tests__/fixtures/resource';
 import { createHttpSessionFactory } from '../http-session-factory';
 import { createSessionSignals } from '../session-signals';
-import { XynoplexSessionError } from '../errors';
-import type { XynoplexSession } from '../xynoplex-session';
+import { XynologSessionError } from '../errors';
+import type { XynologSession } from '../xynolog-session';
 import { cacheKey, getStoredSession, lastEventIdKey, personKey, sessionKey } from '../storage';
 import { fakeGateway, renews } from './fake-gateway';
 import { freshJwt, seedStoredSession, SharedStorage, TestStorage, testSession, TEST_TOKEN_ENDPOINT } from './test-storage-helpers';
@@ -93,10 +93,10 @@ afterEach(() => {
 const settled = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
 /** The session's own errors, read from its errors stream from the first thing it said; its transport's failures are left out. */
-function ownErrorsOf(session: XynoplexSession): XynoplexSessionError[] {
-  const errors: XynoplexSessionError[] = [];
+function ownErrorsOf(session: XynologSession): XynologSessionError[] {
+  const errors: XynologSessionError[] = [];
   session.errors$
-    .pipe(filter((error): error is XynoplexSessionError => error instanceof XynoplexSessionError))
+    .pipe(filter((error): error is XynologSessionError => error instanceof XynologSessionError))
     .subscribe((error) => errors.push(error));
   return errors;
 }

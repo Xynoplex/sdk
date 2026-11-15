@@ -1,4 +1,4 @@
-package xynoplex
+package xynolog
 
 // The stream (protocol/contract/TRANSPORT-HTTP.md § The client): one goroutine
 // that owns the subscription, the connections that carry it, and the state
@@ -38,9 +38,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/bus"
-	"github.com/Xynoplex/sdk/go/internal/required"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/bus"
+	"github.com/xynolog/sdk/go/internal/required"
 )
 
 type commandKind int

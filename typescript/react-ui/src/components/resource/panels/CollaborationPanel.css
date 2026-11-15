@@ -3,74 +3,74 @@
    Styles for user collaboration features
    ============================================ */
 
-.xynoplex-collaboration-panel {
+.xynolog-collaboration-panel {
   display: flex;
   flex-direction: column;
-  gap: var(--xynoplex-panel-gap);
-  padding: var(--xynoplex-panel-padding);
-  background: var(--xynoplex-bg-primary);
-  border-radius: var(--xynoplex-panel-border-radius);
+  gap: var(--xynolog-panel-gap);
+  padding: var(--xynolog-panel-padding);
+  background: var(--xynolog-bg-primary);
+  border-radius: var(--xynolog-panel-border-radius);
 }
 
-.xynoplex-collaboration-panel__title {
-  margin: 0 0 var(--xynoplex-panel-header-margin-bottom);
-  font-size: var(--xynoplex-panel-title-size);
-  font-weight: var(--xynoplex-panel-title-weight);
-  color: var(--xynoplex-text-primary);
+.xynolog-collaboration-panel__title {
+  margin: 0 0 var(--xynolog-panel-header-margin-bottom);
+  font-size: var(--xynolog-panel-title-size);
+  font-weight: var(--xynolog-panel-title-weight);
+  color: var(--xynolog-text-primary);
 }
 
 /* Sections */
-.xynoplex-collaboration-panel__section {
+.xynolog-collaboration-panel__section {
   display: flex;
   flex-direction: column;
-  gap: var(--xynoplex-panel-gap-sm);
+  gap: var(--xynolog-panel-gap-sm);
 }
 
-.xynoplex-collaboration-panel__section--bordered {
-  padding-top: var(--xynoplex-panel-gap);
-  border-top: 1px solid var(--xynoplex-border-secondary);
+.xynolog-collaboration-panel__section--bordered {
+  padding-top: var(--xynolog-panel-gap);
+  border-top: 1px solid var(--xynolog-border-secondary);
 }
 
-[data-theme="dark"] .xynoplex-collaboration-panel__section--bordered {
-  border-top-color: var(--xynoplex-color-gray-700);
+[data-theme="dark"] .xynolog-collaboration-panel__section--bordered {
+  border-top-color: var(--xynolog-color-gray-700);
 }
 
 /* Headings */
-.xynoplex-collaboration-panel__heading {
-  margin: 0 0 var(--xynoplex-panel-gap-sm);
-  font-size: var(--xynoplex-text-sm);
-  font-weight: var(--xynoplex-font-semibold);
-  color: var(--xynoplex-text-primary);
+.xynolog-collaboration-panel__heading {
+  margin: 0 0 var(--xynolog-panel-gap-sm);
+  font-size: var(--xynolog-text-sm);
+  font-weight: var(--xynolog-font-semibold);
+  color: var(--xynolog-text-primary);
 }
 
-[data-theme="dark"] .xynoplex-collaboration-panel__heading {
-  color: var(--xynoplex-text-primary);
+[data-theme="dark"] .xynolog-collaboration-panel__heading {
+  color: var(--xynolog-text-primary);
 }
 
 /* Status Display */
-.xynoplex-collaboration-panel__status {
+.xynolog-collaboration-panel__status {
   display: flex;
   align-items: center;
-  gap: var(--xynoplex-panel-gap-sm);
+  gap: var(--xynolog-panel-gap-sm);
   flex-wrap: wrap;
 }
 
-.xynoplex-collaboration-panel__indicator {
+.xynolog-collaboration-panel__indicator {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-.xynoplex-collaboration-panel__dot {
+.xynolog-collaboration-panel__dot {
   width: 0.5rem;
   height: 0.5rem;
-  border-radius: var(--xynoplex-radius-full);
-  background: var(--xynoplex-color-gray-400);
+  border-radius: var(--xynolog-radius-full);
+  background: var(--xynolog-color-gray-400);
   flex-shrink: 0;
 }
 
-.xynoplex-collaboration-panel__dot[data-connected="true"] {
-  background: var(--xynoplex-color-success);
+.xynolog-collaboration-panel__dot[data-connected="true"] {
+  background: var(--xynolog-color-success);
   animation: pulse 2s ease-in-out infinite;
 }
 
@@ -83,102 +83,102 @@
   }
 }
 
-.xynoplex-collaboration-panel__status-text {
-  font-size: var(--xynoplex-text-sm);
-  font-weight: var(--xynoplex-font-medium);
-  color: var(--xynoplex-text-tertiary);
+.xynolog-collaboration-panel__status-text {
+  font-size: var(--xynolog-text-sm);
+  font-weight: var(--xynolog-font-medium);
+  color: var(--xynolog-text-tertiary);
 }
 
-.xynoplex-collaboration-panel__status-text[data-connected="true"] {
-  color: var(--xynoplex-color-success-dark);
+.xynolog-collaboration-panel__status-text[data-connected="true"] {
+  color: var(--xynolog-color-success-dark);
 }
 
-[data-theme="dark"] .xynoplex-collaboration-panel__status-text[data-connected="true"] {
-  color: var(--xynoplex-color-success-light);
+[data-theme="dark"] .xynolog-collaboration-panel__status-text[data-connected="true"] {
+  color: var(--xynolog-color-success-light);
 }
 
-.xynoplex-collaboration-panel__event-count {
-  font-size: var(--xynoplex-text-xs);
-  color: var(--xynoplex-text-tertiary);
+.xynolog-collaboration-panel__event-count {
+  font-size: var(--xynolog-text-xs);
+  color: var(--xynolog-text-tertiary);
 }
 
 /* Details */
-.xynoplex-collaboration-panel__details {
+.xynolog-collaboration-panel__details {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  font-size: var(--xynoplex-text-sm);
-  color: var(--xynoplex-text-secondary);
+  font-size: var(--xynolog-text-sm);
+  color: var(--xynolog-text-secondary);
   line-height: 1.5;
 }
 
-[data-theme="dark"] .xynoplex-collaboration-panel__details {
-  color: var(--xynoplex-text-secondary);
+[data-theme="dark"] .xynolog-collaboration-panel__details {
+  color: var(--xynolog-text-secondary);
 }
 
-.xynoplex-collaboration-panel__label {
-  font-weight: var(--xynoplex-font-medium);
-  color: var(--xynoplex-text-primary);
+.xynolog-collaboration-panel__label {
+  font-weight: var(--xynolog-font-medium);
+  color: var(--xynolog-text-primary);
 }
 
 /* Description */
-.xynoplex-collaboration-panel__description {
+.xynolog-collaboration-panel__description {
   margin: 0;
-  font-size: var(--xynoplex-text-sm);
-  color: var(--xynoplex-text-tertiary);
+  font-size: var(--xynolog-text-sm);
+  color: var(--xynolog-text-tertiary);
   font-style: italic;
   line-height: 1.5;
 }
 
-[data-theme="dark"] .xynoplex-collaboration-panel__description {
-  color: var(--xynoplex-text-tertiary);
+[data-theme="dark"] .xynolog-collaboration-panel__description {
+  color: var(--xynolog-text-tertiary);
 }
 
 /* Engines — one row per engine, with its job types and ceilings */
-.xynoplex-collaboration-panel__engine {
+.xynolog-collaboration-panel__engine {
   display: flex;
   flex-direction: column;
   gap: 0.125rem;
   padding: 0.375rem 0;
-  font-size: var(--xynoplex-text-sm);
+  font-size: var(--xynolog-text-sm);
   line-height: 1.4;
 }
 
-.xynoplex-collaboration-panel__engine + .xynoplex-collaboration-panel__engine {
-  border-top: 1px solid var(--xynoplex-border-secondary);
+.xynolog-collaboration-panel__engine + .xynolog-collaboration-panel__engine {
+  border-top: 1px solid var(--xynolog-border-secondary);
 }
 
-[data-theme="dark"] .xynoplex-collaboration-panel__engine + .xynoplex-collaboration-panel__engine {
-  border-top-color: var(--xynoplex-color-gray-700);
+[data-theme="dark"] .xynolog-collaboration-panel__engine + .xynolog-collaboration-panel__engine {
+  border-top-color: var(--xynolog-color-gray-700);
 }
 
-.xynoplex-collaboration-panel__engine-id {
+.xynolog-collaboration-panel__engine-id {
   display: flex;
   gap: 0.375rem;
   align-items: baseline;
-  color: var(--xynoplex-text-primary);
+  color: var(--xynolog-text-primary);
 }
 
 /* The provider is context for the model, not a peer of it. */
-.xynoplex-collaboration-panel__engine-provider {
-  font-size: var(--xynoplex-text-xs);
-  color: var(--xynoplex-text-secondary);
+.xynolog-collaboration-panel__engine-provider {
+  font-size: var(--xynolog-text-xs);
+  color: var(--xynolog-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.03em;
 }
 
-.xynoplex-collaboration-panel__engine-model {
-  font-weight: var(--xynoplex-font-medium);
+.xynolog-collaboration-panel__engine-model {
+  font-weight: var(--xynolog-font-medium);
   word-break: break-all;
 }
 
-.xynoplex-collaboration-panel__engine-jobs,
-.xynoplex-collaboration-panel__engine-limits {
-  font-size: var(--xynoplex-text-xs);
-  color: var(--xynoplex-text-secondary);
+.xynolog-collaboration-panel__engine-jobs,
+.xynolog-collaboration-panel__engine-limits {
+  font-size: var(--xynolog-text-xs);
+  color: var(--xynolog-text-secondary);
 }
 
 /* Ceilings are figures — align them with the numeral treatment used elsewhere. */
-.xynoplex-collaboration-panel__engine-limits {
+.xynolog-collaboration-panel__engine-limits {
   font-variant-numeric: tabular-nums;
 }

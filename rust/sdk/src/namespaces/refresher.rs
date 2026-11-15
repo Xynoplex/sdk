@@ -519,7 +519,7 @@ mod tests {
     use std::path::Path;
 
     /// The last part of a path: `ResourceDescriptor` of
-    /// `xynoplex::types::ResourceDescriptor`.
+    /// `xynolog::types::ResourceDescriptor`.
     fn last_part(path: &str) -> &str {
         path.rsplit_once("::").map_or(path, |(_, last)| last)
     }

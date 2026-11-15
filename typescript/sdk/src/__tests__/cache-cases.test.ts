@@ -10,7 +10,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { isObject, type CacheValues, type PersistedQuery } from '@xynoplex/core';
+import { isObject, type CacheValues, type PersistedQuery } from '@xynolog/core';
 import { createCache, type Cache } from '../cache';
 import { KEPT_QUERIES, coupledLastEventId, keptPersister, type KeptKey } from '../cache-persister';
 import { InMemorySessionStorage, type SessionStorage } from '../session/session-storage';

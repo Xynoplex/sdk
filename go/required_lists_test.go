@@ -1,4 +1,4 @@
-package xynoplex_test
+package xynolog_test
 
 // A list a schema requires is Go's slice, and a slice Go holds as nil is the
 // empty list: a generated type writes it as [], never as null, so the
@@ -11,11 +11,11 @@ import (
 	"testing"
 	"time"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/bus"
-	"github.com/Xynoplex/sdk/go/internal/required"
-	"github.com/Xynoplex/sdk/go/xynoplextest"
+	xynolog "github.com/xynolog/sdk/go"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/bus"
+	"github.com/xynolog/sdk/go/internal/required"
+	"github.com/xynolog/sdk/go/xynologtest"
 )
 
 func TestARequiredListLeftNilIsPublishedOnTheClientsOwnBusAsTheEmptyList(t *testing.T) {
@@ -23,10 +23,10 @@ func TestARequiredListLeftNilIsPublishedOnTheClientsOwnBusAsTheEmptyList(t *test
 	if err != nil {
 		t.Fatal(err)
 	}
-	b := xynoplex.NewEventBus()
+	b := xynolog.NewEventBus()
 	channel := bus.MarkUpdateEntityTypes.Request()
-	read := xynoplex.Published(context.Background(), b, channel)
-	if err := xynoplex.Publish(b, channel, api.MarkUpdateEntityTypesCommand{ResourceId: resource}, xynoplex.Envelope{}); err != nil {
+	read := xynolog.Published(context.Background(), b, channel)
+	if err := xynolog.Publish(b, channel, api.MarkUpdateEntityTypesCommand{ResourceId: resource}, xynolog.Envelope{}); err != nil {
 		t.Fatal(err)
 	}
 	b.Close()
@@ -54,12 +54,12 @@ func TestARequiredListLeftNilIsEmittedAsTheEmptyList(t *testing.T) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	w := xynoplex.NewWire(xynoplextest.NewFaultyTransport(xynoplextest.FaultyConfig{Channels: []bus.Channel{bus.BindInitiate.Channel()}}))
-	read, err := xynoplex.Frames(ctx, w, bus.BindInitiate)
+	w := xynolog.NewWire(xynologtest.NewFaultyTransport(xynologtest.FaultyConfig{Channels: []bus.Channel{bus.BindInitiate.Channel()}}))
+	read, err := xynolog.Frames(ctx, w, bus.BindInitiate)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, _, err := xynoplex.Emit(ctx, w, bus.BindInitiate, api.BindInitiateCommand{AnnotationId: annotation, ResourceId: resource, DefaultTitle: "A title"}, xynoplex.Envelope{}); err != nil {
+	if _, _, err := xynolog.Emit(ctx, w, bus.BindInitiate, api.BindInitiateCommand{AnnotationId: annotation, ResourceId: resource, DefaultTitle: "A title"}, xynolog.Envelope{}); err != nil {
 		t.Fatal(err)
 	}
 	want := api.BindInitiateCommand{AnnotationId: annotation, ResourceId: resource, DefaultTitle: "A title", EntityTypes: []string{}}

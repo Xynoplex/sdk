@@ -7,7 +7,7 @@ from typing import get_args
 from pydantic import JsonValue, TypeAdapter
 from spec import PACKAGE, JsonObject
 
-from xynoplex.transport import ConnectionState
+from xynolog.transport import ConnectionState
 
 _LINES = TypeAdapter[dict[str, JsonValue]](dict[str, JsonValue])
 

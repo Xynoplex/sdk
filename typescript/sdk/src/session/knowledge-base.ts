@@ -1,5 +1,5 @@
 /**
- * KnowledgeBase — a connection to a Xynoplex knowledge system.
+ * KnowledgeBase — a connection to a Xynolog knowledge system.
  *
  * The KB type itself is uniform. The transport-shape variation lives in
  * the nested `endpoint` field, which is a discriminated union:
@@ -11,10 +11,10 @@
  *                                  opaque `kbId` identifying the
  *                                  instance to the host process.
  *
- * Session lifecycle code (a `XynoplexSession`, `XynoplexBrowser`'s
+ * Session lifecycle code (a `XynologSession`, `XynologBrowser`'s
  * activation) treats `KnowledgeBase` as uniform and never inspects
  * `endpoint`. Code that constructs transports or signs in at an issuer (the
- * `SessionFactory` passed to `XynoplexBrowser`, `kbGatewayUrl` for HTTP URL
+ * `SessionFactory` passed to `XynologBrowser`, `kbGatewayUrl` for HTTP URL
  * construction, the sign-in paths) inspects `endpoint.kind` and dispatches.
  *
  * Each KB has its own session, its own credentials (where applicable),
@@ -23,10 +23,10 @@
  *
  * The shapes are the spec's (`KbTarget`, `NewKnowledgeBase`,
  * `KnowledgeBase`, `KbRead`, `KbEndpoint` and its two kinds, from
- * `@xynoplex/core`); what is here is made from them.
+ * `@xynolog/core`); what is here is made from them.
  */
 
-import type { KbDescription, KbRead, KbTarget } from '@xynoplex/core';
+import type { KbDescription, KbRead, KbTarget } from '@xynolog/core';
 
 export function kbRead(description: KbDescription, at: Date): KbRead {
   return {
@@ -42,7 +42,7 @@ export function kbRead(description: KbDescription, at: Date): KbRead {
 export type KbSessionStatus = 'authenticated' | 'expired' | 'signed-out';
 
 /**
- * Construct a `KbTarget` for an HTTP-backed Xynoplex gateway without
+ * Construct a `KbTarget` for an HTTP-backed Xynolog gateway without
  * spelling out the nested `endpoint` literal. Convenience for tests,
  * worker bootstraps, and one-off scripts.
  *

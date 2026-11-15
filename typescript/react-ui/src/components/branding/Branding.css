@@ -1,10 +1,10 @@
 /**
  * Branding Component
  *
- * Styles for the Xynoplex branding display including logo and tagline
+ * Styles for the Xynolog branding display including logo and tagline
  */
 
-.xynoplex-branding {
+.xynolog-branding {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -12,8 +12,8 @@
   text-align: center;
 }
 
-.xynoplex-branding-title {
-  font-family: 'Orbitron', var(--xynoplex-font-sans);
+.xynolog-branding-title {
+  font-family: 'Orbitron', var(--xynolog-font-sans);
   font-weight: bold;
   text-transform: uppercase;
   letter-spacing: -0.025em;
@@ -22,98 +22,98 @@
 }
 
 /* Remove margin when tagline is not shown */
-.xynoplex-branding:not(:has(.xynoplex-branding-tagline)) .xynoplex-branding-title {
+.xynolog-branding:not(:has(.xynolog-branding-tagline)) .xynolog-branding-title {
   margin-bottom: 0;
 }
 
-.xynoplex-branding[data-size="sm"] .xynoplex-branding-title {
+.xynolog-branding[data-size="sm"] .xynolog-branding-title {
   font-size: 1.5rem;
 }
 
-.xynoplex-branding[data-size="md"] .xynoplex-branding-title {
+.xynolog-branding[data-size="md"] .xynolog-branding-title {
   font-size: 1.875rem;
 }
 
-.xynoplex-branding[data-size="lg"] .xynoplex-branding-title {
+.xynolog-branding[data-size="lg"] .xynolog-branding-title {
   font-size: 2.25rem;
 }
 
-.xynoplex-branding[data-size="xl"] .xynoplex-branding-title {
+.xynolog-branding[data-size="xl"] .xynolog-branding-title {
   font-size: 3rem;
 }
 
 @media (min-width: 640px) {
-  .xynoplex-branding[data-size="sm"] .xynoplex-branding-title { font-size: 1.875rem; }
-  .xynoplex-branding[data-size="md"] .xynoplex-branding-title { font-size: 2.25rem; }
-  .xynoplex-branding[data-size="lg"] .xynoplex-branding-title { font-size: 3rem; }
-  .xynoplex-branding[data-size="xl"] .xynoplex-branding-title { font-size: 3.75rem; }
+  .xynolog-branding[data-size="sm"] .xynolog-branding-title { font-size: 1.875rem; }
+  .xynolog-branding[data-size="md"] .xynolog-branding-title { font-size: 2.25rem; }
+  .xynolog-branding[data-size="lg"] .xynolog-branding-title { font-size: 3rem; }
+  .xynolog-branding[data-size="xl"] .xynolog-branding-title { font-size: 3.75rem; }
 
   /* Increase spacing on larger screens */
-  .xynoplex-branding-title {
+  .xynolog-branding-title {
     margin-bottom: 2rem; /* sm:mb-8 */
   }
 
   /* Remove margin when tagline is not shown (override for larger screens) */
-  .xynoplex-branding:not(:has(.xynoplex-branding-tagline)) .xynoplex-branding-title {
+  .xynolog-branding:not(:has(.xynolog-branding-tagline)) .xynolog-branding-title {
     margin-bottom: 0;
   }
 }
 
 @media (min-width: 768px) {
-  .xynoplex-branding[data-size="sm"] .xynoplex-branding-title { font-size: 2.25rem; }
-  .xynoplex-branding[data-size="md"] .xynoplex-branding-title { font-size: 3rem; }
-  .xynoplex-branding[data-size="lg"] .xynoplex-branding-title { font-size: 3.75rem; }
-  .xynoplex-branding[data-size="xl"] .xynoplex-branding-title { font-size: 4.5rem; }
+  .xynolog-branding[data-size="sm"] .xynolog-branding-title { font-size: 2.25rem; }
+  .xynolog-branding[data-size="md"] .xynolog-branding-title { font-size: 3rem; }
+  .xynolog-branding[data-size="lg"] .xynolog-branding-title { font-size: 3.75rem; }
+  .xynolog-branding[data-size="xl"] .xynolog-branding-title { font-size: 4.5rem; }
 }
 
-.xynoplex-branding-text {
-  background: linear-gradient(to right, var(--xynoplex-color-black), var(--xynoplex-color-primary-600), var(--xynoplex-color-black));
+.xynolog-branding-text {
+  background: linear-gradient(to right, var(--xynolog-color-black), var(--xynolog-color-primary-600), var(--xynolog-color-black));
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-[data-theme="dark"] .xynoplex-branding-text {
-  background: linear-gradient(to right, var(--xynoplex-color-white), var(--xynoplex-color-primary-400), var(--xynoplex-color-white));
+[data-theme="dark"] .xynolog-branding-text {
+  background: linear-gradient(to right, var(--xynolog-color-white), var(--xynolog-color-primary-400), var(--xynolog-color-white));
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-.xynoplex-branding[data-animated="true"] .xynoplex-branding-title {
+.xynolog-branding[data-animated="true"] .xynolog-branding-title {
   animation: fadeInUp 1s ease-out;
 }
 
-.xynoplex-branding-tagline {
-  color: var(--xynoplex-color-primary-600);
-  font-family: 'Orbitron', var(--xynoplex-font-sans);
+.xynolog-branding-tagline {
+  color: var(--xynolog-color-primary-600);
+  font-family: 'Orbitron', var(--xynolog-font-sans);
   letter-spacing: 0.025em;
 }
 
-[data-theme="dark"] .xynoplex-branding-tagline {
-  color: var(--xynoplex-color-primary-400);
+[data-theme="dark"] .xynolog-branding-tagline {
+  color: var(--xynolog-color-primary-400);
 }
 
-.xynoplex-branding[data-compact-tagline="true"] .xynoplex-branding-tagline {
+.xynolog-branding[data-compact-tagline="true"] .xynolog-branding-tagline {
   font-size: 0.75rem;
   letter-spacing: 0.1em;
 }
 
-.xynoplex-branding[data-size="sm"] .xynoplex-branding-tagline {
+.xynolog-branding[data-size="sm"] .xynolog-branding-tagline {
   font-size: 1.125rem;
 }
 
-.xynoplex-branding[data-size="md"] .xynoplex-branding-tagline {
+.xynolog-branding[data-size="md"] .xynolog-branding-tagline {
   font-size: 1.25rem;
 }
 
-.xynoplex-branding[data-size="lg"] .xynoplex-branding-tagline {
+.xynolog-branding[data-size="lg"] .xynolog-branding-tagline {
   font-size: 1.25rem;
 }
 
-.xynoplex-branding[data-size="xl"] .xynoplex-branding-tagline {
+.xynolog-branding[data-size="xl"] .xynolog-branding-tagline {
   font-size: 1.5rem;
 }
 
-.xynoplex-branding[data-animated="true"] .xynoplex-branding-tagline {
+.xynolog-branding[data-animated="true"] .xynolog-branding-tagline {
   animation: fadeInUp 1s ease-out 0.3s both;
 }
 

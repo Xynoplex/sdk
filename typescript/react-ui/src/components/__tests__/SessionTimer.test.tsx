@@ -38,7 +38,7 @@ describe('SessionTimer', () => {
 
       const { container } = render(<SessionTimer />);
 
-      expect(container.querySelector('.xynoplex-session-timer')).toBeInTheDocument();
+      expect(container.querySelector('.xynolog-session-timer')).toBeInTheDocument();
     });
 
     it('should display complete message with formatted time', () => {

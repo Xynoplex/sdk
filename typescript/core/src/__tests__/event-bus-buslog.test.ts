@@ -1,7 +1,7 @@
 /**
  * EventBus + busLog integration.
  *
- * The `__XYNOPLEX_BUS_LOG__` flag (or `XYNOPLEX_BUS_LOG=1` env var)
+ * The `__XYNOLOG_BUS_LOG__` flag (or `XYNOLOG_BUS_LOG=1` env var)
  * makes `EventBus.emit(channel, payload)` also emit a
  * `[bus EMIT] <channel> ...` line on `console.debug`. This is what
  * makes local-only fan-out signals (`beckon.hover`, `beckon.sparkle`,
@@ -26,21 +26,21 @@ describe('EventBus busLog integration', () => {
   let debugSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
-    savedFlag = (globalThis as { __XYNOPLEX_BUS_LOG__?: boolean }).__XYNOPLEX_BUS_LOG__;
+    savedFlag = (globalThis as { __XYNOLOG_BUS_LOG__?: boolean }).__XYNOLOG_BUS_LOG__;
     debugSpy = vi.spyOn(console, 'debug').mockImplementation(() => {});
   });
 
   afterEach(() => {
     if (savedFlag === undefined) {
-      delete (globalThis as { __XYNOPLEX_BUS_LOG__?: boolean }).__XYNOPLEX_BUS_LOG__;
+      delete (globalThis as { __XYNOLOG_BUS_LOG__?: boolean }).__XYNOLOG_BUS_LOG__;
     } else {
-      (globalThis as { __XYNOPLEX_BUS_LOG__?: boolean }).__XYNOPLEX_BUS_LOG__ = savedFlag as boolean;
+      (globalThis as { __XYNOLOG_BUS_LOG__?: boolean }).__XYNOLOG_BUS_LOG__ = savedFlag as boolean;
     }
     debugSpy.mockRestore();
   });
 
   it('emits a [bus EMIT] line on console.debug when the flag is set', () => {
-    (globalThis as { __XYNOPLEX_BUS_LOG__?: boolean }).__XYNOPLEX_BUS_LOG__ = true;
+    (globalThis as { __XYNOLOG_BUS_LOG__?: boolean }).__XYNOLOG_BUS_LOG__ = true;
 
     const bus = new EventBus();
     bus.emit('beckon:hover', { annotationId: 'ann-1' as never });
@@ -52,7 +52,7 @@ describe('EventBus busLog integration', () => {
   });
 
   it('does NOT log when the flag is not set', () => {
-    delete (globalThis as { __XYNOPLEX_BUS_LOG__?: boolean }).__XYNOPLEX_BUS_LOG__;
+    delete (globalThis as { __XYNOLOG_BUS_LOG__?: boolean }).__XYNOLOG_BUS_LOG__;
 
     const bus = new EventBus();
     bus.emit('beckon:hover', { annotationId: 'ann-1' as never });
@@ -61,7 +61,7 @@ describe('EventBus busLog integration', () => {
   });
 
   it('still delivers payloads to subscribers when the flag is set', () => {
-    (globalThis as { __XYNOPLEX_BUS_LOG__?: boolean }).__XYNOPLEX_BUS_LOG__ = true;
+    (globalThis as { __XYNOLOG_BUS_LOG__?: boolean }).__XYNOLOG_BUS_LOG__ = true;
 
     const bus = new EventBus();
     const seen: unknown[] = [];
@@ -72,7 +72,7 @@ describe('EventBus busLog integration', () => {
   });
 
   it('logs an emit into a resource scope, with its scope, as it logs a global one', () => {
-    (globalThis as { __XYNOPLEX_BUS_LOG__?: boolean }).__XYNOPLEX_BUS_LOG__ = true;
+    (globalThis as { __XYNOLOG_BUS_LOG__?: boolean }).__XYNOLOG_BUS_LOG__ = true;
 
     const bus = new EventBus();
     bus.scope(RID).emit('beckon:hover', { annotationId: annotationId('ann-1') });

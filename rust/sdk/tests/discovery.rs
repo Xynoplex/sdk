@@ -1,21 +1,21 @@
 //! The knowledge bases a launcher manages: what its document says, and what
 //! changed between two readings of it.
 
-use xynoplex::discovery::{
-    DISCOVERY_INTERVAL, DiscoveryAbsentReason, DiscoveryDiff, DiscoveryRead, DiscoveryState,
-    DiscoveryTransport, parse_discovery_document, subscribe_discovery, text_discovery,
-};
-use xynoplex::transport::BoxFuture;
-use xynoplex::types::DiscoveredKB;
 use serde_json::{Value, json};
 use std::collections::VecDeque;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
+use xynolog::discovery::{
+    DISCOVERY_INTERVAL, DiscoveryAbsentReason, DiscoveryDiff, DiscoveryRead, DiscoveryState,
+    DiscoveryTransport, parse_discovery_document, subscribe_discovery, text_discovery,
+};
+use xynolog::transport::BoxFuture;
+use xynolog::types::DiscoveredKB;
 
 fn entry(host: &str, port: u16, did: &str) -> Value {
     json!({
         "host": host, "port": port, "placement": "local",
-        "managedBy": "xynoplex-launcher", "did": did,
+        "managedBy": "xynolog-launcher", "did": did,
     })
 }
 
@@ -49,7 +49,7 @@ const B: &str = "did:web:example.org:kb-b";
 #[test]
 fn a_document_of_knowledge_bases_is_managed_and_one_of_none_is_managed_too() {
     let codespace = json!({
-        "host": "localhost", "port": 4100, "placement": "codespace", "managedBy": "xynoplex-launcher",
+        "host": "localhost", "port": 4100, "placement": "codespace", "managedBy": "xynolog-launcher",
         "did": B, "repo": "owner/name", "siteName": "A site",
     });
     assert_eq!(
@@ -236,7 +236,7 @@ fn at(addresses: &[&str]) -> Vec<String> {
 async fn the_first_reading_is_told_whole_and_each_one_after_by_what_changed() {
     let renamed = json!({
         "host": "localhost", "port": 4000, "placement": "local",
-        "managedBy": "xynoplex-launcher", "did": A, "siteName": "Renamed",
+        "managedBy": "xynolog-launcher", "did": A, "siteName": "Renamed",
     });
     let script = Script::of(&[
         Some(document(&[entry("localhost", 4000, A)])),

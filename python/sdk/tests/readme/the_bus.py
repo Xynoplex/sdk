@@ -1,12 +1,12 @@
-from xynoplex.bus import Bus, Delivered
-from xynoplex.channels import BRIDGED_CHANNELS, MARK_ADDED
-from xynoplex.errors import BusRequestError
-from xynoplex.http import HttpTransport
-from xynoplex.identifiers import ResourceId
-from xynoplex.operations import BROWSE_RESOURCE_REQUESTED
-from xynoplex.transport import FrameRefusal
-from xynoplex.types import BrowseResourceRequest
-from xynoplex.watched import Variable
+from xynolog.bus import Bus, Delivered
+from xynolog.channels import BRIDGED_CHANNELS, MARK_ADDED
+from xynolog.errors import BusRequestError
+from xynolog.http import HttpTransport
+from xynolog.identifiers import ResourceId
+from xynolog.operations import BROWSE_RESOURCE_REQUESTED
+from xynolog.transport import FrameRefusal
+from xynolog.types import BrowseResourceRequest
+from xynolog.watched import Variable
 
 
 async def read(origin: str, token: str, resource: ResourceId) -> None:

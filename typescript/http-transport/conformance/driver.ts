@@ -5,7 +5,7 @@
  * from stdout; protocol/conformance/sdk/README.md is the protocol.
  *
  * It reaches the transport only as an application does, through what
- * `@xynoplex/http-transport` and `@xynoplex/core` export, so what the suite
+ * `@xynolog/http-transport` and `@xynolog/core` export, so what the suite
  * observes is what a caller of the SDK gets. Node runs this file as it is
  * (types stripped); `npm run typecheck:conformance` is its type check.
  */
@@ -14,7 +14,7 @@ import { BehaviorSubject } from 'rxjs';
 import {
   Bus,
   FrameRefusal,
-  XynoplexError,
+  XynologError,
   accessToken,
   baseUrl,
   resourceId,
@@ -24,9 +24,9 @@ import {
   type EventMap,
   type PutBinaryRequest,
   type RetryPolicy,
-} from '@xynoplex/core';
-import { HttpContentTransport, HttpTransport } from '@xynoplex/http-transport';
-import { initObservabilityNode, shutdownObservabilityNode } from '@xynoplex/observability/node';
+} from '@xynolog/core';
+import { HttpContentTransport, HttpTransport } from '@xynolog/http-transport';
+import { initObservabilityNode, shutdownObservabilityNode } from '@xynolog/observability/node';
 import manifest from '../package.json' with { type: 'json' };
 
 type Arguments = Record<string, unknown>;
@@ -72,7 +72,7 @@ function texts(args: Arguments, name: string): string[] {
 /** A failure as the protocol carries it: the SDK's code, and the status when a server stated one. */
 function failure(error: unknown): { code?: string; status?: number; detail: string } {
   const detail = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
-  if (!(error instanceof XynoplexError)) return { detail };
+  if (!(error instanceof XynologError)) return { detail };
   const status = (error as { status?: unknown }).status;
   return { code: error.code, ...(typeof status === 'number' && status > 0 ? { status } : {}), detail };
 }
@@ -321,7 +321,7 @@ async function run(line: string): Promise<void> {
 
 // Exports only when the suite names an OTLP endpoint in the environment. The
 // driver is the transport's, so it reports the transport's version.
-initObservabilityNode({ serviceName: 'xynoplex-conformance-driver', serviceVersion: manifest.version });
+initObservabilityNode({ serviceName: 'xynolog-conformance-driver', serviceVersion: manifest.version });
 
 const lines = createInterface({ input: process.stdin });
 lines.on('line', (line) => void run(line));

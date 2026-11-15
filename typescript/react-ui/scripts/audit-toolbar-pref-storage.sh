@@ -18,7 +18,7 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)"
 
-PATTERN="xynoplex-toolbar-click|xynoplex-toolbar-selection|xynoplex-toolbar-shape|localStorage\.(get|set)Item\('annotateMode'"
+PATTERN="xynolog-toolbar-click|xynolog-toolbar-selection|xynolog-toolbar-shape|localStorage\.(get|set)Item\('annotateMode'"
 
 VIOLATIONS=$(grep -rEn "$PATTERN" \
   "$REPO_ROOT/typescript/react-ui/src" \

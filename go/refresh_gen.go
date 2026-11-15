@@ -2,11 +2,11 @@
 //
 // Regenerate: node packages/codegen/schemas/generate-cache-refresh-go.mjs
 
-package xynoplex
+package xynolog
 
 import (
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/bus"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/bus"
 )
 
 // CacheQuery is a live query a client's cache answers.

@@ -9,9 +9,9 @@ import Data.Aeson.Types (Parser, parseEither)
 import qualified Data.ByteString as Bytes
 import Data.Text (Text)
 import qualified Data.Text as T
-import Xynoplex.Claims (willRetryAfter)
-import Xynoplex.JobFilter (jobMatchesFilter)
-import Xynoplex.Types (FailureClass, JobFilter, JobMetadata(..))
+import Xynolog.Claims (willRetryAfter)
+import Xynolog.JobFilter (jobMatchesFilter)
+import Xynolog.Types (FailureClass, JobFilter, JobMetadata(..))
 import System.FilePath ((</>))
 
 readCases :: FilePath -> (Value -> Parser row) -> IO [row]

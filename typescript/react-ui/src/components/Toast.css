@@ -2,7 +2,7 @@
    Toast Component Styles
    ============================================ */
 
-.xynoplex-toast-container {
+.xynolog-toast-container {
   position: fixed;
   top: 1rem;
   right: 1rem;
@@ -13,23 +13,23 @@
   max-width: 24rem;
 }
 
-.xynoplex-toast {
+.xynolog-toast {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem 1rem;
-  border-radius: var(--xynoplex-radius-lg);
+  border-radius: var(--xynolog-radius-lg);
   border: 1px solid;
-  box-shadow: var(--xynoplex-shadow-lg);
-  transition: all var(--xynoplex-duration-base) var(--xynoplex-ease);
+  box-shadow: var(--xynolog-shadow-lg);
+  transition: all var(--xynolog-duration-base) var(--xynolog-ease);
   transform: translateX(0);
-  animation: slideIn var(--xynoplex-duration-base) var(--xynoplex-ease);
+  animation: slideIn var(--xynolog-duration-base) var(--xynolog-ease);
 }
 
 /* Separation, not decoration: a 10%-black shadow is invisible against a dark
    backdrop, so the dark theme takes the deeper one. */
-[data-theme="dark"] .xynoplex-toast {
-  box-shadow: var(--xynoplex-shadow-xl);
+[data-theme="dark"] .xynolog-toast {
+  box-shadow: var(--xynolog-shadow-xl);
 }
 
 @keyframes slideIn {
@@ -43,25 +43,25 @@
   }
 }
 
-.xynoplex-toast-icon-wrapper {
+.xynolog-toast-icon-wrapper {
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.xynoplex-toast-icon {
+.xynolog-toast-icon {
   width: 1.25rem;
   height: 1.25rem;
 }
 
-.xynoplex-toast-message {
+.xynolog-toast-message {
   flex: 1;
-  font-size: var(--xynoplex-text-sm);
-  font-weight: var(--xynoplex-font-medium);
+  font-size: var(--xynolog-text-sm);
+  font-weight: var(--xynolog-font-medium);
 }
 
-.xynoplex-toast-close {
+.xynolog-toast-close {
   margin-left: auto;
   flex-shrink: 0;
   display: flex;
@@ -71,66 +71,66 @@
   border: none;
   cursor: pointer;
   padding: 0.25rem;
-  border-radius: var(--xynoplex-radius-base);
-  transition: opacity var(--xynoplex-duration-fast) var(--xynoplex-ease);
+  border-radius: var(--xynolog-radius-base);
+  transition: opacity var(--xynolog-duration-fast) var(--xynolog-ease);
 }
 
-.xynoplex-toast-close:hover {
+.xynolog-toast-close:hover {
   opacity: 0.7;
 }
 
-.xynoplex-toast-close-icon {
+.xynolog-toast-close-icon {
   width: 1rem;
   height: 1rem;
 }
 
 /* Toast Variants */
-.xynoplex-toast[data-variant="success"] {
-  background-color: var(--xynoplex-color-green-100);
-  border-color: var(--xynoplex-color-green-300);
-  color: var(--xynoplex-color-green-800);
+.xynolog-toast[data-variant="success"] {
+  background-color: var(--xynolog-color-green-100);
+  border-color: var(--xynolog-color-green-300);
+  color: var(--xynolog-color-green-800);
 }
 
-.xynoplex-toast[data-variant="error"] {
-  background-color: var(--xynoplex-color-red-100);
-  border-color: var(--xynoplex-color-red-300);
-  color: var(--xynoplex-color-red-800);
+.xynolog-toast[data-variant="error"] {
+  background-color: var(--xynolog-color-red-100);
+  border-color: var(--xynolog-color-red-300);
+  color: var(--xynolog-color-red-800);
 }
 
-.xynoplex-toast[data-variant="warning"] {
-  background-color: var(--xynoplex-color-yellow-100);
-  border-color: var(--xynoplex-color-yellow-300);
-  color: var(--xynoplex-color-yellow-900);
+.xynolog-toast[data-variant="warning"] {
+  background-color: var(--xynolog-color-yellow-100);
+  border-color: var(--xynolog-color-yellow-300);
+  color: var(--xynolog-color-yellow-900);
 }
 
-.xynoplex-toast[data-variant="info"] {
-  background-color: var(--xynoplex-color-blue-100);
-  border-color: var(--xynoplex-color-blue-300);
-  color: var(--xynoplex-color-blue-800);
+.xynolog-toast[data-variant="info"] {
+  background-color: var(--xynolog-color-blue-100);
+  border-color: var(--xynolog-color-blue-300);
+  color: var(--xynolog-color-blue-800);
 }
 
 /* Dark mode toast variants */
-[data-theme="dark"] .xynoplex-toast[data-variant="success"] {
+[data-theme="dark"] .xynolog-toast[data-variant="success"] {
   background-color: rgba(34, 197, 94, 0.1);
-  border-color: var(--xynoplex-color-green-600);
-  color: var(--xynoplex-color-green-300);
+  border-color: var(--xynolog-color-green-600);
+  color: var(--xynolog-color-green-300);
 }
 
-[data-theme="dark"] .xynoplex-toast[data-variant="error"] {
+[data-theme="dark"] .xynolog-toast[data-variant="error"] {
   background-color: rgba(239, 68, 68, 0.1);
-  border-color: var(--xynoplex-color-red-600);
-  color: var(--xynoplex-color-red-300);
+  border-color: var(--xynolog-color-red-600);
+  color: var(--xynolog-color-red-300);
 }
 
-[data-theme="dark"] .xynoplex-toast[data-variant="warning"] {
+[data-theme="dark"] .xynolog-toast[data-variant="warning"] {
   background-color: rgba(245, 158, 11, 0.1);
-  border-color: var(--xynoplex-color-amber-600);
-  color: var(--xynoplex-color-yellow-300);
+  border-color: var(--xynolog-color-amber-600);
+  color: var(--xynolog-color-yellow-300);
 }
 
-[data-theme="dark"] .xynoplex-toast[data-variant="info"] {
+[data-theme="dark"] .xynolog-toast[data-variant="info"] {
   background-color: rgba(59, 130, 246, 0.1);
-  border-color: var(--xynoplex-color-blue-600);
-  color: var(--xynoplex-color-blue-300);
+  border-color: var(--xynolog-color-blue-600);
+  color: var(--xynolog-color-blue-300);
 }
 

@@ -12,11 +12,11 @@
 
 import { describe, it, expect } from 'vitest';
 import { firstValueFrom, timer } from 'rxjs';
-import { createTestXynoplexWrapper } from '../test-utils';
+import { createTestXynologWrapper } from '../test-utils';
 
 describe('test-utils composition', () => {
   it('a live query over the wrapper client settles without touching the network', async () => {
-    const { client } = createTestXynoplexWrapper();
+    const { client } = createTestXynologWrapper();
 
     let settled = 'pending';
     const querySub = client.browse

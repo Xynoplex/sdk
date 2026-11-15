@@ -8,7 +8,7 @@ import { spawnSync } from 'node:child_process';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
 function fixture() {
-  const directory = mkdtempSync(join(tmpdir(), 'xynoplex-local-publication-'));
+  const directory = mkdtempSync(join(tmpdir(), 'xynolog-local-publication-'));
   const source = join(directory, 'source');
   const stage = join(directory, 'stage');
   const put = (path, text) => { mkdirSync(dirname(join(source, path)), { recursive: true }); writeFileSync(join(source, path), text); };

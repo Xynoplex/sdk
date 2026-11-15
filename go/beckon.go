@@ -1,4 +1,4 @@
-package xynoplex
+package xynolog
 
 // Beckon: attention. The drives go over the wire, to every other
 // participant, and give how many the gateway reached, or counted false when
@@ -8,8 +8,8 @@ package xynoplex
 import (
 	"context"
 
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/bus"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/bus"
 )
 
 // BeckonNamespace is attention: driving the other participants' viewers.

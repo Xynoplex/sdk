@@ -55,16 +55,16 @@ import (
 
 	"github.com/google/uuid"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/internal/kept"
-	"github.com/Xynoplex/sdk/go/internal/required"
+	xynolog "github.com/xynolog/sdk/go"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/internal/kept"
+	"github.com/xynolog/sdk/go/internal/required"
 )
 
-// XynoplexBrowserConfig is what a registry is made of.
-type XynoplexBrowserConfig struct {
+// XynologBrowserConfig is what a registry is made of.
+type XynologBrowserConfig struct {
 	// Storage is where everything the registry keeps is kept.
-	Storage xynoplex.SessionStorage
+	Storage xynolog.SessionStorage
 	// SessionFactory is what builds a knowledge base's session.
 	SessionFactory SessionFactory
 }
@@ -129,22 +129,22 @@ type KbReadVerdict struct {
 	ObservedName string
 }
 
-// XynoplexBrowser is a registry of knowledge bases: see the package's
+// XynologBrowser is a registry of knowledge bases: see the package's
 // documentation.
-type XynoplexBrowser struct {
-	storage xynoplex.SessionStorage
+type XynologBrowser struct {
+	storage xynolog.SessionStorage
 	factory SessionFactory
 
 	knowledgeBases    *held[[]api.KnowledgeBase]
-	activeKbID        *xynoplex.Variable[string]
-	activeSession     *xynoplex.Variable[*xynoplex.Session]
-	activeSignals     *xynoplex.Variable[*xynoplex.SessionSignals]
-	sessionActivating *xynoplex.Variable[bool]
+	activeKbID        *xynolog.Variable[string]
+	activeSession     *xynolog.Variable[*xynolog.Session]
+	activeSignals     *xynolog.Variable[*xynolog.SessionSignals]
+	sessionActivating *xynolog.Variable[bool]
 	openResources     *held[[]OpenResource]
-	lastViewed        *xynoplex.Variable[api.ResourceId]
-	identityToken     *xynoplex.Variable[string]
-	failures          *kept.Stream[*xynoplex.SessionError]
-	bus               *xynoplex.EventBus
+	lastViewed        *xynolog.Variable[api.ResourceId]
+	identityToken     *xynolog.Variable[string]
+	failures          *kept.Stream[*xynolog.SessionError]
+	bus               *xynolog.EventBus
 
 	// mu guards what the registry keeps in memory of what its storage holds,
 	// and the live session's end.
@@ -171,12 +171,12 @@ type XynoplexBrowser struct {
 	closed        atomic.Bool
 }
 
-// NewXynoplexBrowser is a registry over what config.Storage holds. The active
+// NewXynologBrowser is a registry over what config.Storage holds. The active
 // knowledge base's session is brought up at once, in the background. What was
 // read is what is kept: an entry that did not read as a knowledge base is gone
 // from the storage too. A storage that refuses those writes is the error, and
 // no registry is made.
-func NewXynoplexBrowser(config XynoplexBrowserConfig) (*XynoplexBrowser, error) {
+func NewXynologBrowser(config XynologBrowserConfig) (*XynologBrowser, error) {
 	storage := config.Storage
 	kbs := LoadKnowledgeBases(storage)
 	active, _ := storage.Get(ActiveKey)
@@ -187,19 +187,19 @@ func NewXynoplexBrowser(config XynoplexBrowserConfig) (*XynoplexBrowser, error) 
 		}
 	}
 	alive, stop := context.WithCancel(context.Background())
-	b := &XynoplexBrowser{
+	b := &XynologBrowser{
 		storage:           storage,
 		factory:           config.SessionFactory,
 		knowledgeBases:    newHeld([]api.KnowledgeBase{}),
-		activeKbID:        xynoplex.NewVariable(""),
-		activeSession:     xynoplex.NewVariable[*xynoplex.Session](nil),
-		activeSignals:     xynoplex.NewVariable[*xynoplex.SessionSignals](nil),
-		sessionActivating: xynoplex.NewVariable(false),
+		activeKbID:        xynolog.NewVariable(""),
+		activeSession:     xynolog.NewVariable[*xynolog.Session](nil),
+		activeSignals:     xynolog.NewVariable[*xynolog.SessionSignals](nil),
+		sessionActivating: xynolog.NewVariable(false),
 		openResources:     newHeld([]OpenResource{}),
-		lastViewed:        xynoplex.NewVariable(api.ResourceId{}),
-		identityToken:     xynoplex.NewVariable(""),
-		failures:          kept.NewStream[*xynoplex.SessionError](xynoplex.DefaultTiming().ErrorsKeptForFirstReaderCount),
-		bus:               xynoplex.NewEventBus(),
+		lastViewed:        xynolog.NewVariable(api.ResourceId{}),
+		identityToken:     xynolog.NewVariable(""),
+		failures:          kept.NewStream[*xynolog.SessionError](xynolog.DefaultTiming().ErrorsKeptForFirstReaderCount),
+		bus:               xynolog.NewEventBus(),
 		openByKb:          openByKbOf(storage.Get(OpenResourcesByKbKey)),
 		lastViewedByKb:    lastViewedByKbOf(storage.Get(LastViewedResourceByKbKey)),
 		turn:              make(chan struct{}, 1),
@@ -227,76 +227,76 @@ func NewXynoplexBrowser(config XynoplexBrowserConfig) (*XynoplexBrowser, error) 
 // ── What it holds ───────────────────────────────────────────────────────
 
 // KnowledgeBases is the registered knowledge bases.
-func (b *XynoplexBrowser) KnowledgeBases() xynoplex.Watched[[]api.KnowledgeBase] {
+func (b *XynologBrowser) KnowledgeBases() xynolog.Watched[[]api.KnowledgeBase] {
 	return b.knowledgeBases
 }
 
 // ActiveKbId is the id of the active knowledge base; "" for none. It names
 // the one meant: its session may still be on its way, or there may be none.
-func (b *XynoplexBrowser) ActiveKbId() xynoplex.Watched[string] { return b.activeKbID.Reading() }
+func (b *XynologBrowser) ActiveKbId() xynolog.Watched[string] { return b.activeKbID.Reading() }
 
 // ActiveSession is the active knowledge base's session; nil when it has none.
-func (b *XynoplexBrowser) ActiveSession() xynoplex.Watched[*xynoplex.Session] {
+func (b *XynologBrowser) ActiveSession() xynolog.Watched[*xynolog.Session] {
 	return b.activeSession.Reading()
 }
 
 // ActiveSignals is what a host shows about the active session. There exactly
 // when the session is.
-func (b *XynoplexBrowser) ActiveSignals() xynoplex.Watched[*xynoplex.SessionSignals] {
+func (b *XynologBrowser) ActiveSignals() xynolog.Watched[*xynolog.SessionSignals] {
 	return b.activeSignals.Reading()
 }
 
 // SessionActivating is whether a session is being brought up.
-func (b *XynoplexBrowser) SessionActivating() xynoplex.Watched[bool] {
+func (b *XynologBrowser) SessionActivating() xynolog.Watched[bool] {
 	return b.sessionActivating.Reading()
 }
 
 // OpenResources is what is open in the active knowledge base, in order.
 // Empty while it has no live session.
-func (b *XynoplexBrowser) OpenResources() xynoplex.Watched[[]OpenResource] { return b.openResources }
+func (b *XynologBrowser) OpenResources() xynolog.Watched[[]OpenResource] { return b.openResources }
 
 // LastViewedResource is the resource last viewed in the active knowledge
 // base; the zero id while it has no live session, and never another knowledge
 // base's.
-func (b *XynoplexBrowser) LastViewedResource() xynoplex.Watched[api.ResourceId] {
+func (b *XynologBrowser) LastViewedResource() xynolog.Watched[api.ResourceId] {
 	return b.lastViewed.Reading()
 }
 
 // Errors is the failures its sessions say of their own (each a
-// *xynoplex.SessionError among xynoplex.Session's Errors, which the registry
+// *xynolog.SessionError among xynolog.Session's Errors, which the registry
 // reads from the first thing each session said): those that made a session
 // unusable, those that stopped a session's client keeping what it holds, and
 // each write its storage refused, from this call on, in order, however far
 // behind its reader falls, until ctx is done or the registry is closed; saying
 // never waits for a reader. The first call is given first the latest
-// ErrorsKeptForFirstReaderCount (xynoplex.Timing) said before it, the oldest
+// ErrorsKeptForFirstReaderCount (xynolog.Timing) said before it, the oldest
 // dropped beyond them; a call once the registry has closed, nothing.
-func (b *XynoplexBrowser) Errors(ctx context.Context) iter.Seq[*xynoplex.SessionError] {
+func (b *XynologBrowser) Errors(ctx context.Context) iter.Seq[*xynolog.SessionError] {
 	return b.failures.Reported(ctx.Done())
 }
 
 // IdentityToken is the token of an identity the host's environment supplies;
 // "" for none.
-func (b *XynoplexBrowser) IdentityToken() xynoplex.Watched[string] { return b.identityToken.Reading() }
+func (b *XynologBrowser) IdentityToken() xynolog.Watched[string] { return b.identityToken.Reading() }
 
 // SetIdentityToken sets the identity token; "" for none.
-func (b *XynoplexBrowser) SetIdentityToken(token string) { b.identityToken.Set(token) }
+func (b *XynologBrowser) SetIdentityToken(token string) { b.identityToken.Set(token) }
 
 // Storage is where the registry keeps what it keeps: what a sign-in that is
 // under way is remembered in, too.
-func (b *XynoplexBrowser) Storage() xynoplex.SessionStorage { return b.storage }
+func (b *XynologBrowser) Storage() xynolog.SessionStorage { return b.storage }
 
 // Bus is the application's own bus: what its parts say to each other whether
 // or not a knowledge base is active. Apart from a client's own bus, which
 // carries what happens in one knowledge base.
-func (b *XynoplexBrowser) Bus() *xynoplex.EventBus { return b.bus }
+func (b *XynologBrowser) Bus() *xynolog.EventBus { return b.bus }
 
 // ── The knowledge bases ─────────────────────────────────────────────────
 
 // AddKb registers a knowledge base that a sign-in reached, keeps its tokens,
 // and makes it the active one, returning once its session is up or known not
 // to be.
-func (b *XynoplexBrowser) AddKb(input api.NewKnowledgeBase, session StoredSession) (api.KnowledgeBase, error) {
+func (b *XynologBrowser) AddKb(input api.NewKnowledgeBase, session StoredSession) (api.KnowledgeBase, error) {
 	kb := api.KnowledgeBase{Id: uuid.NewString(), Label: input.Label, Did: input.Did, Endpoint: input.Endpoint, LastRead: input.LastRead}
 	if err := StoreSession(b.storage, kb.Id, session); err != nil {
 		return api.KnowledgeBase{}, err
@@ -313,7 +313,7 @@ func (b *XynoplexBrowser) AddKb(input api.NewKnowledgeBase, session StoredSessio
 // kept of the person its sign-in named is deleted (forgetKept): forgetting a
 // saved sign-in deletes its person's entries, once the client has closed, so
 // nothing its closing writes is left.
-func (b *XynoplexBrowser) RemoveKb(id string) error {
+func (b *XynologBrowser) RemoveKb(id string) error {
 	stored, _, err := swapStoredSession(b.storage, id, nil)
 	if err != nil {
 		return err
@@ -340,7 +340,7 @@ func (b *XynoplexBrowser) RemoveKb(id string) error {
 // UpdateKb writes what a knowledge base last said of itself onto its entry: a
 // label, unless it is nil, and a last read, unless it is nil. Its endpoint is
 // not changed in place, and its did is never changed.
-func (b *XynoplexBrowser) UpdateKb(id string, label *string, lastRead *api.KbRead) error {
+func (b *XynologBrowser) UpdateKb(id string, label *string, lastRead *api.KbRead) error {
 	kbs := slices.Clone(b.knowledgeBases.Value())
 	for i := range kbs {
 		if kbs[i].Id != id {
@@ -359,12 +359,12 @@ func (b *XynoplexBrowser) UpdateKb(id string, label *string, lastRead *api.KbRea
 
 // KbSessionStatus is what the credential stored for a knowledge base says,
 // read without asking anyone.
-func (b *XynoplexBrowser) KbSessionStatus(kbID string) KbSessionStatus {
+func (b *XynologBrowser) KbSessionStatus(kbID string) KbSessionStatus {
 	stored, ok := StoredSessionOf(b.storage, kbID)
 	switch {
 	case !ok:
 		return KbSessionSignedOut
-	case xynoplex.IsTokenExpired(stored.Access, time.Now()):
+	case xynolog.IsTokenExpired(stored.Access, time.Now()):
 		return KbSessionExpired
 	default:
 		return KbSessionAuthenticated
@@ -373,7 +373,7 @@ func (b *XynoplexBrowser) KbSessionStatus(kbID string) KbSessionStatus {
 
 // SetActiveKb makes a knowledge base the active one, or none for "". It
 // returns once its session is up, or once it is known there will be none.
-func (b *XynoplexBrowser) SetActiveKb(id string) error { return b.setActiveKb(id) }
+func (b *XynologBrowser) SetActiveKb(id string) error { return b.setActiveKb(id) }
 
 // SignIn keeps a new sign-in for a registered knowledge base in place of the
 // one stored, and brings its session up on it. A session it already had is
@@ -382,7 +382,7 @@ func (b *XynoplexBrowser) SetActiveKb(id string) error { return b.setActiveKb(id
 // sign-in names nobody until its gateway names them, so keeping one forgets
 // the saved sign-in it replaces, once the client has closed, so nothing its
 // closing writes is left.
-func (b *XynoplexBrowser) SignIn(id string, session StoredSession) error {
+func (b *XynologBrowser) SignIn(id string, session StoredSession) error {
 	if b.closed.Load() {
 		return nil
 	}
@@ -407,8 +407,8 @@ func (b *XynoplexBrowser) SignIn(id string, session StoredSession) error {
 // entry for the knowledge base that answered (see the package's
 // documentation). A description whose domain no did can hold is refused, and
 // nothing is registered.
-func (b *XynoplexBrowser) SignedIn(signedIn SignedIn) (SignInOutcome, error) {
-	did, err := xynoplex.KbDid(signedIn.Description.Domain)
+func (b *XynologBrowser) SignedIn(signedIn SignedIn) (SignInOutcome, error) {
+	did, err := xynolog.KbDid(signedIn.Description.Domain)
 	if err != nil {
 		return SignInOutcome{}, err
 	}
@@ -457,7 +457,7 @@ func (b *XynoplexBrowser) SignedIn(signedIn SignedIn) (SignInOutcome, error) {
 // sign-in named is deleted (forgetKept): forgetting a saved sign-in deletes
 // its person's entries, once the client has closed, so nothing its closing
 // writes is left.
-func (b *XynoplexBrowser) SignOut(id string) error {
+func (b *XynologBrowser) SignOut(id string) error {
 	if b.closed.Load() {
 		return nil
 	}
@@ -486,7 +486,7 @@ func (b *XynoplexBrowser) SignOut(id string) error {
 // AddOpenResource opens a resource in the active knowledge base, or, when it
 // is open already, takes its name, and its media type and storage URI unless
 // each is "". Nothing is opened while it has no live session.
-func (b *XynoplexBrowser) AddOpenResource(id api.ResourceId, name, mediaType, storageURI string) error {
+func (b *XynologBrowser) AddOpenResource(id api.ResourceId, name, mediaType, storageURI string) error {
 	return b.mutateOpenResources(func(open []OpenResource) []OpenResource {
 		for i := range open {
 			if open[i].ID != id {
@@ -512,7 +512,7 @@ func (b *XynoplexBrowser) AddOpenResource(id api.ResourceId, name, mediaType, st
 }
 
 // RemoveOpenResource closes a resource in the active knowledge base.
-func (b *XynoplexBrowser) RemoveOpenResource(id api.ResourceId) error {
+func (b *XynologBrowser) RemoveOpenResource(id api.ResourceId) error {
 	return b.mutateOpenResources(func(open []OpenResource) []OpenResource {
 		return slices.DeleteFunc(open, func(resource OpenResource) bool { return resource.ID == id })
 	})
@@ -520,7 +520,7 @@ func (b *XynoplexBrowser) RemoveOpenResource(id api.ResourceId) error {
 
 // UpdateOpenResourceName gives an open resource of the active knowledge base
 // a name.
-func (b *XynoplexBrowser) UpdateOpenResourceName(id api.ResourceId, name string) error {
+func (b *XynologBrowser) UpdateOpenResourceName(id api.ResourceId, name string) error {
 	return b.mutateOpenResources(func(open []OpenResource) []OpenResource {
 		for i := range open {
 			if open[i].ID == id {
@@ -533,7 +533,7 @@ func (b *XynoplexBrowser) UpdateOpenResourceName(id api.ResourceId, name string)
 
 // ReorderOpenResources moves the open resource at one place in the visible
 // list to another. A place that is not in the list moves nothing.
-func (b *XynoplexBrowser) ReorderOpenResources(from, to int) error {
+func (b *XynologBrowser) ReorderOpenResources(from, to int) error {
 	return b.mutateOpenResources(func(open []OpenResource) []OpenResource {
 		if from < 0 || to < 0 || from >= len(open) || to >= len(open) {
 			return open
@@ -550,7 +550,7 @@ func (b *XynoplexBrowser) ReorderOpenResources(from, to int) error {
 
 // SetLastViewedResource records the resource a person is looking at, in the
 // active knowledge base. Nothing is recorded while it has no live session.
-func (b *XynoplexBrowser) SetLastViewedResource(id api.ResourceId) error {
+func (b *XynologBrowser) SetLastViewedResource(id api.ResourceId) error {
 	kbID := b.liveKbID()
 	if kbID == "" {
 		return nil
@@ -562,7 +562,7 @@ func (b *XynoplexBrowser) SetLastViewedResource(id api.ResourceId) error {
 // says what it answered. Asking is not activating: an answer as the entry is
 // recorded on it, and a different knowledge base answering is reported.
 // Nothing is voided and nothing raised.
-func (b *XynoplexBrowser) ReadActiveKb(ctx context.Context) (KbReadVerdict, error) {
+func (b *XynologBrowser) ReadActiveKb(ctx context.Context) (KbReadVerdict, error) {
 	session, kbID := b.activeSession.Value(), b.activeKbID.Value()
 	if session == nil || kbID == "" {
 		return KbReadVerdict{Kind: KbReadNoVerdict}, nil
@@ -578,7 +578,7 @@ func (b *XynoplexBrowser) ReadActiveKb(ctx context.Context) (KbReadVerdict, erro
 // the factory returns too. Called from within the storage, in a write the
 // registry is making, it does not return: it waits for that write. Closing
 // twice is closing once.
-func (b *XynoplexBrowser) Close() error {
+func (b *XynologBrowser) Close() error {
 	b.mu.Lock()
 	closing := !b.closed.Swap(true)
 	b.mu.Unlock()
@@ -613,7 +613,7 @@ func (b *XynoplexBrowser) Close() error {
 
 // spawn runs work under the registry's lifetime; Close waits for it, and
 // returns what it failed with.
-func (b *XynoplexBrowser) spawn(work func() error) {
+func (b *XynologBrowser) spawn(work func() error) {
 	b.tasks.Add(1)
 	go func() {
 		defer b.tasks.Done()
@@ -692,7 +692,7 @@ func written(value any) string {
 	return string(text)
 }
 
-func (b *XynoplexBrowser) putKbs(kbs []api.KnowledgeBase) error {
+func (b *XynologBrowser) putKbs(kbs []api.KnowledgeBase) error {
 	if b.closed.Load() {
 		return nil
 	}
@@ -703,7 +703,7 @@ func (b *XynoplexBrowser) putKbs(kbs []api.KnowledgeBase) error {
 	return nil
 }
 
-func (b *XynoplexBrowser) putActiveID(id string) error {
+func (b *XynologBrowser) putActiveID(id string) error {
 	if b.closed.Load() {
 		return nil
 	}
@@ -720,7 +720,7 @@ func (b *XynoplexBrowser) putActiveID(id string) error {
 	return nil
 }
 
-func (b *XynoplexBrowser) failed(err *xynoplex.SessionError) { b.failures.Report(err) }
+func (b *XynologBrowser) failed(err *xynolog.SessionError) { b.failures.Report(err) }
 
 // ── The active session ──────────────────────────────────────────────────
 
@@ -728,7 +728,7 @@ func (b *XynoplexBrowser) failed(err *xynoplex.SessionError) { b.failures.Report
 // registry to be closed.
 type ended struct {
 	end     func()
-	signals *xynoplex.SessionSignals
+	signals *xynolog.SessionSignals
 }
 
 // close ends the session as its factory's end does, the client it was built
@@ -742,7 +742,7 @@ func (e *ended) close() {
 
 // takeSession takes the live session out: its readers see none, and what is
 // open is shown no more. Whoever takes it closes it.
-func (b *XynoplexBrowser) takeSession() *ended {
+func (b *XynologBrowser) takeSession() *ended {
 	b.mu.Lock()
 	if b.activeSession.Value() == nil {
 		b.mu.Unlock()
@@ -762,7 +762,7 @@ func (b *XynoplexBrowser) takeSession() *ended {
 // find is said through the signals. A session is put once, so what is open is
 // checked once per session. One that came up as the registry closed is closed
 // instead.
-func (b *XynoplexBrowser) putSession(session *xynoplex.Session, end func(), signals *xynoplex.SessionSignals) {
+func (b *XynologBrowser) putSession(session *xynolog.Session, end func(), signals *xynolog.SessionSignals) {
 	b.mu.Lock()
 	if b.closed.Load() {
 		b.mu.Unlock()
@@ -777,7 +777,7 @@ func (b *XynoplexBrowser) putSession(session *xynoplex.Session, end func(), sign
 	b.spawn(func() error { return b.validateOpenResources(session) })
 }
 
-func (b *XynoplexBrowser) setActiveKb(id string) error {
+func (b *XynologBrowser) setActiveKb(id string) error {
 	if b.closed.Load() {
 		return nil
 	}
@@ -813,14 +813,14 @@ func (b *XynoplexBrowser) setActiveKb(id string) error {
 	return nil
 }
 
-func (b *XynoplexBrowser) activating(change int) {
+func (b *XynologBrowser) activating(change int) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.activations += change
 	b.sessionActivating.Set(b.activations > 0)
 }
 
-func (b *XynoplexBrowser) activate(id string) {
+func (b *XynologBrowser) activate(id string) {
 	kbs := b.knowledgeBases.Value()
 	i := slices.IndexFunc(kbs, func(kb api.KnowledgeBase) bool { return kb.Id == id })
 	if i < 0 {
@@ -828,7 +828,7 @@ func (b *XynoplexBrowser) activate(id string) {
 	}
 	// The signals exist before the session does: the session says it is over
 	// through them, and may be over before it is ready.
-	signals := xynoplex.NewSessionSignals()
+	signals := xynolog.NewSessionSignals()
 	handed, ok := b.build(SessionFactoryOptions{Kb: kbs[i], Storage: b.storage, Signals: signals})
 	if !ok {
 		return
@@ -855,7 +855,7 @@ func (b *XynoplexBrowser) activate(id string) {
 
 // built is what the factory handed back for a session.
 type built struct {
-	session *xynoplex.Session
+	session *xynolog.Session
 	end     func()
 	err     error
 }
@@ -865,7 +865,7 @@ type built struct {
 // closed: ok is false when the registry closed first. A session handed back
 // after that is ended where it is handed back, with what a host was to be
 // shown of it.
-func (b *XynoplexBrowser) build(options SessionFactoryOptions) (handed built, ok bool) {
+func (b *XynologBrowser) build(options SessionFactoryOptions) (handed built, ok bool) {
 	handing := make(chan built)
 	go func() {
 		session, end, err := b.factory.Session(b.alive, options)
@@ -888,12 +888,12 @@ func (b *XynoplexBrowser) build(options SessionFactoryOptions) (handed built, ok
 
 // constructFailed is a factory's refusal as the failure a registry says: the
 // factory's own when it is one.
-func constructFailed(err error, kbID string) *xynoplex.SessionError {
-	var refused *xynoplex.SessionError
+func constructFailed(err error, kbID string) *xynolog.SessionError {
+	var refused *xynolog.SessionError
 	if errors.As(err, &refused) {
 		return refused
 	}
-	return &xynoplex.SessionError{Code: xynoplex.SessionErrorCodeConstructFailed, Message: err.Error(), KbID: kbID}
+	return &xynolog.SessionError{Code: xynolog.SessionErrorCodeConstructFailed, Message: err.Error(), KbID: kbID}
 }
 
 // route reads the session's errors, as their one reader, and so from what
@@ -902,15 +902,15 @@ func constructFailed(err error, kbID string) *xynoplex.SessionError {
 // signals; any other failure of its transport, a refusal for want of a valid
 // token among them, is not acted on. It ends when the session's errors do,
 // when the session ends.
-func (b *XynoplexBrowser) route(session *xynoplex.Session, signals *xynoplex.SessionSignals) {
+func (b *XynologBrowser) route(session *xynolog.Session, signals *xynolog.SessionSignals) {
 	for each := range session.Errors() {
-		var own *xynoplex.SessionError
+		var own *xynolog.SessionError
 		if errors.As(each, &own) {
 			b.failed(own)
 			continue
 		}
-		var failure *xynoplex.TransportError
-		if errors.As(each, &failure) && failure.Code == xynoplex.TransportErrorCodeForbidden {
+		var failure *xynolog.TransportError
+		if errors.As(each, &failure) && failure.Code == xynolog.TransportErrorCodeForbidden {
 			detail := failure.Message
 			signals.NotifyPermissionDenied(&detail)
 		}
@@ -921,7 +921,7 @@ func (b *XynoplexBrowser) route(session *xynoplex.Session, signals *xynoplex.Ses
 
 // liveKbID is the id of the active knowledge base when it has a live
 // session; "" otherwise.
-func (b *XynoplexBrowser) liveKbID() string {
+func (b *XynologBrowser) liveKbID() string {
 	if b.activeSession.Value() == nil {
 		return ""
 	}
@@ -930,7 +930,7 @@ func (b *XynoplexBrowser) liveKbID() string {
 
 // project shows what is open, and where the person was, in the active
 // knowledge base: only while it has a live session.
-func (b *XynoplexBrowser) project() {
+func (b *XynologBrowser) project() {
 	b.mu.Lock()
 	open := []OpenResource{}
 	var viewed api.ResourceId
@@ -945,7 +945,7 @@ func (b *XynoplexBrowser) project() {
 
 // mutateOpenResources changes what is open in the active knowledge base,
 // against what the storage holds, as one step.
-func (b *XynoplexBrowser) mutateOpenResources(mutate func([]OpenResource) []OpenResource) error {
+func (b *XynologBrowser) mutateOpenResources(mutate func([]OpenResource) []OpenResource) error {
 	kbID := b.liveKbID()
 	if kbID == "" {
 		return nil
@@ -967,7 +967,7 @@ func (b *XynoplexBrowser) mutateOpenResources(mutate func([]OpenResource) []Open
 	return nil
 }
 
-func (b *XynoplexBrowser) mutateLastViewed(mutate func(map[string]api.ResourceId)) error {
+func (b *XynologBrowser) mutateLastViewed(mutate func(map[string]api.ResourceId)) error {
 	var committed map[string]api.ResourceId
 	err := b.storage.Update(LastViewedResourceByKbKey, func(stored string, has bool) (string, bool) {
 		viewed := lastViewedByKbOf(stored, has)
@@ -987,7 +987,7 @@ func (b *XynoplexBrowser) mutateLastViewed(mutate func(map[string]api.ResourceId
 
 // forgetOpenIn forgets what was open in a knowledge base and where the person
 // was.
-func (b *XynoplexBrowser) forgetOpenIn(kbID string) error {
+func (b *XynologBrowser) forgetOpenIn(kbID string) error {
 	var committed map[string][]OpenResource
 	err := b.storage.Update(OpenResourcesByKbKey, func(stored string, has bool) (string, bool) {
 		open := openByKbOf(stored, has)
@@ -1006,7 +1006,7 @@ func (b *XynoplexBrowser) forgetOpenIn(kbID string) error {
 
 // writtenElsewhere hears another context change what is open, or where the
 // person was.
-func (b *XynoplexBrowser) writtenElsewhere(key, value string, has bool) {
+func (b *XynologBrowser) writtenElsewhere(key, value string, has bool) {
 	if b.closed.Load() || !has {
 		return
 	}
@@ -1035,7 +1035,7 @@ func (b *XynoplexBrowser) writtenElsewhere(key, value string, has bool) {
 
 // ── The checks a session's arrival starts ───────────────────────────────
 
-func (b *XynoplexBrowser) validateOpenResources(session *xynoplex.Session) error {
+func (b *XynologBrowser) validateOpenResources(session *xynolog.Session) error {
 	// The session's own knowledge base: by the time this runs, another may be
 	// the active one.
 	kbID := session.Kb().Id
@@ -1077,7 +1077,7 @@ func (b *XynoplexBrowser) validateOpenResources(session *xynoplex.Session) error
 	var mu sync.Mutex
 	checks := map[api.ResourceId]TabCheck{}
 	var lanes sync.WaitGroup
-	for range xynoplex.DefaultTiming().ChecksAtOnceCount {
+	for range xynolog.DefaultTiming().ChecksAtOnceCount {
 		lanes.Go(func() {
 			for id := range ids {
 				check := checkOpenResource(b.alive, session, id)
@@ -1101,7 +1101,7 @@ func (b *XynoplexBrowser) validateOpenResources(session *xynoplex.Session) error
 // A did is read one way only. It is not unique, so one that differs says a
 // different knowledge base answered, and one that matches says nothing about
 // what is in it: that is each resource's own check.
-func (b *XynoplexBrowser) readKb(ctx context.Context, session *xynoplex.Session, kbID string) (KbReadVerdict, error) {
+func (b *XynologBrowser) readKb(ctx context.Context, session *xynolog.Session, kbID string) (KbReadVerdict, error) {
 	kbs := b.knowledgeBases.Value()
 	i := slices.IndexFunc(kbs, func(kb api.KnowledgeBase) bool { return kb.Id == kbID })
 	if i < 0 {
@@ -1111,7 +1111,7 @@ func (b *XynoplexBrowser) readKb(ctx context.Context, session *xynoplex.Session,
 	if err != nil {
 		return KbReadVerdict{Kind: KbReadNoVerdict}, nil
 	}
-	observed, err := xynoplex.KbDid(description.Domain)
+	observed, err := xynolog.KbDid(description.Domain)
 	if err != nil {
 		// A domain no did can hold is a knowledge base that could not say who
 		// it is.
@@ -1134,7 +1134,7 @@ func (b *XynoplexBrowser) readKb(ctx context.Context, session *xynoplex.Session,
 // answered for the active entry: it voids what claims to be about the entry's
 // contents, both at once, and raises the conflict. Registering the knowledge
 // base that answered is a person's act.
-func (b *XynoplexBrowser) voidForConflict(kbID, observedDid string) error {
+func (b *XynologBrowser) voidForConflict(kbID, observedDid string) error {
 	kbs := b.knowledgeBases.Value()
 	i := slices.IndexFunc(kbs, func(kb api.KnowledgeBase) bool { return kb.Id == kbID })
 	if i < 0 {
@@ -1147,22 +1147,22 @@ func (b *XynoplexBrowser) voidForConflict(kbID, observedDid string) error {
 		return err
 	}
 	if signals := b.activeSignals.Value(); signals != nil {
-		signals.NotifyKbIdentityConflict(xynoplex.KbIdentityConflict{ExpectedDid: kbs[i].Did, ObservedDid: observedDid})
+		signals.NotifyKbIdentityConflict(xynolog.KbIdentityConflict{ExpectedDid: kbs[i].Did, ObservedDid: observedDid})
 	}
 	return nil
 }
 
 // checkOpenResource is one open resource's verdict. Asking for it freshly
 // also puts what it answered in the client's cache, where a viewer reads it.
-func checkOpenResource(ctx context.Context, session *xynoplex.Session, id api.ResourceId) TabCheck {
+func checkOpenResource(ctx context.Context, session *xynolog.Session, id api.ResourceId) TabCheck {
 	descriptor, err := session.Client().Browse.Resource(id).Fresh(ctx)
 	if err == nil {
 		// A descriptor with no primary representation states no media type.
-		mediaType, _, _ := xynoplex.PrimaryMediaType(descriptor)
+		mediaType, _, _ := xynolog.PrimaryMediaType(descriptor)
 		return TabCheck{Verdict: TabReady, Name: descriptor.Name, MediaType: mediaType}
 	}
-	var refusal *xynoplex.BusRequestError
-	if errors.As(err, &refusal) && refusal.Code == xynoplex.BusRequestErrorCodeNotFound {
+	var refusal *xynolog.BusRequestError
+	if errors.As(err, &refusal) && refusal.Code == xynolog.BusRequestErrorCodeNotFound {
 		return TabCheck{Verdict: TabGone}
 	}
 	// Anything else is a symptom, not a verdict.

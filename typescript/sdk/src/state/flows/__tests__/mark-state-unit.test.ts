@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { Observable } from 'rxjs';
-import { FrameRefusal, resourceId as makeResourceId } from '@xynoplex/core';
+import { FrameRefusal, resourceId as makeResourceId } from '@xynolog/core';
 import { createMarkStateUnit, type MarkStateUnit } from '../mark-state-unit';
 import { makeTestClient, type TestClient } from '../../../__tests__/test-client';
-import { assertStateUnitAxioms } from '@xynoplex/core/testing/axioms';
+import { assertStateUnitAxioms } from '@xynolog/core/testing/axioms';
 
 const RID = makeResourceId('res-1');
 
@@ -27,7 +27,7 @@ describe('createMarkStateUnit', () => {
   it('does not emit panel:open on mark:requested (view layer handles panel)', () => {
     // The view component is responsible for opening the annotations panel
     // in response to `pendingAnnotation$` — the state unit stays pure state, and
-    // `panel:open` lives on the app-scoped (XynoplexBrowser) bus anyway,
+    // `panel:open` lives on the app-scoped (XynologBrowser) bus anyway,
     // which this session-scoped client doesn't reach.
     tc = withMark();
     const stateUnit = createMarkStateUnit(tc.client, RID);

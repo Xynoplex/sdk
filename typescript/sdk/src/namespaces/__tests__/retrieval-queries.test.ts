@@ -8,8 +8,8 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { BehaviorSubject, filter, firstValueFrom, map, type Observable } from 'rxjs';
-import { EventBus, resourceId } from '@xynoplex/core';
-import type { ConnectionState, EventMap, EventMetadata, EventOfType, ResourceDescriptor, ResourceId, StoredEvent, UserId } from '@xynoplex/core';
+import { EventBus, resourceId } from '@xynolog/core';
+import type { ConnectionState, EventMap, EventMetadata, EventOfType, ResourceDescriptor, ResourceId, StoredEvent, UserId } from '@xynolog/core';
 import { isReady, type CacheState } from '../../cache';
 import { GatherNamespace } from '../gather';
 import { MatchNamespace } from '../match';

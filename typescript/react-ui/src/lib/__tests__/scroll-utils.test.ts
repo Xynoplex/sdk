@@ -56,7 +56,7 @@ describe('scroll-utils', () => {
   it('scrolls container when element is not visible', () => {
     // Create a scroll container with the expected class
     const container = document.createElement('div');
-    container.className = 'xynoplex-browse-view__content';
+    container.className = 'xynolog-browse-view__content';
     Object.defineProperty(container, 'clientHeight', { value: 500 });
     container.scrollTo = vi.fn();
 
@@ -85,7 +85,7 @@ describe('scroll-utils', () => {
 
   it('does not scroll when element is already visible', () => {
     const container = document.createElement('div');
-    container.className = 'xynoplex-browse-view__content';
+    container.className = 'xynolog-browse-view__content';
     container.scrollTo = vi.fn();
 
     const el = document.createElement('div');

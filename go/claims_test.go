@@ -1,4 +1,4 @@
-package xynoplex
+package xynolog
 
 // Job.Claim: a worker's claims and the jobs it comes to hold.
 //
@@ -24,8 +24,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/bus"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/bus"
 )
 
 // workerWire is a transport a test answers by hand: every request goes to

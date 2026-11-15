@@ -30,11 +30,11 @@ from pydantic import JsonValue
 from shown import CARRIED, parts_of, printed
 from tokens import token
 
-from xynoplex._required import Fault, fault_of
-from xynoplex._required_table import SCHEMAS
-from xynoplex.bus import Bus
-from xynoplex.channel import Channel
-from xynoplex.channels import (
+from xynolog._required import Fault, fault_of
+from xynolog._required_table import SCHEMAS
+from xynolog.bus import Bus
+from xynolog.channel import Channel
+from xynolog.channels import (
     BECKON_HOVER,
     BRIDGED_CHANNELS,
     CHANNELS,
@@ -44,19 +44,19 @@ from xynoplex.channels import (
     YIELD_CLONE_RESOURCE_REQUESTED,
     YIELD_CLONE_TOKEN_GENERATED,
 )
-from xynoplex.errors import XynoplexError
-from xynoplex.event_bus import EventBus
-from xynoplex.http import AgentToken, HttpTransport, ServiceToken, Timing
-from xynoplex.http._withheld import why_unanswered
-from xynoplex.http.oauth import discover_issuer, issuer_client, refresh_at_issuer
-from xynoplex.identifiers import ResourceId
-from xynoplex.model import WireModel
-from xynoplex.operations import YIELD_CLONE_TOKEN_REQUESTED
-from xynoplex.retry import RetryPolicy
-from xynoplex.testing import FaultyTransport
-from xynoplex.transport import Frame, FrameRefusal
-from xynoplex.types import YieldCloneTokenRequest
-from xynoplex.watched import Variable, reached
+from xynolog.errors import XynologError
+from xynolog.event_bus import EventBus
+from xynolog.http import AgentToken, HttpTransport, ServiceToken, Timing
+from xynolog.http._withheld import why_unanswered
+from xynolog.http.oauth import discover_issuer, issuer_client, refresh_at_issuer
+from xynolog.identifiers import ResourceId
+from xynolog.model import WireModel
+from xynolog.operations import YIELD_CLONE_TOKEN_REQUESTED
+from xynolog.retry import RetryPolicy
+from xynolog.testing import FaultyTransport
+from xynolog.transport import Frame, FrameRefusal
+from xynolog.types import YieldCloneTokenRequest
+from xynolog.watched import Variable, reached
 
 MEDIA: Final = "/api/tokens/media"
 RESOURCE: Final = ResourceId("res-1")
@@ -83,14 +83,14 @@ NEVER_BEGUN: Final = ("a line that is no header", "a body where the status line 
 ILL_FORMED: Final = f"{CARRIED}\n"
 """A token as a file gives it, its line end with it: no header's value."""
 
-type Site = Callable[[GatewayServer, Answer], Awaitable[XynoplexError]]
+type Site = Callable[[GatewayServer, Answer], Awaitable[XynologError]]
 """One place this package makes a request from: the request made of a gateway that answers it as scripted, and the failure it ended in."""
 type Saying = Callable[[GatewayServer], str]
 
 
-async def raised(asking: Awaitable[object]) -> XynoplexError:
+async def raised(asking: Awaitable[object]) -> XynologError:
     """The failure `asking` ends in."""
-    with pytest.raises(XynoplexError) as failed:
+    with pytest.raises(XynologError) as failed:
         await soon(asking)
     return failed.value
 
@@ -100,23 +100,23 @@ def unsaid(head: str, kind: str = "RemoteProtocolError") -> str:
     return f"{head}: {kind}, its own words withheld"
 
 
-async def issuer_discovery(gateway: GatewayServer, said: Answer) -> XynoplexError:
+async def issuer_discovery(gateway: GatewayServer, said: Answer) -> XynologError:
     gateway.scripted[("GET", CONFIGURATION)] = [said]
     return await raised(discover_issuer(gateway.origin))
 
 
-async def account_discovery(gateway: GatewayServer, said: Answer) -> XynoplexError:
+async def account_discovery(gateway: GatewayServer, said: Answer) -> XynologError:
     gateway.scripted[("GET", CONFIGURATION)] = [said]
     return await raised(ServiceToken(account(gateway)).authorization())
 
 
-async def refresh_grant(gateway: GatewayServer, said: Answer) -> XynoplexError:
+async def refresh_grant(gateway: GatewayServer, said: Answer) -> XynologError:
     gateway.scripted[("POST", TOKEN)] = [said]
     async with issuer_client() as http:
-        return await raised(refresh_at_issuer(http, f"{gateway.origin}{TOKEN}", "xynoplex-cli", "refresh-1"))
+        return await raised(refresh_at_issuer(http, f"{gateway.origin}{TOKEN}", "xynolog-cli", "refresh-1"))
 
 
-async def account_grant(gateway: GatewayServer, said: Answer) -> XynoplexError:
+async def account_grant(gateway: GatewayServer, said: Answer) -> XynologError:
     gateway.scripted[("POST", TOKEN)] = [said]
     return await raised(ServiceToken(account(gateway)).authorization())
 
@@ -126,13 +126,13 @@ async def signing_in(gateway: GatewayServer) -> None:
         pass
 
 
-async def agent_naming(gateway: GatewayServer, said: Answer) -> XynoplexError:
+async def agent_naming(gateway: GatewayServer, said: Answer) -> XynologError:
     gateway.answers[TOKEN] = {"access_token": token(3600, 0)}
     gateway.scripted[("GET", ME)] = [said]
     return await raised(signing_in(gateway))
 
 
-async def refused_by(origin: str, asking: Callable[[HttpTransport], Awaitable[object]], held: str = "t") -> XynoplexError:
+async def refused_by(origin: str, asking: Callable[[HttpTransport], Awaitable[object]], held: str = "t") -> XynologError:
     """The failure a request of the gateway at `origin` ends in. Its transport is never opened: only an emit needs the stream."""
     transport = HttpTransport(origin, token=Variable[str | None](held), channels=())
     try:
@@ -141,17 +141,17 @@ async def refused_by(origin: str, asking: Callable[[HttpTransport], Awaitable[ob
         await transport.close()
 
 
-async def media_token(gateway: GatewayServer, said: Answer, held: str = "t") -> XynoplexError:
+async def media_token(gateway: GatewayServer, said: Answer, held: str = "t") -> XynologError:
     gateway.scripted[("POST", MEDIA)] = [said]
     return await refused_by(gateway.origin, lambda transport: transport.get_media_token(RESOURCE), held)
 
 
-async def resource_bytes(gateway: GatewayServer, said: Answer) -> XynoplexError:
+async def resource_bytes(gateway: GatewayServer, said: Answer) -> XynologError:
     gateway.scripted[("GET", BYTES)] = [said]
     return await refused_by(gateway.origin, lambda transport: transport.content.get_binary(RESOURCE))
 
 
-async def resource_stream(gateway: GatewayServer, said: Answer) -> XynoplexError:
+async def resource_stream(gateway: GatewayServer, said: Answer) -> XynologError:
     gateway.scripted[("GET", BYTES)] = [said]
 
     async def reading(transport: HttpTransport) -> None:
@@ -161,7 +161,7 @@ async def resource_stream(gateway: GatewayServer, said: Answer) -> XynoplexError
     return await refused_by(gateway.origin, reading)
 
 
-async def emit(gateway: GatewayServer, said: Answer, held: str = "t") -> XynoplexError:
+async def emit(gateway: GatewayServer, said: Answer, held: str = "t") -> XynologError:
     # An emit that got no answer is made again, as often as its budget allows.
     gateway.scripted[("POST", "/bus/emit")] = [said, said]
     async with HttpTransport(gateway.origin, token=Variable[str | None](held), channels=("beckon:focus",), timing=QUICK) as transport:
@@ -179,7 +179,7 @@ SITES: Final[dict[str, tuple[Site, Saying, tuple[str, ...]]]] = {
     # What its own failure is raised from says the rest, and is printed with it.
     "a service account's grant": (
         account_grant,
-        lambda gateway: f"Client-credentials grant for xynoplex-smelter at {issuer_of(gateway)} got no answer",
+        lambda gateway: f"Client-credentials grant for xynolog-smelter at {issuer_of(gateway)} got no answer",
         EVERY,
     ),
     "an agent's naming": (agent_naming, lambda gateway: unsaid(f"{gateway.origin}{ME} got no answer"), EVERY),
@@ -193,7 +193,7 @@ SITES: Final[dict[str, tuple[Site, Saying, tuple[str, ...]]]] = {
 
 def said_by_this_package(caplog: pytest.LogCaptureFixture) -> str:
     """Every line this package logged."""
-    return "\n".join(record.getMessage() for record in caplog.records if record.name.startswith("xynoplex"))
+    return "\n".join(record.getMessage() for record in caplog.records if record.name.startswith("xynolog"))
 
 
 @pytest.mark.parametrize(
@@ -215,7 +215,7 @@ def test_an_answer_that_is_not_http_is_said_by_the_kind_of_error_it_is_and_in_no
             assert failure.message == saying(gateway)
             assert failure.status is None
 
-    with caplog.at_level(logging.DEBUG, logger="xynoplex"):
+    with caplog.at_level(logging.DEBUG, logger="xynolog"):
         run(scenario())
     assert parts_of(CARRIED, said_by_this_package(caplog)) == []
 
@@ -241,7 +241,7 @@ def test_a_request_whose_token_is_no_header_value_is_said_in_none_of_the_tokens_
             # None of the three left this process.
             assert [gateway.of(method, path) for method, path in (("POST", MEDIA), ("POST", "/bus/emit"), ("GET", ME))] == [[], [], []]
 
-    with caplog.at_level(logging.DEBUG, logger="xynoplex"):
+    with caplog.at_level(logging.DEBUG, logger="xynolog"):
         run(scenario())
     assert parts_of(CARRIED, said_by_this_package(caplog)) == []
 
@@ -357,7 +357,7 @@ def test_a_payload_that_is_not_its_channel_s_is_refused_to_its_reader_by_the_way
             FrameRefusal(channel=channel.name, member=member, reason=reason, payload=payload, scope=None, correlation_id=None)
         ]
 
-    with caplog.at_level(logging.WARNING, logger="xynoplex.bus"):
+    with caplog.at_level(logging.WARNING, logger="xynolog.bus"):
         run(scenario())
     assert said_by_this_package(caplog) == ""
 
@@ -378,7 +378,7 @@ def test_a_result_that_is_not_its_operation_s_is_refused_for_what_it_lacks_and_i
 def test_what_a_stream_carries_that_is_no_frame_is_said_by_its_first_fault_and_in_none_of_its_own_words(
     caplog: pytest.LogCaptureFixture,
 ) -> None:
-    async def scenario() -> list[XynoplexError]:
+    async def scenario() -> list[XynologError]:
         async with (
             GatewayServer() as gateway,
             HttpTransport(gateway.origin, token=Variable[str | None]("t"), channels=("beckon:focus",), timing=QUICK) as transport,
@@ -395,7 +395,7 @@ def test_what_a_stream_carries_that_is_no_frame_is_said_by_its_first_fault_and_i
             assert after.payload == {"resourceId": "res-1"}
             return [await soon(anext(failures)) for _ in range(3)]
 
-    with caplog.at_level(logging.WARNING, logger="xynoplex.http"):
+    with caplog.at_level(logging.WARNING, logger="xynolog.http"):
         told = run(scenario())
     # What names no reader, by its channel or by its scope, is told to the failure report, and nothing is logged.
     assert caplog.records == []

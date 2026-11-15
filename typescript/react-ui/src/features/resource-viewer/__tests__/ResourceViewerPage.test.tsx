@@ -13,12 +13,12 @@ import type { ResourceViewerPageProps } from '../components/ResourceViewerPage';
 import { ToastProvider } from '../../../components/Toast';
 import { ThemeProvider } from '../../../contexts/ThemeContext';
 import { LineNumbersProvider } from '../../../contexts/LineNumbersContext';
-import { createTestXynoplexWrapper, renderInEnglish } from '../../../test-utils';
+import { createTestXynologWrapper, renderInEnglish } from '../../../test-utils';
 import type { LinkComponentProps } from '../../../contexts/RoutingContext';
 import type { ToolbarPanelsProps } from '../../../components/Toolbar';
 import type { AnnotationHistory } from '../../../components/resource/AnnotationHistory';
-import type { BodyOperation, EventMap, ResourceDescriptor, ResourceId, UserId } from '@xynoplex/core';
-import { annotationId as makeAnnotationId, resourceId as makeResourceId } from '@xynoplex/core';
+import type { BodyOperation, EventMap, ResourceDescriptor, ResourceId, UserId } from '@xynolog/core';
+import { annotationId as makeAnnotationId, resourceId as makeResourceId } from '@xynolog/core';
 
 // jsdom doesn't implement window.matchMedia — mock it for useTheme
 Object.defineProperty(window, 'matchMedia', {
@@ -41,14 +41,14 @@ vi.mock('../../../hooks/useResourceContent', () => ({
 }));
 
 
-// Stub XynoplexBrowser whose activeSession$ emits a session carrying a real
-// XynoplexClient over the SDK's in-memory doubles. The real client surface lets
+// Stub XynologBrowser whose activeSession$ emits a session carrying a real
+// XynologClient over the SDK's in-memory doubles. The real client surface lets
 // createResourceViewerPageStateUnit run against the full namespace API without us
 // hand-stubbing every method it touches; `stubGateway` keeps `client.auth`
 // (used by useMediaToken) wired, rejecting by name rather than reaching out.
 const { stubBrowser, stubClient } = vi.hoisted(() => {
   const { BehaviorSubject } = require('rxjs');
-  const { createTestClient, stubGateway } = require('@xynoplex/sdk/testing');
+  const { createTestClient, stubGateway } = require('@xynolog/sdk/testing');
   const { client } = createTestClient({ gateway: stubGateway() });
   const stubActiveSession$ = new BehaviorSubject({ client });
   const stubOpenResources$ = new BehaviorSubject([]);
@@ -67,13 +67,13 @@ const { stubBrowser, stubClient } = vi.hoisted(() => {
   return { stubBrowser, stubClient: client };
 });
 
-vi.mock('../../../session/XynoplexProvider', async () => {
-  const actual = await vi.importActual<typeof import('../../../session/XynoplexProvider')>(
-    '../../../session/XynoplexProvider'
+vi.mock('../../../session/XynologProvider', async () => {
+  const actual = await vi.importActual<typeof import('../../../session/XynologProvider')>(
+    '../../../session/XynologProvider'
   );
   return {
     ...actual,
-    useXynoplex: () => stubBrowser,
+    useXynolog: () => stubBrowser,
   };
 });
 
@@ -93,8 +93,8 @@ function historyProps(): React.ComponentProps<typeof AnnotationHistory> {
   return props;
 }
 
-vi.mock('@xynoplex/react-ui', async () => {
-  const actual = await vi.importActual('@xynoplex/react-ui');
+vi.mock('@xynolog/react-ui', async () => {
+  const actual = await vi.importActual('@xynolog/react-ui');
   return {
     ...actual,
     ResourceViewer: ({ resource }: { resource: ResourceDescriptor }) => <div data-testid="resource-viewer">{resource.name}</div>,
@@ -191,14 +191,14 @@ const createMockProps = (overrides?: Partial<ResourceViewerPageProps>): Resource
 
 // Test wrapper to provide all required providers
 const renderWithProviders = (ui: React.ReactElement) => {
-  const { XynoplexWrapper } = createTestXynoplexWrapper();
+  const { XynologWrapper } = createTestXynologWrapper();
   return renderInEnglish(
     <ThemeProvider>
       <LineNumbersProvider>
         <ToastProvider>
-          <XynoplexWrapper>
+          <XynologWrapper>
             {ui}
-          </XynoplexWrapper>
+          </XynologWrapper>
         </ToastProvider>
       </LineNumbersProvider>
     </ThemeProvider>

@@ -11,13 +11,13 @@ export interface ResourceErrorStateProps {
 
 export function ResourceErrorState({ error, onRetry }: ResourceErrorStateProps) {
   return (
-    <div className="xynoplex-error-state xynoplex-error-state-resource">
-      <p className="xynoplex-error-message">
+    <div className="xynolog-error-state xynolog-error-state-resource">
+      <p className="xynolog-error-message">
         {error instanceof Error ? error.message : 'Failed to load resource'}
       </p>
       <button
         onClick={onRetry}
-        className="xynoplex-button"
+        className="xynolog-button"
         data-variant="secondary"
       >
         Try Again

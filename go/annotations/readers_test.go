@@ -10,8 +10,8 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/Xynoplex/sdk/go/annotations"
-	"github.com/Xynoplex/sdk/go/api"
+	"github.com/xynolog/sdk/go/annotations"
+	"github.com/xynolog/sdk/go/api"
 )
 
 // readSpec is a file of protocol/specs/src.

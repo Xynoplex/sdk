@@ -82,7 +82,7 @@ export function KeyboardShortcutsHelpModal({ isOpen, onClose }: KeyboardShortcut
 
   return (
     <Transition appear show={isOpen}>
-      <Dialog as="div" className="xynoplex-modal" onClose={onClose}>
+      <Dialog as="div" className="xynolog-modal" onClose={onClose}>
         {/* Backdrop */}
         <TransitionChild
                    enter="ease-out duration-200"
@@ -92,12 +92,12 @@ export function KeyboardShortcutsHelpModal({ isOpen, onClose }: KeyboardShortcut
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="xynoplex-modal__backdrop" />
+          <div className="xynolog-modal__backdrop" />
         </TransitionChild>
 
         {/* Modal */}
-        <div className="xynoplex-modal__container">
-          <div className="xynoplex-modal__wrapper">
+        <div className="xynolog-modal__container">
+          <div className="xynolog-modal__wrapper">
             <TransitionChild
                            enter="ease-out duration-200"
               enterFrom="opacity-0 scale-95"
@@ -106,19 +106,19 @@ export function KeyboardShortcutsHelpModal({ isOpen, onClose }: KeyboardShortcut
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <DialogPanel className="xynoplex-modal__panel xynoplex-modal__panel--large">
+              <DialogPanel className="xynolog-modal__panel xynolog-modal__panel--large">
                 {/* Header */}
-                <div className="xynoplex-modal__header">
-                  <div className="xynoplex-modal__header-content">
-                    <DialogTitle className="xynoplex-modal__title">
+                <div className="xynolog-modal__header">
+                  <div className="xynolog-modal__header-content">
+                    <DialogTitle className="xynolog-modal__title">
                       {t('title')}
                     </DialogTitle>
                     <button
                       onClick={onClose}
                       aria-label={t('closeDialog')}
-                      className="xynoplex-modal__close"
+                      className="xynolog-modal__close"
                     >
-                      <svg className="xynoplex-modal__close-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <svg className="xynolog-modal__close-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                       </svg>
                     </button>
@@ -126,23 +126,23 @@ export function KeyboardShortcutsHelpModal({ isOpen, onClose }: KeyboardShortcut
                 </div>
 
                 {/* Content */}
-                <div className="xynoplex-modal__body">
-                  <div className="xynoplex-shortcuts">
+                <div className="xynolog-modal__body">
+                  <div className="xynolog-shortcuts">
                     {shortcutGroups.map((group) => (
-                      <div key={group.titleKey} className="xynoplex-shortcuts__group">
-                        <h3 className="xynoplex-shortcuts__group-title">
+                      <div key={group.titleKey} className="xynolog-shortcuts__group">
+                        <h3 className="xynolog-shortcuts__group-title">
                           {t(group.titleKey)}
                         </h3>
-                        <div className="xynoplex-shortcuts__list">
+                        <div className="xynolog-shortcuts__list">
                           {group.shortcuts.map((shortcut, index) => (
                             <div
                               key={index}
-                              className="xynoplex-shortcuts__item"
+                              className="xynolog-shortcuts__item"
                             >
-                              <span className="xynoplex-shortcuts__description">
+                              <span className="xynolog-shortcuts__description">
                                 {t(shortcut.descriptionKey)}
                               </span>
-                              <div className="xynoplex-shortcuts__keys">
+                              <div className="xynolog-shortcuts__keys">
                                 {shortcut.keys.map((key, keyIndex) => {
                                   // Only show Mac keys on Mac, Windows/Linux keys on others
                                   if (key.includes('⌘') && !isMac) return null;
@@ -151,9 +151,9 @@ export function KeyboardShortcutsHelpModal({ isOpen, onClose }: KeyboardShortcut
                                   return (
                                     <React.Fragment key={keyIndex}>
                                       {keyIndex > 0 && !key.includes('⌘') && !key.includes('Ctrl') && (
-                                        <span className="xynoplex-shortcuts__separator">{t('or')}</span>
+                                        <span className="xynolog-shortcuts__separator">{t('or')}</span>
                                       )}
-                                      <kbd className="xynoplex-shortcuts__key">
+                                      <kbd className="xynolog-shortcuts__key">
                                         {key}
                                       </kbd>
                                     </React.Fragment>
@@ -168,29 +168,29 @@ export function KeyboardShortcutsHelpModal({ isOpen, onClose }: KeyboardShortcut
                   </div>
 
                   {/* Platform note */}
-                  <div className="xynoplex-shortcuts__note">
-                    <p className="xynoplex-shortcuts__note-text">
+                  <div className="xynolog-shortcuts__note">
+                    <p className="xynolog-shortcuts__note-text">
                       {isMac ? t('macNote') : t('windowsNote')}
                     </p>
                   </div>
                 </div>
 
                 {/* Footer */}
-                <div className="xynoplex-modal__footer">
-                  <div className="xynoplex-modal__footer-content">
-                    <div className="xynoplex-modal__hint">
+                <div className="xynolog-modal__footer">
+                  <div className="xynolog-modal__footer-content">
+                    <div className="xynolog-modal__hint">
                       {t('footerHint', { key: '?' }).split('?').map((part, i, arr) => (
                         <React.Fragment key={i}>
                           {part}
                           {i < arr.length - 1 && (
-                            <kbd className="xynoplex-modal__hint-key">?</kbd>
+                            <kbd className="xynolog-modal__hint-key">?</kbd>
                           )}
                         </React.Fragment>
                       ))}
                     </div>
                     <button
                       onClick={onClose}
-                      className="xynoplex-button xynoplex-button--secondary"
+                      className="xynolog-button xynolog-button--secondary"
                     >
                       {t('close')}
                     </button>

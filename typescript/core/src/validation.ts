@@ -1,5 +1,5 @@
 /**
- * Generic validation utilities for @xynoplex/http-transport
+ * Generic validation utilities for @xynolog/http-transport
  *
  * Pure TypeScript validation with no external dependencies.
  * Safe to use in any JavaScript environment (Node.js, browser, Deno, etc.)

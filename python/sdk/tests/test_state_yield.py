@@ -9,12 +9,12 @@ import inspect
 from collections.abc import AsyncIterable, Callable, Sequence
 from typing import final, override
 
-from xynoplex.channels import BRIDGED_CHANNELS
-from xynoplex.namespaces.yield_ import YieldNamespace
-from xynoplex.state import YieldStateUnit
-from xynoplex.testing import FaultyTransport, create_test_client
-from xynoplex.testing.axioms import AxiomSubject, Fresh, assert_state_unit_axioms
-from xynoplex.types import GatheredContext, GenerationJobParams
+from xynolog.channels import BRIDGED_CHANNELS
+from xynolog.namespaces.yield_ import YieldNamespace
+from xynolog.state import YieldStateUnit
+from xynolog.testing import FaultyTransport, create_test_client
+from xynolog.testing.axioms import AxiomSubject, Fresh, assert_state_unit_axioms
+from xynolog.types import GatheredContext, GenerationJobParams
 
 PARAMS = GenerationJobParams(
     title="A title",

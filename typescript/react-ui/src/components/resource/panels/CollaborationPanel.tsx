@@ -1,6 +1,6 @@
 'use client';
 
-import type { ConnectionState, EngineWithLimits } from '@xynoplex/core';
+import type { ConnectionState, EngineWithLimits } from '@xynolog/core';
 import { useTranslations } from '../../../contexts/TranslationContext';
 import './CollaborationPanel.css';
 
@@ -24,7 +24,7 @@ function formatTokens(n: number): string {
 interface Props {
   /**
    * The state of the client's connection to the bus, as its transport
-   * reports it (`ConnectionState`, in `@xynoplex/core`).
+   * reports it (`ConnectionState`, in `@xynolog/core`).
    *
    * UI mapping:
    *   `open` | `reconnecting` | `initial` | `connecting`
@@ -97,49 +97,49 @@ export function CollaborationPanel({
   }
 
   return (
-    <div className="xynoplex-collaboration-panel">
+    <div className="xynolog-collaboration-panel">
       {/* Panel Title */}
-      <h3 className="xynoplex-collaboration-panel__title">
+      <h3 className="xynolog-collaboration-panel__title">
         {t('title')}
       </h3>
 
       {knowledgeBaseName && (
-        <div style={{ padding: '0 0.75rem 0.5rem', fontSize: '0.8rem', color: 'var(--xynoplex-color-neutral-400)' }}>
+        <div style={{ padding: '0 0.75rem 0.5rem', fontSize: '0.8rem', color: 'var(--xynolog-color-neutral-400)' }}>
           {knowledgeBaseName}
         </div>
       )}
 
       {/* Connection Status Section */}
-      <div className="xynoplex-collaboration-panel__section">
-        <h3 className="xynoplex-collaboration-panel__heading">
+      <div className="xynolog-collaboration-panel__section">
+        <h3 className="xynolog-collaboration-panel__heading">
           {t('connectionStatus')}
         </h3>
 
         {/* Live indicator */}
-        <div className="xynoplex-collaboration-panel__status">
-          <span className="xynoplex-collaboration-panel__indicator">
+        <div className="xynolog-collaboration-panel__status">
+          <span className="xynolog-collaboration-panel__indicator">
             <span
-              className="xynoplex-collaboration-panel__dot"
+              className="xynolog-collaboration-panel__dot"
               data-connected={isHealthy ? 'true' : 'false'}
             ></span>
             <span
-              className="xynoplex-collaboration-panel__status-text"
+              className="xynolog-collaboration-panel__status-text"
               data-connected={isHealthy ? 'true' : 'false'}
             >
               {isHealthy ? t('live') : t('disconnected')}
             </span>
           </span>
           {isHealthy && eventCount > 0 && (
-            <span className="xynoplex-collaboration-panel__event-count">
+            <span className="xynolog-collaboration-panel__event-count">
               ({t('events', { count: eventCount })})
             </span>
           )}
         </div>
 
         {/* Last sync */}
-        <div className="xynoplex-collaboration-panel__details">
+        <div className="xynolog-collaboration-panel__details">
           <div>
-            <span className="xynoplex-collaboration-panel__label">{t('lastSync')}</span> {lastSyncText}
+            <span className="xynolog-collaboration-panel__label">{t('lastSync')}</span> {lastSyncText}
           </div>
           <div>
             {isHealthy
@@ -151,8 +151,8 @@ export function CollaborationPanel({
 
       {/* Engines — each a provider and a model, with its discovered ceilings */}
       {engines.length > 0 && (
-        <div className="xynoplex-collaboration-panel__section xynoplex-collaboration-panel__section--bordered">
-          <h3 className="xynoplex-collaboration-panel__heading">
+        <div className="xynolog-collaboration-panel__section xynolog-collaboration-panel__section--bordered">
+          <h3 className="xynolog-collaboration-panel__heading">
             {t('engines')}
           </h3>
           {engines.map((entry) => {
@@ -174,24 +174,24 @@ export function CollaborationPanel({
             return (
               <div
                 key={`${provider}:${model}`}
-                className="xynoplex-collaboration-panel__engine"
-                data-testid="xynoplex-engine-row"
+                className="xynolog-collaboration-panel__engine"
+                data-testid="xynolog-engine-row"
               >
-                <div className="xynoplex-collaboration-panel__engine-id">
-                  <span className="xynoplex-collaboration-panel__engine-provider">
+                <div className="xynolog-collaboration-panel__engine-id">
+                  <span className="xynolog-collaboration-panel__engine-provider">
                     {provider}
                   </span>
-                  <span className="xynoplex-collaboration-panel__engine-model">
+                  <span className="xynolog-collaboration-panel__engine-model">
                     {model}
                   </span>
                 </div>
                 {entry.jobs && entry.jobs.length > 0 && (
-                  <div className="xynoplex-collaboration-panel__engine-jobs">
+                  <div className="xynolog-collaboration-panel__engine-jobs">
                     {entry.jobs.map((filter) => (filter.jobType === 'mark' ? filter.params.motivation : filter.jobType)).join(', ')}
                   </div>
                 )}
                 {ceiling && (
-                  <div className="xynoplex-collaboration-panel__engine-limits">
+                  <div className="xynolog-collaboration-panel__engine-limits">
                     {ceiling}
                   </div>
                 )}
@@ -202,11 +202,11 @@ export function CollaborationPanel({
       )}
 
       {/* Sharing Section - Placeholder for future */}
-      <div className="xynoplex-collaboration-panel__section xynoplex-collaboration-panel__section--bordered">
-        <h3 className="xynoplex-collaboration-panel__heading">
+      <div className="xynolog-collaboration-panel__section xynolog-collaboration-panel__section--bordered">
+        <h3 className="xynolog-collaboration-panel__heading">
           {t('sharing')}
         </h3>
-        <p className="xynoplex-collaboration-panel__description">
+        <p className="xynolog-collaboration-panel__description">
           {t('collaborationComingSoon')}
         </p>
       </div>

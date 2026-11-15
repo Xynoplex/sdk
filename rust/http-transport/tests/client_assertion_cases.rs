@@ -8,10 +8,10 @@
 
 use base64::Engine;
 use base64::engine::general_purpose::URL_SAFE_NO_PAD;
-use xynoplex_http_transport::client_assertion::{
+use serde_json::Value;
+use xynolog_http_transport::client_assertion::{
     JWT_BEARER, LIFETIME_SECONDS, claims, header, thumbprint,
 };
-use serde_json::Value;
 
 fn table() -> Value {
     serde_json::from_str(include_str!(

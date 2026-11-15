@@ -3,7 +3,7 @@
 import pytest
 from spec import SPEC, JsonObject, objects, read, text
 
-from xynoplex.sign_in_store import System, state_dir
+from xynolog.sign_in_store import System, state_dir
 
 CASES = objects(read(SPEC / "sign-in-store/cases.json")["cases"], "cases")
 

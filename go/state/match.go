@@ -9,23 +9,23 @@ package state
 // what it said.
 
 import (
-	xynoplex "github.com/Xynoplex/sdk/go"
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/bus"
+	xynolog "github.com/xynolog/sdk/go"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/bus"
 )
 
 // MatchStateUnit runs the searches asked for on its client's own bus: see
 // the file's documentation.
 type MatchStateUnit struct {
-	client *xynoplex.Client
+	client *xynolog.Client
 	life
 }
 
-var _ xynoplex.StateUnit = (*MatchStateUnit)(nil)
+var _ xynolog.StateUnit = (*MatchStateUnit)(nil)
 
 // NewMatchStateUnit is a unit matching over client. It hears the client's
 // own bus from now on.
-func NewMatchStateUnit(client *xynoplex.Client) *MatchStateUnit {
+func NewMatchStateUnit(client *xynolog.Client) *MatchStateUnit {
 	u := &MatchStateUnit{client: client, life: newLife()}
 	// Taken now, so that a search asked for from here on is heard.
 	u.listen(client.Bus.FramesOn(u.alive, bus.MatchSearchRequested.Request().Channel(), api.ResourceId{}), u.heard)
@@ -34,8 +34,8 @@ func NewMatchStateUnit(client *xynoplex.Client) *MatchStateUnit {
 
 // heard runs a search asked for. A frame that is not a request's, or was
 // refused, is nobody's to act on.
-func (u *MatchStateUnit) heard(frame xynoplex.Frame, refused error) {
-	asked, err := xynoplex.Decoded(bus.MatchSearchRequested.Request(), frame, refused)
+func (u *MatchStateUnit) heard(frame xynolog.Frame, refused error) {
+	asked, err := xynolog.Decoded(bus.MatchSearchRequested.Request(), frame, refused)
 	if err == nil {
 		go u.search(asked.Payload, asked.CorrelationID)
 	}
@@ -44,7 +44,7 @@ func (u *MatchStateUnit) heard(frame xynoplex.Frame, refused error) {
 // search runs one search, and says what it came to under the asker's id. A
 // request that states no option of the search leaves it to the namespace.
 func (u *MatchStateUnit) search(request api.MatchSearchRequest, correlationID string) {
-	options := xynoplex.MatchSearchOptions{UseSemanticScoring: request.UseSemanticScoring}
+	options := xynolog.MatchSearchOptions{UseSemanticScoring: request.UseSemanticScoring}
 	if request.Limit != nil {
 		options.Limit = *request.Limit
 	}
@@ -54,12 +54,12 @@ func (u *MatchStateUnit) search(request api.MatchSearchRequest, correlationID st
 	if u.closed {
 		return
 	}
-	answer := xynoplex.Envelope{CorrelationID: correlationID}
+	answer := xynolog.Envelope{CorrelationID: correlationID}
 	if err != nil {
-		_ = xynoplex.Publish(u.client.Bus, bus.MatchSearchFailed, api.MatchSearchFailed{ReferenceId: request.ReferenceId, Message: err.Error()}, answer)
+		_ = xynolog.Publish(u.client.Bus, bus.MatchSearchFailed, api.MatchSearchFailed{ReferenceId: request.ReferenceId, Message: err.Error()}, answer)
 		return
 	}
-	_ = xynoplex.Publish(u.client.Bus, bus.MatchSearchResults, found, answer)
+	_ = xynolog.Publish(u.client.Bus, bus.MatchSearchResults, found, answer)
 }
 
 // Close ends the unit: the searches under way are abandoned, and nothing

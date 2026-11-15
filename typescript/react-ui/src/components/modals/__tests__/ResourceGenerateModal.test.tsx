@@ -14,8 +14,8 @@
 import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import type { GatheredContext } from '@xynoplex/core';
-import type { ResourceGatherOptions } from '@xynoplex/sdk';
+import type { GatheredContext } from '@xynolog/core';
+import type { ResourceGatherOptions } from '@xynolog/sdk';
 import type { GenerationConfig } from '../ConfigureGenerationStep';
 import { ResourceGenerateModal } from '../ResourceGenerateModal';
 
@@ -117,7 +117,7 @@ describe('ResourceGenerateModal', () => {
     expect(screen.getByLabelText(T.includeContent)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Person' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Topic' })).toBeInTheDocument();
-    expect(baseElement.querySelector('.xynoplex-wizard__step-scroll')).not.toBeNull();
+    expect(baseElement.querySelector('.xynolog-wizard__step-scroll')).not.toBeNull();
     expect(screen.queryByText(T.graphPaneTitle)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(T.resourceTitle)).not.toBeInTheDocument();
   });
@@ -129,7 +129,7 @@ describe('ResourceGenerateModal', () => {
     const { baseElement } = renderModal({ gatherLoading: true });
     fireEvent.click(screen.getByRole('button', { name: /Gather/ }));
     expect(onGather).toHaveBeenCalledWith({ includeContent: true, includeSummary: true, depth: 2, maxResources: 10 });
-    expect(baseElement.querySelector('.xynoplex-gather__loading')).not.toBeNull();
+    expect(baseElement.querySelector('.xynolog-gather__loading')).not.toBeNull();
     // The form's job is done: it folds into a one-line receipt of what THIS
     // gather asked for, and the evidence leads the pane. The form stays
     // mounted (hidden) so its values survive for the expand path.
@@ -190,7 +190,7 @@ describe('ResourceGenerateModal', () => {
     const topic = screen.getByRole('button', { name: 'Topic' });
     expect(person).toHaveAttribute('aria-pressed', 'true');
     expect(person).toHaveAttribute('data-included', 'true');
-    expect(person.className).toContain('xynoplex-form__recall-chip');
+    expect(person.className).toContain('xynolog-form__recall-chip');
 
     fireEvent.click(person);
     expect(person).toHaveAttribute('aria-pressed', 'false');
@@ -328,31 +328,31 @@ describe('ResourceGenerateModal', () => {
     const { baseElement } = renderModal({ gatherContext: RESOURCE_CONTEXT });
     fireEvent.click(screen.getByRole('button', { name: /Gather/ }));
 
-    const scroll = baseElement.querySelector('.xynoplex-wizard__step-scroll');
+    const scroll = baseElement.querySelector('.xynolog-wizard__step-scroll');
     expect(scroll).not.toBeNull();
-    expect(scroll!.querySelector('.xynoplex-gather__outer')).not.toBeNull();      // the evidence
+    expect(scroll!.querySelector('.xynolog-gather__outer')).not.toBeNull();      // the evidence
     expect(screen.getByText(T.graphPaneTitle)).toBeInTheDocument();              // graph pane up
     expect(screen.getByLabelText(T.resourceTitle)).toBeInTheDocument();          // the form, below
-    for (const form of Array.from(scroll!.querySelectorAll('form.xynoplex-form'))) {
-      expect(form.className).not.toContain('xynoplex-form--scrollable');
+    for (const form of Array.from(scroll!.querySelectorAll('form.xynolog-form'))) {
+      expect(form.className).not.toContain('xynolog-form--scrollable');
     }
   });
 
   it('the panel carries the widened class', () => {
     const { baseElement } = renderModal();
-    const panel = baseElement.querySelector('.xynoplex-search-modal__panel--gather');
+    const panel = baseElement.querySelector('.xynolog-search-modal__panel--gather');
     expect(panel).not.toBeNull();
-    expect(panel!.className).toContain('xynoplex-search-modal__panel--wide');
+    expect(panel!.className).toContain('xynolog-search-modal__panel--wide');
   });
 
   it('every footer is the wizard footer — no dismissal, no flex', () => {
     // The modal renders via a HeadlessUI portal, so query the whole document.
     const { baseElement } = renderModal({ gatherContext: RESOURCE_CONTEXT });
     const footerPins = () => {
-      expect(baseElement.querySelector('.xynoplex-modal__actions--wizard')).not.toBeNull();
-      expect(baseElement.querySelectorAll('.xynoplex-button--flex')).toHaveLength(0);
+      expect(baseElement.querySelector('.xynolog-modal__actions--wizard')).not.toBeNull();
+      expect(baseElement.querySelectorAll('.xynolog-button--flex')).toHaveLength(0);
       const footerButtons = Array.from(
-        baseElement.querySelectorAll('.xynoplex-modal__actions button'),
+        baseElement.querySelectorAll('.xynolog-modal__actions button'),
       ).map((b) => b.textContent ?? '');
       expect(footerButtons.filter((l) => /cancel|✕/i.test(l))).toEqual([]);
     };

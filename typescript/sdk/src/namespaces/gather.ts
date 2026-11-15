@@ -1,7 +1,7 @@
-import type { AnnotationId, CacheQuery, CacheValues, components, ResourceId, EventBus, GatheredContext } from '@xynoplex/core';
-import type { ITransport } from '@xynoplex/core';
+import type { AnnotationId, CacheQuery, CacheValues, components, ResourceId, EventBus, GatheredContext } from '@xynolog/core';
+import type { ITransport } from '@xynolog/core';
 import { CacheObservable, StreamObservable } from '../awaitable';
-import { Bus } from '@xynoplex/core';
+import { Bus } from '@xynolog/core';
 import { createCache, type Cache } from '../cache';
 import { CacheRefresher, ScopedSources } from '../cache-refresh';
 import type { GatherNamespace as IGatherNamespace, GatherAnnotationComplete, ReferencedByEntry } from './types';

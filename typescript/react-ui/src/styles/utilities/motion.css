@@ -144,18 +144,18 @@
 
 @media (prefers-reduced-motion: reduce) {
   /* Loading spinners - keep visible but static */
-  .xynoplex-spinner {
+  .xynolog-spinner {
     animation: none !important;
     opacity: 0.6;
   }
 
   /* Progress bars - instant updates */
-  .xynoplex-progress__fill {
+  .xynolog-progress__fill {
     transition: none !important;
   }
 
   /* Toasts - appear instantly */
-  .xynoplex-toast {
+  .xynolog-toast {
     animation: none !important;
     transition: none !important;
     opacity: 1 !important;
@@ -163,21 +163,21 @@
   }
 
   /* Modals - no slide/fade effects */
-  .xynoplex-modal,
-  .xynoplex-modal__backdrop,
-  .xynoplex-modal__content {
+  .xynolog-modal,
+  .xynolog-modal__backdrop,
+  .xynolog-modal__content {
     animation: none !important;
     transition: opacity 0.01ms !important;
   }
 
   /* Accordions/Collapsibles - instant expand/collapse */
-  .xynoplex-collapsible {
+  .xynolog-collapsible {
     transition: none !important;
     animation: none !important;
   }
 
   /* Dropdowns - instant open/close */
-  .xynoplex-dropdown {
+  .xynolog-dropdown {
     transition: none !important;
     animation: none !important;
   }

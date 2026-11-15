@@ -3,19 +3,19 @@
    User account information and session management
    ============================================ */
 
-.xynoplex-user-panel {
+.xynolog-user-panel {
   display: flex;
   flex-direction: column;
-  gap: var(--xynoplex-panel-gap);
-  padding: var(--xynoplex-panel-padding);
-  background: var(--xynoplex-bg-primary);
-  border-radius: var(--xynoplex-panel-border-radius);
+  gap: var(--xynolog-panel-gap);
+  padding: var(--xynolog-panel-padding);
+  background: var(--xynolog-bg-primary);
+  border-radius: var(--xynolog-panel-border-radius);
 }
 
-.xynoplex-user-panel__title {
-  margin: 0 0 var(--xynoplex-panel-header-margin-bottom);
-  font-size: var(--xynoplex-panel-title-size);
-  font-weight: var(--xynoplex-panel-title-weight);
-  color: var(--xynoplex-text-primary);
+.xynolog-user-panel__title {
+  margin: 0 0 var(--xynolog-panel-header-margin-bottom);
+  font-size: var(--xynolog-panel-title-size);
+  font-weight: var(--xynolog-panel-title-weight);
+  color: var(--xynolog-text-primary);
 }
 

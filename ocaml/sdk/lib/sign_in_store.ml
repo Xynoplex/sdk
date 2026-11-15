@@ -11,7 +11,7 @@ type entry = {
 
 exception Invalid_store
 
-external try_lock : Unix.file_descr -> bool = "xynoplex_store_try_flock"
+external try_lock : Unix.file_descr -> bool = "xynolog_store_try_flock"
 
 type platform = Macos | Windows | Other
 
@@ -23,16 +23,16 @@ let state_directory ~platform ~home ~xdg_state_home ~local_app_data =
   Option.map
     (fun home ->
       match platform with
-      | Macos -> Filename.concat home "Library/Application Support/xynoplex"
+      | Macos -> Filename.concat home "Library/Application Support/xynolog"
       | Windows ->
           Option.value (nonempty local_app_data)
             ~default:(home ^ "\\AppData\\Local")
-          ^ "\\xynoplex"
+          ^ "\\xynolog"
       | Other ->
           Filename.concat
             (Option.value (nonempty xdg_state_home)
                ~default:(Filename.concat home ".local/state"))
-            "xynoplex")
+            "xynolog")
     (nonempty home)
 
 let make ~clock ~directory = { directory; clock }

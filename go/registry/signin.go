@@ -7,30 +7,30 @@ package registry
 import (
 	"context"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
-	"github.com/Xynoplex/sdk/go/api"
+	xynolog "github.com/xynolog/sdk/go"
+	"github.com/xynolog/sdk/go/api"
 )
 
 // BeginSignIn begins a sign-in for a registry: it finds the issuer the target
 // trusts, remembers the pending sign-in in the registry's storage, and gives
 // the URL to send the person to.
-func BeginSignIn(ctx context.Context, browser *XynoplexBrowser, issuer xynoplex.Issuer, options xynoplex.BeginAuthorizationOptions) (string, error) {
-	return xynoplex.BeginAuthorization(ctx, issuer, options, browser.Storage())
+func BeginSignIn(ctx context.Context, browser *XynologBrowser, issuer xynolog.Issuer, options xynolog.BeginAuthorizationOptions) (string, error) {
+	return xynolog.BeginAuthorization(ctx, issuer, options, browser.Storage())
 }
 
 // CompleteSignIn finishes a sign-in from the URL the issuer sent the person
 // back to: it exchanges the code, asks the knowledge base who it is, and has
 // the registry land the sign-in on the entry for the knowledge base that
-// answered (XynoplexBrowser.SignedIn). The failure is a *xynoplex.SignInError
-// when the grant failed, and a *xynoplex.IdentityUnverifiableError when it
+// answered (XynologBrowser.SignedIn). The failure is a *xynolog.SignInError
+// when the grant failed, and a *xynolog.IdentityUnverifiableError when it
 // succeeded and the knowledge base could not say who it is; then nothing is
 // registered, and nothing is stored.
-func CompleteSignIn(ctx context.Context, browser *XynoplexBrowser, issuer xynoplex.Issuer, callbackURL string) (SignInOutcome, error) {
-	pending, tokens, err := xynoplex.CompleteAuthorization(ctx, issuer, callbackURL, browser.Storage())
+func CompleteSignIn(ctx context.Context, browser *XynologBrowser, issuer xynolog.Issuer, callbackURL string) (SignInOutcome, error) {
+	pending, tokens, err := xynolog.CompleteAuthorization(ctx, issuer, callbackURL, browser.Storage())
 	if err != nil {
 		return SignInOutcome{}, err
 	}
-	identity, err := xynoplex.DescribeConnection(ctx, pending.Target, tokens.Access, issuer.HTTP, issuer.Timing, issuer.Random)
+	identity, err := xynolog.DescribeConnection(ctx, pending.Target, tokens.Access, issuer.HTTP, issuer.Timing, issuer.Random)
 	if err != nil {
 		return SignInOutcome{}, err
 	}
@@ -45,7 +45,7 @@ func CompleteSignIn(ctx context.Context, browser *XynoplexBrowser, issuer xynopl
 		Session: StoredSession{
 			Access:             tokens.Access,
 			Refresh:            tokens.Refresh,
-			ClientID:           xynoplex.BrowserClientID,
+			ClientID:           xynolog.BrowserClientID,
 			TokenEndpoint:      pending.Issuer.Token,
 			RevocationEndpoint: pending.Issuer.Revocation,
 		},

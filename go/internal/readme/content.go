@@ -5,15 +5,15 @@ import (
 	"context"
 	"fmt"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
-	"github.com/Xynoplex/sdk/go/api"
+	xynolog "github.com/xynolog/sdk/go"
+	"github.com/xynolog/sdk/go/api"
 )
 
 // Store uploads a page, reads it back, and asks the gateway who is signed in
 // and whether it is serving. Over HTTP, content is
-// xynoplex.NewHTTPContentTransport(transport), and gateway is the transport.
-func Store(ctx context.Context, content xynoplex.ContentTransport, gateway xynoplex.GatewayOperations, page []byte) (api.ResourceId, error) {
-	upload := content.PutBinary(ctx, xynoplex.PutBinaryRequest{
+// xynolog.NewHTTPContentTransport(transport), and gateway is the transport.
+func Store(ctx context.Context, content xynolog.ContentTransport, gateway xynolog.GatewayOperations, page []byte) (api.ResourceId, error) {
+	upload := content.PutBinary(ctx, xynolog.PutBinaryRequest{
 		Name: "A page", Bytes: page, Format: "text/markdown", StorageURI: "file://pages/a.md", EntityTypes: []string{"Note"},
 	})
 	for progress := range upload.Progress() {

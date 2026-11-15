@@ -16,13 +16,13 @@
  */
 
 /* Error indicators */
-.xynoplex-error-message::before,
-.xynoplex-form__error::before,
-.xynoplex-entity-tags__error::before,
-.xynoplex-document-viewer__error-title::before,
-.xynoplex-document-viewer__error-message::before,
-.xynoplex-document-viewer__error-button::before,
-.xynoplex-pdf-annotation-canvas__error::before,
+.xynolog-error-message::before,
+.xynolog-form__error::before,
+.xynolog-entity-tags__error::before,
+.xynolog-document-viewer__error-title::before,
+.xynolog-document-viewer__error-message::before,
+.xynolog-document-viewer__error-button::before,
+.xynolog-pdf-annotation-canvas__error::before,
 [data-state="error"]::before,
 [data-status="error"]::before {
   content: "⚠ " !important; /* Warning triangle */
@@ -32,7 +32,7 @@
 }
 
 /* Warning indicators */
-.xynoplex-button[data-variant="warning"]::before,
+.xynolog-button[data-variant="warning"]::before,
 [data-state="warning"]::before,
 [data-status="warning"]::before {
   content: "⚡ " !important; /* Lightning bolt for warnings */
@@ -41,7 +41,7 @@
 }
 
 /* Success indicators */
-.xynoplex-button[data-variant="success"]::before,
+.xynolog-button[data-variant="success"]::before,
 [data-state="success"]::before,
 [data-status="success"]::before {
   content: "✓ " !important; /* Checkmark */
@@ -50,7 +50,7 @@
 }
 
 /* Info indicators */
-.xynoplex-button[data-variant="info"]::before,
+.xynolog-button[data-variant="info"]::before,
 [data-state="info"]::before,
 [data-status="info"]::before {
   content: "ℹ " !important; /* Info symbol */
@@ -59,7 +59,7 @@
 }
 
 /* Danger indicators */
-.xynoplex-button[data-variant="danger"]::before,
+.xynolog-button[data-variant="danger"]::before,
 [data-state="danger"]::before,
 [data-status="danger"]::before {
   content: "✕ " !important; /* X mark */
@@ -77,8 +77,8 @@
  */
 
 /* Add visually hidden but screen-reader accessible text */
-.xynoplex-error-message::after,
-.xynoplex-form__error::after {
+.xynolog-error-message::after,
+.xynolog-form__error::after {
   content: " (Error)" !important;
   position: absolute !important;
   width: 1px !important;
@@ -91,7 +91,7 @@
   border: 0 !important;
 }
 
-.xynoplex-button[data-variant="warning"]::after {
+.xynolog-button[data-variant="warning"]::after {
   content: " (Warning)" !important;
   position: absolute !important;
   width: 1px !important;
@@ -104,7 +104,7 @@
   border: 0 !important;
 }
 
-.xynoplex-button[data-variant="success"]::after {
+.xynolog-button[data-variant="success"]::after {
   content: " (Success)" !important;
   position: absolute !important;
   width: 1px !important;
@@ -127,7 +127,7 @@
  */
 
 /* Error pattern - diagonal stripes */
-.xynoplex-error-message {
+.xynolog-error-message {
   background-image: repeating-linear-gradient(
     -45deg,
     transparent,
@@ -138,14 +138,14 @@
 }
 
 /* Warning pattern - dots, with the border that distinguishes it */
-.xynoplex-button[data-variant="warning"] {
+.xynolog-button[data-variant="warning"] {
   background-image: radial-gradient(
     circle,
     rgba(251, 191, 36, 0.05) 1px,
     transparent 1px
   ) !important;
   background-size: 10px 10px !important;
-  border: 2px dashed var(--xynoplex-color-amber-600) !important;
+  border: 2px dashed var(--xynolog-color-amber-600) !important;
 }
 
 /* ========================================
@@ -153,14 +153,14 @@
    ======================================== */
 
 /* Add distinct border styles to status elements */
-.xynoplex-error-message,
-.xynoplex-form__error {
-  border-left: 4px solid var(--xynoplex-color-red-600) !important;
+.xynolog-error-message,
+.xynolog-form__error {
+  border-left: 4px solid var(--xynolog-color-red-600) !important;
   padding-left: 0.75rem !important;
 }
 
-.xynoplex-button[data-variant="success"] {
-  border: 2px solid var(--xynoplex-color-green-600) !important;
+.xynolog-button[data-variant="success"] {
+  border: 2px solid var(--xynolog-color-green-600) !important;
 }
 
 /* ========================================
@@ -168,14 +168,14 @@
    ======================================== */
 
 /* Ensure hover states don't rely only on color */
-.xynoplex-button[data-variant="warning"]:hover:not(:disabled):not([data-disabled="true"]) {
+.xynolog-button[data-variant="warning"]:hover:not(:disabled):not([data-disabled="true"]) {
   transform: translateY(-1px) !important;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
   text-decoration: underline !important;
 }
 
-.xynoplex-button[data-variant="warning"]:active:not(:disabled):not([data-disabled="true"]),
-.xynoplex-button[data-variant="warning"][data-active="true"]:not(:disabled):not([data-disabled="true"]) {
+.xynolog-button[data-variant="warning"]:active:not(:disabled):not([data-disabled="true"]),
+.xynolog-button[data-variant="warning"][data-active="true"]:not(:disabled):not([data-disabled="true"]) {
   transform: translateY(0) !important;
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1) !important;
 }
@@ -184,25 +184,25 @@
    Document Viewer Error States
    ======================================== */
 
-.xynoplex-document-viewer__error-title {
+.xynolog-document-viewer__error-title {
   font-weight: bold !important;
   text-transform: uppercase !important;
   letter-spacing: 0.05em !important;
 }
 
-.xynoplex-document-viewer__error-message {
+.xynolog-document-viewer__error-message {
   font-style: italic !important;
   border-left: 4px solid currentColor !important;
   padding-left: 1rem !important;
 }
 
-.xynoplex-document-viewer__error-button {
+.xynolog-document-viewer__error-button {
   text-decoration: underline !important;
   font-weight: 600 !important;
 }
 
-.xynoplex-document-viewer__error-button:focus-visible {
-  outline: 2px solid var(--xynoplex-color-red-600) !important;
+.xynolog-document-viewer__error-button:focus-visible {
+  outline: 2px solid var(--xynolog-color-red-600) !important;
   outline-offset: 2px !important;
   border-radius: 2px !important;
 }
@@ -211,7 +211,7 @@
    Entity Tags Error States
    ======================================== */
 
-.xynoplex-entity-tags__error {
+.xynolog-entity-tags__error {
   text-decoration: wavy underline !important;
   text-underline-offset: 2px !important;
   font-weight: 600 !important;
@@ -222,20 +222,20 @@
    ======================================== */
 
 /* Ensure patterns work in dark theme */
-[data-theme="dark"] .xynoplex-error-message,
-[data-theme="dark"] .xynoplex-form__error,
-[data-theme="dark"] .xynoplex-entity-tags__error,
-[data-theme="dark"] .xynoplex-document-viewer__error-title,
-[data-theme="dark"] .xynoplex-document-viewer__error-message,
-[data-theme="dark"] .xynoplex-document-viewer__error-button {
+[data-theme="dark"] .xynolog-error-message,
+[data-theme="dark"] .xynolog-form__error,
+[data-theme="dark"] .xynolog-entity-tags__error,
+[data-theme="dark"] .xynolog-document-viewer__error-title,
+[data-theme="dark"] .xynolog-document-viewer__error-message,
+[data-theme="dark"] .xynolog-document-viewer__error-button {
   /* Icons and patterns still work in dark theme */
   filter: none !important;
 }
 
-[data-theme="dark"] .xynoplex-button[data-variant="warning"],
-[data-theme="dark"] .xynoplex-button[data-variant="warning"]:hover:not(:disabled):not([data-disabled="true"]),
-[data-theme="dark"] .xynoplex-button[data-variant="warning"]:active:not(:disabled):not([data-disabled="true"]),
-[data-theme="dark"] .xynoplex-button[data-variant="warning"][data-active="true"]:not(:disabled):not([data-disabled="true"]) {
+[data-theme="dark"] .xynolog-button[data-variant="warning"],
+[data-theme="dark"] .xynolog-button[data-variant="warning"]:hover:not(:disabled):not([data-disabled="true"]),
+[data-theme="dark"] .xynolog-button[data-variant="warning"]:active:not(:disabled):not([data-disabled="true"]),
+[data-theme="dark"] .xynolog-button[data-variant="warning"][data-active="true"]:not(:disabled):not([data-disabled="true"]) {
   /* Maintain visual indicators in dark theme */
   filter: none !important;
 }
@@ -246,8 +246,8 @@
 
 @media print {
   /* Ensure status is clear when printed */
-  .xynoplex-error-message::before,
-  .xynoplex-button[data-variant="warning"]::before {
+  .xynolog-error-message::before,
+  .xynolog-button[data-variant="warning"]::before {
     content: attr(data-status-text, "•") " " !important;
     font-weight: bold !important;
   }

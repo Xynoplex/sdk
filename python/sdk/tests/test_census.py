@@ -78,7 +78,7 @@ def test_every_refusal_is_silenced_for_both_checkers_on_the_line_it_is_made() ->
 def test_only_the_http_layer_imports_an_http_library() -> None:
     # The seam the layers keep: what a client is built from above its transport
     # never names what carries it, so another transport can stand in.
-    http = PACKAGE / "src/xynoplex/http"
+    http = PACKAGE / "src/xynolog/http"
     names_it = re.compile(r"^\s*(import|from)\s+httpx\b", re.MULTILINE)
     importing = sorted(
         path for path in SOURCES if path.is_relative_to(PACKAGE / "src") and names_it.search(path.read_text(encoding="utf-8"))
@@ -93,7 +93,7 @@ def test_only_the_telemetry_module_names_opentelemetry() -> None:
     importing = sorted(
         path for path in SOURCES if path.is_relative_to(PACKAGE / "src") and names_it.search(path.read_text(encoding="utf-8"))
     )
-    assert [str(path.relative_to(PACKAGE)) for path in importing] == ["src/xynoplex/telemetry.py"]
+    assert [str(path.relative_to(PACKAGE)) for path in importing] == ["src/xynolog/telemetry.py"]
 
 
 def _base_names(node: ast.ClassDef) -> list[str]:
@@ -144,7 +144,7 @@ def test_the_census_reads_what_it_is_shown() -> None:
 
 
 def test_every_state_unit_has_a_test_that_runs_the_axioms_against_it() -> None:
-    testing = PACKAGE / "src/xynoplex/testing"
+    testing = PACKAGE / "src/xynolog/testing"
     units = [
         (unit, path.relative_to(PACKAGE))
         for path in SOURCES
@@ -296,7 +296,7 @@ def raw_states(source: str) -> list[str]:
     Each is typed `Watched[…]` and returns an attribute whose name begins with an underscore.
 
     A state is held in a `Variable` and handed out as a read-only view of it
-    (`xynoplex._reading.Reading`), or as another member's state; the `Variable`
+    (`xynolog._reading.Reading`), or as another member's state; the `Variable`
     itself would let a reader write past what holds it.
     """
     return [

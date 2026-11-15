@@ -9,7 +9,7 @@
  *
  * This models the CSS the image is under exactly:
  *
- *   .xynoplex-pdf-annotation-canvas__image { max-width: 100%; height: auto; }
+ *   .xynolog-pdf-annotation-canvas__image { max-width: 100%; height: auto; }
  *
  * `max-width` shrinks but never upscales, so the displayed width is
  * `min(columnWidth, rasterWidth)` and the height follows the page's aspect

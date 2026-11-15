@@ -1,6 +1,6 @@
 module WorkerWrongResult where
-import qualified Xynoplex.Worker as Worker
-import Xynoplex.Types (MarkJobResult, YieldJobResult)
+import qualified Xynolog.Worker as Worker
+import Xynolog.Types (MarkJobResult, YieldJobResult)
 
 wrongResult :: Worker.HeldJob MarkJobResult -> YieldJobResult -> IO ()
 wrongResult = Worker.complete

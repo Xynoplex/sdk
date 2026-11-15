@@ -14,22 +14,22 @@ package state
 import (
 	"context"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
-	"github.com/Xynoplex/sdk/go/api"
+	xynolog "github.com/xynolog/sdk/go"
+	"github.com/xynolog/sdk/go/api"
 )
 
 // gathering is one gather's state.
 type gathering struct {
-	context *xynoplex.Variable[*api.GatheredContext]
-	loading *xynoplex.Variable[bool]
-	err     *xynoplex.Variable[error]
+	context *xynolog.Variable[*api.GatheredContext]
+	loading *xynolog.Variable[bool]
+	err     *xynolog.Variable[error]
 }
 
 func newGathering() gathering {
 	return gathering{
-		context: xynoplex.NewVariable[*api.GatheredContext](nil),
-		loading: xynoplex.NewVariable(false),
-		err:     xynoplex.NewVariable[error](nil),
+		context: xynolog.NewVariable[*api.GatheredContext](nil),
+		loading: xynolog.NewVariable(false),
+		err:     xynolog.NewVariable[error](nil),
 	}
 }
 
@@ -51,58 +51,58 @@ func (g gathering) end() {
 // see the file's documentation. A state holding none is nil, or the zero
 // AnnotationId.
 type GatherStateUnit struct {
-	client     *xynoplex.Client
+	client     *xynolog.Client
 	resourceID api.ResourceId
 	life
 
 	annotation   gathering
-	annotationID *xynoplex.Variable[api.AnnotationId]
+	annotationID *xynolog.Variable[api.AnnotationId]
 	resource     gathering
 }
 
-var _ xynoplex.StateUnit = (*GatherStateUnit)(nil)
+var _ xynolog.StateUnit = (*GatherStateUnit)(nil)
 
 // NewGatherStateUnit is a unit gathering the annotations of resourceID over
 // client.
-func NewGatherStateUnit(client *xynoplex.Client, resourceID api.ResourceId) *GatherStateUnit {
+func NewGatherStateUnit(client *xynolog.Client, resourceID api.ResourceId) *GatherStateUnit {
 	return &GatherStateUnit{
 		client:       client,
 		resourceID:   resourceID,
 		life:         newLife(),
 		annotation:   newGathering(),
-		annotationID: xynoplex.NewVariable(api.AnnotationId{}),
+		annotationID: xynolog.NewVariable(api.AnnotationId{}),
 		resource:     newGathering(),
 	}
 }
 
 // Context is the context around the annotation last asked about.
-func (u *GatherStateUnit) Context() xynoplex.Watched[*api.GatheredContext] {
+func (u *GatherStateUnit) Context() xynolog.Watched[*api.GatheredContext] {
 	return u.annotation.context.Reading()
 }
 
 // Loading is whether the annotation's gather is under way.
-func (u *GatherStateUnit) Loading() xynoplex.Watched[bool] { return u.annotation.loading.Reading() }
+func (u *GatherStateUnit) Loading() xynolog.Watched[bool] { return u.annotation.loading.Reading() }
 
 // Error is the failure the annotation's gather met.
-func (u *GatherStateUnit) Error() xynoplex.Watched[error] { return u.annotation.err.Reading() }
+func (u *GatherStateUnit) Error() xynolog.Watched[error] { return u.annotation.err.Reading() }
 
 // AnnotationId is the annotation last asked about.
-func (u *GatherStateUnit) AnnotationId() xynoplex.Watched[api.AnnotationId] {
+func (u *GatherStateUnit) AnnotationId() xynolog.Watched[api.AnnotationId] {
 	return u.annotationID.Reading()
 }
 
 // ResourceContext is the context around the resource last asked about.
-func (u *GatherStateUnit) ResourceContext() xynoplex.Watched[*api.GatheredContext] {
+func (u *GatherStateUnit) ResourceContext() xynolog.Watched[*api.GatheredContext] {
 	return u.resource.context.Reading()
 }
 
 // ResourceLoading is whether the resource's gather is under way.
-func (u *GatherStateUnit) ResourceLoading() xynoplex.Watched[bool] {
+func (u *GatherStateUnit) ResourceLoading() xynolog.Watched[bool] {
 	return u.resource.loading.Reading()
 }
 
 // ResourceError is the failure the resource's gather met.
-func (u *GatherStateUnit) ResourceError() xynoplex.Watched[error] { return u.resource.err.Reading() }
+func (u *GatherStateUnit) ResourceError() xynolog.Watched[error] { return u.resource.err.Reading() }
 
 // GatherAnnotation gathers the context around an annotation of this unit's
 // resource, taking what Gather.Annotation takes.
@@ -121,7 +121,7 @@ func (u *GatherStateUnit) GatherAnnotation(annotationID api.AnnotationId, option
 }
 
 // GatherResource gathers the context around a whole resource, as
-// Gather.Resource does given options (xynoplex.GatherResourceDefaults, when
+// Gather.Resource does given options (xynolog.GatherResourceDefaults, when
 // nothing else is to be stated).
 func (u *GatherStateUnit) GatherResource(resourceID api.ResourceId, options api.GatherResourceRequestOptions) {
 	u.mu.Lock()

@@ -13,12 +13,12 @@
  * mocked to identity, so the source→rendered offset map is 1:1 and spans
  * paint in jsdom via the actual overlay path.
  */
-import { resourceId, EventBus } from '@xynoplex/core';
+import { resourceId, EventBus } from '@xynolog/core';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import type { XynoplexSession } from '@xynoplex/sdk';
-import type { Annotation, AnnotationId } from '@xynoplex/core';
+import type { XynologSession } from '@xynolog/sdk';
+import type { Annotation, AnnotationId } from '@xynolog/core';
 import { BrowseView } from '../BrowseView';
 import { englishTranslationManager } from '../../../test-utils';
 
@@ -28,10 +28,10 @@ vi.mock('remark-gfm', () => ({ default: () => ({}) }));
 
 const CONTENT = 'hello world selectme end';
 
-function fakeSession(): XynoplexSession {
+function fakeSession(): XynologSession {
   return {
     client: { bus: new EventBus(), browse: { click: vi.fn() }, beckon: { hover: vi.fn() } },
-  } as unknown as XynoplexSession;
+  } as unknown as XynologSession;
 }
 
 /** A resolved reference over "world" (offsets 6..11) — real W3C shape. */

@@ -7,7 +7,7 @@ package bus
 import (
 	"reflect"
 
-	"github.com/Xynoplex/sdk/go/api"
+	"github.com/xynolog/sdk/go/api"
 )
 
 // Every operation, named for its request channel and typed by what it sends

@@ -23,7 +23,7 @@
  * `undefined`.
  */
 
-import { SEARCH_DEBOUNCE_MS, watched, type StateUnit, type Watched } from '@xynoplex/core';
+import { SEARCH_DEBOUNCE_MS, watched, type StateUnit, type Watched } from '@xynolog/core';
 import { BehaviorSubject, of, type Observable } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, startWith, map } from 'rxjs/operators';
 

@@ -1,16 +1,16 @@
 //! What each annotation reader answers is one table,
 //! protocol/specs/src/annotations/reader-cases.json, which every SDK runs: this
-//! crate's `xynoplex::annotations` gives, for each case's annotation, what
+//! crate's `xynolog::annotations` gives, for each case's annotation, what
 //! TypeScript's and Python's readers give.
 
-use xynoplex::annotations::{
+use serde_json::{Value, json};
+use xynolog::annotations::{
     annotation_exact_text, body_source, comment_text, entity_types, exact_text, is_assessment,
     is_body_resolved, is_comment, is_highlight, is_reference, is_resolved_reference,
     is_stub_reference, is_tag, tag_category, tag_schema_id, target_selector, target_source,
     text_quote_selector,
 };
-use xynoplex::types::Annotation;
-use serde_json::{Value, json};
+use xynolog::types::Annotation;
 
 fn table() -> Value {
     serde_json::from_str(include_str!("../specs/annotations/reader-cases.json"))

@@ -24,27 +24,27 @@ import qualified Data.Text as Text
 import qualified ControlledTime as Time
 import GatewayStage (newStage, stageHttp, registered, signInOf)
 import SessionCases (jwt)
-import qualified Xynoplex.Browse as Browse
-import qualified Xynoplex.Cache as Cache
-import qualified Xynoplex.Client as Client
-import qualified Xynoplex.ErrorCodes as Code
-import Xynoplex.Errors (SessionError(..), TransportError(..))
-import qualified Xynoplex.Gateway as Gateway
-import qualified Xynoplex.Http as Http
-import qualified Xynoplex.Internal.Browse as BrowseState
-import Xynoplex.Internal.Kept (personKey)
-import Xynoplex.Internal.Transport (reportFailure)
-import qualified Xynoplex.Issuer as Issuer
-import qualified Xynoplex.Registry as Browser
-import qualified Xynoplex.Registry.Factory as Factory
-import qualified Xynoplex.Session as Session
-import qualified Xynoplex.SessionStorage as Storage
-import qualified Xynoplex.SignIn as SignIn
-import qualified Xynoplex.State.SessionSignals as Signals
-import qualified Xynoplex.StateValue as State
-import Xynoplex.Timing (errorsKeptForFirstReaderCount)
-import qualified Xynoplex.Timing.Settings as Timing
-import Xynoplex.Types
+import qualified Xynolog.Browse as Browse
+import qualified Xynolog.Cache as Cache
+import qualified Xynolog.Client as Client
+import qualified Xynolog.ErrorCodes as Code
+import Xynolog.Errors (SessionError(..), TransportError(..))
+import qualified Xynolog.Gateway as Gateway
+import qualified Xynolog.Http as Http
+import qualified Xynolog.Internal.Browse as BrowseState
+import Xynolog.Internal.Kept (personKey)
+import Xynolog.Internal.Transport (reportFailure)
+import qualified Xynolog.Issuer as Issuer
+import qualified Xynolog.Registry as Browser
+import qualified Xynolog.Registry.Factory as Factory
+import qualified Xynolog.Session as Session
+import qualified Xynolog.SessionStorage as Storage
+import qualified Xynolog.SignIn as SignIn
+import qualified Xynolog.State.SessionSignals as Signals
+import qualified Xynolog.StateValue as State
+import Xynolog.Timing (errorsKeptForFirstReaderCount)
+import qualified Xynolog.Timing.Settings as Timing
+import Xynolog.Types
 import qualified Streaming.Prelude as Stream
 import System.FilePath ((</>))
 import System.Timeout (timeout)
@@ -195,7 +195,7 @@ holding why time session name = do
     void (wait fetch)
 
 -- | Every code said on the registry's errors, in order, until they end.
-reading :: Doubles -> TVar [Text] -> Browser.XynoplexBrowser -> IO ()
+reading :: Doubles -> TVar [Text] -> Browser.XynologBrowser -> IO ()
 reading doubles said browser = Browser.errors browser $ \failures -> do
   atomically (putTMVar (listening doubles) ())
   Stream.mapM_ (\problem -> atomically (modifyTVar' said (<> [Code.sessionCode (sessionErrorCode problem)]))) failures
@@ -203,7 +203,7 @@ reading doubles said browser = Browser.errors browser $ \failures -> do
 -- | A registry over the stage whose one knowledge base is active, its sessions the factory's, its errors read from
 -- before it activates anything: the registry's active session, its signals, and the codes said on its errors.
 overTheStage :: Text -> Doubles -> Timing.Settings -> UserResponse -> [Saying]
-  -> (Time.ControlledTime -> Browser.XynoplexBrowser -> Async () -> TVar [Text] -> Session.Session -> Signals.SessionSignals -> IO ())
+  -> (Time.ControlledTime -> Browser.XynologBrowser -> Async () -> TVar [Text] -> Session.Session -> Signals.SessionSignals -> IO ())
   -> IO ()
 overTheStage why doubles timing person opening body = do
   stage <- newStage
@@ -214,7 +214,7 @@ overTheStage why doubles timing person opening body = do
   Browser.saveKnowledgeBases store [registered "kb-a"]
   Storage.set store Browser.activeKey "kb-a"
   said <- newTVarIO []
-  bracket (Browser.newXynoplexBrowser (Browser.XynoplexBrowserConfig store factory http (pure 1800000000))) Browser.dispose $ \browser ->
+  bracket (Browser.newXynologBrowser (Browser.XynologBrowserConfig store factory http (pure 1800000000))) Browser.dispose $ \browser ->
     withAsync (reading doubles said browser) $ \reader -> do
       atomically (readTMVar (listening doubles))
       session <- atomically (State.current (Browser.activeSession browser) >>= maybe retry pure)
@@ -325,7 +325,7 @@ runRetiredClosing fixtures = do
 
 -- | A registry over one knowledge base whose factory refuses each session it is asked for, saying why on the
 -- registry's errors, which nobody reads: it refuses count, then body is handed the registry.
-refusedBuilds :: Text -> Int -> (Browser.XynoplexBrowser -> IO ()) -> IO ()
+refusedBuilds :: Text -> Int -> (Browser.XynologBrowser -> IO ()) -> IO ()
 refusedBuilds why count body = do
   stage <- newStage
   time <- Time.newTime
@@ -336,7 +336,7 @@ refusedBuilds why count body = do
         throwIO (SessionError Code.SessionConstructFailed ("build " <> Text.pack (show build) <> " refused") "kb-a")
   store <- Storage.newMemoryStorage
   Browser.saveKnowledgeBases store [registered "kb-a"]
-  bracket (Browser.newXynoplexBrowser (Browser.XynoplexBrowserConfig store (Factory.SessionFactory refuse (const (pure ()))) http (pure 1800000000)))
+  bracket (Browser.newXynologBrowser (Browser.XynologBrowserConfig store (Factory.SessionFactory refuse (const (pure ()))) http (pure 1800000000)))
     Browser.dispose $ \browser -> do
       -- The registry activates its knowledge base as it opens, and again each time it is selected with no session live.
       atomically $ do

@@ -10,8 +10,8 @@ import (
 	"slices"
 	"testing"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
-	"github.com/Xynoplex/sdk/go/registry"
+	xynolog "github.com/xynolog/sdk/go"
+	"github.com/xynolog/sdk/go/registry"
 )
 
 // storedTable is protocol/specs/src/session/stored.json: what a registry keeps in its
@@ -56,7 +56,7 @@ func TestWhatARegistryKeepsIsTheTables(t *testing.T) {
 		"activeKey":                 registry.ActiveKey,
 		"openResourcesByKbKey":      registry.OpenResourcesByKbKey,
 		"lastViewedResourceByKbKey": registry.LastViewedResourceByKbKey,
-		"pendingAuthorizationKey":   xynoplex.PendingAuthorizationKey,
+		"pendingAuthorizationKey":   xynolog.PendingAuthorizationKey,
 	}
 	if !maps.Equal(keys, stated) {
 		t.Errorf("the table's keys are %v; Go states %v", keys, stated)
@@ -66,12 +66,12 @@ func TestWhatARegistryKeepsIsTheTables(t *testing.T) {
 	}
 
 	members := slices.Sorted(maps.Keys(table.StoredSession.Properties))
-	storage := xynoplex.NewMemoryStorage()
-	person := xynoplex.PersonKey("did:web:example.org:users:alice")
+	storage := xynolog.NewMemoryStorage()
+	person := xynolog.PersonKey("did:web:example.org:users:alice")
 	must(t, registry.StoreSession(storage, "kb-a", registry.StoredSession{
 		Access:             "a",
 		Refresh:            "r",
-		ClientID:           "xynoplex-browser",
+		ClientID:           "xynolog-browser",
 		TokenEndpoint:      "https://issuer.test/token",
 		RevocationEndpoint: "https://issuer.test/revoke",
 		PersonKey:          &person,
@@ -158,19 +158,19 @@ func TestAStoredOpenResourceThatLacksAMemberTheTableRequiresIsNone(t *testing.T)
 }
 
 func TestAStoredValueThatLacksAMemberOfASessionIsNone(t *testing.T) {
-	storage := xynoplex.NewMemoryStorage()
+	storage := xynolog.NewMemoryStorage()
 	must(t, storage.Set(registry.SessionKey("kb-a"), `{"access":"a","refresh":"r","tokenEndpoint":"https://issuer.test/token"}`))
 	if _, ok := registry.StoredSessionOf(storage, "kb-a"); ok {
 		t.Error("a session with no client is read")
 	}
-	must(t, storage.Set(registry.SessionKey("kb-a"), `{"access":"a","refresh":"r","clientId":"xynoplex-browser","tokenEndpoint":"https://issuer.test/token"}`))
+	must(t, storage.Set(registry.SessionKey("kb-a"), `{"access":"a","refresh":"r","clientId":"xynolog-browser","tokenEndpoint":"https://issuer.test/token"}`))
 	if stored, ok := registry.StoredSessionOf(storage, "kb-a"); !ok || stored.RevocationEndpoint != "" || stored.PersonKey != nil {
 		t.Errorf("a session with no revocation endpoint and no person reads as %+v, %v", stored, ok)
 	}
 	// Written without them, as read.
 	stored, _ := registry.StoredSessionOf(storage, "kb-a")
 	must(t, registry.StoreSession(storage, "kb-a", stored))
-	if written, _ := storage.Get(registry.SessionKey("kb-a")); written != `{"access":"a","refresh":"r","clientId":"xynoplex-browser","tokenEndpoint":"https://issuer.test/token"}` {
+	if written, _ := storage.Get(registry.SessionKey("kb-a")); written != `{"access":"a","refresh":"r","clientId":"xynolog-browser","tokenEndpoint":"https://issuer.test/token"}` {
 		t.Errorf("a session with no revocation endpoint and no person is written as %s", written)
 	}
 }
@@ -180,10 +180,10 @@ func TestAStoredValueThatLacksAMemberOfASessionIsNone(t *testing.T) {
 // renewal keeps it.
 func TestThePersonIsRecordedOnTheStoredSignInOfTheTokenAskedAbout(t *testing.T) {
 	ctx := context.Background()
-	storage := xynoplex.NewMemoryStorage()
+	storage := xynolog.NewMemoryStorage()
 	kept := registry.KeptIn(storage, "kb-a")
-	jo, ann := xynoplex.PersonKey("did:web:example.org:users:jo"), xynoplex.PersonKey("did:web:example.org:users:ann")
-	read := xynoplex.HeldSignIn{Access: "a1", Refresh: "r1", ClientID: "xynoplex-browser", TokenEndpoint: "https://issuer.test/token"}
+	jo, ann := xynolog.PersonKey("did:web:example.org:users:jo"), xynolog.PersonKey("did:web:example.org:users:ann")
+	read := xynolog.HeldSignIn{Access: "a1", Refresh: "r1", ClientID: "xynolog-browser", TokenEndpoint: "https://issuer.test/token"}
 
 	if recorded, err := kept.RecordPersonKey(ctx, "a1", jo); err != nil || recorded {
 		t.Fatalf("a person recorded on nothing stored: %v, %v", recorded, err)
@@ -221,7 +221,7 @@ func TestThePersonIsRecordedOnTheStoredSignInOfTheTokenAskedAbout(t *testing.T) 
 	if stored, _ := registry.StoredSessionOf(storage, "kb-a"); stored.Access != "a2" || stored.PersonKey == nil || *stored.PersonKey != jo {
 		t.Fatalf("stored after a renewal: %+v", stored)
 	}
-	must(t, kept.Keep(ctx, xynoplex.HeldSignIn{Access: "a3", Refresh: "r3", ClientID: "xynoplex-browser", TokenEndpoint: "https://issuer.test/token"}))
+	must(t, kept.Keep(ctx, xynolog.HeldSignIn{Access: "a3", Refresh: "r3", ClientID: "xynolog-browser", TokenEndpoint: "https://issuer.test/token"}))
 	if stored, _ := registry.StoredSessionOf(storage, "kb-a"); stored.PersonKey != nil {
 		t.Fatalf("a new sign-in names %s", *stored.PersonKey)
 	}
@@ -234,17 +234,17 @@ func TestThePersonIsRecordedOnTheStoredSignInOfTheTokenAskedAbout(t *testing.T) 
 // deleted; no other person's entries, nor the person's on another knowledge
 // base, ever are.
 func TestANewSignInKeptOverOneNamingItsPersonDeletesWhatWasKeptOfThem(t *testing.T) {
-	jo, ann := xynoplex.PersonKey("did:web:example.org:users:jo"), xynoplex.PersonKey("did:web:example.org:users:ann")
+	jo, ann := xynolog.PersonKey("did:web:example.org:users:jo"), xynolog.PersonKey("did:web:example.org:users:ann")
 	entriesOf := func(kbID, personKey string) []string {
-		keys := []string{xynoplex.LastEventIDKey(kbID, personKey)}
-		for _, query := range xynoplex.PersistedCacheQueries {
-			keys = append(keys, xynoplex.CacheKey(kbID, personKey, query))
+		keys := []string{xynolog.LastEventIDKey(kbID, personKey)}
+		for _, query := range xynolog.PersistedCacheQueries {
+			keys = append(keys, xynolog.CacheKey(kbID, personKey, query))
 		}
 		return keys
 	}
 	josOnA := entriesOf("kb-a", jo)
 	others := slices.Concat(entriesOf("kb-a", ann), entriesOf("kb-b", jo))
-	signIn := xynoplex.HeldSignIn{Access: "a2", Refresh: "r2", ClientID: "xynoplex-browser", TokenEndpoint: "https://issuer.test/token"}
+	signIn := xynolog.HeldSignIn{Access: "a2", Refresh: "r2", ClientID: "xynolog-browser", TokenEndpoint: "https://issuer.test/token"}
 	for _, over := range []struct {
 		name      string
 		stored    bool
@@ -257,12 +257,12 @@ func TestANewSignInKeptOverOneNamingItsPersonDeletesWhatWasKeptOfThem(t *testing
 	} {
 		t.Run(over.name, func(t *testing.T) {
 			ctx := context.Background()
-			storage := xynoplex.NewMemoryStorage()
+			storage := xynolog.NewMemoryStorage()
 			for _, key := range slices.Concat(josOnA, others) {
 				must(t, storage.Set(key, "kept"))
 			}
 			if over.stored {
-				must(t, registry.StoreSession(storage, "kb-a", registry.StoredSession{Access: "a1", Refresh: "r1", ClientID: "xynoplex-browser", TokenEndpoint: "https://issuer.test/token", PersonKey: over.personKey}))
+				must(t, registry.StoreSession(storage, "kb-a", registry.StoredSession{Access: "a1", Refresh: "r1", ClientID: "xynolog-browser", TokenEndpoint: "https://issuer.test/token", PersonKey: over.personKey}))
 			}
 			kept := registry.KeptIn(storage, "kb-a")
 
@@ -301,9 +301,9 @@ func TestASessionKeyNamesItsKnowledgeBase(t *testing.T) {
 // and one of a sign-in that is gone is not written back.
 func TestARenewalIsKeptAgainstWhatIsStoredThen(t *testing.T) {
 	ctx := context.Background()
-	storage := xynoplex.NewMemoryStorage()
+	storage := xynolog.NewMemoryStorage()
 	kept := registry.KeptIn(storage, "kb-a")
-	read := xynoplex.HeldSignIn{Access: "a1", Refresh: "r1", ClientID: "xynoplex-browser", TokenEndpoint: "https://issuer.test/token"}
+	read := xynolog.HeldSignIn{Access: "a1", Refresh: "r1", ClientID: "xynolog-browser", TokenEndpoint: "https://issuer.test/token"}
 
 	if _, ok, err := kept.Renewed(ctx, read, "a2", "r2"); err != nil || ok {
 		t.Fatalf("a renewal of nothing stored is kept: %v, %v", ok, err)

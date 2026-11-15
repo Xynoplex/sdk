@@ -1,27 +1,27 @@
 (test
  (name substrate)
  (modules substrate)
- (libraries xynoplex eio_main cohttp-eio tls-eio yojson zarith decimal alcotest))
+ (libraries xynolog eio_main cohttp-eio tls-eio yojson zarith decimal alcotest))
 
 (test
  (name identifiers)
  (modules identifiers)
- (libraries xynoplex alcotest))
+ (libraries xynolog alcotest))
 
 (test
  (name enums_cases)
  (modules enums_cases)
- (libraries xynoplex alcotest))
+ (libraries xynolog alcotest))
 
 (test
  (name generated_protocol)
  (modules generated_protocol)
- (libraries xynoplex yojson alcotest))
+ (libraries xynolog yojson alcotest))
 
 (test
  (name session_renewal)
  (modules session_renewal session_cases)
- (libraries xynoplex eio_main eio.mock mtime base64 yojson alcotest))
+ (libraries xynolog eio_main eio.mock mtime base64 yojson alcotest))
 
 
 (rule
@@ -32,7 +32,7 @@
 (test
  (name worker_filters)
  (modules worker_filters job_filter_cases)
- (libraries xynoplex yojson alcotest))
+ (libraries xynolog yojson alcotest))
 
 (rule
  (targets job_filter_cases.ml)
@@ -43,7 +43,7 @@
  (name sign_in)
  (modules sign_in sign_in_cases assertion_cases)
  (libraries
-  xynoplex
+  xynolog
   eio_main
   eio.mock
   uri
@@ -57,22 +57,22 @@
 (test
  (name surface_behavior)
  (modules surface_behavior surface_cases surface_dispatch)
- (libraries xynoplex eio_main yojson alcotest))
+ (libraries xynolog eio_main yojson alcotest))
 
 (test
  (name registry_behavior)
  (modules registry_behavior registry_cases)
- (libraries xynoplex eio_main eio.mock mtime yojson base64 cstruct alcotest))
+ (libraries xynolog eio_main eio.mock mtime yojson base64 cstruct alcotest))
 
 (test
  (name state_behavior)
  (modules state_behavior state_cases)
- (libraries xynoplex eio_main eio.mock mtime yojson alcotest))
+ (libraries xynolog eio_main eio.mock mtime yojson alcotest))
 
 (test
  (name helper_behavior)
  (modules helper_behavior helper_cases annotation_id)
- (libraries xynoplex eio_main eio.mock yojson alcotest base64 digestif zarith))
+ (libraries xynolog eio_main eio.mock yojson alcotest base64 digestif zarith))
 
 
 (rule
@@ -83,9 +83,9 @@
 (test
  (name completion_behavior)
  (modules completion_behavior retry_cases)
- (libraries xynoplex eio_main eio.mock yojson alcotest mtime uri))
+ (libraries xynolog eio_main eio.mock yojson alcotest mtime uri))
 
 (test
  (name closure_behavior)
  (modules closure_behavior closure_cases)
- (libraries xynoplex yojson alcotest))
+ (libraries xynolog yojson alcotest))

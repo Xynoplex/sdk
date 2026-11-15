@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { kbDid, kbResource } from '../did-utils';
 
-describe('@xynoplex/core - did-utils', () => {
+describe('@xynolog/core - did-utils', () => {
   /**
    * The KB's own identity — not a person's, not an agent's. The launcher
    * mints the identical string in Go (`kbconfig.go` didWeb():
@@ -10,8 +10,8 @@ describe('@xynoplex/core - did-utils', () => {
    */
   describe('kbDid', () => {
     it('is did:web: + the declared domain, VERBATIM — colon-path form untouched', () => {
-      expect(kbDid('xynoplex.github.io:xynoplex-caselaw-kb'))
-        .toBe('did:web:xynoplex.github.io:xynoplex-caselaw-kb');
+      expect(kbDid('xynolog.github.io:xynoplex-caselaw-kb'))
+        .toBe('did:web:xynolog.github.io:xynoplex-caselaw-kb');
     });
 
     it('does NOT url-encode the domain (unlike the agent/user path segments)', () => {
@@ -31,8 +31,8 @@ describe('@xynoplex/core - did-utils', () => {
    */
   describe('kbResource', () => {
     it('resolves the did:web colon path to its https URL', () => {
-      expect(kbResource('xynoplex.github.io:xynoplex-caselaw-kb'))
-        .toBe('https://xynoplex.github.io/xynoplex-caselaw-kb');
+      expect(kbResource('xynolog.github.io:xynoplex-caselaw-kb'))
+        .toBe('https://xynolog.github.io/xynoplex-caselaw-kb');
     });
 
     it('is the bare origin when the domain declares no path', () => {

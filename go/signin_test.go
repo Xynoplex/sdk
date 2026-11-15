@@ -1,4 +1,4 @@
-package xynoplex
+package xynolog
 
 // Signing in and staying signed in, against a stand-in gateway and issuer:
 // finding the issuer, the device grant, the refresh grant and its retries,
@@ -19,7 +19,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Xynoplex/sdk/go/api"
+	"github.com/xynolog/sdk/go/api"
 )
 
 // stack is a stand-in gateway and the issuer it trusts. Each handler of the

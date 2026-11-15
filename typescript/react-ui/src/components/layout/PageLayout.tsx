@@ -24,9 +24,9 @@ export function PageLayout({
   className = '',
 }: PageLayoutProps) {
   return (
-    <div className="xynoplex-page-layout">
-      <header role="banner" className="xynoplex-page-layout__header">
-        <div className="xynoplex-page-layout__header-container">
+    <div className="xynolog-page-layout">
+      <header role="banner" className="xynolog-page-layout__header">
+        <div className="xynolog-page-layout__header-container">
           <UnifiedHeader
             Link={Link}
             routes={routes}
@@ -38,7 +38,7 @@ export function PageLayout({
         </div>
       </header>
 
-      <MainContent className={`xynoplex-page-layout__main ${className}`}>
+      <MainContent className={`xynolog-page-layout__main ${className}`}>
         {children}
       </MainContent>
     </div>

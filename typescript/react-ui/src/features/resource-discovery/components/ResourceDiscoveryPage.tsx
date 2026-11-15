@@ -6,13 +6,13 @@
  */
 
 import React, { useCallback, useRef } from 'react';
-import { getResourceId } from '@xynoplex/core';
+import { getResourceId } from '@xynolog/core';
 import { COMMON_PANELS, type ToolbarPanelType } from '../../../state/shell-state-unit';
 import { useRovingTabIndex } from '../../../hooks/useRovingTabIndex';
 import { Toolbar, type ToolbarPanelsProps } from '../../../components/Toolbar';
 import { ResourceCard } from './ResourceCard';
 
-import type { ResourceDescriptor } from '@xynoplex/core';
+import type { ResourceDescriptor } from '@xynolog/core';
 
 export interface ResourceDiscoveryPageProps {
   // Data props
@@ -134,10 +134,10 @@ export function ResourceDiscoveryPage({
   // A terminally failed load is not still loading — check it first.
   if (recentError) {
     return (
-      <div className="xynoplex-page__loading">
-        <p className="xynoplex-page__loading-text">{t.recentFailed}</p>
+      <div className="xynolog-page__loading">
+        <p className="xynolog-page__loading-text">{t.recentFailed}</p>
         {onRetryRecent && (
-          <button type="button" onClick={onRetryRecent} className="xynoplex-button" data-variant="secondary">
+          <button type="button" onClick={onRetryRecent} className="xynolog-button" data-variant="secondary">
             {t.retry}
           </button>
         )}
@@ -148,8 +148,8 @@ export function ResourceDiscoveryPage({
   // Loading state
   if (isLoadingRecent) {
     return (
-      <div className="xynoplex-page__loading">
-        <p className="xynoplex-page__loading-text">{t.loadingKnowledgeBase}</p>
+      <div className="xynolog-page__loading">
+        <p className="xynolog-page__loading-text">{t.loadingKnowledgeBase}</p>
       </div>
     );
   }
@@ -157,32 +157,32 @@ export function ResourceDiscoveryPage({
   const showNoResultsWarning = hasSearchQuery && searchDocuments.length === 0 && !isSearching;
 
   return (
-    <div className={`xynoplex-page${activePanel && COMMON_PANELS.includes(activePanel) ? ' xynoplex-page--panel-open' : ''}`}>
+    <div className={`xynolog-page${activePanel && COMMON_PANELS.includes(activePanel) ? ' xynolog-page--panel-open' : ''}`}>
       {/* Main Content Area */}
-      <div className="xynoplex-page__content">
+      <div className="xynolog-page__content">
         {/* Page Header */}
-        <div className="xynoplex-page__header">
-          <h1 className="xynoplex-page__title">{t.title}</h1>
-          <p className="xynoplex-page__subtitle">
+        <div className="xynolog-page__header">
+          <h1 className="xynolog-page__title">{t.title}</h1>
+          <p className="xynolog-page__subtitle">
             {t.subtitle}
           </p>
         </div>
 
         {/* Search and Filter Section */}
-        <div className="xynoplex-card">
+        <div className="xynolog-card">
           {/* Search Bar */}
-          <div className="xynoplex-card__search-form">
-            <div className="xynoplex-card__search-wrapper">
+          <div className="xynolog-card__search-form">
+            <div className="xynolog-card__search-wrapper">
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => onSearchQueryChange(e.target.value)}
                 placeholder={t.searchPlaceholder}
-                className="xynoplex-card__search-input"
+                className="xynolog-card__search-input"
                 aria-label={t.searchPlaceholder}
               />
               {isSearching && (
-                <span className="xynoplex-card__search-status" aria-live="polite">
+                <span className="xynolog-card__search-status" aria-live="polite">
                   {t.searching}
                 </span>
               )}
@@ -191,14 +191,14 @@ export function ResourceDiscoveryPage({
 
           {/* Entity Type Filters */}
           {entityTypes.length > 0 && (
-            <div className="xynoplex-card__filters">
-              <h3 className="xynoplex-card__filters-label">
+            <div className="xynolog-card__filters">
+              <h3 className="xynolog-card__filters-label">
                 {t.filterByEntityType}
               </h3>
               <div
                 ref={entityFilterRoving.containerRef}
                 onKeyDown={entityFilterRoving.handleKeyDown}
-                className="xynoplex-card__filter-buttons"
+                className="xynolog-card__filter-buttons"
                 role="group"
                 aria-label="Entity type filters"
               >
@@ -206,7 +206,7 @@ export function ResourceDiscoveryPage({
                   onClick={() => onSelectedEntityTypeChange('')}
                   tabIndex={0}
                   aria-pressed={selectedEntityType === ''}
-                  className="xynoplex-card__filter-button"
+                  className="xynolog-card__filter-button"
                   data-active={selectedEntityType === ''}
                 >
                   {t.all}
@@ -217,7 +217,7 @@ export function ResourceDiscoveryPage({
                     onClick={() => onSelectedEntityTypeChange(type)}
                     tabIndex={-1}
                     aria-pressed={selectedEntityType === type}
-                    className="xynoplex-card__filter-button"
+                    className="xynolog-card__filter-button"
                     data-active={selectedEntityType === type}
                   >
                     {type}
@@ -228,8 +228,8 @@ export function ResourceDiscoveryPage({
           )}
 
           {/* Documents Grid */}
-          <div className="xynoplex-card__documents">
-            <h3 className="xynoplex-card__documents-label">
+          <div className="xynolog-card__documents">
+            <h3 className="xynolog-card__documents-label">
               {hasSearchQuery && searchDocuments.length > 0
                 ? t.searchResults(searchDocuments.length)
                 : selectedEntityType
@@ -247,8 +247,8 @@ export function ResourceDiscoveryPage({
                 control being activated. */}
             {hasSearchQuery && searchMatchKind === 'semantic' && searchDocuments.length > 0 && (
               <p
-                className="xynoplex-card__documents-note"
-                data-testid="xynoplex-semantic-match-notice"
+                className="xynolog-card__documents-note"
+                data-testid="xynolog-semantic-match-notice"
                 aria-live="polite"
               >
                 {t.semanticFallbackNotice}
@@ -256,8 +256,8 @@ export function ResourceDiscoveryPage({
             )}
 
             {showNoResultsWarning && (
-              <div className="xynoplex-card__warning">
-                <p className="xynoplex-card__warning-text">
+              <div className="xynolog-card__warning">
+                <p className="xynolog-card__warning-text">
                   {t.noResultsFound(searchQuery)}
                 </p>
               </div>
@@ -267,7 +267,7 @@ export function ResourceDiscoveryPage({
               <div
                 ref={documentGridRoving.containerRef}
                 onKeyDown={documentGridRoving.handleKeyDown}
-                className="xynoplex-card-grid"
+                className="xynolog-card-grid"
                 role="group"
                 aria-label="Document grid"
               >
@@ -283,14 +283,14 @@ export function ResourceDiscoveryPage({
                 ))}
               </div>
             ) : (
-              <div className="xynoplex-card__empty">
-                <p className="xynoplex-card__empty-text">
+              <div className="xynolog-card__empty">
+                <p className="xynolog-card__empty-text">
                   {t.noResourcesAvailable}
                 </p>
                 {!hasSearchQuery && (
                   <button
                     onClick={onNavigateToCompose}
-                    className="xynoplex-card__empty-button"
+                    className="xynolog-card__empty-button"
                   >
                     {t.composeFirstResource}
                   </button>
@@ -302,7 +302,7 @@ export function ResourceDiscoveryPage({
       </div>
 
       {/* Right Sidebar - Panels and Toolbar */}
-      <div className="xynoplex-page__sidebar">
+      <div className="xynolog-page__sidebar">
         {/* Panels Container */}
         <ToolbarPanels
           activePanel={activePanel}

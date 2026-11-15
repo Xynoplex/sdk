@@ -18,7 +18,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { annotationId, resourceId, textOffsets, type Annotation } from '@xynoplex/core';
+import { annotationId, resourceId, textOffsets, type Annotation } from '@xynolog/core';
 import { buildTextSelectors, fallbackTextPosition } from '../text-selection-handler';
 import { segmentTextWithAnnotations, _resetDegradedAnchorWarnings } from '../text-segmentation';
 import {

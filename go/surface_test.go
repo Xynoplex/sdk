@@ -1,4 +1,4 @@
-package xynoplex_test
+package xynolog_test
 
 // The client's surface against protocol/specs/src/client/surface.json.
 //
@@ -30,10 +30,10 @@ import (
 	"testing"
 	"time"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/bus"
-	"github.com/Xynoplex/sdk/go/xynoplextest"
+	xynolog "github.com/xynolog/sdk/go"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/bus"
+	"github.com/xynolog/sdk/go/xynologtest"
 )
 
 // sdk is this runner's SDK, as the table's `absent` names it.
@@ -226,9 +226,9 @@ func decodeInto[T any](a args, raw json.RawMessage) T {
 }
 
 // filters is the filters a list or a search is given.
-func (a args) filters() xynoplex.ResourceFilters {
+func (a args) filters() xynolog.ResourceFilters {
 	stated := a.stated("filters", "archived", "entityType", "limit", "offset")
-	var filters xynoplex.ResourceFilters
+	var filters xynolog.ResourceFilters
 	if raw, ok := stated["limit"]; ok {
 		filters.Limit = decodeInto[int](a, raw)
 	}
@@ -248,60 +248,60 @@ func (a args) filters() xynoplex.ResourceFilters {
 
 // call is one method called as a case states: what it does is the test's
 // to hold; what it returns, nobody's.
-type call func(ctx context.Context, c *xynoplex.Client, a args)
+type call func(ctx context.Context, c *xynolog.Client, a args)
 
-func fresh[T any](ctx context.Context, q *xynoplex.Cached[T]) { _, _ = q.Fresh(ctx) }
+func fresh[T any](ctx context.Context, q *xynolog.Cached[T]) { _, _ = q.Fresh(ctx) }
 
 var calls = map[string]call{
-	"frame.addEntityType": func(ctx context.Context, c *xynoplex.Client, a args) {
+	"frame.addEntityType": func(ctx context.Context, c *xynolog.Client, a args) {
 		_ = c.Frame.AddEntityType(ctx, a.text("type"))
 	},
-	"frame.addEntityTypes": func(ctx context.Context, c *xynoplex.Client, a args) {
+	"frame.addEntityTypes": func(ctx context.Context, c *xynolog.Client, a args) {
 		_ = c.Frame.AddEntityTypes(ctx, a.texts("types"))
 	},
-	"frame.addTagSchema": func(ctx context.Context, c *xynoplex.Client, a args) {
+	"frame.addTagSchema": func(ctx context.Context, c *xynolog.Client, a args) {
 		_ = c.Frame.AddTagSchema(ctx, decodeInto[api.TagSchema](a, a.given["schema"]))
 	},
-	"browse.resource": func(ctx context.Context, c *xynoplex.Client, a args) {
+	"browse.resource": func(ctx context.Context, c *xynolog.Client, a args) {
 		fresh(ctx, c.Browse.Resource(a.rid("resourceId")))
 	},
-	"browse.resources": func(ctx context.Context, c *xynoplex.Client, a args) {
+	"browse.resources": func(ctx context.Context, c *xynolog.Client, a args) {
 		fresh(ctx, c.Browse.Resources(a.filters()))
 	},
-	"browse.annotations": func(ctx context.Context, c *xynoplex.Client, a args) {
+	"browse.annotations": func(ctx context.Context, c *xynolog.Client, a args) {
 		fresh(ctx, c.Browse.Annotations(a.rid("resourceId")))
 	},
-	"browse.annotation": func(ctx context.Context, c *xynoplex.Client, a args) {
+	"browse.annotation": func(ctx context.Context, c *xynolog.Client, a args) {
 		fresh(ctx, c.Browse.Annotation(a.rid("resourceId"), a.aid("annotationId")))
 	},
-	"browse.entityTypes": func(ctx context.Context, c *xynoplex.Client, a args) { fresh(ctx, c.Browse.EntityTypes()) },
-	"browse.tagSchemas":  func(ctx context.Context, c *xynoplex.Client, a args) { fresh(ctx, c.Browse.TagSchemas()) },
-	"browse.engines":     func(ctx context.Context, c *xynoplex.Client, a args) { fresh(ctx, c.Browse.Engines()) },
-	"browse.events": func(ctx context.Context, c *xynoplex.Client, a args) {
+	"browse.entityTypes": func(ctx context.Context, c *xynolog.Client, a args) { fresh(ctx, c.Browse.EntityTypes()) },
+	"browse.tagSchemas":  func(ctx context.Context, c *xynolog.Client, a args) { fresh(ctx, c.Browse.TagSchemas()) },
+	"browse.engines":     func(ctx context.Context, c *xynolog.Client, a args) { fresh(ctx, c.Browse.Engines()) },
+	"browse.events": func(ctx context.Context, c *xynolog.Client, a args) {
 		fresh(ctx, c.Browse.Events(a.rid("resourceId")))
 	},
-	"browse.resourceContent": func(ctx context.Context, c *xynoplex.Client, a args) {
+	"browse.resourceContent": func(ctx context.Context, c *xynolog.Client, a args) {
 		_, _ = c.Browse.ResourceContent(ctx, a.rid("resourceId"))
 	},
-	"browse.resourceGraph": func(ctx context.Context, c *xynoplex.Client, a args) {
+	"browse.resourceGraph": func(ctx context.Context, c *xynolog.Client, a args) {
 		_, _ = c.Browse.ResourceGraph(ctx, a.rid("resourceId"))
 	},
-	"browse.resourceAnchoredText": func(ctx context.Context, c *xynoplex.Client, a args) {
+	"browse.resourceAnchoredText": func(ctx context.Context, c *xynolog.Client, a args) {
 		_, _ = c.Browse.ResourceAnchoredText(ctx, a.rid("resourceId"))
 	},
-	"browse.resourceRepresentation": func(ctx context.Context, c *xynoplex.Client, a args) {
+	"browse.resourceRepresentation": func(ctx context.Context, c *xynolog.Client, a args) {
 		_, _ = c.Browse.ResourceRepresentation(ctx, a.rid("resourceId"))
 	},
-	"browse.resourceRepresentationStream": func(ctx context.Context, c *xynoplex.Client, a args) {
+	"browse.resourceRepresentationStream": func(ctx context.Context, c *xynolog.Client, a args) {
 		_, _ = c.Browse.ResourceRepresentationStream(ctx, a.rid("resourceId"))
 	},
-	"browse.resourceEvents": func(ctx context.Context, c *xynoplex.Client, a args) {
+	"browse.resourceEvents": func(ctx context.Context, c *xynolog.Client, a args) {
 		_, _ = c.Browse.ResourceEvents(ctx, a.rid("resourceId"))
 	},
-	"browse.annotationHistory": func(ctx context.Context, c *xynoplex.Client, a args) {
+	"browse.annotationHistory": func(ctx context.Context, c *xynolog.Client, a args) {
 		_, _ = c.Browse.AnnotationHistory(ctx, a.rid("resourceId"), a.aid("annotationId"))
 	},
-	"browse.files": func(ctx context.Context, c *xynoplex.Client, a args) {
+	"browse.files": func(ctx context.Context, c *xynolog.Client, a args) {
 		var dirPath string
 		var order api.BrowseDirectoryRequestSort
 		if a.has("dirPath") {
@@ -312,43 +312,43 @@ var calls = map[string]call{
 		}
 		_, _ = c.Browse.Files(ctx, dirPath, order)
 	},
-	"browse.kb":             func(ctx context.Context, c *xynoplex.Client, a args) { _, _ = c.Browse.Kb(ctx) },
-	"browse.click":          func(_ context.Context, c *xynoplex.Client, a args) { c.Browse.Click(a.aid("annotationId")) },
-	"browse.openResource":   func(_ context.Context, c *xynoplex.Client, a args) { c.Browse.OpenResource(a.rid("resourceId")) },
-	"browse.resourceViewed": func(_ context.Context, c *xynoplex.Client, a args) { c.Browse.ResourceViewed(a.rid("resourceId")) },
-	"mark.annotation": func(ctx context.Context, c *xynoplex.Client, a args) {
+	"browse.kb":             func(ctx context.Context, c *xynolog.Client, a args) { _, _ = c.Browse.Kb(ctx) },
+	"browse.click":          func(_ context.Context, c *xynolog.Client, a args) { c.Browse.Click(a.aid("annotationId")) },
+	"browse.openResource":   func(_ context.Context, c *xynolog.Client, a args) { c.Browse.OpenResource(a.rid("resourceId")) },
+	"browse.resourceViewed": func(_ context.Context, c *xynolog.Client, a args) { c.Browse.ResourceViewed(a.rid("resourceId")) },
+	"mark.annotation": func(ctx context.Context, c *xynolog.Client, a args) {
 		_, _ = c.Mark.Annotation(ctx, decodeInto[api.CreateAnnotationRequest](a, a.given["input"]))
 	},
-	"mark.delete": func(ctx context.Context, c *xynoplex.Client, a args) {
+	"mark.delete": func(ctx context.Context, c *xynolog.Client, a args) {
 		_ = c.Mark.Delete(ctx, a.rid("resourceId"), a.aid("annotationId"))
 	},
-	"mark.archive":   func(ctx context.Context, c *xynoplex.Client, a args) { _ = c.Mark.Archive(ctx, a.rid("resourceId")) },
-	"mark.unarchive": func(ctx context.Context, c *xynoplex.Client, a args) { _ = c.Mark.Unarchive(ctx, a.rid("resourceId")) },
-	"mark.updateEntityTypes": func(ctx context.Context, c *xynoplex.Client, a args) {
+	"mark.archive":   func(ctx context.Context, c *xynolog.Client, a args) { _ = c.Mark.Archive(ctx, a.rid("resourceId")) },
+	"mark.unarchive": func(ctx context.Context, c *xynolog.Client, a args) { _ = c.Mark.Unarchive(ctx, a.rid("resourceId")) },
+	"mark.updateEntityTypes": func(ctx context.Context, c *xynolog.Client, a args) {
 		_ = c.Mark.UpdateEntityTypes(ctx, a.rid("resourceId"), a.texts("current"), a.texts("updated"))
 	},
-	"mark.delegate": func(ctx context.Context, c *xynoplex.Client, a args) {
+	"mark.delegate": func(ctx context.Context, c *xynolog.Client, a args) {
 		_, _ = c.Mark.Delegate(a.rid("resourceId"), decodeInto[api.MarkJobParams](a, a.given["params"])).Wait(ctx)
 	},
-	"mark.request": func(_ context.Context, c *xynoplex.Client, a args) {
+	"mark.request": func(_ context.Context, c *xynolog.Client, a args) {
 		c.Mark.Request(a.rid("source"), decodeInto[api.AnnotationSelector](a, a.given["selector"]), api.Motivation(a.text("motivation")))
 	},
-	"mark.submit": func(_ context.Context, c *xynoplex.Client, a args) {
+	"mark.submit": func(_ context.Context, c *xynolog.Client, a args) {
 		c.Mark.Submit(decodeInto[api.MarkSubmitEvent](a, a.given["input"]))
 	},
-	"mark.reportDeleteError": func(_ context.Context, c *xynoplex.Client, a args) {
+	"mark.reportDeleteError": func(_ context.Context, c *xynolog.Client, a args) {
 		c.Mark.ReportDeleteError(decodeInto[api.ResourceErrorEvent](a, a.given["input"]))
 	},
-	"bind.body": func(ctx context.Context, c *xynoplex.Client, a args) {
+	"bind.body": func(ctx context.Context, c *xynolog.Client, a args) {
 		_ = c.Bind.Body(ctx, a.rid("resourceId"), a.aid("annotationId"), decodeInto[[]api.BindBodyOperation](a, a.given["operations"]))
 	},
-	"bind.initiate": func(_ context.Context, c *xynoplex.Client, a args) {
+	"bind.initiate": func(_ context.Context, c *xynolog.Client, a args) {
 		c.Bind.Initiate(decodeInto[api.BindInitiateCommand](a, a.given["input"]))
 	},
-	"bind.reportBodyError": func(_ context.Context, c *xynoplex.Client, a args) {
+	"bind.reportBodyError": func(_ context.Context, c *xynolog.Client, a args) {
 		c.Bind.ReportBodyError(decodeInto[api.ResourceErrorEvent](a, a.given["input"]))
 	},
-	"gather.annotation": func(ctx context.Context, c *xynoplex.Client, a args) {
+	"gather.annotation": func(ctx context.Context, c *xynolog.Client, a args) {
 		a.stated("options", "contextWindow", "includeSourceContext", "includeTargetContext")
 		var options api.GatherAnnotationOptions
 		if a.has("options") {
@@ -356,8 +356,8 @@ var calls = map[string]call{
 		}
 		_, _ = c.Gather.Annotation(a.rid("resourceId"), a.aid("annotationId"), options).Wait(ctx)
 	},
-	"gather.resource": func(ctx context.Context, c *xynoplex.Client, a args) {
-		options := xynoplex.GatherResourceDefaults()
+	"gather.resource": func(ctx context.Context, c *xynolog.Client, a args) {
+		options := xynolog.GatherResourceDefaults()
 		stated := a.stated("options", "depth", "maxResources", "includeContent", "includeSummary", "excludeEntityTypes")
 		encoded, err := json.Marshal(stated)
 		if err != nil {
@@ -366,12 +366,12 @@ var calls = map[string]call{
 		options = decodeOnto(a, encoded, options)
 		_, _ = c.Gather.Resource(ctx, a.rid("resourceId"), options)
 	},
-	"gather.referencedBy": func(ctx context.Context, c *xynoplex.Client, a args) {
+	"gather.referencedBy": func(ctx context.Context, c *xynolog.Client, a args) {
 		fresh(ctx, c.Gather.ReferencedBy(a.rid("resourceId")))
 	},
-	"match.search": func(ctx context.Context, c *xynoplex.Client, a args) {
+	"match.search": func(ctx context.Context, c *xynolog.Client, a args) {
 		stated := a.stated("options", "limit", "useSemanticScoring")
-		var options xynoplex.MatchSearchOptions
+		var options xynolog.MatchSearchOptions
 		if raw, ok := stated["limit"]; ok {
 			options.Limit = decodeInto[int](a, raw)
 		}
@@ -382,13 +382,13 @@ var calls = map[string]call{
 		gathered := decodeInto[api.GatheredContext](a, a.given["context"])
 		_, _ = c.Match.Search(a.rid("resourceId"), a.aid("referenceId"), gathered, options).Wait(ctx)
 	},
-	"match.requestSearch": func(_ context.Context, c *xynoplex.Client, a args) {
+	"match.requestSearch": func(_ context.Context, c *xynolog.Client, a args) {
 		c.Match.RequestSearch(decodeInto[api.MatchSearchRequest](a, a.given["input"]), a.text("correlationId"))
 	},
-	"match.resources": func(ctx context.Context, c *xynoplex.Client, a args) {
+	"match.resources": func(ctx context.Context, c *xynolog.Client, a args) {
 		fresh(ctx, c.Match.Resources(a.text("search"), a.filters()))
 	},
-	"yield.resource": func(ctx context.Context, c *xynoplex.Client, a args) {
+	"yield.resource": func(ctx context.Context, c *xynolog.Client, a args) {
 		var data struct {
 			Name       string `json:"name"`
 			Content    string `json:"content"`
@@ -396,31 +396,31 @@ var calls = map[string]call{
 			StorageURI string `json:"storageUri"`
 		}
 		a.into("data", &data)
-		_, _ = c.Yield.Resource(ctx, xynoplex.PutBinaryRequest{Name: data.Name, Bytes: []byte(data.Content), Format: data.Format, StorageURI: data.StorageURI}).Wait(ctx)
+		_, _ = c.Yield.Resource(ctx, xynolog.PutBinaryRequest{Name: data.Name, Bytes: []byte(data.Content), Format: data.Format, StorageURI: data.StorageURI}).Wait(ctx)
 	},
-	"yield.delegate": func(ctx context.Context, c *xynoplex.Client, a args) {
+	"yield.delegate": func(ctx context.Context, c *xynolog.Client, a args) {
 		var within time.Duration
 		if a.has("stallDeadlineMs") {
 			within = time.Duration(decodeInto[int](a, a.given["stallDeadlineMs"])) * time.Millisecond
 		}
 		_, _ = c.Yield.Delegate(decodeInto[api.GenerationJobParams](a, a.given["params"]), within).Wait(ctx)
 	},
-	"yield.cloneToken": func(ctx context.Context, c *xynoplex.Client, a args) {
+	"yield.cloneToken": func(ctx context.Context, c *xynolog.Client, a args) {
 		_, _ = c.Yield.CloneToken(ctx, a.rid("resourceId"))
 	},
-	"yield.fromToken": func(ctx context.Context, c *xynoplex.Client, a args) {
+	"yield.fromToken": func(ctx context.Context, c *xynolog.Client, a args) {
 		_, _ = c.Yield.FromToken(ctx, a.text("token"))
 	},
-	"yield.createFromToken": func(ctx context.Context, c *xynoplex.Client, a args) {
+	"yield.createFromToken": func(ctx context.Context, c *xynolog.Client, a args) {
 		stated := a.stated("options", "token", "name", "content")
-		_, _ = c.Yield.CreateFromToken(ctx, xynoplex.CreateFromTokenOptions{
+		_, _ = c.Yield.CreateFromToken(ctx, xynolog.CreateFromTokenOptions{
 			Token:   decodeInto[string](a, stated["token"]),
 			Name:    decodeInto[string](a, stated["name"]),
 			Content: decodeInto[string](a, stated["content"]),
 		})
 	},
-	"yield.clone": func(_ context.Context, c *xynoplex.Client, a args) { c.Yield.Clone() },
-	"beckon.attention": func(ctx context.Context, c *xynoplex.Client, a args) {
+	"yield.clone": func(_ context.Context, c *xynolog.Client, a args) { c.Yield.Clone() },
+	"beckon.attention": func(ctx context.Context, c *xynolog.Client, a args) {
 		if !a.has("annotationId") {
 			_, _, _ = c.Beckon.Attention(ctx, a.rid("resourceId"), nil)
 			return
@@ -428,16 +428,16 @@ var calls = map[string]call{
 		focused := a.aid("annotationId")
 		_, _, _ = c.Beckon.Attention(ctx, a.rid("resourceId"), &focused)
 	},
-	"beckon.click": func(ctx context.Context, c *xynoplex.Client, a args) {
+	"beckon.click": func(ctx context.Context, c *xynolog.Client, a args) {
 		_, _, _ = c.Beckon.Click(ctx, a.aid("annotationId"))
 	},
-	"beckon.openResource": func(ctx context.Context, c *xynoplex.Client, a args) {
+	"beckon.openResource": func(ctx context.Context, c *xynolog.Client, a args) {
 		_, _, _ = c.Beckon.OpenResource(ctx, a.rid("resourceId"))
 	},
-	"beckon.sparkleAll": func(ctx context.Context, c *xynoplex.Client, a args) {
+	"beckon.sparkleAll": func(ctx context.Context, c *xynolog.Client, a args) {
 		_, _, _ = c.Beckon.SparkleAll(ctx, a.aid("annotationId"))
 	},
-	"beckon.hover": func(_ context.Context, c *xynoplex.Client, a args) {
+	"beckon.hover": func(_ context.Context, c *xynolog.Client, a args) {
 		if !a.has("annotationId") {
 			c.Beckon.Hover(nil)
 			return
@@ -445,18 +445,18 @@ var calls = map[string]call{
 		hovered := a.aid("annotationId")
 		c.Beckon.Hover(&hovered)
 	},
-	"beckon.sparkle": func(_ context.Context, c *xynoplex.Client, a args) { c.Beckon.Sparkle(a.aid("annotationId")) },
-	"job.status": func(ctx context.Context, c *xynoplex.Client, a args) {
+	"beckon.sparkle": func(_ context.Context, c *xynolog.Client, a args) { c.Beckon.Sparkle(a.aid("annotationId")) },
+	"job.status": func(ctx context.Context, c *xynolog.Client, a args) {
 		_, _ = c.Job.Status(ctx, a.jid("jobId"))
 	},
-	"job.pollUntilComplete": func(ctx context.Context, c *xynoplex.Client, a args) {
+	"job.pollUntilComplete": func(ctx context.Context, c *xynolog.Client, a args) {
 		_, _ = c.Job.PollUntilComplete(ctx, a.jid("jobId"), 0, 0, nil)
 	},
-	"job.cancel": func(ctx context.Context, c *xynoplex.Client, a args) {
+	"job.cancel": func(ctx context.Context, c *xynolog.Client, a args) {
 		_, _ = c.Job.Cancel(ctx, a.jid("jobId"))
 	},
 	// The first thing a worker's claims hand out: claiming begins when they are first ranged over.
-	"job.claim": func(ctx context.Context, c *xynoplex.Client, a args) {
+	"job.claim": func(ctx context.Context, c *xynolog.Client, a args) {
 		stated := a.stated("options", "accepts")
 		claims := c.Job.Claim(decodeInto[[]api.JobFilter](a, stated["accepts"]))
 		defer claims.Close()
@@ -464,15 +464,15 @@ var calls = map[string]call{
 			return
 		}
 	},
-	"auth.me": func(ctx context.Context, c *xynoplex.Client, a args) { _, _ = c.Auth.Me(ctx) },
-	"auth.mediaToken": func(ctx context.Context, c *xynoplex.Client, a args) {
+	"auth.me": func(ctx context.Context, c *xynolog.Client, a args) { _, _ = c.Auth.Me(ctx) },
+	"auth.mediaToken": func(ctx context.Context, c *xynolog.Client, a args) {
 		_, _ = c.Auth.MediaToken(ctx, a.rid("resourceId"))
 	},
-	"auth.protectedResourceMetadata": func(ctx context.Context, c *xynoplex.Client, a args) {
+	"auth.protectedResourceMetadata": func(ctx context.Context, c *xynolog.Client, a args) {
 		_, _ = c.Auth.ProtectedResourceMetadata(ctx)
 	},
-	"system.healthCheck": func(ctx context.Context, c *xynoplex.Client, a args) { _, _ = c.System.HealthCheck(ctx) },
-	"system.status":      func(ctx context.Context, c *xynoplex.Client, a args) { _, _ = c.System.Status(ctx) },
+	"system.healthCheck": func(ctx context.Context, c *xynolog.Client, a args) { _, _ = c.System.HealthCheck(ctx) },
+	"system.status":      func(ctx context.Context, c *xynolog.Client, a args) { _, _ = c.System.Status(ctx) },
 }
 
 // decodeOnto is value with what raw states written over it.
@@ -485,7 +485,7 @@ func decodeOnto[T any](a args, raw json.RawMessage, value T) T {
 }
 
 // firstPayload is the payload of the first event events gives.
-func firstPayload[P any](events iter.Seq2[xynoplex.Delivered[P], error]) (P, error) {
+func firstPayload[P any](events iter.Seq2[xynolog.Delivered[P], error]) (P, error) {
 	for event, err := range events {
 		return event.Payload, err
 	}
@@ -496,20 +496,20 @@ func firstPayload[P any](events iter.Seq2[xynoplex.Delivered[P], error]) (P, err
 // events is every method that gives the events of a channel: what the next
 // one carried. The reader is taken when the method is called, before the
 // frame is published.
-var events = map[string]func(c *xynoplex.Client) func() (any, error){
-	"job.queued": func(c *xynoplex.Client) func() (any, error) {
+var events = map[string]func(c *xynolog.Client) func() (any, error){
+	"job.queued": func(c *xynolog.Client) func() (any, error) {
 		e := c.Job.Queued(context.Background())
 		return func() (any, error) { return firstPayload(e) }
 	},
-	"job.progress": func(c *xynoplex.Client) func() (any, error) {
+	"job.progress": func(c *xynolog.Client) func() (any, error) {
 		e := c.Job.Progress(context.Background())
 		return func() (any, error) { return firstPayload(e) }
 	},
-	"job.complete": func(c *xynoplex.Client) func() (any, error) {
+	"job.complete": func(c *xynolog.Client) func() (any, error) {
 		e := c.Job.Complete(context.Background())
 		return func() (any, error) { return firstPayload(e) }
 	},
-	"job.fail": func(c *xynoplex.Client) func() (any, error) {
+	"job.fail": func(c *xynolog.Client) func() (any, error) {
 		e := c.Job.Fail(context.Background())
 		return func() (any, error) { return firstPayload(e) }
 	},
@@ -518,10 +518,10 @@ var events = map[string]func(c *xynoplex.Client) func() (any, error){
 // surfaceWorld is a client over doubles nothing is scripted to answer but what a
 // case states, which record what was asked of each.
 type surfaceWorld struct {
-	transport *xynoplextest.FaultyTransport
-	content   *xynoplextest.InMemoryContent
-	gateway   *xynoplextest.StubGateway
-	client    *xynoplex.Client
+	transport *xynologtest.FaultyTransport
+	content   *xynologtest.InMemoryContent
+	gateway   *xynologtest.StubGateway
+	client    *xynolog.Client
 	ctx       context.Context
 	cancel    context.CancelFunc
 	calls     sync.WaitGroup
@@ -530,10 +530,10 @@ type surfaceWorld struct {
 // newSurfaceWorld is a world whose gateway answers as answers says; nil
 // answers nothing. Its stream names what a client's does and what a worker's
 // claims need, as the surface is both.
-func newSurfaceWorld(answers xynoplextest.MakeResponse) *surfaceWorld {
-	made := xynoplextest.NewTestClient(xynoplextest.TestClientConfig{
-		Transport: xynoplextest.NewFaultyTransport(xynoplextest.FaultyConfig{Channels: slices.Concat(bus.BridgedChannels, xynoplex.JobClaimChannels), MakeResponse: answers}),
-		Timing:    xynoplex.DefaultTiming(),
+func newSurfaceWorld(answers xynologtest.MakeResponse) *surfaceWorld {
+	made := xynologtest.NewTestClient(xynologtest.TestClientConfig{
+		Transport: xynologtest.NewFaultyTransport(xynologtest.FaultyConfig{Channels: slices.Concat(bus.BridgedChannels, xynolog.JobClaimChannels), MakeResponse: answers}),
+		Timing:    xynolog.DefaultTiming(),
 	})
 	w := &surfaceWorld{transport: made.Transport, content: made.Content, gateway: made.Gateway, client: made.Client}
 	w.ctx, w.cancel = context.WithCancel(context.Background())
@@ -541,8 +541,8 @@ func newSurfaceWorld(answers xynoplextest.MakeResponse) *surfaceWorld {
 }
 
 // signals is every frame emitted that is no request, in order.
-func (w *surfaceWorld) signals() []xynoplex.Frame {
-	var sent []xynoplex.Frame
+func (w *surfaceWorld) signals() []xynolog.Frame {
+	var sent []xynolog.Frame
 	for _, frame := range w.transport.Emitted() {
 		if _, request := bus.Operations[frame.Channel]; !request {
 			sent = append(sent, frame)
@@ -613,12 +613,12 @@ func heldTo(t *testing.T, w *surfaceWorld, kind, named string, at int, sends any
 	t.Helper()
 	switch kind {
 	case "request":
-		sent := eventually(t, why+": a request on "+named, func() (xynoplextest.RequestLogEntry, bool) {
+		sent := eventually(t, why+": a request on "+named, func() (xynologtest.RequestLogEntry, bool) {
 			requests := w.transport.RequestLog()
 			if len(requests) > at {
 				return requests[at], true
 			}
-			return xynoplextest.RequestLogEntry{}, false
+			return xynologtest.RequestLogEntry{}, false
 		})
 		if string(sent.Channel) != named {
 			t.Fatalf("%s: requested on %s, the row says %s", why, sent.Channel, named)
@@ -630,12 +630,12 @@ func heldTo(t *testing.T, w *surfaceWorld, kind, named string, at int, sends any
 			t.Fatalf("%s: it is sent globally, and went on %s's scope", why, sent.Scope)
 		}
 	case "emit":
-		sent := eventually(t, why+": a frame on "+named, func() (xynoplex.Frame, bool) {
+		sent := eventually(t, why+": a frame on "+named, func() (xynolog.Frame, bool) {
 			emits := w.signals()
 			if len(emits) > at {
 				return emits[at], true
 			}
-			return xynoplex.Frame{}, false
+			return xynolog.Frame{}, false
 		})
 		if string(sent.Channel) != named {
 			t.Fatalf("%s: emitted on %s, the row says %s", why, sent.Channel, named)
@@ -647,12 +647,12 @@ func heldTo(t *testing.T, w *surfaceWorld, kind, named string, at int, sends any
 			t.Fatalf("%s: it is sent globally, and went on %s's scope", why, sent.Scope)
 		}
 	case "content":
-		made := eventually(t, why+": a call of the content transport", func() (xynoplextest.ContentCall, bool) {
+		made := eventually(t, why+": a call of the content transport", func() (xynologtest.ContentCall, bool) {
 			calls := w.content.Calls()
 			if len(calls) > at {
 				return calls[at], true
 			}
-			return xynoplextest.ContentCall{}, false
+			return xynologtest.ContentCall{}, false
 		})
 		given := map[string]any{"resourceId": made.Resource.String()}
 		if made.Put != nil {
@@ -668,12 +668,12 @@ func heldTo(t *testing.T, w *surfaceWorld, kind, named string, at int, sends any
 			t.Fatalf("%s: what it was given\n got: %v\nwant: %v", why, normal(t, given), sends)
 		}
 	case "gateway":
-		made := eventually(t, why+": a call of the gateway", func() (xynoplextest.GatewayCall, bool) {
+		made := eventually(t, why+": a call of the gateway", func() (xynologtest.GatewayCall, bool) {
 			calls := w.gateway.Calls()
 			if len(calls) > at {
 				return calls[at], true
 			}
-			return xynoplextest.GatewayCall{}, false
+			return xynologtest.GatewayCall{}, false
 		})
 		given := map[string]any{}
 		if !made.Resource.IsZero() {
@@ -733,7 +733,7 @@ func TestAMethodDoesWhatItsRowSays(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			var answers xynoplextest.MakeResponse
+			var answers xynologtest.MakeResponse
 			if len(rc.c.Answers) > 0 {
 				// A case that answers null is answered with a reply that carries no response.
 				var response json.RawMessage
@@ -742,7 +742,7 @@ func TestAMethodDoesWhatItsRowSays(t *testing.T) {
 				}
 				answers = func(operation bus.Channel, payload json.RawMessage) (json.RawMessage, error) {
 					if operation != bus.Channel(channel) {
-						return xynoplextest.RefuseUnscriptedOperation(operation, payload)
+						return xynologtest.RefuseUnscriptedOperation(operation, payload)
 					}
 					return response, nil
 				}
@@ -758,11 +758,11 @@ func TestAMethodDoesWhatItsRowSays(t *testing.T) {
 				}
 				published := w.client.Bus.FramesOn(context.Background(), bus.Channel(channel), api.ResourceId{})
 				w.start(func(ctx context.Context) { run(ctx, w.client, a) })
-				frame := within(t, why+": a frame published on "+channel, func() xynoplex.Frame {
+				frame := within(t, why+": a frame published on "+channel, func() xynolog.Frame {
 					for frame := range published {
 						return frame
 					}
-					return xynoplex.Frame{}
+					return xynolog.Frame{}
 				})
 				if !reflect.DeepEqual(normal(t, frame.Payload), sends) {
 					t.Fatalf("%s: what was published\n got: %v\nwant: %v", why, normal(t, frame.Payload), sends)
@@ -788,7 +788,7 @@ func TestAMethodDoesWhatItsRowSays(t *testing.T) {
 				if err != nil {
 					t.Fatal(err)
 				}
-				w.client.Bus.Deliver(xynoplex.Frame{Channel: bus.Channel(channel), Payload: payload})
+				w.client.Bus.Deliver(xynolog.Frame{Channel: bus.Channel(channel), Payload: payload})
 				type heard struct {
 					payload any
 					err     error

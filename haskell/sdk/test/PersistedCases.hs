@@ -24,32 +24,32 @@ import qualified ControlledTime as Time
 import GatewayStage (Stage(..), newStage, stageHttp, registered, signInOf, send, resumedFrom, resumedWith)
 import IssuerCases (route)
 import SessionCases (jwt)
-import qualified Xynoplex.Auth as Auth
-import qualified Xynoplex.Browse as Browse
-import qualified Xynoplex.Bus as Bus
-import qualified Xynoplex.Cache as Cache
-import qualified Xynoplex.Client as Client
-import qualified Xynoplex.Content as Content
-import qualified Xynoplex.Http as Http
-import qualified Xynoplex.Internal.Browse as BrowseState
-import Xynoplex.Internal.Generated.CachePersistence (KeptQuery(..), keptQueryName)
-import qualified Xynoplex.Internal.Generated.Stored as StoredKeys
-import qualified Xynoplex.Internal.Kept as Kept
-import qualified Xynoplex.Issuer as Issuer
-import qualified Xynoplex.Registry as Browser
-import qualified Xynoplex.Registry.Factory as Factory
-import Xynoplex.Retry (RetryOptions(..))
-import qualified Xynoplex.Session as Session
-import qualified Xynoplex.SessionStorage as Storage
-import qualified Xynoplex.SignIn as SignIn
-import qualified Xynoplex.StateValue as State
-import Xynoplex.StoragePersister (StoragePersister(..), newStoragePersister)
-import qualified Xynoplex.Testing.Sessions as Sessions
-import qualified Xynoplex.Testing.Storage as Shared
-import qualified Xynoplex.Testing.Transport as Faulty
+import qualified Xynolog.Auth as Auth
+import qualified Xynolog.Browse as Browse
+import qualified Xynolog.Bus as Bus
+import qualified Xynolog.Cache as Cache
+import qualified Xynolog.Client as Client
+import qualified Xynolog.Content as Content
+import qualified Xynolog.Http as Http
+import qualified Xynolog.Internal.Browse as BrowseState
+import Xynolog.Internal.Generated.CachePersistence (KeptQuery(..), keptQueryName)
+import qualified Xynolog.Internal.Generated.Stored as StoredKeys
+import qualified Xynolog.Internal.Kept as Kept
+import qualified Xynolog.Issuer as Issuer
+import qualified Xynolog.Registry as Browser
+import qualified Xynolog.Registry.Factory as Factory
+import Xynolog.Retry (RetryOptions(..))
+import qualified Xynolog.Session as Session
+import qualified Xynolog.SessionStorage as Storage
+import qualified Xynolog.SignIn as SignIn
+import qualified Xynolog.StateValue as State
+import Xynolog.StoragePersister (StoragePersister(..), newStoragePersister)
+import qualified Xynolog.Testing.Sessions as Sessions
+import qualified Xynolog.Testing.Storage as Shared
+import qualified Xynolog.Testing.Transport as Faulty
 import qualified Streaming.Prelude as Stream
-import qualified Xynoplex.Timing.Settings as Timing
-import Xynoplex.Types
+import qualified Xynolog.Timing.Settings as Timing
+import Xynolog.Types
 import qualified Data.UUID.Types as UUID
 import Control.Concurrent.STM
 import System.FilePath ((</>))
@@ -233,8 +233,8 @@ forgottenByTheRegistry fixtures table jo row = do
   pool <- Http.newHttpClient noProxy defaultManagerSettings
   let http = Http.HttpOptions "http://unused.test:1" pool (pure Nothing) (const (pure Nothing)) clock Timing.protocolSettings
         (UUID.fromWords 0 0 0 . fromInteger <$> fresh) Set.empty (pure Map.empty) (\_ _ -> pure ())
-      config = Browser.XynoplexBrowserConfig store (Factory.SessionFactory writesAsItCloses revoking) http (pure 1800000000)
-  bracket (Browser.newXynoplexBrowser config) Browser.dispose $ \browser -> do
+      config = Browser.XynologBrowserConfig store (Factory.SessionFactory writesAsItCloses revoking) http (pure 1800000000)
+  bracket (Browser.newXynologBrowser config) Browser.dispose $ \browser -> do
     Time.settle
     active <- atomically (State.current (Browser.activeKbId browser))
     live <- atomically (State.current (Browser.activeSession browser))
@@ -288,8 +288,8 @@ wallNow :: IO Scientific
 wallNow = pure 1800000000
 
 -- | A registry over storage whose sessions are the HTTP factory's, over the stage.
-overTheStage :: Storage.SessionStorage -> Http.HttpOptions -> Browser.XynoplexBrowserConfig
-overTheStage store http = Browser.XynoplexBrowserConfig store (Factory.newHttpSessionFactory http wallNow) http wallNow
+overTheStage :: Storage.SessionStorage -> Http.HttpOptions -> Browser.XynologBrowserConfig
+overTheStage store http = Browser.XynologBrowserConfig store (Factory.newHttpSessionFactory http wallNow) http wallNow
 
 -- | The settings of a client that writes nothing it holds before it closes.
 unsaved :: Timing.Settings
@@ -303,7 +303,7 @@ withKbA store access person = do
   Browser.storeSession store "kb-a" (signInOf Issuer.browserClientId access "r1" person)
 
 -- | The registry's live session, once it has one.
-liveOver :: Time.ControlledTime -> Text -> Browser.XynoplexBrowser -> IO Session.Session
+liveOver :: Time.ControlledTime -> Text -> Browser.XynologBrowser -> IO Session.Session
 liveOver time why browser = do
   eventually time why "a session come up" (isJust <$> atomically (State.current (Browser.activeSession browser)))
   atomically (State.current (Browser.activeSession browser)) >>= maybe (failure why "has no session") pure
@@ -378,7 +378,7 @@ forgottenByTheSession table jo row = do
   mapM_ (uncurry (Storage.set store)) (Map.toList seeded)
   withKbA store access person
   http <- stageHttp stage time Timing.protocolSettings
-  bracket (Browser.newXynoplexBrowser (overTheStage store http)) Browser.dispose $ \_ ->
+  bracket (Browser.newXynologBrowser (overTheStage store http)) Browser.dispose $ \_ ->
     eventually time why "kb-a's sign-in forgotten" ((== Nothing) <$> Browser.storedSession store "kb-a")
   leftAsTheRowSays why table removes store jo
   noStrays why stage
@@ -437,7 +437,7 @@ startupPart table jo = do
     withKbA memory (jwt 3600 1) person
     (store, readKeys, writtenKeys) <- watched memory
     http <- stageHttp stage time Timing.protocolSettings
-    bracket (Browser.newXynoplexBrowser (overTheStage store http)) Browser.dispose $ \browser -> do
+    bracket (Browser.newXynologBrowser (overTheStage store http)) Browser.dispose $ \browser -> do
       eventually time why "the gateway asked who the token is" (not . null <$> readTVarIO (stageAskedWho stage))
       readFirst <- keptKeys readKeys
       atomically (writeTVar (stageWhoHeld stage) False)
@@ -482,7 +482,7 @@ crossTabPart table jo = do
     let store = Shared.storage shared
     withKbA store (jwt 3600 1) (Just jo)
     http <- stageHttp stage time unsaved
-    held <- bracket (Browser.newXynoplexBrowser (overTheStage store http)) Browser.dispose $ \browser -> do
+    held <- bracket (Browser.newXynologBrowser (overTheStage store http)) Browser.dispose $ \browser -> do
       session <- liveOver time why browser
       value <- freshResource time why session
       unwritten why session store resource
@@ -569,7 +569,7 @@ resumeFromPart table jo = do
     store <- Storage.newMemoryStorage
     withKbA store (jwt 3600 1) (Just jo)
     http <- stageHttp stage time Timing.protocolSettings
-    bracket (Browser.newXynoplexBrowser (overTheStage store http)) Browser.dispose $ \browser -> do
+    bracket (Browser.newXynologBrowser (overTheStage store http)) Browser.dispose $ \browser -> do
       session <- liveOver time why browser
       let hold name = do
             identity <- resourceNamed why name

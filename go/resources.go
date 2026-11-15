@@ -1,4 +1,4 @@
-package xynoplex
+package xynolog
 
 // Reading a resource: its description, and the text its bytes are.
 //
@@ -20,8 +20,8 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/mediatypes"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/mediatypes"
 )
 
 // PrimaryRepresentation is a resource's primary representation: its one, or

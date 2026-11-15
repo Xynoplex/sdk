@@ -17,17 +17,17 @@ from kb import refusing, silent
 from pydantic import JsonValue
 from spec import JsonObject
 
-from xynoplex.bus import Bus, Delivered
-from xynoplex.channels import BRIDGED_CHANNELS, JOB_QUEUED
-from xynoplex.client import ClientTiming, XynoplexClient
-from xynoplex.errors import BusRequestError, XynoplexError, TransportError
-from xynoplex.event_bus import EventBus
-from xynoplex.events import Events
-from xynoplex.identifiers import AnnotationId, JobId, ResourceId
-from xynoplex.namespaces.browse import EngineWithLimits
-from xynoplex.running import Running
-from xynoplex.testing import FaultyTransport, GetAnchoredText, InMemoryContent, StubGateway, create_test_client
-from xynoplex.transport import (
+from xynolog.bus import Bus, Delivered
+from xynolog.channels import BRIDGED_CHANNELS, JOB_QUEUED
+from xynolog.client import ClientTiming, XynologClient
+from xynolog.errors import BusRequestError, TransportError, XynologError
+from xynolog.event_bus import EventBus
+from xynolog.events import Events
+from xynolog.identifiers import AnnotationId, JobId, ResourceId
+from xynolog.namespaces.browse import EngineWithLimits
+from xynolog.running import Running
+from xynolog.testing import FaultyTransport, GetAnchoredText, InMemoryContent, StubGateway, create_test_client
+from xynolog.transport import (
     ConnectionState,
     Content,
     Frame,
@@ -37,8 +37,8 @@ from xynoplex.transport import (
     ResourceHold,
     Transport,
 )
-from xynoplex.types import AnchoredTextAbsent, GatheredContext, JobStatusResponse, MatchSearchResult
-from xynoplex.watched import Watched
+from xynolog.types import AnchoredTextAbsent, GatheredContext, JobStatusResponse, MatchSearchResult
+from xynolog.watched import Watched
 
 RESOURCE = ResourceId("res-1")
 CONTEXT: JsonObject = {
@@ -50,7 +50,7 @@ CONTEXT: JsonObject = {
     "metadata": {},
 }
 
-type Client = XynoplexClient[FaultyTransport]
+type Client = XynologClient[FaultyTransport]
 
 
 @final
@@ -92,7 +92,7 @@ class Down(Transport):
         return self._beneath.state
 
     @override
-    def failures(self) -> Events[XynoplexError]:
+    def failures(self) -> Events[XynologError]:
         return self._beneath.failures()
 
     @override
@@ -175,7 +175,7 @@ def test_a_signal_never_reaches_the_wire_and_a_report_does_without_being_awaited
 
         # A report the transport could not send is the transport's to tell of: nothing is raised to nobody.
         down = Down()
-        unheard: XynoplexClient[Down] = XynoplexClient(down, InMemoryContent(), StubGateway())
+        unheard: XynologClient[Down] = XynologClient(down, InMemoryContent(), StubGateway())
         unheard.browse.resource_viewed(RESOURCE)
         await turns()
         assert down.refused == ["browse:resource-viewed"]
@@ -308,13 +308,13 @@ async def awaited(searching: Running[MatchSearchResult]) -> MatchSearchResult:
 def test_a_request_waits_as_long_as_its_client_was_told_and_a_closed_client_ends_what_it_was_doing() -> None:
     async def scenario() -> None:
         transport = silent()
-        client: Client = XynoplexClient(transport, InMemoryContent(), StubGateway(), timing=ClientTiming(bus_request_ms=40))
+        client: Client = XynologClient(transport, InMemoryContent(), StubGateway(), timing=ClientTiming(bus_request_ms=40))
         # Nobody answers: the request is over when the client's own wait is.
         with pytest.raises(BusRequestError) as late:
             await soon(client.browse.kb(), within=2.0)
         assert late.value.code == "bus.timeout"
 
-        patient: Client = XynoplexClient(transport, InMemoryContent(), StubGateway())
+        patient: Client = XynologClient(transport, InMemoryContent(), StubGateway())
         searching = asyncio.ensure_future(
             awaited(patient.match.search(RESOURCE, AnnotationId("ann-1"), GatheredContext.model_validate(CONTEXT)))
         )

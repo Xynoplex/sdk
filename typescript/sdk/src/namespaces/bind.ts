@@ -1,6 +1,6 @@
-import type { ResourceId, AnnotationId, BodyOperation, EventBus, EventMap } from '@xynoplex/core';
-import type { ITransport } from '@xynoplex/core';
-import { Bus } from '@xynoplex/core';
+import type { ResourceId, AnnotationId, BodyOperation, EventBus, EventMap } from '@xynolog/core';
+import type { ITransport } from '@xynolog/core';
+import { Bus } from '@xynolog/core';
 import type { BindNamespace as IBindNamespace } from './types';
 
 export class BindNamespace implements IBindNamespace {

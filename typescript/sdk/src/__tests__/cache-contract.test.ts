@@ -16,7 +16,7 @@
 
 import { describe, it, expect, vi } from 'vitest';
 import { isReady } from '../cache';
-import { resourceId as makeResourceId } from '@xynoplex/core';
+import { resourceId as makeResourceId } from '@xynolog/core';
 import { createTestClient, refuseUnscriptedOperation } from '../testing';
 import { contentTransportSpies } from './helpers/in-memory-transport';
 import { mockResource } from './fixtures/resource';

@@ -6,7 +6,7 @@
  * `assertStateUnitAxioms(spec)` runs every applicable axiom against a factory in
  * one shot, throwing a labeled Error on the first violation (the axiom id is in
  * the message). It is framework-agnostic on purpose — only `rxjs` + `fast-check`,
- * no `vitest` — so it ships through `@xynoplex/core/testing` and any package's test
+ * no `vitest` — so it ships through `@xynolog/core/testing` and any package's test
  * runner can invoke it from a single `it(...)` per state unit. It lives in core
  * (not sdk) so even packages below sdk (e.g. `http-transport`) can use it without
  * a dependency cycle.

@@ -25,9 +25,9 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { EventBus, resourceId as makeResourceId } from '@xynoplex/core';
-import type { EventMap } from '@xynoplex/core';
-import type { ResourceId } from '@xynoplex/core';
+import { EventBus, resourceId as makeResourceId } from '@xynolog/core';
+import type { EventMap } from '@xynolog/core';
+import type { ResourceId } from '@xynolog/core';
 import { BrowseNamespace } from '../namespaces/browse';
 import { inMemoryTransport, contentTransportSpies } from './helpers/in-memory-transport';
 

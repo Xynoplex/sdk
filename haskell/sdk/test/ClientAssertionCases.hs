@@ -16,7 +16,7 @@ import Data.List (sort)
 import Data.Text (Text)
 import qualified Data.Text as Text
 import Data.Text.Encoding (encodeUtf8)
-import qualified Xynoplex.ClientAssertion as Assertion
+import qualified Xynolog.ClientAssertion as Assertion
 import System.FilePath ((</>))
 
 require :: String -> Bool -> IO ()

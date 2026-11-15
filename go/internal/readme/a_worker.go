@@ -6,14 +6,14 @@ import (
 	"fmt"
 	"strings"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
-	"github.com/Xynoplex/sdk/go/api"
+	xynolog "github.com/xynolog/sdk/go"
+	"github.com/xynolog/sdk/go/api"
 )
 
 // Count is your work: read the resource, and say how many lines it has. A
 // worker that annotates builds each api.Annotation it finds and commits them
 // with job.Commit before it completes.
-func Count(ctx context.Context, client *xynoplex.Client, job *xynoplex.HeldMarkJob) (api.MarkJobResult, error) {
+func Count(ctx context.Context, client *xynolog.Client, job *xynolog.HeldMarkJob) (api.MarkJobResult, error) {
 	var result api.MarkJobResult
 	text, err := client.Browse.ResourceContent(ctx, job.ResourceId())
 	if err != nil {
@@ -28,7 +28,7 @@ func Count(ctx context.Context, client *xynoplex.Client, job *xynoplex.HeldMarkJ
 
 // Run claims the highlighting jobs of the knowledge base client reaches, one
 // at a time, until ctx is done or the credential can never claim.
-func Run(ctx context.Context, client *xynoplex.Client) error {
+func Run(ctx context.Context, client *xynolog.Client) error {
 	var highlights api.MarkJobFilter
 	highlights.JobType = api.MarkJobFilterJobTypeMark
 	highlights.Params.Motivation = api.MotivationHighlighting
@@ -44,8 +44,8 @@ func Run(ctx context.Context, client *xynoplex.Client) error {
 	deterministic := api.FailureClassDeterministic
 	// Each job the worker comes to hold, one at a time. The next is claimed when this one settles.
 	for held, err := range claims.All() {
-		var refused *xynoplex.ClaimRefusal
-		if errors.As(err, &refused) && refused.Code != nil && *refused.Code == xynoplex.BusRequestErrorCodeUnauthorized {
+		var refused *xynolog.ClaimRefusal
+		if errors.As(err, &refused) && refused.Code != nil && *refused.Code == xynolog.BusRequestErrorCodeUnauthorized {
 			// This credential can never claim. Stop, so that whoever runs the worker sees it.
 			return refused
 		}
@@ -54,17 +54,17 @@ func Run(ctx context.Context, client *xynoplex.Client) error {
 			continue
 		}
 		switch job := held.(type) {
-		case *xynoplex.HeldYieldJob:
-			if err := job.Fail(ctx, "this worker runs no yield job", xynoplex.JobFailure{FailureClass: &deterministic}); err != nil {
+		case *xynolog.HeldYieldJob:
+			if err := job.Fail(ctx, "this worker runs no yield job", xynolog.JobFailure{FailureClass: &deterministic}); err != nil {
 				return err
 			}
-		case *xynoplex.HeldMarkJob:
+		case *xynolog.HeldMarkJob:
 			if err := job.Start(ctx); err != nil {
 				return err
 			}
 			result, err := Count(ctx, client, job)
 			if err != nil {
-				err = job.Fail(ctx, err.Error(), xynoplex.JobFailure{})
+				err = job.Fail(ctx, err.Error(), xynolog.JobFailure{})
 			} else {
 				err = job.Complete(ctx, result)
 			}

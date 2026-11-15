@@ -16,8 +16,8 @@
     "noEmit": true,
     "incremental": false,
     "paths": {
-      "@xynoplex/react-ui": ["./src/index.ts"],
-      "@xynoplex/react-ui/*": ["./src/*"],
+      "@xynolog/react-ui": ["./src/index.ts"],
+      "@xynolog/react-ui/*": ["./src/*"],
       "@/*": ["./src/*"]
     }
   },

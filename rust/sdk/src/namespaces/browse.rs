@@ -23,7 +23,7 @@ use crate::channels::{
     BrowseResourceViewed, BrowseResourcesRequested, BrowseTagSchemasRequested,
 };
 use crate::client::{CachePersistence, Links, Owner};
-use crate::errors::{BusRequestError, BusRequestErrorCode, XynoplexError, SessionErrorCode};
+use crate::errors::{BusRequestError, BusRequestErrorCode, SessionErrorCode, XynologError};
 use crate::locked;
 use crate::refresh::CacheQuery;
 use crate::resources::decode_representation;
@@ -209,7 +209,7 @@ pub(super) struct Live {
 /// owns the client, it is made only while the session's sign-in names the
 /// person it is kept for, so that check and the write it allows are one
 /// step under the lock. Stopping takes the lock: a write under way finishes
-/// first, and none is made after (`XynoplexClient::stop_persisting`).
+/// first, and none is made after (`XynologClient::stop_persisting`).
 #[derive(Default)]
 struct Writes {
     stopped: tokio::sync::Mutex<bool>,
@@ -259,7 +259,7 @@ impl Writes {
         }
     }
 
-    /// See `XynoplexClient::record_person_key`.
+    /// See `XynologClient::record_person_key`.
     async fn record(&self, access: &str, person_key: &str) -> bool {
         let Some(owner) = self.owner.get() else {
             return false;
@@ -601,7 +601,7 @@ impl Live {
         if self.annotation.known(&id) {
             self.annotation.remove(
                 &id,
-                Box::new(XynoplexError::from(BusRequestError::new(
+                Box::new(XynologError::from(BusRequestError::new(
                     BusRequestErrorCode::NotFound,
                     format!("Annotation {annotation_id} was removed"),
                 ))),
@@ -788,22 +788,22 @@ impl BrowseNamespace {
         self.kept().any(|kept| kept.fetching)
     }
 
-    /// See `XynoplexClient::attach_persistence`.
+    /// See `XynologClient::attach_persistence`.
     pub(crate) fn attach_persistence(&self, persistence: &CachePersistence) {
         self.live.attach(persistence);
     }
 
-    /// See `XynoplexClient::owned_by`.
+    /// See `XynologClient::owned_by`.
     pub(crate) fn owned_by(&self, owner: Owner) {
         let _ = self.live.writes.owner.set(owner);
     }
 
-    /// See `XynoplexClient::record_person_key`.
+    /// See `XynologClient::record_person_key`.
     pub(crate) async fn record_person_key(&self, access: &str, person_key: &str) -> bool {
         self.live.writes.record(access, person_key).await
     }
 
-    /// See `XynoplexClient::stop_persisting`.
+    /// See `XynologClient::stop_persisting`.
     pub(crate) async fn stop_persisting(&self) {
         *self.live.writes.stopped.lock().await = true;
     }
@@ -929,7 +929,7 @@ impl BrowseNamespace {
     /// feature, only when that is UTF-8. A resource whose text is not its
     /// bytes is refused: a PDF, whose text is `resource_anchored_text`'s, and
     /// an image, which has none.
-    pub async fn resource_content(&self, resource_id: &ResourceId) -> Result<String, XynoplexError> {
+    pub async fn resource_content(&self, resource_id: &ResourceId) -> Result<String, XynologError> {
         let content = self.content.get_binary(resource_id).await?;
         Ok(decode_representation(
             &content.bytes,
@@ -941,7 +941,7 @@ impl BrowseNamespace {
     pub async fn resource_graph(
         &self,
         resource_id: &ResourceId,
-    ) -> Result<GetResourceResponse, XynoplexError> {
+    ) -> Result<GetResourceResponse, XynologError> {
         Ok(self.content.get_resource_graph(resource_id).await?)
     }
 
@@ -951,7 +951,7 @@ impl BrowseNamespace {
     pub async fn resource_anchored_text(
         &self,
         resource_id: &ResourceId,
-    ) -> Result<AnchoredTextAnswer, XynoplexError> {
+    ) -> Result<AnchoredTextAnswer, XynologError> {
         Ok(self.content.get_anchored_text(resource_id).await?)
     }
 
@@ -959,7 +959,7 @@ impl BrowseNamespace {
     pub async fn resource_representation(
         &self,
         resource_id: &ResourceId,
-    ) -> Result<Content, XynoplexError> {
+    ) -> Result<Content, XynologError> {
         Ok(self.content.get_binary(resource_id).await?)
     }
 
@@ -967,14 +967,14 @@ impl BrowseNamespace {
     pub async fn resource_representation_stream(
         &self,
         resource_id: &ResourceId,
-    ) -> Result<ContentStream, XynoplexError> {
+    ) -> Result<ContentStream, XynologError> {
         Ok(self.content.get_binary_stream(resource_id).await?)
     }
 
     pub async fn resource_events(
         &self,
         resource_id: &ResourceId,
-    ) -> Result<Vec<AttributedEvent>, XynoplexError> {
+    ) -> Result<Vec<AttributedEvent>, XynologError> {
         let answer = self
             .links
             .request::<BrowseEventsRequested>(&events_of(resource_id))
@@ -986,7 +986,7 @@ impl BrowseNamespace {
         &self,
         resource_id: &ResourceId,
         annotation_id: &AnnotationId,
-    ) -> Result<GetAnnotationHistoryResponse, XynoplexError> {
+    ) -> Result<GetAnnotationHistoryResponse, XynologError> {
         let answer = self
             .links
             .request::<BrowseAnnotationHistoryRequested>(&BrowseAnnotationHistoryRequest {
@@ -1003,7 +1003,7 @@ impl BrowseNamespace {
         &self,
         path: Option<&str>,
         sort: Option<BrowseDirectoryRequestSort>,
-    ) -> Result<BrowseDirectoryResultResponse, XynoplexError> {
+    ) -> Result<BrowseDirectoryResultResponse, XynologError> {
         let answer = self
             .links
             .request::<BrowseDirectoryRequested>(&BrowseDirectoryRequest {
@@ -1017,7 +1017,7 @@ impl BrowseNamespace {
     /// What the knowledge base says of itself: its name and domain, and its
     /// working tree's branch. Asked every time: a branch changes with no
     /// event to say so.
-    pub async fn kb(&self) -> Result<KbDescription, XynoplexError> {
+    pub async fn kb(&self) -> Result<KbDescription, XynologError> {
         let answer = self
             .links
             .request::<BrowseKbRequested>(&BrowseKbRequest {})
@@ -1069,7 +1069,7 @@ mod tests {
     use std::error::Error;
 
     const ALICE: &str = "did:web:example.org:users:alice";
-    const KEY: &str = "xynoplex.cache.kb.alice.entity-types";
+    const KEY: &str = "xynolog.cache.kb.alice.entity-types";
 
     /// A sign-in that names alice, and cannot be read while `unreadable`
     /// holds. Its read waits on the runtime, as a file's does.
@@ -1085,7 +1085,7 @@ mod tests {
                 .keep(StoredSession {
                     access: "a1".to_owned(),
                     refresh: "r1".to_owned(),
-                    client_id: "xynoplex-browser".to_owned(),
+                    client_id: "xynolog-browser".to_owned(),
                     token_endpoint: "https://issuer.test/token".to_owned(),
                     revocation_endpoint: None,
                     person_key: Some(person_key(ALICE)),

@@ -11,19 +11,19 @@
 
 import { describe, it, expect, vi } from 'vitest';
 import { map, firstValueFrom, filter, BehaviorSubject } from 'rxjs';
-import { EventBus, FrameRefusal, INVALIDATION_WINDOW_MS, SAVE_DEBOUNCE_MS, resourceId, annotationId } from '@xynoplex/core';
-import type { components, StoredEvent, EventOfType, EventMetadata, UserId, ResourceId, EventMap } from '@xynoplex/core';
-import type { ConnectionState } from '@xynoplex/core';
+import { EventBus, FrameRefusal, INVALIDATION_WINDOW_MS, SAVE_DEBOUNCE_MS, resourceId, annotationId } from '@xynolog/core';
+import type { components, StoredEvent, EventOfType, EventMetadata, UserId, ResourceId, EventMap } from '@xynolog/core';
+import type { ConnectionState } from '@xynolog/core';
 import { BrowseNamespace } from '../browse';
 import { isReady, readyValue, type CacheState } from '../../cache';
 import { coupledLastEventId } from '../../cache-persister';
-import { XynoplexClient } from '../../client';
+import { XynologClient } from '../../client';
 import { InMemorySessionStorage } from '../../session/session-storage';
 import { cacheKey, lastEventIdKey, personKey } from '../../session/storage';
-import type { IContentTransport } from '@xynoplex/core';
+import type { IContentTransport } from '@xynolog/core';
 
-import type { Annotation } from '@xynoplex/core';
-import type { ResourceDescriptor } from '@xynoplex/core';
+import type { Annotation } from '@xynolog/core';
+import type { ResourceDescriptor } from '@xynolog/core';
 import { inMemoryTransport } from '../../__tests__/helpers/in-memory-transport';
 
 const TEST_USER_ID = 'did:web:test:users:test' as UserId;
@@ -986,7 +986,7 @@ describe('Cache semantics — behaviors B1–B16, B19 and B20 against BrowseName
       const storage = new InMemorySessionStorage();
       const places = coupledLastEventId(storage, lastEventIdKey('kb-1', PERSON));
       const { transport, content, getAnnotations, state } = createWire(options);
-      const client = new XynoplexClient(transport, content, undefined, {
+      const client = new XynologClient(transport, content, undefined, {
         cachePersistence: { storage: places.storage, kbId: 'kb-1', personKey: PERSON },
         ...(options.busTimeoutMs !== undefined ? { busTimeoutMs: options.busTimeoutMs } : {}),
       });

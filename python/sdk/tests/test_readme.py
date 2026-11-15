@@ -2,7 +2,7 @@
 
 Both type checkers check those files with the rest of the package. What needs
 a gateway runs against this package's scripted one, on this machine; what
-takes a client runs over `xynoplex.testing`'s doubles.
+takes a client runs over `xynolog.testing`'s doubles.
 """
 
 import asyncio
@@ -37,25 +37,25 @@ from readme import (
 from spec import PACKAGE, ROOT, SPEC, JsonObject, objects, read, strings
 from tokens import token
 
-from xynoplex.annotations import QuotedText, target_selector
-from xynoplex.bus import reply_channels_for
-from xynoplex.claims import JOB_CLAIM_CHANNELS, JOB_COMMIT_CHANNELS
-from xynoplex.http import HttpTransport
-from xynoplex.identifiers import AnnotationId, ResourceId
-from xynoplex.identity import agent_did
-from xynoplex.operations import JOB_CLAIM
-from xynoplex.registry import save_knowledge_bases, store_session
-from xynoplex.sign_in_store import FILE_NAME, SignInStore, state_dir, this_system
-from xynoplex.state import BeckonStateUnit
-from xynoplex.storage import MemoryStorage
-from xynoplex.stored import StoredSession
-from xynoplex.testing import InMemoryContent, PutBinary, ScriptedSessions, create_test_client
-from xynoplex.transport import Content, Frame
-from xynoplex.types import AgentSoftware, AnchoredText, FragmentSelector, HttpEndpoint, KnowledgeBase, PdfTextItem, UserResponse
-from xynoplex.watched import Variable
+from xynolog.annotations import QuotedText, target_selector
+from xynolog.bus import reply_channels_for
+from xynolog.claims import JOB_CLAIM_CHANNELS, JOB_COMMIT_CHANNELS
+from xynolog.http import HttpTransport
+from xynolog.identifiers import AnnotationId, ResourceId
+from xynolog.identity import agent_did
+from xynolog.operations import JOB_CLAIM
+from xynolog.registry import save_knowledge_bases, store_session
+from xynolog.sign_in_store import FILE_NAME, SignInStore, state_dir, this_system
+from xynolog.state import BeckonStateUnit
+from xynolog.storage import MemoryStorage
+from xynolog.stored import StoredSession
+from xynolog.testing import InMemoryContent, PutBinary, ScriptedSessions, create_test_client
+from xynolog.transport import Content, Frame
+from xynolog.types import AgentSoftware, AnchoredText, FragmentSelector, HttpEndpoint, KnowledgeBase, PdfTextItem, UserResponse
+from xynolog.watched import Variable
 
 README = (PACKAGE / "README.md").read_text(encoding="utf-8")
-SKILL = (ROOT / "docs/builder/skills/xynoplex-worker/SKILL.md").read_text(encoding="utf-8")
+SKILL = (ROOT / "docs/builder/skills/xynolog-worker/SKILL.md").read_text(encoding="utf-8")
 PROGRAMS = {
     path.stem: path.read_text(encoding="utf-8") for path in sorted((PACKAGE / "tests/readme").glob("*.py")) if path.stem != "__init__"
 }
@@ -98,9 +98,9 @@ def test_every_python_block_of_the_readme_is_a_program_here_word_for_word_and_ev
 def test_every_python_block_of_the_worker_skill_is_a_program_here_word_for_word() -> None:
     # The skill shows a worker in Python. What it shows is a program that is checked and run here.
     shown = python_blocks(SKILL)
-    assert shown, "the xynoplex-worker skill shows no Python block"
+    assert shown, "the xynolog-worker skill shows no Python block"
     for block in shown:
-        assert block in PROGRAMS.values(), f"a Python block of the xynoplex-worker skill is not a program that is checked and run:\n{block}"
+        assert block in PROGRAMS.values(), f"a Python block of the xynolog-worker skill is not a program that is checked and run:\n{block}"
 
 
 def test_every_program_is_run_by_a_test_named_for_it() -> None:
@@ -364,7 +364,7 @@ def test_an_agent_opens_its_stream_as_its_account_with_the_token_its_issuer_gran
             trusting(gateway)
             issued = token(3600, 1)
             gateway.answers[TOKEN] = {"access_token": issued}
-            gateway.answers[ME] = agent_named("xynoplex-smelter")
+            gateway.answers[ME] = agent_named("xynolog-smelter")
             await soon(an_agent.work(gateway.origin, issuer_of(gateway), SECRET))
             # The issuer's token is its bearer: the gateway is asked who it is with it, and its stream is opened with it.
             (named,) = gateway.of("GET", ME)
@@ -374,7 +374,7 @@ def test_an_agent_opens_its_stream_as_its_account_with_the_token_its_issuer_gran
 
     run(scenario())
     # It says who it works as, as the gateway named it, and then that its stream is open.
-    assert capsys.readouterr().out.splitlines() == [f"working as {agent_did('example.org', 'xynoplex-smelter')}", "open"]
+    assert capsys.readouterr().out.splitlines() == [f"working as {agent_did('example.org', 'xynolog-smelter')}", "open"]
 
 
 def test_a_worker_says_what_it_is_called_claims_as_its_agent_commits_a_highlight_it_built_says_the_job_s_lifecycle_and_claims_again(
@@ -504,10 +504,10 @@ def test_a_person_signs_in_by_the_device_grant_once_and_is_that_person_from_then
             trusting(gateway)
             gateway.answers["/api/status"] = STATUS
             issued = token(3600, 1, email="alice@example.org", iss=issuer_of(gateway))
-            gateway.scripted[("POST", "/realms/xynoplex/device")] = [minted(interval=1)]
+            gateway.scripted[("POST", "/realms/xynolog/device")] = [minted(interval=1)]
             gateway.scripted[("POST", TOKEN)] = [PENDING, says({"access_token": issued, "refresh_token": "refresh-1"})]
 
-            # Nothing is kept: the code is shown, and the sign-in it brings is kept where `xynoplex login` keeps one.
+            # Nothing is kept: the code is shown, and the sign-in it brings is kept where `xynolog login` keeps one.
             await hurried(a_person.as_me(gateway.target("local"), str(tmp_path)))
             directory = state_dir(this_system(), home=str(tmp_path), xdg_state_home=None, local_app_data=None)
             assert directory is not None
@@ -515,7 +515,7 @@ def test_a_person_signs_in_by_the_device_grant_once_and_is_that_person_from_then
 
             # Kept: nobody is shown a code again.
             await soon(a_person.as_me(gateway.target("local"), str(tmp_path)))
-            assert len(gateway.of("POST", "/realms/xynoplex/device")) == 1
+            assert len(gateway.of("POST", "/realms/xynolog/device")) == 1
 
     run(scenario())
     code, first, again = capsys.readouterr().out.splitlines()
@@ -543,7 +543,7 @@ def test_several_knowledge_bases_lists_what_is_registered_brings_up_the_active_o
     store_session(
         storage,
         kb.id,
-        StoredSession(access=token(3600, 1), refresh="r-1", client_id="xynoplex-browser", token_endpoint="https://issuer.test/token"),
+        StoredSession(access=token(3600, 1), refresh="r-1", client_id="xynolog-browser", token_endpoint="https://issuer.test/token"),
     )
 
     def answering(kb_id: str, operation: str, payload: Mapping[str, JsonValue]) -> JsonValue | None:
@@ -559,7 +559,7 @@ def test_several_knowledge_bases_lists_what_is_registered_brings_up_the_active_o
     run(several_knowledge_bases.pick_up_where_i_was(storage, sessions))
     assert capsys.readouterr().out.splitlines() == ["KB A did:web:kb-a.example authenticated", "['Notes']"]
     # What was opened is kept, for the next registry over the same storage.
-    assert '"name":"Notes"' in (storage.get("xynoplex.openResourcesByKb") or "")
+    assert '"name":"Notes"' in (storage.get("xynolog.openResourcesByKb") or "")
 
 
 def test_building_annotations_builds_a_highlight_of_a_text_and_of_a_pdf_and_a_link_and_reads_each() -> None:

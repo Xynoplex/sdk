@@ -1,4 +1,4 @@
-package xynoplex
+package xynolog
 
 // Where a client keeps what must outlive it: text under a key, and one
 // cache's values as one document there.
@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Xynoplex/sdk/go/api"
+	"github.com/xynolog/sdk/go/api"
 )
 
 var keptKey = CacheKey("kb", PersonKey("did:web:example.org:users:alice"), CacheQueryResource)

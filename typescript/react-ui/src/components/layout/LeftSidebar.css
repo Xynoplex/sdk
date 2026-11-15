@@ -2,85 +2,85 @@
    LeftSidebar Component
    ============================================ */
 
-.xynoplex-left-sidebar {
+.xynolog-left-sidebar {
   display: flex;
   flex-direction: column;
-  background: var(--xynoplex-bg-primary);
-  border-right: 1px solid var(--xynoplex-border-primary);
-  transition: width var(--xynoplex-duration-base);
+  background: var(--xynolog-bg-primary);
+  border-right: 1px solid var(--xynolog-border-primary);
+  transition: width var(--xynolog-duration-base);
   overflow: hidden visible;
 }
 
-.xynoplex-left-sidebar[data-collapsed="false"] {
+.xynolog-left-sidebar[data-collapsed="false"] {
   /* Width is set by inline style from the usePanelWidth hook */
   /* Fallback for non-JS scenarios */
   width: 16rem;
 }
 
-.xynoplex-left-sidebar[data-collapsed="true"] {
+.xynolog-left-sidebar[data-collapsed="true"] {
   width: 4rem;
 }
 
-.xynoplex-left-sidebar__header {
+.xynolog-left-sidebar__header {
   position: relative;
   padding: 1rem;
-  border-bottom: 1px solid var(--xynoplex-color-gray-200);
+  border-bottom: 1px solid var(--xynolog-color-gray-200);
 }
 
-[data-theme="dark"] .xynoplex-left-sidebar__header {
-  border-bottom-color: var(--xynoplex-color-gray-800);
+[data-theme="dark"] .xynolog-left-sidebar__header {
+  border-bottom-color: var(--xynolog-color-gray-800);
 }
 
-.xynoplex-left-sidebar__branding-button {
+.xynolog-left-sidebar__branding-button {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   width: 100%;
   padding: 0.5rem;
-  border-radius: var(--xynoplex-radius-lg);
-  transition: background var(--xynoplex-duration-base);
+  border-radius: var(--xynolog-radius-lg);
+  transition: background var(--xynolog-duration-base);
   text-decoration: none;
   color: inherit;
 }
 
-.xynoplex-left-sidebar__branding-button:hover {
-  background: var(--xynoplex-bg-tertiary);
+.xynolog-left-sidebar__branding-button:hover {
+  background: var(--xynolog-bg-tertiary);
 }
 
-[data-theme="dark"] .xynoplex-left-sidebar__branding-button {
-  color: var(--xynoplex-text-primary);
+[data-theme="dark"] .xynolog-left-sidebar__branding-button {
+  color: var(--xynolog-text-primary);
 }
 
-.xynoplex-left-sidebar__branding-button:focus-visible {
-  outline: 2px solid var(--xynoplex-color-primary-500);
+.xynolog-left-sidebar__branding-button:focus-visible {
+  outline: 2px solid var(--xynolog-color-primary-500);
   outline-offset: 2px;
 }
 
-[data-theme="dark"] .xynoplex-left-sidebar__branding-button:focus-visible {
-  outline-color: var(--xynoplex-color-primary-400);
+[data-theme="dark"] .xynolog-left-sidebar__branding-button:focus-visible {
+  outline-color: var(--xynolog-color-primary-400);
 }
 
-.xynoplex-left-sidebar__branding-button:focus:not(:focus-visible) {
+.xynolog-left-sidebar__branding-button:focus:not(:focus-visible) {
   outline: none;
 }
 
-.xynoplex-left-sidebar__logo-collapsed {
+.xynolog-left-sidebar__logo-collapsed {
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Match the natural height of the XYNOPLEX branding */
+  /* Match the natural height of the XYNOLOG branding */
   line-height: 1;
   flex-shrink: 0;
 }
 
-.xynoplex-left-sidebar__logo-text {
-  font-family: 'Orbitron', var(--xynoplex-font-sans);
+.xynolog-left-sidebar__logo-text {
+  font-family: 'Orbitron', var(--xynolog-font-sans);
   font-size: 1.5rem; /* Match size="sm" branding - mobile */
   font-weight: bold;
   text-transform: uppercase;
   letter-spacing: -0.025em;
   line-height: 1;
-  background: linear-gradient(to right, var(--xynoplex-color-black), var(--xynoplex-color-primary-600), var(--xynoplex-color-black));
+  background: linear-gradient(to right, var(--xynolog-color-black), var(--xynolog-color-primary-600), var(--xynolog-color-black));
   background-clip: text;
   -webkit-text-fill-color: transparent;
   white-space: nowrap;
@@ -89,24 +89,24 @@
 }
 
 @media (min-width: 640px) {
-  .xynoplex-left-sidebar__logo-text {
+  .xynolog-left-sidebar__logo-text {
     font-size: 1.875rem; /* Match size="sm" branding - small screens */
   }
 }
 
 @media (min-width: 768px) {
-  .xynoplex-left-sidebar__logo-text {
+  .xynolog-left-sidebar__logo-text {
     font-size: 2.25rem; /* Match size="sm" branding - medium screens */
   }
 }
 
-[data-theme="dark"] .xynoplex-left-sidebar__logo-text {
-  background: linear-gradient(to right, var(--xynoplex-color-white), var(--xynoplex-color-primary-400), var(--xynoplex-color-white));
+[data-theme="dark"] .xynolog-left-sidebar__logo-text {
+  background: linear-gradient(to right, var(--xynolog-color-white), var(--xynolog-color-primary-400), var(--xynolog-color-white));
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-.xynoplex-left-sidebar__content {
+.xynolog-left-sidebar__content {
   flex: 1;
   overflow-y: auto;
   padding: 1rem;

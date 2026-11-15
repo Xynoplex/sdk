@@ -2,117 +2,117 @@
    StatusDisplay Component Styles
    ============================================ */
 
-.xynoplex-status-display {
+.xynolog-status-display {
   margin-top: 2rem;
   padding: 1rem;
-  border-radius: var(--xynoplex-radius-lg);
-  transition: all var(--xynoplex-duration-base) var(--xynoplex-ease);
+  border-radius: var(--xynolog-radius-lg);
+  transition: all var(--xynolog-duration-base) var(--xynolog-ease);
 }
 
-.xynoplex-status-message {
-  font-size: var(--xynoplex-text-base);
-  font-weight: var(--xynoplex-font-medium);
+.xynolog-status-message {
+  font-size: var(--xynolog-text-base);
+  font-weight: var(--xynolog-font-medium);
 }
 
-.xynoplex-status-hint {
-  font-size: var(--xynoplex-text-xs);
+.xynolog-status-hint {
+  font-size: var(--xynolog-text-xs);
   margin-top: 0.25rem;
 }
 
 /* Status variants */
-.xynoplex-status-display[data-status="success"] {
-  background-color: var(--xynoplex-color-blue-100);
-  color: var(--xynoplex-color-blue-800);
+.xynolog-status-display[data-status="success"] {
+  background-color: var(--xynolog-color-blue-100);
+  color: var(--xynolog-color-blue-800);
 }
 
-.xynoplex-status-display[data-status="error"] {
-  background-color: var(--xynoplex-color-red-100);
-  color: var(--xynoplex-color-red-800);
+.xynolog-status-display[data-status="error"] {
+  background-color: var(--xynolog-color-red-100);
+  color: var(--xynolog-color-red-800);
 }
 
-.xynoplex-status-display[data-status="warning"] {
-  background-color: var(--xynoplex-color-orange-200);
-  color: var(--xynoplex-color-orange-800);
+.xynolog-status-display[data-status="warning"] {
+  background-color: var(--xynolog-color-orange-200);
+  color: var(--xynolog-color-orange-800);
 }
 
-.xynoplex-status-display[data-status="loading"] {
-  background-color: var(--xynoplex-color-yellow-100);
-  color: var(--xynoplex-color-yellow-900);
+.xynolog-status-display[data-status="loading"] {
+  background-color: var(--xynolog-color-yellow-100);
+  color: var(--xynolog-color-yellow-900);
 }
 
-.xynoplex-status-display[data-status="info"] {
-  background-color: var(--xynoplex-bg-tertiary);
-  color: var(--xynoplex-color-gray-800);
+.xynolog-status-display[data-status="info"] {
+  background-color: var(--xynolog-bg-tertiary);
+  color: var(--xynolog-color-gray-800);
 }
 
-.xynoplex-status-display[data-status="success"] .xynoplex-status-hint {
-  color: var(--xynoplex-color-blue-900);
+.xynolog-status-display[data-status="success"] .xynolog-status-hint {
+  color: var(--xynolog-color-blue-900);
 }
 
-.xynoplex-status-display[data-status="error"] .xynoplex-status-error-hint {
-  color: var(--xynoplex-color-red-600);
+.xynolog-status-display[data-status="error"] .xynolog-status-error-hint {
+  color: var(--xynolog-color-red-600);
 }
 
-.xynoplex-status-display[data-status="info"] .xynoplex-status-hint {
-  color: var(--xynoplex-color-gray-600);
+.xynolog-status-display[data-status="info"] .xynolog-status-hint {
+  color: var(--xynolog-color-gray-600);
 }
 
 /* Dark mode status variants */
-[data-theme="dark"] .xynoplex-status-display[data-status="success"] {
+[data-theme="dark"] .xynolog-status-display[data-status="success"] {
   background-color: rgba(59, 130, 246, 0.1);
-  color: var(--xynoplex-color-blue-300);
+  color: var(--xynolog-color-blue-300);
 }
 
-[data-theme="dark"] .xynoplex-status-display[data-status="error"] {
+[data-theme="dark"] .xynolog-status-display[data-status="error"] {
   background-color: rgba(239, 68, 68, 0.1);
-  color: var(--xynoplex-color-red-300);
+  color: var(--xynolog-color-red-300);
 }
 
-[data-theme="dark"] .xynoplex-status-display[data-status="warning"] {
+[data-theme="dark"] .xynolog-status-display[data-status="warning"] {
   background-color: rgba(251, 146, 60, 0.1);
-  color: var(--xynoplex-color-orange-300);
+  color: var(--xynolog-color-orange-300);
 }
 
-[data-theme="dark"] .xynoplex-status-display[data-status="loading"] {
+[data-theme="dark"] .xynolog-status-display[data-status="loading"] {
   background-color: rgba(245, 158, 11, 0.1);
-  color: var(--xynoplex-color-yellow-300);
+  color: var(--xynolog-color-yellow-300);
 }
 
-[data-theme="dark"] .xynoplex-status-display[data-status="info"] {
+[data-theme="dark"] .xynolog-status-display[data-status="info"] {
   background-color: rgba(156, 163, 175, 0.1);
-  color: var(--xynoplex-color-gray-200);
+  color: var(--xynolog-color-gray-200);
 }
 
-[data-theme="dark"] .xynoplex-status-display[data-status="success"] .xynoplex-status-hint {
-  color: var(--xynoplex-color-blue-400);
+[data-theme="dark"] .xynolog-status-display[data-status="success"] .xynolog-status-hint {
+  color: var(--xynolog-color-blue-400);
 }
 
-[data-theme="dark"] .xynoplex-status-display[data-status="error"] .xynoplex-status-error-hint {
-  color: var(--xynoplex-color-red-400);
+[data-theme="dark"] .xynolog-status-display[data-status="error"] .xynolog-status-error-hint {
+  color: var(--xynolog-color-red-400);
 }
 
-[data-theme="dark"] .xynoplex-status-display[data-status="info"] .xynoplex-status-hint {
-  color: var(--xynoplex-color-gray-400);
+[data-theme="dark"] .xynolog-status-display[data-status="info"] .xynolog-status-hint {
+  color: var(--xynolog-color-gray-400);
 }
 
 /* UserMenuSkeleton Component */
-.xynoplex-user-menu-skeleton {
+.xynolog-user-menu-skeleton {
   width: 2rem;
   height: 2rem;
-  border-radius: var(--xynoplex-radius-full);
-  background-color: var(--xynoplex-color-neutral-200);
-  animation: xynoplex-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  border-radius: var(--xynolog-radius-full);
+  background-color: var(--xynolog-color-neutral-200);
+  animation: xynolog-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 /* Dark mode for UserMenuSkeleton */
-[data-theme="dark"] .xynoplex-user-menu-skeleton {
-  background-color: var(--xynoplex-color-neutral-700);
+[data-theme="dark"] .xynolog-user-menu-skeleton {
+  background-color: var(--xynolog-color-neutral-700);
 }
 
 /* ===== CORE UI COMPONENTS ===== */
 
 /* Toolbar Component */
-.xynoplex-toolbar {
+.xynolog-toolbar {
   width: 3rem;
   height: 100%;
   display: flex;
@@ -120,253 +120,253 @@
   align-items: center;
   gap: 0.5rem; /* gap-2 */
   padding: 0.75rem 0; /* py-3 */
-  background-color: var(--xynoplex-bg-secondary);
-  border-left: 1px solid var(--xynoplex-color-gray-200);
+  background-color: var(--xynolog-bg-secondary);
+  border-left: 1px solid var(--xynolog-color-gray-200);
   flex-shrink: 0;
   overflow: visible; /* Don't clip toolbar buttons at top */
 }
 
-.xynoplex-toolbar-button {
+.xynolog-toolbar-button {
   padding: 0.5rem;
-  border-radius: var(--xynoplex-radius-md);
+  border-radius: var(--xynolog-radius-md);
   transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
   position: relative;
   background: transparent;
   border: none;
   cursor: pointer;
-  color: var(--xynoplex-color-gray-600);
+  color: var(--xynolog-color-gray-600);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.xynoplex-toolbar-button:hover {
-  background-color: var(--xynoplex-color-gray-200);
+.xynolog-toolbar-button:hover {
+  background-color: var(--xynolog-color-gray-200);
 }
 
-.xynoplex-toolbar-button:focus {
+.xynolog-toolbar-button:focus {
   outline: none;
-  box-shadow: 0 0 0 2px var(--xynoplex-color-blue-500), 0 0 0 4px rgba(59, 130, 246, 0.1); /* ring-2 ring-blue-500 ring-offset-2 */
+  box-shadow: 0 0 0 2px var(--xynolog-color-blue-500), 0 0 0 4px rgba(59, 130, 246, 0.1); /* ring-2 ring-blue-500 ring-offset-2 */
 }
 
-.xynoplex-toolbar-button[data-active="true"] {
-  background-color: var(--xynoplex-color-blue-200);
-  color: var(--xynoplex-color-blue-700);
-  border-left: 4px solid var(--xynoplex-color-blue-600);
+.xynolog-toolbar-button[data-active="true"] {
+  background-color: var(--xynolog-color-blue-200);
+  color: var(--xynolog-color-blue-700);
+  border-left: 4px solid var(--xynolog-color-blue-600);
 }
 
-.xynoplex-toolbar-icon {
+.xynolog-toolbar-icon {
   font-size: 1.5rem; /* 24px */
 }
 
-.xynoplex-toolbar-icon-large {
+.xynolog-toolbar-icon-large {
   font-size: 1.875rem; /* 30px */
-  font-weight: var(--xynoplex-font-bold);
+  font-weight: var(--xynolog-font-bold);
 }
 
 /* Dark mode for Toolbar */
-[data-theme="dark"] .xynoplex-toolbar {
-  background-color: var(--xynoplex-bg-secondary);
-  border-left-color: var(--xynoplex-color-gray-700);
+[data-theme="dark"] .xynolog-toolbar {
+  background-color: var(--xynolog-bg-secondary);
+  border-left-color: var(--xynolog-color-gray-700);
 }
 
-[data-theme="dark"] .xynoplex-toolbar-button {
-  color: var(--xynoplex-color-gray-400);
+[data-theme="dark"] .xynolog-toolbar-button {
+  color: var(--xynolog-color-gray-400);
 }
 
-[data-theme="dark"] .xynoplex-toolbar-button:hover {
-  background-color: var(--xynoplex-bg-tertiary);
+[data-theme="dark"] .xynolog-toolbar-button:hover {
+  background-color: var(--xynolog-bg-tertiary);
 }
 
-[data-theme="dark"] .xynoplex-toolbar-button[data-active="true"] {
+[data-theme="dark"] .xynolog-toolbar-button[data-active="true"] {
   background-color: rgba(30, 58, 138, 0.5); /* blue-800/50 - keeping rgba for opacity */
-  color: var(--xynoplex-color-blue-300);
-  border-left-color: var(--xynoplex-color-blue-400);
+  color: var(--xynolog-color-blue-300);
+  border-left-color: var(--xynolog-color-blue-400);
 }
 
 /* ResourceTagsInline Component */
-.xynoplex-resource-tags-inline {
-  padding: var(--xynoplex-spacing-xs) var(--xynoplex-spacing-lg);
-  border-top: 1px solid var(--xynoplex-color-neutral-200);
+.xynolog-resource-tags-inline {
+  padding: var(--xynolog-spacing-xs) var(--xynolog-spacing-lg);
+  border-top: 1px solid var(--xynolog-color-neutral-200);
 }
 
-.xynoplex-resource-tags-list {
+.xynolog-resource-tags-list {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--xynoplex-spacing-xs);
+  gap: var(--xynolog-spacing-xs);
 }
 
-.xynoplex-resource-tag {
+.xynolog-resource-tag {
   display: inline-flex;
   align-items: center;
-  gap: calc(var(--xynoplex-spacing-xs) / 2);
-  padding: calc(var(--xynoplex-spacing-xs) / 2) var(--xynoplex-spacing-xs);
-  background-color: var(--xynoplex-color-primary-100);
-  color: var(--xynoplex-color-primary-700);
-  border: 1px solid var(--xynoplex-color-primary-200);
-  border-radius: var(--xynoplex-radius-base);
-  font-size: var(--xynoplex-text-xs);
+  gap: calc(var(--xynolog-spacing-xs) / 2);
+  padding: calc(var(--xynolog-spacing-xs) / 2) var(--xynolog-spacing-xs);
+  background-color: var(--xynolog-color-primary-100);
+  color: var(--xynolog-color-primary-700);
+  border: 1px solid var(--xynolog-color-primary-200);
+  border-radius: var(--xynolog-radius-base);
+  font-size: var(--xynolog-text-xs);
 }
 
 /* Editing affordances: a remove control on each tag, and the add picker */
-.xynoplex-resource-tag__remove {
+.xynolog-resource-tag__remove {
   display: inline-flex;
   align-items: center;
   padding: 0;
   border: none;
   background: none;
   color: inherit;
-  font-size: var(--xynoplex-text-xs);
+  font-size: var(--xynolog-text-xs);
   cursor: pointer;
   opacity: 0.7;
 }
 
-.xynoplex-resource-tag__remove:hover:not(:disabled) {
+.xynolog-resource-tag__remove:hover:not(:disabled) {
   opacity: 1;
 }
 
-.xynoplex-resource-tag__remove:disabled {
+.xynolog-resource-tag__remove:disabled {
   cursor: default;
   opacity: 0.4;
 }
 
-.xynoplex-resource-tag--add {
+.xynolog-resource-tag--add {
   cursor: pointer;
   background: none;
 }
 
-.xynoplex-resource-tag--add:disabled {
+.xynolog-resource-tag--add:disabled {
   cursor: default;
   opacity: 0.4;
 }
 
-.xynoplex-resource-tags-inline--editing .xynoplex-form__entity-type-buttons {
-  margin-top: var(--xynoplex-spacing-xs);
+.xynolog-resource-tags-inline--editing .xynolog-form__entity-type-buttons {
+  margin-top: var(--xynolog-spacing-xs);
 }
 
 /* Dark mode for ResourceTagsInline */
-[data-theme="dark"] .xynoplex-resource-tags-inline {
-  border-top-color: var(--xynoplex-color-neutral-700);
+[data-theme="dark"] .xynolog-resource-tags-inline {
+  border-top-color: var(--xynolog-color-neutral-700);
 }
 
-[data-theme="dark"] .xynoplex-resource-tag {
+[data-theme="dark"] .xynolog-resource-tag {
   background-color: rgba(59, 130, 246, 0.3);
-  color: var(--xynoplex-color-primary-300);
-  border-color: var(--xynoplex-color-primary-800);
+  color: var(--xynolog-color-primary-300);
+  border-color: var(--xynolog-color-primary-800);
 }
 
 /* ErrorBoundary Component */
-.xynoplex-error-boundary-container {
+.xynolog-error-boundary-container {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--xynoplex-bg-secondary);
-  padding: var(--xynoplex-spacing-md);
+  background-color: var(--xynolog-bg-secondary);
+  padding: var(--xynolog-spacing-md);
 }
 
-.xynoplex-error-boundary-content {
+.xynolog-error-boundary-content {
   max-width: 28rem;
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: var(--xynoplex-spacing-md);
+  gap: var(--xynolog-spacing-md);
 }
 
-.xynoplex-error-boundary-header {
+.xynolog-error-boundary-header {
   text-align: center;
 }
 
-.xynoplex-error-boundary-title {
-  font-size: var(--xynoplex-text-2xl);
-  font-weight: var(--xynoplex-font-bold);
-  color: var(--xynoplex-color-neutral-900);
-  margin-bottom: var(--xynoplex-spacing-xs);
+.xynolog-error-boundary-title {
+  font-size: var(--xynolog-text-2xl);
+  font-weight: var(--xynolog-font-bold);
+  color: var(--xynolog-color-neutral-900);
+  margin-bottom: var(--xynolog-spacing-xs);
 }
 
-.xynoplex-error-boundary-message {
-  color: var(--xynoplex-color-neutral-600);
+.xynolog-error-boundary-message {
+  color: var(--xynolog-color-neutral-600);
 }
 
-.xynoplex-error-boundary-details {
-  background-color: var(--xynoplex-color-red-50);
-  border: 1px solid var(--xynoplex-color-red-200);
-  border-radius: var(--xynoplex-radius-md);
-  padding: var(--xynoplex-spacing-md);
+.xynolog-error-boundary-details {
+  background-color: var(--xynolog-color-red-50);
+  border: 1px solid var(--xynolog-color-red-200);
+  border-radius: var(--xynolog-radius-md);
+  padding: var(--xynolog-spacing-md);
 }
 
-.xynoplex-error-boundary-details-title {
-  font-size: var(--xynoplex-text-sm);
-  font-weight: var(--xynoplex-font-semibold);
-  color: var(--xynoplex-color-red-800);
-  margin-bottom: calc(var(--xynoplex-spacing-xs) / 2);
+.xynolog-error-boundary-details-title {
+  font-size: var(--xynolog-text-sm);
+  font-weight: var(--xynolog-font-semibold);
+  color: var(--xynolog-color-red-800);
+  margin-bottom: calc(var(--xynolog-spacing-xs) / 2);
 }
 
-.xynoplex-error-boundary-details-message {
-  font-size: var(--xynoplex-text-xs);
-  color: var(--xynoplex-color-red-700);
+.xynolog-error-boundary-details-message {
+  font-size: var(--xynolog-text-xs);
+  color: var(--xynolog-color-red-700);
   font-family: monospace;
   word-break: break-all;
 }
 
-.xynoplex-error-boundary-stack {
-  margin-top: var(--xynoplex-spacing-xs);
-  font-size: var(--xynoplex-text-xs);
-  color: var(--xynoplex-color-red-600);
+.xynolog-error-boundary-stack {
+  margin-top: var(--xynolog-spacing-xs);
+  font-size: var(--xynolog-text-xs);
+  color: var(--xynolog-color-red-600);
   overflow-x: auto;
 }
 
-.xynoplex-error-boundary-actions {
+.xynolog-error-boundary-actions {
   display: flex;
-  gap: var(--xynoplex-spacing-md);
+  gap: var(--xynolog-spacing-md);
   justify-content: center;
 }
 
 /* AsyncErrorBoundary Component */
-.xynoplex-async-error-boundary {
-  padding: var(--xynoplex-spacing-md);
-  background-color: var(--xynoplex-color-amber-50);
-  border: 1px solid var(--xynoplex-color-amber-200);
-  border-radius: var(--xynoplex-radius-md);
+.xynolog-async-error-boundary {
+  padding: var(--xynolog-spacing-md);
+  background-color: var(--xynolog-color-amber-50);
+  border: 1px solid var(--xynolog-color-amber-200);
+  border-radius: var(--xynolog-radius-md);
 }
 
-.xynoplex-async-error-content {
+.xynolog-async-error-content {
   display: flex;
   align-items: flex-start;
 }
 
-.xynoplex-async-error-icon {
+.xynolog-async-error-icon {
   flex-shrink: 0;
 }
 
-.xynoplex-icon-warning {
+.xynolog-icon-warning {
   height: 1.25rem;
   width: 1.25rem;
-  color: var(--xynoplex-color-amber-400);
+  color: var(--xynolog-color-amber-400);
 }
 
-.xynoplex-async-error-details {
-  margin-left: var(--xynoplex-spacing-sm);
+.xynolog-async-error-details {
+  margin-left: var(--xynolog-spacing-sm);
   flex: 1;
 }
 
-.xynoplex-async-error-title {
-  font-size: var(--xynoplex-text-sm);
-  font-weight: var(--xynoplex-font-medium);
-  color: var(--xynoplex-color-amber-800);
+.xynolog-async-error-title {
+  font-size: var(--xynolog-text-sm);
+  font-weight: var(--xynolog-font-medium);
+  color: var(--xynolog-color-amber-800);
 }
 
-.xynoplex-async-error-message {
-  margin-top: calc(var(--xynoplex-spacing-xs) / 2);
-  font-size: var(--xynoplex-text-sm);
-  color: var(--xynoplex-color-amber-700);
+.xynolog-async-error-message {
+  margin-top: calc(var(--xynolog-spacing-xs) / 2);
+  font-size: var(--xynolog-text-sm);
+  color: var(--xynolog-color-amber-700);
 }
 
-.xynoplex-async-error-retry {
-  margin-top: var(--xynoplex-spacing-xs);
-  font-size: var(--xynoplex-text-sm);
-  color: var(--xynoplex-color-amber-600);
+.xynolog-async-error-retry {
+  margin-top: var(--xynolog-spacing-xs);
+  font-size: var(--xynolog-text-sm);
+  color: var(--xynolog-color-amber-600);
   text-decoration: underline;
   background: none;
   border: none;
@@ -374,66 +374,66 @@
   cursor: pointer;
 }
 
-.xynoplex-async-error-retry:hover {
-  color: var(--xynoplex-color-amber-500);
+.xynolog-async-error-retry:hover {
+  color: var(--xynolog-color-amber-500);
 }
 
 /* Dark mode for ErrorBoundary */
-[data-theme="dark"] .xynoplex-error-boundary-container {
-  background-color: var(--xynoplex-bg-inverse);
+[data-theme="dark"] .xynolog-error-boundary-container {
+  background-color: var(--xynolog-bg-inverse);
 }
 
-[data-theme="dark"] .xynoplex-error-boundary-title {
-  color: var(--xynoplex-color-neutral-0);
+[data-theme="dark"] .xynolog-error-boundary-title {
+  color: var(--xynolog-color-neutral-0);
 }
 
-[data-theme="dark"] .xynoplex-error-boundary-message {
-  color: var(--xynoplex-color-neutral-400);
+[data-theme="dark"] .xynolog-error-boundary-message {
+  color: var(--xynolog-color-neutral-400);
 }
 
-[data-theme="dark"] .xynoplex-error-boundary-details {
+[data-theme="dark"] .xynolog-error-boundary-details {
   background-color: rgba(239, 68, 68, 0.2);
-  border-color: var(--xynoplex-color-red-800);
+  border-color: var(--xynolog-color-red-800);
 }
 
-[data-theme="dark"] .xynoplex-error-boundary-details-title {
-  color: var(--xynoplex-color-red-300);
+[data-theme="dark"] .xynolog-error-boundary-details-title {
+  color: var(--xynolog-color-red-300);
 }
 
-[data-theme="dark"] .xynoplex-error-boundary-details-message {
-  color: var(--xynoplex-color-red-400);
+[data-theme="dark"] .xynolog-error-boundary-details-message {
+  color: var(--xynolog-color-red-400);
 }
 
-[data-theme="dark"] .xynoplex-error-boundary-stack {
-  color: var(--xynoplex-color-red-500);
+[data-theme="dark"] .xynolog-error-boundary-stack {
+  color: var(--xynolog-color-red-500);
 }
 
-[data-theme="dark"] .xynoplex-async-error-boundary {
+[data-theme="dark"] .xynolog-async-error-boundary {
   background-color: rgba(245, 158, 11, 0.2);
-  border-color: var(--xynoplex-color-amber-800);
+  border-color: var(--xynolog-color-amber-800);
 }
 
-[data-theme="dark"] .xynoplex-icon-warning {
-  color: var(--xynoplex-color-warning-light);
+[data-theme="dark"] .xynolog-icon-warning {
+  color: var(--xynolog-color-warning-light);
 }
 
-[data-theme="dark"] .xynoplex-async-error-title {
-  color: var(--xynoplex-color-amber-300);
+[data-theme="dark"] .xynolog-async-error-title {
+  color: var(--xynolog-color-amber-300);
 }
 
-[data-theme="dark"] .xynoplex-async-error-message {
-  color: var(--xynoplex-color-amber-400);
+[data-theme="dark"] .xynolog-async-error-message {
+  color: var(--xynolog-color-amber-400);
 }
 
-[data-theme="dark"] .xynoplex-async-error-retry {
-  color: var(--xynoplex-color-amber-400);
+[data-theme="dark"] .xynolog-async-error-retry {
+  color: var(--xynolog-color-amber-400);
 }
 
-[data-theme="dark"] .xynoplex-async-error-retry:hover {
-  color: var(--xynoplex-color-amber-300);
+[data-theme="dark"] .xynolog-async-error-retry:hover {
+  color: var(--xynolog-color-amber-300);
 }
 
 /* An editable tag carries a remove affordance; the base tag is read-only. */
-.xynoplex-resource-tag--editable {
+.xynolog-resource-tag--editable {
   cursor: pointer;
 }

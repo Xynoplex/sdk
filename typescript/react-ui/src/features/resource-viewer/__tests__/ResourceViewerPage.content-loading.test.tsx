@@ -12,9 +12,9 @@
 
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { act, screen, waitFor } from '@testing-library/react';
-import type { ResourceDescriptor } from '@xynoplex/core';
-import { XynoplexBrowser, createSessionSignals } from '@xynoplex/sdk';
-import { createTestSession, inMemoryContent, stubGateway } from '@xynoplex/sdk/testing';
+import type { ResourceDescriptor } from '@xynolog/core';
+import { XynologBrowser, createSessionSignals } from '@xynolog/sdk';
+import { createTestSession, inMemoryContent, stubGateway } from '@xynolog/sdk/testing';
 import { ResourceViewerPage } from '../components/ResourceViewerPage';
 import { ThemeProvider } from '../../../contexts/ThemeContext';
 import { renderWithProviders } from '../../../test-utils';
@@ -46,8 +46,8 @@ const viewerRenders = vi.hoisted(() => [] as string[]);
 
 // The viewer is stood in so the content it is HANDED is observable without
 // mounting CodeMirror or PDF.js; everything that loads content stays real.
-vi.mock('@xynoplex/react-ui', async () => {
-  const actual = await vi.importActual('@xynoplex/react-ui');
+vi.mock('@xynolog/react-ui', async () => {
+  const actual = await vi.importActual('@xynolog/react-ui');
   return {
     ...actual,
     ResourceViewer: ({ resource }: { resource: { content: string } }) => {
@@ -96,7 +96,7 @@ async function mountPageFor(mediaType: string, bytes: string) {
     content,
   });
   const resourceViewed = vi.spyOn(client.browse, 'resourceViewed');
-  const browser = new XynoplexBrowser({ storage, sessionFactory: () => session });
+  const browser = new XynologBrowser({ storage, sessionFactory: () => session });
   browser.activeSession$.next(session);
   browser.activeSignals$.next(createSessionSignals());
   cleanups.push(async () => {

@@ -32,7 +32,7 @@
  * A rule for a class nobody renders is dead weight that still gets read,
  * maintained, and dutifully given a dark-theme variant.
  *
- * Class names built by concatenation (`xynoplex-${kind}-badge`) cannot be seen
+ * Class names built by concatenation (`xynolog-${kind}-badge`) cannot be seen
  * by a grep, so a class is also considered live if its literal prefix appears
  * in a template string. That is deliberately permissive: this gate exists to
  * catch the obvious, not to be clever.
@@ -53,7 +53,7 @@ const MARKUP_ROOTS = ['typescript/react-ui/src', 'images/browser/src'];
 
 /** Classes whose consumer is outside this repo's markup, with the reason. */
 const ALLOWLIST = new Map([
-  ['xynoplex-sr-only', 'accessibility utility applied by hosts'],
+  ['xynolog-sr-only', 'accessibility utility applied by hosts'],
 ]);
 
 /**
@@ -72,10 +72,10 @@ const filesUnder = (root, ext) =>
   REPOSITORY.filter((file) => file.startsWith(`${root}/`) && ext.some((e) => file.endsWith(e)));
 const read = (file) => fs.readFileSync(path.join(ROOT, file), 'utf8');
 
-const DEFINITION = /\.(xynoplex-[a-zA-Z0-9_-]+)/g;
+const DEFINITION = /\.(xynolog-[a-zA-Z0-9_-]+)/g;
 
 // Where each class is DEFINED (a selector at the head of a rule), per file.
-const definedIn = new Map(); // class -> Set<file> (bare `.xynoplex-x { }` rules)
+const definedIn = new Map(); // class -> Set<file> (bare `.xynolog-x { }` rules)
 const mentioned = new Map(); // class -> Set<file> (any selector naming it)
 /**
  * Walk the stylesheet, tracking whether we are inside an at-rule. A rule nested
@@ -101,7 +101,7 @@ function scan(source, file) {
         const conditional = atDepth !== null;
         for (const part of head.split(',')) {
           const selector = part.trim();
-          const own = /^\.(xynoplex-[a-zA-Z0-9_-]+)$/.exec(selector);
+          const own = /^\.(xynolog-[a-zA-Z0-9_-]+)$/.exec(selector);
           if (own && !conditional) {
             if (!definedIn.has(own[1])) definedIn.set(own[1], new Set());
             definedIn.get(own[1]).add(file);
@@ -133,14 +133,14 @@ for (const root of CSS_ROOTS) {
 
 // Everything the markup could possibly emit, as one haystack — plus a record
 // of which file each name came from, so the reverse check can name the site.
-const RENDERED = /xynoplex-[a-zA-Z0-9_-]+/g;
+const RENDERED = /xynolog-[a-zA-Z0-9_-]+/g;
 
 /**
- * The `xynoplex-` names in a source file that are actually CLASSES.
+ * The `xynolog-` names in a source file that are actually CLASSES.
  *
  * A bare scan cannot be used here. The prefix is also worn by CSS custom
- * properties (`--xynoplex-color-primary-500`), localStorage keys
- * (`xynoplex-toolbar-click`, `xynoplex-panel-width`) and assorted identifiers —
+ * properties (`--xynolog-color-primary-500`), localStorage keys
+ * (`xynolog-toolbar-click`, `xynolog-panel-width`) and assorted identifiers —
  * none of which any stylesheet should define. Reporting those as "unstyled"
  * would bury the real finding under ~25 entries that can never be fixed, which
  * is how a gate teaches people to ignore it.
@@ -151,7 +151,7 @@ const RENDERED = /xynoplex-[a-zA-Z0-9_-]+/g;
  */
 function classNamesIn(rawSource) {
   const names = new Set();
-  // Data attributes wear the same prefix — `data-testid="xynoplex-delegate-bar"`
+  // Data attributes wear the same prefix — `data-testid="xynolog-delegate-bar"`
   // is a TEST HOOK, never a class, and no stylesheet should define it. They sit
   // inches from a `className`, so the window below would otherwise accuse
   // every one of them. (CSS does select `[data-visible="true"]`, but that is an
@@ -165,23 +165,23 @@ function classNamesIn(rawSource) {
   for (const at of source.matchAll(/className/g)) {
     const window = source.slice(at.index, at.index + 200);
     for (const t of window.matchAll(RENDERED)) {
-      // `--xynoplex-x` is a custom property, not a class.
+      // `--xynolog-x` is a custom property, not a class.
       if (window[t.index - 1] === '-') continue;
-      // `xynoplex-badge-${kind}` is a concatenation PREFIX, not a class.
+      // `xynolog-badge-${kind}` is a concatenation PREFIX, not a class.
       if (window.startsWith('${', t.index + t[0].length)) continue;
       // A name touching the window's edge was CUT by it: the window is a fixed
       // slice, so a class straddling the boundary yields a fragment
-      // (`xynoplex-error-boun`) that no stylesheet could ever define. Dropping
+      // (`xynolog-error-boun`) that no stylesheet could ever define. Dropping
       // these loses a class ending exactly at the edge, which is the right way
       // to be wrong for a check that accuses.
       if (t.index + t[0].length >= window.length) continue;
       names.add(t[0]);
     }
   }
-  // Selector form — `querySelector('.xynoplex-x')`, `closest('.xynoplex-x')`.
+  // Selector form — `querySelector('.xynolog-x')`, `closest('.xynolog-x')`.
   // A literal dot before the prefix is unambiguous: no valid JS reads a
   // property with a hyphen in it.
-  for (const m of source.matchAll(/\.(xynoplex-[a-zA-Z0-9_-]+)/g)) names.add(m[1]);
+  for (const m of source.matchAll(/\.(xynolog-[a-zA-Z0-9_-]+)/g)) names.add(m[1]);
   return names;
 }
 let markup = '';
@@ -208,7 +208,7 @@ for (const [cls, files] of [...mentioned].sort()) {
   const literal = markup.includes(cls);
   const built = !literal && cls.split('-').some((_, i, parts) => {
     const prefix = parts.slice(0, parts.length - i).join('-');
-    return prefix.length > 'xynoplex-'.length + 3 && markup.includes(`${prefix}-\${`);
+    return prefix.length > 'xynolog-'.length + 3 && markup.includes(`${prefix}-\${`);
   });
   if (!literal && !built) unrendered.push([cls, [...files]]);
 }

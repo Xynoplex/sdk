@@ -13,13 +13,13 @@
  * compile, and is refused when called.
  */
 
-import { FrameRefusal, isResourceScopedChannel } from '@xynoplex/core';
-import type { EventMap, UnscopedChannel } from '@xynoplex/core';
-import type { XynoplexClient } from '@xynoplex/sdk';
+import { FrameRefusal, isResourceScopedChannel } from '@xynolog/core';
+import type { EventMap, UnscopedChannel } from '@xynolog/core';
+import type { XynologClient } from '@xynolog/sdk';
 
 /** Hear a channel of no resource's scope. Returns what stops hearing it. */
 export function subscribeChannel<K extends UnscopedChannel>(
-  client: XynoplexClient,
+  client: XynologClient,
   channel: K,
   handler: (payload: EventMap[K]) => void,
 ): () => void {

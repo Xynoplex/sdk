@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
-import type { ResourceId } from '@xynoplex/core';
-import { useXynoplex } from '../../../session/XynoplexProvider';
+import type { ResourceId } from '@xynolog/core';
+import { useXynolog } from '../../../session/XynologProvider';
 import { useObservable } from '../../../hooks/useObservable';
 
 /**
@@ -20,8 +20,8 @@ import { useObservable } from '../../../hooks/useObservable';
  * @emits browse:resource-viewed - The resource this page shows, once it has loaded. Payload: { resourceId: string }
  */
 export function useResourceViewedReport(rid: ResourceId, loaded: boolean): void {
-  const xynoplex = useXynoplex();
-  const session = useObservable(xynoplex.activeSession$);
+  const xynolog = useXynolog();
+  const session = useObservable(xynolog.activeSession$);
   // Brand once at the boundary: the caller already holds a ResourceId; this
   // hook never re-brands.
   const reported = useRef<ResourceId | null>(null);

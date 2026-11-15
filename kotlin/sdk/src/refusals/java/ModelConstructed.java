@@ -1,6 +1,6 @@
 // refused: MarkDeleteCommand(String,String,String) has private access in MarkDeleteCommand
 // Java makes a model through its builder, never from the text its constructor holds the ids as.
-import xynoplex.types.MarkDeleteCommand;
+import xynolog.types.MarkDeleteCommand;
 
 class ModelConstructed {
     MarkDeleteCommand command = new MarkDeleteCommand(null, "a b", null);

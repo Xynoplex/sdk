@@ -15,7 +15,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-STATE = Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache")) / "xynoplex-sdk" / "local"
+STATE = Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache")) / "xynolog-sdk" / "local"
 VERSION = json.loads((ROOT / "version.json").read_text())["version"]
 SDK_COMMIT = subprocess.check_output(["git", "-C", str(ROOT), "rev-parse", "HEAD"], text=True).strip()
 PROTOCOL_COMMIT = subprocess.check_output(["git", "-C", str(ROOT / "protocol"), "rev-parse", "HEAD"], text=True).strip()
@@ -57,29 +57,29 @@ def files(language: str) -> list[tuple[Path, str, str]]:
             if package["publish"]
         ]
     if language == "python":
-        return [(p, "python", "xynoplex") for p in sorted((STATE / "python/packages").glob(f"xynoplex-{VERSION}*"))]
+        return [(p, "python", "xynolog") for p in sorted((STATE / "python/packages").glob(f"xynolog-{VERSION}*"))]
     if language == "rust":
-        names = ["xynoplex-codegen", "xynoplex", "xynoplex-telemetry", "xynoplex-http-transport"]
+        names = ["xynolog-codegen", "xynolog", "xynolog-telemetry", "xynolog-http-transport"]
         return [(STATE / "rust/packages" / f"{name}-{VERSION}.crate", "cargo", name) for name in names]
     if language == "go":
-        root = STATE / "go-proxy/github.com/!xynoplex/sdk/go/@v"
+        root = STATE / "go-proxy/github.com/xynolog/sdk/go/@v"
         return [
             (root / ("list" if suffix == "list" else f"v{VERSION}.{suffix}"),
-             "go-module-proxy", "github.com/Xynoplex/sdk/go")
+             "go-module-proxy", "github.com/xynolog/sdk/go")
             for suffix in ("zip", "mod", "info", "list")
         ]
     if language == "csharp":
-        return [(STATE / "nuget" / f"Xynoplex.{VERSION}.nupkg", "nuget", "Xynoplex")]
+        return [(STATE / "nuget" / f"Xynolog.{VERSION}.nupkg", "nuget", "Xynolog")]
     if language == "haskell":
-        return [(STATE / "haskell" / f"xynoplex-{VERSION}.tar.gz", "hackage-sdist", "xynoplex")]
+        return [(STATE / "haskell" / f"xynolog-{VERSION}.tar.gz", "hackage-sdist", "xynolog")]
     if language == "kotlin":
-        root = STATE / f"kotlin-maven/org/xynoplex/xynoplex/{VERSION}"
-        return [(p, "maven", "org.xynoplex:xynoplex") for p in sorted(root.glob(f"xynoplex-{VERSION}.*")) if p.is_file()]
+        root = STATE / f"kotlin-maven/org/xynolog/xynolog/{VERSION}"
+        return [(p, "maven", "org.xynolog:xynolog") for p in sorted(root.glob(f"xynolog-{VERSION}.*")) if p.is_file()]
     if language == "ocaml":
-        source = STATE / "opam-repo/repo" / f"archives/xynoplex.{VERSION}.tar.gz"
-        return [(source, "opam-source", "xynoplex")]
+        source = STATE / "opam-repo/repo" / f"archives/xynolog.{VERSION}.tar.gz"
+        return [(source, "opam-source", "xynolog")]
     if language == "swift":
-        return [(STATE / "swift" / f"xynoplex-{VERSION}.zip", "swift-source", "Xynoplex")]
+        return [(STATE / "swift" / f"xynolog-{VERSION}.zip", "swift-source", "Xynolog")]
     raise ValueError(f"unknown SDK language {language}")
 
 
@@ -123,7 +123,7 @@ def main() -> None:
         print(output)
         return
 
-    with tempfile.TemporaryDirectory(prefix="xynoplex-sdk-bundle.") as scratch:
+    with tempfile.TemporaryDirectory(prefix="xynolog-sdk-bundle.") as scratch:
         write_bundle(languages, tree_digest, output, Path(scratch))
 
 
@@ -177,14 +177,14 @@ def write_bundle(languages: list[str], tree_digest: str, output: Path, staged: P
     verifier_path = Path("tools/verify-artifact-bundle.py")
     artifacts.append({
         "ecosystem": "bundle-tool",
-        "package": "xynoplex-sdk-artifact-verifier",
+        "package": "xynolog-sdk-artifact-verifier",
         "version": "1",
         "path": verifier_path.as_posix(),
         "sha256": digest(verifier_source),
     })
     copied.append((verifier_source, verifier_path))
     manifest = {
-        "schema": "xynoplex-sdk-artifacts/v2",
+        "schema": "xynolog-sdk-artifacts/v2",
         "sdk": {"commit": SDK_COMMIT, "version": VERSION, "workingTreeSha256": tree_digest},
         "protocol": {"commit": PROTOCOL_COMMIT},
         "languages": languages,

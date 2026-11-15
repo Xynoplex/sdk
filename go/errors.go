@@ -1,4 +1,4 @@
-package xynoplex
+package xynolog
 
 // The failures the SDK reports, one type per vocabulary of
 // protocol/specs/src/errors/codes.json, as the other SDKs have them: each a Go error,
@@ -8,7 +8,7 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/Xynoplex/sdk/go/api"
+	"github.com/xynolog/sdk/go/api"
 )
 
 // Error is what every failure the SDK reports is: a code of one of the

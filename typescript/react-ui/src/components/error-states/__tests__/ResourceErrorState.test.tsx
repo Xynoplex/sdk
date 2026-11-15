@@ -83,7 +83,7 @@ describe('ResourceErrorState', () => {
       render(<ResourceErrorState error={error} onRetry={onRetry} />);
 
       const errorText = screen.getByText('Test error');
-      expect(errorText).toHaveClass('xynoplex-error-message');
+      expect(errorText).toHaveClass('xynolog-error-message');
     });
 
     it('renders container with correct layout', () => {
@@ -93,7 +93,7 @@ describe('ResourceErrorState', () => {
       render(<ResourceErrorState error={error} onRetry={onRetry} />);
 
       const container = screen.getByText('Test error').parentElement;
-      expect(container).toHaveClass('xynoplex-error-state', 'xynoplex-error-state-resource');
+      expect(container).toHaveClass('xynolog-error-state', 'xynolog-error-state-resource');
     });
   });
 });

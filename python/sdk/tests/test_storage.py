@@ -4,13 +4,13 @@ import pytest
 from kb import RESOURCE, descriptor
 from pydantic import JsonValue, TypeAdapter
 
-from xynoplex.identifiers import ResourceId
-from xynoplex.storage import MemoryStorage, StoragePersister
-from xynoplex.testing import SharedStorage
-from xynoplex.timing import MAX_STORED_BYTES_COUNT
-from xynoplex.types import ResourceDescriptor
+from xynolog.identifiers import ResourceId
+from xynolog.storage import MemoryStorage, StoragePersister
+from xynolog.testing import SharedStorage
+from xynolog.timing import MAX_STORED_BYTES_COUNT
+from xynolog.types import ResourceDescriptor
 
-KEY = "xynoplex.cache.kb.resource"
+KEY = "xynolog.cache.kb.resource"
 _JSON = TypeAdapter[JsonValue](JsonValue)
 
 
@@ -20,7 +20,7 @@ def persister(storage: MemoryStorage, max_bytes: int = MAX_STORED_BYTES_COUNT) -
 
 def at(monkeypatch: pytest.MonkeyPatch, milliseconds: int) -> None:
     """Make it `milliseconds` since the epoch."""
-    monkeypatch.setattr("xynoplex.storage.time.time", lambda: milliseconds / 1000)
+    monkeypatch.setattr("xynolog.storage.time.time", lambda: milliseconds / 1000)
 
 
 def test_storage_in_memory_holds_text_by_key() -> None:

@@ -1,10 +1,10 @@
 /**
- * Test utilities for @xynoplex/react-ui
+ * Test utilities for @xynolog/react-ui
  *
  * Provides a renderWithProviders helper that wraps components with all necessary providers
  * for testing, with customizable mock implementations.
  *
- * THE DOUBLES LIVE IN `@xynoplex/sdk/testing`, NOT HERE — `createTestClient` /
+ * THE DOUBLES LIVE IN `@xynolog/sdk/testing`, NOT HERE — `createTestClient` /
  * `createTestSession` (real client and session over `FaultyTransport`),
  * `stubGateway`, `inMemoryContent`, `refuseUnscriptedOperation`. This module
  * only assembles them into React providers. Reach for the SDK's first; a
@@ -15,19 +15,19 @@
 import React, { ReactElement } from 'react';
 import { render, RenderOptions, RenderResult } from '@testing-library/react';
 import { vi, afterEach } from 'vitest';
-import { XynoplexBrowser, createSessionSignals, type XynoplexClient, type XynoplexSession, type SessionEndReason } from '@xynoplex/sdk';
-import { createTestSession, stubGateway } from '@xynoplex/sdk/testing';
-import { EventBus } from '@xynoplex/core';
+import { XynologBrowser, createSessionSignals, type XynologClient, type XynologSession, type SessionEndReason } from '@xynolog/sdk';
+import { createTestSession, stubGateway } from '@xynolog/sdk/testing';
+import { EventBus } from '@xynolog/core';
 import { TranslationProvider } from './contexts/TranslationContext';
 import { LineNumbersProvider } from './contexts/LineNumbersContext';
 import { ToastProvider } from './components/Toast';
 import type { TranslationManager } from './types/TranslationManager';
 import { createTranslationManager } from './lib/translation-manager';
-import { XynoplexProvider } from './session/XynoplexProvider';
+import { XynologProvider } from './session/XynologProvider';
 import en from '../translations/en.json';
 
 /**
-  * Every browser below is a REAL `XynoplexBrowser` over the SDK's own
+  * Every browser below is a REAL `XynologBrowser` over the SDK's own
   * in-memory doubles — no HTTP, no localhost, no network. Clients are
   * disposed at test end all the same: a chain straddling teardown dies in the
   * cache's B16 disposed-guard rather than logging while the vitest worker's RPC
@@ -35,10 +35,10 @@ import en from '../translations/en.json';
   * every file that imports test-utils — exactly the files that create
   * clients — gets the hook.
   */
-const liveTestClients: XynoplexClient[] = [];
-const liveTestBrowsers: XynoplexBrowser[] = [];
+const liveTestClients: XynologClient[] = [];
+const liveTestBrowsers: XynologBrowser[] = [];
 afterEach(async () => {
-  // Browsers first: `XynoplexBrowser`'s constructor opens standing
+  // Browsers first: `XynologBrowser`'s constructor opens standing
   // subscriptions (kbs$/activeKbId$ persistence, the open-resources
   // projection) and owns an EventBus. These are REAL browsers, so leaving
   // them live leaks a growing set of subscriptions across a 179-file run.
@@ -47,15 +47,15 @@ afterEach(async () => {
 });
 
 /**
- * A real `XynoplexBrowser` for tests, carrying a real `XynoplexSession` whose
+ * A real `XynologBrowser` for tests, carrying a real `XynologSession` whose
  * client speaks to in-memory transports. Nothing here is impersonated, so a
  * test spying on `BindNamespace.prototype.body` — or reading
  * `browser.activeSession$` — sees the production surface.
  */
 
-function createTestBrowser(): XynoplexBrowser {
-  // A REAL `XynoplexBrowser` over real in-memory transports — not a
-  // look-alike. `XynoplexBrowserConfig` is only `{storage, sessionFactory}`
+function createTestBrowser(): XynologBrowser {
+  // A REAL `XynologBrowser` over real in-memory transports — not a
+  // look-alike. `XynologBrowserConfig` is only `{storage, sessionFactory}`
   // and the class is transport-agnostic by design ("every HTTP-vs-local
   // construction concern lives in the factory"), so the double stops at the
   // transport layer and production code sees the production surface.
@@ -65,7 +65,7 @@ function createTestBrowser(): XynoplexBrowser {
   // saying which one.
   const { session, client, storage } = createTestSession({ gateway: stubGateway() });
   liveTestClients.push(client);
-  const browser = new XynoplexBrowser({ storage, sessionFactory: () => session });
+  const browser = new XynologBrowser({ storage, sessionFactory: () => session });
   liveTestBrowsers.push(browser);
   // The browser populates these only by driving a real sign-in; tests want a
   // connected shape from the first render. Both values are real objects, so
@@ -119,8 +119,8 @@ export function renderInEnglish(ui: ReactElement, options?: RenderOptions): Rend
  */
 export interface TestProvidersOptions {
   translationManager?: TranslationManager;
-  /** Inject a specific XynoplexBrowser (e.g. one seeded with a kbs list). */
-  browser?: XynoplexBrowser;
+  /** Inject a specific XynologBrowser (e.g. one seeded with a kbs list). */
+  browser?: XynologBrowser;
 }
 
 /**
@@ -130,7 +130,7 @@ export interface TestProvidersOptions {
  * `bus.emit(channel, payload)` / `bus.on(channel).subscribe(...)` against the
  * live client wiring; `client.bus` is read-only public for that.
  */
-function busOf(client: XynoplexClient): EventBus {
+function busOf(client: XynologClient): EventBus {
   return client.bus;
 }
 
@@ -142,7 +142,7 @@ export interface RenderWithProvidersOptions extends TestProvidersOptions, Omit<R
    */
   returnEventBus?: boolean;
   /**
-   * If true, returns the `XynoplexBrowser` itself, whose `stream(channel)`
+   * If true, returns the `XynologBrowser` itself, whose `stream(channel)`
    * reads the app-scoped channels — panel:*, shell:*, tabs:*, nav:*,
    * settings:*. (Its bus is private; `stream` is the published reader.)
    */
@@ -153,9 +153,9 @@ export interface RenderWithProvidersResult extends RenderResult {
   /** Session-scoped bus (from the client inside the browser). */
   eventBus?: EventBus;
   /** The browser — `browser.stream(channel)` reads app-scoped channels. */
-  browser?: XynoplexBrowser;
+  browser?: XynologBrowser;
   /** The session — pass as the `session` prop to provider-free components. */
-  session: XynoplexSession | null;
+  session: XynologSession | null;
 }
 
 export function renderWithProviders(
@@ -177,13 +177,13 @@ export function renderWithProviders(
   function Wrapper({ children }: { children: React.ReactNode }) {
     return (
       <TranslationProvider translationManager={translationManager}>
-        <XynoplexProvider browser={testBrowser}>
+        <XynologProvider browser={testBrowser}>
           <ToastProvider>
             <LineNumbersProvider>
               {children}
             </LineNumbersProvider>
           </ToastProvider>
-        </XynoplexProvider>
+        </XynologProvider>
       </TranslationProvider>
     );
   }
@@ -197,30 +197,30 @@ export function renderWithProviders(
 }
 
 /**
- * Build a minimal `<XynoplexProvider>` wrapper for tests that roll their
+ * Build a minimal `<XynologProvider>` wrapper for tests that roll their
  * own render wrapper (instead of `renderWithProviders`). The returned
  * `eventBus` is the bus backing the session's client — the same
  * instance the client's namespace methods emit on.
  */
-export function createTestXynoplexWrapper(): {
-  XynoplexWrapper: React.ComponentType<{ children: React.ReactNode }>;
+export function createTestXynologWrapper(): {
+  XynologWrapper: React.ComponentType<{ children: React.ReactNode }>;
   /** Session-scoped bus (from the client). */
   eventBus: EventBus;
   /** The browser — `browser.stream(channel)` reads app-scoped channels. */
-  browser: XynoplexBrowser;
+  browser: XynologBrowser;
   /** The session's client — for tests that need to spy on namespace methods. */
-  client: XynoplexClient;
+  client: XynologClient;
   /** The session — pass as the `session` prop to provider-free components. */
-  session: XynoplexSession;
+  session: XynologSession;
 } {
   const testBrowser = createTestBrowser();
   const testSession = testBrowser.activeSession$.getValue()!;
   const client = testSession.client;
-  const XynoplexWrapper = ({ children }: { children: React.ReactNode }) => (
-    <XynoplexProvider browser={testBrowser}>{children}</XynoplexProvider>
+  const XynologWrapper = ({ children }: { children: React.ReactNode }) => (
+    <XynologProvider browser={testBrowser}>{children}</XynologProvider>
   );
   return {
-    XynoplexWrapper,
+    XynologWrapper,
     eventBus: busOf(client),
     browser: testBrowser,
     client,
@@ -242,7 +242,7 @@ export function createMockTranslationManager(
 }
 
 /**
- * A real `XynoplexBrowser` whose `SessionSignals` are pre-populated. Used by SessionEndedModal and
+ * A real `XynologBrowser` whose `SessionSignals` are pre-populated. Used by SessionEndedModal and
  * PermissionDeniedModal tests that need to control the modal flags
  * without driving a real session through its state machine.
  */
@@ -253,7 +253,7 @@ export function createTestBrowserWithSignals(overrides: {
   sessionEnded?: { reason: SessionEndReason };
   acknowledgePermissionDenied?: () => void;
   acknowledgeSessionEnded?: () => void;
-} = {}): XynoplexBrowser {
+} = {}): XynologBrowser {
   const browser = createTestBrowser();
   const signals = browser.activeSignals$.getValue()!;
 

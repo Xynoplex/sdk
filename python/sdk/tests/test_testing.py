@@ -1,4 +1,4 @@
-"""`xynoplex.testing`: the doubles a consumer's tests are built on, and a client and a session over them, each held to its word.
+"""`xynolog.testing`: the doubles a consumer's tests are built on, and a client and a session over them, each held to its word.
 
 A double answers what a test told it to and refuses the rest by name. It
 never answers with a value of its own making.
@@ -14,17 +14,17 @@ from pydantic import JsonValue
 from spec import JsonObject
 from tokens import token
 
-from xynoplex.bus import Delivered, request
-from xynoplex.cache import Pending, Ready
-from xynoplex.channels import BECKON_FOCUS, BRIDGED_CHANNELS
-from xynoplex.client import CachePersistence, ClientTiming, XynoplexClient
-from xynoplex.errors import BusRequestError, XynoplexError, TransportError
-from xynoplex.identifiers import AnnotationId, ResourceId
-from xynoplex.operations import BROWSE_RESOURCE_REQUESTED, GATHER_REQUESTED, GATHER_RESOURCE_REQUESTED, MARK_DELETE, MATCH_SEARCH_REQUESTED
-from xynoplex.session import HeldSignIn, MemorySignIn, XynoplexSession
-from xynoplex.storage import MemoryStorage
-from xynoplex.stored import cache_key, person_key
-from xynoplex.testing import (
+from xynolog.bus import Delivered, request
+from xynolog.cache import Pending, Ready
+from xynolog.channels import BECKON_FOCUS, BRIDGED_CHANNELS
+from xynolog.client import CachePersistence, ClientTiming, XynologClient
+from xynolog.errors import BusRequestError, TransportError, XynologError
+from xynolog.identifiers import AnnotationId, ResourceId
+from xynolog.operations import BROWSE_RESOURCE_REQUESTED, GATHER_REQUESTED, GATHER_RESOURCE_REQUESTED, MARK_DELETE, MATCH_SEARCH_REQUESTED
+from xynolog.session import HeldSignIn, MemorySignIn, XynologSession
+from xynolog.storage import MemoryStorage
+from xynolog.stored import cache_key, person_key
+from xynolog.testing import (
     Delay,
     Deliver,
     DropReply,
@@ -46,9 +46,9 @@ from xynoplex.testing import (
     create_test_session,
     retry_key_of,
 )
-from xynoplex.timing import ERRORS_KEPT_FOR_FIRST_READER_COUNT
-from xynoplex.transport import Content, ContentTransport, Frame, FrameRefusal, FrameSink, GatewayOperations, PutBinaryRequest, Transport
-from xynoplex.types import (
+from xynolog.timing import ERRORS_KEPT_FOR_FIRST_READER_COUNT
+from xynolog.transport import Content, ContentTransport, Frame, FrameRefusal, FrameSink, GatewayOperations, PutBinaryRequest, Transport
+from xynolog.types import (
     AnchoredTextAbsent,
     GatheredContext,
     GetAnnotationsResponse,
@@ -263,7 +263,7 @@ def test_a_request_the_gateway_refuses_is_answered_on_its_failure_channel_before
 def test_what_is_only_sent_is_delivered_to_whoever_listens_and_into_a_clients_bus() -> None:
     async def scenario() -> None:
         transport = FaultyTransport(channels=(*BRIDGED_CHANNELS, ASK))
-        client = XynoplexClient(transport, InMemoryContent(), StubGateway())
+        client = XynologClient(transport, InMemoryContent(), StubGateway())
         heard = transport.frames("beckon:focus")
         on_the_bus = client.bus.frames(BECKON_FOCUS)
         # One subscriber reached: this transport delivers what is emitted through it on a channel its stream names.
@@ -618,7 +618,7 @@ def test_a_stub_gateway_gives_each_scripted_answer_to_its_own_operation() -> Non
 def test_a_test_client_is_a_real_client_over_the_doubles_it_is_given_or_makes() -> None:
     async def scenario() -> None:
         made = create_test_client()
-        assert isinstance(made.client, XynoplexClient)
+        assert isinstance(made.client, XynologClient)
         assert made.client.transport is made.transport
         assert made.client.timing == ClientTiming()
         # What a test runner reads to know this is no class of tests, whatever its name begins with.
@@ -630,7 +630,7 @@ def test_a_test_client_is_a_real_client_over_the_doubles_it_is_given_or_makes() 
             (made.client.browse.resource_content(RESOURCE), "InMemoryContent: no content stored for res-1"),
             (made.client.system.status(), "StubGateway: not scripted: get_status"),
         ):
-            with pytest.raises(XynoplexError, match=message):
+            with pytest.raises(XynologError, match=message):
                 await soon(unscripted)
 
         # Scripted, the client's own namespaces, cache and deadlines do the rest.
@@ -680,7 +680,7 @@ def test_a_test_session_is_a_real_session_over_a_test_client_ready_at_once_and_h
         made = create_test_session()
         # What a test runner reads to know this is no class of tests, whatever its name begins with.
         assert TestSession.__test__ is False
-        assert isinstance(made.session, XynoplexSession)
+        assert isinstance(made.session, XynologSession)
         assert (made.session.client, made.client.transport, made.session.kb.id) == (made.client, made.transport, "test-kb")
         # Left client first, then the session.
         async with made.session as session, made.client:
@@ -696,7 +696,7 @@ def test_a_test_session_is_a_real_session_over_a_test_client_ready_at_once_and_h
         kb = KbTarget(id="kb-2", label="Another", endpoint=HttpEndpoint(kind="http", host="example.org", port=443, protocol="https"))
         access = token(3600, 1)
         kept = MemorySignIn(
-            HeldSignIn(access=access, refresh="a-refresh-token", client_id="xynoplex-cli", token_endpoint="https://issuer.test/token")
+            HeldSignIn(access=access, refresh="a-refresh-token", client_id="xynolog-cli", token_endpoint="https://issuer.test/token")
         )
         given = create_test_session(client=client, kb=kb, kept=kept)
         assert (given.client, given.transport, given.content, given.gateway, given.kept) == (

@@ -55,7 +55,7 @@ function isExternal(id) {
 // OWNED by `dist/testing.d.ts` and must be EXTERNAL to `dist/testing/
 // axioms.d.ts` — otherwise the axioms bundle inlines a second, nominally
 // distinct `FaultyTransport`, and a consumer holding one from
-// `@xynoplex/core/testing` could not pass it where the axiom harness expects
+// `@xynolog/core/testing` could not pass it where the axiom harness expects
 // one. That is the same nominal-inlining bug, one level over.
 function selfExternal({ ownShards, redirects = {} }) {
   return {
@@ -67,7 +67,7 @@ function selfExternal({ ownShards, redirects = {} }) {
         .split('/')
         .pop();
       if (ownShards.has(base)) return null;
-      return { id: redirects[base] ?? '@xynoplex/core', external: true };
+      return { id: redirects[base] ?? '@xynolog/core', external: true };
     },
   };
 }
@@ -77,7 +77,7 @@ function selfExternal({ ownShards, redirects = {} }) {
  * declaration inputs into `dist-types/` — so the openapi entry's one relative
  * import has nothing to resolve there. Point it at the generated declaration
  * itself; its own `components` import falls through to `selfExternal`, which
- * externalizes it to `@xynoplex/core` rather than inlining all of `types.ts`.
+ * externalizes it to `@xynolog/core` rather than inlining all of `types.ts`.
  */
 function resolveGeneratedValidators() {
   return {
@@ -93,7 +93,7 @@ function resolveGeneratedValidators() {
 
 const entries = [
   { input: 'dist-types/index.d.ts', file: 'dist/index.d.ts' },
-  // `@xynoplex/core/openapi` — the generated validators' declarations. Its own
+  // `@xynolog/core/openapi` — the generated validators' declarations. Its own
   // shard is the generated `.d.ts`, which types each validator against
   // `components['schemas'][…]` from the same bundle.
   {
@@ -112,10 +112,10 @@ const entries = [
     file: 'dist/testing/axioms.d.ts',
     selfExternal: {
       ownShards: new Set(['axioms', 'state-unit-axioms', 'liveness-axioms']),
-      redirects: { 'faulty-transport': '@xynoplex/core/testing' },
+      redirects: { 'faulty-transport': '@xynolog/core/testing' },
     },
   },
-  // `@xynoplex/core/testing/issuer` — the in-process OIDC issuer double. Its
+  // `@xynolog/core/testing/issuer` — the in-process OIDC issuer double. Its
   // own shard, so importing the `testing` barrel does not drag `jose` in
   // behind it.
   {

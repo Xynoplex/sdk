@@ -106,7 +106,7 @@ describe('PageLayout Component', () => {
       );
 
       const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper).toHaveClass('xynoplex-page-layout');
+      expect(wrapper).toHaveClass('xynolog-page-layout');
     });
 
     it('should apply custom className to main element', () => {
@@ -139,7 +139,7 @@ describe('PageLayout Component', () => {
       );
 
       const main = screen.getByRole('main');
-      expect(main).toHaveClass('xynoplex-page-layout__main');
+      expect(main).toHaveClass('xynolog-page-layout__main');
     });
 
     it('should have proper header styling', () => {
@@ -155,7 +155,7 @@ describe('PageLayout Component', () => {
       );
 
       const header = container.querySelector('header');
-      expect(header).toHaveClass('xynoplex-page-layout__header');
+      expect(header).toHaveClass('xynolog-page-layout__header');
     });
   });
 
@@ -202,7 +202,7 @@ describe('PageLayout Component', () => {
         </PageLayout>
       );
 
-      expect(container.querySelector('.xynoplex-skip-links')).not.toBeInTheDocument();
+      expect(container.querySelector('.xynolog-skip-links')).not.toBeInTheDocument();
     });
 
     it("should render the host's skip link target as its main element", () => {

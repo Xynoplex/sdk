@@ -24,13 +24,13 @@ from aio import run, soon
 from pydantic import JsonValue, TypeAdapter
 from spec import SPEC, JsonObject, objects, read, text
 
-from xynoplex.bus import Typed
-from xynoplex.channels import BRIDGED_CHANNELS
-from xynoplex.claims import JOB_CLAIM_CHANNELS
-from xynoplex.client import XynoplexClient
-from xynoplex.identifiers import AnnotationId, JobId, ResourceId
-from xynoplex.model import WireModel, written
-from xynoplex.testing import (
+from xynolog.bus import Typed
+from xynolog.channels import BRIDGED_CHANNELS
+from xynolog.claims import JOB_CLAIM_CHANNELS
+from xynolog.client import XynologClient
+from xynolog.identifiers import AnnotationId, JobId, ResourceId
+from xynolog.model import WireModel, written
+from xynolog.testing import (
     ContentCall,
     FaultyTransport,
     GetAnchoredText,
@@ -42,8 +42,8 @@ from xynoplex.testing import (
     PutBinary,
     StubGateway,
 )
-from xynoplex.transport import Frame, FrameRefusal, PutBinaryRequest
-from xynoplex.types import (
+from xynolog.transport import Frame, FrameRefusal, PutBinaryRequest
+from xynolog.types import (
     AnnotationSelector,
     BindBodyOperation,
     BindInitiateCommand,
@@ -74,7 +74,7 @@ def fixtures() -> JsonObject:
 
 FIXTURES: Final = fixtures()
 
-type Client = XynoplexClient[FaultyTransport]
+type Client = XynologClient[FaultyTransport]
 type Args = Mapping[str, JsonValue]
 
 _MOTIVATION = TypeAdapter[Motivation](Motivation)
@@ -414,7 +414,7 @@ class World:
         self.transport = FaultyTransport(channels=(*BRIDGED_CHANNELS, *JOB_CLAIM_CHANNELS))
         self.content = InMemoryContent()
         self.gateway = StubGateway()
-        self.client: Client = XynoplexClient(self.transport, self.content, self.gateway)
+        self.client: Client = XynologClient(self.transport, self.content, self.gateway)
         self.calls: list[asyncio.Task[object]] = []
 
     def call(self, namespace: str, method: str, args: Args) -> None:

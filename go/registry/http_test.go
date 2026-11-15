@@ -19,9 +19,9 @@ import (
 	"testing"
 	"time"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/registry"
+	xynolog "github.com/xynolog/sdk/go"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/registry"
 )
 
 // stage is a stand-in gateway and the issuer it trusts. The gateway says who
@@ -300,12 +300,12 @@ func (s *stage) registered(t *testing.T, kbID string) api.KnowledgeBase {
 }
 
 func (s *stage) stored(access, refresh string) registry.StoredSession {
-	return registry.StoredSession{Access: access, Refresh: refresh, ClientID: xynoplex.BrowserClientID, TokenEndpoint: s.issuer.URL + "/token", RevocationEndpoint: s.issuer.URL + "/revoke"}
+	return registry.StoredSession{Access: access, Refresh: refresh, ClientID: xynolog.BrowserClientID, TokenEndpoint: s.issuer.URL + "/token", RevocationEndpoint: s.issuer.URL + "/revoke"}
 }
 
 // alicesKey is the key of the person the stage's gateway says every token is,
 // unless it is told otherwise.
-var alicesKey = xynoplex.PersonKey("did:web:example.org:users:alice")
+var alicesKey = xynolog.PersonKey("did:web:example.org:users:alice")
 
 // naming is stored, naming the person whose key is personKey.
 func naming(stored registry.StoredSession, personKey string) registry.StoredSession {
@@ -313,28 +313,28 @@ func naming(stored registry.StoredSession, personKey string) registry.StoredSess
 	return stored
 }
 
-func (s *stage) issuerOf() xynoplex.Issuer {
-	timing := xynoplex.DefaultTiming()
+func (s *stage) issuerOf() xynolog.Issuer {
+	timing := xynolog.DefaultTiming()
 	timing.HttpRequestTimeout = 5 * time.Second
-	return xynoplex.Issuer{HTTP: &http.Client{}, Timing: timing}
+	return xynolog.Issuer{HTTP: &http.Client{}, Timing: timing}
 }
 
-func (s *stage) browser(t *testing.T, storage xynoplex.SessionStorage) *registry.XynoplexBrowser {
+func (s *stage) browser(t *testing.T, storage xynolog.SessionStorage) *registry.XynologBrowser {
 	t.Helper()
 	issuer := s.issuerOf()
-	browser, err := registry.NewXynoplexBrowser(registry.XynoplexBrowserConfig{Storage: storage, SessionFactory: registry.HttpSessionFactory{HTTP: issuer.HTTP, Timing: issuer.Timing}})
+	browser, err := registry.NewXynologBrowser(registry.XynologBrowserConfig{Storage: storage, SessionFactory: registry.HttpSessionFactory{HTTP: issuer.HTTP, Timing: issuer.Timing}})
 	must(t, err)
 	closedAtTheEnd(t, browser)
 	return browser
 }
 
-func (s *stage) begin(t *testing.T) xynoplex.BeginAuthorizationOptions {
-	return xynoplex.BeginAuthorizationOptions{Target: s.target(t), RedirectURI: "http://127.0.0.1:9/callback"}
+func (s *stage) begin(t *testing.T) xynolog.BeginAuthorizationOptions {
+	return xynolog.BeginAuthorizationOptions{Target: s.target(t), RedirectURI: "http://127.0.0.1:9/callback"}
 }
 
 // sentBack begins a sign-in through the registry and gives the callback URL
 // the issuer would send the person back to.
-func (s *stage) sentBack(t *testing.T, browser *registry.XynoplexBrowser, options xynoplex.BeginAuthorizationOptions) string {
+func (s *stage) sentBack(t *testing.T, browser *registry.XynologBrowser, options xynolog.BeginAuthorizationOptions) string {
 	t.Helper()
 	address, err := registry.BeginSignIn(context.Background(), browser, s.issuerOf(), options)
 	must(t, err)
@@ -345,7 +345,7 @@ func (s *stage) sentBack(t *testing.T, browser *registry.XynoplexBrowser, option
 
 // liveOver is the registry's live session, once it has one, waited for in
 // real time.
-func liveOver(t *testing.T, browser *registry.XynoplexBrowser) *xynoplex.Session {
+func liveOver(t *testing.T, browser *registry.XynologBrowser) *xynolog.Session {
 	t.Helper()
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -372,7 +372,7 @@ func until(t *testing.T, what string, probe func() bool) {
 
 func TestARegistryBringsUpASessionThatSaysWhoItIsAndRenewsAnExpiredToken(t *testing.T) {
 	s := newStage(t)
-	storage := xynoplex.NewMemoryStorage()
+	storage := xynolog.NewMemoryStorage()
 	must(t, registry.SaveKnowledgeBases(storage, []api.KnowledgeBase{s.registered(t, "kb-a")}))
 	renewed := jwt(time.Hour)
 	must(t, registry.StoreSession(storage, "kb-a", s.stored(jwt(-time.Minute), "r1")))
@@ -401,7 +401,7 @@ func TestARegistryBringsUpASessionThatSaysWhoItIsAndRenewsAnExpiredToken(t *test
 
 func TestRenewalsAskedForTogetherAreOneRequestOfTheIssuer(t *testing.T) {
 	s := newStage(t)
-	storage := xynoplex.NewMemoryStorage()
+	storage := xynolog.NewMemoryStorage()
 	must(t, registry.SaveKnowledgeBases(storage, []api.KnowledgeBase{s.registered(t, "kb-a")}))
 	must(t, registry.StoreSession(storage, "kb-a", s.stored(jwt(time.Hour), "r1")))
 	browser := s.browser(t, storage)
@@ -429,12 +429,12 @@ func TestRenewalsAskedForTogetherAreOneRequestOfTheIssuer(t *testing.T) {
 
 func TestARegistryOverHTTPCannotBuildASessionForWhatIsNotAtAGateway(t *testing.T) {
 	s := newStage(t)
-	storage := xynoplex.NewMemoryStorage()
+	storage := xynolog.NewMemoryStorage()
 	local := s.registered(t, "kb-local")
 	must(t, local.Endpoint.FromLocalEndpoint(api.LocalEndpoint{Kind: api.LocalEndpointKindLocal, KbId: "here"}))
 	must(t, registry.SaveKnowledgeBases(storage, []api.KnowledgeBase{local}))
-	gate := gated{SessionFactory: registry.HttpSessionFactory{HTTP: &http.Client{}, Timing: xynoplex.DefaultTiming()}, open: make(chan struct{})}
-	browser, err := registry.NewXynoplexBrowser(registry.XynoplexBrowserConfig{Storage: storage, SessionFactory: gate})
+	gate := gated{SessionFactory: registry.HttpSessionFactory{HTTP: &http.Client{}, Timing: xynolog.DefaultTiming()}, open: make(chan struct{})}
+	browser, err := registry.NewXynologBrowser(registry.XynologBrowserConfig{Storage: storage, SessionFactory: gate})
 	must(t, err)
 	closedAtTheEnd(t, browser)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -442,19 +442,19 @@ func TestARegistryOverHTTPCannotBuildASessionForWhatIsNotAtAGateway(t *testing.T
 	errs := browser.Errors(ctx)
 	close(gate.open)
 
-	var refused *xynoplex.SessionError
+	var refused *xynolog.SessionError
 	for err := range errs {
 		refused = err
 		break
 	}
-	if refused == nil || refused.Code != xynoplex.SessionErrorCodeConstructFailed || refused.KbID != "kb-local" || !strings.Contains(refused.Message, `"local"`) {
+	if refused == nil || refused.Code != xynolog.SessionErrorCodeConstructFailed || refused.KbID != "kb-local" || !strings.Contains(refused.Message, `"local"`) {
 		t.Errorf("the failure said is %+v", refused)
 	}
 }
 
 func TestSigningOutOfARegistryRevokesTheRefreshTokenAtItsIssuer(t *testing.T) {
 	s := newStage(t)
-	storage := xynoplex.NewMemoryStorage()
+	storage := xynolog.NewMemoryStorage()
 	must(t, registry.SaveKnowledgeBases(storage, []api.KnowledgeBase{s.registered(t, "kb-a")}))
 	must(t, registry.StoreSession(storage, "kb-a", s.stored(jwt(time.Hour), "r1")))
 	browser := s.browser(t, storage)
@@ -470,7 +470,7 @@ func TestSigningOutOfARegistryRevokesTheRefreshTokenAtItsIssuer(t *testing.T) {
 	s.mu.Lock()
 	revoked := s.revokeForms[0]
 	s.mu.Unlock()
-	if revoked.Get("token") != "r1" || revoked.Get("client_id") != "xynoplex-browser" {
+	if revoked.Get("token") != "r1" || revoked.Get("client_id") != "xynolog-browser" {
 		t.Errorf("the issuer was sent %v", revoked)
 	}
 	if _, ok := registry.StoredSessionOf(storage, "kb-a"); ok {
@@ -480,7 +480,7 @@ func TestSigningOutOfARegistryRevokesTheRefreshTokenAtItsIssuer(t *testing.T) {
 
 func TestARegistrysSignInRegistersTheKnowledgeBaseUnderWhatItSaysItIs(t *testing.T) {
 	s := newStage(t)
-	storage := xynoplex.NewMemoryStorage()
+	storage := xynolog.NewMemoryStorage()
 	browser := s.browser(t, storage)
 	access := jwt(time.Hour)
 	s.grant(access, "a-refresh-token")
@@ -530,15 +530,15 @@ func TestARegistrysSignInRegistersTheKnowledgeBaseUnderWhatItSaysItIs(t *testing
 
 func TestAKnowledgeBaseThatCannotSayWhoItIsIsNotRegistered(t *testing.T) {
 	s := newStage(t)
-	browser := s.browser(t, xynoplex.NewMemoryStorage())
+	browser := s.browser(t, xynolog.NewMemoryStorage())
 
 	s.mu.Lock()
 	s.describes = nil
 	s.mu.Unlock()
 	s.grant(jwt(time.Hour), "r")
 	_, err := registry.CompleteSignIn(context.Background(), browser, s.issuerOf(), s.sentBack(t, browser, s.begin(t)))
-	var unverifiable *xynoplex.IdentityUnverifiableError
-	if !errors.As(err, &unverifiable) || unverifiable.Reason != xynoplex.IdentityUnverifiableReasonNotReported {
+	var unverifiable *xynolog.IdentityUnverifiableError
+	if !errors.As(err, &unverifiable) || unverifiable.Reason != xynolog.IdentityUnverifiableReasonNotReported {
 		t.Errorf("a knowledge base that cannot say who it is: %v", err)
 	}
 
@@ -549,7 +549,7 @@ func TestAKnowledgeBaseThatCannotSayWhoItIsIsNotRegistered(t *testing.T) {
 	s.mu.Unlock()
 	s.grant(unwelcome, "r")
 	_, err = registry.CompleteSignIn(context.Background(), browser, s.issuerOf(), s.sentBack(t, browser, s.begin(t)))
-	if !errors.As(err, &unverifiable) || unverifiable.Reason != xynoplex.IdentityUnverifiableReasonUnreachable {
+	if !errors.As(err, &unverifiable) || unverifiable.Reason != xynolog.IdentityUnverifiableReasonUnreachable {
 		t.Errorf("a knowledge base not reached: %v", err)
 	}
 
@@ -560,13 +560,13 @@ func TestAKnowledgeBaseThatCannotSayWhoItIsIsNotRegistered(t *testing.T) {
 
 func TestACallbackThatIsNotThePendingSignInsRegistersNothing(t *testing.T) {
 	s := newStage(t)
-	browser := s.browser(t, xynoplex.NewMemoryStorage())
+	browser := s.browser(t, xynolog.NewMemoryStorage())
 	s.sentBack(t, browser, s.begin(t))
 
 	_, err := registry.CompleteSignIn(context.Background(), browser, s.issuerOf(), "http://127.0.0.1:9/callback?state=another&code=the-code")
 
-	var refused *xynoplex.SignInError
-	if !errors.As(err, &refused) || refused.Code != xynoplex.SignInErrorCodeState || refused.Message != "The sign-in response does not belong to the pending sign-in" {
+	var refused *xynolog.SignInError
+	if !errors.As(err, &refused) || refused.Code != xynolog.SignInErrorCodeState || refused.Message != "The sign-in response does not belong to the pending sign-in" {
 		t.Errorf("a callback of another sign-in: %v", err)
 	}
 	if len(browser.KnowledgeBases().Value()) != 0 {
@@ -578,7 +578,7 @@ func TestAskedWithATokenTheKnowledgeBaseSaysWhoItIs(t *testing.T) {
 	s := newStage(t)
 	issuer := s.issuerOf()
 
-	identity, err := xynoplex.DescribeConnection(context.Background(), s.target(t), jwt(time.Hour), issuer.HTTP, issuer.Timing, issuer.Random)
+	identity, err := xynolog.DescribeConnection(context.Background(), s.target(t), jwt(time.Hour), issuer.HTTP, issuer.Timing, issuer.Random)
 	must(t, err)
 
 	if identity.Did.String() != didA || identity.Description.Name != "KB A" || identity.Description.GitBranch == nil || *identity.Description.GitBranch != "main" {
@@ -588,12 +588,12 @@ func TestAskedWithATokenTheKnowledgeBaseSaysWhoItIs(t *testing.T) {
 
 func TestARegistrysSessionResumesItsStreamFromThePlaceItsStorageKept(t *testing.T) {
 	s := newStage(t)
-	storage := xynoplex.NewMemoryStorage()
+	storage := xynolog.NewMemoryStorage()
 	must(t, registry.SaveKnowledgeBases(storage, []api.KnowledgeBase{s.registered(t, "kb-a")}))
 	must(t, registry.StoreSession(storage, "kb-a", s.stored(jwt(time.Hour), "r1")))
 	// The sign-in names nobody yet: the place is restored once the gateway
 	// names the person it was kept for.
-	places := xynoplex.LastEventIDKey("kb-a", alicesKey)
+	places := xynolog.LastEventIDKey("kb-a", alicesKey)
 	must(t, storage.Set(places, `{"res-1":"p-res-1-5"}`))
 	browser := s.browser(t, storage)
 	session := liveOver(t, browser)

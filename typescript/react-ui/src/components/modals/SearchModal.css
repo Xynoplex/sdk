@@ -1,31 +1,31 @@
 /* Search Modal Styles */
 
 /* Modal container */
-.xynoplex-search-modal {
+.xynolog-search-modal {
   position: relative;
   z-index: 1000;
 }
 
 /* Backdrop */
-.xynoplex-search-modal__backdrop {
+.xynolog-search-modal__backdrop {
   position: fixed;
   inset: 0;
   background-color: rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(4px);
 }
 
-[data-theme="dark"] .xynoplex-search-modal__backdrop {
+[data-theme="dark"] .xynolog-search-modal__backdrop {
   background-color: rgba(0, 0, 0, 0.6);
 }
 
 /* Content wrapper */
-.xynoplex-search-modal__wrapper {
+.xynolog-search-modal__wrapper {
   position: fixed;
   inset: 0;
   overflow-y: auto;
 }
 
-.xynoplex-search-modal__centering {
+.xynolog-search-modal__centering {
   display: flex;
   min-height: 100%;
   align-items: flex-start;
@@ -35,124 +35,124 @@
 }
 
 /* Dialog panel */
-.xynoplex-search-modal__panel {
+.xynolog-search-modal__panel {
   width: 100%;
   max-width: 42rem;
   transform: translateZ(0);
   overflow: hidden;
   border-radius: 0.5rem;
-  background-color: var(--xynoplex-color-white);
+  background-color: var(--xynolog-color-white);
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   transition: all 0.2s;
 }
 
-[data-theme="dark"] .xynoplex-search-modal__panel {
-  background-color: var(--xynoplex-color-gray-800);
+[data-theme="dark"] .xynolog-search-modal__panel {
+  background-color: var(--xynolog-color-gray-800);
 }
 
 /* Search Input Section */
-.xynoplex-search-modal__input-container {
+.xynolog-search-modal__input-container {
   display: flex;
   align-items: center;
-  border-bottom: 1px solid var(--xynoplex-color-gray-200);
+  border-bottom: 1px solid var(--xynolog-color-gray-200);
 }
 
-.xynoplex-search-modal__input-container:focus-within {
-  outline: 2px solid var(--xynoplex-color-primary-500);
+.xynolog-search-modal__input-container:focus-within {
+  outline: 2px solid var(--xynolog-color-primary-500);
   outline-offset: -2px;
 }
 
-[data-theme="dark"] .xynoplex-search-modal__input-container {
-  border-bottom-color: var(--xynoplex-color-gray-700);
+[data-theme="dark"] .xynolog-search-modal__input-container {
+  border-bottom-color: var(--xynolog-color-gray-700);
 }
 
-[data-theme="dark"] .xynoplex-search-modal__input-container:focus-within {
-  outline-color: var(--xynoplex-color-primary-400);
+[data-theme="dark"] .xynolog-search-modal__input-container:focus-within {
+  outline-color: var(--xynolog-color-primary-400);
 }
 
-.xynoplex-search-modal__search-icon-wrapper {
+.xynolog-search-modal__search-icon-wrapper {
   flex-shrink: 0;
   padding: 0.75rem 1rem;
 }
 
-.xynoplex-search-modal__search-icon {
+.xynolog-search-modal__search-icon {
   width: 1.25rem;
   height: 1.25rem;
-  color: var(--xynoplex-color-gray-600);
+  color: var(--xynolog-color-gray-600);
 }
 
-[data-theme="dark"] .xynoplex-search-modal__search-icon {
-  color: var(--xynoplex-color-gray-400);
+[data-theme="dark"] .xynolog-search-modal__search-icon {
+  color: var(--xynolog-color-gray-400);
 }
 
-.xynoplex-search-modal__input {
+.xynolog-search-modal__input {
   flex: 1;
   padding: 0.75rem 1rem;
   background-color: transparent;
-  color: var(--xynoplex-color-gray-900);
+  color: var(--xynolog-color-gray-900);
 }
 
-.xynoplex-search-modal__input:focus-visible {
-  outline: 2px solid var(--xynoplex-color-primary-500);
+.xynolog-search-modal__input:focus-visible {
+  outline: 2px solid var(--xynolog-color-primary-500);
   outline-offset: 2px;
 }
 
-[data-theme="dark"] .xynoplex-search-modal__input {
-  color: var(--xynoplex-color-white);
+[data-theme="dark"] .xynolog-search-modal__input {
+  color: var(--xynolog-color-white);
 }
 
-[data-theme="dark"] .xynoplex-search-modal__input:focus-visible {
-  outline-color: var(--xynoplex-color-primary-400);
+[data-theme="dark"] .xynolog-search-modal__input:focus-visible {
+  outline-color: var(--xynolog-color-primary-400);
 }
 
-.xynoplex-search-modal__esc-wrapper {
+.xynolog-search-modal__esc-wrapper {
   flex-shrink: 0;
   padding: 0.75rem 1rem;
 }
 
 /* Keyboard shortcuts (kbd) */
-.xynoplex-search-modal__kbd {
+.xynolog-search-modal__kbd {
   padding: 0.25rem 0.5rem;
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--xynoplex-color-gray-500);
-  background-color: var(--xynoplex-color-gray-100);
+  color: var(--xynolog-color-gray-500);
+  background-color: var(--xynolog-color-gray-100);
   border-radius: 0.25rem;
 }
 
-[data-theme="dark"] .xynoplex-search-modal__kbd {
-  color: var(--xynoplex-color-gray-400);
-  background-color: var(--xynoplex-color-gray-700);
+[data-theme="dark"] .xynolog-search-modal__kbd {
+  color: var(--xynolog-color-gray-400);
+  background-color: var(--xynolog-color-gray-700);
 }
 
-.xynoplex-search-modal__kbd--small {
+.xynolog-search-modal__kbd--small {
   padding: 0.125rem 0.375rem;
 }
 
 /* Results Section */
-.xynoplex-search-modal__results {
+.xynolog-search-modal__results {
   max-height: 60vh;
   overflow-y: auto;
 }
 
 /* Empty states */
-.xynoplex-search-modal__empty {
+.xynolog-search-modal__empty {
   padding: 2rem 1rem;
   text-align: center;
-  color: var(--xynoplex-color-gray-500);
+  color: var(--xynolog-color-gray-500);
 }
 
-[data-theme="dark"] .xynoplex-search-modal__empty {
-  color: var(--xynoplex-color-gray-400);
+[data-theme="dark"] .xynolog-search-modal__empty {
+  color: var(--xynolog-color-gray-400);
 }
 
 /* Results list */
-.xynoplex-search-modal__results-list {
+.xynolog-search-modal__results-list {
   padding: 0.5rem 0;
 }
 
 /* Result item */
-.xynoplex-search-modal__result {
+.xynolog-search-modal__result {
   width: 100%;
   padding: 0.75rem 1rem;
   display: flex;
@@ -161,96 +161,96 @@
   transition: background-color 0.2s;
 }
 
-.xynoplex-search-modal__result:hover {
-  background-color: var(--xynoplex-color-gray-50);
+.xynolog-search-modal__result:hover {
+  background-color: var(--xynolog-color-gray-50);
 }
 
-[data-theme="dark"] .xynoplex-search-modal__result:hover {
+[data-theme="dark"] .xynolog-search-modal__result:hover {
   background-color: rgba(55, 65, 81, 0.5);
 }
 
-.xynoplex-search-modal__result--selected {
-  background-color: var(--xynoplex-color-gray-50);
+.xynolog-search-modal__result--selected {
+  background-color: var(--xynolog-color-gray-50);
 }
 
-.xynoplex-search-modal__result--selected:focus-visible {
-  outline: 2px solid var(--xynoplex-color-primary-500);
+.xynolog-search-modal__result--selected:focus-visible {
+  outline: 2px solid var(--xynolog-color-primary-500);
   outline-offset: 2px;
 }
 
-[data-theme="dark"] .xynoplex-search-modal__result--selected {
+[data-theme="dark"] .xynolog-search-modal__result--selected {
   background-color: rgba(55, 65, 81, 0.5);
 }
 
-[data-theme="dark"] .xynoplex-search-modal__result--selected:focus-visible {
-  outline-color: var(--xynoplex-color-primary-400);
+[data-theme="dark"] .xynolog-search-modal__result--selected:focus-visible {
+  outline-color: var(--xynolog-color-primary-400);
 }
 
 /* Result icon */
-.xynoplex-search-modal__result-icon-wrapper {
+.xynolog-search-modal__result-icon-wrapper {
   flex-shrink: 0;
   margin-top: 0.125rem;
 }
 
-.xynoplex-search-modal__result-icon {
+.xynolog-search-modal__result-icon {
   width: 1.25rem;
   height: 1.25rem;
 }
 
-.xynoplex-search-modal__result-icon--resource {
-  color: var(--xynoplex-color-primary-500);
+.xynolog-search-modal__result-icon--resource {
+  color: var(--xynolog-color-primary-500);
 }
 
-[data-theme="dark"] .xynoplex-search-modal__result-icon--resource {
-  color: var(--xynoplex-color-primary-400);
+[data-theme="dark"] .xynolog-search-modal__result-icon--resource {
+  color: var(--xynolog-color-primary-400);
 }
 
-.xynoplex-search-modal__result-icon--entity {
-  color: var(--xynoplex-color-green-500);
+.xynolog-search-modal__result-icon--entity {
+  color: var(--xynolog-color-green-500);
 }
 
-[data-theme="dark"] .xynoplex-search-modal__result-icon--entity {
-  color: var(--xynoplex-color-green-400);
+[data-theme="dark"] .xynolog-search-modal__result-icon--entity {
+  color: var(--xynolog-color-green-400);
 }
 
 /* Result content */
-.xynoplex-search-modal__result-content {
+.xynolog-search-modal__result-content {
   flex: 1;
   text-align: left;
 }
 
-.xynoplex-search-modal__result-header {
+.xynolog-search-modal__result-header {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-.xynoplex-search-modal__result-name {
+.xynolog-search-modal__result-name {
   font-weight: 500;
-  color: var(--xynoplex-color-gray-900);
+  color: var(--xynolog-color-gray-900);
 }
 
-[data-theme="dark"] .xynoplex-search-modal__result-name {
-  color: var(--xynoplex-color-white);
+[data-theme="dark"] .xynolog-search-modal__result-name {
+  color: var(--xynolog-color-white);
 }
 
-.xynoplex-search-modal__result-badge {
+.xynolog-search-modal__result-badge {
   padding: 0.125rem 0.5rem;
   font-size: 0.75rem;
   font-weight: 500;
   border-radius: 9999px;
-  background-color: var(--xynoplex-color-green-100);
-  color: var(--xynoplex-color-green-700);
+  background-color: var(--xynolog-color-green-100);
+  color: var(--xynolog-color-green-700);
 }
 
-[data-theme="dark"] .xynoplex-search-modal__result-badge {
+[data-theme="dark"] .xynolog-search-modal__result-badge {
   background-color: rgba(34, 197, 94, 0.3);
-  color: var(--xynoplex-color-green-300);
+  color: var(--xynolog-color-green-300);
 }
 
-.xynoplex-search-modal__result-description {
+.xynolog-search-modal__result-description {
   font-size: 0.875rem;
-  color: var(--xynoplex-color-gray-600);
+  color: var(--xynolog-color-gray-600);
   margin-top: 0.25rem;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -258,69 +258,69 @@
   overflow: hidden;
 }
 
-[data-theme="dark"] .xynoplex-search-modal__result-description {
-  color: var(--xynoplex-color-gray-400);
+[data-theme="dark"] .xynolog-search-modal__result-description {
+  color: var(--xynolog-color-gray-400);
 }
 
 /* Result action */
-.xynoplex-search-modal__result-action {
+.xynolog-search-modal__result-action {
   flex-shrink: 0;
   display: flex;
   align-items: center;
 }
 
 /* Help section */
-.xynoplex-search-modal__help {
+.xynolog-search-modal__help {
   padding: 2rem 1rem;
 }
 
-.xynoplex-search-modal__help-text {
+.xynolog-search-modal__help-text {
   text-align: center;
-  color: var(--xynoplex-color-gray-500);
+  color: var(--xynolog-color-gray-500);
   margin-bottom: 1rem;
 }
 
-[data-theme="dark"] .xynoplex-search-modal__help-text {
-  color: var(--xynoplex-color-gray-400);
+[data-theme="dark"] .xynolog-search-modal__help-text {
+  color: var(--xynolog-color-gray-400);
 }
 
-.xynoplex-search-modal__shortcuts {
+.xynolog-search-modal__shortcuts {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 0.5rem;
 }
 
-.xynoplex-search-modal__shortcut {
+.xynolog-search-modal__shortcut {
   display: flex;
   align-items: center;
   gap: 0.25rem;
   font-size: 0.75rem;
-  color: var(--xynoplex-color-gray-500);
+  color: var(--xynolog-color-gray-500);
 }
 
-[data-theme="dark"] .xynoplex-search-modal__shortcut {
-  color: var(--xynoplex-color-gray-400);
+[data-theme="dark"] .xynolog-search-modal__shortcut {
+  color: var(--xynolog-color-gray-400);
 }
 
 /* Centering variant - center items vertically */
-.xynoplex-search-modal__centering--center {
+.xynolog-search-modal__centering--center {
   align-items: center;
 }
 
 /* Panel variant - with border and padding */
-.xynoplex-search-modal__panel--with-border {
-  border: 1px solid var(--xynoplex-color-gray-200);
+.xynolog-search-modal__panel--with-border {
+  border: 1px solid var(--xynolog-color-gray-200);
   padding: 1.5rem;
   max-width: 600px;
 }
 
-[data-theme="dark"] .xynoplex-search-modal__panel--with-border {
-  border-color: var(--xynoplex-color-gray-700);
+[data-theme="dark"] .xynolog-search-modal__panel--with-border {
+  border-color: var(--xynolog-color-gray-700);
 }
 
 /* Header for ResourceSearchModal */
-.xynoplex-search-modal__header {
+.xynolog-search-modal__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -328,75 +328,75 @@
 }
 
 /* Title */
-.xynoplex-search-modal__title {
+.xynolog-search-modal__title {
   font-size: 1.125rem;
   font-weight: 600;
-  color: var(--xynoplex-color-gray-900);
+  color: var(--xynolog-color-gray-900);
 }
 
-[data-theme="dark"] .xynoplex-search-modal__title {
-  color: var(--xynoplex-color-white);
+[data-theme="dark"] .xynolog-search-modal__title {
+  color: var(--xynolog-color-white);
 }
 
 /* Close button */
-.xynoplex-search-modal__close-button {
-  color: var(--xynoplex-color-gray-600);
+.xynolog-search-modal__close-button {
+  color: var(--xynolog-color-gray-600);
 }
 
-.xynoplex-search-modal__close-button:hover {
-  color: var(--xynoplex-color-gray-900);
+.xynolog-search-modal__close-button:hover {
+  color: var(--xynolog-color-gray-900);
 }
 
-.xynoplex-search-modal__close-button:focus-visible {
-  outline: 2px solid var(--xynoplex-color-primary-500);
+.xynolog-search-modal__close-button:focus-visible {
+  outline: 2px solid var(--xynolog-color-primary-500);
   outline-offset: 2px;
 }
 
-[data-theme="dark"] .xynoplex-search-modal__close-button {
-  color: var(--xynoplex-color-gray-400);
+[data-theme="dark"] .xynolog-search-modal__close-button {
+  color: var(--xynolog-color-gray-400);
 }
 
-[data-theme="dark"] .xynoplex-search-modal__close-button:hover {
-  color: var(--xynoplex-color-gray-300);
+[data-theme="dark"] .xynolog-search-modal__close-button:hover {
+  color: var(--xynolog-color-gray-300);
 }
 
-[data-theme="dark"] .xynoplex-search-modal__close-button:focus-visible {
-  outline-color: var(--xynoplex-color-primary-400);
+[data-theme="dark"] .xynolog-search-modal__close-button:focus-visible {
+  outline-color: var(--xynolog-color-primary-400);
 }
 
 /* Search input */
-.xynoplex-search-modal__search-input {
+.xynolog-search-modal__search-input {
   width: 100%;
   padding: 0.5rem 0.75rem;
-  border: 1px solid var(--xynoplex-color-gray-300);
+  border: 1px solid var(--xynolog-color-gray-300);
   border-radius: 0.5rem;
-  color: var(--xynoplex-color-gray-900);
+  color: var(--xynolog-color-gray-900);
 }
 
-.xynoplex-search-modal__search-input:focus-visible {
-  outline: 2px solid var(--xynoplex-color-primary-500);
+.xynolog-search-modal__search-input:focus-visible {
+  outline: 2px solid var(--xynolog-color-primary-500);
   outline-offset: 2px;
 }
 
-[data-theme="dark"] .xynoplex-search-modal__search-input {
-  border-color: var(--xynoplex-color-gray-600);
-  background-color: var(--xynoplex-color-gray-700);
-  color: var(--xynoplex-color-white);
+[data-theme="dark"] .xynolog-search-modal__search-input {
+  border-color: var(--xynolog-color-gray-600);
+  background-color: var(--xynolog-color-gray-700);
+  color: var(--xynolog-color-white);
 }
 
-[data-theme="dark"] .xynoplex-search-modal__search-input:focus-visible {
-  outline-color: var(--xynoplex-color-primary-400);
+[data-theme="dark"] .xynolog-search-modal__search-input:focus-visible {
+  outline-color: var(--xynolog-color-primary-400);
 }
 
 /* Wide panel variant for two-pane layouts */
-.xynoplex-search-modal__panel--wide {
+.xynolog-search-modal__panel--wide {
   max-width: 1100px;
 }
 
 /* Gather-context step. Width comes from `--wide` (the family's own 1100px
    precedent), applied alongside at both call sites — this class owns only
    the gather-specific flex/height shape. */
-.xynoplex-search-modal__panel--gather {
+.xynolog-search-modal__panel--gather {
   max-height: min(92vh, 860px);
   display: flex;
   flex-direction: column;
@@ -404,7 +404,7 @@
 }
 
 /* Outer flex column: source strip + two-column body */
-.xynoplex-gather__outer {
+.xynolog-gather__outer {
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -414,7 +414,7 @@
 }
 
 /* Loading state */
-.xynoplex-gather__loading {
+.xynolog-gather__loading {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -427,37 +427,37 @@
 /* The gather skeleton: the loading screen is the loaded screen minus the
    data — known annotation facts up top, pane headers in place, shimmer bars
    where the gather's answers will land. */
-.xynoplex-gather__skeleton {
+.xynolog-gather__skeleton {
   display: flex;
   flex-direction: column;
   gap: 1rem;
   flex: 1;
 }
 
-.xynoplex-gather__skeleton-source {
-  font-size: var(--xynoplex-text-sm);
-  color: var(--xynoplex-text-secondary);
+.xynolog-gather__skeleton-source {
+  font-size: var(--xynolog-text-sm);
+  color: var(--xynolog-text-secondary);
 }
 
-.xynoplex-gather__skeleton-header {
+.xynolog-gather__skeleton-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
 }
 
-.xynoplex-gather__skeleton-exact {
-  font-weight: var(--xynoplex-font-medium);
-  color: var(--xynoplex-text-primary);
+.xynolog-gather__skeleton-exact {
+  font-weight: var(--xynolog-font-medium);
+  color: var(--xynolog-text-primary);
 }
 
-.xynoplex-gather__skeleton-panes {
+.xynolog-gather__skeleton-panes {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1.5rem;
 }
 
-.xynoplex-gather__skeleton-pane {
+.xynolog-gather__skeleton-pane {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -465,48 +465,48 @@
 
 /* One small dots animation per zone, sitting exactly where that zone's
    content will land. Reuses the loading-dot spans (same animation). */
-.xynoplex-gather__skeleton-dots {
+.xynolog-gather__skeleton-dots {
   display: flex;
   gap: 0.375rem;
   padding: 0.375rem 0;
 }
 
-.xynoplex-gather__loading-text {
+.xynolog-gather__loading-text {
   font-size: 1.125rem;
-  color: var(--xynoplex-text-secondary);
+  color: var(--xynolog-text-secondary);
   font-weight: 500;
 }
 
-.xynoplex-gather__loading-dot {
+.xynolog-gather__loading-dot {
   display: inline-block;
   width: 0.625rem;
   height: 0.625rem;
   border-radius: 50%;
-  background-color: var(--xynoplex-color-primary-500);
-  animation: xynoplex-gather-pulse 1.2s ease-in-out infinite;
+  background-color: var(--xynolog-color-primary-500);
+  animation: xynolog-gather-pulse 1.2s ease-in-out infinite;
 }
 
-[data-theme="dark"] .xynoplex-gather__loading-dot {
-  background-color: var(--xynoplex-color-primary-400);
+[data-theme="dark"] .xynolog-gather__loading-dot {
+  background-color: var(--xynolog-color-primary-400);
 }
 
-.xynoplex-gather__loading-dot:nth-child(1) { animation-delay: 0s; }
-.xynoplex-gather__loading-dot:nth-child(2) { animation-delay: 0.2s; }
-.xynoplex-gather__loading-dot:nth-child(3) { animation-delay: 0.4s; }
+.xynolog-gather__loading-dot:nth-child(1) { animation-delay: 0s; }
+.xynolog-gather__loading-dot:nth-child(2) { animation-delay: 0.2s; }
+.xynolog-gather__loading-dot:nth-child(3) { animation-delay: 0.4s; }
 
-@keyframes xynoplex-gather-pulse {
+@keyframes xynolog-gather-pulse {
   0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
   40%           { transform: scale(1);   opacity: 1; }
 }
 
 /* Full-width source context strip */
-.xynoplex-gather__source-strip {
+.xynolog-gather__source-strip {
   flex-shrink: 0;
   padding-top: 0.25rem;
 }
 
 /* The evidence panes, graph and corpus — an SVG and a card list under small-cap headers. */
-.xynoplex-gather-pane {
+.xynolog-gather-pane {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -514,28 +514,28 @@
   overflow-y: auto; /* a pane scrolls inside itself; the panel never grows */
 }
 
-.xynoplex-gather-pane__title {
-  font-size: var(--xynoplex-text-xs);
+.xynolog-gather-pane__title {
+  font-size: var(--xynolog-text-xs);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--xynoplex-text-tertiary);
+  color: var(--xynolog-text-tertiary);
 }
 
-.xynoplex-gather-pane__summary {
+.xynolog-gather-pane__summary {
   margin: 0;
-  font-size: var(--xynoplex-text-sm);
-  color: var(--xynoplex-text-primary);
+  font-size: var(--xynolog-text-sm);
+  color: var(--xynolog-text-primary);
 }
 
-.xynoplex-gather-pane__empty {
+.xynolog-gather-pane__empty {
   margin: 0;
-  font-size: var(--xynoplex-text-sm);
+  font-size: var(--xynolog-text-sm);
   font-style: italic;
-  color: var(--xynoplex-text-secondary);
+  color: var(--xynolog-text-secondary);
 }
 
-.xynoplex-corpus__list {
+.xynolog-corpus__list {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -544,134 +544,134 @@
   margin: 0;
 }
 
-.xynoplex-corpus__card {
+.xynolog-corpus__card {
   padding: 0.375rem 0.5rem;
-  border: 1px solid var(--xynoplex-border-primary);
+  border: 1px solid var(--xynolog-border-primary);
   border-radius: 0.375rem;
 }
 
-.xynoplex-corpus__card-head {
+.xynolog-corpus__card-head {
   display: flex;
   align-items: baseline;
   flex-wrap: wrap;
   gap: 0.375rem;
 }
 
-.xynoplex-corpus__source {
-  font-size: var(--xynoplex-text-sm);
+.xynolog-corpus__source {
+  font-size: var(--xynolog-text-sm);
   font-weight: 500;
-  color: var(--xynoplex-text-primary);
+  color: var(--xynolog-text-primary);
 }
 
-.xynoplex-corpus__score {
+.xynolog-corpus__score {
   margin-left: auto;
-  font-size: var(--xynoplex-text-xs);
+  font-size: var(--xynolog-text-xs);
   font-variant-numeric: tabular-nums;
-  color: var(--xynoplex-text-tertiary);
+  color: var(--xynolog-text-tertiary);
 }
 
-.xynoplex-corpus__snippet {
+.xynolog-corpus__snippet {
   margin: 0.25rem 0 0;
-  font-size: var(--xynoplex-text-xs);
-  color: var(--xynoplex-text-secondary);
+  font-size: var(--xynolog-text-xs);
+  color: var(--xynolog-text-secondary);
 }
 
-.xynoplex-corpus__receipt {
+.xynolog-corpus__receipt {
   margin: 0;
-  font-size: var(--xynoplex-text-xs);
+  font-size: var(--xynolog-text-xs);
   font-style: italic;
-  color: var(--xynoplex-text-tertiary);
+  color: var(--xynolog-text-tertiary);
 }
 
 /* The graph pane's body — a deterministic, hand-rolled SVG. */
-.xynoplex-graph {
+.xynolog-graph {
   width: 100%;
   height: auto;
   flex-shrink: 0;
 }
 
-.xynoplex-graph__node rect {
-  fill: var(--xynoplex-bg-secondary);
-  stroke: var(--xynoplex-border-primary);
+.xynolog-graph__node rect {
+  fill: var(--xynolog-bg-secondary);
+  stroke: var(--xynolog-border-primary);
   stroke-width: 1;
 }
 
-.xynoplex-graph__node text {
+.xynolog-graph__node text {
   font-size: 11px;
-  fill: var(--xynoplex-text-primary);
+  fill: var(--xynolog-text-primary);
 }
 
-.xynoplex-graph__node--focal rect {
-  fill: var(--xynoplex-color-primary-100);
-  stroke: var(--xynoplex-color-primary-600);
+.xynolog-graph__node--focal rect {
+  fill: var(--xynolog-color-primary-100);
+  stroke: var(--xynolog-color-primary-600);
   stroke-width: 2;
 }
 
-.xynoplex-graph__node--annotation rect {
-  fill: var(--xynoplex-bg-primary);
+.xynolog-graph__node--annotation rect {
+  fill: var(--xynolog-bg-primary);
   stroke-dasharray: 4 3;
 }
 
-.xynoplex-graph__edge line {
-  stroke: var(--xynoplex-border-primary);
+.xynolog-graph__edge line {
+  stroke: var(--xynolog-border-primary);
   stroke-width: 1.5;
 }
 
-.xynoplex-graph__edge--cites line {
-  stroke: var(--xynoplex-color-primary-600);
+.xynolog-graph__edge--cites line {
+  stroke: var(--xynolog-color-primary-600);
 }
 
-.xynoplex-graph__edge--annotation-of line {
+.xynolog-graph__edge--annotation-of line {
   stroke-dasharray: 4 3;
 }
 
-[data-theme="dark"] .xynoplex-graph__node--focal rect {
-  fill: var(--xynoplex-color-primary-900);
-  stroke: var(--xynoplex-color-primary-400);
+[data-theme="dark"] .xynolog-graph__node--focal rect {
+  fill: var(--xynolog-color-primary-900);
+  stroke: var(--xynolog-color-primary-400);
 }
 
-[data-theme="dark"] .xynoplex-graph__edge--cites line {
-  stroke: var(--xynoplex-color-primary-400);
+[data-theme="dark"] .xynolog-graph__edge--cites line {
+  stroke: var(--xynolog-color-primary-400);
 }
 
 /* Recall chips: the exclusion picker inverted — every entity type starts
-   INCLUDED, wearing the app's token look (the xynoplex-tag tint), and a click
+   INCLUDED, wearing the app's token look (the xynolog-tag tint), and a click
    crosses one off the recall: outline, tertiary text, struck through. The
    wire still carries the exclude list; only the presentation inverted. */
-.xynoplex-form__recall-chips {
+.xynolog-form__recall-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 0.375rem;
 }
 
-.xynoplex-form__recall-chip {
+.xynolog-form__recall-chip {
   padding: 0.25rem 0.75rem;
-  border-radius: var(--xynoplex-radius-full);
-  font-size: var(--xynoplex-text-sm);
+  border-radius: var(--xynolog-radius-full);
+  font-size: var(--xynolog-text-sm);
   cursor: pointer;
   border: 1px solid transparent;
-  background: var(--xynoplex-color-primary-100);
-  color: var(--xynoplex-color-primary-700);
+  background: var(--xynolog-color-primary-100);
+  color: var(--xynolog-color-primary-700);
 }
 
-[data-theme="dark"] .xynoplex-form__recall-chip {
-  background: var(--xynoplex-color-primary-900);
-  color: var(--xynoplex-color-primary-300);
+[data-theme="dark"] .xynolog-form__recall-chip {
+  background: var(--xynolog-color-primary-900);
+  color: var(--xynolog-color-primary-300);
 }
 
-.xynoplex-form__recall-chip[data-included="false"] {
+.xynolog-form__recall-chip[data-included="false"] {
   background: none;
-  border-color: var(--xynoplex-border-primary);
-  color: var(--xynoplex-text-tertiary);
+  border-color: var(--xynolog-border-primary);
+  color: var(--xynolog-text-tertiary);
   text-decoration: line-through;
 }
 
-.xynoplex-form__recall-chip:hover {
+.xynolog-form__recall-chip:hover {
   opacity: 0.85;
 }
 
-.xynoplex-form__recall-chip:focus-visible {
-  outline: 2px solid var(--xynoplex-color-primary-500);
+.xynolog-form__recall-chip:focus-visible {
+  outline: 2px solid var(--xynolog-color-primary-500);
   outline-offset: 1px;
 }
 
@@ -680,80 +680,80 @@
    corpus pane's exclusion receipt and the wizard's strategy band: a choice
    made upstream, echoed compactly. Dashed like the graph's annotation
    nodes — a stand-in for something expandable. */
-.xynoplex-gather-receipt {
+.xynolog-gather-receipt {
   display: block;
   width: 100%;
   flex-shrink: 0;
   text-align: left;
   padding: 0.5rem 0.75rem;
-  font-size: var(--xynoplex-text-sm);
-  color: var(--xynoplex-text-secondary);
+  font-size: var(--xynolog-text-sm);
+  color: var(--xynolog-text-secondary);
   background: none;
-  border: 1px dashed var(--xynoplex-border-primary);
+  border: 1px dashed var(--xynolog-border-primary);
   border-radius: 0.375rem;
   cursor: pointer;
 }
 
-.xynoplex-gather-receipt:hover {
-  color: var(--xynoplex-text-primary);
-  border-color: var(--xynoplex-color-primary-600);
+.xynolog-gather-receipt:hover {
+  color: var(--xynolog-text-primary);
+  border-color: var(--xynolog-color-primary-600);
 }
 
 /* The hint on its own full-width row, input-then-act above the footer. */
-.xynoplex-gather__hint-row {
+.xynolog-gather__hint-row {
   flex-shrink: 0;
   padding-top: 0.5rem;
 }
 
-.xynoplex-gather__hint-effect {
+.xynolog-gather__hint-effect {
   font-weight: 400;
-  color: var(--xynoplex-text-tertiary);
+  color: var(--xynolog-text-tertiary);
 }
 
 /* The gather step's hint, echoed on the configure steps: it stays visible
    while being steered by. */
-.xynoplex-wizard__hint-echo {
+.xynolog-wizard__hint-echo {
   margin: 0 0 0.5rem;
-  font-size: var(--xynoplex-text-xs);
+  font-size: var(--xynolog-text-xs);
   font-style: italic;
-  color: var(--xynoplex-text-secondary);
+  color: var(--xynolog-text-secondary);
 }
 
 /* Suggested references are prose — sentences, listed, not chipped. */
-.xynoplex-gather__suggested {
+.xynolog-gather__suggested {
   margin: 0.5rem 0 0;
   padding-left: 1.25rem;
-  font-size: var(--xynoplex-text-xs);
-  color: var(--xynoplex-text-secondary);
+  font-size: var(--xynolog-text-xs);
+  color: var(--xynolog-text-secondary);
 }
 
-.xynoplex-gather__suggested li {
+.xynolog-gather__suggested li {
   margin-bottom: 0.25rem;
 }
 
 /* Two-column body below the strip */
-.xynoplex-gather__body {
+.xynolog-gather__body {
   display: flex;
   flex: 1;
   min-height: 0;
   overflow: hidden;
 }
 
-.xynoplex-gather__left {
+.xynolog-gather__left {
   flex: 0 0 55%;
   overflow-y: auto;
   padding-right: 1.25rem;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  border-right: 1px solid var(--xynoplex-border-primary);
+  border-right: 1px solid var(--xynolog-border-primary);
 }
 
-[data-theme="dark"] .xynoplex-gather__left {
-  border-right-color: var(--xynoplex-border-primary);
+[data-theme="dark"] .xynolog-gather__left {
+  border-right-color: var(--xynolog-border-primary);
 }
 
-.xynoplex-gather__right {
+.xynolog-gather__right {
   flex: 0 0 45%;
   padding-left: 1.25rem;
   display: flex;
@@ -762,36 +762,36 @@
   overflow-y: auto;
 }
 
-.xynoplex-gather__right .xynoplex-form__field {
+.xynolog-gather__right .xynolog-form__field {
   display: flex;
   flex-direction: column;
   flex: 1;
   min-height: 0;
 }
 
-.xynoplex-gather__hint-textarea {
+.xynolog-gather__hint-textarea {
   width: 100%;
   flex: 1;
   min-height: 0;
 }
 
-.xynoplex-gather__hint-textarea:focus-visible {
-  outline: 2px solid var(--xynoplex-color-primary-500);
+.xynolog-gather__hint-textarea:focus-visible {
+  outline: 2px solid var(--xynolog-color-primary-500);
   outline-offset: 0;
 }
 
-.xynoplex-gather__footer {
+.xynolog-gather__footer {
   flex-shrink: 0;
   padding-top: 0.75rem;
-  border-top: 1px solid var(--xynoplex-border-primary);
+  border-top: 1px solid var(--xynolog-border-primary);
 }
 
-.xynoplex-gather__footer-label {
-  font-size: var(--xynoplex-text-xs);
+.xynolog-gather__footer-label {
+  font-size: var(--xynolog-text-xs);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--xynoplex-text-tertiary);
+  color: var(--xynolog-text-tertiary);
   margin-bottom: 0.5rem;
 }
 
@@ -799,71 +799,71 @@
    selection: a passive echo on the label's own line (--echo). Sized like the
    form's text and in the TEXT color: blue is reserved for controls, and this
    is never a control — the emoji carries the strategy's identity. */
-.xynoplex-gather__footer--echo {
+.xynolog-gather__footer--echo {
   display: flex;
   align-items: baseline;
   gap: 0.75rem;
 }
 
-.xynoplex-gather__footer--echo .xynoplex-gather__footer-label {
+.xynolog-gather__footer--echo .xynolog-gather__footer-label {
   margin-bottom: 0;
 }
 
-.xynoplex-gather__chosen-strategy {
-  font-size: var(--xynoplex-text-sm);
-  font-weight: var(--xynoplex-font-semibold);
-  color: var(--xynoplex-text-primary);
+.xynolog-gather__chosen-strategy {
+  font-size: var(--xynolog-text-sm);
+  font-weight: var(--xynolog-font-semibold);
+  color: var(--xynolog-text-primary);
 }
 
-.xynoplex-gather__actions {
+.xynolog-gather__actions {
   display: flex;
   flex-flow: row nowrap;
   gap: 0.5rem;
 }
 
 /* Source context collapsible */
-.xynoplex-gather__source-box {
+.xynolog-gather__source-box {
   padding: 0.75rem;
-  background-color: var(--xynoplex-bg-secondary);
-  border-radius: var(--xynoplex-radius-md);
-  border: 1px solid var(--xynoplex-border-primary);
+  background-color: var(--xynolog-bg-secondary);
+  border-radius: var(--xynolog-radius-md);
+  border: 1px solid var(--xynolog-border-primary);
   position: relative;
 }
 
-[data-theme="dark"] .xynoplex-gather__source-box {
-  background-color: var(--xynoplex-bg-secondary);
+[data-theme="dark"] .xynolog-gather__source-box {
+  background-color: var(--xynolog-bg-secondary);
 }
 
-.xynoplex-gather__source-box::after {
+.xynolog-gather__source-box::after {
   content: '';
   position: absolute;
   bottom: 2rem; /* above the expand button */
   left: 0;
   right: 0;
   height: 2rem;
-  background: linear-gradient(to bottom, transparent, var(--xynoplex-bg-secondary));
+  background: linear-gradient(to bottom, transparent, var(--xynolog-bg-secondary));
   pointer-events: none;
-  border-radius: 0 0 var(--xynoplex-radius-md) var(--xynoplex-radius-md);
+  border-radius: 0 0 var(--xynolog-radius-md) var(--xynolog-radius-md);
   transition: opacity 0.15s ease;
 }
 
-.xynoplex-gather__source-box--expanded::after {
+.xynolog-gather__source-box--expanded::after {
   opacity: 0;
 }
 
-.xynoplex-gather__source-context {
+.xynolog-gather__source-context {
   max-height: 8rem;
   overflow: hidden;
   transition: max-height 0.2s ease;
 }
 
-.xynoplex-gather__source-box--expanded .xynoplex-gather__source-context {
+.xynolog-gather__source-box--expanded .xynolog-gather__source-context {
   max-height: 16rem;
 }
 
-.xynoplex-gather__expand-btn {
-  font-size: var(--xynoplex-text-xs);
-  color: var(--xynoplex-text-tertiary);
+.xynolog-gather__expand-btn {
+  font-size: var(--xynolog-text-xs);
+  color: var(--xynolog-text-tertiary);
   background: none;
   border: none;
   cursor: pointer;
@@ -873,45 +873,45 @@
   outline: none;
 }
 
-.xynoplex-gather__expand-btn:hover {
-  color: var(--xynoplex-color-primary-600);
+.xynolog-gather__expand-btn:hover {
+  color: var(--xynolog-color-primary-600);
 }
 
-[data-theme="dark"] .xynoplex-gather__expand-btn:hover {
-  color: var(--xynoplex-color-primary-400);
+[data-theme="dark"] .xynolog-gather__expand-btn:hover {
+  color: var(--xynolog-color-primary-400);
 }
 
 /* Narrow screens: stack vertically */
 @media (max-width: 640px) {
-  .xynoplex-search-modal__panel--gather {
+  .xynolog-search-modal__panel--gather {
     max-width: 100%;
     max-height: 100dvh;
   }
 
-  .xynoplex-gather__outer {
+  .xynolog-gather__outer {
     overflow-y: auto;
   }
 
-  .xynoplex-gather__body {
+  .xynolog-gather__body {
     flex-direction: column;
     overflow: visible;
   }
 
-  .xynoplex-gather__left {
+  .xynolog-gather__left {
     flex: none;
     border-right: none;
-    border-bottom: 1px solid var(--xynoplex-border-primary);
+    border-bottom: 1px solid var(--xynolog-border-primary);
     padding-right: 0;
     padding-bottom: 0.75rem;
   }
 
-  .xynoplex-gather__right {
+  .xynolog-gather__right {
     flex: none;
     padding-left: 0;
     padding-top: 0.75rem;
   }
 
-  .xynoplex-gather__actions {
+  .xynolog-gather__actions {
     flex-flow: row wrap;
   }
 }
@@ -919,26 +919,26 @@
 /* Discard guard: inline prompt raised when dismissal would destroy a
    non-empty compose draft. Never window.confirm; the footer stays
    dismissal-free — this band owns the decision. */
-.xynoplex-wizard__discard-prompt {
+.xynolog-wizard__discard-prompt {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   margin-bottom: 0.75rem;
   padding: 0.5rem 0.75rem;
-  border: 1px solid var(--xynoplex-color-red-600);
-  border-radius: var(--xynoplex-radius-md);
+  border: 1px solid var(--xynolog-color-red-600);
+  border-radius: var(--xynolog-radius-md);
 }
 
-.xynoplex-wizard__discard-prompt-text {
+.xynolog-wizard__discard-prompt-text {
   flex: 1;
-  font-weight: var(--xynoplex-font-semibold);
+  font-weight: var(--xynolog-font-semibold);
 }
 
 /* The strategy steps' single scroll pane: evidence + step content scroll
    TOGETHER inside the clipped gather panel. The hosts start it scrolled to
    the bottom on entry, so the step's own content shows in full and the
    evidence tucks up under the modal top. */
-.xynoplex-wizard__step-scroll {
+.xynolog-wizard__step-scroll {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
@@ -952,44 +952,44 @@
    governs the whole step. The search results flow the same way: as a
    shrinking flex item with no least height, the list is squeezed to nothing
    whenever the evidence above it is taller than the pane. */
-.xynoplex-wizard__step-scroll .xynoplex-gather__outer,
-.xynoplex-wizard__step-scroll .xynoplex-gather__body,
-.xynoplex-wizard__step-scroll .xynoplex-search-results {
+.xynolog-wizard__step-scroll .xynolog-gather__outer,
+.xynolog-wizard__step-scroll .xynolog-gather__body,
+.xynolog-wizard__step-scroll .xynolog-search-results {
   flex: none;
   min-height: auto;
   overflow: visible;
 }
 
-.xynoplex-wizard__step-scroll .xynoplex-gather__left,
-.xynoplex-wizard__step-scroll .xynoplex-gather__right,
-.xynoplex-wizard__step-scroll .xynoplex-gather-pane {
+.xynolog-wizard__step-scroll .xynolog-gather__left,
+.xynolog-wizard__step-scroll .xynolog-gather__right,
+.xynolog-wizard__step-scroll .xynolog-gather-pane {
   min-height: auto;
   overflow-y: visible;
 }
 
 /* Narrow screens */
 @media (max-width: 640px) {
-  .xynoplex-search-modal__panel--wide {
+  .xynolog-search-modal__panel--wide {
     max-width: 100%;
   }
 }
 
 /* The two gather panes differ only in what they hold; both fill their column. */
-.xynoplex-gather-pane--corpus,
-.xynoplex-gather-pane--graph {
+.xynolog-gather-pane--corpus,
+.xynolog-gather-pane--graph {
   display: flex;
   flex-direction: column;
   min-height: 0;
 }
 
 /* A line in the graph pane that a citation refers to. */
-.xynoplex-graph__cited-line {
-  color: var(--xynoplex-text-secondary);
-  font-size: var(--xynoplex-text-xs);
+.xynolog-graph__cited-line {
+  color: var(--xynolog-text-secondary);
+  font-size: var(--xynolog-text-xs);
 }
 
 /* The results list, and its two-pane arrangement when a preview is shown. */
-.xynoplex-search-results {
+.xynolog-search-results {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -997,7 +997,7 @@
   overflow-y: auto;
 }
 
-.xynoplex-search-results__two-pane {
+.xynolog-search-results__two-pane {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 1rem;
@@ -1006,14 +1006,14 @@
 
 /* How far the corpus pane's answer can be trusted — a qualifier on the
    result, so it must not compete with the result itself. */
-.xynoplex-corpus__trust {
-  color: var(--xynoplex-text-tertiary);
-  font-size: var(--xynoplex-text-2xs);
+.xynolog-corpus__trust {
+  color: var(--xynolog-text-tertiary);
+  font-size: var(--xynolog-text-2xs);
 }
 
 /* One bar of the gather skeleton; the shimmer belongs to the skeleton block. */
-.xynoplex-gather__skeleton-bar {
+.xynolog-gather__skeleton-bar {
   height: 0.5rem;
-  border-radius: var(--xynoplex-radius-sm);
-  background-color: var(--xynoplex-bg-tertiary);
+  border-radius: var(--xynolog-radius-sm);
+  background-color: var(--xynolog-bg-tertiary);
 }

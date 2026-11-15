@@ -23,19 +23,19 @@ const table: { names: string[]; cases: Case[] } = JSON.parse(readFileSync(resolv
 const CHANNEL = 'yield:clone-create';
 const TAG = `[bus EMIT] ${CHANNEL}`;
 
-const flag = globalThis as { __XYNOPLEX_BUS_LOG__?: boolean };
+const flag = globalThis as { __XYNOLOG_BUS_LOG__?: boolean };
 let saved: boolean | undefined;
 let debug: ReturnType<typeof vi.spyOn>;
 
 beforeEach(() => {
-  saved = flag.__XYNOPLEX_BUS_LOG__;
-  flag.__XYNOPLEX_BUS_LOG__ = true;
+  saved = flag.__XYNOLOG_BUS_LOG__;
+  flag.__XYNOLOG_BUS_LOG__ = true;
   debug = vi.spyOn(console, 'debug').mockImplementation(() => {});
 });
 
 afterEach(() => {
-  if (saved === undefined) delete flag.__XYNOPLEX_BUS_LOG__;
-  else flag.__XYNOPLEX_BUS_LOG__ = saved;
+  if (saved === undefined) delete flag.__XYNOLOG_BUS_LOG__;
+  else flag.__XYNOLOG_BUS_LOG__ = saved;
   debug.mockRestore();
 });
 

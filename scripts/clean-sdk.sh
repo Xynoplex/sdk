@@ -3,9 +3,9 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd -P)"
 source "$ROOT/build-tools/container-runtime.sh"
-CACHE_ROOT="${XDG_CACHE_HOME:-$HOME/.cache}/xynoplex-sdk"
+CACHE_ROOT="${XDG_CACHE_HOME:-$HOME/.cache}/xynolog-sdk"
 STATE_ROOT="$CACHE_ROOT/local"
-OPAM_VOLUME=xynoplex-sdk-opam-5-5
+OPAM_VOLUME=xynolog-sdk-opam-5-5
 LANGUAGES=(typescript python rust go csharp haskell kotlin ocaml swift)
 
 remove_path() {
@@ -77,12 +77,12 @@ clean_local_artifacts() {
 clean_temporary_outputs() {
   local temp_root="${TMPDIR:-/tmp}"
   printf '==> Cleaning interrupted SDK temporary build directories\n'
-  remove_path /tmp/xynoplex-sdk-rust
+  remove_path /tmp/xynolog-sdk-rust
   if [[ -d "$temp_root" ]]; then
     while IFS= read -r -d '' output; do
       remove_path "$output"
     done < <(find "$temp_root" -mindepth 1 -maxdepth 1 -type d \
-      \( -name 'xynoplex-sdk-python.*' -o -name 'xynoplex-go-proxy.*' \) \
+      \( -name 'xynolog-sdk-python.*' -o -name 'xynolog-go-proxy.*' \) \
       -prune -print0)
   fi
 }

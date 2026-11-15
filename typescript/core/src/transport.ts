@@ -1,8 +1,8 @@
 /**
  * Transport interfaces — the shared contract for any wire-or-local
- * communication path consumed by `XynoplexClient`. Concrete implementations
+ * communication path consumed by `XynologClient`. Concrete implementations
  * live alongside the runtime they wrap (`HttpTransport` in
- * `@xynoplex/http-transport`).
+ * `@xynolog/http-transport`).
  *
  * Three interfaces:
  *
@@ -11,7 +11,7 @@
  *   IGatewayOperations  — auth and system endpoints.
  *                         HTTP-shaped; a non-HTTP transport may
  *                         implement none, some, or a different set.
- *                         Optional on `XynoplexClient` — passed only when
+ *                         Optional on `XynologClient` — passed only when
  *                         the host has a gateway that supports them.
  *   IContentTransport   — binary I/O (putBinary / getBinary). Narrow by
  *                         design because binary has different backpressure
@@ -34,7 +34,7 @@ import type { EventMap } from './bus-protocol';
 import type { BusEnvelope, BusFrame } from './event-bus';
 import type { EventBus } from './event-bus';
 import type { FrameRefusal } from './bus';
-import type { XynoplexError } from './errors';
+import type { XynologError } from './errors';
 import type { AnchoredTextAnswer } from './pdf-anchoring';
 
 type Agent = components['schemas']['Agent'];
@@ -212,7 +212,7 @@ export interface ITransport {
    * Stream of transport-level errors surfaced from typed-wire methods or
    * other transport-mediated round-trips, just before they're thrown to
    * the caller, and of each line the stream carried that names no reader.
-   * Each emission is a `XynoplexError` (or subclass — HTTP emits `APIError`
+   * Each emission is a `XynologError` (or subclass — HTTP emits `APIError`
    * for a refusal, other transports emit whatever subclass is
    * appropriate). Consumers can subscribe for global error handling
    * (e.g. surfacing 401/403 as modals, logging) without wrapping every
@@ -222,7 +222,7 @@ export interface ITransport {
    * `ERRORS_KEPT_FOR_FIRST_READER_COUNT` are kept for it, in the order met
    * (protocol/contract/TRANSPORT-CONTRACT.md § Failures).
    */
-  readonly errors$: Observable<XynoplexError>;
+  readonly errors$: Observable<XynologError>;
 
   dispose(): void;
 }
@@ -232,14 +232,14 @@ export interface ITransport {
 /**
  * Auth and system endpoints. HTTP-shaped —
  * `HttpTransport` implements both this and `ITransport`; the
- * `XynoplexClient` constructor takes a `IGatewayOperations` argument
+ * `XynologClient` constructor takes a `IGatewayOperations` argument
  * separately from the bus transport so non-HTTP transports
  * can implement just the bus surface and the
- * XynoplexClient cleanly omits `client.auth` / `client.system`.
+ * XynologClient cleanly omits `client.auth` / `client.system`.
  *
  * Implementations should map their native error codes to
  * `TransportErrorCode` (protocol/specs/src/errors/codes.json) so the routing layer
- * (`XynoplexBrowser`) stays transport-neutral.
+ * (`XynologBrowser`) stays transport-neutral.
  */
 export interface IGatewayOperations {
   // ── Auth ──────────────────────────────────────────────────────────────

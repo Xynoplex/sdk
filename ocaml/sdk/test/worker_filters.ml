@@ -9,4 +9,4 @@ let () =
       Alcotest.(check bool)
         (member "why" row |> to_string)
         (member "matches" row |> to_bool)
-        (Xynoplex.Worker.accepts ~filters ~announcement))
+        (Xynolog.Worker.accepts ~filters ~announcement))

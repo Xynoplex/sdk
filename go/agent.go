@@ -1,4 +1,4 @@
-package xynoplex
+package xynolog
 
 // An agent's token at a knowledge base's gateway. An agent is an account, as a
 // person is: it signs in at its issuer (OIDC discovery, then the
@@ -9,7 +9,7 @@ package xynoplex
 // part of it: each write names that itself.
 //
 // An AgentToken is a transport's token source, as a person's session is: it
-// holds the current token (Token), renews it on the schedule every Xynoplex
+// holds the current token (Token), renews it on the schedule every Xynolog
 // client keeps, and renews it at once when the gateway refuses it (Refresh, a
 // TokenRefresher). It is not a session: an agent whose renewal fails keeps the
 // token it has and tries again, since a process holding a token that still
@@ -33,7 +33,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Xynoplex/sdk/go/api"
+	"github.com/xynolog/sdk/go/api"
 )
 
 // Credential is a service account at an issuer, by how it proves itself: a
@@ -97,16 +97,16 @@ func (c KeyCredential) account() (string, string) { return c.Issuer, c.ClientID 
 func (c SecretCredential) String() string { return fmt.Sprintf("%s at %s", c.ClientID, c.Issuer) }
 
 // GoString names the account and never its secret, for %#v.
-func (c SecretCredential) GoString() string { return "xynoplex.SecretCredential{" + c.String() + "}" }
+func (c SecretCredential) GoString() string { return "xynolog.SecretCredential{" + c.String() + "}" }
 
 // String names the account and never its key.
 func (c KeyCredential) String() string { return fmt.Sprintf("%s at %s", c.ClientID, c.Issuer) }
 
 // GoString names the account and never its key, for %#v.
-func (c KeyCredential) GoString() string { return "xynoplex.KeyCredential{" + c.String() + "}" }
+func (c KeyCredential) GoString() string { return "xynolog.KeyCredential{" + c.String() + "}" }
 
 // ServiceToken is a service account's token, fetched on first use and kept
-// until it is due for renewal by the schedule every Xynoplex client keeps. A
+// until it is due for renewal by the schedule every Xynolog client keeps. A
 // service reaches another as itself with it.
 type ServiceToken struct {
 	credential Credential

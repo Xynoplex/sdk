@@ -5,22 +5,22 @@
  */
 
 /* Base Card Styles */
-.xynoplex-card {
-  background: var(--xynoplex-bg-primary);
-  border: 1px solid var(--xynoplex-border-primary);
-  border-radius: var(--xynoplex-radius-lg);
+.xynolog-card {
+  background: var(--xynolog-bg-primary);
+  border: 1px solid var(--xynolog-border-primary);
+  border-radius: var(--xynolog-radius-lg);
   padding: 1.5rem;
-  box-shadow: var(--xynoplex-shadow-sm);
+  box-shadow: var(--xynolog-shadow-sm);
 }
 
-[data-theme="dark"] .xynoplex-card {
-  background: var(--xynoplex-bg-primary);
-  border-color: var(--xynoplex-border-primary);
+[data-theme="dark"] .xynolog-card {
+  background: var(--xynolog-bg-primary);
+  border-color: var(--xynolog-border-primary);
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
 }
 
 /* A live region on the card reporting that a search is running. */
-.xynoplex-card__search-status {
-  color: var(--xynoplex-text-secondary);
-  font-size: var(--xynoplex-text-xs);
+.xynolog-card__search-status {
+  color: var(--xynolog-text-secondary);
+  font-size: var(--xynolog-text-xs);
 }

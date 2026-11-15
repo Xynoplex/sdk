@@ -5,7 +5,7 @@ find . -path './.build' -prune -o -name '*.swift' -type f -print > .build/census
 while IFS= read -r file; do
   if grep -nE '@unchecked[[:space:]]+Sendable|nonisolated[[:space:]]*\(unsafe\)|@preconcurrency|swift-format-ignore' "$file"; then exit 1; fi
   case "$file" in ./Sources/*)
-    if sed -E 's/ProcessInfo\.processInfo\.environment\["XYNOPLEX_BUS_LOG"\]//g; s/getenv\("XYNOPLEX_BUS_LOG"\)//g' "$file" | grep -nE '\.environment|getenv[[:space:]]*\('; then exit 1; fi
+    if sed -E 's/ProcessInfo\.processInfo\.environment\["XYNOLOG_BUS_LOG"\]//g; s/getenv\("XYNOLOG_BUS_LOG"\)//g' "$file" | grep -nE '\.environment|getenv[[:space:]]*\('; then exit 1; fi
     if grep -nE '\b(setenv|unsetenv|putenv|environ)\b' "$file"; then exit 1; fi
     # Every wait and interval keeps the clock its caller gives, and every jitter draws from the
     # caller's random source; the system's are their default arguments alone. A secret (the PKCE
@@ -16,11 +16,11 @@ while IFS= read -r file; do
     if grep -nE '\.execute\(' "$file" | grep -v 'deadline: \.distantFuture'; then exit 1; fi
     # Every task starts at the one spawn point, which keeps the executor a test binds; a function
     # that returns a task is not one starting.
-    case "$file" in ./Sources/Xynoplex/Transport/Spawn.swift) ;; *)
+    case "$file" in ./Sources/Xynolog/Transport/Spawn.swift) ;; *)
       if sed -E 's/-> Task<[^{]*\{//g' "$file" | grep -nE '(^|[^[:alnum:]_])Task(\.detached|\.immediate)?[[:space:]]*(<[^>]*>)?[[:space:]]*[({]'; then exit 1; fi;;
     esac;;
   # A test's wait is bounded by testDeadlineMs alone, which withinTestDeadline keeps.
-  ./Tests/XynoplexTests/TestDeadline.swift) ;;
+  ./Tests/XynologTests/TestDeadline.swift) ;;
   ./Tests/*)
     if grep -nE '(^|[^[:alnum:]_])within\(' "$file"; then exit 1; fi;;
   esac

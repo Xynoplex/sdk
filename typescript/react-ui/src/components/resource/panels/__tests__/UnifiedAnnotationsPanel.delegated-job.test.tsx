@@ -9,19 +9,19 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 import { screen, fireEvent } from '@testing-library/react';
 import { renderInEnglish } from '../../../../test-utils';
 import '@testing-library/jest-dom';
-import { createMarkStateUnit, type MarkStateUnit, type XynoplexSession } from '@xynoplex/sdk';
-import { createTestSession } from '@xynoplex/sdk/testing';
+import { createMarkStateUnit, type MarkStateUnit, type XynologSession } from '@xynolog/sdk';
+import { createTestSession } from '@xynolog/sdk/testing';
 import type { LinkComponentProps, RouteBuilder } from '../../../../contexts/RoutingContext';
 import { UnifiedAnnotationsPanel } from '../UnifiedAnnotationsPanel';
 import { ANNOTATORS, annotatorKeyForMotivation, type AnnotatorKey } from '../../../../lib/annotation-registry';
-import { jobId, resourceId, type JobId, type Motivation } from '@xynoplex/core';
+import { jobId, resourceId, type JobId, type Motivation } from '@xynolog/core';
 
 const TestLink = ({ href, children, ...rest }: LinkComponentProps) => <a href={href} {...rest}>{children}</a>;
 const testRoutes: RouteBuilder = { resourceDetail: (id) => `/r/${id}` };
 
 type PanelProps = React.ComponentProps<typeof UnifiedAnnotationsPanel>;
 
-const sessions: XynoplexSession[] = [];
+const sessions: XynologSession[] = [];
 const marks: MarkStateUnit[] = [];
 
 afterEach(() => {
@@ -45,7 +45,7 @@ function harness() {
 }
 
 const delegating = (
-  session: XynoplexSession,
+  session: XynologSession,
   mark: MarkStateUnit,
   motivation: Motivation,
   tab: AnnotatorKey,
@@ -81,7 +81,7 @@ describe('UnifiedAnnotationsPanel: the delegated job', () => {
     const { session, mark, cancel } = harness();
     renderInEnglish(<UnifiedAnnotationsPanel {...delegating(session, mark, motivation, tab, jobId('job-1'))} />);
 
-    fireEvent.click(screen.getByTestId('xynoplex-delegate-control'));
+    fireEvent.click(screen.getByTestId('xynolog-delegate-control'));
     expect(cancel).toHaveBeenCalledExactlyOnceWith('job-1');
   });
 
@@ -90,15 +90,15 @@ describe('UnifiedAnnotationsPanel: the delegated job', () => {
     renderInEnglish(<UnifiedAnnotationsPanel {...delegating(session, mark, motivation, tab, null)} />);
 
     // The display is there; only its control is not.
-    expect(screen.getByTestId('xynoplex-delegate-status')).toBeInTheDocument();
-    expect(screen.queryByTestId('xynoplex-delegate-control')).toBeNull();
+    expect(screen.getByTestId('xynolog-delegate-status')).toBeInTheDocument();
+    expect(screen.queryByTestId('xynolog-delegate-control')).toBeNull();
   });
 
   it("shows the references panel no control for another motivation's job", () => {
     const { session, mark } = harness();
     renderInEnglish(<UnifiedAnnotationsPanel {...delegating(session, mark, 'highlighting', 'reference', jobId('job-1'))} />);
 
-    expect(screen.queryByTestId('xynoplex-delegate-control')).toBeNull();
+    expect(screen.queryByTestId('xynolog-delegate-control')).toBeNull();
   });
 });
 
@@ -107,7 +107,7 @@ describe('UnifiedAnnotationsPanel: the delegated job', () => {
  * stays with the motivation it is of until it is dismissed.
  */
 const ended = (
-  session: XynoplexSession,
+  session: XynologSession,
   mark: MarkStateUnit,
   motivation: Motivation,
   tab: AnnotatorKey,
@@ -124,9 +124,9 @@ describe('UnifiedAnnotationsPanel: a delegated job that has ended', () => {
     const dismissProgress = vi.spyOn(mark, 'dismissProgress');
     renderInEnglish(<UnifiedAnnotationsPanel {...ended(session, mark, motivation, tab, false)} />);
 
-    expect(screen.getByTestId('xynoplex-delegate-status')).toBeInTheDocument();
-    expect(screen.getByTestId('xynoplex-delegate-control')).toHaveAccessibleName('Close');
-    fireEvent.click(screen.getByTestId('xynoplex-delegate-control'));
+    expect(screen.getByTestId('xynolog-delegate-status')).toBeInTheDocument();
+    expect(screen.getByTestId('xynolog-delegate-control')).toHaveAccessibleName('Close');
+    fireEvent.click(screen.getByTestId('xynolog-delegate-control'));
     expect(dismissProgress).toHaveBeenCalledOnce();
   });
 
@@ -134,13 +134,13 @@ describe('UnifiedAnnotationsPanel: a delegated job that has ended', () => {
     const { session, mark } = harness();
     renderInEnglish(<UnifiedAnnotationsPanel {...ended(session, mark, motivation, tab, true)} />);
 
-    expect(screen.getByTestId('xynoplex-delegate-status').textContent).toBe('Cancelled');
+    expect(screen.getByTestId('xynolog-delegate-status').textContent).toBe('Cancelled');
   });
 
   it("shows a finished job's display in no other motivation's panel", () => {
     const { session, mark } = harness();
     renderInEnglish(<UnifiedAnnotationsPanel {...ended(session, mark, 'highlighting', 'reference', false)} />);
 
-    expect(screen.queryByTestId('xynoplex-delegate-status')).toBeNull();
+    expect(screen.queryByTestId('xynolog-delegate-status')).toBeNull();
   });
 });

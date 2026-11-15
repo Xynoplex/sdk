@@ -10,8 +10,8 @@ import pytest
 from pydantic import BaseModel
 from spec import SPEC
 
-from xynoplex._pdf_locate import Rectangle, fragment_of, locate
-from xynoplex.types import AnchoredText, PdfTextItem
+from xynolog._pdf_locate import Rectangle, fragment_of, locate
+from xynolog.types import AnchoredText, PdfTextItem
 
 
 class StatedSpan(BaseModel, frozen=True, extra="forbid"):

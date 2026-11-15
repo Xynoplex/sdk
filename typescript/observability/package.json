@@ -1,7 +1,7 @@
 {
-  "name": "@xynoplex/observability",
+  "name": "@xynolog/observability",
   "version": "0.7.3",
-  "description": "OpenTelemetry tracing and metrics for Xynoplex's TypeScript transport. Node process-init helpers, a withSpan wrapper, W3C trace-context propagation across the bus, and the count of the emits a client sent. No-op when no exporter is configured.",
+  "description": "OpenTelemetry tracing and metrics for Xynolog's TypeScript transport. Node process-init helpers, a withSpan wrapper, W3C trace-context propagation across the bus, and the count of the emits a client sent. No-op when no exporter is configured.",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -29,7 +29,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Xynoplex/sdk.git",
+    "url": "git+https://github.com/xynolog/sdk.git",
     "directory": "typescript/observability"
   },
   "scripts": {
@@ -41,7 +41,7 @@
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest"
   },
-  "author": "Xynoplex Team",
+  "author": "Xynolog Team",
   "license": "Apache-2.0",
   "devDependencies": {
     "@vitest/coverage-v8": "^5.0.5",
@@ -61,6 +61,6 @@
     "@opentelemetry/sdk-metrics": "^3.0.0",
     "@opentelemetry/sdk-trace": "^3.0.0",
     "@opentelemetry/semantic-conventions": "^1.44.0",
-    "@xynoplex/core": "*"
+    "@xynolog/core": "*"
   }
 }

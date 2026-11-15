@@ -1,10 +1,10 @@
 import { BehaviorSubject, Subject, combineLatest, of, type Observable } from 'rxjs';
-import { readyValue, type CacheState } from '@xynoplex/sdk';
+import { readyValue, type CacheState } from '@xynolog/sdk';
 import { debounceTime, distinctUntilChanged, map, startWith, switchMap, shareReplay } from 'rxjs/operators';
-import type { ResourceDescriptor } from '@xynoplex/core';
-import type { XynoplexSession } from '@xynoplex/sdk';
-import { SEARCH_DEBOUNCE_MS, type StateUnit } from '@xynoplex/core';
-import { createDisposer } from '@xynoplex/sdk';
+import type { ResourceDescriptor } from '@xynolog/core';
+import type { XynologSession } from '@xynolog/sdk';
+import { SEARCH_DEBOUNCE_MS, type StateUnit } from '@xynolog/core';
+import { createDisposer } from '@xynolog/sdk';
 import type { ShellStateUnit } from '../../../state/shell-state-unit';
 import { trackList, type ListState } from '../../../state/list-state';
 
@@ -40,7 +40,7 @@ export interface DiscoverStateUnit extends StateUnit {
 }
 
 export function createDiscoverStateUnit(
-  session: XynoplexSession,
+  session: XynologSession,
   browse: ShellStateUnit,
 ): DiscoverStateUnit {
   const { client } = session;

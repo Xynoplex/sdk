@@ -9,16 +9,16 @@ import { readFileSync } from 'fs';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import { BehaviorSubject } from 'rxjs';
-import type { AccessToken } from '@xynoplex/core';
-import { RECONNECT_MS, SignInError } from '@xynoplex/core';
+import type { AccessToken } from '@xynolog/core';
+import { RECONNECT_MS, SignInError } from '@xynolog/core';
 import { APIError } from '../../client';
 import { createTestClient } from '../../testing';
 import { httpKb } from '../knowledge-base';
-import { XynoplexSession, type UserInfo } from '../xynoplex-session';
+import { XynologSession, type UserInfo } from '../xynolog-session';
 import type { SessionEndReason } from '../session-signals';
 import { InMemorySessionStorage } from '../session-storage';
 import { getStoredSession, keptIn, parseJwtExpiry, refreshDelayMs, setStoredSession } from '../storage';
-import { userId } from '@xynoplex/core';
+import { userId } from '@xynolog/core';
 
 interface ScheduleCase {
   why: string;
@@ -149,7 +149,7 @@ describe('session — the SDK agrees with the shared table', () => {
       setStoredSession(storage, KB.id, {
         access: stored,
         refresh: 'a-refresh-token',
-        clientId: 'xynoplex-browser',
+        clientId: 'xynolog-browser',
         tokenEndpoint: 'https://issuer.test/token',
       });
     }
@@ -161,7 +161,7 @@ describe('session — the SDK agrees with the shared table', () => {
     let answered: UserInfo | null = null;
     const told: SessionEndReason[] = [];
     const token$ = new BehaviorSubject<AccessToken | null>(null);
-    const session = new XynoplexSession({
+    const session = new XynologSession({
       kb: KB,
       kept: keptIn(storage, KB.id),
       client: createTestClient().client,
@@ -231,7 +231,7 @@ describe('session — the SDK agrees with the shared table', () => {
     setStoredSession(storage, KB.id, {
       access: issued(0),
       refresh: 'a-refresh-token',
-      clientId: 'xynoplex-browser',
+      clientId: 'xynolog-browser',
       tokenEndpoint: 'https://issuer.test/token',
     });
 
@@ -243,7 +243,7 @@ describe('session — the SDK agrees with the shared table', () => {
     let answered: UserInfo = ALICE;
     const told: SessionEndReason[] = [];
     const token$ = new BehaviorSubject<AccessToken | null>(null);
-    const session = new XynoplexSession({
+    const session = new XynologSession({
       kb: KB,
       kept: keptIn(storage, KB.id),
       client: createTestClient().client,
@@ -321,12 +321,12 @@ describe('session — the SDK agrees with the shared table', () => {
     setStoredSession(storage, KB.id, {
       access: issued(0),
       refresh: 'a-refresh-token',
-      clientId: 'xynoplex-browser',
+      clientId: 'xynolog-browser',
       tokenEndpoint: 'https://issuer.test/token',
     });
     let asks = 0;
     let renewals = 0;
-    const session = new XynoplexSession({
+    const session = new XynologSession({
       kb: KB,
       kept: keptIn(storage, KB.id),
       client: createTestClient().client,

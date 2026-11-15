@@ -1,4 +1,4 @@
-# Xynoplex React UI - Styles Documentation
+# Xynolog React UI - Styles Documentation
 
 Using the styles in an app, the design tokens and the class reference are in
 the builder docs: [STYLES.md](../../../../docs/builder/react-ui/STYLES.md). This
@@ -6,12 +6,12 @@ page is how the styles are written, named and linted inside the package.
 
 ## Overview
 
-The Xynoplex React UI package uses a modular, semantic CSS architecture with zero utility framework dependencies. All styles are organized into logical modules using BEM methodology and CSS custom properties.
+The Xynolog React UI package uses a modular, semantic CSS architecture with zero utility framework dependencies. All styles are organized into logical modules using BEM methodology and CSS custom properties.
 
 ## The styling policy
 
 **Plain CSS only.** No Tailwind, no `@apply`, no utility classes, no CSS-in-JS
-in this package — a component's appearance comes from `xynoplex-`-prefixed BEM
+in this package — a component's appearance comes from `xynolog-`-prefixed BEM
 classes, data attributes, and custom properties, and nothing else. A stylesheet
 built that way drops into any host stack; one built on a utility framework
 drags that framework in with it.
@@ -19,15 +19,15 @@ drags that framework in with it.
 Three gates enforce it, so this is a build failure rather than a convention:
 
 - `npm run lint:no-utility-classes` — no utility framework in `typescript/react-ui`
-- `xynoplex/invariants` — rejects utility class names and hardcoded colours
+- `xynolog/invariants` — rejects utility class names and hardcoded colours
 - `.stylelintrc.json`'s `selector-class-pattern` — class names must be
-  `xynoplex-*` (plus a short, explicit allowlist for `annotation-*`, CodeMirror,
+  `xynolog-*` (plus a short, explicit allowlist for `annotation-*`, CodeMirror,
   and markdown classes)
 
 **Hosts are unconstrained.** The policy binds this package, not the app
 consuming it — `images/browser` uses Tailwind. A host adopts the styles by
-importing `@xynoplex/react-ui/styles`, or takes only the tokens from
-`@xynoplex/react-ui/styles/variables.css`.
+importing `@xynolog/react-ui/styles`, or takes only the tokens from
+`@xynolog/react-ui/styles/variables.css`.
 
 ## Architecture
 
@@ -117,46 +117,46 @@ typescript/react-ui/src/
 
 ## Naming Convention
 
-We use BEM (Block Element Modifier) methodology with the `xynoplex-` prefix:
+We use BEM (Block Element Modifier) methodology with the `xynolog-` prefix:
 
 ### Basic Structure
 
 ```css
 /* Block */
-.xynoplex-component { }
+.xynolog-component { }
 
 /* Element */
-.xynoplex-component__element { }
+.xynolog-component__element { }
 
 /* Modifier */
-.xynoplex-component--modifier { }
+.xynolog-component--modifier { }
 
 /* Element with Modifier */
-.xynoplex-component__element--modifier { }
+.xynolog-component__element--modifier { }
 ```
 
 ### Examples
 
 ```css
 /* Panel */
-.xynoplex-panel { }
-.xynoplex-panel__content { }
-.xynoplex-panel__section-title { }
-.xynoplex-panel__section-title--collapsible { }
+.xynolog-panel { }
+.xynolog-panel__content { }
+.xynolog-panel__section-title { }
+.xynolog-panel__section-title--collapsible { }
 
 /* Button */
-.xynoplex-button { }
-.xynoplex-button--primary { }
-.xynoplex-button--danger { }
-.xynoplex-button--large { }
+.xynolog-button { }
+.xynolog-button--primary { }
+.xynolog-button--danger { }
+.xynolog-button--large { }
 ```
 
 ## Dark Mode Support
 
 Dark mode is served two ways, and choosing the right one is the whole of it.
 
-**Semantic tokens flip themselves.** `--xynoplex-text-*`, `--xynoplex-bg-*`,
-`--xynoplex-border-*`, `--xynoplex-bg-hover` and `--xynoplex-focus-ring` are
+**Semantic tokens flip themselves.** `--xynolog-text-*`, `--xynolog-bg-*`,
+`--xynolog-border-*`, `--xynolog-bg-hover` and `--xynolog-focus-ring` are
 redefined under `[data-theme="dark"]` in `variables.css`. A rule built from
 them is already dark-aware, and **must not** be given a `[data-theme="dark"]`
 twin — an override with the same value on both sides is a rule that provably
@@ -164,29 +164,29 @@ changes nothing.
 
 ```css
 /* Both themes, one rule — the token carries the theme. */
-.xynoplex-component {
-  background-color: var(--xynoplex-bg-secondary);
-  color: var(--xynoplex-text-primary);
+.xynolog-component {
+  background-color: var(--xynolog-bg-secondary);
+  color: var(--xynolog-text-primary);
 }
 ```
 
-**Palette tokens do not flip.** `--xynoplex-color-primary-500`,
-`--xynoplex-color-gray-300`, `--xynoplex-color-warning` and the rest are one
+**Palette tokens do not flip.** `--xynolog-color-primary-500`,
+`--xynolog-color-gray-300`, `--xynolog-color-warning` and the rest are one
 fixed hue in both themes, so a rule using them needs a real variant. Accents
 step lighter against a dark surface; the status colours have `-light`
 companions built for exactly this.
 
 ```css
-.xynoplex-progress__fill--error {
-  background-color: var(--xynoplex-color-error);
+.xynolog-progress__fill--error {
+  background-color: var(--xynolog-color-error);
 }
 
-[data-theme="dark"] .xynoplex-progress__fill--error {
-  background-color: var(--xynoplex-color-error-light);
+[data-theme="dark"] .xynolog-progress__fill--error {
+  background-color: var(--xynolog-color-error-light);
 }
 ```
 
-`xynoplex/invariants` enforces this split: it reads which properties
+`xynolog/invariants` enforces this split: it reads which properties
 `variables.css` redefines for dark mode and warns only where the colour is
 genuinely fixed. Write `[data-theme="dark"]` — **not**
 `:root:not([data-theme="light"])`, which the same rule reports as an invalid
@@ -199,21 +199,21 @@ theme selector.
 The CSS architecture uses a comprehensive design token system that ensures consistency across all components:
 
 1. **Centralized Variables** - All design decisions (colors, spacing, typography) are defined in `variables.css`
-2. **Semantic Tokens** - Variables are named by intent, not appearance (e.g., `--xynoplex-bg-primary`, not `--white`)
+2. **Semantic Tokens** - Variables are named by intent, not appearance (e.g., `--xynolog-bg-primary`, not `--white`)
 3. **Component Tokens** - Specific tokens for complex components (e.g., panel design tokens)
 4. **Cascading Values** - Tokens reference other tokens for maintainability
 
 Example of token cascading:
 ```css
 /* Base token */
---xynoplex-text-lg: 1.125rem;
+--xynolog-text-lg: 1.125rem;
 
 /* Component token references base */
---xynoplex-panel-title-size: var(--xynoplex-text-lg);
+--xynolog-panel-title-size: var(--xynolog-text-lg);
 
 /* Usage in component */
-.xynoplex-panel-header__title {
-  font-size: var(--xynoplex-panel-title-size);
+.xynolog-panel-header__title {
+  font-size: var(--xynolog-panel-title-size);
 }
 ```
 
@@ -247,8 +247,8 @@ Always use semantic classes that describe the component, not its appearance:
 
 ```css
 /* Good */
-.xynoplex-panel-header__title { }
-.xynoplex-button--primary { }
+.xynolog-panel-header__title { }
+.xynolog-button--primary { }
 
 /* Avoid */
 .flex-center { }
@@ -261,14 +261,14 @@ Keep the hierarchy clear and consistent:
 
 ```css
 /* Block */
-.xynoplex-document-viewer { }
+.xynolog-document-viewer { }
 
 /* Elements (direct children) */
-.xynoplex-document-viewer__header { }
-.xynoplex-document-viewer__content { }
+.xynolog-document-viewer__header { }
+.xynolog-document-viewer__content { }
 
 /* Modifiers (variants) */
-.xynoplex-document-viewer--panel-open { }
+.xynolog-document-viewer--panel-open { }
 ```
 
 ### 3. Use CSS Variables
@@ -276,10 +276,10 @@ Keep the hierarchy clear and consistent:
 Leverage design tokens for consistency:
 
 ```css
-.xynoplex-component {
-  padding: var(--xynoplex-spacing-md);
-  color: var(--xynoplex-color-gray-700);
-  border-radius: var(--xynoplex-radius-lg);
+.xynolog-component {
+  padding: var(--xynolog-spacing-md);
+  color: var(--xynolog-color-gray-700);
+  border-radius: var(--xynolog-radius-lg);
 }
 ```
 
@@ -291,17 +291,17 @@ hue. See [Dark Mode Support](#dark-mode-support).
 
 ```css
 /* Preferred: one rule, themed by the token. */
-.xynoplex-component {
-  background: var(--xynoplex-bg-primary);
+.xynolog-component {
+  background: var(--xynolog-bg-primary);
 }
 
 /* Only when the value is a fixed hue: */
-.xynoplex-component__accent {
-  background: var(--xynoplex-color-primary-500);
+.xynolog-component__accent {
+  background: var(--xynolog-color-primary-500);
 }
 
-[data-theme="dark"] .xynoplex-component__accent {
-  background: var(--xynoplex-color-primary-400);
+[data-theme="dark"] .xynolog-component__accent {
+  background: var(--xynolog-color-primary-400);
 }
 ```
 
@@ -366,22 +366,22 @@ When adding new components or features:
 
 4. **Follow naming convention**:
    ```css
-   .xynoplex-new-component { }
-   .xynoplex-new-component__element { }
-   .xynoplex-new-component--modifier { }
+   .xynolog-new-component { }
+   .xynolog-new-component__element { }
+   .xynolog-new-component--modifier { }
    ```
 
 5. **Include dark mode support**:
    ```css
-   [data-theme="dark"] .xynoplex-new-component { }
+   [data-theme="dark"] .xynolog-new-component { }
    ```
 
 6. **Use design tokens**:
    ```css
-   .xynoplex-new-component {
-     padding: var(--xynoplex-spacing-md);
-     color: var(--xynoplex-text-primary);
-     background: var(--xynoplex-bg-primary);
+   .xynolog-new-component {
+     padding: var(--xynolog-spacing-md);
+     color: var(--xynolog-text-primary);
+     background: var(--xynolog-bg-primary);
    }
    ```
 
@@ -450,20 +450,20 @@ npm run lint:css
 
 ### Custom Linter Rules
 
-#### xynoplex/invariants
+#### xynolog/invariants
 Enforces design system consistency:
 - **No hardcoded colors** - Must use CSS variables instead of hex values
-- **Dark variant where the colour is fixed** - A `xynoplex-` rule that sets a colour property from a palette token or a literal needs a `[data-theme="dark"]` variant; one built only from semantic tokens needs none (see [Dark Mode Support](#dark-mode-support))
-- **Naming** - No utility class names, and react-ui classes carry the `xynoplex-` prefix (with the same short allowlist as `selector-class-pattern`)
+- **Dark variant where the colour is fixed** - A `xynolog-` rule that sets a colour property from a palette token or a literal needs a `[data-theme="dark"]` variant; one built only from semantic tokens needs none (see [Dark Mode Support](#dark-mode-support))
+- **Naming** - No utility class names, and react-ui classes carry the `xynolog-` prefix (with the same short allowlist as `selector-class-pattern`)
 
-#### xynoplex/accessibility
+#### xynolog/accessibility
 Ensures WCAG 2.1 AA compliance:
 - **Reduced motion support** - Animations must respect `prefers-reduced-motion`
 - **Color contrast** - Validates contrast ratios (4.5:1 for text, 3:1 for large text)
 - **Focus indicators** - Interactive elements must have visible focus states
 - **Semantic indicators** - Status states need non-color cues (icons, patterns)
 
-#### xynoplex/theme-selectors
+#### xynolog/theme-selectors
 Validates dark mode patterns:
 - Enforces `[data-theme="dark"]` selector pattern
 - Prevents incorrect theme implementation
@@ -491,7 +491,7 @@ The package includes comprehensive global accessibility utilities that apply to 
 1. **Always use CSS variables for colors:**
    ```css
    /* Good */
-   color: var(--xynoplex-color-blue-600);
+   color: var(--xynolog-color-blue-600);
 
    /* Bad */
    color: #2563eb;
@@ -499,12 +499,12 @@ The package includes comprehensive global accessibility utilities that apply to 
 
 2. **Give a fixed palette colour a dark mode variant:**
    ```css
-   .xynoplex-component {
-     background-color: var(--xynoplex-color-gray-100);
+   .xynolog-component {
+     background-color: var(--xynolog-color-gray-100);
    }
 
-   [data-theme="dark"] .xynoplex-component {
-     background-color: var(--xynoplex-color-gray-800);
+   [data-theme="dark"] .xynolog-component {
+     background-color: var(--xynolog-color-gray-800);
    }
    ```
 
@@ -515,12 +515,12 @@ The package includes comprehensive global accessibility utilities that apply to 
 
 4. **Use semantic class names with proper focus states:**
    ```css
-   .xynoplex-button {
+   .xynolog-button {
      /* Base styles */
    }
 
-   .xynoplex-button:focus-visible {
-     outline: 2px solid var(--xynoplex-color-blue-500);
+   .xynolog-button:focus-visible {
+     outline: 2px solid var(--xynolog-color-blue-500);
      outline-offset: 2px;
    }
    ```
@@ -531,13 +531,13 @@ The package includes comprehensive global accessibility utilities that apply to 
 ```text
 Hardcoded color "#3b82f6" detected. Use CSS variables instead.
 ```
-Fix: Replace hex color with appropriate CSS variable from `variables.css` (here `var(--xynoplex-color-blue-500)`)
+Fix: Replace hex color with appropriate CSS variable from `variables.css` (here `var(--xynolog-color-blue-500)`)
 
 **Missing dark mode variant:**
 ```text
-Missing dark theme variant for ".xynoplex-component". Add [data-theme="dark"] variant.
+Missing dark theme variant for ".xynolog-component". Add [data-theme="dark"] variant.
 ```
-Fix: Add `[data-theme="dark"] .xynoplex-component { }` selector
+Fix: Add `[data-theme="dark"] .xynolog-component { }` selector
 
 **Animation without reduced motion:**
 ```text

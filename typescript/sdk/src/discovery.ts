@@ -21,8 +21,8 @@
  */
 
 import { Observable } from 'rxjs';
-import { DISCOVERY_INTERVAL_MS, DISCOVERY_URL_PATH, HTTP_REQUEST_TIMEOUT_MS, isArray, isNumber, isObject, isString, withinDeadline } from '@xynoplex/core';
-import type { DiscoveredKB } from '@xynoplex/core';
+import { DISCOVERY_INTERVAL_MS, DISCOVERY_URL_PATH, HTTP_REQUEST_TIMEOUT_MS, isArray, isNumber, isObject, isString, withinDeadline } from '@xynolog/core';
+import type { DiscoveredKB } from '@xynolog/core';
 import { fetchOf } from './fetch-of';
 
 /** Why discovery reads as "no launcher detected". */

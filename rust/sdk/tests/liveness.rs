@@ -3,16 +3,16 @@
 
 use proptest::prelude::Just;
 use proptest::strategy::Strategy;
-use xynoplex::bus::{Bus, Operation, operation};
-use xynoplex::testing::liveness::{
-    DeliveryOp, DeliverySubject, LivenessScenario, LivenessSpec, Respond,
-    assert_exactly_once_delivery, assert_liveness_axioms,
-};
-use xynoplex::testing::{FaultAction, FaultyTransport};
-use xynoplex::transport::{BoxFuture, Envelope, Transport};
 use serde_json::{Map, Value, json};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
+use xynolog::bus::{Bus, Operation, operation};
+use xynolog::testing::liveness::{
+    DeliveryOp, DeliverySubject, LivenessScenario, LivenessSpec, Respond,
+    assert_exactly_once_delivery, assert_liveness_axioms,
+};
+use xynolog::testing::{FaultAction, FaultyTransport};
+use xynolog::transport::{BoxFuture, Envelope, Transport};
 
 const TIMEOUT: Duration = Duration::from_millis(200);
 

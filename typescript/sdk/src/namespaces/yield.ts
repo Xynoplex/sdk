@@ -3,11 +3,11 @@ import type {
   EventBus,
   GenerationJobParams,
   components,
-} from '@xynoplex/core';
-import { cloneFormat, deriveStorageUri, getPrimaryRepresentation } from '@xynoplex/core';
+} from '@xynolog/core';
+import { cloneFormat, deriveStorageUri, getPrimaryRepresentation } from '@xynolog/core';
 
-import type { ITransport, IContentTransport } from '@xynoplex/core';
-import { Bus, isReportedJobResult, isYieldJobResult } from '@xynoplex/core';
+import type { ITransport, IContentTransport } from '@xynolog/core';
+import { Bus, isReportedJobResult, isYieldJobResult } from '@xynolog/core';
 import { UploadObservable, type DelegationObservable, type YieldJobCompletion } from '../awaitable';
 import { delegated, type DelegatedVerb } from './delegation';
 import { deriveStallDeadlineMs } from './generation-stall';
@@ -18,7 +18,7 @@ import type {
   CreateFromTokenOptions,
 } from './types';
 
-import type { ResourceDescriptor } from '@xynoplex/core';
+import type { ResourceDescriptor } from '@xynolog/core';
 
 type CloneResourceWithTokenResponse = components['schemas']['CloneResourceWithTokenResponse'];
 

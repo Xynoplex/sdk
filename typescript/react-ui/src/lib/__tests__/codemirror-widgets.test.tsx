@@ -8,8 +8,8 @@
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from '@testing-library/react';
-import { resourceId } from '@xynoplex/core';
-import type { Annotation, AnnotationId } from '@xynoplex/core';
+import { resourceId } from '@xynolog/core';
+import type { Annotation, AnnotationId } from '@xynolog/core';
 import { ThemeProvider } from '../../contexts/ThemeContext';
 import { ReferenceResolutionWidget } from '../codemirror-widgets';
 

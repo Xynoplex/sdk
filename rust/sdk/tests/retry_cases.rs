@@ -2,8 +2,8 @@
 //! protocol/specs/src/retry/cases.json, which every implementation runs: here through
 //! this crate's rules and its reading of `Retry-After`.
 
-use xynoplex::retry::{RETRY_RULES, RetryFacts, retry_after};
 use serde_json::Value;
+use xynolog::retry::{RETRY_RULES, RetryFacts, retry_after};
 
 fn table() -> Value {
     serde_json::from_str(include_str!("../specs/retry/cases.json")).expect("the table is JSON")

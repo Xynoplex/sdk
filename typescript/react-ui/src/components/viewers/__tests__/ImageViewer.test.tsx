@@ -38,8 +38,8 @@ describe('ImageViewer', () => {
   it('should render with correct class names', () => {
     const { container } = renderWithProviders(<ImageViewer {...defaultProps} />);
 
-    expect(container.querySelector('.xynoplex-image-viewer')).toBeInTheDocument();
-    expect(container.querySelector('.xynoplex-image-viewer__image')).toBeInTheDocument();
+    expect(container.querySelector('.xynolog-image-viewer')).toBeInTheDocument();
+    expect(container.querySelector('.xynolog-image-viewer__image')).toBeInTheDocument();
   });
 
   it('should set imageRendering style to auto', () => {

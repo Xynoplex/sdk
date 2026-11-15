@@ -1,6 +1,6 @@
 import { BehaviorSubject, type Subscription } from 'rxjs';
-import type { XynoplexClient } from '../../client';
-import { DELEGATE_SILENCE_MS, FrameRefusal, watched, type JobId, type MarkJobParams, type Motivation, type ResourceId, type Selector, type StateUnit, type Watched, type components } from '@xynoplex/core';
+import type { XynologClient } from '../../client';
+import { DELEGATE_SILENCE_MS, FrameRefusal, watched, type JobId, type MarkJobParams, type Motivation, type ResourceId, type Selector, type StateUnit, type Watched, type components } from '@xynolog/core';
 import { JobCancelledError } from '../../namespaces/job-status-poll';
 
 type JobProgress = components['schemas']['JobProgress'];
@@ -24,7 +24,7 @@ export interface MarkStateUnit extends StateUnit {
   progressMotivation$: Watched<Motivation | null>;
   /**
    * Why the last delegated job ended without completing: it failed or was
-   * cancelled. A `XynoplexError`'s `code` says which. Null while a job is
+   * cancelled. A `XynologError`'s `code` says which. Null while a job is
    * under way, after one that completed, and once dismissed.
    */
   failure$: Watched<Error | null>;
@@ -47,7 +47,7 @@ export interface MarkStateUnit extends StateUnit {
 }
 
 export function createMarkStateUnit(
-  client: XynoplexClient,
+  client: XynologClient,
   resourceId: ResourceId,
 ): MarkStateUnit {
   const subs: Subscription[] = [];

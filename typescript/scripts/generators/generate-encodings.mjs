@@ -36,7 +36,7 @@ writeFileSync(
 //
 // Source:    protocol/specs/src/text/encoding-cases.json
 // Generator: typescript/scripts/generators/generate-encodings.mjs
-// Regen:     npm run generate:encodings --workspace=@xynoplex/core
+// Regen:     npm run generate:encodings --workspace=@xynolog/core
 
 /** The encodings of the Encoding Standard whose labels every reader of a resource's text refuses, by their names in lower case. */
 export const REFUSED_ENCODINGS: ReadonlySet<string> = new Set([${refused.sort().map((encoding) => `'${encoding}'`).join(', ')}]);

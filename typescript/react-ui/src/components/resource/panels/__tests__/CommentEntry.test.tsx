@@ -1,14 +1,14 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import React from 'react';
 import { screen, fireEvent, waitFor } from '@testing-library/react';
-import { renderWithProviders, createTestXynoplexWrapper } from '../../../../test-utils';
+import { renderWithProviders, createTestXynologWrapper } from '../../../../test-utils';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import { CommentEntry } from '../CommentEntry';
-import { BindNamespace } from '@xynoplex/sdk';
-import type { XynoplexSession } from '@xynoplex/sdk';
+import { BindNamespace } from '@xynolog/sdk';
+import type { XynologSession } from '@xynolog/sdk';
 
-import type { Annotation, AnnotationId, EventBus } from '@xynoplex/core';
+import type { Annotation, AnnotationId, EventBus } from '@xynolog/core';
 
 // Mock TranslationContext
 vi.mock('../../../../contexts/TranslationContext', () => ({
@@ -25,9 +25,9 @@ vi.mock('../../../../contexts/TranslationContext', () => ({
   TranslationProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
-// Mock @xynoplex/http-transport utilities
-vi.mock('@xynoplex/core', async () => {
-  const actual = await vi.importActual('@xynoplex/core');
+// Mock @xynolog/http-transport utilities
+vi.mock('@xynolog/core', async () => {
+  const actual = await vi.importActual('@xynolog/core');
   return {
     ...actual,
     getCommentText: vi.fn(),
@@ -35,7 +35,7 @@ vi.mock('@xynoplex/core', async () => {
   };
 });
 
-import { getCommentText, getAnnotationExactText, resourceId } from '@xynoplex/core';
+import { getCommentText, getAnnotationExactText, resourceId } from '@xynolog/core';
 import type { MockedFunction } from 'vitest';
 
 const mockGetCommentText = getCommentText as MockedFunction<typeof getCommentText>;
@@ -108,12 +108,12 @@ describe('CommentEntry Component', () => {
   // disposed after the first test). The component is provider-free: the
   // session prop is the only session it sees, so event assertions subscribe
   // on the eventBus from the SAME factory call.
-  let session: XynoplexSession;
+  let session: XynologSession;
   let eventBus: EventBus;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    ({ session, eventBus } = createTestXynoplexWrapper());
+    ({ session, eventBus } = createTestXynologWrapper());
     mockGetCommentText.mockReturnValue('This is a test comment');
     mockGetAnnotationExactText.mockReturnValue('This is th');
 
@@ -136,7 +136,7 @@ describe('CommentEntry Component', () => {
     it('should render selected text quote', () => {
       const { container } = renderWithProviders(<CommentEntry session={session} {...defaultProps} />);
 
-      const quote = container.querySelector('.xynoplex-annotation-entry__quote');
+      const quote = container.querySelector('.xynolog-annotation-entry__quote');
       expect(quote).toBeInTheDocument();
       expect(quote).toHaveTextContent('"This is th');
     });
@@ -181,7 +181,7 @@ describe('CommentEntry Component', () => {
         />
       );
 
-      const metadata = container.querySelector('.xynoplex-annotation-entry__metadata');
+      const metadata = container.querySelector('.xynolog-annotation-entry__metadata');
       expect(metadata).toBeInTheDocument();
       expect(metadata?.textContent).not.toMatch(/By|Unknown/);
     });
@@ -217,7 +217,7 @@ describe('CommentEntry Component', () => {
         <CommentEntry session={session} {...defaultProps} isFocused={true} />
       );
 
-      const commentDiv = container.querySelector('.xynoplex-annotation-entry');
+      const commentDiv = container.querySelector('.xynolog-annotation-entry');
       expect(commentDiv).toBeInTheDocument();
       expect(commentDiv).toHaveAttribute('data-focused', 'true');
     });
@@ -227,7 +227,7 @@ describe('CommentEntry Component', () => {
         <CommentEntry session={session} {...defaultProps} isFocused={false} />
       );
 
-      const commentDiv = container.querySelector('.xynoplex-skeleton-outline');
+      const commentDiv = container.querySelector('.xynolog-skeleton-outline');
       expect(commentDiv).not.toBeInTheDocument();
     });
 
@@ -280,7 +280,7 @@ describe('CommentEntry Component', () => {
       const { container } = renderWithProviders(<CommentEntry session={session} {...defaultProps} />);
 
       const commentDiv = container.firstChild as HTMLElement;
-      expect(commentDiv).toHaveClass('xynoplex-annotation-entry');
+      expect(commentDiv).toHaveClass('xynolog-annotation-entry');
     });
   });
 
@@ -556,14 +556,14 @@ describe('CommentEntry Component', () => {
       const { container } = renderWithProviders(<CommentEntry session={session} {...defaultProps} />);
 
       const commentDiv = container.firstChild as HTMLElement;
-      expect(commentDiv).toHaveClass('xynoplex-annotation-entry');
+      expect(commentDiv).toHaveClass('xynolog-annotation-entry');
     });
 
     it('should have hover styles when not focused', () => {
       const { container } = renderWithProviders(<CommentEntry session={session} {...defaultProps} />);
 
       const commentDiv = container.firstChild as HTMLElement;
-      expect(commentDiv).toHaveClass('xynoplex-annotation-entry');
+      expect(commentDiv).toHaveClass('xynolog-annotation-entry');
       expect(commentDiv).toHaveAttribute('data-type', 'comment');
     });
 
@@ -571,7 +571,7 @@ describe('CommentEntry Component', () => {
       const { container } = renderWithProviders(<CommentEntry session={session} {...defaultProps} />);
 
       const commentDiv = container.firstChild as HTMLElement;
-      expect(commentDiv).toHaveClass('xynoplex-annotation-entry');
+      expect(commentDiv).toHaveClass('xynolog-annotation-entry');
     });
 
     it('should render comment text with whitespace preserved', () => {
@@ -579,7 +579,7 @@ describe('CommentEntry Component', () => {
       const { container } = renderWithProviders(<CommentEntry session={session} {...defaultProps} />);
 
       // Look for the comment text in the annotation entry
-      const commentContent = container.querySelector('.xynoplex-annotation-entry__body');
+      const commentContent = container.querySelector('.xynolog-annotation-entry__body');
       expect(commentContent).toBeInTheDocument();
     });
   });
@@ -590,7 +590,7 @@ describe('CommentEntry Component', () => {
       const { container } = renderWithProviders(<CommentEntry session={session} {...defaultProps} />);
 
       // Check that the annotation entry exists even with empty text
-      const commentDiv = container.querySelector('.xynoplex-annotation-entry');
+      const commentDiv = container.querySelector('.xynolog-annotation-entry');
       expect(commentDiv).toBeInTheDocument();
     });
 

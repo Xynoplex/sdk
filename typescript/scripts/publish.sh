@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Publish all @xynoplex/* packages to a registry, or pack them as local tarballs.
+# Publish all @xynolog/* packages to a registry, or pack them as local tarballs.
 #
 # Usage:
 #   ./typescript/scripts/publish.sh [options]

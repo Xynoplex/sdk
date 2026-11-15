@@ -1,13 +1,13 @@
 # Core API Tour
 
-What `@xynoplex/core` exports, area by area, with an example of each. The small utilities have a guide of their own: [Utilities](Utilities.md).
+What `@xynolog/core` exports, area by area, with an example of each. The small utilities have a guide of their own: [Utilities](Utilities.md).
 
 ## OpenAPI Types (Generated)
 
 TypeScript types generated from the OpenAPI specification - the **source of truth** for all API schemas:
 
 ```typescript
-import type { components, paths, operations } from '@xynoplex/core';
+import type { components, paths, operations } from '@xynolog/core';
 
 type Annotation = components['schemas']['Annotation'];
 type Resource = components['schemas']['ResourceDescriptor'];
@@ -20,13 +20,13 @@ npm run generate:openapi  # Bundles spec → generates types.ts
 ```
 
 The spec's validators and limits come from the same bundle, on the
-`@xynoplex/core/openapi` subpath:
+`@xynolog/core/openapi` subpath:
 
 ```typescript
-import { validators, operationLimits, itemLimits } from '@xynoplex/core/openapi';
+import { validators, operationLimits, itemLimits } from '@xynolog/core/openapi';
 
 validators.BusEmitRequest(body);                          // Ajv, compiled at build
-operationLimits['POST /bus/emit'].claimSeconds;           // an operation's x-xynoplex-limits
+operationLimits['POST /bus/emit'].claimSeconds;           // an operation's x-xynolog-limits
 itemLimits['BusSubscribeRequest.pendingReplies'];         // a property's maxItems
 ```
 
@@ -35,7 +35,7 @@ itemLimits['BusSubscribeRequest.pendingReplies'];         // a property's maxIte
 Compile-time type safety for tokens and identifiers:
 
 ```typescript
-import { accessToken, entityType } from '@xynoplex/core';
+import { accessToken, entityType } from '@xynolog/core';
 
 const token = accessToken('eyJhbGc...');
 const eType = entityType('Person');
@@ -44,7 +44,7 @@ const eType = entityType('Person');
 The four kinds of id are types of their own, generated from the spec ([`protocol/specs/src/identifiers/kinds.json`](../../../../protocol/specs/src/identifiers/kinds.json) and each kind's schema): `ResourceId`, `AnnotationId`, `JobId`, `UserId`. The spec's types carry them, so a property that holds an id is of its kind and one kind is not assignable to another. Each is made by its constructor (`resourceId`, `annotationId`, `jobId`, `userId`), which holds text to the kind's rule and throws a `TypeError` for text the rule refuses:
 
 ```typescript
-import { resourceId, annotationId } from '@xynoplex/core';
+import { resourceId, annotationId } from '@xynolog/core';
 
 const resource = resourceId('5bcd259ab1464cf68a556bbad21f513f');
 resourceId('https://kb.example/resources/5bcd259ab1464cf68a556bbad21f513f'); // throws: a URI is not an id
@@ -55,7 +55,7 @@ const annotation = annotationId('a-1');
 Each kind also has a guard (`isResourceId`, `isAnnotationId`, `isJobId`, `isUserId`) that asks the same rule without throwing and narrows the text to the kind. Use it where text that is not an id is an ordinary answer, such as an address typed into a browser:
 
 ```typescript
-import { isResourceId } from '@xynoplex/core';
+import { isResourceId } from '@xynolog/core';
 
 if (!isResourceId(params.id)) return notFound();
 const descriptor = await client.browse.resource(params.id).fresh();
@@ -76,8 +76,8 @@ import type {
   StoredEvent,
   EventMetadata,
   BodyOperation,
-} from '@xynoplex/core';
-import { PERSISTED_EVENT_TYPES } from '@xynoplex/core';
+} from '@xynolog/core';
+import { PERSISTED_EVENT_TYPES } from '@xynolog/core';
 
 function handle(event: PersistedEvent) {
   if (event.type === 'mark:added') {
@@ -93,8 +93,8 @@ function handle(event: PersistedEvent) {
 The RxJS-based event bus, with a typed channel protocol:
 
 ```typescript
-import { EventBus, ScopedEventBus } from '@xynoplex/core';
-import type { EventMap, EventName } from '@xynoplex/core';
+import { EventBus, ScopedEventBus } from '@xynolog/core';
+import type { EventMap, EventName } from '@xynolog/core';
 ```
 
 - **`EventBus` / `ScopedEventBus`** — framework-agnostic pub/sub over the unified `EventMap`
@@ -106,11 +106,11 @@ import type { EventMap, EventName } from '@xynoplex/core';
 The interfaces every concrete transport must satisfy, plus the channel set transports bridge into a client's bus:
 
 ```typescript
-import type { ITransport, IContentTransport, IGatewayOperations, ConnectionState } from '@xynoplex/core';
-import { BRIDGED_CHANNELS } from '@xynoplex/core';
+import type { ITransport, IContentTransport, IGatewayOperations, ConnectionState } from '@xynolog/core';
+import { BRIDGED_CHANNELS } from '@xynolog/core';
 ```
 
-`@xynoplex/http-transport` implements these over HTTP + SSE.
+`@xynolog/http-transport` implements these over HTTP + SSE.
 
 ## W3C Web Annotation Utilities
 
@@ -127,7 +127,7 @@ import {
   isHighlight,
   isReference,
   isComment,
-} from '@xynoplex/core';
+} from '@xynolog/core';
 ```
 
 Selector helpers cover text position, text quote, SVG, and PDF-viewrect fragment selectors (`getTextPositionSelector`, `getSvgSelector`, `createFragmentSelector`, `parseSvgSelector`, …).
@@ -140,7 +140,7 @@ Re-anchor annotations after content edits — fuzzy text matching plus a render-
 import {
   anchorAnnotation,
   textOffsets,
-} from '@xynoplex/core';
+} from '@xynolog/core';
 ```
 
 Every position these take or answer is an **offset**: it counts Unicode code
@@ -158,7 +158,7 @@ over* a coordinate map; producing one (text layer, OCR, tables, forms) is the
 [Smelter](../../../../protocol/contract/SMELTER.md)'s.
 
 ```typescript
-import { locate, textUnder, type AnchoredText } from '@xynoplex/core';
+import { locate, textUnder, type AnchoredText } from '@xynolog/core';
 
 // A model quoted text; find its geometry. One rect per line. The span is two
 // offsets into anchored.text, in code points, as each item's start and end are.
@@ -182,7 +182,7 @@ stored, served, and turned into a selector.
 A knowledge base's own identity, from its committed `site.domain`:
 
 ```typescript
-import { kbDid, kbResource } from '@xynoplex/core';
+import { kbDid, kbResource } from '@xynolog/core';
 
 kbDid('example.com:kb');       // => 'did:web:example.com:kb'
 kbResource('example.com:kb');  // => 'https://example.com/kb', the audience its tokens carry
@@ -193,23 +193,23 @@ reads its kind (`protocol/specs/src/principals/cases.json`, `protocol/specs/src/
 
 ## Error Classes
 
-`XynoplexError` is the base of every Xynoplex error: `BusRequestError` here, `APIError` in `@xynoplex/http-transport`, `XynoplexSessionError` in `@xynoplex/sdk`. Each carries a `code` and optional `details`:
+`XynologError` is the base of every Xynolog error: `BusRequestError` here, `APIError` in `@xynolog/http-transport`, `XynologSessionError` in `@xynolog/sdk`. Each carries a `code` and optional `details`:
 
 ```typescript
-import { XynoplexError, BusRequestError } from '@xynoplex/core';
+import { XynologError, BusRequestError } from '@xynolog/core';
 
 try {
   await request();
 } catch (error) {
   if (error instanceof BusRequestError && error.code === 'bus.timeout') retry();
-  else if (error instanceof XynoplexError) report(error.code, error.details);
+  else if (error instanceof XynologError) report(error.code, error.details);
 }
 ```
 
 ## Type Guards & Validation
 
 ```typescript
-import { isString, isObject, isArray, isNumber, validateData, isValidEmail } from '@xynoplex/core';
+import { isString, isObject, isArray, isNumber, validateData, isValidEmail } from '@xynolog/core';
 
 if (isObject(value) && isString(value.name)) {
   // TypeScript knows value is a record, and value.name a string

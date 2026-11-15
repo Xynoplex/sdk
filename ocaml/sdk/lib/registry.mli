@@ -70,35 +70,35 @@ type session_factory =
     registry reads them from the first thing the session said. The registry
     makes the [signals] it is handed for the session. *)
 
-type xynoplex_browser_config = {
+type xynolog_browser_config = {
   storage : storage;
   clock : Clock.t;
   fresh_id : unit -> string;
   factory : session_factory;
 }
 
-type xynoplex_browser
+type xynolog_browser
 
 type activation_error =
   | Unavailable of string
   | Identity_conflict of string
   | Superseded
 
-val new_xynoplex_browser :
-  ?storage:Storage.t -> xynoplex_browser_config -> xynoplex_browser
+val new_xynolog_browser :
+  ?storage:Storage.t -> xynolog_browser_config -> xynolog_browser
 
 val same_place : endpoint -> endpoint -> bool
-val knowledge_bases : xynoplex_browser -> knowledge_base list
-val active_id : xynoplex_browser -> string option
-val active_client : xynoplex_browser -> Client.t option
+val knowledge_bases : xynolog_browser -> knowledge_base list
+val active_id : xynolog_browser -> string option
+val active_client : xynolog_browser -> Client.t option
 
 val record_sign_in :
-  xynoplex_browser -> signed_in -> (sign_in_outcome, string) result
+  xynolog_browser -> signed_in -> (sign_in_outcome, string) result
 
 val describe_connection : Client.t -> (connection_identity, string) result
 
 val activate :
-  xynoplex_browser -> string -> (State_units.Session.t, activation_error) result
+  xynolog_browser -> string -> (State_units.Session.t, activation_error) result
 (** Builds the knowledge base's session and reads its errors until it ends: each
     of the session's own errors is said on [errors]; a refusal for lack of
     permission is said through its signals, with the failure's message as the
@@ -111,7 +111,7 @@ val activate :
     which builds nothing. *)
 
 val errors :
-  xynoplex_browser ->
+  xynolog_browser ->
   on_value:(Client.session_error -> unit) ->
   on_close:(unit -> unit) ->
   unit ->
@@ -122,12 +122,12 @@ val errors :
     before it came, in order; a later reader hears what is said from when it
     reads. [close] ends it. The returned function stops hearing. *)
 
-val close : xynoplex_browser -> unit
+val close : xynolog_browser -> unit
 (** Ends the active session, its client first, so what the client's closing
     flush meets is said on [errors], and then ends [errors]. *)
 
-val sign_out : xynoplex_browser -> string -> unit
-val session_status : xynoplex_browser -> string -> kb_session_status
+val sign_out : xynolog_browser -> string -> unit
+val session_status : xynolog_browser -> string -> kb_session_status
 
 val http_session_factory :
   (session_factory_options -> (State_units.Session.t, string) result) ->
@@ -149,13 +149,13 @@ val store_session : storage -> string -> stored_session -> unit
 val clear_stored_session : storage -> string -> unit
 val load_knowledge_bases : storage -> knowledge_base list
 val save_knowledge_bases : storage -> knowledge_base list -> unit
-val open_resources : xynoplex_browser -> kb_id:string -> open_resource list
+val open_resources : xynolog_browser -> kb_id:string -> open_resource list
 
 val set_open_resources :
-  xynoplex_browser -> kb_id:string -> open_resource list -> unit
+  xynolog_browser -> kb_id:string -> open_resource list -> unit
 
-val last_viewed : xynoplex_browser -> kb_id:string -> string option
-val set_last_viewed : xynoplex_browser -> kb_id:string -> string option -> unit
+val last_viewed : xynolog_browser -> kb_id:string -> string option
+val set_last_viewed : xynolog_browser -> kb_id:string -> string option -> unit
 val pending_authorization_key : string
 
 type kept_sign_in = {
@@ -167,7 +167,7 @@ type kept_sign_in = {
 val kept_in : storage -> string -> kept_sign_in
 
 val renew_kept :
-  xynoplex_browser ->
+  xynolog_browser ->
   http:Oauth.http ->
   string ->
   holding:string option ->
@@ -175,17 +175,17 @@ val renew_kept :
 (** Renew the sign-in kept for a knowledge base, handed the token the renewal
     renews (protocol/specs/src/sign-in-store/README.md, Renewing it). *)
 
-val forget_rejected : xynoplex_browser -> string -> string -> unit
+val forget_rejected : xynolog_browser -> string -> string -> unit
 (** Forget the sign-in kept for a knowledge base while its access token is the
     one the gateway rejected. *)
 
 val start_kept_session :
-  xynoplex_browser -> sw:Eio.Switch.t -> http:Oauth.http -> string -> Session.t
+  xynolog_browser -> sw:Eio.Switch.t -> http:Oauth.http -> string -> Session.t
 (** A session over the sign-in kept for a knowledge base: [renew_kept] renews it
     and [forget_rejected] is told each token the gateway rejects. *)
 
 val begin_sign_in :
-  xynoplex_browser ->
+  xynolog_browser ->
   http:Oauth.http ->
   issuer:string ->
   random:(int -> string) ->
@@ -198,7 +198,7 @@ val begin_sign_in :
   (string, Oauth.error) result
 
 val complete_sign_in :
-  xynoplex_browser ->
+  xynolog_browser ->
   http:Oauth.http ->
   callback:string ->
   describe:

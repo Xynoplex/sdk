@@ -2,141 +2,141 @@
    Text Inputs - Core UI Element
 
    This is the authoritative source for all text input styles.
-   Usage: Apply .xynoplex-input to <input type="text">, <input type="email">, etc.
+   Usage: Apply .xynolog-input to <input type="text">, <input type="email">, etc.
    ============================================ */
 
 /* Base Input Styling */
-.xynoplex-input {
+.xynolog-input {
   width: 100%;
   padding: 0.5rem 0.75rem;
-  border: 1px solid var(--xynoplex-color-gray-300);
-  border-radius: var(--xynoplex-radius-md);
-  font-size: var(--xynoplex-text-sm);
+  border: 1px solid var(--xynolog-color-gray-300);
+  border-radius: var(--xynolog-radius-md);
+  font-size: var(--xynolog-text-sm);
   font-family: inherit;
   line-height: 1.5;
-  background-color: var(--xynoplex-bg-primary);
-  color: var(--xynoplex-text-primary);
+  background-color: var(--xynolog-bg-primary);
+  color: var(--xynolog-text-primary);
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-[data-theme="dark"] .xynoplex-input {
-  background-color: var(--xynoplex-bg-primary);
-  color: var(--xynoplex-text-primary);
-  border-color: var(--xynoplex-color-gray-700);
+[data-theme="dark"] .xynolog-input {
+  background-color: var(--xynolog-bg-primary);
+  color: var(--xynolog-text-primary);
+  border-color: var(--xynolog-color-gray-700);
 }
 
 /* Focus State - keyboard navigation */
-.xynoplex-input:focus-visible {
-  outline: 2px solid var(--xynoplex-color-primary-500);
+.xynolog-input:focus-visible {
+  outline: 2px solid var(--xynolog-color-primary-500);
   outline-offset: -1px;
-  border-color: var(--xynoplex-color-primary-500);
+  border-color: var(--xynolog-color-primary-500);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-[data-theme="dark"] .xynoplex-input:focus-visible {
-  outline-color: var(--xynoplex-color-primary-400);
-  border-color: var(--xynoplex-color-primary-400);
+[data-theme="dark"] .xynolog-input:focus-visible {
+  outline-color: var(--xynolog-color-primary-400);
+  border-color: var(--xynolog-color-primary-400);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
 /* Remove default focus for mouse users */
-.xynoplex-input:focus:not(:focus-visible) {
+.xynolog-input:focus:not(:focus-visible) {
   outline: none;
-  border-color: var(--xynoplex-color-primary-500);
+  border-color: var(--xynolog-color-primary-500);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-[data-theme="dark"] .xynoplex-input:focus:not(:focus-visible) {
+[data-theme="dark"] .xynolog-input:focus:not(:focus-visible) {
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
 /* High contrast mode support */
 @media (prefers-contrast: more) {
-  .xynoplex-input:focus-visible {
+  .xynolog-input:focus-visible {
     outline-width: 3px;
   }
 }
 
 /* Invalid State */
-.xynoplex-input[aria-invalid="true"] {
-  border-color: var(--xynoplex-color-red-500);
+.xynolog-input[aria-invalid="true"] {
+  border-color: var(--xynolog-color-red-500);
 }
 
-[data-theme="dark"] .xynoplex-input[aria-invalid="true"] {
-  border-color: var(--xynoplex-color-red-400);
+[data-theme="dark"] .xynolog-input[aria-invalid="true"] {
+  border-color: var(--xynolog-color-red-400);
 }
 
-.xynoplex-input[aria-invalid="true"]:focus-visible {
-  outline: 2px solid var(--xynoplex-color-red-500);
+.xynolog-input[aria-invalid="true"]:focus-visible {
+  outline: 2px solid var(--xynolog-color-red-500);
   outline-offset: -1px;
-  border-color: var(--xynoplex-color-red-500);
+  border-color: var(--xynolog-color-red-500);
   box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
 }
 
-[data-theme="dark"] .xynoplex-input[aria-invalid="true"]:focus-visible {
-  outline-color: var(--xynoplex-color-red-400);
-  border-color: var(--xynoplex-color-red-400);
+[data-theme="dark"] .xynolog-input[aria-invalid="true"]:focus-visible {
+  outline-color: var(--xynolog-color-red-400);
+  border-color: var(--xynolog-color-red-400);
   box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
 }
 
 /* Disabled State */
-.xynoplex-input:disabled {
+.xynolog-input:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  background-color: var(--xynoplex-color-gray-100);
+  background-color: var(--xynolog-color-gray-100);
 }
 
-[data-theme="dark"] .xynoplex-input:disabled {
-  background-color: var(--xynoplex-color-gray-800);
+[data-theme="dark"] .xynolog-input:disabled {
+  background-color: var(--xynolog-color-gray-800);
 }
 
 /* Input with inline prefix (e.g. "file://") */
-.xynoplex-input-addon {
+.xynolog-input-addon {
   display: flex;
   align-items: stretch;
-  border: 1px solid var(--xynoplex-color-gray-300);
-  border-radius: var(--xynoplex-radius-md);
+  border: 1px solid var(--xynolog-color-gray-300);
+  border-radius: var(--xynolog-radius-md);
   overflow: hidden;
-  background-color: var(--xynoplex-bg-primary);
+  background-color: var(--xynolog-bg-primary);
 }
 
-[data-theme="dark"] .xynoplex-input-addon {
-  border-color: var(--xynoplex-color-gray-700);
+[data-theme="dark"] .xynolog-input-addon {
+  border-color: var(--xynolog-color-gray-700);
 }
 
-.xynoplex-input-addon:focus-within {
-  outline: 2px solid var(--xynoplex-color-primary-500);
+.xynolog-input-addon:focus-within {
+  outline: 2px solid var(--xynolog-color-primary-500);
   outline-offset: -1px;
-  border-color: var(--xynoplex-color-primary-500);
+  border-color: var(--xynolog-color-primary-500);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-[data-theme="dark"] .xynoplex-input-addon:focus-within {
-  outline-color: var(--xynoplex-color-primary-400);
-  border-color: var(--xynoplex-color-primary-400);
+[data-theme="dark"] .xynolog-input-addon:focus-within {
+  outline-color: var(--xynolog-color-primary-400);
+  border-color: var(--xynolog-color-primary-400);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
-.xynoplex-input-addon__prefix {
+.xynolog-input-addon__prefix {
   display: flex;
   align-items: center;
   padding: 0.5rem 0.5rem 0.5rem 0.75rem;
-  font-size: var(--xynoplex-text-sm);
-  font-family: var(--xynoplex-font-mono);
-  color: var(--xynoplex-text-tertiary);
-  background-color: var(--xynoplex-color-gray-50);
-  border-right: 1px solid var(--xynoplex-color-gray-300);
+  font-size: var(--xynolog-text-sm);
+  font-family: var(--xynolog-font-mono);
+  color: var(--xynolog-text-tertiary);
+  background-color: var(--xynolog-color-gray-50);
+  border-right: 1px solid var(--xynolog-color-gray-300);
   user-select: none;
   white-space: nowrap;
 }
 
-[data-theme="dark"] .xynoplex-input-addon__prefix {
-  background-color: var(--xynoplex-color-gray-800);
-  border-right-color: var(--xynoplex-color-gray-700);
-  color: var(--xynoplex-text-tertiary);
+[data-theme="dark"] .xynolog-input-addon__prefix {
+  background-color: var(--xynolog-color-gray-800);
+  border-right-color: var(--xynolog-color-gray-700);
+  color: var(--xynolog-text-tertiary);
 }
 
-.xynoplex-input--addon {
+.xynolog-input--addon {
   border: none;
   border-radius: 0;
   outline: none;
@@ -145,20 +145,20 @@
   min-width: 0;
 }
 
-.xynoplex-input--addon:focus-visible,
-.xynoplex-input--addon:focus {
+.xynolog-input--addon:focus-visible,
+.xynolog-input--addon:focus {
   outline: none;
   border: none;
   box-shadow: none;
 }
 
 /* Placeholder */
-.xynoplex-input::placeholder {
-  color: var(--xynoplex-text-tertiary);
+.xynolog-input::placeholder {
+  color: var(--xynolog-text-tertiary);
   opacity: 0.6;
 }
 
-[data-theme="dark"] .xynoplex-input::placeholder {
-  color: var(--xynoplex-text-tertiary);
+[data-theme="dark"] .xynolog-input::placeholder {
+  color: var(--xynolog-text-tertiary);
   opacity: 0.5;
 }

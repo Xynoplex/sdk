@@ -1,7 +1,7 @@
-package xynoplex
+package xynolog
 
 // A session with a knowledge base: the token its transport sends, renewed on
-// the schedule every Xynoplex client keeps and whenever the gateway refuses it,
+// the schedule every Xynolog client keeps and whenever the gateway refuses it,
 // and who that token is. How it starts and how it answers a refusal are the
 // session table's (protocol/specs/src/session/cases.json, startup and refusal): it asks
 // the gateway at most twice and renews at most once at its start, and one
@@ -25,8 +25,8 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/internal/kept"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/internal/kept"
 )
 
 // SessionEndReason is why a session ended, as its host is told: not a

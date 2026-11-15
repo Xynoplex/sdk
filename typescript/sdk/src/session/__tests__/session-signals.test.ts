@@ -7,7 +7,7 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { assertStateUnitAxioms } from '@xynoplex/core/testing/axioms';
+import { assertStateUnitAxioms } from '@xynolog/core/testing/axioms';
 import { createSessionSignals, type SessionSignals } from '../session-signals';
 
 let signals: SessionSignals;

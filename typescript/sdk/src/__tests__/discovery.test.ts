@@ -10,7 +10,7 @@
  * `readFile` in (in place of a file-reading transport: no fs in the sdk).
  */
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { DISCOVERY_URL_PATH, HTTP_REQUEST_TIMEOUT_MS, type DiscoveredKB } from '@xynoplex/core';
+import { DISCOVERY_URL_PATH, HTTP_REQUEST_TIMEOUT_MS, type DiscoveredKB } from '@xynolog/core';
 import {
   parseDiscoveryDocument,
   httpDiscovery,
@@ -21,16 +21,16 @@ import {
 } from '../discovery';
 
 const KB_A: DiscoveredKB = {
-  host: 'localhost', port: 4000, placement: 'local', managedBy: 'xynoplex-launcher',
+  host: 'localhost', port: 4000, placement: 'local', managedBy: 'xynolog-launcher',
   did: 'did:web:kb-a.example', siteName: 'KB A',
 };
 const KB_B: DiscoveredKB = {
-  host: 'localhost', port: 4100, placement: 'codespace', managedBy: 'xynoplex-launcher',
+  host: 'localhost', port: 4100, placement: 'codespace', managedBy: 'xynolog-launcher',
   repo: 'octo/kb-b', did: 'did:web:kb-b.example',
 };
 /** A third live KB. */
 const KB_C: DiscoveredKB = {
-  host: 'localhost', port: 4200, placement: 'local', managedBy: 'xynoplex-launcher',
+  host: 'localhost', port: 4200, placement: 'local', managedBy: 'xynolog-launcher',
   did: 'did:web:example.github.io:kb-c',
 };
 
@@ -69,7 +69,7 @@ describe('parseDiscoveryDocument — the one validator', () => {
       version: 1,
       kbs: [
         KB_A,
-        { host: 'localhost', port: 4300, placement: 'local', managedBy: 'xynoplex-launcher' },
+        { host: 'localhost', port: 4300, placement: 'local', managedBy: 'xynolog-launcher' },
       ],
     });
 
@@ -278,11 +278,11 @@ describe('subscribeDiscovery — poll + diff, keyed host:port', () => {
    */
   describe('one KB in two places', () => {
     const CLONE: DiscoveredKB = {
-      host: 'localhost', port: 4000, placement: 'local', managedBy: 'xynoplex-launcher',
+      host: 'localhost', port: 4000, placement: 'local', managedBy: 'xynolog-launcher',
       did: 'did:web:example.github.io:kb', siteName: 'KB',
     };
     const CODESPACE: DiscoveredKB = {
-      host: 'localhost', port: 4100, placement: 'codespace', managedBy: 'xynoplex-launcher',
+      host: 'localhost', port: 4100, placement: 'codespace', managedBy: 'xynolog-launcher',
       did: 'did:web:example.github.io:kb', siteName: 'KB', repo: 'octo/kb',
     };
 
@@ -343,8 +343,8 @@ describe('subscribeDiscovery — poll + diff, keyed host:port', () => {
     try {
       // Same ADDRESS, different dids — the real conflict (only one process
       // binds a port).
-      const dupA: DiscoveredKB = { host: 'localhost', port: 4000, placement: 'local', managedBy: 'xynoplex-launcher', did: 'did:web:example.github.io:kb-a' };
-      const dupB: DiscoveredKB = { host: 'localhost', port: 4000, placement: 'codespace', managedBy: 'xynoplex-launcher', repo: 'octo/other', did: 'did:web:example.github.io:other' };
+      const dupA: DiscoveredKB = { host: 'localhost', port: 4000, placement: 'local', managedBy: 'xynolog-launcher', did: 'did:web:example.github.io:kb-a' };
+      const dupB: DiscoveredKB = { host: 'localhost', port: 4000, placement: 'codespace', managedBy: 'xynolog-launcher', repo: 'octo/other', did: 'did:web:example.github.io:other' };
       const { transport } = scripted([{ kind: 'managed', kbs: [dupA, dupB] }]);
 
       const emitted = await collect(transport, async () => {});

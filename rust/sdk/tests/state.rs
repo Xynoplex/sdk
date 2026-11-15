@@ -7,25 +7,25 @@
 //! here is bounded: a unit that never acts fails its test, and does not
 //! hang it.
 
-use xynoplex::channels::BRIDGED_CHANNELS;
-use xynoplex::client::XynoplexClient;
-use xynoplex::state::{
-    BeckonStateUnit, GatherStateUnit, HoverDwell, MarkStateUnit, MatchStateUnit, PendingAnnotation,
-    SearchPipeline, SearchPipelineOptions, YieldStateUnit,
-};
-use xynoplex::testing::as_id;
-use xynoplex::testing::axioms::{AxiomSubject, Fresh, Surface, assert_state_unit_axioms};
-use xynoplex::testing::{FaultyTransport, TestClientOptions, create_test_client};
-use xynoplex::timing::HOVER_DELAY;
-use xynoplex::types::{
-    AnnotationSelector, GatherAnnotationOptions, GatherResourceRequestOptions, GenerationJobParams,
-    MarkJobParams, Motivation,
-};
 use serde_json::{Map, Value, json};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use tokio::sync::mpsc;
 use tokio_stream::wrappers::UnboundedReceiverStream;
+use xynolog::channels::BRIDGED_CHANNELS;
+use xynolog::client::XynologClient;
+use xynolog::state::{
+    BeckonStateUnit, GatherStateUnit, HoverDwell, MarkStateUnit, MatchStateUnit, PendingAnnotation,
+    SearchPipeline, SearchPipelineOptions, YieldStateUnit,
+};
+use xynolog::testing::as_id;
+use xynolog::testing::axioms::{AxiomSubject, Fresh, Surface, assert_state_unit_axioms};
+use xynolog::testing::{FaultyTransport, TestClientOptions, create_test_client};
+use xynolog::timing::HOVER_DELAY;
+use xynolog::types::{
+    AnnotationSelector, GatherAnnotationOptions, GatherResourceRequestOptions, GenerationJobParams,
+    MarkJobParams, Motivation,
+};
 
 const RES: &str = "res-1";
 
@@ -33,7 +33,7 @@ fn object(value: Value) -> Map<String, Value> {
     value.as_object().cloned().expect("an object")
 }
 
-fn client_over(transport: &FaultyTransport) -> Arc<XynoplexClient> {
+fn client_over(transport: &FaultyTransport) -> Arc<XynologClient> {
     create_test_client(TestClientOptions {
         transport: Some(transport.clone()),
         ..TestClientOptions::default()
@@ -42,7 +42,7 @@ fn client_over(transport: &FaultyTransport) -> Arc<XynoplexClient> {
 }
 
 /// A transport that answers nothing, and its client.
-fn world() -> (Arc<XynoplexClient>, FaultyTransport) {
+fn world() -> (Arc<XynologClient>, FaultyTransport) {
     let transport = FaultyTransport::new(BRIDGED_CHANNELS, vec![]);
     (client_over(&transport), transport)
 }

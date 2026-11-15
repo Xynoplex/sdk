@@ -31,10 +31,10 @@ import {
   type ResourceId,
   type TagSchema,
   type components,
-} from '@xynoplex/core';
+} from '@xynolog/core';
 import { CacheObservable, DelegationObservable, StreamObservable, UploadObservable } from '../awaitable';
 import { ClaimsObservable, JOB_CLAIM_CHANNELS, type ClaimOptions } from '../claims';
-import { XynoplexClient } from '../client';
+import { XynologClient } from '../client';
 import { FaultyTransport } from '../testing';
 import type {
   AuthNamespace,
@@ -125,7 +125,7 @@ interface Namespaces {
 
 /** A member's name as the table has it: an `events` row is a property named `<method>$`. */
 type Listed<K> = K extends `${infer Stem}$` ? Stem : K;
-type Call = (client: XynoplexClient, args: Args) => unknown;
+type Call = (client: XynologClient, args: Args) => unknown;
 type Calls = { [N in keyof Namespaces]: { [M in keyof Namespaces[N] as Listed<M & string>]: Call } };
 
 const rid = (args: Args): ResourceId => resourceId(String(args['resourceId']));
@@ -311,7 +311,7 @@ function world() {
   const gateway: Recorded[] = [];
   // A client that is every namespace, a worker's claims among them: a full client's channels, and what claims read.
   const transport = new FaultyTransport({ channels: [...BRIDGED_CHANNELS, ...JOB_CLAIM_CHANNELS] });
-  const client = new XynoplexClient(transport, recordingContent(content), recordingGateway(gateway));
+  const client = new XynologClient(transport, recordingContent(content), recordingGateway(gateway));
   const wire = vi.spyOn(transport, 'emit');
   const own = vi.spyOn(client.bus, 'emit');
   return { client, transport, wire, own, content, gateway };

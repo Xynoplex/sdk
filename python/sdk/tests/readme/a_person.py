@@ -1,9 +1,9 @@
 from pathlib import Path
 
-from xynoplex.channels import BRIDGED_CHANNELS
-from xynoplex.http import DeviceCode, session_from_kept, sign_in_device
-from xynoplex.sign_in_store import FILE_NAME, SignInStore, state_dir, this_system
-from xynoplex.types import KbTarget
+from xynolog.channels import BRIDGED_CHANNELS
+from xynolog.http import DeviceCode, session_from_kept, sign_in_device
+from xynolog.sign_in_store import FILE_NAME, SignInStore, state_dir, this_system
+from xynolog.types import KbTarget
 
 
 def show(code: DeviceCode) -> None:
@@ -14,7 +14,7 @@ async def as_me(kb: KbTarget, home: str) -> None:
     directory = state_dir(this_system(), home=home, xdg_state_home=None, local_app_data=None)
     if directory is None:
         return
-    # The sign-in of the stack `xynoplex login` keys as the knowledge base's id.
+    # The sign-in of the stack `xynolog login` keys as the knowledge base's id.
     kept = SignInStore(Path(directory) / FILE_NAME).entry(kb.id)
     if await kept.held() is None:
         await sign_in_device(kb, kept, show)

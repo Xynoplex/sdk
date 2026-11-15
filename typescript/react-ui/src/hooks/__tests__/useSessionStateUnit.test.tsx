@@ -8,16 +8,16 @@
  * session — the null-check lives at exactly one layer, this hook, instead
  * of inside `!`-asserted factories (the auth/welcome production crash).
  *
- * Sessions here are REAL `XynoplexSession`s over the scriptable transport
- * (`@xynoplex/sdk/testing` — no hand-rolled session mock; its session entry
+ * Sessions here are REAL `XynologSession`s over the scriptable transport
+ * (`@xynolog/sdk/testing` — no hand-rolled session mock; its session entry
  * point exists for exactly this file's benefit).
  */
 
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
-import type { StateUnit } from '@xynoplex/core';
-import type { XynoplexSession } from '@xynoplex/sdk';
-import { createTestSession } from '@xynoplex/sdk/testing';
+import type { StateUnit } from '@xynolog/core';
+import type { XynologSession } from '@xynolog/sdk';
+import { createTestSession } from '@xynolog/sdk/testing';
 import { useSessionStateUnit } from '../useSessionStateUnit';
 
 interface TestUnit extends StateUnit {
@@ -28,7 +28,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-function makeSession(): XynoplexSession {
+function makeSession(): XynologSession {
   return createTestSession().session;
 }
 
@@ -36,7 +36,7 @@ describe('useSessionStateUnit', () => {
   it('constructs exactly once for a stable session across rerenders', async () => {
     const session = makeSession();
     const factory = vi.fn(
-      (s: XynoplexSession): TestUnit => ({ ownerSessionId: s.id, dispose: vi.fn() }),
+      (s: XynologSession): TestUnit => ({ ownerSessionId: s.id, dispose: vi.fn() }),
     );
 
     const { result, rerender } = renderHook(() => useSessionStateUnit(session, factory));
@@ -55,13 +55,13 @@ describe('useSessionStateUnit', () => {
     expect(sessionA.id).not.toBe(sessionB.id);
 
     const order: string[] = [];
-    const factory = (s: XynoplexSession): TestUnit => {
+    const factory = (s: XynologSession): TestUnit => {
       order.push(`create:${s.id}`);
       return { ownerSessionId: s.id, dispose: () => order.push(`dispose:${s.id}`) };
     };
 
     const { result, rerender } = renderHook(
-      ({ session }: { session: XynoplexSession }) => useSessionStateUnit(session, factory),
+      ({ session }: { session: XynologSession }) => useSessionStateUnit(session, factory),
       { initialProps: { session: sessionA } },
     );
     await waitFor(() => expect(result.current?.ownerSessionId).toBe(sessionA.id));
@@ -91,13 +91,13 @@ describe('useSessionStateUnit', () => {
 
   it('no session → no construction, and the return type says so', async () => {
     const factory = vi.fn(
-      (s: XynoplexSession): TestUnit => ({ ownerSessionId: s.id, dispose: vi.fn() }),
+      (s: XynologSession): TestUnit => ({ ownerSessionId: s.id, dispose: vi.fn() }),
     );
 
     const { result, rerender } = renderHook(
-      ({ session }: { session: XynoplexSession | undefined }) =>
+      ({ session }: { session: XynologSession | undefined }) =>
         useSessionStateUnit(session, factory),
-      { initialProps: { session: undefined as XynoplexSession | undefined } },
+      { initialProps: { session: undefined as XynologSession | undefined } },
     );
 
     rerender({ session: undefined });
@@ -115,9 +115,9 @@ describe('useSessionStateUnit', () => {
     const session = makeSession();
     const dispose = vi.fn();
     const { result, rerender } = renderHook(
-      ({ s }: { s: XynoplexSession | undefined }) =>
+      ({ s }: { s: XynologSession | undefined }) =>
         useSessionStateUnit(s, (live): TestUnit => ({ ownerSessionId: live.id, dispose })),
-      { initialProps: { s: session as XynoplexSession | undefined } },
+      { initialProps: { s: session as XynologSession | undefined } },
     );
     await waitFor(() => expect(result.current).toBeDefined());
 

@@ -1,5 +1,5 @@
 /**
- * PostCSS Configuration for @xynoplex/react-ui
+ * PostCSS Configuration for @xynolog/react-ui
  *
  * Enables CSS source maps for better debugging experience
  * while maintaining the modular CSS architecture.

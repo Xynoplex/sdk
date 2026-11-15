@@ -24,13 +24,13 @@
      Button Components
      ======================================== */
 
-  .xynoplex-button,
-  .xynoplex-button[data-variant],
-  .xynoplex-button[data-size],
-  .xynoplex-panel-button,
-  .xynoplex-toolbar-button,
-  .xynoplex-signout-button,
-  .xynoplex-resource-button {
+  .xynolog-button,
+  .xynolog-button[data-variant],
+  .xynolog-button[data-size],
+  .xynolog-panel-button,
+  .xynolog-toolbar-button,
+  .xynolog-signout-button,
+  .xynolog-resource-button {
     transition: none !important;
     animation: none !important;
   }
@@ -39,26 +39,26 @@
      Loading & Spinner Components
      ======================================== */
 
-  .xynoplex-spinner {
+  .xynolog-spinner {
     animation: none !important;
     opacity: 0.6; /* Keep visible but static */
   }
 
   /* Skeleton loading effects */
-  .xynoplex-skeleton {
+  .xynolog-skeleton {
     animation: none !important;
-    background: var(--xynoplex-color-gray-200) !important;
+    background: var(--xynolog-color-gray-200) !important;
   }
 
-  [data-theme="dark"] .xynoplex-skeleton {
-    background: var(--xynoplex-color-gray-700) !important;
+  [data-theme="dark"] .xynolog-skeleton {
+    background: var(--xynolog-color-gray-700) !important;
   }
 
   /* ========================================
      Toast & Notification Components
      ======================================== */
 
-  .xynoplex-toast {
+  .xynolog-toast {
     animation: none !important;
     transition: opacity 0.01ms !important;
     transform: none !important;
@@ -69,9 +69,9 @@
      Modal & Dialog Components
      ======================================== */
 
-  .xynoplex-modal,
-  .xynoplex-modal__backdrop,
-  .xynoplex-modal__content {
+  .xynolog-modal,
+  .xynolog-modal__backdrop,
+  .xynolog-modal__content {
     animation: none !important;
     transition: opacity 0.01ms !important;
     transform: none !important;
@@ -81,8 +81,8 @@
      Panel & Sidebar Components
      ======================================== */
 
-  .xynoplex-panel,
-  .xynoplex-panel__content {
+  .xynolog-panel,
+  .xynolog-panel__content {
     transition: none !important;
     animation: none !important;
     transform: none !important;
@@ -92,7 +92,7 @@
      Dropdown & Select Components
      ======================================== */
 
-  .xynoplex-dropdown {
+  .xynolog-dropdown {
     transition: none !important;
     animation: none !important;
     transform: none !important;
@@ -102,7 +102,7 @@
      Tab & Accordion Components
      ======================================== */
 
-  .xynoplex-collapsible {
+  .xynolog-collapsible {
     transition: none !important;
     animation: none !important;
   }
@@ -111,7 +111,7 @@
      Progress & Status Components
      ======================================== */
 
-  .xynoplex-progress__fill {
+  .xynolog-progress__fill {
     transition: none !important;
     animation: none !important;
   }
@@ -120,7 +120,7 @@
      Card & List Components
      ======================================== */
 
-  .xynoplex-card {
+  .xynolog-card {
     transition: none !important;
     transform: none !important;
   }
@@ -129,11 +129,11 @@
      Form Components
      ======================================== */
 
-  .xynoplex-form__field,
-  .xynoplex-input,
-  .xynoplex-textarea,
-  .xynoplex-checkbox,
-  .xynoplex-toggle {
+  .xynolog-form__field,
+  .xynolog-input,
+  .xynolog-textarea,
+  .xynolog-checkbox,
+  .xynolog-toggle {
     transition: none !important;
   }
 
@@ -141,8 +141,8 @@
      Annotation & Highlight Components
      ======================================== */
 
-  .xynoplex-annotation,
-  .xynoplex-annotation-entry {
+  .xynolog-annotation,
+  .xynolog-annotation-entry {
     transition: none !important;
     animation: none !important;
   }
@@ -151,7 +151,7 @@
      Branding & Logo Components
      ======================================== */
 
-  .xynoplex-brand {
+  .xynolog-brand {
     animation: none !important;
     transform: none !important;
     opacity: 1 !important;
@@ -161,8 +161,8 @@
      Resource Discovery Components
      ======================================== */
 
-  .xynoplex-resource-card,
-  .xynoplex-search-result {
+  .xynolog-resource-card,
+  .xynolog-search-result {
     transition: none !important;
     animation: none !important;
   }
@@ -171,8 +171,8 @@
      Toolbar Components
      ======================================== */
 
-  .xynoplex-toolbar-menu,
-  .xynoplex-toolbar-panel {
+  .xynolog-toolbar-menu,
+  .xynolog-toolbar-panel {
     transition: none !important;
     animation: none !important;
   }
@@ -278,7 +278,7 @@
     }
   }
 
-  @keyframes xynoplex-sparkle-infinite {
+  @keyframes xynolog-sparkle-infinite {
     from, to {
       transform: none;
       opacity: 1;

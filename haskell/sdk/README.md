@@ -1,8 +1,8 @@
-# Xynoplex Haskell SDK
+# Xynolog Haskell SDK
 
-[![codecov](https://codecov.io/gh/Xynoplex/sdk/graph/badge.svg?component=haskell-sdk)](https://app.codecov.io/gh/Xynoplex/sdk/components)
+[![codecov](https://codecov.io/gh/xynolog/sdk/graph/badge.svg?component=haskell-sdk)](https://app.codecov.io/gh/xynolog/sdk/components)
 
-The Haskell SDK implements Xynoplex's client and protocol contracts with `IO`,
+The Haskell SDK implements Xynolog's client and protocol contracts with `IO`,
 STM observations and scoped streams. It provides all eleven client namespaces,
 live queries and durable caches, typed delegation, uploads, claims, held jobs and
 durable worker commits. Device, redirect, kept-grant and service-account sign-in
@@ -19,22 +19,22 @@ against its public API. It builds from source until the package is published.
 
 ## Install
 
-Use the local Cabal package in a Xynoplex checkout. It is not published on
+Use the local Cabal package in a Xynolog checkout. It is not published on
 Hackage. In your application's `cabal.project`, include both packages:
 
 ```cabal
 packages: ./my-app
-          /path/to/xynoplex/haskell/sdk
+          /path/to/xynolog/haskell/sdk
 ```
 
-Add `xynoplex` to the application's `build-depends`. Use the compiler pinned in
+Add `xynolog` to the application's `build-depends`. Use the compiler pinned in
 [the development project](../probes/cabal.project). The repository's
 [container runner](../run-container.sh) builds and tests the SDK without a host
 Haskell installation; see [Building and verifying](#building-and-verifying).
 
 ## Signing in
 
-`Xynoplex.Issuer` discovers the issuer from a knowledge base's resource metadata.
+`Xynolog.Issuer` discovers the issuer from a knowledge base's resource metadata.
 `signInWithDeviceGrant` reports the approval code to your callback and polls at
 the issuer's interval. `beginAuthorization` saves PKCE/state and returns the
 URL to navigate to; `completeAuthorization` consumes the callback once and
@@ -42,7 +42,7 @@ returns the pending identity and issued tokens. Both use the application's
 HTTP pool and controlled clock. The client ids and scope come from the shared
 OAuth registration table.
 
-`Xynoplex.Session.signInDevice` opens a client/session from a device grant.
+`Xynolog.Session.signInDevice` opens a client/session from a device grant.
 `Session.signOut http kept` signs out of a kept sign-in: it revokes the refresh
 token at the issuer where the sign-in names a revocation endpoint, forgets the
 sign-in however that went, and says whether the issuer revoked it.
@@ -57,7 +57,7 @@ own errors and its transport's failures, is said once each on `errors`, one
 stream in the order met. A session is its transport's first reader when
 nobody has read that transport's failures before it is made, and then says
 what the transport kept for it as it is made. The first reader of `errors` is given the latest
-`errorsKeptForFirstReaderCount` (`Xynoplex.Timing`) said before it came, in
+`errorsKeptForFirstReaderCount` (`Xynolog.Timing`) said before it came, in
 that order, the oldest beyond them dropped, and what is still kept when
 `errors` ends is dropped: a reader who comes after is given nothing. Disposing a session
 joins its work, ends `errors` and leaves its client open, and once its client
@@ -74,9 +74,9 @@ for their first reader as a session's do, and drop what they kept as they end.
 ```haskell
 module DeviceSignIn where
 import Control.Exception (bracket)
-import qualified Xynoplex.Http as Http
-import qualified Xynoplex.Session as Session
-import Xynoplex.Types (DeviceCode)
+import qualified Xynolog.Http as Http
+import qualified Xynolog.Session as Session
+import Xynolog.Types (DeviceCode)
 
 withDeviceSession :: Http.HttpOptions -> Session.SessionOptions
   -> (DeviceCode -> IO ()) -> (Session.Session -> IO result) -> IO result
@@ -85,7 +85,7 @@ withDeviceSession http options showCode use =
     Session.closeOpenedSession (use . Session.openedSession)
 ```
 
-`Xynoplex.SessionStorage.newMemoryStorage` keeps one context's text values;
+`Xynolog.SessionStorage.newMemoryStorage` keeps one context's text values;
 applications can implement `SessionStorage` for their own storage.
 `Registry.Stored.keptIn storage kbId` is that knowledge base’s typed
 `KeptSignIn`; `SignIn.newMemorySignIn` is one independent in-memory grant.
@@ -93,11 +93,11 @@ Its `update` transforms and returns a result atomically, so redirect completion
 and refresh rotation cannot overwrite another writer. The shared
 [sign-in guide](../../../docs/builder/SIGN-IN.md) describes the flows.
 
-`Xynoplex.ServiceToken` performs a lazy client-credentials grant with a secret
+`Xynolog.ServiceToken` performs a lazy client-credentials grant with a secret
 or RSA key. It discovers the token endpoint once and keeps each opaque access
 token only for the lifetime the issuer stated. Key grants carry a fresh RS256
 assertion, with the shared RFC 7638 thumbprint and claims; the private key stays
-in the process. `Xynoplex.ClientAssertion.privateKeyFromPem` reads one unencrypted
+in the process. `Xynolog.ClientAssertion.privateKeyFromPem` reads one unencrypted
 PKCS#8 RSA key and refuses other key formats without echoing their contents.
 
 ```haskell
@@ -107,9 +107,9 @@ import Data.ByteString (ByteString)
 import Data.Scientific (Scientific)
 import Data.Text (Text)
 import qualified Data.Text as Text
-import qualified Xynoplex.ClientAssertion as Assertion
-import qualified Xynoplex.Issuer as Issuer
-import qualified Xynoplex.ServiceToken as Service
+import qualified Xynolog.ClientAssertion as Assertion
+import qualified Xynolog.Issuer as Issuer
+import qualified Xynolog.ServiceToken as Service
 
 withAccount :: Issuer.IssuerOptions -> Text -> Text -> ByteString
   -> IO Scientific -> (Service.ServiceToken -> IO result) -> IO result
@@ -131,7 +131,7 @@ and after a renewal that got no answer, the one that renewal was for;
 without renewing or quarantining the inherited token. `Auth.me auth Nothing`
 uses the client's own token and retry policy.
 
-`Xynoplex.SignInStore` reads the launcher's `tokens.json`, preserving unknown
+`Xynolog.SignInStore` reads the launcher's `tokens.json`, preserving unknown
 members and refusing to overwrite a corrupt document. `stateDirectory` runs the
 shared platform rules on directory values supplied by the application; the SDK
 reads no environment. `signInFileName` is the file name below that directory.
@@ -143,10 +143,10 @@ concurrent renewal or sign-out; token comparison is shared.
 ```haskell
 module KeptSignIn where
 import Control.Exception (bracket)
-import qualified Xynoplex.Http as Http
-import qualified Xynoplex.Session as Session
-import qualified Xynoplex.SignInStore as Store
-import Xynoplex.Types (kbTargetId)
+import qualified Xynolog.Http as Http
+import qualified Xynolog.Session as Session
+import qualified Xynolog.SignInStore as Store
+import Xynolog.Types (kbTargetId)
 
 withKeptSession :: Http.HttpOptions -> Session.SessionOptions
   -> Store.SignInStoreOptions -> FilePath
@@ -161,20 +161,20 @@ withKeptSession http options storeOptions filename use = do
 
 ## Connect
 
-Build a reusable HTTP pool with `Xynoplex.Http.newHttpClient`, supplying an
+Build a reusable HTTP pool with `Xynolog.Http.newHttpClient`, supplying an
 explicit proxy policy and your `http-client` `ManagerSettings`. For example,
 `newHttpClient noProxy tlsManagerSettings` uses your TLS settings without an
 environment-selected proxy; `tlsManagerSettings` is supplied by
 `http-client-tls`. The pool disables implicit retries and response timeouts so
-Xynoplex owns its attempt budgets and deadlines. A transport never closes the
+Xynolog owns its attempt budgets and deadlines. A transport never closes the
 caller's pool. Its active requests and response scopes end on disposal.
 
 Supply the pool through `HttpOptions`, together with the base URL, token reader,
 refused-token renewal action, fresh UUID action, global channel profile, monotonic
 clock/wait/jitter actions, timing settings, and replay-position load/save actions.
-`Xynoplex.Timing.Settings.protocolSettings` supplies the protocol timings;
+`Xynolog.Timing.Settings.protocolSettings` supplies the protocol timings;
 `withOverrides` validates explicitly supplied timing overrides. Use
-`Xynoplex.Channels.globalChannels` for a full client. All these choices are
+`Xynolog.Channels.globalChannels` for a full client. All these choices are
 explicit. `Client.fromHttp` builds the bus, content and gateway adapters with
 the same clock and ID source. Keep the client scoped:
 
@@ -182,8 +182,8 @@ the same clock and ID source. Keep the client scoped:
 module HttpConnection (withConnection) where
 
 import Control.Exception (bracket)
-import Xynoplex.Client (Client, fromHttp, dispose)
-import Xynoplex.Http (HttpOptions)
+import Xynolog.Client (Client, fromHttp, dispose)
+import Xynolog.Http (HttpOptions)
 
 withConnection :: HttpOptions -> (Client -> IO result) -> IO result
 withConnection options = bracket (fromHttp options Nothing) dispose
@@ -206,7 +206,7 @@ refuses further reads.
 
 The Haskell client implements the
 [client surface](../../../protocol/specs/src/client/surface.json), with typed
-channel and operation descriptors in `Xynoplex.Channels`.
+channel and operation descriptors in `Xynolog.Channels`.
 All methods of Frame, Bind, Beckon, Browse, Gather, Match, Mark, Yield, Job,
 Auth and System are available. See the
 [builder guide](../../../docs/builder/README.md) for the shared model.
@@ -220,10 +220,10 @@ an opaque `Running (JobEvent completion) completion`: a mark job completes with
 ```haskell
 module DelegateMarks (runMarks) where
 
-import qualified Xynoplex.Client as Client
-import qualified Xynoplex.Mark as Mark
-import qualified Xynoplex.Running as Running
-import Xynoplex.Types (ResourceId, MarkJobParams, MarkJobCompleteCommand)
+import qualified Xynolog.Client as Client
+import qualified Xynolog.Mark as Mark
+import qualified Xynolog.Running as Running
+import Xynolog.Types (ResourceId, MarkJobParams, MarkJobCompleteCommand)
 
 runMarks :: Client.Client -> ResourceId -> MarkJobParams -> IO MarkJobCompleteCommand
 runMarks client identity params =
@@ -254,7 +254,7 @@ and joins the producer, and a stream retained past that scope refuses reads.
 
 ## Live queries
 
-`Xynoplex.Cache` provides lazy read-through queries with three outcomes:
+`Xynolog.Cache` provides lazy read-through queries with three outcomes:
 `Pending`, `Ready value`, and `Failed exception`. `Cache.query` is pure;
 `Cache.watch` starts a scoped live observation, and `Cache.fresh` forces a
 one-shot read. Concurrent readers share a fetch. Invalidation keeps a stale
@@ -265,8 +265,8 @@ response from overwriting a newer value.
 module CachedReads (nameCache, readName) where
 
 import Data.Text (Text)
-import qualified Xynoplex.Cache as Cache
-import qualified Xynoplex.Timing.Settings as Timing
+import qualified Xynolog.Cache as Cache
+import qualified Xynolog.Timing.Settings as Timing
 
 nameCache :: (Text -> IO Text) -> IO Integer -> (Integer -> IO ())
           -> IO (Cache.Cache Text Text)
@@ -302,10 +302,10 @@ assignments and gain each inference service's limits as those arrive.
 module ResourceNames (readResourceName) where
 
 import Data.Text (Text)
-import qualified Xynoplex.Browse as Browse
-import qualified Xynoplex.Cache as Cache
-import qualified Xynoplex.Client as Client
-import Xynoplex.Types (ResourceId, resourceDescriptorName)
+import qualified Xynolog.Browse as Browse
+import qualified Xynolog.Cache as Cache
+import qualified Xynolog.Client as Client
+import Xynolog.Types (ResourceId, resourceDescriptorName)
 
 readResourceName :: Client.Client -> ResourceId -> IO Text
 readResourceName client identity =
@@ -324,7 +324,7 @@ Query behavior follows the
 
 ## State units
 
-`Xynoplex.State.Mark`, `Yield`, `Gather`, `Match` and `Beckon` coordinate the
+`Xynolog.State.Mark`, `Yield`, `Gather`, `Match` and `Beckon` coordinate the
 client signals and expose read-only state. `HoverDwell` waits for a pointer to
 rest; `Search` debounces typed queries and joins the search it replaces.
 `SessionSignals` holds host notices beside a session. The cache and session
@@ -343,13 +343,13 @@ can start while the earlier job remains followed.
 {-# LANGUAGE OverloadedStrings #-}
 module ResourceSearch where
 import Control.Exception (bracket)
-import qualified Xynoplex.Cache as Cache
-import qualified Xynoplex.Client as Client
-import qualified Xynoplex.Match as Match
-import Xynoplex.Retry (RetryOptions)
-import qualified Xynoplex.State.Search as Search
-import qualified Xynoplex.Timing.Settings as Timing
-import Xynoplex.Types (ResourceDescriptor, matchResourcesResponseResources)
+import qualified Xynolog.Cache as Cache
+import qualified Xynolog.Client as Client
+import qualified Xynolog.Match as Match
+import Xynolog.Retry (RetryOptions)
+import qualified Xynolog.State.Search as Search
+import qualified Xynolog.Timing.Settings as Timing
+import Xynolog.Types (ResourceDescriptor, matchResourcesResponseResources)
 import qualified Streaming.Prelude as Stream
 
 withResourceSearch :: Client.Client -> RetryOptions
@@ -400,7 +400,7 @@ cannot skip an unfinished update.
 
 ## Building annotations
 
-`Xynoplex.Annotations` reads the generated annotation types without narrowing
+`Xynolog.Annotations` reads the generated annotation types without narrowing
 single bodies, body lists, resource targets, or selector lists. Its builders
 produce the same deterministic annotation IDs as the other SDKs. Reconciliation
 and every span offset count Unicode code points, including characters outside
@@ -410,8 +410,8 @@ the basic multilingual plane. PDF spans use the anchored text's page rectangles.
 {-# LANGUAGE OverloadedStrings #-}
 module BuiltAnnotation where
 import Data.Time (UTCTime)
-import Xynoplex.Types
-import qualified Xynoplex.Annotations as Annotations
+import Xynolog.Types
+import qualified Xynolog.Annotations as Annotations
 
 highlight :: IO UTCTime -> ResourceId -> Agent -> IO (Maybe Annotation)
 highlight wall resource generator =
@@ -427,25 +427,25 @@ highlight wall resource generator =
         spanValue resource MotivationHighlighting generator Nothing
 ```
 
-Set the existing cross-SDK `XYNOPLEX_BUS_LOG` switch to a nonempty value to
+Set the existing cross-SDK `XYNOLOG_BUS_LOG` switch to a nonempty value to
 write HTTP transport frames and content operations to stderr. Payload credentials
 are recursively replaced with `[withheld]`; the logger does not print headers.
 
 ## Running a worker
 
-`Xynoplex.JobFilter.jobMatchesFilter` compares a typed `JobFilter` with a job's
+`Xynolog.JobFilter.jobMatchesFilter` compares a typed `JobFilter` with a job's
 JSON representation, including queued events and claimed job descriptions.
 It compares every field the filter states at the same path; other fields do
-not affect the match. `Xynoplex.Claims.willRetryAfter` takes the job's metadata
+not affect the match. `Xynolog.Claims.willRetryAfter` takes the job's metadata
 before applying a failure and its optional `FailureClass`. Its answer follows
 the shared job retry cases: deterministic and withheld failures do not retry;
 transient and unclassified failures retry while the record has budget left.
 
-`Xynoplex.Claims.jobClaimChannels` and `jobCommitChannels` give a worker the
+`Xynolog.Claims.jobClaimChannels` and `jobCommitChannels` give a worker the
 channels to subscribe to for claiming and committing. They are generated from
 the existing SDK's worker channel declarations and the typed bus descriptors.
 
-`Xynoplex.Worker` claims one job at a time. `newClaims` is lazy: the first
+`Xynolog.Worker` claims one job at a time. `newClaims` is lazy: the first
 `next` starts claiming, and the worker claims again after settlement, a
 matching announcement while idle, or a stream reopening. Bracket it with
 `stop` so a job still held when the worker stops is failed for retry before
@@ -456,9 +456,9 @@ the transport closes.
 module WorkerExample where
 
 import Control.Exception (bracket)
-import qualified Xynoplex.Client as Client
-import qualified Xynoplex.Worker as Worker
-import Xynoplex.Types (MarkJobResult, YieldJobResult)
+import qualified Xynolog.Client as Client
+import qualified Xynolog.Worker as Worker
+import Xynolog.Types (MarkJobResult, YieldJobResult)
 
 runWorker :: Client.Client -> Worker.WorkerOptions
   -> (Worker.HeldJob MarkJobResult -> IO MarkJobResult)
@@ -512,12 +512,12 @@ lifetimes and observations.
 
 ## Several knowledge bases
 
-`Xynoplex.HostName.isValidHostname` checks the host names an HTTP endpoint may
-use. `Xynoplex.Gateway.gatewayUrl` validates a typed `HttpEndpoint` and returns
+`Xynolog.HostName.isValidHostname` checks the host names an HTTP endpoint may
+use. `Xynolog.Gateway.gatewayUrl` validates a typed `HttpEndpoint` and returns
 its origin, with the host in lowercase and an explicit port. Invalid host
 names are refused before they become part of a URL.
 
-`Xynoplex.Discovery` reads a launcher's entire document and distinguishes an
+`Xynolog.Discovery` reads a launcher's entire document and distinguishes an
 absent launcher from one managing no knowledge bases. Its types and absent
 reasons are derived from the protocol. Use `textDiscovery` over an application
 reader, for example a launcher file:
@@ -526,7 +526,7 @@ reader, for example a launcher file:
 module Main (main) where
 
 import qualified Data.Text.IO as Text
-import Xynoplex.Discovery (readDiscovery, textDiscovery)
+import Xynolog.Discovery (readDiscovery, textDiscovery)
 
 main :: IO ()
 main = do
@@ -541,13 +541,13 @@ duplicate address claims. `subscribeDiscovery` polls with the monotonic time,
 interruptible absolute wait, and interval supplied through `DiscoveryOptions`.
 Stopping consumption leaves no polling task running.
 
-`Xynoplex.Http.Discovery.httpDiscovery` reads discovery over HTTP with the
+`Xynolog.Http.Discovery.httpDiscovery` reads discovery over HTTP with the
 caller's pool and controlled clock. Reading a discovery document does not
 sign in to any of its knowledge bases.
 
-`Xynoplex.Registry.newXynoplexBrowser` manages registered knowledge bases,
+`Xynolog.Registry.newXynologBrowser` manages registered knowledge bases,
 selection, sign-in, per-KB tabs and the last viewed resource. Give it a
-`XynoplexBrowserConfig` with storage, a `SessionFactory`, HTTP options and an
+`XynologBrowserConfig` with storage, a `SessionFactory`, HTTP options and an
 epoch-seconds wall reader. `newHttpSessionFactory` opens real HTTP sessions
 and opts their queries into per-KB durable storage. The browser closes the
 previous client before opening the next, joins stale activations, and raises
@@ -563,14 +563,14 @@ tabs and caches. Close the browser and switch storage when changing profiles.
 module KnowledgeBases where
 import Control.Exception (bracket)
 import Data.Scientific (Scientific)
-import qualified Xynoplex.Http as Http
-import qualified Xynoplex.Registry as Registry
-import qualified Xynoplex.SessionStorage as Storage
+import qualified Xynolog.Http as Http
+import qualified Xynolog.Registry as Registry
+import qualified Xynolog.SessionStorage as Storage
 
 withKnowledgeBases :: Storage.SessionStorage -> Http.HttpOptions -> IO Scientific
-  -> (Registry.XynoplexBrowser -> IO result) -> IO result
+  -> (Registry.XynologBrowser -> IO result) -> IO result
 withKnowledgeBases storage http wall = bracket
-  (Registry.newXynoplexBrowser (Registry.XynoplexBrowserConfig storage
+  (Registry.newXynologBrowser (Registry.XynologBrowserConfig storage
     (Registry.newHttpSessionFactory http wall) http wall))
   Registry.dispose
 ```
@@ -581,13 +581,13 @@ withKnowledgeBases storage http wall = bracket
 
 ## IDs and protocol types
 
-Import models from `Xynoplex.Types`. Distinct identifier types expose checked
+Import models from `Xynolog.Types`. Distinct identifier types expose checked
 makers such as `mkResourceId`; their constructors are hidden. JSON decoders
 apply the same protocol constraints. Optional nullable properties use
-`Xynoplex.Types.Presence`, whose `Absent`, `Null`, and `Present` cases preserve
+`Xynolog.Types.Presence`, whose `Absent`, `Null`, and `Present` cases preserve
 JSON membership. Other optional properties use `Maybe`.
 
-`Xynoplex.Resources` reads a descriptor's primary representation, primary media
+`Xynolog.Resources` reads a descriptor's primary representation, primary media
 type and entity types. Representation order decides which is primary; media
 types retain their case and parameters.
 
@@ -595,18 +595,18 @@ Records preserve extra members when their schema permits them. Closed enums
 and unions are algebraic types. JSON numbers use `Integer` or `Scientific`,
 and date and URI values retain their `Text` spelling.
 
-`Xynoplex.Channels` provides GADT descriptors. Each channel has its own payload
+`Xynolog.Channels` provides GADT descriptors. Each channel has its own payload
 type and scope kind; each operation fixes its request, result, and failure
 types. The typed bus requires `InScope resourceId` when observing a
 resource-scoped channel.
 
 ## Errors and retry
 
-`Xynoplex.ErrorCodes` derives closed error vocabularies and wire/HTTP status
-classifiers from the protocol. `Xynoplex.Timing` derives the timing constants
+`Xynolog.ErrorCodes` derives closed error vocabularies and wire/HTTP status
+classifiers from the protocol. `Xynolog.Timing` derives the timing constants
 and retry budgets.
 
-`Xynoplex.Retry` provides retry decisions, `Retry-After` parsing, and
+`Xynolog.Retry` provides retry decisions, `Retry-After` parsing, and
 `retryWithBackoff`. Its `RetryOptions` requires caller-supplied monotonic
 nanoseconds, an interruptible wait to an absolute deadline, and non-secret
 jitter. Cancellation is preserved, each retry respects the server's stated
@@ -620,14 +620,14 @@ the transport. `Nothing` uses its held credential and normal renewal policy.
 or quarantines the held credential. Scoped streams and replayable uploads keep
 the same ownership rules in either mode.
 
-`Xynoplex.Transport.newTransport` gives a carrier its input handle and the
+`Xynolog.Transport.newTransport` gives a carrier its input handle and the
 transport its consumers use. The carrier supplies sending and teardown, feeds
 received frames through `receive`, frame refusals through `receiveRefusal`, and publishes valid connection transitions
 through `setState`. Its subscription snapshot contains the current resource
-holds and pending correlations. `Xynoplex.StateValue` exposes state observations
+holds and pending correlations. `Xynolog.StateValue` exposes state observations
 without a public setter.
 
-Build a `Xynoplex.Bus` with `newBus`, a transport, and `BusOptions`. The options
+Build a `Xynolog.Bus` with `newBus`, a transport, and `BusOptions`. The options
 supply monotonic time, an interruptible absolute wait, and fresh correlation
 IDs. Each request waits for the stream to open, tracks its reply before sending,
 emits once, and ends on a reply, deadline, cancellation, or transport close.
@@ -636,10 +636,10 @@ For example, given a bus and a typed command:
 ```haskell
 module ProtocolCalls (addEntityType) where
 
-import qualified Xynoplex.Bus as Bus
-import qualified Xynoplex.Channels as Channels
-import qualified Xynoplex.Timing as Timing
-import Xynoplex.Types (EmptyBusPayload, FrameAddEntityTypeCommand)
+import qualified Xynolog.Bus as Bus
+import qualified Xynolog.Channels as Channels
+import qualified Xynolog.Timing as Timing
+import Xynolog.Types (EmptyBusPayload, FrameAddEntityTypeCommand)
 
 addEntityType :: Bus.Bus -> FrameAddEntityTypeCommand -> IO EmptyBusPayload
 addEntityType wire command =
@@ -657,7 +657,7 @@ frames are checked against the same generated rules that the other SDKs use;
 a diagnostic never includes the rejected value. The trace field is lifted out
 of the payload.
 
-`Xynoplex.EventBus` is the client's separate local plane. A transport bridge
+`Xynolog.EventBus` is the client's separate local plane. A transport bridge
 publishes raw replies there before request continuations can emit derived
 signals. Detach a bridge through its returned release action. Closing a
 transport completes its observations, ends pending requests, and joins its
@@ -694,8 +694,8 @@ work, operation producers and callback tasks using the standard propagation API.
 
 ## Testing applications
 
-`Xynoplex.Testing.Transport` scripts answers and faults around the real native
-carrier. Give it the global channels it carries, `Xynoplex.Channels.globalChannels`
+`Xynolog.Testing.Transport` scripts answers and faults around the real native
+carrier. Give it the global channels it carries, `Xynolog.Channels.globalChannels`
 for a full client; like the HTTP transport, it adds the resource-scoped channels
 in the scopes it holds and delivers a frame on no other. Queue typed JSON
 responses by operation; requests left unscripted fail by name. A dropped reply
@@ -705,7 +705,7 @@ contexts. `createTestSession` builds a real session over a supplied real client.
 `ScriptedSessions` supplies a registry factory and records its transports,
 renewals and revocations; script its users, answers and renewal results explicitly.
 
-`Xynoplex.Testing.Liveness` supplies QuickCheck generators and executable L1/L2/L3
+`Xynolog.Testing.Liveness` supplies QuickCheck generators and executable L1/L2/L3
 checks. Give `assertLivenessAxioms` QuickCheck arguments and a `LivenessSpec`
 with the composition, timeout, retry budget, case count, fault generator,
 responder and controlled clock. Outputs must reach a value or a failure;
@@ -727,8 +727,8 @@ Cabal pins are shared with [the design probes](../probes/README.md); exact
 project dependencies are frozen. Ordinary builds use checked-in generated
 files and require no npm or schema generation.
 
-The runner builds `conformance/bin/xynoplex-haskell-wire-driver` and
-`conformance/bin/xynoplex-haskell-live-driver`. The shared
+The runner builds `conformance/bin/xynolog-haskell-wire-driver` and
+`conformance/bin/xynolog-haskell-live-driver`. The shared
 [SDK conformance suite](../../../protocol/conformance/sdk/README.md) drives them
 through the public SDK against the real gateway on both signal planes, including
 OTLP export. Worker conformance uses the wire driver. CI transfers both tested
@@ -737,7 +737,7 @@ drivers to the corresponding conformance jobs.
 Inside the development container, from this package directory:
 
 ```sh
-cabal run xynoplex-codegen -- /work
+cabal run xynolog-codegen -- /work
 cabal build all --enable-tests --enable-coverage -j1
 python3 api.py --write
 bash run.sh /work

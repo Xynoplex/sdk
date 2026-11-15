@@ -4,49 +4,49 @@
  * A warning that the session is about to end, shown above the app.
  */
 
-.xynoplex-session-expiry-banner {
+.xynolog-session-expiry-banner {
   padding: 0.5rem 1rem;
-  background-color: var(--xynoplex-color-warning-light);
-  border-bottom: 1px solid var(--xynoplex-color-warning);
-  color: var(--xynoplex-color-warning-dark);
+  background-color: var(--xynolog-color-warning-light);
+  border-bottom: 1px solid var(--xynolog-color-warning);
+  color: var(--xynolog-color-warning-dark);
 }
 
-[data-theme="dark"] .xynoplex-session-expiry-banner {
+[data-theme="dark"] .xynolog-session-expiry-banner {
   /* The light fill is unreadable on a dark ground; the border and text carry
      the warning instead. */
   background-color: transparent;
-  color: var(--xynoplex-color-warning-light);
+  color: var(--xynolog-color-warning-light);
 }
 
-.xynoplex-session-expiry-content {
+.xynolog-session-expiry-content {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
 }
 
-.xynoplex-session-expiry-message {
+.xynolog-session-expiry-message {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   min-width: 0;
 }
 
-.xynoplex-session-expiry-icon {
+.xynolog-session-expiry-icon {
   display: inline-flex;
   flex-shrink: 0;
 }
 
-.xynoplex-session-expiry-text {
+.xynolog-session-expiry-text {
   margin: 0;
-  font-size: var(--xynoplex-text-sm);
+  font-size: var(--xynolog-text-sm);
 }
 
-.xynoplex-session-expiry-label {
+.xynolog-session-expiry-label {
   font-weight: 600;
 }
 
-.xynoplex-session-expiry-dismiss {
+.xynolog-session-expiry-dismiss {
   display: inline-flex;
   flex-shrink: 0;
   padding: 0.25rem;
@@ -54,14 +54,14 @@
   background: none;
   color: inherit;
   cursor: pointer;
-  border-radius: var(--xynoplex-radius-sm);
+  border-radius: var(--xynolog-radius-sm);
 }
 
-.xynoplex-session-expiry-dismiss:hover {
-  background-color: var(--xynoplex-bg-hover);
+.xynolog-session-expiry-dismiss:hover {
+  background-color: var(--xynolog-bg-hover);
 }
 
-.xynoplex-session-expiry-dismiss:focus-visible {
-  outline: 2px solid var(--xynoplex-color-primary-500);
+.xynolog-session-expiry-dismiss:focus-visible {
+  outline: 2px solid var(--xynolog-color-primary-500);
   outline-offset: 2px;
 }

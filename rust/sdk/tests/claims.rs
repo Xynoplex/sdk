@@ -11,29 +11,29 @@
 use opentelemetry::Context;
 use opentelemetry::context::FutureExt;
 use opentelemetry::trace::{SpanContext, SpanId, TraceContextExt, TraceFlags, TraceId, TraceState};
-use xynoplex::bus::reply_channels_for;
-use xynoplex::claims::{
-    ClaimOptions, ClaimRefusal, ClaimTiming, Claims, HeldJob, HeldJobStall, JOB_CLAIM_CHANNELS,
-    JOB_COMMIT_CHANNELS, JobFailure,
-};
-use xynoplex::client::XynoplexClient;
-use xynoplex::errors::{BusRequestError, BusRequestErrorCode, XynoplexError};
-use xynoplex::testing::{FaultAction, FaultyTransport, TestClientOptions, create_test_client};
-use xynoplex::timing::ERRORS_KEPT_FOR_FIRST_READER_COUNT;
-use xynoplex::transport::{
-    ConnectionState, Events, Frame, FrameRefusal, FrameRefusalReason, TraceCarrier,
-};
-use xynoplex::types::DurabilityEvidence::{
-    Acknowledged, ProbeConfirmed, ProbeRefused, ProbeUnreachable,
-};
-use xynoplex::types::{
-    Annotation, DurabilityEvidence, FailureClass, JobFilter, JobProgress, JobType, MarkJobDone,
-    ResourceId, YieldJobResult,
-};
 use serde_json::{Map, Value, json};
 use std::collections::VecDeque;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
+use xynolog::bus::reply_channels_for;
+use xynolog::claims::{
+    ClaimOptions, ClaimRefusal, ClaimTiming, Claims, HeldJob, HeldJobStall, JOB_CLAIM_CHANNELS,
+    JOB_COMMIT_CHANNELS, JobFailure,
+};
+use xynolog::client::XynologClient;
+use xynolog::errors::{BusRequestError, BusRequestErrorCode, XynologError};
+use xynolog::testing::{FaultAction, FaultyTransport, TestClientOptions, create_test_client};
+use xynolog::timing::ERRORS_KEPT_FOR_FIRST_READER_COUNT;
+use xynolog::transport::{
+    ConnectionState, Events, Frame, FrameRefusal, FrameRefusalReason, TraceCarrier,
+};
+use xynolog::types::DurabilityEvidence::{
+    Acknowledged, ProbeConfirmed, ProbeRefused, ProbeUnreachable,
+};
+use xynolog::types::{
+    Annotation, DurabilityEvidence, FailureClass, JobFilter, JobProgress, JobType, MarkJobDone,
+    ResourceId, YieldJobResult,
+};
 
 /// What the stand-in dispatcher answers the next claims with, and what the
 /// stand-in record answers a commit and a question with.
@@ -77,7 +77,7 @@ fn current_trace() -> Option<String> {
 }
 
 struct World {
-    client: Arc<XynoplexClient>,
+    client: Arc<XynologClient>,
     transport: FaultyTransport,
     queue: Arc<Queue>,
 }
@@ -357,7 +357,7 @@ impl World {
         job: &HeldJob,
         how: DurabilityEvidence,
         id: &str,
-    ) -> Result<(), XynoplexError> {
+    ) -> Result<(), XynologError> {
         self.answer_questions(
             (how == ProbeRefused).then(|| json!({ "message": "Annotation not found" })),
         );
@@ -400,7 +400,7 @@ async fn held(claims: &Claims) -> HeldJob {
     }
 }
 
-fn found(found: u64, persisted: u64) -> xynoplex::types::MarkJobResult {
+fn found(found: u64, persisted: u64) -> xynolog::types::MarkJobResult {
     MarkJobDone::new(found, persisted).into()
 }
 
@@ -442,8 +442,8 @@ fn world_observing(observed: &[DurabilityEvidence]) -> World {
 }
 
 /// The failure of a `mark:commit` nobody acknowledged within `waited`.
-fn unacknowledged(waited: Duration) -> XynoplexError {
-    XynoplexError::Bus(BusRequestError::new(
+fn unacknowledged(waited: Duration) -> XynologError {
+    XynologError::Bus(BusRequestError::new(
         BusRequestErrorCode::Timeout,
         format!(
             "Bus request timed out after {}ms on mark:commit-ok",
@@ -1331,7 +1331,7 @@ async fn a_commit_the_record_refuses_fails_with_the_records_reason_and_nothing_i
 
     assert_eq!(
         refused,
-        Err(XynoplexError::Bus(BusRequestError {
+        Err(XynologError::Bus(BusRequestError {
             code: BusRequestErrorCode::Rejected,
             message: "the record could not append".to_owned(),
             failure: Some(object(json!({ "message": "the record could not append" }))),

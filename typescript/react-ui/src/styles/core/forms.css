@@ -5,37 +5,37 @@
  */
 
 /* Form container */
-.xynoplex-form {
+.xynolog-form {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
 }
 
-.xynoplex-form__fields {
+.xynolog-form__fields {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
 /* Form field */
-.xynoplex-form__field {
+.xynolog-form__field {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
 }
 
 /* Labels */
-.xynoplex-form__label {
+.xynolog-form__label {
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--xynoplex-text-primary);
+  color: var(--xynolog-text-primary);
 }
 
-[data-theme="dark"] .xynoplex-form__label {
-  color: var(--xynoplex-text-primary);
+[data-theme="dark"] .xynolog-form__label {
+  color: var(--xynolog-text-primary);
 }
 
-/* Note: Form control styles (.xynoplex-input, .xynoplex-textarea, .xynoplex-select, .xynoplex-checkbox)
+/* Note: Form control styles (.xynolog-input, .xynolog-textarea, .xynolog-select, .xynolog-checkbox)
    are defined in dedicated core files:
    - core/inputs.css
    - core/textareas.css
@@ -43,18 +43,18 @@
    - core/checkboxes.css */
 
 /* Error messages */
-.xynoplex-form__error {
-  color: var(--xynoplex-color-red-600);
+.xynolog-form__error {
+  color: var(--xynolog-color-red-600);
   font-size: 0.875rem;
   margin-top: 0.25rem;
 }
 
-[data-theme="dark"] .xynoplex-form__error {
-  color: var(--xynoplex-color-red-400);
+[data-theme="dark"] .xynolog-form__error {
+  color: var(--xynolog-color-red-400);
 }
 
 /* Checkbox and radio - wrapper fields */
-.xynoplex-form__checkbox-field {
+.xynolog-form__checkbox-field {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -63,37 +63,37 @@
 /* Inline-flex with a gap so the control never touches its text — the gap on
    the FIELD wrapper only helps when the input is a sibling; several forms
    nest the input inside the label, where only this reaches. */
-.xynoplex-form__checkbox-label {
+.xynolog-form__checkbox-label {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
   font-size: 0.875rem;
-  color: var(--xynoplex-text-primary);
+  color: var(--xynolog-text-primary);
 }
 
 /* Form actions */
-.xynoplex-form__actions {
+.xynolog-form__actions {
   display: flex;
   gap: 1rem;
   margin-top: 1.5rem;
 }
 
 /* Help text */
-.xynoplex-form__help {
+.xynolog-form__help {
   font-size: 0.875rem;
-  color: var(--xynoplex-text-secondary);
+  color: var(--xynolog-text-secondary);
   margin-top: 0.25rem;
 }
 
-[data-theme="dark"] .xynoplex-form__help {
-  color: var(--xynoplex-text-secondary);
+[data-theme="dark"] .xynolog-form__help {
+  color: var(--xynolog-text-secondary);
 }
 
 /* A help sentence scoped to a whole inline row rather than one column —
    full width under the row, so its height never stretches the row's flex
    siblings. Right-aligned: the row's `--end` column is what it describes,
    and the sentence should end beneath that cell. */
-.xynoplex-form__help--row {
+.xynolog-form__help--row {
   margin-top: 0.5rem;
   text-align: right;
 }
@@ -101,35 +101,35 @@
 /* Note: Disabled states for form controls are defined in their respective core files */
 
 /* Panel form elements */
-.xynoplex-panel-label {
+.xynolog-panel-label {
   display: block;
-  font-size: var(--xynoplex-text-sm);
-  font-weight: var(--xynoplex-font-medium);
-  color: var(--xynoplex-text-secondary);
+  font-size: var(--xynolog-text-sm);
+  font-weight: var(--xynolog-font-medium);
+  color: var(--xynolog-text-secondary);
   margin-bottom: 0.5rem;
 }
 
-[data-theme="dark"] .xynoplex-panel-label {
-  color: var(--xynoplex-color-gray-300);
+[data-theme="dark"] .xynolog-panel-label {
+  color: var(--xynolog-color-gray-300);
 }
 
-.xynoplex-panel-hint {
-  font-size: var(--xynoplex-text-xs);
-  color: var(--xynoplex-color-gray-500);
+.xynolog-panel-hint {
+  font-size: var(--xynolog-text-xs);
+  color: var(--xynolog-color-gray-500);
   margin-top: 0.25rem;
 }
 
-[data-theme="dark"] .xynoplex-panel-hint {
-  color: var(--xynoplex-color-gray-400);
+[data-theme="dark"] .xynolog-panel-hint {
+  color: var(--xynolog-color-gray-400);
 }
 
-.xynoplex-panel-divider {
-  border-top: 1px solid var(--xynoplex-color-gray-200);
+.xynolog-panel-divider {
+  border-top: 1px solid var(--xynolog-color-gray-200);
   padding-top: 0.5rem;
 }
 
-[data-theme="dark"] .xynoplex-panel-divider {
-  border-top-color: var(--xynoplex-color-gray-700);
+[data-theme="dark"] .xynolog-panel-divider {
+  border-top-color: var(--xynolog-color-gray-700);
 }
 
 /* ============================================
@@ -137,51 +137,51 @@
    Used in DelegateSection component
    ============================================ */
 
-.xynoplex-form-field {
+.xynolog-form-field {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
   margin-bottom: 1rem;
 }
 
-.xynoplex-form-field__header {
+.xynolog-form-field__header {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.xynoplex-form-field__label {
+.xynolog-form-field__label {
   display: block;
-  font-size: var(--xynoplex-text-sm);
-  font-weight: var(--xynoplex-font-medium);
-  color: var(--xynoplex-text-primary);
+  font-size: var(--xynolog-text-sm);
+  font-weight: var(--xynolog-font-medium);
+  color: var(--xynolog-text-primary);
 }
 
-.xynoplex-form-field__label--with-checkbox {
+.xynolog-form-field__label--with-checkbox {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   cursor: pointer;
 }
 
-.xynoplex-form-field__info {
-  font-size: var(--xynoplex-text-xs);
-  color: var(--xynoplex-text-tertiary);
-  font-weight: var(--xynoplex-font-medium);
+.xynolog-form-field__info {
+  font-size: var(--xynolog-text-xs);
+  color: var(--xynolog-text-tertiary);
+  font-weight: var(--xynolog-font-medium);
 }
 
-.xynoplex-form-field__char-count {
-  font-size: var(--xynoplex-text-xs);
-  color: var(--xynoplex-text-tertiary);
+.xynolog-form-field__char-count {
+  font-size: var(--xynolog-text-xs);
+  color: var(--xynolog-text-tertiary);
   text-align: right;
 }
 
-/* Note: Basic form controls (.xynoplex-textarea, .xynoplex-select, .xynoplex-checkbox)
+/* Note: Basic form controls (.xynolog-textarea, .xynolog-select, .xynolog-checkbox)
    are defined in /styles/core/ as they are fundamental UI elements.
    See: core/textareas.css, core/selects.css, core/checkboxes.css */
 
 /* Inline row — lays out multiple fields side by side */
-.xynoplex-form__inline-row {
+.xynolog-form__inline-row {
   display: flex;
   flex-direction: row;
   gap: 0.75rem;
@@ -189,13 +189,13 @@
 }
 
 /* Inline field variant — participates in an inline row */
-.xynoplex-form__field--inline {
+.xynolog-form__field--inline {
   flex-shrink: 0;
 }
 
 /* A slider column: flexible, but a 0-to-1 range gains nothing past ~26rem —
    uncapped it stretches into a band and drags the row's other columns apart. */
-.xynoplex-form__field--slider {
+.xynolog-form__field--slider {
   flex: 1;
   min-width: 0;
   max-width: 26rem;
@@ -204,7 +204,7 @@
 /* Pushed to the row's end — pairs with a right-aligned `__help--row`
    footnote below, so the sentence ends under the cell it describes instead
    of floating at the far left with a void to its right. */
-.xynoplex-form__field--end {
+.xynolog-form__field--end {
   margin-left: auto;
 }
 
@@ -212,24 +212,24 @@
    content with a floor, not a fixed box: a fixed 5.5rem wraps labels like
    "Max resources" onto two lines, which stretches that column and knocks
    the row's inputs out of alignment. */
-.xynoplex-form__field--narrow {
+.xynolog-form__field--narrow {
   width: auto;
   min-width: 5.5rem;
   flex-shrink: 0;
 }
 
-.xynoplex-form__field--inline > .xynoplex-form__label {
+.xynolog-form__field--inline > .xynolog-form__label {
   white-space: nowrap;
 }
 
 /* A form tall enough to need its own scroll rather than growing its dialog. */
-.xynoplex-form--scrollable {
+.xynolog-form--scrollable {
   overflow-y: auto;
   min-height: 0;
 }
 
 /* A label that sits beside its control instead of above it. */
-.xynoplex-form__label--inline {
+.xynolog-form__label--inline {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;

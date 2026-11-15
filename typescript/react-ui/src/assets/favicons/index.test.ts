@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { faviconPaths, XynoplexFavicon } from './index';
+import { faviconPaths, XynologFavicon } from './index';
 
 describe('favicons index exports', () => {
   describe('faviconPaths', () => {
@@ -49,14 +49,14 @@ describe('favicons index exports', () => {
     });
   });
 
-  describe('XynoplexFavicon component export', () => {
-    it('exports XynoplexFavicon component', () => {
-      expect(XynoplexFavicon).toBeDefined();
-      expect(typeof XynoplexFavicon).toBe('function');
+  describe('XynologFavicon component export', () => {
+    it('exports XynologFavicon component', () => {
+      expect(XynologFavicon).toBeDefined();
+      expect(typeof XynologFavicon).toBe('function');
     });
 
     it('component has expected name', () => {
-      expect(XynoplexFavicon.name).toBe('XynoplexFavicon');
+      expect(XynologFavicon.name).toBe('XynologFavicon');
     });
   });
 
@@ -64,7 +64,7 @@ describe('favicons index exports', () => {
     it('provides complete favicon solution', () => {
       // Verify we have both static paths and dynamic component
       expect(faviconPaths).toBeDefined();
-      expect(XynoplexFavicon).toBeDefined();
+      expect(XynologFavicon).toBeDefined();
 
       // Common use cases
       const icoPath = faviconPaths.ico;
@@ -74,7 +74,7 @@ describe('favicons index exports', () => {
       expect(svgPath).toBe('/favicons/favicon.svg');
 
       // Component can be used for inline rendering
-      expect(typeof XynoplexFavicon).toBe('function');
+      expect(typeof XynologFavicon).toBe('function');
     });
 
     it('covers all standard favicon use cases', () => {

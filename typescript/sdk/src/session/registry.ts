@@ -1,5 +1,5 @@
 /**
- * Process-wide accessor for `XynoplexBrowser`. Constructed lazily on the
+ * Process-wide accessor for `XynologBrowser`. Constructed lazily on the
  * first `getBrowser()` call and held for the host's lifetime — a single
  * instance owns the KB list, identity token, and active-session state,
  * so callers throughout the host get the same view of "which KB am I
@@ -14,22 +14,22 @@
  * instance regardless of the options passed.
  */
 
-import { XynoplexBrowser } from './xynoplex-browser';
+import { XynologBrowser } from './xynolog-browser';
 import type { SessionStorage } from './session-storage';
 import type { SessionFactory } from './session-factory';
 
-let instance: XynoplexBrowser | null = null;
+let instance: XynologBrowser | null = null;
 
 export interface GetBrowserOptions {
   /** Persistence adapter used to construct the singleton on first call. */
   storage: SessionStorage;
-  /** Session factory used to build a `XynoplexSession` per active KB. */
+  /** Session factory used to build a `XynologSession` per active KB. */
   sessionFactory: SessionFactory;
 }
 
-export function getBrowser(options: GetBrowserOptions): XynoplexBrowser {
+export function getBrowser(options: GetBrowserOptions): XynologBrowser {
   if (!instance) {
-    instance = new XynoplexBrowser({
+    instance = new XynologBrowser({
       storage: options.storage,
       sessionFactory: options.sessionFactory,
     });

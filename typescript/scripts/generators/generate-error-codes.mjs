@@ -46,7 +46,7 @@ writeFileSync(
   OUT,
   `// ⚠ GENERATED FILE — do not edit.
 // Source: protocol/specs/src/errors/codes.json → typescript/scripts/generators/generate-error-codes.mjs
-// Rebuilt by \`npm run prebuild\` in @xynoplex/core; gitignored on purpose.
+// Rebuilt by \`npm run prebuild\` in @xynolog/core; gitignored on purpose.
 
 ${union('BusRequestErrorCode', table.busRequest, busCodes)}
 /** The bus code a failure's own wire code (\`CommandError.code\`) becomes. */
@@ -67,7 +67,7 @@ ${ranges.map((entry) => `  if (status >= ${entry.statusFrom}) return ${JSON.stri
 }
 
 ${union('JobErrorCode', table.job, jobCodes)}
-${union('XynoplexSessionErrorCode', table.session, sessionCodes)}
+${union('XynologSessionErrorCode', table.session, sessionCodes)}
 ${union('SignInErrorCode', table.signIn, signInCodes)}
 ${union('IdentityUnverifiableReason', table.kbIdentity, kbIdentityCodes)}
 ${union('SpanRefusal', table.spanRefusal, spanRefusalCodes)}`,

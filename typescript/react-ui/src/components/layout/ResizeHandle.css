@@ -2,7 +2,7 @@
    Resize Handle Component
    ============================================ */
 
-.xynoplex-resize-handle {
+.xynolog-resize-handle {
   position: absolute;
   top: 0;
   bottom: 0;
@@ -12,7 +12,7 @@
   padding: 0;
   cursor: col-resize;
   z-index: 10;
-  transition: background var(--xynoplex-duration-base);
+  transition: background var(--xynolog-duration-base);
 
   /* Ensure sufficient click target for accessibility (WCAG 2.1 Level AA) */
   min-width: 44px;
@@ -20,16 +20,16 @@
 }
 
 /* Position variants */
-.xynoplex-resize-handle--left {
+.xynolog-resize-handle--left {
   left: 0;
 }
 
-.xynoplex-resize-handle--right {
+.xynolog-resize-handle--right {
   right: 0;
 }
 
 /* Visual indicator - always visible but subtle */
-.xynoplex-resize-handle::before {
+.xynolog-resize-handle::before {
   content: '';
   position: absolute;
   top: 50%;
@@ -37,74 +37,74 @@
   transform: translate(-50%, -50%);
   width: 3px;
   height: 48px;
-  background: var(--xynoplex-color-gray-400);
+  background: var(--xynolog-color-gray-400);
   border-radius: 2px;
   opacity: 0.4;
-  transition: all var(--xynoplex-duration-base);
+  transition: all var(--xynolog-duration-base);
 }
 
-.xynoplex-resize-handle:hover::before {
+.xynolog-resize-handle:hover::before {
   opacity: 1;
   height: 64px;
-  background: var(--xynoplex-color-primary-500);
+  background: var(--xynolog-color-primary-500);
 }
 
-[data-theme="dark"] .xynoplex-resize-handle::before {
-  background: var(--xynoplex-color-gray-500);
+[data-theme="dark"] .xynolog-resize-handle::before {
+  background: var(--xynolog-color-gray-500);
 }
 
-[data-theme="dark"] .xynoplex-resize-handle:hover::before {
-  background: var(--xynoplex-color-primary-400);
+[data-theme="dark"] .xynolog-resize-handle:hover::before {
+  background: var(--xynolog-color-primary-400);
 }
 
 /* Hover state */
-.xynoplex-resize-handle:hover {
+.xynolog-resize-handle:hover {
   background: rgba(0, 0, 0, 0.02);
 }
 
-[data-theme="dark"] .xynoplex-resize-handle:hover {
+[data-theme="dark"] .xynolog-resize-handle:hover {
   background: rgba(255, 255, 255, 0.02);
 }
 
 /* Active/dragging state */
-.xynoplex-resize-handle--dragging,
-.xynoplex-resize-handle:active {
+.xynolog-resize-handle--dragging,
+.xynolog-resize-handle:active {
   background: rgba(0, 0, 0, 0.04);
 }
 
-[data-theme="dark"] .xynoplex-resize-handle--dragging,
-[data-theme="dark"] .xynoplex-resize-handle:active {
+[data-theme="dark"] .xynolog-resize-handle--dragging,
+[data-theme="dark"] .xynolog-resize-handle:active {
   background: rgba(255, 255, 255, 0.04);
 }
 
-.xynoplex-resize-handle--dragging::before,
-.xynoplex-resize-handle:active::before {
+.xynolog-resize-handle--dragging::before,
+.xynolog-resize-handle:active::before {
   opacity: 1;
-  background: var(--xynoplex-color-primary-500);
+  background: var(--xynolog-color-primary-500);
 }
 
-[data-theme="dark"] .xynoplex-resize-handle--dragging::before,
-[data-theme="dark"] .xynoplex-resize-handle:active::before {
-  background: var(--xynoplex-color-primary-400);
+[data-theme="dark"] .xynolog-resize-handle--dragging::before,
+[data-theme="dark"] .xynolog-resize-handle:active::before {
+  background: var(--xynolog-color-primary-400);
 }
 
 /* Focus state for keyboard navigation */
-.xynoplex-resize-handle:focus-visible {
-  outline: 2px solid var(--xynoplex-color-primary-500);
+.xynolog-resize-handle:focus-visible {
+  outline: 2px solid var(--xynolog-color-primary-500);
   outline-offset: -2px;
   background: rgba(0, 0, 0, 0.02);
 }
 
-[data-theme="dark"] .xynoplex-resize-handle:focus-visible {
-  outline-color: var(--xynoplex-color-primary-400);
+[data-theme="dark"] .xynolog-resize-handle:focus-visible {
+  outline-color: var(--xynolog-color-primary-400);
   background: rgba(255, 255, 255, 0.02);
 }
 
-.xynoplex-resize-handle:focus-visible::before {
+.xynolog-resize-handle:focus-visible::before {
   opacity: 1;
 }
 
 /* Remove outline when not using keyboard */
-.xynoplex-resize-handle:focus:not(:focus-visible) {
+.xynolog-resize-handle:focus:not(:focus-visible) {
   outline: none;
 }

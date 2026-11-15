@@ -57,7 +57,7 @@ describe('UnifiedHeader Component', () => {
 
       const header = container.querySelector('header');
       expect(header).toBeInTheDocument();
-      expect(header).toHaveClass('xynoplex-unified-header');
+      expect(header).toHaveClass('xynolog-unified-header');
     });
 
     it('should render branding in standalone variant', () => {
@@ -71,8 +71,8 @@ describe('UnifiedHeader Component', () => {
         />
       );
 
-      // Real XynoplexBranding renders "Xynoplex" text
-      expect(screen.getByText('Xynoplex')).toBeInTheDocument();
+      // Real XynologBranding renders "Xynolog" text
+      expect(screen.getByText('Xynolog')).toBeInTheDocument();
     });
 
     it('should default to standalone variant', () => {
@@ -117,7 +117,7 @@ describe('UnifiedHeader Component', () => {
         />
       );
 
-      expect(screen.getByText('Xynoplex')).toBeInTheDocument();
+      expect(screen.getByText('Xynolog')).toBeInTheDocument();
     });
   });
 
@@ -133,7 +133,7 @@ describe('UnifiedHeader Component', () => {
         />
       );
 
-      const floatingDiv = container.querySelector('.xynoplex-unified-header--floating');
+      const floatingDiv = container.querySelector('.xynolog-unified-header--floating');
       expect(floatingDiv).toBeInTheDocument();
     });
 
@@ -148,7 +148,7 @@ describe('UnifiedHeader Component', () => {
         />
       );
 
-      expect(screen.getByText('Xynoplex')).toBeInTheDocument();
+      expect(screen.getByText('Xynolog')).toBeInTheDocument();
     });
 
     it('should not render floating variant when showBranding is false', () => {
@@ -163,7 +163,7 @@ describe('UnifiedHeader Component', () => {
         />
       );
 
-      const floatingDiv = container.querySelector('.xynoplex-unified-header--floating');
+      const floatingDiv = container.querySelector('.xynolog-unified-header--floating');
       expect(floatingDiv).not.toBeInTheDocument();
     });
   });
@@ -179,7 +179,7 @@ describe('UnifiedHeader Component', () => {
         />
       );
 
-      expect(screen.getByText('Xynoplex')).toBeInTheDocument();
+      expect(screen.getByText('Xynolog')).toBeInTheDocument();
     });
 
     it('should hide branding when showBranding is false', () => {
@@ -193,7 +193,7 @@ describe('UnifiedHeader Component', () => {
         />
       );
 
-      expect(screen.queryByText('Xynoplex')).not.toBeInTheDocument();
+      expect(screen.queryByText('Xynolog')).not.toBeInTheDocument();
     });
 
     it('should render navigation button for branding', () => {
@@ -353,7 +353,7 @@ describe('UnifiedHeader Component', () => {
       );
 
       // Should render branding with custom link
-      expect(screen.getByText('Xynoplex')).toBeInTheDocument();
+      expect(screen.getByText('Xynolog')).toBeInTheDocument();
     });
 
     it('should default branding link to /', () => {
@@ -366,7 +366,7 @@ describe('UnifiedHeader Component', () => {
         />
       );
 
-      expect(screen.getByText('Xynoplex')).toBeInTheDocument();
+      expect(screen.getByText('Xynolog')).toBeInTheDocument();
     });
 
     it('should pass moderator status to NavigationMenu', () => {
@@ -491,7 +491,7 @@ describe('UnifiedHeader Component', () => {
       );
 
       const header = container.querySelector('header');
-      expect(header).toHaveClass('xynoplex-unified-header');
+      expect(header).toHaveClass('xynolog-unified-header');
     });
 
     it('should have proper floating variant styling', () => {
@@ -505,7 +505,7 @@ describe('UnifiedHeader Component', () => {
         />
       );
 
-      const floatingDiv = container.querySelector('.xynoplex-unified-header--floating');
+      const floatingDiv = container.querySelector('.xynolog-unified-header--floating');
       expect(floatingDiv).toBeInTheDocument();
     });
 
@@ -530,11 +530,11 @@ describe('UnifiedHeader Component', () => {
         />
       );
 
-      const standaloneContent = standaloneContainer.querySelector('.xynoplex-unified-header');
+      const standaloneContent = standaloneContainer.querySelector('.xynolog-unified-header');
       expect(standaloneContent).toBeInTheDocument();
 
       // Embedded variant has branding directly in container
-      const embeddedContent = embeddedContainer.querySelector('.xynoplex-branding');
+      const embeddedContent = embeddedContainer.querySelector('.xynolog-branding');
       expect(embeddedContent).toBeInTheDocument();
     });
   });

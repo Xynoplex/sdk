@@ -1,4 +1,4 @@
-package xynoplex
+package xynolog
 
 // Frame: the knowledge base's vocabulary. Each write is confirmed: it returns
 // when the knowledge base says it is recorded, and fails with the failure it
@@ -7,8 +7,8 @@ package xynoplex
 import (
 	"context"
 
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/bus"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/bus"
 )
 
 // FrameNamespace is the vocabulary: what kinds of things exist.

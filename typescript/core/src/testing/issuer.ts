@@ -1,5 +1,5 @@
 /**
- * `@xynoplex/core/testing/issuer` — an in-process OIDC issuer: it holds signing
+ * `@xynolog/core/testing/issuer` — an in-process OIDC issuer: it holds signing
  * keys, signs tokens with the ones it publishes (or, on request, with one it
  * does not), and hands out the two documents a verifier fetches. The JWKS sits
  * at a path only discovery reveals, so a verifier that guesses

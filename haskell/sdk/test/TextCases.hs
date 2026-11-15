@@ -11,9 +11,9 @@ import Data.Char (digitToInt)
 import Data.Foldable (toList)
 import Data.Text (Text)
 import qualified Data.Text as Text
-import Xynoplex.Errors (TransportError(..))
-import qualified Xynoplex.MediaTypes as Media
-import qualified Xynoplex.Resources as Resources
+import Xynolog.Errors (TransportError(..))
+import qualified Xynolog.MediaTypes as Media
+import qualified Xynolog.Resources as Resources
 import System.FilePath ((</>))
 
 member :: Text -> Value -> Value

@@ -1,7 +1,7 @@
 'use client';
 
 import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react';
-import { useXynoplex } from '../../session/XynoplexProvider';
+import { useXynolog } from '../../session/XynologProvider';
 import { useObservable } from '../../hooks/useObservable';
 import { useTranslations } from '../../contexts/TranslationContext';
 
@@ -24,22 +24,22 @@ import { useTranslations } from '../../contexts/TranslationContext';
  */
 export function KbIdentityConflictModal() {
   const t = useTranslations('KbIdentityConflictModal');
-  const xynoplex = useXynoplex();
-  const signals = useObservable(xynoplex.activeSignals$);
+  const xynolog = useXynolog();
+  const signals = useObservable(xynolog.activeSignals$);
   const conflict = useObservable(signals?.kbIdentityConflict$) ?? null;
-  const kb = useObservable(xynoplex.activeSession$)?.kb ?? null;
+  const kb = useObservable(xynolog.activeSession$)?.kb ?? null;
 
   if (conflict === null) return null;
 
   const acknowledge = () => signals?.acknowledgeKbIdentityConflict();
   const handleReview = () => {
     acknowledge();
-    xynoplex.emit('panel:open', { panel: 'knowledge-base' });
+    xynolog.emit('panel:open', { panel: 'knowledge-base' });
   };
 
   return (
     <Transition appear show>
-      <Dialog as="div" className="xynoplex-modal" onClose={acknowledge}>
+      <Dialog as="div" className="xynolog-modal" onClose={acknowledge}>
         <TransitionChild
           enter="ease-out duration-200"
           enterFrom="opacity-0"
@@ -48,10 +48,10 @@ export function KbIdentityConflictModal() {
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="xynoplex-modal__backdrop" aria-hidden="true" />
+          <div className="xynolog-modal__backdrop" aria-hidden="true" />
         </TransitionChild>
-        <div className="xynoplex-modal__container">
-          <div className="xynoplex-modal__wrapper">
+        <div className="xynolog-modal__container">
+          <div className="xynolog-modal__wrapper">
             <TransitionChild
               enter="ease-out duration-200"
               enterFrom="opacity-0 scale-95"
@@ -60,29 +60,29 @@ export function KbIdentityConflictModal() {
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <DialogPanel className="xynoplex-modal__panel xynoplex-modal__panel--medium">
-                <div className="xynoplex-modal__content">
-                  <DialogTitle className="xynoplex-modal__title xynoplex-modal__title--centered">
+              <DialogPanel className="xynolog-modal__panel xynolog-modal__panel--medium">
+                <div className="xynolog-modal__content">
+                  <DialogTitle className="xynolog-modal__title xynolog-modal__title--centered">
                     {t('title')}
                   </DialogTitle>
-                  <div className="xynoplex-modal__description">
-                    <div className="xynoplex-kb-conflict__fact">
-                      <span className="xynoplex-kb-conflict__fact-label">{t('registeredIdentity')}</span>
-                      {kb?.label && <span className="xynoplex-kb-conflict__kb-name">{kb.label}</span>}
-                      <code className="xynoplex-kb-conflict__did">{conflict.expectedDid}</code>
+                  <div className="xynolog-modal__description">
+                    <div className="xynolog-kb-conflict__fact">
+                      <span className="xynolog-kb-conflict__fact-label">{t('registeredIdentity')}</span>
+                      {kb?.label && <span className="xynolog-kb-conflict__kb-name">{kb.label}</span>}
+                      <code className="xynolog-kb-conflict__did">{conflict.expectedDid}</code>
                     </div>
-                    <div className="xynoplex-kb-conflict__fact">
-                      <span className="xynoplex-kb-conflict__fact-label">{t('answeringNow')}</span>
-                      <code className="xynoplex-kb-conflict__did">{conflict.observedDid}</code>
+                    <div className="xynolog-kb-conflict__fact">
+                      <span className="xynolog-kb-conflict__fact-label">{t('answeringNow')}</span>
+                      <code className="xynolog-kb-conflict__did">{conflict.observedDid}</code>
                     </div>
                     <p>{t('stateCleared')}</p>
                   </div>
                 </div>
-                <div className="xynoplex-modal__actions">
-                  <button type="button" onClick={acknowledge} className="xynoplex-button--secondary xynoplex-button--flex">
+                <div className="xynolog-modal__actions">
+                  <button type="button" onClick={acknowledge} className="xynolog-button--secondary xynolog-button--flex">
                     {t('dismiss')}
                   </button>
-                  <button type="button" onClick={handleReview} className="xynoplex-button--primary xynoplex-button--flex">
+                  <button type="button" onClick={handleReview} className="xynolog-button--primary xynolog-button--flex">
                     {t('reviewKnowledgeBases')}
                   </button>
                 </div>

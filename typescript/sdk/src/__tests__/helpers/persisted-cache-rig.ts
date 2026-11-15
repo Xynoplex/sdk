@@ -9,7 +9,7 @@
  * types: its document write is what can flush a noted place.
  */
 
-import { resourceId, type ResourceId, type components } from '@xynoplex/core';
+import { resourceId, type ResourceId, type components } from '@xynolog/core';
 import { coupledLastEventId } from '../../cache-persister';
 import { cacheKey, lastEventIdKey, personKey } from '../../session/storage';
 import type { InMemorySessionStorage } from '../../session/session-storage';

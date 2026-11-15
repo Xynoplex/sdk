@@ -1,7 +1,7 @@
 import type { Observable } from 'rxjs';
-import type { EventBus, EventMap, FrameRefusal, JobId, components } from '@xynoplex/core';
-import type { ITransport } from '@xynoplex/core';
-import { Bus, BUS_REQUEST_TIMEOUT_MS, BusRequestError, JOB_POLL_MS, JOB_POLL_TIMEOUT_MS } from '@xynoplex/core';
+import type { EventBus, EventMap, FrameRefusal, JobId, components } from '@xynolog/core';
+import type { ITransport } from '@xynolog/core';
+import { Bus, BUS_REQUEST_TIMEOUT_MS, BusRequestError, JOB_POLL_MS, JOB_POLL_TIMEOUT_MS } from '@xynolog/core';
 import { ClaimsObservable, type ClaimOptions } from '../claims';
 import type { JobNamespace as IJobNamespace } from './types';
 

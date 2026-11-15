@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document defines the fundamental axioms and correctness properties that govern annotation rendering in Xynoplex. These principles ensure accurate, predictable, and maintainable annotation behavior across different rendering modes and document types.
+This document defines the fundamental axioms and correctness properties that govern annotation rendering in Xynolog. These principles ensure accurate, predictable, and maintainable annotation behavior across different rendering modes and document types.
 
 ## Fundamental Axioms
 
@@ -127,7 +127,7 @@ The renderer trusts the stored selector and re-anchors only on a verbatim quote 
 
 **Rationale:** The event log is the system of record. An annotation's `TextPositionSelector` and `TextQuoteSelector` are written to agree — `reconcile` finds the span, and `annotationOfSpan` refuses one whose text from offset `start` to offset `end` is not `exact`, at write time. The only legitimate render-time discrepancy is *positional drift*: content shifted above the span after the annotation was written, so the offset is stale but the exact text still exists byte-identical. Re-anchoring to that verbatim match is the W3C-intended use of `TextQuoteSelector`, and is safe because it demands identical text — no judgment call.
 
-**What the renderer does** (`anchorAnnotation` in `@xynoplex/core`):
+**What the renderer does** (`anchorAnnotation` in `@xynolog/core`):
 - `fast-path` — the stored offset already lands on `exact`.
 - `unique-occurrence` / `context-disambiguated` / `position-tiebreaker` — `exact` is found verbatim; prefix/suffix and (for repeated text) position pick the occurrence.
 - `position-fallback` — `exact` is not found verbatim; render at the stored offset and flag low-confidence.
@@ -185,7 +185,7 @@ Property-based tests ([fast-check](https://github.com/dubzzz/fast-check)) cover 
 
 ### Data Model & API
 - [W3C-WEB-ANNOTATION.md](../../../../protocol/contract/W3C-WEB-ANNOTATION.md) - W3C annotation structure and full-stack implementation
-- See `@xynoplex/sdk` package - API client and utilities
+- See `@xynolog/sdk` package - API client and utilities
 
 ### Testing
 - `src/lib/__tests__/text-segmentation.test.ts` - Segmentation axioms

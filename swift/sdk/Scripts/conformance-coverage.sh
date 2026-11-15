@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 llvm-profdata merge -sparse .build/conformance/profiles/*.profraw -o .build/conformance/coverage.profdata
-llvm-cov export -format=lcov .build/conformance/bin/XynoplexWireDriver \
+llvm-cov export -format=lcov .build/conformance/bin/XynologWireDriver \
   -instr-profile=.build/conformance/coverage.profdata \
   -ignore-filename-regex='(/Conformance/|/\.build/)' > .build/conformance/coverage.lcov
 # The build and export run at the same mount point; make filenames repository-relative.

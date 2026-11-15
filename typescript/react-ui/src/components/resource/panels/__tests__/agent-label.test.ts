@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { creatorName, renderAgentLabel, renderAgentLabels } from '../agent-label';
-import type { components } from '@xynoplex/core';
+import type { components } from '@xynolog/core';
 
 type Agent = components['schemas']['Agent'];
 
@@ -9,7 +9,7 @@ describe('renderAgentLabel', () => {
     it('is labeled by its name, then the provider and model it runs', () => {
       const agent: Agent = {
         '@type': 'Software',
-        '@id': 'did:web:example.com:agents:xynoplex-worker',
+        '@id': 'did:web:example.com:agents:xynolog-worker',
         name: 'my-highlighter',
         provider: 'ollama',
         model: 'gemma2:27b',
@@ -38,7 +38,7 @@ describe('renderAgentLabel', () => {
     it('is labeled by its provider and model when it has no profile', () => {
       const agent: Agent = {
         '@type': 'Software',
-        '@id': 'did:web:example.com:agents:xynoplex-worker',
+        '@id': 'did:web:example.com:agents:xynolog-worker',
         provider: 'ollama',
         model: 'gemma2:27b',
       };
@@ -64,9 +64,9 @@ describe('renderAgentLabel', () => {
     it('falls back to its DID when it says nothing of itself, as a generator the record supplies', () => {
       const agent: Agent = {
         '@type': 'Software',
-        '@id': 'did:web:example.com:agents:xynoplex-worker',
+        '@id': 'did:web:example.com:agents:xynolog-worker',
       };
-      expect(renderAgentLabel(agent)).toBe('did:web:example.com:agents:xynoplex-worker');
+      expect(renderAgentLabel(agent)).toBe('did:web:example.com:agents:xynolog-worker');
     });
   });
 

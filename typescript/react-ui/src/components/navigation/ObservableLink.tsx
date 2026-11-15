@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useCallback, useRef, useEffect } from 'react';
-import { useXynoplex } from '../../session/XynoplexProvider';
+import { useXynolog } from '../../session/XynologProvider';
 
 /**
  * Props for ObservableLink component
@@ -60,7 +60,7 @@ export function ObservableLink({
   children,
   ...anchorProps
 }: ObservableLinkProps) {
-  const xynoplex = useXynoplex();
+  const xynolog = useXynolog();
 
   // Store callback in ref to avoid including in dependency arrays
   const onClickRef = useRef(onClick);
@@ -70,14 +70,14 @@ export function ObservableLink({
 
   const handleClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
     // Emit event for observability
-    xynoplex.emit('nav:link-clicked', {
+    xynolog.emit('nav:link-clicked', {
       href,
       label
     });
 
     // Call original onClick if provided
     onClickRef.current?.(e);
-  }, [href, label, xynoplex]);
+  }, [href, label, xynolog]);
 
   return (
     <a

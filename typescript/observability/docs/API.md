@@ -4,9 +4,9 @@ How to start telemetry in a process, and each helper with an example. What the p
 
 ## The three tiers
 
-Xynoplex's observability is layered:
+Xynolog's observability is layered:
 
-- **Tier 1 — `busLog`** (in [`@xynoplex/core`](../../core/README.md)): a 5-op grep-friendly timeline at the `ITransport` contract layer (`EMIT`, `RECV`, `SSE`, `PUT`, `GET`). Off until switched on (`XYNOPLEX_BUS_LOG=1` in Node, `window.__XYNOPLEX_BUS_LOG__ = true` in the browser); one property read per call while off.
+- **Tier 1 — `busLog`** (in [`@xynolog/core`](../../core/README.md)): a 5-op grep-friendly timeline at the `ITransport` contract layer (`EMIT`, `RECV`, `SSE`, `PUT`, `GET`). Off until switched on (`XYNOLOG_BUS_LOG=1` in Node, `window.__XYNOLOG_BUS_LOG__ = true` in the browser); one property read per call while off.
 - **Tier 2 — OpenTelemetry traces** (this package): spans, with W3C trace-context propagation across the bus's HTTP and SSE legs so a single user action produces one trace spanning Browser → gateway → Librarian.
 - **Tier 3 — metrics**: each service's own, and in this package the count of the emits a client sent.
 
@@ -18,7 +18,7 @@ Initialize once at the process entry point, before any spanning code runs:
 
 ```ts
 // main.ts
-import { initObservabilityNode } from '@xynoplex/observability/node';
+import { initObservabilityNode } from '@xynolog/observability/node';
 
 initObservabilityNode({ serviceName: 'my-program', serviceVersion: '1.0.0' });
 
@@ -28,7 +28,7 @@ initObservabilityNode({ serviceName: 'my-program', serviceVersion: '1.0.0' });
 Then use the universal API anywhere:
 
 ```ts
-import { withSpan } from '@xynoplex/observability';
+import { withSpan } from '@xynolog/observability';
 
 await withSpan('handle-request', async (span) => {
   span.setAttribute('user.id', userId);
@@ -40,16 +40,16 @@ What is exported, and where, is read from the standard `OTEL_*` variables. They 
 
 ## In the browser
 
-The universal API below runs in the Browser as it does in Node: the Browser bundles it through `@xynoplex/http-transport`, which is why `index.ts` imports no Node builtins. The Browser's tracer itself — the web SDK and its exporter — is the Browser's own (`images/browser/src/lib/tracing.ts`), so no server that traces carries a browser SDK. Spans created in the SPA propagate to the gateway in the `traceparent` header of each bus emit; the gateway hands trace context back to subscribers in the trace field of each SSE payload.
+The universal API below runs in the Browser as it does in Node: the Browser bundles it through `@xynolog/http-transport`, which is why `index.ts` imports no Node builtins. The Browser's tracer itself — the web SDK and its exporter — is the Browser's own (`images/browser/src/lib/tracing.ts`), so no server that traces carries a browser SDK. Spans created in the SPA propagate to the gateway in the `traceparent` header of each bus emit; the gateway hands trace context back to subscribers in the trace field of each SSE payload.
 
 ## Universal API
 
-Everything below is from the main `@xynoplex/observability` import — works identically in Node and the browser.
+Everything below is from the main `@xynolog/observability` import — works identically in Node and the browser.
 
 ### Spans
 
 ```ts
-import { withSpan, SpanKind } from '@xynoplex/observability';
+import { withSpan, SpanKind } from '@xynolog/observability';
 
 // Generic async wrapper
 await withSpan('parse-document', () => parser.parse(buf));
@@ -64,7 +64,7 @@ await withSpan(
 
 ### Trace-context propagation
 
-Trace context crosses the bus in two forms. An outbound request (a bus emit, a content read or write) carries the active span in its W3C `traceparent` header, read with `getActiveTraceparent`. A frame the gateway relays over SSE has no headers of its own, so the gateway puts the context in the payload's trace field, which the bus registry names and `@xynoplex/core` exports as `TRACE_FIELD`: the receiver takes it off with `extractTraceparent` and runs its handlers under it with `withTraceparent`. `@xynoplex/http-transport` does both, so code that goes through a transport calls none of these:
+Trace context crosses the bus in two forms. An outbound request (a bus emit, a content read or write) carries the active span in its W3C `traceparent` header, read with `getActiveTraceparent`. A frame the gateway relays over SSE has no headers of its own, so the gateway puts the context in the payload's trace field, which the bus registry names and `@xynolog/core` exports as `TRACE_FIELD`: the receiver takes it off with `extractTraceparent` and runs its handlers under it with `withTraceparent`. `@xynolog/http-transport` does both, so code that goes through a transport calls none of these:
 
 ```ts
 import {
@@ -72,7 +72,7 @@ import {
   withTraceparent,
   getActiveTraceparent,
   withSpan,
-} from '@xynoplex/observability';
+} from '@xynolog/observability';
 
 // Receiving: take the trace field off the payload and continue its trace.
 const carrier = extractTraceparent(incoming);
@@ -92,7 +92,7 @@ if (trace) {
 Work that is nobody's to continue runs under `withoutTrace`: a span started inside it, and every continuation it registers, has no parent, whatever span is active where it is called. A worker's claim is made so, because it belongs to no job, and the code that settled the job before it is inside that job's span:
 
 ```ts
-import { withoutTrace, withSpan } from '@xynoplex/observability';
+import { withoutTrace, withSpan } from '@xynolog/observability';
 
 await withSpan('job', async () => {
   // A child of `job`.
@@ -104,10 +104,10 @@ await withSpan('job', async () => {
 
 ### Metrics
 
-Each service emits its own metrics: the gateway, the dispatcher and the Archivist are Rust, and the others are Python. The one recorder here is the transport's, `xynoplex.bus.sent`:
+Each service emits its own metrics: the gateway, the dispatcher and the Archivist are Rust, and the others are Python. The one recorder here is the transport's, `xynolog.bus.sent`:
 
 ```ts
-import { recordBusSent } from '@xynoplex/observability';
+import { recordBusSent } from '@xynolog/observability';
 
 recordBusSent('mark:create-request', resourceId);  // channel, and the scope it was sent in
 ```

@@ -1,6 +1,6 @@
 //go:build unix
 
-package xynoplex
+package xynolog
 
 import (
 	"os"

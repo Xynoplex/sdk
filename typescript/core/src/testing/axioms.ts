@@ -1,18 +1,18 @@
 /**
- * `@xynoplex/core/testing/axioms` — the property-based axiom harnesses.
+ * `@xynolog/core/testing/axioms` — the property-based axiom harnesses.
  *
- * A separate entry from `@xynoplex/core/testing` so that `fast-check` —
+ * A separate entry from `@xynolog/core/testing` so that `fast-check` —
  * declared an OPTIONAL peerDependency — is only loaded by consumers who
  * actually run the axioms. The axiom modules do a top-level `import * as fc`;
  * bundled with the doubles, importing ANYTHING from `/testing` (including
- * transitively, via `@xynoplex/sdk/testing` → `createTestSession`) would pull
+ * transitively, via `@xynolog/sdk/testing` → `createTestSession`) would pull
  * fast-check at import time, and npm does not install optional peers, so an
  * out-of-monorepo consumer's test run would die with
  * `Cannot find package 'fast-check'`. The double's entry never touches fc.
  *
  * Importing this module REQUIRES `fast-check` in your devDependencies.
  * Test doubles with no fast-check requirement — `FaultyTransport` and its
- * scripting surface — stay at `@xynoplex/core/testing`.
+ * scripting surface — stay at `@xynolog/core/testing`.
  *
  * Two axiom families: the StateUnit axioms (per-unit safety: dispose is
  * idempotent and total, subscribers complete, instances are isolated) and the

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Build Xynoplex packages and apps.
+# Build Xynolog packages and apps.
 #
 # Usage:
 #   ./typescript/scripts/build.sh                        # build everything
@@ -94,7 +94,7 @@ if [[ -n "$START_FROM" ]]; then
 elif [[ -n "$PACKAGES" ]]; then
   IFS=',' read -ra TARGETS <<< "$PACKAGES"
   # Validate, exactly as --start-from above does. Without this an unmatched
-  # name — a typo, or the SCOPED form `@xynoplex/react-ui` when this script
+  # name — a typo, or the SCOPED form `@xynolog/react-ui` when this script
   # wants the bare `react-ui` — silently selects nothing: both build sections
   # run empty, "BUILD COMPLETE ✓" prints, publish pushes the PREVIOUS dist,
   # and the resulting image is stale in a way that only shows up as "my change
@@ -113,8 +113,8 @@ elif [[ -n "$PACKAGES" ]]; then
     echo "Valid packages: ${ALL[*]}" >&2
     echo "" >&2
     for u in "${UNKNOWN[@]}"; do
-      if [[ "$u" == @xynoplex/* ]]; then
-        echo "  '$u' looks scoped — this flag takes BARE names: '${u#@xynoplex/}'" >&2
+      if [[ "$u" == @xynolog/* ]]; then
+        echo "  '$u' looks scoped — this flag takes BARE names: '${u#@xynolog/}'" >&2
       fi
     done
     echo "" >&2

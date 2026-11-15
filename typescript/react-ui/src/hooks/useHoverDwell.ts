@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { createHoverDwell, type HoverDwell, type XynoplexSession } from '@xynoplex/sdk';
+import { createHoverDwell, type HoverDwell, type XynologSession } from '@xynolog/sdk';
 
 /**
  * A hover dwell that tells `session` which annotation the pointer rests on.
@@ -13,7 +13,7 @@ import { createHoverDwell, type HoverDwell, type XynoplexSession } from '@xynopl
  *
  * @emits beckon:hover - The annotation when the pointer rests on it, and null when it leaves. Payload: { annotationId: string | null }
  */
-export function useHoverDwell(session: XynoplexSession | null | undefined, delayMs: number): HoverDwell | undefined {
+export function useHoverDwell(session: XynologSession | null | undefined, delayMs: number): HoverDwell | undefined {
   const [dwell, setDwell] = useState<HoverDwell | undefined>(undefined);
 
   useEffect(() => {

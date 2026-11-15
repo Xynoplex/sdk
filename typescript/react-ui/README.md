@@ -1,17 +1,17 @@
-# @xynoplex/react-ui
+# @xynolog/react-ui
 
-[![Tests](https://github.com/Xynoplex/sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/Xynoplex/sdk/actions/workflows/ci.yml?query=branch%3Amain+is%3Asuccess+job%3A%22Test+react-ui%22)
-[![codecov](https://codecov.io/gh/Xynoplex/sdk/graph/badge.svg?component=typescript-react-ui)](https://app.codecov.io/gh/Xynoplex/sdk/components)
-[![npm version](https://img.shields.io/npm/v/@xynoplex/react-ui.svg)](https://www.npmjs.com/package/@xynoplex/react-ui)
-[![npm downloads](https://img.shields.io/npm/dm/@xynoplex/react-ui.svg)](https://www.npmjs.com/package/@xynoplex/react-ui)
-[![License](https://img.shields.io/npm/l/@xynoplex/react-ui.svg)](https://github.com/Xynoplex/sdk/blob/main/LICENSE)
+[![Tests](https://github.com/xynolog/sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/xynolog/sdk/actions/workflows/ci.yml?query=branch%3Amain+is%3Asuccess+job%3A%22Test+react-ui%22)
+[![codecov](https://codecov.io/gh/xynolog/sdk/graph/badge.svg?component=typescript-react-ui)](https://app.codecov.io/gh/xynolog/sdk/components)
+[![npm version](https://img.shields.io/npm/v/@xynolog/react-ui.svg)](https://www.npmjs.com/package/@xynolog/react-ui)
+[![npm downloads](https://img.shields.io/npm/dm/@xynolog/react-ui.svg)](https://www.npmjs.com/package/@xynolog/react-ui)
+[![License](https://img.shields.io/npm/l/@xynolog/react-ui.svg)](https://github.com/xynolog/sdk/blob/main/LICENSE)
 [![WCAG 2.1 AA](https://img.shields.io/badge/WCAG-2.1%20AA-blue.svg)](https://www.w3.org/WAI/WCAG2AA-Conformance)
 
-Framework-agnostic React component library for building Xynoplex knowledge management applications.
+Framework-agnostic React component library for building Xynolog knowledge management applications.
 
 ## Overview
 
-`@xynoplex/react-ui` provides reusable React components, hooks, and utilities for creating Xynoplex applications. The library is designed to be **completely framework-agnostic**, working seamlessly with Next.js, Create React App, Vite, Remix, or any other React framework.
+`@xynolog/react-ui` provides reusable React components, hooks, and utilities for creating Xynolog applications. The library is designed to be **completely framework-agnostic**, working seamlessly with Next.js, Create React App, Vite, Remix, or any other React framework.
 
 ## Key Features
 
@@ -25,19 +25,19 @@ Framework-agnostic React component library for building Xynoplex knowledge manag
 - **Accessibility First** - WCAG compliant with keyboard navigation, screen reader support
 - **Comprehensive Testing** - 1250+ tests with extensive coverage
 - **Annotation System** - Rich annotation and tagging capabilities
-- **Built-in Translations** - one per supported language (`LOCALE_CODES` from `@xynoplex/core`), each loaded on demand
+- **Built-in Translations** - one per supported language (`LOCALE_CODES` from `@xynolog/core`), each loaded on demand
 - **Flexible i18n** - Two modes: built-in locales or a custom translation system. There is no default language
-- **Favicon Assets** - Complete set of Xynoplex branded favicons for all platforms
+- **Favicon Assets** - Complete set of Xynolog branded favicons for all platforms
 
 ## Installation
 
 ```bash
-npm install @xynoplex/react-ui @xynoplex/sdk @xynoplex/core
+npm install @xynolog/react-ui @xynolog/sdk @xynolog/core
 ```
 
-`@xynoplex/sdk` is the primary dependency — it provides the `XynoplexBrowser`,
-`XynoplexClient`, the read-through cache, and the state machinery that
-`@xynoplex/react-ui` renders. `@xynoplex/core` provides the shared API types.
+`@xynolog/sdk` is the primary dependency — it provides the `XynologBrowser`,
+`XynologClient`, the read-through cache, and the state machinery that
+`@xynolog/react-ui` renders. `@xynolog/core` provides the shared API types.
 
 ### Peer Dependencies
 
@@ -54,7 +54,7 @@ Import the styles in your app's main CSS file:
 
 ```css
 /* Your app's main CSS file (e.g., globals.css, app.css) */
-@import '@xynoplex/react-ui/styles';
+@import '@xynolog/react-ui/styles';
 ```
 
 **Requirements:**
@@ -73,28 +73,28 @@ Import the styles in your app's main CSS file:
 
 ```tsx
 import {
-  XynoplexProvider,
+  XynologProvider,
   TranslationProvider,
   ProtectedErrorBoundary,
   SessionEndedModal,
   PermissionDeniedModal,
   type TranslationManager,
-} from '@xynoplex/react-ui';
+} from '@xynolog/react-ui';
 
 function App({ translationManager, children }: { translationManager: TranslationManager; children: React.ReactNode }) {
   // `translationManager` is your implementation (see "Use Translations" below)
   return (
     <TranslationProvider translationManager={translationManager}>
-      {/* XynoplexProvider puts the XynoplexBrowser singleton into context.
-          useXynoplex() hands it back; the active XynoplexSession (and its
-          XynoplexClient) flow from there. */}
-      <XynoplexProvider>
+      {/* XynologProvider puts the XynologBrowser singleton into context.
+          useXynolog() hands it back; the active XynologSession (and its
+          XynologClient) flow from there. */}
+      <XynologProvider>
         <ProtectedErrorBoundary>
           <SessionEndedModal />
           <PermissionDeniedModal />
           {children}
         </ProtectedErrorBoundary>
-      </XynoplexProvider>
+      </XynologProvider>
     </TranslationProvider>
   );
 }
@@ -103,11 +103,11 @@ function App({ translationManager, children }: { translationManager: Translation
 ### 2. Use Components
 
 ```tsx
-import { ResourceViewer, useResourceLoader, useXynoplex, useObservable } from '@xynoplex/react-ui';
+import { ResourceViewer, useResourceLoader, useXynolog, useObservable } from '@xynolog/react-ui';
 
 function Resource({ rId }: { rId: ResourceId }) {
   // The active session (null until one is signed in) and its client
-  const session = useObservable(useXynoplex().activeSession$) ?? null;
+  const session = useObservable(useXynolog().activeSession$) ?? null;
   // browse.resource() and browse.annotations() are SDK live queries backed by
   // the read-through cache; useResourceLoader subscribes to both.
   const { resource, annotations } = useResourceLoader(session?.client ?? null, rId);
@@ -122,7 +122,7 @@ function Resource({ rId }: { rId: ResourceId }) {
 ### 3. Use Translations
 
 ```tsx
-import { TranslationProvider, useTranslations, type TranslationManager } from '@xynoplex/react-ui';
+import { TranslationProvider, useTranslations, type TranslationManager } from '@xynolog/react-ui';
 
 // Reads the nearest TranslationProvider, and throws when there is none
 function SettingsButton() {
@@ -165,11 +165,11 @@ required: a `locale` of react-ui's own, or the host's `translationManager`. reac
 none, so a host that leaves it out does not compile.
 
 ```tsx
-import { ResourceViewer, useResourceLoader } from '@xynoplex/react-ui';
-import type { ResourceId } from '@xynoplex/core';
-import type { XynoplexSession } from '@xynoplex/sdk';
+import { ResourceViewer, useResourceLoader } from '@xynolog/react-ui';
+import type { ResourceId } from '@xynolog/core';
+import type { XynologSession } from '@xynolog/sdk';
 
-function EmbeddedResource({ session, rId, content }: { session: XynoplexSession; rId: ResourceId; content: string }) {
+function EmbeddedResource({ session, rId, content }: { session: XynologSession; rId: ResourceId; content: string }) {
   const { resource, annotations } = useResourceLoader(session.client, rId);
   if (!resource) return null;
   return <ResourceViewer locale="en" session={session} resource={{ ...resource, content }} annotations={annotations} />;
@@ -182,7 +182,7 @@ react-ui's stylesheet, so dark mode needs nothing more.
 
 ## Favicon Assets
 
-The package includes Xynoplex-branded favicons in multiple formats (SVG, PNG, ICO) and a React component for inline usage. See [FAVICON.md](../../../docs/builder/react-ui/FAVICON.md) for complete usage instructions.
+The package includes Xynolog-branded favicons in multiple formats (SVG, PNG, ICO) and a React component for inline usage. See [FAVICON.md](../../../docs/builder/react-ui/FAVICON.md) for complete usage instructions.
 
 ## Architecture
 
@@ -196,11 +196,11 @@ The library follows strict architectural principles:
 ## CSS Architecture
 
 **This package ships plain CSS and no utility framework.** No Tailwind, no
-`@apply`, no utility classes — only `xynoplex-`-prefixed BEM classes, data
+`@apply`, no utility classes — only `xynolog-`-prefixed BEM classes, data
 attributes, and CSS custom properties. The rule exists so the stylesheet drops
 into any stack a host happens to use, and it is enforced, not merely intended:
-`npm run lint:no-utility-classes` plus the `xynoplex/invariants` stylelint rule
-fail on a utility class or a non-`xynoplex-` selector.
+`npm run lint:no-utility-classes` plus the `xynolog/invariants` stylelint rule
+fail on a utility class or a non-`xynolog-` selector.
 
 The rule binds the library, not its hosts. An app is free to use whatever it
 likes — `images/browser` uses Tailwind — and consumes this package by whichever
@@ -208,8 +208,8 @@ route fits:
 
 | Host stack | Consume via |
 |---|---|
-| Anything with PostCSS | `@import '@xynoplex/react-ui/styles'` |
-| Own design system | `@xynoplex/react-ui/styles/variables.css` for the tokens alone |
+| Anything with PostCSS | `@import '@xynolog/react-ui/styles'` |
+| Own design system | `@xynolog/react-ui/styles/variables.css` for the tokens alone |
 
 The styles are organized into a modular, maintainable structure:
 
@@ -234,7 +234,7 @@ See [STYLES.md](../../../docs/builder/react-ui/STYLES.md) for detailed CSS docum
 
 Cross-cutting concerns use the Provider Pattern:
 
-- **XynoplexProvider** - The single React provider for session state. Puts the module-scoped `XynoplexBrowser` singleton into context; `useXynoplex()` returns it. The browser owns the KB list, active KB, and validated session lifecycle — it's the single source of truth for "which KB and what's the session against it." The active `XynoplexSession` (and its `XynoplexClient`) flow from `browser.activeSession$`.
+- **XynologProvider** - The single React provider for session state. Puts the module-scoped `XynologBrowser` singleton into context; `useXynolog()` returns it. The browser owns the KB list, active KB, and validated session lifecycle — it's the single source of truth for "which KB and what's the session against it." The active `XynologSession` (and its `XynologClient`) flow from `browser.activeSession$`.
 - **TranslationProvider** - Internationalization
 - **Routing** - Not a provider: components that link take the host's `Link` and `routes` as props (`LinkComponentProps`, `RouteBuilder`)
 
@@ -242,7 +242,7 @@ See [SESSION.md](../../../docs/builder/react-ui/SESSION.md) for details.
 
 ### Page state machines
 
-`@xynoplex/react-ui` houses the framework-neutral state machinery for the Xynoplex Browser's specific pages and shell. These are RxJS-based factories (no React inside; pure observables and async functions) but they're shaped around the Browser's page taxonomy, so they belong with the components that render them rather than in `@xynoplex/sdk`:
+`@xynolog/react-ui` houses the framework-neutral state machinery for the Xynolog Browser's specific pages and shell. These are RxJS-based factories (no React inside; pure observables and async functions) but they're shaped around the Browser's page taxonomy, so they belong with the components that render them rather than in `@xynolog/sdk`:
 
 - **Shell** — `createShellStateUnit` (toolbar panel state with `'knowledge-base' | 'common' | 'resource'` taxonomy)
 - **Pages** — `createComposePageStateUnit`, `createResourceViewerPageStateUnit`, `createResourceLoaderStateUnit`
@@ -254,7 +254,7 @@ see [SESSION.md](../../../docs/builder/react-ui/SESSION.md#usekbdiscovery--launc
 
 Each lives in `src/features/<feature>/state/` (or `src/state/` for cross-feature ones) next to the components that consume it. The `useStateUnit` hook wires them into React lifecycles.
 
-Use them via `import { createComposePageStateUnit } from '@xynoplex/react-ui'`. UI-shape-neutral state machines (flow VMs, worker adapters, search pipeline) live in `@xynoplex/sdk` and are re-exported from here for convenience.
+Use them via `import { createComposePageStateUnit } from '@xynolog/react-ui'`. UI-shape-neutral state machines (flow VMs, worker adapters, search pipeline) live in `@xynolog/sdk` and are re-exported from here for convenience.
 
 ### API Integration
 
@@ -265,11 +265,11 @@ observables; writes go through the typed namespaces (`client.mark.*`,
 `client.bind.*`, etc.).
 
 ```tsx
-import { useXynoplex, useObservable } from '@xynoplex/react-ui';
-import { readyValue } from '@xynoplex/sdk';
+import { useXynolog, useObservable } from '@xynolog/react-ui';
+import { readyValue } from '@xynolog/sdk';
 
 function Example() {
-  const client = useObservable(useXynoplex().activeSession$)?.client;
+  const client = useObservable(useXynolog().activeSession$)?.client;
 
   // Read: live query over the read-through cache. Emissions are
   // CacheState<ResourceList>; readyValue projects out the ready envelope.
@@ -288,7 +288,7 @@ See [API-INTEGRATION.md](../../../docs/builder/react-ui/API-INTEGRATION.md) for 
 Comprehensive test utilities included:
 
 ```tsx
-import { renderWithProviders, screen } from '@xynoplex/react-ui/test-utils';
+import { renderWithProviders, screen } from '@xynolog/react-ui/test-utils';
 
 it('should render component', () => {
   renderWithProviders(<Toolbar context="simple" activePanel={null} />);
@@ -303,7 +303,7 @@ See [TESTING.md](../../../docs/builder/react-ui/TESTING.md) for details.
 - [SESSION.md](../../../docs/builder/react-ui/SESSION.md) - Provider Pattern and manager interfaces
 - [INTERNATIONALIZATION.md](../../../docs/builder/react-ui/INTERNATIONALIZATION.md) - Translation approach
 - [TESTING.md](../../../docs/builder/react-ui/TESTING.md) - Testing utilities and patterns
-- [API-INTEGRATION.md](../../../docs/builder/react-ui/API-INTEGRATION.md) - Working with the Xynoplex API
+- [API-INTEGRATION.md](../../../docs/builder/react-ui/API-INTEGRATION.md) - Working with the Xynolog API
 - [EVENTS.md](../../../docs/builder/react-ui/EVENTS.md) - Subscribing and emitting from React, and reading the wire log
 - [COMPONENTS.md](../../../docs/builder/react-ui/COMPONENTS.md) - Component library reference
 - [navigation-components.md](../../../docs/builder/react-ui/navigation-components.md) - Navigation components (CollapsibleResourceNavigation, SimpleNavigation, NavigationMenu, ObservableLink)
@@ -321,7 +321,7 @@ See [TESTING.md](../../../docs/builder/react-ui/TESTING.md) for details.
 
 ```tsx
 // src/App.tsx
-import { TranslationProvider, XynoplexProvider, type TranslationManager } from '@xynoplex/react-ui';
+import { TranslationProvider, XynologProvider, type TranslationManager } from '@xynolog/react-ui';
 
 function useTranslationManager(): TranslationManager {
   return {
@@ -332,20 +332,20 @@ function useTranslationManager(): TranslationManager {
 function App({ children }: { children: React.ReactNode }) {
   const translationManager = useTranslationManager();
 
-  // XynoplexProvider defaults to the canonical web setup (WebBrowserStorage +
-  // an HTTP session factory). It reads the module-scoped XynoplexBrowser
+  // XynologProvider defaults to the canonical web setup (WebBrowserStorage +
+  // an HTTP session factory). It reads the module-scoped XynologBrowser
   // singleton via getBrowser() — no client construction here. Sign-in flows
   // adopt the OAuth session onto the browser; browser.activeSession$ then
-  // carries the live XynoplexClient.
+  // carries the live XynologClient.
   return (
     <TranslationProvider translationManager={translationManager}>
-      <XynoplexProvider>{children}</XynoplexProvider>
+      <XynologProvider>{children}</XynologProvider>
     </TranslationProvider>
   );
 }
 ```
 
-The Xynoplex Browser (`images/browser`, Vite + React Router) is the full reference: its
+The Xynolog Browser (`images/browser`, Vite + React Router) is the full reference: its
 `images/browser/src/app/providers.tsx` mounts the whole provider stack, with a translation
 manager built over react-i18next.
 
@@ -376,7 +376,7 @@ python scripts/generate-favicons.py
 
 The script needs Python with `cairosvg` (SVG to PNG) and `Pillow` (the ICO).
 
-The mark is the capital S of "XYNOPLEX" in Orbitron bold, in a cyan to blue gradient (`#00FFFF` to `#0080FF`) on a dark background (`#1a1a1a`).
+The mark is the capital S of "XYNOLOG" in Orbitron bold, in a cyan to blue gradient (`#00FFFF` to `#0080FF`) on a dark background (`#1a1a1a`).
 
 ## Contributing
 
@@ -395,7 +395,7 @@ See [CONTRIBUTING.md](../../../CONTRIBUTING.md) in the repository root for full 
 
 ## Related Packages
 
-- [@xynoplex/sdk](../sdk) - `XynoplexBrowser`, `XynoplexClient`, the read-through cache, and the state machinery. Its [**Developer Guide**](../../../docs/builder/DEVELOPER-GUIDE.md) covers end-to-end use, including embedding this package's `ResourceViewer`.
-- [@xynoplex/core](../core) - Shared API types (`components`) generated from the OpenAPI spec
-- [@xynoplex/http-transport](../http-transport) - HTTP transport (`HttpTransport`, `HttpContentTransport`, `APIError`)
-- [xynoplex-browser](../../../images/browser) - Reference implementation (Vite + React Router)
+- [@xynolog/sdk](../sdk) - `XynologBrowser`, `XynologClient`, the read-through cache, and the state machinery. Its [**Developer Guide**](../../../docs/builder/DEVELOPER-GUIDE.md) covers end-to-end use, including embedding this package's `ResourceViewer`.
+- [@xynolog/core](../core) - Shared API types (`components`) generated from the OpenAPI spec
+- [@xynolog/http-transport](../http-transport) - HTTP transport (`HttpTransport`, `HttpContentTransport`, `APIError`)
+- [xynolog-browser](../../../images/browser) - Reference implementation (Vite + React Router)

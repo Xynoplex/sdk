@@ -10,9 +10,9 @@
  * lives in one place. No aliasing, wrappers, or compatibility layers elsewhere.
  */
 
-import type { components } from '@xynoplex/core';
-import { isHighlight, isComment, isReference, isTag } from '@xynoplex/core';
-import type { Annotation } from '@xynoplex/core';
+import type { components } from '@xynolog/core';
+import { isHighlight, isComment, isReference, isTag } from '@xynolog/core';
+import type { Annotation } from '@xynolog/core';
 type Motivation = components['schemas']['Motivation'];
 
 /**

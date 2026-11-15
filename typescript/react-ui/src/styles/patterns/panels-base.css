@@ -4,55 +4,55 @@
    ============================================ */
 
 /* Base Panel Container */
-.xynoplex-panel {
+.xynolog-panel {
   display: flex;
   flex-direction: column;
-  background: var(--xynoplex-bg-primary);
-  border-radius: var(--xynoplex-panel-border-radius);
+  background: var(--xynolog-bg-primary);
+  border-radius: var(--xynolog-panel-border-radius);
   overflow: hidden;
 }
 
 /* Panel Header */
-.xynoplex-panel-header {
-  padding: var(--xynoplex-panel-padding);
-  background: var(--xynoplex-bg-primary);
-  border-bottom: 1px solid var(--xynoplex-color-gray-200);
+.xynolog-panel-header {
+  padding: var(--xynolog-panel-padding);
+  background: var(--xynolog-bg-primary);
+  border-bottom: 1px solid var(--xynolog-color-gray-200);
 }
 
-[data-theme="dark"] .xynoplex-panel-header {
-  background: var(--xynoplex-bg-secondary);
-  border-bottom-color: var(--xynoplex-color-gray-700);
+[data-theme="dark"] .xynolog-panel-header {
+  background: var(--xynolog-bg-secondary);
+  border-bottom-color: var(--xynolog-color-gray-700);
 }
 
-.xynoplex-panel-header__title {
+.xynolog-panel-header__title {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: var(--xynoplex-panel-title-size);
-  font-weight: var(--xynoplex-panel-title-weight);
-  color: var(--xynoplex-text-primary);
-  margin-bottom: var(--xynoplex-panel-header-margin-bottom);
+  font-size: var(--xynolog-panel-title-size);
+  font-weight: var(--xynolog-panel-title-weight);
+  color: var(--xynolog-text-primary);
+  margin-bottom: var(--xynolog-panel-header-margin-bottom);
 }
 
-.xynoplex-panel-header__text {
+.xynolog-panel-header__text {
   flex: 1;
 }
 
-.xynoplex-panel-header__count {
-  color: var(--xynoplex-text-tertiary);
-  font-size: var(--xynoplex-text-sm);
+.xynolog-panel-header__count {
+  color: var(--xynolog-text-tertiary);
+  font-size: var(--xynolog-text-sm);
 }
 
 /* Panel Footer */
-.xynoplex-panel-footer {
+.xynolog-panel-footer {
   padding: 1rem;
-  border-top: 1px solid var(--xynoplex-color-gray-200);
-  background: var(--xynoplex-bg-primary);
+  border-top: 1px solid var(--xynolog-color-gray-200);
+  background: var(--xynolog-bg-primary);
 }
 
-[data-theme="dark"] .xynoplex-panel-footer {
-  border-top-color: var(--xynoplex-color-gray-700);
-  background: var(--xynoplex-bg-secondary);
+[data-theme="dark"] .xynolog-panel-footer {
+  border-top-color: var(--xynolog-color-gray-700);
+  background: var(--xynolog-bg-secondary);
 }
 
 /* Panel States */
@@ -68,52 +68,52 @@
 
 /* Panel Typography */
 
-.xynoplex-panel-text {
-  font-size: var(--xynoplex-text-sm);
-  font-weight: var(--xynoplex-font-medium);
-  color: var(--xynoplex-text-primary);
+.xynolog-panel-text {
+  font-size: var(--xynolog-text-sm);
+  font-weight: var(--xynolog-font-medium);
+  color: var(--xynolog-text-primary);
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
 }
 
-.xynoplex-panel-text-secondary {
-  font-size: var(--xynoplex-text-xs);
-  color: var(--xynoplex-color-gray-500);
+.xynolog-panel-text-secondary {
+  font-size: var(--xynolog-text-xs);
+  color: var(--xynolog-color-gray-500);
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
 }
 
-[data-theme="dark"] .xynoplex-panel-text-secondary {
-  color: var(--xynoplex-color-gray-400);
+[data-theme="dark"] .xynolog-panel-text-secondary {
+  color: var(--xynolog-color-gray-400);
 }
 
 /* Panel content area (BEM style for motivation panels) */
-.xynoplex-panel__content {
+.xynolog-panel__content {
   flex: 1;
   overflow-y: auto;
-  padding: var(--xynoplex-panel-padding);
+  padding: var(--xynolog-panel-padding);
 }
 
 /* Panel section (for detection/creation sections within panels) */
-.xynoplex-panel__section {
+.xynolog-panel__section {
   margin-bottom: 1.5rem;
 }
 
-.xynoplex-panel__section-title {
+.xynolog-panel__section-title {
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--xynoplex-color-gray-700);
+  color: var(--xynolog-color-gray-700);
   margin-bottom: 0.75rem;
 }
 
-[data-theme="dark"] .xynoplex-panel__section-title {
-  color: var(--xynoplex-color-gray-300);
+[data-theme="dark"] .xynolog-panel__section-title {
+  color: var(--xynolog-color-gray-300);
 }
 
 /* Collapsible section title */
-.xynoplex-panel__section-title--collapsible {
+.xynolog-panel__section-title--collapsible {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -123,150 +123,150 @@
   text-align: left;
   padding: 0.5rem 0.75rem;
   margin: 0 -0.75rem 0.75rem;
-  border-radius: var(--xynoplex-radius-md);
+  border-radius: var(--xynolog-radius-md);
   cursor: pointer;
-  transition: background var(--xynoplex-duration-base);
+  transition: background var(--xynolog-duration-base);
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--xynoplex-color-gray-700);
+  color: var(--xynolog-color-gray-700);
 }
 
-.xynoplex-panel__section-title--collapsible:hover {
-  background: var(--xynoplex-bg-tertiary);
+.xynolog-panel__section-title--collapsible:hover {
+  background: var(--xynolog-bg-tertiary);
 }
 
-[data-theme="dark"] .xynoplex-panel__section-title--collapsible {
-  color: var(--xynoplex-color-gray-300);
+[data-theme="dark"] .xynolog-panel__section-title--collapsible {
+  color: var(--xynolog-color-gray-300);
 }
 
-.xynoplex-panel__section-title--collapsible:focus-visible {
-  outline: 2px solid var(--xynoplex-color-primary-500);
+.xynolog-panel__section-title--collapsible:focus-visible {
+  outline: 2px solid var(--xynolog-color-primary-500);
   outline-offset: 2px;
 }
 
 /* Chevron icon */
-.xynoplex-panel__section-chevron {
+.xynolog-panel__section-chevron {
   font-size: 1.5rem;
-  color: var(--xynoplex-color-gray-500);
-  transition: transform var(--xynoplex-duration-base);
+  color: var(--xynolog-color-gray-500);
+  transition: transform var(--xynolog-duration-base);
   user-select: none;
 }
 
-.xynoplex-panel__section-chevron[data-expanded="true"] {
+.xynolog-panel__section-chevron[data-expanded="true"] {
   transform: rotate(90deg);
 }
 
-[data-theme="dark"] .xynoplex-panel__section-chevron {
-  color: var(--xynoplex-color-gray-400);
+[data-theme="dark"] .xynolog-panel__section-chevron {
+  color: var(--xynolog-color-gray-400);
 }
 
 /* Panel list container (BEM style for motivation panels) */
-.xynoplex-panel__list {
+.xynolog-panel__list {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
 /* Empty state (BEM style for motivation panels) */
-.xynoplex-panel__empty {
+.xynolog-panel__empty {
   padding: 3rem 1rem;
   text-align: center;
-  color: var(--xynoplex-text-tertiary);
-  font-size: var(--xynoplex-text-sm);
+  color: var(--xynolog-text-tertiary);
+  font-size: var(--xynolog-text-sm);
 }
 
-[data-theme="dark"] .xynoplex-panel__empty {
-  color: var(--xynoplex-text-tertiary);
+[data-theme="dark"] .xynolog-panel__empty {
+  color: var(--xynolog-text-tertiary);
 }
 
 /* Panel Item */
-.xynoplex-panel-item {
+.xynolog-panel-item {
   padding: 0.75rem;
-  background: var(--xynoplex-bg-secondary);
-  border-radius: var(--xynoplex-radius-md);
+  background: var(--xynolog-bg-secondary);
+  border-radius: var(--xynolog-radius-md);
   transition: all 0.2s ease;
 }
 
-[data-theme="dark"] .xynoplex-panel-item {
-  background: var(--xynoplex-bg-tertiary);
+[data-theme="dark"] .xynolog-panel-item {
+  background: var(--xynolog-bg-tertiary);
 }
 
-.xynoplex-panel-item:hover {
-  background: var(--xynoplex-bg-tertiary);
+.xynolog-panel-item:hover {
+  background: var(--xynolog-bg-tertiary);
 }
 
-[data-theme="dark"] .xynoplex-panel-item:hover {
-  background: var(--xynoplex-color-gray-700);
+[data-theme="dark"] .xynolog-panel-item:hover {
+  background: var(--xynolog-color-gray-700);
 }
 
-.xynoplex-panel-item--clickable {
+.xynolog-panel-item--clickable {
   cursor: pointer;
 }
 
-.xynoplex-panel-item--clickable:focus-visible {
-  outline: 2px solid var(--xynoplex-color-primary-500);
+.xynolog-panel-item--clickable:focus-visible {
+  outline: 2px solid var(--xynolog-color-primary-500);
   outline-offset: 2px;
 }
 
-.xynoplex-panel-item--selected {
-  border: 1px solid var(--xynoplex-color-primary-500);
-  background: var(--xynoplex-color-primary-50);
+.xynolog-panel-item--selected {
+  border: 1px solid var(--xynolog-color-primary-500);
+  background: var(--xynolog-color-primary-50);
 }
 
-.xynoplex-panel-item--selected:focus-visible {
-  outline: 2px solid var(--xynoplex-color-primary-500);
+.xynolog-panel-item--selected:focus-visible {
+  outline: 2px solid var(--xynolog-color-primary-500);
   outline-offset: 2px;
 }
 
-[data-theme="dark"] .xynoplex-panel-item--selected {
-  border-color: var(--xynoplex-color-primary-400);
+[data-theme="dark"] .xynolog-panel-item--selected {
+  border-color: var(--xynolog-color-primary-400);
   background: rgba(59, 130, 246, 0.1);
 }
 
-[data-theme="dark"] .xynoplex-panel-item--selected:focus-visible {
-  outline-color: var(--xynoplex-color-primary-400);
+[data-theme="dark"] .xynolog-panel-item--selected:focus-visible {
+  outline-color: var(--xynolog-color-primary-400);
 }
 
 /* Panel Divider */
-.xynoplex-panel-divider {
+.xynolog-panel-divider {
   height: 1px;
-  background: var(--xynoplex-border-primary);
+  background: var(--xynolog-border-primary);
   margin: 1rem 0;
 }
 
 /* Login form pulsing border for first-launch nudge */
-@keyframes xynoplex-pulse-border {
-  0%, 100% { border-color: var(--xynoplex-color-primary-300); }
-  50% { border-color: var(--xynoplex-color-primary-600); }
+@keyframes xynolog-pulse-border {
+  0%, 100% { border-color: var(--xynolog-color-primary-300); }
+  50% { border-color: var(--xynolog-color-primary-600); }
 }
 
-.xynoplex-panel__login-form--pulsing {
-  border: 2px solid var(--xynoplex-color-primary-400);
-  border-radius: var(--xynoplex-panel-border-radius);
-  animation: xynoplex-pulse-border 2s ease-in-out infinite;
+.xynolog-panel__login-form--pulsing {
+  border: 2px solid var(--xynolog-color-primary-400);
+  border-radius: var(--xynolog-panel-border-radius);
+  animation: xynolog-pulse-border 2s ease-in-out infinite;
 }
 
 /* A text-weight action inside panel body copy — "retry", "show more" — which
    must read as a control without taking a button's visual weight. */
-.xynoplex-panel__inline-action {
+.xynolog-panel__inline-action {
   padding: 0;
   border: none;
   background: none;
-  color: var(--xynoplex-color-primary-600);
-  font-size: var(--xynoplex-text-sm);
+  color: var(--xynolog-color-primary-600);
+  font-size: var(--xynolog-text-sm);
   cursor: pointer;
   text-decoration: underline;
 }
 
-.xynoplex-panel__inline-action:hover {
-  color: var(--xynoplex-color-primary-700);
+.xynolog-panel__inline-action:hover {
+  color: var(--xynolog-color-primary-700);
 }
 
-.xynoplex-panel__inline-action:focus-visible {
-  outline: 2px solid var(--xynoplex-color-primary-500);
+.xynolog-panel__inline-action:focus-visible {
+  outline: 2px solid var(--xynolog-color-primary-500);
   outline-offset: 2px;
 }
 
-[data-theme="dark"] .xynoplex-panel__inline-action {
-  color: var(--xynoplex-color-primary-400);
+[data-theme="dark"] .xynolog-panel__inline-action {
+  color: var(--xynolog-color-primary-400);
 }

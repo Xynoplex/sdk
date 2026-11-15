@@ -12,27 +12,27 @@
    ============================================ */
 :root {
   /* Light theme colors */
-  --xynoplex-motivation-highlight-primary: var(--xynoplex-color-yellow-500);
-  --xynoplex-motivation-highlight-bg: var(--xynoplex-color-yellow-200);
-  --xynoplex-motivation-highlight-bg-hover: var(--xynoplex-color-yellow-300);
-  --xynoplex-motivation-highlight-border: rgba(251, 191, 36, 0.3);
-  --xynoplex-motivation-highlight-border-hover: rgba(251, 191, 36, 0.5);
-  --xynoplex-motivation-highlight-text: var(--xynoplex-color-gray-900);
+  --xynolog-motivation-highlight-primary: var(--xynolog-color-yellow-500);
+  --xynolog-motivation-highlight-bg: var(--xynolog-color-yellow-200);
+  --xynolog-motivation-highlight-bg-hover: var(--xynolog-color-yellow-300);
+  --xynolog-motivation-highlight-border: rgba(251, 191, 36, 0.3);
+  --xynolog-motivation-highlight-border-hover: rgba(251, 191, 36, 0.5);
+  --xynolog-motivation-highlight-text: var(--xynolog-color-gray-900);
 
   /* Dark theme colors */
-  --xynoplex-motivation-highlight-dark-bg: rgba(113, 63, 18, 0.5);
-  --xynoplex-motivation-highlight-dark-bg-hover: rgba(113, 63, 18, 0.6);
-  --xynoplex-motivation-highlight-dark-text: var(--xynoplex-color-white);
-  --xynoplex-motivation-highlight-dark-outline: rgba(251, 191, 36, 0.6);
-  --xynoplex-motivation-highlight-dark-primary: var(--xynoplex-color-yellow-300);
+  --xynolog-motivation-highlight-dark-bg: rgba(113, 63, 18, 0.5);
+  --xynolog-motivation-highlight-dark-bg-hover: rgba(113, 63, 18, 0.6);
+  --xynolog-motivation-highlight-dark-text: var(--xynolog-color-white);
+  --xynolog-motivation-highlight-dark-outline: rgba(251, 191, 36, 0.6);
+  --xynolog-motivation-highlight-dark-primary: var(--xynolog-color-yellow-300);
 
   /* Panel backgrounds */
-  --xynoplex-motivation-highlight-panel-bg: rgba(254, 249, 195, 0.3);
-  --xynoplex-motivation-highlight-panel-bg-dark: rgba(113, 63, 18, 0.2);
+  --xynolog-motivation-highlight-panel-bg: rgba(254, 249, 195, 0.3);
+  --xynolog-motivation-highlight-panel-bg-dark: rgba(113, 63, 18, 0.2);
 
   /* Button colors */
-  --xynoplex-motivation-highlight-button-bg: var(--xynoplex-color-warning);
-  --xynoplex-motivation-highlight-button-bg-hover: var(--xynoplex-color-warning-dark);
+  --xynolog-motivation-highlight-button-bg: var(--xynolog-color-warning);
+  --xynolog-motivation-highlight-button-bg-hover: var(--xynolog-color-warning-dark);
 }
 
 /* ============================================
@@ -43,90 +43,90 @@
   padding: 0 0.125rem;
   cursor: pointer;
   transition: all 200ms;
-  background: var(--xynoplex-motivation-highlight-bg);
-  color: var(--xynoplex-motivation-highlight-text);
+  background: var(--xynolog-motivation-highlight-bg);
+  color: var(--xynolog-motivation-highlight-text);
 }
 
 .annotation-highlight:hover {
-  background: var(--xynoplex-motivation-highlight-bg-hover);
+  background: var(--xynolog-motivation-highlight-bg-hover);
 }
 
 [data-theme="dark"] .annotation-highlight {
-  background: var(--xynoplex-motivation-highlight-dark-bg);
-  color: var(--xynoplex-motivation-highlight-dark-text);
-  outline: 2px dashed var(--xynoplex-motivation-highlight-dark-outline);
+  background: var(--xynolog-motivation-highlight-dark-bg);
+  color: var(--xynolog-motivation-highlight-dark-text);
+  outline: 2px dashed var(--xynolog-motivation-highlight-dark-outline);
   outline-offset: 1px;
 }
 
 [data-theme="dark"] .annotation-highlight:hover {
-  background: var(--xynoplex-motivation-highlight-dark-bg-hover);
+  background: var(--xynolog-motivation-highlight-dark-bg-hover);
 }
 
 /* ============================================
    Panel Entry Styling
    ============================================ */
-.xynoplex-annotation-entry[data-type="highlight"] {
-  border-color: var(--xynoplex-motivation-highlight-border);
+.xynolog-annotation-entry[data-type="highlight"] {
+  border-color: var(--xynolog-motivation-highlight-border);
 }
 
-.xynoplex-annotation-entry[data-type="highlight"]:hover {
-  background: var(--xynoplex-motivation-highlight-panel-bg);
-  border-color: var(--xynoplex-motivation-highlight-border-hover);
+.xynolog-annotation-entry[data-type="highlight"]:hover {
+  background: var(--xynolog-motivation-highlight-panel-bg);
+  border-color: var(--xynolog-motivation-highlight-border-hover);
 }
 
-[data-theme="dark"] .xynoplex-annotation-entry[data-type="highlight"] {
-  border-color: var(--xynoplex-motivation-highlight-border);
+[data-theme="dark"] .xynolog-annotation-entry[data-type="highlight"] {
+  border-color: var(--xynolog-motivation-highlight-border);
 }
 
-[data-theme="dark"] .xynoplex-annotation-entry[data-type="highlight"]:hover {
-  background: var(--xynoplex-motivation-highlight-panel-bg-dark);
+[data-theme="dark"] .xynolog-annotation-entry[data-type="highlight"]:hover {
+  background: var(--xynolog-motivation-highlight-panel-bg-dark);
 }
 
 /* ============================================
    Quote/Excerpt Styling in Panels
    ============================================ */
-.xynoplex-annotation-entry__quote[data-type="highlight"] {
-  background: var(--xynoplex-motivation-highlight-bg);
-  color: var(--xynoplex-motivation-highlight-text);
+.xynolog-annotation-entry__quote[data-type="highlight"] {
+  background: var(--xynolog-motivation-highlight-bg);
+  color: var(--xynolog-motivation-highlight-text);
   padding: 0.375rem 0.5rem;
-  border-radius: var(--xynoplex-radius-sm);
+  border-radius: var(--xynolog-radius-sm);
 }
 
-[data-theme="dark"] .xynoplex-annotation-entry__quote[data-type="highlight"] {
-  background: var(--xynoplex-motivation-highlight-dark-bg);
-  color: var(--xynoplex-motivation-highlight-dark-primary);
+[data-theme="dark"] .xynolog-annotation-entry__quote[data-type="highlight"] {
+  background: var(--xynolog-motivation-highlight-dark-bg);
+  color: var(--xynolog-motivation-highlight-dark-primary);
 }
 
 /* ============================================
    Button Styling
    ============================================ */
-.xynoplex-button[data-variant="delegate"][data-type="highlight"] {
-  background: linear-gradient(to right, var(--xynoplex-motivation-highlight-button-bg), var(--xynoplex-motivation-highlight-button-bg-hover));
-  color: var(--xynoplex-color-white) !important;
-  border: 1px solid var(--xynoplex-motivation-highlight-border);
+.xynolog-button[data-variant="delegate"][data-type="highlight"] {
+  background: linear-gradient(to right, var(--xynolog-motivation-highlight-button-bg), var(--xynolog-motivation-highlight-button-bg-hover));
+  color: var(--xynolog-color-white) !important;
+  border: 1px solid var(--xynolog-motivation-highlight-border);
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
-.xynoplex-button[data-variant="delegate"][data-type="highlight"]:hover {
-  background: var(--xynoplex-motivation-highlight-button-bg-hover);
-  border-color: var(--xynoplex-motivation-highlight-primary);
+.xynolog-button[data-variant="delegate"][data-type="highlight"]:hover {
+  background: var(--xynolog-motivation-highlight-button-bg-hover);
+  border-color: var(--xynolog-motivation-highlight-primary);
 }
 
-[data-theme="dark"] .xynoplex-button[data-variant="delegate"][data-type="highlight"] {
-  border-color: var(--xynoplex-motivation-highlight-dark-outline);
+[data-theme="dark"] .xynolog-button[data-variant="delegate"][data-type="highlight"] {
+  border-color: var(--xynolog-motivation-highlight-dark-outline);
 }
 
-[data-theme="dark"] .xynoplex-button[data-variant="delegate"][data-type="highlight"]:hover {
-  border-color: var(--xynoplex-motivation-highlight-dark-primary);
+[data-theme="dark"] .xynolog-button[data-variant="delegate"][data-type="highlight"]:hover {
+  border-color: var(--xynolog-motivation-highlight-dark-primary);
 }
 
-.xynoplex-button[data-variant="delegate"][data-type="highlight"]:focus-visible {
-  outline: 2px solid var(--xynoplex-motivation-highlight-primary);
+.xynolog-button[data-variant="delegate"][data-type="highlight"]:focus-visible {
+  outline: 2px solid var(--xynolog-motivation-highlight-primary);
   outline-offset: 2px;
 }
 
-[data-theme="dark"] .xynoplex-button[data-variant="delegate"][data-type="highlight"]:focus-visible {
-  outline: 2px solid var(--xynoplex-motivation-highlight-dark-primary);
+[data-theme="dark"] .xynolog-button[data-variant="delegate"][data-type="highlight"]:focus-visible {
+  outline: 2px solid var(--xynolog-motivation-highlight-dark-primary);
   outline-offset: 2px;
 }

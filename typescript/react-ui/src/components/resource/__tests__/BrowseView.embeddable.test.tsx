@@ -2,7 +2,7 @@
  * The embeddable viewer — BrowseView renders provider-free.
  *
  * BrowseView takes its `session` + `sparkleAnnotationIds` as props (not
- * `useXynoplex()` / `useResourceAnnotations()`), and subscribes to session-scoped
+ * `useXynolog()` / `useResourceAnnotations()`), and subscribes to session-scoped
  * beckon events on `session.client`. `AnnotateToolbar` is mocked here — its
  * own provider-freedom is pinned in AnnotateView.embeddable.test.tsx — so this
  * spec isolates BrowseView's body.
@@ -10,10 +10,10 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import type { XynoplexSession } from '@xynoplex/sdk';
+import type { XynologSession } from '@xynolog/sdk';
 import { englishTranslationManager } from '../../../test-utils';
 import { BrowseView } from '../BrowseView';
-import { resourceId, EventBus } from '@xynoplex/core';
+import { resourceId, EventBus } from '@xynolog/core';
 
 // AnnotateToolbar is stubbed out so this spec exercises only BrowseView's own
 // provider-freedom.
@@ -23,14 +23,14 @@ vi.mock('remark-gfm', () => ({ default: () => ({}) }));
 
 const emptyAnnotations = { highlights: [], references: [], assessments: [], comments: [], tags: [] };
 
-function fakeSession(): XynoplexSession {
+function fakeSession(): XynologSession {
   return {
     client: {
       bus: new EventBus(),
       browse: { click: vi.fn() },
       beckon: { hover: vi.fn() },
     },
-  } as unknown as XynoplexSession;
+  } as unknown as XynologSession;
 }
 
 describe('BrowseView — embeddable (session prop, no providers)', () => {

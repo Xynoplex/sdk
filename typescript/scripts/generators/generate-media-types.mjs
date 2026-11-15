@@ -46,7 +46,7 @@ writeFileSync(
 //
 // Source:    protocol/specs/src/media-types/registry.json (the AUTHORITY)
 // Generator: typescript/scripts/generators/generate-media-types.mjs
-// Regen:     npm run generate:media-types --workspace=@xynoplex/core
+// Regen:     npm run generate:media-types --workspace=@xynolog/core
 
 ${VOCABULARIES.map((v) => `export type ${typeName[v]} = ${union(table[v])};`).join('\n')}
 

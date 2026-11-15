@@ -1,13 +1,13 @@
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { filter, map, share } from 'rxjs/operators';
-import { busLog, busLogEnabled, uuidV4, retryWithBackoff, withinDeadline, UnansweredError, retryAfterMs, equalJitter, BusRequestError, XynoplexError, FrameRefusal, faultOf, said, isObject, RESOURCE_SCOPED_CHANNELS, type BusEnvelope, type BusFrame, type BusPrimitive, type components, type ConnectionState, type EventMap, type Fault, type ResourceId, type RetryPolicy, type StateUnit, type TraceCarrier, type TransportErrorCode, DEGRADED_THRESHOLD_MS, EMIT_RETRY, EMIT_TIMEOUT_MS, HTTP_REQUEST_TIMEOUT_MS, LAZY_REMOVE_MS, LINGER_MS, MAX_RECONNECT_MS, RECONNECT_DEBOUNCE_MS, RECONNECT_MS, SEEN_EVENT_IDS_COUNT, STREAM_OPEN_TIMEOUT_MS } from '@xynoplex/core';
+import { busLog, busLogEnabled, uuidV4, retryWithBackoff, withinDeadline, UnansweredError, retryAfterMs, equalJitter, BusRequestError, XynologError, FrameRefusal, faultOf, said, isObject, RESOURCE_SCOPED_CHANNELS, type BusEnvelope, type BusFrame, type BusPrimitive, type components, type ConnectionState, type EventMap, type Fault, type ResourceId, type RetryPolicy, type StateUnit, type TraceCarrier, type TransportErrorCode, DEGRADED_THRESHOLD_MS, EMIT_RETRY, EMIT_TIMEOUT_MS, HTTP_REQUEST_TIMEOUT_MS, LAZY_REMOVE_MS, LINGER_MS, MAX_RECONNECT_MS, RECONNECT_DEBOUNCE_MS, RECONNECT_MS, SEEN_EVENT_IDS_COUNT, STREAM_OPEN_TIMEOUT_MS } from '@xynolog/core';
 import {
   SpanKind,
   extractTraceparent,
   getActiveTraceparent,
   withSpan,
   withTraceparent,
-} from '@xynoplex/observability';
+} from '@xynolog/observability';
 import { APIError, gatewayWords, refusalBody, retryableUnlessRefused } from './api-error';
 import { MALFORMED } from './declared-body';
 import { fetchOf } from './fetch-of';
@@ -172,7 +172,7 @@ export interface ActorStateUnit extends StateUnit, Omit<BusPrimitive, 'subscribe
    * wrong with it. Network-level failures (fetch rejections) have no
    * status and do not emit here — they stay on the reconnect path.
    */
-  errors$: Observable<XynoplexError>;
+  errors$: Observable<XynologError>;
   /** With `scope`: upsert channels into that scope's matrix entry. Without: global channels. */
   addChannels(channels: readonly (keyof EventMap)[], scope?: ResourceId): void;
   /** With `scope`: remove channels from that scope's entry (empty entry drops the scope). Without: global channels. */
@@ -235,7 +235,7 @@ export function createActorStateUnit(options: ActorStateUnitOptions): ActorState
 
   const events$ = new Subject<Received | Refused>();
   const state$ = new BehaviorSubject<ConnectionState>('initial');
-  const errors$ = new Subject<XynoplexError>();
+  const errors$ = new Subject<XynologError>();
   let currentState: ConnectionState = 'initial';
   let degradedTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -649,7 +649,7 @@ export function createActorStateUnit(options: ActorStateUnitOptions): ActorState
             if (typeof parsed === 'string') {
               if (currentId !== undefined) rememberEventId(currentId);
               // What names no reader is told to the failure report.
-              errors$.next(new XynoplexError(`the stream carried what is not a frame: ${parsed}`, 'error' satisfies TransportErrorCode));
+              errors$.next(new XynologError(`the stream carried what is not a frame: ${parsed}`, 'error' satisfies TransportErrorCode));
             } else if (parsed !== undefined && 'fault' in parsed) {
               if (currentId !== undefined) rememberEventId(currentId);
               events$.next(parsed);

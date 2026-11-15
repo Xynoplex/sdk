@@ -11,12 +11,12 @@
  *
  * Designed to live below the Save button in the compose form so the
  * visual association with the action that triggered the upload is
- * direct. Uses the existing `.xynoplex-progress` styles in
+ * direct. Uses the existing `.xynolog-progress` styles in
  * `typescript/react-ui/src/styles/core/progress.css`.
  */
 
 import React from 'react';
-import type { UploadProgress } from '@xynoplex/sdk';
+import type { UploadProgress } from '@xynolog/sdk';
 
 export interface UploadProgressBarProps {
   progress: UploadProgress | null;
@@ -36,12 +36,12 @@ export function UploadProgressBar({ progress, label }: UploadProgressBarProps): 
 
   if (progress.phase === 'started') {
     return (
-      <div className="xynoplex-progress-wrapper" role="status" aria-live="polite">
-        <div className="xynoplex-progress__label">
+      <div className="xynolog-progress-wrapper" role="status" aria-live="polite">
+        <div className="xynolog-progress__label">
           <span>{label}: starting…</span>
         </div>
-        <div className="xynoplex-progress xynoplex-progress--indeterminate">
-          <div className="xynoplex-progress__fill" />
+        <div className="xynolog-progress xynolog-progress--indeterminate">
+          <div className="xynolog-progress__fill" />
         </div>
       </div>
     );
@@ -53,8 +53,8 @@ export function UploadProgressBar({ progress, label }: UploadProgressBarProps): 
       ? 0
       : Math.min(100, Math.round((progress.bytesUploaded / progress.totalBytes) * 100));
     return (
-      <div className="xynoplex-progress-wrapper" role="status" aria-live="polite">
-        <div className="xynoplex-progress__label">
+      <div className="xynolog-progress-wrapper" role="status" aria-live="polite">
+        <div className="xynolog-progress__label">
           {indeterminate ? (
             <span>{label}: {formatBytes(progress.bytesUploaded)}…</span>
           ) : (
@@ -65,14 +65,14 @@ export function UploadProgressBar({ progress, label }: UploadProgressBarProps): 
           )}
         </div>
         <div
-          className={`xynoplex-progress${indeterminate ? ' xynoplex-progress--indeterminate' : ''}`}
+          className={`xynolog-progress${indeterminate ? ' xynolog-progress--indeterminate' : ''}`}
           role="progressbar"
           aria-valuemin={0}
           aria-valuemax={indeterminate ? undefined : 100}
           aria-valuenow={indeterminate ? undefined : percentage}
         >
           <div
-            className="xynoplex-progress__fill"
+            className="xynolog-progress__fill"
             style={indeterminate ? undefined : { width: `${percentage}%` }}
           />
         </div>
@@ -82,12 +82,12 @@ export function UploadProgressBar({ progress, label }: UploadProgressBarProps): 
 
   // phase === 'finished'
   return (
-    <div className="xynoplex-progress-wrapper" role="status" aria-live="polite">
-      <div className="xynoplex-progress__label">
+    <div className="xynolog-progress-wrapper" role="status" aria-live="polite">
+      <div className="xynolog-progress__label">
         <span>{label}: uploaded</span>
       </div>
-      <div className="xynoplex-progress" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={100}>
-        <div className="xynoplex-progress__fill xynoplex-progress__fill--success" style={{ width: '100%' }} />
+      <div className="xynolog-progress" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={100}>
+        <div className="xynolog-progress__fill xynolog-progress__fill--success" style={{ width: '100%' }} />
       </div>
     </div>
   );

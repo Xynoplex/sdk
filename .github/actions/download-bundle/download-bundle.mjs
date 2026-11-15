@@ -17,13 +17,13 @@ if (languages.length === 0 || new Set(languages).size !== languages.length) fail
 const workspace = process.env.GITHUB_WORKSPACE;
 if (!workspace) fail('GITHUB_WORKSPACE is not set');
 const outputDir = resolve(workspace, '.local', 'sdk-artifacts', `${tag}-${sdkCommit}`);
-const temporaryDir = join(tmpdir(), `xynoplex-sdk-${process.pid}`);
-const archive = join(temporaryDir, `xynoplex-sdk-artifacts-${tag}.tar.gz`);
+const temporaryDir = join(tmpdir(), `xynolog-sdk-${process.pid}`);
+const archive = join(temporaryDir, `xynolog-sdk-artifacts-${tag}.tar.gz`);
 mkdirSync(temporaryDir, { recursive: true });
 mkdirSync(outputDir, { recursive: true });
 
 try {
-  const url = `https://github.com/Xynoplex/sdk/releases/download/${tag}/xynoplex-sdk-artifacts-${tag}.tar.gz`;
+  const url = `https://github.com/xynolog/sdk/releases/download/${tag}/xynolog-sdk-artifacts-${tag}.tar.gz`;
   execFileSync('curl', ['--fail', '--location', '--silent', '--show-error', url, '--output', archive], { stdio: 'inherit' });
   const actualArchiveSha256 = hash(readFileSync(archive));
   if (actualArchiveSha256 !== archiveSha256) fail(`Bundle archive checksum mismatch: expected ${archiveSha256}, got ${actualArchiveSha256}`);
@@ -31,7 +31,7 @@ try {
 
   const bundle = outputDir;
   const manifest = JSON.parse(readFileSync(join(bundle, 'artifacts.json'), 'utf8'));
-  if (manifest.schema !== 'xynoplex-sdk-artifacts/v2') fail(`Unsupported bundle schema: ${manifest.schema}`);
+  if (manifest.schema !== 'xynolog-sdk-artifacts/v2') fail(`Unsupported bundle schema: ${manifest.schema}`);
   if (manifest.sdk.commit !== sdkCommit) fail(`SDK commit mismatch: expected ${sdkCommit}, got ${manifest.sdk.commit}`);
   if (manifest.protocol.commit !== protocolCommit) fail(`Protocol commit mismatch: expected ${protocolCommit}, got ${manifest.protocol.commit}`);
   for (const language of languages) {
@@ -45,7 +45,7 @@ try {
   }
   if (!process.env.GITHUB_OUTPUT) fail('GITHUB_OUTPUT is not set');
   appendFileSync(process.env.GITHUB_OUTPUT, `path=${bundle}\n`);
-  console.log(`Verified Xynoplex SDK bundle ${tag} at ${bundle}`);
+  console.log(`Verified Xynolog SDK bundle ${tag} at ${bundle}`);
 } finally {
   rmSync(temporaryDir, { recursive: true, force: true });
 }

@@ -1,4 +1,4 @@
-package xynoplex
+package xynolog
 
 // A worker's side of the job queue: Job.Claim.
 //
@@ -48,14 +48,14 @@ package xynoplex
 //	claims := client.Job.Claim(accepts)
 //	defer claims.Close()
 //	for job, err := range claims.All() {
-//		var refused *xynoplex.ClaimRefusal
+//		var refused *xynolog.ClaimRefusal
 //		if errors.As(err, &refused) {
 //			continue // the host judges: bus.unauthorized means stop
 //		}
 //		...
 //		job.Start(ctx)
 //		switch held := job.(type) {
-//		case *xynoplex.HeldMarkJob:
+//		case *xynolog.HeldMarkJob:
 //			held.Complete(ctx, result)
 //		}
 //	}
@@ -77,9 +77,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/bus"
-	"github.com/Xynoplex/sdk/go/internal/kept"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/bus"
+	"github.com/xynolog/sdk/go/internal/kept"
 )
 
 // JobClaimChannels is what a worker's stream names for its claims: the

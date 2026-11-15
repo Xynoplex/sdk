@@ -21,17 +21,17 @@ use std::error::Error;
 use std::sync::Arc;
 use std::time::SystemTime;
 
-const SESSION_PREFIX: &str = "xynoplex.session.";
-const LAST_EVENT_ID_PREFIX: &str = "xynoplex.lastEventId.";
-const CACHE_PREFIX: &str = "xynoplex.cache.";
+const SESSION_PREFIX: &str = "xynolog.session.";
+const LAST_EVENT_ID_PREFIX: &str = "xynolog.lastEventId.";
+const CACHE_PREFIX: &str = "xynolog.cache.";
 /// The registered knowledge bases.
-pub const KNOWLEDGE_BASES_KEY: &str = "xynoplex.knowledgeBases";
+pub const KNOWLEDGE_BASES_KEY: &str = "xynolog.knowledgeBases";
 /// The id of the active one.
-pub const ACTIVE_KEY: &str = "xynoplex.activeKnowledgeBaseId";
+pub const ACTIVE_KEY: &str = "xynolog.activeKnowledgeBaseId";
 /// Each knowledge base's open resources, by its id.
-pub const OPEN_RESOURCES_BY_KB_KEY: &str = "xynoplex.openResourcesByKb";
+pub const OPEN_RESOURCES_BY_KB_KEY: &str = "xynolog.openResourcesByKb";
 /// Each knowledge base's last-viewed resource, by its id.
-pub const LAST_VIEWED_RESOURCE_BY_KB_KEY: &str = "xynoplex.lastViewedResourceByKb";
+pub const LAST_VIEWED_RESOURCE_BY_KB_KEY: &str = "xynolog.lastViewedResourceByKb";
 
 /// The key a knowledge base's session is stored under.
 pub fn session_key(kb_id: &str) -> String {

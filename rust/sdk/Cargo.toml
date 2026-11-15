@@ -1,12 +1,12 @@
 [package]
-name = "xynoplex"
+name = "xynolog"
 version.workspace = true
 edition = "2024"
 license = "Apache-2.0"
 repository.workspace = true
-description = "Xynoplex's Rust SDK: the protocol's types, the transport contract and a client of the bus over it, and what a client needs to name its principals and hold its roles, as protocol/specs/ states it."
-documentation = "https://docs.rs/xynoplex"
-keywords = ["xynoplex", "knowledge-base", "annotation", "agents", "sdk"]
+description = "Xynolog's Rust SDK: the protocol's types, the transport contract and a client of the bus over it, and what a client needs to name its principals and hold its roles, as protocol/specs/ states it."
+documentation = "https://docs.rs/xynolog"
+keywords = ["xynolog", "knowledge-base", "annotation", "agents", "sdk"]
 categories = ["api-bindings", "asynchronous"]
 
 [features]
@@ -48,10 +48,10 @@ base64.workspace = true
 # The claims tests read the trace a claim is made in, as a transport would.
 opentelemetry = { workspace = true, features = ["trace"] }
 # This crate's own tests use its testing surface, and read text in every charset a reader decodes.
-xynoplex = { path = ".", features = ["testing", "charsets"] }
+xynolog = { path = ".", features = ["testing", "charsets"] }
 # The multi-threaded runtime is for the tests that hold a unit to the order it hears things in.
 tokio = { workspace = true, features = ["test-util", "rt-multi-thread"] }
 
 [build-dependencies]
-xynoplex-codegen.workspace = true
+xynolog-codegen.workspace = true
 serde_json.workspace = true

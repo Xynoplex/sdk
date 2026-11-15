@@ -9,7 +9,7 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { textOffsets } from '@xynoplex/core';
+import { textOffsets } from '@xynolog/core';
 import {
   buildSourceToRenderedMap,
   buildTextNodeIndex,

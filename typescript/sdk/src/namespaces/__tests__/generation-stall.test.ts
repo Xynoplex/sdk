@@ -13,12 +13,12 @@
  */
 
 import { describe, it, expect, afterEach, vi } from 'vitest';
-import { EventBus, GENERATION_STALL_FLOOR_MS, resourceId, jobId, userId } from '@xynoplex/core';
-import type { ITransport, IContentTransport } from '@xynoplex/core';
+import { EventBus, GENERATION_STALL_FLOOR_MS, resourceId, jobId, userId } from '@xynolog/core';
+import type { ITransport, IContentTransport } from '@xynolog/core';
 import { resourceContextFor } from '../../__tests__/fixtures/gathered-context';
 import { YieldNamespace } from '../yield';
 import { createYieldStateUnit } from '../../state/flows/yield-state-unit';
-import type { XynoplexClient } from '../../client';
+import type { XynologClient } from '../../client';
 import { inMemoryTransport } from '../../__tests__/helpers/in-memory-transport';
 import { GenerationStallError, deriveStallDeadlineMs } from '../generation-stall';
 
@@ -284,7 +284,7 @@ describe('generation stall guard', () => {
   it("the unit's drive path shares the same guard: stall cancels and clears the display", async () => {
     vi.useFakeTimers();
     const { y, emitSpy } = harness();
-    const client = { yield: y } as unknown as XynoplexClient;
+    const client = { yield: y } as unknown as XynologClient;
     const unit = createYieldStateUnit(client, 'en');
     const gen: boolean[] = [];
     const prog: unknown[] = [];

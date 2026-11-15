@@ -39,10 +39,10 @@ export function ResourceTagsInline({
       return null;
     }
     return (
-      <div className="xynoplex-resource-tags-inline">
-        <div className="xynoplex-resource-tags-list">
+      <div className="xynolog-resource-tags-inline">
+        <div className="xynolog-resource-tags-list">
           {tags.map((tag) => (
-            <span key={tag} className="xynoplex-resource-tag">
+            <span key={tag} className="xynolog-resource-tag">
               {tag}
             </span>
           ))}
@@ -68,14 +68,14 @@ export function ResourceTagsInline({
   };
 
   return (
-    <div className="xynoplex-resource-tags-inline xynoplex-resource-tags-inline--editing">
-      <div className="xynoplex-resource-tags-list">
+    <div className="xynolog-resource-tags-inline xynolog-resource-tags-inline--editing">
+      <div className="xynolog-resource-tags-list">
         {tags.map((tag) => (
-          <span key={tag} className="xynoplex-resource-tag xynoplex-resource-tag--editable">
+          <span key={tag} className="xynolog-resource-tag xynolog-resource-tag--editable">
             {tag}
             <button
               type="button"
-              className="xynoplex-resource-tag__remove"
+              className="xynolog-resource-tag__remove"
               aria-label={`Remove ${tag}`}
               disabled={inert}
               onClick={() => void commit(tags.filter((t) => t !== tag))}
@@ -87,7 +87,7 @@ export function ResourceTagsInline({
         {vocabulary && (
           <button
             type="button"
-            className="xynoplex-resource-tag xynoplex-resource-tag--add"
+            className="xynolog-resource-tag xynolog-resource-tag--add"
             aria-label="Add tag"
             aria-expanded={picking}
             disabled={inert || candidates.length === 0}
@@ -98,12 +98,12 @@ export function ResourceTagsInline({
         )}
       </div>
       {picking && candidates.length > 0 && (
-        <div className="xynoplex-form__entity-type-buttons">
+        <div className="xynolog-form__entity-type-buttons">
           {candidates.map((entityType) => (
             <button
               key={entityType}
               type="button"
-              className="xynoplex-form__entity-type-button"
+              className="xynolog-form__entity-type-button"
               disabled={inert}
               onClick={() => void commit([...tags, entityType])}
             >

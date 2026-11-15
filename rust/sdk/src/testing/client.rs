@@ -8,8 +8,8 @@
 
 use super::{FaultyTransport, InMemoryContent};
 use crate::channels::BRIDGED_CHANNELS;
-use crate::client::{ClientOptions, XynoplexClient};
-use crate::session::{XynoplexSession, XynoplexSessionConfig, kept_in};
+use crate::client::{ClientOptions, XynologClient};
+use crate::session::{XynologSession, XynologSessionConfig, kept_in};
 use crate::storage::InMemorySessionStorage;
 use crate::transport::GatewayOperations;
 use crate::types::{HttpEndpointProtocol, KbTarget};
@@ -34,18 +34,18 @@ pub struct TestClientOptions {
 
 /// A client, and the doubles it speaks through.
 pub struct TestClient {
-    pub client: Arc<XynoplexClient>,
+    pub client: Arc<XynologClient>,
     pub transport: FaultyTransport,
     pub content: InMemoryContent,
 }
 
-/// A real `XynoplexClient` over a `FaultyTransport` and an `InMemoryContent`.
+/// A real `XynologClient` over a `FaultyTransport` and an `InMemoryContent`.
 pub fn create_test_client(options: TestClientOptions) -> TestClient {
     let transport = options
         .transport
         .unwrap_or_else(|| FaultyTransport::new(BRIDGED_CHANNELS, vec![]));
     let content = options.content.unwrap_or_default();
-    let client = Arc::new(XynoplexClient::new(
+    let client = Arc::new(XynologClient::new(
         Arc::new(transport.clone()),
         Arc::new(content.clone()),
         options.gateway,
@@ -72,8 +72,8 @@ pub struct TestSessionOptions {
 
 /// A session, and what it was built over.
 pub struct TestSession {
-    pub session: XynoplexSession,
-    pub client: Arc<XynoplexClient>,
+    pub session: XynologSession,
+    pub client: Arc<XynologClient>,
     pub transport: FaultyTransport,
     pub content: InMemoryContent,
     /// Where the session keeps its tokens.
@@ -83,7 +83,7 @@ pub struct TestSession {
     pub token: watch::Sender<Option<String>>,
 }
 
-/// A real `XynoplexSession` over a test client. It renews nothing and asks
+/// A real `XynologSession` over a test client. It renews nothing and asks
 /// nobody who it is, so it is ready as soon as it has read its storage, and
 /// holds a token only if its storage held one. Built inside a Tokio runtime.
 pub fn create_test_session(options: TestSessionOptions) -> TestSession {
@@ -103,7 +103,7 @@ pub fn create_test_session(options: TestSessionOptions) -> TestSession {
             HttpEndpointProtocol::Http,
         )
     });
-    let session = XynoplexSession::new(XynoplexSessionConfig {
+    let session = XynologSession::new(XynologSessionConfig {
         kept: kept_in(storage.clone(), &kb.id),
         kb,
         client: client.clone(),

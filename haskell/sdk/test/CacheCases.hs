@@ -8,10 +8,10 @@ import Control.Monad (forM_, unless, void)
 import Data.Aeson (Value, ToJSON(..), object, (.=))
 import Data.IORef
 import Data.Maybe (isJust)
-import qualified Xynoplex.Cache as Cache
-import qualified Xynoplex.Internal.Cache as Internal
-import Xynoplex.Errors (BusRequestError(..))
-import Xynoplex.ErrorCodes (BusRequestCode(BusRequestClosed, BusRequestNotFound))
+import qualified Xynolog.Cache as Cache
+import qualified Xynolog.Internal.Cache as Internal
+import Xynolog.Errors (BusRequestError(..))
+import Xynolog.ErrorCodes (BusRequestCode(BusRequestClosed, BusRequestNotFound))
 import qualified Streaming.Prelude as Stream
 import System.Timeout (timeout)
 import qualified ControlledTime as Time

@@ -12,7 +12,7 @@ import pytest
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey, RSAPublicNumbers
 from spec import SPEC, JsonObject, objects, read, text
 
-from xynoplex.http._client_assertion import JWT_BEARER, LIFETIME_SECONDS, claims, header, thumbprint
+from xynolog.http._client_assertion import JWT_BEARER, LIFETIME_SECONDS, claims, header, thumbprint
 
 TABLE = read(SPEC / "session/client-assertion-cases.json")
 THUMBPRINTS = objects(TABLE["thumbprints"], "thumbprints")

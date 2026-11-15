@@ -12,12 +12,12 @@ import qualified Data.Map.Strict as Map
 import Data.Text (Text)
 import qualified Data.Text as Text
 import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
-import qualified Xynoplex.Annotations as A
-import Xynoplex.ErrorCodes (spanRefusalCode)
-import qualified Xynoplex.Internal.Annotations.Id as Id
-import qualified Xynoplex.Internal.Annotations.Pdf as Pdf
-import Xynoplex.Internal.Annotations.Spans (occurrencesOf,between)
-import Xynoplex.Types
+import qualified Xynolog.Annotations as A
+import Xynolog.ErrorCodes (spanRefusalCode)
+import qualified Xynolog.Internal.Annotations.Id as Id
+import qualified Xynolog.Internal.Annotations.Pdf as Pdf
+import Xynolog.Internal.Annotations.Spans (occurrencesOf,between)
+import Xynolog.Types
 import System.FilePath ((</>))
 
 require :: String -> Bool -> IO ()

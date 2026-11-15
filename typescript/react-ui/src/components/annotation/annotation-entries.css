@@ -6,10 +6,10 @@
  */
 
 /* Base annotation entry container */
-.xynoplex-annotation-entry {
+.xynolog-annotation-entry {
   padding: 0.75rem;
-  background: var(--xynoplex-bg-secondary);
-  border-radius: var(--xynoplex-radius-md);
+  background: var(--xynolog-bg-secondary);
+  border-radius: var(--xynolog-radius-md);
   border: 2px solid transparent;
   transition: all 0.2s ease;
   cursor: pointer;
@@ -17,81 +17,81 @@
   margin-bottom: 0.5rem;
 }
 
-[data-theme="dark"] .xynoplex-annotation-entry {
-  background: var(--xynoplex-bg-tertiary);
+[data-theme="dark"] .xynolog-annotation-entry {
+  background: var(--xynolog-bg-tertiary);
 }
 
 /* Focused state */
-.xynoplex-annotation-entry[data-focused="true"] {
-  outline: 2px solid var(--xynoplex-color-primary-500);
+.xynolog-annotation-entry[data-focused="true"] {
+  outline: 2px solid var(--xynolog-color-primary-500);
   outline-offset: 2px;
   z-index: 10;
 }
 
 /* Pulse effect for hover synchronization */
-.xynoplex-annotation-pulse {
-  background: var(--xynoplex-bg-hover) !important;
+.xynolog-annotation-pulse {
+  background: var(--xynolog-bg-hover) !important;
   transition: background 0.3s ease-in-out;
 }
 
-[data-theme="dark"] .xynoplex-annotation-pulse {
-  background: var(--xynoplex-bg-hover) !important;
+[data-theme="dark"] .xynolog-annotation-pulse {
+  background: var(--xynolog-bg-hover) !important;
 }
 
 /* Motivation-specific styles are handled in /styles/motivations/*.css */
 
 /* Entry structure */
-.xynoplex-annotation-entry__header {
+.xynolog-annotation-entry__header {
   display: flex;
   align-items: flex-start;
   gap: 0.5rem;
   margin-bottom: 0.5rem;
 }
 
-.xynoplex-annotation-entry__content {
+.xynolog-annotation-entry__content {
   flex: 1;
   min-width: 0;
 }
 
 /* Quote styling - base structure */
-.xynoplex-annotation-entry__quote {
-  font-size: var(--xynoplex-text-sm);
+.xynolog-annotation-entry__quote {
+  font-size: var(--xynolog-text-sm);
   line-height: 1.5;
   padding: 0.375rem 0.5rem;
-  border-radius: var(--xynoplex-radius-sm);
+  border-radius: var(--xynolog-radius-sm);
   margin-bottom: 0.5rem;
 }
 
 /* Motivation-specific quote styles are handled in /styles/motivations/*.css */
 
 /* Body content */
-.xynoplex-annotation-entry__body {
-  font-size: var(--xynoplex-text-sm);
-  color: var(--xynoplex-text-primary);
+.xynolog-annotation-entry__body {
+  font-size: var(--xynolog-text-sm);
+  color: var(--xynolog-text-primary);
   line-height: 1.5;
   margin-bottom: 0.5rem;
 }
 
-[data-theme="dark"] .xynoplex-annotation-entry__body {
-  color: var(--xynoplex-text-primary);
+[data-theme="dark"] .xynolog-annotation-entry__body {
+  color: var(--xynolog-text-primary);
 }
 
 /* Motivation-specific body styles are handled in /styles/motivations/*.css */
 
 /* Metadata */
-.xynoplex-annotation-entry__metadata,
-.xynoplex-annotation-entry__meta {
-  font-size: var(--xynoplex-text-xs);
-  color: var(--xynoplex-text-tertiary);
+.xynolog-annotation-entry__metadata,
+.xynolog-annotation-entry__meta {
+  font-size: var(--xynolog-text-xs);
+  color: var(--xynolog-text-tertiary);
 }
 
-[data-theme="dark"] .xynoplex-annotation-entry__metadata,
-[data-theme="dark"] .xynoplex-annotation-entry__meta {
-  color: var(--xynoplex-text-tertiary);
+[data-theme="dark"] .xynolog-annotation-entry__metadata,
+[data-theme="dark"] .xynolog-annotation-entry__meta {
+  color: var(--xynolog-text-tertiary);
 }
 
 /* Footer */
-.xynoplex-annotation-entry__footer {
+.xynolog-annotation-entry__footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -99,36 +99,36 @@
 }
 
 /* Actions */
-.xynoplex-annotation-entry__actions {
+.xynolog-annotation-entry__actions {
   display: flex;
   gap: 0.25rem;
 }
 
 /* Button group for edit mode */
-.xynoplex-annotation-entry__button-group {
+.xynolog-annotation-entry__button-group {
   display: flex;
   gap: 0.25rem;
 }
 
 /* Edit mode */
-.xynoplex-annotation-entry__edit {
+.xynolog-annotation-entry__edit {
   margin-top: 0.5rem;
 }
 
-.xynoplex-annotation-entry__edit-footer {
+.xynolog-annotation-entry__edit-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-top: 0.5rem;
 }
 
-.xynoplex-annotation-entry__char-count {
-  font-size: var(--xynoplex-text-xs);
-  color: var(--xynoplex-text-tertiary);
+.xynolog-annotation-entry__char-count {
+  font-size: var(--xynolog-text-xs);
+  color: var(--xynolog-text-tertiary);
 }
 
 /* Tags within entries */
-.xynoplex-annotation-entry__tags {
+.xynolog-annotation-entry__tags {
   display: flex;
   flex-wrap: wrap;
   gap: 0.25rem;

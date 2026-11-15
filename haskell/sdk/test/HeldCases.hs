@@ -14,17 +14,17 @@ import qualified Data.Map.Strict as Map
 import qualified Data.Set as Set
 import Data.Text (Text)
 import qualified Data.Text as T
-import qualified Xynoplex.Bus as Bus
-import Xynoplex.Channels hiding (JobComplete, JobCheckpoint)
-import qualified Xynoplex.Channels as Ch
-import qualified Xynoplex.ErrorCodes as Code
-import Xynoplex.Errors (BusRequestError(..))
-import Xynoplex.Timing (errorsKeptForFirstReaderCount)
-import qualified Xynoplex.Timing.Settings as Timing
-import qualified Xynoplex.Transport as Transport
-import Xynoplex.Types
-import qualified Xynoplex.Worker as Worker
-import Xynoplex.Worker.Types
+import qualified Xynolog.Bus as Bus
+import Xynolog.Channels hiding (JobComplete, JobCheckpoint)
+import qualified Xynolog.Channels as Ch
+import qualified Xynolog.ErrorCodes as Code
+import Xynolog.Errors (BusRequestError(..))
+import Xynolog.Timing (errorsKeptForFirstReaderCount)
+import qualified Xynolog.Timing.Settings as Timing
+import qualified Xynolog.Transport as Transport
+import Xynolog.Types
+import qualified Xynolog.Worker as Worker
+import Xynolog.Worker.Types
 import qualified Streaming.Prelude as Stream
 import System.Timeout (timeout)
 import ClockCases (Scenario(..), clockCasesFor)

@@ -1,4 +1,4 @@
 // refused: inaccessible due to 'internal' protection level
-import Xynoplex
+import Xynolog
 
 let forged = Channel<BeckonFocusEvent>(name: "unregistered", stamps: [])

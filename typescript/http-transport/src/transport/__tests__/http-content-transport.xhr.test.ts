@@ -12,7 +12,7 @@
 
 import util from 'node:util';
 import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
-import { BRIDGED_CHANNELS, REQUEST_RETRY_PAUSE_MS, baseUrl, resourceId } from '@xynoplex/core';
+import { BRIDGED_CHANNELS, REQUEST_RETRY_PAUSE_MS, baseUrl, resourceId } from '@xynolog/core';
 import type { KyInstance } from 'ky';
 
 vi.mock('ky', () => ({

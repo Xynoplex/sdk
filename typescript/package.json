@@ -1,5 +1,5 @@
 {
-  "name": "@xynoplex/sdk-typescript-workspace",
+  "name": "@xynolog/sdk-typescript-workspace",
   "private": true,
   "workspaces": [
     "./core",
@@ -12,7 +12,7 @@
     "esbuild@0.28.2": true
   },
   "scripts": {
-    "build:packages": "npm run build --workspace=@xynoplex/core && npm run build --workspace=@xynoplex/observability && npm run build --workspace=@xynoplex/http-transport && npm run build --workspace=@xynoplex/sdk && npm run build --workspace=@xynoplex/react-ui"
+    "build:packages": "npm run build --workspace=@xynolog/core && npm run build --workspace=@xynolog/observability && npm run build --workspace=@xynolog/http-transport && npm run build --workspace=@xynolog/sdk && npm run build --workspace=@xynolog/react-ui"
   },
   "devDependencies": {
     "@types/node": "^26.6.6",

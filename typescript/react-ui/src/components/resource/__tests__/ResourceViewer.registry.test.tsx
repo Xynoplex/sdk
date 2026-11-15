@@ -14,8 +14,8 @@ import { describe, it, expect, vi } from 'vitest';
 import { screen } from '@testing-library/react';
 import { renderInEnglish, englishTranslationManager } from '../../../test-utils';
 import '@testing-library/jest-dom';
-import type { XynoplexSession } from '@xynoplex/sdk';
-import { EventBus } from '@xynoplex/core';
+import type { XynologSession } from '@xynolog/sdk';
+import { EventBus } from '@xynolog/core';
 import { ResourceViewer } from '../ResourceViewer';
 import type { MediaRendererProps } from '../browse-renderers';
 import type { AnnotateMediaRendererProps } from '../annotate-renderers';
@@ -26,7 +26,7 @@ vi.mock('../../CodeMirrorRenderer', () => ({
   CodeMirrorRenderer: () => <div data-testid="default-text">default-cm</div>,
 }));
 
-function fakeSession(): XynoplexSession {
+function fakeSession(): XynologSession {
   return {
     client: {
       bus: new EventBus(),
@@ -34,7 +34,7 @@ function fakeSession(): XynoplexSession {
       beckon: { hover: vi.fn() },
       mark: { request: vi.fn() },
     },
-  } as unknown as XynoplexSession;
+  } as unknown as XynologSession;
 }
 
 type ViewerProps = React.ComponentProps<typeof ResourceViewer>;

@@ -1,6 +1,6 @@
 import { Observable, Subject, share } from 'rxjs';
-import { Bus, FrameRefusal, JOB_SILENCE_MS, JOB_STATUS_POLL_MS, XynoplexError } from '@xynoplex/core';
-import type { EventBus, EventMap, ITransport, JobErrorCode, components } from '@xynoplex/core';
+import { Bus, FrameRefusal, JOB_SILENCE_MS, JOB_STATUS_POLL_MS, XynologError } from '@xynolog/core';
+import type { EventBus, EventMap, ITransport, JobErrorCode, components } from '@xynolog/core';
 
 type JobStatusResponse = components['schemas']['JobStatusResponse'];
 type FailureClass = components['schemas']['FailureClass'];
@@ -14,7 +14,7 @@ type FailureClass = components['schemas']['FailureClass'];
  * tells "the provider would not answer" (`withheld`) from "the job broke"
  * (`deterministic`) without reading the message.
  */
-export class JobFailedError extends XynoplexError {
+export class JobFailedError extends XynologError {
   declare code: JobErrorCode;
 
   constructor(
@@ -31,7 +31,7 @@ export class JobFailedError extends XynoplexError {
  * A job its follower was following was cancelled. Nothing announces a
  * cancellation, so a follower learns of one from the job's status.
  */
-export class JobCancelledError extends XynoplexError {
+export class JobCancelledError extends XynologError {
   declare code: JobErrorCode;
 
   constructor(public readonly jobId: string) {
@@ -53,7 +53,7 @@ export interface JobFollowTiming {
  * its job for `jobSilenceMs` asks for the job's status, and goes on asking
  * every `jobStatusPollMs` until the job says something or it is told to stop.
  * It asks one at a time: a poll that comes round while the last ask is
- * unanswered asks nothing. An ask that fails with a `XynoplexError` is asked
+ * unanswered asks nothing. An ask that fails with a `XynologError` is asked
  * again at the next poll; one that fails with anything else is given to
  * `onFailure`, which ends the follower.
  */
@@ -102,7 +102,7 @@ export class JobStatusPoll {
       (error: unknown) => {
         this.asking = false;
         // A status that cannot be had is asked for again at the next poll.
-        if (!(error instanceof XynoplexError)) this.onFailure(error);
+        if (!(error instanceof XynologError)) this.onFailure(error);
       },
     );
   }

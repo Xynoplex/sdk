@@ -22,7 +22,7 @@
 import { annotationIdFor } from './annotation-id';
 import type { Annotation } from './annotation-types';
 import type { Motivation } from './branded-types';
-import { XynoplexError } from './errors';
+import { XynologError } from './errors';
 import { findBestTextMatch, buildContentCache, type MatchQuality } from './fuzzy-anchor';
 import type { SpanRefusal } from './generated/error-codes';
 import type { ResourceId } from './identifiers';
@@ -93,7 +93,7 @@ export interface ReconciledSpan extends TextSpan {
  * `spanRefusal` codes of protocol/specs/src/errors/codes.json, the table every SDK's
  * codes are generated from.
  */
-export class SpanRefusedError extends XynoplexError {
+export class SpanRefusedError extends XynologError {
   declare code: SpanRefusal;
 
   constructor(message: string, code: SpanRefusal) {

@@ -11,8 +11,8 @@ import { describe, it, expect, vi } from 'vitest';
 import { useState } from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import type { EngineWithLimits, GatheredContext } from '@xynoplex/core';
-import { GENERATABLE_MEDIA_TYPES, capabilitiesOf } from '@xynoplex/core';
+import type { EngineWithLimits, GatheredContext } from '@xynolog/core';
+import { GENERATABLE_MEDIA_TYPES, capabilitiesOf } from '@xynolog/core';
 import { ConfigureGenerationStep, freshGenerationDraft } from '../ConfigureGenerationStep';
 import type { GenerationDraft } from '../ConfigureGenerationStep';
 
@@ -105,8 +105,8 @@ describe('ConfigureGenerationStep — ceiling awareness', () => {
     renderStep(engineWithCeiling(64_000));
 
     const help = screen.getByText(/Limited to 64000 tokens/);
-    expect(help).toHaveClass('xynoplex-form__help--row');
-    expect(help.closest('.xynoplex-form__field--narrow')).toBeNull();
+    expect(help).toHaveClass('xynolog-form__help--row');
+    expect(help.closest('.xynolog-form__field--narrow')).toBeNull();
   });
 
   it('will not commit a value above the ceiling', () => {
@@ -378,7 +378,7 @@ describe('ConfigureGenerationStep — the hint echo', () => {
         hintEcho={{ label: 'Hint', value: 'the ancient city, not the modern province' }}
       />,
     );
-    const echo = container.querySelector('.xynoplex-wizard__hint-echo');
+    const echo = container.querySelector('.xynolog-wizard__hint-echo');
     expect(echo).not.toBeNull();
     expect(echo!.textContent).toContain('the ancient city, not the modern province');
 
@@ -388,7 +388,7 @@ describe('ConfigureGenerationStep — the hint echo', () => {
         onBack={vi.fn()} onGenerate={vi.fn()} translations={translations}
       />,
     );
-    expect(container.querySelector('.xynoplex-wizard__hint-echo')).toBeNull();
+    expect(container.querySelector('.xynolog-wizard__hint-echo')).toBeNull();
   });
 });
 

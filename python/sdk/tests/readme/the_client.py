@@ -1,14 +1,14 @@
-from xynoplex.channels import BRIDGED_CHANNELS
-from xynoplex.client import XynoplexClient
-from xynoplex.http import HttpTransport
-from xynoplex.identifiers import AnnotationId, ResourceId
-from xynoplex.namespaces.follow import JobAttemptFailed, JobCompleted, JobCreated, JobProgressed, JobRefused
-from xynoplex.transport import Transport
-from xynoplex.types import HighlightingJobParams
-from xynoplex.watched import Variable
+from xynolog.channels import BRIDGED_CHANNELS
+from xynolog.client import XynologClient
+from xynolog.http import HttpTransport
+from xynolog.identifiers import AnnotationId, ResourceId
+from xynolog.namespaces.follow import JobAttemptFailed, JobCompleted, JobCreated, JobProgressed, JobRefused
+from xynolog.transport import Transport
+from xynolog.types import HighlightingJobParams
+from xynolog.watched import Variable
 
 
-async def annotate(client: XynoplexClient[Transport], resource: ResourceId, annotation: AnnotationId) -> None:
+async def annotate(client: XynologClient[Transport], resource: ResourceId, annotation: AnnotationId) -> None:
     described = await client.browse.resource(resource).fresh()  # a query, read once
     text = await client.browse.resource_content(resource)  # asked once, answered once
     print(described.name, len(text))
@@ -34,6 +34,6 @@ async def annotate(client: XynoplexClient[Transport], resource: ResourceId, anno
 async def over_http(origin: str, token: str, resource: ResourceId, annotation: AnnotationId) -> None:
     async with (
         HttpTransport(origin, token=Variable[str | None](token), channels=BRIDGED_CHANNELS) as transport,
-        XynoplexClient(transport, transport.content, transport) as client,
+        XynologClient(transport, transport.content, transport) as client,
     ):
         await annotate(client, resource, annotation)

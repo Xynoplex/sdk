@@ -8,7 +8,7 @@ import (
 	"cmp"
 	"slices"
 
-	"github.com/Xynoplex/sdk/go/api"
+	"github.com/xynolog/sdk/go/api"
 )
 
 // OpenResource is one resource open in a knowledge base.

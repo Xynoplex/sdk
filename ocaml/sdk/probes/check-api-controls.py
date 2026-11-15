@@ -7,7 +7,7 @@ import sys
 root = Path(__file__).resolve().parents[1]
 snapshot = root / 'public-api.json'
 original = snapshot.read_bytes()
-source = root / 'lib/xynoplex.mli'
+source = root / 'lib/xynolog.mli'
 original_source = source.read_bytes()
 extra = root / 'lib/api-freshness-probe.txt'
 if extra.exists():
@@ -36,7 +36,7 @@ try:
         if label == 'missing export':
             changed['entries'].pop()
         elif label == 'extra export':
-            changed['entries'].append({'kind': 'value', 'path': 'Xynoplex.surprise', 'declaration': 'val surprise : int'})
+            changed['entries'].append({'kind': 'value', 'path': 'Xynolog.surprise', 'declaration': 'val surprise : int'})
         else:
             changed['entries'][0]['declaration'] = 'changed'
         snapshot.write_text(json.dumps(changed, indent=2) + '\n')

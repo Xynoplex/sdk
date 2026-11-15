@@ -1,4 +1,4 @@
-module github.com/Xynoplex/sdk/go
+module github.com/xynolog/sdk/go
 
 go 1.27.0
 

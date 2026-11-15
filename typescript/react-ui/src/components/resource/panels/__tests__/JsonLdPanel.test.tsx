@@ -3,8 +3,8 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import { JsonLdPanel } from '../JsonLdPanel';
-import { resourceId } from '@xynoplex/core';
-import type { components } from '@xynoplex/core';
+import { resourceId } from '@xynolog/core';
+import type { components } from '@xynolog/core';
 
 type GetResourceResponse = components['schemas']['GetResourceResponse'];
 
@@ -97,7 +97,7 @@ describe('JsonLdPanel Component', () => {
       const { container } = renderPanel();
       expect(screen.getByText('JSON-LD')).toBeInTheDocument();
       expect(screen.getByText(/Copy/)).toBeInTheDocument();
-      expect(container.querySelector('.xynoplex-jsonld-panel__editor')).toBeInTheDocument();
+      expect(container.querySelector('.xynolog-jsonld-panel__editor')).toBeInTheDocument();
     });
 
     it('fetches the graph for the given resourceId', () => {
@@ -191,10 +191,10 @@ describe('JsonLdPanel Component', () => {
   describe('Accessibility / structure', () => {
     it('has the panel structure and a titled copy button', () => {
       const { container } = renderPanel();
-      expect(container.firstChild).toHaveClass('xynoplex-jsonld-panel');
+      expect(container.firstChild).toHaveClass('xynolog-jsonld-panel');
       const copyButton = screen.getByText(/Copy/).closest('button');
       expect(copyButton).toHaveAttribute('title', 'Copy to clipboard');
-      expect(screen.getByText('JSON-LD')).toHaveClass('xynoplex-jsonld-panel__title');
+      expect(screen.getByText('JSON-LD')).toHaveClass('xynolog-jsonld-panel__title');
     });
   });
 });

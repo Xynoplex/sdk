@@ -9,19 +9,19 @@
    Button Component Styles
    ============================================ */
 
-.xynoplex-button {
+.xynolog-button {
   /* Base styles */
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--xynoplex-font-sans);
-  font-weight: var(--xynoplex-font-medium);
-  line-height: var(--xynoplex-leading-snug);
+  font-family: var(--xynolog-font-sans);
+  font-weight: var(--xynolog-font-medium);
+  line-height: var(--xynolog-leading-snug);
   border: none;
   outline: none;
   cursor: pointer;
-  transition: all var(--xynoplex-duration-base) var(--xynoplex-ease);
+  transition: all var(--xynolog-duration-base) var(--xynolog-ease);
   user-select: none;
   white-space: nowrap;
   text-decoration: none;
@@ -30,62 +30,62 @@
 }
 
 /* Focus indicators for keyboard navigation */
-.xynoplex-button:focus-visible {
-  outline: 2px solid var(--xynoplex-color-primary-500);
+.xynolog-button:focus-visible {
+  outline: 2px solid var(--xynolog-color-primary-500);
   outline-offset: 2px;
   position: relative;
   z-index: 1;
 }
 
 /* Remove default focus for mouse users */
-.xynoplex-button:focus:not(:focus-visible) {
+.xynolog-button:focus:not(:focus-visible) {
   outline: none;
 }
 
 /* Dark theme focus */
-[data-theme="dark"] .xynoplex-button:focus-visible {
-  outline-color: var(--xynoplex-color-primary-400);
+[data-theme="dark"] .xynolog-button:focus-visible {
+  outline-color: var(--xynolog-color-primary-400);
 }
 
 /* High contrast mode support */
 @media (prefers-contrast: more) {
-  .xynoplex-button:focus-visible {
+  .xynolog-button:focus-visible {
     outline-width: 3px;
     outline-color: currentColor;
   }
 }
 
 /* Disabled state */
-.xynoplex-button:disabled,
-.xynoplex-button[data-disabled="true"] {
+.xynolog-button:disabled,
+.xynolog-button[data-disabled="true"] {
   cursor: not-allowed;
   opacity: 0.5;
 }
 
 /* Button content wrapper */
-.xynoplex-button-content {
+.xynolog-button-content {
   display: inline-flex;
   align-items: center;
 }
 
 /* Button icons */
-.xynoplex-button-icon {
+.xynolog-button-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 }
 
-.xynoplex-button-icon-left {
-  margin-right: var(--xynoplex-spacing-sm);
+.xynolog-button-icon-left {
+  margin-right: var(--xynolog-spacing-sm);
 }
 
-.xynoplex-button-icon-right {
-  margin-left: var(--xynoplex-spacing-sm);
+.xynolog-button-icon-right {
+  margin-left: var(--xynolog-spacing-sm);
 }
 
 /* Loading spinner */
-.xynoplex-button-spinner {
+.xynolog-button-spinner {
   position: absolute;
   display: flex;
   align-items: center;
@@ -93,7 +93,7 @@
   inset: 0;
 }
 
-.xynoplex-spinner-svg {
+.xynolog-spinner-svg {
   animation: spin 1s linear infinite;
   width: 1.25em;
   height: 1.25em;
@@ -109,8 +109,8 @@
 }
 
 /* Hide content when loading */
-.xynoplex-button[data-loading="true"] .xynoplex-button-content,
-.xynoplex-button[data-loading="true"] .xynoplex-button-icon {
+.xynolog-button[data-loading="true"] .xynolog-button-content,
+.xynolog-button[data-loading="true"] .xynolog-button-icon {
   visibility: hidden;
 }
 
@@ -119,215 +119,215 @@
    ============================================ */
 
 /* Primary variant */
-.xynoplex-button[data-variant="primary"] {
-  background-color: var(--xynoplex-color-primary-500);
-  color: var(--xynoplex-color-neutral-0);
+.xynolog-button[data-variant="primary"] {
+  background-color: var(--xynolog-color-primary-500);
+  color: var(--xynolog-color-neutral-0);
 }
 
-[data-theme="dark"] .xynoplex-button[data-variant="primary"] {
-  background-color: var(--xynoplex-color-primary-600);
-  color: var(--xynoplex-color-neutral-0);
+[data-theme="dark"] .xynolog-button[data-variant="primary"] {
+  background-color: var(--xynolog-color-primary-600);
+  color: var(--xynolog-color-neutral-0);
 }
 
-.xynoplex-button[data-variant="primary"]:hover:not(:disabled):not([data-disabled="true"]) {
-  background-color: var(--xynoplex-color-primary-600);
+.xynolog-button[data-variant="primary"]:hover:not(:disabled):not([data-disabled="true"]) {
+  background-color: var(--xynolog-color-primary-600);
 }
 
-[data-theme="dark"] .xynoplex-button[data-variant="primary"]:hover:not(:disabled):not([data-disabled="true"]) {
-  background-color: var(--xynoplex-color-primary-500);
+[data-theme="dark"] .xynolog-button[data-variant="primary"]:hover:not(:disabled):not([data-disabled="true"]) {
+  background-color: var(--xynolog-color-primary-500);
 }
 
-.xynoplex-button[data-variant="primary"]:active:not(:disabled):not([data-disabled="true"]),
-.xynoplex-button[data-variant="primary"][data-active="true"]:not(:disabled):not([data-disabled="true"]) {
-  background-color: var(--xynoplex-color-primary-700);
+.xynolog-button[data-variant="primary"]:active:not(:disabled):not([data-disabled="true"]),
+.xynolog-button[data-variant="primary"][data-active="true"]:not(:disabled):not([data-disabled="true"]) {
+  background-color: var(--xynolog-color-primary-700);
 }
 
 /* Secondary variant */
-.xynoplex-button[data-variant="secondary"] {
-  background-color: var(--xynoplex-bg-tertiary);
-  color: var(--xynoplex-color-neutral-900);
+.xynolog-button[data-variant="secondary"] {
+  background-color: var(--xynolog-bg-tertiary);
+  color: var(--xynolog-color-neutral-900);
 }
 
-.xynoplex-button[data-variant="secondary"]:hover:not(:disabled):not([data-disabled="true"]) {
-  background-color: var(--xynoplex-color-neutral-200);
+.xynolog-button[data-variant="secondary"]:hover:not(:disabled):not([data-disabled="true"]) {
+  background-color: var(--xynolog-color-neutral-200);
 }
 
-.xynoplex-button[data-variant="secondary"]:active:not(:disabled):not([data-disabled="true"]),
-.xynoplex-button[data-variant="secondary"][data-active="true"]:not(:disabled):not([data-disabled="true"]) {
-  background-color: var(--xynoplex-color-neutral-300);
+.xynolog-button[data-variant="secondary"]:active:not(:disabled):not([data-disabled="true"]),
+.xynolog-button[data-variant="secondary"][data-active="true"]:not(:disabled):not([data-disabled="true"]) {
+  background-color: var(--xynolog-color-neutral-300);
 }
 
 /* Tertiary variant */
-.xynoplex-button[data-variant="tertiary"] {
+.xynolog-button[data-variant="tertiary"] {
   background-color: transparent;
-  color: var(--xynoplex-color-primary-600);
-  box-shadow: inset 0 0 0 1px var(--xynoplex-color-primary-200);
+  color: var(--xynolog-color-primary-600);
+  box-shadow: inset 0 0 0 1px var(--xynolog-color-primary-200);
 }
 
-[data-theme="dark"] .xynoplex-button[data-variant="tertiary"] {
+[data-theme="dark"] .xynolog-button[data-variant="tertiary"] {
   background-color: transparent;
-  color: var(--xynoplex-color-primary-400);
-  box-shadow: inset 0 0 0 1px var(--xynoplex-color-primary-700);
+  color: var(--xynolog-color-primary-400);
+  box-shadow: inset 0 0 0 1px var(--xynolog-color-primary-700);
 }
 
-.xynoplex-button[data-variant="tertiary"]:hover:not(:disabled):not([data-disabled="true"]) {
-  background-color: var(--xynoplex-color-primary-50);
-  box-shadow: inset 0 0 0 1px var(--xynoplex-color-primary-300);
+.xynolog-button[data-variant="tertiary"]:hover:not(:disabled):not([data-disabled="true"]) {
+  background-color: var(--xynolog-color-primary-50);
+  box-shadow: inset 0 0 0 1px var(--xynolog-color-primary-300);
 }
 
-.xynoplex-button[data-variant="tertiary"]:active:not(:disabled):not([data-disabled="true"]),
-.xynoplex-button[data-variant="tertiary"][data-active="true"]:not(:disabled):not([data-disabled="true"]) {
-  background-color: var(--xynoplex-color-primary-100);
-  box-shadow: inset 0 0 0 1px var(--xynoplex-color-primary-400);
+.xynolog-button[data-variant="tertiary"]:active:not(:disabled):not([data-disabled="true"]),
+.xynolog-button[data-variant="tertiary"][data-active="true"]:not(:disabled):not([data-disabled="true"]) {
+  background-color: var(--xynolog-color-primary-100);
+  box-shadow: inset 0 0 0 1px var(--xynolog-color-primary-400);
 }
 
 /* Danger variant */
-.xynoplex-button[data-variant="danger"] {
-  background-color: var(--xynoplex-color-error);
-  color: var(--xynoplex-color-neutral-0);
+.xynolog-button[data-variant="danger"] {
+  background-color: var(--xynolog-color-error);
+  color: var(--xynolog-color-neutral-0);
 }
 
-[data-theme="dark"] .xynoplex-button[data-variant="danger"] {
-  background-color: var(--xynoplex-color-error-dark);
-  color: var(--xynoplex-color-neutral-0);
+[data-theme="dark"] .xynolog-button[data-variant="danger"] {
+  background-color: var(--xynolog-color-error-dark);
+  color: var(--xynolog-color-neutral-0);
 }
 
-.xynoplex-button[data-variant="danger"]:hover:not(:disabled):not([data-disabled="true"]) {
-  background-color: var(--xynoplex-color-error-dark);
+.xynolog-button[data-variant="danger"]:hover:not(:disabled):not([data-disabled="true"]) {
+  background-color: var(--xynolog-color-error-dark);
 }
 
-.xynoplex-button[data-variant="danger"]:active:not(:disabled):not([data-disabled="true"]),
-.xynoplex-button[data-variant="danger"][data-active="true"]:not(:disabled):not([data-disabled="true"]) {
-  background-color: var(--xynoplex-color-error-dark);
+.xynolog-button[data-variant="danger"]:active:not(:disabled):not([data-disabled="true"]),
+.xynolog-button[data-variant="danger"][data-active="true"]:not(:disabled):not([data-disabled="true"]) {
+  background-color: var(--xynolog-color-error-dark);
   filter: brightness(0.9);
 }
 
 /* Warning variant */
-.xynoplex-button[data-variant="warning"] {
-  background-color: var(--xynoplex-color-warning);
-  color: var(--xynoplex-color-neutral-900);
+.xynolog-button[data-variant="warning"] {
+  background-color: var(--xynolog-color-warning);
+  color: var(--xynolog-color-neutral-900);
 }
 
-[data-theme="dark"] .xynoplex-button[data-variant="warning"] {
-  background-color: var(--xynoplex-color-warning-dark);
-  color: var(--xynoplex-color-neutral-900);
+[data-theme="dark"] .xynolog-button[data-variant="warning"] {
+  background-color: var(--xynolog-color-warning-dark);
+  color: var(--xynolog-color-neutral-900);
 }
 
-.xynoplex-button[data-variant="warning"]:hover:not(:disabled):not([data-disabled="true"]) {
-  background-color: var(--xynoplex-color-warning-dark);
+.xynolog-button[data-variant="warning"]:hover:not(:disabled):not([data-disabled="true"]) {
+  background-color: var(--xynolog-color-warning-dark);
 }
 
-.xynoplex-button[data-variant="warning"]:active:not(:disabled):not([data-disabled="true"]),
-.xynoplex-button[data-variant="warning"][data-active="true"]:not(:disabled):not([data-disabled="true"]) {
-  background-color: var(--xynoplex-color-warning-dark);
+.xynolog-button[data-variant="warning"]:active:not(:disabled):not([data-disabled="true"]),
+.xynolog-button[data-variant="warning"][data-active="true"]:not(:disabled):not([data-disabled="true"]) {
+  background-color: var(--xynolog-color-warning-dark);
   filter: brightness(0.9);
 }
 
 /* Delegate variant - the button that starts a delegated annotation job */
-.xynoplex-button[data-variant="delegate"] {
+.xynolog-button[data-variant="delegate"] {
   width: 100%;
   padding: 0.75rem 1rem;
-  font-size: var(--xynoplex-text-base);
-  font-weight: var(--xynoplex-font-semibold);
-  border-radius: var(--xynoplex-radius-md);
+  font-size: var(--xynolog-text-base);
+  font-weight: var(--xynolog-font-semibold);
+  border-radius: var(--xynolog-radius-md);
   gap: 0.5rem;
   border: 1px solid rgba(0, 0, 0, 0.1);
   background: linear-gradient(to right, #6366f1, #8b5cf6);
-  color: var(--xynoplex-color-white);
+  color: var(--xynolog-color-white);
   /* These base colors will be overridden by motivation CSS via data-type attribute */
 }
 
-[data-theme="dark"] .xynoplex-button[data-variant="delegate"] {
+[data-theme="dark"] .xynolog-button[data-variant="delegate"] {
   border-color: rgba(255, 255, 255, 0.1);
 }
 
 /* Ghost variant */
-.xynoplex-button[data-variant="ghost"] {
+.xynolog-button[data-variant="ghost"] {
   background-color: transparent;
-  color: var(--xynoplex-text-primary);
+  color: var(--xynolog-text-primary);
 }
 
-[data-theme="dark"] .xynoplex-button[data-variant="ghost"] {
+[data-theme="dark"] .xynolog-button[data-variant="ghost"] {
   background-color: transparent;
-  color: var(--xynoplex-text-primary);
+  color: var(--xynolog-text-primary);
 }
 
-.xynoplex-button[data-variant="ghost"]:hover:not(:disabled):not([data-disabled="true"]) {
-  background-color: var(--xynoplex-bg-tertiary);
+.xynolog-button[data-variant="ghost"]:hover:not(:disabled):not([data-disabled="true"]) {
+  background-color: var(--xynolog-bg-tertiary);
 }
 
-.xynoplex-button[data-variant="ghost"]:active:not(:disabled):not([data-disabled="true"]),
-.xynoplex-button[data-variant="ghost"][data-active="true"]:not(:disabled):not([data-disabled="true"]) {
-  background-color: var(--xynoplex-color-neutral-200);
+.xynolog-button[data-variant="ghost"]:active:not(:disabled):not([data-disabled="true"]),
+.xynolog-button[data-variant="ghost"][data-active="true"]:not(:disabled):not([data-disabled="true"]) {
+  background-color: var(--xynolog-color-neutral-200);
 }
 
 /* ============================================
    Button Sizes
    ============================================ */
 
-.xynoplex-button[data-size="xs"] {
-  padding: var(--xynoplex-spacing-xs) var(--xynoplex-spacing-sm);
-  font-size: var(--xynoplex-text-xs);
-  border-radius: var(--xynoplex-radius-sm);
+.xynolog-button[data-size="xs"] {
+  padding: var(--xynolog-spacing-xs) var(--xynolog-spacing-sm);
+  font-size: var(--xynolog-text-xs);
+  border-radius: var(--xynolog-radius-sm);
   min-height: 1.75rem;
 }
 
-.xynoplex-button[data-size="sm"] {
-  padding: var(--xynoplex-spacing-xs) var(--xynoplex-spacing-md);
-  font-size: var(--xynoplex-text-sm);
-  border-radius: var(--xynoplex-radius-base);
+.xynolog-button[data-size="sm"] {
+  padding: var(--xynolog-spacing-xs) var(--xynolog-spacing-md);
+  font-size: var(--xynolog-text-sm);
+  border-radius: var(--xynolog-radius-base);
   min-height: 2rem;
 }
 
-.xynoplex-button[data-size="md"] {
-  padding: var(--xynoplex-spacing-sm) var(--xynoplex-spacing-lg);
-  font-size: var(--xynoplex-text-base);
-  border-radius: var(--xynoplex-radius-md);
+.xynolog-button[data-size="md"] {
+  padding: var(--xynolog-spacing-sm) var(--xynolog-spacing-lg);
+  font-size: var(--xynolog-text-base);
+  border-radius: var(--xynolog-radius-md);
   min-height: 2.5rem;
 }
 
-.xynoplex-button[data-size="lg"] {
-  padding: var(--xynoplex-spacing-sm) var(--xynoplex-spacing-xl);
-  font-size: var(--xynoplex-text-lg);
-  border-radius: var(--xynoplex-radius-md);
+.xynolog-button[data-size="lg"] {
+  padding: var(--xynolog-spacing-sm) var(--xynolog-spacing-xl);
+  font-size: var(--xynolog-text-lg);
+  border-radius: var(--xynolog-radius-md);
   min-height: 3rem;
 }
 
-.xynoplex-button[data-size="xl"] {
-  padding: var(--xynoplex-spacing-md) var(--xynoplex-spacing-2xl);
-  font-size: var(--xynoplex-text-xl);
-  border-radius: var(--xynoplex-radius-lg);
+.xynolog-button[data-size="xl"] {
+  padding: var(--xynolog-spacing-md) var(--xynolog-spacing-2xl);
+  font-size: var(--xynolog-text-xl);
+  border-radius: var(--xynolog-radius-lg);
   min-height: 3.5rem;
 }
 
 /* Icon-only buttons have equal padding */
-.xynoplex-button[data-icon-only="true"][data-size="xs"] {
-  padding: var(--xynoplex-spacing-xs);
+.xynolog-button[data-icon-only="true"][data-size="xs"] {
+  padding: var(--xynolog-spacing-xs);
   width: 1.75rem;
 }
 
-.xynoplex-button[data-icon-only="true"][data-size="sm"] {
-  padding: var(--xynoplex-spacing-xs);
+.xynolog-button[data-icon-only="true"][data-size="sm"] {
+  padding: var(--xynolog-spacing-xs);
   width: 2rem;
 }
 
-.xynoplex-button[data-icon-only="true"][data-size="md"] {
-  padding: var(--xynoplex-spacing-sm);
+.xynolog-button[data-icon-only="true"][data-size="md"] {
+  padding: var(--xynolog-spacing-sm);
   width: 2.5rem;
 }
 
-.xynoplex-button[data-icon-only="true"][data-size="lg"] {
-  padding: var(--xynoplex-spacing-sm);
+.xynolog-button[data-icon-only="true"][data-size="lg"] {
+  padding: var(--xynolog-spacing-sm);
   width: 3rem;
 }
 
-.xynoplex-button[data-icon-only="true"][data-size="xl"] {
-  padding: var(--xynoplex-spacing-md);
+.xynolog-button[data-icon-only="true"][data-size="xl"] {
+  padding: var(--xynolog-spacing-md);
   width: 3.5rem;
 }
 
 /* Full width button */
-.xynoplex-button[data-full-width="true"] {
+.xynolog-button[data-full-width="true"] {
   width: 100%;
 }
 
@@ -335,69 +335,69 @@
    Button Group Styles
    ============================================ */
 
-.xynoplex-button-group {
+.xynolog-button-group {
   display: flex;
 }
 
 /* Horizontal orientation (default) */
-.xynoplex-button-group[data-orientation="horizontal"] {
+.xynolog-button-group[data-orientation="horizontal"] {
   flex-direction: row;
 }
 
-.xynoplex-button-group[data-orientation="vertical"] {
+.xynolog-button-group[data-orientation="vertical"] {
   flex-direction: column;
 }
 
 /* Spacing between buttons */
-.xynoplex-button-group[data-spacing="xs"] {
-  gap: var(--xynoplex-spacing-xs);
+.xynolog-button-group[data-spacing="xs"] {
+  gap: var(--xynolog-spacing-xs);
 }
 
-.xynoplex-button-group[data-spacing="sm"] {
-  gap: var(--xynoplex-spacing-sm);
+.xynolog-button-group[data-spacing="sm"] {
+  gap: var(--xynolog-spacing-sm);
 }
 
-.xynoplex-button-group[data-spacing="md"] {
-  gap: var(--xynoplex-spacing-md);
+.xynolog-button-group[data-spacing="md"] {
+  gap: var(--xynolog-spacing-md);
 }
 
-.xynoplex-button-group[data-spacing="lg"] {
-  gap: var(--xynoplex-spacing-lg);
+.xynolog-button-group[data-spacing="lg"] {
+  gap: var(--xynolog-spacing-lg);
 }
 
 /* Attached button group (no gaps) */
-.xynoplex-button-group[data-attached="true"] {
+.xynolog-button-group[data-attached="true"] {
   gap: 0;
 }
 
 /* Attached horizontal buttons */
-.xynoplex-button-group[data-attached="true"][data-orientation="horizontal"] .xynoplex-button:not(:first-child) {
+.xynolog-button-group[data-attached="true"][data-orientation="horizontal"] .xynolog-button:not(:first-child) {
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
   margin-left: -1px;
 }
 
-.xynoplex-button-group[data-attached="true"][data-orientation="horizontal"] .xynoplex-button:not(:last-child) {
+.xynolog-button-group[data-attached="true"][data-orientation="horizontal"] .xynolog-button:not(:last-child) {
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
 }
 
 /* Attached vertical buttons */
-.xynoplex-button-group[data-attached="true"][data-orientation="vertical"] .xynoplex-button:not(:first-child) {
+.xynolog-button-group[data-attached="true"][data-orientation="vertical"] .xynolog-button:not(:first-child) {
   border-top-left-radius: 0;
   border-top-right-radius: 0;
   margin-top: -1px;
 }
 
-.xynoplex-button-group[data-attached="true"][data-orientation="vertical"] .xynoplex-button:not(:last-child) {
+.xynolog-button-group[data-attached="true"][data-orientation="vertical"] .xynolog-button:not(:last-child) {
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
 }
 
 /* Ensure attached buttons have proper z-index on hover/focus */
-.xynoplex-button-group[data-attached="true"] .xynoplex-button:hover,
-.xynoplex-button-group[data-attached="true"] .xynoplex-button:focus-visible,
-.xynoplex-button-group[data-attached="true"] .xynoplex-button[data-active="true"] {
+.xynolog-button-group[data-attached="true"] .xynolog-button:hover,
+.xynolog-button-group[data-attached="true"] .xynolog-button:focus-visible,
+.xynolog-button-group[data-attached="true"] .xynolog-button[data-active="true"] {
   z-index: 1;
   position: relative;
 }
@@ -407,28 +407,28 @@
    ============================================ */
 
 /* Manual dark mode override */
-[data-theme="dark"] .xynoplex-button[data-variant="ghost"]:hover:not(:disabled):not([data-disabled="true"]) {
-  background-color: var(--xynoplex-color-neutral-800);
+[data-theme="dark"] .xynolog-button[data-variant="ghost"]:hover:not(:disabled):not([data-disabled="true"]) {
+  background-color: var(--xynolog-color-neutral-800);
 }
 
-[data-theme="dark"] .xynoplex-button[data-variant="ghost"]:active:not(:disabled):not([data-disabled="true"]),
-[data-theme="dark"] .xynoplex-button[data-variant="ghost"][data-active="true"]:not(:disabled):not([data-disabled="true"]) {
-  background-color: var(--xynoplex-color-neutral-700);
+[data-theme="dark"] .xynolog-button[data-variant="ghost"]:active:not(:disabled):not([data-disabled="true"]),
+[data-theme="dark"] .xynolog-button[data-variant="ghost"][data-active="true"]:not(:disabled):not([data-disabled="true"]) {
+  background-color: var(--xynolog-color-neutral-700);
 }
 
 /* Secondary variant in dark mode */
-[data-theme="dark"] .xynoplex-button[data-variant="secondary"] {
-  background-color: var(--xynoplex-color-neutral-700);
-  color: var(--xynoplex-color-neutral-100);
+[data-theme="dark"] .xynolog-button[data-variant="secondary"] {
+  background-color: var(--xynolog-color-neutral-700);
+  color: var(--xynolog-color-neutral-100);
 }
 
-[data-theme="dark"] .xynoplex-button[data-variant="secondary"]:hover:not(:disabled):not([data-disabled="true"]) {
-  background-color: var(--xynoplex-color-neutral-600);
+[data-theme="dark"] .xynolog-button[data-variant="secondary"]:hover:not(:disabled):not([data-disabled="true"]) {
+  background-color: var(--xynolog-color-neutral-600);
 }
 
-[data-theme="dark"] .xynoplex-button[data-variant="secondary"]:active:not(:disabled):not([data-disabled="true"]),
-[data-theme="dark"] .xynoplex-button[data-variant="secondary"][data-active="true"]:not(:disabled):not([data-disabled="true"]) {
-  background-color: var(--xynoplex-color-neutral-500);
+[data-theme="dark"] .xynolog-button[data-variant="secondary"]:active:not(:disabled):not([data-disabled="true"]),
+[data-theme="dark"] .xynolog-button[data-variant="secondary"][data-active="true"]:not(:disabled):not([data-disabled="true"]) {
+  background-color: var(--xynolog-color-neutral-500);
 }
 
 /* ============================================
@@ -436,51 +436,51 @@
    ============================================ */
 
 /* Default panel button (inactive) */
-.xynoplex-panel-button {
-  background-color: var(--xynoplex-bg-tertiary);
-  color: var(--xynoplex-text-primary);
+.xynolog-panel-button {
+  background-color: var(--xynolog-bg-tertiary);
+  color: var(--xynolog-text-primary);
   padding: 0.5rem 0.75rem;
-  border-radius: var(--xynoplex-radius-lg);
-  font-size: var(--xynoplex-text-sm);
-  font-weight: var(--xynoplex-font-medium);
-  transition: all var(--xynoplex-duration-base);
+  border-radius: var(--xynolog-radius-lg);
+  font-size: var(--xynolog-text-sm);
+  font-weight: var(--xynolog-font-medium);
+  transition: all var(--xynolog-duration-base);
   cursor: pointer;
   border: none;
 }
 
-.xynoplex-panel-button:hover {
-  background-color: var(--xynoplex-color-neutral-300);
+.xynolog-panel-button:hover {
+  background-color: var(--xynolog-color-neutral-300);
 }
 
 /* Active/selected state */
-.xynoplex-panel-button-active {
-  background-color: var(--xynoplex-color-primary-600);
-  color: var(--xynoplex-color-white);
+.xynolog-panel-button-active {
+  background-color: var(--xynolog-color-primary-600);
+  color: var(--xynolog-color-white);
 }
 
-.xynoplex-panel-button-active:hover {
-  background-color: var(--xynoplex-color-primary-700);
+.xynolog-panel-button-active:hover {
+  background-color: var(--xynolog-color-primary-700);
 }
 
 /* Dark mode adjustments */
-[data-theme="dark"] .xynoplex-panel-button {
-  background-color: var(--xynoplex-color-neutral-700);
-  color: var(--xynoplex-text-primary);
+[data-theme="dark"] .xynolog-panel-button {
+  background-color: var(--xynolog-color-neutral-700);
+  color: var(--xynolog-text-primary);
 }
 
-[data-theme="dark"] .xynoplex-panel-button:hover {
-  background-color: var(--xynoplex-color-neutral-600);
+[data-theme="dark"] .xynolog-panel-button:hover {
+  background-color: var(--xynolog-color-neutral-600);
 }
 
-[data-theme="dark"] .xynoplex-panel-button-active {
-  background-color: var(--xynoplex-color-primary-600);
-  color: var(--xynoplex-color-white);
+[data-theme="dark"] .xynolog-panel-button-active {
+  background-color: var(--xynolog-color-primary-600);
+  color: var(--xynolog-color-white);
 }
 
 /* Hover lifts. The dark active state is primary-600, so hovering to 700 would
-   sink it — the opposite of the sibling .xynoplex-panel-button:hover above. */
-[data-theme="dark"] .xynoplex-panel-button-active:hover {
-  background-color: var(--xynoplex-color-primary-500);
+   sink it — the opposite of the sibling .xynolog-panel-button:hover above. */
+[data-theme="dark"] .xynolog-panel-button-active:hover {
+  background-color: var(--xynolog-color-primary-500);
 }
 
 /* ============================================
@@ -488,10 +488,10 @@
    ============================================ */
 
 /* Primary button with cyan/blue gradient */
-.xynoplex-button--primary {
-  background: var(--xynoplex-gradient-primary);
-  color: var(--xynoplex-color-primary-700);
-  border: 1px solid var(--xynoplex-color-primary-300);
+.xynolog-button--primary {
+  background: var(--xynolog-gradient-primary);
+  color: var(--xynolog-color-primary-700);
+  border: 1px solid var(--xynolog-color-primary-300);
   padding: 0.5rem 1.5rem;
   border-radius: 0.5rem;
   font-weight: 500;
@@ -504,40 +504,40 @@
   cursor: pointer;
 }
 
-.xynoplex-button--primary:hover:not(:disabled) {
-  background: var(--xynoplex-gradient-primary-hover);
-  color: var(--xynoplex-color-neutral-0);
-  border-color: var(--xynoplex-color-primary-600);
+.xynolog-button--primary:hover:not(:disabled) {
+  background: var(--xynolog-gradient-primary-hover);
+  color: var(--xynolog-color-neutral-0);
+  border-color: var(--xynolog-color-primary-600);
 }
 
-.xynoplex-button--primary:disabled {
+.xynolog-button--primary:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
 /* Dark mode primary button */
-[data-theme="dark"] .xynoplex-button--primary {
-  background: var(--xynoplex-gradient-primary-dark);
-  color: var(--xynoplex-color-primary-400);
-  border-color: var(--xynoplex-color-primary-500);
+[data-theme="dark"] .xynolog-button--primary {
+  background: var(--xynolog-gradient-primary-dark);
+  color: var(--xynolog-color-primary-400);
+  border-color: var(--xynolog-color-primary-500);
 }
 
-[data-theme="dark"] .xynoplex-button--primary:hover:not(:disabled) {
-  background: var(--xynoplex-gradient-primary-hover-dark);
-  color: var(--xynoplex-color-neutral-0);
-  border-color: var(--xynoplex-color-primary-400);
+[data-theme="dark"] .xynolog-button--primary:hover:not(:disabled) {
+  background: var(--xynolog-gradient-primary-hover-dark);
+  color: var(--xynolog-color-neutral-0);
+  border-color: var(--xynolog-color-primary-400);
 }
 
 /* Generating state pulse */
-.xynoplex-button--primary[data-generating="true"] {
-  animation: xynoplex-button-pulse 1.5s ease-in-out infinite;
+.xynolog-button--primary[data-generating="true"] {
+  animation: xynolog-button-pulse 1.5s ease-in-out infinite;
 }
 
-[data-theme="dark"] .xynoplex-button--primary[data-generating="true"] {
-  animation: xynoplex-button-pulse-dark 1.5s ease-in-out infinite;
+[data-theme="dark"] .xynolog-button--primary[data-generating="true"] {
+  animation: xynolog-button-pulse-dark 1.5s ease-in-out infinite;
 }
 
-@keyframes xynoplex-button-pulse {
+@keyframes xynolog-button-pulse {
   0%, 100% {
     transform: scale(1);
     box-shadow: 0 0 8px 2px rgba(59, 130, 246, 0.5);
@@ -548,7 +548,7 @@
   }
 }
 
-@keyframes xynoplex-button-pulse-dark {
+@keyframes xynolog-button-pulse-dark {
   0%, 100% {
     transform: scale(1);
     box-shadow: 0 0 8px 2px rgba(96, 165, 250, 0.6);
@@ -560,20 +560,20 @@
 }
 
 /* Large variant */
-.xynoplex-button--large {
+.xynolog-button--large {
   width: 100%;
   padding: 0.75rem 1rem;
   font-weight: 500;
 }
 
-.xynoplex-button--large:hover:not(:disabled) {
+.xynolog-button--large:hover:not(:disabled) {
   transform: scale(1.02);
 }
 
 /* Secondary button */
-.xynoplex-button--secondary {
+.xynolog-button--secondary {
   background: rgba(0, 0, 0, 0.1);
-  color: var(--xynoplex-color-gray-900);
+  color: var(--xynolog-color-gray-900);
   border: 1px solid rgba(0, 0, 0, 0.2);
   padding: 0.5rem 1.5rem;
   border-radius: 0.5rem;
@@ -584,33 +584,33 @@
   cursor: pointer;
 }
 
-.xynoplex-button--secondary:hover:not(:disabled) {
+.xynolog-button--secondary:hover:not(:disabled) {
   background: rgba(0, 0, 0, 0.2);
 }
 
-.xynoplex-button--secondary:disabled {
+.xynolog-button--secondary:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-[data-theme="dark"] .xynoplex-button--secondary {
+[data-theme="dark"] .xynolog-button--secondary {
   background: rgba(255, 255, 255, 0.1);
-  color: var(--xynoplex-color-neutral-0);
+  color: var(--xynolog-color-neutral-0);
   border-color: rgba(255, 255, 255, 0.2);
 }
 
-[data-theme="dark"] .xynoplex-button--secondary:hover:not(:disabled) {
+[data-theme="dark"] .xynolog-button--secondary:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.2);
 }
 
 /* Scale modifier */
-.xynoplex-button--scale:hover:not(:disabled) {
+.xynolog-button--scale:hover:not(:disabled) {
   transform: scale(1.05);
 }
 
 /* Tertiary button */
-.xynoplex-button--tertiary {
-  color: var(--xynoplex-color-gray-700);
+.xynolog-button--tertiary {
+  color: var(--xynolog-color-gray-700);
   padding: 0.5rem 1rem;
   border-radius: 0.5rem;
   transition: colors 150ms;
@@ -622,23 +622,23 @@
   cursor: pointer;
 }
 
-.xynoplex-button--tertiary:hover:not(:disabled) {
-  background: var(--xynoplex-color-gray-100);
+.xynolog-button--tertiary:hover:not(:disabled) {
+  background: var(--xynolog-color-gray-100);
 }
 
-[data-theme="dark"] .xynoplex-button--tertiary {
-  color: var(--xynoplex-color-gray-300);
+[data-theme="dark"] .xynolog-button--tertiary {
+  color: var(--xynolog-color-gray-300);
 }
 
-[data-theme="dark"] .xynoplex-button--tertiary:hover:not(:disabled) {
-  background: var(--xynoplex-color-gray-700);
+[data-theme="dark"] .xynolog-button--tertiary:hover:not(:disabled) {
+  background: var(--xynolog-color-gray-700);
 }
 
 /* Danger button */
-.xynoplex-button--danger {
-  color: var(--xynoplex-color-red-600);
+.xynolog-button--danger {
+  color: var(--xynolog-color-red-600);
   padding: 0.5rem 1.5rem;
-  border: 1px solid var(--xynoplex-color-red-200);
+  border: 1px solid var(--xynolog-color-red-200);
   border-radius: 0.5rem;
   transition: all 300ms;
   background: transparent;
@@ -648,24 +648,24 @@
   cursor: pointer;
 }
 
-.xynoplex-button--danger:hover:not(:disabled) {
-  background: var(--xynoplex-color-red-50);
+.xynolog-button--danger:hover:not(:disabled) {
+  background: var(--xynolog-color-red-50);
 }
 
-[data-theme="dark"] .xynoplex-button--danger {
-  color: var(--xynoplex-color-red-400);
-  border-color: var(--xynoplex-color-red-800);
+[data-theme="dark"] .xynolog-button--danger {
+  color: var(--xynolog-color-red-400);
+  border-color: var(--xynolog-color-red-800);
 }
 
-[data-theme="dark"] .xynoplex-button--danger:hover:not(:disabled) {
+[data-theme="dark"] .xynolog-button--danger:hover:not(:disabled) {
   background: rgba(239, 68, 68, 0.2);
 }
 
 /* Warning button */
-.xynoplex-button--warning {
+.xynolog-button--warning {
   background: rgba(251, 191, 36, 0.2);
-  color: var(--xynoplex-color-amber-800);
-  border: 1px solid var(--xynoplex-color-amber-300);
+  color: var(--xynolog-color-amber-800);
+  border: 1px solid var(--xynolog-color-amber-300);
   padding: 0.5rem 1.5rem;
   border-radius: 0.5rem;
   transition: all 300ms;
@@ -676,97 +676,97 @@
   cursor: pointer;
 }
 
-.xynoplex-button--warning:hover:not(:disabled) {
+.xynolog-button--warning:hover:not(:disabled) {
   background: rgba(251, 191, 36, 0.3);
-  color: var(--xynoplex-color-amber-900);
-  border-color: var(--xynoplex-color-amber-500);
+  color: var(--xynolog-color-amber-900);
+  border-color: var(--xynolog-color-amber-500);
 }
 
-[data-theme="dark"] .xynoplex-button--warning {
+[data-theme="dark"] .xynolog-button--warning {
   background: rgba(245, 158, 11, 0.2);
-  color: var(--xynoplex-color-amber-300);
-  border-color: var(--xynoplex-color-amber-500);
+  color: var(--xynolog-color-amber-300);
+  border-color: var(--xynolog-color-amber-500);
 }
 
-[data-theme="dark"] .xynoplex-button--warning:hover:not(:disabled) {
+[data-theme="dark"] .xynolog-button--warning:hover:not(:disabled) {
   background: rgba(245, 158, 11, 0.3);
-  color: var(--xynoplex-color-amber-200);
-  border-color: var(--xynoplex-color-amber-400);
+  color: var(--xynolog-color-amber-200);
+  border-color: var(--xynolog-color-amber-400);
 }
 
 /* Sign out button */
-.xynoplex-signout-button {
-  background-color: var(--xynoplex-bg-secondary);
-  color: var(--xynoplex-text-primary);
+.xynolog-signout-button {
+  background-color: var(--xynolog-bg-secondary);
+  color: var(--xynolog-text-primary);
   padding: 0.5rem 1rem;
-  border-radius: var(--xynoplex-radius-lg);
-  font-size: var(--xynoplex-text-sm);
-  font-weight: var(--xynoplex-font-medium);
-  transition: all var(--xynoplex-duration-base);
+  border-radius: var(--xynolog-radius-lg);
+  font-size: var(--xynolog-text-sm);
+  font-weight: var(--xynolog-font-medium);
+  transition: all var(--xynolog-duration-base);
   cursor: pointer;
   border: none;
   width: 100%;
 }
 
-.xynoplex-signout-button:hover {
-  background-color: var(--xynoplex-bg-tertiary);
+.xynolog-signout-button:hover {
+  background-color: var(--xynolog-bg-tertiary);
 }
 
-.xynoplex-signout-button:focus-visible {
-  outline: 2px solid var(--xynoplex-color-primary-500);
+.xynolog-signout-button:focus-visible {
+  outline: 2px solid var(--xynolog-color-primary-500);
   outline-offset: 2px;
 }
 
-[data-theme="dark"] .xynoplex-signout-button {
-  background-color: var(--xynoplex-color-neutral-700);
-  color: var(--xynoplex-text-primary);
+[data-theme="dark"] .xynolog-signout-button {
+  background-color: var(--xynolog-color-neutral-700);
+  color: var(--xynolog-text-primary);
 }
 
-[data-theme="dark"] .xynoplex-signout-button:hover {
-  background-color: var(--xynoplex-color-neutral-600);
+[data-theme="dark"] .xynolog-signout-button:hover {
+  background-color: var(--xynolog-color-neutral-600);
 }
 
 /* Session info box */
-.xynoplex-session-box {
-  background-color: var(--xynoplex-bg-secondary);
+.xynolog-session-box {
+  background-color: var(--xynolog-bg-secondary);
   padding: 0.5rem 0.75rem;
-  border-radius: var(--xynoplex-radius-lg);
+  border-radius: var(--xynolog-radius-lg);
 }
 
-[data-theme="dark"] .xynoplex-session-box {
-  background-color: var(--xynoplex-color-neutral-800);
+[data-theme="dark"] .xynolog-session-box {
+  background-color: var(--xynolog-color-neutral-800);
 }
 
 /* The spinner SVG's two halves: a faint full ring, and the arc that turns.
    The rotation lives on the svg, so these only carry the contrast. */
-.xynoplex-spinner-circle {
+.xynolog-spinner-circle {
   opacity: 0.25;
 }
 
-.xynoplex-spinner-path {
+.xynolog-spinner-path {
   opacity: 0.75;
 }
 
 /* A control that reads as text — used inside body copy where a button's
    weight would shout. */
-.xynoplex-text-button {
+.xynolog-text-button {
   padding: 0;
   border: none;
   background: none;
-  color: var(--xynoplex-color-primary-600);
-  font-size: var(--xynoplex-text-sm);
+  color: var(--xynolog-color-primary-600);
+  font-size: var(--xynolog-text-sm);
   cursor: pointer;
 }
 
-.xynoplex-text-button:hover {
+.xynolog-text-button:hover {
   text-decoration: underline;
 }
 
-.xynoplex-text-button:focus-visible {
-  outline: 2px solid var(--xynoplex-color-primary-500);
+.xynolog-text-button:focus-visible {
+  outline: 2px solid var(--xynolog-color-primary-500);
   outline-offset: 2px;
 }
 
-[data-theme="dark"] .xynoplex-text-button {
-  color: var(--xynoplex-color-primary-400);
+[data-theme="dark"] .xynolog-text-button {
+  color: var(--xynolog-color-primary-400);
 }

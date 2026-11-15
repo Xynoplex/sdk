@@ -3,7 +3,7 @@
  */
 
 import type { components } from './types';
-import { XynoplexError } from './errors';
+import { XynologError } from './errors';
 import type { TransportErrorCode } from './generated/error-codes';
 import type { ResourceDescriptor } from './graph';
 import type { ResourceId } from './identifiers';
@@ -39,7 +39,7 @@ export function getPrimaryRepresentation(resource: ResourceDescriptor | undefine
   const stated: unknown = resource.representations;
   if (isRepresentation(stated)) return stated;
   if (Array.isArray(stated) && stated.every(isRepresentation)) return stated[0];
-  throw new XynoplexError(
+  throw new XynologError(
     `The resource ${resource['@id']} is no ResourceDescriptor: its representations are ${stated === undefined ? 'not stated' : 'neither one representation nor a list of them'}`,
     'error' satisfies TransportErrorCode,
   );
@@ -117,7 +117,7 @@ export function isDraft(resource: ResourceDescriptor | undefined): boolean {
  * @param buffer - The raw representation data
  * @param mediaType - Media type with optional charset (e.g., "text/plain; charset=iso-8859-1")
  * @returns Decoded string
- * @throws A `XynoplexError` whose code is `error`: naming the media type, for one whose bytes are not its text, and naming the charset, for one that is not decoded
+ * @throws A `XynologError` whose code is `error`: naming the media type, for one whose bytes are not its text, and naming the charset, for one that is not decoded
  *
  * @example
  * ```typescript
@@ -136,7 +136,7 @@ export function decodeRepresentation(buffer: ArrayBuffer | Uint8Array, mediaType
   // this gate follows automatically.
   const source = textSourceOf(mediaType);
   if (derivesTextOf(mediaType) || source === 'none') {
-    throw new XynoplexError(
+    throw new XynologError(
       `decodeRepresentation refused ${mediaType}: its text source is '${source}' — ` +
       `derived text comes from the anchored-text read, never from decoding bytes`,
       'error' satisfies TransportErrorCode,

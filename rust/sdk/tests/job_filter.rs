@@ -3,9 +3,9 @@
 //! dispatcher's claims and each SDK's reading of an announcement answer
 //! through this crate's `job_matches_filter`.
 
-use xynoplex::job_filter::job_matches_filter;
-use xynoplex::types::JobFilter;
 use serde_json::Value;
+use xynolog::job_filter::job_matches_filter;
+use xynolog::types::JobFilter;
 
 fn cases() -> Vec<Value> {
     let table: Value = serde_json::from_str(include_str!("../specs/jobs/filter-cases.json"))

@@ -41,9 +41,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { filter, map } from 'rxjs/operators';
 import type { Observable } from 'rxjs';
-import { BRIDGED_CHANNELS, EventBus, resourceId as makeResourceId } from '@xynoplex/core';
-import { FaultyTransport, refuseUnscriptedOperation } from '@xynoplex/core/testing';
-import { assertLivenessAxioms } from '@xynoplex/core/testing/axioms';
+import { BRIDGED_CHANNELS, EventBus, resourceId as makeResourceId } from '@xynolog/core';
+import { FaultyTransport, refuseUnscriptedOperation } from '@xynolog/core/testing';
+import { assertLivenessAxioms } from '@xynolog/core/testing/axioms';
 import { BrowseNamespace } from '../namespaces/browse';
 import { contentTransportSpies } from './helpers/in-memory-transport';
 import { mockResource } from './fixtures/resource';

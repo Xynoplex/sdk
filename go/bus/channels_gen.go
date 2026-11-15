@@ -4,7 +4,7 @@
 
 package bus
 
-import "github.com/Xynoplex/sdk/go/api"
+import "github.com/xynolog/sdk/go/api"
 
 // Channel is a bus channel's name: what a channel chosen at run time is
 // given as, and what each typed value below is named by.

@@ -13,19 +13,19 @@ import { describe, it, expect, vi } from 'vitest';
 import { screen, fireEvent } from '@testing-library/react';
 import { renderInEnglish } from '../../../../test-utils';
 import '@testing-library/jest-dom';
-import type { XynoplexSession } from '@xynoplex/sdk';
+import type { XynologSession } from '@xynolog/sdk';
 import type { LinkComponentProps, RouteBuilder } from '../../../../contexts/RoutingContext';
 import { UnifiedAnnotationsPanel } from '../UnifiedAnnotationsPanel';
 import { ANNOTATORS } from '../../../../lib/annotation-registry';
-import { resourceId, EventBus } from '@xynoplex/core';
+import { resourceId, EventBus } from '@xynolog/core';
 
 const TestLink = ({ href, children, ...rest }: LinkComponentProps) => <a href={href} {...rest}>{children}</a>;
 const testRoutes: RouteBuilder = { resourceDetail: (id) => `/r/${id}` };
 
-function fakeSession(): XynoplexSession {
+function fakeSession(): XynologSession {
   return {
     client: { bus: new EventBus(), browse: { click: vi.fn() }, beckon: { hover: vi.fn() } },
-  } as unknown as XynoplexSession;
+  } as unknown as XynologSession;
 }
 
 type PanelProps = React.ComponentProps<typeof UnifiedAnnotationsPanel>;

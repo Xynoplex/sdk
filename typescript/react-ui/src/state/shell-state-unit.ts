@@ -1,7 +1,7 @@
 /**
  * ShellStateUnit — app-shell state: which toolbar panel is open, tab-bar
  * coordination helpers, scroll-to-annotation signals. Lives on
- * `XynoplexBrowser`'s app-scoped bus (not the per-session client bus)
+ * `XynologBrowser`'s app-scoped bus (not the per-session client bus)
  * because panel toggles and shell chrome must work regardless of
  * whether a KB session is active.
  *
@@ -9,8 +9,8 @@
  */
 
 import { BehaviorSubject, type Observable, type Subscription } from 'rxjs';
-import type { XynoplexBrowser } from '@xynoplex/sdk';
-import type { StateUnit } from '@xynoplex/core';
+import type { XynologBrowser } from '@xynolog/sdk';
+import type { StateUnit } from '@xynolog/core';
 import { annotatorKeyForMotivation, type AnnotatorKey } from '../lib/annotation-registry';
 
 export type ToolbarPanelType = 'history' | 'info' | 'annotations' | 'settings' | 'collaboration' | 'user' | 'jsonld' | 'knowledge-base';
@@ -38,7 +38,7 @@ export interface ShellStateUnitOptions {
  * @emits panel:close - Close the open panel. Payload: undefined
  * @emits panel:toggle - Open a panel, or close it when it is the open one. Payload: { panel: string }
  */
-export function createShellStateUnit(browser: XynoplexBrowser, options?: ShellStateUnitOptions): ShellStateUnit {
+export function createShellStateUnit(browser: XynologBrowser, options?: ShellStateUnitOptions): ShellStateUnit {
   const subs: Subscription[] = [];
   const activePanel$ = new BehaviorSubject<ToolbarPanelType | null>(options?.initialPanel ?? null);
   const scrollToAnnotationId$ = new BehaviorSubject<string | null>(null);

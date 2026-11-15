@@ -15,11 +15,11 @@ const stableMockSession = { client: stableMockClient };
 const stableActiveSession$ = new BehaviorSubject(stableMockSession);
 const stableMockBrowser = { activeSession$: stableActiveSession$ };
 
-vi.mock('../../session/XynoplexProvider', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../../session/XynoplexProvider')>();
+vi.mock('../../session/XynologProvider', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../session/XynologProvider')>();
   return {
     ...actual,
-    useXynoplex: () => stableMockBrowser,
+    useXynolog: () => stableMockBrowser,
   };
 });
 

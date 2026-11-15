@@ -370,8 +370,8 @@ let tls ~trusted ~host () =
     check "server also completed the authenticated handshake" true (peer = Ok ())
 
 let payload_wire () =
-  let module B = Xynoplex.Bus_registry in
-  let module W = Xynoplex.Wire_stream in
+  let module B = Xynolog.Bus_registry in
+  let module W = Xynolog.Wire_stream in
   Eio_main.run @@ fun env ->
   with_listener env @@ fun sw socket address port ->
   let url = Uri.of_string (Printf.sprintf "http://localhost:%d/bus" port) in
@@ -413,7 +413,7 @@ let payload_wire () =
   (match W.read input with
   | Some
       (Error
-         (W.Invalid_frame (Some route, Xynoplex.Models.Invalid_payload fault)))
+         (W.Invalid_frame (Some route, Xynolog.Models.Invalid_payload fault)))
     ->
       Alcotest.(check (option string))
         "refusal keeps correlation" (Some "request") route.correlation_id;
@@ -432,8 +432,8 @@ let payload_wire () =
   Promise.await_exn server
 
 let subscription_replay () =
-  let module B = Xynoplex.Bus_registry in
-  let module S = Xynoplex.Subscription in
+  let module B = Xynolog.Bus_registry in
+  let module S = Xynolog.Subscription in
   Eio_main.run @@ fun env ->
   with_listener env @@ fun sw socket address port ->
   let base = Eio_mock.Clock.Mono.make () in
@@ -457,7 +457,7 @@ let subscription_replay () =
   end in
   let monotonic = Eio.Resource.T ((), Eio.Time.Pi.clock (module Timer)) in
   let clock =
-    Xynoplex.Clock.make ~monotonic ~wall:(Eio.Stdenv.clock env) ~jitter
+    Xynolog.Clock.make ~monotonic ~wall:(Eio.Stdenv.clock env) ~jitter
   in
   let sent, send = Promise.create () in
   let release, release_peer = Promise.create () in
@@ -558,8 +558,8 @@ let subscription_replay () =
   Promise.await_exn server
 
 let scope_handoff () =
-  let module B = Xynoplex.Bus_registry in
-  let module S = Xynoplex.Subscription in
+  let module B = Xynolog.Bus_registry in
+  let module S = Xynolog.Subscription in
   Eio_main.run @@ fun env ->
   Switch.run @@ fun sw ->
   let base = Eio_mock.Clock.Mono.make () in
@@ -576,7 +576,7 @@ let scope_handoff () =
   end in
   let monotonic = Eio.Resource.T ((), Eio.Time.Pi.clock (module Timer)) in
   let clock =
-    Xynoplex.Clock.make ~monotonic ~wall:(Eio.Stdenv.clock env)
+    Xynolog.Clock.make ~monotonic ~wall:(Eio.Stdenv.clock env)
       ~jitter:(Random.State.make [| 0 |])
   in
   let module Source = struct
@@ -625,7 +625,7 @@ let scope_handoff () =
   in
   let read id =
     match Eio.Stream.take events with
-    | Ok (Xynoplex.Wire_stream.Frame { id = Some actual; _ }) ->
+    | Ok (Xynolog.Wire_stream.Frame { id = Some actual; _ }) ->
         Alcotest.(check string) "event delivered once" id actual
     | _ -> Alcotest.fail "expected event"
   in
@@ -634,7 +634,7 @@ let scope_handoff () =
   let scope =
     {
       S.resource =
-        Result.get_ok (Xynoplex.Identifiers.Resource_id.of_string "res-1");
+        Result.get_ok (Xynolog.Identifiers.Resource_id.of_string "res-1");
       channels = [ B.Channel B.Channels.mark_removed ];
     }
   in
@@ -714,7 +714,7 @@ let scope_handoff () =
     (List.sort Int.compare !closed)
 
 let credential_renewal () =
-  let module S = Xynoplex.Subscription in
+  let module S = Xynolog.Subscription in
   Eio_main.run @@ fun _ ->
   Switch.run @@ fun sw ->
   let current = ref (Some "first") in

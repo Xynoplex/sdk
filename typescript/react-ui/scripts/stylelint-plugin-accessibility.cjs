@@ -1,7 +1,7 @@
 const stylelint = require('stylelint');
 const { report, ruleMessages, validateOptions } = stylelint.utils;
 
-const ruleName = 'xynoplex/accessibility';
+const ruleName = 'xynolog/accessibility';
 const messages = ruleMessages(ruleName, {
   missingFocusVisible: (selector) => `Missing :focus-visible styles for interactive element "${selector}". Add keyboard focus indicators.`,
   insufficientColorContrast: (property) => `Potential color contrast issue in "${property}". Ensure WCAG AA compliance (4.5:1 for normal text, 3:1 for large text).`,
@@ -29,17 +29,17 @@ const ANIMATION_PROPERTIES = [
 // Interactive selectors that need focus styles
 const INTERACTIVE_PATTERNS = [
   /button/i,
-  /\.xynoplex-[a-z-]*btn/,
-  /\.xynoplex-[a-z-]*button/,
-  /\.xynoplex-[a-z-]*link/,
+  /\.xynolog-[a-z-]*btn/,
+  /\.xynolog-[a-z-]*button/,
+  /\.xynolog-[a-z-]*link/,
   // `tab` must END a name segment, or the `tab` inside `edi-tab-le` makes
-  // `.xynoplex-resource-tag--editable` an interactive element.
-  /\.xynoplex-[a-z-]*tabs?(?![a-z])/,
-  /\.xynoplex-chip/,
-  /\.xynoplex-[a-z-]*clickable/,
-  /\.xynoplex-[a-z-]*interactive/,
+  // `.xynolog-resource-tag--editable` an interactive element.
+  /\.xynolog-[a-z-]*tabs?(?![a-z])/,
+  /\.xynolog-chip/,
+  /\.xynolog-[a-z-]*clickable/,
+  /\.xynolog-[a-z-]*interactive/,
   // Element selectors, so they must not match as substrings: `select` inside
-  // `.xynoplex-selected-text-display` is a past participle, not a form control.
+  // `.xynolog-selected-text-display` is a past participle, not a form control.
   /\binput\b/,
   /\bselect\b/,
   /\btextarea\b/,
@@ -122,7 +122,7 @@ function hasFocusStyles(selector, root) {
 
   // If no direct focus, check if base class has focus styles (for variants/modifiers)
   if (!hasFocus && selector.includes('[')) {
-    // Extract base class from selector like .xynoplex-button[data-variant="primary"]
+    // Extract base class from selector like .xynolog-button[data-variant="primary"]
     const baseClass = selector.split('[')[0];
     if (baseClass) {
       return hasFocusStyles(baseClass, root);
@@ -301,8 +301,8 @@ const plugin = stylelint.createPlugin(
                 !selector.includes('::after') &&
                 !selector.includes('.sr-only') &&
                 !selector.includes('icon') &&
-                !selector.includes('.xynoplex-hidden') &&  // Utility class for programmatic hiding
-                !selector.includes('.xynoplex-form__upload-input')) {  // Hidden file input with accessible button
+                !selector.includes('.xynolog-hidden') &&  // Utility class for programmatic hiding
+                !selector.includes('.xynolog-form__upload-input')) {  // Hidden file input with accessible button
               report({
                 message: messages.hiddenContentWarning(selector),
                 node: decl,
@@ -373,26 +373,26 @@ const plugin = stylelint.createPlugin(
       interactiveSelectors.forEach((selector) => {
         // Skip checking for common elements that have global focus styles
         const hasGlobalFocusStyles =
-          selector.includes('.xynoplex-button') ||
-          selector.includes('.xynoplex-panel-button') ||
-          selector.includes('.xynoplex-signout-button') ||
-          selector.includes('.xynoplex-modal__selection') ||
-          selector.includes('.xynoplex-skip-link') ||
-          selector.includes('.xynoplex-form__upload-input') ||
-          selector.includes('.xynoplex-form__entity-type-button') ||
-          selector.includes('.xynoplex-language-select') ||
-          selector.includes('.xynoplex-tagging-panel__input') ||
-          selector.includes('.xynoplex-comments-panel__input') ||
-          selector.includes('.xynoplex-card__search-input') ||
-          selector.includes('.xynoplex-selection-indicator') ||
-          selector.includes('.xynoplex-highlight-panel__color') ||
-          selector.includes('.xynoplex-detect-button') ||
-          selector.includes('.xynoplex-detect-widget__button') ||
-          selector.includes('.xynoplex-reference-button') ||
-          selector.includes('.xynoplex-resource-button') ||
-          selector.includes('.xynoplex-toolbar-button') ||
-          selector.includes('.xynoplex-toolbar-menu-button') ||
-          selector.includes('.xynoplex-table') ||
+          selector.includes('.xynolog-button') ||
+          selector.includes('.xynolog-panel-button') ||
+          selector.includes('.xynolog-signout-button') ||
+          selector.includes('.xynolog-modal__selection') ||
+          selector.includes('.xynolog-skip-link') ||
+          selector.includes('.xynolog-form__upload-input') ||
+          selector.includes('.xynolog-form__entity-type-button') ||
+          selector.includes('.xynolog-language-select') ||
+          selector.includes('.xynolog-tagging-panel__input') ||
+          selector.includes('.xynolog-comments-panel__input') ||
+          selector.includes('.xynolog-card__search-input') ||
+          selector.includes('.xynolog-selection-indicator') ||
+          selector.includes('.xynolog-highlight-panel__color') ||
+          selector.includes('.xynolog-detect-button') ||
+          selector.includes('.xynolog-detect-widget__button') ||
+          selector.includes('.xynolog-reference-button') ||
+          selector.includes('.xynolog-resource-button') ||
+          selector.includes('.xynolog-toolbar-button') ||
+          selector.includes('.xynolog-toolbar-menu-button') ||
+          selector.includes('.xynolog-table') ||
           selector === 'input' ||
           selector === 'textarea' ||
           selector === 'select' ||

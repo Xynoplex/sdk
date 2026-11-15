@@ -29,7 +29,7 @@ def source_inputs(recipe):
 
 def installed_api(recipe):
     subprocess.run(['dune', 'build', '@install', 'probes/api_inventory.exe'], cwd=root, check=True)
-    installed = root / '_build/install/default/lib/xynoplex'
+    installed = root / '_build/install/default/lib/xynolog'
     public_units = sorted(path for path in installed.rglob('*.cmi')
                           if '.private' not in path.relative_to(installed).parts
                           and '__' not in path.stem)

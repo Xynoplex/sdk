@@ -8,14 +8,14 @@ use axum::extract::State;
 use axum::http::{StatusCode, Uri, header};
 use axum::response::{IntoResponse, Response};
 use bytes::Bytes;
-use xynoplex::channels::BRIDGED_CHANNELS;
-use xynoplex::errors::{TransportError, TransportErrorCode};
-use xynoplex::transport::{GatewayOperations, Transport};
-use xynoplex_http_transport::transport::{HttpTransport, HttpTransportConfig, Timing};
 use std::convert::Infallible;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use tokio::sync::watch;
+use xynolog::channels::BRIDGED_CHANNELS;
+use xynolog::errors::{TransportError, TransportErrorCode};
+use xynolog::transport::{GatewayOperations, Transport};
+use xynolog_http_transport::transport::{HttpTransport, HttpTransportConfig, Timing};
 
 /// The media type and the body the stand-in answers `GET /api/users/me` with.
 type Answering = Arc<Mutex<(&'static str, &'static str)>>;

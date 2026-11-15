@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useXynoplex } from '../session/XynoplexProvider';
+import { useXynolog } from '../session/XynologProvider';
 import { useObservable } from '../hooks/useObservable';
 import './StatusDisplay.css';
 
@@ -21,16 +21,16 @@ export function StatusDisplay({
   isAuthenticated = false,
   hasValidGatewayToken = false
 }: StatusDisplayProps) {
-  const xynoplex = useObservable(useXynoplex().activeSession$)?.client;
+  const xynolog = useObservable(useXynolog().activeSession$)?.client;
   const [data, setData] = useState<StatusData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    if (!xynoplex) { setLoading(false); return; }
+    if (!xynolog) { setLoading(false); return; }
 
     const fetchStatus = () => {
-      xynoplex.system!.status()
+      xynolog.system!.status()
         .then((result) => {
           setData(result as StatusData);
           setError(null);
@@ -45,7 +45,7 @@ export function StatusDisplay({
     fetchStatus();
     const interval = setInterval(fetchStatus, 30000);
     return () => clearInterval(interval);
-  }, [xynoplex]);
+  }, [xynolog]);
 
   const getStatusContent = () => {
     if (isAuthenticated && !hasValidGatewayToken) {
@@ -97,22 +97,22 @@ export function StatusDisplay({
 
   return (
     <section
-      className="xynoplex-status-display"
+      className="xynolog-status-display"
       data-status={getStatusType()}
       role="status"
       aria-live="polite"
       aria-label="System status information"
     >
-      <p className="xynoplex-status-message">
+      <p className="xynolog-status-message">
         <span className="sr-only">System status: </span>
         {getStatusContent()}
       </p>
       {!isFullyAuthenticated ? (
-        <p className="xynoplex-status-hint">
+        <p className="xynolog-status-hint">
           Sign in to view gateway status
         </p>
       ) : error ? (
-        <p className="xynoplex-status-hint xynoplex-status-error-hint" role="alert">
+        <p className="xynolog-status-hint xynolog-status-error-hint" role="alert">
           <span className="sr-only">Error: </span>
           Check that the gateway server is running and accessible
         </p>

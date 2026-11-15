@@ -1,20 +1,20 @@
-import { FrameRefusal, type AnnotationId } from '@xynoplex/core';
+import { FrameRefusal, type AnnotationId } from '@xynolog/core';
 import { BehaviorSubject, type Observable, map } from 'rxjs';
-import type { AttributedEvent, ResourceId } from '@xynoplex/core';
-import { createDisposer } from '@xynoplex/sdk';
-import type { StateUnit } from '@xynoplex/core';
+import type { AttributedEvent, ResourceId } from '@xynolog/core';
+import { createDisposer } from '@xynolog/sdk';
+import type { StateUnit } from '@xynolog/core';
 import type { ShellStateUnit } from '../../../state/shell-state-unit';
 import { trackList, type ListState } from '../../../state/list-state';
-import { createBeckonStateUnit, type BeckonStateUnit } from '@xynoplex/sdk';
-import { createMarkStateUnit, type MarkStateUnit } from '@xynoplex/sdk';
-import { createGatherStateUnit, type GatherStateUnit } from '@xynoplex/sdk';
-import { createMatchStateUnit } from '@xynoplex/sdk';
-import { createYieldStateUnit, type YieldStateUnit } from '@xynoplex/sdk';
-import type { XynoplexSession } from '@xynoplex/sdk';
+import { createBeckonStateUnit, type BeckonStateUnit } from '@xynolog/sdk';
+import { createMarkStateUnit, type MarkStateUnit } from '@xynolog/sdk';
+import { createGatherStateUnit, type GatherStateUnit } from '@xynolog/sdk';
+import { createMatchStateUnit } from '@xynolog/sdk';
+import { createYieldStateUnit, type YieldStateUnit } from '@xynolog/sdk';
+import type { XynologSession } from '@xynolog/sdk';
 import { groupAnnotations } from '../../../lib/annotation-groups';
-import type { ReferencedByEntry } from '@xynoplex/sdk';
+import type { ReferencedByEntry } from '@xynolog/sdk';
 
-import type { Annotation } from '@xynoplex/core';
+import type { Annotation } from '@xynolog/core';
 
 export interface AnnotationGroups {
   highlights: Annotation[];
@@ -59,7 +59,7 @@ export interface ResourceViewerPageStateUnit extends StateUnit {
 // THIS unit's disposer, which is session-bound; that is layering, not a
 // loophole.
 export function createResourceViewerPageStateUnit(
-  session: XynoplexSession,
+  session: XynologSession,
   resourceId: ResourceId,
   locale: string,
   browse: ShellStateUnit,

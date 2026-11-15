@@ -1,4 +1,4 @@
-package xynoplex
+package xynolog
 
 // Job: a job's lifecycle as it is announced, its status, its cancellation,
 // and, for a worker, the claiming of jobs. Creating a job is Mark.Delegate
@@ -10,8 +10,8 @@ import (
 	"iter"
 	"time"
 
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/bus"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/bus"
 )
 
 // JobNamespace is jobs: their lifecycle, their status, their cancellation,

@@ -21,16 +21,16 @@
  * L4: the property describe silences `[bus LINGER]` (bursty, expected);
  * the dedicated L4 describe below asserts it — the gated breadcrumb fires for
  * a superseded-connection delivery once `busLogEnabled()` is on
- * (`globalThis.__XYNOPLEX_BUS_LOG__`), on the
+ * (`globalThis.__XYNOLOG_BUS_LOG__`), on the
  * deterministic linger-drain scenario borrowed from the hand-written anchor.
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import * as fc from 'fast-check';
 import { Subject, map } from 'rxjs';
-import { assertExactlyOnceDelivery, type DeliverySubject, type DeliveryOp } from '@xynoplex/core/testing/axioms';
+import { assertExactlyOnceDelivery, type DeliverySubject, type DeliveryOp } from '@xynolog/core/testing/axioms';
 import { createActorStateUnit } from '../actor-state-unit';
 import { mockFetch, mockConn, createSSEStream, sseChunkId } from './helpers/mock-conn';
-import { resourceId } from '@xynoplex/core';
+import { resourceId } from '@xynolog/core';
 
 const CHANNEL = 'browse:resource-result';
 
@@ -220,7 +220,7 @@ describe('L3 — delivery across lifecycle transitions', () => {
 // ── L4 — observable degradation: the [bus LINGER] breadcrumb ────────────────
 
 describe('L4 — [bus LINGER] fires for a superseded-connection delivery', () => {
-  const busLogGlobal = globalThis as { __XYNOPLEX_BUS_LOG__?: boolean };
+  const busLogGlobal = globalThis as { __XYNOLOG_BUS_LOG__?: boolean };
 
   beforeEach(() => {
     vi.useRealTimers();
@@ -230,11 +230,11 @@ describe('L4 — [bus LINGER] fires for a superseded-connection delivery', () =>
     vi.spyOn(console, 'debug').mockImplementation(() => {});
     // The gate also turns on busLog's RECV/SSE lines — keep them off stdout.
     vi.spyOn(console, 'log').mockImplementation(() => {});
-    busLogGlobal.__XYNOPLEX_BUS_LOG__ = true;
+    busLogGlobal.__XYNOLOG_BUS_LOG__ = true;
   });
 
   afterEach(() => {
-    delete busLogGlobal.__XYNOPLEX_BUS_LOG__;
+    delete busLogGlobal.__XYNOLOG_BUS_LOG__;
     vi.mocked(console.debug).mockRestore();
     vi.mocked(console.log).mockRestore();
   });

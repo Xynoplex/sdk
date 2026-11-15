@@ -14,7 +14,7 @@ const { execFileSync, spawn } = require('child_process');
 // Configuration
 const PACKAGES = [
   {
-    name: '@xynoplex/react-ui',
+    name: '@xynolog/react-ui',
     input: 'typescript/react-ui/src/styles/index.css',
     output: 'typescript/react-ui/dist/styles/index.css',
     watch: 'typescript/react-ui/src/styles/**/*.css'

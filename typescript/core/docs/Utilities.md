@@ -1,6 +1,6 @@
 # Core Utilities
 
-The small helpers of `@xynoplex/core`, each with a worked example: text encoding, the context around a span of text, anchoring an annotation to its text, SVG selectors, and reading a resource's description. The larger areas of the package are in the [API tour](API.md).
+The small helpers of `@xynolog/core`, each with a worked example: text encoding, the context around a span of text, anchoring an annotation to its text, SVG selectors, and reading a resource's description. The larger areas of the package are in the [API tour](API.md).
 
 All of them are plain functions in the main import, which runs in a browser as well as in Node.
 
@@ -13,7 +13,7 @@ What text a resource's bytes are. The rule is protocol: [the text of a resource]
 A text's bytes as the text they are. This is the one place TypeScript makes a text of bytes: [`decodeRepresentation`](#decode-resource-content) reads with it, and so the SDK's `browse.resourceContent` does, and the Browser calls it itself. It reads whatever bytes it is handed: which media types have bytes that are a text is `decodeRepresentation`'s to say.
 
 ```typescript
-import { decodeWithCharset } from '@xynoplex/core';
+import { decodeWithCharset } from '@xynolog/core';
 
 // UTF-8 document (default)
 const buffer1 = new Uint8Array([72, 101, 108, 108, 111]);
@@ -53,7 +53,7 @@ const span = reconcile(rightText, { exact: 'café' });
 - With no charset stated, UTF-8.
 - Bytes that begin with the byte-order mark of UTF-8, UTF-16BE or UTF-16LE are in that encoding, whatever charset was stated, and the mark is not part of the text.
 - What the encoding does not have is U+FFFD.
-- A charset that is no label of the standard, or that the platform's `TextDecoder` does not decode, throws a `XynoplexError` whose `code` is `error` and whose message names the charset. Nothing is read as UTF-8 in its place.
+- A charset that is no label of the standard, or that the platform's `TextDecoder` does not decode, throws a `XynologError` whose `code` is `error` and whose message names the charset. Nothing is read as UTF-8 in its place.
 
 The cases are [`protocol/specs/src/text/decode-cases.json`](../../../../protocol/specs/src/text/decode-cases.json) and [`protocol/specs/src/text/encoding-cases.json`](../../../../protocol/specs/src/text/encoding-cases.json), which the Rust, Python, Go and Kotlin SDKs' readers run too.
 
@@ -64,7 +64,7 @@ Utilities for extracting prefix/suffix context around text selections and valida
 Every `start` and `end` here is an **offset**: it counts Unicode code points from the start of the text, as a W3C TextPositionSelector does. A JavaScript string is indexed in UTF-16 code units, where a character outside the Basic Multilingual Plane (an emoji, a mathematical letter, some CJK) is two, so the two counts differ after the first such character. `textOffsets` converts, once for a text:
 
 ```typescript
-import { textOffsets } from '@xynoplex/core';
+import { textOffsets } from '@xynolog/core';
 
 const content = "a😀 brown fox";
 const offsets = textOffsets(content);
@@ -79,7 +79,7 @@ offsets.length; // 12: the text's length in code points
 Extract prefix and suffix context for W3C TextQuoteSelector:
 
 ```typescript
-import { extractContext } from '@xynoplex/core';
+import { extractContext } from '@xynolog/core';
 
 const content = "The United States Congress passed the bill.";
 const start = 4;   // the offset of "United"
@@ -100,7 +100,7 @@ const { prefix, suffix } = extractContext(content, start, end);
 The LLM does not supply offsets — it supplies `exact` (a verbatim substring) plus optional prefix/suffix context. `reconcile` computes `start`/`end` by searching the source, producing a span whose offsets (in code points) are provably consistent with the source content. The content is a plain string:
 
 ```typescript
-import { reconcile } from '@xynoplex/core';
+import { reconcile } from '@xynolog/core';
 
 const content = "The quick brown fox jumps over the lazy dog.";
 
@@ -142,13 +142,13 @@ Returns `null` when `exact` is empty or only white space, or is text that doesn'
 `annotationOfSpan` builds the annotation of a span: its selectors, its `id`, and the body and `generator` as given. `annotationOfResource` builds an annotation of a resource as a whole, with no selector. Each annotation's `id` is derived from what it is (the resource, the motivation, the body and where the span is), so building it again builds the same id.
 
 ```typescript
-import { annotationOfResource, annotationOfSpan, reconcile, resourceId, SpanRefusedError, type components } from '@xynoplex/core';
+import { annotationOfResource, annotationOfSpan, reconcile, resourceId, SpanRefusedError, type components } from '@xynolog/core';
 
 const content = "The quick brown fox jumps over the lazy dog.";
 // The agent the worker signed in as, by the DID the gateway named it with, and the engine it ran.
 const generator: components['schemas']['Agent'] = {
   '@type': 'Software',
-  '@id': 'did:web:kb.example:agents:xynoplex-worker',
+  '@id': 'did:web:kb.example:agents:xynolog-worker',
   name: 'ollama gemma3',
   provider: 'ollama',
   model: 'gemma3',
@@ -196,7 +196,7 @@ For a PDF, give `annotationOfSpan` the PDF's `anchored` text in place of `text`:
 `anchorAnnotation` is the renderer's counterpart to `reconcile`. It is **verbatim-only**: it re-anchors on an exact `TextQuoteSelector` match and otherwise renders at the stored offset, flagged — it never fuzzy-matches at render time. The stored selectors are written to agree, so the only legitimate render-time discrepancy is *positional drift* (content shifted above the span). Position is a locality signal used to break ties among verbatim occurrences when context isn't unique. The position given and the anchor answered are offsets, in code points. It takes the content's `textOffsets`, which a renderer with several annotations of one content makes once.
 
 ```typescript
-import { anchorAnnotation, textOffsets } from '@xynoplex/core';
+import { anchorAnnotation, textOffsets } from '@xynolog/core';
 
 const content = "Section A: the parties agree. Section B: the parties agree.";
 const offsets = textOffsets(content);
@@ -235,7 +235,7 @@ W3C-compliant SVG selector creation and parsing for image annotation.
 ### Create Rectangle SVG
 
 ```typescript
-import { createRectangleSvg } from '@xynoplex/core';
+import { createRectangleSvg } from '@xynolog/core';
 
 const svg = createRectangleSvg(
   { x: 10, y: 20 },  // Top-left corner
@@ -249,7 +249,7 @@ console.log(svg);
 ### Create Polygon SVG
 
 ```typescript
-import { createPolygonSvg } from '@xynoplex/core';
+import { createPolygonSvg } from '@xynolog/core';
 
 const svg = createPolygonSvg([
   { x: 0, y: 0 },
@@ -264,7 +264,7 @@ console.log(svg);
 ### Create Circle SVG
 
 ```typescript
-import { createCircleSvg } from '@xynoplex/core';
+import { createCircleSvg } from '@xynolog/core';
 
 const svg = createCircleSvg(
   { x: 50, y: 50 },  // Center
@@ -280,7 +280,7 @@ console.log(svg);
 Extract shape type and data from SVG string:
 
 ```typescript
-import { parseSvgSelector } from '@xynoplex/core';
+import { parseSvgSelector } from '@xynolog/core';
 
 const svg = '<svg xmlns="http://www.w3.org/2000/svg"><rect x="10" y="20" width="90" height="60"/></svg>';
 
@@ -294,7 +294,7 @@ console.log(parsed);
 Scale entire SVG selector from display dimensions to image native resolution:
 
 ```typescript
-import { scaleSvgToNative } from '@xynoplex/core';
+import { scaleSvgToNative } from '@xynolog/core';
 
 // SVG created on 800x600 display
 const displaySvg = '<svg xmlns="http://www.w3.org/2000/svg"><rect x="10" y="20" width="90" height="60"/></svg>';
@@ -331,7 +331,7 @@ import {
   getResourceEntityTypes,
   isDraft,
   type ResourceDescriptor
-} from '@xynoplex/core';
+} from '@xynolog/core';
 
 const resource: ResourceDescriptor = /* ... */;
 
@@ -342,7 +342,7 @@ const id = getResourceId(resource);
 // Get primary representation: the only one, or the first of the list;
 // undefined for an empty list. A resource whose `representations` is neither
 // one representation nor a list of them is no ResourceDescriptor, and is
-// refused with a XynoplexError whose code is 'error'.
+// refused with a XynologError whose code is 'error'.
 const rep = getPrimaryRepresentation(resource);
 console.log(rep?.mediaType); // "text/plain"
 console.log(rep?.checksum); // "sha256:..."
@@ -365,7 +365,7 @@ Read a representation's bytes as the text they are, for a media type whose bytes
 A media type whose text is derived from its bytes (a PDF), or that has no text (an image), is refused, and the refusal names the media type. A `text/` type the registry does not list is read. [`protocol/specs/src/text/decode-cases.json`](../../../../protocol/specs/src/text/decode-cases.json) holds that too: its cases are run through this function, as the Rust, Python, Go and Kotlin SDKs run them through theirs.
 
 ```typescript
-import { decodeRepresentation, getPrimaryRepresentation, getPrimaryMediaType, type ResourceDescriptor } from '@xynoplex/core';
+import { decodeRepresentation, getPrimaryRepresentation, getPrimaryMediaType, type ResourceDescriptor } from '@xynolog/core';
 
 const resource: ResourceDescriptor = /* ... */;
 const buffer: Buffer = /* raw bytes from storage */;
@@ -373,7 +373,7 @@ const buffer: Buffer = /* raw bytes from storage */;
 // Get media type with charset
 const mediaType = getPrimaryMediaType(resource) || 'text/plain';
 
-// Throws a XynoplexError whose code is 'error' for a media type whose bytes
+// Throws a XynologError whose code is 'error' for a media type whose bytes
 // are not its text (a PDF, an image), and for a charset that is not decoded
 const content = decodeRepresentation(buffer, mediaType);
 ```

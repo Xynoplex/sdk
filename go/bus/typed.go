@@ -2,7 +2,7 @@ package bus
 
 // A channel typed by the payload it carries. Go has no method
 // type parameters, so the bus typed by channel is the root package's generic
-// functions over these values: xynoplex.Emit(ctx, w, bus.BeckonFocus, p) is
+// functions over these values: xynolog.Emit(ctx, w, bus.BeckonFocus, p) is
 // refused another channel's payload at compile time. Which channel carries
 // which payload is the registry's to say; channels_gen.go and
 // operations_gen.go derive every value from it.

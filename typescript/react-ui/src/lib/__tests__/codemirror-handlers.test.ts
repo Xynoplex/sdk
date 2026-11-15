@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { annotationId, resourceId, type Annotation } from '@xynoplex/core';
-import type { XynoplexSession } from '@xynoplex/sdk';
-import { createTestSession } from '@xynoplex/sdk/testing';
+import { annotationId, resourceId, type Annotation } from '@xynolog/core';
+import type { XynologSession } from '@xynolog/sdk';
+import { createTestSession } from '@xynolog/sdk/testing';
 import {
   handleAnnotationClick,
   handleWidgetClick,
@@ -28,7 +28,7 @@ function makeSegment(id: string, motivation: Annotation['motivation']): TextSegm
   };
 }
 
-const sessions: XynoplexSession[] = [];
+const sessions: XynologSession[] = [];
 
 afterEach(() => {
   vi.restoreAllMocks();

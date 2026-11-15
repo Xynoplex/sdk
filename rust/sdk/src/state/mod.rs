@@ -32,8 +32,8 @@ pub use yield_::YieldStateUnit;
 
 use crate::bus::decoded;
 use crate::channels::Channel;
-use crate::client::XynoplexClient;
-use crate::errors::{JobErrorCode, XynoplexError};
+use crate::client::XynologClient;
+use crate::errors::{JobErrorCode, XynologError};
 use crate::locked;
 use crate::transport::{Envelope, Frame};
 use std::collections::HashMap;
@@ -198,13 +198,13 @@ pub(crate) fn said<C: Channel>(frame: &Frame) -> Option<C::Payload> {
 }
 
 /// Say something to the client's own parts, as a namespace's signal does.
-pub(crate) fn signal<C: Channel>(client: &XynoplexClient, payload: &C::Payload, envelope: Envelope) {
+pub(crate) fn signal<C: Channel>(client: &XynologClient, payload: &C::Payload, envelope: Envelope) {
     // A payload of the registry's types is always an object.
     let _ = client.bus().publish::<C>(payload, envelope);
 }
 
 /// Whether a delegated run ended because it was cancelled. Its commits
 /// stand, so a unit keeps such a run's progress, to show how it ended.
-pub(crate) fn cancelled(error: &XynoplexError) -> bool {
-    matches!(error, XynoplexError::Job(job) if job.code == JobErrorCode::Cancelled)
+pub(crate) fn cancelled(error: &XynologError) -> bool {
+    matches!(error, XynologError::Job(job) if job.code == JobErrorCode::Cancelled)
 }

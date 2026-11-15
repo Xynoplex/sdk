@@ -52,15 +52,15 @@ jobs:
           echo "release_tag=$release_tag" >> "$GITHUB_ENV"
           python3 scripts/create-artifact-archive.py \
             "$RUNNER_TEMP/sdk-artifacts" \
-            "$RUNNER_TEMP/xynoplex-sdk-artifacts-${release_tag}.tar.gz"
+            "$RUNNER_TEMP/xynolog-sdk-artifacts-${release_tag}.tar.gz"
           cd "$RUNNER_TEMP"
-          shasum -a 256 "xynoplex-sdk-artifacts-${release_tag}.tar.gz" > "xynoplex-sdk-artifacts-${release_tag}.tar.gz.sha256"
+          shasum -a 256 "xynolog-sdk-artifacts-${release_tag}.tar.gz" > "xynolog-sdk-artifacts-${release_tag}.tar.gz.sha256"
 
       - name: Publish the bundle as versioned release assets
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          asset="$RUNNER_TEMP/xynoplex-sdk-artifacts-${release_tag}.tar.gz"
+          asset="$RUNNER_TEMP/xynolog-sdk-artifacts-${release_tag}.tar.gz"
           checksum="$asset.sha256"
           if gh release view "$release_tag" >/dev/null 2>&1; then
             echo "Immutable SDK artifact release already exists: $release_tag" >&2
@@ -68,5 +68,5 @@ jobs:
           fi
           gh release create "$release_tag" "$asset" "$checksum" \
             --target "$GITHUB_SHA" \
-            --title "Xynoplex SDK artifacts ${release_tag}" \
+            --title "Xynolog SDK artifacts ${release_tag}" \
             --generate-notes

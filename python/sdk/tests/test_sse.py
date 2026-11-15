@@ -1,6 +1,6 @@
 """The stream's parser gives the same events wherever the reads fall (`protocol/contract/TRANSPORT-HTTP.md` § Wire framing)."""
 
-from xynoplex.http.sse import SseEvent, SseParser
+from xynolog.http.sse import SseEvent, SseParser
 
 STREAM = (
     "event: bus-event\nid: e-beckon:focus:1\n"

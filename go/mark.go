@@ -1,4 +1,4 @@
-package xynoplex
+package xynolog
 
 // Mark: annotations, a resource's own metadata, and the annotating of a
 // resource delegated as a job. Each write is confirmed: it returns when the
@@ -8,8 +8,8 @@ package xynoplex
 import (
 	"context"
 
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/bus"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/bus"
 )
 
 // MarkNamespace is annotations, a resource's own metadata, and the

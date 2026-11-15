@@ -19,7 +19,7 @@ with tarfile.open(sys.argv[1], 'w:gz') as archive:
         archive.add(file, arcname=str(relative), recursive=False)
 PYTHON
 container run --rm --memory 4g --volume "$input:/input:ro" \
-  --workdir / xynoplex-ocaml-development bash -ec '
+  --workdir / xynolog-ocaml-development bash -ec '
     mkdir /package
     cd /package
     tar -xzf /input/source.tar.gz
@@ -27,10 +27,10 @@ container run --rm --memory 4g --volume "$input:/input:ro" \
     python3 test/check-format.py
     dune runtest
     dune install --pkg=disabled --prefix /installed
-    python3 test/check-installed-api.py --installed /installed/lib/xynoplex
+    python3 test/check-installed-api.py --installed /installed/lib/xynolog
     python3 probes/check-interface.py
     python3 api.py
     python3 probes/check-api-controls.py
-    _build/default/probes/api_inventory.exe /installed/lib/xynoplex/xynoplex.cmi /installed/lib/xynoplex > /tmp/installed-interface.json
+    _build/default/probes/api_inventory.exe /installed/lib/xynolog/xynolog.cmi /installed/lib/xynolog > /tmp/installed-interface.json
     python3 -c "import json; x=json.load(open(\"/tmp/installed-interface.json\")); assert x[\"entries\"]; print(\"isolated source package: installed compiler interface is readable\")"
   '

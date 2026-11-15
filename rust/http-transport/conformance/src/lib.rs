@@ -3,12 +3,12 @@
 //! process that reads one operation per line on stdin and writes what it did,
 //! and what it saw, one line at a time on stdout.
 //!
-//! The two drivers are this crate's binaries: `xynoplex-wire-driver` holds a
-//! transport, and `xynoplex-live-driver` the SDK's client over one.
+//! The two drivers are this crate's binaries: `xynolog-wire-driver` holds a
+//! transport, and `xynolog-live-driver` the SDK's client over one.
 
-use xynoplex::errors::{JobError, XynoplexError, TransportError};
-use xynoplex::types::InvalidIdentifier;
-use xynoplex_observability::telemetry;
+use xynolog::errors::{JobError, XynologError, TransportError};
+use xynolog::types::InvalidIdentifier;
+use xynolog_observability::telemetry;
 use serde_json::{Map, Value, json};
 use std::collections::HashMap;
 use std::future::Future;
@@ -25,20 +25,20 @@ pub enum Ended {
     /// The suite sent something this driver cannot act on: the suite's
     /// mistake, never the SDK's.
     Misuse(String),
-    /// The SDK failed it: with a `XynoplexError`, or with whatever a query's
+    /// The SDK failed it: with a `XynologError`, or with whatever a query's
     /// fetch failed with.
     Failed(Arc<dyn std::error::Error + Send + Sync>),
 }
 
-impl From<XynoplexError> for Ended {
-    fn from(error: XynoplexError) -> Ended {
+impl From<XynologError> for Ended {
+    fn from(error: XynologError) -> Ended {
         Ended::Failed(Arc::new(error))
     }
 }
 
 impl From<TransportError> for Ended {
     fn from(error: TransportError) -> Ended {
-        Ended::Failed(Arc::new(XynoplexError::from(error)))
+        Ended::Failed(Arc::new(XynologError::from(error)))
     }
 }
 
@@ -71,14 +71,14 @@ pub fn failure(code: &str, status: Option<u16>, detail: String) -> Value {
 }
 
 /// The same, of a failure the SDK reported, with a job failure's class when
-/// it has one. A failure that is no `XynoplexError` has no code: it says only
+/// it has one. A failure that is no `XynologError` has no code: it says only
 /// what it is, as Go's driver says it.
 pub fn failed(error: &(dyn std::error::Error + Send + Sync + 'static)) -> Value {
-    let Some(error) = error.downcast_ref::<XynoplexError>() else {
+    let Some(error) = error.downcast_ref::<XynologError>() else {
         return json!({ "detail": error.to_string() });
     };
     let mut reported = failure(error.code(), error.status(), error.to_string());
-    if let XynoplexError::Job(JobError {
+    if let XynologError::Job(JobError {
         failure_class: Some(class),
         ..
     }) = error
@@ -207,7 +207,7 @@ pub async fn serve<D: Driver>(driver: D) {
     // Exports only when the suite names an OTLP endpoint in the environment.
     // A driver serves no knowledge base, so its resource names none.
     if let Err(error) = telemetry::initialize(
-        "xynoplex-conformance-driver",
+        "xynolog-conformance-driver",
         env!("CARGO_PKG_VERSION"),
         None,
     ) {

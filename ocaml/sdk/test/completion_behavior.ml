@@ -1,5 +1,5 @@
 open Eio.Std
-open Xynoplex
+open Xynolog
 module J = Yojson.Safe.Util
 
 let option decode value =

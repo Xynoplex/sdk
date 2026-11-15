@@ -41,7 +41,7 @@ func Exporting() (flush func(), exporting bool) {
 		fmt.Fprintf(os.Stderr, "no metric exporter: %v\n", err)
 		os.Exit(2)
 	}
-	described := resource.NewSchemaless(attribute.String("service.name", "xynoplex-conformance-driver"))
+	described := resource.NewSchemaless(attribute.String("service.name", "xynolog-conformance-driver"))
 	tracers := sdktrace.NewTracerProvider(sdktrace.WithBatcher(spans), sdktrace.WithResource(described))
 	meters := sdkmetric.NewMeterProvider(sdkmetric.WithReader(sdkmetric.NewPeriodicReader(counts)), sdkmetric.WithResource(described))
 	// As an application turns tracing on: its providers, and W3C's propagator,

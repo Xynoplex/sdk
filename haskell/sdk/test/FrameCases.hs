@@ -15,15 +15,15 @@ import Data.Foldable (toList)
 import qualified Data.Set as Set
 import Data.Text (Text)
 import Data.Text.Encoding (decodeUtf8)
-import qualified Xynoplex.Bus as Bus
-import Xynoplex.Channels hiding (BrowseResourceResult)
-import qualified Xynoplex.Channels as Channel
-import qualified Xynoplex.ErrorCodes as Code
-import Xynoplex.Errors (TransportError(..), BusRequestError(..))
-import qualified Xynoplex.Internal.Required as Required
-import qualified Xynoplex.Internal.StreamFrame as Frame
-import qualified Xynoplex.Transport as Transport
-import Xynoplex.Types
+import qualified Xynolog.Bus as Bus
+import Xynolog.Channels hiding (BrowseResourceResult)
+import qualified Xynolog.Channels as Channel
+import qualified Xynolog.ErrorCodes as Code
+import Xynolog.Errors (TransportError(..), BusRequestError(..))
+import qualified Xynolog.Internal.Required as Required
+import qualified Xynolog.Internal.StreamFrame as Frame
+import qualified Xynolog.Transport as Transport
+import Xynolog.Types
 import qualified Streaming.Prelude as Stream
 import System.FilePath ((</>))
 import System.Timeout (timeout)

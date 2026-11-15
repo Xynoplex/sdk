@@ -1,5 +1,5 @@
 /**
- * makeTestClient — structurally-typed `XynoplexClient` stand-in for state unit
+ * makeTestClient — structurally-typed `XynologClient` stand-in for state unit
  * factory tests. Exposes a real `EventBus` as `client.bus` (the same
  * shape production code reads), plus whatever HTTP namespaces the caller
  * supplies via `overrides`.
@@ -23,23 +23,23 @@
  * const stateUnit = createMarkStateUnit(client, resourceId);
  * ```
  *
- * The `client` is cast `as unknown as XynoplexClient`, matching the
+ * The `client` is cast `as unknown as XynologClient`, matching the
  * established pattern for structural mocks in this codebase.
  */
 
 import { BehaviorSubject, Subject, type Observable, map as rxMap } from 'rxjs';
-import { EventBus } from '@xynoplex/core';
-import type { ConnectionState, XynoplexError } from '@xynoplex/core';
-import type { CacheState } from '@xynoplex/sdk';
-import type { XynoplexClient, XynoplexSession } from '@xynoplex/sdk';
-import { XynoplexSession as RealXynoplexSession, httpKb, MemorySignIn } from '@xynoplex/sdk';
-import type { AccessToken } from '@xynoplex/core';
+import { EventBus } from '@xynolog/core';
+import type { ConnectionState, XynologError } from '@xynolog/core';
+import type { CacheState } from '@xynolog/sdk';
+import type { XynologClient, XynologSession } from '@xynolog/sdk';
+import { XynologSession as RealXynologSession, httpKb, MemorySignIn } from '@xynolog/sdk';
+import type { AccessToken } from '@xynolog/core';
 
 export interface TestClient {
   /** The real bus backing `client.bus` — exposed so tests can
    *  destroy() it in afterEach. Same instance as `client.bus`. */
   bus: EventBus;
-  client: XynoplexClient;
+  client: XynologClient;
 }
 
 export function makeTestClient(
@@ -47,29 +47,29 @@ export function makeTestClient(
 ): TestClient {
   const bus = new EventBus();
   const client = {
-    // Surfaces a REAL `XynoplexSession` reads at construction — present by
+    // Surfaces a REAL `XynologSession` reads at construction — present by
     // default so `makeTestSession` can wrap this client; overridable.
     state$: new BehaviorSubject<ConnectionState>('open').asObservable(),
-    transport: { errors$: new Subject<XynoplexError>().asObservable() },
+    transport: { errors$: new Subject<XynologError>().asObservable() },
     ...overrides,
     bus,
-  } as unknown as XynoplexClient;
+  } as unknown as XynologClient;
   return { bus, client };
 }
 
 export interface TestSession extends TestClient {
-  /** A REAL `XynoplexSession` wrapping the structural client above — for
+  /** A REAL `XynologSession` wrapping the structural client above — for
    *  state-unit factories, which take a session rather than a client. The
    *  session machinery (id, kb, token$) is real; only the client seam is
    *  scripted. */
-  session: XynoplexSession;
+  session: XynologSession;
 }
 
 export function makeTestSession(
   overrides: Record<string, unknown> = {},
 ): TestSession {
   const { bus, client } = makeTestClient(overrides);
-  const session = new RealXynoplexSession({
+  const session = new RealXynologSession({
     kb: httpKb({
       id: 'test-kb',
       label: 'Test KB',
@@ -85,20 +85,20 @@ export function makeTestSession(
 }
 
 /**
- * Wrap a structural client mock in a REAL `XynoplexSession` — the bridge for
+ * Wrap a structural client mock in a REAL `XynologSession` — the bridge for
  * factory tests whose subject is unit logic over a scripted client seam
  * (a state-unit factory takes a session, never a bare client). Supplies the
  * two surfaces the session constructor reads (`state$`, `transport.errors$`)
  * when the mock lacks them; the mock's own members win when present. Same
  * documented structural-mock cast this helper already uses.
  */
-export function sessionOf(client: XynoplexClient): XynoplexSession {
+export function sessionOf(client: XynologClient): XynologSession {
   const complete = {
     state$: new BehaviorSubject<ConnectionState>('open').asObservable(),
-    transport: { errors$: new Subject<XynoplexError>().asObservable() },
+    transport: { errors$: new Subject<XynologError>().asObservable() },
     ...(client as unknown as Record<string, unknown>),
-  } as unknown as XynoplexClient;
-  return new RealXynoplexSession({
+  } as unknown as XynologClient;
+  return new RealXynologSession({
     kb: httpKb({
       id: 'test-kb',
       label: 'Test KB',

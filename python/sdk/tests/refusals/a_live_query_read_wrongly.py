@@ -2,13 +2,13 @@
 
 from typing import assert_never
 
-from xynoplex.cache import CacheState, Failed, Pending, Ready
-from xynoplex.client import XynoplexClient
-from xynoplex.http import HttpTransport
-from xynoplex.identifiers import AnnotationId, ResourceId
-from xynoplex.types import Annotation, ResourceDescriptor
+from xynolog.cache import CacheState, Failed, Pending, Ready
+from xynolog.client import XynologClient
+from xynolog.http import HttpTransport
+from xynolog.identifiers import AnnotationId, ResourceId
+from xynolog.types import Annotation, ResourceDescriptor
 
-type Client = XynoplexClient[HttpTransport]
+type Client = XynologClient[HttpTransport]
 
 
 def a_failure_left_unhandled(state: CacheState[list[Annotation]]) -> int:

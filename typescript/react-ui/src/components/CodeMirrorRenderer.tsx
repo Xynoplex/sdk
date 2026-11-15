@@ -6,9 +6,9 @@ import { EditorState, RangeSetBuilder, StateField, StateEffect, Compartment } fr
 import { markdown } from '@codemirror/lang-markdown';
 import { ReferenceResolutionWidget, showWidgetPreview, hideWidgetPreview } from '../lib/codemirror-widgets';
 import { scrollAnnotationIntoView } from '../lib/scroll-utils';
-import { annotationId as toAnnotationId, textOffsets } from '@xynoplex/core';
-import { isReference } from '@xynoplex/core';
-import { createHoverDwell, type XynoplexSession } from '@xynoplex/sdk';
+import { annotationId as toAnnotationId, textOffsets } from '@xynolog/core';
+import { isReference } from '@xynolog/core';
+import { createHoverDwell, type XynologSession } from '@xynolog/sdk';
 import {
   documentPositions,
   convertSegmentPositions,
@@ -39,7 +39,7 @@ interface Props {
   sourceView?: boolean; // If true, show raw source (no markdown rendering)
   showLineNumbers?: boolean; // If true, show line numbers
   enableWidgets?: boolean; // If true, show inline widgets (reference previews, entity badges)
-  session?: XynoplexSession | null | undefined;
+  session?: XynologSession | null | undefined;
   getTargetResourceName?: (resourceId: string) => string | undefined;
   generatingReferenceId?: string | null; // ID of reference currently generating a document
   hoverDelayMs: number; // Hover delay in milliseconds for accessibility
@@ -434,8 +434,8 @@ export function CodeMirrorRenderer({
     if (!element) return undefined;
 
     // Find the actual scroll container - could be annotate view or document viewer
-    const scrollContainer = (element.closest('.xynoplex-annotate-view__content') ||
-                            element.closest('.xynoplex-document-viewer__scrollable-body')) as HTMLElement;
+    const scrollContainer = (element.closest('.xynolog-annotate-view__content') ||
+                            element.closest('.xynolog-document-viewer__scrollable-body')) as HTMLElement;
 
     if (scrollContainer) {
       // Check visibility within the scroll container, not window
@@ -475,8 +475,8 @@ export function CodeMirrorRenderer({
   }, [scrollToAnnotationId]);
 
   const containerClasses = sourceView
-    ? "xynoplex-codemirror xynoplex-codemirror--source"
-    : "xynoplex-codemirror";
+    ? "xynolog-codemirror xynolog-codemirror--source"
+    : "xynolog-codemirror";
 
   return <div ref={containerRef} className={containerClasses} data-markdown-container />;
 }

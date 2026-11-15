@@ -28,7 +28,7 @@ writeFileSync(
 // Source: protocol/specs/src/jobs/storage.json, protocol/specs/src/components/schemas/JobType.json,
 //   protocol/specs/src/components/schemas/MarkJobParams.json
 //   → typescript/scripts/generators/generate-job-storage.mjs
-// Rebuilt by \`npm run prebuild\` in @xynoplex/core; gitignored on purpose.
+// Rebuilt by \`npm run prebuild\` in @xynolog/core; gitignored on purpose.
 
 /** The work-queue stream every job is published into. */
 export const JOBS_STREAM = ${JSON.stringify(stream.name)};

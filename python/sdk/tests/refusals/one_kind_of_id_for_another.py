@@ -1,7 +1,7 @@
 """A resource's id is not an annotation's, wherever one is wanted."""
 
-from xynoplex.identifiers import AnnotationId, ResourceId
-from xynoplex.types import MarkDeleteCommand
+from xynolog.identifiers import AnnotationId, ResourceId
+from xynolog.types import MarkDeleteCommand
 
 
 def as_a_field(resource: ResourceId) -> MarkDeleteCommand:

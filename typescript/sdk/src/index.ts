@@ -1,33 +1,33 @@
 /**
- * @xynoplex/sdk
+ * @xynolog/sdk
  *
- * The Xynoplex SDK — `XynoplexClient`, the verb-oriented namespaces, the
+ * The Xynolog SDK — `XynologClient`, the verb-oriented namespaces, the
  * per-KB session layer, the flow state machines, and the supporting
  * helpers (the `cache` primitive, KB discovery).
  *
- * Transport-agnostic: `XynoplexClient` consumes the `ITransport` /
- * `IContentTransport` contracts from `@xynoplex/core`. The HTTP adapters
+ * Transport-agnostic: `XynologClient` consumes the `ITransport` /
+ * `IContentTransport` contracts from `@xynolog/core`. The HTTP adapters
  * (`HttpTransport`, `HttpContentTransport`) are re-exported here for
  * convenience so the common case is a single import; non-HTTP transports
  * are constructed by the caller from their own package.
  *
  * `APIError`, the HTTP transport's error class, is re-exported with the
- * adapters. Catch on `XynoplexError` (exported below) and route on
+ * adapters. Catch on `XynologError` (exported below) and route on
  * `err.code`; reach for the transport-specific class only when you're
  * already in HTTP-aware code.
  *
  * ```ts
- * import { XynoplexClient, HttpTransport, HttpContentTransport } from '@xynoplex/sdk';
- * import { BRIDGED_CHANNELS, baseUrl } from '@xynoplex/core';
+ * import { XynologClient, HttpTransport, HttpContentTransport } from '@xynolog/sdk';
+ * import { BRIDGED_CHANNELS, baseUrl } from '@xynolog/core';
  *
  * const transport = new HttpTransport({ baseUrl: baseUrl('https://kb.example/'), channels: BRIDGED_CHANNELS });
  * // HttpTransport implements both ITransport and IGatewayOperations;
  * // passing it as the third arg wires `client.auth` and `client.system`.
- * const client = new XynoplexClient(transport, new HttpContentTransport(transport), transport);
+ * const client = new XynologClient(transport, new HttpContentTransport(transport), transport);
  * ```
  */
 
-// XynoplexClient + the convenience HTTP-adapter re-exports.
+// XynologClient + the convenience HTTP-adapter re-exports.
 export * from './client';
 
 // The Observable subclasses namespace methods return. The stream and the
@@ -68,10 +68,10 @@ export {
 // the REAL B14/B15 semantics instead of mock subjects — mock-only coverage is
 // how a two-state consumer of a three-outcome cache shipped twice.
 export { createCache, isReady, readyValue, type CacheState, type Cache } from './cache';
-// Where a client keeps its persisted queries: `XynoplexClient`'s `cachePersistence` option.
+// Where a client keeps its persisted queries: `XynologClient`'s `cachePersistence` option.
 export type { CachePersistence } from './cache-persister';
 
-// `Bus` / `BusPrimitive` live in @xynoplex/core (next to the bus protocol
+// `Bus` / `BusPrimitive` live in @xynolog/core (next to the bus protocol
 // they're coupled to); a client hands its out as `client.wire`.
 // `BusRequestError` (and
 // its `BusRequestErrorCode`) are re-exported below for catch-convenience, so
@@ -94,10 +94,10 @@ export { AuthNamespace } from './namespaces/auth';
 export { SystemNamespace } from './namespaces/system';
 export type * from './namespaces/types';
 
-// Re-exports from @xynoplex/core for one-import convenience. The principled
+// Re-exports from @xynolog/core for one-import convenience. The principled
 // boundary still holds — sdk depends on core, never the reverse — but most
 // consumers don't care about the layering and importing branded IDs from
-// the same package as `XynoplexClient` is the ergonomic default.
+// the same package as `XynologClient` is the ergonomic default.
 export type {
   Logger,
   // Branded ID + URL + token types
@@ -130,8 +130,8 @@ export type {
   // Transport-neutral error-code vocabulary (route on `error.code`).
   TransportErrorCode,
   BusRequestErrorCode,
-  XynoplexSessionErrorCode,
-} from '@xynoplex/core';
+  XynologSessionErrorCode,
+} from '@xynolog/core';
 export {
   // The kinds of id are made by their constructors, which hold text to the
   // kind's rule; the others are casts.
@@ -142,18 +142,18 @@ export {
   jobId,
   resourceId,
   userId,
-  // Unified error base — every Xynoplex-thrown error extends this.
-  XynoplexError,
+  // Unified error base — every Xynolog-thrown error extends this.
+  XynologError,
   // Bus-mediated command error — re-exported for catch-convenience (defined in
-  // @xynoplex/core next to `Bus`).
+  // @xynolog/core next to `Bus`).
   BusRequestError,
   // What a read of a channel gives in place of a frame whose payload is not
-  // the channel's (defined in @xynoplex/core next to `Bus`): a reader of
+  // the channel's (defined in @xynolog/core next to `Bus`): a reader of
   // `client.bus` tells one apart with `instanceof`.
   FrameRefusal,
   // The read-only view a state unit hands out of a state it holds.
   watched,
-} from '@xynoplex/core';
+} from '@xynolog/core';
 
 // The annotation readers. An annotation's target is an id or an object, its
 // selector one or a list, its body absent, one item or a list: these read
@@ -178,7 +178,7 @@ export {
   isResolvedReference,
   isStubReference,
   isTag,
-} from '@xynoplex/core';
+} from '@xynolog/core';
 
 // The annotation builders. A worker finds the words its model quoted in a
 // text (`reconcile`), builds the annotation of the span (`annotationOfSpan`),
@@ -186,17 +186,17 @@ export {
 // (`job.commit`). A span that is not the text's is refused with a
 // `SpanRefusedError`. Every SDK has the three, and
 // protocol/specs/src/annotations/builder-cases.json holds them to one answer.
-export { annotationOfResource, annotationOfSpan, reconcile, SpanRefusedError } from '@xynoplex/core';
-export type { AnchorMethod, MatchQuality, QuotedText, ReconciledSpan, SpanRefusal, TextSpan } from '@xynoplex/core';
+export { annotationOfResource, annotationOfSpan, reconcile, SpanRefusedError } from '@xynolog/core';
+export type { AnchorMethod, MatchQuality, QuotedText, ReconciledSpan, SpanRefusal, TextSpan } from '@xynolog/core';
 
 // Session layer — per-KB sessions, app-level browser, storage adapter,
 // error surface, modal signals.
-export { XynoplexSession, type OpenedSession, type XynoplexSessionConfig, type UserInfo } from './session/xynoplex-session';
+export { XynologSession, type OpenedSession, type XynologSessionConfig, type UserInfo } from './session/xynolog-session';
 // A software agent's sign-in: a worker's, or one of the knowledge base's own services'.
 export { startAgentSession, type AgentSession, type AgentSessionOptions } from './session/agent-session';
-export { privateKeyFromPem, ServiceToken, type KeyCredential, type SecretCredential, type ServiceAccountCredential } from '@xynoplex/core';
-export { XynoplexBrowser, type XynoplexBrowserConfig, type SignInOutcome, type KbReadVerdict } from './session/xynoplex-browser';
-export { SignInError } from '@xynoplex/core';
+export { privateKeyFromPem, ServiceToken, type KeyCredential, type SecretCredential, type ServiceAccountCredential } from '@xynolog/core';
+export { XynologBrowser, type XynologBrowserConfig, type SignInOutcome, type KbReadVerdict } from './session/xynolog-browser';
+export { SignInError } from '@xynolog/core';
 export {
   BROWSER_CLIENT_ID,
   SCRIPT_CLIENT_ID,
@@ -222,7 +222,7 @@ export {
   type SessionEnded,
   type PermissionDenied,
 } from './session/session-signals';
-export { XynoplexSessionError } from './session/errors';
+export { XynologSessionError } from './session/errors';
 export { getBrowser, type GetBrowserOptions } from './session/registry';
 export {
   type SessionStorage,
@@ -237,7 +237,7 @@ export type {
   KbEndpoint,
   HttpEndpoint,
   LocalEndpoint,
-} from '@xynoplex/core';
+} from '@xynolog/core';
 export {
   type KbSessionStatus,
   httpKb,
@@ -262,7 +262,7 @@ export {
   type StoredSession,
 } from './session/storage';
 // Where a session's sign-in is kept: a registry's storage (`keptIn`), memory,
-// or an entry of the sign-ins `xynoplex login` keeps, over the files a caller
+// or an entry of the sign-ins `xynolog login` keeps, over the files a caller
 // gives; and a script's sign-out of one.
 export { MemorySignIn, signOut, type SignInKept } from './session/sign-in-kept';
 export { SignInStore, stateDir, type SignInFiles, type System } from './session/sign-in-store';

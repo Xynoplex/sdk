@@ -87,7 +87,7 @@
           "OpenTelemetry.Api": "1.21.0"
         }
       },
-      "xynoplex": {
+      "xynolog": {
         "type": "Project"
       }
     },

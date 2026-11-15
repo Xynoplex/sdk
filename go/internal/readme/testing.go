@@ -7,21 +7,21 @@ import (
 	"strings"
 	"testing"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/bus"
-	"github.com/Xynoplex/sdk/go/xynoplextest"
+	xynolog "github.com/xynolog/sdk/go"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/bus"
+	"github.com/xynolog/sdk/go/xynologtest"
 )
 
 // TitleOf is the code under test: a resource's name, in capitals.
-func TitleOf(ctx context.Context, client *xynoplex.Client, resource api.ResourceId) (string, error) {
+func TitleOf(ctx context.Context, client *xynolog.Client, resource api.ResourceId) (string, error) {
 	described, err := client.Browse.Resource(resource).Fresh(ctx)
 	return strings.ToUpper(described.Name), err
 }
 
 // ATitleIsItsResourcesNameInCapitals is the test of it.
 func ATitleIsItsResourcesNameInCapitals(t *testing.T) {
-	made := xynoplextest.NewTestClient(xynoplextest.TestClientConfig{Timing: xynoplex.DefaultTiming()})
+	made := xynologtest.NewTestClient(xynologtest.TestClientConfig{Timing: xynolog.DefaultTiming()})
 	defer made.Transport.Close()
 	defer made.Client.Close()
 	asked := bus.BrowseResourceRequested.Request().Channel()
@@ -37,7 +37,7 @@ func ATitleIsItsResourcesNameInCapitals(t *testing.T) {
 
 	// What the code under test asked of the knowledge base, as it was sent.
 	sent := made.Transport.RequestLog()
-	if !slices.EqualFunc(sent, []string{`{"resourceId":"res-1"}`}, func(entry xynoplextest.RequestLogEntry, payload string) bool {
+	if !slices.EqualFunc(sent, []string{`{"resourceId":"res-1"}`}, func(entry xynologtest.RequestLogEntry, payload string) bool {
 		return entry.Channel == asked && string(entry.Payload) == payload
 	}) {
 		t.Fatalf("asked %v", sent)

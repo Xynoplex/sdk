@@ -1,7 +1,7 @@
 {
-  "name": "@xynoplex/sdk",
+  "name": "@xynolog/sdk",
   "version": "0.7.3",
-  "description": "Xynoplex SDK — XynoplexClient, namespaces, session/browser, state units, and the bus-request/cache helpers. Transport-agnostic; pair with @xynoplex/http-transport (HttpTransport) for the wire.",
+  "description": "Xynolog SDK — XynologClient, namespaces, session/browser, state units, and the bus-request/cache helpers. Transport-agnostic; pair with @xynolog/http-transport (HttpTransport) for the wire.",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -29,7 +29,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Xynoplex/sdk.git",
+    "url": "git+https://github.com/xynolog/sdk.git",
     "directory": "typescript/sdk"
   },
   "scripts": {
@@ -43,9 +43,9 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@xynoplex/core": "*",
-    "@xynoplex/http-transport": "*",
-    "@xynoplex/observability": "*",
+    "@xynolog/core": "*",
+    "@xynolog/http-transport": "*",
+    "@xynolog/observability": "*",
     "rxjs": "^7.8.1"
   },
   "devDependencies": {
@@ -61,12 +61,12 @@
     "vitest": "^5.1.0"
   },
   "keywords": [
-    "xynoplex",
+    "xynolog",
     "sdk",
     "client",
     "annotations",
     "w3c"
   ],
-  "author": "Xynoplex Team",
+  "author": "Xynolog Team",
   "license": "Apache-2.0"
 }

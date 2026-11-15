@@ -11,13 +11,13 @@ use opentelemetry_sdk::metrics::data::{AggregatedMetrics, MetricData};
 use opentelemetry_sdk::metrics::{InMemoryMetricExporter, SdkMeterProvider};
 use opentelemetry_sdk::propagation::TraceContextPropagator;
 use opentelemetry_sdk::trace::{InMemorySpanExporter, SdkTracerProvider, SpanData};
-use xynoplex::testing::examples::assert_readme_shows;
-use xynoplex::transport::TraceCarrier;
-use xynoplex_telemetry::{
+use serde_json::Value;
+use xynolog::testing::examples::assert_readme_shows;
+use xynolog::transport::TraceCarrier;
+use xynolog_telemetry::{
     active_trace, active_trace_id, bus_emit, bus_recv, content_get, content_get_anchored_text,
     content_get_annotations, content_get_graph, content_put, continued, continuing, in_span_now,
 };
-use serde_json::Value;
 
 const SENDER: &str = "00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01";
 const SENDERS_TRACE: &str = "0af7651916cd43dd8448eb211c80319c";
@@ -88,7 +88,7 @@ async fn every_row_of_the_sdk_telemetry_table_is_what_a_function_here_records() 
     global::set_tracer_provider(tracer_provider);
     global::set_meter_provider(meter_provider.clone());
     // The bus log's `trace=` field is the active span's trace.
-    xynoplex::bus_log::set_trace_id_provider(xynoplex_telemetry::active_trace_id);
+    xynolog::bus_log::set_trace_id_provider(xynolog_telemetry::active_trace_id);
     // </readme:install>
 
     // Each function, with and without what its row lists as conditional.

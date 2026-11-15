@@ -39,7 +39,7 @@ VIOLATIONS=$(grep -rnE ":[[:space:]]*Promise<void>" \
   || true)
 
 if [ -n "$VIOLATIONS" ]; then
-  echo "❌ X5: Promise<void> method(s) in @xynoplex/sdk namespaces not in the ack allowlist:"
+  echo "❌ X5: Promise<void> method(s) in @xynolog/sdk namespaces not in the ack allowlist:"
   echo ""
   echo "$VIOLATIONS"
   echo ""

@@ -1,4 +1,4 @@
-package xynoplex
+package xynolog
 
 // Gather: assembling the context a model is given, and what refers to a
 // resource.
@@ -6,8 +6,8 @@ package xynoplex
 import (
 	"context"
 
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/bus"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/bus"
 )
 
 // What a caller that states nothing is given. Every SDK sends the same: the

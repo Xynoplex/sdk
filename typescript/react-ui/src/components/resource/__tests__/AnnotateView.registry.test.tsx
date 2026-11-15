@@ -11,11 +11,11 @@ import { describe, it, expect, vi } from 'vitest';
 import { screen } from '@testing-library/react';
 import { renderInEnglish, englishTranslationManager } from '../../../test-utils';
 import '@testing-library/jest-dom';
-import type { XynoplexSession } from '@xynoplex/sdk';
+import type { XynologSession } from '@xynolog/sdk';
 import type { AnnotationUIState } from '../../../types/annotation-props';
 import { AnnotateView } from '../AnnotateView';
 import type { AnnotateMediaRendererProps } from '../annotate-renderers';
-import { resourceId, EventBus } from '@xynoplex/core';
+import { resourceId, EventBus } from '@xynolog/core';
 
 vi.mock('../../annotation/AnnotateToolbar', () => ({ AnnotateToolbar: () => null }));
 vi.mock('../../CodeMirrorRenderer', () => ({
@@ -34,13 +34,13 @@ const uiState: AnnotationUIState = {
   scrollToAnnotationId: null,
 };
 
-function fakeSession(): XynoplexSession {
+function fakeSession(): XynologSession {
   return {
     client: {
       bus: new EventBus(),
       mark: { request: vi.fn() },
     },
-  } as unknown as XynoplexSession;
+  } as unknown as XynologSession;
 }
 
 type ViewProps = React.ComponentProps<typeof AnnotateView>;
@@ -103,8 +103,8 @@ describe('AnnotateView — media-renderer registry', () => {
     // div exist once, not once per render-mode branch.
     for (const mimeType of ['text/plain', 'application/pdf', 'image/png']) {
       const { container, unmount } = renderInEnglish(<AnnotateView {...base(mimeType)} />);
-      expect(container.querySelectorAll('.xynoplex-annotate-view')).toHaveLength(1);
-      expect(container.querySelectorAll('.xynoplex-annotate-view__content')).toHaveLength(1);
+      expect(container.querySelectorAll('.xynolog-annotate-view')).toHaveLength(1);
+      expect(container.querySelectorAll('.xynolog-annotate-view__content')).toHaveLength(1);
       unmount();
     }
   });

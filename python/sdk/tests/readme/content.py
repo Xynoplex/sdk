@@ -1,6 +1,6 @@
-from xynoplex.http import HttpTransport
-from xynoplex.identifiers import ResourceId
-from xynoplex.transport import PutBinaryRequest
+from xynolog.http import HttpTransport
+from xynolog.identifiers import ResourceId
+from xynolog.transport import PutBinaryRequest
 
 
 async def store(transport: HttpTransport, page: bytes) -> ResourceId:

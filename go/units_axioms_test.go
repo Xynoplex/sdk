@@ -1,4 +1,4 @@
-package xynoplex_test
+package xynolog_test
 
 // The root package's state units held to the state-unit axioms (the cache,
 // the session, the session's signals), what the session's signals' cases in
@@ -18,77 +18,77 @@ import (
 	"testing"
 	"testing/synctest"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/xynoplextest"
+	xynolog "github.com/xynolog/sdk/go"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/xynologtest"
 )
 
 func TestTheCacheKeepsTheStateUnitAxioms(t *testing.T) {
-	xynoplextest.AssertStateUnitAxioms(t, xynoplextest.AxiomSubject[*xynoplex.Cache[string, int]]{
-		Setup: func(t *testing.T) xynoplextest.Fresh[*xynoplex.Cache[string, int]] {
+	xynologtest.AssertStateUnitAxioms(t, xynologtest.AxiomSubject[*xynolog.Cache[string, int]]{
+		Setup: func(t *testing.T) xynologtest.Fresh[*xynolog.Cache[string, int]] {
 			fetch := func(context.Context, string) (int, error) { return 1, nil }
 			run := func(work func(context.Context)) { go work(context.Background()) }
-			return xynoplextest.Fresh[*xynoplex.Cache[string, int]]{Unit: xynoplex.NewCache(fetch, run, nil, xynoplex.DefaultTiming().SaveDebounce)}
+			return xynologtest.Fresh[*xynolog.Cache[string, int]]{Unit: xynolog.NewCache(fetch, run, nil, xynolog.DefaultTiming().SaveDebounce)}
 		},
 		// One key observed, and what moves a key.
-		Surfaces: func(unit *xynoplex.Cache[string, int]) []xynoplextest.Surface {
-			return []xynoplextest.Surface{xynoplextest.Events(func(ctx context.Context) iter.Seq[xynoplex.CacheState] { return unit.Observe(ctx, "a") })}
+		Surfaces: func(unit *xynolog.Cache[string, int]) []xynologtest.Surface {
+			return []xynologtest.Surface{xynologtest.Events(func(ctx context.Context) iter.Seq[xynolog.CacheState] { return unit.Observe(ctx, "a") })}
 		},
-		Invocations: func(unit *xynoplex.Cache[string, int]) []func() {
+		Invocations: func(unit *xynolog.Cache[string, int]) []func() {
 			return []func(){func() { unit.Set("a", 1) }, func() { unit.Invalidate("a") }, unit.InvalidateAll}
 		},
 	})
 }
 
 func TestASessionKeepsTheStateUnitAxiomsAndNeverClosesItsClient(t *testing.T) {
-	xynoplextest.AssertStateUnitAxioms(t, xynoplextest.AxiomSubject[*xynoplex.Session]{
-		Setup: func(t *testing.T) xynoplextest.Fresh[*xynoplex.Session] {
-			made := xynoplextest.NewTestClient(xynoplextest.TestClientConfig{Timing: xynoplex.DefaultTiming()})
+	xynologtest.AssertStateUnitAxioms(t, xynologtest.AxiomSubject[*xynolog.Session]{
+		Setup: func(t *testing.T) xynologtest.Fresh[*xynolog.Session] {
+			made := xynologtest.NewTestClient(xynologtest.TestClientConfig{Timing: xynolog.DefaultTiming()})
 			t.Cleanup(func() {
 				made.Client.Close()
 				made.Transport.Close()
 			})
-			session, err := xynoplex.StartSession(context.Background(), xynoplex.SessionConfig{
+			session, err := xynolog.StartSession(context.Background(), xynolog.SessionConfig{
 				Kb:     api.KbTarget{Id: "kb-1"},
 				Client: made.Client,
-				Token:  xynoplex.NewVariable(""),
-				Kept:   &xynoplex.MemorySignIn{},
-				Timing: xynoplex.DefaultTiming(),
+				Token:  xynolog.NewVariable(""),
+				Kept:   &xynolog.MemorySignIn{},
+				Timing: xynolog.DefaultTiming(),
 			})
 			if err != nil {
 				t.Fatal(err)
 			}
-			return xynoplextest.Fresh[*xynoplex.Session]{Unit: session}.With(xynoplextest.TheClient(made.Client))
+			return xynologtest.Fresh[*xynolog.Session]{Unit: session}.With(xynologtest.TheClient(made.Client))
 		},
 		// Its stream state is its client's, and ends with it; its errors end
 		// with the session.
-		Surfaces: func(unit *xynoplex.Session) []xynoplextest.Surface {
-			return []xynoplextest.Surface{
-				xynoplextest.Watching(unit.Token()),
-				xynoplextest.Watching(unit.User()),
-				xynoplextest.Events(func(context.Context) iter.Seq[xynoplex.Error] { return unit.Errors() }),
+		Surfaces: func(unit *xynolog.Session) []xynologtest.Surface {
+			return []xynologtest.Surface{
+				xynologtest.Watching(unit.Token()),
+				xynologtest.Watching(unit.User()),
+				xynologtest.Events(func(context.Context) iter.Seq[xynolog.Error] { return unit.Errors() }),
 			}
 		},
 	})
 }
 
 func TestTheSessionSignalsKeepTheStateUnitAxioms(t *testing.T) {
-	conflict := xynoplex.KbIdentityConflict{ExpectedDid: "did:web:kb.example.org", ObservedDid: "did:web:other.example.org"}
+	conflict := xynolog.KbIdentityConflict{ExpectedDid: "did:web:kb.example.org", ObservedDid: "did:web:other.example.org"}
 	detail := "no"
-	xynoplextest.AssertStateUnitAxioms(t, xynoplextest.AxiomSubject[*xynoplex.SessionSignals]{
-		Setup: func(*testing.T) xynoplextest.Fresh[*xynoplex.SessionSignals] {
-			return xynoplextest.Fresh[*xynoplex.SessionSignals]{Unit: xynoplex.NewSessionSignals()}
+	xynologtest.AssertStateUnitAxioms(t, xynologtest.AxiomSubject[*xynolog.SessionSignals]{
+		Setup: func(*testing.T) xynologtest.Fresh[*xynolog.SessionSignals] {
+			return xynologtest.Fresh[*xynolog.SessionSignals]{Unit: xynolog.NewSessionSignals()}
 		},
-		Surfaces: func(unit *xynoplex.SessionSignals) []xynoplextest.Surface {
-			return []xynoplextest.Surface{
-				xynoplextest.Watching(unit.SessionEnded()),
-				xynoplextest.Watching(unit.PermissionDenied()),
-				xynoplextest.Watching(unit.KbIdentityConflict()),
+		Surfaces: func(unit *xynolog.SessionSignals) []xynologtest.Surface {
+			return []xynologtest.Surface{
+				xynologtest.Watching(unit.SessionEnded()),
+				xynologtest.Watching(unit.PermissionDenied()),
+				xynologtest.Watching(unit.KbIdentityConflict()),
 			}
 		},
-		Invocations: func(unit *xynoplex.SessionSignals) []func() {
+		Invocations: func(unit *xynolog.SessionSignals) []func() {
 			return []func(){
-				func() { unit.NotifySessionEnded(xynoplex.SessionEndRefused) },
+				func() { unit.NotifySessionEnded(xynolog.SessionEndRefused) },
 				func() { unit.NotifyPermissionDenied(&detail) },
 				func() { unit.NotifyKbIdentityConflict(conflict) },
 				unit.AcknowledgeSessionEnded,
@@ -101,7 +101,7 @@ func TestTheSessionSignalsKeepTheStateUnitAxioms(t *testing.T) {
 
 // gathered is each value a reader of watched is given, read on a goroutine
 // of its own until ctx is done.
-func gathered[T any](ctx context.Context, watched xynoplex.Watched[T]) func() []T {
+func gathered[T any](ctx context.Context, watched xynolog.Watched[T]) func() []T {
 	var mu sync.Mutex
 	var given []T
 	go func() {
@@ -121,7 +121,7 @@ func gathered[T any](ctx context.Context, watched xynoplex.Watched[T]) func() []
 
 func TestASecondOccurrenceIsToldEvenWhenItSaysTheSame(t *testing.T) {
 	synctest.Test(t, func(t *testing.T) {
-		signals := xynoplex.NewSessionSignals()
+		signals := xynolog.NewSessionSignals()
 		defer signals.Close()
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
@@ -130,10 +130,10 @@ func TestASecondOccurrenceIsToldEvenWhenItSaysTheSame(t *testing.T) {
 			t.Fatal("a reader was not first given what is raised now")
 		}
 		for occurrence := 2; occurrence <= 3; occurrence++ {
-			signals.NotifySessionEnded(xynoplex.SessionEndExpired)
+			signals.NotifySessionEnded(xynolog.SessionEndExpired)
 			signals.NotifyPermissionDenied(nil)
 			told, refused := ended(), denied()
-			if len(told) != occurrence || told[occurrence-1] == nil || told[occurrence-1].Reason != xynoplex.SessionEndExpired {
+			if len(told) != occurrence || told[occurrence-1] == nil || told[occurrence-1].Reason != xynolog.SessionEndExpired {
 				t.Fatalf("occurrence %d of the session's end was not told: %v", occurrence, told)
 			}
 			if len(refused) != occurrence || refused[occurrence-1] == nil || refused[occurrence-1].Detail != nil {
@@ -147,7 +147,7 @@ func TestASecondOccurrenceIsToldEvenWhenItSaysTheSame(t *testing.T) {
 
 var (
 	// declaredUnit is a type said to be a StateUnit where it is declared.
-	declaredUnit = regexp.MustCompile(`(?m)^\s*(?:var\s+)?_\s+(?:xynoplex\.)?StateUnit\s*=\s*\(\*(\w+)`)
+	declaredUnit = regexp.MustCompile(`(?m)^\s*(?:var\s+)?_\s+(?:xynolog\.)?StateUnit\s*=\s*\(\*(\w+)`)
 	// heldUnit is a unit a test hands to the axioms.
 	heldUnit = regexp.MustCompile(`AxiomSubject\[\*(?:\w+\.)?(\w+)`)
 	// commentLine is a line that is only a comment.
@@ -162,7 +162,7 @@ func TestEveryStateUnitIsHeldToTheAxioms(t *testing.T) {
 			return err
 		}
 		// The test double's probe and the conformance drivers are no unit of the SDK's.
-		if entry.IsDir() && (path == "xynoplextest" || path == "conformance") {
+		if entry.IsDir() && (path == "xynologtest" || path == "conformance") {
 			return filepath.SkipDir
 		}
 		if entry.IsDir() || !strings.HasSuffix(path, ".go") {
@@ -194,7 +194,7 @@ func TestEveryStateUnitIsHeldToTheAxioms(t *testing.T) {
 	}
 	for unit, path := range declared {
 		if !held[unit] {
-			t.Errorf("%s: %s is a StateUnit that no test holds to the axioms (xynoplextest.AssertStateUnitAxioms)", path, unit)
+			t.Errorf("%s: %s is a StateUnit that no test holds to the axioms (xynologtest.AssertStateUnitAxioms)", path, unit)
 		}
 	}
 }

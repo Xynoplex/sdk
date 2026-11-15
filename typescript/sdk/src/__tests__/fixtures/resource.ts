@@ -6,12 +6,12 @@
  * doubles' `as unknown as` casts.
  */
 
-import { resourceId } from '@xynoplex/core';
-import type { ResourceDescriptor } from '@xynoplex/core';
+import { resourceId } from '@xynolog/core';
+import type { ResourceDescriptor } from '@xynolog/core';
 
 export function mockResource(id: string, overrides: Partial<ResourceDescriptor> = {}): ResourceDescriptor {
   return {
-    '@context': 'https://xynoplex.dev/context/v1',
+    '@context': 'https://xynolog.dev/context/v1',
     '@id': resourceId(id),
     name: `Resource ${id}`,
     representations: [],

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import type { ResourceDescriptor, ResourceId } from '@xynoplex/core';
-import { getPrimaryMediaType, decodeWithCharset } from '@xynoplex/core';
-import type { XynoplexClient } from '@xynoplex/sdk';
+import type { ResourceDescriptor, ResourceId } from '@xynolog/core';
+import { getPrimaryMediaType, decodeWithCharset } from '@xynolog/core';
+import type { XynologClient } from '@xynolog/sdk';
 
 export interface UseResourceContentResult {
   /**
@@ -16,7 +16,7 @@ export interface UseResourceContentResult {
 
 /** A finished fetch, held with the inputs it was made for. */
 interface Outcome {
-  client: XynoplexClient;
+  client: XynologClient;
   rUri: ResourceId;
   mediaType: string;
   result: { content: string } | { error: Error };
@@ -30,7 +30,7 @@ interface Outcome {
  * or ignore). `enabled=false` fetches nothing (the binary/media-token path).
  */
 export function useResourceContent(
-  client: XynoplexClient | null,
+  client: XynologClient | null,
   rUri: ResourceId,
   resource: ResourceDescriptor,
   enabled = true

@@ -18,7 +18,7 @@
 
 /* Time left in the session, shown before it is urgent — the banner takes
    over once it is. */
-.xynoplex-session-timer {
-  color: var(--xynoplex-text-secondary);
-  font-size: var(--xynoplex-text-xs);
+.xynolog-session-timer {
+  color: var(--xynolog-text-secondary);
+  font-size: var(--xynolog-text-xs);
 }

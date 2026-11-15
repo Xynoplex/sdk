@@ -9,7 +9,7 @@
  * Home is core (not sdk/test-utils) for the same reason as
  * `assertStateUnitAxioms`: it needs only core types, and every layer —
  * including `http-transport`, below sdk — can consume it via
- * `@xynoplex/core/testing` without a dependency cycle.
+ * `@xynolog/core/testing` without a dependency cycle.
  *
  * Deterministic-by-construction: no `Date.now`, no randomness of its own —
  * all variation comes in through the schedule (fast-check owns the seed).
@@ -19,7 +19,7 @@
 
 import { BehaviorSubject, type Observable } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
-import type { XynoplexError } from './errors';
+import type { XynologError } from './errors';
 import { KeptForFirstReader } from './kept-for-first-reader';
 import type { BaseUrl } from './branded-types';
 import { baseUrl as makeBaseUrl } from './branded-types';
@@ -132,14 +132,14 @@ export function retryKeyOf(channel: string, payload: Record<string, unknown>): s
 export class FaultyTransport implements ITransport {
   readonly baseUrl: BaseUrl = makeBaseUrl('faulty://simulator');
   readonly state$ = new BehaviorSubject<ConnectionState>('open');
-  private readonly failures = new KeptForFirstReader<XynoplexError>();
+  private readonly failures = new KeptForFirstReader<XynologError>();
   /**
    * The failures `fail` reports. Of those reported before its first reader,
    * the latest `ERRORS_KEPT_FOR_FIRST_READER_COUNT` are kept for it, in the
    * order reported; what is still kept when the transport is disposed is
    * dropped.
    */
-  readonly errors$: Observable<XynoplexError> = this.failures.said$;
+  readonly errors$: Observable<XynologError> = this.failures.said$;
 
   /** Every request-channel emit, in order — the L2 accounting surface. */
   readonly requestLog: RequestLogEntry[] = [];
@@ -186,7 +186,7 @@ export class FaultyTransport implements ITransport {
    * Report `error` on `errors$`, as a transport reports a request the
    * gateway refused. A disposed transport reports nothing.
    */
-  fail(error: XynoplexError): void {
+  fail(error: XynologError): void {
     this.failures.say(error);
   }
 

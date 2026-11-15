@@ -9,10 +9,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, fireEvent } from '@testing-library/react';
 import { ResourceDiscoveryPage } from '../components/ResourceDiscoveryPage';
 import type { ResourceDiscoveryPageProps } from '../components/ResourceDiscoveryPage';
-import { createTestXynoplexWrapper, renderInEnglish } from '../../../test-utils';
+import { createTestXynologWrapper, renderInEnglish } from '../../../test-utils';
 import type { ToolbarPanelsProps } from '../../../components/Toolbar';
-import { resourceId } from '@xynoplex/core';
-import type { ResourceDescriptor } from '@xynoplex/core';
+import { resourceId } from '@xynolog/core';
+import type { ResourceDescriptor } from '@xynolog/core';
 
 const createMockResource = (id: string, name: string, entityTypes: string[] = []): ResourceDescriptor => ({
   '@context': 'https://www.w3.org/ns/anno.jsonld',
@@ -65,10 +65,10 @@ const createMockProps = (overrides?: Partial<ResourceDiscoveryPageProps>): Resou
   ...overrides,
 });
 
-// Helper to render with XynoplexProvider (gives components access to session.emit)
+// Helper to render with XynologProvider (gives components access to session.emit)
 const renderWithProviders = (ui: React.ReactElement) => {
-  const { XynoplexWrapper } = createTestXynoplexWrapper();
-  return renderInEnglish(<XynoplexWrapper>{ui}</XynoplexWrapper>);
+  const { XynologWrapper } = createTestXynologWrapper();
+  return renderInEnglish(<XynologWrapper>{ui}</XynologWrapper>);
 };
 
 describe('ResourceDiscoveryPage', () => {
@@ -78,7 +78,7 @@ describe('ResourceDiscoveryPage', () => {
   // revised from use, so a copy-pinned test would rot on the first edit and
   // teach the next reader to weaken it.
   describe('semantic fallback notice', () => {
-    const NOTICE = 'xynoplex-semantic-match-notice';
+    const NOTICE = 'xynolog-semantic-match-notice';
 
     it('marks a semantic result set as distinct from a lexical one', () => {
       const props = createMockProps({
@@ -158,7 +158,7 @@ describe('ResourceDiscoveryPage', () => {
       const { container } = renderWithProviders(<ResourceDiscoveryPage {...props} />);
 
       // Toolbar renders with context="simple" - check for toolbar element
-      const toolbar = container.querySelector('.xynoplex-toolbar[data-context="simple"]');
+      const toolbar = container.querySelector('.xynolog-toolbar[data-context="simple"]');
       expect(toolbar).toBeInTheDocument();
     });
   });

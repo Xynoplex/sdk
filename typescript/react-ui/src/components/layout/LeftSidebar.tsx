@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { XynoplexBranding } from '../branding/XynoplexBranding';
+import { XynologBranding } from '../branding/XynologBranding';
 import { NavigationMenu } from '../navigation/NavigationMenu';
 import { ResizeHandle } from '../ResizeHandle';
 import { usePanelWidth } from '../../hooks/usePanelWidth';
@@ -49,7 +49,7 @@ export function LeftSidebar({
     defaultWidth: 256, // 16rem
     minWidth: 192,     // 12rem
     maxWidth: 400,     // 25rem
-    storageKey: 'xynoplex-left-sidebar-width'
+    storageKey: 'xynolog-left-sidebar-width'
   });
 
   // Load collapsed state from localStorage on mount (only if collapsible)
@@ -84,7 +84,7 @@ export function LeftSidebar({
 
   return (
     <aside
-      className="xynoplex-left-sidebar"
+      className="xynolog-left-sidebar"
       data-collapsed={isCollapsed}
       style={!isCollapsed ? { width: `${width}px`, position: 'relative' } : undefined}
     >
@@ -102,24 +102,24 @@ export function LeftSidebar({
 
       {/* Logo Header - fixed height for alignment */}
       <div
-        className="xynoplex-left-sidebar__header"
+        className="xynolog-left-sidebar__header"
         data-collapsed={isCollapsed}
       >
         <Link
           href={brandingLink}
-          className="xynoplex-left-sidebar__branding-button"
+          className="xynolog-left-sidebar__branding-button"
           aria-label="Go to home page"
         >
           {isCollapsed ? (
             // Collapsed: Just show "S" with gradient
-            <div className="xynoplex-left-sidebar__logo-collapsed">
-              <span className="xynoplex-left-sidebar__logo-text">
+            <div className="xynolog-left-sidebar__logo-collapsed">
+              <span className="xynolog-left-sidebar__logo-text">
                 S
               </span>
             </div>
           ) : (
             // Expanded: Show branding without tagline, no extra padding
-            <XynoplexBranding
+            <XynologBranding
               t={tHome}
               size="sm"
               showTagline={false}
@@ -134,7 +134,7 @@ export function LeftSidebar({
       <nav
         role="navigation"
         aria-label="Main navigation"
-        className="xynoplex-left-sidebar__content"
+        className="xynolog-left-sidebar__content"
       >
         {typeof children === 'function' ? children(isCollapsed, toggleCollapsed, navigationMenu) : children}
       </nav>

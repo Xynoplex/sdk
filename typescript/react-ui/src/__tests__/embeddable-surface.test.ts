@@ -3,14 +3,14 @@
  *
  * The bring-your-own-session consumer surface must be importable straight from
  * the barrel, so `import { ResourceViewer, useResourceLoader, useMediaToken,
- * useSessionEventSubscriptions } from '@xynoplex/react-ui'` works in a plain
+ * useSessionEventSubscriptions } from '@xynolog/react-ui'` works in a plain
  * Vite/Electron host with no app framework. (The "no `next/*` on the viewer path"
  * half of the gate is a static grep over the sources, not a test.)
  */
 import { describe, it, expect } from 'vitest';
 import * as reactUi from '../index';
 
-describe('@xynoplex/react-ui — embeddable consumer surface', () => {
+describe('@xynolog/react-ui — embeddable consumer surface', () => {
   it('exports the bring-your-own-session viewer pieces from the barrel', () => {
     expect(typeof reactUi.ResourceViewer).toBe('function');
     expect(typeof reactUi.useResourceLoader).toBe('function');

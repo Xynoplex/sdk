@@ -6,8 +6,8 @@ from collections.abc import Callable
 import pytest
 from aio import run, soon
 
-from xynoplex.errors import BusRequestError
-from xynoplex.running import Running
+from xynolog.errors import BusRequestError
+from xynolog.running import Running
 
 
 def counting_to(last: int, started: list[int] | None = None) -> Running[int]:

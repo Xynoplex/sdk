@@ -1,4 +1,4 @@
-//! The namespaces of a client (`crate::client::XynoplexClient`), one per flow
+//! The namespaces of a client (`crate::client::XynologClient`), one per flow
 //! of the protocol and three beside them: `frame`, `browse`, `mark`, `bind`,
 //! `gather`, `match_`, `yield_` and `beckon`; and `job`, `auth` and `system`.
 //!

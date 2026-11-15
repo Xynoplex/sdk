@@ -11,7 +11,7 @@ from gateway_server import Answer, GatewayServer
 from pydantic import JsonValue, TypeAdapter
 from spec import JsonObject
 
-from xynoplex.discovery import (
+from xynolog.discovery import (
     DISCOVERY_INTERVAL,
     Absent,
     DiscoveryAbsentReason,
@@ -25,9 +25,9 @@ from xynoplex.discovery import (
     subscribe_discovery,
     text_discovery,
 )
-from xynoplex.http.discovery import http_discovery
-from xynoplex.timing import HTTP_REQUEST_TIMEOUT_MS
-from xynoplex.types import DiscoveredKB
+from xynolog.http.discovery import http_discovery
+from xynolog.timing import HTTP_REQUEST_TIMEOUT_MS
+from xynolog.types import DiscoveredKB
 
 _JSON: Final = TypeAdapter[JsonValue](JsonValue)
 
@@ -37,7 +37,7 @@ PATH: Final = "/discovery/kbs.json"
 
 
 def entry(host: str, port: int, did: str) -> JsonObject:
-    return {"host": host, "port": port, "placement": "local", "managedBy": "xynoplex-launcher", "did": did}
+    return {"host": host, "port": port, "placement": "local", "managedBy": "xynolog-launcher", "did": did}
 
 
 def written(value: JsonValue) -> str:
@@ -56,7 +56,7 @@ CODESPACE: Final[JsonObject] = {
     "host": "localhost",
     "port": 4100,
     "placement": "codespace",
-    "managedBy": "xynoplex-launcher",
+    "managedBy": "xynolog-launcher",
     "did": B,
     "repo": "owner/name",
     "siteName": "A site",

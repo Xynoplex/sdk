@@ -8,8 +8,8 @@
  * `browse.kb()` answers those (`describeConnection`).
  */
 
-import type { paths } from '@xynoplex/core';
-import type { IGatewayOperations } from '@xynoplex/core';
+import type { paths } from '@xynolog/core';
+import type { IGatewayOperations } from '@xynolog/core';
 import type { SystemNamespace as ISystemNamespace, ResponseContent } from './types';
 
 export class SystemNamespace implements ISystemNamespace {

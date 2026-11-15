@@ -1,11 +1,11 @@
 'use client';
 
-import type { EventMap, ResourceId } from '@xynoplex/core';
+import type { EventMap, ResourceId } from '@xynolog/core';
 import { useEffect, useRef, useCallback, useMemo, memo, type MouseEvent as ReactMouseEvent } from 'react';
-import { annotationId as toAnnotationId } from '@xynoplex/core';
-import { capabilitiesOf, getBodySource, isResolvedReference, textOffsets } from '@xynoplex/core';
-import type { Annotation, ResourceDescriptor } from '@xynoplex/core';
-import { HOVER_DELAY_MS, createHoverDwell } from '@xynoplex/sdk';
+import { annotationId as toAnnotationId } from '@xynolog/core';
+import { capabilitiesOf, getBodySource, isResolvedReference, textOffsets } from '@xynolog/core';
+import type { Annotation, ResourceDescriptor } from '@xynolog/core';
+import { HOVER_DELAY_MS, createHoverDwell } from '@xynolog/sdk';
 import { ANNOTATORS } from '../../lib/annotation-registry';
 import { scrollAnnotationIntoView } from '../../lib/scroll-utils';
 import { AnnotateToolbar, type ClickAction } from '../annotation/AnnotateToolbar';
@@ -19,7 +19,7 @@ import {
   toOverlayAnnotations,
 } from '../../lib/annotation-overlay';
 
-import type { XynoplexSession } from '@xynoplex/sdk';
+import type { XynologSession } from '@xynolog/sdk';
 import { useSessionEventSubscriptions } from '../../hooks/useSessionEventSubscriptions';
 import { defaultBrowseRenderers, type BrowseMediaRenderers } from './browse-renderers';
 import { DownloadFileLink } from './DownloadFileLink';
@@ -38,7 +38,7 @@ interface Props {
   annotateMode: boolean;
   hoverDelayMs?: number;
   /** Session for the shown resource — emits browse:click / beckon:hover; its bus feeds beckon events. */
-  session: XynoplexSession | null;
+  session: XynologSession | null;
   /** Recently-created annotation ids to sparkle (host-provided). */
   sparkleAnnotationIds?: Set<string>;
   /** Override the read-only media renderers (render mode → renderer); merged over the defaults. */
@@ -112,7 +112,7 @@ function BrowseViewBody({
   inline = false,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const inlineMod = inline ? ' xynoplex-browse-view--inline' : '';
+  const inlineMod = inline ? ' xynolog-browse-view--inline' : '';
 
   const render = capabilitiesOf(mimeType)?.render ?? 'none';
 
@@ -327,9 +327,9 @@ function BrowseViewBody({
 
   if (!Renderer) {
     return (
-      <div ref={containerRef} className={`xynoplex-browse-view xynoplex-browse-view--unsupported${inlineMod}`} data-mime-type="unsupported">
-        <div className="xynoplex-browse-view__empty">
-          <p className="xynoplex-browse-view__empty-message">
+      <div ref={containerRef} className={`xynolog-browse-view xynolog-browse-view--unsupported${inlineMod}`} data-mime-type="unsupported">
+        <div className="xynolog-browse-view__empty">
+          <p className="xynolog-browse-view__empty-message">
             Preview not available for {mimeType}
           </p>
           <DownloadFileLink resourceUri={resourceUri} session={session} />
@@ -339,7 +339,7 @@ function BrowseViewBody({
   }
 
   return (
-    <div className={`xynoplex-browse-view${inlineMod}`} data-mime-type={render}>
+    <div className={`xynolog-browse-view${inlineMod}`} data-mime-type={render}>
       {showToolbar && (
       <AnnotateToolbar
         selectedMotivation={null}
@@ -355,7 +355,7 @@ function BrowseViewBody({
       )}
       <div
         ref={containerRef}
-        className="xynoplex-browse-view__content"
+        className="xynolog-browse-view__content"
         data-scroll-owner={render === 'pdf' && !inline ? 'renderer' : undefined}
         onClick={handleContentClick}
       >

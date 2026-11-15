@@ -1,7 +1,7 @@
 'use client';
 
-import type { ResourceId } from '@xynoplex/core';
-import type { XynoplexSession } from '@xynoplex/sdk';
+import type { ResourceId } from '@xynolog/core';
+import type { XynologSession } from '@xynolog/sdk';
 import { useMediaToken } from '../../hooks/useMediaToken';
 import { mediaUrl } from '../../lib/media-url';
 
@@ -9,7 +9,7 @@ interface Props {
   /** The '@id' of the resource whose bytes to offer. */
   resourceUri: ResourceId;
   /** Session for that resource — its client mints the media token and supplies the gateway origin. */
-  session: XynoplexSession | null;
+  session: XynologSession | null;
 }
 
 /**
@@ -35,14 +35,14 @@ export function DownloadFileLink({ resourceUri, session }: Props) {
 
   if (!href) {
     return (
-      <button type="button" disabled className="xynoplex-button xynoplex-button--primary xynoplex-button--disabled">
+      <button type="button" disabled className="xynolog-button xynolog-button--primary xynolog-button--disabled">
         Download File
       </button>
     );
   }
 
   return (
-    <a href={href} download className="xynoplex-button xynoplex-button--primary">
+    <a href={href} download className="xynolog-button xynolog-button--primary">
       Download File
     </a>
   );

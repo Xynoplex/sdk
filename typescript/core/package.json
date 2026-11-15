@@ -1,7 +1,7 @@
 {
-  "name": "@xynoplex/core",
+  "name": "@xynolog/core",
   "version": "0.7.3",
-  "description": "Core types and domain logic for Xynoplex - Resource, Annotation, and Graph models",
+  "description": "Core types and domain logic for Xynolog - Resource, Annotation, and Graph models",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -44,7 +44,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Xynoplex/sdk.git",
+    "url": "git+https://github.com/xynolog/sdk.git",
     "directory": "typescript/core"
   },
   "scripts": {
@@ -78,9 +78,9 @@
     "resource",
     "annotation",
     "graph",
-    "xynoplex"
+    "xynolog"
   ],
-  "author": "Xynoplex Team",
+  "author": "Xynolog Team",
   "sideEffects": false,
   "license": "Apache-2.0",
   "devDependencies": {

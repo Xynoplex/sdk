@@ -1,5 +1,5 @@
 // oauth-clients.mjs — read and check protocol/specs/src/session/oauth.json: the client
-// ids a Xynoplex client signs in as, and the scope a sign-in asks for.
+// ids a Xynolog client signs in as, and the scope a sign-in asks for.
 //
 // One place for the checks, shared by every generator that reads the file
 // (generate-oauth-clients.mjs for TypeScript, generate-oauth-clients-go.mjs

@@ -5,13 +5,13 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import { AssessmentPanel } from '../AssessmentPanel';
-import { FrameRefusal, type EventBus, type EventMap } from '@xynoplex/core';
+import { FrameRefusal, type EventBus, type EventMap } from '@xynolog/core';
 import type { AssessmentEntry } from '../AssessmentEntry';
 import type { DelegateSection } from '../DelegateSection';
-import { createMarkStateUnit, type MarkStateUnit, type XynoplexSession } from '@xynoplex/sdk';
-import { createTestXynoplexWrapper } from '../../../../test-utils';
+import { createMarkStateUnit, type MarkStateUnit, type XynologSession } from '@xynolog/sdk';
+import { createTestXynologWrapper } from '../../../../test-utils';
 
-import type { Annotation, AnnotationId } from '@xynoplex/core';
+import type { Annotation, AnnotationId } from '@xynolog/core';
 
 // Composition-based event tracker
 interface TrackedEvent {
@@ -41,15 +41,15 @@ function createEventTracker() {
 // factory call would hand tests a client that test-utils disposes after
 // the first test). The `session` passed as a prop below and the `eventBus`
 // the tracker subscribes come from the SAME factory call.
-let session: XynoplexSession;
+let session: XynologSession;
 let mark: MarkStateUnit;
 let eventBus: EventBus;
-let XynoplexWrapper: React.ComponentType<{ children: React.ReactNode }>;
+let XynologWrapper: React.ComponentType<{ children: React.ReactNode }>;
 
 const renderWithEventBus = (component: React.ReactElement, tracker?: ReturnType<typeof createEventTracker>) => {
   if (tracker) tracker._attach(eventBus);
   const Wrapper = ({ children }: { children: React.ReactNode }) => (
-    <XynoplexWrapper>{children}</XynoplexWrapper>
+    <XynologWrapper>{children}</XynologWrapper>
   );
   return render(component, { wrapper: Wrapper });
 };
@@ -70,9 +70,9 @@ vi.mock('../../../../contexts/TranslationContext', () => ({
   TranslationProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
-// Mock @xynoplex/http-transport utilities
-vi.mock('@xynoplex/core', async () => {
-  const actual = await vi.importActual('@xynoplex/core');
+// Mock @xynolog/http-transport utilities
+vi.mock('@xynolog/core', async () => {
+  const actual = await vi.importActual('@xynolog/core');
   return {
     ...actual,
     getTextPositionSelector: vi.fn(),
@@ -99,7 +99,7 @@ vi.mock('../DelegateSection', () => ({
   ),
 }));
 
-import { getTextPositionSelector, getTargetSelector, resourceId } from '@xynoplex/core';
+import { getTextPositionSelector, getTargetSelector, resourceId } from '@xynolog/core';
 const mockGetTextPositionSelector = getTextPositionSelector as MockedFunction<typeof getTextPositionSelector>;
 const mockGetTargetSelector = getTargetSelector as MockedFunction<typeof getTargetSelector>;
 
@@ -163,7 +163,7 @@ describe('AssessmentPanel Component', () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    ({ session, eventBus, XynoplexWrapper } = createTestXynoplexWrapper());
+    ({ session, eventBus, XynologWrapper } = createTestXynologWrapper());
     mark = createMarkStateUnit(session.client, resourceId('res-1'));
 
     // Mock scrollIntoView for jsdom
@@ -210,7 +210,7 @@ describe('AssessmentPanel Component', () => {
       const { container } = renderWithEventBus(<AssessmentPanel {...defaultProps} session={session} mark={mark} />);
 
       const panel = container.firstChild as HTMLElement;
-      expect(panel).toHaveClass('xynoplex-panel');
+      expect(panel).toHaveClass('xynolog-panel');
     });
   });
 
@@ -426,7 +426,7 @@ describe('AssessmentPanel Component', () => {
         />
       );
 
-      const newAssessmentArea = container.querySelector('.xynoplex-annotation-prompt');
+      const newAssessmentArea = container.querySelector('.xynolog-annotation-prompt');
       expect(newAssessmentArea).toBeInTheDocument();
       expect(newAssessmentArea).toHaveAttribute('data-type', 'assessment');
     });
@@ -536,7 +536,7 @@ describe('AssessmentPanel Component', () => {
       renderWithEventBus(<AssessmentPanel {...defaultProps} session={session} mark={mark} />);
 
       const heading = screen.getByText(/Assessments/);
-      expect(heading).toHaveClass('xynoplex-panel-header__text');
+      expect(heading).toHaveClass('xynolog-panel-header__text');
     });
 
     it('should have proper textarea attributes for new assessments', () => {

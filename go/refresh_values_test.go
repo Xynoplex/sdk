@@ -1,4 +1,4 @@
-package xynoplex
+package xynolog
 
 // What each live query's cache holds, against
 // protocol/specs/src/client/refresh.json: every query of the table is a live
@@ -12,7 +12,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/Xynoplex/sdk/go/api"
+	"github.com/xynolog/sdk/go/api"
 )
 
 // keptKeys is the type of a persisted query's keys, by what the refresh

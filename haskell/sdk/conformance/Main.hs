@@ -14,9 +14,9 @@ import qualified OpenTelemetry.Context as Context
 import OpenTelemetry.Context.ThreadLocal (getContext, attachContext, detachContext)
 import qualified OpenTelemetry.Propagator as Propagator
 import OpenTelemetry.Attributes (toAttribute)
-import qualified Xynoplex.Worker as Worker
-import Xynoplex.Worker.Types
-import Xynoplex.Claims (jobClaimChannels, jobCommitChannels)
+import qualified Xynolog.Worker as Worker
+import Xynolog.Worker.Types
+import Xynolog.Claims (jobClaimChannels, jobCommitChannels)
 import Control.Monad (forM_, unless, void, when)
 import Data.Aeson hiding (decode)
 import qualified Data.Aeson.Key as Key
@@ -36,18 +36,18 @@ import Network.HTTP.Client (defaultManagerSettings, noProxy)
 import qualified OpenTelemetry.Trace.Core as TraceCore
 import qualified OpenTelemetry.Trace as Trace
 import qualified OpenTelemetry.Metric as Metric
-import qualified Xynoplex.Bus as Bus
-import Xynoplex.Channels
-import qualified Xynoplex.Content as Content
-import qualified Xynoplex.ErrorCodes as Code
-import qualified Xynoplex.Gateway as Gateway
-import qualified Xynoplex.Http as Http
-import qualified Xynoplex.Retry as Retry
-import qualified Xynoplex.StateValue as State
-import qualified Xynoplex.Timing.Settings as Timing
-import qualified Xynoplex.Transport as Transport
-import Xynoplex.Transport.Facts (connectionStateName)
-import Xynoplex.Types
+import qualified Xynolog.Bus as Bus
+import Xynolog.Channels
+import qualified Xynolog.Content as Content
+import qualified Xynolog.ErrorCodes as Code
+import qualified Xynolog.Gateway as Gateway
+import qualified Xynolog.Http as Http
+import qualified Xynolog.Retry as Retry
+import qualified Xynolog.StateValue as State
+import qualified Xynolog.Timing.Settings as Timing
+import qualified Xynolog.Transport as Transport
+import Xynolog.Transport.Facts (connectionStateName)
+import Xynolog.Types
 import System.IO
 import System.Environment (lookupEnv, getArgs)
 import System.Random (randomRIO)
@@ -265,7 +265,7 @@ reportJobs driver worker = do
           parent <- Propagator.extract propagator carrier Context.empty
           bracket (attachContext parent) detachContext $ \_ -> do
             provider <- Trace.getGlobalTracerProvider
-            tracer <- Trace.getTracer provider (TraceCore.instrumentationLibrary "xynoplex-conformance" "1") Trace.tracerOptions
+            tracer <- Trace.getTracer provider (TraceCore.instrumentationLibrary "xynolog-conformance" "1") Trace.tracerOptions
             Trace.inSpan'' tracer ("job:" <> (case Worker.jobType job of JobTypeMark -> "mark"; JobTypeYield -> "yield"))
               Trace.defaultSpanArguments { Trace.attributes = HashMap.singleton "job.id" (toAttribute (jobIdValue (Worker.jobId job))) } $ \_ -> do
                 context <- getContext

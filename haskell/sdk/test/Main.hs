@@ -18,18 +18,18 @@ import qualified Data.Set as Set
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Vector as V
-import Xynoplex.Internal.Generated.RoundTrip (roundTrip)
-import Xynoplex.Internal.Generated.ChannelRoundTrip (roundTripChannel, channelMetadata, operationMetadata)
-import qualified Xynoplex.Channels as Channels
-import Xynoplex.Internal.Generated.ErrorRoundTrip (roundTripError)
-import Xynoplex.Internal.Generated.TimingValues (timingValues)
-import qualified Xynoplex.Internal.Generated.DiscoveryReasonRoundTrip as DiscoveryReasons
-import qualified Xynoplex.ErrorCodes as Errors
-import qualified Xynoplex.Retry as Retry
-import qualified Xynoplex.Internal.Required as Required
-import qualified Xynoplex.Timing.Settings as TimingSettings
-import Xynoplex.Internal.Generated.Schemas (schemas)
-import Xynoplex.Internal.Schema (normalize, validate, validateNamed)
+import Xynolog.Internal.Generated.RoundTrip (roundTrip)
+import Xynolog.Internal.Generated.ChannelRoundTrip (roundTripChannel, channelMetadata, operationMetadata)
+import qualified Xynolog.Channels as Channels
+import Xynolog.Internal.Generated.ErrorRoundTrip (roundTripError)
+import Xynolog.Internal.Generated.TimingValues (timingValues)
+import qualified Xynolog.Internal.Generated.DiscoveryReasonRoundTrip as DiscoveryReasons
+import qualified Xynolog.ErrorCodes as Errors
+import qualified Xynolog.Retry as Retry
+import qualified Xynolog.Internal.Required as Required
+import qualified Xynolog.Timing.Settings as TimingSettings
+import Xynolog.Internal.Generated.Schemas (schemas)
+import Xynolog.Internal.Schema (normalize, validate, validateNamed)
 import System.Directory (doesDirectoryExist, listDirectory)
 import System.Environment (getArgs)
 import System.IO (hSetBuffering, stdout, BufferMode(LineBuffering), utf8)

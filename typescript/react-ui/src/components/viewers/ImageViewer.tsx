@@ -6,11 +6,11 @@ interface ImageViewerProps {
 
 export function ImageViewer({ imageUrl, alt }: ImageViewerProps) {
   return (
-    <div className="xynoplex-image-viewer">
+    <div className="xynolog-image-viewer">
       <img
         src={imageUrl}
         alt={alt}
-        className="xynoplex-image-viewer__image"
+        className="xynolog-image-viewer__image"
         style={{ imageRendering: 'auto' }}
       />
     </div>

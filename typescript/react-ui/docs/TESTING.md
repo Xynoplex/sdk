@@ -46,7 +46,7 @@ open coverage/index.html
 
 ## Writing Tests for Library Components
 
-If contributing to `@xynoplex/react-ui`, follow these patterns:
+If contributing to `@xynolog/react-ui`, follow these patterns:
 
 ### Component Test Structure
 
@@ -58,7 +58,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { LeftSidebar, type LinkComponentProps, type RouteBuilder } from '@xynoplex/react-ui';
+import { LeftSidebar, type LinkComponentProps, type RouteBuilder } from '@xynolog/react-ui';
 
 // No mocks - using real components via composition
 
@@ -109,8 +109,8 @@ describe('LeftSidebar Component', () => {
         </LeftSidebar>
       );
 
-      // Real XynoplexBranding renders "Xynoplex" text
-      expect(screen.getByText('Xynoplex')).toBeInTheDocument();
+      // Real XynologBranding renders "Xynolog" text
+      expect(screen.getByText('Xynolog')).toBeInTheDocument();
     });
   });
 
@@ -148,7 +148,7 @@ describe('LeftSidebar Component', () => {
 // src/hooks/__tests__/useUI.test.tsx
 import { describe, it, expect } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useDropdown } from '@xynoplex/react-ui';
+import { useDropdown } from '@xynolog/react-ui';
 
 describe('useDropdown', () => {
   it('starts closed', () => {
@@ -176,14 +176,14 @@ describe('useDropdown', () => {
 `SearchModal.keyboard.test.tsx`, `SearchModal.accessibility.test.tsx` and
 `SearchModal.basic.test.tsx` (the search box) render HeadlessUI's real `<Dialog>`. They share
 `__tests__/search-modal-harness.ts` with `SearchModal.search-wiring.test.tsx`: one browser for the
-whole file, because `useXynoplex` is called on every render and a browser made per render restarts
+whole file, because `useXynolog` is called on every render and a browser made per render restarts
 the modal's search pipeline on every keystroke. `search-wiring` and
 `SearchModal.translations.test.tsx` replace the dialog's parts with plain elements: they are about
 the search and the strings.
 
 ## Testing Philosophy Summary
 
-The `@xynoplex/react-ui` library uses **composition-based testing** as the primary pattern:
+The `@xynolog/react-ui` library uses **composition-based testing** as the primary pattern:
 
 ### Core Principles
 
@@ -202,7 +202,7 @@ The `@xynoplex/react-ui` library uses **composition-based testing** as the prima
 - Utility modules (`getAnnotationExactText`, `getResourceIcon`)
 
 **❌ DON'T Mock:**
-- React components (`NavigationMenu`, `XynoplexBranding`)
+- React components (`NavigationMenu`, `XynologBranding`)
 - EventBus methods (`on`, `off`, `emit`)
 - React Context Providers
 - Component props or callbacks
@@ -226,7 +226,7 @@ src/
 
 Our codebase includes 1300+ tests demonstrating these patterns:
 
-- **[LeftSidebar.test.tsx](../src/components/layout/__tests__/LeftSidebar.test.tsx)** - Layout component with real NavigationMenu and XynoplexBranding
+- **[LeftSidebar.test.tsx](../src/components/layout/__tests__/LeftSidebar.test.tsx)** - Layout component with real NavigationMenu and XynologBranding
 - **[UnifiedHeader.test.tsx](../src/components/layout/__tests__/UnifiedHeader.test.tsx)** - Header with real child components and dropdown hook
 - **[PageLayout.test.tsx](../src/components/layout/__tests__/PageLayout.test.tsx)** - Full page layout with a real UnifiedHeader
 - **[BrowseView.test.tsx](../src/components/resource/__tests__/BrowseView.test.tsx)** - Event-driven component listening on the real bus

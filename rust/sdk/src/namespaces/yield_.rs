@@ -4,7 +4,7 @@
 use super::follow::{Delegation, Following, follow};
 use crate::channels::{Empty, YieldClone, YieldCloneResourceRequested, YieldCloneTokenRequested};
 use crate::client::Links;
-use crate::errors::XynoplexError;
+use crate::errors::XynologError;
 use crate::media_types::{clone_format, derive_storage_uri};
 use crate::resources::primary_media_type;
 use crate::timing::{
@@ -88,7 +88,7 @@ impl YieldNamespace {
     pub async fn clone_token(
         &self,
         resource_id: &ResourceId,
-    ) -> Result<CloneResourceWithTokenResponse, XynoplexError> {
+    ) -> Result<CloneResourceWithTokenResponse, XynologError> {
         let answer = self
             .links
             .request::<YieldCloneTokenRequested>(&YieldCloneTokenRequest {
@@ -99,7 +99,7 @@ impl YieldNamespace {
     }
 
     /// The resource a clone token was made from.
-    pub async fn from_token(&self, token: &str) -> Result<ResourceDescriptor, XynoplexError> {
+    pub async fn from_token(&self, token: &str) -> Result<ResourceDescriptor, XynologError> {
         let answer = self
             .links
             .request::<YieldCloneResourceRequested>(&YieldCloneResourceRequest {
@@ -116,7 +116,7 @@ impl YieldNamespace {
     pub async fn create_from_token(
         &self,
         options: CreateFromTokenOptions,
-    ) -> Result<CreateResourceResponse, XynoplexError> {
+    ) -> Result<CreateResourceResponse, XynologError> {
         let source = self.from_token(&options.token).await?;
         let format = clone_format(primary_media_type(&source));
         let storage_uri = derive_storage_uri(&options.name, format);

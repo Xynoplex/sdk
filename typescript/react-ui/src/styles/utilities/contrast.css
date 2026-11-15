@@ -14,45 +14,45 @@
 /* Fix light gray text that fails contrast */
 [class*="text-gray-300"],
 [class*="color-gray-300"] {
-  color: var(--xynoplex-color-gray-600) !important; /* Darker gray for better contrast */
+  color: var(--xynolog-color-gray-600) !important; /* Darker gray for better contrast */
 }
 
 [data-theme="dark"] [class*="text-gray-300"],
 [data-theme="dark"] [class*="color-gray-300"] {
-  color: var(--xynoplex-color-gray-400) !important;
+  color: var(--xynolog-color-gray-400) !important;
 }
 
 [class*="text-gray-400"],
 [class*="color-gray-400"] {
-  color: var(--xynoplex-color-gray-600) !important;
+  color: var(--xynolog-color-gray-600) !important;
 }
 
 [data-theme="dark"] [class*="text-gray-400"],
 [data-theme="dark"] [class*="color-gray-400"] {
-  color: var(--xynoplex-color-gray-300) !important;
+  color: var(--xynolog-color-gray-300) !important;
 }
 
 /* Fix light yellow that often fails contrast */
 [class*="text-yellow-100"],
 [class*="text-yellow-200"] {
-  color: var(--xynoplex-color-yellow-700) !important; /* Much darker yellow */
+  color: var(--xynolog-color-yellow-700) !important; /* Much darker yellow */
 }
 
 [data-theme="dark"] [class*="text-yellow-100"],
 [data-theme="dark"] [class*="text-yellow-200"] {
-  color: var(--xynoplex-color-yellow-400) !important;
+  color: var(--xynolog-color-yellow-400) !important;
 }
 
 /* Fix light backgrounds with light text */
 [class*="bg-gray-100"],
 [class*="bg-gray-200"] {
-  color: var(--xynoplex-color-gray-800) !important; /* Ensure dark text on light bg */
+  color: var(--xynolog-color-gray-800) !important; /* Ensure dark text on light bg */
 }
 
 [data-theme="dark"] [class*="bg-gray-100"],
 [data-theme="dark"] [class*="bg-gray-200"] {
-  background-color: var(--xynoplex-color-gray-800) !important;
-  color: var(--xynoplex-color-gray-100) !important;
+  background-color: var(--xynolog-color-gray-800) !important;
+  color: var(--xynolog-color-gray-100) !important;
 }
 
 /* ========================================
@@ -62,17 +62,17 @@
 /* Placeholder text - needs darker color */
 input::placeholder,
 textarea::placeholder,
-.xynoplex-input::placeholder,
-.xynoplex-textarea::placeholder {
-  color: var(--xynoplex-color-gray-600) !important;
+.xynolog-input::placeholder,
+.xynolog-textarea::placeholder {
+  color: var(--xynolog-color-gray-600) !important;
   opacity: 1 !important;
 }
 
 [data-theme="dark"] input::placeholder,
 [data-theme="dark"] textarea::placeholder,
-[data-theme="dark"] .xynoplex-input::placeholder,
-[data-theme="dark"] .xynoplex-textarea::placeholder {
-  color: var(--xynoplex-color-gray-400) !important;
+[data-theme="dark"] .xynolog-input::placeholder,
+[data-theme="dark"] .xynolog-textarea::placeholder {
+  color: var(--xynolog-color-gray-400) !important;
   opacity: 1 !important;
 }
 
@@ -81,21 +81,21 @@ button:disabled,
 input:disabled,
 select:disabled,
 textarea:disabled,
-.xynoplex-button:disabled,
-.xynoplex-button[data-disabled="true"],
+.xynolog-button:disabled,
+.xynolog-button[data-disabled="true"],
 [disabled] {
   opacity: 0.7 !important; /* Higher opacity for better contrast */
-  color: var(--xynoplex-color-gray-700) !important;
+  color: var(--xynolog-color-gray-700) !important;
 }
 
 [data-theme="dark"] button:disabled,
 [data-theme="dark"] input:disabled,
 [data-theme="dark"] select:disabled,
 [data-theme="dark"] textarea:disabled,
-[data-theme="dark"] .xynoplex-button:disabled,
-[data-theme="dark"] .xynoplex-button[data-disabled="true"],
+[data-theme="dark"] .xynolog-button:disabled,
+[data-theme="dark"] .xynolog-button[data-disabled="true"],
 [data-theme="dark"] [disabled] {
-  color: var(--xynoplex-color-gray-300) !important;
+  color: var(--xynolog-color-gray-300) !important;
 }
 
 /* Links - ensure sufficient contrast */
@@ -112,20 +112,20 @@ a:visited,
 [data-theme="dark"] a:visited,
 
 /* Badge and chip text - ensure readability */
-.xynoplex-chip,
-.xynoplex-tag {
+.xynolog-chip,
+.xynolog-tag {
   font-weight: 500 !important; /* Slightly bolder for better readability */
 }
 
 /* Light colored badges need dark text */
 [data-variant="light"] {
-  color: var(--xynoplex-color-gray-900) !important;
-  background-color: var(--xynoplex-color-gray-100) !important;
+  color: var(--xynolog-color-gray-900) !important;
+  background-color: var(--xynolog-color-gray-100) !important;
 }
 
 [data-theme="dark"] [data-variant="light"] {
-  color: var(--xynoplex-color-gray-100) !important;
-  background-color: var(--xynoplex-color-gray-700) !important;
+  color: var(--xynolog-color-gray-100) !important;
+  background-color: var(--xynolog-color-gray-700) !important;
 }
 
 /* ========================================
@@ -135,13 +135,13 @@ a:visited,
 @media (prefers-contrast: more) {
   /* Increase all text contrast in high contrast mode */
   body,
-  .xynoplex-text {
-    color: var(--xynoplex-color-gray-900) !important;
+  .xynolog-text {
+    color: var(--xynolog-color-gray-900) !important;
   }
 
   [data-theme="dark"] body,
-  [data-theme="dark"] .xynoplex-text {
-    color: var(--xynoplex-color-gray-50) !important;
+  [data-theme="dark"] .xynolog-text {
+    color: var(--xynolog-color-gray-50) !important;
   }
 
   /* Stronger borders for better definition */
@@ -149,10 +149,10 @@ a:visited,
   input,
   select,
   textarea,
-  .xynoplex-button,
-  .xynoplex-input,
-  .xynoplex-select,
-  .xynoplex-textarea {
+  .xynolog-button,
+  .xynolog-input,
+  .xynolog-select,
+  .xynolog-textarea {
     border-width: 2px !important;
     border-color: currentColor !important;
   }
@@ -161,12 +161,12 @@ a:visited,
   [data-theme="dark"] input,
   [data-theme="dark"] select,
   [data-theme="dark"] textarea,
-  [data-theme="dark"] .xynoplex-button,
-  [data-theme="dark"] .xynoplex-input,
-  [data-theme="dark"] .xynoplex-select,
-  [data-theme="dark"] .xynoplex-textarea {
+  [data-theme="dark"] .xynolog-button,
+  [data-theme="dark"] .xynolog-input,
+  [data-theme="dark"] .xynolog-select,
+  [data-theme="dark"] .xynolog-textarea {
     border-width: 2px !important;
-    border-color: var(--xynoplex-color-gray-400) !important;
+    border-color: var(--xynolog-color-gray-400) !important;
   }
 
   /* Higher opacity for disabled states */
@@ -174,7 +174,7 @@ a:visited,
   input:disabled,
   select:disabled,
   textarea:disabled,
-  .xynoplex-button:disabled,
+  .xynolog-button:disabled,
   [disabled] {
     opacity: 0.8 !important;
   }
@@ -231,50 +231,50 @@ a:visited,
    ======================================== */
 
 /* Forms - improve label contrast */
-.xynoplex-form__label,
+.xynolog-form__label,
 label {
-  color: var(--xynoplex-color-gray-700) !important;
+  color: var(--xynolog-color-gray-700) !important;
   font-weight: 500 !important;
 }
 
-[data-theme="dark"] .xynoplex-form__label,
+[data-theme="dark"] .xynolog-form__label,
 [data-theme="dark"] label {
-  color: var(--xynoplex-color-gray-200) !important;
+  color: var(--xynolog-color-gray-200) !important;
 }
 
 /* Helper text - ensure readability */
-.xynoplex-form__helper {
-  color: var(--xynoplex-color-gray-600) !important;
+.xynolog-form__helper {
+  color: var(--xynolog-color-gray-600) !important;
   font-size: 0.875rem !important;
 }
 
-[data-theme="dark"] .xynoplex-form__helper {
-  color: var(--xynoplex-color-gray-400) !important;
+[data-theme="dark"] .xynolog-form__helper {
+  color: var(--xynolog-color-gray-400) !important;
 }
 
 /* Error messages - high contrast for importance */
-.xynoplex-form__error,
-.xynoplex-error {
-  color: var(--xynoplex-color-red-700) !important;
+.xynolog-form__error,
+.xynolog-error {
+  color: var(--xynolog-color-red-700) !important;
   font-weight: 500 !important;
 }
 
-[data-theme="dark"] .xynoplex-form__error,
-[data-theme="dark"] .xynoplex-error {
-  color: var(--xynoplex-color-red-400) !important;
+[data-theme="dark"] .xynolog-form__error,
+[data-theme="dark"] .xynolog-error {
+  color: var(--xynolog-color-red-400) !important;
 }
 
 /* Code blocks - ensure syntax highlighting has contrast */
 code,
 pre,
-.xynoplex-code {
-  background-color: var(--xynoplex-color-gray-100) !important;
-  color: var(--xynoplex-color-gray-900) !important;
+.xynolog-code {
+  background-color: var(--xynolog-color-gray-100) !important;
+  color: var(--xynolog-color-gray-900) !important;
 }
 
 [data-theme="dark"] code,
 [data-theme="dark"] pre,
-[data-theme="dark"] .xynoplex-code {
-  background-color: var(--xynoplex-color-gray-800) !important;
-  color: var(--xynoplex-color-gray-100) !important;
+[data-theme="dark"] .xynolog-code {
+  background-color: var(--xynolog-color-gray-800) !important;
+  color: var(--xynolog-color-gray-100) !important;
 }

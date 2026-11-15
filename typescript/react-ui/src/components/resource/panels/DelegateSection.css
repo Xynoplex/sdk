@@ -10,66 +10,66 @@
    Base Delegate Widget Container
    ============================================ */
 
-.xynoplex-delegate-widget {
+.xynolog-delegate-widget {
   display: flex;
   flex-direction: column;
   gap: 1rem;
   padding: 1rem;
-  background-color: var(--xynoplex-bg-secondary);
+  background-color: var(--xynolog-bg-secondary);
   border-radius: 0.5rem;
-  border: 1px solid var(--xynoplex-color-gray-200);
+  border: 1px solid var(--xynolog-color-gray-200);
 }
 
-[data-theme="dark"] .xynoplex-delegate-widget {
-  background-color: var(--xynoplex-color-gray-800);
-  border-color: var(--xynoplex-color-gray-700);
+[data-theme="dark"] .xynolog-delegate-widget {
+  background-color: var(--xynolog-color-gray-800);
+  border-color: var(--xynolog-color-gray-700);
 }
 
 /* ============================================
    Labels and Descriptive Text
    ============================================ */
 
-.xynoplex-delegate-widget__label {
+.xynolog-delegate-widget__label {
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--xynoplex-color-gray-700);
+  color: var(--xynolog-color-gray-700);
   margin-bottom: 0.5rem;
 }
 
-[data-theme="dark"] .xynoplex-delegate-widget__label {
-  color: var(--xynoplex-color-gray-300);
+[data-theme="dark"] .xynolog-delegate-widget__label {
+  color: var(--xynolog-color-gray-300);
 }
 
-.xynoplex-delegate-widget__count {
+.xynolog-delegate-widget__count {
   font-size: 0.75rem;
-  color: var(--xynoplex-color-gray-500);
+  color: var(--xynolog-color-gray-500);
   text-align: center;
   margin-bottom: 1rem;
 }
 
-[data-theme="dark"] .xynoplex-delegate-widget__count {
-  color: var(--xynoplex-color-gray-400);
+[data-theme="dark"] .xynolog-delegate-widget__count {
+  color: var(--xynolog-color-gray-400);
 }
 
-.xynoplex-delegate-widget__no-types {
+.xynolog-delegate-widget__no-types {
   font-size: 0.875rem;
-  color: var(--xynoplex-color-gray-500);
+  color: var(--xynolog-color-gray-500);
   font-style: italic;
 }
 
-[data-theme="dark"] .xynoplex-delegate-widget__no-types {
-  color: var(--xynoplex-color-gray-400);
+[data-theme="dark"] .xynolog-delegate-widget__no-types {
+  color: var(--xynolog-color-gray-400);
 }
 
 /* ============================================
    Entity Types / Chips Section (References)
    ============================================ */
 
-.xynoplex-delegate-widget__entity-types {
+.xynolog-delegate-widget__entity-types {
   margin-bottom: 1rem;
 }
 
-.xynoplex-delegate-widget__chips {
+.xynolog-delegate-widget__chips {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
@@ -79,47 +79,47 @@
    Checkbox Group (References)
    ============================================ */
 
-.xynoplex-delegate-widget__checkbox-group {
+.xynolog-delegate-widget__checkbox-group {
   margin-bottom: 1rem;
 }
 
-.xynoplex-delegate-widget__checkbox-label {
+.xynolog-delegate-widget__checkbox-label {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   font-size: 0.875rem;
-  color: var(--xynoplex-color-gray-700);
+  color: var(--xynolog-color-gray-700);
   cursor: pointer;
 }
 
-[data-theme="dark"] .xynoplex-delegate-widget__checkbox-label {
-  color: var(--xynoplex-color-gray-300);
+[data-theme="dark"] .xynolog-delegate-widget__checkbox-label {
+  color: var(--xynolog-color-gray-300);
 }
 
-.xynoplex-delegate-widget__checkbox {
+.xynolog-delegate-widget__checkbox {
   border-radius: 0.25rem;
-  border: 1px solid var(--xynoplex-color-gray-300);
-  color: var(--xynoplex-color-blue-600);
+  border: 1px solid var(--xynolog-color-gray-300);
+  color: var(--xynolog-color-blue-600);
 }
 
-[data-theme="dark"] .xynoplex-delegate-widget__checkbox {
-  border-color: var(--xynoplex-color-gray-600);
+[data-theme="dark"] .xynolog-delegate-widget__checkbox {
+  border-color: var(--xynolog-color-gray-600);
 }
 
-.xynoplex-delegate-widget__checkbox:focus {
-  outline: 2px solid var(--xynoplex-color-blue-500);
+.xynolog-delegate-widget__checkbox:focus {
+  outline: 2px solid var(--xynolog-color-blue-500);
   outline-offset: 2px;
 }
 
-.xynoplex-delegate-widget__checkbox-hint {
+.xynolog-delegate-widget__checkbox-hint {
   font-size: 0.75rem;
-  color: var(--xynoplex-color-gray-500);
+  color: var(--xynolog-color-gray-500);
   margin-top: 0.25rem;
   margin-left: 1.5rem;
 }
 
-[data-theme="dark"] .xynoplex-delegate-widget__checkbox-hint {
-  color: var(--xynoplex-color-gray-400);
+[data-theme="dark"] .xynolog-delegate-widget__checkbox-hint {
+  color: var(--xynolog-color-gray-400);
 }
 
 /* ============================================
@@ -127,46 +127,46 @@
    ============================================ */
 
 /* ── Delegate progress: TWO containers ──────────────────────────────────────
-   The outer `.xynoplex-delegate-widget` (above) provides the card; this provides
+   The outer `.xynolog-delegate-widget` (above) provides the card; this provides
    the status region inside it. A border, padding and tint on each nested
    element would put a stack of boxes around one sentence of status. */
-.xynoplex-delegate-progress {
+.xynolog-delegate-progress {
   display: flex;
   flex-direction: column;
   gap: 0.375rem;
   position: relative;
 }
 
-.xynoplex-delegate-progress__status {
+.xynolog-delegate-progress__status {
   display: flex;
   align-items: baseline;
   gap: 0.5rem;
   padding-right: 1.5rem; /* room for the single control */
-  font-size: var(--xynoplex-text-sm);
-  font-weight: var(--xynoplex-font-medium);
-  color: var(--xynoplex-text-primary);
+  font-size: var(--xynolog-text-sm);
+  font-weight: var(--xynolog-font-medium);
+  color: var(--xynolog-text-primary);
 }
 
-.xynoplex-delegate-progress__icon {
+.xynolog-delegate-progress__icon {
   flex: none;
 }
 
 /* The subject and the parameters are context for the status, not peers of it. */
-.xynoplex-delegate-progress__subject,
-.xynoplex-delegate-progress__tally,
-.xynoplex-delegate-progress__params {
-  font-size: var(--xynoplex-text-xs);
-  color: var(--xynoplex-text-secondary);
+.xynolog-delegate-progress__subject,
+.xynolog-delegate-progress__tally,
+.xynolog-delegate-progress__params {
+  font-size: var(--xynolog-text-xs);
+  color: var(--xynolog-text-secondary);
 }
 
-[data-theme="dark"] .xynoplex-delegate-progress__subject,
-[data-theme="dark"] .xynoplex-delegate-progress__tally,
-[data-theme="dark"] .xynoplex-delegate-progress__params {
-  color: var(--xynoplex-text-secondary);
+[data-theme="dark"] .xynolog-delegate-progress__subject,
+[data-theme="dark"] .xynolog-delegate-progress__tally,
+[data-theme="dark"] .xynolog-delegate-progress__params {
+  color: var(--xynolog-text-secondary);
 }
 
-.xynoplex-delegate-progress__subject,
-.xynoplex-delegate-progress__tally {
+.xynolog-delegate-progress__subject,
+.xynolog-delegate-progress__tally {
   font-variant-numeric: tabular-nums;
 }
 
@@ -174,49 +174,49 @@
    affordance. Completion reveals the new reference rather than navigating to
    the new resource, so this is the way there: a button-shaped invitation to
    open what was made, not an underlined footnote beside the bar. */
-.xynoplex-delegate-progress__outcome {
+.xynolog-delegate-progress__outcome {
   align-self: stretch;
   padding: 0.5rem 0.75rem;
-  border: 1px solid var(--xynoplex-color-primary-300);
+  border: 1px solid var(--xynolog-color-primary-300);
   border-radius: 0.5rem;
-  background: var(--xynoplex-color-primary-50);
+  background: var(--xynolog-color-primary-50);
   cursor: pointer;
-  font-size: var(--xynoplex-text-sm);
-  font-weight: var(--xynoplex-font-medium);
-  color: var(--xynoplex-color-primary-700);
+  font-size: var(--xynolog-text-sm);
+  font-weight: var(--xynolog-font-medium);
+  color: var(--xynolog-color-primary-700);
   text-align: left;
 }
 
-.xynoplex-delegate-progress__outcome:hover {
-  border-color: var(--xynoplex-color-primary-400);
-  background: var(--xynoplex-color-primary-100);
-  color: var(--xynoplex-color-primary-800);
+.xynolog-delegate-progress__outcome:hover {
+  border-color: var(--xynolog-color-primary-400);
+  background: var(--xynolog-color-primary-100);
+  color: var(--xynolog-color-primary-800);
 }
 
-[data-theme="dark"] .xynoplex-delegate-progress__outcome {
-  border-color: var(--xynoplex-color-primary-700);
-  background: var(--xynoplex-color-primary-900);
-  color: var(--xynoplex-color-primary-300);
+[data-theme="dark"] .xynolog-delegate-progress__outcome {
+  border-color: var(--xynolog-color-primary-700);
+  background: var(--xynolog-color-primary-900);
+  color: var(--xynolog-color-primary-300);
 }
 
-[data-theme="dark"] .xynoplex-delegate-progress__outcome:hover {
-  border-color: var(--xynoplex-color-primary-600);
-  background: var(--xynoplex-color-primary-800);
-  color: var(--xynoplex-color-primary-200);
+[data-theme="dark"] .xynolog-delegate-progress__outcome:hover {
+  border-color: var(--xynolog-color-primary-600);
+  background: var(--xynolog-color-primary-800);
+  color: var(--xynolog-color-primary-200);
 }
 
-.xynoplex-delegate-progress__params {
+.xynolog-delegate-progress__params {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
 }
 
-.xynoplex-delegate-progress__param-label {
-  font-weight: var(--xynoplex-font-medium);
+.xynolog-delegate-progress__param-label {
+  font-weight: var(--xynolog-font-medium);
 }
 
 /* One control, top-right, quiet until hovered. */
-.xynoplex-delegate-progress__control {
+.xynolog-delegate-progress__control {
   position: absolute;
   top: 0;
   right: 0;
@@ -225,64 +225,64 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--xynoplex-text-secondary);
+  color: var(--xynolog-text-secondary);
 }
 
-.xynoplex-delegate-progress__control:hover:not(:disabled) {
-  color: var(--xynoplex-text-primary);
+.xynolog-delegate-progress__control:hover:not(:disabled) {
+  color: var(--xynolog-text-primary);
 }
 
-.xynoplex-delegate-progress__control:disabled {
+.xynolog-delegate-progress__control:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-[data-theme="dark"] .xynoplex-delegate-progress__control {
-  color: var(--xynoplex-text-secondary);
+[data-theme="dark"] .xynolog-delegate-progress__control {
+  color: var(--xynolog-text-secondary);
 }
 
-.xynoplex-delegate-widget[data-type="highlight"] {
-  border-color: var(--xynoplex-color-yellow-300);
+.xynolog-delegate-widget[data-type="highlight"] {
+  border-color: var(--xynolog-color-yellow-300);
 }
 
-[data-theme="dark"] .xynoplex-delegate-widget[data-type="highlight"] {
-  border-color: var(--xynoplex-color-yellow-600);
+[data-theme="dark"] .xynolog-delegate-widget[data-type="highlight"] {
+  border-color: var(--xynolog-color-yellow-600);
 }
 
 /* Comment */
-.xynoplex-delegate-widget[data-type="comment"] {
-  border-color: var(--xynoplex-color-gray-300);
+.xynolog-delegate-widget[data-type="comment"] {
+  border-color: var(--xynolog-color-gray-300);
 }
 
-[data-theme="dark"] .xynoplex-delegate-widget[data-type="comment"] {
-  border-color: var(--xynoplex-color-gray-600);
+[data-theme="dark"] .xynolog-delegate-widget[data-type="comment"] {
+  border-color: var(--xynolog-color-gray-600);
 }
 
 /* Assessment */
-.xynoplex-delegate-widget[data-type="assessment"] {
-  border-color: var(--xynoplex-color-purple-300);
+.xynolog-delegate-widget[data-type="assessment"] {
+  border-color: var(--xynolog-color-purple-300);
 }
 
-[data-theme="dark"] .xynoplex-delegate-widget[data-type="assessment"] {
-  border-color: var(--xynoplex-color-purple-600);
+[data-theme="dark"] .xynolog-delegate-widget[data-type="assessment"] {
+  border-color: var(--xynolog-color-purple-600);
 }
 
 /* Tag */
-.xynoplex-delegate-widget[data-type="tag"] {
-  border-color: var(--xynoplex-color-orange-300);
+.xynolog-delegate-widget[data-type="tag"] {
+  border-color: var(--xynolog-color-orange-300);
 }
 
-[data-theme="dark"] .xynoplex-delegate-widget[data-type="tag"] {
-  border-color: var(--xynoplex-color-orange-600);
+[data-theme="dark"] .xynolog-delegate-widget[data-type="tag"] {
+  border-color: var(--xynolog-color-orange-600);
 }
 
 /* Reference */
-.xynoplex-delegate-widget[data-type="reference"] {
-  border-color: var(--xynoplex-color-blue-300);
+.xynolog-delegate-widget[data-type="reference"] {
+  border-color: var(--xynolog-color-blue-300);
 }
 
-[data-theme="dark"] .xynoplex-delegate-widget[data-type="reference"] {
-  border-color: var(--xynoplex-color-blue-600);
+[data-theme="dark"] .xynolog-delegate-widget[data-type="reference"] {
+  border-color: var(--xynolog-color-blue-600);
 }
 
 /*
@@ -290,40 +290,40 @@
  * package, so it lives here rather than in `styles/core/`. If a second
  * consumer ever appears, promoting these rules to core is a move, not a copy.
  *
- * The track is NOT `--xynoplex-bg-secondary`: that is exactly
- * `.xynoplex-delegate-widget`'s own background, so the track would go invisible
+ * The track is NOT `--xynolog-bg-secondary`: that is exactly
+ * `.xynolog-delegate-widget`'s own background, so the track would go invisible
  * inside the card and the fill would float with nothing to measure it against.
  */
-.xynoplex-progress-bar {
+.xynolog-progress-bar {
   width: 100%;
   height: 0.5rem;
   overflow: hidden;
-  border-radius: var(--xynoplex-radius-full);
-  background-color: var(--xynoplex-color-gray-200);
+  border-radius: var(--xynolog-radius-full);
+  background-color: var(--xynolog-color-gray-200);
 }
 
-[data-theme="dark"] .xynoplex-progress-bar {
-  background-color: var(--xynoplex-color-gray-700);
+[data-theme="dark"] .xynolog-progress-bar {
+  background-color: var(--xynolog-color-gray-700);
 }
 
-.xynoplex-progress-bar__fill {
+.xynolog-progress-bar__fill {
   height: 100%;
-  background-color: var(--xynoplex-color-primary-500);
+  background-color: var(--xynolog-color-primary-500);
   transition: width 0.3s ease;
 }
 
-[data-theme="dark"] .xynoplex-progress-bar__fill {
-  background-color: var(--xynoplex-color-primary-400);
+[data-theme="dark"] .xynolog-progress-bar__fill {
+  background-color: var(--xynolog-color-primary-400);
 }
 
 /* One parameter row inside the params list. */
-.xynoplex-delegate-progress__param {
+.xynolog-delegate-progress__param {
   display: flex;
   gap: 0.375rem;
   align-items: baseline;
 }
 
-.xynoplex-delegate-widget__log {
+.xynolog-delegate-widget__log {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;

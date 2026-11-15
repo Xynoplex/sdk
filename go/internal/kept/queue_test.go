@@ -4,7 +4,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/Xynoplex/sdk/go/internal/kept"
+	"github.com/xynolog/sdk/go/internal/kept"
 )
 
 // A queue's reader is given every item pushed, in order, however far behind

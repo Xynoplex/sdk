@@ -17,15 +17,15 @@ import (
 	"testing/synctest"
 	"time"
 
-	xynoplex "github.com/Xynoplex/sdk/go"
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/registry"
-	"github.com/Xynoplex/sdk/go/xynoplextest"
+	xynolog "github.com/xynolog/sdk/go"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/registry"
+	"github.com/xynolog/sdk/go/xynologtest"
 )
 
 // ended is whether a reader of something a registry showed sees no more: its
 // changes end once it is given the value now.
-func ended[T any](watched xynoplex.Watched[T]) bool {
+func ended[T any](watched xynolog.Watched[T]) bool {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 	seen := 0
@@ -546,7 +546,7 @@ func TestAResourceAnotherContextOpenedWhileTheChecksRanIsLeftOpen(t *testing.T) 
 		w.factory.behind.mu.Unlock()
 		elsewhere := w.storage.Context()
 		gate := gated{SessionFactory: w.factory.sessions, open: make(chan struct{})}
-		browser, err := registry.NewXynoplexBrowser(registry.XynoplexBrowserConfig{Storage: w.storage, SessionFactory: gate})
+		browser, err := registry.NewXynologBrowser(registry.XynologBrowserConfig{Storage: w.storage, SessionFactory: gate})
 		must(t, err)
 		closedAtTheEnd(t, browser)
 		// Before the session is up: the other context opens one more.
@@ -564,7 +564,7 @@ func TestAResourceAnotherContextOpenedWhileTheChecksRanIsLeftOpen(t *testing.T) 
 	})
 }
 
-func conflict(browser *registry.XynoplexBrowser) *xynoplex.KbIdentityConflict {
+func conflict(browser *registry.XynologBrowser) *xynolog.KbIdentityConflict {
 	if signals := browser.ActiveSignals().Value(); signals != nil {
 		return signals.KbIdentityConflict().Value()
 	}
@@ -587,7 +587,7 @@ func TestADifferentKnowledgeBaseAnsweringVoidsWhatWasOpenAndIsRaised(t *testing.
 		if !equalStrings(w.storedOpen(kbB), []string{"b1"}) || !reflect.DeepEqual(w.storedLastViewed(), map[string]string{kbB: "b1"}) {
 			t.Errorf("B's: open %v, last viewed %v", w.storedOpen(kbB), w.storedLastViewed())
 		}
-		if got := conflict(browser); got == nil || *got != (xynoplex.KbIdentityConflict{ExpectedDid: didA, ObservedDid: didB}) {
+		if got := conflict(browser); got == nil || *got != (xynolog.KbIdentityConflict{ExpectedDid: didA, ObservedDid: didB}) {
 			t.Errorf("the conflict raised is %+v", got)
 		}
 		// The entry is as it was written: nothing of the other is put on it.
@@ -622,7 +622,7 @@ func TestTheKnowledgeBaseAnsweringAsItselfChangesNothingAndIsRecorded(t *testing
 		// arrival would ask the knowledge base again and record a later read
 		// over this one.
 		must(t, browser.Close())
-		reopened, err := registry.NewXynoplexBrowser(registry.XynoplexBrowserConfig{Storage: w.storage, SessionFactory: gated{SessionFactory: w.factory.sessions, open: make(chan struct{})}})
+		reopened, err := registry.NewXynologBrowser(registry.XynologBrowserConfig{Storage: w.storage, SessionFactory: gated{SessionFactory: w.factory.sessions, open: make(chan struct{})}})
 		must(t, err)
 		closedAtTheEnd(t, reopened)
 		if !same(t, reopened.KnowledgeBases().Value()[0], entry) {
@@ -737,18 +737,18 @@ func TestWithNoSessionThereIsNothingToAsk(t *testing.T) {
 
 // ── What the session's transport fails at ───────────────────────────────
 
-func refusal(code xynoplex.TransportErrorCode, status int) *xynoplex.TransportError {
-	return &xynoplex.TransportError{Code: code, Message: fmt.Sprintf("HTTP %d", status)}
+func refusal(code xynolog.TransportErrorCode, status int) *xynolog.TransportError {
+	return &xynolog.TransportError{Code: code, Message: fmt.Sprintf("HTTP %d", status)}
 }
 
-func sessionEnded(browser *registry.XynoplexBrowser) *xynoplex.SessionEnded {
+func sessionEnded(browser *registry.XynologBrowser) *xynolog.SessionEnded {
 	if signals := browser.ActiveSignals().Value(); signals != nil {
 		return signals.SessionEnded().Value()
 	}
 	return nil
 }
 
-func denied(browser *registry.XynoplexBrowser) *xynoplex.PermissionDenied {
+func denied(browser *registry.XynologBrowser) *xynolog.PermissionDenied {
 	if signals := browser.ActiveSignals().Value(); signals != nil {
 		return signals.PermissionDenied().Value()
 	}
@@ -767,18 +767,18 @@ type startedSessions struct {
 
 	mu         sync.Mutex
 	handed     []string
-	transports []*xynoplextest.FaultyTransport
+	transports []*xynologtest.FaultyTransport
 }
 
-func (f *startedSessions) Session(ctx context.Context, options registry.SessionFactoryOptions) (*xynoplex.Session, func(), error) {
-	made := xynoplextest.NewTestClient(xynoplextest.TestClientConfig{Timing: xynoplex.DefaultTiming()})
+func (f *startedSessions) Session(ctx context.Context, options registry.SessionFactoryOptions) (*xynolog.Session, func(), error) {
+	made := xynologtest.NewTestClient(xynologtest.TestClientConfig{Timing: xynolog.DefaultTiming()})
 	f.mu.Lock()
 	f.transports = append(f.transports, made.Transport)
 	f.mu.Unlock()
-	session, err := xynoplex.StartSession(ctx, xynoplex.SessionConfig{
+	session, err := xynolog.StartSession(ctx, xynolog.SessionConfig{
 		Kb:     api.KbTarget{Endpoint: options.Kb.Endpoint, Id: options.Kb.Id, Label: options.Kb.Label},
 		Client: made.Client,
-		Token:  xynoplex.NewVariable(""),
+		Token:  xynolog.NewVariable(""),
 		Kept:   registry.KeptIn(options.Storage, options.Kb.Id),
 		Refresh: func(_ context.Context, renewing string) (string, error) {
 			f.mu.Lock()
@@ -793,7 +793,7 @@ func (f *startedSessions) Session(ctx context.Context, options registry.SessionF
 			return *f.who, nil
 		},
 		OnAuthFailed: options.Signals.NotifySessionEnded,
-		Timing:       xynoplex.DefaultTiming(),
+		Timing:       xynolog.DefaultTiming(),
 	})
 	if err != nil {
 		made.Client.Close()
@@ -822,7 +822,7 @@ func (f *startedSessions) renewals() []string {
 }
 
 // last is the transport of the session built last.
-func (f *startedSessions) last() *xynoplextest.FaultyTransport {
+func (f *startedSessions) last() *xynologtest.FaultyTransport {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	return f.transports[len(f.transports)-1]
@@ -838,16 +838,16 @@ func TestAConflictIsNotActedOnAndNoOtherFailureEndsTheSession(t *testing.T) {
 		live(t, browser)
 		transport := w.factory.sessions.Transports(kbA)[0]
 
-		transport.Fail(refusal(xynoplex.TransportErrorCodeConflict, 409))
+		transport.Fail(refusal(xynolog.TransportErrorCodeConflict, 409))
 		settle()
 		if denied(browser) != nil || sessionEnded(browser) != nil || w.factory.sessions.Renewed() != 0 {
 			t.Error("a conflict was acted on")
 		}
 
-		transport.Fail(refusal(xynoplex.TransportErrorCodeNotFound, 404))
-		transport.Fail(refusal(xynoplex.TransportErrorCodeError, 500))
-		transport.Fail(refusal(xynoplex.TransportErrorCodeUnavailable, 503))
-		transport.Fail(refusal(xynoplex.TransportErrorCodeForbidden, 403))
+		transport.Fail(refusal(xynolog.TransportErrorCodeNotFound, 404))
+		transport.Fail(refusal(xynolog.TransportErrorCodeError, 500))
+		transport.Fail(refusal(xynolog.TransportErrorCodeUnavailable, 503))
+		transport.Fail(refusal(xynolog.TransportErrorCodeForbidden, 403))
 		settle()
 		if denied(browser) == nil {
 			t.Fatal("the failures were not read: the refusal for lack of permission after them is not said")
@@ -861,13 +861,13 @@ func TestAConflictIsNotActedOnAndNoOtherFailureEndsTheSession(t *testing.T) {
 // forbiddenAtTheStart is a factory whose every session's transport is refused
 // for lack of permission before the session is handed back: at its start,
 // before the registry reads what it says.
-type forbiddenAtTheStart struct{ *xynoplextest.ScriptedSessions }
+type forbiddenAtTheStart struct{ *xynologtest.ScriptedSessions }
 
-func (f forbiddenAtTheStart) Session(ctx context.Context, options registry.SessionFactoryOptions) (*xynoplex.Session, func(), error) {
+func (f forbiddenAtTheStart) Session(ctx context.Context, options registry.SessionFactoryOptions) (*xynolog.Session, func(), error) {
 	session, end, err := f.ScriptedSessions.Session(ctx, options)
 	if err == nil {
 		transports := f.Transports(options.Kb.Id)
-		transports[len(transports)-1].Fail(refusal(xynoplex.TransportErrorCodeForbidden, 403))
+		transports[len(transports)-1].Fail(refusal(xynolog.TransportErrorCodeForbidden, 403))
 	}
 	return session, end, err
 }
@@ -878,7 +878,7 @@ func (f forbiddenAtTheStart) Session(ctx context.Context, options registry.Sessi
 func TestARefusalForLackOfPermissionAtASessionsStartIsSaid(t *testing.T) {
 	bubble(t, func(t *testing.T, w *world) {
 		w.with(kbOfA())
-		browser, err := registry.NewXynoplexBrowser(registry.XynoplexBrowserConfig{Storage: w.storage, SessionFactory: forbiddenAtTheStart{w.factory.sessions}})
+		browser, err := registry.NewXynologBrowser(registry.XynologBrowserConfig{Storage: w.storage, SessionFactory: forbiddenAtTheStart{w.factory.sessions}})
 		must(t, err)
 		closedAtTheEnd(t, browser)
 		live(t, browser)
@@ -900,7 +900,7 @@ var errFull = errors.New("the storage is full")
 // refusing is a storage that, while it refuses a kind of write, takes none of
 // that kind: what it holds stays as it was.
 type refusing struct {
-	*xynoplextest.SharedStorage
+	*xynologtest.SharedStorage
 	sets, deletes, updates atomic.Bool
 }
 
@@ -933,7 +933,7 @@ func TestARegistryOverAStorageThatRefusesWhatItReadIsNotMade(t *testing.T) {
 		storage := &refusing{SharedStorage: w.storage}
 		storage.sets.Store(true)
 
-		if _, err := registry.NewXynoplexBrowser(registry.XynoplexBrowserConfig{Storage: storage, SessionFactory: w.factory.sessions}); !errors.Is(err, errFull) {
+		if _, err := registry.NewXynologBrowser(registry.XynologBrowserConfig{Storage: storage, SessionFactory: w.factory.sessions}); !errors.Is(err, errFull) {
 			t.Fatalf("made over a storage that refuses, it says %v", err)
 		}
 		settle()
@@ -1101,11 +1101,11 @@ func TestClosingTheRegistryClosesItsSessionAndEndsWhatItHolds(t *testing.T) {
 // is building the session it began with, and says what closing returned.
 type closingAsItBuilds struct {
 	registry.SessionFactory
-	browser chan *registry.XynoplexBrowser
+	browser chan *registry.XynologBrowser
 	closed  chan error
 }
 
-func (c closingAsItBuilds) Session(ctx context.Context, _ registry.SessionFactoryOptions) (*xynoplex.Session, func(), error) {
+func (c closingAsItBuilds) Session(ctx context.Context, _ registry.SessionFactoryOptions) (*xynolog.Session, func(), error) {
 	c.closed <- (<-c.browser).Close()
 	// Closing ended the registry's wait for this session, which is never built.
 	<-ctx.Done()
@@ -1115,8 +1115,8 @@ func (c closingAsItBuilds) Session(ctx context.Context, _ registry.SessionFactor
 func TestClosingFromWithinTheFactoryEndsTheRegistryWithoutWaitingForItself(t *testing.T) {
 	bubble(t, func(t *testing.T, w *world) {
 		w.with(kbOfA())
-		factory := closingAsItBuilds{SessionFactory: w.factory.sessions, browser: make(chan *registry.XynoplexBrowser, 1), closed: make(chan error, 1)}
-		browser, err := registry.NewXynoplexBrowser(registry.XynoplexBrowserConfig{Storage: w.storage, SessionFactory: factory})
+		factory := closingAsItBuilds{SessionFactory: w.factory.sessions, browser: make(chan *registry.XynologBrowser, 1), closed: make(chan error, 1)}
+		browser, err := registry.NewXynologBrowser(registry.XynologBrowserConfig{Storage: w.storage, SessionFactory: factory})
 		must(t, err)
 		factory.browser <- browser
 
@@ -1137,7 +1137,7 @@ type deaf struct {
 	open  chan struct{}
 }
 
-func (d deaf) Session(_ context.Context, options registry.SessionFactoryOptions) (*xynoplex.Session, func(), error) {
+func (d deaf) Session(_ context.Context, options registry.SessionFactoryOptions) (*xynolog.Session, func(), error) {
 	close(d.asked)
 	<-d.open
 	return d.SessionFactory.Session(context.Background(), options)
@@ -1147,7 +1147,7 @@ func TestClosingDoesNotWaitForAFactoryThatDoesNotHearTheRegistryEnd(t *testing.T
 	bubble(t, func(t *testing.T, w *world) {
 		w.with(kbOfA())
 		factory := deaf{SessionFactory: w.factory.sessions, asked: make(chan struct{}), open: make(chan struct{})}
-		browser, err := registry.NewXynoplexBrowser(registry.XynoplexBrowserConfig{Storage: w.storage, SessionFactory: factory})
+		browser, err := registry.NewXynologBrowser(registry.XynologBrowserConfig{Storage: w.storage, SessionFactory: factory})
 		must(t, err)
 		<-factory.asked
 

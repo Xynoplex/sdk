@@ -2,7 +2,7 @@
 
 from datetime import UTC, datetime
 
-from xynoplex.transport import Transport
+from xynolog.transport import Transport
 
 
 async def emits(transport: Transport) -> None:

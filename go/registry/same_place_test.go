@@ -11,8 +11,8 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/Xynoplex/sdk/go/api"
-	"github.com/Xynoplex/sdk/go/internal/required"
+	"github.com/xynolog/sdk/go/api"
+	"github.com/xynolog/sdk/go/internal/required"
 )
 
 type registryCases struct {

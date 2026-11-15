@@ -10,7 +10,7 @@ import Data.Char (toUpper)
 import Data.List (nub)
 import qualified Data.Map.Strict as Map
 import qualified Data.Text.Encoding as Encoding
-import Xynoplex.Internal.Schema (Schemas, normalize)
+import Xynolog.Internal.Schema (Schemas, normalize)
 import Text.Read (readMaybe)
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -110,12 +110,12 @@ httpFacts root (Object spec) schemas = do
       code = T.unlines
         [ "-- Generated from protocol/specs/src/openapi.json and its paths, and the reference credential classifier. Do not edit."
         , "{-# LANGUAGE GADTs, OverloadedStrings #-}"
-        , "module Xynoplex.Http.Routes (HttpRoute(..), routeName, routeMethod, routePath, routeStatus, routeMediaType, routeAuthenticated, routeRequestMediaType, routeRequiredHeaders, wireRefusesCredential, busEventName) where"
+        , "module Xynolog.Http.Routes (HttpRoute(..), routeName, routeMethod, routePath, routeStatus, routeMediaType, routeAuthenticated, routeRequestMediaType, routeRequiredHeaders, wireRefusesCredential, busEventName) where"
         , "import Data.ByteString (ByteString)"
         , "import Data.Text (Text)"
         , "import Data.Aeson (Value(..))"
         , "import qualified Data.Aeson.KeyMap as KM"
-        , "import Xynoplex.Types"
+        , "import Xynolog.Types"
         , "data HttpRoute request answer where"
         ] <> T.unlines ["  " <> constructorName row <> " :: HttpRoute " <> inputName row <> " " <> outputName row | row <- rows]
         <> "routeName :: HttpRoute request answer -> Text\n" <> T.unlines ["routeName " <> constructorName row <> " = " <> quote (constructorName row) | row <- rows]
@@ -129,5 +129,5 @@ httpFacts root (Object spec) schemas = do
         <> "wireRefusesCredential :: Int -> Maybe Value -> Bool\nwireRefusesCredential status body = status == " <> T.pack (show unauthorized)
         <> " || (status == " <> T.pack (show limited) <> " && maybe False matches body)\n  where matches (Object fields) = KM.lookup " <> quote field <> " fields == Just (String " <> quote literal <> ")\n        matches _ = False\n"
         <> "busEventName :: Text\nbusEventName = " <> quote eventName <> "\n"
-  pure (concat [addedSchemas row ++ [(named, shape) | (_,named,shape) <- headerSchemas row] | row <- rows], [("src/Xynoplex/Http/Routes.hs", code)])
+  pure (concat [addedSchemas row ++ [(named, shape) | (_,named,shape) <- headerSchemas row] | row <- rows], [("src/Xynolog/Http/Routes.hs", code)])
 httpFacts _ _ _ = fail "OpenAPI is not an object"

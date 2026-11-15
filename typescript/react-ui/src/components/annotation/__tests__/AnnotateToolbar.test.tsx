@@ -118,7 +118,7 @@ describe('AnnotateToolbar', () => {
       expect(screen.queryByLabelText('Mode')).not.toBeInTheDocument();
       expect(screen.queryByLabelText('Motivation')).not.toBeInTheDocument();
       // A lone part renders no separators
-      expect(container.querySelector('.xynoplex-toolbar-separator')).toBeNull();
+      expect(container.querySelector('.xynolog-toolbar-separator')).toBeNull();
     });
 
     it("parts={['clickAction','mode']} renders those two with one separator", () => {
@@ -128,7 +128,7 @@ describe('AnnotateToolbar', () => {
       expect(screen.getByLabelText('Click')).toBeInTheDocument();
       expect(screen.getByLabelText('Mode')).toBeInTheDocument();
       expect(screen.queryByLabelText('Motivation')).not.toBeInTheDocument();
-      expect(container.querySelectorAll('.xynoplex-toolbar-separator')).toHaveLength(1);
+      expect(container.querySelectorAll('.xynolog-toolbar-separator')).toHaveLength(1);
     });
 
     it('the default renders all four groups (shape media-gated: none for PDF beyond rectangle)', () => {

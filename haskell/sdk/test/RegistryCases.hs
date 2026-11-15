@@ -11,11 +11,11 @@ import Data.Foldable (toList)
 import qualified Data.Map.Strict as Map
 import Data.Text (Text)
 import Data.Text.Encoding (decodeUtf8)
-import qualified Xynoplex.Registry.Identity as Identity
-import qualified Xynoplex.Registry.Stored as Stored
-import qualified Xynoplex.Registry.Resources as Resources
-import qualified Xynoplex.SessionStorage as Storage
-import Xynoplex.Types
+import qualified Xynolog.Registry.Identity as Identity
+import qualified Xynolog.Registry.Stored as Stored
+import qualified Xynolog.Registry.Resources as Resources
+import qualified Xynolog.SessionStorage as Storage
+import Xynolog.Types
 import System.FilePath ((</>))
 
 require :: String -> Bool -> IO ()

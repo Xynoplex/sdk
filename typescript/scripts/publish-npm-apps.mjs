@@ -34,7 +34,7 @@ if (!existsSync(resolve(rootDir, 'images/browser'))) {
   process.exit(0);
 }
 
-const VERIFY_DIR = VERIFY ? mkdtempSync(resolve(tmpdir(), 'xynoplex-npm-verify-')) : null;
+const VERIFY_DIR = VERIFY ? mkdtempSync(resolve(tmpdir(), 'xynolog-npm-verify-')) : null;
 const STAGE_DIR = VERIFY_DIR ?? resolve(rootDir, '.npm-stage');
 
 function getVersion() {
@@ -47,7 +47,7 @@ function log(msg) {
 }
 
 function stageBrowser(version) {
-  log('\n=== Staging @xynoplex/browser ===\n');
+  log('\n=== Staging @xynolog/browser ===\n');
 
   const browserDir = resolve(rootDir, 'images/browser');
   const stageDir = resolve(STAGE_DIR, 'browser');
@@ -95,7 +95,7 @@ function stageBrowser(version) {
   execFileSync('cp', [resolve(browserDir, 'README.npm.md'), resolve(stageDir, 'README.md')]);
 
   verifyPublication(stageDir, publishPkg, 'images/browser');
-  log(`  Staged @xynoplex/browser@${version} to ${stageDir}`);
+  log(`  Staged @xynolog/browser@${version} to ${stageDir}`);
   log(`  Files: dist/, server.js, package.json, README.md`);
 
   return stageDir;

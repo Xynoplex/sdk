@@ -2,14 +2,14 @@
 //! sends, when, and how it settles (protocol/contract/TRANSPORT-CONTRACT.md
 //! § Requests).
 
-use xynoplex::bus::{Bus, Operation, operation};
-use xynoplex::channels::BRIDGED_CHANNELS;
-use xynoplex::errors::{XynoplexError, TransportErrorCode};
-use xynoplex::testing::{FaultAction, FaultyTransport};
-use xynoplex::transport::{ConnectionState, Frame, STREAM_BACKLOG, Transport};
 use serde_json::{Map, Value, json};
 use std::sync::Arc;
 use std::time::Duration;
+use xynolog::bus::{Bus, Operation, operation};
+use xynolog::channels::BRIDGED_CHANNELS;
+use xynolog::errors::{TransportErrorCode, XynologError};
+use xynolog::testing::{FaultAction, FaultyTransport};
+use xynolog::transport::{ConnectionState, Frame, STREAM_BACKLOG, Transport};
 
 const WITHIN: Duration = Duration::from_secs(5);
 
@@ -29,7 +29,7 @@ fn bus(schedule: Vec<FaultAction>) -> (Bus, FaultyTransport) {
     (Bus::new(Arc::new(transport.clone())), transport)
 }
 
-fn code(outcome: Result<Option<Value>, XynoplexError>) -> &'static str {
+fn code(outcome: Result<Option<Value>, XynologError>) -> &'static str {
     outcome.expect_err("the request fails").code()
 }
 
@@ -111,7 +111,7 @@ async fn a_failure_reply_fails_under_the_code_its_own_code_becomes() {
         });
         let error = asked.await.expect("the request ran").expect_err("it fails");
         assert_eq!(error.code(), expected);
-        let XynoplexError::Bus(error) = error else {
+        let XynologError::Bus(error) = error else {
             panic!("a failure reply is the request's own failure");
         };
         assert_eq!(error.message, "refused");
@@ -153,7 +153,7 @@ async fn a_failure_reply_that_is_not_its_channels_is_refused_naming_its_fault() 
             stream_id: None,
         });
         let error = asked.await.expect("the request ran").expect_err("it fails");
-        let XynoplexError::Transport(refusal) = error else {
+        let XynologError::Transport(refusal) = error else {
             panic!("a failure that is not its channel's is refused, not read: {error:?}");
         };
         assert_eq!(refusal.code, TransportErrorCode::Error);
@@ -175,7 +175,7 @@ async fn a_refused_emit_fails_the_request_as_the_transport_failed_it() {
         .request_of(read(), asking("r1"), WITHIN)
         .await
         .expect_err("the emit is refused");
-    assert!(matches!(error, XynoplexError::Transport(_)), "{error:?}");
+    assert!(matches!(error, XynologError::Transport(_)), "{error:?}");
     assert!(transport.pending_replies().is_empty());
 }
 

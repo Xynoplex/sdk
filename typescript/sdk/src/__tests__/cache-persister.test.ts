@@ -13,11 +13,11 @@ import type { SessionStorage } from '../session/session-storage';
 import { personKey } from '../session/storage';
 import { TestStorage } from '../session/__tests__/test-storage-helpers';
 import { createTestClient, inMemoryContent } from '../testing';
-import { isObject, isString, resourceId, type components } from '@xynoplex/core';
+import { isObject, isString, resourceId, type components } from '@xynolog/core';
 
 type GetAnnotationsResponse = components['schemas']['GetAnnotationsResponse'];
 
-const KEY = 'xynoplex.cache.kb-1.resource';
+const KEY = 'xynolog.cache.kb-1.resource';
 
 /** Entries of any text key and text value. */
 const TEXT: EntryDecoder<string, string> = { key: isString, value: isString };
@@ -103,7 +103,7 @@ describe('sessionStoragePersister (B17)', () => {
 });
 
 describe('coupledLastEventId (B17 — the bookmark rides the cache flush)', () => {
-  const ID_KEY = 'xynoplex.lastEventId.kb-1';
+  const ID_KEY = 'xynolog.lastEventId.kb-1';
 
   function recordingStorage() {
     const writes: Array<[string, string]> = [];
@@ -137,9 +137,9 @@ describe('coupledLastEventId (B17 — the bookmark rides the cache flush)', () =
     const coupled = coupledLastEventId(storage, ID_KEY);
 
     coupled.saveLastEventId(resourceId('res-1'), 'p-res-1-47');
-    coupled.storage.set('xynoplex.cache.kb-1.resource', '{"doc":1}');
+    coupled.storage.set('xynolog.cache.kb-1.resource', '{"doc":1}');
 
-    expect(writes.map(([k]) => k)).toEqual(['xynoplex.cache.kb-1.resource', ID_KEY]);
+    expect(writes.map(([k]) => k)).toEqual(['xynolog.cache.kb-1.resource', ID_KEY]);
     expect(JSON.parse(storage.get(ID_KEY)!)).toEqual({ 'res-1': 'p-res-1-47' });
   });
 
@@ -159,19 +159,19 @@ describe('coupledLastEventId (B17 — the bookmark rides the cache flush)', () =
     const asked = client.browse.annotations(resourceId('res-1')).fresh();
 
     coupled.saveLastEventId(resourceId('res-1'), 'p-res-1-47');
-    coupled.storage.update('xynoplex.cache.kb-1.resource', () => '{"doc":1}');
+    coupled.storage.update('xynolog.cache.kb-1.resource', () => '{"doc":1}');
 
     // The caches are not quiet: the ids stay pending, lagging.
-    expect(writes.map(([k]) => k)).toEqual(['xynoplex.cache.kb-1.resource']);
+    expect(writes.map(([k]) => k)).toEqual(['xynolog.cache.kb-1.resource']);
     expect(storage.get(ID_KEY)).toBeNull();
 
     // The fetch fails, and nothing is in flight or owed: the client is at rest, having written nothing.
     refusals.forEach((refuse) => refuse(new Error('the gateway refused the read')));
     await expect(asked).rejects.toThrow('the gateway refused the read');
-    coupled.storage.update('xynoplex.cache.kb-1.resource', () => '{"doc":2}');
+    coupled.storage.update('xynolog.cache.kb-1.resource', () => '{"doc":2}');
 
     // Document first, ids second.
-    expect(writes.map(([k]) => k)).toEqual(['xynoplex.cache.kb-1.resource', 'xynoplex.cache.kb-1.resource', ID_KEY]);
+    expect(writes.map(([k]) => k)).toEqual(['xynolog.cache.kb-1.resource', 'xynolog.cache.kb-1.resource', ID_KEY]);
     expect(JSON.parse(storage.get(ID_KEY)!)).toEqual({ 'res-1': 'p-res-1-47' });
     client.dispose();
   });
@@ -180,9 +180,9 @@ describe('coupledLastEventId (B17 — the bookmark rides the cache flush)', () =
     const { storage, writes } = recordingStorage();
     const coupled = coupledLastEventId(storage, ID_KEY);
 
-    coupled.storage.set('xynoplex.cache.kb-1.resource', '{"doc":1}');
+    coupled.storage.set('xynolog.cache.kb-1.resource', '{"doc":1}');
 
-    expect(writes.map(([k]) => k)).toEqual(['xynoplex.cache.kb-1.resource']);
+    expect(writes.map(([k]) => k)).toEqual(['xynolog.cache.kb-1.resource']);
   });
 
   it('multiple events before one flush persist the latest id per scope exactly once', () => {
@@ -192,8 +192,8 @@ describe('coupledLastEventId (B17 — the bookmark rides the cache flush)', () =
     coupled.saveLastEventId(resourceId('res-1'), 'p-res-1-47');
     coupled.saveLastEventId(resourceId('res-1'), 'p-res-1-48');
     coupled.saveLastEventId(resourceId('res-2'), 'p-res-2-5');
-    coupled.storage.set('xynoplex.cache.kb-1.annotations', '{"doc":2}');
-    coupled.storage.set('xynoplex.cache.kb-1.resource', '{"doc":3}');
+    coupled.storage.set('xynolog.cache.kb-1.annotations', '{"doc":2}');
+    coupled.storage.set('xynolog.cache.kb-1.resource', '{"doc":3}');
 
     expect(JSON.parse(storage.get(ID_KEY)!)).toEqual({ 'res-1': 'p-res-1-48', 'res-2': 'p-res-2-5' });
     expect(writes.filter(([k]) => k === ID_KEY)).toHaveLength(1);
@@ -204,9 +204,9 @@ describe('coupledLastEventId (B17 — the bookmark rides the cache flush)', () =
     const coupled = coupledLastEventId(storage, ID_KEY);
 
     coupled.saveLastEventId(resourceId('res-1'), 'p-res-1-47');
-    coupled.storage.set('xynoplex.cache.kb-1.resource', '{"doc":1}');
+    coupled.storage.set('xynolog.cache.kb-1.resource', '{"doc":1}');
     coupled.saveLastEventId(resourceId('res-2'), 'p-res-2-9');
-    coupled.storage.set('xynoplex.cache.kb-1.annotations', '{"doc":2}');
+    coupled.storage.set('xynolog.cache.kb-1.annotations', '{"doc":2}');
 
     expect(JSON.parse(storage.get(ID_KEY)!)).toEqual({ 'res-1': 'p-res-1-47', 'res-2': 'p-res-2-9' });
   });
@@ -215,7 +215,7 @@ describe('coupledLastEventId (B17 — the bookmark rides the cache flush)', () =
     const { storage } = recordingStorage();
     const coupled = coupledLastEventId(storage, ID_KEY);
     coupled.saveLastEventId(resourceId('res-1'), 'p-res-1-47');
-    coupled.storage.set('xynoplex.cache.kb-1.resource', '{"doc":1}');
+    coupled.storage.set('xynolog.cache.kb-1.resource', '{"doc":1}');
 
     expect(coupledLastEventId(storage, ID_KEY).loadLastEventIds()).toEqual(new Map([['res-1', 'p-res-1-47']]));
   });
@@ -236,7 +236,7 @@ describe('coupledLastEventId (B17 — the bookmark rides the cache flush)', () =
 
     coupled.saveLastEventId(resourceId('res-1'), 'e-res-1-47');
     coupled.saveLastEventId(resourceId('res-2'), 'p-res-2-9');
-    coupled.storage.set('xynoplex.cache.kb-1.resource', '{"doc":1}');
+    coupled.storage.set('xynolog.cache.kb-1.resource', '{"doc":1}');
 
     expect(JSON.parse(storage.get(ID_KEY)!)).toEqual({ 'res-2': 'p-res-2-9' });
   });

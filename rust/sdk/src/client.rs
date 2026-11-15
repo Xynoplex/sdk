@@ -20,7 +20,7 @@
 
 use crate::bus::{Bus, payload_of};
 use crate::channels::{Channel, Request};
-use crate::errors::{XynoplexError, SessionErrorCode};
+use crate::errors::{SessionErrorCode, XynologError};
 use crate::event_bus::EventBus;
 use crate::namespaces::{
     AuthNamespace, BeckonNamespace, BindNamespace, BrowseNamespace, FrameNamespace,
@@ -76,7 +76,7 @@ pub struct CachePersistence {
     pub person_key: String,
 }
 
-/// The session a client is owned by (`XynoplexClient::owned_by`): the
+/// The session a client is owned by (`XynologClient::owned_by`): the
 /// sign-in what the client keeps is written for, and how the session says
 /// what goes wrong with it.
 pub(crate) struct Owner {
@@ -89,7 +89,7 @@ pub(crate) struct Owner {
 pub struct ClientOptions {
     pub timing: ClientTiming,
     /// Absent, the client's caches live as long as it does, until it is
-    /// given one (`XynoplexClient::attach_persistence`).
+    /// given one (`XynologClient::attach_persistence`).
     pub cache_persistence: Option<CachePersistence>,
 }
 
@@ -110,7 +110,7 @@ impl Links {
     pub async fn request<R: Request>(
         &self,
         payload: &R::Payload,
-    ) -> Result<<R::Result as Channel>::Payload, XynoplexError> {
+    ) -> Result<<R::Result as Channel>::Payload, XynologError> {
         self.wire
             .request::<R>(payload, self.timing.bus_request)
             .await
@@ -121,7 +121,7 @@ impl Links {
     pub async fn drive<C: Channel>(
         &self,
         payload: &C::Payload,
-    ) -> Result<Option<u64>, XynoplexError> {
+    ) -> Result<Option<u64>, XynologError> {
         Ok(self.wire.emit::<C>(payload, Envelope::default()).await?)
     }
 
@@ -146,7 +146,7 @@ impl Links {
 }
 
 /// See the module's documentation.
-pub struct XynoplexClient {
+pub struct XynologClient {
     transport: Arc<dyn Transport>,
     /// The bus over the transport.
     wire: Bus,
@@ -182,7 +182,7 @@ pub struct XynoplexClient {
     pub system: Option<SystemNamespace>,
 }
 
-impl XynoplexClient {
+impl XynologClient {
     /// A client over `transport` and `content`, with `auth` and `system`
     /// when there is a `gateway`.
     pub fn new(
@@ -190,7 +190,7 @@ impl XynoplexClient {
         content: Arc<dyn ContentTransport>,
         gateway: Option<Arc<dyn GatewayOperations>>,
         options: ClientOptions,
-    ) -> XynoplexClient {
+    ) -> XynologClient {
         let own = EventBus::new();
         transport.bridge_into(Arc::new(own.clone()));
         let wire = Bus::new(transport.clone());
@@ -207,7 +207,7 @@ impl XynoplexClient {
         );
         let gather = GatherNamespace::new(links.clone());
         let match_ = MatchNamespace::new(links.clone());
-        XynoplexClient {
+        XynologClient {
             transport,
             wire,
             own,
@@ -345,7 +345,7 @@ impl XynoplexClient {
     }
 }
 
-impl Drop for XynoplexClient {
+impl Drop for XynologClient {
     fn drop(&mut self) {
         self.own.destroy();
     }

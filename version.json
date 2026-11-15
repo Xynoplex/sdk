@@ -1,27 +1,27 @@
 {
   "version": "0.7.3",
   "packages": {
-    "@xynoplex/core": {
+    "@xynolog/core": {
       "dir": "typescript/core",
       "version": "0.7.3",
       "publish": true
     },
-    "@xynoplex/observability": {
+    "@xynolog/observability": {
       "dir": "typescript/observability",
       "version": "0.7.3",
       "publish": true
     },
-    "@xynoplex/http-transport": {
+    "@xynolog/http-transport": {
       "dir": "typescript/http-transport",
       "version": "0.7.3",
       "publish": true
     },
-    "@xynoplex/sdk": {
+    "@xynolog/sdk": {
       "dir": "typescript/sdk",
       "version": "0.7.3",
       "publish": true
     },
-    "@xynoplex/react-ui": {
+    "@xynolog/react-ui": {
       "dir": "typescript/react-ui",
       "version": "0.7.3",
       "publish": true
