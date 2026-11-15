@@ -7,6 +7,12 @@ version: 2
 # waits a week before it is proposed, and a major release a month where the
 # ecosystem reads semver (not GitHub Actions or Docker).
 
+# Security updates are grouped the same way, in a group of each entry's own,
+# and Dependabot raises them when an advisory is published, not on the
+# schedule; neither the cooldown nor the one-PR limit holds them back.
+# Rust's crates and toolchain are not: whether an entry in a
+# multi-ecosystem group may also have groups of its own is undocumented.
+
 multi-ecosystem-groups:
   rust:
     schedule:
@@ -24,6 +30,9 @@ updates:
     cooldown:
       default-days: 7
     groups:
+      actions-security:
+        applies-to: security-updates
+        patterns: ["*"]
       actions:
         patterns: ["*"]
 
@@ -41,6 +50,9 @@ updates:
       default-days: 7
       semver-major-days: 30
     groups:
+      go-security:
+        applies-to: security-updates
+        patterns: ["*"]
       go:
         patterns: ["*"]
 
@@ -70,6 +82,9 @@ updates:
       default-days: 7
       semver-major-days: 30
     groups:
+      typescript-security:
+        applies-to: security-updates
+        patterns: ["*"]
       typescript:
         patterns: ["*"]
     ignore:
@@ -89,6 +104,9 @@ updates:
       default-days: 7
       semver-major-days: 30
     groups:
+      python-security:
+        applies-to: security-updates
+        patterns: ["*"]
       python:
         patterns: ["*"]
 
@@ -103,6 +121,9 @@ updates:
       default-days: 7
       semver-major-days: 30
     groups:
+      csharp-security:
+        applies-to: security-updates
+        patterns: ["*"]
       csharp:
         patterns: ["*"]
 
@@ -117,6 +138,9 @@ updates:
       default-days: 7
       semver-major-days: 30
     groups:
+      kotlin-security:
+        applies-to: security-updates
+        patterns: ["*"]
       kotlin:
         patterns: ["*"]
 
@@ -131,5 +155,8 @@ updates:
       default-days: 7
       semver-major-days: 30
     groups:
+      swift-security:
+        applies-to: security-updates
+        patterns: ["*"]
       swift:
         patterns: ["*"]
