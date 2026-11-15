@@ -12,18 +12,13 @@ permissions:
   contents: read
 
 jobs:
-  protocol-derived-packages:
-    name: Build SDK artifacts from pinned Protocol
+  checks:
+    name: Make help, the source archive, and the SDK languages
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    outputs:
+      languages: ${{ steps.languages.outputs.languages }}
     steps:
-      - name: Check out source and pinned Protocol
-        uses: actions/checkout@v7.0.1
-        with:
-          submodules: recursive
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4.4.1
+      - uses: actions/checkout@v7.0.1
 
       - name: Make help lists every public target
         run: python3 scripts/test_make_help.py
@@ -35,10 +30,33 @@ jobs:
           broken="$(find "$archive" -xtype l)"
           test -z "$broken" || { printf 'Broken in the source archive GitHub serves to action users:\n%s\n' "$broken" >&2; exit 1; }
 
-      - name: Build all language artifacts and verify the bundle
+      - name: List the Makefile's SDK languages
+        id: languages
         run: |
-          make build
-          SDK_ARTIFACTS="$(python3 scripts/create-artifact-bundle.py --path all)" make verify-artifacts
+          languages="$(make -pRrq -f Makefile : | sed -n 's/^LANGUAGES := //p')"
+          echo "languages=$(python3 -c 'import json, sys; print(json.dumps(sys.argv[1].split()))' "$languages")" >> "$GITHUB_OUTPUT"
+
+  artifacts:
+    name: ${{ matrix.language }} SDK artifacts from pinned Protocol
+    needs: checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ${{ fromJSON(needs.checks.outputs.languages) }}
+    env:
+      LANGUAGE: ${{ matrix.language }}
+    steps:
+      - name: Check out source and pinned Protocol
+        uses: actions/checkout@v7.0.1
+        with:
+          submodules: recursive
+
+      - name: Build and verify the language's bundle
+        run: |
+          make "$LANGUAGE"
+          SDK_ARTIFACTS="$(python3 scripts/create-artifact-bundle.py --path "$LANGUAGE")" make verify-artifacts
 
   go-sdk:
     name: Go SDK tests and coverage
