@@ -129,6 +129,8 @@ if ! run_container_quietly "$RUNTIME" run --rm --volume "$OPAM_VOLUME:/cache" \
   run_container_quietly "$RUNTIME" run --rm --user 0:0 --volume "$OPAM_VOLUME:/cache" \
     ocaml/opam:debian-13-ocaml-5.5 bash -euc 'cp -R /home/opam/.opam/. /cache/ && chown -R opam:opam /cache'
 fi
+# The OCaml image runs as its opam user, who writes the repository here.
+chmod 0777 "$STATE_ROOT/opam-repo"
 run_container_quietly "$RUNTIME" run --rm --memory 4g --volume "$ROOT/ocaml/sdk:/source:ro" \
   --volume "$STATE_ROOT/opam-repo:/out" \
   --volume "$OPAM_VOLUME:/home/opam/.opam" \

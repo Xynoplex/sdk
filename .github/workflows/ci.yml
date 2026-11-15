@@ -28,6 +28,13 @@ jobs:
       - name: Make help lists every public target
         run: python3 scripts/test_make_help.py
 
+      - name: The source archive holds no broken symlink
+        run: |
+          archive="$(mktemp -d)"
+          git archive HEAD | tar -x -C "$archive"
+          broken="$(find "$archive" -xtype l)"
+          test -z "$broken" || { printf 'Broken in the source archive GitHub serves to action users:\n%s\n' "$broken" >&2; exit 1; }
+
       - name: Build all language artifacts and verify the bundle
         run: |
           make build

@@ -1,0 +1,4 @@
+# Links into the protocol submodule, which source archives leave out; a broken
+# link in the archive fails every workflow that uses this repository's actions.
+rust/sdk/specs export-ignore
+rust/telemetry/specs export-ignore
