@@ -42,6 +42,11 @@ jobs:
           fetch-depth: 2
           submodules: true
 
+      # A wrapper jar runs whatever it holds on every Gradle build; this holds
+      # each one to a checksum Gradle publishes for a release of its own.
+      - name: Every Gradle wrapper jar is one Gradle released
+        uses: gradle/actions/wrapper-validation@v6.4.1
+
       - name: Make help lists every public target
         run: python3 build-tools/test_make_help.py --root . --list '<language>=LANGUAGES'
 
