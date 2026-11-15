@@ -1,77 +1,121 @@
 version: 2
+
+# One pull request per language, twice a month at most: every language's
+# updates are one group, proposed on the 1st and the 15th, with no more than
+# one PR open. Go's three modules are one group across their directories, and
+# Rust's crates and toolchain one group across their two ecosystems. A release
+# waits a week before it is proposed, and a major release a month where the
+# ecosystem reads semver (not GitHub Actions or Docker).
+
+multi-ecosystem-groups:
+  rust:
+    schedule:
+      interval: cron
+      cronjob: "0 6 1,15 * *"
+
 updates:
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: weekly
+      interval: cron
+      cronjob: "0 6 1,15 * *"
+    open-pull-requests-limit: 1
+    cooldown:
+      default-days: 7
     groups:
       actions:
-        patterns:
-          - "*"
+        patterns: ["*"]
 
   - package-ecosystem: gomod
-    directory: /go
+    directories:
+      - /go
+      - /go/conformance
+      - /scripts/go-module-zip
     schedule:
-      interval: weekly
+      interval: cron
+      cronjob: "0 6 1,15 * *"
+    open-pull-requests-limit: 1
+    cooldown:
+      default-days: 7
+      semver-major-days: 30
     groups:
-      go-dependencies:
-        patterns:
-          - "*"
-
-  - package-ecosystem: gomod
-    directory: /go/conformance
-    schedule:
-      interval: weekly
-
-  - package-ecosystem: gomod
-    directory: /scripts/go-module-zip
-    schedule:
-      interval: weekly
+      go:
+        patterns: ["*"]
 
   - package-ecosystem: cargo
     directory: /rust
-    schedule:
-      interval: weekly
-    groups:
-      rust-dependencies:
-        patterns:
-          - "*"
+    multi-ecosystem-group: rust
+    patterns: ["*"]
+    cooldown:
+      default-days: 7
+      semver-major-days: 30
 
   - package-ecosystem: rust-toolchain
     directory: /rust
-    schedule:
-      interval: weekly
+    multi-ecosystem-group: rust
+    patterns: ["*"]
 
   - package-ecosystem: npm
     directory: /typescript
     schedule:
-      interval: weekly
+      interval: cron
+      cronjob: "0 6 1,15 * *"
+    open-pull-requests-limit: 1
+    cooldown:
+      default-days: 7
+      semver-major-days: 30
     groups:
-      npm-dependencies:
-        patterns:
-          - "*"
+      typescript:
+        patterns: ["*"]
 
   - package-ecosystem: uv
     directory: /python/sdk
     schedule:
-      interval: weekly
+      interval: cron
+      cronjob: "0 6 1,15 * *"
+    open-pull-requests-limit: 1
+    cooldown:
+      default-days: 7
+      semver-major-days: 30
     groups:
-      python-dependencies:
-        patterns:
-          - "*"
+      python:
+        patterns: ["*"]
 
   - package-ecosystem: nuget
     directory: /csharp/sdk
     schedule:
-      interval: weekly
+      interval: cron
+      cronjob: "0 6 1,15 * *"
+    open-pull-requests-limit: 1
+    cooldown:
+      default-days: 7
+      semver-major-days: 30
+    groups:
+      csharp:
+        patterns: ["*"]
 
   - package-ecosystem: gradle
     directory: /kotlin/sdk
     schedule:
-      interval: weekly
+      interval: cron
+      cronjob: "0 6 1,15 * *"
+    open-pull-requests-limit: 1
+    cooldown:
+      default-days: 7
+      semver-major-days: 30
+    groups:
+      kotlin:
+        patterns: ["*"]
 
   - package-ecosystem: swift
     directory: /swift/sdk
     schedule:
-      interval: weekly
-
+      interval: cron
+      cronjob: "0 6 1,15 * *"
+    open-pull-requests-limit: 1
+    cooldown:
+      default-days: 7
+      semver-major-days: 30
+    groups:
+      swift:
+        patterns: ["*"]
