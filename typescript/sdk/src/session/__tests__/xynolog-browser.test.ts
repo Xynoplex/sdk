@@ -211,7 +211,7 @@ describe('XynologBrowser — KB list', () => {
     // registration or in the storage round-trip would not load at all.
     // Pinned here because `loadKnowledgeBases` rebuilds each entry field by
     // field, and a field left out of that projection is gone after a reload.
-    const DID = 'did:web:xynolog.github.io:xynoplex-caselaw-kb';
+    const DID = 'did:web:xynoplex.github.io:xynoplex-caselaw-kb';
     const browser = makeBrowser();
     const kb = browser.addKb(
       { label: KB_A.label, endpoint: KB_A.endpoint, did: DID },

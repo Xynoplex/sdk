@@ -13,7 +13,7 @@
  *
  * Format: `did:web:<domain>` — the domain **verbatim, never encoded**. The
  * project file already stores it in did:web colon-path form
- * (`xynolog.github.io:xynoplex-caselaw-kb`), so encoding those colons
+ * (`xynoplex.github.io:xynoplex-caselaw-kb`), so encoding those colons
  * would mint a string nothing else in the system produces. The launcher
  * mints the identical string in Go (`kbconfig.go` `didWeb()`), and the two
  * MUST agree byte-for-byte: the Browser joins discovered KBs to connected

@@ -50,8 +50,8 @@ const id = resourceId('5bcd259ab1464cf68a556bbad21f513f');
 const typed = isResourceId('https://kb.example/resources/5bcd');   // false: a URI is not an id
 
 // A knowledge base's did and the audience its tokens carry, from its committed domain.
-const did = kbDid('xynolog.github.io:xynoplex-caselaw-kb');        // 'did:web:xynolog.github.io:xynoplex-caselaw-kb'
-const audience = kbResource('xynolog.github.io:xynoplex-caselaw-kb'); // 'https://xynolog.github.io/xynoplex-caselaw-kb'
+const did = kbDid('xynoplex.github.io:xynoplex-caselaw-kb');        // 'did:web:xynoplex.github.io:xynoplex-caselaw-kb'
+const audience = kbResource('xynoplex.github.io:xynoplex-caselaw-kb'); // 'https://xynoplex.github.io/xynoplex-caselaw-kb'
 ```
 
 ## What a change must keep

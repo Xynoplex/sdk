@@ -47,7 +47,7 @@ const mockGetEventEntityTypes = getEventEntityTypes as ReturnType<typeof vi.fn>;
 const mockGetResourceCreationDetails = getResourceCreationDetails as ReturnType<typeof vi.fn>;
 const mockFormatEventType = formatEventType as ReturnType<typeof vi.fn>;
 
-const KB = 'did:web:xynolog.github.io:xynoplex-template-kb';
+const KB = 'did:web:xynoplex.github.io:xynoplex-template-kb';
 const PERSON = `${KB}:users:59523dd4-a0e3-4c1c-8c2d-7fcbe3d789dd`;
 const WORKER = `${KB}:agents:xynolog-worker`;
 
