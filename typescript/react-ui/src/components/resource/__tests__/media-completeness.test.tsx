@@ -69,7 +69,7 @@ describe('media-completeness sweep — one component, all types, inline, default
   ])('%s renders via the text default with the overlay container', (mt, content) => {
     const { container } = mount(mt, content);
     expect(container.querySelector('.xynolog-browse-view[data-mime-type="text"]')).toBeInTheDocument();
-    expect(screen.getByTestId('md')).toHaveTextContent(content.replace('# ', '# ').trim());
+    expect(screen.getByTestId('md')).toHaveTextContent(content);
     expect(container.querySelector('.xynolog-browse-view__content')).toBeInTheDocument(); // overlay anchor
     expect(container.querySelector('.xynolog-browse-view')).toHaveClass('xynolog-browse-view--inline');
   });

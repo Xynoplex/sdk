@@ -8,7 +8,7 @@
  * padding boundaries around a block are where the equivalence run looks
  * hardest.
  */
-import { createHash, randomBytes } from 'node:crypto';
+import { createHash, randomBytes, randomInt } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import { sha256 } from '../sha256';
 
@@ -48,7 +48,7 @@ describe('sha256', () => {
 
   it('agrees with the platform on random messages of random lengths', () => {
     for (let run = 0; run < 200; run++) {
-      const message = randomBytes(randomBytes(2).readUInt16BE(0) % 5000);
+      const message = randomBytes(randomInt(5000));
       expect(hex(sha256(message)), `${message.length} bytes`).toBe(createHash('sha256').update(message).digest('hex'));
     }
   });

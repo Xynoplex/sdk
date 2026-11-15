@@ -24,6 +24,13 @@ describe('extractCharset', () => {
     expect(extractCharset('text/plain; charset=""')).toBe('utf-8');
     expect(extractCharset('not a media type; charset=iso-8859-1')).toBe('utf-8');
   });
+
+  test('stays linear on long runs of white space inside a media type', () => {
+    const run = '\t'.repeat(100_000);
+    expect(extractCharset(`text/plain${run}x`)).toBe('utf-8');
+    expect(extractCharset(`text/plain; charset=x${run}y`)).toBe(`x${run}y`);
+    expect(extractCharset(`text/plain; charset="${run}x${run}y${run}"`)).toBe(`x${run}y`);
+  });
 });
 
 describe('decodeWithCharset', () => {
