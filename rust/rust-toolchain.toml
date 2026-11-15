@@ -1,9 +1,7 @@
-# The toolchain every Rust build in the repository uses: the workspace's
-# crates and the desktop app's. rustup reads this file wherever cargo runs in
-# rust. A Rust image's tag is its `channel` (rust:<channel>-alpine,
-# rust:<channel>-bookworm), and the desktop app, outside the workspace, sets
-# rustup's default to it; rust/scripts/rust-toolchain.sh reads it for both. So the version is written here and nowhere else, and
-# lint:rust-toolchain refuses a second copy.
+# The toolchain every Rust build in the repository uses. rustup reads this
+# file wherever cargo runs in rust. A Rust image's tag is its `channel`
+# (rust:<channel>-bookworm), which rust/scripts/rust-toolchain.sh prints, so
+# the version is written here and nowhere else.
 [toolchain]
 channel = "1.100.0"
 components = ["rustfmt", "clippy"]

@@ -21,6 +21,10 @@ SDK_COMMIT = subprocess.check_output(["git", "-C", str(ROOT), "rev-parse", "HEAD
 PROTOCOL_COMMIT = subprocess.check_output(["git", "-C", str(ROOT / "protocol"), "rev-parse", "HEAD"], text=True).strip()
 
 
+def rust_toolchain() -> str:
+    return subprocess.check_output(["sh", str(ROOT / "rust/scripts/rust-toolchain.sh")], text=True).strip()
+
+
 def digest(path: Path) -> str:
     value = hashlib.sha256()
     with path.open("rb") as stream:
@@ -161,7 +165,7 @@ def write_bundle(languages: list[str], tree_digest: str, output: Path, staged: P
     toolchains = {
         "typescript": "node:26-bookworm",
         "python": "python:3.12-bookworm",
-        "rust": "rust:1.100.0-bookworm",
+        "rust": f"rust:{rust_toolchain()}-bookworm",
         "go": "golang:1.27.4-bookworm",
         "csharp": "mcr.microsoft.com/dotnet/sdk (version from csharp/sdk/global.json)",
         "haskell": "haskell:9.10.3",
