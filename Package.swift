@@ -1,6 +1,9 @@
 // swift-tools-version: 6.2
 import PackageDescription
 
+// SwiftPM reads a package's manifest at its repository's root, so the Swift SDK's is here, and
+// each target names its directory under swift/sdk. The build plugin reads the Protocol submodule.
+
 let package = Package(
   name: "Xynolog",
   platforms: [.macOS(.v15), .iOS(.v18)],
@@ -23,7 +26,8 @@ let package = Package(
         .product(name: "AsyncHTTPClient", package: "async-http-client"),
         .product(name: "OpenTelemetrySdk", package: "opentelemetry-swift-core"),
         .product(name: "OpenTelemetryProtocolExporterHTTP", package: "opentelemetry-swift"),
-      ], path: "Conformance", exclude: ["launch.sh"], swiftSettings: [.treatAllWarnings(as: .error)]
+      ], path: "swift/sdk/Conformance", exclude: ["launch.sh"],
+      swiftSettings: [.treatAllWarnings(as: .error)]
     ),
     .target(
       name: "Xynolog",
@@ -33,19 +37,20 @@ let package = Package(
         .product(name: "NIOCore", package: "swift-nio"),
         .product(name: "AsyncHTTPClient", package: "async-http-client"),
         .product(name: "OpenTelemetryApi", package: "opentelemetry-swift-core"),
-      ], swiftSettings: [.treatAllWarnings(as: .error)],
+      ], path: "swift/sdk/Sources/Xynolog", swiftSettings: [.treatAllWarnings(as: .error)],
       plugins: ["GenerateXynologPlugin"]),
     .executableTarget(
       name: "GenerateXynolog", dependencies: ["XynologCodegen"],
-      swiftSettings: [.treatAllWarnings(as: .error)]),
+      path: "swift/sdk/Sources/GenerateXynolog", swiftSettings: [.treatAllWarnings(as: .error)]),
     .plugin(
-      name: "GenerateXynologPlugin", capability: .buildTool(), dependencies: ["GenerateXynolog"]),
+      name: "GenerateXynologPlugin", capability: .buildTool(), dependencies: ["GenerateXynolog"],
+      path: "swift/sdk/Plugins/GenerateXynologPlugin"),
     .target(
-      name: "XynologTesting", dependencies: ["Xynolog"],
+      name: "XynologTesting", dependencies: ["Xynolog"], path: "swift/sdk/Sources/XynologTesting",
       swiftSettings: [.treatAllWarnings(as: .error)]),
     .target(
-      name: "XynologCodegen", exclude: ["required-schemas.json"],
-      swiftSettings: [.treatAllWarnings(as: .error)]),
+      name: "XynologCodegen", path: "swift/sdk/Sources/XynologCodegen",
+      exclude: ["required-schemas.json"], swiftSettings: [.treatAllWarnings(as: .error)]),
     .testTarget(
       name: "XynologTests",
       dependencies: [
@@ -56,11 +61,11 @@ let package = Package(
         .product(name: "NIOPosix", package: "swift-nio"),
         .product(name: "NIOHTTP1", package: "swift-nio"),
         .product(name: "OpenTelemetrySdk", package: "opentelemetry-swift-core"),
-      ],
+      ], path: "swift/sdk/Tests/XynologTests",
       swiftSettings: [.treatAllWarnings(as: .error)], plugins: ["GenerateXynologPlugin"]),
     .testTarget(
       name: "XynologCodegenTests", dependencies: ["XynologCodegen"],
-      swiftSettings: [.treatAllWarnings(as: .error)]),
+      path: "swift/sdk/Tests/XynologCodegenTests", swiftSettings: [.treatAllWarnings(as: .error)]),
   ],
   swiftLanguageModes: [.v6]
 )

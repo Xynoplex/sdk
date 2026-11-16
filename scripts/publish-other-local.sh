@@ -169,20 +169,25 @@ fi
 if [[ "$LANGUAGE" == all || "$LANGUAGE" == swift ]]; then
 echo 'Building and archiving the Swift package in a Swift container…'
 swift_package_version="$(version_of swift)"
-swift_version="$(cat "$ROOT/swift/sdk/.swift-version")"
-run_container_quietly "$RUNTIME" run --rm --memory 4g --volume "$ROOT/swift/sdk:/source:ro" --volume "$PROTOCOL:/protocol:ro" \
+swift_version="$(cat "$ROOT/.swift-version")"
+# The package is the repository's root manifest, its swift/sdk, and the Protocol beside them; the
+# source archive holds the same tree, so it builds as a checkout does.
+run_container_quietly "$RUNTIME" run --rm --memory 4g --volume "$ROOT:/source:ro" --volume "$PROTOCOL:/protocol:ro" \
   --volume "$STATE_ROOT/swift:/out" --volume "$STATE_ROOT/swift-cache:/root/.cache" \
   --volume "$STATE_ROOT/swift-build:/build" --env "XYNOLOG_SDK_VERSION=$swift_package_version" --workdir /tmp "swift:$swift_version" bash -euc '
     apt-get update -qq && apt-get install -y -qq --no-install-recommends zip >/dev/null
-    mkdir -p /tmp/sdk/swift/sdk /tmp/protocol /tmp/archive/sdk/swift/sdk /tmp/archive/protocol
-    cp -a /source/. /tmp/sdk/swift/sdk/
-    cp -a /protocol/. /tmp/protocol/
-    cd /tmp/sdk/swift/sdk
+    package() {
+      mkdir -p "$1/swift" "$1/protocol"
+      cp -a /source/Package.swift /source/Package.resolved "$1/"
+      cp -a /source/swift/sdk "$1/swift/"
+      cp -a /protocol/. "$1/protocol/"
+    }
+    package /tmp/sdk
+    cd /tmp/sdk
     if ! swift build --build-path /build --jobs 4 --force-resolved-versions --product Xynolog > /out/build.log 2>&1; then tail -n 100 /out/build.log; exit 1; fi
-    cp -a /source/. /tmp/archive/sdk/swift/sdk/
-    cp -a /protocol/. /tmp/archive/protocol/
+    package /tmp/archive
     cd /tmp/archive
     rm -f "/out/xynolog-$XYNOLOG_SDK_VERSION.zip"
-    zip -qr "/out/xynolog-$XYNOLOG_SDK_VERSION.zip" sdk protocol
+    zip -qr "/out/xynolog-$XYNOLOG_SDK_VERSION.zip" Package.swift Package.resolved swift protocol
   '
 fi

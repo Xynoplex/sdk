@@ -10,16 +10,19 @@ those capabilities fit together.
 
 ## Install
 
-The SDK is available as a local Swift package in a Xynolog checkout. In Xcode,
-add `swift/sdk` from that checkout as a local package and link the
-`Xynolog` product to your target. With SwiftPM, add a
-`.package(path: "../xynolog/swift/sdk")` dependency, adjusting the path
-for your project, and add `.product(name: "Xynolog", package: "sdk")` to the
-target's dependencies. Add the `AsyncHTTPClient` product from
-[AsyncHTTPClient][http-client] to targets that create the HTTP client.
+The SDK is the Swift package at the root of the
+[sdk repository](https://github.com/xynolog/sdk), released at its SDK release
+tags, `vYY.M.N`. With SwiftPM, add a
+`.package(url: "https://github.com/xynolog/sdk.git", from: "26.11.0")`
+dependency and add `.product(name: "Xynolog", package: "sdk")` to the target's
+dependencies. In Xcode, add the package by that URL, or add a checkout of the
+repository as a local package, and link the `Xynolog` product to your target.
+Add the `AsyncHTTPClient` product from [AsyncHTTPClient][http-client] to
+targets that create the HTTP client.
 
-Keep the full checkout. The SwiftPM build plugin generates wire models and
-tables from `protocol/specs/src`. See [the pinned Swift toolchain][toolchain]
+A local checkout needs its submodules, which SwiftPM fetches for a git
+dependency: the SwiftPM build plugin generates wire models and tables from the
+Protocol submodule's `protocol/specs/src`. See [the pinned Swift toolchain][toolchain]
 for the version used in CI. The SDK supports macOS 15 and iOS 18 or later,
 and CI also runs on Linux.
 
@@ -355,14 +358,14 @@ The HTTP transport uses the caller's AsyncHTTPClient `HTTPClient` for every requ
 CI runs the SDK and generator tests in the pinned Swift container on Linux and
 natively on Apple silicon. Both jobs run the formatter, census, and
 compile-failure checks. On a provisioned macOS runner, use
-`swift test --jobs 4 --force-resolved-versions` from `swift/sdk`.
+`swift test --jobs 4 --force-resolved-versions` from the repository root.
 The dependency lock includes the OpenTelemetry exporter's macOS dependencies.
 Both jobs use the same lock.
 
 Run the Linux checks from the repository root.
 
 ```bash
-container run --rm --memory 8g -e HOME=/tmp/swift-home -v "$PWD":/w -w /w/swift/sdk "swift:$(swift/scripts/swift-version.sh)" sh -c 'mkdir -p "$HOME" && Scripts/test.sh && Scripts/coverage.sh && swift format lint --strict --recursive . && Scripts/census.sh && Scripts/refusals.sh'
+container run --rm --memory 8g -e HOME=/tmp/swift-home -v "$PWD":/w -w /w "swift:$(swift/scripts/swift-version.sh)" sh -c 'mkdir -p "$HOME" && swift/sdk/Scripts/test.sh && swift/sdk/Scripts/coverage.sh && swift format lint --strict --recursive Package.swift swift/sdk && swift/sdk/Scripts/census.sh && swift/sdk/Scripts/refusals.sh'
 ```
 
 Swift 6 language mode and warnings as errors apply to every target. The canary must fail with the concurrency diagnostic. Each future `Refusals/*.swift` program begins `// refused: <text>` and must fail with that message. The census forbids unchecked concurrency escapes, environment reads beyond `XYNOLOG_BUS_LOG`, and a test wait bounded by anything but `testDeadlineMs`: every test starts at once, and on a small runner a second can pass before a test's tasks are scheduled. The formatter forbids force unwraps, force casts, force tries and implicitly unwrapped optionals throughout the package.
@@ -375,11 +378,11 @@ The build-tool plugin runs the native Swift generator over `protocol/specs/src`,
 
 `Scripts/install-driver.sh` builds the instrumented Linux wire driver and bundles its Swift runtime. The conformance application chooses OTLP/HTTP exporters when the harness supplies `OTEL_EXPORTER_OTLP_ENDPOINT`. Its runtime matches Ubuntu 26.04. `Scripts/conformance-coverage.sh` reports the library code the driver exercised, separately from Rust's LLVM profiles.
 
-[protocol]: ../../../protocol/contract/README.md
-[conformance]: ../../../protocol/conformance/sdk/README.md
+[protocol]: ../../protocol/contract/README.md
+[conformance]: ../../protocol/conformance/sdk/README.md
 [guide]: ../../../docs/builder/DEVELOPER-GUIDE.md
 [http-client]: https://github.com/swift-server/async-http-client
-[toolchain]: .swift-version
+[toolchain]: ../../.swift-version
 [quick-start]: ../../../docs/builder/QUICK-START.md
-[flows]: ../../../protocol/contract/flows
+[flows]: ../../protocol/contract/flows
 [sign-in]: ../../../docs/builder/SIGN-IN.md
