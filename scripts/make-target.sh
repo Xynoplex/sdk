@@ -37,6 +37,9 @@ case "${1:-}" in
       node react-ui/scripts/check-css-variables-defined.cjs
       node react-ui/scripts/check-css-classes-live.cjs
       node scripts/compliance/audit-hooks-ordering.mts
+      bash scripts/compliance/audit-gathered-context-component-state.sh
+      bash scripts/compliance/audit-session-typed-factories.sh
+      bash react-ui/scripts/audit-toolbar-pref-storage.sh
       for package in core observability http-transport sdk react-ui; do
         npm test --workspace="@xynolog/$package"
       done'

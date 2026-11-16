@@ -20,13 +20,14 @@ set -euo pipefail
 # only the shell (browser-lifetime, spans sessions).
 # Exit code: 0 if clean, 1 if violations found.
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 cd "$REPO_ROOT"
+[ -d typescript/react-ui/src ] || { echo "❌ $REPO_ROOT/typescript/react-ui/src is not a directory" >&2; exit 2; }
 
 STATUS=0
 
-BANG=$(grep -rnE "use(Session)?StateUnit\(" typescript/react-ui/src images/browser/src \
-  --include='*.ts' --include='*.tsx' 2>/dev/null \
+BANG=$(grep -rnE "use(Session)?StateUnit\(" typescript/react-ui/src \
+  --include='*.ts' --include='*.tsx' \
   | grep -v __tests__ \
   | grep -E "[A-Za-z_]+!(,|\.|\))" || true)
 if [ -n "$BANG" ]; then
@@ -35,8 +36,8 @@ if [ -n "$BANG" ]; then
   STATUS=1
 fi
 
-PLAIN=$(grep -rnE "useStateUnit\(" typescript/react-ui/src images/browser/src \
-  --include='*.ts' --include='*.tsx' 2>/dev/null \
+PLAIN=$(grep -rnE "useStateUnit\(" typescript/react-ui/src \
+  --include='*.ts' --include='*.tsx' \
   | grep -v __tests__ \
   | grep -v "useSessionStateUnit(" \
   | grep -v "typescript/react-ui/src/hooks/useStateUnit.ts" \
