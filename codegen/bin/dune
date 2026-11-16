@@ -1,0 +1,4 @@
+(executable
+ (name main)
+ (public_name xynolog-codegen)
+ (libraries xynolog_codegen))

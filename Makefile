@@ -2,7 +2,7 @@
 
 LANGUAGES := typescript python rust go csharp haskell kotlin ocaml swift
 
-.PHONY: help build test generate check-generated verify-artifacts clean clean-local $(LANGUAGES) $(addprefix test-,$(LANGUAGES)) $(addsuffix -clean,$(LANGUAGES))
+.PHONY: help build test generate check-generated test-codegen verify-artifacts clean clean-local $(LANGUAGES) $(addprefix test-,$(LANGUAGES)) $(addsuffix -clean,$(LANGUAGES))
 
 # `make help` prints the `##` lines below, in order (build-tools/make-help.awk).
 ##@ Xynolog SDK: make [target] [VARIABLE=value ...]
@@ -46,6 +46,10 @@ generate:
 ## check-generated: Fail when a committed generated file differs from what its generator writes
 check-generated:
 	bash scripts/make-target.sh check-generated
+
+## test-codegen: The generator's own tests and checks: its model reads every file of the pinned Protocol
+test-codegen:
+	bash scripts/make-target.sh test-codegen
 
 ##@ Clean
 ## clean: Remove every language's output, the local artifacts, caches and bundles

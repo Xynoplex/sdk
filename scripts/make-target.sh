@@ -17,6 +17,13 @@ in_container() {
 $script"
 }
 
+# The OCaml toolchain's image, which the SDK and the generator build on.
+ocaml_toolchain_image() {
+  python3 "$ROOT/ocaml/check-toolchain.py"
+  "$RUNTIME" build --build-arg "BASE_IMAGE=$(python3 "$ROOT/ocaml/check-toolchain.py" --base-image)" \
+    --tag xynolog-ocaml-toolchain --file "$ROOT/ocaml/Dockerfile" "$ROOT/ocaml"
+}
+
 case "${1:-}" in
   test-typescript)
     bash "$ROOT/scripts/bundle-protocol.sh"
@@ -118,9 +125,7 @@ case "${1:-}" in
       python3 ../coverage.py coverage.lcov' --memory 4g --volume "$cabal_home:/cabal" --env CABAL_DIR=/cabal
     ;;
   test-ocaml)
-    python3 "$ROOT/ocaml/check-toolchain.py"
-    "$RUNTIME" build --build-arg "BASE_IMAGE=$(python3 "$ROOT/ocaml/check-toolchain.py" --base-image)" \
-      --tag xynolog-ocaml-toolchain --file "$ROOT/ocaml/Dockerfile" "$ROOT/ocaml"
+    ocaml_toolchain_image
     in_container xynolog-ocaml-toolchain '
       cd /tmp/sdk/ocaml/sdk
       dune build @all @opam
@@ -130,6 +135,18 @@ case "${1:-}" in
       python3 api.py
       python3 probes/check-api-controls.py
       dune runtest' --memory 4g
+    ;;
+  test-codegen)
+    # The generator's model reads every file of the pinned Protocol, and
+    # refuses a copy of it that has what the model does not know.
+    ocaml_toolchain_image
+    in_container xynolog-ocaml-toolchain '
+      cd /tmp/sdk/codegen
+      dune build @all @opam
+      find bin lib test -name "*.ml*" | sort | xargs dune exec -- ocamlformat --check
+      dune runtest
+      dune exec -- ./test/census.exe ../protocol/specs/src
+      dune exec -- xynolog-codegen --check ../protocol/specs/src' --memory 4g
     ;;
   generate|check-generated)
     # Each group is codegen/node/package.json's generate:<group>, in the order
@@ -155,7 +172,7 @@ $groups"
     fi
     ;;
   *)
-    echo 'Usage: make-target.sh test-<language>|generate|check-generated' >&2
+    echo 'Usage: make-target.sh test-<language>|test-codegen|generate|check-generated' >&2
     exit 2
     ;;
 esac
