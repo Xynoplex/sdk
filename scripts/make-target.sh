@@ -21,6 +21,9 @@ case "${1:-}" in
   test-typescript)
     bash "$ROOT/scripts/bundle-protocol.sh"
     in_container node:26-bookworm '
+      # The censuses ask git what the repository holds, and the copy belongs
+      # to another user than the container runs as.
+      git config --global --add safe.directory /tmp/sdk
       cd /tmp/sdk/typescript
       npm install --no-package-lock
       npm run build:packages

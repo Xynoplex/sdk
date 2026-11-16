@@ -743,7 +743,7 @@ picks up where the last one was.
 
 ```python
 from xynolog.identifiers import ResourceId
-from xynolog.registry import XynologBrowser, XynologBrowserConfig, SessionFactory
+from xynolog.registry import SessionFactory, XynologBrowser, XynologBrowserConfig
 from xynolog.storage import SessionStorage
 from xynolog.watched import reached
 

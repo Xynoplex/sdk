@@ -16,8 +16,8 @@ import kotlin.io.path.readText
 
 /** What the repository states beside this SDK: the spec, and the corpora every SDK is run against. */
 internal object Spec {
-    val src: Path = Path.of("../../../protocol/specs/src")
-    val conformance: Path = Path.of("../../../protocol/conformance")
+    val src: Path = Path.of("../../protocol/specs/src")
+    val conformance: Path = Path.of("../../protocol/conformance")
 
     fun read(path: String): JsonElement = Json.parseToJsonElement(src.resolve(path).readText())
 
