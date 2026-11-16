@@ -43,17 +43,36 @@
 
 const fs = require('fs');
 const path = require('path');
-const { repositoryFiles } = require('../../../.github/scripts/checks/repository-files.mjs');
+const { repositoryFiles } = require('../../scripts/repository-files.mjs');
 
 const ROOT = path.join(__dirname, '../../..');
 const REPOSITORY = repositoryFiles(ROOT);
 
-const CSS_ROOTS = ['typescript/react-ui/src', 'images/browser/src'];
-const MARKUP_ROOTS = ['typescript/react-ui/src', 'images/browser/src'];
+const CSS_ROOTS = ['typescript/react-ui/src'];
+const MARKUP_ROOTS = ['typescript/react-ui/src'];
 
 /** Classes whose consumer is outside this repo's markup, with the reason. */
+// The classes react-ui styles for the apps that host it and renders nowhere
+// itself. Those apps are other repositories, so this gate cannot see them
+// render a class.
 const ALLOWLIST = new Map([
   ['xynolog-sr-only', 'accessibility utility applied by hosts'],
+  ['xynolog-panel-divider', 'rendered by the Browser, in images'],
+  ['xynolog-panel-footer', 'rendered by the Browser, in images'],
+  ['xynolog-panel-hint', 'rendered by the Browser, in images'],
+  ['xynolog-panel-item', 'rendered by the Browser, in images'],
+  ['xynolog-panel-item--clickable', 'rendered by the Browser, in images'],
+  ['xynolog-panel-item--selected', 'rendered by the Browser, in images'],
+  ['xynolog-panel-label', 'rendered by the Browser, in images'],
+  ['xynolog-panel-text', 'rendered by the Browser, in images'],
+  ['xynolog-panel-text-secondary', 'rendered by the Browser, in images'],
+  ['xynolog-panel__login-form--pulsing', 'rendered by the Browser, in images'],
+  ['xynolog-session-box', 'rendered by the Browser, in images'],
+  ['xynolog-signout-button', 'rendered by the Browser, in images'],
+  ['xynolog-toolbar-panels', 'rendered by the Browser, in images'],
+  ['xynolog-toolbar-panels__content', 'rendered by the Browser, in images'],
+  ['xynolog-user-panel', 'rendered by the Browser, in images'],
+  ['xynolog-user-panel__title', 'rendered by the Browser, in images'],
 ]);
 
 /**
@@ -63,9 +82,7 @@ const ALLOWLIST = new Map([
  * the build. Entries only come OUT.
  */
 const BASELINE_PATH = path.join(__dirname, 'css-classes-baseline.json');
-const baseline = fs.existsSync(BASELINE_PATH)
-  ? { unstyled: [], ...JSON.parse(fs.readFileSync(BASELINE_PATH, 'utf8')) }
-  : { duplicated: [], unrendered: [], unstyled: [] };
+const baseline = JSON.parse(fs.readFileSync(BASELINE_PATH, 'utf8'));
 
 /** The repository's files under `root` whose names end in one of `ext`. */
 const filesUnder = (root, ext) =>

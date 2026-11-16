@@ -25,13 +25,16 @@ const gitListed = (directories: readonly string[], ...flags: string[]): string[]
  * The `.ts` and `.tsx` files under `directories`, as paths relative to REPO.
  * Each names a regular file in the working tree: a link is skipped without
  * being followed, so one that dangles never fails the census, and a tracked
- * file deleted on disk is skipped too.
+ * file deleted on disk is skipped too. Directories that hold no such file
+ * fail: a census over nothing passes whatever the tree holds.
  */
 export function typeScriptFiles(...directories: string[]): string[] {
   const listed = new Set([...gitListed(directories, '--cached'), ...gitListed(directories, '--others', '--exclude-standard')]);
-  return [...listed]
+  const files = [...listed]
     .filter((path) => TYPESCRIPT.test(path) && lstatSync(join(REPO, path), { throwIfNoEntry: false })?.isFile())
     .sort();
+  if (files.length === 0) throw new Error(`no TypeScript file under ${directories.join(', ')}`);
+  return files;
 }
 
 /** `source` without its block and line comments, so prose about a banned shape is not a match. */

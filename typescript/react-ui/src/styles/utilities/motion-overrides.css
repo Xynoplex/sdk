@@ -171,8 +171,7 @@
      Toolbar Components
      ======================================== */
 
-  .xynolog-toolbar-menu,
-  .xynolog-toolbar-panel {
+  .xynolog-toolbar-menu {
     transition: none !important;
     animation: none !important;
   }

@@ -30,6 +30,10 @@ case "${1:-}" in
       npm run typecheck:conformance --workspace=@xynolog/http-transport
       npm run typecheck:conformance --workspace=@xynolog/sdk
       npm run lint:css --workspace=@xynolog/react-ui
+      node react-ui/scripts/check-no-utility-classes-in-react-ui.cjs
+      node react-ui/scripts/check-css-variables-defined.cjs
+      node react-ui/scripts/check-css-classes-live.cjs
+      node scripts/compliance/audit-hooks-ordering.mts
       for package in core observability http-transport sdk react-ui; do
         npm test --workspace="@xynolog/$package"
       done'
