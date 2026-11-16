@@ -1,6 +1,6 @@
 import Foundation
-import Xynolog
 import Synchronization
+import Xynolog
 
 /// A manually advanced clock for timeout, debounce and retry tests. Sleepers due at one instant wake
 /// in the order they slept.

@@ -16,14 +16,14 @@ set -euo pipefail
 #   - typescript/react-ui/src/lib/media-shapes.ts       — svg shape key
 #   - test files                                      — seed/assert the keys
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+SOURCE="$REPO_ROOT/typescript/react-ui/src"
+[ -d "$SOURCE" ] || { echo "❌ $SOURCE is not a directory" >&2; exit 2; }
 
 PATTERN="xynolog-toolbar-click|xynolog-toolbar-selection|xynolog-toolbar-shape|localStorage\.(get|set)Item\('annotateMode'"
 
-VIOLATIONS=$(grep -rEn "$PATTERN" \
-  "$REPO_ROOT/typescript/react-ui/src" \
-  "$REPO_ROOT/images/browser/src" \
-  --include='*.ts' --include='*.tsx' 2>/dev/null \
+VIOLATIONS=$(grep -rEn "$PATTERN" "$SOURCE" \
+  --include='*.ts' --include='*.tsx' \
   | grep -v "hooks/useToolbarPrefs.ts" \
   | grep -v "lib/media-shapes.ts" \
   | grep -v "__tests__/" \

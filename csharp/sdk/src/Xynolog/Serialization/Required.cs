@@ -22,7 +22,7 @@ internal sealed record Fault(string Member, FrameRefusalReason Reason)
 // The first fault of a value as one of the protocol's component schemas, and what a reader reads of it. Every SDK holds
 // what it reads to the table of what each schema requires, and names the first fault it finds the same way. The table is this SDK's copy of it
 // (generators/Xynolog.Generator/required-schemas.json), written by the rules of
-// packages/codegen/schemas/required-shapes.mjs, which states what each part of a shape means and the order a reader
+// typescript/scripts/generators/required-shapes.mjs, which states what each part of a shape means and the order a reader
 // walks them in. The generator adds what each payload type the bus registry makes requires (an envelope of a schema's
 // response, and the empty payload) to it, by the same rules.
 internal static partial class Required

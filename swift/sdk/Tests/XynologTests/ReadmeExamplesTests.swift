@@ -1,6 +1,6 @@
 import Foundation
-import XynologTesting
 import Testing
+import XynologTesting
 
 @testable import Xynolog
 

@@ -944,7 +944,7 @@ fn sign_in_error(failure: Box<dyn Error + Send + Sync>) -> SignInError {
 #[test]
 fn a_pending_sign_in_is_kept_under_the_tables_key() {
     let table: Value = serde_json::from_str(include_str!(
-        "../../../../protocol/specs/src/session/stored.json"
+        "../../../protocol/specs/src/session/stored.json"
     ))
     .expect("the table");
     let key = table["keys"]
@@ -983,7 +983,7 @@ fn required_of(shape: &Value) -> HashSet<String> {
 #[tokio::test]
 async fn a_sign_in_begun_is_kept_as_the_table_states_it() {
     let table: Value = serde_json::from_str(include_str!(
-        "../../../../protocol/specs/src/session/stored.json"
+        "../../../protocol/specs/src/session/stored.json"
     ))
     .expect("the table");
     let shape = &table["pendingAuthorization"];
@@ -3142,7 +3142,7 @@ async fn an_agent_whose_token_the_gateway_refuses_is_not_signed_in() {
 
 fn assertion_table() -> Value {
     serde_json::from_str(include_str!(
-        "../../../../protocol/specs/src/session/client-assertion-cases.json"
+        "../../../protocol/specs/src/session/client-assertion-cases.json"
     ))
     .expect("the table is JSON")
 }
@@ -4432,7 +4432,7 @@ fn every_rust_block_of_the_readme_is_an_example_that_ran_here() {
 #[test]
 fn every_rust_block_of_the_worker_skill_is_an_example_that_ran_here() {
     assert_blocks_are_examples(
-        include_str!("../../../../docs/builder/skills/xynolog-worker/SKILL.md"),
+        include_str!("../../../skills/xynolog-worker/SKILL.md"),
         &[include_str!("sign_in.rs")],
     )
     .unwrap_or_else(|odd| panic!("{odd}"));

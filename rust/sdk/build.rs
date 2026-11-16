@@ -15,8 +15,8 @@
 //!   stamps its type declares;
 //! - `required.rs`: what each component schema requires of a value
 //!   (src/required-schemas.json, the SDK's copy of the table, which
-//!   packages/codegen/schemas/generate-required.mjs writes by the rules of
-//!   packages/codegen/schemas/required-shapes.mjs);
+//!   codegen/node/schemas/generate-required.mjs writes by the rules of
+//!   typescript/scripts/generators/required-shapes.mjs);
 //! - `error_codes.rs`: the codes a client reports and what maps onto them
 //!   (errors/codes.json);
 //! - `oauth_clients.rs`: the ids a client signs in under at an issuer, and
@@ -569,7 +569,7 @@ fn refused_encodings(table: &Value) -> String {
 
 /// The registry as an enum per vocabulary, a row per media type in the
 /// registry's order, and the row a clone falls back to. The registry's own
-/// generator (packages/codegen/schemas/generate-media-types.mjs) is where it is held to
+/// generator (typescript/scripts/generators/generate-media-types.mjs) is where it is held to
 /// the `SupportedMediaType` schema; this refuses only what it cannot render.
 fn media_types(table: &Value) -> String {
     const VOCABULARIES: [(&str, &str, &str, &str); 3] = [
@@ -715,7 +715,7 @@ fn live_kept(table: &Value) -> String {
 /// The refresh table as its queries, its triggers, which of them are
 /// `channels` of the registry, and each trigger's rows, their ways split into
 /// the names of their members. The table's own reader
-/// (packages/codegen/schemas/cache-refresh-table.mjs) is where it is held to
+/// (typescript/scripts/generators/cache-refresh-table.mjs) is where it is held to
 /// account; this refuses only what it cannot render.
 fn cache_refresh(table: &Value, channels: &[&str]) -> String {
     let mut code =

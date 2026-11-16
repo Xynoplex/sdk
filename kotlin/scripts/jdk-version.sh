@@ -11,7 +11,7 @@
 # With no version it prints nothing and fails, so a build that cannot name its
 # JDK stops. It is plain sh: an image with no bash can run it.
 set -eu
-cd "$(dirname "$0")/../../.."
+cd "$(dirname "$0")/../.."
 
 version=$(sed -n '1s/^\([0-9][0-9]*\)$/\1/p' kotlin/sdk/.java-version)
 if [ -z "$version" ]; then

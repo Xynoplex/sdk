@@ -15,8 +15,8 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { LOCALES, LOCALE_CODES } from '../locales';
 
-const at = (path: string): string => fileURLToPath(new URL(`../../../../../${path}`, import.meta.url));
-const GENERATOR = at('packages/codegen/schemas/generate-locales.mjs');
+const at = (path: string): string => fileURLToPath(new URL(`../../../../${path}`, import.meta.url));
+const GENERATOR = at('typescript/scripts/generators/generate-locales.mjs');
 const TABLE = at('protocol/specs/src/locales/registry.json');
 
 interface Row {

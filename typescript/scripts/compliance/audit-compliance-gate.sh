@@ -13,7 +13,7 @@ set -euo pipefail
 # requires a non-zero exit; then a clean tree, and requires zero. The clean
 # case is what tells a refusal apart from an audit that merely crashed.
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 COMPLIANCE_DIR="$REPO_ROOT/typescript/scripts/compliance"
 
 scratch="$(mktemp -d)"

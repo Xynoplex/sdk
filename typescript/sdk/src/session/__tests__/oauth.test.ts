@@ -44,7 +44,7 @@ interface ObjectShape {
 
 /** What protocol/specs/src/session/stored.json states is kept of a sign-in begun. */
 const PENDING: ObjectShape & { properties: { issuer: ObjectShape } } = (JSON.parse(readFileSync(
-  join(dirname(fileURLToPath(import.meta.url)), '../../../../../../protocol/specs/src/session/stored.json'),
+  join(dirname(fileURLToPath(import.meta.url)), '../../../../../protocol/specs/src/session/stored.json'),
   'utf-8',
 )) as { pendingAuthorization: ObjectShape & { properties: { issuer: ObjectShape } } }).pendingAuthorization;
 

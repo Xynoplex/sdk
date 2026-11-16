@@ -33,7 +33,7 @@ interface Table {
 }
 
 const table: Table = JSON.parse(
-  readFileSync(new URL('../../../../../protocol/specs/src/session/client-assertion-cases.json', import.meta.url), 'utf8'),
+  readFileSync(new URL('../../../../protocol/specs/src/session/client-assertion-cases.json', import.meta.url), 'utf8'),
 );
 
 describe('a service account\'s assertion (protocol/specs/src/session/client-assertion-cases.json)', () => {

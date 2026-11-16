@@ -375,13 +375,13 @@ private fun escaped(text: String): String = buildString {
  * What each component schema requires of a value, by its name, each as its
  * own JSON: one string of the whole table would be past what a class file's
  * constant holds. The table is the SDK's copy (src/codegen/required-schemas.json),
- * which packages/codegen/schemas/generate-required.mjs writes by the rules of
- * packages/codegen/schemas/required-shapes.mjs.
+ * which codegen/node/schemas/generate-required.mjs writes by the rules of
+ * typescript/scripts/generators/required-shapes.mjs.
  */
 internal fun requiredFile(table: JsonObject): String = buildString {
     val schemas = table["schemas"].obj("the table's schemas")
     if (schemas.isEmpty()) refuse("the table of what each schema requires holds none")
-    append("/** What each component schema requires of a value, by its name, as JSON: the rules are packages/codegen/schemas/required-shapes.mjs's. */\n")
+    append("/** What each component schema requires of a value, by its name, as JSON: the rules are typescript/scripts/generators/required-shapes.mjs's. */\n")
     append("internal val REQUIRED_SCHEMAS: Map<String, String> = mapOf(\n")
     for ((name, shape) in schemas) append("    ${literal(name)} to ${literal(shape.obj("$name's shape").toString())},\n")
     append(")\n")
@@ -391,7 +391,7 @@ internal fun requiredFile(table: JsonObject): String = buildString {
  * Whether a code point is cased, and whether it is case-ignorable, as Unicode's
  * Cased and Case_Ignorable properties have it, which the JDK gives neither of.
  * The table is the SDK's copy (src/codegen/unicode-case.json), which
- * packages/codegen/schemas/generate-unicode-case.mjs writes from Node's Unicode data.
+ * codegen/node/schemas/generate-unicode-case.mjs writes from Node's Unicode data.
  */
 internal fun unicodeCaseFile(table: JsonObject): String = buildString {
     fun ranges(property: String): Pair<List<Long>, List<Long>> {
@@ -488,7 +488,7 @@ private class KeptRow(val name: String, val key: String, val keyed: String, val 
  * trigger that is neither a channel of the registry nor `reopened` nor
  * `unreadable`, or is no channel and reaches a subject or carries a value; and
  * a table without `reopened` or `unreadable`.
- * packages/codegen/schemas/cache-refresh-table.mjs holds each way to its
+ * typescript/scripts/generators/cache-refresh-table.mjs holds each way to its
  * channel's schema.
  */
 internal fun cacheRefreshFile(table: JsonObject, registry: JsonObject, definitions: JsonObject, generation: Generation): String = buildString {

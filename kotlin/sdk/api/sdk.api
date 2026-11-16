@@ -113,6 +113,10 @@ public final class xynolog/Running : kotlinx/coroutines/flow/Flow {
 	public fun collect (Lkotlinx/coroutines/flow/FlowCollector;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
+public abstract interface class xynolog/StateUnit : java/lang/AutoCloseable {
+	public abstract fun close ()V
+}
+
 public final class xynolog/XynologClient : java/lang/AutoCloseable {
 	public fun <init> (Lxynolog/transport/Transport;Lxynolog/transport/ContentTransport;Lxynolog/transport/GatewayOperations;)V
 	public fun <init> (Lxynolog/transport/Transport;Lxynolog/transport/ContentTransport;Lxynolog/transport/GatewayOperations;Lxynolog/ClientTiming;)V
@@ -137,10 +141,6 @@ public final class xynolog/XynologClient : java/lang/AutoCloseable {
 	public final fun getTransport ()Lxynolog/transport/Transport;
 	public final fun getWire ()Lxynolog/bus/Bus;
 	public final fun getYield ()Lxynolog/namespaces/YieldNamespace;
-}
-
-public abstract interface class xynolog/StateUnit : java/lang/AutoCloseable {
-	public abstract fun close ()V
 }
 
 public abstract interface class xynolog/annotations/AnchorMethod {
@@ -188,20 +188,20 @@ public final class xynolog/annotations/AnnotationsKt {
 	public static final fun annotationOfResource (Lxynolog/identifiers/ResourceId;Lxynolog/types/Motivation;)Lxynolog/types/Annotation;
 	public static final fun annotationOfResource (Lxynolog/identifiers/ResourceId;Lxynolog/types/Motivation;Lxynolog/types/Agent;)Lxynolog/types/Annotation;
 	public static final fun annotationOfResource (Lxynolog/identifiers/ResourceId;Lxynolog/types/Motivation;Lxynolog/types/Agent;Lxynolog/types/AnnotationBodies;)Lxynolog/types/Annotation;
-	public static final fun annotationOfResource-cLomD_0 (Ljava/lang/String;Lxynolog/types/Motivation;Lxynolog/types/Agent;Lxynolog/types/AnnotationBodies;)Lxynolog/types/Annotation;
-	public static synthetic fun annotationOfResource-cLomD_0$default (Ljava/lang/String;Lxynolog/types/Motivation;Lxynolog/types/Agent;Lxynolog/types/AnnotationBodies;ILjava/lang/Object;)Lxynolog/types/Annotation;
-	public static final fun annotationOfResource-k2J_C-I (Ljava/lang/String;Lxynolog/types/Motivation;)Lxynolog/types/Annotation;
-	public static final fun annotationOfResource-ogcqSrQ (Ljava/lang/String;Lxynolog/types/Motivation;Lxynolog/types/Agent;)Lxynolog/types/Annotation;
+	public static final fun annotationOfResource-Tz_IDJk (Ljava/lang/String;Lxynolog/types/Motivation;)Lxynolog/types/Annotation;
+	public static final fun annotationOfResource-_HOLNf0 (Ljava/lang/String;Lxynolog/types/Motivation;Lxynolog/types/Agent;Lxynolog/types/AnnotationBodies;)Lxynolog/types/Annotation;
+	public static synthetic fun annotationOfResource-_HOLNf0$default (Ljava/lang/String;Lxynolog/types/Motivation;Lxynolog/types/Agent;Lxynolog/types/AnnotationBodies;ILjava/lang/Object;)Lxynolog/types/Annotation;
+	public static final fun annotationOfResource-e71mPsk (Ljava/lang/String;Lxynolog/types/Motivation;Lxynolog/types/Agent;)Lxynolog/types/Annotation;
 	public static final fun annotationOfSpan (Ljava/lang/String;Lxynolog/annotations/TextSpan;Lxynolog/identifiers/ResourceId;Lxynolog/types/Motivation;Lxynolog/types/Agent;)Lxynolog/types/Annotation;
 	public static final fun annotationOfSpan (Ljava/lang/String;Lxynolog/annotations/TextSpan;Lxynolog/identifiers/ResourceId;Lxynolog/types/Motivation;Lxynolog/types/Agent;Lxynolog/types/AnnotationBodies;)Lxynolog/types/Annotation;
 	public static final fun annotationOfSpan (Lxynolog/types/AnchoredText;Lxynolog/annotations/TextSpan;Lxynolog/identifiers/ResourceId;Lxynolog/types/Motivation;Lxynolog/types/Agent;)Lxynolog/types/Annotation;
 	public static final fun annotationOfSpan (Lxynolog/types/AnchoredText;Lxynolog/annotations/TextSpan;Lxynolog/identifiers/ResourceId;Lxynolog/types/Motivation;Lxynolog/types/Agent;Lxynolog/types/AnnotationBodies;)Lxynolog/types/Annotation;
-	public static final fun annotationOfSpan-5NWYt7w (Ljava/lang/String;Lxynolog/annotations/TextSpan;Ljava/lang/String;Lxynolog/types/Motivation;Lxynolog/types/Agent;Lxynolog/types/AnnotationBodies;)Lxynolog/types/Annotation;
-	public static final fun annotationOfSpan-5NWYt7w (Lxynolog/types/AnchoredText;Lxynolog/annotations/TextSpan;Ljava/lang/String;Lxynolog/types/Motivation;Lxynolog/types/Agent;Lxynolog/types/AnnotationBodies;)Lxynolog/types/Annotation;
-	public static synthetic fun annotationOfSpan-5NWYt7w$default (Ljava/lang/String;Lxynolog/annotations/TextSpan;Ljava/lang/String;Lxynolog/types/Motivation;Lxynolog/types/Agent;Lxynolog/types/AnnotationBodies;ILjava/lang/Object;)Lxynolog/types/Annotation;
-	public static synthetic fun annotationOfSpan-5NWYt7w$default (Lxynolog/types/AnchoredText;Lxynolog/annotations/TextSpan;Ljava/lang/String;Lxynolog/types/Motivation;Lxynolog/types/Agent;Lxynolog/types/AnnotationBodies;ILjava/lang/Object;)Lxynolog/types/Annotation;
-	public static final fun annotationOfSpan-snzPxMI (Ljava/lang/String;Lxynolog/annotations/TextSpan;Ljava/lang/String;Lxynolog/types/Motivation;Lxynolog/types/Agent;)Lxynolog/types/Annotation;
-	public static final fun annotationOfSpan-snzPxMI (Lxynolog/types/AnchoredText;Lxynolog/annotations/TextSpan;Ljava/lang/String;Lxynolog/types/Motivation;Lxynolog/types/Agent;)Lxynolog/types/Annotation;
+	public static final fun annotationOfSpan-6fYgrzQ (Ljava/lang/String;Lxynolog/annotations/TextSpan;Ljava/lang/String;Lxynolog/types/Motivation;Lxynolog/types/Agent;Lxynolog/types/AnnotationBodies;)Lxynolog/types/Annotation;
+	public static final fun annotationOfSpan-6fYgrzQ (Lxynolog/types/AnchoredText;Lxynolog/annotations/TextSpan;Ljava/lang/String;Lxynolog/types/Motivation;Lxynolog/types/Agent;Lxynolog/types/AnnotationBodies;)Lxynolog/types/Annotation;
+	public static synthetic fun annotationOfSpan-6fYgrzQ$default (Ljava/lang/String;Lxynolog/annotations/TextSpan;Ljava/lang/String;Lxynolog/types/Motivation;Lxynolog/types/Agent;Lxynolog/types/AnnotationBodies;ILjava/lang/Object;)Lxynolog/types/Annotation;
+	public static synthetic fun annotationOfSpan-6fYgrzQ$default (Lxynolog/types/AnchoredText;Lxynolog/annotations/TextSpan;Ljava/lang/String;Lxynolog/types/Motivation;Lxynolog/types/Agent;Lxynolog/types/AnnotationBodies;ILjava/lang/Object;)Lxynolog/types/Annotation;
+	public static final fun annotationOfSpan-9IMsetE (Ljava/lang/String;Lxynolog/annotations/TextSpan;Ljava/lang/String;Lxynolog/types/Motivation;Lxynolog/types/Agent;)Lxynolog/types/Annotation;
+	public static final fun annotationOfSpan-9IMsetE (Lxynolog/types/AnchoredText;Lxynolog/annotations/TextSpan;Ljava/lang/String;Lxynolog/types/Motivation;Lxynolog/types/Agent;)Lxynolog/types/Annotation;
 	public static final fun bodySource (Lxynolog/types/AnnotationBodies;)Ljava/lang/String;
 	public static final fun commentText (Lxynolog/types/Annotation;)Ljava/lang/String;
 	public static final fun entityTypes (Lxynolog/types/Annotation;)Ljava/util/List;
@@ -290,13 +290,13 @@ public final class xynolog/bus/Bus {
 	public fun <init> (Lxynolog/transport/Transport;Lkotlin/coroutines/CoroutineContext;)V
 	public fun <init> (Lxynolog/transport/Transport;Lkotlin/coroutines/CoroutineContext;Lkotlin/time/TimeSource;)V
 	public synthetic fun <init> (Lxynolog/transport/Transport;Lkotlin/coroutines/CoroutineContext;Lkotlin/time/TimeSource;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun emit-6b3uWpE (Lxynolog/channels/Channel;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static synthetic fun emit-6b3uWpE$default (Lxynolog/bus/Bus;Lxynolog/channels/Channel;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public final fun emit-mNhzOW0 (Lxynolog/channels/Channel;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun emit-mNhzOW0$default (Lxynolog/bus/Bus;Lxynolog/channels/Channel;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public final fun emitFuture (Lxynolog/channels/Channel;Ljava/lang/Object;Lxynolog/identifiers/ResourceId;Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
-	public final fun emitFuture-NOvym2Y (Lxynolog/channels/Channel;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
+	public final fun emitFuture-HY7VUpc (Lxynolog/channels/Channel;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
 	public final fun frames (Lxynolog/channels/Channel;)Lxynolog/bus/Typed;
 	public final fun frames (Lxynolog/channels/ScopedChannel;Lxynolog/identifiers/ResourceId;)Lxynolog/bus/Typed;
-	public final fun frames-4s78tp8 (Lxynolog/channels/ScopedChannel;Ljava/lang/String;)Lxynolog/bus/Typed;
+	public final fun frames-qYb7wTs (Lxynolog/channels/ScopedChannel;Ljava/lang/String;)Lxynolog/bus/Typed;
 	public final fun request (Lxynolog/bus/Operation;Ljava/lang/Object;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun request$default (Lxynolog/bus/Bus;Lxynolog/bus/Operation;Ljava/lang/Object;JLkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public final fun requestFuture (Lxynolog/bus/Operation;Ljava/lang/Object;J)Ljava/util/concurrent/CompletableFuture;
@@ -320,15 +320,15 @@ public final class xynolog/bus/EventBus : xynolog/transport/FrameSink {
 	public fun deliver (Lxynolog/transport/Carried;)V
 	public final fun destroy ()V
 	public final fun emit (Ljava/lang/String;Lkotlinx/serialization/json/JsonObject;Lxynolog/identifiers/ResourceId;Ljava/lang/String;)V
-	public final fun emit-NOvym2Y (Ljava/lang/String;Lkotlinx/serialization/json/JsonObject;Ljava/lang/String;Ljava/lang/String;)V
+	public final fun emit-HY7VUpc (Ljava/lang/String;Lkotlinx/serialization/json/JsonObject;Ljava/lang/String;Ljava/lang/String;)V
 	public final fun frames (Lxynolog/channels/Channel;Lxynolog/identifiers/ResourceId;)Lxynolog/bus/Typed;
-	public final fun frames-n4-Erus (Lxynolog/channels/Channel;Ljava/lang/String;)Lxynolog/bus/Typed;
+	public final fun frames-MhPvvJc (Lxynolog/channels/Channel;Ljava/lang/String;)Lxynolog/bus/Typed;
 	public final fun framesAmong (Ljava/util/Collection;)Lxynolog/transport/Events;
 	public final fun framesOn (Ljava/lang/String;Lxynolog/identifiers/ResourceId;)Lxynolog/transport/Events;
-	public final fun framesOn-n4-Erus (Ljava/lang/String;Ljava/lang/String;)Lxynolog/transport/Events;
+	public final fun framesOn-MhPvvJc (Ljava/lang/String;Ljava/lang/String;)Lxynolog/transport/Events;
 	public final fun isDestroyed ()Z
 	public final fun publish (Lxynolog/channels/Channel;Ljava/lang/Object;Lxynolog/identifiers/ResourceId;Ljava/lang/String;)V
-	public final fun publish-NOvym2Y (Lxynolog/channels/Channel;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;)V
+	public final fun publish-HY7VUpc (Lxynolog/channels/Channel;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;)V
 }
 
 public final class xynolog/bus/Operation {
@@ -568,15 +568,8 @@ public final class xynolog/errors/JobError : xynolog/errors/XynologError {
 	public fun getCode ()Ljava/lang/String;
 	public final fun getFailureClass ()Lxynolog/types/FailureClass;
 	public final fun getJobId ()Lxynolog/identifiers/JobId;
-	public final fun getJobId-jnM91lI ()Ljava/lang/String;
+	public final fun getJobId-YK5D900 ()Ljava/lang/String;
 	public final fun getReason ()Lxynolog/errors/JobErrorCode;
-}
-
-public abstract class xynolog/errors/XynologError : java/lang/Exception {
-	public synthetic fun <init> (Ljava/lang/String;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public abstract fun getCode ()Ljava/lang/String;
-	public fun getMessage ()Ljava/lang/String;
-	public fun getRetryAfterMs ()Ljava/lang/Long;
 }
 
 public final class xynolog/errors/SessionError : xynolog/errors/XynologError {
@@ -609,6 +602,13 @@ public final class xynolog/errors/TransportError : xynolog/errors/XynologError {
 	public final fun getStatus ()Ljava/lang/Integer;
 }
 
+public abstract class xynolog/errors/XynologError : java/lang/Exception {
+	public synthetic fun <init> (Ljava/lang/String;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public abstract fun getCode ()Ljava/lang/String;
+	public fun getMessage ()Ljava/lang/String;
+	public fun getRetryAfterMs ()Ljava/lang/Long;
+}
+
 public final class xynolog/http/AgentToken : java/lang/AutoCloseable, xynolog/http/TokenRefresher {
 	public fun <init> (Ljava/lang/String;Lxynolog/http/ServiceToken;)V
 	public fun <init> (Ljava/lang/String;Lxynolog/http/ServiceToken;Ljava/net/http/HttpClient;)V
@@ -617,7 +617,7 @@ public final class xynolog/http/AgentToken : java/lang/AutoCloseable, xynolog/ht
 	public synthetic fun <init> (Ljava/lang/String;Lxynolog/http/ServiceToken;Ljava/net/http/HttpClient;Lkotlin/coroutines/CoroutineContext;Lkotlin/random/Random;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun close ()V
 	public final fun getDid ()Lxynolog/identifiers/UserId;
-	public final fun getDid-lE7-m4I ()Ljava/lang/String;
+	public final fun getDid-tcVePhc ()Ljava/lang/String;
 	public final fun getGateway ()Ljava/lang/String;
 	public final fun getToken ()Lkotlinx/coroutines/flow/StateFlow;
 	public fun refresh (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -682,14 +682,14 @@ public final class xynolog/http/ConnectKt {
 public final class xynolog/http/ConnectionIdentity {
 	public synthetic fun <init> (Ljava/lang/String;Lxynolog/types/KbDescription;Lkotlin/jvm/internal/BoxingConstructorMarker;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun <init> (Lxynolog/identifiers/UserId;Lxynolog/types/KbDescription;)V
-	public final fun component1-lE7-m4I ()Ljava/lang/String;
+	public final fun component1-tcVePhc ()Ljava/lang/String;
 	public final fun component2 ()Lxynolog/types/KbDescription;
-	public final fun copy-Oz5wUo0 (Ljava/lang/String;Lxynolog/types/KbDescription;)Lxynolog/http/ConnectionIdentity;
-	public static synthetic fun copy-Oz5wUo0$default (Lxynolog/http/ConnectionIdentity;Ljava/lang/String;Lxynolog/types/KbDescription;ILjava/lang/Object;)Lxynolog/http/ConnectionIdentity;
+	public final fun copy-0N-5PGo (Ljava/lang/String;Lxynolog/types/KbDescription;)Lxynolog/http/ConnectionIdentity;
+	public static synthetic fun copy-0N-5PGo$default (Lxynolog/http/ConnectionIdentity;Ljava/lang/String;Lxynolog/types/KbDescription;ILjava/lang/Object;)Lxynolog/http/ConnectionIdentity;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getDescription ()Lxynolog/types/KbDescription;
 	public final fun getDid ()Lxynolog/identifiers/UserId;
-	public final fun getDid-lE7-m4I ()Ljava/lang/String;
+	public final fun getDid-tcVePhc ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
@@ -731,21 +731,21 @@ public final class xynolog/http/EndpointKt {
 public final class xynolog/http/HttpContentTransport : xynolog/transport/ContentTransport {
 	public fun <init> (Lxynolog/http/HttpTransport;)V
 	public fun close ()V
-	public fun getAnchoredText-k2J_C-I (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun getAnchoredText-Tz_IDJk (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun getAnchoredTextFuture (Lxynolog/identifiers/ResourceId;)Ljava/util/concurrent/CompletableFuture;
-	public fun getAnchoredTextFuture--Xm7VB4 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
-	public fun getAnnotations-k2J_C-I (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun getAnchoredTextFuture-n-VWWI8 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
+	public fun getAnnotations-Tz_IDJk (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun getAnnotationsFuture (Lxynolog/identifiers/ResourceId;)Ljava/util/concurrent/CompletableFuture;
-	public fun getAnnotationsFuture--Xm7VB4 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
-	public fun getBinary-k2J_C-I (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun getAnnotationsFuture-n-VWWI8 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
+	public fun getBinary-Tz_IDJk (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun getBinaryFuture (Lxynolog/identifiers/ResourceId;)Ljava/util/concurrent/CompletableFuture;
-	public fun getBinaryFuture--Xm7VB4 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
-	public fun getBinaryStream-k2J_C-I (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun getBinaryFuture-n-VWWI8 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
+	public fun getBinaryStream-Tz_IDJk (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun getBinaryStreamFuture (Lxynolog/identifiers/ResourceId;)Ljava/util/concurrent/CompletableFuture;
-	public fun getBinaryStreamFuture--Xm7VB4 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
-	public fun getResourceGraph-k2J_C-I (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun getBinaryStreamFuture-n-VWWI8 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
+	public fun getResourceGraph-Tz_IDJk (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun getResourceGraphFuture (Lxynolog/identifiers/ResourceId;)Ljava/util/concurrent/CompletableFuture;
-	public fun getResourceGraphFuture--Xm7VB4 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
+	public fun getResourceGraphFuture-n-VWWI8 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
 	public fun putBinary (Lxynolog/transport/PutBinaryRequest;)Lxynolog/transport/Upload;
 }
 
@@ -774,17 +774,17 @@ public final class xynolog/http/HttpTransport : xynolog/transport/GatewayOperati
 	public synthetic fun <init> (Ljava/lang/String;Lkotlinx/coroutines/flow/StateFlow;Ljava/util/List;Lxynolog/http/Timing;Lxynolog/http/TokenRefresher;Lxynolog/http/Bookmarks;Ljava/net/http/HttpClient;Lkotlin/coroutines/CoroutineContext;Lkotlin/time/TimeSource;Lkotlin/random/Random;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun bridgeInto (Lxynolog/transport/FrameSink;)V
 	public fun close ()V
-	public fun emit-6b3uWpE (Ljava/lang/String;Lkotlinx/serialization/json/JsonObject;Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun emit-mNhzOW0 (Ljava/lang/String;Lkotlinx/serialization/json/JsonObject;Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun emitFuture (Ljava/lang/String;Lkotlinx/serialization/json/JsonObject;Lxynolog/identifiers/ResourceId;Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
-	public fun emitFuture-NOvym2Y (Ljava/lang/String;Lkotlinx/serialization/json/JsonObject;Ljava/lang/String;Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
+	public fun emitFuture-HY7VUpc (Ljava/lang/String;Lkotlinx/serialization/json/JsonObject;Ljava/lang/String;Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
 	public fun failures ()Lxynolog/transport/Events;
 	public fun frames (Ljava/lang/String;)Lxynolog/transport/Events;
 	public fun getBaseUrl ()Ljava/lang/String;
 	public fun getCurrentUser (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun getCurrentUserFuture ()Ljava/util/concurrent/CompletableFuture;
-	public fun getMediaToken-k2J_C-I (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun getMediaToken-Tz_IDJk (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun getMediaTokenFuture (Lxynolog/identifiers/ResourceId;)Ljava/util/concurrent/CompletableFuture;
-	public fun getMediaTokenFuture--Xm7VB4 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
+	public fun getMediaTokenFuture-n-VWWI8 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
 	public fun getProtectedResourceMetadata (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun getProtectedResourceMetadataFuture ()Ljava/util/concurrent/CompletableFuture;
 	public fun getState ()Lxynolog/transport/Watched;
@@ -794,7 +794,7 @@ public final class xynolog/http/HttpTransport : xynolog/transport/GatewayOperati
 	public fun healthCheckFuture ()Ljava/util/concurrent/CompletableFuture;
 	public fun isSubscribed (Ljava/lang/String;)Z
 	public fun subscribeToResource (Lxynolog/identifiers/ResourceId;)Lxynolog/transport/ResourceHold;
-	public fun subscribeToResource--Xm7VB4 (Ljava/lang/String;)Lxynolog/transport/ResourceHold;
+	public fun subscribeToResource-n-VWWI8 (Ljava/lang/String;)Lxynolog/transport/ResourceHold;
 	public fun trackReply (Ljava/lang/String;Ljava/util/Collection;)Lxynolog/transport/PendingReply;
 }
 
@@ -1010,7 +1010,7 @@ public final class xynolog/identity/IdentityKt {
 
 public final class xynolog/jobs/ActiveJob {
 	public final fun getJobId ()Lxynolog/identifiers/JobId;
-	public final fun getJobId-uJFoOgc ()Ljava/lang/String;
+	public final fun getJobId-gcNJweM ()Ljava/lang/String;
 	public final fun getJobType ()Lxynolog/types/JobType;
 	public final fun getSince ()Ljava/time/Instant;
 }
@@ -1045,24 +1045,24 @@ public abstract class xynolog/jobs/HeldJob : java/lang/AutoCloseable {
 	public static synthetic fun checkpoint$default (Lxynolog/jobs/HeldJob;Ljava/util/List;Ljava/util/Map;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public final fun checkpointFuture (Ljava/util/List;Ljava/util/Map;)Ljava/util/concurrent/CompletableFuture;
 	public fun close ()V
-	public final fun commit-ogcqSrQ (Ljava/lang/String;Ljava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun commit-e71mPsk (Ljava/lang/String;Ljava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun commitFuture (Lxynolog/identifiers/ResourceId;Ljava/util/List;)Ljava/util/concurrent/CompletableFuture;
-	public final fun commitFuture-k2J_C-I (Ljava/lang/String;Ljava/util/List;)Ljava/util/concurrent/CompletableFuture;
+	public final fun commitFuture-Tz_IDJk (Ljava/lang/String;Ljava/util/List;)Ljava/util/concurrent/CompletableFuture;
 	public final fun fail (Ljava/lang/String;Lxynolog/types/FailureClass;Ljava/util/List;Ljava/util/Map;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun fail$default (Lxynolog/jobs/HeldJob;Ljava/lang/String;Lxynolog/types/FailureClass;Ljava/util/List;Ljava/util/Map;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public final fun failFuture (Ljava/lang/String;Lxynolog/types/FailureClass;Ljava/util/List;Ljava/util/Map;)Ljava/util/concurrent/CompletableFuture;
 	public final fun getAnnotationId ()Lxynolog/identifiers/AnnotationId;
-	public final fun getAnnotationId-C0ARYTo ()Ljava/lang/String;
+	public final fun getAnnotationId-9QHvHjw ()Ljava/lang/String;
 	public final fun getAttempt ()J
 	public final fun getCancelled ()Lxynolog/transport/Watched;
 	public final fun getCompletedUnits ()Ljava/util/List;
 	public final fun getJobId ()Lxynolog/identifiers/JobId;
-	public final fun getJobId-uJFoOgc ()Ljava/lang/String;
+	public final fun getJobId-gcNJweM ()Ljava/lang/String;
 	public final fun getJobType ()Lxynolog/types/JobType;
 	public final fun getMaxRetries ()J
 	public final fun getParams ()Lxynolog/types/JobParams;
 	public final fun getResourceId ()Lxynolog/identifiers/ResourceId;
-	public final fun getResourceId-1-yoK9c ()Ljava/lang/String;
+	public final fun getResourceId-mMrHYc8 ()Ljava/lang/String;
 	public final fun getRetryCount ()J
 	public final fun getSettled ()Z
 	public final fun getTrace ()Lxynolog/transport/TraceContext;
@@ -1076,7 +1076,7 @@ public abstract class xynolog/jobs/HeldJob : java/lang/AutoCloseable {
 public final class xynolog/jobs/HeldJobStall {
 	public final fun getHeldSince ()Ljava/time/Instant;
 	public final fun getJobId ()Lxynolog/identifiers/JobId;
-	public final fun getJobId-uJFoOgc ()Ljava/lang/String;
+	public final fun getJobId-gcNJweM ()Ljava/lang/String;
 	public final fun getJobType ()Lxynolog/types/JobType;
 	public final fun getLastActivityAt ()Ljava/time/Instant;
 	public final fun getSilentForMs ()J
@@ -1113,87 +1113,87 @@ public final class xynolog/jobs/WorkerVitals {
 public final class xynolog/namespaces/AuthNamespace {
 	public final fun me (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun meFuture ()Ljava/util/concurrent/CompletableFuture;
-	public final fun mediaToken-k2J_C-I (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun mediaToken-Tz_IDJk (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun mediaTokenFuture (Lxynolog/identifiers/ResourceId;)Ljava/util/concurrent/CompletableFuture;
-	public final fun mediaTokenFuture--Xm7VB4 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
+	public final fun mediaTokenFuture-n-VWWI8 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
 	public final fun protectedResourceMetadata (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun protectedResourceMetadataFuture ()Ljava/util/concurrent/CompletableFuture;
 }
 
 public final class xynolog/namespaces/BeckonNamespace {
-	public final fun attention-TX4fQuk (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static synthetic fun attention-TX4fQuk$default (Lxynolog/namespaces/BeckonNamespace;Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public final fun attention-bNRvAvA (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun attention-bNRvAvA$default (Lxynolog/namespaces/BeckonNamespace;Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public final fun attentionFuture (Lxynolog/identifiers/ResourceId;)Ljava/util/concurrent/CompletableFuture;
 	public final fun attentionFuture (Lxynolog/identifiers/ResourceId;Lxynolog/identifiers/AnnotationId;)Ljava/util/concurrent/CompletableFuture;
-	public final fun attentionFuture--Xm7VB4 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
-	public final fun attentionFuture-zT0v48I (Ljava/lang/String;Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
-	public static synthetic fun attentionFuture-zT0v48I$default (Lxynolog/namespaces/BeckonNamespace;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Ljava/util/concurrent/CompletableFuture;
-	public final fun click-iUDtbMI (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun attentionFuture-8cBymW8 (Ljava/lang/String;Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
+	public static synthetic fun attentionFuture-8cBymW8$default (Lxynolog/namespaces/BeckonNamespace;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Ljava/util/concurrent/CompletableFuture;
+	public final fun attentionFuture-n-VWWI8 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
+	public final fun click-KjjMSAs (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun clickFuture (Lxynolog/identifiers/AnnotationId;)Ljava/util/concurrent/CompletableFuture;
-	public final fun clickFuture-2VybQ2U (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
+	public final fun clickFuture-FNmhOTc (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
 	public final fun hover (Lxynolog/identifiers/AnnotationId;)V
-	public final fun hover-KdeD-Ww (Ljava/lang/String;)V
-	public final fun openResource-k2J_C-I (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun hover-rudTuf4 (Ljava/lang/String;)V
+	public final fun openResource-Tz_IDJk (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun openResourceFuture (Lxynolog/identifiers/ResourceId;)Ljava/util/concurrent/CompletableFuture;
-	public final fun openResourceFuture--Xm7VB4 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
+	public final fun openResourceFuture-n-VWWI8 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
 	public final fun sparkle (Lxynolog/identifiers/AnnotationId;)V
-	public final fun sparkle-2VybQ2U (Ljava/lang/String;)V
-	public final fun sparkleAll-iUDtbMI (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun sparkle-FNmhOTc (Ljava/lang/String;)V
+	public final fun sparkleAll-KjjMSAs (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun sparkleAllFuture (Lxynolog/identifiers/AnnotationId;)Ljava/util/concurrent/CompletableFuture;
-	public final fun sparkleAllFuture-2VybQ2U (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
+	public final fun sparkleAllFuture-FNmhOTc (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
 }
 
 public final class xynolog/namespaces/BindNamespace {
-	public final fun body-SAPwhrY (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun body-cMjPUdA (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun bodyFuture (Lxynolog/identifiers/ResourceId;Lxynolog/identifiers/AnnotationId;Ljava/util/List;)Ljava/util/concurrent/CompletableFuture;
-	public final fun bodyFuture-rbRhPYE (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;)Ljava/util/concurrent/CompletableFuture;
+	public final fun bodyFuture-1QMA0MI (Ljava/lang/String;Ljava/lang/String;Ljava/util/List;)Ljava/util/concurrent/CompletableFuture;
 	public final fun initiate (Lxynolog/types/BindInitiateCommand;)V
 	public final fun reportBodyError (Lxynolog/types/ResourceErrorEvent;)V
 }
 
 public final class xynolog/namespaces/BrowseNamespace {
 	public final fun annotation (Lxynolog/identifiers/ResourceId;Lxynolog/identifiers/AnnotationId;)Lxynolog/cache/Cached;
-	public final fun annotation-8pmxbt4 (Ljava/lang/String;Ljava/lang/String;)Lxynolog/cache/Cached;
-	public final fun annotationHistory-rbRhPYE (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun annotation-e8b9Keo (Ljava/lang/String;Ljava/lang/String;)Lxynolog/cache/Cached;
+	public final fun annotationHistory-1QMA0MI (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun annotationHistoryFuture (Lxynolog/identifiers/ResourceId;Lxynolog/identifiers/AnnotationId;)Ljava/util/concurrent/CompletableFuture;
-	public final fun annotationHistoryFuture-8pmxbt4 (Ljava/lang/String;Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
+	public final fun annotationHistoryFuture-e8b9Keo (Ljava/lang/String;Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
 	public final fun annotations (Lxynolog/identifiers/ResourceId;)Lxynolog/cache/Cached;
-	public final fun annotations--Xm7VB4 (Ljava/lang/String;)Lxynolog/cache/Cached;
+	public final fun annotations-n-VWWI8 (Ljava/lang/String;)Lxynolog/cache/Cached;
 	public final fun click (Lxynolog/identifiers/AnnotationId;)V
-	public final fun click-2VybQ2U (Ljava/lang/String;)V
+	public final fun click-FNmhOTc (Ljava/lang/String;)V
 	public final fun engines ()Lxynolog/cache/Cached;
 	public final fun entityTypes ()Lxynolog/cache/Cached;
 	public final fun events (Lxynolog/identifiers/ResourceId;)Lxynolog/cache/Cached;
-	public final fun events--Xm7VB4 (Ljava/lang/String;)Lxynolog/cache/Cached;
+	public final fun events-n-VWWI8 (Ljava/lang/String;)Lxynolog/cache/Cached;
 	public final fun files (Ljava/lang/String;Lxynolog/types/BrowseDirectoryRequestSort;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun files$default (Lxynolog/namespaces/BrowseNamespace;Ljava/lang/String;Lxynolog/types/BrowseDirectoryRequestSort;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public final fun filesFuture (Ljava/lang/String;Lxynolog/types/BrowseDirectoryRequestSort;)Ljava/util/concurrent/CompletableFuture;
 	public final fun kb (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun kbFuture ()Ljava/util/concurrent/CompletableFuture;
 	public final fun openResource (Lxynolog/identifiers/ResourceId;)V
-	public final fun openResource--Xm7VB4 (Ljava/lang/String;)V
+	public final fun openResource-n-VWWI8 (Ljava/lang/String;)V
 	public final fun resource (Lxynolog/identifiers/ResourceId;)Lxynolog/cache/Cached;
-	public final fun resource--Xm7VB4 (Ljava/lang/String;)Lxynolog/cache/Cached;
-	public final fun resourceAnchoredText-k2J_C-I (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun resource-n-VWWI8 (Ljava/lang/String;)Lxynolog/cache/Cached;
+	public final fun resourceAnchoredText-Tz_IDJk (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun resourceAnchoredTextFuture (Lxynolog/identifiers/ResourceId;)Ljava/util/concurrent/CompletableFuture;
-	public final fun resourceAnchoredTextFuture--Xm7VB4 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
-	public final fun resourceContent-k2J_C-I (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun resourceAnchoredTextFuture-n-VWWI8 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
+	public final fun resourceContent-Tz_IDJk (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun resourceContentFuture (Lxynolog/identifiers/ResourceId;)Ljava/util/concurrent/CompletableFuture;
-	public final fun resourceContentFuture--Xm7VB4 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
-	public final fun resourceEvents-k2J_C-I (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun resourceContentFuture-n-VWWI8 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
+	public final fun resourceEvents-Tz_IDJk (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun resourceEventsFuture (Lxynolog/identifiers/ResourceId;)Ljava/util/concurrent/CompletableFuture;
-	public final fun resourceEventsFuture--Xm7VB4 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
-	public final fun resourceGraph-k2J_C-I (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun resourceEventsFuture-n-VWWI8 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
+	public final fun resourceGraph-Tz_IDJk (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun resourceGraphFuture (Lxynolog/identifiers/ResourceId;)Ljava/util/concurrent/CompletableFuture;
-	public final fun resourceGraphFuture--Xm7VB4 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
-	public final fun resourceRepresentation-k2J_C-I (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun resourceGraphFuture-n-VWWI8 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
+	public final fun resourceRepresentation-Tz_IDJk (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun resourceRepresentationFuture (Lxynolog/identifiers/ResourceId;)Ljava/util/concurrent/CompletableFuture;
-	public final fun resourceRepresentationFuture--Xm7VB4 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
-	public final fun resourceRepresentationStream-k2J_C-I (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun resourceRepresentationFuture-n-VWWI8 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
+	public final fun resourceRepresentationStream-Tz_IDJk (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun resourceRepresentationStreamFuture (Lxynolog/identifiers/ResourceId;)Ljava/util/concurrent/CompletableFuture;
-	public final fun resourceRepresentationStreamFuture--Xm7VB4 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
+	public final fun resourceRepresentationStreamFuture-n-VWWI8 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
 	public final fun resourceViewed (Lxynolog/identifiers/ResourceId;)V
-	public final fun resourceViewed--Xm7VB4 (Ljava/lang/String;)V
+	public final fun resourceViewed-n-VWWI8 (Ljava/lang/String;)V
 	public final fun resources ()Lxynolog/cache/Cached;
 	public final fun resources (J)Lxynolog/cache/Cached;
 	public final fun resources (JJ)Lxynolog/cache/Cached;
@@ -1230,23 +1230,23 @@ public final class xynolog/namespaces/GatherNamespace {
 	public final fun annotation (Lxynolog/identifiers/ResourceId;Lxynolog/identifiers/AnnotationId;J)Lxynolog/Running;
 	public final fun annotation (Lxynolog/identifiers/ResourceId;Lxynolog/identifiers/AnnotationId;JLjava/lang/Boolean;)Lxynolog/Running;
 	public final fun annotation (Lxynolog/identifiers/ResourceId;Lxynolog/identifiers/AnnotationId;JLjava/lang/Boolean;Ljava/lang/Boolean;)Lxynolog/Running;
-	public final fun annotation-8pmxbt4 (Ljava/lang/String;Ljava/lang/String;)Lxynolog/Running;
-	public final fun annotation-SAPwhrY (Ljava/lang/String;Ljava/lang/String;JLjava/lang/Boolean;)Lxynolog/Running;
-	public final fun annotation-n0x_L0s (Ljava/lang/String;Ljava/lang/String;JLjava/lang/Boolean;Ljava/lang/Boolean;)Lxynolog/Running;
-	public static synthetic fun annotation-n0x_L0s$default (Lxynolog/namespaces/GatherNamespace;Ljava/lang/String;Ljava/lang/String;JLjava/lang/Boolean;Ljava/lang/Boolean;ILjava/lang/Object;)Lxynolog/Running;
-	public final fun annotation-rbRhPYE (Ljava/lang/String;Ljava/lang/String;J)Lxynolog/Running;
+	public final fun annotation-1QMA0MI (Ljava/lang/String;Ljava/lang/String;J)Lxynolog/Running;
+	public final fun annotation-2lGsauY (Ljava/lang/String;Ljava/lang/String;JLjava/lang/Boolean;Ljava/lang/Boolean;)Lxynolog/Running;
+	public static synthetic fun annotation-2lGsauY$default (Lxynolog/namespaces/GatherNamespace;Ljava/lang/String;Ljava/lang/String;JLjava/lang/Boolean;Ljava/lang/Boolean;ILjava/lang/Object;)Lxynolog/Running;
+	public final fun annotation-cMjPUdA (Ljava/lang/String;Ljava/lang/String;JLjava/lang/Boolean;)Lxynolog/Running;
+	public final fun annotation-e8b9Keo (Ljava/lang/String;Ljava/lang/String;)Lxynolog/Running;
 	public final fun referencedBy (Lxynolog/identifiers/ResourceId;)Lxynolog/cache/Cached;
-	public final fun referencedBy--Xm7VB4 (Ljava/lang/String;)Lxynolog/cache/Cached;
-	public final fun resource-Z9ojSc8 (Ljava/lang/String;JJZZLjava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static synthetic fun resource-Z9ojSc8$default (Lxynolog/namespaces/GatherNamespace;Ljava/lang/String;JJZZLjava/util/List;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public final fun referencedBy-n-VWWI8 (Ljava/lang/String;)Lxynolog/cache/Cached;
+	public final fun resource-0V-VdnE (Ljava/lang/String;JJZZLjava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun resource-0V-VdnE$default (Lxynolog/namespaces/GatherNamespace;Ljava/lang/String;JJZZLjava/util/List;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public final fun resourceFuture (Lxynolog/identifiers/ResourceId;JJZZLjava/util/List;)Ljava/util/concurrent/CompletableFuture;
-	public final fun resourceFuture-0-slNOc (Ljava/lang/String;JJZZLjava/util/List;)Ljava/util/concurrent/CompletableFuture;
+	public final fun resourceFuture-2a5fTYc (Ljava/lang/String;JJZZLjava/util/List;)Ljava/util/concurrent/CompletableFuture;
 }
 
 public final class xynolog/namespaces/JobNamespace {
-	public final fun cancel-PSXEM9Q (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun cancel-qzu4rNk (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun cancelFuture (Lxynolog/identifiers/JobId;)Ljava/util/concurrent/CompletableFuture;
-	public final fun cancelFuture--cCJ8JM (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
+	public final fun cancelFuture-v5rtfDE (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
 	public final fun claim (Ljava/util/List;)Lxynolog/jobs/Claims;
 	public final fun claim (Ljava/util/List;J)Lxynolog/jobs/Claims;
 	public final fun claim (Ljava/util/List;JJ)Lxynolog/jobs/Claims;
@@ -1255,45 +1255,45 @@ public final class xynolog/namespaces/JobNamespace {
 	public static synthetic fun claim$default (Lxynolog/namespaces/JobNamespace;Ljava/util/List;JJJJILjava/lang/Object;)Lxynolog/jobs/Claims;
 	public final fun complete ()Lxynolog/bus/Typed;
 	public final fun fail ()Lxynolog/bus/Typed;
-	public final fun pollUntilComplete-U24uh8E (Ljava/lang/String;JJLkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static synthetic fun pollUntilComplete-U24uh8E$default (Lxynolog/namespaces/JobNamespace;Ljava/lang/String;JJLkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public final fun pollUntilComplete-k_oCx0U (Ljava/lang/String;JJLkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun pollUntilComplete-k_oCx0U$default (Lxynolog/namespaces/JobNamespace;Ljava/lang/String;JJLkotlin/jvm/functions/Function1;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public final fun pollUntilCompleteFuture (Lxynolog/identifiers/JobId;)Ljava/util/concurrent/CompletableFuture;
 	public final fun pollUntilCompleteFuture (Lxynolog/identifiers/JobId;J)Ljava/util/concurrent/CompletableFuture;
 	public final fun pollUntilCompleteFuture (Lxynolog/identifiers/JobId;JJ)Ljava/util/concurrent/CompletableFuture;
 	public final fun pollUntilCompleteFuture (Lxynolog/identifiers/JobId;JJLjava/util/function/Consumer;)Ljava/util/concurrent/CompletableFuture;
-	public final fun pollUntilCompleteFuture--cCJ8JM (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
-	public final fun pollUntilCompleteFuture-PSXEM9Q (Ljava/lang/String;J)Ljava/util/concurrent/CompletableFuture;
-	public final fun pollUntilCompleteFuture-UbuRbP8 (Ljava/lang/String;JJ)Ljava/util/concurrent/CompletableFuture;
-	public final fun pollUntilCompleteFuture-VMfirKA (Ljava/lang/String;JJLjava/util/function/Consumer;)Ljava/util/concurrent/CompletableFuture;
-	public static synthetic fun pollUntilCompleteFuture-VMfirKA$default (Lxynolog/namespaces/JobNamespace;Ljava/lang/String;JJLjava/util/function/Consumer;ILjava/lang/Object;)Ljava/util/concurrent/CompletableFuture;
+	public final fun pollUntilCompleteFuture-QQ6HzF4 (Ljava/lang/String;JJ)Ljava/util/concurrent/CompletableFuture;
+	public final fun pollUntilCompleteFuture-lsrf4-k (Ljava/lang/String;JJLjava/util/function/Consumer;)Ljava/util/concurrent/CompletableFuture;
+	public static synthetic fun pollUntilCompleteFuture-lsrf4-k$default (Lxynolog/namespaces/JobNamespace;Ljava/lang/String;JJLjava/util/function/Consumer;ILjava/lang/Object;)Ljava/util/concurrent/CompletableFuture;
+	public final fun pollUntilCompleteFuture-qzu4rNk (Ljava/lang/String;J)Ljava/util/concurrent/CompletableFuture;
+	public final fun pollUntilCompleteFuture-v5rtfDE (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
 	public final fun progress ()Lxynolog/bus/Typed;
 	public final fun queued ()Lxynolog/bus/Typed;
-	public final fun status-PSXEM9Q (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun status-qzu4rNk (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun statusFuture (Lxynolog/identifiers/JobId;)Ljava/util/concurrent/CompletableFuture;
-	public final fun statusFuture--cCJ8JM (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
+	public final fun statusFuture-v5rtfDE (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
 }
 
 public final class xynolog/namespaces/MarkNamespace {
 	public final fun annotation (Lxynolog/types/CreateAnnotationRequest;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun annotationFuture (Lxynolog/types/CreateAnnotationRequest;)Ljava/util/concurrent/CompletableFuture;
-	public final fun archive-k2J_C-I (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun archive-Tz_IDJk (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun archiveFuture (Lxynolog/identifiers/ResourceId;)Ljava/util/concurrent/CompletableFuture;
-	public final fun archiveFuture--Xm7VB4 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
+	public final fun archiveFuture-n-VWWI8 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
 	public final fun delegate (Lxynolog/identifiers/ResourceId;Lxynolog/types/MarkJobParams;)Lxynolog/Delegation;
-	public final fun delegate-k2J_C-I (Ljava/lang/String;Lxynolog/types/MarkJobParams;)Lxynolog/Delegation;
-	public final fun delete-rbRhPYE (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun delegate-Tz_IDJk (Ljava/lang/String;Lxynolog/types/MarkJobParams;)Lxynolog/Delegation;
+	public final fun delete-1QMA0MI (Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun deleteFuture (Lxynolog/identifiers/ResourceId;Lxynolog/identifiers/AnnotationId;)Ljava/util/concurrent/CompletableFuture;
-	public final fun deleteFuture-8pmxbt4 (Ljava/lang/String;Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
+	public final fun deleteFuture-e8b9Keo (Ljava/lang/String;Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
 	public final fun reportDeleteError (Lxynolog/types/ResourceErrorEvent;)V
 	public final fun request (Lxynolog/identifiers/ResourceId;Lxynolog/types/AnnotationSelector;Lxynolog/types/Motivation;)V
-	public final fun request-ogcqSrQ (Ljava/lang/String;Lxynolog/types/AnnotationSelector;Lxynolog/types/Motivation;)V
+	public final fun request-e71mPsk (Ljava/lang/String;Lxynolog/types/AnnotationSelector;Lxynolog/types/Motivation;)V
 	public final fun submit (Lxynolog/types/MarkSubmitEvent;)V
-	public final fun unarchive-k2J_C-I (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun unarchive-Tz_IDJk (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun unarchiveFuture (Lxynolog/identifiers/ResourceId;)Ljava/util/concurrent/CompletableFuture;
-	public final fun unarchiveFuture--Xm7VB4 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
-	public final fun updateEntityTypes-cLomD_0 (Ljava/lang/String;Ljava/util/List;Ljava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun unarchiveFuture-n-VWWI8 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
+	public final fun updateEntityTypes-_HOLNf0 (Ljava/lang/String;Ljava/util/List;Ljava/util/List;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun updateEntityTypesFuture (Lxynolog/identifiers/ResourceId;Ljava/util/List;Ljava/util/List;)Ljava/util/concurrent/CompletableFuture;
-	public final fun updateEntityTypesFuture-ogcqSrQ (Ljava/lang/String;Ljava/util/List;Ljava/util/List;)Ljava/util/concurrent/CompletableFuture;
+	public final fun updateEntityTypesFuture-e71mPsk (Ljava/lang/String;Ljava/util/List;Ljava/util/List;)Ljava/util/concurrent/CompletableFuture;
 }
 
 public final class xynolog/namespaces/MatchNamespace {
@@ -1307,10 +1307,10 @@ public final class xynolog/namespaces/MatchNamespace {
 	public final fun search (Lxynolog/identifiers/ResourceId;Lxynolog/identifiers/AnnotationId;Lxynolog/types/GatheredContext;)Lxynolog/Running;
 	public final fun search (Lxynolog/identifiers/ResourceId;Lxynolog/identifiers/AnnotationId;Lxynolog/types/GatheredContext;J)Lxynolog/Running;
 	public final fun search (Lxynolog/identifiers/ResourceId;Lxynolog/identifiers/AnnotationId;Lxynolog/types/GatheredContext;JZ)Lxynolog/Running;
-	public final fun search-SAPwhrY (Ljava/lang/String;Ljava/lang/String;Lxynolog/types/GatheredContext;J)Lxynolog/Running;
-	public final fun search-n0x_L0s (Ljava/lang/String;Ljava/lang/String;Lxynolog/types/GatheredContext;JZ)Lxynolog/Running;
-	public static synthetic fun search-n0x_L0s$default (Lxynolog/namespaces/MatchNamespace;Ljava/lang/String;Ljava/lang/String;Lxynolog/types/GatheredContext;JZILjava/lang/Object;)Lxynolog/Running;
-	public final fun search-rbRhPYE (Ljava/lang/String;Ljava/lang/String;Lxynolog/types/GatheredContext;)Lxynolog/Running;
+	public final fun search-1QMA0MI (Ljava/lang/String;Ljava/lang/String;Lxynolog/types/GatheredContext;)Lxynolog/Running;
+	public final fun search-2lGsauY (Ljava/lang/String;Ljava/lang/String;Lxynolog/types/GatheredContext;JZ)Lxynolog/Running;
+	public static synthetic fun search-2lGsauY$default (Lxynolog/namespaces/MatchNamespace;Ljava/lang/String;Ljava/lang/String;Lxynolog/types/GatheredContext;JZILjava/lang/Object;)Lxynolog/Running;
+	public final fun search-cMjPUdA (Ljava/lang/String;Ljava/lang/String;Lxynolog/types/GatheredContext;J)Lxynolog/Running;
 }
 
 public final class xynolog/namespaces/SystemNamespace {
@@ -1322,9 +1322,9 @@ public final class xynolog/namespaces/SystemNamespace {
 
 public final class xynolog/namespaces/YieldNamespace {
 	public final fun clone ()V
-	public final fun cloneToken-k2J_C-I (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun cloneToken-Tz_IDJk (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun cloneTokenFuture (Lxynolog/identifiers/ResourceId;)Ljava/util/concurrent/CompletableFuture;
-	public final fun cloneTokenFuture--Xm7VB4 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
+	public final fun cloneTokenFuture-n-VWWI8 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
 	public final fun createFromToken (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Boolean;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static synthetic fun createFromToken$default (Lxynolog/namespaces/YieldNamespace;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Boolean;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 	public final fun createFromTokenFuture (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
@@ -1408,17 +1408,17 @@ public final class xynolog/registry/OpenResource {
 	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;JILjava/lang/String;Ljava/lang/String;Lkotlin/jvm/internal/BoxingConstructorMarker;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;JILjava/lang/String;Ljava/lang/String;Lkotlin/jvm/internal/BoxingConstructorMarker;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun <init> (Lxynolog/identifiers/ResourceId;Ljava/lang/String;JILjava/lang/String;Ljava/lang/String;)V
-	public final fun component1-1-yoK9c ()Ljava/lang/String;
+	public final fun component1-mMrHYc8 ()Ljava/lang/String;
 	public final fun component2 ()Ljava/lang/String;
 	public final fun component3 ()J
 	public final fun component4 ()I
 	public final fun component5 ()Ljava/lang/String;
 	public final fun component6 ()Ljava/lang/String;
-	public final fun copy-0-slNOc (Ljava/lang/String;Ljava/lang/String;JILjava/lang/String;Ljava/lang/String;)Lxynolog/registry/OpenResource;
-	public static synthetic fun copy-0-slNOc$default (Lxynolog/registry/OpenResource;Ljava/lang/String;Ljava/lang/String;JILjava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lxynolog/registry/OpenResource;
+	public final fun copy-2a5fTYc (Ljava/lang/String;Ljava/lang/String;JILjava/lang/String;Ljava/lang/String;)Lxynolog/registry/OpenResource;
+	public static synthetic fun copy-2a5fTYc$default (Lxynolog/registry/OpenResource;Ljava/lang/String;Ljava/lang/String;JILjava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lxynolog/registry/OpenResource;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getId ()Lxynolog/identifiers/ResourceId;
-	public final fun getId-1-yoK9c ()Ljava/lang/String;
+	public final fun getId-mMrHYc8 ()Ljava/lang/String;
 	public final fun getMediaType ()Ljava/lang/String;
 	public final fun getName ()Ljava/lang/String;
 	public final fun getOpenedAt ()J
@@ -1441,79 +1441,6 @@ public final synthetic class xynolog/registry/OpenResource$$serializer : kotlinx
 
 public final class xynolog/registry/OpenResource$Companion {
 	public final fun serializer ()Lkotlinx/serialization/KSerializer;
-}
-
-public final class xynolog/registry/XynologBrowser : java/lang/AutoCloseable {
-	public fun <init> (Lxynolog/registry/XynologBrowserConfig;)V
-	public final fun addKb (Lxynolog/types/NewKnowledgeBase;Lxynolog/registry/StoredSession;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun addKbFuture (Lxynolog/types/NewKnowledgeBase;Lxynolog/registry/StoredSession;)Ljava/util/concurrent/CompletableFuture;
-	public final fun addOpenResource (Lxynolog/identifiers/ResourceId;Ljava/lang/String;)V
-	public final fun addOpenResource (Lxynolog/identifiers/ResourceId;Ljava/lang/String;Ljava/lang/String;)V
-	public final fun addOpenResource (Lxynolog/identifiers/ResourceId;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
-	public final fun addOpenResource-cLomD_0 (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
-	public static synthetic fun addOpenResource-cLomD_0$default (Lxynolog/registry/XynologBrowser;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)V
-	public final fun addOpenResource-k2J_C-I (Ljava/lang/String;Ljava/lang/String;)V
-	public final fun addOpenResource-ogcqSrQ (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
-	public fun close ()V
-	public final fun errors ()Lxynolog/transport/Events;
-	public final fun getActiveKbId ()Lxynolog/transport/Watched;
-	public final fun getActiveSession ()Lxynolog/transport/Watched;
-	public final fun getActiveSignals ()Lxynolog/transport/Watched;
-	public final fun getBus ()Lxynolog/bus/EventBus;
-	public final fun getIdentityToken ()Lxynolog/transport/Watched;
-	public final fun getKbs ()Lxynolog/transport/Watched;
-	public final fun getLastViewedResource ()Lxynolog/transport/Watched;
-	public final fun getOpenResources ()Lxynolog/transport/Watched;
-	public final fun getSessionActivating ()Lxynolog/transport/Watched;
-	public final fun getStorage ()Lxynolog/storage/SessionStorage;
-	public final fun kbSessionStatus (Ljava/lang/String;)Lxynolog/registry/KbSessionStatus;
-	public final fun readActiveKb (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun readActiveKbFuture ()Ljava/util/concurrent/CompletableFuture;
-	public final fun removeKb (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun removeKbFuture (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
-	public final fun removeOpenResource (Lxynolog/identifiers/ResourceId;)V
-	public final fun removeOpenResource--Xm7VB4 (Ljava/lang/String;)V
-	public final fun reorderOpenResources (II)V
-	public final fun setActiveKb (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun setActiveKbFuture (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
-	public final fun setIdentityToken (Ljava/lang/String;)V
-	public final fun setLastViewedResource (Lxynolog/identifiers/ResourceId;)V
-	public final fun setLastViewedResource--Xm7VB4 (Ljava/lang/String;)V
-	public final fun signIn (Ljava/lang/String;Lxynolog/registry/StoredSession;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun signInFuture (Ljava/lang/String;Lxynolog/registry/StoredSession;)Ljava/util/concurrent/CompletableFuture;
-	public final fun signOut (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun signOutFuture (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
-	public final fun signedIn (Lxynolog/registry/SignedIn;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun signedInFuture (Lxynolog/registry/SignedIn;)Ljava/util/concurrent/CompletableFuture;
-	public final fun updateKb (Ljava/lang/String;)V
-	public final fun updateKb (Ljava/lang/String;Ljava/lang/String;)V
-	public final fun updateKb (Ljava/lang/String;Ljava/lang/String;Lxynolog/types/KbRead;)V
-	public static synthetic fun updateKb$default (Lxynolog/registry/XynologBrowser;Ljava/lang/String;Ljava/lang/String;Lxynolog/types/KbRead;ILjava/lang/Object;)V
-	public final fun updateOpenResourceName (Lxynolog/identifiers/ResourceId;Ljava/lang/String;)V
-	public final fun updateOpenResourceName-k2J_C-I (Ljava/lang/String;Ljava/lang/String;)V
-}
-
-public final class xynolog/registry/XynologBrowserConfig {
-	public fun <init> (Lxynolog/storage/SessionStorage;Lxynolog/registry/SessionFactory;)V
-	public fun <init> (Lxynolog/storage/SessionStorage;Lxynolog/registry/SessionFactory;Lkotlin/coroutines/CoroutineContext;)V
-	public fun <init> (Lxynolog/storage/SessionStorage;Lxynolog/registry/SessionFactory;Lkotlin/coroutines/CoroutineContext;Lkotlin/time/TimeSource;)V
-	public fun <init> (Lxynolog/storage/SessionStorage;Lxynolog/registry/SessionFactory;Lkotlin/coroutines/CoroutineContext;Lkotlin/time/TimeSource;Lkotlin/random/Random;)V
-	public synthetic fun <init> (Lxynolog/storage/SessionStorage;Lxynolog/registry/SessionFactory;Lkotlin/coroutines/CoroutineContext;Lkotlin/time/TimeSource;Lkotlin/random/Random;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1 ()Lxynolog/storage/SessionStorage;
-	public final fun component2 ()Lxynolog/registry/SessionFactory;
-	public final fun component3 ()Lkotlin/coroutines/CoroutineContext;
-	public final fun component4 ()Lkotlin/time/TimeSource;
-	public final fun component5 ()Lkotlin/random/Random;
-	public final fun copy (Lxynolog/storage/SessionStorage;Lxynolog/registry/SessionFactory;Lkotlin/coroutines/CoroutineContext;Lkotlin/time/TimeSource;Lkotlin/random/Random;)Lxynolog/registry/XynologBrowserConfig;
-	public static synthetic fun copy$default (Lxynolog/registry/XynologBrowserConfig;Lxynolog/storage/SessionStorage;Lxynolog/registry/SessionFactory;Lkotlin/coroutines/CoroutineContext;Lkotlin/time/TimeSource;Lkotlin/random/Random;ILjava/lang/Object;)Lxynolog/registry/XynologBrowserConfig;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getClock ()Lkotlin/time/TimeSource;
-	public final fun getContext ()Lkotlin/coroutines/CoroutineContext;
-	public final fun getRandom ()Lkotlin/random/Random;
-	public final fun getSessionFactory ()Lxynolog/registry/SessionFactory;
-	public final fun getStorage ()Lxynolog/storage/SessionStorage;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
 }
 
 public abstract interface class xynolog/registry/SessionFactory {
@@ -1650,6 +1577,79 @@ public final class xynolog/registry/TabVerdict : java/lang/Enum {
 	public static fun values ()[Lxynolog/registry/TabVerdict;
 }
 
+public final class xynolog/registry/XynologBrowser : java/lang/AutoCloseable {
+	public fun <init> (Lxynolog/registry/XynologBrowserConfig;)V
+	public final fun addKb (Lxynolog/types/NewKnowledgeBase;Lxynolog/registry/StoredSession;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun addKbFuture (Lxynolog/types/NewKnowledgeBase;Lxynolog/registry/StoredSession;)Ljava/util/concurrent/CompletableFuture;
+	public final fun addOpenResource (Lxynolog/identifiers/ResourceId;Ljava/lang/String;)V
+	public final fun addOpenResource (Lxynolog/identifiers/ResourceId;Ljava/lang/String;Ljava/lang/String;)V
+	public final fun addOpenResource (Lxynolog/identifiers/ResourceId;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public final fun addOpenResource-Tz_IDJk (Ljava/lang/String;Ljava/lang/String;)V
+	public final fun addOpenResource-_HOLNf0 (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public static synthetic fun addOpenResource-_HOLNf0$default (Lxynolog/registry/XynologBrowser;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)V
+	public final fun addOpenResource-e71mPsk (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public fun close ()V
+	public final fun errors ()Lxynolog/transport/Events;
+	public final fun getActiveKbId ()Lxynolog/transport/Watched;
+	public final fun getActiveSession ()Lxynolog/transport/Watched;
+	public final fun getActiveSignals ()Lxynolog/transport/Watched;
+	public final fun getBus ()Lxynolog/bus/EventBus;
+	public final fun getIdentityToken ()Lxynolog/transport/Watched;
+	public final fun getKbs ()Lxynolog/transport/Watched;
+	public final fun getLastViewedResource ()Lxynolog/transport/Watched;
+	public final fun getOpenResources ()Lxynolog/transport/Watched;
+	public final fun getSessionActivating ()Lxynolog/transport/Watched;
+	public final fun getStorage ()Lxynolog/storage/SessionStorage;
+	public final fun kbSessionStatus (Ljava/lang/String;)Lxynolog/registry/KbSessionStatus;
+	public final fun readActiveKb (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun readActiveKbFuture ()Ljava/util/concurrent/CompletableFuture;
+	public final fun removeKb (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun removeKbFuture (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
+	public final fun removeOpenResource (Lxynolog/identifiers/ResourceId;)V
+	public final fun removeOpenResource-n-VWWI8 (Ljava/lang/String;)V
+	public final fun reorderOpenResources (II)V
+	public final fun setActiveKb (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun setActiveKbFuture (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
+	public final fun setIdentityToken (Ljava/lang/String;)V
+	public final fun setLastViewedResource (Lxynolog/identifiers/ResourceId;)V
+	public final fun setLastViewedResource-n-VWWI8 (Ljava/lang/String;)V
+	public final fun signIn (Ljava/lang/String;Lxynolog/registry/StoredSession;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun signInFuture (Ljava/lang/String;Lxynolog/registry/StoredSession;)Ljava/util/concurrent/CompletableFuture;
+	public final fun signOut (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun signOutFuture (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
+	public final fun signedIn (Lxynolog/registry/SignedIn;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun signedInFuture (Lxynolog/registry/SignedIn;)Ljava/util/concurrent/CompletableFuture;
+	public final fun updateKb (Ljava/lang/String;)V
+	public final fun updateKb (Ljava/lang/String;Ljava/lang/String;)V
+	public final fun updateKb (Ljava/lang/String;Ljava/lang/String;Lxynolog/types/KbRead;)V
+	public static synthetic fun updateKb$default (Lxynolog/registry/XynologBrowser;Ljava/lang/String;Ljava/lang/String;Lxynolog/types/KbRead;ILjava/lang/Object;)V
+	public final fun updateOpenResourceName (Lxynolog/identifiers/ResourceId;Ljava/lang/String;)V
+	public final fun updateOpenResourceName-Tz_IDJk (Ljava/lang/String;Ljava/lang/String;)V
+}
+
+public final class xynolog/registry/XynologBrowserConfig {
+	public fun <init> (Lxynolog/storage/SessionStorage;Lxynolog/registry/SessionFactory;)V
+	public fun <init> (Lxynolog/storage/SessionStorage;Lxynolog/registry/SessionFactory;Lkotlin/coroutines/CoroutineContext;)V
+	public fun <init> (Lxynolog/storage/SessionStorage;Lxynolog/registry/SessionFactory;Lkotlin/coroutines/CoroutineContext;Lkotlin/time/TimeSource;)V
+	public fun <init> (Lxynolog/storage/SessionStorage;Lxynolog/registry/SessionFactory;Lkotlin/coroutines/CoroutineContext;Lkotlin/time/TimeSource;Lkotlin/random/Random;)V
+	public synthetic fun <init> (Lxynolog/storage/SessionStorage;Lxynolog/registry/SessionFactory;Lkotlin/coroutines/CoroutineContext;Lkotlin/time/TimeSource;Lkotlin/random/Random;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Lxynolog/storage/SessionStorage;
+	public final fun component2 ()Lxynolog/registry/SessionFactory;
+	public final fun component3 ()Lkotlin/coroutines/CoroutineContext;
+	public final fun component4 ()Lkotlin/time/TimeSource;
+	public final fun component5 ()Lkotlin/random/Random;
+	public final fun copy (Lxynolog/storage/SessionStorage;Lxynolog/registry/SessionFactory;Lkotlin/coroutines/CoroutineContext;Lkotlin/time/TimeSource;Lkotlin/random/Random;)Lxynolog/registry/XynologBrowserConfig;
+	public static synthetic fun copy$default (Lxynolog/registry/XynologBrowserConfig;Lxynolog/storage/SessionStorage;Lxynolog/registry/SessionFactory;Lkotlin/coroutines/CoroutineContext;Lkotlin/time/TimeSource;Lkotlin/random/Random;ILjava/lang/Object;)Lxynolog/registry/XynologBrowserConfig;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getClock ()Lkotlin/time/TimeSource;
+	public final fun getContext ()Lkotlin/coroutines/CoroutineContext;
+	public final fun getRandom ()Lkotlin/random/Random;
+	public final fun getSessionFactory ()Lxynolog/registry/SessionFactory;
+	public final fun getStorage ()Lxynolog/storage/SessionStorage;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
 public final class xynolog/retry/RetryFacts {
 	public fun <init> (Ljava/lang/Integer;Ljava/lang/String;Z)V
 	public synthetic fun <init> (Ljava/lang/Integer;Ljava/lang/String;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -1734,22 +1734,6 @@ public final class xynolog/session/PermissionDenied {
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class xynolog/session/XynologSession : xynolog/StateUnit {
-	public fun close ()V
-	public final fun errors ()Lxynolog/transport/Events;
-	public final fun expiresAt ()Ljava/lang/Double;
-	public final fun getClient ()Lxynolog/XynologClient;
-	public final fun getId ()Ljava/lang/String;
-	public final fun getKb ()Lxynolog/types/KbTarget;
-	public final fun getStreamState ()Lxynolog/transport/Watched;
-	public final fun getToken ()Lxynolog/transport/Watched;
-	public final fun getUser ()Lxynolog/transport/Watched;
-	public final fun ready (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun readyFuture ()Ljava/util/concurrent/CompletableFuture;
-	public final fun refresh (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public final fun refreshFuture (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
-}
-
 public final class xynolog/session/SessionEndReason : java/lang/Enum {
 	public static final field EXPIRED Lxynolog/session/SessionEndReason;
 	public static final field REFUSED Lxynolog/session/SessionEndReason;
@@ -1790,6 +1774,22 @@ public final class xynolog/session/TokensKt {
 	public static final fun renewalDelay (DD)D
 	public static final fun textClaim (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
 	public static final fun tokenExpiry (Ljava/lang/String;)Ljava/lang/Double;
+}
+
+public final class xynolog/session/XynologSession : xynolog/StateUnit {
+	public fun close ()V
+	public final fun errors ()Lxynolog/transport/Events;
+	public final fun expiresAt ()Ljava/lang/Double;
+	public final fun getClient ()Lxynolog/XynologClient;
+	public final fun getId ()Ljava/lang/String;
+	public final fun getKb ()Lxynolog/types/KbTarget;
+	public final fun getStreamState ()Lxynolog/transport/Watched;
+	public final fun getToken ()Lxynolog/transport/Watched;
+	public final fun getUser ()Lxynolog/transport/Watched;
+	public final fun ready (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun readyFuture ()Ljava/util/concurrent/CompletableFuture;
+	public final fun refresh (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun refreshFuture (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
 }
 
 public final class xynolog/signin/HeldSignIn {
@@ -1877,7 +1877,7 @@ public final class xynolog/state/BeckonStateUnit : xynolog/StateUnit {
 	public fun <init> (Lxynolog/XynologClient;Lxynolog/identifiers/ResourceId;)V
 	public fun close ()V
 	public final fun focus (Lxynolog/identifiers/AnnotationId;)V
-	public final fun focus-2VybQ2U (Ljava/lang/String;)V
+	public final fun focus-FNmhOTc (Ljava/lang/String;)V
 	public final fun getHoveredAnnotationId ()Lxynolog/transport/Watched;
 }
 
@@ -1889,24 +1889,24 @@ public final class xynolog/state/GatherStateUnit : xynolog/StateUnit {
 	public final fun gatherAnnotation (Lxynolog/identifiers/AnnotationId;J)V
 	public final fun gatherAnnotation (Lxynolog/identifiers/AnnotationId;JLjava/lang/Boolean;)V
 	public final fun gatherAnnotation (Lxynolog/identifiers/AnnotationId;JLjava/lang/Boolean;Ljava/lang/Boolean;)V
-	public final fun gatherAnnotation-2VybQ2U (Ljava/lang/String;)V
-	public final fun gatherAnnotation-CMbQ8Ps (Ljava/lang/String;JLjava/lang/Boolean;)V
-	public final fun gatherAnnotation-hXGs-Os (Ljava/lang/String;JLjava/lang/Boolean;Ljava/lang/Boolean;)V
-	public static synthetic fun gatherAnnotation-hXGs-Os$default (Lxynolog/state/GatherStateUnit;Ljava/lang/String;JLjava/lang/Boolean;Ljava/lang/Boolean;ILjava/lang/Object;)V
-	public final fun gatherAnnotation-iUDtbMI (Ljava/lang/String;J)V
+	public final fun gatherAnnotation-FNmhOTc (Ljava/lang/String;)V
+	public final fun gatherAnnotation-KjjMSAs (Ljava/lang/String;J)V
+	public final fun gatherAnnotation-Q9ITkaE (Ljava/lang/String;JLjava/lang/Boolean;)V
+	public final fun gatherAnnotation-_kKx8S8 (Ljava/lang/String;JLjava/lang/Boolean;Ljava/lang/Boolean;)V
+	public static synthetic fun gatherAnnotation-_kKx8S8$default (Lxynolog/state/GatherStateUnit;Ljava/lang/String;JLjava/lang/Boolean;Ljava/lang/Boolean;ILjava/lang/Object;)V
 	public final fun gatherResource (Lxynolog/identifiers/ResourceId;)V
 	public final fun gatherResource (Lxynolog/identifiers/ResourceId;J)V
 	public final fun gatherResource (Lxynolog/identifiers/ResourceId;JJ)V
 	public final fun gatherResource (Lxynolog/identifiers/ResourceId;JJZ)V
 	public final fun gatherResource (Lxynolog/identifiers/ResourceId;JJZZ)V
 	public final fun gatherResource (Lxynolog/identifiers/ResourceId;JJZZLjava/util/List;)V
-	public final fun gatherResource--Xm7VB4 (Ljava/lang/String;)V
-	public final fun gatherResource-0-slNOc (Ljava/lang/String;JJZZLjava/util/List;)V
-	public static synthetic fun gatherResource-0-slNOc$default (Lxynolog/state/GatherStateUnit;Ljava/lang/String;JJZZLjava/util/List;ILjava/lang/Object;)V
-	public final fun gatherResource-cLomD_0 (Ljava/lang/String;JJZ)V
-	public final fun gatherResource-iAntK8w (Ljava/lang/String;JJZZ)V
-	public final fun gatherResource-k2J_C-I (Ljava/lang/String;J)V
-	public final fun gatherResource-ogcqSrQ (Ljava/lang/String;JJ)V
+	public final fun gatherResource-1OSvbmY (Ljava/lang/String;JJZZ)V
+	public final fun gatherResource-2a5fTYc (Ljava/lang/String;JJZZLjava/util/List;)V
+	public static synthetic fun gatherResource-2a5fTYc$default (Lxynolog/state/GatherStateUnit;Ljava/lang/String;JJZZLjava/util/List;ILjava/lang/Object;)V
+	public final fun gatherResource-Tz_IDJk (Ljava/lang/String;J)V
+	public final fun gatherResource-_HOLNf0 (Ljava/lang/String;JJZ)V
+	public final fun gatherResource-e71mPsk (Ljava/lang/String;JJ)V
+	public final fun gatherResource-n-VWWI8 (Ljava/lang/String;)V
 	public final fun getAnnotationId ()Lxynolog/transport/Watched;
 	public final fun getContext ()Lxynolog/transport/Watched;
 	public final fun getError ()Lxynolog/transport/Watched;
@@ -1922,7 +1922,7 @@ public final class xynolog/state/HoverDwell : xynolog/StateUnit {
 	public synthetic fun <init> (Lkotlin/jvm/functions/Function1;JLkotlin/coroutines/CoroutineContext;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun close ()V
 	public final fun enter (Lxynolog/identifiers/AnnotationId;)V
-	public final fun enter-2VybQ2U (Ljava/lang/String;)V
+	public final fun enter-FNmhOTc (Ljava/lang/String;)V
 	public final fun leave ()V
 }
 
@@ -2111,9 +2111,9 @@ public final class xynolog/testing/FaultyTransport : xynolog/transport/Transport
 	public fun bridgeInto (Lxynolog/transport/FrameSink;)V
 	public fun close ()V
 	public final fun deliver (Lxynolog/transport/Carried;)V
-	public fun emit-6b3uWpE (Ljava/lang/String;Lkotlinx/serialization/json/JsonObject;Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun emit-mNhzOW0 (Ljava/lang/String;Lkotlinx/serialization/json/JsonObject;Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun emitFuture (Ljava/lang/String;Lkotlinx/serialization/json/JsonObject;Lxynolog/identifiers/ResourceId;Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
-	public fun emitFuture-NOvym2Y (Ljava/lang/String;Lkotlinx/serialization/json/JsonObject;Ljava/lang/String;Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
+	public fun emitFuture-HY7VUpc (Ljava/lang/String;Lkotlinx/serialization/json/JsonObject;Ljava/lang/String;Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
 	public final fun fail (Lxynolog/errors/XynologError;)V
 	public fun failures ()Lxynolog/transport/Events;
 	public fun frames (Ljava/lang/String;)Lxynolog/transport/Events;
@@ -2124,13 +2124,13 @@ public final class xynolog/testing/FaultyTransport : xynolog/transport/Transport
 	public final fun getScopes ()Ljava/util/List;
 	public fun getState ()Lxynolog/transport/Watched;
 	public final fun holds (Lxynolog/identifiers/ResourceId;)I
-	public final fun holds--Xm7VB4 (Ljava/lang/String;)I
+	public final fun holds-n-VWWI8 (Ljava/lang/String;)I
 	public fun isSubscribed (Ljava/lang/String;)Z
 	public final fun queueReply (Ljava/lang/String;Ljava/util/List;)V
 	public final fun refuseWhen (Lxynolog/testing/Refuse;)V
 	public final fun setState (Lxynolog/transport/ConnectionState;)V
 	public fun subscribeToResource (Lxynolog/identifiers/ResourceId;)Lxynolog/transport/ResourceHold;
-	public fun subscribeToResource--Xm7VB4 (Ljava/lang/String;)Lxynolog/transport/ResourceHold;
+	public fun subscribeToResource-n-VWWI8 (Ljava/lang/String;)Lxynolog/transport/ResourceHold;
 	public fun trackReply (Ljava/lang/String;Ljava/util/Collection;)Lxynolog/transport/PendingReply;
 }
 
@@ -2141,60 +2141,60 @@ public final class xynolog/testing/FaultyTransportKt {
 
 public final class xynolog/testing/GetAnchoredText : xynolog/testing/ContentCall {
 	public synthetic fun <init> (Ljava/lang/String;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1-1-yoK9c ()Ljava/lang/String;
-	public final fun copy--Xm7VB4 (Ljava/lang/String;)Lxynolog/testing/GetAnchoredText;
-	public static synthetic fun copy--Xm7VB4$default (Lxynolog/testing/GetAnchoredText;Ljava/lang/String;ILjava/lang/Object;)Lxynolog/testing/GetAnchoredText;
+	public final fun component1-mMrHYc8 ()Ljava/lang/String;
+	public final fun copy-n-VWWI8 (Ljava/lang/String;)Lxynolog/testing/GetAnchoredText;
+	public static synthetic fun copy-n-VWWI8$default (Lxynolog/testing/GetAnchoredText;Ljava/lang/String;ILjava/lang/Object;)Lxynolog/testing/GetAnchoredText;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getResourceId ()Lxynolog/identifiers/ResourceId;
-	public final fun getResourceId-1-yoK9c ()Ljava/lang/String;
+	public final fun getResourceId-mMrHYc8 ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
 public final class xynolog/testing/GetAnnotations : xynolog/testing/ContentCall {
 	public synthetic fun <init> (Ljava/lang/String;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1-1-yoK9c ()Ljava/lang/String;
-	public final fun copy--Xm7VB4 (Ljava/lang/String;)Lxynolog/testing/GetAnnotations;
-	public static synthetic fun copy--Xm7VB4$default (Lxynolog/testing/GetAnnotations;Ljava/lang/String;ILjava/lang/Object;)Lxynolog/testing/GetAnnotations;
+	public final fun component1-mMrHYc8 ()Ljava/lang/String;
+	public final fun copy-n-VWWI8 (Ljava/lang/String;)Lxynolog/testing/GetAnnotations;
+	public static synthetic fun copy-n-VWWI8$default (Lxynolog/testing/GetAnnotations;Ljava/lang/String;ILjava/lang/Object;)Lxynolog/testing/GetAnnotations;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getResourceId ()Lxynolog/identifiers/ResourceId;
-	public final fun getResourceId-1-yoK9c ()Ljava/lang/String;
+	public final fun getResourceId-mMrHYc8 ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
 public final class xynolog/testing/GetBinary : xynolog/testing/ContentCall {
 	public synthetic fun <init> (Ljava/lang/String;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1-1-yoK9c ()Ljava/lang/String;
-	public final fun copy--Xm7VB4 (Ljava/lang/String;)Lxynolog/testing/GetBinary;
-	public static synthetic fun copy--Xm7VB4$default (Lxynolog/testing/GetBinary;Ljava/lang/String;ILjava/lang/Object;)Lxynolog/testing/GetBinary;
+	public final fun component1-mMrHYc8 ()Ljava/lang/String;
+	public final fun copy-n-VWWI8 (Ljava/lang/String;)Lxynolog/testing/GetBinary;
+	public static synthetic fun copy-n-VWWI8$default (Lxynolog/testing/GetBinary;Ljava/lang/String;ILjava/lang/Object;)Lxynolog/testing/GetBinary;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getResourceId ()Lxynolog/identifiers/ResourceId;
-	public final fun getResourceId-1-yoK9c ()Ljava/lang/String;
+	public final fun getResourceId-mMrHYc8 ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
 public final class xynolog/testing/GetBinaryStream : xynolog/testing/ContentCall {
 	public synthetic fun <init> (Ljava/lang/String;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1-1-yoK9c ()Ljava/lang/String;
-	public final fun copy--Xm7VB4 (Ljava/lang/String;)Lxynolog/testing/GetBinaryStream;
-	public static synthetic fun copy--Xm7VB4$default (Lxynolog/testing/GetBinaryStream;Ljava/lang/String;ILjava/lang/Object;)Lxynolog/testing/GetBinaryStream;
+	public final fun component1-mMrHYc8 ()Ljava/lang/String;
+	public final fun copy-n-VWWI8 (Ljava/lang/String;)Lxynolog/testing/GetBinaryStream;
+	public static synthetic fun copy-n-VWWI8$default (Lxynolog/testing/GetBinaryStream;Ljava/lang/String;ILjava/lang/Object;)Lxynolog/testing/GetBinaryStream;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getResourceId ()Lxynolog/identifiers/ResourceId;
-	public final fun getResourceId-1-yoK9c ()Ljava/lang/String;
+	public final fun getResourceId-mMrHYc8 ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
 public final class xynolog/testing/GetResourceGraph : xynolog/testing/ContentCall {
 	public synthetic fun <init> (Ljava/lang/String;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1-1-yoK9c ()Ljava/lang/String;
-	public final fun copy--Xm7VB4 (Ljava/lang/String;)Lxynolog/testing/GetResourceGraph;
-	public static synthetic fun copy--Xm7VB4$default (Lxynolog/testing/GetResourceGraph;Ljava/lang/String;ILjava/lang/Object;)Lxynolog/testing/GetResourceGraph;
+	public final fun component1-mMrHYc8 ()Ljava/lang/String;
+	public final fun copy-n-VWWI8 (Ljava/lang/String;)Lxynolog/testing/GetResourceGraph;
+	public static synthetic fun copy-n-VWWI8$default (Lxynolog/testing/GetResourceGraph;Ljava/lang/String;ILjava/lang/Object;)Lxynolog/testing/GetResourceGraph;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getResourceId ()Lxynolog/identifiers/ResourceId;
-	public final fun getResourceId-1-yoK9c ()Ljava/lang/String;
+	public final fun getResourceId-mMrHYc8 ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
@@ -2202,31 +2202,31 @@ public final class xynolog/testing/GetResourceGraph : xynolog/testing/ContentCal
 public final class xynolog/testing/InMemoryContent : xynolog/transport/ContentTransport {
 	public fun <init> ()V
 	public fun close ()V
-	public fun getAnchoredText-k2J_C-I (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun getAnchoredText-Tz_IDJk (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun getAnchoredTextFuture (Lxynolog/identifiers/ResourceId;)Ljava/util/concurrent/CompletableFuture;
-	public fun getAnchoredTextFuture--Xm7VB4 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
-	public fun getAnnotations-k2J_C-I (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun getAnchoredTextFuture-n-VWWI8 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
+	public fun getAnnotations-Tz_IDJk (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun getAnnotationsFuture (Lxynolog/identifiers/ResourceId;)Ljava/util/concurrent/CompletableFuture;
-	public fun getAnnotationsFuture--Xm7VB4 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
-	public fun getBinary-k2J_C-I (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun getAnnotationsFuture-n-VWWI8 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
+	public fun getBinary-Tz_IDJk (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun getBinaryFuture (Lxynolog/identifiers/ResourceId;)Ljava/util/concurrent/CompletableFuture;
-	public fun getBinaryFuture--Xm7VB4 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
-	public fun getBinaryStream-k2J_C-I (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun getBinaryFuture-n-VWWI8 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
+	public fun getBinaryStream-Tz_IDJk (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun getBinaryStreamFuture (Lxynolog/identifiers/ResourceId;)Ljava/util/concurrent/CompletableFuture;
-	public fun getBinaryStreamFuture--Xm7VB4 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
+	public fun getBinaryStreamFuture-n-VWWI8 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
 	public final fun getCalls ()Ljava/util/List;
-	public fun getResourceGraph-k2J_C-I (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun getResourceGraph-Tz_IDJk (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun getResourceGraphFuture (Lxynolog/identifiers/ResourceId;)Ljava/util/concurrent/CompletableFuture;
-	public fun getResourceGraphFuture--Xm7VB4 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
+	public fun getResourceGraphFuture-n-VWWI8 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
 	public fun putBinary (Lxynolog/transport/PutBinaryRequest;)Lxynolog/transport/Upload;
 	public final fun seed (Lxynolog/identifiers/ResourceId;Lxynolog/transport/Content;)V
-	public final fun seed-k2J_C-I (Ljava/lang/String;Lxynolog/transport/Content;)V
+	public final fun seed-Tz_IDJk (Ljava/lang/String;Lxynolog/transport/Content;)V
 	public final fun seedAnchoredText (Lxynolog/identifiers/ResourceId;Lxynolog/types/AnchoredTextAnswer;)V
-	public final fun seedAnchoredText-k2J_C-I (Ljava/lang/String;Lxynolog/types/AnchoredTextAnswer;)V
+	public final fun seedAnchoredText-Tz_IDJk (Ljava/lang/String;Lxynolog/types/AnchoredTextAnswer;)V
 	public final fun seedAnnotations (Lxynolog/identifiers/ResourceId;Lxynolog/types/GetAnnotationsResponse;)V
-	public final fun seedAnnotations-k2J_C-I (Ljava/lang/String;Lxynolog/types/GetAnnotationsResponse;)V
+	public final fun seedAnnotations-Tz_IDJk (Ljava/lang/String;Lxynolog/types/GetAnnotationsResponse;)V
 	public final fun seedGraph (Lxynolog/identifiers/ResourceId;Lxynolog/types/GetResourceResponse;)V
-	public final fun seedGraph-k2J_C-I (Ljava/lang/String;Lxynolog/types/GetResourceResponse;)V
+	public final fun seedGraph-Tz_IDJk (Ljava/lang/String;Lxynolog/types/GetResourceResponse;)V
 }
 
 public final class xynolog/testing/LivenessKt {
@@ -2351,9 +2351,9 @@ public final class xynolog/testing/StubGateway : xynolog/transport/GatewayOperat
 	public final fun getCalls ()Ljava/util/List;
 	public fun getCurrentUser (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun getCurrentUserFuture ()Ljava/util/concurrent/CompletableFuture;
-	public fun getMediaToken-k2J_C-I (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun getMediaToken-Tz_IDJk (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun getMediaTokenFuture (Lxynolog/identifiers/ResourceId;)Ljava/util/concurrent/CompletableFuture;
-	public fun getMediaTokenFuture--Xm7VB4 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
+	public fun getMediaTokenFuture-n-VWWI8 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
 	public fun getProtectedResourceMetadata (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun getProtectedResourceMetadataFuture ()Ljava/util/concurrent/CompletableFuture;
 	public fun getStatus (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -2444,16 +2444,16 @@ public final class xynolog/transport/ContentStream {
 }
 
 public abstract interface class xynolog/transport/ContentTransport : java/lang/AutoCloseable {
-	public abstract fun getAnchoredText-k2J_C-I (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public abstract fun getAnchoredTextFuture--Xm7VB4 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
-	public abstract fun getAnnotations-k2J_C-I (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public abstract fun getAnnotationsFuture--Xm7VB4 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
-	public abstract fun getBinary-k2J_C-I (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public abstract fun getBinaryFuture--Xm7VB4 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
-	public abstract fun getBinaryStream-k2J_C-I (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public abstract fun getBinaryStreamFuture--Xm7VB4 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
-	public abstract fun getResourceGraph-k2J_C-I (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public abstract fun getResourceGraphFuture--Xm7VB4 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
+	public abstract fun getAnchoredText-Tz_IDJk (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun getAnchoredTextFuture-n-VWWI8 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
+	public abstract fun getAnnotations-Tz_IDJk (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun getAnnotationsFuture-n-VWWI8 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
+	public abstract fun getBinary-Tz_IDJk (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun getBinaryFuture-n-VWWI8 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
+	public abstract fun getBinaryStream-Tz_IDJk (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun getBinaryStreamFuture-n-VWWI8 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
+	public abstract fun getResourceGraph-Tz_IDJk (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun getResourceGraphFuture-n-VWWI8 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
 	public abstract fun putBinary (Lxynolog/transport/PutBinaryRequest;)Lxynolog/transport/Upload;
 }
 
@@ -2461,20 +2461,20 @@ public final class xynolog/transport/Delivered : xynolog/transport/Heard {
 	public synthetic fun <init> (Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lxynolog/transport/TraceContext;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Ljava/lang/Object;
 	public final fun component2 ()Ljava/lang/String;
-	public final fun component3-Au_5XH8 ()Ljava/lang/String;
-	public final fun component4-1KRECTw ()Ljava/lang/String;
+	public final fun component3-3LCPUrU ()Ljava/lang/String;
+	public final fun component4-KuqBCL0 ()Ljava/lang/String;
 	public final fun component5 ()Lxynolog/transport/TraceContext;
-	public final fun copy-cCR51TQ (Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lxynolog/transport/TraceContext;)Lxynolog/transport/Delivered;
-	public static synthetic fun copy-cCR51TQ$default (Lxynolog/transport/Delivered;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lxynolog/transport/TraceContext;ILjava/lang/Object;)Lxynolog/transport/Delivered;
+	public final fun copy-Ho5u24c (Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lxynolog/transport/TraceContext;)Lxynolog/transport/Delivered;
+	public static synthetic fun copy-Ho5u24c$default (Lxynolog/transport/Delivered;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lxynolog/transport/TraceContext;ILjava/lang/Object;)Lxynolog/transport/Delivered;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getCorrelationId ()Ljava/lang/String;
 	public final fun getPayload ()Ljava/lang/Object;
 	public final fun getScope ()Lxynolog/identifiers/ResourceId;
-	public final fun getScope-Au_5XH8 ()Ljava/lang/String;
+	public final fun getScope-3LCPUrU ()Ljava/lang/String;
 	public fun getStatus ()Ljava/lang/String;
 	public final fun getTrace ()Lxynolog/transport/TraceContext;
 	public final fun getUserId ()Lxynolog/identifiers/UserId;
-	public final fun getUserId-1KRECTw ()Ljava/lang/String;
+	public final fun getUserId-KuqBCL0 ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
@@ -2492,16 +2492,16 @@ public final class xynolog/transport/Frame : xynolog/transport/Carried {
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component2 ()Lkotlinx/serialization/json/JsonObject;
 	public final fun component3 ()Ljava/lang/String;
-	public final fun component4-Au_5XH8 ()Ljava/lang/String;
+	public final fun component4-3LCPUrU ()Ljava/lang/String;
 	public final fun component5 ()Lxynolog/transport/TraceContext;
-	public final fun copy-Ne8IA3g (Ljava/lang/String;Lkotlinx/serialization/json/JsonObject;Ljava/lang/String;Ljava/lang/String;Lxynolog/transport/TraceContext;)Lxynolog/transport/Frame;
-	public static synthetic fun copy-Ne8IA3g$default (Lxynolog/transport/Frame;Ljava/lang/String;Lkotlinx/serialization/json/JsonObject;Ljava/lang/String;Ljava/lang/String;Lxynolog/transport/TraceContext;ILjava/lang/Object;)Lxynolog/transport/Frame;
+	public final fun copy-TiJG1JI (Ljava/lang/String;Lkotlinx/serialization/json/JsonObject;Ljava/lang/String;Ljava/lang/String;Lxynolog/transport/TraceContext;)Lxynolog/transport/Frame;
+	public static synthetic fun copy-TiJG1JI$default (Lxynolog/transport/Frame;Ljava/lang/String;Lkotlinx/serialization/json/JsonObject;Ljava/lang/String;Ljava/lang/String;Lxynolog/transport/TraceContext;ILjava/lang/Object;)Lxynolog/transport/Frame;
 	public fun equals (Ljava/lang/Object;)Z
 	public fun getChannel ()Ljava/lang/String;
 	public fun getCorrelationId ()Ljava/lang/String;
 	public final fun getPayload ()Lkotlinx/serialization/json/JsonObject;
 	public final fun getScope ()Lxynolog/identifiers/ResourceId;
-	public final fun getScope-Au_5XH8 ()Ljava/lang/String;
+	public final fun getScope-3LCPUrU ()Ljava/lang/String;
 	public final fun getTrace ()Lxynolog/transport/TraceContext;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
@@ -2515,9 +2515,9 @@ public final class xynolog/transport/FrameRefusal : xynolog/transport/Carried, x
 	public final fun component3 ()Lxynolog/transport/FrameRefusalReason;
 	public final fun component4 ()Lkotlinx/serialization/json/JsonElement;
 	public final fun component5 ()Ljava/lang/String;
-	public final fun component6-Au_5XH8 ()Ljava/lang/String;
-	public final fun copy-Uz4vPl4 (Ljava/lang/String;Ljava/lang/String;Lxynolog/transport/FrameRefusalReason;Lkotlinx/serialization/json/JsonElement;Ljava/lang/String;Ljava/lang/String;)Lxynolog/transport/FrameRefusal;
-	public static synthetic fun copy-Uz4vPl4$default (Lxynolog/transport/FrameRefusal;Ljava/lang/String;Ljava/lang/String;Lxynolog/transport/FrameRefusalReason;Lkotlinx/serialization/json/JsonElement;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lxynolog/transport/FrameRefusal;
+	public final fun component6-3LCPUrU ()Ljava/lang/String;
+	public final fun copy-T8liQTM (Ljava/lang/String;Ljava/lang/String;Lxynolog/transport/FrameRefusalReason;Lkotlinx/serialization/json/JsonElement;Ljava/lang/String;Ljava/lang/String;)Lxynolog/transport/FrameRefusal;
+	public static synthetic fun copy-T8liQTM$default (Lxynolog/transport/FrameRefusal;Ljava/lang/String;Ljava/lang/String;Lxynolog/transport/FrameRefusalReason;Lkotlinx/serialization/json/JsonElement;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lxynolog/transport/FrameRefusal;
 	public fun equals (Ljava/lang/Object;)Z
 	public fun getChannel ()Ljava/lang/String;
 	public fun getCorrelationId ()Ljava/lang/String;
@@ -2525,7 +2525,7 @@ public final class xynolog/transport/FrameRefusal : xynolog/transport/Carried, x
 	public final fun getPayload ()Lkotlinx/serialization/json/JsonElement;
 	public final fun getReason ()Lxynolog/transport/FrameRefusalReason;
 	public final fun getScope ()Lxynolog/identifiers/ResourceId;
-	public final fun getScope-Au_5XH8 ()Ljava/lang/String;
+	public final fun getScope-3LCPUrU ()Ljava/lang/String;
 	public fun getStatus ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
@@ -2547,8 +2547,8 @@ public abstract interface class xynolog/transport/FrameSink {
 public abstract interface class xynolog/transport/GatewayOperations {
 	public abstract fun getCurrentUser (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun getCurrentUserFuture ()Ljava/util/concurrent/CompletableFuture;
-	public abstract fun getMediaToken-k2J_C-I (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public abstract fun getMediaTokenFuture--Xm7VB4 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
+	public abstract fun getMediaToken-Tz_IDJk (Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public abstract fun getMediaTokenFuture-n-VWWI8 (Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
 	public abstract fun getProtectedResourceMetadata (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public abstract fun getProtectedResourceMetadataFuture ()Ljava/util/concurrent/CompletableFuture;
 	public abstract fun getStatus (Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
@@ -2574,7 +2574,7 @@ public final class xynolog/transport/PutBinaryRequest {
 	public static final fun builder (Ljava/lang/String;[BLjava/lang/String;Ljava/lang/String;)Lxynolog/transport/PutBinaryRequest$Builder;
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component10 ()Ljava/util/List;
-	public final fun component11-jnM91lI ()Ljava/lang/String;
+	public final fun component11-YK5D900 ()Ljava/lang/String;
 	public final fun component12 ()Ljava/lang/Boolean;
 	public final fun component13 ()Ljava/lang/String;
 	public final fun component14 ()Ljava/lang/Boolean;
@@ -2583,11 +2583,11 @@ public final class xynolog/transport/PutBinaryRequest {
 	public final fun component4 ()Ljava/lang/String;
 	public final fun component5 ()Ljava/util/List;
 	public final fun component6 ()Ljava/lang/String;
-	public final fun component7-C0ARYTo ()Ljava/lang/String;
-	public final fun component8-Au_5XH8 ()Ljava/lang/String;
+	public final fun component7-9QHvHjw ()Ljava/lang/String;
+	public final fun component8-3LCPUrU ()Ljava/lang/String;
 	public final fun component9 ()Ljava/lang/String;
-	public final fun copy-K6POUZY (Ljava/lang/String;[BLjava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/lang/Boolean;Ljava/lang/String;Ljava/lang/Boolean;)Lxynolog/transport/PutBinaryRequest;
-	public static synthetic fun copy-K6POUZY$default (Lxynolog/transport/PutBinaryRequest;Ljava/lang/String;[BLjava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/lang/Boolean;Ljava/lang/String;Ljava/lang/Boolean;ILjava/lang/Object;)Lxynolog/transport/PutBinaryRequest;
+	public final fun copy-xQJuXac (Ljava/lang/String;[BLjava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/lang/Boolean;Ljava/lang/String;Ljava/lang/Boolean;)Lxynolog/transport/PutBinaryRequest;
+	public static synthetic fun copy-xQJuXac$default (Lxynolog/transport/PutBinaryRequest;Ljava/lang/String;[BLjava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/lang/String;Ljava/lang/Boolean;Ljava/lang/String;Ljava/lang/Boolean;ILjava/lang/Object;)Lxynolog/transport/PutBinaryRequest;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getArchiveOriginal ()Ljava/lang/Boolean;
 	public final fun getCloneToken ()Ljava/lang/String;
@@ -2597,13 +2597,13 @@ public final class xynolog/transport/PutBinaryRequest {
 	public final fun getGenerationPrompt ()Ljava/lang/String;
 	public final fun getGenerator ()Ljava/util/List;
 	public final fun getJobId ()Lxynolog/identifiers/JobId;
-	public final fun getJobId-jnM91lI ()Ljava/lang/String;
+	public final fun getJobId-YK5D900 ()Ljava/lang/String;
 	public final fun getLanguage ()Ljava/lang/String;
 	public final fun getName ()Ljava/lang/String;
 	public final fun getSourceAnnotationId ()Lxynolog/identifiers/AnnotationId;
-	public final fun getSourceAnnotationId-C0ARYTo ()Ljava/lang/String;
+	public final fun getSourceAnnotationId-9QHvHjw ()Ljava/lang/String;
 	public final fun getSourceResourceId ()Lxynolog/identifiers/ResourceId;
-	public final fun getSourceResourceId-Au_5XH8 ()Ljava/lang/String;
+	public final fun getSourceResourceId-3LCPUrU ()Ljava/lang/String;
 	public final fun getStorageUri ()Ljava/lang/String;
 	public fun hashCode ()I
 	public final fun isDraft ()Ljava/lang/Boolean;
@@ -2619,12 +2619,12 @@ public final class xynolog/transport/PutBinaryRequest$Builder {
 	public final fun generator (Ljava/util/List;)Lxynolog/transport/PutBinaryRequest$Builder;
 	public final fun isDraft (Ljava/lang/Boolean;)Lxynolog/transport/PutBinaryRequest$Builder;
 	public final fun jobId (Lxynolog/identifiers/JobId;)Lxynolog/transport/PutBinaryRequest$Builder;
-	public final fun jobId-dAF7pZU (Ljava/lang/String;)Lxynolog/transport/PutBinaryRequest$Builder;
+	public final fun jobId-PYIGT7k (Ljava/lang/String;)Lxynolog/transport/PutBinaryRequest$Builder;
 	public final fun language (Ljava/lang/String;)Lxynolog/transport/PutBinaryRequest$Builder;
 	public final fun sourceAnnotationId (Lxynolog/identifiers/AnnotationId;)Lxynolog/transport/PutBinaryRequest$Builder;
-	public final fun sourceAnnotationId-KdeD-Ww (Ljava/lang/String;)Lxynolog/transport/PutBinaryRequest$Builder;
+	public final fun sourceAnnotationId-rudTuf4 (Ljava/lang/String;)Lxynolog/transport/PutBinaryRequest$Builder;
 	public final fun sourceResourceId (Lxynolog/identifiers/ResourceId;)Lxynolog/transport/PutBinaryRequest$Builder;
-	public final fun sourceResourceId-yxrLRgo (Ljava/lang/String;)Lxynolog/transport/PutBinaryRequest$Builder;
+	public final fun sourceResourceId-yW8Pafg (Ljava/lang/String;)Lxynolog/transport/PutBinaryRequest$Builder;
 }
 
 public final class xynolog/transport/PutBinaryRequest$Companion {
@@ -2652,20 +2652,20 @@ public final class xynolog/transport/TraceContext {
 public abstract interface class xynolog/transport/Transport : java/lang/AutoCloseable {
 	public abstract fun bridgeInto (Lxynolog/transport/FrameSink;)V
 	public abstract fun close ()V
-	public abstract fun emit-6b3uWpE (Ljava/lang/String;Lkotlinx/serialization/json/JsonObject;Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-	public static synthetic fun emit-6b3uWpE$default (Lxynolog/transport/Transport;Ljava/lang/String;Lkotlinx/serialization/json/JsonObject;Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
-	public abstract fun emitFuture-NOvym2Y (Ljava/lang/String;Lkotlinx/serialization/json/JsonObject;Ljava/lang/String;Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
+	public abstract fun emit-mNhzOW0 (Ljava/lang/String;Lkotlinx/serialization/json/JsonObject;Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static synthetic fun emit-mNhzOW0$default (Lxynolog/transport/Transport;Ljava/lang/String;Lkotlinx/serialization/json/JsonObject;Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public abstract fun emitFuture-HY7VUpc (Ljava/lang/String;Lkotlinx/serialization/json/JsonObject;Ljava/lang/String;Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;
 	public abstract fun failures ()Lxynolog/transport/Events;
 	public abstract fun frames (Ljava/lang/String;)Lxynolog/transport/Events;
 	public abstract fun getBaseUrl ()Ljava/lang/String;
 	public abstract fun getState ()Lxynolog/transport/Watched;
 	public abstract fun isSubscribed (Ljava/lang/String;)Z
-	public abstract fun subscribeToResource--Xm7VB4 (Ljava/lang/String;)Lxynolog/transport/ResourceHold;
+	public abstract fun subscribeToResource-n-VWWI8 (Ljava/lang/String;)Lxynolog/transport/ResourceHold;
 	public abstract fun trackReply (Ljava/lang/String;Ljava/util/Collection;)Lxynolog/transport/PendingReply;
 }
 
 public final class xynolog/transport/Transport$DefaultImpls {
-	public static synthetic fun emit-6b3uWpE$default (Lxynolog/transport/Transport;Ljava/lang/String;Lkotlinx/serialization/json/JsonObject;Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
+	public static synthetic fun emit-mNhzOW0$default (Lxynolog/transport/Transport;Ljava/lang/String;Lkotlinx/serialization/json/JsonObject;Ljava/lang/String;Ljava/lang/String;Lkotlin/coroutines/Continuation;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
 public final class xynolog/transport/TransportKt {

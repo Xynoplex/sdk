@@ -55,11 +55,11 @@ public sealed class ProtocolGenerator : IIncrementalGenerator
             }
             if (requiredSchemas is null)
             {
-                throw new InvalidOperationException("No required-schemas.json is supplied: the table of what each component schema requires, which packages/codegen/schemas/generate-required.mjs writes.");
+                throw new InvalidOperationException("No required-schemas.json is supplied: the table of what each component schema requires, which codegen/node/schemas/generate-required.mjs writes.");
             }
             if (unicodeCase is null)
             {
-                throw new InvalidOperationException("No unicode-case.json is supplied: the code points Unicode gives the Cased and the Case_Ignorable property, which packages/codegen/schemas/generate-unicode-case.mjs writes.");
+                throw new InvalidOperationException("No unicode-case.json is supplied: the code points Unicode gives the Cased and the Case_Ignorable property, which codegen/node/schemas/generate-unicode-case.mjs writes.");
             }
             var definitions = new Dictionary<string, JsonElement>(StringComparer.Ordinal);
             var identifiers = new HashSet<string>(StringComparer.Ordinal);

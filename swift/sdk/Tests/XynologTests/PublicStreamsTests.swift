@@ -1,5 +1,5 @@
-import Xynolog
 import Testing
+import Xynolog
 
 @Test func aTransportCanSupplyReadOnlyStateFromItsOwnStream() async throws {
   let (updates, continuation) = AsyncStream<ConnectionState>.makeStream()

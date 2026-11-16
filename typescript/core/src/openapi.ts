@@ -2,7 +2,7 @@
  * Spec validation, and the spec's limits — `@xynolog/core/openapi`.
  *
  * The validators are GENERATED from `protocol/specs/openapi.json`
- * (`packages/codegen/schemas/generate-validators.mjs`), the same bundle `types.ts` and
+ * (`typescript/scripts/generators/generate-validators.mjs`), the same bundle `types.ts` and
  * `go/api/client_gen.go` come from. One authority, four artifacts.
  *
  * Compiled at BUILD time, deliberately. Ajv's `addSchema` does not compile;

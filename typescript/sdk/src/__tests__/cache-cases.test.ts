@@ -40,7 +40,7 @@ interface Places extends Stored {
   kept: Record<string, string>;
 }
 
-const TABLE = fileURLToPath(new URL('../../../../../protocol/specs/src/session/cache-cases.json', import.meta.url));
+const TABLE = fileURLToPath(new URL('../../../../protocol/specs/src/session/cache-cases.json', import.meta.url));
 const table = JSON.parse(readFileSync(TABLE, 'utf8')) as { cases: Load[]; writes: Write[]; refusedWrites: Write[]; places: Places[] };
 
 /** The knowledge base and the person each case's documents and places are kept for. */

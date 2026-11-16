@@ -25,7 +25,7 @@ interface OrderCase {
   shown: string[];
 }
 
-const TABLE = join(dirname(fileURLToPath(import.meta.url)), '../../../../../../protocol/specs/src/session/registry-cases.json');
+const TABLE = join(dirname(fileURLToPath(import.meta.url)), '../../../../../protocol/specs/src/session/registry-cases.json');
 const { cases, openResourceOrder } = JSON.parse(readFileSync(TABLE, 'utf-8')) as {
   cases: RegistryCase[];
   openResourceOrder: OrderCase[];

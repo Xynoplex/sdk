@@ -62,12 +62,12 @@ interface StoredTable {
 /** The person what the tests keep is kept for. */
 const PERSON = personKey('did:web:example.org:users:jo');
 
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../../../../../..');
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../../../../..');
 const TABLE = join(ROOT, 'protocol/specs/src/session/stored.json');
 const table = JSON.parse(readFileSync(TABLE, 'utf-8')) as StoredTable;
 const members = Object.keys(table.storedSession.properties);
 
-/** A kept query as packages/codegen/schemas/kept-queries.mjs reads it from refresh.json: what its entries are keyed by. */
+/** A kept query as typescript/scripts/generators/kept-queries.mjs reads it from refresh.json: what its entries are keyed by. */
 interface Kept {
   query: string;
   key: string;
@@ -76,7 +76,7 @@ interface Kept {
 type ReadKeptQueries = (root: string, refuse: (message: string) => never) => { kept: Kept[]; wholeKey: string };
 
 const { readKeptQueries, WHOLE }: { readKeptQueries: ReadKeptQueries; WHOLE: string } = await import(
-  join(ROOT, 'packages/codegen/schemas/kept-queries.mjs')
+  join(ROOT, 'typescript/scripts/generators/kept-queries.mjs')
 );
 
 /** The queries refresh.json marks `persisted`, in its order. */

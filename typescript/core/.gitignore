@@ -1,5 +1,5 @@
 # Generated from the spec by the build: the bundle it copies, the types
-# openapi-typescript writes, and what packages/codegen/schemas/ generates
+# openapi-typescript writes, and what typescript/scripts/generators/ generates
 /openapi.json
 /src/types.ts
 /src/generated/

@@ -59,21 +59,21 @@ use xynolog_http_transport::session::HttpSessionFactory;
 
 fn table() -> Value {
     serde_json::from_str(include_str!(
-        "../../../../protocol/specs/src/session/persisted-cases.json"
+        "../../../protocol/specs/src/session/persisted-cases.json"
     ))
     .expect("the table is JSON")
 }
 
 fn refresh_table() -> Value {
     serde_json::from_str(include_str!(
-        "../../../../protocol/specs/src/client/refresh.json"
+        "../../../protocol/specs/src/client/refresh.json"
     ))
     .expect("the refresh table is JSON")
 }
 
 fn stored_table() -> Value {
     serde_json::from_str(include_str!(
-        "../../../../protocol/specs/src/session/stored.json"
+        "../../../protocol/specs/src/session/stored.json"
     ))
     .expect("the stored table is JSON")
 }

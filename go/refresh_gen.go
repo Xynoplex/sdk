@@ -1,6 +1,6 @@
 // Code generated from protocol/specs/src/client/refresh.json — DO NOT EDIT.
 //
-// Regenerate: node packages/codegen/schemas/generate-cache-refresh-go.mjs
+// Regenerate: node codegen/node/schemas/generate-cache-refresh-go.mjs
 
 package xynolog
 

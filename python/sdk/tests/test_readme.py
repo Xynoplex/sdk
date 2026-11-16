@@ -55,7 +55,7 @@ from xynolog.types import AgentSoftware, AnchoredText, FragmentSelector, HttpEnd
 from xynolog.watched import Variable
 
 README = (PACKAGE / "README.md").read_text(encoding="utf-8")
-SKILL = (ROOT / "docs/builder/skills/xynolog-worker/SKILL.md").read_text(encoding="utf-8")
+SKILL = (ROOT / "skills/xynolog-worker/SKILL.md").read_text(encoding="utf-8")
 PROGRAMS = {
     path.stem: path.read_text(encoding="utf-8") for path in sorted((PACKAGE / "tests/readme").glob("*.py")) if path.stem != "__init__"
 }

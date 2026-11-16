@@ -61,7 +61,7 @@ fi
 if [[ "$LANGUAGE" == all || "$LANGUAGE" == csharp ]]; then
 echo 'Packing the .NET SDK in a .NET container…'
 csharp_package_version="$(version_of csharp)"
-dotnet_version="$(sed -n 's/.*"version": "\([^"]*\)".*/\1/p' "$ROOT/csharp/sdk/global.json" | sed -E 's/(-(preview|rc)\.[0-9]+)\.[0-9]+\.[0-9]+$/\1/')"
+dotnet_version="$(sh "$ROOT/csharp/scripts/dotnet-version.sh" --image-tag)"
 run_container_quietly "$RUNTIME" run --rm \
   --volume "$ROOT:/source:ro" --volume "$PROTOCOL:/protocol:ro" \
   --volume "$STATE_ROOT/nuget:/out" --volume "$STATE_ROOT/nuget-cache:/root/.nuget/packages" --workdir /tmp \
@@ -70,7 +70,7 @@ run_container_quietly "$RUNTIME" run --rm \
     version="$XYNOLOG_SDK_VERSION"
     cp -a /source /tmp/sdk
     rm -rf /tmp/sdk/protocol
-    cp -a /protocol /tmp/protocol
+    cp -a /protocol /tmp/sdk/protocol
     dotnet pack /tmp/sdk/csharp/sdk/src/Xynolog/Xynolog.csproj -c Release --verbosity quiet \
       -p:IsPackable=true -p:PackageId=Xynolog -p:PackageVersion="$version" \
       -p:CheckRefusals=false -o /out
@@ -85,7 +85,7 @@ run_container_quietly "$RUNTIME" run --rm --memory 4g --volume "$ROOT/haskell/sd
   --volume "$STATE_ROOT/haskell:/out" --volume "$STATE_ROOT/cabal-cache:/root/.cabal" \
   --volume "$STATE_ROOT/haskell-build:/tmp/sdk/dist-newstyle" --workdir /tmp \
   --env "XYNOLOG_SDK_VERSION=$haskell_package_version" \
-  haskell:9.10.3 bash -euc 'mkdir -p /tmp/sdk && cp -a /source/. /tmp/sdk/ && bash /cabal-version.sh "$XYNOLOG_SDK_VERSION" /tmp/sdk/xynolog.cabal && cd /tmp/sdk && printf "packages: .\\n" > cabal.project && test -f /root/.cabal/packages/hackage.haskell.org/01-index.cache || cabal update; cabal build lib:xynolog && cabal sdist --output-directory=/out'
+  "haskell:$(bash "$ROOT/haskell/toolchain/toolchain.sh" --ghc)" bash -euc 'mkdir -p /tmp/sdk && cp -a /source/. /tmp/sdk/ && bash /cabal-version.sh "$XYNOLOG_SDK_VERSION" /tmp/sdk/xynolog.cabal && cd /tmp/sdk && printf "packages: .\\n" > cabal.project && test -f /root/.cabal/packages/hackage.haskell.org/01-index.cache || cabal update; cabal build lib:xynolog && cabal sdist --output-directory=/out'
 fi
 
 if [[ "$LANGUAGE" == all || "$LANGUAGE" == kotlin ]]; then
@@ -93,7 +93,7 @@ if [[ "$LANGUAGE" == all || "$LANGUAGE" == kotlin ]]; then
 # the SDK build itself stays unchanged and its locked dependencies stay intact.
 echo 'Building and publishing the Kotlin SDK to a local Maven repository in a JDK container…'
 kotlin_package_version="$(version_of kotlin)"
-jdk="$(cat "$ROOT/kotlin/sdk/.java-version")"
+jdk="$(sh "$ROOT/kotlin/scripts/jdk-version.sh")"
 cat > "$STATE_ROOT/kotlin-publish.init.gradle" <<'GRADLE'
 allprojects {
   plugins.withId('org.jetbrains.kotlin.jvm') {
@@ -120,7 +120,7 @@ run_container_quietly "$RUNTIME" run --rm --memory 4g --volume "$ROOT:/source:ro
   --volume "$STATE_ROOT/kotlin-publish.init.gradle:/tmp/publish.init.gradle:ro" \
   --env "XYNOLOG_SDK_VERSION=$kotlin_package_version" \
   --workdir /tmp eclipse-temurin:"$jdk"-jdk bash -euc '
-    mkdir -p /tmp/sdk && cp -a /source/. /tmp/sdk/ && rm -rf /tmp/sdk/protocol && cp -a /protocol /tmp/protocol
+    mkdir -p /tmp/sdk && cp -a /source/. /tmp/sdk/ && rm -rf /tmp/sdk/protocol && cp -a /protocol /tmp/sdk/protocol
     cd /tmp/sdk/kotlin/sdk
     ./gradlew --no-daemon -I /tmp/publish.init.gradle assemble -x checkKotlinAbi publishMavenJavaPublicationToXynologLocalRepository
   '
@@ -129,16 +129,17 @@ fi
 if [[ "$LANGUAGE" == all || "$LANGUAGE" == ocaml ]]; then
 echo 'Building and archiving the OCaml SDK in an OCaml container…'
 ocaml_package_version="$(version_of ocaml)"
+ocaml_image="$(python3 "$ROOT/ocaml/check-toolchain.py" --base-image)"
 opam_archive_uri="file://$STATE_ROOT/opam-repo/repo/archives/xynolog.$ocaml_package_version.tar.gz"
 opam_archive_uri="${opam_archive_uri// /%20}"
 if ! "$RUNTIME" volume inspect "$OPAM_VOLUME" >/dev/null 2>&1; then
   "$RUNTIME" volume create "$OPAM_VOLUME" >/dev/null
 fi
 if ! run_container_quietly "$RUNTIME" run --rm --volume "$OPAM_VOLUME:/cache" \
-  ocaml/opam:debian-13-ocaml-5.5 bash -euc 'test -s /cache/config'; then
+  "$ocaml_image" bash -euc 'test -s /cache/config'; then
   echo 'Seeding the pinned OCaml switch cache…'
   run_container_quietly "$RUNTIME" run --rm --user 0:0 --volume "$OPAM_VOLUME:/cache" \
-    ocaml/opam:debian-13-ocaml-5.5 bash -euc 'cp -R /home/opam/.opam/. /cache/ && chown -R opam:opam /cache'
+    "$ocaml_image" bash -euc 'cp -R /home/opam/.opam/. /cache/ && chown -R opam:opam /cache'
 fi
 # The OCaml image runs as its opam user, who writes the repository here.
 chmod 0777 "$STATE_ROOT/opam-repo"
@@ -147,7 +148,7 @@ run_container_quietly "$RUNTIME" run --rm --memory 4g --volume "$ROOT/ocaml/sdk:
   --volume "$OPAM_VOLUME:/home/opam/.opam" \
   --env "XYNOLOG_SDK_VERSION=$ocaml_package_version" --env "XYNOLOG_OPAM_ARCHIVE_URI=$opam_archive_uri" \
   --workdir /tmp \
-  ocaml/opam:debian-13-ocaml-5.5 bash -euc '
+  "$ocaml_image" bash -euc '
     sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends libgmp-dev pkg-config >/dev/null
     cp -a /source /tmp/sdk && cd /tmp/sdk
     rm -rf /home/opam/.opam/5.5/.opam-switch/sources/uring.2.15.0

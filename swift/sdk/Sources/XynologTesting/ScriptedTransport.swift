@@ -1,6 +1,6 @@
 import Foundation
-import Xynolog
 import Synchronization
+import Xynolog
 
 public typealias Respond =
   @Sendable (String, [String: JSONValue]) async throws -> [String: JSONValue]

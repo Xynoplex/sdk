@@ -56,7 +56,7 @@ val generated = layout.buildDirectory.dir("generated/xynolog/main/kotlin")
 val generate = tasks.register<JavaExec>("generate") {
     description = "Writes the SDK's protocol types from protocol/specs/src."
     group = LifecycleBasePlugin.BUILD_GROUP
-    val specs = layout.projectDirectory.dir("../../../protocol/specs/src")
+    val specs = layout.projectDirectory.dir("../../protocol/specs/src")
     val required = layout.projectDirectory.file("src/codegen/required-schemas.json")
     val unicodeCase = layout.projectDirectory.file("src/codegen/unicode-case.json")
     inputs.dir(specs).withPathSensitivity(PathSensitivity.RELATIVE)

@@ -1,5 +1,5 @@
 # Generated from protocol/specs/src/sign-in-store/owner-only.json; do not edit.
-# Regenerate: node packages/codegen/schemas/generate-sign-in-python.mjs
+# Regenerate: node codegen/node/schemas/generate-sign-in-python.mjs
 
 """How a writer of the sign-in store keeps its directory and its files to their owner, as the launcher keeps its state home."""
 

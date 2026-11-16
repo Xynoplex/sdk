@@ -4,7 +4,6 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd -P)"
 source "$ROOT/build-tools/container-runtime.sh"
 source "$ROOT/scripts/run-container-quietly.sh"
-source "$ROOT/scripts/require-protocol-pin.sh"
 RUNTIME="$(detect_container_runtime)"
 STATE_ROOT="${XDG_CACHE_HOME:-$HOME/.cache}/xynolog-sdk/local"
 PROTOCOL="$ROOT/protocol"
@@ -45,20 +44,7 @@ has_language() {
 ALL_LANGUAGES=false
 [[ "$LANGUAGE" == all ]] && ALL_LANGUAGES=true
 
-PROTOCOL_REVISION="$(require_protocol_pin "$ROOT")"
-
-echo "Building protocol bundles from pinned revision ${PROTOCOL_REVISION}…"
-run_container_quietly "$RUNTIME" run --rm \
-  --volume "$PROTOCOL:/protocol" \
-  --workdir /tmp \
-  node:26-bookworm bash -euc '
-    cp -a /protocol /tmp/protocol
-    cd /tmp/protocol
-    npm ci
-    npm run specs:bundle
-    cp -f specs/openapi.json /protocol/specs/openapi.json
-    cp -f specs/archivist.openapi.json /protocol/specs/archivist.openapi.json
-  '
+bash "$ROOT/scripts/bundle-protocol.sh"
 
 if has_language typescript; then
   echo 'Building TypeScript packages and packing npm artifacts in a Node container…'

@@ -57,7 +57,7 @@ interface ClosingCase {
   registryErrors: XynologSessionErrorCode[];
 }
 
-const TABLE = join(dirname(fileURLToPath(import.meta.url)), '../../../../../../protocol/specs/src/session/registry-errors-cases.json');
+const TABLE = join(dirname(fileURLToPath(import.meta.url)), '../../../../../protocol/specs/src/session/registry-errors-cases.json');
 const { cases, closing } = JSON.parse(readFileSync(TABLE, 'utf-8')) as { cases: Case[]; closing: ClosingCase[] };
 
 /** The knowledge base each registry signs in to, where the fake gateway is. */

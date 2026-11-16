@@ -133,7 +133,7 @@ pub struct Frame {
 }
 
 /// Why a value is refused at a member, as every SDK finds a value's first
-/// fault (packages/codegen/schemas/required-shapes.mjs).
+/// fault (typescript/scripts/generators/required-shapes.mjs).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum FrameRefusalReason {
     /// The value does not carry the member, or the member holds null where it

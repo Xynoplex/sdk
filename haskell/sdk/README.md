@@ -28,9 +28,9 @@ packages: ./my-app
 ```
 
 Add `xynolog` to the application's `build-depends`. Use the GHC whose `base`
-[the freeze file](cabal.project.freeze) pins. The repository's
-[container runner](../run-container.sh) builds and tests the SDK without a host
-Haskell installation; see [Building and verifying](#building-and-verifying).
+[the freeze file](cabal.project.freeze) pins. `make test-haskell`, at
+the repository root, builds and tests the SDK without a host Haskell
+installation; see [Building and verifying](#building-and-verifying).
 
 ## Signing in
 
@@ -716,17 +716,17 @@ Use the caller's clock for those waits; real sockets can use an actual host cloc
 
 ## Building and verifying
 
-From the repository root, build and test in Apple `container`:
+From the repository root, build and test in the pinned toolchain's container:
 
 ```sh
-bash haskell/run-container.sh
+make test-haskell
 ```
 
-CI runs the same entry point with `docker` as its argument. Exact project
+CI runs the same target. Exact project
 dependencies are frozen in [the freeze file](cabal.project.freeze). Ordinary
 builds use checked-in generated files and require no npm or schema generation.
 
-The runner builds `conformance/bin/xynolog-haskell-wire-driver` and
+The target builds `conformance/bin/xynolog-haskell-wire-driver` and
 `conformance/bin/xynolog-haskell-live-driver`. The shared
 [SDK conformance suite](../../../protocol/conformance/sdk/README.md) drives them
 through the public SDK against the real gateway on both signal planes, including

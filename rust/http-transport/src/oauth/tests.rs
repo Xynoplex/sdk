@@ -591,7 +591,7 @@ async fn renewed_as_the_row_says(row: &Value, store: &str) -> Vec<String> {
 #[tokio::test]
 async fn every_renewal_is_the_tables() {
     let table: Value = serde_json::from_str(include_str!(
-        "../../../../../protocol/specs/src/sign-in-store/cases.json"
+        "../../../../protocol/specs/src/sign-in-store/cases.json"
     ))
     .expect("the table");
     let rows = table["renewals"].as_array().expect("the renewals");

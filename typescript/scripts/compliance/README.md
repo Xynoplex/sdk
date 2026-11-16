@@ -128,13 +128,13 @@ const handler = useCallback(() => {
 }, []); // ✅ onCallback NOT in deps - it's in a ref
 ```
 
-### audit-hooks-ordering.ts
+### audit-hooks-ordering.mts
 
-**Purpose**: Find a React hook called where React's rules forbid one, in `typescript/react-ui/src` and `images/browser/src`.
+**Purpose**: Find a React hook called where React's rules forbid one, in `typescript/react-ui/src`.
 
 **Usage**:
 ```bash
-npx tsx typescript/scripts/compliance/audit-hooks-ordering.ts
+node typescript/scripts/compliance/audit-hooks-ordering.mts
 ```
 
 **What it checks**:

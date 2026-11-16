@@ -39,7 +39,7 @@ interface Refused {
 }
 
 const table: { cases: (Delivered | Refused)[] } = JSON.parse(
-  readFileSync(new URL('../../../../../../protocol/specs/src/bus/frame-cases.json', import.meta.url), 'utf8'),
+  readFileSync(new URL('../../../../../protocol/specs/src/bus/frame-cases.json', import.meta.url), 'utf8'),
 );
 const delivered = table.cases.filter((stated): stated is Delivered => !('refused' in stated));
 const refused = table.cases.filter((stated): stated is Refused => 'refused' in stated);

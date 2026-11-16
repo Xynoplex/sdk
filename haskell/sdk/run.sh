@@ -2,7 +2,7 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 root=${1:?expected repository root}
-bash ../probes/toolchain.sh --check
+bash ../toolchain/toolchain.sh --check
 cabal check
 cabal run xynolog-codegen -- --check "$root"
 cabal build all --enable-tests --enable-coverage

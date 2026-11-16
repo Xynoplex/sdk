@@ -91,6 +91,8 @@
     "jest-axe": "^11.0.0",
     "jsdom": "^31.0.0",
     "postcss-import": "^17.0.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
     "rollup": "^4.67.5",
     "rollup-plugin-dts": "^6.4.1",
     "tsup": "^9.0.0",

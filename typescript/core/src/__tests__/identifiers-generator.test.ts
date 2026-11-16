@@ -15,9 +15,9 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const GENERATOR = fileURLToPath(new URL('../../../../codegen/schemas/generate-identifiers.mjs', import.meta.url));
-const KINDS = fileURLToPath(new URL('../../../../../protocol/specs/src/identifiers/kinds.json', import.meta.url));
-const SCHEMAS = fileURLToPath(new URL('../../../../../protocol/specs/src/components/schemas', import.meta.url));
+const GENERATOR = fileURLToPath(new URL('../../../scripts/generators/generate-identifiers.mjs', import.meta.url));
+const KINDS = fileURLToPath(new URL('../../../../protocol/specs/src/identifiers/kinds.json', import.meta.url));
+const SCHEMAS = fileURLToPath(new URL('../../../../protocol/specs/src/components/schemas', import.meta.url));
 
 /** The types as openapi-typescript writes the four schemas, before any is branded. */
 const TYPES = [

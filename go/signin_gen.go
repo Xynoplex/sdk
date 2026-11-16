@@ -1,6 +1,6 @@
 // Code generated from protocol/specs/src/sign-in-store/SignIn.json — DO NOT EDIT.
 //
-// Regenerate: node packages/codegen/schemas/generate-sign-in-go.mjs
+// Regenerate: node codegen/node/schemas/generate-sign-in-go.mjs
 // The Rust (xynolog::sign_in_store) and Python (xynolog.sign_in) SDKs generate
 // their entries from the same schema.
 

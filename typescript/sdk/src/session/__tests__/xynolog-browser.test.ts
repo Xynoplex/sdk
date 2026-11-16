@@ -81,7 +81,7 @@ interface OpenResourceCase {
 
 const openResourceCases = (
   JSON.parse(
-    readFileSync(fileURLToPath(new URL('../../../../../../protocol/specs/src/session/open-resource-cases.json', import.meta.url)), 'utf8'),
+    readFileSync(fileURLToPath(new URL('../../../../../protocol/specs/src/session/open-resource-cases.json', import.meta.url)), 'utf8'),
   ) as { cases: OpenResourceCase[] }
 ).cases;
 

@@ -1,5 +1,5 @@
 # Generated from protocol/specs/src/sign-in-store/SignIn.json; do not edit.
-# Regenerate: node packages/codegen/schemas/generate-sign-in-python.mjs
+# Regenerate: node codegen/node/schemas/generate-sign-in-python.mjs
 
 """One entry of the sign-in store (`protocol/specs/src/sign-in-store`): the file where
 `xynolog login` keeps the sign-in to each stack, and where an application
