@@ -32,3 +32,11 @@
   gap: 0.75rem;
   padding: 1.5rem;
 }
+
+/* A skeleton drawn as an outline rather than a filled block, for places where
+   a solid bar would read as real content. */
+.xynolog-skeleton-outline {
+  border: 1px dashed var(--xynolog-border-secondary);
+  border-radius: var(--xynolog-radius-sm);
+  background: none;
+}

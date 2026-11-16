@@ -8,9 +8,6 @@
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "bin": {
-    "xynolog-react-ui-check": "./checks/bin.mjs"
-  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -30,8 +27,6 @@
   "files": [
     "dist",
     "!dist/**/*.map",
-    "checks",
-    "!checks/**/*.test.ts",
     "src/styles",
     "src/components",
     "src/features",
@@ -73,13 +68,9 @@
   "peerDependencies": {
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "typescript": "^6.0.2",
     "vitest": "^4.0.0 || ^5.0.0"
   },
   "peerDependenciesMeta": {
-    "typescript": {
-      "optional": true
-    },
     "vitest": {
       "optional": true
     }

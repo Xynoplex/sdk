@@ -348,7 +348,7 @@ function ResourceViewerBody({
     onOpenPanelRef.current?.({ panel: 'annotations', scrollToAnnotationId: makeAnnotationId(annotationId), motivation: annotation.motivation, ...(anchorRect ? { anchorRect } : {}) });
   }, [highlights, references, assessments, comments, tags, handleAnnotationClick, selectedClick]);
 
-  // Single subscription call per file (see checks/hooks-ordering.mjs).
+  // Single subscription call per file (see typescript/scripts/compliance/audit-hooks-ordering.mts).
   useSessionEventSubscriptions(session, {
     // Annotation clicks
     'browse:click': handleAnnotationClickEvent,

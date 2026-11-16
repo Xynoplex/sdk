@@ -485,7 +485,7 @@ export function ResourceViewerPage({
   useOutcomeToasts(rUri);
 
   // Single useEventSubscriptions call per file (enforced by
-  // checks/hooks-ordering.mjs); hooks like useOutcomeToasts
+  // typescript/scripts/compliance/audit-hooks-ordering.mts); hooks like useOutcomeToasts
   // own their channels in their own files.
   useEventSubscriptions({
     'mark:archive': handleResourceArchive,

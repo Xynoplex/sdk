@@ -44,6 +44,16 @@
     opacity: 0.6; /* Keep visible but static */
   }
 
+  /* Skeleton loading effects */
+  .xynolog-skeleton {
+    animation: none !important;
+    background: var(--xynolog-color-gray-200) !important;
+  }
+
+  [data-theme="dark"] .xynolog-skeleton {
+    background: var(--xynolog-color-gray-700) !important;
+  }
+
   /* ========================================
      Toast & Notification Components
      ======================================== */
