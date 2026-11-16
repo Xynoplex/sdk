@@ -124,6 +124,9 @@ jobs:
       # The Haskell target keeps Cabal's home here (scripts/make-target.sh).
       # It is saved even when the checks fail: the dependencies built are
       # still good, and a failing branch is when the next run comes soonest.
+      # It is not saved when the run is cancelled: a build cut short leaves a
+      # partial store, and saved under the key it would be an exact hit that
+      # no later run saves over.
       - name: Restore Cabal's index and built dependencies
         id: cabal
         if: matrix.language == 'haskell'
@@ -138,7 +141,7 @@ jobs:
         run: make "test-$LANGUAGE"
 
       - name: Save Cabal's index and built dependencies
-        if: always() && matrix.language == 'haskell' && steps.cabal.outputs.cache-hit != 'true'
+        if: ${{ !cancelled() && steps.cabal.outcome == 'success' && steps.cabal.outputs.cache-hit != 'true' }}
         uses: actions/cache/save@v6.1.0
         with:
           path: ~/.cache/xynolog/haskell-cabal
