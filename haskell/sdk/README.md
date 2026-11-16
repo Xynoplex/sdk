@@ -27,8 +27,8 @@ packages: ./my-app
           /path/to/xynolog/haskell/sdk
 ```
 
-Add `xynolog` to the application's `build-depends`. Use the compiler pinned in
-[the development project](../probes/cabal.project). The repository's
+Add `xynolog` to the application's `build-depends`. Use the GHC whose `base`
+[the freeze file](cabal.project.freeze) pins. The repository's
 [container runner](../run-container.sh) builds and tests the SDK without a host
 Haskell installation; see [Building and verifying](#building-and-verifying).
 
@@ -722,10 +722,9 @@ From the repository root, build and test in Apple `container`:
 bash haskell/run-container.sh
 ```
 
-CI runs the same entry point with `docker` as its argument. The compiler and
-Cabal pins are shared with [the design probes](../probes/README.md); exact
-project dependencies are frozen. Ordinary builds use checked-in generated
-files and require no npm or schema generation.
+CI runs the same entry point with `docker` as its argument. Exact project
+dependencies are frozen in [the freeze file](cabal.project.freeze). Ordinary
+builds use checked-in generated files and require no npm or schema generation.
 
 The runner builds `conformance/bin/xynolog-haskell-wire-driver` and
 `conformance/bin/xynolog-haskell-live-driver`. The shared
@@ -781,9 +780,6 @@ missing census reader or missing parity conformance driver. CI runs it as
 Runtime tests also cover atomic publication of raw replies before request
 continuations, channel/correlation matching, tracking cleanup on cancellation,
 close waking pending requests, SSE chunk boundaries, and operation ownership.
-
-See [the design probe results](../probes/README.md) for the measured HTTP,
-resource-lifetime, telemetry, crypto, and native-lock behavior.
 
 ## License
 
