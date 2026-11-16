@@ -8,16 +8,17 @@
 #   Cargo.lock   each published crate's own entry
 #
 # Which crates are published is read from the workspace's manifests, never
-# listed here. version-bump.sh and `npm run version:sync` both run this, so
-# the crates move with version.json as every package.json does; CI fails a
-# published crate at any other version.
+# listed here. scripts/sdk_version.py write runs this on the checkout, with the
+# release's version, and scripts/publish-rust-local.sh on a build's copy, with
+# the version that build gives the crates: the release's, or a development
+# version (scripts/sdk_version.py).
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 trap 'rm -f rust/Cargo.toml.tmp rust/Cargo.lock.tmp' EXIT
 
 version=${1:-}
-if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-  echo "usage: cargo-version.sh <X.Y.Z>" >&2
+if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+  echo "usage: cargo-version.sh <X.Y.Z[-pre-release]>" >&2
   exit 2
 fi
 

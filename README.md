@@ -48,6 +48,21 @@ Run `git clone --recurse-submodules https://github.com/xynolog/sdk.git` (or init
 
 `make clean` removes generated build directories and local package artifacts for all nine SDK languages, their SDK-scoped compiler and dependency caches, and cached artifact bundles. Use `make rust-clean` (or another `<language>-clean` target) to clean one language. It leaves downloaded container images and any bundle written to an external `SDK_ARTIFACTS` path untouched.
 
+## Releasing
+
+`version.json` names the coming release, `YY.M.N`, and each language's compatibility number; `scripts/sdk_version.py` derives every package version from them. A commit tagged `vYY.M.N` builds the release; every other commit builds a development version, which no registry receives.
+
+To release, check out the commit on `main` and run `bash scripts/tag-release.sh`. It runs `scripts/release-ready.sh`, which checks four things:
+
+- the committed manifests hold the release's versions;
+- the release is not tagged on another commit;
+- `main` holds the commit;
+- the Protocol submodule is at a Protocol release.
+
+It then signs and pushes `vYY.M.N` and Go's `go/vC.YYMM.N` together. Pushing `go/v…` releases the Go module, since the Go module proxy serves the tag from then on. The release workflow publishes nothing until it has fetched both tags and found each one annotated, named as pushed, on the commit, and signed by the key it trusts; it then runs the same checks again.
+
+Once the release is tagged, CI fails until the coming release moves on: `python3 scripts/sdk_version.py move YY.M.N` writes a later one into `version.json` and every manifest, in a pull request of its own.
+
 ## License
 
 Apache-2.0. See [LICENSE](./LICENSE) and [NOTICE](./NOTICE) for attribution.

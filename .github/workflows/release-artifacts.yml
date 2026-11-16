@@ -1,9 +1,10 @@
 name: Publish SDK artifact bundle
 
+# A person releases the SDK by pushing its two signed tags
+# (scripts/tag-release.sh); `v*` matches the SDK's, not Go's `go/v…`.
 on:
   push:
     tags: ["v*"]
-  workflow_dispatch:
 
 permissions: {}
 
@@ -19,17 +20,39 @@ jobs:
       - name: Check out source and pinned Protocol
         uses: actions/checkout@v7.0.1
         with:
+          # All of it: the release checks ask whether main holds this commit.
+          fetch-depth: 0
           submodules: recursive
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4.4.1
 
-      - name: Verify tag matches SDK package version
-        if: github.event_name == 'push'
+      # The tags are the release: both name version.json's coming release, sit
+      # on this commit, and are annotated tags the release signer signed. The
+      # pushed tag is fetched again as itself, an annotated tag object, rather
+      # than trusted as the checkout left it. A tag object names itself, and
+      # that name must be the ref's, so a signed tag cannot stand in for
+      # another. The release checks then hold main to holding this commit, so
+      # what is released came through a pull request.
+      - name: The release tags are signed by the release signer, on a commit main holds
         shell: bash
+        env:
+          # The one key a release tag may be signed with. A pull request that
+          # changes it changes who can release the SDK.
+          RELEASE_SIGNER: 'release namespaces="git" ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJJ31NyQTK0Ei9DAoAw6TdxWueTtsRtLv0hPp368eynn'
         run: |
-          version="$(python3 -c 'import json; print(json.load(open("version.json"))["version"])')"
-          test "$GITHUB_REF_NAME" = "v$version"
+          fail() { echo "::error::$1" >&2; exit 1; }
+          read -r -a tags <<< "$(python3 scripts/sdk_version.py tags)"
+          test "$GITHUB_REF_NAME" = "${tags[0]}" || fail "$GITHUB_REF_NAME is not the coming release's tag, ${tags[0]}"
+          printf '%s\n' "$RELEASE_SIGNER" > "$RUNNER_TEMP/release-signers"
+          for tag in "${tags[@]}"; do
+            git fetch --quiet --force --no-tags origin "+refs/tags/$tag:refs/tags/$tag" || fail "$tag was not pushed"
+            test "$(git cat-file -t "refs/tags/$tag")" = tag || fail "$tag is not an annotated tag"
+            test "$(git for-each-ref --format='%(tag)' "refs/tags/$tag")" = "$tag" || fail "the tag object pushed as $tag names itself otherwise"
+            test "$(git rev-parse "refs/tags/$tag^{commit}")" = "$(git rev-parse HEAD)" || fail "$tag is not on this commit"
+            git -c gpg.format=ssh -c gpg.ssh.allowedSignersFile="$RUNNER_TEMP/release-signers" verify-tag "$tag" || fail "the release signer did not sign $tag"
+          done
+          bash scripts/release-ready.sh
 
       - name: Build native packages and bundle
         shell: bash
@@ -40,33 +63,24 @@ jobs:
 
       - name: Create deterministic release archive
         shell: bash
-        env:
-          EVENT_NAME: ${{ github.event_name }}
-          REF_NAME: ${{ github.ref_name }}
         run: |
-          if [ "$EVENT_NAME" = push ]; then
-            release_tag="$REF_NAME"
-          else
-            release_tag="sdk-$GITHUB_SHA"
-          fi
-          echo "release_tag=$release_tag" >> "$GITHUB_ENV"
           python3 scripts/create-artifact-archive.py \
             "$RUNNER_TEMP/sdk-artifacts" \
-            "$RUNNER_TEMP/xynolog-sdk-artifacts-${release_tag}.tar.gz"
+            "$RUNNER_TEMP/xynolog-sdk-artifacts-${GITHUB_REF_NAME}.tar.gz"
           cd "$RUNNER_TEMP"
-          shasum -a 256 "xynolog-sdk-artifacts-${release_tag}.tar.gz" > "xynolog-sdk-artifacts-${release_tag}.tar.gz.sha256"
+          shasum -a 256 "xynolog-sdk-artifacts-${GITHUB_REF_NAME}.tar.gz" > "xynolog-sdk-artifacts-${GITHUB_REF_NAME}.tar.gz.sha256"
 
       - name: Publish the bundle as versioned release assets
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          asset="$RUNNER_TEMP/xynolog-sdk-artifacts-${release_tag}.tar.gz"
+          asset="$RUNNER_TEMP/xynolog-sdk-artifacts-${GITHUB_REF_NAME}.tar.gz"
           checksum="$asset.sha256"
-          if gh release view "$release_tag" >/dev/null 2>&1; then
-            echo "Immutable SDK artifact release already exists: $release_tag" >&2
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            echo "Immutable SDK artifact release already exists: $GITHUB_REF_NAME" >&2
             exit 1
           fi
-          gh release create "$release_tag" "$asset" "$checksum" \
+          gh release create "$GITHUB_REF_NAME" "$asset" "$checksum" \
             --target "$GITHUB_SHA" \
-            --title "Xynolog SDK artifacts ${release_tag}" \
+            --title "Xynolog SDK artifacts ${GITHUB_REF_NAME}" \
             --generate-notes

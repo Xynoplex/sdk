@@ -50,6 +50,12 @@ jobs:
       - name: Make help lists every public target
         run: python3 build-tools/test_make_help.py --root . --list '<language>=LANGUAGES'
 
+      - name: The committed manifests hold the release's versions
+        run: python3 scripts/sdk_version.py check
+
+      - name: The coming release is not yet tagged on another commit
+        run: python3 scripts/sdk_version.py unreleased
+
       - name: The source archive holds no broken symlink
         run: |
           archive="$(mktemp -d)"
@@ -125,6 +131,21 @@ jobs:
           flags: go-sdk
           fail_ci_if_error: false
 
+  haskell-codegen:
+    name: The Haskell SDK's generated files are its codegen's
+    needs: checks
+    if: contains(fromJSON(needs.checks.outputs.languages), 'haskell')
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Check out source and pinned Protocol
+        uses: actions/checkout@v7.0.1
+        with:
+          submodules: recursive
+
+      - name: Check the generated files against the pinned Protocol
+        run: make haskell-codegen
+
   # No dependency in any lockfile has a published advisory that advisories.toml
   # does not ignore with a reason, and no ignore outlives its finding
   # (build-tools/advisories.py).
@@ -170,7 +191,7 @@ jobs:
   gate:
     name: CI Gate
     if: always()
-    needs: [dco, labels, checks, artifacts, go-sdk, advisories, crates]
+    needs: [dco, labels, checks, artifacts, go-sdk, haskell-codegen, advisories, crates]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7.0.1

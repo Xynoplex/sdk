@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 /**
- * Stamp the release version across version.json and every workspace
- * package.json (the `version` field + internal cross-dep pins). Run by
- * publish.sh before staging/publishing.
+ * Stamp a version across every workspace package.json that version.json
+ * lists (the `version` field + internal cross-dep pins). Run by publish.sh on
+ * its staged copy, with the version that build gives the packages
+ * (scripts/sdk_version.py typescript).
  *
  * Internal `@xynolog/*` / `xynolog-*` deps are declared `"*"` in source and
  * rewritten to the exact version here via the shared stampInternalDeps — the
@@ -26,13 +27,9 @@ const read = (p) => JSON.parse(readFileSync(resolve(rootDir, p), 'utf-8'));
 const write = (p, data) => writeFileSync(resolve(rootDir, p), JSON.stringify(data, null, 2) + '\n');
 
 const versionJson = read('version.json');
-versionJson.version = version;
-for (const pkg of Object.values(versionJson.packages)) pkg.version = version;
-write('version.json', versionJson);
-console.log('  version.json -> ' + version);
 
-// Stamp every package.json in version.json — including non-published ones
-// (desktop) so the workspace stays version-coherent.
+// Stamp every package.json in version.json, published or not, so the
+// workspace stays version-coherent.
 for (const pkg of Object.values(versionJson.packages)) {
   const path = pkg.dir + '/package.json';
   const json = read(path);

@@ -70,10 +70,13 @@ dev = [
 [tool.uv]
 default-groups = ["conformance", "dev"]
 
-# The version is the repository's, stated once, in version.json.
+# The checkout's version is the release's, from version.json, by the SDK's one
+# derivation. A build stamps its copy with the version that build gives the
+# package (python/sdk/scripts/build-python-sdk.sh).
 [tool.hatch.version]
-path = "../../version.json"
-pattern = '"version": "(?P<version>[^"]+)"'
+source = "code"
+path = "../../scripts/sdk_version.py"
+expression = 'released(config(), "python")'
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/xynolog"]

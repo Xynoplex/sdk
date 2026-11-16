@@ -1,4 +1,3 @@
-import: ../probes/cabal.project
 packages: .
 
 package xynolog
