@@ -46,6 +46,26 @@ export function createCircleSvg(center: Point, radius: number): string {
 }
 
 /**
+ * The attributes of the first `<name …/>` element in `svg`: white space after
+ * the name, at least one more character, and `/>` at the first `>`. Found by
+ * index, in one pass, where a regular expression would backtrack quadratically.
+ */
+function selfClosingElementAttributes(svg: string, name: string): string | undefined {
+  const opener = `<${name}`;
+  let close = -1;
+  for (let start = svg.indexOf(opener); start !== -1; start = svg.indexOf(opener, start + 1)) {
+    const attributesStart = start + opener.length;
+    if (close < attributesStart) close = svg.indexOf('>', attributesStart);
+    if (close === -1) return undefined;
+    const attributes = svg.slice(attributesStart, close - 1);
+    if (attributes.length >= 2 && /\s/.test(attributes.charAt(0)) && svg.charAt(close - 1) === '/') {
+      return attributes;
+    }
+  }
+  return undefined;
+}
+
+/**
  * Parse SVG selector to extract shape type and data
  */
 export function parseSvgSelector(svg: string):
@@ -54,9 +74,9 @@ export function parseSvgSelector(svg: string):
   | { type: 'circle'; data: { cx: number; cy: number; r: number } }
   | null {
   // Extract rectangle
-  const rectMatch = svg.match(/<rect\s+([^>]+)\/>/);
-  if (rectMatch && rectMatch[1]) {
-    const attrs = rectMatch[1];
+  const rectAttributes = selfClosingElementAttributes(svg, 'rect');
+  if (rectAttributes !== undefined) {
+    const attrs = rectAttributes;
     const x = parseFloat(attrs.match(/x="([^"]+)"/)?.[1] || '0');
     const y = parseFloat(attrs.match(/y="([^"]+)"/)?.[1] || '0');
     const width = parseFloat(attrs.match(/width="([^"]+)"/)?.[1] || '0');
@@ -84,9 +104,9 @@ export function parseSvgSelector(svg: string):
   }
 
   // Extract circle
-  const circleMatch = svg.match(/<circle\s+([^>]+)\/>/);
-  if (circleMatch && circleMatch[1]) {
-    const attrs = circleMatch[1];
+  const circleAttributes = selfClosingElementAttributes(svg, 'circle');
+  if (circleAttributes !== undefined) {
+    const attrs = circleAttributes;
     const cx = parseFloat(attrs.match(/cx="([^"]+)"/)?.[1] || '0');
     const cy = parseFloat(attrs.match(/cy="([^"]+)"/)?.[1] || '0');
     const r = parseFloat(attrs.match(/r="([^"]+)"/)?.[1] || '0');

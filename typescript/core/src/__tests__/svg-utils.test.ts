@@ -75,6 +75,27 @@ describe('parseSvgSelector', () => {
     const svg = '<svg xmlns="http://www.w3.org/2000/svg"><text>Hello</text></svg>';
     expect(parseSvgSelector(svg)).toBeNull();
   });
+
+  test('reads the first self-closing element, past one that is not', () => {
+    const svg = '<svg><rect x="1"></rect><rect x="5" y="6" width="7" height="8"/></svg>';
+    expect(parseSvgSelector(svg)).toEqual({ type: 'rect', data: { x: 5, y: 6, width: 7, height: 8 } });
+  });
+
+  test('takes any white space after the name', () => {
+    const svg = '<svg><circle\n\t  cx="1" cy="2" r="3"/></svg>';
+    expect(parseSvgSelector(svg)).toEqual({ type: 'circle', data: { cx: 1, cy: 2, r: 3 } });
+  });
+
+  test('refuses a name that only begins with the shape, and an element with no attributes', () => {
+    expect(parseSvgSelector('<svg><rectangle x="1" y="2" width="3" height="4"/></svg>')).toBeNull();
+    expect(parseSvgSelector('<svg><rect /></svg>')).toBeNull();
+  });
+
+  test('stays linear on an element that never closes', () => {
+    expect(parseSvgSelector(`<rect ${' '.repeat(100_000)}`)).toBeNull();
+    expect(parseSvgSelector(`<circle ${'\t'.repeat(100_000)}`)).toBeNull();
+    expect(parseSvgSelector('<rect '.repeat(20_000))).toBeNull();
+  });
 });
 
 describe('scaleSvgToNative', () => {

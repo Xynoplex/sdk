@@ -98,6 +98,20 @@ describe('ImageURLSchema', () => {
         );
       });
 
+      it('should reject profile-image domains anywhere but the host', () => {
+        const elsewhere = [
+          'https://example.com/googleusercontent.com',
+          'https://example.com/?u=avatars.githubusercontent.com',
+          'https://googleusercontent.com.example.com/a',
+          'https://evilgoogleusercontent.com/a',
+          'https://avatars.githubusercontent.com.example.com/u/1',
+        ];
+
+        elsewhere.forEach(url => {
+          expect(() => ImageURLSchema.parse(url)).toThrow('URL must point to an image file');
+        });
+      });
+
       it('should reject empty strings', () => {
         expect(() => ImageURLSchema.parse('')).toThrow('Invalid image URL');
       });

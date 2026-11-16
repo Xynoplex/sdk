@@ -21,7 +21,22 @@ import type { TransportErrorCode } from './generated/error-codes';
 /** HTTP white space: line feed, carriage return, tab and space. */
 const isHttpWhiteSpace = (character: string): boolean =>
   character === '\n' || character === '\r' || character === '\t' || character === ' ';
-const withoutTrailingHttpWhiteSpace = (text: string): string => text.replace(/[\n\r\t ]+$/, '');
+/** ASCII white space: HTTP white space and form feed. */
+const isAsciiWhiteSpace = (character: string): boolean => isHttpWhiteSpace(character) || character === '\f';
+
+/** `text` without the characters at its start that `isSpace` holds of. */
+function withoutLeading(text: string, isSpace: (character: string) => boolean): string {
+  let start = 0;
+  while (start < text.length && isSpace(text.charAt(start))) start += 1;
+  return text.slice(start);
+}
+
+/** `text` without the characters at its end that `isSpace` holds of. */
+function withoutTrailing(text: string, isSpace: (character: string) => boolean): string {
+  let end = text.length;
+  while (end > 0 && isSpace(text.charAt(end - 1))) end -= 1;
+  return text.slice(0, end);
+}
 
 /** An HTTP token: what a type, a subtype and a parameter's name are made of. */
 const HTTP_TOKEN = /^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$/;
@@ -60,12 +75,12 @@ function quotedString(input: string, start: number): [value: string, end: number
  * type.
  */
 function charsetParameter(contentType: string): string | undefined {
-  const input = withoutTrailingHttpWhiteSpace(contentType.replace(/^[\n\r\t ]+/, ''));
+  const input = withoutTrailing(withoutLeading(contentType, isHttpWhiteSpace), isHttpWhiteSpace);
   const slash = input.indexOf('/');
   if (slash === -1 || !HTTP_TOKEN.test(input.slice(0, slash))) return undefined;
   const semicolon = input.indexOf(';', slash);
   let position = semicolon === -1 ? input.length : semicolon;
-  if (!HTTP_TOKEN.test(withoutTrailingHttpWhiteSpace(input.slice(slash + 1, position)))) return undefined;
+  if (!HTTP_TOKEN.test(withoutTrailing(input.slice(slash + 1, position), isHttpWhiteSpace))) return undefined;
 
   while (position < input.length) {
     position += 1; // past the semicolon
@@ -86,7 +101,7 @@ function charsetParameter(contentType: string): string | undefined {
     } else {
       const valueStart = position;
       while (position < input.length && input.charAt(position) !== ';') position += 1;
-      value = withoutTrailingHttpWhiteSpace(input.slice(valueStart, position));
+      value = withoutTrailing(input.slice(valueStart, position), isHttpWhiteSpace);
       if (value === '') continue;
     }
     if (name === 'charset' && PARAMETER_VALUE.test(value)) return value;
@@ -108,7 +123,7 @@ function charsetParameter(contentType: string): string | undefined {
 export function extractCharset(mediaType: string): string {
   const stated = charsetParameter(mediaType);
   if (stated === undefined || stated === '') return 'utf-8';
-  return asciiLowerCase(stated.replace(/^[\t\n\f\r ]+|[\t\n\f\r ]+$/g, ''));
+  return asciiLowerCase(withoutTrailing(withoutLeading(stated, isAsciiWhiteSpace), isAsciiWhiteSpace));
 }
 
 /** The reader's own refusal of a charset, which names it. */

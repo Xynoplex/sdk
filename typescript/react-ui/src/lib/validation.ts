@@ -45,8 +45,9 @@ export const ImageURLSchema = {
     // Check file extension or known profile image domains
     const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.ico'];
     const hasExtension = imageExtensions.some(ext => lowerUrl.includes(ext));
-    const isProfileImage = lowerUrl.includes('googleusercontent.com') ||
-                          lowerUrl.includes('avatars.githubusercontent.com');
+    const isProfileImage = parsed.hostname === 'googleusercontent.com' ||
+                          parsed.hostname.endsWith('.googleusercontent.com') ||
+                          parsed.hostname === 'avatars.githubusercontent.com';
 
     if (!hasExtension && !isProfileImage) {
       throw new Error('URL must point to an image file');
