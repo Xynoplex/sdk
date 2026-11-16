@@ -2,6 +2,6 @@
   "directories": ["src", "internal", "generated", "codegen"],
   "files": [
     "xynolog.cabal.in", "cabal.project", "cabal.project.freeze",
-    "api.py", "public-api.inputs.json", "../probes/cabal.project", "../probes/cabal-install.version"
+    "api.py", "public-api.inputs.json", "../toolchain/cabal-install.version"
   ]
 }
