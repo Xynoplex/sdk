@@ -503,7 +503,7 @@ private class Types(private val definitions: JsonObject, private val generation:
                 |
                 |        override fun deserialize(decoder: Decoder): $name =
                 |            try {
-                |                $name(decoder.decodeString())
+                |                $name(decoder.decodeInline(descriptor).decodeString())
                 |            } catch (refused: $INVALID_IDENTIFIER) {
                 |                throw SerializationException(refused.message, refused)
                 |            }
