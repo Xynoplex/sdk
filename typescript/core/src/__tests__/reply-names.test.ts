@@ -5,8 +5,9 @@
  * A reply names what it answers for by stating a property of its request
  * again: the resource a context was gathered for, the reference a search was
  * for. `replyNames` reads each operation's list from the component schema of
- * its reply (what it requires, without `response`); `generate-ts.mjs` prints
- * the result as `REPLY_NAMES`, which `FaultyTransport` answers from.
+ * its reply (what it requires, without `response`), for the OCaml SDK's bus
+ * modules. The bus group derives the same in `codegen/lib/bus/registry.ml`
+ * and prints it as `REPLY_NAMES`, which `FaultyTransport` answers from.
  *
  * Each case hands the derivation a small registry and the schemas it names.
  * The first is the control: a registry that can be meant is derived from.

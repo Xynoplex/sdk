@@ -14,8 +14,8 @@ let banner =
   {|// ⚠ GENERATED FILE — do not edit.
 //
 // Authority:   protocol/specs/src/bus/registry.json  (channels, payloads, operations)
-// Regenerate:  node codegen/node/bus/generate-ts.mjs
-// Go counterpart: node codegen/node/bus/generate-go.mjs → go/bus
+// Regenerate:  make generate  (codegen/lib/bus/typescript.ml)
+// Go counterpart: codegen/lib/bus/go.ml → go/bus
 //
 // Payload schemas themselves live in the OpenAPI components; the registry
 // names which one each channel carries, and every payload type here is

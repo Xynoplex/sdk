@@ -1,8 +1,9 @@
 // The delivery class of every channel that crosses the wire, derived from the
-// registry's axes. One derivation: generate-ts.mjs prints it into
-// CHANNEL_ATTRS (and the JSON the Rust services embed), and
-// typescript/scripts/generators/generate-cache-refresh.mjs holds the client's refresh table to
-// it.
+// registry's axes, for codegen/node/ocaml/generate-bus.mjs, and for
+// typescript/scripts/generators/generate-cache-refresh.mjs, which holds the
+// client's refresh table to it. The bus group derives the same in
+// codegen/lib/bus/registry.ml, which writes CHANNEL_ATTRS; this copy goes
+// when those generators are ported.
 //
 // A frame's guarantee comes from its identity
 // (protocol/contract/TRANSPORT-CONTRACT.md § Delivery):

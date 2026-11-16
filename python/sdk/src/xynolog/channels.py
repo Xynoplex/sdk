@@ -1,5 +1,5 @@
 # Generated from protocol/specs/src/bus/registry.json; do not edit.
-# Regenerate: node codegen/node/bus/generate-python.mjs
+# Regenerate: make generate (codegen/lib/bus/python.ml)
 
 """Every channel of the bus, typed by the payload it carries.
 

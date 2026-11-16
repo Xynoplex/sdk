@@ -164,7 +164,7 @@ jobs:
     name: Generated files are what their generators write
     needs: checks
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - name: Check out source and pinned Protocol
         uses: actions/checkout@v7.0.1

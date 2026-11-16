@@ -12,7 +12,7 @@ module R = Tables.Bus_registry
 
 let banner =
   {|# Generated from protocol/specs/src/bus/registry.json; do not edit.
-# Regenerate: node codegen/node/bus/generate-python.mjs
+# Regenerate: make generate (codegen/lib/bus/python.ml)
 |}
 
 let is_lower_or_digit = function 'a' .. 'z' | '0' .. '9' -> true | _ -> false
