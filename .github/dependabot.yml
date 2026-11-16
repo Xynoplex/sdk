@@ -146,7 +146,7 @@ updates:
 
   - package-ecosystem: swift
     labels: ["dependencies"]
-    directory: /
+    directory: /swift/sdk
     schedule:
       interval: cron
       cronjob: "0 6 1,15 * *"

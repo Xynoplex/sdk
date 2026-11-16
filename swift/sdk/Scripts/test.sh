@@ -1,7 +1,5 @@
 #!/bin/sh
 set -eu
-# The package is the repository's: its manifest is at the root.
-cd "$(dirname "$0")/../../.."
 # SwiftPM's automatic JSON export includes dependency coverage and exceeds its output limit.
 # Build instrumented tests, then run them without asking SwiftPM to export that JSON.
 swift build --jobs 4 --force-resolved-versions --build-tests --enable-code-coverage
