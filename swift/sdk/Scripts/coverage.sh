@@ -1,6 +1,8 @@
 #!/bin/sh
 # Export both compiled test libraries, without SwiftPM's dependency-sized JSON report.
 set -eu
+# The package is the repository's: its manifest is at the root.
+cd "$(dirname "$0")/../../.."
 bin=$(swift build --force-resolved-versions --show-bin-path)
 llvm-profdata merge -sparse .build/unit-profiles/*.profraw -o .build/unit-profiles/default.profdata
 set --

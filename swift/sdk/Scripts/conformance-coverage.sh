@@ -1,11 +1,13 @@
 #!/bin/sh
 set -eu
+# The package is the repository's: its manifest is at the root.
+cd "$(dirname "$0")/../../.."
 llvm-profdata merge -sparse .build/conformance/profiles/*.profraw -o .build/conformance/coverage.profdata
 llvm-cov export -format=lcov .build/conformance/bin/XynologWireDriver \
   -instr-profile=.build/conformance/coverage.profdata \
   -ignore-filename-regex='(/Conformance/|/\.build/)' > .build/conformance/coverage.lcov
 # The build and export run at the same mount point; make filenames repository-relative.
-repo=$(CDPATH= cd ../../.. && pwd)
+repo=$(pwd)
 awk -v prefix="SF:$repo/" 'index($0, prefix) == 1 { $0="SF:" substr($0, length(prefix)+1) } { print }' \
   .build/conformance/coverage.lcov > .build/conformance/coverage.relative.lcov
 mv .build/conformance/coverage.relative.lcov .build/conformance/coverage.lcov
