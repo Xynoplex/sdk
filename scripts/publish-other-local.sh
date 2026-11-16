@@ -167,22 +167,23 @@ run_container_quietly "$RUNTIME" run --rm --memory 4g --volume "$ROOT/ocaml/sdk:
 fi
 
 if [[ "$LANGUAGE" == all || "$LANGUAGE" == swift ]]; then
-echo 'Building and archiving the Swift package in a Swift container…'
+echo 'Building the Swift package and its distribution in a Swift container…'
 swift_package_version="$(version_of swift)"
 swift_version="$(cat "$ROOT/swift/sdk/.swift-version")"
-run_container_quietly "$RUNTIME" run --rm --memory 4g --volume "$ROOT/swift/sdk:/source:ro" --volume "$PROTOCOL:/protocol:ro" \
+# The container holds the repository as a checkout lays it out: swift/, the
+# LICENSE, and Protocol at protocol/.
+run_container_quietly "$RUNTIME" run --rm --memory 4g --volume "$ROOT:/source:ro" --volume "$PROTOCOL:/protocol:ro" \
   --volume "$STATE_ROOT/swift:/out" --volume "$STATE_ROOT/swift-cache:/root/.cache" \
   --volume "$STATE_ROOT/swift-build:/build" --env "XYNOLOG_SDK_VERSION=$swift_package_version" --workdir /tmp "swift:$swift_version" bash -euc '
-    apt-get update -qq && apt-get install -y -qq --no-install-recommends zip >/dev/null
-    mkdir -p /tmp/sdk/swift/sdk /tmp/protocol /tmp/archive/sdk/swift/sdk /tmp/archive/protocol
-    cp -a /source/. /tmp/sdk/swift/sdk/
-    cp -a /protocol/. /tmp/protocol/
+    apt-get update -qq && apt-get install -y -qq --no-install-recommends python3 zip >/dev/null
+    mkdir -p /tmp/sdk/protocol
+    cp -a /source/LICENSE /source/swift /tmp/sdk/
+    cp -a /protocol/. /tmp/sdk/protocol/
     cd /tmp/sdk/swift/sdk
     if ! swift build --build-path /build --jobs 4 --force-resolved-versions --product Xynolog > /out/build.log 2>&1; then tail -n 100 /out/build.log; exit 1; fi
-    cp -a /source/. /tmp/archive/sdk/swift/sdk/
-    cp -a /protocol/. /tmp/archive/protocol/
-    cd /tmp/archive
-    rm -f "/out/xynolog-$XYNOLOG_SDK_VERSION.zip"
-    zip -qr "/out/xynolog-$XYNOLOG_SDK_VERSION.zip" sdk protocol
+    if ! sh /tmp/sdk/swift/scripts/distribution.sh "$XYNOLOG_SDK_VERSION" /build /tmp/distribution > /out/distribution.log 2>&1; then tail -n 100 /out/distribution.log; exit 1; fi
+    cd /tmp/distribution
+    rm -f "/out/sdk-swift-$XYNOLOG_SDK_VERSION.zip"
+    zip -qr "/out/sdk-swift-$XYNOLOG_SDK_VERSION.zip" sdk-swift
   '
 fi

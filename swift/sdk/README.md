@@ -375,11 +375,11 @@ The build-tool plugin runs the native Swift generator over `protocol/specs/src`,
 
 `Scripts/install-driver.sh` builds the instrumented Linux wire driver and bundles its Swift runtime. The conformance application chooses OTLP/HTTP exporters when the harness supplies `OTEL_EXPORTER_OTLP_ENDPOINT`. Its runtime matches Ubuntu 26.04. `Scripts/conformance-coverage.sh` reports the library code the driver exercised, separately from Rust's LLVM profiles.
 
-[protocol]: ../../../protocol/contract/README.md
-[conformance]: ../../../protocol/conformance/sdk/README.md
+[protocol]: ../../protocol/contract/README.md
+[conformance]: ../../protocol/conformance/sdk/README.md
 [guide]: ../../../docs/builder/DEVELOPER-GUIDE.md
 [http-client]: https://github.com/swift-server/async-http-client
 [toolchain]: .swift-version
 [quick-start]: ../../../docs/builder/QUICK-START.md
-[flows]: ../../../protocol/contract/flows
+[flows]: ../../protocol/contract/flows
 [sign-in]: ../../../docs/builder/SIGN-IN.md

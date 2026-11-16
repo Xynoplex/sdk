@@ -81,7 +81,7 @@ def files(language: str) -> list[tuple[Path, str, str]]:
         source = STATE / "opam-repo/repo" / f"archives/xynolog.{version}.tar.gz"
         return [(source, "opam-source", "xynolog")]
     if language == "swift":
-        return [(STATE / "swift" / f"xynolog-{version}.zip", "swift-source", "Xynolog")]
+        return [(STATE / "swift" / f"sdk-swift-{version}.zip", "swiftpm-package", "sdk-swift")]
     raise ValueError(f"unknown SDK language {language}")
 
 
