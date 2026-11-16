@@ -110,19 +110,25 @@ case "${1:-}" in
       Scripts/census.sh
       Scripts/refusals.sh' --memory 4g
     ;;
-  test-haskell)
+  test-haskell|haskell-dependencies)
     "$RUNTIME" build --build-arg "GHC_VERSION=$(bash "$ROOT/haskell/toolchain/toolchain.sh" --ghc)" \
       --tag xynolog-haskell-toolchain --file "$ROOT/haskell/toolchain/Dockerfile" "$ROOT/haskell/toolchain"
     # Cabal's home (its index and the store of built dependencies) outlives
     # the container, so a run builds only what changed since the last one.
-    # CI's tests job caches this directory.
+    # CI's tests job caches this directory, once haskell-dependencies has
+    # built every dependency into it.
     cabal_home="$HOME/.cache/xynolog/haskell-cabal"
     mkdir -p "$cabal_home"
-    in_container xynolog-haskell-toolchain '
+    if [[ "$1" == haskell-dependencies ]]; then
+      commands='bash run.sh --only-dependencies'
+    else
+      commands='bash run.sh /tmp/sdk
+      python3 ../coverage.py coverage.lcov'
+    fi
+    in_container xynolog-haskell-toolchain "
       cd /tmp/sdk/haskell/sdk
       cabal update
-      bash run.sh /tmp/sdk
-      python3 ../coverage.py coverage.lcov' --memory 4g --volume "$cabal_home:/cabal" --env CABAL_DIR=/cabal
+      $commands" --memory 4g --volume "$cabal_home:/cabal" --env CABAL_DIR=/cabal
     ;;
   test-ocaml)
     ocaml_toolchain_image
@@ -172,7 +178,7 @@ $groups"
     fi
     ;;
   *)
-    echo 'Usage: make-target.sh test-<language>|test-codegen|generate|check-generated' >&2
+    echo 'Usage: make-target.sh test-<language>|haskell-dependencies|test-codegen|generate|check-generated' >&2
     exit 2
     ;;
 esac

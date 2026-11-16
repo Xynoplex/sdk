@@ -122,8 +122,10 @@ jobs:
           submodules: recursive
 
       # The Haskell target keeps Cabal's home here (scripts/make-target.sh).
-      # It is saved even when the checks fail: the dependencies built are
-      # still good, and a failing branch is when the next run comes soonest.
+      # It is saved once every dependency is built, even when the checks
+      # fail: a failing branch is when the next run comes soonest. A store
+      # whose dependency build failed or was cut short is never saved: under
+      # the key it would be an exact hit that no later run saves over.
       - name: Restore Cabal's index and built dependencies
         id: cabal
         if: matrix.language == 'haskell'
@@ -134,11 +136,16 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-${{ runner.arch }}-haskell-
 
+      - name: Build Haskell's dependencies into Cabal's store
+        id: dependencies
+        if: matrix.language == 'haskell'
+        run: bash scripts/make-target.sh haskell-dependencies
+
       - name: Run the language's tests, type checks, lints and format checks
         run: make "test-$LANGUAGE"
 
       - name: Save Cabal's index and built dependencies
-        if: always() && matrix.language == 'haskell' && steps.cabal.outputs.cache-hit != 'true'
+        if: always() && steps.dependencies.outcome == 'success' && steps.cabal.outputs.cache-hit != 'true'
         uses: actions/cache/save@v6.1.0
         with:
           path: ~/.cache/xynolog/haskell-cabal
