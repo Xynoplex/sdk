@@ -1,6 +1,6 @@
 import Foundation
-import Xynolog
 import Synchronization
+import Xynolog
 
 /// Storage contexts share atomic writes. A context only hears changes made by its peers.
 public final class SharedStorage: SessionStorage {

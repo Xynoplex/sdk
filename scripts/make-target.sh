@@ -37,6 +37,10 @@ case "${1:-}" in
   test-python)
     bash "$ROOT/scripts/bundle-protocol.sh"
     in_container python:3.12-bookworm '
+      # pyright is a Node program, and its Python wrapper runs the node it
+      # finds on PATH.
+      apt-get update -qq
+      apt-get install -y -qq --no-install-recommends nodejs > /dev/null
       python -m pip install --disable-pip-version-check --no-cache-dir --root-user-action=ignore uv
       cd /tmp/sdk/python/sdk
       uv sync --locked
