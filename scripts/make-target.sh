@@ -106,11 +106,16 @@ case "${1:-}" in
   test-haskell)
     "$RUNTIME" build --build-arg "GHC_VERSION=$(bash "$ROOT/haskell/toolchain/toolchain.sh" --ghc)" \
       --tag xynolog-haskell-toolchain --file "$ROOT/haskell/toolchain/Dockerfile" "$ROOT/haskell/toolchain"
+    # Cabal's home (its index and the store of built dependencies) outlives
+    # the container, so a run builds only what changed since the last one.
+    # CI's tests job caches this directory.
+    cabal_home="$HOME/.cache/xynolog/haskell-cabal"
+    mkdir -p "$cabal_home"
     in_container xynolog-haskell-toolchain '
       cd /tmp/sdk/haskell/sdk
       cabal update
       bash run.sh /tmp/sdk
-      python3 ../coverage.py coverage.lcov' --memory 4g
+      python3 ../coverage.py coverage.lcov' --memory 4g --volume "$cabal_home:/cabal" --env CABAL_DIR=/cabal
     ;;
   test-ocaml)
     python3 "$ROOT/ocaml/check-toolchain.py"
