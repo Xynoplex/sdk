@@ -1,7 +1,7 @@
 // The delivery class of every channel that crosses the wire, derived from the
 // registry's axes. One derivation: generate-ts.mjs prints it into
 // CHANNEL_ATTRS (and the JSON the Rust services embed), and
-// packages/codegen/schemas/generate-cache-refresh.mjs holds the client's refresh table to
+// typescript/scripts/generators/generate-cache-refresh.mjs holds the client's refresh table to
 // it.
 //
 // A frame's guarantee comes from its identity

@@ -1,5 +1,5 @@
 # Generated from protocol/specs/src/session/stored.json; do not edit.
-# Regenerate: node packages/codegen/schemas/generate-stored-python.mjs
+# Regenerate: node codegen/node/schemas/generate-stored-python.mjs
 
 """What a registry of knowledge bases keeps in a `SessionStorage` (`protocol/specs/src/session/stored.json`):
 the key each thing it keeps is kept under, the shape of a knowledge base's
@@ -77,11 +77,11 @@ def kb_of_session_key(key: str) -> str | None:
 # never the did itself. What is kept is `lastEventIds`. It is written in the same call as a
 # write of one of the caches kept beside it, and only while every kept cache has no fetch in
 # flight and owes no save, and the refresher owes no refetch (a window of B19,
-# protocol/contract/CACHE-SEMANTICS.md, that holds an invalidation it has not yet run); so it
-# never leads them. Its own write is never a reason to write a cache. At disposal this is read
-# once, before any kept cache or the refresher is disposed. Nothing is kept for a token whose
-# person the gateway has not named, and forgetting the knowledge base's stored sign-in, however
-# it is forgotten, deletes it.
+# contract/CACHE-SEMANTICS.md, that holds an invalidation it has not yet run); so it never leads
+# them. Its own write is never a reason to write a cache. At disposal this is read once, before
+# any kept cache or the refresher is disposed. Nothing is kept for a token whose person the
+# gateway has not named, and forgetting the knowledge base's stored sign-in, however it is
+# forgotten, deletes it.
 _LAST_EVENT_ID_KEY_PREFIX: Final = "xynolog.lastEventId."
 
 
@@ -102,10 +102,9 @@ type LastEventIds = dict[ResourceId, PersistedEventId]
 
 # What a client keeps of a query, for one person, is kept under this followed by the knowledge
 # base's id, a dot, the person's key as `lastEventIdKeyPrefix` makes it, a dot and the query's
-# name: one `cacheDocument` for each query protocol/specs/src/client/refresh.json marks
-# `persisted`. Nothing is kept for a token whose person the gateway has not named, and
-# forgetting the knowledge base's stored sign-in, however it is forgotten, deletes the key of
-# every kept query.
+# name: one `cacheDocument` for each query specs/src/client/refresh.json marks `persisted`.
+# Nothing is kept for a token whose person the gateway has not named, and forgetting the
+# knowledge base's stored sign-in, however it is forgotten, deletes the key of every kept query.
 _CACHE_KEY_PREFIX: Final = "xynolog.cache."
 
 # The queries a client keeps across a restart, each by its name in
@@ -137,8 +136,8 @@ def cache_key(kb_id: str, person_key: str, query: KeptQuery) -> str:
     return f"{_CACHE_KEY_PREFIX}{kb_id}.{person_key}.{query}"
 
 
-# The key a kept query that is per nothing (a `queries` row of
-# protocol/specs/src/client/refresh.json with no `per`) keeps its one entry under.
+# The key a kept query that is per nothing (a `queries` row of specs/src/client/refresh.json
+# with no `per`) keeps its one entry under.
 type WholeKey = Literal["_"]
 WHOLE_KEY: Final[WholeKey] = "_"
 

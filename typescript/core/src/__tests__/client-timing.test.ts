@@ -15,7 +15,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const GENERATOR = fileURLToPath(new URL('../../../../codegen/schemas/generate-client-timing.mjs', import.meta.url));
+const GENERATOR = fileURLToPath(new URL('../../../scripts/generators/generate-client-timing.mjs', import.meta.url));
 const TABLE = fileURLToPath(new URL('../../../../protocol/specs/src/client/timing.json', import.meta.url));
 
 interface Entry {

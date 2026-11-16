@@ -1,6 +1,6 @@
 /**
  * What each live query's cache holds, as protocol/specs/src/client/refresh.json's `value` says. The mapping
- * is generated (packages/codegen/schemas/generate-cache-refresh.mjs): `CACHE_VALUES`, each query's component
+ * is generated (typescript/scripts/generators/generate-cache-refresh.mjs): `CACHE_VALUES`, each query's component
  * and the members within it, and `CacheValues`, the type each names, which types the namespaces' caches.
  * Held here: that the generated mapping names refresh.json's rows, and, at compile time (`shownCensus`), that
  * what each live query shows, which namespaces/types.ts writes by hand in the names consumers read
@@ -15,7 +15,7 @@ import { CACHE_QUERIES, CACHE_VALUES, type CacheQuery, type CacheValues } from '
 import type { CacheObservable } from '../awaitable';
 import type { BrowseNamespace, GatherNamespace, MatchNamespace } from '../namespaces/types';
 
-/** What packages/codegen/schemas/cache-refresh-table.mjs reads of a query's `value`. */
+/** What typescript/scripts/generators/cache-refresh-table.mjs reads of a query's `value`. */
 interface Value {
   component: string;
   members: string[];
@@ -25,7 +25,7 @@ type ReadCacheRefresh = (root: string, tablePath: string, refuse: (message: stri
 
 const ROOT = fileURLToPath(new URL('../../../..', import.meta.url));
 const { readCacheRefresh }: { readCacheRefresh: ReadCacheRefresh } = await import(
-  fileURLToPath(new URL('../../../../codegen/schemas/cache-refresh-table.mjs', import.meta.url))
+  fileURLToPath(new URL('../../../scripts/generators/cache-refresh-table.mjs', import.meta.url))
 );
 
 const { values } = readCacheRefresh(ROOT, `${ROOT}/protocol/specs/src/client/refresh.json`, (message) => {

@@ -5,7 +5,7 @@ import Foundation
 // and leaves out of what it reads a member the table reads as absent. The table is generated at
 // build time (requiredSchemas, from the SDK's copy of it,
 // Sources/XynologCodegen/required-schemas.json), by the rules of
-// packages/codegen/schemas/required-shapes.mjs, which states what each part of a shape means and
+// typescript/scripts/generators/required-shapes.mjs, which states what each part of a shape means and
 // the order a reader walks them in.
 
 /// The first thing wrong with a value: the way to the member it is at (the names of the members it

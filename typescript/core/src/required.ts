@@ -5,7 +5,7 @@
  * Every SDK holds a reply to what its schema requires before it reads it, and
  * names the first fault it finds the same way, by the same table: what each
  * schema requires is generated from the spec (`generated/required-schemas.ts`,
- * by the rules of packages/codegen/schemas/required-shapes.mjs, which every SDK's table is
+ * by the rules of typescript/scripts/generators/required-shapes.mjs, which every SDK's table is
  * written by). This SDK does not decode a reply: it refuses one with a fault,
  * as every other SDK refuses it, and reads the rest as its schema's type,
  * without each member the table reads as absent (`recognized`).
@@ -28,7 +28,7 @@ interface Step {
   readonly max?: number;
 }
 
-/** What a value must be: packages/codegen/schemas/required-shapes.mjs states what each part means. */
+/** What a value must be: typescript/scripts/generators/required-shapes.mjs states what each part means. */
 export interface Shape {
   readonly ref?: SchemaName;
   readonly kinds?: readonly Kind[];

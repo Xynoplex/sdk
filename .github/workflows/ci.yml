@@ -133,6 +133,20 @@ jobs:
           flags: go-sdk
           fail_ci_if_error: false
 
+  generated:
+    name: Generated files are what their generators write
+    needs: checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out source and pinned Protocol
+        uses: actions/checkout@v7.0.1
+        with:
+          submodules: recursive
+
+      - name: Check every generation group
+        run: make check-generated
+
   # No dependency in any lockfile has a published advisory that advisories.toml
   # does not ignore with a reason, and no ignore outlives its finding
   # (build-tools/advisories.py).
@@ -178,7 +192,7 @@ jobs:
   gate:
     name: CI Gate
     if: always()
-    needs: [dco, labels, checks, artifacts, tests, advisories, crates]
+    needs: [dco, labels, checks, artifacts, tests, generated, advisories, crates]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7.0.1

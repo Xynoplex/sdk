@@ -112,8 +112,31 @@ case "${1:-}" in
       python3 probes/check-api-controls.py
       dune runtest' --memory 4g
     ;;
+  generate|check-generated)
+    # Each group is codegen/node/package.json's generate:<group>, in the order
+    # it lists them; check-generated runs each one's :check, which compares
+    # the committed files and writes nothing. generate writes into the
+    # checkout itself.
+    bash "$ROOT/scripts/bundle-protocol.sh"
+    suffix=""
+    [[ "$1" == check-generated ]] && suffix=:check
+    groups='
+      cd typescript
+      npm install --no-package-lock --ignore-scripts
+      ln -sfn ../../typescript/node_modules ../codegen/node/node_modules
+      cd ../codegen/node
+      for script in $(node -p "Object.keys(require(\"./package.json\").scripts).filter((s) => /^generate:[a-z-]+$/.test(s)).join(\" \")"); do
+        npm run --silent "$script'"$suffix"'"
+      done'
+    if [[ "$1" == generate ]]; then
+      "$RUNTIME" run --rm --volume "$ROOT:/sdk" --workdir /sdk node:26-bookworm bash -euc "$groups"
+    else
+      in_container node:26-bookworm "cd /tmp/sdk
+$groups"
+    fi
+    ;;
   *)
-    echo 'Usage: make-target.sh test-<language>' >&2
+    echo 'Usage: make-target.sh test-<language>|generate|check-generated' >&2
     exit 2
     ;;
 esac

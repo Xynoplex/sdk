@@ -2,7 +2,7 @@
 
 Every SDK holds what it reads to the table of what each component schema
 requires (`xynolog._required_table`, written by the rules of
-packages/codegen/schemas/required-shapes.mjs) before it decodes it, and
+typescript/scripts/generators/required-shapes.mjs) before it decodes it, and
 names the first fault it finds the same way: a member the value lacks, or
 one that is not what its schema allows, by the names the schema gives the
 way to it. A member that holds a text none of the texts it is `recognized`
@@ -46,7 +46,7 @@ class _Step(BaseModel, frozen=True, extra="forbid"):
 
 
 class _Shape(BaseModel, frozen=True, extra="forbid"):
-    """What a value must be: packages/codegen/schemas/required-shapes.mjs states what each part means."""
+    """What a value must be: typescript/scripts/generators/required-shapes.mjs states what each part means."""
 
     ref: str | None = None
     kinds: tuple[_Kind, ...] | None = None

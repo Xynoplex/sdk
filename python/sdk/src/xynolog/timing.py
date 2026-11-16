@@ -1,5 +1,5 @@
 # Generated from protocol/specs/src/client/timing.json; do not edit.
-# Regenerate: node packages/codegen/schemas/generate-client-timing-python.mjs
+# Regenerate: node codegen/node/schemas/generate-client-timing-python.mjs
 
 """The timing a Xynolog client keeps: its deadlines, its retry budgets, the
 cadence of its stream, and what it keeps count of.
@@ -89,18 +89,18 @@ EMIT_RETRY: Final = RetryPolicy(attempts=4, initial_delay_ms=1000, max_delay_ms=
 # after it, for as long as the process lives. An upload has no deadline: how long it takes is
 # how large the resource is. A read of anchored text may be held by the Archivist while the
 # Smelter reads the content, and the gateway waits for the Archivist as the Archivist's document
-# states (protocol/specs/src/archivist/openapi.json): this deadline is longer than its
-# `connectSeconds` and `readSeconds` together, and the hold is shorter than `readSeconds`, which
+# states (specs/src/archivist/openapi.json): this deadline is longer than its `connectSeconds`
+# and `readSeconds` together, and the hold is shorter than `readSeconds`, which
 # `lint:spec-protocol` holds.
 HTTP_REQUEST_TIMEOUT_MS: Final = 30000
 
 # The wait before an HTTP request that is neither the stream nor an emit is made a second time.
 # It is made again when the gateway answered it with a status that promises recovery, or did not
 # answer at all, and a repeat cannot cause a second effect: its method cannot, or it carries an
-# `Idempotency-Key`, as an upload does (`transport` in protocol/specs/src/retry/cases.json);
-# once, after this wait, or after a refusal's `Retry-After` when that is longer. A request whose
-# credential was refused is renewed and sent again at once, without this wait, and one
-# unanswered at its deadline (`httpRequestTimeoutMs`) is not made again.
+# `Idempotency-Key`, as an upload does (`transport` in specs/src/retry/cases.json); once, after
+# this wait, or after a refusal's `Retry-After` when that is longer. A request whose credential
+# was refused is renewed and sent again at once, without this wait, and one unanswered at its
+# deadline (`httpRequestTimeoutMs`) is not made again.
 REQUEST_RETRY_PAUSE_MS: Final = 300
 
 # How long a client waits for the gateway to answer the request that opens its stream (POST

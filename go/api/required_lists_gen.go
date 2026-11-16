@@ -1,6 +1,6 @@
 // Code generated from the component schemas of protocol/specs/src/openapi.json and api/client_gen.go — DO NOT EDIT.
 //
-// Regenerate: node packages/codegen/schemas/generate-required-lists-go.mjs
+// Regenerate: node codegen/node/schemas/generate-required-lists-go.mjs
 
 package api
 

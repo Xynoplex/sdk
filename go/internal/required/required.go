@@ -4,8 +4,8 @@
 // before it decodes it, and names the first fault it finds the same way.
 //
 // What a type of package api requires is its schema's, read from the spec
-// (schemas_gen.json, which packages/codegen/schemas/generate-required-go.mjs writes by
-// the rules of packages/codegen/schemas/required-shapes.mjs), and the type is found
+// (schemas_gen.json, which codegen/node/schemas/generate-required-go.mjs writes by
+// the rules of typescript/scripts/generators/required-shapes.mjs), and the type is found
 // there by its name, which is its schema's. What any other type requires is
 // read from it: a struct is an object, and requires each member it writes
 // without omitempty, which may be null where it is a pointer, an interface
@@ -30,7 +30,7 @@ import (
 	"github.com/xynolog/sdk/go/bus"
 )
 
-// shape is what a value must be: packages/codegen/schemas/required-shapes.mjs states
+// shape is what a value must be: typescript/scripts/generators/required-shapes.mjs states
 // what each part means.
 type shape struct {
 	Ref   string   `json:"ref"`
@@ -96,7 +96,7 @@ func readSchemas(source []byte) map[string]*shape {
 	decoder := json.NewDecoder(bytes.NewReader(source))
 	decoder.DisallowUnknownFields()
 	if err := decoder.Decode(&table); err != nil {
-		panic("schemas_gen.json is not what packages/codegen/schemas/generate-required-go.mjs writes: " + err.Error())
+		panic("schemas_gen.json is not what codegen/node/schemas/generate-required-go.mjs writes: " + err.Error())
 	}
 	return table.Schemas
 }

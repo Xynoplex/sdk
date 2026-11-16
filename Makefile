@@ -2,7 +2,7 @@
 
 LANGUAGES := typescript python rust go csharp haskell kotlin ocaml swift
 
-.PHONY: help build test verify-artifacts clean clean-local $(LANGUAGES) $(addprefix test-,$(LANGUAGES)) $(addsuffix -clean,$(LANGUAGES))
+.PHONY: help build test generate check-generated verify-artifacts clean clean-local $(LANGUAGES) $(addprefix test-,$(LANGUAGES)) $(addsuffix -clean,$(LANGUAGES))
 
 # `make help` prints the `##` lines below, in order (build-tools/make-help.awk).
 ##@ Xynolog SDK: make [target] [VARIABLE=value ...]
@@ -37,6 +37,15 @@ test: $(addprefix test-,$(LANGUAGES))
 ## test-<language>: One SDK's own tests and checks, in its toolchain's container (Go's write coverage.txt): <list>
 $(addprefix test-,$(LANGUAGES)):
 	bash scripts/make-target.sh $@
+
+##@ Generate
+## generate: Write every SDK's generated files from the pinned Protocol
+generate:
+	bash scripts/make-target.sh generate
+
+## check-generated: Fail when a committed generated file differs from what its generator writes
+check-generated:
+	bash scripts/make-target.sh check-generated
 
 ##@ Clean
 ## clean: Remove every language's output, the local artifacts, caches and bundles
