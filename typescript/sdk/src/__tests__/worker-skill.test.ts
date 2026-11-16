@@ -1,5 +1,11 @@
 /**
- * The `xynolog-worker` skill's complete worker, run.
+ * The `xynolog-worker` skill's TypeScript, type-checked, and its complete
+ * worker, run.
+ *
+ * Every TypeScript block of the skill type-checks as a module of its own,
+ * against the built packages, resolved as a Node program that installed them
+ * resolves them. A block that awaits what is not thenable fails too: that is
+ * legal TypeScript, and it is how a live query is misused.
  *
  * The TypeScript block of skills/xynolog-worker/SKILL.md that
  * has `main` is a whole program. Node is given it here word for word, as
@@ -19,22 +25,28 @@ import { existsSync, readFileSync } from 'node:fs';
 import { createServer, type ServerResponse } from 'node:http';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import * as ts from 'typescript';
 import { afterEach, describe, expect, it } from 'vitest';
 import { isObject, isString } from '@xynolog/core';
 import { JOB_CLAIM_CHANNELS, JOB_COMMIT_CHANNELS } from '../claims';
 
 const REPO = join(dirname(fileURLToPath(import.meta.url)), '../../../..');
 const PACKAGE = join(REPO, 'typescript/sdk');
-const SKILL = readFileSync(join(REPO, 'skills/xynolog-worker/SKILL.md'), 'utf-8');
+const SKILL_PATH = 'skills/xynolog-worker/SKILL.md';
+const SKILL = readFileSync(join(REPO, SKILL_PATH), 'utf-8');
 /** What a grant that proves an account by its key posts. */
 const ASSERTION: { form: string[]; grantType: string; assertionType: string } = JSON.parse(
   readFileSync(join(REPO, 'protocol/specs/src/session/client-assertion-cases.json'), 'utf-8'),
 );
 
+/** The skill's TypeScript blocks: each one's body, and the line of the skill its fence opens on. */
+const FENCES = [...SKILL.matchAll(/^```(?:ts|typescript)\b.*\n([\s\S]*?)^```$/gm)].map((fence) => ({
+  body: fence[1],
+  line: SKILL.slice(0, fence.index).split('\n').length,
+}));
+
 /** The skill's TypeScript blocks that are a whole program: the ones that have a `main`. */
-const PROGRAMS = [...SKILL.matchAll(/^```typescript\n([\s\S]*?)^```$/gm)]
-  .map((fence) => fence[1])
-  .filter((block) => block.includes('async function main('));
+const PROGRAMS = FENCES.map((fence) => fence.body).filter((block) => block.includes('async function main('));
 
 /** A member of a JSON object. One that is not there is a failure that says so. */
 function member(value: unknown, name: string): unknown {
@@ -219,6 +231,77 @@ const JOB = {
   progress: {},
 };
 
+/** Whether some part of `type` has a callable `then`. `any` and `unknown` might, so they count. */
+function thenable(checker: ts.TypeChecker, type: ts.Type): boolean {
+  return (type.isUnion() ? type.types : [type]).some((part) => {
+    if (part.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)) return true;
+    const then = part.getProperty('then');
+    const declaration = then?.declarations?.[0];
+    if (!then || !declaration) return false;
+    const thenType = checker.getTypeOfSymbolAtLocation(then, declaration);
+    return (thenType.isUnion() ? thenType.types : [thenType]).some((callee) => callee.getCallSignatures().length > 0);
+  });
+}
+
+describe('the TypeScript of the xynolog-worker skill', () => {
+  it('type-checks, each block a module of its own, against the built packages, and awaits only what is thenable', () => {
+    expect(FENCES.length, 'the skill shows TypeScript').toBeGreaterThan(0);
+    const { options, errors } = ts.convertCompilerOptionsFromJson({
+      strict: true,
+      target: 'es2022',
+      lib: ['es2022'],
+      module: 'nodenext',
+      moduleResolution: 'nodenext',
+      moduleDetection: 'force',
+      types: ['node'],
+      skipLibCheck: true,
+      noEmit: true,
+    }, PACKAGE);
+    expect(errors).toEqual([]);
+
+    // Each block is a file of the package's directory that only this program
+    // holds, so its imports resolve from there, as an installed package's do.
+    const blocks = new Map(FENCES.map((fence) => [join(PACKAGE, `xynolog-worker-skill.L${fence.line}.ts`), fence]));
+    const host = ts.createCompilerHost(options);
+    const { fileExists, readFile, getSourceFile } = host;
+    host.fileExists = (name) => blocks.has(name) || fileExists(name);
+    host.readFile = (name) => {
+      const block = blocks.get(name);
+      return block ? block.body : readFile(name);
+    };
+    host.getSourceFile = (name, languageVersionOrOptions, ...rest) => {
+      const block = blocks.get(name);
+      return block
+        ? ts.createSourceFile(name, block.body, languageVersionOrOptions, true)
+        : getSourceFile(name, languageVersionOrOptions, ...rest);
+    };
+    const program = ts.createProgram([...blocks.keys()], options, host);
+    const checker = program.getTypeChecker();
+
+    /** Where in the skill a position of a block is. Its body's first line is the line after its fence. */
+    const where = (file: ts.SourceFile, position: number): string => {
+      const block = blocks.get(file.fileName);
+      const { line } = file.getLineAndCharacterOfPosition(position);
+      return block ? `${SKILL_PATH}:${block.line + line + 1}` : `${file.fileName}:${line + 1}`;
+    };
+    const failures = ts.getPreEmitDiagnostics(program)
+      .filter((diagnostic) => diagnostic.category === ts.DiagnosticCategory.Error)
+      .map((diagnostic) => `${diagnostic.file && diagnostic.start !== undefined ? where(diagnostic.file, diagnostic.start) : '(no position)'}  TS${diagnostic.code}: ${ts.flattenDiagnosticMessageText(diagnostic.messageText, ' ')}`);
+    for (const name of blocks.keys()) {
+      const file = program.getSourceFile(name);
+      if (!file) throw new Error(`${name} is not in the program`);
+      const visit = (node: ts.Node): void => {
+        if (ts.isAwaitExpression(node) && !thenable(checker, checker.getTypeAtLocation(node.expression))) {
+          failures.push(`${where(file, node.getStart(file))}  awaits ${checker.typeToString(checker.getTypeAtLocation(node.expression))}, which is not thenable`);
+        }
+        ts.forEachChild(node, visit);
+      };
+      visit(file);
+    }
+    expect(failures).toEqual([]);
+  });
+});
+
 describe('the complete worker of the xynolog-worker skill', () => {
   let gateway: StandIn | undefined;
   let worker: ChildProcessWithoutNullStreams | undefined;
@@ -232,7 +315,7 @@ describe('the complete worker of the xynolog-worker skill', () => {
     expect(PROGRAMS, 'the skill shows one TypeScript program').toHaveLength(1);
     const [program] = PROGRAMS;
     for (const imported of program.matchAll(/from '@xynolog\/([a-z-]+)'/g)) {
-      const built = join(REPO, 'packages', 'typescript', imported[1], 'dist/index.js');
+      const built = join(REPO, 'typescript', imported[1], 'dist/index.js');
       if (!existsSync(built)) throw new Error(`${built} is missing: this test runs the built packages, so run \`npm run build --workspace=@xynolog/sdk\` first`);
     }
 

@@ -561,7 +561,11 @@ Set `XYNOLOG_BUS_LOG=1` in the worker's environment. Every emit, reply and strea
 - **Claims answered with nothing pending**: the worker is healthy and the queue has no job its claim matches.
 
 ```typescript
-xynolog.state$.subscribe((state) => console.log(`connection: ${state}`));
+import type { XynologClient } from '@xynolog/sdk';
+
+function watchConnection(client: XynologClient): void {
+  client.state$.subscribe((state) => console.log(`connection: ${state}`));
+}
 ```
 
 `degraded` means the stream has been reconnecting for more than three seconds, which is the state worth reporting from a health endpoint.
