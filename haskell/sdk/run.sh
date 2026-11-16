@@ -1,11 +1,18 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")"
-root=${1:?expected repository root}
+# One plan for the build and for --only-dependencies, so the dependencies
+# built alone are the ones the build uses.
+build=(cabal build all --enable-tests --enable-coverage)
+if [[ "${1:-}" == --only-dependencies ]]; then
+  "${build[@]}" --only-dependencies
+  exit
+fi
+root=${1:?expected repository root or --only-dependencies}
 bash ../toolchain/toolchain.sh --check
 cabal check
 cabal run xynolog-codegen -- --check "$root"
-cabal build all --enable-tests --enable-coverage
+"${build[@]}"
 mkdir -p conformance/bin
 for role in wire live; do
   name="xynolog-haskell-$role-driver"
