@@ -24,12 +24,36 @@ Pointer of the value refused; nothing is defaulted.
 - `Spec`: every file accounted for, and every `$ref` resolved to a file of
   the kind its place calls for.
 
+## The groups
+
+A group writes one subject's files, in every language it has, from the
+model, and refuses a spec that breaks a rule its files rely on. `Groups.all`
+lists them; each group's modules are a directory of `lib/`, with one module
+per language it writes:
+
+- `bus`: every SDK's bus vocabulary, from `bus/registry.json`.
+  `Bus.Registry` holds the registry to the bus's rules and derives what the
+  languages share; `Bus.Typescript`, `Bus.Go` and `Bus.Python` write
+  `typescript/core/src`'s bus files, `go/bus`'s `_gen.go` files and
+  `python/sdk/src/xynolog`'s `channels.py` and `operations.py`.
+
+`Text` measures and spells text as the generated files always have: a width
+in UTF-16 code units, a string as JSON writes it. `Output` is the drift gate.
+
 ## Running it
 
 ```sh
 make test-codegen
 ```
 
-builds the project, checks its formatting, runs its tests, and decodes the
-pinned Protocol with `xynolog-codegen --check`, in the toolchain's container.
-It writes no generated output yet.
+builds the project, checks its formatting, runs its tests, and reads the
+pinned Protocol with `xynolog-codegen read`, in the toolchain's container.
+
+```sh
+make generate
+make check-generated
+```
+
+run every group, the OCaml ones with `xynolog-codegen generate` and
+`xynolog-codegen check`: generate writes each group's files into the
+checkout, and check compares them with the committed ones and writes nothing.

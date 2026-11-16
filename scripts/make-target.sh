@@ -152,17 +152,19 @@ case "${1:-}" in
       find bin lib test -name "*.ml*" | sort | xargs dune exec -- ocamlformat --check
       dune runtest
       dune exec -- ./test/census.exe ../protocol/specs/src
-      dune exec -- xynolog-codegen --check ../protocol/specs/src' --memory 4g
+      dune exec -- xynolog-codegen read ..' --memory 4g
     ;;
   generate|check-generated)
-    # Each group is codegen/node/package.json's generate:<group>, in the order
-    # it lists them; check-generated runs each one's :check, which compares
-    # the committed files and writes nothing. generate writes into the
-    # checkout itself.
+    # The Node groups are codegen/node/package.json's generate:<group>, in the
+    # order it lists them; the OCaml groups are xynolog-codegen's. check-generated
+    # compares each group's files with the committed ones and writes nothing.
+    # generate writes into the checkout itself, and builds xynolog-codegen in a
+    # copy of codegen/, never in the checkout.
     bash "$ROOT/scripts/bundle-protocol.sh"
+    ocaml_toolchain_image
     suffix=""
     [[ "$1" == check-generated ]] && suffix=:check
-    groups='
+    node_groups='
       cd typescript
       npm install --no-package-lock --ignore-scripts
       ln -sfn ../../typescript/node_modules ../codegen/node/node_modules
@@ -171,10 +173,19 @@ case "${1:-}" in
         npm run --silent "$script'"$suffix"'"
       done'
     if [[ "$1" == generate ]]; then
-      "$RUNTIME" run --rm --volume "$ROOT:/sdk" --workdir /sdk node:26-bookworm bash -euc "$groups"
+      "$RUNTIME" run --rm --volume "$ROOT:/sdk" --workdir /sdk node:26-bookworm bash -euc "$node_groups"
+      "$RUNTIME" run --rm --volume "$ROOT:/sdk" --workdir /tmp --memory 4g xynolog-ocaml-toolchain bash -euc '
+        cp -a /sdk/codegen /tmp/codegen
+        cd /tmp/codegen
+        dune build ./bin/main.exe
+        dune exec -- xynolog-codegen generate /sdk'
     else
       in_container node:26-bookworm "cd /tmp/sdk
-$groups"
+$node_groups"
+      in_container xynolog-ocaml-toolchain '
+        cd /tmp/sdk/codegen
+        dune build ./bin/main.exe
+        dune exec -- xynolog-codegen check ..' --memory 4g
     fi
     ;;
   *)

@@ -9,6 +9,7 @@ let channel_order =
         schemas = Decode.required o "schemas" (Decode.list Decode.string);
       })
 
+(* The lines written before an entry, and the comment after it on its line. *)
 type docs = { lead : string list; trailing : string }
 
 let docs =
@@ -18,229 +19,101 @@ let docs =
         trailing = Decode.required o "trailing" Decode.string;
       })
 
-type schema_docs = { lead : string list; trailing : string }
+(* What a channel carries, by its shape. Only a channel that carries a schema
+   is validated against one, and then against that schema or none. Only a
+   stored event names an event and its payload, and its flags are true or
+   absent. *)
+type payload =
+  | Schema of {
+      schema : string;
+      validate : string option;
+      ts_refinement : string option;
+    }
+  | Envelope of { schema : string }
+  | Stored_event of {
+      event : string;
+      payload : string;
+      enriched : bool;
+      system : bool;
+      ts_refinement : string option;
+    }
+  | Void
+  | Empty
 
-let schema_docs =
-  Decode.obj (fun o : schema_docs ->
-      {
-        lead = Decode.required o "lead" (Decode.list Decode.string);
-        trailing = Decode.required o "trailing" Decode.string;
-      })
-
-type channel_stored_event = {
+type channel = {
   channel : string;
-  event : string;
-  payload : string;
-  validate : unit;
+  payload : payload;
   docs : docs;
-  schema_docs : schema_docs;
-  enriched : bool option;
-  ts_refinement : string option;
-  system : bool option;
+  schema_docs : docs;
 }
 
-let channel_stored_event =
-  Decode.obj (fun o : channel_stored_event ->
-      Decode.required o "shape" (Decode.literal "storedEvent");
+let flag o name =
+  Option.is_some
+    (Decode.optional o name (fun cursor ->
+         if not (Decode.bool cursor) then
+           Decode.refuse cursor "a flag is true, or absent"))
+
+let channel_of payload =
+  Decode.obj (fun o : channel ->
       {
         channel = Decode.required o "channel" Decode.string;
-        event = Decode.required o "event" Decode.string;
-        payload = Decode.required o "payload" Decode.string;
-        validate = Decode.required o "validate" Decode.null;
+        payload = payload o;
         docs = Decode.required o "docs" docs;
-        schema_docs = Decode.required o "schemaDocs" schema_docs;
-        enriched = Decode.optional o "enriched" Decode.bool;
-        ts_refinement = Decode.optional o "tsRefinement" Decode.string;
-        system = Decode.optional o "system" Decode.bool;
+        schema_docs = Decode.required o "schemaDocs" docs;
       })
 
-type channel_schema_docs = { lead : string list; trailing : string }
-
-let channel_schema_docs =
-  Decode.obj (fun o : channel_schema_docs ->
-      {
-        lead = Decode.required o "lead" (Decode.list Decode.string);
-        trailing = Decode.required o "trailing" Decode.string;
-      })
-
-type channel_schema_schema_docs = { lead : string list; trailing : string }
-
-let channel_schema_schema_docs =
-  Decode.obj (fun o : channel_schema_schema_docs ->
-      {
-        lead = Decode.required o "lead" (Decode.list Decode.string);
-        trailing = Decode.required o "trailing" Decode.string;
-      })
-
-type channel_schema = {
-  channel : string;
-  schema : string;
-  validate : string option;
-  docs : channel_schema_docs;
-  schema_docs : channel_schema_schema_docs;
-  ts_refinement : string option;
-}
-
-let channel_schema =
-  Decode.obj (fun o : channel_schema ->
-      Decode.required o "shape" (Decode.literal "schema");
-      {
-        channel = Decode.required o "channel" Decode.string;
-        schema = Decode.required o "schema" Decode.string;
-        validate = Decode.required o "validate" (Decode.nullable Decode.string);
-        docs = Decode.required o "docs" channel_schema_docs;
-        schema_docs = Decode.required o "schemaDocs" channel_schema_schema_docs;
-        ts_refinement = Decode.optional o "tsRefinement" Decode.string;
-      })
-
-type channel_void_docs = { lead : Decode.nothing list; trailing : string }
-
-let channel_void_docs =
-  Decode.obj (fun o : channel_void_docs ->
-      {
-        lead = Decode.required o "lead" (Decode.list Decode.nothing);
-        trailing = Decode.required o "trailing" Decode.string;
-      })
-
-type channel_void_schema_docs = {
-  lead : Decode.nothing list;
-  trailing : string;
-}
-
-let channel_void_schema_docs =
-  Decode.obj (fun o : channel_void_schema_docs ->
-      {
-        lead = Decode.required o "lead" (Decode.list Decode.nothing);
-        trailing = Decode.required o "trailing" Decode.string;
-      })
-
-type channel_void = {
-  channel : string;
-  validate : unit;
-  docs : channel_void_docs;
-  schema_docs : channel_void_schema_docs;
-}
-
-let channel_void =
-  Decode.obj (fun o : channel_void ->
-      Decode.required o "shape" (Decode.literal "void");
-      {
-        channel = Decode.required o "channel" Decode.string;
-        validate = Decode.required o "validate" Decode.null;
-        docs = Decode.required o "docs" channel_void_docs;
-        schema_docs = Decode.required o "schemaDocs" channel_void_schema_docs;
-      })
-
-type channel_envelope_docs = { lead : string list; trailing : string }
-
-let channel_envelope_docs =
-  Decode.obj (fun o : channel_envelope_docs ->
-      {
-        lead = Decode.required o "lead" (Decode.list Decode.string);
-        trailing = Decode.required o "trailing" Decode.string;
-      })
-
-type channel_envelope_schema_docs = {
-  lead : Decode.nothing list;
-  trailing : string;
-}
-
-let channel_envelope_schema_docs =
-  Decode.obj (fun o : channel_envelope_schema_docs ->
-      {
-        lead = Decode.required o "lead" (Decode.list Decode.nothing);
-        trailing = Decode.required o "trailing" Decode.string;
-      })
-
-type channel_envelope = {
-  channel : string;
-  schema : string;
-  validate : unit;
-  docs : channel_envelope_docs;
-  schema_docs : channel_envelope_schema_docs;
-}
-
-let channel_envelope =
-  Decode.obj (fun o : channel_envelope ->
-      Decode.required o "shape" (Decode.literal "envelope");
-      {
-        channel = Decode.required o "channel" Decode.string;
-        schema = Decode.required o "schema" Decode.string;
-        validate = Decode.required o "validate" Decode.null;
-        docs = Decode.required o "docs" channel_envelope_docs;
-        schema_docs =
-          Decode.required o "schemaDocs" channel_envelope_schema_docs;
-      })
-
-type channel_empty_docs = { lead : string list; trailing : string }
-
-let channel_empty_docs =
-  Decode.obj (fun o : channel_empty_docs ->
-      {
-        lead = Decode.required o "lead" (Decode.list Decode.string);
-        trailing = Decode.required o "trailing" Decode.string;
-      })
-
-type channel_empty_schema_docs = {
-  lead : Decode.nothing list;
-  trailing : string;
-}
-
-let channel_empty_schema_docs =
-  Decode.obj (fun o : channel_empty_schema_docs ->
-      {
-        lead = Decode.required o "lead" (Decode.list Decode.nothing);
-        trailing = Decode.required o "trailing" Decode.string;
-      })
-
-type channel_empty = {
-  channel : string;
-  validate : unit;
-  docs : channel_empty_docs;
-  schema_docs : channel_empty_schema_docs;
-}
-
-let channel_empty =
-  Decode.obj (fun o : channel_empty ->
-      Decode.required o "shape" (Decode.literal "empty");
-      {
-        channel = Decode.required o "channel" Decode.string;
-        validate = Decode.required o "validate" Decode.null;
-        docs = Decode.required o "docs" channel_empty_docs;
-        schema_docs = Decode.required o "schemaDocs" channel_empty_schema_docs;
-      })
-
-type channel =
-  | Stored_event of channel_stored_event
-  | Schema of channel_schema
-  | Void of channel_void
-  | Envelope of channel_envelope
-  | Empty of channel_empty
+let no_validate o = Decode.required o "validate" Decode.null
 
 let channel =
   Decode.variant "shape"
     [
-      ("storedEvent", fun c -> (Stored_event (channel_stored_event c) : channel));
-      ("schema", fun c -> (Schema (channel_schema c) : channel));
-      ("void", fun c -> (Void (channel_void c) : channel));
-      ("envelope", fun c -> (Envelope (channel_envelope c) : channel));
-      ("empty", fun c -> (Empty (channel_empty c) : channel));
+      ( "schema",
+        channel_of (fun o ->
+            Decode.required o "shape" (Decode.literal "schema");
+            Schema
+              {
+                schema = Decode.required o "schema" Decode.non_empty_string;
+                validate =
+                  Decode.required o "validate"
+                    (Decode.nullable Decode.non_empty_string);
+                ts_refinement = Decode.optional o "tsRefinement" Decode.string;
+              }) );
+      ( "envelope",
+        channel_of (fun o ->
+            Decode.required o "shape" (Decode.literal "envelope");
+            no_validate o;
+            Envelope
+              { schema = Decode.required o "schema" Decode.non_empty_string })
+      );
+      ( "storedEvent",
+        channel_of (fun o ->
+            Decode.required o "shape" (Decode.literal "storedEvent");
+            no_validate o;
+            Stored_event
+              {
+                event = Decode.required o "event" Decode.string;
+                payload = Decode.required o "payload" Decode.non_empty_string;
+                enriched = flag o "enriched";
+                system = flag o "system";
+                ts_refinement = Decode.optional o "tsRefinement" Decode.string;
+              }) );
+      ( "void",
+        channel_of (fun o ->
+            Decode.required o "shape" (Decode.literal "void");
+            no_validate o;
+            Void) );
+      ( "empty",
+        channel_of (fun o ->
+            Decode.required o "shape" (Decode.literal "empty");
+            no_validate o;
+            Empty) );
     ]
-
-type operation_docs = { lead : string list; trailing : string }
-
-let operation_docs =
-  Decode.obj (fun o : operation_docs ->
-      {
-        lead = Decode.required o "lead" (Decode.list Decode.string);
-        trailing = Decode.required o "trailing" Decode.string;
-      })
 
 type operation = {
   request : string;
   result : string;
   failure : string;
-  docs : operation_docs;
+  docs : docs;
 }
 
 let operation =
@@ -249,7 +122,7 @@ let operation =
         request = Decode.required o "request" Decode.string;
         result = Decode.required o "result" Decode.string;
         failure = Decode.required o "failure" Decode.string;
-        docs = Decode.required o "docs" operation_docs;
+        docs = Decode.required o "docs" docs;
       })
 
 type preamble = {
@@ -279,15 +152,15 @@ let preamble =
         bridged_derivation = Decode.required o "bridgedDerivation" Decode.string;
       })
 
-type docs_2 = {
+type type_docs = {
   event_name : string;
   enriched_events : string;
   channel_schemas : string;
   emittable_channel : string;
 }
 
-let docs_2 =
-  Decode.obj (fun o : docs_2 ->
+let type_docs =
+  Decode.obj (fun o : type_docs ->
       {
         event_name = Decode.required o "eventName" Decode.string;
         enriched_events = Decode.required o "enrichedEvents" Decode.string;
@@ -345,7 +218,7 @@ type trace = { meaning : string; field : string }
 let trace =
   Decode.obj (fun o : trace ->
       {
-        meaning = Decode.required o "meaning" Decode.string;
+        meaning = Decode.required o "meaning" Decode.non_empty_string;
         field = Decode.required o "field" Decode.string;
       })
 
@@ -355,7 +228,7 @@ type t = {
   channels : channel list;
   operations : operation list;
   preamble : preamble;
-  docs : docs_2;
+  docs : type_docs;
   in_process : in_process;
   kind : kind;
   audience : audience;
@@ -371,7 +244,7 @@ let decode =
         channels = Decode.required o "channels" (Decode.list channel);
         operations = Decode.required o "operations" (Decode.list operation);
         preamble = Decode.required o "preamble" preamble;
-        docs = Decode.required o "docs" docs_2;
+        docs = Decode.required o "docs" type_docs;
         in_process = Decode.required o "inProcess" in_process;
         kind = Decode.required o "kind" kind;
         audience = Decode.required o "audience" audience;
