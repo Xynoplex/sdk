@@ -4,13 +4,14 @@ import PackagePlugin
 @main
 struct GenerateXynologPlugin: BuildToolPlugin {
   func createBuildCommands(context: PluginContext, target: any Target) throws -> [Command] {
-    let specs = context.package.directoryURL.appendingPathComponent("protocol/specs/src")
+    let specs = context.package.directoryURL.appendingPathComponent("../../../protocol/specs/src")
+      .standardizedFileURL
     guard let files = FileManager.default.enumerator(at: specs, includingPropertiesForKeys: nil)
     else {
       throw PluginFailure.missingSpec
     }
     let required = context.package.directoryURL.appendingPathComponent(
-      "swift/sdk/Sources/XynologCodegen/required-schemas.json")
+      "Sources/XynologCodegen/required-schemas.json")
     var inputs: [URL] = [required]
     for case let file as URL in files where file.pathExtension == "json" { inputs.append(file) }
     let mode: String

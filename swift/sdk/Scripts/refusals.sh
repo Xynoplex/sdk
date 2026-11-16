@@ -1,14 +1,12 @@
 #!/bin/sh
 set -eu
-# The package is the repository's: its manifest is at the root.
-cd "$(dirname "$0")/../../.."
 mkdir -p .build/refusals
 clean() { sed -E 's/\[[0-9;]*[mK]//g; s/\]8;;[^]*\\//g'; }
 if swift build --jobs 4 --force-resolved-versions -Xswiftc -DXYNOLOG_SENDABLE_CANARY --scratch-path .build/canary > .build/refusals/canary.log 2>&1; then
   echo "Sendable canary compiled" >&2; exit 1
 fi
 clean < .build/refusals/canary.log > .build/refusals/clean.log
-expected=$(sed -n '1s@// refused: @@p' swift/sdk/Sources/Xynolog/SendableCanary.swift)
+expected=$(sed -n '1s@// refused: @@p' Sources/Xynolog/SendableCanary.swift)
 sed -n 's/^.*error: //p' .build/refusals/clean.log | grep -F "$expected" > /dev/null
 if grep -F '; this is an error in the Swift 6 language mode' .build/refusals/clean.log; then exit 1; fi
 bin=$(swift build --force-resolved-versions --show-bin-path)
@@ -20,7 +18,7 @@ if [ "$(uname -s)" = Darwin ]; then
   set -- "$@" -sdk "$(xcrun --sdk macosx --show-sdk-path)"
 fi
 while IFS= read -r map; do set -- "$@" -Xcc "-fmodule-map-file=$map"; done < .build/refusals/modulemaps
-for file in swift/sdk/Refusals/*.swift; do
+for file in Refusals/*.swift; do
   [ -f "$file" ] || continue
   expected=$(sed -n '1s@// refused: @@p' "$file")
   test -n "$expected"

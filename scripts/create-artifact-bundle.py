@@ -173,7 +173,7 @@ def write_bundle(languages: list[str], tree_digest: str, output: Path, staged: P
         "haskell": "haskell:9.10.3",
         "kotlin": "eclipse-temurin (version from kotlin/sdk/.java-version)",
         "ocaml": "ocaml/opam:debian-13-ocaml-5.5",
-        "swift": f"swift:{(ROOT / '.swift-version').read_text().strip()}",
+        "swift": f"swift:{(ROOT / 'swift/sdk/.swift-version').read_text().strip()}",
     }
     release = sdk_version.config()
     verifier_source = ROOT / "scripts/verify-artifact-bundle.py"

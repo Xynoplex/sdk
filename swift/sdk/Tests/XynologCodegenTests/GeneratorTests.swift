@@ -36,7 +36,7 @@ private let requiredTable = URL(fileURLWithPath: #filePath).deletingLastPathComp
 
 @Test func everySpecSchemaAndTableGeneratesTogether() throws {
   let specs = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
-    .appendingPathComponent("../../../../protocol/specs/src").standardizedFileURL
+    .appendingPathComponent("../../../../../protocol/specs/src").standardizedFileURL
   let definitions = try loadDefinitions(specs)
   let kinds = try #require(
     loadJSON(specs.appendingPathComponent("identifiers/kinds.json")).object["kinds"])
@@ -53,7 +53,7 @@ private let requiredTable = URL(fileURLWithPath: #filePath).deletingLastPathComp
 @Test(arguments: ["no-schema", "optional-message", "non-string-message"])
 func operationFailureSchemaDriftRefusesGeneration(change: String) throws {
   let specs = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
-    .appendingPathComponent("../../../../protocol/specs/src").standardizedFileURL
+    .appendingPathComponent("../../../../../protocol/specs/src").standardizedFileURL
   var definitions = try loadDefinitions(specs)
   var registry = try loadJSON(specs.appendingPathComponent("bus/registry.json")).object
   if change == "no-schema" {
