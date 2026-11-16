@@ -737,7 +737,7 @@ Inside the development container, from this package directory:
 
 ```sh
 cabal run xynolog-codegen -- /work
-cabal build all --enable-tests --enable-coverage -j1
+cabal build all --enable-tests --enable-coverage
 python3 api.py --write
 bash run.sh /work
 ```
