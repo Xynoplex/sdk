@@ -41,12 +41,9 @@ npm install @xynolog/react-ui @xynolog/sdk @xynolog/core
 
 ### Peer Dependencies
 
-```json
-{
-  "react": "^19.0.0",
-  "react-dom": "^19.0.0"
-}
-```
+`package.json` states the versions. They are `react` and `react-dom`;
+`vitest`, optionally, for `test-utils`; and `typescript`, optionally, for
+`xynolog-react-ui-check`.
 
 ### CSS Setup
 
@@ -297,6 +294,36 @@ it('should render component', () => {
 ```
 
 See [TESTING.md](../../../docs/builder/react-ui/TESTING.md) for details.
+
+### Checking an app against react-ui's rules
+
+The package installs `xynolog-react-ui-check`, which holds an app's source
+directory to the rules react-ui's components rely on:
+
+```bash
+npx xynolog-react-ui-check src
+```
+
+- **Gathered context** is SDK state: no component holds a `GatheredContext`
+  in `useState`.
+- **Session-bound state units** are made with `useSessionStateUnit`, with no
+  `!` on a client or session.
+- **Hooks** are called where React's rules allow, with one
+  `useEventSubscriptions` call per file.
+- **Toolbar preferences** are stored by `useToolbarPrefs()` alone.
+- **Every `var()`** in the app's stylesheets resolves to a property they or
+  react-ui's define.
+- **Every class** the app renders is styled. A react-ui class the app renders
+  is one react-ui offers to apps (`checks/host-classes.json`), unless the app
+  styles it itself. The app's own stylesheets define each class once, and
+  each one they style is rendered.
+
+It reads the files git says the directory holds, so it runs in a git
+checkout. The hooks check parses with `typescript`, which the app installs.
+It exits 1 when a check fails. react-ui's CI runs it over react-ui's own
+`src`, which it holds to stricter rules: its class debt to
+`checks/css-classes-baseline.json`, and the list of classes it offers to
+the classes it styles.
 
 ## Documentation
 

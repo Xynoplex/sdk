@@ -222,12 +222,6 @@
   white-space: nowrap;
 }
 
-/* A form tall enough to need its own scroll rather than growing its dialog. */
-.xynolog-form--scrollable {
-  overflow-y: auto;
-  min-height: 0;
-}
-
 /* A label that sits beside its control instead of above it. */
 .xynolog-form__label--inline {
   display: inline-flex;

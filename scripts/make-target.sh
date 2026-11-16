@@ -34,12 +34,7 @@ case "${1:-}" in
       npm run typecheck:conformance --workspace=@xynolog/sdk
       npm run lint:css --workspace=@xynolog/react-ui
       node react-ui/scripts/check-no-utility-classes-in-react-ui.cjs
-      node react-ui/scripts/check-css-variables-defined.cjs
-      node react-ui/scripts/check-css-classes-live.cjs
-      node scripts/compliance/audit-hooks-ordering.mts
-      bash scripts/compliance/audit-gathered-context-component-state.sh
-      bash scripts/compliance/audit-session-typed-factories.sh
-      bash react-ui/scripts/audit-toolbar-pref-storage.sh
+      node_modules/.bin/xynolog-react-ui-check react-ui/src
       for package in core observability http-transport sdk react-ui; do
         npm test --workspace="@xynolog/$package"
       done'

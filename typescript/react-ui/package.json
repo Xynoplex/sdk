@@ -8,6 +8,9 @@
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "bin": {
+    "xynolog-react-ui-check": "./checks/bin.mjs"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -27,6 +30,8 @@
   "files": [
     "dist",
     "!dist/**/*.map",
+    "checks",
+    "!checks/**/*.test.ts",
     "src/styles",
     "src/components",
     "src/features",
@@ -68,9 +73,13 @@
   "peerDependencies": {
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
+    "typescript": "^6.0.2",
     "vitest": "^4.0.0 || ^5.0.0"
   },
   "peerDependenciesMeta": {
+    "typescript": {
+      "optional": true
+    },
     "vitest": {
       "optional": true
     }
@@ -91,6 +100,8 @@
     "jest-axe": "^11.0.0",
     "jsdom": "^31.0.0",
     "postcss-import": "^17.0.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
     "rollup": "^4.67.5",
     "rollup-plugin-dts": "^6.4.1",
     "tsup": "^9.0.0",

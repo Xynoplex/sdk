@@ -128,21 +128,10 @@ const handler = useCallback(() => {
 }, []); // ✅ onCallback NOT in deps - it's in a ref
 ```
 
-### audit-hooks-ordering.mts
+### The hooks-ordering gate
 
-**Purpose**: Find a React hook called where React's rules forbid one, in `typescript/react-ui/src`.
-
-**Usage**:
-```bash
-node typescript/scripts/compliance/audit-hooks-ordering.mts
-```
-
-**What it checks**:
-- ❌ A hook called inside a callback (the body of a `useCallback` or a `useMemo`): an error.
-- ❌ A hook called inline in a conditional render, such as `prop={useCallback(...)}` inside a ternary: an error.
-- ⚠️ More than one `useEventSubscriptions` call in a file, where one call takes them all: a warning.
-
-It takes no arguments and writes no report. It exits 1 on an error, and 0 with warnings alone. The compliance workflow runs it as a step of its own.
+It is react-ui's now, one of the gates `xynolog-react-ui-check` runs
+(`typescript/react-ui/checks/hooks-ordering.mjs`); see react-ui's README.
 
 ## Workspace Wrappers
 
