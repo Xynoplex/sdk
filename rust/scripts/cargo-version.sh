@@ -12,7 +12,7 @@
 # the crates move with version.json as every package.json does; CI fails a
 # published crate at any other version.
 set -euo pipefail
-cd "$(dirname "$0")/../../.."
+cd "$(dirname "$0")/../.."
 trap 'rm -f rust/Cargo.toml.tmp rust/Cargo.lock.tmp' EXIT
 
 version=${1:-}

@@ -10,7 +10,7 @@
 # fails if the two ever disagree. version-bump.sh and `npm run version:sync`
 # both run this.
 set -euo pipefail
-cd "$(dirname "$0")/../../.."
+cd "$(dirname "$0")/../.."
 manifest=haskell/sdk/xynolog.cabal
 trap 'rm -f "$manifest.tmp"' EXIT
 
