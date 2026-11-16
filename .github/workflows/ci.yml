@@ -53,6 +53,9 @@ jobs:
       - name: The committed manifests hold the release's versions
         run: python3 scripts/sdk_version.py check
 
+      - name: The coming release is not yet tagged on another commit
+        run: python3 scripts/sdk_version.py unreleased
+
       - name: The source archive holds no broken symlink
         run: |
           archive="$(mktemp -d)"
