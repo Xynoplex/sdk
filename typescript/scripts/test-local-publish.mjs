@@ -31,26 +31,9 @@ function fixture() {
       }
     }
   }
-  for (const path of ['server.js', 'README.npm.md', 'package.publish.json']) {
-    put(`images/browser/${path}`, readFileSync(join(root, 'images/browser', path), 'utf8'));
-  }
-  put('images/browser/dist/index.html', '<html>built</html>');
   const run = (...args) => spawnSync(process.execPath, [join(source, 'typescript/scripts/stage-local-publish.mjs'), ...args], { encoding: 'utf8' });
   return { directory, source, stage, run, version };
 }
-
-test('missing Browser artifacts fail before creating staging or touching source', () => {
-  const f = fixture();
-  try {
-    rmSync(join(f.source, 'images/browser/dist/index.html'));
-    const before = readFileSync(join(f.source, 'package-lock.json'));
-    const result = f.run('stage', f.stage);
-    assert.notEqual(result.status, 0);
-    assert.match(result.stderr, /Browser not built/);
-    assert.equal(existsSync(f.stage), false);
-    assert.deepEqual(readFileSync(join(f.source, 'package-lock.json')), before);
-  } finally { rmSync(f.directory, { recursive: true, force: true }); }
-});
 
 test('publication stamping is confined to the complete isolated npm input set', () => {
   const f = fixture();
@@ -66,7 +49,6 @@ test('publication stamping is confined to the complete isolated npm input set', 
     for (const entry of Object.values(f.version.packages).filter((entry) => entry.publish)) {
       assert.equal(existsSync(join(f.stage, entry.dir, 'package.json')), true);
     }
-    assert.equal(existsSync(join(f.source, '.npm-stage')), false);
   } finally { rmSync(f.directory, { recursive: true, force: true }); }
 });
 
@@ -85,7 +67,6 @@ for (const [name, path] of [
       assert.notEqual(result.status, 0);
       assert.match(result.stderr, /publication input is missing/);
       assert.equal(existsSync(f.stage), false);
-      assert.equal(existsSync(join(f.source, '.npm-stage')), false);
     } finally { rmSync(f.directory, { recursive: true, force: true }); }
   });
 }

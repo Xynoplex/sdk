@@ -22,8 +22,16 @@ case "${1:-}" in
       bash -euc 'cp -a /source /tmp/sdk && mkdir -p /tmp/sdk/protocol && cp -a /protocol/. /tmp/sdk/protocol/ && cd /tmp/sdk/go && go test -race -coverprofile=/coverage/coverage.txt -covermode=atomic ./...'
     cp "$COVERAGE_DIR/out/coverage.txt" "$ROOT/coverage.txt"
     ;;
+  haskell-codegen)
+    "$RUNTIME" run --rm --memory 4g \
+      --volume "$ROOT:/source:ro" \
+      --volume "$PROTOCOL:/protocol:ro" \
+      --workdir /tmp \
+      haskell:9.10.3 \
+      bash -euc 'cp -a /source /tmp/sdk && mkdir -p /tmp/sdk/protocol && cp -a /protocol/. /tmp/sdk/protocol/ && cd /tmp/sdk/haskell/sdk && cabal update && cabal run xynolog-codegen -- --check /tmp/sdk'
+    ;;
   *)
-    echo 'Usage: make-target.sh go-test' >&2
+    echo 'Usage: make-target.sh go-test|haskell-codegen' >&2
     exit 2
     ;;
 esac
