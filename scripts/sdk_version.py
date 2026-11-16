@@ -3,8 +3,7 @@
 
 version.json names two things: the coming release, `YY.M.N`, and each
 language's compatibility number `C`. A language publishes the release as
-`C.YYMM.N`, the month as two digits. Swift has no `C`: its version is the
-release's own, `YY.M.N`.
+`C.YYMM.N`, the month as two digits.
 Every package version and file name is derived here, and nothing else reads
 version.json's `release` or `compatibility`.
 
@@ -38,7 +37,6 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 RELEASE = re.compile(r"([0-9]{2})\.([1-9]|1[0-2])\.(0|[1-9][0-9]*)")
 GO_MODULE = "github.com/xynolog/sdk/go"
-UNNUMBERED = ("swift",)
 
 
 def makefile_languages() -> tuple:
@@ -55,9 +53,8 @@ def config() -> dict:
     data = json.loads((ROOT / "version.json").read_text())
     if not RELEASE.fullmatch(data["release"]):
         raise SystemExit(f"version.json: release {data['release']!r} is not YY.M.N")
-    numbered = sorted(set(LANGUAGES) - set(UNNUMBERED))
-    if sorted(data["compatibility"]) != numbered:
-        raise SystemExit(f"version.json: compatibility names {sorted(data['compatibility'])}, not {numbered}")
+    if sorted(data["compatibility"]) != sorted(LANGUAGES):
+        raise SystemExit(f"version.json: compatibility names {sorted(data['compatibility'])}, not {sorted(LANGUAGES)}")
     for language, number in data["compatibility"].items():
         if type(number) is not int or number < 1:
             raise SystemExit(f"version.json: {language}'s compatibility number {number!r} is not a whole number from 1")
@@ -67,8 +64,6 @@ def config() -> dict:
 def released(data: dict, language: str) -> str:
     if language not in LANGUAGES:
         raise SystemExit(f"sdk_version.py: unknown SDK language {language!r}")
-    if language in UNNUMBERED:
-        return data["release"]
     year, month, count = RELEASE.fullmatch(data["release"]).groups()
     return f"{data['compatibility'][language]}.{year}{int(month):02d}.{count}"
 
