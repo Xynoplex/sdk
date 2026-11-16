@@ -7,6 +7,8 @@ set -euo pipefail
 # warning without changing the resulting environment.
 export UV_LINK_MODE=copy
 
+# The version this build gives the package (scripts/sdk_version.py python).
+VERSION="${1:?usage: publish-python-local.sh <version>}"
 ROOT=/source
 SCRATCH="$(mktemp -d /tmp/xynolog-sdk-python.XXXXXX)"
 trap 'rm -rf "$SCRATCH"' EXIT
@@ -15,13 +17,17 @@ mkdir -p "$SCRATCH/python"
 cp -a "$ROOT/python/sdk" "$SCRATCH/python/sdk"
 cp -a "$ROOT/python/scripts" "$SCRATCH/python/scripts"
 cp -a /protocol "$SCRATCH/protocol"
-cp "$ROOT/version.json" "$ROOT/LICENSE" "$SCRATCH/"
+mkdir -p "$SCRATCH/scripts"
+# What the checkout's pyproject.toml derives its version from, until
+# build-python-sdk.sh states this build's.
+cp "$ROOT/scripts/sdk_version.py" "$SCRATCH/scripts/"
+cp "$ROOT/LICENSE" "$ROOT/version.json" "$ROOT/Makefile" "$SCRATCH/"
 
 cd "$SCRATCH"
 cd python/sdk
 uv run --locked python scripts/generate_models.py --check
 cd "$SCRATCH"
-python/sdk/scripts/build-python-sdk.sh
+python/sdk/scripts/build-python-sdk.sh "$VERSION"
 
 mkdir -p /artifacts
 cp -f python/sdk/dist/* /artifacts/

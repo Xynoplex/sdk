@@ -9,7 +9,7 @@ set -euo pipefail
 # Options:
 #   --registry <url>   Target registry (default: https://registry.npmjs.org)
 #   --tag <tag>        Dist tag: latest or dev (default: latest)
-#   --version <ver>    Override publish version (default: read from version.json)
+#   --version <ver>    The version to publish (scripts/sdk_version.py typescript); required
 #   --clean            Unpublish existing versions before publishing (for local registries)
 #   --npmrc <path>     Path to .npmrc for registry auth
 #   --pack-dir <path>  Write npm package tarballs to a directory instead
@@ -60,7 +60,8 @@ done
 # --- Determine version ---
 
 if [[ -z "$VERSION" ]]; then
-  VERSION=$(node -p "require('./version.json').version")
+  echo -e "${RED}--version is required: the version scripts/sdk_version.py typescript gives this build${RESET}" >&2
+  exit 1
 fi
 
 banner "STAMP VERSIONS"

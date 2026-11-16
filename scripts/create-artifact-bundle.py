@@ -13,10 +13,11 @@ import tempfile
 import zipfile
 from pathlib import Path
 
+import sdk_version
+
 
 ROOT = Path(__file__).resolve().parents[1]
 STATE = Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache")) / "xynolog-sdk" / "local"
-VERSION = json.loads((ROOT / "version.json").read_text())["version"]
 SDK_COMMIT = subprocess.check_output(["git", "-C", str(ROOT), "rev-parse", "HEAD"], text=True).strip()
 PROTOCOL_COMMIT = subprocess.check_output(["git", "-C", str(ROOT / "protocol"), "rev-parse", "HEAD"], text=True).strip()
 
@@ -49,37 +50,38 @@ def working_tree_digest() -> str:
 
 def files(language: str) -> list[tuple[Path, str, str]]:
     """Return source paths and package coordinate for a built language output."""
+    version = sdk_version.version(language)
     if language == "typescript":
         config = json.loads((ROOT / "version.json").read_text())
         return [
-            (STATE / "npm/packages" / f"{name.removeprefix('@').replace('/', '-')}-{VERSION}.tgz", "npm", name)
+            (STATE / "npm/packages" / f"{name.removeprefix('@').replace('/', '-')}-{version}.tgz", "npm", name)
             for name, package in config["packages"].items()
             if package["publish"]
         ]
     if language == "python":
-        return [(p, "python", "xynolog") for p in sorted((STATE / "python/packages").glob(f"xynolog-{VERSION}*"))]
+        return [(p, "python", "xynolog") for p in sorted((STATE / "python/packages").glob(f"xynolog-{version}*"))]
     if language == "rust":
         names = ["xynolog-codegen", "xynolog", "xynolog-telemetry", "xynolog-http-transport"]
-        return [(STATE / "rust/packages" / f"{name}-{VERSION}.crate", "cargo", name) for name in names]
+        return [(STATE / "rust/packages" / f"{name}-{version}.crate", "cargo", name) for name in names]
     if language == "go":
         root = STATE / "go-proxy/github.com/xynolog/sdk/go/@v"
         return [
-            (root / ("list" if suffix == "list" else f"v{VERSION}.{suffix}"),
+            (root / ("list" if suffix == "list" else f"v{version}.{suffix}"),
              "go-module-proxy", "github.com/xynolog/sdk/go")
             for suffix in ("zip", "mod", "info", "list")
         ]
     if language == "csharp":
-        return [(STATE / "nuget" / f"Xynolog.{VERSION}.nupkg", "nuget", "Xynolog")]
+        return [(STATE / "nuget" / f"Xynolog.{version}.nupkg", "nuget", "Xynolog")]
     if language == "haskell":
-        return [(STATE / "haskell" / f"xynolog-{VERSION}.tar.gz", "hackage-sdist", "xynolog")]
+        return [(STATE / "haskell" / f"xynolog-{version}.tar.gz", "hackage-sdist", "xynolog")]
     if language == "kotlin":
-        root = STATE / f"kotlin-maven/org/xynolog/xynolog/{VERSION}"
-        return [(p, "maven", "org.xynolog:xynolog") for p in sorted(root.glob(f"xynolog-{VERSION}.*")) if p.is_file()]
+        root = STATE / f"kotlin-maven/org/xynolog/xynolog/{version}"
+        return [(p, "maven", "org.xynolog:xynolog") for p in sorted(root.glob(f"xynolog-{version}.*")) if p.is_file()]
     if language == "ocaml":
-        source = STATE / "opam-repo/repo" / f"archives/xynolog.{VERSION}.tar.gz"
+        source = STATE / "opam-repo/repo" / f"archives/xynolog.{version}.tar.gz"
         return [(source, "opam-source", "xynolog")]
     if language == "swift":
-        return [(STATE / "swift" / f"xynolog-{VERSION}.zip", "swift-source", "Xynolog")]
+        return [(STATE / "swift" / f"xynolog-{version}.zip", "swift-source", "Xynolog")]
     raise ValueError(f"unknown SDK language {language}")
 
 
@@ -98,7 +100,7 @@ def package_version(language: str, path: Path) -> str:
             metadata = next(m for m in archive.getmembers() if m.name.endswith("/PKG-INFO"))
             text = archive.extractfile(metadata).read().decode()
     else:
-        return VERSION
+        return sdk_version.version(language)
     match = re.search(r"(?m)^Version: (.+)$", text)
     if not match:
         raise ValueError(f"package version missing from {path}")
@@ -110,7 +112,7 @@ def main() -> None:
     show_path = bool(arguments and arguments[0] == "--path")
     if show_path:
         arguments = arguments[1:]
-    languages = ["typescript", "python", "rust", "go", "csharp", "haskell", "kotlin", "ocaml", "swift"] if arguments == ["all"] else arguments
+    languages = list(sdk_version.LANGUAGES) if arguments == ["all"] else arguments
     if not languages:
         raise SystemExit("select at least one SDK language")
     languages = sorted(languages)
@@ -173,6 +175,7 @@ def write_bundle(languages: list[str], tree_digest: str, output: Path, staged: P
         "ocaml": "ocaml/opam:debian-13-ocaml-5.5",
         "swift": f"swift:{(ROOT / 'swift/sdk/.swift-version').read_text().strip()}",
     }
+    release = sdk_version.config()
     verifier_source = ROOT / "scripts/verify-artifact-bundle.py"
     verifier_path = Path("tools/verify-artifact-bundle.py")
     artifacts.append({
@@ -185,7 +188,12 @@ def write_bundle(languages: list[str], tree_digest: str, output: Path, staged: P
     copied.append((verifier_source, verifier_path))
     manifest = {
         "schema": "xynolog-sdk-artifacts/v2",
-        "sdk": {"commit": SDK_COMMIT, "version": VERSION, "workingTreeSha256": tree_digest},
+        "sdk": {
+            "commit": SDK_COMMIT,
+            "release": release["release"],
+            "development": not sdk_version.is_release(release),
+            "workingTreeSha256": tree_digest,
+        },
         "protocol": {"commit": PROTOCOL_COMMIT},
         "languages": languages,
         "toolchains": {language: toolchains[language] for language in languages},

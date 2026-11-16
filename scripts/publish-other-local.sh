@@ -15,7 +15,9 @@ esac
 PROTOCOL_REVISION="$(require_protocol_pin "$ROOT")"
 mkdir -p "$STATE_ROOT"/{go-proxy,nuget,nuget-cache,haskell,cabal-cache,haskell-build,kotlin-maven,gradle-cache,opam-repo,swift,swift-cache,swift-build,go-mod-cache,go-build-cache}
 OPAM_VOLUME=xynolog-sdk-opam-5-5
-VERSION="$(sed -n 's/.*"version": "\([^"]*\)".*/\1/p' "$ROOT/version.json" | head -n1)"
+# The version this build gives a language's packages: the release's, or a
+# development version. Each container is handed its own.
+version_of() { python3 "$ROOT/scripts/sdk_version.py" "$1"; }
 SDK_SOURCE_TIME="$(git -C "$ROOT" log -1 --format=%cI)"
 
 case "$LANGUAGE" in
@@ -26,6 +28,7 @@ esac
 
 if [[ "$LANGUAGE" == all || "$LANGUAGE" == go ]]; then
 echo 'Building the Go module proxy package in a Go container…'
+go_package_version="$(version_of go)"
 # What a commit of this tree would hold of the module and what Go's packager
 # reads beside it: go/, LICENSE and .gitattributes, tracked or new and not ignored.
 GO_MODULE_SOURCE="$(mktemp -d)"
@@ -38,9 +41,9 @@ run_container_quietly "$RUNTIME" run --rm \
   --volume "$GO_MODULE_SOURCE:/module-source:ro" \
   --volume "$STATE_ROOT/go-proxy:/out" --volume "$STATE_ROOT/go-mod-cache:/go/pkg/mod" \
   --volume "$STATE_ROOT/go-build-cache:/root/.cache/go-build" \
-  --env "SDK_SOURCE_TIME=$SDK_SOURCE_TIME" \
+  --env "SDK_SOURCE_TIME=$SDK_SOURCE_TIME" --env "XYNOLOG_SDK_VERSION=$go_package_version" \
   --workdir /tmp golang:1.27.4-bookworm bash -euc '
-    version=$(sed -n "s/.*\"version\": \"\([^\"]*\)\".*/\1/p" /source/version.json | head -n1)
+    version="$XYNOLOG_SDK_VERSION"
     mkdir -p /tmp/sdk && cp -a /source/. /tmp/sdk/ && rm -rf /tmp/sdk/protocol && cp -a /protocol /tmp/sdk/protocol && cd /tmp/sdk/go && go build ./...
     module="github.com/xynolog/sdk/go"
     mkdir -p "/out/$module/@v"
@@ -57,12 +60,14 @@ run_container_quietly "$RUNTIME" run --rm \
 fi
 if [[ "$LANGUAGE" == all || "$LANGUAGE" == csharp ]]; then
 echo 'Packing the .NET SDK in a .NET container…'
+csharp_package_version="$(version_of csharp)"
 dotnet_version="$(sed -n 's/.*"version": "\([^"]*\)".*/\1/p' "$ROOT/csharp/sdk/global.json" | sed -E 's/(-(preview|rc)\.[0-9]+)\.[0-9]+\.[0-9]+$/\1/')"
 run_container_quietly "$RUNTIME" run --rm \
   --volume "$ROOT:/source:ro" --volume "$PROTOCOL:/protocol:ro" \
   --volume "$STATE_ROOT/nuget:/out" --volume "$STATE_ROOT/nuget-cache:/root/.nuget/packages" --workdir /tmp \
+  --env "XYNOLOG_SDK_VERSION=$csharp_package_version" \
   "mcr.microsoft.com/dotnet/sdk:$dotnet_version" bash -euc '
-    version=$(sed -n "s/.*\"version\": \"\([^\"]*\)\".*/\1/p" /source/version.json | head -n1)
+    version="$XYNOLOG_SDK_VERSION"
     cp -a /source /tmp/sdk
     rm -rf /tmp/sdk/protocol
     cp -a /protocol /tmp/protocol
@@ -74,16 +79,20 @@ fi
 
 if [[ "$LANGUAGE" == all || "$LANGUAGE" == haskell ]]; then
 echo 'Creating the Haskell source distribution in a GHC container…'
+haskell_package_version="$(version_of haskell)"
 run_container_quietly "$RUNTIME" run --rm --memory 4g --volume "$ROOT/haskell/sdk:/source:ro" \
+  --volume "$ROOT/haskell/scripts/cabal-version.sh:/cabal-version.sh:ro" \
   --volume "$STATE_ROOT/haskell:/out" --volume "$STATE_ROOT/cabal-cache:/root/.cabal" \
   --volume "$STATE_ROOT/haskell-build:/tmp/sdk/dist-newstyle" --workdir /tmp \
-  haskell:9.10.3 bash -euc 'mkdir -p /tmp/sdk && cp -a /source/. /tmp/sdk/ && cd /tmp/sdk && printf "packages: .\\n" > cabal.project && test -f /root/.cabal/packages/hackage.haskell.org/01-index.cache || cabal update; cabal build lib:xynolog && cabal sdist --output-directory=/out'
+  --env "XYNOLOG_SDK_VERSION=$haskell_package_version" \
+  haskell:9.10.3 bash -euc 'mkdir -p /tmp/sdk && cp -a /source/. /tmp/sdk/ && bash /cabal-version.sh "$XYNOLOG_SDK_VERSION" /tmp/sdk/xynolog.cabal && cd /tmp/sdk && printf "packages: .\\n" > cabal.project && test -f /root/.cabal/packages/hackage.haskell.org/01-index.cache || cabal update; cabal build lib:xynolog && cabal sdist --output-directory=/out'
 fi
 
 if [[ "$LANGUAGE" == all || "$LANGUAGE" == kotlin ]]; then
 # Gradle's standard Maven publication is injected only for this local publish;
 # the SDK build itself stays unchanged and its locked dependencies stay intact.
 echo 'Building and publishing the Kotlin SDK to a local Maven repository in a JDK container…'
+kotlin_package_version="$(version_of kotlin)"
 jdk="$(cat "$ROOT/kotlin/sdk/.java-version")"
 cat > "$STATE_ROOT/kotlin-publish.init.gradle" <<'GRADLE'
 allprojects {
@@ -109,9 +118,9 @@ run_container_quietly "$RUNTIME" run --rm --memory 4g --volume "$ROOT:/source:ro
   --volume "$PROTOCOL:/protocol:ro" --volume "$STATE_ROOT/kotlin-maven:/out" \
   --volume "$STATE_ROOT/gradle-cache:/root/.gradle" \
   --volume "$STATE_ROOT/kotlin-publish.init.gradle:/tmp/publish.init.gradle:ro" \
+  --env "XYNOLOG_SDK_VERSION=$kotlin_package_version" \
   --workdir /tmp eclipse-temurin:"$jdk"-jdk bash -euc '
     mkdir -p /tmp/sdk && cp -a /source/. /tmp/sdk/ && rm -rf /tmp/sdk/protocol && cp -a /protocol /tmp/protocol
-    export XYNOLOG_SDK_VERSION="$(sed -n "s/.*\"version\": \"\([^\"]*\)\".*/\1/p" /source/version.json | head -n1)"
     cd /tmp/sdk/kotlin/sdk
     ./gradlew --no-daemon -I /tmp/publish.init.gradle assemble -x checkKotlinAbi publishMavenJavaPublicationToXynologLocalRepository
   '
@@ -119,7 +128,8 @@ fi
 
 if [[ "$LANGUAGE" == all || "$LANGUAGE" == ocaml ]]; then
 echo 'Building and archiving the OCaml SDK in an OCaml container…'
-opam_archive_uri="file://$STATE_ROOT/opam-repo/repo/archives/xynolog.$VERSION.tar.gz"
+ocaml_package_version="$(version_of ocaml)"
+opam_archive_uri="file://$STATE_ROOT/opam-repo/repo/archives/xynolog.$ocaml_package_version.tar.gz"
 opam_archive_uri="${opam_archive_uri// /%20}"
 if ! "$RUNTIME" volume inspect "$OPAM_VOLUME" >/dev/null 2>&1; then
   "$RUNTIME" volume create "$OPAM_VOLUME" >/dev/null
@@ -135,7 +145,7 @@ chmod 0777 "$STATE_ROOT/opam-repo"
 run_container_quietly "$RUNTIME" run --rm --memory 4g --volume "$ROOT/ocaml/sdk:/source:ro" \
   --volume "$STATE_ROOT/opam-repo:/out" \
   --volume "$OPAM_VOLUME:/home/opam/.opam" \
-  --env "XYNOLOG_SDK_VERSION=$VERSION" --env "XYNOLOG_OPAM_ARCHIVE_URI=$opam_archive_uri" \
+  --env "XYNOLOG_SDK_VERSION=$ocaml_package_version" --env "XYNOLOG_OPAM_ARCHIVE_URI=$opam_archive_uri" \
   --workdir /tmp \
   ocaml/opam:debian-13-ocaml-5.5 bash -euc '
     sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends libgmp-dev pkg-config >/dev/null
@@ -158,10 +168,11 @@ fi
 
 if [[ "$LANGUAGE" == all || "$LANGUAGE" == swift ]]; then
 echo 'Building and archiving the Swift package in a Swift container…'
+swift_package_version="$(version_of swift)"
 swift_version="$(cat "$ROOT/swift/sdk/.swift-version")"
 run_container_quietly "$RUNTIME" run --rm --memory 4g --volume "$ROOT/swift/sdk:/source:ro" --volume "$PROTOCOL:/protocol:ro" \
   --volume "$STATE_ROOT/swift:/out" --volume "$STATE_ROOT/swift-cache:/root/.cache" \
-  --volume "$STATE_ROOT/swift-build:/build" --env "XYNOLOG_SDK_VERSION=$VERSION" --workdir /tmp "swift:$swift_version" bash -euc '
+  --volume "$STATE_ROOT/swift-build:/build" --env "XYNOLOG_SDK_VERSION=$swift_package_version" --workdir /tmp "swift:$swift_version" bash -euc '
     apt-get update -qq && apt-get install -y -qq --no-install-recommends zip >/dev/null
     mkdir -p /tmp/sdk/swift/sdk /tmp/protocol /tmp/archive/sdk/swift/sdk /tmp/archive/protocol
     cp -a /source/. /tmp/sdk/swift/sdk/
