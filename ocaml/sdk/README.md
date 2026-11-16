@@ -43,11 +43,11 @@ Use `Client.Job.claim` and `Claims.next` to take a job, then use `Worker` to sta
 ## Develop and verify
 
 ```sh
-bash ocaml/run-container.sh
+make test-ocaml
 bash ocaml/check-source-package.sh
 ```
 
-The first command builds the pinned toolchain in Apple `container` and runs the development checks. The second builds and installs an isolated source archive and verifies the installed compiler interface. Regenerate protocol-derived sources with `make generate-ocaml` and verify them with `make check-generated-ocaml`.
+The first command builds the pinned toolchain in a container and runs the development checks. The second builds and installs an isolated source archive and verifies the installed compiler interface. Regenerate protocol-derived sources with `make generate-ocaml` and verify them with `make check-generated-ocaml`.
 
 CI runs the tests instrumented by `bisect_ppx_ng` and uploads their line coverage:
 
