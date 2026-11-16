@@ -1,0 +1,9 @@
+Xynolog SDK for Swift
+Copyright 2026 Xynoplex
+
+This package is built from the Xynolog SDK repository,
+https://github.com/xynolog/sdk, where the Swift SDK is developed. The Swift
+SDK was introduced on or after 2026-08-27 and is owned by Xynoplex. It is
+distributed under the Apache License, Version 2.0.
+
+Third-party notices remain with the dependencies to which they apply.

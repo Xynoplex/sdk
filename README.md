@@ -44,7 +44,7 @@ Run `git clone --recurse-submodules https://github.com/xynolog/sdk.git` (or init
 | Haskell | `haskell` | Cabal source distribution |
 | Kotlin | `kotlin-maven` | Maven repository |
 | OCaml | `opam-repo/repo` | opam repository |
-| Swift | `swift` | source archive |
+| Swift | `swift` | SwiftPM package, as a release writes it to `xynolog/sdk-swift` |
 
 `make clean` removes generated build directories and local package artifacts for all nine SDK languages, their SDK-scoped compiler and dependency caches, and cached artifact bundles. Use `make rust-clean` (or another `<language>-clean` target) to clean one language. It leaves downloaded container images and any bundle written to an external `SDK_ARTIFACTS` path untouched.
 
