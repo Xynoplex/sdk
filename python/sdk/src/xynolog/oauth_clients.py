@@ -1,5 +1,5 @@
 # Generated from protocol/specs/src/session/oauth.json; do not edit.
-# Regenerate: node packages/codegen/schemas/generate-oauth-clients-python.mjs
+# Regenerate: node codegen/node/schemas/generate-oauth-clients-python.mjs
 
 """How a Xynolog client presents itself to the issuer a knowledge base trusts:
 the clients its realm registers, and the scope every sign-in asks for.

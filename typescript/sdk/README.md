@@ -331,7 +331,7 @@ claims.subscribe(async (job) => {
   trace OpenTelemetry has active when the reply arrives, so in a process that has set up
   no OpenTelemetry it is `undefined`, as every trace is there.
 
-The [`xynolog-worker` skill](https://github.com/xynolog/sdk/blob/main/docs/builder/skills/xynolog-worker/SKILL.md)
+The [`xynolog-worker` skill](https://github.com/xynolog/sdk/blob/main/skills/xynolog-worker/SKILL.md)
 is a whole worker, sign-in to shutdown, and
 [`protocol/contract/WORKER-CONTRACT.md`](https://github.com/xynolog/sdk/blob/main/protocol/contract/WORKER-CONTRACT.md)
 is what a worker promises the dispatcher.

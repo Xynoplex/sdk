@@ -2,7 +2,7 @@
 
 LANGUAGES := typescript python rust go csharp haskell kotlin ocaml swift
 
-.PHONY: help build test haskell-codegen verify-artifacts clean clean-local $(LANGUAGES) $(addsuffix -clean,$(LANGUAGES))
+.PHONY: help build test generate check-generated verify-artifacts clean clean-local $(LANGUAGES) $(addprefix test-,$(LANGUAGES)) $(addsuffix -clean,$(LANGUAGES))
 
 # `make help` prints the `##` lines below, in order (build-tools/make-help.awk).
 ##@ Xynolog SDK: make [target] [VARIABLE=value ...]
@@ -31,13 +31,21 @@ verify-artifacts:
 	python3 scripts/verify-artifact-bundle.py "$(SDK_ARTIFACTS)"
 
 ##@ Test
-## test: The Go SDK's tests, writing coverage.txt
-test:
-	bash scripts/make-target.sh go-test
+## test: Every SDK's own tests, type checks, lints and format checks
+test: $(addprefix test-,$(LANGUAGES))
 
-## haskell-codegen: The Haskell SDK's generated files are what its codegen writes from the pinned Protocol
-haskell-codegen:
-	bash scripts/make-target.sh haskell-codegen
+## test-<language>: One SDK's own tests and checks, in its toolchain's container (Go's write coverage.txt): <list>
+$(addprefix test-,$(LANGUAGES)):
+	bash scripts/make-target.sh $@
+
+##@ Generate
+## generate: Write every SDK's generated files from the pinned Protocol
+generate:
+	bash scripts/make-target.sh generate
+
+## check-generated: Fail when a committed generated file differs from what its generator writes
+check-generated:
+	bash scripts/make-target.sh check-generated
 
 ##@ Clean
 ## clean: Remove every language's output, the local artifacts, caches and bundles

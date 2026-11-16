@@ -27,9 +27,9 @@ interface Kept {
 
 type ReadKeptQueries = (root: string, refuse: (message: string) => never) => { kept: Kept[]; wholeKey: string; version: number };
 
-const ROOT = fileURLToPath(new URL('../../../../..', import.meta.url));
+const ROOT = fileURLToPath(new URL('../../../..', import.meta.url));
 const { readKeptQueries, WHOLE }: { readKeptQueries: ReadKeptQueries; WHOLE: string } = await import(
-  fileURLToPath(new URL('../../../../codegen/schemas/kept-queries.mjs', import.meta.url))
+  fileURLToPath(new URL('../../../scripts/generators/kept-queries.mjs', import.meta.url))
 );
 
 type Entry = [unknown, unknown];

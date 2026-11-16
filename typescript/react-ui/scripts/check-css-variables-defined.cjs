@@ -27,14 +27,14 @@
 
 const fs = require('fs');
 const path = require('path');
-const { repositoryFiles } = require('../../../../.github/scripts/checks/repository-files.mjs');
+const { repositoryFiles } = require('../../scripts/repository-files.mjs');
 
-const ROOT = path.join(__dirname, '../../../..');
+const ROOT = path.join(__dirname, '../../..');
 const REPOSITORY = repositoryFiles(ROOT);
 
 const ROOTS = process.argv.slice(2).length
   ? process.argv.slice(2).map((root) => root.replace(/\/+$/, ''))
-  : ['typescript/react-ui/src', 'images/browser/src'];
+  : ['typescript/react-ui/src'];
 
 /** Every .css under a root. */
 const cssFiles = (root) => REPOSITORY.filter((file) => file.startsWith(`${root}/`) && file.endsWith('.css'));

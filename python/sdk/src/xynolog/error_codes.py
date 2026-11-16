@@ -1,5 +1,5 @@
 # Generated from protocol/specs/src/errors/codes.json; do not edit.
-# Regenerate: node packages/codegen/schemas/generate-error-codes-python.mjs
+# Regenerate: node codegen/node/schemas/generate-error-codes-python.mjs
 
 """The codes a Xynolog client reports a failure under.
 
@@ -19,14 +19,14 @@ __all__ = [
     "IdentityUnverifiableReason",
     "JOB_ERROR_CODES",
     "JobErrorCode",
-    "XYNOLOG_SESSION_ERROR_CODES",
     "SIGN_IN_ERROR_CODES",
     "SPAN_REFUSALS",
-    "XynologSessionErrorCode",
     "SignInErrorCode",
     "SpanRefusal",
     "TRANSPORT_ERROR_CODES",
     "TransportErrorCode",
+    "XYNOLOG_SESSION_ERROR_CODES",
+    "XynologSessionErrorCode",
     "bus_request_code_for_wire_code",
     "transport_error_code_for_status",
 ]
@@ -264,7 +264,7 @@ IDENTITY_UNVERIFIABLE_REASONS: Final[tuple[IdentityUnverifiableReason, ...]] = (
 
 # Why no annotation was built of a span: the span is not the text's, or, for a PDF, is nowhere
 # on its pages, or the PDF's anchored text does not hold together.
-# protocol/specs/src/annotations/builder-cases.json holds when each is given.
+# specs/src/annotations/builder-cases.json holds when each is given.
 type SpanRefusal = Literal[
     # The span's offsets are not two whole numbers from 0, the second no less than the first,
     # within the text.

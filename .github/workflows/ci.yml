@@ -103,27 +103,49 @@ jobs:
           make "$LANGUAGE"
           SDK_ARTIFACTS="$(python3 scripts/create-artifact-bundle.py --path "$LANGUAGE")" make verify-artifacts
 
-  go-sdk:
-    name: Go SDK tests and coverage
+  tests:
+    name: ${{ matrix.language }} SDK tests and checks
     needs: checks
-    if: contains(fromJSON(needs.checks.outputs.languages), 'go')
+    if: needs.checks.outputs.languages != '[]'
     runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ${{ fromJSON(needs.checks.outputs.languages) }}
+    env:
+      LANGUAGE: ${{ matrix.language }}
     steps:
-      - name: Check out source
+      - name: Check out source and pinned Protocol
         uses: actions/checkout@v7.0.1
         with:
           submodules: recursive
 
-      - name: Set up Go
-        uses: actions/setup-go@v7.0.0
+      # The Haskell target keeps Cabal's home here (scripts/make-target.sh).
+      # It is saved even when the checks fail: the dependencies built are
+      # still good, and a failing branch is when the next run comes soonest.
+      - name: Restore Cabal's index and built dependencies
+        id: cabal
+        if: matrix.language == 'haskell'
+        uses: actions/cache/restore@v6.1.0
         with:
-          go-version-file: go/go.mod
-          cache-dependency-path: go/go.sum
+          path: ~/.cache/xynolog/haskell-cabal
+          key: ${{ runner.os }}-${{ runner.arch }}-haskell-${{ hashFiles('haskell/toolchain/**', 'haskell/sdk/cabal.project', 'haskell/sdk/cabal.project.freeze') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-haskell-
 
-      - name: Test with coverage
-        run: make test
+      - name: Run the language's tests, type checks, lints and format checks
+        run: make "test-$LANGUAGE"
+
+      - name: Save Cabal's index and built dependencies
+        if: always() && matrix.language == 'haskell' && steps.cabal.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6.1.0
+        with:
+          path: ~/.cache/xynolog/haskell-cabal
+          key: ${{ steps.cabal.outputs.cache-primary-key }}
 
       - name: Upload coverage to Codecov
+        if: matrix.language == 'go'
         # Codecov rejects tokenless uploads for this organization; configure CODECOV_TOKEN to enable reports.
         uses: codecov/codecov-action@v7
         with:
@@ -131,20 +153,19 @@ jobs:
           flags: go-sdk
           fail_ci_if_error: false
 
-  haskell-codegen:
-    name: The Haskell SDK's generated files are its codegen's
+  generated:
+    name: Generated files are what their generators write
     needs: checks
-    if: contains(fromJSON(needs.checks.outputs.languages), 'haskell')
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 30
     steps:
       - name: Check out source and pinned Protocol
         uses: actions/checkout@v7.0.1
         with:
           submodules: recursive
 
-      - name: Check the generated files against the pinned Protocol
-        run: make haskell-codegen
+      - name: Check every generation group
+        run: make check-generated
 
   # No dependency in any lockfile has a published advisory that advisories.toml
   # does not ignore with a reason, and no ignore outlives its finding
@@ -191,7 +212,7 @@ jobs:
   gate:
     name: CI Gate
     if: always()
-    needs: [dco, labels, checks, artifacts, go-sdk, haskell-codegen, advisories, crates]
+    needs: [dco, labels, checks, artifacts, tests, generated, advisories, crates]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7.0.1

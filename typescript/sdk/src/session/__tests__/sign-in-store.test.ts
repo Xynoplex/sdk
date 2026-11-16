@@ -31,7 +31,7 @@ import { MemorySignIn, type SignInKept } from '../sign-in-kept';
 import { SignInStore, stateDir, type SignInFiles, type System } from '../sign-in-store';
 import type { StoredSession } from '../storage';
 
-const SPECS = join(dirname(fileURLToPath(import.meta.url)), '../../../../../../protocol/specs/src/sign-in-store');
+const SPECS = join(dirname(fileURLToPath(import.meta.url)), '../../../../../protocol/specs/src/sign-in-store');
 
 interface StateCase {
   why: string;

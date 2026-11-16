@@ -20,7 +20,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { repositoryFiles } = require('../../../../.github/scripts/checks/repository-files.mjs');
+const { repositoryFiles } = require('../../scripts/repository-files.mjs');
 
 // Common utility-class patterns from various frameworks
 // These patterns are shared across Tailwind, UnoCSS, Windi, Tachyons, Bootstrap, and others
@@ -148,7 +148,7 @@ function checkFileForUtilityClasses(filePath) {
  * holds (repository-files.mjs), tests left out
  */
 function findReactUIFiles() {
-  const root = path.join(__dirname, '../../../..');
+  const root = path.join(__dirname, '../../..');
   const files = repositoryFiles(root)
     .filter((file) => file.startsWith('typescript/react-ui/src/') && /\.[jt]sx$/.test(file))
     .filter((file) => !file.includes('/__tests__/') && !/\.(test|spec)\.[jt]sx$/.test(file));

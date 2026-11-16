@@ -1,5 +1,5 @@
 # Generated from protocol/specs/src/sdk-telemetry/telemetry.json; do not edit.
-# Regenerate: node packages/codegen/schemas/generate-sdk-telemetry-python.mjs
+# Regenerate: node codegen/node/schemas/generate-sdk-telemetry-python.mjs
 
 """The telemetry a Xynolog SDK's transports export, when the process they run
 in exports at all: every span and metric, its kind, and the attributes it
@@ -23,10 +23,10 @@ __all__ = [
     "Instrument",
     "METRICS",
     "MetricRow",
-    "XYNOLOG_BUS_SENT",
     "SPANS",
     "SpanKindName",
     "SpanRow",
+    "XYNOLOG_BUS_SENT",
 ]
 
 # The kinds of span the table states, by OTLP's names for them.

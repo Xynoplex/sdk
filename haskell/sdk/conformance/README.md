@@ -20,13 +20,13 @@ Mark/Yield delegation. One storage survives close/reopen for persisted-cache
 cases. `LiveQueries.hs` is generated from the refresh table. Both executables
 share protocol decoding and reply formatting in `DriverProtocol.hs`.
 
-Build them in Apple `container` from the repository root:
+Build them from the repository root:
 
 ```sh
-bash haskell/run-container.sh
+make test-haskell
 ```
 
-The runner copies both executables to `conformance/bin`. Xynolog's implementations
+The target copies both executables to `conformance/bin`. Xynolog's implementations
 file registers wire, worker and live drivers; the live tier is `parity`. Follow their setup for
 the gateway, core package, Node dependencies and NATS. Run npm commands inside
 Apple `container` locally.

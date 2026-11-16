@@ -1,4 +1,5 @@
 packages: .
+with-compiler: ghc-9.10.3
 
 package xynolog
   ghc-options: -Werror

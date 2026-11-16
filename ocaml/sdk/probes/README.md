@@ -6,7 +6,7 @@ complete shared client surface. Their private libraries are not SDK exports.
 The dependency observations below are the 2026-11-06 checkpoint; exact selected
 versions live in the committed development lock.
 
-Run them with `bash ocaml/run-container.sh` from the repository root.
+Run them with `make test-ocaml` from the repository root.
 The CI matrix runs the same Dune tests and external-consumer checks natively
 on Linux and macOS. Native Windows is outside the initial acceptance scope.
 

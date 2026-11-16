@@ -1,6 +1,6 @@
 // Code generated from protocol/specs/src/text/encoding-cases.json — DO NOT EDIT.
 //
-// Regenerate: node packages/codegen/schemas/generate-encodings-go.mjs
+// Regenerate: node codegen/node/schemas/generate-encodings-go.mjs
 
 package xynolog
 

@@ -18,7 +18,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../../..');
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const SPEC = resolve(ROOT, 'protocol/specs/openapi.json');
 // Package api: oapi-codegen's client_gen.go, and ids_gen.go, which writes the
 // kinds of id the config excludes from it. Every generated file of the

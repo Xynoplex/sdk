@@ -7,7 +7,7 @@ namespace Xynolog.Generator;
 internal static class UnicodeCase
 {
     /// <summary>Whether a code point is cased, and whether it is case-ignorable, as the table
-    /// packages/codegen/schemas/generate-unicode-case.mjs writes from Unicode's Cased and Case_Ignorable
+    /// codegen/node/schemas/generate-unicode-case.mjs writes from Unicode's Cased and Case_Ignorable
     /// properties: .NET gives neither.</summary>
     internal static string Emit(string table)
     {

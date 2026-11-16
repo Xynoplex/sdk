@@ -167,7 +167,7 @@ Where to go from here:
   annotating by hand, reacting to what others do, and testing. Its code is
   TypeScript, and [the table below](#from-the-typescript-sdk) maps each shape
   to this crate's.
-- The [agent skills](../../../docs/builder/skills/README.md) are whole scripts,
+- The [agent skills](https://github.com/xynolog/docs/blob/main/builder/skills/README.md) are whole scripts,
   one per task, for an AI coding assistant to load: ingesting a corpus,
   annotating it, linking it, and the layers built on those. They are
   TypeScript as well.

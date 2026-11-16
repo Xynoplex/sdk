@@ -1,4 +1,4 @@
-#!/usr/bin/env ts-node
+#!/usr/bin/env node
 /**
  * Audit React Hooks ordering violations using TypeScript AST analysis
  *
@@ -7,13 +7,14 @@
  * 2. Multiple useEventSubscriptions calls (should be combined into one)
  *
  * The files read are the ones git says the repository holds
- * (.github/scripts/checks/repository-files.mjs).
+ * (typescript/scripts/repository-files.mjs).
  */
 
-import * as ts from 'typescript';
-import * as fs from 'fs';
-import * as path from 'path';
-import { repositoryFiles } from '../../../../.github/scripts/checks/repository-files.mjs';
+import ts from 'typescript';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { repositoryFiles } from '../repository-files.mjs';
 
 interface HookViolation {
   filePath: string;
@@ -325,13 +326,11 @@ class HooksOrderingAuditor {
 }
 
 // CLI usage
-if (require.main === module) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const auditor = new HooksOrderingAuditor();
 
-  const repoRoot = path.resolve(__dirname, '../../../..');
+  const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 
-  auditor.analyzeDirectories(repoRoot, ['typescript/react-ui/src', 'images/browser/src']);
+  auditor.analyzeDirectories(repoRoot, ['typescript/react-ui/src']);
   auditor.printReport();
 }
-
-export { HooksOrderingAuditor, HookViolation };

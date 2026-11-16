@@ -15,7 +15,7 @@ use xynolog_http_transport::client_assertion::{
 
 fn table() -> Value {
     serde_json::from_str(include_str!(
-        "../../../../protocol/specs/src/session/client-assertion-cases.json"
+        "../../../protocol/specs/src/session/client-assertion-cases.json"
     ))
     .expect("the table is JSON")
 }
