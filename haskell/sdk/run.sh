@@ -5,7 +5,7 @@ root=${1:?expected repository root}
 bash ../toolchain/toolchain.sh --check
 cabal check
 cabal run xynolog-codegen -- --check "$root"
-cabal build all --enable-tests --enable-coverage -j1
+cabal build all --enable-tests --enable-coverage
 mkdir -p conformance/bin
 for role in wire live; do
   name="xynolog-haskell-$role-driver"
@@ -14,7 +14,7 @@ for role in wire live; do
   chmod +x "conformance/bin/$name"
 done
 python3 api.py --compiler-check
-cabal test schema-cases --enable-coverage -j1 --test-show-details=direct --test-options="$root"
+cabal test schema-cases --enable-coverage --test-show-details=direct --test-options="$root"
 python3 test/refusals.py
 cabal exec -- hpc-codecov --format=lcov --ignore-dittos -x Main cabal:schema-cases -o coverage.lcov
 cabal sdist
