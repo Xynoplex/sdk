@@ -1,6 +1,7 @@
 // What each operation's reply states beside its `response`, derived from the
-// component schema the reply carries. One derivation: generate-ts.mjs prints
-// it as REPLY_NAMES, which core's FaultyTransport answers from.
+// component schema the reply carries, for codegen/node/ocaml/generate-bus.mjs.
+// The bus group derives the same in codegen/lib/bus/registry.ml, which writes
+// REPLY_NAMES; this copy goes when the OCaml modules' generators are ported.
 //
 // A reply names what it answers for by stating a property of its request
 // again: the annotation or the resource a context was gathered for, the

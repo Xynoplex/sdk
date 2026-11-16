@@ -1172,17 +1172,15 @@ by its type and then its value, as `LogFormatJson` is the `json` of
 `LogFormat`. A schema that reuses a value another schema has renames no
 constant.
 
-The bus's channels, and the SDK's tables:
-
-```sh
-npm run generate:bus          # the TypeScript and Go sides of the bus registry
-```
+The bus's channels are written by the generator's bus group
+(`codegen/lib/bus`), which `make generate` runs with every other group, and
+`make check-generated` verifies without writing, as CI does. The SDK's tables:
 
 ```sh
 npm run generate:go           # the Go SDK's tables
 ```
 
-Each has a `:check` form that verifies without writing, as CI does.
+`generate:go` has a `:check` form that verifies without writing.
 
 ## Working on it
 

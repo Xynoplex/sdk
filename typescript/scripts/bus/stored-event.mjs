@@ -1,7 +1,8 @@
 // The component a recorded event is, by its channel's registry entry. One
 // derivation, which every generator that names the payload of a `storedEvent`
-// channel asks: generate-ts.mjs, generate-go.mjs and generate-python.mjs for
-// each SDK's bus types, codegen/node/schemas/generate-required.mjs for the
+// channel asks: codegen/node/ocaml/generate-bus.mjs for the OCaml SDK's bus
+// types (the bus group derives the same, in codegen/lib/bus/registry.ml, for
+// the other SDKs'), codegen/node/schemas/generate-required.mjs for the
 // shape every SDK holds a channel's payload to, and
 // typescript/scripts/generators/cache-refresh-table.mjs for the ways the client's
 // refresh table reads in it.
