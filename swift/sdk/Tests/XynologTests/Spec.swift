@@ -6,7 +6,7 @@ import Testing
 enum Spec {
   static var repository: URL {
     URL(fileURLWithPath: #filePath).deletingLastPathComponent()
-      .appendingPathComponent("../../../..").standardizedFileURL
+      .appendingPathComponent("../../../../..").standardizedFileURL
   }
   static func read(_ relative: String) throws -> JSONValue {
     try JSONDecoder().decode(
