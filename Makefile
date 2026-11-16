@@ -2,7 +2,7 @@
 
 LANGUAGES := typescript python rust go csharp haskell kotlin ocaml swift
 
-.PHONY: help build test verify-artifacts clean clean-local $(LANGUAGES) $(addsuffix -clean,$(LANGUAGES))
+.PHONY: help build test haskell-codegen verify-artifacts clean clean-local $(LANGUAGES) $(addsuffix -clean,$(LANGUAGES))
 
 # `make help` prints the `##` lines below, in order (build-tools/make-help.awk).
 ##@ Xynolog SDK: make [target] [VARIABLE=value ...]
@@ -34,6 +34,10 @@ verify-artifacts:
 ## test: The Go SDK's tests, writing coverage.txt
 test:
 	bash scripts/make-target.sh go-test
+
+## haskell-codegen: The Haskell SDK's generated files are what its codegen writes from the pinned Protocol
+haskell-codegen:
+	bash scripts/make-target.sh haskell-codegen
 
 ##@ Clean
 ## clean: Remove every language's output, the local artifacts, caches and bundles

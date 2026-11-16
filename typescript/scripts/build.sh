@@ -14,9 +14,7 @@ set -euo pipefail
 # `--package` / `--start-from` CLI args.
 #
 # Library packages (under `packages/`) are built first, in the order
-# version.json lists them; apps (`browser`) follow.
-# App staging (.npm-stage/) is the publish flow's job — see
-# typescript/scripts/publish.sh, which runs publish-npm-apps.mjs itself.
+# version.json lists them; apps follow.
 #
 # Dependencies are always installed. OpenAPI spec is always bundled.
 

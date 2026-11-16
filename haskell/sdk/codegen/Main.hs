@@ -671,8 +671,11 @@ main = do
   template <- readUTF8 (output </> "xynolog.cabal.in")
   forM_ ["@VERSION@", "@MODEL_MODULES@"] $ \marker ->
     unless (T.count marker template == 1) (ioError (userError ("manifest template must contain exactly one " ++ T.unpack marker)))
-  package <- readJSON (root </> "package.json") >>= either (ioError . userError) pure . fieldsOf
-  version <- maybe (ioError (userError "root package.json has no version")) pure (textAt "version" package)
+  -- The manifest's version line is scripts/sdk_version.py write's; the codegen keeps it.
+  committed <- readUTF8 (output </> "xynolog.cabal")
+  version <- case [T.strip (T.drop (T.length "version:") line) | line <- T.lines committed, "version:" `T.isPrefixOf` line] of
+    [found] -> pure found
+    _ -> ioError (userError "xynolog.cabal must hold exactly one top-level version line")
   license <- readUTF8 (root </> "LICENSE")
   let manifest = T.replace "@VERSION@" version $ T.replace "@MODEL_MODULES@" (T.intercalate "\n" (map ("    " <>) moduleNames)) template
       generated = ("LICENSE", license) : ("xynolog.cabal", manifest) : [storedFile,factoryFile,oauthFile,assertionFile,storePolicy,storeNames,principalFile,busLogFile] ++ busFiles ++ models ++ facts ++ transportFiles ++ httpFiles ++ workerFiles
