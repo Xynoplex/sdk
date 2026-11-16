@@ -2,12 +2,14 @@
 # Build the Python SDK's distributions, and hold them to what a published one
 # must be, before anything is uploaded.
 #
-#   python/sdk/scripts/build-python-sdk.sh
+#   python/sdk/scripts/build-python-sdk.sh <version>
 #
-# Leaves a source distribution and a wheel in python/sdk/dist, at
-# version.json's version. CI runs it on every change, so a release is not the
-# first place a packaging break is seen; publish-pypi.yml runs it and uploads
-# what it leaves.
+# Leaves a source distribution and a wheel in python/sdk/dist, at <version>:
+# the version this build gives the package (scripts/sdk_version.py python).
+# It writes that version into the pyproject.toml it builds, so it runs on a
+# copy of the checkout, as scripts/publish-python-local.sh runs it. CI runs it
+# on every change, so a release is not the first place a packaging break is
+# seen.
 #
 # The wheel is built from the source distribution, as an installer builds one.
 # It is then installed in an environment of its own, and every module of it is
@@ -22,19 +24,35 @@
 # one it does not find, so the file is copied there from the repository's root
 # before the build and each distribution is held to carrying it after.
 #
-# Needs `uv` and `jq`.
+# Needs `uv` and `python3`.
 
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
 PACKAGE="$ROOT/python/sdk"
 
+VERSION="${1:?usage: build-python-sdk.sh <version>}"
 NAME=$(sed -n 's/^name = "\(.*\)"$/\1/p' "$PACKAGE/pyproject.toml")
-VERSION=$(jq -r .version "$ROOT/version.json")
-if [ -z "$NAME" ] || [ -z "$VERSION" ] || [ "$VERSION" = "null" ]; then
-  echo "::error::no name in python/sdk/pyproject.toml, or no version in version.json" >&2
+if [ -z "$NAME" ]; then
+  echo "::error::no name in python/sdk/pyproject.toml" >&2
   exit 1
 fi
+
+# The checkout's pyproject.toml derives its version from version.json, which a
+# build's copy does not hold: the copy states this build's version instead.
+python3 - "$PACKAGE/pyproject.toml" "$VERSION" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+path, version = Path(sys.argv[1]), sys.argv[2]
+text = path.read_text()
+text, dynamic = re.subn(r'(?m)^dynamic = \["version"\]$', f'version = "{version}"', text)
+text, source = re.subn(r'(?m)^# The checkout\'s version is[^\n]*\n(?:#[^\n]*\n)*\[tool\.hatch\.version\]\n(?:[a-z]+ = [^\n]*\n)+\n', "", text)
+if dynamic != 1 or source != 1:
+    sys.exit(f"{path} does not derive its version as the checkout's does")
+path.write_text(text)
+PY
 
 cd "$PACKAGE"
 rm -rf dist

@@ -62,10 +62,12 @@ run_container_quietly "$RUNTIME" run --rm \
 
 if has_language typescript; then
   echo 'Building TypeScript packages and packing npm artifacts in a Node container…'
+  typescript_version="$(python3 "$ROOT/scripts/sdk_version.py" typescript)"
   run_container_quietly "$RUNTIME" run --rm \
     --volume "$ROOT:/source:ro" \
     --volume "$PROTOCOL:/protocol:ro" \
     --volume "$STATE_ROOT/npm/packages:/artifacts" \
+    --env "XYNOLOG_SDK_VERSION=$typescript_version" \
     --workdir /source \
     node:26-bookworm bash -euc '
       mkdir -p /tmp/sdk/typescript
@@ -78,28 +80,29 @@ if has_language typescript; then
       node scripts/stage-local-publish.mjs verify
       node scripts/stage-local-publish.mjs stage /tmp/local-publish
       cd /tmp/local-publish
-      bash typescript/scripts/publish.sh --pack-dir /artifacts
+      bash typescript/scripts/publish.sh --pack-dir /artifacts --version "$XYNOLOG_SDK_VERSION"
     '
 fi
 
 if has_language python; then
   echo 'Building Python source and wheel archives in a Python container…'
+  python_version="$(python3 "$ROOT/scripts/sdk_version.py" python)"
   run_container_quietly "$RUNTIME" run --rm \
     --volume "$ROOT:/source:ro" \
     --volume "$PROTOCOL:/protocol:ro" \
     --volume "$STATE_ROOT/uv-cache:/root/.cache/uv" \
     --volume "$STATE_ROOT/python/packages:/artifacts" \
+    --env "XYNOLOG_SDK_VERSION=$python_version" \
     --workdir /source \
     python:3.12-bookworm bash -euc '
-      apt-get update -qq
-      apt-get install -y -qq --no-install-recommends jq >/dev/null
       python -m pip install --disable-pip-version-check --no-cache-dir --root-user-action=ignore uv
-      bash /source/scripts/publish-python-local.sh
+      bash /source/scripts/publish-python-local.sh "$XYNOLOG_SDK_VERSION"
     '
 fi
 
 if has_language rust; then
   rust_toolchain="$(sh "$ROOT/rust/scripts/rust-toolchain.sh")"
+  rust_version="$(python3 "$ROOT/scripts/sdk_version.py" rust)"
   echo 'Building and packaging Rust crates in a Rust container…'
   run_container_quietly "$RUNTIME" run --rm --memory 4g \
     --volume "$ROOT:/source:ro" \
@@ -110,7 +113,7 @@ if has_language rust; then
     --env CARGO_HOME=/cargo-home \
     --env CARGO_TARGET_DIR=/cargo-target \
     --workdir /source \
-    "rust:$rust_toolchain-bookworm" bash /source/scripts/publish-rust-local.sh
+    "rust:$rust_toolchain-bookworm" bash /source/scripts/publish-rust-local.sh "$rust_version"
 fi
 
 for language in go csharp haskell kotlin ocaml swift; do

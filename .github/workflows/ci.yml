@@ -50,6 +50,9 @@ jobs:
       - name: Make help lists every public target
         run: python3 build-tools/test_make_help.py --root . --list '<language>=LANGUAGES'
 
+      - name: The committed manifests hold the release's versions
+        run: python3 scripts/sdk_version.py check
+
       - name: The source archive holds no broken symlink
         run: |
           archive="$(mktemp -d)"

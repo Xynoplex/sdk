@@ -745,8 +745,9 @@ bash run.sh /work
 
 Here `/work` is the repository root. The Haskell generator derives protocol
 types, channel descriptors, error codes, timing, the module list, and the
-package version. A release's version bump writes the manifest's version line
-as the generator would (`haskell/scripts/cabal-version.sh`); the
+package version. The committed manifest's version line holds the coming
+release's Haskell version, which `scripts/sdk_version.py write` puts there as
+the generator would (`haskell/scripts/cabal-version.sh`); the
 manifest is not among `public-api.json`'s inputs, since the template, the
 generated modules and the codegen it is written from are. Refresh
 `public-api.json` after library source changes;

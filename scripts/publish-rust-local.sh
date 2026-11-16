@@ -1,18 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# The version this build gives the crates (scripts/sdk_version.py rust).
+version="${1:?usage: publish-rust-local.sh <version>}"
 SCRATCH=/tmp/xynolog-sdk-rust
 rm -rf "$SCRATCH"
 mkdir -p "$SCRATCH"
 cp -a /source/rust "$SCRATCH/rust"
 cp -a /protocol "$SCRATCH/protocol"
-cp /source/LICENSE /source/version.json "$SCRATCH/"
-
-version="$(sed -n 's/^[[:space:]]*"version":[[:space:]]*"\([^"]*\)".*/\1/p' /source/version.json | head -n 1)"
-if [[ -z "$version" ]]; then
-  echo 'Could not read the SDK version.' >&2
-  exit 1
-fi
+cp /source/LICENSE "$SCRATCH/"
+bash "$SCRATCH/rust/scripts/cargo-version.sh" "$version"
 
 cd "$SCRATCH/rust"
 
@@ -22,12 +19,6 @@ echo 'Building the Rust workspace and creating crate archives…'
 # use that same resolved lockfile for every archive below. Build all features
 # so the optional sign-in code is checked too, and reject every lint warning.
 RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-D warnings" cargo build --workspace --all-features
-
-version="$(awk '/^\[workspace.package\]$/ { in_workspace=1; next } /^\[/ { in_workspace=0 } in_workspace && /^version = / { gsub(/"/, "", $3); print $3; exit }' Cargo.toml)"
-if [[ -z "$version" ]]; then
-  echo 'Could not read the Rust workspace package version.' >&2
-  exit 1
-fi
 
 # Package dependencies before consumers. Cargo writes one .crate archive per
 # publishable workspace crate to target/package; no registry is involved.
