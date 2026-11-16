@@ -8,6 +8,7 @@
     "ocaml": 1,
     "python": 1,
     "rust": 1,
+    "swift": 1,
     "typescript": 1
   },
   "packages": {

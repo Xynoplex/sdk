@@ -4,7 +4,7 @@ import PackagePlugin
 @main
 struct GenerateXynologPlugin: BuildToolPlugin {
   func createBuildCommands(context: PluginContext, target: any Target) throws -> [Command] {
-    let specs = context.package.directoryURL.appendingPathComponent("../../../protocol/specs/src")
+    let specs = context.package.directoryURL.appendingPathComponent("../../protocol/specs/src")
       .standardizedFileURL
     guard let files = FileManager.default.enumerator(at: specs, includingPropertiesForKeys: nil)
     else {
