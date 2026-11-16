@@ -488,9 +488,29 @@ private class Types(private val definitions: JsonObject, private val generation:
         val rule = Rule.of(name, pattern)
         return buildString {
             append(kdoc("", schema["description"].string()))
-            append("@Serializable\n@JvmExposeBoxed\n@JvmInline\npublic value class $name(\n    /** The id as text. */\n    public val value: String,\n) {\n")
+            append("@Serializable(with = $name.Serializer::class)\n@JvmExposeBoxed\n@JvmInline\npublic value class $name(\n    /** The id as text. */\n    public val value: String,\n) {\n")
             append("    init {\n        if (!admits(value)) throw $INVALID_IDENTIFIER(${literal(name)}, PATTERN, value)\n    }\n\n")
             append("    override fun toString(): String = value\n\n")
+            append(
+                """
+                |    /** The id as a JSON string; text its rule refuses fails as a decoder's failures do. */
+                |    internal object Serializer : KSerializer<$name> {
+                |        override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor(${literal("$IDENTIFIERS_PACKAGE.$name")}, PrimitiveKind.STRING)
+                |
+                |        override fun serialize(encoder: Encoder, value: $name) {
+                |            encoder.encodeString(value.value)
+                |        }
+                |
+                |        override fun deserialize(decoder: Decoder): $name =
+                |            try {
+                |                $name(decoder.decodeString())
+                |            } catch (refused: $INVALID_IDENTIFIER) {
+                |                throw SerializationException(refused.message, refused)
+                |            }
+                |    }
+                |
+                |""".trimMargin(),
+            )
             append("    public companion object {\n")
             append("        /** The rule a value is held to, as the spec writes it. */\n")
             append("        public const val PATTERN: String = ${literal(pattern)}\n\n")
