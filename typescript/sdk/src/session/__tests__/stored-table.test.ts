@@ -62,7 +62,7 @@ interface StoredTable {
 /** The person what the tests keep is kept for. */
 const PERSON = personKey('did:web:example.org:users:jo');
 
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../../../../../..');
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../../../../..');
 const TABLE = join(ROOT, 'protocol/specs/src/session/stored.json');
 const table = JSON.parse(readFileSync(TABLE, 'utf-8')) as StoredTable;
 const members = Object.keys(table.storedSession.properties);

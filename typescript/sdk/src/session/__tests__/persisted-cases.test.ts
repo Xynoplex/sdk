@@ -120,7 +120,7 @@ interface StoredTable {
   cacheKeyPrefix: { prefix: string };
 }
 
-const SPECS = join(dirname(fileURLToPath(import.meta.url)), '../../../../../../protocol/specs/src');
+const SPECS = join(dirname(fileURLToPath(import.meta.url)), '../../../../../protocol/specs/src');
 const table = JSON.parse(readFileSync(join(SPECS, 'session/persisted-cases.json'), 'utf-8')) as PersistedCases;
 const stored = JSON.parse(readFileSync(join(SPECS, 'session/stored.json'), 'utf-8')) as StoredTable;
 

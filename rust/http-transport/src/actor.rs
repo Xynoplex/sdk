@@ -1027,7 +1027,7 @@ mod tests {
     #[tokio::test]
     async fn each_line_of_the_table_is_delivered_or_refused_as_it_states() {
         let table: Value = serde_json::from_str(include_str!(
-            "../../../../protocol/specs/src/bus/frame-cases.json"
+            "../../../protocol/specs/src/bus/frame-cases.json"
         ))
         .expect("the table is JSON");
         let cases = table["cases"].as_array().expect("the table has cases");

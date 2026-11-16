@@ -13,7 +13,7 @@
 import * as ts from 'typescript';
 import * as fs from 'fs';
 import * as path from 'path';
-import { repositoryFiles } from '../../../../.github/scripts/checks/repository-files.mjs';
+import { repositoryFiles } from '../../../.github/scripts/checks/repository-files.mjs';
 
 interface HookViolation {
   filePath: string;
@@ -328,7 +328,7 @@ class HooksOrderingAuditor {
 if (require.main === module) {
   const auditor = new HooksOrderingAuditor();
 
-  const repoRoot = path.resolve(__dirname, '../../../..');
+  const repoRoot = path.resolve(__dirname, '../../..');
 
   auditor.analyzeDirectories(repoRoot, ['typescript/react-ui/src', 'images/browser/src']);
   auditor.printReport();

@@ -77,7 +77,7 @@ interface RefusalCase {
   then?: Then;
 }
 
-const TABLE = join(dirname(fileURLToPath(import.meta.url)), '../../../../../../protocol/specs/src/session/cases.json');
+const TABLE = join(dirname(fileURLToPath(import.meta.url)), '../../../../../protocol/specs/src/session/cases.json');
 const { refreshSchedule, tokenExpiry, startup, refusal } = JSON.parse(readFileSync(TABLE, 'utf-8')) as {
   refreshSchedule: ScheduleCase[];
   tokenExpiry: ExpiryCase[];

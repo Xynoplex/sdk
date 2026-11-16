@@ -14,7 +14,7 @@ interface Case extends AnnotationIdentity {
 }
 
 const table: { cases: Case[] } = JSON.parse(
-  readFileSync(new URL('../../../../../protocol/specs/src/annotations/id-cases.json', import.meta.url), 'utf8'),
+  readFileSync(new URL('../../../../protocol/specs/src/annotations/id-cases.json', import.meta.url), 'utf8'),
 );
 
 describe('the id of an annotation (protocol/specs/src/annotations/id-cases.json)', () => {

@@ -17,7 +17,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const GENERATOR = fileURLToPath(new URL('../../../../codegen/schemas/generate-error-codes.mjs', import.meta.url));
-const TABLE = fileURLToPath(new URL('../../../../../protocol/specs/src/errors/codes.json', import.meta.url));
+const TABLE = fileURLToPath(new URL('../../../../protocol/specs/src/errors/codes.json', import.meta.url));
 
 interface Entry {
   code: string;

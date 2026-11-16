@@ -23,7 +23,7 @@ interface Value {
 
 type ReadCacheRefresh = (root: string, tablePath: string, refuse: (message: string) => never) => { values: Map<string, Value> };
 
-const ROOT = fileURLToPath(new URL('../../../../..', import.meta.url));
+const ROOT = fileURLToPath(new URL('../../../..', import.meta.url));
 const { readCacheRefresh }: { readCacheRefresh: ReadCacheRefresh } = await import(
   fileURLToPath(new URL('../../../../codegen/schemas/cache-refresh-table.mjs', import.meta.url))
 );

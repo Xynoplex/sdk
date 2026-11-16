@@ -503,7 +503,7 @@ credential goes by (`token`, `password`, `apiKey` and the rest of the list in
 Every Rust block on this page is a region of
 [tests/sign_in.rs](tests/sign_in.rs), compiled and run there against a
 stand-in gateway and issuer. The Rust block of the
-[`xynolog-worker` skill](../../../docs/builder/skills/xynolog-worker/SKILL.md)
+[`xynolog-worker` skill](../../skills/xynolog-worker/SKILL.md)
 is held to the same regions. [tests/stream.rs](tests/stream.rs) holds the
 stream's behaviour against a gateway that misbehaves on cue.
 [conformance/](conformance) holds the two drivers the

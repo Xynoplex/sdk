@@ -43,9 +43,9 @@
 
 const fs = require('fs');
 const path = require('path');
-const { repositoryFiles } = require('../../../../.github/scripts/checks/repository-files.mjs');
+const { repositoryFiles } = require('../../../.github/scripts/checks/repository-files.mjs');
 
-const ROOT = path.join(__dirname, '../../../..');
+const ROOT = path.join(__dirname, '../../..');
 const REPOSITORY = repositoryFiles(ROOT);
 
 const CSS_ROOTS = ['typescript/react-ui/src', 'images/browser/src'];

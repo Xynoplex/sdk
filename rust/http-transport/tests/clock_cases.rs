@@ -72,14 +72,14 @@ use xynolog_http_transport::transport::{HttpTransport, HttpTransportConfig, Timi
 
 static TABLE: LazyLock<Value> = LazyLock::new(|| {
     serde_json::from_str(include_str!(
-        "../../../../protocol/specs/src/client/clock-cases.json"
+        "../../../protocol/specs/src/client/clock-cases.json"
     ))
     .expect("the clock table is JSON")
 });
 
 static TIMING: LazyLock<Value> = LazyLock::new(|| {
     serde_json::from_str(include_str!(
-        "../../../../protocol/specs/src/client/timing.json"
+        "../../../protocol/specs/src/client/timing.json"
     ))
     .expect("the timing table is JSON")
 });

@@ -16,7 +16,7 @@ set -euo pipefail
 #   - typescript/react-ui/src/lib/media-shapes.ts       — svg shape key
 #   - test files                                      — seed/assert the keys
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 
 PATTERN="xynolog-toolbar-click|xynolog-toolbar-selection|xynolog-toolbar-shape|localStorage\.(get|set)Item\('annotateMode'"
 

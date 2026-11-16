@@ -1,7 +1,7 @@
 /**
  * The `xynolog-worker` skill's complete worker, run.
  *
- * The TypeScript block of docs/builder/skills/xynolog-worker/SKILL.md that
+ * The TypeScript block of skills/xynolog-worker/SKILL.md that
  * has `main` is a whole program. Node is given it here word for word, as
  * whoever copies it would run it, with a gateway and the issuer it trusts
  * standing in on this machine. What the program sends is read off them. The
@@ -23,9 +23,9 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { isObject, isString } from '@xynolog/core';
 import { JOB_CLAIM_CHANNELS, JOB_COMMIT_CHANNELS } from '../claims';
 
-const REPO = join(dirname(fileURLToPath(import.meta.url)), '../../../../..');
+const REPO = join(dirname(fileURLToPath(import.meta.url)), '../../../..');
 const PACKAGE = join(REPO, 'typescript/sdk');
-const SKILL = readFileSync(join(REPO, 'docs/builder/skills/xynolog-worker/SKILL.md'), 'utf-8');
+const SKILL = readFileSync(join(REPO, 'skills/xynolog-worker/SKILL.md'), 'utf-8');
 /** What a grant that proves an account by its key posts. */
 const ASSERTION: { form: string[]; grantType: string; assertionType: string } = JSON.parse(
   readFileSync(join(REPO, 'protocol/specs/src/session/client-assertion-cases.json'), 'utf-8'),

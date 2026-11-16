@@ -53,7 +53,7 @@ interface Case {
   steps: Json[];
 }
 
-const read = (path: string): unknown => JSON.parse(readFileSync(new URL(`../../../../../protocol/specs/src/${path}`, import.meta.url), 'utf8'));
+const read = (path: string): unknown => JSON.parse(readFileSync(new URL(`../../../../protocol/specs/src/${path}`, import.meta.url), 'utf8'));
 
 const TABLE = read('client/clock-cases.json') as { cases: Case[] };
 const TIMING = new Map(
