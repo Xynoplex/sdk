@@ -76,11 +76,13 @@ if has_language typescript; then
       cp -a /protocol /tmp/sdk/protocol
       cd /tmp/sdk/typescript
       npm install --no-package-lock
+      node --test scripts/test-local-publish.mjs
       npm run build:packages
       node scripts/stage-local-publish.mjs verify
       node scripts/stage-local-publish.mjs stage /tmp/local-publish
       cd /tmp/local-publish
       bash typescript/scripts/publish.sh --pack-dir /artifacts --version "$XYNOLOG_SDK_VERSION"
+      bash /tmp/sdk/typescript/scripts/verify-nodenext-resolution.sh /artifacts "$XYNOLOG_SDK_VERSION"
     '
 fi
 

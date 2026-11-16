@@ -1,168 +1,50 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Verify that every published @xynolog/* package's dist resolves cleanly
-# under `tsc --moduleResolution NodeNext` against a synthetic consumer
-# project. Catches an asymmetric dist — bundled .js
-# with per-file .d.ts shards (or any other dist incoherence) — *before*
-# the tarballs reach a downstream NodeNext consumer.
+# Every published @xynolog/* tarball resolves under `tsc --moduleResolution
+# NodeNext`, installed as an external consumer installs it. This catches an
+# asymmetric dist, a bundled .js beside per-file .d.ts shards, before a
+# tarball reaches a NodeNext consumer: `export * from './client'` in
+# dist/index.d.ts fails when no ./client.js sits beside it.
 #
-# tsup emits bundled `dist/index.js`. Sharded `dist/*.d.ts` next to it (tsc
-# with `emitDeclarationOnly`) break under NodeNext: `dist/index.d.ts`'s
-# internal re-exports (`export * from './client'`) fail because the matching
-# `./client.js` does not exist. `.d.ts` is bundled via
-# `rollup-plugin-dts` so the dist contains only one .d.ts per entry
-# point — this gate proves that contract holds.
+#   typescript/scripts/verify-nodenext-resolution.sh <tarball dir> <version>
 #
-# How the check works:
-#   1. For every `packages/<name>` listed in version.json:
-#      a. `npm pack` → tarball
-#      b. Extract to a scratch dir
-#      c. Drop a synthetic `smoke.ts` that does `import * as p from "@xynolog/<name>"`
-#      d. Run `tsc --noEmit` with `moduleResolution: NodeNext`
-#   2. Any non-zero tsc exit fails the gate.
-#
-# Usage:
-#   ./typescript/scripts/verify-nodenext-resolution.sh
-#
-# Assumes packages have already been built (run after `./typescript/scripts/build.sh`).
-# Runs inside the host shell; uses the host's `node`/`npm`/`npx` (the
-# whole point is to mimic an external consumer).
+# Run after `publish.sh --pack-dir`, in the container that built the packages,
+# so the consumer is checked with the TypeScript compiler the workspace
+# installed. The tarballs are installed together: each package depends on the
+# others at this exact version, which no registry holds.
 
-cd "$(dirname "$0")/../../.."
+cd "$(dirname "${BASH_SOURCE[0]}")/../.."
+tarballs="$(cd "$1" && pwd)"
+version="$2"
+tsc="$PWD/typescript/node_modules/typescript/bin/tsc"
+[[ -f "$tsc" ]] || { echo "verify-nodenext-resolution.sh: $tsc is missing; install the workspace first" >&2; exit 1; }
 
-GREEN='\033[0;32m'
-CYAN='\033[0;36m'
-RED='\033[0;31m'
-DIM='\033[2m'
-RESET='\033[0m'
+consumer="$(mktemp -d)"
+trap 'rm -rf "$consumer"' EXIT
 
-step() { echo -e "${CYAN}▸${RESET} $1"; }
-ok()   { echo -e "${GREEN}✓${RESET} $1"; }
-fail() { echo -e "${RED}✗${RESET} $1"; }
-
-# Workspace TS for the consumer typecheck. Pin to whatever the workspace
-# uses so we exercise the resolver the workspace publishes against.
-TS_VERSION=$(node -e "console.log(require('./package.json').devDependencies.typescript || 'latest')" | sed 's/^\^//')
-
-# Packages to verify. Each line is "<full-name>\t<dir>" so we don't have
-# to reconstruct paths. Read from version.json so adding a new package
-# auto-includes it in the gate.
-PACKAGES=$(node -e "
-const v = require('./version.json');
-for (const [name, pkg] of Object.entries(v.packages || {})) {
-  if (pkg.dir && pkg.dir.startsWith('packages/') && pkg.publish !== false) {
-    console.log(name + '\t' + pkg.dir);
-  }
+node - "$tarballs" "$version" "$consumer" <<'NODE'
+const { existsSync, readFileSync, writeFileSync } = require('node:fs');
+const [tarballs, version, consumer] = process.argv.slice(2);
+const names = Object.entries(JSON.parse(readFileSync('version.json', 'utf8')).packages)
+  .filter(([, entry]) => entry.publish === true)
+  .map(([name]) => name);
+const dependencies = {};
+for (const name of names) {
+  const tarball = `${tarballs}/${name.slice(1).replace('/', '-')}-${version}.tgz`;
+  if (!existsSync(tarball)) throw new Error(`${name}: no tarball at ${tarball}`);
+  dependencies[name] = `file:${tarball}`;
 }
-")
+writeFileSync(`${consumer}/package.json`, JSON.stringify({ name: 'verify-nodenext', version: '0.0.0', private: true, type: 'module', dependencies }, null, 2));
+writeFileSync(`${consumer}/tsconfig.json`, JSON.stringify({
+  compilerOptions: { target: 'ES2022', module: 'NodeNext', moduleResolution: 'NodeNext', strict: true, skipLibCheck: true, noEmit: true, types: [] },
+  include: ['smoke.ts'],
+}, null, 2));
+// `import *` makes the resolver walk each package's whole re-export chain.
+writeFileSync(`${consumer}/smoke.ts`, names.map((name, index) => `import * as package${index} from '${name}';\nvoid package${index};\n`).join(''));
+console.log(`Checking ${names.join(', ')} at ${version}`);
+NODE
 
-SCRATCH=$(mktemp -d -t xynolog-nodenext-XXXXXX)
-trap "rm -rf '$SCRATCH'" EXIT
-
-step "Scratch dir: ${DIM}$SCRATCH${RESET}"
-step "TypeScript:  ${DIM}$TS_VERSION${RESET}"
-
-# Install TS once for all checks
-(cd "$SCRATCH" && npm init -y > /dev/null && npm install --silent --no-package-lock "typescript@$TS_VERSION")
-
-FAILED=()
-
-while IFS=$'\t' read -r pkg_name pkg_dir; do
-  [ -z "$pkg_name" ] && continue
-  short_name="${pkg_name#@xynolog/}"  # bare name for scratch dir
-
-  if [ ! -d "$pkg_dir/dist" ]; then
-    fail "$pkg_name: no dist/ — run build first"
-    FAILED+=("$pkg_name")
-    continue
-  fi
-
-  step "Verifying $pkg_name…"
-
-  # Pack the built package
-  tarball_path=$(cd "$pkg_dir" && npm pack --silent 2>/dev/null | tail -1)
-  if [ -z "$tarball_path" ] || [ ! -f "$pkg_dir/$tarball_path" ]; then
-    fail "$pkg_name: npm pack produced no tarball"
-    FAILED+=("$pkg_name")
-    continue
-  fi
-
-  # Each package gets its own scratch consumer so installs don't conflict
-  consumer="$SCRATCH/$short_name"
-  mkdir -p "$consumer"
-  cp "$pkg_dir/$tarball_path" "$consumer/pkg.tgz"
-  rm "$pkg_dir/$tarball_path"
-
-  cat > "$consumer/package.json" <<EOF
-{
-  "name": "verify-$short_name",
-  "version": "0.0.0",
-  "private": true,
-  "type": "module",
-  "dependencies": {
-    "$pkg_name": "file:./pkg.tgz"
-  }
-}
-EOF
-
-  cat > "$consumer/tsconfig.json" <<EOF
-{
-  "compilerOptions": {
-    "target": "ES2022",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "noEmit": true,
-    "types": []
-  },
-  "include": ["smoke.ts"]
-}
-EOF
-
-  cat > "$consumer/smoke.ts" <<EOF
-// Verify $pkg_name's type surface resolves cleanly under NodeNext.
-// \`import *\` forces the resolver to walk the full re-export chain
-// in the package's index.d.ts; any missing matching .js (the
-// asymmetric-dist class of bug) fails here.
-import * as pkg from '$pkg_name';
-void pkg;
-EOF
-
-  # Install the tarball into the consumer. Use --no-package-lock since
-  # we're in a throwaway scratch dir.
-  if ! (cd "$consumer" && npm install --silent --no-package-lock 2>&1 | tail -3 > install.log); then
-    fail "$pkg_name: npm install failed"
-    cat "$consumer/install.log"
-    FAILED+=("$pkg_name")
-    continue
-  fi
-
-  # Symlink in the shared node_modules/typescript so the consumer can
-  # find tsc without re-installing it.
-  ln -sfn "$SCRATCH/node_modules/typescript" "$consumer/node_modules/typescript"
-
-  if (cd "$consumer" && ./node_modules/typescript/bin/tsc --noEmit) 2> "$consumer/tsc.log"; then
-    ok "$pkg_name resolves cleanly under NodeNext"
-  else
-    fail "$pkg_name: NodeNext typecheck FAILED"
-    cat "$consumer/tsc.log"
-    FAILED+=("$pkg_name")
-  fi
-done <<< "$PACKAGES"
-
-if [ ${#FAILED[@]} -gt 0 ]; then
-  echo
-  fail "NodeNext verification failed for: ${FAILED[*]}"
-  echo
-  echo "Most common cause: the package's dist has per-file .d.ts shards"
-  echo "without matching .js files. The .d.ts bundle step in"
-  echo "rollup.dts.config.mjs may not be running, or a new entry point"
-  echo "needs to be added to the package's rollup config."
-  exit 1
-fi
-
-echo
-ok "All @xynolog/* packages resolve cleanly under NodeNext."
+(cd "$consumer" && npm install --no-package-lock --no-audit --no-fund --loglevel=error)
+node "$tsc" --noEmit -p "$consumer"
+echo "Every @xynolog/* tarball resolves under NodeNext."

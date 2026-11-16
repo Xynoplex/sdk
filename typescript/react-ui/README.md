@@ -398,4 +398,4 @@ See [CONTRIBUTING.md](../../../CONTRIBUTING.md) in the repository root for full 
 - [@xynolog/sdk](../sdk) - `XynologBrowser`, `XynologClient`, the read-through cache, and the state machinery. Its [**Developer Guide**](../../../docs/builder/DEVELOPER-GUIDE.md) covers end-to-end use, including embedding this package's `ResourceViewer`.
 - [@xynolog/core](../core) - Shared API types (`components`) generated from the OpenAPI spec
 - [@xynolog/http-transport](../http-transport) - HTTP transport (`HttpTransport`, `HttpContentTransport`, `APIError`)
-- [xynolog-browser](../../../images/browser) - Reference implementation (Vite + React Router)
+- [xynolog-browser](https://github.com/xynolog/images/tree/main/browser) - Reference implementation (Vite + React Router)
