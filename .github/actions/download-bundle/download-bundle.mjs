@@ -9,7 +9,7 @@ const sdkCommit = required('INPUT_COMMIT');
 const protocolCommit = required('INPUT_PROTOCOL_COMMIT');
 const archiveSha256 = required('INPUT_SHA256');
 const languages = required('INPUT_LANGUAGES').split(',').map((value) => value.trim()).filter(Boolean).sort();
-if (!/^(?:sdk-[0-9a-f]{40}|v[0-9A-Za-z.-]+)$/.test(tag)) fail('SDK artifact release tag is not valid');
+if (!/^v[0-9]{2}\.(?:[1-9]|1[0-2])\.(?:0|[1-9][0-9]*)$/.test(tag)) fail('SDK artifact release tag is not an SDK release, vYY.M.N');
 if (!/^[0-9a-f]{40}$/.test(sdkCommit) || !/^[0-9a-f]{40}$/.test(protocolCommit)) fail('SDK and Protocol commits must be full commit hashes');
 if (!/^[0-9a-f]{64}$/.test(archiveSha256)) fail('Bundle SHA-256 must be a full lowercase digest');
 if (languages.length === 0 || new Set(languages).size !== languages.length) fail('At least one unique SDK language is required');
