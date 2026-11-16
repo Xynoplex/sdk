@@ -174,6 +174,20 @@ jobs:
       - name: Check every generation group
         run: make check-generated
 
+  codegen:
+    name: The generator's model reads every file of the pinned Protocol
+    needs: checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Check out source and pinned Protocol
+        uses: actions/checkout@v7.0.1
+        with:
+          submodules: recursive
+
+      - name: Build, format-check and test the generator
+        run: make test-codegen
+
   # No dependency in any lockfile has a published advisory that advisories.toml
   # does not ignore with a reason, and no ignore outlives its finding
   # (build-tools/advisories.py).
@@ -219,7 +233,7 @@ jobs:
   gate:
     name: CI Gate
     if: always()
-    needs: [dco, labels, checks, artifacts, tests, generated, advisories, crates]
+    needs: [dco, labels, checks, artifacts, tests, generated, codegen, advisories, crates]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7.0.1

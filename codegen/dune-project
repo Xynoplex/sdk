@@ -1,0 +1,16 @@
+(lang dune 3.24)
+(name xynolog-codegen)
+(generate_opam_files true)
+(source (github xynolog/sdk))
+(license Apache-2.0)
+(authors "Xynolog")
+(maintainers "Xynolog maintainers")
+(package
+ (name xynolog-codegen)
+ (synopsis "Xynolog's generator: Protocol's specs, read strictly, into every SDK's code")
+ (description "Reads the pinned Protocol's specs into a model that refuses what it does not know.")
+ (depends
+  (ocaml (= 5.5.2))
+  (yojson (>= 3.0.0))
+  (alcotest :with-test)
+  (ocamlformat (and :with-test (= 0.29.0)))))

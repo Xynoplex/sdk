@@ -1,0 +1,2 @@
+; node holds the Node generators each OCaml port replaces, and no dune files.
+(dirs :standard \ node)
