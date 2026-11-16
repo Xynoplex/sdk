@@ -3,8 +3,8 @@
 
 version.json names two things: the coming release, `YY.M.N`, and each
 language's compatibility number `C`. A language publishes the release as
-`C.YYMM.N`, the month as two digits. Swift has no `C`: SwiftPM takes the
-repository's root release tag, `vYY.M.N`, as the Swift package's version.
+`C.YYMM.N`, the month as two digits. Swift has no `C`: its version is the
+release's own, `YY.M.N`.
 Every package version and file name is derived here, and nothing else reads
 version.json's `release` or `compatibility`.
 
