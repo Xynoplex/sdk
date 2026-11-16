@@ -1,5 +1,5 @@
-Xynoplex SDKs
-Copyright 2026 Xynoplex
+Xynolog SDKs
+Copyright 2026 Xynolog
 
 Carried-forward SDKs
 
@@ -16,11 +16,11 @@ The Rust, Python, C#, Kotlin, Swift, Haskell, and OCaml SDK packages were also
 introduced after 2026-08-26 and were absent from the historical SDK package
 tree. The earlier Go implementation remains only in the historical snapshot.
 
-Xynoplex work
+Xynolog work
 
 All work in these SDKs made on or after 2026-08-27, including the rewritten Go
 SDK, the newly introduced language SDKs, and subsequent work on the carried-
-forward TypeScript packages, is owned by Xynoplex. The repository history
+forward TypeScript packages, is owned by Xynolog. The repository history
 records the pre-boundary source as a single snapshot commit, followed by the
 post-boundary changes.
 
