@@ -6,7 +6,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 
-const root = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
+const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 function fixture() {
   const directory = mkdtempSync(join(tmpdir(), 'xynolog-local-publication-'));
   const source = join(directory, 'source');
