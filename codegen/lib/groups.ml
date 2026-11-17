@@ -26,4 +26,5 @@ let all =
     { name = "locales"; files = Locales.files };
     { name = "job-storage"; files = Job_storage.files };
     { name = "limits"; files = Limits.files };
+    { name = "ocaml-sdk"; files = Ocaml_sdk.files };
   ]

@@ -185,3 +185,36 @@ let python_docstring ~indent text =
       ^ String.concat "" (List.map (fun l -> indent ^ l ^ "\n") rest)
       ^ indent ^ quotes
   | [] -> indent ^ quotes ^ quotes
+
+(* A camel-case name in lower snake case: an underscore where a lower-case
+   letter or a digit meets an upper-case one ([ResourceId] is
+   [resource_id]). *)
+let snake name =
+  let out = Buffer.create (String.length name + 8) in
+  String.iteri
+    (fun i c ->
+      (match c with
+      | 'A' .. 'Z' when i > 0 -> (
+          match name.[i - 1] with
+          | 'a' .. 'z' | '0' .. '9' -> Buffer.add_char out '_'
+          | _ -> ())
+      | _ -> ());
+      Buffer.add_char out (Char.lowercase_ascii c))
+    name;
+  Buffer.contents out
+
+(* A string as an OCaml literal: printable ASCII as itself, and a quote, a
+   backslash and every other byte by its decimal escape, so no byte of UTF-8
+   reads two ways. *)
+let ocaml_quoted text =
+  let out = Buffer.create (String.length text + 2) in
+  Buffer.add_char out '"';
+  String.iter
+    (fun c ->
+      match Char.code c with
+      | code when code >= 32 && code < 127 && c <> '"' && c <> '\\' ->
+          Buffer.add_char out c
+      | code -> Buffer.add_string out (Printf.sprintf "\\%03d" code))
+    text;
+  Buffer.add_char out '"';
+  Buffer.contents out

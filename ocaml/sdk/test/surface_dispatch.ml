@@ -1,4 +1,5 @@
-(* Generated from protocol/specs/src/client/surface.json. Do not edit. *)
+(* Generated from protocol/specs/src/client/surface.json. Do not edit.
+   Regenerate: make generate (codegen/lib/ocaml_sdk/bus_modules.ml) *)
 
 [@@@ocamlformat "disable"]
 

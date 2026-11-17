@@ -217,6 +217,20 @@ let typescript (entry : Flat.t) (o : Owner_only.t) (names : Contract.t) =
         ];
   }
 
+(* The owner-only modes as the OCaml SDK and its storage probe hold them
+   (ocaml/sdk/lib/store_policy.ml, ocaml/sdk/probes/store_policy.ml). *)
+let ocaml_owner_only (o : Owner_only.t) =
+  List.map
+    (fun dir ->
+      {
+        Output.path = "ocaml/sdk/" ^ dir ^ "/store_policy.ml";
+        text =
+          Banner.ocaml ~from_:"sign-in-store/owner-only.json" __FILE__
+          ^ "let directory_mode = 0o" ^ o.directory.octal
+          ^ "\nlet file_mode = 0o" ^ o.file.octal ^ "\n";
+      })
+    [ "lib"; "probes" ]
+
 let files ~root (spec : Spec.t) =
   let entry =
     match List.assoc_opt schema_file spec.schemas with
@@ -236,13 +250,14 @@ let files ~root (spec : Spec.t) =
   match (entry, owner_only, names) with
   | Ok entry, Ok o, Ok names ->
       Ok
-        [
-          go_entry entry;
-          go_owner_only o;
-          python_entry entry;
-          python_owner_only o;
-          typescript entry o names;
-        ]
+        ([
+           go_entry entry;
+           go_owner_only o;
+           python_entry entry;
+           python_owner_only o;
+           typescript entry o names;
+         ]
+        @ ocaml_owner_only o)
   | _ ->
       let errors = function Ok _ -> [] | Error e -> e in
       Error (errors entry @ errors owner_only @ errors names)

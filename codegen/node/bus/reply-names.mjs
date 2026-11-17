@@ -1,7 +1,8 @@
 // What each operation's reply states beside its `response`, derived from the
-// component schema the reply carries, for codegen/node/ocaml/generate-bus.mjs.
+// component schema the reply carries, for typescript/core's reply-names test.
 // The bus group derives the same in codegen/lib/bus/registry.ml, which writes
-// REPLY_NAMES; this copy goes when the OCaml modules' generators are ported.
+// REPLY_NAMES and the OCaml SDK's reply names; this copy is a second
+// derivation that only that test still reads.
 //
 // A reply names what it answers for by stating a property of its request
 // again: the annotation or the resource a context was gathered for, the

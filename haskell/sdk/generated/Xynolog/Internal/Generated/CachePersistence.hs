@@ -1,4 +1,5 @@
--- Generated from session/stored.json and client/refresh.json; do not edit.
+-- Generated from session/stored.json and client/refresh.json. Do not edit.
+-- Regenerate: make generate (codegen/lib/stored/stored.ml)
 {-# LANGUAGE OverloadedStrings #-}
 module Xynolog.Internal.Generated.CachePersistence (KeptQuery(..), keptQueryName, Whole(..), CacheDocument(..), lastEventIds) where
 import Control.Monad (unless)

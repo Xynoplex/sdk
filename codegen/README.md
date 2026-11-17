@@ -110,12 +110,14 @@ per language it writes:
   base media type stated once, with an extension, a label and a word of each
   vocabulary; an alias is another spelling of a row's extension; and the rows
   are the `SupportedMediaType` enum's members, no more and no fewer.
-- `stored`: what a Python client keeps for its person, from
-  `session/stored.json`, for the Python SDK: the store's keys and prefixes,
-  the stored session (a flat schema, as `sign-in`'s entry is), an open
-  resource, the last event ids, and the queries a client keeps, which are the
-  refresh table's persisted queries, by the identifier each is keyed by. A
-  key is a camel-case `…Key` stated once, and no key begins with a prefix.
+- `stored`: what a client keeps for its person, from `session/stored.json`,
+  for the Python and Haskell SDKs: the store's keys and prefixes, the stored
+  session (a flat schema, as `sign-in`'s entry is), an open resource, the
+  last event ids, the cache document, and the queries a client keeps, which
+  are the refresh table's persisted queries, by the identifier each is keyed
+  by. A key is a camel-case `…Key` stated once, and no key begins with a
+  prefix; a cache document is a version and its entries, each a key, a value
+  and a whole-number stamp.
 - `locales`: every language an SDK's interface speaks, from
   `locales/registry.json`, for the TypeScript SDK. A code is two or three
   lower-case letters stated once, with a native and an English name.
@@ -124,17 +126,29 @@ per language it writes:
   `MarkJobParams` is told apart by, for the TypeScript SDK.
 - `limits`: each gateway operation's `x-xynolog-limits` and each component
   property's `maxItems`, from `openapi.json`, for the TypeScript SDK.
+- `ocaml-sdk`: the OCaml SDK's modules that no other group's table owns: the
+  string enums, the selector and the records of the component schemas, what
+  its HTTP transport says, the bus's channels and the namespace methods that
+  are one channel or operation each, and the facts of tables no group writes
+  for it, with the repository's `LICENSE`, which its package ships. The
+  `required`, `identifiers`, `timing`, `error-codes`, `cache-refresh`,
+  `encodings`, `oauth-clients`, `telemetry`, `sign-in` and `media-types`
+  groups each write the OCaml SDK's module of their own table. The OCaml
+  SDK's tests read Protocol's case tables where the checkout holds them, as
+  every SDK's do; no group copies a table into one.
 
 `Text` measures and spells text: a width in code points, a word ended by
 ASCII white space, a string as JSON writes it or as a Go or Python literal
-of printable ASCII, a camel-case name in upper snake case, and a comment as
-Go, Python and TypeScript write one. `Python_layout` lays a Python
+of printable ASCII or an OCaml one, a camel-case name in upper or lower
+snake case, and a comment as Go, Python and TypeScript write one. `Python_layout` lays a Python
 statement out as ruff's formatter does at the SDK's line length, so a
 generated module is one `ruff format` leaves as it is. `Banner` is the line
 each generated file opens with, naming the module that writes it; a
 generated Python module also names the lint rules it is exempt from (a long
 line, an ambiguous character, the order of its imports and of its `__all__`,
-and an exemption it does not use), and every other rule holds it. `Output` is the drift gate.
+and an exemption it does not use), and every other rule holds it; a
+generated OCaml module tells ocamlformat to leave it as written. `Output` is
+the drift gate.
 
 ## Running it
 

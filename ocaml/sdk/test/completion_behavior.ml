@@ -10,7 +10,7 @@ let row_name row = J.member "why" row |> J.to_string
 
 (* All four policies and the header table in retry/cases.json. *)
 let retry_rules () =
-  Yojson.Safe.from_string Retry_cases.rules
+  Protocol.member "retry/cases.json" "rules"
   |> J.to_list
   |> List.iter (fun row ->
       let field key = J.member key row in
@@ -30,7 +30,7 @@ let retry_rules () =
           ()
       in
       Alcotest.(check bool) (row_name row) (J.to_bool (field "retries")) actual);
-  Yojson.Safe.from_string Retry_cases.retry_after
+  Protocol.member "retry/cases.json" "retryAfter"
   |> J.to_list
   |> List.iter (fun row ->
       let actual =

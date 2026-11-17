@@ -5,8 +5,7 @@
 //
 //   codegen/node/schemas/generate-required-lists-go.mjs → go/api/required_lists_gen.go, how
 //                                                         each Go type writes a required list held as nil
-//   typescript/scripts/generators/cache-refresh-table.mjs, and the OCaml SDK's generators in
-//   codegen/node/ocaml, which read the shapes.
+//   typescript/scripts/generators/cache-refresh-table.mjs, which reads the shapes.
 //
 // The required group (codegen/lib/required) writes every SDK's table from its
 // own copy of these rules, codegen/lib/required/shape.ml. This copy goes when

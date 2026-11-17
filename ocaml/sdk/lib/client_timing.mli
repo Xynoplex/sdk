@@ -1,4 +1,5 @@
-(* Generated from protocol/specs/src/client/timing.json. Do not edit. *)
+(* Generated from protocol/specs/src/client/timing.json. Do not edit.
+   Regenerate: make generate (codegen/lib/timing/ocaml.ml) *)
 
 [@@@ocamlformat "disable"]
 

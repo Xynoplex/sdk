@@ -1,5 +1,5 @@
 // The delivery class of every channel that crosses the wire, derived from the
-// registry's axes, for codegen/node/ocaml/generate-bus.mjs, and for
+// registry's axes, for
 // typescript/scripts/generators/cache-refresh-table.mjs, which holds the
 // client's refresh table to it. The bus group derives the same in
 // codegen/lib/bus/registry.ml, which writes CHANNEL_ATTRS; this copy goes

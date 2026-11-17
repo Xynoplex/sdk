@@ -67,7 +67,7 @@ let run_case row =
     Clock.make ~monotonic:mono ~wall:(Eio.Stdenv.clock env)
       ~jitter:(Random.State.make [| 1 |])
   in
-  let timing = Yojson.Safe.from_string State_cases.timing in
+  let timing = Protocol.timing () in
   let number fallback = function
     | `Int n -> float n
     | `Float n -> n
@@ -582,9 +582,9 @@ let run_case row =
   Session.close session
 
 let () =
-  let fixture = Yojson.Safe.from_string State_cases.fixtures in
+  let fixture = Protocol.member "client/state-units.json" "fixtures" in
   let cases =
-    Yojson.Safe.from_string State_cases.cases
+    Protocol.member "client/state-units.json" "cases"
     |> J.to_list
     |> List.map (substitute fixture)
   in

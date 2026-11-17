@@ -137,7 +137,24 @@ let typescript (t : T.t) =
         ];
   }
 
+(* The clients and the scope as the OCaml SDK names them
+   (ocaml/sdk/lib/oauth_facts.ml): a client's id by its name, and the scope. *)
+let ocaml (t : T.t) =
+  {
+    Output.path = "ocaml/sdk/lib/oauth_facts.ml";
+    text =
+      Banner.ocaml ~from_:file __FILE__
+      ^ String.concat ""
+          (List.map
+             (fun (c : T.client) ->
+               "let " ^ c.name ^ " = " ^ Text.ocaml_quoted c.id ^ "\n")
+             t.clients)
+      ^ "let scope = "
+      ^ Text.ocaml_quoted t.scope.value
+      ^ "\n";
+  }
+
 let files ~root:_ (spec : Spec.t) =
   Result.map
-    (fun t -> [ go t; python t; typescript t ])
+    (fun t -> [ go t; python t; typescript t; ocaml t ])
     (derive spec.tables.session_oauth)

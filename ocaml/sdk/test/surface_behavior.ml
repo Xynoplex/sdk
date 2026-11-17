@@ -460,7 +460,7 @@ let tests env ~name ~via ~row =
   Session.close session
 
 let () =
-  let table = Yojson.Safe.from_string Surface_cases.table in
+  let table = Protocol.table "client/surface.json" in
   let fixtures = field "fixtures" table in
   let suites =
     J.to_list (field "namespaces" table)

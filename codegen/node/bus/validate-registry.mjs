@@ -11,10 +11,10 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 // These assertions run at the source, in the language-neutral layer, so the
 // error names the registry entry and applies to every generated language.
 //
-// codegen/node/ocaml/generate-bus.mjs imports and runs this, so no OCaml bus
-// module can be produced from a registry that violates them. The bus group
-// holds the registry to the same rules in codegen/lib/bus/registry.ml; this
-// copy goes when the OCaml modules' generators are ported.
+// typescript/core's registry tests import and run this. The bus group holds
+// the registry to the same rules in codegen/lib/bus/registry.ml before any
+// SDK's bus module is written; this copy is a second statement of them that
+// only those tests still read.
 
 /**
  * The registry's ON-DISK form, not just its content.

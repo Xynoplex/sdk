@@ -18,7 +18,7 @@ let decode schema value =
 
 (* Shared origin and ordering rows from session/registry-cases.json. *)
 let shared () =
-  let table = Yojson.Safe.from_string Registry_cases.cases in
+  let table = Protocol.table "session/registry-cases.json" in
   List.iter
     (fun row ->
       let read name = decode Models.kb_endpoint (field name row) in
@@ -53,7 +53,7 @@ let shared () =
 
 (* Shared endpoint rows from session/gateway-url-cases.json. *)
 let gateway_urls () =
-  Yojson.Safe.from_string Registry_cases.gateway_cases
+  Protocol.member "session/gateway-url-cases.json" "cases"
   |> J.to_list
   |> List.iter (fun row ->
       let endpoint = decode Models.http_endpoint (field "endpoint" row) in
@@ -91,8 +91,8 @@ let discovery () =
 
 (* Discovery and deviceGrant rows from client/clock-cases.json. *)
 let controlled () =
-  let table = Yojson.Safe.from_string Registry_cases.clock_cases |> J.to_list in
-  let timing = Yojson.Safe.from_string Registry_cases.timing in
+  let table = Protocol.member "client/clock-cases.json" "cases" |> J.to_list in
+  let timing = Protocol.timing () in
   let number fallback = function
     | `Int n -> float n
     | `Float n -> n
@@ -898,9 +898,7 @@ let pass mono clock elapsed_ms =
 
 (* client/timing.json, errorsKeptForFirstReaderCount: how many of what a stream
    said before its first reader came that reader is given, the oldest dropped. *)
-let kept =
-  int "errorsKeptForFirstReaderCount"
-    (Yojson.Safe.from_string Registry_cases.timing)
+let kept = int "errorsKeptForFirstReaderCount" (Protocol.timing ())
 
 let claims_refused () =
   Eio_mock.Backend.run @@ fun () ->
@@ -1087,7 +1085,7 @@ let claims_stalled () =
 (* protocol/specs/src/session/registry-errors-cases.json: a registry reads the
    errors of each session it activates, from the first thing the session said,
    over a factory that builds a scripted session and reads none of them. *)
-let errors_table = Yojson.Safe.from_string Registry_cases.errors_cases
+let errors_table = Protocol.table "session/registry-errors-cases.json"
 
 let errors_kb =
   decode Models.knowledge_base
