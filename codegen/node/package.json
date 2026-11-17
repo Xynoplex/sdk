@@ -7,7 +7,7 @@
     "generate:go:check": "node schemas/generate-required-lists-go.mjs --check && node ../../go/scripts/check-go-schema-coverage.mjs",
     "generate:haskell": "node schemas/generate-operation-reports-haskell.mjs && node schemas/generate-session-adapters-haskell.mjs && node schemas/generate-annotation-adapters-haskell.mjs && node schemas/generate-state-adapters-haskell.mjs && node schemas/generate-testing-adapters-haskell.mjs",
     "generate:haskell:check": "node schemas/generate-operation-reports-haskell.mjs --check && node schemas/generate-session-adapters-haskell.mjs --check && node schemas/generate-annotation-adapters-haskell.mjs --check && node schemas/generate-state-adapters-haskell.mjs --check && node schemas/generate-testing-adapters-haskell.mjs --check",
-    "generate:ocaml": "node ocaml/generate-identifiers.mjs && node ocaml/generate-support.mjs && node ocaml/generate-client-timing.mjs && node ocaml/generate-enums.mjs && node ocaml/generate-bus.mjs && node ocaml/generate-selectors.mjs && node ocaml/generate-shapes.mjs && node ocaml/generate-records.mjs && node schemas/generate-testing-adapters-haskell.mjs --ocaml",
-    "generate:ocaml:check": "node ocaml/generate-identifiers.mjs --check && node ocaml/generate-support.mjs --check && node ocaml/generate-client-timing.mjs --check && node ocaml/generate-enums.mjs --check && node ocaml/generate-bus.mjs --check && node ocaml/generate-selectors.mjs --check && node ocaml/generate-shapes.mjs --check && node ocaml/generate-records.mjs --check && node schemas/generate-testing-adapters-haskell.mjs --ocaml --check"
+    "generate:ocaml": "node schemas/generate-testing-adapters-haskell.mjs --ocaml",
+    "generate:ocaml:check": "node schemas/generate-testing-adapters-haskell.mjs --ocaml --check"
   }
 }

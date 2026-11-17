@@ -92,17 +92,22 @@ let files (spec : Spec.t) (bus : Bus.Registry.t) ~shapes =
     List.mapi
       (fun i (o : R.operation) ->
         if not (row o.request).emittable then
-          refuse (Printf.sprintf "/operations/%d/request" i)
+          refuse
+            (Printf.sprintf "/operations/%d/request" i)
             (Printf.sprintf "is %s, which cannot be emitted" o.request);
         ( o,
           "("
           ^ String.concat ", "
-              (List.map (fun c -> (row c).type_) [ o.request; o.result; o.failure ])
+              (List.map
+                 (fun c -> (row c).type_)
+                 [ o.request; o.result; o.failure ])
           ^ ") operation" ))
       reg.operations
   in
   let bridged =
-    List.concat_map (fun (o : R.operation) -> [ o.result; o.failure ]) reg.operations
+    List.concat_map
+      (fun (o : R.operation) -> [ o.result; o.failure ])
+      reg.operations
     @ reg.audience.everyone
   in
   if List.length (List.sort_uniq compare bridged) <> List.length bridged then
@@ -118,10 +123,10 @@ let files (spec : Spec.t) (bus : Bus.Registry.t) ~shapes =
     else if List.mem channel reg.effect_.reads then Some "reads"
     else None
   in
-  let header source =
-    Banner.ocaml ~from_:source __FILE__ ^ "\n"
+  let header source = Banner.ocaml ~from_:source __FILE__ ^ "\n" in
+  let registry_header =
+    header (Bus.Registry.file ^ " and its OpenAPI components")
   in
-  let registry_header = header (Bus.Registry.file ^ " and its OpenAPI components") in
   let types =
     [
       "type 'schema component";
@@ -179,8 +184,7 @@ let files (spec : Spec.t) (bus : Bus.Registry.t) ~shapes =
        in_process : bool }";
       "type ('request, 'result, 'failure) operation = { request : 'request \
        channel; result : 'result channel; failure : 'failure channel; \
-       reply_names : string list; operation_effect : operation_effect option \
-       }";
+       reply_names : string list; operation_effect : operation_effect option }";
       "type 'a decoded = Yojson.Raw.t";
       "type fault = Schema_codec.fault = { member : string; reason : [ `Lacks \
        | `Malformed ] }";
@@ -240,8 +244,8 @@ let files (spec : Spec.t) (bus : Bus.Registry.t) ~shapes =
     List.map
       (fun r ->
         Printf.sprintf
-          "  let %s = { name = %s; payload = %s; delivery = %s; emittable = %b; \
-           audience = %s; in_process = %b }"
+          "  let %s = { name = %s; payload = %s; delivery = %s; emittable = \
+           %b; audience = %s; in_process = %b }"
           r.name (string r.channel) r.shape (delivery_of r.channel) r.emittable
           (some (audience r.channel))
           (List.mem r.channel reg.in_process.channels))
@@ -270,7 +274,8 @@ let files (spec : Spec.t) (bus : Bus.Registry.t) ~shapes =
         "let channels = " ^ packed (fun r -> "Channel Channels." ^ r.name) rows;
         "let operations = "
         ^ packed
-            (fun ((o : R.operation), _) -> "Operation Operations." ^ name_of o.request)
+            (fun ((o : R.operation), _) ->
+              "Operation Operations." ^ name_of o.request)
             operations;
         "let bridged_channels = "
         ^ packed (fun c -> "Channel Channels." ^ name_of c) bridged;
@@ -278,12 +283,15 @@ let files (spec : Spec.t) (bus : Bus.Registry.t) ~shapes =
   in
   let registry_mli =
     types @ api
-    @ ("module Channels : sig"
-      :: List.map (fun r -> "  val " ^ r.name ^ " : " ^ r.type_ ^ " channel") rows)
-    @ ("end" :: "module Operations : sig"
+    @ "module Channels : sig"
       :: List.map
-           (fun ((o : R.operation), t) -> "  val " ^ name_of o.request ^ " : " ^ t)
-           operations)
+           (fun r -> "  val " ^ r.name ^ " : " ^ r.type_ ^ " channel")
+           rows
+    @ "end" :: "module Operations : sig"
+      :: List.map
+           (fun ((o : R.operation), t) ->
+             "  val " ^ name_of o.request ^ " : " ^ t)
+           operations
     @ [ "end" ]
   in
   (* Each method a channel or an operation is, by its namespace. *)
@@ -310,29 +318,33 @@ let files (spec : Spec.t) (bus : Bus.Registry.t) ~shapes =
              List.concat
                (List.mapi
                   (fun i (m : S.method_) ->
-                    let at = Printf.sprintf "/namespaces/%d/methods/%d/via" n i in
+                    let at =
+                      Printf.sprintf "/namespaces/%d/methods/%d/via" n i
+                    in
                     let name = Text.snake m.method_ in
                     let correlation = correlated m in
                     match (m.via.request, m.via.local, m.via.emit) with
                     | Some request, _, _
-                      when m.shape = "promise" && not (List.mem m.method_ by_hand)
-                      -> (
+                      when m.shape = "promise"
+                           && not (List.mem m.method_ by_hand) -> (
                         match operation_of request with
                         | Some (o, _) ->
                             [
                               Printf.sprintf
-                                "  let %s client payload = Client_core.ask client \
-                                 Bus_registry.Operations.%s payload"
+                                "  let %s client payload = Client_core.ask \
+                                 client Bus_registry.Operations.%s payload"
                                 name (name_of o.request);
                             ]
                         | None ->
                             refuse ~file:surface_file (at ^ "/request")
-                              (Printf.sprintf "names %s, which no operation asks"
-                                 request);
+                              (Printf.sprintf
+                                 "names %s, which no operation asks" request);
                             [])
                     | _, Some local, _ when m.shape = "signal" ->
                         let c = channel_of (at ^ "/local") "local" local in
-                        let opt = if correlation then " ?correlation_id" else "" in
+                        let opt =
+                          if correlation then " ?correlation_id" else ""
+                        in
                         [
                           Printf.sprintf
                             "  let %s client%s payload = Client_core.publish \
@@ -341,11 +353,13 @@ let files (spec : Spec.t) (bus : Bus.Registry.t) ~shapes =
                         ]
                     | _, _, Some emit ->
                         let c = channel_of (at ^ "/emit") "emitted" emit in
-                        let how = if m.shape = "count" then "drive" else "signal" in
+                        let how =
+                          if m.shape = "count" then "drive" else "signal"
+                        in
                         [
                           Printf.sprintf
-                            "  let %s client ?scope payload = Client_core.%s client \
-                             ?scope Bus_registry.Channels.%s payload"
+                            "  let %s client ?scope payload = Client_core.%s \
+                             client ?scope Bus_registry.Channels.%s payload"
                             name how c;
                         ]
                     | _ -> [])
@@ -368,15 +382,16 @@ let files (spec : Spec.t) (bus : Bus.Registry.t) ~shapes =
               if
                 (Option.is_some m.via.request && m.shape = "promise")
                 || Option.is_some m.via.emit || Option.is_some m.via.local
-              then List.find_map Fun.id [ m.via.request; m.via.emit; m.via.local ]
+              then
+                List.find_map Fun.id [ m.via.request; m.via.emit; m.via.local ]
               else None
             in
             match target with
             | Some channel when not (List.mem m.method_ by_hand) ->
                 Some
                   (Printf.sprintf
-                     "  | \"%s.%s\" -> ignore (C.%s.%s client%s (decode B.Channels.%s \
-                      payload)); true"
+                     "  | \"%s.%s\" -> ignore (C.%s.%s client%s (decode \
+                      B.Channels.%s payload)); true"
                      ns.namespace m.method_ (upper ns.namespace)
                      (Text.snake m.method_)
                      (if correlated m then " ?correlation_id" else "")
@@ -404,8 +419,8 @@ let files (spec : Spec.t) (bus : Bus.Registry.t) ~shapes =
             Output.path = "ocaml/sdk/lib/namespace_methods.ml";
             text =
               header
-                ("protocol/specs/src/" ^ surface_file ^ " and protocol/specs/src/"
-               ^ Bus.Registry.file)
+                ("protocol/specs/src/" ^ surface_file
+               ^ " and protocol/specs/src/" ^ Bus.Registry.file)
               ^ String.concat "\n" wired;
           };
           {
@@ -420,14 +435,13 @@ let files (spec : Spec.t) (bus : Bus.Registry.t) ~shapes =
                      "let decode channel payload = match B.decode channel \
                       (Yojson.Safe.to_string payload) with";
                      "  | Ok decoded -> decoded";
-                     "  | Error _ -> failwith (\"invalid test payload for \" ^ B.name \
-                      channel)";
+                     "  | Error _ -> failwith (\"invalid test payload for \" ^ \
+                      B.name channel)";
                      "";
-                     "let invoke client ~correlation_id name payload = match name \
-                      with";
+                     "let invoke client ~correlation_id name payload = match \
+                      name with";
                    ]
-                  @ behavior
-                  @ [ "  | _ -> false"; "" ]);
+                  @ behavior @ [ "  | _ -> false"; "" ]);
           };
         ]
   | errors -> Error errors

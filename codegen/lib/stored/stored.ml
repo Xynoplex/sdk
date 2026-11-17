@@ -501,11 +501,13 @@ import Numeric.Natural (Natural)
            client/refresh.json.\n\
            data KeptQuery = ";
           String.concat " | " (List.map constructor t.kept);
-          " deriving (Eq, Ord, Show, Enum, Bounded)\nkeptQueryName :: KeptQuery -> Text\n";
+          " deriving (Eq, Ord, Show, Enum, Bounded)\n\
+           keptQueryName :: KeptQuery -> Text\n";
           String.concat ""
             (List.map
                (fun k ->
-                 "keptQueryName " ^ constructor k ^ " = " ^ quoted k.query ^ "\n")
+                 "keptQueryName " ^ constructor k ^ " = " ^ quoted k.query
+                 ^ "\n")
                t.kept);
           {|-- | The key a kept query per nothing keeps its one entry under.
 data Whole = Whole deriving (Eq, Ord, Show)
@@ -532,8 +534,8 @@ instance ToJSON CacheDocument where
           {| :: Integer), "entries" .= entries]
 -- | Where a stream was: a pair that is not a |};
           t.scope ^ " and a " ^ t.place;
-          " is skipped, and a value that is no object is none.\nlastEventIds :: Value -> Map.Map "
-          ^ t.scope ^ " " ^ t.place;
+          " is skipped, and a value that is no object is none.\n\
+           lastEventIds :: Value -> Map.Map " ^ t.scope ^ " " ^ t.place;
           {|
 lastEventIds (Object fields) = Map.fromList
   [(named, value) | (key, raw) <- KM.toList fields, Success named <- [fromJSON (String (Key.toText key))], Success value <- [fromJSON raw]]

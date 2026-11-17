@@ -18,14 +18,17 @@ let file (table : T.t) =
     List.filter_map
       (fun (q : T.query) ->
         match q.source with
-        | Asks request -> Some (Printf.sprintf "  (%s, %s);" (string q.name) (string request))
+        | Asks request ->
+            Some (Printf.sprintf "  (%s, %s);" (string q.name) (string request))
         | Reads _ -> None)
       table.queries
   in
   let rows =
     List.map
       (fun (r : T.refresh_item) ->
-        let names = Option.value ~default:{ T.resource = None; annotation = None } r.names in
+        let names =
+          Option.value ~default:{ T.resource = None; annotation = None } r.names
+        in
         let list = function None -> "[]" | Some values -> strings values in
         Printf.sprintf "  (%s, %s, %b, %s, %s, %s, %s, %s, %s);" (string r.on)
           (match r.when_ with
@@ -41,7 +44,5 @@ let file (table : T.t) =
     text =
       String.concat "\n"
         ([ Banner.ocaml ~from_:Table.file __FILE__; "let queries = [" ]
-        @ queries
-        @ [ "]"; "let refresh = [" ]
-        @ rows @ [ "]"; "" ]);
+        @ queries @ [ "]"; "let refresh = [" ] @ rows @ [ "]"; "" ]);
   }

@@ -4,9 +4,8 @@
 // (`CommandError.code`) in either direction, or that says one thing twice.
 //
 // Its other copy is the OCaml generator's codegen/lib/error_codes/table.ml,
-// which writes the Go, Python and TypeScript vocabularies and is tested; this
-// one stays for the OCaml SDK's generate-support.mjs and required-shapes.mjs
-// until their groups are ported.
+// which writes every SDK's vocabularies and is tested; this one stays for
+// required-shapes.mjs.
 
 import { readFileSync } from 'node:fs';
 

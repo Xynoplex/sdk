@@ -22,16 +22,18 @@ let files ~root (spec : Spec.t) =
   let* http = Http_facts.file spec codes in
   let* facts = Facts.files spec in
   let* bus =
-    Bus.Registry.derive ~component:(Bus.Registry.component spec)
+    Bus.Registry.derive
+      ~component:(Bus.Registry.component spec)
       spec.tables.bus_registry
   in
   let* shapes = Required.derive spec in
   let* bus_modules = Bus_modules.files spec bus ~shapes:shapes.shapes in
   let license =
-    In_channel.with_open_bin (Filename.concat root "LICENSE") In_channel.input_all
+    In_channel.with_open_bin
+      (Filename.concat root "LICENSE")
+      In_channel.input_all
   in
   Ok
     (Enums.files enums @ Selector.files selector @ Records.files records
-    @ (http :: facts)
-    @ bus_modules
+   @ (http :: facts) @ bus_modules
     @ [ { Output.path = "ocaml/sdk/LICENSE"; text = license } ])

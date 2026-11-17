@@ -14,7 +14,7 @@ let settle () =
 (* The generated data comes from session/cases.json. *)
 let table () =
   let open Yojson.Safe.Util in
-  let cases = Yojson.Safe.from_string Session_cases.cases in
+  let cases = Protocol.table "session/cases.json" in
   let expected case field = case |> member field |> to_option to_number in
   List.iter
     (fun case ->
@@ -590,7 +590,7 @@ let lifecycle phase row =
 
 let lifecycle_cases phase =
   let open Yojson.Safe.Util in
-  Yojson.Safe.from_string Session_cases.cases
+  Protocol.table "session/cases.json"
   |> member phase |> to_list
   |> List.map (fun row ->
       Alcotest.test_case

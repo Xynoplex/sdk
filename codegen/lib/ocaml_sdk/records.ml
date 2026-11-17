@@ -12,8 +12,7 @@ let keywords =
    exception external false for fun function functor if in include inherit \
    initializer land lazy let lor lsl lsr lxor match method mod module mutable \
    new nonrec object of open or private rec sig struct then to true try type \
-   val virtual when while with"
-  |> String.split_on_char ' '
+   val virtual when while with" |> String.split_on_char ' '
 
 let module_name name = String.capitalize_ascii (Text.snake name)
 
@@ -28,13 +27,14 @@ let field_name name =
 
 (* A member's schema as it is read: a string or a boolean, or raw. *)
 type member = Text_member | Bool_member | Raw_member
-
 type composed = { properties : (string * member) list; required : string list }
 
 let member_of = function
-  | Schema.Schema { type_ = Some [ String ]; nullable = None | Some false; _ } ->
+  | Schema.Schema { type_ = Some [ String ]; nullable = None | Some false; _ }
+    ->
       Text_member
-  | Schema.Schema { type_ = Some [ Boolean ]; nullable = None | Some false; _ } ->
+  | Schema.Schema { type_ = Some [ Boolean ]; nullable = None | Some false; _ }
+    ->
       Bool_member
   | _ -> Raw_member
 
@@ -71,7 +71,7 @@ let rec object_shape (spec : Spec.t) ~file ~seen (schema : Schema.t) =
       in
       match s.all_of with
       | None -> own
-      | Some parts -> (
+      | Some parts ->
           let parts = List.map (object_shape spec ~file ~seen) parts in
           if List.mem None parts then None
           else
@@ -84,7 +84,8 @@ let rec object_shape (spec : Spec.t) ~file ~seen (schema : Schema.t) =
                     (fun acc (name, m) ->
                       if List.mem_assoc name acc then
                         List.map
-                          (fun (n, v) -> if n = name then (n, Raw_member) else (n, v))
+                          (fun (n, v) ->
+                            if n = name then (n, Raw_member) else (n, v))
                           acc
                       else acc @ [ (name, m) ])
                     acc part.properties)
@@ -98,7 +99,7 @@ let rec object_shape (spec : Spec.t) ~file ~seen (schema : Schema.t) =
                     acc part.required)
                 [] all
             in
-            Some { properties; required }))
+            Some { properties; required })
 
 type record = { name : string; file : string; shape : composed }
 
@@ -190,7 +191,8 @@ let derive (spec : Spec.t) =
               if
                 List.length (List.sort_uniq compare constructors)
                 <> List.length constructors
-              then refuse file "/discriminator/mapping" "names two variants alike";
+              then
+                refuse file "/discriminator/mapping" "names two variants alike";
               Some { name; property = property_name; variants }
           | _ -> None)
         components
@@ -198,8 +200,8 @@ let derive (spec : Spec.t) =
     List.iter
       (fun (r : record) ->
         let labels = List.map (fun (n, _) -> field_name n) r.shape.properties in
-        if List.length (List.sort_uniq compare labels) <> List.length labels then
-          refuse r.file "/properties" "has two members OCaml names alike")
+        if List.length (List.sort_uniq compare labels) <> List.length labels
+        then refuse r.file "/properties" "has two members OCaml names alike")
       records;
     Ok (records, unions)
   with Refused e -> Error [ e ]
@@ -257,7 +259,8 @@ let files (records, unions) =
           fields
       @ [
           "      extra = extra ["
-          ^ String.concat "; " (List.map (fun (n, _, _, _, _) -> string n) fields)
+          ^ String.concat "; "
+              (List.map (fun (n, _, _, _, _) -> string n) fields)
           ^ "] fields;";
           "    }";
           "  let of_model model = project (object_fields (Models.json model))";
@@ -276,7 +279,9 @@ let files (records, unions) =
     let type_ =
       "  type t = "
       ^ String.concat " | "
-          (List.map (fun (_, c, branch) -> c ^ " of " ^ branch ^ ".t") u.variants)
+          (List.map
+             (fun (_, c, branch) -> c ^ " of " ^ branch ^ ".t")
+             u.variants)
     in
     ( [
         "module " ^ m ^ " : sig";

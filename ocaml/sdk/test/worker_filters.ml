@@ -1,7 +1,7 @@
 (* Shared worker filter cases from jobs/filter-cases.json. *)
 let () =
   let open Yojson.Safe.Util in
-  Yojson.Safe.from_string Job_filter_cases.cases
+  Protocol.member "jobs/filter-cases.json" "cases"
   |> to_list
   |> List.iter (fun row ->
       let filters = `List [ member "filter" row ] in

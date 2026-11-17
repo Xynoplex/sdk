@@ -393,9 +393,8 @@ let retry row =
   in
   check "retries" (field "retries" row) (`Bool result)
 
-let cases table test =
-  Yojson.Safe.from_string table
-  |> J.to_list
+let cases ?(rows = "cases") path test =
+  Protocol.member path rows |> J.to_list
   |> List.map (fun row ->
       Alcotest.test_case
         (J.to_string (field "why" row))
@@ -405,13 +404,14 @@ let cases table test =
 let () =
   Alcotest.run "OCaml reader helpers"
     [
-      ("frames", cases Helper_cases.table_0 frame);
-      ("annotations", cases Helper_cases.table_1 annotation);
-      ("resources", cases Helper_cases.table_2 resource);
-      ("span builders", cases Helper_cases.table_3 builder);
-      ("resource builders", cases Helper_cases.resource_builders builder);
-      ("annotation ids", cases Helper_cases.table_4 identity);
-      ("reconciliation", cases Helper_cases.table_5 reconcile);
-      ("PDF locations", cases Helper_cases.table_6 pdf);
-      ("job retry", cases Helper_cases.table_7 retry);
+      ("frames", cases "bus/frame-cases.json" frame);
+      ("annotations", cases "annotations/reader-cases.json" annotation);
+      ("resources", cases "resources/reader-cases.json" resource);
+      ("span builders", cases "annotations/builder-cases.json" builder);
+      ( "resource builders",
+        cases "annotations/builder-cases.json" ~rows:"resources" builder );
+      ("annotation ids", cases "annotations/id-cases.json" identity);
+      ("reconciliation", cases "annotations/reconcile-cases.json" reconcile);
+      ("PDF locations", cases "annotations/pdf-locate-cases.json" pdf);
+      ("job retry", cases "jobs/retry-cases.json" retry);
     ]

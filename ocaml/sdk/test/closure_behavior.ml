@@ -3,7 +3,7 @@ module J = Yojson.Safe.Util
 
 let field = J.member
 let text name row = J.to_string (field name row)
-let rows source name = Yojson.Safe.from_string source |> field name |> J.to_list
+let rows path name = Protocol.table path |> field name |> J.to_list
 let check = Alcotest.(check string)
 let named row = text "why" row
 let json = Yojson.Safe.to_string
@@ -107,24 +107,32 @@ let cases rows run =
     rows
 
 let () =
-  let open Closure_cases in
   let kb_rows =
-    rows table_1 "cases" |> List.filter (fun row -> field "domain" row <> `Null)
+    rows "kb-identity/cases.json" "cases"
+    |> List.filter (fun row -> field "domain" row <> `Null)
   in
   let encodings =
-    rows table_5 "cases"
+    rows "text/encoding-cases.json" "cases"
     |> List.map (fun row ->
         Alcotest.test_case (text "encoding" row) `Quick (fun () -> encoding row))
   in
   Alcotest.run "OCaml remaining shared tables"
     [
-      ("bus logs", cases (rows table_0 "cases") log);
+      ("bus logs", cases (rows "bus/log-cases.json" "cases") log);
       ("knowledge base identity", cases kb_rows kb);
-      ("clone formats", cases (rows table_2 "cloneFormat") clone);
-      ("storage filenames", cases (rows table_2 "storageFileName") filename);
-      ("text sources", cases (rows table_2 "textSource") text_source);
-      ("people", cases (rows table_3 "people") (principal Identity.Person));
-      ("agents", cases (rows table_3 "agents") (principal Identity.Agent));
-      ("decode", cases (rows table_4 "cases") decode_case);
+      ( "clone formats",
+        cases (rows "media-types/cases.json" "cloneFormat") clone );
+      ( "storage filenames",
+        cases (rows "media-types/cases.json" "storageFileName") filename );
+      ( "text sources",
+        cases (rows "media-types/cases.json" "textSource") text_source );
+      ( "people",
+        cases
+          (rows "principals/cases.json" "people")
+          (principal Identity.Person) );
+      ( "agents",
+        cases (rows "principals/cases.json" "agents") (principal Identity.Agent)
+      );
+      ("decode", cases (rows "text/decode-cases.json" "cases") decode_case);
       ("encodings", encodings);
     ]

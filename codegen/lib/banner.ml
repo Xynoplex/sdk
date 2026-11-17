@@ -19,5 +19,6 @@ let python ~from_ file =
 (* An OCaml module's opening: what it is generated from, the writer, and
    ocamlformat told to leave it as written. *)
 let ocaml ~from_ file =
-  "(* Generated from " ^ from_ ^ ". Do not edit.\n   Regenerate: make generate ("
-  ^ writer file ^ ") *)\n\n[@@@ocamlformat \"disable\"]\n"
+  "(* Generated from " ^ from_
+  ^ ". Do not edit.\n   Regenerate: make generate (" ^ writer file
+  ^ ") *)\n\n[@@@ocamlformat \"disable\"]\n"

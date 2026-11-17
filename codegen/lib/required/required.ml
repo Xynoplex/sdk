@@ -104,7 +104,8 @@ let declared ~root =
 
 (* What each component requires, by the component's name. *)
 let derive (spec : Spec.t) =
-  Result.bind (collect (components spec))
+  Result.bind
+    (collect (components spec))
     (Shape.derive
        ~unrecognized:spec.tables.errors_codes.bus_request.unrecognized_failure)
 

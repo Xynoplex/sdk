@@ -1,5 +1,5 @@
 // cache-refresh-table.mjs — the reading of protocol/specs/src/client/refresh.json
-// that kept-queries.mjs and the OCaml SDK's generate-support.mjs still use: the
+// that kept-queries.mjs and the TypeScript tests still use: the
 // queries, and what each trigger does to them, held to the registry, the
 // gateway's API, how each trigger is delivered and the schema of each
 // channel's events.

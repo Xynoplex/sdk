@@ -26,14 +26,17 @@ let file (table : T.t) =
           (List.filter_map
              (fun (c : T.case) ->
                match c.kind with
-               | Single_byte { every_byte } -> Some (pair (c.encoding, every_byte))
+               | Single_byte { every_byte } ->
+                   Some (pair (c.encoding, every_byte))
                | _ -> None)
              table.cases)
       ^ "\nlet refused = "
       ^ list
           (List.filter_map
              (fun (c : T.case) ->
-               match c.kind with Refused -> Some (string c.encoding) | _ -> None)
+               match c.kind with
+               | Refused -> Some (string c.encoding)
+               | _ -> None)
              table.cases)
       ^ "\n";
   }

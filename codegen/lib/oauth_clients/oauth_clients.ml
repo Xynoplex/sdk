@@ -149,7 +149,9 @@ let ocaml (t : T.t) =
              (fun (c : T.client) ->
                "let " ^ c.name ^ " = " ^ Text.ocaml_quoted c.id ^ "\n")
              t.clients)
-      ^ "let scope = " ^ Text.ocaml_quoted t.scope.value ^ "\n";
+      ^ "let scope = "
+      ^ Text.ocaml_quoted t.scope.value
+      ^ "\n";
   }
 
 let files ~root:_ (spec : Spec.t) =

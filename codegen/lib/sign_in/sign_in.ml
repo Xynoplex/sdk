@@ -226,8 +226,8 @@ let ocaml_owner_only (o : Owner_only.t) =
         Output.path = "ocaml/sdk/" ^ dir ^ "/store_policy.ml";
         text =
           Banner.ocaml ~from_:"sign-in-store/owner-only.json" __FILE__
-          ^ "let directory_mode = 0o" ^ o.directory.octal ^ "\nlet file_mode = 0o"
-          ^ o.file.octal ^ "\n";
+          ^ "let directory_mode = 0o" ^ o.directory.octal
+          ^ "\nlet file_mode = 0o" ^ o.file.octal ^ "\n";
       })
     [ "lib"; "probes" ]
 
@@ -251,12 +251,12 @@ let files ~root (spec : Spec.t) =
   | Ok entry, Ok o, Ok names ->
       Ok
         ([
-          go_entry entry;
-          go_owner_only o;
-          python_entry entry;
-          python_owner_only o;
-          typescript entry o names;
-        ]
+           go_entry entry;
+           go_owner_only o;
+           python_entry entry;
+           python_owner_only o;
+           typescript entry o names;
+         ]
         @ ocaml_owner_only o)
   | _ ->
       let errors = function Ok _ -> [] | Error e -> e in

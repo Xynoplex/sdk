@@ -44,7 +44,9 @@ let files (spec : Spec.t) =
           file "ocaml/sdk/lib/assertion_facts.ml"
             ~from_:"session/client-assertion-cases.json"
             (Printf.sprintf
-               "let lifetime_seconds = %d\nlet assertion_type = %s\nlet grant_type = %s\n"
+               "let lifetime_seconds = %d\n\
+                let assertion_type = %s\n\
+                let grant_type = %s\n"
                assertion.lifetime_seconds
                (string assertion.assertion_type)
                (string assertion.grant_type));
@@ -62,19 +64,22 @@ let files (spec : Spec.t) =
             ^ "]\n");
           file "ocaml/sdk/lib/log_facts.ml" ~from_:"bus/log-cases.json"
             ("let credentials = ["
-            ^ String.concat "; " (List.map string spec.tables.bus_log_cases.names)
+            ^ String.concat "; "
+                (List.map string spec.tables.bus_log_cases.names)
             ^ "]\n");
-          file "ocaml/sdk/probes/unicode_cases.ml" ~from_:"text/offset-cases.json"
+          file "ocaml/sdk/probes/unicode_cases.ml"
+            ~from_:"text/offset-cases.json"
             ("let cases = [\n"
             ^ String.concat ";\n"
                 (List.map
                    (fun (c : Tables.Text_offset_cases.case) ->
-                     Printf.sprintf "  (%s, %d, [%s])" (string c.text) c.code_points
+                     Printf.sprintf "  (%s, %d, [%s])" (string c.text)
+                       c.code_points
                        (String.concat "; "
                           (List.map
                              (fun (s : Tables.Text_offset_cases.span) ->
-                               Printf.sprintf "(%s, %d, %d, %d)" (string s.exact)
-                                 s.occurrence s.start s.end_)
+                               Printf.sprintf "(%s, %d, %d, %d)"
+                                 (string s.exact) s.occurrence s.start s.end_)
                              c.spans)))
                    spec.tables.text_offset_cases.cases)
             ^ "\n]\n");

@@ -67,10 +67,7 @@ let derive (spec : Spec.t) =
                  <> List.length constructors
             then refuse "/enum" "is empty, or two members name one constructor";
             Some
-              {
-                module_ = String.capitalize_ascii (Text.snake stem);
-                variants;
-              }
+              { module_ = String.capitalize_ascii (Text.snake stem); variants }
         | _ -> None)
       (List.sort (fun (a, _) (b, _) -> compare a b) spec.schemas)
   in
@@ -83,7 +80,11 @@ let files enums =
   let type_ e = "type t = " ^ String.concat " | " (List.map fst e.variants) in
   let impl e =
     String.concat "\n"
-      ([ "module " ^ e.module_ ^ " = struct"; "  " ^ type_ e; "  let to_string = function" ]
+      ([
+         "module " ^ e.module_ ^ " = struct";
+         "  " ^ type_ e;
+         "  let to_string = function";
+       ]
       @ List.map (fun (c, l) -> "    | " ^ c ^ " -> " ^ l) e.variants
       @ [ "  let of_string = function" ]
       @ List.map (fun (c, l) -> "    | " ^ l ^ " -> Some " ^ c) e.variants

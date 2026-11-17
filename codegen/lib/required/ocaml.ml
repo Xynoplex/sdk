@@ -5,7 +5,10 @@
 
 let string = Text.ocaml_quoted
 let list write values = "[" ^ String.concat "; " (List.map write values) ^ "]"
-let option write = function None -> "None" | Some v -> "Some (" ^ write v ^ ")"
+
+let option write = function
+  | None -> "None"
+  | Some v -> "Some (" ^ write v ^ ")"
 
 (* A number as JavaScript's String writes one. *)
 let number value =
@@ -13,7 +16,9 @@ let number value =
   else
     List.find
       (fun s -> float_of_string s = value)
-      (List.map (fun digits -> Printf.sprintf "%.*g" digits value) [ 15; 16; 17 ])
+      (List.map
+         (fun digits -> Printf.sprintf "%.*g" digits value)
+         [ 15; 16; 17 ])
 
 let literal : Schema.literal -> string = function
   | String_literal s -> "`Stringlit " ^ string (Text.quoted s)
@@ -33,7 +38,8 @@ let rec shape : Shape.shape -> string = function
         List.filter_map Fun.id
           [
             part "kinds"
-              (some (list (fun k -> String.capitalize_ascii (Shape.kind_name k))))
+              (some
+                 (list (fun k -> String.capitalize_ascii (Shape.kind_name k))))
               b.kinds;
             part "recognized" (some (list string)) b.recognized;
             part "enum" (some (list literal)) b.enum;
@@ -41,7 +47,8 @@ let rec shape : Shape.shape -> string = function
               (some
                  (list (fun (step : Shape.step) ->
                       Printf.sprintf "(%s, %d, %s)"
-                        (list (fun (lo, hi) -> Printf.sprintf "(%d, %d)" lo hi)
+                        (list
+                           (fun (lo, hi) -> Printf.sprintf "(%d, %d)" lo hi)
                            step.of_)
                         step.min
                         (option string_of_int step.max))))
@@ -87,11 +94,13 @@ let files shapes =
      initializer, the table is more than the native compiler can allocate
      registers for. *)
   let definitions =
-    List.mapi (fun i (_, s) -> Printf.sprintf "let shape_%d () = %s" i (shape s))
+    List.mapi
+      (fun i (_, s) -> Printf.sprintf "let shape_%d () = %s" i (shape s))
       shapes
   in
   let entries =
-    List.mapi (fun i name -> Printf.sprintf "  (%s, shape_%d);" (string name) i)
+    List.mapi
+      (fun i name -> Printf.sprintf "  (%s, shape_%d);" (string name) i)
       names
   in
   let value_name = Text.snake in
@@ -107,7 +116,8 @@ let files shapes =
       "val json : 'schema t -> Yojson.Raw.t";
     ]
     @ List.map
-        (fun name -> "val " ^ value_name name ^ " : [ `" ^ name ^ " ] descriptor")
+        (fun name ->
+          "val " ^ value_name name ^ " : [ `" ^ name ^ " ] descriptor")
         names
   in
   let impl =
@@ -122,7 +132,9 @@ let files shapes =
       "let encode value = Yojson.Raw.to_string value";
       "let json value = value";
     ]
-    @ List.map (fun name -> "let " ^ value_name name ^ " = " ^ string name) names
+    @ List.map
+        (fun name -> "let " ^ value_name name ^ " = " ^ string name)
+        names
   in
   [
     {

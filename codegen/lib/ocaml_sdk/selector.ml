@@ -31,7 +31,8 @@ let derive (spec : Spec.t) =
   in
   let* tag, mapping =
     match schema.discriminator with
-    | Some { property_name; mapping = Some mapping } -> Ok (property_name, mapping)
+    | Some { property_name; mapping = Some mapping } ->
+        Ok (property_name, mapping)
     | _ -> refuse "/discriminator" "maps no branch"
   in
   let branches =
@@ -50,14 +51,17 @@ let derive (spec : Spec.t) =
     else Ok ()
   in
   let variant (constructor, target) =
-    let reference = { Decode.target; file; pointer = "/discriminator/mapping" } in
+    let reference =
+      { Decode.target; file; pointer = "/discriminator/mapping" }
+    in
     let branch, _ = Decode.resolve reference in
     let refuse_branch pointer message = refuse ~file:branch pointer message in
     let valid_name =
       constructor <> ""
       && (match constructor.[0] with 'A' .. 'Z' -> true | _ -> false)
       && String.for_all
-           (function 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' -> true | _ -> false)
+           (function
+             | 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' -> true | _ -> false)
            constructor
     in
     match List.assoc_opt branch spec.schemas with
@@ -82,7 +86,9 @@ let derive (spec : Spec.t) =
               let others =
                 List.filter
                   (fun k ->
-                    not (List.mem k [ "type"; "minimum"; "description"; "example" ]))
+                    not
+                      (List.mem k
+                         [ "type"; "minimum"; "description"; "example" ]))
                   (Schema.keywords s)
               in
               let label = if name = "end" then "end_" else Text.snake name in
@@ -129,7 +135,8 @@ let derive (spec : Spec.t) =
             (Ok [])
         in
         Ok { constructor; fields; record = Text.snake constructor }
-    | _ -> refuse_branch "" "is no open selector object tagged with its own name"
+    | _ ->
+        refuse_branch "" "is no open selector object tagged with its own name"
   in
   let* variants =
     List.fold_right
@@ -177,7 +184,8 @@ let files (tag, variants) =
         ^ String.concat "; "
             (List.map
                (fun f ->
-                 f.label ^ " : " ^ f.type_ ^ if f.optional then " option" else "")
+                 f.label ^ " : " ^ f.type_
+                 ^ if f.optional then " option" else "")
                v.fields)
         ^ "; extra : (string * Yojson.Safe.t) list }")
       variants
@@ -189,7 +197,9 @@ let files (tag, variants) =
       ]
   in
   let names fields =
-    "[" ^ String.concat "; " (tag_name :: List.map (fun f -> f.name) fields) ^ "]"
+    "["
+    ^ String.concat "; " (tag_name :: List.map (fun f -> f.name) fields)
+    ^ "]"
   in
   let labels fields = String.concat "; " (List.map (fun f -> f.label) fields) in
   let branches =
@@ -199,13 +209,13 @@ let files (tag, variants) =
           List.filter (fun f -> not f.optional) v.fields
           @ List.filter (fun f -> f.optional) v.fields
         in
-        (("    | " ^ string v.constructor ^ " ->")
+        ("    | " ^ string v.constructor ^ " ->")
         :: List.map
              (fun f ->
                "        let* " ^ f.label ^ " = "
                ^ (if f.optional then "optional" else "required")
                ^ " " ^ f.reader ^ " " ^ f.name ^ " fields in")
-             reading)
+             reading
         @ [
             "        Ok (" ^ v.constructor ^ " { " ^ labels v.fields
             ^ "; extra = extra " ^ names v.fields ^ " fields })";
@@ -217,8 +227,8 @@ let files (tag, variants) =
       (fun v ->
         [
           "  | " ^ v.constructor ^ " value ->";
-          "      `Assoc (List.filter_map Fun.id [Some (" ^ tag_name ^ ", `String "
-          ^ string v.constructor ^ ");";
+          "      `Assoc (List.filter_map Fun.id [Some (" ^ tag_name
+          ^ ", `String " ^ string v.constructor ^ ");";
         ]
         @ List.map
             (fun f ->
@@ -226,14 +236,15 @@ let files (tag, variants) =
                 "        Option.map (fun field -> (" ^ f.name ^ ", " ^ f.writer
                 ^ " field)) value." ^ f.label ^ ";"
               else
-                "        Some (" ^ f.name ^ ", " ^ f.writer ^ " value." ^ f.label
-                ^ ");")
+                "        Some (" ^ f.name ^ ", " ^ f.writer ^ " value."
+                ^ f.label ^ ");")
             v.fields
         @ [ "      ] @ extra " ^ names v.fields ^ " value.extra)" ])
       variants
   in
   let impl =
-    types @ [ helpers; "let of_json = function"; "  | `Assoc fields ->" ]
+    types
+    @ [ helpers; "let of_json = function"; "  | `Assoc fields ->" ]
     @ [
         "      let* tag = required string " ^ tag_name ^ " fields in";
         "      (match tag with";
@@ -258,6 +269,12 @@ let files (tag, variants) =
     ^ "\n"
   in
   [
-    { Output.path = "ocaml/sdk/lib/selector.ml"; text = header ^ String.concat "\n" impl ^ "\n" };
-    { Output.path = "ocaml/sdk/lib/selector.mli"; text = header ^ String.concat "\n" api ^ "\n" };
+    {
+      Output.path = "ocaml/sdk/lib/selector.ml";
+      text = header ^ String.concat "\n" impl ^ "\n";
+    };
+    {
+      Output.path = "ocaml/sdk/lib/selector.mli";
+      text = header ^ String.concat "\n" api ^ "\n";
+    };
   ]

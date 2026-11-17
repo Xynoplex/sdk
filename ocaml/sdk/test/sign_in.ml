@@ -156,7 +156,7 @@ let get_text name value = Option.get (optional (field name value))
 
 (* Shared rows from sign-in-store/cases.json. *)
 let paths () =
-  Yojson.Safe.from_string Sign_in_cases.cases
+  Protocol.member "sign-in-store/cases.json" "cases"
   |> Yojson.Safe.Util.to_list
   |> List.iter (fun row ->
       let platform =
@@ -269,7 +269,7 @@ let renewals () =
         Alcotest.(check (option (pair string (option string))))
           why (credentials leaves) (credentials kept))
   in
-  Yojson.Safe.from_string Sign_in_cases.renewals
+  Protocol.member "sign-in-store/cases.json" "renewals"
   |> Yojson.Safe.Util.to_list |> List.iter run
 
 (* Shared rows from session/client-assertion-cases.json. *)
@@ -283,7 +283,7 @@ let rsa () =
   let public =
     X509.Private_key.public (get (X509.Private_key.decode_pem pem))
   in
-  let vector = Yojson.Safe.from_string Assertion_cases.cases in
+  let vector = Protocol.table "session/client-assertion-cases.json" in
   let list = Yojson.Safe.Util.to_list in
   let thumbprint jwk =
     O.rsa_thumbprint ~e:(get_text "e" jwk) ~n:(get_text "n" jwk)

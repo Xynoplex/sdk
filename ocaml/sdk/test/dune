@@ -20,29 +20,21 @@
 
 (test
  (name session_renewal)
- (modules session_renewal session_cases)
- (libraries xynolog eio_main eio.mock mtime base64 yojson alcotest))
-
-
-(rule
- (targets session_cases.ml)
- (deps ../probes/session_cases.ml)
- (action (copy %{deps} %{targets})))
+ (modules session_renewal)
+ (libraries protocol xynolog eio_main eio.mock mtime base64 yojson alcotest)
+ (deps (universe)))
 
 (test
  (name worker_filters)
- (modules worker_filters job_filter_cases)
- (libraries xynolog yojson alcotest))
-
-(rule
- (targets job_filter_cases.ml)
- (deps ../probes/job_filter_cases.ml)
- (action (copy %{deps} %{targets})))
+ (modules worker_filters)
+ (libraries protocol xynolog yojson alcotest)
+ (deps (universe)))
 
 (test
  (name sign_in)
- (modules sign_in sign_in_cases assertion_cases)
+ (modules sign_in)
  (libraries
+  protocol
   xynolog
   eio_main
   eio.mock
@@ -52,28 +44,31 @@
   alcotest
   x509
   mirage-crypto-rng.unix)
- (deps ../probes/peer-key.pem))
+ (deps (universe) ../probes/peer-key.pem))
 
 (test
  (name surface_behavior)
- (modules surface_behavior surface_cases surface_dispatch)
- (libraries xynolog eio_main yojson alcotest))
+ (modules surface_behavior surface_dispatch)
+ (libraries protocol xynolog eio_main yojson alcotest)
+ (deps (universe)))
 
 (test
  (name registry_behavior)
- (modules registry_behavior registry_cases)
- (libraries xynolog eio_main eio.mock mtime yojson base64 cstruct alcotest))
+ (modules registry_behavior)
+ (libraries protocol xynolog eio_main eio.mock mtime yojson base64 cstruct alcotest)
+ (deps (universe)))
 
 (test
  (name state_behavior)
- (modules state_behavior state_cases)
- (libraries xynolog eio_main eio.mock mtime yojson alcotest))
+ (modules state_behavior)
+ (libraries protocol xynolog eio_main eio.mock mtime yojson alcotest)
+ (deps (universe)))
 
 (test
  (name helper_behavior)
- (modules helper_behavior helper_cases annotation_id)
- (libraries xynolog eio_main eio.mock yojson alcotest base64 digestif zarith))
-
+ (modules helper_behavior annotation_id)
+ (libraries protocol xynolog eio_main eio.mock yojson alcotest base64 digestif zarith)
+ (deps (universe)))
 
 (rule
  (target annotation_id.ml)
@@ -82,10 +77,17 @@
 
 (test
  (name completion_behavior)
- (modules completion_behavior retry_cases)
- (libraries xynolog eio_main eio.mock yojson alcotest mtime uri))
+ (modules completion_behavior)
+ (libraries protocol xynolog eio_main eio.mock yojson alcotest mtime uri)
+ (deps (universe)))
 
 (test
  (name closure_behavior)
- (modules closure_behavior closure_cases)
- (libraries xynolog yojson alcotest))
+ (modules closure_behavior)
+ (libraries protocol xynolog yojson alcotest)
+ (deps (universe)))
+
+(library
+ (name protocol)
+ (modules protocol)
+ (libraries yojson))

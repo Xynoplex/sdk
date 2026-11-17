@@ -33,7 +33,9 @@ let file (t : Table.t) =
     List.concat_map
       (fun (module_, name) ->
         match
-          List.find_opt (fun (v : Table.vocabulary) -> v.name = name) vocabularies
+          List.find_opt
+            (fun (v : Table.vocabulary) -> v.name = name)
+            vocabularies
         with
         | None ->
             refuse
@@ -43,7 +45,7 @@ let file (t : Table.t) =
             []
         | Some v ->
             let named = Hashtbl.create 16 in
-            (("module " ^ module_ ^ " = struct")
+            ("module " ^ module_ ^ " = struct")
             :: List.map
                  (fun (c : Table.code) ->
                    let n = value_name c.code in
@@ -55,7 +57,7 @@ let file (t : Table.t) =
                           module_ n);
                    Hashtbl.replace named n ();
                    "  let " ^ n ^ " = " ^ Text.ocaml_quoted c.code)
-                 v.codes)
+                 v.codes
             @ [ "end" ])
       said
   in

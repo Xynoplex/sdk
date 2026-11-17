@@ -9,8 +9,7 @@ let string = Text.ocaml_quoted
 let header =
   Banner.ocaml
     ~from_:
-      "protocol/specs/src/identifiers/kinds.json and the kinds' required \
-       shapes"
+      "protocol/specs/src/identifiers/kinds.json and the kinds' required shapes"
     __FILE__
 
 let files (spec : Spec.t) (shapes : (string * Required.Shape.shape) list) =
