@@ -154,7 +154,8 @@ case "${1:-}" in
       find bin lib test -name "*.ml*" | sort | xargs dune exec -- ocamlformat --check
       dune runtest
       dune exec -- ./test/census.exe ../protocol/specs/src
-      dune exec -- xynolog-codegen read ..' --memory 4g
+      dune exec -- xynolog-codegen read ..
+      python3 check-boundary.py ..' --memory 4g
     ;;
   generate|check-generated)
     # The Node groups are codegen/node/package.json's generate:<group>, in the
