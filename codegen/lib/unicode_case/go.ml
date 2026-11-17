@@ -43,7 +43,7 @@ let range_table ranges =
 let table ~doc name ranges =
   G.Var (G.spec ~doc:[ G.Line doc ] name (range_table ranges))
 
-let text ~version ~cased ~case_ignorable =
+let text ~version ~notice ~cased ~case_ignorable =
   G.text
     {
       header =
@@ -53,8 +53,10 @@ let text ~version ~cased ~case_ignorable =
               (codegen/ucd); DO NOT EDIT.\n\n\
               Regenerate: make generate (codegen/lib/unicode_case/go.ml)\n\
               C#'s and Kotlin's copies of the two properties are generated \
-              from the same data."
-             version);
+              from the same data.\n\n\
+              %s"
+             version
+             (String.concat "\n" notice));
       package = "annotations";
       imports = [ [ "unicode" ] ];
       decls =
@@ -70,5 +72,5 @@ let text ~version ~cased ~case_ignorable =
         ];
     }
 
-let file ~version ~cased ~case_ignorable =
-  { Output.path; text = text ~version ~cased ~case_ignorable }
+let file ~version ~notice ~cased ~case_ignorable =
+  { Output.path; text = text ~version ~notice ~cased ~case_ignorable }

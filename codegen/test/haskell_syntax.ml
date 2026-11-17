@@ -41,8 +41,14 @@ let cases =
                       T_name "Text"; T_apply ("Vector.Vector", [ T_name "Int" ]);
                     ] ))
                (Name "y"))));
-    case "a function's clauses are a line each"
-      (writes "name :: Kind -> Text\nname A = \"a\"\nname B = \"b\""
+    case
+      "a function's clauses are a line each, a constructor's held patterns \
+       bracketed with it"
+      (writes
+         "name :: Kind -> Text\n\
+          name A = \"a\"\n\
+          name (C _ \"x\") = \"c\"\n\
+          name B = \"b\""
          (decl
             (Value
                {
@@ -51,8 +57,13 @@ let cases =
                  type_ = T_fun (T_name "Kind", T_name "Text");
                  clauses =
                    [
-                     { patterns = [ Constructor "A" ]; body = Str "a" };
-                     { patterns = [ Constructor "B" ]; body = Str "b" };
+                     { patterns = [ Constructor ("A", []) ]; body = Str "a" };
+                     {
+                       patterns =
+                         [ Constructor ("C", [ Otherwise; Literal "x" ]) ];
+                       body = Str "c";
+                     };
+                     { patterns = [ Constructor ("B", []) ]; body = Str "b" };
                    ];
                })));
     case "an instance of one line is written on its own line"

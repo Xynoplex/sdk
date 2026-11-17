@@ -82,6 +82,157 @@ let reading =
          (file ^ ": /: line 5: 0041 does not follow Cased's last range, 0061"));
   ]
 
+let unicode_data_file = "codegen/ucd/UnicodeData.txt"
+let special_file = "codegen/ucd/SpecialCasing.txt"
+let special_header = "# SpecialCasing-17.0.0.txt\n# Date: 2025-07-30\n\n"
+
+let unicode_data_line ?(lower = "") point =
+  Printf.sprintf "%s;NAME;Lu;0;L;;;;;N;;;;%s;\n" point lower
+
+let refused expected = function
+  | Ok _ -> Alcotest.failf "expected the refusal\n  %s\nand none came" expected
+  | Error error ->
+      Alcotest.(check string) "refusal" expected (Decode.error_to_string error)
+
+let mappings = Alcotest.(list (pair int (list int)))
+
+let casing =
+  Alcotest.testable
+    (fun f { Ucd.code; lower; conditions } ->
+      Format.fprintf f "%04X -> [%s] if [%s]" code
+        (String.concat " " (List.map string_of_int lower))
+        (String.concat " " conditions))
+    ( = )
+
+let special text =
+  match Ucd.special_casing ~file:special_file text with
+  | Ok (_, rows) -> rows
+  | Error error -> Alcotest.fail (Decode.error_to_string error)
+
+let mapping_files =
+  [
+    case "UnicodeData's simple lowercase mappings, by the fourteenth field"
+      (fun () ->
+        Alcotest.(check (result (list (pair int int)) string))
+          "mappings"
+          (Ok [ (0x41, 0x61); (0x130, 0x69) ])
+          (Result.map_error Decode.error_to_string
+             (Ucd.simple_lowercase ~file:unicode_data_file
+                (unicode_data_line ~lower:"0061" "0041"
+                ^ unicode_data_line "0061"
+                ^ unicode_data_line ~lower:"0069" "0130"))));
+    case "a UnicodeData line of other than fifteen fields is refused" (fun () ->
+        refused
+          (unicode_data_file ^ ": /: line 2: is no line of fifteen fields")
+          (Ucd.simple_lowercase ~file:unicode_data_file
+             (unicode_data_line "0041" ^ "0042;NAME;Lu\n")));
+    case "UnicodeData out of order is refused" (fun () ->
+        refused
+          (unicode_data_file ^ ": /: line 2: 0041 does not follow 0042")
+          (Ucd.simple_lowercase ~file:unicode_data_file
+             (unicode_data_line "0042" ^ unicode_data_line "0041")));
+    case "SpecialCasing's rows, with and without conditions" (fun () ->
+        Alcotest.(check (list casing))
+          "rows"
+          [
+            { code = 0xDF; lower = [ 0xDF ]; conditions = [] };
+            { code = 0x3A3; lower = [ 0x3C2 ]; conditions = [ "Final_Sigma" ] };
+            { code = 0x307; lower = []; conditions = [ "tr"; "After_I" ] };
+          ]
+          (special
+             (special_header
+            ^ "00DF; 00DF; 0053 0073; 0053 0053; # LATIN SMALL LETTER SHARP S\n\
+               03A3; 03C2; 03A3; 03A3; Final_Sigma; # GREEK CAPITAL LETTER SIGMA\n\
+               0307; ; 0307; 0307; tr After_I; # COMBINING DOT ABOVE\n")));
+    case "a SpecialCasing row of no form is refused" (fun () ->
+        refused
+          (special_file
+         ^ ": /: line 4: is no code point, its lower, title and upper mappings \
+            and conditions")
+          (Ucd.special_casing ~file:special_file
+             (special_header ^ "00DF; 00DF; 0053 0073 # no fourth\n")));
+    case
+      "the full mappings: SpecialCasing's that always hold, else \
+       UnicodeData's, where each changes the code point" (fun () ->
+        Alcotest.check mappings "lowercase"
+          [ (0x41, [ 0x61 ]); (0x130, [ 0x69; 0x307 ]) ]
+          (Unicode_case.lowercase
+             ~simple:[ (0x41, 0x61); (0x130, 0x69) ]
+             ~special:
+               (special
+                  (special_header
+                 ^ "00DF; 00DF; 0053 0073; 0053 0053; # SHARP S\n\
+                    0130; 0069 0307; 0130; 0130; # I WITH DOT ABOVE\n\
+                    0130; 0069; 0130; 0130; tr; # I WITH DOT ABOVE\n"))));
+    case "the final mappings: Final_Sigma's, where they differ" (fun () ->
+        Alcotest.(check (result mappings string))
+          "final"
+          (Ok [ (0x3A3, [ 0x3C2 ]) ])
+          (Result.map_error
+             (fun errors ->
+               String.concat "; " (List.map Decode.error_to_string errors))
+             (Unicode_case.final_lowercase
+                ~lowercase:[ (0x3A3, [ 0x3C3 ]); (0x41, [ 0x61 ]) ]
+                ~special:
+                  (special
+                     (special_header
+                    ^ "03A3; 03C2; 03A3; 03A3; Final_Sigma; # SIGMA\n\
+                       0041; 0061; 0041; 0041; Final_Sigma; # A\n\
+                       0049; 0131; 0049; 0049; tr Not_Before_Dot; # I\n")))));
+    case "a context no language decides but Final_Sigma is refused" (fun () ->
+        match
+          Unicode_case.final_lowercase ~lowercase:[]
+            ~special:
+              (special
+                 (special_header ^ "0307; 0307; ; ; After_Soft_Dotted; # DOT\n"))
+        with
+        | Ok _ -> Alcotest.fail "accepted a context the SDKs do not implement"
+        | Error errors ->
+            Alcotest.(check (list string))
+              "refusal"
+              [
+                special_file
+                ^ ": /: 0307 lower-cases by After_Soft_Dotted, a context no \
+                   language decides that the SDKs do not implement";
+              ]
+              (List.map Decode.error_to_string errors));
+  ]
+
+let haskell =
+  [
+    case "the Haskell tables" (fun () ->
+        let text =
+          Unicode_case.Haskell.text ~version:"17.0.0" ~notice:[ "N." ]
+            ~cased:[ (65, 90) ]
+            ~case_ignorable:[ (39, 39) ]
+            ~white_space:[ (9, 13); (32, 32) ]
+            ~lowercase:[ (65, [ 97 ]); (304, [ 105; 775 ]) ]
+            ~final_lowercase:[ (931, [ 962 ]) ]
+        in
+        let body =
+          String.concat "\n"
+            (List.filter
+               (fun l -> not (String.starts_with ~prefix:"--" l))
+               (String.split_on_char '\n' text))
+        in
+        Alcotest.(check string)
+          "module"
+          "module Xynolog.Internal.Generated.UnicodeCase (lowercase, \
+           finalLowercase, casedRanges, caseIgnorableRanges, whiteSpaceRanges) \
+           where\n\
+           import Data.Char (chr)\n\
+           import qualified Data.IntMap.Strict as Map\n\
+           lowercase, finalLowercase :: Map.IntMap String\n\
+           lowercase = Map.fromDistinctAscList [(65, [chr 97]), (304, [chr \
+           105, chr 775])]\n\
+           finalLowercase = Map.fromDistinctAscList [(931, [chr 962])]\n\
+           casedRanges, caseIgnorableRanges, whiteSpaceRanges :: [(Int, Int)]\n\
+           casedRanges = [(65, 90)]\n\
+           caseIgnorableRanges = [(39, 39)]\n\
+           whiteSpaceRanges = [(9, 13), (32, 32)]\n"
+          body);
+  ]
+
 let go =
   [
     case "a range table, split at the Basic Multilingual Plane" (fun () ->
@@ -118,16 +269,23 @@ let json =
           "text"
           ("{\n  \"$comment\": "
           ^ Yojson.Safe.to_string
-              (`String (Unicode_case.Json.comment ~version:"17.0.0"))
+              (`String
+                 (Unicode_case.Json.comment ~version:"17.0.0" ~notice:[ "N." ]))
           ^ ",\n\
             \  \"cased\": [[65,90],[97,122]],\n\
             \  \"caseIgnorable\": [[768,879]]\n\
              }\n")
-          (Unicode_case.Json.text ~version:"17.0.0"
+          (Unicode_case.Json.text ~version:"17.0.0" ~notice:[ "N." ]
              ~cased:[ (65, 90); (97, 122) ]
              ~case_ignorable:[ (768, 879) ]));
   ]
 
 let () =
   Alcotest.run "unicode-case"
-    [ ("the UCD", reading); ("Go", go); ("JSON", json) ]
+    [
+      ("the UCD", reading);
+      ("the case mappings", mapping_files);
+      ("Haskell", haskell);
+      ("Go", go);
+      ("JSON", json);
+    ]

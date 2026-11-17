@@ -481,7 +481,7 @@ let haskell (t : T.t) (encodings : Encodings.Table.t) =
                     List.map
                       (fun w ->
                         {
-                          H.patterns = [ Constructor (constructor w) ];
+                          H.patterns = [ Constructor (constructor w, []) ];
                           body = Str w;
                         })
                       t.text_source;

@@ -1,4 +1,5 @@
-(* The media types, telemetry, OAuth clients and sign-in groups each refuse a
+(* The media types, telemetry, OAuth clients, sign-in and locales groups, and
+   the job storage group's reading of a mark job's motivations, each refuse a
    table that cannot be meant, naming the place. Each case changes one thing
    of a table every rule holds; the first case of each is that table. *)
 
@@ -310,9 +311,101 @@ let locale_registry =
         refuses "/locales" "states no languages" (locales []));
   ]
 
+let schema file json =
+  match Decode.run ~file (Yojson.Safe.from_string json) Schema.decode with
+  | Error e ->
+      Alcotest.failf "the fixture is no schema: %s" (Decode.error_to_string e)
+  | Ok (schema, _) -> (file, schema)
+
+let mark_branch ?(required = {|["motivation"]|}) ?(words = {|["highlighting"]|})
+    name =
+  schema
+    ("components/schemas/" ^ name ^ ".json")
+    (Printf.sprintf
+       {|{"type":"object","properties":{"motivation":{"type":"string","enum":%s}},"required":%s}|}
+       words required)
+
+let mark_schemas
+    ?(params =
+      {|{"oneOf":[{"$ref":"./HighlightingJobParams.json"},{"$ref":"./TaggingJobParams.json"}],"discriminator":{"propertyName":"motivation","mapping":{"highlighting":"./HighlightingJobParams.json","tagging":"./TaggingJobParams.json"}}}|})
+    ?(highlighting = mark_branch "HighlightingJobParams") () =
+  [
+    schema "components/schemas/MarkJobParams.json" params;
+    schema "components/schemas/Motivation.json"
+      {|{"type":"string","enum":["highlighting","tagging"]}|};
+    highlighting;
+    mark_branch ~words:{|["tagging"]|} "TaggingJobParams";
+  ]
+
+let marks = Job_storage.branch_motivations
+
+let mark_motivations =
+  [
+    case "each branch's motivation, in the branches' order" (fun () ->
+        Alcotest.(check (list string))
+          "motivations"
+          [ "highlighting"; "tagging" ]
+          (match marks (mark_schemas ()) with
+          | Ok words -> words
+          | Error errors ->
+              Alcotest.failf "refused: %s"
+                (String.concat "; " (List.map Decode.error_to_string errors))));
+    case "a branch whose motivation is not required" (fun () ->
+        refuses "/oneOf/0" "required motivation"
+          (marks
+             (mark_schemas
+                ~highlighting:
+                  (mark_branch ~required:{|["other"]|} "HighlightingJobParams")
+                ())));
+    case "a branch of more than one motivation, and of one Motivation lacks"
+      (fun () ->
+        refuses "/oneOf/0" "required motivation"
+          (marks
+             (mark_schemas
+                ~highlighting:
+                  (mark_branch ~words:{|["highlighting","tagging"]|}
+                     "HighlightingJobParams")
+                ()));
+        refuses "/oneOf/0" "required motivation"
+          (marks
+             (mark_schemas
+                ~highlighting:
+                  (mark_branch ~words:{|["linking"]|} "HighlightingJobParams")
+                ())));
+    case "a mapping that names another branch for a word" (fun () ->
+        refuses "/oneOf/0" "mapped to it"
+          (marks
+             (mark_schemas
+                ~params:
+                  {|{"oneOf":[{"$ref":"./HighlightingJobParams.json"},{"$ref":"./TaggingJobParams.json"}],"discriminator":{"propertyName":"motivation","mapping":{"highlighting":"./TaggingJobParams.json","tagging":"./TaggingJobParams.json"}}}|}
+                ())));
+    case "a mapping of an extra word" (fun () ->
+        refuses "/discriminator/mapping" "does not name each branch once"
+          (marks
+             (mark_schemas
+                ~params:
+                  {|{"oneOf":[{"$ref":"./HighlightingJobParams.json"},{"$ref":"./TaggingJobParams.json"}],"discriminator":{"propertyName":"motivation","mapping":{"highlighting":"./HighlightingJobParams.json","tagging":"./TaggingJobParams.json","linking":"./TaggingJobParams.json"}}}|}
+                ())));
+    case "a branch that is no plain $ref" (fun () ->
+        refuses "/oneOf/0" "is no plain $ref"
+          (marks
+             (mark_schemas
+                ~params:
+                  {|{"oneOf":[{"$ref":"./HighlightingJobParams.json","description":"d"},{"$ref":"./TaggingJobParams.json"}],"discriminator":{"propertyName":"motivation","mapping":{"highlighting":"./HighlightingJobParams.json","tagging":"./TaggingJobParams.json"}}}|}
+                ())));
+    case "branches told apart by another property" (fun () ->
+        refuses "" "told apart by a mapping of its motivation"
+          (marks
+             (mark_schemas
+                ~params:
+                  {|{"oneOf":[{"$ref":"./HighlightingJobParams.json"},{"$ref":"./TaggingJobParams.json"}],"discriminator":{"propertyName":"kind","mapping":{"highlighting":"./HighlightingJobParams.json","tagging":"./TaggingJobParams.json"}}}|}
+                ())));
+  ]
+
 let () =
   Alcotest.run "registries"
     [
+      ("mark motivations", mark_motivations);
       ("locales", locale_registry);
       ("media types", media_types);
       ("telemetry", telemetries);

@@ -15,4 +15,11 @@ Xynolog work
 All work in these SDKs made on or after 2026-08-27, including subsequent work
 on the carried-forward TypeScript packages, is owned by Xynolog.
 
+Unicode data
+
+codegen/ucd holds files of the Unicode Character Database, unmodified. The
+SDKs' Unicode case tables are generated from them, and each carries in its
+banner Unicode's copyright and permission notice, codegen/ucd/LICENSE: the
+Unicode License V3. Unicode's data is Copyright Unicode, Inc.
+
 Third-party notices remain with the files or dependencies to which they apply.

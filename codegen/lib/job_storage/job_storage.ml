@@ -1,22 +1,109 @@
 (* The job storage group: the names and subjects every implementation of the
    job queue uses on the broker (protocol/specs/src/jobs/storage.json), with
    the job types (JobType) and the motivations a mark job is told apart by
-   (MarkJobParams), for the TypeScript SDK. Work queued by one implementation
-   survives a switch to another only if both name these alike. Each name is
-   stated; the bucket's record is a component; JobType is an enum of words;
-   and MarkJobParams is told apart by a mapping. *)
+   (MarkJobParams), for the TypeScript SDK; and, for the Haskell SDK, which
+   motivation each of MarkJobParams' branches is. Work queued by one
+   implementation survives a switch to another only if both name these
+   alike. Each name is stated; the bucket's record is a component; JobType is
+   an enum of words; and MarkJobParams is told apart by a mapping, whose every
+   entry names the one branch whose required motivation is that word, a word
+   of Motivation. *)
 
 module T = Tables.Jobs_storage
 
 let file = "jobs/storage.json"
 let job_type = "components/schemas/JobType.json"
 let mark_params = "components/schemas/MarkJobParams.json"
+let motivation = "components/schemas/Motivation.json"
 
 type t = {
   table : T.t;
   job_types : string list;
   mark_motivations : string list;
+      (** The motivation of each of MarkJobParams' branches, in their order. *)
 }
+
+(* A schema's enum, when each of its members is a word. *)
+let words = function
+  | Some (Schema.Schema { enum = Some literals; _ }) ->
+      let words =
+        List.filter_map
+          (function Schema.String_literal w -> Some w | _ -> None)
+          literals
+      in
+      if List.length words = List.length literals then Some words else None
+  | _ -> None
+
+(* The motivation of each of MarkJobParams' branches, refusing a branch that
+   is no plain reference to a component whose required motivation is one word
+   of Motivation, the mapping naming it for that word. *)
+let branch_motivations schemas =
+  let refusals = ref [] in
+  let refuse file pointer message =
+    refusals := { Decode.file; pointer; message } :: !refusals
+  in
+  let motivations =
+    match words (List.assoc_opt motivation schemas) with
+    | Some words -> words
+    | None ->
+        refuse motivation "/enum" "is no enum of words";
+        []
+  in
+  let held =
+    match List.assoc_opt mark_params schemas with
+    | Some
+        (Schema.Schema
+           {
+             one_of = Some branches;
+             discriminator =
+               Some { property_name = "motivation"; mapping = Some mapping };
+             _;
+           }) ->
+        if List.length mapping <> List.length branches then
+          refuse mark_params "/discriminator/mapping"
+            "does not name each branch once";
+        List.concat
+          (List.mapi
+             (fun i branch ->
+               let pointer = Printf.sprintf "/oneOf/%d" i in
+               match branch with
+               | Schema.Schema ({ ref_ = Some ref_; _ } as s)
+                 when Schema.keywords s = [ "$ref" ] -> (
+                   let target, _ = Decode.resolve ref_ in
+                   let branch_schema = List.assoc_opt target schemas in
+                   let required =
+                     match branch_schema with
+                     | Some (Schema.Schema { required = Some r; _ }) -> r
+                     | _ -> []
+                   in
+                   let held =
+                     match branch_schema with
+                     | Some (Schema.Schema { properties = Some properties; _ })
+                       ->
+                         words (List.assoc_opt "motivation" properties)
+                     | _ -> None
+                   in
+                   match held with
+                   | Some [ word ]
+                     when List.mem "motivation" required
+                          && List.mem word motivations
+                          && List.assoc_opt word mapping = Some ref_.target ->
+                       [ word ]
+                   | _ ->
+                       refuse mark_params pointer
+                         "names no component whose required motivation is one \
+                          word of Motivation, mapped to it";
+                       [])
+               | _ ->
+                   refuse mark_params pointer "is no plain $ref";
+                   [])
+             branches)
+    | _ ->
+        refuse mark_params ""
+          "is no oneOf told apart by a mapping of its motivation";
+        []
+  in
+  match List.rev !refusals with [] -> Ok held | errors -> Error errors
 
 let derive (spec : Spec.t) =
   let table = spec.tables.jobs_storage in
@@ -54,19 +141,10 @@ let derive (spec : Spec.t) =
         refuse job_type "" "states no enum";
         []
   in
-  let mark_motivations =
-    match List.assoc_opt mark_params spec.schemas with
-    | Some
-        (Schema.Schema { discriminator = Some { mapping = Some mapping; _ }; _ })
-      ->
-        List.map fst mapping
-    | _ ->
-        refuse mark_params "/discriminator/mapping" "is absent";
-        []
-  in
-  match List.rev !refusals with
-  | [] -> Ok { table; job_types; mark_motivations }
-  | errors -> Error errors
+  match (List.rev !refusals, branch_motivations spec.schemas) with
+  | [], Ok mark_motivations -> Ok { table; job_types; mark_motivations }
+  | errors, Error branch_errors -> Error (errors @ branch_errors)
+  | errors, Ok _ -> Error errors
 
 let typescript t =
   let module S = Typescript_syntax in
@@ -120,5 +198,55 @@ let typescript t =
         };
   }
 
+(* Haskell's [markMotivation]: the motivation a MarkJobParams holds, by its
+   branch. The branches' and motivations' constructor names are the ones
+   haskell/sdk/codegen gives Xynolog.Types. *)
+let haskell t =
+  let module H = Haskell_syntax in
+  {
+    Output.path =
+      "haskell/sdk/generated/Xynolog/Internal/Generated/MarkMotivation.hs";
+    text =
+      H.text
+        {
+          banner =
+            Banner.haskell_lines
+              ~from_:
+                ("protocol/specs/src/" ^ mark_params
+               ^ " and protocol/specs/src/" ^ motivation)
+              __FILE__;
+          extensions = [];
+          name = "Xynolog.Internal.Generated.MarkMotivation";
+          imports =
+            [
+              H.import "Xynolog.Types"
+                ~items:[ All "MarkJobParams"; All "Motivation" ];
+            ];
+          body =
+            [
+              Value
+                {
+                  about = [];
+                  name = "markMotivation";
+                  type_ = T_fun (T_name "MarkJobParams", T_name "Motivation");
+                  clauses =
+                    List.mapi
+                      (fun i word ->
+                        {
+                          H.patterns =
+                            [
+                              Constructor
+                                ( Printf.sprintf "MarkJobParamsBranch%d" (i + 1),
+                                  [ Otherwise ] );
+                            ];
+                          body =
+                            Name ("Motivation" ^ String.capitalize_ascii word);
+                        })
+                      t.mark_motivations;
+                };
+            ];
+        };
+  }
+
 let files ~root:_ (spec : Spec.t) =
-  Result.map (fun t -> [ typescript t ]) (derive spec)
+  Result.map (fun t -> [ typescript t; haskell t ]) (derive spec)
