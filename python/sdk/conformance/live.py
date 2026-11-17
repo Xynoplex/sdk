@@ -26,7 +26,7 @@ from xynolog.namespaces.browse import EngineWithLimits
 from xynolog.namespaces.follow import Delegation, JobRefused
 from xynolog.refresh import CACHE_QUERIES, CacheQuery
 from xynolog.storage import MemoryStorage
-from xynolog.stored import person_key
+from xynolog.storage_keys import person_key
 from xynolog.transport import ConnectionState
 from xynolog.types import GenerationJobParams, JobCompleteCommand, MarkJobParams
 from xynolog.watched import Variable

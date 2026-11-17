@@ -13,7 +13,6 @@ module T = Tables.Media_types_registry
 
 let file = "media-types/registry.json"
 let enum_file = "components/schemas/SupportedMediaType.json"
-let quoted = Text.quoted
 
 let is_extension text =
   String.length text > 1
@@ -140,297 +139,381 @@ let constructor word =
     (List.map String.capitalize_ascii (String.split_on_char '-' word))
 
 let go (t : T.t) =
+  let module G = Go_syntax in
   let source word = "TextSource" ^ constructor word in
-  let width =
-    List.fold_left (fun w s -> max w (String.length (source s))) 0 t.text_source
-  in
-  (* gofmt aligns the values of a map literal's consecutive lines. *)
-  let key_width =
-    List.fold_left
-      (fun w (a, _) -> max w (String.length (quoted a) + 1))
-      0 t.extension_aliases
-  in
-  let pad width text = text ^ String.make (width - String.length text) ' ' in
-  let bool b = if b then "true" else "false" in
   {
     Output.path = "go/mediatypes/registry_gen.go";
     text =
-      String.concat ""
-        [
-          "// Code generated from protocol/specs/src/" ^ file
-          ^ " — DO NOT EDIT.\n//\n// Regenerate: make generate (";
-          Banner.writer __FILE__;
-          {|)
-// The TypeScript (typescript/core/src/media-type-registry.ts) and Rust
-// (xynolog::media_types) SDKs generate from the same registry.
-
-package mediatypes
-
-// TextSource is where a type's text comes from: decoded from its own bytes,
-// derived by reading them, or nowhere.
-type TextSource string
-
-const (
-|};
-          String.concat "\n"
-            (List.map
-               (fun word ->
-                 "\t" ^ pad width (source word) ^ " TextSource = " ^ quoted word)
-               t.text_source);
-          {|
-)
-
-// Row is one media type a knowledge base admits, with the extension a stored
-// name takes for it, where its text comes from, and whether it is offered
-// where a person writes a resource.
-type Row struct {
-	MediaType  string
-	Extension  string
-	TextSource TextSource
-	Authorable bool
-}
-
-|};
-          Printf.sprintf
-            "// Rows is the registry, in its own order: %d media types. The \
-             order is\n"
-            (List.length t.media_types);
-          {|// read: two types that share an extension resolve, from the extension, to the
-// first row that states it.
-var Rows = []Row{
-|};
-          String.concat "\n"
-            (List.map
-               (fun (r : T.media_type) ->
-                 "\t{MediaType: " ^ quoted r.media_type ^ ", Extension: "
-                 ^ quoted r.extension ^ ", TextSource: " ^ source r.text_source
-                 ^ ", Authorable: " ^ bool r.authorable ^ "},")
-               t.media_types);
-          {|
-}
-
-// ExtensionAliases are other spellings of an extension, each with the one a
-// row states.
-var ExtensionAliases = map[string]string{
-|};
-          String.concat "\n"
-            (List.map
-               (fun (alias, extension) ->
-                 "\t"
-                 ^ pad key_width (quoted alias ^ ":")
-                 ^ " " ^ quoted extension ^ ",")
-               t.extension_aliases);
-          "\n}\n";
-        ];
+      G.text
+        {
+          header =
+            G.verbatim
+              ("Code generated from protocol/specs/src/" ^ file
+             ^ " — DO NOT EDIT.\n\nRegenerate: make generate ("
+             ^ Banner.writer __FILE__
+             ^ ")\n\
+                The TypeScript (typescript/core/src/media-type-registry.ts) \
+                and Rust\n\
+                (xynolog::media_types) SDKs generate from the same registry.");
+          package = "mediatypes";
+          imports = [];
+          decls =
+            [
+              G.Consts
+                {
+                  doc = [];
+                  spacing = G.Packed;
+                  specs =
+                    List.map
+                      (fun word ->
+                        G.spec ~type_:(G.Named "TextSource") (source word)
+                          (G.Quoted word))
+                      t.text_source;
+                };
+              G.Var
+                (G.spec
+                   ~doc:
+                     (G.verbatim
+                        (Printf.sprintf
+                           "Rows is the registry, in its own order: %d media \
+                            types. The order is\n\
+                            read: two types that share an extension resolve, \
+                            from the extension, to the\n\
+                            first row that states it."
+                           (List.length t.media_types)))
+                   "Rows"
+                   (G.lines ~of_:(G.Slice (G.Named "Row"))
+                      (List.map
+                         (fun (r : T.media_type) ->
+                           G.item
+                             (G.inline
+                                [
+                                  G.keyed "MediaType" (G.Quoted r.media_type);
+                                  G.keyed "Extension" (G.Quoted r.extension);
+                                  G.keyed "TextSource"
+                                    (G.Name (source r.text_source));
+                                  G.keyed "Authorable"
+                                    (G.Name
+                                       (if r.authorable then "true" else "false"));
+                                ]))
+                         t.media_types)));
+              G.Var
+                (G.spec
+                   ~doc:
+                     (G.verbatim
+                        "ExtensionAliases are other spellings of an extension, \
+                         each with the one a\n\
+                         row states.")
+                   "ExtensionAliases"
+                   (G.lines
+                      ~of_:(G.Map (G.Named "string", G.Named "string"))
+                      (List.map
+                         (fun (alias, extension) ->
+                           G.element ~key:(G.Quoted alias) (G.Quoted extension))
+                         t.extension_aliases)));
+            ];
+        };
   }
 
 let python (t : T.t) =
-  let module L = Python_layout in
-  let bool b = L.Atom (if b then "True" else "False") in
+  let module P = Python_syntax in
+  let bool b = P.Name (if b then "True" else "False") in
   let row (r : T.media_type) =
-    L.Call
-      ( "MediaType",
-        [
-          L.Keyword ("media_type", L.Atom (quoted r.media_type));
-          L.Keyword ("extension", L.Atom (quoted r.extension));
-          L.Keyword ("text_source", L.Atom (quoted r.text_source));
-          L.Keyword ("authorable", bool r.authorable);
-          L.Keyword ("generatable", bool r.generatable);
-        ] )
+    P.item
+      (P.call "MediaType"
+         [
+           P.keyword "media_type" (P.Str r.media_type);
+           P.keyword "extension" (P.Str r.extension);
+           P.keyword "text_source" (P.Str r.text_source);
+           P.keyword "authorable" (bool r.authorable);
+           P.keyword "generatable" (bool r.generatable);
+         ])
   in
   {
     Output.path = "python/sdk/src/xynolog/media_types_table.py";
     text =
-      String.concat ""
-        [
-          Banner.python ~from_:("protocol/specs/src/" ^ file) __FILE__;
-          {|
-"""The media types a knowledge base admits, with what this SDK reads of each."""
-
-from dataclasses import dataclass
-from typing import Final, Literal, final
-
-__all__ = ["MEDIA_TYPES", "MediaType", "TextSource"]
-
-type TextSource = Literal[|};
-          String.concat ", " (List.map quoted t.text_source);
-          {|]
-"""Where a type's text comes from: decoded from its own bytes, derived by reading them, or nowhere."""
-
-
-@final
-@dataclass(frozen=True, slots=True, kw_only=True)
-class MediaType:
-    """One media type a knowledge base admits."""
-
-    media_type: str
-    extension: str
-    """The extension a stored name takes, with its dot."""
-    text_source: TextSource
-    authorable: bool
-    """Offered where a person writes a resource."""
-    generatable: bool
-    """The generation worker can produce it."""
-
-
-|};
-          Printf.sprintf "# The registry, in its own order: %d media types.\n"
-            (List.length t.media_types);
-          L.statement ~indent:0
-            ~prefix:"MEDIA_TYPES: Final[tuple[MediaType, ...]] = " ~suffix:""
-            (L.Rows (List.map row t.media_types));
-          "\n";
-        ];
+      P.text
+        {
+          header =
+            Banner.python_lines ~from_:("protocol/specs/src/" ^ file) __FILE__;
+          doc =
+            As_is
+              "The media types a knowledge base admits, with what this SDK \
+               reads of each.";
+          imports =
+            [
+              [
+                P.From ("dataclasses", [ "dataclass" ]);
+                P.From ("typing", [ "Final"; "Literal"; "final" ]);
+              ];
+            ];
+          body =
+            [
+              P.assign "__all__"
+                ~value:
+                  (P.List
+                     (P.items
+                        (List.map
+                           (fun n -> P.item (P.Str n))
+                           [ "MEDIA_TYPES"; "MediaType"; "TextSource" ])));
+              P.alias
+                ~doc:
+                  (As_is
+                     "Where a type's text comes from: decoded from its own \
+                      bytes, derived by reading them, or nowhere.")
+                "TextSource"
+                (P.sub "Literal"
+                   (List.map (fun w -> P.item (P.Str w)) t.text_source));
+              P.frozen_dataclass "MediaType"
+                "One media type a knowledge base admits."
+                [
+                  P.field "media_type" (P.Name "str");
+                  P.field "extension" (P.Name "str")
+                    ~doc:"The extension a stored name takes, with its dot.";
+                  P.field "text_source" (P.Name "TextSource");
+                  P.field "authorable" (P.Name "bool")
+                    ~doc:"Offered where a person writes a resource.";
+                  P.field "generatable" (P.Name "bool")
+                    ~doc:"The generation worker can produce it.";
+                ];
+              P.assign
+                ~about:
+                  [
+                    Line
+                      (Printf.sprintf
+                         "The registry, in its own order: %d media types."
+                         (List.length t.media_types));
+                  ]
+                ~annotation:
+                  (P.sub "Final"
+                     [
+                       P.item
+                         (P.sub "tuple"
+                            [ P.item (P.Name "MediaType"); P.item P.Ellipsis ]);
+                     ])
+                ~value:(P.tuple ~magic:true (List.map row t.media_types))
+                "MEDIA_TYPES";
+            ];
+        };
   }
 
 let typescript (t : T.t) =
-  (* A TypeScript string in single quotes, as the hand-written modules write
-     theirs. *)
-  let text value =
-    "'"
-    ^ Text.replace_all ~sub:"'" ~by:"\\'"
-        (Text.replace_all ~sub:"\\" ~by:"\\\\" value)
-    ^ "'"
+  let module S = Typescript_syntax in
+  let text value = S.Str (Single, value) in
+  let union name words =
+    S.type_alias name (T_union (List.map (fun w -> S.T_str (Single, w)) words))
   in
-  let union words = String.concat " | " (List.map text words) in
-  let bool b = if b then "true" else "false" in
+  let attrs (r : T.media_type) =
+    S.Object
+      {
+        layout = Inline;
+        column = None;
+        entries =
+          [
+            S.entry (Ident "extension") (text r.extension);
+            S.entry (Ident "label") (text r.label);
+            S.entry (Ident "render") (text r.render);
+            S.entry (Ident "anchoring") (text r.anchoring);
+            S.entry (Ident "textSource") (text r.text_source);
+            S.entry (Ident "authorable") (Bool r.authorable);
+            S.entry (Ident "uploadable") (Bool r.uploadable);
+            S.entry (Ident "generatable") (Bool r.generatable);
+          ];
+      }
+  in
   {
     Output.path = "typescript/core/src/media-type-registry.ts";
     text =
-      String.concat ""
-        [
-          "// ⚠ GENERATED FILE — do not edit.\n\
-           //\n\
-           // Authority:   protocol/specs/src/" ^ file
-          ^ "\n// Regenerate:  make generate  (";
-          Banner.writer __FILE__;
-          ")\n\nexport type RenderMode = " ^ union t.render
-          ^ ";\nexport type AnchoringModel = " ^ union t.anchoring
-          ^ ";\nexport type TextSource = " ^ union t.text_source
-          ^ ";\n\n\
-             /** A row of the registry, by media type, in the registry's \
-             order. */\n\
-             export const MEDIA_TYPE_ROWS = {\n";
-          String.concat "\n"
-            (List.map
-               (fun (r : T.media_type) ->
-                 "  " ^ text r.media_type ^ ": { extension: " ^ text r.extension
-                 ^ ", label: " ^ text r.label ^ ", render: " ^ text r.render
-                 ^ ", anchoring: " ^ text r.anchoring ^ ", textSource: "
-                 ^ text r.text_source ^ ", authorable: " ^ bool r.authorable
-                 ^ ", uploadable: " ^ bool r.uploadable ^ ", generatable: "
-                 ^ bool r.generatable ^ " },")
-               t.media_types);
-          "\n\
-           } as const;\n\n\
-           /** Other spellings of an extension, each with the one a row \
-           states. */\n\
-           export const EXTENSION_ALIASES: Readonly<Record<string, string>> = {\n";
-          String.concat "\n"
-            (List.map
-               (fun (a, e) -> "  " ^ text a ^ ": " ^ text e ^ ",")
-               t.extension_aliases);
-          "\n};\n";
-        ];
+      S.text
+        {
+          banner =
+            Banner.typescript_lines
+              ~authority:[ "protocol/specs/src/" ^ file ]
+              __FILE__;
+          body =
+            [
+              S.Adjacent
+                [
+                  union "RenderMode" t.render;
+                  union "AnchoringModel" t.anchoring;
+                  union "TextSource" t.text_source;
+                ];
+              S.const "MEDIA_TYPE_ROWS" ~as_const:true
+                ~about:
+                  [
+                    Doc
+                      "A row of the registry, by media type, in the registry's \
+                       order.";
+                  ]
+                (S.rows
+                   (List.map
+                      (fun (r : T.media_type) ->
+                        S.entry (Quoted (Single, r.media_type)) (attrs r))
+                      t.media_types));
+              S.const "EXTENSION_ALIASES"
+                ~about:
+                  [
+                    Doc
+                      "Other spellings of an extension, each with the one a \
+                       row states.";
+                  ]
+                ~annotation:
+                  (T_generic
+                     ( "Readonly",
+                       [
+                         T_generic
+                           ("Record", [ T_name "string"; T_name "string" ]);
+                       ] ))
+                (S.rows
+                   (List.map
+                      (fun (a, e) -> S.entry (Quoted (Single, a)) (text e))
+                      t.extension_aliases));
+            ];
+        };
   }
 
-(* A Haskell string literal: a quote and a backslash escaped, printable ASCII
-   as itself, and every other character by its code point, ended by \& so a
-   digit after it is not read as more of it. *)
-let haskell_literal value =
-  let out = Buffer.create (String.length value + 2) in
-  Buffer.add_char out '"';
-  Text.fold_uchars
-    (fun () u ->
-      match Uchar.to_int u with
-      | (0x22 | 0x5C) as c ->
-          Buffer.add_char out '\\';
-          Buffer.add_char out (Char.chr c)
-      | c when c >= 32 && c <= 126 -> Buffer.add_char out (Char.chr c)
-      | c -> Buffer.add_string out (Printf.sprintf "\\x%x\\&" c))
-    () value;
-  Buffer.add_char out '"';
-  Buffer.contents out
-
 let haskell (t : T.t) (encodings : Encodings.Table.t) =
-  let l = haskell_literal in
-  let list items = "[" ^ String.concat ", " items ^ "]" in
-  let pair a b = "(" ^ a ^ ", " ^ b ^ ")" in
-  let code_points text =
+  let module H = Haskell_syntax in
+  let text = H.T_name "Text" in
+  let map k v = H.T_apply ("Map.Map", [ k; v ]) in
+  let from_list pairs = H.Apply (Name "Map.fromList", [ List pairs ]) in
+  let pair a b = H.Tuple [ Str a; Str b ] in
+  let code_points every_byte =
     List.rev
       (Text.fold_uchars
-         (fun acc u -> string_of_int (Uchar.to_int u) :: acc)
-         [] text)
+         (fun acc u -> H.Int (Uchar.to_int u) :: acc)
+         [] every_byte)
   in
+  let source w = H.Name (constructor w) in
   {
     Output.path = "haskell/sdk/generated/Xynolog/Internal/Generated/Text.hs";
     text =
-      String.concat ""
-        [
-          "-- Generated from " ^ Encodings.Table.file ^ " and " ^ file
-          ^ ". Do not edit.\n-- Regenerate: make generate (";
-          Banner.writer __FILE__;
-          {|)
-{-# LANGUAGE OverloadedStrings #-}
-module Xynolog.Internal.Generated.Text (encodingOf, singleByte, refused, TextSource(..), textSourceName, mediaTypes, extensions, aliases) where
-import Data.Text (Text)
-import Data.Aeson (FromJSON(..), ToJSON(..), Value(String), withText)
-import qualified Data.Map.Strict as Map
-import qualified Data.Vector as Vector
-encodingOf :: Map.Map Text Text
-encodingOf = Map.fromList |};
-          list
-            (List.map
-               (fun (label, encoding) -> pair (l label) (l encoding))
-               encodings.labels);
-          "\n\
-           singleByte :: Map.Map Text (Vector.Vector Int)\n\
-           singleByte = Map.fromList ";
-          list
-            (List.map
-               (fun (encoding, every_byte) ->
-                 pair (l encoding)
-                   ("Vector.fromList " ^ list (code_points every_byte)))
-               encodings.single_byte);
-          "\nrefused :: [Text]\nrefused = ";
-          list (List.map l encodings.refused);
-          "\ndata TextSource = ";
-          String.concat " | " (List.map constructor t.text_source);
-          {| deriving (Eq, Ord, Show, Enum, Bounded)
-instance ToJSON TextSource where toJSON = String . textSourceName
-instance FromJSON TextSource where
-  parseJSON = withText "TextSource" $ \value -> case value of
-|};
-          String.concat ""
-            (List.map
-               (fun w -> "    " ^ l w ^ " -> pure " ^ constructor w ^ "\n")
-               t.text_source);
-          "    _ -> fail \"unknown text source\"\n\
-           textSourceName :: TextSource -> Text\n";
-          String.concat ""
-            (List.map
-               (fun w -> "textSourceName " ^ constructor w ^ " = " ^ l w ^ "\n")
-               t.text_source);
-          "mediaTypes :: Map.Map Text (Text,TextSource,Bool)\n\
-           mediaTypes = Map.fromList ";
-          list
-            (List.map
-               (fun (r : T.media_type) ->
-                 pair (l r.media_type)
-                   ("(" ^ l r.extension ^ ", " ^ constructor r.text_source
-                  ^ ", "
-                   ^ (if r.authorable then "True" else "False")
-                   ^ ")"))
-               t.media_types);
-          "\nextensions :: [(Text,Text)]\nextensions = ";
-          list
-            (List.map
-               (fun (r : T.media_type) -> pair (l r.extension) (l r.media_type))
-               t.media_types);
-          "\naliases :: Map.Map Text Text\naliases = Map.fromList ";
-          list (List.map (fun (a, e) -> pair (l a) (l e)) t.extension_aliases);
-          "\n";
-        ];
+      H.text
+        {
+          banner =
+            Banner.haskell_lines
+              ~from_:(Encodings.Table.file ^ " and " ^ file)
+              __FILE__;
+          extensions = [ "OverloadedStrings" ];
+          name = "Xynolog.Internal.Generated.Text";
+          imports =
+            [
+              H.import "Data.Text" ~items:[ Plain "Text" ];
+              H.import "Data.Aeson"
+                ~items:
+                  [
+                    All "FromJSON";
+                    All "ToJSON";
+                    With ("Value", [ "String" ]);
+                    Plain "withText";
+                  ];
+              H.import "Data.Map.Strict" ~qualified:"Map";
+              H.import "Data.Vector" ~qualified:"Vector";
+            ];
+          body =
+            [
+              H.value "encodingOf" (map text text)
+                (from_list
+                   (List.map
+                      (fun (label, encoding) -> pair label encoding)
+                      encodings.labels));
+              H.value "singleByte"
+                (map text (T_apply ("Vector.Vector", [ T_name "Int" ])))
+                (from_list
+                   (List.map
+                      (fun (encoding, every_byte) ->
+                        H.Tuple
+                          [
+                            Str encoding;
+                            Apply
+                              ( Name "Vector.fromList",
+                                [ List (code_points every_byte) ] );
+                          ])
+                      encodings.single_byte));
+              H.value "refused" (T_list text)
+                (List (List.map (fun e -> H.Str e) encodings.refused));
+              H.data "TextSource"
+                (List.map
+                   (fun w -> H.constructor (constructor w))
+                   t.text_source)
+                ~deriving:[ "Eq"; "Ord"; "Show"; "Enum"; "Bounded" ];
+              Instance
+                {
+                  class_ = "ToJSON";
+                  instance = "TextSource";
+                  methods =
+                    [
+                      ("toJSON", Compose (Name "String", Name "textSourceName"));
+                    ];
+                };
+              Instance
+                {
+                  class_ = "FromJSON";
+                  instance = "TextSource";
+                  methods =
+                    [
+                      ( "parseJSON",
+                        Dollar
+                          ( Apply (Name "withText", [ Str "TextSource" ]),
+                            Lambda
+                              ( "value",
+                                Case
+                                  ( Name "value",
+                                    List.map
+                                      (fun w ->
+                                        ( H.Literal w,
+                                          H.Apply (Name "pure", [ source w ]) ))
+                                      t.text_source
+                                    @ [
+                                        ( Otherwise,
+                                          Apply
+                                            ( Name "fail",
+                                              [ Str "unknown text source" ] ) );
+                                      ] ) ) ) );
+                    ];
+                };
+              Value
+                {
+                  about = [];
+                  name = "textSourceName";
+                  type_ = T_fun (T_name "TextSource", text);
+                  clauses =
+                    List.map
+                      (fun w ->
+                        {
+                          H.patterns = [ Constructor (constructor w) ];
+                          body = Str w;
+                        })
+                      t.text_source;
+                };
+              H.value "mediaTypes"
+                (map text
+                   (T_tuple [ text; T_name "TextSource"; T_name "Bool" ]))
+                (from_list
+                   (List.map
+                      (fun (r : T.media_type) ->
+                        H.Tuple
+                          [
+                            Str r.media_type;
+                            Tuple
+                              [
+                                Str r.extension;
+                                source r.text_source;
+                                Name (if r.authorable then "True" else "False");
+                              ];
+                          ])
+                      t.media_types));
+              H.value "extensions"
+                (T_list (T_tuple [ text; text ]))
+                (List
+                   (List.map
+                      (fun (r : T.media_type) -> pair r.extension r.media_type)
+                      t.media_types));
+              H.value "aliases" (map text text)
+                (from_list
+                   (List.map (fun (a, e) -> pair a e) t.extension_aliases));
+            ];
+        };
   }
 
 (* Each type as the OCaml SDK reads it (ocaml/sdk/lib/media_facts.ml): its

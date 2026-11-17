@@ -14,7 +14,7 @@ import qualified Data.Map.Strict as Map
 import Data.Maybe (isJust, isNothing)
 import Data.Text (Text)
 import Data.Text.Encoding (decodeUtf8, encodeUtf8)
-import Xynolog.Internal.Generated.CachePersistence (lastEventIds)
+import Xynolog.Internal.CacheDocument (lastEventIds)
 import qualified Xynolog.SessionStorage as Storage
 import Xynolog.Types (ResourceId, resourceIdValue, PersistedEventId(..))
 

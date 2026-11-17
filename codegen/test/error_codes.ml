@@ -638,9 +638,7 @@ type JobErrorCode = Literal[
     "job.failed",
 ]
 
-JOB_ERROR_CODES: Final[tuple[JobErrorCode, ...]] = (
-    "job.failed",
-)
+JOB_ERROR_CODES: Final[tuple[JobErrorCode, ...]] = ("job.failed",)
 
 # Why a session broke.
 type XynologSessionErrorCode = Literal[
@@ -648,9 +646,7 @@ type XynologSessionErrorCode = Literal[
     "session.auth-failed",
 ]
 
-XYNOLOG_SESSION_ERROR_CODES: Final[tuple[XynologSessionErrorCode, ...]] = (
-    "session.auth-failed",
-)
+XYNOLOG_SESSION_ERROR_CODES: Final[tuple[XynologSessionErrorCode, ...]] = ("session.auth-failed",)
 
 # Why a sign-in failed.
 type SignInErrorCode = Literal[
@@ -658,9 +654,7 @@ type SignInErrorCode = Literal[
     "no-issuer",
 ]
 
-SIGN_IN_ERROR_CODES: Final[tuple[SignInErrorCode, ...]] = (
-    "no-issuer",
-)
+SIGN_IN_ERROR_CODES: Final[tuple[SignInErrorCode, ...]] = ("no-issuer",)
 
 # Why an identity is unverified.
 type IdentityUnverifiableReason = Literal[
@@ -668,9 +662,7 @@ type IdentityUnverifiableReason = Literal[
     "unreachable",
 ]
 
-IDENTITY_UNVERIFIABLE_REASONS: Final[tuple[IdentityUnverifiableReason, ...]] = (
-    "unreachable",
-)
+IDENTITY_UNVERIFIABLE_REASONS: Final[tuple[IdentityUnverifiableReason, ...]] = ("unreachable",)
 
 # Why a span was refused.
 type SpanRefusal = Literal[
@@ -678,9 +670,7 @@ type SpanRefusal = Literal[
     "span-out-of-range",
 ]
 
-SPAN_REFUSALS: Final[tuple[SpanRefusal, ...]] = (
-    "span-out-of-range",
-)
+SPAN_REFUSALS: Final[tuple[SpanRefusal, ...]] = ("span-out-of-range",)
 |}
 
 let typescript =

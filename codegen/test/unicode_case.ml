@@ -87,7 +87,7 @@ let go =
     case "a range table, split at the Basic Multilingual Plane" (fun () ->
         Alcotest.(check string)
           "table"
-          "var demo = &unicode.RangeTable{\n\
+          "&unicode.RangeTable{\n\
            \tR16: []unicode.Range16{\n\
            \t\t{0x0041, 0x005a, 1},\n\
            \t\t{0x00c0, 0x00ff, 1},\n\
@@ -100,14 +100,15 @@ let go =
            \t},\n\
            \tLatinOffset: 2,\n\
            }"
-          (Unicode_case.Go.range_table "demo"
-             [
-               (0x41, 0x5A);
-               (0xC0, 0xFF);
-               (0x101, 0x102);
-               (0xFFF0, 0x10010);
-               (0x1F600, 0x1F64F);
-             ]));
+          (Go_syntax.expr ~depth:0
+             (Unicode_case.Go.range_table
+                [
+                  (0x41, 0x5A);
+                  (0xC0, 0xFF);
+                  (0x101, 0x102);
+                  (0xFFF0, 0x10010);
+                  (0x1F600, 0x1F64F);
+                ])));
   ]
 
 let json =

@@ -13,67 +13,19 @@
  *
  * The complete EventMap for the RxJS EventBus. Every channel name and
  * its payload type is defined here — domain events, commands, reads,
- * results, SSE stream payloads, and Browser UI events.
- *
- * Identifier discipline: where a payload carries an annotation or
- * resource id, the TypeScript layer narrows the OpenAPI `string` to the
- * branded type (`AnnotationId`, `ResourceId`, `UserId`). The runtime
- * wire shape is unchanged (brands have no runtime representation);
- * what this buys us is that command handlers don't have to re-brand
- * at every seam. Brand once at the entry boundary (HTTP route handler,
- * DOM attribute read, URL param parse), not at every bus hop in
- * between.
+ * results, SSE stream payloads, and Browser UI events. What TypeScript
+ * narrows in a payload is bus-refinements.ts's.
  *
  * Organized by flow (verb), then by category within each flow.
  */
 
 import type { components } from './types';
-import type { AnnotationId, ResourceId } from './identifiers';
-import type { Annotation } from './annotation-types';
-import type { ResourceDescriptor } from './graph';
-import type { EnrichedEvent, Refines, StoredEvent } from './event-base';
+import type { EnrichedEvent, StoredEvent } from './event-base';
 import type { EventOfType, PersistedEventType } from './persisted-events';
-import type { AnchorRect } from './bus-ui-types';
+import type { ChannelRefinements } from './bus-refinements';
 
-// Branded overrides for OpenAPI command payloads that carry identifier
-// fields. Narrows `string` → branded at the TypeScript layer.
-//
-// `_userId` is the gateway-injected authenticated DID (string at the
-// schema layer); handlers that need a `UserId` brand it locally.
-type MarkDeleteCommand =
-  components['schemas']['MarkDeleteCommand'] & {
-    annotationId: AnnotationId;
-    resourceId?: ResourceId;
-  };
-type MarkUpdateBodyCommand =
-  components['schemas']['MarkUpdateBodyCommand'] & {
-    annotationId: AnnotationId;
-    resourceId: ResourceId;
-  };
-type BindInitiateCommand =
-  components['schemas']['BindInitiateCommand'] & {
-    annotationId: AnnotationId;
-    resourceId: ResourceId;
-  };
-type BindUpdateBodyCommand =
-  components['schemas']['BindUpdateBodyCommand'] & {
-    annotationId: AnnotationId;
-    resourceId: ResourceId;
-  };
-
-/**
- * The unified EventMap — every channel on the EventBus.
- *
- * Convention:
- * - Domain events (past tense): StoredEvent<Interface> — branded types
- * - Annotation-mutating events: EnrichedEvent<Interface> — the stored event
- *   plus the annotation the EventStore attaches before publishing
- * - Commands/reads/results/UI: OpenAPI schema refs — plain strings
- * - void: UI-only signals with no payload
- */
-
-
-export type EventMap = {
+/** Each channel's payload as the registry states it. */
+export type StatedEventMap = {
 
   // ========================================================================
   // YIELD FLOW — resource creation, update, move, clone
@@ -132,8 +84,8 @@ export type EventMap = {
 
   // Commands
   'mark:create-request': components['schemas']['MarkCreateRequest'];
-  'mark:delete': Refines<components['schemas']['MarkDeleteCommand'], MarkDeleteCommand>;
-  'mark:update-body': Refines<components['schemas']['MarkUpdateBodyCommand'], MarkUpdateBodyCommand>;
+  'mark:delete': components['schemas']['MarkDeleteCommand'];
+  'mark:update-body': components['schemas']['MarkUpdateBodyCommand'];
   'mark:archive': components['schemas']['MarkArchiveCommand'];
   'mark:unarchive': components['schemas']['MarkUnarchiveCommand'];
   'mark:update-entity-types': components['schemas']['MarkUpdateEntityTypesCommand'];
@@ -229,8 +181,8 @@ export type EventMap = {
   // BIND FLOW — reference linking
   // ========================================================================
 
-  'bind:initiate': Refines<components['schemas']['BindInitiateCommand'], BindInitiateCommand>;
-  'bind:update-body': Refines<components['schemas']['BindUpdateBodyCommand'], BindUpdateBodyCommand>;
+  'bind:initiate': components['schemas']['BindInitiateCommand'];
+  'bind:update-body': components['schemas']['BindUpdateBodyCommand'];
   'bind:body-updated': components['schemas']['BindBodyUpdated'];
   'bind:body-update-failed': components['schemas']['CommandError'];
 
@@ -244,11 +196,7 @@ export type EventMap = {
 
   // Searching resources by text: lexical first, by meaning when nothing matches.
   'match:resources-requested': components['schemas']['MatchResourcesRequest'];
-  'match:resources-result': Refines<components['schemas']['MatchResourcesResult'], {
-    response: Omit<components['schemas']['MatchResourcesResponse'], 'resources'> & {
-      resources: ResourceDescriptor[];
-    };
-  }>;
+  'match:resources-result': components['schemas']['MatchResourcesResult'];
   'match:resources-failed': components['schemas']['CommandError'];
   'match:limits-requested': components['schemas']['InferenceLimitsRequest'];
   'match:limits-result': components['schemas']['InferenceLimitsResult'];
@@ -290,29 +238,15 @@ export type EventMap = {
   // what the protocol already guarantees. Field overrides via Omit +
   // intersection; envelope shape per the reply-shape standard.
   'browse:resource-requested': components['schemas']['BrowseResourceRequest'];
-  'browse:resource-result': Refines<components['schemas']['BrowseResourceResult'], {
-    response: Omit<components['schemas']['BrowseResourceResult']['response'], 'resource'> & {
-      resource: ResourceDescriptor;
-    };
-  }>;
+  'browse:resource-result': components['schemas']['BrowseResourceResult'];
   'browse:resource-failed': components['schemas']['CommandError'];
 
   'browse:resources-requested': components['schemas']['BrowseResourcesRequest'];
-  'browse:resources-result': Refines<components['schemas']['BrowseResourcesResult'], {
-    response: Omit<components['schemas']['ListResourcesResponse'], 'resources'> & {
-      resources: ResourceDescriptor[];
-    };
-  }>;
+  'browse:resources-result': components['schemas']['BrowseResourcesResult'];
   'browse:resources-failed': components['schemas']['CommandError'];
 
   'browse:annotation-requested': components['schemas']['BrowseAnnotationRequest'];
-  'browse:annotation-result': Refines<components['schemas']['BrowseAnnotationResult'], {
-    response: Omit<components['schemas']['GetAnnotationResponse'], 'annotation' | 'resource' | 'resolvedResource'> & {
-      annotation: Annotation;
-      resource: ResourceDescriptor | null;
-      resolvedResource: ResourceDescriptor | null;
-    };
-  }>;
+  'browse:annotation-result': components['schemas']['BrowseAnnotationResult'];
   'browse:annotation-failed': components['schemas']['CommandError'];
 
   'browse:events-requested': components['schemas']['BrowseEventsRequest'];
@@ -348,7 +282,7 @@ export type EventMap = {
   'browse:directory-failed': components['schemas']['BrowseDirectoryFailed'];
 
   // UI events (session-scoped — fire on the client bus, tied to a KB)
-  'browse:click': Refines<components['schemas']['BrowseClickEvent'], components['schemas']['BrowseClickEvent'] & { anchorRect?: AnchorRect }>;
+  'browse:click': components['schemas']['BrowseClickEvent'];
   'browse:resource-open': components['schemas']['BrowseResourceOpenEvent'];
   'browse:resource-viewed': components['schemas']['BrowseResourceViewedEvent'];
   'browse:entity-type-clicked': components['schemas']['BrowseEntityTypeClickedEvent'];
@@ -360,14 +294,14 @@ export type EventMap = {
   // ========================================================================
 
   'panel:toggle': components['schemas']['BrowsePanelToggleEvent'];
-  'panel:open': Refines<components['schemas']['BrowsePanelOpenEvent'], components['schemas']['BrowsePanelOpenEvent'] & { anchorRect?: AnchorRect }>;
+  'panel:open': components['schemas']['BrowsePanelOpenEvent'];
   'panel:close': void;
   'shell:sidebar-toggle': void;
   'tabs:close': components['schemas']['BrowseResourceCloseEvent'];
   'tabs:reorder': components['schemas']['BrowseResourceReorderEvent'];
   'nav:link-clicked': components['schemas']['BrowseLinkClickedEvent'];
   'nav:push': components['schemas']['BrowseRouterPushEvent'];
-  'nav:external': Refines<components['schemas']['BrowseExternalNavigateEvent'], components['schemas']['BrowseExternalNavigateEvent'] & { cancelFallback: () => void }>;
+  'nav:external': components['schemas']['BrowseExternalNavigateEvent'];
 
   // ========================================================================
   // BECKON FLOW — annotation attention
@@ -482,6 +416,21 @@ export type EventMap = {
   'bus:resume-gap': components['schemas']['BusResumeGap'];
   'session:joined': components['schemas']['SessionJoinedEvent'];
   'session:left': components['schemas']['SessionLeftEvent'];
+};
+
+/**
+ * The unified EventMap — every channel on the EventBus: each channel's
+ * stated payload, or its refinement where bus-refinements.ts narrows it.
+ *
+ * Convention:
+ * - Domain events (past tense): StoredEvent<Interface> — branded types
+ * - Annotation-mutating events: EnrichedEvent<Interface> — the stored event
+ *   plus the annotation the EventStore attaches before publishing
+ * - Commands/reads/results/UI: OpenAPI schema refs — plain strings
+ * - void: UI-only signals with no payload
+ */
+export type EventMap = {
+  [K in keyof StatedEventMap]: K extends keyof ChannelRefinements ? ChannelRefinements[K] : StatedEventMap[K];
 };
 
 export type { AnchorRect } from './bus-ui-types';
@@ -757,7 +706,7 @@ export const CHANNEL_SCHEMAS = {
 
 /** Channels where `/bus/emit` validates the payload (non-null schema). */
 export type EmittableChannel = {
-  [K in EventName]: typeof CHANNEL_SCHEMAS[K] extends null ? never : K
+  [K in EventName]: typeof CHANNEL_SCHEMAS[K] extends null ? never : K;
 }[EventName];
 
 /** The field of a relayed frame's payload that carries the trace the frame was published under: an object of W3C's `traceparent` and, when it has one, `tracestate`. A frame the gateway relays over the stream has no headers of its own, so the gateway writes the field on its payload, and a receiver takes it off before the payload is delivered and continues the trace from it. No payload schema declares it, and no subscriber sees it. An emit carries its trace in its request's `traceparent` header, and its payload carries no such field. */

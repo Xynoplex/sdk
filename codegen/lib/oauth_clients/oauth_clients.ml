@@ -43,98 +43,98 @@ let derive (t : T.t) =
   in
   if refusals = [] then Ok t else Error refusals
 
-let quoted = Text.quoted
-
 let go (t : T.t) =
+  let module G = Go_syntax in
   let constant name docs value =
-    Text.go_comment ~indent:"" (name ^ ": " ^ docs)
-    ^ "\nconst " ^ name ^ " = " ^ quoted value ^ "\n"
+    G.Const (G.spec ~doc:(G.prose (name ^ ": " ^ docs)) name (G.Quoted value))
   in
   let name (c : T.client) = String.capitalize_ascii c.name ^ "ClientID" in
   {
     Output.path = "go/oauthclients_gen.go";
     text =
-      String.concat ""
-        [
-          {|// Code generated from protocol/specs/src/session/oauth.json — DO NOT EDIT.
-//
-// Regenerate: make generate (|};
-          Banner.writer __FILE__;
-          {|)
-// The TypeScript (typescript/core/src/oauth-clients.ts), Rust
-// (rust/sdk/build.rs) and Python (xynolog.oauth_clients) SDKs generate
-// from the same file.
-
-package xynolog
-
-|};
-          String.concat "\n"
-            (List.map
-               (fun (c : T.client) -> constant (name c) c.docs c.id)
-               t.clients);
-          "\n";
-          constant "SignInScope" t.scope.docs t.scope.value;
-        ];
+      G.text
+        {
+          header =
+            G.verbatim
+              ("Code generated from protocol/specs/src/session/oauth.json — DO \
+                NOT EDIT.\n\n\
+                Regenerate: make generate (" ^ Banner.writer __FILE__
+             ^ ")\n\
+                The TypeScript (typescript/core/src/oauth-clients.ts), Rust\n\
+                (rust/sdk/build.rs) and Python (xynolog.oauth_clients) SDKs \
+                generate\n\
+                from the same file.");
+          package = "xynolog";
+          imports = [];
+          decls =
+            List.map
+              (fun (c : T.client) -> constant (name c) c.docs c.id)
+              t.clients
+            @ [ constant "SignInScope" t.scope.docs t.scope.value ];
+        };
   }
 
 let python (t : T.t) =
+  let module P = Python_syntax in
   let constant name docs value =
-    Text.python_comment ~indent:"" docs
-    ^ "\n" ^ name ^ ": Final = " ^ quoted value ^ "\n"
+    P.assign ~about:[ Prose docs ] ~annotation:(P.Name "Final")
+      ~value:(P.Str value) name
   in
   let name (c : T.client) = String.uppercase_ascii c.name ^ "_CLIENT_ID" in
   {
     Output.path = "python/sdk/src/xynolog/oauth_clients.py";
     text =
-      String.concat ""
-        [
-          Banner.python ~from_:"protocol/specs/src/session/oauth.json" __FILE__;
-          {|
-"""How a Xynolog client presents itself to the issuer a knowledge base trusts:
-the clients its realm registers, and the scope every sign-in asks for.
-"""
-
-from typing import Final
-
-__all__ = [
-|};
-          String.concat ""
-            (List.map
-               (fun n -> "    " ^ quoted n ^ ",\n")
-               (List.sort compare ("SIGN_IN_SCOPE" :: List.map name t.clients)));
-          "]\n\n";
-          String.concat "\n"
-            (List.map
-               (fun (c : T.client) -> constant (name c) c.docs c.id)
-               t.clients);
-          "\n";
-          constant "SIGN_IN_SCOPE" t.scope.docs t.scope.value;
-        ];
+      P.text
+        {
+          header =
+            Banner.python_lines ~from_:"protocol/specs/src/session/oauth.json"
+              __FILE__;
+          doc =
+            As_is
+              "How a Xynolog client presents itself to the issuer a knowledge \
+               base trusts:\n\
+               the clients its realm registers, and the scope every sign-in \
+               asks for.\n";
+          imports = [ [ P.From ("typing", [ "Final" ]) ] ];
+          body =
+            P.assign "__all__"
+              ~value:
+                (P.List
+                   (P.items ~magic:true
+                      (List.map
+                         (fun n -> P.item (P.Str n))
+                         (List.sort compare
+                            ("SIGN_IN_SCOPE" :: List.map name t.clients)))))
+            :: List.map
+                 (fun (c : T.client) -> constant (name c) c.docs c.id)
+                 t.clients
+            @ [ constant "SIGN_IN_SCOPE" t.scope.docs t.scope.value ];
+        };
   }
 
 let typescript (t : T.t) =
+  let module S = Typescript_syntax in
+  let constant name docs value =
+    S.const name ~about:[ Doc docs ] (Str (Double, value))
+  in
   {
     Output.path = "typescript/core/src/oauth-clients.ts";
     text =
-      String.concat ""
-        [
-          {|// ⚠ GENERATED FILE — do not edit.
-//
-// Authority:   protocol/specs/src/session/oauth.json
-// Regenerate:  make generate  (|};
-          Banner.writer __FILE__;
-          ")\n\n";
-          String.concat "\n"
-            (List.map
-               (fun (c : T.client) ->
-                 Text.doc_comment c.docs ^ "\nexport const "
-                 ^ String.uppercase_ascii c.name
-                 ^ "_CLIENT_ID = " ^ quoted c.id ^ ";\n")
-               t.clients);
-          "\n";
-          Text.doc_comment t.scope.docs;
-          "\nexport const SIGN_IN_SCOPE = " ^ quoted t.scope.value ^ ";\n";
-        ];
+      S.text
+        {
+          banner =
+            Banner.typescript_lines
+              ~authority:[ "protocol/specs/src/" ^ file ]
+              __FILE__;
+          body =
+            List.map
+              (fun (c : T.client) ->
+                constant
+                  (String.uppercase_ascii c.name ^ "_CLIENT_ID")
+                  c.docs c.id)
+              t.clients
+            @ [ constant "SIGN_IN_SCOPE" t.scope.docs t.scope.value ];
+        };
   }
 
 (* The clients and the scope as the OCaml SDK names them

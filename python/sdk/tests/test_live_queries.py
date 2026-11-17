@@ -42,7 +42,8 @@ from xynolog.namespaces.browse import EngineWithLimits
 from xynolog.refresh import CACHE_QUERIES, CacheQuery
 from xynolog.resume import CoupledBookmarks
 from xynolog.storage import MemoryStorage
-from xynolog.stored import KEPT_QUERIES, KeptQuery, cache_key, last_event_id_key, person_key
+from xynolog.storage_keys import cache_key, last_event_id_key, person_key
+from xynolog.stored import KEPT_QUERIES, KeptQuery
 from xynolog.testing import DropReply, FaultyTransport, SharedStorage, StubGateway, create_test_client, refuse_unscripted_operation
 from xynolog.testing.liveness import LivenessScenario, LivenessSpec, assert_liveness_axioms
 from xynolog.timing import INVALIDATION_WINDOW_MS, SAVE_DEBOUNCE_MS

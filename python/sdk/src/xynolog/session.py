@@ -231,7 +231,7 @@ class HeldSignIn:
     revocation_endpoint: str | None = None
     person_key: str | None = None
     """Who a gateway said the sign-in's person is, as the key their caches are kept under
-    (`xynolog.stored.person_key`); none until a gateway has named them. A renewal keeps it,
+    (`xynolog.storage_keys.person_key`); none until a gateway has named them. A renewal keeps it,
     and a new sign-in begins without it."""
 
 

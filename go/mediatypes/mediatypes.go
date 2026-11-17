@@ -12,6 +12,20 @@ import (
 	"unicode"
 )
 
+// TextSource is where a type's text comes from: decoded from its own bytes,
+// derived by reading them, or nowhere.
+type TextSource string
+
+// Row is one media type a knowledge base admits, with the extension a stored
+// name takes for it, where its text comes from, and whether it is offered
+// where a person writes a resource.
+type Row struct {
+	MediaType  string
+	Extension  string
+	TextSource TextSource
+	Authorable bool
+}
+
 // byExtension: each extension a row states, with the first row that states it.
 var byExtension = func() map[string]string {
 	m := make(map[string]string, len(Rows))

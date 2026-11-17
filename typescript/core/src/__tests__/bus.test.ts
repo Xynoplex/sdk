@@ -9,7 +9,7 @@ import { describe, it, expect, vi } from 'vitest';
 import type { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { asDeclared, Bus, FrameRefusal, type Delivered, type Heard } from '../bus';
-import { BRIDGED_CHANNELS } from '../bridged-channels';
+import { BRIDGED_CHANNELS } from '../bridging';
 import { FaultyTransport } from '../faulty-transport';
 import { EventBus } from '../event-bus';
 import type { EventMap } from '../bus-protocol';

@@ -34,7 +34,8 @@ from xynolog.operations import (
 )
 from xynolog.refresh import CacheQuery, CacheRefreshWhen
 from xynolog.storage import SessionStorage, StoragePersister
-from xynolog.stored import WHOLE_KEY, KeptQuery, WholeKey, cache_key
+from xynolog.storage_keys import cache_key
+from xynolog.stored import WHOLE_KEY, KeptQuery, WholeKey
 from xynolog.timing import MAX_STORED_BYTES_COUNT
 from xynolog.transport import ContentTransport
 from xynolog.types import (
@@ -126,13 +127,13 @@ class CachePersistence:
     The queries `xynolog.stored.KEPT_QUERIES` names are kept: a resource's
     description, its annotations, one annotation, the entity types, the tag
     schemas. Each is a document in `storage`, under
-    `xynolog.stored.cache_key(kb_id, person_key, query)`.
+    `xynolog.storage_keys.cache_key(kb_id, person_key, query)`.
     """
 
     storage: SessionStorage
     kb_id: str
     person_key: str
-    """The person's key (`xynolog.stored.person_key`), never their did."""
+    """The person's key (`xynolog.storage_keys.person_key`), never their did."""
 
 
 def _persister[K: Hashable, V](

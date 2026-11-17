@@ -2,57 +2,74 @@
    per entry under its name in upper case, and the names as the table states
    them, by which a caller overrides one. *)
 
+module P = Python_syntax
+
 let path = "python/sdk/src/xynolog/timing.py"
 
+let value (e : Table.entry) =
+  match e.value with
+  | Duration n | Count n -> P.Int n
+  | Budget { attempts; initial_delay_ms; max_delay_ms } ->
+      P.call "RetryPolicy"
+        [
+          P.keyword "attempts" (P.Int attempts);
+          P.keyword "initial_delay_ms" (P.Int initial_delay_ms);
+          P.keyword "max_delay_ms" (P.Int max_delay_ms);
+        ]
+
 let text (t : Table.t) =
-  String.concat ""
-    [
-      Banner.python ~from_:"protocol/specs/src/client/timing.json" __FILE__;
-      {|
-"""The timing a Xynolog client keeps: its deadlines, its retry budgets, the
-cadence of its stream, and what it keeps count of.
-
-Each constant is an entry of the table every SDK generates from, under the
-entry's own name: `emitRetry` is `EMIT_RETRY`. `TIMING_NAMES` lists the names
-as the table states them, which is how a caller overrides one.
-"""
-
-from typing import Final
-
-from xynolog.retry import RetryPolicy
-
-__all__ = [
-|};
-      String.concat ""
-        (List.map
-           (fun name -> Printf.sprintf "    %s,\n" (Text.quoted name))
-           (List.sort compare
-              ("TIMING_NAMES"
-              :: List.map (fun (e : Table.entry) -> Text.upper_snake e.name) t)));
-      "]\n\n";
-      String.concat "\n"
-        (List.map
-           (fun (e : Table.entry) ->
-             Printf.sprintf "%s\n%s: Final = %s\n"
-               (Text.python_comment ~indent:"" e.docs)
-               (Text.upper_snake e.name)
-               (match e.value with
-               | Duration n | Count n -> string_of_int n
-               | Budget { attempts; initial_delay_ms; max_delay_ms } ->
-                   Printf.sprintf
-                     "RetryPolicy(attempts=%d, initial_delay_ms=%d, \
-                      max_delay_ms=%d)"
-                     attempts initial_delay_ms max_delay_ms))
-           t);
-      "\n\
-       # Every entry's name, as the table states it.\n\
-       TIMING_NAMES: Final[tuple[str, ...]] = (\n";
-      String.concat ""
-        (List.map
-           (fun (e : Table.entry) ->
-             Printf.sprintf "    %s,\n" (Text.quoted e.name))
-           t);
-      ")\n";
-    ]
+  P.text
+    {
+      header =
+        Banner.python_lines ~from_:"protocol/specs/src/client/timing.json"
+          __FILE__;
+      doc =
+        As_is
+          "The timing a Xynolog client keeps: its deadlines, its retry \
+           budgets, the\n\
+           cadence of its stream, and what it keeps count of.\n\n\
+           Each constant is an entry of the table every SDK generates from, \
+           under the\n\
+           entry's own name: `emitRetry` is `EMIT_RETRY`. `TIMING_NAMES` lists \
+           the names\n\
+           as the table states them, which is how a caller overrides one.\n";
+      imports =
+        [
+          [ P.From ("typing", [ "Final" ]) ];
+          [ P.From ("xynolog.retry", [ "RetryPolicy" ]) ];
+        ];
+      body =
+        P.assign "__all__"
+          ~value:
+            (P.List
+               (P.items ~magic:true
+                  (List.map
+                     (fun n -> P.item (P.Str n))
+                     (List.sort compare
+                        ("TIMING_NAMES"
+                        :: List.map
+                             (fun (e : Table.entry) -> Text.upper_snake e.name)
+                             t)))))
+        :: List.map
+             (fun (e : Table.entry) ->
+               P.assign ~about:[ Prose e.docs ] ~annotation:(P.Name "Final")
+                 ~value:(value e) (Text.upper_snake e.name))
+             t
+        @ [
+            P.assign
+              ~about:[ Line "Every entry's name, as the table states it." ]
+              ~annotation:
+                (P.sub "Final"
+                   [
+                     P.item
+                       (P.sub "tuple"
+                          [ P.item (P.Name "str"); P.item P.Ellipsis ]);
+                   ])
+              ~value:
+                (P.strings ~magic:true
+                   (List.map (fun (e : Table.entry) -> e.name) t))
+              "TIMING_NAMES";
+          ];
+    }
 
 let file t = { Output.path; text = text t }

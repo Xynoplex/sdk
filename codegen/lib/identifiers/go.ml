@@ -51,95 +51,127 @@ let held ~root (kinds : Table.kind list) =
             ("exclude-schemas names " ^ String.concat ", " stray
            ^ ", which is no kind of id in protocol/specs/src/" ^ Table.file))
 
+module G = Go_syntax
+
 let lower name =
   String.make 1 (Char.lowercase_ascii name.[0])
   ^ String.sub name 1 (String.length name - 1)
 
 let kind (k : Table.kind) =
-  let rule = lower k.name ^ "Rule" and pattern = lower k.name ^ "Pattern" in
-  let name = k.name and quoted = Text.quoted k.name in
-  Text.go_comment ~indent:"" k.description
-  ^ Printf.sprintf
-      {|
-//
-// It is made only by Parse%s, which holds text to the kind's rule, and
-// by decoding, which goes through the same rule. Its zero value is no id: it
-// is refused wherever an id is written, and IsZero names it.
-type %s struct{ text string }
-
-const %s = %s
-
-var %s = regexp.MustCompile(%s)
-
-// Parse%s is text as a %s, or an *InvalidIdentifierError when the
-// kind's rule refuses it.
-func Parse%s(text string) (%s, error) {
-	if !%s.MatchString(text) {
-		return %s{}, &InvalidIdentifierError{Kind: %s, Pattern: %s, Value: text}
-	}
-	return %s{text: text}, nil
-}
-
-// String is the id's text.
-func (id %s) String() string { return id.text }
-
-// IsZero reports whether id is the zero value, which is no id.
-func (id %s) IsZero() bool { return id.text == "" }
-
-// MarshalText is the id's text. The zero value is refused, as the rule refuses
-// empty text.
-func (id %s) MarshalText() ([]byte, error) {
-	if id.text == "" {
-		return nil, &InvalidIdentifierError{Kind: %s, Pattern: %s, Value: ""}
-	}
-	return []byte(id.text), nil
-}
-
-// UnmarshalText holds decoded text to the kind's rule.
-func (id *%s) UnmarshalText(text []byte) error {
-	parsed, err := Parse%s(string(text))
-	if err != nil {
-		return err
-	}
-	*id = parsed
-	return nil
-}
-|}
-      name name pattern (Text.quoted k.pattern) rule pattern name name name name
-      rule name quoted pattern name name name name quoted pattern name name
+  let name = k.name in
+  let rule = lower name ^ "Rule" and pattern = lower name ^ "Pattern" in
+  let id = G.Named name and text = G.Name "text" in
+  let invalid value =
+    G.Unary
+      ( G.Address,
+        G.inline ~of_:(G.Named "InvalidIdentifierError")
+          [
+            G.keyed "Kind" (G.Quoted name);
+            G.keyed "Pattern" (G.Name pattern);
+            G.keyed "Value" value;
+          ] )
+  in
+  let errors = G.Unnamed [ G.Named "error" ] in
+  let held = G.Binary (G.Name "id.text", G.Eq, G.Quoted "") in
+  [
+    G.Type
+      {
+        doc =
+          G.prose k.description
+          @ G.verbatim
+              (Printf.sprintf
+                 "\n\
+                  It is made only by Parse%s, which holds text to the kind's \
+                  rule, and\n\
+                  by decoding, which goes through the same rule. Its zero \
+                  value is no id: it\n\
+                  is refused wherever an id is written, and IsZero names it."
+                 name);
+        name;
+        def = G.Is (G.Struct_type [ ([ "text" ], G.Named "string") ]);
+      };
+    G.Const (G.spec pattern (G.Quoted k.pattern));
+    G.Var (G.spec rule (G.call "regexp.MustCompile" [ G.Name pattern ]));
+    G.func
+      ~doc:
+        (G.verbatim
+           (Printf.sprintf
+              "Parse%s is text as a %s, or an *InvalidIdentifierError when the\n\
+               kind's rule refuses it."
+              name name))
+      ~params:[ ("text", G.Named "string") ]
+      ~results:(G.Unnamed [ id; G.Named "error" ])
+      ("Parse" ^ name)
+      (G.Block
+         [
+           G.If
+             ( G.Unary (G.Not, G.call (rule ^ ".MatchString") [ text ]),
+               [ G.Return [ G.inline ~of_:id []; invalid text ] ] );
+           G.Return [ G.inline ~of_:id [ G.keyed "text" text ]; G.Name "nil" ];
+         ]);
+    G.func
+      ~doc:[ G.Line "String is the id's text." ]
+      ~receiver:("id", id) ~results:(G.Unnamed [ G.Named "string" ]) "String"
+      (G.One_line (G.Return [ G.Name "id.text" ]));
+    G.func
+      ~doc:
+        [
+          G.Line "IsZero reports whether id is the zero value, which is no id.";
+        ]
+      ~receiver:("id", id) ~results:(G.Unnamed [ G.Named "bool" ]) "IsZero"
+      (G.One_line (G.Return [ held ]));
+    G.func
+      ~doc:
+        (G.verbatim
+           "MarshalText is the id's text. The zero value is refused, as the \
+            rule refuses\n\
+            empty text.")
+      ~receiver:("id", id)
+      ~results:(G.Unnamed [ G.Slice (G.Named "byte"); G.Named "error" ])
+      "MarshalText"
+      (G.Block
+         [
+           G.If (held, [ G.Return [ G.Name "nil"; invalid (G.Quoted "") ] ]);
+           G.Return
+             [
+               G.Convert (G.Slice (G.Named "byte"), G.Name "id.text");
+               G.Name "nil";
+             ];
+         ]);
+    G.func
+      ~doc:[ G.Line "UnmarshalText holds decoded text to the kind's rule." ]
+      ~receiver:("id", G.Pointer id)
+      ~params:[ ("text", G.Slice (G.Named "byte")) ]
+      ~results:errors "UnmarshalText"
+      (G.Block
+         [
+           G.Define
+             ( [ "parsed"; "err" ],
+               G.call ("Parse" ^ name) [ G.Convert (G.Named "string", text) ] );
+           G.If
+             ( G.Binary (G.Name "err", G.Ne, G.Name "nil"),
+               [ G.Return [ G.Name "err" ] ] );
+           G.Assign (G.Unary (G.Deref, G.Name "id"), G.Name "parsed");
+           G.Return [ G.Name "nil" ];
+         ]);
+  ]
 
 let text kinds =
-  {|// Code generated from protocol/specs/src/identifiers/kinds.json and each kind's schema — DO NOT EDIT.
-//
-// Regenerate: make generate (|}
-  ^ Banner.writer __FILE__
-  ^ {|)
-// The TypeScript and Python kinds are generated from the same table, and Rust's
-// by its SDK's build script.
-
-package api
-
-import (
-	"fmt"
-	"regexp"
-)
-
-// InvalidIdentifierError is text that is not an id of the kind it was to be.
-type InvalidIdentifierError struct {
-	// Kind is the kind of id the text was to be, as its schema is named.
-	Kind string
-	// Pattern is the kind's rule, as its schema states it.
-	Pattern string
-	// Value is the text the rule refused.
-	Value string
-}
-
-func (e *InvalidIdentifierError) Error() string {
-	return fmt.Sprintf("%q is not a %s: it does not match %s", e.Value, e.Kind, e.Pattern)
-}
-
-|}
-  ^ String.concat "\n" (List.map kind kinds)
+  G.text
+    {
+      header =
+        G.verbatim
+          ("Code generated from protocol/specs/src/identifiers/kinds.json and \
+            each kind's schema — DO NOT EDIT.\n\n\
+            Regenerate: make generate (" ^ Banner.writer __FILE__
+         ^ ")\n\
+            The TypeScript and Python kinds are generated from the same table, \
+            and Rust's\n\
+            by its SDK's build script.");
+      package = "api";
+      imports = [ [ "regexp" ] ];
+      decls = List.concat_map kind kinds;
+    }
 
 let file ~root kinds =
   Result.map (fun () -> { Output.path; text = text kinds }) (held ~root kinds)

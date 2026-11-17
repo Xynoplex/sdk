@@ -5,6 +5,7 @@
 
 let file = "sign-in-store/README.md"
 
+(* [offset_high] is in hexadecimal digits. *)
 type t = { document : string; lock : string; offset_high : string }
 
 (* Where each [prefix] in [text] ends. *)
@@ -78,7 +79,7 @@ let read ~root =
                 | '0' .. '9' | 'a' .. 'f' | 'A' .. 'F' -> true | _ -> false)
               text (j + 2)
           in
-          if digits = "" then None else Some ("0x" ^ digits)
+          if digits = "" then None else Some digits
         else None)
       (ends ~prefix:"OffsetHigh:" text)
   in

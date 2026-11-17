@@ -253,10 +253,9 @@ export function validateRegistry(reg) {
   // type from that; a payload stated only as a TypeScript type is one no
   // other language can type.
   //
-  // `tsRefinement` is TypeScript narrowing a schema's
-  // type (a branded id for a string, a DOM rectangle, a callback). It never
-  // states the payload; the generated code holds each one to its schema's
-  // type, so a refinement that is not a narrowing fails to compile.
+  // What TypeScript narrows in a schema's type (a branded id for a string, a
+  // DOM rectangle, a callback) is the TypeScript SDK's own
+  // (typescript/core/src/bus-refinements.ts), not the registry's.
   //
   // A stored event's payload is a schema too. Which payload belongs to which
   // event, and which events belong to no resource (`system`), are the entry's
@@ -274,7 +273,7 @@ export function validateRegistry(reg) {
       continue;
     }
     if (c.ts !== undefined) {
-      problems.push(`"${c.channel}" carries a ts string — the TypeScript type is derived from its shape; a narrowing goes in tsRefinement`);
+      problems.push(`"${c.channel}" carries a ts string — the TypeScript type is derived from its shape; a narrowing goes in typescript/core/src/bus-refinements.ts`);
     }
     const namesSchema = c.shape === 'schema' || c.shape === 'envelope';
     if (namesSchema !== (typeof c.schema === 'string' && c.schema !== '')) {
@@ -301,8 +300,8 @@ export function validateRegistry(reg) {
     if (c.enriched !== undefined && (c.enriched !== true || c.shape !== 'storedEvent')) {
       problems.push(`"${c.channel}" sets enriched: ${JSON.stringify(c.enriched)} — it is a flag (true or absent), and only a stored event can carry it`);
     }
-    if (c.tsRefinement !== undefined && !namesSchema && c.shape !== 'storedEvent') {
-      problems.push(`"${c.channel}" has a tsRefinement and is ${SHAPES[c.shape]} — a refinement narrows a schema's type, and there is none`);
+    if (c.tsRefinement !== undefined) {
+      problems.push(`"${c.channel}" has a tsRefinement — a TypeScript refinement is typescript/core/src/bus-refinements.ts's, not the registry's`);
     }
     if (c.shape === 'schema' && c.validate !== null && c.validate !== c.schema) {
       problems.push(`"${c.channel}" carries ${c.schema} and validates against ${c.validate} — one channel, one schema`);

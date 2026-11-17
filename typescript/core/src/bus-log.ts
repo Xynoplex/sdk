@@ -26,7 +26,8 @@
  *   - Node:     `XYNOLOG_BUS_LOG=1` in the process env (read at module load)
  */
 
-import { BRIDGED_CHANNELS, RESOURCE_SCOPED_CHANNELS } from './bridged-channels';
+import { RESOURCE_SCOPED_CHANNELS } from './bridged-channels';
+import { BRIDGED_CHANNELS } from './bridging';
 import { isObject } from './type-guards';
 
 const NODE_BUS_LOG =

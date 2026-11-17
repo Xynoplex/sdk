@@ -26,7 +26,7 @@ import qualified Xynolog.Cache as Cache
 import qualified Xynolog.StoragePersister as Stored
 import qualified Xynolog.SessionStorage as Storage
 import qualified Xynolog.Internal.Coupled as Coupled
-import Xynolog.Internal.Generated.CachePersistence (CacheDocument(..))
+import Xynolog.Internal.CacheDocument (CacheDocument(..))
 import qualified Xynolog.Internal.Kept as Kept
 import Xynolog.Types
 import qualified ControlledTime as Time

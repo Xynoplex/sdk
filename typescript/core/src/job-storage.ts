@@ -24,8 +24,3 @@ export const JOB_TYPES = ["mark","yield"] as const;
 
 /** Every motivation a `mark` job has: the ones MarkJobParams is told apart by. */
 export const MARK_MOTIVATIONS = ["highlighting","commenting","assessing","linking","tagging"] as const;
-
-/** The subject a job of this type is published on. */
-export function jobSubject(type: string): string {
-  return `${JOBS_SUBJECT_ROOT}.${type}`;
-}

@@ -10,11 +10,34 @@ let writer file = "codegen/" ^ file
    RUF100, since a module need not break each of them. Every other rule holds
    it, as ruff format, the drift gate and the type checkers do.
    python/sdk/scripts/generate_models.py writes the same line. *)
-let python_exempt = "# ruff: noqa: E501, I001, RUF002, RUF022, RUF100"
+let python_exempt = "ruff: noqa: E501, I001, RUF002, RUF022, RUF100"
 
-let python ~from_ file =
-  "# Generated from " ^ from_ ^ "; do not edit.\n# Regenerate: make generate ("
-  ^ writer file ^ ")\n" ^ python_exempt ^ "\n"
+(* A generated Haskell module's opening comment lines, without their [--]. *)
+let haskell_lines ~from_ file =
+  [
+    "Generated from " ^ from_ ^ "; do not edit.";
+    "Regenerate: make generate (" ^ writer file ^ ")";
+  ]
+
+(* A generated Python module's opening comment lines, without their [#]. *)
+let python_lines ~from_ file =
+  [
+    "Generated from " ^ from_ ^ "; do not edit.";
+    "Regenerate: make generate (" ^ writer file ^ ")";
+    python_exempt;
+  ]
+
+(* A generated TypeScript module's opening comment lines, without their
+   [//]: what it is generated from ([authority], a line each), the writer,
+   then [notes]. *)
+let typescript_lines ~authority ?(notes = []) file =
+  [ "⚠ GENERATED FILE — do not edit."; "" ]
+  @ List.mapi
+      (fun i line ->
+        (if i = 0 then "Authority:   " else "             ") ^ line)
+      authority
+  @ [ "Regenerate:  make generate  (" ^ writer file ^ ")" ]
+  @ notes
 
 (* An OCaml module's opening: what it is generated from, the writer, and
    ocamlformat told to leave it as written. *)

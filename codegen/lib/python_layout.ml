@@ -1,7 +1,7 @@
-(* A Python expression laid out as ruff format lays one out, so a generated
-   file is ruff's fixed point. The width is python/sdk/pyproject.toml's
-   line-length; test-python's `ruff format --check` holds every generated file
-   to both.
+(* Layout as ruff format lays a Python expression out, so a generated file is
+   ruff's fixed point. The width is python/sdk/pyproject.toml's line-length;
+   test-python's `ruff format --check` holds every generated file to both.
+   Python_syntax builds these from its expressions.
 
    Ruff breaks a bracket's outer group first: its contents go on a line of
    their own, and only if they don't fit there are they one a line, with a
@@ -10,61 +10,47 @@
 
 let width = 140
 
-type t =
-  | Atom of string
-  | Keyword of string * t
-  | Call of string * t list
-  | Tuple of t list
-  | Rows of t list
-      (** A tuple written one item a line, which ruff keeps: the comma after the
-          last of two or more is its magic trailing comma. A tuple of one has no
-          magic comma, so ruff lays it out as any other. *)
+(* A comment line: prose wrapped to 96 columns, or a line as it is given. *)
+type line = Prose of string | Line of string
 
-(* The layout's own terms: [Break] is nothing on a line and a new line where
-   its group is broken; [Space] is a space or a new line; [Comma] is a comma
-   only where its group is broken. *)
+(* [Break] is nothing on a line and a new line where its group is broken;
+   [Space] is a space or a new line; [Broken_text] is text only where its
+   group is broken (a magic comma, an import's parentheses). A [Comment] is
+   its lines, each at the indentation, and breaks every group around it. *)
 type doc =
   | Text of string
   | Break
   | Space
-  | Comma
+  | Broken_text of string
+  | Comment of line list
   | Indent of doc list
   | Group of { broken : bool; docs : doc list }
 
 let rec is_broken = function
   | Group { broken; _ } -> broken
   | Indent docs -> List.exists is_broken docs
-  | Text _ | Break | Space | Comma -> false
+  | Comment _ -> true
+  | Text _ | Break | Space | Broken_text _ -> false
 
 let group ?(broken = false) docs =
   Group { broken = broken || List.exists is_broken docs; docs }
 
-let rec doc = function
-  | Atom text -> Text text
-  | Keyword (name, value) -> group [ Text (name ^ "="); doc value ]
-  | Call (callee, []) -> Text (callee ^ "()")
-  | Call (callee, args) -> bracket (callee ^ "(") ")" args ~last:(comma args)
-  | Tuple [] | Rows [] -> Text "()"
-  | Tuple [ one ] -> bracket "(" ")" [ one ] ~last:(Text ",")
-  | Tuple items -> bracket "(" ")" items ~last:Comma
-  | Rows [ one ] -> doc (Tuple [ one ])
-  | Rows items -> bracket "(" ")" items ~last:Comma ~one_a_line:true
-
-and comma = function [ _ ] -> Text "" | _ -> Comma
-
-and bracket ?(one_a_line = false) opening closing items ~last =
-  let rec separated = function
-    | [] -> []
-    | [ item ] -> [ doc item; last ]
-    | item :: rest -> doc item :: Text "," :: Space :: separated rest
-  in
-  group
-    [
-      Text opening;
-      Indent [ Break; group ~broken:one_a_line (separated items) ];
-      Break;
-      Text closing;
-    ]
+(* [comment]'s lines behind [lead], wrapped to 96 columns. *)
+let comment_lines ~indent lines =
+  let lead = String.make indent ' ' ^ "#" in
+  List.concat_map
+    (function
+      | Prose text ->
+          List.map
+            (fun l -> "# " ^ l)
+            (Text.wrapped ~lead:(lead ^ " ") ~width:96 text)
+      | Line "" -> [ "#" ]
+      | Line text ->
+          if String.contains text '\n' then
+            invalid_arg
+              (Printf.sprintf "Python_layout: comment line %S is two" text)
+          else [ "# " ^ text ])
+    lines
 
 type mode = Flat | Broken
 
@@ -79,7 +65,9 @@ let fits room docs rest =
         | Text text -> go (room - Text.length text) more
         | Break -> mode = Broken || go room more
         | Space -> mode = Broken || go (room - 1) more
-        | Comma -> go (if mode = Broken then room - 1 else room) more
+        | Broken_text text ->
+            go (if mode = Broken then room - Text.length text else room) more
+        | Comment _ -> false
         | Indent docs -> go room (List.map (fun d -> (mode, d)) docs @ more)
         | Group { broken; docs } ->
             let mode = if broken then Broken else mode in
@@ -112,8 +100,15 @@ let render ~indent docs =
         | Space ->
             if mode = Broken then newline at else text " ";
             go more
-        | Comma ->
-            if mode = Broken then text ",";
+        | Broken_text s ->
+            if mode = Broken then text s;
+            go more
+        | Comment lines ->
+            List.iteri
+              (fun i l ->
+                if i > 0 then newline at;
+                text l)
+              (comment_lines ~indent:at lines);
             go more
         | Indent docs -> go (List.map (fun d -> (at + 4, mode, d)) docs @ more)
         | Group { broken; docs } ->
@@ -129,7 +124,14 @@ let render ~indent docs =
   go (List.map (fun d -> (indent, Broken, d)) docs);
   Buffer.contents out
 
-(* [expr] as the statement or item it is, from column [indent]: [prefix] is
-   what comes before it on its line, and [suffix] after. *)
-let statement ~indent ~prefix ~suffix expr =
-  render ~indent [ group [ Text prefix; doc expr; Text suffix ] ]
+(* [docs] on one line, however long. *)
+let rec flat docs =
+  String.concat ""
+    (List.map
+       (function
+         | Text s -> s
+         | Break | Broken_text _ -> ""
+         | Space -> " "
+         | Comment _ -> invalid_arg "Python_layout: a comment on one line"
+         | Indent docs | Group { docs; _ } -> flat docs)
+       docs)

@@ -484,14 +484,6 @@ let writers =
                ("A", Required.Shape.Shape Required.Shape.empty);
                ("B", string_shape);
              ]));
-    case "a Python string holding a JSON line" (fun () ->
-        Alcotest.(check string)
-          "quoted" {|'"a\'b\\c"'|}
-          (Required.Python.quoted {|"a'b\c"|}));
-    case "a Haskell string literal" (fun () ->
-        Alcotest.(check string)
-          "literal" {|"a\"\\\xe9\&\x1f600\&\xa\&"|}
-          (Required.Haskell.literal "a\"\\\195\169\240\159\152\128\n"));
     case "an envelope holds only its response" (fun () ->
         let channel payload : Tables.Bus_registry.channel =
           let docs : Tables.Bus_registry.docs = { lead = []; trailing = "" } in
@@ -523,10 +515,8 @@ let writers =
                    payload = "P";
                    enriched = false;
                    system = false;
-                   ts_refinement = None;
                  };
-               Schema
-                 { schema = "Missing"; validate = None; ts_refinement = None };
+               Schema { schema = "Missing"; validate = None };
              ]));
   ]
 

@@ -17,25 +17,21 @@
  */
 
 import type { components } from './types';
-import type { AnnotationId, ResourceId } from './identifiers';
-import type { Annotation } from './annotation-types';
-import type { EventBase, Refines } from './event-base';
+import type { ResourceId } from './identifiers';
+import type { EventBase } from './event-base';
+import type { EventPayloadRefinements } from './bus-refinements';
 
-/**
- * Each persisted event type and the payload it carries. A `Refines` entry
- * narrows the schema's type to this layer's branded one, so consumers read
- * `payload.annotation.id` as `AnnotationId` without an upcast at every seam.
- */
-type PersistedEventCatalog = {
+/** Each persisted event type and the payload the registry states it carries. */
+export type StatedPersistedEventCatalog = {
   'yield:created': components['schemas']['ResourceCreatedPayload'];
   'yield:cloned': components['schemas']['ResourceClonedPayload'];
   'yield:updated': components['schemas']['ResourceUpdatedPayload'];
   'yield:moved': components['schemas']['ResourceMovedPayload'];
   'yield:representation-added': components['schemas']['RepresentationAddedPayload'];
   'yield:representation-removed': components['schemas']['RepresentationRemovedPayload'];
-  'mark:added': Refines<components['schemas']['AnnotationAddedPayload'], components['schemas']['AnnotationAddedPayload'] & { annotation: Annotation }>;
-  'mark:removed': Refines<components['schemas']['AnnotationRemovedPayload'], components['schemas']['AnnotationRemovedPayload'] & { annotationId: AnnotationId }>;
-  'mark:body-updated': Refines<components['schemas']['AnnotationBodyUpdatedPayload'], components['schemas']['AnnotationBodyUpdatedPayload'] & { annotationId: AnnotationId }>;
+  'mark:added': components['schemas']['AnnotationAddedPayload'];
+  'mark:removed': components['schemas']['AnnotationRemovedPayload'];
+  'mark:body-updated': components['schemas']['AnnotationBodyUpdatedPayload'];
   'mark:entity-tag-added': components['schemas']['EntityTagChangedPayload'];
   'mark:entity-tag-removed': components['schemas']['EntityTagChangedPayload'];
   'mark:archived': components['schemas']['ResourceArchivedPayload'];
@@ -49,6 +45,18 @@ type PersistedEventCatalog = {
   'job:failed': components['schemas']['JobFailedPayload'];
 };
 
+/**
+ * Each persisted event type and the payload it carries: the stated one, or
+ * its refinement where bus-refinements.ts narrows it to this layer's branded
+ * types, so consumers read `payload.annotation.id` as `AnnotationId` without
+ * an upcast at every seam.
+ */
+type PersistedEventCatalog = {
+  [K in keyof StatedPersistedEventCatalog]: K extends keyof EventPayloadRefinements
+    ? EventPayloadRefinements[K]
+    : StatedPersistedEventCatalog[K];
+};
+
 /** System event types — persisted events that have no resourceId. */
 type SystemEventType = 'frame:entity-type-added' | 'frame:tag-schema-added' | 'principal:profiled';
 
@@ -60,7 +68,7 @@ export type EventOfType<K extends keyof PersistedEventCatalog> =
 
 /** The union of all persisted event types. Discriminated on `type`. */
 export type PersistedEvent = {
-  [K in keyof PersistedEventCatalog]: EventOfType<K>
+  [K in keyof PersistedEventCatalog]: EventOfType<K>;
 }[keyof PersistedEventCatalog];
 
 export type PersistedEventType = PersistedEvent['type'];

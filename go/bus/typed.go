@@ -10,8 +10,28 @@ package bus
 import (
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"slices"
 )
+
+// Channel is a bus channel's name: what a channel chosen at run time is
+// given as, and what each typed value of channels_gen.go and
+// operations_gen.go is named by.
+type Channel string
+
+// Replies is the two channels a request is answered on, the type its
+// failure is read as, and what its result states beside its response.
+type Replies struct {
+	Result  Channel
+	Failure Channel
+	// FailurePayload is the type of what the failure channel carries: a
+	// failure is held to its shape before it is read.
+	FailurePayload reflect.Type
+	// ReplyNames is what the result states beside its response: properties of
+	// the request, which whoever answers states again (the resource a context
+	// was gathered for, the reference a search was for). None, for most.
+	ReplyNames []string
+}
 
 // Global is a channel delivered with no resource's scope: what is read with
 // no resource named.

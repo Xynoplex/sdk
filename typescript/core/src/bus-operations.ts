@@ -20,7 +20,7 @@ import type { EventMap, EventName, EmittableChannel } from './bus-protocol';
  *   - and the `failure` channel.
  *
  * `BridgedChannel` / `BRIDGED_CHANNELS` are DERIVED from this map
- * (bridged-channels.ts): every reply lands in the bridged fan-in set by
+ * (bridging.ts): every reply lands in the bridged fan-in set by
  * construction, so "a reply channel forgotten from BRIDGED_CHANNELS" is not
  * representable.
  *
@@ -163,6 +163,5 @@ export const REPLY_NAMES = {
   'yield:clone-resource-requested':      [],
   'yield:clone-token-requested':         [],
 } as const satisfies {
-  readonly [Op in BusOperationKey]: readonly (keyof EventMap[Op] &
-    keyof EventMap[(typeof BUS_OPERATIONS)[Op]['result'] & EventName])[];
+  readonly [Op in BusOperationKey]: readonly (keyof EventMap[Op] & keyof EventMap[(typeof BUS_OPERATIONS)[Op]['result'] & EventName])[];
 };

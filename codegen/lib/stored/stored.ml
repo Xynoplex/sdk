@@ -15,7 +15,6 @@
 module T = Tables.Session_stored
 
 let file = "session/stored.json"
-let quoted = Text.quoted
 let snake name = String.lowercase_ascii (Text.upper_snake name)
 let schemas_prefix = "../components/schemas/"
 
@@ -274,24 +273,25 @@ let derive (spec : Spec.t) ~kinds ~(refresh : Cache_refresh.Table.t) =
   | errors, _ -> Error errors
 
 let python t =
-  let comment = Text.python_comment ~indent:"" in
+  let module P = Python_syntax in
   let table = t.table in
+  let optional type_ = P.Binary (type_, P.Or, P.Name "None") in
   let field (f : field) =
     let python = snake f.name in
-    let plain = if f.required then f.type_ else f.type_ ^ " | None" in
+    let plain =
+      if f.required then P.Name f.type_ else optional (P.Name f.type_)
+    in
     let said =
-      (if python = f.name then [] else [ "alias=" ^ quoted f.name ])
-      @ match f.least with None -> [] | Some n -> [ "ge=" ^ string_of_int n ]
+      (if python = f.name then [] else [ P.keyword "alias" (P.Str f.name) ])
+      @ match f.least with None -> [] | Some n -> [ P.keyword "ge" (P.Int n) ]
     in
-    let annotated =
-      match said with
-      | [] -> plain
-      | said ->
-          "Annotated[" ^ plain ^ ", Field(" ^ String.concat ", " said ^ ")]"
-    in
-    Text.python_comment ~indent:"    " f.description
-    ^ "\n    " ^ python ^ ": " ^ annotated
-    ^ if f.required then "" else " = None"
+    P.assign ~about:[ Prose f.description ] python
+      ~annotation:
+        (match said with
+        | [] -> plain
+        | said ->
+            P.sub "Annotated" [ P.item plain; P.item (P.call "Field" said) ])
+      ?value:(if f.required then None else Some (P.Name "None"))
   in
   let session_field (f : Sign_in.Flat.field) =
     field
@@ -303,6 +303,21 @@ let python t =
         kind = None;
         least = None;
       }
+  in
+  let model name doc fields =
+    P.Class
+      {
+        decorators = [ P.Name "final" ];
+        name;
+        bases =
+          [ P.item (P.Name "WireModel"); P.keyword "frozen" (P.Name "True") ];
+        doc = Some (Wrapped doc);
+        spacing = Spaced;
+        body = fields;
+      }
+  in
+  let constant ~about name value =
+    P.assign ~about:[ Prose about ] name ~annotation:(P.Name "Final") ~value
   in
   let named = [ t.scope; t.place ] in
   let identifiers =
@@ -322,7 +337,14 @@ let python t =
   let exported =
     List.sort compare
       (List.map (fun (n, _, _) -> n) constants
-      @ [ "CACHE_DOCUMENT_VERSION"; "KEPT_QUERIES"; "WHOLE_KEY" ])
+      @ [
+          "CACHE_DOCUMENT_VERSION";
+          "CACHE_KEY_PREFIX";
+          "KEPT_QUERIES";
+          "LAST_EVENT_ID_KEY_PREFIX";
+          "SESSION_KEY_PREFIX";
+          "WHOLE_KEY";
+        ])
     @ List.sort compare
         [
           t.session.title;
@@ -331,217 +353,165 @@ let python t =
           "KeptQuery";
           "WholeKey";
         ]
-    @ [
-        "cache_key";
-        "kb_of_session_key";
-        "last_event_id_key";
-        "person_key";
-        "session_key";
-      ]
   in
   let kept_as k =
     "Keyed by "
     ^ (match k.keyed_by with None -> "WHOLE_KEY alone" | Some key -> key)
     ^ "; its value is " ^ k.value ^ "."
   in
-  let imports what = function
-    | [] -> ""
-    | names -> "\nfrom xynolog." ^ what ^ " import " ^ String.concat ", " names
+  let from what = function
+    | [] -> []
+    | names -> [ P.From ("xynolog." ^ what, names) ]
   in
+  let whole = P.Str table.whole_key.key in
   {
     Output.path = "python/sdk/src/xynolog/stored.py";
     text =
-      String.concat ""
-        [
-          Banner.python ~from_:("protocol/specs/src/" ^ file) __FILE__;
-          {|
-"""What a registry of knowledge bases keeps in a `SessionStorage` (`protocol/specs/src/session/stored.json`):
-the key each thing it keeps is kept under, the shape of a knowledge base's
-stored session, and the shape of a resource open in one. And what the
-sessions it makes keep there: which queries, and the stream's places.
-"""
-
-from typing import Annotated, Final, Literal, final
-
-from pydantic import Field
-
-from xynolog._digest import base64url_sha256|};
-          imports "identifiers" identifiers;
-          "\nfrom xynolog.model import WireModel";
-          imports "types" components;
-          "\n\n__all__ = [\n";
-          String.concat ""
-            (List.map (fun n -> "    " ^ quoted n ^ ",\n") exported);
-          "]\n\n";
-          String.concat "\n\n"
-            (List.map
-               (fun (name, key, docs) ->
-                 comment docs ^ "\n" ^ name ^ ": Final = " ^ quoted key)
-               constants);
-          "\n\n";
-          comment table.session_key_prefix.docs;
-          "\n_SESSION_KEY_PREFIX: Final = "
-          ^ quoted table.session_key_prefix.prefix;
-          {|
-
-
-def session_key(kb_id: str) -> str:
-    """The key a knowledge base's session is kept under."""
-    return f"{_SESSION_KEY_PREFIX}{kb_id}"
-
-
-def kb_of_session_key(key: str) -> str | None:
-    """The knowledge base a key is the session of; nothing when it is no session's key."""
-    return key.removeprefix(_SESSION_KEY_PREFIX) if key.startswith(_SESSION_KEY_PREFIX) else None
-
-
-|};
-          comment table.last_event_id_key_prefix.docs;
-          "\n_LAST_EVENT_ID_KEY_PREFIX: Final = "
-          ^ quoted table.last_event_id_key_prefix.prefix;
-          {|
-
-
-def person_key(did: str) -> str:
-    """The key of the person whose did the gateway answered: what their caches and stream's places are kept under."""
-    return base64url_sha256(did)
-
-
-def last_event_id_key(kb_id: str, person_key: str) -> str:
-    """The key a person's stream's places in a knowledge base are kept under, as `|};
-          table.last_event_ids.title;
-          {|`."""
-    return f"{_LAST_EVENT_ID_KEY_PREFIX}{kb_id}.{person_key}"
-
-
-|};
-          comment table.last_event_ids.description;
-          "\ntype " ^ table.last_event_ids.title ^ " = dict[" ^ t.scope ^ ", "
-          ^ t.place ^ "]\n\n\n";
-          comment table.cache_key_prefix.docs;
-          "\n_CACHE_KEY_PREFIX: Final = " ^ quoted table.cache_key_prefix.prefix;
-          {|
-
-# The queries a client keeps across a restart, each by its name in
-# protocol/specs/src/client/refresh.json, and each as one document under `cache_key`.
-type KeptQuery = Literal[
-|};
-          String.concat "\n"
-            (List.map
-               (fun k ->
-                 Text.python_comment ~indent:"    " (kept_as k)
-                 ^ "\n    " ^ quoted k.query ^ ",")
-               t.kept);
-          "\n]\n\n";
-          Python_layout.statement ~indent:0
-            ~prefix:"KEPT_QUERIES: Final[tuple[KeptQuery, ...]] = " ~suffix:""
-            (Python_layout.Rows
-               (List.map (fun k -> Python_layout.Atom (quoted k.query)) t.kept));
-          {|
-
-
-def cache_key(kb_id: str, person_key: str, query: KeptQuery) -> str:
-    """The key what a person's client keeps of `query` in a knowledge base is kept under."""
-    return f"{_CACHE_KEY_PREFIX}{kb_id}.{person_key}.{query}"
-
-
-|};
-          comment table.whole_key.docs;
-          "\ntype WholeKey = Literal[" ^ quoted table.whole_key.key
-          ^ "]\nWHOLE_KEY: Final[WholeKey] = " ^ quoted table.whole_key.key
-          ^ "\n\n";
-          comment table.cache_document.properties.version.description;
-          "\nCACHE_DOCUMENT_VERSION: Final = "
-          ^ string_of_int table.cache_document.properties.version.const
-          ^ "\n\n\n@final\nclass " ^ t.session.title
-          ^ "(WireModel, frozen=True):\n";
-          Text.python_docstring ~indent:"    " t.session.description;
-          "\n\n";
-          String.concat "\n\n" (List.map session_field t.session.fields);
-          "\n\n\n@final\nclass " ^ table.open_resource.title
-          ^ "(WireModel, frozen=True):\n";
-          Text.python_docstring ~indent:"    " table.open_resource.description;
-          "\n\n";
-          String.concat "\n\n" (List.map field t.open_resource);
-          "\n";
-        ];
+      P.text
+        {
+          header =
+            Banner.python_lines ~from_:("protocol/specs/src/" ^ file) __FILE__;
+          doc =
+            As_is
+              "What a registry of knowledge bases keeps in a `SessionStorage` \
+               (`protocol/specs/src/session/stored.json`):\n\
+               the key each thing it keeps is kept under, the shape of a \
+               knowledge base's\n\
+               stored session, and the shape of a resource open in one. And \
+               what the\n\
+               sessions it makes keep there: which queries, and the stream's \
+               places. The\n\
+               keys made of these prefixes are `xynolog.storage_keys`'s.\n";
+          imports =
+            [
+              [
+                P.From ("typing", [ "Annotated"; "Final"; "Literal"; "final" ]);
+              ];
+              [ P.From ("pydantic", [ "Field" ]) ];
+              from "identifiers" identifiers
+              @ [ P.From ("xynolog.model", [ "WireModel" ]) ]
+              @ from "types" components;
+            ];
+          body =
+            P.assign "__all__"
+              ~value:
+                (P.List
+                   (P.items ~magic:true
+                      (List.map (fun n -> P.item (P.Str n)) exported)))
+            :: List.map
+                 (fun (name, key, docs) ->
+                   constant ~about:docs name (P.Str key))
+                 constants
+            @ [
+                constant ~about:table.session_key_prefix.docs
+                  "SESSION_KEY_PREFIX" (P.Str table.session_key_prefix.prefix);
+                constant ~about:table.last_event_id_key_prefix.docs
+                  "LAST_EVENT_ID_KEY_PREFIX"
+                  (P.Str table.last_event_id_key_prefix.prefix);
+                P.alias
+                  ~about:[ Prose table.last_event_ids.description ]
+                  table.last_event_ids.title
+                  (P.sub "dict"
+                     [ P.item (P.Name t.scope); P.item (P.Name t.place) ]);
+                constant ~about:table.cache_key_prefix.docs "CACHE_KEY_PREFIX"
+                  (P.Str table.cache_key_prefix.prefix);
+                P.alias
+                  ~about:
+                    [
+                      Prose
+                        "The queries a client keeps across a restart, each by \
+                         its name in protocol/specs/src/client/refresh.json, \
+                         and each as one document under its \
+                         `xynolog.storage_keys.cache_key`.";
+                    ]
+                  "KeptQuery"
+                  (P.sub ~magic:true "Literal"
+                     (List.map
+                        (fun k ->
+                          P.element ~about:[ Prose (kept_as k) ] (P.Str k.query))
+                        t.kept));
+                P.assign "KEPT_QUERIES"
+                  ~annotation:
+                    (P.sub "Final"
+                       [
+                         P.item
+                           (P.sub "tuple"
+                              [ P.item (P.Name "KeptQuery"); P.item P.Ellipsis ]);
+                       ])
+                  ~value:
+                    (P.strings ~magic:true (List.map (fun k -> k.query) t.kept));
+                P.Adjacent
+                  [
+                    P.alias
+                      ~about:[ Prose table.whole_key.docs ]
+                      "WholeKey"
+                      (P.sub "Literal" [ P.item whole ]);
+                    P.assign "WHOLE_KEY"
+                      ~annotation:(P.sub "Final" [ P.item (P.Name "WholeKey") ])
+                      ~value:whole;
+                  ];
+                constant
+                  ~about:table.cache_document.properties.version.description
+                  "CACHE_DOCUMENT_VERSION"
+                  (P.Int table.cache_document.properties.version.const);
+                model t.session.title t.session.description
+                  (List.map session_field t.session.fields);
+                model table.open_resource.title table.open_resource.description
+                  (List.map field t.open_resource);
+              ];
+        };
   }
 
-(* Haskell's kept queries, its cache document and the stream's places. *)
+(* Haskell's kept queries, the key a whole query keeps its one entry under,
+   and the version of a cache document. What reads and writes them is the
+   SDK's own (haskell/sdk/internal/Xynolog/Internal/CacheDocument.hs). *)
 let haskell t =
-  let version = string_of_int t.table.cache_document.properties.version.const in
-  let whole = quoted t.table.whole_key.key in
+  let module H = Haskell_syntax in
   let constructor (k : kept) = String.capitalize_ascii k.query in
-  let models name =
-    "import Xynolog.Internal.Generated.Models." ^ name ^ " (" ^ name ^ ")\n"
-  in
   {
     Output.path =
       "haskell/sdk/generated/Xynolog/Internal/Generated/CachePersistence.hs";
     text =
-      String.concat ""
-        [
-          "-- Generated from " ^ file ^ " and " ^ Cache_refresh.Table.file
-          ^ ". Do not edit.\n-- Regenerate: make generate (";
-          Banner.writer __FILE__;
-          {|)
-{-# LANGUAGE OverloadedStrings #-}
-module Xynolog.Internal.Generated.CachePersistence (KeptQuery(..), keptQueryName, Whole(..), CacheDocument(..), lastEventIds) where
-import Control.Monad (unless)
-import Data.Aeson (FromJSON(..), ToJSON(..), Result(..), Value(..), fromJSON, object, withObject, withText, (.:), (.=))
-import qualified Data.Aeson.Key as Key
-import qualified Data.Aeson.KeyMap as KM
-import qualified Data.Map.Strict as Map
-import Data.Text (Text)
-import Numeric.Natural (Natural)
-|};
-          models t.place;
-          models t.scope;
-          "-- | The queries a client keeps across a restart, by their names in \
-           client/refresh.json.\n\
-           data KeptQuery = ";
-          String.concat " | " (List.map constructor t.kept);
-          " deriving (Eq, Ord, Show, Enum, Bounded)\n\
-           keptQueryName :: KeptQuery -> Text\n";
-          String.concat ""
-            (List.map
-               (fun k ->
-                 "keptQueryName " ^ constructor k ^ " = " ^ quoted k.query
-                 ^ "\n")
-               t.kept);
-          {|-- | The key a kept query per nothing keeps its one entry under.
-data Whole = Whole deriving (Eq, Ord, Show)
-instance ToJSON Whole where toJSON Whole = String |};
-          whole;
-          {|
-instance FromJSON Whole where
-  parseJSON = withText "Whole" (\key -> if key == |};
-          whole;
-          {| then pure Whole else fail "not the whole key")
--- | What a client keeps of one query: each entry's key, value and stamp. A document of another
--- version, or one whose entries are not each a key, a value and a stamp, does not decode.
-newtype CacheDocument = CacheDocument [(Value, Value, Natural)] deriving (Eq, Show)
-instance FromJSON CacheDocument where
-  parseJSON = withObject "CacheDocument" $ \fields -> do
-    version <- fields .: "version"
-    unless (version == (|};
-          version;
-          {| :: Integer)) (fail "a cache document of another version")
-    CacheDocument <$> fields .: "entries"
-instance ToJSON CacheDocument where
-  toJSON (CacheDocument entries) = object ["version" .= (|};
-          version;
-          {| :: Integer), "entries" .= entries]
--- | Where a stream was: a pair that is not a |};
-          t.scope ^ " and a " ^ t.place;
-          " is skipped, and a value that is no object is none.\n\
-           lastEventIds :: Value -> Map.Map " ^ t.scope ^ " " ^ t.place;
-          {|
-lastEventIds (Object fields) = Map.fromList
-  [(named, value) | (key, raw) <- KM.toList fields, Success named <- [fromJSON (String (Key.toText key))], Success value <- [fromJSON raw]]
-lastEventIds _ = Map.empty
-|};
-        ];
+      H.text
+        {
+          banner =
+            Banner.haskell_lines
+              ~from_:(file ^ " and " ^ Cache_refresh.Table.file)
+              __FILE__;
+          extensions = [ "OverloadedStrings" ];
+          name = "Xynolog.Internal.Generated.CachePersistence";
+          imports = [ H.import "Data.Text" ~items:[ Plain "Text" ] ];
+          body =
+            [
+              H.data "KeptQuery"
+                ~about:
+                  [
+                    "The queries a client keeps across a restart, by their \
+                     names in client/refresh.json.";
+                  ]
+                (List.map (fun k -> H.constructor (constructor k)) t.kept)
+                ~deriving:[ "Eq"; "Ord"; "Show"; "Enum"; "Bounded" ];
+              Value
+                {
+                  about = [];
+                  name = "keptQueryName";
+                  type_ = T_fun (T_name "KeptQuery", T_name "Text");
+                  clauses =
+                    List.map
+                      (fun k ->
+                        {
+                          H.patterns = [ Constructor (constructor k) ];
+                          body = Str k.query;
+                        })
+                      t.kept;
+                };
+              H.value "wholeKey" (T_name "Text")
+                ~about:[ t.table.whole_key.docs ] (Str t.table.whole_key.key);
+              H.value "cacheDocumentVersion" (T_name "Integer")
+                ~about:[ t.table.cache_document.properties.version.description ]
+                (Int t.table.cache_document.properties.version.const);
+            ];
+        };
   }
 
 let files ~root:_ (spec : Spec.t) =

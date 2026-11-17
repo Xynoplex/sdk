@@ -3,17 +3,30 @@
    standard's labels and its encodings, and decodes the refused ones all the
    same. *)
 
+module T = Typescript_syntax
+
 let path = "typescript/core/src/refused-encodings.ts"
 
 let text (t : Table.t) =
-  {|// ⚠ GENERATED FILE — do not edit.
-//
-// Authority:   protocol/specs/src/text/encoding-cases.json
-// Regenerate:  make generate  (codegen/lib/encodings/typescript.ml)
-
-/** The encodings of the Encoding Standard whose labels every reader of a resource's text refuses, by their names in lower case. */
-export const REFUSED_ENCODINGS: ReadonlySet<string> = new Set([|}
-  ^ String.concat ", " (List.map Text.quoted t.refused)
-  ^ "]);\n"
+  T.text
+    {
+      banner =
+        Banner.typescript_lines
+          ~authority:[ "protocol/specs/src/text/encoding-cases.json" ]
+          __FILE__;
+      body =
+        [
+          T.const "REFUSED_ENCODINGS"
+            ~about:
+              [
+                Doc
+                  "The encodings of the Encoding Standard whose labels every \
+                   reader of a resource's text refuses, by their names in \
+                   lower case.";
+              ]
+            ~annotation:(T_generic ("ReadonlySet", [ T_name "string" ]))
+            (New ("Set", [ T.strings ~quote:Double Inline t.refused ]));
+        ];
+    }
 
 let file t = { Output.path; text = text t }

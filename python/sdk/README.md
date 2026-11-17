@@ -1091,7 +1091,7 @@ resource is cloned by, `password`, `apiKey` and the rest of the
 | `xynolog.storage` | Where a client keeps what must outlive it: `SessionStorage`, and `MemoryStorage` |
 | `xynolog.session` | `XynologSession`, and `MemorySignIn` |
 | `xynolog.http` | `HttpTransport`, and signing in: `ServiceToken`, `AgentToken`, `sign_in_device`, `session_from_kept`, `sign_out`; a gateway's origin from its endpoint, `gateway_url`. And in `xynolog.http.oauth`, the redirect sign-in (`begin_authorization`, `complete_authorization`); in `xynolog.http.session`, a registry's sessions and sign-in over HTTP (`HttpSessionFactory`, `begin_sign_in`, `complete_sign_in`, `describe_connection`); in `xynolog.http.discovery`, a launcher's document over HTTP |
-| `xynolog.registry`, `xynolog.stored` | A registry of knowledge bases, `XynologBrowser`: the ones registered, the active one's session, what is open in each; and what it keeps in its storage, under which keys |
+| `xynolog.registry`, `xynolog.stored`, `xynolog.storage_keys` | A registry of knowledge bases, `XynologBrowser`: the ones registered, the active one's session, what is open in each; what it keeps in its storage, and the keys it keeps each under |
 | `xynolog.discovery` | The knowledge bases a launcher manages, as it publishes them, and what changed since they were last read |
 | `xynolog.sign_in_store` | The sign-ins `xynolog login` keeps, and where each system keeps them |
 | `xynolog.identifiers`, `xynolog.types` | The kinds of id, and every request, response and event |

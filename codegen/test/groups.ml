@@ -61,18 +61,6 @@ let base : Yojson.Safe.t =
                 ("docs", docs);
               ];
           ] );
-      ( "preamble",
-        `Assoc
-          [
-            ("protocolHeader", `String "");
-            ("eventMapTail", `List []);
-            ("schemasTail", `List []);
-            ("operationsHeader", `String "");
-            ("operationsInnerTail", `List []);
-            ("operationsFooter", `String "");
-            ("bridgedHeader", `String "");
-            ("bridgedDerivation", `String "");
-          ] );
       ( "docs",
         `Assoc
           [
@@ -326,12 +314,6 @@ let payloads =
               ("validate", `Null);
             ];
             [
-              ("shape", `String "schema");
-              ("schema", `String "DemoExtra");
-              ("validate", `Null);
-              ("tsRefinement", `String "DemoExtraRefined");
-            ];
-            [
               ("shape", `String "envelope");
               ("schema", `String "DemoExtra");
               ("validate", `Null);
@@ -345,7 +327,6 @@ let payloads =
               ("validate", `Null);
               ("system", `Bool true);
               ("enriched", `Bool true);
-              ("tsRefinement", `String "DemoRefined");
             ];
           ]);
     case "a shape no language can type"
@@ -376,13 +357,14 @@ let payloads =
               ("validate", `Null);
             ])
          "/channels/5/schema: an unknown member");
-    case "a refinement with no schema to narrow"
+    case "a refinement is the SDK's, not the registry's"
       (refuses
          (with_channel
             [
-              ("shape", `String "empty");
+              ("shape", `String "schema");
+              ("schema", `String "DemoExtra");
               ("validate", `Null);
-              ("tsRefinement", `String "Whatever");
+              ("tsRefinement", `String "DemoExtraRefined");
             ])
          "/channels/5/tsRefinement: an unknown member");
     case "a channel that carries one schema and validates against another"
@@ -678,16 +660,16 @@ let text =
             Text.pad "abcd" 3;
             Text.pad "\240\159\152\128" 3;
           ]);
-    case "a comment wrapped to its width" (fun () ->
-        Alcotest.(check string)
-          "comment" "// one two\n// three\n// fourfourfour"
-          (Text.comment ~marker:"// " ~indent:"" ~width:12
-             "one  two\nthree fourfourfour"));
+    case "words wrapped to their width behind a lead" (fun () ->
+        Alcotest.(check (list string))
+          "wrapped"
+          [ "one two"; "three"; "fourfourfour" ]
+          (Text.wrapped ~lead:"// " ~width:12 "one  two\nthree fourfourfour"));
     case "a no-break space joins its words" (fun () ->
-        Alcotest.(check string)
-          "comment" "// one\n// two\194\160three"
-          (Text.comment ~marker:"// " ~indent:"" ~width:12
-             "one two\194\160three"));
+        Alcotest.(check (list string))
+          "wrapped"
+          [ "one"; "two\194\160three" ]
+          (Text.wrapped ~lead:"// " ~width:12 "one two\194\160three"));
   ]
 
 let output =

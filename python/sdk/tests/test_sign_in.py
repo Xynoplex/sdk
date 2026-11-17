@@ -63,7 +63,8 @@ from xynolog.registry import kept_in
 from xynolog.session import HeldSignIn, MemorySignIn, SessionEndReason, SignInKept, XynologSession
 from xynolog.sign_in_store import FILE_NAME, SignInStore
 from xynolog.storage import MemoryStorage, SessionStorage
-from xynolog.stored import KEPT_QUERIES, cache_key, last_event_id_key, person_key
+from xynolog.storage_keys import cache_key, last_event_id_key, person_key
+from xynolog.stored import KEPT_QUERIES
 from xynolog.testing import create_test_client
 from xynolog.timing import DEVICE_POLL_MS, DEVICE_SLOW_DOWN_MS, MAX_RECONNECT_MS, MIN_REFRESH_DELAY_MS
 from xynolog.types import HttpEndpoint, KbTarget, LocalEndpoint, UserResponse

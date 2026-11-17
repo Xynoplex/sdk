@@ -31,14 +31,6 @@ import type { PersistedEvent } from './persisted-events';
 export type Brand<T, Overrides> =
   Omit<T, keyof Overrides> & Overrides;
 
-/**
- * `Refined`, which must narrow `Schema`: what TypeScript adds to a payload the
- * spec states. The bus registry's `tsRefinement` entries are emitted through
- * this, so a refinement that is not a narrowing of its schema's type fails to
- * compile on the line that uses it.
- */
-export type Refines<Schema, Refined extends Schema> = Refined;
-
 // ── Core event shape ─────────────────────────────────────────────────────────
 
 /**

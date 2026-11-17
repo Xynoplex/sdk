@@ -11,7 +11,6 @@ module T = Tables.Jobs_storage
 let file = "jobs/storage.json"
 let job_type = "components/schemas/JobType.json"
 let mark_params = "components/schemas/MarkJobParams.json"
-let quoted = Text.quoted
 
 type t = {
   table : T.t;
@@ -70,56 +69,55 @@ let derive (spec : Spec.t) =
   | errors -> Error errors
 
 let typescript t =
-  let array words = "[" ^ String.concat "," (List.map quoted words) ^ "]" in
+  let module S = Typescript_syntax in
   let s = t.table in
+  let constant ?(as_const = false) name about value =
+    S.const name ~as_const ~about:[ Doc about ] value
+  in
+  let str text = S.Str (Double, text) in
+  let words = S.strings ~quote:Double Packed in
   {
     Output.path = "typescript/core/src/job-storage.ts";
     text =
-      String.concat ""
-        [
-          "// ⚠ GENERATED FILE — do not edit.\n\
-           //\n\
-           // Authority:   protocol/specs/src/" ^ file ^ ", protocol/specs/src/"
-          ^ job_type ^ ",\n//              protocol/specs/src/" ^ mark_params
-          ^ "\n// Regenerate:  make generate  (";
-          Banner.writer __FILE__;
-          ")\n\n\
-           /** The work-queue stream every job is published into. */\n\
-           export const JOBS_STREAM = ";
-          quoted s.stream.name;
-          ";\n\n\
-           /** The root of every job subject: a job is published on \
-           `<root>.<jobType>`. */\n\
-           export const JOBS_SUBJECT_ROOT = ";
-          quoted s.stream.subject_root;
-          ";\n\n\
-           /** The stream's capture filter: every subject under the root. */\n\
-           export const JOBS_STREAM_SUBJECTS = [";
-          quoted (s.stream.subject_root ^ ".>");
-          "] as const;\n\n\
-           /** The durable consumer that holds each job's message as its \
-           lease. */\n\
-           export const JOBS_CONSUMER = ";
-          quoted s.consumer.durable_name;
-          ";\n\n/** The KV bucket holding one ";
-          s.bucket.record;
-          " per job, keyed by the job's id. */\nexport const JOBS_BUCKET = ";
-          quoted s.bucket.name;
-          ";\n\n/** Every job type. */\nexport const JOB_TYPES = ";
-          array t.job_types;
-          " as const;\n\n\
-           /** Every motivation a `mark` job has: the ones MarkJobParams is \
-           told apart by. */\n\
-           export const MARK_MOTIVATIONS = ";
-          array t.mark_motivations;
-          {| as const;
-
-/** The subject a job of this type is published on. */
-export function jobSubject(type: string): string {
-  return `${JOBS_SUBJECT_ROOT}.${type}`;
-}
-|};
-        ];
+      S.text
+        {
+          banner =
+            Banner.typescript_lines
+              ~authority:
+                [
+                  "protocol/specs/src/" ^ file ^ ", protocol/specs/src/"
+                  ^ job_type ^ ",";
+                  "protocol/specs/src/" ^ mark_params;
+                ]
+              __FILE__;
+          body =
+            [
+              constant "JOBS_STREAM"
+                "The work-queue stream every job is published into."
+                (str s.stream.name);
+              constant "JOBS_SUBJECT_ROOT"
+                "The root of every job subject: a job is published on \
+                 `<root>.<jobType>`."
+                (str s.stream.subject_root);
+              constant "JOBS_STREAM_SUBJECTS" ~as_const:true
+                "The stream's capture filter: every subject under the root."
+                (words [ s.stream.subject_root ^ ".>" ]);
+              constant "JOBS_CONSUMER"
+                "The durable consumer that holds each job's message as its \
+                 lease."
+                (str s.consumer.durable_name);
+              constant "JOBS_BUCKET"
+                ("The KV bucket holding one " ^ s.bucket.record
+               ^ " per job, keyed by the job's id.")
+                (str s.bucket.name);
+              constant "JOB_TYPES" ~as_const:true "Every job type."
+                (words t.job_types);
+              constant "MARK_MOTIVATIONS" ~as_const:true
+                "Every motivation a `mark` job has: the ones MarkJobParams is \
+                 told apart by."
+                (words t.mark_motivations);
+            ];
+        };
   }
 
 let files ~root:_ (spec : Spec.t) =

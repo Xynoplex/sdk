@@ -141,9 +141,8 @@ let derive (table : T.t) =
   | [] -> Ok { spans; metrics }
   | errors -> Error errors
 
-let quoted = Text.quoted
-
 let go (t : t) =
+  let module G = Go_syntax in
   let span_kind = function
     | "internal" -> "trace.SpanKindInternal"
     | "server" -> "trace.SpanKindServer"
@@ -155,176 +154,187 @@ let go (t : t) =
     List.sort_uniq compare
       (List.concat_map (fun r -> r.all) (t.spans @ t.metrics))
   in
+  let row type_ doc prefix r fields =
+    G.Var
+      (G.spec ~doc:(G.prose doc)
+         (go_identifier prefix r.name)
+         (G.inline ~of_:(G.Named type_)
+            (G.keyed "name" (G.Quoted r.name) :: fields)))
+  in
   {
     Output.path = "go/telemetry_gen.go";
     text =
-      String.concat ""
-        [
-          {|// Code generated from protocol/specs/src/sdk-telemetry/telemetry.json — DO NOT EDIT.
-//
-// Regenerate: make generate (|};
-          Banner.writer __FILE__;
-          {|)
-// The Python table is generated from the same table.
-
-package xynolog
-
-import (
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/trace"
-)
-
-// telemetryChannel stands for the bus channel in a span's name.
-const telemetryChannel = |};
-          quoted channel;
-          {|
-
-// telemetrySpan is a span the SDK's transports export: its name, in which
-// telemetryChannel stands for the bus channel, and its kind.
-type telemetrySpan struct {
-	name string
-	kind trace.SpanKind
-}
-
-// telemetryMetric is a metric the SDK's transports export: its name, and
-// what it means, which is its description.
-type telemetryMetric struct {
-	name    string
-	meaning string
-}
-
-|};
-          String.concat "\n"
-            (List.map
-               (fun r ->
-                 Text.go_comment ~indent:"" r.meaning
-                 ^ "\nvar "
-                 ^ go_identifier "span" r.name
-                 ^ " = telemetrySpan{name: " ^ quoted r.name ^ ", kind: "
-                 ^ span_kind r.kind ^ "}\n")
-               t.spans);
-          "\n";
-          String.concat "\n"
-            (List.map
-               (fun r ->
-                 Text.go_comment ~indent:"" (r.meaning ^ " A " ^ r.kind ^ ".")
-                 ^ "\nvar "
-                 ^ go_identifier "metric" r.name
-                 ^ " = telemetryMetric{name: " ^ quoted r.name ^ ", meaning: "
-                 ^ quoted r.meaning ^ "}\n")
-               t.metrics);
-          "\n// The attributes the rows carry.\n\n";
-          String.concat "\n"
-            (List.map
-               (fun k ->
-                 "const " ^ go_identifier "key" k ^ " attribute.Key = "
-                 ^ quoted k)
-               keys);
-          "\n";
-        ];
+      G.text
+        {
+          header =
+            G.verbatim
+              ("Code generated from \
+                protocol/specs/src/sdk-telemetry/telemetry.json — DO NOT \
+                EDIT.\n\n\
+                Regenerate: make generate (" ^ Banner.writer __FILE__
+             ^ ")\nThe Python table is generated from the same table.");
+          package = "xynolog";
+          imports =
+            [
+              [
+                "go.opentelemetry.io/otel/attribute";
+                "go.opentelemetry.io/otel/trace";
+              ];
+            ];
+          decls =
+            [
+              G.Const
+                (G.spec
+                   ~doc:
+                     [
+                       G.Line
+                         "telemetryChannel stands for the bus channel in a \
+                          span's name.";
+                     ]
+                   "telemetryChannel" (G.Quoted channel));
+            ]
+            @ List.map
+                (fun r ->
+                  row "telemetrySpan" r.meaning "span" r
+                    [ G.keyed "kind" (G.Name (span_kind r.kind)) ])
+                t.spans
+            @ List.map
+                (fun r ->
+                  row "telemetryMetric"
+                    (r.meaning ^ " A " ^ r.kind ^ ".")
+                    "metric" r
+                    [ G.keyed "meaning" (G.Quoted r.meaning) ])
+                t.metrics
+            @ [
+                G.Comment [ G.Line "The attributes the rows carry." ];
+                G.Adjacent
+                  (List.map
+                     (fun k ->
+                       G.Const
+                         (G.spec ~type_:(G.Named "attribute.Key")
+                            (go_identifier "key" k) (G.Quoted k)))
+                     keys);
+              ];
+        };
   }
 
 let python (t : t) =
-  let module L = Python_layout in
-  let tuple = function
-    | [ one ] -> "(" ^ quoted one ^ ",)"
-    | keys -> "(" ^ String.concat ", " (List.map quoted keys) ^ ")"
-  in
+  let module P = Python_syntax in
   let literal values =
-    "Literal["
-    ^ String.concat ", " (List.map quoted (List.sort_uniq compare values))
-    ^ "]"
+    P.sub "Literal"
+      (List.map (fun v -> P.item (P.Str v)) (List.sort_uniq compare values))
   in
   let constant r = python_constant r.name in
   let row type_ field r =
-    Text.python_comment ~indent:"" r.meaning
-    ^ "\n" ^ constant r ^ ": Final = " ^ type_ ^ "(\n    name=" ^ quoted r.name
-    ^ ",\n    " ^ field ^ "=" ^ quoted r.kind ^ ",\n    attributes="
-    ^ tuple r.all ^ ",\n    always=" ^ tuple r.always ^ ",\n)\n"
+    P.assign ~about:[ Prose r.meaning ] ~annotation:(P.Name "Final")
+      ~value:
+        (P.call ~magic:true type_
+           [
+             P.keyword "name" (P.Str r.name);
+             P.keyword field (P.Str r.kind);
+             P.keyword "attributes" (P.strings r.all);
+             P.keyword "always" (P.strings r.always);
+           ])
+      (constant r)
   in
-  let constants rows = L.Rows (List.map (fun r -> L.Atom (constant r)) rows) in
+  let keys = P.sub "tuple" [ P.item (P.Name "str"); P.item P.Ellipsis ] in
+  let table name type_ rows =
+    P.assign
+      ~annotation:
+        (P.sub "Final"
+           [
+             P.item (P.sub "tuple" [ P.item (P.Name type_); P.item P.Ellipsis ]);
+           ])
+      ~value:
+        (P.tuple ~magic:true
+           (List.map (fun r -> P.item (P.Name (constant r))) rows))
+      name
+  in
   {
     Output.path = "python/sdk/src/xynolog/telemetry_table.py";
     text =
-      String.concat ""
-        [
-          Banner.python ~from_:"protocol/specs/src/sdk-telemetry/telemetry.json"
-            __FILE__;
-          {|
-"""The telemetry a Xynolog SDK's transports export, when the process they run
-in exports at all: every span and metric, its kind, and the attributes it
-carries.
-
-The table is every SDK's: the conformance suite holds each to it from outside.
-A span's name may hold `{channel}`, which stands for the bus channel.
-"""
-
-from dataclasses import dataclass
-from typing import Final, Literal, final
-
-__all__ = [
-|};
-          String.concat ""
-            (List.map
-               (fun n -> "    " ^ quoted n ^ ",\n")
-               (List.sort compare
-                  ([
-                     "METRICS";
-                     "SPANS";
-                     "Instrument";
-                     "MetricRow";
-                     "SpanKindName";
-                     "SpanRow";
-                   ]
-                  @ List.map constant (t.spans @ t.metrics))));
-          "]\n\n\
-           # The kinds of span the table states, by OTLP's names for them.\n\
-           type SpanKindName = ";
-          literal (List.map (fun r -> r.kind) t.spans);
-          "\n\n# The instruments the table states.\ntype Instrument = ";
-          literal (List.map (fun r -> r.kind) t.metrics);
-          {|
-
-
-@final
-@dataclass(frozen=True, slots=True, kw_only=True)
-class SpanRow:
-    """A span an SDK exports."""
-
-    name: str
-    kind: SpanKindName
-    attributes: tuple[str, ...]
-    """Every attribute it may carry. It carries no other."""
-    always: tuple[str, ...]
-    """The attributes every one of them carries."""
-
-
-@final
-@dataclass(frozen=True, slots=True, kw_only=True)
-class MetricRow:
-    """A metric an SDK exports."""
-
-    name: str
-    instrument: Instrument
-    attributes: tuple[str, ...]
-    """Every attribute a data point of it may carry. It carries no other."""
-    always: tuple[str, ...]
-    """The attributes every data point of it carries."""
-
-
-|};
-          String.concat "\n" (List.map (row "SpanRow" "kind") t.spans);
-          "\n";
-          String.concat "\n" (List.map (row "MetricRow" "instrument") t.metrics);
-          "\n";
-          L.statement ~indent:0 ~prefix:"SPANS: Final[tuple[SpanRow, ...]] = "
-            ~suffix:"" (constants t.spans);
-          "\n\n";
-          L.statement ~indent:0
-            ~prefix:"METRICS: Final[tuple[MetricRow, ...]] = " ~suffix:""
-            (constants t.metrics);
-          "\n";
-        ];
+      P.text
+        {
+          header =
+            Banner.python_lines
+              ~from_:"protocol/specs/src/sdk-telemetry/telemetry.json" __FILE__;
+          doc =
+            As_is
+              "The telemetry a Xynolog SDK's transports export, when the \
+               process they run\n\
+               in exports at all: every span and metric, its kind, and the \
+               attributes it\n\
+               carries.\n\n\
+               The table is every SDK's: the conformance suite holds each to \
+               it from outside.\n\
+               A span's name may hold `{channel}`, which stands for the bus \
+               channel.\n";
+          imports =
+            [
+              [
+                P.From ("dataclasses", [ "dataclass" ]);
+                P.From ("typing", [ "Final"; "Literal"; "final" ]);
+              ];
+            ];
+          body =
+            [
+              P.assign "__all__"
+                ~value:
+                  (P.List
+                     (P.items ~magic:true
+                        (List.map
+                           (fun n -> P.item (P.Str n))
+                           (List.sort compare
+                              ([
+                                 "METRICS";
+                                 "SPANS";
+                                 "Instrument";
+                                 "MetricRow";
+                                 "SpanKindName";
+                                 "SpanRow";
+                               ]
+                              @ List.map constant (t.spans @ t.metrics))))));
+              P.alias
+                ~about:
+                  [
+                    Line
+                      "The kinds of span the table states, by OTLP's names for \
+                       them.";
+                  ]
+                "SpanKindName"
+                (literal (List.map (fun r -> r.kind) t.spans));
+              P.alias
+                ~about:[ Line "The instruments the table states." ]
+                "Instrument"
+                (literal (List.map (fun r -> r.kind) t.metrics));
+              P.frozen_dataclass "SpanRow" "A span an SDK exports."
+                [
+                  P.field "name" (P.Name "str");
+                  P.field "kind" (P.Name "SpanKindName");
+                  P.field "attributes" keys
+                    ~doc:"Every attribute it may carry. It carries no other.";
+                  P.field "always" keys
+                    ~doc:"The attributes every one of them carries.";
+                ];
+              P.frozen_dataclass "MetricRow" "A metric an SDK exports."
+                [
+                  P.field "name" (P.Name "str");
+                  P.field "instrument" (P.Name "Instrument");
+                  P.field "attributes" keys
+                    ~doc:
+                      "Every attribute a data point of it may carry. It \
+                       carries no other.";
+                  P.field "always" keys
+                    ~doc:"The attributes every data point of it carries.";
+                ];
+            ]
+            @ List.map (row "SpanRow" "kind") t.spans
+            @ List.map (row "MetricRow" "instrument") t.metrics
+            @ [
+                table "SPANS" "SpanRow" t.spans;
+                table "METRICS" "MetricRow" t.metrics;
+              ];
+        };
   }
 
 (* The rows as the OCaml SDK names them (ocaml/sdk/lib/telemetry_facts.ml): a

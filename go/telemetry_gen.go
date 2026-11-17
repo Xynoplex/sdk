@@ -13,20 +13,6 @@ import (
 // telemetryChannel stands for the bus channel in a span's name.
 const telemetryChannel = "{channel}"
 
-// telemetrySpan is a span the SDK's transports export: its name, in which
-// telemetryChannel stands for the bus channel, and its kind.
-type telemetrySpan struct {
-	name string
-	kind trace.SpanKind
-}
-
-// telemetryMetric is a metric the SDK's transports export: its name, and
-// what it means, which is its description.
-type telemetryMetric struct {
-	name    string
-	meaning string
-}
-
 // A frame the client sent, in the trace of the work that sent it.
 var spanBusEmit = telemetrySpan{name: "bus.emit:{channel}", kind: trace.SpanKindProducer}
 
