@@ -20,6 +20,10 @@ import qualified Xynolog.Testing.Transport as Faulty
 import qualified Xynolog.Channels as Channels
 import qualified Xynolog.Transport as Transport
 
+-- | A schedule of faults, as long as Protocol's bounds allow, each drawn alike.
+faultSchedules :: QC.Gen [FaultAction]
+faultSchedules = QC.chooseInt scheduleLength >>= \count -> QC.vectorOf count faultActions
+
 deliveryOps :: Int -> QC.Gen [DeliveryOp]
 deliveryOps longest
   | longest<1=error "delivery interleavings require a positive maximum length"

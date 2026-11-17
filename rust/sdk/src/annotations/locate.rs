@@ -15,7 +15,7 @@ use std::cmp::Ordering;
 /// measured from the bottom-left corner of the page, `y` growing upward.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub(crate) struct Rect {
-    pub(crate) page: f64,
+    pub(crate) page: i64,
     pub(crate) x: f64,
     pub(crate) y: f64,
     pub(crate) width: f64,
@@ -53,7 +53,7 @@ fn ascending(a: f64, b: f64) -> Ordering {
 /// edge to their greatest right edge, and from their least `y` to their
 /// greatest top. An item the span cuts has its edge where the span does, by
 /// the fraction of its code points the span leaves out.
-fn spanning(page: f64, line: &[&PdfTextItem], start: u64, end: u64) -> Rect {
+fn spanning(page: i64, line: &[&PdfTextItem], start: u64, end: u64) -> Rect {
     let (mut left, mut right) = (f64::INFINITY, f64::NEG_INFINITY);
     let (mut bottom, mut top) = (f64::INFINITY, f64::NEG_INFINITY);
     for item in line {
@@ -93,7 +93,7 @@ pub(crate) fn locate(anchored: &AnchoredText, start: u64, end: u64) -> Located<'
 
     // The overlapping items a page at a time, the pages in the order their
     // first overlapping item comes in.
-    let mut pages: Vec<(f64, Vec<&PdfTextItem>)> = Vec::new();
+    let mut pages: Vec<(i64, Vec<&PdfTextItem>)> = Vec::new();
     for &item in &overlapping {
         match pages.iter_mut().find(|(page, _)| *page == item.page) {
             Some((_, items)) => items.push(item),
@@ -152,8 +152,8 @@ mod tests {
                 "{why}"
             );
 
-            // The table's numbers are read as the doubles they are, and a
-            // rectangle is compared for equality.
+            // The table's page is a whole number and its coordinates the
+            // doubles they are, and a rectangle is compared for equality.
             let rects: Vec<Rect> = case["rects"]
                 .as_array()
                 .expect("rects")
@@ -161,7 +161,7 @@ mod tests {
                 .map(|rect| {
                     let number = |member: &str| rect[member].as_f64().expect("a number");
                     Rect {
-                        page: number("page"),
+                        page: rect["page"].as_i64().expect("a whole page"),
                         x: number("x"),
                         y: number("y"),
                         width: number("width"),

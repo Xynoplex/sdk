@@ -28,7 +28,8 @@ const sameLine = 2
 // rectangle is a rectangle on a page: its bottom-left corner and its size, in
 // PDF points.
 type rectangle struct {
-	page, x, y, width, height float64
+	page                int
+	x, y, width, height float64
 }
 
 // lines is a page's items as its lines, the top of the page first and each
@@ -65,7 +66,7 @@ func edges(item api.PdfTextItem, start, end int) (left, right float64) {
 
 // spanning is the rectangle that spans a line's items, as far as the span
 // reaches into each.
-func spanning(page float64, line []api.PdfTextItem, start, end int) rectangle {
+func spanning(page int, line []api.PdfTextItem, start, end int) rectangle {
 	x, right := math.Inf(1), math.Inf(-1)
 	y, top := math.Inf(1), math.Inf(-1)
 	for _, item := range line {
@@ -86,8 +87,8 @@ func locate(anchored api.AnchoredText, start, end int) ([]api.PdfTextItem, []rec
 		return nil, nil
 	}
 	var overlapping []api.PdfTextItem
-	var pages []float64
-	onPage := map[float64][]api.PdfTextItem{}
+	var pages []int
+	onPage := map[int][]api.PdfTextItem{}
 	for _, item := range anchored.Items {
 		if item.Start < end && item.End > start {
 			overlapping = append(overlapping, item)
@@ -118,5 +119,5 @@ func decimal(number float64) string {
 // fragmentOf is a rectangle as the value of a FragmentSelector:
 // page=P&viewrect=X,Y,W,H.
 func fragmentOf(at rectangle) string {
-	return fmt.Sprintf("page=%s&viewrect=%s,%s,%s,%s", decimal(at.page), decimal(at.x), decimal(at.y), decimal(at.width), decimal(at.height))
+	return fmt.Sprintf("page=%d&viewrect=%s,%s,%s,%s", at.page, decimal(at.x), decimal(at.y), decimal(at.width), decimal(at.height))
 }

@@ -22,7 +22,7 @@ import qualified Data.ByteString as Bytes
 import qualified Data.ByteString.Base64.URL as Base64
 import qualified Data.ByteString.Lazy as Lazy
 import Data.Maybe (fromMaybe)
-import Data.Scientific (Scientific)
+import Data.Scientific (Scientific, floatingOrInteger)
 import qualified Xynolog.SignIn as SignIn
 import qualified Xynolog.Tokens as Tokens
 import Data.Text (Text)
@@ -66,6 +66,9 @@ text _ _ = Nothing
 number :: Text -> Value -> Maybe Scientific
 number name (Object fields) = case KM.lookup (Key.fromText name) fields of Just (Number value) -> Just value; _ -> Nothing
 number _ _ = Nothing
+-- | A member that is a whole number: one with a fraction is none.
+whole :: Text -> Value -> Maybe Integer
+whole name value = number name value >>= either (const Nothing :: Double -> Maybe Integer) Just . floatingOrInteger
 requiredText :: Code.SignInCode -> Text -> Value -> IO Text
 requiredText code name value = maybe (failWith code ("The issuer's answer lacks "<>name) Nothing) pure (text name value)
 
@@ -223,14 +226,14 @@ signInWithDeviceGrant options target onCode = do
   device <- requiredText Code.SignInExchange "device_code" body
   userCode <- requiredText Code.SignInExchange "user_code" body
   verification <- requiredText Code.SignInExchange "verification_uri" body
-  expires <- maybe (failWith Code.SignInExchange "The device code has no lifetime" Nothing) pure (number "expires_in" body)
+  expires <- maybe (failWith Code.SignInExchange "The device code has no lifetime" Nothing) pure (whole "expires_in" body)
   when (expires<0) (failWith Code.SignInExchange "The device code has a negative lifetime" Nothing)
   onCode (DeviceCode expires userCode verification (text "verification_uri_complete" body) KM.empty)
   now <- Retry.retryNow (issuerTime options)
   let settings=issuerTiming options
       interval=max (fromInteger (Timing.devicePollFloorMs settings))
         (maybe (fromInteger (Timing.devicePollMs settings)) (*1000) (number "interval" body))
-      deadline=now+ceiling (expires*1000000000)
+      deadline=now+expires*1000000000
       poll delay = do
         before <- Retry.retryNow (issuerTime options)
         Retry.retryWaitUntil (issuerTime options) (before+ceiling (delay*1000000))

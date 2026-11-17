@@ -22,7 +22,7 @@ class PdfLocateTest {
 
     private fun rectangle(stated: JsonObject): Rectangle {
         fun number(name: String) = stated.getValue(name).jsonPrimitive.double
-        return Rectangle(number("page"), number("x"), number("y"), number("width"), number("height"))
+        return Rectangle(stated.getValue("page").jsonPrimitive.long, number("x"), number("y"), number("width"), number("height"))
     }
 
     @Test
@@ -47,6 +47,6 @@ class PdfLocateTest {
     fun aNumberTheJvmWouldWriteWithAnExponentIsWrittenAsADecimal() {
         // The JVM writes a number below a thousandth with an exponent (5.0E-5), and the rule is the shortest decimal.
         assertEquals("5.0E-5", 0.00005.toString())
-        assertEquals("page=1&viewrect=72,700.25,0.00005,12", fragmentOf(Rectangle(1.0, 72.0, 700.25, 0.00005, 12.0)))
+        assertEquals("page=1&viewrect=72,700.25,0.00005,12", fragmentOf(Rectangle(1, 72.0, 700.25, 0.00005, 12.0)))
     }
 }

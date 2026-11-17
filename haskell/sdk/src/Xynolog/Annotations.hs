@@ -15,7 +15,6 @@ import Control.Exception (Exception, throwIO)
 import Control.Monad (unless, forM_)
 import Data.Aeson (toJSON)
 import Data.Maybe (isJust, listToMaybe, mapMaybe)
-import Data.Scientific (Scientific)
 import Data.Text (Text)
 import qualified Data.Text as Text
 import Data.Time (UTCTime, defaultTimeLocale, formatTime)
@@ -102,19 +101,18 @@ annotationOfResource wall resource motivation generator body =
 annotationOfSpan :: IO UTCTime -> Spanned -> TextSpan -> ResourceId -> Motivation -> Agent -> Maybe AnnotationBodies -> IO Annotation
 annotationOfSpan wall content spanValue resource motivation generator body = do
   let whole=case content of TextContent value->value; PdfContent value->anchoredTextText value
-      lengthInPoints=fromIntegral (Text.length whole)::Scientific
+      lengthInPoints=toInteger (Text.length whole)
       valid start end = start>=0 && end>=start && end<=lengthInPoints
-        &&fromInteger (floor start)==start &&fromInteger (floor end)==end
       refuse code message=throwIO (SpanRefusedError code message)
   case content of
     TextContent _ -> pure ()
     PdfContent anchored -> forM_ (anchoredTextItems anchored) $ \item ->
-      unless (valid (fromInteger (pdfTextItemStart item)) (fromInteger (pdfTextItemEnd item)))
+      unless (valid (pdfTextItemStart item) (pdfTextItemEnd item))
         (refuse SpanRefusalItemOutOfRange "An anchored-text item is not a stretch of its text")
   unless (valid (textSpanStart spanValue) (textSpanEnd spanValue))
     (refuse SpanRefusalSpanOutOfRange "The offsets are not a span of the text")
-  let start=floor (textSpanStart spanValue)::Integer
-      end=floor (textSpanEnd spanValue)::Integer
+  let start=textSpanStart spanValue
+      end=textSpanEnd spanValue
       exact=textSpanExact spanValue
   places <- case content of
     TextContent _ -> do

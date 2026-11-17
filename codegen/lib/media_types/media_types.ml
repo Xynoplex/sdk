@@ -437,41 +437,32 @@ let haskell (t : T.t) (encodings : Encodings.Table.t) =
                    (fun w -> H.constructor (constructor w))
                    t.text_source)
                 ~deriving:[ "Eq"; "Ord"; "Show"; "Enum"; "Bounded" ];
-              Instance
-                {
-                  class_ = "ToJSON";
-                  instance = "TextSource";
-                  methods =
-                    [
-                      ("toJSON", Compose (Name "String", Name "textSourceName"));
-                    ];
-                };
-              Instance
-                {
-                  class_ = "FromJSON";
-                  instance = "TextSource";
-                  methods =
-                    [
-                      ( "parseJSON",
-                        Dollar
-                          ( Apply (Name "withText", [ Str "TextSource" ]),
-                            Lambda
-                              ( "value",
-                                Case
-                                  ( Name "value",
-                                    List.map
-                                      (fun w ->
-                                        ( H.Literal w,
-                                          H.Apply (Name "pure", [ source w ]) ))
-                                      t.text_source
-                                    @ [
-                                        ( Otherwise,
-                                          Apply
-                                            ( Name "fail",
-                                              [ Str "unknown text source" ] ) );
-                                      ] ) ) ) );
-                    ];
-                };
+              H.instance "ToJSON" (T_name "TextSource")
+                [
+                  H.method_ "toJSON"
+                    (Compose (Name "String", Name "textSourceName"));
+                ];
+              H.instance "FromJSON" (T_name "TextSource")
+                [
+                  H.method_ "parseJSON"
+                    (Dollar
+                       ( Apply (Name "withText", [ Str "TextSource" ]),
+                         Lambda
+                           ( "value",
+                             Case
+                               ( Name "value",
+                                 List.map
+                                   (fun w ->
+                                     ( H.Literal w,
+                                       H.Apply (Name "pure", [ source w ]) ))
+                                   t.text_source
+                                 @ [
+                                     ( Otherwise,
+                                       Apply
+                                         ( Name "fail",
+                                           [ Str "unknown text source" ] ) );
+                                   ] ) ) ));
+                ];
               Value
                 {
                   about = [];

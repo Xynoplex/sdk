@@ -19,7 +19,7 @@ func TestASpanIsLocatedAsTheTableSays(t *testing.T) {
 		t.Fatal(err)
 	}
 	type statedRectangle struct {
-		Page   float64 `json:"page"`
+		Page   int     `json:"page"`
 		X      float64 `json:"x"`
 		Y      float64 `json:"y"`
 		Width  float64 `json:"width"`

@@ -126,6 +126,21 @@ per language it writes:
   `MarkJobParams` is told apart by, for the TypeScript SDK.
 - `limits`: each gateway operation's `x-xynolog-limits` and each component
   property's `maxItems`, from `openapi.json`, for the TypeScript SDK.
+- `client-types`: the shapes an SDK hands its callers that no wire message
+  carries, from `client/types`, and the form a service account posts with a
+  client secret, from `session/ClientSecretForm.json`, for the Haskell SDK:
+  the reconciled span's and the sign-in's types as `haskell/sdk/codegen`
+  reads them, the pending annotation's and the search state's records, the
+  events a delegation and an upload report, and the secret proof. A type is
+  words, an object's members (with those of each type it is all of) or a
+  union told apart by one member, and a member is a scalar, a word of an
+  enum, another schema, an open list or an object stated in place; anything
+  else is refused. The secret proof's grant is the client assertion's.
+- `testing`: the testing kit's facts, from `client/testing.json`, for the
+  Haskell and OCaml SDKs: the faults, the bounds they and a schedule are
+  drawn in, the slack, the delivery steps and, for Haskell, the kit's
+  records, each member of the Haskell type the writer gives it. A member
+  the table has and the writer types not, or the reverse, is refused.
 - `ocaml-sdk`: the OCaml SDK's modules that no other group's table owns: the
   string enums, the selector and the records of the component schemas, what
   its HTTP transport says, the bus's channels and the namespace methods that

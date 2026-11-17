@@ -64,3 +64,8 @@
  (name haskell_syntax)
  (modules haskell_syntax)
  (libraries xynolog_codegen alcotest))
+
+(test
+ (name client_types)
+ (modules client_types)
+ (libraries xynolog_codegen yojson alcotest))
