@@ -1,6 +1,7 @@
 (* Text as the generated files measure and spell it: a width is in code
    points, a word ends at ASCII white space, and a string literal is JSON's,
-   which TypeScript, Go and Python each read as the same string. *)
+   which TypeScript, Go and Python each read as the same string, or, for Go
+   and Python, one of printable ASCII. *)
 
 let fold_uchars f init text =
   let rec go acc i =
@@ -92,5 +93,32 @@ let quoted text =
           Buffer.add_string out (Printf.sprintf "\\u%04x" (Char.code c))
       | c -> Buffer.add_char out c)
     text;
+  Buffer.add_char out '"';
+  Buffer.contents out
+
+(* A string as a Go or a Python literal of printable ASCII: a quote and a
+   backslash escaped; backspace, tab, line feed, form feed and carriage return
+   by their short escapes; and every other character outside printable ASCII
+   by its code point, in four hex digits or, past the Basic Multilingual
+   Plane, eight. *)
+let ascii_quoted text =
+  let out = Buffer.create (String.length text + 2) in
+  Buffer.add_char out '"';
+  fold_uchars
+    (fun () u ->
+      match Uchar.to_int u with
+      | 0x22 -> Buffer.add_string out "\\\""
+      | 0x5C -> Buffer.add_string out "\\\\"
+      | 0x08 -> Buffer.add_string out "\\b"
+      | 0x09 -> Buffer.add_string out "\\t"
+      | 0x0A -> Buffer.add_string out "\\n"
+      | 0x0C -> Buffer.add_string out "\\f"
+      | 0x0D -> Buffer.add_string out "\\r"
+      | code when code >= 0x20 && code < 0x7F ->
+          Buffer.add_char out (Char.chr code)
+      | code when code <= 0xFFFF ->
+          Buffer.add_string out (Printf.sprintf "\\u%04x" code)
+      | code -> Buffer.add_string out (Printf.sprintf "\\U%08x" code))
+    () text;
   Buffer.add_char out '"';
   Buffer.contents out
