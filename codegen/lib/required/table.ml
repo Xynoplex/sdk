@@ -1,4 +1,4 @@
-(* The table as JSON, which the Rust, Kotlin, Swift and C# SDKs read as they
+(* The table as JSON, which the Rust, Kotlin and Swift SDKs read as they
    build and Go's package embeds: one text, a copy in each SDK's tree. *)
 
 let paths =
@@ -6,7 +6,6 @@ let paths =
     "rust/sdk/src/required-schemas.json";
     "kotlin/sdk/src/codegen/required-schemas.json";
     "swift/sdk/Sources/XynologCodegen/required-schemas.json";
-    "csharp/sdk/generators/Xynolog.Generator/required-schemas.json";
     "go/internal/required/schemas_gen.json";
   ]
 
