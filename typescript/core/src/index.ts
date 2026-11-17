@@ -52,7 +52,7 @@ export {
   JOB_TYPES,
   MARK_MOTIVATIONS,
   jobSubject,
-} from './generated/job-storage';
+} from './job-storage';
 
 // Graph types
 export type { ResourceDescriptor } from './graph';

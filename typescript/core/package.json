@@ -51,7 +51,7 @@
     "bundle-spec": "test -f ../../protocol/specs/openapi.json",
     "copy-spec": "cp ../../protocol/specs/openapi.json openapi.json",
     "generate:openapi": "npm run bundle-spec && npm run copy-spec && openapi-typescript openapi.json -o src/types.ts && node ../scripts/generators/generate-identifiers.mjs",
-    "prebuild": "npm run generate:openapi && npm run generate:validators && npm run generate:limits && npm run generate:locales && npm run generate:job-storage",
+    "prebuild": "npm run generate:openapi && npm run generate:validators",
     "typecheck": "tsc --noEmit",
     "build": "npm run typecheck && tsup && tsc -p tsconfig.build.json && rollup -c rollup.dts.config.mjs && rm -rf dist-types",
     "watch": "tsup --watch",
@@ -59,10 +59,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "generate:validators": "node ../scripts/generators/generate-validators.mjs",
-    "generate:limits": "node ../scripts/generators/generate-limits.mjs",
-    "generate:locales": "node ../scripts/generators/generate-locales.mjs",
-    "generate:job-storage": "node ../scripts/generators/generate-job-storage.mjs"
+    "generate:validators": "node ../scripts/generators/generate-validators.mjs"
   },
   "keywords": [
     "types",

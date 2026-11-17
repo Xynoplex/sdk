@@ -110,6 +110,20 @@ per language it writes:
   base media type stated once, with an extension, a label and a word of each
   vocabulary; an alias is another spelling of a row's extension; and the rows
   are the `SupportedMediaType` enum's members, no more and no fewer.
+- `stored`: what a Python client keeps for its person, from
+  `session/stored.json`, for the Python SDK: the store's keys and prefixes,
+  the stored session (a flat schema, as `sign-in`'s entry is), an open
+  resource, the last event ids, and the queries a client keeps, which are the
+  refresh table's persisted queries, by the identifier each is keyed by. A
+  key is a camel-case `…Key` stated once, and no key begins with a prefix.
+- `locales`: every language an SDK's interface speaks, from
+  `locales/registry.json`, for the TypeScript SDK. A code is two or three
+  lower-case letters stated once, with a native and an English name.
+- `job-storage`: the stream, subjects, consumer and bucket jobs are kept in,
+  from `jobs/storage.json`, with the `JobType` enum and the motivations
+  `MarkJobParams` is told apart by, for the TypeScript SDK.
+- `limits`: each gateway operation's `x-xynolog-limits` and each component
+  property's `maxItems`, from `openapi.json`, for the TypeScript SDK.
 
 `Text` measures and spells text: a width in code points, a word ended by
 ASCII white space, a string as JSON writes it or as a Go or Python literal

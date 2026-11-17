@@ -3,10 +3,10 @@
  * generated from protocol/specs/src/locales/registry.json.
  */
 
-import { LOCALES, type LocaleInfo } from './generated/locales';
+import { LOCALES, type LocaleInfo } from './locale-registry';
 
-export { LOCALES, LOCALE_CODES } from './generated/locales';
-export type { LocaleCode, LocaleInfo } from './generated/locales';
+export { LOCALES, LOCALE_CODES } from './locale-registry';
+export type { LocaleCode, LocaleInfo } from './locale-registry';
 
 // Create lookup map for efficient access
 const localeByCode = new Map<string, LocaleInfo>(

@@ -281,9 +281,39 @@ let sign_in =
           (flat (entry ~required:{|["token","issuer"]|} ())));
   ]
 
+let locale ?(native_name = "Deutsch") ?(english_name = "German") code :
+    Tables.Locales_registry.locale =
+  { code; native_name; english_name }
+
+let locales rows = Locales.derive { comment = "c"; locales = rows }
+
+let locale_registry =
+  [
+    case "a registry every rule holds" (fun () ->
+        accepts (locales [ locale "de"; locale "fil" ]));
+    case "a language stated twice" (fun () ->
+        refuses "/locales/1/code" "states already"
+          (locales [ locale "de"; locale "de" ]));
+    case "a code that is not a lower-case language code" (fun () ->
+        List.iter
+          (fun code ->
+            refuses "/locales/0/code" "not a lower-case language code"
+              (locales [ locale code ]))
+          [ "DE"; "d"; "deut"; "de-AT" ]);
+    case "a language with no native name, and one with no English name"
+      (fun () ->
+        refuses "/locales/0/nativeName" "is empty"
+          (locales [ locale ~native_name:"" "de" ]);
+        refuses "/locales/0/englishName" "is empty"
+          (locales [ locale ~english_name:"" "de" ]));
+    case "a registry with no languages" (fun () ->
+        refuses "/locales" "states no languages" (locales []));
+  ]
+
 let () =
   Alcotest.run "registries"
     [
+      ("locales", locale_registry);
       ("media types", media_types);
       ("telemetry", telemetries);
       ("oauth clients", oauth_clients);
