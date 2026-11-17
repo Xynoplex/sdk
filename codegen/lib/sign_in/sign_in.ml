@@ -8,6 +8,7 @@
 module Flat = Flat
 module Owner_only = Owner_only
 module Contract = Contract
+module Rust = Rust
 
 let schema_file = "sign-in-store/SignIn.json"
 let snake name = String.lowercase_ascii (Text.upper_snake name)
@@ -385,6 +386,7 @@ let files ~root (spec : Spec.t) =
            python_entry entry;
            python_owner_only o;
            typescript entry o names;
+           Rust.file o;
          ]
         @ ocaml_owner_only o)
   | _ ->

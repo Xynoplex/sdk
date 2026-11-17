@@ -69,3 +69,13 @@
  (name client_types)
  (modules client_types)
  (libraries xynolog_codegen yojson alcotest))
+
+(test
+ (name rust_syntax)
+ (modules rust_syntax)
+ (libraries xynolog_codegen alcotest))
+
+(test
+ (name rust_types)
+ (modules rust_types)
+ (libraries xynolog_codegen yojson alcotest))

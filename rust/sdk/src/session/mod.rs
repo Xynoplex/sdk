@@ -58,7 +58,7 @@ pub use xynolog_session::{
     XynologSessionConfig,
 };
 
-include!(concat!(env!("OUT_DIR"), "/oauth_clients.rs"));
+include!("../generated/oauth_clients.rs");
 
 use crate::timing::{MIN_REFRESH_DELAY, REFRESH_BEFORE_EXP};
 use base64::Engine;

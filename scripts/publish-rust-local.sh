@@ -22,17 +22,9 @@ RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-D warnings" cargo build --workspace --all-f
 
 # Package dependencies before consumers. Cargo writes one .crate archive per
 # publishable workspace crate to target/package; no registry is involved.
-for crate in xynolog-codegen xynolog xynolog-telemetry xynolog-http-transport; do
+for crate in xynolog xynolog-telemetry xynolog-http-transport; do
   config=""
   case "$crate" in
-    xynolog)
-      mkdir -p .cargo
-      cat > .cargo/config.toml <<EOF
-[patch.crates-io]
-xynolog-codegen = { path = "$SCRATCH/rust/codegen" }
-EOF
-      config=.cargo/config.toml
-      ;;
     xynolog-telemetry)
       mkdir -p .cargo
       cat > .cargo/config.toml <<EOF
