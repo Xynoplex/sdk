@@ -179,6 +179,141 @@ let cases =
                    H.value "k" (T_name "Text") (Str "a");
                  ];
              }));
+    case "a do block writes a statement a line, past the line it opens on"
+      (writes
+         "parseJSON = withObject \"R\" $ \\o -> do\n\
+         \    v <- R <$> (o .: \"a\")\n\
+         \    unless (all (`elem` [\"a\"]) (KM.keys o)) (fail \"x\")\n\
+         \    pure v" (fun () ->
+           "parseJSON = "
+           ^ H.expr ~depth:1
+               (Dollar
+                  ( Apply (Name "withObject", [ Str "R" ]),
+                    Lambda
+                      ( "o",
+                        Do
+                          [
+                            Bind
+                              ( "v",
+                                Infix
+                                  ( Name "R",
+                                    [
+                                      ( "<$>",
+                                        Infix (Name "o", [ (".:", Str "a") ]) );
+                                    ] ) );
+                            Run
+                              (Apply
+                                 ( Name "unless",
+                                   [
+                                     Apply
+                                       ( Name "all",
+                                         [
+                                           Section ("elem", List [ Str "a" ]);
+                                           Apply (Name "KM.keys", [ Name "o" ]);
+                                         ] );
+                                     Apply (Name "fail", [ Str "x" ]);
+                                   ] ));
+                            Run (Apply (Name "pure", [ Name "v" ]));
+                          ] ) ))));
+    case "a section of an operator waits for its left operand"
+      (writes "(>= 0)" (expr (Section (">=", Int 0))));
+    case "a record is built by its fields' names"
+      (writes "f (R { a = 1, b = g x })"
+         (expr
+            (Apply
+               ( Name "f",
+                 [
+                   Construct
+                     ( "R",
+                       [ ("a", Int 1); ("b", Apply (Name "g", [ Name "x" ])) ]
+                     );
+                 ] ))));
+    case "a conditional's branches are expressions"
+      (writes "f (if s == 1 then A else if s >= 5 then B else C)"
+         (expr
+            (Apply
+               ( Name "f",
+                 [
+                   If
+                     ( Infix (Name "s", [ ("==", Int 1) ]),
+                       Name "A",
+                       If
+                         ( Infix (Name "s", [ (">=", Int 5) ]),
+                           Name "B",
+                           Name "C" ) );
+                 ] ))));
+    case "a GADT states each constructor's type, under its variables' kinds"
+      (writes "data R (s :: Scope) a where\n  A :: R 'Global Text"
+         (decl
+            (Gadt
+               {
+                 about = [];
+                 name = "R";
+                 params = [ ("s", Some "Scope"); ("a", None) ];
+                 constructors =
+                   [
+                     ("A", T_apply ("R", [ T_promoted "Global"; T_name "Text" ]));
+                   ];
+               })));
+    case "a GADT of no constructors is refused"
+      (refuses
+         (decl
+            (Gadt { about = []; name = "R"; params = []; constructors = [] })));
+    case "an opaque newtype is exported without its constructor"
+      (writes
+         "module M (Id, Name(..)) where\n\
+          newtype Id = Id Text deriving (Eq)\n\
+          newtype Name = Name { nameText :: Text }\n" (fun () ->
+           H.text
+             {
+               banner = [];
+               extensions = [];
+               name = "M";
+               imports = [];
+               body =
+                 [
+                   Newtype
+                     {
+                       about = [];
+                       name = "Id";
+                       field = None;
+                       type_ = T_name "Text";
+                       opaque = true;
+                       deriving = [ "Eq" ];
+                     };
+                   Newtype
+                     {
+                       about = [];
+                       name = "Name";
+                       field = Some "nameText";
+                       type_ = T_name "Text";
+                       opaque = false;
+                       deriving = [];
+                     };
+                 ];
+             }));
+    case "a module re-exports what it imports whole"
+      (writes "module T (module A) where\nimport A\n" (fun () ->
+           H.text
+             {
+               banner = [];
+               extensions = [];
+               name = "T";
+               imports = [ H.import "A" ];
+               body = [ Reexport "A" ];
+             }));
+    case "what a module uses is told by namespace" (fun () ->
+        let used =
+          H.uses
+            [
+              H.value "f"
+                (T_fun (T_name "String", T_name "Value"))
+                (Apply (Name "String", [ Section ("<>", Name "x") ]));
+            ]
+        in
+        Alcotest.(check (list string)) "types" [ "String"; "Value" ] used.types;
+        Alcotest.(check (list string))
+          "values" [ "<>"; "String"; "x" ] used.values);
   ]
 
 let () = Alcotest.run "haskell_syntax" [ ("the printer", cases) ]
