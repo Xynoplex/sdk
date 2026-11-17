@@ -30,4 +30,5 @@ let all =
     { name = "testing"; files = Testing.files };
     { name = "ocaml-sdk"; files = Ocaml_sdk.files };
     { name = "haskell-sdk"; files = Haskell_sdk.files };
+    { name = "csharp-sdk"; files = Csharp_sdk.files };
   ]

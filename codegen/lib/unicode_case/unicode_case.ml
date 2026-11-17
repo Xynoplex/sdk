@@ -13,6 +13,7 @@
 module Json = Json
 module Go = Go
 module Haskell = Haskell
+module Csharp = Csharp
 
 let derived_core = "codegen/ucd/DerivedCoreProperties.txt"
 let prop_list = "codegen/ucd/PropList.txt"
@@ -163,5 +164,7 @@ let files ~root (_ : Spec.t) =
           Haskell.file ~version:t.version ~notice:t.notice ~cased:t.cased
             ~case_ignorable:t.case_ignorable ~white_space:t.white_space
             ~lowercase:t.lowercase ~final_lowercase:t.final_lowercase;
+          Csharp.file ~version:t.version ~notice:t.notice ~cased:t.cased
+            ~case_ignorable:t.case_ignorable;
         ])
     (derive ~root)

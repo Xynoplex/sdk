@@ -74,3 +74,8 @@
  (name csharp_syntax)
  (modules csharp_syntax)
  (libraries xynolog_codegen alcotest))
+
+(test
+ (name csharp_sdk)
+ (modules csharp_sdk)
+ (libraries xynolog_codegen yojson alcotest))
