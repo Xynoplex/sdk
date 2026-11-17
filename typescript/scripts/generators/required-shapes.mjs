@@ -5,11 +5,10 @@
 //
 //   codegen/node/schemas/generate-required-lists-go.mjs → go/api/required_lists_gen.go, how
 //                                                         each Go type writes a required list held as nil
-//   typescript/scripts/generators/cache-refresh-table.mjs, which reads the shapes.
 //
 // The required group (codegen/lib/required) writes every SDK's table from its
 // own copy of these rules, codegen/lib/required/shape.ml. This copy goes when
-// its last readers are ported.
+// its last reader is ported.
 //
 // Each SDK walks a payload by this table before it decodes it, so every SDK
 // finds the same first FAULT in it, names it the same way, and refuses it.
@@ -170,7 +169,7 @@ function complement(ranges) {
 }
 
 /** The order of two names by their code points. */
-export function byCodePoint(a, b) {
+function byCodePoint(a, b) {
   const x = [...a].map((c) => c.codePointAt(0));
   const y = [...b].map((c) => c.codePointAt(0));
   for (let at = 0; at < Math.min(x.length, y.length); at += 1) if (x[at] !== y[at]) return x[at] - y[at];

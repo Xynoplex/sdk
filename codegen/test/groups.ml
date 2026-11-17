@@ -432,6 +432,26 @@ let payloads =
               ("validate", `Null);
             ])
          "/channels/5/system: a flag is true, or absent");
+    case "the enriched flag on a channel that is no stored event"
+      (refuses
+         (with_channel
+            [
+              ("shape", `String "empty");
+              ("enriched", `Bool true);
+              ("validate", `Null);
+            ])
+         "/channels/5/enriched: an unknown member");
+    case "the enriched flag false"
+      (refuses
+         (with_channel
+            [
+              ("shape", `String "storedEvent");
+              ("event", `String "demo:extra");
+              ("payload", `String "DemoPayload");
+              ("enriched", `Bool false);
+              ("validate", `Null);
+            ])
+         "/channels/5/enriched: a flag is true, or absent");
     case "a scoped channel that is no stored event"
       (let scoped members =
          base
@@ -482,6 +502,17 @@ let with_schemas changes =
   changes
   @ List.filter (fun (n, _) -> not (List.mem_assoc n changes)) base_schemas
 
+(* The registry derives, and its one operation's result names nothing beside
+   its response. *)
+let names_nothing ~schemas json =
+  match derived ~schemas json with
+  | Ok bus ->
+      Alcotest.(check (list (pair string (list string))))
+        "reply names"
+        [ ("demo:limits-requested", []) ]
+        bus.reply_names
+  | Error errors -> Alcotest.fail (String.concat "\n" errors)
+
 let derivations =
   [
     case "a reply names what its schema requires beside its response" (fun () ->
@@ -505,6 +536,45 @@ let derivations =
               [ ("demo:limits-requested", [ "demoId" ]) ]
               bus.reply_names
         | Error errors -> Alcotest.fail (String.concat "\n" errors));
+    case "a reply that requires its response alone, or nothing, names nothing"
+      (fun () ->
+        List.iter
+          (fun result ->
+            names_nothing
+              ~schemas:(with_schemas [ ("DemoResult", result) ])
+              base)
+          [
+            {|{"type":"object","required":["response"],"properties":{"response":{}}}|};
+            {|{"type":"object","properties":{}}|};
+          ]);
+    case "a property a reply may state and does not require is no name"
+      (fun () ->
+        names_nothing
+          ~schemas:
+            (with_schemas
+               [
+                 ( "DemoResult",
+                   {|{"type":"object","required":["response"],"properties":{"response":{},"demoId":{"type":"string"}}}|}
+                 );
+               ])
+          base);
+    case "a reply of no schema names nothing, and no schema is read for it"
+      (fun () ->
+        let unread =
+          List.filter (fun (name, _) -> name <> "DemoResult") base_schemas
+        in
+        List.iter
+          (fun members ->
+            names_nothing ~schemas:unread
+              (set [ "channels"; "1" ]
+                 (channel "demo:limits-result"
+                    (members @ [ ("validate", `Null) ]))
+                 base))
+          [
+            [ ("shape", `String "envelope"); ("schema", `String "DemoResult") ];
+            [ ("shape", `String "empty") ];
+            [ ("shape", `String "void") ];
+          ]);
     case "a reply whose schema is composed"
       (refuses
          ~schemas:

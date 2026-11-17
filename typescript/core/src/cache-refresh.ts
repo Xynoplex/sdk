@@ -14,18 +14,19 @@ export const PERSISTED_QUERIES = ['resource', 'annotations', 'annotation', 'enti
 export type PersistedQuery = (typeof PERSISTED_QUERIES)[number];
 
 /** What each live query is asked for per: a resource, an annotation, or the filters it is asked with; `whole` for one asked for whole, whose one answer is kept under `wholeKey`. */
-export interface CachePer {
-  'resource': 'resource';
-  'annotations': 'resource';
-  'annotation': 'annotation';
-  'events': 'resource';
-  'referencedBy': 'resource';
-  'resources': 'filters';
-  'matchedResources': 'filters';
-  'entityTypes': 'whole';
-  'tagSchemas': 'whole';
-  'engines': 'whole';
-}
+export const CACHE_PER = {
+  'resource': 'resource',
+  'annotations': 'resource',
+  'annotation': 'annotation',
+  'events': 'resource',
+  'referencedBy': 'resource',
+  'resources': 'filters',
+  'matchedResources': 'filters',
+  'entityTypes': 'whole',
+  'tagSchemas': 'whole',
+  'engines': 'whole',
+} as const satisfies { readonly [Q in CacheQuery]: 'resource' | 'annotation' | 'filters' | 'whole' };
+export type CachePer = typeof CACHE_PER;
 
 /** What each live query's cache holds, its `value`: the component, and the members within it the value is, outermost first. */
 export const CACHE_VALUES = {

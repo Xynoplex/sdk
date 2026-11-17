@@ -48,6 +48,18 @@ let words ~about name type_name values =
         (T_index (T_paren (T_typeof name), T_name "number"));
     ]
 
+let spelled (per : Tables.Client_refresh.per option) =
+  match per with
+  | Some Resource -> "resource"
+  | Some Annotation -> "annotation"
+  | Some Filters -> "filters"
+  | None -> "whole"
+
+let per (q : Table.query) = spelled q.per
+
+let pers =
+  List.map spelled [ Some Resource; Some Annotation; Some Filters; None ]
+
 let interface ~about name members =
   T.Interface { about = [ Doc about ]; export = true; name; members }
 
@@ -75,21 +87,31 @@ let text (t : Table.t) =
                (fun (q : Table.query) ->
                  if q.persisted then Some q.name else None)
                t.queries);
-          interface
-            ~about:
-              "What each live query is asked for per: a resource, an \
-               annotation, or the filters it is asked with; `whole` for one \
-               asked for whole, whose one answer is kept under `wholeKey`."
-            "CachePer"
-            (each (fun (q : Table.query) ->
-                 T.member
-                   (Quoted (Single, q.name))
-                   (str
-                      (match q.per with
-                      | Some Resource -> "resource"
-                      | Some Annotation -> "annotation"
-                      | Some Filters -> "filters"
-                      | None -> "whole"))));
+          T.Adjacent
+            [
+              T.const "CACHE_PER" ~as_const:true
+                ~about:
+                  [
+                    Doc
+                      "What each live query is asked for per: a resource, an \
+                       annotation, or the filters it is asked with; `whole` \
+                       for one asked for whole, whose one answer is kept under \
+                       `wholeKey`.";
+                  ]
+                ~satisfies:
+                  (T_mapped
+                     {
+                       layout = Inline;
+                       readonly = true;
+                       key = "Q";
+                       in_ = T_name "CacheQuery";
+                       value = T_union (List.map str pers);
+                     })
+                (T.rows
+                   (each (fun (q : Table.query) ->
+                        T.entry (Quoted (Single, q.name)) (Str (Single, per q)))));
+              T.type_alias "CachePer" (T_typeof "CACHE_PER");
+            ];
           T.const "CACHE_VALUES" ~as_const:true
             ~about:
               [
