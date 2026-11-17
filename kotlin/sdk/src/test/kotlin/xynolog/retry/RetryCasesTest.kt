@@ -66,7 +66,12 @@ class RetryCasesTest {
     fun aFailureWorthAnotherAttemptIsTriedAgainUntilTheAttemptsAreSpent() = runBlocking {
         var made = 0
         val error = assertThrows(TransportError::class.java) {
-            runBlocking { retryWithBackoff(quick, { BOOT.retryable(RetryFacts(status = it.status(), keyed = false)) }) { made += 1; throw refused(503) } }
+            runBlocking {
+                retryWithBackoff(quick, { BOOT.retryable(RetryFacts(status = it.status(), keyed = false)) }) {
+                    made += 1
+                    throw refused(503)
+                }
+            }
         }
         assertEquals(503, error.status)
         assertEquals(3, made)
@@ -76,7 +81,12 @@ class RetryCasesTest {
     fun aFailureNotWorthAnotherAttemptIsThrownAtOnce() = runBlocking {
         var made = 0
         assertThrows(TransportError::class.java) {
-            runBlocking { retryWithBackoff(quick, { BOOT.retryable(RetryFacts(status = it.status(), keyed = false)) }) { made += 1; throw refused(400) } }
+            runBlocking {
+                retryWithBackoff(quick, { BOOT.retryable(RetryFacts(status = it.status(), keyed = false)) }) {
+                    made += 1
+                    throw refused(400)
+                }
+            }
         }
         assertEquals(1, made)
     }

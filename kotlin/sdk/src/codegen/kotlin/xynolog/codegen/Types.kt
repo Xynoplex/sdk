@@ -184,7 +184,8 @@ private class Types(private val definitions: JsonObject, private val generation:
             |    public val value: String,
             |) : IllegalArgumentException("\"${'$'}value\" is not a ${'$'}kind: it does not match ${'$'}pattern")
             |
-            |""".trimMargin(),
+            |
+            """.trimMargin(),
         )
         if (identifiers.values.any { it.contains("isWhitespace(") }) {
             append(
@@ -195,7 +196,8 @@ private class Types(private val definitions: JsonObject, private val generation:
                 |    c == 0x09 || c == 0x0A || c == 0x0B || c == 0x0C || c == 0x0D || c == 0xFEFF || c == 0x2028 || c == 0x2029 ||
                 |        Character.getType(c) == Character.SPACE_SEPARATOR.toInt()
                 |
-                |""".trimMargin(),
+                |
+                """.trimMargin(),
             )
         }
         for (code in identifiers.values) append("\n").append(code)
@@ -268,7 +270,8 @@ private class Types(private val definitions: JsonObject, private val generation:
             |            if (decoder.decodeNotNullMark()) Value(decoder.decodeSerializableValue(value)) else Null.also { decoder.decodeNull() }
             |    }
             |}
-            |""".trimMargin()
+            |
+        """.trimMargin()
     }
 
     /** Whether a schema is text, following `$ref`s and unions of text. A kind of id is text. */
@@ -377,7 +380,7 @@ private class Types(private val definitions: JsonObject, private val generation:
                 Form.THREE_STATES -> "$STATED<$type> = $STATED.Absent"
                 Form.OPTIONAL -> "$type? = null"
             }
-            return "$doc${annotations}    public val ${code(name)}: $declared,\n"
+            return "$doc$annotations    public val ${code(name)}: $declared,\n"
         }
 
         /** The type a builder takes it as. */
@@ -509,7 +512,8 @@ private class Types(private val definitions: JsonObject, private val generation:
                 |            }
                 |    }
                 |
-                |""".trimMargin(),
+                |
+                """.trimMargin(),
             )
             append("    public companion object {\n")
             append("        /** The rule a value is held to, as the spec writes it. */\n")
@@ -652,7 +656,8 @@ private class Types(private val definitions: JsonObject, private val generation:
         |        }
         |    }
         |
-        |""".trimMargin()
+        |
+        """.trimMargin()
     }
 }
 

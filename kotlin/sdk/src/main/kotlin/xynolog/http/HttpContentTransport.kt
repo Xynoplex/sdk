@@ -2,16 +2,6 @@
 
 package xynolog.http
 
-import xynolog.types.wireJson
-import xynolog.types.Agent
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.builtins.ListSerializer
-import kotlinx.serialization.json.JsonObject
-import xynolog.bus.Logged
-import xynolog.bus.BusLog
-import xynolog.telemetry.futureOf
-import xynolog.telemetry.callersTrace
-import xynolog.telemetry.Telemetry
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -21,11 +11,19 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.jdk9.asFlow
+import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.jsonObject
+import xynolog.bus.BusLog
+import xynolog.bus.Logged
 import xynolog.errors.TransportError
 import xynolog.identifiers.ResourceId
+import xynolog.telemetry.Telemetry
+import xynolog.telemetry.callersTrace
+import xynolog.telemetry.futureOf
 import xynolog.transport.Content
 import xynolog.transport.ContentStream
 import xynolog.transport.ContentTransport
@@ -33,11 +31,13 @@ import xynolog.transport.Events
 import xynolog.transport.PutBinaryRequest
 import xynolog.transport.Upload
 import xynolog.transport.UploadProgress
+import xynolog.types.Agent
 import xynolog.types.AnchoredTextAnswer
 import xynolog.types.CreateResourceResponse
 import xynolog.types.GetAnnotationsResponse
 import xynolog.types.GetResourceResponse
 import xynolog.types.ResourceUpload
+import xynolog.types.wireJson
 import java.io.IOException
 import java.net.http.HttpRequest
 import java.nio.ByteBuffer

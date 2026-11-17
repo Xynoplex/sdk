@@ -99,10 +99,12 @@ class GeneratorTest {
         definitions("""{"queries":$queries,"refresh":[{"on":"reopened","reach":"held"},{"on":"unreadable","reach":"held"}]}""")
 
     /** The schemas a refresh table's values name: `B`, and `A`, whose member `m` is a list of text. */
-    private val values = definitions("""{
+    private val values = definitions(
+        """{
         "A":{"type":"object","properties":{"m":{"type":"array","items":{"type":"string"}}}},
         "B":{"type":"object","properties":{"n":{"type":"string"}}}
-    }""")
+    }""",
+    )
 
     /** The file the refresh table of `queries` generates, its values typed from `values`. */
     private fun refreshFile(queries: String): String =

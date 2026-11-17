@@ -30,9 +30,9 @@ import xynolog.bus.Fault
 import xynolog.bus.UNDECODED
 import xynolog.channels.Channel
 import xynolog.channels.Channels
-import xynolog.errors.XynologError
 import xynolog.errors.TransportError
 import xynolog.errors.TransportErrorCode
+import xynolog.errors.XynologError
 import xynolog.frame
 import xynolog.sameJson
 import xynolog.transport.Carried

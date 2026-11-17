@@ -16,9 +16,9 @@ import xynolog.bus.EMITTED_BY
 import xynolog.bus.OPERATIONS
 import xynolog.channels.RESOURCE_SCOPED_CHANNELS
 import xynolog.channels.TRACE_FIELD
-import xynolog.errors.XynologError
 import xynolog.errors.TransportError
 import xynolog.errors.TransportErrorCode
+import xynolog.errors.XynologError
 import xynolog.http.FrameHub
 import xynolog.identifiers.ResourceId
 import xynolog.telemetry.futureOf
@@ -31,10 +31,10 @@ import xynolog.transport.FrameSink
 import xynolog.transport.PendingReply
 import xynolog.transport.ReplyRouter
 import xynolog.transport.ResourceHold
-import xynolog.transport.scope
 import xynolog.transport.Transport
 import xynolog.transport.Variable
 import xynolog.transport.Watched
+import xynolog.transport.scope
 import xynolog.transport.unsubscribed
 import java.util.concurrent.CompletableFuture
 import kotlin.coroutines.CoroutineContext

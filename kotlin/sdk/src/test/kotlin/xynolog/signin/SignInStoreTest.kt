@@ -134,12 +134,14 @@ class SignInStoreTest {
         val minted = mutableMapOf<String, String>()
         fun named(name: String): String = minted.getOrPut(name) {
             val now = System.currentTimeMillis() / 1000
-            jwt(buildJsonObject {
-                put("email", "alice@example.org")
-                put("iss", ISSUER)
-                put("exp", if (name in expired) now - 3600 else now + 3600)
-                put("jti", name)
-            })
+            jwt(
+                buildJsonObject {
+                    put("email", "alice@example.org")
+                    put("iss", ISSUER)
+                    put("exp", if (name in expired) now - 3600 else now + 3600)
+                    put("jti", name)
+                },
+            )
         }
         fun nameOf(access: String?): String? = minted.entries.firstOrNull { it.value == access }?.key ?: access
 
@@ -269,12 +271,14 @@ class SignInStoreTest {
 
     private fun signedIn(n: Int, email: String = "alice@example.org"): String {
         val now = System.currentTimeMillis() / 1000
-        return jwt(buildJsonObject {
-            put("email", email)
-            put("iss", ISSUER)
-            put("exp", now + 3600)
-            put("jti", "access-$n")
-        })
+        return jwt(
+            buildJsonObject {
+                put("email", email)
+                put("iss", ISSUER)
+                put("exp", now + 3600)
+                put("jti", "access-$n")
+            },
+        )
     }
 
     private fun held(access: String, refresh: String = "refresh-1", revocation: String? = "$ISSUER/revoke") =
@@ -373,7 +377,17 @@ class SignInStoreTest {
     @Test
     fun anIssuerWithNoRevocationEndpointAndATokenWithNoExpiryLeaveThoseOut(@TempDir directory: Path) = runBlocking {
         val path = directory.resolve(FILE_NAME)
-        SignInStore(path).entry("local").keep(held(jwt(buildJsonObject { put("email", "alice@example.org"); put("iss", ISSUER) }), revocation = null))
+        SignInStore(path).entry("local").keep(
+            held(
+                jwt(
+                    buildJsonObject {
+                        put("email", "alice@example.org")
+                        put("iss", ISSUER)
+                    },
+                ),
+                revocation = null,
+            ),
+        )
         assertFalse("revocationEndpoint" in entryOf(path, "local"))
         assertFalse("expiresAt" in entryOf(path, "local"))
     }
@@ -400,7 +414,14 @@ class SignInStoreTest {
     fun aTokenThatNamesNoAddressIsKeptWithoutOne(@TempDir directory: Path) = runBlocking {
         val path = directory.resolve(FILE_NAME)
         val kept = SignInStore(path).entry("local")
-        val unaddressed = held(jwt(buildJsonObject { put("iss", ISSUER); put("sub", "an-account") }))
+        val unaddressed = held(
+            jwt(
+                buildJsonObject {
+                    put("iss", ISSUER)
+                    put("sub", "an-account")
+                },
+            ),
+        )
         kept.keep(unaddressed)
         assertEquals(ISSUER, entryOf(path, "local").getValue("issuer").jsonPrimitive.content)
         assertFalse("email" in entryOf(path, "local"))
