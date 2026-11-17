@@ -1,7 +1,7 @@
 (* The refresh table as the Python SDK reads it (python/sdk/src/xynolog): the
    queries, the triggers, those that are channels, and each trigger's rows,
    with where in its event a row finds what it names. Which queries a client
-   keeps for its person is generate-stored-python.mjs's KEPT_QUERIES. *)
+   keeps for its person is stored.py's KEPT_QUERIES. *)
 
 let path = "python/sdk/src/xynolog/refresh.py"
 

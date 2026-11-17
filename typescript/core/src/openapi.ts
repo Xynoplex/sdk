@@ -23,7 +23,7 @@ import * as generated from './generated/openapi-validators.cjs';
 export const validators = generated;
 
 /** The limits the spec states — generated from it the same way. */
-export { operationLimits, itemLimits } from './generated/protocol-limits';
+export { operationLimits, itemLimits } from './protocol-limits';
 
 /**
  * Ajv's error list as one human-readable line, for a 4xx body.

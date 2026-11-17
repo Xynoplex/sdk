@@ -9,8 +9,7 @@ let writer file = "codegen/" ^ file
    of imports or of __all__ is the spec's or the writer's, not isort's; and
    RUF100, since a module need not break each of them. Every other rule holds
    it, as ruff format, the drift gate and the type checkers do.
-   codegen/node/lib/python-source.mjs and
-   python/sdk/scripts/generate_models.py write the same line. *)
+   python/sdk/scripts/generate_models.py writes the same line. *)
 let python_exempt = "# ruff: noqa: E501, I001, RUF002, RUF022, RUF100"
 
 let python ~from_ file =

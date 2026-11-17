@@ -27,7 +27,8 @@ Every other TypeScript package, the Browser, and the conformance and end-to-end 
 | Anchoring | Finding an annotation again after its text changed, and the geometry of text on a PDF page (`locate`, `textUnder`) | [src/anchor-annotation.ts](src/anchor-annotation.ts), [src/pdf-anchoring.ts](src/pdf-anchoring.ts) |
 | Identity | A knowledge base's own did and resource identifier (`kbDid`, `kbResource`). A principal's DID is the gateway's to mint and the record's to read | [src/did-utils.ts](src/did-utils.ts) |
 | Media types | Which types a knowledge base admits, and what can be done with each | [src/media-types.ts](src/media-types.ts) |
-| Shared rules | Error codes, timing, retry and the cache's refresh table, the same for every SDK | [src/error-codes.ts](src/error-codes.ts), [src/client-timing.ts](src/client-timing.ts), [src/cache-refresh.ts](src/cache-refresh.ts), generated; [src/retry.ts](src/retry.ts) |
+| Shared rules | Error codes, timing, retry, the cache's refresh table, where jobs are kept and the API's limits, the same for every SDK | [src/error-codes.ts](src/error-codes.ts), [src/client-timing.ts](src/client-timing.ts), [src/cache-refresh.ts](src/cache-refresh.ts), [src/job-storage.ts](src/job-storage.ts), [src/protocol-limits.ts](src/protocol-limits.ts), generated; [src/retry.ts](src/retry.ts) |
+| Languages | Every language an interface speaks, by code, with its native and English names | [src/locale-registry.ts](src/locale-registry.ts), generated; [src/locales.ts](src/locales.ts) |
 
 The main import runs in a browser. What cannot is on a subpath:
 
@@ -56,7 +57,7 @@ const audience = kbResource('xynoplex.github.io:xynoplex-caselaw-kb'); // 'https
 
 ## What a change must keep
 
-- **The spec is the source.** `src/types.ts`, everything in `src/generated/`, and each module that opens `GENERATED FILE` are generated from [`protocol/specs/src`](../../../protocol/specs/src/), and never edited. The modules that open `GENERATED FILE` are committed, and `make generate` writes them; the rest is made when the package is built. Change the spec, then run `make generate` and `npm run generate:openapi --workspace=@xynolog/core`. A type written by hand that restates a schema is a second copy that nothing keeps true: use the spec's type, under the spec's name.
+- **The spec is the source.** `src/types.ts`, the validators in `src/generated/`, and each module that opens `GENERATED FILE` are generated from [`protocol/specs/src`](../../../protocol/specs/src/), and never edited. The modules that open `GENERATED FILE` are committed, and `make generate` writes them; the rest is made when the package is built. Change the spec, then run `make generate` and `npm run generate:openapi --workspace=@xynolog/core`. A type written by hand that restates a schema is a second copy that nothing keeps true: use the spec's type, under the spec's name.
 - **The main import runs in a browser.** It uses no Node builtin. The validators and the test issuer are reachable only by their subpaths, because of the weight they would add to every bundle, and `npm run lint:core-subpaths` fails a re-export of either from the root.
 - **It depends on no other Xynolog package.** Everything else depends on it.
 - **An id is made only by its constructor or its guard.** One kind is never assignable to another.

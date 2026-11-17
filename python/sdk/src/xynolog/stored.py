@@ -1,5 +1,5 @@
 # Generated from protocol/specs/src/session/stored.json; do not edit.
-# Regenerate: node codegen/node/schemas/generate-stored-python.mjs
+# Regenerate: make generate (codegen/lib/stored/stored.ml)
 # ruff: noqa: E501, I001, RUF002, RUF022, RUF100
 
 """What a registry of knowledge bases keeps in a `SessionStorage` (`protocol/specs/src/session/stored.json`):

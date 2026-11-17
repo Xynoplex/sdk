@@ -22,4 +22,8 @@ let all =
     { name = "telemetry"; files = Telemetry.files };
     { name = "sign-in"; files = Sign_in.files };
     { name = "media-types"; files = Media_types.files };
+    { name = "stored"; files = Stored.files };
+    { name = "locales"; files = Locales.files };
+    { name = "job-storage"; files = Job_storage.files };
+    { name = "limits"; files = Limits.files };
   ]
