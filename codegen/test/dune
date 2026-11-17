@@ -69,3 +69,13 @@
  (name client_types)
  (modules client_types)
  (libraries xynolog_codegen yojson alcotest))
+
+(test
+ (name kotlin_syntax)
+ (modules kotlin_syntax)
+ (libraries xynolog_codegen alcotest))
+
+(test
+ (name kotlin_sdk)
+ (modules kotlin_sdk)
+ (libraries xynolog_codegen yojson alcotest))
