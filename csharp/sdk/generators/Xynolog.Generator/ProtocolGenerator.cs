@@ -55,7 +55,7 @@ public sealed class ProtocolGenerator : IIncrementalGenerator
             }
             if (requiredSchemas is null)
             {
-                throw new InvalidOperationException("No required-schemas.json is supplied: the table of what each component schema requires, which codegen/node/schemas/generate-required.mjs writes.");
+                throw new InvalidOperationException("No required-schemas.json is supplied: the table of what each component schema requires, which codegen/lib/required writes.");
             }
             if (unicodeCase is null)
             {

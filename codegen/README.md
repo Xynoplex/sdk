@@ -36,6 +36,13 @@ per language it writes:
   languages share; `Bus.Typescript`, `Bus.Go` and `Bus.Python` write
   `typescript/core/src`'s bus files, `go/bus`'s `_gen.go` files and
   `python/sdk/src/xynolog`'s `channels.py` and `operations.py`.
+- `required`: what each component schema requires of a value, the table
+  every SDK holds a reply to before it reads it. `Required.Shape` derives it
+  and states its rules. `Required.Table` writes it as JSON for Rust, Kotlin,
+  Swift, C# and Go, and `Required.Typescript`, `Required.Python` and
+  `Required.Haskell` write it for theirs, Haskell's with each bus channel's
+  payload and each HTTP operation's reply. `Required.Go` holds it to the
+  types `go/api` declares.
 
 `Text` measures and spells text: a width in code points, a word ended by
 ASCII white space, a string as JSON writes it. `Output` is the drift gate.

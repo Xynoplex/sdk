@@ -3,15 +3,14 @@
 // it must and may carry and what each member must be. The table every SDK
 // holds a reply to before it reads it.
 //
-//   typescript/scripts/generators/generate-required-ts.mjs     → typescript/core/src/generated/required-schemas.ts
-//   typescript/scripts/generators/generate-required-go.mjs     → go/sdk/internal/required/schemas_gen.json
-//   typescript/scripts/generators/generate-required-lists-go.mjs → go/sdk/api/required_lists_gen.go, how
-//                                                           each Go type writes a required list held as nil
-//   typescript/scripts/generators/generate-required.mjs        → rust/sdk/src/required-schemas.json,
-//                                                           kotlin/sdk/src/codegen/required-schemas.json,
-//                                                           swift/sdk/Sources/XynologCodegen/required-schemas.json and
-//                                                           csharp/sdk/generators/Xynolog.Generator/required-schemas.json
-//   typescript/scripts/generators/generate-required-python.mjs → python/sdk/src/xynolog/_required_table.py
+//   codegen/node/schemas/generate-required-lists-go.mjs → go/api/required_lists_gen.go, how
+//                                                         each Go type writes a required list held as nil
+//   typescript/scripts/generators/cache-refresh-table.mjs, and the OCaml SDK's generators in
+//   codegen/node/ocaml, which read the shapes.
+//
+// The required group (codegen/lib/required) writes every SDK's table from its
+// own copy of these rules, codegen/lib/required/shape.ml. This copy goes when
+// its last readers are ported.
 //
 // Each SDK walks a payload by this table before it decodes it, so every SDK
 // finds the same first FAULT in it, names it the same way, and refuses it.

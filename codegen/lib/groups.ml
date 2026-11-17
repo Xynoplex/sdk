@@ -8,4 +8,8 @@ type group = {
   files : root:string -> Spec.t -> (Output.file list, Decode.error list) result;
 }
 
-let all = [ { name = "bus"; files = Bus.files } ]
+let all =
+  [
+    { name = "bus"; files = Bus.files };
+    { name = "required"; files = Required.files };
+  ]

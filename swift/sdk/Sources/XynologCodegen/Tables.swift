@@ -9,7 +9,7 @@ package struct TableGenerator {
   }
   let specs: URL
   /// The SDK's copy of the table of what each component schema requires, which
-  /// codegen/node/schemas/generate-required.mjs writes.
+  /// codegen/lib/required writes.
   let requiredTable: URL
   let models: ModelGenerator
 
@@ -289,7 +289,7 @@ package struct TableGenerator {
     return shapes
   }
   /// A shape of the table as the value the walk reads (Sources/Xynolog/Bus/Required.swift). Each
-  /// part's meaning is typescript/scripts/generators/required-shapes.mjs's; a part this does not know
+  /// part's meaning is codegen/lib/required/shape.ml's; a part this does not know
   /// refuses generation, so the walk cannot fall behind the table unseen.
   func shapeLiteral(_ raw: JSONValue) throws -> String {
     let shape = try raw.object

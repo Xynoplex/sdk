@@ -1,7 +1,7 @@
 package bus
 
 // FrameRefusalReason is why a value is refused at a member, as every SDK
-// names a fault (typescript/scripts/generators/required-shapes.mjs): the reason a
+// names a fault (codegen/lib/required/shape.ml): the reason a
 // refused frame states, and the reason of every other fault this SDK finds.
 type FrameRefusalReason string
 
