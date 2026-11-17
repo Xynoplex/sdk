@@ -1,4 +1,5 @@
-(* Generated from Selector.json and its component branches. Do not edit. *)
+(* Generated from Selector.json and its component branches. Do not edit.
+   Regenerate: make generate (codegen/lib/ocaml_sdk/selector.ml) *)
 
 [@@@ocamlformat "disable"]
 

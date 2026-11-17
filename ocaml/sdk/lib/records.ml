@@ -1,4 +1,5 @@
-(* Generated from OpenAPI object components and discriminator mappings. Do not edit. *)
+(* Generated from OpenAPI object components and discriminator mappings. Do not edit.
+   Regenerate: make generate (codegen/lib/ocaml_sdk/records.ml) *)
 
 [@@@ocamlformat "disable"]
 

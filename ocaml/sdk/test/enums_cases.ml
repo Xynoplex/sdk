@@ -1,4 +1,5 @@
-(* Generated from string enums in protocol/specs/src/components/schemas. Do not edit. *)
+(* Generated from string enums in protocol/specs/src/components/schemas. Do not edit.
+   Regenerate: make generate (codegen/lib/ocaml_sdk/enums.ml) *)
 
 [@@@ocamlformat "disable"]
 
