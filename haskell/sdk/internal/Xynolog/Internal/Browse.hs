@@ -24,6 +24,7 @@ import qualified Xynolog.Content as Content
 import qualified Xynolog.Internal.Cache as Cache
 import qualified Xynolog.Internal.Coupled as Coupled
 import qualified Xynolog.Internal.Persistence as Persistence
+import Xynolog.Internal.CacheDocument (Whole(..))
 import qualified Xynolog.Internal.Generated.CachePersistence as Persisted
 import qualified Xynolog.Annotations as Annotations
 import qualified Xynolog.Internal.Generated.CacheRefresh as Fact
@@ -47,8 +48,8 @@ data BrowseNamespace = BrowseNamespace
   , resourcesCache :: Cache.Cache BrowseResourcesRequest Fact.ResourcesValue
   , annotationsCache :: Cache.Cache ResourceId Fact.AnnotationsValue
   , annotationCache :: Cache.Cache AnnotationKey Fact.AnnotationValue
-  , entityTypesCache :: Cache.Cache Persisted.Whole Fact.EntityTypesValue
-  , tagSchemasCache :: Cache.Cache Persisted.Whole Fact.TagSchemasValue
+  , entityTypesCache :: Cache.Cache Whole Fact.EntityTypesValue
+  , tagSchemasCache :: Cache.Cache Whole Fact.TagSchemasValue
   , enginesCache :: Cache.Cache () Fact.EnginesValue
   , limitsCache :: Cache.Cache Text [EngineLimits]
   , eventsCache :: Cache.Cache ResourceId Fact.EventsValue
@@ -95,9 +96,9 @@ annotations namespace identity = getAnnotationsResponseAnnotations <$> Cache.que
 annotation :: BrowseNamespace -> ResourceId -> AnnotationId -> Cache.Query Annotation
 annotation namespace identity mark = Cache.query (annotationCache namespace) (AnnotationKey identity mark)
 entityTypes :: BrowseNamespace -> Cache.Query [Text]
-entityTypes namespace = Cache.query (entityTypesCache namespace) Persisted.Whole
+entityTypes namespace = Cache.query (entityTypesCache namespace) Whole
 tagSchemas :: BrowseNamespace -> Cache.Query [TagSchema]
-tagSchemas namespace = Cache.query (tagSchemasCache namespace) Persisted.Whole
+tagSchemas namespace = Cache.query (tagSchemasCache namespace) Whole
 engines :: BrowseNamespace -> Cache.Query [EngineWithLimits]
 engines namespace = case reports of
   [] -> error "the derived inference-limits operation set is empty"

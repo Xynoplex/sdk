@@ -15,7 +15,7 @@ import Data.Text (Text)
 import Data.Text.Encoding (encodeUtf8, decodeUtf8)
 import qualified Xynolog.Internal.Cache as Cache
 import qualified Xynolog.SessionStorage as Storage
-import Xynolog.Internal.Generated.CachePersistence (CacheDocument(..))
+import Xynolog.Internal.CacheDocument (CacheDocument(..))
 
 data StoragePersister = StoragePersister
   { persisterStorage :: Storage.SessionStorage

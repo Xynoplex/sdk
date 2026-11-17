@@ -484,10 +484,6 @@ let writers =
                ("A", Required.Shape.Shape Required.Shape.empty);
                ("B", string_shape);
              ]));
-    case "a Haskell string literal" (fun () ->
-        Alcotest.(check string)
-          "literal" {|"a\"\\\xe9\&\x1f600\&\xa\&"|}
-          (Required.Haskell.literal "a\"\\\195\169\240\159\152\128\n"));
     case "an envelope holds only its response" (fun () ->
         let channel payload : Tables.Bus_registry.channel =
           let docs : Tables.Bus_registry.docs = { lead = []; trailing = "" } in

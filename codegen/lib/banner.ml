@@ -12,6 +12,13 @@ let writer file = "codegen/" ^ file
    python/sdk/scripts/generate_models.py writes the same line. *)
 let python_exempt = "ruff: noqa: E501, I001, RUF002, RUF022, RUF100"
 
+(* A generated Haskell module's opening comment lines, without their [--]. *)
+let haskell_lines ~from_ file =
+  [
+    "Generated from " ^ from_ ^ "; do not edit.";
+    "Regenerate: make generate (" ^ writer file ^ ")";
+  ]
+
 (* A generated Python module's opening comment lines, without their [#]. *)
 let python_lines ~from_ file =
   [

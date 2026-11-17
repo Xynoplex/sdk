@@ -70,6 +70,7 @@ library internal
     Xynolog.Internal.Schema
     Xynolog.Internal.Required
     Xynolog.Internal.Cache
+    Xynolog.Internal.CacheDocument
     Xynolog.Internal.Queries
     Xynolog.Internal.Delegation
     Xynolog.Internal.DelegatedVerbs

@@ -15,7 +15,6 @@
 module T = Tables.Session_stored
 
 let file = "session/stored.json"
-let quoted = Text.quoted
 let snake name = String.lowercase_ascii (Text.upper_snake name)
 let schemas_prefix = "../components/schemas/"
 
@@ -463,81 +462,56 @@ let python t =
         };
   }
 
-(* Haskell's kept queries, its cache document and the stream's places. *)
+(* Haskell's kept queries, the key a whole query keeps its one entry under,
+   and the version of a cache document. What reads and writes them is the
+   SDK's own (haskell/sdk/internal/Xynolog/Internal/CacheDocument.hs). *)
 let haskell t =
-  let version = string_of_int t.table.cache_document.properties.version.const in
-  let whole = quoted t.table.whole_key.key in
+  let module H = Haskell_syntax in
   let constructor (k : kept) = String.capitalize_ascii k.query in
-  let models name =
-    "import Xynolog.Internal.Generated.Models." ^ name ^ " (" ^ name ^ ")\n"
-  in
   {
     Output.path =
       "haskell/sdk/generated/Xynolog/Internal/Generated/CachePersistence.hs";
     text =
-      String.concat ""
-        [
-          "-- Generated from " ^ file ^ " and " ^ Cache_refresh.Table.file
-          ^ ". Do not edit.\n-- Regenerate: make generate (";
-          Banner.writer __FILE__;
-          {|)
-{-# LANGUAGE OverloadedStrings #-}
-module Xynolog.Internal.Generated.CachePersistence (KeptQuery(..), keptQueryName, Whole(..), CacheDocument(..), lastEventIds) where
-import Control.Monad (unless)
-import Data.Aeson (FromJSON(..), ToJSON(..), Result(..), Value(..), fromJSON, object, withObject, withText, (.:), (.=))
-import qualified Data.Aeson.Key as Key
-import qualified Data.Aeson.KeyMap as KM
-import qualified Data.Map.Strict as Map
-import Data.Text (Text)
-import Numeric.Natural (Natural)
-|};
-          models t.place;
-          models t.scope;
-          "-- | The queries a client keeps across a restart, by their names in \
-           client/refresh.json.\n\
-           data KeptQuery = ";
-          String.concat " | " (List.map constructor t.kept);
-          " deriving (Eq, Ord, Show, Enum, Bounded)\n\
-           keptQueryName :: KeptQuery -> Text\n";
-          String.concat ""
-            (List.map
-               (fun k ->
-                 "keptQueryName " ^ constructor k ^ " = " ^ quoted k.query
-                 ^ "\n")
-               t.kept);
-          {|-- | The key a kept query per nothing keeps its one entry under.
-data Whole = Whole deriving (Eq, Ord, Show)
-instance ToJSON Whole where toJSON Whole = String |};
-          whole;
-          {|
-instance FromJSON Whole where
-  parseJSON = withText "Whole" (\key -> if key == |};
-          whole;
-          {| then pure Whole else fail "not the whole key")
--- | What a client keeps of one query: each entry's key, value and stamp. A document of another
--- version, or one whose entries are not each a key, a value and a stamp, does not decode.
-newtype CacheDocument = CacheDocument [(Value, Value, Natural)] deriving (Eq, Show)
-instance FromJSON CacheDocument where
-  parseJSON = withObject "CacheDocument" $ \fields -> do
-    version <- fields .: "version"
-    unless (version == (|};
-          version;
-          {| :: Integer)) (fail "a cache document of another version")
-    CacheDocument <$> fields .: "entries"
-instance ToJSON CacheDocument where
-  toJSON (CacheDocument entries) = object ["version" .= (|};
-          version;
-          {| :: Integer), "entries" .= entries]
--- | Where a stream was: a pair that is not a |};
-          t.scope ^ " and a " ^ t.place;
-          " is skipped, and a value that is no object is none.\n\
-           lastEventIds :: Value -> Map.Map " ^ t.scope ^ " " ^ t.place;
-          {|
-lastEventIds (Object fields) = Map.fromList
-  [(named, value) | (key, raw) <- KM.toList fields, Success named <- [fromJSON (String (Key.toText key))], Success value <- [fromJSON raw]]
-lastEventIds _ = Map.empty
-|};
-        ];
+      H.text
+        {
+          banner =
+            Banner.haskell_lines
+              ~from_:(file ^ " and " ^ Cache_refresh.Table.file)
+              __FILE__;
+          extensions = [ "OverloadedStrings" ];
+          name = "Xynolog.Internal.Generated.CachePersistence";
+          imports = [ H.import "Data.Text" ~items:[ Plain "Text" ] ];
+          body =
+            [
+              H.data "KeptQuery"
+                ~about:
+                  [
+                    "The queries a client keeps across a restart, by their \
+                     names in client/refresh.json.";
+                  ]
+                (List.map (fun k -> H.constructor (constructor k)) t.kept)
+                ~deriving:[ "Eq"; "Ord"; "Show"; "Enum"; "Bounded" ];
+              Value
+                {
+                  about = [];
+                  name = "keptQueryName";
+                  type_ = T_fun (T_name "KeptQuery", T_name "Text");
+                  clauses =
+                    List.map
+                      (fun k ->
+                        {
+                          H.patterns = [ Constructor (constructor k) ];
+                          body = Str k.query;
+                        })
+                      t.kept;
+                };
+              H.value "wholeKey" (T_name "Text")
+                ~about:[ t.table.whole_key.docs ] (Str t.table.whole_key.key);
+              H.value "cacheDocumentVersion" (T_name "Integer")
+                ~about:[ t.table.cache_document.properties.version.description ]
+                (Int t.table.cache_document.properties.version.const);
+            ];
+        };
   }
 
 let files ~root:_ (spec : Spec.t) =

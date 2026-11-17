@@ -21,7 +21,8 @@ import Data.Text.Encoding (decodeUtf8, encodeUtf8)
 import qualified Xynolog.Cache as Cache
 import qualified Xynolog.Internal.Coupled as Coupled
 import qualified Xynolog.Internal.Persistence as Persistence
-import Xynolog.Internal.Generated.CachePersistence (KeptQuery(..), Whole, keptQueryName)
+import Xynolog.Internal.CacheDocument (Whole)
+import Xynolog.Internal.Generated.CachePersistence (KeptQuery(..), keptQueryName)
 import qualified Xynolog.Internal.Generated.CacheRefresh as Fact
 import qualified Xynolog.Internal.Kept as Kept
 import qualified Xynolog.SessionStorage as Storage

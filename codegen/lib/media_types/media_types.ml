@@ -372,103 +372,148 @@ let typescript (t : T.t) =
         };
   }
 
-(* A Haskell string literal: a quote and a backslash escaped, printable ASCII
-   as itself, and every other character by its code point, ended by \& so a
-   digit after it is not read as more of it. *)
-let haskell_literal value =
-  let out = Buffer.create (String.length value + 2) in
-  Buffer.add_char out '"';
-  Text.fold_uchars
-    (fun () u ->
-      match Uchar.to_int u with
-      | (0x22 | 0x5C) as c ->
-          Buffer.add_char out '\\';
-          Buffer.add_char out (Char.chr c)
-      | c when c >= 32 && c <= 126 -> Buffer.add_char out (Char.chr c)
-      | c -> Buffer.add_string out (Printf.sprintf "\\x%x\\&" c))
-    () value;
-  Buffer.add_char out '"';
-  Buffer.contents out
-
 let haskell (t : T.t) (encodings : Encodings.Table.t) =
-  let l = haskell_literal in
-  let list items = "[" ^ String.concat ", " items ^ "]" in
-  let pair a b = "(" ^ a ^ ", " ^ b ^ ")" in
-  let code_points text =
+  let module H = Haskell_syntax in
+  let text = H.T_name "Text" in
+  let map k v = H.T_apply ("Map.Map", [ k; v ]) in
+  let from_list pairs = H.Apply (Name "Map.fromList", [ List pairs ]) in
+  let pair a b = H.Tuple [ Str a; Str b ] in
+  let code_points every_byte =
     List.rev
       (Text.fold_uchars
-         (fun acc u -> string_of_int (Uchar.to_int u) :: acc)
-         [] text)
+         (fun acc u -> H.Int (Uchar.to_int u) :: acc)
+         [] every_byte)
   in
+  let source w = H.Name (constructor w) in
   {
     Output.path = "haskell/sdk/generated/Xynolog/Internal/Generated/Text.hs";
     text =
-      String.concat ""
-        [
-          "-- Generated from " ^ Encodings.Table.file ^ " and " ^ file
-          ^ ". Do not edit.\n-- Regenerate: make generate (";
-          Banner.writer __FILE__;
-          {|)
-{-# LANGUAGE OverloadedStrings #-}
-module Xynolog.Internal.Generated.Text (encodingOf, singleByte, refused, TextSource(..), textSourceName, mediaTypes, extensions, aliases) where
-import Data.Text (Text)
-import Data.Aeson (FromJSON(..), ToJSON(..), Value(String), withText)
-import qualified Data.Map.Strict as Map
-import qualified Data.Vector as Vector
-encodingOf :: Map.Map Text Text
-encodingOf = Map.fromList |};
-          list
-            (List.map
-               (fun (label, encoding) -> pair (l label) (l encoding))
-               encodings.labels);
-          "\n\
-           singleByte :: Map.Map Text (Vector.Vector Int)\n\
-           singleByte = Map.fromList ";
-          list
-            (List.map
-               (fun (encoding, every_byte) ->
-                 pair (l encoding)
-                   ("Vector.fromList " ^ list (code_points every_byte)))
-               encodings.single_byte);
-          "\nrefused :: [Text]\nrefused = ";
-          list (List.map l encodings.refused);
-          "\ndata TextSource = ";
-          String.concat " | " (List.map constructor t.text_source);
-          {| deriving (Eq, Ord, Show, Enum, Bounded)
-instance ToJSON TextSource where toJSON = String . textSourceName
-instance FromJSON TextSource where
-  parseJSON = withText "TextSource" $ \value -> case value of
-|};
-          String.concat ""
-            (List.map
-               (fun w -> "    " ^ l w ^ " -> pure " ^ constructor w ^ "\n")
-               t.text_source);
-          "    _ -> fail \"unknown text source\"\n\
-           textSourceName :: TextSource -> Text\n";
-          String.concat ""
-            (List.map
-               (fun w -> "textSourceName " ^ constructor w ^ " = " ^ l w ^ "\n")
-               t.text_source);
-          "mediaTypes :: Map.Map Text (Text,TextSource,Bool)\n\
-           mediaTypes = Map.fromList ";
-          list
-            (List.map
-               (fun (r : T.media_type) ->
-                 pair (l r.media_type)
-                   ("(" ^ l r.extension ^ ", " ^ constructor r.text_source
-                  ^ ", "
-                   ^ (if r.authorable then "True" else "False")
-                   ^ ")"))
-               t.media_types);
-          "\nextensions :: [(Text,Text)]\nextensions = ";
-          list
-            (List.map
-               (fun (r : T.media_type) -> pair (l r.extension) (l r.media_type))
-               t.media_types);
-          "\naliases :: Map.Map Text Text\naliases = Map.fromList ";
-          list (List.map (fun (a, e) -> pair (l a) (l e)) t.extension_aliases);
-          "\n";
-        ];
+      H.text
+        {
+          banner =
+            Banner.haskell_lines
+              ~from_:(Encodings.Table.file ^ " and " ^ file)
+              __FILE__;
+          extensions = [ "OverloadedStrings" ];
+          name = "Xynolog.Internal.Generated.Text";
+          imports =
+            [
+              H.import "Data.Text" ~items:[ Plain "Text" ];
+              H.import "Data.Aeson"
+                ~items:
+                  [
+                    All "FromJSON";
+                    All "ToJSON";
+                    With ("Value", [ "String" ]);
+                    Plain "withText";
+                  ];
+              H.import "Data.Map.Strict" ~qualified:"Map";
+              H.import "Data.Vector" ~qualified:"Vector";
+            ];
+          body =
+            [
+              H.value "encodingOf" (map text text)
+                (from_list
+                   (List.map
+                      (fun (label, encoding) -> pair label encoding)
+                      encodings.labels));
+              H.value "singleByte"
+                (map text (T_apply ("Vector.Vector", [ T_name "Int" ])))
+                (from_list
+                   (List.map
+                      (fun (encoding, every_byte) ->
+                        H.Tuple
+                          [
+                            Str encoding;
+                            Apply
+                              ( Name "Vector.fromList",
+                                [ List (code_points every_byte) ] );
+                          ])
+                      encodings.single_byte));
+              H.value "refused" (T_list text)
+                (List (List.map (fun e -> H.Str e) encodings.refused));
+              H.data "TextSource"
+                (List.map
+                   (fun w -> H.constructor (constructor w))
+                   t.text_source)
+                ~deriving:[ "Eq"; "Ord"; "Show"; "Enum"; "Bounded" ];
+              Instance
+                {
+                  class_ = "ToJSON";
+                  instance = "TextSource";
+                  methods =
+                    [
+                      ("toJSON", Compose (Name "String", Name "textSourceName"));
+                    ];
+                };
+              Instance
+                {
+                  class_ = "FromJSON";
+                  instance = "TextSource";
+                  methods =
+                    [
+                      ( "parseJSON",
+                        Dollar
+                          ( Apply (Name "withText", [ Str "TextSource" ]),
+                            Lambda
+                              ( "value",
+                                Case
+                                  ( Name "value",
+                                    List.map
+                                      (fun w ->
+                                        ( H.Literal w,
+                                          H.Apply (Name "pure", [ source w ]) ))
+                                      t.text_source
+                                    @ [
+                                        ( Otherwise,
+                                          Apply
+                                            ( Name "fail",
+                                              [ Str "unknown text source" ] ) );
+                                      ] ) ) ) );
+                    ];
+                };
+              Value
+                {
+                  about = [];
+                  name = "textSourceName";
+                  type_ = T_fun (T_name "TextSource", text);
+                  clauses =
+                    List.map
+                      (fun w ->
+                        {
+                          H.patterns = [ Constructor (constructor w) ];
+                          body = Str w;
+                        })
+                      t.text_source;
+                };
+              H.value "mediaTypes"
+                (map text
+                   (T_tuple [ text; T_name "TextSource"; T_name "Bool" ]))
+                (from_list
+                   (List.map
+                      (fun (r : T.media_type) ->
+                        H.Tuple
+                          [
+                            Str r.media_type;
+                            Tuple
+                              [
+                                Str r.extension;
+                                source r.text_source;
+                                Name (if r.authorable then "True" else "False");
+                              ];
+                          ])
+                      t.media_types));
+              H.value "extensions"
+                (T_list (T_tuple [ text; text ]))
+                (List
+                   (List.map
+                      (fun (r : T.media_type) -> pair r.extension r.media_type)
+                      t.media_types));
+              H.value "aliases" (map text text)
+                (from_list
+                   (List.map (fun (a, e) -> pair a e) t.extension_aliases));
+            ];
+        };
   }
 
 (* Each type as the OCaml SDK reads it (ocaml/sdk/lib/media_facts.ml): its
