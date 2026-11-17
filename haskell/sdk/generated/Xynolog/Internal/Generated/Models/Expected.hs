@@ -1,19 +1,14 @@
--- Generated from protocol/specs/src. Run xynolog-codegen; do not edit.
+-- Generated from protocol/specs/src; do not edit.
+-- Regenerate: make generate (codegen/lib/haskell_sdk/haskell_sdk.ml)
 {-# LANGUAGE OverloadedStrings #-}
-
-{-# OPTIONS_GHC -Wno-unused-imports #-}
-module Xynolog.Internal.Generated.Models.Expected
-  ( Expected(..)
-  ) where
-import Control.Applicative ((<|>))
+module Xynolog.Internal.Generated.Models.Expected (Expected(..)) where
 import Data.Aeson (FromJSON(..), ToJSON(..), Value(..), withObject, (.:))
-import Data.Aeson.Types (parseEither)
 import qualified Data.Aeson.KeyMap as KM
-import Data.Scientific (Scientific)
 import Data.Text (Text)
 import Xynolog.Internal.Codec
-import Xynolog.Types.Presence (Presence)
-data Expected = Expected { expectedDid :: Text, expectedName :: Maybe (Text) } deriving (Eq, Show)
-instance FromJSON Expected where
-  parseJSON = checked "Expected" $ withObject "Expected" (\fields -> Expected <$> fields .: "did" <*> optional fields "name")
+data Expected = Expected
+  { expectedDid :: Text
+  , expectedName :: Maybe Text
+  } deriving (Eq, Show)
+instance FromJSON Expected where parseJSON = checked "Expected" $ withObject "Expected" (\fields -> Expected <$> (fields .: "did") <*> optional fields "name")
 instance ToJSON Expected where toJSON value = Object (KM.fromList (concat [[("did", toJSON (expectedDid value))], optionalPair "name" (expectedName value)]))

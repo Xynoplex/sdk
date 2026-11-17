@@ -12,7 +12,8 @@ import Control.Concurrent.Async (Async, ExceptionInLinkedThread(..), asyncThread
 import Control.Exception (Exception, Handler(..), SomeException, bracket, catch, catches, mask, onException, throwIO, try)
 import Control.Monad (unless, void, when)
 import qualified Xynolog.Internal.Required as Required
-import Data.Aeson (FromJSON, ToJSON, Result(..), Value(String), eitherDecodeStrict', encode, fromJSON, toJSON)
+import Data.Aeson (FromJSON, ToJSON, Result(..), Value(Object, String), eitherDecodeStrict', encode, fromJSON, toJSON)
+import qualified Data.Aeson.KeyMap as KM
 import qualified Data.ByteString as Bytes
 import qualified Data.ByteString.Char8 as Char8
 import qualified Data.CaseInsensitive as CI
@@ -343,3 +344,11 @@ emit http frame = Telemetry.sending frame $ do
         count `catch` (\(_ :: HttpFailure) -> pure Nothing) `catch` (\(_ :: HttpException) -> pure Nothing)
   Lifetime.run (lifetime http) (Transport.ownAction (transport http) sending)
     `catch` (\problem -> throwIO (failure problem))
+
+-- | Whether a response refused the credential it was sent with, as the
+-- reference transport reads one: the unauthorized status, or the limited one
+-- with the refusal's code.
+wireRefusesCredential :: Int -> Maybe Value -> Bool
+wireRefusesCredential status body = status == unauthorizedStatus || (status == limitedStatus && maybe False matches body)
+  where matches (Object fields) = KM.lookup refusalField fields == Just (String refusalCode)
+        matches _ = False

@@ -514,6 +514,35 @@ let haskell t =
         };
   }
 
+(* The keys a Haskell client keeps its registry under, by their members'
+   names, and the prefixes of the keys it keeps per session
+   (generated/.../Stored.hs). *)
+let haskell_keys (table : T.t) =
+  let module H = Haskell_syntax in
+  {
+    Output.path = "haskell/sdk/generated/Xynolog/Internal/Generated/Stored.hs";
+    text =
+      H.text
+        {
+          banner = Banner.haskell_lines ~from_:file __FILE__;
+          extensions = [ "OverloadedStrings" ];
+          name = "Xynolog.Internal.Generated.Stored";
+          imports = [ H.import "Data.Text" ~items:[ Plain "Text" ] ];
+          body =
+            List.map
+              (fun (k : T.key) -> H.value k.member (T_name "Text") (Str k.key))
+              table.keys
+            @ List.map
+                (fun (name, prefix) ->
+                  H.value name (T_name "Text") (Str prefix))
+                [
+                  ("sessionKeyPrefix", table.session_key_prefix.prefix);
+                  ("lastEventIdKeyPrefix", table.last_event_id_key_prefix.prefix);
+                  ("cacheKeyPrefix", table.cache_key_prefix.prefix);
+                ];
+        };
+  }
+
 let files ~root:_ (spec : Spec.t) =
   let ( let* ) = Result.bind in
   let* kinds = Identifiers.Table.derive spec in
@@ -526,4 +555,4 @@ let files ~root:_ (spec : Spec.t) =
       ~kinds:(List.map (fun (k : Identifiers.Table.kind) -> k.name) kinds)
       ~refresh
   in
-  Ok [ python t; haskell t ]
+  Ok [ python t; haskell t; haskell_keys t.table ]

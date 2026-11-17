@@ -1,4 +1,5 @@
--- Generated from TRANSPORT-HTTP.md, bus/registry.json and identifiers/kinds.json. Do not edit.
+-- Generated from TRANSPORT-HTTP.md, bus/registry.json and identifiers/kinds.json; do not edit.
+-- Regenerate: make generate (codegen/lib/haskell_sdk/haskell_sdk.ml)
 {-# LANGUAGE OverloadedStrings #-}
 module Xynolog.Transport.Facts (ConnectionState(..), connectionStateName, connectionTransitions, traceField, traceCarrierFields, userField) where
 import Data.Text (Text)

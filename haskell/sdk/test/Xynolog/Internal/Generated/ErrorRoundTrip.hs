@@ -1,4 +1,5 @@
 -- Generated from protocol/specs/src/errors/codes.json; do not edit.
+-- Regenerate: make generate (codegen/lib/error_codes/haskell.ml)
 {-# LANGUAGE OverloadedStrings #-}
 module Xynolog.Internal.Generated.ErrorRoundTrip (roundTripError) where
 import Data.Aeson (Value, parseJSON, toJSON)

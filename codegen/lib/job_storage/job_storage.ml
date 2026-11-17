@@ -200,7 +200,7 @@ let typescript t =
 
 (* Haskell's [markMotivation]: the motivation a MarkJobParams holds, by its
    branch. The branches' and motivations' constructor names are the ones
-   haskell/sdk/codegen gives Xynolog.Types. *)
+   the haskell-sdk group gives Xynolog.Types. *)
 let haskell t =
   let module H = Haskell_syntax in
   {

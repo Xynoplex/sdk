@@ -1,4 +1,5 @@
 -- Generated from protocol/specs/src/errors/codes.json; do not edit.
+-- Regenerate: make generate (codegen/lib/error_codes/haskell.ml)
 {-# LANGUAGE OverloadedStrings #-}
 module Xynolog.ErrorCodes (BusRequestCode(..), busRequestCode, parseBusRequestCode, ControlCode(..), controlCode, parseControlCode, JobCode(..), jobCode, parseJobCode, KbIdentityCode(..), kbIdentityCode, parseKbIdentityCode, SessionCode(..), sessionCode, parseSessionCode, SignInCode(..), signInCode, parseSignInCode, SpanRefusalCode(..), spanRefusalCode, parseSpanRefusalCode, TransportCode(..), transportCode, parseTransportCode, transportCodeFromStatus) where
 import Data.Aeson (FromJSON(..), ToJSON(..), Value(..), withText)
@@ -26,7 +27,6 @@ parseBusRequestCode value = case value of
   _ -> Nothing
 instance ToJSON BusRequestCode where toJSON = String . busRequestCode
 instance FromJSON BusRequestCode where parseJSON = withText "BusRequestCode" (\value -> maybe (fail "unknown error code") pure (parseBusRequestCode value))
-
 data ControlCode = ControlInvalidParams | ControlUnsupportedApiVersion | ControlInvalidRequest | ControlInvalidService | ControlInvalidValue | ControlUnknownSetting | ControlTargetRequired | ControlTargetAmbiguous | ControlRootNotFound | ControlRootNotRegistered | ControlStackNotRunning | ControlStackRunning | ControlStartInProgress | ControlRuntimeUnavailable | ControlDependencyUnavailable | ControlUnreachable | ControlConfirmationRequired | ControlUnreadableState | ControlAlreadySignedIn | ControlSignInFailed | ControlCancelled | ControlFailed deriving (Eq, Ord, Show, Enum, Bounded)
 controlCode :: ControlCode -> Text
 controlCode ControlInvalidParams = "control.invalid-params"
@@ -78,7 +78,6 @@ parseControlCode value = case value of
   _ -> Nothing
 instance ToJSON ControlCode where toJSON = String . controlCode
 instance FromJSON ControlCode where parseJSON = withText "ControlCode" (\value -> maybe (fail "unknown error code") pure (parseControlCode value))
-
 data JobCode = JobFailed | JobCancelled | JobStalled deriving (Eq, Ord, Show, Enum, Bounded)
 jobCode :: JobCode -> Text
 jobCode JobFailed = "job.failed"
@@ -92,7 +91,6 @@ parseJobCode value = case value of
   _ -> Nothing
 instance ToJSON JobCode where toJSON = String . jobCode
 instance FromJSON JobCode where parseJSON = withText "JobCode" (\value -> maybe (fail "unknown error code") pure (parseJobCode value))
-
 data KbIdentityCode = KbIdentityUnreachable | KbIdentityNotReported deriving (Eq, Ord, Show, Enum, Bounded)
 kbIdentityCode :: KbIdentityCode -> Text
 kbIdentityCode KbIdentityUnreachable = "unreachable"
@@ -104,7 +102,6 @@ parseKbIdentityCode value = case value of
   _ -> Nothing
 instance ToJSON KbIdentityCode where toJSON = String . kbIdentityCode
 instance FromJSON KbIdentityCode where parseJSON = withText "KbIdentityCode" (\value -> maybe (fail "unknown error code") pure (parseKbIdentityCode value))
-
 data SessionCode = SessionConstructFailed | SessionAuthFailed | SessionRefreshExhausted | SessionCredentialRefused | SessionKeepFailed | SessionSaveRefused deriving (Eq, Ord, Show, Enum, Bounded)
 sessionCode :: SessionCode -> Text
 sessionCode SessionConstructFailed = "session.construct-failed"
@@ -124,7 +121,6 @@ parseSessionCode value = case value of
   _ -> Nothing
 instance ToJSON SessionCode where toJSON = String . sessionCode
 instance FromJSON SessionCode where parseJSON = withText "SessionCode" (\value -> maybe (fail "unknown error code") pure (parseSessionCode value))
-
 data SignInCode = SignInNoIssuer | SignInDiscovery | SignInNoPending | SignInState | SignInDenied | SignInExpired | SignInAborted | SignInExchange deriving (Eq, Ord, Show, Enum, Bounded)
 signInCode :: SignInCode -> Text
 signInCode SignInNoIssuer = "no-issuer"
@@ -148,7 +144,6 @@ parseSignInCode value = case value of
   _ -> Nothing
 instance ToJSON SignInCode where toJSON = String . signInCode
 instance FromJSON SignInCode where parseJSON = withText "SignInCode" (\value -> maybe (fail "unknown error code") pure (parseSignInCode value))
-
 data SpanRefusalCode = SpanRefusalSpanOutOfRange | SpanRefusalExactMismatch | SpanRefusalPrefixMismatch | SpanRefusalSuffixMismatch | SpanRefusalNothingLocated | SpanRefusalExactNotCovered | SpanRefusalItemOutOfRange deriving (Eq, Ord, Show, Enum, Bounded)
 spanRefusalCode :: SpanRefusalCode -> Text
 spanRefusalCode SpanRefusalSpanOutOfRange = "span-out-of-range"
@@ -170,7 +165,6 @@ parseSpanRefusalCode value = case value of
   _ -> Nothing
 instance ToJSON SpanRefusalCode where toJSON = String . spanRefusalCode
 instance FromJSON SpanRefusalCode where parseJSON = withText "SpanRefusalCode" (\value -> maybe (fail "unknown error code") pure (parseSpanRefusalCode value))
-
 data TransportCode = TransportUnauthorized | TransportForbidden | TransportNotFound | TransportConflict | TransportBadRequest | TransportUnprocessable | TransportRateLimited | TransportUnavailable | TransportError deriving (Eq, Ord, Show, Enum, Bounded)
 transportCode :: TransportCode -> Text
 transportCode TransportUnauthorized = "unauthorized"
@@ -197,13 +191,4 @@ parseTransportCode value = case value of
 instance ToJSON TransportCode where toJSON = String . transportCode
 instance FromJSON TransportCode where parseJSON = withText "TransportCode" (\value -> maybe (fail "unknown error code") pure (parseTransportCode value))
 transportCodeFromStatus :: Int -> TransportCode
-transportCodeFromStatus status
-  | status == 401 = TransportUnauthorized
-  | status == 403 = TransportForbidden
-  | status == 404 = TransportNotFound
-  | status == 409 = TransportConflict
-  | status == 400 = TransportBadRequest
-  | status == 422 = TransportUnprocessable
-  | status == 429 = TransportRateLimited
-  | status >= 500 = TransportUnavailable
-  | otherwise = TransportError
+transportCodeFromStatus status = if status == 401 then TransportUnauthorized else if status == 403 then TransportForbidden else if status == 404 then TransportNotFound else if status == 409 then TransportConflict else if status == 400 then TransportBadRequest else if status == 422 then TransportUnprocessable else if status == 429 then TransportRateLimited else if status >= 500 then TransportUnavailable else TransportError

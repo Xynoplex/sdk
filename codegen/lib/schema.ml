@@ -16,9 +16,10 @@ type discriminator = {
   mapping : (string * string) list option;
 }
 
-type t = Boolean_schema of bool | Schema of schema
-
-and schema = {
+(* One schema's keywords, with ['a] wherever a keyword holds schemas: a
+   schema is a layer whose children are schemas, and [map] rewrites a layer's
+   children with nothing else of it changed. *)
+type 'a layer = {
   ref_ : Decode.reference option;
   comment : string option;
   title : string option;
@@ -30,13 +31,13 @@ and schema = {
   default : literal option;
   example : Yojson.Safe.t option;
   nullable : bool option;
-  properties : (string * t) list option;
+  properties : (string * 'a) list option;
   required : string list option;
-  additional_properties : t option;
-  property_names : t option;
+  additional_properties : 'a option;
+  property_names : 'a option;
   min_properties : int option;
   max_properties : int option;
-  items : t option;
+  items : 'a option;
   min_items : int option;
   max_items : int option;
   unique_items : bool option;
@@ -45,12 +46,66 @@ and schema = {
   pattern : string option;
   minimum : float option;
   maximum : float option;
-  all_of : t list option;
-  any_of : t list option;
-  one_of : t list option;
-  not_ : t option;
+  all_of : 'a list option;
+  any_of : 'a list option;
+  one_of : 'a list option;
+  not_ : 'a option;
   discriminator : discriminator option;
 }
+
+type t = Boolean_schema of bool | Schema of schema
+and schema = t layer
+
+(* A schema that states nothing. *)
+let empty : schema =
+  {
+    ref_ = None;
+    comment = None;
+    title = None;
+    description = None;
+    type_ = None;
+    format = None;
+    enum = None;
+    const = None;
+    default = None;
+    example = None;
+    nullable = None;
+    properties = None;
+    required = None;
+    additional_properties = None;
+    property_names = None;
+    min_properties = None;
+    max_properties = None;
+    items = None;
+    min_items = None;
+    max_items = None;
+    unique_items = None;
+    min_length = None;
+    max_length = None;
+    pattern = None;
+    minimum = None;
+    maximum = None;
+    all_of = None;
+    any_of = None;
+    one_of = None;
+    not_ = None;
+    discriminator = None;
+  }
+
+let map f layer =
+  let each = Option.map (List.map f) in
+  {
+    layer with
+    properties =
+      Option.map (List.map (fun (name, s) -> (name, f s))) layer.properties;
+    additional_properties = Option.map f layer.additional_properties;
+    property_names = Option.map f layer.property_names;
+    items = Option.map f layer.items;
+    all_of = each layer.all_of;
+    any_of = each layer.any_of;
+    one_of = each layer.one_of;
+    not_ = Option.map f layer.not_;
+  }
 
 (* The keywords [schema] states, by their names in the spec. The pattern
    names every field, so a keyword the model learns is one this must name. *)

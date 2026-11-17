@@ -1,26 +1,17 @@
--- Generated from protocol/specs/src. Run xynolog-codegen; do not edit.
+-- Generated from protocol/specs/src; do not edit.
+-- Regenerate: make generate (codegen/lib/haskell_sdk/haskell_sdk.ml)
 {-# LANGUAGE OverloadedStrings #-}
-
-{-# OPTIONS_GHC -Wno-unused-imports #-}
-module Xynolog.Internal.Generated.Models.BusPingMessage
-  ( BusPingMessage(..)
-  , BusPingMessageEvent(..)
-  ) where
-import Control.Applicative ((<|>))
+module Xynolog.Internal.Generated.Models.BusPingMessage (BusPingMessage(..), BusPingMessageEvent(..)) where
 import Data.Aeson (FromJSON(..), ToJSON(..), Value(..), withObject, (.:))
-import Data.Aeson.Types (parseEither)
 import qualified Data.Aeson.KeyMap as KM
-import Data.Scientific (Scientific)
 import Data.Text (Text)
 import Xynolog.Internal.Codec
-import Xynolog.Types.Presence (Presence)
-data BusPingMessage = BusPingMessage { busPingMessageData :: Text, busPingMessageEvent :: BusPingMessageEvent } deriving (Eq, Show)
-instance FromJSON BusPingMessage where
-  parseJSON = checked "BusPingMessage" $ withObject "BusPingMessage" (\fields -> BusPingMessage <$> fields .: "data" <*> fields .: "event")
+data BusPingMessage = BusPingMessage
+  { busPingMessageData :: Text
+  , busPingMessageEvent :: BusPingMessageEvent
+  } deriving (Eq, Show)
+instance FromJSON BusPingMessage where parseJSON = checked "BusPingMessage" $ withObject "BusPingMessage" (\fields -> BusPingMessage <$> (fields .: "data") <*> (fields .: "event"))
 instance ToJSON BusPingMessage where toJSON value = Object (KM.fromList (concat [[("data", toJSON (busPingMessageData value))], [("event", toJSON (busPingMessageEvent value))]]))
-
 data BusPingMessageEvent = BusPingMessageEventPing deriving (Eq, Show)
-instance FromJSON BusPingMessageEvent where
-  parseJSON = checked "BusPingMessageEvent" $ \value -> if value == (String "ping") then pure BusPingMessageEventPing else fail "unknown enumeration member"
-instance ToJSON BusPingMessageEvent where
-  toJSON BusPingMessageEventPing = String "ping"
+instance FromJSON BusPingMessageEvent where parseJSON = checked "BusPingMessageEvent" $ \value -> if value == String "ping" then pure BusPingMessageEventPing else fail "unknown enumeration member"
+instance ToJSON BusPingMessageEvent where toJSON BusPingMessageEventPing = String "ping"

@@ -1,4 +1,5 @@
 -- Generated from protocol/specs/src/client/discovery-absent.json; do not edit.
+-- Regenerate: make generate (codegen/lib/error_codes/haskell.ml)
 {-# LANGUAGE OverloadedStrings #-}
 module Xynolog.Internal.Generated.DiscoveryReasonRoundTrip (roundTripError) where
 import Data.Aeson (Value, parseJSON, toJSON)

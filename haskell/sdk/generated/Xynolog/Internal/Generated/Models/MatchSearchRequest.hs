@@ -1,22 +1,20 @@
--- Generated from protocol/specs/src. Run xynolog-codegen; do not edit.
+-- Generated from protocol/specs/src; do not edit.
+-- Regenerate: make generate (codegen/lib/haskell_sdk/haskell_sdk.ml)
 {-# LANGUAGE OverloadedStrings #-}
-
-{-# OPTIONS_GHC -Wno-unused-imports #-}
-module Xynolog.Internal.Generated.Models.MatchSearchRequest
-  ( MatchSearchRequest(..)
-  ) where
-import Control.Applicative ((<|>))
+module Xynolog.Internal.Generated.Models.MatchSearchRequest (MatchSearchRequest(..)) where
 import Data.Aeson (FromJSON(..), ToJSON(..), Value(..), withObject, (.:))
-import Data.Aeson.Types (parseEither)
 import qualified Data.Aeson.KeyMap as KM
-import Data.Scientific (Scientific)
-import Data.Text (Text)
 import Xynolog.Internal.Codec
-import Xynolog.Types.Presence (Presence)
 import Xynolog.Internal.Generated.Models.AnnotationId
 import Xynolog.Internal.Generated.Models.GatheredContext
 import Xynolog.Internal.Generated.Models.ResourceId
-data MatchSearchRequest = MatchSearchRequest { matchSearchRequestContext :: GatheredContext, matchSearchRequestLimit :: Maybe (Integer), matchSearchRequestReferenceId :: AnnotationId, matchSearchRequestResourceId :: ResourceId, matchSearchRequestUseSemanticScoring :: Maybe (Bool), matchSearchRequestAdditionalProperties :: KM.KeyMap (Value) } deriving (Eq, Show)
-instance FromJSON MatchSearchRequest where
-  parseJSON = checked "MatchSearchRequest" $ withObject "MatchSearchRequest" (\fields -> MatchSearchRequest <$> fields .: "context" <*> optional fields "limit" <*> fields .: "referenceId" <*> fields .: "resourceId" <*> optional fields "useSemanticScoring" <*> traverse parseJSON (withoutFields ["context", "limit", "referenceId", "resourceId", "useSemanticScoring"] fields))
+data MatchSearchRequest = MatchSearchRequest
+  { matchSearchRequestContext :: GatheredContext
+  , matchSearchRequestLimit :: Maybe Integer
+  , matchSearchRequestReferenceId :: AnnotationId
+  , matchSearchRequestResourceId :: ResourceId
+  , matchSearchRequestUseSemanticScoring :: Maybe Bool
+  , matchSearchRequestAdditionalProperties :: KM.KeyMap Value
+  } deriving (Eq, Show)
+instance FromJSON MatchSearchRequest where parseJSON = checked "MatchSearchRequest" $ withObject "MatchSearchRequest" (\fields -> MatchSearchRequest <$> (fields .: "context") <*> optional fields "limit" <*> (fields .: "referenceId") <*> (fields .: "resourceId") <*> optional fields "useSemanticScoring" <*> traverse parseJSON (withoutFields ["context", "limit", "referenceId", "resourceId", "useSemanticScoring"] fields))
 instance ToJSON MatchSearchRequest where toJSON value = Object (KM.fromList (concat [[("context", toJSON (matchSearchRequestContext value))], optionalPair "limit" (matchSearchRequestLimit value), [("referenceId", toJSON (matchSearchRequestReferenceId value))], [("resourceId", toJSON (matchSearchRequestResourceId value))], optionalPair "useSemanticScoring" (matchSearchRequestUseSemanticScoring value)]) <> fmap toJSON (withoutFields ["context", "limit", "referenceId", "resourceId", "useSemanticScoring"] (matchSearchRequestAdditionalProperties value)))

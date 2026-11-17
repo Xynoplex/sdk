@@ -29,7 +29,7 @@ import qualified Xynolog.Retry as Retry
 import qualified Xynolog.Internal.Required as Required
 import qualified Xynolog.Timing.Settings as TimingSettings
 import Xynolog.Internal.Generated.Schemas (schemas)
-import Xynolog.Internal.Schema (normalize, validate, validateNamed)
+import Xynolog.Internal.Schema (checkSchema, normalize, validate, validateNamed)
 import System.Directory (doesDirectoryExist, listDirectory)
 import System.Environment (getArgs)
 import System.IO (hSetBuffering, stdout, BufferMode(LineBuffering), utf8)
@@ -142,6 +142,7 @@ schemaCases root = do
   forM_ [T.pack (takeBaseName file) | file <- files, ".json" `isSuffixOf` file] $ \name ->
     require ("missing generated schema: " ++ T.unpack name) (Map.member name schemas)
   forM_ (Map.toAscList schemas) $ \(name, definition) -> do
+    either (ioError . userError . ((T.unpack name ++ ": ") ++)) pure (checkSchema schemas definition)
     value <- either (ioError . userError . ((T.unpack name ++ ": ") ++)) pure (sample 0 definition)
     expectRoundTrip name value
     normalized <- either (ioError . userError) pure (normalize schemas definition)
