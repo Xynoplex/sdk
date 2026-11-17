@@ -1,4 +1,5 @@
-(* Generated from errors/codes.json. Do not edit. *)
+(* Generated from protocol/specs/src/errors/codes.json. Do not edit.
+   Regenerate: make generate (codegen/lib/error_codes/ocaml.ml) *)
 
 [@@@ocamlformat "disable"]
 

@@ -327,7 +327,36 @@ class MetricRow:
         ];
   }
 
+(* The rows as the OCaml SDK names them (ocaml/sdk/lib/telemetry_facts.ml): a
+   span's name, its channel left for the caller, and its kind; a metric's
+   name; and every attribute key, each by its name with the channel and the
+   dots dropped. *)
+let ocaml (t : t) =
+  let name row = Text.replace_all ~sub:"." ~by:"_" (without_channel row) in
+  let string = Text.ocaml_quoted in
+  let lines =
+    List.map
+      (fun (r : row) ->
+        Printf.sprintf "let %s = (%s, Telemetry.%s)" (name r.name)
+          (string (Text.replace_all ~sub:channel ~by:"" r.name))
+          (String.capitalize_ascii r.kind))
+      t.spans
+    @ List.map
+        (fun (r : row) ->
+          Printf.sprintf "let %s = %s" (name r.name) (string r.name))
+        t.metrics
+    @ List.map
+        (fun key -> Printf.sprintf "let attr_%s = %s" (name key) (string key))
+        (List.sort_uniq compare
+           (List.concat_map (fun (r : row) -> r.all) (t.spans @ t.metrics)))
+  in
+  {
+    Output.path = "ocaml/sdk/lib/telemetry_facts.ml";
+    text =
+      Banner.ocaml ~from_:file __FILE__ ^ "\n" ^ String.concat "\n" lines ^ "\n";
+  }
+
 let files ~root:_ (spec : Spec.t) =
   Result.map
-    (fun t -> [ go t; python t ])
+    (fun t -> [ go t; python t; ocaml t ])
     (derive spec.tables.sdk_telemetry_telemetry)

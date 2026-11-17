@@ -10,6 +10,7 @@ module Go = Go
 module Python = Python
 module Typescript = Typescript
 module Haskell = Haskell
+module Ocaml = Ocaml
 
 let ( let* ) = Result.bind
 
@@ -77,4 +78,7 @@ let context (spec : Spec.t) =
 let files ~root:_ (spec : Spec.t) =
   let* context = context spec in
   let* t = Table.derive context spec.tables.client_refresh in
-  Ok ([ Go.file t; Python.file t; Typescript.file t ] @ Haskell.files t)
+  Ok
+    ([ Go.file t; Python.file t; Typescript.file t ]
+    @ Haskell.files t
+    @ [ Ocaml.file spec.tables.client_refresh ])

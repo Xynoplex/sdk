@@ -1,4 +1,5 @@
-(* Generated from OpenAPI paths, error codes and retry cases. Do not edit. *)
+(* Generated from OpenAPI paths, error codes and retry cases. Do not edit.
+   Regenerate: make generate (codegen/lib/ocaml_sdk/http_facts.ml) *)
 
 [@@@ocamlformat "disable"]
 

@@ -8,9 +8,11 @@ module Table = Table
 module Go = Go
 module Python = Python
 module Typescript = Typescript
+module Ocaml = Ocaml
 
 let files ~root:_ (spec : Spec.t) =
   let ( let* ) = Result.bind in
   let* wire_codes = Table.wire_codes spec in
   let* t = Table.derive ~wire_codes spec.tables.errors_codes in
-  Ok [ Go.file t; Python.file t; Typescript.file t ]
+  let* ocaml = Ocaml.file t in
+  Ok [ Go.file t; Python.file t; Typescript.file t; ocaml ]

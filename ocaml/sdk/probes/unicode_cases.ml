@@ -1,4 +1,5 @@
-(* Generated from text/offset-cases.json. Do not edit. *)
+(* Generated from text/offset-cases.json. Do not edit.
+   Regenerate: make generate (codegen/lib/ocaml_sdk/facts.ml) *)
 
 [@@@ocamlformat "disable"]
 let cases = [

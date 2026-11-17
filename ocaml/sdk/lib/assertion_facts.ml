@@ -1,4 +1,5 @@
-(* Generated from session/client-assertion-cases.json. Do not edit. *)
+(* Generated from session/client-assertion-cases.json. Do not edit.
+   Regenerate: make generate (codegen/lib/ocaml_sdk/facts.ml) *)
 
 [@@@ocamlformat "disable"]
 let lifetime_seconds = 60

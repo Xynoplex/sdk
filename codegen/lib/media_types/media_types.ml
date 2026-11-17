@@ -433,13 +433,31 @@ instance FromJSON TextSource where
         ];
   }
 
+(* Each type as the OCaml SDK reads it (ocaml/sdk/lib/media_facts.ml): its
+   extension, whether a person authors one, and how its text is had. *)
+let ocaml (t : T.t) =
+  let string = Text.ocaml_quoted in
+  {
+    Output.path = "ocaml/sdk/lib/media_facts.ml";
+    text =
+      Banner.ocaml ~from_:file __FILE__
+      ^ "let types = ["
+      ^ String.concat "; "
+          (List.map
+             (fun (m : T.media_type) ->
+               Printf.sprintf "(%s, (%s, %b, %s))" (string m.media_type)
+                 (string m.extension) m.authorable (string m.text_source))
+             t.media_types)
+      ^ "]\n";
+  }
+
 let files ~root:_ (spec : Spec.t) =
   let registry =
     Result.bind (admitted spec) (derive spec.tables.media_types_registry)
   in
   let encodings = Encodings.Table.derive spec.tables.text_encoding_cases in
   match (registry, encodings) with
-  | Ok t, Ok e -> Ok [ go t; python t; typescript t; haskell t e ]
+  | Ok t, Ok e -> Ok [ go t; python t; typescript t; haskell t e; ocaml t ]
   | _ ->
       let errors = function Ok _ -> [] | Error e -> e in
       Error (errors registry @ errors encodings)

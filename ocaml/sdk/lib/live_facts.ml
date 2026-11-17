@@ -1,4 +1,5 @@
-(* Generated from client/refresh.json. Do not edit. *)
+(* Generated from client/refresh.json. Do not edit.
+   Regenerate: make generate (codegen/lib/cache_refresh/ocaml.ml) *)
 
 [@@@ocamlformat "disable"]
 

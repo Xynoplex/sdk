@@ -1,4 +1,5 @@
-(* Generated from session/oauth.json. Do not edit. *)
+(* Generated from session/oauth.json. Do not edit.
+   Regenerate: make generate (codegen/lib/oauth_clients/oauth_clients.ml) *)
 
 [@@@ocamlformat "disable"]
 let browser = "xynolog-browser"

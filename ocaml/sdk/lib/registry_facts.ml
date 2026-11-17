@@ -1,4 +1,5 @@
-(* Generated from session/stored.json and discovery/DiscoveryDocument.json. Do not edit. *)
+(* Generated from session/stored.json and discovery/DiscoveryDocument.json. Do not edit.
+   Regenerate: make generate (codegen/lib/ocaml_sdk/facts.ml) *)
 
 [@@@ocamlformat "disable"]
 let knowledge_bases_key = "xynolog.knowledgeBases"

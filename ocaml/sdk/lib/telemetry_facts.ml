@@ -1,4 +1,5 @@
-(* Generated from sdk-telemetry/telemetry.json. Do not edit. *)
+(* Generated from sdk-telemetry/telemetry.json. Do not edit.
+   Regenerate: make generate (codegen/lib/telemetry/telemetry.ml) *)
 
 [@@@ocamlformat "disable"]
 
