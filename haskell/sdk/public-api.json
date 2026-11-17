@@ -406,7 +406,7 @@
     "generated/Xynolog/Internal/Generated/SignInStore.hs": "37d60bc1ed0f09de7f6cfbb442251a94572d534f80dd0d0d28e839c52cffadff",
     "generated/Xynolog/Internal/Generated/Stored.hs": "0c6d353979e417b79d3709fb0878b3b24d8ea42afabe17d3847cf3469194f6ed",
     "generated/Xynolog/Internal/Generated/Testing.hs": "316cdd59c1219557493aa2ef6fc5b5ba59c30e7c3299aba70086c7611d4f0d6d",
-    "generated/Xynolog/Internal/Generated/Text.hs": "0aee463b1ef765f328455557844dc8df3a3ba316dbf658fe8fe6b0933bb815a0",
+    "generated/Xynolog/Internal/Generated/Text.hs": "09e7815504449260a8fdde7997cdb53678eb6a798e9686698e1ca673b2be7474",
     "generated/Xynolog/Internal/Generated/UnicodeCase.hs": "241877ce0cdbadfb3a90d18704d8997e3f8d7b6460edb542f08ebc38c669fefe",
     "generated/Xynolog/Internal/Generated/WorkerChannels.hs": "eaefd56b2d1b40f4509c8d51046d55393a9a7cf79d65f3806f089bf0eede28d1",
     "generated/Xynolog/Internal/Generated/xynolog_store_policy.h": "6e5bb80017c5718d48693dfee935b4289bbc022bd5d49cde501713f56fc4a085",

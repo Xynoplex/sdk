@@ -11,9 +11,7 @@
 module R = Tables.Bus_registry
 
 let banner =
-  {|# Generated from protocol/specs/src/bus/registry.json; do not edit.
-# Regenerate: make generate (codegen/lib/bus/python.ml)
-|}
+  Banner.python ~from_:"protocol/specs/src/bus/registry.json" __FILE__
 
 let is_lower_or_digit = function 'a' .. 'z' | '0' .. '9' -> true | _ -> false
 let is_upper = function 'A' .. 'Z' -> true | _ -> false
@@ -56,16 +54,20 @@ let channels (bus : Registry.t) =
   let scoped = reg.audience.scoped in
   let declaration (c : R.channel) =
     let type_ = type_of (Registry.carried c) in
-    match c.payload with
-    | Stored_event { payload; _ } ->
-        constant c.channel ^ ": Final = "
-        ^ (if List.mem c.channel scoped then "ScopedChannel"
-           else "RecordedChannel")
-        ^ "[" ^ type_ ^ ", " ^ payload ^ "](" ^ Text.quoted c.channel ^ ", "
-        ^ type_ ^ ", " ^ payload ^ ")"
-    | _ ->
-        constant c.channel ^ ": Final = Channel[" ^ type_ ^ "]("
-        ^ Text.quoted c.channel ^ ", " ^ type_ ^ ")"
+    let name = Python_layout.Atom (Text.quoted c.channel) in
+    let call =
+      match c.payload with
+      | Stored_event { payload; _ } ->
+          Python_layout.Call
+            ( (if List.mem c.channel scoped then "ScopedChannel"
+               else "RecordedChannel")
+              ^ "[" ^ type_ ^ ", " ^ payload ^ "]",
+              [ name; Atom type_; Atom payload ] )
+      | _ -> Call ("Channel[" ^ type_ ^ "]", [ name; Atom type_ ])
+    in
+    Python_layout.statement ~indent:0
+      ~prefix:(constant c.channel ^ ": Final = ")
+      ~suffix:"" call
   in
   let all_names = List.map (fun (c : R.channel) -> c.channel) reg.channels in
   let bridged =

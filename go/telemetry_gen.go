@@ -1,6 +1,6 @@
 // Code generated from protocol/specs/src/sdk-telemetry/telemetry.json — DO NOT EDIT.
 //
-// Regenerate: node codegen/node/schemas/generate-sdk-telemetry-go.mjs
+// Regenerate: make generate (codegen/lib/telemetry/telemetry.ml)
 // The Python table is generated from the same table.
 
 package xynolog

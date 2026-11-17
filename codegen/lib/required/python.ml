@@ -24,9 +24,10 @@ let text (shapes : (string * Shape.shape) list) =
   in
   String.concat ""
     [
-      {|# Generated from the component schemas of protocol/specs/src/openapi.json; do not edit.
-# Regenerate: make generate (codegen/lib/required/python.ml)
-
+      Banner.python
+        ~from_:"the component schemas of protocol/specs/src/openapi.json"
+        __FILE__;
+      {|
 """What each component schema requires of a value, by its name, as JSON: codegen/lib/required/shape.ml states the rules."""
 
 from typing import Final

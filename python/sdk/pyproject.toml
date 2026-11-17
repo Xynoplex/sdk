@@ -101,24 +101,6 @@ relative_files = true
 # No target-version: ruff takes it from requires-python.
 [tool.ruff]
 line-length = 140
-# Generated, each held by its own drift gate.
-extend-exclude = [
-    "src/xynolog/_encodings.py",
-    "src/xynolog/_owner_only_table.py",
-    "src/xynolog/_required_table.py",
-    "src/xynolog/channels.py",
-    "src/xynolog/error_codes.py",
-    "src/xynolog/identifiers.py",
-    "src/xynolog/media_types_table.py",
-    "src/xynolog/oauth_clients.py",
-    "src/xynolog/operations.py",
-    "src/xynolog/refresh.py",
-    "src/xynolog/sign_in.py",
-    "src/xynolog/stored.py",
-    "src/xynolog/telemetry_table.py",
-    "src/xynolog/timing.py",
-    "src/xynolog/types.py",
-]
 
 [tool.ruff.lint]
 select = ["ANN", "ASYNC", "B", "C4", "E", "F", "I", "PGH", "PT", "RUF", "SIM", "TID", "UP", "W"]

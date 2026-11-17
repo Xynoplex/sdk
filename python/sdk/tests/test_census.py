@@ -1,7 +1,8 @@
 """What is written by hand here, and what is generated, each held to its rule.
 
-Generated modules are marked as such on their first line, and are the ones the
-formatter is told to leave alone. Hand-written code states no type by force: it
+Generated modules are marked as such on their first line, and ruff holds them as
+it holds the rest, but for the one exemption each states on its third line.
+Hand-written code states no type by force: it
 has no `cast` and silences no checker. The one place a checker is silenced is
 `tests/refusals`, where each silenced line is a program that must not
 type-check, and a line that no longer needs silencing fails the checker.
@@ -44,11 +45,19 @@ def test_the_walk_found_the_package() -> None:
     assert len(SOURCES) > 15
 
 
-def test_the_generated_modules_are_the_ones_the_formatter_leaves_alone() -> None:
-    marked = sorted(str(path.relative_to(PACKAGE)) for path in SOURCES if generated(path.read_text(encoding="utf-8")))
+def test_the_generated_modules_are_held_by_ruff_but_for_one_stated_exemption() -> None:
     with (PACKAGE / "pyproject.toml").open("rb") as file:
-        excluded = tomllib.load(file)["tool"]["ruff"]["extend-exclude"]
-    assert marked == sorted(excluded)
+        ruff = tomllib.load(file)["tool"]["ruff"]
+    assert "exclude" not in ruff
+    assert "extend-exclude" not in ruff
+    exemptions = {
+        str(path.relative_to(PACKAGE)): path.read_text(encoding="utf-8").splitlines()[2]
+        for path in SOURCES
+        if generated(path.read_text(encoding="utf-8"))
+    }
+    assert len(exemptions) > 10
+    assert len(set(exemptions.values())) == 1, exemptions
+    assert next(iter(exemptions.values())).startswith("# ruff: noqa: ")
 
 
 def test_no_hand_written_line_forces_a_type_or_silences_a_checker() -> None:

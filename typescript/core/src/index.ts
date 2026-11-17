@@ -243,8 +243,8 @@ export {
   type IdentityUnverifiableReason,
   type SpanRefusal,
 } from './error-codes';
-export * from './generated/oauth-clients';
-export * from './generated/sign-in';
+export * from './oauth-clients';
+export * from './sign-in';
 export { BUS_OPERATIONS, type BusOperationKey, type BusOperationSpec } from './bus-operations';
 export { LIMITS_OPERATIONS, type LimitsOperation } from './limits-operations';
 export {

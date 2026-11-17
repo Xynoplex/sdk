@@ -1,5 +1,6 @@
 # Generated from protocol/specs/src/sign-in-store/SignIn.json; do not edit.
-# Regenerate: node codegen/node/schemas/generate-sign-in-python.mjs
+# Regenerate: make generate (codegen/lib/sign_in/sign_in.ml)
+# ruff: noqa: E501, I001, RUF002, RUF022, RUF100
 
 """One entry of the sign-in store (`protocol/specs/src/sign-in-store`): the file where
 `xynolog login` keeps the sign-in to each stack, and where an application

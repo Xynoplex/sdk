@@ -1,5 +1,6 @@
 # Generated from protocol/specs/src/errors/codes.json; do not edit.
 # Regenerate: make generate (codegen/lib/error_codes/python.ml)
+# ruff: noqa: E501, I001, RUF002, RUF022, RUF100
 
 """The codes a Xynolog client reports a failure under.
 

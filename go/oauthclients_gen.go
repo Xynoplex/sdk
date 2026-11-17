@@ -1,7 +1,7 @@
 // Code generated from protocol/specs/src/session/oauth.json — DO NOT EDIT.
 //
-// Regenerate: node codegen/node/schemas/generate-oauth-clients-go.mjs
-// The TypeScript (typescript/core/src/generated/oauth-clients.ts), Rust
+// Regenerate: make generate (codegen/lib/oauth_clients/oauth_clients.ml)
+// The TypeScript (typescript/core/src/oauth-clients.ts), Rust
 // (rust/sdk/build.rs) and Python (xynolog.oauth_clients) SDKs generate
 // from the same file.
 

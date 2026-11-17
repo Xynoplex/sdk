@@ -84,11 +84,43 @@ per language it writes:
   `reopened` refetches too. `Cache_refresh.Go`, `Cache_refresh.Python`,
   `Cache_refresh.Typescript` and `Cache_refresh.Haskell` write each SDK's
   table, Haskell's with the live conformance driver's queries.
+- `identifiers`: the kinds of id, from `identifiers/kinds.json` and each
+  kind's schema, for the Go, Python and TypeScript SDKs: a type of its own
+  per kind, made only through the kind's pattern. `Identifiers.Table` holds
+  each kind to a string schema with a pattern, and `Identifiers.Go` holds
+  `go/oapi-codegen.yaml`'s excluded schemas to the kinds.
+- `oauth-clients`: the client ids a client signs in as and the scope it asks
+  for, from `session/oauth.json`, for the Go, Python and TypeScript SDKs. A
+  client is named in lowercase letters, once.
+- `telemetry`: every span and metric an SDK's transports export, from
+  `sdk-telemetry/telemetry.json`, for the Go and Python SDKs. A span's kind
+  is one of OTLP's, a metric a counter, a span's name holds no placeholder
+  but `{channel}`, and no two rows or keys are one Go or Python name.
+- `sign-in`: the sign-in store's entry, from `sign-in-store/SignIn.json`, and
+  how its directory and files are kept to their owner, from
+  `sign-in-store/owner-only.json`, for the Go, Python and TypeScript SDKs;
+  TypeScript's with the names `sign-in-store/README.md` gives the store's
+  files. `Sign_in.Flat` holds the entry to a flat schema (every property a
+  described string, some of them a date-time), `Sign_in.Owner_only` each
+  mode to four octal digits and the access list to one place for the owner,
+  and `Sign_in.Contract` the README to one name for each.
+- `media-types`: the types a knowledge base admits and what can be done with
+  each, from `media-types/registry.json`, for the Go, Python, TypeScript and
+  Haskell SDKs, Haskell's beside the Encoding Standard's labels. A row is a
+  base media type stated once, with an extension, a label and a word of each
+  vocabulary; an alias is another spelling of a row's extension; and the rows
+  are the `SupportedMediaType` enum's members, no more and no fewer.
 
 `Text` measures and spells text: a width in code points, a word ended by
 ASCII white space, a string as JSON writes it or as a Go or Python literal
 of printable ASCII, a camel-case name in upper snake case, and a comment as
-Go, Python and TypeScript write one. `Output` is the drift gate.
+Go, Python and TypeScript write one. `Python_layout` lays a Python
+statement out as ruff's formatter does at the SDK's line length, so a
+generated module is one `ruff format` leaves as it is. `Banner` is the line
+each generated file opens with, naming the module that writes it; a
+generated Python module also names the lint rules it is exempt from (a long
+line, an ambiguous character, the order of its imports and of its `__all__`,
+and an exemption it does not use), and every other rule holds it. `Output` is the drift gate.
 
 ## Running it
 

@@ -40,7 +40,7 @@ import {
   type AnchoringModel,
   type RenderMode,
   type TextSource,
-} from './generated/media-types';
+} from './media-type-registry';
 
 export type SupportedMediaType = components['schemas']['SupportedMediaType'];
 export type { AnchoringModel, RenderMode, TextSource };

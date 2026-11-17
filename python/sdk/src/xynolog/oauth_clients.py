@@ -1,5 +1,6 @@
 # Generated from protocol/specs/src/session/oauth.json; do not edit.
-# Regenerate: node codegen/node/schemas/generate-oauth-clients-python.mjs
+# Regenerate: make generate (codegen/lib/oauth_clients/oauth_clients.ml)
+# ruff: noqa: E501, I001, RUF002, RUF022, RUF100
 
 """How a Xynolog client presents itself to the issuer a knowledge base trusts:
 the clients its realm registers, and the scope every sign-in asks for.

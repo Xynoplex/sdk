@@ -5,43 +5,43 @@
 
 let path = "python/sdk/src/xynolog/refresh.py"
 
-(* A tuple of strings, as Python writes one: [("a",)], never [("a")]. *)
-let tuple = function
-  | [] -> "()"
-  | [ one ] -> "(" ^ Text.quoted one ^ ",)"
-  | many -> "(" ^ String.concat ", " (List.map Text.quoted many) ^ ")"
+module L = Python_layout
+
+let strings names = L.Tuple (List.map (fun n -> L.Atom (Text.quoted n)) names)
+let field name value = L.Keyword (name, value)
 
 let row (r : Table.row) =
-  let said =
-    List.concat
-      [
+  L.Call
+    ( "CacheRefresh",
+      List.concat
         [
-          (match r.reach with
-          | Subject -> {|reach="subject"|}
-          | Held -> {|reach="held"|});
-        ];
-        List.filter_map
-          (fun (field, w) -> Option.map (fun w -> field ^ "=" ^ tuple w) w)
           [
-            ("names_resource", r.resource);
-            ("names_annotation", r.annotation);
-            ("carries", r.carries);
+            field "reach"
+              (L.Atom
+                 (match r.reach with
+                 | Subject -> {|"subject"|}
+                 | Held -> {|"held"|}));
           ];
-        List.filter_map
-          (fun (field, qs) ->
-            if qs = [] then None else Some (field ^ "=" ^ tuple qs))
-          [
-            ("refetches", r.refetches);
-            ("writes", r.writes);
-            ("removes", r.removes);
-          ];
-        (match r.when_ with
-        | Some Enriched -> [ {|when="enriched"|} ]
-        | Some Unenriched -> [ {|when="unenriched"|} ]
-        | None -> []);
-      ]
-  in
-  "CacheRefresh(" ^ String.concat ", " said ^ ")"
+          List.filter_map
+            (fun (name, w) -> Option.map (fun w -> field name (strings w)) w)
+            [
+              ("names_resource", r.resource);
+              ("names_annotation", r.annotation);
+              ("carries", r.carries);
+            ];
+          List.filter_map
+            (fun (name, qs) ->
+              if qs = [] then None else Some (field name (strings qs)))
+            [
+              ("refetches", r.refetches);
+              ("writes", r.writes);
+              ("removes", r.removes);
+            ];
+          (match r.when_ with
+          | Some Enriched -> [ field "when" (L.Atom {|"enriched"|}) ]
+          | Some Unenriched -> [ field "when" (L.Atom {|"unenriched"|}) ]
+          | None -> []);
+        ] )
 
 let lines names =
   String.concat ""
@@ -58,9 +58,8 @@ let text (t : Table.t) =
   in
   String.concat ""
     [
-      {|# Generated from protocol/specs/src/client/refresh.json; do not edit.
-# Regenerate: make generate (codegen/lib/cache_refresh/python.ml)
-
+      Banner.python ~from_:"protocol/specs/src/client/refresh.json" __FILE__;
+      {|
 """What a Xynolog client asks again for, and when.
 
 A client's live queries answer from a cache. This table says what each event
@@ -162,13 +161,12 @@ CACHE_REFRESH: Final[Mapping[CacheRefreshTrigger, tuple[CacheRefresh, ...]]] = M
       String.concat ""
         (List.map
            (fun (trigger : Table.trigger) ->
-             Printf.sprintf "%s\n        %s: (\n%s        ),\n"
+             Printf.sprintf "%s\n%s\n"
                (Text.python_comment ~indent:"        " trigger.docs)
-               (Text.quoted trigger.on)
-               (String.concat ""
-                  (List.map
-                     (fun r -> "            " ^ row r ^ ",\n")
-                     trigger.rows)))
+               (L.statement ~indent:8
+                  ~prefix:(Text.quoted trigger.on ^ ": ")
+                  ~suffix:","
+                  (L.Rows (List.map row trigger.rows))))
            t.triggers);
       "    }\n)\n";
     ]

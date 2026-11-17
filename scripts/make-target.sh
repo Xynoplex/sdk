@@ -82,6 +82,8 @@ case "${1:-}" in
     trap 'rm -rf "$COVERAGE_DIR"' EXIT
     in_container "golang:$(sh "$ROOT/go/scripts/go-toolchain.sh")-bookworm" '
       cd /tmp/sdk/go
+      unformatted="$(gofmt -l .)"
+      if [ -n "$unformatted" ]; then echo "not as gofmt writes them:"; echo "$unformatted"; exit 1; fi
       go vet ./...
       go test -race -coverprofile=/coverage/coverage.txt -covermode=atomic ./...' \
       --volume "$COVERAGE_DIR:/coverage"

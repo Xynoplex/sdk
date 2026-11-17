@@ -49,9 +49,8 @@ let text (t : Table.t) =
   in
   String.concat ""
     [
-      {|# Generated from protocol/specs/src/errors/codes.json; do not edit.
-# Regenerate: make generate (codegen/lib/error_codes/python.ml)
-
+      Banner.python ~from_:"protocol/specs/src/errors/codes.json" __FILE__;
+      {|
 """The codes a Xynolog client reports a failure under.
 
 Each vocabulary is a closed set: a `Literal` union, so a `match` over one that

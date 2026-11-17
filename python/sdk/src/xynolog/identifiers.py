@@ -1,5 +1,6 @@
 # Generated from protocol/specs/src/identifiers/kinds.json and each kind's schema; do not edit.
-# Regenerate: node codegen/node/schemas/generate-identifiers-python.mjs
+# Regenerate: make generate (codegen/lib/identifiers/python.ml)
+# ruff: noqa: E501, I001, RUF002, RUF022, RUF100
 
 """The kinds of id.
 

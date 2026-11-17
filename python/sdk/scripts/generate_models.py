@@ -70,6 +70,8 @@ BYTES = "binary"
 BANNER = (
     "# Generated from protocol/specs/openapi.json, the bundled spec; do not edit.\n"
     "# Regenerate: uv run python scripts/generate_models.py (in python/sdk)\n"
+    # Exempt from the lint rules codegen/lib/banner.ml names for every generated module.
+    "# ruff: noqa: E501, I001, RUF002, RUF022, RUF100\n"
 )
 
 type JsonObject = dict[str, JsonValue]

@@ -1,5 +1,6 @@
 # Generated from protocol/specs/openapi.json, the bundled spec; do not edit.
 # Regenerate: uv run python scripts/generate_models.py (in python/sdk)
+# ruff: noqa: E501, I001, RUF002, RUF022, RUF100
 
 from __future__ import annotations
 

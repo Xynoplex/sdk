@@ -2,9 +2,12 @@
 // banner that marks a module as generated, a string as Python writes one, a
 // comment wrapped to the line, and a constant's name.
 
-/** The lines that open a generated module: what it is generated from, and how. */
+/**
+ * The lines that open a generated module: what it is generated from, and how.
+ * `ruff: noqa: …` exempts it from the lint rules codegen/lib/banner.ml names.
+ */
 export function pyBanner(source, script) {
-  return `# Generated from ${source}; do not edit.\n# Regenerate: node ${script}\n`;
+  return `# Generated from ${source}; do not edit.\n# Regenerate: node ${script}\n# ruff: noqa: E501, I001, RUF002, RUF022, RUF100\n`;
 }
 
 /** `value` as a Python string literal. JSON's escapes are all Python's. */
