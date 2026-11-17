@@ -19,6 +19,13 @@ let haskell_lines ~from_ file =
     "Regenerate: make generate (" ^ writer file ^ ")";
   ]
 
+(* A generated Kotlin file's opening comment lines, without their [//]. *)
+let kotlin_lines ~from_ file =
+  [
+    "Generated from " ^ from_ ^ "; do not edit.";
+    "Regenerate: make generate (" ^ writer file ^ ")";
+  ]
+
 (* A generated Python module's opening comment lines, without their [#]. *)
 let python_lines ~from_ file =
   [
