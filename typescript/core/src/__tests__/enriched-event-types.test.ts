@@ -87,8 +87,9 @@ type Equal<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
  * channels whose own payload type happens to have an `annotation` key. They
  * are replies, not enriched stored events.
  *
- * The narrowing mirrors what `validate-registry.mjs` already enforces: the
- * `enriched` flag is only allowed on a stored event. Without it this test would
+ * The narrowing mirrors what the bus registry's decoder
+ * (codegen/lib/tables/bus_registry.ml) already enforces: the `enriched` flag
+ * is only allowed on a stored event. Without it this test would
  * fail against a correct generator.
  */
 type ByKey = {

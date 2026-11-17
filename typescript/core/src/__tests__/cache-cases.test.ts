@@ -6,31 +6,20 @@
  * Every SDK runs the table against its own persister, so a case whose expectation is not the spec's
  * would hold every SDK to a wrong rule. Here each expectation is derived from the spec alone: a
  * document's structure by stored.json's own `cacheDocument`, each key by the query's `per` and each
- * value by its `value` in refresh.json. A load keeps exactly the entries whose key and value both hold,
- * of a document whose structure holds; a load of places keeps exactly the pairs of a resource's id and
- * a PersistedEventId. A refused write writes, once the storage takes it, what a write does.
+ * value by its `value`, as the generated refresh table (`CACHE_PER`, `CACHE_VALUES`) states them. A load
+ * keeps exactly the entries whose key and value both hold, of a document whose structure holds; a load
+ * of places keeps exactly the pairs of a resource's id and a PersistedEventId. A refused write writes,
+ * once the storage takes it, what a write does.
  */
 
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import Ajv2020 from 'ajv/dist/2020.js';
+import { CACHE_PER, CACHE_VALUES, PERSISTED_QUERIES, type CachePer, type PersistedQuery } from '../cache-refresh';
 import { validators } from '../openapi';
 
-interface Kept {
-  query: string;
-  key: string;
-  component: string;
-  /** The members within the component the value is, outermost first; none when it is the component. */
-  members: string[];
-}
-
-type ReadKeptQueries = (root: string, refuse: (message: string) => never) => { kept: Kept[]; wholeKey: string; version: number };
-
 const ROOT = fileURLToPath(new URL('../../../..', import.meta.url));
-const { readKeptQueries, WHOLE }: { readKeptQueries: ReadKeptQueries; WHOLE: string } = await import(
-  fileURLToPath(new URL('../../../scripts/generators/kept-queries.mjs', import.meta.url))
-);
 
 type Entry = [unknown, unknown];
 
@@ -58,12 +47,14 @@ interface Places extends Stored {
 
 const read = (path: string): unknown => JSON.parse(readFileSync(`${ROOT}/${path}`, 'utf8'));
 const table = read('protocol/specs/src/session/cache-cases.json') as { cases: Load[]; writes: Write[]; refusedWrites: Write[]; places: Places[] };
-const stored = read('protocol/specs/src/session/stored.json') as { cacheDocument: object };
+const stored = read('protocol/specs/src/session/stored.json') as { cacheDocument: object; wholeKey: { key: string } };
 
-const { kept, wholeKey } = readKeptQueries(ROOT, (message) => {
-  throw new Error(message);
-});
-const keptBy = new Map(kept.map((query) => [query.query, query]));
+const isPersisted = (name: string): name is PersistedQuery => PERSISTED_QUERIES.some((persisted) => persisted === name);
+
+function keptQuery(name: string, stated: string): PersistedQuery {
+  if (!isPersisted(name)) throw new Error(`${stated}: ${name} is no kept query`);
+  return name;
+}
 
 /** A component's name among the validators; the namespace's `default` is the module itself. */
 const isComponent = (name: string): name is Exclude<keyof typeof validators, 'default'> =>
@@ -74,10 +65,25 @@ const holds = (component: string, value: unknown): boolean => {
   return validators[component](value) === true;
 };
 
-const keyHolds = (query: Kept, key: unknown): boolean => (query.key === WHOLE ? key === wholeKey : holds(query.key, key));
+/** A key held as what the query is asked for per: a resource's id, an annotation's id, or the whole key. */
+function keyHolds(query: PersistedQuery, key: unknown): boolean {
+  const per: CachePer[PersistedQuery] = CACHE_PER[query];
+  switch (per) {
+    case 'resource':
+      return holds('ResourceId', key);
+    case 'annotation':
+      return holds('AnnotationId', key);
+    case 'whole':
+      return key === stored.wholeKey.key;
+  }
+}
+
 /** A value held as its component holding it alone, member within member. */
-const valueHolds = (query: Kept, value: unknown): boolean =>
-  holds(query.component, query.members.reduceRight<unknown>((inner, member) => ({ [member]: inner }), value));
+function valueHolds(query: PersistedQuery, value: unknown): boolean {
+  const { component } = CACHE_VALUES[query];
+  const members: readonly string[] = CACHE_VALUES[query].members;
+  return holds(component, members.reduceRight<unknown>((inner, member) => ({ [member]: inner }), value));
+}
 
 const structureHolds = new Ajv2020({ strict: false }).compile(stored.cacheDocument);
 
@@ -96,7 +102,7 @@ const parsed = (source: string): { ok: true; value: unknown } | { ok: false } =>
 };
 
 /** What a load of a query's document keeps, by the spec's rule. */
-function loaded(query: Kept, source: string): Entry[] {
+function loaded(query: PersistedQuery, source: string): Entry[] {
   const document = parsed(source);
   if (!document.ok || !structureHolds(document.value)) return [];
   const { entries } = document.value as { entries: [unknown, unknown, number][] };
@@ -116,19 +122,17 @@ const asMap = (entries: Entry[]): Map<string, unknown> => new Map(entries.map(([
 
 describe('the cache case table (protocol/specs/src/session/cache-cases.json)', () => {
   it('keeps every query refresh.json marks persisted, and no other', () => {
-    expect(new Set(table.cases.map((stated) => stated.query))).toEqual(new Set(keptBy.keys()));
-    expect(new Set(table.writes.map((stated) => stated.query))).toEqual(new Set(keptBy.keys()));
+    expect(new Set(table.cases.map((stated) => stated.query))).toEqual(new Set(PERSISTED_QUERIES));
+    expect(new Set(table.writes.map((stated) => stated.query))).toEqual(new Set(PERSISTED_QUERIES));
   });
 
   it.each(table.cases)('$name: keeps what the spec keeps', (stated) => {
-    const query = keptBy.get(stated.query);
-    if (query === undefined) throw new Error(`${stated.name}: ${stated.query} is no kept query`);
+    const query = keptQuery(stated.query, stated.name);
     expect(asMap(stated.kept)).toEqual(asMap(loaded(query, text(stated))));
   });
 
   it.each([...table.writes, ...table.refusedWrites])('$name: writes what it holds, each key and value the query\'s', (stated) => {
-    const query = keptBy.get(stated.query);
-    if (query === undefined) throw new Error(`${stated.name}: ${stated.query} is no kept query`);
+    const query = keptQuery(stated.query, stated.name);
     for (const [key, value] of stated.held) {
       expect(keyHolds(query, key), `${stated.name}: key ${JSON.stringify(key)}`).toBe(true);
       expect(valueHolds(query, value), `${stated.name}: the value of ${JSON.stringify(key)}`).toBe(true);
