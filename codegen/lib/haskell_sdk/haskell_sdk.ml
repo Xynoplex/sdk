@@ -29,23 +29,10 @@ let file ~under (m : H.module_) =
 
 let banner from_ = Banner.haskell_lines ~from_ __FILE__
 
-(* The adapters of the client types, as their group writes them. *)
+(* The client types the SDK models, as their group states them. *)
 let adapters (spec : Spec.t) =
   let* model = Client_types.Model.derive spec in
-  let* files =
-    Client_types.Haskell.adapters ~shape:(Client_types.Model.shape model)
-  in
-  Result.map List.concat
-    (Spec.all
-       (List.map
-          (fun (f : Output.file) ->
-            Result.map_error
-              (fun e -> [ e ])
-              (Result.map fst
-                 (Decode.run ~file:f.path
-                    (Yojson.Safe.from_string f.text)
-                    (Decode.map Schema.decode))))
-          files))
+  Client_types.Haskell.adapters ~shape:(Client_types.Model.shape model)
 
 (* The package's manifest: its template with the model modules listed, at
    the version the committed manifest states, which scripts/sdk_version.py
