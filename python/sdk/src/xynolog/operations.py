@@ -1,5 +1,6 @@
 # Generated from protocol/specs/src/bus/registry.json; do not edit.
 # Regenerate: make generate (codegen/lib/bus/python.ml)
+# ruff: noqa: E501, I001, RUF002, RUF022, RUF100
 
 """Every request of the bus, with the two channels it is answered on.
 

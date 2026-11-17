@@ -52,6 +52,78 @@ and schema = {
   discriminator : discriminator option;
 }
 
+(* The keywords [schema] states, by their names in the spec. The pattern
+   names every field, so a keyword the model learns is one this must name. *)
+let keywords
+    {
+      ref_;
+      comment;
+      title;
+      description;
+      type_;
+      format;
+      enum;
+      const;
+      default;
+      example;
+      nullable;
+      properties;
+      required;
+      additional_properties;
+      property_names;
+      min_properties;
+      max_properties;
+      items;
+      min_items;
+      max_items;
+      unique_items;
+      min_length;
+      max_length;
+      pattern;
+      minimum;
+      maximum;
+      all_of;
+      any_of;
+      one_of;
+      not_;
+      discriminator;
+    } =
+  let is name value = if Option.is_some value then [ name ] else [] in
+  List.concat
+    [
+      is "$ref" ref_;
+      is "$comment" comment;
+      is "title" title;
+      is "description" description;
+      is "type" type_;
+      is "format" format;
+      is "enum" enum;
+      is "const" const;
+      is "default" default;
+      is "example" example;
+      is "nullable" nullable;
+      is "properties" properties;
+      is "required" required;
+      is "additionalProperties" additional_properties;
+      is "propertyNames" property_names;
+      is "minProperties" min_properties;
+      is "maxProperties" max_properties;
+      is "items" items;
+      is "minItems" min_items;
+      is "maxItems" max_items;
+      is "uniqueItems" unique_items;
+      is "minLength" min_length;
+      is "maxLength" max_length;
+      is "pattern" pattern;
+      is "minimum" minimum;
+      is "maximum" maximum;
+      is "allOf" all_of;
+      is "anyOf" any_of;
+      is "oneOf" one_of;
+      is "not" not_;
+      is "discriminator" discriminator;
+    ]
+
 let type_name =
   Decode.enum
     [

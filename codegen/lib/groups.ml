@@ -17,4 +17,9 @@ let all =
     { name = "error-codes"; files = Error_codes.files };
     { name = "timing"; files = Timing.files };
     { name = "cache-refresh"; files = Cache_refresh.files };
+    { name = "identifiers"; files = Identifiers.files };
+    { name = "oauth-clients"; files = Oauth_clients.files };
+    { name = "telemetry"; files = Telemetry.files };
+    { name = "sign-in"; files = Sign_in.files };
+    { name = "media-types"; files = Media_types.files };
   ]

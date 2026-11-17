@@ -7,9 +7,8 @@ let path = "python/sdk/src/xynolog/timing.py"
 let text (t : Table.t) =
   String.concat ""
     [
-      {|# Generated from protocol/specs/src/client/timing.json; do not edit.
-# Regenerate: make generate (codegen/lib/timing/python.ml)
-
+      Banner.python ~from_:"protocol/specs/src/client/timing.json" __FILE__;
+      {|
 """The timing a Xynolog client keeps: its deadlines, its retry budgets, the
 cadence of its stream, and what it keeps count of.
 

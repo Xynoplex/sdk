@@ -277,6 +277,7 @@ func DefaultTiming() Timing {
 let python =
   {|# Generated from protocol/specs/src/client/timing.json; do not edit.
 # Regenerate: make generate (codegen/lib/timing/python.ml)
+# ruff: noqa: E501, I001, RUF002, RUF022, RUF100
 
 """The timing a Xynolog client keeps: its deadlines, its retry budgets, the
 cadence of its stream, and what it keeps count of.

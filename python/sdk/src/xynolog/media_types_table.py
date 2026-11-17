@@ -1,5 +1,6 @@
 # Generated from protocol/specs/src/media-types/registry.json; do not edit.
-# Regenerate: node codegen/node/schemas/generate-media-types-python.mjs
+# Regenerate: make generate (codegen/lib/media_types/media_types.ml)
+# ruff: noqa: E501, I001, RUF002, RUF022, RUF100
 
 """The media types a knowledge base admits, with what this SDK reads of each."""
 
@@ -59,11 +60,29 @@ MEDIA_TYPES: Final[tuple[MediaType, ...]] = (
     MediaType(media_type="text/x-kotlin", extension=".kt", text_source="decode", authorable=False, generatable=False),
     MediaType(media_type="text/x-shell", extension=".sh", text_source="decode", authorable=False, generatable=False),
     MediaType(media_type="application/msword", extension=".doc", text_source="none", authorable=False, generatable=False),
-    MediaType(media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document", extension=".docx", text_source="none", authorable=False, generatable=False),
+    MediaType(
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        extension=".docx",
+        text_source="none",
+        authorable=False,
+        generatable=False,
+    ),
     MediaType(media_type="application/vnd.ms-excel", extension=".xls", text_source="none", authorable=False, generatable=False),
-    MediaType(media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", extension=".xlsx", text_source="none", authorable=False, generatable=False),
+    MediaType(
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        extension=".xlsx",
+        text_source="none",
+        authorable=False,
+        generatable=False,
+    ),
     MediaType(media_type="application/vnd.ms-powerpoint", extension=".ppt", text_source="none", authorable=False, generatable=False),
-    MediaType(media_type="application/vnd.openxmlformats-officedocument.presentationml.presentation", extension=".pptx", text_source="none", authorable=False, generatable=False),
+    MediaType(
+        media_type="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        extension=".pptx",
+        text_source="none",
+        authorable=False,
+        generatable=False,
+    ),
     MediaType(media_type="application/zip", extension=".zip", text_source="none", authorable=False, generatable=False),
     MediaType(media_type="application/gzip", extension=".gz", text_source="none", authorable=False, generatable=False),
     MediaType(media_type="application/x-tar", extension=".tar", text_source="none", authorable=False, generatable=False),

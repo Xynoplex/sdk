@@ -2,8 +2,8 @@
  * The generator of the kinds of id refuses what cannot be meant.
  *
  * protocol/specs/src/identifiers/kinds.json and each kind's schema are what every SDK
- * generates its id types from. A generated constructor cannot drift from
- * them, so what is left to hold is the generator's own refusals: each case
+ * generates its id types from. This step brands each kind in types.ts; the
+ * constructors are codegen/lib/identifiers/typescript.ml's. Each case
  * hands it the committed inputs with one fault and expects a refusal that
  * names it. The first case is the control: the committed inputs are accepted.
  */
@@ -49,7 +49,7 @@ interface Fault {
 }
 
 /** Run the generator on the committed inputs after `fault` has changed them. */
-function generate(fault: Fault = {}): { status: number | null; stderr: string; types: string; out: string } {
+function generate(fault: Fault = {}): { status: number | null; stderr: string; types: string } {
   const table = JSON.parse(readFileSync(KINDS, 'utf8')) as { kinds: Array<{ schema: string }> };
   fault.kinds?.(table.kinds);
   const kindsPath = join(dir, 'kinds.json');
@@ -66,24 +66,18 @@ function generate(fault: Fault = {}): { status: number | null; stderr: string; t
   }
   const typesPath = join(dir, 'types.ts');
   writeFileSync(typesPath, fault.types ? fault.types(TYPES) : TYPES);
-  const out = join(dir, 'identifiers.ts');
-  const run = spawnSync(process.execPath, [GENERATOR, '--kinds', kindsPath, '--schemas', schemas, '--types', typesPath, '--out', out], { encoding: 'utf8' });
-  return { status: run.status, stderr: run.stderr, types: readFileSync(typesPath, 'utf8'), out };
+  const run = spawnSync(process.execPath, [GENERATOR, '--kinds', kindsPath, '--schemas', schemas, '--types', typesPath], { encoding: 'utf8' });
+  return { status: run.status, stderr: run.stderr, types: readFileSync(typesPath, 'utf8') };
 }
 
 describe('the generator of the kinds of id', () => {
-  it('accepts the committed kinds: each schema is branded, and each has a constructor whose check is its pattern', () => {
+  it('accepts the committed kinds: each schema is branded', () => {
     const run = generate();
     expect(run.stderr).toBe('');
     expect(run.status).toBe(0);
     expect(run.types).toContain('        ResourceId: string & { readonly __brand: "ResourceId" };');
     expect(run.types).toContain('        UserId: string & { readonly __brand: "UserId" };');
     expect(run.types).not.toMatch(/Id: string;/);
-    const generated = readFileSync(run.out, 'utf8');
-    expect(generated).toContain("const RESOURCE_ID = new RegExp(\"^[A-Za-z0-9_-]{1,128}$\", 'u');");
-    expect(generated).toContain('export function isResourceId(value: string): value is ResourceId {');
-    expect(generated).toContain('export function resourceId(value: string): ResourceId {');
-    expect(generated).toContain('export function jobId(value: string): JobId {');
   });
 
   it('refuses a kind whose schema states no rule', () => {

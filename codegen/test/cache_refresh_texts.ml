@@ -197,6 +197,7 @@ func (v *live) attach(persistence *CachePersistence) {
 let python =
   {xx|# Generated from protocol/specs/src/client/refresh.json; do not edit.
 # Regenerate: make generate (codegen/lib/cache_refresh/python.ml)
+# ruff: noqa: E501, I001, RUF002, RUF022, RUF100
 
 """What a Xynolog client asks again for, and when.
 
@@ -306,22 +307,31 @@ class CacheRefresh:
 CACHE_REFRESH: Final[Mapping[CacheRefreshTrigger, tuple[CacheRefresh, ...]]] = MappingProxyType(
     {
         # Docs.
-        "reopened": (
-            CacheRefresh(reach="held", refetches=("thing", "names")),
-        ),
+        "reopened": (CacheRefresh(reach="held", refetches=("thing", "names")),),
         # Docs.
-        "unreadable": (
-            CacheRefresh(reach="held", refetches=("thing", "items", "names")),
-        ),
+        "unreadable": (CacheRefresh(reach="held", refetches=("thing", "items", "names")),),
         # enriched: It changed, and says how. unenriched: It changed.
         "demo:changed": (
-            CacheRefresh(reach="subject", names_resource=("resourceId",), names_annotation=("annotation", "id"), carries=("annotation",), refetches=("thing",), writes=("items",), when="enriched"),
-            CacheRefresh(reach="subject", names_resource=("resourceId",), names_annotation=("payload", "annotationId"), refetches=("items", "thing"), removes=("names",), when="unenriched"),
+            CacheRefresh(
+                reach="subject",
+                names_resource=("resourceId",),
+                names_annotation=("annotation", "id"),
+                carries=("annotation",),
+                refetches=("thing",),
+                writes=("items",),
+                when="enriched",
+            ),
+            CacheRefresh(
+                reach="subject",
+                names_resource=("resourceId",),
+                names_annotation=("payload", "annotationId"),
+                refetches=("items", "thing"),
+                removes=("names",),
+                when="unenriched",
+            ),
         ),
         # Something */ was said.
-        "demo:said": (
-            CacheRefresh(reach="subject", refetches=("names",)),
-        ),
+        "demo:said": (CacheRefresh(reach="subject", refetches=("names",)),),
     }
 )
 |xx}

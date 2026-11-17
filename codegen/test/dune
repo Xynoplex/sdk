@@ -34,6 +34,16 @@
  (libraries xynolog_codegen yojson alcotest))
 
 (test
+ (name registries)
+ (modules registries)
+ (libraries xynolog_codegen yojson alcotest))
+
+(test
+ (name python_layout)
+ (modules python_layout)
+ (libraries xynolog_codegen alcotest))
+
+(test
  (name cache_refresh)
  (modules cache_refresh cache_refresh_texts)
  (libraries xynolog_codegen yojson alcotest))

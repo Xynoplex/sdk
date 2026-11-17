@@ -1,8 +1,8 @@
 // Code generated from protocol/specs/src/media-types/registry.json — DO NOT EDIT.
 //
-// Regenerate: node codegen/node/schemas/generate-media-types-go.mjs
-// The TypeScript side (typescript/core/src/generated/media-types.ts) and the
-// Rust side (xynolog::media_types) generate from the same registry.
+// Regenerate: make generate (codegen/lib/media_types/media_types.ml)
+// The TypeScript (typescript/core/src/media-type-registry.ts) and Rust
+// (xynolog::media_types) SDKs generate from the same registry.
 
 package mediatypes
 

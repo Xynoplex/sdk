@@ -569,7 +569,7 @@ fn refused_encodings(table: &Value) -> String {
 
 /// The registry as an enum per vocabulary, a row per media type in the
 /// registry's order, and the row a clone falls back to. The registry's own
-/// generator (typescript/scripts/generators/generate-media-types.mjs) is where it is held to
+/// generator (codegen/lib/media_types/media_types.ml) is where it is held to
 /// the `SupportedMediaType` schema; this refuses only what it cannot render.
 fn media_types(table: &Value) -> String {
     const VOCABULARIES: [(&str, &str, &str, &str); 3] = [

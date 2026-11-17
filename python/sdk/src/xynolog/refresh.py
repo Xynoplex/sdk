@@ -1,5 +1,6 @@
 # Generated from protocol/specs/src/client/refresh.json; do not edit.
 # Regenerate: make generate (codegen/lib/cache_refresh/python.ml)
+# ruff: noqa: E501, I001, RUF002, RUF022, RUF100
 
 """What a Xynolog client asks again for, and when.
 
@@ -176,32 +177,64 @@ CACHE_REFRESH: Final[Mapping[CacheRefreshTrigger, tuple[CacheRefresh, ...]]] = M
         # the row names is present and is not what it names: something changed and nothing says
         # what, so every key held is asked for again, as after a gap.
         "unreadable": (
-            CacheRefresh(reach="held", refetches=("resource", "annotations", "annotation", "events", "referencedBy", "resources", "matchedResources", "entityTypes", "tagSchemas", "engines")),
+            CacheRefresh(
+                reach="held",
+                refetches=(
+                    "resource",
+                    "annotations",
+                    "annotation",
+                    "events",
+                    "referencedBy",
+                    "resources",
+                    "matchedResources",
+                    "entityTypes",
+                    "tagSchemas",
+                    "engines",
+                ),
+            ),
         ),
         # The gateway could not replay what a scope missed: everything held of that resource,
         # and of its annotations, is asked for again.
         "bus:resume-gap": (
-            CacheRefresh(reach="subject", names_resource=("scope",), refetches=("annotations", "annotation", "resource", "events", "referencedBy")),
+            CacheRefresh(
+                reach="subject", names_resource=("scope",), refetches=("annotations", "annotation", "resource", "events", "referencedBy")
+            ),
         ),
         # An annotation was added to the resource.
-        "mark:added": (
-            CacheRefresh(reach="subject", names_resource=("resourceId",), refetches=("annotations", "events")),
-        ),
+        "mark:added": (CacheRefresh(reach="subject", names_resource=("resourceId",), refetches=("annotations", "events")),),
         # An annotation was removed from the resource.
         "mark:removed": (
-            CacheRefresh(reach="subject", names_resource=("resourceId",), names_annotation=("payload", "annotationId"), refetches=("annotations", "events"), removes=("annotation",)),
+            CacheRefresh(
+                reach="subject",
+                names_resource=("resourceId",),
+                names_annotation=("payload", "annotationId"),
+                refetches=("annotations", "events"),
+                removes=("annotation",),
+            ),
         ),
         # The reply to this client's own deletion: the annotation is gone whether or not the
         # client holds the scope that would tell it so.
-        "mark:delete-ok": (
-            CacheRefresh(reach="subject", names_annotation=("response", "annotationId"), removes=("annotation",)),
-        ),
+        "mark:delete-ok": (CacheRefresh(reach="subject", names_annotation=("response", "annotationId"), removes=("annotation",)),),
         # enriched: An annotation's body changed, and the event carries the annotation as it now
         # is. unenriched: An annotation's body changed, and the event could not say what it now
         # is.
         "mark:body-updated": (
-            CacheRefresh(reach="subject", names_resource=("resourceId",), names_annotation=("annotation", "id"), carries=("annotation",), refetches=("events",), writes=("annotations", "annotation"), when="enriched"),
-            CacheRefresh(reach="subject", names_resource=("resourceId",), names_annotation=("payload", "annotationId"), refetches=("annotations", "annotation", "events"), when="unenriched"),
+            CacheRefresh(
+                reach="subject",
+                names_resource=("resourceId",),
+                names_annotation=("annotation", "id"),
+                carries=("annotation",),
+                refetches=("events",),
+                writes=("annotations", "annotation"),
+                when="enriched",
+            ),
+            CacheRefresh(
+                reach="subject",
+                names_resource=("resourceId",),
+                names_annotation=("payload", "annotationId"),
+                refetches=("annotations", "annotation", "events"),
+                when="unenriched",
+            ),
         ),
         # An entity tag was added to the resource.
         "mark:entity-tag-added": (
@@ -236,12 +269,8 @@ CACHE_REFRESH: Final[Mapping[CacheRefreshTrigger, tuple[CacheRefresh, ...]]] = M
             CacheRefresh(reach="subject", names_resource=("resourceId",), refetches=("resource", "resources", "matchedResources")),
         ),
         # An entity type was added to the knowledge base.
-        "frame:entity-type-added": (
-            CacheRefresh(reach="subject", refetches=("entityTypes",)),
-        ),
+        "frame:entity-type-added": (CacheRefresh(reach="subject", refetches=("entityTypes",)),),
         # A tag schema was added to the knowledge base.
-        "frame:tag-schema-added": (
-            CacheRefresh(reach="subject", refetches=("tagSchemas",)),
-        ),
+        "frame:tag-schema-added": (CacheRefresh(reach="subject", refetches=("tagSchemas",)),),
     }
 )

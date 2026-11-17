@@ -10,6 +10,9 @@ type error = { file : string; pointer : string; message : string }
 
 val error_to_string : error -> string
 
+val escape : string -> string
+(** A member's name as a token of a JSON Pointer. *)
+
 type cursor
 
 val pointer : cursor -> string

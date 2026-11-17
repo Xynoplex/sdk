@@ -1,5 +1,6 @@
 # Generated from protocol/specs/src/bus/registry.json; do not edit.
 # Regenerate: make generate (codegen/lib/bus/python.ml)
+# ruff: noqa: E501, I001, RUF002, RUF022, RUF100
 
 """Every channel of the bus, typed by the payload it carries.
 
@@ -740,12 +741,22 @@ CHANNEL_NAMES: Final[tuple[ChannelName, ...]] = (
     "session:left",
 )
 
-YIELD_CREATED: Final = RecordedChannel[StoredEventResponse, ResourceCreatedPayload]("yield:created", StoredEventResponse, ResourceCreatedPayload)
-YIELD_CLONED: Final = RecordedChannel[StoredEventResponse, ResourceClonedPayload]("yield:cloned", StoredEventResponse, ResourceClonedPayload)
-YIELD_UPDATED: Final = RecordedChannel[StoredEventResponse, ResourceUpdatedPayload]("yield:updated", StoredEventResponse, ResourceUpdatedPayload)
+YIELD_CREATED: Final = RecordedChannel[StoredEventResponse, ResourceCreatedPayload](
+    "yield:created", StoredEventResponse, ResourceCreatedPayload
+)
+YIELD_CLONED: Final = RecordedChannel[StoredEventResponse, ResourceClonedPayload](
+    "yield:cloned", StoredEventResponse, ResourceClonedPayload
+)
+YIELD_UPDATED: Final = RecordedChannel[StoredEventResponse, ResourceUpdatedPayload](
+    "yield:updated", StoredEventResponse, ResourceUpdatedPayload
+)
 YIELD_MOVED: Final = RecordedChannel[StoredEventResponse, ResourceMovedPayload]("yield:moved", StoredEventResponse, ResourceMovedPayload)
-YIELD_REPRESENTATION_ADDED: Final = ScopedChannel[StoredEventResponse, RepresentationAddedPayload]("yield:representation-added", StoredEventResponse, RepresentationAddedPayload)
-YIELD_REPRESENTATION_REMOVED: Final = ScopedChannel[StoredEventResponse, RepresentationRemovedPayload]("yield:representation-removed", StoredEventResponse, RepresentationRemovedPayload)
+YIELD_REPRESENTATION_ADDED: Final = ScopedChannel[StoredEventResponse, RepresentationAddedPayload](
+    "yield:representation-added", StoredEventResponse, RepresentationAddedPayload
+)
+YIELD_REPRESENTATION_REMOVED: Final = ScopedChannel[StoredEventResponse, RepresentationRemovedPayload](
+    "yield:representation-removed", StoredEventResponse, RepresentationRemovedPayload
+)
 YIELD_CREATE: Final = Channel[YieldCreateCommand]("yield:create", YieldCreateCommand)
 YIELD_CLONE_PERSIST: Final = Channel[YieldClonePersistCommand]("yield:clone-persist", YieldClonePersistCommand)
 YIELD_UPDATE: Final = Channel[YieldUpdateCommand]("yield:update", YieldUpdateCommand)
@@ -759,19 +770,37 @@ YIELD_CLONE_PERSIST_OK: Final = Channel[YieldClonePersistOk]("yield:clone-persis
 YIELD_CLONE_PERSIST_FAILED: Final = Channel[CommandError]("yield:clone-persist-failed", CommandError)
 YIELD_UPDATE_OK: Final = Channel[YieldUpdateOk]("yield:update-ok", YieldUpdateOk)
 YIELD_UPDATE_FAILED: Final = Channel[CommandError]("yield:update-failed", CommandError)
-YIELD_CLONE_TOKEN_GENERATED: Final = Channel[Response[CloneResourceWithTokenResponse]]("yield:clone-token-generated", Response[CloneResourceWithTokenResponse])
+YIELD_CLONE_TOKEN_GENERATED: Final = Channel[Response[CloneResourceWithTokenResponse]](
+    "yield:clone-token-generated", Response[CloneResourceWithTokenResponse]
+)
 YIELD_CLONE_TOKEN_FAILED: Final = Channel[CommandError]("yield:clone-token-failed", CommandError)
-YIELD_CLONE_RESOURCE_RESULT: Final = Channel[Response[GetResourceByTokenResponse]]("yield:clone-resource-result", Response[GetResourceByTokenResponse])
+YIELD_CLONE_RESOURCE_RESULT: Final = Channel[Response[GetResourceByTokenResponse]](
+    "yield:clone-resource-result", Response[GetResourceByTokenResponse]
+)
 YIELD_CLONE_RESOURCE_FAILED: Final = Channel[CommandError]("yield:clone-resource-failed", CommandError)
 YIELD_CLONE_CREATED: Final = Channel[YieldCloneCreated]("yield:clone-created", YieldCloneCreated)
 YIELD_CLONE_CREATE_FAILED: Final = Channel[CommandError]("yield:clone-create-failed", CommandError)
-MARK_ADDED: Final = ScopedChannel[EnrichedResourceEvent, AnnotationAddedPayload]("mark:added", EnrichedResourceEvent, AnnotationAddedPayload)
-MARK_REMOVED: Final = ScopedChannel[StoredEventResponse, AnnotationRemovedPayload]("mark:removed", StoredEventResponse, AnnotationRemovedPayload)
-MARK_BODY_UPDATED: Final = ScopedChannel[EnrichedResourceEvent, AnnotationBodyUpdatedPayload]("mark:body-updated", EnrichedResourceEvent, AnnotationBodyUpdatedPayload)
-MARK_ENTITY_TAG_ADDED: Final = ScopedChannel[StoredEventResponse, EntityTagChangedPayload]("mark:entity-tag-added", StoredEventResponse, EntityTagChangedPayload)
-MARK_ENTITY_TAG_REMOVED: Final = ScopedChannel[StoredEventResponse, EntityTagChangedPayload]("mark:entity-tag-removed", StoredEventResponse, EntityTagChangedPayload)
-MARK_ARCHIVED: Final = ScopedChannel[StoredEventResponse, ResourceArchivedPayload]("mark:archived", StoredEventResponse, ResourceArchivedPayload)
-MARK_UNARCHIVED: Final = ScopedChannel[StoredEventResponse, ResourceUnarchivedPayload]("mark:unarchived", StoredEventResponse, ResourceUnarchivedPayload)
+MARK_ADDED: Final = ScopedChannel[EnrichedResourceEvent, AnnotationAddedPayload](
+    "mark:added", EnrichedResourceEvent, AnnotationAddedPayload
+)
+MARK_REMOVED: Final = ScopedChannel[StoredEventResponse, AnnotationRemovedPayload](
+    "mark:removed", StoredEventResponse, AnnotationRemovedPayload
+)
+MARK_BODY_UPDATED: Final = ScopedChannel[EnrichedResourceEvent, AnnotationBodyUpdatedPayload](
+    "mark:body-updated", EnrichedResourceEvent, AnnotationBodyUpdatedPayload
+)
+MARK_ENTITY_TAG_ADDED: Final = ScopedChannel[StoredEventResponse, EntityTagChangedPayload](
+    "mark:entity-tag-added", StoredEventResponse, EntityTagChangedPayload
+)
+MARK_ENTITY_TAG_REMOVED: Final = ScopedChannel[StoredEventResponse, EntityTagChangedPayload](
+    "mark:entity-tag-removed", StoredEventResponse, EntityTagChangedPayload
+)
+MARK_ARCHIVED: Final = ScopedChannel[StoredEventResponse, ResourceArchivedPayload](
+    "mark:archived", StoredEventResponse, ResourceArchivedPayload
+)
+MARK_UNARCHIVED: Final = ScopedChannel[StoredEventResponse, ResourceUnarchivedPayload](
+    "mark:unarchived", StoredEventResponse, ResourceUnarchivedPayload
+)
 MARK_CREATE_REQUEST: Final = Channel[MarkCreateRequest]("mark:create-request", MarkCreateRequest)
 MARK_DELETE: Final = Channel[MarkDeleteCommand]("mark:delete", MarkDeleteCommand)
 MARK_UPDATE_BODY: Final = Channel[MarkUpdateBodyCommand]("mark:update-body", MarkUpdateBodyCommand)
@@ -798,15 +827,21 @@ MARK_DELEGATE_TIMEOUT: Final = Channel[MarkDelegateTimeoutEvent]("mark:delegate-
 MARK_CREATE_ERROR: Final = Channel[ResourceErrorEvent]("mark:create-error", ResourceErrorEvent)
 MARK_DELETE_ERROR: Final = Channel[ResourceErrorEvent]("mark:delete-error", ResourceErrorEvent)
 BIND_BODY_ERROR: Final = Channel[ResourceErrorEvent]("bind:body-error", ResourceErrorEvent)
-FRAME_ENTITY_TYPE_ADDED: Final = RecordedChannel[StoredEventResponse, EntityTypeAddedPayload]("frame:entity-type-added", StoredEventResponse, EntityTypeAddedPayload)
-FRAME_TAG_SCHEMA_ADDED: Final = RecordedChannel[StoredEventResponse, TagSchemaAddedPayload]("frame:tag-schema-added", StoredEventResponse, TagSchemaAddedPayload)
+FRAME_ENTITY_TYPE_ADDED: Final = RecordedChannel[StoredEventResponse, EntityTypeAddedPayload](
+    "frame:entity-type-added", StoredEventResponse, EntityTypeAddedPayload
+)
+FRAME_TAG_SCHEMA_ADDED: Final = RecordedChannel[StoredEventResponse, TagSchemaAddedPayload](
+    "frame:tag-schema-added", StoredEventResponse, TagSchemaAddedPayload
+)
 FRAME_ADD_ENTITY_TYPE: Final = Channel[FrameAddEntityTypeCommand]("frame:add-entity-type", FrameAddEntityTypeCommand)
 FRAME_ADD_TAG_SCHEMA: Final = Channel[FrameAddTagSchemaCommand]("frame:add-tag-schema", FrameAddTagSchemaCommand)
 FRAME_ENTITY_TYPE_ADD_OK: Final = Channel[Empty]("frame:entity-type-add-ok", Empty)
 FRAME_ENTITY_TYPE_ADD_FAILED: Final = Channel[CommandError]("frame:entity-type-add-failed", CommandError)
 FRAME_TAG_SCHEMA_ADD_OK: Final = Channel[Empty]("frame:tag-schema-add-ok", Empty)
 FRAME_TAG_SCHEMA_ADD_FAILED: Final = Channel[CommandError]("frame:tag-schema-add-failed", CommandError)
-PRINCIPAL_PROFILED: Final = RecordedChannel[StoredEventResponse, PrincipalProfiledPayload]("principal:profiled", StoredEventResponse, PrincipalProfiledPayload)
+PRINCIPAL_PROFILED: Final = RecordedChannel[StoredEventResponse, PrincipalProfiledPayload](
+    "principal:profiled", StoredEventResponse, PrincipalProfiledPayload
+)
 PRINCIPAL_PROFILE: Final = Channel[PrincipalProfileCommand]("principal:profile", PrincipalProfileCommand)
 BIND_INITIATE: Final = Channel[BindInitiateCommand]("bind:initiate", BindInitiateCommand)
 BIND_UPDATE_BODY: Final = Channel[BindUpdateBodyCommand]("bind:update-body", BindUpdateBodyCommand)
@@ -848,8 +883,12 @@ BROWSE_ANNOTATION_FAILED: Final = Channel[CommandError]("browse:annotation-faile
 BROWSE_EVENTS_REQUESTED: Final = Channel[BrowseEventsRequest]("browse:events-requested", BrowseEventsRequest)
 BROWSE_EVENTS_RESULT: Final = Channel[BrowseEventsResult]("browse:events-result", BrowseEventsResult)
 BROWSE_EVENTS_FAILED: Final = Channel[CommandError]("browse:events-failed", CommandError)
-BROWSE_ANNOTATION_HISTORY_REQUESTED: Final = Channel[BrowseAnnotationHistoryRequest]("browse:annotation-history-requested", BrowseAnnotationHistoryRequest)
-BROWSE_ANNOTATION_HISTORY_RESULT: Final = Channel[BrowseAnnotationHistoryResult]("browse:annotation-history-result", BrowseAnnotationHistoryResult)
+BROWSE_ANNOTATION_HISTORY_REQUESTED: Final = Channel[BrowseAnnotationHistoryRequest](
+    "browse:annotation-history-requested", BrowseAnnotationHistoryRequest
+)
+BROWSE_ANNOTATION_HISTORY_RESULT: Final = Channel[BrowseAnnotationHistoryResult](
+    "browse:annotation-history-result", BrowseAnnotationHistoryResult
+)
 BROWSE_ANNOTATION_HISTORY_FAILED: Final = Channel[CommandError]("browse:annotation-history-failed", CommandError)
 BROWSE_ENTITY_TYPES_REQUESTED: Final = Channel[BrowseEntityTypesRequest]("browse:entity-types-requested", BrowseEntityTypesRequest)
 BROWSE_ENTITY_TYPES_RESULT: Final = Channel[BrowseEntityTypesResult]("browse:entity-types-result", BrowseEntityTypesResult)
@@ -923,7 +962,9 @@ SMELT_REBUILD_ANCHORS_FAILED: Final = Channel[CommandError]("smelt:rebuild-ancho
 SETTINGS_THEME_CHANGED: Final = Channel[SettingsThemeChangedEvent]("settings:theme-changed", SettingsThemeChangedEvent)
 SETTINGS_LINE_NUMBERS_TOGGLED: Final = Channel[Empty]("settings:line-numbers-toggled", Empty)
 SETTINGS_LOCALE_CHANGED: Final = Channel[SettingsLocaleChangedEvent]("settings:locale-changed", SettingsLocaleChangedEvent)
-SETTINGS_HOVER_DELAY_CHANGED: Final = Channel[SettingsHoverDelayChangedEvent]("settings:hover-delay-changed", SettingsHoverDelayChangedEvent)
+SETTINGS_HOVER_DELAY_CHANGED: Final = Channel[SettingsHoverDelayChangedEvent](
+    "settings:hover-delay-changed", SettingsHoverDelayChangedEvent
+)
 BUS_RESUME_GAP: Final = Channel[BusResumeGap]("bus:resume-gap", BusResumeGap)
 SESSION_JOINED: Final = Channel[SessionJoinedEvent]("session:joined", SessionJoinedEvent)
 SESSION_LEFT: Final = Channel[SessionLeftEvent]("session:left", SessionLeftEvent)

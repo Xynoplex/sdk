@@ -1,5 +1,6 @@
 # Generated from the component schemas of protocol/specs/src/openapi.json; do not edit.
 # Regenerate: make generate (codegen/lib/required/python.ml)
+# ruff: noqa: E501, I001, RUF002, RUF022, RUF100
 
 """What each component schema requires of a value, by its name, as JSON: codegen/lib/required/shape.ml states the rules."""
 

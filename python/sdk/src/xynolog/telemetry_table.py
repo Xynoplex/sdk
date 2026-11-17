@@ -1,5 +1,6 @@
 # Generated from protocol/specs/src/sdk-telemetry/telemetry.json; do not edit.
-# Regenerate: node codegen/node/schemas/generate-sdk-telemetry-python.mjs
+# Regenerate: make generate (codegen/lib/telemetry/telemetry.ml)
+# ruff: noqa: E501, I001, RUF002, RUF022, RUF100
 
 """The telemetry a Xynolog SDK's transports export, when the process they run
 in exports at all: every span and metric, its kind, and the attributes it
@@ -136,6 +137,4 @@ SPANS: Final[tuple[SpanRow, ...]] = (
     CONTENT_GET_ANNOTATIONS,
 )
 
-METRICS: Final[tuple[MetricRow, ...]] = (
-    XYNOLOG_BUS_SENT,
-)
+METRICS: Final[tuple[MetricRow, ...]] = (XYNOLOG_BUS_SENT,)

@@ -318,7 +318,8 @@ let writers =
           "text"
           ("# Generated from protocol/specs/src/text/encoding-cases.json; do \
             not edit.\n\
-            # Regenerate: make generate (codegen/lib/encodings/python.ml)\n\n\
+            # Regenerate: make generate (codegen/lib/encodings/python.ml)\n\
+            # ruff: noqa: E501, I001, RUF002, RUF022, RUF100\n\n\
             \"\"\"The Encoding Standard as the reader of a resource's text \
             needs it: the encoding each label names, and each single-byte \
             encoding byte by byte.\"\"\"\n\n\

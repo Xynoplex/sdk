@@ -1,6 +1,6 @@
 // Code generated from protocol/specs/src/sign-in-store/owner-only.json — DO NOT EDIT.
 //
-// Regenerate: node codegen/node/schemas/generate-sign-in-go.mjs
+// Regenerate: make generate (codegen/lib/sign_in/sign_in.ml)
 // The Rust, Python and Kotlin SDKs generate theirs from the same file.
 
 package xynolog

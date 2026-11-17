@@ -19,7 +19,7 @@ Every other TypeScript package, the Browser, and the conformance and end-to-end 
 | Area | What | Where |
 |---|---|---|
 | The protocol's types | `components`, `paths`, `operations`: every request, response and schema | `src/types.ts`, generated when the package is built and not committed |
-| Ids | `ResourceId`, `AnnotationId`, `JobId`, `UserId`, each with a constructor that holds text to its rule and a guard that asks without throwing | `src/generated/identifiers.ts`, generated |
+| Ids | `ResourceId`, `AnnotationId`, `JobId`, `UserId`, each with a constructor that holds text to its rule and a guard that asks without throwing | [src/identifiers.ts](src/identifiers.ts), generated |
 | The bus | `EventBus`, the `EventMap` of every channel and its payload, and `Bus`, the typed bus over a transport, whose `request` is a request and its reply | [src/event-bus.ts](src/event-bus.ts), [src/bus-protocol.ts](src/bus-protocol.ts), [src/bus.ts](src/bus.ts), [src/bus-request.ts](src/bus-request.ts) |
 | The record's events | `PersistedEvent`, `StoredEvent`, and the list of every event type a knowledge base records | [src/persisted-events.ts](src/persisted-events.ts), [src/event-base.ts](src/event-base.ts) |
 | The transport contract | `ITransport`, `IContentTransport`, `IGatewayOperations`: what a client needs of the wire | [src/transport.ts](src/transport.ts) |
@@ -27,7 +27,7 @@ Every other TypeScript package, the Browser, and the conformance and end-to-end 
 | Anchoring | Finding an annotation again after its text changed, and the geometry of text on a PDF page (`locate`, `textUnder`) | [src/anchor-annotation.ts](src/anchor-annotation.ts), [src/pdf-anchoring.ts](src/pdf-anchoring.ts) |
 | Identity | A knowledge base's own did and resource identifier (`kbDid`, `kbResource`). A principal's DID is the gateway's to mint and the record's to read | [src/did-utils.ts](src/did-utils.ts) |
 | Media types | Which types a knowledge base admits, and what can be done with each | [src/media-types.ts](src/media-types.ts) |
-| Shared rules | Error codes, timing, retry and the cache's refresh table, the same for every SDK | `src/generated/`, [src/retry.ts](src/retry.ts) |
+| Shared rules | Error codes, timing, retry and the cache's refresh table, the same for every SDK | [src/error-codes.ts](src/error-codes.ts), [src/client-timing.ts](src/client-timing.ts), [src/cache-refresh.ts](src/cache-refresh.ts), generated; [src/retry.ts](src/retry.ts) |
 
 The main import runs in a browser. What cannot is on a subpath:
 
@@ -56,7 +56,7 @@ const audience = kbResource('xynoplex.github.io:xynoplex-caselaw-kb'); // 'https
 
 ## What a change must keep
 
-- **The spec is the source.** `src/types.ts`, [src/bus-protocol.ts](src/bus-protocol.ts) and everything in `src/generated/` are generated from [`protocol/specs/src`](../../../protocol/specs/src/), and never edited. Only `bus-protocol.ts` is committed; the rest is made when the package is built. Change the spec, then run `npm run generate:openapi --workspace=@xynolog/core`. A type written by hand that restates a schema is a second copy that nothing keeps true: use the spec's type, under the spec's name.
+- **The spec is the source.** `src/types.ts`, everything in `src/generated/`, and each module that opens `GENERATED FILE` are generated from [`protocol/specs/src`](../../../protocol/specs/src/), and never edited. The modules that open `GENERATED FILE` are committed, and `make generate` writes them; the rest is made when the package is built. Change the spec, then run `make generate` and `npm run generate:openapi --workspace=@xynolog/core`. A type written by hand that restates a schema is a second copy that nothing keeps true: use the spec's type, under the spec's name.
 - **The main import runs in a browser.** It uses no Node builtin. The validators and the test issuer are reachable only by their subpaths, because of the weight they would add to every bundle, and `npm run lint:core-subpaths` fails a re-export of either from the root.
 - **It depends on no other Xynolog package.** Everything else depends on it.
 - **An id is made only by its constructor or its guard.** One kind is never assignable to another.

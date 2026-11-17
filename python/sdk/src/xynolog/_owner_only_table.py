@@ -1,5 +1,6 @@
 # Generated from protocol/specs/src/sign-in-store/owner-only.json; do not edit.
-# Regenerate: node codegen/node/schemas/generate-sign-in-python.mjs
+# Regenerate: make generate (codegen/lib/sign_in/sign_in.ml)
+# ruff: noqa: E501, I001, RUF002, RUF022, RUF100
 
 """How a writer of the sign-in store keeps its directory and its files to their owner, as the launcher keeps its state home."""
 

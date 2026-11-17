@@ -46,8 +46,7 @@ let words text =
 
 (* [text] as comment lines behind [indent ^ marker], each as many words as fit
    within [width]. A word longer than the width has a line of its own. *)
-let comment ~marker ~indent ~width text =
-  let lead = indent ^ marker in
+let wrapped ~lead ~width text =
   let lines, last =
     List.fold_left
       (fun (lines, line) word ->
@@ -56,8 +55,12 @@ let comment ~marker ~indent ~width text =
         else (lines, if line = "" then word else line ^ " " ^ word))
       ([], "") (words text)
   in
-  let lines = List.rev (if last = "" then lines else last :: lines) in
-  String.concat "\n" (List.map (fun line -> lead ^ line) lines)
+  List.rev (if last = "" then lines else last :: lines)
+
+let comment ~marker ~indent ~width text =
+  let lead = indent ^ marker in
+  String.concat "\n"
+    (List.map (fun line -> lead ^ line) (wrapped ~lead ~width text))
 
 let replace_all ~sub ~by text =
   let n = String.length sub and length = String.length text in
@@ -75,13 +78,24 @@ let replace_all ~sub ~by text =
   go 0;
   Buffer.contents out
 
-(* A string as JSON writes it: quoted, with a quote, a backslash and the
-   control characters escaped, and every other character as itself. *)
+(* [text] in the pieces between each [sub] in it: one more than there are. *)
+let split ~sub text =
+  let n = String.length sub and length = String.length text in
+  let rec go start i pieces =
+    if i > length - n then
+      List.rev (String.sub text start (length - start) :: pieces)
+    else if String.sub text i n = sub then
+      go (i + n) (i + n) (String.sub text start (i - start) :: pieces)
+    else go start (i + 1) pieces
+  in
+  go 0 0 []
 
 (* [text] as a one-line TypeScript doc comment, which a [*/] in it would end
    early. *)
 let doc_comment text = "/** " ^ replace_all ~sub:"*/" ~by:"*\\/" text ^ " */"
 
+(* A string as JSON writes it: quoted, with a quote, a backslash and the
+   control characters escaped, and every other character as itself. *)
 let quoted text =
   let out = Buffer.create (String.length text + 2) in
   Buffer.add_char out '"';
@@ -149,3 +163,25 @@ let go_comment ~indent = comment ~marker:"// " ~indent ~width:78
 
 (* [text] as Python comment lines behind [indent]. *)
 let python_comment ~indent = comment ~marker:"# " ~indent ~width:96
+
+(* [text] as a Python docstring behind [indent]: one line when it fits in 96
+   columns, its words wrapped at 96 otherwise, with the closing quotes on a
+   line of their own. A backslash and a [""""] in it are escaped, and a
+   closing quote of its own is kept off the docstring's. *)
+let python_docstring ~indent text =
+  let safe =
+    replace_all ~sub:{|"""|} ~by:{|\"\"\"|}
+      (replace_all ~sub:"\\" ~by:"\\\\" text)
+  in
+  let quotes = {|"""|} in
+  match wrapped ~lead:indent ~width:96 safe with
+  | [ line ] when length (indent ^ quotes ^ line ^ quotes) <= 96 ->
+      let line =
+        if String.ends_with ~suffix:"\"" line then line ^ " " else line
+      in
+      indent ^ quotes ^ line ^ quotes
+  | first :: rest ->
+      indent ^ quotes ^ first ^ "\n"
+      ^ String.concat "" (List.map (fun l -> indent ^ l ^ "\n") rest)
+      ^ indent ^ quotes
+  | [] -> indent ^ quotes ^ quotes
