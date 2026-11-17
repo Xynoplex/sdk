@@ -736,19 +736,19 @@ drivers to the corresponding conformance jobs.
 Inside the development container, from this package directory:
 
 ```sh
-cabal run xynolog-codegen -- /work
 cabal build all --enable-tests --enable-coverage
 python3 api.py --write
 bash run.sh /work
 ```
 
-Here `/work` is the repository root. The Haskell generator derives protocol
+Here `/work` is the repository root. `make generate`, at the root, writes the
+generated modules: the repository's generator (`codegen/`) derives protocol
 types, channel descriptors, error codes, timing and the module list. It keeps
 the committed manifest's version line, which holds the coming release's Haskell
 version: `scripts/sdk_version.py write` puts it there
 (`haskell/scripts/cabal-version.sh`). The
-manifest is not among `public-api.json`'s inputs, since the template, the
-generated modules and the codegen it is written from are. Refresh
+manifest is not among `public-api.json`'s inputs, since the template and the
+generated modules are. Refresh
 `public-api.json` after library source changes;
 GHC supplies the reachable types, constructors, and signatures through the
 public Cabal modules, including re-exports. The census checks source

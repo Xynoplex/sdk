@@ -9,7 +9,7 @@ category: Network
 author: Xynolog
 maintainer: Xynolog contributors
 build-type: Simple
-extra-source-files: codegen/annotation-adapters.json, test/store-owner-policy.py, test/store-owner-policy.ps1, test/store-lock-peer.py, generated/Xynolog/Internal/Generated/xynolog_store_policy.h, test/fixtures/*.pem, codegen/session-adapters.json, xynolog.cabal.in, README.md, run.sh, api.py, public-api.inputs.json, public-api.json, test/refusals.py, test/refusals/*.hs, test/http-peer.py, conformance/README.md, conformance/launch.sh
+extra-source-files: test/store-owner-policy.py, test/store-owner-policy.ps1, test/store-lock-peer.py, generated/Xynolog/Internal/Generated/xynolog_store_policy.h, test/fixtures/*.pem, xynolog.cabal.in, README.md, run.sh, api.py, public-api.inputs.json, public-api.json, test/refusals.py, test/refusals/*.hs, test/http-peer.py, conformance/README.md, conformance/launch.sh
 
 common settings
   default-language: GHC2021
@@ -194,14 +194,6 @@ library internal
     Xynolog.Internal.Generated.WorkerChannels
 @MODEL_MODULES@
   autogen-modules: Paths_xynolog
-
-executable xynolog-codegen
-  import: settings
-  main-is: Main.hs
-  hs-source-dirs: codegen, internal
-  other-modules: Xynolog.Internal.Schema, Facts, TransportFacts, HttpFacts, WorkerFacts, WorkerTypes
-  ghc-options: -threaded
-  build-depends: mtl >=2.3 && <2.4, directory >=1.3 && <1.4, filepath >=1.5 && <1.6
 
 test-suite schema-cases
   import: settings, context-propagation, crypto
