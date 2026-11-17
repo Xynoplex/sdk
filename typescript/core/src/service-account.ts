@@ -19,7 +19,7 @@
 
 import { JWT_BEARER, clientAssertion } from './client-assertion';
 import { withinDeadline } from './deadline';
-import { HTTP_REQUEST_TIMEOUT_MS } from './generated/client-timing';
+import { HTTP_REQUEST_TIMEOUT_MS } from './client-timing';
 import { uuidV4 } from './id-generation';
 import { SignInError } from './sign-in-error';
 import { isObject, isString } from './type-guards';

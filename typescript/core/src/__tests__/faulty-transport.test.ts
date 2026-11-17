@@ -23,7 +23,7 @@ import { BRIDGED_CHANNELS } from '../bridged-channels';
 import { EventBus } from '../event-bus';
 import { XynologError } from '../errors';
 import { FaultyTransport } from '../faulty-transport';
-import { ERRORS_KEPT_FOR_FIRST_READER_COUNT } from '../generated/client-timing';
+import { ERRORS_KEPT_FOR_FIRST_READER_COUNT } from '../client-timing';
 import { annotationId, resourceId, userId, type ResourceId } from '../identifiers';
 import type { EventMap } from '../bus-protocol';
 import type { GatheredContext } from '../payload-types';

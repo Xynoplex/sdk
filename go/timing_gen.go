@@ -1,6 +1,6 @@
-// Code generated from protocol/specs/src/client/timing.json — DO NOT EDIT.
+// Code generated from protocol/specs/src/client/timing.json; DO NOT EDIT.
 //
-// Regenerate: node codegen/node/schemas/generate-client-timing-go.mjs
+// Regenerate: make generate (codegen/lib/timing/go.ml)
 // The TypeScript and Python constants are generated from the same table, and
 // Rust's by its SDK's build script.
 
@@ -10,9 +10,9 @@ import "time"
 
 // Timing is the timing a Xynolog client keeps: its deadlines, its retry
 // budgets, the cadence of its stream, and what it keeps count of, as
-// protocol/specs/src/client/timing.json states them for every SDK. It holds one field
-// per entry, under the entry's name. DefaultTiming is the table's values; a
-// caller that wants another sets that field.
+// protocol/specs/src/client/timing.json states them for every SDK. It holds
+// one field per entry, under the entry's name. DefaultTiming is the table's
+// values; a caller that wants another sets that field.
 type Timing struct {
 	// BusRequestTimeout is busRequestTimeoutMs: How long a bus request has, from
 	// the call, to be answered: the wait for the stream to open, the emit with

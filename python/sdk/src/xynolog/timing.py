@@ -1,5 +1,5 @@
 # Generated from protocol/specs/src/client/timing.json; do not edit.
-# Regenerate: node codegen/node/schemas/generate-client-timing-python.mjs
+# Regenerate: make generate (codegen/lib/timing/python.ml)
 
 """The timing a Xynolog client keeps: its deadlines, its retry budgets, the
 cadence of its stream, and what it keeps count of.

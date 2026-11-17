@@ -226,7 +226,7 @@ export { replyChannelsFor, BusRequestError } from './bus-request';
 export { Bus, FrameRefusal, asDeclared, type BusPrimitive, type Delivered, type Heard } from './bus';
 // The client's deadlines, retry budgets and stream cadence, generated from
 // protocol/specs/src/client/timing.json — the table every SDK generates from.
-export * from './generated/client-timing';
+export * from './client-timing';
 
 // What each event on the bus refreshes in a client's cache, generated from
 // protocol/specs/src/client/refresh.json — the table every SDK generates from.

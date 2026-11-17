@@ -66,10 +66,18 @@ per language it writes:
   from a status. `Error_codes.Go`, `Error_codes.Python` and
   `Error_codes.Typescript` write each vocabulary, the bus code a wire code
   becomes and the transport code a status becomes.
+- `timing`: the durations, retry budgets and counts a client waits and
+  retries by, from `client/timing.json`, for the Go, Python and TypeScript
+  SDKs. `Timing.Table` holds each entry to the kind its name says (a name
+  ending in Ms is a duration, in Retry a budget, in Count a count), states
+  each once, and holds a budget's backoff at or below its ceiling.
+  `Timing.Go`, `Timing.Python` and `Timing.Typescript` write each SDK's
+  constants.
 
 `Text` measures and spells text: a width in code points, a word ended by
 ASCII white space, a string as JSON writes it or as a Go or Python literal
-of printable ASCII. `Output` is the drift gate.
+of printable ASCII, a camel-case name in upper snake case. `Output` is the
+drift gate.
 
 ## Running it
 

@@ -1,7 +1,11 @@
-// client-timing-table.mjs — the one reading of protocol/specs/src/client/timing.json
-// that every generator of it shares: each entry named for what it is (a
-// duration, a retry budget, a count), stated once, documented, and a value of
-// its kind.
+// client-timing-table.mjs — the reading of protocol/specs/src/client/timing.json
+// that the OCaml SDK's generate-client-timing.mjs still uses: each entry named
+// for what it is (a duration, a retry budget, a count), stated once,
+// documented, and a value of its kind.
+//
+// Its other copy is the OCaml generator's codegen/lib/timing/table.ml, which
+// writes the Go, Python and TypeScript timing and is tested; this one stays
+// until the OCaml SDK's generator is ported.
 
 import { readFileSync } from 'node:fs';
 
