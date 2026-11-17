@@ -391,7 +391,7 @@ internal fun requiredFile(table: JsonObject): String = buildString {
  * Whether a code point is cased, and whether it is case-ignorable, as Unicode's
  * Cased and Case_Ignorable properties have it, which the JDK gives neither of.
  * The table is the SDK's copy (src/codegen/unicode-case.json), which
- * codegen/node/schemas/generate-unicode-case.mjs writes from Node's Unicode data.
+ * codegen/lib/unicode_case writes from Unicode's DerivedCoreProperties.txt.
  */
 internal fun unicodeCaseFile(table: JsonObject): String = buildString {
     fun ranges(property: String): Pair<List<Long>, List<Long>> {

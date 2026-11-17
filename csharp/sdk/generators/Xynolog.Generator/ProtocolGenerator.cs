@@ -59,7 +59,7 @@ public sealed class ProtocolGenerator : IIncrementalGenerator
             }
             if (unicodeCase is null)
             {
-                throw new InvalidOperationException("No unicode-case.json is supplied: the code points Unicode gives the Cased and the Case_Ignorable property, which codegen/node/schemas/generate-unicode-case.mjs writes.");
+                throw new InvalidOperationException("No unicode-case.json is supplied: the code points Unicode gives the Cased and the Case_Ignorable property, which codegen/lib/unicode_case writes.");
             }
             var definitions = new Dictionary<string, JsonElement>(StringComparer.Ordinal);
             var identifiers = new HashSet<string>(StringComparer.Ordinal);
