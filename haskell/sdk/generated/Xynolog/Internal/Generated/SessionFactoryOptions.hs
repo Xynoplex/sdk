@@ -1,5 +1,7 @@
 -- Generated from client/surface.json; do not edit.
-module Xynolog.Internal.Generated.SessionFactoryOptions where
+-- Regenerate: make generate (codegen/lib/haskell_sdk/constants.ml)
+{-# LANGUAGE OverloadedStrings #-}
+module Xynolog.Internal.Generated.SessionFactoryOptions (SessionFactoryOptions(..)) where
 import Xynolog.Types (KnowledgeBase)
 import qualified Xynolog.SessionStorage as Storage
 import qualified Xynolog.State.SessionSignals as Signals

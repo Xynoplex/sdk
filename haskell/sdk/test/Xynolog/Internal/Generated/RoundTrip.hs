@@ -1,6 +1,6 @@
--- Generated from protocol/specs/src. Run xynolog-codegen; do not edit.
+-- Generated from protocol/specs/src; do not edit.
+-- Regenerate: make generate (codegen/lib/haskell_sdk/haskell_sdk.ml)
 {-# LANGUAGE OverloadedStrings #-}
-
 module Xynolog.Internal.Generated.RoundTrip (roundTrip) where
 import Data.Aeson (Value, parseJSON, toJSON)
 import Data.Aeson.Types (parseEither)

@@ -1,5 +1,5 @@
-(* The Haskell SDK's client types. Two JSON files, which haskell/sdk/codegen
-   reads to write their records into Xynolog.Types; and four modules: the
+(* The Haskell SDK's client types. The schemas of nine, which the haskell-sdk
+   group writes models of into Xynolog.Types; and four modules: the
    records of a pending annotation and of a search's state, the events a
    delegation and an upload report, and the form a client secret proves an
    account with.
@@ -38,54 +38,19 @@ let found ~shape name =
   | None ->
       Error [ refusal name "is no client type, and a Haskell writer reads it" ]
 
-(* JSON as JSON.stringify writes it two spaces deep: each member and item on a
-   line of its own. *)
-let rec json ~depth = function
-  | `Assoc [] -> "{}"
-  | `List [] -> "[]"
-  | `Assoc members ->
-      let inner = String.make (2 * (depth + 1)) ' ' in
-      "{\n"
-      ^ String.concat ",\n"
-          (List.map
-             (fun (key, value) ->
-               inner
-               ^ Yojson.Safe.to_string (`String key)
-               ^ ": "
-               ^ json ~depth:(depth + 1) value)
-             members)
-      ^ "\n"
-      ^ String.make (2 * depth) ' '
-      ^ "}"
-  | `List items ->
-      let inner = String.make (2 * (depth + 1)) ' ' in
-      "[\n"
-      ^ String.concat ",\n"
-          (List.map (fun item -> inner ^ json ~depth:(depth + 1) item) items)
-      ^ "\n"
-      ^ String.make (2 * depth) ' '
-      ^ "]"
-  | scalar -> Yojson.Safe.to_string scalar
-
-let type_word : Schema.type_name -> string = function
-  | String -> "string"
-  | Object -> "object"
-  | Integer -> "integer"
-  | Array -> "array"
-  | Boolean -> "boolean"
-  | Number -> "number"
-
-(* A client type as haskell/sdk/codegen reads one: words, or an object's
-   members, each a scalar or another type's file. *)
-let adapter name = function
+(* A client type as the haskell-sdk group models one: words, or an object's
+   members, each a scalar or another type's schema. *)
+let adapter name =
+  let schema (s : Schema.schema) = Schema.Schema { s with title = Some name } in
+  function
   | Words words ->
       Ok
-        (`Assoc
-           [
-             ("title", `String name);
-             ("type", `String "string");
-             ("enum", `List (List.map (fun w -> `String w) words));
-           ])
+        (schema
+           {
+             Schema.empty with
+             type_ = Some [ String ];
+             enum = Some (List.map (fun w -> Schema.String_literal w) words);
+           })
   | Fields members ->
       let* properties =
         all
@@ -93,53 +58,58 @@ let adapter name = function
              (fun m ->
                match m.held with
                | Scalar t ->
-                   Ok (m.name, `Assoc [ ("type", `String (type_word t)) ])
+                   Ok
+                     ( m.name,
+                       Schema.Schema { Schema.empty with type_ = Some [ t ] } )
                | Named { name = n; union = false } ->
-                   Ok (m.name, `Assoc [ ("$ref", `String (n ^ ".json")) ])
+                   Ok
+                     ( m.name,
+                       Schema.Schema
+                         {
+                           Schema.empty with
+                           ref_ =
+                             Some
+                               {
+                                 Decode.target = n ^ ".json";
+                                 file = "";
+                                 pointer = "";
+                               };
+                         } )
                | _ -> Error [ refusal name (m.name ^ " is no scalar or type") ])
              members)
       in
       Ok
-        (`Assoc
-           [
-             ("title", `String name);
-             ("type", `String "object");
-             ("properties", `Assoc properties);
-             ( "required",
-               `List
+        (schema
+           {
+             Schema.empty with
+             type_ = Some [ Object ];
+             properties = Some properties;
+             required =
+               Some
                  (List.filter_map
-                    (fun m ->
-                      if m.required then Some (`String m.name) else None)
-                    members) );
-           ])
+                    (fun m -> if m.required then Some m.name else None)
+                    members);
+           })
   | Union _ -> Error [ refusal name "is a union, which an adapter is not" ]
 
-let adapter_file ~shape path names =
-  let* adapters =
-    all
-      (List.map
-         (fun name ->
-           let* s = found ~shape name in
-           Result.map (fun a -> (name, a)) (adapter name s))
-         names)
-  in
-  Ok { Output.path; text = json ~depth:0 (`Assoc adapters) ^ "\n" }
-
+(* The client types the Haskell SDK models, each by its name. *)
 let adapters ~shape =
   all
-    [
-      adapter_file ~shape "haskell/sdk/codegen/annotation-adapters.json"
-        [
-          "QuotedText";
-          "TextSpan";
-          "ReconciledSpan";
-          "AnchorMethod";
-          "MatchQuality";
-          "PdfCoordinate";
-        ];
-      adapter_file ~shape "haskell/sdk/codegen/session-adapters.json"
-        [ "IssuedTokens"; "DeviceCode"; "BeginAuthorizationOptions" ];
-    ]
+    (List.map
+       (fun name ->
+         let* s = found ~shape name in
+         Result.map (fun a -> (name, a)) (adapter name s))
+       [
+         "QuotedText";
+         "TextSpan";
+         "ReconciledSpan";
+         "AnchorMethod";
+         "MatchQuality";
+         "PdfCoordinate";
+         "IssuedTokens";
+         "DeviceCode";
+         "BeginAuthorizationOptions";
+       ])
 
 let scalar name : Schema.type_name -> (H.type_, Decode.error list) result =
   function

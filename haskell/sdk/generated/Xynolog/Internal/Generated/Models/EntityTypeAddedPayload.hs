@@ -1,19 +1,14 @@
--- Generated from protocol/specs/src. Run xynolog-codegen; do not edit.
+-- Generated from protocol/specs/src; do not edit.
+-- Regenerate: make generate (codegen/lib/haskell_sdk/haskell_sdk.ml)
 {-# LANGUAGE OverloadedStrings #-}
-
-{-# OPTIONS_GHC -Wno-unused-imports #-}
-module Xynolog.Internal.Generated.Models.EntityTypeAddedPayload
-  ( EntityTypeAddedPayload(..)
-  ) where
-import Control.Applicative ((<|>))
+module Xynolog.Internal.Generated.Models.EntityTypeAddedPayload (EntityTypeAddedPayload(..)) where
 import Data.Aeson (FromJSON(..), ToJSON(..), Value(..), withObject, (.:))
-import Data.Aeson.Types (parseEither)
 import qualified Data.Aeson.KeyMap as KM
-import Data.Scientific (Scientific)
 import Data.Text (Text)
 import Xynolog.Internal.Codec
-import Xynolog.Types.Presence (Presence)
-data EntityTypeAddedPayload = EntityTypeAddedPayload { entityTypeAddedPayloadEntityType :: Text, entityTypeAddedPayloadAdditionalProperties :: KM.KeyMap (Value) } deriving (Eq, Show)
-instance FromJSON EntityTypeAddedPayload where
-  parseJSON = checked "EntityTypeAddedPayload" $ withObject "EntityTypeAddedPayload" (\fields -> EntityTypeAddedPayload <$> fields .: "entityType" <*> traverse parseJSON (withoutFields ["entityType"] fields))
+data EntityTypeAddedPayload = EntityTypeAddedPayload
+  { entityTypeAddedPayloadEntityType :: Text
+  , entityTypeAddedPayloadAdditionalProperties :: KM.KeyMap Value
+  } deriving (Eq, Show)
+instance FromJSON EntityTypeAddedPayload where parseJSON = checked "EntityTypeAddedPayload" $ withObject "EntityTypeAddedPayload" (\fields -> EntityTypeAddedPayload <$> (fields .: "entityType") <*> traverse parseJSON (withoutFields ["entityType"] fields))
 instance ToJSON EntityTypeAddedPayload where toJSON value = Object (KM.fromList (concat [[("entityType", toJSON (entityTypeAddedPayloadEntityType value))]]) <> fmap toJSON (withoutFields ["entityType"] (entityTypeAddedPayloadAdditionalProperties value)))

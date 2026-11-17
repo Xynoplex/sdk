@@ -1,7 +1,11 @@
--- Generated from protocol/specs/src/bus/registry.json. Do not edit.
-{-# LANGUAGE DataKinds, GADTs, KindSignatures, OverloadedStrings #-}
-module Xynolog.Channels (Scope(..), ScopeArg(..), Channel(..), Operation(..), SomeOperation(..), allOperations, limitsOperations, channelName, channelNames, globalChannels, scopedChannels, channelSchema, channelIsScoped, encodePayload, decodePayload, operationChannels, persistedEventTypes) where
-import Data.Aeson (Value(..), toJSON, parseJSON)
+-- Generated from protocol/specs/src/bus/registry.json; do not edit.
+-- Regenerate: make generate (codegen/lib/haskell_sdk/haskell_sdk.ml)
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE OverloadedStrings #-}
+module Xynolog.Channels (Scope(..), ScopeArg(..), Channel(..), channelName, channelNames, globalChannels, scopedChannels, channelSchema, persistedEventTypes, channelIsScoped, encodePayload, decodePayload, Operation(..), SomeOperation(..), allOperations, limitsOperations, operationChannels) where
+import Data.Aeson (Value, toJSON, parseJSON)
 import Data.Aeson.Types (parseEither)
 import Data.Text (Text)
 import qualified Xynolog.Internal.Required as Required

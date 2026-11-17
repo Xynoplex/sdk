@@ -11,7 +11,6 @@ fi
 root=${1:?expected repository root or --only-dependencies}
 bash ../toolchain/toolchain.sh --check
 cabal check
-cabal run xynolog-codegen -- --check "$root"
 "${build[@]}"
 mkdir -p conformance/bin
 for role in wire live; do

@@ -1,4 +1,5 @@
 -- Generated from protocol/specs/src/client/timing.json; do not edit.
+-- Regenerate: make generate (codegen/lib/timing/haskell.ml)
 {-# LANGUAGE OverloadedStrings #-}
 module Xynolog.Internal.Generated.TimingValues (timingValues) where
 import Data.Aeson (Value, toJSON)

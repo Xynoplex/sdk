@@ -147,12 +147,13 @@ let cases =
                        ] );
                  ])
         with
-        | Ok [ annotations; _ ] ->
-            Alcotest.(check bool)
-              "start is an integer" true
-              (contains "\"start\": {\n        \"type\": \"integer\""
-                 (text annotations))
-        | Ok _ -> Alcotest.fail "wrote other than the two adapter files"
+        | Ok adapters -> (
+            match List.assoc_opt "TextSpan" adapters with
+            | Some (Schema.Schema { properties = Some properties; _ }) -> (
+                match List.assoc_opt "start" properties with
+                | Some (Schema.Schema { type_ = Some [ Integer ]; _ }) -> ()
+                | _ -> Alcotest.fail "start is not an integer")
+            | _ -> Alcotest.fail "no TextSpan of properties")
         | Error _ -> Alcotest.fail "refused");
     case "a secret proof whose grant is not the client assertion's is refused"
       (fun () ->

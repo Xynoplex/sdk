@@ -15,6 +15,7 @@ type code = {
 }
 
 type vocabulary = {
+  member : string;  (** The vocabulary's member of the table. *)
   name : string;  (** The type's name in Python and TypeScript. *)
   go_name : string;  (** The type's name in Go. *)
   docs : string;
@@ -36,6 +37,7 @@ type t = {
   unclassified : code;  (** What any other status becomes. *)
   others : vocabulary list;
       (** The vocabularies that state nothing but their codes. *)
+  control : vocabulary;  (** The control plane's codes. *)
 }
 
 (* A code's part after its last dot, which names its Go constant: lower-case
@@ -122,7 +124,7 @@ let derive ~wire_codes (table : Tables.Errors_codes.t) =
           { code; docs; go })
         codes
     in
-    { name; go_name; docs; codes }
+    { member; name; go_name; docs; codes }
   in
   let bus =
     vocabulary ~member:"busRequest" ~name:"BusRequestErrorCode"
@@ -295,5 +297,8 @@ let derive ~wire_codes (table : Tables.Errors_codes.t) =
           from;
           unclassified;
           others;
+          control =
+            plain ~member:"control" ~name:"ControlErrorCode"
+              ~go_name:"ControlErrorCode" table.control;
         }
   | refusals, _, _ -> Error refusals

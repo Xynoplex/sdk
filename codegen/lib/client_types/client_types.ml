@@ -12,7 +12,6 @@ let files ~root:_ (spec : Spec.t) =
       Result.map List.concat
         (Haskell.all
            [
-             Haskell.adapters ~shape;
              Result.map
                (fun file -> [ file ])
                (Haskell.pending_annotation ~shape);
