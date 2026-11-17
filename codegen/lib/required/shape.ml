@@ -332,11 +332,11 @@ let token name =
    type, null is one more kind the value may be; anywhere else (beside an
    [allOf], 3.0's only way to make a reference nullable) the schema is a union
    of null and the schema without it. *)
-type view =
-  | Plain of { schema : Schema.schema; null : bool }
-  | Or_null of Schema.schema
+type 'a view =
+  | Plain of { schema : 'a Schema.layer; null : bool }
+  | Or_null of 'a Schema.layer
 
-let view file at (schema : Schema.schema) =
+let view file at (schema : _ Schema.layer) =
   match schema.nullable with
   | None -> Plain { schema; null = false }
   | Some false ->
@@ -349,12 +349,21 @@ let view file at (schema : Schema.schema) =
       | Some [ _ ] -> Plain { schema; null = true }
       | _ -> Or_null schema)
 
-let variants file at (schema : Schema.schema) =
+let variants file at (schema : _ Schema.layer) =
   match (schema.one_of, schema.any_of) with
   | Some _, Some _ -> refuse file at "states both oneOf and anyOf"
   | Some variants, None -> Some ("oneOf", variants)
   | None, Some variants -> Some ("anyOf", variants)
   | None, None -> None
+
+(* What a schema reads as, given its file and where in that it is: the kinds
+   of value it allows, whether it is an object closed to members it does not
+   name, and its shape. *)
+type reading = {
+  kinds_of : string -> string -> kind list;
+  closed_schema : string -> string -> bool;
+  shape_of : string -> string -> shape;
+}
 
 type t = {
   shapes : (string * shape) list;
@@ -442,19 +451,35 @@ let derive ~unrecognized components =
             "names %s, a place within a component" reference.target
     in
     let component_kinds = Hashtbl.create 256 in
-    let rec kinds_of file at (schema : Schema.t) =
-      match schema with
-      | Boolean_schema true -> all_kinds
-      | Boolean_schema false ->
-          refuse file at
-            "allows no value, which the table does not know how to state"
-      | Schema schema -> (
-          match view file at schema with
-          | Or_null schema -> union [ Null ] (plain_kinds file at schema)
-          | Plain { schema; null } ->
-              let kinds = plain_kinds file at schema in
-              if null then union [ Null ] kinds else kinds)
-    and plain_kinds file at (schema : Schema.schema) =
+    let ordered_set kinds = List.filter (fun k -> List.mem k kinds) all_kinds in
+    let rec read (schema : Schema.t) : reading =
+      Schema.para
+        ~boolean:(fun allowed ->
+          let refused file at =
+            refuse file at
+              "allows no value, which the table does not know how to state"
+          in
+          {
+            kinds_of =
+              (fun file at -> if allowed then all_kinds else refused file at);
+            closed_schema = (fun _ _ -> false);
+            shape_of =
+              (fun file at -> if allowed then Shape empty else refused file at);
+          })
+        ~schema:(fun l ->
+          {
+            kinds_of = kinds_of l;
+            closed_schema = closed_schema l;
+            shape_of = shape_of l;
+          })
+        schema
+    and kinds_of l file at =
+      match view file at l with
+      | Or_null schema -> union [ Null ] (plain_kinds file at schema)
+      | Plain { schema; null } ->
+          let kinds = plain_kinds file at schema in
+          if null then union [ Null ] kinds else kinds
+    and plain_kinds file at schema =
       match schema.ref_ with
       | Some reference -> (
           let name = referred reference in
@@ -465,7 +490,7 @@ let derive ~unrecognized components =
                  may be any. *)
               Hashtbl.replace component_kinds name all_kinds;
               let file, schema = Hashtbl.find file_of name in
-              let kinds = kinds_of file "" schema in
+              let kinds = (read schema).kinds_of file "" in
               Hashtbl.replace component_kinds name kinds;
               kinds)
       | None -> (
@@ -473,9 +498,9 @@ let derive ~unrecognized components =
           | Some types, _, _ -> ordered_set (List.map kind_of_type types)
           | None, Some parts, _ ->
               List.fold_left
-                (fun (kinds, i) part ->
+                (fun (kinds, i) (_, part) ->
                   let allowed =
-                    kinds_of file (Printf.sprintf "%s/allOf/%d" at i) part
+                    part.kinds_of file (Printf.sprintf "%s/allOf/%d" at i)
                   in
                   ( List.filter
                       (fun k -> allows kinds k && allows allowed k)
@@ -486,10 +511,9 @@ let derive ~unrecognized components =
           | None, None, Some (keyword, variants) ->
               List.fold_left union []
                 (List.mapi
-                   (fun i variant ->
-                     kinds_of file
-                       (Printf.sprintf "%s/%s/%d" at keyword i)
-                       variant)
+                   (fun i (_, variant) ->
+                     variant.kinds_of file
+                       (Printf.sprintf "%s/%s/%d" at keyword i))
                    variants)
           | None, None, None -> (
               if
@@ -501,54 +525,38 @@ let derive ~unrecognized components =
                 match schema.enum with
                 | Some values -> ordered_set (List.map kind_of_literal values)
                 | None -> all_kinds))
-    and ordered_set kinds = List.filter (fun k -> List.mem k kinds) all_kinds in
-    let closed_schema =
-      let rec closed (schema : Schema.t) : string -> string -> bool =
-        Schema.para
-          ~boolean:(fun _ _ _ -> false)
-          ~schema:(fun l file at ->
-            match view file at (Schema.map fst l) with
-            | Or_null _ -> false
-            | Plain { schema; _ } -> (
-                match schema.ref_ with
-                | Some reference ->
-                    let file, schema =
-                      Hashtbl.find file_of (referred reference)
-                    in
-                    closed schema file ""
-                | None ->
-                    schema.additional_properties = Some (Boolean_schema false)
-                    || schema.max_properties = Some 0
-                    || List.exists
-                         (fun (_, part) -> part file at)
-                         (Option.value l.all_of ~default:[])))
-          schema
-      in
-      fun file at schema -> closed schema file at
-    in
-    let rec shape_of file at (schema : Schema.t) =
-      match schema with
-      | Boolean_schema true -> Shape empty
-      | Boolean_schema false ->
-          refuse file at
-            "allows no value, which the table does not know how to state"
-      | Schema schema -> (
-          match view file at schema with
-          | Or_null inner ->
-              let kinds = union [ Null ] (plain_kinds file at inner) in
-              Shape
-                {
-                  empty with
-                  kinds =
-                    (if any_kind kinds then None else Some (ordered kinds));
-                  one_of =
-                    [
-                      Shape { empty with kinds = Some [ Null ] };
-                      plain_shape file at inner ~null:false;
-                    ];
-                }
-          | Plain { schema; null } -> plain_shape file at schema ~null)
-    and plain_shape file at (schema : Schema.schema) ~null =
+    and closed_schema l file at =
+      match view file at l with
+      | Or_null _ -> false
+      | Plain { schema; _ } -> (
+          match schema.ref_ with
+          | Some reference ->
+              let file, schema = Hashtbl.find file_of (referred reference) in
+              (read schema).closed_schema file ""
+          | None ->
+              (match schema.additional_properties with
+                | Some (Boolean_schema false, _) -> true
+                | _ -> false)
+              || schema.max_properties = Some 0
+              || List.exists
+                   (fun (_, part) -> part.closed_schema file at)
+                   (Option.value schema.all_of ~default:[]))
+    and shape_of l file at =
+      match view file at l with
+      | Or_null inner ->
+          let kinds = union [ Null ] (plain_kinds file at inner) in
+          Shape
+            {
+              empty with
+              kinds = (if any_kind kinds then None else Some (ordered kinds));
+              one_of =
+                [
+                  Shape { empty with kinds = Some [ Null ] };
+                  plain_shape file at inner ~null:false;
+                ];
+            }
+      | Plain { schema; null } -> plain_shape file at schema ~null
+    and plain_shape file at schema ~null =
       let {
         Schema.ref_;
         comment = _;
@@ -609,7 +617,8 @@ let derive ~unrecognized components =
           in
           match all_of with
           (* An allOf around one schema only describes it. *)
-          | Some [ part ] when not own -> shape_of file (at ^ "/allOf/0") part
+          | Some [ (_, part) ] when not own ->
+              part.shape_of file (at ^ "/allOf/0")
           | _ ->
               let kinds =
                 let kinds = plain_kinds file at schema in
@@ -644,14 +653,14 @@ let derive ~unrecognized components =
                 List.map
                   (fun name ->
                     ( name,
-                      shape_of file
-                        (at ^ "/properties/" ^ token name)
-                        (List.assoc name (Option.get properties)) ))
+                      (snd (List.assoc name (Option.get properties))).shape_of
+                        file
+                        (at ^ "/properties/" ^ token name) ))
                   names
               in
               let closed =
                 match (additional_properties, max_properties) with
-                | Some (Boolean_schema false), _ -> Some names
+                | Some (Schema.Boolean_schema false, _), _ -> Some names
                 | _, Some 0 when names = [] -> Some []
                 | _, Some n ->
                     refuse file (at ^ "/maxProperties")
@@ -662,9 +671,9 @@ let derive ~unrecognized components =
               in
               let values =
                 match additional_properties with
-                | Some (Schema _ as value) ->
-                    Some (shape_of file (at ^ "/additionalProperties") value)
-                | Some (Boolean_schema _) | None -> None
+                | Some (Schema _, value) ->
+                    Some (value.shape_of file (at ^ "/additionalProperties"))
+                | Some (Boolean_schema _, _) | None -> None
               in
               let one_of, discriminator =
                 match (variants file at schema, discriminator) with
@@ -675,10 +684,9 @@ let derive ~unrecognized components =
                 | Some (keyword, variants), discriminator ->
                     let shapes =
                       List.mapi
-                        (fun i variant ->
-                          shape_of file
-                            (Printf.sprintf "%s/%s/%d" at keyword i)
-                            variant)
+                        (fun i (_, variant) ->
+                          variant.shape_of file
+                            (Printf.sprintf "%s/%s/%d" at keyword i))
                         variants
                     in
                     ( shapes,
@@ -693,7 +701,8 @@ let derive ~unrecognized components =
                           let named =
                             List.map
                               (function
-                                | Schema.Schema { ref_ = Some reference; _ } ->
+                                | Schema.Schema { ref_ = Some reference; _ }, _
+                                  ->
                                     Some (referred reference)
                                 | _ -> None)
                               variants
@@ -729,14 +738,17 @@ let derive ~unrecognized components =
                 | Some parts ->
                     if
                       List.length parts > 1
-                      && List.exists (closed_schema file (at ^ "/allOf")) parts
+                      && List.exists
+                           (fun (_, part) ->
+                             part.closed_schema file (at ^ "/allOf"))
+                           parts
                     then
                       refuse file (at ^ "/allOf")
                         "has a closed part, which would refuse the other \
                          parts' members";
                     List.mapi
-                      (fun i part ->
-                        shape_of file (Printf.sprintf "%s/allOf/%d" at i) part)
+                      (fun i (_, part) ->
+                        part.shape_of file (Printf.sprintf "%s/allOf/%d" at i))
                       parts
               in
               Shape
@@ -758,7 +770,10 @@ let derive ~unrecognized components =
                     | _ -> None);
                   members;
                   closed;
-                  items = Option.map (shape_of file (at ^ "/items")) items;
+                  items =
+                    Option.map
+                      (fun (_, item) -> item.shape_of file (at ^ "/items"))
+                      items;
                   values;
                   one_of;
                   discriminator;
@@ -768,7 +783,7 @@ let derive ~unrecognized components =
     let unpruned =
       List.map
         (fun (name, file, schema) ->
-          let shape = shape_of file "" schema in
+          let shape = (read schema).shape_of file "" in
           if name <> "CommandError" then (name, shape)
           else
             match shape with
@@ -860,7 +875,7 @@ let derive ~unrecognized components =
         (List.map (fun (name, shape) -> (name, pruned shape)) unpruned)
     in
     let inline ~file ~pointer schema =
-      try Ok (pruned (shape_of file pointer schema))
+      try Ok (pruned ((read schema).shape_of file pointer))
       with Refused error -> Error error
     in
     Ok { shapes; inline }
