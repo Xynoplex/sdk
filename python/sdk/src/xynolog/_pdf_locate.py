@@ -25,7 +25,7 @@ _SAME_LINE: Final = 2
 class Rectangle:
     """A rectangle on a page: its bottom-left corner and its size, in PDF points."""
 
-    page: float
+    page: int
     x: float
     y: float
     width: float
@@ -51,7 +51,7 @@ def _edges(item: PdfTextItem, start: int, end: int) -> tuple[float, float]:
     return left, right
 
 
-def _spanning(page: float, line: list[PdfTextItem], start: int, end: int) -> Rectangle:
+def _spanning(page: int, line: list[PdfTextItem], start: int, end: int) -> Rectangle:
     """The rectangle that spans a line's items, as far as the span reaches into each."""
     edges = [_edges(item, start, end) for item in line]
     x = min(left for left, _ in edges)
@@ -71,7 +71,7 @@ def locate(anchored: AnchoredText, start: int, end: int) -> tuple[list[PdfTextIt
     if start == end:
         return [], []
     overlapping = [item for item in anchored.items if item.start < end and item.end > start]
-    pages: dict[float, list[PdfTextItem]] = {}
+    pages: dict[int, list[PdfTextItem]] = {}
     for item in overlapping:
         pages.setdefault(item.page, []).append(item)
     return overlapping, [_spanning(page, line, start, end) for page, items in pages.items() for line in _lines(items)]
@@ -89,6 +89,6 @@ def _decimal(number: float) -> str:
 def fragment_of(rectangle: Rectangle) -> str:
     """A rectangle as the value of a `FragmentSelector`: `page=P&viewrect=X,Y,W,H`."""
     return (
-        f"page={_decimal(rectangle.page)}"
+        f"page={rectangle.page}"
         f"&viewrect={_decimal(rectangle.x)},{_decimal(rectangle.y)},{_decimal(rectangle.width)},{_decimal(rectangle.height)}"
     )

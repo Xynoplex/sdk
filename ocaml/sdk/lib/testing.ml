@@ -13,6 +13,7 @@ type respond =
   channel:string -> Yojson.Safe.t -> (string * Yojson.Safe.t) option
 
 let fault_actions = Testing_facts.fault_actions
+
 let fault_schedules random =
   let shortest, longest = Testing_facts.schedule_length in
   List.init

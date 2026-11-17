@@ -766,7 +766,7 @@ class PdfTextItem(WireModel, frozen=True):
             ge=0,
         ),
     ]
-    page: Annotated[float, Field(description="1-indexed page number.")]
+    page: Annotated[int, Field(description="1-indexed page number.")]
     x: float
     y: float
     width: float
