@@ -112,34 +112,48 @@ let derive (spec : Spec.t) =
         None
   in
   (* An object's members, with those of each schema it is all of, in order. *)
-  let rec object_ file pointer = function
-    | Schema.Schema ({ all_of = Some parts; _ } as s)
-      when List.for_all (fun k -> List.mem k [ "title"; "allOf" ]) (described s)
-      ->
-        let members =
-          List.concat
-            (List.mapi
-               (fun i part ->
-                 let at = Printf.sprintf "%s/allOf/%d" pointer i in
-                 match part with
-                 | Schema.Schema ({ ref_ = Some ref_; _ } as r)
-                   when Schema.keywords r = [ "$ref" ] -> (
-                     let target, _ = Decode.resolve ref_ in
-                     match schema target with
-                     | Some s -> Option.value (object_ target "" s) ~default:[]
-                     | None -> [])
-                 | part -> Option.value (object_ file at part) ~default:[])
-               parts)
-        in
-        let names = List.map (fun m -> m.name) members in
-        if List.length (List.sort_uniq compare names) <> List.length names then
-          refuse file pointer "states a member twice among what it is all of";
-        Some members
-    | Schema.Schema ({ type_ = Some [ Object ]; _ } as s) ->
-        fields file pointer s
-    | _ ->
-        refuse file pointer "is no object";
-        None
+  let object_ =
+    let rec object_ (t : Schema.t) : string -> string -> member list option =
+      Schema.para
+        ~boolean:(fun _ file pointer ->
+          refuse file pointer "is no object";
+          None)
+        ~schema:(fun l file pointer ->
+          let s = Schema.map fst l in
+          match l.all_of with
+          | Some parts
+            when List.for_all
+                   (fun k -> List.mem k [ "title"; "allOf" ])
+                   (described s) ->
+              let members =
+                List.concat
+                  (List.mapi
+                     (fun i (part, objected) ->
+                       let at = Printf.sprintf "%s/allOf/%d" pointer i in
+                       match part with
+                       | Schema.Schema ({ ref_ = Some ref_; _ } as r)
+                         when Schema.keywords r = [ "$ref" ] -> (
+                           let target, _ = Decode.resolve ref_ in
+                           match schema target with
+                           | Some s ->
+                               Option.value (object_ s target "") ~default:[]
+                           | None -> [])
+                       | _ -> Option.value (objected file at) ~default:[])
+                     parts)
+              in
+              let names = List.map (fun m -> m.name) members in
+              if List.length (List.sort_uniq compare names) <> List.length names
+              then
+                refuse file pointer
+                  "states a member twice among what it is all of";
+              Some members
+          | _ when s.type_ = Some [ Object ] -> fields file pointer s
+          | _ ->
+              refuse file pointer "is no object";
+              None)
+        t
+    in
+    fun file pointer t -> object_ t file pointer
   in
   let shape file = function
     | Schema.Schema ({ type_ = Some [ String ]; enum = Some literals; _ } as s)

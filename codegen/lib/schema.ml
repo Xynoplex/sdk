@@ -92,20 +92,99 @@ let empty : schema =
     discriminator = None;
   }
 
+(* The schemas [layer] holds, in the order its keywords are written here. A
+   [$ref] holds none: it names a schema, and what that is is the reader's to
+   resolve. The pattern names every field, so a keyword the model learns is
+   one this must place. *)
+let children
+    {
+      ref_ = _;
+      comment = _;
+      title = _;
+      description = _;
+      type_ = _;
+      format = _;
+      enum = _;
+      const = _;
+      default = _;
+      example = _;
+      nullable = _;
+      properties;
+      required = _;
+      additional_properties;
+      property_names;
+      min_properties = _;
+      max_properties = _;
+      items;
+      min_items = _;
+      max_items = _;
+      unique_items = _;
+      min_length = _;
+      max_length = _;
+      pattern = _;
+      minimum = _;
+      maximum = _;
+      all_of;
+      any_of;
+      one_of;
+      not_;
+      discriminator = _;
+    } =
+  let one = Option.to_list and each = Option.value ~default:[] in
+  List.concat
+    [
+      List.map snd (each properties);
+      one additional_properties;
+      one property_names;
+      one items;
+      each all_of;
+      each any_of;
+      each one_of;
+      one not_;
+    ]
+
+(* [layer] with [f] applied to each schema it holds, in the order [children]
+   names them. *)
 let map f layer =
-  let each = Option.map (List.map f) in
+  let one = Option.map f and each = Option.map (List.map f) in
+  let properties =
+    Option.map (List.map (fun (name, s) -> (name, f s))) layer.properties
+  in
+  let additional_properties = one layer.additional_properties in
+  let property_names = one layer.property_names in
+  let items = one layer.items in
+  let all_of = each layer.all_of in
+  let any_of = each layer.any_of in
+  let one_of = each layer.one_of in
+  let not_ = one layer.not_ in
   {
     layer with
-    properties =
-      Option.map (List.map (fun (name, s) -> (name, f s))) layer.properties;
-    additional_properties = Option.map f layer.additional_properties;
-    property_names = Option.map f layer.property_names;
-    items = Option.map f layer.items;
-    all_of = each layer.all_of;
-    any_of = each layer.any_of;
-    one_of = each layer.one_of;
-    not_ = Option.map f layer.not_;
+    properties;
+    additional_properties;
+    property_names;
+    items;
+    all_of;
+    any_of;
+    one_of;
+    not_;
   }
+
+(* The one recursion over a schema: each schema it holds is folded first, in
+   [children]'s order, and [schema] is given the layer of their results. It
+   stops at a [$ref]: a walk that follows one is given what resolves it, and
+   folds the schema it names itself. *)
+let rec cata ~boolean ~schema = function
+  | Boolean_schema b -> boolean b
+  | Schema layer -> schema (map (cata ~boolean ~schema) layer)
+
+(* [cata], with each schema held beside its result: for a walk that reads
+   what a child states as well as what the walk made of it. A walk whose
+   result is a function of what it is called with decides which children it
+   calls, and when. *)
+let rec para ~boolean ~schema = function
+  | Boolean_schema b -> boolean b
+  | Schema layer ->
+      schema (map (fun child -> (child, para ~boolean ~schema child)) layer)
 
 (* The keywords [schema] states, by their names in the spec. The pattern
    names every field, so a keyword the model learns is one this must name. *)

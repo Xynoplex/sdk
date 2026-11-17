@@ -41,65 +41,77 @@ let member_of = function
 exception Refused of Decode.error
 
 (* The object a schema of [file] is, its references followed, or none. *)
-let rec object_shape (spec : Spec.t) ~file ~seen (schema : Schema.t) =
-  match schema with
-  | Schema.Boolean_schema _ -> None
-  | Schema.Schema ({ ref_ = Some reference; _ } : Schema.schema) ->
-      let target, _ = Decode.resolve reference in
-      if List.mem target seen then
-        raise
-          (Refused
-             {
-               Decode.file;
-               pointer = reference.pointer;
-               message = "is an object composed of itself";
-             });
-      object_shape spec ~file:target ~seen:(target :: seen)
-        (List.assoc target spec.schemas)
-  | Schema.Schema s -> (
-      let own =
-        if s.type_ = Some [ Object ] then
-          Some
-            {
-              properties =
-                List.map
-                  (fun (n, m) -> (n, member_of m))
-                  (Option.value ~default:[] s.properties);
-              required = Option.value ~default:[] s.required;
-            }
-        else None
-      in
-      match s.all_of with
-      | None -> own
-      | Some parts ->
-          let parts = List.map (object_shape spec ~file ~seen) parts in
-          if List.mem None parts then None
-          else
-            let parts = List.filter_map Fun.id parts in
-            let all = match own with None -> parts | Some o -> o :: parts in
-            let properties =
-              List.fold_left
-                (fun acc part ->
-                  List.fold_left
-                    (fun acc (name, m) ->
-                      if List.mem_assoc name acc then
-                        List.map
-                          (fun (n, v) ->
-                            if n = name then (n, Raw_member) else (n, v))
-                          acc
-                      else acc @ [ (name, m) ])
-                    acc part.properties)
-                [] all
+let object_shape (spec : Spec.t) =
+  let rec shape schema : file:string -> seen:string list -> composed option =
+    Schema.para
+      ~boolean:(fun _ ~file:_ ~seen:_ -> None)
+      ~schema:(fun s ~file ~seen ->
+        match s.ref_ with
+        | Some reference ->
+            let target, _ = Decode.resolve reference in
+            if List.mem target seen then
+              raise
+                (Refused
+                   {
+                     Decode.file;
+                     pointer = reference.pointer;
+                     message = "is an object composed of itself";
+                   });
+            shape
+              (List.assoc target spec.schemas)
+              ~file:target ~seen:(target :: seen)
+        | None -> (
+            let own =
+              if s.type_ = Some [ Object ] then
+                Some
+                  {
+                    properties =
+                      List.map
+                        (fun (n, (m, _)) -> (n, member_of m))
+                        (Option.value ~default:[] s.properties);
+                    required = Option.value ~default:[] s.required;
+                  }
+              else None
             in
-            let required =
-              List.fold_left
-                (fun acc part ->
-                  List.fold_left
-                    (fun acc n -> if List.mem n acc then acc else acc @ [ n ])
-                    acc part.required)
-                [] all
-            in
-            Some { properties; required })
+            match s.all_of with
+            | None -> own
+            | Some parts ->
+                let parts =
+                  List.map (fun (_, part) -> part ~file ~seen) parts
+                in
+                if List.mem None parts then None
+                else
+                  let parts = List.filter_map Fun.id parts in
+                  let all =
+                    match own with None -> parts | Some o -> o :: parts
+                  in
+                  let properties =
+                    List.fold_left
+                      (fun acc part ->
+                        List.fold_left
+                          (fun acc (name, m) ->
+                            if List.mem_assoc name acc then
+                              List.map
+                                (fun (n, v) ->
+                                  if n = name then (n, Raw_member) else (n, v))
+                                acc
+                            else acc @ [ (name, m) ])
+                          acc part.properties)
+                      [] all
+                  in
+                  let required =
+                    List.fold_left
+                      (fun acc part ->
+                        List.fold_left
+                          (fun acc n ->
+                            if List.mem n acc then acc else acc @ [ n ])
+                          acc part.required)
+                      [] all
+                  in
+                  Some { properties; required }))
+      schema
+  in
+  fun ~file ~seen schema -> shape schema ~file ~seen
 
 type record = { name : string; file : string; shape : composed }
 

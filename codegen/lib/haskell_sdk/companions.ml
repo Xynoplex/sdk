@@ -60,9 +60,10 @@ let format_word : Schema.format -> string = function
    (haskell/sdk/internal/Xynolog/Internal/Schema.hs), at any depth. A schema
    the SDK validates against states none: dropping one would accept what
    the schema refuses. *)
-let rec unread : Schema.t -> string list = function
-  | Boolean_schema _ -> []
-  | Schema s ->
+let unread : Schema.t -> string list =
+  Schema.cata
+    ~boolean:(fun _ -> [])
+    ~schema:(fun s ->
       let stated name = Option.map (fun _ -> name) in
       List.filter_map Fun.id
         [
@@ -71,25 +72,17 @@ let rec unread : Schema.t -> string list = function
           stated "propertyNames" s.property_names;
           stated "minProperties" s.min_properties;
         ]
-      @ List.concat_map unread
-          (List.concat
-             [
-               List.map snd (Option.value s.properties ~default:[]);
-               Option.to_list s.additional_properties;
-               Option.to_list s.items;
-               Option.value s.all_of ~default:[];
-               Option.value s.any_of ~default:[];
-               Option.value s.one_of ~default:[];
-             ])
+      @ List.concat (Schema.children s))
 
 (* A schema as the SDK validates against it: every keyword but those that
    only describe it. *)
-let rec runtime : Schema.t -> Yojson.Safe.t = function
-  | Boolean_schema b -> `Bool b
-  | Schema s ->
+let runtime : Schema.t -> Yojson.Safe.t =
+  Schema.cata
+    ~boolean:(fun b -> `Bool b)
+    ~schema:(fun s ->
       let some name f = Option.map (fun v -> (name, f v)) in
       let int n = `Int n in
-      let schemas = Option.map (fun xs -> `List (List.map runtime xs)) in
+      let schemas = Option.map (fun xs -> `List xs) in
       `Assoc
         (List.filter_map Fun.id
            [
@@ -102,15 +95,13 @@ let rec runtime : Schema.t -> Yojson.Safe.t = function
              some "format" (fun f -> `String (format_word f)) s.format;
              some "enum" (fun vs -> `List (List.map literal vs)) s.enum;
              some "nullable" (fun b -> `Bool b) s.nullable;
-             some "properties"
-               (fun ps -> `Assoc (List.map (fun (k, v) -> (k, runtime v)) ps))
-               s.properties;
+             some "properties" (fun ps -> `Assoc ps) s.properties;
              some "required"
                (fun rs -> `List (List.map (fun r -> `String r) rs))
                s.required;
-             some "additionalProperties" runtime s.additional_properties;
+             some "additionalProperties" Fun.id s.additional_properties;
              some "maxProperties" int s.max_properties;
-             some "items" runtime s.items;
+             some "items" Fun.id s.items;
              some "minItems" int s.min_items;
              some "maxItems" int s.max_items;
              some "uniqueItems" (fun b -> `Bool b) s.unique_items;
@@ -122,7 +113,7 @@ let rec runtime : Schema.t -> Yojson.Safe.t = function
              Option.map (fun v -> ("allOf", v)) (schemas s.all_of);
              Option.map (fun v -> ("anyOf", v)) (schemas s.any_of);
              Option.map (fun v -> ("oneOf", v)) (schemas s.one_of);
-           ])
+           ]))
 
 let schemas_module ~banner definitions =
   let body =

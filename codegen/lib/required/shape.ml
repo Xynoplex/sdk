@@ -502,24 +502,29 @@ let derive ~unrecognized components =
                 | Some values -> ordered_set (List.map kind_of_literal values)
                 | None -> all_kinds))
     and ordered_set kinds = List.filter (fun k -> List.mem k kinds) all_kinds in
-    let rec closed_schema file at (schema : Schema.t) =
-      match schema with
-      | Boolean_schema _ -> false
-      | Schema schema -> (
-          match view file at schema with
-          | Or_null _ -> false
-          | Plain { schema; _ } -> (
-              match schema.ref_ with
-              | Some reference ->
-                  let file, schema =
-                    Hashtbl.find file_of (referred reference)
-                  in
-                  closed_schema file "" schema
-              | None ->
-                  schema.additional_properties = Some (Boolean_schema false)
-                  || schema.max_properties = Some 0
-                  || List.exists (closed_schema file at)
-                       (Option.value schema.all_of ~default:[])))
+    let closed_schema =
+      let rec closed (schema : Schema.t) : string -> string -> bool =
+        Schema.para
+          ~boolean:(fun _ _ _ -> false)
+          ~schema:(fun l file at ->
+            match view file at (Schema.map fst l) with
+            | Or_null _ -> false
+            | Plain { schema; _ } -> (
+                match schema.ref_ with
+                | Some reference ->
+                    let file, schema =
+                      Hashtbl.find file_of (referred reference)
+                    in
+                    closed schema file ""
+                | None ->
+                    schema.additional_properties = Some (Boolean_schema false)
+                    || schema.max_properties = Some 0
+                    || List.exists
+                         (fun (_, part) -> part file at)
+                         (Option.value l.all_of ~default:[])))
+          schema
+      in
+      fun file at schema -> closed schema file at
     in
     let rec shape_of file at (schema : Schema.t) =
       match schema with
