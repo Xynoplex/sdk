@@ -1,8 +1,9 @@
 (* The OAuth clients group: the client ids a Xynolog client signs in as, and
    the scope a sign-in asks for (protocol/specs/src/session/oauth.json), for
-   the Go, Python and TypeScript SDKs. A knowledge base's realm registers the
-   clients, so an id restated by hand is a sign-in that fails the day the
-   registration changes. A client is named in lowercase letters, once. *)
+   the Go, Python, TypeScript, OCaml and Kotlin SDKs. A knowledge base's
+   realm registers the clients, so an id restated by hand is a sign-in that
+   fails the day the registration changes. A client is named in lowercase
+   letters, once. *)
 
 module T = Tables.Session_oauth
 
@@ -156,5 +157,6 @@ let ocaml (t : T.t) =
 
 let files ~root:_ (spec : Spec.t) =
   Result.map
-    (fun t -> [ go t; python t; typescript t; ocaml t ])
+    (fun t ->
+      [ go t; python t; typescript t; ocaml t; Kotlin.file ~from_:file t ])
     (derive spec.tables.session_oauth)

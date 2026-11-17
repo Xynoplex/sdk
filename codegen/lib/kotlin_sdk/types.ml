@@ -934,3 +934,16 @@ let value_type_of spec ~component ~member =
   | K.Type name when List.mem name spec.identifiers -> t (identifiers_package ^ "." ^ name)
   | K.Type name when List.mem_assoc name spec.definitions -> t (types_package ^ "." ^ name)
   | other -> other
+
+(* What a file that names [type_] imports for it: the generated types and
+   the JSON library's it names unqualified. *)
+let rec imports_of spec = function
+  | K.Type name when String.contains name '.' -> []
+  | K.Type ("String" | "Boolean" | "Double" | "Long") -> []
+  | K.Type (("JsonElement" | "JsonObject") as name) -> [ "kotlinx.serialization.json." ^ name ]
+  | K.Type name when List.mem name spec.identifiers -> [ identifiers_package ^ "." ^ name ]
+  | K.Type name -> [ types_package ^ "." ^ name ]
+  | K.Generic (name, args) -> imports_of spec (K.Type name) @ List.concat_map (imports_of spec) args
+  | K.Nullable t -> imports_of spec t
+  | K.Star -> []
+  | K.Function_type (params, result) -> List.concat_map (imports_of spec) (result :: params)
