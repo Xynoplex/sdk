@@ -63,10 +63,10 @@ constraints: any.Cabal ==3.12.1.0,
              any.crypton-pem ==0.3.0,
              any.crypton-socks ==0.6.2,
              crypton-socks -example +network-3-0-0-0,
-             any.crypton-x509 ==1.10.1,
+             any.crypton-x509 ==1.10.2,
              any.crypton-x509-store ==1.10.0,
              any.crypton-x509-system ==1.10.0,
-             any.crypton-x509-validation ==1.10.1,
+             any.crypton-x509-validation ==1.10.2,
              any.data-default ==0.8.0.2,
              any.data-default-class ==0.2.0.0,
              any.data-fix ==0.3.4,
@@ -223,4 +223,4 @@ constraints: any.Cabal ==3.12.1.0,
              yaml +no-examples +no-exe,
              any.zlib ==0.7.1.1,
              zlib -bundled-c-zlib +non-blocking-ffi -pkg-config
-index-state: hackage.haskell.org 2026-11-06T12:10:10Z
+index-state: hackage.haskell.org 2026-11-17T02:00:00Z
