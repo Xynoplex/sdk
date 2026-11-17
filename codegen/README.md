@@ -37,8 +37,8 @@ per language it writes:
   `typescript/core/src`'s bus files, `go/bus`'s `_gen.go` files and
   `python/sdk/src/xynolog`'s `channels.py` and `operations.py`.
 
-`Text` measures and spells text as the generated files always have: a width
-in UTF-16 code units, a string as JSON writes it. `Output` is the drift gate.
+`Text` measures and spells text: a width in code points, a word ended by
+ASCII white space, a string as JSON writes it. `Output` is the drift gate.
 
 ## Running it
 

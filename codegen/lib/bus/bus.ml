@@ -7,17 +7,13 @@ module Python = Python
 
 let errors = function Ok _ -> [] | Error errors -> errors
 
-let files ~specs spec =
+let files ~root:_ spec =
   match
-    ( Registry.canonical
-        (In_channel.with_open_bin
-           (Filename.concat specs Registry.file)
-           In_channel.input_all),
-      Registry.derive ~component:(Registry.component spec)
-        spec.Spec.tables.bus_registry )
+    Registry.derive ~component:(Registry.component spec)
+      spec.Spec.tables.bus_registry
   with
-  | [], Ok bus -> (
+  | Ok bus -> (
       match (Go.files bus, Python.files bus) with
       | Ok go, Ok python -> Ok (Typescript.files bus @ go @ python)
       | go, python -> Error (errors go @ errors python))
-  | canonical, derived -> Error (canonical @ errors derived)
+  | Error errors -> Error errors

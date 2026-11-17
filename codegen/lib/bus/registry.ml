@@ -573,23 +573,3 @@ let derive ~component (reg : R.t) =
               limits = (first, rest);
             }
       | _, problems -> Error problems)
-
-(* The registry's bytes are those JSON.stringify(registry, null, 2) writes,
-   with a trailing newline. JSON spells a document more than one way, and the
-   file most branches touch at once must not land respelled: a re-encoding
-   conflicts on nearly every line and hides the change under review. *)
-let canonical text =
-  match Text.stringified (Yojson.Safe.from_string text) with
-  | Ok canonical when canonical = text -> []
-  | Ok _ ->
-      [
-        {
-          Decode.file;
-          pointer = "";
-          message =
-            "is not in the form JSON.stringify(registry, null, 2) writes, with \
-             a trailing newline: its content may be right, and its bytes are \
-             spelled another way (escaping, indentation, the trailing newline)";
-        };
-      ]
-  | Error why -> [ { Decode.file; pointer = ""; message = why } ]

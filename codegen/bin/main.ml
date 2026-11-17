@@ -21,9 +21,7 @@ let bad_usage () =
 
 let load root =
   let specs = Filename.concat root "protocol/specs/src" in
-  match Spec.load specs with
-  | Ok spec -> (specs, spec)
-  | Error errors -> refused errors
+  match Spec.load specs with Ok spec -> spec | Error errors -> refused errors
 
 let groups = function
   | [] -> Groups.all
@@ -41,11 +39,11 @@ let groups = function
 
 let files root names =
   let groups = groups names in
-  let specs, spec = load root in
+  let spec = load root in
   let collected =
     List.fold_right
       (fun (g : Groups.group) collected ->
-        match (g.files ~specs spec, collected) with
+        match (g.files ~root spec, collected) with
         | Ok files, Ok rest -> Ok (files @ rest)
         | Ok _, Error errors | Error errors, Ok _ -> Error errors
         | Error errors, Error rest -> Error (errors @ rest))
@@ -56,7 +54,7 @@ let files root names =
 let () =
   match Array.to_list Sys.argv with
   | [ _; "read"; root ] ->
-      let _, spec = load root in
+      let spec = load root in
       Printf.printf
         "Protocol read: 2 OpenAPI documents, %d path items, %d responses, %d \
          JSON Schemas, and its tables\n"

@@ -1,6 +1,6 @@
-(* Text as the generated files measure and spell it. The files were first
-   written by JavaScript, so a width is in UTF-16 code units, a string literal
-   is JSON's, and a word ends at what JavaScript's \s matches. *)
+(* Text as the generated files measure and spell it: a width is in code
+   points, a word ends at ASCII white space, and a string literal is JSON's,
+   which TypeScript, Go and Python each read as the same string. *)
 
 let fold_uchars f init text =
   let rec go acc i =
@@ -13,8 +13,7 @@ let fold_uchars f init text =
   in
   go init 0
 
-let length text =
-  fold_uchars (fun n u -> n + if Uchar.to_int u >= 0x10000 then 2 else 1) 0 text
+let length text = fold_uchars (fun n _ -> n + 1) 0 text
 
 (* [head] padded with spaces out to column [col]; a head that reaches it gets a
    single space. *)
@@ -23,11 +22,7 @@ let pad head col =
   head ^ if n < col then String.make (col - n) ' ' else " "
 
 let is_space u =
-  match Uchar.to_int u with
-  | 0x09 | 0x0A | 0x0B | 0x0C | 0x0D | 0x20 | 0xA0 | 0x1680 | 0x2028 | 0x2029
-  | 0x202F | 0x205F | 0x3000 | 0xFEFF ->
-      true
-  | c -> c >= 0x2000 && c <= 0x200A
+  match Uchar.to_int u with 0x09 | 0x0A | 0x0D | 0x20 -> true | _ -> false
 
 let words text =
   let word = Buffer.create 16 in
@@ -99,42 +94,3 @@ let quoted text =
     text;
   Buffer.add_char out '"';
   Buffer.contents out
-
-(* A JSON value as JavaScript's JSON.stringify(value, null, 2) writes it, and
-   a trailing newline: the form a hand-authored file of Protocol is kept in.
-   A number with a fraction or beyond an int is refused: JavaScript would spell
-   it in a way this does not reproduce. *)
-let rec json indent (value : Yojson.Safe.t) =
-  let inner = indent ^ "  " in
-  let block opening closing items =
-    match items with
-    | [] -> Ok (opening ^ closing)
-    | _ ->
-        Result.map
-          (fun items ->
-            opening ^ "\n" ^ inner
-            ^ String.concat (",\n" ^ inner) items
-            ^ "\n" ^ indent ^ closing)
-          (List.fold_right
-             (fun item rest ->
-               Result.bind item (fun item ->
-                   Result.map (fun rest -> item :: rest) rest))
-             items (Ok []))
-  in
-  match value with
-  | `Null -> Ok "null"
-  | `Bool b -> Ok (string_of_bool b)
-  | `Int n -> Ok (string_of_int n)
-  | `String s -> Ok (quoted s)
-  | `Intlit _ | `Float _ -> Error "a number that is not an int"
-  | `List items -> block "[" "]" (List.map (json inner) items)
-  | `Assoc members ->
-      block "{" "}"
-        (List.map
-           (fun (name, value) ->
-             Result.map
-               (fun value -> quoted name ^ ": " ^ value)
-               (json inner value))
-           members)
-
-let stringified value = Result.map (fun text -> text ^ "\n") (json "" value)
