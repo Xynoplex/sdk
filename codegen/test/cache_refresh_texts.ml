@@ -298,13 +298,14 @@ export const PERSISTED_QUERIES = ['thing', 'deep'] as const;
 export type PersistedQuery = (typeof PERSISTED_QUERIES)[number];
 
 /** What each live query is asked for per: a resource, an annotation, or the filters it is asked with; `whole` for one asked for whole, whose one answer is kept under `wholeKey`. */
-export interface CachePer {
-  'thing': 'resource';
-  'items': 'resource';
-  'names': 'whole';
-  'deep': 'annotation';
-  'labels': 'filters';
-}
+export const CACHE_PER = {
+  'thing': 'resource',
+  'items': 'resource',
+  'names': 'whole',
+  'deep': 'annotation',
+  'labels': 'filters',
+} as const satisfies { readonly [Q in CacheQuery]: 'resource' | 'annotation' | 'filters' | 'whole' };
+export type CachePer = typeof CACHE_PER;
 
 /** What each live query's cache holds, its `value`: the component, and the members within it the value is, outermost first. */
 export const CACHE_VALUES = {
