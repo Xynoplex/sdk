@@ -77,38 +77,41 @@ let go (t : T.t) =
   }
 
 let python (t : T.t) =
+  let module P = Python_syntax in
   let constant name docs value =
-    Text.python_comment ~indent:"" docs
-    ^ "\n" ^ name ^ ": Final = " ^ quoted value ^ "\n"
+    P.assign ~about:[ Prose docs ] ~annotation:(P.Name "Final")
+      ~value:(P.Str value) name
   in
   let name (c : T.client) = String.uppercase_ascii c.name ^ "_CLIENT_ID" in
   {
     Output.path = "python/sdk/src/xynolog/oauth_clients.py";
     text =
-      String.concat ""
-        [
-          Banner.python ~from_:"protocol/specs/src/session/oauth.json" __FILE__;
-          {|
-"""How a Xynolog client presents itself to the issuer a knowledge base trusts:
-the clients its realm registers, and the scope every sign-in asks for.
-"""
-
-from typing import Final
-
-__all__ = [
-|};
-          String.concat ""
-            (List.map
-               (fun n -> "    " ^ quoted n ^ ",\n")
-               (List.sort compare ("SIGN_IN_SCOPE" :: List.map name t.clients)));
-          "]\n\n";
-          String.concat "\n"
-            (List.map
-               (fun (c : T.client) -> constant (name c) c.docs c.id)
-               t.clients);
-          "\n";
-          constant "SIGN_IN_SCOPE" t.scope.docs t.scope.value;
-        ];
+      P.text
+        {
+          header =
+            Banner.python_lines ~from_:"protocol/specs/src/session/oauth.json"
+              __FILE__;
+          doc =
+            As_is
+              "How a Xynolog client presents itself to the issuer a knowledge \
+               base trusts:\n\
+               the clients its realm registers, and the scope every sign-in \
+               asks for.\n";
+          imports = [ [ P.From ("typing", [ "Final" ]) ] ];
+          body =
+            P.assign "__all__"
+              ~value:
+                (P.List
+                   (P.items ~magic:true
+                      (List.map
+                         (fun n -> P.item (P.Str n))
+                         (List.sort compare
+                            ("SIGN_IN_SCOPE" :: List.map name t.clients)))))
+            :: List.map
+                 (fun (c : T.client) -> constant (name c) c.docs c.id)
+                 t.clients
+            @ [ constant "SIGN_IN_SCOPE" t.scope.docs t.scope.value ];
+        };
   }
 
 let typescript (t : T.t) =

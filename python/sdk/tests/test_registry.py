@@ -46,6 +46,7 @@ from xynolog.registry import (
 from xynolog.session import HeldSignIn, MemorySignIn, SignInKept, XynologSession
 from xynolog.session_signals import KbIdentityConflict, PermissionDenied, SessionEnded, SessionSignals
 from xynolog.storage import MemoryStorage, SessionStorage
+from xynolog.storage_keys import cache_key, kb_of_session_key, last_event_id_key, person_key, session_key
 from xynolog.stored import (
     ACTIVE_KEY,
     KEPT_QUERIES,
@@ -54,11 +55,6 @@ from xynolog.stored import (
     OPEN_RESOURCES_BY_KB_KEY,
     OpenResource,
     StoredSession,
-    cache_key,
-    kb_of_session_key,
-    last_event_id_key,
-    person_key,
-    session_key,
 )
 from xynolog.testing import FaultyTransport, ScriptedSessions, SharedStorage
 from xynolog.transport import Transport

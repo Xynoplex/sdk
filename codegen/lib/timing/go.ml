@@ -15,7 +15,7 @@ let field (e : Table.entry) =
   in
   String.capitalize_ascii name
 
-let ms n = G.Binary (G.Int n, "*", G.Name "time.Millisecond")
+let ms n = G.Binary (G.Int n, G.Mul, G.Name "time.Millisecond")
 
 let value (e : Table.entry) =
   match e.value with

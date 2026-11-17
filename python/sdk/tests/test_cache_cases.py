@@ -24,7 +24,8 @@ from xynolog.identifiers import AnnotationId, ResourceId
 from xynolog.namespaces.live import KeptPersisters
 from xynolog.resume import CoupledBookmarks
 from xynolog.storage import MemoryStorage, SessionStorage, StoragePersister
-from xynolog.stored import KeptQuery, WholeKey, cache_key, last_event_id_key, person_key
+from xynolog.storage_keys import cache_key, last_event_id_key, person_key
+from xynolog.stored import KeptQuery, WholeKey
 from xynolog.timing import SAVE_DEBOUNCE_MS
 from xynolog.types import Annotation, GetAnnotationsResponse, ResourceDescriptor, TagSchema
 

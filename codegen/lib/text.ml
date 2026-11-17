@@ -57,11 +57,6 @@ let wrapped ~lead ~width text =
   in
   List.rev (if last = "" then lines else last :: lines)
 
-let comment ~marker ~indent ~width text =
-  let lead = indent ^ marker in
-  String.concat "\n"
-    (List.map (fun line -> lead ^ line) (wrapped ~lead ~width text))
-
 let replace_all ~sub ~by text =
   let n = String.length sub and length = String.length text in
   let out = Buffer.create length in
@@ -157,9 +152,6 @@ let upper_snake name =
       Buffer.add_char out (Char.uppercase_ascii c))
     name;
   Buffer.contents out
-
-(* [text] as Python comment lines behind [indent]. *)
-let python_comment ~indent = comment ~marker:"# " ~indent ~width:96
 
 (* [text] as a Python docstring behind [indent]: one line when it fits in 96
    columns, its words wrapped at 96 otherwise, with the closing quotes on a

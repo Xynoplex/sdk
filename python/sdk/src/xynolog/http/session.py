@@ -60,7 +60,8 @@ from xynolog.registry import SessionFactory, SessionFactoryOptions, SignedIn, Si
 from xynolog.resume import CoupledBookmarks
 from xynolog.session import HeldSignIn, SessionEndReason, SignInKept, Validate, XynologSession
 from xynolog.storage import SessionStorage
-from xynolog.stored import StoredSession, last_event_id_key, person_key
+from xynolog.storage_keys import last_event_id_key, person_key
+from xynolog.stored import StoredSession
 from xynolog.types import HttpEndpoint, KbDescription, KbTarget, LocalEndpoint, UserResponse
 from xynolog.watched import Variable
 

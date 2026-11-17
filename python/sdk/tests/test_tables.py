@@ -10,7 +10,7 @@ from typing import get_args
 from pydantic import BaseModel, JsonValue
 from spec import SPEC, objects, read, text
 
-from xynolog import error_codes, refresh, stored, timing
+from xynolog import error_codes, refresh, storage_keys, stored, timing
 from xynolog import types as wire
 from xynolog.channels import CHANNELS
 from xynolog.namespaces import live
@@ -180,8 +180,8 @@ def test_each_key_prefix_s_example_in_the_stored_table_is_the_key_made_of_it() -
         return {name: text(value, f"{member}'s example's {name}") for name, value in stated.items()}
 
     stream = example("lastEventIdKeyPrefix")
-    assert stored.last_event_id_key(stream["kbId"], stored.person_key(stream["did"])) == stream["key"]
+    assert storage_keys.last_event_id_key(stream["kbId"], storage_keys.person_key(stream["did"])) == stream["key"]
     query = example("cacheKeyPrefix")
     named: list[stored.KeptQuery] = [name for name in stored.KEPT_QUERIES if name == query["query"]]
     (kept,) = named
-    assert stored.cache_key(query["kbId"], stored.person_key(query["did"]), kept) == query["key"]
+    assert storage_keys.cache_key(query["kbId"], storage_keys.person_key(query["did"]), kept) == query["key"]

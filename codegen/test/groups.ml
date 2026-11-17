@@ -678,16 +678,16 @@ let text =
             Text.pad "abcd" 3;
             Text.pad "\240\159\152\128" 3;
           ]);
-    case "a comment wrapped to its width" (fun () ->
-        Alcotest.(check string)
-          "comment" "// one two\n// three\n// fourfourfour"
-          (Text.comment ~marker:"// " ~indent:"" ~width:12
-             "one  two\nthree fourfourfour"));
+    case "words wrapped to their width behind a lead" (fun () ->
+        Alcotest.(check (list string))
+          "wrapped"
+          [ "one two"; "three"; "fourfourfour" ]
+          (Text.wrapped ~lead:"// " ~width:12 "one  two\nthree fourfourfour"));
     case "a no-break space joins its words" (fun () ->
-        Alcotest.(check string)
-          "comment" "// one\n// two\194\160three"
-          (Text.comment ~marker:"// " ~indent:"" ~width:12
-             "one two\194\160three"));
+        Alcotest.(check (list string))
+          "wrapped"
+          [ "one"; "two\194\160three" ]
+          (Text.wrapped ~lead:"// " ~width:12 "one two\194\160three"));
   ]
 
 let output =

@@ -10,11 +10,15 @@ let writer file = "codegen/" ^ file
    RUF100, since a module need not break each of them. Every other rule holds
    it, as ruff format, the drift gate and the type checkers do.
    python/sdk/scripts/generate_models.py writes the same line. *)
-let python_exempt = "# ruff: noqa: E501, I001, RUF002, RUF022, RUF100"
+let python_exempt = "ruff: noqa: E501, I001, RUF002, RUF022, RUF100"
 
-let python ~from_ file =
-  "# Generated from " ^ from_ ^ "; do not edit.\n# Regenerate: make generate ("
-  ^ writer file ^ ")\n" ^ python_exempt ^ "\n"
+(* A generated Python module's opening comment lines, without their [#]. *)
+let python_lines ~from_ file =
+  [
+    "Generated from " ^ from_ ^ "; do not edit.";
+    "Regenerate: make generate (" ^ writer file ^ ")";
+    python_exempt;
+  ]
 
 (* An OCaml module's opening: what it is generated from, the writer, and
    ocamlformat told to leave it as written. *)

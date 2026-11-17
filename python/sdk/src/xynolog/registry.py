@@ -74,6 +74,7 @@ from xynolog.resources import primary_media_type
 from xynolog.session import HeldSignIn, SignInKept, XynologSession, is_token_expired
 from xynolog.session_signals import KbIdentityConflict, SessionSignals
 from xynolog.storage import SessionStorage
+from xynolog.storage_keys import cache_key, last_event_id_key, session_key
 from xynolog.stored import (
     ACTIVE_KEY,
     KEPT_QUERIES,
@@ -82,9 +83,6 @@ from xynolog.stored import (
     OPEN_RESOURCES_BY_KB_KEY,
     OpenResource,
     StoredSession,
-    cache_key,
-    last_event_id_key,
-    session_key,
 )
 from xynolog.timing import CHECKS_AT_ONCE_COUNT
 from xynolog.transport import Transport

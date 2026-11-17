@@ -63,7 +63,7 @@ let kind (k : Table.kind) =
   let id = G.Named name and text = G.Name "text" in
   let invalid value =
     G.Unary
-      ( "&",
+      ( G.Address,
         G.inline ~of_:(G.Named "InvalidIdentifierError")
           [
             G.keyed "Kind" (G.Quoted name);
@@ -72,7 +72,7 @@ let kind (k : Table.kind) =
           ] )
   in
   let errors = G.Unnamed [ G.Named "error" ] in
-  let held = G.Binary (G.Name "id.text", "==", G.Quoted "") in
+  let held = G.Binary (G.Name "id.text", G.Eq, G.Quoted "") in
   [
     G.Type
       {
@@ -105,7 +105,7 @@ let kind (k : Table.kind) =
       (G.Block
          [
            G.If
-             ( G.Unary ("!", G.call (rule ^ ".MatchString") [ text ]),
+             ( G.Unary (G.Not, G.call (rule ^ ".MatchString") [ text ]),
                [ G.Return [ G.inline ~of_:id []; invalid text ] ] );
            G.Return [ G.inline ~of_:id [ G.keyed "text" text ]; G.Name "nil" ];
          ]);
@@ -149,9 +149,9 @@ let kind (k : Table.kind) =
              ( [ "parsed"; "err" ],
                G.call ("Parse" ^ name) [ G.Convert (G.Named "string", text) ] );
            G.If
-             ( G.Binary (G.Name "err", "!=", G.Name "nil"),
+             ( G.Binary (G.Name "err", G.Ne, G.Name "nil"),
                [ G.Return [ G.Name "err" ] ] );
-           G.Assign (G.Unary ("*", G.Name "id"), G.Name "parsed");
+           G.Assign (G.Unary (G.Deref, G.Name "id"), G.Name "parsed");
            G.Return [ G.Name "nil" ];
          ]);
   ]

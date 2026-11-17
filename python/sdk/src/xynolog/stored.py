@@ -5,14 +5,14 @@
 """What a registry of knowledge bases keeps in a `SessionStorage` (`protocol/specs/src/session/stored.json`):
 the key each thing it keeps is kept under, the shape of a knowledge base's
 stored session, and the shape of a resource open in one. And what the
-sessions it makes keep there: which queries, and the stream's places.
+sessions it makes keep there: which queries, and the stream's places. The
+keys made of these prefixes are `xynolog.storage_keys`'s.
 """
 
 from typing import Annotated, Final, Literal, final
 
 from pydantic import Field
 
-from xynolog._digest import base64url_sha256
 from xynolog.identifiers import ResourceId
 from xynolog.model import WireModel
 from xynolog.types import PersistedEventId
@@ -20,22 +20,20 @@ from xynolog.types import PersistedEventId
 __all__ = [
     "ACTIVE_KEY",
     "CACHE_DOCUMENT_VERSION",
+    "CACHE_KEY_PREFIX",
     "KEPT_QUERIES",
     "KNOWLEDGE_BASES_KEY",
+    "LAST_EVENT_ID_KEY_PREFIX",
     "LAST_VIEWED_RESOURCE_BY_KB_KEY",
     "OPEN_RESOURCES_BY_KB_KEY",
     "PENDING_AUTHORIZATION_KEY",
+    "SESSION_KEY_PREFIX",
     "WHOLE_KEY",
     "KeptQuery",
     "LastEventIds",
     "OpenResource",
     "StoredSession",
     "WholeKey",
-    "cache_key",
-    "kb_of_session_key",
-    "last_event_id_key",
-    "person_key",
-    "session_key",
 ]
 
 # The registered knowledge bases: a JSON list of KnowledgeBase
@@ -59,18 +57,7 @@ LAST_VIEWED_RESOURCE_BY_KB_KEY: Final = "xynolog.lastViewedResourceByKb"
 PENDING_AUTHORIZATION_KEY: Final = "xynolog.pendingAuthorization"
 
 # A knowledge base's stored session is kept under this followed by the knowledge base's id.
-_SESSION_KEY_PREFIX: Final = "xynolog.session."
-
-
-def session_key(kb_id: str) -> str:
-    """The key a knowledge base's session is kept under."""
-    return f"{_SESSION_KEY_PREFIX}{kb_id}"
-
-
-def kb_of_session_key(key: str) -> str | None:
-    """The knowledge base a key is the session of; nothing when it is no session's key."""
-    return key.removeprefix(_SESSION_KEY_PREFIX) if key.startswith(_SESSION_KEY_PREFIX) else None
-
+SESSION_KEY_PREFIX: Final = "xynolog.session."
 
 # Where a knowledge base's stream was, for one person, is kept under this followed by the
 # knowledge base's id, a dot and the person's key: the unpadded base64url SHA-256 of the UTF-8
@@ -83,33 +70,22 @@ def kb_of_session_key(key: str) -> str | None:
 # any kept cache or the refresher is disposed. Nothing is kept for a token whose person the
 # gateway has not named, and forgetting the knowledge base's stored sign-in, however it is
 # forgotten, deletes it.
-_LAST_EVENT_ID_KEY_PREFIX: Final = "xynolog.lastEventId."
-
-
-def person_key(did: str) -> str:
-    """The key of the person whose did the gateway answered: what their caches and stream's places are kept under."""
-    return base64url_sha256(did)
-
-
-def last_event_id_key(kb_id: str, person_key: str) -> str:
-    """The key a person's stream's places in a knowledge base are kept under, as `LastEventIds`."""
-    return f"{_LAST_EVENT_ID_KEY_PREFIX}{kb_id}.{person_key}"
-
+LAST_EVENT_ID_KEY_PREFIX: Final = "xynolog.lastEventId."
 
 # Where a knowledge base's stream was: for each scope, a resource's id, the id of the last
 # recorded event delivered on it.
 type LastEventIds = dict[ResourceId, PersistedEventId]
-
 
 # What a client keeps of a query, for one person, is kept under this followed by the knowledge
 # base's id, a dot, the person's key as `lastEventIdKeyPrefix` makes it, a dot and the query's
 # name: one `cacheDocument` for each query specs/src/client/refresh.json marks `persisted`.
 # Nothing is kept for a token whose person the gateway has not named, and forgetting the
 # knowledge base's stored sign-in, however it is forgotten, deletes the key of every kept query.
-_CACHE_KEY_PREFIX: Final = "xynolog.cache."
+CACHE_KEY_PREFIX: Final = "xynolog.cache."
 
 # The queries a client keeps across a restart, each by its name in
-# protocol/specs/src/client/refresh.json, and each as one document under `cache_key`.
+# protocol/specs/src/client/refresh.json, and each as one document under its
+# `xynolog.storage_keys.cache_key`.
 type KeptQuery = Literal[
     # Keyed by ResourceId; its value is ResourceDescriptor.
     "resource",
@@ -130,12 +106,6 @@ KEPT_QUERIES: Final[tuple[KeptQuery, ...]] = (
     "entityTypes",
     "tagSchemas",
 )
-
-
-def cache_key(kb_id: str, person_key: str, query: KeptQuery) -> str:
-    """The key what a person's client keeps of `query` in a knowledge base is kept under."""
-    return f"{_CACHE_KEY_PREFIX}{kb_id}.{person_key}.{query}"
-
 
 # The key a kept query that is per nothing (a `queries` row of specs/src/client/refresh.json
 # with no `per`) keeps its one entry under.

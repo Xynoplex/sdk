@@ -13,7 +13,6 @@ module T = Tables.Media_types_registry
 
 let file = "media-types/registry.json"
 let enum_file = "components/schemas/SupportedMediaType.json"
-let quoted = Text.quoted
 
 let is_extension text =
   String.length text > 1
@@ -217,62 +216,85 @@ let go (t : T.t) =
   }
 
 let python (t : T.t) =
-  let module L = Python_layout in
-  let bool b = L.Atom (if b then "True" else "False") in
+  let module P = Python_syntax in
+  let bool b = P.Name (if b then "True" else "False") in
   let row (r : T.media_type) =
-    L.Call
-      ( "MediaType",
-        [
-          L.Keyword ("media_type", L.Atom (quoted r.media_type));
-          L.Keyword ("extension", L.Atom (quoted r.extension));
-          L.Keyword ("text_source", L.Atom (quoted r.text_source));
-          L.Keyword ("authorable", bool r.authorable);
-          L.Keyword ("generatable", bool r.generatable);
-        ] )
+    P.item
+      (P.call "MediaType"
+         [
+           P.keyword "media_type" (P.Str r.media_type);
+           P.keyword "extension" (P.Str r.extension);
+           P.keyword "text_source" (P.Str r.text_source);
+           P.keyword "authorable" (bool r.authorable);
+           P.keyword "generatable" (bool r.generatable);
+         ])
   in
   {
     Output.path = "python/sdk/src/xynolog/media_types_table.py";
     text =
-      String.concat ""
-        [
-          Banner.python ~from_:("protocol/specs/src/" ^ file) __FILE__;
-          {|
-"""The media types a knowledge base admits, with what this SDK reads of each."""
-
-from dataclasses import dataclass
-from typing import Final, Literal, final
-
-__all__ = ["MEDIA_TYPES", "MediaType", "TextSource"]
-
-type TextSource = Literal[|};
-          String.concat ", " (List.map quoted t.text_source);
-          {|]
-"""Where a type's text comes from: decoded from its own bytes, derived by reading them, or nowhere."""
-
-
-@final
-@dataclass(frozen=True, slots=True, kw_only=True)
-class MediaType:
-    """One media type a knowledge base admits."""
-
-    media_type: str
-    extension: str
-    """The extension a stored name takes, with its dot."""
-    text_source: TextSource
-    authorable: bool
-    """Offered where a person writes a resource."""
-    generatable: bool
-    """The generation worker can produce it."""
-
-
-|};
-          Printf.sprintf "# The registry, in its own order: %d media types.\n"
-            (List.length t.media_types);
-          L.statement ~indent:0
-            ~prefix:"MEDIA_TYPES: Final[tuple[MediaType, ...]] = " ~suffix:""
-            (L.Rows (List.map row t.media_types));
-          "\n";
-        ];
+      P.text
+        {
+          header =
+            Banner.python_lines ~from_:("protocol/specs/src/" ^ file) __FILE__;
+          doc =
+            As_is
+              "The media types a knowledge base admits, with what this SDK \
+               reads of each.";
+          imports =
+            [
+              [
+                P.From ("dataclasses", [ "dataclass" ]);
+                P.From ("typing", [ "Final"; "Literal"; "final" ]);
+              ];
+            ];
+          body =
+            [
+              P.assign "__all__"
+                ~value:
+                  (P.List
+                     (P.items
+                        (List.map
+                           (fun n -> P.item (P.Str n))
+                           [ "MEDIA_TYPES"; "MediaType"; "TextSource" ])));
+              P.alias
+                ~doc:
+                  (As_is
+                     "Where a type's text comes from: decoded from its own \
+                      bytes, derived by reading them, or nowhere.")
+                "TextSource"
+                (P.sub "Literal"
+                   (List.map (fun w -> P.item (P.Str w)) t.text_source));
+              P.frozen_dataclass "MediaType"
+                "One media type a knowledge base admits."
+                [
+                  P.field "media_type" (P.Name "str");
+                  P.field "extension" (P.Name "str")
+                    ~doc:"The extension a stored name takes, with its dot.";
+                  P.field "text_source" (P.Name "TextSource");
+                  P.field "authorable" (P.Name "bool")
+                    ~doc:"Offered where a person writes a resource.";
+                  P.field "generatable" (P.Name "bool")
+                    ~doc:"The generation worker can produce it.";
+                ];
+              P.assign
+                ~about:
+                  [
+                    Line
+                      (Printf.sprintf
+                         "The registry, in its own order: %d media types."
+                         (List.length t.media_types));
+                  ]
+                ~annotation:
+                  (P.sub "Final"
+                     [
+                       P.item
+                         (P.sub "tuple"
+                            [ P.item (P.Name "MediaType"); P.item P.Ellipsis ]);
+                     ])
+                ~value:(P.tuple ~magic:true (List.map row t.media_types))
+                "MEDIA_TYPES";
+            ];
+        };
   }
 
 let typescript (t : T.t) =

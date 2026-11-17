@@ -18,7 +18,7 @@ from xynolog.http import HttpTransport, Timing
 from xynolog.identifiers import ResourceId
 from xynolog.resume import CoupledBookmarks
 from xynolog.storage import MemoryStorage, SessionStorage
-from xynolog.stored import cache_key, last_event_id_key, person_key
+from xynolog.storage_keys import cache_key, last_event_id_key, person_key
 from xynolog.testing import DropReply, FaultyTransport, StubGateway
 from xynolog.timing import SAVE_DEBOUNCE_MS
 from xynolog.watched import Variable, reached

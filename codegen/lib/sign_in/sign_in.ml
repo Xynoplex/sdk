@@ -114,9 +114,9 @@ let go_owner_only (o : Owner_only.t) =
                          G.Binary
                            ( G.Binary
                                ( G.Quoted o.access_list.before,
-                                 "+",
+                                 G.Add,
                                  G.Name "owner" ),
-                             "+",
+                             G.Add,
                              G.Quoted o.access_list.after );
                        ];
                    ]);
@@ -124,20 +124,30 @@ let go_owner_only (o : Owner_only.t) =
         };
   }
 
+module P = Python_syntax
+
+(* [plain], or Annotated with the pydantic Field that states [said]. *)
+let python_annotated plain said =
+  match said with
+  | [] -> plain
+  | said -> P.sub "Annotated" [ P.item plain; P.item (P.call "Field" said) ]
+
 let python_entry (entry : Flat.t) =
   (* A time stays the text it is written as: what this SDK reads it writes
      back as it came. The wire's name is beside the type, where both type
      checkers leave the Python name as the one an entry is built by. *)
   let field (f : Flat.field) =
     let python = snake f.name in
-    let plain = if f.required then "str" else "str | None" in
-    let type_ =
-      if python = f.name then plain
-      else "Annotated[" ^ plain ^ ", Field(alias=" ^ quoted f.name ^ ")]"
+    let plain =
+      if f.required then P.Name "str"
+      else P.Binary (P.Name "str", P.Or, P.Name "None")
     in
-    Text.python_comment ~indent:"    " f.description
-    ^ "\n    " ^ python ^ ": " ^ type_
-    ^ if f.required then "" else " = None"
+    P.assign ~about:[ Prose f.description ]
+      ~annotation:
+        (python_annotated plain
+           (if python = f.name then [] else [ P.keyword "alias" (P.Str f.name) ]))
+      ?value:(if f.required then None else Some (P.Name "None"))
+      python
   in
   let aliased =
     List.exists (fun (f : Flat.field) -> snake f.name <> f.name) entry.fields
@@ -145,56 +155,100 @@ let python_entry (entry : Flat.t) =
   {
     Output.path = "python/sdk/src/xynolog/sign_in.py";
     text =
-      String.concat ""
-        [
-          Banner.python ~from_:("protocol/specs/src/" ^ schema_file) __FILE__;
-          {|
-"""One entry of the sign-in store (`protocol/specs/src/sign-in-store`): the file where
-`xynolog login` keeps the sign-in to each stack, and where an application
-finds it.
-"""
-
-from typing import |};
-          (if aliased then "Annotated, " else "");
-          "final\n";
-          (if aliased then "\nfrom pydantic import Field\n" else "");
-          "\nfrom xynolog.model import WireModel\n\n__all__ = [";
-          quoted entry.title;
-          "]\n\n\n@final\nclass " ^ entry.title ^ "(WireModel, frozen=True):\n";
-          Text.python_docstring ~indent:"    " entry.description;
-          "\n\n";
-          String.concat "\n\n" (List.map field entry.fields);
-          "\n";
-        ];
+      P.text
+        {
+          header =
+            Banner.python_lines
+              ~from_:("protocol/specs/src/" ^ schema_file)
+              __FILE__;
+          doc =
+            As_is
+              "One entry of the sign-in store \
+               (`protocol/specs/src/sign-in-store`): the file where\n\
+               `xynolog login` keeps the sign-in to each stack, and where an \
+               application\n\
+               finds it.\n";
+          imports =
+            [
+              [
+                P.From
+                  ( "typing",
+                    (if aliased then [ "Annotated" ] else []) @ [ "final" ] );
+              ];
+            ]
+            @ (if aliased then [ [ P.From ("pydantic", [ "Field" ]) ] ] else [])
+            @ [ [ P.From ("xynolog.model", [ "WireModel" ]) ] ];
+          body =
+            [
+              P.assign "__all__"
+                ~value:(P.List (P.items [ P.item (P.Str entry.title) ]));
+              P.Class
+                {
+                  decorators = [ P.Name "final" ];
+                  name = entry.title;
+                  bases =
+                    [
+                      P.item (P.Name "WireModel");
+                      P.keyword "frozen" (P.Name "True");
+                    ];
+                  doc = Some (Wrapped entry.description);
+                  spacing = Spaced;
+                  body = List.map field entry.fields;
+                };
+            ];
+        };
   }
 
 let python_owner_only (o : Owner_only.t) =
+  let constant name (m : Owner_only.mode) =
+    P.assign ~about:[ Prose m.docs ] ~annotation:(P.Name "Final")
+      ~value:(P.Octal m.octal) name
+  in
   {
     Output.path = "python/sdk/src/xynolog/_owner_only_table.py";
     text =
-      String.concat ""
-        [
-          Banner.python
-            ~from_:("protocol/specs/src/" ^ Owner_only.file)
-            __FILE__;
-          {|
-"""How a writer of the sign-in store keeps its directory and its files to their owner, as the launcher keeps its state home."""
-
-from typing import Final
-
-__all__ = ["DIRECTORY_MODE", "FILE_MODE", "access_list"]
-
-|};
-          Text.python_comment ~indent:"" o.directory.docs;
-          "\nDIRECTORY_MODE: Final = 0o" ^ o.directory.octal ^ "\n\n";
-          Text.python_comment ~indent:"" o.file.docs;
-          "\nFILE_MODE: Final = 0o" ^ o.file.octal
-          ^ "\n\n\ndef access_list(owner: str) -> str:\n";
-          Text.python_docstring ~indent:"    " o.access_list.docs;
-          "\n    return "
-          ^ quoted o.access_list.before
-          ^ " + owner + " ^ quoted o.access_list.after ^ "\n";
-        ];
+      P.text
+        {
+          header =
+            Banner.python_lines
+              ~from_:("protocol/specs/src/" ^ Owner_only.file)
+              __FILE__;
+          doc =
+            As_is
+              "How a writer of the sign-in store keeps its directory and its \
+               files to their owner, as the launcher keeps its state home.";
+          imports = [ [ P.From ("typing", [ "Final" ]) ] ];
+          body =
+            [
+              P.assign "__all__"
+                ~value:
+                  (P.List
+                     (P.items
+                        (List.map
+                           (fun n -> P.item (P.Str n))
+                           [ "DIRECTORY_MODE"; "FILE_MODE"; "access_list" ])));
+              constant "DIRECTORY_MODE" o.directory;
+              constant "FILE_MODE" o.file;
+              P.Def
+                {
+                  name = "access_list";
+                  params = [ ("owner", P.Name "str") ];
+                  returns = P.Name "str";
+                  doc = Some (Wrapped o.access_list.docs);
+                  body =
+                    [
+                      P.Return
+                        (P.Binary
+                           ( P.Binary
+                               ( P.Str o.access_list.before,
+                                 P.Add,
+                                 P.Name "owner" ),
+                             P.Add,
+                             P.Str o.access_list.after ));
+                    ];
+                };
+            ];
+        };
   }
 
 let typescript (entry : Flat.t) (o : Owner_only.t) (names : Contract.t) =

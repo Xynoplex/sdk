@@ -66,11 +66,11 @@ let text (t : Table.t) =
               (G.Block
                  [
                    G.If
-                     ( G.Binary (code, "==", G.Name "nil"),
+                     ( G.Binary (code, G.Eq, G.Name "nil"),
                        [ G.Return [ G.Name t.unrecognized.go ] ] );
                    G.Switch
                      {
-                       tag = Some (G.Unary ("*", code));
+                       tag = Some (G.Unary (G.Deref, code));
                        cases =
                          returning
                            (List.map
@@ -86,11 +86,11 @@ let text (t : Table.t) =
                                     G.Binary
                                       ( G.Binary
                                           ( G.Quoted "a failure's code \"",
-                                            "+",
+                                            G.Add,
                                             G.Convert
                                               ( G.Named "string",
-                                                G.Unary ("*", code) ) ),
-                                        "+",
+                                                G.Unary (G.Deref, code) ) ),
+                                        G.Add,
                                         G.Quoted
                                           "\" is none of CommandErrorCode's: \
                                            the required table recognizes a \
@@ -151,12 +151,12 @@ let text (t : Table.t) =
                          returning
                            (List.map
                               (fun (n, (c : Table.code)) ->
-                                ( G.Binary (status, "==", G.Int n),
+                                ( G.Binary (status, G.Eq, G.Int n),
                                   [ G.Name c.go ] ))
                               t.exact
                            @ List.map
                                (fun (n, (c : Table.code)) ->
-                                 ( G.Binary (status, ">=", G.Int n),
+                                 ( G.Binary (status, G.Ge, G.Int n),
                                    [ G.Name c.go ] ))
                                (Option.to_list t.from));
                        default = Some [ G.Return [ G.Name t.unclassified.go ] ];

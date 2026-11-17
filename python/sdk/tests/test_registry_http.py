@@ -37,7 +37,8 @@ from xynolog.identifiers import ResourceId
 from xynolog.registry import XynologBrowser, XynologBrowserConfig, save_knowledge_bases, store_session, stored_session
 from xynolog.session import XynologSession
 from xynolog.storage import MemoryStorage, SessionStorage
-from xynolog.stored import PENDING_AUTHORIZATION_KEY, StoredSession, last_event_id_key, person_key
+from xynolog.storage_keys import last_event_id_key, person_key
+from xynolog.stored import PENDING_AUTHORIZATION_KEY, StoredSession
 from xynolog.transport import Transport
 from xynolog.types import HttpEndpoint, KnowledgeBase, LocalEndpoint
 from xynolog.watched import reached

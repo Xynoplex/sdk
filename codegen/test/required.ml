@@ -484,10 +484,6 @@ let writers =
                ("A", Required.Shape.Shape Required.Shape.empty);
                ("B", string_shape);
              ]));
-    case "a Python string holding a JSON line" (fun () ->
-        Alcotest.(check string)
-          "quoted" {|'"a\'b\\c"'|}
-          (Required.Python.quoted {|"a'b\c"|}));
     case "a Haskell string literal" (fun () ->
         Alcotest.(check string)
           "literal" {|"a\"\\\xe9\&\x1f600\&\xa\&"|}

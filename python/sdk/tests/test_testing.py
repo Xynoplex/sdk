@@ -23,7 +23,7 @@ from xynolog.identifiers import AnnotationId, ResourceId
 from xynolog.operations import BROWSE_RESOURCE_REQUESTED, GATHER_REQUESTED, GATHER_RESOURCE_REQUESTED, MARK_DELETE, MATCH_SEARCH_REQUESTED
 from xynolog.session import HeldSignIn, MemorySignIn, XynologSession
 from xynolog.storage import MemoryStorage
-from xynolog.stored import cache_key, person_key
+from xynolog.storage_keys import cache_key, person_key
 from xynolog.testing import (
     Delay,
     Deliver,

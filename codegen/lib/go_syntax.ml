@@ -8,7 +8,9 @@
    group, the fields of a struct and the elements of a literal written a line
    each are aligned in runs, as gofmt aligns them: each cell but the last
    padded out to its column's widest, then a space. A run ends at a blank
-   line, at a comment, and at an item written over several lines. *)
+   line, before a comment, and on both sides of an item written over several
+   lines. gofmt also ends a run at a key much longer than its neighbours';
+   no table has one, and the gofmt gate would refuse the file that did. *)
 
 (* A comment: prose wrapped to 78 columns, or a line as it is given. An empty
    line is a bare [//]. *)
@@ -26,6 +28,11 @@ type type_ =
 
 (* Items written a line each: one after another, or a blank line between. *)
 type spacing = Packed | Spaced
+type unary = Not | Deref | Address
+
+(* An operand of one of these is no other operation, so none needs
+   parentheses, and gofmt spaces each as it is written. *)
+type binary = Eq | Ne | Ge | Add | Mul
 
 type expr =
   | Name of string  (** [true], [false] and [nil] are names. *)
@@ -37,8 +44,8 @@ type expr =
   | Call of expr * expr list
   | Instance of expr * type_ list  (** A generic function's instance. *)
   | Convert of type_ * expr
-  | Unary of string * expr
-  | Binary of expr * string * expr
+  | Unary of unary * expr
+  | Binary of expr * binary * expr  (** [a + b + c] is [(a + b) + c]. *)
   | Literal of literal
 
 (* A composite literal: its type, or none where the enclosing literal's
@@ -177,7 +184,11 @@ let comment ~depth (doc : doc) =
             (fun l -> lead ^ " " ^ l)
             (Text.wrapped ~lead:(lead ^ " ") ~width:78 text)
       | Line "" -> [ lead ]
-      | Line text -> [ lead ^ " " ^ text ])
+      | Line text ->
+          if String.contains text '\n' then
+            invalid_arg
+              (Printf.sprintf "Go_syntax: comment line %S is two" text)
+          else [ lead ^ " " ^ text ])
     doc
 
 let rec spans_lines = function
@@ -216,19 +227,21 @@ let align rows =
            row))
     rows
 
-(* Consecutive items in runs, an item that is [solo] in a run of its own. *)
-let runs ~solo items =
+(* Consecutive items in runs: one that has a comment begins a run, and one
+   written over several lines is a run of its own. *)
+let runs ~commented ~spans items =
   List.fold_left
     (fun acc item ->
       match acc with
-      | (last :: _ as run) :: rest when not (solo item || solo last) ->
+      | (last :: _ as run) :: rest
+        when not (commented item || spans item || spans last) ->
           (item :: run) :: rest
       | _ -> [ item ] :: acc)
     [] items
   |> List.rev_map List.rev
 
 (* Items a line each at [depth], each under its comment, aligned in runs. *)
-let rows ~depth ~spacing ~about ~solo ~cells items =
+let rows ~depth ~spacing ~about ~spans ~cells items =
   let run items =
     List.concat
       (List.map2
@@ -237,7 +250,10 @@ let rows ~depth ~spacing ~about ~solo ~cells items =
          (align (List.map cells items)))
   in
   match spacing with
-  | Packed -> String.concat "\n" (List.concat_map run (runs ~solo items))
+  | Packed ->
+      String.concat "\n"
+        (List.concat_map run
+           (runs ~commented:(fun item -> about item <> []) ~spans items))
   | Spaced ->
       String.concat "\n\n"
         (List.map (fun item -> String.concat "\n" (run [ item ])) items)
@@ -258,9 +274,31 @@ let rec expr ~depth = function
   | Call (f, args) -> expr ~depth f ^ "(" ^ listed (expr ~depth) args ^ ")"
   | Instance (e, types) -> expr ~depth e ^ "[" ^ listed type_text types ^ "]"
   | Convert (t, e) -> type_text t ^ "(" ^ expr ~depth e ^ ")"
-  | Unary (op, e) -> op ^ expr ~depth e
-  | Binary (a, op, b) -> expr ~depth a ^ " " ^ op ^ " " ^ expr ~depth b
+  | Unary (op, e) ->
+      (match op with Not -> "!" | Deref -> "*" | Address -> "&")
+      ^ operand ~depth e
+  | Binary (a, op, b) ->
+      let left =
+        match a with
+        | Binary (_, inner, _) when inner = op && (op = Add || op = Mul) ->
+            expr ~depth a
+        | _ -> operand ~depth a
+      in
+      left ^ " "
+      ^ (match op with
+        | Eq -> "=="
+        | Ne -> "!="
+        | Ge -> ">="
+        | Add -> "+"
+        | Mul -> "*")
+      ^ " " ^ operand ~depth b
   | Literal l -> literal ~depth l
+
+and operand ~depth = function
+  | Unary _ | Binary _ ->
+      invalid_arg
+        "Go_syntax: an operand is another operation, which needs parentheses"
+  | e -> expr ~depth e
 
 and literal ~depth { of_; elements; layout } =
   let opening = Option.fold ~none:"" ~some:type_text of_ ^ "{" in
@@ -279,7 +317,7 @@ and literal ~depth { of_; elements; layout } =
       opening ^ "\n"
       ^ rows ~depth:inner ~spacing
           ~about:(fun (e : element) -> e.about)
-          ~solo:(fun (e : element) -> e.about <> [] || spans_lines e.value)
+          ~spans:(fun (e : element) -> spans_lines e.value)
           ~cells:(fun (e : element) ->
             let value = expr ~depth:inner e.value ^ "," in
             match e.key with
@@ -330,7 +368,7 @@ let group keyword ~doc ~spacing specs =
     (keyword ^ " (\n"
     ^ rows ~depth:1 ~spacing
         ~about:(fun (s : spec) -> s.doc)
-        ~solo:(fun (s : spec) -> s.doc <> [] || spans_lines s.value)
+        ~spans:(fun (s : spec) -> spans_lines s.value)
         ~cells:(spec_cells ~depth:1) specs
     ^ "\n)")
 
@@ -358,7 +396,7 @@ let rec decl = function
         ("type (\n"
         ^ rows ~depth:1 ~spacing:Packed
             ~about:(fun _ -> [])
-            ~solo:(fun _ -> false)
+            ~spans:(fun _ -> false)
             ~cells:(fun (name, t) -> [ checked name; "= " ^ type_text t ])
             specs
         ^ "\n)")
@@ -372,7 +410,7 @@ let rec decl = function
             "struct {\n"
             ^ rows ~depth:1 ~spacing
                 ~about:(fun (f : field) -> f.doc)
-                ~solo:(fun (f : field) -> f.doc <> [])
+                ~spans:(fun _ -> false)
                 ~cells:field_cells fields
             ^ "\n}"
         | Interface methods ->

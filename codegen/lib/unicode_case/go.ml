@@ -30,7 +30,7 @@ let range_table ranges =
          pairs)
   in
   G.Unary
-    ( "&",
+    ( G.Address,
       G.lines ~of_:(G.Named "unicode.RangeTable")
         [
           G.keyed "R16" (rows "unicode.Range16" r16);
