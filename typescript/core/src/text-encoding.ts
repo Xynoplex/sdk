@@ -15,7 +15,7 @@
  */
 
 import { XynologError } from './errors';
-import { REFUSED_ENCODINGS } from './generated/encodings';
+import { REFUSED_ENCODINGS } from './refused-encodings';
 import type { TransportErrorCode } from './generated/error-codes';
 
 /** HTTP white space: line feed, carriage return, tab and space. */

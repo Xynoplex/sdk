@@ -49,9 +49,19 @@ per language it writes:
   `DerivedCoreProperties.txt`, which [`ucd/`](ucd) holds;
   `Unicode_case.Json` writes C#'s and Kotlin's copy, and `Unicode_case.Go`
   Go's range tables.
+- `encodings`: the Encoding Standard's labels, its single-byte encodings and
+  the encodings whose labels are refused, from `text/encoding-cases.json`,
+  for the readers of a resource's text whose platform lacks them.
+  `Encodings.Table` holds the table to its rules: an encoding is among its
+  own labels, a label names one encoding and is one a reader can match, and
+  a single-byte encoding is 256 characters. `Encodings.Go` and
+  `Encodings.Python` write the labels and the single-byte encodings, and
+  `Encodings.Typescript` the refused encodings, which the platform's
+  `TextDecoder` decodes all the same.
 
 `Text` measures and spells text: a width in code points, a word ended by
-ASCII white space, a string as JSON writes it. `Output` is the drift gate.
+ASCII white space, a string as JSON writes it or as a Go or Python literal
+of printable ASCII. `Output` is the drift gate.
 
 ## Running it
 

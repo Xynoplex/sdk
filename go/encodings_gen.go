@@ -1,13 +1,13 @@
-// Code generated from protocol/specs/src/text/encoding-cases.json — DO NOT EDIT.
+// Code generated from protocol/specs/src/text/encoding-cases.json; DO NOT EDIT.
 //
-// Regenerate: node codegen/node/schemas/generate-encodings-go.mjs
+// Regenerate: make generate (codegen/lib/encodings/go.ml)
 
 package xynolog
 
 // labelsOfEncodings is every label of the Encoding Standard, 228 of them,
 // each with the encoding it names. A label is matched in lower case, with no
 // white space around it. An encoding that is neither in singleByteEncodings
-// nor in refusedEncodings is UTF-8, UTF-16BE or UTF-16LE, which no table here
+// nor in refusedEncodings is utf-8, utf-16be or utf-16le, which no table here
 // decodes.
 var labelsOfEncodings = []struct{ label, encoding string }{
 	{"866", "ibm866"},
