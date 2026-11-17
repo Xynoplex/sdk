@@ -137,9 +137,8 @@ let protocol (bus : Registry.t) =
       "\nexport type EmittableChannel = {\n";
       "  [K in EventName]: typeof CHANNEL_SCHEMAS[K] extends null ? never : K\n";
       "}[EventName];\n\n";
-      "/** ";
-      Text.replace_all ~sub:"*/" ~by:"*\\/" reg.trace.meaning;
-      " */\n";
+      Text.doc_comment reg.trace.meaning;
+      "\n";
       "export const TRACE_FIELD = '" ^ reg.trace.field ^ "';\n\n";
       {|/**
  * The stamps a gateway puts on a payload (`_userId`, `_roles`) that each

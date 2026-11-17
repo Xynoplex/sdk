@@ -1,9 +1,10 @@
 (* The required group: what each component schema requires of a value, the
-   table every SDK holds a reply to before it reads it. Shape derives it;
-   Table, Typescript, Python and Haskell write it; Go holds it to what package
-   api declares. *)
+   table every SDK holds a reply to before it reads it. Shape derives it, and
+   Event what an event on each bus channel is; Table, Typescript, Python and
+   Haskell write it; Go holds it to what package api declares. *)
 
 module Shape = Shape
+module Event = Event
 module Table = Table
 module Typescript = Typescript
 module Python = Python
@@ -114,9 +115,7 @@ let files ~root (spec : Spec.t) =
     collect
       (List.map
          (fun (c : Tables.Bus_registry.channel) ->
-           Result.map
-             (fun shape -> (c.channel, shape))
-             (Haskell.channel ~known c))
+           Result.map (fun shape -> (c.channel, shape)) (Event.channel ~known c))
          spec.tables.bus_registry.channels)
   in
   let* http = collect (replies spec derivation) in

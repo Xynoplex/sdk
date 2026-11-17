@@ -3,7 +3,6 @@
    nor its single-byte encodings. *)
 
 let path = "go/encodings_gen.go"
-let comment = Text.comment ~marker:"// " ~indent:"" ~width:78
 
 let text (t : Table.t) =
   let rows pairs =
@@ -21,7 +20,7 @@ let text (t : Table.t) =
        //\n\
        // Regenerate: make generate (codegen/lib/encodings/go.ml)\n\n\
        package xynolog\n\n";
-      comment
+      Text.go_comment ~indent:""
         (Printf.sprintf
            "labelsOfEncodings is every label of the Encoding Standard, %d of \
             them, each with the encoding it names. A label is matched in lower \
@@ -32,13 +31,13 @@ let text (t : Table.t) =
       "\nvar labelsOfEncodings = []struct{ label, encoding string }{\n";
       rows t.labels;
       "}\n\n";
-      comment
+      Text.go_comment ~indent:""
         "singleByteEncodings is, for each single-byte encoding, the 256 \
          characters its bytes are: the one at n is the byte n's.";
       "\nvar singleByteEncodings = []struct{ encoding, everyByte string }{\n";
       rows t.single_byte;
       "}\n\n";
-      comment
+      Text.go_comment ~indent:""
         "refusedEncodings is the encodings whose labels are refused: no text \
          is read under them.";
       "\nvar refusedEncodings = []string{";

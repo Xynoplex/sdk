@@ -16,4 +16,5 @@ let all =
     { name = "encodings"; files = Encodings.files };
     { name = "error-codes"; files = Error_codes.files };
     { name = "timing"; files = Timing.files };
+    { name = "cache-refresh"; files = Cache_refresh.files };
   ]

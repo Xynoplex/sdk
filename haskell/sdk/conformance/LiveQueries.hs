@@ -1,4 +1,5 @@
--- Generated from client/refresh.json; do not edit.
+-- Generated from protocol/specs/src/client/refresh.json; do not edit.
+-- Regenerate: make generate (codegen/lib/cache_refresh/haskell.ml)
 {-# LANGUAGE OverloadedStrings #-}
 module LiveQueries (LiveQuery(..)) where
 import Data.Aeson (FromJSON(..), withText)

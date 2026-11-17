@@ -3,7 +3,6 @@
    is checked to name every code, and a tuple of the same codes to iterate. *)
 
 let path = "python/sdk/src/xynolog/error_codes.py"
-let comment ?(indent = "") = Text.comment ~marker:"# " ~indent ~width:96
 
 (* The tuple of a vocabulary's codes. *)
 let codes_constant (v : Table.vocabulary) = Text.upper_snake v.name ^ "S"
@@ -11,13 +10,13 @@ let codes_constant (v : Table.vocabulary) = Text.upper_snake v.name ^ "S"
 let union (v : Table.vocabulary) =
   String.concat ""
     [
-      comment v.docs;
+      Text.python_comment ~indent:"" v.docs;
       Printf.sprintf "\ntype %s = Literal[\n" v.name;
       String.concat ""
         (List.map
            (fun (c : Table.code) ->
              Printf.sprintf "%s\n    %s,\n"
-               (comment ~indent:"    " c.docs)
+               (Text.python_comment ~indent:"    " c.docs)
                (Text.quoted c.code))
            v.codes);
       Printf.sprintf "]\n\n%s: Final[tuple[%s, ...]] = (\n" (codes_constant v)

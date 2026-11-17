@@ -88,7 +88,7 @@ var (
 |};
       aligned rows;
       "\n)\n\n";
-      Text.comment ~marker:"// " ~indent:"" ~width:78 reg.trace.meaning;
+      Text.go_comment ~indent:"" reg.trace.meaning;
       "\nconst TraceField = ";
       Text.quoted reg.trace.field;
       "\n";

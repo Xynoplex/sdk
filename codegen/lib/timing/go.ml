@@ -4,7 +4,6 @@
    retry budget a RetryPolicy, and a count an int. *)
 
 let path = "go/timing_gen.go"
-let comment ?(indent = "") = Text.comment ~marker:"// " ~indent ~width:78
 
 let field (e : Table.entry) =
   let name =
@@ -33,7 +32,7 @@ package xynolog
 import "time"
 
 |};
-      comment
+      Text.go_comment ~indent:""
         "Timing is the timing a Xynolog client keeps: its deadlines, its retry \
          budgets, the cadence of its stream, and what it keeps count of, as \
          protocol/specs/src/client/timing.json states them for every SDK. It \
@@ -44,7 +43,7 @@ import "time"
         (List.map
            (fun (e : Table.entry) ->
              Printf.sprintf "%s\n\t%s %s\n"
-               (comment ~indent:"\t"
+               (Text.go_comment ~indent:"\t"
                   (Printf.sprintf "%s is %s: %s" (field e) e.name e.docs))
                (field e)
                (match e.value with

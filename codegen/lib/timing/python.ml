@@ -3,7 +3,6 @@
    them, by which a caller overrides one. *)
 
 let path = "python/sdk/src/xynolog/timing.py"
-let comment = Text.comment ~marker:"# " ~indent:"" ~width:96
 
 let text (t : Table.t) =
   String.concat ""
@@ -35,7 +34,8 @@ __all__ = [
       String.concat "\n"
         (List.map
            (fun (e : Table.entry) ->
-             Printf.sprintf "%s\n%s: Final = %s\n" (comment e.docs)
+             Printf.sprintf "%s\n%s: Final = %s\n"
+               (Text.python_comment ~indent:"" e.docs)
                (Text.upper_snake e.name)
                (match e.value with
                | Duration n | Count n -> string_of_int n
