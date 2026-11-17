@@ -11,6 +11,7 @@ module Python = Python
 module Haskell = Haskell
 module Go = Go
 module Ocaml = Ocaml
+module Rust = Rust
 
 let refusal file pointer message = { Decode.file; pointer; message }
 
@@ -130,6 +131,7 @@ let files ~root (spec : Spec.t) =
             Typescript.file shapes;
             Python.file shapes;
             Haskell.file ~shapes ~channels ~http;
+            Rust.file shapes;
           ]
         @ Ocaml.files shapes)
   | refusals -> Error refusals

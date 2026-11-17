@@ -396,7 +396,7 @@ where
     }
 }
 
-include!(concat!(env!("OUT_DIR"), "/live_kept.rs"));
+include!("../generated/live_kept.rs");
 
 fn events_of(resource_id: &ResourceId) -> BrowseEventsRequest {
     BrowseEventsRequest {

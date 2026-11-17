@@ -8,8 +8,11 @@ module Go = Go
 module Python = Python
 module Typescript = Typescript
 module Ocaml = Ocaml
+module Rust = Rust
 
 let files ~root:_ (spec : Spec.t) =
   Result.map
-    (fun t -> [ Go.file t; Python.file t; Typescript.file t ] @ Ocaml.files t)
+    (fun t ->
+      [ Go.file t; Python.file t; Typescript.file t; Rust.file t ]
+      @ Ocaml.files t)
     (Table.derive spec.tables.client_timing)

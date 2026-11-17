@@ -45,3 +45,10 @@ let ocaml ~from_ file =
   "(* Generated from " ^ from_
   ^ ". Do not edit.\n   Regenerate: make generate (" ^ writer file
   ^ ") *)\n\n[@@@ocamlformat \"disable\"]\n"
+
+(* A generated Rust file's opening comment lines, without their [//]. *)
+let rust_lines ~from_ file =
+  [
+    "Generated from " ^ from_ ^ "; do not edit.";
+    "Regenerate: make generate (" ^ writer file ^ ")";
+  ]
