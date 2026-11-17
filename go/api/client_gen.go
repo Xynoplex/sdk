@@ -5640,7 +5640,7 @@ type PdfTextItem struct {
 	Height float64 `json:"height"`
 
 	// Page 1-indexed page number.
-	Page float64 `json:"page"`
+	Page int `json:"page"`
 
 	// Start Offset into AnchoredText.text, in Unicode code points from its start, inclusive.
 	Start int     `json:"start"`

@@ -69,12 +69,8 @@ let cases =
     case "an instance of one line is written on its own line"
       (writes "instance ToJSON K where toJSON = String . name"
          (decl
-            (Instance
-               {
-                 class_ = "ToJSON";
-                 instance = "K";
-                 methods = [ ("toJSON", Compose (Name "String", Name "name")) ];
-               })));
+            (H.instance "ToJSON" (T_name "K")
+               [ H.method_ "toJSON" (Compose (Name "String", Name "name")) ])));
     case "a case puts each alternative on a line of its own"
       (writes
          "instance FromJSON K where\n\
@@ -82,27 +78,84 @@ let cases =
          \    \"a\" -> pure A\n\
          \    _ -> fail \"no\""
          (decl
-            (Instance
-               {
-                 class_ = "FromJSON";
-                 instance = "K";
-                 methods =
-                   [
-                     ( "parseJSON",
-                       Dollar
-                         ( Apply (Name "withText", [ Str "K" ]),
-                           Lambda
-                             ( "value",
-                               Case
-                                 ( Name "value",
-                                   [
-                                     ( Literal "a",
-                                       Apply (Name "pure", [ Name "A" ]) );
-                                     ( Otherwise,
-                                       Apply (Name "fail", [ Str "no" ]) );
-                                   ] ) ) ) );
-                   ];
-               })));
+            (H.instance "FromJSON" (T_name "K")
+               [
+                 H.method_ "parseJSON"
+                   (Dollar
+                      ( Apply (Name "withText", [ Str "K" ]),
+                        Lambda
+                          ( "value",
+                            Case
+                              ( Name "value",
+                                [
+                                  ( Literal "a",
+                                    Apply (Name "pure", [ Name "A" ]) );
+                                  (Otherwise, Apply (Name "fail", [ Str "no" ]));
+                                ] ) ) ));
+               ])));
+    case
+      "an instance's context and head come before its clauses, a method's \
+       patterns after its name"
+      (writes
+         "instance ToJSON c => ToJSON (Event c) where\n\
+         \  toJSON (Done v) = object [\"kind\" .= (\"done\" :: Text), \"data\" \
+          .= v]\n\
+         \  toJSON Begun = object []"
+         (decl
+            (H.instance
+               ~context:[ ("ToJSON", "c") ]
+               "ToJSON"
+               (T_apply ("Event", [ T_name "c" ]))
+               [
+                 ( "toJSON",
+                   {
+                     patterns = [ Constructor ("Done", [ Var "v" ]) ];
+                     body =
+                       Apply
+                         ( Name "object",
+                           [
+                             List
+                               [
+                                 Infix
+                                   ( Str "kind",
+                                     [
+                                       (".=", Typed (Str "done", T_name "Text"));
+                                     ] );
+                                 Infix (Str "data", [ (".=", Name "v") ]);
+                               ];
+                           ] );
+                   } );
+                 ( "toJSON",
+                   {
+                     patterns = [ Constructor ("Begun", []) ];
+                     body = Apply (Name "object", [ List [] ]);
+                   } );
+               ])));
+    case "an operand that is an operation is parenthesised"
+      (writes {|R <$> (o .: "a") <*> (o .: "b")|}
+         (expr
+            (Infix
+               ( Name "R",
+                 [
+                   ("<$>", Infix (Name "o", [ (".:", Str "a") ]));
+                   ("<*>", Infix (Name "o", [ (".:", Str "b") ]));
+                 ] ))));
+    case "an operator that is none is refused"
+      (refuses (expr (Infix (Name "a", [ ("plus", Name "b") ]))));
+    case "a record writes a field a line, under its type's variables"
+      (writes
+         "data State v = State\n\
+         \  { stateResults :: [v]\n\
+         \  , stateBusy :: Bool\n\
+         \  } deriving (Eq, Show)"
+         (decl
+            (H.record "State" ~params:[ "v" ] ~deriving:[ "Eq"; "Show" ]
+               [
+                 ("stateResults", T_list (T_name "v"));
+                 ("stateBusy", T_name "Bool");
+               ])));
+    case "a record of no fields is refused"
+      (refuses (decl (H.record "Empty" [])));
     case "a doc comment's line is one line"
       (refuses (decl (H.alias ~about:[ "two\nlines" ] "A" (T_name "B"))));
     case "a module exports what it declares, in order"

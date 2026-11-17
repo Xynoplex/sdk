@@ -13,7 +13,7 @@ import Data.Text (Text)
 import qualified Data.Text as Text
 import Data.Time.Clock.POSIX (posixSecondsToUTCTime)
 import qualified Xynolog.Annotations as A
-import Xynolog.ErrorCodes (spanRefusalCode)
+import Xynolog.ErrorCodes (SpanRefusalCode(SpanRefusalSpanOutOfRange), spanRefusalCode)
 import qualified Xynolog.Internal.Annotations.Id as Id
 import qualified Xynolog.Internal.Annotations.Pdf as Pdf
 import Xynolog.Internal.Annotations.Spans (occurrencesOf,between)
@@ -105,16 +105,21 @@ annotationCases root = do
           _ -> ioError (userError "annotation is not an object")
   forM_ (array (member "cases" builders)) $ \row -> do
     content <- case optional "text" row of String value->pure (A.TextContent value); _->A.PdfContent <$> decode (member "anchored" row)
-    spanValue <- decode (member "span" row)
     resource <- decode (member "resourceId" row)
     motivation <- decode (member "motivation" row)
     generator <- decode (member "generator" row)
     body <- decode (optional "body" row)
-    result <- try (A.annotationOfSpan wall content spanValue resource motivation generator body) :: IO (Either A.SpanRefusedError Annotation)
-    case (optional "refused" row,result) of
-      (String code,Left refusal) -> require "span refusal differs" (spanRefusalCode (A.spanRefusedCode refusal)==code)
-      (Null,Right annotation) -> compareBuilt row annotation
-      _ -> ioError (userError ("annotation builder refused/accepted wrongly: "++show (row,result)))
+    -- A span holds whole numbers, so one stated in fractions is no span: the
+    -- refusal is the span type's, before any builder is called.
+    case fromJSON (member "span" row) of
+      Error _ -> require ("a span that is no span is refused as out of range: "++show row)
+        (optional "refused" row==String (spanRefusalCode SpanRefusalSpanOutOfRange))
+      Success spanValue -> do
+        result <- try (A.annotationOfSpan wall content spanValue resource motivation generator body) :: IO (Either A.SpanRefusedError Annotation)
+        case (optional "refused" row,result) of
+          (String code,Left refusal) -> require "span refusal differs" (spanRefusalCode (A.spanRefusedCode refusal)==code)
+          (Null,Right annotation) -> compareBuilt row annotation
+          _ -> ioError (userError ("annotation builder refused/accepted wrongly: "++show (row,result)))
   forM_ (array (member "resources" builders)) $ \row -> do
     resource <- decode (member "resourceId" row)
     motivation <- decode (member "motivation" row)

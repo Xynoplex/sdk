@@ -1,7 +1,7 @@
 import Foundation
 
 struct Rectangle: Codable {
-  let page: Double
+  let page: Int
   let x: Double
   let y: Double
   let width: Double
@@ -10,7 +10,7 @@ struct Rectangle: Codable {
 func locate(_ anchored: AnchoredText, start: Int, end: Int) -> ([PdfTextItem], [Rectangle]) {
   guard start != end else { return ([], []) }
   let overlapping = anchored.items.filter { $0.start < end && $0.end > start }
-  var pages: [Double] = []
+  var pages: [Int] = []
   for item in overlapping where !pages.contains(item.page) { pages.append(item.page) }
   var rectangles: [Rectangle] = []
   for page in pages {
@@ -51,5 +51,5 @@ func fragmentOf(_ rectangle: Rectangle) -> String {
     return text
   }
   return
-    "page=\(decimal(rectangle.page))&viewrect=\(decimal(rectangle.x)),\(decimal(rectangle.y)),\(decimal(rectangle.width)),\(decimal(rectangle.height))"
+    "page=\(rectangle.page)&viewrect=\(decimal(rectangle.x)),\(decimal(rectangle.y)),\(decimal(rectangle.width)),\(decimal(rectangle.height))"
 }

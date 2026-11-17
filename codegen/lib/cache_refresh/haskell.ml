@@ -162,34 +162,28 @@ let live_queries (t : Table.t) =
           H.data "LiveQuery"
             (List.map (fun n -> H.constructor (identifier n)) (queries t))
             ~deriving:[ "Eq"; "Show" ];
-          Instance
-            {
-              class_ = "FromJSON";
-              instance = "LiveQuery";
-              methods =
-                [
-                  ( "parseJSON",
-                    Dollar
-                      ( Apply (Name "withText", [ Str "LiveQuery" ]),
-                        Lambda
-                          ( "value",
-                            Case
-                              ( Name "value",
-                                List.map
-                                  (fun n ->
-                                    ( H.Literal n,
-                                      H.Apply
-                                        (Name "pure", [ Name (identifier n) ])
-                                    ))
-                                  (queries t)
-                                @ [
-                                    ( Otherwise,
-                                      Apply
-                                        ( Name "fail",
-                                          [ Str "unknown live query" ] ) );
-                                  ] ) ) ) );
-                ];
-            };
+          H.instance "FromJSON" (T_name "LiveQuery")
+            [
+              H.method_ "parseJSON"
+                (Dollar
+                   ( Apply (Name "withText", [ Str "LiveQuery" ]),
+                     Lambda
+                       ( "value",
+                         Case
+                           ( Name "value",
+                             List.map
+                               (fun n ->
+                                 ( H.Literal n,
+                                   H.Apply (Name "pure", [ Name (identifier n) ])
+                                 ))
+                               (queries t)
+                             @ [
+                                 ( Otherwise,
+                                   Apply
+                                     (Name "fail", [ Str "unknown live query" ])
+                                 );
+                               ] ) ) ));
+            ];
         ];
     }
 

@@ -1,4 +1,5 @@
-(* Generated from Python testing/transport.py and testing/liveness.py. Do not edit. *)
+(* Generated from client/testing.json. Do not edit.
+   Regenerate: make generate (codegen/lib/testing/testing.ml) *)
 
 [@@@ocamlformat "disable"]
 type fault_action = Deliver | Drop_reply | Delay of int | Duplicate_reply | Reject_emit
@@ -11,6 +12,5 @@ let fault_actions random =
   | 3 -> Duplicate_reply
   | 4 -> Reject_emit
   | _ -> assert false
-let fault_schedules random =
-  List.init (1 + Random.State.int random 8) (fun _ -> fault_actions random)
+let schedule_length = (1, 8)
 let slack = 4

@@ -4,7 +4,7 @@ namespace Xynolog.Annotations;
 
 internal static class PdfLocation
 {
-    internal sealed record Rectangle(double Page, double X, double Y, double Width, double Height)
+    internal sealed record Rectangle(long Page, double X, double Y, double Width, double Height)
     {
         internal string Fragment() => FormattableString.Invariant($"page={Page}&viewrect={X},{Y},{Width},{Height}");
     }

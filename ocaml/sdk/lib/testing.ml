@@ -13,7 +13,12 @@ type respond =
   channel:string -> Yojson.Safe.t -> (string * Yojson.Safe.t) option
 
 let fault_actions = Testing_facts.fault_actions
-let fault_schedules = Testing_facts.fault_schedules
+
+let fault_schedules random =
+  let shortest, longest = Testing_facts.schedule_length in
+  List.init
+    (shortest + Random.State.int random (longest - shortest + 1))
+    (fun _ -> fault_actions random)
 
 let delivery_ops random ~max_length =
   if max_length < 1 then invalid_arg "delivery schedule must be nonempty";
