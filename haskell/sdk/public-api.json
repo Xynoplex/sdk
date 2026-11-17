@@ -3,7 +3,7 @@
     "../toolchain/cabal-install.version": "a5d7f6d75c0159726e5f2927efc20ee5b49e25ff827d4e86270bed25af3533a2",
     "api.py": "1d390a6f164b82c1483bf940506e617fea31a087d4f901b9400ea71f5dd46fa6",
     "cabal.project": "a78c42390bcc40515ea91788294ad2523aa66d2cd7d8603e60575315ecc8f3b9",
-    "cabal.project.freeze": "e3f5b1fd71043e46c15541b37e119bd95a41ba55c788383306624a80acd2ec1f",
+    "cabal.project.freeze": "80997d6af4ef89646787bf0840b4d824ebf6bda1f6e932668341b94ba159e93c",
     "codegen/Facts.hs": "db5571e09eb5c26a7ae27340b10c4fca269422d669fc5afc7dd6af3c124af317",
     "codegen/HttpFacts.hs": "da07203b15e83c87c8465aaccb7f639c430e6fb74d3d1c1b762d3919f6742231",
     "codegen/Main.hs": "3a4e1c45597afe24d765b73365647f46fe0e438fd0fa128d03d9a2add3a85401",
