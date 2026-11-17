@@ -49,19 +49,6 @@ let payload_type (c : R.channel) =
   | Void -> "void"
   | Empty -> "Record<string, never>"
 
-(* A refinement is held to the type it narrows, by Refines (event-base.ts). *)
-let refined refinement type_ =
-  match refinement with
-  | None -> type_
-  | Some refinement -> "Refines<" ^ type_ ^ ", " ^ refinement ^ ">"
-
-(* A stored event's refinement narrows its payload, in the persisted-event
-   catalog, not the channel. *)
-let channel_type (c : R.channel) =
-  match c.payload with
-  | Schema { ts_refinement; _ } -> refined ts_refinement (payload_type c)
-  | _ -> payload_type c
-
 let payload_schema (c : R.channel) =
   match c.payload with
   | Schema { schema; _ } -> "{ payload: '" ^ schema ^ "' }"
@@ -79,7 +66,7 @@ let protocol (bus : Registry.t) =
     entries
       (fun (c : R.channel) -> c.docs)
       (fun c ->
-        "  '" ^ c.channel ^ "': " ^ channel_type c ^ ";" ^ trailing c.docs)
+        "  '" ^ c.channel ^ "': " ^ payload_type c ^ ";" ^ trailing c.docs)
       (channels reg.channel_order.event_map)
   in
   let schemas =
@@ -115,10 +102,44 @@ let protocol (bus : Registry.t) =
   String.concat ""
     [
       banner;
-      reg.preamble.protocol_header;
-      "export type EventMap = {";
+      {|/**
+ * Bus Protocol
+ *
+ * The complete EventMap for the RxJS EventBus. Every channel name and
+ * its payload type is defined here — domain events, commands, reads,
+ * results, SSE stream payloads, and Browser UI events. What TypeScript
+ * narrows in a payload is bus-refinements.ts's.
+ *
+ * Organized by flow (verb), then by category within each flow.
+ */
+
+import type { components } from './types';
+import type { EnrichedEvent, StoredEvent } from './event-base';
+import type { EventOfType, PersistedEventType } from './persisted-events';
+import type { ChannelRefinements } from './bus-refinements';
+
+/** Each channel's payload as the registry states it. */
+export type StatedEventMap = {|};
       lines event_map;
-      "\n};\n\n";
+      {|
+};
+
+/**
+ * The unified EventMap — every channel on the EventBus: each channel's
+ * stated payload, or its refinement where bus-refinements.ts narrows it.
+ *
+ * Convention:
+ * - Domain events (past tense): StoredEvent<Interface> — branded types
+ * - Annotation-mutating events: EnrichedEvent<Interface> — the stored event
+ *   plus the annotation the EventStore attaches before publishing
+ * - Commands/reads/results/UI: OpenAPI schema refs — plain strings
+ * - void: UI-only signals with no payload
+ */
+export type EventMap = {
+  [K in keyof StatedEventMap]: K extends keyof ChannelRefinements ? ChannelRefinements[K] : StatedEventMap[K];
+};
+
+|};
       "export type { AnchorRect } from './bus-ui-types';\n\n";
       reg.docs.event_name;
       "\nexport type EventName = keyof EventMap;\n\n";
@@ -171,19 +192,14 @@ export const CHANNEL_PAYLOADS = {
 (* The catalog is the registry's stored-event channels, in their order: the
    payload each names, and the system flag of those that belong to no
    resource. *)
-type stored = {
-  event : string;
-  payload : string;
-  system : bool;
-  refinement : string option;
-}
+type stored = { event : string; payload : string; system : bool }
 
 let stored (reg : R.t) =
   List.filter_map
     (fun (c : R.channel) ->
       match c.payload with
-      | Stored_event { event; payload; system; ts_refinement; _ } ->
-          Some { event; payload; system; refinement = ts_refinement }
+      | Stored_event { event; payload; system; _ } ->
+          Some { event; payload; system }
       | _ -> None)
     reg.channels
 
@@ -201,25 +217,31 @@ let persisted (bus : Registry.t) =
  */
 
 import type { components } from './types';
-import type { AnnotationId, ResourceId } from './identifiers';
-import type { Annotation } from './annotation-types';
-import type { EventBase, Refines } from './event-base';
+import type { ResourceId } from './identifiers';
+import type { EventBase } from './event-base';
+import type { EventPayloadRefinements } from './bus-refinements';
 
-/**
- * Each persisted event type and the payload it carries. A `Refines` entry
- * narrows the schema's type to this layer's branded one, so consumers read
- * `payload.annotation.id` as `AnnotationId` without an upcast at every seam.
- */
-type PersistedEventCatalog = {
+/** Each persisted event type and the payload the registry states it carries. */
+export type StatedPersistedEventCatalog = {
 |};
       lines
         (List.map
            (fun s ->
-             "  '" ^ s.event ^ "': "
-             ^ refined s.refinement (schema_type s.payload)
-             ^ ";")
+             "  '" ^ s.event ^ "': " ^ schema_type s.payload ^ ";")
            stored);
       {|
+};
+
+/**
+ * Each persisted event type and the payload it carries: the stated one, or
+ * its refinement where bus-refinements.ts narrows it to this layer's branded
+ * types, so consumers read `payload.annotation.id` as `AnnotationId` without
+ * an upcast at every seam.
+ */
+type PersistedEventCatalog = {
+  [K in keyof StatedPersistedEventCatalog]: K extends keyof EventPayloadRefinements
+    ? EventPayloadRefinements[K]
+    : StatedPersistedEventCatalog[K];
 };
 
 /** System event types — persisted events that have no resourceId. */
@@ -277,11 +299,40 @@ let operations (bus : Registry.t) =
   String.concat ""
     [
       banner;
-      reg.preamble.operations_header;
-      "export const BUS_OPERATIONS = {";
+      {|import type { EventMap, EventName, EmittableChannel } from './bus-protocol';
+
+/**
+ * BUS_OPERATIONS — the request/reply operations registry.
+ *
+ * Each entry declares ONE operation as a triple, so its three facts are
+ * stated together rather than maintained independently across call sites:
+ *   - the request channel (the key — an `EmittableChannel`),
+ *   - the `result` channel (success reply),
+ *   - and the `failure` channel.
+ *
+ * `BridgedChannel` / `BRIDGED_CHANNELS` are DERIVED from this map
+ * (bridging.ts): every reply lands in the bridged fan-in set by
+ * construction, so "a reply channel forgotten from BRIDGED_CHANNELS" is not
+ * representable.
+ *
+ * `Partial<Record<EmittableChannel, …>>` enforces that every key is a real
+ * emittable request. `result`/`failure` stay `EventName` rather than
+ * `BridgedChannel` to avoid a circular reference (BridgedChannel derives from
+ * this map); the derivation closes the loop instead.
+ */
+export interface BusOperationSpec {
+  result: EventName;
+  failure: EventName;
+}
+
+export const BUS_OPERATIONS = {|};
       lines operations;
-      "\n}";
-      reg.preamble.operations_footer;
+      {|
+} as const satisfies Partial<Record<EmittableChannel, BusOperationSpec>>;
+
+/** The request-channel key of a registered operation — what `Bus.request` takes. */
+export type BusOperationKey = keyof typeof BUS_OPERATIONS;
+|};
       {|
 /**
  * REPLY_NAMES — what each operation's reply states beside its `response`.
@@ -313,14 +364,12 @@ let bridged (bus : Registry.t) =
   String.concat ""
     [
       banner;
-      reg.preamble.bridged_header;
+      "import type { EventName } from './bus-protocol';\n\n";
       reg.audience.doc;
       "\nexport const BRIDGED_BROADCASTS = [\n";
       channels reg.audience.everyone;
       "\n] as const satisfies readonly EventName[];\n\n";
-      reg.preamble.bridged_derivation;
-      {|
-/**
+      {|/**
  * The channels a client receives per RESOURCE SCOPE rather than globally —
  * what `subscribeToResource` joins. `audience: scoped` in the registry.
  */
@@ -335,13 +384,6 @@ export type ResourceScopedChannel = (typeof RESOURCE_SCOPED_CHANNELS)[number];
 
 /** A channel of no resource's scope: every other channel. */
 export type UnscopedChannel = Exclude<EventName, ResourceScopedChannel>;
-
-const SCOPED: ReadonlySet<EventName> = new Set(RESOURCE_SCOPED_CHANNELS);
-
-/** Whether `channel` is delivered on a resource's scope. */
-export function isResourceScopedChannel(channel: EventName): channel is ResourceScopedChannel {
-  return SCOPED.has(channel);
-}
 |};
     ]
 
@@ -420,18 +462,6 @@ export const CHANNEL_ATTRS = {
       lines attrs;
       {|
 } as const satisfies Record<EventName, ChannelAttrs>;
-
-const BY_CHANNEL: ReadonlyMap<string, ChannelAttrs> = new Map(Object.entries(CHANNEL_ATTRS));
-
-/** String-keyed accessor for boundary code that has not yet narrowed to
- *  EventName. Undefined means "not a channel", never "unclassified" — the
- *  satisfies above makes unclassified unrepresentable. */
-export const channelAttrsOf = (channel: string): ChannelAttrs | undefined => BY_CHANNEL.get(channel);
-
-/** Did emitting this channel CHANGE the knowledge base? False for a read, and
- *  for anything nobody emits — both are "no act happened", which is the
- *  question every caller is actually asking. */
-export const channelWrites = (channel: string): boolean => BY_CHANNEL.get(channel)?.writes === true;
 |};
     ]
 

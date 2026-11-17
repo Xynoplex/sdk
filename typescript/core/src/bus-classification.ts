@@ -254,15 +254,3 @@ export const CHANNEL_ATTRS = {
   'session:joined':                   { recorded: false, direction: 'inbound', delivery: 'passing' },
   'session:left':                     { recorded: false, direction: 'inbound', delivery: 'passing' },
 } as const satisfies Record<EventName, ChannelAttrs>;
-
-const BY_CHANNEL: ReadonlyMap<string, ChannelAttrs> = new Map(Object.entries(CHANNEL_ATTRS));
-
-/** String-keyed accessor for boundary code that has not yet narrowed to
- *  EventName. Undefined means "not a channel", never "unclassified" — the
- *  satisfies above makes unclassified unrepresentable. */
-export const channelAttrsOf = (channel: string): ChannelAttrs | undefined => BY_CHANNEL.get(channel);
-
-/** Did emitting this channel CHANGE the knowledge base? False for a read, and
- *  for anything nobody emits — both are "no act happened", which is the
- *  question every caller is actually asking. */
-export const channelWrites = (channel: string): boolean => BY_CHANNEL.get(channel)?.writes === true;

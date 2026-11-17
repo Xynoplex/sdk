@@ -519,10 +519,9 @@ let writers =
                    payload = "P";
                    enriched = false;
                    system = false;
-                   ts_refinement = None;
                  };
                Schema
-                 { schema = "Missing"; validate = None; ts_refinement = None };
+                 { schema = "Missing"; validate = None };
              ]));
   ]
 

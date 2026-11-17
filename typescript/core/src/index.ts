@@ -51,8 +51,8 @@ export {
   JOBS_BUCKET,
   JOB_TYPES,
   MARK_MOTIVATIONS,
-  jobSubject,
 } from './job-storage';
+export { jobSubject } from './job-subject';
 
 // Graph types
 export type { ResourceDescriptor } from './graph';
@@ -213,13 +213,11 @@ export type {
 
 // Channel set every concrete transport bridges into the client's bus.
 export {
-  BRIDGED_CHANNELS,
   RESOURCE_SCOPED_CHANNELS,
-  isResourceScopedChannel,
-  type BridgedChannel,
   type ResourceScopedChannel,
   type UnscopedChannel,
 } from './bridged-channels';
+export { BRIDGED_CHANNELS, isResourceScopedChannel, type BridgedChannel } from './bridging';
 
 // Request/reply over the bus — the transport-neutral primitive.
 export { replyChannelsFor, BusRequestError } from './bus-request';
@@ -249,12 +247,11 @@ export { BUS_OPERATIONS, type BusOperationKey, type BusOperationSpec } from './b
 export { LIMITS_OPERATIONS, type LimitsOperation } from './limits-operations';
 export {
   CHANNEL_ATTRS,
-  channelAttrsOf,
-  channelWrites,
   type ChannelAttrs,
   type ChannelDelivery,
   type ChannelDirection,
 } from './bus-classification';
+export { channelAttrsOf, channelWrites } from './channel-attrs';
 
 // How well a quote was found in a text (annotation re-anchoring under content edits)
 export type { MatchQuality } from './fuzzy-anchor';

@@ -112,13 +112,7 @@ let typescript t =
            told apart by. */\n\
            export const MARK_MOTIVATIONS = ";
           array t.mark_motivations;
-          {| as const;
-
-/** The subject a job of this type is published on. */
-export function jobSubject(type: string): string {
-  return `${JOBS_SUBJECT_ROOT}.${type}`;
-}
-|};
+          " as const;\n";
         ];
   }
 

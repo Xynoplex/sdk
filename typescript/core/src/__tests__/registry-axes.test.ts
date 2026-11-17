@@ -176,7 +176,6 @@ describe('registry payloads — stated by shape, never as a TypeScript string', 
   test('accepts each of the five shapes', () => {
     for (const entry of [
       { shape: 'schema', schema: 'DemoExtra', validate: null },
-      { shape: 'schema', schema: 'DemoExtra', validate: null, tsRefinement: 'DemoExtraRefined' },
       { shape: 'envelope', schema: 'DemoExtra', validate: null },
       { shape: 'void', validate: null },
       { shape: 'empty', validate: null },
@@ -190,16 +189,8 @@ describe('registry payloads — stated by shape, never as a TypeScript string', 
         ...stored.channels,
         { channel: 'demo:stored', shape: 'storedEvent', event: 'demo:stored', payload: 'DemoStoredPayload', validate: null },
         { channel: 'demo:system', shape: 'storedEvent', event: 'demo:system', payload: 'DemoSystemPayload', system: true, validate: null },
-        {
-          channel: 'demo:branded',
-          shape: 'storedEvent',
-          event: 'demo:branded',
-          payload: 'DemoBrandedPayload',
-          validate: null,
-          tsRefinement: "components['schemas']['DemoBrandedPayload'] & { id: DemoId }",
-        },
       ],
-      inProcess: { doc: [], channels: [...stored.inProcess.channels, 'demo:stored', 'demo:system', 'demo:branded'] },
+      inProcess: { doc: [], channels: [...stored.inProcess.channels, 'demo:stored', 'demo:system'] },
     };
     expect(problemsFor(reg)).toBe('');
   });
@@ -223,9 +214,9 @@ describe('registry payloads — stated by shape, never as a TypeScript string', 
     expect(complains(withChannel({ shape: 'empty', schema: 'DemoExtra', validate: null }), 'names no schema')).toBe(true);
   });
 
-  test('refuses a refinement with no schema to narrow', () => {
-    const reg = withChannel({ shape: 'empty', validate: null, tsRefinement: 'Whatever' });
-    expect(complains(reg, 'a refinement narrows a schema')).toBe(true);
+  test('refuses a refinement — a TypeScript refinement is the SDK’s own', () => {
+    const reg = withChannel({ shape: 'schema', schema: 'DemoExtra', validate: null, tsRefinement: 'DemoExtraRefined' });
+    expect(complains(reg, 'has a tsRefinement')).toBe(true);
   });
 
   test('refuses a channel that carries one schema and validates against another', () => {

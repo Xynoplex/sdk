@@ -1,8 +1,9 @@
 (* The kinds of id as the TypeScript SDK's core declares them
    (typescript/core/src/identifiers.ts): for each, its branded type, a guard
-   and the one constructor that makes it. The brands themselves are written
-   into openapi-typescript's types.ts by generate-identifiers.mjs, until
-   types.ts is the generator's own. *)
+   and the one constructor that makes it, of the kind its rule makes. What the
+   kinds share is the SDK's own (typescript/core/src/identifier.ts). The
+   brands themselves are written into openapi-typescript's types.ts by
+   generate-identifiers.mjs, until types.ts is the generator's own. *)
 
 let path = "typescript/core/src/identifiers.ts"
 
@@ -13,24 +14,17 @@ let kind (k : Table.kind) =
     {|%s
 export type %s = components['schemas']['%s'];
 
-const %s = new RegExp(%s, 'u');
+const %s = identifierKind<%s>('%s', %s);
 
 /** Whether `value` is a `%s`: where text enters and what is not an id is an answer, not a fault. */
-export function is%s(value: string): value is %s {
-  return %s.test(value);
-}
+export const is%s = %s.is;
 
 /** `value` as a `%s`. Throws a `TypeError` when the kind's rule refuses it. */
-export function %s(value: string): %s {
-  if (!is%s(value)) {
-    throw new TypeError(`${JSON.stringify(value)} is not a %s: it does not match ${%s.source}`);
-  }
-  return value;
-}
+export const %s = %s.of;
 |}
     (Text.doc_comment k.description)
-    name name rule (Text.quoted k.pattern) name name name rule name make name
-    name name rule
+    name name rule name name (Text.quoted k.pattern) name name rule name make
+    rule
 
 let text kinds =
   {|// ⚠ GENERATED FILE — do not edit.
@@ -50,6 +44,7 @@ let text kinds =
  */
 
 import type { components } from './types';
+import { identifierKind } from './identifier';
 
 |}
   ^ String.concat "\n" (List.map kind kinds)

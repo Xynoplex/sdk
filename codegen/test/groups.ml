@@ -61,18 +61,6 @@ let base : Yojson.Safe.t =
                 ("docs", docs);
               ];
           ] );
-      ( "preamble",
-        `Assoc
-          [
-            ("protocolHeader", `String "");
-            ("eventMapTail", `List []);
-            ("schemasTail", `List []);
-            ("operationsHeader", `String "");
-            ("operationsInnerTail", `List []);
-            ("operationsFooter", `String "");
-            ("bridgedHeader", `String "");
-            ("bridgedDerivation", `String "");
-          ] );
       ( "docs",
         `Assoc
           [
@@ -326,12 +314,6 @@ let payloads =
               ("validate", `Null);
             ];
             [
-              ("shape", `String "schema");
-              ("schema", `String "DemoExtra");
-              ("validate", `Null);
-              ("tsRefinement", `String "DemoExtraRefined");
-            ];
-            [
               ("shape", `String "envelope");
               ("schema", `String "DemoExtra");
               ("validate", `Null);
@@ -345,7 +327,6 @@ let payloads =
               ("validate", `Null);
               ("system", `Bool true);
               ("enriched", `Bool true);
-              ("tsRefinement", `String "DemoRefined");
             ];
           ]);
     case "a shape no language can type"
@@ -376,13 +357,14 @@ let payloads =
               ("validate", `Null);
             ])
          "/channels/5/schema: an unknown member");
-    case "a refinement with no schema to narrow"
+    case "a refinement is the SDK's, not the registry's"
       (refuses
          (with_channel
             [
-              ("shape", `String "empty");
+              ("shape", `String "schema");
+              ("schema", `String "DemoExtra");
               ("validate", `Null);
-              ("tsRefinement", `String "Whatever");
+              ("tsRefinement", `String "DemoExtraRefined");
             ])
          "/channels/5/tsRefinement: an unknown member");
     case "a channel that carries one schema and validates against another"

@@ -39,7 +39,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
 import { CHANNEL_ATTRS } from '../bus-classification';
-import { BRIDGED_CHANNELS } from '../bridged-channels';
+import { BRIDGED_CHANNELS } from '../bridging';
 import { BUS_OPERATIONS } from '../bus-operations';
 import { PERSISTED_EVENT_TYPES } from '../persisted-events';
 

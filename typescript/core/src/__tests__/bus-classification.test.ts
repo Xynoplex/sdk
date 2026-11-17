@@ -15,10 +15,12 @@
  * `--check` drift gate's job, not this suite's.
  */
 import { describe, test, expect } from 'vitest';
-import { CHANNEL_ATTRS, channelAttrsOf } from '../bus-classification';
+import { CHANNEL_ATTRS } from '../bus-classification';
+import { channelAttrsOf } from '../channel-attrs';
 import { CHANNEL_SCHEMAS } from '../bus-protocol';
 import { BUS_OPERATIONS } from '../bus-operations';
-import { BRIDGED_BROADCASTS, BRIDGED_CHANNELS, RESOURCE_SCOPED_CHANNELS } from '../bridged-channels';
+import { BRIDGED_BROADCASTS, RESOURCE_SCOPED_CHANNELS } from '../bridged-channels';
+import { BRIDGED_CHANNELS } from '../bridging';
 import { PERSISTED_EVENT_TYPES } from '../persisted-events';
 
 const allChannels = Object.keys(CHANNEL_SCHEMAS);

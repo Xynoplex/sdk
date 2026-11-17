@@ -31,7 +31,8 @@ import { EventBus } from './event-bus';
 import { BUS_OPERATIONS, REPLY_NAMES, type BusOperationKey } from './bus-operations';
 import { asDeclared, type FrameRefusal } from './bus';
 import { BusRequestError } from './bus-request';
-import { isResourceScopedChannel, RESOURCE_SCOPED_CHANNELS } from './bridged-channels';
+import { RESOURCE_SCOPED_CHANNELS } from './bridged-channels';
+import { isResourceScopedChannel } from './bridging';
 import { relayFrames } from './relay-frames';
 
 /** One wire behavior, applied to a single request-channel emit. */

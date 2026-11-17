@@ -27,7 +27,7 @@
 
 import * as fc from 'fast-check';
 import type { Observable, Subscription } from 'rxjs';
-import { BRIDGED_CHANNELS } from './bridged-channels';
+import { BRIDGED_CHANNELS } from './bridging';
 import { FaultyTransport, type FaultAction } from './faulty-transport';
 
 // ── L1/L2: liveness over a composition on FaultyTransport ────────────────

@@ -27,7 +27,6 @@ type payload =
   | Schema of {
       schema : string;
       validate : string option;
-      ts_refinement : string option;
     }
   | Envelope of { schema : string }
   | Stored_event of {
@@ -35,7 +34,6 @@ type payload =
       payload : string;
       enriched : bool;
       system : bool;
-      ts_refinement : string option;
     }
   | Void
   | Empty
@@ -76,7 +74,6 @@ let channel =
                 validate =
                   Decode.required o "validate"
                     (Decode.nullable Decode.non_empty_string);
-                ts_refinement = Decode.optional o "tsRefinement" Decode.string;
               }) );
       ( "envelope",
         channel_of (fun o ->
@@ -95,7 +92,6 @@ let channel =
                 payload = Decode.required o "payload" Decode.non_empty_string;
                 enriched = flag o "enriched";
                 system = flag o "system";
-                ts_refinement = Decode.optional o "tsRefinement" Decode.string;
               }) );
       ( "void",
         channel_of (fun o ->
@@ -123,33 +119,6 @@ let operation =
         result = Decode.required o "result" Decode.string;
         failure = Decode.required o "failure" Decode.string;
         docs = Decode.required o "docs" docs;
-      })
-
-type preamble = {
-  protocol_header : string;
-  event_map_tail : Decode.nothing list;
-  schemas_tail : Decode.nothing list;
-  operations_header : string;
-  operations_inner_tail : Decode.nothing list;
-  operations_footer : string;
-  bridged_header : string;
-  bridged_derivation : string;
-}
-
-let preamble =
-  Decode.obj (fun o : preamble ->
-      {
-        protocol_header = Decode.required o "protocolHeader" Decode.string;
-        event_map_tail =
-          Decode.required o "eventMapTail" (Decode.list Decode.nothing);
-        schemas_tail =
-          Decode.required o "schemasTail" (Decode.list Decode.nothing);
-        operations_header = Decode.required o "operationsHeader" Decode.string;
-        operations_inner_tail =
-          Decode.required o "operationsInnerTail" (Decode.list Decode.nothing);
-        operations_footer = Decode.required o "operationsFooter" Decode.string;
-        bridged_header = Decode.required o "bridgedHeader" Decode.string;
-        bridged_derivation = Decode.required o "bridgedDerivation" Decode.string;
       })
 
 type type_docs = {
@@ -227,7 +196,6 @@ type t = {
   channel_order : channel_order;
   channels : channel list;
   operations : operation list;
-  preamble : preamble;
   docs : type_docs;
   in_process : in_process;
   kind : kind;
@@ -243,7 +211,6 @@ let decode =
         channel_order = Decode.required o "channelOrder" channel_order;
         channels = Decode.required o "channels" (Decode.list channel);
         operations = Decode.required o "operations" (Decode.list operation);
-        preamble = Decode.required o "preamble" preamble;
         docs = Decode.required o "docs" type_docs;
         in_process = Decode.required o "inProcess" in_process;
         kind = Decode.required o "kind" kind;

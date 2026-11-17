@@ -19,7 +19,7 @@ import { describe, it, expect } from 'vitest';
 import type { Observable } from 'rxjs';
 import { Bus } from '../bus';
 import { BUS_OPERATIONS, type BusOperationKey } from '../bus-operations';
-import { BRIDGED_CHANNELS } from '../bridged-channels';
+import { BRIDGED_CHANNELS } from '../bridging';
 import { EventBus } from '../event-bus';
 import { XynologError } from '../errors';
 import { FaultyTransport } from '../faulty-transport';
