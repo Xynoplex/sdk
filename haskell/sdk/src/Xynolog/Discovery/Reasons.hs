@@ -1,4 +1,5 @@
 -- Generated from protocol/specs/src/client/discovery-absent.json; do not edit.
+-- Regenerate: make generate (codegen/lib/error_codes/haskell.ml)
 {-# LANGUAGE OverloadedStrings #-}
 module Xynolog.Discovery.Reasons (DiscoveryAbsentCode(..), discoveryAbsentCode, parseDiscoveryAbsentCode) where
 import Data.Aeson (FromJSON(..), ToJSON(..), Value(..), withText)

@@ -1,21 +1,11 @@
--- Generated from protocol/specs/src. Run xynolog-codegen; do not edit.
+-- Generated from protocol/specs/src; do not edit.
+-- Regenerate: make generate (codegen/lib/haskell_sdk/haskell_sdk.ml)
 {-# LANGUAGE OverloadedStrings #-}
-
-{-# OPTIONS_GHC -Wno-unused-imports #-}
-module Xynolog.Internal.Generated.Models.JobType
-  ( JobType(..)
-  ) where
-import Control.Applicative ((<|>))
-import Data.Aeson (FromJSON(..), ToJSON(..), Value(..), withObject, (.:))
-import Data.Aeson.Types (parseEither)
-import qualified Data.Aeson.KeyMap as KM
-import Data.Scientific (Scientific)
-import Data.Text (Text)
+module Xynolog.Internal.Generated.Models.JobType (JobType(..)) where
+import Data.Aeson (FromJSON(..), ToJSON(..), Value(..))
 import Xynolog.Internal.Codec
-import Xynolog.Types.Presence (Presence)
 data JobType = JobTypeMark | JobTypeYield deriving (Eq, Show)
-instance FromJSON JobType where
-  parseJSON = checked "JobType" $ \value -> if value == (String "mark") then pure JobTypeMark else if value == (String "yield") then pure JobTypeYield else fail "unknown enumeration member"
+instance FromJSON JobType where parseJSON = checked "JobType" $ \value -> if value == String "mark" then pure JobTypeMark else if value == String "yield" then pure JobTypeYield else fail "unknown enumeration member"
 instance ToJSON JobType where
   toJSON JobTypeMark = String "mark"
   toJSON JobTypeYield = String "yield"

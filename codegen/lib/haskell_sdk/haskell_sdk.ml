@@ -1,0 +1,236 @@
+(* The Haskell SDK's modules that no other group's table owns: the models of
+   every schema it reads or writes, with the module that exports them, the
+   schemas it validates against and the round trips its tests drive; its
+   HTTP routes; its transport's facts; and its bus's channels and
+   operations, with each operation's failure. Each group that owns a table
+   writes the Haskell SDK's module of it itself. *)
+
+module Normalize = Normalize
+module Models = Models
+module Companions = Companions
+module Definitions = Definitions
+module Http = Http
+module Transport = Transport
+module Channels = Channels
+module Marker = Marker
+module Constants = Constants
+module Worker = Worker
+module H = Haskell_syntax
+
+let ( let* ) = Result.bind
+
+let path ~under name =
+  "haskell/sdk/" ^ under ^ "/"
+  ^ String.concat "/" (String.split_on_char '.' name)
+  ^ ".hs"
+
+let file ~under (m : H.module_) =
+  { Output.path = path ~under m.name; text = H.text m }
+
+let banner from_ = Banner.haskell_lines ~from_ __FILE__
+
+(* The adapters of the client types, as their group writes them. *)
+let adapters (spec : Spec.t) =
+  let* model = Client_types.Model.derive spec in
+  let* files =
+    Client_types.Haskell.adapters ~shape:(Client_types.Model.shape model)
+  in
+  Result.map List.concat
+    (Spec.all
+       (List.map
+          (fun (f : Output.file) ->
+            Result.map_error
+              (fun e -> [ e ])
+              (Result.map fst
+                 (Decode.run ~file:f.path
+                    (Yojson.Safe.from_string f.text)
+                    (Decode.map Schema.decode))))
+          files))
+
+(* The package's manifest: its template with the model modules listed, at
+   the version the committed manifest states, which scripts/sdk_version.py
+   writes; and the repository's licence, which the package ships. *)
+let manifest ~root module_names =
+  let template = Marker.read ~root "haskell/sdk/xynolog.cabal.in" in
+  let committed = Marker.read ~root "haskell/sdk/xynolog.cabal" in
+  let* () =
+    match
+      List.find_opt
+        (fun m -> Marker.count m template <> 1)
+        [ "@VERSION@"; "@MODEL_MODULES@" ]
+    with
+    | Some m -> Error ("the manifest template states " ^ m ^ " other than once")
+    | None -> Ok ()
+  in
+  let* version =
+    match
+      List.filter_map
+        (fun line ->
+          if String.starts_with ~prefix:"version:" line then
+            Some (String.trim (Marker.drop (String.length "version:") line))
+          else None)
+        (String.split_on_char '\n' committed)
+    with
+    | [ version ] -> Ok version
+    | _ -> Error "xynolog.cabal must hold exactly one top-level version line"
+  in
+  let replace marker by text =
+    match Marker.find marker text with
+    | Some i ->
+        String.sub text 0 i ^ by ^ Marker.drop (i + String.length marker) text
+    | None -> text
+  in
+  Ok
+    [
+      {
+        Output.path = "haskell/sdk/xynolog.cabal";
+        text =
+          template
+          |> replace "@VERSION@" version
+          |> replace "@MODEL_MODULES@"
+               (String.concat "\n"
+                  (List.map (fun m -> "    " ^ m) module_names));
+      };
+      {
+        Output.path = "haskell/sdk/LICENSE";
+        text = Marker.read ~root "LICENSE";
+      };
+    ]
+
+let files ~root (spec : Spec.t) =
+  let refused file message = [ { Decode.file; pointer = ""; message } ] in
+  let within file result = Result.map_error (refused file) result in
+  let* transport = within Transport.contract (Transport.derive ~root spec) in
+  let* http = within "openapi.json" (Http.routes spec) in
+  let* bus =
+    within "bus/registry.json" (Channels.derive spec.tables.bus_registry)
+  in
+  let* adapters = adapters spec in
+  let* definitions =
+    within "openapi.json"
+      (Definitions.derive ~root spec ~adapters
+         ~carrier:(Transport.carrier_schema transport)
+         ~http:http.schemas ~envelopes:bus.envelopes)
+  in
+  let identifiers =
+    List.map
+      (fun (k : Tables.Identifiers_kinds.kind) -> k.schema)
+      spec.tables.identifiers_kinds.kinds
+  in
+  let* models =
+    within "openapi.json"
+      (Models.generate
+         ~banner:(banner "protocol/specs/src")
+         ~identifiers definitions)
+  in
+  let named = List.map fst definitions in
+  let definition name =
+    match List.assoc_opt name definitions with
+    | Some s -> Ok s
+    | None -> Error ("missing schema: " ^ name)
+  in
+  let normalize = Normalize.normalize ~find:definition in
+  let* () = within "bus/registry.json" (Channels.check bus ~models:named) in
+  let* limits = within "bus/registry.json" (Channels.limits bus) in
+  let* readers =
+    within "bus/registry.json"
+      (Channels.readers bus ~normalize ~definition spec.tables.errors_codes)
+  in
+  let* credential =
+    within Http.classifier
+      (let* c = Http.credential ~root in
+       let* limit = Result.bind (definition "LimitRefusal") normalize in
+       let* code =
+         match Option.bind limit.properties (List.assoc_opt c.field) with
+         | Some p -> normalize p
+         | None -> Error ("HTTP schema has no requested field: " ^ c.field)
+       in
+       if
+         code.type_ = Some [ String ]
+         && List.mem (Schema.String_literal c.refusal)
+              (Option.value code.enum ~default:[])
+       then Ok c
+       else Error "credential refusal reader no longer matches its schema")
+  in
+  let* bus_event =
+    within "openapi.json"
+      (match Result.bind (definition "BusEventMessage") Normalize.layer with
+      | Ok { properties = Some properties; _ } -> (
+          match List.assoc_opt "event" properties with
+          | Some (Schema { enum = Some [ String_literal event ]; _ }) ->
+              Ok event
+          | _ -> Error "bus event has no single name")
+      | Ok _ -> Error "BusEventMessage has no properties"
+      | Error e -> Error e)
+  in
+  let* constants = within "client/surface.json" (Constants.modules spec) in
+  let* worker = within Worker.source (Worker.modules ~root) in
+  let* manifest =
+    within "haskell/sdk/xynolog.cabal.in" (manifest ~root models.module_names)
+  in
+  let unrecognized =
+    Error_codes.Haskell.code_constructor "busRequest"
+      spec.tables.errors_codes.bus_request.unrecognized_failure
+  in
+  Ok
+    (List.map (file ~under:"generated") models.modules
+    @ [
+        file ~under:"src"
+          (Companions.types_module
+             ~banner:(banner "protocol/specs/src")
+             models.module_names);
+        file ~under:"generated"
+          (Companions.schemas_module
+             ~banner:(banner "protocol/specs/src")
+             models.definitions);
+        file ~under:"test"
+          (Companions.round_trip_module
+             ~banner:(banner "protocol/specs/src")
+             (List.map fst models.definitions));
+        file ~under:"src"
+          (Http.file
+             ~banner:
+               (banner
+                  "protocol/specs/src/openapi.json, its paths, and the \
+                   reference credential classifier")
+             http ~credential ~bus_event);
+        file ~under:"src"
+          (Transport.file
+             ~banner:
+               (banner
+                  "TRANSPORT-HTTP.md, bus/registry.json and \
+                   identifiers/kinds.json")
+             transport);
+        file ~under:"src"
+          (Channels.channels_file
+             ~banner:(banner "protocol/specs/src/bus/registry.json")
+             bus ~limits);
+        file ~under:"test"
+          (Channels.round_trip_file
+             ~banner:(banner "protocol/specs/src/bus/registry.json")
+             bus);
+        file ~under:"generated"
+          (Channels.failure_file
+             ~banner:
+               (banner
+                  "protocol/specs/src/bus/registry.json and \
+                   protocol/specs/src/errors/codes.json")
+             ~unrecognized readers);
+      ]
+    @ List.map (file ~under:"generated") constants
+    @ List.map (file ~under:"generated") worker
+    @ manifest
+    @ Error_codes.Haskell.modules
+        ~from_:"protocol/specs/src/client/discovery-absent.json"
+        ~module_name:"Xynolog.Discovery.Reasons"
+        ~test_name:"DiscoveryReasonRoundTrip"
+        [
+          {
+            Error_codes.Haskell.member = "discoveryAbsent";
+            codes =
+              List.map
+                (fun (r : Tables.Client_discovery_absent.reason) -> r.reason)
+                spec.tables.client_discovery_absent.reasons;
+            statuses = None;
+          };
+        ])

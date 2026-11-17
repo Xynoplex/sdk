@@ -1,6 +1,10 @@
--- Generated from protocol/specs/src/bus/registry.json and protocol/specs/src/errors/codes.json. Do not edit.
-{-# LANGUAGE DataKinds, GADTs, KindSignatures, OverloadedStrings #-}
-module Xynolog.Internal.Generated.OperationFailure (message, code) where
+-- Generated from protocol/specs/src/bus/registry.json and protocol/specs/src/errors/codes.json; do not edit.
+-- Regenerate: make generate (codegen/lib/haskell_sdk/haskell_sdk.ml)
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE OverloadedStrings #-}
+module Xynolog.Internal.Generated.OperationFailure (message, code, fromCommandErrorCode, fromBrowseDirectoryFailedCode, fromGatherFailedCode, fromGatherResourceFailedCode, fromMatchSearchFailedCode) where
 import Data.Text (Text)
 import Xynolog.Channels
 import Xynolog.ErrorCodes (BusRequestCode(..))
@@ -94,35 +98,35 @@ code YieldCloneTokenRequestedOperation = fromCommandErrorCode . Types.commandErr
 fromCommandErrorCode :: Maybe Types.CommandErrorCode -> BusRequestCode
 fromCommandErrorCode value = case value of
   Nothing -> BusRequestRejected
-  Just Types.CommandErrorCodePeerU2d_unavailable -> BusRequestPeerUnavailable
-  Just Types.CommandErrorCodeNotU2d_found -> BusRequestNotFound
-  Just Types.CommandErrorCodeUnauthorized -> BusRequestUnauthorized
-  Just Types.CommandErrorCodeNoneU2d_pending -> BusRequestNonePending
+  (Just Types.CommandErrorCodePeerU2d_unavailable) -> BusRequestPeerUnavailable
+  (Just Types.CommandErrorCodeNotU2d_found) -> BusRequestNotFound
+  (Just Types.CommandErrorCodeUnauthorized) -> BusRequestUnauthorized
+  (Just Types.CommandErrorCodeNoneU2d_pending) -> BusRequestNonePending
 fromBrowseDirectoryFailedCode :: Maybe Types.BrowseDirectoryFailedCode -> BusRequestCode
 fromBrowseDirectoryFailedCode value = case value of
   Nothing -> BusRequestRejected
-  Just Types.BrowseDirectoryFailedCodePeerU2d_unavailable -> BusRequestPeerUnavailable
-  Just Types.BrowseDirectoryFailedCodeNotU2d_found -> BusRequestNotFound
-  Just Types.BrowseDirectoryFailedCodeUnauthorized -> BusRequestUnauthorized
-  Just Types.BrowseDirectoryFailedCodeNoneU2d_pending -> BusRequestNonePending
+  (Just Types.BrowseDirectoryFailedCodePeerU2d_unavailable) -> BusRequestPeerUnavailable
+  (Just Types.BrowseDirectoryFailedCodeNotU2d_found) -> BusRequestNotFound
+  (Just Types.BrowseDirectoryFailedCodeUnauthorized) -> BusRequestUnauthorized
+  (Just Types.BrowseDirectoryFailedCodeNoneU2d_pending) -> BusRequestNonePending
 fromGatherFailedCode :: Maybe Types.GatherFailedCode -> BusRequestCode
 fromGatherFailedCode value = case value of
   Nothing -> BusRequestRejected
-  Just Types.GatherFailedCodePeerU2d_unavailable -> BusRequestPeerUnavailable
-  Just Types.GatherFailedCodeNotU2d_found -> BusRequestNotFound
-  Just Types.GatherFailedCodeUnauthorized -> BusRequestUnauthorized
-  Just Types.GatherFailedCodeNoneU2d_pending -> BusRequestNonePending
+  (Just Types.GatherFailedCodePeerU2d_unavailable) -> BusRequestPeerUnavailable
+  (Just Types.GatherFailedCodeNotU2d_found) -> BusRequestNotFound
+  (Just Types.GatherFailedCodeUnauthorized) -> BusRequestUnauthorized
+  (Just Types.GatherFailedCodeNoneU2d_pending) -> BusRequestNonePending
 fromGatherResourceFailedCode :: Maybe Types.GatherResourceFailedCode -> BusRequestCode
 fromGatherResourceFailedCode value = case value of
   Nothing -> BusRequestRejected
-  Just Types.GatherResourceFailedCodePeerU2d_unavailable -> BusRequestPeerUnavailable
-  Just Types.GatherResourceFailedCodeNotU2d_found -> BusRequestNotFound
-  Just Types.GatherResourceFailedCodeUnauthorized -> BusRequestUnauthorized
-  Just Types.GatherResourceFailedCodeNoneU2d_pending -> BusRequestNonePending
+  (Just Types.GatherResourceFailedCodePeerU2d_unavailable) -> BusRequestPeerUnavailable
+  (Just Types.GatherResourceFailedCodeNotU2d_found) -> BusRequestNotFound
+  (Just Types.GatherResourceFailedCodeUnauthorized) -> BusRequestUnauthorized
+  (Just Types.GatherResourceFailedCodeNoneU2d_pending) -> BusRequestNonePending
 fromMatchSearchFailedCode :: Maybe Types.MatchSearchFailedCode -> BusRequestCode
 fromMatchSearchFailedCode value = case value of
   Nothing -> BusRequestRejected
-  Just Types.MatchSearchFailedCodePeerU2d_unavailable -> BusRequestPeerUnavailable
-  Just Types.MatchSearchFailedCodeNotU2d_found -> BusRequestNotFound
-  Just Types.MatchSearchFailedCodeUnauthorized -> BusRequestUnauthorized
-  Just Types.MatchSearchFailedCodeNoneU2d_pending -> BusRequestNonePending
+  (Just Types.MatchSearchFailedCodePeerU2d_unavailable) -> BusRequestPeerUnavailable
+  (Just Types.MatchSearchFailedCodeNotU2d_found) -> BusRequestNotFound
+  (Just Types.MatchSearchFailedCodeUnauthorized) -> BusRequestUnauthorized
+  (Just Types.MatchSearchFailedCodeNoneU2d_pending) -> BusRequestNonePending

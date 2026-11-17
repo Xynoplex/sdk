@@ -360,6 +360,67 @@ let ocaml_owner_only (o : Owner_only.t) =
       })
     [ "lib"; "probes" ]
 
+(* What the Haskell SDK's native store binding holds the store to
+   (generated/.../xynolog_store_policy.h): the owner-only modes, the access
+   list with the owner's SID in its place, and the one byte of the lock file
+   a Windows writer locks; and the names of the store's files
+   (generated/.../SignInStore.hs). *)
+let haskell (o : Owner_only.t) (names : Contract.t) =
+  let module H = Haskell_syntax in
+  let generated = "haskell/sdk/generated/Xynolog/Internal/Generated/" in
+  let c_string text =
+    "\""
+    ^ String.concat ""
+        (List.map
+           (function '"' -> "\\\"" | '\\' -> "\\\\" | c -> String.make 1 c)
+           (List.of_seq (String.to_seq text)))
+    ^ "\""
+  in
+  [
+    {
+      Output.path = generated ^ "xynolog_store_policy.h";
+      text =
+        String.concat "\n"
+          [
+            "/* Generated from " ^ Contract.file ^ " and " ^ Owner_only.file
+            ^ "; do not edit.";
+            "   Regenerate: " ^ regenerate ^ " */";
+            "#define XYNOLOG_DIRECTORY_MODE 0" ^ o.directory.octal;
+            "#define XYNOLOG_FILE_MODE 0" ^ o.file.octal;
+            "#define XYNOLOG_ACCESS_LIST "
+            ^ c_string
+                (o.access_list.before ^ Owner_only.owner ^ o.access_list.after);
+            "#define XYNOLOG_LOCK_HIGH 0x" ^ names.offset_high;
+            "#define XYNOLOG_LOCK_BYTES 1";
+          ]
+        ^ "\n";
+    };
+    {
+      Output.path = generated ^ "SignInStore.hs";
+      text =
+        H.text
+          {
+            banner = Banner.haskell_lines ~from_:Contract.file __FILE__;
+            extensions = [];
+            name = "Xynolog.Internal.Generated.SignInStore";
+            imports = [];
+            body =
+              [
+                Values
+                  {
+                    about = [];
+                    type_ = T_name "FilePath";
+                    values =
+                      [
+                        ("signInFileName", Str names.document);
+                        ("signInLockName", Str names.lock);
+                      ];
+                  };
+              ];
+          };
+    };
+  ]
+
 let files ~root (spec : Spec.t) =
   let entry =
     match List.assoc_opt schema_file spec.schemas with
@@ -386,7 +447,7 @@ let files ~root (spec : Spec.t) =
            python_owner_only o;
            typescript entry o names;
          ]
-        @ ocaml_owner_only o)
+        @ ocaml_owner_only o @ haskell o names)
   | _ ->
       let errors = function Ok _ -> [] | Error e -> e in
       Error (errors entry @ errors owner_only @ errors names)

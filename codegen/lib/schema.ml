@@ -56,6 +56,42 @@ type 'a layer = {
 type t = Boolean_schema of bool | Schema of schema
 and schema = t layer
 
+(* A schema that states nothing. *)
+let empty : schema =
+  {
+    ref_ = None;
+    comment = None;
+    title = None;
+    description = None;
+    type_ = None;
+    format = None;
+    enum = None;
+    const = None;
+    default = None;
+    example = None;
+    nullable = None;
+    properties = None;
+    required = None;
+    additional_properties = None;
+    property_names = None;
+    min_properties = None;
+    max_properties = None;
+    items = None;
+    min_items = None;
+    max_items = None;
+    unique_items = None;
+    min_length = None;
+    max_length = None;
+    pattern = None;
+    minimum = None;
+    maximum = None;
+    all_of = None;
+    any_of = None;
+    one_of = None;
+    not_ = None;
+    discriminator = None;
+  }
+
 let map f layer =
   let each = Option.map (List.map f) in
   {

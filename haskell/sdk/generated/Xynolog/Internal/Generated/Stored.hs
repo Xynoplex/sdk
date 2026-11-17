@@ -1,6 +1,7 @@
 -- Generated from session/stored.json; do not edit.
+-- Regenerate: make generate (codegen/lib/stored/stored.ml)
 {-# LANGUAGE OverloadedStrings #-}
-module Xynolog.Internal.Generated.Stored where
+module Xynolog.Internal.Generated.Stored (knowledgeBasesKey, activeKey, openResourcesByKbKey, lastViewedResourceByKbKey, pendingAuthorizationKey, sessionKeyPrefix, lastEventIdKeyPrefix, cacheKeyPrefix) where
 import Data.Text (Text)
 knowledgeBasesKey :: Text
 knowledgeBasesKey = "xynolog.knowledgeBases"
