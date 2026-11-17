@@ -4,7 +4,7 @@
 
 import type { components } from './types';
 import { XynologError } from './errors';
-import type { TransportErrorCode } from './generated/error-codes';
+import type { TransportErrorCode } from './error-codes';
 import type { ResourceDescriptor } from './graph';
 import type { ResourceId } from './identifiers';
 import { derivesTextOf, textSourceOf } from './media-types';

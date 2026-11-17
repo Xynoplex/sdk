@@ -14,4 +14,5 @@ let all =
     { name = "required"; files = Required.files };
     { name = "unicode-case"; files = Unicode_case.files };
     { name = "encodings"; files = Encodings.files };
+    { name = "error-codes"; files = Error_codes.files };
   ]

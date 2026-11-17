@@ -1,7 +1,12 @@
-// error-codes-table.mjs — the one reading of protocol/specs/src/errors/codes.json that
-// every generator of it shares: the table, held to account. It refuses a table
-// that disagrees with the wire's own vocabulary (`CommandError.code`) in
-// either direction, or that says one thing twice.
+// error-codes-table.mjs — the reading of protocol/specs/src/errors/codes.json
+// that the Node generators still left share: the table, held to account. It
+// refuses a table that disagrees with the wire's own vocabulary
+// (`CommandError.code`) in either direction, or that says one thing twice.
+//
+// Its other copy is the OCaml generator's codegen/lib/error_codes/table.ml,
+// which writes the Go, Python and TypeScript vocabularies and is tested; this
+// one stays for the OCaml SDK's generate-support.mjs and required-shapes.mjs
+// until their groups are ported.
 
 import { readFileSync } from 'node:fs';
 

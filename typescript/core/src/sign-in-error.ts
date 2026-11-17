@@ -4,7 +4,7 @@
  * grant (`ServiceToken`).
  */
 
-import type { SignInErrorCode } from './generated/error-codes';
+import type { SignInErrorCode } from './error-codes';
 
 export class SignInError extends Error {
   constructor(

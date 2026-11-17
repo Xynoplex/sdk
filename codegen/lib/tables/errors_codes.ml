@@ -1,45 +1,68 @@
 (* specs/src/errors/codes.json *)
 
-type code = { code : string; docs : string; wire : string option }
+type code = { code : string; docs : string }
 
 let code =
   Decode.obj (fun o : code ->
-      {
-        code = Decode.required o "code" Decode.string;
-        docs = Decode.required o "docs" Decode.string;
-        wire = Decode.optional o "wire" Decode.string;
-      })
+      let code = Decode.required o "code" Decode.non_empty_string in
+      let docs = Decode.required o "docs" Decode.non_empty_string in
+      { code; docs })
+
+(* A vocabulary that states nothing of its codes but each one's docs. *)
+type vocabulary = { docs : string; codes : code list }
+
+let vocabulary =
+  Decode.obj (fun o : vocabulary ->
+      let docs = Decode.required o "docs" Decode.non_empty_string in
+      let codes = Decode.required o "codes" (Decode.non_empty_list code) in
+      { docs; codes })
+
+type bus_code = { code : string; docs : string; wire : string option }
+
+let bus_code =
+  Decode.obj (fun o : bus_code ->
+      let code = Decode.required o "code" Decode.non_empty_string in
+      let docs = Decode.required o "docs" Decode.non_empty_string in
+      let wire = Decode.optional o "wire" Decode.non_empty_string in
+      { code; docs; wire })
 
 type bus_request = {
   docs : string;
   unrecognized_failure : string;
-  codes : code list;
+  codes : bus_code list;
 }
 
 let bus_request =
   Decode.obj (fun o : bus_request ->
-      {
-        docs = Decode.required o "docs" Decode.string;
-        unrecognized_failure =
-          Decode.required o "unrecognizedFailure" Decode.string;
-        codes = Decode.required o "codes" (Decode.list code);
-      })
+      let docs = Decode.required o "docs" Decode.non_empty_string in
+      let unrecognized_failure =
+        Decode.required o "unrecognizedFailure" Decode.non_empty_string
+      in
+      let codes = Decode.required o "codes" (Decode.non_empty_list bus_code) in
+      { docs; unrecognized_failure; codes })
 
-type transport_code = {
-  code : string;
-  status : int option;
-  docs : string;
-  status_from : int option;
-}
+(* The HTTP statuses a transport code is read from: one, every one from a
+   status up, or none. *)
+type statuses = Status of int | Status_from of int | No_status
+
+let statuses o =
+  let cursor = Decode.at o in
+  match
+    (Decode.has_member "status" cursor, Decode.has_member "statusFrom" cursor)
+  with
+  | true, true -> Decode.refuse cursor "states both a status and a statusFrom"
+  | true, false -> Status (Decode.required o "status" Decode.int)
+  | false, true -> Status_from (Decode.required o "statusFrom" Decode.int)
+  | false, false -> No_status
+
+type transport_code = { code : string; docs : string; statuses : statuses }
 
 let transport_code =
   Decode.obj (fun o : transport_code ->
-      {
-        code = Decode.required o "code" Decode.string;
-        status = Decode.optional o "status" Decode.int;
-        docs = Decode.required o "docs" Decode.string;
-        status_from = Decode.optional o "statusFrom" Decode.int;
-      })
+      let code = Decode.required o "code" Decode.non_empty_string in
+      let docs = Decode.required o "docs" Decode.non_empty_string in
+      let statuses = statuses o in
+      { code; docs; statuses })
 
 type transport = {
   docs : string;
@@ -49,130 +72,25 @@ type transport = {
 
 let transport =
   Decode.obj (fun o : transport ->
-      {
-        docs = Decode.required o "docs" Decode.string;
-        unclassified = Decode.required o "unclassified" Decode.string;
-        codes = Decode.required o "codes" (Decode.list transport_code);
-      })
-
-type job_code = { code : string; docs : string }
-
-let job_code =
-  Decode.obj (fun o : job_code ->
-      {
-        code = Decode.required o "code" Decode.string;
-        docs = Decode.required o "docs" Decode.string;
-      })
-
-type job = { docs : string; codes : job_code list }
-
-let job =
-  Decode.obj (fun o : job ->
-      {
-        docs = Decode.required o "docs" Decode.string;
-        codes = Decode.required o "codes" (Decode.list job_code);
-      })
-
-type session_code = { code : string; docs : string }
-
-let session_code =
-  Decode.obj (fun o : session_code ->
-      {
-        code = Decode.required o "code" Decode.string;
-        docs = Decode.required o "docs" Decode.string;
-      })
-
-type session = { docs : string; codes : session_code list }
-
-let session =
-  Decode.obj (fun o : session ->
-      {
-        docs = Decode.required o "docs" Decode.string;
-        codes = Decode.required o "codes" (Decode.list session_code);
-      })
-
-type sign_in_code = { code : string; docs : string }
-
-let sign_in_code =
-  Decode.obj (fun o : sign_in_code ->
-      {
-        code = Decode.required o "code" Decode.string;
-        docs = Decode.required o "docs" Decode.string;
-      })
-
-type sign_in = { docs : string; codes : sign_in_code list }
-
-let sign_in =
-  Decode.obj (fun o : sign_in ->
-      {
-        docs = Decode.required o "docs" Decode.string;
-        codes = Decode.required o "codes" (Decode.list sign_in_code);
-      })
-
-type kb_identity_code = { code : string; docs : string }
-
-let kb_identity_code =
-  Decode.obj (fun o : kb_identity_code ->
-      {
-        code = Decode.required o "code" Decode.string;
-        docs = Decode.required o "docs" Decode.string;
-      })
-
-type kb_identity = { docs : string; codes : kb_identity_code list }
-
-let kb_identity =
-  Decode.obj (fun o : kb_identity ->
-      {
-        docs = Decode.required o "docs" Decode.string;
-        codes = Decode.required o "codes" (Decode.list kb_identity_code);
-      })
-
-type span_refusal_code = { code : string; docs : string }
-
-let span_refusal_code =
-  Decode.obj (fun o : span_refusal_code ->
-      {
-        code = Decode.required o "code" Decode.string;
-        docs = Decode.required o "docs" Decode.string;
-      })
-
-type span_refusal = { docs : string; codes : span_refusal_code list }
-
-let span_refusal =
-  Decode.obj (fun o : span_refusal ->
-      {
-        docs = Decode.required o "docs" Decode.string;
-        codes = Decode.required o "codes" (Decode.list span_refusal_code);
-      })
-
-type control_code = { code : string; docs : string }
-
-let control_code =
-  Decode.obj (fun o : control_code ->
-      {
-        code = Decode.required o "code" Decode.string;
-        docs = Decode.required o "docs" Decode.string;
-      })
-
-type control = { docs : string; codes : control_code list }
-
-let control =
-  Decode.obj (fun o : control ->
-      {
-        docs = Decode.required o "docs" Decode.string;
-        codes = Decode.required o "codes" (Decode.list control_code);
-      })
+      let docs = Decode.required o "docs" Decode.non_empty_string in
+      let unclassified =
+        Decode.required o "unclassified" Decode.non_empty_string
+      in
+      let codes =
+        Decode.required o "codes" (Decode.non_empty_list transport_code)
+      in
+      { docs; unclassified; codes })
 
 type t = {
   comment : string;
   bus_request : bus_request;
   transport : transport;
-  job : job;
-  session : session;
-  sign_in : sign_in;
-  kb_identity : kb_identity;
-  span_refusal : span_refusal;
-  control : control;
+  job : vocabulary;
+  session : vocabulary;
+  sign_in : vocabulary;
+  kb_identity : vocabulary;
+  span_refusal : vocabulary;
+  control : vocabulary;
 }
 
 let decode =
@@ -181,10 +99,10 @@ let decode =
         comment = Decode.required o "$comment" Decode.string;
         bus_request = Decode.required o "busRequest" bus_request;
         transport = Decode.required o "transport" transport;
-        job = Decode.required o "job" job;
-        session = Decode.required o "session" session;
-        sign_in = Decode.required o "signIn" sign_in;
-        kb_identity = Decode.required o "kbIdentity" kb_identity;
-        span_refusal = Decode.required o "spanRefusal" span_refusal;
-        control = Decode.required o "control" control;
+        job = Decode.required o "job" vocabulary;
+        session = Decode.required o "session" vocabulary;
+        sign_in = Decode.required o "signIn" vocabulary;
+        kb_identity = Decode.required o "kbIdentity" vocabulary;
+        span_refusal = Decode.required o "spanRefusal" vocabulary;
+        control = Decode.required o "control" vocabulary;
       })

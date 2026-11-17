@@ -1,0 +1,835 @@
+open Xynolog_codegen
+
+let case name test = Alcotest.test_case name `Quick test
+let file = "errors/codes.json"
+
+(* Two docs of words that wrap where Go's width of 78 and Python's of 96
+   break a line, and where a column more or less would not. *)
+let go_wrapped =
+  "transport the peer reply peer reply an refused reply a reply answered reply \
+   refused peer an closed code transport a closed transport status status \
+   reply an peer."
+
+let python_wrapped =
+  "an answered peer request gateway the request gateway an request the peer \
+   transport status peer status request status peer a status transport failure \
+   closed reply peer peer a refused answered answered."
+
+(* A code of a vocabulary, as codes.json states it. *)
+let entry ?wire ?status ?status_from ?(docs = "Docs.") code =
+  String.concat ","
+    (List.concat
+       [
+         [ "\"code\":" ^ Text.quoted code; "\"docs\":" ^ Text.quoted docs ];
+         Option.to_list (Option.map (fun w -> "\"wire\":" ^ Text.quoted w) wire);
+         Option.to_list
+           (Option.map (fun s -> "\"status\":" ^ string_of_int s) status);
+         Option.to_list
+           (Option.map
+              (fun s -> "\"statusFrom\":" ^ string_of_int s)
+              status_from);
+       ])
+  |> Printf.sprintf "{%s}"
+
+let codes entries = "[" ^ String.concat "," entries ^ "]"
+
+let plain docs entries =
+  Printf.sprintf {|{"docs":%s,"codes":%s}|} (Text.quoted docs) (codes entries)
+
+let bus_codes =
+  [
+    entry ~docs:"No reply came." "bus.timeout";
+    entry ~docs:"The peer refused." "bus.rejected";
+    entry ~docs:"Not there." ~wire:"not-found" "bus.not-found";
+    entry ~docs:"No peer." ~wire:"peer-unavailable" "bus.peer-unavailable";
+  ]
+
+let transport_codes =
+  [
+    entry ~docs:"Who?" ~status:401 "unauthorized";
+    entry ~docs:"Missing, */ even." ~status:404 "not-found";
+    entry ~docs:"Down." ~status_from:500 "unavailable";
+    entry ~docs:"Else." "error";
+  ]
+
+let session_codes = [ entry ~docs:"No auth." "session.auth-failed" ]
+
+let table ?(bus = bus_codes) ?(unrecognized = "bus.rejected")
+    ?(transport = transport_codes) ?(unclassified = "error")
+    ?(session = session_codes) () =
+  Printf.sprintf
+    {|{"$comment":"c",
+      "busRequest":{"docs":"Why a bus request failed.","unrecognizedFailure":%s,"codes":%s},
+      "transport":{"docs":%s,"unclassified":%s,"codes":%s},
+      "job":%s,"session":%s,"signIn":%s,"kbIdentity":%s,"spanRefusal":%s,"control":%s}|}
+    (Text.quoted unrecognized) (codes bus) (Text.quoted go_wrapped)
+    (Text.quoted unclassified) (codes transport)
+    (plain python_wrapped [ entry ~docs:"It failed." "job.failed" ])
+    (plain "Why a session broke." session)
+    (plain "Why a sign-in failed." [ entry ~docs:"No issuer." "no-issuer" ])
+    (plain "Why an identity is unverified."
+       [ entry ~docs:"Unreachable." "unreachable" ])
+    (plain "Why a span was refused."
+       [ entry ~docs:"Out of range." "span-out-of-range" ])
+    (plain "Control." [ entry ~docs:"Failed." "control.failed" ])
+
+let wire_codes = [ "not-found"; "peer-unavailable" ]
+
+let decode text =
+  Decode.run ~file (Yojson.Safe.from_string text) Tables.Errors_codes.decode
+
+let model text =
+  match decode text with
+  | Ok (t, _) -> t
+  | Error error -> Alcotest.fail (Decode.error_to_string error)
+
+let derive ?(wire_codes = wire_codes) text =
+  Error_codes.Table.derive ~wire_codes (model text)
+
+let derived ?wire_codes text =
+  match derive ?wire_codes text with
+  | Ok t -> t
+  | Error errors ->
+      Alcotest.fail
+        (String.concat "\n" (List.map Decode.error_to_string errors))
+
+let refuses ?wire_codes text expected () =
+  match derive ?wire_codes text with
+  | Ok _ ->
+      Alcotest.failf "expected the refusals\n  %s\nand none came"
+        (String.concat "\n  " expected)
+  | Error errors ->
+      Alcotest.(check (list string))
+        "refusals"
+        (List.map (fun e -> file ^ ": " ^ e) expected)
+        (List.map Decode.error_to_string errors)
+
+let model_refuses text expected () =
+  match decode text with
+  | Ok _ -> Alcotest.failf "expected the refusal\n  %s\nand none came" expected
+  | Error error ->
+      Alcotest.(check string)
+        "refusal"
+        (file ^ ": " ^ expected)
+        (Decode.error_to_string error)
+
+let the_model =
+  [
+    case "a status and a statusFrom both is refused"
+      (model_refuses
+         (table
+            ~transport:[ entry ~status:401 ~status_from:500 "x"; entry "error" ]
+            ())
+         "/transport/codes/0: states both a status and a statusFrom");
+    case "a code with no docs is refused"
+      (model_refuses
+         (table ~session:[ {|{"code":"session.auth-failed"}|} ] ())
+         "/session/codes/0: lacks the member \"docs\"");
+    case "a code with empty docs is refused"
+      (model_refuses
+         (table ~session:[ entry ~docs:"" "session.auth-failed" ] ())
+         "/session/codes/0/docs: expected a non-empty string");
+    case "a vocabulary of no codes is refused"
+      (model_refuses (table ~session:[] ())
+         "/session/codes: expected a non-empty array");
+  ]
+
+let code = Alcotest.(pair string string)
+
+let rules =
+  [
+    case "the vocabularies, the wire's codes and the statuses" (fun () ->
+        let t = derived (table ()) in
+        Alcotest.(check (list (pair string string)))
+          "wire"
+          [
+            ("not-found", "bus.not-found");
+            ("peer-unavailable", "bus.peer-unavailable");
+          ]
+          (List.map
+             (fun (wire, (c : Error_codes.Table.code)) -> (wire, c.code))
+             t.wire);
+        Alcotest.(check string)
+          "unrecognized" "bus.rejected" t.unrecognized.code;
+        Alcotest.(check (list (pair int string)))
+          "exact"
+          [ (401, "unauthorized"); (404, "not-found") ]
+          (List.map
+             (fun (status, (c : Error_codes.Table.code)) -> (status, c.code))
+             t.exact);
+        Alcotest.(check (option (pair int string)))
+          "from"
+          (Some (500, "unavailable"))
+          (Option.map
+             (fun (status, (c : Error_codes.Table.code)) -> (status, c.code))
+             t.from);
+        Alcotest.(check string) "unclassified" "error" t.unclassified.code;
+        Alcotest.(check (list code))
+          "names"
+          [
+            ("BusRequestErrorCode", "BusRequestErrorCode");
+            ("TransportErrorCode", "TransportErrorCode");
+            ("JobErrorCode", "JobErrorCode");
+            ("XynologSessionErrorCode", "SessionErrorCode");
+            ("SignInErrorCode", "SignInErrorCode");
+            ("IdentityUnverifiableReason", "IdentityUnverifiableReason");
+            ("SpanRefusal", "SpanRefusal");
+          ]
+          (List.map
+             (fun (v : Error_codes.Table.vocabulary) -> (v.name, v.go_name))
+             (t.bus :: t.transport :: t.others));
+        Alcotest.(check (list string))
+          "Go constants"
+          [
+            "BusRequestErrorCodeTimeout";
+            "BusRequestErrorCodeRejected";
+            "BusRequestErrorCodeNotFound";
+            "BusRequestErrorCodePeerUnavailable";
+          ]
+          (List.map (fun (c : Error_codes.Table.code) -> c.go) t.bus.codes));
+    case "a code's Go constant, from its part after its last dot" (fun () ->
+        let t =
+          derived (table ~session:[ entry "session.store.keep-failed" ] ())
+        in
+        Alcotest.(check (list string))
+          "Go constants"
+          [ "SessionErrorCodeKeepFailed" ]
+          (List.map
+             (fun (c : Error_codes.Table.code) -> c.go)
+             (List.nth t.others 1).codes));
+    case "no range and no exact status" (fun () ->
+        let t = derived (table ~transport:[ entry "error" ] ()) in
+        Alcotest.(check int) "exact" 0 (List.length t.exact);
+        Alcotest.(check bool) "from" true (t.from = None));
+    case "a wire code CommandError does not declare is refused"
+      (refuses
+         (table
+            ~bus:(entry ~wire:"timed-out" "bus.timeout" :: List.tl bus_codes)
+            ())
+         [
+           "/busRequest/codes/0/wire: is timed-out, which CommandError.code \
+            does not declare";
+         ]);
+    case "a wire code no bus code restates is refused"
+      (refuses
+         (table
+            ~bus:
+              [
+                entry "bus.rejected";
+                entry ~wire:"peer-unavailable" "bus.peer-unavailable";
+              ]
+            ())
+         [
+           "/busRequest/codes: restates no code as CommandError.code's \
+            not-found";
+         ]);
+    case "a wire code restated twice is refused"
+      (refuses
+         (table ~bus:(bus_codes @ [ entry ~wire:"not-found" "bus.closed" ]) ())
+         [
+           "/busRequest/codes/4/wire: is not-found, which bus.not-found \
+            restates already";
+         ]);
+    case "a code stated twice is refused"
+      (refuses
+         (table ~session:(session_codes @ [ entry "session.auth-failed" ]) ())
+         [
+           "/session/codes/1/code: is session.auth-failed, which \
+            /session/codes/0 states already";
+         ]);
+    case "two codes that are one Go constant are refused"
+      (refuses
+         (table ~session:(session_codes @ [ entry "other.auth-failed" ]) ())
+         [
+           "/session/codes/1/code: is SessionErrorCodeAuthFailed in Go, which \
+            /session/codes/0 is already";
+         ]);
+    case "a code whose last part names no Go constant is refused"
+      (refuses
+         (table
+            ~session:[ entry "session.Auth_failed"; entry "session.a--b" ]
+            ())
+         [
+           "/session/codes/0/code: is session.Auth_failed, whose last part \
+            names no Go constant: it is lower-case words of letters and digits \
+            joined by hyphens";
+           "/session/codes/1/code: is session.a--b, whose last part names no \
+            Go constant: it is lower-case words of letters and digits joined \
+            by hyphens";
+         ]);
+    case "an unrecognized failure that restates a wire code is refused"
+      (refuses
+         (table ~unrecognized:"bus.not-found" ())
+         [
+           "/busRequest/unrecognizedFailure: is bus.not-found, which restates \
+            the wire's not-found: an unrecognized failure is no recognized one";
+         ]);
+    case "an unrecognized failure that is none of the codes is refused"
+      (refuses
+         (table ~unrecognized:"bus.gone" ())
+         [
+           "/busRequest/unrecognizedFailure: is bus.gone, which is none of its \
+            codes";
+         ]);
+    case "a status two codes are read from is refused"
+      (refuses
+         (table
+            ~transport:(transport_codes @ [ entry ~status:404 "conflict" ])
+            ())
+         [
+           "/transport/codes/4/status: is 404, which not-found is read from \
+            already";
+         ]);
+    case "a status in the range is refused"
+      (refuses
+         (table
+            ~transport:(transport_codes @ [ entry ~status:503 "conflict" ])
+            ())
+         [
+           "/transport/codes/4/status: is 503, which is in unavailable's \
+            statuses, from 500";
+         ]);
+    case "a status at the range's start is refused"
+      (refuses
+         (table
+            ~transport:(transport_codes @ [ entry ~status:500 "conflict" ])
+            ())
+         [
+           "/transport/codes/4/status: is 500, which is in unavailable's \
+            statuses, from 500";
+         ]);
+    case "a second range is refused"
+      (refuses
+         (table
+            ~transport:(transport_codes @ [ entry ~status_from:600 "worse" ])
+            ())
+         [
+           "/transport/codes/4/statusFrom: is a second range of statuses: a \
+            status falls in one";
+         ]);
+    case "a transport code nothing produces is refused"
+      (refuses
+         (table ~transport:(transport_codes @ [ entry "gone" ]) ())
+         [
+           "/transport/codes/4: is gone, which no status is read as, and which \
+            is not the unclassified code";
+         ]);
+    case "an unclassified code a status is read as is refused"
+      (refuses
+         (table ~unclassified:"not-found" ())
+         [
+           "/transport/codes/1: is not-found, the unclassified code, which a \
+            status is read as already";
+           "/transport/codes/3: is error, which no status is read as, and \
+            which is not the unclassified code";
+         ]);
+    case "an unclassified code that is none of the codes is refused"
+      (refuses
+         (table ~unclassified:"lost" ())
+         [
+           "/transport/unclassified: is lost, which is none of its codes";
+           "/transport/codes/3: is error, which no status is read as, and \
+            which is not the unclassified code";
+         ]);
+  ]
+
+let schema text =
+  match
+    Decode.run ~file:"s.json" (Yojson.Safe.from_string text) Schema.decode
+  with
+  | Ok (s, _) -> s
+  | Error error -> Alcotest.fail (Decode.error_to_string error)
+
+let wire =
+  let errors = Result.map_error (List.map Decode.error_to_string) in
+  [
+    case "CommandError's codes" (fun () ->
+        Alcotest.(check (result (list string) (list string)))
+          "codes"
+          (Ok [ "not-found"; "unauthorized" ])
+          (errors
+             (Error_codes.Table.wire_codes_of
+                (schema
+                   {|{"type":"object","properties":{"code":{"type":"string","enum":["not-found","unauthorized"]}}}|}))));
+    case "a CommandError whose code enumerates nothing is refused" (fun () ->
+        Alcotest.(check (result (list string) (list string)))
+          "codes"
+          (Error
+             [
+               "components/schemas/CommandError.json: /properties/code: \
+                enumerates no codes";
+             ])
+          (errors
+             (Error_codes.Table.wire_codes_of
+                (schema
+                   {|{"type":"object","properties":{"code":{"type":"string"}}}|}))));
+    case "a CommandError with no code is refused" (fun () ->
+        Alcotest.(check (result (list string) (list string)))
+          "codes"
+          (Error
+             [
+               "components/schemas/CommandError.json: /properties: has no code";
+             ])
+          (errors
+             (Error_codes.Table.wire_codes_of
+                (schema
+                   {|{"type":"object","properties":{"message":{"type":"string"}}}|}))));
+    case "a CommandError code that is no string is refused" (fun () ->
+        Alcotest.(check (result (list string) (list string)))
+          "codes"
+          (Error
+             [
+               "components/schemas/CommandError.json: /properties/code/enum: \
+                holds a member that is no string";
+             ])
+          (errors
+             (Error_codes.Table.wire_codes_of
+                (schema
+                   {|{"type":"object","properties":{"code":{"enum":["a",1]}}}|}))));
+  ]
+
+(* A tab, in the expected texts below, is written as a tilde. *)
+let tabs = Text.replace_all ~sub:"~" ~by:"\t"
+
+let go =
+  {|// Code generated from protocol/specs/src/errors/codes.json; DO NOT EDIT.
+//
+// Regenerate: make generate (codegen/lib/error_codes/go.ml)
+// The TypeScript and Python vocabularies are generated from the same table,
+// and Rust's by its SDK's build script.
+
+package xynolog
+
+import "github.com/xynolog/sdk/go/api"
+
+// Why a bus request failed.
+type BusRequestErrorCode string
+
+const (
+~// No reply came.
+~BusRequestErrorCodeTimeout BusRequestErrorCode = "bus.timeout"
+~// The peer refused.
+~BusRequestErrorCodeRejected BusRequestErrorCode = "bus.rejected"
+~// Not there.
+~BusRequestErrorCodeNotFound BusRequestErrorCode = "bus.not-found"
+~// No peer.
+~BusRequestErrorCodePeerUnavailable BusRequestErrorCode = "bus.peer-unavailable"
+)
+
+// BusRequestErrorCodeOfWire is the code a failure's own code
+// (CommandError.code) becomes, a case for each of CommandErrorCode's codes. A
+// failure that states none is BusRequestErrorCodeRejected. A reader leaves a
+// code the required table does not recognize out of the failure before it
+// decodes it, so a code CommandErrorCode does not name is none a failure is
+// read with: given one, it panics.
+func BusRequestErrorCodeOfWire(code *api.CommandErrorCode) BusRequestErrorCode {
+~if code == nil {
+~~return BusRequestErrorCodeRejected
+~}
+~switch *code {
+~case api.CommandErrorCodeNotFound:
+~~return BusRequestErrorCodeNotFound
+~case api.CommandErrorCodePeerUnavailable:
+~~return BusRequestErrorCodePeerUnavailable
+~default:
+~~panic("a failure's code \"" + string(*code) + "\" is none of CommandErrorCode's: the required table recognizes a code CommandError does not list")
+~}
+}
+
+// Wire is the wire code a peer stated, when this code restates one: what a
+// service answers its own caller with. A failure only this side knows states
+// none, and ok is false.
+func (c BusRequestErrorCode) Wire() (code api.CommandErrorCode, ok bool) {
+~switch c {
+~case BusRequestErrorCodeNotFound:
+~~return api.CommandErrorCodeNotFound, true
+~case BusRequestErrorCodePeerUnavailable:
+~~return api.CommandErrorCodePeerUnavailable, true
+~default:
+~~return "", false
+~}
+}
+
+// transport the peer reply peer reply an refused reply a reply answered reply
+// refused peer an closed code transport a closed transport status status
+// reply an peer.
+type TransportErrorCode string
+
+const (
+~// Who?
+~TransportErrorCodeUnauthorized TransportErrorCode = "unauthorized"
+~// Missing, */ even.
+~TransportErrorCodeNotFound TransportErrorCode = "not-found"
+~// Down.
+~TransportErrorCodeUnavailable TransportErrorCode = "unavailable"
+~// Else.
+~TransportErrorCodeError TransportErrorCode = "error"
+)
+
+// TransportErrorCodeOfStatus is the code an HTTP status becomes.
+func TransportErrorCodeOfStatus(status int) TransportErrorCode {
+~switch {
+~case status == 401:
+~~return TransportErrorCodeUnauthorized
+~case status == 404:
+~~return TransportErrorCodeNotFound
+~case status >= 500:
+~~return TransportErrorCodeUnavailable
+~default:
+~~return TransportErrorCodeError
+~}
+}
+
+// an answered peer request gateway the request gateway an request the peer
+// transport status peer status request status peer a status transport failure
+// closed reply peer peer a refused answered answered.
+type JobErrorCode string
+
+const (
+~// It failed.
+~JobErrorCodeFailed JobErrorCode = "job.failed"
+)
+
+// Why a session broke.
+type SessionErrorCode string
+
+const (
+~// No auth.
+~SessionErrorCodeAuthFailed SessionErrorCode = "session.auth-failed"
+)
+
+// Why a sign-in failed.
+type SignInErrorCode string
+
+const (
+~// No issuer.
+~SignInErrorCodeNoIssuer SignInErrorCode = "no-issuer"
+)
+
+// Why an identity is unverified.
+type IdentityUnverifiableReason string
+
+const (
+~// Unreachable.
+~IdentityUnverifiableReasonUnreachable IdentityUnverifiableReason = "unreachable"
+)
+
+// Why a span was refused.
+type SpanRefusal string
+
+const (
+~// Out of range.
+~SpanRefusalSpanOutOfRange SpanRefusal = "span-out-of-range"
+)
+|}
+
+let python =
+  {|# Generated from protocol/specs/src/errors/codes.json; do not edit.
+# Regenerate: make generate (codegen/lib/error_codes/python.ml)
+
+"""The codes a Xynolog client reports a failure under.
+
+Each vocabulary is a closed set: a `Literal` union, so a `match` over one that
+ends in `assert_never` is checked to name every code, and a tuple of the same
+codes to iterate.
+"""
+
+from typing import Final, Literal, assert_never
+
+from xynolog.types import CommandErrorCode
+
+__all__ = [
+    "BUS_REQUEST_ERROR_CODES",
+    "BusRequestErrorCode",
+    "IDENTITY_UNVERIFIABLE_REASONS",
+    "IdentityUnverifiableReason",
+    "JOB_ERROR_CODES",
+    "JobErrorCode",
+    "SIGN_IN_ERROR_CODES",
+    "SPAN_REFUSALS",
+    "SignInErrorCode",
+    "SpanRefusal",
+    "TRANSPORT_ERROR_CODES",
+    "TransportErrorCode",
+    "XYNOLOG_SESSION_ERROR_CODES",
+    "XynologSessionErrorCode",
+    "bus_request_code_for_wire_code",
+    "transport_error_code_for_status",
+]
+
+# Why a bus request failed.
+type BusRequestErrorCode = Literal[
+    # No reply came.
+    "bus.timeout",
+    # The peer refused.
+    "bus.rejected",
+    # Not there.
+    "bus.not-found",
+    # No peer.
+    "bus.peer-unavailable",
+]
+
+BUS_REQUEST_ERROR_CODES: Final[tuple[BusRequestErrorCode, ...]] = (
+    "bus.timeout",
+    "bus.rejected",
+    "bus.not-found",
+    "bus.peer-unavailable",
+)
+
+
+def bus_request_code_for_wire_code(code: CommandErrorCode | None) -> BusRequestErrorCode:
+    """The bus code a failure's own code (`CommandError.code`) becomes.
+
+    A failure that states none is the unrecognized failure, and so is one
+    whose code the wire does not list, which is read as stating none.
+    """
+    match code:
+        case "not-found":
+            return "bus.not-found"
+        case "peer-unavailable":
+            return "bus.peer-unavailable"
+        case None:
+            return "bus.rejected"
+        case _:
+            assert_never(code)
+
+
+# transport the peer reply peer reply an refused reply a reply answered reply refused peer an
+# closed code transport a closed transport status status reply an peer.
+type TransportErrorCode = Literal[
+    # Who?
+    "unauthorized",
+    # Missing, */ even.
+    "not-found",
+    # Down.
+    "unavailable",
+    # Else.
+    "error",
+]
+
+TRANSPORT_ERROR_CODES: Final[tuple[TransportErrorCode, ...]] = (
+    "unauthorized",
+    "not-found",
+    "unavailable",
+    "error",
+)
+
+
+def transport_error_code_for_status(status: int) -> TransportErrorCode:
+    """The transport code an HTTP status becomes."""
+    match status:
+        case 401:
+            return "unauthorized"
+        case 404:
+            return "not-found"
+        case _:
+            pass
+    if status >= 500:
+        return "unavailable"
+    return "error"
+
+
+# an answered peer request gateway the request gateway an request the peer transport status peer
+# status request status peer a status transport failure closed reply peer peer a refused
+# answered answered.
+type JobErrorCode = Literal[
+    # It failed.
+    "job.failed",
+]
+
+JOB_ERROR_CODES: Final[tuple[JobErrorCode, ...]] = (
+    "job.failed",
+)
+
+# Why a session broke.
+type XynologSessionErrorCode = Literal[
+    # No auth.
+    "session.auth-failed",
+]
+
+XYNOLOG_SESSION_ERROR_CODES: Final[tuple[XynologSessionErrorCode, ...]] = (
+    "session.auth-failed",
+)
+
+# Why a sign-in failed.
+type SignInErrorCode = Literal[
+    # No issuer.
+    "no-issuer",
+]
+
+SIGN_IN_ERROR_CODES: Final[tuple[SignInErrorCode, ...]] = (
+    "no-issuer",
+)
+
+# Why an identity is unverified.
+type IdentityUnverifiableReason = Literal[
+    # Unreachable.
+    "unreachable",
+]
+
+IDENTITY_UNVERIFIABLE_REASONS: Final[tuple[IdentityUnverifiableReason, ...]] = (
+    "unreachable",
+)
+
+# Why a span was refused.
+type SpanRefusal = Literal[
+    # Out of range.
+    "span-out-of-range",
+]
+
+SPAN_REFUSALS: Final[tuple[SpanRefusal, ...]] = (
+    "span-out-of-range",
+)
+|}
+
+let typescript =
+  {|// ⚠ GENERATED FILE — do not edit.
+//
+// Authority:   protocol/specs/src/errors/codes.json
+// Regenerate:  make generate  (codegen/lib/error_codes/typescript.ml)
+
+/** Why a bus request failed. */
+export type BusRequestErrorCode =
+  /** No reply came. */
+  | "bus.timeout"
+  /** The peer refused. */
+  | "bus.rejected"
+  /** Not there. */
+  | "bus.not-found"
+  /** No peer. */
+  | "bus.peer-unavailable";
+
+/** The bus code a failure's own wire code (`CommandError.code`) becomes. */
+export const busRequestCodeByWireCode = {
+  "not-found": "bus.not-found",
+  "peer-unavailable": "bus.peer-unavailable",
+} as const;
+
+/** What a failure becomes when it states no code, or one CommandError does not list, which is read as none. */
+export const unrecognizedFailureCode = "bus.rejected" as const;
+
+/** transport the peer reply peer reply an refused reply a reply answered reply refused peer an closed code transport a closed transport status status reply an peer. */
+export type TransportErrorCode =
+  /** Who? */
+  | "unauthorized"
+  /** Missing, *\/ even. */
+  | "not-found"
+  /** Down. */
+  | "unavailable"
+  /** Else. */
+  | "error";
+
+/** The transport code an HTTP status becomes. */
+export function transportErrorCodeForStatus(status: number): TransportErrorCode {
+  switch (status) {
+    case 401: return "unauthorized";
+    case 404: return "not-found";
+  }
+  if (status >= 500) return "unavailable";
+  return "error";
+}
+
+/** an answered peer request gateway the request gateway an request the peer transport status peer status request status peer a status transport failure closed reply peer peer a refused answered answered. */
+export type JobErrorCode =
+  /** It failed. */
+  | "job.failed";
+
+/** Why a session broke. */
+export type XynologSessionErrorCode =
+  /** No auth. */
+  | "session.auth-failed";
+
+/** Why a sign-in failed. */
+export type SignInErrorCode =
+  /** No issuer. */
+  | "no-issuer";
+
+/** Why an identity is unverified. */
+export type IdentityUnverifiableReason =
+  /** Unreachable. */
+  | "unreachable";
+
+/** Why a span was refused. */
+export type SpanRefusal =
+  /** Out of range. */
+  | "span-out-of-range";
+|}
+
+let writers =
+  [
+    case "Go's vocabularies" (fun () ->
+        Alcotest.(check string)
+          "text" (tabs go)
+          (Error_codes.Go.text (derived (table ()))));
+    case "Python's vocabularies" (fun () ->
+        Alcotest.(check string)
+          "text" python
+          (Error_codes.Python.text (derived (table ()))));
+    case "TypeScript's vocabularies" (fun () ->
+        Alcotest.(check string)
+          "text" typescript
+          (Error_codes.Typescript.text (derived (table ()))));
+    case "with no range, no line for one" (fun () ->
+        let t = derived (table ~transport:[ entry "error" ] ()) in
+        let lines text =
+          List.filter
+            (fun line -> String.trim line <> "")
+            (String.split_on_char '\n' text)
+        in
+        let around text first =
+          let rec from = function
+            | [] -> []
+            | line :: rest when line = first -> line :: rest
+            | _ :: rest -> from rest
+          in
+          List.filteri (fun i _ -> i < 5) (from (lines text))
+        in
+        Alcotest.(check (list string))
+          "Go"
+          [
+            "func TransportErrorCodeOfStatus(status int) TransportErrorCode {";
+            "\tswitch {";
+            "\tdefault:";
+            "\t\treturn TransportErrorCodeError";
+            "\t}";
+          ]
+          (around (Error_codes.Go.text t)
+             "func TransportErrorCodeOfStatus(status int) TransportErrorCode {");
+        Alcotest.(check (list string))
+          "Python"
+          [
+            "def transport_error_code_for_status(status: int) -> \
+             TransportErrorCode:";
+            "    \"\"\"The transport code an HTTP status becomes.\"\"\"";
+            "    match status:";
+            "        case _:";
+            "            pass";
+          ]
+          (around
+             (Error_codes.Python.text t)
+             "def transport_error_code_for_status(status: int) -> \
+              TransportErrorCode:");
+        Alcotest.(check (list string))
+          "TypeScript"
+          [
+            "export function transportErrorCodeForStatus(status: number): \
+             TransportErrorCode {";
+            "  switch (status) {";
+            "  }";
+            "  return \"error\";";
+            "}";
+          ]
+          (around
+             (Error_codes.Typescript.text t)
+             "export function transportErrorCodeForStatus(status: number): \
+              TransportErrorCode {"));
+  ]
+
+let () =
+  Alcotest.run "error-codes"
+    [
+      ("the model", the_model);
+      ("the rules", rules);
+      ("the wire's codes", wire);
+      ("the writers", writers);
+    ]

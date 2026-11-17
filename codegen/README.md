@@ -58,6 +58,14 @@ per language it writes:
   `Encodings.Python` write the labels and the single-byte encodings, and
   `Encodings.Typescript` the refused encodings, which the platform's
   `TextDecoder` decodes all the same.
+- `error-codes`: the codes a client reports a failure under, from
+  `errors/codes.json`, for the Go, Python and TypeScript SDKs.
+  `Error_codes.Table` holds the table to the wire's own codes
+  (`CommandError.code`), each restated once, and to its statuses: one per
+  code, at most one open range, and every code but the unclassified one read
+  from a status. `Error_codes.Go`, `Error_codes.Python` and
+  `Error_codes.Typescript` write each vocabulary, the bus code a wire code
+  becomes and the transport code a status becomes.
 
 `Text` measures and spells text: a width in code points, a word ended by
 ASCII white space, a string as JSON writes it or as a Go or Python literal

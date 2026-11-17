@@ -1,6 +1,6 @@
-// Code generated from protocol/specs/src/errors/codes.json — DO NOT EDIT.
+// Code generated from protocol/specs/src/errors/codes.json; DO NOT EDIT.
 //
-// Regenerate: node codegen/node/schemas/generate-error-codes-go.mjs
+// Regenerate: make generate (codegen/lib/error_codes/go.ml)
 // The TypeScript and Python vocabularies are generated from the same table,
 // and Rust's by its SDK's build script.
 
@@ -44,10 +44,10 @@ const (
 
 // BusRequestErrorCodeOfWire is the code a failure's own code
 // (CommandError.code) becomes, a case for each of CommandErrorCode's codes. A
-// failure that states none is BusRequestErrorCodeRejected. A reader leaves a code the
-// required table does not recognize out of the failure before it decodes it,
-// so a code CommandErrorCode does not name is none a failure is read with:
-// given one, it panics.
+// failure that states none is BusRequestErrorCodeRejected. A reader leaves a
+// code the required table does not recognize out of the failure before it
+// decodes it, so a code CommandErrorCode does not name is none a failure is
+// read with: given one, it panics.
 func BusRequestErrorCodeOfWire(code *api.CommandErrorCode) BusRequestErrorCode {
 	if code == nil {
 		return BusRequestErrorCodeRejected

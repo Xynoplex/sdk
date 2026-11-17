@@ -23,6 +23,11 @@
  (modules encodings)
  (libraries xynolog_codegen yojson alcotest))
 
+(test
+ (name error_codes)
+ (modules error_codes)
+ (libraries xynolog_codegen yojson alcotest))
+
 ; Run with Protocol's specs/src, which is outside this project:
 ; dune exec test/census.exe -- ../protocol/specs/src
 (executable

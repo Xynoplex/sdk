@@ -16,7 +16,7 @@
 
 import { XynologError } from './errors';
 import { REFUSED_ENCODINGS } from './refused-encodings';
-import type { TransportErrorCode } from './generated/error-codes';
+import type { TransportErrorCode } from './error-codes';
 
 /** HTTP white space: line feed, carriage return, tab and space. */
 const isHttpWhiteSpace = (character: string): boolean =>

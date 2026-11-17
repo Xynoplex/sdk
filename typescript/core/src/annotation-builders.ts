@@ -24,7 +24,7 @@ import type { Annotation } from './annotation-types';
 import type { Motivation } from './branded-types';
 import { XynologError } from './errors';
 import { findBestTextMatch, buildContentCache, type MatchQuality } from './fuzzy-anchor';
-import type { SpanRefusal } from './generated/error-codes';
+import type { SpanRefusal } from './error-codes';
 import type { ResourceId } from './identifiers';
 import type { Selector } from './payload-types';
 import { locate, type AnchoredText } from './pdf-anchoring';
