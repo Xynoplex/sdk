@@ -242,7 +242,7 @@ export {
   type SignInErrorCode,
   type IdentityUnverifiableReason,
   type SpanRefusal,
-} from './generated/error-codes';
+} from './error-codes';
 export * from './generated/oauth-clients';
 export * from './generated/sign-in';
 export { BUS_OPERATIONS, type BusOperationKey, type BusOperationSpec } from './bus-operations';

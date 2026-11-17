@@ -1,5 +1,5 @@
 # Generated from protocol/specs/src/errors/codes.json; do not edit.
-# Regenerate: node codegen/node/schemas/generate-error-codes-python.mjs
+# Regenerate: make generate (codegen/lib/error_codes/python.ml)
 
 """The codes a Xynolog client reports a failure under.
 
