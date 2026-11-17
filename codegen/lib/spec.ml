@@ -50,6 +50,7 @@ type tables = {
   client_registry : Tables.Client_registry.t;
   client_state_units : Tables.Client_state_units.t;
   client_surface : Tables.Client_surface.t;
+  client_testing : Tables.Client_testing.t;
   client_timing : Tables.Client_timing.t;
   control_cli : Tables.Control_cli.t;
   control_methods : Tables.Control_methods.t;
@@ -142,6 +143,7 @@ let tables { table } =
   and+ client_state_units =
     table "client/state-units.json" Tables.Client_state_units.decode
   and+ client_surface = table "client/surface.json" Tables.Client_surface.decode
+  and+ client_testing = table "client/testing.json" Tables.Client_testing.decode
   and+ client_timing = table "client/timing.json" Tables.Client_timing.decode
   and+ control_cli = table "control/cli.json" Tables.Control_cli.decode
   and+ control_methods =
@@ -276,6 +278,7 @@ let tables { table } =
     client_registry;
     client_state_units;
     client_surface;
+    client_testing;
     client_timing;
     control_cli;
     control_methods;

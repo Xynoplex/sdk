@@ -35,7 +35,7 @@ locate anchored start end
 
 
 fragmentOf :: PdfCoordinate -> Text
-fragmentOf rectangle = "page="<>decimal (pdfCoordinatePage rectangle)<>"&viewrect="<>
+fragmentOf rectangle = "page="<>Text.pack (show (pdfCoordinatePage rectangle))<>"&viewrect="<>
   Text.intercalate "," (map decimal [pdfCoordinateX rectangle,pdfCoordinateY rectangle,pdfCoordinateWidth rectangle,pdfCoordinateHeight rectangle])
   where
     decimal :: Scientific -> Text

@@ -4,10 +4,6 @@
   "description": "The Node generators, until codegen/'s OCaml generator replaces each (plans: codegen.md). Each group is a generate:<group> script and its generate:<group>:check.",
   "scripts": {
     "generate:go": "node schemas/generate-required-lists-go.mjs",
-    "generate:go:check": "node schemas/generate-required-lists-go.mjs --check && node ../../go/scripts/check-go-schema-coverage.mjs",
-    "generate:haskell": "node schemas/generate-operation-reports-haskell.mjs && node schemas/generate-session-adapters-haskell.mjs && node schemas/generate-annotation-adapters-haskell.mjs && node schemas/generate-state-adapters-haskell.mjs && node schemas/generate-testing-adapters-haskell.mjs",
-    "generate:haskell:check": "node schemas/generate-operation-reports-haskell.mjs --check && node schemas/generate-session-adapters-haskell.mjs --check && node schemas/generate-annotation-adapters-haskell.mjs --check && node schemas/generate-state-adapters-haskell.mjs --check && node schemas/generate-testing-adapters-haskell.mjs --check",
-    "generate:ocaml": "node schemas/generate-testing-adapters-haskell.mjs --ocaml",
-    "generate:ocaml:check": "node schemas/generate-testing-adapters-haskell.mjs --ocaml --check"
+    "generate:go:check": "node schemas/generate-required-lists-go.mjs --check && node ../../go/scripts/check-go-schema-coverage.mjs"
   }
 }
