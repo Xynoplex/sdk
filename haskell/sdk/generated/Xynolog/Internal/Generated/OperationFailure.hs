@@ -4,7 +4,7 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE OverloadedStrings #-}
-module Xynolog.Internal.Generated.OperationFailure (message, code, fromCommandErrorCode, fromBrowseDirectoryFailedCode, fromGatherFailedCode, fromGatherResourceFailedCode, fromMatchSearchFailedCode) where
+module Xynolog.Internal.Generated.OperationFailure (message, code) where
 import Data.Text (Text)
 import Xynolog.Channels
 import Xynolog.ErrorCodes (BusRequestCode(..))

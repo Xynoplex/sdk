@@ -129,6 +129,8 @@ type decl =
       instance : type_;
       methods : (string * clause) list;  (** A method's clauses, in order. *)
     }
+  | Private of decl
+      (** A declaration the module keeps to itself: it exports none of it. *)
 
 type module_ = {
   banner : string list;  (** Line comments, each written after a [--]. *)
@@ -341,7 +343,7 @@ let exports = function
   | Reexport name -> [ Module name ]
   | Alias { name; _ } | Value { name; _ } -> [ Plain name ]
   | Values { values; _ } -> List.map (fun (name, _) -> Plain name) values
-  | Instance _ -> []
+  | Instance _ | Private _ -> []
 
 let deriving_clause = function
   | [] -> ""
@@ -354,7 +356,8 @@ let clause_line name { patterns; body } =
   String.concat " " (checked name :: List.map pattern patterns)
   ^ " = " ^ expr ~depth:0 body
 
-let decl = function
+let rec decl = function
+  | Private d -> decl d
   | Data { about; name; params; constructors; deriving } ->
       doc about
       @ [
@@ -523,34 +526,35 @@ let uses body =
     List.iter pattern patterns;
     expr body
   in
-  List.iter
-    (function
-      | Data { constructors; deriving; _ } ->
-          List.iter (fun c -> List.iter type_ c.fields) constructors;
-          List.iter type_use deriving
-      | Record { fields; deriving; _ } ->
-          List.iter (fun (_, t) -> type_ t) fields;
-          List.iter type_use deriving
-      | Newtype { type_ = t; deriving; _ } ->
-          type_ t;
-          List.iter type_use deriving
-      | Gadt { params; constructors; _ } ->
-          List.iter (fun (_, kind) -> Option.iter type_use kind) params;
-          List.iter (fun (_, t) -> type_ t) constructors
-      | Reexport _ -> ()
-      | Alias { type_ = t; _ } -> type_ t
-      | Value { type_ = t; clauses; _ } ->
-          type_ t;
-          List.iter clause clauses
-      | Values { type_ = t; values; _ } ->
-          type_ t;
-          List.iter (fun (_, e) -> expr e) values
-      | Instance { context; class_; instance; methods } ->
-          List.iter (fun (c, _) -> type_use c) context;
-          type_use class_;
-          type_ instance;
-          List.iter (fun (_, c) -> clause c) methods)
-    body;
+  let rec declaration = function
+    | Private d -> declaration d
+    | Data { constructors; deriving; _ } ->
+        List.iter (fun c -> List.iter type_ c.fields) constructors;
+        List.iter type_use deriving
+    | Record { fields; deriving; _ } ->
+        List.iter (fun (_, t) -> type_ t) fields;
+        List.iter type_use deriving
+    | Newtype { type_ = t; deriving; _ } ->
+        type_ t;
+        List.iter type_use deriving
+    | Gadt { params; constructors; _ } ->
+        List.iter (fun (_, kind) -> Option.iter type_use kind) params;
+        List.iter (fun (_, t) -> type_ t) constructors
+    | Reexport _ -> ()
+    | Alias { type_ = t; _ } -> type_ t
+    | Value { type_ = t; clauses; _ } ->
+        type_ t;
+        List.iter clause clauses
+    | Values { type_ = t; values; _ } ->
+        type_ t;
+        List.iter (fun (_, e) -> expr e) values
+    | Instance { context; class_; instance; methods } ->
+        List.iter (fun (c, _) -> type_use c) context;
+        type_use class_;
+        type_ instance;
+        List.iter (fun (_, c) -> clause c) methods
+  in
+  List.iter declaration body;
   let sorted found =
     List.sort String.compare (List.of_seq (Hashtbl.to_seq_keys found))
   in

@@ -56,6 +56,32 @@ let format_word : Schema.format -> string = function
   | Uri -> "uri"
   | Binary -> "binary"
 
+(* The keywords a schema states that the SDK's validator does not read
+   (haskell/sdk/internal/Xynolog/Internal/Schema.hs), at any depth. A schema
+   the SDK validates against states none: dropping one would accept what
+   the schema refuses. *)
+let rec unread : Schema.t -> string list = function
+  | Boolean_schema _ -> []
+  | Schema s ->
+      let stated name = Option.map (fun _ -> name) in
+      List.filter_map Fun.id
+        [
+          stated "const" s.const;
+          stated "not" s.not_;
+          stated "propertyNames" s.property_names;
+          stated "minProperties" s.min_properties;
+        ]
+      @ List.concat_map unread
+          (List.concat
+             [
+               List.map snd (Option.value s.properties ~default:[]);
+               Option.to_list s.additional_properties;
+               Option.to_list s.items;
+               Option.value s.all_of ~default:[];
+               Option.value s.any_of ~default:[];
+               Option.value s.one_of ~default:[];
+             ])
+
 (* A schema as the SDK validates against it: every keyword but those that
    only describe it. *)
 let rec runtime : Schema.t -> Yojson.Safe.t = function

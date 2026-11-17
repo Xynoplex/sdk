@@ -97,6 +97,24 @@ let manifest ~root module_names =
       };
     ]
 
+(* A model module the models no longer make: one in the models' directory
+   that [written] does not name. It is refused rather than removed, so the
+   run that drops a schema names the file to delete with it. *)
+let stale ~root written =
+  let directory = "haskell/sdk/generated/Xynolog/Internal/Generated/Models" in
+  let on_disk =
+    match Sys.readdir (Filename.concat root directory) with
+    | names -> Array.to_list names
+    | exception Sys_error _ -> []
+  in
+  match
+    List.find_opt
+      (fun name -> not (List.mem (directory ^ "/" ^ name) written))
+      (List.sort String.compare on_disk)
+  with
+  | Some name -> Error ("stale generated module: " ^ directory ^ "/" ^ name)
+  | None -> Ok ()
+
 let files ~root (spec : Spec.t) =
   let refused file message = [ { Decode.file; pointer = ""; message } ] in
   let within file result = Result.map_error (refused file) result in
@@ -112,6 +130,22 @@ let files ~root (spec : Spec.t) =
          ~carrier:(Transport.carrier_schema transport)
          ~http:http.schemas ~envelopes:bus.envelopes)
   in
+  let* () =
+    within "openapi.json"
+      (match
+         List.find_map
+           (fun (name, schema) ->
+             match Companions.unread schema with
+             | [] -> None
+             | keyword :: _ ->
+                 Some
+                   (name ^ " states " ^ keyword
+                  ^ ", which the SDK does not read"))
+           definitions
+       with
+      | Some refusal -> Error refusal
+      | None -> Ok ())
+  in
   let identifiers =
     List.map
       (fun (k : Tables.Identifiers_kinds.kind) -> k.schema)
@@ -122,6 +156,13 @@ let files ~root (spec : Spec.t) =
       (Models.generate
          ~banner:(banner "protocol/specs/src")
          ~identifiers definitions)
+  in
+  let* () =
+    within "openapi.json"
+      (stale ~root
+         (List.map
+            (fun (m : H.module_) -> path ~under:"generated" m.name)
+            models.modules))
   in
   let named = List.map fst definitions in
   let definition name =

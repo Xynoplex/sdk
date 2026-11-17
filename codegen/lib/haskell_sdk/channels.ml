@@ -589,36 +589,38 @@ let failure_file ~banner ~unrecognized readers =
            }
       :: List.map
            (fun (failure, codes) ->
-             H.Value
-               {
-                 about = [];
-                 name = reader_of failure;
-                 type_ =
-                   T_fun
-                     ( T_apply ("Maybe", [ types (code_type failure) ]),
-                       t_name "BusRequestCode" );
-                 clauses =
-                   [
-                     {
-                       patterns = [ Var "value" ];
-                       body =
-                         Case
-                           ( Name "value",
-                             (H.Constructor ("Nothing", []), H.Name unrecognized)
-                             :: List.map
-                                  (fun (wire, code) ->
-                                    ( H.Constructor
-                                        ( "Just",
-                                          [
-                                            Constructor
-                                              ( "Types." ^ code_type failure
-                                                ^ Models.identifier wire,
-                                                [] );
-                                          ] ),
-                                      H.Name code ))
-                                  codes );
-                     };
-                   ];
-               })
+             H.Private
+               (H.Value
+                  {
+                    about = [];
+                    name = reader_of failure;
+                    type_ =
+                      T_fun
+                        ( T_apply ("Maybe", [ types (code_type failure) ]),
+                          t_name "BusRequestCode" );
+                    clauses =
+                      [
+                        {
+                          patterns = [ Var "value" ];
+                          body =
+                            Case
+                              ( Name "value",
+                                ( H.Constructor ("Nothing", []),
+                                  H.Name unrecognized )
+                                :: List.map
+                                     (fun (wire, code) ->
+                                       ( H.Constructor
+                                           ( "Just",
+                                             [
+                                               Constructor
+                                                 ( "Types." ^ code_type failure
+                                                   ^ Models.identifier wire,
+                                                   [] );
+                                             ] ),
+                                         H.Name code ))
+                                     codes );
+                        };
+                      ];
+                  }))
            distinct;
   }

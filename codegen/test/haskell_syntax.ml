@@ -292,6 +292,21 @@ let cases =
                      };
                  ];
              }));
+    case "a private declaration is written but not exported"
+      (writes "module P (f) where\nf :: Int\nf = g\ng :: Int\ng = 1\n"
+         (fun () ->
+           H.text
+             {
+               banner = [];
+               extensions = [];
+               name = "P";
+               imports = [];
+               body =
+                 [
+                   H.value "f" (T_name "Int") (Name "g");
+                   Private (H.value "g" (T_name "Int") (Int 1));
+                 ];
+             }));
     case "a module re-exports what it imports whole"
       (writes "module T (module A) where\nimport A\n" (fun () ->
            H.text
