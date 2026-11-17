@@ -1,4 +1,5 @@
-(* Generated from OpenAPI component schemas through required-shapes.mjs. Do not edit. *)
+(* Generated from OpenAPI component schemas through codegen/lib/required/shape.ml. Do not edit.
+   Regenerate: make generate (codegen/lib/required/ocaml.ml) *)
 
 [@@@ocamlformat "disable"]
 

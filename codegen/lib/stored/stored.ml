@@ -213,6 +213,34 @@ let derive (spec : Spec.t) ~kinds ~(refresh : Cache_refresh.Table.t) =
   if table.whole_key.docs = "" then refuse "/wholeKey/docs" "is empty";
   if table.cache_document.properties.version.description = "" then
     refuse "/cacheDocument/properties/version/description" "is empty";
+  (* A cache document is a version and its entries, each a key, a value and a
+     whole-number stamp; Haskell's reads it as no more than that. *)
+  let d = table.cache_document in
+  if d.type_ <> "object" then refuse "/cacheDocument/type" "is not object";
+  if d.required <> [ "version"; "entries" ] then
+    refuse "/cacheDocument/required"
+      "is not the version, then the entries, which is all a cache document is";
+  let e = d.properties.entries in
+  if e.type_ <> "array" then
+    refuse "/cacheDocument/properties/entries/type" "is not array";
+  let at_entry = "/cacheDocument/properties/entries/items" in
+  if e.items.type_ <> "array" then refuse (at_entry ^ "/type") "is not array";
+  if e.items.min_items <> 3 || e.items.max_items <> 3 then
+    refuse at_entry "is not exactly three items: a key, a value and a stamp";
+  (match e.items.prefix_items with
+  | [ key; value; stamp ] ->
+      List.iteri
+        (fun i (p : T.prefix_item) ->
+          if p.type_ <> None || p.minimum <> None then
+            refuse
+              (Printf.sprintf "%s/prefixItems/%d" at_entry i)
+              "states a type, but an entry's key and value are any JSON")
+        [ key; value ];
+      if stamp.type_ <> Some "integer" || stamp.minimum <> Some 0 then
+        refuse
+          (at_entry ^ "/prefixItems/2")
+          "is not a whole number of at least 0"
+  | _ -> refuse (at_entry ^ "/prefixItems") "is not a key, a value and a stamp");
   let kept =
     List.filter_map
       (fun (q : Cache_refresh.Table.query) ->
@@ -439,6 +467,81 @@ def cache_key(kb_id: str, person_key: str, query: KeptQuery) -> str:
         ];
   }
 
+(* Haskell's kept queries, its cache document and the stream's places. *)
+let haskell t =
+  let version = string_of_int t.table.cache_document.properties.version.const in
+  let whole = quoted t.table.whole_key.key in
+  let constructor (k : kept) = String.capitalize_ascii k.query in
+  let models name =
+    "import Xynolog.Internal.Generated.Models." ^ name ^ " (" ^ name ^ ")\n"
+  in
+  {
+    Output.path =
+      "haskell/sdk/generated/Xynolog/Internal/Generated/CachePersistence.hs";
+    text =
+      String.concat ""
+        [
+          "-- Generated from " ^ file ^ " and " ^ Cache_refresh.Table.file
+          ^ ". Do not edit.\n-- Regenerate: make generate (";
+          Banner.writer __FILE__;
+          {|)
+{-# LANGUAGE OverloadedStrings #-}
+module Xynolog.Internal.Generated.CachePersistence (KeptQuery(..), keptQueryName, Whole(..), CacheDocument(..), lastEventIds) where
+import Control.Monad (unless)
+import Data.Aeson (FromJSON(..), ToJSON(..), Result(..), Value(..), fromJSON, object, withObject, withText, (.:), (.=))
+import qualified Data.Aeson.Key as Key
+import qualified Data.Aeson.KeyMap as KM
+import qualified Data.Map.Strict as Map
+import Data.Text (Text)
+import Numeric.Natural (Natural)
+|};
+          models t.place;
+          models t.scope;
+          "-- | The queries a client keeps across a restart, by their names in \
+           client/refresh.json.\n\
+           data KeptQuery = ";
+          String.concat " | " (List.map constructor t.kept);
+          " deriving (Eq, Ord, Show, Enum, Bounded)\nkeptQueryName :: KeptQuery -> Text\n";
+          String.concat ""
+            (List.map
+               (fun k ->
+                 "keptQueryName " ^ constructor k ^ " = " ^ quoted k.query ^ "\n")
+               t.kept);
+          {|-- | The key a kept query per nothing keeps its one entry under.
+data Whole = Whole deriving (Eq, Ord, Show)
+instance ToJSON Whole where toJSON Whole = String |};
+          whole;
+          {|
+instance FromJSON Whole where
+  parseJSON = withText "Whole" (\key -> if key == |};
+          whole;
+          {| then pure Whole else fail "not the whole key")
+-- | What a client keeps of one query: each entry's key, value and stamp. A document of another
+-- version, or one whose entries are not each a key, a value and a stamp, does not decode.
+newtype CacheDocument = CacheDocument [(Value, Value, Natural)] deriving (Eq, Show)
+instance FromJSON CacheDocument where
+  parseJSON = withObject "CacheDocument" $ \fields -> do
+    version <- fields .: "version"
+    unless (version == (|};
+          version;
+          {| :: Integer)) (fail "a cache document of another version")
+    CacheDocument <$> fields .: "entries"
+instance ToJSON CacheDocument where
+  toJSON (CacheDocument entries) = object ["version" .= (|};
+          version;
+          {| :: Integer), "entries" .= entries]
+-- | Where a stream was: a pair that is not a |};
+          t.scope ^ " and a " ^ t.place;
+          " is skipped, and a value that is no object is none.\nlastEventIds :: Value -> Map.Map "
+          ^ t.scope ^ " " ^ t.place;
+          {|
+lastEventIds (Object fields) = Map.fromList
+  [(named, value) | (key, raw) <- KM.toList fields, Success named <- [fromJSON (String (Key.toText key))], Success value <- [fromJSON raw]]
+lastEventIds _ = Map.empty
+|};
+        ];
+  }
+
 let files ~root:_ (spec : Spec.t) =
   let ( let* ) = Result.bind in
   let* kinds = Identifiers.Table.derive spec in
@@ -451,4 +554,4 @@ let files ~root:_ (spec : Spec.t) =
       ~kinds:(List.map (fun (k : Identifiers.Table.kind) -> k.name) kinds)
       ~refresh
   in
-  Ok [ python t ]
+  Ok [ python t; haskell t ]

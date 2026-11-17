@@ -10,6 +10,7 @@ module Typescript = Typescript
 module Python = Python
 module Haskell = Haskell
 module Go = Go
+module Ocaml = Ocaml
 
 let refusal file pointer message = { Decode.file; pointer; message }
 
@@ -101,14 +102,15 @@ let declared ~root =
            In_channel.input_all))
     Go.declaring
 
+(* What each component requires, by the component's name. *)
+let derive (spec : Spec.t) =
+  Result.bind (collect (components spec))
+    (Shape.derive
+       ~unrecognized:spec.tables.errors_codes.bus_request.unrecognized_failure)
+
 let files ~root (spec : Spec.t) =
   let ( let* ) = Result.bind in
-  let* components = collect (components spec) in
-  let* derivation =
-    Shape.derive
-      ~unrecognized:spec.tables.errors_codes.bus_request.unrecognized_failure
-      components
-  in
+  let* derivation = derive spec in
   let shapes = derivation.shapes in
   let known name = List.mem_assoc name shapes in
   let* channels =
@@ -127,5 +129,6 @@ let files ~root (spec : Spec.t) =
             Typescript.file shapes;
             Python.file shapes;
             Haskell.file ~shapes ~channels ~http;
-          ])
+          ]
+        @ Ocaml.files shapes)
   | refusals -> Error refusals

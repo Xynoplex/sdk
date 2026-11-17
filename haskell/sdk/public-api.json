@@ -13,7 +13,7 @@
     "codegen/annotation-adapters.json": "e6dfcda059e21f97a16133dfcf6ac1369219c4709f59bded35fe3fac11f537e6",
     "codegen/session-adapters.json": "0742e2e564f46829ba537ffa67b453ff764c8cd2c5d2cbc64b5adb2e0fc9f514",
     "generated/Xynolog/Internal/Generated/BusLog.hs": "5bcd664b4ef1d7cfd5f04c9b92a820875214bb9a92c20407f905da70a25cdbc0",
-    "generated/Xynolog/Internal/Generated/CachePersistence.hs": "df2c891079bb60b788d3f4b35ffbc1b651562d813c1d3272bf5521af3fa54fb0",
+    "generated/Xynolog/Internal/Generated/CachePersistence.hs": "1868467bd6c8b271d91d91dcff4bc5b05858e7306188ec6741dd6769368bd81f",
     "generated/Xynolog/Internal/Generated/CacheRefresh.hs": "8bb0555627e7d4903981328ebd69903a0978626d8365cfbc1206b6e078692bc5",
     "generated/Xynolog/Internal/Generated/ClientAssertion.hs": "229df785755ee93ce1f6e5e44c47b274cc9dbe8f56929834b0226886cb2f45d2",
     "generated/Xynolog/Internal/Generated/MarkMotivation.hs": "76089b277cbde1be0bfb31a81b4e1306e0c09de074ada403b5d6ed0c97dafb8f",

@@ -1,4 +1,5 @@
-(* Generated from protocol identifier kinds and shared required shapes. Do not edit. *)
+(* Generated from protocol/specs/src/identifiers/kinds.json and the kinds' required shapes. Do not edit.
+   Regenerate: make generate (codegen/lib/identifiers/ocaml.ml) *)
 
 [@@@ocamlformat "disable"]
 let () =
