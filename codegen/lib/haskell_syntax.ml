@@ -20,8 +20,12 @@ type type_ =
   | T_tuple of type_ list
   | T_fun of type_ * type_
 
-(* What a clause or an alternative matches. *)
-type pattern = Constructor of string | Literal of string | Otherwise
+(* What a clause or an alternative matches: a constructor matches what it
+   holds by a pattern each. *)
+type pattern =
+  | Constructor of string * pattern list
+  | Literal of string
+  | Otherwise
 
 type expr =
   | Name of string
@@ -145,8 +149,10 @@ and type_argument = function
   | (T_apply _ | T_fun _) as t -> "(" ^ type_ t ^ ")"
   | t -> type_ t
 
-let pattern = function
-  | Constructor name -> checked name
+let rec pattern = function
+  | Constructor (name, []) -> checked name
+  | Constructor (name, held) ->
+      "(" ^ String.concat " " (checked name :: List.map pattern held) ^ ")"
   | Literal text -> literal text
   | Otherwise -> "_"
 

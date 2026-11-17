@@ -52,23 +52,3 @@ instance FromJSON PendingAnnotation where
 instance ToJSON PendingAnnotation where
   toJSON pending = object [${pendingFields.map(([name])=>`${JSON.stringify(name)} .= ${pendingAccessor(name)} pending`).join(', ')}]
 `,process.argv.includes('--check'));
-const schema=name=>JSON.parse(readFileSync(resolve(root,'protocol/specs/src/components/schemas',name+'.json'),'utf8'));
-const params=schema('MarkJobParams');
-if(params.discriminator?.propertyName!=='motivation'||!Array.isArray(params.oneOf))fail('mark parameters changed discriminator');
-const motivations=schema('Motivation').enum;
-const motivationCases=params.oneOf.map((branch,index)=>{
- if(Object.keys(branch).join()!=='$ref'||typeof branch.$ref!=='string')fail('mark parameter branch has no plain reference');
- const name=/^\.\/(\w+)\.json$/.exec(branch.$ref)?.[1]??fail('unread mark parameter reference');
- const fields=schema(name),values=fields.properties?.motivation?.enum;
- if(!fields.required?.includes('motivation')||values?.length!==1||!motivations.includes(values[0]))fail('mark branch has no single required motivation');
- const word=values[0];
- if(params.discriminator.mapping?.[word]!==branch.$ref||!/^\w+$/.test(word))fail('unread motivation mapping');
- return `markMotivation (MarkJobParamsBranch${index+1} _) = Motivation${word[0].toUpperCase()+word.slice(1)}`;
-});
-if(Object.keys(params.discriminator.mapping).length!==motivationCases.length)fail('extra mark discriminator entry');
-writeOrCheck(root,resolve(root,'haskell/sdk/generated/Xynolog/Internal/Generated/MarkMotivation.hs'),`-- Generated from MarkJobParams.json and Motivation.json; do not edit.
-module Xynolog.Internal.Generated.MarkMotivation (markMotivation) where
-import Xynolog.Types (MarkJobParams(..), Motivation(..))
-markMotivation :: MarkJobParams -> Motivation
-${motivationCases.join('\n')}
-`,process.argv.includes('--check'));

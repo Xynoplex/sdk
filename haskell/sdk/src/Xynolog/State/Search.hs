@@ -9,7 +9,7 @@ import Control.Exception (finally, mask)
 import Control.Monad (unless, void, when)
 import Data.Text (Text)
 import qualified Data.Text as Text
-import qualified Xynolog.Internal.Generated.UnicodeCase as Unicode
+import qualified Xynolog.Internal.UnicodeCase as Unicode
 import Xynolog.Internal.Generated.SearchState (SearchState(..))
 import qualified Xynolog.Internal.StateTasks as Tasks
 import qualified Xynolog.Internal.StateValue as State

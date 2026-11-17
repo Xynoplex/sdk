@@ -6,7 +6,7 @@ import Data.Ord (comparing)
 import Data.Text (Text)
 import qualified Data.Text as Text
 import qualified Data.Vector as Vector
-import qualified Xynolog.Internal.Generated.UnicodeCase as Unicode
+import qualified Xynolog.Internal.UnicodeCase as Unicode
 import Xynolog.Types
 
 whiteSpace :: Char -> Bool

@@ -500,7 +500,7 @@ let haskell t =
                     List.map
                       (fun k ->
                         {
-                          H.patterns = [ Constructor (constructor k) ];
+                          H.patterns = [ Constructor (constructor k, []) ];
                           body = Str k.query;
                         })
                       t.kept;

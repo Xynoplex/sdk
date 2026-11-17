@@ -83,6 +83,7 @@ library internal
     Xynolog.Internal.Refresh
     Xynolog.Internal.Text
     Xynolog.Internal.Utf8
+    Xynolog.Internal.UnicodeCase
     Xynolog.Internal.StreamFrame
     Xynolog.Internal.Broadcast
     Xynolog.Internal.Sse

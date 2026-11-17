@@ -5,7 +5,6 @@ import {dirname,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import ts from 'typescript';
 import {writeOrCheck} from '../lib/committed-source.mjs';
-import {propertyRanges,scalars,unicodeVersion} from './unicode-properties.mjs';
 const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),'../../..');
 const sources=['annotation-builders.ts','fuzzy-anchor.ts','pdf-coordinates.ts'].map(file=>{
  const path=resolve(ROOT,'typescript/core/src',file);
@@ -56,40 +55,3 @@ const derive=name=>{
 for(const name of ['QuotedText','TextSpan','ReconciledSpan','AnchorMethod','MatchQuality','PdfCoordinate'])derive(name);
 writeOrCheck(ROOT,resolve(ROOT,'haskell/sdk/codegen/annotation-adapters.json'),JSON.stringify(schemas,null,2)+'\n',process.argv.includes('--check'));
 
-// Unicode default lowercasing has one context-sensitive non-locale rule: final
-// sigma. Derive the character properties and mappings from the JS runtime's
-// Unicode data, including multi-code-point mappings; Haskell Text.toLower
-// deliberately implements only unconditional mappings.
-const casedRanges=propertyRanges(/\p{Cased}/u),ignoredRanges=propertyRanges(/\p{Case_Ignorable}/u),whiteSpaceRanges=propertyRanges(/\p{White_Space}/u);
-const mappings=[],finals=[];
-for(const code of scalars()){
- const char=String.fromCodePoint(code),lower=char.toLowerCase();
- if(lower!==char)mappings.push([code,Array.from(lower,c=>c.codePointAt(0))]);
- const atEnd=('A'+char+' ').toLowerCase().slice(1,-1);
- if(atEnd!==lower)finals.push([code,Array.from(atEnd,c=>c.codePointAt(0))]);
-}
-const chars=values=>`[${values.map(value=>`chr ${value}`).join(',')}]`;
-const generated=`-- Generated from Node's Unicode ${unicodeVersion} data; do not edit.
-module Xynolog.Internal.Generated.UnicodeCase (lowerChar, finalChar, isCased, caseIgnorable, whiteSpace) where
-import Data.Char (chr, ord)
-import qualified Data.IntMap.Strict as Map
-lowerChar, finalChar :: Char -> String
-lowerChar char = Map.findWithDefault [char] (ord char) lower
-finalChar char = Map.findWithDefault (lowerChar char) (ord char) final
-lower, final :: Map.IntMap String
-lower = Map.fromDistinctAscList [${mappings.map(([code,values])=>`(${code},${chars(values)})`).join(',')}]
-final = Map.fromDistinctAscList [${finals.map(([code,values])=>`(${code},${chars(values)})`).join(',')}]
-isCased, caseIgnorable, whiteSpace :: Char -> Bool
-isCased char = within (ord char) cased
-caseIgnorable char = within (ord char) ignored
-whiteSpace char = within (ord char) spaces
-within :: Int -> [(Int,Int)] -> Bool
-within code ranges = case dropWhile ((<code) . snd) ranges of
-  (start,_):_ -> start<=code
-  [] -> False
-cased, ignored, spaces :: [(Int,Int)]
-cased = [${casedRanges.map(([start,end])=>`(${start},${end})`).join(',')}]
-ignored = [${ignoredRanges.map(([start,end])=>`(${start},${end})`).join(',')}]
-spaces = [${whiteSpaceRanges.map(([start,end])=>`(${start},${end})`).join(',')}]
-`;
-writeOrCheck(ROOT,resolve(ROOT,'haskell/sdk/generated/Xynolog/Internal/Generated/UnicodeCase.hs'),generated,process.argv.includes('--check'));
