@@ -177,7 +177,7 @@ PERSISTED_EVENT_TYPES: Final[tuple[ChannelName, ...]] = (
              if Registry.is_recorded c then Some c.channel else None)
            reg.channels);
       "\n)\n\n";
-      Text.comment ~marker:"# " ~indent:"" ~width:96 reg.trace.meaning;
+      Text.python_comment ~indent:"" reg.trace.meaning;
       "\nTRACE_FIELD: Final = ";
       Text.quoted reg.trace.field;
       "\n";

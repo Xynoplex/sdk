@@ -77,6 +77,11 @@ let replace_all ~sub ~by text =
 
 (* A string as JSON writes it: quoted, with a quote, a backslash and the
    control characters escaped, and every other character as itself. *)
+
+(* [text] as a one-line TypeScript doc comment, which a [*/] in it would end
+   early. *)
+let doc_comment text = "/** " ^ replace_all ~sub:"*/" ~by:"*\\/" text ^ " */"
+
 let quoted text =
   let out = Buffer.create (String.length text + 2) in
   Buffer.add_char out '"';
@@ -138,3 +143,9 @@ let upper_snake name =
       Buffer.add_char out (Char.uppercase_ascii c))
     name;
   Buffer.contents out
+
+(* [text] as Go comment lines behind [indent], as gofmt leaves them. *)
+let go_comment ~indent = comment ~marker:"// " ~indent ~width:78
+
+(* [text] as Python comment lines behind [indent]. *)
+let python_comment ~indent = comment ~marker:"# " ~indent ~width:96

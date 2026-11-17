@@ -1,5 +1,5 @@
 # Generated from protocol/specs/src/client/refresh.json; do not edit.
-# Regenerate: node codegen/node/schemas/generate-cache-refresh-python.mjs
+# Regenerate: make generate (codegen/lib/cache_refresh/python.ml)
 
 """What a Xynolog client asks again for, and when.
 

@@ -4,17 +4,13 @@
 
 let path = "typescript/core/src/error-codes.ts"
 
-(* [text] as a one-line doc comment, which a [*/] in it would end early. *)
-let doc ?(indent = "") text =
-  Printf.sprintf "%s/** %s */" indent
-    (Text.replace_all ~sub:"*/" ~by:"*\\/" text)
-
 let union (v : Table.vocabulary) =
-  Printf.sprintf "%s\nexport type %s =\n%s;\n" (doc v.docs) v.name
+  Printf.sprintf "%s\nexport type %s =\n%s;\n" (Text.doc_comment v.docs) v.name
     (String.concat "\n"
        (List.map
           (fun (c : Table.code) ->
-            Printf.sprintf "%s\n  | %s" (doc ~indent:"  " c.docs)
+            Printf.sprintf "%s\n  | %s"
+              ("  " ^ Text.doc_comment c.docs)
               (Text.quoted c.code))
           v.codes))
 

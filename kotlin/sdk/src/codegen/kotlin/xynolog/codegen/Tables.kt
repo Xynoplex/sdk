@@ -488,8 +488,8 @@ private class KeptRow(val name: String, val key: String, val keyed: String, val 
  * trigger that is neither a channel of the registry nor `reopened` nor
  * `unreadable`, or is no channel and reaches a subject or carries a value; and
  * a table without `reopened` or `unreadable`.
- * typescript/scripts/generators/cache-refresh-table.mjs holds each way to its
- * channel's schema.
+ * codegen/lib/cache_refresh/table.ml holds each way to the shape of its
+ * channel's events.
  */
 internal fun cacheRefreshFile(table: JsonObject, registry: JsonObject, definitions: JsonObject, generation: Generation): String = buildString {
     val queries = table["queries"].list("the refresh table's queries").map { it.obj("a query") }

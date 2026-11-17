@@ -3,10 +3,6 @@
 
 let path = "typescript/core/src/client-timing.ts"
 
-(* [text] as a one-line doc comment, which a [*/] in it would end early. *)
-let doc text =
-  Printf.sprintf "/** %s */" (Text.replace_all ~sub:"*/" ~by:"*\\/" text)
-
 let text (t : Table.t) =
   String.concat ""
     [
@@ -21,7 +17,7 @@ import type { RetryPolicy } from './retry';
       String.concat "\n"
         (List.map
            (fun (e : Table.entry) ->
-             Printf.sprintf "%s\nexport const %s;\n" (doc e.docs)
+             Printf.sprintf "%s\nexport const %s;\n" (Text.doc_comment e.docs)
                (match e.value with
                | Duration n | Count n ->
                    Printf.sprintf "%s = %d" (Text.upper_snake e.name) n

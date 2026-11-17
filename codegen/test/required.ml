@@ -511,7 +511,7 @@ let writers =
              (fun payload ->
                Result.map_error Decode.error_to_string
                  (Result.map json
-                    (Required.Haskell.channel
+                    (Required.Event.channel
                        ~known:(fun name -> name <> "Missing")
                        (channel payload))))
              [

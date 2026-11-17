@@ -1,6 +1,6 @@
 /**
  * What each live query's cache holds, as protocol/specs/src/client/refresh.json's `value` says. The mapping
- * is generated (typescript/scripts/generators/generate-cache-refresh.mjs): `CACHE_VALUES`, each query's component
+ * is generated (codegen/lib/cache_refresh/typescript.ml): `CACHE_VALUES`, each query's component
  * and the members within it, and `CacheValues`, the type each names, which types the namespaces' caches.
  * Held here: that the generated mapping names refresh.json's rows, and, at compile time (`shownCensus`), that
  * what each live query shows, which namespaces/types.ts writes by hand in the names consumers read

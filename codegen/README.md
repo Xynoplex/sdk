@@ -41,7 +41,8 @@ per language it writes:
   and states its rules. `Required.Table` writes it as JSON for Rust, Kotlin,
   Swift, C# and Go, and `Required.Typescript`, `Required.Python` and
   `Required.Haskell` write it for theirs, Haskell's with each bus channel's
-  payload and each HTTP operation's reply. `Required.Go` holds it to the
+  payload and each HTTP operation's reply, which `Required.Event` derives
+  for every reader of a channel's events. `Required.Go` holds it to the
   types `go/api` declares.
 - `unicode-case`: the code points Unicode gives the Cased and the
   Case_Ignorable property, for the C#, Kotlin and Go SDKs, whose runtimes
@@ -73,11 +74,21 @@ per language it writes:
   each once, and holds a budget's backoff at or below its ceiling.
   `Timing.Go`, `Timing.Python` and `Timing.Typescript` write each SDK's
   constants.
+- `cache-refresh`: what a client's live queries hold, and what each event on
+  the bus, the reopening of a dropped stream and an event that cannot be read
+  does to them, from `client/refresh.json`, for the Go, Python, TypeScript
+  and Haskell SDKs. `Cache_refresh.Table` holds the table to the registry's
+  operations, the gateway's GETs, the component each query's value names and
+  each channel's events: each way to what a row names ends at the component
+  its slot is, and a row a passing frame triggers only refetches what
+  `reopened` refetches too. `Cache_refresh.Go`, `Cache_refresh.Python`,
+  `Cache_refresh.Typescript` and `Cache_refresh.Haskell` write each SDK's
+  table, Haskell's with the live conformance driver's queries.
 
 `Text` measures and spells text: a width in code points, a word ended by
 ASCII white space, a string as JSON writes it or as a Go or Python literal
-of printable ASCII, a camel-case name in upper snake case. `Output` is the
-drift gate.
+of printable ASCII, a camel-case name in upper snake case, and a comment as
+Go, Python and TypeScript write one. `Output` is the drift gate.
 
 ## Running it
 

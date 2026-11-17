@@ -1,4 +1,5 @@
--- Generated from client/refresh.json. Do not edit.
+-- Generated from protocol/specs/src/client/refresh.json; do not edit.
+-- Regenerate: make generate (codegen/lib/cache_refresh/haskell.ml)
 {-# LANGUAGE OverloadedStrings #-}
 module Xynolog.Internal.Generated.CacheRefresh (Query(..), ResourceValue, AnnotationsValue, AnnotationValue, EventsValue, ReferencedByValue, ResourcesValue, MatchedResourcesValue, EntityTypesValue, TagSchemasValue, EnginesValue, Reach(..), Ways(..), Row(..), rows, channels, reopened, unreadable) where
 import Data.Text (Text)

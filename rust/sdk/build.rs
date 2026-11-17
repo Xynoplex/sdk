@@ -715,8 +715,8 @@ fn live_kept(table: &Value) -> String {
 /// The refresh table as its queries, its triggers, which of them are
 /// `channels` of the registry, and each trigger's rows, their ways split into
 /// the names of their members. The table's own reader
-/// (typescript/scripts/generators/cache-refresh-table.mjs) is where it is held to
-/// account; this refuses only what it cannot render.
+/// (codegen/lib/cache_refresh/table.ml) is where it is held to account; this
+/// refuses only what it cannot render.
 fn cache_refresh(table: &Value, channels: &[&str]) -> String {
     let mut code =
         String::from("// Generated from protocol/specs/src/client/refresh.json; do not edit.\n");

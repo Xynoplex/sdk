@@ -5,7 +5,6 @@
    gives it in package api, and the Go build is what holds the two together. *)
 
 let path = "go/errorcodes_gen.go"
-let comment ?(indent = "") = Text.comment ~marker:"// " ~indent ~width:78
 let wire_constant wire = "api.CommandErrorCode" ^ Table.pascal wire
 
 (* A vocabulary: its type, and a constant per code in the table's order, each
@@ -13,13 +12,13 @@ let wire_constant wire = "api.CommandErrorCode" ^ Table.pascal wire
 let vocabulary (v : Table.vocabulary) =
   String.concat ""
     [
-      comment v.docs;
+      Text.go_comment ~indent:"" v.docs;
       Printf.sprintf "\ntype %s string\n\nconst (\n" v.go_name;
       String.concat ""
         (List.map
            (fun (c : Table.code) ->
              Printf.sprintf "%s\n\t%s %s = %s\n"
-               (comment ~indent:"\t" c.docs)
+               (Text.go_comment ~indent:"\t" c.docs)
                c.go v.go_name (Text.quoted c.code))
            v.codes);
       ")\n";
@@ -45,7 +44,7 @@ let text (t : Table.t) =
        import \"github.com/xynolog/sdk/go/api\"\n\n";
       vocabulary t.bus;
       "\n";
-      comment
+      Text.go_comment ~indent:""
         (Printf.sprintf
            "%sOfWire is the code a failure's own code (CommandError.code) \
             becomes, a case for each of CommandErrorCode's codes. A failure \
@@ -72,7 +71,7 @@ let text (t : Table.t) =
        does not list\")\n\
        \t}\n\
        }\n\n";
-      comment
+      Text.go_comment ~indent:""
         "Wire is the wire code a peer stated, when this code restates one: \
          what a service answers its own caller with. A failure only this side \
          knows states none, and ok is false.";
@@ -89,7 +88,7 @@ let text (t : Table.t) =
       "\tdefault:\n\t\treturn \"\", false\n\t}\n}\n\n";
       vocabulary t.transport;
       "\n";
-      comment
+      Text.go_comment ~indent:""
         (Printf.sprintf "%sOfStatus is the code an HTTP status becomes."
            t.transport.go_name);
       Printf.sprintf "\nfunc %sOfStatus(status int) %s {\n\tswitch {\n"
