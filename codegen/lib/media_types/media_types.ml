@@ -298,54 +298,78 @@ let python (t : T.t) =
   }
 
 let typescript (t : T.t) =
-  (* A TypeScript string in single quotes, as the hand-written modules write
-     theirs. *)
-  let text value =
-    "'"
-    ^ Text.replace_all ~sub:"'" ~by:"\\'"
-        (Text.replace_all ~sub:"\\" ~by:"\\\\" value)
-    ^ "'"
+  let module S = Typescript_syntax in
+  let text value = S.Str (Single, value) in
+  let union name words =
+    S.type_alias name (T_union (List.map (fun w -> S.T_str (Single, w)) words))
   in
-  let union words = String.concat " | " (List.map text words) in
-  let bool b = if b then "true" else "false" in
+  let attrs (r : T.media_type) =
+    S.Object
+      {
+        layout = Inline;
+        column = None;
+        entries =
+          [
+            S.entry (Ident "extension") (text r.extension);
+            S.entry (Ident "label") (text r.label);
+            S.entry (Ident "render") (text r.render);
+            S.entry (Ident "anchoring") (text r.anchoring);
+            S.entry (Ident "textSource") (text r.text_source);
+            S.entry (Ident "authorable") (Bool r.authorable);
+            S.entry (Ident "uploadable") (Bool r.uploadable);
+            S.entry (Ident "generatable") (Bool r.generatable);
+          ];
+      }
+  in
   {
     Output.path = "typescript/core/src/media-type-registry.ts";
     text =
-      String.concat ""
-        [
-          "// ⚠ GENERATED FILE — do not edit.\n\
-           //\n\
-           // Authority:   protocol/specs/src/" ^ file
-          ^ "\n// Regenerate:  make generate  (";
-          Banner.writer __FILE__;
-          ")\n\nexport type RenderMode = " ^ union t.render
-          ^ ";\nexport type AnchoringModel = " ^ union t.anchoring
-          ^ ";\nexport type TextSource = " ^ union t.text_source
-          ^ ";\n\n\
-             /** A row of the registry, by media type, in the registry's \
-             order. */\n\
-             export const MEDIA_TYPE_ROWS = {\n";
-          String.concat "\n"
-            (List.map
-               (fun (r : T.media_type) ->
-                 "  " ^ text r.media_type ^ ": { extension: " ^ text r.extension
-                 ^ ", label: " ^ text r.label ^ ", render: " ^ text r.render
-                 ^ ", anchoring: " ^ text r.anchoring ^ ", textSource: "
-                 ^ text r.text_source ^ ", authorable: " ^ bool r.authorable
-                 ^ ", uploadable: " ^ bool r.uploadable ^ ", generatable: "
-                 ^ bool r.generatable ^ " },")
-               t.media_types);
-          "\n\
-           } as const;\n\n\
-           /** Other spellings of an extension, each with the one a row \
-           states. */\n\
-           export const EXTENSION_ALIASES: Readonly<Record<string, string>> = {\n";
-          String.concat "\n"
-            (List.map
-               (fun (a, e) -> "  " ^ text a ^ ": " ^ text e ^ ",")
-               t.extension_aliases);
-          "\n};\n";
-        ];
+      S.text
+        {
+          banner =
+            Banner.typescript_lines
+              ~authority:[ "protocol/specs/src/" ^ file ]
+              __FILE__;
+          body =
+            [
+              S.Adjacent
+                [
+                  union "RenderMode" t.render;
+                  union "AnchoringModel" t.anchoring;
+                  union "TextSource" t.text_source;
+                ];
+              S.const "MEDIA_TYPE_ROWS" ~as_const:true
+                ~about:
+                  [
+                    Doc
+                      "A row of the registry, by media type, in the registry's \
+                       order.";
+                  ]
+                (S.rows
+                   (List.map
+                      (fun (r : T.media_type) ->
+                        S.entry (Quoted (Single, r.media_type)) (attrs r))
+                      t.media_types));
+              S.const "EXTENSION_ALIASES"
+                ~about:
+                  [
+                    Doc
+                      "Other spellings of an extension, each with the one a \
+                       row states.";
+                  ]
+                ~annotation:
+                  (T_generic
+                     ( "Readonly",
+                       [
+                         T_generic
+                           ("Record", [ T_name "string"; T_name "string" ]);
+                       ] ))
+                (S.rows
+                   (List.map
+                      (fun (a, e) -> S.entry (Quoted (Single, a)) (text e))
+                      t.extension_aliases));
+            ];
+        };
   }
 
 (* A Haskell string literal: a quote and a backslash escaped, printable ASCII

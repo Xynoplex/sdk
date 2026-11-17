@@ -54,3 +54,8 @@
  (name census)
  (modules census)
  (libraries xynolog_codegen))
+
+(test
+ (name typescript_syntax)
+ (modules typescript_syntax)
+ (libraries xynolog_codegen alcotest))

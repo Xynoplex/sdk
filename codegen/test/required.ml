@@ -520,8 +520,7 @@ let writers =
                    enriched = false;
                    system = false;
                  };
-               Schema
-                 { schema = "Missing"; validate = None };
+               Schema { schema = "Missing"; validate = None };
              ]));
   ]
 

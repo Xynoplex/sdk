@@ -2,146 +2,235 @@
    the queries and those persisted, what each is asked for per, what each one's
    cache holds at run time and as a type, and each trigger's rows. *)
 
-let path = "typescript/core/src/cache-refresh.ts"
+module T = Typescript_syntax
 
-let list names =
-  "[" ^ String.concat ", " (List.map (fun n -> "'" ^ n ^ "'") names) ^ "]"
+let path = "typescript/core/src/cache-refresh.ts"
+let list = T.strings Inline
+let str text = T.T_str (Single, text)
+let readonly_array t = T.T_readonly (T_array t)
+let inline entries = T.Object { layout = Inline; column = None; entries }
 
 let row (r : Table.row) =
-  let names =
-    List.filter_map
-      (fun (slot, w) -> Option.map (fun w -> slot ^ ": " ^ list w) w)
-      [ ("resource", r.resource); ("annotation", r.annotation) ]
-  in
-  String.concat ""
+  let field name value = T.entry (Ident name) value in
+  let word w = T.Str (Single, w) in
+  inline
+    (Option.to_list
+       (Option.map
+          (fun (w : Tables.Client_refresh.when_) ->
+            field "when"
+              (word
+                 (match w with
+                 | Enriched -> "enriched"
+                 | Unenriched -> "unenriched")))
+          r.when_)
+    @ [
+        field "reach"
+          (word (match r.reach with Subject -> "subject" | Held -> "held"));
+        field "names"
+          (inline
+             (List.filter_map
+                (fun (slot, w) -> Option.map (fun w -> field slot (list w)) w)
+                [ ("resource", r.resource); ("annotation", r.annotation) ]));
+      ]
+    @ Option.to_list (Option.map (fun w -> field "carries" (list w)) r.carries)
+    @ [
+        field "refetches" (list r.refetches);
+        field "writes" (list r.writes);
+        field "removes" (list r.removes);
+      ])
+
+(* A list of words, as a constant, beside the type of one of them. *)
+let words ~about name type_name values =
+  T.Adjacent
     [
-      "{ ";
-      (match r.when_ with
-      | Some Enriched -> "when: 'enriched', "
-      | Some Unenriched -> "when: 'unenriched', "
-      | None -> "");
-      (match r.reach with
-      | Subject -> "reach: 'subject', "
-      | Held -> "reach: 'held', ");
-      "names: {";
-      (match names with [] -> "" | _ -> " " ^ String.concat ", " names ^ " ");
-      "}, ";
-      Option.fold ~none:""
-        ~some:(fun w -> "carries: " ^ list w ^ ", ")
-        r.carries;
-      "refetches: " ^ list r.refetches;
-      ", writes: " ^ list r.writes;
-      ", removes: " ^ list r.removes;
-      " }";
+      T.const name ~as_const:true ~about:[ Doc about ] (list values);
+      T.type_alias type_name
+        (T_index (T_paren (T_typeof name), T_name "number"));
     ]
+
+let interface ~about name members =
+  T.Interface { about = [ Doc about ]; export = true; name; members }
 
 let text (t : Table.t) =
   let names = List.map (fun (q : Table.query) -> q.name) t.queries in
-  let each f = String.concat "" (List.map f t.queries) in
-  String.concat ""
-    [
-      {|// ⚠ GENERATED FILE — do not edit.
-//
-// Authority:   protocol/specs/src/client/refresh.json
-// Regenerate:  make generate  (codegen/lib/cache_refresh/typescript.ml)
-
-import type { components } from './types';
-
-/** The live queries a client's cache answers. */
-export const CACHE_QUERIES = |};
-      list names;
-      {| as const;
-export type CacheQuery = (typeof CACHE_QUERIES)[number];
-
-/** The live queries whose answers a client keeps across its lives, for the person signed in. */
-export const PERSISTED_QUERIES = |};
-      list
-        (List.filter_map
-           (fun (q : Table.query) -> if q.persisted then Some q.name else None)
-           t.queries);
-      {| as const;
-export type PersistedQuery = (typeof PERSISTED_QUERIES)[number];
-
-/** What each live query is asked for per: a resource, an annotation, or the filters it is asked with; `whole` for one asked for whole, whose one answer is kept under `wholeKey`. */
-export interface CachePer {
-|};
-      each (fun (q : Table.query) ->
-          Printf.sprintf "  '%s': '%s';\n" q.name
-            (match q.per with
-            | Some Resource -> "resource"
-            | Some Annotation -> "annotation"
-            | Some Filters -> "filters"
-            | None -> "whole"));
-      {|}
-
-/** What each live query's cache holds, its `value`: the component, and the members within it the value is, outermost first. */
-export const CACHE_VALUES = {
-|};
-      each (fun (q : Table.query) ->
-          Printf.sprintf "  '%s': { component: '%s', members: %s },\n" q.name
-            q.value.component (list q.value.members));
-      {|} as const satisfies { readonly [Q in CacheQuery]: { readonly component: keyof components['schemas']; readonly members: readonly string[] } };
-
-/** The type of what each live query's cache holds: `CACHE_VALUES`'s component, member within member. */
-export interface CacheValues {
-|};
-      each (fun (q : Table.query) ->
-          Printf.sprintf "  '%s': components['schemas']['%s']%s;\n" q.name
-            q.value.component
-            (String.concat ""
-               (List.map (fun m -> "['" ^ m ^ "']") q.value.members)));
-      {|}
-
-/** Which of a split channel's two kinds of event a row is for. */
-export type CacheRefreshWhen = 'enriched' | 'unenriched';
-
-/** A way to a member of an event: the names of the members it is within, and its own. */
-export type CacheRefreshWay = readonly string[];
-
-/** What one trigger does to the cache. */
-export interface CacheRefresh {
-  readonly when?: CacheRefreshWhen;
-  /** `subject`: the keys the event names. `held`: every key the client holds. */
-  readonly reach: 'subject' | 'held';
-  /** Where in the event the keys a `subject` row reaches are: the way to the resource it names (a ResourceId), and to the annotation (an AnnotationId). */
-  readonly names: { readonly resource?: CacheRefreshWay; readonly annotation?: CacheRefreshWay };
-  /** The way to the value the row writes (an Annotation). On a split channel, its presence is what makes an event enriched. */
-  readonly carries?: CacheRefreshWay;
-  /** Asked for again, the value shown meanwhile. */
-  readonly refetches: readonly CacheQuery[];
-  /** Written with the value the event carries. */
-  readonly writes: readonly CacheQuery[];
-  /** Gone: the key fails as `bus.not-found`. */
-  readonly removes: readonly CacheQuery[];
-}
-
-/** What each trigger does: a channel's events; `reopened`, the stream open again after a drop; or `unreadable`, an event on one of these channels that cannot be read. */
-export const CACHE_REFRESH = {
-|};
-      String.concat ""
-        (List.map
-           (fun (trigger : Table.trigger) ->
-             Printf.sprintf "  %s\n  '%s': [%s],\n"
-               (Text.doc_comment trigger.docs)
-               trigger.on
-               (String.concat ", " (List.map row trigger.rows)))
-           t.triggers);
-      {|} as const satisfies Record<string, readonly CacheRefresh[]>;
-
-export type CacheRefreshTrigger = keyof typeof CACHE_REFRESH;
-
-/** The triggers that are channels of the bus. */
-export const CACHE_REFRESH_CHANNELS = |};
-      list
-        (List.filter_map
-           (fun (trigger : Table.trigger) ->
-             match trigger.kind with
-             | Channel _ -> Some trigger.on
-             | Reopened | Unreadable -> None)
-           t.triggers);
-      {| as const;
-export type CacheRefreshChannel = (typeof CACHE_REFRESH_CHANNELS)[number];
-|};
-    ]
+  let each f = List.map f t.queries in
+  let readonly = true in
+  T.text
+    {
+      banner =
+        Banner.typescript_lines
+          ~authority:[ "protocol/specs/src/client/refresh.json" ]
+          __FILE__;
+      body =
+        [
+          T.import ~type_only:true [ "components" ] "./types";
+          words ~about:"The live queries a client's cache answers."
+            "CACHE_QUERIES" "CacheQuery" names;
+          words
+            ~about:
+              "The live queries whose answers a client keeps across its lives, \
+               for the person signed in."
+            "PERSISTED_QUERIES" "PersistedQuery"
+            (List.filter_map
+               (fun (q : Table.query) ->
+                 if q.persisted then Some q.name else None)
+               t.queries);
+          interface
+            ~about:
+              "What each live query is asked for per: a resource, an \
+               annotation, or the filters it is asked with; `whole` for one \
+               asked for whole, whose one answer is kept under `wholeKey`."
+            "CachePer"
+            (each (fun (q : Table.query) ->
+                 T.member
+                   (Quoted (Single, q.name))
+                   (str
+                      (match q.per with
+                      | Some Resource -> "resource"
+                      | Some Annotation -> "annotation"
+                      | Some Filters -> "filters"
+                      | None -> "whole"))));
+          T.const "CACHE_VALUES" ~as_const:true
+            ~about:
+              [
+                Doc
+                  "What each live query's cache holds, its `value`: the \
+                   component, and the members within it the value is, \
+                   outermost first.";
+              ]
+            ~satisfies:
+              (T_mapped
+                 {
+                   layout = Inline;
+                   readonly = true;
+                   key = "Q";
+                   in_ = T_name "CacheQuery";
+                   value =
+                     T_object
+                       ( Inline,
+                         [
+                           T.member ~readonly (Ident "component")
+                             (T_keyof
+                                (T_index (T_name "components", str "schemas")));
+                           T.member ~readonly (Ident "members")
+                             (readonly_array (T_name "string"));
+                         ] );
+                 })
+            (T.rows
+               (each (fun (q : Table.query) ->
+                    T.entry
+                      (Quoted (Single, q.name))
+                      (inline
+                         [
+                           T.entry (Ident "component")
+                             (Str (Single, q.value.component));
+                           T.entry (Ident "members") (list q.value.members);
+                         ]))));
+          interface
+            ~about:
+              "The type of what each live query's cache holds: \
+               `CACHE_VALUES`'s component, member within member."
+            "CacheValues"
+            (each (fun (q : Table.query) ->
+                 T.member
+                   (Quoted (Single, q.name))
+                   (List.fold_left
+                      (fun t m -> T.T_index (t, str m))
+                      (T.schema q.value.component)
+                      q.value.members)));
+          T.type_alias "CacheRefreshWhen"
+            ~about:
+              [
+                Doc
+                  "Which of a split channel's two kinds of event a row is for.";
+              ]
+            (T_union [ str "enriched"; str "unenriched" ]);
+          T.type_alias "CacheRefreshWay"
+            ~about:
+              [
+                Doc
+                  "A way to a member of an event: the names of the members it \
+                   is within, and its own.";
+              ]
+            (readonly_array (T_name "string"));
+          interface ~about:"What one trigger does to the cache." "CacheRefresh"
+            [
+              T.member ~readonly ~optional:true (Ident "when")
+                (T_name "CacheRefreshWhen");
+              T.member ~readonly (Ident "reach")
+                ~about:
+                  [
+                    Doc
+                      "`subject`: the keys the event names. `held`: every key \
+                       the client holds.";
+                  ]
+                (T_union [ str "subject"; str "held" ]);
+              T.member ~readonly (Ident "names")
+                ~about:
+                  [
+                    Doc
+                      "Where in the event the keys a `subject` row reaches \
+                       are: the way to the resource it names (a ResourceId), \
+                       and to the annotation (an AnnotationId).";
+                  ]
+                (T_object
+                   ( Inline,
+                     [
+                       T.member ~readonly ~optional:true (Ident "resource")
+                         (T_name "CacheRefreshWay");
+                       T.member ~readonly ~optional:true (Ident "annotation")
+                         (T_name "CacheRefreshWay");
+                     ] ));
+              T.member ~readonly ~optional:true (Ident "carries")
+                ~about:
+                  [
+                    Doc
+                      "The way to the value the row writes (an Annotation). On \
+                       a split channel, its presence is what makes an event \
+                       enriched.";
+                  ]
+                (T_name "CacheRefreshWay");
+              T.member ~readonly (Ident "refetches")
+                ~about:[ Doc "Asked for again, the value shown meanwhile." ]
+                (readonly_array (T_name "CacheQuery"));
+              T.member ~readonly (Ident "writes")
+                ~about:[ Doc "Written with the value the event carries." ]
+                (readonly_array (T_name "CacheQuery"));
+              T.member ~readonly (Ident "removes")
+                ~about:[ Doc "Gone: the key fails as `bus.not-found`." ]
+                (readonly_array (T_name "CacheQuery"));
+            ];
+          T.const "CACHE_REFRESH" ~as_const:true
+            ~about:
+              [
+                Doc
+                  "What each trigger does: a channel's events; `reopened`, the \
+                   stream open again after a drop; or `unreadable`, an event \
+                   on one of these channels that cannot be read.";
+              ]
+            ~satisfies:
+              (T_generic
+                 ( "Record",
+                   [ T_name "string"; readonly_array (T_name "CacheRefresh") ]
+                 ))
+            (T.rows
+               (List.map
+                  (fun (trigger : Table.trigger) ->
+                    T.entry ~about:[ Doc trigger.docs ]
+                      (Quoted (Single, trigger.on))
+                      (T.array Inline (List.map row trigger.rows)))
+                  t.triggers));
+          T.type_alias "CacheRefreshTrigger"
+            (T_keyof (T_typeof "CACHE_REFRESH"));
+          words ~about:"The triggers that are channels of the bus."
+            "CACHE_REFRESH_CHANNELS" "CacheRefreshChannel"
+            (List.filter_map
+               (fun (trigger : Table.trigger) ->
+                 match trigger.kind with
+                 | Channel _ -> Some trigger.on
+                 | Reopened | Unreadable -> None)
+               t.triggers);
+        ];
+    }
 
 let file t = { Output.path; text = text t }

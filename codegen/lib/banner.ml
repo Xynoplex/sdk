@@ -20,6 +20,18 @@ let python_lines ~from_ file =
     python_exempt;
   ]
 
+(* A generated TypeScript module's opening comment lines, without their
+   [//]: what it is generated from ([authority], a line each), the writer,
+   then [notes]. *)
+let typescript_lines ~authority ?(notes = []) file =
+  [ "⚠ GENERATED FILE — do not edit."; "" ]
+  @ List.mapi
+      (fun i line ->
+        (if i = 0 then "Authority:   " else "             ") ^ line)
+      authority
+  @ [ "Regenerate:  make generate  (" ^ writer file ^ ")" ]
+  @ notes
+
 (* An OCaml module's opening: what it is generated from, the writer, and
    ocamlformat told to leave it as written. *)
 let ocaml ~from_ file =

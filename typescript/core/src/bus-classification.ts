@@ -10,9 +10,11 @@
 
 import type { EventName } from './bus-protocol';
 
-/** Where a channel sits relative to the hub: emitted toward it, delivered
- *  from it (the fan-in set — BRIDGED_CHANNELS, by construction), or never on
- *  the wire at all. */
+/**
+ * Where a channel sits relative to the hub: emitted toward it, delivered
+ * from it (the fan-in set — BRIDGED_CHANNELS, by construction), or never on
+ * the wire at all.
+ */
 export type ChannelDirection = 'outbound' | 'inbound' | 'in-process';
 
 /**

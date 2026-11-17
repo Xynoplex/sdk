@@ -163,6 +163,5 @@ export const REPLY_NAMES = {
   'yield:clone-resource-requested':      [],
   'yield:clone-token-requested':         [],
 } as const satisfies {
-  readonly [Op in BusOperationKey]: readonly (keyof EventMap[Op] &
-    keyof EventMap[(typeof BUS_OPERATIONS)[Op]['result'] & EventName])[];
+  readonly [Op in BusOperationKey]: readonly (keyof EventMap[Op] & keyof EventMap[(typeof BUS_OPERATIONS)[Op]['result'] & EventName])[];
 };

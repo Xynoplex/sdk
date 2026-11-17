@@ -68,7 +68,7 @@ export type EventOfType<K extends keyof PersistedEventCatalog> =
 
 /** The union of all persisted event types. Discriminated on `type`. */
 export type PersistedEvent = {
-  [K in keyof PersistedEventCatalog]: EventOfType<K>
+  [K in keyof PersistedEventCatalog]: EventOfType<K>;
 }[keyof PersistedEventCatalog];
 
 export type PersistedEventType = PersistedEvent['type'];

@@ -43,8 +43,6 @@ let derive (t : T.t) =
   in
   if refusals = [] then Ok t else Error refusals
 
-let quoted = Text.quoted
-
 let go (t : T.t) =
   let module G = Go_syntax in
   let constant name docs value =
@@ -115,28 +113,28 @@ let python (t : T.t) =
   }
 
 let typescript (t : T.t) =
+  let module S = Typescript_syntax in
+  let constant name docs value =
+    S.const name ~about:[ Doc docs ] (Str (Double, value))
+  in
   {
     Output.path = "typescript/core/src/oauth-clients.ts";
     text =
-      String.concat ""
-        [
-          {|// ⚠ GENERATED FILE — do not edit.
-//
-// Authority:   protocol/specs/src/session/oauth.json
-// Regenerate:  make generate  (|};
-          Banner.writer __FILE__;
-          ")\n\n";
-          String.concat "\n"
-            (List.map
-               (fun (c : T.client) ->
-                 Text.doc_comment c.docs ^ "\nexport const "
-                 ^ String.uppercase_ascii c.name
-                 ^ "_CLIENT_ID = " ^ quoted c.id ^ ";\n")
-               t.clients);
-          "\n";
-          Text.doc_comment t.scope.docs;
-          "\nexport const SIGN_IN_SCOPE = " ^ quoted t.scope.value ^ ";\n";
-        ];
+      S.text
+        {
+          banner =
+            Banner.typescript_lines
+              ~authority:[ "protocol/specs/src/" ^ file ]
+              __FILE__;
+          body =
+            List.map
+              (fun (c : T.client) ->
+                constant
+                  (String.uppercase_ascii c.name ^ "_CLIENT_ID")
+                  c.docs c.id)
+              t.clients
+            @ [ constant "SIGN_IN_SCOPE" t.scope.docs t.scope.value ];
+        };
   }
 
 (* The clients and the scope as the OCaml SDK names them

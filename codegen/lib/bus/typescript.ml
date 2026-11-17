@@ -9,185 +9,293 @@
    bus-classification.ts  CHANNEL_ATTRS *)
 
 module R = Tables.Bus_registry
+module T = Typescript_syntax
 
 let banner =
-  {|// ⚠ GENERATED FILE — do not edit.
-//
-// Authority:   protocol/specs/src/bus/registry.json  (channels, payloads, operations)
-// Regenerate:  make generate  (codegen/lib/bus/typescript.ml)
-// Go counterpart: codegen/lib/bus/go.ml → go/bus
-//
-// Payload schemas themselves live in the OpenAPI components; the registry
-// names which one each channel carries, and every payload type here is
-// derived from that. Add or change a channel THERE.
-
-|}
+  Banner.typescript_lines
+    ~authority:
+      [
+        "protocol/specs/src/bus/registry.json  (channels, payloads, operations)";
+      ]
+    ~notes:
+      [
+        "Go counterpart: codegen/lib/bus/go.ml → go/bus";
+        "";
+        "Payload schemas themselves live in the OpenAPI components; the \
+         registry";
+        "names which one each channel carries, and every payload type here is";
+        "derived from that. Add or change a channel THERE.";
+      ]
+    __FILE__
 
 let value_column_schemas = 38
 let value_column_operations = 41
 let failure_column_operations = 85
-let lines = String.concat "\n"
-let quoted name = "'" ^ name ^ "'"
-let listed names = "[" ^ String.concat ", " (List.map quoted names) ^ "]"
+let str text = T.T_str (Single, text)
+let word text = T.Str (Single, text)
+let channel_key channel = T.Quoted (Single, channel)
 
-let trailing (docs : R.docs) =
-  if docs.trailing = "" then "" else " " ^ docs.trailing
+(* The registry's lead lines are a row's, two spaces in; the first row's first
+   is the line its block opens on. *)
+let lead ~first (docs : R.docs) =
+  let row l =
+    if l = "" then l
+    else if String.starts_with ~prefix:"  " l then
+      String.sub l 2 (String.length l - 2)
+    else
+      invalid_arg
+        (Printf.sprintf "bus/typescript: the lead line %S is not a row's" l)
+  in
+  let lines =
+    match (first, docs.lead) with
+    | false, lines -> lines
+    | true, "" :: lines -> lines
+    | true, [] -> []
+    | true, l :: _ ->
+        invalid_arg
+          (Printf.sprintf
+             "bus/typescript: the first lead line %S opens no block" l)
+  in
+  match List.map row lines with [] -> [] | lines -> [ T.Spec lines ]
 
-(* Each entry's lead lines, then its own. *)
-let entries docs line items =
-  List.concat_map (fun item -> (docs item : R.docs).lead @ [ line item ]) items
+(* Each item with its lead lines and trailing comment. *)
+let with_docs docs make items =
+  List.mapi
+    (fun i item ->
+      let d : R.docs = docs item in
+      make ~about:(lead ~first:(i = 0) d) ~trailing:d.trailing item)
+    items
 
-let schema_type name = "components['schemas']['" ^ name ^ "']"
+let schemas = T.T_index (T_name "components", str "schemas")
+let component_name = T.T_keyof schemas
 
-let payload_type (c : R.channel) =
+let satisfies_channels value =
+  T.T_generic ("Record", [ T_name "EventName"; value ])
+
+let channel_list ?(about = []) name channels ~of_ =
+  T.const name ~about ~as_const:true
+    ~satisfies:(T_readonly (T_array (T_name of_)))
+    (T.array Rows (List.map word channels))
+
+let payload_type (c : R.channel) : T.type_ =
   match c.payload with
-  | Schema { schema; _ } -> schema_type schema
-  | Envelope { schema } -> "{ response: " ^ schema_type schema ^ " }"
+  | Schema { schema; _ } -> T.schema schema
+  | Envelope { schema } ->
+      T_object (Inline, [ T.member (Ident "response") (T.schema schema) ])
   | Stored_event { event; enriched; _ } ->
-      (if enriched then "EnrichedEvent" else "StoredEvent")
-      ^ "<EventOfType<'" ^ event ^ "'>>"
-  | Void -> "void"
-  | Empty -> "Record<string, never>"
+      T_generic
+        ( (if enriched then "EnrichedEvent" else "StoredEvent"),
+          [ T_generic ("EventOfType", [ str event ]) ] )
+  | Void -> T_name "void"
+  | Empty -> T_generic ("Record", [ T_name "string"; T_name "never" ])
 
 let payload_schema (c : R.channel) =
+  let one name schema =
+    T.Object
+      {
+        layout = Inline;
+        column = None;
+        entries = [ T.entry (Ident name) (word schema) ];
+      }
+  in
   match c.payload with
-  | Schema { schema; _ } -> "{ payload: '" ^ schema ^ "' }"
-  | Envelope { schema } -> "{ response: '" ^ schema ^ "' }"
+  | Schema { schema; _ } -> one "payload" schema
+  | Envelope { schema } -> one "response" schema
   | Stored_event { enriched; _ } ->
-      "{ payload: '" ^ Registry.stored_event_component ~enriched ^ "' }"
-  | Void | Empty -> "{}"
-
-let key column channel = Text.pad ("  '" ^ channel ^ "':") column
+      one "payload" (Registry.stored_event_component ~enriched)
+  | Void | Empty -> T.Object { layout = Inline; column = None; entries = [] }
 
 let protocol (bus : Registry.t) =
   let reg = bus.registry in
   let channels = List.map bus.channel in
-  let event_map =
-    entries
-      (fun (c : R.channel) -> c.docs)
-      (fun c ->
-        "  '" ^ c.channel ^ "': " ^ payload_type c ^ ";" ^ trailing c.docs)
-      (channels reg.channel_order.event_map)
+  let mapped ?(layout = T.Rows) key in_ value =
+    T.T_mapped { layout; readonly = false; key; in_; value }
   in
-  let schemas =
-    entries
-      (fun (c : R.channel) -> c.schema_docs)
-      (fun c ->
-        key value_column_schemas c.channel
-        ^ (match Registry.validate_of c with
-          | None -> "null"
-          | Some validate -> quoted validate)
-        ^ "," ^ trailing c.schema_docs)
-      (channels reg.channel_order.schemas)
-  in
-  let enriched =
-    List.filter_map
-      (fun (c : R.channel) ->
-        match c.payload with
-        | Stored_event { enriched = true; _ } -> Some ("  '" ^ c.channel ^ "',")
-        | _ -> None)
-      reg.channels
-  in
-  let stamps =
-    List.map
-      (fun (channel, stamps) ->
-        key value_column_schemas channel ^ listed stamps ^ ",")
-      bus.stamps
-  in
-  let payloads =
-    List.map
-      (fun c -> key value_column_schemas c.R.channel ^ payload_schema c ^ ",")
-      (channels reg.channel_order.event_map)
-  in
-  String.concat ""
-    [
+  T.text
+    {
       banner;
-      {|/**
- * Bus Protocol
- *
- * The complete EventMap for the RxJS EventBus. Every channel name and
- * its payload type is defined here — domain events, commands, reads,
- * results, SSE stream payloads, and Browser UI events. What TypeScript
- * narrows in a payload is bus-refinements.ts's.
- *
- * Organized by flow (verb), then by category within each flow.
- */
-
-import type { components } from './types';
-import type { EnrichedEvent, StoredEvent } from './event-base';
-import type { EventOfType, PersistedEventType } from './persisted-events';
-import type { ChannelRefinements } from './bus-refinements';
-
-/** Each channel's payload as the registry states it. */
-export type StatedEventMap = {|};
-      lines event_map;
-      {|
-};
-
-/**
- * The unified EventMap — every channel on the EventBus: each channel's
- * stated payload, or its refinement where bus-refinements.ts narrows it.
- *
- * Convention:
- * - Domain events (past tense): StoredEvent<Interface> — branded types
- * - Annotation-mutating events: EnrichedEvent<Interface> — the stored event
- *   plus the annotation the EventStore attaches before publishing
- * - Commands/reads/results/UI: OpenAPI schema refs — plain strings
- * - void: UI-only signals with no payload
- */
-export type EventMap = {
-  [K in keyof StatedEventMap]: K extends keyof ChannelRefinements ? ChannelRefinements[K] : StatedEventMap[K];
-};
-
-|};
-      "export type { AnchorRect } from './bus-ui-types';\n\n";
-      reg.docs.event_name;
-      "\nexport type EventName = keyof EventMap;\n\n";
-      reg.docs.enriched_events;
-      "\nexport const ENRICHED_EVENT_TYPES = [\n";
-      lines enriched;
-      "\n] as const satisfies readonly PersistedEventType[];\n\n";
-      "export type EnrichedEventType = typeof ENRICHED_EVENT_TYPES[number];\n\n";
-      reg.docs.channel_schemas;
-      "\nexport const CHANNEL_SCHEMAS = {";
-      lines schemas;
-      "\n\
-       } as const satisfies Record<EventName, keyof components['schemas'] | \
-       null>;\n\n";
-      reg.docs.emittable_channel;
-      "\nexport type EmittableChannel = {\n";
-      "  [K in EventName]: typeof CHANNEL_SCHEMAS[K] extends null ? never : K\n";
-      "}[EventName];\n\n";
-      Text.doc_comment reg.trace.meaning;
-      "\n";
-      "export const TRACE_FIELD = '" ^ reg.trace.field ^ "';\n\n";
-      {|/**
- * The stamps a gateway puts on a payload (`_userId`, `_roles`) that each
- * channel's payload type declares, and so reads. Any other is the bus's, not
- * the payload's, and is left out of what the SDK delivers.
- */
-export const CHANNEL_STAMPS = {
-|};
-      lines stamps;
-      {|
-} as const satisfies Record<EventName, readonly string[]>;
-
-/**
- * What each channel's payload is, as a reader holds it: the component schema
- * it is (`payload`), a `{ response }` whose response is one (`response`), or
- * nothing a schema states (`{}`). A stored event is its stored form; what it
- * records is the channel's own. A payload read off the wire with a fault as
- * its schema's, a member it lacks or one that is malformed, is not its
- * channel's.
- */
-export const CHANNEL_PAYLOADS = {
-|};
-      lines payloads;
-      "\n\
-       } as const satisfies Record<EventName, { readonly payload: keyof \
-       components['schemas'] } | { readonly response: keyof \
-       components['schemas'] } | Record<string, never>>;\n";
-    ]
+      body =
+        [
+          T.Comment
+            [
+              Block
+                [
+                  "Bus Protocol";
+                  "";
+                  "The complete EventMap for the RxJS EventBus. Every channel \
+                   name and";
+                  "its payload type is defined here — domain events, commands, \
+                   reads,";
+                  "results, SSE stream payloads, and Browser UI events. What \
+                   TypeScript";
+                  "narrows in a payload is bus-refinements.ts's.";
+                  "";
+                  "Organized by flow (verb), then by category within each flow.";
+                ];
+            ];
+          T.Adjacent
+            [
+              T.import ~type_only:true [ "components" ] "./types";
+              T.import ~type_only:true
+                [ "EnrichedEvent"; "StoredEvent" ]
+                "./event-base";
+              T.import ~type_only:true
+                [ "EventOfType"; "PersistedEventType" ]
+                "./persisted-events";
+              T.import ~type_only:true [ "ChannelRefinements" ]
+                "./bus-refinements";
+            ];
+          T.type_alias "StatedEventMap"
+            ~about:[ Doc "Each channel's payload as the registry states it." ]
+            (T_object
+               ( Rows,
+                 with_docs
+                   (fun (c : R.channel) -> c.docs)
+                   (fun ~about ~trailing (c : R.channel) ->
+                     T.member ~about ~trailing (channel_key c.channel)
+                       (payload_type c))
+                   (channels reg.channel_order.event_map) ));
+          T.type_alias "EventMap"
+            ~about:
+              [
+                Block
+                  [
+                    "The unified EventMap — every channel on the EventBus: \
+                     each channel's";
+                    "stated payload, or its refinement where \
+                     bus-refinements.ts narrows it.";
+                    "";
+                    "Convention:";
+                    "- Domain events (past tense): StoredEvent<Interface> — \
+                     branded types";
+                    "- Annotation-mutating events: EnrichedEvent<Interface> — \
+                     the stored event";
+                    "  plus the annotation the EventStore attaches before \
+                     publishing";
+                    "- Commands/reads/results/UI: OpenAPI schema refs — plain \
+                     strings";
+                    "- void: UI-only signals with no payload";
+                  ];
+              ]
+            (mapped "K" (T_keyof (T_name "StatedEventMap"))
+               (T_conditional
+                  {
+                    layout = Inline;
+                    check = T_name "K";
+                    extends = T_keyof (T_name "ChannelRefinements");
+                    then_ = T_index (T_name "ChannelRefinements", T_name "K");
+                    else_ = T_index (T_name "StatedEventMap", T_name "K");
+                  }));
+          T.Export_from
+            {
+              type_only = true;
+              names = [ "AnchorRect" ];
+              from = "./bus-ui-types";
+            };
+          T.type_alias "EventName"
+            ~about:[ Spec [ reg.docs.event_name ] ]
+            (T_keyof (T_name "EventMap"));
+          channel_list "ENRICHED_EVENT_TYPES"
+            ~about:[ Spec [ reg.docs.enriched_events ] ]
+            ~of_:"PersistedEventType"
+            (List.filter_map
+               (fun (c : R.channel) ->
+                 match c.payload with
+                 | Stored_event { enriched = true; _ } -> Some c.channel
+                 | _ -> None)
+               reg.channels);
+          T.type_alias "EnrichedEventType"
+            (T_index (T_typeof "ENRICHED_EVENT_TYPES", T_name "number"));
+          T.const "CHANNEL_SCHEMAS" ~as_const:true
+            ~about:[ Spec [ reg.docs.channel_schemas ] ]
+            ~satisfies:
+              (satisfies_channels (T_union [ component_name; T_name "null" ]))
+            (T.rows ~column:value_column_schemas
+               (with_docs
+                  (fun (c : R.channel) -> c.schema_docs)
+                  (fun ~about ~trailing (c : R.channel) ->
+                    T.entry ~about ~trailing (channel_key c.channel)
+                      (match Registry.validate_of c with
+                      | None -> Null
+                      | Some validate -> word validate))
+                  (channels reg.channel_order.schemas)));
+          T.type_alias "EmittableChannel"
+            ~about:[ Spec [ reg.docs.emittable_channel ] ]
+            (T_index
+               ( mapped "K" (T_name "EventName")
+                   (T_conditional
+                      {
+                        layout = Inline;
+                        check = T_index (T_typeof "CHANNEL_SCHEMAS", T_name "K");
+                        extends = T_name "null";
+                        then_ = T_name "never";
+                        else_ = T_name "K";
+                      }),
+                 T_name "EventName" ));
+          T.const "TRACE_FIELD" ~about:[ Doc reg.trace.meaning ]
+            (word reg.trace.field);
+          T.const "CHANNEL_STAMPS" ~as_const:true
+            ~about:
+              [
+                Block
+                  [
+                    "The stamps a gateway puts on a payload (`_userId`, \
+                     `_roles`) that each";
+                    "channel's payload type declares, and so reads. Any other \
+                     is the bus's, not";
+                    "the payload's, and is left out of what the SDK delivers.";
+                  ];
+              ]
+            ~satisfies:
+              (satisfies_channels (T_readonly (T_array (T_name "string"))))
+            (T.rows ~column:value_column_schemas
+               (List.map
+                  (fun (channel, stamps) ->
+                    T.entry (channel_key channel) (T.strings Inline stamps))
+                  bus.stamps));
+          T.const "CHANNEL_PAYLOADS" ~as_const:true
+            ~about:
+              [
+                Block
+                  [
+                    "What each channel's payload is, as a reader holds it: the \
+                     component schema";
+                    "it is (`payload`), a `{ response }` whose response is one \
+                     (`response`), or";
+                    "nothing a schema states (`{}`). A stored event is its \
+                     stored form; what it";
+                    "records is the channel's own. A payload read off the wire \
+                     with a fault as";
+                    "its schema's, a member it lacks or one that is malformed, \
+                     is not its";
+                    "channel's.";
+                  ];
+              ]
+            ~satisfies:
+              (satisfies_channels
+                 (T_union
+                    [
+                      T_object
+                        ( Inline,
+                          [
+                            T.member ~readonly:true (Ident "payload")
+                              component_name;
+                          ] );
+                      T_object
+                        ( Inline,
+                          [
+                            T.member ~readonly:true (Ident "response")
+                              component_name;
+                          ] );
+                      T_generic ("Record", [ T_name "string"; T_name "never" ]);
+                    ]))
+            (T.rows ~column:value_column_schemas
+               (List.map
+                  (fun (c : R.channel) ->
+                    T.entry (channel_key c.channel) (payload_schema c))
+                  (channels reg.channel_order.event_map)));
+        ];
+    }
 
 (* The catalog is the registry's stored-event channels, in their order: the
    payload each names, and the system flag of those that belong to no
@@ -205,187 +313,361 @@ let stored (reg : R.t) =
 
 let persisted (bus : Registry.t) =
   let stored = stored bus.registry in
-  String.concat ""
-    [
+  let catalog_k = T.T_index (T_name "PersistedEventCatalog", T_name "K") in
+  let event members =
+    T.T_intersection [ T_name "EventBase"; T_object (Inline, members) ]
+  in
+  T.text
+    {
       banner;
-      {|/**
- * Persisted Events
- *
- * The event types that get appended to the JSONL event log, each with the
- * component schema of its payload. The PersistedEvent union derives from this
- * catalog.
- */
-
-import type { components } from './types';
-import type { ResourceId } from './identifiers';
-import type { EventBase } from './event-base';
-import type { EventPayloadRefinements } from './bus-refinements';
-
-/** Each persisted event type and the payload the registry states it carries. */
-export type StatedPersistedEventCatalog = {
-|};
-      lines
-        (List.map
-           (fun s ->
-             "  '" ^ s.event ^ "': " ^ schema_type s.payload ^ ";")
-           stored);
-      {|
-};
-
-/**
- * Each persisted event type and the payload it carries: the stated one, or
- * its refinement where bus-refinements.ts narrows it to this layer's branded
- * types, so consumers read `payload.annotation.id` as `AnnotationId` without
- * an upcast at every seam.
- */
-type PersistedEventCatalog = {
-  [K in keyof StatedPersistedEventCatalog]: K extends keyof EventPayloadRefinements
-    ? EventPayloadRefinements[K]
-    : StatedPersistedEventCatalog[K];
-};
-
-/** System event types — persisted events that have no resourceId. */
-type SystemEventType = |};
-      String.concat " | "
-        (List.filter_map
-           (fun s -> if s.system then Some (quoted s.event) else None)
-           stored);
-      {|;
-
-/** Extract the concrete persisted event type for a given type string. */
-export type EventOfType<K extends keyof PersistedEventCatalog> =
-  K extends SystemEventType
-    ? EventBase & { type: K; payload: PersistedEventCatalog[K] }
-    : EventBase & { type: K; resourceId: ResourceId; payload: PersistedEventCatalog[K] };
-
-/** The union of all persisted event types. Discriminated on `type`. */
-export type PersistedEvent = {
-  [K in keyof PersistedEventCatalog]: EventOfType<K>
-}[keyof PersistedEventCatalog];
-
-export type PersistedEventType = PersistedEvent['type'];
-
-/** Every persisted event type, for code that enumerates them at runtime. */
-export const PERSISTED_EVENT_TYPES = [
-|};
-      lines (List.map (fun s -> "  '" ^ s.event ^ "',") stored);
-      {|
-] as const satisfies readonly PersistedEventType[];
-
-/** Input type for appendEvent — PersistedEvent without id/timestamp (assigned at persistence time). */
-export type EventInput = Omit<PersistedEvent, 'id' | 'timestamp'>;
-|};
-    ]
+      body =
+        [
+          T.Comment
+            [
+              Block
+                [
+                  "Persisted Events";
+                  "";
+                  "The event types that get appended to the JSONL event log, \
+                   each with the";
+                  "component schema of its payload. The PersistedEvent union \
+                   derives from this";
+                  "catalog.";
+                ];
+            ];
+          T.Adjacent
+            [
+              T.import ~type_only:true [ "components" ] "./types";
+              T.import ~type_only:true [ "ResourceId" ] "./identifiers";
+              T.import ~type_only:true [ "EventBase" ] "./event-base";
+              T.import ~type_only:true
+                [ "EventPayloadRefinements" ]
+                "./bus-refinements";
+            ];
+          T.type_alias "StatedPersistedEventCatalog"
+            ~about:
+              [
+                Doc
+                  "Each persisted event type and the payload the registry \
+                   states it carries.";
+              ]
+            (T_object
+               ( Rows,
+                 List.map
+                   (fun s ->
+                     T.member (channel_key s.event) (T.schema s.payload))
+                   stored ));
+          T.type_alias "PersistedEventCatalog" ~export:false
+            ~about:
+              [
+                Block
+                  [
+                    "Each persisted event type and the payload it carries: the \
+                     stated one, or";
+                    "its refinement where bus-refinements.ts narrows it to \
+                     this layer's branded";
+                    "types, so consumers read `payload.annotation.id` as \
+                     `AnnotationId` without";
+                    "an upcast at every seam.";
+                  ];
+              ]
+            (T_mapped
+               {
+                 layout = Rows;
+                 readonly = false;
+                 key = "K";
+                 in_ = T_keyof (T_name "StatedPersistedEventCatalog");
+                 value =
+                   T_conditional
+                     {
+                       layout = Rows;
+                       check = T_name "K";
+                       extends = T_keyof (T_name "EventPayloadRefinements");
+                       then_ =
+                         T_index (T_name "EventPayloadRefinements", T_name "K");
+                       else_ =
+                         T_index
+                           (T_name "StatedPersistedEventCatalog", T_name "K");
+                     };
+               });
+          T.type_alias "SystemEventType" ~export:false
+            ~about:
+              [
+                Doc
+                  "System event types — persisted events that have no \
+                   resourceId.";
+              ]
+            (T_union
+               (List.filter_map
+                  (fun s -> if s.system then Some (str s.event) else None)
+                  stored));
+          T.type_alias "EventOfType"
+            ~about:
+              [
+                Doc
+                  "Extract the concrete persisted event type for a given type \
+                   string.";
+              ]
+            ~params:
+              [
+                {
+                  param = "K";
+                  bound = Some (T_keyof (T_name "PersistedEventCatalog"));
+                };
+              ]
+            (T_conditional
+               {
+                 layout = Rows;
+                 check = T_name "K";
+                 extends = T_name "SystemEventType";
+                 then_ =
+                   event
+                     [
+                       T.member (Ident "type") (T_name "K");
+                       T.member (Ident "payload") catalog_k;
+                     ];
+                 else_ =
+                   event
+                     [
+                       T.member (Ident "type") (T_name "K");
+                       T.member (Ident "resourceId") (T_name "ResourceId");
+                       T.member (Ident "payload") catalog_k;
+                     ];
+               });
+          T.type_alias "PersistedEvent"
+            ~about:
+              [
+                Doc
+                  "The union of all persisted event types. Discriminated on \
+                   `type`.";
+              ]
+            (T_index
+               ( T_mapped
+                   {
+                     layout = Rows;
+                     readonly = false;
+                     key = "K";
+                     in_ = T_keyof (T_name "PersistedEventCatalog");
+                     value = T_generic ("EventOfType", [ T_name "K" ]);
+                   },
+                 T_keyof (T_name "PersistedEventCatalog") ));
+          T.type_alias "PersistedEventType"
+            (T_index (T_name "PersistedEvent", str "type"));
+          channel_list "PERSISTED_EVENT_TYPES"
+            ~about:
+              [
+                Doc
+                  "Every persisted event type, for code that enumerates them \
+                   at runtime.";
+              ]
+            ~of_:"PersistedEventType"
+            (List.map (fun s -> s.event) stored);
+          T.type_alias "EventInput"
+            ~about:
+              [
+                Doc
+                  "Input type for appendEvent — PersistedEvent without \
+                   id/timestamp (assigned at persistence time).";
+              ]
+            (T_generic
+               ( "Omit",
+                 [
+                   T_name "PersistedEvent";
+                   T_union [ str "id"; str "timestamp" ];
+                 ] ));
+        ];
+    }
 
 let operations (bus : Registry.t) =
   let reg = bus.registry in
-  let operations =
-    entries
-      (fun (o : R.operation) -> o.docs)
-      (fun o ->
-        Text.pad
-          (Text.pad ("  '" ^ o.request ^ "':") value_column_operations
-          ^ "{ result: '" ^ o.result ^ "',")
-          failure_column_operations
-        ^ "failure: '" ^ o.failure ^ "' }," ^ trailing o.docs)
-      reg.operations
-  in
-  let reply_names =
-    List.map
-      (fun (request, names) ->
-        key value_column_operations request ^ listed names ^ ",")
-      bus.reply_names
-  in
-  String.concat ""
-    [
+  let bus_operations = T.T_typeof "BUS_OPERATIONS" in
+  T.text
+    {
       banner;
-      {|import type { EventMap, EventName, EmittableChannel } from './bus-protocol';
-
-/**
- * BUS_OPERATIONS — the request/reply operations registry.
- *
- * Each entry declares ONE operation as a triple, so its three facts are
- * stated together rather than maintained independently across call sites:
- *   - the request channel (the key — an `EmittableChannel`),
- *   - the `result` channel (success reply),
- *   - and the `failure` channel.
- *
- * `BridgedChannel` / `BRIDGED_CHANNELS` are DERIVED from this map
- * (bridging.ts): every reply lands in the bridged fan-in set by
- * construction, so "a reply channel forgotten from BRIDGED_CHANNELS" is not
- * representable.
- *
- * `Partial<Record<EmittableChannel, …>>` enforces that every key is a real
- * emittable request. `result`/`failure` stay `EventName` rather than
- * `BridgedChannel` to avoid a circular reference (BridgedChannel derives from
- * this map); the derivation closes the loop instead.
- */
-export interface BusOperationSpec {
-  result: EventName;
-  failure: EventName;
-}
-
-export const BUS_OPERATIONS = {|};
-      lines operations;
-      {|
-} as const satisfies Partial<Record<EmittableChannel, BusOperationSpec>>;
-
-/** The request-channel key of a registered operation — what `Bus.request` takes. */
-export type BusOperationKey = keyof typeof BUS_OPERATIONS;
-|};
-      {|
-/**
- * REPLY_NAMES — what each operation's reply states beside its `response`.
- *
- * A reply names what it answers for by stating a property of its request
- * again: the annotation or the resource a context was gathered for, the
- * reference a search was for. Whoever answers takes each from the request.
- * Most replies name nothing.
- *
- * Each list is what the reply's component schema requires, without
- * `response`. The generator refuses a name the request's schema does not
- * state, and the `satisfies` below holds each to the TypeScript types of both
- * payloads.
- */
-export const REPLY_NAMES = {
-|};
-      lines reply_names;
-      {|
-} as const satisfies {
-  readonly [Op in BusOperationKey]: readonly (keyof EventMap[Op] &
-    keyof EventMap[(typeof BUS_OPERATIONS)[Op]['result'] & EventName])[];
-};
-|};
-    ]
+      body =
+        [
+          T.import ~type_only:true
+            [ "EventMap"; "EventName"; "EmittableChannel" ]
+            "./bus-protocol";
+          T.Interface
+            {
+              about =
+                [
+                  Block
+                    [
+                      "BUS_OPERATIONS — the request/reply operations registry.";
+                      "";
+                      "Each entry declares ONE operation as a triple, so its \
+                       three facts are";
+                      "stated together rather than maintained independently \
+                       across call sites:";
+                      "  - the request channel (the key — an \
+                       `EmittableChannel`),";
+                      "  - the `result` channel (success reply),";
+                      "  - and the `failure` channel.";
+                      "";
+                      "`BridgedChannel` / `BRIDGED_CHANNELS` are DERIVED from \
+                       this map";
+                      "(bridging.ts): every reply lands in the bridged fan-in \
+                       set by";
+                      "construction, so \"a reply channel forgotten from \
+                       BRIDGED_CHANNELS\" is not";
+                      "representable.";
+                      "";
+                      "`Partial<Record<EmittableChannel, …>>` enforces that \
+                       every key is a real";
+                      "emittable request. `result`/`failure` stay `EventName` \
+                       rather than";
+                      "`BridgedChannel` to avoid a circular reference \
+                       (BridgedChannel derives from";
+                      "this map); the derivation closes the loop instead.";
+                    ];
+                ];
+              export = true;
+              name = "BusOperationSpec";
+              members =
+                [
+                  T.member (Ident "result") (T_name "EventName");
+                  T.member (Ident "failure") (T_name "EventName");
+                ];
+            };
+          T.const "BUS_OPERATIONS" ~as_const:true
+            ~satisfies:
+              (T_generic
+                 ( "Partial",
+                   [
+                     T_generic
+                       ( "Record",
+                         [
+                           T_name "EmittableChannel"; T_name "BusOperationSpec";
+                         ] );
+                   ] ))
+            (T.rows ~column:value_column_operations
+               (with_docs
+                  (fun (o : R.operation) -> o.docs)
+                  (fun ~about ~trailing (o : R.operation) ->
+                    T.entry ~about ~trailing (channel_key o.request)
+                      (Object
+                         {
+                           layout = Inline;
+                           column = Some failure_column_operations;
+                           entries =
+                             [
+                               T.entry (Ident "result") (word o.result);
+                               T.entry (Ident "failure") (word o.failure);
+                             ];
+                         }))
+                  reg.operations));
+          T.type_alias "BusOperationKey"
+            ~about:
+              [
+                Doc
+                  "The request-channel key of a registered operation — what \
+                   `Bus.request` takes.";
+              ]
+            (T_keyof bus_operations);
+          T.const "REPLY_NAMES" ~as_const:true
+            ~about:
+              [
+                Block
+                  [
+                    "REPLY_NAMES — what each operation's reply states beside \
+                     its `response`.";
+                    "";
+                    "A reply names what it answers for by stating a property \
+                     of its request";
+                    "again: the annotation or the resource a context was \
+                     gathered for, the";
+                    "reference a search was for. Whoever answers takes each \
+                     from the request.";
+                    "Most replies name nothing.";
+                    "";
+                    "Each list is what the reply's component schema requires, \
+                     without";
+                    "`response`. The generator refuses a name the request's \
+                     schema does not";
+                    "state, and the `satisfies` below holds each to the \
+                     TypeScript types of both";
+                    "payloads.";
+                  ];
+              ]
+            ~satisfies:
+              (T_mapped
+                 {
+                   layout = Rows;
+                   readonly = true;
+                   key = "Op";
+                   in_ = T_name "BusOperationKey";
+                   value =
+                     T_readonly
+                       (T_array
+                          (T_paren
+                             (T_intersection
+                                [
+                                  T_keyof
+                                    (T_index (T_name "EventMap", T_name "Op"));
+                                  T_keyof
+                                    (T_index
+                                       ( T_name "EventMap",
+                                         T_intersection
+                                           [
+                                             T_index
+                                               ( T_index
+                                                   ( T_paren bus_operations,
+                                                     T_name "Op" ),
+                                                 str "result" );
+                                             T_name "EventName";
+                                           ] ));
+                                ])));
+                 })
+            (T.rows ~column:value_column_operations
+               (List.map
+                  (fun (request, names) ->
+                    T.entry (channel_key request) (T.strings Inline names))
+                  bus.reply_names));
+        ];
+    }
 
 let bridged (bus : Registry.t) =
   let reg = bus.registry in
-  let channels list = lines (List.map (fun c -> "  '" ^ c ^ "',") list) in
-  String.concat ""
-    [
+  T.text
+    {
       banner;
-      "import type { EventName } from './bus-protocol';\n\n";
-      reg.audience.doc;
-      "\nexport const BRIDGED_BROADCASTS = [\n";
-      channels reg.audience.everyone;
-      "\n] as const satisfies readonly EventName[];\n\n";
-      {|/**
- * The channels a client receives per RESOURCE SCOPE rather than globally —
- * what `subscribeToResource` joins. `audience: scoped` in the registry.
- */
-export const RESOURCE_SCOPED_CHANNELS = [
-|};
-      channels reg.audience.scoped;
-      {|
-] as const satisfies readonly EventName[];
-
-/** A channel a resource's scope carries. A read of one names its resource. */
-export type ResourceScopedChannel = (typeof RESOURCE_SCOPED_CHANNELS)[number];
-
-/** A channel of no resource's scope: every other channel. */
-export type UnscopedChannel = Exclude<EventName, ResourceScopedChannel>;
-|};
-    ]
+      body =
+        [
+          T.import ~type_only:true [ "EventName" ] "./bus-protocol";
+          channel_list "BRIDGED_BROADCASTS"
+            ~about:[ Spec [ reg.audience.doc ] ]
+            ~of_:"EventName" reg.audience.everyone;
+          channel_list "RESOURCE_SCOPED_CHANNELS"
+            ~about:
+              [
+                Block
+                  [
+                    "The channels a client receives per RESOURCE SCOPE rather \
+                     than globally —";
+                    "what `subscribeToResource` joins. `audience: scoped` in \
+                     the registry.";
+                  ];
+              ]
+            ~of_:"EventName" reg.audience.scoped;
+          T.type_alias "ResourceScopedChannel"
+            ~about:
+              [
+                Doc
+                  "A channel a resource's scope carries. A read of one names \
+                   its resource.";
+              ]
+            (T_index
+               (T_paren (T_typeof "RESOURCE_SCOPED_CHANNELS"), T_name "number"));
+          T.type_alias "UnscopedChannel"
+            ~about:
+              [ Doc "A channel of no resource's scope: every other channel." ]
+            (T_generic
+               ( "Exclude",
+                 [ T_name "EventName"; T_name "ResourceScopedChannel" ] ));
+        ];
+    }
 
 let direction : Registry.direction -> string = function
   | Outbound -> "outbound"
@@ -399,71 +681,119 @@ let delivery : Registry.delivery -> string = function
 
 let classification (bus : Registry.t) =
   let reg = bus.registry in
-  let attrs =
-    List.map
-      (fun (a : Registry.attrs) ->
-        key value_column_schemas a.channel
-        ^ "{ recorded: " ^ string_of_bool a.recorded ^ ", direction: '"
-        ^ direction a.direction ^ "'"
-        ^ (match a.writes with
-          | None -> ""
-          | Some writes -> ", writes: " ^ string_of_bool writes)
-        ^ (match a.delivery with
-          | None -> ""
-          | Some d -> ", delivery: '" ^ delivery d ^ "'")
-        ^ " },")
-      bus.attrs
+  let attrs (a : Registry.attrs) =
+    let field name value = T.entry (Ident name) value in
+    T.Object
+      {
+        layout = Inline;
+        column = None;
+        entries =
+          [
+            field "recorded" (Bool a.recorded);
+            field "direction" (word (direction a.direction));
+          ]
+          @ Option.to_list
+              (Option.map (fun w -> field "writes" (Bool w)) a.writes)
+          @ Option.to_list
+              (Option.map
+                 (fun d -> field "delivery" (word (delivery d)))
+                 a.delivery);
+      }
   in
-  String.concat ""
-    [
+  T.text
+    {
       banner;
-      {|import type { EventName } from './bus-protocol';
-
-/** Where a channel sits relative to the hub: emitted toward it, delivered
- *  from it (the fan-in set — BRIDGED_CHANNELS, by construction), or never on
- *  the wire at all. */
-export type ChannelDirection = 'outbound' | 'inbound' | 'in-process';
-
-/**
- * A channel's delivery class: what a subscriber is promised about a frame on
- * it when its stream drops, or is handed to another. The promise comes from
- * the frame's identity (protocol/contract/TRANSPORT-CONTRACT.md § Delivery).
- *
- *   positioned — a recorded event delivered on its resource's scope. Its id
- *                is its place in that resource's record: a subscriber that
- *                names the last one it holds is sent what it missed.
- *   correlated — the reply to a claimed request, routed to the client that
- *                asked. Its id is the request's: it is recognised when it
- *                arrives twice, and sent again while it is retained.
- *   passing    — every other frame. Nothing replays it.
- *
- * Derived from the registry's axes, never declared: an operation's replies
- * are correlated; a recorded event whose audience is `scoped` is positioned;
- * everything else that crosses the wire is passing. Who RECEIVES a frame is
- * the audience axis, and a different question.
- */
-export type ChannelDelivery = 'positioned' | 'correlated' | 'passing';
-
-export interface ChannelAttrs {
-  /** In PERSISTED_EVENT_TYPES — lands in the event log, the system of record. */
-  readonly recorded: boolean;
-  readonly direction: ChannelDirection;
-|};
-      (* Every line of the doc indented, an empty last one too. *)
-      "  " ^ Text.replace_all ~sub:"\n" ~by:"\n  " reg.effect_.doc;
-      {|
-  readonly writes?: boolean;
-  /** Absent exactly when the channel never crosses the wire (`in-process`). */
-  readonly delivery?: ChannelDelivery;
-}
-
-export const CHANNEL_ATTRS = {
-|};
-      lines attrs;
-      {|
-} as const satisfies Record<EventName, ChannelAttrs>;
-|};
-    ]
+      body =
+        [
+          T.import ~type_only:true [ "EventName" ] "./bus-protocol";
+          T.type_alias "ChannelDirection"
+            ~about:
+              [
+                Block
+                  [
+                    "Where a channel sits relative to the hub: emitted toward \
+                     it, delivered";
+                    "from it (the fan-in set — BRIDGED_CHANNELS, by \
+                     construction), or never on";
+                    "the wire at all.";
+                  ];
+              ]
+            (T_union [ str "outbound"; str "inbound"; str "in-process" ]);
+          T.type_alias "ChannelDelivery"
+            ~about:
+              [
+                Block
+                  [
+                    "A channel's delivery class: what a subscriber is promised \
+                     about a frame on";
+                    "it when its stream drops, or is handed to another. The \
+                     promise comes from";
+                    "the frame's identity \
+                     (protocol/contract/TRANSPORT-CONTRACT.md § Delivery).";
+                    "";
+                    "  positioned — a recorded event delivered on its \
+                     resource's scope. Its id";
+                    "               is its place in that resource's record: a \
+                     subscriber that";
+                    "               names the last one it holds is sent what \
+                     it missed.";
+                    "  correlated — the reply to a claimed request, routed to \
+                     the client that";
+                    "               asked. Its id is the request's: it is \
+                     recognised when it";
+                    "               arrives twice, and sent again while it is \
+                     retained.";
+                    "  passing    — every other frame. Nothing replays it.";
+                    "";
+                    "Derived from the registry's axes, never declared: an \
+                     operation's replies";
+                    "are correlated; a recorded event whose audience is \
+                     `scoped` is positioned;";
+                    "everything else that crosses the wire is passing. Who \
+                     RECEIVES a frame is";
+                    "the audience axis, and a different question.";
+                  ];
+              ]
+            (T_union [ str "positioned"; str "correlated"; str "passing" ]);
+          T.Interface
+            {
+              about = [];
+              export = true;
+              name = "ChannelAttrs";
+              members =
+                [
+                  T.member ~readonly:true (Ident "recorded")
+                    ~about:
+                      [
+                        Doc
+                          "In PERSISTED_EVENT_TYPES — lands in the event log, \
+                           the system of record.";
+                      ]
+                    (T_name "boolean");
+                  T.member ~readonly:true (Ident "direction")
+                    (T_name "ChannelDirection");
+                  T.member ~readonly:true ~optional:true (Ident "writes")
+                    ~about:[ Spec [ reg.effect_.doc ] ]
+                    (T_name "boolean");
+                  T.member ~readonly:true ~optional:true (Ident "delivery")
+                    ~about:
+                      [
+                        Doc
+                          "Absent exactly when the channel never crosses the \
+                           wire (`in-process`).";
+                      ]
+                    (T_name "ChannelDelivery");
+                ];
+            };
+          T.const "CHANNEL_ATTRS" ~as_const:true
+            ~satisfies:(satisfies_channels (T_name "ChannelAttrs"))
+            (T.rows ~column:value_column_schemas
+               (List.map
+                  (fun (a : Registry.attrs) ->
+                    T.entry (channel_key a.channel) (attrs a))
+                  bus.attrs));
+        ];
+    }
 
 let files bus : Output.file list =
   let at name text = { Output.path = "typescript/core/src/" ^ name; text } in

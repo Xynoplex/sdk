@@ -5,8 +5,6 @@
    them, so an implementation reads them from here rather than restating a
    number. *)
 
-let quoted = Text.quoted
-
 type t = {
   operations : (string * Openapi.limits) list;
   items : (string * int) list;
@@ -67,53 +65,46 @@ let derive (spec : Spec.t) =
   | [] -> Ok { operations; items }
   | errors -> Error errors
 
-(* An object as JSON.stringify writes it two spaces to a level, which is how
-   the TypeScript module has always held these. *)
-let rec json ~indent members =
-  match members with
-  | [] -> "{}"
-  | members ->
-      let inner = indent ^ "  " in
-      "{\n"
-      ^ String.concat ",\n"
-          (List.map
-             (fun (key, value) -> inner ^ quoted key ^ ": " ^ value inner)
-             members)
-      ^ "\n" ^ indent ^ "}"
-
-and limit (l : Openapi.limit) indent =
-  match l with
-  | Count n -> string_of_int n
-  | Unlimited -> quoted "unlimited"
-  | Limits limits -> json ~indent (List.map (fun (k, v) -> (k, limit v)) limits)
+let rec limit : Openapi.limit -> Yojson.Safe.t = function
+  | Count n -> `Int n
+  | Unlimited -> `String "unlimited"
+  | Limits limits -> `Assoc (List.map (fun (k, v) -> (k, limit v)) limits)
 
 let typescript t =
+  let module S = Typescript_syntax in
   {
     Output.path = "typescript/core/src/protocol-limits.ts";
     text =
-      String.concat ""
-        [
-          "// ⚠ GENERATED FILE — do not edit.\n\
-           //\n\
-           // Authority:   protocol/specs/src/openapi.json and the files it \
-           names\n\
-           // Regenerate:  make generate  (";
-          Banner.writer __FILE__;
-          ")\n\n\
-           /** Each operation's `x-xynolog-limits`, by `METHOD path`. */\n\
-           export const operationLimits = ";
-          json ~indent:""
-            (List.map
-               (fun (key, limits) ->
-                 (key, fun indent -> limit (Openapi.Limits limits) indent))
-               t.operations);
-          " as const;\n\n\
-           /** Each schema property's `maxItems`, by `Schema.property`. */\n\
-           export const itemLimits = ";
-          json ~indent:""
-            (List.map (fun (key, n) -> (key, fun _ -> string_of_int n)) t.items);
-          " as const;\n";
-        ];
+      S.text
+        {
+          banner =
+            Banner.typescript_lines
+              ~authority:
+                [ "protocol/specs/src/openapi.json and the files it names" ]
+              __FILE__;
+          body =
+            [
+              S.const "operationLimits" ~as_const:true
+                ~about:
+                  [
+                    Doc "Each operation's `x-xynolog-limits`, by `METHOD path`.";
+                  ]
+                (Json_rows
+                   (`Assoc
+                      (List.map
+                         (fun (key, limits) ->
+                           (key, limit (Openapi.Limits limits)))
+                         t.operations)));
+              S.const "itemLimits" ~as_const:true
+                ~about:
+                  [
+                    Doc
+                      "Each schema property's `maxItems`, by `Schema.property`.";
+                  ]
+                (Json_rows
+                   (`Assoc (List.map (fun (key, n) -> (key, `Int n)) t.items)));
+            ];
+        };
   }
 
 let files ~root:_ (spec : Spec.t) =

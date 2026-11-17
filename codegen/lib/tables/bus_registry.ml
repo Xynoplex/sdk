@@ -24,10 +24,7 @@ let docs =
    stored event names an event and its payload, and its flags are true or
    absent. *)
 type payload =
-  | Schema of {
-      schema : string;
-      validate : string option;
-    }
+  | Schema of { schema : string; validate : string option }
   | Envelope of { schema : string }
   | Stored_event of {
       event : string;

@@ -10,7 +10,6 @@ module Owner_only = Owner_only
 module Contract = Contract
 
 let schema_file = "sign-in-store/SignIn.json"
-let quoted = Text.quoted
 let snake name = String.lowercase_ascii (Text.upper_snake name)
 let regenerate = "make generate (" ^ Banner.writer __FILE__ ^ ")"
 
@@ -252,65 +251,99 @@ let python_owner_only (o : Owner_only.t) =
   }
 
 let typescript (entry : Flat.t) (o : Owner_only.t) (names : Contract.t) =
+  let module S = Typescript_syntax in
   let field (f : Flat.field) =
-    "  "
-    ^ Text.doc_comment f.description
-    ^ "\n  " ^ f.name
-    ^ (if f.required then "" else "?")
-    ^ ": string;"
+    S.member ~about:[ Doc f.description ] ~optional:(not f.required)
+      (Ident f.name) (T_name "string")
   in
   let check (f : Flat.field) =
-    let member = "value[" ^ quoted f.name ^ "]" in
-    if f.required then "isString(" ^ member ^ ")"
-    else "(" ^ member ^ " === undefined || isString(" ^ member ^ "))"
+    let member = S.Index (Name "value", Str (Double, f.name)) in
+    let is_string = S.Call (Name "isString", [ member ]) in
+    if f.required then is_string
+    else Paren (Binary (Binary (member, Strict_eq, Undefined), Or, is_string))
   in
+  let constant name about value = S.const name ~about:[ Doc about ] value in
   {
     Output.path = "typescript/core/src/sign-in.ts";
     text =
-      String.concat ""
-        [
-          "// ⚠ GENERATED FILE — do not edit.\n\
-           //\n\
-           // Authority:   protocol/specs/src/sign-in-store (SignIn.json, \
-           owner-only.json, README.md)\n\
-           // Regenerate:  make generate  (";
-          Banner.writer __FILE__;
-          ")\n\nimport { isObject, isString } from './type-guards';\n\n";
-          Text.doc_comment entry.description;
-          "\nexport interface " ^ entry.title ^ " {\n";
-          String.concat "\n" (List.map field entry.fields);
-          "\n}\n\n/** Whether `value` is a " ^ entry.title
-          ^ ": what it requires is there, and every member it has is text. */\n\
-             export function is" ^ entry.title ^ "(value: unknown): value is "
-          ^ entry.title ^ " {\n  return isObject(value)\n    && ";
-          String.concat "\n    && " (List.map check entry.fields);
-          ";\n}\n\n";
-          Text.doc_comment o.directory.docs;
-          "\nexport const OWNER_ONLY_DIRECTORY_MODE = 0o" ^ o.directory.octal
-          ^ ";\n\n";
-          Text.doc_comment o.file.docs;
-          "\nexport const OWNER_ONLY_FILE_MODE = 0o" ^ o.file.octal ^ ";\n\n";
-          Text.doc_comment o.access_list.docs;
-          "\n\
-           export function ownerOnlyAccessList(owner: string): string {\n\
-          \  return "
-          ^ quoted o.access_list.before
-          ^ " + owner + " ^ quoted o.access_list.after ^ ";\n}\n\n";
-          "/** The document's name in the state home: one sign-in per stack. */\n\
-           export const SIGN_IN_STORE_FILE = ";
-          quoted names.document;
-          ";\n\n\
-           /** The name, beside the document, of the file every writer locks \
-           from before its read until after its rename. */\n\
-           export const SIGN_IN_STORE_LOCK = ";
-          quoted names.lock;
-          ";\n\n\
-           /** On Windows, the high 32 bits of the offset of the one byte of \
-           the lock file that is locked: far past anything the file holds. */\n\
-           export const SIGN_IN_STORE_WINDOWS_OFFSET_HIGH = ";
-          names.offset_high;
-          ";\n";
-        ];
+      S.text
+        {
+          banner =
+            Banner.typescript_lines
+              ~authority:
+                [
+                  "protocol/specs/src/sign-in-store (SignIn.json, \
+                   owner-only.json, README.md)";
+                ]
+              __FILE__;
+          body =
+            [
+              S.import [ "isObject"; "isString" ] "./type-guards";
+              S.Interface
+                {
+                  about = [ Doc entry.description ];
+                  export = true;
+                  name = entry.title;
+                  members = List.map field entry.fields;
+                };
+              S.Function
+                {
+                  about =
+                    [
+                      Doc
+                        ("Whether `value` is a " ^ entry.title
+                       ^ ": what it requires is there, and every member it has \
+                          is text.");
+                    ];
+                  export = true;
+                  name = "is" ^ entry.title;
+                  params = [ { name = "value"; type_ = T_name "unknown" } ];
+                  returns = T_predicate ("value", T_name entry.title);
+                  body =
+                    [
+                      Return
+                        (Chain
+                           ( And,
+                             Call (Name "isObject", [ Name "value" ])
+                             :: List.map check entry.fields ));
+                    ];
+                };
+              constant "OWNER_ONLY_DIRECTORY_MODE" o.directory.docs
+                (Octal o.directory.octal);
+              constant "OWNER_ONLY_FILE_MODE" o.file.docs (Octal o.file.octal);
+              S.Function
+                {
+                  about = [ Doc o.access_list.docs ];
+                  export = true;
+                  name = "ownerOnlyAccessList";
+                  params = [ { name = "owner"; type_ = T_name "string" } ];
+                  returns = T_name "string";
+                  body =
+                    [
+                      Return
+                        (Binary
+                           ( Binary
+                               ( Str (Double, o.access_list.before),
+                                 Plus,
+                                 Name "owner" ),
+                             Plus,
+                             Str (Double, o.access_list.after) ));
+                    ];
+                };
+              constant "SIGN_IN_STORE_FILE"
+                "The document's name in the state home: one sign-in per stack."
+                (Str (Double, names.document));
+              constant "SIGN_IN_STORE_LOCK"
+                "The name, beside the document, of the file every writer locks \
+                 from before its read until after its rename."
+                (Str (Double, names.lock));
+              constant "SIGN_IN_STORE_WINDOWS_OFFSET_HIGH"
+                "On Windows, the high 32 bits of the offset of the one byte of \
+                 the lock file that is locked: far past anything the file \
+                 holds."
+                (Hex names.offset_high);
+            ];
+        };
   }
 
 (* The owner-only modes as the OCaml SDK and its storage probe hold them

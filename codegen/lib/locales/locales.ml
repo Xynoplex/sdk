@@ -38,53 +38,74 @@ let derive (t : T.t) =
     t.locales;
   match List.rev !refusals with [] -> Ok t | errors -> Error errors
 
-(* A TypeScript string in single quotes. *)
-let text value =
-  "'"
-  ^ Text.replace_all ~sub:"'" ~by:"\\'"
-      (Text.replace_all ~sub:"\\" ~by:"\\\\" value)
-  ^ "'"
-
 let typescript (t : T.t) =
+  let module S = Typescript_syntax in
+  let text value = S.Str (Single, value) in
   {
     Output.path = "typescript/core/src/locale-registry.ts";
     text =
-      String.concat ""
-        [
-          "// ⚠ GENERATED FILE — do not edit.\n\
-           //\n\
-           // Authority:   protocol/specs/src/" ^ file
-          ^ "\n// Regenerate:  make generate  (";
-          Banner.writer __FILE__;
-          ")\n\n\
-           /** The code of every supported language, in the registry's order. */\n\
-           export const LOCALE_CODES = [";
-          String.concat ", "
-            (List.map (fun (l : T.locale) -> text l.code) t.locales);
-          {|] as const;
-
-/** The code of a supported language. */
-export type LocaleCode = (typeof LOCALE_CODES)[number];
-
-/** A supported language: its code, what it calls itself, and its name in English. */
-export interface LocaleInfo {
-  code: LocaleCode;
-  nativeName: string;
-  englishName: string;
-}
-
-/** A row per supported language, in the registry's order. */
-export const LOCALES: readonly LocaleInfo[] = [
-|};
-          String.concat ""
-            (List.map
-               (fun (l : T.locale) ->
-                 "  { code: " ^ text l.code ^ ", nativeName: "
-                 ^ text l.native_name ^ ", englishName: " ^ text l.english_name
-                 ^ " },\n")
-               t.locales);
-          "];\n";
-        ];
+      S.text
+        {
+          banner =
+            Banner.typescript_lines
+              ~authority:[ "protocol/specs/src/" ^ file ]
+              __FILE__;
+          body =
+            [
+              S.const "LOCALE_CODES" ~as_const:true
+                ~about:
+                  [
+                    Doc
+                      "The code of every supported language, in the registry's \
+                       order.";
+                  ]
+                (S.strings Inline
+                   (List.map (fun (l : T.locale) -> l.code) t.locales));
+              S.type_alias "LocaleCode"
+                ~about:[ Doc "The code of a supported language." ]
+                (T_index (T_paren (T_typeof "LOCALE_CODES"), T_name "number"));
+              S.Interface
+                {
+                  about =
+                    [
+                      Doc
+                        "A supported language: its code, what it calls itself, \
+                         and its name in English.";
+                    ];
+                  export = true;
+                  name = "LocaleInfo";
+                  members =
+                    [
+                      S.member (Ident "code") (T_name "LocaleCode");
+                      S.member (Ident "nativeName") (T_name "string");
+                      S.member (Ident "englishName") (T_name "string");
+                    ];
+                };
+              S.const "LOCALES"
+                ~about:
+                  [
+                    Doc "A row per supported language, in the registry's order.";
+                  ]
+                ~annotation:(T_readonly (T_array (T_name "LocaleInfo")))
+                (S.array Rows
+                   (List.map
+                      (fun (l : T.locale) ->
+                        S.Object
+                          {
+                            layout = Inline;
+                            column = None;
+                            entries =
+                              [
+                                S.entry (Ident "code") (text l.code);
+                                S.entry (Ident "nativeName")
+                                  (text l.native_name);
+                                S.entry (Ident "englishName")
+                                  (text l.english_name);
+                              ];
+                          })
+                      t.locales));
+            ];
+        };
   }
 
 let files ~root:_ (spec : Spec.t) =
