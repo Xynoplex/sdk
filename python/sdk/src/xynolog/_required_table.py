@@ -1,7 +1,7 @@
 # Generated from the component schemas of protocol/specs/src/openapi.json; do not edit.
-# Regenerate: node codegen/node/schemas/generate-required-python.mjs
+# Regenerate: make generate (codegen/lib/required/python.ml)
 
-"""What each component schema requires of a value, by its name, as JSON: the rules are typescript/scripts/generators/required-shapes.mjs's."""
+"""What each component schema requires of a value, by its name, as JSON: codegen/lib/required/shape.ml states the rules."""
 
 from typing import Final
 

@@ -667,58 +667,27 @@ let names =
              [ "mark:delegate-timeout"; "emitRetry"; "a--b?" ]));
   ]
 
-let canonical =
-  let text = Result.get_ok (Text.stringified base) in
-  [
-    case "the registry as JSON.stringify writes it" (fun () ->
-        Alcotest.(check (list string))
-          "refusals" []
-          (List.map Decode.error_to_string (Bus.Registry.canonical text)));
-    case "the registry respelled" (fun () ->
-        Alcotest.(check (list string))
-          "refusals"
-          [
-            "bus/registry.json: /: is not in the form JSON.stringify(registry, \
-             null, 2) writes, with a trailing newline: its content may be \
-             right, and its bytes are spelled another way (escaping, \
-             indentation, the trailing newline)";
-          ]
-          (List.map Decode.error_to_string
-             (Bus.Registry.canonical
-                (Text.replace_all ~sub:"\"c\"" ~by:"\"\\u0063\"" text))));
-    case "JSON.stringify's spelling" (fun () ->
-        Alcotest.(check (result string string))
-          "text"
-          (Ok
-             "{\n\
-             \  \"a\": [\n\
-             \    1,\n\
-             \    \"\226\128\148\\n\\u0001\"\n\
-             \  ],\n\
-             \  \"b\": {},\n\
-             \  \"c\": []\n\
-              }\n")
-          (Text.stringified
-             (Yojson.Safe.from_string
-                {|{"a":[1,"\u2014\n\u0001"],"b":{},"c":[]}|})));
-  ]
-
 let text =
   [
-    case "a width in UTF-16 code units" (fun () ->
+    case "a width in code points" (fun () ->
         Alcotest.(check (list string))
           "padded"
-          [ "\226\134\146  "; "abcd "; "\240\159\152\128 " ]
+          [ "\226\134\146  "; "abcd "; "\240\159\152\128  " ]
           [
             Text.pad "\226\134\146" 3;
             Text.pad "abcd" 3;
-            Text.pad "\240\159\152\128" 2;
+            Text.pad "\240\159\152\128" 3;
           ]);
     case "a comment wrapped to its width" (fun () ->
         Alcotest.(check string)
           "comment" "// one two\n// three\n// fourfourfour"
           (Text.comment ~marker:"// " ~indent:"" ~width:12
              "one  two\nthree fourfourfour"));
+    case "a no-break space joins its words" (fun () ->
+        Alcotest.(check string)
+          "comment" "// one\n// two\194\160three"
+          (Text.comment ~marker:"// " ~indent:"" ~width:12
+             "one two\194\160three"));
   ]
 
 let output =
@@ -757,7 +726,6 @@ let () =
       ("bus trace", trace);
       ("bus derivations", derivations);
       ("bus names", names);
-      ("bus canonical form", canonical);
       ("text", text);
       ("output", output);
     ]

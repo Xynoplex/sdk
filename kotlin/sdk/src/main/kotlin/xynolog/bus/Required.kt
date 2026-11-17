@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap
  * what it reads to the table of what each component schema requires
  * (REQUIRED_SCHEMAS, which the generator writes from the SDK's copy of it,
  * src/codegen/required-schemas.json, by the rules of
- * typescript/scripts/generators/required-shapes.mjs) before it decodes it, and
+ * codegen/lib/required/shape.ml) before it decodes it, and
  * names the first fault it finds the same way: a member the value lacks, or
  * one that is not what its schema allows. What the decoder refuses that the
  * table does not state is a fault of the value itself. A member that holds a
@@ -30,7 +30,7 @@ import java.util.concurrent.ConcurrentHashMap
  * send) is no fault: a reader leaves it out before it decodes the value.
  */
 
-/** What a value must be: typescript/scripts/generators/required-shapes.mjs states what each part means. */
+/** What a value must be: codegen/lib/required/shape.ml states what each part means. */
 @Serializable
 internal data class Shape(
     val ref: String? = null,

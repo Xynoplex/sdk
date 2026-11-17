@@ -1,6 +1,6 @@
 /**
  * The first fault of a value as one of the spec's schemas, as every SDK names
- * it: the table generated from the spec (typescript/scripts/generators/required-shapes.mjs),
+ * it: the table generated from the spec (codegen/lib/required/shape.ml),
  * read as Go's is (go/internal/required/required_test.go).
  */
 

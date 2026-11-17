@@ -15,8 +15,8 @@
 //!   stamps its type declares;
 //! - `required.rs`: what each component schema requires of a value
 //!   (src/required-schemas.json, the SDK's copy of the table, which
-//!   codegen/node/schemas/generate-required.mjs writes by the rules of
-//!   typescript/scripts/generators/required-shapes.mjs);
+//!   codegen/lib/required writes by the rules of
+//!   codegen/lib/required/shape.ml);
 //! - `error_codes.rs`: the codes a client reports and what maps onto them
 //!   (errors/codes.json);
 //! - `oauth_clients.rs`: the ids a client signs in under at an issuer, and

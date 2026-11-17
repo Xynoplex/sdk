@@ -375,13 +375,13 @@ private fun escaped(text: String): String = buildString {
  * What each component schema requires of a value, by its name, each as its
  * own JSON: one string of the whole table would be past what a class file's
  * constant holds. The table is the SDK's copy (src/codegen/required-schemas.json),
- * which codegen/node/schemas/generate-required.mjs writes by the rules of
- * typescript/scripts/generators/required-shapes.mjs.
+ * which codegen/lib/required writes by the rules of
+ * codegen/lib/required/shape.ml.
  */
 internal fun requiredFile(table: JsonObject): String = buildString {
     val schemas = table["schemas"].obj("the table's schemas")
     if (schemas.isEmpty()) refuse("the table of what each schema requires holds none")
-    append("/** What each component schema requires of a value, by its name, as JSON: the rules are typescript/scripts/generators/required-shapes.mjs's. */\n")
+    append("/** What each component schema requires of a value, by its name, as JSON: the rules are codegen/lib/required/shape.ml's. */\n")
     append("internal val REQUIRED_SCHEMAS: Map<String, String> = mapOf(\n")
     for ((name, shape) in schemas) append("    ${literal(name)} to ${literal(shape.obj("$name's shape").toString())},\n")
     append(")\n")

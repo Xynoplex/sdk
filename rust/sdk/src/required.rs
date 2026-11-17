@@ -1,7 +1,7 @@
 //! The first fault of a value as one of the protocol's shapes. Every SDK
 //! holds what it reads to the table of what each component schema requires
 //! (`SCHEMAS`, which the build writes from src/required-schemas.json, by the
-//! rules of typescript/scripts/generators/required-shapes.mjs) before it decodes it, and
+//! rules of codegen/lib/required/shape.ml) before it decodes it, and
 //! names the first fault it finds the same way: a member the value lacks, or
 //! one that is not what its schema allows. What serde refuses that the table
 //! does not state is a fault of the value itself, and nothing of serde's own
@@ -66,7 +66,7 @@ pub(crate) struct Discriminator {
     pub(crate) mapping: &'static [(&'static str, usize)],
 }
 
-/// What a value must be: typescript/scripts/generators/required-shapes.mjs states
+/// What a value must be: codegen/lib/required/shape.ml states
 /// what each part means. A part the table does not state is `NONE`'s: no kinds allow
 /// any, and an empty list holds nothing.
 pub(crate) struct Shape {

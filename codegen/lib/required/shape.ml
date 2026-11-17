@@ -1,0 +1,956 @@
+(* What each component schema requires of a value: the kinds of value it may
+   be, the values and the form it may take, the members it must and may carry
+   and what each member must be. Every SDK holds a reply to this table before
+   it reads it, so each finds the same first fault in it, names it the same
+   way, and refuses it.
+
+   The table states whatever the schemas state that some SDK's decoding
+   refuses, so a payload the table passes is one every SDK decodes. Two things
+   a schema states no SDK's decoding refuses, and the table leaves them out: a
+   [format] (a date-time or a URI is text in every SDK) and [uniqueItems]. A
+   keyword the table does not know how to state is refused, so the table
+   cannot fall behind the schemas unseen.
+
+   One list a schema states the table states otherwise: the one CommandError's
+   [code] is one of, which is its [recognized] codes and no [enum]. codes.json
+   reads a failure whose code the list does not name as its unrecognized
+   failure, one that states none: so a reader reads such a code as absent, and
+   a writer is held to the list.
+
+   A KIND is one of object, array, string, integer, number, boolean, null. An
+   integer is a number with no fractional part, as JSON Schema has it, and a
+   number is any number, an integer among them.
+
+   A SHAPE is what a value must be, and each of its parts holds where it
+   applies:
+
+   - [ref]: the value is the component of that name;
+   - [kinds]: the kinds the value may be; a shape that states none allows any;
+   - [recognized]: of an object's member, the texts it is read as. A reader
+     reads a member holding any other text as absent; a writer holds the
+     member to these as to an [enum];
+   - [enum]: the value is one of these, a number by its value (1.0 is 1);
+   - [pattern]: a text is a series of steps, each a set of code points ([of],
+     ranges from and to, both included) the text's next code points are in, at
+     least [min] of them and at most [max] (no [max]: any number). It is the
+     schema's pattern, anchored at both ends and read as ECMA-262 reads it,
+     spelled out so that no SDK reads it by a regular-expression engine of its
+     own;
+   - [minLength], [maxLength]: the fewest and most code points of a text;
+   - [minimum], [maximum]: the least and greatest a number is, each allowed;
+   - [minItems], [maxItems]: the fewest and most items of an array;
+   - [required]: an object carries each of these members, holding null only
+     where its shape in [members] allows null;
+   - [members]: what an object's member must be, where the object has it and
+     it is not null, by the order of the names' code points;
+   - [closed]: an object carries no member but these;
+   - [items]: what each item of an array must be;
+   - [values]: what each value of a map must be;
+   - [oneOf]: the value is one of these variants, and a [discriminator] the
+     value states names the one it is, by its place;
+   - [allOf]: the value is what each of these is.
+
+   A part that can be wrong in no way is left out, and so is a union none of
+   whose variants can be: what is left is what a value can be wrong in. A
+   component that can be wrong in no way is the empty shape. *)
+
+type kind = Object | Array | String | Integer | Number | Boolean | Null
+
+let all_kinds = [ Object; Array; String; Integer; Number; Boolean; Null ]
+
+let kind_name = function
+  | Object -> "object"
+  | Array -> "array"
+  | String -> "string"
+  | Integer -> "integer"
+  | Number -> "number"
+  | Boolean -> "boolean"
+  | Null -> "null"
+
+type step = { of_ : (int * int) list; min : int; max : int option }
+type discriminator = { property : string; mapping : (string * int) list }
+
+type shape = Ref of string | Shape of body
+
+and body = {
+  kinds : kind list option;
+  recognized : string list option;
+  enum : Schema.literal list option;
+  pattern : step list option;
+  min_length : int option;
+  max_length : int option;
+  minimum : float option;
+  maximum : float option;
+  min_items : int option;
+  max_items : int option;
+  required : string list option;
+  members : (string * shape) list;
+  closed : string list option;
+  items : shape option;
+  values : shape option;
+  one_of : shape list;
+  discriminator : discriminator option;
+  all_of : shape list;
+}
+
+let empty =
+  {
+    kinds = None;
+    recognized = None;
+    enum = None;
+    pattern = None;
+    min_length = None;
+    max_length = None;
+    minimum = None;
+    maximum = None;
+    min_items = None;
+    max_items = None;
+    required = None;
+    members = [];
+    closed = None;
+    items = None;
+    values = None;
+    one_of = [];
+    discriminator = None;
+    all_of = [];
+  }
+
+(* ── Patterns ─────────────────────────────────────────────────────────── *)
+
+let last = 0x10FFFF
+
+(* ECMA-262's white space and line terminators: [\s]. *)
+let white_space =
+  [
+    (0x09, 0x0D);
+    (0x20, 0x20);
+    (0xA0, 0xA0);
+    (0x1680, 0x1680);
+    (0x2000, 0x200A);
+    (0x2028, 0x2029);
+    (0x202F, 0x202F);
+    (0x205F, 0x205F);
+    (0x3000, 0x3000);
+    (0xFEFF, 0xFEFF);
+  ]
+
+(* ECMA-262's line terminators, which [.] is none of. *)
+let line_terminators = [ (0x0A, 0x0A); (0x0D, 0x0D); (0x2028, 0x2029) ]
+let digits = [ (0x30, 0x39) ]
+let word = [ (0x30, 0x39); (0x41, 0x5A); (0x5F, 0x5F); (0x61, 0x7A) ]
+
+(* [ranges] sorted, with those that touch or overlap made one. *)
+let merged ranges =
+  List.fold_left
+    (fun out (from, to_) ->
+      match out with
+      | (first, upto) :: rest when from <= upto + 1 ->
+          (first, max upto to_) :: rest
+      | _ -> (from, to_) :: out)
+    [] (List.sort compare ranges)
+  |> List.rev
+
+(* Every code point [ranges] leave out. *)
+let complement ranges =
+  let out, next =
+    List.fold_left
+      (fun (out, next) (from, to_) ->
+        ((if from > next then (next, from - 1) :: out else out), to_ + 1))
+      ([], 0) (merged ranges)
+  in
+  List.rev (if next <= last then (next, last) :: out else out)
+
+let code_points text =
+  let rec go acc i =
+    if i >= String.length text then Array.of_list (List.rev acc)
+    else
+      let decoded = String.get_utf_8_uchar text i in
+      go
+        (Uchar.to_int (Uchar.utf_decode_uchar decoded) :: acc)
+        (i + Uchar.utf_decode_length decoded)
+  in
+  go [] 0
+
+exception Unspellable
+
+(* A pattern as the steps a text of its form takes: anchored at both ends, a
+   series of single characters, sets ([[...]], [[^...]]), [.], [\s], [\S],
+   [\d], [\D], [\w] and [\W], each with no quantifier or with [?], [*], [+],
+   [{n}], [{n,}] or [{n,m}]. Any other is unspellable. *)
+let steps_of pattern =
+  let n = String.length pattern in
+  if
+    n < 2
+    || pattern.[0] <> '^'
+    || pattern.[n - 1] <> '$'
+    || (n >= 3 && pattern.[n - 2] = '\\')
+  then raise Unspellable;
+  let body = code_points (String.sub pattern 1 (n - 2)) in
+  let length = Array.length body in
+  let at i = if i < length then Some body.(i) else None in
+  let is c i = at i = Some (Char.code c) in
+  let among chars i =
+    match at i with
+    | Some c -> c < 128 && String.contains chars (Char.chr c)
+    | None -> false
+  in
+  let single c = [ (c, c) ] in
+  let escaped i =
+    match at i with
+    | Some c when c = Char.code 's' -> white_space
+    | Some c when c = Char.code 'S' -> complement white_space
+    | Some c when c = Char.code 'd' -> digits
+    | Some c when c = Char.code 'D' -> complement digits
+    | Some c when c = Char.code 'w' -> word
+    | Some c when c = Char.code 'W' -> complement word
+    | Some c when among "\\^$.|?*+()[]{}/:-" i -> single c
+    | _ -> raise Unspellable
+  in
+  let rec set i ranges =
+    match at i with
+    | None -> raise Unspellable
+    | Some c when c = Char.code ']' ->
+        if ranges = [] then raise Unspellable else (i + 1, ranges)
+    | Some c when c = Char.code '[' -> raise Unspellable
+    | Some c ->
+        let i, from =
+          if c = Char.code '\\' then
+            if among "\\][^-." (i + 1) then (i + 1, body.(i + 1))
+            else raise Unspellable
+          else (i, c)
+        in
+        if is '-' (i + 1) && at (i + 2) <> None && not (is ']' (i + 2)) then (
+          let to_ = body.(i + 2) in
+          if is '\\' (i + 2) || is '[' (i + 2) || to_ < from then
+            raise Unspellable;
+          set (i + 3) ((from, to_) :: ranges))
+        else set (i + 1) ((from, from) :: ranges)
+  in
+  let number text =
+    if text <> "" && String.for_all (fun c -> c >= '0' && c <= '9') text then
+      int_of_string text
+    else raise Unspellable
+  in
+  let quantifier i =
+    match at i with
+    | Some c when c = Char.code '?' -> (i + 1, 0, Some 1)
+    | Some c when c = Char.code '*' -> (i + 1, 0, None)
+    | Some c when c = Char.code '+' -> (i + 1, 1, None)
+    | Some c when c = Char.code '{' ->
+        let rec close j =
+          match at j with
+          | None -> raise Unspellable
+          | Some c when c = Char.code '}' -> j
+          | Some c when c < 128 -> close (j + 1)
+          | Some _ -> raise Unspellable
+        in
+        let j = close (i + 1) in
+        let inside =
+          String.init (j - i - 1) (fun k -> Char.chr body.(i + 1 + k))
+        in
+        let min, max =
+          match String.index_opt inside ',' with
+          | None ->
+              let n = number inside in
+              (n, Some n)
+          | Some k ->
+              let upper =
+                String.sub inside (k + 1) (String.length inside - k - 1)
+              in
+              ( number (String.sub inside 0 k),
+                if upper = "" then None else Some (number upper) )
+        in
+        (j + 1, min, max)
+    | _ -> (i, 1, Some 1)
+  in
+  let rec steps i acc =
+    if i >= length then List.rev acc
+    else
+      let i, of_ =
+        match body.(i) with
+        | c when c = Char.code '[' ->
+            let negated = is '^' (i + 1) in
+            let i, ranges = set (if negated then i + 2 else i + 1) [] in
+            (i, if negated then complement ranges else merged ranges)
+        | c when c = Char.code '.' -> (i + 1, complement line_terminators)
+        | c when c = Char.code '\\' -> (i + 2, escaped (i + 1))
+        | _ when among "^$|?*+(){}]" i -> raise Unspellable
+        | c -> (i + 1, single c)
+      in
+      let i, min, max = quantifier i in
+      if among "?*+{" i then raise Unspellable;
+      steps i ({ of_; min; max } :: acc)
+  in
+  steps 0 []
+
+(* ── Kinds ────────────────────────────────────────────────────────────── *)
+
+(* Whether [kinds] allow a value of [kind]: a number allows an integer. *)
+let allows kinds kind =
+  List.mem kind kinds || (kind = Integer && List.mem Number kinds)
+
+let union a b = List.filter (fun k -> List.mem k a || List.mem k b) all_kinds
+
+(* [kinds] in the table's order, without an integer a number already allows. *)
+let ordered kinds =
+  List.filter
+    (fun k -> List.mem k kinds && not (k = Integer && List.mem Number kinds))
+    all_kinds
+
+let any_kind kinds = List.for_all (allows kinds) all_kinds
+
+let kind_of_type : Schema.type_name -> kind = function
+  | String -> String
+  | Object -> Object
+  | Integer -> Integer
+  | Array -> Array
+  | Boolean -> Boolean
+  | Number -> Number
+
+let kind_of_literal : Schema.literal -> kind = function
+  | String_literal _ -> String
+  | Int_literal _ -> Integer
+  | Bool_literal _ -> Boolean
+
+(* ── The derivation ───────────────────────────────────────────────────── *)
+
+exception Refused of Decode.error
+
+let refuse file pointer fmt =
+  Printf.ksprintf
+    (fun message -> raise (Refused { Decode.file; pointer; message }))
+    fmt
+
+(* A JSON Pointer's token for a member's name (RFC 6901). *)
+let token name =
+  String.concat "~1"
+    (List.map
+       (fun part -> String.concat "~0" (String.split_on_char '~' part))
+       (String.split_on_char '/' name))
+
+(* OpenAPI 3.0's [nullable], read as JSON Schema reads null: beside a single
+   type, null is one more kind the value may be; anywhere else (beside an
+   [allOf], 3.0's only way to make a reference nullable) the schema is a union
+   of null and the schema without it. *)
+type view =
+  | Plain of { schema : Schema.schema; null : bool }
+  | Or_null of Schema.schema
+
+let view file at (schema : Schema.schema) =
+  match schema.nullable with
+  | None -> Plain { schema; null = false }
+  | Some false ->
+      refuse file at
+        "states nullable false, which says nothing: a schema is nullable, or \
+         says nothing of null"
+  | Some true -> (
+      let schema = { schema with nullable = None } in
+      match schema.type_ with
+      | Some [ _ ] -> Plain { schema; null = true }
+      | _ -> Or_null schema)
+
+let variants file at (schema : Schema.schema) =
+  match (schema.one_of, schema.any_of) with
+  | Some _, Some _ -> refuse file at "states both oneOf and anyOf"
+  | Some variants, None -> Some ("oneOf", variants)
+  | None, Some variants -> Some ("anyOf", variants)
+  | None, None -> None
+
+type t = {
+  shapes : (string * shape) list;
+  inline :
+    file:string -> pointer:string -> Schema.t -> (shape, Decode.error) result;
+}
+
+(* [components] are each component's name, its file and its schema.
+   [unrecognized] is the failure codes.json reads an unrecognized code as. *)
+let derive ~unrecognized components =
+  try
+    let command_error =
+      match
+        List.find_opt (fun (name, _, _) -> name = "CommandError") components
+      with
+      | Some (_, file, Schema.Schema schema) -> (file, schema)
+      | Some (_, file, Schema.Boolean_schema _) ->
+          refuse file "" "is no schema with a code"
+      | None ->
+          refuse "openapi.json" "/components/schemas" "names no CommandError"
+    in
+    (* CommandError's code is read by its recognized codes, and no enum. *)
+    let recognized, components =
+      let file, schema = command_error in
+      if List.mem "code" (Option.value schema.required ~default:[]) then
+        refuse file "/required"
+          "requires code, and codes.json reads a code its enum does not name \
+           as %s, as one that states none"
+          unrecognized;
+      let code =
+        match Option.bind schema.properties (List.assoc_opt "code") with
+        | Some (Schema.Schema code) -> code
+        | _ -> refuse file "/properties" "describes no code of its own"
+      in
+      let codes =
+        match code.enum with
+        | Some codes ->
+            List.map
+              (function
+                | Schema.String_literal code -> code
+                | _ ->
+                    refuse file "/properties/code/enum"
+                      "states a code that is no text")
+              codes
+        | None ->
+            refuse file "/properties/code"
+              "is one of no enum, and codes.json reads a code the enum does \
+               not name as %s"
+              unrecognized
+      in
+      let properties =
+        List.map
+          (fun (name, property) ->
+            if name = "code" then (name, Schema.Schema { code with enum = None })
+            else (name, property))
+          (Option.get schema.properties)
+      in
+      ( codes,
+        List.map
+          (fun (name, file, s) ->
+            if name = "CommandError" then
+              ( name,
+                file,
+                Schema.Schema { schema with properties = Some properties } )
+            else (name, file, s))
+          components )
+    in
+    let file_of = Hashtbl.create 256 and name_of = Hashtbl.create 256 in
+    List.iter
+      (fun (name, file, schema) ->
+        Hashtbl.replace file_of name (file, schema);
+        Hashtbl.replace name_of file name)
+      components;
+    let referred (reference : Decode.reference) =
+      match Decode.resolve reference with
+      | file, "" -> (
+          match Hashtbl.find_opt name_of file with
+          | Some name -> name
+          | None ->
+              refuse reference.file reference.pointer
+                "names %s, which is no component of openapi.json"
+                reference.target)
+      | _ ->
+          refuse reference.file reference.pointer
+            "names %s, a place within a component" reference.target
+    in
+    let component_kinds = Hashtbl.create 256 in
+    let rec kinds_of file at (schema : Schema.t) =
+      match schema with
+      | Boolean_schema true -> all_kinds
+      | Boolean_schema false ->
+          refuse file at
+            "allows no value, which the table does not know how to state"
+      | Schema schema -> (
+          match view file at schema with
+          | Or_null schema -> union [ Null ] (plain_kinds file at schema)
+          | Plain { schema; null } ->
+              let kinds = plain_kinds file at schema in
+              if null then union [ Null ] kinds else kinds)
+    and plain_kinds file at (schema : Schema.schema) =
+      match schema.ref_ with
+      | Some reference -> (
+          let name = referred reference in
+          match Hashtbl.find_opt component_kinds name with
+          | Some kinds -> kinds
+          | None ->
+              (* A component that refers to itself before it says its kind
+                 may be any. *)
+              Hashtbl.replace component_kinds name all_kinds;
+              let file, schema = Hashtbl.find file_of name in
+              let kinds = kinds_of file "" schema in
+              Hashtbl.replace component_kinds name kinds;
+              kinds)
+      | None -> (
+          match (schema.type_, schema.all_of, variants file at schema) with
+          | Some types, _, _ -> ordered_set (List.map kind_of_type types)
+          | None, Some parts, _ ->
+              List.fold_left
+                (fun (kinds, i) part ->
+                  let allowed =
+                    kinds_of file (Printf.sprintf "%s/allOf/%d" at i) part
+                  in
+                  ( List.filter
+                      (fun k -> allows kinds k && allows allowed k)
+                      all_kinds,
+                    i + 1 ))
+                (all_kinds, 0) parts
+              |> fst
+          | None, None, Some (keyword, variants) ->
+              List.fold_left union []
+                (List.mapi
+                   (fun i variant ->
+                     kinds_of file
+                       (Printf.sprintf "%s/%s/%d" at keyword i)
+                       variant)
+                   variants)
+          | None, None, None -> (
+              if
+                schema.properties <> None || schema.required <> None
+                || schema.additional_properties <> None
+              then [ Object ]
+              else if schema.items <> None then [ Array ]
+              else
+                match schema.enum with
+                | Some values -> ordered_set (List.map kind_of_literal values)
+                | None -> all_kinds))
+    and ordered_set kinds = List.filter (fun k -> List.mem k kinds) all_kinds in
+    let rec closed_schema file at (schema : Schema.t) =
+      match schema with
+      | Boolean_schema _ -> false
+      | Schema schema -> (
+          match view file at schema with
+          | Or_null _ -> false
+          | Plain { schema; _ } -> (
+              match schema.ref_ with
+              | Some reference ->
+                  let file, schema =
+                    Hashtbl.find file_of (referred reference)
+                  in
+                  closed_schema file "" schema
+              | None ->
+                  schema.additional_properties = Some (Boolean_schema false)
+                  || schema.max_properties = Some 0
+                  || List.exists (closed_schema file at)
+                       (Option.value schema.all_of ~default:[])))
+    in
+    let rec shape_of file at (schema : Schema.t) =
+      match schema with
+      | Boolean_schema true -> Shape empty
+      | Boolean_schema false ->
+          refuse file at
+            "allows no value, which the table does not know how to state"
+      | Schema schema -> (
+          match view file at schema with
+          | Or_null inner ->
+              let kinds = union [ Null ] (plain_kinds file at inner) in
+              Shape
+                {
+                  empty with
+                  kinds =
+                    (if any_kind kinds then None else Some (ordered kinds));
+                  one_of =
+                    [
+                      Shape { empty with kinds = Some [ Null ] };
+                      plain_shape file at inner ~null:false;
+                    ];
+                }
+          | Plain { schema; null } -> plain_shape file at schema ~null)
+    and plain_shape file at (schema : Schema.schema) ~null =
+      let {
+        Schema.ref_;
+        comment = _;
+        title = _;
+        description = _;
+        type_;
+        format = _;
+        enum;
+        const;
+        default = _;
+        example = _;
+        nullable = _;
+        properties;
+        required;
+        additional_properties;
+        property_names;
+        min_properties;
+        max_properties;
+        items;
+        min_items;
+        max_items;
+        unique_items = _;
+        min_length;
+        max_length;
+        pattern;
+        minimum;
+        maximum;
+        all_of;
+        any_of;
+        one_of;
+        not_;
+        discriminator;
+      } =
+        schema
+      in
+      List.iter
+        (fun (keyword, stated) ->
+          if stated then
+            refuse file at
+              "states %s, which the table does not know how to state" keyword)
+        [
+          ("const", const <> None);
+          ("propertyNames", property_names <> None);
+          ("minProperties", min_properties <> None);
+          ("not", not_ <> None);
+        ];
+      match ref_ with
+      | Some reference -> Ref (referred reference)
+      | None -> (
+          let own =
+            type_ <> None || enum <> None || pattern <> None
+            || min_length <> None || max_length <> None || minimum <> None
+            || maximum <> None || min_items <> None || max_items <> None
+            || properties <> None || required <> None
+            || additional_properties <> None
+            || max_properties <> None || items <> None || one_of <> None
+            || any_of <> None
+          in
+          match all_of with
+          (* An allOf around one schema only describes it. *)
+          | Some [ part ] when not own -> shape_of file (at ^ "/allOf/0") part
+          | _ ->
+              let kinds =
+                let kinds = plain_kinds file at schema in
+                if null then union [ Null ] kinds else kinds
+              in
+              if enum <> None && List.mem Null kinds then
+                refuse file at
+                  "states an enum beside a type that allows null, and an enum \
+                   states no null";
+              let count keyword = function
+                | Some n when n < 0 ->
+                    refuse file
+                      (at ^ "/" ^ keyword)
+                      "is %d, which is no count" n
+                | bound -> bound
+              in
+              let pattern =
+                Option.map
+                  (fun text ->
+                    try steps_of text
+                    with Unspellable ->
+                      refuse file (at ^ "/pattern")
+                        "is %s, which is not a pattern the table can spell out"
+                        text)
+                  pattern
+              in
+              let names =
+                List.sort String.compare
+                  (List.map fst (Option.value properties ~default:[]))
+              in
+              let members =
+                List.map
+                  (fun name ->
+                    ( name,
+                      shape_of file
+                        (at ^ "/properties/" ^ token name)
+                        (List.assoc name (Option.get properties)) ))
+                  names
+              in
+              let closed =
+                match (additional_properties, max_properties) with
+                | Some (Boolean_schema false), _ -> Some names
+                | _, Some 0 when names = [] -> Some []
+                | _, Some n ->
+                    refuse file (at ^ "/maxProperties")
+                      "is %d beside %d properties, and the table states only \
+                       an object that carries none"
+                      n (List.length names)
+                | _, None -> None
+              in
+              let values =
+                match additional_properties with
+                | Some (Schema _ as value) ->
+                    Some (shape_of file (at ^ "/additionalProperties") value)
+                | Some (Boolean_schema _) | None -> None
+              in
+              let one_of, discriminator =
+                match (variants file at schema, discriminator) with
+                | None, None -> ([], None)
+                | None, Some _ ->
+                    refuse file (at ^ "/discriminator")
+                      "is beside no oneOf or anyOf"
+                | Some (keyword, variants), discriminator ->
+                    let shapes =
+                      List.mapi
+                        (fun i variant ->
+                          shape_of file
+                            (Printf.sprintf "%s/%s/%d" at keyword i)
+                            variant)
+                        variants
+                    in
+                    ( shapes,
+                      Option.map
+                        (fun (d : Schema.discriminator) ->
+                          let at = at ^ "/discriminator" in
+                          let mapping =
+                            match d.mapping with
+                            | Some mapping -> mapping
+                            | None -> refuse file at "states no mapping"
+                          in
+                          let named =
+                            List.map
+                              (function
+                                | Schema.Schema { ref_ = Some reference; _ } ->
+                                    Some (referred reference)
+                                | _ -> None)
+                              variants
+                          in
+                          {
+                            property = d.property_name;
+                            mapping =
+                              List.map
+                                (fun (value, target) ->
+                                  let pointer =
+                                    at ^ "/mapping/" ^ token value
+                                  in
+                                  let name =
+                                    referred { Decode.target; file; pointer }
+                                  in
+                                  let rec place i = function
+                                    | [] ->
+                                        refuse file pointer
+                                          "maps %S to %s, which is none of its \
+                                           variants"
+                                          value target
+                                    | Some n :: _ when n = name -> i
+                                    | _ :: rest -> place (i + 1) rest
+                                  in
+                                  (value, place 0 named))
+                                mapping;
+                          })
+                        discriminator )
+              in
+              let all_of =
+                match all_of with
+                | None -> []
+                | Some parts ->
+                    if
+                      List.length parts > 1
+                      && List.exists (closed_schema file (at ^ "/allOf")) parts
+                    then
+                      refuse file (at ^ "/allOf")
+                        "has a closed part, which would refuse the other \
+                         parts' members";
+                    List.mapi
+                      (fun i part ->
+                        shape_of file (Printf.sprintf "%s/allOf/%d" at i) part)
+                      parts
+              in
+              Shape
+                {
+                  kinds =
+                    (if any_kind kinds then None else Some (ordered kinds));
+                  recognized = None;
+                  enum;
+                  pattern;
+                  min_length = count "minLength" min_length;
+                  max_length = count "maxLength" max_length;
+                  minimum;
+                  maximum;
+                  min_items = count "minItems" min_items;
+                  max_items = count "maxItems" max_items;
+                  required =
+                    (match required with
+                    | Some (_ :: _) -> required
+                    | _ -> None);
+                  members;
+                  closed;
+                  items = Option.map (shape_of file (at ^ "/items")) items;
+                  values;
+                  one_of;
+                  discriminator;
+                  all_of;
+                })
+    in
+    let unpruned =
+      List.map
+        (fun (name, file, schema) ->
+          let shape = shape_of file "" schema in
+          if name <> "CommandError" then (name, shape)
+          else
+            match shape with
+            | Shape ({ members; _ } as body) -> (
+                match List.assoc_opt "code" members with
+                | Some (Shape code) ->
+                    ( name,
+                      Shape
+                        {
+                          body with
+                          members =
+                            List.map
+                              (fun (member, shape) ->
+                                if member = "code" then
+                                  ( member,
+                                    Shape
+                                      { code with recognized = Some recognized }
+                                  )
+                                else (member, shape))
+                              members;
+                        } )
+                | _ ->
+                    refuse file "/properties/code"
+                      "is described by no shape of its own to state its \
+                       recognized codes in")
+            | Ref _ ->
+                refuse file ""
+                  "is described by no shape of its own to state its recognized \
+                   codes in")
+        components
+    in
+    (* Which components can be wrong: one is read as wrong in no way until it
+       is found to be, and found again until nothing more is. *)
+    let can_fault_component = Hashtbl.create 256 in
+    let rec can_fault = function
+      | Ref name -> Hashtbl.mem can_fault_component name
+      | Shape b ->
+          b.kinds <> None || b.recognized <> None || b.enum <> None
+          || b.pattern <> None || b.min_length <> None || b.max_length <> None
+          || b.minimum <> None || b.maximum <> None || b.min_items <> None
+          || b.max_items <> None || b.closed <> None || b.required <> None
+          || List.exists (fun (_, member) -> can_fault member) b.members
+          || Option.fold ~none:false ~some:can_fault b.items
+          || Option.fold ~none:false ~some:can_fault b.values
+          || List.exists can_fault b.one_of
+          || List.exists can_fault b.all_of
+    in
+    let rec settle () =
+      let found =
+        List.filter
+          (fun (name, shape) ->
+            (not (Hashtbl.mem can_fault_component name)) && can_fault shape)
+          unpruned
+      in
+      if found <> [] then (
+        List.iter
+          (fun (name, _) -> Hashtbl.replace can_fault_component name ())
+          found;
+        settle ())
+    in
+    settle ();
+    let rec pruned = function
+      | Ref _ as shape -> if can_fault shape then shape else Shape empty
+      | Shape b ->
+          let kept = function
+            | Some shape when can_fault shape -> Some (pruned shape)
+            | _ -> None
+          in
+          let unions = List.exists can_fault b.one_of in
+          Shape
+            {
+              b with
+              members =
+                List.filter_map
+                  (fun (name, member) ->
+                    if can_fault member then Some (name, pruned member)
+                    else None)
+                  b.members;
+              items = kept b.items;
+              values = kept b.values;
+              one_of = (if unions then List.map pruned b.one_of else []);
+              discriminator = (if unions then b.discriminator else None);
+              all_of = List.map pruned (List.filter can_fault b.all_of);
+            }
+    in
+    let shapes =
+      List.sort
+        (fun (a, _) (b, _) -> String.compare a b)
+        (List.map (fun (name, shape) -> (name, pruned shape)) unpruned)
+    in
+    let inline ~file ~pointer schema =
+      try Ok (pruned (shape_of file pointer schema))
+      with Refused error -> Error error
+    in
+    Ok { shapes; inline }
+  with Refused error -> Error [ error ]
+
+(* ── As JSON ──────────────────────────────────────────────────────────── *)
+
+let number value =
+  if Float.is_integer value then `Int (Float.to_int value) else `Float value
+
+let literal : Schema.literal -> Yojson.Safe.t = function
+  | String_literal s -> `String s
+  | Int_literal n -> `Int n
+  | Bool_literal b -> `Bool b
+
+let strings list = `List (List.map (fun s -> `String s) list)
+
+(* A shape as the table writes it. [pairs] writes an object's members as
+   [name, shape] pairs, for a reader whose JSON objects keep no order. *)
+let rec to_json ~pairs = function
+  | Ref name -> `Assoc [ ("ref", `String name) ]
+  | Shape b ->
+      let part name value = Option.map (fun value -> (name, value)) value in
+      let list name = function
+        | [] -> None
+        | items -> Some (name, `List items)
+      in
+      let int = Option.map (fun n -> `Int n) in
+      `Assoc
+        (List.filter_map Fun.id
+           [
+             part "kinds"
+               (Option.map (fun ks -> strings (List.map kind_name ks)) b.kinds);
+             part "recognized" (Option.map strings b.recognized);
+             part "enum"
+               (Option.map (fun vs -> `List (List.map literal vs)) b.enum);
+             part "pattern"
+               (Option.map
+                  (fun steps ->
+                    `List
+                      (List.map
+                         (fun step ->
+                           `Assoc
+                             ([
+                                ( "of",
+                                  `List
+                                    (List.map
+                                       (fun (from, to_) ->
+                                         `List [ `Int from; `Int to_ ])
+                                       step.of_) );
+                                ("min", `Int step.min);
+                              ]
+                             @ Option.fold ~none:[]
+                                 ~some:(fun max -> [ ("max", `Int max) ])
+                                 step.max))
+                         steps))
+                  b.pattern);
+             part "minLength" (int b.min_length);
+             part "maxLength" (int b.max_length);
+             part "minimum" (Option.map number b.minimum);
+             part "maximum" (Option.map number b.maximum);
+             part "minItems" (int b.min_items);
+             part "maxItems" (int b.max_items);
+             part "required" (Option.map strings b.required);
+             (match b.members with
+             | [] -> None
+             | members when pairs ->
+                 Some
+                   ( "members",
+                     `List
+                       (List.map
+                          (fun (name, shape) ->
+                            `List [ `String name; to_json ~pairs shape ])
+                          members) )
+             | members ->
+                 Some
+                   ( "members",
+                     `Assoc
+                       (List.map
+                          (fun (name, shape) -> (name, to_json ~pairs shape))
+                          members) ));
+             part "closed" (Option.map strings b.closed);
+             part "items" (Option.map (to_json ~pairs) b.items);
+             part "values" (Option.map (to_json ~pairs) b.values);
+             list "oneOf" (List.map (to_json ~pairs) b.one_of);
+             part "discriminator"
+               (Option.map
+                  (fun d ->
+                    `Assoc
+                      [
+                        ("property", `String d.property);
+                        ( "mapping",
+                          `Assoc
+                            (List.map (fun (v, i) -> (v, `Int i)) d.mapping) );
+                      ])
+                  b.discriminator);
+             list "allOf" (List.map (to_json ~pairs) b.all_of);
+           ])

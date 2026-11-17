@@ -297,7 +297,7 @@ func TestMalformedGeneratedSchemasFailLoudly(t *testing.T) {
 	defer func() {
 		failure := recover()
 		message, ok := failure.(string)
-		if !ok || !strings.Contains(message, "schemas_gen.json is not what codegen/node/schemas/generate-required-go.mjs writes:") {
+		if !ok || !strings.Contains(message, "schemas_gen.json is not what codegen/lib/required writes:") {
 			t.Fatalf("malformed generated table must identify its source, got %v", failure)
 		}
 	}()
