@@ -43,6 +43,12 @@ per language it writes:
   `Required.Haskell` write it for theirs, Haskell's with each bus channel's
   payload and each HTTP operation's reply. `Required.Go` holds it to the
   types `go/api` declares.
+- `unicode-case`: the code points Unicode gives the Cased and the
+  Case_Ignorable property, for the C#, Kotlin and Go SDKs, whose runtimes
+  give neither. `Ucd` reads them from Unicode's own
+  `DerivedCoreProperties.txt`, which [`ucd/`](ucd) holds;
+  `Unicode_case.Json` writes C#'s and Kotlin's copy, and `Unicode_case.Go`
+  Go's range tables.
 
 `Text` measures and spells text: a width in code points, a word ended by
 ASCII white space, a string as JSON writes it. `Output` is the drift gate.

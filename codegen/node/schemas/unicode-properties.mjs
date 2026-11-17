@@ -3,9 +3,10 @@
 // from their own runtime are generated from.
 //
 //   codegen/node/schemas/generate-annotation-adapters-haskell.mjs → haskell/sdk/generated/Xynolog/Internal/Generated/UnicodeCase.hs
-//   codegen/node/schemas/generate-unicode-case.mjs                → csharp/sdk/generators/Xynolog.Generator/unicode-case.json,
-//                                                                       kotlin/sdk/src/codegen/unicode-case.json and
-//                                                                       go/annotations/unicodecase_gen.go
+//
+// The unicode-case group (codegen/lib/unicode_case) writes C#'s, Kotlin's and
+// Go's tables from Unicode's own files (codegen/ucd). This goes when Haskell's
+// generator is ported.
 
 /** The Unicode version of this Node's data. */
 export const unicodeVersion = process.versions.unicode;

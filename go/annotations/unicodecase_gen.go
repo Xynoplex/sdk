@@ -1,6 +1,6 @@
-// Code generated from Node's Unicode 17.0 data by codegen/node/schemas/generate-unicode-case.mjs — DO NOT EDIT.
+// Code generated from Unicode 17.0.0's DerivedCoreProperties.txt (codegen/ucd); DO NOT EDIT.
 //
-// Regenerate: node codegen/node/schemas/generate-unicode-case.mjs
+// Regenerate: make generate (codegen/lib/unicode_case/go.ml)
 // C#'s and Kotlin's copies of the two properties are generated from the same data.
 
 package annotations

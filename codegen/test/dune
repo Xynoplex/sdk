@@ -13,6 +13,11 @@
  (modules required)
  (libraries xynolog_codegen yojson alcotest))
 
+(test
+ (name unicode_case)
+ (modules unicode_case)
+ (libraries xynolog_codegen yojson alcotest))
+
 ; Run with Protocol's specs/src, which is outside this project:
 ; dune exec test/census.exe -- ../protocol/specs/src
 (executable
