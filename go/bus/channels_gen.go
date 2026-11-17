@@ -6,10 +6,6 @@ package bus
 
 import "github.com/xynolog/sdk/go/api"
 
-// Channel is a bus channel's name: what a channel chosen at run time is
-// given as, and what each typed value below is named by.
-type Channel string
-
 // Every channel that is no operation's request, typed by the payload it
 // carries. An operation's request is the operation (operations_gen.go).
 var (

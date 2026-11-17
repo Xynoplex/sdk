@@ -46,35 +46,34 @@ let derive (t : T.t) =
 let quoted = Text.quoted
 
 let go (t : T.t) =
+  let module G = Go_syntax in
   let constant name docs value =
-    Text.go_comment ~indent:"" (name ^ ": " ^ docs)
-    ^ "\nconst " ^ name ^ " = " ^ quoted value ^ "\n"
+    G.Const (G.spec ~doc:(G.prose (name ^ ": " ^ docs)) name (G.Quoted value))
   in
   let name (c : T.client) = String.capitalize_ascii c.name ^ "ClientID" in
   {
     Output.path = "go/oauthclients_gen.go";
     text =
-      String.concat ""
-        [
-          {|// Code generated from protocol/specs/src/session/oauth.json — DO NOT EDIT.
-//
-// Regenerate: make generate (|};
-          Banner.writer __FILE__;
-          {|)
-// The TypeScript (typescript/core/src/oauth-clients.ts), Rust
-// (rust/sdk/build.rs) and Python (xynolog.oauth_clients) SDKs generate
-// from the same file.
-
-package xynolog
-
-|};
-          String.concat "\n"
-            (List.map
-               (fun (c : T.client) -> constant (name c) c.docs c.id)
-               t.clients);
-          "\n";
-          constant "SignInScope" t.scope.docs t.scope.value;
-        ];
+      G.text
+        {
+          header =
+            G.verbatim
+              ("Code generated from protocol/specs/src/session/oauth.json — DO \
+                NOT EDIT.\n\n\
+                Regenerate: make generate (" ^ Banner.writer __FILE__
+             ^ ")\n\
+                The TypeScript (typescript/core/src/oauth-clients.ts), Rust\n\
+                (rust/sdk/build.rs) and Python (xynolog.oauth_clients) SDKs \
+                generate\n\
+                from the same file.");
+          package = "xynolog";
+          imports = [];
+          decls =
+            List.map
+              (fun (c : T.client) -> constant (name c) c.docs c.id)
+              t.clients
+            @ [ constant "SignInScope" t.scope.docs t.scope.value ];
+        };
   }
 
 let python (t : T.t) =

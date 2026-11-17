@@ -65,20 +65,6 @@ var LimitsOperations = []Operation[api.InferenceLimitsRequest, api.InferenceLimi
 	MatchLimitsRequested,
 }
 
-// Replies is the two channels a request is answered on, the type its
-// failure is read as, and what its result states beside its response.
-type Replies struct {
-	Result  Channel
-	Failure Channel
-	// FailurePayload is the type of what the failure channel carries: a
-	// failure is held to its shape before it is read.
-	FailurePayload reflect.Type
-	// ReplyNames is what the result states beside its response: properties of
-	// the request, which whoever answers states again (the resource a context
-	// was gathered for, the reference a search was for). None, for most.
-	ReplyNames []string
-}
-
 // Operations is each operation's replies, by the name of its request
 // channel: for a request named at run time. 41 operations.
 var Operations = map[Channel]Replies{

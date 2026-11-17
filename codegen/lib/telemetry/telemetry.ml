@@ -144,6 +144,7 @@ let derive (table : T.t) =
 let quoted = Text.quoted
 
 let go (t : t) =
+  let module G = Go_syntax in
   let span_kind = function
     | "internal" -> "trace.SpanKindInternal"
     | "server" -> "trace.SpanKindServer"
@@ -155,73 +156,68 @@ let go (t : t) =
     List.sort_uniq compare
       (List.concat_map (fun r -> r.all) (t.spans @ t.metrics))
   in
+  let row type_ doc prefix r fields =
+    G.Var
+      (G.spec ~doc:(G.prose doc)
+         (go_identifier prefix r.name)
+         (G.inline ~of_:(G.Named type_)
+            (G.keyed "name" (G.Quoted r.name) :: fields)))
+  in
   {
     Output.path = "go/telemetry_gen.go";
     text =
-      String.concat ""
-        [
-          {|// Code generated from protocol/specs/src/sdk-telemetry/telemetry.json — DO NOT EDIT.
-//
-// Regenerate: make generate (|};
-          Banner.writer __FILE__;
-          {|)
-// The Python table is generated from the same table.
-
-package xynolog
-
-import (
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/trace"
-)
-
-// telemetryChannel stands for the bus channel in a span's name.
-const telemetryChannel = |};
-          quoted channel;
-          {|
-
-// telemetrySpan is a span the SDK's transports export: its name, in which
-// telemetryChannel stands for the bus channel, and its kind.
-type telemetrySpan struct {
-	name string
-	kind trace.SpanKind
-}
-
-// telemetryMetric is a metric the SDK's transports export: its name, and
-// what it means, which is its description.
-type telemetryMetric struct {
-	name    string
-	meaning string
-}
-
-|};
-          String.concat "\n"
-            (List.map
-               (fun r ->
-                 Text.go_comment ~indent:"" r.meaning
-                 ^ "\nvar "
-                 ^ go_identifier "span" r.name
-                 ^ " = telemetrySpan{name: " ^ quoted r.name ^ ", kind: "
-                 ^ span_kind r.kind ^ "}\n")
-               t.spans);
-          "\n";
-          String.concat "\n"
-            (List.map
-               (fun r ->
-                 Text.go_comment ~indent:"" (r.meaning ^ " A " ^ r.kind ^ ".")
-                 ^ "\nvar "
-                 ^ go_identifier "metric" r.name
-                 ^ " = telemetryMetric{name: " ^ quoted r.name ^ ", meaning: "
-                 ^ quoted r.meaning ^ "}\n")
-               t.metrics);
-          "\n// The attributes the rows carry.\n\n";
-          String.concat "\n"
-            (List.map
-               (fun k ->
-                 "const " ^ go_identifier "key" k ^ " attribute.Key = "
-                 ^ quoted k)
-               keys);
-          "\n";
-        ];
+      G.text
+        {
+          header =
+            G.verbatim
+              ("Code generated from \
+                protocol/specs/src/sdk-telemetry/telemetry.json — DO NOT \
+                EDIT.\n\n\
+                Regenerate: make generate (" ^ Banner.writer __FILE__
+             ^ ")\nThe Python table is generated from the same table.");
+          package = "xynolog";
+          imports =
+            [
+              [
+                "go.opentelemetry.io/otel/attribute";
+                "go.opentelemetry.io/otel/trace";
+              ];
+            ];
+          decls =
+            [
+              G.Const
+                (G.spec
+                   ~doc:
+                     [
+                       G.Line
+                         "telemetryChannel stands for the bus channel in a \
+                          span's name.";
+                     ]
+                   "telemetryChannel" (G.Quoted channel));
+            ]
+            @ List.map
+                (fun r ->
+                  row "telemetrySpan" r.meaning "span" r
+                    [ G.keyed "kind" (G.Name (span_kind r.kind)) ])
+                t.spans
+            @ List.map
+                (fun r ->
+                  row "telemetryMetric"
+                    (r.meaning ^ " A " ^ r.kind ^ ".")
+                    "metric" r
+                    [ G.keyed "meaning" (G.Quoted r.meaning) ])
+                t.metrics
+            @ [
+                G.Comment [ G.Line "The attributes the rows carry." ];
+                G.Adjacent
+                  (List.map
+                     (fun k ->
+                       G.Const
+                         (G.spec ~type_:(G.Named "attribute.Key")
+                            (go_identifier "key" k) (G.Quoted k)))
+                     keys);
+              ];
+        };
   }
 
 let python (t : t) =

@@ -34,6 +34,20 @@ import (
 // instrumentationScope is the scope every span and count here is made under.
 const instrumentationScope = "xynolog"
 
+// telemetrySpan is a span the SDK's transports export: its name, in which
+// telemetryChannel stands for the bus channel, and its kind.
+type telemetrySpan struct {
+	name string
+	kind trace.SpanKind
+}
+
+// telemetryMetric is a metric the SDK's transports export: its name, and
+// what it means, which is its description.
+type telemetryMetric struct {
+	name    string
+	meaning string
+}
+
 // TraceContext is a trace as the wire carries one: what a frame was sent
 // under. Its zero value is no trace.
 type TraceContext struct {

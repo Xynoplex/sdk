@@ -14,6 +14,13 @@ let quoted = Text.quoted
 let snake name = String.lowercase_ascii (Text.upper_snake name)
 let regenerate = "make generate (" ^ Banner.writer __FILE__ ^ ")"
 
+module G = Go_syntax
+
+let go_header ~from_ ~also =
+  G.verbatim
+    ("Code generated from protocol/specs/src/" ^ from_
+   ^ " — DO NOT EDIT.\n\nRegenerate: " ^ regenerate ^ "\n" ^ also)
+
 let go_entry (entry : Flat.t) =
   let field (f : Flat.field) =
     (* An absent optional property is the zero value: "" for a string, the
@@ -21,65 +28,100 @@ let go_entry (entry : Flat.t) =
     let omit =
       if f.required then "" else if f.is_time then ",omitzero" else ",omitempty"
     in
-    Text.go_comment ~indent:"\t" f.description
-    ^ "\n\t"
-    ^ String.capitalize_ascii f.name
-    ^ " "
-    ^ (if f.is_time then "time.Time" else "string")
-    ^ " `json:\"" ^ f.name ^ omit ^ "\"`"
+    {
+      G.doc = G.prose f.description;
+      names = [ String.capitalize_ascii f.name ];
+      type_ = G.Named (if f.is_time then "time.Time" else "string");
+      tag = Some ("json:\"" ^ f.name ^ omit ^ "\"");
+    }
   in
   let required = String.uncapitalize_ascii entry.title ^ "Required" in
   {
     Output.path = "go/signin_gen.go";
     text =
-      String.concat ""
-        [
-          "// Code generated from protocol/specs/src/" ^ schema_file
-          ^ " — DO NOT EDIT.\n//\n// Regenerate: " ^ regenerate
-          ^ "\n\
-             // The Rust (xynolog::sign_in_store) and Python (xynolog.sign_in) \
-             SDKs generate\n\
-             // their entries from the same schema.\n\n\
-             package xynolog\n";
-          (if List.exists (fun (f : Flat.field) -> f.is_time) entry.fields then
-             "\nimport \"time\"\n"
-           else "");
-          "\n";
-          Text.go_comment ~indent:"" (entry.title ^ ": " ^ entry.description);
-          "\ntype " ^ entry.title ^ " struct {\n";
-          String.concat "\n\n" (List.map field entry.fields);
-          "\n}\n\n// " ^ required ^ ": the properties every " ^ entry.title
-          ^ " states. A member of the\n// document that lacks one is not a "
-          ^ entry.title ^ ".\nvar " ^ required ^ " = []string{"
-          ^ String.concat ", " (List.map quoted entry.required)
-          ^ "}\n";
-        ];
+      G.text
+        {
+          header =
+            go_header ~from_:schema_file
+              ~also:
+                "The Rust (xynolog::sign_in_store) and Python \
+                 (xynolog.sign_in) SDKs generate\n\
+                 their entries from the same schema.";
+          package = "xynolog";
+          imports =
+            (if List.exists (fun (f : Flat.field) -> f.is_time) entry.fields
+             then [ [ "time" ] ]
+             else []);
+          decls =
+            [
+              G.Type
+                {
+                  doc = G.prose (entry.title ^ ": " ^ entry.description);
+                  name = entry.title;
+                  def =
+                    G.Struct
+                      {
+                        fields = List.map field entry.fields;
+                        spacing = G.Spaced;
+                      };
+                };
+              G.Var
+                (G.spec
+                   ~doc:
+                     (G.verbatim
+                        (required ^ ": the properties every " ^ entry.title
+                       ^ " states. A member of the\n\
+                          document that lacks one is not a " ^ entry.title ^ "."
+                        ))
+                   required
+                   (G.inline ~of_:(G.Slice (G.Named "string"))
+                      (List.map (fun r -> G.item (G.Quoted r)) entry.required)));
+            ];
+        };
   }
 
 let go_owner_only (o : Owner_only.t) =
+  let mode name (m : Owner_only.mode) =
+    G.Const
+      (G.spec
+         ~doc:(G.prose (name ^ ": " ^ m.docs))
+         ~type_:(G.Named "os.FileMode") name (G.Octal m.octal))
+  in
   {
     Output.path = "go/owneronly_gen.go";
     text =
-      String.concat ""
-        [
-          "// Code generated from protocol/specs/src/" ^ Owner_only.file
-          ^ " — DO NOT EDIT.\n//\n// Regenerate: " ^ regenerate
-          ^ "\n\
-             // The Rust, Python and Kotlin SDKs generate theirs from the same \
-             file.\n\n\
-             package xynolog\n\n\
-             import \"os\"\n\n";
-          Text.go_comment ~indent:"" ("ownerOnlyDirMode: " ^ o.directory.docs);
-          "\nconst ownerOnlyDirMode os.FileMode = 0o" ^ o.directory.octal
-          ^ "\n\n";
-          Text.go_comment ~indent:"" ("ownerOnlyFileMode: " ^ o.file.docs);
-          "\nconst ownerOnlyFileMode os.FileMode = 0o" ^ o.file.octal ^ "\n\n";
-          Text.go_comment ~indent:""
-            ("ownerOnlyAccessList: " ^ o.access_list.docs);
-          "\nfunc ownerOnlyAccessList(owner string) string {\n\treturn "
-          ^ quoted o.access_list.before
-          ^ " + owner + " ^ quoted o.access_list.after ^ "\n}\n";
-        ];
+      G.text
+        {
+          header =
+            go_header ~from_:Owner_only.file
+              ~also:
+                "The Rust, Python and Kotlin SDKs generate theirs from the \
+                 same file.";
+          package = "xynolog";
+          imports = [ [ "os" ] ];
+          decls =
+            [
+              mode "ownerOnlyDirMode" o.directory;
+              mode "ownerOnlyFileMode" o.file;
+              G.func
+                ~doc:(G.prose ("ownerOnlyAccessList: " ^ o.access_list.docs))
+                ~params:[ ("owner", G.Named "string") ]
+                ~results:(G.Unnamed [ G.Named "string" ]) "ownerOnlyAccessList"
+                (G.Block
+                   [
+                     G.Return
+                       [
+                         G.Binary
+                           ( G.Binary
+                               ( G.Quoted o.access_list.before,
+                                 "+",
+                                 G.Name "owner" ),
+                             "+",
+                             G.Quoted o.access_list.after );
+                       ];
+                   ]);
+            ];
+        };
   }
 
 let python_entry (entry : Flat.t) =

@@ -1,13 +1,14 @@
 (* The two properties as Go range tables, in package annotations: Go's
    unicode package gives neither. *)
 
-let path = "go/annotations/unicodecase_gen.go"
-let hex code = Printf.sprintf "0x%04x" code
+module G = Go_syntax
 
-(* [ranges] as the [*unicode.RangeTable] named [name]: the ranges of the Basic
+let path = "go/annotations/unicodecase_gen.go"
+
+(* [ranges] as a [*unicode.RangeTable]: the ranges of the Basic
    Multilingual Plane as 16-bit ones, those beyond it as 32-bit ones, and a
    range that crosses from the one to the other split in two. *)
-let range_table name ranges =
+let range_table ranges =
   let r16 =
     List.filter_map
       (fun (first, last) ->
@@ -19,44 +20,55 @@ let range_table name ranges =
         if last > 0xFFFF then Some (max first 0x10000, last) else None)
       ranges
   in
-  let rows pairs =
-    String.concat "\n"
+  let rows type_ pairs =
+    G.lines ~of_:(G.Slice (G.Named type_))
       (List.map
          (fun (first, last) ->
-           Printf.sprintf "\t\t{%s, %s, 1}," (hex first) (hex last))
+           G.item
+             (G.inline
+                [ G.item (G.Hex first); G.item (G.Hex last); G.item (G.Int 1) ]))
          pairs)
   in
-  Printf.sprintf
-    "var %s = &unicode.RangeTable{\n\
-     \tR16: []unicode.Range16{\n\
-     %s\n\
-     \t},\n\
-     \tR32: []unicode.Range32{\n\
-     %s\n\
-     \t},\n\
-     \tLatinOffset: %d,\n\
-     }"
-    name (rows r16) (rows r32)
-    (List.length (List.filter (fun (_, last) -> last <= 0xFF) r16))
+  G.Unary
+    ( "&",
+      G.lines ~of_:(G.Named "unicode.RangeTable")
+        [
+          G.keyed "R16" (rows "unicode.Range16" r16);
+          G.keyed "R32" (rows "unicode.Range32" r32);
+          G.keyed "LatinOffset"
+            (G.Int
+               (List.length (List.filter (fun (_, last) -> last <= 0xFF) r16)));
+        ] )
+
+let table ~doc name ranges =
+  G.Var (G.spec ~doc:[ G.Line doc ] name (range_table ranges))
 
 let text ~version ~cased ~case_ignorable =
-  Printf.sprintf
-    "// Code generated from Unicode %s's DerivedCoreProperties.txt \
-     (codegen/ucd); DO NOT EDIT.\n\
-     //\n\
-     // Regenerate: make generate (codegen/lib/unicode_case/go.ml)\n\
-     // C#'s and Kotlin's copies of the two properties are generated from the \
-     same data.\n\n\
-     package annotations\n\n\
-     import \"unicode\"\n\n\
-     // cased is the code points Unicode gives the Cased property.\n\
-     %s\n\n\
-     // caseIgnorable is the code points Unicode gives the Case_Ignorable \
-     property.\n\
-     %s\n"
-    version
-    (range_table "cased" cased)
-    (range_table "caseIgnorable" case_ignorable)
+  G.text
+    {
+      header =
+        G.verbatim
+          (Printf.sprintf
+             "Code generated from Unicode %s's DerivedCoreProperties.txt \
+              (codegen/ucd); DO NOT EDIT.\n\n\
+              Regenerate: make generate (codegen/lib/unicode_case/go.ml)\n\
+              C#'s and Kotlin's copies of the two properties are generated \
+              from the same data."
+             version);
+      package = "annotations";
+      imports = [ [ "unicode" ] ];
+      decls =
+        [
+          table
+            ~doc:"cased is the code points Unicode gives the Cased property."
+            "cased" cased;
+          table
+            ~doc:
+              "caseIgnorable is the code points Unicode gives the \
+               Case_Ignorable property."
+            "caseIgnorable" case_ignorable;
+        ];
+    }
 
 let file ~version ~cased ~case_ignorable =
   { Output.path; text = text ~version ~cased ~case_ignorable }

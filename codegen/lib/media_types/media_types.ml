@@ -140,88 +140,80 @@ let constructor word =
     (List.map String.capitalize_ascii (String.split_on_char '-' word))
 
 let go (t : T.t) =
+  let module G = Go_syntax in
   let source word = "TextSource" ^ constructor word in
-  let width =
-    List.fold_left (fun w s -> max w (String.length (source s))) 0 t.text_source
-  in
-  (* gofmt aligns the values of a map literal's consecutive lines. *)
-  let key_width =
-    List.fold_left
-      (fun w (a, _) -> max w (String.length (quoted a) + 1))
-      0 t.extension_aliases
-  in
-  let pad width text = text ^ String.make (width - String.length text) ' ' in
-  let bool b = if b then "true" else "false" in
   {
     Output.path = "go/mediatypes/registry_gen.go";
     text =
-      String.concat ""
-        [
-          "// Code generated from protocol/specs/src/" ^ file
-          ^ " — DO NOT EDIT.\n//\n// Regenerate: make generate (";
-          Banner.writer __FILE__;
-          {|)
-// The TypeScript (typescript/core/src/media-type-registry.ts) and Rust
-// (xynolog::media_types) SDKs generate from the same registry.
-
-package mediatypes
-
-// TextSource is where a type's text comes from: decoded from its own bytes,
-// derived by reading them, or nowhere.
-type TextSource string
-
-const (
-|};
-          String.concat "\n"
-            (List.map
-               (fun word ->
-                 "\t" ^ pad width (source word) ^ " TextSource = " ^ quoted word)
-               t.text_source);
-          {|
-)
-
-// Row is one media type a knowledge base admits, with the extension a stored
-// name takes for it, where its text comes from, and whether it is offered
-// where a person writes a resource.
-type Row struct {
-	MediaType  string
-	Extension  string
-	TextSource TextSource
-	Authorable bool
-}
-
-|};
-          Printf.sprintf
-            "// Rows is the registry, in its own order: %d media types. The \
-             order is\n"
-            (List.length t.media_types);
-          {|// read: two types that share an extension resolve, from the extension, to the
-// first row that states it.
-var Rows = []Row{
-|};
-          String.concat "\n"
-            (List.map
-               (fun (r : T.media_type) ->
-                 "\t{MediaType: " ^ quoted r.media_type ^ ", Extension: "
-                 ^ quoted r.extension ^ ", TextSource: " ^ source r.text_source
-                 ^ ", Authorable: " ^ bool r.authorable ^ "},")
-               t.media_types);
-          {|
-}
-
-// ExtensionAliases are other spellings of an extension, each with the one a
-// row states.
-var ExtensionAliases = map[string]string{
-|};
-          String.concat "\n"
-            (List.map
-               (fun (alias, extension) ->
-                 "\t"
-                 ^ pad key_width (quoted alias ^ ":")
-                 ^ " " ^ quoted extension ^ ",")
-               t.extension_aliases);
-          "\n}\n";
-        ];
+      G.text
+        {
+          header =
+            G.verbatim
+              ("Code generated from protocol/specs/src/" ^ file
+             ^ " — DO NOT EDIT.\n\nRegenerate: make generate ("
+             ^ Banner.writer __FILE__
+             ^ ")\n\
+                The TypeScript (typescript/core/src/media-type-registry.ts) \
+                and Rust\n\
+                (xynolog::media_types) SDKs generate from the same registry.");
+          package = "mediatypes";
+          imports = [];
+          decls =
+            [
+              G.Consts
+                {
+                  doc = [];
+                  spacing = G.Packed;
+                  specs =
+                    List.map
+                      (fun word ->
+                        G.spec ~type_:(G.Named "TextSource") (source word)
+                          (G.Quoted word))
+                      t.text_source;
+                };
+              G.Var
+                (G.spec
+                   ~doc:
+                     (G.verbatim
+                        (Printf.sprintf
+                           "Rows is the registry, in its own order: %d media \
+                            types. The order is\n\
+                            read: two types that share an extension resolve, \
+                            from the extension, to the\n\
+                            first row that states it."
+                           (List.length t.media_types)))
+                   "Rows"
+                   (G.lines ~of_:(G.Slice (G.Named "Row"))
+                      (List.map
+                         (fun (r : T.media_type) ->
+                           G.item
+                             (G.inline
+                                [
+                                  G.keyed "MediaType" (G.Quoted r.media_type);
+                                  G.keyed "Extension" (G.Quoted r.extension);
+                                  G.keyed "TextSource"
+                                    (G.Name (source r.text_source));
+                                  G.keyed "Authorable"
+                                    (G.Name
+                                       (if r.authorable then "true" else "false"));
+                                ]))
+                         t.media_types)));
+              G.Var
+                (G.spec
+                   ~doc:
+                     (G.verbatim
+                        "ExtensionAliases are other spellings of an extension, \
+                         each with the one a\n\
+                         row states.")
+                   "ExtensionAliases"
+                   (G.lines
+                      ~of_:(G.Map (G.Named "string", G.Named "string"))
+                      (List.map
+                         (fun (alias, extension) ->
+                           G.element ~key:(G.Quoted alias) (G.Quoted extension))
+                         t.extension_aliases)));
+            ];
+        };
   }
 
 let python (t : T.t) =

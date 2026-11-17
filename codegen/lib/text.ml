@@ -158,9 +158,6 @@ let upper_snake name =
     name;
   Buffer.contents out
 
-(* [text] as Go comment lines behind [indent], as gofmt leaves them. *)
-let go_comment ~indent = comment ~marker:"// " ~indent ~width:78
-
 (* [text] as Python comment lines behind [indent]. *)
 let python_comment ~indent = comment ~marker:"# " ~indent ~width:96
 

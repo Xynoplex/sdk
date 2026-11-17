@@ -6,25 +6,11 @@
 
 package mediatypes
 
-// TextSource is where a type's text comes from: decoded from its own bytes,
-// derived by reading them, or nowhere.
-type TextSource string
-
 const (
 	TextSourceDecode       TextSource = "decode"
 	TextSourcePdfTextLayer TextSource = "pdf-text-layer"
 	TextSourceNone         TextSource = "none"
 )
-
-// Row is one media type a knowledge base admits, with the extension a stored
-// name takes for it, where its text comes from, and whether it is offered
-// where a person writes a resource.
-type Row struct {
-	MediaType  string
-	Extension  string
-	TextSource TextSource
-	Authorable bool
-}
 
 // Rows is the registry, in its own order: 63 media types. The order is
 // read: two types that share an extension resolve, from the extension, to the
