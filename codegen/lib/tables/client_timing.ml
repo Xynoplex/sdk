@@ -27,11 +27,10 @@ type timing_item = { name : string; value : value; docs : string }
 
 let timing_item =
   Decode.obj (fun o : timing_item ->
-      {
-        name = Decode.required o "name" Decode.string;
-        value = Decode.required o "value" value;
-        docs = Decode.required o "docs" Decode.string;
-      })
+      let name = Decode.required o "name" Decode.string in
+      let value = Decode.required o "value" value in
+      let docs = Decode.required o "docs" Decode.non_empty_string in
+      { name; value; docs })
 
 type t = { comment : string; timing : timing_item list }
 
@@ -39,5 +38,5 @@ let decode =
   Decode.obj (fun o : t ->
       {
         comment = Decode.required o "$comment" Decode.string;
-        timing = Decode.required o "timing" (Decode.list timing_item);
+        timing = Decode.required o "timing" (Decode.non_empty_list timing_item);
       })

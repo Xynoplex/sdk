@@ -122,3 +122,19 @@ let ascii_quoted text =
     () text;
   Buffer.add_char out '"';
   Buffer.contents out
+
+(* A camel-case name as a constant's: upper case, with an underscore where a
+   lower-case letter meets an upper-case one ([emitRetry] is [EMIT_RETRY]). *)
+let upper_snake name =
+  let out = Buffer.create (String.length name + 8) in
+  String.iteri
+    (fun i c ->
+      (match c with
+      | 'A' .. 'Z' when i > 0 -> (
+          match name.[i - 1] with
+          | 'a' .. 'z' -> Buffer.add_char out '_'
+          | _ -> ())
+      | _ -> ());
+      Buffer.add_char out (Char.uppercase_ascii c))
+    name;
+  Buffer.contents out

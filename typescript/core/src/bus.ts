@@ -31,7 +31,7 @@ import { BusRequestError, classifyFailureCode, type BusReply } from './bus-reque
 import { XynologError } from './errors';
 import { readOfShape, said, within, type Fault, type Shape } from './required';
 import type { components } from './types';
-import { BUS_REQUEST_TIMEOUT_MS } from './generated/client-timing';
+import { BUS_REQUEST_TIMEOUT_MS } from './client-timing';
 import { isResourceScopedChannel, type ResourceScopedChannel, type UnscopedChannel } from './bridged-channels';
 import { uuidV4 } from './id-generation';
 import { userId, type ResourceId, type UserId } from './identifiers';

@@ -5,7 +5,7 @@
  * `fetch` is stubbed.
  */
 import { describe, it, expect, afterEach, vi } from 'vitest';
-import { HTTP_REQUEST_TIMEOUT_MS } from '../generated/client-timing';
+import { HTTP_REQUEST_TIMEOUT_MS } from '../client-timing';
 import { ServiceToken } from '../service-account';
 import { SignInError } from '../sign-in-error';
 import { UnansweredError } from '../unanswered';

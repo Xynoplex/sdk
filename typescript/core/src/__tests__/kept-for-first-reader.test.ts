@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { ERRORS_KEPT_FOR_FIRST_READER_COUNT } from '../generated/client-timing';
+import { ERRORS_KEPT_FOR_FIRST_READER_COUNT } from '../client-timing';
 import { KeptForFirstReader } from '../kept-for-first-reader';
 
 function heardBy<T>(stream: KeptForFirstReader<T>): { heard: T[]; ended: () => boolean } {

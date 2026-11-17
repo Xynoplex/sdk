@@ -5,23 +5,8 @@
 let path = "python/sdk/src/xynolog/error_codes.py"
 let comment ?(indent = "") = Text.comment ~marker:"# " ~indent ~width:96
 
-(* [BusRequestErrorCode] as a constant's name: [BUS_REQUEST_ERROR_CODE]. *)
-let constant name =
-  let out = Buffer.create (String.length name + 8) in
-  String.iteri
-    (fun i c ->
-      (match c with
-      | 'A' .. 'Z' when i > 0 -> (
-          match name.[i - 1] with
-          | 'a' .. 'z' -> Buffer.add_char out '_'
-          | _ -> ())
-      | _ -> ());
-      Buffer.add_char out (Char.uppercase_ascii c))
-    name;
-  Buffer.contents out
-
 (* The tuple of a vocabulary's codes. *)
-let codes_constant (v : Table.vocabulary) = constant v.name ^ "S"
+let codes_constant (v : Table.vocabulary) = Text.upper_snake v.name ^ "S"
 
 let union (v : Table.vocabulary) =
   String.concat ""
