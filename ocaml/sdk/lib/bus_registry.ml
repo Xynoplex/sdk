@@ -1,4 +1,5 @@
-(* Generated from protocol/specs/src/bus/registry.json and its OpenAPI components. Do not edit. *)
+(* Generated from bus/registry.json and its OpenAPI components. Do not edit.
+   Regenerate: make generate (codegen/lib/ocaml_sdk/bus_modules.ml) *)
 
 [@@@ocamlformat "disable"]
 
