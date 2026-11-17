@@ -1,6 +1,6 @@
-(* The gateway's component schemas as the Rust types are generated from
-   them: the document bundled (each file it names as a component, or that a
-   directory of schemas holds, is a schema by its name, and any other file a
+(* The gateway's component schemas as the Rust and Swift types are generated
+   from them: the document bundled (each file it names as a component, or that
+   a directory of schemas holds, is a schema by its name, and any other file a
    [$ref] names is written in its place, the [$ref]'s siblings with it gone),
    and OpenAPI's [nullable] as JSON Schema draft 7 states it: beside one
    [type], [null] is a second type; beside anything else, the schema is a

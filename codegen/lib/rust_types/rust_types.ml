@@ -4,7 +4,6 @@
    them, and every kind of id, with every schema they reach; and an entry of
    the store [xynolog login] keeps (rust/sdk/src/sign_in_store.rs). *)
 
-module Definitions = Definitions
 module Generate = Generate
 
 (* What the SDK holds beside the bodies and the payloads: the job a client
