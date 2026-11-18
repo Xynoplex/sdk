@@ -12,10 +12,10 @@ import xynolog.cache.Source
 import xynolog.errors.BusRequestError
 import xynolog.errors.BusRequestErrorCode
 import xynolog.errors.XynologError
-import xynolog.registry.WHOLE_KEY
-import xynolog.storage.CachePersistence
 import xynolog.identifiers.AnnotationId
 import xynolog.identifiers.ResourceId
+import xynolog.registry.WHOLE_KEY
+import xynolog.storage.CachePersistence
 import xynolog.transport.ContentTransport
 import xynolog.types.Annotation
 import xynolog.types.AttributedEvent
@@ -194,4 +194,3 @@ internal class Live(private val links: Links, private val content: ContentTransp
 
 /** The annotations of a resource's list, as its query shows them. */
 internal fun listed(answer: GetAnnotationsResponse): List<Annotation> = answer.annotations
-

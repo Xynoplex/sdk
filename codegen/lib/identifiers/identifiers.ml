@@ -8,6 +8,7 @@ module Go = Go
 module Python = Python
 module Typescript = Typescript
 module Ocaml = Ocaml
+module Csharp = Csharp
 
 let files ~root (spec : Spec.t) =
   let ( let* ) = Result.bind in
@@ -15,4 +16,7 @@ let files ~root (spec : Spec.t) =
   let* go = Go.file ~root kinds in
   let* derivation = Required.derive spec in
   let* ocaml = Ocaml.files spec derivation.shapes in
-  Ok ([ go; Python.file kinds; Typescript.file kinds ] @ ocaml)
+  let csharp = Csharp.files kinds in
+  match Output.stale ~root ~directory:Csharp.directory csharp with
+  | [] -> Ok ([ go; Python.file kinds; Typescript.file kinds ] @ ocaml @ csharp)
+  | stale -> Error stale

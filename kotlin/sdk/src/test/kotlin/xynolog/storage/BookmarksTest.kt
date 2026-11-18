@@ -21,8 +21,8 @@ import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import xynolog.ClientTiming
-import xynolog.XynologClient
 import xynolog.Timings
+import xynolog.XynologClient
 import xynolog.cache.CACHE_REFRESH_CHANNELS
 import xynolog.channels.RESOURCE_SCOPED_CHANNELS
 import xynolog.frame

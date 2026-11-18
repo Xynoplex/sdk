@@ -20,10 +20,10 @@ import xynolog.errors.BusRequestErrorCode
 import xynolog.identifiers.AnnotationId
 import xynolog.identifiers.ResourceId
 import xynolog.session.KbIdentityConflict
-import xynolog.session.XynologSession
 import xynolog.session.SessionEndReason
 import xynolog.session.SessionSignals
 import xynolog.session.TARGET
+import xynolog.session.XynologSession
 import xynolog.signin.MemorySignIn
 import xynolog.types.GatheredContext
 import xynolog.types.GenerationJobParams

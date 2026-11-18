@@ -143,7 +143,7 @@ Every maker that waits takes the `context: CoroutineContext` its work runs on (`
 
 ## The protocol's types
 
-Every component schema of the spec is a type of `xynolog.types`, and each kind of id a value class of `xynolog.identifiers`. The build generates them from `protocol/specs/src` (the `generate` task, run before every compile); nothing generated is committed.
+Every component schema of the spec is a type of `xynolog.types`, and each kind of id a value class of `xynolog.identifiers`. The repository's generator (`codegen/`, `make generate`) writes them from `protocol/specs/src` into `src/generated/kotlin`, with the code of the spec's tables, and `make check-generated` fails when a committed one differs from what it writes.
 
 - An id is made only through its kind's check: `ResourceId("res-1")` throws `InvalidIdentifier` for text the rule refuses, and `ResourceId.parse(text)` gives `null` instead. Decoding goes through the same check.
 - A model is immutable, and written back as it was read: a property left out stays left out, and text the spec gives a format (a time, a URI) stays the text it was. A property that is optional and may be null is a `Stated`: `Absent`, `Null` or `Value`.

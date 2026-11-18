@@ -43,3 +43,25 @@ let write ~root files =
               Out_channel.output_string out file.text);
           Printf.printf "wrote  %s\n" file.path)
     files
+
+(* A file in [directory] that no run writes: one there that [files] does not
+   name. It is refused rather than removed, so the run that stops writing a
+   file names it, to be deleted with the change that drops it. *)
+let stale ~root ~directory files =
+  let on_disk =
+    match Sys.readdir (Filename.concat root directory) with
+    | names -> List.sort String.compare (Array.to_list names)
+    | exception Sys_error _ -> []
+  in
+  List.filter_map
+    (fun name ->
+      let path = directory ^ "/" ^ name in
+      if List.exists (fun file -> file.path = path) files then None
+      else
+        Some
+          {
+            Decode.file = path;
+            pointer = "";
+            message = "is a generated file no run writes: delete it";
+          })
+    on_disk

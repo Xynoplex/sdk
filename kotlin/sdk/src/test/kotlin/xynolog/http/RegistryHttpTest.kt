@@ -23,9 +23,9 @@ import xynolog.errors.SignInError
 import xynolog.errors.SignInErrorCode
 import xynolog.identifiers.ResourceId
 import xynolog.live.recorded
+import xynolog.registry.StoredSession
 import xynolog.registry.XynologBrowser
 import xynolog.registry.XynologBrowserConfig
-import xynolog.registry.StoredSession
 import xynolog.registry.lastEventIdKey
 import xynolog.registry.personKey
 import xynolog.registry.saveKnowledgeBases
@@ -90,15 +90,21 @@ private class Behind(private val realm: Realm) {
                             correlation,
                             "browse:resource-result" to buildJsonObject {
                                 put("resourceId", resource)
-                                put("response", buildJsonObject {
-                                    put("resource", buildJsonObject {
-                                        put("@context", "https://schema.org")
-                                        put("@id", resource)
-                                        put("name", resource)
-                                        put("representations", kotlinx.serialization.json.JsonArray(emptyList()))
-                                    })
-                                    put("lastSequence", 1)
-                                })
+                                put(
+                                    "response",
+                                    buildJsonObject {
+                                        put(
+                                            "resource",
+                                            buildJsonObject {
+                                                put("@context", "https://schema.org")
+                                                put("@id", resource)
+                                                put("name", resource)
+                                                put("representations", kotlinx.serialization.json.JsonArray(emptyList()))
+                                            },
+                                        )
+                                        put("lastSequence", 1)
+                                    },
+                                )
                             },
                         )
                     }
@@ -107,11 +113,13 @@ private class Behind(private val realm: Realm) {
         }
     }
 
-    private fun answer(correlation: String, said: Pair<String, JsonObject>) = realm.send(buildJsonObject {
-        put("channel", said.first)
-        put("payload", said.second)
-        put("correlationId", correlation)
-    })
+    private fun answer(correlation: String, said: Pair<String, JsonObject>) = realm.send(
+        buildJsonObject {
+            put("channel", said.first)
+            put("payload", said.second)
+            put("correlationId", correlation)
+        },
+    )
 }
 
 private fun browserOver(storage: SessionStorage) = XynologBrowser(XynologBrowserConfig(storage, HttpSessionFactory()))

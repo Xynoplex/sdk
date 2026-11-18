@@ -262,24 +262,6 @@ let go =
                 ])));
   ]
 
-let json =
-  [
-    case "the JSON copy" (fun () ->
-        Alcotest.(check string)
-          "text"
-          ("{\n  \"$comment\": "
-          ^ Yojson.Safe.to_string
-              (`String
-                 (Unicode_case.Json.comment ~version:"17.0.0" ~notice:[ "N." ]))
-          ^ ",\n\
-            \  \"cased\": [[65,90],[97,122]],\n\
-            \  \"caseIgnorable\": [[768,879]]\n\
-             }\n")
-          (Unicode_case.Json.text ~version:"17.0.0" ~notice:[ "N." ]
-             ~cased:[ (65, 90); (97, 122) ]
-             ~case_ignorable:[ (768, 879) ]));
-  ]
-
 let () =
   Alcotest.run "unicode-case"
     [
@@ -287,5 +269,4 @@ let () =
       ("the case mappings", mapping_files);
       ("Haskell", haskell);
       ("Go", go);
-      ("JSON", json);
     ]

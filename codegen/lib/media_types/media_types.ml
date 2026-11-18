@@ -1,7 +1,7 @@
 (* The media types group: the types a knowledge base admits and what the
    system can do with each (protocol/specs/src/media-types/registry.json), for
-   the Go, Python, TypeScript and Haskell SDKs; Haskell's module beside the
-   Encoding Standard's labels, which it has always held.
+   the Go, Python, TypeScript, Haskell, OCaml and Kotlin SDKs; Haskell's
+   module beside the Encoding Standard's labels, which it has always held.
 
    A type is a base media type, stated once, with an extension (a dot, then
    lower-case letters and digits), a label, and a word of each vocabulary.
@@ -656,9 +656,13 @@ let files ~root:_ (spec : Spec.t) =
   match (registry, encodings) with
   | Ok t, Ok e ->
       Result.map
-        (fun rust ->
-          [ go t; python t; typescript t; haskell t e; ocaml t; rust ])
-        (rust t)
+        (fun (rust, kotlin) ->
+          [ go t; python t; typescript t; haskell t e; ocaml t; rust; kotlin ])
+        (Result.bind (rust t) (fun rust ->
+             Result.map
+               (fun kotlin -> (rust, kotlin))
+               (Kotlin_sdk.written ~from_:file (fun () ->
+                    Kotlin.file ~from_:file t))))
   | _ ->
       let errors = function Ok _ -> [] | Error e -> e in
       Error (errors registry @ errors encodings)

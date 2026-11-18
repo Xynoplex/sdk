@@ -2,10 +2,6 @@
 
 package xynolog.http
 
-import xynolog.bus.Logged
-import xynolog.bus.BusLog
-import xynolog.telemetry.futureOf
-import xynolog.telemetry.Telemetry
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -17,16 +13,20 @@ import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.JsonObject
 import xynolog.Timings
+import xynolog.bus.BusLog
+import xynolog.bus.Logged
 import xynolog.channels.RESOURCE_SCOPED_CHANNELS
-import xynolog.errors.XynologError
 import xynolog.errors.TransportError
 import xynolog.errors.TransportErrorCode
+import xynolog.errors.XynologError
 import xynolog.identifiers.ResourceId
+import xynolog.retry.BOOT
 import xynolog.retry.RetryFacts
 import xynolog.retry.RetryPolicy
-import xynolog.retry.BOOT
 import xynolog.retry.equalJitter
 import xynolog.retry.retryAfterMs
+import xynolog.telemetry.Telemetry
+import xynolog.telemetry.futureOf
 import xynolog.transport.Broadcast
 import xynolog.transport.Carried
 import xynolog.transport.ConnectionState
@@ -100,7 +100,8 @@ public class HttpTransport @JvmOverloads constructor(
     internal val context: CoroutineContext = Dispatchers.Default,
     internal val clock: TimeSource = TimeSource.Monotonic,
     internal val random: Random = Random.Default,
-) : Transport, GatewayOperations {
+) : Transport,
+    GatewayOperations {
     override val baseUrl: String = baseUrl.trimEnd('/')
 
     private val scope = CoroutineScope(context + SupervisorJob(context[Job]))

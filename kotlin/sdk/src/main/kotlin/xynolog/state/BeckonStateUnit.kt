@@ -2,8 +2,8 @@
 
 package xynolog.state
 
-import xynolog.XynologClient
 import xynolog.StateUnit
+import xynolog.XynologClient
 import xynolog.bus.heard
 import xynolog.channels.Channels
 import xynolog.identifiers.AnnotationId

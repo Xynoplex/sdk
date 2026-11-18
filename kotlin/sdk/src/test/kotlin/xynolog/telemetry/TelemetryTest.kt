@@ -1,14 +1,5 @@
 package xynolog.telemetry
 
-import xynolog.channels.BRIDGED_CHANNELS
-import xynolog.http.HttpTransport
-import kotlinx.serialization.json.JsonObject
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.CoroutineScope
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.CompletableFuture
-import java.net.InetSocketAddress
-import java.net.InetAddress
 import com.sun.net.httpserver.HttpServer
 import io.opentelemetry.api.GlobalOpenTelemetry
 import io.opentelemetry.api.common.AttributeKey
@@ -21,17 +12,26 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider
 import io.opentelemetry.sdk.trace.data.SpanData
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor
 import io.opentelemetry.sdk.trace.export.SpanExporter
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.JsonObject
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import xynolog.channels.BRIDGED_CHANNELS
+import xynolog.http.HttpTransport
 import xynolog.identifiers.ResourceId
 import xynolog.transport.TraceContext
+import java.net.InetAddress
+import java.net.InetSocketAddress
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.TimeUnit
 
 /** Each span a test's work ended. */
 private class Kept : SpanExporter {

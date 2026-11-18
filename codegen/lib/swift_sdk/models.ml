@@ -69,11 +69,6 @@ let json_value = S.Named "JSONValue"
 let string_type = S.Named "String"
 let dictionary_of value = S.Dictionary_of (string_type, value)
 
-let known_set wires =
-  call
-    (S.Type_value (S.Generic ("Set", [ string_type ])))
-    [ S.Array (S.Inline, List.map (fun w -> S.String w) wires) ]
-
 let decoder_param =
   {
     S.label = Some "from";
@@ -447,250 +442,68 @@ and object_ t ~modifiers n s =
          })
   in
   let wires = List.map (fun (wire, _, _, _, _, _, _) -> wire) fields in
+  let names = S.Array (S.Inline, List.map (fun w -> S.String w) wires) in
   let c = name "c" in
-  let container =
-    try_
-      (labelled
-         (member (name "decoder") "container")
-         [ arg "keyedBy" (type_self (S.Named "WireKey")) ])
-  in
-  let decode type_ key =
-    try_
-      (labelled (member c "decode")
-         [ { label = None; value = type_self type_ }; arg "forKey" key ])
+  let on_c f args = S.Expr (try_ (labelled (member c f) args)) in
+  let unlabelled value = { S.label = None; value } in
+  let container keyed =
+    labelled
+      (member (name keyed) "container")
+      [ arg "keyedBy" (type_self (S.Named "WireKey")) ]
   in
   let decoding =
     (if fields <> [] || open_ || closed then
-       S.Let { var = false; name = "c"; type_ = None; value = container }
-     else assign S.Discard container)
+       S.Let
+         {
+           var = false;
+           name = "c";
+           type_ = None;
+           value = try_ (container "decoder");
+         }
+     else assign S.Discard (try_ (container "decoder")))
     ::
     (if closed then
-       [
-         S.If
-           {
-             conditions =
-               [
-                 S.Let_bound
-                   ( "key",
-                     labelled
-                       (member (member c "allKeys") "first")
-                       [
-                         arg "where"
-                           (S.Closure
-                              {
-                                params = [];
-                                layout = S.Inline;
-                                body =
-                                  [
-                                    S.Expr
-                                      (S.Not
-                                         (call
-                                            (member (known_set wires) "contains")
-                                            [ member (name "$0") "stringValue" ]));
-                                  ];
-                              });
-                       ] );
-               ];
-             body =
-               inline_block
-                 [
-                   S.Throw
-                     (labelled
-                        (member (name "DecodingError") "dataCorruptedError")
-                        [
-                          arg "forKey" (name "key");
-                          arg "in" c;
-                          arg "debugDescription"
-                            (S.String ("unknown property in " ^ n));
-                        ]);
-                 ];
-             else_ = None;
-           };
-       ]
+       [ on_c "refuseUnknown" [ unlabelled names; arg "in" (S.String n) ] ]
      else [])
     @ List.map
-        (fun (wire, m, type_, is_required, nullable, _, _) ->
-          let key = wire_key wire in
-          let target = self_ m in
-          if is_required then
-            assign target
-              (decode
-                 (if nullable then S.Generic ("Optional", [ type_ ]) else type_)
-                 key)
-          else if nullable then
-            S.If
-              {
-                conditions =
-                  [ S.Is (S.Not (call (member c "contains") [ key ])) ];
-                body =
-                  inline_block [ assign target (S.Implicit_member "absent") ];
-                else_ =
-                  Some
-                    (S.Else_if
-                       {
-                         conditions =
-                           [
-                             S.Is
-                               (try_
-                                  (labelled (member c "decodeNil")
-                                     [ arg "forKey" key ]));
-                           ];
-                         body =
-                           inline_block
-                             [ assign target (S.Implicit_member "null") ];
-                         else_ =
-                           Some
-                             (S.Else
-                                (inline_block
-                                   [
-                                     assign target
-                                       (call (S.Implicit_member "value")
-                                          [ decode type_ key ]);
-                                   ]));
-                       });
-              }
-          else
-            assign target
-              (S.Ternary
-                 (call (member c "contains") [ key ], decode type_ key, S.Nil)))
+        (fun (wire, m, _, is_required, nullable, _, _) ->
+          let read =
+            if is_required then "value"
+            else if nullable then "stated"
+            else "ifPresent"
+          in
+          assign (self_ m) (try_ (call (member c read) [ S.String wire ])))
         fields
     @
     if open_ then
       [
-        assign (name "rest") (S.Dictionary (S.Inline, []));
-        S.For
-          {
-            names = [ "key" ];
-            sequence = member c "allKeys";
-            where_ =
-              Some
-                (S.Not
-                   (call
-                      (member (known_set wires) "contains")
-                      [ member (name "key") "stringValue" ]));
-            body =
-              inline_block
-                [
-                  assign
-                    (S.Subscript
-                       ( name "rest",
-                         [
-                           {
-                             label = None;
-                             value = member (name "key") "stringValue";
-                           };
-                         ] ))
-                    (try_
-                       (labelled (member c "decode")
-                          [
-                            { label = None; value = type_self json_value };
-                            arg "forKey" (name "key");
-                          ]));
-                ];
-          };
+        assign (name "rest")
+          (try_ (labelled (member c "rest") [ arg "excluding" names ]));
       ]
     else []
   in
-  let encoder_container =
-    labelled
-      (member (name "encoder") "container")
-      [ arg "keyedBy" (type_self (S.Named "WireKey")) ]
-  in
-  let encode value key =
-    S.Expr
-      (try_
-         (labelled (member c "encode")
-            [ { label = None; value }; arg "forKey" key ]))
-  in
   let encoding =
     (if fields <> [] || open_ then
-       S.Let { var = true; name = "c"; type_ = None; value = encoder_container }
-     else assign S.Discard encoder_container)
+       S.Let
+         { var = true; name = "c"; type_ = None; value = container "encoder" }
+     else assign S.Discard (container "encoder"))
     ::
     (if open_ then
        [
-         S.For
-           {
-             names = [ "key"; "value" ];
-             sequence = name "rest";
-             where_ = None;
-             body =
-               inline_block
-                 [
-                   S.Guard
-                     {
-                       conditions =
-                         [
-                           S.Is
-                             (S.Not
-                                (call
-                                   (member (known_set wires) "contains")
-                                   [ name "key" ]));
-                         ];
-                       else_ =
-                         inline_block
-                           [
-                             S.Throw
-                               (call
-                                  (member (name "EncodingError") "invalidValue")
-                                  [
-                                    name "value";
-                                    labelled (S.Implicit_member "init")
-                                      [
-                                        arg "codingPath"
-                                          (member (name "encoder") "codingPath");
-                                        arg "debugDescription"
-                                          (S.String
-                                             ("rest overrides a named property \
-                                               of " ^ n));
-                                      ];
-                                  ]);
-                           ];
-                     };
-                   encode (name "value") (call (name "WireKey") [ name "key" ]);
-                 ];
-           };
+         on_c "encode"
+           [
+             arg "rest" (name "rest");
+             arg "excluding" names;
+             arg "of" (S.String n);
+           ];
        ]
      else [])
     @ List.map
         (fun (wire, m, _, is_required, nullable, _, _) ->
-          let key = wire_key wire in
-          let value = self_ m in
-          if is_required then encode value key
-          else if nullable then
-            S.Switch
-              {
-                subject = value;
-                layout = S.Inline;
-                cases =
-                  [
-                    {
-                      patterns = [ S.Implicit_member "absent" ];
-                      body = [ S.Break ];
-                    };
-                    {
-                      patterns = [ S.Implicit_member "null" ];
-                      body =
-                        [
-                          S.Expr
-                            (try_
-                               (labelled (member c "encodeNil")
-                                  [ arg "forKey" key ]));
-                        ];
-                    };
-                    {
-                      patterns =
-                        [ call (S.Implicit_member "value") [ S.Bind "value" ] ];
-                      body = [ encode (name "value") key ];
-                    };
-                  ];
-              }
-          else
-            S.Expr
-              (try_
-                 (labelled
-                    (member c "encodeIfPresent")
-                    [ { label = None; value }; arg "forKey" key ])))
+          let value = self_ m and as_ = arg "as" (S.String wire) in
+          if is_required then on_c "encode" [ unlabelled value; as_ ]
+          else if nullable then on_c "encode" [ arg "stated" value; as_ ]
+          else on_c "encodeIfPresent" [ unlabelled value; as_ ])
         fields
   in
   decl modifiers

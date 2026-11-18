@@ -6,8 +6,8 @@ import xynolog.JobCompleted
 import xynolog.JobCreated
 import xynolog.JobProgressed
 import xynolog.JobRefused
-import xynolog.XynologClient
 import xynolog.StateUnit
+import xynolog.XynologClient
 import xynolog.errors.XynologError
 import xynolog.identifiers.JobId
 import xynolog.transport.Variable

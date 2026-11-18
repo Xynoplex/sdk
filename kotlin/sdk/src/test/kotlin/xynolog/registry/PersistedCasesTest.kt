@@ -25,8 +25,8 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestFactory
-import xynolog.XynologClient
 import xynolog.Spec
+import xynolog.XynologClient
 import xynolog.cache.CacheState
 import xynolog.cache.PERSISTED_QUERIES
 import xynolog.http.HttpSessionFactory
@@ -156,15 +156,21 @@ internal fun Realm.answersFresh() {
                         "browse:resource-result",
                         buildJsonObject {
                             put("resourceId", resource)
-                            put("response", buildJsonObject {
-                                put("resource", buildJsonObject {
-                                    put("@context", "https://schema.org/")
-                                    put("@id", resource)
-                                    put("name", "fresh")
-                                    put("representations", JsonArray(emptyList()))
-                                })
-                                put("lastSequence", 1)
-                            })
+                            put(
+                                "response",
+                                buildJsonObject {
+                                    put(
+                                        "resource",
+                                        buildJsonObject {
+                                            put("@context", "https://schema.org/")
+                                            put("@id", resource)
+                                            put("name", "fresh")
+                                            put("representations", JsonArray(emptyList()))
+                                        },
+                                    )
+                                    put("lastSequence", 1)
+                                },
+                            )
                         },
                     )
                 }
@@ -174,11 +180,13 @@ internal fun Realm.answersFresh() {
     }
 }
 
-private fun Realm.reply(correlation: String, channel: String, payload: JsonObject) = send(buildJsonObject {
-    put("channel", channel)
-    put("payload", payload)
-    put("correlationId", correlation)
-})
+private fun Realm.reply(correlation: String, channel: String, payload: JsonObject) = send(
+    buildJsonObject {
+        put("channel", channel)
+        put("payload", payload)
+        put("correlationId", correlation)
+    },
+)
 
 /** What the first stream to name `scope` said of it; null while none has. */
 private fun Realm.scoped(scope: String): JsonObject? =
@@ -573,11 +581,14 @@ class PersistedCasesTest {
                         eventually("a stream names res-1") { realm.scoped("res-1") != null }
                         val heard = client.transport.frames("mark:added")
                         for (id in frames) {
-                            realm.send(buildJsonObject {
-                                put("channel", "mark:added")
-                                put("payload", recorded("mark:added", ResourceId("res-1")))
-                                put("scope", "res-1")
-                            }, id)
+                            realm.send(
+                                buildJsonObject {
+                                    put("channel", "mark:added")
+                                    put("payload", recorded("mark:added", ResourceId("res-1")))
+                                    put("scope", "res-1")
+                                },
+                                id,
+                            )
                         }
                         withTimeout(10_000) { heard.firstOf(frames.size) }
                         assertEquals("fresh", Watching(client, "res-2", this).use { it.given() })

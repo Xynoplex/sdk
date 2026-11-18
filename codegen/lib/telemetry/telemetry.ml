@@ -1,6 +1,7 @@
 (* The telemetry group: every span and metric an SDK's transports export
    (protocol/specs/src/sdk-telemetry/telemetry.json), its kind or instrument,
-   what it means, and its attributes, for the Go and Python SDKs.
+   what it means, and its attributes, for the Go, Python, OCaml and Kotlin
+   SDKs.
 
    A span's kind is one of OTLP's, a metric's instrument a counter, and a
    span's name holds no placeholder but {channel}. A row says what it means
@@ -364,6 +365,9 @@ let ocaml (t : t) =
            (List.concat_map (fun (r : row) -> r.all) (t.spans @ t.metrics))))
 
 let files ~root:_ (spec : Spec.t) =
-  Result.map
-    (fun t -> [ go t; python t; ocaml t ])
-    (derive spec.tables.sdk_telemetry_telemetry)
+  let table = spec.tables.sdk_telemetry_telemetry in
+  Result.bind (derive table) (fun t ->
+      Result.map
+        (fun kotlin -> [ go t; python t; ocaml t; kotlin ])
+        (Kotlin_sdk.written ~from_:file (fun () ->
+             Kotlin.file ~from_:file table)))

@@ -1,7 +1,7 @@
 package xynolog
 
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
@@ -59,7 +59,10 @@ internal fun Carried.frame(): Frame = when (this) {
  * test serves: a case holds what a call did, step by step, and not what it was
  * answered.
  */
-internal class Recording : Transport, GatewayOperations, ContentTransport {
+internal class Recording :
+    Transport,
+    GatewayOperations,
+    ContentTransport {
     val did = CopyOnWriteArrayList<Did>()
     private val router = ReplyRouter(Dispatchers.Unconfined)
     private val answers = ConcurrentHashMap<String, JsonElement>()
