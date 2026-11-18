@@ -87,7 +87,7 @@ def refuse(message: str) -> Never:
 def read(path: Path) -> JsonObject:
     """The JSON object a file holds."""
     if not path.exists():
-        refuse(f"{path.relative_to(ROOT)} does not exist. Bundle the spec first: npm run generate:openapi --workspace=@xynolog/core")
+        refuse(f"{path.relative_to(ROOT)} does not exist. Bundle the spec first: bash scripts/bundle-protocol.sh")
     value = _JSON.validate_json(path.read_bytes())
     if not isinstance(value, dict):
         refuse(f"{path.relative_to(ROOT)} is not a JSON object")

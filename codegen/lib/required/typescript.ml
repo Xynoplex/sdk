@@ -1,7 +1,7 @@
 (* The table as the TypeScript SDK's reply checks read it
-   (typescript/core/src/required.ts). It is typed by the schemas
-   openapi-typescript writes (src/types.ts), so one it leaves out, or a name
-   that is no schema, fails to compile. *)
+   (typescript/core/src/required.ts). It is typed by the schemas the
+   typescript-types group writes (src/types.ts), so one it leaves out, or a
+   name that is no schema, fails to compile. *)
 
 module T = Typescript_syntax
 
