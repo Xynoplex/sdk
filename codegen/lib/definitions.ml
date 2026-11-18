@@ -24,6 +24,7 @@ and node = {
   keys : string list;  (** The keywords it states, by their names. *)
   description : string option;
   type_ : types option;
+  format : Schema.format option;
   enum : Schema.literal list option;
   const : bool;
   properties : (string * t) list option;
@@ -45,6 +46,7 @@ let node keys =
     keys;
     description = None;
     type_ = None;
+    format = None;
     enum = None;
     const = false;
     properties = None;
@@ -122,6 +124,7 @@ let view ~named ~schemas =
             keys;
             description = s.description;
             type_ = types;
+            format = s.format;
             enum = s.enum;
             const = Option.is_some s.const;
             properties =

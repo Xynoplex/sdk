@@ -295,7 +295,7 @@ func (s *stage) target(t *testing.T) api.HttpEndpoint {
 func (s *stage) registered(t *testing.T, kbID string) api.KnowledgeBase {
 	t.Helper()
 	var at api.KbEndpoint
-	must(t, at.FromHttpEndpoint(s.target(t)))
+	must(t, at.From(s.target(t)))
 	return api.KnowledgeBase{Id: kbID, Label: "KB A", Did: didA, Endpoint: at}
 }
 
@@ -431,7 +431,7 @@ func TestARegistryOverHTTPCannotBuildASessionForWhatIsNotAtAGateway(t *testing.T
 	s := newStage(t)
 	storage := xynolog.NewMemoryStorage()
 	local := s.registered(t, "kb-local")
-	must(t, local.Endpoint.FromLocalEndpoint(api.LocalEndpoint{Kind: api.LocalEndpointKindLocal, KbId: "here"}))
+	must(t, local.Endpoint.From(api.LocalEndpoint{Kind: api.LocalEndpointKindLocal, KbId: "here"}))
 	must(t, registry.SaveKnowledgeBases(storage, []api.KnowledgeBase{local}))
 	gate := gated{SessionFactory: registry.HttpSessionFactory{HTTP: &http.Client{}, Timing: xynolog.DefaultTiming()}, open: make(chan struct{})}
 	browser, err := registry.NewXynologBrowser(registry.XynologBrowserConfig{Storage: storage, SessionFactory: gate})
@@ -492,7 +492,7 @@ func TestARegistrysSignInRegistersTheKnowledgeBaseUnderWhatItSaysItIs(t *testing
 	must(t, err)
 
 	var at api.KbEndpoint
-	must(t, at.FromHttpEndpoint(s.target(t)))
+	must(t, at.From(s.target(t)))
 	if outcome.Kb.Did != didA || outcome.Kb.Label != "KB A" || !same(t, outcome.Kb.Endpoint, at) {
 		t.Errorf("the entry is %+v", outcome.Kb)
 	}

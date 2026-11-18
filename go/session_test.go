@@ -1435,7 +1435,7 @@ func (f *failsAfter) Held(ctx context.Context) (xynolog.HeldSignIn, bool, error)
 func localTarget(t *testing.T) api.KbTarget {
 	t.Helper()
 	var at api.KbEndpoint
-	if err := at.FromHttpEndpoint(api.HttpEndpoint{Kind: api.HttpEndpointKindHttp, Host: "localhost", Port: 4000, Protocol: api.HttpEndpointProtocolHttp}); err != nil {
+	if err := at.From(api.HttpEndpoint{Kind: api.HttpEndpointKindHttp, Host: "localhost", Port: 4000, Protocol: api.HttpEndpointProtocolHttp}); err != nil {
 		t.Fatal(err)
 	}
 	return api.KbTarget{Id: kb, Label: kb, Endpoint: at}

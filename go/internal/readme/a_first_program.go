@@ -25,7 +25,7 @@ func Summarize(ctx context.Context, client *xynolog.Client, paper []byte) (summa
 
 	// Annotate: a model reads it and marks each mention of a concept.
 	var linking api.MarkJobParams
-	if err := linking.FromLinkingJobParams(api.LinkingJobParams{Motivation: api.LinkingJobParamsMotivationLinking, EntityTypes: []string{"Concept"}}); err != nil {
+	if err := linking.From(api.LinkingJobParams{Motivation: api.LinkingJobParamsMotivationLinking, EntityTypes: []string{"Concept"}}); err != nil {
 		return api.ResourceId{}, false, err
 	}
 	if _, err := client.Mark.Delegate(paperID, linking).Wait(ctx); err != nil {
@@ -53,9 +53,11 @@ func Summarize(ctx context.Context, client *xynolog.Client, paper []byte) (summa
 	if done.Result == nil {
 		return api.ResourceId{}, false, nil
 	}
-	if declined, err := done.Result.AsJobDeclined(); err == nil && declined.Declined == api.JobDeclinedDeclinedTrue {
+	var declined api.JobDeclined
+	if done.Result.As(&declined) == nil && declined.Declined == api.JobDeclinedDeclinedTrue {
 		return api.ResourceId{}, false, nil
 	}
-	made, err := done.Result.AsYieldJobDone()
+	var made api.YieldJobDone
+	err = done.Result.As(&made)
 	return made.ResourceId, err == nil, err
 }

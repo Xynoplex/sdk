@@ -106,7 +106,7 @@ let carried (c : Reg.channel) =
         R.Struct ([ "Shape" ], [ ("kinds", object_kind) ], Some (R.p "NONE")) )
 
 let channel_items (bus : Registry.t) component (c : Reg.channel) =
-  let marker = R.pascal c.channel in
+  let marker = Text.pascal c.channel in
   let payload, _ = carried c in
   let stamps =
     match c.payload with
@@ -211,7 +211,7 @@ let channels (bus : Registry.t) component =
   in
   let markers =
     List.map
-      (fun (c : Reg.channel) -> (R.pascal c.channel, c.channel))
+      (fun (c : Reg.channel) -> (Text.pascal c.channel, c.channel))
       reg.channels
   in
   let refusals =
@@ -284,11 +284,11 @@ let channels (bus : Registry.t) component =
                     {
                       generics = [];
                       trait_ = Some (R.named "Request");
-                      for_ = R.named (R.pascal o.request);
+                      for_ = R.named (Text.pascal o.request);
                       items =
                         [
-                          R.I_type ("Result", R.named (R.pascal o.result));
-                          R.I_type ("Failure", R.named (R.pascal o.failure));
+                          R.I_type ("Result", R.named (Text.pascal o.result));
+                          R.I_type ("Failure", R.named (Text.pascal o.failure));
                         ];
                     })
                 reg.operations
@@ -331,7 +331,7 @@ let channels (bus : Registry.t) component =
                             ( R.p "channel",
                               by_name (fun c ->
                                   R.Qualified
-                                    ( R.named (R.pascal c.channel),
+                                    ( R.named (Text.pascal c.channel),
                                       R.named "Channel",
                                       [ "STAMPS" ] )) ));
                      ]);

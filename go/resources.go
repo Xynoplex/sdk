@@ -44,14 +44,14 @@ func PrimaryRepresentation(resource api.ResourceDescriptor) (api.Representation,
 		if len(listed) == 0 {
 			return api.Representation{}, false, nil
 		}
-		list, err := resource.Representations.AsResourceDescriptorRepresentations1()
-		if err != nil {
+		var list api.ResourceDescriptorRepresentationsList
+		if err := resource.Representations.As(&list); err != nil {
 			return api.Representation{}, false, noDescriptor(resource, "its representations do not read")
 		}
 		return list[0], true, nil
 	case isRepresentation(stated):
-		one, err := resource.Representations.AsRepresentation()
-		if err != nil {
+		var one api.Representation
+		if err := resource.Representations.As(&one); err != nil {
 			return api.Representation{}, false, noDescriptor(resource, "its representation does not read")
 		}
 		return one, true, nil

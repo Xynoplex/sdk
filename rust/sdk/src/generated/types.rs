@@ -7884,6 +7884,9 @@ pub struct ScoredResource {
     #[serde(rename = "matchReason")]
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub match_reason: Option<String>,
+    /// Every property the schema does not name, as it came.
+    #[serde(flatten)]
+    pub rest: serde_json::Map<String, serde_json::Value>,
 }
 
 impl ScoredResource {
@@ -7923,6 +7926,7 @@ impl ScoredResource {
             originated_from: None,
             score: None,
             match_reason: None,
+            rest: serde_json::Map::new(),
         }
     }
 }

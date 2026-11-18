@@ -641,12 +641,12 @@ func samePlace(one, other api.KbEndpoint) bool {
 	}
 	switch oneKind {
 	case string(api.HttpEndpointKindHttp):
-		a, errA := one.AsHttpEndpoint()
-		b, errB := other.AsHttpEndpoint()
+		var a, b api.HttpEndpoint
+		errA, errB := one.As(&a), other.As(&b)
 		return errA == nil && errB == nil && a.Protocol == b.Protocol && strings.ToLower(a.Host) == strings.ToLower(b.Host) && a.Port == b.Port
 	case string(api.LocalEndpointKindLocal):
-		a, errA := one.AsLocalEndpoint()
-		b, errB := other.AsLocalEndpoint()
+		var a, b api.LocalEndpoint
+		errA, errB := one.As(&a), other.As(&b)
 		return errA == nil && errB == nil && a.KbId == b.KbId
 	}
 	return false

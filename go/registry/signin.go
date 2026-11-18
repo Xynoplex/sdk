@@ -35,7 +35,7 @@ func CompleteSignIn(ctx context.Context, browser *XynologBrowser, issuer xynolog
 		return SignInOutcome{}, err
 	}
 	var endpoint api.KbEndpoint
-	if err := endpoint.FromHttpEndpoint(pending.Target); err != nil {
+	if err := endpoint.From(pending.Target); err != nil {
 		// An endpoint read back from the pending record writes as it was read.
 		panic(err)
 	}
