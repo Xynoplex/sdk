@@ -67,13 +67,11 @@ let cases =
       (refuses
          (expr
             (Binary (Conditional (Name "a", Name "b", Name "c"), And, Name "d"))));
-    case "a conditional's arms may be a cast null and a call"
-      (writes "a ? (long?)null : f(a)"
+    case "a conditional's arms may be null and a call"
+      (writes "a ? null : f(a)"
          (expr
             (Conditional
-               ( Name "a",
-                 Cast (Nullable (T "long"), Null),
-                 Call (Name "f", [], [ Arg (Name "a") ]) ))));
+               (Name "a", Null, Call (Name "f", [], [ Arg (Name "a") ])))));
     case "a call's type arguments and out variable"
       (writes
          "x.TryRead<global::Xynolog.Types.Stated<string?>>(\"k\", out var p0)"
@@ -108,53 +106,11 @@ let cases =
                             init = None;
                           }) );
                  ] ))));
-    case "an object initializer assigns a member a line"
-      (writes "new X\n{\n    A = 1,\n    B = \"b\",\n}"
-         (expr
-            (New
-               {
-                 type_ = Some (T "X");
-                 args = None;
-                 init = Some (Assigns [ ("A", Int 1); ("B", Str "b") ]);
-               })));
-    case "an array is made on one line"
-      (writes "new string[] { \"a\", \"b\" }"
-         (expr (Array_new (T "string", [ Str "a"; Str "b" ]))));
     case "an if's block is braced on lines of its own"
       (writes "if (value.A is not null)\n{\n    return true;\n}"
          (stmt
             (If
                (Is_not_null (Member (Name "value", "A")), [ Return (Bool true) ]))));
-    case "a foreach of one statement is one line"
-      (writes "foreach (var pair in xs) { f(pair); }"
-         (stmt
-            (Foreach
-               {
-                 name = "pair";
-                 over = Name "xs";
-                 body = Do (Call (Name "f", [], [ Arg (Name "pair") ]));
-               })));
-    case "a switch statement's cases are a line each"
-      (writes
-         "switch (value)\n\
-          {\n\
-         \    case X.ACase selected: f(selected); break;\n\
-         \    default: throw new E();\n\
-          }"
-         (stmt
-            (Switch_stmt
-               {
-                 on = Name "value";
-                 cases =
-                   [
-                     ( T "X.ACase",
-                       "selected",
-                       Do (Call (Name "f", [], [ Arg (Name "selected") ])) );
-                   ];
-                 default =
-                   Throw_stmt
-                     (New { type_ = Some (T "E"); args = Some []; init = None });
-               })));
     case "a statement that only reads is refused"
       (refuses (stmt (Do (Name "x"))));
     case "a packed type's members are a line each, its braces Allman's"

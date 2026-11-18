@@ -55,31 +55,21 @@ let rest = "rest"
 (* The names a generated file imports: no schema may be named as one. *)
 let imported =
   [
-    "kotlinx.serialization.DeserializationStrategy";
     "kotlinx.serialization.EncodeDefault";
-    "kotlinx.serialization.ExperimentalSerializationApi";
     "kotlinx.serialization.KSerializer";
     "kotlinx.serialization.KeepGeneratedSerializer";
     "kotlinx.serialization.SerialName";
     "kotlinx.serialization.Serializable";
     "kotlinx.serialization.SerializationException";
     "kotlinx.serialization.Transient";
-    "kotlinx.serialization.builtins.ListSerializer";
     "kotlinx.serialization.descriptors.PrimitiveKind";
     "kotlinx.serialization.descriptors.PrimitiveSerialDescriptor";
     "kotlinx.serialization.descriptors.SerialDescriptor";
-    "kotlinx.serialization.descriptors.nullable";
     "kotlinx.serialization.encoding.Decoder";
     "kotlinx.serialization.encoding.Encoder";
-    "kotlinx.serialization.json.JsonArray";
-    "kotlinx.serialization.json.JsonContentPolymorphicSerializer";
-    "kotlinx.serialization.json.JsonDecoder";
     "kotlinx.serialization.json.JsonElement";
-    "kotlinx.serialization.json.JsonEncoder";
     "kotlinx.serialization.json.JsonIgnoreUnknownKeys";
     "kotlinx.serialization.json.JsonObject";
-    "kotlinx.serialization.json.JsonPrimitive";
-    "kotlinx.serialization.json.jsonObject";
     "kotlinx.serialization.serializer";
   ]
 
@@ -585,7 +575,7 @@ and object_declaration st name { stated_properties; required_names; beside }
               ~visibility:K.Public
               ~constructor:
                 (K.constructor
-                   (List.map (declared ~boxing:true) props
+                   (List.map declared props
                    @ if open_ then [ rest_param ] else []))
               ~supers:(supers unions)
               ~members:
@@ -595,15 +585,13 @@ and object_declaration st name { stated_properties; required_names; beside }
           ])
 
 (* As the data class declares it. *)
-and declared ~boxing p =
+and declared p =
   let annotations =
     serial_name ~name:p.name p.wire
     @ (match p.form with
       | Single _ -> [ K.annotation "EncodeDefault" ]
       | _ -> [])
-    @
-    if boxing && p.boxed then [ K.annotation ~target:"get" "JvmExposeBoxed" ]
-    else []
+    @ if p.boxed then [ K.annotation ~target:"get" "JvmExposeBoxed" ] else []
   in
   let type_, default =
     match p.form with

@@ -19,7 +19,6 @@ type type_ =
   | Array of type_
   | Member_type of type_ * string  (** A type declared within another. *)
 
-type unary = Complement
 type binary = And | Eq | Lt | Le | Ge
 
 type expr =
@@ -34,16 +33,12 @@ type expr =
   | Uint_hex of string  (** Hex digits, written [0x…U]. *)
   | Member of expr * string
   | Call of expr * type_ list * arg list
-  | Index of expr * expr
   | New of { type_ : type_ option; args : arg list option; init : init option }
       (** [new T(args) { … }]; no type is the type the target is, and no
           arguments is no parentheses, beside an initializer. *)
-  | Array_new of type_ * expr list  (** [new T[] { … }], on one line. *)
   | Collection of expr list  (** [[a, b]]. *)
   | Typeof of type_
   | Nameof of string
-  | Cast of type_ * expr
-  | Unary of unary * expr
   | Binary of expr * binary * expr  (** [a && b && c] is [(a && b) && c]. *)
   | Coalesce of expr * expr  (** [a ?? b], whose [b] may be a throw. *)
   | Is of expr * type_
@@ -57,29 +52,15 @@ type expr =
   | Assign of expr * expr
 
 and arg = Arg of expr | Ref of expr | Out_var of string
-
-and init =
-  | Assigns of (string * expr) list  (** [Name = value], a line each. *)
-  | Keyed of (expr * expr) list  (** [[key] = value], a line each. *)
-
+and init = Keyed of (expr * expr) list  (** [[key] = value], a line each. *)
 and pattern = Value of expr | Discard
 
 type stmt =
-  | Using_var of string * expr
-  | Var of string * expr
   | Do of expr
   | Set of expr * expr
   | Return of expr
   | Throw_stmt of expr
   | If of expr * stmt list
-  | Foreach of { name : string; over : expr; body : stmt }
-      (** On one line, its body braced. *)
-  | Switch_stmt of {
-      on : expr;
-      cases : (type_ * string * stmt) list;
-          (** A case a line: its type, the name it binds, then [break]. *)
-      default : stmt;
-    }
   | Try of stmt list * (type_ * string * stmt list)
 
 type modifier =
@@ -347,7 +328,6 @@ let indent depth = String.make (4 * depth) ' '
 
 (* Precedence: an operand binds at least as tightly as its place asks. *)
 let primary = 10
-let unary_level = 9
 let switch_level = 8
 let binary_level = function And -> 4 | Eq -> 6 | Lt | Le | Ge -> 7
 
@@ -360,10 +340,9 @@ let binary_text = function
 
 let level = function
   | Name _ | This | Null | Default | Bool _ | Str _ | Char _ | Int _
-  | Uint_hex _ | Member _ | Call _ | Index _ | New _ | Array_new _
-  | Collection _ | Typeof _ | Nameof _ ->
+  | Uint_hex _ | Member _ | Call _ | New _ | Collection _ | Typeof _ | Nameof _
+    ->
       primary
-  | Cast _ | Unary _ -> unary_level
   | Switch _ -> switch_level
   | Is _ | Is_not_null _ -> 7
   | Binary (_, op, _) -> binary_level op
@@ -408,25 +387,16 @@ and block_lines ~depth items =
 and item_lines ~depth first value =
   [ indent (depth + 1) ^ first ] ^^ value ^^ [ "," ]
 
-and init_lines ~depth = function
-  | Assigns members ->
-      block_lines ~depth
-        (List.map
-           (fun (name, value) ->
-             item_lines ~depth
-               (checked name ^ " = ")
-               (at_least ~depth:(depth + 1) 1 value))
-           members)
-  | Keyed pairs ->
-      block_lines ~depth
-        (List.map
-           (fun (key, value) ->
-             item_lines ~depth ""
-               ([ "[" ]
-               ^^ at_least ~depth:(depth + 1) 1 key
-               ^^ [ "] = " ]
-               ^^ at_least ~depth:(depth + 1) 0 value))
-           pairs)
+and init_lines ~depth (Keyed pairs) =
+  block_lines ~depth
+    (List.map
+       (fun (key, value) ->
+         item_lines ~depth ""
+           ([ "[" ]
+           ^^ at_least ~depth:(depth + 1) 1 key
+           ^^ [ "] = " ]
+           ^^ at_least ~depth:(depth + 1) 0 value))
+       pairs)
 
 and lines ~depth = function
   | Name name -> [ qualified name ]
@@ -453,8 +423,6 @@ and lines ~depth = function
         | [] -> [ "" ]
         | ts -> [ "<" ^ listed type_text ts ^ ">" ])
       ^^ args_lines ~depth args
-  | Index (e, i) ->
-      at_least ~depth primary e ^^ [ "[" ] ^^ expr ~depth i ^^ [ "]" ]
   | New { type_; args; init } -> (
       let head =
         match (type_, args) with
@@ -467,11 +435,6 @@ and lines ~depth = function
       match init with
       | None -> head
       | Some init -> head @ init_lines ~depth init)
-  | Array_new (t, items) ->
-      [ "new " ^ type_text t ^ "[] { " ]
-      ^^ joined ~depth ", "
-           (List.map (fun e ~depth -> at_least ~depth 1 e) items)
-      ^^ [ " }" ]
   | Collection items ->
       [ "[" ]
       ^^ joined ~depth ", "
@@ -479,8 +442,6 @@ and lines ~depth = function
       ^^ [ "]" ]
   | Typeof t -> [ "typeof(" ^ type_text t ^ ")" ]
   | Nameof name -> [ "nameof(" ^ checked name ^ ")" ]
-  | Cast (t, e) -> [ "(" ^ type_text t ^ ")" ] ^^ at_least ~depth unary_level e
-  | Unary (Complement, e) -> [ "~" ] ^^ at_least ~depth unary_level e
   | Binary (a, op, b) ->
       let n = binary_level op in
       at_least ~depth n a
@@ -521,9 +482,6 @@ let line ~depth text = [ indent depth ] ^^ text
 let rec stmt ~depth s =
   let ended e = line ~depth (e ^^ [ ";" ]) in
   match s with
-  | Using_var (name, e) ->
-      ended ([ "using var " ^ checked name ^ " = " ] ^^ expr ~depth e)
-  | Var (name, e) -> ended ([ "var " ^ checked name ^ " = " ] ^^ expr ~depth e)
   | Do e -> (
       match e with
       | Call _ | Assign _ -> ended (expr ~depth e)
@@ -534,32 +492,11 @@ let rec stmt ~depth s =
   | If (c, body) ->
       line ~depth ([ "if (" ] ^^ at_least ~depth 0 c ^^ [ ")" ])
       @ braced ~depth body
-  | Foreach { name; over; body } ->
-      line ~depth
-        ([ "foreach (var " ^ checked name ^ " in " ]
-        ^^ at_least ~depth 0 over ^^ [ ") { " ] ^^ one_line body ^^ [ " }" ])
-  | Switch_stmt { on; cases; default } ->
-      line ~depth ([ "switch (" ] ^^ at_least ~depth 0 on ^^ [ ")" ])
-      @ [ indent depth ^ "{" ]
-      @ List.concat_map
-          (fun (t, name, body) ->
-            line ~depth:(depth + 1)
-              ([ "case " ^ type_text t ^ " " ^ checked name ^ ": " ]
-              ^^ one_line body ^^ [ " break;" ]))
-          cases
-      @ line ~depth:(depth + 1) ([ "default: " ] ^^ one_line default)
-      @ [ indent depth ^ "}" ]
   | Try (body, (t, name, handler)) ->
       [ indent depth ^ "try" ]
       @ braced ~depth body
       @ [ indent depth ^ "catch (" ^ type_text t ^ " " ^ checked name ^ ")" ]
       @ braced ~depth handler
-
-(* A statement on the line it is given, which must fit one. *)
-and one_line s =
-  match stmt ~depth:0 s with
-  | [ text ] -> [ text ]
-  | _ -> refuse "a statement over several lines where one line is asked"
 
 and braced ~depth body =
   [ indent depth ^ "{" ]

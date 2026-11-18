@@ -27,25 +27,12 @@ type type_ =
   | Star
   | Function_type of type_ list * type_
 
-type binary =
-  | Or
-  | And
-  | Eq
-  | Ne
-  | Ge
-  | In
-  | Not_in
-  | Range
-  | Plus
-  | Elvis
-  | To
-
+type binary = Or | And | Eq | Ge | In | Range | Plus | To
 type layout = Inline | Lines
 
 type expr =
   | Name of string  (** A name, or one qualified by what it is within. *)
   | This
-  | Super
   | Null
   | Bool of bool
   | Str of string  (** Every character as itself but what must be escaped. *)
@@ -54,10 +41,8 @@ type expr =
   | Char of char
   | Call of call
   | Member of expr * string  (** [e.name] *)
-  | Safe of expr * string  (** [e?.name] *)
   | Not of expr
   | Binary of expr * binary * expr  (** [a + b + c] is [(a + b) + c]. *)
-  | As_safe of expr * type_  (** [e as? t] *)
   | Class_literal of string  (** [T::class] *)
   | Reference of string * string  (** [T::name] *)
   | Lambda of string list * expr  (** [{ a -> e }], or [{ e }] with none. *)
@@ -79,7 +64,7 @@ and call = {
 
 and arg = { label : string option; value : expr }
 and branch = { conditions : condition list; result : expr }
-and condition = Equal of expr | Is of type_
+and condition = Equal of expr
 
 type stmt =
   | Val of string * expr
@@ -418,13 +403,10 @@ let binary = function
   | Or -> "||"
   | And -> "&&"
   | Eq -> "=="
-  | Ne -> "!="
   | Ge -> ">="
   | In -> "in"
-  | Not_in -> "!in"
   | Range -> ".."
   | Plus -> "+"
-  | Elvis -> "?:"
   | To -> "to"
 
 (* How tightly an operation binds, as Kotlin's grammar ranks them: a postfix
@@ -435,10 +417,9 @@ let binary = function
 let rank = function
   | Or -> 1
   | And -> 2
-  | Eq | Ne -> 3
+  | Eq -> 3
   | Ge -> 4
-  | In | Not_in -> 5
-  | Elvis -> 6
+  | In -> 5
   | To -> 7
   | Range -> 8
   | Plus -> 9
@@ -447,7 +428,6 @@ let postfix_rank = 12
 
 let rank_of = function
   | Binary (_, op, _) -> rank op
-  | As_safe _ -> 10
   | Not _ -> 11
   | Throw _ | If _ | When _ | Try _ -> 0
   | _ -> postfix_rank
@@ -456,7 +436,6 @@ let rec expr ~depth e =
   match e with
   | Name name -> checked name
   | This -> "this"
-  | Super -> "super"
   | Null -> "null"
   | Bool b -> string_of_bool b
   | Str text -> escaped text
@@ -473,7 +452,6 @@ let rec expr ~depth e =
         | _ -> arguments ~depth layout args)
       ^ match lambda with None -> "" | Some l -> " " ^ expr ~depth l)
   | Member (e, name) -> receiver ~depth e ^ "." ^ simple name
-  | Safe (e, name) -> receiver ~depth e ^ "?." ^ simple name
   | Not e -> "!" ^ bound ~depth ~least:11 e
   | Binary (a, op, b) ->
       (* A range is written close, as ktlint has it; every other operator spaced. *)
@@ -481,7 +459,6 @@ let rec expr ~depth e =
       bound ~depth ~least:(rank op) a
       ^ spaced
       ^ right ~depth ~least:(rank op + 1) b
-  | As_safe (e, t) -> bound ~depth ~least:10 e ^ " as? " ^ type_ t
   | Class_literal name -> checked name ^ "::class"
   | Reference (owner, name) -> checked owner ^ "::" ^ simple name
   | Lambda ([], Assigning (target, e)) ->
@@ -506,9 +483,7 @@ let rec expr ~depth e =
                  | cs ->
                      String.concat ", "
                        (List.map
-                          (function
-                            | Equal e -> expr ~depth:(depth + 1) e
-                            | Is t -> "is " ^ type_ t)
+                          (fun (Equal e) -> expr ~depth:(depth + 1) e)
                           cs))
                ^ " -> "
                ^ expr ~depth:(depth + 1) result
@@ -838,16 +813,15 @@ let referenced decls =
   let rec of_expr = function
     | Name name | Class_literal name -> [ first name ]
     | Reference (owner, _) -> [ first owner ]
-    | This | Super | Null | Bool _ | Str _ | Ascii _ | Int _ | Char _ -> []
+    | This | Null | Bool _ | Str _ | Ascii _ | Int _ | Char _ -> []
     | Call { callee; types; args; lambda; layout = _ } ->
         of_expr callee
         @ List.concat_map of_type types
         @ of_args args
         @ Option.fold ~none:[] ~some:of_expr lambda
-    | Member (e, name) | Safe (e, name) -> name :: of_expr e
+    | Member (e, name) -> name :: of_expr e
     | Not e | Throw e -> of_expr e
     | Binary (a, _, b) -> of_expr a @ of_expr b
-    | As_safe (e, t) -> of_expr e @ of_type t
     | Lambda (_, e) -> of_expr e
     | Assigning (a, b) -> of_expr a @ of_expr b
     | When { subject; branches } ->
@@ -855,9 +829,7 @@ let referenced decls =
         @ List.concat_map
             (fun { conditions; result } ->
               of_expr result
-              @ List.concat_map
-                  (function Equal e -> of_expr e | Is t -> of_type t)
-                  conditions)
+              @ List.concat_map (fun (Equal e) -> of_expr e) conditions)
             branches
     | If (a, b, c) -> of_expr a @ of_expr b @ of_expr c
     | Try { body; caught = _, t; handler } ->
