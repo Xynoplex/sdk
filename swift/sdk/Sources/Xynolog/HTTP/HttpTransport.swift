@@ -239,7 +239,7 @@ public actor HttpTransport: Transport, GatewayOperations {
         for try await bytes in response.body {
           try Task.checkCancellation()
           for event in parser.feed(bytes.readableBytesView)
-          where event.event == "bus-event" && !event.data.isEmpty {
+          where event.event == BusEventMessageEvent.busEvent.rawValue && !event.data.isEmpty {
             await self?.received(event, connection: id)
           }
         }
