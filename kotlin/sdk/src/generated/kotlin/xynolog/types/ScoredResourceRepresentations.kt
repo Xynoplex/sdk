@@ -4,17 +4,7 @@
 
 package xynolog.types
 
-import kotlinx.serialization.DeserializationStrategy
-import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonContentPolymorphicSerializer
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
 
 /** Managed or referenced byte-level renditions of this resource. */
 @Serializable(with = ScoredResourceRepresentationsSerializer::class)
@@ -22,31 +12,13 @@ public sealed interface ScoredResourceRepresentations {
     /** A member that is a `List<Representation>`, as the value itself. */
     @Serializable(with = List.Serializer::class)
     public data class List(public val value: kotlin.collections.List<Representation>) : ScoredResourceRepresentations {
-        internal object Serializer : KSerializer<List> {
-            private val value: KSerializer<kotlin.collections.List<Representation>> = kotlinx.serialization.serializer()
-
-            override val descriptor: SerialDescriptor = SerialDescriptor("xynolog.types.ScoredResourceRepresentations.List", value.descriptor)
-
-            override fun serialize(encoder: Encoder, value: List) {
-                encoder.encodeSerializableValue(this.value, value.value)
-            }
-
-            override fun deserialize(decoder: Decoder): List = List(decoder.decodeSerializableValue(value))
-        }
+        internal object Serializer : WrapperSerializer<List, kotlin.collections.List<Representation>>(List::class, kotlinx.serialization.serializer(), { List(it) }, List::value)
     }
 }
 
-internal object ScoredResourceRepresentationsSerializer : JsonContentPolymorphicSerializer<ScoredResourceRepresentations>(ScoredResourceRepresentations::class) {
-    override val descriptor: SerialDescriptor = SerialDescriptor("xynolog.types.ScoredResourceRepresentations", super.descriptor)
-
-    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<ScoredResourceRepresentations> =
-        firstThatFits<ScoredResourceRepresentations>(
-            element,
-            when (element) {
-                is JsonPrimitive -> if (element.isString) listOf() else emptyList()
-                is JsonArray -> listOf(ScoredResourceRepresentations.List.serializer())
-                is JsonObject -> listOf(Representation.serializer())
-            },
-            "ScoredResourceRepresentations",
-        )
-}
+internal object ScoredResourceRepresentationsSerializer : KindsUnionSerializer<ScoredResourceRepresentations>(
+    ScoredResourceRepresentations::class,
+    strings = { emptyList() },
+    arrays = { listOf(ScoredResourceRepresentations.List.serializer()) },
+    objects = { listOf(Representation.serializer()) },
+)

@@ -5,20 +5,15 @@
 package xynolog.types
 
 import kotlinx.serialization.EncodeDefault
-import kotlinx.serialization.KSerializer
+import kotlinx.serialization.KeepGeneratedSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationException
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.json.JsonDecoder
-import kotlinx.serialization.json.JsonEncoder
+import kotlinx.serialization.Transient
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.jsonObject
 
 /** A human participant — the Person branch of Agent. */
 @Serializable(with = AgentPerson.Serializer::class)
+@KeepGeneratedSerializer
 public data class AgentPerson(
     @SerialName("@type")
     @EncodeDefault
@@ -34,6 +29,7 @@ public data class AgentPerson(
     public val emailSha1: String? = null,
     public val homepage: String? = null,
     /** Every property the schema does not name, as it came. */
+    @Transient
     public val rest: JsonObject = JsonObject(emptyMap()),
 ) : Agent {
     /** How Java makes a `AgentPerson`: `builder` takes what it must state, a setter each thing it may, and `build` makes it. */
@@ -63,39 +59,9 @@ public data class AgentPerson(
         public fun builder(): Builder = Builder()
     }
 
-    @Serializable
-    internal data class Known(
-        @SerialName("@type")
-        @EncodeDefault
-        public val type: AgentPersonType = AgentPersonType.Person,
-        /** DID-shaped identifier (e.g. did:web:host:users:email%40host) */
-        @SerialName("@id")
-        public val id: String? = null,
-        /** Display name. ABSENT until resolved: a Person is identified by `@id` and nothing else, and what they are called is recorded once per change on the knowledge base's own log and filled in when a record is read. An artifact therefore never freezes a name, which is what lets a correction reach every artifact its subject ever wrote. Absent also means genuinely unknown — a DID this knowledge base has no profile for. */
-        public val name: String? = null,
-        public val nickname: String? = null,
-        public val email: String? = null,
-        @SerialName("email_sha1")
-        public val emailSha1: String? = null,
-        public val homepage: String? = null,
+    internal object Serializer : OpenObjectSerializer<AgentPerson>(
+        AgentPerson.generatedSerializer(),
+        AgentPerson::rest,
+        { named, rest -> named.copy(rest = rest) },
     )
-
-    internal object Serializer : KSerializer<AgentPerson> {
-        private val named: Set<String> = setOf("@type", "@id", "name", "nickname", "email", "email_sha1", "homepage")
-
-        override val descriptor: SerialDescriptor = SerialDescriptor("xynolog.types.AgentPerson", Known.serializer().descriptor)
-
-        override fun deserialize(decoder: Decoder): AgentPerson {
-            val json = decoder as? JsonDecoder ?: throw SerializationException("a AgentPerson is read from JSON alone")
-            val all = json.decodeJsonElement().jsonObject
-            val known = json.json.decodeFromJsonElement(Known.serializer(), JsonObject(all.filterKeys { it in named }))
-            return AgentPerson(type = known.type, id = known.id, name = known.name, nickname = known.nickname, email = known.email, emailSha1 = known.emailSha1, homepage = known.homepage, rest = JsonObject(all.filterKeys { it !in named }))
-        }
-
-        override fun serialize(encoder: Encoder, value: AgentPerson) {
-            val json = encoder as? JsonEncoder ?: throw SerializationException("a AgentPerson is written as JSON alone")
-            val known = json.json.encodeToJsonElement(Known.serializer(), Known(type = value.type, id = value.id, name = value.name, nickname = value.nickname, email = value.email, emailSha1 = value.emailSha1, homepage = value.homepage)).jsonObject
-            json.encodeJsonElement(JsonObject(known + value.rest))
-        }
-    }
 }

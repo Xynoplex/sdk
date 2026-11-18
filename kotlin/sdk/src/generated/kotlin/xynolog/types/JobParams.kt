@@ -4,26 +4,22 @@
 
 package xynolog.types
 
-import kotlinx.serialization.KSerializer
+import kotlinx.serialization.KeepGeneratedSerializer
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationException
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.json.JsonDecoder
-import kotlinx.serialization.json.JsonEncoder
+import kotlinx.serialization.Transient
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.jsonObject
 import xynolog.identifiers.ResourceId
 
 /** A job's parameters as the Dispatcher holds them: the `params` of its `job:create`, and what the Dispatcher adds. It adds `resourceId`, the resource the job is about: a `mark` job's own, and for a `yield` job the one its context focuses on. For a tagging job it adds `schema`, the tag schema its `schemaId` names, so that whoever holds the job needs no registry. Nothing the caller sent is changed or removed. */
 @Serializable(with = JobParams.Serializer::class)
+@KeepGeneratedSerializer
 public data class JobParams(
     @get:JvmExposeBoxed
     public val resourceId: ResourceId,
     /** The tag schema a tagging job's `schemaId` names, as the knowledge base registered it when the job was created. On a tagging job, and on no other. */
     public val schema: TagSchema? = null,
     /** Every property the schema does not name, as it came. */
+    @Transient
     public val rest: JsonObject = JsonObject(emptyMap()),
 ) {
     /** How Java makes a `JobParams`: `builder` takes what it must state, a setter each thing it may, and `build` makes it. */
@@ -46,29 +42,9 @@ public data class JobParams(
         public fun builder(resourceId: ResourceId): Builder = Builder(resourceId)
     }
 
-    @Serializable
-    internal data class Known(
-        public val resourceId: ResourceId,
-        /** The tag schema a tagging job's `schemaId` names, as the knowledge base registered it when the job was created. On a tagging job, and on no other. */
-        public val schema: TagSchema? = null,
+    internal object Serializer : OpenObjectSerializer<JobParams>(
+        JobParams.generatedSerializer(),
+        JobParams::rest,
+        { named, rest -> named.copy(rest = rest) },
     )
-
-    internal object Serializer : KSerializer<JobParams> {
-        private val named: Set<String> = setOf("resourceId", "schema")
-
-        override val descriptor: SerialDescriptor = SerialDescriptor("xynolog.types.JobParams", Known.serializer().descriptor)
-
-        override fun deserialize(decoder: Decoder): JobParams {
-            val json = decoder as? JsonDecoder ?: throw SerializationException("a JobParams is read from JSON alone")
-            val all = json.decodeJsonElement().jsonObject
-            val known = json.json.decodeFromJsonElement(Known.serializer(), JsonObject(all.filterKeys { it in named }))
-            return JobParams(resourceId = known.resourceId, schema = known.schema, rest = JsonObject(all.filterKeys { it !in named }))
-        }
-
-        override fun serialize(encoder: Encoder, value: JobParams) {
-            val json = encoder as? JsonEncoder ?: throw SerializationException("a JobParams is written as JSON alone")
-            val known = json.json.encodeToJsonElement(Known.serializer(), Known(resourceId = value.resourceId, schema = value.schema)).jsonObject
-            json.encodeJsonElement(JsonObject(known + value.rest))
-        }
-    }
 }

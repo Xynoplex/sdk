@@ -4,29 +4,14 @@
 
 package xynolog.types
 
-import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonContentPolymorphicSerializer
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
 
 @Serializable(with = UpdateAnnotationBodyRequestOperationsItemSerializer::class)
 public sealed interface UpdateAnnotationBodyRequestOperationsItem
 
-internal object UpdateAnnotationBodyRequestOperationsItemSerializer : JsonContentPolymorphicSerializer<UpdateAnnotationBodyRequestOperationsItem>(UpdateAnnotationBodyRequestOperationsItem::class) {
-    override val descriptor: SerialDescriptor = SerialDescriptor("xynolog.types.UpdateAnnotationBodyRequestOperationsItem", super.descriptor)
-
-    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<UpdateAnnotationBodyRequestOperationsItem> =
-        firstThatFits<UpdateAnnotationBodyRequestOperationsItem>(
-            element,
-            when (element) {
-                is JsonPrimitive -> if (element.isString) listOf() else emptyList()
-                is JsonArray -> listOf()
-                is JsonObject -> listOf(BodyOperationAdd.serializer(), BodyOperationRemove.serializer(), BodyOperationReplace.serializer())
-            },
-            "UpdateAnnotationBodyRequestOperationsItem",
-        )
-}
+internal object UpdateAnnotationBodyRequestOperationsItemSerializer : KindsUnionSerializer<UpdateAnnotationBodyRequestOperationsItem>(
+    UpdateAnnotationBodyRequestOperationsItem::class,
+    strings = { emptyList() },
+    arrays = { emptyList() },
+    objects = { listOf(BodyOperationAdd.serializer(), BodyOperationRemove.serializer(), BodyOperationReplace.serializer()) },
+)

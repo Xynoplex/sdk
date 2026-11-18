@@ -4,17 +4,7 @@
 
 package xynolog.types
 
-import kotlinx.serialization.DeserializationStrategy
-import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonContentPolymorphicSerializer
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
 import xynolog.identifiers.ResourceId
 
 /** W3C Web Annotation target: the id of the resource annotated, when the whole of it is, or an object with source and optional selector (fragment) */
@@ -23,31 +13,13 @@ public sealed interface AnnotationTargetValue {
     /** A member that is a `ResourceId`, as the value itself. */
     @Serializable(with = ResourceId.Serializer::class)
     public data class ResourceId(public val value: xynolog.identifiers.ResourceId) : AnnotationTargetValue {
-        internal object Serializer : KSerializer<ResourceId> {
-            private val value: KSerializer<xynolog.identifiers.ResourceId> = kotlinx.serialization.serializer()
-
-            override val descriptor: SerialDescriptor = SerialDescriptor("xynolog.types.AnnotationTargetValue.ResourceId", value.descriptor)
-
-            override fun serialize(encoder: Encoder, value: ResourceId) {
-                encoder.encodeSerializableValue(this.value, value.value)
-            }
-
-            override fun deserialize(decoder: Decoder): ResourceId = ResourceId(decoder.decodeSerializableValue(value))
-        }
+        internal object Serializer : WrapperSerializer<ResourceId, xynolog.identifiers.ResourceId>(ResourceId::class, kotlinx.serialization.serializer(), { ResourceId(it) }, ResourceId::value)
     }
 }
 
-internal object AnnotationTargetValueSerializer : JsonContentPolymorphicSerializer<AnnotationTargetValue>(AnnotationTargetValue::class) {
-    override val descriptor: SerialDescriptor = SerialDescriptor("xynolog.types.AnnotationTargetValue", super.descriptor)
-
-    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<AnnotationTargetValue> =
-        firstThatFits<AnnotationTargetValue>(
-            element,
-            when (element) {
-                is JsonPrimitive -> if (element.isString) listOf(AnnotationTargetValue.ResourceId.serializer()) else emptyList()
-                is JsonArray -> listOf()
-                is JsonObject -> listOf(AnnotationTarget.serializer())
-            },
-            "AnnotationTargetValue",
-        )
-}
+internal object AnnotationTargetValueSerializer : KindsUnionSerializer<AnnotationTargetValue>(
+    AnnotationTargetValue::class,
+    strings = { listOf(AnnotationTargetValue.ResourceId.serializer()) },
+    arrays = { emptyList() },
+    objects = { listOf(AnnotationTarget.serializer()) },
+)

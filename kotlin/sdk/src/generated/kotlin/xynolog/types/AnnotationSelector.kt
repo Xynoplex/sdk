@@ -4,17 +4,7 @@
 
 package xynolog.types
 
-import kotlinx.serialization.DeserializationStrategy
-import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonContentPolymorphicSerializer
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
 
 /** What a target's `selector` holds: one W3C selector, or several of the same segment. */
 @Serializable(with = AnnotationSelectorSerializer::class)
@@ -22,31 +12,13 @@ public sealed interface AnnotationSelector {
     /** A member that is a `List<Selector>`, as the value itself. */
     @Serializable(with = List.Serializer::class)
     public data class List(public val value: kotlin.collections.List<Selector>) : AnnotationSelector {
-        internal object Serializer : KSerializer<List> {
-            private val value: KSerializer<kotlin.collections.List<Selector>> = kotlinx.serialization.serializer()
-
-            override val descriptor: SerialDescriptor = SerialDescriptor("xynolog.types.AnnotationSelector.List", value.descriptor)
-
-            override fun serialize(encoder: Encoder, value: List) {
-                encoder.encodeSerializableValue(this.value, value.value)
-            }
-
-            override fun deserialize(decoder: Decoder): List = List(decoder.decodeSerializableValue(value))
-        }
+        internal object Serializer : WrapperSerializer<List, kotlin.collections.List<Selector>>(List::class, kotlinx.serialization.serializer(), { List(it) }, List::value)
     }
 }
 
-internal object AnnotationSelectorSerializer : JsonContentPolymorphicSerializer<AnnotationSelector>(AnnotationSelector::class) {
-    override val descriptor: SerialDescriptor = SerialDescriptor("xynolog.types.AnnotationSelector", super.descriptor)
-
-    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<AnnotationSelector> =
-        firstThatFits<AnnotationSelector>(
-            element,
-            when (element) {
-                is JsonPrimitive -> if (element.isString) listOf(Selector.serializer()) else emptyList()
-                is JsonArray -> listOf(Selector.serializer(), AnnotationSelector.List.serializer())
-                is JsonObject -> listOf(Selector.serializer())
-            },
-            "AnnotationSelector",
-        )
-}
+internal object AnnotationSelectorSerializer : KindsUnionSerializer<AnnotationSelector>(
+    AnnotationSelector::class,
+    strings = { listOf(Selector.serializer()) },
+    arrays = { listOf(Selector.serializer(), AnnotationSelector.List.serializer()) },
+    objects = { listOf(Selector.serializer()) },
+)

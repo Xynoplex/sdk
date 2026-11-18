@@ -4,30 +4,15 @@
 
 package xynolog.types
 
-import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonContentPolymorphicSerializer
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
 
 /** Every message the bus stream carries. A client ignores an `event` it does not know; the gateway writes no other. */
 @Serializable(with = BusStreamMessageSerializer::class)
 public sealed interface BusStreamMessage
 
-internal object BusStreamMessageSerializer : JsonContentPolymorphicSerializer<BusStreamMessage>(BusStreamMessage::class) {
-    override val descriptor: SerialDescriptor = SerialDescriptor("xynolog.types.BusStreamMessage", super.descriptor)
-
-    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<BusStreamMessage> =
-        firstThatFits<BusStreamMessage>(
-            element,
-            when (element) {
-                is JsonPrimitive -> if (element.isString) listOf() else emptyList()
-                is JsonArray -> listOf()
-                is JsonObject -> listOf(BusEventMessage.serializer(), BusPingMessage.serializer())
-            },
-            "BusStreamMessage",
-        )
-}
+internal object BusStreamMessageSerializer : KindsUnionSerializer<BusStreamMessage>(
+    BusStreamMessage::class,
+    strings = { emptyList() },
+    arrays = { emptyList() },
+    objects = { listOf(BusEventMessage.serializer(), BusPingMessage.serializer()) },
+)

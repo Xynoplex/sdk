@@ -4,19 +4,7 @@
 
 package xynolog.types
 
-import kotlinx.serialization.DeserializationStrategy
-import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonContentPolymorphicSerializer
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
 
 /** Type(s) of the resource (IRIs/CURIEs via @context). */
 @Serializable(with = ResourceDescriptorTypeSerializer::class)
@@ -24,47 +12,19 @@ public sealed interface ResourceDescriptorType {
     /** A member that is a `String`, as the value itself. */
     @Serializable(with = Text.Serializer::class)
     public data class Text(public val value: String) : ResourceDescriptorType {
-        internal object Serializer : KSerializer<Text> {
-            private val value: KSerializer<String> = kotlinx.serialization.serializer()
-
-            override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("xynolog.types.ResourceDescriptorType.Text", PrimitiveKind.STRING)
-
-            override fun serialize(encoder: Encoder, value: Text) {
-                encoder.encodeSerializableValue(this.value, value.value)
-            }
-
-            override fun deserialize(decoder: Decoder): Text = Text(decoder.decodeSerializableValue(value))
-        }
+        internal object Serializer : WrapperSerializer<Text, String>(Text::class, kotlinx.serialization.serializer(), { Text(it) }, Text::value)
     }
 
     /** A member that is a `List<String>`, as the value itself. */
     @Serializable(with = List.Serializer::class)
     public data class List(public val value: kotlin.collections.List<String>) : ResourceDescriptorType {
-        internal object Serializer : KSerializer<List> {
-            private val value: KSerializer<kotlin.collections.List<String>> = kotlinx.serialization.serializer()
-
-            override val descriptor: SerialDescriptor = SerialDescriptor("xynolog.types.ResourceDescriptorType.List", value.descriptor)
-
-            override fun serialize(encoder: Encoder, value: List) {
-                encoder.encodeSerializableValue(this.value, value.value)
-            }
-
-            override fun deserialize(decoder: Decoder): List = List(decoder.decodeSerializableValue(value))
-        }
+        internal object Serializer : WrapperSerializer<List, kotlin.collections.List<String>>(List::class, kotlinx.serialization.serializer(), { List(it) }, List::value)
     }
 }
 
-internal object ResourceDescriptorTypeSerializer : JsonContentPolymorphicSerializer<ResourceDescriptorType>(ResourceDescriptorType::class) {
-    override val descriptor: SerialDescriptor = SerialDescriptor("xynolog.types.ResourceDescriptorType", super.descriptor)
-
-    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<ResourceDescriptorType> =
-        firstThatFits<ResourceDescriptorType>(
-            element,
-            when (element) {
-                is JsonPrimitive -> if (element.isString) listOf(ResourceDescriptorType.Text.serializer()) else emptyList()
-                is JsonArray -> listOf(ResourceDescriptorType.List.serializer())
-                is JsonObject -> listOf()
-            },
-            "ResourceDescriptorType",
-        )
-}
+internal object ResourceDescriptorTypeSerializer : KindsUnionSerializer<ResourceDescriptorType>(
+    ResourceDescriptorType::class,
+    strings = { listOf(ResourceDescriptorType.Text.serializer()) },
+    arrays = { listOf(ResourceDescriptorType.List.serializer()) },
+    objects = { emptyList() },
+)

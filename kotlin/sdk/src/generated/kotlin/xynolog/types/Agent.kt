@@ -4,14 +4,7 @@
 
 package xynolog.types
 
-import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationException
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.json.JsonContentPolymorphicSerializer
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
 
 /** Web Annotation / W3C PROV Agent. Discriminated by @type — Person, Organization, or Software (named member schemas: AgentPerson, AgentOrganization, AgentSoftware). Software peers are first-class participants, not a sub-class of Person. */
 @Serializable(with = AgentSerializer::class)
@@ -27,14 +20,8 @@ public sealed interface Agent :
     ScoredResourceWasAttributedTo,
     YieldCreateCommandGenerator
 
-internal object AgentSerializer : JsonContentPolymorphicSerializer<Agent>(Agent::class) {
-    override val descriptor: SerialDescriptor = SerialDescriptor("xynolog.types.Agent", super.descriptor)
-
-    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<Agent> =
-        when (((element as? JsonObject)?.get("@type") as? JsonPrimitive)?.content) {
-            "Person" -> AgentPerson.serializer()
-            "Organization" -> AgentOrganization.serializer()
-            "Software" -> AgentSoftware.serializer()
-            else -> throw SerializationException("a Agent states a `@type` that is one of `Person`, `Organization`, `Software`")
-        }
-}
+internal object AgentSerializer : TaggedUnionSerializer<Agent>(
+    Agent::class,
+    "@type",
+    members = { mapOf("Person" to AgentPerson.serializer(), "Organization" to AgentOrganization.serializer(), "Software" to AgentSoftware.serializer()) },
+)

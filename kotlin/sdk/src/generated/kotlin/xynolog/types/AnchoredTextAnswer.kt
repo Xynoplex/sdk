@@ -4,14 +4,7 @@
 
 package xynolog.types
 
-import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonContentPolymorphicSerializer
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
 
 /**
  * What a reader gets when it asks for a resource's coordinate map: the map, a stored decline, or a named absence.
@@ -23,17 +16,9 @@ import kotlinx.serialization.json.JsonPrimitive
 @Serializable(with = AnchoredTextAnswerSerializer::class)
 public sealed interface AnchoredTextAnswer
 
-internal object AnchoredTextAnswerSerializer : JsonContentPolymorphicSerializer<AnchoredTextAnswer>(AnchoredTextAnswer::class) {
-    override val descriptor: SerialDescriptor = SerialDescriptor("xynolog.types.AnchoredTextAnswer", super.descriptor)
-
-    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<AnchoredTextAnswer> =
-        firstThatFits<AnchoredTextAnswer>(
-            element,
-            when (element) {
-                is JsonPrimitive -> if (element.isString) listOf() else emptyList()
-                is JsonArray -> listOf()
-                is JsonObject -> listOf(ExtractedText.serializer(), ExtractionDeclined.serializer(), AnchoredTextAbsent.serializer())
-            },
-            "AnchoredTextAnswer",
-        )
-}
+internal object AnchoredTextAnswerSerializer : KindsUnionSerializer<AnchoredTextAnswer>(
+    AnchoredTextAnswer::class,
+    strings = { emptyList() },
+    arrays = { emptyList() },
+    objects = { listOf(ExtractedText.serializer(), ExtractionDeclined.serializer(), AnchoredTextAbsent.serializer()) },
+)

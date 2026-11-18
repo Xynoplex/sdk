@@ -4,29 +4,14 @@
 
 package xynolog.types
 
-import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonContentPolymorphicSerializer
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
 
 @Serializable(with = MarkUpdateBodyCommandOperationsItemSerializer::class)
 public sealed interface MarkUpdateBodyCommandOperationsItem
 
-internal object MarkUpdateBodyCommandOperationsItemSerializer : JsonContentPolymorphicSerializer<MarkUpdateBodyCommandOperationsItem>(MarkUpdateBodyCommandOperationsItem::class) {
-    override val descriptor: SerialDescriptor = SerialDescriptor("xynolog.types.MarkUpdateBodyCommandOperationsItem", super.descriptor)
-
-    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<MarkUpdateBodyCommandOperationsItem> =
-        firstThatFits<MarkUpdateBodyCommandOperationsItem>(
-            element,
-            when (element) {
-                is JsonPrimitive -> if (element.isString) listOf() else emptyList()
-                is JsonArray -> listOf()
-                is JsonObject -> listOf(BodyOperationAdd.serializer(), BodyOperationRemove.serializer(), BodyOperationReplace.serializer())
-            },
-            "MarkUpdateBodyCommandOperationsItem",
-        )
-}
+internal object MarkUpdateBodyCommandOperationsItemSerializer : KindsUnionSerializer<MarkUpdateBodyCommandOperationsItem>(
+    MarkUpdateBodyCommandOperationsItem::class,
+    strings = { emptyList() },
+    arrays = { emptyList() },
+    objects = { listOf(BodyOperationAdd.serializer(), BodyOperationRemove.serializer(), BodyOperationReplace.serializer()) },
+)

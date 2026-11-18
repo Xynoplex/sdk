@@ -4,22 +4,17 @@
 
 package xynolog.types
 
-import kotlinx.serialization.KSerializer
+import kotlinx.serialization.KeepGeneratedSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationException
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.json.JsonDecoder
-import kotlinx.serialization.json.JsonEncoder
+import kotlinx.serialization.Transient
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.jsonObject
 import xynolog.identifiers.AnnotationId
 import xynolog.identifiers.ResourceId
 
 /** Metadata about a resource (1:1 with its URI). JSON-LD subject is @id. Link to concrete bytes via representations. */
 @Serializable(with = ResourceDescriptor.Serializer::class)
+@KeepGeneratedSerializer
 public data class ResourceDescriptor(
     /** JSON-LD context; URI, object, or array of these. */
     @SerialName("@context")
@@ -72,6 +67,7 @@ public data class ResourceDescriptor(
     /** Original URI from a source knowledge base when this resource was imported */
     public val originatedFrom: String? = null,
     /** Every property the schema does not name, as it came. */
+    @Transient
     public val rest: JsonObject = JsonObject(emptyMap()),
 ) {
     /** How Java makes a `ResourceDescriptor`: `builder` takes what it must state, a setter each thing it may, and `build` makes it. */
@@ -144,73 +140,9 @@ public data class ResourceDescriptor(
         public fun builder(context: ResourceDescriptorContext, id: ResourceId, name: String, representations: ResourceDescriptorRepresentations): Builder = Builder(context, id, name, representations)
     }
 
-    @Serializable
-    internal data class Known(
-        /** JSON-LD context; URI, object, or array of these. */
-        @SerialName("@context")
-        public val context: ResourceDescriptorContext,
-        /** The id of the resource being described. */
-        @SerialName("@id")
-        public val id: ResourceId,
-        /** Type(s) of the resource (IRIs/CURIEs via @context). */
-        @SerialName("@type")
-        public val type: ResourceDescriptorType? = null,
-        public val name: String,
-        public val description: String? = null,
-        /** Persistent identifiers (e.g., DOI, URN). */
-        public val identifier: ResourceDescriptorIdentifier? = null,
-        /** Topics (IRIs or strings). */
-        public val about: ResourceDescriptorAbout? = null,
-        /** Equivalent/authoritative references. */
-        public val sameAs: kotlin.collections.List<String>? = null,
-        public val isPartOf: kotlin.collections.List<String>? = null,
-        public val hasPart: kotlin.collections.List<String>? = null,
-        public val license: String? = null,
-        public val version: String? = null,
-        public val dateCreated: String? = null,
-        public val dateModified: String? = null,
-        /** W3C PROV: the resource, or resources, this one was derived from, each by its id */
-        public val wasDerivedFrom: ResourceDescriptorWasDerivedFrom? = null,
-        /** W3C PROV — every party responsible for this resource, derived by the knowledge base at creation from verified identities: `[requester, generator]` for a resource a job produced, collapsed to the one agent when the requester produced it. Never accepted from an emitter. */
-        public val wasAttributedTo: ResourceDescriptorWasAttributedTo? = null,
-        /** Software peer that produced this resource (W3C Web Annotation model). Its identity is the verified emitter of the create; the parameters are the producer's to state. */
-        public val generator: ResourceDescriptorGenerator? = null,
-        /** Profile/shape URI this resource description conforms to. */
-        public val conformsTo: ResourceDescriptorConformsTo? = null,
-        /** Convenience set summarizing media types across representations. */
-        public val availableFormats: kotlin.collections.List<String>? = null,
-        /** Managed or referenced byte-level renditions of this resource. */
-        public val representations: ResourceDescriptorRepresentations,
-        /** Application-specific: Whether this resource is archived */
-        public val archived: Boolean? = null,
-        /** Application-specific: Entity types for this resource */
-        public val entityTypes: kotlin.collections.List<String>? = null,
-        /** Application-specific: Whether this resource is a draft */
-        public val isDraft: Boolean? = null,
-        /** Application-specific: ID of annotation that triggered generation */
-        public val sourceAnnotationId: AnnotationId? = null,
-        /** Application-specific: ID of source resource for clones/derivatives */
-        public val sourceResourceId: ResourceId? = null,
-        /** Original URI from a source knowledge base when this resource was imported */
-        public val originatedFrom: String? = null,
+    internal object Serializer : OpenObjectSerializer<ResourceDescriptor>(
+        ResourceDescriptor.generatedSerializer(),
+        ResourceDescriptor::rest,
+        { named, rest -> named.copy(rest = rest) },
     )
-
-    internal object Serializer : KSerializer<ResourceDescriptor> {
-        private val named: Set<String> = setOf("@context", "@id", "@type", "name", "description", "identifier", "about", "sameAs", "isPartOf", "hasPart", "license", "version", "dateCreated", "dateModified", "wasDerivedFrom", "wasAttributedTo", "generator", "conformsTo", "availableFormats", "representations", "archived", "entityTypes", "isDraft", "sourceAnnotationId", "sourceResourceId", "originatedFrom")
-
-        override val descriptor: SerialDescriptor = SerialDescriptor("xynolog.types.ResourceDescriptor", Known.serializer().descriptor)
-
-        override fun deserialize(decoder: Decoder): ResourceDescriptor {
-            val json = decoder as? JsonDecoder ?: throw SerializationException("a ResourceDescriptor is read from JSON alone")
-            val all = json.decodeJsonElement().jsonObject
-            val known = json.json.decodeFromJsonElement(Known.serializer(), JsonObject(all.filterKeys { it in named }))
-            return ResourceDescriptor(context = known.context, id = known.id, type = known.type, name = known.name, description = known.description, identifier = known.identifier, about = known.about, sameAs = known.sameAs, isPartOf = known.isPartOf, hasPart = known.hasPart, license = known.license, version = known.version, dateCreated = known.dateCreated, dateModified = known.dateModified, wasDerivedFrom = known.wasDerivedFrom, wasAttributedTo = known.wasAttributedTo, generator = known.generator, conformsTo = known.conformsTo, availableFormats = known.availableFormats, representations = known.representations, archived = known.archived, entityTypes = known.entityTypes, isDraft = known.isDraft, sourceAnnotationId = known.sourceAnnotationId, sourceResourceId = known.sourceResourceId, originatedFrom = known.originatedFrom, rest = JsonObject(all.filterKeys { it !in named }))
-        }
-
-        override fun serialize(encoder: Encoder, value: ResourceDescriptor) {
-            val json = encoder as? JsonEncoder ?: throw SerializationException("a ResourceDescriptor is written as JSON alone")
-            val known = json.json.encodeToJsonElement(Known.serializer(), Known(context = value.context, id = value.id, type = value.type, name = value.name, description = value.description, identifier = value.identifier, about = value.about, sameAs = value.sameAs, isPartOf = value.isPartOf, hasPart = value.hasPart, license = value.license, version = value.version, dateCreated = value.dateCreated, dateModified = value.dateModified, wasDerivedFrom = value.wasDerivedFrom, wasAttributedTo = value.wasAttributedTo, generator = value.generator, conformsTo = value.conformsTo, availableFormats = value.availableFormats, representations = value.representations, archived = value.archived, entityTypes = value.entityTypes, isDraft = value.isDraft, sourceAnnotationId = value.sourceAnnotationId, sourceResourceId = value.sourceResourceId, originatedFrom = value.originatedFrom)).jsonObject
-            json.encodeJsonElement(JsonObject(known + value.rest))
-        }
-    }
 }

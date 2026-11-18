@@ -120,7 +120,11 @@ type kind =
   | Data_object
   | Companion_object
 
-type super = { super : type_; super_args : arg list option }
+type super = {
+  super : type_;
+  super_args : arg list option;
+  super_layout : layout;
+}
 
 type entry = {
   entry_about : doc option;
@@ -252,7 +256,8 @@ let constructor ?(annotations = []) ?(visibility = Default) ?(layout = Lines)
 let param ?about ?(annotations = []) ?(binding = Plain) ?default name type_ =
   { about; annotations; binding; name; type_; default }
 
-let super ?args type_ = { super = type_; super_args = args }
+let super ?(layout = Inline) ?args type_ =
+  { super = type_; super_args = args; super_layout = layout }
 
 let entry ?about ?(annotations = []) ?(args = []) name =
   {
@@ -611,12 +616,12 @@ let kind_text = function
   | Data_object -> "data object"
   | Companion_object -> "companion object"
 
-let super_text ~depth { super = t; super_args } =
+let super_text ~depth { super = t; super_args; super_layout } =
   type_ t
   ^
   match super_args with
   | None -> ""
-  | Some args -> arguments ~depth Inline args
+  | Some args -> arguments ~depth super_layout args
 
 (* A member is annotated or documented: ktlint sets it a blank line apart,
    so a writer may not pack it. *)
@@ -894,7 +899,7 @@ let referenced decls =
               @ List.concat_map of_param params)
             constructor
         @ List.concat_map
-            (fun { super = t; super_args } ->
+            (fun { super = t; super_args; _ } ->
               of_type t @ Option.fold ~none:[] ~some:of_args super_args)
             supers
         @ List.concat_map

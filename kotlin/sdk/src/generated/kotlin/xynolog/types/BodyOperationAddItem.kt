@@ -4,29 +4,14 @@
 
 package xynolog.types
 
-import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonContentPolymorphicSerializer
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
 
 @Serializable(with = BodyOperationAddItemSerializer::class)
 public sealed interface BodyOperationAddItem
 
-internal object BodyOperationAddItemSerializer : JsonContentPolymorphicSerializer<BodyOperationAddItem>(BodyOperationAddItem::class) {
-    override val descriptor: SerialDescriptor = SerialDescriptor("xynolog.types.BodyOperationAddItem", super.descriptor)
-
-    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<BodyOperationAddItem> =
-        firstThatFits<BodyOperationAddItem>(
-            element,
-            when (element) {
-                is JsonPrimitive -> if (element.isString) listOf() else emptyList()
-                is JsonArray -> listOf()
-                is JsonObject -> listOf(TextualBody.serializer(), SpecificResource.serializer())
-            },
-            "BodyOperationAddItem",
-        )
-}
+internal object BodyOperationAddItemSerializer : KindsUnionSerializer<BodyOperationAddItem>(
+    BodyOperationAddItem::class,
+    strings = { emptyList() },
+    arrays = { emptyList() },
+    objects = { listOf(TextualBody.serializer(), SpecificResource.serializer()) },
+)

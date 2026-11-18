@@ -4,30 +4,15 @@
 
 package xynolog.types
 
-import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonContentPolymorphicSerializer
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
 
 /** The full outcome of text extraction for one representation — the record the anchored-text store holds and the wire serves. Discriminated on `kind`: 'extracted' — the anchored text with its provenance; 'declined' — a named decline. ocrConfidence is extraction quality for operators, deliberately not anchor confidence. */
 @Serializable(with = ExtractionOutcomeSerializer::class)
 public sealed interface ExtractionOutcome
 
-internal object ExtractionOutcomeSerializer : JsonContentPolymorphicSerializer<ExtractionOutcome>(ExtractionOutcome::class) {
-    override val descriptor: SerialDescriptor = SerialDescriptor("xynolog.types.ExtractionOutcome", super.descriptor)
-
-    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<ExtractionOutcome> =
-        firstThatFits<ExtractionOutcome>(
-            element,
-            when (element) {
-                is JsonPrimitive -> if (element.isString) listOf() else emptyList()
-                is JsonArray -> listOf()
-                is JsonObject -> listOf(ExtractedText.serializer(), ExtractionDeclined.serializer())
-            },
-            "ExtractionOutcome",
-        )
-}
+internal object ExtractionOutcomeSerializer : KindsUnionSerializer<ExtractionOutcome>(
+    ExtractionOutcome::class,
+    strings = { emptyList() },
+    arrays = { emptyList() },
+    objects = { listOf(ExtractedText.serializer(), ExtractionDeclined.serializer()) },
+)

@@ -4,30 +4,15 @@
 
 package xynolog.types
 
-import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonContentPolymorphicSerializer
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
 
 /** What a `yield` job reports when it concludes without failing: the resource it made, or a decline. Neither names its kind: a decline is the one with `declined`. */
 @Serializable(with = YieldJobResultSerializer::class)
 public sealed interface YieldJobResult
 
-internal object YieldJobResultSerializer : JsonContentPolymorphicSerializer<YieldJobResult>(YieldJobResult::class) {
-    override val descriptor: SerialDescriptor = SerialDescriptor("xynolog.types.YieldJobResult", super.descriptor)
-
-    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<YieldJobResult> =
-        firstThatFits<YieldJobResult>(
-            element,
-            when (element) {
-                is JsonPrimitive -> if (element.isString) listOf() else emptyList()
-                is JsonArray -> listOf()
-                is JsonObject -> listOf(YieldJobDone.serializer(), JobDeclined.serializer())
-            },
-            "YieldJobResult",
-        )
-}
+internal object YieldJobResultSerializer : KindsUnionSerializer<YieldJobResult>(
+    YieldJobResult::class,
+    strings = { emptyList() },
+    arrays = { emptyList() },
+    objects = { listOf(YieldJobDone.serializer(), JobDeclined.serializer()) },
+)

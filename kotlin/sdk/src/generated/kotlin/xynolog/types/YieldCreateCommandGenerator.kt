@@ -4,17 +4,7 @@
 
 package xynolog.types
 
-import kotlinx.serialization.DeserializationStrategy
-import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonContentPolymorphicSerializer
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
 
 /** The Software peer that produced the content, when software did. Its identity must be the emitter's own — the knowledge base refuses a generator naming anyone else, and supplies it from the verified emitter when omitted. `creator` and `wasAttributedTo` are never sent; the knowledge base derives them from the emitter and the cited job. */
 @Serializable(with = YieldCreateCommandGeneratorSerializer::class)
@@ -22,31 +12,13 @@ public sealed interface YieldCreateCommandGenerator {
     /** A member that is a `List<Agent>`, as the value itself. */
     @Serializable(with = List.Serializer::class)
     public data class List(public val value: kotlin.collections.List<Agent>) : YieldCreateCommandGenerator {
-        internal object Serializer : KSerializer<List> {
-            private val value: KSerializer<kotlin.collections.List<Agent>> = kotlinx.serialization.serializer()
-
-            override val descriptor: SerialDescriptor = SerialDescriptor("xynolog.types.YieldCreateCommandGenerator.List", value.descriptor)
-
-            override fun serialize(encoder: Encoder, value: List) {
-                encoder.encodeSerializableValue(this.value, value.value)
-            }
-
-            override fun deserialize(decoder: Decoder): List = List(decoder.decodeSerializableValue(value))
-        }
+        internal object Serializer : WrapperSerializer<List, kotlin.collections.List<Agent>>(List::class, kotlinx.serialization.serializer(), { List(it) }, List::value)
     }
 }
 
-internal object YieldCreateCommandGeneratorSerializer : JsonContentPolymorphicSerializer<YieldCreateCommandGenerator>(YieldCreateCommandGenerator::class) {
-    override val descriptor: SerialDescriptor = SerialDescriptor("xynolog.types.YieldCreateCommandGenerator", super.descriptor)
-
-    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<YieldCreateCommandGenerator> =
-        firstThatFits<YieldCreateCommandGenerator>(
-            element,
-            when (element) {
-                is JsonPrimitive -> if (element.isString) listOf(Agent.serializer()) else emptyList()
-                is JsonArray -> listOf(Agent.serializer(), YieldCreateCommandGenerator.List.serializer())
-                is JsonObject -> listOf(Agent.serializer())
-            },
-            "YieldCreateCommandGenerator",
-        )
-}
+internal object YieldCreateCommandGeneratorSerializer : KindsUnionSerializer<YieldCreateCommandGenerator>(
+    YieldCreateCommandGenerator::class,
+    strings = { listOf(Agent.serializer()) },
+    arrays = { listOf(Agent.serializer(), YieldCreateCommandGenerator.List.serializer()) },
+    objects = { listOf(Agent.serializer()) },
+)
