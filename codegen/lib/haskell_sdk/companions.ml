@@ -56,23 +56,13 @@ let format_word : Schema.format -> string = function
   | Uri -> "uri"
   | Binary -> "binary"
 
-(* The keywords a schema states that the SDK's validator does not read
-   (haskell/sdk/internal/Xynolog/Internal/Schema.hs), at any depth. A schema
-   the SDK validates against states none: dropping one would accept what
-   the schema refuses. *)
+(* The keywords no SDK reads ([Schema.unread]) that a schema states, at any
+   depth: those the SDK's validator
+   (haskell/sdk/internal/Xynolog/Internal/Schema.hs) does not read. *)
 let unread : Schema.t -> string list =
   Schema.cata
     ~boolean:(fun _ -> [])
-    ~schema:(fun s ->
-      let stated name = Option.map (fun _ -> name) in
-      List.filter_map Fun.id
-        [
-          stated "const" s.const;
-          stated "not" s.not_;
-          stated "propertyNames" s.property_names;
-          stated "minProperties" s.min_properties;
-        ]
-      @ List.concat (Schema.children s))
+    ~schema:(fun s -> Schema.unread s @ List.concat (Schema.children s))
 
 (* A schema as the SDK validates against it: every keyword but those that
    only describe it. *)
