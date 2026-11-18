@@ -77,11 +77,11 @@ describe('SearchModal translations', () => {
     const elements = [
       // @ts-expect-error no translations
       <SearchModal isOpen onClose={vi.fn()} onNavigate={vi.fn()} />,
-      // @ts-expect-error a string is missing
       <SearchModal
         isOpen
         onClose={vi.fn()}
         onNavigate={vi.fn()}
+        // @ts-expect-error a string is missing
         translations={withoutEsc}
       />,
     ];

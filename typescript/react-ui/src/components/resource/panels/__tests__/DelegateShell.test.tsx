@@ -162,8 +162,8 @@ describe('DelegateShell', () => {
         form={null}
         progressProps={{ translations: TR }}
       />,
-      // @ts-expect-error controls written in place, not made from a job
       <DelegateShell
+        // @ts-expect-error controls written in place, not made from a job
         controls={{ onCancel: undefined, onDismiss: () => {} }}
         delegateType="tag"
         title="t"
@@ -173,8 +173,8 @@ describe('DelegateShell', () => {
         form={null}
         progressProps={{ translations: TR }}
       />,
-      // @ts-expect-error a cancel handed to the display around the job's controls
       <DelegateShell
+        // @ts-expect-error a cancel handed to the display around the job's controls
         progressProps={{ translations: TR, onCancel: () => {} }}
         delegateType="tag"
         title="t"

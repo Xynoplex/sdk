@@ -75,8 +75,8 @@ describe('JobResult — told apart by its own members, with no `kind` (A2, A3)',
   });
 
   it('a result that states a `kind` does not typecheck', () => {
-    // @ts-expect-error — the job description beside a result says which job it answers
     const tagged: JobResult = {
+      // @ts-expect-error — the job description beside a result says which job it answers
       kind: 'highlight-annotation',
       found: 2,
       persisted: 2,
@@ -145,36 +145,36 @@ describe('a job description is its jobType and enough parameters (A4)', () => {
       jobType: 'mark',
       params: { motivation: 'highlighting' },
     };
-    // @ts-expect-error — a mark job has a motivation
     const aimless: JobCreateCommand = {
       jobType: 'mark',
       resourceId: R,
+      // @ts-expect-error — a mark job has a motivation
       params: {},
     };
     expect([nowhere, aimless]).toHaveLength(2);
   });
 
   it('a job takes only what its motivation takes', () => {
-    // @ts-expect-error — a highlight has no tone
     const toned: JobCreateCommand = {
       jobType: 'mark',
       resourceId: R,
+      // @ts-expect-error — a highlight has no tone
       params: { motivation: 'highlighting', tone: 'scholarly' },
     };
-    // @ts-expect-error — a link job takes no instructions
     const instructed: JobCreateCommand = {
       jobType: 'mark',
       resourceId: R,
       params: {
         motivation: 'linking',
         entityTypes: ['Person'],
+        // @ts-expect-error — a link job takes no instructions
         instructions: 'find relationships',
       },
     };
-    // @ts-expect-error — a tag job names its schema and its categories
     const schemaless: JobCreateCommand = {
       jobType: 'mark',
       resourceId: R,
+      // @ts-expect-error — a tag job names its schema and its categories
       params: { motivation: 'tagging' },
     };
     expect([toned, instructed, schemaless]).toHaveLength(3);
@@ -183,9 +183,9 @@ describe('a job description is its jobType and enough parameters (A4)', () => {
   it('a yield job names no resource: its context does', () => {
     const made: JobCreateCommand = { jobType: 'yield', params: generation };
     expect(made.jobType).toBe('yield');
-    // @ts-expect-error — the context's focus is the resource
     const twice: JobCreateCommand = {
       jobType: 'yield',
+      // @ts-expect-error — the context's focus is the resource
       resourceId: R,
       params: generation,
     };

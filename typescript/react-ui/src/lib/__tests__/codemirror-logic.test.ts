@@ -213,8 +213,8 @@ describe('getAnnotationDecorationMeta', () => {
   });
 
   it('falls back to annotation-highlight for unknown motivation', () => {
-    // @ts-expect-error — a W3C motivation Xynolog does not support, for the fallback
     const meta = getAnnotationDecorationMeta(
+      // @ts-expect-error — a W3C motivation Xynolog does not support, for the fallback
       makeAnnotation('1', 'bookmarking'),
       false,
     );

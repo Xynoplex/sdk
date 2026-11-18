@@ -111,8 +111,8 @@ describe('the types', () => {
     const text: ResourceId = 'res-one';
     // @ts-expect-error an annotation's id is not a resource's
     const swapped: ResourceId = annotation;
-    // @ts-expect-error nor in a payload
     const wrong: components['schemas']['BeckonFocusEvent'] = {
+      // @ts-expect-error nor in a payload
       resourceId: annotation,
     };
     // @ts-expect-error a job's id is not whoever asked for it
