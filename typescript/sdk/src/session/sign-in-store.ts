@@ -274,7 +274,10 @@ export class SignInStore {
         SIGN_IN_STORE_WINDOWS_OFFSET_HIGH,
       );
       try {
-        this.files.keepToOwner(OWNER_ONLY_DIRECTORY_MODE, ownerOnlyDirectoryAccessList);
+        this.files.keepToOwner(
+          OWNER_ONLY_DIRECTORY_MODE,
+          ownerOnlyDirectoryAccessList,
+        );
         const document = this.read();
         if (change(document)) {
           this.files.replace(

@@ -283,9 +283,7 @@ let typescript (entry : Flat.t) (o : Owner_only.t) (names : Contract.t) =
           [
             Return
               (Binary
-                 ( Binary (Str l.before, Plus, Name "owner"),
-                   Plus,
-                   Str l.after ));
+                 (Binary (Str l.before, Plus, Name "owner"), Plus, Str l.after));
           ];
       }
   in
