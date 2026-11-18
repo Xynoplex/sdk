@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+
 -- | Where a knowledge base's stream was (session/stored.json's @lastEventIds@),
 -- written only in the same call as a write of a kept cache's document.
 module Xynolog.Internal.Coupled (Coupled, newCoupled, savePosition, loadPositions, start, written, dispose) where
@@ -6,41 +7,47 @@ module Xynolog.Internal.Coupled (Coupled, newCoupled, savePosition, loadPosition
 import Control.Concurrent.MVar (MVar, newMVar, withMVar)
 import Control.Concurrent.STM
 import Control.Monad (unless, when)
-import Data.Aeson (Value(..), encode, eitherDecodeStrict', fromJSON, Result(..))
-import qualified Data.Aeson.Key as Key
-import qualified Data.Aeson.KeyMap as KM
-import qualified Data.ByteString.Lazy as Lazy
-import qualified Data.Map.Strict as Map
+import Data.Aeson (Result (..), Value (..), eitherDecodeStrict', encode, fromJSON)
+import Data.Aeson.Key qualified as Key
+import Data.Aeson.KeyMap qualified as KM
+import Data.ByteString.Lazy qualified as Lazy
+import Data.Map.Strict qualified as Map
 import Data.Maybe (isJust, isNothing)
 import Data.Text (Text)
 import Data.Text.Encoding (decodeUtf8, encodeUtf8)
 import Xynolog.Internal.CacheDocument (lastEventIds)
-import qualified Xynolog.SessionStorage as Storage
-import Xynolog.Types (ResourceId, resourceIdValue, PersistedEventId(..))
+import Xynolog.SessionStorage qualified as Storage
+import Xynolog.Types (PersistedEventId (..), ResourceId, resourceIdValue)
 
 data Coupled = Coupled
-  { storage :: Storage.SessionStorage
-  , positionKey :: Text
-  , pending :: TVar (Map.Map ResourceId Text)
-  , gate :: TVar (Maybe (STM Bool, STM Bool))
-  , final :: TVar (Maybe (Map.Map ResourceId Text))
-  -- ^ Set once disposal begins: the places its flush writes.
-  , writing :: MVar ()
+  { storage :: Storage.SessionStorage,
+    positionKey :: Text,
+    pending :: TVar (Map.Map ResourceId Text),
+    gate :: TVar (Maybe (STM Bool, STM Bool)),
+    -- | Set once disposal begins: the places its flush writes.
+    final :: TVar (Maybe (Map.Map ResourceId Text)),
+    writing :: MVar ()
   }
 
 -- | The places kept under @key@ of @underlying@.
 newCoupled :: Storage.SessionStorage -> Text -> IO Coupled
-newCoupled underlying key = Coupled underlying key
-  <$> newTVarIO Map.empty <*> newTVarIO Nothing <*> newTVarIO Nothing <*> newMVar ()
+newCoupled underlying key =
+  Coupled underlying key
+    <$> newTVarIO Map.empty
+    <*> newTVarIO Nothing
+    <*> newTVarIO Nothing
+    <*> newMVar ()
 
 positionsOf :: Maybe Text -> Map.Map ResourceId Text
-positionsOf raw=case raw >>= either (const Nothing) Just . eitherDecodeStrict' . encodeUtf8 of
+positionsOf raw = case raw >>= either (const Nothing) Just . eitherDecodeStrict' . encodeUtf8 of
   Just document -> persistedEventIdValue <$> lastEventIds document
   Nothing -> Map.empty
+
 loadPositions :: Coupled -> IO (Map.Map ResourceId Text)
-loadPositions coupled=positionsOf <$> Storage.get (storage coupled) (positionKey coupled)
+loadPositions coupled = positionsOf <$> Storage.get (storage coupled) (positionKey coupled)
+
 savePosition :: Coupled -> ResourceId -> Text -> IO ()
-savePosition coupled scope identity=case fromJSON (String identity) :: Result PersistedEventId of
+savePosition coupled scope identity = case fromJSON (String identity) :: Result PersistedEventId of
   Error _ -> pure ()
   Success _ -> atomically $ do
     over <- isJust <$> readTVar (final coupled)
@@ -60,7 +67,7 @@ start coupled unsettled dropped = atomically $ do
 -- gate holds, or once disposal has begun, those it let through. Places that
 -- are not written wait for the next document write.
 written :: Coupled -> IO ()
-written coupled=withMVar (writing coupled) $ \_ -> do
+written coupled = withMVar (writing coupled) $ \_ -> do
   snapshot <- atomically $ do
     sealed <- readTVar (final coupled)
     case sealed of
@@ -73,10 +80,10 @@ written coupled=withMVar (writing coupled) $ \_ -> do
         if held then pure Map.empty else readTVar (pending coupled)
   unless (Map.null snapshot) $ do
     Storage.update (storage coupled) (positionKey coupled) $ \prior ->
-      let merged=Map.union snapshot (positionsOf prior)
-          document=Object (KM.fromList [(Key.fromText (resourceIdValue scope),String identity) | (scope,identity)<-Map.toList merged])
-      in (Just (decodeUtf8 (Lazy.toStrict (encode document))),())
-    let unwritten values=Map.differenceWith (\new old -> if new==old then Nothing else Just new) values snapshot
+      let merged = Map.union snapshot (positionsOf prior)
+          document = Object (KM.fromList [(Key.fromText (resourceIdValue scope), String identity) | (scope, identity) <- Map.toList merged])
+       in (Just (decodeUtf8 (Lazy.toStrict (encode document))), ())
+    let unwritten values = Map.differenceWith (\new old -> if new == old then Nothing else Just new) values snapshot
     atomically $ do
       modifyTVar' (pending coupled) unwritten
       modifyTVar' (final coupled) (fmap unwritten)
@@ -86,7 +93,7 @@ written coupled=withMVar (writing coupled) $ \_ -> do
 -- the disposal's flush, which drops it; a save then owed does not, since the
 -- flush is that save.
 dispose :: Coupled -> IO ()
-dispose coupled=atomically $ do
+dispose coupled = atomically $ do
   sealed <- readTVar (final coupled)
   when (isNothing sealed) $ do
     given <- readTVar (gate coupled)

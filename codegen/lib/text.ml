@@ -214,19 +214,3 @@ let snake name =
       Buffer.add_char out (Char.lowercase_ascii c))
     name;
   Buffer.contents out
-
-(* A string as an OCaml literal: printable ASCII as itself, and a quote, a
-   backslash and every other byte by its decimal escape, so no byte of UTF-8
-   reads two ways. *)
-let ocaml_quoted text =
-  let out = Buffer.create (String.length text + 2) in
-  Buffer.add_char out '"';
-  String.iter
-    (fun c ->
-      match Char.code c with
-      | code when code >= 32 && code < 127 && c <> '"' && c <> '\\' ->
-          Buffer.add_char out c
-      | code -> Buffer.add_string out (Printf.sprintf "\\%03d" code))
-    text;
-  Buffer.add_char out '"';
-  Buffer.contents out

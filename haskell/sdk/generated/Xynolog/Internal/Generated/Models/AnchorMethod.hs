@@ -1,11 +1,16 @@
 -- Generated from protocol/specs/src; do not edit.
 -- Regenerate: make generate (codegen/lib/haskell_sdk/haskell_sdk.ml)
 {-# LANGUAGE OverloadedStrings #-}
-module Xynolog.Internal.Generated.Models.AnchorMethod (AnchorMethod(..)) where
-import Data.Aeson (FromJSON(..), ToJSON(..), Value(..))
+
+module Xynolog.Internal.Generated.Models.AnchorMethod (AnchorMethod (..)) where
+
+import Data.Aeson (FromJSON (..), ToJSON (..), Value (..))
 import Xynolog.Internal.Codec
+
 data AnchorMethod = AnchorMethodUniqueU2d_match | AnchorMethodContextU2d_recovered | AnchorMethodFirstU2d_ofU2d_many | AnchorMethodFuzzyU2d_match deriving (Eq, Show)
+
 instance FromJSON AnchorMethod where parseJSON = checked "AnchorMethod" $ \value -> if value == String "unique-match" then pure AnchorMethodUniqueU2d_match else if value == String "context-recovered" then pure AnchorMethodContextU2d_recovered else if value == String "first-of-many" then pure AnchorMethodFirstU2d_ofU2d_many else if value == String "fuzzy-match" then pure AnchorMethodFuzzyU2d_match else fail "unknown enumeration member"
+
 instance ToJSON AnchorMethod where
   toJSON AnchorMethodUniqueU2d_match = String "unique-match"
   toJSON AnchorMethodContextU2d_recovered = String "context-recovered"

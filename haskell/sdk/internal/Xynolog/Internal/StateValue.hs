@@ -1,11 +1,10 @@
-module Xynolog.Internal.StateValue
-  ( StateValue, newStateValue, current, watch, update, complete ) where
+module Xynolog.Internal.StateValue (StateValue, newStateValue, current, watch, update, complete) where
 
 import Control.Concurrent.STM
 import Control.Monad.IO.Class (liftIO)
-import qualified Xynolog.Internal.Broadcast as Broadcast
 import Streaming (Of, Stream)
-import qualified Streaming.Prelude as Stream
+import Streaming.Prelude qualified as Stream
+import Xynolog.Internal.Broadcast qualified as Broadcast
 
 data StateValue value = StateValue (TVar value) (Broadcast.Broadcast value) (TVar Bool)
 
@@ -27,5 +26,5 @@ watch :: StateValue value -> (Stream (Of value) IO () -> IO result) -> IO result
 watch (StateValue _ broadcast _) consume = Broadcast.withSubscription broadcast $ \reader ->
   let loop = do
         value <- liftIO (atomically (Broadcast.next reader))
-        case value of Nothing -> pure (); Just next -> Stream.yield next >> loop
-  in consume loop
+        case value of { Nothing -> pure (); Just next -> Stream.yield next >> loop }
+   in consume loop

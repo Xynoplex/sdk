@@ -5,7 +5,7 @@
    members. Which operations it calls is the SDK's, each by its operationId;
    one the document no longer has is refused. *)
 
-let string = Text.ocaml_quoted
+module O = Ocaml_syntax
 
 let routes =
   [
@@ -47,28 +47,28 @@ let file (spec : Spec.t) (codes : Error_codes.Table.t) =
   let route (name, id) =
     match List.assoc_opt id operations with
     | Some (method_, template) ->
-        Printf.sprintf "let %s = (%s, %s)" name (string method_)
-          (string template)
+        [ O.let_ name (O.tuple [ O.string method_; O.string template ]) ]
     | None ->
         refuse "openapi.json" "/paths"
           (Printf.sprintf "has no operation %s, which the OCaml SDK calls as %s"
              id name);
-        ""
+        []
   in
-  let routes = List.map route routes in
+  let routes = List.concat_map route routes in
   let status_code =
     List.map
       (fun (status, (c : Error_codes.Table.code)) ->
-        Printf.sprintf "  | %d -> %s" status (string c.code))
+        O.case (O.Pattern.int status) (O.string c.code))
       codes.exact
     @ (match codes.from with
       | None -> []
       | Some (status, c) ->
           [
-            Printf.sprintf "  | status when status >= %d -> %s" status
-              (string c.code);
+            O.case (O.Pattern.var "status")
+              ~guard:(O.infix ">=" (O.ident "status") (O.int status))
+              (O.string c.code);
           ])
-    @ [ "  | _ -> " ^ string codes.unclassified.code ]
+    @ [ O.case O.Pattern.any (O.string codes.unclassified.code) ]
   in
   let failures =
     List.map
@@ -111,45 +111,59 @@ let file (spec : Spec.t) (codes : Error_codes.Table.t) =
           "states no members";
         []
   in
-  let lines =
-    [
-      Banner.ocaml ~from_:"OpenAPI paths, error codes and retry cases" __FILE__;
-    ]
-    @ routes
-    @ ("let status_code = function" :: status_code)
-    @ [
-        "module Failure_code = struct";
-        "  type t = "
-        ^ String.concat " | " (List.map (fun (_, _, c) -> c) failures);
-        "  let of_wire = function";
+  let failure_code =
+    O.module_ "Failure_code"
+      [
+        O.type_item
+          (O.type_declaration "t"
+             (Variant (List.map (fun (_, _, c) -> O.constructor c) failures)));
+        O.let_ "of_wire"
+          (O.function_
+             (List.map
+                (fun (w, _, c) -> O.case (O.Pattern.string w) (O.construct c))
+                failures
+             @ [
+                 O.case (O.Pattern.var "code")
+                   (O.apply (O.ident "invalid_arg")
+                      [
+                        O.infix "^"
+                          (O.string "a failure's code \"")
+                          (O.infix "^" (O.ident "code")
+                             (O.string
+                                "\" is none of CommandError's: the reader \
+                                 leaves such a code out"));
+                      ]);
+               ]));
       ]
-    @ List.map (fun (w, _, c) -> "    | " ^ string w ^ " -> " ^ c) failures
+  in
+  let bus_failure =
+    O.let_ "bus_failure"
+      (O.function_
+         (O.case (O.Pattern.construct "None") (O.string codes.unrecognized.code)
+         :: List.map
+              (fun (_, code, c) ->
+                O.case
+                  (O.Pattern.construct "Some"
+                     ~arg:(O.Pattern.construct ("Failure_code." ^ c)))
+                  (O.string code))
+              failures))
+  in
+  let items =
+    routes
     @ [
-        "    | code -> invalid_arg (\"a failure's code \\\"\" ^ code ^ \"\\\" \
-         is none of CommandError's: the reader leaves such a code out\")";
-        "end";
-        "let bus_failure = function";
-        "  | None -> " ^ string codes.unrecognized.code;
-      ]
-    @ List.map
-        (fun (_, code, c) ->
-          "  | Some Failure_code." ^ c ^ " -> " ^ string code)
-        failures
-    @ [
-        "let retry_statuses = ["
-        ^ String.concat "; " (List.map string_of_int retry_statuses)
-        ^ "]";
-        "let upload_fields = ["
-        ^ String.concat "; " (List.map string upload_fields)
-        ^ "]";
-        "";
+        O.let_ "status_code" (O.function_ status_code);
+        failure_code;
+        bus_failure;
+        O.let_ "retry_statuses" (O.list (List.map O.int retry_statuses));
+        O.let_ "upload_fields" (O.list (List.map O.string upload_fields));
       ]
   in
   match List.rev !refusals with
   | [] ->
       Ok
-        {
-          Output.path = "ocaml/sdk/lib/http_facts.ml";
-          text = String.concat "\n" lines;
-        }
+        (O.implementation ~path:"ocaml/sdk/lib/http_facts.ml"
+           ~banner:
+             (Banner.ocaml ~from_:"OpenAPI paths, error codes and retry cases"
+                __FILE__)
+           items)
   | errors -> Error errors

@@ -5,10 +5,9 @@
 
 let source = "protocol/specs/src/components/schemas"
 let prefix = "components/schemas/"
-let string = Text.ocaml_quoted
 
 type enum = { module_ : string; variants : (string * string) list }
-(** Each variant: its constructor, and its member as an OCaml literal. *)
+(** Each variant: its constructor, and its member. *)
 
 let is_member value =
   value <> ""
@@ -52,7 +51,7 @@ let derive (spec : Spec.t) =
                    (fun i (member : Schema.literal) ->
                      match member with
                      | String_literal value when is_member value ->
-                         [ (constructor value, string value) ]
+                         [ (constructor value, value) ]
                      | _ ->
                          refuse
                            (Printf.sprintf "/enum/%d" i)
@@ -73,60 +72,78 @@ let derive (spec : Spec.t) =
   in
   match List.rev !refusals with [] -> Ok enums | errors -> Error errors
 
+module O = Ocaml_syntax
+
+let banner = Banner.ocaml ~from_:("string enums in " ^ source) __FILE__
+
+let t e =
+  O.type_declaration "t"
+    (Variant (List.map (fun (c, _) -> O.constructor c) e.variants))
+
+let impl e =
+  O.module_ e.module_
+    [
+      O.type_item (t e);
+      O.let_ "to_string"
+        (O.function_
+           (List.map
+              (fun (c, member) ->
+                O.case (O.Pattern.construct c) (O.string member))
+              e.variants));
+      O.let_ "of_string"
+        (O.function_
+           (List.map
+              (fun (c, member) ->
+                O.case (O.Pattern.string member) (O.some (O.construct c)))
+              e.variants
+           @ [ O.case O.Pattern.any O.none ]));
+    ]
+
+let api e =
+  O.module_spec e.module_
+    [
+      O.type_spec (t e);
+      O.val_ "to_string" (O.arrow (O.type_ "t") (O.type_ "string"));
+      O.val_ "of_string"
+        (O.arrow (O.type_ "string") (O.type_ "option" ~args:[ O.type_ "t" ]));
+    ]
+
+(* Each enum's members, encoded and decoded, and an unknown value refused,
+   with [rest] after. *)
+let test e rest =
+  let check kind name actual expected =
+    O.apply (O.ident "Alcotest.check")
+      [ O.ident ("Alcotest." ^ kind); O.string name; actual; expected ]
+  in
+  let model c = O.construct ("Model." ^ c) in
+  let of_string member =
+    O.apply (O.ident "Model.of_string") [ O.string member ]
+  in
+  O.let_module "Model"
+    ("Xynolog.Enums." ^ e.module_)
+    (O.sequence
+       (List.concat_map
+          (fun (c, member) ->
+            [
+              check "string" (e.module_ ^ " encode") (O.string member)
+                (O.apply (O.ident "Model.to_string") [ model c ]);
+              check "bool" (e.module_ ^ " decode") (O.bool true)
+                (O.infix "=" (of_string member) (O.some (model c)));
+            ])
+          e.variants
+       @ [
+           check "bool"
+             (e.module_ ^ " rejects unknown values")
+             (O.bool true)
+             (O.infix "=" (of_string "") O.none);
+           rest;
+         ]))
+
 let files enums =
-  let header =
-    Banner.ocaml ~from_:("string enums in " ^ source) __FILE__ ^ "\n"
-  in
-  let type_ e = "type t = " ^ String.concat " | " (List.map fst e.variants) in
-  let impl e =
-    String.concat "\n"
-      ([
-         "module " ^ e.module_ ^ " = struct";
-         "  " ^ type_ e;
-         "  let to_string = function";
-       ]
-      @ List.map (fun (c, l) -> "    | " ^ c ^ " -> " ^ l) e.variants
-      @ [ "  let of_string = function" ]
-      @ List.map (fun (c, l) -> "    | " ^ l ^ " -> Some " ^ c) e.variants
-      @ [ "    | _ -> None"; "end" ])
-  in
-  let api e =
-    String.concat "\n"
-      [
-        "module " ^ e.module_ ^ " : sig";
-        "  " ^ type_ e;
-        "  val to_string : t -> string";
-        "  val of_string : string -> t option";
-        "end";
-      ]
-  in
-  let test e =
-    String.concat "\n"
-      (("  let module Model = Xynolog.Enums." ^ e.module_ ^ " in")
-       :: List.concat_map
-            (fun (c, l) ->
-              [
-                Printf.sprintf
-                  "  Alcotest.(check string) \"%s encode\" %s (Model.to_string \
-                   Model.%s);"
-                  e.module_ l c;
-                Printf.sprintf
-                  "  Alcotest.(check bool) \"%s decode\" true (Model.of_string \
-                   %s = Some Model.%s);"
-                  e.module_ l c;
-              ])
-            e.variants
-      @ [
-          Printf.sprintf
-            "  Alcotest.(check bool) \"%s rejects unknown values\" true \
-             (Model.of_string \"\" = None);"
-            e.module_;
-        ])
-  in
-  let file path contents = { Output.path; text = header ^ contents ^ "\n" } in
   [
-    file "ocaml/sdk/lib/enums.ml" (String.concat "\n\n" (List.map impl enums));
-    file "ocaml/sdk/lib/enums.mli" (String.concat "\n\n" (List.map api enums));
-    file "ocaml/sdk/test/enums_cases.ml"
-      ("let () =\n" ^ String.concat "\n" (List.map test enums) ^ "\n  ()");
+    O.implementation ~path:"ocaml/sdk/lib/enums.ml" ~banner
+      (List.map impl enums);
+    O.interface ~path:"ocaml/sdk/lib/enums.mli" ~banner (List.map api enums);
+    O.implementation ~path:"ocaml/sdk/test/enums_cases.ml" ~banner
+      [ O.let_unit (List.fold_right test enums O.unit) ];
   ]

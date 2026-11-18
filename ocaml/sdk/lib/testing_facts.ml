@@ -1,9 +1,15 @@
 (* Generated from client/testing.json. Do not edit.
    Regenerate: make generate (codegen/lib/testing/testing.ml) *)
 
-[@@@ocamlformat "disable"]
-type fault_action = Deliver | Drop_reply | Delay of int | Duplicate_reply | Reject_emit
+type fault_action =
+  | Deliver
+  | Drop_reply
+  | Delay of int
+  | Duplicate_reply
+  | Reject_emit
+
 type delivery_op = Write | Transition
+
 let fault_actions random =
   match Random.State.int random 5 with
   | 0 -> Deliver
@@ -12,5 +18,6 @@ let fault_actions random =
   | 3 -> Duplicate_reply
   | 4 -> Reject_emit
   | _ -> assert false
+
 let schedule_length = (1, 8)
 let slack = 4

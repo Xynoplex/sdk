@@ -5,7 +5,7 @@
    string or a boolean member is read as one, and every other kept as its raw
    JSON, numbers exactly. A union's every branch is one of the records. *)
 
-let string = Text.ocaml_quoted
+module O = Ocaml_syntax
 
 let keywords =
   "and as assert begin class constraint do done downto effect else end \
@@ -219,21 +219,69 @@ let derive (spec : Spec.t) =
   with Refused e -> Error [ e ]
 
 let helpers =
+  let refuse = O.case O.Pattern.any O.assert_false in
   [
-    "let object_fields = function `Assoc fields -> fields | _ -> assert false";
-    "let string = function";
-    "  | `Stringlit literal -> (match Yojson.Safe.from_string literal with \
-     `String text -> text | _ -> assert false)";
-    "  | _ -> assert false";
-    "let bool = function `Bool value -> value | _ -> assert false";
-    "let required read name fields = read (List.assoc name fields)";
-    "let optional read name fields =";
-    "  match List.assoc_opt name fields with";
-    "  | None -> Types.Absent | Some `Null -> Types.Null | Some value -> \
-     Types.Present (read value)";
-    "let identity value = value";
-    "let extra names = List.filter (fun (name, _) -> not (List.mem name names))";
+    O.let_ "object_fields"
+      (O.function_
+         [
+           O.case
+             (O.Pattern.variant "Assoc" ~arg:(O.Pattern.var "fields"))
+             (O.ident "fields");
+           refuse;
+         ]);
+    O.let_ "string"
+      (O.function_
+         [
+           O.case
+             (O.Pattern.variant "Stringlit" ~arg:(O.Pattern.var "literal"))
+             (O.match_
+                (O.call "Yojson.Safe.from_string" [ O.ident "literal" ])
+                [
+                  O.case
+                    (O.Pattern.variant "String" ~arg:(O.Pattern.var "text"))
+                    (O.ident "text");
+                  refuse;
+                ]);
+           refuse;
+         ]);
+    O.let_ "bool"
+      (O.function_
+         [
+           O.case
+             (O.Pattern.variant "Bool" ~arg:(O.Pattern.var "value"))
+             (O.ident "value");
+           refuse;
+         ]);
+    O.define "required"
+      [ "read"; "name"; "fields" ]
+      (O.call "read"
+         [ O.call "List.assoc" [ O.ident "name"; O.ident "fields" ] ]);
+    O.define "optional"
+      [ "read"; "name"; "fields" ]
+      (O.match_
+         (O.call "List.assoc_opt" [ O.ident "name"; O.ident "fields" ])
+         [
+           O.case (O.Pattern.construct "None") (O.construct "Types.Absent");
+           O.case
+             (O.Pattern.construct "Some" ~arg:(O.Pattern.variant "Null"))
+             (O.construct "Types.Null");
+           O.case
+             (O.Pattern.construct "Some" ~arg:(O.Pattern.var "value"))
+             (O.construct "Types.Present"
+                ~arg:(O.call "read" [ O.ident "value" ]));
+         ]);
+    O.define "identity" [ "value" ] (O.ident "value");
+    O.define "extra" [ "names" ]
+      (O.call "List.filter"
+         [
+           O.fun_
+             [ O.Pattern.tuple [ O.Pattern.var "name"; O.Pattern.any ] ]
+             (O.call "not"
+                [ O.call "List.mem" [ O.ident "name"; O.ident "names" ] ]);
+         ]);
   ]
+
+let model kind = O.type_ "Models.t" ~args:[ O.tags [ kind ] ]
 
 let files (records, unions) =
   let record (r : record) =
@@ -251,88 +299,112 @@ let files (records, unions) =
             field_name name,
             read,
             optional,
-            if optional then type_ ^ " Types.presence" else type_ ))
+            if optional then O.type_ "Types.presence" ~args:[ O.type_ type_ ]
+            else O.type_ type_ ))
         r.shape.properties
     in
     let m = module_name r.name in
-    let type_ =
-      "  type t = { "
-      ^ String.concat "; "
-          (List.map (fun (_, label, _, _, t) -> label ^ " : " ^ t) fields)
-      ^ "; extra : (string * Yojson.Raw.t) list }"
+    let t =
+      O.type_declaration "t"
+        (Record
+           (List.map (fun (_, label, _, _, t) -> (label, t)) fields
+           @ [
+               ( "extra",
+                 O.type_ "list"
+                   ~args:
+                     [
+                       O.type_tuple [ O.type_ "string"; O.type_ "Yojson.Raw.t" ];
+                     ] );
+             ]))
     in
-    let view =
-      [ "  let project fields ="; "    {" ]
-      @ List.map
-          (fun (name, label, read, optional, _) ->
-            "      " ^ label ^ " = "
-            ^ (if optional then "optional" else "required")
-            ^ " " ^ read ^ " " ^ string name ^ " fields;")
-          fields
-      @ [
-          "      extra = extra ["
-          ^ String.concat "; "
-              (List.map (fun (n, _, _, _, _) -> string n) fields)
-          ^ "] fields;";
-          "    }";
-          "  let of_model model = project (object_fields (Models.json model))";
-        ]
+    let project =
+      O.define "project" [ "fields" ]
+        (O.record
+           (List.map
+              (fun (name, label, read, optional, _) ->
+                ( label,
+                  O.call
+                    (if optional then "optional" else "required")
+                    [ O.ident read; O.string name; O.ident "fields" ] ))
+              fields
+           @ [
+               ( "extra",
+                 O.call "extra"
+                   [
+                     O.list
+                       (List.map (fun (n, _, _, _, _) -> O.string n) fields);
+                     O.ident "fields";
+                   ] );
+             ]))
     in
-    ( [
-        "module " ^ m ^ " : sig";
-        type_;
-        "  val of_model : [ `" ^ r.name ^ " ] Models.t -> t";
-        "end";
-      ],
-      [ "module " ^ m ^ " = struct"; type_ ] @ view @ [ "end" ] )
+    let of_model =
+      O.define "of_model" [ "model" ]
+        (O.call "project"
+           [
+             O.call "object_fields" [ O.call "Models.json" [ O.ident "model" ] ];
+           ])
+    in
+    ( O.module_spec m
+        [
+          O.type_spec t;
+          O.val_ "of_model" (O.arrow (model r.name) (O.type_ "t"));
+        ],
+      O.module_ m [ O.type_item t; project; of_model ] )
   in
   let union u =
     let m = module_name u.name in
-    let type_ =
-      "  type t = "
-      ^ String.concat " | "
-          (List.map
-             (fun (_, c, branch) -> c ^ " of " ^ branch ^ ".t")
-             u.variants)
+    let t =
+      O.type_declaration "t"
+        (Variant
+           (List.map
+              (fun (_, c, branch) ->
+                O.constructor c ~args:[ O.type_ (branch ^ ".t") ])
+              u.variants))
     in
-    ( [
-        "module " ^ m ^ " : sig";
-        type_;
-        "  val of_model : [ `" ^ u.name ^ " ] Models.t -> t option";
-        "end";
-      ],
-      [
-        "module " ^ m ^ " = struct";
-        type_;
-        "  let of_model model =";
-        "    let fields = object_fields (Models.json model) in";
-        "    match List.assoc_opt " ^ string u.property ^ " fields with";
-        "    | Some (`Stringlit literal) -> (match string (`Stringlit literal) \
-         with";
-      ]
-      @ List.map
-          (fun (tag, c, branch) ->
-            "      | " ^ string tag ^ " -> Some (" ^ c ^ " (" ^ branch
-            ^ ".project fields))")
-          u.variants
-      @ [ "      | _ -> None)"; "    | _ -> None"; "end" ] )
+    let literal = O.variant "Stringlit" ~arg:(O.ident "literal") in
+    let of_model =
+      O.define "of_model" [ "model" ]
+        (O.let_in "fields"
+           (O.call "object_fields" [ O.call "Models.json" [ O.ident "model" ] ])
+           (O.match_
+              (O.call "List.assoc_opt"
+                 [ O.string u.property; O.ident "fields" ])
+              [
+                O.case
+                  (O.Pattern.construct "Some"
+                     ~arg:
+                       (O.Pattern.variant "Stringlit"
+                          ~arg:(O.Pattern.var "literal")))
+                  (O.match_
+                     (O.call "string" [ literal ])
+                     (List.map
+                        (fun (tag, c, branch) ->
+                          O.case (O.Pattern.string tag)
+                            (O.some
+                               (O.construct c
+                                  ~arg:
+                                    (O.call (branch ^ ".project")
+                                       [ O.ident "fields" ]))))
+                        u.variants
+                     @ [ O.case O.Pattern.any O.none ]));
+                O.case O.Pattern.any O.none;
+              ]))
+    in
+    ( O.module_spec m
+        [
+          O.type_spec t;
+          O.val_ "of_model"
+            (O.arrow (model u.name) (O.type_ "option" ~args:[ O.type_ "t" ]));
+        ],
+      O.module_ m [ O.type_item t; of_model ] )
   in
   let entries = List.map record records @ List.map union unions in
-  let header =
+  let banner =
     Banner.ocaml ~from_:"OpenAPI object components and discriminator mappings"
       __FILE__
-    ^ "\n"
   in
   [
-    {
-      Output.path = "ocaml/sdk/lib/records.ml";
-      text =
-        header
-        ^ String.concat "\n" (helpers @ List.concat_map snd entries)
-        ^ "\n";
-    };
-    {
-      Output.path = "ocaml/sdk/lib/records.mli";
-      text = header ^ String.concat "\n" (List.concat_map fst entries) ^ "\n";
-    };
+    O.implementation ~path:"ocaml/sdk/lib/records.ml" ~banner
+      (helpers @ List.map snd entries);
+    O.interface ~path:"ocaml/sdk/lib/records.mli" ~banner (List.map fst entries);
   ]

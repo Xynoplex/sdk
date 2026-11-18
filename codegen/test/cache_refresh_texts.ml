@@ -371,27 +371,41 @@ let haskell =
   {xx|-- Generated from protocol/specs/src/client/refresh.json; do not edit.
 -- Regenerate: make generate (codegen/lib/cache_refresh/haskell.ml)
 {-# LANGUAGE OverloadedStrings #-}
-module Xynolog.Internal.Generated.CacheRefresh (Query(..), ThingValue, ItemsValue, NamesValue, DeepValue, LabelsValue, Reach(..), Ways(..), Row(..), rows, channels, reopened, unreadable) where
+
+module Xynolog.Internal.Generated.CacheRefresh (Query (..), ThingValue, ItemsValue, NamesValue, DeepValue, LabelsValue, Reach (..), Ways (..), Row (..), rows, channels, reopened, unreadable) where
+
 import Data.Text (Text)
 import Xynolog.Internal.Generated.Models.Item (Item)
 import Xynolog.Internal.Generated.Models.Thing (Thing)
+
 data Query = Thing | Items | Names | Deep | Labels deriving (Eq, Ord, Show, Enum, Bounded)
+
 -- | The type of the value each live query's cache holds for a key: the table's `value`, a component or a member
 -- within one.
 type ThingValue = Thing
+
 type ItemsValue = [Item]
+
 type NamesValue = [Text]
+
 type DeepValue = [Item]
+
 type LabelsValue = Text
+
 data Reach = Subject | Held deriving (Eq, Show)
+
 -- | Where in its event a row finds the resource it names, the annotation it names, and the value it carries.
 data Ways = Ways (Maybe [Text]) (Maybe [Text]) (Maybe [Text]) deriving (Eq, Show)
+
 data Row = Row Text (Maybe Text) Reach Ways [Query] [Query] [Query] deriving (Eq, Show)
+
 rows :: [Row]
 rows = [Row "reopened" Nothing Held (Ways Nothing Nothing Nothing) [Thing, Names] [] [], Row "unreadable" Nothing Held (Ways Nothing Nothing Nothing) [Thing, Items, Names] [] [], Row "demo:changed" (Just "enriched") Subject (Ways (Just ["resourceId"]) (Just ["annotation", "id"]) (Just ["annotation"])) [Thing] [Items] [], Row "demo:changed" (Just "unenriched") Subject (Ways (Just ["resourceId"]) (Just ["payload", "annotationId"]) Nothing) [Items, Thing] [] [Names], Row "demo:said" Nothing Subject (Ways Nothing Nothing Nothing) [Names] [] []]
+
 -- | The triggers that are channels of the bus.
 channels :: [Text]
 channels = ["demo:changed", "demo:said"]
+
 reopened, unreadable :: Text
 reopened = "reopened"
 unreadable = "unreadable"
@@ -401,9 +415,13 @@ let live_queries =
   {xx|-- Generated from protocol/specs/src/client/refresh.json; do not edit.
 -- Regenerate: make generate (codegen/lib/cache_refresh/haskell.ml)
 {-# LANGUAGE OverloadedStrings #-}
-module LiveQueries (LiveQuery(..)) where
-import Data.Aeson (FromJSON(..), withText)
+
+module LiveQueries (LiveQuery (..)) where
+
+import Data.Aeson (FromJSON (..), withText)
+
 data LiveQuery = Thing | Items | Names | Deep | Labels deriving (Eq, Show)
+
 instance FromJSON LiveQuery where
   parseJSON = withText "LiveQuery" $ \value -> case value of
     "thing" -> pure Thing

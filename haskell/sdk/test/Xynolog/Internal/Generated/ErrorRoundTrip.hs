@@ -1,11 +1,14 @@
 -- Generated from protocol/specs/src/errors/codes.json; do not edit.
 -- Regenerate: make generate (codegen/lib/error_codes/haskell.ml)
 {-# LANGUAGE OverloadedStrings #-}
+
 module Xynolog.Internal.Generated.ErrorRoundTrip (roundTripError) where
+
 import Data.Aeson (Value, parseJSON, toJSON)
 import Data.Aeson.Types (parseEither)
 import Data.Text (Text)
 import Xynolog.ErrorCodes
+
 roundTripError :: Text -> Value -> Either String Value
 roundTripError family value = case family of
   "busRequest" -> toJSON <$> (parseEither parseJSON value :: Either String BusRequestCode)

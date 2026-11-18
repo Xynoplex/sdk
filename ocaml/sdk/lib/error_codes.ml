@@ -1,8 +1,6 @@
 (* Generated from protocol/specs/src/errors/codes.json. Do not edit.
    Regenerate: make generate (codegen/lib/error_codes/ocaml.ml) *)
 
-[@@@ocamlformat "disable"]
-
 module Bus_request = struct
   let timeout = "bus.timeout"
   let rejected = "bus.rejected"
@@ -13,6 +11,7 @@ module Bus_request = struct
   let unauthorized = "bus.unauthorized"
   let none_pending = "bus.none-pending"
 end
+
 module Transport = struct
   let unauthorized = "unauthorized"
   let forbidden = "forbidden"
@@ -24,11 +23,13 @@ module Transport = struct
   let unavailable = "unavailable"
   let error = "error"
 end
+
 module Job = struct
   let failed = "job.failed"
   let cancelled = "job.cancelled"
   let stalled = "job.stalled"
 end
+
 module Session = struct
   let construct_failed = "session.construct-failed"
   let auth_failed = "session.auth-failed"

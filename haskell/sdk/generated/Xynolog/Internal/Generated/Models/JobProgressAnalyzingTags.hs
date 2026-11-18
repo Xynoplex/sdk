@@ -1,16 +1,25 @@
 -- Generated from protocol/specs/src; do not edit.
 -- Regenerate: make generate (codegen/lib/haskell_sdk/haskell_sdk.ml)
 {-# LANGUAGE OverloadedStrings #-}
-module Xynolog.Internal.Generated.Models.JobProgressAnalyzingTags (JobProgressAnalyzingTags(..), JobProgressAnalyzingTagsCode(..)) where
-import Data.Aeson (FromJSON(..), ToJSON(..), Value(..), withObject, (.:))
-import qualified Data.Aeson.KeyMap as KM
+
+module Xynolog.Internal.Generated.Models.JobProgressAnalyzingTags (JobProgressAnalyzingTags (..), JobProgressAnalyzingTagsCode (..)) where
+
+import Data.Aeson (FromJSON (..), ToJSON (..), Value (..), withObject, (.:))
+import Data.Aeson.KeyMap qualified as KM
 import Xynolog.Internal.Codec
+
 data JobProgressAnalyzingTags = JobProgressAnalyzingTags
-  { jobProgressAnalyzingTagsCode :: JobProgressAnalyzingTagsCode
-  , jobProgressAnalyzingTagsAdditionalProperties :: KM.KeyMap Value
-  } deriving (Eq, Show)
+  { jobProgressAnalyzingTagsCode :: JobProgressAnalyzingTagsCode,
+    jobProgressAnalyzingTagsAdditionalProperties :: KM.KeyMap Value
+  }
+  deriving (Eq, Show)
+
 instance FromJSON JobProgressAnalyzingTags where parseJSON = checked "JobProgressAnalyzingTags" $ withObject "JobProgressAnalyzingTags" (\fields -> JobProgressAnalyzingTags <$> (fields .: "code") <*> traverse parseJSON (withoutFields ["code"] fields))
+
 instance ToJSON JobProgressAnalyzingTags where toJSON value = Object (KM.fromList (concat [[("code", toJSON (jobProgressAnalyzingTagsCode value))]]) <> fmap toJSON (withoutFields ["code"] (jobProgressAnalyzingTagsAdditionalProperties value)))
+
 data JobProgressAnalyzingTagsCode = JobProgressAnalyzingTagsCodeAnalyzingU2d_tags deriving (Eq, Show)
+
 instance FromJSON JobProgressAnalyzingTagsCode where parseJSON = checked "JobProgressAnalyzingTagsCode" $ \value -> if value == String "analyzing-tags" then pure JobProgressAnalyzingTagsCodeAnalyzingU2d_tags else fail "unknown enumeration member"
+
 instance ToJSON JobProgressAnalyzingTagsCode where toJSON JobProgressAnalyzingTagsCodeAnalyzingU2d_tags = String "analyzing-tags"

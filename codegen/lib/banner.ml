@@ -41,9 +41,8 @@ let typescript_lines ~authority ?(notes = []) file =
   @ [ "Regenerate:  make generate  (" ^ writer file ^ ")" ]
   @ notes
 
-(* An OCaml module's opening: what it is generated from, the writer, and
-   ocamlformat told to leave it as written. *)
+(* An OCaml module's opening comment: what it is generated from, and the
+   writer. *)
 let ocaml ~from_ file =
   "(* Generated from " ^ from_
-  ^ ". Do not edit.\n   Regenerate: make generate (" ^ writer file
-  ^ ") *)\n\n[@@@ocamlformat \"disable\"]\n"
+  ^ ". Do not edit.\n   Regenerate: make generate (" ^ writer file ^ ") *)"

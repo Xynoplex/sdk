@@ -1,37 +1,37 @@
-module Xynolog.Client (Client, CachePersistence(..), newClient, fromHttp, keepIn, baseUrl, transport, content, wire, bus, frame, bind, beckon, browse, gather, match, mark, yield, job, auth, system, state, dispose) where
+module Xynolog.Client (Client, CachePersistence (..), newClient, fromHttp, keepIn, baseUrl, transport, content, wire, bus, frame, bind, beckon, browse, gather, match, mark, yield, job, auth, system, state, dispose) where
 
 import Control.Concurrent.STM
-import Control.Exception (onException, finally, bracketOnError)
+import Control.Exception (bracketOnError, finally, onException)
 import Control.Monad (unless, when)
 import Data.List (sort)
-import qualified Data.Map.Strict as Map
-import qualified Xynolog.Internal.Browse as Browse
-import qualified Xynolog.Internal.Gather as Gather
-import qualified Xynolog.Internal.Match as Match
-import qualified Xynolog.Internal.Mark as Mark
-import qualified Xynolog.Internal.Yield as Yield
-import qualified Xynolog.Internal.Delegation as Delegation
-import qualified Xynolog.Internal.Refresh as Refresh
-import Xynolog.Internal.Persistence (CachePersistence(..))
-import qualified Xynolog.Internal.Coupled as Coupled
-import Xynolog.Internal.Kept (lastEventIdKey)
+import Data.Map.Strict qualified as Map
 import Data.Text (Text)
-import qualified Data.UUID.Types as UUID
-import qualified Xynolog.Http as Http
-import qualified Xynolog.Retry as Retry
-import qualified Xynolog.Bus as Bus
-import qualified Xynolog.Content as Content
-import Xynolog.Frame (FrameNamespace, newFrame)
-import Xynolog.Bind (BindNamespace, newBind)
-import Xynolog.Beckon (BeckonNamespace, newBeckon)
-import Xynolog.Job (JobNamespace, newJob)
-import qualified Xynolog.Timing.Settings as Timing
+import Data.UUID.Types qualified as UUID
 import Xynolog.Auth (AuthNamespace, newAuth)
-import Xynolog.System (SystemNamespace, newSystem)
+import Xynolog.Beckon (BeckonNamespace, newBeckon)
+import Xynolog.Bind (BindNamespace, newBind)
+import Xynolog.Bus qualified as Bus
+import Xynolog.Content qualified as Content
+import Xynolog.EventBus qualified as Local
+import Xynolog.Frame (FrameNamespace, newFrame)
 import Xynolog.Gateway (GatewayOperations)
-import qualified Xynolog.EventBus as Local
+import Xynolog.Http qualified as Http
+import Xynolog.Internal.Browse qualified as Browse
+import Xynolog.Internal.Coupled qualified as Coupled
+import Xynolog.Internal.Delegation qualified as Delegation
+import Xynolog.Internal.Gather qualified as Gather
+import Xynolog.Internal.Kept (lastEventIdKey)
+import Xynolog.Internal.Mark qualified as Mark
+import Xynolog.Internal.Match qualified as Match
+import Xynolog.Internal.Persistence (CachePersistence (..))
+import Xynolog.Internal.Refresh qualified as Refresh
+import Xynolog.Internal.Yield qualified as Yield
+import Xynolog.Job (JobNamespace, newJob)
+import Xynolog.Retry qualified as Retry
 import Xynolog.StateValue (StateValue)
-import qualified Xynolog.Transport as Transport
+import Xynolog.System (SystemNamespace, newSystem)
+import Xynolog.Timing.Settings qualified as Timing
+import Xynolog.Transport qualified as Transport
 import Xynolog.Types (ResourceId)
 
 -- | What a client keeps: nothing yet, one person's things, or nothing more
@@ -39,27 +39,27 @@ import Xynolog.Types (ResourceId)
 data Keeping = Unkept | Keeping Coupled.Coupled | Ended
 
 data Client = Client
-  { clientCarrier :: Transport.Transport
-  , clientContent :: Content.ContentTransport
-  , clientWire :: Bus.Bus
-  , clientLocal :: Local.EventBus
-  , clientFrame :: FrameNamespace
-  , clientBind :: BindNamespace
-  , clientBeckon :: BeckonNamespace
-  , clientBrowse :: Browse.BrowseNamespace
-  , clientGather :: Gather.GatherNamespace
-  , clientMatch :: Match.MatchNamespace
-  , clientMark :: Mark.MarkNamespace
-  , clientYield :: Yield.YieldNamespace
-  , clientFollower :: Delegation.Follower
-  , clientRefresh :: Refresh.Refresher
-  , clientJob :: JobNamespace
-  , clientAuth :: Maybe AuthNamespace
-  , clientSystem :: Maybe SystemNamespace
-  , clientKeeping :: TVar Keeping
-  , clientPlaces :: TVar (Map.Map ResourceId Text)
-  -- ^ The places kept, where the stream begins each scope it holds no place in.
-  , clientDisconnect :: IO ()
+  { clientCarrier :: Transport.Transport,
+    clientContent :: Content.ContentTransport,
+    clientWire :: Bus.Bus,
+    clientLocal :: Local.EventBus,
+    clientFrame :: FrameNamespace,
+    clientBind :: BindNamespace,
+    clientBeckon :: BeckonNamespace,
+    clientBrowse :: Browse.BrowseNamespace,
+    clientGather :: Gather.GatherNamespace,
+    clientMatch :: Match.MatchNamespace,
+    clientMark :: Mark.MarkNamespace,
+    clientYield :: Yield.YieldNamespace,
+    clientFollower :: Delegation.Follower,
+    clientRefresh :: Refresh.Refresher,
+    clientJob :: JobNamespace,
+    clientAuth :: Maybe AuthNamespace,
+    clientSystem :: Maybe SystemNamespace,
+    clientKeeping :: TVar Keeping,
+    -- | The places kept, where the stream begins each scope it holds no place in.
+    clientPlaces :: TVar (Map.Map ResourceId Text),
+    clientDisconnect :: IO ()
   }
 
 -- | A client given a CachePersistence keeps from construction on.
@@ -71,22 +71,49 @@ newClient carrier contents gateway options timing persistence = do
   mapM_ (keepIn made) persistence `onException` dispose made
   pure made
 
-construct :: Transport.Transport -> Content.ContentTransport -> Maybe GatewayOperations -> Bus.BusOptions -> Timing.Settings
-  -> TVar Keeping -> TVar (Map.Map ResourceId Text) -> IO Client
+construct ::
+  Transport.Transport ->
+  Content.ContentTransport ->
+  Maybe GatewayOperations ->
+  Bus.BusOptions ->
+  Timing.Settings ->
+  TVar Keeping ->
+  TVar (Map.Map ResourceId Text) ->
+  IO Client
 construct carrier contents gateway options timing keeping places =
   bracketOnError Local.newEventBus Local.closeEventBus $ \local ->
-  bracketOnError (Transport.bridgeInto carrier local) id $ \disconnect -> do
-    let typed = Bus.newBus options carrier
-    bracketOnError (Delegation.newFollower typed local options timing) Delegation.dispose $ \follower ->
-      bracketOnError (Browse.newBrowse typed local carrier contents options timing) Browse.dispose $ \browseQueries ->
-        bracketOnError (Gather.newGather typed carrier options timing) Gather.dispose $ \gatherQueries ->
-        bracketOnError (Match.newMatch typed local options timing) Match.dispose $ \matchQueries -> do
-          let controls = Browse.controls browseQueries ++ Gather.controls gatherQueries ++ Match.controls matchQueries
-          unless (sort (map fst controls) == [minBound..maxBound]) (ioError (userError "the client does not own every refresh-table query exactly once"))
-          bracketOnError (Refresh.newRefresher local carrier options timing controls) Refresh.dispose $ \refresher ->
-            pure (Client carrier contents typed local (newFrame typed timing) (newBind typed local timing) (newBeckon typed local)
-              browseQueries gatherQueries matchQueries (Mark.newMark typed local timing follower)
-              (Yield.newYield typed local contents timing follower) follower refresher (newJob typed local carrier options timing) (newAuth <$> gateway) (newSystem <$> gateway) keeping places disconnect)
+    bracketOnError (Transport.bridgeInto carrier local) id $ \disconnect -> do
+      let typed = Bus.newBus options carrier
+      bracketOnError (Delegation.newFollower typed local options timing) Delegation.dispose $ \follower ->
+        bracketOnError (Browse.newBrowse typed local carrier contents options timing) Browse.dispose $ \browseQueries ->
+          bracketOnError (Gather.newGather typed carrier options timing) Gather.dispose $ \gatherQueries ->
+            bracketOnError (Match.newMatch typed local options timing) Match.dispose $ \matchQueries -> do
+              let controls = Browse.controls browseQueries ++ Gather.controls gatherQueries ++ Match.controls matchQueries
+              unless (sort (map fst controls) == [minBound .. maxBound]) (ioError (userError "the client does not own every refresh-table query exactly once"))
+              bracketOnError (Refresh.newRefresher local carrier options timing controls) Refresh.dispose $ \refresher ->
+                pure
+                  ( Client
+                      carrier
+                      contents
+                      typed
+                      local
+                      (newFrame typed timing)
+                      (newBind typed local timing)
+                      (newBeckon typed local)
+                      browseQueries
+                      gatherQueries
+                      matchQueries
+                      (Mark.newMark typed local timing follower)
+                      (Yield.newYield typed local contents timing follower)
+                      follower
+                      refresher
+                      (newJob typed local carrier options timing)
+                      (newAuth <$> gateway)
+                      (newSystem <$> gateway)
+                      keeping
+                      places
+                      disconnect
+                  )
 
 -- | The client's stream begins each scope it holds no place in where the
 -- places kept say, and notes each place it reaches for them: these replace
@@ -95,15 +122,17 @@ fromHttp :: Http.HttpOptions -> Maybe CachePersistence -> IO Client
 fromHttp options persistence = do
   keeping <- newTVarIO Unkept
   places <- newTVarIO Map.empty
-  let noted scope identity = readTVarIO keeping >>= \kept -> case kept of
-        Keeping coupled -> Coupled.savePosition coupled scope identity
-        _ -> pure ()
-      actual = options { Http.httpLoadPositions=readTVarIO places, Http.httpSavePosition=noted }
+  let noted scope identity =
+        readTVarIO keeping >>= \kept -> case kept of
+          Keeping coupled -> Coupled.savePosition coupled scope identity
+          _ -> pure ()
+      actual = options {Http.httpLoadPositions = readTVarIO places, Http.httpSavePosition = noted}
   http <- Http.newHttpTransport actual
   let time = Http.httpTime options
       busOptions = Bus.BusOptions (Retry.retryNow time) (Retry.retryWaitUntil time) (UUID.toText <$> Http.httpNewId options)
-  made <- construct (Http.transport http) (Http.content http) (Just (Http.gateway http)) busOptions (Http.httpTiming options) keeping places
-    `onException` Http.dispose http
+  made <-
+    construct (Http.transport http) (Http.content http) (Just (Http.gateway http)) busOptions (Http.httpTiming options) keeping places
+      `onException` Http.dispose http
   mapM_ (keepIn made) persistence `onException` dispose made
   pure made
 
@@ -122,7 +151,9 @@ keepIn client persistence = do
       Unkept -> writeTVar (clientKeeping client) (Keeping coupled) >> pure True
       _ -> pure False
   when begun $ do
-    Coupled.start coupled (Browse.persistencePending (clientBrowse client))
+    Coupled.start
+      coupled
+      (Browse.persistencePending (clientBrowse client))
       ((||) <$> Browse.fetching (clientBrowse client) <*> Refresh.owes (clientRefresh client))
     Coupled.loadPositions coupled >>= atomically . writeTVar (clientPlaces client)
     Browse.keepIn (clientBrowse client) persistence coupled
@@ -131,45 +162,65 @@ baseUrl :: Client -> Text
 baseUrl = Transport.baseUrl . transport
 
 transport :: Client -> Transport.Transport
-transport Client { clientCarrier = value } = value
+transport Client {clientCarrier = value} = value
+
 content :: Client -> Content.ContentTransport
-content Client { clientContent = value } = value
+content Client {clientContent = value} = value
+
 wire :: Client -> Bus.Bus
-wire Client { clientWire = value } = value
+wire Client {clientWire = value} = value
+
 bus :: Client -> Local.EventBus
-bus Client { clientLocal = value } = value
+bus Client {clientLocal = value} = value
+
 frame :: Client -> FrameNamespace
-frame Client { clientFrame = value } = value
+frame Client {clientFrame = value} = value
+
 bind :: Client -> BindNamespace
-bind Client { clientBind = value } = value
+bind Client {clientBind = value} = value
+
 beckon :: Client -> BeckonNamespace
-beckon Client { clientBeckon = value } = value
+beckon Client {clientBeckon = value} = value
+
 browse :: Client -> Browse.BrowseNamespace
-browse Client { clientBrowse = value } = value
+browse Client {clientBrowse = value} = value
+
 gather :: Client -> Gather.GatherNamespace
-gather Client { clientGather = value } = value
+gather Client {clientGather = value} = value
+
 match :: Client -> Match.MatchNamespace
-match Client { clientMatch = value } = value
+match Client {clientMatch = value} = value
 
 mark :: Client -> Mark.MarkNamespace
-mark Client { clientMark = value } = value
+mark Client {clientMark = value} = value
+
 yield :: Client -> Yield.YieldNamespace
-yield Client { clientYield = value } = value
+yield Client {clientYield = value} = value
 
 job :: Client -> JobNamespace
-job Client { clientJob = value } = value
+job Client {clientJob = value} = value
+
 auth :: Client -> Maybe AuthNamespace
-auth Client { clientAuth = value } = value
+auth Client {clientAuth = value} = value
+
 system :: Client -> Maybe SystemNamespace
-system Client { clientSystem = value } = value
+system Client {clientSystem = value} = value
 
 state :: Client -> StateValue Transport.ConnectionState
 state = Transport.state . transport
+
 -- | The places' gate is read first, before what it reads is disposed.
 dispose :: Client -> IO ()
 dispose client = do
   kept <- atomically (readTVar (clientKeeping client) <* writeTVar (clientKeeping client) Ended)
-  (case kept of Keeping coupled -> Coupled.dispose coupled; _ -> pure ()) `finally` Delegation.dispose (clientFollower client) `finally` Refresh.dispose (clientRefresh client) `finally` (Browse.dispose (browse client)
-    `finally` Gather.dispose (gather client) `finally` Match.dispose (match client)
-    `finally` Transport.dispose (transport client)) `finally` (Content.dispose (content client)
-    `finally` (clientDisconnect client `finally` Local.closeEventBus (bus client)))
+  (case kept of Keeping coupled -> Coupled.dispose coupled; _ -> pure ())
+    `finally` Delegation.dispose (clientFollower client)
+    `finally` Refresh.dispose (clientRefresh client)
+    `finally` ( Browse.dispose (browse client)
+                  `finally` Gather.dispose (gather client)
+                  `finally` Match.dispose (match client)
+                  `finally` Transport.dispose (transport client)
+              )
+    `finally` ( Content.dispose (content client)
+                  `finally` (clientDisconnect client `finally` Local.closeEventBus (bus client))
+              )

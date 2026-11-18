@@ -1,32 +1,34 @@
-{-# LANGUAGE DataKinds, OverloadedStrings #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE OverloadedStrings #-}
+
 module FrameCases (frameCases) where
 
 import Control.Applicative ((<|>))
-import Control.Concurrent.Async (withAsync, wait)
+import Control.Concurrent.Async (wait, withAsync)
 import Control.Concurrent.STM
 import Control.Exception (SomeException, bracket, fromException, try)
 import Control.Monad (forM_, unless, when)
-import Data.Aeson (ToJSON, Value(..), eitherDecodeStrict', encode, toJSON)
-import qualified Data.Aeson.Key as Key
-import qualified Data.Aeson.KeyMap as KM
-import qualified Data.ByteString as Bytes
-import qualified Data.ByteString.Lazy as Lazy
+import Data.Aeson (ToJSON, Value (..), eitherDecodeStrict', encode, toJSON)
+import Data.Aeson.Key qualified as Key
+import Data.Aeson.KeyMap qualified as KM
+import Data.ByteString qualified as Bytes
+import Data.ByteString.Lazy qualified as Lazy
 import Data.Foldable (toList)
-import qualified Data.Set as Set
+import Data.Set qualified as Set
 import Data.Text (Text)
 import Data.Text.Encoding (decodeUtf8)
-import qualified Xynolog.Bus as Bus
-import Xynolog.Channels hiding (BrowseResourceResult)
-import qualified Xynolog.Channels as Channel
-import qualified Xynolog.ErrorCodes as Code
-import Xynolog.Errors (TransportError(..), BusRequestError(..))
-import qualified Xynolog.Internal.Required as Required
-import qualified Xynolog.Internal.StreamFrame as Frame
-import qualified Xynolog.Transport as Transport
-import Xynolog.Types
-import qualified Streaming.Prelude as Stream
+import Streaming.Prelude qualified as Stream
 import System.FilePath ((</>))
 import System.Timeout (timeout)
+import Xynolog.Bus qualified as Bus
+import Xynolog.Channels hiding (BrowseResourceResult)
+import Xynolog.Channels qualified as Channel
+import Xynolog.ErrorCodes qualified as Code
+import Xynolog.Errors (BusRequestError (..), TransportError (..))
+import Xynolog.Internal.Required qualified as Required
+import Xynolog.Internal.StreamFrame qualified as Frame
+import Xynolog.Transport qualified as Transport
+import Xynolog.Types
 
 require :: String -> Bool -> IO ()
 require label value = unless value (ioError (userError label))
@@ -46,18 +48,32 @@ caseKeys = ["why", "frame", "data", "read", "refused", "member", "reason", "told
 withBus :: (TMVar () -> TVar Integer -> Transport.Transport -> Transport.TransportInput -> Bus.Bus -> IO result) -> IO result
 withBus action = do
   asked <- newEmptyTMVarIO
-  bracket (Transport.newTransport (Transport.TransportOptions "local://frame-cases" (Set.fromList channelNames)
-    (\_ -> atomically (putTMVar asked ()) >> pure Nothing) (pure ())))
-    (Transport.dispose . fst) $ \(transport,input) -> do
+  bracket
+    ( Transport.newTransport
+        ( Transport.TransportOptions
+            "local://frame-cases"
+            (Set.fromList channelNames)
+            (\_ -> atomically (putTMVar asked ()) >> pure Nothing)
+            (pure ())
+        )
+    )
+    (Transport.dispose . fst)
+    $ \(transport, input) -> do
       Transport.setState input Transport.Connecting
       Transport.setState input Transport.Open
       clock <- newTVarIO 0
-      let bus = Bus.newBus (Bus.BusOptions (readTVarIO clock)
-            (\deadline -> atomically (readTVar clock >>= check . (>= deadline))) (pure "c-1")) transport
+      let bus =
+            Bus.newBus
+              ( Bus.BusOptions
+                  (readTVarIO clock)
+                  (\deadline -> atomically (readTVar clock >>= check . (>= deadline)))
+                  (pure "c-1")
+              )
+              transport
       action asked clock transport input bus
 
 -- | What a delivered frame's typed reader reads of its payload, or nothing when it refuses the frame.
-typedRead :: ToJSON payload => Channel 'Global payload -> BusFrame -> IO (Maybe Value)
+typedRead :: (ToJSON payload) => Channel 'Global payload -> BusFrame -> IO (Maybe Value)
 typedRead channel frame = withBus $ \_ _ _ input bus -> Bus.frames bus channel NoScope $ \values -> do
   Transport.receive input frame
   heard <- Stream.head_ values
@@ -73,8 +89,8 @@ runCases root = do
     fields <- case row of Object fields -> pure fields; _ -> ioError (userError "frame row is not an object")
     require ("a frame case states what its runner does not know: " ++ show row) (all ((`elem` caseKeys) . Key.toText) (KM.keys fields))
     text <- case (KM.lookup "data" fields, KM.lookup "frame" fields) of
-      (Just (String raw),Nothing) -> pure raw
-      (Nothing,Just raw) -> pure (decodeUtf8 (Lazy.toStrict (encode raw)))
+      (Just (String raw), Nothing) -> pure raw
+      (Nothing, Just raw) -> pure (decodeUtf8 (Lazy.toStrict (encode raw)))
       _ -> ioError (userError "frame case must state frame or data")
     let parsed = Frame.readFrame text
         expectedRefusal = KM.lookup "refused" fields == Just (Bool True)
@@ -94,9 +110,13 @@ runCases root = do
         require "a stream frame changed on reading" (toJSON frame == member "frame" row)
         let channel = busFrameChannel frame
             stated = KM.lookup "read" fields <|> (case member "frame" row of Object raw -> KM.lookup "payload" raw; _ -> Nothing)
-        reading <- if channel == channelName Channel.BrowseResourceFailed then Just <$> typedRead Channel.BrowseResourceFailed frame
-          else if channel == channelName Channel.GatherFailed then Just <$> typedRead Channel.GatherFailed frame
-          else pure Nothing
+        reading <-
+          if channel == channelName Channel.BrowseResourceFailed
+            then Just <$> typedRead Channel.BrowseResourceFailed frame
+            else
+              if channel == channelName Channel.GatherFailed
+                then Just <$> typedRead Channel.GatherFailed frame
+                else pure Nothing
         case reading of
           Just found -> require ("a typed reader read otherwise than the case states: " ++ show (row, found)) (found == stated)
           Nothing -> require "a frame case states a typed read on a channel its runner reads by no type" (not (KM.member "read" fields))
@@ -112,26 +132,38 @@ runCases root = do
               require "refusal carried the wrong correlation id" (fmap String (Transport.refusedCorrelationId refusal) == KM.lookup "correlationId" fields)
         if channel == String (channelName BeckonFocus)
           then Bus.frames bus BeckonFocus NoScope inspect
-          else if channel == String (channelName Channel.BrowseResourceResult)
-            then Bus.frames bus Channel.BrowseResourceResult NoScope inspect
-            else ioError (userError "unread typed channel in frame cases")
+          else
+            if channel == String (channelName Channel.BrowseResourceResult)
+              then Bus.frames bus Channel.BrowseResourceResult NoScope inspect
+              else ioError (userError "unread typed channel in frame cases")
         forM_ (KM.lookup "request" fields) $ \expected -> Transport.errors transport $ \observations -> do
           resource <- either (ioError . userError) pure (mkResourceId "res-1")
-          let action = try (Bus.request bus BrowseResourceRequestedOperation (BrowseResourceRequest resource mempty) 100)
-                :: IO (Either SomeException BrowseResourceResult)
+          let action =
+                try (Bus.request bus BrowseResourceRequestedOperation (BrowseResourceRequest resource mempty) 100) ::
+                  IO (Either SomeException BrowseResourceResult)
           withAsync action $ \pending -> do
             atomically (takeTMVar asked)
             publish input
             when (expected == String "waits") (atomically (writeTVar clock 100000000))
             answer <- wait pending
-            case (expected,answer) of
-              (String "fails",Left problem) | Just failure <- fromException problem -> do
-                let issue = Required.Fault (case member "member" row of String value -> value; _ -> error "nontext fault")
-                      (case member "reason" row of String "lacks" -> Required.Lacks; String "malformed" -> Required.Malformed; _ -> error "unknown reason")
-                require "request did not fail with its frame refusal" (failure == TransportError Code.TransportError
-                  ("a frame on browse:resource-result is not that channel's: " <> Required.faultSaid issue) Nothing Nothing)
-              (String "waits",Left problem) | Just failure <- fromException problem ->
-                require "a reply without a readable correlation id reached the request" (busRequestErrorCode failure == Code.BusRequestTimeout)
+            case (expected, answer) of
+              (String "fails", Left problem) | Just failure <- fromException problem -> do
+                let issue =
+                      Required.Fault
+                        (case member "member" row of String value -> value; _ -> error "nontext fault")
+                        (case member "reason" row of String "lacks" -> Required.Lacks; String "malformed" -> Required.Malformed; _ -> error "unknown reason")
+                require
+                  "request did not fail with its frame refusal"
+                  ( failure
+                      == TransportError
+                        Code.TransportError
+                        ("a frame on browse:resource-result is not that channel's: " <> Required.faultSaid issue)
+                        Nothing
+                        Nothing
+                  )
+              (String "waits", Left problem)
+                | Just failure <- fromException problem ->
+                    require "a reply without a readable correlation id reached the request" (busRequestErrorCode failure == Code.BusRequestTimeout)
               _ -> ioError (userError "unread request outcome in frame cases")
           -- A refusal told to its readers is told to no failure report: the report's first
           -- observation is a marker reported after the request settled.

@@ -1,63 +1,68 @@
-{-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
-module ClockCases (clockCasesFor, clockCensus, Scenario(..), cacheClockCases, httpClockCases, discoveryClockCases, clientClockCases, jobPollClockCases) where
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+
+module ClockCases (clockCasesFor, clockCensus, Scenario (..), cacheClockCases, httpClockCases, discoveryClockCases, clientClockCases, jobPollClockCases) where
 
 import Control.Concurrent.Async (async, cancel, poll)
 import Control.Concurrent.STM
 import Control.Exception (SomeException, bracket, finally, throwIO, try)
 import Control.Monad (forM_, unless, when)
-import Data.Aeson (Value(..), eitherDecodeStrict', toJSON, FromJSON, fromJSON, Result(..))
-import qualified Data.Aeson.Key as Key
-import qualified Data.Aeson.KeyMap as KM
-import qualified Data.ByteString as Bytes
-import qualified Data.ByteString.Char8 as Char8
+import ControlledTime qualified as Time
+import Data.Aeson (FromJSON, Result (..), Value (..), eitherDecodeStrict', fromJSON, toJSON)
+import Data.Aeson.Key qualified as Key
+import Data.Aeson.KeyMap qualified as KM
+import Data.ByteString qualified as Bytes
+import Data.ByteString.Char8 qualified as Char8
 import Data.Foldable (toList)
 import Data.IORef
-import qualified Data.Map.Strict as Map
+import Data.Map.Strict qualified as Map
+import Data.Set qualified as Set
 import Data.Text (Text)
-import qualified Data.Text as Text
+import Data.Text qualified as Text
 import Data.Text.Encoding (encodeUtf8)
-import qualified Data.UUID.Types as UUID
-import qualified Data.Set as Set
+import Data.UUID.Types qualified as UUID
 import Network.HTTP.Client (defaultManagerSettings, managerRawConnection, noProxy)
 import Network.HTTP.Client.Internal (makeConnection)
-import qualified Xynolog.Browse as Browse
-import qualified Xynolog.Client as Client
-import qualified Xynolog.Content as Content
-import qualified Xynolog.Bus as Bus
-import qualified Xynolog.Cache as Cache
-import qualified Xynolog.Channels as Channel
-import qualified Xynolog.Discovery as Discovery
-import qualified Xynolog.ErrorCodes as Code
-import Xynolog.Errors (BusRequestError(..))
-import qualified Xynolog.Gateway as Gateway
-import qualified Xynolog.Http as Http
-import qualified Xynolog.Http.Routes as Route
-import qualified Xynolog.Job as Job
-import qualified Xynolog.Retry as Retry
-import qualified Xynolog.StateValue as State
-import qualified Xynolog.Timing.Settings as Timing
-import qualified Xynolog.Transport as Transport
-import Xynolog.Types
-import qualified Streaming.Prelude as Stream
+import Streaming.Prelude qualified as Stream
 import System.FilePath ((</>))
 import System.Timeout (timeout)
-import qualified ControlledTime as Time
+import Xynolog.Browse qualified as Browse
+import Xynolog.Bus qualified as Bus
+import Xynolog.Cache qualified as Cache
+import Xynolog.Channels qualified as Channel
+import Xynolog.Client qualified as Client
+import Xynolog.Content qualified as Content
+import Xynolog.Discovery qualified as Discovery
+import Xynolog.ErrorCodes qualified as Code
+import Xynolog.Errors (BusRequestError (..))
+import Xynolog.Gateway qualified as Gateway
+import Xynolog.Http qualified as Http
+import Xynolog.Http.Routes qualified as Route
+import Xynolog.Job qualified as Job
+import Xynolog.Retry qualified as Retry
+import Xynolog.StateValue qualified as State
+import Xynolog.Timing.Settings qualified as Timing
+import Xynolog.Transport qualified as Transport
+import Xynolog.Types
 
-data Scenario = Scenario { act :: IO (), counted :: IO Integer, close :: IO () }
+data Scenario = Scenario {act :: IO (), counted :: IO Integer, close :: IO ()}
 
 member :: Text -> Value -> Value
 member name (Object fields) = maybe (error ("missing clock case member " ++ Text.unpack name)) id (KM.lookup (Key.fromText name) fields)
 member _ _ = error "clock case is not an object"
+
 array :: Value -> [Value]
 array (Array values) = toList values
 array _ = error "clock case list is not an array"
+
 number :: Value -> Rational
 number (Number value) = toRational value
 number _ = error "clock case number is not a number"
 
 clockTable :: FilePath -> IO Value
-clockTable root = Bytes.readFile (root </> "protocol/specs/src/client/clock-cases.json")
-  >>= either (ioError . userError) pure . eitherDecodeStrict'
+clockTable root =
+  Bytes.readFile (root </> "protocol/specs/src/client/clock-cases.json")
+    >>= either (ioError . userError) pure . eitherDecodeStrict'
 
 -- Runs every case of the subjects a runner builds, and answers those subjects for clockCensus.
 clockCasesFor :: FilePath -> [Text] -> (Time.ControlledTime -> Value -> IO Scenario) -> IO [Text]
@@ -69,9 +74,10 @@ clockCasesFor root subjects make = do
         let name = case KM.lookup "timing" fields of Just (String text) -> text; _ -> error "clock duration names no timing"
             timing = foldl (flip member) settings (Text.splitOn "." name)
             stated key fallback = maybe fallback number (KM.lookup key fields)
-        in number timing * stated "times" 1 + stated "plusMs" 0
+         in number timing * stated "times" 1 + stated "plusMs" 0
       duration value = number value
-  unless (all (\subject -> any ((== String subject) . member "subject") cases) subjects)
+  unless
+    (all (\subject -> any ((== String subject) . member "subject") cases) subjects)
     (ioError (userError "a controlled-clock subject has no authority cases"))
   forM_ cases $ \row -> do
     outcome <- timeout 10000000 $ do
@@ -86,8 +92,13 @@ clockCasesFor root subjects make = do
             Object fields | Just count <- KM.lookup "counted" fields -> do
               Time.settle
               actual <- counted scenario
-              unless (toRational actual == number count) (ioError (userError
-                ("controlled clock mismatch: " ++ show row ++ "; expected " ++ show count ++ ", got " ++ show actual)))
+              unless
+                (toRational actual == number count)
+                ( ioError
+                    ( userError
+                        ("controlled clock mismatch: " ++ show row ++ "; expected " ++ show count ++ ", got " ++ show actual)
+                    )
+                )
             _ -> ioError (userError ("unhandled controlled clock step: " ++ show step))
           Time.settle
     unless (outcome == Just ()) (ioError (userError ("controlled clock subject did not settle: " ++ show row)))
@@ -106,9 +117,20 @@ clockCensus root built = do
 -- An in-memory HTTP connection holds real http-client requests and responses.
 -- Time, including the open-headers deadline, belongs to the public HttpOptions.
 httpClockCases :: FilePath -> IO [Text]
-httpClockCases root = clockCasesFor root
-  [ "refusedStream", "unansweredStream", "degradedStream", "scopeTaken", "scopeLetGo", "handoffLinger", "unansweredRequest", "unansweredEmit"
-  , "refusedBusRequest", "timedOutBusRequest" ] $ \clock row -> do
+httpClockCases root = clockCasesFor
+  root
+  [ "refusedStream",
+    "unansweredStream",
+    "degradedStream",
+    "scopeTaken",
+    "scopeLetGo",
+    "handoffLinger",
+    "unansweredRequest",
+    "unansweredEmit",
+    "refusedBusRequest",
+    "timedOutBusRequest"
+  ]
+  $ \clock row -> do
     let subject = case member "subject" row of String name -> name; _ -> error "subject has no name"
         busRequest = subject `elem` ["refusedBusRequest", "timedOutBusRequest"]
         given = case row of
@@ -123,7 +145,7 @@ httpClockCases root = clockCasesFor root
     failures <- newTVarIO 0
     ids <- newTVarIO 0
     let fresh = atomically $ do
-          modifyTVar' ids (+1)
+          modifyTVar' ids (+ 1)
           value <- readTVar ids
           pure (UUID.fromWords 0 0 0 (fromInteger value))
         requestStart route = Route.routeMethod route <> " " <> encodeUtf8 (Route.routePath route) <> " "
@@ -134,28 +156,32 @@ httpClockCases root = clockCasesFor root
           stopped <- newTVarIO False
           let readBytes = atomically (readTQueue output `orElse` (readTVar stopped >>= check >> pure Bytes.empty))
               writeBytes bytes = do
-                accumulated <- atomicModifyIORef' seen (\prior -> let next = prior <> bytes in (next,next))
+                accumulated <- atomicModifyIORef' seen (\prior -> let next = prior <> bytes in (next, next))
                 sent <- readIORef assigned
                 when (not sent && "\r\n\r\n" `Bytes.isInfixOf` accumulated) $ do
                   writeIORef assigned True
-                  let header = Char8.takeWhile (/='\r') accumulated
+                  let header = Char8.takeWhile (/= '\r') accumulated
                       subscribe = requestStart Route.SubscribeToBus `Bytes.isPrefixOf` header
                       emit = requestStart Route.EmitOnBus `Bytes.isPrefixOf` header
                       health = requestStart Route.GetHealth `Bytes.isPrefixOf` header
-                  when (if subject `elem` ["unansweredEmit", "refusedBusRequest"] then emit else if subject == "unansweredRequest" then health else subscribe)
-                    (atomically (modifyTVar' asks (+1)))
-                  if subscribe then case subject of
-                    "unansweredStream" -> pure ()
-                    "refusedStream" -> refuse output
-                    "degradedStream" -> refuse output
-                    _ -> atomically (writeTQueue output "HTTP/1.1 200 OK\r\nContent-Type: text/event-stream\r\nTransfer-Encoding: chunked\r\n\r\n")
-                    else if emit && busRequest then refuse output
-                    else unless (emit || health) (ioError (userError ("unexpected controlled HTTP request " ++ show header)))
+                  when
+                    (if subject `elem` ["unansweredEmit", "refusedBusRequest"] then emit else if subject == "unansweredRequest" then health else subscribe)
+                    (atomically (modifyTVar' asks (+ 1)))
+                  if subscribe
+                    then case subject of
+                      "unansweredStream" -> pure ()
+                      "refusedStream" -> refuse output
+                      "degradedStream" -> refuse output
+                      _ -> atomically (writeTQueue output "HTTP/1.1 200 OK\r\nContent-Type: text/event-stream\r\nTransfer-Encoding: chunked\r\n\r\n")
+                    else
+                      if emit && busRequest
+                        then refuse output
+                        else unless (emit || health) (ioError (userError ("unexpected controlled HTTP request " ++ show header)))
               stop = atomically $ do
                 prior <- readTVar stopped
                 unless prior $ do
                   writeTVar stopped True
-                  modifyTVar' closed (+1)
+                  modifyTVar' closed (+ 1)
           makeConnection readBytes writeBytes stop
         refuse output = do
           let retryHeader = case KM.lookup "retryAfterSeconds" given of
@@ -163,30 +189,73 @@ httpClockCases root = clockCasesFor root
                 Just value -> "Retry-After: " <> Char8.pack (show (round (number value) :: Integer)) <> "\r\n"
           atomically (writeTQueue output ("HTTP/1.1 503 Unavailable\r\nConnection: close\r\nContent-Type: application/json\r\nContent-Length: 2\r\n" <> retryHeader <> "\r\n{}"))
         time = Retry.RetryOptions (Time.now clock) (Time.waitUntil clock) (pure 0)
-    pool <- Http.newHttpClient noProxy defaultManagerSettings { managerRawConnection = pure connect }
+    pool <- Http.newHttpClient noProxy defaultManagerSettings {managerRawConnection = pure connect}
     let token = if subject == "unansweredRequest" then Nothing else Just "clock-token"
-        options = Http.HttpOptions "http://clock.test" pool (pure token) (const (pure Nothing)) time Timing.protocolSettings fresh
-          (Set.fromList Channel.globalChannels) (pure Map.empty) (\_ _ -> pure ())
+        options =
+          Http.HttpOptions
+            "http://clock.test"
+            pool
+            (pure token)
+            (const (pure Nothing))
+            time
+            Timing.protocolSettings
+            fresh
+            (Set.fromList Channel.globalChannels)
+            (pure Map.empty)
+            (\_ _ -> pure ())
     http <- Http.newHttpTransport options
-    watcher <- async (State.watch (Transport.state (Http.transport http)) (Stream.mapM_ (\state ->
-      when (state == Transport.Degraded) (atomically (modifyTVar' degraded (+1))))))
+    watcher <-
+      async
+        ( State.watch
+            (Transport.state (Http.transport http))
+            ( Stream.mapM_
+                ( \state ->
+                    when (state == Transport.Degraded) (atomically (modifyTVar' degraded (+ 1)))
+                )
+            )
+        )
     resource <- either (ioError . userError) pure (mkResourceId "clock-resource")
     owned <- case subject of
-      _ | busRequest -> Just <$> async (do
-        let wire = Bus.newBus (Bus.BusOptions (Time.now clock) (Time.waitUntil clock) (UUID.toText <$> fresh)) (Http.transport http)
-        result <- try (Bus.request wire Channel.BrowseEventsRequestedOperation (BrowseEventsRequest Nothing resource Nothing Nothing mempty)
-          (Timing.busRequestTimeoutMs Timing.protocolSettings)) :: IO (Either BusRequestError BrowseEventsResult)
-        case result of
-          Left failure | busRequestErrorCode failure == Code.BusRequestTimeout -> atomically (modifyTVar' failures (+1))
-          Left failure -> ioError (userError ("refused bus request failed but not as timed out: " ++ show failure))
-          Right _ -> ioError (userError "refused bus request returned"))
-      "unansweredRequest" -> Just <$> async (do
-        result <- try (Gateway.healthCheck (Http.gateway http)) :: IO (Either SomeException HealthResponse)
-        case result of Left _ -> atomically (modifyTVar' failures (+1)); Right _ -> ioError (userError "unanswered health request returned"))
-      "unansweredEmit" -> Just <$> async (do
-        result <- try (Transport.emit (Http.transport http)
-          (BusFrame (Channel.channelName Channel.FrameAddEntityType) Nothing (BusFramePayload (KM.singleton "entityType" (String "clock"))) Nothing)) :: IO (Either SomeException (Maybe Integer))
-        case result of Left _ -> pure (); Right _ -> ioError (userError "unanswered emit returned"))
+      _
+        | busRequest ->
+            Just
+              <$> async
+                ( do
+                    let wire = Bus.newBus (Bus.BusOptions (Time.now clock) (Time.waitUntil clock) (UUID.toText <$> fresh)) (Http.transport http)
+                    result <-
+                      try
+                        ( Bus.request
+                            wire
+                            Channel.BrowseEventsRequestedOperation
+                            (BrowseEventsRequest Nothing resource Nothing Nothing mempty)
+                            (Timing.busRequestTimeoutMs Timing.protocolSettings)
+                        ) ::
+                        IO (Either BusRequestError BrowseEventsResult)
+                    case result of
+                      Left failure | busRequestErrorCode failure == Code.BusRequestTimeout -> atomically (modifyTVar' failures (+ 1))
+                      Left failure -> ioError (userError ("refused bus request failed but not as timed out: " ++ show failure))
+                      Right _ -> ioError (userError "refused bus request returned")
+                )
+      "unansweredRequest" ->
+        Just
+          <$> async
+            ( do
+                result <- try (Gateway.healthCheck (Http.gateway http)) :: IO (Either SomeException HealthResponse)
+                case result of { Left _ -> atomically (modifyTVar' failures (+ 1)); Right _ -> ioError (userError "unanswered health request returned") }
+            )
+      "unansweredEmit" ->
+        Just
+          <$> async
+            ( do
+                result <-
+                  try
+                    ( Transport.emit
+                        (Http.transport http)
+                        (BusFrame (Channel.channelName Channel.FrameAddEntityType) Nothing (BusFramePayload (KM.singleton "entityType" (String "clock"))) Nothing)
+                    ) ::
+                    IO (Either SomeException (Maybe Integer))
+                case result of { Left _ -> pure (); Right _ -> ioError (userError "unanswered emit returned") }
+            )
       _ -> pure Nothing
     release <- newIORef (pure ())
     when (subject == "scopeLetGo") $ do
@@ -197,10 +266,18 @@ httpClockCases root = clockCasesFor root
           "scopeLetGo" -> readIORef release >>= id
           "handoffLinger" -> Transport.subscribeToResource (Http.transport http) resource >>= writeIORef release
           _ -> pure ()
-        count = readTVarIO (if subject == "degradedStream" then degraded else if subject == "handoffLinger" then closed
-          else if subject `elem` ["unansweredRequest", "timedOutBusRequest"] then failures else asks)
-        finish = (readIORef release >>= id) `finally`
-          (mapM_ cancel owned `finally` (cancel watcher `finally` Http.dispose http))
+        count =
+          readTVarIO
+            ( if subject == "degradedStream"
+                then degraded
+                else
+                  if subject == "handoffLinger"
+                    then closed
+                    else if subject `elem` ["unansweredRequest", "timedOutBusRequest"] then failures else asks
+            )
+        finish =
+          (readIORef release >>= id)
+            `finally` (mapM_ cancel owned `finally` (cancel watcher `finally` Http.dispose http))
     pure (Scenario action count finish)
 
 discoveryClockCases :: FilePath -> DiscoveredKB -> IO [Text]
@@ -208,7 +285,7 @@ discoveryClockCases root kb = clockCasesFor root ["discovery"] $ \clock _ -> do
   readCount <- newTVarIO 0
   let transport = Discovery.DiscoveryTransport $ atomically $ do
         count <- readTVar readCount
-        writeTVar readCount (count+1)
+        writeTVar readCount (count + 1)
         pure (if count == 0 then Discovery.Read (Discovery.Managed [kb]) else Discovery.Unchanged)
       options = Discovery.DiscoveryOptions (Time.now clock) (Time.waitUntil clock) (Timing.discoveryIntervalMs Timing.protocolSettings)
   worker <- async (Stream.effects (Discovery.subscribeDiscovery options transport))
@@ -217,16 +294,20 @@ discoveryClockCases root kb = clockCasesFor root ["discovery"] $ \clock _ -> do
 cacheClockCases :: FilePath -> IO [Text]
 cacheClockCases root = clockCasesFor root ["saveDebounce"] $ \clock _ -> do
   saves <- newTVarIO 0
-  values <- newIORef (0::Int)
-  let persister = Cache.CachePersister (pure []) (\_ -> atomically (modifyTVar' saves (+1))) (pure ())
-      options = Cache.CacheOptions (Time.now clock) (Time.waitUntil clock)
-        (Timing.saveDebounceMs Timing.protocolSettings) (Just persister) (const (pure (pure ())))
+  values <- newIORef (0 :: Int)
+  let persister = Cache.CachePersister (pure []) (\_ -> atomically (modifyTVar' saves (+ 1))) (pure ())
+      options =
+        Cache.CacheOptions
+          (Time.now clock)
+          (Time.waitUntil clock)
+          (Timing.saveDebounceMs Timing.protocolSettings)
+          (Just persister)
+          (const (pure (pure ())))
   cache <- Cache.newCache (pure :: Int -> IO Int) options
-  let action = atomicModifyIORef' values (\n -> (n+1,n+1)) >>= Cache.set cache 1
+  let action = atomicModifyIORef' values (\n -> (n + 1, n + 1)) >>= Cache.set cache 1
   pure (Scenario action (readTVarIO saves) (Cache.dispose cache))
 
-
-fixture :: FromJSON value => Map.Map Text Value -> Text -> IO value
+fixture :: (FromJSON value) => Map.Map Text Value -> Text -> IO value
 fixture fixtures name = case Map.lookup name fixtures of
   Nothing -> ioError (userError ("missing client clock fixture " ++ Text.unpack name))
   Just value -> case fromJSON value of Error message -> ioError (userError message); Success parsed -> pure parsed
@@ -234,19 +315,29 @@ fixture fixtures name = case Map.lookup name fixtures of
 -- | A client over an in-process transport that hands each frame it sends to answer, with the input it replies on.
 inProcessClient :: Time.ControlledTime -> (Transport.TransportInput -> BusFrame -> IO ()) -> IO (Client.Client, Transport.TransportInput)
 inProcessClient time answer = do
-  ids <- newTVarIO (0::Integer)
+  ids <- newTVarIO (0 :: Integer)
   inputCell <- newEmptyTMVarIO
   let unexpected :: IO value
       unexpected = ioError (userError "unexpected content read in a client clock case")
-      contents = Content.ContentTransport (\_ _ _ _ -> unexpected) (\_ _ -> unexpected) (\_ _ _ -> unexpected)
-        (\_ _ -> unexpected) (\_ _ -> unexpected) (\_ _ -> unexpected) (pure ())
-      options = Bus.BusOptions (Time.now time) (Time.waitUntil time)
-        (atomically $ do modifyTVar' ids (+1); Text.pack . show <$> readTVar ids)
+      contents =
+        Content.ContentTransport
+          (\_ _ _ _ -> unexpected)
+          (\_ _ -> unexpected)
+          (\_ _ _ -> unexpected)
+          (\_ _ -> unexpected)
+          (\_ _ -> unexpected)
+          (\_ _ -> unexpected)
+          (pure ())
+      options =
+        Bus.BusOptions
+          (Time.now time)
+          (Time.waitUntil time)
+          (atomically $ do modifyTVar' ids (+ 1); Text.pack . show <$> readTVar ids)
       send frame = do
         input <- atomically (readTMVar inputCell)
         answer input frame
         pure Nothing
-  (carrier,input) <- Transport.newTransport (Transport.TransportOptions "local://clock" (Set.fromList Channel.channelNames) send (pure ()))
+  (carrier, input) <- Transport.newTransport (Transport.TransportOptions "local://clock" (Set.fromList Channel.channelNames) send (pure ()))
   atomically (putTMVar inputCell input)
   Transport.setState input Transport.Connecting
   Transport.setState input Transport.Open
@@ -264,14 +355,14 @@ clientClockCases root fixtures = clockCasesFor root ["invalidationWindow"] $ \ti
   count <- newTVarIO 0
   identity <- either (ioError . userError) pure (mkResourceId "clock-resource")
   response <- fixture fixtures "BrowseEventsResult"
-  (client,input) <- inProcessClient time $ \input frame -> do
-    unless (busFrameChannel frame==Channel.channelName Channel.BrowseEventsRequested) (ioError (userError "unexpected client clock request"))
-    atomically (modifyTVar' count (+1))
+  (client, input) <- inProcessClient time $ \input frame -> do
+    unless (busFrameChannel frame == Channel.channelName Channel.BrowseEventsRequested) (ioError (userError "unexpected client clock request"))
+    atomically (modifyTVar' count (+ 1))
     reply input frame Channel.BrowseEventsResult response
   observer <- async (Cache.watch (Browse.events (Client.browse client) identity) (Stream.mapM_ (const (pure ()))))
   stored <- fixture fixtures "StoredEventResponse"
-  let payload=case toJSON stored { storedEventResponseResourceId=Just identity } of Object fields -> BusFramePayload fields; _ -> error "stored event is not an object"
-      action=Transport.receive input (BusFrame (Channel.channelName Channel.MarkAdded) Nothing payload (Just identity))
+  let payload = case toJSON stored {storedEventResponseResourceId = Just identity} of Object fields -> BusFramePayload fields; _ -> error "stored event is not an object"
+      action = Transport.receive input (BusFrame (Channel.channelName Channel.MarkAdded) Nothing payload (Just identity))
   pure (Scenario action (readTVarIO count) (Client.dispose client `finally` cancel observer))
 
 -- | A client's job.pollUntilComplete of one job, naming no interval and no limit, over a transport that answers every
@@ -282,15 +373,15 @@ jobPollClockCases root fixtures = clockCasesFor root ["jobPoll", "jobPollTimeout
   timedOut <- newTVarIO 0
   identity <- either (ioError . userError) pure (mkJobId "polled-job")
   base <- fixture fixtures "JobStatusResponse"
-  let running = JobStatusResult base { jobStatusResponseJobId=identity, jobStatusResponseStatus=JobStatusResponseStatusRunning } mempty
-  (client,_) <- inProcessClient time $ \input frame -> do
-    unless (busFrameChannel frame==Channel.channelName Channel.JobStatusRequested) (ioError (userError "unexpected job poll request"))
-    atomically (modifyTVar' asks (+1))
+  let running = JobStatusResult base {jobStatusResponseJobId = identity, jobStatusResponseStatus = JobStatusResponseStatusRunning} mempty
+  (client, _) <- inProcessClient time $ \input frame -> do
+    unless (busFrameChannel frame == Channel.channelName Channel.JobStatusRequested) (ioError (userError "unexpected job poll request"))
+    atomically (modifyTVar' asks (+ 1))
     reply input frame Channel.JobStatusResult running
   poller <- async $ do
     outcome <- try (Job.pollUntilComplete (Client.job client) identity (Job.PollOptions Nothing Nothing (const (pure ()))))
     case outcome of
-      Left failure | busRequestErrorCode failure == Code.BusRequestTimeout -> atomically (modifyTVar' timedOut (+1))
+      Left failure | busRequestErrorCode failure == Code.BusRequestTimeout -> atomically (modifyTVar' timedOut (+ 1))
       Left failure -> throwIO failure
       Right _ -> ioError (userError "the poll of a running job ended")
   let counter = if member "subject" row == String "jobPoll" then asks else timedOut

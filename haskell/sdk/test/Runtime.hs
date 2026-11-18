@@ -4,24 +4,24 @@ module Runtime (runtimeCases) where
 
 import Control.Concurrent.Async (async, cancel, wait, waitCatch)
 import Control.Concurrent.STM
-import Control.Exception (Exception, SomeException, SomeAsyncException, AsyncException(UserInterrupt), IOException, finally, fromException, throwIO, try)
+import Control.Exception (AsyncException (UserInterrupt), Exception, IOException, SomeAsyncException, SomeException, finally, fromException, throwIO, try)
 import Control.Monad (forM_, unless)
-import qualified Data.ByteString as Bytes
-import qualified Data.Aeson.KeyMap as KM
+import Data.Aeson.KeyMap qualified as KM
+import Data.ByteString qualified as Bytes
 import Data.List (mapAccumL)
+import Data.Set qualified as Set
 import Data.Text.Encoding (encodeUtf8)
-import qualified Data.Set as Set
-import qualified Xynolog.Channels as Channels
-import qualified Xynolog.Internal.Broadcast as Broadcast
-import qualified Xynolog.Internal.Delivery as Delivery
-import qualified Xynolog.Internal.Running as Running
-import qualified Xynolog.Retry as Retry
-import qualified Xynolog.Timing as Timing
-import Xynolog.Internal.Sse
-import Xynolog.Types (BusFrame(..), BusFramePayload(..))
+import Streaming (Of (..))
+import Streaming.Prelude qualified as Stream
 import System.Timeout (timeout)
-import Streaming (Of(..))
-import qualified Streaming.Prelude as Stream
+import Xynolog.Channels qualified as Channels
+import Xynolog.Internal.Broadcast qualified as Broadcast
+import Xynolog.Internal.Delivery qualified as Delivery
+import Xynolog.Internal.Running qualified as Running
+import Xynolog.Internal.Sse
+import Xynolog.Retry qualified as Retry
+import Xynolog.Timing qualified as Timing
+import Xynolog.Types (BusFrame (..), BusFramePayload (..))
 
 require :: String -> Bool -> IO ()
 require label good = unless good (ioError (userError label))
@@ -30,11 +30,11 @@ sseCases :: IO ()
 sseCases = do
   let wire = encodeUtf8 "\xfeff:comment\r\nid: evt-1\revent: update\rdata: α\ndata: β\r\n\r\ndata: second\n\nretry: 0015\nretry: no\nid:\ndata:\n\nid: bad\0id\ndata: last\n\n"
       expected =
-        [ Message (Event "update" (Just "evt-1") "evt-1" "α\nβ")
-        , Message (Event "message" Nothing "evt-1" "second")
-        , RetryAfterMs 15
-        , Message (Event "message" (Just "") "" "")
-        , Message (Event "message" Nothing "" "last")
+        [ Message (Event "update" (Just "evt-1") "evt-1" "α\nβ"),
+          Message (Event "message" Nothing "evt-1" "second"),
+          RetryAfterMs 15,
+          Message (Event "message" (Just "") "" ""),
+          Message (Event "message" Nothing "" "last")
         ]
       parse chunks = concat (snd (mapAccumL feed newParser chunks))
   forM_ [0 .. Bytes.length wire] $ \index ->
@@ -43,7 +43,7 @@ sseCases = do
   require "SSE ended a partial event at EOF" (null (parse ["data: incomplete\n"]))
   require "SSE removed more than one leading space" (parse ["data:  value\n\n"] == [Message (Event "message" Nothing "" " value")])
   require "SSE refused a field without a colon" (parse ["data\n\n"] == [Message (Event "message" Nothing "" "")])
-  require "SSE did not replace malformed UTF-8" (parse [Bytes.pack [100,97,116,97,58,32,255,10,10]] == [Message (Event "message" Nothing "" "\xfffd")])
+  require "SSE did not replace malformed UTF-8" (parse [Bytes.pack [100, 97, 116, 97, 58, 32, 255, 10, 10]] == [Message (Event "message" Nothing "" "\xfffd")])
 
 broadcastCases :: IO ()
 broadcastCases = do
@@ -94,7 +94,7 @@ broadcastCases = do
   -- within the transaction that publishes it, until it is stopped.
   kept <- atomically Broadcast.newKeptEvents
   handed <- newTVarIO []
-  let hand value = modifyTVar' handed (<>[value :: Int])
+  let hand value = modifyTVar' handed (<> [value :: Int])
   stopRelay <- atomically (Broadcast.publish kept 1 >> Broadcast.relay kept hand)
   withinPublishing <- atomically (Broadcast.publish kept 2 >> readTVar handed)
   atomically (stopRelay >> Broadcast.publish kept 3)
@@ -126,11 +126,18 @@ runningCases = do
   value <- Running.await awaited
   require "await did not return the terminal value" value
   failed <- Running.newRunning (\report -> report 'x' >> throwIO (userError "operation failed"))
-  failure <- try (Running.withReports failed (\stream -> do
-    first <- Stream.next stream
-    case first of
-      Right ('x', rest) -> Stream.effects rest
-      _ -> ioError (userError "failure lost its prior report"))) :: IO (Either IOException ())
+  failure <-
+    try
+      ( Running.withReports
+          failed
+          ( \stream -> do
+              first <- Stream.next stream
+              case first of
+                Right ('x', rest) -> Stream.effects rest
+                _ -> ioError (userError "failure lost its prior report")
+          )
+      ) ::
+      IO (Either IOException ())
   require "producer failure was swallowed" $ case failure of Left exception -> show exception == "user error (operation failed)"; Right _ -> False
   entered <- newEmptyTMVarIO
   released <- newEmptyTMVarIO
@@ -164,20 +171,20 @@ runningCases = do
 deliveryCases :: IO ()
 deliveryCases = do
   tapped <- atomically (Delivery.newHub (const "channel"))
-  mutations <- newTVarIO (0::Int)
-  release <- Delivery.onFrameSTM tapped (\_ -> modifyTVar' mutations (+1))
+  mutations <- newTVarIO (0 :: Int)
+  release <- Delivery.onFrameSTM tapped (\_ -> modifyTVar' mutations (+ 1))
   atomically (Delivery.publish tapped ())
-  readTVarIO mutations >>= require "frame effect depended on a raw observer" . (==1)
+  readTVarIO mutations >>= require "frame effect depended on a raw observer" . (== 1)
   release
   release
   atomically (Delivery.publish tapped ())
-  readTVarIO mutations >>= require "a detached frame effect ran again" . (==1)
-  _ <- Delivery.onFrameSTM tapped (\_ -> modifyTVar' mutations (+1))
+  readTVarIO mutations >>= require "a detached frame effect ran again" . (== 1)
+  _ <- Delivery.onFrameSTM tapped (\_ -> modifyTVar' mutations (+ 1))
   atomically (Delivery.closeHub tapped >> Delivery.publish tapped ())
-  late <- Delivery.onFrameSTM tapped (\_ -> modifyTVar' mutations (+1))
+  late <- Delivery.onFrameSTM tapped (\_ -> modifyTVar' mutations (+ 1))
   atomically (Delivery.publish tapped ())
   late
-  readTVarIO mutations >>= require "a closed frame hub retained an effect" . (==1)
+  readTVarIO mutations >>= require "a closed frame hub retained an effect" . (== 1)
   wire <- atomically (Delivery.newHub busFrameChannel)
   local <- atomically (Delivery.newHub busFrameChannel)
   replies <- atomically (Delivery.newReplies busFrameChannel busFrameCorrelationId)
@@ -185,7 +192,7 @@ deliveryCases = do
       resultName = Channels.channelName resultChannel
       replyChannels = Set.fromList [resultName, Channels.channelName failureChannel]
       reply = BusFrame resultName (Just "request-1") (BusFramePayload KM.empty) Nothing
-      signal = reply { busFrameCorrelationId = Nothing }
+      signal = reply {busFrameCorrelationId = Nothing}
   Delivery.withFrames wire resultName $ \wireFrames -> Delivery.withFrames local resultName $ \localFrames ->
     Delivery.withReply replies "request-1" replyChannels $ \pending -> do
       ids <- atomically (Delivery.awaited replies)
@@ -201,7 +208,7 @@ deliveryCases = do
         atomically (Delivery.publish local signal)
       atomically $ do
         Delivery.deliver [wire, local] replies reply
-        Delivery.deliver [wire, local] replies (reply { busFrameChannel = Channels.channelName Channels.BeckonFocus })
+        Delivery.deliver [wire, local] replies (reply {busFrameChannel = Channels.channelName Channels.BeckonFocus})
       wait continuation
       detach
       atomically (Delivery.closeHub wire >> Delivery.closeHub local)
@@ -212,7 +219,7 @@ deliveryCases = do
       idsAfter <- atomically (Delivery.awaited replies)
       require "settled reply remained tracked" (null idsAfter)
   Delivery.withReply replies "wrong-channel" replyChannels $ \pending -> do
-    atomically (Delivery.deliver [] replies (reply { busFrameCorrelationId = Just "wrong-channel", busFrameChannel = Channels.channelName Channels.BeckonFocus }))
+    atomically (Delivery.deliver [] replies (reply {busFrameCorrelationId = Just "wrong-channel", busFrameChannel = Channels.channelName Channels.BeckonFocus}))
     unanswered <- atomically ((Just <$> Delivery.awaitReply pending) `orElse` pure Nothing)
     require "an unrelated channel settled a request" (unanswered == Nothing)
   abandoned <- atomically (Delivery.awaited replies)
@@ -237,6 +244,7 @@ deliveryCases = do
     require "a reader attached to a closed hub did not end" (outcome == Nothing)
 
 data RetryProbeFailure = RetryProbeFailure deriving (Eq, Show)
+
 instance Exception RetryProbeFailure
 
 retryRuntimeCases :: IO ()
@@ -245,13 +253,14 @@ retryRuntimeCases = do
   waits <- newTQueueIO
   attempts <- newTVarIO (0 :: Integer)
   let budget = Timing.emitRetry
-      options = Retry.RetryOptions
-        { Retry.retryNow = readTVarIO clock
-        , Retry.retryWaitUntil = \deadline -> do
-            atomically (writeTQueue waits deadline)
-            atomically (readTVar clock >>= check . (>= deadline))
-        , Retry.retryRandom = pure 0
-        }
+      options =
+        Retry.RetryOptions
+          { Retry.retryNow = readTVarIO clock,
+            Retry.retryWaitUntil = \deadline -> do
+              atomically (writeTQueue waits deadline)
+              atomically (readTVar clock >>= check . (>= deadline)),
+            Retry.retryRandom = pure 0
+          }
       accepts :: RetryProbeFailure -> Bool
       accepts _ = True
       action = atomically (modifyTVar' attempts (+ 1)) >> throwIO RetryProbeFailure
@@ -264,14 +273,16 @@ retryRuntimeCases = do
         counted <- readTVarIO attempts
         require "retry ran before its caller-controlled deadline" (counted == made)
         atomically (writeTVar clock deadline)
-        if made + 1 >= Timing.retryAttempts budget then pure () else
-          checkWait (made + 1) (min (Timing.retryMaxDelayMs budget) (cap * 2))
+        if made + 1 >= Timing.retryAttempts budget
+          then pure ()
+          else
+            checkWait (made + 1) (min (Timing.retryMaxDelayMs budget) (cap * 2))
   checkWait 1 (Timing.retryInitialDelayMs budget)
   exhausted <- wait working
   counted <- readTVarIO attempts
   require "retry lost the last failure or exceeded its budget" (exhausted == Left RetryProbeFailure && counted == Timing.retryAttempts budget)
   atomically (writeTVar attempts 0)
-  let advancing = options { Retry.retryWaitUntil = \deadline -> atomically (writeTQueue waits deadline >> writeTVar clock deadline) }
+  let advancing = options {Retry.retryWaitUntil = \deadline -> atomically (writeTQueue waits deadline >> writeTVar clock deadline)}
   beforeStated <- readTVarIO clock
   answer <- Retry.retryWithBackoff advancing budget accepts (const (Just 5000)) $ do
     made <- atomically (modifyTVar' attempts (+ 1) >> readTVar attempts)
@@ -281,12 +292,20 @@ retryRuntimeCases = do
   atomically (writeTVar attempts 0)
   let acceptsAny :: SomeException -> Bool
       acceptsAny _ = True
-  interrupted <- try (Retry.retryWithBackoff advancing budget acceptsAny (const Nothing)
-    (atomically (modifyTVar' attempts (+ 1)) >> throwIO UserInterrupt)) :: IO (Either AsyncException ())
+  interrupted <-
+    try
+      ( Retry.retryWithBackoff
+          advancing
+          budget
+          acceptsAny
+          (const Nothing)
+          (atomically (modifyTVar' attempts (+ 1)) >> throwIO UserInterrupt)
+      ) ::
+      IO (Either AsyncException ())
   countedInterrupt <- readTVarIO attempts
   require "retry treated an asynchronous exception as a request failure" (interrupted == Left UserInterrupt && countedInterrupt == 1)
   ready <- newEmptyTMVarIO
-  let parked = options { Retry.retryWaitUntil = \_ -> atomically (putTMVar ready ()) >> atomically retry }
+  let parked = options {Retry.retryWaitUntil = \_ -> atomically (putTMVar ready ()) >> atomically retry}
   cancelled <- async (Retry.retryWithBackoff parked budget accepts (const Nothing) action :: IO ())
   atomically (takeTMVar ready)
   cancel cancelled
@@ -294,7 +313,7 @@ retryRuntimeCases = do
   require "retry swallowed cancellation of its wait" $ case cancelledOutcome of
     Left exception -> case fromException exception :: Maybe SomeAsyncException of Just _ -> True; Nothing -> False
     Right _ -> False
-  invalid <- try (Retry.retryWithBackoff options (budget { Timing.retryAttempts = 0 }) accepts (const Nothing) action) :: IO (Either Retry.RetryConfigurationError ())
+  invalid <- try (Retry.retryWithBackoff options (budget {Timing.retryAttempts = 0}) accepts (const Nothing) action) :: IO (Either Retry.RetryConfigurationError ())
   require "invalid retry budget was accepted" (invalid == Left Retry.InvalidRetryBudget)
 
 runtimeCases :: IO ()
