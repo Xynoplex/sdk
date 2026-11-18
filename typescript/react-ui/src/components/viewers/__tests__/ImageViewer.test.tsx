@@ -28,7 +28,7 @@ describe('ImageViewer', () => {
 
   it('should use custom alt text when provided', () => {
     renderWithProviders(
-      <ImageViewer {...defaultProps} alt="A beautiful diagram" />
+      <ImageViewer {...defaultProps} alt="A beautiful diagram" />,
     );
 
     const img = screen.getByRole('img');
@@ -36,10 +36,16 @@ describe('ImageViewer', () => {
   });
 
   it('should render with correct class names', () => {
-    const { container } = renderWithProviders(<ImageViewer {...defaultProps} />);
+    const { container } = renderWithProviders(
+      <ImageViewer {...defaultProps} />,
+    );
 
-    expect(container.querySelector('.xynolog-image-viewer')).toBeInTheDocument();
-    expect(container.querySelector('.xynolog-image-viewer__image')).toBeInTheDocument();
+    expect(
+      container.querySelector('.xynolog-image-viewer'),
+    ).toBeInTheDocument();
+    expect(
+      container.querySelector('.xynolog-image-viewer__image'),
+    ).toBeInTheDocument();
   });
 
   it('should set imageRendering style to auto', () => {

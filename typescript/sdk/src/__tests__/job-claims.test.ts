@@ -14,15 +14,53 @@
  */
 
 import { readFileSync } from 'node:fs';
-import { afterAll, beforeAll, describe, it, expect, expectTypeOf, beforeEach, vi } from 'vitest';
+import {
+  afterAll,
+  beforeAll,
+  describe,
+  it,
+  expect,
+  expectTypeOf,
+  beforeEach,
+  vi,
+} from 'vitest';
 import { BehaviorSubject, map } from 'rxjs';
-import { ROOT_CONTEXT, context, propagation, trace as otelTrace } from '@opentelemetry/api';
+import {
+  ROOT_CONTEXT,
+  context,
+  propagation,
+  trace as otelTrace,
+} from '@opentelemetry/api';
 import { AsyncLocalStorageContextManager } from '@opentelemetry/context-async-hooks';
 import { W3CTraceContextPropagator } from '@opentelemetry/core';
 import { getActiveTraceparent, withTraceparent } from '@xynolog/observability';
 import type { Annotation, BusPrimitive } from '@xynolog/core';
-import { BusRequestError, ERRORS_KEPT_FOR_FIRST_READER_COUNT, EventBus, FrameRefusal, type BusEnvelope, type ConnectionState, type EventMap, annotationId, jobId as makeJobId, userId, resourceId } from '@xynolog/core';
-import { ClaimsObservable, JOB_CLAIM_CHANNELS, JOB_COMMIT_CHANNELS, willRetryAfter, type ClaimOptions, type ClaimRefusal, type HeldJob, type HeldJobStall, type HeldMarkJob, type HeldYieldJob, type JobFailure } from '../claims';
+import {
+  BusRequestError,
+  ERRORS_KEPT_FOR_FIRST_READER_COUNT,
+  EventBus,
+  FrameRefusal,
+  type BusEnvelope,
+  type ConnectionState,
+  type EventMap,
+  annotationId,
+  jobId as makeJobId,
+  userId,
+  resourceId,
+} from '@xynolog/core';
+import {
+  ClaimsObservable,
+  JOB_CLAIM_CHANNELS,
+  JOB_COMMIT_CHANNELS,
+  willRetryAfter,
+  type ClaimOptions,
+  type ClaimRefusal,
+  type HeldJob,
+  type HeldJobStall,
+  type HeldMarkJob,
+  type HeldYieldJob,
+  type JobFailure,
+} from '../claims';
 
 /** The job a `job:claimed` reply carries: running, under the claimant. */
 type ClaimedJob = EventMap['job:claimed']['response'];
@@ -35,12 +73,19 @@ const annotation = (id: string): Annotation => ({
   type: 'Annotation',
   id: annotationId(id),
   motivation: 'highlighting',
-  target: { source: resourceId('res-1'), selector: { type: 'TextQuoteSelector', exact: `the words of ${id}` } },
+  target: {
+    source: resourceId('res-1'),
+    selector: { type: 'TextQuoteSelector', exact: `the words of ${id}` },
+  },
   created: '2026-01-01T00:00:00.000Z',
 });
 
 /** A running job as the dispatcher returns one from a claim, its metadata overridden by `metadata`. */
-function runningJob(id: string, metadata: Partial<ClaimedJob['metadata']> = {}, params: Record<string, unknown> = {}): ClaimedJob {
+function runningJob(
+  id: string,
+  metadata: Partial<ClaimedJob['metadata']> = {},
+  params: Record<string, unknown> = {},
+): ClaimedJob {
   return {
     status: 'running',
     metadata: {
@@ -61,7 +106,14 @@ function runningJob(id: string, metadata: Partial<ClaimedJob['metadata']> = {}, 
 function fakeBus(initialState: ConnectionState = 'open') {
   // A correlated union, so `channel` narrows `payload` at every read site.
   // `trace` is the W3C `traceparent` of the span the emit was made in, when it was made in one.
-  type Emitted = { [K in keyof EventMap]: { channel: K; payload: EventMap[K]; envelope: BusEnvelope | undefined; trace: string | undefined } }[keyof EventMap];
+  type Emitted = {
+    [K in keyof EventMap]: {
+      channel: K;
+      payload: EventMap[K];
+      envelope: BusEnvelope | undefined;
+      trace: string | undefined;
+    };
+  }[keyof EventMap];
   const emits: Emitted[] = [];
   const eventBus = new EventBus();
   const state$ = new BehaviorSubject<ConnectionState>(initialState);
@@ -77,46 +129,103 @@ function fakeBus(initialState: ConnectionState = 'open') {
    * answers on the next tick, at the request's correlation id. As it starts
    * it answers neither, and a case answers by hand.
    */
-  const record: { commit: 'acknowledged' | 'refused' | 'unanswered'; question: 'there' | 'not-there' | 'unanswered' } = { commit: 'unanswered', question: 'unanswered' };
+  const record: {
+    commit: 'acknowledged' | 'refused' | 'unanswered';
+    question: 'there' | 'not-there' | 'unanswered';
+  } = { commit: 'unanswered', question: 'unanswered' };
 
   const bus: BusPrimitive = {
-    stream: <K extends keyof EventMap>(channel: K) => eventBus.frames(channel).pipe(map((frame) => frame.payload)),
+    stream: <K extends keyof EventMap>(channel: K) =>
+      eventBus.frames(channel).pipe(map((frame) => frame.payload)),
     frames: <K extends keyof EventMap>(channel: K) => eventBus.frames(channel),
     isSubscribed: (channel) => !unnamed.has(channel),
     trackReply: () => () => {},
     subscribeToResource: () => () => {},
     state$,
-    emit: vi.fn(async <K extends keyof EventMap>(channel: K, payload: EventMap[K], envelope?: BusEnvelope) => {
-      // The pair is this call's own two arguments; the assertion is what buys
-      // narrowing at every read site.
-      const emitted = { channel, payload, envelope, trace: getActiveTraceparent()?.traceparent } as Emitted;
-      emits.push(emitted);
-      if (failing.has(channel)) throw thrown.get(channel) ?? new Error(`the gateway did not take ${channel}`);
-      const correlationId = envelope?.correlationId;
-      if (emitted.channel === 'mark:commit' && record.commit !== 'unanswered') {
-        const ids = emitted.payload.annotations.map((committed) => committed.id);
-        const acknowledged = record.commit === 'acknowledged';
-        queueMicrotask(() => {
-          if (acknowledged) eventBus.emit('mark:commit-ok', { response: { persisted: ids.length, annotationIds: ids } }, { correlationId });
-          else eventBus.emit('mark:commit-failed', { message: 'the record could not append' }, { correlationId });
-        });
-      }
-      if (emitted.channel === 'browse:annotation-requested' && record.question !== 'unanswered') {
-        const asked = emitted.payload.annotationId;
-        const there = record.question === 'there';
-        queueMicrotask(() => {
-          if (there) eventBus.emit('browse:annotation-result', { response: { annotation: annotation(asked), resource: null, resolvedResource: null } }, { correlationId });
-          else eventBus.emit('browse:annotation-failed', { message: 'Annotation not found' }, { correlationId });
-        });
-      }
-      return undefined;
-    }),
+    emit: vi.fn(
+      async <K extends keyof EventMap>(
+        channel: K,
+        payload: EventMap[K],
+        envelope?: BusEnvelope,
+      ) => {
+        // The pair is this call's own two arguments; the assertion is what buys
+        // narrowing at every read site.
+        const emitted = {
+          channel,
+          payload,
+          envelope,
+          trace: getActiveTraceparent()?.traceparent,
+        } as Emitted;
+        emits.push(emitted);
+        if (failing.has(channel))
+          throw (
+            thrown.get(channel) ??
+            new Error(`the gateway did not take ${channel}`)
+          );
+        const correlationId = envelope?.correlationId;
+        if (
+          emitted.channel === 'mark:commit' &&
+          record.commit !== 'unanswered'
+        ) {
+          const ids = emitted.payload.annotations.map(
+            (committed) => committed.id,
+          );
+          const acknowledged = record.commit === 'acknowledged';
+          queueMicrotask(() => {
+            if (acknowledged)
+              eventBus.emit(
+                'mark:commit-ok',
+                { response: { persisted: ids.length, annotationIds: ids } },
+                { correlationId },
+              );
+            else
+              eventBus.emit(
+                'mark:commit-failed',
+                { message: 'the record could not append' },
+                { correlationId },
+              );
+          });
+        }
+        if (
+          emitted.channel === 'browse:annotation-requested' &&
+          record.question !== 'unanswered'
+        ) {
+          const asked = emitted.payload.annotationId;
+          const there = record.question === 'there';
+          queueMicrotask(() => {
+            if (there)
+              eventBus.emit(
+                'browse:annotation-result',
+                {
+                  response: {
+                    annotation: annotation(asked),
+                    resource: null,
+                    resolvedResource: null,
+                  },
+                },
+                { correlationId },
+              );
+            else
+              eventBus.emit(
+                'browse:annotation-failed',
+                { message: 'Annotation not found' },
+                { correlationId },
+              );
+          });
+        }
+        return undefined;
+      },
+    ),
   };
 
   const claims = () => emits.filter((e) => e.channel === 'job:claim');
   const cid = (i: number) => claims()[i]!.envelope?.correlationId;
-  const commits = () => emits.flatMap((e) => (e.channel === 'mark:commit' ? [e] : []));
-  const questions = () => emits.flatMap((e) => (e.channel === 'browse:annotation-requested' ? [e] : []));
+  const commits = () =>
+    emits.flatMap((e) => (e.channel === 'mark:commit' ? [e] : []));
+  const questions = () =>
+    emits.flatMap((e) =>
+      e.channel === 'browse:annotation-requested' ? [e] : [],
+    );
 
   return {
     bus,
@@ -125,23 +234,35 @@ function fakeBus(initialState: ConnectionState = 'open') {
     thrown,
     unnamed,
     record,
-    pushEvent: <K extends keyof EventMap>(channel: K, payload: EventMap[K], correlationId?: string) =>
-      eventBus.emit(channel, payload, { correlationId }),
+    pushEvent: <K extends keyof EventMap>(
+      channel: K,
+      payload: EventMap[K],
+      correlationId?: string,
+    ) => eventBus.emit(channel, payload, { correlationId }),
     /** A frame on `channel` its transport refused, its payload no object, in its place. */
     pushRefused: (channel: keyof EventMap) =>
-      eventBus.emit(channel, new FrameRefusal(channel, 'payload', 'malformed', 'j', undefined)),
+      eventBus.emit(
+        channel,
+        new FrameRefusal(channel, 'payload', 'malformed', 'j', undefined),
+      ),
     /** Every `job:claim` emitted so far, in order. */
     claims,
     claimAt: (i: number): EventMap['job:claim'] => {
       const e = claims()[i];
-      if (!e) throw new Error(`no job:claim at index ${i} (${claims().length} emitted)`);
+      if (!e)
+        throw new Error(
+          `no job:claim at index ${i} (${claims().length} emitted)`,
+        );
       return e.payload as EventMap['job:claim'];
     },
     claimCidAt: cid,
     /** The trace claim `i` was made in: undefined for one made in none. */
     claimTraceAt: (i: number): string | undefined => {
       const e = claims()[i];
-      if (!e) throw new Error(`no job:claim at index ${i} (${claims().length} emitted)`);
+      if (!e)
+        throw new Error(
+          `no job:claim at index ${i} (${claims().length} emitted)`,
+        );
       return e.trace;
     },
     /** Every `mark:commit` sent so far, in order. */
@@ -149,23 +270,57 @@ function fakeBus(initialState: ConnectionState = 'open') {
     /** Every `browse:annotation-requested` sent so far, in order: what an unacknowledged commit asks. */
     questions,
     /** Everything said that is not a request: the lifecycle, in order. */
-    said: () => emits.filter((e) => e.channel !== 'job:claim' && e.channel !== 'mark:commit' && e.channel !== 'browse:annotation-requested'),
+    said: () =>
+      emits.filter(
+        (e) =>
+          e.channel !== 'job:claim' &&
+          e.channel !== 'mark:commit' &&
+          e.channel !== 'browse:annotation-requested',
+      ),
     /** Answer claim `i` with a running job. */
-    grant: (i: number, id: string, metadata: Partial<ClaimedJob['metadata']> = {}, params: Record<string, unknown> = {}) =>
-      eventBus.emit('job:claimed', { response: runningJob(id, metadata, params) }, { correlationId: cid(i) }),
+    grant: (
+      i: number,
+      id: string,
+      metadata: Partial<ClaimedJob['metadata']> = {},
+      params: Record<string, unknown> = {},
+    ) =>
+      eventBus.emit(
+        'job:claimed',
+        { response: runningJob(id, metadata, params) },
+        { correlationId: cid(i) },
+      ),
     /** Answer claim `i` with the dispatcher's decline: nothing pending. */
     decline: (i: number) =>
-      eventBus.emit('job:claim-failed', { message: 'No pending job of the requested types', code: 'none-pending' }, { correlationId: cid(i) }),
+      eventBus.emit(
+        'job:claim-failed',
+        {
+          message: 'No pending job of the requested types',
+          code: 'none-pending',
+        },
+        { correlationId: cid(i) },
+      ),
     /** Answer claim `i` with a refusal carrying `code` (or none). */
-    refuse: (i: number, code?: EventMap['job:claim-failed']['code'], message = 'refused') =>
-      eventBus.emit('job:claim-failed', code ? { message, code } : { message }, { correlationId: cid(i) }),
+    refuse: (
+      i: number,
+      code?: EventMap['job:claim-failed']['code'],
+      message = 'refused',
+    ) =>
+      eventBus.emit(
+        'job:claim-failed',
+        code ? { message, code } : { message },
+        { correlationId: cid(i) },
+      ),
     /**
      * Answer claim `i` with a `job:claimed` that is not a claimed job. The
      * channel's type forbids exactly this, which is the point of the case, so
      * this is the one place a reply is asserted to be what it is not.
      */
     grantMalformed: (i: number, response: unknown) =>
-      eventBus.emit('job:claimed', { response: response as ClaimedJob }, { correlationId: cid(i) }),
+      eventBus.emit(
+        'job:claimed',
+        { response: response as ClaimedJob },
+        { correlationId: cid(i) },
+      ),
   };
 }
 
@@ -173,33 +328,97 @@ const tick = () => new Promise((r) => setTimeout(r, 0));
 const after = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 type JobFilter = EventMap['job:claim']['accepts'][number];
-type Motivation = Extract<JobFilter, { jobType: 'mark' }>['params']['motivation'];
+type Motivation = Extract<
+  JobFilter,
+  { jobType: 'mark' }
+>['params']['motivation'];
 const YIELD: JobFilter = { jobType: 'yield' };
-const mark = (motivation: Motivation): JobFilter => ({ jobType: 'mark', params: { motivation } });
+const mark = (motivation: Motivation): JobFilter => ({
+  jobType: 'mark',
+  params: { motivation },
+});
 /** A worker that takes every job: one filter for each. */
-const EVERYTHING: JobFilter[] = [YIELD, mark('highlighting'), mark('commenting'), mark('assessing'), mark('linking'), mark('tagging')];
+const EVERYTHING: JobFilter[] = [
+  YIELD,
+  mark('highlighting'),
+  mark('commenting'),
+  mark('assessing'),
+  mark('linking'),
+  mark('tagging'),
+];
 
 /** An announcement: the job description less its input, as the dispatcher sends one. */
-const queued = (what: 'yield' | Motivation, jobId = 'j'): EventMap['job:queued'] => {
-  const about = { jobId: makeJobId(jobId), resourceId: resourceId('r1'), userId: userId('did:u1') };
+const queued = (
+  what: 'yield' | Motivation,
+  jobId = 'j',
+): EventMap['job:queued'] => {
+  const about = {
+    jobId: makeJobId(jobId),
+    resourceId: resourceId('r1'),
+    userId: userId('did:u1'),
+  };
   return what === 'yield'
-    ? { ...about, jobType: 'yield', params: { title: 'Ouranos', storageUri: 'file://generated/ouranos.md' } }
-    : { ...about, jobType: 'mark', params: what === 'tagging' ? { motivation: what, schemaId: 'irac', categories: ['Issue'] }
-      : what === 'linking' ? { motivation: what, entityTypes: ['Person'] } : { motivation: what } };
+    ? {
+        ...about,
+        jobType: 'yield',
+        params: { title: 'Ouranos', storageUri: 'file://generated/ouranos.md' },
+      }
+    : {
+        ...about,
+        jobType: 'mark',
+        params:
+          what === 'tagging'
+            ? { motivation: what, schemaId: 'irac', categories: ['Issue'] }
+            : what === 'linking'
+              ? { motivation: what, entityTypes: ['Person'] }
+              : { motivation: what },
+      };
 };
 
 /** Read a worker's claims, keeping what it comes to hold and what it is told beside that. */
-function reading(h: ReturnType<typeof fakeBus>, options: Partial<ClaimOptions> = {}) {
-  const claims = new ClaimsObservable(h.bus, { accepts: EVERYTHING, ...options });
+function reading(
+  h: ReturnType<typeof fakeBus>,
+  options: Partial<ClaimOptions> = {},
+) {
+  const claims = new ClaimsObservable(h.bus, {
+    accepts: EVERYTHING,
+    ...options,
+  });
   const held: HeldJob[] = [];
   const refusals: ClaimRefusal[] = [];
   const stalls: HeldJobStall[] = [];
   const ended = { claims: false, refused: false, stalled: false };
   let failure: unknown;
-  claims.refused$.subscribe({ next: (r) => refusals.push(r), complete: () => { ended.refused = true; } });
-  claims.stalled$.subscribe({ next: (s) => stalls.push(s), complete: () => { ended.stalled = true; } });
-  const subscription = claims.subscribe({ next: (job) => held.push(job), error: (e) => { failure = e; }, complete: () => { ended.claims = true; } });
-  return { claims, held, refusals, stalls, ended, subscription, failure: () => failure };
+  claims.refused$.subscribe({
+    next: (r) => refusals.push(r),
+    complete: () => {
+      ended.refused = true;
+    },
+  });
+  claims.stalled$.subscribe({
+    next: (s) => stalls.push(s),
+    complete: () => {
+      ended.stalled = true;
+    },
+  });
+  const subscription = claims.subscribe({
+    next: (job) => held.push(job),
+    error: (e) => {
+      failure = e;
+    },
+    complete: () => {
+      ended.claims = true;
+    },
+  });
+  return {
+    claims,
+    held,
+    refusals,
+    stalls,
+    ended,
+    subscription,
+    failure: () => failure,
+  };
 }
 
 /** Complete a held `mark` job that found nothing. A completion is its verb's, so the verb is narrowed first. */
@@ -216,14 +435,33 @@ const QUICK_COMMIT = { markCommitTimeoutMs: 20 };
  * `how`. Resolves with nothing when the commit is established, and with what
  * it rejected with when it is not.
  */
-function commitObserving(h: ReturnType<typeof fakeBus>, job: HeldJob, how: Durability, id = 'ann-1'): Promise<unknown> {
+function commitObserving(
+  h: ReturnType<typeof fakeBus>,
+  job: HeldJob,
+  how: Durability,
+  id = 'ann-1',
+): Promise<unknown> {
   h.record.commit = how === 'acknowledged' ? 'acknowledged' : 'unanswered';
-  h.record.question = how === 'probe-confirmed' ? 'there' : how === 'probe-refused' ? 'not-there' : 'unanswered';
-  return job.commit(resourceId('res-1'), [annotation(id)]).then(() => undefined, (error: unknown) => error);
+  h.record.question =
+    how === 'probe-confirmed'
+      ? 'there'
+      : how === 'probe-refused'
+        ? 'not-there'
+        : 'unanswered';
+  return job.commit(resourceId('res-1'), [annotation(id)]).then(
+    () => undefined,
+    (error: unknown) => error,
+  );
 }
 
 /** Read, and be granted the first claim: the worker holds `id`. */
-async function holding(h: ReturnType<typeof fakeBus>, id = 'j1', metadata: Partial<ClaimedJob['metadata']> = {}, params: Record<string, unknown> = {}, options: Partial<ClaimOptions> = {}) {
+async function holding(
+  h: ReturnType<typeof fakeBus>,
+  id = 'j1',
+  metadata: Partial<ClaimedJob['metadata']> = {},
+  params: Record<string, unknown> = {},
+  options: Partial<ClaimOptions> = {},
+) {
   const r = reading(h, options);
   h.grant(0, id, metadata, params);
   await tick();
@@ -257,7 +495,10 @@ describe('job.claim — a worker claims when it becomes idle, and at no other ti
   it('waits for the stream to open before the first claim', () => {
     const closed = fakeBus('connecting');
     const r = reading(closed);
-    expect(closed.claims(), 'a claim on a closed stream would only be refused here').toHaveLength(0);
+    expect(
+      closed.claims(),
+      'a claim on a closed stream would only be refused here',
+    ).toHaveLength(0);
 
     closed.state$.next('open');
     expect(closed.claims()).toHaveLength(1);
@@ -298,9 +539,14 @@ describe('job.claim — a worker claims when it becomes idle, and at no other ti
     await tick();
 
     h.pushEvent('job:queued', queued('yield'));
-    expect(h.claims(), 'no round trip for a job type this worker does not take').toHaveLength(1);
+    expect(
+      h.claims(),
+      'no round trip for a job type this worker does not take',
+    ).toHaveLength(1);
     h.pushEvent('job:queued', queued('highlighting'));
-    expect(h.claims(), 'nor for a mark job of another motivation').toHaveLength(1);
+    expect(h.claims(), 'nor for a mark job of another motivation').toHaveLength(
+      1,
+    );
 
     h.pushEvent('job:queued', queued('tagging'));
     expect(h.claims()).toHaveLength(2);
@@ -316,7 +562,10 @@ describe('job.claim — a worker claims when it becomes idle, and at no other ti
     expect(h.claims(), 'no claim while holding a job').toHaveLength(1);
 
     await finish(r.job);
-    expect(h.claims(), 'the settle asks; the announcement needed no memory').toHaveLength(2);
+    expect(
+      h.claims(),
+      'the settle asks; the announcement needed no memory',
+    ).toHaveLength(2);
 
     r.subscription.unsubscribe();
   });
@@ -336,7 +585,9 @@ describe('job.claim — a worker claims when it becomes idle, and at no other ti
 
     h.decline(1);
     await tick();
-    expect(h.claims(), 'then nothing until the next idle moment').toHaveLength(2);
+    expect(h.claims(), 'then nothing until the next idle moment').toHaveLength(
+      2,
+    );
 
     r.subscription.unsubscribe();
   });
@@ -346,7 +597,9 @@ describe('job.claim — a worker claims when it becomes idle, and at no other ti
     expect(h.claims()).toHaveLength(1);
 
     h.pushRefused('job:queued');
-    expect(h.claims(), 'a claim is in flight: one more is owed').toHaveLength(1);
+    expect(h.claims(), 'a claim is in flight: one more is owed').toHaveLength(
+      1,
+    );
     h.decline(0);
     await tick();
     expect(h.claims(), 'exactly one more').toHaveLength(2);
@@ -385,7 +638,10 @@ describe('job.claim — a worker claims when it becomes idle, and at no other ti
     h.state$.next('reconnecting');
     expect(h.claims(), 'losing the stream claims nothing').toHaveLength(1);
     h.state$.next('open');
-    expect(h.claims(), 'regaining it asks: whatever was queued in the gap is claimable now').toHaveLength(2);
+    expect(
+      h.claims(),
+      'regaining it asks: whatever was queued in the gap is claimable now',
+    ).toHaveLength(2);
 
     h.state$.next('open');
     expect(h.claims(), 'open to open is not an edge').toHaveLength(2);
@@ -395,10 +651,20 @@ describe('job.claim — a worker claims when it becomes idle, and at no other ti
 
   it('an unauthorized claim is reported as such; the worker holds nothing and does not ask again by itself', async () => {
     const r = reading(h);
-    h.refuse(0, 'unauthorized', 'job:claim refused: the caller is not a worker for this knowledge base');
+    h.refuse(
+      0,
+      'unauthorized',
+      'job:claim refused: the caller is not a worker for this knowledge base',
+    );
     await tick();
 
-    expect(r.refusals).toEqual([{ code: 'bus.unauthorized', message: 'job:claim refused: the caller is not a worker for this knowledge base' }]);
+    expect(r.refusals).toEqual([
+      {
+        code: 'bus.unauthorized',
+        message:
+          'job:claim refused: the caller is not a worker for this knowledge base',
+      },
+    ]);
     expect(r.held).toEqual([]);
     expect(h.claims()).toHaveLength(1);
 
@@ -407,10 +673,20 @@ describe('job.claim — a worker claims when it becomes idle, and at no other ti
 
   it('a refusal with no code is reported as bus.rejected', async () => {
     const r = reading(h);
-    h.refuse(0, undefined, 'job:claim: job j9 names no resource to record its assignment under');
+    h.refuse(
+      0,
+      undefined,
+      'job:claim: job j9 names no resource to record its assignment under',
+    );
     await tick();
 
-    expect(r.refusals).toEqual([{ code: 'bus.rejected', message: 'job:claim: job j9 names no resource to record its assignment under' }]);
+    expect(r.refusals).toEqual([
+      {
+        code: 'bus.rejected',
+        message:
+          'job:claim: job j9 names no resource to record its assignment under',
+      },
+    ]);
 
     r.subscription.unsubscribe();
   });
@@ -420,31 +696,60 @@ describe('job.claim — a worker claims when it becomes idle, and at no other ti
   // (a member it lacks, or a job type no verb has) is refused by the request
   // it answers, naming the member.
   const whole = runningJob('j1');
-  const lacking = (way: string) => `a payload on job:claimed is not that channel's: it has no \`${way}\``;
-  const malformed = (way: string) => `a payload on job:claimed is not that channel's: its \`${way}\` is malformed`;
+  const lacking = (way: string) =>
+    `a payload on job:claimed is not that channel's: it has no \`${way}\``;
+  const malformed = (way: string) =>
+    `a payload on job:claimed is not that channel's: its \`${way}\` is malformed`;
   it.each([
     ['nothing', undefined, lacking('response')],
-    ['no metadata', { ...whole, metadata: undefined }, lacking('response.metadata')],
-    ['no job id', { ...whole, metadata: { ...whole.metadata, id: undefined } }, lacking('response.metadata.id')],
-    ['no job type', { ...whole, metadata: { ...whole.metadata, type: undefined } }, lacking('response.metadata.type')],
-    ['a job type that is no verb', { ...whole, metadata: { ...whole.metadata, type: 'weave' } }, malformed('response.metadata.type')],
-    ['no parameters', { ...whole, params: undefined }, lacking('response.params')],
-  ])('a reply that names no job (%s) is refused here, never held, and the next announcement claims', async (_what, response, message) => {
-    const r = reading(h);
-    h.grantMalformed(0, response);
-    await tick();
+    [
+      'no metadata',
+      { ...whole, metadata: undefined },
+      lacking('response.metadata'),
+    ],
+    [
+      'no job id',
+      { ...whole, metadata: { ...whole.metadata, id: undefined } },
+      lacking('response.metadata.id'),
+    ],
+    [
+      'no job type',
+      { ...whole, metadata: { ...whole.metadata, type: undefined } },
+      lacking('response.metadata.type'),
+    ],
+    [
+      'a job type that is no verb',
+      { ...whole, metadata: { ...whole.metadata, type: 'weave' } },
+      malformed('response.metadata.type'),
+    ],
+    [
+      'no parameters',
+      { ...whole, params: undefined },
+      lacking('response.params'),
+    ],
+  ])(
+    'a reply that names no job (%s) is refused here, never held, and the next announcement claims',
+    async (_what, response, message) => {
+      const r = reading(h);
+      h.grantMalformed(0, response);
+      await tick();
 
-    expect(r.refusals, 'reported, as a failure of this worker\'s own and under no bus code').toEqual([
-      { code: null, message },
-    ]);
-    expect(r.held, 'never held, so never run').toEqual([]);
+      expect(
+        r.refusals,
+        "reported, as a failure of this worker's own and under no bus code",
+      ).toEqual([{ code: null, message }]);
+      expect(r.held, 'never held, so never run').toEqual([]);
 
-    h.pushEvent('job:queued', queued('yield'));
-    await tick();
-    expect(h.claims(), 'the worker is not left with a claim in flight').toHaveLength(2);
+      h.pushEvent('job:queued', queued('yield'));
+      await tick();
+      expect(
+        h.claims(),
+        'the worker is not left with a claim in flight',
+      ).toHaveLength(2);
 
-    r.subscription.unsubscribe();
-  });
+      r.subscription.unsubscribe();
+    },
+  );
 
   // WORKER-CONTRACT C10. The table's wait is ten seconds; a caller that must
   // not wait it out states its own, as the transport's callers do.
@@ -461,12 +766,22 @@ describe('job.claim — a worker claims when it becomes idle, and at no other ti
     r.subscription.unsubscribe();
   });
 
-  it('JOB_CLAIM_CHANNELS is what a worker\'s stream names for its claims', () => {
-    expect([...JOB_CLAIM_CHANNELS].sort()).toEqual(['job:cancel-requested', 'job:claim-failed', 'job:claimed', 'job:queued']);
+  it("JOB_CLAIM_CHANNELS is what a worker's stream names for its claims", () => {
+    expect([...JOB_CLAIM_CHANNELS].sort()).toEqual([
+      'job:cancel-requested',
+      'job:claim-failed',
+      'job:claimed',
+      'job:queued',
+    ]);
   });
 
-  it.each(['job:queued', 'job:cancel-requested', 'job:claimed', 'job:claim-failed'] as const)(
-    'a stream that does not name %s cannot carry a worker\'s claims, and reading them fails at once',
+  it.each([
+    'job:queued',
+    'job:cancel-requested',
+    'job:claimed',
+    'job:claim-failed',
+  ] as const)(
+    "a stream that does not name %s cannot carry a worker's claims, and reading them fails at once",
     (channel) => {
       // A worker on such a stream would claim once and never be woken, or
       // never hear a cancellation, with nothing thrown and nothing logged.
@@ -482,7 +797,11 @@ describe('job.claim — a worker claims when it becomes idle, and at no other ti
   it('its claims are read once: a second reader is refused, and the first is not disturbed', async () => {
     const r = reading(h);
     let second: unknown;
-    r.claims.subscribe({ error: (e) => { second = e; } });
+    r.claims.subscribe({
+      error: (e) => {
+        second = e;
+      },
+    });
 
     expect(String(second)).toContain('read once');
     expect(h.claims(), 'one worker, one claim').toHaveLength(1);
@@ -505,7 +824,11 @@ describe('job.claim — a worker claims when it becomes idle, and at no other ti
     h.state$.next('open');
 
     expect(h.claims()).toHaveLength(1);
-    expect(r.ended, 'everything it was read by is told it has ended').toEqual({ claims: true, refused: true, stalled: true });
+    expect(r.ended, 'everything it was read by is told it has ended').toEqual({
+      claims: true,
+      refused: true,
+      stalled: true,
+    });
   });
 
   it('a claim answered after the worker stopped is failed, and not left held by nobody', async () => {
@@ -518,8 +841,20 @@ describe('job.claim — a worker claims when it becomes idle, and at no other ti
     await tick();
 
     expect(r.held).toEqual([]);
-    expect(h.said().map(({ channel, payload }) => ({ channel, payload }))).toEqual([
-      { channel: 'job:fail', payload: { resourceId: 'res-1', jobId: 'j1', jobType: 'mark', attempt: 1, error: 'The worker stopped while it held the job', willRetry: true } },
+    expect(
+      h.said().map(({ channel, payload }) => ({ channel, payload })),
+    ).toEqual([
+      {
+        channel: 'job:fail',
+        payload: {
+          resourceId: 'res-1',
+          jobId: 'j1',
+          jobType: 'mark',
+          attempt: 1,
+          error: 'The worker stopped while it held the job',
+          willRetry: true,
+        },
+      },
     ]);
   });
 
@@ -544,7 +879,12 @@ describe('job.claim — the held job', () => {
   });
 
   it('is the claimed record: its id, its type, its parameters whole, its budget, and no checkpoint on a first attempt', async () => {
-    const { job, subscription } = await holding(h, 'j1', { retryCount: 1, maxRetries: 3 }, { motivation: 'highlighting', foo: 'bar' });
+    const { job, subscription } = await holding(
+      h,
+      'j1',
+      { retryCount: 1, maxRetries: 3 },
+      { motivation: 'highlighting', foo: 'bar' },
+    );
 
     expect(job).toMatchObject({
       jobId: 'j1',
@@ -569,19 +909,42 @@ describe('job.claim — the held job', () => {
   // than the spec types it there: a job's type is a `JobType` and not text to
   // be recognised again, and its params are the record's params.
   it('each field has the type of the field it is read from', () => {
-    expectTypeOf<HeldJob['jobId']>().toEqualTypeOf<ClaimedJob['metadata']['id']>();
-    expectTypeOf<HeldJob['jobType']>().toEqualTypeOf<ClaimedJob['metadata']['type']>();
-    expectTypeOf<HeldJob['resourceId']>().toEqualTypeOf<ClaimedJob['params']['resourceId']>();
+    expectTypeOf<HeldJob['jobId']>().toEqualTypeOf<
+      ClaimedJob['metadata']['id']
+    >();
+    expectTypeOf<HeldJob['jobType']>().toEqualTypeOf<
+      ClaimedJob['metadata']['type']
+    >();
+    expectTypeOf<HeldJob['resourceId']>().toEqualTypeOf<
+      ClaimedJob['params']['resourceId']
+    >();
     expectTypeOf<HeldJob['params']>().toEqualTypeOf<ClaimedJob['params']>();
-    expectTypeOf<HeldJob['retryCount']>().toEqualTypeOf<ClaimedJob['metadata']['retryCount']>();
-    expectTypeOf<HeldJob['maxRetries']>().toEqualTypeOf<ClaimedJob['metadata']['maxRetries']>();
-    expectTypeOf<HeldJob['completedUnits']>().toEqualTypeOf<Readonly<NonNullable<ClaimedJob['metadata']['completedUnits']>>>();
-    expectTypeOf<HeldJob['unitCursors']>().toEqualTypeOf<Readonly<NonNullable<ClaimedJob['metadata']['unitCursors']>>>();
+    expectTypeOf<HeldJob['retryCount']>().toEqualTypeOf<
+      ClaimedJob['metadata']['retryCount']
+    >();
+    expectTypeOf<HeldJob['maxRetries']>().toEqualTypeOf<
+      ClaimedJob['metadata']['maxRetries']
+    >();
+    expectTypeOf<HeldJob['completedUnits']>().toEqualTypeOf<
+      Readonly<NonNullable<ClaimedJob['metadata']['completedUnits']>>
+    >();
+    expectTypeOf<HeldJob['unitCursors']>().toEqualTypeOf<
+      Readonly<NonNullable<ClaimedJob['metadata']['unitCursors']>>
+    >();
   });
 
   it('carries the checkpoint earlier attempts left, as the record states it', async () => {
-    const cursor = { next: 12_400, size: 560, found: 20, emitted: 18, errors: 0 };
-    const { job, subscription } = await holding(h, 'j1', { completedUnits: ['Person', 'Date'], unitCursors: { Place: cursor } });
+    const cursor = {
+      next: 12_400,
+      size: 560,
+      found: 20,
+      emitted: 18,
+      errors: 0,
+    };
+    const { job, subscription } = await holding(h, 'j1', {
+      completedUnits: ['Person', 'Date'],
+      unitCursors: { Place: cursor },
+    });
 
     expect(job.completedUnits).toEqual(['Person', 'Date']);
     expect(job.unitCursors).toEqual({ Place: cursor });
@@ -590,59 +953,129 @@ describe('job.claim — the held job', () => {
   });
 
   it('a yield job focused on an annotation is anchored to it; one focused on a resource is anchored to none', async () => {
-    const onAnnotation = await holding(h, 'j1', { type: 'yield' }, { context: { focus: { kind: 'annotation', annotation: { id: 'ann-7' } } } });
+    const onAnnotation = await holding(
+      h,
+      'j1',
+      { type: 'yield' },
+      {
+        context: { focus: { kind: 'annotation', annotation: { id: 'ann-7' } } },
+      },
+    );
     expect(onAnnotation.job.annotationId).toBe(annotationId('ann-7'));
     onAnnotation.subscription.unsubscribe();
 
     const other = fakeBus();
-    const onResource = await holding(other, 'j2', { type: 'yield' }, { context: { focus: { kind: 'resource' } } });
+    const onResource = await holding(
+      other,
+      'j2',
+      { type: 'yield' },
+      { context: { focus: { kind: 'resource' } } },
+    );
     expect(onResource.job.annotationId).toBeUndefined();
     onResource.subscription.unsubscribe();
   });
 
-  it('says its whole lifecycle itself: a start, progress and checkpoints, and one completion that is its verb\'s', async () => {
+  it("says its whole lifecycle itself: a start, progress and checkpoints, and one completion that is its verb's", async () => {
     const { job, subscription } = await holding(h, 'j1', { retryCount: 1 });
     const cursor = { next: 1200, size: 800, found: 4, emitted: 3, errors: 0 };
 
     await job.start();
     await job.progress({ percentage: 40 });
-    await job.checkpoint({ completedUnits: ['Person'], unitCursors: { Place: cursor } });
+    await job.checkpoint({
+      completedUnits: ['Person'],
+      unitCursors: { Place: cursor },
+    });
     expect(await commitObserving(h, job, 'acknowledged')).toBeUndefined();
     if (job.jobType !== 'mark') throw new Error('the record says mark');
     await job.complete({ found: 9, persisted: 7 });
 
-    const identity = { resourceId: 'res-1', jobId: 'j1', jobType: 'mark', attempt: 2 };
-    expect(h.said().map(({ channel, payload }) => ({ channel, payload }))).toEqual([
+    const identity = {
+      resourceId: 'res-1',
+      jobId: 'j1',
+      jobType: 'mark',
+      attempt: 2,
+    };
+    expect(
+      h.said().map(({ channel, payload }) => ({ channel, payload })),
+    ).toEqual([
       { channel: 'job:start', payload: identity },
-      { channel: 'job:report-progress', payload: { ...identity, percentage: 40, progress: { percentage: 40 } } },
-      { channel: 'job:checkpoint', payload: { jobId: 'j1', completedUnits: ['Person'], unitCursors: { Place: cursor } } },
-      { channel: 'job:complete', payload: { ...identity, result: { found: 9, persisted: 7 }, durability: 'acknowledged' } },
+      {
+        channel: 'job:report-progress',
+        payload: { ...identity, percentage: 40, progress: { percentage: 40 } },
+      },
+      {
+        channel: 'job:checkpoint',
+        payload: {
+          jobId: 'j1',
+          completedUnits: ['Person'],
+          unitCursors: { Place: cursor },
+        },
+      },
+      {
+        channel: 'job:complete',
+        payload: {
+          ...identity,
+          result: { found: 9, persisted: 7 },
+          durability: 'acknowledged',
+        },
+      },
     ]);
-    expect(h.said().every((e) => e.envelope === undefined), 'every lifecycle message is global and nobody\'s reply').toBe(true);
+    expect(
+      h.said().every((e) => e.envelope === undefined),
+      "every lifecycle message is global and nobody's reply",
+    ).toBe(true);
     expect(job.settled).toBe(true);
 
     subscription.unsubscribe();
   });
 
   it('a job anchored to an annotation says so on every message a follower routes by it', async () => {
-    const { job, subscription } = await holding(h, 'j1', { type: 'yield', maxRetries: 0 }, { context: { focus: { kind: 'annotation', annotation: { id: 'ann-7' } } } });
+    const { job, subscription } = await holding(
+      h,
+      'j1',
+      { type: 'yield', maxRetries: 0 },
+      {
+        context: { focus: { kind: 'annotation', annotation: { id: 'ann-7' } } },
+      },
+    );
 
     await job.start();
     await job.progress({ percentage: 5 });
     if (job.jobType !== 'yield') throw new Error('the record says yield');
-    await job.complete({ resourceId: resourceId('res-new'), resourceName: 'Ouranos', truncated: false });
+    await job.complete({
+      resourceId: resourceId('res-new'),
+      resourceName: 'Ouranos',
+      truncated: false,
+    });
 
-    const identity = { resourceId: 'res-1', jobId: 'j1', jobType: 'yield', attempt: 1, annotationId: 'ann-7' };
+    const identity = {
+      resourceId: 'res-1',
+      jobId: 'j1',
+      jobType: 'yield',
+      attempt: 1,
+      annotationId: 'ann-7',
+    };
     expect(h.said().map(({ payload }) => payload)).toEqual([
       identity,
-      { ...identity, percentage: 5, progress: { percentage: 5, annotationId: 'ann-7' } },
-      { ...identity, result: { resourceId: 'res-new', resourceName: 'Ouranos', truncated: false } },
+      {
+        ...identity,
+        percentage: 5,
+        progress: { percentage: 5, annotationId: 'ann-7' },
+      },
+      {
+        ...identity,
+        result: {
+          resourceId: 'res-new',
+          resourceName: 'Ouranos',
+          truncated: false,
+        },
+      },
     ]);
 
     subscription.unsubscribe();
   });
 
-  it('job:start is a held job\'s first message, said once', async () => {
+  it("job:start is a held job's first message, said once", async () => {
     const { job, subscription } = await holding(h);
 
     await job.start();
@@ -658,31 +1091,69 @@ describe('job.claim — the held job', () => {
     other.subscription.unsubscribe();
   });
 
-  it('a failure says whether it will be retried, from the record\'s budget and the failure\'s class', async () => {
+  it("a failure says whether it will be retried, from the record's budget and the failure's class", async () => {
     const retried = await holding(h, 'j1', { retryCount: 0, maxRetries: 1 });
-    await retried.job.fail('the model timed out', { completedUnits: ['Person'], unitCursors: { Place: { next: 1, size: 2, found: 3, emitted: 3, errors: 0 } } });
+    await retried.job.fail('the model timed out', {
+      completedUnits: ['Person'],
+      unitCursors: {
+        Place: { next: 1, size: 2, found: 3, emitted: 3, errors: 0 },
+      },
+    });
     expect(h.said()[0]).toMatchObject({
       channel: 'job:fail',
       payload: {
-        resourceId: 'res-1', jobId: 'j1', jobType: 'mark', attempt: 1, error: 'the model timed out', willRetry: true,
-        completedUnits: ['Person'], unitCursors: { Place: { next: 1, size: 2, found: 3, emitted: 3, errors: 0 } },
+        resourceId: 'res-1',
+        jobId: 'j1',
+        jobType: 'mark',
+        attempt: 1,
+        error: 'the model timed out',
+        willRetry: true,
+        completedUnits: ['Person'],
+        unitCursors: {
+          Place: { next: 1, size: 2, found: 3, emitted: 3, errors: 0 },
+        },
       },
     });
-    expect(h.said()[0]!.payload, 'a class the worker does not know is not stated').not.toHaveProperty('failureClass');
+    expect(
+      h.said()[0]!.payload,
+      'a class the worker does not know is not stated',
+    ).not.toHaveProperty('failureClass');
 
     const known = fakeBus();
-    const deterministic = await holding(known, 'j2', { retryCount: 0, maxRetries: 1 }, {}, QUICK_COMMIT);
-    expect(await commitObserving(known, deterministic.job, 'probe-refused')).toMatchObject({ code: 'bus.timeout' });
-    await deterministic.job.fail('the resource has no text', { failureClass: 'deterministic' });
+    const deterministic = await holding(
+      known,
+      'j2',
+      { retryCount: 0, maxRetries: 1 },
+      {},
+      QUICK_COMMIT,
+    );
+    expect(
+      await commitObserving(known, deterministic.job, 'probe-refused'),
+    ).toMatchObject({ code: 'bus.timeout' });
+    await deterministic.job.fail('the resource has no text', {
+      failureClass: 'deterministic',
+    });
     expect(known.said()[0]!.payload).toEqual({
-      resourceId: 'res-1', jobId: 'j2', jobType: 'mark', attempt: 1, error: 'the resource has no text',
-      failureClass: 'deterministic', durability: 'probe-refused', willRetry: false,
+      resourceId: 'res-1',
+      jobId: 'j2',
+      jobType: 'mark',
+      attempt: 1,
+      error: 'the resource has no text',
+      failureClass: 'deterministic',
+      durability: 'probe-refused',
+      willRetry: false,
     });
 
     const spentBus = fakeBus();
-    const spent = await holding(spentBus, 'j3', { retryCount: 1, maxRetries: 1 });
+    const spent = await holding(spentBus, 'j3', {
+      retryCount: 1,
+      maxRetries: 1,
+    });
     await spent.job.fail('the model timed out');
-    expect(spentBus.said()[0]!.payload).toMatchObject({ attempt: 2, willRetry: false });
+    expect(spentBus.said()[0]!.payload).toMatchObject({
+      attempt: 2,
+      willRetry: false,
+    });
 
     retried.subscription.unsubscribe();
     deterministic.subscription.unsubscribe();
@@ -693,8 +1164,18 @@ describe('job.claim — the held job', () => {
     const { job, subscription } = await holding(h);
     await job.cancel({ completedUnits: ['Person'] });
 
-    expect(h.said().map(({ channel, payload }) => ({ channel, payload }))).toEqual([
-      { channel: 'job:cancel', payload: { resourceId: 'res-1', jobId: 'j1', jobType: 'mark', completedUnits: ['Person'] } },
+    expect(
+      h.said().map(({ channel, payload }) => ({ channel, payload })),
+    ).toEqual([
+      {
+        channel: 'job:cancel',
+        payload: {
+          resourceId: 'res-1',
+          jobId: 'j1',
+          jobType: 'mark',
+          completedUnits: ['Person'],
+        },
+      },
     ]);
 
     subscription.unsubscribe();
@@ -707,7 +1188,9 @@ describe('job.claim — the held job', () => {
     await expect(job.fail('too late')).rejects.toThrow(/already settled/);
     await expect(job.cancel()).rejects.toThrow(/already settled/);
     await expect(finish(job)).rejects.toThrow(/already settled/);
-    await expect(job.progress({ percentage: 99 })).rejects.toThrow(/already settled/);
+    await expect(job.progress({ percentage: 99 })).rejects.toThrow(
+      /already settled/,
+    );
 
     expect(h.said().map((e) => e.channel)).toEqual(['job:complete']);
     expect(h.claims(), 'one settle, one claim after it').toHaveLength(2);
@@ -752,13 +1235,28 @@ describe('job.claim — the held job', () => {
   });
 
   it('a worker that stops while it holds a job fails it, saying so, and leaves it to its retry budget', async () => {
-    const { job, claims } = await holding(h, 'j1', { retryCount: 0, maxRetries: 1 });
+    const { job, claims } = await holding(h, 'j1', {
+      retryCount: 0,
+      maxRetries: 1,
+    });
 
     await claims.stop();
 
     expect(job.settled).toBe(true);
-    expect(h.said().map(({ channel, payload }) => ({ channel, payload }))).toEqual([
-      { channel: 'job:fail', payload: { resourceId: 'res-1', jobId: 'j1', jobType: 'mark', attempt: 1, error: 'The worker stopped while it held the job', willRetry: true } },
+    expect(
+      h.said().map(({ channel, payload }) => ({ channel, payload })),
+    ).toEqual([
+      {
+        channel: 'job:fail',
+        payload: {
+          resourceId: 'res-1',
+          jobId: 'j1',
+          jobType: 'mark',
+          attempt: 1,
+          error: 'The worker stopped while it held the job',
+          willRetry: true,
+        },
+      },
     ]);
     expect(h.claims(), 'and claims nothing more').toHaveLength(1);
   });
@@ -807,8 +1305,13 @@ describe('job.claim — a held job commits for itself', () => {
     return last;
   };
 
-  it('JOB_COMMIT_CHANNELS is what a worker\'s stream names for its commits', () => {
-    expect([...JOB_COMMIT_CHANNELS].sort()).toEqual(['browse:annotation-failed', 'browse:annotation-result', 'mark:commit-failed', 'mark:commit-ok']);
+  it("JOB_COMMIT_CHANNELS is what a worker's stream names for its commits", () => {
+    expect([...JOB_COMMIT_CHANNELS].sort()).toEqual([
+      'browse:annotation-failed',
+      'browse:annotation-result',
+      'mark:commit-failed',
+      'mark:commit-ok',
+    ]);
   });
 
   it('sends the batch as a request that cites the job and names the resource it is given, and is established when the record acknowledges it, and not before', async () => {
@@ -817,19 +1320,36 @@ describe('job.claim — a held job commits for itself', () => {
 
     let established = false;
     // A job commits on more than one resource: here, on one that is not its own.
-    const commit = job.commit(resourceId('res-new'), batch).then(() => { established = true; });
+    const commit = job.commit(resourceId('res-new'), batch).then(() => {
+      established = true;
+    });
 
-    expect(h.commits().map(({ payload }) => payload)).toEqual([{ resourceId: 'res-new', annotations: batch, jobId: 'j1' }]);
-    expect(typeof h.commits()[0]!.envelope?.correlationId, 'a request, answered at its correlation id').toBe('string');
+    expect(h.commits().map(({ payload }) => payload)).toEqual([
+      { resourceId: 'res-new', annotations: batch, jobId: 'j1' },
+    ]);
+    expect(
+      typeof h.commits()[0]!.envelope?.correlationId,
+      'a request, answered at its correlation id',
+    ).toBe('string');
 
     await after(30);
-    expect(established, 'the gateway taking the message says nothing of the record').toBe(false);
+    expect(
+      established,
+      'the gateway taking the message says nothing of the record',
+    ).toBe(false);
 
-    h.pushEvent('mark:commit-ok', { response: { persisted: 2, annotationIds: batch.map((a) => a.id) } }, h.commits()[0]!.envelope?.correlationId);
+    h.pushEvent(
+      'mark:commit-ok',
+      { response: { persisted: 2, annotationIds: batch.map((a) => a.id) } },
+      h.commits()[0]!.envelope?.correlationId,
+    );
     await commit;
 
     expect(established).toBe(true);
-    expect(h.questions(), 'nothing is asked of a commit the record acknowledged').toEqual([]);
+    expect(
+      h.questions(),
+      'nothing is asked of a commit the record acknowledged',
+    ).toEqual([]);
     expect(h.said(), 'a commit is no lifecycle message').toEqual([]);
 
     await finish(job);
@@ -845,7 +1365,13 @@ describe('job.claim — a held job commits for itself', () => {
     expect(h.commits()).toEqual([]);
 
     await finish(job);
-    expect(settle().payload).toEqual({ resourceId: 'res-1', jobId: 'j1', jobType: 'mark', attempt: 1, result: { found: 0, persisted: 0 } });
+    expect(settle().payload).toEqual({
+      resourceId: 'res-1',
+      jobId: 'j1',
+      jobType: 'mark',
+      attempt: 1,
+      result: { found: 0, persisted: 0 },
+    });
 
     subscription.unsubscribe();
   });
@@ -859,32 +1385,58 @@ describe('job.claim — a held job commits for itself', () => {
     subscription.unsubscribe();
   });
 
-  it('a commit the record refuses fails with the record\'s reason: nothing is asked, and nothing is observed', async () => {
+  it("a commit the record refuses fails with the record's reason: nothing is asked, and nothing is observed", async () => {
     const { job, subscription } = await holding(h, 'j1', {}, {}, QUICK_COMMIT);
     h.record.commit = 'refused';
 
-    const refused = await job.commit(resourceId('res-1'), [annotation('ann-1')]).then(() => undefined, (error: unknown) => error);
+    const refused = await job
+      .commit(resourceId('res-1'), [annotation('ann-1')])
+      .then(
+        () => undefined,
+        (error: unknown) => error,
+      );
 
     expect(refused).toBeInstanceOf(BusRequestError);
-    expect(refused).toMatchObject({ code: 'bus.rejected', message: 'the record could not append' });
+    expect(refused).toMatchObject({
+      code: 'bus.rejected',
+      message: 'the record could not append',
+    });
     await after(60);
     expect(h.questions(), 'the record has answered').toEqual([]);
 
     await job.fail('the record could not append');
-    expect(settle().payload).toEqual({ resourceId: 'res-1', jobId: 'j1', jobType: 'mark', attempt: 1, error: 'the record could not append', willRetry: true });
+    expect(settle().payload).toEqual({
+      resourceId: 'res-1',
+      jobId: 'j1',
+      jobType: 'mark',
+      attempt: 1,
+      error: 'the record could not append',
+      willRetry: true,
+    });
 
     subscription.unsubscribe();
   });
 
-  it('a commit nobody acknowledges asks whether the batch\'s last annotation is on the resource; answered with it, the commit is established', async () => {
+  it("a commit nobody acknowledges asks whether the batch's last annotation is on the resource; answered with it, the commit is established", async () => {
     const { job, subscription } = await holding(h, 'j1', {}, {}, QUICK_COMMIT);
     h.record.question = 'there';
 
-    await expect(job.commit(resourceId('res-new'), [annotation('ann-1'), annotation('ann-2')])).resolves.toBeUndefined();
+    await expect(
+      job.commit(resourceId('res-new'), [
+        annotation('ann-1'),
+        annotation('ann-2'),
+      ]),
+    ).resolves.toBeUndefined();
 
-    expect(h.questions().map(({ payload }) => payload), 'the last, on the resource the batch was for').toEqual([{ resourceId: 'res-new', annotationId: 'ann-2' }]);
+    expect(
+      h.questions().map(({ payload }) => payload),
+      'the last, on the resource the batch was for',
+    ).toEqual([{ resourceId: 'res-new', annotationId: 'ann-2' }]);
     expect(typeof h.questions()[0]!.envelope?.correlationId).toBe('string');
-    expect(h.commits(), 'the record is asked what it holds; the batch is not sent again').toHaveLength(1);
+    expect(
+      h.commits(),
+      'the record is asked what it holds; the batch is not sent again',
+    ).toHaveLength(1);
 
     await finish(job);
     expect(settle().payload).toMatchObject({ durability: 'probe-confirmed' });
@@ -892,7 +1444,7 @@ describe('job.claim — a held job commits for itself', () => {
     subscription.unsubscribe();
   });
 
-  it('answered that it is not there, the commit fails as its unanswered request did, and the job\'s failure says what was observed', async () => {
+  it("answered that it is not there, the commit fails as its unanswered request did, and the job's failure says what was observed", async () => {
     const { job, subscription } = await holding(h, 'j1', {}, {}, QUICK_COMMIT);
 
     const failed = await commitObserving(h, job, 'probe-refused');
@@ -905,29 +1457,51 @@ describe('job.claim — a held job commits for itself', () => {
       name: 'BusRequestError',
       code: 'bus.timeout',
       message: 'Bus request timed out after 20ms on mark:commit-ok',
-      details: { channel: 'mark:commit', correlationId: h.commits()[0]!.envelope?.correlationId },
+      details: {
+        channel: 'mark:commit',
+        correlationId: h.commits()[0]!.envelope?.correlationId,
+      },
     });
     expect(h.questions()).toHaveLength(1);
 
     await job.fail('the commit was not established');
     expect(settle().payload).toEqual({
-      resourceId: 'res-1', jobId: 'j1', jobType: 'mark', attempt: 1, error: 'the commit was not established', durability: 'probe-refused', willRetry: true,
+      resourceId: 'res-1',
+      jobId: 'j1',
+      jobType: 'mark',
+      attempt: 1,
+      error: 'the commit was not established',
+      durability: 'probe-refused',
+      willRetry: true,
     });
 
     subscription.unsubscribe();
   });
 
   it('not answered, it waits as long again, fails the same way, and says that nobody answered', async () => {
-    const { job, subscription } = await holding(h, 'j1', {}, {}, { markCommitTimeoutMs: 60 });
+    const { job, subscription } = await holding(
+      h,
+      'j1',
+      {},
+      {},
+      { markCommitTimeoutMs: 60 },
+    );
 
     const began = performance.now();
     const failed = await commitObserving(h, job, 'probe-unreachable');
     const waited = performance.now() - began;
 
     expect(failed).toBeInstanceOf(BusRequestError);
-    expect(failed).toMatchObject({ code: 'bus.timeout', message: 'Bus request timed out after 60ms on mark:commit-ok', details: { channel: 'mark:commit' } });
+    expect(failed).toMatchObject({
+      code: 'bus.timeout',
+      message: 'Bus request timed out after 60ms on mark:commit-ok',
+      details: { channel: 'mark:commit' },
+    });
     expect(h.questions()).toHaveLength(1);
-    expect(waited, 'the acknowledgement\'s wait, and then the answer\'s').toBeGreaterThanOrEqual(110);
+    expect(
+      waited,
+      "the acknowledgement's wait, and then the answer's",
+    ).toBeGreaterThanOrEqual(110);
 
     await job.fail('the commit was not established');
     expect(settle().payload).toMatchObject({ durability: 'probe-unreachable' });
@@ -939,28 +1513,66 @@ describe('job.claim — a held job commits for itself', () => {
   // class: a second copy of the library anywhere in the tree makes a class
   // check fail silently, and a refusal would be said as "nobody answered".
   it.each([
-    ['carries bus.rejected, whatever its class', 'probe-refused', Object.assign(new Error('Annotation not found'), { code: 'bus.rejected' })],
-    ['carries another code', 'probe-unreachable', Object.assign(new Error('Bus closed before emit'), { code: 'bus.closed' })],
-    ['carries no code', 'probe-unreachable', new Error('the gateway did not take the question')],
-  ] as const)('a question whose failure %s is observed as %s', async (_what, observed, failure) => {
-    const { job, subscription } = await holding(h, 'j1', {}, {}, QUICK_COMMIT);
-    h.failing.add('browse:annotation-requested');
-    h.thrown.set('browse:annotation-requested', failure);
+    [
+      'carries bus.rejected, whatever its class',
+      'probe-refused',
+      Object.assign(new Error('Annotation not found'), {
+        code: 'bus.rejected',
+      }),
+    ],
+    [
+      'carries another code',
+      'probe-unreachable',
+      Object.assign(new Error('Bus closed before emit'), {
+        code: 'bus.closed',
+      }),
+    ],
+    [
+      'carries no code',
+      'probe-unreachable',
+      new Error('the gateway did not take the question'),
+    ],
+  ] as const)(
+    'a question whose failure %s is observed as %s',
+    async (_what, observed, failure) => {
+      const { job, subscription } = await holding(
+        h,
+        'j1',
+        {},
+        {},
+        QUICK_COMMIT,
+      );
+      h.failing.add('browse:annotation-requested');
+      h.thrown.set('browse:annotation-requested', failure);
 
-    const failed = await job.commit(resourceId('res-1'), [annotation('ann-1')]).then(() => undefined, (error: unknown) => error);
+      const failed = await job
+        .commit(resourceId('res-1'), [annotation('ann-1')])
+        .then(
+          () => undefined,
+          (error: unknown) => error,
+        );
 
-    expect(failed, 'the commit\'s own failure, never the question\'s').toMatchObject({ code: 'bus.timeout', details: { channel: 'mark:commit' } });
-    await job.fail('the commit was not established');
-    expect(settle().payload).toMatchObject({ durability: observed });
+      expect(
+        failed,
+        "the commit's own failure, never the question's",
+      ).toMatchObject({
+        code: 'bus.timeout',
+        details: { channel: 'mark:commit' },
+      });
+      await job.fail('the commit was not established');
+      expect(settle().payload).toMatchObject({ durability: observed });
 
-    subscription.unsubscribe();
-  });
+      subscription.unsubscribe();
+    },
+  );
 
-  it('any other failure of the commit\'s request is thrown as it is: nothing is asked, and nothing is observed', async () => {
+  it("any other failure of the commit's request is thrown as it is: nothing is asked, and nothing is observed", async () => {
     const { job, subscription } = await holding(h, 'j1', {}, {}, QUICK_COMMIT);
     h.failing.add('mark:commit');
 
-    await expect(job.commit(resourceId('res-1'), [annotation('ann-1')])).rejects.toThrow(/did not take mark:commit/);
+    await expect(
+      job.commit(resourceId('res-1'), [annotation('ann-1')]),
+    ).rejects.toThrow(/did not take mark:commit/);
     await after(60);
     expect(h.questions()).toEqual([]);
 
@@ -973,9 +1585,14 @@ describe('job.claim — a held job commits for itself', () => {
   it('a worker whose stream does not name JOB_COMMIT_CHANNELS claims as any other, and its commit fails as a request on an unnamed reply channel does', async () => {
     for (const channel of JOB_COMMIT_CHANNELS) h.unnamed.add(channel);
     const { job, failure, subscription } = await holding(h);
-    expect(failure(), 'a worker that never commits names nothing more').toBeUndefined();
+    expect(
+      failure(),
+      'a worker that never commits names nothing more',
+    ).toBeUndefined();
 
-    await expect(job.commit(resourceId('res-1'), [annotation('ann-1')])).rejects.toMatchObject({ code: 'bus.unsubscribed' });
+    await expect(
+      job.commit(resourceId('res-1'), [annotation('ann-1')]),
+    ).rejects.toMatchObject({ code: 'bus.unsubscribed' });
     expect(h.commits()).toEqual([]);
 
     subscription.unsubscribe();
@@ -985,7 +1602,9 @@ describe('job.claim — a held job commits for itself', () => {
     const { job, subscription } = await holding(h);
     await finish(job);
 
-    await expect(job.commit(resourceId('res-1'), [annotation('ann-1')])).rejects.toThrow(/already settled/);
+    await expect(
+      job.commit(resourceId('res-1'), [annotation('ann-1')]),
+    ).rejects.toThrow(/already settled/);
     expect(h.commits()).toEqual([]);
 
     subscription.unsubscribe();
@@ -1019,46 +1638,69 @@ describe('job.claim — a held job commits for itself', () => {
       const r = await holding(h, 'j1', {}, {}, QUICK_COMMIT);
       for (const [i, how] of observed.entries()) {
         const failed = await commitObserving(h, r.job, how, `ann-${i}`);
-        if (how === 'acknowledged' || how === 'probe-confirmed') expect(failed, `${how} establishes the commit`).toBeUndefined();
-        else expect(failed, `${how} does not`).toMatchObject({ code: 'bus.timeout' });
+        if (how === 'acknowledged' || how === 'probe-confirmed')
+          expect(failed, `${how} establishes the commit`).toBeUndefined();
+        else
+          expect(failed, `${how} does not`).toMatchObject({
+            code: 'bus.timeout',
+          });
       }
       expect(h.commits()).toHaveLength(observed.length);
       return r;
     }
 
-    it.each([...ESTABLISHED, ...NOT_ESTABLISHED])('commits that observed %j: a completion says %s', async (observed, weakest) => {
-      const { job, subscription } = await committed(observed);
+    it.each([...ESTABLISHED, ...NOT_ESTABLISHED])(
+      'commits that observed %j: a completion says %s',
+      async (observed, weakest) => {
+        const { job, subscription } = await committed(observed);
 
-      await finish(job);
-      expect(settle()).toMatchObject({ channel: 'job:complete', payload: { durability: weakest } });
+        await finish(job);
+        expect(settle()).toMatchObject({
+          channel: 'job:complete',
+          payload: { durability: weakest },
+        });
 
-      subscription.unsubscribe();
-    });
+        subscription.unsubscribe();
+      },
+    );
 
-    it.each(NOT_ESTABLISHED)('commits that observed %j: a failure says %s', async (observed, weakest) => {
-      const { job, subscription } = await committed(observed);
+    it.each(NOT_ESTABLISHED)(
+      'commits that observed %j: a failure says %s',
+      async (observed, weakest) => {
+        const { job, subscription } = await committed(observed);
 
-      await job.fail('the commit was not established');
-      expect(settle()).toMatchObject({ channel: 'job:fail', payload: { durability: weakest } });
+        await job.fail('the commit was not established');
+        expect(settle()).toMatchObject({
+          channel: 'job:fail',
+          payload: { durability: weakest },
+        });
 
-      subscription.unsubscribe();
-    });
+        subscription.unsubscribe();
+      },
+    );
 
-    it.each(ESTABLISHED)('commits that observed %j, all established: a failure for another reason says nothing of them', async (observed) => {
-      const { job, subscription } = await committed(observed);
+    it.each(ESTABLISHED)(
+      'commits that observed %j, all established: a failure for another reason says nothing of them',
+      async (observed) => {
+        const { job, subscription } = await committed(observed);
 
-      await job.fail('the model timed out');
-      expect(settle().channel).toBe('job:fail');
-      expect(settle().payload).not.toHaveProperty('durability');
+        await job.fail('the model timed out');
+        expect(settle().channel).toBe('job:fail');
+        expect(settle().payload).not.toHaveProperty('durability');
 
-      subscription.unsubscribe();
-    });
+        subscription.unsubscribe();
+      },
+    );
 
     it('a cancel says nothing of them', async () => {
       const { job, subscription } = await committed(['probe-refused']);
 
       await job.cancel();
-      expect(settle().payload).toEqual({ resourceId: 'res-1', jobId: 'j1', jobType: 'mark' });
+      expect(settle().payload).toEqual({
+        resourceId: 'res-1',
+        jobId: 'j1',
+        jobType: 'mark',
+      });
 
       subscription.unsubscribe();
     });
@@ -1067,14 +1709,21 @@ describe('job.claim — a held job commits for itself', () => {
       const { claims } = await committed(['probe-unreachable']);
 
       await claims.stop();
-      expect(settle().payload).toMatchObject({ error: 'The worker stopped while it held the job', durability: 'probe-unreachable' });
+      expect(settle().payload).toMatchObject({
+        error: 'The worker stopped while it held the job',
+        durability: 'probe-unreachable',
+      });
     });
 
     // The job states what its commits observed; its caller is given no way to
     // state it for it.
-    it('is the held job\'s alone to say', () => {
-      expectTypeOf<Parameters<HeldMarkJob['complete']>>().toEqualTypeOf<[result: Parameters<HeldMarkJob['complete']>[0]]>();
-      expectTypeOf<Parameters<HeldYieldJob['complete']>>().toEqualTypeOf<[result: Parameters<HeldYieldJob['complete']>[0]]>();
+    it("is the held job's alone to say", () => {
+      expectTypeOf<Parameters<HeldMarkJob['complete']>>().toEqualTypeOf<
+        [result: Parameters<HeldMarkJob['complete']>[0]]
+      >();
+      expectTypeOf<Parameters<HeldYieldJob['complete']>>().toEqualTypeOf<
+        [result: Parameters<HeldYieldJob['complete']>[0]]
+      >();
       expectTypeOf<JobFailure>().not.toHaveProperty('durability');
     });
   });
@@ -1088,7 +1737,9 @@ describe('job.claim — vitals', () => {
   });
 
   it('start empty', () => {
-    expect(new ClaimsObservable(h.bus, { accepts: EVERYTHING }).vitals()).toEqual({
+    expect(
+      new ClaimsObservable(h.bus, { accepts: EVERYTHING }).vitals(),
+    ).toEqual({
       lastQueuedEventAt: null,
       lastClaimAt: null,
       lastFinishedAt: null,
@@ -1102,10 +1753,17 @@ describe('job.claim — vitals', () => {
     const { job, claims, subscription } = await holding(h, 'jv1');
 
     const claimed = claims.vitals();
-    expect(claimed.lastQueuedEventAt, 'no announcement was needed to claim').toBeNull();
+    expect(
+      claimed.lastQueuedEventAt,
+      'no announcement was needed to claim',
+    ).toBeNull();
     expect(claimed.lastClaimAt).not.toBeNull();
     expect(claimed.lastActivityAt).toBe(claimed.lastClaimAt);
-    expect(claimed.activeJob).toEqual({ jobId: 'jv1', type: 'mark', since: claimed.lastClaimAt });
+    expect(claimed.activeJob).toEqual({
+      jobId: 'jv1',
+      type: 'mark',
+      since: claimed.lastClaimAt,
+    });
     expect(claimed.lastFinishedAt).toBeNull();
 
     await finish(job);
@@ -1150,7 +1808,9 @@ describe('job.claim — vitals', () => {
 
     await after(5);
     await job.checkpoint({ completedUnits: [] });
-    expect(Date.parse(claims.vitals().lastActivityAt!)).toBeGreaterThan(Date.parse(reported));
+    expect(Date.parse(claims.vitals().lastActivityAt!)).toBeGreaterThan(
+      Date.parse(reported),
+    );
 
     subscription.unsubscribe();
   });
@@ -1180,13 +1840,25 @@ describe('job.claim — a held job that shows no activity is stalled', () => {
   });
 
   it('is reported once, with the job and how long it has been silent', async () => {
-    const { stalls, claims, subscription } = await holding(h, 'j1', {}, {}, QUICK);
+    const { stalls, claims, subscription } = await holding(
+      h,
+      'j1',
+      {},
+      {},
+      QUICK,
+    );
     const { lastActivityAt, activeJob } = claims.vitals();
 
     await after(150);
 
     expect(stalls).toHaveLength(1);
-    expect(stalls[0]).toMatchObject({ jobId: 'j1', jobType: 'mark', heldSince: activeJob!.since, lastActivityAt, thresholdMs: 40 });
+    expect(stalls[0]).toMatchObject({
+      jobId: 'j1',
+      jobType: 'mark',
+      heldSince: activeJob!.since,
+      lastActivityAt,
+      thresholdMs: 40,
+    });
     expect(stalls[0]!.silentForMs).toBeGreaterThan(40);
 
     subscription.unsubscribe();
@@ -1238,7 +1910,10 @@ describe('job.claim — what refused$ and stalled$ keep for a first reader', () 
   it('refused$ gives its first reader the latest ERRORS_KEPT_FOR_FIRST_READER_COUNT refused before it read, in order, the oldest dropped', async () => {
     const claims = new ClaimsObservable(h.bus, { accepts: EVERYTHING });
     const subscription = claims.subscribe(() => {});
-    const messages = Array.from({ length: ERRORS_KEPT_FOR_FIRST_READER_COUNT + beyond }, (_, n) => `claim ${n} refused`);
+    const messages = Array.from(
+      { length: ERRORS_KEPT_FOR_FIRST_READER_COUNT + beyond },
+      (_, n) => `claim ${n} refused`,
+    );
     for (const [n, message] of messages.entries()) {
       h.refuse(n, 'unauthorized', message);
       await tick();
@@ -1263,7 +1938,12 @@ describe('job.claim — what refused$ and stalled$ keep for a first reader', () 
 
     const refused: string[] = [];
     let ended = false;
-    claims.refused$.subscribe({ next: (refusal) => refused.push(refusal.message), complete: () => { ended = true; } });
+    claims.refused$.subscribe({
+      next: (refusal) => refused.push(refusal.message),
+      complete: () => {
+        ended = true;
+      },
+    });
     expect(refused).toEqual([]);
     expect(ended).toBe(true);
 
@@ -1271,10 +1951,16 @@ describe('job.claim — what refused$ and stalled$ keep for a first reader', () 
   });
 
   it('stalled$ gives its first reader the latest ERRORS_KEPT_FOR_FIRST_READER_COUNT reported before it read, in order, the oldest dropped', async () => {
-    const claims = new ClaimsObservable(h.bus, { accepts: EVERYTHING, ...QUICKLY });
+    const claims = new ClaimsObservable(h.bus, {
+      accepts: EVERYTHING,
+      ...QUICKLY,
+    });
     const held: HeldJob[] = [];
     const subscription = claims.subscribe((job) => held.push(job));
-    const jobIds = Array.from({ length: ERRORS_KEPT_FOR_FIRST_READER_COUNT + beyond }, (_, n) => `j${n}`);
+    const jobIds = Array.from(
+      { length: ERRORS_KEPT_FOR_FIRST_READER_COUNT + beyond },
+      (_, n) => `j${n}`,
+    );
     for (const [n, id] of jobIds.entries()) {
       h.grant(n, id);
       await tick();
@@ -1293,7 +1979,10 @@ describe('job.claim — what refused$ and stalled$ keep for a first reader', () 
   }, 20_000);
 
   it('stalled$ gives a reader who comes once the claiming has ended nothing of what it kept', async () => {
-    const claims = new ClaimsObservable(h.bus, { accepts: EVERYTHING, ...QUICKLY });
+    const claims = new ClaimsObservable(h.bus, {
+      accepts: EVERYTHING,
+      ...QUICKLY,
+    });
     const subscription = claims.subscribe(() => {});
     h.grant(0, 'j1');
     await tick();
@@ -1302,7 +1991,12 @@ describe('job.claim — what refused$ and stalled$ keep for a first reader', () 
 
     const stalled: string[] = [];
     let ended = false;
-    claims.stalled$.subscribe({ next: (stall) => stalled.push(stall.jobId), complete: () => { ended = true; } });
+    claims.stalled$.subscribe({
+      next: (stall) => stalled.push(stall.jobId),
+      complete: () => {
+        ended = true;
+      },
+    });
     expect(stalled).toEqual([]);
     expect(ended).toBe(true);
 
@@ -1316,12 +2010,16 @@ describe('job.claim — what refused$ and stalled$ keep for a first reader', () 
 // it runs. A frame is delivered inside the span of its arrival, which is what
 // `inTrace` stands in for; so is a span of the worker's own code.
 describe('job.claim — each job has a trace of its own', () => {
-  const trace = (digit: number) => `00-${String(digit).repeat(32)}-${String(digit).repeat(16)}-01`;
-  const inTrace = <T>(traceparent: string, work: () => T): T => withTraceparent({ traceparent }, work);
+  const trace = (digit: number) =>
+    `00-${String(digit).repeat(32)}-${String(digit).repeat(16)}-01`;
+  const inTrace = <T>(traceparent: string, work: () => T): T =>
+    withTraceparent({ traceparent }, work);
   let h: ReturnType<typeof fakeBus>;
 
   beforeAll(() => {
-    context.setGlobalContextManager(new AsyncLocalStorageContextManager().enable());
+    context.setGlobalContextManager(
+      new AsyncLocalStorageContextManager().enable(),
+    );
     propagation.setGlobalPropagator(new W3CTraceContextPropagator());
   });
   afterAll(() => {
@@ -1372,12 +2070,15 @@ describe('job.claim — each job has a trace of its own', () => {
     await inTrace(trace(7), () => finish(r.held[0]!));
     h.grant(1, 'j2');
     await tick();
-    expect(r.held[1]!.trace, 'not that of the job settled before it').toBeUndefined();
+    expect(
+      r.held[1]!.trace,
+      'not that of the job settled before it',
+    ).toBeUndefined();
 
     r.subscription.unsubscribe();
   });
 
-  it('the trace a held job states is a carrier OpenTelemetry\'s propagation takes as it is', async () => {
+  it("the trace a held job states is a carrier OpenTelemetry's propagation takes as it is", async () => {
     const r = readingTraces();
     inTrace(trace(1), () => h.grant(0, 'j1'));
     await tick();
@@ -1388,7 +2089,7 @@ describe('job.claim — each job has a trace of its own', () => {
     r.subscription.unsubscribe();
   });
 
-  it('claims from no span of the job it settled, and hands the next job over in its own reply\'s trace', async () => {
+  it("claims from no span of the job it settled, and hands the next job over in its own reply's trace", async () => {
     const r = readingTraces();
     inTrace(trace(1), () => h.grant(0, 'j1'));
     await tick();
@@ -1435,12 +2136,24 @@ describe('job.claim — each job has a trace of its own', () => {
     r.subscription.unsubscribe();
   });
 
-  it('hands a job over in its own reply\'s trace when another worker\'s reply arrives beside it', async () => {
+  it("hands a job over in its own reply's trace when another worker's reply arrives beside it", async () => {
     const r = readingTraces();
 
-    inTrace(trace(3), () => h.pushEvent('job:claimed', { response: runningJob('theirs') }, 'another-workers-claim'));
+    inTrace(trace(3), () =>
+      h.pushEvent(
+        'job:claimed',
+        { response: runningJob('theirs') },
+        'another-workers-claim',
+      ),
+    );
     inTrace(trace(1), () => h.grant(0, 'j1'));
-    inTrace(trace(4), () => h.pushEvent('job:claimed', { response: runningJob('theirs-too') }, 'another-workers-claim'));
+    inTrace(trace(4), () =>
+      h.pushEvent(
+        'job:claimed',
+        { response: runningJob('theirs-too') },
+        'another-workers-claim',
+      ),
+    );
     await tick();
 
     expect(r.held.map((job) => job.jobId)).toEqual(['j1']);
@@ -1485,22 +2198,44 @@ describe('willRetryAfter (protocol/specs/src/jobs/retry-cases.json)', () => {
     failureClass?: NonNullable<JobFailure['failureClass']>;
     retries: boolean;
   }
-  const { cases } = JSON.parse(readFileSync(new URL('../../../../protocol/specs/src/jobs/retry-cases.json', import.meta.url), 'utf8')) as { cases: RetryCase[] };
+  const { cases } = JSON.parse(
+    readFileSync(
+      new URL(
+        '../../../../protocol/specs/src/jobs/retry-cases.json',
+        import.meta.url,
+      ),
+      'utf8',
+    ),
+  ) as { cases: RetryCase[] };
 
   it('has cases to run', () => {
     expect(cases.length).toBeGreaterThan(0);
   });
 
   it.each(cases.map((c) => [c.why, c] as const))('%s', (_why, c) => {
-    expect(willRetryAfter({ retryCount: c.retryCount, maxRetries: c.maxRetries }, c.failureClass)).toBe(c.retries);
+    expect(
+      willRetryAfter(
+        { retryCount: c.retryCount, maxRetries: c.maxRetries },
+        c.failureClass,
+      ),
+    ).toBe(c.retries);
   });
 
-  it.each(cases.map((c) => [c.why, c] as const))('a held job\'s failure says the same: %s', async (_why, c) => {
-    const h = fakeBus();
-    const { job, subscription } = await holding(h, 'j1', { retryCount: c.retryCount, maxRetries: c.maxRetries });
-    await job.fail('it failed', c.failureClass === undefined ? {} : { failureClass: c.failureClass });
+  it.each(cases.map((c) => [c.why, c] as const))(
+    "a held job's failure says the same: %s",
+    async (_why, c) => {
+      const h = fakeBus();
+      const { job, subscription } = await holding(h, 'j1', {
+        retryCount: c.retryCount,
+        maxRetries: c.maxRetries,
+      });
+      await job.fail(
+        'it failed',
+        c.failureClass === undefined ? {} : { failureClass: c.failureClass },
+      );
 
-    expect(h.said()[0]!.payload).toMatchObject({ willRetry: c.retries });
-    subscription.unsubscribe();
-  });
+      expect(h.said()[0]!.payload).toMatchObject({ willRetry: c.retries });
+      subscription.unsubscribe();
+    },
+  );
 });

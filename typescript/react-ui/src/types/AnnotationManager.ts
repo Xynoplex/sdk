@@ -5,7 +5,8 @@ import type { Annotation, ResourceId, Selector } from '@xynolog/core';
  */
 export interface CreateAnnotationParams {
   rUri: ResourceId;
-  motivation: 'highlighting' | 'linking' | 'assessing' | 'commenting' | 'tagging';
+  motivation:
+    'highlighting' | 'linking' | 'assessing' | 'commenting' | 'tagging';
   selector: Selector | Selector[];
   body?: Annotation['body'];
 }
@@ -45,7 +46,9 @@ export interface AnnotationManager {
    * @param params - Creation parameters (rUri, motivation, selector, body)
    * @returns Promise resolving to the created annotation, or undefined if creation fails
    */
-  markAnnotation: (params: CreateAnnotationParams) => Promise<Annotation | undefined>;
+  markAnnotation: (
+    params: CreateAnnotationParams,
+  ) => Promise<Annotation | undefined>;
 
   /**
    * Delete an annotation

@@ -11,7 +11,10 @@
 import { resourceId, EventBus } from '@xynolog/core';
 import { describe, it, expect, vi } from 'vitest';
 import { screen } from '@testing-library/react';
-import { renderInEnglish, englishTranslationManager } from '../../../test-utils';
+import {
+  renderInEnglish,
+  englishTranslationManager,
+} from '../../../test-utils';
 import '@testing-library/jest-dom';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -20,14 +23,26 @@ import { AnnotateToolbar } from '../AnnotateToolbar';
 import { ANNOTATORS } from '../../../lib/annotation-registry';
 import { BrowseView } from '../../resource/BrowseView';
 
-vi.mock('react-markdown', () => ({ default: ({ children }: { children: string }) => <div>{children}</div> }));
+vi.mock('react-markdown', () => ({
+  default: ({ children }: { children: string }) => <div>{children}</div>,
+}));
 vi.mock('remark-gfm', () => ({ default: () => ({}) }));
 
-const emptyAnnotations = { highlights: [], references: [], assessments: [], comments: [], tags: [] };
+const emptyAnnotations = {
+  highlights: [],
+  references: [],
+  assessments: [],
+  comments: [],
+  tags: [],
+};
 
 function fakeSession(): XynologSession {
   return {
-    client: { bus: new EventBus(), browse: { click: vi.fn() }, beckon: { hover: vi.fn() } },
+    client: {
+      bus: new EventBus(),
+      browse: { click: vi.fn() },
+      beckon: { hover: vi.fn() },
+    },
   } as unknown as XynologSession;
 }
 
@@ -41,11 +56,19 @@ const toolbarProps = {
 
 describe('Annotate Bar display forms', () => {
   it('`compact` adds the display modifier; default does not', () => {
-    const { container: normal } = renderInEnglish(<AnnotateToolbar {...toolbarProps} />);
-    expect(normal.querySelector('.xynolog-annotate-toolbar')).not.toHaveClass('xynolog-annotate-toolbar--compact');
+    const { container: normal } = renderInEnglish(
+      <AnnotateToolbar {...toolbarProps} />,
+    );
+    expect(normal.querySelector('.xynolog-annotate-toolbar')).not.toHaveClass(
+      'xynolog-annotate-toolbar--compact',
+    );
 
-    const { container } = renderInEnglish(<AnnotateToolbar {...toolbarProps} compact />);
-    expect(container.querySelector('.xynolog-annotate-toolbar')).toHaveClass('xynolog-annotate-toolbar--compact');
+    const { container } = renderInEnglish(
+      <AnnotateToolbar {...toolbarProps} compact />,
+    );
+    expect(container.querySelector('.xynolog-annotate-toolbar')).toHaveClass(
+      'xynolog-annotate-toolbar--compact',
+    );
   });
 
   it('compact is display-only: the functional groups are still present', () => {
@@ -57,18 +80,37 @@ describe('Annotate Bar display forms', () => {
 
   it('BrowseView inline embeds show the compact bar automatically', () => {
     const props = {
-      content: 'x', mimeType: 'text/plain', resourceUri: resourceId('res-1'),
-      annotations: emptyAnnotations, annotateMode: false, session: fakeSession(),
+      content: 'x',
+      mimeType: 'text/plain',
+      resourceUri: resourceId('res-1'),
+      annotations: emptyAnnotations,
+      annotateMode: false,
+      session: fakeSession(),
     };
-    const { container: pane } = renderInEnglish(<BrowseView translationManager={englishTranslationManager} {...props} />);
-    expect(pane.querySelector('.xynolog-annotate-toolbar')).not.toHaveClass('xynolog-annotate-toolbar--compact');
+    const { container: pane } = renderInEnglish(
+      <BrowseView translationManager={englishTranslationManager} {...props} />,
+    );
+    expect(pane.querySelector('.xynolog-annotate-toolbar')).not.toHaveClass(
+      'xynolog-annotate-toolbar--compact',
+    );
 
-    const { container } = renderInEnglish(<BrowseView translationManager={englishTranslationManager} {...props} inline />);
-    expect(container.querySelector('.xynolog-annotate-toolbar')).toHaveClass('xynolog-annotate-toolbar--compact');
+    const { container } = renderInEnglish(
+      <BrowseView
+        translationManager={englishTranslationManager}
+        {...props}
+        inline
+      />,
+    );
+    expect(container.querySelector('.xynolog-annotate-toolbar')).toHaveClass(
+      'xynolog-annotate-toolbar--compact',
+    );
   });
 
   it('stylesheet carries the compact form (static gate — icon-only, chromeless)', () => {
-    const css = readFileSync(resolve(process.cwd(), 'src/components/toolbar/Toolbar.css'), 'utf8');
+    const css = readFileSync(
+      resolve(process.cwd(), 'src/components/toolbar/Toolbar.css'),
+      'utf8',
+    );
     expect(css).toMatch(/\.xynolog-annotate-toolbar--compact\s*\{/);
 
     // Icon-only VISUALLY, but the label stays in the accessibility tree: its

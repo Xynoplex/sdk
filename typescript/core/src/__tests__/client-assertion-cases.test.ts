@@ -10,7 +10,14 @@
 
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { JWT_BEARER, LIFETIME_SECONDS, assertionClaims, assertionHeader, thumbprint, type RsaPublicMembers } from '../client-assertion';
+import {
+  JWT_BEARER,
+  LIFETIME_SECONDS,
+  assertionClaims,
+  assertionHeader,
+  thumbprint,
+  type RsaPublicMembers,
+} from '../client-assertion';
 
 interface Jwk extends RsaPublicMembers {
   kty: string;
@@ -33,14 +40,21 @@ interface Table {
 }
 
 const table: Table = JSON.parse(
-  readFileSync(new URL('../../../../protocol/specs/src/session/client-assertion-cases.json', import.meta.url), 'utf8'),
+  readFileSync(
+    new URL(
+      '../../../../protocol/specs/src/session/client-assertion-cases.json',
+      import.meta.url,
+    ),
+    'utf8',
+  ),
 );
 
-describe('a service account\'s assertion (protocol/specs/src/session/client-assertion-cases.json)', () => {
+describe("a service account's assertion (protocol/specs/src/session/client-assertion-cases.json)", () => {
   it('has thumbprints and cases, each of an RSA key', () => {
     expect(table.thumbprints.length).toBeGreaterThan(0);
     expect(table.cases.length).toBeGreaterThan(0);
-    for (const { why, jwk } of [...table.thumbprints, ...table.cases]) expect(jwk.kty, why).toBe('RSA');
+    for (const { why, jwk } of [...table.thumbprints, ...table.cases])
+      expect(jwk.kty, why).toBe('RSA');
   });
 
   describe('a key is named by its thumbprint', () => {
@@ -52,15 +66,26 @@ describe('a service account\'s assertion (protocol/specs/src/session/client-asse
   });
 
   describe('an assertion carries the header and claims the table states', () => {
-    for (const { why, jwk, clientId, tokenEndpoint, issuedAt, jti, header, claims } of table.cases) {
+    for (const {
+      why,
+      jwk,
+      clientId,
+      tokenEndpoint,
+      issuedAt,
+      jti,
+      header,
+      claims,
+    } of table.cases) {
       it(why, () => {
         expect(assertionHeader(jwk)).toEqual(header);
-        expect(assertionClaims(clientId, tokenEndpoint, { issuedAt, jti })).toEqual(claims);
+        expect(
+          assertionClaims(clientId, tokenEndpoint, { issuedAt, jti }),
+        ).toEqual(claims);
       });
     }
   });
 
-  it('an assertion is of the table\'s type and lives as long as it says', () => {
+  it("an assertion is of the table's type and lives as long as it says", () => {
     // The form a grant posts is held where a grant is made, in key-credential.test.ts.
     expect(JWT_BEARER).toBe(table.assertionType);
     expect(LIFETIME_SECONDS).toBe(table.lifetimeSeconds);

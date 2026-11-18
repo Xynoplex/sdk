@@ -108,17 +108,31 @@ describe('XynologFavicon', () => {
 
     expect(outlineStops).toHaveLength(2);
     expect(outlineStops[0]).toHaveAttribute('offset', '0%');
-    expect(outlineStops[0]).toHaveStyle({ stopColor: '#00FFFF', stopOpacity: '1' });
+    expect(outlineStops[0]).toHaveStyle({
+      stopColor: '#00FFFF',
+      stopOpacity: '1',
+    });
     expect(outlineStops[1]).toHaveAttribute('offset', '100%');
-    expect(outlineStops[1]).toHaveStyle({ stopColor: '#0080FF', stopOpacity: '1' });
+    expect(outlineStops[1]).toHaveStyle({
+      stopColor: '#0080FF',
+      stopOpacity: '1',
+    });
   });
 
   it('does not render outline gradient for non-outline variants', () => {
-    const { container: gradientContainer } = render(<XynologFavicon variant="gradient" />);
-    const { container: solidContainer } = render(<XynologFavicon variant="solid" />);
+    const { container: gradientContainer } = render(
+      <XynologFavicon variant="gradient" />,
+    );
+    const { container: solidContainer } = render(
+      <XynologFavicon variant="solid" />,
+    );
 
-    expect(gradientContainer.querySelector('#xynologOutline')).not.toBeInTheDocument();
-    expect(solidContainer.querySelector('#xynologOutline')).not.toBeInTheDocument();
+    expect(
+      gradientContainer.querySelector('#xynologOutline'),
+    ).not.toBeInTheDocument();
+    expect(
+      solidContainer.querySelector('#xynologOutline'),
+    ).not.toBeInTheDocument();
   });
 
   it('renders with all props combined', () => {
@@ -128,7 +142,7 @@ describe('XynologFavicon', () => {
         className="test-favicon"
         variant="outline"
         background={false}
-      />
+      />,
     );
 
     const svg = container.querySelector('svg');

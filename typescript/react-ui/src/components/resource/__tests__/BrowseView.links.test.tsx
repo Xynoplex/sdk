@@ -17,13 +17,25 @@ import { BrowseView } from '../BrowseView';
 import { resourceId, EventBus } from '@xynolog/core';
 import { englishTranslationManager } from '../../../test-utils';
 
-vi.mock('../../annotation/AnnotateToolbar', () => ({ AnnotateToolbar: () => null }));
+vi.mock('../../annotation/AnnotateToolbar', () => ({
+  AnnotateToolbar: () => null,
+}));
 
-const emptyAnnotations = { highlights: [], references: [], assessments: [], comments: [], tags: [] };
+const emptyAnnotations = {
+  highlights: [],
+  references: [],
+  assessments: [],
+  comments: [],
+  tags: [],
+};
 
 function fakeSession(): XynologSession {
   return {
-    client: { bus: new EventBus(), browse: { click: vi.fn() }, beckon: { hover: vi.fn() } },
+    client: {
+      bus: new EventBus(),
+      browse: { click: vi.fn() },
+      beckon: { hover: vi.fn() },
+    },
   } as unknown as XynologSession;
 }
 
@@ -35,9 +47,13 @@ describe('BrowseView — content link delegation', () => {
     render(
       <BrowseView
         translationManager={englishTranslationManager}
-        content={MD} mimeType="text/markdown" resourceUri={resourceId("res-1")}
-        annotations={emptyAnnotations} annotateMode={false}
-        session={fakeSession()} onLinkClick={onLinkClick}
+        content={MD}
+        mimeType="text/markdown"
+        resourceUri={resourceId('res-1')}
+        annotations={emptyAnnotations}
+        annotateMode={false}
+        session={fakeSession()}
+        onLinkClick={onLinkClick}
       />,
     );
     const anchor = screen.getByText('the link').closest('a')!;
@@ -45,15 +61,20 @@ describe('BrowseView — content link delegation', () => {
     const notCancelled = fireEvent.click(anchor);
     expect(notCancelled).toBe(false); // navigation blocked
     expect(onLinkClick).toHaveBeenCalledTimes(1);
-    expect(onLinkClick.mock.calls[0]![0]).toMatchObject({ href: 'https://example.test/x' });
+    expect(onLinkClick.mock.calls[0]![0]).toMatchObject({
+      href: 'https://example.test/x',
+    });
   });
 
   it('blocks navigation even with no handler (never navigates on its own)', () => {
     render(
       <BrowseView
         translationManager={englishTranslationManager}
-        content={MD} mimeType="text/markdown" resourceUri={resourceId("res-1")}
-        annotations={emptyAnnotations} annotateMode={false}
+        content={MD}
+        mimeType="text/markdown"
+        resourceUri={resourceId('res-1')}
+        annotations={emptyAnnotations}
+        annotateMode={false}
         session={fakeSession()}
       />,
     );

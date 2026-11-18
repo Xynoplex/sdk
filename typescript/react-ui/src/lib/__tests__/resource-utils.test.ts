@@ -13,7 +13,7 @@ describe('resource-utils', () => {
           'image/svg+xml',
         ];
 
-        imageTypes.forEach(type => {
+        imageTypes.forEach((type) => {
           expect(getResourceIcon(type)).toBe('🖼️');
         });
       });
@@ -83,7 +83,9 @@ describe('resource-utils', () => {
       });
 
       it('should handle media type with multiple semicolons', () => {
-        expect(getResourceIcon('text/plain; charset=utf-8; boundary=something')).toBe('📄');
+        expect(
+          getResourceIcon('text/plain; charset=utf-8; boundary=something'),
+        ).toBe('📄');
       });
 
       it('should trim whitespace in base type', () => {
@@ -112,7 +114,9 @@ describe('resource-utils', () => {
 
       it('should return true for text/* with charset', () => {
         expect(supportsDetection('text/plain; charset=utf-8')).toBe(true);
-        expect(supportsDetection('text/markdown; charset=iso-8859-1')).toBe(true);
+        expect(supportsDetection('text/markdown; charset=iso-8859-1')).toBe(
+          true,
+        );
       });
 
       it('should handle uppercase TEXT/*', () => {
@@ -127,13 +131,9 @@ describe('resource-utils', () => {
 
     describe('Unsupported Types', () => {
       it('should return false for image types', () => {
-        const imageTypes = [
-          'image/jpeg',
-          'image/png',
-          'image/gif',
-        ];
+        const imageTypes = ['image/jpeg', 'image/png', 'image/gif'];
 
-        imageTypes.forEach(type => {
+        imageTypes.forEach((type) => {
           expect(supportsDetection(type)).toBe(false);
         });
       });
@@ -145,7 +145,7 @@ describe('resource-utils', () => {
           'application/octet-stream',
         ];
 
-        appTypes.forEach(type => {
+        appTypes.forEach((type) => {
           expect(supportsDetection(type)).toBe(false);
         });
       });
@@ -162,7 +162,7 @@ describe('resource-utils', () => {
           'text/calendar',
         ];
 
-        storageTierText.forEach(type => {
+        storageTierText.forEach((type) => {
           expect(supportsDetection(type)).toBe(false);
         });
       });
@@ -198,7 +198,9 @@ describe('resource-utils', () => {
       });
 
       it('should handle media type with multiple parameters', () => {
-        expect(supportsDetection('text/plain; charset=utf-8; format=flowed')).toBe(true);
+        expect(
+          supportsDetection('text/plain; charset=utf-8; format=flowed'),
+        ).toBe(true);
       });
 
       it('should trim whitespace in base type', () => {

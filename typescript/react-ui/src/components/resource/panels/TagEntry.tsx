@@ -48,7 +48,7 @@ export function TagEntry({
   const schemas = useObservable(tagSchemas$);
   const schema =
     schemaId && schemas && isReady(schemas)
-      ? schemas.value.find((s) => s.id === schemaId) ?? null
+      ? (schemas.value.find((s) => s.id === schemaId) ?? null)
       : null;
 
   return (
@@ -68,15 +68,14 @@ export function TagEntry({
           {category}
         </span>
         {schema && (
-          <span className="xynolog-annotation-entry__meta">
-            {schema.name}
-          </span>
+          <span className="xynolog-annotation-entry__meta">{schema.name}</span>
         )}
       </div>
 
       {/* Selected text */}
       <div className="xynolog-annotation-entry__quote" data-type="tag">
-        "{selectedText.substring(0, 150)}{selectedText.length > 150 ? '...' : ''}"
+        "{selectedText.substring(0, 150)}
+        {selectedText.length > 150 ? '...' : ''}"
       </div>
       {tag.generator && renderAgentLabels(tag.generator) && (
         <div className="xynolog-annotation-entry__metadata">

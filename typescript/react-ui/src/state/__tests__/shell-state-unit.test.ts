@@ -21,12 +21,16 @@ describe('createShellStateUnit', () => {
       sessionFactory: createHttpSessionFactory(),
     });
   });
-  afterEach(async () => { await browser.dispose(); });
+  afterEach(async () => {
+    await browser.dispose();
+  });
 
   it('starts with the given initial panel', () => {
-    const stateUnit = createShellStateUnit(browser, { initialPanel: 'knowledge-base' });
+    const stateUnit = createShellStateUnit(browser, {
+      initialPanel: 'knowledge-base',
+    });
     const values: (string | null)[] = [];
-    stateUnit.activePanel$.subscribe(v => values.push(v));
+    stateUnit.activePanel$.subscribe((v) => values.push(v));
     expect(values).toEqual(['knowledge-base']);
     stateUnit.dispose();
   });
@@ -34,7 +38,7 @@ describe('createShellStateUnit', () => {
   it('defaults to null when no initial panel', () => {
     const stateUnit = createShellStateUnit(browser);
     const values: (string | null)[] = [];
-    stateUnit.activePanel$.subscribe(v => values.push(v));
+    stateUnit.activePanel$.subscribe((v) => values.push(v));
     expect(values).toEqual([null]);
     stateUnit.dispose();
   });
@@ -42,7 +46,7 @@ describe('createShellStateUnit', () => {
   it('toggles panel on panel:toggle', () => {
     const stateUnit = createShellStateUnit(browser);
     const values: (string | null)[] = [];
-    stateUnit.activePanel$.subscribe(v => values.push(v));
+    stateUnit.activePanel$.subscribe((v) => values.push(v));
 
     browser.emit('panel:toggle', { panel: 'annotations' });
     expect(values).toEqual([null, 'annotations']);
@@ -55,7 +59,7 @@ describe('createShellStateUnit', () => {
   it('switches panel when toggling a different one', () => {
     const stateUnit = createShellStateUnit(browser, { initialPanel: 'info' });
     const values: (string | null)[] = [];
-    stateUnit.activePanel$.subscribe(v => values.push(v));
+    stateUnit.activePanel$.subscribe((v) => values.push(v));
 
     browser.emit('panel:toggle', { panel: 'annotations' });
     expect(values).toEqual(['info', 'annotations']);
@@ -65,7 +69,7 @@ describe('createShellStateUnit', () => {
   it('opens panel on panel:open', () => {
     const stateUnit = createShellStateUnit(browser);
     const values: (string | null)[] = [];
-    stateUnit.activePanel$.subscribe(v => values.push(v));
+    stateUnit.activePanel$.subscribe((v) => values.push(v));
 
     browser.emit('panel:open', { panel: 'history' });
     expect(values).toEqual([null, 'history']);
@@ -75,9 +79,12 @@ describe('createShellStateUnit', () => {
   it('sets scrollToAnnotationId on panel:open with scrollTarget', () => {
     const stateUnit = createShellStateUnit(browser);
     const scrolls: (string | null)[] = [];
-    stateUnit.scrollToAnnotationId$.subscribe(v => scrolls.push(v));
+    stateUnit.scrollToAnnotationId$.subscribe((v) => scrolls.push(v));
 
-    browser.emit('panel:open', { panel: 'annotations', scrollToAnnotationId: annotationId('ann-42') });
+    browser.emit('panel:open', {
+      panel: 'annotations',
+      scrollToAnnotationId: annotationId('ann-42'),
+    });
     expect(scrolls).toEqual([null, 'ann-42']);
     stateUnit.dispose();
   });
@@ -85,7 +92,9 @@ describe('createShellStateUnit', () => {
   it('maps all motivations to correct tab keys', () => {
     const stateUnit = createShellStateUnit(browser);
     const tabs: string[] = [];
-    stateUnit.panelInitialTab$.subscribe(v => { if (v) tabs.push(v.tab); });
+    stateUnit.panelInitialTab$.subscribe((v) => {
+      if (v) tabs.push(v.tab);
+    });
 
     const cases: Array<[components['schemas']['Motivation'], string]> = [
       ['linking', 'reference'],
@@ -104,12 +113,17 @@ describe('createShellStateUnit', () => {
   it('defaults to highlight tab for unknown motivation', () => {
     const stateUnit = createShellStateUnit(browser);
     const tabs: string[] = [];
-    stateUnit.panelInitialTab$.subscribe(v => { if (v) tabs.push(v.tab); });
+    stateUnit.panelInitialTab$.subscribe((v) => {
+      if (v) tabs.push(v.tab);
+    });
 
     // The schema types motivation as Motivation, but panel:open is not
     // wire-validated (CHANNEL_SCHEMAS: null) — simulate a runtime-loose
     // payload; the 'highlight' fallback is the pinned defense for it.
-    browser.emit('panel:open', { panel: 'annotations', motivation: 'unknown-thing' as never });
+    browser.emit('panel:open', {
+      panel: 'annotations',
+      motivation: 'unknown-thing' as never,
+    });
     expect(tabs[tabs.length - 1]).toBe('highlight');
     stateUnit.dispose();
   });
@@ -117,19 +131,29 @@ describe('createShellStateUnit', () => {
   it('increments generation counter on each panel open with motivation', () => {
     const stateUnit = createShellStateUnit(browser);
     const generations: number[] = [];
-    stateUnit.panelInitialTab$.subscribe(v => { if (v) generations.push(v.generation); });
+    stateUnit.panelInitialTab$.subscribe((v) => {
+      if (v) generations.push(v.generation);
+    });
 
-    browser.emit('panel:open', { panel: 'annotations', motivation: 'highlighting' });
-    browser.emit('panel:open', { panel: 'annotations', motivation: 'highlighting' });
+    browser.emit('panel:open', {
+      panel: 'annotations',
+      motivation: 'highlighting',
+    });
+    browser.emit('panel:open', {
+      panel: 'annotations',
+      motivation: 'highlighting',
+    });
     expect(generations).toHaveLength(2);
     expect(generations[1]).toBeGreaterThan(generations[0]);
     stateUnit.dispose();
   });
 
   it('closes panel on panel:close', () => {
-    const stateUnit = createShellStateUnit(browser, { initialPanel: 'annotations' });
+    const stateUnit = createShellStateUnit(browser, {
+      initialPanel: 'annotations',
+    });
     const values: (string | null)[] = [];
-    stateUnit.activePanel$.subscribe(v => values.push(v));
+    stateUnit.activePanel$.subscribe((v) => values.push(v));
 
     browser.emit('panel:close', undefined);
     expect(values).toEqual(['annotations', null]);
@@ -139,9 +163,12 @@ describe('createShellStateUnit', () => {
   it('clears scrollToAnnotationId on onScrollCompleted', () => {
     const stateUnit = createShellStateUnit(browser);
     const scrolls: (string | null)[] = [];
-    stateUnit.scrollToAnnotationId$.subscribe(v => scrolls.push(v));
+    stateUnit.scrollToAnnotationId$.subscribe((v) => scrolls.push(v));
 
-    browser.emit('panel:open', { panel: 'annotations', scrollToAnnotationId: annotationId('ann-1') });
+    browser.emit('panel:open', {
+      panel: 'annotations',
+      scrollToAnnotationId: annotationId('ann-1'),
+    });
     stateUnit.onScrollCompleted();
     expect(scrolls).toEqual([null, 'ann-1', null]);
     stateUnit.dispose();
@@ -149,7 +176,10 @@ describe('createShellStateUnit', () => {
 
   it('calls onPanelChange callback', () => {
     const cb = vi.fn();
-    const stateUnit = createShellStateUnit(browser, { initialPanel: 'info', onPanelChange: cb });
+    const stateUnit = createShellStateUnit(browser, {
+      initialPanel: 'info',
+      onPanelChange: cb,
+    });
     expect(cb).toHaveBeenCalledWith('info');
 
     browser.emit('panel:toggle', { panel: 'info' });
@@ -160,7 +190,7 @@ describe('createShellStateUnit', () => {
   it('openPanel command pushes to bus', () => {
     const stateUnit = createShellStateUnit(browser);
     const values: (string | null)[] = [];
-    stateUnit.activePanel$.subscribe(v => values.push(v));
+    stateUnit.activePanel$.subscribe((v) => values.push(v));
 
     stateUnit.openPanel('settings');
     expect(values).toEqual([null, 'settings']);
@@ -170,7 +200,7 @@ describe('createShellStateUnit', () => {
   it('closePanel command pushes to bus', () => {
     const stateUnit = createShellStateUnit(browser, { initialPanel: 'info' });
     const values: (string | null)[] = [];
-    stateUnit.activePanel$.subscribe(v => values.push(v));
+    stateUnit.activePanel$.subscribe((v) => values.push(v));
 
     stateUnit.closePanel();
     expect(values).toEqual(['info', null]);
@@ -180,7 +210,7 @@ describe('createShellStateUnit', () => {
   it('togglePanel command pushes to bus', () => {
     const stateUnit = createShellStateUnit(browser);
     const values: (string | null)[] = [];
-    stateUnit.activePanel$.subscribe(v => values.push(v));
+    stateUnit.activePanel$.subscribe((v) => values.push(v));
 
     stateUnit.togglePanel('annotations');
     stateUnit.togglePanel('annotations');
@@ -191,7 +221,7 @@ describe('createShellStateUnit', () => {
   it('stops responding after dispose', () => {
     const stateUnit = createShellStateUnit(browser);
     const values: (string | null)[] = [];
-    stateUnit.activePanel$.subscribe(v => values.push(v));
+    stateUnit.activePanel$.subscribe((v) => values.push(v));
 
     stateUnit.dispose();
     browser.emit('panel:open', { panel: 'info' });
@@ -205,13 +235,27 @@ describe('ShellStateUnit — StateUnit axioms', () => {
     // independent browsers in X3 give genuine instance isolation.
     assertStateUnitAxioms<ShellStateUnit>({
       setup: () => {
-        const b = new XynologBrowser({ storage: new InMemorySessionStorage(), sessionFactory: createHttpSessionFactory() });
-        return { unit: createShellStateUnit(b), teardown: () => { void b.dispose(); } };
+        const b = new XynologBrowser({
+          storage: new InMemorySessionStorage(),
+          sessionFactory: createHttpSessionFactory(),
+        });
+        return {
+          unit: createShellStateUnit(b),
+          teardown: () => {
+            void b.dispose();
+          },
+        };
       },
-      surfaces: (u) => [u.activePanel$, u.scrollToAnnotationId$, u.panelInitialTab$],
+      surfaces: (u) => [
+        u.activePanel$,
+        u.scrollToAnnotationId$,
+        u.panelInitialTab$,
+      ],
       invocations: (u) => [
-        () => u.openPanel('knowledge-base'), () => u.togglePanel('knowledge-base'),
-        () => u.closePanel(), () => u.onScrollCompleted(),
+        () => u.openPanel('knowledge-base'),
+        () => u.togglePanel('knowledge-base'),
+        () => u.closePanel(),
+        () => u.onScrollCompleted(),
       ],
       numRuns: 10,
     });

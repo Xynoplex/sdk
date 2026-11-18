@@ -21,8 +21,14 @@ import { inMemoryTransport } from '../../__tests__/helpers/in-memory-transport';
 
 // command channel → its confirmed-write reply channels
 const REPLY_FOR: Record<string, { ok: string; failed: string }> = {
-  'frame:add-entity-type': { ok: 'frame:entity-type-add-ok', failed: 'frame:entity-type-add-failed' },
-  'frame:add-tag-schema': { ok: 'frame:tag-schema-add-ok', failed: 'frame:tag-schema-add-failed' },
+  'frame:add-entity-type': {
+    ok: 'frame:entity-type-add-ok',
+    failed: 'frame:entity-type-add-failed',
+  },
+  'frame:add-tag-schema': {
+    ok: 'frame:tag-schema-add-ok',
+    failed: 'frame:tag-schema-add-failed',
+  },
 };
 
 /**
@@ -36,29 +42,37 @@ function createMockTransport(opts: { fail?: boolean } = {}): {
 } {
   const bus = new EventBus();
 
-  const emitSpy = vi.fn(async (
-    channel: string,
-    _payload: Record<string, unknown>,
-    envelope?: { correlationId?: string },
-  ) => {
-    const correlationId = envelope?.correlationId;
-    const reply = REPLY_FOR[channel];
-    if (reply) {
-      const target = (opts.fail ? reply.failed : reply.ok) as keyof EventMap;
-      // The subscription is already live (Bus.request subscribes before emitting),
-      // so a synchronous push is delivered to the awaiting take(1).
-      bus.emit(
-        target,
-        (opts.fail ? { message: 'gateway add failed' } : {}) as EventMap[typeof target],
-        { correlationId },
-      );
-    }
-  });
+  const emitSpy = vi.fn(
+    async (
+      channel: string,
+      _payload: Record<string, unknown>,
+      envelope?: { correlationId?: string },
+    ) => {
+      const correlationId = envelope?.correlationId;
+      const reply = REPLY_FOR[channel];
+      if (reply) {
+        const target = (opts.fail ? reply.failed : reply.ok) as keyof EventMap;
+        // The subscription is already live (Bus.request subscribes before emitting),
+        // so a synchronous push is delivered to the awaiting take(1).
+        bus.emit(
+          target,
+          (opts.fail
+            ? { message: 'gateway add failed' }
+            : {}) as EventMap[typeof target],
+          { correlationId },
+        );
+      }
+    },
+  );
 
   const transport = inMemoryTransport({
     bus,
     onEmit: (channel, payload, envelope) => {
-      void emitSpy(channel as string, payload as Record<string, unknown>, envelope);
+      void emitSpy(
+        channel as string,
+        payload as Record<string, unknown>,
+        envelope,
+      );
     },
   });
 
@@ -88,9 +102,24 @@ describe('FrameNamespace', () => {
   it('addEntityTypes() emits one event per type, preserving order', async () => {
     await frame.addEntityTypes(['Person', 'Organization', 'Location']);
     expect(emitSpy).toHaveBeenCalledTimes(3);
-    expect(emitSpy).toHaveBeenNthCalledWith(1, 'frame:add-entity-type', expect.objectContaining({ tag: 'Person' }), expect.objectContaining({ correlationId: expect.any(String) }));
-    expect(emitSpy).toHaveBeenNthCalledWith(2, 'frame:add-entity-type', expect.objectContaining({ tag: 'Organization' }), expect.objectContaining({ correlationId: expect.any(String) }));
-    expect(emitSpy).toHaveBeenNthCalledWith(3, 'frame:add-entity-type', expect.objectContaining({ tag: 'Location' }), expect.objectContaining({ correlationId: expect.any(String) }));
+    expect(emitSpy).toHaveBeenNthCalledWith(
+      1,
+      'frame:add-entity-type',
+      expect.objectContaining({ tag: 'Person' }),
+      expect.objectContaining({ correlationId: expect.any(String) }),
+    );
+    expect(emitSpy).toHaveBeenNthCalledWith(
+      2,
+      'frame:add-entity-type',
+      expect.objectContaining({ tag: 'Organization' }),
+      expect.objectContaining({ correlationId: expect.any(String) }),
+    );
+    expect(emitSpy).toHaveBeenNthCalledWith(
+      3,
+      'frame:add-entity-type',
+      expect.objectContaining({ tag: 'Location' }),
+      expect.objectContaining({ correlationId: expect.any(String) }),
+    );
   });
 
   it('addEntityTypes([]) is a no-op', async () => {
@@ -101,7 +130,9 @@ describe('FrameNamespace', () => {
   it('REJECTS when the gateway replies *-add-failed — a remote add-failure is not silently dropped', async () => {
     const { transport } = createMockTransport({ fail: true });
     const failing = new FrameNamespace(transport);
-    await expect(failing.addEntityType('Person')).rejects.toThrow(/gateway add failed/);
+    await expect(failing.addEntityType('Person')).rejects.toThrow(
+      /gateway add failed/,
+    );
   });
 
   describe('addTagSchema()', () => {

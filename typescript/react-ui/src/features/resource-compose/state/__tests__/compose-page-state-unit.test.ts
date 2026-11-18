@@ -5,8 +5,14 @@ import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import type { XynologClient } from '@xynolog/sdk';
 import type { ShellStateUnit } from '../../../../state/shell-state-unit';
-import { createComposePageStateUnit, type ComposePageStateUnit } from '../compose-page-state-unit';
-import { assertStateUnitAxioms, disposeProbe } from '@xynolog/core/testing/axioms';
+import {
+  createComposePageStateUnit,
+  type ComposePageStateUnit,
+} from '../compose-page-state-unit';
+import {
+  assertStateUnitAxioms,
+  disposeProbe,
+} from '@xynolog/core/testing/axioms';
 
 /** Build an `UploadObservable`-shaped mock that emits started → finished. */
 function mockUpload(resourceId: string) {
@@ -23,49 +29,72 @@ function mockBrowse(): ShellStateUnit {
   return { dispose: vi.fn() } as unknown as ShellStateUnit;
 }
 
-function mockClient(overrides: {
-  entityTypes$?: BehaviorSubject<string[] | undefined>;
-  fromToken?: ReturnType<typeof vi.fn>;
-  getResourceRepresentation?: ReturnType<typeof vi.fn>;
-  createFromToken?: ReturnType<typeof vi.fn>;
-  resource?: ReturnType<typeof vi.fn>;
-  body?: ReturnType<typeof vi.fn>;
-} = {}): XynologClient {
-  const entityTypes$ = overrides.entityTypes$ ?? new BehaviorSubject<string[] | undefined>(['Person']);
+function mockClient(
+  overrides: {
+    entityTypes$?: BehaviorSubject<string[] | undefined>;
+    fromToken?: ReturnType<typeof vi.fn>;
+    getResourceRepresentation?: ReturnType<typeof vi.fn>;
+    createFromToken?: ReturnType<typeof vi.fn>;
+    resource?: ReturnType<typeof vi.fn>;
+    body?: ReturnType<typeof vi.fn>;
+  } = {},
+): XynologClient {
+  const entityTypes$ =
+    overrides.entityTypes$ ??
+    new BehaviorSubject<string[] | undefined>(['Person']);
   return {
     browse: {
       entityTypes: () => asStates(entityTypes$.asObservable()),
     },
     yield: {
-      fromToken: overrides.fromToken ?? vi.fn().mockResolvedValue({ '@id': 'src-1', representations: [{ mediaType: 'text/plain' }] }),
-      createFromToken: overrides.createFromToken ?? vi.fn().mockResolvedValue({ resourceId: 'new-1' }),
+      fromToken:
+        overrides.fromToken ??
+        vi.fn().mockResolvedValue({
+          '@id': 'src-1',
+          representations: [{ mediaType: 'text/plain' }],
+        }),
+      createFromToken:
+        overrides.createFromToken ??
+        vi.fn().mockResolvedValue({ resourceId: 'new-1' }),
       resource: overrides.resource ?? mockUpload('new-2'),
     },
     bind: {
       body: overrides.body ?? vi.fn().mockResolvedValue(undefined),
     },
-    getResourceRepresentation: overrides.getResourceRepresentation ?? vi.fn().mockResolvedValue({
-      data: new TextEncoder().encode('source content').buffer,
-      contentType: 'text/plain',
-    }),
+    getResourceRepresentation:
+      overrides.getResourceRepresentation ??
+      vi.fn().mockResolvedValue({
+        data: new TextEncoder().encode('source content').buffer,
+        contentType: 'text/plain',
+      }),
   } as unknown as XynologClient;
 }
 
 describe('createComposePageStateUnit', () => {
   it('defaults to "new" mode', async () => {
-    const stateUnit = createComposePageStateUnit(sessionOf(mockClient()), mockBrowse(), {});
+    const stateUnit = createComposePageStateUnit(
+      sessionOf(mockClient()),
+      mockBrowse(),
+      {},
+    );
 
     const mode = await firstValueFrom(stateUnit.mode$);
     expect(mode).toBe('new');
 
-    const loading = await firstValueFrom(stateUnit.loading$.pipe(filter((l) => !l)));
+    const loading = await firstValueFrom(
+      stateUnit.loading$.pipe(filter((l) => !l)),
+    );
     expect(loading).toBe(false);
 
     stateUnit.dispose();
   });
 
   it('exposes entity types', async () => {
-    const stateUnit = createComposePageStateUnit(sessionOf(mockClient()), mockBrowse(), {});
+    const stateUnit = createComposePageStateUnit(
+      sessionOf(mockClient()),
+      mockBrowse(),
+      {},
+    );
 
     const types = await firstValueFrom(stateUnit.entityTypes.value$);
     expect(types).toEqual(['Person']);
@@ -75,7 +104,11 @@ describe('createComposePageStateUnit', () => {
 
   it('save in new mode calls yield.resource', async () => {
     const resource = mockUpload('new-3');
-    const stateUnit = createComposePageStateUnit(sessionOf(mockClient({ resource })), mockBrowse(), {});
+    const stateUnit = createComposePageStateUnit(
+      sessionOf(mockClient({ resource })),
+      mockBrowse(),
+      {},
+    );
 
     const id = await stateUnit.save({
       mode: 'new',
@@ -93,11 +126,17 @@ describe('createComposePageStateUnit', () => {
   });
 
   it('save in clone mode calls yield.createFromToken', async () => {
-    const createFromToken = vi.fn().mockResolvedValue({ resourceId: 'cloned-1' });
-    const stateUnit = createComposePageStateUnit(sessionOf(mockClient({ createFromToken })), mockBrowse(), {
-      mode: 'clone',
-      token: 'tok-abc',
-    });
+    const createFromToken = vi
+      .fn()
+      .mockResolvedValue({ resourceId: 'cloned-1' });
+    const stateUnit = createComposePageStateUnit(
+      sessionOf(mockClient({ createFromToken })),
+      mockBrowse(),
+      {
+        mode: 'clone',
+        token: 'tok-abc',
+      },
+    );
 
     const id = await stateUnit.save({
       mode: 'clone',
@@ -119,7 +158,14 @@ describe('ComposePageStateUnit — StateUnit axioms', () => {
     assertStateUnitAxioms<ComposePageStateUnit>({
       setup: () => {
         const browse = disposeProbe();
-        return { unit: createComposePageStateUnit(sessionOf(mockClient()), browse as unknown as ShellStateUnit, {}), passedIn: [browse] };
+        return {
+          unit: createComposePageStateUnit(
+            sessionOf(mockClient()),
+            browse as unknown as ShellStateUnit,
+            {},
+          ),
+          passedIn: [browse],
+        };
       },
       surfaces: (u) => [u.mode$, u.loading$, u.cloneData$, u.uploadProgress$],
     });
@@ -132,7 +178,11 @@ describe('createComposePageStateUnit — entity types load failure', () => {
 
   it('surfaces the failure rather than presenting an empty picker as fact', async () => {
     const entityTypes$ = new BehaviorSubject<string[] | undefined>(undefined);
-    const stateUnit = createComposePageStateUnit(sessionOf(mockClient({ entityTypes$ })), mockBrowse(), {});
+    const stateUnit = createComposePageStateUnit(
+      sessionOf(mockClient({ entityTypes$ })),
+      mockBrowse(),
+      {},
+    );
 
     entityTypes$.next({ status: 'failed', error: new Error('boom') } as never);
 

@@ -8,11 +8,23 @@
 import type { AnnotationId } from '@xynolog/core';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useResourceViewedReport } from '../hooks/useResourceViewedReport';
-import type { components, ResourceDescriptor, ResourceId, EventMap } from '@xynolog/core';
+import type {
+  components,
+  ResourceDescriptor,
+  ResourceId,
+  EventMap,
+} from '@xynolog/core';
 import type { ConnectionState, RenderMode } from '@xynolog/core';
 import { folderOf } from '@xynolog/core';
 import type { ComposeParams } from '../../../components/modals/ComposeStep';
-import { getLanguage, getPrimaryRepresentation, getPrimaryMediaType, getStorageUri, capabilitiesOf, extensionForMediaType } from '@xynolog/core';
+import {
+  getLanguage,
+  getPrimaryRepresentation,
+  getPrimaryMediaType,
+  getStorageUri,
+  capabilitiesOf,
+  extensionForMediaType,
+} from '@xynolog/core';
 import { ANNOTATORS } from '@xynolog/react-ui';
 import { ErrorBoundary } from '@xynolog/react-ui';
 import { AnnotationHistory } from '@xynolog/react-ui';
@@ -23,7 +35,11 @@ import { JsonLdPanel } from '@xynolog/react-ui';
 import { Toolbar } from '@xynolog/react-ui';
 import { useResourceLoadingAnnouncements } from '@xynolog/react-ui';
 import { ResourceViewer } from '@xynolog/react-ui';
-import type { BrowseMediaRenderers, AnnotateMediaRenderers, ToolbarPanelsProps } from '@xynolog/react-ui';
+import type {
+  BrowseMediaRenderers,
+  AnnotateMediaRenderers,
+  ToolbarPanelsProps,
+} from '@xynolog/react-ui';
 import { useObservable } from '@xynolog/react-ui';
 import { JobCancelledError } from '@xynolog/sdk';
 import { useResourceContent } from '../../../hooks/useResourceContent';
@@ -36,7 +52,10 @@ import { useGenerationArrival } from '../../../hooks/useGenerationArrival';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useLineNumbers } from '../../../contexts/LineNumbersContext';
 import { useHoverDelay } from '../../../hooks/useHoverDelay';
-import { useEventSubscriptions, useResourceEventSubscriptions } from '../../../contexts/useEventSubscription';
+import {
+  useEventSubscriptions,
+  useResourceEventSubscriptions,
+} from '../../../contexts/useEventSubscription';
 import { useObservableExternalNavigation } from '../../../hooks/useObservableBrowse';
 import { useToolbarPrefs } from '../../../hooks/useToolbarPrefs';
 import { getSelectorType } from '../../../lib/media-shapes';
@@ -45,11 +64,17 @@ import { useXynolog } from '../../../session/XynologProvider';
 import { createResourceViewerPageStateUnit } from '../state/resource-viewer-page-state-unit';
 import { useSessionStateUnit } from '../../../hooks/useSessionStateUnit';
 import { useShellStateUnit } from '../../../hooks/useShellStateUnit';
-import { useTranslationManager, useTranslations } from '../../../contexts/TranslationContext';
+import {
+  useTranslationManager,
+  useTranslations,
+} from '../../../contexts/TranslationContext';
 import { ReferenceWizardModal } from '../../../components/modals/ReferenceWizardModal';
 import { ResourceGenerateModal } from '../../../components/modals/ResourceGenerateModal';
 import type { GenerationConfig } from '../../../components/modals/ConfigureGenerationStep';
-import type { LinkComponentProps, RouteBuilder } from '../../../contexts/RoutingContext';
+import type {
+  LinkComponentProps,
+  RouteBuilder,
+} from '../../../contexts/RoutingContext';
 import { toGenerationParams } from '../generation-params';
 
 type XynologResource = ResourceDescriptor;
@@ -187,20 +212,27 @@ export function ResourceViewerPage({
 
   // ResourceViewer is bring-your-own-session: feed it the active session plus
   // host-owned navigation (reference follow) and panel control (app-scoped bus).
-  const handleViewerOpenResource = useCallback((id: ResourceId) => {
-    navigateExternal(`/know/resource/${id}`, { resourceId: id });
-  }, [navigateExternal]);
+  const handleViewerOpenResource = useCallback(
+    (id: ResourceId) => {
+      navigateExternal(`/know/resource/${id}`, { resourceId: id });
+    },
+    [navigateExternal],
+  );
 
-  const handleViewerOpenPanel = useCallback((event: EventMap['panel:open']) => {
-    browser.emit('panel:open', event);
-  }, [browser]);
+  const handleViewerOpenPanel = useCallback(
+    (event: EventMap['panel:open']) => {
+      browser.emit('panel:open', event);
+    },
+    [browser],
+  );
 
   // UI state hooks
   const { showError, showSuccess } = useToast();
   const { theme } = useTheme();
   const { showLineNumbers } = useLineNumbers();
   const { hoverDelayMs } = useHoverDelay();
-  const { triggerSparkleAnimation, clearSparkle, sparkleAnnotationIds } = useResourceAnnotations();
+  const { triggerSparkleAnimation, clearSparkle, sparkleAnnotationIds } =
+    useResourceAnnotations();
 
   // The view the viewer mounts decides what the page loads: decoded text for a
   // text view, a media-token URL for an image or PDF view, and nothing for a
@@ -214,19 +246,30 @@ export function ResourceViewerPage({
   // controlled props; the components hold no pref state policy.
   const toolbarPrefs = useToolbarPrefs(getSelectorType(resourceMediaType));
   const annotateMode = toolbarPrefs.annotateMode;
-  const contentSource = CONTENT_SOURCE[capabilitiesOf(resourceMediaType)?.render ?? 'none'];
+  const contentSource =
+    CONTENT_SOURCE[capabilitiesOf(resourceMediaType)?.render ?? 'none'];
 
   // Headless hook returns the error; the page (chrome tier) owns the toast.
-  const { content: textContent, loading: textLoading, error: contentError } =
-    useResourceContent(xynolog ?? null, rUri, resource, contentSource === 'text');
+  const {
+    content: textContent,
+    loading: textLoading,
+    error: contentError,
+  } = useResourceContent(
+    xynolog ?? null,
+    rUri,
+    resource,
+    contentSource === 'text',
+  );
 
   useEffect(() => {
     if (contentError) showError('Failed to load resource representation');
   }, [contentError, showError]);
 
   // A null client mints nothing: only a view that loads by URL needs a token.
-  const { token: mediaToken, loading: mediaTokenLoading } =
-    useMediaToken(contentSource === 'media-url' ? xynolog ?? null : null, rUri);
+  const { token: mediaToken, loading: mediaTokenLoading } = useMediaToken(
+    contentSource === 'media-url' ? (xynolog ?? null) : null,
+    rUri,
+  );
 
   const tokenUrl = mediaUrl(xynolog, rUri, mediaToken);
 
@@ -235,10 +278,21 @@ export function ResourceViewerPage({
   // the URL exists, there is nothing to load — never inferred from a non-empty
   // string, which answers "never" for a zero-byte document and for a view that
   // reads no content.
-  const loadedBy: Record<ContentSource, { content: string; contentLoading: boolean; contentLoaded: boolean }> = {
-    'text': { content: textContent ?? '', contentLoading: textLoading, contentLoaded: textContent !== undefined },
-    'media-url': { content: tokenUrl ?? '', contentLoading: mediaTokenLoading, contentLoaded: tokenUrl !== undefined },
-    'none': { content: '', contentLoading: false, contentLoaded: true },
+  const loadedBy: Record<
+    ContentSource,
+    { content: string; contentLoading: boolean; contentLoaded: boolean }
+  > = {
+    text: {
+      content: textContent ?? '',
+      contentLoading: textLoading,
+      contentLoaded: textContent !== undefined,
+    },
+    'media-url': {
+      content: tokenUrl ?? '',
+      contentLoading: mediaTokenLoading,
+      contentLoaded: tokenUrl !== undefined,
+    },
+    none: { content: '', contentLoading: false, contentLoaded: true },
   };
   const { content, contentLoading, contentLoaded } = loadedBy[contentSource];
 
@@ -246,9 +300,8 @@ export function ResourceViewerPage({
   const browseStateUnit = useShellStateUnit();
   // Session-typed + session-keyed: no `!`, no construction without a session,
   // dispose-first rebuild on session swap.
-  const stateUnit = useSessionStateUnit(
-    session ?? undefined,
-    (s) => createResourceViewerPageStateUnit(s, rUri, locale, browseStateUnit),
+  const stateUnit = useSessionStateUnit(session ?? undefined, (s) =>
+    createResourceViewerPageStateUnit(s, rUri, locale, browseStateUnit),
   );
 
   const annotations = useObservable(stateUnit?.annotations.value$) ?? [];
@@ -260,21 +313,29 @@ export function ResourceViewerPage({
   // deriving "loading" from `undefined` leaves a dead request spinning for
   // ever.
   const referencedBy = useObservable(stateUnit?.referencedBy.value$) ?? [];
-  const referencedByLoading = useObservable(stateUnit?.referencedBy.loading$) ?? true;
-  const referencedByError = useObservable(stateUnit?.referencedBy.error$) ?? null;
+  const referencedByLoading =
+    useObservable(stateUnit?.referencedBy.loading$) ?? true;
+  const referencedByError =
+    useObservable(stateUnit?.referencedBy.error$) ?? null;
   const events = useObservable(stateUnit?.events.value$) ?? [];
   const eventsLoading = useObservable(stateUnit?.events.loading$) ?? true;
   const eventsError = useObservable(stateUnit?.events.error$) ?? null;
-  const hoveredAnnotationId = useObservable(stateUnit?.beckon.hoveredAnnotationId$) ?? null;
-  const pendingAnnotation = useObservable(stateUnit?.mark.pendingAnnotation$) ?? null;
-  const delegatingMotivation = useObservable(stateUnit?.mark.delegatingMotivation$) ?? null;
+  const hoveredAnnotationId =
+    useObservable(stateUnit?.beckon.hoveredAnnotationId$) ?? null;
+  const pendingAnnotation =
+    useObservable(stateUnit?.mark.pendingAnnotation$) ?? null;
+  const delegatingMotivation =
+    useObservable(stateUnit?.mark.delegatingMotivation$) ?? null;
   const progress = useObservable(stateUnit?.mark.progress$) ?? null;
-  const progressMotivation = useObservable(stateUnit?.mark.progressMotivation$) ?? null;
+  const progressMotivation =
+    useObservable(stateUnit?.mark.progressMotivation$) ?? null;
   const delegatedJobId = useObservable(stateUnit?.mark.jobId$) ?? null;
   const delegationFailure = useObservable(stateUnit?.mark.failure$) ?? null;
   const activePanel = useObservable(stateUnit?.browse.activePanel$) ?? null;
-  const scrollToAnnotationId = useObservable(stateUnit?.browse.scrollToAnnotationId$) ?? null;
-  const panelInitialTab = useObservable(stateUnit?.browse.panelInitialTab$) ?? null;
+  const scrollToAnnotationId =
+    useObservable(stateUnit?.browse.scrollToAnnotationId$) ?? null;
+  const panelInitialTab =
+    useObservable(stateUnit?.browse.panelInitialTab$) ?? null;
   const onScrollCompleted = stateUnit?.browse.onScrollCompleted;
   const generationProgress = useObservable(stateUnit?.yield.progress$) ?? null;
   const isGenerating = useObservable(stateUnit?.yield.isGenerating$) ?? false;
@@ -283,17 +344,26 @@ export function ResourceViewerPage({
   const generationFailure = useObservable(stateUnit?.yield.failure$) ?? null;
   // The reference whose generation is running. Only while it runs: a
   // cancelled run's progress is kept, and its reference is still unresolved.
-  const generatingReferenceId = isGenerating ? (generationProgress?.annotationId ?? null) : null;
+  const generatingReferenceId = isGenerating
+    ? (generationProgress?.annotationId ?? null)
+    : null;
 
   // A completion witnessed on this page reveals the derivation edge the worker
   // minted — the annotations panel opens on References, scrolls to the
   // provenance reference, and its sparkle is re-armed (the mark:added glow
   // burned its window unseen). Never navigates; a held outcome on remount
   // stays quiet (inside the hook).
-  const handleGenerationArrival = useCallback((annId: AnnotationId) => {
-    browser.emit('panel:open', { panel: 'annotations', scrollToAnnotationId: annId, motivation: 'linking' });
-    triggerSparkleAnimation(annId);
-  }, [browser, triggerSparkleAnimation]);
+  const handleGenerationArrival = useCallback(
+    (annId: AnnotationId) => {
+      browser.emit('panel:open', {
+        panel: 'annotations',
+        scrollToAnnotationId: annId,
+        motivation: 'linking',
+      });
+      triggerSparkleAnimation(annId);
+    },
+    [browser, triggerSparkleAnimation],
+  );
   useGenerationArrival(generationOutcome, annotations, handleGenerationArrival);
 
   const gatherContext = useObservable(stateUnit?.gather.context$) ?? null;
@@ -301,9 +371,12 @@ export function ResourceViewerPage({
   const gatherError = useObservable(stateUnit?.gather.error$) ?? null;
   // Resource-gather slots (separate from the annotation slots above — the two
   // gathers can be live at once).
-  const resourceGatherContext = useObservable(stateUnit?.gather.resourceContext$) ?? null;
-  const resourceGatherLoading = useObservable(stateUnit?.gather.resourceLoading$) ?? false;
-  const resourceGatherError = useObservable(stateUnit?.gather.resourceError$) ?? null;
+  const resourceGatherContext =
+    useObservable(stateUnit?.gather.resourceContext$) ?? null;
+  const resourceGatherLoading =
+    useObservable(stateUnit?.gather.resourceLoading$) ?? false;
+  const resourceGatherError =
+    useObservable(stateUnit?.gather.resourceError$) ?? null;
   const wizardState = useObservable(stateUnit?.wizard$);
   const wizardOpen = wizardState?.open ?? false;
   const wizardAnnotationId = wizardState?.annotationId ?? null;
@@ -316,73 +389,109 @@ export function ResourceViewerPage({
     stateUnit?.closeWizard();
   }, [stateUnit]);
 
-  const handleWizardGenerateSubmit = useCallback((referenceId: AnnotationId, config: GenerationConfig) => {
-    clearSparkle(referenceId);
-    // Forwarded by spread in ONE place, so a knob added to the form is
-    // never dropped on the way to the wire. `sourceLanguage` is the viewed
-    // resource's language — a page fact the form cannot know.
-    stateUnit?.yield.generate(toGenerationParams(config, getLanguage(resource)));
-  }, [stateUnit, clearSparkle, resource]);
+  const handleWizardGenerateSubmit = useCallback(
+    (referenceId: AnnotationId, config: GenerationConfig) => {
+      clearSparkle(referenceId);
+      // Forwarded by spread in ONE place, so a knob added to the form is
+      // never dropped on the way to the wire. `sourceLanguage` is the viewed
+      // resource's language — a page fact the form cannot know.
+      stateUnit?.yield.generate(
+        toGenerationParams(config, getLanguage(resource)),
+      );
+    },
+    [stateUnit, clearSparkle, resource],
+  );
 
   // Resource-generate flow, from the Generate button: drive the SAME yield
   // progress$ the annotation path uses so the full `DelegateProgress` widget
   // shows — NOT a toast. Both paths are one `generate(params)`: the focus of
   // the params' context (resource here, annotation above) decides the shape.
-  const handleResourceGenerateSubmit = useCallback((_resourceId: string, config: GenerationConfig) => {
-    stateUnit?.yield.generate(toGenerationParams(config, getLanguage(resource)));
-  }, [stateUnit, resource]);
-
-  const handleWizardLinkResource = useCallback(async (referenceId: AnnotationId, targetResourceId: ResourceId) => {
-    if (!xynolog) return;
-    try {
-      await xynolog.bind.body(
-        rUri,
-        referenceId,
-        [{ op: 'add', item: { type: 'SpecificResource' as const, source: targetResourceId, purpose: 'linking' as const } }],
+  const handleResourceGenerateSubmit = useCallback(
+    (_resourceId: string, config: GenerationConfig) => {
+      stateUnit?.yield.generate(
+        toGenerationParams(config, getLanguage(resource)),
       );
-      showSuccess('Reference linked successfully');
-    } catch (error) {
-      showError(`Failed to link reference: ${error instanceof Error ? error.message : String(error)}`);
-    }
-  }, [rUri, xynolog, showSuccess, showError]);
+    },
+    [stateUnit, resource],
+  );
+
+  const handleWizardLinkResource = useCallback(
+    async (referenceId: AnnotationId, targetResourceId: ResourceId) => {
+      if (!xynolog) return;
+      try {
+        await xynolog.bind.body(rUri, referenceId, [
+          {
+            op: 'add',
+            item: {
+              type: 'SpecificResource' as const,
+              source: targetResourceId,
+              purpose: 'linking' as const,
+            },
+          },
+        ]);
+        showSuccess('Reference linked successfully');
+      } catch (error) {
+        showError(
+          `Failed to link reference: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+    },
+    [rUri, xynolog, showSuccess, showError],
+  );
 
   // The wizard's compose handler: create-and-link, in place. The modal
   // already holds the context, so nothing is stashed in sessionStorage and
   // nothing navigates to the compose page. Text-only by design — uploads stay
   // on the standalone compose page.
-  const handleWizardComposeSubmit = useCallback(async (referenceId: AnnotationId, params: ComposeParams) => {
-    if (!xynolog) throw new Error('No active session');
-    try {
-      const format = 'text/markdown';
-      const file = new File(
-        [new Blob([params.content], { type: format })],
-        params.name + extensionForMediaType(format),
-        { type: format },
-      );
-      const newResourceId = await new Promise<ResourceId>((resolve, reject) => {
-        xynolog.yield.resource({
-          name: params.name,
-          file,
-          format,
-          entityTypes: params.entityTypes,
-          language: params.language,
-          storageUri: params.storagePath,
-        }).subscribe({
-          next: (event) => { if (event.phase === 'finished') resolve(event.resourceId); },
-          error: reject,
-        });
-      });
-      await xynolog.bind.body(
-        rUri,
-        referenceId,
-        [{ op: 'add', item: { type: 'SpecificResource' as const, source: newResourceId, purpose: 'linking' as const } }],
-      );
-      showSuccess('Reference successfully linked to the new resource');
-    } catch (error) {
-      showError(`Failed to compose resource: ${error instanceof Error ? error.message : String(error)}`);
-      throw error; // ComposeStep re-enables its footer on rejection
-    }
-  }, [xynolog, rUri, showSuccess, showError]);
+  const handleWizardComposeSubmit = useCallback(
+    async (referenceId: AnnotationId, params: ComposeParams) => {
+      if (!xynolog) throw new Error('No active session');
+      try {
+        const format = 'text/markdown';
+        const file = new File(
+          [new Blob([params.content], { type: format })],
+          params.name + extensionForMediaType(format),
+          { type: format },
+        );
+        const newResourceId = await new Promise<ResourceId>(
+          (resolve, reject) => {
+            xynolog.yield
+              .resource({
+                name: params.name,
+                file,
+                format,
+                entityTypes: params.entityTypes,
+                language: params.language,
+                storageUri: params.storagePath,
+              })
+              .subscribe({
+                next: (event) => {
+                  if (event.phase === 'finished') resolve(event.resourceId);
+                },
+                error: reject,
+              });
+          },
+        );
+        await xynolog.bind.body(rUri, referenceId, [
+          {
+            op: 'add',
+            item: {
+              type: 'SpecificResource' as const,
+              source: newResourceId,
+              purpose: 'linking' as const,
+            },
+          },
+        ]);
+        showSuccess('Reference successfully linked to the new resource');
+      } catch (error) {
+        showError(
+          `Failed to compose resource: ${error instanceof Error ? error.message : String(error)}`,
+        );
+        throw error; // ComposeStep re-enables its footer on rejection
+      }
+    },
+    [xynolog, rUri, showSuccess, showError],
+  );
 
   // Add resource to open tabs when it loads, and record it as this KB's
   // last-viewed for the /know landing route to resume from. Both are per-KB
@@ -391,7 +500,12 @@ export function ResourceViewerPage({
   useEffect(() => {
     if (resource && rUri) {
       const mediaType = getPrimaryMediaType(resource);
-      browser.addOpenResource(rUri, resource.name, mediaType || undefined, getStorageUri(resource));
+      browser.addOpenResource(
+        rUri,
+        resource.name,
+        mediaType || undefined,
+        getStorageUri(resource),
+      );
       browser.setLastViewedResource(rUri);
     }
   }, [resource, rUri, browser]);
@@ -439,44 +553,68 @@ export function ResourceViewerPage({
     try {
       const result = await xynolog.yield.cloneToken(rUri);
       const token = result.token;
-      browser.emit('nav:push', { path: `/know/compose?mode=clone&token=${token}`, reason: 'clone' });
+      browser.emit('nav:push', {
+        path: `/know/compose?mode=clone&token=${token}`,
+        reason: 'clone',
+      });
     } catch (err) {
       console.error('Failed to generate clone token:', err);
       showError('Failed to generate clone link');
     }
   }, [xynolog, rUri, showError, browser]);
 
-  const handleAnnotationSparkle = useCallback(({ annotationId }: { annotationId: string }) => {
-    triggerSparkleAnimation(annotationId);
-  }, [triggerSparkleAnimation]);
+  const handleAnnotationSparkle = useCallback(
+    ({ annotationId }: { annotationId: string }) => {
+      triggerSparkleAnimation(annotationId);
+    },
+    [triggerSparkleAnimation],
+  );
 
-  const handleAnnotationAdded = useCallback((stored: EventMap['mark:added']) => {
-    triggerSparkleAnimation(stored.payload.annotation.id);
-  }, [triggerSparkleAnimation]);
+  const handleAnnotationAdded = useCallback(
+    (stored: EventMap['mark:added']) => {
+      triggerSparkleAnimation(stored.payload.annotation.id);
+    },
+    [triggerSparkleAnimation],
+  );
 
   // A reference resolving — Compose, Search → Link, a Generate job landing, or
   // another principal's edit — is a body update whose operations add a linking
   // SpecificResource. Exactly that sparkles; an unlink (remove) or an
   // entity-tag body change stays dark.
-  const handleAnnotationBodyUpdated = useCallback((stored: EventMap['mark:body-updated']) => {
-    const resolves = stored.payload.operations.some(
-      (op) => op.op === 'add' && op.item.type === 'SpecificResource' && op.item.purpose === 'linking',
-    );
-    if (resolves) {
-      triggerSparkleAnimation(stored.payload.annotationId);
-    }
-  }, [triggerSparkleAnimation]);
+  const handleAnnotationBodyUpdated = useCallback(
+    (stored: EventMap['mark:body-updated']) => {
+      const resolves = stored.payload.operations.some(
+        (op) =>
+          op.op === 'add' &&
+          op.item.type === 'SpecificResource' &&
+          op.item.purpose === 'linking',
+      );
+      if (resolves) {
+        triggerSparkleAnimation(stored.payload.annotationId);
+      }
+    },
+    [triggerSparkleAnimation],
+  );
 
-  const handleResourceOpen = useCallback(({ resourceId }: { resourceId: string }) => {
-    browser.emit('nav:push', { path: routes.resourceDetail(resourceId), reason: 'reference-link' });
-  }, [routes.resourceDetail, browser]);
+  const handleResourceOpen = useCallback(
+    ({ resourceId }: { resourceId: string }) => {
+      browser.emit('nav:push', {
+        path: routes.resourceDetail(resourceId),
+        reason: 'reference-link',
+      });
+    },
+    [routes.resourceDetail, browser],
+  );
 
   // A host without a knowledge page has nowhere to filter to.
-  const handleEntityTypeClicked = useCallback(({ entityType }: { entityType: string }) => {
-    if (!routes.knowledge) return;
-    const path = `${routes.knowledge()}?entityType=${encodeURIComponent(entityType)}`;
-    browser.emit('nav:push', { path, reason: 'entity-type-filter' });
-  }, [routes.knowledge, browser]);
+  const handleEntityTypeClicked = useCallback(
+    ({ entityType }: { entityType: string }) => {
+      if (!routes.knowledge) return;
+      const path = `${routes.knowledge()}?entityType=${encodeURIComponent(entityType)}`;
+      browser.emit('nav:push', { path, reason: 'entity-type-filter' });
+    },
+    [routes.knowledge, browser],
+  );
 
   // Outcome notifications (annotation CRUD failures, job success/decline/fail,
   // a delegated job gone quiet) live in useOutcomeToasts — they need only the resource id
@@ -503,10 +641,8 @@ export function ResourceViewerPage({
   });
 
   // Resource loading announcements
-  const {
-    announceResourceLoading,
-    announceResourceLoaded
-  } = useResourceLoadingAnnouncements();
+  const { announceResourceLoading, announceResourceLoaded } =
+    useResourceLoadingAnnouncements();
 
   // Announce content loading state changes (app-level)
   useEffect(() => {
@@ -515,7 +651,13 @@ export function ResourceViewerPage({
     } else if (contentLoaded) {
       announceResourceLoaded(resource.name);
     }
-  }, [contentLoading, contentLoaded, resource.name, announceResourceLoading, announceResourceLoaded]);
+  }, [
+    contentLoading,
+    contentLoaded,
+    resource.name,
+    announceResourceLoading,
+    announceResourceLoaded,
+  ]);
 
   // Report the arrival on the wire (browse:resource-viewed) — same
   // load-complete condition the announcement uses, so "viewed" means the
@@ -534,26 +676,34 @@ export function ResourceViewerPage({
   const resourceWithContent = { ...resource, content };
 
   // Handlers for AnnotationHistory
-  const handleEventHover = useCallback((id: AnnotationId | null) => {
-    if (id) {
-      session?.client.beckon.sparkle(id);
-    }
-  }, [session]);
+  const handleEventHover = useCallback(
+    (id: AnnotationId | null) => {
+      if (id) {
+        session?.client.beckon.sparkle(id);
+      }
+    },
+    [session],
+  );
 
   // Clicking a history row reveals that annotation in the content. HistoryEvent
   // renders these rows as buttons labelled "View annotation" — focusable,
   // screen-reader-announced controls, so the click must do what the label says.
   // `beckon:focus` is the "scroll to and highlight" contract, used rather than
   // a prop chain — BrowseView and AnnotateView both subscribe to it.
-  const handleEventClick = useCallback((id: AnnotationId | null) => {
-    if (id) {
-      stateUnit?.beckon.focus(id);
-    }
-  }, [stateUnit]);
+  const handleEventClick = useCallback(
+    (id: AnnotationId | null) => {
+      if (id) {
+        stateUnit?.beckon.focus(id);
+      }
+    },
+    [stateUnit],
+  );
 
   // Document rendering
   return (
-    <div className={`xynolog-document-viewer${activePanel ? ' xynolog-document-viewer--panel-open' : ''}`}>
+    <div
+      className={`xynolog-document-viewer${activePanel ? ' xynolog-document-viewer--panel-open' : ''}`}
+    >
       {/* Main Content - Fills remaining height */}
       <div className="xynolog-document-viewer__main">
         {/* Document Content - Left Side */}
@@ -567,7 +717,10 @@ export function ResourceViewerPage({
             </div>
           </div>
           {/* Scrollable body wrapper - contains document content, header is sibling above */}
-          <div className="xynolog-document-viewer__scrollable-body" lang={getLanguage(resource) || undefined}>
+          <div
+            className="xynolog-document-viewer__scrollable-body"
+            lang={getLanguage(resource) || undefined}
+          >
             <ErrorBoundary
               fallback={(error, reset) => (
                 <div className="xynolog-document-viewer__error">
@@ -594,7 +747,15 @@ export function ResourceViewerPage({
                 <ResourceViewer
                   translationManager={translationManager}
                   resource={resourceWithContent}
-                  annotations={groups ?? { highlights: [], comments: [], assessments: [], references: [], tags: [] }}
+                  annotations={
+                    groups ?? {
+                      highlights: [],
+                      comments: [],
+                      assessments: [],
+                      references: [],
+                      tags: [],
+                    }
+                  }
                   session={session ?? null}
                   onOpenResource={handleViewerOpenResource}
                   onOpenPanel={handleViewerOpenPanel}
@@ -603,7 +764,9 @@ export function ResourceViewerPage({
                   clickAction={toolbarPrefs.clickAction}
                   onClickActionChange={toolbarPrefs.setClickAction}
                   selectionMotivation={toolbarPrefs.selectionMotivation}
-                  onSelectionMotivationChange={toolbarPrefs.setSelectionMotivation}
+                  onSelectionMotivationChange={
+                    toolbarPrefs.setSelectionMotivation
+                  }
                   shape={toolbarPrefs.shape}
                   onShapeChange={toolbarPrefs.setShape}
                   sparkleAnnotationIds={sparkleAnnotationIds}
@@ -622,10 +785,7 @@ export function ResourceViewerPage({
         {/* Sidebar */}
         <div className="xynolog-document-viewer__sidebar">
           {/* Right Panel - Conditional based on active toolbar panel */}
-          <ToolbarPanels
-            activePanel={activePanel}
-            theme={theme}
-          >
+          <ToolbarPanels activePanel={activePanel} theme={theme}>
             {/* Archived Status */}
             {annotateMode && resource.archived && (
               <div className="xynolog-document-viewer__archived-status">
@@ -705,18 +865,27 @@ export function ResourceViewerPage({
                 dateModified={resource.dateModified}
                 wasAttributedTo={resource.wasAttributedTo}
                 wasDerivedFrom={resource.wasDerivedFrom}
-                generator={resource.generator as components['schemas']['Agent'] | components['schemas']['Agent'][] | undefined}
+                generator={
+                  resource.generator as
+                    | components['schemas']['Agent']
+                    | components['schemas']['Agent'][]
+                    | undefined
+                }
                 onGenerate={() => setGenerateOpen(true)}
                 // The panel is generation's progress surface; no annotationId
                 // ⇒ a resource-gen job — the annotation path's frame renders
                 // in the reference wizard.
                 isGenerating={isGenerating}
                 generationProgress={
-                  generationProgress && !generationProgress.annotationId ? generationProgress : null
+                  generationProgress && !generationProgress.annotationId
+                    ? generationProgress
+                    : null
                 }
                 generationJobId={generationJobId}
                 generationOutcome={generationOutcome}
-                generationCancelled={generationFailure instanceof JobCancelledError}
+                generationCancelled={
+                  generationFailure instanceof JobCancelledError
+                }
                 onDismissProgress={() => stateUnit?.yield.dismissProgress()}
               />
             )}
@@ -732,9 +901,7 @@ export function ResourceViewerPage({
             )}
 
             {/* JSON-LD Panel */}
-            {activePanel === 'jsonld' && (
-              <JsonLdPanel resourceId={rUri} />
-            )}
+            {activePanel === 'jsonld' && <JsonLdPanel resourceId={rUri} />}
           </ToolbarPanels>
 
           {/* Toolbar - Always visible on the right */}
@@ -796,7 +963,9 @@ export function ResourceViewerPage({
           resourceTitlePlaceholder: tw('resourceTitlePlaceholder'),
           saveLocation: tw('saveLocation'),
           additionalInstructions: tw('additionalInstructions'),
-          additionalInstructionsPlaceholder: tw('additionalInstructionsPlaceholder'),
+          additionalInstructionsPlaceholder: tw(
+            'additionalInstructionsPlaceholder',
+          ),
           language: tw('language'),
           languageHelp: tw('languageHelp'),
           creativity: tw('creativity'),
@@ -865,7 +1034,9 @@ export function ResourceViewerPage({
           resourceTitlePlaceholder: tg('resourceTitlePlaceholder'),
           saveLocation: tg('saveLocation'),
           additionalInstructions: tg('additionalInstructions'),
-          additionalInstructionsPlaceholder: tg('additionalInstructionsPlaceholder'),
+          additionalInstructionsPlaceholder: tg(
+            'additionalInstructionsPlaceholder',
+          ),
           language: tg('language'),
           languageHelp: tg('languageHelp'),
           creativity: tg('creativity'),

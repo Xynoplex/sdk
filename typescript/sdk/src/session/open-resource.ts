@@ -88,5 +88,7 @@ export function applyTabChecks(
 
 /** By place, and two in one place by when each was opened, earliest first. */
 export function sortOpenResources(resources: OpenResource[]): OpenResource[] {
-  return [...resources].sort((a, b) => (a.order === b.order ? a.openedAt - b.openedAt : a.order - b.order));
+  return [...resources].sort((a, b) =>
+    a.order === b.order ? a.openedAt - b.openedAt : a.order - b.order,
+  );
 }

@@ -23,7 +23,10 @@ interface TestStateUnit {
   dispose(): void;
 }
 
-function makeStateUnit(id: string, disposeSpy?: Mock<() => void>): TestStateUnit {
+function makeStateUnit(
+  id: string,
+  disposeSpy?: Mock<() => void>,
+): TestStateUnit {
   return {
     id,
     dispose: disposeSpy ?? vi.fn<() => void>(),
@@ -84,20 +87,18 @@ describe('useStateUnit', () => {
     const disposeSpy = vi.fn<() => void>();
     const factory = vi.fn((id: string) => makeStateUnit(id, disposeSpy));
 
-    const first = renderHook(
-      ({ id }) => useStateUnit(() => factory(id)),
-      { initialProps: { id: 'res-A' } },
-    );
+    const first = renderHook(({ id }) => useStateUnit(() => factory(id)), {
+      initialProps: { id: 'res-A' },
+    });
     expect(first.result.current.id).toBe('res-A');
     expect(factory).toHaveBeenCalledTimes(1);
 
     first.unmount();
     expect(disposeSpy).toHaveBeenCalledTimes(1);
 
-    const second = renderHook(
-      ({ id }) => useStateUnit(() => factory(id)),
-      { initialProps: { id: 'res-B' } },
-    );
+    const second = renderHook(({ id }) => useStateUnit(() => factory(id)), {
+      initialProps: { id: 'res-B' },
+    });
     expect(second.result.current.id).toBe('res-B');
     expect(factory).toHaveBeenCalledTimes(2);
 

@@ -12,12 +12,21 @@ import { lstatSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-export const REPO = join(dirname(fileURLToPath(import.meta.url)), '../../../..');
+export const REPO = join(
+  dirname(fileURLToPath(import.meta.url)),
+  '../../../..',
+);
 
 const TYPESCRIPT = /\.tsx?$/;
 
-const gitListed = (directories: readonly string[], ...flags: string[]): string[] =>
-  execFileSync('git', ['ls-files', '-z', ...flags, '--', ...directories], { cwd: REPO, encoding: 'utf8' })
+const gitListed = (
+  directories: readonly string[],
+  ...flags: string[]
+): string[] =>
+  execFileSync('git', ['ls-files', '-z', ...flags, '--', ...directories], {
+    cwd: REPO,
+    encoding: 'utf8',
+  })
     .split('\0')
     .filter(Boolean);
 
@@ -29,11 +38,19 @@ const gitListed = (directories: readonly string[], ...flags: string[]): string[]
  * fail: a census over nothing passes whatever the tree holds.
  */
 export function typeScriptFiles(...directories: string[]): string[] {
-  const listed = new Set([...gitListed(directories, '--cached'), ...gitListed(directories, '--others', '--exclude-standard')]);
+  const listed = new Set([
+    ...gitListed(directories, '--cached'),
+    ...gitListed(directories, '--others', '--exclude-standard'),
+  ]);
   const files = [...listed]
-    .filter((path) => TYPESCRIPT.test(path) && lstatSync(join(REPO, path), { throwIfNoEntry: false })?.isFile())
+    .filter(
+      (path) =>
+        TYPESCRIPT.test(path) &&
+        lstatSync(join(REPO, path), { throwIfNoEntry: false })?.isFile(),
+    )
     .sort();
-  if (files.length === 0) throw new Error(`no TypeScript file under ${directories.join(', ')}`);
+  if (files.length === 0)
+    throw new Error(`no TypeScript file under ${directories.join(', ')}`);
   return files;
 }
 

@@ -34,25 +34,16 @@ export class FrameNamespace implements IFrameNamespace {
   // failure — a remote add-failure is surfaced to the caller, never silently
   // dropped.
   async addEntityType(type: string): Promise<void> {
-    await this.wire.request(
-      'frame:add-entity-type',
-      { tag: type },
-    );
+    await this.wire.request('frame:add-entity-type', { tag: type });
   }
 
   async addEntityTypes(types: string[]): Promise<void> {
     for (const tag of types) {
-      await this.wire.request(
-        'frame:add-entity-type',
-        { tag },
-      );
+      await this.wire.request('frame:add-entity-type', { tag });
     }
   }
 
   async addTagSchema(schema: TagSchema): Promise<void> {
-    await this.wire.request(
-      'frame:add-tag-schema',
-      { schema },
-    );
+    await this.wire.request('frame:add-tag-schema', { schema });
   }
 }

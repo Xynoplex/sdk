@@ -23,9 +23,10 @@ export const jsonTheme = EditorView.theme({
   '.cm-cursor, .cm-dropCursor': {
     borderLeftColor: 'var(--xynolog-text-primary)',
   },
-  '&.cm-focused .cm-selectionBackground, .cm-selectionBackground, .cm-content ::selection': {
-    backgroundColor: 'var(--xynolog-bg-tertiary)',
-  },
+  '&.cm-focused .cm-selectionBackground, .cm-selectionBackground, .cm-content ::selection':
+    {
+      backgroundColor: 'var(--xynolog-bg-tertiary)',
+    },
   '.cm-gutters': {
     backgroundColor: 'var(--xynolog-bg-secondary)',
     color: 'var(--xynolog-text-tertiary)',

@@ -21,16 +21,25 @@
 import { describe, it, expect, vi } from 'vitest';
 import { map, firstValueFrom, filter, take } from 'rxjs';
 import { EventBus, resourceId as makeResourceId } from '@xynolog/core';
-import type { IContentTransport, ITransport, ResourceDescriptor } from '@xynolog/core';
+import type {
+  IContentTransport,
+  ITransport,
+  ResourceDescriptor,
+} from '@xynolog/core';
 import { isReady } from '../cache';
 import { BrowseNamespace } from '../namespaces/browse';
 import { keptPersister } from '../cache-persister';
 import { cacheKey } from '../session/storage';
 import { TestStorage } from '../session/__tests__/test-storage-helpers';
-import { inMemoryTransport, type InMemoryTransportOptions } from './helpers/in-memory-transport';
+import {
+  inMemoryTransport,
+  type InMemoryTransportOptions,
+} from './helpers/in-memory-transport';
 import { mockResource } from './fixtures/resource';
 
-function inertTransport(onEmit: InMemoryTransportOptions['onEmit']): ITransport {
+function inertTransport(
+  onEmit: InMemoryTransportOptions['onEmit'],
+): ITransport {
   return inMemoryTransport({ onEmit });
 }
 
@@ -38,22 +47,38 @@ const RID = makeResourceId('res-cached');
 const DESCRIPTOR = mockResource(RID, { name: 'Cached Doc' });
 
 /** The person and the knowledge base what is kept is kept for. */
-const KEPT_FOR = { kbId: 'kb-1', personKey: 'gqB898gk4Ww_orAHhzDCSVl7yHP9UEsX0DA_xbGbq-I' };
+const KEPT_FOR = {
+  kbId: 'kb-1',
+  personKey: 'gqB898gk4Ww_orAHhzDCSVl7yHP9UEsX0DA_xbGbq-I',
+};
 const RESOURCE_KEY = cacheKey(KEPT_FOR.kbId, KEPT_FOR.personKey, 'resource');
 
 /** Write `value` under `id` as a fetch result reaching the store would (B13b's write-through). */
-function write(browse: BrowseNamespace, id: string, value: ResourceDescriptor): void {
-  (browse as unknown as { resourceCache: { set(k: string, v: ResourceDescriptor): void } }).resourceCache.set(id, value);
+function write(
+  browse: BrowseNamespace,
+  id: string,
+  value: ResourceDescriptor,
+): void {
+  (
+    browse as unknown as {
+      resourceCache: { set(k: string, v: ResourceDescriptor): void };
+    }
+  ).resourceCache.set(id, value);
 }
 
-const settle = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
+const settle = (ms: number): Promise<void> =>
+  new Promise((resolve) => setTimeout(resolve, ms));
 
 describe('BrowseNamespace cache rehydration (B17)', () => {
   it('serves a rehydrated resource instantly AND revalidates it (B18); un-cached keys still request', async () => {
     const storage = new TestStorage();
-    keptPersister('resource', { storage, ...KEPT_FOR }).save(new Map([[RID, DESCRIPTOR]]));
+    keptPersister('resource', { storage, ...KEPT_FOR }).save(
+      new Map([[RID, DESCRIPTOR]]),
+    );
 
-    const emit = vi.fn<(channel: string, ...rest: unknown[]) => Promise<number>>(async () => 1);
+    const emit = vi.fn<
+      (channel: string, ...rest: unknown[]) => Promise<number>
+    >(async () => 1);
     const browse = new BrowseNamespace(
       inertTransport(emit),
       new EventBus(),
@@ -62,7 +87,11 @@ describe('BrowseNamespace cache rehydration (B17)', () => {
     );
 
     const seen = await firstValueFrom(
-      browse.resource(RID).pipe(filter(isReady), map((s) => s.value), take(1)),
+      browse.resource(RID).pipe(
+        filter(isReady),
+        map((s) => s.value),
+        take(1),
+      ),
     );
     // Instant paint from disk — the value arrives without waiting on the
     // wire (the inert transport never answers), which is B17's whole point.
@@ -103,7 +132,11 @@ describe('BrowseNamespace cache rehydration (B17)', () => {
       { busTimeoutMs: 50, cachePersistence: { storage, ...KEPT_FOR } },
     );
     const seen = await firstValueFrom(
-      second.resource(RID).pipe(filter(isReady), map((s) => s.value), take(1)),
+      second.resource(RID).pipe(
+        filter(isReady),
+        map((s) => s.value),
+        take(1),
+      ),
     );
     // The round trip is proven by the value arriving at all: the transport
     // is inert, so 'Cached Doc' can only have come from storage.
@@ -126,7 +159,9 @@ describe('BrowseNamespace cache rehydration (B17)', () => {
     );
     const kept = storage.get(RESOURCE_KEY);
 
-    const emit = vi.fn<(channel: string, ...rest: unknown[]) => Promise<number>>(async () => 1);
+    const emit = vi.fn<
+      (channel: string, ...rest: unknown[]) => Promise<number>
+    >(async () => 1);
     const browse = new BrowseNamespace(
       inertTransport(emit),
       new EventBus(),
@@ -141,23 +176,39 @@ describe('BrowseNamespace cache rehydration (B17)', () => {
 
     browse.attachPersistence({ storage, ...KEPT_FOR });
 
-    const restored = await firstValueFrom(browse.resource(RID).pipe(filter(isReady), map((s) => s.value), take(1)));
+    const restored = await firstValueFrom(
+      browse.resource(RID).pipe(
+        filter(isReady),
+        map((s) => s.value),
+        take(1),
+      ),
+    );
     expect(restored.name).toBe('Cached Doc');
     // B17-Q: a cache given persistence late is one the bookmark waits for, and its revalidation is in flight.
     expect(browse.persistenceSettled()).toBe(false);
     // What it held stands: a kept value fills only a key it does not hold.
-    const held = await firstValueFrom(browse.resource(HELD).pipe(filter(isReady), map((s) => s.value), take(1)));
+    const held = await firstValueFrom(
+      browse.resource(HELD).pipe(
+        filter(isReady),
+        map((s) => s.value),
+        take(1),
+      ),
+    );
     expect(held.name).toBe('Held');
     // B18: the restored key is revalidated, once; the held one is not asked for.
-    expect(emit.mock.calls.map(([channel, payload]) => [channel, payload])).toEqual([
-      ['browse:resource-requested', { resourceId: RID }],
-    ]);
+    expect(
+      emit.mock.calls.map(([channel, payload]) => [channel, payload]),
+    ).toEqual([['browse:resource-requested', { resourceId: RID }]]);
 
     // And from now on what it holds is saved under the person's key.
     write(browse, String(HELD), mockResource(HELD, { name: 'Held again' }));
     await settle(80);
-    const saved = JSON.parse(storage.get(RESOURCE_KEY) ?? 'null') as { entries: Array<[string, ResourceDescriptor, number]> };
-    expect(Object.fromEntries(saved.entries.map(([id, value]) => [id, value.name]))).toEqual({
+    const saved = JSON.parse(storage.get(RESOURCE_KEY) ?? 'null') as {
+      entries: Array<[string, ResourceDescriptor, number]>;
+    };
+    expect(
+      Object.fromEntries(saved.entries.map(([id, value]) => [id, value.name])),
+    ).toEqual({
       [String(RID)]: 'Cached Doc',
       [String(HELD)]: 'Held again',
     });

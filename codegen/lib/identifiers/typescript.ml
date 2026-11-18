@@ -17,7 +17,7 @@ let kind (k : Table.kind) =
     T.const ~export:false rule
       (Call
          ( Instantiate (Name "identifierKind", [ T_name name ]),
-           [ Str (Single, name); Str (Double, k.pattern) ] ));
+           [ Str name; Str k.pattern ] ));
     T.const ("is" ^ name)
       ~about:
         [

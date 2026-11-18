@@ -5,7 +5,10 @@ import '@testing-library/jest-dom';
 import { KeyboardShortcutsHelpModal } from '../KeyboardShortcutsHelpModal';
 
 // HeadlessUI's dialog as plain elements: this suite is about what is rendered inside it
-vi.mock('@headlessui/react', () => import('../../../__tests__/plain-headlessui'));
+vi.mock(
+  '@headlessui/react',
+  () => import('../../../__tests__/plain-headlessui'),
+);
 
 describe('KeyboardShortcutsHelpModal', () => {
   const defaultProps = {
@@ -20,30 +23,50 @@ describe('KeyboardShortcutsHelpModal', () => {
 
   it('does not render content when closed', () => {
     renderWithProviders(
-      <KeyboardShortcutsHelpModal {...defaultProps} isOpen={false} />
+      <KeyboardShortcutsHelpModal {...defaultProps} isOpen={false} />,
     );
-    expect(screen.queryByText('KeyboardShortcuts.title')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('KeyboardShortcuts.title'),
+    ).not.toBeInTheDocument();
   });
 
   it('renders all shortcut groups', () => {
     renderWithProviders(<KeyboardShortcutsHelpModal {...defaultProps} />);
-    expect(screen.getByText('KeyboardShortcuts.navigationTitle')).toBeInTheDocument();
-    expect(screen.getByText('KeyboardShortcuts.sidebarTitle')).toBeInTheDocument();
-    expect(screen.getByText('KeyboardShortcuts.listsTitle')).toBeInTheDocument();
-    expect(screen.getByText('KeyboardShortcuts.searchModalTitle')).toBeInTheDocument();
-    expect(screen.getByText('KeyboardShortcuts.modalTitle')).toBeInTheDocument();
-    expect(screen.getByText('KeyboardShortcuts.accessibilityTitle')).toBeInTheDocument();
+    expect(
+      screen.getByText('KeyboardShortcuts.navigationTitle'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('KeyboardShortcuts.sidebarTitle'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('KeyboardShortcuts.listsTitle'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('KeyboardShortcuts.searchModalTitle'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('KeyboardShortcuts.modalTitle'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('KeyboardShortcuts.accessibilityTitle'),
+    ).toBeInTheDocument();
   });
 
   it('renders keyboard shortcut descriptions', () => {
     renderWithProviders(<KeyboardShortcutsHelpModal {...defaultProps} />);
-    expect(screen.getByText('KeyboardShortcuts.navOpenSearch')).toBeInTheDocument();
-    expect(screen.getByText('KeyboardShortcuts.navCreateResource')).toBeInTheDocument();
+    expect(
+      screen.getByText('KeyboardShortcuts.navOpenSearch'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('KeyboardShortcuts.navCreateResource'),
+    ).toBeInTheDocument();
   });
 
   it('describes the one skip link a page has', () => {
     renderInEnglish(<KeyboardShortcutsHelpModal {...defaultProps} />);
-    expect(screen.getByText('Navigate to the skip link (when at page start)')).toBeInTheDocument();
+    expect(
+      screen.getByText('Navigate to the skip link (when at page start)'),
+    ).toBeInTheDocument();
     expect(screen.getByText('Follow skip link')).toBeInTheDocument();
   });
 
@@ -55,13 +78,15 @@ describe('KeyboardShortcutsHelpModal', () => {
 
   it('renders close button with aria-label', () => {
     renderWithProviders(<KeyboardShortcutsHelpModal {...defaultProps} />);
-    expect(screen.getByLabelText('KeyboardShortcuts.closeDialog')).toBeInTheDocument();
+    expect(
+      screen.getByLabelText('KeyboardShortcuts.closeDialog'),
+    ).toBeInTheDocument();
   });
 
   it('calls onClose when close button is clicked', () => {
     const onClose = vi.fn();
     renderWithProviders(
-      <KeyboardShortcutsHelpModal isOpen={true} onClose={onClose} />
+      <KeyboardShortcutsHelpModal isOpen={true} onClose={onClose} />,
     );
     fireEvent.click(screen.getByLabelText('KeyboardShortcuts.closeDialog'));
     expect(onClose).toHaveBeenCalled();
@@ -75,7 +100,7 @@ describe('KeyboardShortcutsHelpModal', () => {
   it('calls onClose when footer close button is clicked', () => {
     const onClose = vi.fn();
     renderWithProviders(
-      <KeyboardShortcutsHelpModal isOpen={true} onClose={onClose} />
+      <KeyboardShortcutsHelpModal isOpen={true} onClose={onClose} />,
     );
     fireEvent.click(screen.getByText('KeyboardShortcuts.close'));
     expect(onClose).toHaveBeenCalled();
@@ -83,6 +108,8 @@ describe('KeyboardShortcutsHelpModal', () => {
 
   it('renders platform note for non-Mac', () => {
     renderWithProviders(<KeyboardShortcutsHelpModal {...defaultProps} />);
-    expect(screen.getByText('KeyboardShortcuts.windowsNote')).toBeInTheDocument();
+    expect(
+      screen.getByText('KeyboardShortcuts.windowsNote'),
+    ).toBeInTheDocument();
   });
 });

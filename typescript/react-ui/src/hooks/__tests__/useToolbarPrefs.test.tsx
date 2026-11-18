@@ -11,12 +11,19 @@ import { renderInEnglish, englishTranslationManager } from '../../test-utils';
 import '@testing-library/jest-dom';
 import type { XynologSession } from '@xynolog/sdk';
 import { EventBus } from '@xynolog/core';
-import type { ResourceDescriptor as XynologResource, ResourceId } from '@xynolog/core';
+import type {
+  ResourceDescriptor as XynologResource,
+  ResourceId,
+} from '@xynolog/core';
 import { ResourceViewer } from '../../components/resource/ResourceViewer';
 import { useToolbarPrefs } from '../useToolbarPrefs';
 
-vi.mock('../../components/CodeMirrorRenderer', () => ({ CodeMirrorRenderer: () => <div>cm-mock</div> }));
-vi.mock('react-markdown', () => ({ default: ({ children }: { children: string }) => <div>{children}</div> }));
+vi.mock('../../components/CodeMirrorRenderer', () => ({
+  CodeMirrorRenderer: () => <div>cm-mock</div>,
+}));
+vi.mock('react-markdown', () => ({
+  default: ({ children }: { children: string }) => <div>{children}</div>,
+}));
 vi.mock('remark-gfm', () => ({ default: () => ({}) }));
 
 const resource: XynologResource & { content: string } = {
@@ -29,7 +36,13 @@ const resource: XynologResource & { content: string } = {
   representations: [{ mediaType: 'text/plain', byteSize: 10 }],
   content: 'Policy content.',
 };
-const annotations = { highlights: [], references: [], assessments: [], comments: [], tags: [] };
+const annotations = {
+  highlights: [],
+  references: [],
+  assessments: [],
+  comments: [],
+  tags: [],
+};
 
 function fakeSession(): XynologSession {
   return {
@@ -57,13 +70,30 @@ function TwoViewers({ session }: { session: XynologSession }) {
   };
   return (
     <>
-      <div data-testid="v1"><ResourceViewer translationManager={englishTranslationManager} session={session} resource={resource} annotations={annotations} {...controlled} /></div>
-      <div data-testid="v2"><ResourceViewer translationManager={englishTranslationManager} session={session} resource={resource} annotations={annotations} {...controlled} /></div>
+      <div data-testid="v1">
+        <ResourceViewer
+          translationManager={englishTranslationManager}
+          session={session}
+          resource={resource}
+          annotations={annotations}
+          {...controlled}
+        />
+      </div>
+      <div data-testid="v2">
+        <ResourceViewer
+          translationManager={englishTranslationManager}
+          session={session}
+          resource={resource}
+          annotations={annotations}
+          {...controlled}
+        />
+      </div>
     </>
   );
 }
 
-const isAnnotate = (c: HTMLElement) => !!c.querySelector('.xynolog-annotate-view');
+const isAnnotate = (c: HTMLElement) =>
+  !!c.querySelector('.xynolog-annotate-view');
 
 async function pickMode(container: HTMLElement, option: 'Browse' | 'Annotate') {
   const trigger = within(container).getByLabelText('Mode');
@@ -81,7 +111,9 @@ describe('useToolbarPrefs — the policy layer (Browser parity)', () => {
   });
 
   it('two viewers under one hook stay in lockstep: one Mode click flips both', async () => {
-    const { getByTestId } = renderInEnglish(<TwoViewers session={fakeSession()} />);
+    const { getByTestId } = renderInEnglish(
+      <TwoViewers session={fakeSession()} />,
+    );
     const v1 = getByTestId('v1');
     const v2 = getByTestId('v2');
     expect(isAnnotate(v1)).toBe(false);
@@ -90,8 +122,8 @@ describe('useToolbarPrefs — the policy layer (Browser parity)', () => {
     await pickMode(v1, 'Annotate');
 
     await waitFor(() => {
-      expect(isAnnotate(v1)).toBe(true);   // the host (hook) applied it…
-      expect(isAnnotate(v2)).toBe(true);   // …to every composed viewer
+      expect(isAnnotate(v1)).toBe(true); // the host (hook) applied it…
+      expect(isAnnotate(v2)).toBe(true); // …to every composed viewer
     });
   });
 
@@ -104,13 +136,17 @@ describe('useToolbarPrefs — the policy layer (Browser parity)', () => {
     first.unmount();
 
     const second = renderInEnglish(<TwoViewers session={session} />);
-    expect(isAnnotate(second.getByTestId('v1'))).toBe(true);   // restored on remount
+    expect(isAnnotate(second.getByTestId('v1'))).toBe(true); // restored on remount
   });
 
   it('initializes from existing keys (users’ saved prefs carry over)', () => {
     localStorage.setItem('xynolog-toolbar-click', 'follow');
-    const { getByTestId } = renderInEnglish(<TwoViewers session={fakeSession()} />);
-    const bar = getByTestId('v1').querySelector('.xynolog-annotate-toolbar') as HTMLElement;
+    const { getByTestId } = renderInEnglish(
+      <TwoViewers session={fakeSession()} />,
+    );
+    const bar = getByTestId('v1').querySelector(
+      '.xynolog-annotate-toolbar',
+    ) as HTMLElement;
     expect(within(bar).getByText('Follow')).toBeInTheDocument();
   });
 });

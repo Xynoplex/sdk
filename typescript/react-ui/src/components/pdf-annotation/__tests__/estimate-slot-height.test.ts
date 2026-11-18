@@ -19,18 +19,24 @@ const RASTER_W = 918;
 describe('estimateSlotHeight', () => {
   it('scales to the column when the column is narrower than the raster', () => {
     // The common case: `max-width: 100%` shrinks the image to the column.
-    expect(estimateSlotHeight(600, RASTER_W, ASPECT)).toBe(Math.round(600 * ASPECT));
+    expect(estimateSlotHeight(600, RASTER_W, ASPECT)).toBe(
+      Math.round(600 * ASPECT),
+    );
   });
 
   it('never upscales past the raster — max-width shrinks only', () => {
     // A column wider than the raster leaves the image at natural size, so the
     // height stops growing. Reserving columnWidth * aspect here would over-
     // reserve and leave a gap under every page.
-    expect(estimateSlotHeight(1600, RASTER_W, ASPECT)).toBe(Math.round(RASTER_W * ASPECT));
+    expect(estimateSlotHeight(1600, RASTER_W, ASPECT)).toBe(
+      Math.round(RASTER_W * ASPECT),
+    );
   });
 
   it('is exactly the raster height when the column matches the raster', () => {
-    expect(estimateSlotHeight(RASTER_W, RASTER_W, ASPECT)).toBe(Math.round(RASTER_W * ASPECT));
+    expect(estimateSlotHeight(RASTER_W, RASTER_W, ASPECT)).toBe(
+      Math.round(RASTER_W * ASPECT),
+    );
   });
 
   it('does NOT use the raster height as a width-independent constant', () => {
@@ -39,7 +45,9 @@ describe('estimateSlotHeight', () => {
     // column's height lurch on every mount.
     const rasterHeight = Math.round(RASTER_W * ASPECT); // 1188
     expect(estimateSlotHeight(600, RASTER_W, ASPECT)).not.toBe(rasterHeight);
-    expect(estimateSlotHeight(600, RASTER_W, ASPECT)).toBeLessThan(rasterHeight);
+    expect(estimateSlotHeight(600, RASTER_W, ASPECT)).toBeLessThan(
+      rasterHeight,
+    );
   });
 
   it('answers null until every measurement is in, rather than guessing', () => {

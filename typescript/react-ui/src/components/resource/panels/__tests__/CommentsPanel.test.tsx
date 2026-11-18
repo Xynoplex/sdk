@@ -7,7 +7,11 @@ import '@testing-library/jest-dom';
 import { CommentsPanel } from '../CommentsPanel';
 import { FrameRefusal, type EventBus, type EventMap } from '@xynolog/core';
 import type { CommentEntry } from '../CommentEntry';
-import { createMarkStateUnit, type MarkStateUnit, type XynologSession } from '@xynolog/sdk';
+import {
+  createMarkStateUnit,
+  type MarkStateUnit,
+  type XynologSession,
+} from '@xynolog/sdk';
 import { createTestXynologWrapper } from '../../../../test-utils';
 
 import type { Annotation, AnnotationId } from '@xynolog/core';
@@ -22,13 +26,18 @@ function createEventTracker() {
   const events: TrackedEvent[] = [];
   return {
     events,
-    clear: () => { events.length = 0; },
+    clear: () => {
+      events.length = 0;
+    },
     _attach(eventBus: EventBus) {
       const panelEvents = ['mark:submit'] as const;
       panelEvents.forEach((eventName) => {
         eventBus.on(eventName).subscribe((payload) => {
           // Nothing bridges into this test's bus: a refusal on it is the test's own fault.
-          if (payload instanceof FrameRefusal) throw new Error(`refused: ${payload.channel} ${payload.reason} ${payload.member}`);
+          if (payload instanceof FrameRefusal)
+            throw new Error(
+              `refused: ${payload.channel} ${payload.reason} ${payload.member}`,
+            );
           events.push({ event: eventName, payload });
         });
       });
@@ -49,7 +58,10 @@ beforeEach(() => {
   mark = createMarkStateUnit(session.client, resourceId('res-1'));
 });
 
-const renderWithEventBus = (component: React.ReactElement, tracker?: ReturnType<typeof createEventTracker>) => {
+const renderWithEventBus = (
+  component: React.ReactElement,
+  tracker?: ReturnType<typeof createEventTracker>,
+) => {
   if (tracker) tracker._attach(eventBus);
   const Wrapper = ({ children }: { children: React.ReactNode }) => (
     <XynologWrapper>{children}</XynologWrapper>
@@ -69,7 +81,8 @@ vi.mock('../../../../contexts/TranslationContext', () => ({
     };
     return translations[key] || key;
   }),
-  TranslationProvider: ({ children }: { children: React.ReactNode }) => children,
+  TranslationProvider: ({ children }: { children: React.ReactNode }) =>
+    children,
 }));
 
 // Mock @xynolog/http-transport utilities
@@ -91,12 +104,24 @@ vi.mock('../CommentEntry', () => ({
   ),
 }));
 
-import { getTextPositionSelector, getTargetSelector, resourceId } from '@xynolog/core';
-const mockGetTextPositionSelector = getTextPositionSelector as MockedFunction<typeof getTextPositionSelector>;
-const mockGetTargetSelector = getTargetSelector as MockedFunction<typeof getTargetSelector>;
+import {
+  getTextPositionSelector,
+  getTargetSelector,
+  resourceId,
+} from '@xynolog/core';
+const mockGetTextPositionSelector = getTextPositionSelector as MockedFunction<
+  typeof getTextPositionSelector
+>;
+const mockGetTargetSelector = getTargetSelector as MockedFunction<
+  typeof getTargetSelector
+>;
 
 // Test data fixtures
-const createMockComment = (id: string, start: number, end: number): Annotation => ({
+const createMockComment = (
+  id: string,
+  start: number,
+  end: number,
+): Annotation => ({
   '@context': 'http://www.w3.org/ns/anno.jsonld',
   id: id as AnnotationId,
   type: 'Annotation',
@@ -128,12 +153,12 @@ const mockComments = {
   empty: [],
   single: [createMockComment('1', 0, 10)],
   multiple: [
-    createMockComment('1', 50, 60),  // Middle position
-    createMockComment('2', 0, 10),   // First position
+    createMockComment('1', 50, 60), // Middle position
+    createMockComment('2', 0, 10), // First position
     createMockComment('3', 100, 110), // Last position
   ],
   many: Array.from({ length: 10 }, (_, i) =>
-    createMockComment(`${i + 1}`, i * 10, (i + 1) * 10)
+    createMockComment(`${i + 1}`, i * 10, (i + 1) * 10),
   ),
 };
 
@@ -162,9 +187,15 @@ describe('CommentsPanel Component', () => {
     Element.prototype.scrollIntoView = vi.fn();
 
     // Mock selector functions to return proper position data
-    mockGetTargetSelector.mockImplementation((target) => (typeof target === 'string' ? undefined : target.selector));
+    mockGetTargetSelector.mockImplementation((target) =>
+      typeof target === 'string' ? undefined : target.selector,
+    );
     mockGetTextPositionSelector.mockImplementation((selector) => {
-      if (selector !== undefined && !Array.isArray(selector) && selector.type === 'TextPositionSelector') {
+      if (
+        selector !== undefined &&
+        !Array.isArray(selector) &&
+        selector.type === 'TextPositionSelector'
+      ) {
         return selector;
       }
       return null;
@@ -178,7 +209,14 @@ describe('CommentsPanel Component', () => {
 
   describe('Rendering', () => {
     it('should render panel header with title and count', () => {
-      renderWithEventBus(<CommentsPanel session={session} mark={mark} {...defaultProps} annotations={mockComments.multiple} />);
+      renderWithEventBus(
+        <CommentsPanel
+          session={session}
+          mark={mark}
+          {...defaultProps}
+          annotations={mockComments.multiple}
+        />,
+      );
 
       const headings = screen.getAllByText(/Comments/);
       expect(headings.length).toBeGreaterThan(0);
@@ -186,13 +224,22 @@ describe('CommentsPanel Component', () => {
     });
 
     it('should show empty state when no comments', () => {
-      renderWithEventBus(<CommentsPanel session={session} mark={mark} {...defaultProps} />);
+      renderWithEventBus(
+        <CommentsPanel session={session} mark={mark} {...defaultProps} />,
+      );
 
       expect(screen.getByText(/No comments yet/)).toBeInTheDocument();
     });
 
     it('should render all comments', () => {
-      renderWithEventBus(<CommentsPanel session={session} mark={mark} {...defaultProps} annotations={mockComments.multiple} />);
+      renderWithEventBus(
+        <CommentsPanel
+          session={session}
+          mark={mark}
+          {...defaultProps}
+          annotations={mockComments.multiple}
+        />,
+      );
 
       expect(screen.getByTestId('comment-1')).toBeInTheDocument();
       expect(screen.getByTestId('comment-2')).toBeInTheDocument();
@@ -200,7 +247,9 @@ describe('CommentsPanel Component', () => {
     });
 
     it('should have proper panel structure', () => {
-      const { container } = renderWithEventBus(<CommentsPanel session={session} mark={mark} {...defaultProps} />);
+      const { container } = renderWithEventBus(
+        <CommentsPanel session={session} mark={mark} {...defaultProps} />,
+      );
 
       // Find the root panel div (first child of the container)
       const panel = container.firstChild as HTMLElement;
@@ -209,7 +258,12 @@ describe('CommentsPanel Component', () => {
 
     it('should have scrollable comments list', () => {
       const { container } = renderWithEventBus(
-        <CommentsPanel session={session} mark={mark} {...defaultProps} annotations={mockComments.many} />
+        <CommentsPanel
+          session={session}
+          mark={mark}
+          {...defaultProps}
+          annotations={mockComments.many}
+        />,
       );
 
       const commentsList = container.querySelector('.xynolog-panel__list');
@@ -219,7 +273,14 @@ describe('CommentsPanel Component', () => {
 
   describe('Comment Sorting', () => {
     it('should sort comments by position in resource', () => {
-      renderWithEventBus(<CommentsPanel session={session} mark={mark} {...defaultProps} annotations={mockComments.multiple} />);
+      renderWithEventBus(
+        <CommentsPanel
+          session={session}
+          mark={mark}
+          {...defaultProps}
+          annotations={mockComments.multiple}
+        />,
+      );
 
       const comments = screen.getAllByTestId(/comment-/);
 
@@ -233,13 +294,25 @@ describe('CommentsPanel Component', () => {
       mockGetTextPositionSelector.mockReturnValue(null);
 
       expect(() => {
-        renderWithEventBus(<CommentsPanel session={session} mark={mark} {...defaultProps} annotations={mockComments.multiple} />);
+        renderWithEventBus(
+          <CommentsPanel
+            session={session}
+            mark={mark}
+            {...defaultProps}
+            annotations={mockComments.multiple}
+          />,
+        );
       }).not.toThrow();
     });
 
     it('should maintain sort order when comments update', () => {
       const { rerender } = renderWithEventBus(
-        <CommentsPanel session={session} mark={mark} {...defaultProps} annotations={mockComments.multiple} />
+        <CommentsPanel
+          session={session}
+          mark={mark}
+          {...defaultProps}
+          annotations={mockComments.multiple}
+        />,
       );
 
       // Add a new comment at position 25
@@ -249,7 +322,12 @@ describe('CommentsPanel Component', () => {
       ];
 
       rerender(
-        <CommentsPanel session={session} mark={mark} {...defaultProps} annotations={updatedComments} />
+        <CommentsPanel
+          session={session}
+          mark={mark}
+          {...defaultProps}
+          annotations={updatedComments}
+        />,
       );
 
       const comments = screen.getAllByTestId(/comment-/);
@@ -264,9 +342,13 @@ describe('CommentsPanel Component', () => {
 
   describe('New Comment Creation', () => {
     it('should not show new comment input by default', () => {
-      renderWithEventBus(<CommentsPanel session={session} mark={mark} {...defaultProps} />);
+      renderWithEventBus(
+        <CommentsPanel session={session} mark={mark} {...defaultProps} />,
+      );
 
-      expect(screen.queryByPlaceholderText(/Add your comment/)).not.toBeInTheDocument();
+      expect(
+        screen.queryByPlaceholderText(/Add your comment/),
+      ).not.toBeInTheDocument();
     });
 
     it('should show new comment input when pendingAnnotation exists', () => {
@@ -274,27 +356,35 @@ describe('CommentsPanel Component', () => {
 
       renderWithEventBus(
         <CommentsPanel
-          session={session} mark={mark}
+          session={session}
+          mark={mark}
           {...defaultProps}
           pendingAnnotation={pendingAnnotation}
-        />
+        />,
       );
 
-      expect(screen.getByPlaceholderText(/Add your comment/)).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText(/Add your comment/),
+      ).toBeInTheDocument();
     });
 
     it('should display quoted selected text in new comment area', () => {
-      const pendingAnnotation = createPendingAnnotation('Selected text for comment');
+      const pendingAnnotation = createPendingAnnotation(
+        'Selected text for comment',
+      );
 
       renderWithEventBus(
         <CommentsPanel
-          session={session} mark={mark}
+          session={session}
+          mark={mark}
           {...defaultProps}
           pendingAnnotation={pendingAnnotation}
-        />
+        />,
       );
 
-      expect(screen.getByText(/"Selected text for comment"/)).toBeInTheDocument();
+      expect(
+        screen.getByText(/"Selected text for comment"/),
+      ).toBeInTheDocument();
     });
 
     it('should truncate long selected text at 100 characters', () => {
@@ -303,13 +393,16 @@ describe('CommentsPanel Component', () => {
 
       renderWithEventBus(
         <CommentsPanel
-          session={session} mark={mark}
+          session={session}
+          mark={mark}
           {...defaultProps}
           pendingAnnotation={pendingAnnotation}
-        />
+        />,
       );
 
-      expect(screen.getByText(new RegExp(`"${'A'.repeat(100)}`))).toBeInTheDocument();
+      expect(
+        screen.getByText(new RegExp(`"${'A'.repeat(100)}`)),
+      ).toBeInTheDocument();
       expect(screen.getByText(/\.\.\./)).toBeInTheDocument();
     });
 
@@ -318,10 +411,11 @@ describe('CommentsPanel Component', () => {
 
       renderWithEventBus(
         <CommentsPanel
-          session={session} mark={mark}
+          session={session}
+          mark={mark}
           {...defaultProps}
           pendingAnnotation={pendingAnnotation}
-        />
+        />,
       );
 
       const textarea = screen.getByPlaceholderText(/Add your comment/);
@@ -335,10 +429,11 @@ describe('CommentsPanel Component', () => {
 
       renderWithEventBus(
         <CommentsPanel
-          session={session} mark={mark}
+          session={session}
+          mark={mark}
           {...defaultProps}
           pendingAnnotation={pendingAnnotation}
-        />
+        />,
       );
 
       expect(screen.getByText('0/2000')).toBeInTheDocument();
@@ -354,13 +449,16 @@ describe('CommentsPanel Component', () => {
 
       renderWithEventBus(
         <CommentsPanel
-          session={session} mark={mark}
+          session={session}
+          mark={mark}
           {...defaultProps}
           pendingAnnotation={pendingAnnotation}
-        />
+        />,
       );
 
-      const textarea = screen.getByPlaceholderText(/Add your comment/) as HTMLTextAreaElement;
+      const textarea = screen.getByPlaceholderText(
+        /Add your comment/,
+      ) as HTMLTextAreaElement;
       expect(textarea).toHaveAttribute('maxLength', '2000');
     });
 
@@ -369,10 +467,11 @@ describe('CommentsPanel Component', () => {
 
       renderWithEventBus(
         <CommentsPanel
-          session={session} mark={mark}
+          session={session}
+          mark={mark}
           {...defaultProps}
           pendingAnnotation={pendingAnnotation}
-        />
+        />,
       );
 
       const textarea = screen.getByPlaceholderText(/Add your comment/);
@@ -385,11 +484,12 @@ describe('CommentsPanel Component', () => {
 
       renderWithEventBus(
         <CommentsPanel
-          session={session} mark={mark}
+          session={session}
+          mark={mark}
           {...defaultProps}
           pendingAnnotation={pendingAnnotation}
         />,
-        tracker
+        tracker,
       );
 
       const textarea = screen.getByPlaceholderText(/Add your comment/);
@@ -399,13 +499,16 @@ describe('CommentsPanel Component', () => {
       await userEvent.click(saveButton);
 
       await waitFor(() => {
-        expect(tracker.events.some(e =>
-          e.event === 'mark:submit' &&
-          e.payload.motivation === 'commenting' &&
-          Array.isArray(e.payload.body) &&
-          e.payload.body[0]?.type === 'TextualBody' &&
-          e.payload.body[0].value === 'My new comment'
-        )).toBe(true);
+        expect(
+          tracker.events.some(
+            (e) =>
+              e.event === 'mark:submit' &&
+              e.payload.motivation === 'commenting' &&
+              Array.isArray(e.payload.body) &&
+              e.payload.body[0]?.type === 'TextualBody' &&
+              e.payload.body[0].value === 'My new comment',
+          ),
+        ).toBe(true);
       });
     });
 
@@ -414,10 +517,11 @@ describe('CommentsPanel Component', () => {
 
       renderWithEventBus(
         <CommentsPanel
-          session={session} mark={mark}
+          session={session}
+          mark={mark}
           {...defaultProps}
           pendingAnnotation={pendingAnnotation}
-        />
+        />,
       );
 
       const textarea = screen.getByPlaceholderText(/Add your comment/);
@@ -432,10 +536,11 @@ describe('CommentsPanel Component', () => {
 
       renderWithEventBus(
         <CommentsPanel
-          session={session} mark={mark}
+          session={session}
+          mark={mark}
           {...defaultProps}
           pendingAnnotation={pendingAnnotation}
-        />
+        />,
       );
 
       const saveButton = screen.getByText('Save');
@@ -447,10 +552,11 @@ describe('CommentsPanel Component', () => {
 
       renderWithEventBus(
         <CommentsPanel
-          session={session} mark={mark}
+          session={session}
+          mark={mark}
           {...defaultProps}
           pendingAnnotation={pendingAnnotation}
-        />
+        />,
       );
 
       const textarea = screen.getByPlaceholderText(/Add your comment/);
@@ -465,10 +571,11 @@ describe('CommentsPanel Component', () => {
 
       renderWithEventBus(
         <CommentsPanel
-          session={session} mark={mark}
+          session={session}
+          mark={mark}
           {...defaultProps}
           pendingAnnotation={pendingAnnotation}
-        />
+        />,
       );
 
       const textarea = screen.getByPlaceholderText(/Add your comment/);
@@ -483,13 +590,16 @@ describe('CommentsPanel Component', () => {
 
       const { container } = renderWithEventBus(
         <CommentsPanel
-          session={session} mark={mark}
+          session={session}
+          mark={mark}
           {...defaultProps}
           pendingAnnotation={pendingAnnotation}
-        />
+        />,
       );
 
-      const newCommentArea = container.querySelector('.xynolog-annotation-prompt');
+      const newCommentArea = container.querySelector(
+        '.xynolog-annotation-prompt',
+      );
       expect(newCommentArea).toBeInTheDocument();
       expect(newCommentArea).toHaveAttribute('data-type', 'comment');
     });
@@ -499,16 +609,16 @@ describe('CommentsPanel Component', () => {
     it('should render comment entries', () => {
       renderWithEventBus(
         <CommentsPanel
-          session={session} mark={mark}
+          session={session}
+          mark={mark}
           {...defaultProps}
           annotations={mockComments.single}
-        />
+        />,
       );
 
       const comment = screen.getByTestId('comment-1');
       expect(comment).toBeInTheDocument();
     });
-
   });
 
   describe('Comment Hover Behavior', () => {
@@ -516,10 +626,11 @@ describe('CommentsPanel Component', () => {
       expect(() => {
         renderWithEventBus(
           <CommentsPanel
-            session={session} mark={mark}
+            session={session}
+            mark={mark}
             {...defaultProps}
             annotations={mockComments.single}
-          />
+          />,
         );
       }).not.toThrow();
     });
@@ -529,10 +640,11 @@ describe('CommentsPanel Component', () => {
     it('should render comments', () => {
       renderWithEventBus(
         <CommentsPanel
-          session={session} mark={mark}
+          session={session}
+          mark={mark}
           {...defaultProps}
           annotations={mockComments.multiple}
-        />
+        />,
       );
 
       // Comments should be rendered
@@ -543,7 +655,12 @@ describe('CommentsPanel Component', () => {
   describe('Panel Structure and Styling', () => {
     it('should have fixed header that does not scroll', () => {
       renderWithEventBus(
-        <CommentsPanel session={session} mark={mark} {...defaultProps} annotations={mockComments.many} />
+        <CommentsPanel
+          session={session}
+          mark={mark}
+          {...defaultProps}
+          annotations={mockComments.many}
+        />,
       );
 
       const headers = screen.getAllByText(/Comments/);
@@ -552,7 +669,9 @@ describe('CommentsPanel Component', () => {
     });
 
     it('should support dark mode', () => {
-      const { container } = renderWithEventBus(<CommentsPanel session={session} mark={mark} {...defaultProps} />);
+      const { container } = renderWithEventBus(
+        <CommentsPanel session={session} mark={mark} {...defaultProps} />,
+      );
 
       const panel = container.firstChild as HTMLElement;
       expect(panel).toHaveClass('xynolog-panel');
@@ -560,7 +679,12 @@ describe('CommentsPanel Component', () => {
 
     it('should have proper spacing between comments', () => {
       const { container } = renderWithEventBus(
-        <CommentsPanel session={session} mark={mark} {...defaultProps} annotations={mockComments.multiple} />
+        <CommentsPanel
+          session={session}
+          mark={mark}
+          {...defaultProps}
+          annotations={mockComments.multiple}
+        />,
       );
 
       const commentsList = container.querySelector('.xynolog-panel__list');
@@ -568,7 +692,9 @@ describe('CommentsPanel Component', () => {
     });
 
     it('should have proper border styling', () => {
-      renderWithEventBus(<CommentsPanel session={session} mark={mark} {...defaultProps} />);
+      renderWithEventBus(
+        <CommentsPanel session={session} mark={mark} {...defaultProps} />,
+      );
 
       const headers = screen.getAllByText(/Comments/);
       const header = headers[0].closest('div');
@@ -579,7 +705,14 @@ describe('CommentsPanel Component', () => {
   describe('Edge Cases', () => {
     it('should handle empty comments array', () => {
       expect(() => {
-        renderWithEventBus(<CommentsPanel session={session} mark={mark} {...defaultProps} annotations={[]} />);
+        renderWithEventBus(
+          <CommentsPanel
+            session={session}
+            mark={mark}
+            {...defaultProps}
+            annotations={[]}
+          />,
+        );
       }).not.toThrow();
 
       expect(screen.getByText(/No comments yet/)).toBeInTheDocument();
@@ -587,15 +720,25 @@ describe('CommentsPanel Component', () => {
 
     it('should handle rapid comment additions', () => {
       const { rerender } = renderWithEventBus(
-        <CommentsPanel session={session} mark={mark} {...defaultProps} annotations={mockComments.empty} />
+        <CommentsPanel
+          session={session}
+          mark={mark}
+          {...defaultProps}
+          annotations={mockComments.empty}
+        />,
       );
 
       for (let i = 1; i <= 5; i++) {
         const comments = Array.from({ length: i }, (_, j) =>
-          createMockComment(`${j + 1}`, j * 10, (j + 1) * 10)
+          createMockComment(`${j + 1}`, j * 10, (j + 1) * 10),
         );
         rerender(
-          <CommentsPanel session={session} mark={mark} {...defaultProps} annotations={comments} />
+          <CommentsPanel
+            session={session}
+            mark={mark}
+            {...defaultProps}
+            annotations={comments}
+          />,
         );
       }
 
@@ -604,13 +747,23 @@ describe('CommentsPanel Component', () => {
 
     it('should handle comment removal', () => {
       const { rerender } = renderWithEventBus(
-        <CommentsPanel session={session} mark={mark} {...defaultProps} annotations={mockComments.multiple} />
+        <CommentsPanel
+          session={session}
+          mark={mark}
+          {...defaultProps}
+          annotations={mockComments.multiple}
+        />,
       );
 
       expect(screen.getAllByTestId(/comment-/)).toHaveLength(3);
 
       rerender(
-        <CommentsPanel session={session} mark={mark} {...defaultProps} annotations={mockComments.single} />
+        <CommentsPanel
+          session={session}
+          mark={mark}
+          {...defaultProps}
+          annotations={mockComments.single}
+        />,
       );
 
       expect(screen.getAllByTestId(/comment-/)).toHaveLength(1);
@@ -621,23 +774,33 @@ describe('CommentsPanel Component', () => {
 
       renderWithEventBus(
         <CommentsPanel
-          session={session} mark={mark}
+          session={session}
+          mark={mark}
           {...defaultProps}
           pendingAnnotation={pendingAnnotation}
-        />
+        />,
       );
 
       // Component shows textarea when pendingAnnotation exists
-      expect(screen.getByPlaceholderText(/Add your comment/)).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText(/Add your comment/),
+      ).toBeInTheDocument();
     });
 
     it('should handle very large number of comments', () => {
       const manyComments = Array.from({ length: 100 }, (_, i) =>
-        createMockComment(`${i + 1}`, i * 10, (i + 1) * 10)
+        createMockComment(`${i + 1}`, i * 10, (i + 1) * 10),
       );
 
       expect(() => {
-        renderWithEventBus(<CommentsPanel session={session} mark={mark} {...defaultProps} annotations={manyComments} />);
+        renderWithEventBus(
+          <CommentsPanel
+            session={session}
+            mark={mark}
+            {...defaultProps}
+            annotations={manyComments}
+          />,
+        );
       }).not.toThrow();
 
       expect(screen.getAllByTestId(/comment-/)).toHaveLength(100);
@@ -651,7 +814,14 @@ describe('CommentsPanel Component', () => {
       ];
 
       expect(() => {
-        renderWithEventBus(<CommentsPanel session={session} mark={mark} {...defaultProps} annotations={commentsAtSamePosition} />);
+        renderWithEventBus(
+          <CommentsPanel
+            session={session}
+            mark={mark}
+            {...defaultProps}
+            annotations={commentsAtSamePosition}
+          />,
+        );
       }).not.toThrow();
 
       expect(screen.getAllByTestId(/comment-/)).toHaveLength(3);
@@ -660,7 +830,9 @@ describe('CommentsPanel Component', () => {
 
   describe('Accessibility', () => {
     it('should have proper heading structure', () => {
-      renderWithEventBus(<CommentsPanel session={session} mark={mark} {...defaultProps} />);
+      renderWithEventBus(
+        <CommentsPanel session={session} mark={mark} {...defaultProps} />,
+      );
 
       const headings = screen.getAllByText(/Comments/);
       expect(headings[0]).toHaveClass('xynolog-panel-header__text');
@@ -677,10 +849,11 @@ describe('CommentsPanel Component', () => {
 
       renderWithEventBus(
         <CommentsPanel
-          session={session} mark={mark}
+          session={session}
+          mark={mark}
           {...defaultProps}
           pendingAnnotation={pendingAnnotation}
-        />
+        />,
       );
 
       const textarea = screen.getByPlaceholderText(/Add your comment/);
@@ -689,7 +862,12 @@ describe('CommentsPanel Component', () => {
 
     it('should have semantic HTML structure', () => {
       const { container } = renderWithEventBus(
-        <CommentsPanel session={session} mark={mark} {...defaultProps} annotations={mockComments.multiple} />
+        <CommentsPanel
+          session={session}
+          mark={mark}
+          {...defaultProps}
+          annotations={mockComments.multiple}
+        />,
       );
 
       // Panel should be a properly structured div hierarchy

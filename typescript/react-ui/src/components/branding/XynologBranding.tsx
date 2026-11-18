@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import type { TranslateFn } from '../../types/translation';
 import './Branding.css';
@@ -14,11 +14,11 @@ interface XynologBrandingProps {
 
 export function XynologBranding({
   t,
-  className = "",
+  className = '',
   size = 'lg',
   showTagline = true,
   animated = true,
-  compactTagline = false
+  compactTagline = false,
 }: XynologBrandingProps) {
   return (
     <div
@@ -29,16 +29,12 @@ export function XynologBranding({
     >
       {/* Main heading */}
       <h1 className="xynolog-branding-title">
-        <span className="xynolog-branding-text">
-          Xynolog
-        </span>
+        <span className="xynolog-branding-text">Xynolog</span>
       </h1>
 
       {/* Tagline */}
       {showTagline && (
-        <h2 className="xynolog-branding-tagline">
-          {t('tagline')}
-        </h2>
+        <h2 className="xynolog-branding-tagline">{t('tagline')}</h2>
       )}
     </div>
   );

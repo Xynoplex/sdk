@@ -15,16 +15,15 @@
 
 import { describe, it, expect } from 'vitest';
 import { MIN_REFRESH_DELAY_MS, REFRESH_BEFORE_EXP_MS } from '@xynolog/core';
-import {
-  refreshDelayMs,
-  parseJwtExpiry,
-  isJwtExpired,
-} from '../storage';
+import { refreshDelayMs, parseJwtExpiry, isJwtExpired } from '../storage';
 
 const NOW = 1_800_000_000_000; // fixed, so these assert arithmetic not clocks
 
 /** A token as an issuer mints it: issued now, living `lifetimeSec`. */
-function token(lifetimeSec: number, opts: { iat?: boolean; ageSec?: number } = {}): string {
+function token(
+  lifetimeSec: number,
+  opts: { iat?: boolean; ageSec?: number } = {},
+): string {
   const iat = Math.floor(NOW / 1000) - (opts.ageSec ?? 0);
   const payload: Record<string, number> = { exp: iat + lifetimeSec };
   if (opts.iat !== false) payload.iat = iat;
@@ -43,10 +42,14 @@ describe('refreshDelayMs — the margin is a fraction of the lifetime', () => {
   it('no issuer lifetime can drive the delay to zero', () => {
     // The property, not an example: the margin is at most half the lifetime,
     // so a freshly minted token always has at least half of it left to wait.
-    for (const lifetimeSec of [1, 5, 30, 60, 299, 300, 301, 600, 3600, 86_400]) {
+    for (const lifetimeSec of [
+      1, 5, 30, 60, 299, 300, 301, 600, 3600, 86_400,
+    ]) {
       const delay = refreshDelayMs(token(lifetimeSec), NOW);
       expect(delay, `lifetime ${lifetimeSec}s`).not.toBeNull();
-      expect(delay!, `lifetime ${lifetimeSec}s`).toBeGreaterThanOrEqual(MIN_REFRESH_DELAY_MS);
+      expect(delay!, `lifetime ${lifetimeSec}s`).toBeGreaterThanOrEqual(
+        MIN_REFRESH_DELAY_MS,
+      );
     }
   });
 
@@ -54,8 +57,10 @@ describe('refreshDelayMs — the margin is a fraction of the lifetime', () => {
     // Above twice the floor, half-life is the binding rule and the refresh
     // lands inside the token's life, which is the point of refreshing early.
     for (const lifetimeSec of [30, 60, 299, 300, 301, 600, 3600, 86_400]) {
-      expect(refreshDelayMs(token(lifetimeSec), NOW)!, `lifetime ${lifetimeSec}s`)
-        .toBeLessThan(lifetimeSec * 1000);
+      expect(
+        refreshDelayMs(token(lifetimeSec), NOW)!,
+        `lifetime ${lifetimeSec}s`,
+      ).toBeLessThan(lifetimeSec * 1000);
     }
   });
 
@@ -72,7 +77,9 @@ describe('refreshDelayMs — the margin is a fraction of the lifetime', () => {
   it('a long-lived token keeps the five-minute margin', () => {
     // An hour-long token: the constant is much smaller than half the lifetime,
     // so it governs and the refresh lands 55 minutes out.
-    expect(refreshDelayMs(token(3600), NOW)).toBe(3600_000 - REFRESH_BEFORE_EXP_MS);
+    expect(refreshDelayMs(token(3600), NOW)).toBe(
+      3600_000 - REFRESH_BEFORE_EXP_MS,
+    );
   });
 
   it('a short-lived token refreshes at half-life, because the constant cannot apply', () => {
@@ -89,7 +96,9 @@ describe('refreshDelayMs — the floor', () => {
   });
 
   it('an already-expired token still waits the floor rather than spinning', () => {
-    expect(refreshDelayMs(token(300, { ageSec: 400 }), NOW)).toBe(MIN_REFRESH_DELAY_MS);
+    expect(refreshDelayMs(token(300, { ageSec: 400 }), NOW)).toBe(
+      MIN_REFRESH_DELAY_MS,
+    );
   });
 });
 
@@ -103,7 +112,9 @@ describe('refreshDelayMs — what it does without a full claim set', () => {
 
   it('returns null when there is no exp to schedule against', () => {
     const b64 = (o: unknown) => btoa(JSON.stringify(o));
-    expect(refreshDelayMs(`${b64({ alg: 'none' })}.${b64({ sub: 'u' })}.sig`, NOW)).toBeNull();
+    expect(
+      refreshDelayMs(`${b64({ alg: 'none' })}.${b64({ sub: 'u' })}.sig`, NOW),
+    ).toBeNull();
     expect(refreshDelayMs('not-a-jwt', NOW)).toBeNull();
   });
 });

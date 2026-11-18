@@ -7,7 +7,11 @@
  */
 import { BUS_OPERATIONS, type BusOperationKey } from './bus-operations';
 
-export type LimitsOperation = Extract<BusOperationKey, `${string}:limits-requested`>;
+export type LimitsOperation = Extract<
+  BusOperationKey,
+  `${string}:limits-requested`
+>;
 
-export const LIMITS_OPERATIONS: readonly LimitsOperation[] = (Object.keys(BUS_OPERATIONS) as BusOperationKey[])
-  .filter((op): op is LimitsOperation => op.endsWith(':limits-requested'));
+export const LIMITS_OPERATIONS: readonly LimitsOperation[] = (
+  Object.keys(BUS_OPERATIONS) as BusOperationKey[]
+).filter((op): op is LimitsOperation => op.endsWith(':limits-requested'));

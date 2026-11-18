@@ -18,7 +18,12 @@ export * from './lib/codemirror-json-theme';
 export * from './lib/codemirror-widgets';
 export * from './lib/media-shapes';
 export * from './lib/media-url';
-export { createSearchPipeline, type SearchPipeline, type SearchPipelineOptions, type SearchState } from '@xynolog/sdk';
+export {
+  createSearchPipeline,
+  type SearchPipeline,
+  type SearchPipelineOptions,
+  type SearchState,
+} from '@xynolog/sdk';
 export * from './lib/annotation-overlay';
 export * from './lib/resource-utils';
 export { interpolateTranslation } from './lib/translation-interpolation';
@@ -55,7 +60,11 @@ export * from './hooks/useKBDiscovery';
 // `XynologSessionError`, `SessionStorage`, `InMemorySessionStorage`, the
 // `KnowledgeBase` / `OpenResource` types, etc.) live in `@xynolog/sdk`.
 // Callers import them from there directly.
-export { XynologProvider, useXynolog, type XynologProviderProps } from './session/XynologProvider';
+export {
+  XynologProvider,
+  useXynolog,
+  type XynologProviderProps,
+} from './session/XynologProvider';
 export { WebBrowserStorage } from './session/web-browser-storage';
 
 // Contexts
@@ -142,7 +151,7 @@ export * from './components/navigation/CollapsibleResourceNavigation';
 export * from './components/navigation/SortableResourceTab';
 export type {
   CollapsibleResourceNavigationProps,
-  SortableResourceTabProps
+  SortableResourceTabProps,
 } from './types/collapsible-navigation';
 
 // Components - Modals
@@ -203,8 +212,18 @@ export * from './hooks/useHoverEmitter';
 // any consumer — web, terminal, mobile, daemon — can reach for).
 // React-ui re-exports them so consumers of this package don't need a
 // second import line.
-export { createBeckonStateUnit, type BeckonStateUnit, createHoverDwell, type HoverDwell, HOVER_DELAY_MS } from '@xynolog/sdk';
-export { createMarkStateUnit, type MarkStateUnit, type PendingAnnotation } from '@xynolog/sdk';
+export {
+  createBeckonStateUnit,
+  type BeckonStateUnit,
+  createHoverDwell,
+  type HoverDwell,
+  HOVER_DELAY_MS,
+} from '@xynolog/sdk';
+export {
+  createMarkStateUnit,
+  type MarkStateUnit,
+  type PendingAnnotation,
+} from '@xynolog/sdk';
 export { createYieldStateUnit, type YieldStateUnit } from '@xynolog/sdk';
 export { createGatherStateUnit, type GatherStateUnit } from '@xynolog/sdk';
 export { createMatchStateUnit, type MatchStateUnit } from '@xynolog/sdk';
@@ -216,12 +235,40 @@ export { createMatchStateUnit, type MatchStateUnit } from '@xynolog/sdk';
 // model the Xynolog web frontend's specific page taxonomy and shell. They
 // are framework-neutral (pure RxJS, no React inside) but not portable to a
 // non-web UI shape.
-export { createShellStateUnit, type ShellStateUnit, type ShellStateUnitOptions, type ToolbarPanelType, COMMON_PANELS, RESOURCE_PANELS } from './state/shell-state-unit';
-export { createComposePageStateUnit, type ComposePageStateUnit, type ComposeParams, type ComposeMode, type CloneData, type SaveResourceParams } from './features/resource-compose/state/compose-page-state-unit';
-export { createResourceViewerPageStateUnit, type ResourceViewerPageStateUnit, type WizardState, type AnnotationGroups } from './features/resource-viewer/state/resource-viewer-page-state-unit';
-export { createResourceLoaderStateUnit, type ResourceLoaderStateUnit } from './features/resource-viewer/state/resource-loader-state-unit';
-export { createDiscoverStateUnit, type DiscoverStateUnit } from './features/resource-discovery/state/discover-state-unit';
-export { createEntityTagsStateUnit, type EntityTagsStateUnit } from './features/moderate-entity-tags/state/entity-tags-state-unit';
+export {
+  createShellStateUnit,
+  type ShellStateUnit,
+  type ShellStateUnitOptions,
+  type ToolbarPanelType,
+  COMMON_PANELS,
+  RESOURCE_PANELS,
+} from './state/shell-state-unit';
+export {
+  createComposePageStateUnit,
+  type ComposePageStateUnit,
+  type ComposeParams,
+  type ComposeMode,
+  type CloneData,
+  type SaveResourceParams,
+} from './features/resource-compose/state/compose-page-state-unit';
+export {
+  createResourceViewerPageStateUnit,
+  type ResourceViewerPageStateUnit,
+  type WizardState,
+  type AnnotationGroups,
+} from './features/resource-viewer/state/resource-viewer-page-state-unit';
+export {
+  createResourceLoaderStateUnit,
+  type ResourceLoaderStateUnit,
+} from './features/resource-viewer/state/resource-loader-state-unit';
+export {
+  createDiscoverStateUnit,
+  type DiscoverStateUnit,
+} from './features/resource-discovery/state/discover-state-unit';
+export {
+  createEntityTagsStateUnit,
+  type EntityTagsStateUnit,
+} from './features/moderate-entity-tags/state/entity-tags-state-unit';
 
 export * from './hooks/useShellStateUnit';
 export * from './hooks/useObservable';

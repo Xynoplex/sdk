@@ -21,7 +21,12 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { jobId as toJobId, resourceId as toResourceId } from '@xynolog/core';
 import type { CacheState } from '../cache';
-import { CacheObservable, DelegationObservable, StreamObservable, UploadObservable } from '../awaitable';
+import {
+  CacheObservable,
+  DelegationObservable,
+  StreamObservable,
+  UploadObservable,
+} from '../awaitable';
 
 describe('StreamObservable', () => {
   it('await resolves to the last emitted value', async () => {
@@ -123,7 +128,8 @@ describe('CacheObservable', () => {
     });
     await new Promise<void>((resolve) => {
       cache.subscribe({
-        next: (st) => seen.push(st.status === 'ready' ? `ready:${st.value}` : st.status),
+        next: (st) =>
+          seen.push(st.status === 'ready' ? `ready:${st.value}` : st.status),
         complete: () => resolve(),
       });
     });
@@ -225,7 +231,12 @@ describe('UploadObservable.run', () => {
 });
 
 describe('DelegationObservable', () => {
-  const completion = { jobId: toJobId('job-1'), jobType: 'mark' as const, resourceId: toResourceId('res-1'), result: { found: 3, persisted: 2 } };
+  const completion = {
+    jobId: toJobId('job-1'),
+    jobType: 'mark' as const,
+    resourceId: toResourceId('res-1'),
+    result: { found: 3, persisted: 2 },
+  };
   const followed = (count: { subscribed: number }) =>
     new DelegationObservable((subscriber) => {
       count.subscribed += 1;
@@ -256,7 +267,10 @@ describe('DelegationObservable', () => {
   });
 
   it('await and run() reject when the job fails', async () => {
-    const failing = () => new DelegationObservable((subscriber) => subscriber.error(new Error('worker gave up')));
+    const failing = () =>
+      new DelegationObservable((subscriber) =>
+        subscriber.error(new Error('worker gave up')),
+      );
     await expect(failing()).rejects.toThrow('worker gave up');
     await expect(failing().run(() => {})).rejects.toThrow('worker gave up');
   });

@@ -16,15 +16,23 @@ import { renderHook, fireEvent, within, act } from '@testing-library/react';
 import { renderInEnglish, englishTranslationManager } from '../../test-utils';
 import '@testing-library/jest-dom';
 import { resourceId, EventBus } from '@xynolog/core';
-import type { EventMap, ResourceDescriptor as XynologResource, ResourceId } from '@xynolog/core';
+import type {
+  EventMap,
+  ResourceDescriptor as XynologResource,
+  ResourceId,
+} from '@xynolog/core';
 import type { XynologSession } from '@xynolog/sdk';
 import { usePendingCreation } from '../usePendingCreation';
 import { ResourceViewer } from '../../components/resource/ResourceViewer';
 
 vi.mock('../../components/CodeMirrorRenderer', () => ({
-  CodeMirrorRenderer: ({ content }: { content: string }) => <div className="xynolog-codemirror">{content}</div>,
+  CodeMirrorRenderer: ({ content }: { content: string }) => (
+    <div className="xynolog-codemirror">{content}</div>
+  ),
 }));
-vi.mock('react-markdown', () => ({ default: ({ children }: { children: string }) => <div>{children}</div> }));
+vi.mock('react-markdown', () => ({
+  default: ({ children }: { children: string }) => <div>{children}</div>,
+}));
 vi.mock('remark-gfm', () => ({ default: () => ({}) }));
 
 type MarkRequested = EventMap['mark:requested'];
@@ -35,67 +43,105 @@ type MarkRequested = EventMap['mark:requested'];
  */
 function liveSession() {
   const bus = new EventBus();
-  const fire = (channel: 'mark:requested', payload: MarkRequested) => bus.emit(channel, payload);
+  const fire = (channel: 'mark:requested', payload: MarkRequested) =>
+    bus.emit(channel, payload);
   const client = {
     bus,
     browse: { click: vi.fn(), invalidateAnnotationList: vi.fn() },
     beckon: { hover: vi.fn() },
     mark: {
       delete: vi.fn(),
-      request: vi.fn((source: ResourceId, selector: MarkRequested['selector'], motivation: MarkRequested['motivation']) =>
-        fire('mark:requested', { source, selector, motivation })),
+      request: vi.fn(
+        (
+          source: ResourceId,
+          selector: MarkRequested['selector'],
+          motivation: MarkRequested['motivation'],
+        ) => fire('mark:requested', { source, selector, motivation }),
+      ),
     },
   };
   const session = { client } as unknown as XynologSession;
   return { session, client, fire };
 }
 
-const REQ_A: MarkRequested = { source: resourceId('res-a'), selector: { type: 'TextPositionSelector', start: 0, end: 5 }, motivation: 'highlighting' };
-const REQ_A2: MarkRequested = { source: resourceId('res-a'), selector: { type: 'TextPositionSelector', start: 9, end: 12 }, motivation: 'commenting' };
+const REQ_A: MarkRequested = {
+  source: resourceId('res-a'),
+  selector: { type: 'TextPositionSelector', start: 0, end: 5 },
+  motivation: 'highlighting',
+};
+const REQ_A2: MarkRequested = {
+  source: resourceId('res-a'),
+  selector: { type: 'TextPositionSelector', start: 9, end: 12 },
+  motivation: 'commenting',
+};
 
 describe('usePendingCreation — the exported creation seam', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it('keystone: two hooks on one session claim only their own source', () => {
     const { session, fire } = liveSession();
-    const a = renderHook(() => usePendingCreation(session, resourceId('res-a'), true));
-    const b = renderHook(() => usePendingCreation(session, resourceId('res-b'), true));
+    const a = renderHook(() =>
+      usePendingCreation(session, resourceId('res-a'), true),
+    );
+    const b = renderHook(() =>
+      usePendingCreation(session, resourceId('res-b'), true),
+    );
 
-    act(() => { fire('mark:requested', REQ_A); });
+    act(() => {
+      fire('mark:requested', REQ_A);
+    });
 
-    expect(a.result.current.pending).toEqual(REQ_A);   // A claims its own…
-    expect(b.result.current.pending).toBeNull();       // …B stays null
+    expect(a.result.current.pending).toEqual(REQ_A); // A claims its own…
+    expect(b.result.current.pending).toBeNull(); // …B stays null
   });
 
   it('enabled=false never claims, even for its own source (browse-mode viewers are inert)', () => {
     const { session, fire } = liveSession();
-    const { result } = renderHook(() => usePendingCreation(session, resourceId('res-a'), false));
+    const { result } = renderHook(() =>
+      usePendingCreation(session, resourceId('res-a'), false),
+    );
 
-    act(() => { fire('mark:requested', REQ_A); });
+    act(() => {
+      fire('mark:requested', REQ_A);
+    });
 
     expect(result.current.pending).toBeNull();
   });
 
   it('a new request for the same resource REPLACES an unresolved pending', () => {
     const { session, fire } = liveSession();
-    const { result } = renderHook(() => usePendingCreation(session, resourceId('res-a'), true));
+    const { result } = renderHook(() =>
+      usePendingCreation(session, resourceId('res-a'), true),
+    );
 
-    act(() => { fire('mark:requested', REQ_A); });
+    act(() => {
+      fire('mark:requested', REQ_A);
+    });
     expect(result.current.pending).toEqual(REQ_A);
 
-    act(() => { fire('mark:requested', REQ_A2); });    // user reselected
-    expect(result.current.pending).toEqual(REQ_A2);    // replaced, not queued
+    act(() => {
+      fire('mark:requested', REQ_A2);
+    }); // user reselected
+    expect(result.current.pending).toEqual(REQ_A2); // replaced, not queued
   });
 
   it('clearPending resolves to null; session=null is inert', () => {
     const { session, fire } = liveSession();
-    const { result } = renderHook(() => usePendingCreation(session, resourceId('res-a'), true));
+    const { result } = renderHook(() =>
+      usePendingCreation(session, resourceId('res-a'), true),
+    );
 
-    act(() => { fire('mark:requested', REQ_A); });
-    act(() => { result.current.clearPending(); });
+    act(() => {
+      fire('mark:requested', REQ_A);
+    });
+    act(() => {
+      result.current.clearPending();
+    });
     expect(result.current.pending).toBeNull();
 
-    const inert = renderHook(() => usePendingCreation(null, resourceId('res-a'), true));
+    const inert = renderHook(() =>
+      usePendingCreation(null, resourceId('res-a'), true),
+    );
     expect(inert.result.current.pending).toBeNull();
   });
 
@@ -112,14 +158,29 @@ describe('usePendingCreation — the exported creation seam', () => {
       representations: [{ mediaType: 'text/plain', byteSize: 10 }],
       content: CONTENT,
     };
-    const annotations = { highlights: [], references: [], assessments: [], comments: [], tags: [] };
+    const annotations = {
+      highlights: [],
+      references: [],
+      assessments: [],
+      comments: [],
+      tags: [],
+    };
 
-    const hook = renderHook(() => usePendingCreation(session, resourceId('res-1'), true));
+    const hook = renderHook(() =>
+      usePendingCreation(session, resourceId('res-1'), true),
+    );
     const { container } = renderInEnglish(
-      <ResourceViewer translationManager={englishTranslationManager} session={session} resource={resource} annotations={annotations}
-        annotateMode={true} onAnnotateModeChange={vi.fn()}
-        selectionMotivation="highlighting" onSelectionMotivationChange={vi.fn()}
-        showToolbar={false} />,
+      <ResourceViewer
+        translationManager={englishTranslationManager}
+        session={session}
+        resource={resource}
+        annotations={annotations}
+        annotateMode={true}
+        onAnnotateModeChange={vi.fn()}
+        selectionMotivation="highlighting"
+        onSelectionMotivationChange={vi.fn()}
+        showToolbar={false}
+      />,
     );
 
     // Select "world" (offsets 6..11) and mouseup — the viewer emits mark.request.

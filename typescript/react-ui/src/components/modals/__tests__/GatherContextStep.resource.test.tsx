@@ -29,17 +29,41 @@ const t = {
 
 /** SemanticMatch wire shape: resourceName required, entityTypes/machineRead optional. */
 const MATCHES = [
-  { text: 'a middling passage', resourceId: 'r-mid', resourceName: 'Middling Doc', score: 0.55 },
-  { text: 'the best passage', resourceId: 'r-best', resourceName: 'Best Doc', score: 0.91,
-    entityTypes: ['Battle'], machineRead: true },
-  { text: 'a weak passage', resourceId: 'r-weak', resourceName: 'Weak Doc', score: 0.12 },
+  {
+    text: 'a middling passage',
+    resourceId: 'r-mid',
+    resourceName: 'Middling Doc',
+    score: 0.55,
+  },
+  {
+    text: 'the best passage',
+    resourceId: 'r-best',
+    resourceName: 'Best Doc',
+    score: 0.91,
+    entityTypes: ['Battle'],
+    machineRead: true,
+  },
+  {
+    text: 'a weak passage',
+    resourceId: 'r-weak',
+    resourceName: 'Weak Doc',
+    score: 0.12,
+  },
 ];
 
-function withSemantic(ctx: GatheredContext, over: Record<string, unknown> = {}): GatheredContext {
+function withSemantic(
+  ctx: GatheredContext,
+  over: Record<string, unknown> = {},
+): GatheredContext {
   return {
     ...(ctx as object),
-    semanticContext: { similar: MATCHES, excludedEntityTypes: ['Question'], ...over },
-    inferredRelationshipSummary: 'Cedar County sits inside the Black Hawk Purchase.',
+    semanticContext: {
+      similar: MATCHES,
+      excludedEntityTypes: ['Question'],
+      ...over,
+    },
+    inferredRelationshipSummary:
+      'Cedar County sits inside the Black Hawk Purchase.',
   } as unknown as GatheredContext;
 }
 
@@ -76,7 +100,12 @@ function resourceContext(): GatheredContext {
     graph: {
       nodes: [
         { id: 'res-1', type: 'resource', label: 'My Resource' },
-        { id: 'res-2', type: 'resource', label: 'Related Resource', entityTypes: ['Topic'] },
+        {
+          id: 'res-2',
+          type: 'resource',
+          label: 'Related Resource',
+          entityTypes: ['Topic'],
+        },
       ],
       edges: [{ source: 'res-1', target: 'res-2', type: 'peer' }],
     },
@@ -92,7 +121,9 @@ describe('GatheredContext display — resource focus', () => {
   });
 
   it('ContextSummary renders graph views (connections) for a resource focus', () => {
-    const { container } = render(<ContextSummary context={resourceContext()} translations={t} />);
+    const { container } = render(
+      <ContextSummary context={resourceContext()} translations={t} />,
+    );
     expect(container.textContent).toContain('Related Resource'); // peer connection from deriveViews
   });
 
@@ -100,7 +131,12 @@ describe('GatheredContext display — resource focus', () => {
     // The composite Generate modal has its controls visible above the loading
     // zone; only the annotation wizard passes `pending` (its known facts).
     const { queryByText, getByText } = render(
-      <GatherContextStep context={null} contextLoading contextError={null} translations={t} />,
+      <GatherContextStep
+        context={null}
+        contextLoading
+        contextError={null}
+        translations={t}
+      />,
     );
     expect(getByText(t.loadingContext)).toBeInTheDocument();
     expect(queryByText(t.graphPaneTitle)).toBeNull();
@@ -116,14 +152,16 @@ describe('GatheredContext display — resource focus', () => {
         translations={t}
       />,
     );
-    expect(container.textContent).toContain('My Resource');     // focal resource name
+    expect(container.textContent).toContain('My Resource'); // focal resource name
     expect(container.textContent).toContain('A short summary'); // resource summary
     expect(container.textContent).toContain('Suggested Topic'); // suggestedReferences entry
     expect(container.textContent).toContain('Related Resource'); // graph view via ContextSummary
     // annotation-only controls are gated out for a resource focus
     expect(container.textContent).not.toContain('Strategy');
     expect(container.querySelector('.xynolog-gather__footer')).toBeNull();
-    expect(container.querySelector('.xynolog-gather__hint-textarea')).toBeNull();
+    expect(
+      container.querySelector('.xynolog-gather__hint-textarea'),
+    ).toBeNull();
   });
 
   it('GatherContextStep still shows the footer for an annotation focus', () => {
@@ -184,7 +222,9 @@ describe('GatheredContext display — resource focus', () => {
     // (the registry's applied name; the motivation stylesheets declare it as a
     // synonym of `xynolog-motivation-reference`), with no inline highlight
     // style of its own.
-    const span = strip.querySelector('.annotation-reference') as HTMLElement | null;
+    const span = strip.querySelector(
+      '.annotation-reference',
+    ) as HTMLElement | null;
     expect(span).not.toBeNull();
     expect(span!.textContent).toBe('term');
     expect(span!.style.backgroundColor).toBe('');
@@ -210,12 +250,15 @@ describe('GatheredContext display — resource focus', () => {
         translations={t}
       />,
     );
-    const item = Array.from(container.querySelectorAll('li'))
-      .find((el) => el.textContent === 'Suggested Topic');
+    const item = Array.from(container.querySelectorAll('li')).find(
+      (el) => el.textContent === 'Suggested Topic',
+    );
     expect(item).toBeDefined();
     expect(item!.className).not.toContain('xynolog-chip');
     // The entity-type tokens beside the summary stay chips.
-    const chipTexts = Array.from(container.querySelectorAll('.xynolog-chip')).map((el) => el.textContent);
+    const chipTexts = Array.from(
+      container.querySelectorAll('.xynolog-chip'),
+    ).map((el) => el.textContent);
     expect(chipTexts).toContain('Topic');
     expect(chipTexts).not.toContain('Suggested Topic');
   });
@@ -226,34 +269,45 @@ describe('GatheredContext display — resource focus', () => {
     const { container } = render(
       <GatherContextStep
         context={withSemantic(resourceContext())}
-        contextLoading={false} contextError={null} translations={t}
+        contextLoading={false}
+        contextError={null}
+        translations={t}
       />,
     );
     const pane = container.querySelector('.xynolog-gather-pane--graph');
     expect(pane).not.toBeNull();
     expect(pane!.textContent).toContain('In the graph');
-    expect(pane!.textContent).toContain('Cedar County sits inside the Black Hawk Purchase.');
+    expect(pane!.textContent).toContain(
+      'Cedar County sits inside the Black Hawk Purchase.',
+    );
   });
 
   it('the corpus pane ranks match cards by descending score, named and marked', () => {
     const { container } = render(
       <GatherContextStep
         context={withSemantic(resourceContext())}
-        contextLoading={false} contextError={null} translations={t}
+        contextLoading={false}
+        contextError={null}
+        translations={t}
       />,
     );
-    const cards = Array.from(container.querySelectorAll('.xynolog-corpus__card'));
+    const cards = Array.from(
+      container.querySelectorAll('.xynolog-corpus__card'),
+    );
     expect(cards).toHaveLength(3);
     // Descending by score, whatever order the wire delivered.
-    expect(cards.map((c) => c.querySelector('.xynolog-corpus__source')!.textContent))
-      .toEqual(['Best Doc', 'Middling Doc', 'Weak Doc']);
+    expect(
+      cards.map((c) => c.querySelector('.xynolog-corpus__source')!.textContent),
+    ).toEqual(['Best Doc', 'Middling Doc', 'Weak Doc']);
     // The card names its source (`resourceName`, required on every match),
     // shows the snippet, and formats the 0–1 cosine to two places (the search
     // step's raw render is a different scale).
     expect(cards[0]!.textContent).toContain('the best passage');
     expect(cards[0]!.textContent).toContain('0.91');
     // Match-level entityTypes are tokens — chips on the card.
-    expect(cards[0]!.querySelector('.xynolog-chip')!.textContent).toBe('Battle');
+    expect(cards[0]!.querySelector('.xynolog-chip')!.textContent).toBe(
+      'Battle',
+    );
     // machineRead is a trust marker that appears ONLY when the flag travels.
     expect(cards[0]!.textContent).toContain('OCR');
     expect(cards[1]!.textContent).not.toContain('OCR');
@@ -263,16 +317,21 @@ describe('GatheredContext display — resource focus', () => {
     const { container, rerender } = render(
       <GatherContextStep
         context={withSemantic(resourceContext())}
-        contextLoading={false} contextError={null} translations={t}
+        contextLoading={false}
+        contextError={null}
+        translations={t}
       />,
     );
-    expect(container.querySelector('.xynolog-corpus__receipt')!.textContent)
-      .toContain('Question excluded from this recall');
+    expect(
+      container.querySelector('.xynolog-corpus__receipt')!.textContent,
+    ).toContain('Question excluded from this recall');
 
     rerender(
       <GatherContextStep
         context={withSemantic(resourceContext(), { excludedEntityTypes: [] })}
-        contextLoading={false} contextError={null} translations={t}
+        contextLoading={false}
+        contextError={null}
+        translations={t}
       />,
     );
     expect(container.querySelector('.xynolog-corpus__receipt')).toBeNull();
@@ -286,20 +345,29 @@ describe('GatheredContext display — resource focus', () => {
       graph: { nodes: [], edges: [] },
     } as unknown as GatheredContext;
     const { container } = render(
-      <GatherContextStep context={empty} contextLoading={false} contextError={null} translations={t} />,
+      <GatherContextStep
+        context={empty}
+        contextLoading={false}
+        contextError={null}
+        translations={t}
+      />,
     );
-    expect(container.querySelector('.xynolog-gather-pane--graph')!.textContent)
-      .toContain('No links yet');
-    expect(container.querySelector('.xynolog-gather-pane--corpus')!.textContent)
-      .toContain('Nothing similar in the corpus.');
+    expect(
+      container.querySelector('.xynolog-gather-pane--graph')!.textContent,
+    ).toContain('No links yet');
+    expect(
+      container.querySelector('.xynolog-gather-pane--corpus')!.textContent,
+    ).toContain('Nothing similar in the corpus.');
   });
 
   it('the hint sits OUTSIDE the pane grid, full width above the footer', () => {
     const { container } = render(
       <GatherContextStep
         context={annotationContext()}
-        contextLoading={false} contextError={null}
-        annotate={annotate} translations={t}
+        contextLoading={false}
+        contextError={null}
+        annotate={annotate}
+        translations={t}
       />,
     );
     const textarea = container.querySelector('.xynolog-gather__hint-textarea');
@@ -321,23 +389,48 @@ describe('GatheredContext display — resource focus', () => {
       graph: {
         nodes: [
           { id: 'res-1', type: 'resource', label: 'My Resource' },
-          { id: 'res-2', type: 'resource', label: 'Peer Doc', entityTypes: ['Topic'] },
+          {
+            id: 'res-2',
+            type: 'resource',
+            label: 'Peer Doc',
+            entityTypes: ['Topic'],
+          },
           { id: 'res-3', type: 'resource', label: 'Citing Doc' },
-          { id: 'ann-c', type: 'annotation', label: 'linking',
-            annotation: { id: 'ann-c', motivation: 'linking' } },
-          { id: 'ann-s', type: 'annotation', label: 'commenting', entityTypes: ['Person'],
-            annotation: { id: 'ann-s', motivation: 'commenting',
-              target: { source: 'res-1', selector: [
-                { type: 'TextPositionSelector', start: 5, end: 22 },
-                { type: 'TextQuoteSelector', exact: 'the disputed span' },
-              ] },
+          {
+            id: 'ann-c',
+            type: 'annotation',
+            label: 'linking',
+            annotation: { id: 'ann-c', motivation: 'linking' },
+          },
+          {
+            id: 'ann-s',
+            type: 'annotation',
+            label: 'commenting',
+            entityTypes: ['Person'],
+            annotation: {
+              id: 'ann-s',
+              motivation: 'commenting',
+              target: {
+                source: 'res-1',
+                selector: [
+                  { type: 'TextPositionSelector', start: 5, end: 22 },
+                  { type: 'TextQuoteSelector', exact: 'the disputed span' },
+                ],
+              },
               body: [
                 { type: 'TextualBody', value: 'Person', purpose: 'tagging' },
                 { type: 'TextualBody', value: 'a sibling note' },
-              ] } },
+              ],
+            },
+          },
         ],
         edges: [
-          { source: 'res-1', target: 'res-2', type: 'related', bidirectional: true },
+          {
+            source: 'res-1',
+            target: 'res-2',
+            type: 'related',
+            bidirectional: true,
+          },
           { source: 'ann-c', target: 'res-3', type: 'annotation-of' },
           { source: 'ann-c', target: 'res-1', type: 'cites' },
           { source: 'ann-s', target: 'res-1', type: 'annotation-of' },
@@ -349,7 +442,10 @@ describe('GatheredContext display — resource focus', () => {
   function renderViz() {
     return render(
       <GatherContextStep
-        context={vizContext()} contextLoading={false} contextError={null} translations={t}
+        context={vizContext()}
+        contextLoading={false}
+        contextError={null}
+        translations={t}
       />,
     );
   }
@@ -378,7 +474,9 @@ describe('GatheredContext display — resource focus', () => {
     const { container } = renderViz();
     const sibling = container.querySelector('[data-node-id="ann-s"]');
     expect(sibling).not.toBeNull();
-    expect(sibling!.querySelector('text')!.textContent).toBe('the disputed span');
+    expect(sibling!.querySelector('text')!.textContent).toBe(
+      'the disputed span',
+    );
     const title = sibling!.querySelector('title');
     expect(title).not.toBeNull();
     expect(title!.textContent).toContain('commenting');
@@ -387,7 +485,9 @@ describe('GatheredContext display — resource focus', () => {
     // ONCE (from entityTypes), not again as a body value.
     expect(title!.textContent!.match(/Person/g)).toHaveLength(1);
     // Peer hover carries its entity types.
-    expect(container.querySelector('[data-node-id="res-2"] title')!.textContent).toContain('Topic');
+    expect(
+      container.querySelector('[data-node-id="res-2"] title')!.textContent,
+    ).toContain('Topic');
   });
 
   /** A resource-level provenance annotation: target has no selector (nothing
@@ -399,10 +499,23 @@ describe('GatheredContext display — resource focus', () => {
         nodes: [
           { id: 'res-1', type: 'resource', label: 'My Resource' },
           { id: 'res-9', type: 'resource', label: 'Generated Doc' },
-          { id: 'ann-p', type: 'annotation', label: 'linking',
-            annotation: { id: 'ann-p', motivation: 'linking',
+          {
+            id: 'ann-p',
+            type: 'annotation',
+            label: 'linking',
+            annotation: {
+              id: 'ann-p',
+              motivation: 'linking',
               target: { source: 'res-1' },
-              body: [{ type: 'SpecificResource', source: bodySource, purpose: 'linking' }] } },
+              body: [
+                {
+                  type: 'SpecificResource',
+                  source: bodySource,
+                  purpose: 'linking',
+                },
+              ],
+            },
+          },
         ],
         edges: [{ source: 'ann-p', target: 'res-1', type: 'annotation-of' }],
       },
@@ -410,7 +523,9 @@ describe('GatheredContext display — resource focus', () => {
   }
 
   it('a resource-level linking annotation is labeled by what it links to, not its motivation', () => {
-    const { container } = render(<ContextSummary context={provenanceContext('res-9')} translations={t} />);
+    const { container } = render(
+      <ContextSummary context={provenanceContext('res-9')} translations={t} />,
+    );
     const node = container.querySelector('[data-node-id="ann-p"]')!;
     expect(node.querySelector('text')!.textContent).toBe('→ Generated Doc');
     // Hover carries the full linked name; the motivation stays hover-only.
@@ -419,7 +534,12 @@ describe('GatheredContext display — resource focus', () => {
   });
 
   it('an unresolvable link target falls back to the translated label — never raw vocabulary', () => {
-    const { container } = render(<ContextSummary context={provenanceContext('res-404')} translations={t} />);
+    const { container } = render(
+      <ContextSummary
+        context={provenanceContext('res-404')}
+        translations={t}
+      />,
+    );
     const node = container.querySelector('[data-node-id="ann-p"]')!;
     expect(node.querySelector('text')!.textContent).toBe('Resource link');
   });
@@ -427,8 +547,13 @@ describe('GatheredContext display — resource focus', () => {
   it('layout is deterministic — same context, same positions', () => {
     const positions = () => {
       const { container, unmount } = renderViz();
-      const snap = Array.from(container.querySelectorAll('.xynolog-graph__node rect'))
-        .map((r) => `${r.closest('[data-node-id]')!.getAttribute('data-node-id')}@${r.getAttribute('x')},${r.getAttribute('y')}`)
+      const snap = Array.from(
+        container.querySelectorAll('.xynolog-graph__node rect'),
+      )
+        .map(
+          (r) =>
+            `${r.closest('[data-node-id]')!.getAttribute('data-node-id')}@${r.getAttribute('x')},${r.getAttribute('y')}`,
+        )
         .join('|');
       unmount();
       return snap;
@@ -452,16 +577,24 @@ describe('GatheredContext display — resource focus', () => {
         nodes: [
           { id: 'res-1', type: 'resource', label: 'My Resource' },
           ...Array.from({ length: siblingCount }, (_, i) => ({
-            id: `ann-${i}`, type: 'annotation', label: 'commenting',
-            annotation: { id: `ann-${i}`, motivation: 'commenting',
-              target: { source: 'res-1', selector: [
-                { type: 'TextQuoteSelector', exact: `span ${i}` },
-              ] },
-              body: [] },
+            id: `ann-${i}`,
+            type: 'annotation',
+            label: 'commenting',
+            annotation: {
+              id: `ann-${i}`,
+              motivation: 'commenting',
+              target: {
+                source: 'res-1',
+                selector: [{ type: 'TextQuoteSelector', exact: `span ${i}` }],
+              },
+              body: [],
+            },
           })),
         ],
         edges: Array.from({ length: siblingCount }, (_, i) => ({
-          source: `ann-${i}`, target: 'res-1', type: 'annotation-of',
+          source: `ann-${i}`,
+          target: 'res-1',
+          type: 'annotation-of',
         })),
       },
     } as unknown as GatheredContext;
@@ -469,7 +602,9 @@ describe('GatheredContext display — resource focus', () => {
 
   describe('graph geometry adapts to the populated layers', () => {
     it('a lone sibling collapses to one natural-size column — no dead thirds', () => {
-      const { container } = render(<ContextSummary context={middleOnlyContext(1)} translations={t} />);
+      const { container } = render(
+        <ContextSummary context={middleOnlyContext(1)} translations={t} />,
+      );
       const svg = container.querySelector('svg')!;
       // One 180-wide column + margins; two rows (focal above, sibling below).
       expect(svg.getAttribute('viewBox')).toBe('0 0 196 120');
@@ -479,19 +614,33 @@ describe('GatheredContext display — resource focus', () => {
     });
 
     it('siblings wrap into the freed columns instead of chaining (5 → 3-across grid)', () => {
-      const { container } = render(<ContextSummary context={middleOnlyContext(5)} translations={t} />);
+      const { container } = render(
+        <ContextSummary context={middleOnlyContext(5)} translations={t} />,
+      );
       const svg = container.querySelector('svg')!;
       // Three columns, three rows (focal + two sibling rows) — not six rows.
       expect(svg.getAttribute('viewBox')).toBe('0 0 628 172');
-      const rects = Array.from(container.querySelectorAll('.xynolog-graph__node--annotation rect'));
-      expect(new Set(rects.map((r) => r.getAttribute('x')))).toEqual(new Set(['8', '224', '440']));
-      expect(Math.max(...rects.map((r) => Number(r.getAttribute('y'))))).toBe(112); // row 2
+      const rects = Array.from(
+        container.querySelectorAll('.xynolog-graph__node--annotation rect'),
+      );
+      expect(new Set(rects.map((r) => r.getAttribute('x')))).toEqual(
+        new Set(['8', '224', '440']),
+      );
+      expect(Math.max(...rects.map((r) => Number(r.getAttribute('y'))))).toBe(
+        112,
+      ); // row 2
     });
 
     it('wrap compacts, never clips — every sibling and edge still draws', () => {
-      const { container } = render(<ContextSummary context={middleOnlyContext(11)} translations={t} />);
-      expect(container.querySelectorAll('.xynolog-graph__node--annotation')).toHaveLength(11);
-      expect(container.querySelectorAll('.xynolog-graph__edge--annotation-of')).toHaveLength(11);
+      const { container } = render(
+        <ContextSummary context={middleOnlyContext(11)} translations={t} />,
+      );
+      expect(
+        container.querySelectorAll('.xynolog-graph__node--annotation'),
+      ).toHaveLength(11);
+      expect(
+        container.querySelectorAll('.xynolog-graph__edge--annotation-of'),
+      ).toHaveLength(11);
     });
 
     it('a fully populated graph keeps the three-layer full-width shape', () => {
@@ -524,7 +673,9 @@ describe('GatheredContext display — resource focus', () => {
       />,
     );
     expect(container.querySelector('.xynolog-gather__footer')).toBeNull();
-    expect(container.querySelector('.xynolog-gather__hint-textarea')).toBeNull();
+    expect(
+      container.querySelector('.xynolog-gather__hint-textarea'),
+    ).toBeNull();
   });
 });
 
@@ -543,7 +694,9 @@ function annotationContext(): GatheredContext {
 
 /** Same annotation focus, with anchor entity types — the chip fixtures. */
 function annotationContextWithTypes(): GatheredContext {
-  const ctx = annotationContext() as GatheredContext & { metadata: { entityTypes?: string[] } };
+  const ctx = annotationContext() as GatheredContext & {
+    metadata: { entityTypes?: string[] };
+  };
   ctx.metadata = { entityTypes: ['Topic'] };
   return ctx;
 }

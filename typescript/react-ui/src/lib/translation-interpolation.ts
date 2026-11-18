@@ -27,9 +27,11 @@ function selectBranch(
   count: unknown,
   locale: string,
 ): string | undefined {
-  return branches.get(`=${count}`)
-    ?? branches.get(new Intl.PluralRules(locale).select(Number(count)))
-    ?? branches.get('other');
+  return (
+    branches.get(`=${count}`) ??
+    branches.get(new Intl.PluralRules(locale).select(Number(count))) ??
+    branches.get('other')
+  );
 }
 
 /**
@@ -56,13 +58,20 @@ function interpolate(
       const end = closingBrace(template, named.lastIndex);
       if (end === -1) break;
       const pluralCount = params[pluralParam];
-      const branch = pluralCount === undefined
-        ? undefined
-        : selectBranch(pluralBranches(template.slice(named.lastIndex, end)), pluralCount, locale);
-      if (branch !== undefined) value = interpolate(branch, params, locale, String(pluralCount));
+      const branch =
+        pluralCount === undefined
+          ? undefined
+          : selectBranch(
+              pluralBranches(template.slice(named.lastIndex, end)),
+              pluralCount,
+              locale,
+            );
+      if (branch !== undefined)
+        value = interpolate(branch, params, locale, String(pluralCount));
       named.lastIndex = end + 1;
     } else if (placeholderParam !== undefined) {
-      if (Object.hasOwn(params, placeholderParam)) value = String(params[placeholderParam]);
+      if (Object.hasOwn(params, placeholderParam))
+        value = String(params[placeholderParam]);
     } else {
       value = count;
     }

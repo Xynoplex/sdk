@@ -3,11 +3,25 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import type { EngineWithLimits, GatheredContext } from '@xynolog/core';
 import type { ResourceGatherOptions } from '@xynolog/sdk';
-import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react';
-import { ConfigureGatherStep, type ResourceGatherConfig } from './ConfigureGatherStep';
+import {
+  Dialog,
+  DialogPanel,
+  DialogTitle,
+  Transition,
+  TransitionChild,
+} from '@headlessui/react';
+import {
+  ConfigureGatherStep,
+  type ResourceGatherConfig,
+} from './ConfigureGatherStep';
 import { DiscardPrompt } from './DiscardPrompt';
 import { GatherContextStep } from './GatherContextStep';
-import { ConfigureGenerationStep, freshGenerationDraft, type GenerationConfig, type GenerationDraft } from './ConfigureGenerationStep';
+import {
+  ConfigureGenerationStep,
+  freshGenerationDraft,
+  type GenerationConfig,
+  type GenerationDraft,
+} from './ConfigureGenerationStep';
 
 export interface ResourceGenerateModalTranslations {
   /** The ONE modal title — names the flow, not a step. */
@@ -141,8 +155,10 @@ export function ResourceGenerateModal({
   // Same draft ownership as the wizard: the step is controlled and this modal
   // holds its draft, so what was typed outlives the step itself, which is
   // mounted only while there is gathered context.
-  const freshDraft = (): GenerationDraft => freshGenerationDraft(defaultTitle, locale);
-  const [generationDraft, setGenerationDraft] = useState<GenerationDraft>(freshDraft);
+  const freshDraft = (): GenerationDraft =>
+    freshGenerationDraft(defaultTitle, locale);
+  const [generationDraft, setGenerationDraft] =
+    useState<GenerationDraft>(freshDraft);
 
   // "Has THIS run gathered yet?" — the page's gather slots survive across
   // opens, so a context prop can be stale at open time. Nothing renders below
@@ -151,7 +167,9 @@ export function ResourceGenerateModal({
   // The fired snapshot feeds the receipt: what THIS gather actually asked
   // for, exclusions included — not the form's live state, which the user can
   // edit without re-firing.
-  const [lastGather, setLastGather] = useState<(ResourceGatherConfig & { excludeEntityTypes: string[] }) | null>(null);
+  const [lastGather, setLastGather] = useState<
+    (ResourceGatherConfig & { excludeEntityTypes: string[] }) | null
+  >(null);
   const [editingGather, setEditingGather] = useState(false);
   const [showDiscardPrompt, setShowDiscardPrompt] = useState(false);
   // Supplied by the owner, which already tracks the list with its failure
@@ -187,20 +205,26 @@ export function ResourceGenerateModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
-  const handleGather = useCallback((config: ResourceGatherConfig) => {
-    setGatherFired(true);
-    setLastGather({ ...config, excludeEntityTypes });
-    setEditingGather(false);
-    onGatherRef.current({
-      ...config,
-      ...(excludeEntityTypes.length ? { excludeEntityTypes } : {}),
-    });
-  }, [excludeEntityTypes]);
+  const handleGather = useCallback(
+    (config: ResourceGatherConfig) => {
+      setGatherFired(true);
+      setLastGather({ ...config, excludeEntityTypes });
+      setEditingGather(false);
+      onGatherRef.current({
+        ...config,
+        ...(excludeEntityTypes.length ? { excludeEntityTypes } : {}),
+      });
+    },
+    [excludeEntityTypes],
+  );
 
-  const handleGenerate = useCallback((config: GenerationConfig) => {
-    onGenerateSubmitRef.current(resourceId, config);
-    onCloseRef.current();
-  }, [resourceId]);
+  const handleGenerate = useCallback(
+    (config: GenerationConfig) => {
+      onGenerateSubmitRef.current(resourceId, config);
+      onCloseRef.current();
+    },
+    [resourceId],
+  );
 
   // The dirty guard: typed text must not die with a dismissed modal. Toggles,
   // depth, and exclusion picks are cheap to redo and never nag. Generate's
@@ -272,8 +296,14 @@ export function ResourceGenerateModal({
             >
               <DialogPanel className="xynolog-search-modal__panel xynolog-search-modal__panel--with-border xynolog-search-modal__panel--gather xynolog-search-modal__panel--wide">
                 <div className="xynolog-search-modal__header">
-                  <DialogTitle className="xynolog-search-modal__title">{t.title}</DialogTitle>
-                  <button onClick={handleDismiss} className="xynolog-search-modal__close-button" aria-label="Close">
+                  <DialogTitle className="xynolog-search-modal__title">
+                    {t.title}
+                  </DialogTitle>
+                  <button
+                    onClick={handleDismiss}
+                    className="xynolog-search-modal__close-button"
+                    aria-label="Close"
+                  >
                     ✕
                   </button>
                 </div>
@@ -283,12 +313,18 @@ export function ResourceGenerateModal({
                     prompt={t.discardDraftPrompt}
                     discardLabel={t.discardDraft}
                     keepLabel={t.keepEditing}
-                    onDiscard={() => { setShowDiscardPrompt(false); onClose(); }}
+                    onDiscard={() => {
+                      setShowDiscardPrompt(false);
+                      onClose();
+                    }}
                     onKeepEditing={() => setShowDiscardPrompt(false)}
                   />
                 )}
 
-                <div className="xynolog-wizard__step-scroll" ref={stepScrollRef}>
+                <div
+                  className="xynolog-wizard__step-scroll"
+                  ref={stepScrollRef}
+                >
                   {/* Once fired, the spent controls fold into a receipt of
                       what THIS gather asked for — the evidence leads the
                       pane, the parameters stay visible and revisable. The
@@ -304,54 +340,72 @@ export function ResourceGenerateModal({
                       {[
                         `${t.gatherDepth} ${lastGather.depth}`,
                         `${t.gatherMaxResources} ${lastGather.maxResources}`,
-                        ...(lastGather.includeContent ? [t.includeContent] : []),
-                        ...(lastGather.includeSummary ? [t.includeSummary] : []),
+                        ...(lastGather.includeContent
+                          ? [t.includeContent]
+                          : []),
+                        ...(lastGather.includeSummary
+                          ? [t.includeSummary]
+                          : []),
                         ...(lastGather.excludeEntityTypes.length
-                          ? [t.excludedReceipt.replace('{{types}}', lastGather.excludeEntityTypes.join(', '))]
+                          ? [
+                              t.excludedReceipt.replace(
+                                '{{types}}',
+                                lastGather.excludeEntityTypes.join(', '),
+                              ),
+                            ]
                           : []),
                       ].join(' · ')}
                       <span aria-hidden="true"> ✎</span>
                     </button>
                   )}
                   <div hidden={gatherFired && !editingGather}>
-                  <ConfigureGatherStep
-                    onGather={handleGather}
-                    translations={{
-                      intro: t.gatherIntro,
-                      includeContent: t.includeContent,
-                      includeSummary: t.includeSummary,
-                      depth: t.gatherDepth,
-                      maxResources: t.gatherMaxResources,
-                      gather: t.gatherButton,
-                    }}
-                  >
-                    {entityTypeOptions.length > 0 && (
-                      <div className="xynolog-form__field xynolog-form__entity-types">
-                        <label className="xynolog-form__label">{t.recallLabel}</label>
-                        {/* Recall chips — the exclude wire, inverted for the
+                    <ConfigureGatherStep
+                      onGather={handleGather}
+                      translations={{
+                        intro: t.gatherIntro,
+                        includeContent: t.includeContent,
+                        includeSummary: t.includeSummary,
+                        depth: t.gatherDepth,
+                        maxResources: t.gatherMaxResources,
+                        gather: t.gatherButton,
+                      }}
+                    >
+                      {entityTypeOptions.length > 0 && (
+                        <div className="xynolog-form__field xynolog-form__entity-types">
+                          <label className="xynolog-form__label">
+                            {t.recallLabel}
+                          </label>
+                          {/* Recall chips — the exclude wire, inverted for the
                             UI: every type is IN the recall until crossed off,
                             so the state is still the exclude list and a chip
                             is included when absent from it. */}
-                        <div className="xynolog-form__recall-chips">
-                          {entityTypeOptions.map((et) => {
-                            const isIncluded = !excludeEntityTypes.includes(et);
-                            return (
-                              <button
-                                key={et}
-                                type="button"
-                                className="xynolog-form__recall-chip"
-                                data-included={isIncluded}
-                                aria-pressed={isIncluded}
-                                onClick={() => setExcludeEntityTypes(prev => prev.includes(et) ? prev.filter(x => x !== et) : [...prev, et])}
-                              >
-                                {et}
-                              </button>
-                            );
-                          })}
+                          <div className="xynolog-form__recall-chips">
+                            {entityTypeOptions.map((et) => {
+                              const isIncluded =
+                                !excludeEntityTypes.includes(et);
+                              return (
+                                <button
+                                  key={et}
+                                  type="button"
+                                  className="xynolog-form__recall-chip"
+                                  data-included={isIncluded}
+                                  aria-pressed={isIncluded}
+                                  onClick={() =>
+                                    setExcludeEntityTypes((prev) =>
+                                      prev.includes(et)
+                                        ? prev.filter((x) => x !== et)
+                                        : [...prev, et],
+                                    )
+                                  }
+                                >
+                                  {et}
+                                </button>
+                              );
+                            })}
+                          </div>
                         </div>
-                      </div>
-                    )}
-                  </ConfigureGatherStep>
+                      )}
+                    </ConfigureGatherStep>
                   </div>
 
                   {gatherFired && (
@@ -376,7 +430,8 @@ export function ResourceGenerateModal({
                         resourceTitlePlaceholder: t.resourceTitlePlaceholder,
                         saveLocation: t.saveLocation,
                         additionalInstructions: t.additionalInstructions,
-                        additionalInstructionsPlaceholder: t.additionalInstructionsPlaceholder,
+                        additionalInstructionsPlaceholder:
+                          t.additionalInstructionsPlaceholder,
                         language: t.language,
                         languageHelp: t.languageHelp,
                         creativity: t.creativity,

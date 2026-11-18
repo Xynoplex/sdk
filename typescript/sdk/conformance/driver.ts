@@ -10,7 +10,17 @@
  */
 import { createInterface } from 'node:readline';
 import { BehaviorSubject, type Subscription } from 'rxjs';
-import { BRIDGED_CHANNELS, XynologError, accessToken, annotationId, baseUrl, resourceId, type AccessToken, type GenerationJobParams, type MarkJobParams } from '@xynolog/core';
+import {
+  BRIDGED_CHANNELS,
+  XynologError,
+  accessToken,
+  annotationId,
+  baseUrl,
+  resourceId,
+  type AccessToken,
+  type GenerationJobParams,
+  type MarkJobParams,
+} from '@xynolog/core';
 import type { Observable } from 'rxjs';
 import {
   HttpContentTransport,
@@ -46,16 +56,24 @@ function count(args: Arguments, name: string): number {
 
 function object(args: Arguments, name: string): Arguments {
   const value = args[name];
-  if (typeof value !== 'object' || value === null || Array.isArray(value)) throw new Misuse(`${name} must be an object`);
+  if (typeof value !== 'object' || value === null || Array.isArray(value))
+    throw new Misuse(`${name} must be an object`);
   return value as Arguments;
 }
 
 /** A failure as the protocol carries it: the SDK's code, the status when a server stated one, and a job failure's class when it has one. */
-function failure(error: unknown): { code?: string; status?: number; failureClass?: string; detail: string } {
-  const detail = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+function failure(error: unknown): {
+  code?: string;
+  status?: number;
+  failureClass?: string;
+  detail: string;
+} {
+  const detail =
+    error instanceof Error ? `${error.name}: ${error.message}` : String(error);
   if (!(error instanceof XynologError)) return { detail };
   const status = (error as { status?: unknown }).status;
-  const failureClass = error instanceof JobFailedError ? error.failureClass : undefined;
+  const failureClass =
+    error instanceof JobFailedError ? error.failureClass : undefined;
   return {
     code: error.code,
     ...(typeof status === 'number' && status > 0 ? { status } : {}),
@@ -84,12 +102,22 @@ function opened(): XynologClient {
  * reports is a `ready` state, its failure a `failed` one, its end a completion.
  */
 function follow(observer: string, job: () => Observable<unknown>): void {
-  if (observers.has(observer)) throw new Misuse(`${observer} is already observing`);
+  if (observers.has(observer))
+    throw new Misuse(`${observer} is already observing`);
   observers.set(
     observer,
     job().subscribe({
-      next: (event) => say({ emission: { observer, state: { status: 'ready', value: event } } }),
-      error: (error: unknown) => say({ emission: { observer, state: { status: 'failed', error: failure(error) } } }),
+      next: (event) =>
+        say({
+          emission: { observer, state: { status: 'ready', value: event } },
+        }),
+      error: (error: unknown) =>
+        say({
+          emission: {
+            observer,
+            state: { status: 'failed', error: failure(error) },
+          },
+        }),
       complete: () => say({ completed: observer }),
     }),
   );
@@ -105,15 +133,23 @@ function live(query: Arguments): CacheObservable<unknown> {
     case 'annotations':
       return browse.annotations(resource());
     case 'annotation':
-      return browse.annotation(resource(), annotationId(text(query, 'annotation')));
+      return browse.annotation(
+        resource(),
+        annotationId(text(query, 'annotation')),
+      );
     case 'events':
       return browse.events(resource());
     case 'referencedBy':
       return gather.referencedBy(resource());
     case 'resources':
-      return browse.resources(query['filters'] === undefined ? undefined : object(query, 'filters'));
+      return browse.resources(
+        query['filters'] === undefined ? undefined : object(query, 'filters'),
+      );
     case 'matchedResources':
-      return match.resources(text(query, 'search'), query['filters'] === undefined ? undefined : object(query, 'filters'));
+      return match.resources(
+        text(query, 'search'),
+        query['filters'] === undefined ? undefined : object(query, 'filters'),
+      );
     case 'entityTypes':
       return browse.entityTypes();
     case 'tagSchemas':
@@ -128,13 +164,27 @@ function live(query: Arguments): CacheObservable<unknown> {
 const state = (s: CacheState<unknown>): Record<string, unknown> =>
   s.status === 'failed' ? { status: 'failed', error: failure(s.error) } : s;
 
-const operations: Record<string, (args: Arguments) => Promise<unknown> | unknown> = {
+const operations: Record<
+  string,
+  (args: Arguments) => Promise<unknown> | unknown
+> = {
   open(args) {
     if (client && !closed) throw new Misuse('a client is already open');
     const timing = args['timing'] === undefined ? {} : object(args, 'timing');
-    const known = ['busRequestTimeoutMs', 'invalidationWindowMs', 'reconnectMs', 'lazyRemoveMs', 'lingerMs', 'jobSilenceMs', 'jobStatusPollMs'];
-    for (const name of Object.keys(timing)) if (!known.includes(name)) throw new Misuse(`this driver cannot override ${name}`);
-    const override = (name: string) => (timing[name] === undefined ? undefined : count(timing, name));
+    const known = [
+      'busRequestTimeoutMs',
+      'invalidationWindowMs',
+      'reconnectMs',
+      'lazyRemoveMs',
+      'lingerMs',
+      'jobSilenceMs',
+      'jobStatusPollMs',
+    ];
+    for (const name of Object.keys(timing))
+      if (!known.includes(name))
+        throw new Misuse(`this driver cannot override ${name}`);
+    const override = (name: string) =>
+      timing[name] === undefined ? undefined : count(timing, name);
     const reconnectMs = override('reconnectMs');
     const lazyRemoveMs = override('lazyRemoveMs');
     const lingerMs = override('lingerMs');
@@ -145,19 +195,34 @@ const operations: Record<string, (args: Arguments) => Promise<unknown> | unknown
 
     const transport = new HttpTransport({
       baseUrl: baseUrl(text(args, 'baseUrl')),
-      token$: new BehaviorSubject<AccessToken | null>(accessToken(text(args, 'token'))),
+      token$: new BehaviorSubject<AccessToken | null>(
+        accessToken(text(args, 'token')),
+      ),
       channels: BRIDGED_CHANNELS,
       ...(reconnectMs === undefined ? {} : { reconnectMs }),
       ...(lazyRemoveMs === undefined ? {} : { lazyRemoveMs }),
       ...(lingerMs === undefined ? {} : { lingerMs }),
     });
-    client = new XynologClient(transport, new HttpContentTransport(transport), transport, {
-      ...(busTimeoutMs === undefined ? {} : { busTimeoutMs }),
-      ...(invalidationWindowMs === undefined ? {} : { invalidationWindowMs }),
-      ...(jobSilenceMs === undefined ? {} : { jobSilenceMs }),
-      ...(jobStatusPollMs === undefined ? {} : { jobStatusPollMs }),
-      ...(args['persist'] === true ? { cachePersistence: { storage, kbId: 'conformance', personKey: DRIVER_PERSON } } : {}),
-    });
+    client = new XynologClient(
+      transport,
+      new HttpContentTransport(transport),
+      transport,
+      {
+        ...(busTimeoutMs === undefined ? {} : { busTimeoutMs }),
+        ...(invalidationWindowMs === undefined ? {} : { invalidationWindowMs }),
+        ...(jobSilenceMs === undefined ? {} : { jobSilenceMs }),
+        ...(jobStatusPollMs === undefined ? {} : { jobStatusPollMs }),
+        ...(args['persist'] === true
+          ? {
+              cachePersistence: {
+                storage,
+                kbId: 'conformance',
+                personKey: DRIVER_PERSON,
+              },
+            }
+          : {}),
+      },
+    );
     closed = false;
     observers.clear();
     client.state$.subscribe((s) => say({ state: s }));
@@ -171,7 +236,8 @@ const operations: Record<string, (args: Arguments) => Promise<unknown> | unknown
 
   observe(args) {
     const observer = text(args, 'observer');
-    if (observers.has(observer)) throw new Misuse(`${observer} is already observing`);
+    if (observers.has(observer))
+      throw new Misuse(`${observer} is already observing`);
     observers.set(
       observer,
       live(object(args, 'query')).subscribe({
@@ -194,7 +260,10 @@ const operations: Record<string, (args: Arguments) => Promise<unknown> | unknown
   // may send what the knowledge base refuses.
   markDelegate(args) {
     follow(text(args, 'observer'), () =>
-      opened().mark.delegate(resourceId(text(args, 'resource')), object(args, 'params') as MarkJobParams),
+      opened().mark.delegate(
+        resourceId(text(args, 'resource')),
+        object(args, 'params') as MarkJobParams,
+      ),
     );
   },
 
@@ -203,12 +272,18 @@ const operations: Record<string, (args: Arguments) => Promise<unknown> | unknown
   yieldDelegate(args) {
     const stallDeadlineMs = count(args, 'stallDeadlineMs');
     follow(text(args, 'observer'), () =>
-      opened().yield.delegate(object(args, 'params') as unknown as GenerationJobParams, stallDeadlineMs),
+      opened().yield.delegate(
+        object(args, 'params') as unknown as GenerationJobParams,
+        stallDeadlineMs,
+      ),
     );
   },
 
   async delete(args) {
-    await opened().mark.delete(resourceId(text(args, 'resource')), annotationId(text(args, 'annotation')));
+    await opened().mark.delete(
+      resourceId(text(args, 'resource')),
+      annotationId(text(args, 'annotation')),
+    );
   },
 
   async fresh(args) {
@@ -247,7 +322,10 @@ const operations: Record<string, (args: Arguments) => Promise<unknown> | unknown
 };
 
 async function run(line: string): Promise<void> {
-  const { id, op, ...args } = JSON.parse(line) as { id: number; op: string } & Arguments;
+  const { id, op, ...args } = JSON.parse(line) as {
+    id: number;
+    op: string;
+  } & Arguments;
   const operation = operations[op];
   if (!operation) {
     say({ id, unsupported: true });

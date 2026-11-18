@@ -86,7 +86,9 @@ export interface SessionSignals extends StateUnit {
 export function createSessionSignals(): SessionSignals {
   const sessionEnded$ = new BehaviorSubject<SessionEnded | null>(null);
   const permissionDenied$ = new BehaviorSubject<PermissionDenied | null>(null);
-  const kbIdentityConflict$ = new BehaviorSubject<KbIdentityConflict | null>(null);
+  const kbIdentityConflict$ = new BehaviorSubject<KbIdentityConflict | null>(
+    null,
+  );
   let disposed = false;
   // A completed BehaviorSubject still takes a value from `next`, which its
   // `getValue` then gives: once disposed, a notice is what it was.
@@ -99,7 +101,8 @@ export function createSessionSignals(): SessionSignals {
     kbIdentityConflict$: watched(kbIdentityConflict$),
     notifySessionEnded: (reason) => raise(sessionEnded$, { reason }),
     notifyPermissionDenied: (detail) => raise(permissionDenied$, { detail }),
-    notifyKbIdentityConflict: (conflict) => raise(kbIdentityConflict$, conflict),
+    notifyKbIdentityConflict: (conflict) =>
+      raise(kbIdentityConflict$, conflict),
     acknowledgeSessionEnded: () => raise(sessionEnded$, null),
     acknowledgePermissionDenied: () => raise(permissionDenied$, null),
     acknowledgeKbIdentityConflict: () => raise(kbIdentityConflict$, null),

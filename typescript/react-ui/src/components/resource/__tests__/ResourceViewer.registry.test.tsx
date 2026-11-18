@@ -12,7 +12,10 @@
 import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { screen } from '@testing-library/react';
-import { renderInEnglish, englishTranslationManager } from '../../../test-utils';
+import {
+  renderInEnglish,
+  englishTranslationManager,
+} from '../../../test-utils';
 import '@testing-library/jest-dom';
 import type { XynologSession } from '@xynolog/sdk';
 import { EventBus } from '@xynolog/core';
@@ -20,7 +23,9 @@ import { ResourceViewer } from '../ResourceViewer';
 import type { MediaRendererProps } from '../browse-renderers';
 import type { AnnotateMediaRendererProps } from '../annotate-renderers';
 
-vi.mock('../../annotation/AnnotateToolbar', () => ({ AnnotateToolbar: () => null }));
+vi.mock('../../annotation/AnnotateToolbar', () => ({
+  AnnotateToolbar: () => null,
+}));
 vi.mock('../../Toolbar', () => ({ Toolbar: () => null }));
 vi.mock('../../CodeMirrorRenderer', () => ({
   CodeMirrorRenderer: () => <div data-testid="default-text">default-cm</div>,
@@ -39,19 +44,26 @@ function fakeSession(): XynologSession {
 
 type ViewerProps = React.ComponentProps<typeof ResourceViewer>;
 
-const emptyAnnotations = { highlights: [], references: [], assessments: [], comments: [], tags: [] };
+const emptyAnnotations = {
+  highlights: [],
+  references: [],
+  assessments: [],
+  comments: [],
+  tags: [],
+};
 
-const base = (): ViewerProps => ({
-  translationManager: englishTranslationManager,
-  resource: {
-    '@id': 'res-1',
-    name: 'Doc',
-    content: 'the-body',
-    representations: [{ mediaType: 'text/plain' }],
-  },
-  annotations: emptyAnnotations,
-  session: fakeSession(),
-} as unknown as ViewerProps);
+const base = (): ViewerProps =>
+  ({
+    translationManager: englishTranslationManager,
+    resource: {
+      '@id': 'res-1',
+      name: 'Doc',
+      content: 'the-body',
+      representations: [{ mediaType: 'text/plain' }],
+    },
+    annotations: emptyAnnotations,
+    session: fakeSession(),
+  }) as unknown as ViewerProps;
 
 describe('ResourceViewer — media-renderer registries are reachable', () => {
   it('forwards browseRenderers to the read-only path', () => {
@@ -59,7 +71,13 @@ describe('ResourceViewer — media-renderer registries are reachable', () => {
       <div data-testid="custom-browse">{content}</div>
     );
 
-    renderInEnglish(<ResourceViewer {...base()} annotateMode={false} browseRenderers={{ text: CustomText }} />);
+    renderInEnglish(
+      <ResourceViewer
+        {...base()}
+        annotateMode={false}
+        browseRenderers={{ text: CustomText }}
+      />,
+    );
 
     expect(screen.getByTestId('custom-browse')).toHaveTextContent('the-body');
   });
@@ -69,14 +87,22 @@ describe('ResourceViewer — media-renderer registries are reachable', () => {
       <div data-testid="custom-annotate">{content}</div>
     );
 
-    renderInEnglish(<ResourceViewer {...base()} annotateMode annotateRenderers={{ text: CustomText }} />);
+    renderInEnglish(
+      <ResourceViewer
+        {...base()}
+        annotateMode
+        annotateRenderers={{ text: CustomText }}
+      />,
+    );
 
     expect(screen.getByTestId('custom-annotate')).toHaveTextContent('the-body');
     expect(screen.queryByTestId('default-text')).not.toBeInTheDocument();
   });
 
   it('without overrides the defaults still render, in both modes', () => {
-    const { unmount } = renderInEnglish(<ResourceViewer {...base()} annotateMode />);
+    const { unmount } = renderInEnglish(
+      <ResourceViewer {...base()} annotateMode />,
+    );
     expect(screen.getByTestId('default-text')).toBeInTheDocument();
     unmount();
 

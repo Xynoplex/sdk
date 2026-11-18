@@ -34,7 +34,10 @@ export interface AuthErrorDisplayProps {
 /**
  * Get error message based on error type
  */
-function getErrorMessage(errorType: string | null, t: AuthErrorDisplayProps['translations']): string {
+function getErrorMessage(
+  errorType: string | null,
+  t: AuthErrorDisplayProps['translations'],
+): string {
   switch (errorType) {
     case 'Configuration':
       return t.errorConfiguration;
@@ -52,20 +55,24 @@ function getErrorMessage(errorType: string | null, t: AuthErrorDisplayProps['tra
  *
  * Displays authentication error messages with a link to try again.
  */
-export function AuthErrorDisplay({ errorType, Link, translations: t }: AuthErrorDisplayProps) {
+export function AuthErrorDisplay({
+  errorType,
+  Link,
+  translations: t,
+}: AuthErrorDisplayProps) {
   const errorMessage = getErrorMessage(errorType, t);
 
   return (
     <div className="xynolog-auth-error-display">
       <div className="xynolog-auth-error-display__container">
         <div>
-          <h2 className="xynolog-auth-error-display__title">
-            {t.pageTitle}
-          </h2>
+          <h2 className="xynolog-auth-error-display__title">{t.pageTitle}</h2>
         </div>
 
         <div className="xynolog-auth-error-display__error-box">
-          <div className="xynolog-auth-error-display__error-message">{errorMessage}</div>
+          <div className="xynolog-auth-error-display__error-message">
+            {errorMessage}
+          </div>
         </div>
 
         <div className="xynolog-auth-error-display__actions">

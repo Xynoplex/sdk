@@ -89,32 +89,74 @@ describe('media-types registry', () => {
   describe('full-capability tier', () => {
     it('pins the seven curated rows', () => {
       expect(MEDIA_TYPES['text/markdown']).toEqual({
-        extension: '.md', label: 'Markdown', render: 'text', anchoring: 'text-selector',
-        textSource: 'decode', authorable: true, uploadable: true, generatable: true,
+        extension: '.md',
+        label: 'Markdown',
+        render: 'text',
+        anchoring: 'text-selector',
+        textSource: 'decode',
+        authorable: true,
+        uploadable: true,
+        generatable: true,
       });
       expect(MEDIA_TYPES['text/plain']).toEqual({
-        extension: '.txt', label: 'Plain Text', render: 'text', anchoring: 'text-selector',
-        textSource: 'decode', authorable: true, uploadable: true, generatable: true,
+        extension: '.txt',
+        label: 'Plain Text',
+        render: 'text',
+        anchoring: 'text-selector',
+        textSource: 'decode',
+        authorable: true,
+        uploadable: true,
+        generatable: true,
       });
       expect(MEDIA_TYPES['text/html']).toEqual({
-        extension: '.html', label: 'HTML', render: 'text', anchoring: 'text-selector',
-        textSource: 'decode', authorable: true, uploadable: true, generatable: false,
+        extension: '.html',
+        label: 'HTML',
+        render: 'text',
+        anchoring: 'text-selector',
+        textSource: 'decode',
+        authorable: true,
+        uploadable: true,
+        generatable: false,
       });
       expect(MEDIA_TYPES['application/json']).toEqual({
-        extension: '.json', label: 'JSON', render: 'text', anchoring: 'text-selector',
-        textSource: 'decode', authorable: false, uploadable: true, generatable: false,
+        extension: '.json',
+        label: 'JSON',
+        render: 'text',
+        anchoring: 'text-selector',
+        textSource: 'decode',
+        authorable: false,
+        uploadable: true,
+        generatable: false,
       });
       expect(MEDIA_TYPES['image/png']).toEqual({
-        extension: '.png', label: 'PNG image', render: 'image', anchoring: 'spatial',
-        textSource: 'none', authorable: false, uploadable: true, generatable: false,
+        extension: '.png',
+        label: 'PNG image',
+        render: 'image',
+        anchoring: 'spatial',
+        textSource: 'none',
+        authorable: false,
+        uploadable: true,
+        generatable: false,
       });
       expect(MEDIA_TYPES['image/jpeg']).toEqual({
-        extension: '.jpg', label: 'JPEG image', render: 'image', anchoring: 'spatial',
-        textSource: 'none', authorable: false, uploadable: true, generatable: false,
+        extension: '.jpg',
+        label: 'JPEG image',
+        render: 'image',
+        anchoring: 'spatial',
+        textSource: 'none',
+        authorable: false,
+        uploadable: true,
+        generatable: false,
       });
       expect(MEDIA_TYPES['application/pdf']).toEqual({
-        extension: '.pdf', label: 'PDF', render: 'pdf', anchoring: 'spatial',
-        textSource: 'pdf-text-layer', authorable: false, uploadable: true, generatable: true,
+        extension: '.pdf',
+        label: 'PDF',
+        render: 'pdf',
+        anchoring: 'spatial',
+        textSource: 'pdf-text-layer',
+        authorable: false,
+        uploadable: true,
+        generatable: true,
       });
     });
   });
@@ -124,7 +166,11 @@ describe('media-types registry', () => {
     // local table — a second media-type table is what the one registry exists
     // to prevent.
     it('derives GENERATABLE_MEDIA_TYPES from the registry', () => {
-      expect(GENERATABLE_MEDIA_TYPES).toEqual(['text/markdown', 'text/plain', 'application/pdf']);
+      expect(GENERATABLE_MEDIA_TYPES).toEqual([
+        'text/markdown',
+        'text/plain',
+        'application/pdf',
+      ]);
     });
 
     it('application/pdf is generatable — the Typst renderer exists', () => {
@@ -153,7 +199,11 @@ describe('media-types registry', () => {
 
   describe('the rows that carry annotations', () => {
     it('are exactly the seven with an anchoring model', () => {
-      expect(Object.entries(MEDIA_TYPES).filter(([, caps]) => caps.anchoring !== 'none').map(([type]) => type)).toEqual([
+      expect(
+        Object.entries(MEDIA_TYPES)
+          .filter(([, caps]) => caps.anchoring !== 'none')
+          .map(([type]) => type),
+      ).toEqual([
         'text/markdown',
         'text/plain',
         'text/html',
@@ -170,7 +220,7 @@ describe('media-types registry', () => {
     // text COME FROM?" needs the category, not the mechanism — the mechanism
     // literal ('pdf-text-layer') stays confined to the extraction side, which
     // genuinely dispatches on it.
-    it('is true where text is the Smelter\'s derived artifact', () => {
+    it("is true where text is the Smelter's derived artifact", () => {
       expect(derivesTextOf('application/pdf')).toBe(true);
     });
 
@@ -198,7 +248,7 @@ describe('media-types registry', () => {
     // The question is about a MEDIA TYPE, so core answers it. A boolean
     // declared on each extractor would be a property of the strategy stored
     // beside the implementations: two homes for one fact, gated by nothing.
-    it("is true for the one strategy that derives geometry", () => {
+    it('is true for the one strategy that derives geometry', () => {
       expect(yieldsGeometryOf('application/pdf')).toBe(true);
     });
 
@@ -209,13 +259,15 @@ describe('media-types registry', () => {
       expect(yieldsGeometryOf('application/json')).toBe(false);
     });
 
-    it("is false where there is no text to extract at all", () => {
+    it('is false where there is no text to extract at all', () => {
       expect(yieldsGeometryOf('image/png')).toBe(false);
       expect(yieldsGeometryOf('image/jpeg')).toBe(false);
     });
 
     it('is true of exactly one registry row', () => {
-      expect(Object.keys(MEDIA_TYPES).filter(yieldsGeometryOf)).toEqual(['application/pdf']);
+      expect(Object.keys(MEDIA_TYPES).filter(yieldsGeometryOf)).toEqual([
+        'application/pdf',
+      ]);
     });
 
     it('agrees with textSourceOf on every registry row — one fact, derived', () => {
@@ -224,7 +276,9 @@ describe('media-types registry', () => {
       // strategy makes GEOMETRY_BY_STRATEGY fail to compile in media-types.ts,
       // which is where the fact belongs.
       for (const type of Object.keys(MEDIA_TYPES) as SupportedMediaType[]) {
-        expect(yieldsGeometryOf(type), type).toBe(textSourceOf(type) === 'pdf-text-layer');
+        expect(yieldsGeometryOf(type), type).toBe(
+          textSourceOf(type) === 'pdf-text-layer',
+        );
       }
     });
 
@@ -258,11 +312,14 @@ describe('media-types registry', () => {
       'application/x-yaml': '.yaml',
       'application/pdf': '.pdf',
       'application/msword': '.doc',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+        '.docx',
       'application/vnd.ms-excel': '.xls',
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': '.xlsx',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+        '.xlsx',
       'application/vnd.ms-powerpoint': '.ppt',
-      'application/vnd.openxmlformats-officedocument.presentationml.presentation': '.pptx',
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation':
+        '.pptx',
       'application/zip': '.zip',
       'application/gzip': '.gz',
       'application/x-tar': '.tar',
@@ -318,18 +375,24 @@ describe('media-types registry', () => {
     });
 
     it('covers the registry exactly (no unpinned rows)', () => {
-      expect(Object.keys(expectations).sort()).toEqual(Object.keys(MEDIA_TYPES).sort());
+      expect(Object.keys(expectations).sort()).toEqual(
+        Object.keys(MEDIA_TYPES).sort(),
+      );
     });
   });
 
   describe('baseMediaType', () => {
     it('strips charset parameters', () => {
       expect(baseMediaType('text/plain; charset=utf-8')).toBe('text/plain');
-      expect(baseMediaType('text/markdown; charset=windows-1252')).toBe('text/markdown');
+      expect(baseMediaType('text/markdown; charset=windows-1252')).toBe(
+        'text/markdown',
+      );
     });
 
     it('strips multiple parameters', () => {
-      expect(baseMediaType('multipart/form-data; boundary=x; charset=utf-8')).toBe('multipart/form-data');
+      expect(
+        baseMediaType('multipart/form-data; boundary=x; charset=utf-8'),
+      ).toBe('multipart/form-data');
     });
 
     it('lowercases and trims', () => {
@@ -375,7 +438,9 @@ describe('media-types registry', () => {
     });
 
     it('tolerates parameters and case', () => {
-      expect(capabilitiesOf('text/plain; charset=utf-8')?.extension).toBe('.txt');
+      expect(capabilitiesOf('text/plain; charset=utf-8')?.extension).toBe(
+        '.txt',
+      );
       expect(capabilitiesOf('IMAGE/PNG')?.render).toBe('image');
     });
 
@@ -442,7 +507,9 @@ describe('media-types registry', () => {
 
     it('decodes unregistered text/* (RFC 2046 — imported text subtypes embed)', () => {
       expect(textSourceOf('text/x-obscure-notation')).toBe('decode');
-      expect(textSourceOf('text/x-obscure-notation; charset=iso-8859-1')).toBe('decode');
+      expect(textSourceOf('text/x-obscure-notation; charset=iso-8859-1')).toBe(
+        'decode',
+      );
     });
 
     it('never decodes unregistered non-text types — no mojibake', () => {
@@ -457,7 +524,11 @@ describe('media-types registry', () => {
 
   describe('derived lists', () => {
     it('AUTHORABLE_MEDIA_TYPES is exactly the compose-editor set', () => {
-      expect(AUTHORABLE_MEDIA_TYPES).toEqual(['text/markdown', 'text/plain', 'text/html']);
+      expect(AUTHORABLE_MEDIA_TYPES).toEqual([
+        'text/markdown',
+        'text/plain',
+        'text/html',
+      ]);
     });
   });
 });

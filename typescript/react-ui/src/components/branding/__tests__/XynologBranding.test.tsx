@@ -6,7 +6,7 @@ import { XynologBranding } from '../XynologBranding';
 describe('XynologBranding Component', () => {
   const mockTranslate = vi.fn((key: string) => {
     const translations: Record<string, string> = {
-      'tagline': 'Semantic Annotation Tool',
+      tagline: 'Semantic Annotation Tool',
     };
     return translations[key] || key;
   });
@@ -56,12 +56,16 @@ describe('XynologBranding Component', () => {
     it('should hide tagline when showTagline is false', () => {
       render(<XynologBranding t={mockTranslate} showTagline={false} />);
 
-      expect(screen.queryByText('Semantic Annotation Tool')).not.toBeInTheDocument();
+      expect(
+        screen.queryByText('Semantic Annotation Tool'),
+      ).not.toBeInTheDocument();
       expect(mockTranslate).not.toHaveBeenCalledWith('tagline');
     });
 
     it('should not render h2 when tagline is hidden', () => {
-      const { container } = render(<XynologBranding t={mockTranslate} showTagline={false} />);
+      const { container } = render(
+        <XynologBranding t={mockTranslate} showTagline={false} />,
+      );
 
       expect(container.querySelector('h2')).not.toBeInTheDocument();
     });
@@ -69,14 +73,18 @@ describe('XynologBranding Component', () => {
 
   describe('Size Variants', () => {
     it('should apply small size classes', () => {
-      const { container } = render(<XynologBranding t={mockTranslate} size="sm" />);
+      const { container } = render(
+        <XynologBranding t={mockTranslate} size="sm" />,
+      );
 
       const h1 = container.querySelector('h1');
       expect(h1).toHaveClass('xynolog-branding-title');
     });
 
     it('should apply medium size classes', () => {
-      const { container } = render(<XynologBranding t={mockTranslate} size="md" />);
+      const { container } = render(
+        <XynologBranding t={mockTranslate} size="md" />,
+      );
 
       const h1 = container.querySelector('h1');
       expect(h1).toHaveClass('xynolog-branding-title');
@@ -90,7 +98,9 @@ describe('XynologBranding Component', () => {
     });
 
     it('should apply extra large size classes', () => {
-      const { container } = render(<XynologBranding t={mockTranslate} size="xl" />);
+      const { container } = render(
+        <XynologBranding t={mockTranslate} size="xl" />,
+      );
 
       const h1 = container.querySelector('h1');
       expect(h1).toHaveClass('xynolog-branding-title');
@@ -99,28 +109,36 @@ describe('XynologBranding Component', () => {
 
   describe('Tagline Size Variants', () => {
     it('should apply small tagline size', () => {
-      const { container } = render(<XynologBranding t={mockTranslate} size="sm" showTagline={true} />);
+      const { container } = render(
+        <XynologBranding t={mockTranslate} size="sm" showTagline={true} />,
+      );
 
       const h2 = container.querySelector('h2');
       expect(h2).toHaveClass('xynolog-branding-tagline');
     });
 
     it('should apply medium tagline size', () => {
-      const { container } = render(<XynologBranding t={mockTranslate} size="md" showTagline={true} />);
+      const { container } = render(
+        <XynologBranding t={mockTranslate} size="md" showTagline={true} />,
+      );
 
       const h2 = container.querySelector('h2');
       expect(h2).toHaveClass('xynolog-branding-tagline');
     });
 
     it('should apply large tagline size', () => {
-      const { container } = render(<XynologBranding t={mockTranslate} size="lg" showTagline={true} />);
+      const { container } = render(
+        <XynologBranding t={mockTranslate} size="lg" showTagline={true} />,
+      );
 
       const h2 = container.querySelector('h2');
       expect(h2).toHaveClass('xynolog-branding-tagline');
     });
 
     it('should apply extra large tagline size', () => {
-      const { container } = render(<XynologBranding t={mockTranslate} size="xl" showTagline={true} />);
+      const { container } = render(
+        <XynologBranding t={mockTranslate} size="xl" showTagline={true} />,
+      );
 
       const h2 = container.querySelector('h2');
       expect(h2).toHaveClass('xynolog-branding-tagline');
@@ -130,7 +148,7 @@ describe('XynologBranding Component', () => {
   describe('Compact Tagline Mode', () => {
     it('should apply compact tagline styles when compactTagline is true', () => {
       const { container } = render(
-        <XynologBranding t={mockTranslate} compactTagline={true} />
+        <XynologBranding t={mockTranslate} compactTagline={true} />,
       );
 
       const h2 = container.querySelector('h2');
@@ -139,7 +157,7 @@ describe('XynologBranding Component', () => {
 
     it('should apply different spacing with compact tagline', () => {
       const { container } = render(
-        <XynologBranding t={mockTranslate} compactTagline={true} />
+        <XynologBranding t={mockTranslate} compactTagline={true} />,
       );
 
       const h1 = container.querySelector('h1');
@@ -149,7 +167,7 @@ describe('XynologBranding Component', () => {
 
     it('should apply normal spacing without compact tagline', () => {
       const { container } = render(
-        <XynologBranding t={mockTranslate} compactTagline={false} />
+        <XynologBranding t={mockTranslate} compactTagline={false} />,
       );
 
       const h1 = container.querySelector('h1');
@@ -158,7 +176,7 @@ describe('XynologBranding Component', () => {
 
     it('should use compact size classes with compactTagline', () => {
       const { container } = render(
-        <XynologBranding t={mockTranslate} size="sm" compactTagline={true} />
+        <XynologBranding t={mockTranslate} size="sm" compactTagline={true} />,
       );
 
       const h2 = container.querySelector('h2');
@@ -167,7 +185,7 @@ describe('XynologBranding Component', () => {
 
     it('should apply tracking-wide for normal tagline', () => {
       const { container } = render(
-        <XynologBranding t={mockTranslate} compactTagline={false} />
+        <XynologBranding t={mockTranslate} compactTagline={false} />,
       );
 
       const h2 = container.querySelector('h2');
@@ -192,14 +210,18 @@ describe('XynologBranding Component', () => {
     });
 
     it('should not apply animation classes when animated is false', () => {
-      const { container } = render(<XynologBranding t={mockTranslate} animated={false} />);
+      const { container } = render(
+        <XynologBranding t={mockTranslate} animated={false} />,
+      );
 
       const h1 = container.querySelector('h1');
       expect(h1).toHaveClass('xynolog-branding-title');
     });
 
     it('should not animate tagline when animated is false', () => {
-      const { container } = render(<XynologBranding t={mockTranslate} animated={false} />);
+      const { container } = render(
+        <XynologBranding t={mockTranslate} animated={false} />,
+      );
 
       const h2 = container.querySelector('h2');
       expect(h2).toHaveClass('xynolog-branding-tagline');
@@ -209,7 +231,7 @@ describe('XynologBranding Component', () => {
   describe('Custom Styling', () => {
     it('should apply custom className', () => {
       const { container } = render(
-        <XynologBranding t={mockTranslate} className="custom-class" />
+        <XynologBranding t={mockTranslate} className="custom-class" />,
       );
 
       const wrapper = container.querySelector('.custom-class');
@@ -218,7 +240,7 @@ describe('XynologBranding Component', () => {
 
     it('should preserve default classes with custom className', () => {
       const { container } = render(
-        <XynologBranding t={mockTranslate} className="custom-class" />
+        <XynologBranding t={mockTranslate} className="custom-class" />,
       );
 
       const wrapper = container.querySelector('.custom-class');
@@ -322,7 +344,7 @@ describe('XynologBranding Component', () => {
           animated={false}
           compactTagline={true}
           className="custom"
-        />
+        />,
       );
 
       const h1 = container.querySelector('h1');
@@ -337,7 +359,7 @@ describe('XynologBranding Component', () => {
   describe('Spacing Behavior', () => {
     it('should not apply margin-bottom when tagline is hidden', () => {
       const { container } = render(
-        <XynologBranding t={mockTranslate} showTagline={false} />
+        <XynologBranding t={mockTranslate} showTagline={false} />,
       );
 
       const h1 = container.querySelector('h1');
@@ -347,7 +369,11 @@ describe('XynologBranding Component', () => {
 
     it('should apply margin-bottom when tagline is shown', () => {
       const { container } = render(
-        <XynologBranding t={mockTranslate} showTagline={true} compactTagline={false} />
+        <XynologBranding
+          t={mockTranslate}
+          showTagline={true}
+          compactTagline={false}
+        />,
       );
 
       const h1 = container.querySelector('h1');

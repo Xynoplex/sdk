@@ -13,7 +13,11 @@ import type { AnchoredTextState } from '../../hooks/useAnchoredText';
  * there is a line: a canvas mounted with no session, to paint and nothing
  * else, needs no `TranslationProvider` for a line it never shows.
  */
-export function AnchoredTextNotice({ status }: { status: AnchoredTextState['status'] }) {
+export function AnchoredTextNotice({
+  status,
+}: {
+  status: AnchoredTextState['status'];
+}) {
   if (status === 'held' || status === 'unasked') return null;
   return <AnchoredTextLine status={status} />;
 }
@@ -21,7 +25,11 @@ export function AnchoredTextNotice({ status }: { status: AnchoredTextState['stat
 function AnchoredTextLine({ status }: { status: 'waiting' | 'never' }) {
   const t = useTranslations('PdfViewer');
   return (
-    <div className="xynolog-anchored-text-notice" data-anchored-text={status} role="status">
+    <div
+      className="xynolog-anchored-text-notice"
+      data-anchored-text={status}
+      role="status"
+    >
       {t(status === 'waiting' ? 'preparingTextLayer' : 'textLayerUnreadable')}
     </div>
   );

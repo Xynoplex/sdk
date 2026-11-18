@@ -32,7 +32,10 @@ if (!('DOMMatrix' in globalThis)) {
 // directly, which nothing restores: the clobbered method then leaks to every
 // later test in the file. Defining a no-op here gives `vi.spyOn` something to
 // attach to, so those tests are ordinary restorable spies.
-if (typeof Element !== 'undefined' && typeof Element.prototype.scrollIntoView !== 'function') {
+if (
+  typeof Element !== 'undefined' &&
+  typeof Element.prototype.scrollIntoView !== 'function'
+) {
   Object.defineProperty(Element.prototype, 'scrollIntoView', {
     configurable: true,
     writable: true,
@@ -43,7 +46,10 @@ if (typeof Element !== 'undefined' && typeof Element.prototype.scrollIntoView !=
 // Polyfill for HTMLElement.focus to fix @headlessui/react Dialog focus issues in jsdom
 // jsdom's focus is read-only and doesn't properly set document.activeElement
 if (typeof HTMLElement !== 'undefined') {
-  const descriptor = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'focus');
+  const descriptor = Object.getOwnPropertyDescriptor(
+    HTMLElement.prototype,
+    'focus',
+  );
 
   if (descriptor && !descriptor.writable) {
     // Redefine focus as a writable method that properly sets activeElement
@@ -56,18 +62,24 @@ if (typeof HTMLElement !== 'undefined') {
           Object.defineProperty(this.ownerDocument, 'activeElement', {
             configurable: true,
             writable: true,
-            value: this
+            value: this,
           });
         }
 
         // Dispatch focus event
-        const focusEvent = new FocusEvent('focus', { bubbles: false, cancelable: false });
+        const focusEvent = new FocusEvent('focus', {
+          bubbles: false,
+          cancelable: false,
+        });
         this.dispatchEvent(focusEvent);
 
         // Also dispatch focusin (which bubbles)
-        const focusinEvent = new FocusEvent('focusin', { bubbles: true, cancelable: false });
+        const focusinEvent = new FocusEvent('focusin', {
+          bubbles: true,
+          cancelable: false,
+        });
         this.dispatchEvent(focusinEvent);
-      }
+      },
     });
   }
 }
@@ -88,7 +100,11 @@ afterEach(() => {
 // worker teardown.
 const refuseNetwork: typeof fetch = (input) => {
   const url =
-    typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+    typeof input === 'string'
+      ? input
+      : input instanceof URL
+        ? input.href
+        : input.url;
   throw new Error(
     `Unit test attempted a network request: ${url}\n` +
       `Unit tests compose the SDK's in-memory doubles, never a real transport. ` +

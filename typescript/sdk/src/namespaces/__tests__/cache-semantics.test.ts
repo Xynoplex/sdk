@@ -11,8 +11,23 @@
 
 import { describe, it, expect, vi } from 'vitest';
 import { map, firstValueFrom, filter, BehaviorSubject } from 'rxjs';
-import { EventBus, FrameRefusal, INVALIDATION_WINDOW_MS, SAVE_DEBOUNCE_MS, resourceId, annotationId } from '@xynolog/core';
-import type { components, StoredEvent, EventOfType, EventMetadata, UserId, ResourceId, EventMap } from '@xynolog/core';
+import {
+  EventBus,
+  FrameRefusal,
+  INVALIDATION_WINDOW_MS,
+  SAVE_DEBOUNCE_MS,
+  resourceId,
+  annotationId,
+} from '@xynolog/core';
+import type {
+  components,
+  StoredEvent,
+  EventOfType,
+  EventMetadata,
+  UserId,
+  ResourceId,
+  EventMap,
+} from '@xynolog/core';
 import type { ConnectionState } from '@xynolog/core';
 import { BrowseNamespace } from '../browse';
 import { isReady, readyValue, type CacheState } from '../../cache';
@@ -37,12 +52,19 @@ function mockAnnotation(id: string, source = 'res-1'): Annotation {
     motivation: 'commenting',
     created: '2026-01-01T00:00:00Z',
     target: { source: resourceId(source) },
-    body: [{ type: 'TextualBody', value: 'test comment', purpose: 'commenting' }],
+    body: [
+      { type: 'TextualBody', value: 'test comment', purpose: 'commenting' },
+    ],
   };
 }
 
 function mockResource(id: string, name?: string): ResourceDescriptor {
-  return { '@context': 'http://schema.org', '@id': resourceId(id), name: name ?? `Resource ${id}`, representations: [] };
+  return {
+    '@context': 'http://schema.org',
+    '@id': resourceId(id),
+    name: name ?? `Resource ${id}`,
+    representations: [],
+  };
 }
 
 /**
@@ -51,7 +73,10 @@ function mockResource(id: string, name?: string): ResourceDescriptor {
  * (resourceId, payload.annotation); the rest is filled out to satisfy
  * the schema without `as any` casts.
  */
-function fakeMarkAdded(rId: ResourceId, annIdStr: string): StoredEvent<EventOfType<'mark:added'>> {
+function fakeMarkAdded(
+  rId: ResourceId,
+  annIdStr: string,
+): StoredEvent<EventOfType<'mark:added'>> {
   return {
     id: `evt-${annIdStr}`,
     type: 'mark:added',
@@ -64,7 +89,9 @@ function fakeMarkAdded(rId: ResourceId, annIdStr: string): StoredEvent<EventOfTy
   };
 }
 
-function fakeYieldCreated(rId: ResourceId): StoredEvent<EventOfType<'yield:created'>> {
+function fakeYieldCreated(
+  rId: ResourceId,
+): StoredEvent<EventOfType<'yield:created'>> {
   return {
     id: `evt-created-${rId}`,
     type: 'yield:created',
@@ -72,12 +99,19 @@ function fakeYieldCreated(rId: ResourceId): StoredEvent<EventOfType<'yield:creat
     userId: TEST_USER_ID,
     version: 1,
     timestamp: '2026-01-01T00:00:00Z',
-    payload: { name: `Imported ${rId}`, format: 'text/plain', contentChecksum: 'sha256-test' },
+    payload: {
+      name: `Imported ${rId}`,
+      format: 'text/plain',
+      contentChecksum: 'sha256-test',
+    },
     metadata: TEST_METADATA,
   };
 }
 
-function fakeMarkRemoved(rId: ResourceId, annIdStr: string): StoredEvent<EventOfType<'mark:removed'>> {
+function fakeMarkRemoved(
+  rId: ResourceId,
+  annIdStr: string,
+): StoredEvent<EventOfType<'mark:removed'>> {
   return {
     id: `evt-${annIdStr}-removed`,
     type: 'mark:removed',
@@ -109,7 +143,10 @@ function fakeMarkBodyUpdated(
   };
 }
 
-function fakeBusResumeGap(scope: string, reason: EventMap['bus:resume-gap']['reason']): EventMap['bus:resume-gap'] {
+function fakeBusResumeGap(
+  scope: string,
+  reason: EventMap['bus:resume-gap']['reason'],
+): EventMap['bus:resume-gap'] {
   return { scope: resourceId(scope), lastSeenId: `p-${scope}-1`, reason };
 }
 
@@ -130,7 +167,10 @@ function reopen(state$: BehaviorSubject<ConnectionState>): void {
 const MOCK_ENGINES = [
   {
     engine: { provider: 'anthropic', model: 'claude-haiku-4-5' },
-    jobs: [{ jobType: 'mark', params: { motivation: 'linking' } }, { jobType: 'yield' }],
+    jobs: [
+      { jobType: 'mark', params: { motivation: 'linking' } },
+      { jobType: 'yield' },
+    ],
   },
   {
     engine: { provider: 'anthropic', model: 'claude-sonnet-4-5' },
@@ -146,8 +186,18 @@ const MOCK_ENGINES = [
 const HAIKU_LIMITS = { contextTokens: 200_000, maxOutputTokens: 64_000 };
 const SONNET_LIMITS = { contextTokens: 200_000, maxOutputTokens: 32_000 };
 const MOCK_LIMITS: Record<string, unknown[]> = {
-  'job:limits-requested': [{ engine: { provider: 'anthropic', model: 'claude-haiku-4-5' }, limits: HAIKU_LIMITS }],
-  'match:limits-requested': [{ engine: { provider: 'anthropic', model: 'claude-sonnet-4-5' }, limits: SONNET_LIMITS }],
+  'job:limits-requested': [
+    {
+      engine: { provider: 'anthropic', model: 'claude-haiku-4-5' },
+      limits: HAIKU_LIMITS,
+    },
+  ],
+  'match:limits-requested': [
+    {
+      engine: { provider: 'anthropic', model: 'claude-sonnet-4-5' },
+      limits: SONNET_LIMITS,
+    },
+  ],
   'gather:limits-requested': [],
 };
 
@@ -179,89 +229,120 @@ function createWire(opts: HarnessOptions) {
   };
   const silentChannels = opts.silentChannels ?? [];
 
-  const emitSpy = vi.fn().mockImplementation(async (channel: string, payload: Record<string, unknown>, envelope?: { correlationId?: string }) => {
-    const correlationId = envelope?.correlationId as string;
-    if (silentChannels.includes(channel)) return; // request swallowed — no reply ever
+  const emitSpy = vi
+    .fn()
+    .mockImplementation(
+      async (
+        channel: string,
+        payload: Record<string, unknown>,
+        envelope?: { correlationId?: string },
+      ) => {
+        const correlationId = envelope?.correlationId as string;
+        if (silentChannels.includes(channel)) return; // request swallowed — no reply ever
 
-    let resultChannel: string;
-    let response: Record<string, unknown>;
+        let resultChannel: string;
+        let response: Record<string, unknown>;
 
-    switch (channel) {
-      case 'browse:resource-requested': {
-        resultChannel = 'browse:resource-result';
-        const id = (payload.resourceId as string) ?? 'res-1';
-        response = { resource: mockResource(id, state.resourceName(id)), lastSequence: 1 };
-        break;
-      }
-      case 'browse:resources-requested': {
-        resultChannel = 'browse:resources-result';
-        response = { resources: [mockResource('res-1')], total: 1, offset: 0, limit: 20 };
-        break;
-      }
-      case 'browse:annotation-requested': {
-        resultChannel = 'browse:annotation-result';
-        const id = payload.annotationId as string;
-        response = { annotation: mockAnnotation(id), resource: null, resolvedResource: null };
-        break;
-      }
-      case 'browse:entity-types-requested': {
-        resultChannel = 'browse:entity-types-result';
-        response = { entityTypes: ['Person'] };
-        break;
-      }
-      case 'browse:events-requested': {
-        resultChannel = 'browse:events-result';
-        response = { events: [], total: 0, resourceId: (payload.resourceId as string) ?? 'res-1' };
-        break;
-      }
-      case 'browse:engines-requested': {
-        resultChannel = 'browse:engines-result';
-        response = { engines: MOCK_ENGINES };
-        break;
-      }
-      case 'job:limits-requested':
-      case 'gather:limits-requested':
-      case 'match:limits-requested': {
-        resultChannel = channel.replace('-requested', '-result');
-        response = { limits: MOCK_LIMITS[channel] };
-        break;
-      }
-      default:
-        return;
-    }
+        switch (channel) {
+          case 'browse:resource-requested': {
+            resultChannel = 'browse:resource-result';
+            const id = (payload.resourceId as string) ?? 'res-1';
+            response = {
+              resource: mockResource(id, state.resourceName(id)),
+              lastSequence: 1,
+            };
+            break;
+          }
+          case 'browse:resources-requested': {
+            resultChannel = 'browse:resources-result';
+            response = {
+              resources: [mockResource('res-1')],
+              total: 1,
+              offset: 0,
+              limit: 20,
+            };
+            break;
+          }
+          case 'browse:annotation-requested': {
+            resultChannel = 'browse:annotation-result';
+            const id = payload.annotationId as string;
+            response = {
+              annotation: mockAnnotation(id),
+              resource: null,
+              resolvedResource: null,
+            };
+            break;
+          }
+          case 'browse:entity-types-requested': {
+            resultChannel = 'browse:entity-types-result';
+            response = { entityTypes: ['Person'] };
+            break;
+          }
+          case 'browse:events-requested': {
+            resultChannel = 'browse:events-result';
+            response = {
+              events: [],
+              total: 0,
+              resourceId: (payload.resourceId as string) ?? 'res-1',
+            };
+            break;
+          }
+          case 'browse:engines-requested': {
+            resultChannel = 'browse:engines-result';
+            response = { engines: MOCK_ENGINES };
+            break;
+          }
+          case 'job:limits-requested':
+          case 'gather:limits-requested':
+          case 'match:limits-requested': {
+            resultChannel = channel.replace('-requested', '-result');
+            response = { limits: MOCK_LIMITS[channel] };
+            break;
+          }
+          default:
+            return;
+        }
 
-    if (state.rejectRemaining > 0) {
-      state.rejectRemaining--;
-      queueMicrotask(() => {
-        transportBus.emit(
-          resultChannel.replace('-result', '-failed') as never,
-          ({ message: 'rejected by test' }) as never,
-          { correlationId },
-        );
-      });
-    } else {
-      queueMicrotask(() => {
-        transportBus.emit(resultChannel as never, { response } as never, { correlationId });
-      });
-    }
-  });
+        if (state.rejectRemaining > 0) {
+          state.rejectRemaining--;
+          queueMicrotask(() => {
+            transportBus.emit(
+              resultChannel.replace('-result', '-failed') as never,
+              { message: 'rejected by test' } as never,
+              { correlationId },
+            );
+          });
+        } else {
+          queueMicrotask(() => {
+            transportBus.emit(resultChannel as never, { response } as never, {
+              correlationId,
+            });
+          });
+        }
+      },
+    );
 
   const subscribeToResource = vi.fn().mockReturnValue(() => {});
   const transport = inMemoryTransport({
     bus: transportBus,
     subscribeToResource,
-    state$: (opts.state$ ?? new BehaviorSubject<ConnectionState>('open')).asObservable(),
+    state$: (
+      opts.state$ ?? new BehaviorSubject<ConnectionState>('open')
+    ).asObservable(),
     onEmit: (channel, payload, envelope) => {
       void emitSpy(channel, payload, envelope);
     },
   });
 
   // A resource's annotations are read over HTTP: the content transport's.
-  const getAnnotations = vi.fn<IContentTransport['getAnnotations']>(async () => {
-    const annotations: Annotation[] = [];
-    for (let i = 0; i < state.annotationCount; i++) annotations.push(mockAnnotation(`ann-${i + 1}`));
-    return { annotations, total: annotations.length };
-  });
+  const getAnnotations = vi.fn<IContentTransport['getAnnotations']>(
+    async () => {
+      const annotations: Annotation[] = [];
+      for (let i = 0; i < state.annotationCount; i++)
+        annotations.push(mockAnnotation(`ann-${i + 1}`));
+      return { annotations, total: annotations.length };
+    },
+  );
   const content: IContentTransport = {
     putBinary: vi.fn(),
     getBinary: vi.fn(),
@@ -276,17 +357,27 @@ function createWire(opts: HarnessOptions) {
 }
 
 function createHarness(opts: HarnessOptions = {}) {
-  const { transport, content, emitSpy, getAnnotations, state } = createWire(opts);
+  const { transport, content, emitSpy, getAnnotations, state } =
+    createWire(opts);
   const eventBus = new EventBus();
   const browse = new BrowseNamespace(transport, eventBus, content, {
-    ...(opts.busTimeoutMs !== undefined ? { busTimeoutMs: opts.busTimeoutMs } : {}),
+    ...(opts.busTimeoutMs !== undefined
+      ? { busTimeoutMs: opts.busTimeoutMs }
+      : {}),
   });
 
   return { browse, eventBus, emitSpy, getAnnotations, state };
 }
 
-function firstDefined<T>(obs: import('rxjs').Observable<import('../../cache').CacheState<T>>): Promise<T> {
-  return firstValueFrom(obs.pipe(filter(isReady), map((s) => s.value)));
+function firstDefined<T>(
+  obs: import('rxjs').Observable<import('../../cache').CacheState<T>>,
+): Promise<T> {
+  return firstValueFrom(
+    obs.pipe(
+      filter(isReady),
+      map((s) => s.value),
+    ),
+  );
 }
 
 // Tick past queued microtasks so values propagate.
@@ -465,7 +556,9 @@ describe('Cache semantics — behaviors B1–B16, B19 and B20 against BrowseName
       // Value-less exhaustion emits `failed` to this subscriber (B15) —
       // projected to undefined here; this test is about the in-flight guard,
       // not the notification.
-      browse.resource(RID).subscribe({ next: (s) => seen.push(readyValue(s)), error: () => {} });
+      browse
+        .resource(RID)
+        .subscribe({ next: (s) => seen.push(readyValue(s)), error: () => {} });
       await flush(); // Attempt + B14 retry both reject; guard releases in finally.
 
       state.rejectRemaining = 0;
@@ -620,8 +713,10 @@ describe('Cache semantics — behaviors B1–B16, B19 and B20 against BrowseName
   });
 
   describe('B13 — a stream that reopens', () => {
-    const requests = (emitSpy: ReturnType<typeof createHarness>['emitSpy'], channel: string) =>
-      emitSpy.mock.calls.filter(([ch]) => ch === channel).length;
+    const requests = (
+      emitSpy: ReturnType<typeof createHarness>['emitSpy'],
+      channel: string,
+    ) => emitSpy.mock.calls.filter(([ch]) => ch === channel).length;
 
     it('after a drop, asks again for what events without a position feed, and not for what a scope replays', async () => {
       const state$ = new BehaviorSubject<ConnectionState>('open');
@@ -695,7 +790,16 @@ describe('Cache semantics — behaviors B1–B16, B19 and B20 against BrowseName
       expect(getAnnotations).toHaveBeenCalledTimes(1);
 
       // Something changed and nothing says what.
-      eventBus.emit('mark:added', new FrameRefusal('mark:added', 'payload.resourceId', 'lacks', { not: 'a recorded event' }, undefined));
+      eventBus.emit(
+        'mark:added',
+        new FrameRefusal(
+          'mark:added',
+          'payload.resourceId',
+          'lacks',
+          { not: 'a recorded event' },
+          undefined,
+        ),
+      );
       await flush();
 
       expect(requests(emitSpy, 'browse:resource-requested')).toBe(2);
@@ -718,15 +822,26 @@ describe('Cache semantics — behaviors B1–B16, B19 and B20 against BrowseName
       expect(emitSpy).toHaveBeenCalledTimes(5);
       expect(getAnnotations).toHaveBeenCalledTimes(1);
 
-      eventBus.emit('bus:resume-gap', fakeBusResumeGap(RID_A, 'retention-exceeded'));
+      eventBus.emit(
+        'bus:resume-gap',
+        fakeBusResumeGap(RID_A, 'retention-exceeded'),
+      );
       await flush();
 
-      const asked = emitSpy.mock.calls.slice(5).map(([channel, payload]) => [channel, payload]);
+      const asked = emitSpy.mock.calls
+        .slice(5)
+        .map(([channel, payload]) => [channel, payload]);
       expect(asked).toHaveLength(2);
-      expect(asked).toContainEqual(['browse:resource-requested', { resourceId: RID_A }]);
+      expect(asked).toContainEqual([
+        'browse:resource-requested',
+        { resourceId: RID_A },
+      ]);
       expect(getAnnotations.mock.calls.slice(1)).toEqual([[RID_A]]);
       // The scope's annotations too: its events are what feed them.
-      expect(asked).toContainEqual(['browse:annotation-requested', { resourceId: RID_A, annotationId: AID_A }]);
+      expect(asked).toContainEqual([
+        'browse:annotation-requested',
+        { resourceId: RID_A, annotationId: AID_A },
+      ]);
     });
   });
 
@@ -739,13 +854,17 @@ describe('Cache semantics — behaviors B1–B16, B19 and B20 against BrowseName
       expect(emitSpy).toHaveBeenCalledTimes(1);
 
       // mark:delete-ok → remove path.
-      const deleteOkPayload: components['schemas']['MarkDeleteOk'] = { response: { annotationId: AID } };
+      const deleteOkPayload: components['schemas']['MarkDeleteOk'] = {
+        response: { annotationId: AID },
+      };
       eventBus.emit('mark:delete-ok', deleteOkPayload);
       await flush();
 
       const last = seen.at(-1)!;
       expect(last.status).toBe('failed');
-      expect(last.status === 'failed' && last.error).toMatchObject({ code: 'bus.not-found' });
+      expect(last.status === 'failed' && last.error).toMatchObject({
+        code: 'bus.not-found',
+      });
       // Never `pending` on the way: no request stands behind a removal.
       expect(seen.map((s) => s.status)).toEqual(['pending', 'ready', 'failed']);
       expect(emitSpy).toHaveBeenCalledTimes(1);
@@ -759,7 +878,11 @@ describe('Cache semantics — behaviors B1–B16, B19 and B20 against BrowseName
       await flush();
 
       await firstDefined(browse.annotation(RID, AID));
-      expect(emitSpy.mock.calls.filter(([ch]) => ch === 'browse:annotation-requested')).toHaveLength(2);
+      expect(
+        emitSpy.mock.calls.filter(
+          ([ch]) => ch === 'browse:annotation-requested',
+        ),
+      ).toHaveLength(2);
     });
 
     it('marks nothing about an annotation the client never asked for (B20)', async () => {
@@ -769,7 +892,9 @@ describe('Cache semantics — behaviors B1–B16, B19 and B20 against BrowseName
 
       // Its first observer is simply the first: pending, one request, ready.
       const seen: string[] = [];
-      const sub = browse.annotation(RID, AID).subscribe((s) => seen.push(s.status));
+      const sub = browse
+        .annotation(RID, AID)
+        .subscribe((s) => seen.push(s.status));
       await firstDefined(browse.annotation(RID, AID));
       expect(seen).toEqual(['pending', 'ready']);
       expect(emitSpy).toHaveBeenCalledTimes(1);
@@ -781,13 +906,22 @@ describe('Cache semantics — behaviors B1–B16, B19 and B20 against BrowseName
     it('asks again for the annotation itself, and goes on showing what it has', async () => {
       const { browse, eventBus, emitSpy } = createHarness();
       const seen: string[] = [];
-      const sub = browse.annotation(RID, AID).subscribe((s) => seen.push(s.status));
+      const sub = browse
+        .annotation(RID, AID)
+        .subscribe((s) => seen.push(s.status));
       await firstDefined(browse.annotation(RID, AID));
 
-      eventBus.emit('mark:body-updated', fakeMarkBodyUpdated(RID, mockAnnotation(AID, 'res-1')));
+      eventBus.emit(
+        'mark:body-updated',
+        fakeMarkBodyUpdated(RID, mockAnnotation(AID, 'res-1')),
+      );
       await flush();
 
-      expect(emitSpy.mock.calls.filter(([ch]) => ch === 'browse:annotation-requested')).toHaveLength(2);
+      expect(
+        emitSpy.mock.calls.filter(
+          ([ch]) => ch === 'browse:annotation-requested',
+        ),
+      ).toHaveLength(2);
       // The update is not a removal: the value stays until the new one arrives.
       expect(seen).not.toContain('failed');
       expect(seen.filter((status) => status === 'pending')).toHaveLength(1);
@@ -804,7 +938,10 @@ describe('Cache semantics — behaviors B1–B16, B19 and B20 against BrowseName
 
       // No top-level `annotation`: the enricher declined, so there is nothing to
       // write through. Returning early would leave the stale body on screen.
-      eventBus.emit('mark:body-updated', fakeMarkBodyUpdated(RID, mockAnnotation(AID, 'res-1')));
+      eventBus.emit(
+        'mark:body-updated',
+        fakeMarkBodyUpdated(RID, mockAnnotation(AID, 'res-1')),
+      );
       await flush();
 
       expect(listFetches()).toBeGreaterThan(before);
@@ -813,8 +950,10 @@ describe('Cache semantics — behaviors B1–B16, B19 and B20 against BrowseName
   });
 
   describe('B20 — a bus event refreshes only what the cache holds', () => {
-    const requests = (emitSpy: ReturnType<typeof createHarness>['emitSpy'], channel: string) =>
-      emitSpy.mock.calls.filter(([ch]) => ch === channel).length;
+    const requests = (
+      emitSpy: ReturnType<typeof createHarness>['emitSpy'],
+      channel: string,
+    ) => emitSpy.mock.calls.filter(([ch]) => ch === channel).length;
 
     it('an event on an observed resource costs no request for what nothing has asked for', async () => {
       const { browse, eventBus, emitSpy, getAnnotations } = createHarness();
@@ -824,8 +963,14 @@ describe('Cache semantics — behaviors B1–B16, B19 and B20 against BrowseName
       eventBus.emit('mark:added', fakeMarkAdded(RID, AID));
       await flush();
 
-      expect(getAnnotations, 'the observed list is refreshed').toHaveBeenCalledTimes(2);
-      expect(requests(emitSpy, 'browse:events-requested'), 'the event history nobody asked for is not').toBe(0);
+      expect(
+        getAnnotations,
+        'the observed list is refreshed',
+      ).toHaveBeenCalledTimes(2);
+      expect(
+        requests(emitSpy, 'browse:events-requested'),
+        'the event history nobody asked for is not',
+      ).toBe(0);
       sub.unsubscribe();
     });
 
@@ -834,7 +979,11 @@ describe('Cache semantics — behaviors B1–B16, B19 and B20 against BrowseName
       const sub = browse.resources().subscribe(() => {});
       await firstDefined(browse.resources());
 
-      for (let i = 0; i < 100; i++) eventBus.emit('yield:created', fakeYieldCreated(resourceId(`imported-${i}`)));
+      for (let i = 0; i < 100; i++)
+        eventBus.emit(
+          'yield:created',
+          fakeYieldCreated(resourceId(`imported-${i}`)),
+        );
       await flush();
 
       expect(requests(emitSpy, 'browse:resource-requested')).toBe(0);
@@ -866,9 +1015,12 @@ describe('Cache semantics — behaviors B1–B16, B19 and B20 against BrowseName
     const STORM_EVENTS = 1_000;
     const STORM_SPACING_MS = 10;
     // At most once per window while the storm lasts, and once after it.
-    const BOUND = Math.ceil((STORM_EVENTS * STORM_SPACING_MS) / INVALIDATION_WINDOW_MS) + 1;
-    const requests = (emitSpy: ReturnType<typeof createHarness>['emitSpy'], channel: string) =>
-      emitSpy.mock.calls.filter(([ch]) => ch === channel).length;
+    const BOUND =
+      Math.ceil((STORM_EVENTS * STORM_SPACING_MS) / INVALIDATION_WINDOW_MS) + 1;
+    const requests = (
+      emitSpy: ReturnType<typeof createHarness>['emitSpy'],
+      channel: string,
+    ) => emitSpy.mock.calls.filter(([ch]) => ch === channel).length;
 
     it('a bulk import refetches an observed resource list at most once per window, and after its last event', async () => {
       vi.useFakeTimers();
@@ -879,14 +1031,24 @@ describe('Cache semantics — behaviors B1–B16, B19 and B20 against BrowseName
         const before = requests(emitSpy, 'browse:resources-requested');
         let beforeLast = before;
         for (let i = 0; i < STORM_EVENTS; i++) {
-          if (i === STORM_EVENTS - 1) beforeLast = requests(emitSpy, 'browse:resources-requested');
-          eventBus.emit('yield:created', fakeYieldCreated(resourceId(`imported-${i}`)));
+          if (i === STORM_EVENTS - 1)
+            beforeLast = requests(emitSpy, 'browse:resources-requested');
+          eventBus.emit(
+            'yield:created',
+            fakeYieldCreated(resourceId(`imported-${i}`)),
+          );
           await vi.advanceTimersByTimeAsync(STORM_SPACING_MS);
         }
         await vi.advanceTimersByTimeAsync(INVALIDATION_WINDOW_MS);
         const after = requests(emitSpy, 'browse:resources-requested');
-        expect(after - before, `list refetches during a ${STORM_EVENTS}-event import`).toBeLessThanOrEqual(BOUND);
-        expect(after, 'a refetch after the last event, so the list shows it').toBeGreaterThan(beforeLast);
+        expect(
+          after - before,
+          `list refetches during a ${STORM_EVENTS}-event import`,
+        ).toBeLessThanOrEqual(BOUND);
+        expect(
+          after,
+          'a refetch after the last event, so the list shows it',
+        ).toBeGreaterThan(beforeLast);
         sub.unsubscribe();
       } finally {
         vi.useRealTimers();
@@ -909,8 +1071,13 @@ describe('Cache semantics — behaviors B1–B16, B19 and B20 against BrowseName
           await vi.advanceTimersByTimeAsync(STORM_SPACING_MS);
         }
         await vi.advanceTimersByTimeAsync(INVALIDATION_WINDOW_MS);
-        expect(getAnnotations.mock.calls.length - before, `annotation refetches during ${STORM_EVENTS} marks`).toBeLessThanOrEqual(BOUND);
-        expect(shown, 'the list ends with every mark').toHaveLength(STORM_EVENTS + 1);
+        expect(
+          getAnnotations.mock.calls.length - before,
+          `annotation refetches during ${STORM_EVENTS} marks`,
+        ).toBeLessThanOrEqual(BOUND);
+        expect(shown, 'the list ends with every mark').toHaveLength(
+          STORM_EVENTS + 1,
+        );
         sub.unsubscribe();
       } finally {
         vi.useRealTimers();
@@ -947,9 +1114,14 @@ describe('Cache semantics — behaviors B1–B16, B19 and B20 against BrowseName
         browse.dispose();
         // An open window is a live timer: left running, it would hold a Node
         // process open and fire into disposed caches.
-        expect(vi.getTimerCount(), 'timers left running after disposal').toBe(0);
+        expect(vi.getTimerCount(), 'timers left running after disposal').toBe(
+          0,
+        );
         await vi.advanceTimersByTimeAsync(INVALIDATION_WINDOW_MS * 2);
-        expect(getAnnotations.mock.calls.length, 'nothing is requested after disposal').toBe(settled);
+        expect(
+          getAnnotations.mock.calls.length,
+          'nothing is requested after disposal',
+        ).toBe(settled);
       } finally {
         vi.useRealTimers();
       }
@@ -965,9 +1137,15 @@ describe('Cache semantics — behaviors B1–B16, B19 and B20 against BrowseName
         eventBus.emit('mark:added', fakeMarkAdded(RID, 'ann-a'));
         eventBus.emit('mark:added', fakeMarkAdded(RID, 'ann-b'));
         await vi.advanceTimersByTimeAsync(0);
-        expect(browse.persistenceSettled(), 'the second mark is owed to the window').toBe(false);
+        expect(
+          browse.persistenceSettled(),
+          'the second mark is owed to the window',
+        ).toBe(false);
         await vi.advanceTimersByTimeAsync(INVALIDATION_WINDOW_MS);
-        expect(browse.persistenceSettled(), 'the window has run what it owed').toBe(true);
+        expect(
+          browse.persistenceSettled(),
+          'the window has run what it owed',
+        ).toBe(true);
         sub.unsubscribe();
         browse.dispose();
       } finally {
@@ -984,28 +1162,47 @@ describe('Cache semantics — behaviors B1–B16, B19 and B20 against BrowseName
      */
     function persistedHarness(options: HarnessOptions) {
       const storage = new InMemorySessionStorage();
-      const places = coupledLastEventId(storage, lastEventIdKey('kb-1', PERSON));
+      const places = coupledLastEventId(
+        storage,
+        lastEventIdKey('kb-1', PERSON),
+      );
       const { transport, content, getAnnotations, state } = createWire(options);
       const client = new XynologClient(transport, content, undefined, {
-        cachePersistence: { storage: places.storage, kbId: 'kb-1', personKey: PERSON },
-        ...(options.busTimeoutMs !== undefined ? { busTimeoutMs: options.busTimeoutMs } : {}),
+        cachePersistence: {
+          storage: places.storage,
+          kbId: 'kb-1',
+          personKey: PERSON,
+        },
+        ...(options.busTimeoutMs !== undefined
+          ? { busTimeoutMs: options.busTimeoutMs }
+          : {}),
       });
       places.coupleTo(client);
-      return { client, getAnnotations, state, storage, saveLastEventId: places.saveLastEventId };
+      return {
+        client,
+        getAnnotations,
+        state,
+        storage,
+        saveLastEventId: places.saveLastEventId,
+      };
     }
 
     /** The total of the resource's annotations its kept document holds. */
     function keptTotal(storage: InMemorySessionStorage): number | undefined {
       const text = storage.get(cacheKey('kb-1', PERSON, 'annotations'));
       if (text === null) throw new Error('No annotations document was written');
-      const document = JSON.parse(text) as { entries: [string, { total: number }, number][] };
+      const document = JSON.parse(text) as {
+        entries: [string, { total: number }, number][];
+      };
       return document.entries.find(([key]) => key === RID)?.[1].total;
     }
 
     it("a window holding an owed invalidation at disposal leaves the places unwritten, and the caches' documents are still flushed (B17-Q)", async () => {
       vi.useFakeTimers();
       try {
-        const { client, state, storage, saveLastEventId } = persistedHarness({});
+        const { client, state, storage, saveLastEventId } = persistedHarness(
+          {},
+        );
         const sub = client.browse.annotations(RID).subscribe(() => {});
         await firstDefined(client.browse.annotations(RID));
         state.annotationCount = 2;
@@ -1015,8 +1212,14 @@ describe('Cache semantics — behaviors B1–B16, B19 and B20 against BrowseName
         await vi.advanceTimersByTimeAsync(0);
         sub.unsubscribe();
         client.dispose();
-        expect(keptTotal(storage), 'the save the annotations owed is flushed').toBe(2);
-        expect(storage.get(lastEventIdKey('kb-1', PERSON)), 'the places wait for the refetch disposal drops').toBeNull();
+        expect(
+          keptTotal(storage),
+          'the save the annotations owed is flushed',
+        ).toBe(2);
+        expect(
+          storage.get(lastEventIdKey('kb-1', PERSON)),
+          'the places wait for the refetch disposal drops',
+        ).toBeNull();
       } finally {
         vi.useRealTimers();
       }
@@ -1025,7 +1228,9 @@ describe('Cache semantics — behaviors B1–B16, B19 and B20 against BrowseName
     it('with nothing owed at disposal, the documents flushed then carry the places (B17-Q)', async () => {
       vi.useFakeTimers();
       try {
-        const { client, state, storage, saveLastEventId } = persistedHarness({});
+        const { client, state, storage, saveLastEventId } = persistedHarness(
+          {},
+        );
         const sub = client.browse.annotations(RID).subscribe(() => {});
         await firstDefined(client.browse.annotations(RID));
         state.annotationCount = 2;
@@ -1034,7 +1239,10 @@ describe('Cache semantics — behaviors B1–B16, B19 and B20 against BrowseName
         await vi.advanceTimersByTimeAsync(0);
         sub.unsubscribe();
         client.dispose();
-        expect(keptTotal(storage), 'the save the annotations owed is flushed').toBe(2);
+        expect(
+          keptTotal(storage),
+          'the save the annotations owed is flushed',
+        ).toBe(2);
         const places = storage.get(lastEventIdKey('kb-1', PERSON));
         if (places === null) throw new Error('The places were not written');
         expect(JSON.parse(places)).toEqual({ 'res-1': 'p-res-1-2' });
@@ -1046,8 +1254,12 @@ describe('Cache semantics — behaviors B1–B16, B19 and B20 against BrowseName
     it("a fetch in flight in a kept cache disposed first leaves the places unwritten when the next cache's document is flushed (B17-Q)", async () => {
       vi.useFakeTimers();
       try {
-        const { client, state, storage, saveLastEventId } = persistedHarness({ silentChannels: ['browse:resource-requested'] });
-        const annotationsSub = client.browse.annotations(RID).subscribe(() => {});
+        const { client, state, storage, saveLastEventId } = persistedHarness({
+          silentChannels: ['browse:resource-requested'],
+        });
+        const annotationsSub = client.browse
+          .annotations(RID)
+          .subscribe(() => {});
         await firstDefined(client.browse.annotations(RID));
         // The resource cache is disposed before the annotations: its fetch is never answered.
         const resourceSub = client.browse.resource(RID).subscribe(() => {});
@@ -1058,8 +1270,14 @@ describe('Cache semantics — behaviors B1–B16, B19 and B20 against BrowseName
         resourceSub.unsubscribe();
         annotationsSub.unsubscribe();
         client.dispose();
-        expect(keptTotal(storage), 'the save the annotations owed is flushed').toBe(2);
-        expect(storage.get(lastEventIdKey('kb-1', PERSON)), 'the places wait for the fetch disposal drops').toBeNull();
+        expect(
+          keptTotal(storage),
+          'the save the annotations owed is flushed',
+        ).toBe(2);
+        expect(
+          storage.get(lastEventIdKey('kb-1', PERSON)),
+          'the places wait for the fetch disposal drops',
+        ).toBeNull();
       } finally {
         vi.useRealTimers();
       }
@@ -1068,29 +1286,49 @@ describe('Cache semantics — behaviors B1–B16, B19 and B20 against BrowseName
     it('a refetch whose value fresh() gives has settled: the save the clock fires at once carries the place its event noted (B17-Q)', async () => {
       vi.useFakeTimers();
       try {
-        const { client, getAnnotations, storage, saveLastEventId } = persistedHarness({});
+        const { client, getAnnotations, storage, saveLastEventId } =
+          persistedHarness({});
         const sub = client.browse.annotations(RID).subscribe(() => {});
         await firstDefined(client.browse.annotations(RID));
         await vi.advanceTimersByTimeAsync(SAVE_DEBOUNCE_MS);
         expect(keptTotal(storage), 'the first answer is saved').toBe(1);
 
         // The event is taken, and the refetch it starts waits for the test's answer.
-        type AnnotationsRead = Awaited<ReturnType<IContentTransport['getAnnotations']>>;
+        type AnnotationsRead = Awaited<
+          ReturnType<IContentTransport['getAnnotations']>
+        >;
         let answer!: (read: AnnotationsRead) => void;
-        getAnnotations.mockImplementationOnce(() => new Promise<AnnotationsRead>((resolve) => { answer = resolve; }));
+        getAnnotations.mockImplementationOnce(
+          () =>
+            new Promise<AnnotationsRead>((resolve) => {
+              answer = resolve;
+            }),
+        );
         client.bus.emit('mark:added', fakeMarkAdded(RID, 'ann-a'));
         saveLastEventId(RID, 'p-res-1-2');
         await vi.advanceTimersByTimeAsync(0);
-        expect(getAnnotations, 'the refresher took the event and asked again').toHaveBeenCalledTimes(2);
+        expect(
+          getAnnotations,
+          'the refresher took the event and asked again',
+        ).toHaveBeenCalledTimes(2);
 
         const refetched = client.browse.annotations(RID).fresh();
-        answer({ annotations: [mockAnnotation('ann-1'), mockAnnotation('ann-a')], total: 2 });
+        answer({
+          annotations: [mockAnnotation('ann-1'), mockAnnotation('ann-a')],
+          total: 2,
+        });
         expect(await refetched).toHaveLength(2);
-        expect(getAnnotations, 'the read joined the refetch').toHaveBeenCalledTimes(2);
+        expect(
+          getAnnotations,
+          'the read joined the refetch',
+        ).toHaveBeenCalledTimes(2);
         vi.advanceTimersByTime(SAVE_DEBOUNCE_MS);
         expect(keptTotal(storage), 'the refetched value is saved').toBe(2);
         const places = storage.get(lastEventIdKey('kb-1', PERSON));
-        if (places === null) throw new Error('The save made once the refetch had settled held its place back');
+        if (places === null)
+          throw new Error(
+            'The save made once the refetch had settled held its place back',
+          );
         expect(JSON.parse(places)).toEqual({ 'res-1': 'p-res-1-2' });
         sub.unsubscribe();
         client.dispose();
@@ -1119,19 +1357,28 @@ describe('Cache semantics — behaviors B1–B16, B19 and B20 against BrowseName
       };
 
       // The enriched annotation the EventStore attaches, typed by EventMap.
-      eventBus.emit('mark:body-updated', { ...fakeMarkBodyUpdated(RID, updated), annotation: updated });
+      eventBus.emit('mark:body-updated', {
+        ...fakeMarkBodyUpdated(RID, updated),
+        annotation: updated,
+      });
       await flush();
 
       const list = await firstDefined(browse.annotations(RID));
       const detail = await firstDefined(browse.annotation(RID, AID));
       const firstListBody = list![0].body;
       const firstDetailBody = detail!.body;
-      expect(Array.isArray(firstListBody) ? firstListBody[0] : firstListBody).toMatchObject({ value: 'new body' });
-      expect(Array.isArray(firstDetailBody) ? firstDetailBody[0] : firstDetailBody).toMatchObject({ value: 'new body' });
+      expect(
+        Array.isArray(firstListBody) ? firstListBody[0] : firstListBody,
+      ).toMatchObject({ value: 'new body' });
+      expect(
+        Array.isArray(firstDetailBody) ? firstDetailBody[0] : firstDetailBody,
+      ).toMatchObject({ value: 'new body' });
 
       // Detail arrived without a refetch: the emit count did not grow for that channel.
       const channels = emitSpy.mock.calls.map(([ch]) => ch);
-      const detailFetches = channels.filter((c) => c === 'browse:annotation-requested').length;
+      const detailFetches = channels.filter(
+        (c) => c === 'browse:annotation-requested',
+      ).length;
       expect(detailFetches).toBe(1); // just the initial observe
     });
   });
@@ -1153,19 +1400,21 @@ describe('Cache semantics — behaviors B1–B16, B19 and B20 against BrowseName
 
         const events: string[] = [];
         browse.resource(RID).subscribe({
-          next: (s) => { if (s.status !== 'pending') events.push('next'); },
+          next: (s) => {
+            if (s.status !== 'pending') events.push('next');
+          },
           error: () => events.push('error'),
           complete: () => events.push('complete'),
         });
         expect(emitSpy).toHaveBeenCalledTimes(1); // attempt 1 in flight
 
-        browse.dispose();          // teardown straddles the pending reply
+        browse.dispose(); // teardown straddles the pending reply
         await flush();
-        await flush();             // the -failed reply lands post-dispose
+        await flush(); // the -failed reply lands post-dispose
 
-        expect(events).toEqual(['complete']);     // completed at dispose: no `failed`, no error
+        expect(events).toEqual(['complete']); // completed at dispose: no `failed`, no error
         expect(emitSpy).toHaveBeenCalledTimes(1); // no B14 re-issue after dispose
-        expect(warnSpy).not.toHaveBeenCalled();   // no teardown breadcrumb noise
+        expect(warnSpy).not.toHaveBeenCalled(); // no teardown breadcrumb noise
       } finally {
         warnSpy.mockRestore();
       }
@@ -1206,7 +1455,9 @@ describe('Cache semantics — behaviors B1–B16, B19 and B20 against BrowseName
       expect(entries).toEqual(MOCK_ENGINES);
 
       await firstDefined(browse.engines());
-      const engineFetches = emitSpy.mock.calls.filter(([ch]) => ch === 'browse:engines-requested').length;
+      const engineFetches = emitSpy.mock.calls.filter(
+        ([ch]) => ch === 'browse:engines-requested',
+      ).length;
       expect(engineFetches).toBe(1);
     });
 
@@ -1214,7 +1465,9 @@ describe('Cache semantics — behaviors B1–B16, B19 and B20 against BrowseName
       const { browse } = createHarness();
       const events: string[] = [];
       browse.engines().subscribe({
-        next: (s) => { if (s.status !== 'pending') events.push('next'); },
+        next: (s) => {
+          if (s.status !== 'pending') events.push('next');
+        },
         error: () => events.push('error'),
         complete: () => events.push('complete'),
       });
@@ -1239,37 +1492,54 @@ describe('Cache semantics — behaviors B1–B16, B19 and B20 against BrowseName
       reopen(state$);
       await flush();
 
-      const engineFetches = emitSpy.mock.calls.filter(([ch]) => ch === 'browse:engines-requested').length;
+      const engineFetches = emitSpy.mock.calls.filter(
+        ([ch]) => ch === 'browse:engines-requested',
+      ).length;
       expect(engineFetches).toBe(2);
     });
 
-    it('joins each key holder\'s limits onto the entries for its engine', async () => {
+    it("joins each key holder's limits onto the entries for its engine", async () => {
       const { browse } = createHarness();
 
-      const entries = await firstValueFrom(browse.engines().pipe(
-        filter(isReady),
-        map((s) => s.value),
-        filter((es) => es.every((e) => e.limits !== undefined)),
-      ));
+      const entries = await firstValueFrom(
+        browse.engines().pipe(
+          filter(isReady),
+          map((s) => s.value),
+          filter((es) => es.every((e) => e.limits !== undefined)),
+        ),
+      );
 
       expect(entries.map((e) => [e.engine.model, e.limits])).toEqual([
         ['claude-haiku-4-5', HAIKU_LIMITS],
         ['claude-sonnet-4-5', SONNET_LIMITS],
       ]);
       // The entry is otherwise the Archivist's, unreshaped.
-      expect(entries[0]!.jobs).toEqual([{ jobType: 'mark', params: { motivation: 'linking' } }, { jobType: 'yield' }]);
+      expect(entries[0]!.jobs).toEqual([
+        { jobType: 'mark', params: { motivation: 'linking' } },
+        { jobType: 'yield' },
+      ]);
     });
 
     it('a silent key holder does not hold the engines, and leaves only its engines without limits', async () => {
-      const { browse } = createHarness({ silentChannels: ['job:limits-requested'], busTimeoutMs: 60_000 });
+      const { browse } = createHarness({
+        silentChannels: ['job:limits-requested'],
+        busTimeoutMs: 60_000,
+      });
 
       const first = await firstDefined(browse.engines());
-      expect(first.map((e) => e.engine.model)).toEqual(['claude-haiku-4-5', 'claude-sonnet-4-5']);
+      expect(first.map((e) => e.engine.model)).toEqual([
+        'claude-haiku-4-5',
+        'claude-sonnet-4-5',
+      ]);
 
       await flush();
       const entries = await firstDefined(browse.engines());
-      expect(entries.find((e) => e.engine.model === 'claude-sonnet-4-5')?.limits).toEqual(SONNET_LIMITS);
-      expect(entries.find((e) => e.engine.model === 'claude-haiku-4-5')).not.toHaveProperty('limits');
+      expect(
+        entries.find((e) => e.engine.model === 'claude-sonnet-4-5')?.limits,
+      ).toEqual(SONNET_LIMITS);
+      expect(
+        entries.find((e) => e.engine.model === 'claude-haiku-4-5'),
+      ).not.toHaveProperty('limits');
     });
 
     it('a stream that reopens asks the key holders again', async () => {
@@ -1281,8 +1551,14 @@ describe('Cache semantics — behaviors B1–B16, B19 and B20 against BrowseName
       reopen(state$);
       await flush();
 
-      for (const op of ['job:limits-requested', 'gather:limits-requested', 'match:limits-requested']) {
-        expect(emitSpy.mock.calls.filter(([ch]) => ch === op).length, op).toBe(2);
+      for (const op of [
+        'job:limits-requested',
+        'gather:limits-requested',
+        'match:limits-requested',
+      ]) {
+        expect(emitSpy.mock.calls.filter(([ch]) => ch === op).length, op).toBe(
+          2,
+        );
       }
     });
 
@@ -1294,7 +1570,9 @@ describe('Cache semantics — behaviors B1–B16, B19 and B20 against BrowseName
           silentChannels: ['browse:engines-requested'],
           busTimeoutMs: 60,
         });
-        await expect(browse.engines().fresh()).rejects.toMatchObject({ code: 'bus.timeout' });
+        await expect(browse.engines().fresh()).rejects.toMatchObject({
+          code: 'bus.timeout',
+        });
       } finally {
         warnSpy.mockRestore();
       }

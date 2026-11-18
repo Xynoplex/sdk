@@ -13,7 +13,10 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import type { EngineWithLimits, GatheredContext } from '@xynolog/core';
 import { GENERATABLE_MEDIA_TYPES, capabilitiesOf } from '@xynolog/core';
-import { ConfigureGenerationStep, freshGenerationDraft } from '../ConfigureGenerationStep';
+import {
+  ConfigureGenerationStep,
+  freshGenerationDraft,
+} from '../ConfigureGenerationStep';
 import type { GenerationDraft } from '../ConfigureGenerationStep';
 
 const translations = {
@@ -32,12 +35,16 @@ const translations = {
   // Named model + ceiling, so the bound is legible rather than mysterious.
   maxLengthCeiling: 'Limited to {{maxOutputTokens}} tokens by {{model}}.',
   outputFormat: 'Format',
-  formatExtensionMismatch: 'Save location must end in {{extension}} to match the selected format.',
+  formatExtensionMismatch:
+    'Save location must end in {{extension}} to match the selected format.',
   back: 'Back',
   generate: 'Generate',
 };
 
-const context = { resources: [], annotations: [] } as unknown as GatheredContext;
+const context = {
+  resources: [],
+  annotations: [],
+} as unknown as GatheredContext;
 
 /** The wizard's initial draft. */
 const DRAFT: GenerationDraft = freshGenerationDraft('Untitled', 'en');
@@ -54,7 +61,13 @@ const engineWithCeiling = (maxOutputTokens: number): EngineWithLimits => ({
  * than the bare component: a `vi.fn()` for `onConfigChange` would swallow every edit
  * and quietly turn each assertion below into a test of nothing.
  */
-function Harness({ generationEngine, defaultFolder }: { generationEngine?: EngineWithLimits; defaultFolder?: string }) {
+function Harness({
+  generationEngine,
+  defaultFolder,
+}: {
+  generationEngine?: EngineWithLimits;
+  defaultFolder?: string;
+}) {
   const [draft, setDraft] = useState(DRAFT);
   return (
     <ConfigureGenerationStep
@@ -72,7 +85,10 @@ function Harness({ generationEngine, defaultFolder }: { generationEngine?: Engin
 
 let onGenerateSpy = vi.fn();
 
-function renderStep(generationEngine?: EngineWithLimits, defaultFolder?: string) {
+function renderStep(
+  generationEngine?: EngineWithLimits,
+  defaultFolder?: string,
+) {
   onGenerateSpy = vi.fn();
   const utils = render(
     <Harness
@@ -95,7 +111,9 @@ describe('ConfigureGenerationStep — ceiling awareness', () => {
     const { input } = renderStep(engineWithCeiling(64_000));
 
     expect(input().max).toBe('64000');
-    expect(screen.getByText(/Limited to 64000 tokens by claude-sonnet-5\./)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Limited to 64000 tokens by claude-sonnet-5\./),
+    ).toBeInTheDocument();
   });
 
   it('the ceiling sentence is a row-level footnote, never a column child', () => {
@@ -161,7 +179,9 @@ describe('ConfigureGenerationStep — ceiling awareness', () => {
 
     expect(input().min).toBe('100');
     expect(input().max).toBe('4000');
-    expect(screen.getByText('How long the generated resource may be.')).toBeInTheDocument();
+    expect(
+      screen.getByText('How long the generated resource may be.'),
+    ).toBeInTheDocument();
     expect(screen.queryByText(/Limited to/)).not.toBeInTheDocument();
   });
 
@@ -213,21 +233,38 @@ describe('ConfigureGenerationStep — ceiling awareness', () => {
 // The rest of the draft, same contract as the ceiling: every field reports to
 // the owner. A field that kept its own state would look
 // right until someone pressed Back.
-describe('ConfigureGenerationStep — the draft is the owner\'s', () => {
+describe("ConfigureGenerationStep — the draft is the owner's", () => {
   it('reports edits to title, instructions, language and creativity', async () => {
     const { input } = renderStep(engineWithCeiling(4_000));
     expect(input()).toBeInTheDocument();
 
-    fireEvent.change(screen.getByLabelText(translations.resourceTitle), { target: { value: 'Caspian Sea' } });
-    expect((screen.getByLabelText(translations.resourceTitle) as HTMLInputElement).value).toBe('Caspian Sea');
+    fireEvent.change(screen.getByLabelText(translations.resourceTitle), {
+      target: { value: 'Caspian Sea' },
+    });
+    expect(
+      (screen.getByLabelText(translations.resourceTitle) as HTMLInputElement)
+        .value,
+    ).toBe('Caspian Sea');
 
-    fireEvent.change(screen.getByLabelText(translations.additionalInstructions), { target: { value: 'hydrology only' } });
-    expect((screen.getByLabelText(translations.additionalInstructions) as HTMLTextAreaElement).value).toBe('hydrology only');
+    fireEvent.change(
+      screen.getByLabelText(translations.additionalInstructions),
+      { target: { value: 'hydrology only' } },
+    );
+    expect(
+      (
+        screen.getByLabelText(
+          translations.additionalInstructions,
+        ) as HTMLTextAreaElement
+      ).value,
+    ).toBe('hydrology only');
 
     // The label carries the live value — "Creativity (0.7)" — which is itself
     // the proof the slider is controlled: it can only update if the owner's
     // draft came back down.
-    const slider = () => screen.getByLabelText(new RegExp(`^${translations.creativity}`)) as HTMLInputElement;
+    const slider = () =>
+      screen.getByLabelText(
+        new RegExp(`^${translations.creativity}`),
+      ) as HTMLInputElement;
     fireEvent.change(slider(), { target: { value: '0.2' } });
     expect(slider().value).toBe('0.2');
     expect(screen.getByText(/Creativity \(0\.2\)/)).toBeInTheDocument();
@@ -243,8 +280,11 @@ describe('ConfigureGenerationStep — the draft is the owner\'s', () => {
 
   it('reports a language change to the owner', () => {
     renderStep(engineWithCeiling(4_000));
-    const select = () => screen.getByLabelText(translations.language) as HTMLSelectElement;
-    const other = Array.from(select().options).map((o) => o.value).find((v) => v !== select().value);
+    const select = () =>
+      screen.getByLabelText(translations.language) as HTMLSelectElement;
+    const other = Array.from(select().options)
+      .map((o) => o.value)
+      .find((v) => v !== select().value);
     fireEvent.change(select(), { target: { value: other } });
     expect(select().value).toBe(other);
   });
@@ -252,7 +292,10 @@ describe('ConfigureGenerationStep — the draft is the owner\'s', () => {
   it('carries the typed instructions into the submitted config, trimmed', () => {
     const { props } = renderStep(engineWithCeiling(4_000));
     fillRequired();
-    fireEvent.change(screen.getByLabelText(translations.additionalInstructions), { target: { value: '  hydrology only  ' } });
+    fireEvent.change(
+      screen.getByLabelText(translations.additionalInstructions),
+      { target: { value: '  hydrology only  ' } },
+    );
     fireEvent.click(screen.getByText(new RegExp(translations.generate)));
 
     expect(props.onGenerate).toHaveBeenCalledTimes(1);
@@ -274,7 +317,8 @@ describe('ConfigureGenerationStep — the draft is the owner\'s', () => {
 // control is where the user chooses among them.
 
 describe('ConfigureGenerationStep — the output format', () => {
-  const formatSelect = () => screen.getByLabelText(translations.outputFormat) as HTMLSelectElement;
+  const formatSelect = () =>
+    screen.getByLabelText(translations.outputFormat) as HTMLSelectElement;
 
   it('offers exactly the registry-generatable types, in registry order, by their registry labels', () => {
     // DERIVED from GENERATABLE_MEDIA_TYPES, never a literal list: promoting a
@@ -296,27 +340,37 @@ describe('ConfigureGenerationStep — the output format', () => {
     expect(formatSelect().value).toBe('text/markdown');
     fillRequired();
     fireEvent.click(screen.getByText(new RegExp(translations.generate)));
-    expect(props.onGenerate.mock.calls[0]![0]).toMatchObject({ outputMediaType: 'text/markdown' });
+    expect(props.onGenerate.mock.calls[0]![0]).toMatchObject({
+      outputMediaType: 'text/markdown',
+    });
   });
 
   it('carries a chosen format into the submitted config', () => {
     const { props } = renderStep();
-    fireEvent.change(screen.getByLabelText('Save location'), { target: { value: 'generated/out.pdf' } });
+    fireEvent.change(screen.getByLabelText('Save location'), {
+      target: { value: 'generated/out.pdf' },
+    });
     fireEvent.change(formatSelect(), { target: { value: 'application/pdf' } });
     fireEvent.click(screen.getByText(new RegExp(translations.generate)));
-    expect(props.onGenerate.mock.calls[0]![0]).toMatchObject({ outputMediaType: 'application/pdf' });
+    expect(props.onGenerate.mock.calls[0]![0]).toMatchObject({
+      outputMediaType: 'application/pdf',
+    });
   });
 });
 
 describe('ConfigureGenerationStep — the GUI refuses a format/extension mismatch', () => {
-  const formatSelect = () => screen.getByLabelText(translations.outputFormat) as HTMLSelectElement;
-  const generateButton = () => screen.getByText(new RegExp(translations.generate)).closest('button')!;
+  const formatSelect = () =>
+    screen.getByLabelText(translations.outputFormat) as HTMLSelectElement;
+  const generateButton = () =>
+    screen.getByText(new RegExp(translations.generate)).closest('button')!;
 
   it('blocks submission and explains, naming the extension the format expects', () => {
     // The worker is faithful and incurious — it will write a PDF to a .md
     // path and only log it — so this form is the ONLY refusal in the chain.
     const { props } = renderStep();
-    fireEvent.change(screen.getByLabelText('Save location'), { target: { value: 'generated/out.md' } });
+    fireEvent.change(screen.getByLabelText('Save location'), {
+      target: { value: 'generated/out.md' },
+    });
     fireEvent.change(formatSelect(), { target: { value: 'application/pdf' } });
 
     expect(generateButton()).toBeDisabled();
@@ -327,12 +381,16 @@ describe('ConfigureGenerationStep — the GUI refuses a format/extension mismatc
 
   it('clears when EITHER control is corrected', () => {
     const { props } = renderStep();
-    fireEvent.change(screen.getByLabelText('Save location'), { target: { value: 'generated/out.md' } });
+    fireEvent.change(screen.getByLabelText('Save location'), {
+      target: { value: 'generated/out.md' },
+    });
     fireEvent.change(formatSelect(), { target: { value: 'application/pdf' } });
     expect(generateButton()).toBeDisabled();
 
     // Fix the path…
-    fireEvent.change(screen.getByLabelText('Save location'), { target: { value: 'generated/out.pdf' } });
+    fireEvent.change(screen.getByLabelText('Save location'), {
+      target: { value: 'generated/out.pdf' },
+    });
     expect(generateButton()).not.toBeDisabled();
     expect(screen.queryByText(/must end in/)).toBeNull();
 
@@ -359,10 +417,14 @@ describe('ConfigureGenerationStep — the GUI refuses a format/extension mismatc
     // Both edges: the rule is "ends with the registry
     // extension", so no extension fails it; case is not a real mismatch.
     renderStep();
-    fireEvent.change(screen.getByLabelText('Save location'), { target: { value: 'generated/notes' } });
+    fireEvent.change(screen.getByLabelText('Save location'), {
+      target: { value: 'generated/notes' },
+    });
     expect(generateButton()).toBeDisabled();
 
-    fireEvent.change(screen.getByLabelText('Save location'), { target: { value: 'generated/NOTES.MD' } });
+    fireEvent.change(screen.getByLabelText('Save location'), {
+      target: { value: 'generated/NOTES.MD' },
+    });
     expect(generateButton()).not.toBeDisabled();
   });
 });
@@ -373,19 +435,32 @@ describe('ConfigureGenerationStep — the hint echo', () => {
   it('echoes a non-empty hint, and renders nothing without one', () => {
     const { container, rerender } = render(
       <ConfigureGenerationStep
-        context={context} config={DRAFT} onConfigChange={vi.fn()}
-        onBack={vi.fn()} onGenerate={vi.fn()} translations={translations}
-        hintEcho={{ label: 'Hint', value: 'the ancient city, not the modern province' }}
+        context={context}
+        config={DRAFT}
+        onConfigChange={vi.fn()}
+        onBack={vi.fn()}
+        onGenerate={vi.fn()}
+        translations={translations}
+        hintEcho={{
+          label: 'Hint',
+          value: 'the ancient city, not the modern province',
+        }}
       />,
     );
     const echo = container.querySelector('.xynolog-wizard__hint-echo');
     expect(echo).not.toBeNull();
-    expect(echo!.textContent).toContain('the ancient city, not the modern province');
+    expect(echo!.textContent).toContain(
+      'the ancient city, not the modern province',
+    );
 
     rerender(
       <ConfigureGenerationStep
-        context={context} config={DRAFT} onConfigChange={vi.fn()}
-        onBack={vi.fn()} onGenerate={vi.fn()} translations={translations}
+        context={context}
+        config={DRAFT}
+        onConfigChange={vi.fn()}
+        onBack={vi.fn()}
+        onGenerate={vi.fn()}
+        translations={translations}
       />,
     );
     expect(container.querySelector('.xynolog-wizard__hint-echo')).toBeNull();
@@ -414,7 +489,9 @@ describe('the Save location proposes a path and stops following once touched', (
 
   it('FOLLOWS the format while untouched — extension included', () => {
     renderStep(undefined, 'research');
-    fireEvent.change(screen.getByLabelText('Format'), { target: { value: 'application/pdf' } });
+    fireEvent.change(screen.getByLabelText('Format'), {
+      target: { value: 'application/pdf' },
+    });
     expect(path().value).toBe('research/untitled.pdf');
   });
 
@@ -442,7 +519,9 @@ describe('the Save location proposes a path and stops following once touched', (
 
   it('a proposed path never trips the mismatch refusal — it carries the right extension', () => {
     const { props } = renderStep(undefined, 'research');
-    fireEvent.change(screen.getByLabelText('Format'), { target: { value: 'application/pdf' } });
+    fireEvent.change(screen.getByLabelText('Format'), {
+      target: { value: 'application/pdf' },
+    });
     fireEvent.click(screen.getByRole('button', { name: 'Generate' }));
     expect(props.onGenerate).toHaveBeenCalledWith(
       expect.objectContaining({ storageUri: 'file://research/untitled.pdf' }),
@@ -458,7 +537,11 @@ describe('temperature gating — the Creativity slider follows the model', () =>
   const rejectingEngine = (): EngineWithLimits => ({
     engine: { provider: 'anthropic', model: 'claude-sonnet-5' },
     jobs: [{ jobType: 'yield' }],
-    limits: { contextTokens: 200_000, maxOutputTokens: 64_000, acceptsTemperature: false },
+    limits: {
+      contextTokens: 200_000,
+      maxOutputTokens: 64_000,
+      acceptsTemperature: false,
+    },
   });
 
   it('hides the slider and OMITS temperature from the submission when the model rejects it', () => {
@@ -468,7 +551,9 @@ describe('temperature gating — the Creativity slider follows the model', () =>
 
     fireEvent.click(screen.getByRole('button', { name: 'Generate' }));
     expect(props.onGenerate).toHaveBeenCalledTimes(1);
-    expect('temperature' in (props.onGenerate.mock.calls[0]![0] as object)).toBe(false);
+    expect(
+      'temperature' in (props.onGenerate.mock.calls[0]![0] as object),
+    ).toBe(false);
   });
 
   it('keeps the slider and sends temperature when discovery makes no claim about acceptance', () => {

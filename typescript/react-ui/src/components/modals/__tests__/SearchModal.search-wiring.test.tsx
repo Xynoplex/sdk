@@ -24,10 +24,14 @@ import {
   setBrowseResults,
 } from './search-modal-harness';
 
-vi.mock('@headlessui/react', () => import('../../../__tests__/plain-headlessui'));
+vi.mock(
+  '@headlessui/react',
+  () => import('../../../__tests__/plain-headlessui'),
+);
 
 vi.mock('../../../session/XynologProvider', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../../../session/XynologProvider')>();
+  const actual =
+    await importOriginal<typeof import('../../../session/XynologProvider')>();
   const { searchBrowser } = await import('./search-modal-harness');
   return { ...actual, useXynolog: () => searchBrowser };
 });
@@ -56,12 +60,16 @@ describe('SearchModal — search wiring', () => {
 
   it('renders the search input when open', () => {
     renderWithProviders(<SearchModal {...defaultProps} />);
-    expect(screen.getByPlaceholderText('Search resources, entities...')).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText('Search resources, entities...'),
+    ).toBeInTheDocument();
   });
 
   it('does not render when closed', () => {
     renderWithProviders(<SearchModal {...defaultProps} isOpen={false} />);
-    expect(screen.queryByPlaceholderText('Search resources, entities...')).not.toBeInTheDocument();
+    expect(
+      screen.queryByPlaceholderText('Search resources, entities...'),
+    ).not.toBeInTheDocument();
   });
 
   it('shows the start-typing hint when query is empty', () => {
@@ -79,8 +87,11 @@ describe('SearchModal — search wiring', () => {
     fireEvent.change(input, { target: { value: 'marathon' } });
 
     await waitFor(
-      () => expect(matchResourcesMock).toHaveBeenCalledWith('marathon', { limit: 5 }),
-      { timeout: 1500 }
+      () =>
+        expect(matchResourcesMock).toHaveBeenCalledWith('marathon', {
+          limit: 5,
+        }),
+      { timeout: 1500 },
     );
   });
 
@@ -89,16 +100,21 @@ describe('SearchModal — search wiring', () => {
     const input = screen.getByPlaceholderText('Search resources, entities...');
     fireEvent.change(input, { target: { value: 'test' } });
 
-    await waitFor(() => expect(matchResourcesMock).toHaveBeenCalled(), { timeout: 1500 });
+    await waitFor(() => expect(matchResourcesMock).toHaveBeenCalled(), {
+      timeout: 1500,
+    });
     setBrowseResults([
       buildResource('res-1', 'Test Document', 'A document about testing'),
       buildResource('res-2', 'Another Result'),
     ]);
 
-    await waitFor(() => {
-      expect(screen.getByText('Test Document')).toBeInTheDocument();
-      expect(screen.getByText('Another Result')).toBeInTheDocument();
-    }, { timeout: 1500 });
+    await waitFor(
+      () => {
+        expect(screen.getByText('Test Document')).toBeInTheDocument();
+        expect(screen.getByText('Another Result')).toBeInTheDocument();
+      },
+      { timeout: 1500 },
+    );
     expect(screen.getByText('A document about testing')).toBeInTheDocument();
   });
 
@@ -107,13 +123,18 @@ describe('SearchModal — search wiring', () => {
     const input = screen.getByPlaceholderText('Search resources, entities...');
     fireEvent.change(input, { target: { value: 'xyz' } });
 
-    await waitFor(() => expect(matchResourcesMock).toHaveBeenCalled(), { timeout: 1500 });
+    await waitFor(() => expect(matchResourcesMock).toHaveBeenCalled(), {
+      timeout: 1500,
+    });
     setBrowseResults([]);
 
-    await waitFor(() => {
-      expect(screen.getByText(/No results found for/)).toBeInTheDocument();
-      expect(screen.getByText(/"xyz"/)).toBeInTheDocument();
-    }, { timeout: 1500 });
+    await waitFor(
+      () => {
+        expect(screen.getByText(/No results found for/)).toBeInTheDocument();
+        expect(screen.getByText(/"xyz"/)).toBeInTheDocument();
+      },
+      { timeout: 1500 },
+    );
   });
 
   it('shows the searching state while the Observable has not emitted', async () => {
@@ -122,27 +143,39 @@ describe('SearchModal — search wiring', () => {
     fireEvent.change(input, { target: { value: 'foo' } });
 
     // After debounce fires, the inner observable starts with { results: [], loading: true }.
-    await waitFor(() => expect(screen.getByText('Searching...')).toBeInTheDocument(), {
-      timeout: 1500,
-    });
+    await waitFor(
+      () => expect(screen.getByText('Searching...')).toBeInTheDocument(),
+      {
+        timeout: 1500,
+      },
+    );
   });
 
   it('navigates to a result and closes when clicked', async () => {
     const onClose = vi.fn();
     const onNavigate = vi.fn();
     renderWithProviders(
-      <SearchModal {...defaultProps} onClose={onClose} onNavigate={onNavigate} />
+      <SearchModal
+        {...defaultProps}
+        onClose={onClose}
+        onNavigate={onNavigate}
+      />,
     );
 
     const input = screen.getByPlaceholderText('Search resources, entities...');
     fireEvent.change(input, { target: { value: 'doc' } });
 
-    await waitFor(() => expect(matchResourcesMock).toHaveBeenCalled(), { timeout: 1500 });
-    setBrowseResults([buildResource('res-1', 'Pickable', 'preview')]);
-
-    await waitFor(() => expect(screen.getByText('Pickable')).toBeInTheDocument(), {
+    await waitFor(() => expect(matchResourcesMock).toHaveBeenCalled(), {
       timeout: 1500,
     });
+    setBrowseResults([buildResource('res-1', 'Pickable', 'preview')]);
+
+    await waitFor(
+      () => expect(screen.getByText('Pickable')).toBeInTheDocument(),
+      {
+        timeout: 1500,
+      },
+    );
 
     fireEvent.click(screen.getByText('Pickable'));
     expect(onNavigate).toHaveBeenCalledWith('resource', 'res-1');
@@ -151,19 +184,25 @@ describe('SearchModal — search wiring', () => {
 
   it('moves selection with arrow keys and selects with Enter', async () => {
     const onNavigate = vi.fn();
-    renderWithProviders(<SearchModal {...defaultProps} onNavigate={onNavigate} />);
+    renderWithProviders(
+      <SearchModal {...defaultProps} onNavigate={onNavigate} />,
+    );
 
     const input = screen.getByPlaceholderText('Search resources, entities...');
     fireEvent.change(input, { target: { value: 'doc' } });
 
-    await waitFor(() => expect(matchResourcesMock).toHaveBeenCalled(), { timeout: 1500 });
+    await waitFor(() => expect(matchResourcesMock).toHaveBeenCalled(), {
+      timeout: 1500,
+    });
     setBrowseResults([
       buildResource('res-1', 'First'),
       buildResource('res-2', 'Second'),
       buildResource('res-3', 'Third'),
     ]);
 
-    await waitFor(() => expect(screen.getByText('Third')).toBeInTheDocument(), { timeout: 1500 });
+    await waitFor(() => expect(screen.getByText('Third')).toBeInTheDocument(), {
+      timeout: 1500,
+    });
 
     fireEvent.keyDown(input, { key: 'ArrowDown' });
     fireEvent.keyDown(input, { key: 'ArrowDown' });
@@ -177,13 +216,22 @@ describe('SearchModal — search wiring', () => {
     const input = screen.getByPlaceholderText('Search resources, entities...');
     fireEvent.change(input, { target: { value: 'q' } });
 
-    await waitFor(() => expect(matchResourcesMock).toHaveBeenCalled(), { timeout: 1500 });
+    await waitFor(() => expect(matchResourcesMock).toHaveBeenCalled(), {
+      timeout: 1500,
+    });
     setBrowseResults([
-      { '@context': 'https://www.w3.org/ns/anno.jsonld', name: 'No ID', representations: [] },
+      {
+        '@context': 'https://www.w3.org/ns/anno.jsonld',
+        name: 'No ID',
+        representations: [],
+      },
       buildResource('res-keep', 'Has ID'),
     ]);
 
-    await waitFor(() => expect(screen.getByText('Has ID')).toBeInTheDocument(), { timeout: 1500 });
+    await waitFor(
+      () => expect(screen.getByText('Has ID')).toBeInTheDocument(),
+      { timeout: 1500 },
+    );
     expect(screen.queryByText('No ID')).not.toBeInTheDocument();
   });
 });

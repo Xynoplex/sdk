@@ -7,19 +7,34 @@ import type { SimpleNavigationItem } from '../SimpleNavigation';
 import type { LinkComponentProps } from '../../../contexts/RoutingContext';
 import type { ComponentProps } from 'react';
 
-const MockChevronLeft = (props: ComponentProps<'span'>) => <span data-testid="chevron" {...props} />;
-const MockBars = (props: ComponentProps<'span'>) => <span data-testid="bars" {...props} />;
-
-const MockLink = ({ href, children, ...props }: LinkComponentProps) => (
-  <a href={href} {...props}>{children}</a>
+const MockChevronLeft = (props: ComponentProps<'span'>) => (
+  <span data-testid="chevron" {...props} />
+);
+const MockBars = (props: ComponentProps<'span'>) => (
+  <span data-testid="bars" {...props} />
 );
 
-const MockIcon1 = (props: ComponentProps<'span'>) => <span data-testid="icon-1" {...props} />;
-const MockIcon2 = (props: ComponentProps<'span'>) => <span data-testid="icon-2" {...props} />;
+const MockLink = ({ href, children, ...props }: LinkComponentProps) => (
+  <a href={href} {...props}>
+    {children}
+  </a>
+);
+
+const MockIcon1 = (props: ComponentProps<'span'>) => (
+  <span data-testid="icon-1" {...props} />
+);
+const MockIcon2 = (props: ComponentProps<'span'>) => (
+  <span data-testid="icon-2" {...props} />
+);
 
 const defaultItems: SimpleNavigationItem[] = [
   { name: 'Dashboard', href: '/admin/dashboard', icon: MockIcon1 },
-  { name: 'Users', href: '/admin/users', icon: MockIcon2, description: 'Manage users' },
+  {
+    name: 'Users',
+    href: '/admin/users',
+    icon: MockIcon2,
+    description: 'Manage users',
+  },
 ];
 
 const defaultProps = {
@@ -46,7 +61,7 @@ describe('SimpleNavigation', () => {
 
     it('hides title when collapsed', () => {
       renderWithProviders(
-        <SimpleNavigation {...defaultProps} isCollapsed={true} />
+        <SimpleNavigation {...defaultProps} isCollapsed={true} />,
       );
 
       expect(screen.queryByText('Administration')).not.toBeInTheDocument();
@@ -80,7 +95,7 @@ describe('SimpleNavigation', () => {
 
     it('shows only icons when collapsed', () => {
       renderWithProviders(
-        <SimpleNavigation {...defaultProps} isCollapsed={true} />
+        <SimpleNavigation {...defaultProps} isCollapsed={true} />,
       );
 
       // Text spans should not be present in collapsed mode
@@ -99,10 +114,12 @@ describe('SimpleNavigation', () => {
 
       const { browser } = renderWithProviders(
         <SimpleNavigation {...defaultProps} />,
-        { returnShellBus: true }
+        { returnShellBus: true },
       );
 
-      const subscription = browser!.stream('shell:sidebar-toggle').subscribe(handler);
+      const subscription = browser!
+        .stream('shell:sidebar-toggle')
+        .subscribe(handler);
 
       const collapseButton = screen.getByLabelText('Collapse sidebar');
       fireEvent.click(collapseButton);
@@ -114,7 +131,7 @@ describe('SimpleNavigation', () => {
 
     it('shows expand label when collapsed', () => {
       renderWithProviders(
-        <SimpleNavigation {...defaultProps} isCollapsed={true} />
+        <SimpleNavigation {...defaultProps} isCollapsed={true} />,
       );
 
       expect(screen.getByLabelText('Expand sidebar')).toBeInTheDocument();
@@ -130,14 +147,19 @@ describe('SimpleNavigation', () => {
       );
 
       renderWithProviders(
-        <SimpleNavigation {...defaultProps} dropdownContent={dropdownContent} />
+        <SimpleNavigation
+          {...defaultProps}
+          dropdownContent={dropdownContent}
+        />,
       );
 
       // Dropdown should not be visible initially
       expect(screen.queryByTestId('dropdown-content')).not.toBeInTheDocument();
 
       // Click header button to open dropdown
-      const headerButton = screen.getByRole('button', { name: /Administration/i });
+      const headerButton = screen.getByRole('button', {
+        name: /Administration/i,
+      });
       fireEvent.click(headerButton);
 
       expect(screen.getByTestId('dropdown-content')).toBeInTheDocument();
@@ -149,11 +171,16 @@ describe('SimpleNavigation', () => {
       );
 
       renderWithProviders(
-        <SimpleNavigation {...defaultProps} dropdownContent={dropdownContent} />
+        <SimpleNavigation
+          {...defaultProps}
+          dropdownContent={dropdownContent}
+        />,
       );
 
       // Open dropdown
-      const headerButton = screen.getByRole('button', { name: /Administration/i });
+      const headerButton = screen.getByRole('button', {
+        name: /Administration/i,
+      });
       fireEvent.click(headerButton);
       expect(screen.getByTestId('dropdown-content')).toBeInTheDocument();
 

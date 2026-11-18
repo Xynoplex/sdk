@@ -1,23 +1,45 @@
-import type { AnnotationId, CacheQuery, CacheValues, ResourceDescriptor, ResourceId, GatheredContext, EventBus, components } from '@xynolog/core';
+import type {
+  AnnotationId,
+  CacheQuery,
+  CacheValues,
+  ResourceDescriptor,
+  ResourceId,
+  GatheredContext,
+  EventBus,
+  components,
+} from '@xynolog/core';
 import type { ITransport } from '@xynolog/core';
 import { Bus } from '@xynolog/core';
 import { CacheObservable, StreamObservable } from '../awaitable';
 import { createCache, type Cache } from '../cache';
 import { CacheRefresher } from '../cache-refresh';
-import type { MatchNamespace as IMatchNamespace, MatchSearchProgress, MatchedResources, ResourceSearchFilters } from './types';
+import type {
+  MatchNamespace as IMatchNamespace,
+  MatchSearchProgress,
+  MatchedResources,
+  ResourceSearchFilters,
+} from './types';
 
 /**
  * The live queries of protocol/specs/src/client/refresh.json this namespace answers.
  * `client.ts` holds the namespaces to answering every one between them.
  */
-export const MATCH_QUERIES = ['matchedResources'] as const satisfies readonly CacheQuery[];
+export const MATCH_QUERIES = [
+  'matchedResources',
+] as const satisfies readonly CacheQuery[];
 type MatchQuery = (typeof MATCH_QUERIES)[number];
 
 export class MatchNamespace implements IMatchNamespace {
   /** One per search and set of filters asked for. In memory only. */
-  private readonly resourcesCache: Cache<string, CacheValues['matchedResources']>;
+  private readonly resourcesCache: Cache<
+    string,
+    CacheValues['matchedResources']
+  >;
   /** What each key asks, so a refetch can ask it again. */
-  private readonly resourcesAsked = new Map<string, { search: string; filters: ResourceSearchFilters }>();
+  private readonly resourcesAsked = new Map<
+    string,
+    { search: string; filters: ResourceSearchFilters }
+  >();
   private readonly refresher: CacheRefresher<MatchQuery>;
 
   private readonly wire: Bus;
@@ -33,30 +55,48 @@ export class MatchNamespace implements IMatchNamespace {
     },
   ) {
     this.wire = new Bus(transport);
-    this.resourcesCache = createCache<string, CacheValues['matchedResources']>(async (key) => {
-      const asked = this.resourcesAsked.get(key);
-      if (!asked) throw new Error(`Cannot search resources for ${key}: nothing asked it`);
-      const result = await this.wire.request(
-        'match:resources-requested',
-        {
-          search: asked.search,
-          archived: asked.filters.archived,
-          entityType: asked.filters.entityType,
-          limit: asked.filters.limit ?? 100,
-          offset: asked.filters.offset ?? 0,
-        },
-        options?.busTimeoutMs,
-      );
-      // Brand the wire type (unbranded @id: string) to the SDK's ResourceDescriptor
-      // (@id: ResourceId) at the boundary. The whole envelope is cached, not
-      // just the page: `matchKind` and the list it labels are one value.
-      return { ...result, resources: result.resources as ResourceDescriptor[] };
-    });
+    this.resourcesCache = createCache<string, CacheValues['matchedResources']>(
+      async (key) => {
+        const asked = this.resourcesAsked.get(key);
+        if (!asked)
+          throw new Error(
+            `Cannot search resources for ${key}: nothing asked it`,
+          );
+        const result = await this.wire.request(
+          'match:resources-requested',
+          {
+            search: asked.search,
+            archived: asked.filters.archived,
+            entityType: asked.filters.entityType,
+            limit: asked.filters.limit ?? 100,
+            offset: asked.filters.offset ?? 0,
+          },
+          options?.busTimeoutMs,
+        );
+        // Brand the wire type (unbranded @id: string) to the SDK's ResourceDescriptor
+        // (@id: ResourceId) at the boundary. The whole envelope is cached, not
+        // just the page: `matchKind` and the list it labels are one value.
+        return {
+          ...result,
+          resources: result.resources as ResourceDescriptor[],
+        };
+      },
+    );
 
-    this.refresher = new CacheRefresher<MatchQuery>(this.transport, this.bus, {
-      // Its keys are the searches the cache knows: `invalidateAll` reaches no other.
-      matchedResources: { refetch: () => this.refresher.windowed('matched-resources', () => this.invalidateResources()) },
-    }, options?.invalidationWindowMs);
+    this.refresher = new CacheRefresher<MatchQuery>(
+      this.transport,
+      this.bus,
+      {
+        // Its keys are the searches the cache knows: `invalidateAll` reaches no other.
+        matchedResources: {
+          refetch: () =>
+            this.refresher.windowed('matched-resources', () =>
+              this.invalidateResources(),
+            ),
+        },
+      },
+      options?.invalidationWindowMs,
+    );
   }
 
   /**
@@ -64,10 +104,15 @@ export class MatchNamespace implements IMatchNamespace {
    * set of filters. The Librarian matches the text lexically and, when
    * nothing matches, by meaning; `matchKind` says which answer this is.
    */
-  resources(search: string, filters?: ResourceSearchFilters): CacheObservable<MatchedResources> {
+  resources(
+    search: string,
+    filters?: ResourceSearchFilters,
+  ): CacheObservable<MatchedResources> {
     const key = JSON.stringify({ search, ...filters });
     this.resourcesAsked.set(key, { search, filters: filters ?? {} });
-    return CacheObservable.from(this.resourcesCache.observe(key), () => this.resourcesCache.fetch(key));
+    return CacheObservable.from(this.resourcesCache.observe(key), () =>
+      this.resourcesCache.fetch(key),
+    );
   }
 
   /** A direct caller says every held search is out of date: each is asked again at once (B8). */
@@ -82,7 +127,10 @@ export class MatchNamespace implements IMatchNamespace {
     this.resourcesAsked.clear();
   }
 
-  requestSearch(input: components['schemas']['MatchSearchRequest'], correlationId: string): void {
+  requestSearch(
+    input: components['schemas']['MatchSearchRequest'],
+    correlationId: string,
+  ): void {
     // Local emit: match-state-unit subscribes via the local bus. The key is
     // the caller's to mint and rides the envelope, never the request body.
     this.bus.emit('match:search-requested', input, { correlationId });

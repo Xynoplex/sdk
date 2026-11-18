@@ -1,14 +1,29 @@
 'use client';
 
 import type { EventMap, ResourceId } from '@xynolog/core';
-import { useEffect, useRef, useCallback, useMemo, memo, type MouseEvent as ReactMouseEvent } from 'react';
+import {
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+  memo,
+  type MouseEvent as ReactMouseEvent,
+} from 'react';
 import { annotationId as toAnnotationId } from '@xynolog/core';
-import { capabilitiesOf, getBodySource, isResolvedReference, textOffsets } from '@xynolog/core';
+import {
+  capabilitiesOf,
+  getBodySource,
+  isResolvedReference,
+  textOffsets,
+} from '@xynolog/core';
 import type { Annotation, ResourceDescriptor } from '@xynolog/core';
 import { HOVER_DELAY_MS, createHoverDwell } from '@xynolog/sdk';
 import { ANNOTATORS } from '../../lib/annotation-registry';
 import { scrollAnnotationIntoView } from '../../lib/scroll-utils';
-import { AnnotateToolbar, type ClickAction } from '../annotation/AnnotateToolbar';
+import {
+  AnnotateToolbar,
+  type ClickAction,
+} from '../annotation/AnnotateToolbar';
 import type { AnnotationsCollection } from '../../types/annotation-props';
 import {
   buildSourceToRenderedMap,
@@ -21,9 +36,15 @@ import {
 
 import type { XynologSession } from '@xynolog/sdk';
 import { useSessionEventSubscriptions } from '../../hooks/useSessionEventSubscriptions';
-import { defaultBrowseRenderers, type BrowseMediaRenderers } from './browse-renderers';
+import {
+  defaultBrowseRenderers,
+  type BrowseMediaRenderers,
+} from './browse-renderers';
 import { DownloadFileLink } from './DownloadFileLink';
-import { TranslationProvider, type TranslationSource } from '../../contexts/TranslationContext';
+import {
+  TranslationProvider,
+  type TranslationSource,
+} from '../../contexts/TranslationContext';
 import { translationSourceOf } from '../../lib/translation-source';
 
 interface Props {
@@ -71,7 +92,9 @@ export interface ReferenceHover {
  * The read-only view, given its language: it mounts the translation provider
  * its subtree reads. Inside `ResourceViewer` it is handed the viewer's own.
  */
-export const BrowseView = memo(function BrowseView(props: Props & TranslationSource) {
+export const BrowseView = memo(function BrowseView(
+  props: Props & TranslationSource,
+) {
   return (
     <TranslationProvider {...translationSourceOf(props)}>
       <BrowseViewBody {...props} />
@@ -120,12 +143,12 @@ function BrowseViewBody({
 
   const allAnnotations = useMemo(
     () => [...highlights, ...references, ...assessments, ...comments, ...tags],
-    [highlights, references, assessments, comments, tags]
+    [highlights, references, assessments, comments, tags],
   );
 
   const overlayAnnotations = useMemo(
     () => toOverlayAnnotations(allAnnotations),
-    [allAnnotations]
+    [allAnnotations],
   );
 
   // The content's conversions, made once for a content: an annotation's
@@ -144,7 +167,11 @@ function BrowseViewBody({
     const container = containerRef.current;
     const sourceToRendered = buildSourceToRenderedMap(content, container);
     const textNodeIndex = buildTextNodeIndex(container);
-    const spans = resolveAnnotationSpans(overlayAnnotations, offsets, sourceToRendered);
+    const spans = resolveAnnotationSpans(
+      overlayAnnotations,
+      offsets,
+      sourceToRendered,
+    );
     applyHighlights(spans, textNodeIndex);
 
     return () => clearHighlights(container);
@@ -173,11 +200,14 @@ function BrowseViewBody({
 
       const annotationId = annotationElement.getAttribute('data-annotation-id');
       if (annotationId) {
-        const annotation = allAnnotations.find(a => a.id === annotationId);
+        const annotation = allAnnotations.find((a) => a.id === annotationId);
         if (annotation) {
           // The emission site owns the geometry: the clicked span's viewport
           // rect rides the event so hosts can anchor popovers.
-          session.client.browse.click(annotation.id, annotationElement.getBoundingClientRect());
+          session.client.browse.click(
+            annotation.id,
+            annotationElement.getBoundingClientRect(),
+          );
         }
       }
     };
@@ -193,7 +223,7 @@ function BrowseViewBody({
 
     const startReferenceHover = (id: string) => {
       if (!onReferenceHover) return; // no handler → no referent load
-      const annotation = allAnnotations.find(a => a.id === id);
+      const annotation = allAnnotations.find((a) => a.id === id);
       if (!annotation || !isResolvedReference(annotation)) return; // stub / non-reference: fires nothing
       const referentId = getBodySource(annotation.body);
       const element = hoveredElement;
@@ -207,9 +237,15 @@ function BrowseViewBody({
           referentSub = null;
           referenceHoverFired = true;
           // anchorRect taken at fire time so it reflects current layout.
-          onReferenceHover({ annotation, referent, anchorRect: element.getBoundingClientRect() });
+          onReferenceHover({
+            annotation,
+            referent,
+            anchorRect: element.getBoundingClientRect(),
+          });
         },
-        error: () => { referentSub = null; }, // failed load: never fires
+        error: () => {
+          referentSub = null;
+        }, // failed load: never fires
       });
     };
 
@@ -222,19 +258,18 @@ function BrowseViewBody({
       }
     };
 
-    const dwell = createHoverDwell(
-      (id) => {
-        session.client.beckon.hover(id);
-        if (id) startReferenceHover(id); else endReferenceHover();
-      },
-      hoverDelayMs
-    );
+    const dwell = createHoverDwell((id) => {
+      session.client.beckon.hover(id);
+      if (id) startReferenceHover(id);
+      else endReferenceHover();
+    }, hoverDelayMs);
 
     // Single mouseover handler for the container - fires once on enter
     const handleMouseOver = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       const annotationElement = target.closest('[data-annotation-id]');
-      const annotationId = annotationElement?.getAttribute('data-annotation-id');
+      const annotationId =
+        annotationElement?.getAttribute('data-annotation-id');
       if (annotationId) {
         hoveredElement = annotationElement as HTMLElement; // anchor for onReferenceHover
         dwell.enter(toAnnotationId(annotationId));
@@ -250,7 +285,9 @@ function BrowseViewBody({
 
     // Apply animation classes to new annotations
     if (sparkleAnnotationIds) {
-      const annotationSpans = container.querySelectorAll('[data-annotation-id]');
+      const annotationSpans = container.querySelectorAll(
+        '[data-annotation-id]',
+      );
       annotationSpans.forEach((span) => {
         const annotationId = span.getAttribute('data-annotation-id');
         if (annotationId && sparkleAnnotationIds.has(annotationId)) {
@@ -270,20 +307,35 @@ function BrowseViewBody({
       dwell.dispose();
       referentSub?.unsubscribe(); // in-flight referent load dies with the effect
     };
-  }, [content, allAnnotations, sparkleAnnotationIds, hoverDelayMs, session, onReferenceHover]);
+  }, [
+    content,
+    allAnnotations,
+    sparkleAnnotationIds,
+    hoverDelayMs,
+    session,
+    onReferenceHover,
+  ]);
 
   // Helper to scroll annotation into view with pulse effect
-  const scrollToAnnotation = useCallback((annotationId: string | null, removePulse = false) => {
-    if (!containerRef.current) return;
-    // removePulse = true means "add pulse and auto-remove after 2s"
-    scrollAnnotationIntoView(annotationId, containerRef.current, { pulse: removePulse });
-  }, []);
+  const scrollToAnnotation = useCallback(
+    (annotationId: string | null, removePulse = false) => {
+      if (!containerRef.current) return;
+      // removePulse = true means "add pulse and auto-remove after 2s"
+      scrollAnnotationIntoView(annotationId, containerRef.current, {
+        pulse: removePulse,
+      });
+    },
+    [],
+  );
 
   // Handle hover events for scrolling
   // Event handlers (named callbacks rather than inline arrow functions)
-  const handleAnnotationHover = useCallback(({ annotationId }: { annotationId: string | null }) => {
-    scrollToAnnotation(annotationId);
-  }, [scrollToAnnotation]);
+  const handleAnnotationHover = useCallback(
+    ({ annotationId }: { annotationId: string | null }) => {
+      scrollToAnnotation(annotationId);
+    },
+    [scrollToAnnotation],
+  );
 
   // A focus on another resource is not this view's: one on an annotation
   // there is ignored, and one on the resource alone is the host's to bring
@@ -293,8 +345,10 @@ function BrowseViewBody({
       if (resourceId !== resourceUri) return;
       if (annotationId === undefined) {
         if (!containerRef.current) return;
-        const scrollport = containerRef.current.querySelector<HTMLElement>('[data-resource-scrollport]')
-          ?? containerRef.current;
+        const scrollport =
+          containerRef.current.querySelector<HTMLElement>(
+            '[data-resource-scrollport]',
+          ) ?? containerRef.current;
         scrollport.scrollTo({ top: 0, behavior: 'smooth' });
         return;
       }
@@ -310,24 +364,34 @@ function BrowseViewBody({
 
   // A content link inside the rendered output (react-markdown / HTML `<a href>`) must never navigate
   // on its own (embedded/Electron security): always preventDefault, then delegate to the host if it cares.
-  const handleContentClick = useCallback((e: ReactMouseEvent) => {
-    const anchor = (e.target as HTMLElement).closest('a[href]');
-    if (!anchor) return;
-    e.preventDefault();
-    const href = anchor.getAttribute('href');
-    if (href) onLinkClick?.({ href, event: e });
-  }, [onLinkClick]);
+  const handleContentClick = useCallback(
+    (e: ReactMouseEvent) => {
+      const anchor = (e.target as HTMLElement).closest('a[href]');
+      if (!anchor) return;
+      e.preventDefault();
+      const href = anchor.getAttribute('href');
+      if (href) onLinkClick?.({ href, event: e });
+    },
+    [onLinkClick],
+  );
 
   // Route to the media renderer for this render mode. `text`/`image`/`pdf` share
   // the shell (toolbar + annotation-overlay container); `none` (no preview, or an
   // unknown type) has its own metadata+download structure. Callers can override
   // any renderer via `renderers`.
-  const mediaRenderers: BrowseMediaRenderers = { ...defaultBrowseRenderers, ...renderers };
+  const mediaRenderers: BrowseMediaRenderers = {
+    ...defaultBrowseRenderers,
+    ...renderers,
+  };
   const Renderer = render === 'none' ? undefined : mediaRenderers[render];
 
   if (!Renderer) {
     return (
-      <div ref={containerRef} className={`xynolog-browse-view xynolog-browse-view--unsupported${inlineMod}`} data-mime-type="unsupported">
+      <div
+        ref={containerRef}
+        className={`xynolog-browse-view xynolog-browse-view--unsupported${inlineMod}`}
+        data-mime-type="unsupported"
+      >
         <div className="xynolog-browse-view__empty">
           <p className="xynolog-browse-view__empty-message">
             Preview not available for {mimeType}
@@ -341,17 +405,17 @@ function BrowseViewBody({
   return (
     <div className={`xynolog-browse-view${inlineMod}`} data-mime-type={render}>
       {showToolbar && (
-      <AnnotateToolbar
-        selectedMotivation={null}
-        selectedClick={selectedClick}
-        parts={['clickAction', 'mode']}
-        showDeleteButton={false}
-        annotateMode={annotateMode}
-        annotators={ANNOTATORS}
-        onModeChange={onModeChange}
-        onClickActionChange={onClickActionChange}
-        compact={inline}
-      />
+        <AnnotateToolbar
+          selectedMotivation={null}
+          selectedClick={selectedClick}
+          parts={['clickAction', 'mode']}
+          showDeleteButton={false}
+          annotateMode={annotateMode}
+          annotators={ANNOTATORS}
+          onModeChange={onModeChange}
+          onClickActionChange={onClickActionChange}
+          compact={inline}
+        />
       )}
       <div
         ref={containerRef}

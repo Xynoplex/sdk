@@ -14,7 +14,6 @@ let constant (e : Table.entry) =
         (Object
            {
              layout = Inline;
-             column = None;
              entries =
                [
                  T.entry (Ident "attempts") (Int attempts);

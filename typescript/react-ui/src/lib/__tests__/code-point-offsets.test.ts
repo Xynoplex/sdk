@@ -18,9 +18,20 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { annotationId, resourceId, textOffsets, type Annotation } from '@xynolog/core';
-import { buildTextSelectors, fallbackTextPosition } from '../text-selection-handler';
-import { segmentTextWithAnnotations, _resetDegradedAnchorWarnings } from '../text-segmentation';
+import {
+  annotationId,
+  resourceId,
+  textOffsets,
+  type Annotation,
+} from '@xynolog/core';
+import {
+  buildTextSelectors,
+  fallbackTextPosition,
+} from '../text-selection-handler';
+import {
+  segmentTextWithAnnotations,
+  _resetDegradedAnchorWarnings,
+} from '../text-segmentation';
 import {
   documentPositions,
   convertSegmentPositions,
@@ -55,7 +66,10 @@ function segmentsOf(content: string, annotations: Annotation[]): TextSegment[] {
 
 /** The same segments, placed in CodeMirror's document. */
 function placed(content: string, segments: TextSegment[]): TextSegment[] {
-  return convertSegmentPositions(segments, documentPositions(content, textOffsets(content)));
+  return convertSegmentPositions(
+    segments,
+    documentPositions(content, textOffsets(content)),
+  );
 }
 
 /** The position in CodeMirror's document of an offset into `content`. */
@@ -69,9 +83,17 @@ function offsetAt(content: string, position: number): number {
 }
 
 /** Light `annotations` over the DOM that `source` rendered to; answers each one's stretch of the rendered text. */
-function overlay(source: string, container: HTMLElement, annotations: Annotation[]): Array<[string, number, number]> {
+function overlay(
+  source: string,
+  container: HTMLElement,
+  annotations: Annotation[],
+): Array<[string, number, number]> {
   const sourceToRendered = buildSourceToRenderedMap(source, container);
-  const spans = resolveAnnotationSpans(toOverlayAnnotations(annotations), textOffsets(source), sourceToRendered);
+  const spans = resolveAnnotationSpans(
+    toOverlayAnnotations(annotations),
+    textOffsets(source),
+    sourceToRendered,
+  );
   applyHighlights(spans, buildTextNodeIndex(container));
   return spans.map((span) => [span.annotation.id, span.start, span.end]);
 }
@@ -94,10 +116,12 @@ const CRLF_ASTRAL = '😀 first line\r\nsecond 𝑥 line\r\nthird line 🎉 word
 
 /** A heading, a blank line, and a paragraph with bold words. */
 const MARKDOWN = '# 😀 Title\n\nSome **bold 𝑥** text, then the words.\n';
-const MARKDOWN_RENDERED = '<h1>😀 Title</h1>\n<p>Some <strong>bold 𝑥</strong> text, then the words.</p>';
+const MARKDOWN_RENDERED =
+  '<h1>😀 Title</h1>\n<p>Some <strong>bold 𝑥</strong> text, then the words.</p>';
 
 /** CodeMirror's document for a content: every CRLF is one line break. */
-const editorDocument = (content: string): string => content.replace(/\r\n/g, '\n');
+const editorDocument = (content: string): string =>
+  content.replace(/\r\n/g, '\n');
 
 function stored(
   id: string,
@@ -113,21 +137,34 @@ function stored(
     motivation,
     target: {
       source: resourceId('res-1'),
-      selector: exact === undefined
-        ? { type: 'TextPositionSelector', start, end }
-        : [{ type: 'TextPositionSelector', start, end }, { type: 'TextQuoteSelector', exact }],
+      selector:
+        exact === undefined
+          ? { type: 'TextPositionSelector', start, end }
+          : [
+              { type: 'TextPositionSelector', start, end },
+              { type: 'TextQuoteSelector', exact },
+            ],
     },
     created: '2026-01-01T00:00:00Z',
   };
 }
 
 /** A segment as its text, its two ends, and the annotation it is of. */
-const brief = (segments: TextSegment[]): Array<[string, number, number, string | null]> =>
-  segments.map((segment) => [segment.exact, segment.start, segment.end, segment.annotation?.id ?? null]);
+const brief = (
+  segments: TextSegment[],
+): Array<[string, number, number, string | null]> =>
+  segments.map((segment) => [
+    segment.exact,
+    segment.start,
+    segment.end,
+    segment.annotation?.id ?? null,
+  ]);
 
 /** The rendered text lit for an annotation: its spans' text, in order, as one. */
 const lit = (container: HTMLElement, id: string): string =>
-  Array.from(container.querySelectorAll(`[data-annotation-id="${id}"]`)).map((span) => span.textContent).join('');
+  Array.from(container.querySelectorAll(`[data-annotation-id="${id}"]`))
+    .map((span) => span.textContent)
+    .join('');
 
 function rendered(html: string): HTMLDivElement {
   const container = document.createElement('div');
@@ -149,54 +186,88 @@ afterEach(() => {
 
 // ─── The offset table ────────────────────────────────────────────────────────
 
-interface Span { exact: string; occurrence: number; start: number; end: number }
-interface Case { why: string; text: string; codePoints: number; spans: Span[] }
+interface Span {
+  exact: string;
+  occurrence: number;
+  start: number;
+  end: number;
+}
+interface Case {
+  why: string;
+  text: string;
+  codePoints: number;
+  spans: Span[];
+}
 
 const TABLE = 'protocol/specs/src/text/offset-cases.json';
-const table: { cases: Case[] } = JSON.parse(readFileSync(resolve(__dirname, '../../../../..', TABLE), 'utf8'));
+const table: { cases: Case[] } = JSON.parse(
+  readFileSync(resolve(__dirname, '../../../../..', TABLE), 'utf8'),
+);
 
 describe('the offset table, through what makes an offset and what applies one (protocol/specs/src/text/offset-cases.json)', () => {
   it('has cases, and one at least with a character outside the basic plane', () => {
     expect(table.cases.length).toBeGreaterThan(0);
-    expect(table.cases.some(({ text }) => /[\u{10000}-\u{10FFFF}]/u.test(text))).toBe(true);
+    expect(
+      table.cases.some(({ text }) => /[\u{10000}-\u{10FFFF}]/u.test(text)),
+    ).toBe(true);
   });
 
   describe.each(table.cases)('$why', ({ text, spans }) => {
-    it.each(spans)('"$exact" ($occurrence): a selection from the table\'s offsets is recorded with them, and quotes those words', ({ exact, start, end }) => {
-      const pair = selectorsOf(text, start, end);
-      expect(pair?.[0]).toEqual({ type: 'TextPositionSelector', start, end });
-      expect(pair?.[1]).toMatchObject({ type: 'TextQuoteSelector', exact });
-    });
+    it.each(spans)(
+      '"$exact" ($occurrence): a selection from the table\'s offsets is recorded with them, and quotes those words',
+      ({ exact, start, end }) => {
+        const pair = selectorsOf(text, start, end);
+        expect(pair?.[0]).toEqual({ type: 'TextPositionSelector', start, end });
+        expect(pair?.[1]).toMatchObject({ type: 'TextQuoteSelector', exact });
+      },
+    );
 
-    it.each(spans.filter(({ occurrence }) => occurrence === 1))('"$exact": searched for in the content, it is found at the table\'s offsets', ({ exact, start, end }) => {
-      expect(firstPlaceOf(text, exact)).toEqual({ start, end });
-    });
+    it.each(spans.filter(({ occurrence }) => occurrence === 1))(
+      '"$exact": searched for in the content, it is found at the table\'s offsets',
+      ({ exact, start, end }) => {
+        expect(firstPlaceOf(text, exact)).toEqual({ start, end });
+      },
+    );
 
-    it.each(spans)('"$exact" ($occurrence): a selector stored with the table\'s offsets is a segment of exactly those words', ({ exact, start, end }) => {
-      const segments = segmentsOf(text, [stored('a', start, end)]);
-      expect(brief(segments).filter(([, , , id]) => id === 'a')).toEqual([[exact, start, end, 'a']]);
-      expect(segments.map((segment) => segment.exact).join('')).toBe(text);
-    });
+    it.each(spans)(
+      '"$exact" ($occurrence): a selector stored with the table\'s offsets is a segment of exactly those words',
+      ({ exact, start, end }) => {
+        const segments = segmentsOf(text, [stored('a', start, end)]);
+        expect(brief(segments).filter(([, , , id]) => id === 'a')).toEqual([
+          [exact, start, end, 'a'],
+        ]);
+        expect(segments.map((segment) => segment.exact).join('')).toBe(text);
+      },
+    );
 
-    it.each(spans)('"$exact" ($occurrence): and CodeMirror is given the place its document has those words', ({ exact, start, end }) => {
-      const [decoration] = computeAnnotationDecorations(placed(text, segmentsOf(text, [stored('a', start, end)])));
-      expect(decoration).toBeDefined();
-      expect(editorDocument(text).slice(decoration!.start, decoration!.end)).toBe(exact);
-    });
+    it.each(spans)(
+      '"$exact" ($occurrence): and CodeMirror is given the place its document has those words',
+      ({ exact, start, end }) => {
+        const [decoration] = computeAnnotationDecorations(
+          placed(text, segmentsOf(text, [stored('a', start, end)])),
+        );
+        expect(decoration).toBeDefined();
+        expect(
+          editorDocument(text).slice(decoration!.start, decoration!.end),
+        ).toBe(exact);
+      },
+    );
   });
 });
 
 // ─── Capture ─────────────────────────────────────────────────────────────────
 
 describe('the selector pair of a selection', () => {
-  it('has the offsets it was given, the content\'s text between them, and the text around that', () => {
+  it("has the offsets it was given, the content's text between them, and the text around that", () => {
     expect(selectorsOf(LONG, 102, 114)).toEqual([
       { type: 'TextPositionSelector', start: 102, end: 114 },
       {
         type: 'TextQuoteSelector',
         exact: 'chosen words',
-        prefix: 'and a rare 𠮷 character, long enough that the context is cut. The ',
-        suffix: ' sit here, after the 🎉 and before the 🙂; the same chosen words come',
+        prefix:
+          'and a rare 𠮷 character, long enough that the context is cut. The ',
+        suffix:
+          ' sit here, after the 🎉 and before the 🙂; the same chosen words come',
       },
     ]);
   });
@@ -204,7 +275,12 @@ describe('the selector pair of a selection', () => {
   it('quotes a CRLF of the content as the content has it', () => {
     expect(selectorsOf(CRLF_ASTRAL, 23, 34)).toEqual([
       { type: 'TextPositionSelector', start: 23, end: 34 },
-      { type: 'TextQuoteSelector', exact: 'line\r\nthird', prefix: '😀 first line\r\nsecond 𝑥 ', suffix: ' line 🎉 words\r\n' },
+      {
+        type: 'TextQuoteSelector',
+        exact: 'line\r\nthird',
+        prefix: '😀 first line\r\nsecond 𝑥 ',
+        suffix: ' line 🎉 words\r\n',
+      },
     ]);
   });
 
@@ -219,18 +295,25 @@ describe('the selector pair of a selection', () => {
     expect(selectorsOf(PLAIN, 15, 20)).toBeNull();
   });
 
-  it.each([[-1, 3], [5, 5], [7, 2]])('is not made from %s to %s', (start, end) => {
+  it.each([
+    [-1, 3],
+    [5, 5],
+    [7, 2],
+  ])('is not made from %s to %s', (start, end) => {
     expect(selectorsOf(PLAIN, start, end)).toBeNull();
   });
 });
 
 describe('the first place a content has some words', () => {
   it('is given as offsets', () => {
-    expect(firstPlaceOf(LONG, 'chosen words')).toEqual({ start: 102, end: 114 });
+    expect(firstPlaceOf(LONG, 'chosen words')).toEqual({
+      start: 102,
+      end: 114,
+    });
     expect(firstPlaceOf(CRLF_ASTRAL, 'words')).toEqual({ start: 42, end: 47 });
   });
 
-  it('ends at the content\'s count of code points when the words end it', () => {
+  it("ends at the content's count of code points when the words end it", () => {
     expect(firstPlaceOf('end 🙂', '🙂')).toEqual({ start: 4, end: 5 });
   });
 
@@ -241,24 +324,31 @@ describe('the first place a content has some words', () => {
 
 // ─── An offset into the content and a position in CodeMirror's document ──────
 
-describe('an offset into the content and a position in CodeMirror\'s document', () => {
+describe("an offset into the content and a position in CodeMirror's document", () => {
   /** Code points: a 😀 CR LF b CR LF 𝑥 c CR d. The document: a 😀(2) break b break 𝑥(2) c break d. */
   const SMALL = 'a😀\r\nb\r\n𝑥c\rd';
 
   it('every offset has its position: a character outside the basic plane is two further on, a CRLF one', () => {
-    const positions = Array.from({ length: 12 }, (_, offset) => positionAt(SMALL, offset));
+    const positions = Array.from({ length: 12 }, (_, offset) =>
+      positionAt(SMALL, offset),
+    );
     // An offset between the CR and the LF of a CRLF is before that line break, as the CR is.
     expect(positions).toEqual([0, 1, 3, 3, 4, 5, 5, 6, 8, 9, 10, 11]);
   });
 
   it('every position between two characters has its offset: before a line break is the CR, after it is past the LF', () => {
-    const offsets = [0, 1, 3, 4, 5, 6, 8, 9, 10, 11].map((position) => offsetAt(SMALL, position));
+    const offsets = [0, 1, 3, 4, 5, 6, 8, 9, 10, 11].map((position) =>
+      offsetAt(SMALL, position),
+    );
     expect(offsets).toEqual([0, 1, 2, 4, 5, 7, 8, 9, 10, 11]);
   });
 
-  it.each([2, 7])('position %s is inside a character, and has no offset', (position) => {
-    expect(() => offsetAt(SMALL, position)).toThrow(RangeError);
-  });
+  it.each([2, 7])(
+    'position %s is inside a character, and has no offset',
+    (position) => {
+      expect(() => offsetAt(SMALL, position)).toThrow(RangeError);
+    },
+  );
 
   it.each([-1, 12, 0.5])('position %s is not in the document', (position) => {
     expect(() => offsetAt(SMALL, position)).toThrow(RangeError);
@@ -286,8 +376,12 @@ describe('an offset into the content and a position in CodeMirror\'s document', 
 
   it('and with characters outside the basic plane above it, further on by each of those', () => {
     // "words" on the third line: offsets 42 to 47, the string's 45 to 50, the document's 43 to 48.
-    expect([positionAt(CRLF_ASTRAL, 42), positionAt(CRLF_ASTRAL, 47)]).toEqual([43, 48]);
-    expect([offsetAt(CRLF_ASTRAL, 43), offsetAt(CRLF_ASTRAL, 48)]).toEqual([42, 47]);
+    expect([positionAt(CRLF_ASTRAL, 42), positionAt(CRLF_ASTRAL, 47)]).toEqual([
+      43, 48,
+    ]);
+    expect([offsetAt(CRLF_ASTRAL, 43), offsetAt(CRLF_ASTRAL, 48)]).toEqual([
+      42, 47,
+    ]);
   });
 
   it('from an offset to a position and back is the offset, for every offset not inside a CRLF', () => {
@@ -295,7 +389,11 @@ describe('an offset into the content and a position in CodeMirror\'s document', 
       const text = Array.from(content);
       // An offset may be the count itself: the end of the content.
       for (let offset = 0; offset <= text.length; offset++) {
-        const insideCrlf = 0 < offset && offset < text.length && text[offset - 1] === '\r' && text[offset] === '\n';
+        const insideCrlf =
+          0 < offset &&
+          offset < text.length &&
+          text[offset - 1] === '\r' &&
+          text[offset] === '\n';
         if (insideCrlf) continue;
         expect(offsetAt(content, positionAt(content, offset))).toBe(offset);
       }
@@ -311,7 +409,10 @@ describe('the segments of a content, and where CodeMirror is told they are', () 
   });
 
   it('after a character outside the basic plane: segments are in offsets and cover the content', () => {
-    const segments = segmentsOf(PLAIN, [stored('first', 2, 7, 'first'), stored('words', 14, 19, 'words')]);
+    const segments = segmentsOf(PLAIN, [
+      stored('first', 2, 7, 'first'),
+      stored('words', 14, 19, 'words'),
+    ]);
 
     expect(brief(segments)).toEqual([
       ['😀 ', 0, 2, null],
@@ -319,8 +420,14 @@ describe('the segments of a content, and where CodeMirror is told they are', () 
       [', then ', 7, 14, null],
       ['words', 14, 19, 'words'],
     ]);
-    expect(computeAnnotationDecorations(placed(PLAIN, segments)).map(({ start, end, meta }) => [meta.annotationId, start, end]))
-      .toEqual([['first', 3, 8], ['words', 15, 20]]);
+    expect(
+      computeAnnotationDecorations(placed(PLAIN, segments)).map(
+        ({ start, end, meta }) => [meta.annotationId, start, end],
+      ),
+    ).toEqual([
+      ['first', 3, 8],
+      ['words', 15, 20],
+    ]);
   });
 
   it('a long line with five such characters, the same words twice', () => {
@@ -335,13 +442,25 @@ describe('the segments of a content, and where CodeMirror is told they are', () 
       ['🎉 and', 135, 140, 'party'],
       ['chosen words', 164, 176, 'second-chosen'],
     ]);
-    expect(brief(segments).at(-1)).toEqual([' come again at the end.', 176, 199, null]);
+    expect(brief(segments).at(-1)).toEqual([
+      ' come again at the end.',
+      176,
+      199,
+      null,
+    ]);
     expect(segments.map((segment) => segment.exact).join('')).toBe(LONG);
-    expect(computeAnnotationDecorations(placed(LONG, segments)).map(({ start, end }) => [start, end]))
-      .toEqual([[105, 117], [138, 144], [169, 181]]);
+    expect(
+      computeAnnotationDecorations(placed(LONG, segments)).map(
+        ({ start, end }) => [start, end],
+      ),
+    ).toEqual([
+      [105, 117],
+      [138, 144],
+      [169, 181],
+    ]);
   });
 
-  it('a CRLF document: segments count each CR and LF, and CodeMirror\'s positions count a line break once', () => {
+  it("a CRLF document: segments count each CR and LF, and CodeMirror's positions count a line break once", () => {
     const segments = segmentsOf(CRLF, [
       stored('second', 12, 18, 'second'),
       stored('across', 24, 35, 'here\r\nthird'),
@@ -354,8 +473,16 @@ describe('the segments of a content, and where CodeMirror is told they are', () 
       ['words', 41, 46, 'words'],
     ]);
     const decorations = computeAnnotationDecorations(placed(CRLF, segments));
-    expect(decorations.map(({ start, end }) => [start, end])).toEqual([[11, 17], [23, 33], [39, 44]]);
-    expect(decorations.map(({ start, end }) => editorDocument(CRLF).slice(start, end))).toEqual(['second', 'here\nthird', 'words']);
+    expect(decorations.map(({ start, end }) => [start, end])).toEqual([
+      [11, 17],
+      [23, 33],
+      [39, 44],
+    ]);
+    expect(
+      decorations.map(({ start, end }) =>
+        editorDocument(CRLF).slice(start, end),
+      ),
+    ).toEqual(['second', 'here\nthird', 'words']);
   });
 
   it('a CRLF document with a character outside the basic plane on every line', () => {
@@ -376,10 +503,22 @@ describe('the segments of a content, and where CodeMirror is told they are', () 
     ]);
     const inEditor = placed(CRLF_ASTRAL, segments);
     const decorations = computeAnnotationDecorations(inEditor);
-    expect(decorations.map(({ start, end }) => [start, end])).toEqual([[3, 8], [21, 28], [43, 48]]);
-    expect(decorations.map(({ start, end }) => editorDocument(CRLF_ASTRAL).slice(start, end))).toEqual(['first', '𝑥 line', 'words']);
+    expect(decorations.map(({ start, end }) => [start, end])).toEqual([
+      [3, 8],
+      [21, 28],
+      [43, 48],
+    ]);
+    expect(
+      decorations.map(({ start, end }) =>
+        editorDocument(CRLF_ASTRAL).slice(start, end),
+      ),
+    ).toEqual(['first', '𝑥 line', 'words']);
     // A reference's widget sits where its words end.
-    expect(computeWidgetDecorations(inEditor, null).map(({ annotationId: id, position }) => [id, position])).toEqual([['first', 8]]);
+    expect(
+      computeWidgetDecorations(inEditor, null).map(
+        ({ annotationId: id, position }) => [id, position],
+      ),
+    ).toEqual([['first', 8]]);
   });
 
   it('a stored position that is not two offsets of the content draws nothing, and the rest is drawn', () => {
@@ -389,19 +528,30 @@ describe('the segments of a content, and where CodeMirror is told they are', () 
       stored('words', 14, 19),
     ]);
 
-    expect(brief(segments)).toEqual([['😀 first, then ', 0, 14, null], ['words', 14, 19, 'words']]);
+    expect(brief(segments)).toEqual([
+      ['😀 first, then ', 0, 14, null],
+      ['words', 14, 19, 'words'],
+    ]);
   });
 });
 
 // ─── Display, rendered markdown ──────────────────────────────────────────────
 
-describe('the overlay\'s stretch of the rendered text for a stored selector', () => {
+describe("the overlay's stretch of the rendered text for a stored selector", () => {
   it('after a character outside the basic plane and markdown syntax, each lights its words', () => {
     const container = rendered(MARKDOWN_RENDERED);
-    const spans = overlay(MARKDOWN, container, [stored('title', 4, 9), stored('bold', 18, 24), stored('words', 42, 47)]);
+    const spans = overlay(MARKDOWN, container, [
+      stored('title', 4, 9),
+      stored('bold', 18, 24),
+      stored('words', 42, 47),
+    ]);
 
     // The rendered text is DOM text: its stretches are in UTF-16 code units.
-    expect(spans).toEqual([['title', 3, 8], ['bold', 14, 21], ['words', 37, 42]]);
+    expect(spans).toEqual([
+      ['title', 3, 8],
+      ['bold', 14, 21],
+      ['words', 37, 42],
+    ]);
     expect(lit(container, 'title')).toBe('Title');
     expect(lit(container, 'bold')).toBe('bold 𝑥');
     expect(lit(container, 'words')).toBe('words');
@@ -410,33 +560,62 @@ describe('the overlay\'s stretch of the rendered text for a stored selector', ()
   it('from such a character, across syntax that is not rendered', () => {
     const container = rendered(MARKDOWN_RENDERED);
     // The source there is "𝑥** text".
-    expect(overlay(MARKDOWN, container, [stored('across', 23, 31)])).toEqual([['across', 19, 26]]);
+    expect(overlay(MARKDOWN, container, [stored('across', 23, 31)])).toEqual([
+      ['across', 19, 26],
+    ]);
     expect(lit(container, 'across')).toBe('𝑥 text');
   });
 
   it('in a text rendered as it is', () => {
     const container = rendered(`<p>${PLAIN}</p>`);
 
-    expect(overlay(PLAIN, container, [stored('first', 2, 7), stored('words', 14, 19)])).toEqual([['first', 3, 8], ['words', 15, 20]]);
+    expect(
+      overlay(PLAIN, container, [
+        stored('first', 2, 7),
+        stored('words', 14, 19),
+      ]),
+    ).toEqual([
+      ['first', 3, 8],
+      ['words', 15, 20],
+    ]);
     expect(lit(container, 'first')).toBe('first');
     expect(lit(container, 'words')).toBe('words');
   });
 
   it.each([
-    ['past the end: 20 is a position in the string, and no offset of its 19 code points', 15, 20],
+    [
+      'past the end: 20 is a position in the string, and no offset of its 19 code points',
+      15,
+      20,
+    ],
     ['below zero', -2, 3],
     ['not whole numbers', 2.5, 7.5],
-  ])('offsets the content does not have light nothing (%s)', (_why, start, end) => {
-    const container = rendered(`<p>${PLAIN}</p>`);
+  ])(
+    'offsets the content does not have light nothing (%s)',
+    (_why, start, end) => {
+      const container = rendered(`<p>${PLAIN}</p>`);
 
-    expect(overlay(PLAIN, container, [stored('none', start, end), stored('first', 2, 7)])).toEqual([['first', 3, 8]]);
-    expect(lit(container, 'none')).toBe('');
-    expect(lit(container, 'first')).toBe('first');
-  });
+      expect(
+        overlay(PLAIN, container, [
+          stored('none', start, end),
+          stored('first', 2, 7),
+        ]),
+      ).toEqual([['first', 3, 8]]);
+      expect(lit(container, 'none')).toBe('');
+      expect(lit(container, 'first')).toBe('first');
+    },
+  );
 
-  it('the overlay\'s form of a selector carries its offset and its length, in code points', () => {
+  it("the overlay's form of a selector carries its offset and its length, in code points", () => {
     expect(toOverlayAnnotations([stored('words', 42, 47)])).toEqual([
-      { id: 'words', exact: '', offset: 42, length: 5, type: 'highlight', source: null },
+      {
+        id: 'words',
+        exact: '',
+        offset: 42,
+        length: 5,
+        type: 'highlight',
+        source: null,
+      },
     ]);
   });
 });

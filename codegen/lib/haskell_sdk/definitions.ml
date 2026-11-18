@@ -169,7 +169,7 @@ let derive ~root (spec : Spec.t) ~adapters ~carrier ~http ~envelopes =
   let* () =
     if
       Marker.find
-        "exporttypeEngineWithLimits=EngineEntry&{limits?:components['schemas']['InferenceLimits']};"
+        "exporttypeEngineWithLimits=EngineEntry&{limits?:components['schemas']['InferenceLimits'];};"
         (squeeze (Marker.read ~root payload_types))
       = None
     then Error "EngineWithLimits changed: update its derived Haskell adapter"

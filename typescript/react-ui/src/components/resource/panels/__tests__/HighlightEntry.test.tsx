@@ -1,7 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { renderWithProviders, createTestXynologWrapper } from '../../../../test-utils';
+import {
+  renderWithProviders,
+  createTestXynologWrapper,
+} from '../../../../test-utils';
 import userEvent from '@testing-library/user-event';
 import type { XynologSession } from '@xynolog/sdk';
 
@@ -20,7 +23,9 @@ import { getAnnotationExactText, resourceId } from '@xynolog/core';
 import type { MockedFunction } from 'vitest';
 import { HighlightEntry } from '../HighlightEntry';
 
-const mockGetAnnotationExactText = getAnnotationExactText as MockedFunction<typeof getAnnotationExactText>;
+const mockGetAnnotationExactText = getAnnotationExactText as MockedFunction<
+  typeof getAnnotationExactText
+>;
 
 const createMockHighlight = (overrides?: Partial<Annotation>): Annotation => ({
   '@context': 'http://www.w3.org/ns/anno.jsonld',
@@ -64,19 +69,27 @@ describe('HighlightEntry', () => {
 
   describe('Rendering', () => {
     it('should render the selected text in quotes', () => {
-      renderWithProviders(<HighlightEntry {...defaultProps} session={session} />);
+      renderWithProviders(
+        <HighlightEntry {...defaultProps} session={session} />,
+      );
 
-      expect(screen.getByText(/This is the highlighted text/)).toBeInTheDocument();
+      expect(
+        screen.getByText(/This is the highlighted text/),
+      ).toBeInTheDocument();
     });
 
     it('should truncate text over 200 characters', () => {
       const longText = 'A'.repeat(250);
       mockGetAnnotationExactText.mockReturnValue(longText);
 
-      renderWithProviders(<HighlightEntry {...defaultProps} session={session} />);
+      renderWithProviders(
+        <HighlightEntry {...defaultProps} session={session} />,
+      );
 
       // Should show first 200 chars followed by ellipsis
-      expect(screen.getByText(new RegExp(`"${'A'.repeat(200)}`))).toBeInTheDocument();
+      expect(
+        screen.getByText(new RegExp(`"${'A'.repeat(200)}`)),
+      ).toBeInTheDocument();
       expect(screen.getByText(/\.\.\./)).toBeInTheDocument();
     });
 
@@ -84,7 +97,9 @@ describe('HighlightEntry', () => {
       const exactText = 'B'.repeat(200);
       mockGetAnnotationExactText.mockReturnValue(exactText);
 
-      const { container } = renderWithProviders(<HighlightEntry {...defaultProps} session={session} />);
+      const { container } = renderWithProviders(
+        <HighlightEntry {...defaultProps} session={session} />,
+      );
 
       const quote = container.querySelector('.xynolog-annotation-entry__quote');
       expect(quote).toBeInTheDocument();
@@ -92,7 +107,9 @@ describe('HighlightEntry', () => {
     });
 
     it('should show creator name', () => {
-      renderWithProviders(<HighlightEntry {...defaultProps} session={session} />);
+      renderWithProviders(
+        <HighlightEntry {...defaultProps} session={session} />,
+      );
 
       expect(screen.getByText(/alice@example.com/)).toBeInTheDocument();
     });
@@ -102,10 +119,16 @@ describe('HighlightEntry', () => {
       delete (highlight as Record<string, unknown>).creator;
 
       const { container } = renderWithProviders(
-        <HighlightEntry highlight={highlight} isFocused={false} session={session} />
+        <HighlightEntry
+          highlight={highlight}
+          isFocused={false}
+          session={session}
+        />,
       );
 
-      const metadata = container.querySelector('.xynolog-annotation-entry__metadata');
+      const metadata = container.querySelector(
+        '.xynolog-annotation-entry__metadata',
+      );
       expect(metadata).toBeInTheDocument();
       expect(metadata?.textContent).not.toMatch(/By|Unknown/);
     });
@@ -116,7 +139,11 @@ describe('HighlightEntry', () => {
       });
 
       renderWithProviders(
-        <HighlightEntry highlight={recentHighlight} isFocused={false} session={session} />
+        <HighlightEntry
+          highlight={recentHighlight}
+          isFocused={false}
+          session={session}
+        />,
       );
 
       expect(screen.getByText(/just now/)).toBeInTheDocument();
@@ -125,9 +152,13 @@ describe('HighlightEntry', () => {
     it('should not render quote section when selectedText is empty', () => {
       mockGetAnnotationExactText.mockReturnValue('');
 
-      const { container } = renderWithProviders(<HighlightEntry {...defaultProps} session={session} />);
+      const { container } = renderWithProviders(
+        <HighlightEntry {...defaultProps} session={session} />,
+      );
 
-      expect(container.querySelector('.xynolog-annotation-entry__quote')).not.toBeInTheDocument();
+      expect(
+        container.querySelector('.xynolog-annotation-entry__quote'),
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -139,7 +170,7 @@ describe('HighlightEntry', () => {
       // must subscribe on that same session's bus — not the bus of the
       // wrapper renderWithProviders creates internally.
       const { container } = renderWithProviders(
-        <HighlightEntry {...defaultProps} session={session} />
+        <HighlightEntry {...defaultProps} session={session} />,
       );
 
       const subscription = eventBus.on('browse:click').subscribe(clickHandler);
@@ -158,7 +189,7 @@ describe('HighlightEntry', () => {
   describe('Hover state', () => {
     it('should apply pulse class when isHovered is true', () => {
       const { container } = renderWithProviders(
-        <HighlightEntry {...defaultProps} isHovered={true} session={session} />
+        <HighlightEntry {...defaultProps} isHovered={true} session={session} />,
       );
 
       const entry = container.firstChild as HTMLElement;
@@ -167,7 +198,11 @@ describe('HighlightEntry', () => {
 
     it('should not apply pulse class when isHovered is false', () => {
       const { container } = renderWithProviders(
-        <HighlightEntry {...defaultProps} isHovered={false} session={session} />
+        <HighlightEntry
+          {...defaultProps}
+          isHovered={false}
+          session={session}
+        />,
       );
 
       const entry = container.firstChild as HTMLElement;
@@ -178,7 +213,7 @@ describe('HighlightEntry', () => {
   describe('Focus state', () => {
     it('should set data-focused to true when focused', () => {
       const { container } = renderWithProviders(
-        <HighlightEntry {...defaultProps} isFocused={true} session={session} />
+        <HighlightEntry {...defaultProps} isFocused={true} session={session} />,
       );
 
       const entry = container.firstChild as HTMLElement;
@@ -187,7 +222,11 @@ describe('HighlightEntry', () => {
 
     it('should set data-focused to false when not focused', () => {
       const { container } = renderWithProviders(
-        <HighlightEntry {...defaultProps} isFocused={false} session={session} />
+        <HighlightEntry
+          {...defaultProps}
+          isFocused={false}
+          session={session}
+        />,
       );
 
       const entry = container.firstChild as HTMLElement;

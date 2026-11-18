@@ -2,8 +2,18 @@
 
 import React, { useEffect } from 'react';
 import { WizardFooter } from './WizardFooter';
-import type { EngineWithLimits, GatheredContext, GenerationJobParams, SupportedMediaType } from '@xynolog/core';
-import { LOCALES, GENERATABLE_MEDIA_TYPES, capabilitiesOf, proposeStoragePath } from '@xynolog/core';
+import type {
+  EngineWithLimits,
+  GatheredContext,
+  GenerationJobParams,
+  SupportedMediaType,
+} from '@xynolog/core';
+import {
+  LOCALES,
+  GENERATABLE_MEDIA_TYPES,
+  capabilitiesOf,
+  proposeStoragePath,
+} from '@xynolog/core';
 
 /**
  * Bounds for the max-length control when no ceiling is known — the fallback
@@ -38,11 +48,7 @@ export interface GenerationDraft {
  * so no field-by-field copy can drop one.
  */
 type FormFilled =
-  | 'title'
-  | 'storageUri'
-  | 'language'
-  | 'maxTokens'
-  | 'outputMediaType';
+  'title' | 'storageUri' | 'language' | 'maxTokens' | 'outputMediaType';
 
 /**
  * The submitted payload: a `yield` job's own params (`GenerationJobParams`),
@@ -63,12 +69,11 @@ type FormFilled =
  * them be absent; `prompt` stays optional, because a blank instruction field
  * is omitted rather than sent empty.
  */
-export type GenerationConfig =
-  & Required<Pick<GenerationJobParams, FormFilled>>
+export type GenerationConfig = Required<Pick<GenerationJobParams, FormFilled>> &
   // `temperature` is deliberately not Required: a model that rejects the
   // parameter gets neither the slider nor the field, so the submission
   // carries it only when the serving model accepts it.
-  & Pick<GenerationJobParams, 'prompt' | 'temperature' | 'context'>;
+  Pick<GenerationJobParams, 'prompt' | 'temperature' | 'context'>;
 
 /** The one place a format's required extension is read. */
 const extensionFor = (format: SupportedMediaType): string =>
@@ -79,7 +84,10 @@ const extensionFor = (format: SupportedMediaType): string =>
  * numbers included — would make every new field two edits and an opportunity
  * to seed only one of them.
  */
-export const freshGenerationDraft = (title: string, locale: string): GenerationDraft => ({
+export const freshGenerationDraft = (
+  title: string,
+  locale: string,
+): GenerationDraft => ({
   title,
   storagePath: '',
   prompt: '',
@@ -164,8 +172,17 @@ export function ConfigureGenerationStep({
   // `maxTokensText` stays TEXT rather than a number so the field can be cleared
   // mid-edit — `parseInt` on an empty field yields NaN, which React warns about
   // and which would travel into the job config.
-  const { title, storagePath, prompt, language, temperature, maxTokensText, outputMediaType } = config;
-  const set = (patch: Partial<GenerationDraft>) => onConfigChange({ ...config, ...patch });
+  const {
+    title,
+    storagePath,
+    prompt,
+    language,
+    temperature,
+    maxTokensText,
+    outputMediaType,
+  } = config;
+  const set = (patch: Partial<GenerationDraft>) =>
+    onConfigChange({ ...config, ...patch });
 
   // The Save location starts filled and FOLLOWS the title and format until
   // the user takes it over. `pathTouched` is DERIVED rather than stored:
@@ -173,7 +190,11 @@ export function ConfigureGenerationStep({
   // the field un-touch it for free, keeps it reset-on-open and Back-safe
   // because `storagePath` already is, and leaves no second field to desync.
   const pathTouched = storagePath !== '';
-  const proposedPath = proposeStoragePath(defaultFolder, title, outputMediaType);
+  const proposedPath = proposeStoragePath(
+    defaultFolder,
+    title,
+    outputMediaType,
+  );
   const effectivePath = pathTouched ? storagePath : proposedPath;
 
   // The GUI is where a format/extension mismatch is caught, because it is
@@ -186,21 +207,26 @@ export function ConfigureGenerationStep({
     effectivePath !== '' &&
     !effectivePath.toLowerCase().endsWith(requiredExtension.toLowerCase());
 
-  const ceiling = generationEngine?.limits?.maxOutputTokens ?? DEFAULT_MAX_TOKENS_CEILING;
+  const ceiling =
+    generationEngine?.limits?.maxOutputTokens ?? DEFAULT_MAX_TOKENS_CEILING;
 
   // claude-sonnet-5 refuses EVERY non-default temperature — the untouched 0.7
   // default included — so a rejecting model gets neither the control nor the
   // field, and no control silently does nothing. Only an explicit false hides
   // it: absent discovery means no claim, and the inference client suppresses
   // as the second line of defense either way.
-  const temperatureAccepted = generationEngine?.limits?.acceptsTemperature !== false;
+  const temperatureAccepted =
+    generationEngine?.limits?.acceptsTemperature !== false;
 
   /**
    * The value that will actually be submitted: always finite, always inside
    * the bounds, whatever the field currently shows.
    */
   const clamp = (n: number): number =>
-    Math.min(Math.max(Number.isFinite(n) ? n : MIN_MAX_TOKENS, MIN_MAX_TOKENS), ceiling);
+    Math.min(
+      Math.max(Number.isFinite(n) ? n : MIN_MAX_TOKENS, MIN_MAX_TOKENS),
+      ceiling,
+    );
 
   const submittedMaxTokens = clamp(parseInt(maxTokensText, 10));
 
@@ -211,7 +237,8 @@ export function ConfigureGenerationStep({
   useEffect(() => {
     const n = parseInt(maxTokensText, 10);
     // An empty/mid-edit field is left alone; submission clamps it anyway.
-    if (Number.isFinite(n) && n > ceiling) set({ maxTokensText: String(ceiling) });
+    if (Number.isFinite(n) && n > ceiling)
+      set({ maxTokensText: String(ceiling) });
     // `set` and the draft are intentionally out of the dep list: this reacts to the
     // CEILING arriving (browse.engines() is async), not to the user typing.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -273,7 +300,9 @@ export function ConfigureGenerationStep({
             onChange={(e) => set({ storagePath: e.target.value })}
             required
             aria-invalid={extensionMismatch}
-            {...(extensionMismatch ? { 'aria-describedby': 'wizard-format-mismatch' } : {})}
+            {...(extensionMismatch
+              ? { 'aria-describedby': 'wizard-format-mismatch' }
+              : {})}
             className="xynolog-input xynolog-input--addon"
             placeholder="generated/my-resource.md"
           />
@@ -281,8 +310,15 @@ export function ConfigureGenerationStep({
         {/* The reason sits with the field, not on the button: the message
             belongs where the fix is. */}
         {extensionMismatch && (
-          <p id="wizard-format-mismatch" className="xynolog-form__error" role="alert">
-            {t.formatExtensionMismatch.replace('{{extension}}', requiredExtension)}
+          <p
+            id="wizard-format-mismatch"
+            className="xynolog-form__error"
+            role="alert"
+          >
+            {t.formatExtensionMismatch.replace(
+              '{{extension}}',
+              requiredExtension,
+            )}
           </p>
         )}
       </div>
@@ -298,7 +334,9 @@ export function ConfigureGenerationStep({
         <select
           id="wizard-outputFormat"
           value={outputMediaType}
-          onChange={(e) => set({ outputMediaType: e.target.value as SupportedMediaType })}
+          onChange={(e) =>
+            set({ outputMediaType: e.target.value as SupportedMediaType })
+          }
           className="xynolog-select"
         >
           {GENERATABLE_MEDIA_TYPES.map((format) => (
@@ -345,25 +383,25 @@ export function ConfigureGenerationStep({
         </div>
 
         {temperatureAccepted && (
-        <div className="xynolog-form__field xynolog-form__field--inline xynolog-form__field--slider">
-          <label htmlFor="wizard-temperature" className="xynolog-form__label">
-            {t.creativity} ({temperature.toFixed(1)})
-          </label>
-          <input
-            id="wizard-temperature"
-            type="range"
-            min="0"
-            max="1"
-            step="0.1"
-            value={temperature}
-            onChange={(e) => set({ temperature: parseFloat(e.target.value) })}
-            className="xynolog-slider"
-          />
-          <div className="xynolog-slider__labels xynolog-slider__labels--small">
-            <span>{t.creativityFocused}</span>
-            <span>{t.creativityCreative}</span>
+          <div className="xynolog-form__field xynolog-form__field--inline xynolog-form__field--slider">
+            <label htmlFor="wizard-temperature" className="xynolog-form__label">
+              {t.creativity} ({temperature.toFixed(1)})
+            </label>
+            <input
+              id="wizard-temperature"
+              type="range"
+              min="0"
+              max="1"
+              step="0.1"
+              value={temperature}
+              onChange={(e) => set({ temperature: parseFloat(e.target.value) })}
+              className="xynolog-slider"
+            />
+            <div className="xynolog-slider__labels xynolog-slider__labels--small">
+              <span>{t.creativityFocused}</span>
+              <span>{t.creativityCreative}</span>
+            </div>
           </div>
-        </div>
         )}
 
         <div className="xynolog-form__field xynolog-form__field--inline xynolog-form__field--narrow xynolog-form__field--end">
@@ -380,7 +418,10 @@ export function ConfigureGenerationStep({
             onChange={(e) => {
               const raw = e.target.value;
               // Empty is a legitimate transient state while retyping.
-              if (raw === '') { set({ maxTokensText: '' }); return; }
+              if (raw === '') {
+                set({ maxTokensText: '' });
+                return;
+              }
               const n = parseInt(raw, 10);
               if (!Number.isFinite(n)) return;
               // `max` alone does not stop a larger value being typed — it only
@@ -406,7 +447,11 @@ export function ConfigureGenerationStep({
 
       <WizardFooter
         {...(onBack && t.back ? { backLabel: t.back, onBack } : {})}
-        primary={{ label: t.generate, type: 'submit', disabled: extensionMismatch }}
+        primary={{
+          label: t.generate,
+          type: 'submit',
+          disabled: extensionMismatch,
+        }}
       />
     </form>
   );

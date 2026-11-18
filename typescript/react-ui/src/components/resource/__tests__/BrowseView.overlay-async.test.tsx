@@ -22,15 +22,23 @@ import type { Annotation, AnnotationId } from '@xynolog/core';
 import { BrowseView } from '../BrowseView';
 import { englishTranslationManager } from '../../../test-utils';
 
-vi.mock('../../annotation/AnnotateToolbar', () => ({ AnnotateToolbar: () => null }));
-vi.mock('react-markdown', () => ({ default: ({ children }: { children: string }) => <div>{children}</div> }));
+vi.mock('../../annotation/AnnotateToolbar', () => ({
+  AnnotateToolbar: () => null,
+}));
+vi.mock('react-markdown', () => ({
+  default: ({ children }: { children: string }) => <div>{children}</div>,
+}));
 vi.mock('remark-gfm', () => ({ default: () => ({}) }));
 
 const CONTENT = 'hello world selectme end';
 
 function fakeSession(): XynologSession {
   return {
-    client: { bus: new EventBus(), browse: { click: vi.fn() }, beckon: { hover: vi.fn() } },
+    client: {
+      bus: new EventBus(),
+      browse: { click: vi.fn() },
+      beckon: { hover: vi.fn() },
+    },
   } as unknown as XynologSession;
 }
 
@@ -50,7 +58,13 @@ function referenceOnWorld(): Annotation {
   } as unknown as Annotation;
 }
 
-const emptyAnnotations = { highlights: [], references: [], assessments: [], comments: [], tags: [] };
+const emptyAnnotations = {
+  highlights: [],
+  references: [],
+  assessments: [],
+  comments: [],
+  tags: [],
+};
 const withReference = { ...emptyAnnotations, references: [referenceOnWorld()] };
 
 const baseProps = {
@@ -67,29 +81,55 @@ describe('BrowseView — overlay vs async content arrival', () => {
   it('paints spans when content arrives AFTER annotations (async content)', () => {
     const session = fakeSession();
     const { container, rerender } = render(
-      <BrowseView translationManager={englishTranslationManager} {...baseProps} content="" annotations={withReference} session={session} />,
+      <BrowseView
+        translationManager={englishTranslationManager}
+        {...baseProps}
+        content=""
+        annotations={withReference}
+        session={session}
+      />,
     );
     expect(spans(container)).toHaveLength(0); // nothing to anchor on yet
 
     // Content lands (useResourceContent resolved) — annotations unchanged.
     rerender(
-      <BrowseView translationManager={englishTranslationManager} {...baseProps} content={CONTENT} annotations={withReference} session={session} />,
+      <BrowseView
+        translationManager={englishTranslationManager}
+        {...baseProps}
+        content={CONTENT}
+        annotations={withReference}
+        session={session}
+      />,
     );
 
     expect(spans(container)).toHaveLength(1);
     expect(spans(container)[0]!.textContent).toBe('world');
-    expect(spans(container)[0]!.getAttribute('data-annotation-type')).toBe('reference');
+    expect(spans(container)[0]!.getAttribute('data-annotation-type')).toBe(
+      'reference',
+    );
   });
 
   it('paints spans when annotations arrive AFTER content', () => {
     const session = fakeSession();
     const { container, rerender } = render(
-      <BrowseView translationManager={englishTranslationManager} {...baseProps} content={CONTENT} annotations={emptyAnnotations} session={session} />,
+      <BrowseView
+        translationManager={englishTranslationManager}
+        {...baseProps}
+        content={CONTENT}
+        annotations={emptyAnnotations}
+        session={session}
+      />,
     );
     expect(spans(container)).toHaveLength(0);
 
     rerender(
-      <BrowseView translationManager={englishTranslationManager} {...baseProps} content={CONTENT} annotations={withReference} session={session} />,
+      <BrowseView
+        translationManager={englishTranslationManager}
+        {...baseProps}
+        content={CONTENT}
+        annotations={withReference}
+        session={session}
+      />,
     );
 
     expect(spans(container)).toHaveLength(1);
@@ -99,12 +139,24 @@ describe('BrowseView — overlay vs async content arrival', () => {
   it('clears spans when annotations shrink to zero', () => {
     const session = fakeSession();
     const { container, rerender } = render(
-      <BrowseView translationManager={englishTranslationManager} {...baseProps} content={CONTENT} annotations={withReference} session={session} />,
+      <BrowseView
+        translationManager={englishTranslationManager}
+        {...baseProps}
+        content={CONTENT}
+        annotations={withReference}
+        session={session}
+      />,
     );
     expect(spans(container)).toHaveLength(1);
 
     rerender(
-      <BrowseView translationManager={englishTranslationManager} {...baseProps} content={CONTENT} annotations={emptyAnnotations} session={session} />,
+      <BrowseView
+        translationManager={englishTranslationManager}
+        {...baseProps}
+        content={CONTENT}
+        annotations={emptyAnnotations}
+        session={session}
+      />,
     );
 
     expect(spans(container)).toHaveLength(0);

@@ -29,14 +29,20 @@ describe('PDF viewrect FragmentSelector codec', () => {
 
           expect(parsed).toEqual(coord);
           return true;
-        }
+        },
       ),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 
   it('round-trips negative coordinates (rects that extend off-page)', () => {
-    const coord: PdfCoordinate = { page: 3, x: -5, y: -12, width: 40, height: 18 };
+    const coord: PdfCoordinate = {
+      page: 3,
+      x: -5,
+      y: -12,
+      width: 40,
+      height: 18,
+    };
     expect(parseFragmentSelector(createFragmentSelector(coord))).toEqual(coord);
   });
 
@@ -46,26 +52,23 @@ describe('PDF viewrect FragmentSelector codec', () => {
 
   it('parseFragmentSelector returns null for invalid fragments', () => {
     fc.assert(
-      fc.property(
-        fc.string(),
-        (randomString) => {
-          const parsed = parseFragmentSelector(randomString);
+      fc.property(fc.string(), (randomString) => {
+        const parsed = parseFragmentSelector(randomString);
 
-          // If it parses successfully, verify it has valid structure
-          if (parsed !== null) {
-            expect(parsed).toHaveProperty('page');
-            expect(parsed).toHaveProperty('x');
-            expect(parsed).toHaveProperty('y');
-            expect(parsed).toHaveProperty('width');
-            expect(parsed).toHaveProperty('height');
-            expect(typeof parsed.page).toBe('number');
-            expect(parsed.page).toBeGreaterThan(0);
-          }
-
-          return true;
+        // If it parses successfully, verify it has valid structure
+        if (parsed !== null) {
+          expect(parsed).toHaveProperty('page');
+          expect(parsed).toHaveProperty('x');
+          expect(parsed).toHaveProperty('y');
+          expect(parsed).toHaveProperty('width');
+          expect(parsed).toHaveProperty('height');
+          expect(typeof parsed.page).toBe('number');
+          expect(parsed.page).toBeGreaterThan(0);
         }
-      ),
-      { numRuns: 100 }
+
+        return true;
+      }),
+      { numRuns: 100 },
     );
   });
 });

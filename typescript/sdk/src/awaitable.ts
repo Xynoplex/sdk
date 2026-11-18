@@ -34,7 +34,10 @@ import type { CacheState } from './cache';
  * Subscribing yields every emission, ending in `complete`. **Do not do both on
  * one instance** (see the module note); use `run()` for progress + result.
  */
-export class StreamObservable<T> extends Observable<T> implements PromiseLike<T> {
+export class StreamObservable<T>
+  extends Observable<T>
+  implements PromiseLike<T>
+{
   then<R1 = T, R2 = never>(
     onfulfilled?: ((v: T) => R1 | PromiseLike<R1>) | null,
     onrejected?: ((e: unknown) => R2 | PromiseLike<R2>) | null,
@@ -71,7 +74,9 @@ export class StreamObservable<T> extends Observable<T> implements PromiseLike<T>
 
   /** Wrap an existing Observable's subscribe behavior in a StreamObservable. */
   static from<T>(source: Observable<T>): StreamObservable<T> {
-    return new StreamObservable<T>((subscriber) => source.subscribe(subscriber));
+    return new StreamObservable<T>((subscriber) =>
+      source.subscribe(subscriber),
+    );
   }
 }
 
@@ -114,7 +119,8 @@ export class CacheObservable<T> extends Observable<CacheState<T>> {
     return firstValueFrom(
       this.pipe(
         filter(
-          (s): s is Exclude<CacheState<T>, { status: 'pending' }> => s.status !== 'pending',
+          (s): s is Exclude<CacheState<T>, { status: 'pending' }> =>
+            s.status !== 'pending',
         ),
       ),
     ).then((s) => {
@@ -140,10 +146,15 @@ export class CacheObservable<T> extends Observable<CacheState<T>> {
    *
    * Backed by a `WeakMap`, so wrappers are GC'd when their source is.
    */
-  static from<T>(source: Observable<CacheState<T>>, fetchFresh?: () => Promise<T>): CacheObservable<T> {
+  static from<T>(
+    source: Observable<CacheState<T>>,
+    fetchFresh?: () => Promise<T>,
+  ): CacheObservable<T> {
     let wrapper = wrapperCache.get(source) as CacheObservable<T> | undefined;
     if (!wrapper) {
-      wrapper = new CacheObservable<T>((subscriber) => source.subscribe(subscriber));
+      wrapper = new CacheObservable<T>((subscriber) =>
+        source.subscribe(subscriber),
+      );
       wrapper.fetchFresh = fetchFresh;
       wrapperCache.set(source, wrapper);
     }
@@ -151,7 +162,10 @@ export class CacheObservable<T> extends Observable<CacheState<T>> {
   }
 }
 
-const wrapperCache = new WeakMap<Observable<unknown>, CacheObservable<unknown>>();
+const wrapperCache = new WeakMap<
+  Observable<unknown>,
+  CacheObservable<unknown>
+>();
 
 /**
  * Discriminated phases of an upload's lifecycle.
@@ -174,14 +188,20 @@ export type UploadProgress =
  * `'finished'` event, so `await client.yield.resource(...)` callers don't
  * need to narrow the union.
  */
-export class UploadObservable extends Observable<UploadProgress> implements PromiseLike<{ resourceId: ResourceId }> {
+export class UploadObservable
+  extends Observable<UploadProgress>
+  implements PromiseLike<{ resourceId: ResourceId }>
+{
   then<R1 = { resourceId: ResourceId }, R2 = never>(
-    onfulfilled?: ((v: { resourceId: ResourceId }) => R1 | PromiseLike<R1>) | null,
+    onfulfilled?:
+      ((v: { resourceId: ResourceId }) => R1 | PromiseLike<R1>) | null,
     onrejected?: ((e: unknown) => R2 | PromiseLike<R2>) | null,
   ): PromiseLike<R1 | R2> {
     return lastValueFrom(this).then((v) => {
       if (v.phase !== 'finished') {
-        throw new Error(`UploadObservable resolved on a non-finished event: ${v.phase}`);
+        throw new Error(
+          `UploadObservable resolved on a non-finished event: ${v.phase}`,
+        );
       }
       const result = { resourceId: v.resourceId };
       return onfulfilled ? onfulfilled(result) : (result as unknown as R1);
@@ -195,7 +215,9 @@ export class UploadObservable extends Observable<UploadProgress> implements Prom
    * track upload progress *and* get the resource id — unlike `.subscribe(...)` +
    * `await`, which re-runs this cold Observable and uploads twice.
    */
-  run(onNext: (event: UploadProgress) => void): Promise<{ resourceId: ResourceId }> {
+  run(
+    onNext: (event: UploadProgress) => void,
+  ): Promise<{ resourceId: ResourceId }> {
     return new Promise<{ resourceId: ResourceId }>((resolve, reject) => {
       let last: UploadProgress | undefined;
       this.subscribe({
@@ -205,8 +227,14 @@ export class UploadObservable extends Observable<UploadProgress> implements Prom
         },
         error: reject,
         complete: () => {
-          if (last?.phase === 'finished') resolve({ resourceId: last.resourceId });
-          else reject(new Error(`UploadObservable completed on a non-finished event: ${last?.phase ?? '<none>'}`));
+          if (last?.phase === 'finished')
+            resolve({ resourceId: last.resourceId });
+          else
+            reject(
+              new Error(
+                `UploadObservable completed on a non-finished event: ${last?.phase ?? '<none>'}`,
+              ),
+            );
         },
       });
     });
@@ -221,7 +249,8 @@ export class UploadObservable extends Observable<UploadProgress> implements Prom
  */
 export type JobCompletion = components['schemas']['JobCompleteCommand'];
 export type MarkJobCompletion = components['schemas']['MarkJobCompleteCommand'];
-export type YieldJobCompletion = components['schemas']['YieldJobCompleteCommand'];
+export type YieldJobCompletion =
+  components['schemas']['YieldJobCompleteCommand'];
 
 /**
  * One event of a delegated job. The first is `created`: the queue's answer
@@ -241,16 +270,26 @@ export type YieldJobCompletion = components['schemas']['YieldJobCompleteCommand'
  * silence goes on being counted. It comes only after `created`.
  */
 export type JobEvent<C extends JobCompletion = JobCompletion> =
-  | { kind: 'created'; data: components['schemas']['JobCreatedResult']['response'] }
+  | {
+      kind: 'created';
+      data: components['schemas']['JobCreatedResult']['response'];
+    }
   | { kind: 'progress'; data: components['schemas']['JobProgress'] }
   | { kind: 'failed'; data: components['schemas']['JobFailCommand'] }
-  | { kind: 'refused'; data: Pick<FrameRefusal, 'channel' | 'member' | 'reason'> }
+  | {
+      kind: 'refused';
+      data: Pick<FrameRefusal, 'channel' | 'member' | 'reason'>;
+    }
   | { kind: 'complete'; data: C };
 
 /** The completion a delegated job's last event carries. */
-function completionOf<C extends JobCompletion>(last: JobEvent<C> | undefined): C {
+function completionOf<C extends JobCompletion>(
+  last: JobEvent<C> | undefined,
+): C {
   if (last?.kind !== 'complete') {
-    throw new Error(`A delegated job ended on ${last ? `a ${last.kind} event` : 'no event'}, not on its completion`);
+    throw new Error(
+      `A delegated job ended on ${last ? `a ${last.kind} event` : 'no event'}, not on its completion`,
+    );
   }
   return last.data;
 }
@@ -262,7 +301,10 @@ function completionOf<C extends JobCompletion>(last: JobEvent<C> | undefined): C
  * completion itself, so `(await ...).result` is read without narrowing an
  * event, and is the result its verb reports.
  */
-export class DelegationObservable<C extends JobCompletion = JobCompletion> extends Observable<JobEvent<C>> implements PromiseLike<C> {
+export class DelegationObservable<C extends JobCompletion = JobCompletion>
+  extends Observable<JobEvent<C>>
+  implements PromiseLike<C>
+{
   then<R1 = C, R2 = never>(
     onfulfilled?: ((v: C) => R1 | PromiseLike<R1>) | null,
     onrejected?: ((e: unknown) => R2 | PromiseLike<R2>) | null,

@@ -18,37 +18,53 @@ import {
 
 describe('deriveStorageUri', () => {
   it('should slugify the name and append the registry extension', () => {
-    expect(deriveStorageUri('My Document', 'text/markdown')).toBe('file://my-document.md');
+    expect(deriveStorageUri('My Document', 'text/markdown')).toBe(
+      'file://my-document.md',
+    );
   });
 
   it('should collapse runs of non-alphanumeric characters into single hyphens', () => {
-    expect(deriveStorageUri('Q3 — Sales & Marketing (final)', 'application/pdf')).toBe('file://q3-sales-marketing-final.pdf');
+    expect(
+      deriveStorageUri('Q3 — Sales & Marketing (final)', 'application/pdf'),
+    ).toBe('file://q3-sales-marketing-final.pdf');
   });
 
   it('should strip leading and trailing hyphens from the slug', () => {
-    expect(deriveStorageUri('  (draft)  ', 'text/plain')).toBe('file://draft.txt');
+    expect(deriveStorageUri('  (draft)  ', 'text/plain')).toBe(
+      'file://draft.txt',
+    );
   });
 
   it('should use the canonical registry extension for non-text types', () => {
-    expect(deriveStorageUri('Team Photo', 'image/jpeg')).toBe('file://team-photo.jpg');
-    expect(deriveStorageUri('Release Bundle', 'application/zip')).toBe('file://release-bundle.zip');
+    expect(deriveStorageUri('Team Photo', 'image/jpeg')).toBe(
+      'file://team-photo.jpg',
+    );
+    expect(deriveStorageUri('Release Bundle', 'application/zip')).toBe(
+      'file://release-bundle.zip',
+    );
   });
 });
 
 describe('storageFileName — the fragment the form composes with', () => {
   it('is deriveStorageUri without the scheme', () => {
-    expect(storageFileName('My Document', 'text/markdown')).toBe('my-document.md');
-    expect(deriveStorageUri('My Document', 'text/markdown'))
-      .toBe(`file://${storageFileName('My Document', 'text/markdown')}`);
+    expect(storageFileName('My Document', 'text/markdown')).toBe(
+      'my-document.md',
+    );
+    expect(deriveStorageUri('My Document', 'text/markdown')).toBe(
+      `file://${storageFileName('My Document', 'text/markdown')}`,
+    );
   });
 
   it('carries no file:// prefix — the form renders that as a chip beside the input', () => {
-    expect(storageFileName('Report', 'application/pdf')).not.toContain('file://');
+    expect(storageFileName('Report', 'application/pdf')).not.toContain(
+      'file://',
+    );
   });
 
   it('slugs and extends exactly as the URI form does', () => {
-    expect(storageFileName('Q3 — Sales & Marketing (final)', 'application/pdf'))
-      .toBe('q3-sales-marketing-final.pdf');
+    expect(
+      storageFileName('Q3 — Sales & Marketing (final)', 'application/pdf'),
+    ).toBe('q3-sales-marketing-final.pdf');
   });
 });
 
@@ -77,19 +93,27 @@ describe('folderOf — where a form proposes to save, read off the source', () =
 
 describe('proposeStoragePath — the Save location a form proposes', () => {
   it('names the file for the title, beside the source', () => {
-    expect(proposeStoragePath('notes', 'Q3 Report', 'text/markdown')).toBe('notes/q3-report.md');
+    expect(proposeStoragePath('notes', 'Q3 Report', 'text/markdown')).toBe(
+      'notes/q3-report.md',
+    );
   });
 
   it('drops the folder segment at the tree root', () => {
-    expect(proposeStoragePath('', 'Q3 Report', 'text/markdown')).toBe('q3-report.md');
+    expect(proposeStoragePath('', 'Q3 Report', 'text/markdown')).toBe(
+      'q3-report.md',
+    );
   });
 
   it('rewrites the extension when the format changes', () => {
     // This is what keeps the form's refusal of an extension that disagrees
     // with the format unreachable while the path is untouched: the proposal
     // owns the whole filename, extension included.
-    expect(proposeStoragePath('notes', 'Q3 Report', 'application/pdf')).toBe('notes/q3-report.pdf');
-    expect(proposeStoragePath('notes', 'Q3 Report', 'text/plain')).toBe('notes/q3-report.txt');
+    expect(proposeStoragePath('notes', 'Q3 Report', 'application/pdf')).toBe(
+      'notes/q3-report.pdf',
+    );
+    expect(proposeStoragePath('notes', 'Q3 Report', 'text/plain')).toBe(
+      'notes/q3-report.txt',
+    );
   });
 
   it('proposes nothing for an empty title — a bare ".md" is a hidden file, not an intent', () => {
@@ -104,7 +128,11 @@ describe('proposeStoragePath — the Save location a form proposes', () => {
 
   it('composes with folderOf, which is how the clone form uses both', () => {
     const folder = folderOf('file://notes/q3/source.md');
-    const proposed = proposeStoragePath(folder, 'Clone of Source', 'text/markdown');
+    const proposed = proposeStoragePath(
+      folder,
+      'Clone of Source',
+      'text/markdown',
+    );
     expect(proposed).toBe('notes/q3/clone-of-source.md');
     expect(folderOf(proposed)).toBe(folder);
   });

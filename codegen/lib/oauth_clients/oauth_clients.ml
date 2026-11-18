@@ -115,9 +115,7 @@ let python (t : T.t) =
 
 let typescript (t : T.t) =
   let module S = Typescript_syntax in
-  let constant name docs value =
-    S.const name ~about:[ Doc docs ] (Str (Double, value))
-  in
+  let constant name docs value = S.const name ~about:[ Doc docs ] (Str value) in
   {
     Output.path = "typescript/core/src/oauth-clients.ts";
     text =

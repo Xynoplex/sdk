@@ -3,9 +3,23 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { BehaviorSubject } from 'rxjs';
-import type { EventBus, EventMap, ResourceDescriptor, ResourceId } from '@xynolog/core';
-import { FrameRefusal, jobId, resourceId as makeResourceId } from '@xynolog/core';
-import type { CacheObservable, CacheState, XynologClient, XynologSession } from '@xynolog/sdk';
+import type {
+  EventBus,
+  EventMap,
+  ResourceDescriptor,
+  ResourceId,
+} from '@xynolog/core';
+import {
+  FrameRefusal,
+  jobId,
+  resourceId as makeResourceId,
+} from '@xynolog/core';
+import type {
+  CacheObservable,
+  CacheState,
+  XynologClient,
+  XynologSession,
+} from '@xynolog/sdk';
 import { ResourceInfoPanel } from '../ResourceInfoPanel';
 import { createTestXynologWrapper } from '../../../../test-utils';
 
@@ -36,7 +50,8 @@ vi.mock('../../../../contexts/TranslationContext', () => ({
     };
     return translations[key] || key;
   }),
-  TranslationProvider: ({ children }: { children: React.ReactNode }) => children,
+  TranslationProvider: ({ children }: { children: React.ReactNode }) =>
+    children,
 }));
 
 // Mock @xynolog/http-transport utilities
@@ -60,18 +75,26 @@ vi.mock('@/lib/button-styles', () => ({
 // Composition-based event tracker
 type TrackedEvent =
   | { event: 'yield:clone'; payload: EventMap['yield:clone'] }
-  | { event: 'mark:archive' | 'mark:unarchive'; payload: { resourceId: ResourceId } };
+  | {
+      event: 'mark:archive' | 'mark:unarchive';
+      payload: { resourceId: ResourceId };
+    };
 
 function createEventTracker() {
   const events: TrackedEvent[] = [];
   return {
     events,
-    clear: () => { events.length = 0; },
+    clear: () => {
+      events.length = 0;
+    },
     _attach(eventBus: EventBus, client: XynologClient) {
       // `yield:clone` is a local-bus UI signal emitted by `client.yield.clone()`.
       eventBus.on('yield:clone').subscribe((payload) => {
         // Nothing bridges into this test's bus: a refusal on it is the test's own fault.
-        if (payload instanceof FrameRefusal) throw new Error(`refused: ${payload.channel} ${payload.reason} ${payload.member}`);
+        if (payload instanceof FrameRefusal)
+          throw new Error(
+            `refused: ${payload.channel} ${payload.reason} ${payload.member}`,
+          );
         events.push({ event: 'yield:clone', payload });
       });
       // `mark:archive` / `mark:unarchive` are gateway-routed via `actor.emit`;
@@ -90,8 +113,12 @@ function createEventTracker() {
   };
 }
 
-const renderWithEventBus = (component: React.ReactElement<{ session: XynologSession | null }>, tracker?: ReturnType<typeof createEventTracker>) => {
-  const { XynologWrapper, eventBus, client, session } = createTestXynologWrapper();
+const renderWithEventBus = (
+  component: React.ReactElement<{ session: XynologSession | null }>,
+  tracker?: ReturnType<typeof createEventTracker>,
+) => {
+  const { XynologWrapper, eventBus, client, session } =
+    createTestXynologWrapper();
   if (tracker) tracker._attach(eventBus, client);
   const Wrapper = ({ children }: { children: React.ReactNode }) => (
     <XynologWrapper>{children}</XynologWrapper>
@@ -100,7 +127,11 @@ const renderWithEventBus = (component: React.ReactElement<{ session: XynologSess
   // SAME session whose client the tracker spies on / whose bus it subscribes.
   // The injected session/client are returned too: a test that spies on what the
   // panel calls has to spy on THIS client, not a second factory's.
-  return { ...render(React.cloneElement(component, { session }), { wrapper: Wrapper }), session, client };
+  return {
+    ...render(React.cloneElement(component, { session }), { wrapper: Wrapper }),
+    session,
+    client,
+  };
 };
 
 describe('ResourceInfoPanel Component', () => {
@@ -128,13 +159,17 @@ describe('ResourceInfoPanel Component', () => {
     });
 
     it('should render locale when provided', () => {
-      renderWithEventBus(<ResourceInfoPanel {...defaultProps} documentLocale="en-US" />);
+      renderWithEventBus(
+        <ResourceInfoPanel {...defaultProps} documentLocale="en-US" />,
+      );
       // formatLocaleDisplay is mocked to return "Language: {locale}"
       expect(screen.getByText('Language: en-US')).toBeInTheDocument();
     });
 
     it('should show "not specified" when locale is undefined', () => {
-      renderWithEventBus(<ResourceInfoPanel {...defaultProps} documentLocale={undefined} />);
+      renderWithEventBus(
+        <ResourceInfoPanel {...defaultProps} documentLocale={undefined} />,
+      );
       expect(screen.getByText('Not specified')).toBeInTheDocument();
     });
 
@@ -143,7 +178,7 @@ describe('ResourceInfoPanel Component', () => {
         <ResourceInfoPanel
           {...defaultProps}
           documentEntityTypes={['Person', 'Organization', 'Location']}
-        />
+        />,
       );
 
       expect(screen.getByText('Entity Type Tags')).toBeInTheDocument();
@@ -153,7 +188,9 @@ describe('ResourceInfoPanel Component', () => {
     });
 
     it('should not render entity type tags section when empty', () => {
-      renderWithEventBus(<ResourceInfoPanel {...defaultProps} documentEntityTypes={[]} />);
+      renderWithEventBus(
+        <ResourceInfoPanel {...defaultProps} documentEntityTypes={[]} />,
+      );
       expect(screen.queryByText('Entity Type Tags')).not.toBeInTheDocument();
     });
 
@@ -162,7 +199,7 @@ describe('ResourceInfoPanel Component', () => {
         <ResourceInfoPanel
           {...defaultProps}
           primaryMediaType="text/markdown"
-        />
+        />,
       );
 
       expect(screen.getByText('Representation')).toBeInTheDocument();
@@ -172,10 +209,7 @@ describe('ResourceInfoPanel Component', () => {
 
     it('should render byte size when provided', () => {
       renderWithEventBus(
-        <ResourceInfoPanel
-          {...defaultProps}
-          primaryByteSize={1024}
-        />
+        <ResourceInfoPanel {...defaultProps} primaryByteSize={1024} />,
       );
 
       expect(screen.getByText('Representation')).toBeInTheDocument();
@@ -189,7 +223,7 @@ describe('ResourceInfoPanel Component', () => {
           {...defaultProps}
           primaryMediaType="text/markdown"
           storageUri="file://docs/overview.md"
-        />
+        />,
       );
       expect(screen.getByText('Storage')).toBeInTheDocument();
       expect(screen.getByText('file://docs/overview.md')).toBeInTheDocument();
@@ -200,7 +234,7 @@ describe('ResourceInfoPanel Component', () => {
         <ResourceInfoPanel
           {...defaultProps}
           primaryMediaType="text/markdown"
-        />
+        />,
       );
       expect(screen.queryByText('Storage')).not.toBeInTheDocument();
     });
@@ -211,7 +245,7 @@ describe('ResourceInfoPanel Component', () => {
           {...defaultProps}
           primaryMediaType={undefined}
           primaryByteSize={undefined}
-        />
+        />,
       );
 
       expect(screen.queryByText('Representation')).not.toBeInTheDocument();
@@ -220,8 +254,12 @@ describe('ResourceInfoPanel Component', () => {
 
   describe('Styling and Appearance', () => {
     it('should have proper panel structure', () => {
-      const { container } = renderWithEventBus(<ResourceInfoPanel {...defaultProps} />);
-      expect(container.querySelector('.xynolog-resource-info-panel')).toBeInTheDocument();
+      const { container } = renderWithEventBus(
+        <ResourceInfoPanel {...defaultProps} />,
+      );
+      expect(
+        container.querySelector('.xynolog-resource-info-panel'),
+      ).toBeInTheDocument();
     });
 
     it('should style entity type tags appropriately', () => {
@@ -229,7 +267,7 @@ describe('ResourceInfoPanel Component', () => {
         <ResourceInfoPanel
           {...defaultProps}
           documentEntityTypes={['TestType']}
-        />
+        />,
       );
 
       const tag = screen.getByText('TestType');
@@ -245,7 +283,7 @@ describe('ResourceInfoPanel Component', () => {
           {...defaultProps}
           documentLocale="en-US"
           documentEntityTypes={['Person']}
-        />
+        />,
       );
 
       const headings = screen.getAllByRole('heading', { level: 3 });
@@ -255,30 +293,27 @@ describe('ResourceInfoPanel Component', () => {
 
   describe('Clone Action', () => {
     it('should render clone button', () => {
-      renderWithEventBus(
-        <ResourceInfoPanel
-          {...defaultProps}
-        />
-      );
+      renderWithEventBus(<ResourceInfoPanel {...defaultProps} />);
 
-      expect(screen.getByRole('button', { name: /Clone/i })).toBeInTheDocument();
-      expect(screen.getByText('Generate a shareable clone link for this resource')).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /Clone/i }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText('Generate a shareable clone link for this resource'),
+      ).toBeInTheDocument();
     });
 
     it('should emit yield:clone event when clone button clicked', async () => {
       const tracker = createEventTracker();
-      renderWithEventBus(
-        <ResourceInfoPanel
-          {...defaultProps}
-        />,
-        tracker
-      );
+      renderWithEventBus(<ResourceInfoPanel {...defaultProps} />, tracker);
 
       const button = screen.getByRole('button', { name: /Clone/i });
       fireEvent.click(button);
 
       await waitFor(() => {
-        expect(tracker.events.some(e => e.event === 'yield:clone')).toBe(true);
+        expect(tracker.events.some((e) => e.event === 'yield:clone')).toBe(
+          true,
+        );
       });
     });
   });
@@ -288,21 +323,27 @@ describe('ResourceInfoPanel Component', () => {
     // form control is targeted by its exact accessible name (the ✨ is part of it).
     it('renders the Generate button when onGenerate is provided', () => {
       renderWithEventBus(
-        <ResourceInfoPanel {...defaultProps} onGenerate={() => {}} />
+        <ResourceInfoPanel {...defaultProps} onGenerate={() => {}} />,
       );
-      expect(screen.getByRole('button', { name: '✨ Generate' })).toBeInTheDocument();
-      expect(screen.getByText("Generate a new resource from this one's context")).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: '✨ Generate' }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText("Generate a new resource from this one's context"),
+      ).toBeInTheDocument();
     });
 
     it('hides the Generate button when onGenerate is omitted', () => {
       renderWithEventBus(<ResourceInfoPanel {...defaultProps} />);
-      expect(screen.queryByRole('button', { name: '✨ Generate' })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: '✨ Generate' }),
+      ).not.toBeInTheDocument();
     });
 
     it('calls onGenerate when clicked', () => {
       const onGenerate = vi.fn();
       renderWithEventBus(
-        <ResourceInfoPanel {...defaultProps} onGenerate={onGenerate} />
+        <ResourceInfoPanel {...defaultProps} onGenerate={onGenerate} />,
       );
       fireEvent.click(screen.getByRole('button', { name: '✨ Generate' }));
       expect(onGenerate).toHaveBeenCalledTimes(1);
@@ -312,30 +353,50 @@ describe('ResourceInfoPanel Component', () => {
 
     it('the Generate control lives inside the delegate shell', () => {
       const { container } = renderWithEventBus(
-        <ResourceInfoPanel {...defaultProps} onGenerate={() => {}}
-          isGenerating={false} generationProgress={null} />
+        <ResourceInfoPanel
+          {...defaultProps}
+          onGenerate={() => {}}
+          isGenerating={false}
+          generationProgress={null}
+        />,
       );
-      const shell = container.querySelector('.xynolog-delegate-widget[data-type="generation"]');
+      const shell = container.querySelector(
+        '.xynolog-delegate-widget[data-type="generation"]',
+      );
       expect(shell).not.toBeNull();
       expect(shell!.querySelector('button')).not.toBeNull(); // the form IS the Generate control
     });
 
     it('progress replaces the Generate form while a generation runs', () => {
       const { container } = renderWithEventBus(
-        <ResourceInfoPanel {...defaultProps} onGenerate={() => {}}
+        <ResourceInfoPanel
+          {...defaultProps}
+          onGenerate={() => {}}
           isGenerating
-          generationProgress={{ percentage: 40, message: { code: 'generating-resource' } }} />
+          generationProgress={{
+            percentage: 40,
+            message: { code: 'generating-resource' },
+          }}
+        />,
       );
-      expect(container.querySelector('.xynolog-delegate-progress')).not.toBeNull();
+      expect(
+        container.querySelector('.xynolog-delegate-progress'),
+      ).not.toBeNull();
       expect(screen.queryByRole('button', { name: '✨ Generate' })).toBeNull();
     });
 
     it('the control of a running generation asks for that job to be cancelled, by its id', () => {
       const { client } = renderWithEventBus(
-        <ResourceInfoPanel {...defaultProps} onGenerate={() => {}}
+        <ResourceInfoPanel
+          {...defaultProps}
+          onGenerate={() => {}}
           isGenerating
           generationJobId={jobId('job-1')}
-          generationProgress={{ percentage: 40, message: { code: 'generating-resource' } }} />
+          generationProgress={{
+            percentage: 40,
+            message: { code: 'generating-resource' },
+          }}
+        />,
       );
       const cancelSpy = vi.spyOn(client.job, 'cancel').mockResolvedValue(true);
 
@@ -346,15 +407,23 @@ describe('ResourceInfoPanel Component', () => {
     it('a cancelled generation stays to say so, made nothing, and dismisses', () => {
       const onDismissProgress = vi.fn();
       renderWithEventBus(
-        <ResourceInfoPanel {...defaultProps} onGenerate={() => {}}
+        <ResourceInfoPanel
+          {...defaultProps}
+          onGenerate={() => {}}
           isGenerating={false}
           generationCancelled
-          generationProgress={{ percentage: 40, message: { code: 'generating-resource' } }}
-          onDismissProgress={onDismissProgress} />
+          generationProgress={{
+            percentage: 40,
+            message: { code: 'generating-resource' },
+          }}
+          onDismissProgress={onDismissProgress}
+        />,
       );
 
       // The mocked translator answers a key it does not list with the key.
-      expect(screen.getByTestId('xynolog-delegate-status').textContent).toBe('cancelled');
+      expect(screen.getByTestId('xynolog-delegate-status').textContent).toBe(
+        'cancelled',
+      );
       expect(screen.queryByTestId('xynolog-delegate-outcome')).toBeNull();
       expect(screen.queryByRole('button', { name: '✨ Generate' })).toBeNull();
       fireEvent.click(screen.getByTestId('xynolog-delegate-control'));
@@ -363,9 +432,15 @@ describe('ResourceInfoPanel Component', () => {
 
     it('a running generation the queue has not named yet has no cancel control', () => {
       renderWithEventBus(
-        <ResourceInfoPanel {...defaultProps} onGenerate={() => {}}
+        <ResourceInfoPanel
+          {...defaultProps}
+          onGenerate={() => {}}
           isGenerating
-          generationProgress={{ percentage: 40, message: { code: 'generating-resource' } }} />
+          generationProgress={{
+            percentage: 40,
+            message: { code: 'generating-resource' },
+          }}
+        />,
       );
 
       expect(screen.queryByTestId('xynolog-delegate-control')).toBeNull();
@@ -374,15 +449,21 @@ describe('ResourceInfoPanel Component', () => {
     it('the ended frame links the generated resource by name, and dismisses', () => {
       const onDismissProgress = vi.fn();
       const { client } = renderWithEventBus(
-        <ResourceInfoPanel {...defaultProps} onGenerate={() => {}}
+        <ResourceInfoPanel
+          {...defaultProps}
+          onGenerate={() => {}}
           isGenerating={false}
-          generationProgress={{ percentage: 100, message: { code: 'complete-generated', truncated: false } }}
+          generationProgress={{
+            percentage: 100,
+            message: { code: 'complete-generated', truncated: false },
+          }}
           generationOutcome={{
             resourceId: makeResourceId('res-new1'),
             resourceName: 'Summary of PB',
             truncated: false,
           }}
-          onDismissProgress={onDismissProgress} />
+          onDismissProgress={onDismissProgress}
+        />,
       );
       const openSpy = vi.spyOn(client.browse, 'openResource');
 
@@ -397,23 +478,40 @@ describe('ResourceInfoPanel Component', () => {
     it('a truncated completion says so; a natural stop does not', () => {
       // The mocked translator echoes unknown keys, so the assertion reads the
       // KEY the real delegateProgressCopy branch picked — structure, not copy.
-      const base = { ...defaultProps, onGenerate: () => {}, isGenerating: false };
+      const base = {
+        ...defaultProps,
+        onGenerate: () => {},
+        isGenerating: false,
+      };
       const { unmount } = renderWithEventBus(
-        <ResourceInfoPanel {...base}
-          generationProgress={{ percentage: 100, message: { code: 'complete-generated', truncated: true } }} />
+        <ResourceInfoPanel
+          {...base}
+          generationProgress={{
+            percentage: 100,
+            message: { code: 'complete-generated', truncated: true },
+          }}
+        />,
       );
-      expect(screen.getByTestId('xynolog-delegate-status').textContent)
-        .toContain('codeCompleteGeneratedTruncated');
+      expect(
+        screen.getByTestId('xynolog-delegate-status').textContent,
+      ).toContain('codeCompleteGeneratedTruncated');
       unmount();
 
       renderWithEventBus(
-        <ResourceInfoPanel {...base}
-          generationProgress={{ percentage: 100, message: { code: 'complete-generated', truncated: false } }} />
+        <ResourceInfoPanel
+          {...base}
+          generationProgress={{
+            percentage: 100,
+            message: { code: 'complete-generated', truncated: false },
+          }}
+        />,
       );
-      expect(screen.getByTestId('xynolog-delegate-status').textContent)
-        .toContain('codeCompleteGenerated');
-      expect(screen.getByTestId('xynolog-delegate-status').textContent)
-        .not.toContain('Truncated');
+      expect(
+        screen.getByTestId('xynolog-delegate-status').textContent,
+      ).toContain('codeCompleteGenerated');
+      expect(
+        screen.getByTestId('xynolog-delegate-status').textContent,
+      ).not.toContain('Truncated');
     });
 
     it('the ended frame speaks completion even when the final progress frame lost the race', () => {
@@ -421,38 +519,60 @@ describe('ResourceInfoPanel Component', () => {
       // terminal 100% frame never arrived — but the outcome did. The sentence
       // derives from the OUTCOME, not the racing frame.
       renderWithEventBus(
-        <ResourceInfoPanel {...defaultProps} onGenerate={() => {}}
+        <ResourceInfoPanel
+          {...defaultProps}
+          onGenerate={() => {}}
           isGenerating={false}
-          generationProgress={{ percentage: 95, message: { code: 'creating-resource' } }}
+          generationProgress={{
+            percentage: 95,
+            message: { code: 'creating-resource' },
+          }}
           generationOutcome={{
             resourceId: makeResourceId('res-new1'),
             resourceName: 'Summary of PB',
             truncated: false,
-          }} />
+          }}
+        />,
       );
-      expect(screen.getByTestId('xynolog-delegate-status').textContent).toBe('codeCompleteGenerated');
+      expect(screen.getByTestId('xynolog-delegate-status').textContent).toBe(
+        'codeCompleteGenerated',
+      );
     });
 
     it('a truncated outcome says so — the bit rides the outcome, not the racing frame', () => {
       renderWithEventBus(
-        <ResourceInfoPanel {...defaultProps} onGenerate={() => {}}
+        <ResourceInfoPanel
+          {...defaultProps}
+          onGenerate={() => {}}
           isGenerating={false}
-          generationProgress={{ percentage: 95, message: { code: 'creating-resource' } }}
+          generationProgress={{
+            percentage: 95,
+            message: { code: 'creating-resource' },
+          }}
           generationOutcome={{
             resourceId: makeResourceId('res-new1'),
             resourceName: 'Summary of PB',
             truncated: true,
-          }} />
+          }}
+        />,
       );
-      expect(screen.getByTestId('xynolog-delegate-status').textContent).toBe('codeCompleteGeneratedTruncated');
+      expect(screen.getByTestId('xynolog-delegate-status').textContent).toBe(
+        'codeCompleteGeneratedTruncated',
+      );
     });
 
     it('no outcome, no link: the ended frame renders without one until job:complete arrives', () => {
       renderWithEventBus(
-        <ResourceInfoPanel {...defaultProps} onGenerate={() => {}}
+        <ResourceInfoPanel
+          {...defaultProps}
+          onGenerate={() => {}}
           isGenerating={false}
-          generationProgress={{ percentage: 100, message: { code: 'complete-generated', truncated: false } }}
-          generationOutcome={null} />
+          generationProgress={{
+            percentage: 100,
+            message: { code: 'complete-generated', truncated: false },
+          }}
+          generationOutcome={null}
+        />,
       );
       expect(screen.queryByText('Summary of PB')).toBeNull();
     });
@@ -466,7 +586,10 @@ describe('ResourceInfoPanel Component', () => {
 
     it('should render dateCreated when provided', () => {
       renderWithEventBus(
-        <ResourceInfoPanel {...defaultProps} dateCreated="2024-01-15T10:30:00Z" />
+        <ResourceInfoPanel
+          {...defaultProps}
+          dateCreated="2024-01-15T10:30:00Z"
+        />,
       );
       expect(screen.getByText('Provenance')).toBeInTheDocument();
       expect(screen.getByText('Created')).toBeInTheDocument();
@@ -474,7 +597,10 @@ describe('ResourceInfoPanel Component', () => {
 
     it('should render dateModified when provided', () => {
       renderWithEventBus(
-        <ResourceInfoPanel {...defaultProps} dateModified="2024-06-01T12:00:00Z" />
+        <ResourceInfoPanel
+          {...defaultProps}
+          dateModified="2024-06-01T12:00:00Z"
+        />,
       );
       expect(screen.getByText('Provenance')).toBeInTheDocument();
       expect(screen.getByText('Modified')).toBeInTheDocument();
@@ -484,8 +610,12 @@ describe('ResourceInfoPanel Component', () => {
       renderWithEventBus(
         <ResourceInfoPanel
           {...defaultProps}
-          wasAttributedTo={{ '@type': 'Person', name: 'Alice', '@id': 'https://example.org/alice' }}
-        />
+          wasAttributedTo={{
+            '@type': 'Person',
+            name: 'Alice',
+            '@id': 'https://example.org/alice',
+          }}
+        />,
       );
       expect(screen.getByText('Attributed to')).toBeInTheDocument();
       expect(screen.getByText('Alice')).toBeInTheDocument();
@@ -499,7 +629,7 @@ describe('ResourceInfoPanel Component', () => {
             { '@type': 'Person', name: 'Alice' },
             { '@type': 'Person', name: 'Bob' },
           ]}
-        />
+        />,
       );
       expect(screen.getByText('Alice, Bob')).toBeInTheDocument();
     });
@@ -510,8 +640,8 @@ describe('ResourceInfoPanel Component', () => {
       renderWithEventBus(
         <ResourceInfoPanel
           {...defaultProps}
-          wasDerivedFrom={makeResourceId("res-abc123")}
-        />
+          wasDerivedFrom={makeResourceId('res-abc123')}
+        />,
       );
       expect(screen.getByText('Derived from')).toBeInTheDocument();
       expect(screen.getByText('res-abc123')).toBeInTheDocument();
@@ -528,8 +658,8 @@ describe('ResourceInfoPanel Component', () => {
       const { client } = renderWithEventBus(
         <ResourceInfoPanel
           {...defaultProps}
-          wasDerivedFrom={makeResourceId("res-abc123")}
-        />
+          wasDerivedFrom={makeResourceId('res-abc123')}
+        />,
       );
       const openSpy = vi.spyOn(client.browse, 'openResource');
 
@@ -546,7 +676,10 @@ describe('ResourceInfoPanel Component', () => {
       vi.spyOn(client.browse, 'resource').mockReturnValue(
         new BehaviorSubject<CacheState<ResourceDescriptor>>({
           status: 'ready',
-          value: { '@id': 'res-abc123', name: 'Source Doc' } as ResourceDescriptor,
+          value: {
+            '@id': 'res-abc123',
+            name: 'Source Doc',
+          } as ResourceDescriptor,
         }) as unknown as CacheObservable<ResourceDescriptor>,
       );
       const openSpy = vi.spyOn(client.browse, 'openResource');
@@ -554,9 +687,13 @@ describe('ResourceInfoPanel Component', () => {
         <ResourceInfoPanel
           {...defaultProps}
           session={session}
-          wasDerivedFrom={makeResourceId("res-abc123")}
+          wasDerivedFrom={makeResourceId('res-abc123')}
         />,
-        { wrapper: ({ children }) => <XynologWrapper>{children}</XynologWrapper> },
+        {
+          wrapper: ({ children }) => (
+            <XynologWrapper>{children}</XynologWrapper>
+          ),
+        },
       );
 
       expect(screen.getByText('Source Doc')).toBeInTheDocument();
@@ -571,7 +708,7 @@ describe('ResourceInfoPanel Component', () => {
         <ResourceInfoPanel
           {...defaultProps}
           wasDerivedFrom={['res-a', 'res-b'] as never}
-        />
+        />,
       );
       // The separator lives inside the button (`{i > 0 && ', '}{id}`), so the
       // second one's text node is ", urn:…:b" — matched loosely on purpose.
@@ -584,7 +721,7 @@ describe('ResourceInfoPanel Component', () => {
         <ResourceInfoPanel
           {...defaultProps}
           generator={{ '@type': 'Software', name: 'Xynolog AI' } as never}
-        />
+        />,
       );
       expect(screen.getByText('Attributed to')).toBeInTheDocument();
       expect(screen.getByText('Xynolog AI')).toBeInTheDocument();
@@ -594,77 +731,81 @@ describe('ResourceInfoPanel Component', () => {
       renderWithEventBus(
         <ResourceInfoPanel
           {...defaultProps}
-          generator={{
-            '@type': 'Software',
-            '@id': 'did:web:example.com:agents:xynolog-worker',
-            name: 'my-highlighter',
-            provider: 'ollama',
-            model: 'gemma2:27b',
-          } as never}
-        />
+          generator={
+            {
+              '@type': 'Software',
+              '@id': 'did:web:example.com:agents:xynolog-worker',
+              name: 'my-highlighter',
+              provider: 'ollama',
+              model: 'gemma2:27b',
+            } as never
+          }
+        />,
       );
-      expect(screen.getByText('my-highlighter (ollama gemma2:27b)')).toBeInTheDocument();
+      expect(
+        screen.getByText('my-highlighter (ollama gemma2:27b)'),
+      ).toBeInTheDocument();
     });
   });
 
   describe('Archive Actions', () => {
     it('should render archive button when not archived', () => {
       renderWithEventBus(
-        <ResourceInfoPanel
-          {...defaultProps}
-          isArchived={false}
-        />
+        <ResourceInfoPanel {...defaultProps} isArchived={false} />,
       );
 
-      expect(screen.getByRole('button', { name: /Archive/i })).toBeInTheDocument();
-      expect(screen.getByText('Move this resource to archived status')).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /Archive/i }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText('Move this resource to archived status'),
+      ).toBeInTheDocument();
     });
 
     it('should render unarchive button when archived', () => {
       renderWithEventBus(
-        <ResourceInfoPanel
-          {...defaultProps}
-          isArchived={true}
-        />
+        <ResourceInfoPanel {...defaultProps} isArchived={true} />,
       );
 
-      expect(screen.getByRole('button', { name: /Unarchive/i })).toBeInTheDocument();
-      expect(screen.getByText('Restore this resource to active status')).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /Unarchive/i }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText('Restore this resource to active status'),
+      ).toBeInTheDocument();
     });
 
     it('should emit mark:archive event when archive button clicked', async () => {
       const tracker = createEventTracker();
       renderWithEventBus(
-        <ResourceInfoPanel
-          {...defaultProps}
-          isArchived={false}
-        />,
-        tracker
+        <ResourceInfoPanel {...defaultProps} isArchived={false} />,
+        tracker,
       );
 
       const button = screen.getByRole('button', { name: /Archive/i });
       fireEvent.click(button);
 
       await waitFor(() => {
-        expect(tracker.events.some(e => e.event === 'mark:archive')).toBe(true);
+        expect(tracker.events.some((e) => e.event === 'mark:archive')).toBe(
+          true,
+        );
       });
     });
 
     it('should emit mark:unarchive event when unarchive button clicked', async () => {
       const tracker = createEventTracker();
       renderWithEventBus(
-        <ResourceInfoPanel
-          {...defaultProps}
-          isArchived={true}
-        />,
-        tracker
+        <ResourceInfoPanel {...defaultProps} isArchived={true} />,
+        tracker,
       );
 
       const button = screen.getByRole('button', { name: /Unarchive/i });
       fireEvent.click(button);
 
       await waitFor(() => {
-        expect(tracker.events.some(e => e.event === 'mark:unarchive')).toBe(true);
+        expect(tracker.events.some((e) => e.event === 'mark:unarchive')).toBe(
+          true,
+        );
       });
     });
   });

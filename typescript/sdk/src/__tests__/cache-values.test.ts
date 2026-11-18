@@ -12,7 +12,11 @@
 import { describe, it, expect } from 'vitest';
 import type { CacheQuery, CacheValues } from '@xynolog/core';
 import type { CacheObservable } from '../awaitable';
-import type { BrowseNamespace, GatherNamespace, MatchNamespace } from '../namespaces/types';
+import type {
+  BrowseNamespace,
+  GatherNamespace,
+  MatchNamespace,
+} from '../namespaces/types';
 
 /** What a live query shows. */
 type Shown<O> = O extends CacheObservable<infer V> ? V : never;
@@ -34,15 +38,22 @@ interface ShownByQuery {
 }
 
 /** What of its cache's value each live query shows: the value, or `annotations`' annotations. */
-type ShownOfValue<Q extends Named> = Q extends 'annotations' ? CacheValues['annotations']['annotations'] : CacheValues[Q];
+type ShownOfValue<Q extends Named> = Q extends 'annotations'
+  ? CacheValues['annotations']['annotations']
+  : CacheValues[Q];
 
 /** Each holds every value of the other: the same shape, however it is written. */
 type Agrees<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
 
-type Disagreeing = { [Q in Named]: Agrees<ShownByQuery[Q], ShownOfValue<Q>> extends true ? never : Q }[Named];
+type Disagreeing = {
+  [Q in Named]: Agrees<ShownByQuery[Q], ShownOfValue<Q>> extends true
+    ? never
+    : Q;
+}[Named];
 
 /** tsc fails here while any live query shows another type than its cache's value: `Disagreeing` is those queries. */
-const shownCensus: [Disagreeing] extends [never] ? 'agrees' : Disagreeing = 'agrees';
+const shownCensus: [Disagreeing] extends [never] ? 'agrees' : Disagreeing =
+  'agrees';
 
 describe("what each live query's cache holds (protocol/specs/src/client/refresh.json's value)", () => {
   it("what each live query shows is its cache's value", () => {

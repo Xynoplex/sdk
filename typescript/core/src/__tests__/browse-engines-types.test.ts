@@ -33,7 +33,10 @@ describe('browse:engines — operation + reply-shape guard', () => {
   it('an entry is an engine, a provider and a model, with the jobs it is used for', () => {
     const entry: EngineEntry = {
       engine: { provider: 'anthropic', model: 'claude-haiku-4-5' },
-      jobs: [{ jobType: 'mark', params: { motivation: 'highlighting' } }, { jobType: 'yield' }],
+      jobs: [
+        { jobType: 'mark', params: { motivation: 'highlighting' } },
+        { jobType: 'yield' },
+      ],
     };
     expect(entry.engine.provider).toBe('anthropic');
   });
@@ -48,13 +51,18 @@ describe('browse:engines — operation + reply-shape guard', () => {
       provider: 'anthropic',
       model: 'claude-haiku-4-5',
     };
-    const person: components['schemas']['AgentPerson'] = { '@type': 'Person', name: 'Ada' };
+    const person: components['schemas']['AgentPerson'] = {
+      '@type': 'Person',
+      name: 'Ada',
+    };
     expect(software['@type']).toBe('Software');
     expect(person['@type']).toBe('Person');
   });
 
   it('an engine only Librarian actors ask is used for no job', () => {
-    const entry: EngineEntry = { engine: { provider: 'ollama', model: 'llama3' } };
+    const entry: EngineEntry = {
+      engine: { provider: 'ollama', model: 'llama3' },
+    };
     expect(entry.jobs).toBeUndefined();
   });
 });

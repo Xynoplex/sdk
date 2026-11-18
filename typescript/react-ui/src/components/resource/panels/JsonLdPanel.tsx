@@ -6,7 +6,10 @@ import { EditorState } from '@codemirror/state';
 import { json } from '@codemirror/lang-json';
 import { syntaxHighlighting } from '@codemirror/language';
 import { clipboard } from '../../../lib/clipboard';
-import { jsonTheme, jsonHighlightStyle } from '../../../lib/codemirror-json-theme';
+import {
+  jsonTheme,
+  jsonHighlightStyle,
+} from '../../../lib/codemirror-json-theme';
 import { useLineNumbers } from '../../../contexts/LineNumbersContext';
 import { useResourceGraph } from '../../../hooks/useResourceGraph';
 import type { ResourceId } from '@xynolog/core';
@@ -82,9 +85,7 @@ export function JsonLdPanel({ resourceId }: Props) {
     <div className="xynolog-jsonld-panel">
       {/* Header with copy button */}
       <div className="xynolog-jsonld-panel__header">
-        <h3 className="xynolog-jsonld-panel__title">
-          JSON-LD
-        </h3>
+        <h3 className="xynolog-jsonld-panel__title">JSON-LD</h3>
         {copyTo && (
           <button
             onClick={() => handleCopyToClipboard(copyTo)}
@@ -103,16 +104,16 @@ export function JsonLdPanel({ resourceId }: Props) {
         </p>
       )}
       {error && !loading && (
-        <p className="xynolog-jsonld-panel__status xynolog-jsonld-panel__status--error" role="alert">
+        <p
+          className="xynolog-jsonld-panel__status xynolog-jsonld-panel__status--error"
+          role="alert"
+        >
           Failed to load JSON-LD.
         </p>
       )}
 
       {/* JSON-LD content rendered with CodeMirror */}
-      <div
-        ref={editorRef}
-        className="xynolog-jsonld-panel__editor"
-      />
+      <div ref={editorRef} className="xynolog-jsonld-panel__editor" />
     </div>
   );
 }

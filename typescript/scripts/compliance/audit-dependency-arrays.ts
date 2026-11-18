@@ -42,10 +42,10 @@ interface HookAnalysis {
   legacyEventNames: string[];
 
   // Layer separation (mitt-specific)
-  usesEventBusOn: boolean;        // Direct eventBus.on() calls (should use useEventSubscriptions)
-  usesEventBusOff: boolean;       // Direct eventBus.off() calls (useEventSubscriptions handles cleanup)
-  createsEventSource: boolean;    // new EventSource() in components (should use useResourceEvents)
-  returnsJSX: boolean;            // Hooks returning JSX (should return data only)
+  usesEventBusOn: boolean; // Direct eventBus.on() calls (should use useEventSubscriptions)
+  usesEventBusOff: boolean; // Direct eventBus.off() calls (useEventSubscriptions handles cleanup)
+  createsEventSource: boolean; // new EventSource() in components (should use useResourceEvents)
+  returnsJSX: boolean; // Hooks returning JSX (should return data only)
   hasGlobalEventBusImport: boolean; // Direct eventBus import (should use useEventBus() hook)
 }
 
@@ -65,7 +65,10 @@ class DependencyArrayAuditor {
   /**
    * Extract JSDoc event contracts (@emits and @subscribes tags)
    */
-  private extractJSDocEventContracts(node: ts.Node): { emits: string[], subscribes: string[] } {
+  private extractJSDocEventContracts(node: ts.Node): {
+    emits: string[];
+    subscribes: string[];
+  } {
     const emits: string[] = [];
     const subscribes: string[] = [];
 
@@ -94,11 +97,17 @@ class DependencyArrayAuditor {
   /**
    * Check if component accepts eventBus prop
    */
-  private parseEventBusProp(params: ts.NodeArray<ts.ParameterDeclaration>): boolean {
+  private parseEventBusProp(
+    params: ts.NodeArray<ts.ParameterDeclaration>,
+  ): boolean {
     for (const param of params) {
       if (param.type && ts.isTypeLiteralNode(param.type)) {
         for (const member of param.type.members) {
-          if (ts.isPropertySignature(member) && member.name && ts.isIdentifier(member.name)) {
+          if (
+            ts.isPropertySignature(member) &&
+            member.name &&
+            ts.isIdentifier(member.name)
+          ) {
             if (member.name.text === 'eventBus') {
               return true;
             }
@@ -119,7 +128,10 @@ class DependencyArrayAuditor {
       // Look for return statements
       if (ts.isReturnStatement(node) && node.expression) {
         // Check if returning eventBus directly: return eventBus
-        if (ts.isIdentifier(node.expression) && node.expression.text === 'eventBus') {
+        if (
+          ts.isIdentifier(node.expression) &&
+          node.expression.text === 'eventBus'
+        ) {
           returnsEventBus = true;
           return;
         }
@@ -139,7 +151,10 @@ class DependencyArrayAuditor {
                 returnsEventBus = true;
                 return;
               }
-              if (ts.isIdentifier(prop.initializer) && prop.initializer.text === 'eventBus') {
+              if (
+                ts.isIdentifier(prop.initializer) &&
+                prop.initializer.text === 'eventBus'
+              ) {
                 returnsEventBus = true;
                 return;
               }
@@ -165,10 +180,12 @@ class DependencyArrayAuditor {
       // Look for eventBus.emit('event-name', ...) calls
       if (ts.isCallExpression(node)) {
         const expr = node.expression;
-        if (ts.isPropertyAccessExpression(expr) &&
-            expr.name.text === 'emit' &&
-            ts.isIdentifier(expr.expression) &&
-            expr.expression.text === 'eventBus') {
+        if (
+          ts.isPropertyAccessExpression(expr) &&
+          expr.name.text === 'emit' &&
+          ts.isIdentifier(expr.expression) &&
+          expr.expression.text === 'eventBus'
+        ) {
           // Extract first argument (event name)
           if (node.arguments.length > 0) {
             const eventNameArg = node.arguments[0];
@@ -198,10 +215,12 @@ class DependencyArrayAuditor {
         const expr = node.expression;
 
         // Pattern 1: eventBus.on('event-name', handler)
-        if (ts.isPropertyAccessExpression(expr) &&
-            expr.name.text === 'on' &&
-            ts.isIdentifier(expr.expression) &&
-            expr.expression.text === 'eventBus') {
+        if (
+          ts.isPropertyAccessExpression(expr) &&
+          expr.name.text === 'on' &&
+          ts.isIdentifier(expr.expression) &&
+          expr.expression.text === 'eventBus'
+        ) {
           // Extract first argument (event name)
           if (node.arguments.length > 0) {
             const eventNameArg = node.arguments[0];
@@ -218,7 +237,10 @@ class DependencyArrayAuditor {
             if (ts.isObjectLiteralExpression(subscriptionsArg)) {
               // Extract all string literal property names
               for (const prop of subscriptionsArg.properties) {
-                if (ts.isPropertyAssignment(prop) && ts.isStringLiteral(prop.name)) {
+                if (
+                  ts.isPropertyAssignment(prop) &&
+                  ts.isStringLiteral(prop.name)
+                ) {
                   events.push(prop.name.text);
                 }
               }
@@ -237,7 +259,10 @@ class DependencyArrayAuditor {
   /**
    * Analyze event naming convention (colon vs hyphen)
    */
-  private analyzeEventNaming(eventName: string): { isColon: boolean, isHyphen: boolean } {
+  private analyzeEventNaming(eventName: string): {
+    isColon: boolean;
+    isHyphen: boolean;
+  } {
     // Correct pattern: namespace:event-name (colon for namespace, hyphen allowed in event name)
     // Wrong pattern: namespace-event-name (hyphen used for namespacing instead of colon)
 
@@ -250,7 +275,7 @@ class DependencyArrayAuditor {
 
     return {
       isColon: hasColon,
-      isHyphen: isLegacyHyphenNamespace
+      isHyphen: isLegacyHyphenNamespace,
     };
   }
 
@@ -263,10 +288,12 @@ class DependencyArrayAuditor {
     const visit = (node: ts.Node) => {
       if (ts.isCallExpression(node)) {
         const expr = node.expression;
-        if (ts.isPropertyAccessExpression(expr) &&
-            expr.name.text === 'on' &&
-            ts.isIdentifier(expr.expression) &&
-            expr.expression.text === 'eventBus') {
+        if (
+          ts.isPropertyAccessExpression(expr) &&
+          expr.name.text === 'on' &&
+          ts.isIdentifier(expr.expression) &&
+          expr.expression.text === 'eventBus'
+        ) {
           found = true;
           return;
         }
@@ -287,10 +314,12 @@ class DependencyArrayAuditor {
     const visit = (node: ts.Node) => {
       if (ts.isCallExpression(node)) {
         const expr = node.expression;
-        if (ts.isPropertyAccessExpression(expr) &&
-            expr.name.text === 'off' &&
-            ts.isIdentifier(expr.expression) &&
-            expr.expression.text === 'eventBus') {
+        if (
+          ts.isPropertyAccessExpression(expr) &&
+          expr.name.text === 'off' &&
+          ts.isIdentifier(expr.expression) &&
+          expr.expression.text === 'eventBus'
+        ) {
           found = true;
           return;
         }
@@ -332,9 +361,11 @@ class DependencyArrayAuditor {
     const visit = (node: ts.Node) => {
       if (ts.isReturnStatement(node) && node.expression) {
         // Check if returning JSX element
-        if (ts.isJsxElement(node.expression) ||
-            ts.isJsxSelfClosingElement(node.expression) ||
-            ts.isJsxFragment(node.expression)) {
+        if (
+          ts.isJsxElement(node.expression) ||
+          ts.isJsxSelfClosingElement(node.expression) ||
+          ts.isJsxFragment(node.expression)
+        ) {
           found = true;
           return;
         }
@@ -378,7 +409,7 @@ class DependencyArrayAuditor {
       filePath,
       fs.readFileSync(filePath, 'utf-8'),
       ts.ScriptTarget.Latest,
-      true
+      true,
     );
 
     const hooks: HookAnalysis[] = [];
@@ -388,8 +419,16 @@ class DependencyArrayAuditor {
 
     const visit = (node: ts.Node) => {
       // Look for function declarations/expressions that might be hooks
-      if (ts.isFunctionDeclaration(node) || ts.isFunctionExpression(node) || ts.isArrowFunction(node)) {
-        const analysis = this.analyzeHook(node, filePath, hasGlobalEventBusImport);
+      if (
+        ts.isFunctionDeclaration(node) ||
+        ts.isFunctionExpression(node) ||
+        ts.isArrowFunction(node)
+      ) {
+        const analysis = this.analyzeHook(
+          node,
+          filePath,
+          hasGlobalEventBusImport,
+        );
         if (analysis) {
           hooks.push(analysis);
         }
@@ -403,7 +442,11 @@ class DependencyArrayAuditor {
     return { filePath, hooks };
   }
 
-  private analyzeHook(node: ts.FunctionDeclaration | ts.FunctionExpression | ts.ArrowFunction, filePath: string, hasGlobalEventBusImport: boolean): HookAnalysis | null {
+  private analyzeHook(
+    node: ts.FunctionDeclaration | ts.FunctionExpression | ts.ArrowFunction,
+    filePath: string,
+    hasGlobalEventBusImport: boolean,
+  ): HookAnalysis | null {
     // Get function name - handle variable declarations like "const useMyHook = () => {}"
     let hookName = 'anonymous';
     if (ts.isFunctionDeclaration(node) && node.name) {
@@ -415,7 +458,10 @@ class DependencyArrayAuditor {
       const parent = node.parent;
       if (ts.isVariableDeclaration(parent) && ts.isIdentifier(parent.name)) {
         hookName = parent.name.text;
-      } else if (ts.isPropertyAssignment(parent) && ts.isIdentifier(parent.name)) {
+      } else if (
+        ts.isPropertyAssignment(parent) &&
+        ts.isIdentifier(parent.name)
+      ) {
         hookName = parent.name.text;
       }
     }
@@ -463,20 +509,23 @@ class DependencyArrayAuditor {
       usesEventBusOff: false,
       createsEventSource: false,
       returnsJSX: false,
-      hasGlobalEventBusImport: false
+      hasGlobalEventBusImport: false,
     };
 
     // Extract JSDoc event contracts
     const eventContracts = this.extractJSDocEventContracts(node);
     analysis.documentedEmittedEvents = eventContracts.emits;
     analysis.documentedSubscribedEvents = eventContracts.subscribes;
-    analysis.hasEventContractDocs = eventContracts.emits.length > 0 || eventContracts.subscribes.length > 0;
+    analysis.hasEventContractDocs =
+      eventContracts.emits.length > 0 || eventContracts.subscribes.length > 0;
 
     // Check for eventBus prop
     if (node.parameters) {
       analysis.acceptsEventBusProp = this.parseEventBusProp(node.parameters);
       if (analysis.acceptsEventBusProp) {
-        analysis.issues.push('❌ Component accepts eventBus prop (use useEventBus() hook instead)');
+        analysis.issues.push(
+          '❌ Component accepts eventBus prop (use useEventBus() hook instead)',
+        );
       }
     }
 
@@ -492,7 +541,10 @@ class DependencyArrayAuditor {
       analysis.subscribedEvents = this.extractSubscribedEvents(node.body);
 
       // Analyze event naming
-      const allEvents = [...analysis.emittedEvents, ...analysis.subscribedEvents];
+      const allEvents = [
+        ...analysis.emittedEvents,
+        ...analysis.subscribedEvents,
+      ];
       for (const eventName of allEvents) {
         const naming = this.analyzeEventNaming(eventName);
         if (naming.isColon) {
@@ -507,7 +559,9 @@ class DependencyArrayAuditor {
       // Check if hook returns eventBus
       analysis.returnsEventBus = this.detectEventBusReturn(node.body);
       if (analysis.returnsEventBus) {
-        analysis.issues.push('❌ Hook returns eventBus instance (should not expose EventBus)');
+        analysis.issues.push(
+          '❌ Hook returns eventBus instance (should not expose EventBus)',
+        );
       }
 
       // Layer separation checks
@@ -517,24 +571,36 @@ class DependencyArrayAuditor {
       analysis.returnsJSX = this.detectJSXReturn(node.body);
 
       // Determine if this is a component (not a hook)
-      const isComponent = /^[A-Z]/.test(analysis.hookName) && !analysis.hookName.startsWith('use');
+      const isComponent =
+        /^[A-Z]/.test(analysis.hookName) &&
+        !analysis.hookName.startsWith('use');
       const isHook = analysis.hookName.startsWith('use');
 
       // Layer separation violations
       if (isComponent && analysis.usesEventBusOn) {
-        analysis.issues.push('❌ Component uses eventBus.on() (use useEventSubscriptions hook instead)');
+        analysis.issues.push(
+          '❌ Component uses eventBus.on() (use useEventSubscriptions hook instead)',
+        );
       }
       if (isComponent && analysis.usesEventBusOff) {
-        analysis.issues.push('❌ Component uses eventBus.off() (useEventSubscriptions handles cleanup automatically)');
+        analysis.issues.push(
+          '❌ Component uses eventBus.off() (useEventSubscriptions handles cleanup automatically)',
+        );
       }
       if (isComponent && analysis.createsEventSource) {
-        analysis.issues.push('❌ Component creates EventSource directly (use useResourceEvents hook instead)');
+        analysis.issues.push(
+          '❌ Component creates EventSource directly (use useResourceEvents hook instead)',
+        );
       }
       if (isHook && analysis.returnsJSX) {
-        analysis.issues.push('❌ Hook returns JSX (hooks should return data/state, not JSX)');
+        analysis.issues.push(
+          '❌ Hook returns JSX (hooks should return data/state, not JSX)',
+        );
       }
       if (hasGlobalEventBusImport && !filePath.includes('EventBusContext')) {
-        analysis.issues.push('❌ File imports global eventBus (use useEventBus() hook instead)');
+        analysis.issues.push(
+          '❌ File imports global eventBus (use useEventBus() hook instead)',
+        );
       }
     }
 
@@ -546,7 +612,9 @@ class DependencyArrayAuditor {
     // Container-specific validation
     if (analysis.isContainer) {
       if (analysis.acceptsCallbacks) {
-        analysis.issues.push('❌ Container accepts callback props (containers must use events only)');
+        analysis.issues.push(
+          '❌ Container accepts callback props (containers must use events only)',
+        );
       }
       // Containers must use useEventBus() OR useEventSubscriptions() (which internally uses useEventBus())
       // Subscribe-only containers (no emits) can use useEventSubscriptions() without direct useEventBus()
@@ -555,15 +623,25 @@ class DependencyArrayAuditor {
         analysis.issues.push('❌ Container does not use useEventBus() hook');
       } else if (!analysis.usesEventBus && hasEmittedEvents) {
         // Only require direct useEventBus() if container emits events
-        analysis.issues.push('❌ Container emits events but does not use useEventBus() hook directly');
+        analysis.issues.push(
+          '❌ Container emits events but does not use useEventBus() hook directly',
+        );
       }
-      const missingEmitsDocs = analysis.emittedEvents.filter(e => !analysis.documentedEmittedEvents.includes(e));
-      const missingSubscribesDocs = analysis.subscribedEvents.filter(e => !analysis.documentedSubscribedEvents.includes(e));
+      const missingEmitsDocs = analysis.emittedEvents.filter(
+        (e) => !analysis.documentedEmittedEvents.includes(e),
+      );
+      const missingSubscribesDocs = analysis.subscribedEvents.filter(
+        (e) => !analysis.documentedSubscribedEvents.includes(e),
+      );
       if (missingEmitsDocs.length > 0) {
-        analysis.issues.push(`❌ Container missing @emits JSDoc for: ${missingEmitsDocs.join(', ')}`);
+        analysis.issues.push(
+          `❌ Container missing @emits JSDoc for: ${missingEmitsDocs.join(', ')}`,
+        );
       }
       if (missingSubscribesDocs.length > 0) {
-        analysis.issues.push(`❌ Container missing @subscribes JSDoc for: ${missingSubscribesDocs.join(', ')}`);
+        analysis.issues.push(
+          `❌ Container missing @subscribes JSDoc for: ${missingSubscribesDocs.join(', ')}`,
+        );
       }
     }
 
@@ -585,18 +663,28 @@ class DependencyArrayAuditor {
             const varName = decl.name.text;
             if (decl.initializer) {
               // Track useRef callbacks
-              if (ts.isCallExpression(decl.initializer) &&
-                  ts.isIdentifier(decl.initializer.expression) &&
-                  decl.initializer.expression.text === 'useRef') {
+              if (
+                ts.isCallExpression(decl.initializer) &&
+                ts.isIdentifier(decl.initializer.expression) &&
+                decl.initializer.expression.text === 'useRef'
+              ) {
                 const arg = decl.initializer.arguments[0];
-                if (arg && ts.isIdentifier(arg) && /^(on[A-Z]|handle[A-Z])/.test(arg.text)) {
+                if (
+                  arg &&
+                  ts.isIdentifier(arg) &&
+                  /^(on[A-Z]|handle[A-Z])/.test(arg.text)
+                ) {
                   callbacksStoredInRefs.add(arg.text);
                 }
               }
               // Track useCallback/useMemo as local callbacks
-              if (ts.isCallExpression(decl.initializer) &&
-                  ts.isIdentifier(decl.initializer.expression) &&
-                  ['useCallback', 'useMemo'].includes(decl.initializer.expression.text)) {
+              if (
+                ts.isCallExpression(decl.initializer) &&
+                ts.isIdentifier(decl.initializer.expression) &&
+                ['useCallback', 'useMemo'].includes(
+                  decl.initializer.expression.text,
+                )
+              ) {
                 localCallbacks.add(varName);
               }
             }
@@ -607,14 +695,18 @@ class DependencyArrayAuditor {
       // Look for xxxRef.current = xxx; pattern
       if (ts.isExpressionStatement(node)) {
         const expr = node.expression;
-        if (ts.isBinaryExpression(expr) &&
-            expr.operatorToken.kind === ts.SyntaxKind.EqualsToken) {
+        if (
+          ts.isBinaryExpression(expr) &&
+          expr.operatorToken.kind === ts.SyntaxKind.EqualsToken
+        ) {
           const left = expr.left;
           const right = expr.right;
-          if (ts.isPropertyAccessExpression(left) &&
-              left.name.text === 'current' &&
-              ts.isIdentifier(right) &&
-              /^(on[A-Z]|handle[A-Z])/.test(right.text)) {
+          if (
+            ts.isPropertyAccessExpression(left) &&
+            left.name.text === 'current' &&
+            ts.isIdentifier(right) &&
+            /^(on[A-Z]|handle[A-Z])/.test(right.text)
+          ) {
             callbacksStoredInRefs.add(right.text);
           }
         }
@@ -650,16 +742,25 @@ class DependencyArrayAuditor {
           }
 
           // Analyze useEffect/useCallback/useMemo dependency arrays
-          if (['useEffect', 'useCallback', 'useMemo', 'useEventOperations'].includes(hookName)) {
+          if (
+            [
+              'useEffect',
+              'useCallback',
+              'useMemo',
+              'useEventOperations',
+            ].includes(hookName)
+          ) {
             const deps = this.extractDependencyArray(node);
             if (deps) {
               hasAnyDeps = true;
-              deps.forEach(d => allDeps.add(d));
+              deps.forEach((d) => allDeps.add(d));
 
               // Check for violations
               if (deps.includes('eventBus')) {
                 analysis.eventBusInDeps = true;
-                analysis.issues.push('❌ eventBus in dependency array (global singleton)');
+                analysis.issues.push(
+                  '❌ eventBus in dependency array (global singleton)',
+                );
               }
 
               if (deps.includes('client')) {
@@ -668,13 +769,16 @@ class DependencyArrayAuditor {
 
               // Check for callback-like dependencies (functions starting with 'on')
               // Exclude local callbacks (defined via useCallback/useMemo) and callbacks stored in refs
-              const callbacks = deps.filter(d => /^on[A-Z]/.test(d));
-              const unsafeCallbacks = callbacks.filter(cb =>
-                !callbacksStoredInRefs.has(cb) && !localCallbacks.has(cb)
+              const callbacks = deps.filter((d) => /^on[A-Z]/.test(d));
+              const unsafeCallbacks = callbacks.filter(
+                (cb) =>
+                  !callbacksStoredInRefs.has(cb) && !localCallbacks.has(cb),
               );
               if (unsafeCallbacks.length > 0) {
                 analysis.callbacksInDeps = true;
-                analysis.issues.push(`❌ Callback props in deps: ${unsafeCallbacks.join(', ')} (use events or refs instead)`);
+                analysis.issues.push(
+                  `❌ Callback props in deps: ${unsafeCallbacks.join(', ')} (use events or refs instead)`,
+                );
               }
             }
           }
@@ -693,14 +797,25 @@ class DependencyArrayAuditor {
     }
   }
 
-  private analyzeParameters(parameters: ts.NodeArray<ts.ParameterDeclaration>, analysis: HookAnalysis) {
-    parameters.forEach(param => {
+  private analyzeParameters(
+    parameters: ts.NodeArray<ts.ParameterDeclaration>,
+    analysis: HookAnalysis,
+  ) {
+    parameters.forEach((param) => {
       if (param.type && ts.isTypeLiteralNode(param.type)) {
-        param.type.members.forEach(member => {
-          if (ts.isPropertySignature(member) && member.name && ts.isIdentifier(member.name)) {
+        param.type.members.forEach((member) => {
+          if (
+            ts.isPropertySignature(member) &&
+            member.name &&
+            ts.isIdentifier(member.name)
+          ) {
             const propName = member.name.text;
             // Check for callback props (start with 'on')
-            if (propName.startsWith('on') && member.type && this.isFunctionType(member.type)) {
+            if (
+              propName.startsWith('on') &&
+              member.type &&
+              this.isFunctionType(member.type)
+            ) {
               analysis.acceptsCallbacks = true;
             }
           }
@@ -717,7 +832,7 @@ class DependencyArrayAuditor {
       return null;
     }
 
-    return lastArg.elements.map(elem => {
+    return lastArg.elements.map((elem) => {
       if (ts.isIdentifier(elem)) {
         return elem.text;
       }
@@ -731,7 +846,10 @@ class DependencyArrayAuditor {
   private hasInlineArrowFunctions(obj: ts.ObjectLiteralExpression): boolean {
     for (const prop of obj.properties) {
       if (ts.isPropertyAssignment(prop)) {
-        if (ts.isArrowFunction(prop.initializer) || ts.isFunctionExpression(prop.initializer)) {
+        if (
+          ts.isArrowFunction(prop.initializer) ||
+          ts.isFunctionExpression(prop.initializer)
+        ) {
           return true;
         }
       }

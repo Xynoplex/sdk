@@ -29,7 +29,9 @@ export type SelectorType = 'fragment' | 'svg' | 'text';
  * @param mediaType - MIME type of the resource (e.g., 'application/pdf', 'image/png')
  * @returns Array of supported shape types for annotation
  */
-export function getSupportedShapes(mediaType: string | undefined | null): ShapeType[] {
+export function getSupportedShapes(
+  mediaType: string | undefined | null,
+): ShapeType[] {
   if (!mediaType) {
     // Unknown medium: don't advertise drawing capability it may not have.
     return [];
@@ -57,7 +59,7 @@ export function getSupportedShapes(mediaType: string | undefined | null): ShapeT
  */
 export function isShapeSupported(
   mediaType: string | undefined | null,
-  shape: ShapeType
+  shape: ShapeType,
 ): boolean {
   return getSupportedShapes(mediaType).includes(shape);
 }
@@ -78,7 +80,9 @@ export function isShapeSupported(
  * @param mediaType - MIME type of the resource
  * @returns Selector type (fragment, svg, or text)
  */
-export function getSelectorType(mediaType: string | undefined | null): SelectorType {
+export function getSelectorType(
+  mediaType: string | undefined | null,
+): SelectorType {
   if (!mediaType) {
     return 'text'; // Default fallback
   }
@@ -98,7 +102,9 @@ export function getSelectorType(mediaType: string | undefined | null): SelectorT
  * @param selectorType - The selector type
  * @returns The selected shape, or default for that selector type
  */
-export function getSelectedShapeForSelectorType(selectorType: SelectorType): ShapeType {
+export function getSelectedShapeForSelectorType(
+  selectorType: SelectorType,
+): ShapeType {
   // Fragment selector only supports rectangle
   if (selectorType === 'fragment') {
     return 'rectangle';
@@ -127,7 +133,10 @@ export function getSelectedShapeForSelectorType(selectorType: SelectorType): Sha
  * @param selectorType - The selector type
  * @param shape - The shape to save
  */
-export function saveSelectedShapeForSelectorType(selectorType: SelectorType, shape: ShapeType): void {
+export function saveSelectedShapeForSelectorType(
+  selectorType: SelectorType,
+  shape: ShapeType,
+): void {
   // Only save for SVG selector (fragment is always rectangle, text doesn't use shapes)
   if (selectorType === 'svg' && typeof window !== 'undefined') {
     localStorage.setItem('xynolog-toolbar-shape-svg', shape);

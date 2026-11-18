@@ -22,17 +22,27 @@ describe('EventBus scoping', () => {
     const events1: unknown[] = [];
     const events2: unknown[] = [];
 
-    resource1.on('mark:create-ok').subscribe(e => events1.push(e));
-    resource2.on('mark:create-ok').subscribe(e => events2.push(e));
+    resource1.on('mark:create-ok').subscribe((e) => events1.push(e));
+    resource2.on('mark:create-ok').subscribe((e) => events2.push(e));
 
-    resource1.emit('mark:create-ok', { response: { annotationId:'ann-1' as never } });
-    resource2.emit('mark:create-ok', { response: { annotationId:'ann-2' as never } });
+    resource1.emit('mark:create-ok', {
+      response: { annotationId: 'ann-1' as never },
+    });
+    resource2.emit('mark:create-ok', {
+      response: { annotationId: 'ann-2' as never },
+    });
 
     expect(events1).toHaveLength(1);
-    expect((events1[0] as { response: { annotationId: string } }).response.annotationId).toBe('ann-1');
+    expect(
+      (events1[0] as { response: { annotationId: string } }).response
+        .annotationId,
+    ).toBe('ann-1');
 
     expect(events2).toHaveLength(1);
-    expect((events2[0] as { response: { annotationId: string } }).response.annotationId).toBe('ann-2');
+    expect(
+      (events2[0] as { response: { annotationId: string } }).response
+        .annotationId,
+    ).toBe('ann-2');
   });
 
   it('isolates events between different scopes', () => {
@@ -42,14 +52,19 @@ describe('EventBus scoping', () => {
     const events1: unknown[] = [];
     const events2: unknown[] = [];
 
-    resource1.on('mark:create-ok').subscribe(e => events1.push(e));
-    resource2.on('mark:create-ok').subscribe(e => events2.push(e));
+    resource1.on('mark:create-ok').subscribe((e) => events1.push(e));
+    resource2.on('mark:create-ok').subscribe((e) => events2.push(e));
 
     // Emit to resource1 only
-    resource1.emit('mark:create-ok', { response: { annotationId:'ann-1' as never } });
+    resource1.emit('mark:create-ok', {
+      response: { annotationId: 'ann-1' as never },
+    });
 
     expect(events1).toHaveLength(1);
-    expect((events1[0] as { response: { annotationId: string } }).response.annotationId).toBe('ann-1');
+    expect(
+      (events1[0] as { response: { annotationId: string } }).response
+        .annotationId,
+    ).toBe('ann-1');
 
     expect(events2).toHaveLength(0); // Resource2 should not receive event
   });
@@ -59,7 +74,9 @@ describe('EventBus scoping', () => {
     const resource2 = eventBus.scope(resourceId('resource-2'));
 
     // Both scopes use the same underlying EventBus
-    expect((resource1 as unknown as { parent: unknown }).parent).toBe((resource2 as unknown as { parent: unknown }).parent);
+    expect((resource1 as unknown as { parent: unknown }).parent).toBe(
+      (resource2 as unknown as { parent: unknown }).parent,
+    );
     expect((resource1 as unknown as { parent: unknown }).parent).toBe(eventBus);
   });
 
@@ -69,13 +86,16 @@ describe('EventBus scoping', () => {
     // The verbs separate reading from writing, and the payload stays typed
     // either way — which is what this test is about.
     const events: unknown[] = [];
-    resourceScope.on('mark:create-ok').subscribe(e => {
-      if (e instanceof FrameRefusal) throw new Error(`refused: ${e.channel} ${e.reason} ${e.member}`);
+    resourceScope.on('mark:create-ok').subscribe((e) => {
+      if (e instanceof FrameRefusal)
+        throw new Error(`refused: ${e.channel} ${e.reason} ${e.member}`);
       expect(e.response.annotationId).toBeDefined();
       events.push(e);
     });
 
-    resourceScope.emit('mark:create-ok', { response: { annotationId:'ann-1' as never } });
+    resourceScope.emit('mark:create-ok', {
+      response: { annotationId: 'ann-1' as never },
+    });
 
     expect(events).toHaveLength(1);
   });

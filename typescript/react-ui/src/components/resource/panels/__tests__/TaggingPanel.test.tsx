@@ -5,9 +5,19 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import { of } from 'rxjs';
-import { CacheObservable, createMarkStateUnit, type MarkStateUnit, type XynologSession } from '@xynolog/sdk';
+import {
+  CacheObservable,
+  createMarkStateUnit,
+  type MarkStateUnit,
+  type XynologSession,
+} from '@xynolog/sdk';
 import { TaggingPanel } from '../TaggingPanel';
-import { FrameRefusal, type EventBus, type EventMap, type TagSchema } from '@xynolog/core';
+import {
+  FrameRefusal,
+  type EventBus,
+  type EventMap,
+  type TagSchema,
+} from '@xynolog/core';
 import type { TagEntry } from '../TagEntry';
 import { createTestXynologWrapper } from '../../../../test-utils';
 
@@ -23,13 +33,18 @@ function createEventTracker() {
   const events: TrackedEvent[] = [];
   return {
     events,
-    clear: () => { events.length = 0; },
+    clear: () => {
+      events.length = 0;
+    },
     _attach(eventBus: EventBus) {
       const panelEvents = ['mark:submit'] as const;
       panelEvents.forEach((eventName) => {
         eventBus.on(eventName).subscribe((payload) => {
           // Nothing bridges into this test's bus: a refusal on it is the test's own fault.
-          if (payload instanceof FrameRefusal) throw new Error(`refused: ${payload.channel} ${payload.reason} ${payload.member}`);
+          if (payload instanceof FrameRefusal)
+            throw new Error(
+              `refused: ${payload.channel} ${payload.reason} ${payload.member}`,
+            );
           events.push({ event: eventName, payload });
         });
       });
@@ -45,18 +60,34 @@ const TEST_TAG_SCHEMAS: TagSchema[] = [
   {
     id: 'legal-irac',
     name: 'Legal (IRAC)',
-    description: 'Issue, Rule, Application, Conclusion framework for legal analysis',
+    description:
+      'Issue, Rule, Application, Conclusion framework for legal analysis',
     domain: 'legal',
     tags: [
-      { name: 'Issue',       description: 'Legal question to be resolved', examples: [] },
-      { name: 'Rule',        description: 'Legal principle or statute',    examples: [] },
-      { name: 'Application', description: 'Application of rule to facts',  examples: [] },
-      { name: 'Conclusion',  description: 'Resolution of the issue',       examples: [] },
+      {
+        name: 'Issue',
+        description: 'Legal question to be resolved',
+        examples: [],
+      },
+      { name: 'Rule', description: 'Legal principle or statute', examples: [] },
+      {
+        name: 'Application',
+        description: 'Application of rule to facts',
+        examples: [],
+      },
+      {
+        name: 'Conclusion',
+        description: 'Resolution of the issue',
+        examples: [],
+      },
     ],
   },
 ];
 
-type SessionProps = { session: XynologSession | null; mark: MarkStateUnit | undefined };
+type SessionProps = {
+  session: XynologSession | null;
+  mark: MarkStateUnit | undefined;
+};
 
 // The mark units the render helpers make, disposed after each test.
 const markUnits: MarkStateUnit[] = [];
@@ -64,12 +95,18 @@ afterEach(() => {
   for (const unit of markUnits.splice(0)) unit.dispose();
 });
 
-const renderWithEventBus = (component: React.ReactElement<SessionProps>, tracker?: ReturnType<typeof createEventTracker>) => {
-  const { XynologWrapper, eventBus, client, session } = createTestXynologWrapper();
+const renderWithEventBus = (
+  component: React.ReactElement<SessionProps>,
+  tracker?: ReturnType<typeof createEventTracker>,
+) => {
+  const { XynologWrapper, eventBus, client, session } =
+    createTestXynologWrapper();
   const mark = createMarkStateUnit(client, resourceId('res-1'));
   markUnits.push(mark);
   vi.spyOn(client.browse, 'tagSchemas').mockReturnValue(
-    CacheObservable.from(of({ status: 'ready' as const, value: TEST_TAG_SCHEMAS }))
+    CacheObservable.from(
+      of({ status: 'ready' as const, value: TEST_TAG_SCHEMAS }),
+    ),
   );
   if (tracker) tracker._attach(eventBus);
   const Wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -78,23 +115,32 @@ const renderWithEventBus = (component: React.ReactElement<SessionProps>, tracker
   // The component is provider-free: the `session` prop is the only session it
   // sees. Inject the factory session here so it is the SAME session whose
   // client backs `eventBus` (trackers subscribe there), and a mark unit on it.
-  return Object.assign(render(React.cloneElement(component, { session, mark }), { wrapper: Wrapper }), { mark });
+  return Object.assign(
+    render(React.cloneElement(component, { session, mark }), {
+      wrapper: Wrapper,
+    }),
+    { mark },
+  );
 };
 
 // Variant for the empty-registry case: the cache resolves to `[]`
 // (post-bootstrap, no schemas registered). Distinct from the still-
 // loading case where the observable yields `undefined`.
-const renderWithEmptyRegistry = (component: React.ReactElement<SessionProps>) => {
+const renderWithEmptyRegistry = (
+  component: React.ReactElement<SessionProps>,
+) => {
   const { XynologWrapper, client, session } = createTestXynologWrapper();
   const mark = createMarkStateUnit(client, resourceId('res-1'));
   markUnits.push(mark);
   vi.spyOn(client.browse, 'tagSchemas').mockReturnValue(
-    CacheObservable.from(of({ status: 'ready' as const, value: [] }))
+    CacheObservable.from(of({ status: 'ready' as const, value: [] })),
   );
   const Wrapper = ({ children }: { children: React.ReactNode }) => (
     <XynologWrapper>{children}</XynologWrapper>
   );
-  return render(React.cloneElement(component, { session, mark }), { wrapper: Wrapper });
+  return render(React.cloneElement(component, { session, mark }), {
+    wrapper: Wrapper,
+  });
 };
 
 // Mock TranslationContext. The component uses `schema.name` /
@@ -102,31 +148,34 @@ const renderWithEmptyRegistry = (component: React.ReactElement<SessionProps>) =>
 // are registered per knowledge base at runtime), so the mock carries no
 // per-schema or per-category translation keys.
 vi.mock('../../../../contexts/TranslationContext', () => ({
-  useTranslations: vi.fn(() => (key: string, params?: Record<string, unknown>) => {
-    const translations: Record<string, string> = {
-      title: 'Tags',
-      noTags: 'No tags yet. Select text to add a tag.',
-      noSchemas: 'No tag schemas registered for this knowledge base.',
-      createTagForSelection: 'Create tag for selection',
-      selectSchema: 'Select schema',
-      selectCategory: 'Select category',
-      selectCategories: 'Select categories',
-      chooseCategory: 'Choose a category',
-      annotateTags: 'Annotate Tags',
-      annotate: 'Annotate',
-      cancel: 'Cancel',
-      fragmentSelected: 'Fragment selected',
-      selectAll: 'Select All',
-      deselectAll: 'Deselect All',
-      categoriesSelected: '{count} categories selected',
-    };
-    let result = translations[key] || key;
-    if (params?.count !== undefined) {
-      result = result.replace('{count}', String(params.count));
-    }
-    return result;
-  }),
-  TranslationProvider: ({ children }: { children: React.ReactNode }) => children,
+  useTranslations: vi.fn(
+    () => (key: string, params?: Record<string, unknown>) => {
+      const translations: Record<string, string> = {
+        title: 'Tags',
+        noTags: 'No tags yet. Select text to add a tag.',
+        noSchemas: 'No tag schemas registered for this knowledge base.',
+        createTagForSelection: 'Create tag for selection',
+        selectSchema: 'Select schema',
+        selectCategory: 'Select category',
+        selectCategories: 'Select categories',
+        chooseCategory: 'Choose a category',
+        annotateTags: 'Annotate Tags',
+        annotate: 'Annotate',
+        cancel: 'Cancel',
+        fragmentSelected: 'Fragment selected',
+        selectAll: 'Select All',
+        deselectAll: 'Deselect All',
+        categoriesSelected: '{count} categories selected',
+      };
+      let result = translations[key] || key;
+      if (params?.count !== undefined) {
+        result = result.replace('{count}', String(params.count));
+      }
+      return result;
+    },
+  ),
+  TranslationProvider: ({ children }: { children: React.ReactNode }) =>
+    children,
 }));
 
 // Mock @xynolog/http-transport utilities
@@ -148,12 +197,25 @@ vi.mock('../TagEntry', () => ({
   ),
 }));
 
-import { getTextPositionSelector, getTargetSelector, resourceId } from '@xynolog/core';
-const mockGetTextPositionSelector = getTextPositionSelector as MockedFunction<typeof getTextPositionSelector>;
-const mockGetTargetSelector = getTargetSelector as MockedFunction<typeof getTargetSelector>;
+import {
+  getTextPositionSelector,
+  getTargetSelector,
+  resourceId,
+} from '@xynolog/core';
+const mockGetTextPositionSelector = getTextPositionSelector as MockedFunction<
+  typeof getTextPositionSelector
+>;
+const mockGetTargetSelector = getTargetSelector as MockedFunction<
+  typeof getTargetSelector
+>;
 
 // Test data fixtures
-const createMockTag = (id: string, start: number, end: number, tagName: string = 'Issue'): Annotation => ({
+const createMockTag = (
+  id: string,
+  start: number,
+  end: number,
+  tagName: string = 'Issue',
+): Annotation => ({
   '@context': 'http://www.w3.org/ns/anno.jsonld',
   id: id as AnnotationId,
   type: 'Annotation',
@@ -222,9 +284,15 @@ describe('TaggingPanel Component', () => {
     Element.prototype.scrollIntoView = vi.fn();
 
     // Mock selector functions to return proper position data
-    mockGetTargetSelector.mockImplementation((target) => (typeof target === 'string' ? undefined : target.selector));
+    mockGetTargetSelector.mockImplementation((target) =>
+      typeof target === 'string' ? undefined : target.selector,
+    );
     mockGetTextPositionSelector.mockImplementation((selector) => {
-      if (selector !== undefined && !Array.isArray(selector) && selector.type === 'TextPositionSelector') {
+      if (
+        selector !== undefined &&
+        !Array.isArray(selector) &&
+        selector.type === 'TextPositionSelector'
+      ) {
         return selector;
       }
       return null;
@@ -241,7 +309,9 @@ describe('TaggingPanel Component', () => {
 
   describe('Rendering', () => {
     it('should render panel header with title and count', () => {
-      renderWithEventBus(<TaggingPanel {...defaultProps} annotations={mockTags.multiple} />);
+      renderWithEventBus(
+        <TaggingPanel {...defaultProps} annotations={mockTags.multiple} />,
+      );
 
       const headings = screen.getAllByText(/Tags/);
       expect(headings.length).toBeGreaterThan(0);
@@ -255,7 +325,9 @@ describe('TaggingPanel Component', () => {
     });
 
     it('should render all tags', () => {
-      renderWithEventBus(<TaggingPanel {...defaultProps} annotations={mockTags.multiple} />);
+      renderWithEventBus(
+        <TaggingPanel {...defaultProps} annotations={mockTags.multiple} />,
+      );
 
       expect(screen.getByTestId('tag-1')).toBeInTheDocument();
       expect(screen.getByTestId('tag-2')).toBeInTheDocument();
@@ -263,7 +335,9 @@ describe('TaggingPanel Component', () => {
     });
 
     it('should have proper panel structure', () => {
-      const { container } = renderWithEventBus(<TaggingPanel {...defaultProps} />);
+      const { container } = renderWithEventBus(
+        <TaggingPanel {...defaultProps} />,
+      );
 
       const panel = container.firstChild as HTMLElement;
       expect(panel).toHaveClass('xynolog-panel');
@@ -272,7 +346,9 @@ describe('TaggingPanel Component', () => {
 
   describe('Tag Sorting', () => {
     it('should sort tags by position in resource', () => {
-      renderWithEventBus(<TaggingPanel {...defaultProps} annotations={mockTags.multiple} />);
+      renderWithEventBus(
+        <TaggingPanel {...defaultProps} annotations={mockTags.multiple} />,
+      );
 
       const tags = screen.getAllByTestId(/tag-/);
 
@@ -286,7 +362,9 @@ describe('TaggingPanel Component', () => {
       mockGetTextPositionSelector.mockReturnValue(null);
 
       expect(() => {
-        renderWithEventBus(<TaggingPanel {...defaultProps} annotations={mockTags.multiple} />);
+        renderWithEventBus(
+          <TaggingPanel {...defaultProps} annotations={mockTags.multiple} />,
+        );
       }).not.toThrow();
     });
   });
@@ -295,7 +373,9 @@ describe('TaggingPanel Component', () => {
     it('should not show tag creation form by default', () => {
       renderWithEventBus(<TaggingPanel {...defaultProps} />);
 
-      expect(screen.queryByText(/Create tag for selection/)).not.toBeInTheDocument();
+      expect(
+        screen.queryByText(/Create tag for selection/),
+      ).not.toBeInTheDocument();
     });
 
     it('should show tag creation form when pendingAnnotation exists', () => {
@@ -305,23 +385,27 @@ describe('TaggingPanel Component', () => {
         <TaggingPanel
           {...defaultProps}
           pendingAnnotation={pendingAnnotation}
-        />
+        />,
       );
 
       expect(screen.getByText(/Create tag for selection/)).toBeInTheDocument();
     });
 
     it('should display quoted selected text in tag creation form', () => {
-      const pendingAnnotation = createPendingAnnotation('Selected text for tagging');
+      const pendingAnnotation = createPendingAnnotation(
+        'Selected text for tagging',
+      );
 
       renderWithEventBus(
         <TaggingPanel
           {...defaultProps}
           pendingAnnotation={pendingAnnotation}
-        />
+        />,
       );
 
-      expect(screen.getByText(/"Selected text for tagging"/)).toBeInTheDocument();
+      expect(
+        screen.getByText(/"Selected text for tagging"/),
+      ).toBeInTheDocument();
     });
 
     it('should truncate long selected text at 100 characters', () => {
@@ -332,10 +416,12 @@ describe('TaggingPanel Component', () => {
         <TaggingPanel
           {...defaultProps}
           pendingAnnotation={pendingAnnotation}
-        />
+        />,
       );
 
-      expect(screen.getByText(new RegExp(`"${'A'.repeat(100)}`))).toBeInTheDocument();
+      expect(
+        screen.getByText(new RegExp(`"${'A'.repeat(100)}`)),
+      ).toBeInTheDocument();
       expect(screen.getByText(/\.\.\./)).toBeInTheDocument();
     });
 
@@ -346,7 +432,7 @@ describe('TaggingPanel Component', () => {
         <TaggingPanel
           {...defaultProps}
           pendingAnnotation={pendingAnnotation}
-        />
+        />,
       );
 
       const selects = screen.getAllByText(/Select schema/);
@@ -360,7 +446,7 @@ describe('TaggingPanel Component', () => {
         <TaggingPanel
           {...defaultProps}
           pendingAnnotation={pendingAnnotation}
-        />
+        />,
       );
 
       // The category selector only renders once the schema list has
@@ -378,7 +464,7 @@ describe('TaggingPanel Component', () => {
           {...defaultProps}
           pendingAnnotation={pendingAnnotation}
         />,
-        tracker
+        tracker,
       );
 
       // Wait for the schema list to load — `browse.tagSchemas()` is
@@ -386,8 +472,10 @@ describe('TaggingPanel Component', () => {
       // response lands.
       await screen.findByText(/Select category/);
       const categorySelects = screen.getAllByRole('combobox');
-      const categorySelect = categorySelects.find(select =>
-        select.querySelector('option[value=""]')?.textContent === 'Choose a category'
+      const categorySelect = categorySelects.find(
+        (select) =>
+          select.querySelector('option[value=""]')?.textContent ===
+          'Choose a category',
       );
 
       expect(categorySelect).toBeInTheDocument();
@@ -395,13 +483,16 @@ describe('TaggingPanel Component', () => {
       await userEvent.selectOptions(categorySelect!, 'Issue');
 
       await waitFor(() => {
-        expect(tracker.events.some(e =>
-          e.event === 'mark:submit' &&
-          e.payload.motivation === 'tagging' &&
-          Array.isArray(e.payload.body) &&
-          e.payload.body[0]?.type === 'TextualBody' &&
-          e.payload.body[0].value === 'Issue'
-        )).toBe(true);
+        expect(
+          tracker.events.some(
+            (e) =>
+              e.event === 'mark:submit' &&
+              e.payload.motivation === 'tagging' &&
+              Array.isArray(e.payload.body) &&
+              e.payload.body[0]?.type === 'TextualBody' &&
+              e.payload.body[0].value === 'Issue',
+          ),
+        ).toBe(true);
       });
     });
 
@@ -416,18 +507,22 @@ describe('TaggingPanel Component', () => {
           {...defaultProps}
           pendingAnnotation={pendingAnnotation}
         />,
-        tracker
+        tracker,
       );
 
       await screen.findByText(/Select category/);
       const categorySelects = screen.getAllByRole('combobox');
-      const categorySelect = categorySelects.find(select =>
-        select.querySelector('option[value=""]')?.textContent === 'Choose a category'
+      const categorySelect = categorySelects.find(
+        (select) =>
+          select.querySelector('option[value=""]')?.textContent ===
+          'Choose a category',
       );
       await userEvent.selectOptions(categorySelect!, 'Rule');
 
       await waitFor(() => {
-        const createEvent = tracker.events.find(e => e.event === 'mark:submit');
+        const createEvent = tracker.events.find(
+          (e) => e.event === 'mark:submit',
+        );
         expect(createEvent).toBeDefined();
         // Exactly two bodies: the category, then the schema id.
         expect(createEvent!.payload.body).toMatchObject([
@@ -444,7 +539,7 @@ describe('TaggingPanel Component', () => {
         <TaggingPanel
           {...defaultProps}
           pendingAnnotation={pendingAnnotation}
-        />
+        />,
       );
 
       const tagForm = container.querySelector('.xynolog-annotation-prompt');
@@ -456,10 +551,7 @@ describe('TaggingPanel Component', () => {
   describe('Tag Interactions', () => {
     it('should render tag entries', () => {
       renderWithEventBus(
-        <TaggingPanel
-          {...defaultProps}
-          annotations={mockTags.single}
-        />
+        <TaggingPanel {...defaultProps} annotations={mockTags.single} />,
       );
 
       const tag = screen.getByTestId('tag-1');
@@ -471,10 +563,7 @@ describe('TaggingPanel Component', () => {
     it('should render without errors', () => {
       expect(() => {
         renderWithEventBus(
-          <TaggingPanel
-            {...defaultProps}
-            annotations={mockTags.single}
-          />
+          <TaggingPanel {...defaultProps} annotations={mockTags.single} />,
         );
       }).not.toThrow();
     });
@@ -483,10 +572,7 @@ describe('TaggingPanel Component', () => {
   describe('Detection Section', () => {
     it('should render detection section when annotateMode is true', () => {
       renderWithEventBus(
-        <TaggingPanel
-          {...defaultProps}
-          annotateMode={true}
-        />
+        <TaggingPanel {...defaultProps} annotateMode={true} />,
       );
 
       expect(screen.getByText(/Annotate Tags/)).toBeInTheDocument();
@@ -494,10 +580,7 @@ describe('TaggingPanel Component', () => {
 
     it('should not render detection section when annotateMode is false', () => {
       renderWithEventBus(
-        <TaggingPanel
-          {...defaultProps}
-          annotateMode={false}
-        />
+        <TaggingPanel {...defaultProps} annotateMode={false} />,
       );
 
       expect(screen.queryByText(/Annotate Tags/)).not.toBeInTheDocument();
@@ -505,10 +588,7 @@ describe('TaggingPanel Component', () => {
 
     it('should show schema selector in detection section', () => {
       renderWithEventBus(
-        <TaggingPanel
-          {...defaultProps}
-          annotateMode={true}
-        />
+        <TaggingPanel {...defaultProps} annotateMode={true} />,
       );
 
       const selects = screen.getAllByText(/Select schema/);
@@ -517,10 +597,7 @@ describe('TaggingPanel Component', () => {
 
     it('should show Select All and Deselect All buttons', async () => {
       renderWithEventBus(
-        <TaggingPanel
-          {...defaultProps}
-          annotateMode={true}
-        />
+        <TaggingPanel {...defaultProps} annotateMode={true} />,
       );
 
       expect(await screen.findByText('Select All')).toBeInTheDocument();
@@ -529,10 +606,7 @@ describe('TaggingPanel Component', () => {
 
     it('should show category checkboxes', async () => {
       renderWithEventBus(
-        <TaggingPanel
-          {...defaultProps}
-          annotateMode={true}
-        />
+        <TaggingPanel {...defaultProps} annotateMode={true} />,
       );
 
       // Categories appear once `browse.tagSchemas()` resolves and the
@@ -545,39 +619,36 @@ describe('TaggingPanel Component', () => {
 
     it('should disable detect button when no categories selected', () => {
       renderWithEventBus(
-        <TaggingPanel
-          {...defaultProps}
-          annotateMode={true}
-        />
+        <TaggingPanel {...defaultProps} annotateMode={true} />,
       );
 
-      const annotateButton = screen.getByRole('button', { name: /✨\s*Annotate/i });
+      const annotateButton = screen.getByRole('button', {
+        name: /✨\s*Annotate/i,
+      });
       expect(annotateButton).toBeDisabled();
     });
 
     it('should enable detect button when categories are selected', async () => {
       renderWithEventBus(
-        <TaggingPanel
-          {...defaultProps}
-          annotateMode={true}
-        />
+        <TaggingPanel {...defaultProps} annotateMode={true} />,
       );
 
       const issueCheckbox = await screen.findByLabelText(/Issue/);
       await userEvent.click(issueCheckbox);
 
-      const annotateButton = screen.getByRole('button', { name: /✨\s*Annotate/i });
+      const annotateButton = screen.getByRole('button', {
+        name: /✨\s*Annotate/i,
+      });
       expect(annotateButton).not.toBeDisabled();
     });
 
     it('asks the mark unit to delegate a tagging job of the chosen schema and categories', async () => {
       const { mark } = renderWithEventBus(
-        <TaggingPanel
-          {...defaultProps}
-          annotateMode={true}
-        />,
+        <TaggingPanel {...defaultProps} annotateMode={true} />,
       );
-      const requestDelegate = vi.spyOn(mark, 'requestDelegate').mockImplementation(() => {});
+      const requestDelegate = vi
+        .spyOn(mark, 'requestDelegate')
+        .mockImplementation(() => {});
 
       const issueCheckbox = await screen.findByLabelText(/Issue/);
       const ruleCheckbox = screen.getByLabelText(/Rule/);
@@ -585,14 +656,18 @@ describe('TaggingPanel Component', () => {
       await userEvent.click(issueCheckbox);
       await userEvent.click(ruleCheckbox);
 
-      const annotateButton = screen.getByRole('button', { name: /✨\s*Annotate/i });
+      const annotateButton = screen.getByRole('button', {
+        name: /✨\s*Annotate/i,
+      });
       await userEvent.click(annotateButton);
 
-      expect(requestDelegate).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({
-        motivation: 'tagging',
-        schemaId: 'legal-irac',
-        categories: ['Issue', 'Rule'],
-      }));
+      expect(requestDelegate).toHaveBeenCalledExactlyOnceWith(
+        expect.objectContaining({
+          motivation: 'tagging',
+          schemaId: 'legal-irac',
+          categories: ['Issue', 'Rule'],
+        }),
+      );
     });
   });
 
@@ -604,7 +679,7 @@ describe('TaggingPanel Component', () => {
         <TaggingPanel
           {...defaultProps}
           pendingAnnotation={pendingAnnotation}
-        />
+        />,
       );
 
       expect(screen.getByText('Cancel')).toBeInTheDocument();
@@ -621,10 +696,7 @@ describe('TaggingPanel Component', () => {
 
     it('should have proper checkbox labels', async () => {
       renderWithEventBus(
-        <TaggingPanel
-          {...defaultProps}
-          annotateMode={true}
-        />
+        <TaggingPanel {...defaultProps} annotateMode={true} />,
       );
 
       expect(await screen.findByLabelText(/Issue/)).toBeInTheDocument();
@@ -641,12 +713,14 @@ describe('TaggingPanel Component', () => {
 
     it('shows the noSchemas message in the delegate section instead of the picker', async () => {
       renderWithEmptyRegistry(
-        <TaggingPanel {...defaultProps} annotateMode={true} />
+        <TaggingPanel {...defaultProps} annotateMode={true} />,
       );
 
       // The empty-state message renders…
       expect(
-        await screen.findByText(/No tag schemas registered for this knowledge base/i),
+        await screen.findByText(
+          /No tag schemas registered for this knowledge base/i,
+        ),
       ).toBeInTheDocument();
 
       // …and the picker UI does NOT (the form-field label `Select schema`
@@ -662,7 +736,7 @@ describe('TaggingPanel Component', () => {
           {...defaultProps}
           pendingAnnotation={pendingAnnotation}
           annotateMode={false}
-        />
+        />,
       );
 
       // The pending form opens. With annotateMode={false} the delegate
@@ -672,7 +746,9 @@ describe('TaggingPanel Component', () => {
       // behavior; a separate test covers the delegate-section path.)
       expect(screen.getByText(/Create tag for selection/)).toBeInTheDocument();
       expect(
-        await screen.findByText(/No tag schemas registered for this knowledge base/i),
+        await screen.findByText(
+          /No tag schemas registered for this knowledge base/i,
+        ),
       ).toBeInTheDocument();
       // No "Select category" label — the second dropdown renders only
       // when `selectedSchema` exists, which requires a schema to be
@@ -685,7 +761,7 @@ describe('TaggingPanel Component', () => {
       // schema-registration is a write-side concern; reading existing
       // tags doesn't depend on the registry being populated.
       renderWithEmptyRegistry(
-        <TaggingPanel {...defaultProps} annotations={mockTags.multiple} />
+        <TaggingPanel {...defaultProps} annotations={mockTags.multiple} />,
       );
 
       expect(screen.getByTestId('tag-1')).toBeInTheDocument();

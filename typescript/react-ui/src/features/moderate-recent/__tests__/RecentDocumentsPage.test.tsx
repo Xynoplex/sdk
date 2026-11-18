@@ -10,7 +10,9 @@ import { render, screen } from '@testing-library/react';
 import { RecentDocumentsPage } from '../components/RecentDocumentsPage';
 import type { RecentDocumentsPageProps } from '../components/RecentDocumentsPage';
 
-const createMockProps = (overrides?: Partial<RecentDocumentsPageProps>): RecentDocumentsPageProps => ({
+const createMockProps = (
+  overrides?: Partial<RecentDocumentsPageProps>,
+): RecentDocumentsPageProps => ({
   isLoading: false,
   theme: 'light',
   activePanel: null,
@@ -35,7 +37,9 @@ describe('RecentDocumentsPage', () => {
       render(<RecentDocumentsPage {...props} />);
 
       expect(screen.getByText('Recent Documents')).toBeInTheDocument();
-      expect(screen.getByText('View recently moderated documents')).toBeInTheDocument();
+      expect(
+        screen.getByText('View recently moderated documents'),
+      ).toBeInTheDocument();
     });
 
     it('renders section title and description', () => {
@@ -43,7 +47,9 @@ describe('RecentDocumentsPage', () => {
       render(<RecentDocumentsPage {...props} />);
 
       expect(screen.getByText('Recent Activity')).toBeInTheDocument();
-      expect(screen.getByText('Documents that have been recently reviewed')).toBeInTheDocument();
+      expect(
+        screen.getByText('Documents that have been recently reviewed'),
+      ).toBeInTheDocument();
     });
 
     it('renders clock icon', () => {
@@ -91,7 +97,9 @@ describe('RecentDocumentsPage', () => {
       const props = createMockProps();
       const { container } = render(<RecentDocumentsPage {...props} />);
 
-      const noDocsText = container.querySelector('.xynolog-recent-docs__empty-message');
+      const noDocsText = container.querySelector(
+        '.xynolog-recent-docs__empty-message',
+      );
       expect(noDocsText).toBeInTheDocument();
       expect(noDocsText).toHaveTextContent('No documents found');
     });
@@ -100,7 +108,9 @@ describe('RecentDocumentsPage', () => {
       const props = createMockProps();
       const { container } = render(<RecentDocumentsPage {...props} />);
 
-      const hintText = container.querySelector('.xynolog-recent-docs__empty-hint');
+      const hintText = container.querySelector(
+        '.xynolog-recent-docs__empty-hint',
+      );
       expect(hintText).toBeInTheDocument();
       expect(hintText).toHaveTextContent('Activity will appear here');
     });
@@ -145,7 +155,9 @@ describe('RecentDocumentsPage', () => {
       const props = createMockProps();
       const { container } = render(<RecentDocumentsPage {...props} />);
 
-      const iconContainer = container.querySelector('.xynolog-recent-docs__icon-box');
+      const iconContainer = container.querySelector(
+        '.xynolog-recent-docs__icon-box',
+      );
       expect(iconContainer).toBeInTheDocument();
     });
 
@@ -205,7 +217,7 @@ describe('RecentDocumentsPage', () => {
 
     it('does not thread showLineNumbers to toolbar panels — the setting is context-backed', () => {
       const ToolbarPanels = vi.fn(() => <div data-testid="toolbar-panels" />);
-      const props = createMockProps({ToolbarPanels });
+      const props = createMockProps({ ToolbarPanels });
       render(<RecentDocumentsPage {...props} />);
 
       expect(ToolbarPanels).toHaveBeenCalledWith(
@@ -213,7 +225,6 @@ describe('RecentDocumentsPage', () => {
         undefined,
       );
     });
-
 
     it('passes context to toolbar', () => {
       const Toolbar = vi.fn(() => <div data-testid="toolbar" />);
@@ -256,7 +267,9 @@ describe('RecentDocumentsPage', () => {
       const props = createMockProps();
       const { container } = render(<RecentDocumentsPage {...props} />);
 
-      const emptyState = container.querySelector('.xynolog-recent-docs__empty-state');
+      const emptyState = container.querySelector(
+        '.xynolog-recent-docs__empty-state',
+      );
       expect(emptyState).toBeInTheDocument();
     });
   });

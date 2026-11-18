@@ -11,24 +11,44 @@
  */
 import { resourceId, EventBus } from '@xynolog/core';
 import { describe, it, expect, vi } from 'vitest';
-import { renderInEnglish, englishTranslationManager } from '../../../test-utils';
+import {
+  renderInEnglish,
+  englishTranslationManager,
+} from '../../../test-utils';
 import '@testing-library/jest-dom';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import type { XynologSession } from '@xynolog/sdk';
-import type { ResourceDescriptor as XynologResource, ResourceId } from '@xynolog/core';
+import type {
+  ResourceDescriptor as XynologResource,
+  ResourceId,
+} from '@xynolog/core';
 import { BrowseView } from '../BrowseView';
 import { ResourceViewer } from '../ResourceViewer';
 
-vi.mock('../../annotation/AnnotateToolbar', () => ({ AnnotateToolbar: () => null }));
-vi.mock('react-markdown', () => ({ default: ({ children }: { children: string }) => <div>{children}</div> }));
+vi.mock('../../annotation/AnnotateToolbar', () => ({
+  AnnotateToolbar: () => null,
+}));
+vi.mock('react-markdown', () => ({
+  default: ({ children }: { children: string }) => <div>{children}</div>,
+}));
 vi.mock('remark-gfm', () => ({ default: () => ({}) }));
 
-const emptyAnnotations = { highlights: [], references: [], assessments: [], comments: [], tags: [] };
+const emptyAnnotations = {
+  highlights: [],
+  references: [],
+  assessments: [],
+  comments: [],
+  tags: [],
+};
 
 function fakeSession(): XynologSession {
   return {
-    client: { bus: new EventBus(), browse: { click: vi.fn() }, beckon: { hover: vi.fn() } },
+    client: {
+      bus: new EventBus(),
+      browse: { click: vi.fn() },
+      beckon: { hover: vi.fn() },
+    },
   } as unknown as XynologSession;
 }
 
@@ -46,35 +66,68 @@ const resource: XynologResource & { content: string } = {
 describe('inline embedding', () => {
   it('BrowseView: `inline` adds the modifier class; default does not', () => {
     const props = {
-      content: 'x', mimeType: 'text/plain', resourceUri: resourceId('res-1'),
-      annotations: emptyAnnotations, annotateMode: false, session: fakeSession(),
+      content: 'x',
+      mimeType: 'text/plain',
+      resourceUri: resourceId('res-1'),
+      annotations: emptyAnnotations,
+      annotateMode: false,
+      session: fakeSession(),
     };
-    const { container: pane } = renderInEnglish(<BrowseView translationManager={englishTranslationManager} {...props} />);
-    expect(pane.querySelector('.xynolog-browse-view')).not.toHaveClass('xynolog-browse-view--inline');
+    const { container: pane } = renderInEnglish(
+      <BrowseView translationManager={englishTranslationManager} {...props} />,
+    );
+    expect(pane.querySelector('.xynolog-browse-view')).not.toHaveClass(
+      'xynolog-browse-view--inline',
+    );
 
-    const { container } = renderInEnglish(<BrowseView translationManager={englishTranslationManager} {...props} inline />);
-    expect(container.querySelector('.xynolog-browse-view')).toHaveClass('xynolog-browse-view--inline');
+    const { container } = renderInEnglish(
+      <BrowseView
+        translationManager={englishTranslationManager}
+        {...props}
+        inline
+      />,
+    );
+    expect(container.querySelector('.xynolog-browse-view')).toHaveClass(
+      'xynolog-browse-view--inline',
+    );
   });
 
   it('ResourceViewer: `inline` marks its root and threads to BrowseView', () => {
     const { container } = renderInEnglish(
       <ResourceViewer
         translationManager={englishTranslationManager}
-        resource={resource} annotations={emptyAnnotations}
-        session={fakeSession()} inline
+        resource={resource}
+        annotations={emptyAnnotations}
+        session={fakeSession()}
+        inline
       />,
     );
-    expect(container.querySelector('.xynolog-resource-viewer')).toHaveClass('xynolog-resource-viewer--inline');
-    expect(container.querySelector('.xynolog-browse-view')).toHaveClass('xynolog-browse-view--inline');
+    expect(container.querySelector('.xynolog-resource-viewer')).toHaveClass(
+      'xynolog-resource-viewer--inline',
+    );
+    expect(container.querySelector('.xynolog-browse-view')).toHaveClass(
+      'xynolog-browse-view--inline',
+    );
   });
 
   it('stylesheet carries the inline overrides (static gate — layout itself is the live check)', () => {
     // vitest runs with cwd = the package root (same in CI's per-workspace run).
-    const css = readFileSync(resolve(process.cwd(), 'src/styles/features/resource-viewer.css'), 'utf8');
+    const css = readFileSync(
+      resolve(process.cwd(), 'src/styles/features/resource-viewer.css'),
+      'utf8',
+    );
     // Auto-height roots, and the content area stops being a scroll container / drops the pane gutter.
-    expect(css).toMatch(/\.xynolog-resource-viewer--inline\s*\{[^}]*height:\s*auto/);
-    expect(css).toMatch(/\.xynolog-browse-view--inline\s*\{[^}]*height:\s*auto/);
-    expect(css).toMatch(/\.xynolog-browse-view--inline\s+\.xynolog-browse-view__content\s*\{[^}]*overflow:\s*visible/);
-    expect(css).toMatch(/\.xynolog-browse-view--inline\s+\.xynolog-browse-view__content\s*\{[^}]*padding:\s*0/);
+    expect(css).toMatch(
+      /\.xynolog-resource-viewer--inline\s*\{[^}]*height:\s*auto/,
+    );
+    expect(css).toMatch(
+      /\.xynolog-browse-view--inline\s*\{[^}]*height:\s*auto/,
+    );
+    expect(css).toMatch(
+      /\.xynolog-browse-view--inline\s+\.xynolog-browse-view__content\s*\{[^}]*overflow:\s*visible/,
+    );
+    expect(css).toMatch(
+      /\.xynolog-browse-view--inline\s+\.xynolog-browse-view__content\s*\{[^}]*padding:\s*0/,
+    );
   });
 });

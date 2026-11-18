@@ -1,7 +1,19 @@
 import type { Observable } from 'rxjs';
-import type { EventBus, EventMap, FrameRefusal, JobId, components } from '@xynolog/core';
+import type {
+  EventBus,
+  EventMap,
+  FrameRefusal,
+  JobId,
+  components,
+} from '@xynolog/core';
 import type { ITransport } from '@xynolog/core';
-import { Bus, BUS_REQUEST_TIMEOUT_MS, BusRequestError, JOB_POLL_MS, JOB_POLL_TIMEOUT_MS } from '@xynolog/core';
+import {
+  Bus,
+  BUS_REQUEST_TIMEOUT_MS,
+  BusRequestError,
+  JOB_POLL_MS,
+  JOB_POLL_TIMEOUT_MS,
+} from '@xynolog/core';
 import { ClaimsObservable, type ClaimOptions } from '../claims';
 import type { JobNamespace as IJobNamespace } from './types';
 
@@ -44,33 +56,49 @@ export class JobNamespace implements IJobNamespace {
   }
 
   async status(jobId: JobId): Promise<JobStatusResponse> {
-    return this.wire.request(
-      'job:status-requested',
-      { jobId },
-    );
+    return this.wire.request('job:status-requested', { jobId });
   }
 
   async pollUntilComplete(
     jobId: JobId,
-    options?: { interval?: number; timeout?: number; onProgress?: (status: JobStatusResponse) => void },
+    options?: {
+      interval?: number;
+      timeout?: number;
+      onProgress?: (status: JobStatusResponse) => void;
+    },
   ): Promise<JobStatusResponse> {
     const interval = options?.interval ?? JOB_POLL_MS;
     const timeout = options?.timeout ?? JOB_POLL_TIMEOUT_MS;
     const due = Date.now() + timeout;
-    const timedOut = () => new BusRequestError(`Job polling timed out after ${timeout}ms`, 'bus.timeout', { jobId });
+    const timedOut = () =>
+      new BusRequestError(
+        `Job polling timed out after ${timeout}ms`,
+        'bus.timeout',
+        { jobId },
+      );
 
     while (true) {
       const left = due - Date.now();
       if (left <= 0) throw timedOut();
       // The limit counts the asks too: one still unanswered at it fails there.
-      const status = await this.wire.request('job:status-requested', { jobId }, Math.min(left, BUS_REQUEST_TIMEOUT_MS));
+      const status = await this.wire.request(
+        'job:status-requested',
+        { jobId },
+        Math.min(left, BUS_REQUEST_TIMEOUT_MS),
+      );
       if (options?.onProgress) options.onProgress(status);
-      if (status.status === 'complete' || status.status === 'failed' || status.status === 'cancelled') {
+      if (
+        status.status === 'complete' ||
+        status.status === 'failed' ||
+        status.status === 'cancelled'
+      ) {
         return status;
       }
       const waitLeft = due - Date.now();
       if (waitLeft <= 0) throw timedOut();
-      await new Promise((resolve) => setTimeout(resolve, Math.min(interval, waitLeft)));
+      await new Promise((resolve) =>
+        setTimeout(resolve, Math.min(interval, waitLeft)),
+      );
     }
   }
 
@@ -83,10 +111,9 @@ export class JobNamespace implements IJobNamespace {
    * failure.
    */
   async cancel(jobId: JobId): Promise<boolean> {
-    const { cancelled } = await this.wire.request(
-      'job:cancel-requested',
-      { jobId },
-    );
+    const { cancelled } = await this.wire.request('job:cancel-requested', {
+      jobId,
+    });
     return cancelled;
   }
 

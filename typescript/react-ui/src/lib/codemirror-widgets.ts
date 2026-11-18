@@ -24,7 +24,7 @@ export class ReferenceResolutionWidget extends WidgetType {
   constructor(
     readonly annotation: Annotation,
     readonly targetDocumentName?: string,
-    readonly isGenerating?: boolean
+    readonly isGenerating?: boolean,
   ) {
     super();
   }
@@ -32,10 +32,12 @@ export class ReferenceResolutionWidget extends WidgetType {
   override eq(other: ReferenceResolutionWidget) {
     const thisSource = getBodySource(this.annotation.body);
     const otherSource = getBodySource(other.annotation.body);
-    return other.annotation.id === this.annotation.id &&
-           otherSource === thisSource &&
-           other.targetDocumentName === this.targetDocumentName &&
-           other.isGenerating === this.isGenerating;
+    return (
+      other.annotation.id === this.annotation.id &&
+      otherSource === thisSource &&
+      other.targetDocumentName === this.targetDocumentName &&
+      other.isGenerating === this.isGenerating
+    );
   }
 
   override toDOM() {
@@ -55,7 +57,8 @@ export class ReferenceResolutionWidget extends WidgetType {
     container.dataset.widgetMotivation = this.annotation.motivation;
     container.dataset.widgetResolved = isResolved ? 'true' : 'false';
     if (bodySource) container.dataset.widgetBodySource = bodySource;
-    if (this.targetDocumentName) container.dataset.widgetTargetName = this.targetDocumentName;
+    if (this.targetDocumentName)
+      container.dataset.widgetTargetName = this.targetDocumentName;
     if (this.isGenerating) container.dataset.widgetGenerating = 'true';
 
     // Use button element for keyboard accessibility
@@ -65,9 +68,12 @@ export class ReferenceResolutionWidget extends WidgetType {
 
     if (isResolved) {
       indicator.innerHTML = '<span aria-hidden="true">🔗</span>';
-      indicator.setAttribute('aria-label', this.targetDocumentName
-        ? `Reference link to ${this.targetDocumentName}`
-        : 'Reference link to document');
+      indicator.setAttribute(
+        'aria-label',
+        this.targetDocumentName
+          ? `Reference link to ${this.targetDocumentName}`
+          : 'Reference link to document',
+      );
       indicator.title = this.targetDocumentName
         ? `Links to: ${this.targetDocumentName}`
         : 'Links to document';
@@ -109,12 +115,16 @@ export class ReferenceResolutionWidget extends WidgetType {
       // Inline styles are out of reach of the stylesheet's [data-theme="dark"]
       // rules, so read the mark ThemeProvider puts on <html>.
       if (document.documentElement.dataset.theme === 'dark') {
-        const innerCircle = indicator.querySelector('span > span:last-child') as HTMLElement;
+        const innerCircle = indicator.querySelector(
+          'span > span:last-child',
+        ) as HTMLElement;
         if (innerCircle) {
           innerCircle.style.background = 'rgb(31, 41, 55)'; // gray-800
           innerCircle.style.borderColor = 'rgb(234, 179, 8)'; // yellow-500
         }
-        const pingCircle = indicator.querySelector('span > span:first-child') as HTMLElement;
+        const pingCircle = indicator.querySelector(
+          'span > span:first-child',
+        ) as HTMLElement;
         if (pingCircle) {
           pingCircle.style.background = 'rgb(234, 179, 8)'; // yellow-500
         }
@@ -149,7 +159,10 @@ export class ReferenceResolutionWidget extends WidgetType {
  * Show a tooltip preview on a widget container.
  * Called from delegated mouseenter handler in CodeMirrorRenderer.
  */
-export function showWidgetPreview(container: HTMLElement, documentName: string): void {
+export function showWidgetPreview(
+  container: HTMLElement,
+  documentName: string,
+): void {
   if (!documentName || documentName.trim() === '') return;
 
   const tooltip = document.createElement('div');

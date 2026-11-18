@@ -1,5 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { normalizeText, normalizeTextWithMap, lowerCaseWithMap, findBestTextMatch, buildContentCache, type ContentCache } from '../fuzzy-anchor';
+import {
+  normalizeText,
+  normalizeTextWithMap,
+  lowerCaseWithMap,
+  findBestTextMatch,
+  buildContentCache,
+  type ContentCache,
+} from '../fuzzy-anchor';
 import { textOffsets } from '../text-offsets';
 
 /** What is made once for a content, as a caller with many searches of it makes it. */
@@ -57,7 +64,9 @@ describe('Fuzzy Anchoring (W3C TextQuoteSelector)', () => {
 
     for (const input of cases) {
       it(`normalized output equals normalizeText for ${JSON.stringify(input)}`, () => {
-        expect(normalizeTextWithMap(input).normalized).toBe(normalizeText(input));
+        expect(normalizeTextWithMap(input).normalized).toBe(
+          normalizeText(input),
+        );
       });
     }
 
@@ -154,7 +163,9 @@ describe('Fuzzy Anchoring (W3C TextQuoteSelector)', () => {
       const [place] = result!.places;
       expect(place!.start).toBe(14);
       // The recovered span, normalized, equals the normalized search.
-      expect(normalizeText(content.substring(place!.start, place!.end))).toBe(normalizeText(search));
+      expect(normalizeText(content.substring(place!.start, place!.end))).toBe(
+        normalizeText(search),
+      );
     });
 
     it('recovers correct offset when content has smart quotes and search has straight', () => {
@@ -168,8 +179,12 @@ describe('Fuzzy Anchoring (W3C TextQuoteSelector)', () => {
 
     it('ends a match just after its last character: white space the content has after it is no part of it', () => {
       const content = 'He said “hello world”  \n';
-      expect(findBestTextMatch(content, '"hello world"', cacheOf(content)))
-        .toEqual({ places: [{ start: 8, end: 21 }], matchQuality: 'normalized' });
+      expect(
+        findBestTextMatch(content, '"hello world"', cacheOf(content)),
+      ).toEqual({
+        places: [{ start: 8, end: 21 }],
+        matchQuality: 'normalized',
+      });
     });
 
     it('finds no place for text that is empty or only white space: it is no words to find', () => {
@@ -184,7 +199,11 @@ describe('Fuzzy Anchoring (W3C TextQuoteSelector)', () => {
   describe('findBestTextMatch', () => {
     it('should find normalized match when exact fails', () => {
       const content = 'The quick  brown fox'; // Two spaces
-      const result = findBestTextMatch(content, 'quick brown', cacheOf(content)); // One space
+      const result = findBestTextMatch(
+        content,
+        'quick brown',
+        cacheOf(content),
+      ); // One space
 
       expect(result).not.toBeNull();
       expect(result!.matchQuality).toBe('normalized');
@@ -192,39 +211,60 @@ describe('Fuzzy Anchoring (W3C TextQuoteSelector)', () => {
 
     it('should find case-insensitive match when normalized fails', () => {
       const content = 'The Quick Brown Fox';
-      const result = findBestTextMatch(content, 'quick brown', cacheOf(content));
+      const result = findBestTextMatch(
+        content,
+        'quick brown',
+        cacheOf(content),
+      );
 
-      expect(result).toEqual({ places: [{ start: 4, end: 15 }], matchQuality: 'case-insensitive' });
+      expect(result).toEqual({
+        places: [{ start: 4, end: 15 }],
+        matchQuality: 'case-insensitive',
+      });
     });
 
-    it('answers every place the search that finds any finds it, in the content\'s order', () => {
+    it("answers every place the search that finds any finds it, in the content's order", () => {
       const content = 'The Cat and the  cat and THE CAT';
-      expect(findBestTextMatch(content, 'the cat', cacheOf(content)))
-        .toEqual({ places: [{ start: 12, end: 20 }], matchQuality: 'normalized' });
-      expect(findBestTextMatch(content, 'tHE cAT', cacheOf(content)))
-        .toEqual({ places: [{ start: 0, end: 7 }, { start: 25, end: 32 }], matchQuality: 'case-insensitive' });
+      expect(findBestTextMatch(content, 'the cat', cacheOf(content))).toEqual({
+        places: [{ start: 12, end: 20 }],
+        matchQuality: 'normalized',
+      });
+      expect(findBestTextMatch(content, 'tHE cAT', cacheOf(content))).toEqual({
+        places: [
+          { start: 0, end: 7 },
+          { start: 25, end: 32 },
+        ],
+        matchQuality: 'case-insensitive',
+      });
     });
 
-    it('should find a fuzzy match within a twentieth of the search text\'s length', () => {
+    it("should find a fuzzy match within a twentieth of the search text's length", () => {
       const content = 'The quick brown fox jumps over the lazy dog';
       const searchText = 'quick brvwn fox jumps'; // Typo: 'o' → 'v', in 21 code points
       const result = findBestTextMatch(content, searchText, cacheOf(content));
 
-      expect(result).toEqual({ places: [{ start: 4, end: 25 }], matchQuality: 'fuzzy' });
+      expect(result).toEqual({
+        places: [{ start: 4, end: 25 }],
+        matchQuality: 'fuzzy',
+      });
     });
 
     it('should find a fuzzy match longer or shorter than the search text', () => {
       const content = 'The quick brown fox jumps over the lazy dog';
       // A letter dropped, and a letter added: the stretch found is the content's own words.
-      expect(findBestTextMatch(content, 'quick brwn fox jumps', cacheOf(content)))
-        .toEqual({ places: [{ start: 4, end: 25 }], matchQuality: 'fuzzy' });
-      expect(findBestTextMatch(content, 'quick broown fox jumps', cacheOf(content)))
-        .toEqual({ places: [{ start: 4, end: 25 }], matchQuality: 'fuzzy' });
+      expect(
+        findBestTextMatch(content, 'quick brwn fox jumps', cacheOf(content)),
+      ).toEqual({ places: [{ start: 4, end: 25 }], matchQuality: 'fuzzy' });
+      expect(
+        findBestTextMatch(content, 'quick broown fox jumps', cacheOf(content)),
+      ).toEqual({ places: [{ start: 4, end: 25 }], matchQuality: 'fuzzy' });
     });
 
     it('allows a search text of fewer than twenty code points no edit', () => {
       const content = 'The quick brown fox jumps over the lazy dog';
-      expect(findBestTextMatch(content, 'brvwn fox', cacheOf(content))).toBeNull();
+      expect(
+        findBestTextMatch(content, 'brvwn fox', cacheOf(content)),
+      ).toBeNull();
     });
 
     it('should return null when no acceptable match found', () => {
@@ -241,38 +281,55 @@ describe('Fuzzy Anchoring (W3C TextQuoteSelector)', () => {
   describe('findBestTextMatch — offsets count code points', () => {
     it('a normalized match after such a character is answered as offsets, through the map', () => {
       const content = '😀 The quick  brown fox';
-      expect(findBestTextMatch(content, 'quick brown', cacheOf(content)))
-        .toEqual({ places: [{ start: 6, end: 18 }], matchQuality: 'normalized' });
+      expect(
+        findBestTextMatch(content, 'quick brown', cacheOf(content)),
+      ).toEqual({
+        places: [{ start: 6, end: 18 }],
+        matchQuality: 'normalized',
+      });
     });
 
     it('so is a case-insensitive match', () => {
       const content = '😀 The Quick Brown Fox';
-      expect(findBestTextMatch(content, 'quick brown', cacheOf(content)))
-        .toEqual({ places: [{ start: 6, end: 17 }], matchQuality: 'case-insensitive' });
+      expect(
+        findBestTextMatch(content, 'quick brown', cacheOf(content)),
+      ).toEqual({
+        places: [{ start: 6, end: 17 }],
+        matchQuality: 'case-insensitive',
+      });
     });
 
     it('so is a fuzzy match, and it is as long as its code points', () => {
       // 22 code points, 23 units of a string: one wrong letter is within a twentieth of 22.
       const content = '😀 The 🦊 quick brown fox jumps';
-      expect(findBestTextMatch(content, '🦊 quick brvwn fox jump', cacheOf(content)))
-        .toEqual({ places: [{ start: 6, end: 28 }], matchQuality: 'fuzzy' });
+      expect(
+        findBestTextMatch(content, '🦊 quick brvwn fox jump', cacheOf(content)),
+      ).toEqual({ places: [{ start: 6, end: 28 }], matchQuality: 'fuzzy' });
     });
 
     it('a normalized match of words that hold such a character ends where its code points do', () => {
       const content = '😀 The 🦊 quick  brown fox';
-      expect(findBestTextMatch(content, '🦊 quick brown', cacheOf(content)))
-        .toEqual({ places: [{ start: 6, end: 20 }], matchQuality: 'normalized' });
+      expect(
+        findBestTextMatch(content, '🦊 quick brown', cacheOf(content)),
+      ).toEqual({
+        places: [{ start: 6, end: 20 }],
+        matchQuality: 'normalized',
+      });
     });
 
     it('a match that ends or begins between the two code points a character became takes the character whole', () => {
       // İ lower-cases to an i and a combining dot. A plain i matches the first
       // of the two, a search text that begins with the dot the second.
       const taxi = 'a TAKSİ here';
-      expect(findBestTextMatch(taxi, 'taksi', cacheOf(taxi)))
-        .toEqual({ places: [{ start: 2, end: 7 }], matchQuality: 'case-insensitive' });
+      expect(findBestTextMatch(taxi, 'taksi', cacheOf(taxi))).toEqual({
+        places: [{ start: 2, end: 7 }],
+        matchQuality: 'case-insensitive',
+      });
       const city = 'in İSTANBUL now';
-      expect(findBestTextMatch(city, '\u0307stanbul', cacheOf(city)))
-        .toEqual({ places: [{ start: 3, end: 11 }], matchQuality: 'case-insensitive' });
+      expect(findBestTextMatch(city, '\u0307stanbul', cacheOf(city))).toEqual({
+        places: [{ start: 3, end: 11 }],
+        matchQuality: 'case-insensitive',
+      });
     });
 
     it('a case-insensitive match is a span of the content, not of the lower-cased content', () => {
@@ -280,8 +337,10 @@ describe('Fuzzy Anchoring (W3C TextQuoteSelector)', () => {
       // one further along: where the content's string has the middle of it.
       // In the content it is at offset 1, and the match ends at 6.
       const content = 'İ😀 BIG';
-      expect(findBestTextMatch(content, '😀 big', cacheOf(content)))
-        .toEqual({ places: [{ start: 1, end: 6 }], matchQuality: 'case-insensitive' });
+      expect(findBestTextMatch(content, '😀 big', cacheOf(content))).toEqual({
+        places: [{ start: 1, end: 6 }],
+        matchQuality: 'case-insensitive',
+      });
     });
   });
 });

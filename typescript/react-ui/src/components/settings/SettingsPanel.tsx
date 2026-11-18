@@ -41,7 +41,7 @@ export function SettingsPanel({
   hoverDelayMs,
   version,
   sourceCodeUrl,
-  onOpenKeyboardHelp
+  onOpenKeyboardHelp,
 }: SettingsPanelProps) {
   const t = useTranslations('Settings');
   const xynolog = useXynolog();
@@ -49,14 +49,16 @@ export function SettingsPanel({
   // its toggle is applied by a bus subscriber in ToolbarPanels, so a prop
   // fed from any per-route source is a second copy that never updates.
   const { showLineNumbers } = useLineNumbers();
-  const { announceLanguageChanging, announceLanguageChanged } = useLanguageChangeAnnouncements();
+  const { announceLanguageChanging, announceLanguageChanged } =
+    useLanguageChangeAnnouncements();
 
   // Track previous locale to detect changes
   const [previousLocale, setPreviousLocale] = React.useState(locale);
 
   // Handle language change with announcement
   const handleLocaleChange = (newLocale: string) => {
-    const localeName = LOCALES.find(l => l.code === newLocale)?.nativeName || newLocale;
+    const localeName =
+      LOCALES.find((l) => l.code === newLocale)?.nativeName || newLocale;
     announceLanguageChanging(localeName);
     xynolog.emit('settings:locale-changed', { locale: newLocale });
   };
@@ -64,7 +66,8 @@ export function SettingsPanel({
   // Announce when language has successfully changed
   useEffect(() => {
     if (locale !== previousLocale && !isPendingLocaleChange) {
-      const localeName = LOCALES.find(l => l.code === locale)?.nativeName || locale;
+      const localeName =
+        LOCALES.find((l) => l.code === locale)?.nativeName || locale;
       announceLanguageChanged(localeName);
       setPreviousLocale(locale);
     }
@@ -72,9 +75,7 @@ export function SettingsPanel({
 
   return (
     <div className="xynolog-settings-panel">
-      <h3 className="xynolog-settings-panel__title">
-        {t('title')}
-      </h3>
+      <h3 className="xynolog-settings-panel__title">{t('title')}</h3>
 
       <div className="xynolog-settings-panel__content">
         {/* Line Numbers Toggle */}
@@ -87,7 +88,9 @@ export function SettingsPanel({
               type="button"
               role="switch"
               aria-checked={showLineNumbers}
-              onClick={() => xynolog.emit('settings:line-numbers-toggled', undefined)}
+              onClick={() =>
+                xynolog.emit('settings:line-numbers-toggled', undefined)
+              }
               className={`xynolog-toggle ${
                 showLineNumbers ? 'xynolog-toggle--active' : ''
               }`}
@@ -106,12 +109,12 @@ export function SettingsPanel({
 
         {/* Theme Selection */}
         <div className="xynolog-settings-panel__field">
-          <label className="xynolog-form__label">
-            {t('theme')}
-          </label>
+          <label className="xynolog-form__label">{t('theme')}</label>
           <div className="xynolog-settings-panel__button-group">
             <button
-              onClick={() => xynolog.emit('settings:theme-changed', { theme: 'light' })}
+              onClick={() =>
+                xynolog.emit('settings:theme-changed', { theme: 'light' })
+              }
               className={`xynolog-panel-button ${
                 theme === 'light' ? 'xynolog-panel-button-active' : ''
               }`}
@@ -120,7 +123,9 @@ export function SettingsPanel({
               ☀️ {t('themeLight')}
             </button>
             <button
-              onClick={() => xynolog.emit('settings:theme-changed', { theme: 'dark' })}
+              onClick={() =>
+                xynolog.emit('settings:theme-changed', { theme: 'dark' })
+              }
               className={`xynolog-panel-button ${
                 theme === 'dark' ? 'xynolog-panel-button-active' : ''
               }`}
@@ -129,7 +134,9 @@ export function SettingsPanel({
               🌙 {t('themeDark')}
             </button>
             <button
-              onClick={() => xynolog.emit('settings:theme-changed', { theme: 'system' })}
+              onClick={() =>
+                xynolog.emit('settings:theme-changed', { theme: 'system' })
+              }
               className={`xynolog-panel-button ${
                 theme === 'system' ? 'xynolog-panel-button-active' : ''
               }`}
@@ -141,7 +148,9 @@ export function SettingsPanel({
           <p className="xynolog-form__help" aria-live="polite">
             {theme === 'system'
               ? t('themeSystemActive')
-              : t('themeModeActive', { mode: theme.charAt(0).toUpperCase() + theme.slice(1) })}
+              : t('themeModeActive', {
+                  mode: theme.charAt(0).toUpperCase() + theme.slice(1),
+                })}
           </p>
         </div>
 
@@ -169,7 +178,11 @@ export function SettingsPanel({
             {t('languageHint')}
           </p>
           {isPendingLocaleChange && (
-            <p className="xynolog-settings-panel__loading" role="status" aria-live="polite">
+            <p
+              className="xynolog-settings-panel__loading"
+              role="status"
+              aria-live="polite"
+            >
               {t('languageChanging')}
             </p>
           )}
@@ -187,7 +200,11 @@ export function SettingsPanel({
             max="500"
             step="50"
             value={hoverDelayMs}
-            onChange={(e) => xynolog.emit('settings:hover-delay-changed', { hoverDelayMs: Number(e.target.value) })}
+            onChange={(e) =>
+              xynolog.emit('settings:hover-delay-changed', {
+                hoverDelayMs: Number(e.target.value),
+              })
+            }
             className="xynolog-slider"
             aria-describedby="hover-delay-description"
           />
@@ -203,7 +220,9 @@ export function SettingsPanel({
         {/* About */}
         <div className="xynolog-settings-panel__field xynolog-settings-panel__about">
           <h4 className="xynolog-settings-panel__about-name">Xynolog</h4>
-          <p className="xynolog-settings-panel__about-tagline">{t('tagline')}</p>
+          <p className="xynolog-settings-panel__about-tagline">
+            {t('tagline')}
+          </p>
           <p className="xynolog-settings-panel__about-version">
             {t('version', { version })}
           </p>

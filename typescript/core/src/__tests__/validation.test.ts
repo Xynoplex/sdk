@@ -17,11 +17,15 @@ describe('JWTTokenSchema', () => {
     });
 
     test('rejects invalid format (no dots)', () => {
-      expect(() => JWTTokenSchema.parse('not-a-jwt')).toThrow('Invalid JWT token format');
+      expect(() => JWTTokenSchema.parse('not-a-jwt')).toThrow(
+        'Invalid JWT token format',
+      );
     });
 
     test('rejects format with only one dot', () => {
-      expect(() => JWTTokenSchema.parse('header.payload')).toThrow('Invalid JWT token format');
+      expect(() => JWTTokenSchema.parse('header.payload')).toThrow(
+        'Invalid JWT token format',
+      );
     });
 
     test('accepts token with empty signature', () => {
@@ -62,13 +66,21 @@ describe('validateData', () => {
   });
 
   test('returns failure when parse throws Error', () => {
-    const schema = { parse: () => { throw new Error('bad input'); } };
+    const schema = {
+      parse: () => {
+        throw new Error('bad input');
+      },
+    };
     const result = validateData(schema, 'anything');
     expect(result).toEqual({ success: false, error: 'bad input' });
   });
 
   test('returns generic message for non-Error throw', () => {
-    const schema = { parse: () => { throw 'string error'; } };
+    const schema = {
+      parse: () => {
+        throw 'string error';
+      },
+    };
     const result = validateData(schema, 'anything');
     expect(result).toEqual({ success: false, error: 'Validation failed' });
   });

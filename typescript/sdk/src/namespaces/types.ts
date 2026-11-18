@@ -70,27 +70,41 @@ import type { AnchoredTextAnswer } from '@xynolog/core';
 import type { ResourceDescriptor } from '@xynolog/core';
 type GetResourceResponse = components['schemas']['GetResourceResponse'];
 type MatchSearchResult = components['schemas']['MatchSearchResult'];
-export type GatherAnnotationComplete = components['schemas']['GatherAnnotationComplete'];
+export type GatherAnnotationComplete =
+  components['schemas']['GatherAnnotationComplete'];
 type JobStatusResponse = components['schemas']['JobStatusResponse'];
-type CloneResourceWithTokenResponse = components['schemas']['CloneResourceWithTokenResponse'];
-type ProtectedResourceMetadata = components['schemas']['ProtectedResourceMetadata'];
+type CloneResourceWithTokenResponse =
+  components['schemas']['CloneResourceWithTokenResponse'];
+type ProtectedResourceMetadata =
+  components['schemas']['ProtectedResourceMetadata'];
 
 // ── Response type helpers (extract JSON body from OpenAPI path types) ────────
 
-export type ResponseContent<T> = T extends { responses: { 200: { content: { 'application/json': infer R } } } }
+export type ResponseContent<T> = T extends {
+  responses: { 200: { content: { 'application/json': infer R } } };
+}
   ? R
-  : T extends { responses: { 201: { content: { 'application/json': infer R } } } }
+  : T extends {
+        responses: { 201: { content: { 'application/json': infer R } } };
+      }
     ? R
-    : T extends { responses: { 202: { content: { 'application/json': infer R } } } }
+    : T extends {
+          responses: { 202: { content: { 'application/json': infer R } } };
+        }
       ? R
       : never;
 
-export type RequestContent<T> = T extends { requestBody?: { content: { 'application/json': infer R } } } ? R : never;
+export type RequestContent<T> = T extends {
+  requestBody?: { content: { 'application/json': infer R } };
+}
+  ? R
+  : never;
 
 // ── Domain-specific input types ─────────────────────────────────────────────
 
 /** Input for creating an annotation via mark.annotation() */
-export type CreateAnnotationInput = components['schemas']['CreateAnnotationRequest'];
+export type CreateAnnotationInput =
+  components['schemas']['CreateAnnotationRequest'];
 
 /** Input for creating a resource via yield.resource() */
 export interface CreateResourceInput {
@@ -117,13 +131,20 @@ export interface CreateResourceInput {
 }
 
 /** Options for yield.createFromToken() */
-export type CreateFromTokenOptions = { token: string; name: string; content: string; archiveOriginal?: boolean };
+export type CreateFromTokenOptions = {
+  token: string;
+  name: string;
+  content: string;
+  archiveOriginal?: boolean;
+};
 
 /** Referenced-by entry from gather.referencedBy() */
-export type ReferencedByEntry = components['schemas']['GetReferencedByResponse']['referencedBy'][number];
+export type ReferencedByEntry =
+  components['schemas']['GetReferencedByResponse']['referencedBy'][number];
 
 /** Annotation history from browse.annotationHistory() */
-export type AnnotationHistoryResponse = components['schemas']['GetAnnotationHistoryResponse'];
+export type AnnotationHistoryResponse =
+  components['schemas']['GetAnnotationHistoryResponse'];
 
 /** The signed-in user, as `GET /api/users/me` returns it. */
 export type User = components['schemas']['UserResponse'];
@@ -145,15 +166,22 @@ export type MatchSearchProgress = MatchSearchResult;
  * What `browse.resources()` emits: the list-reply envelope, the page of
  * descriptors with the size of the whole listing.
  */
-export type ResourceList = Omit<components['schemas']['ListResourcesResponse'], 'resources'> & {
+export type ResourceList = Omit<
+  components['schemas']['ListResourcesResponse'],
+  'resources'
+> & {
   resources: ResourceDescriptor[];
 };
 
 /** The filters a list of resources takes: the list request, whole. */
-export type ResourceListFilters = components['schemas']['BrowseResourcesRequest'];
+export type ResourceListFilters =
+  components['schemas']['BrowseResourcesRequest'];
 
 /** The filters a text search takes beside its text: the search request, less its text. */
-export type ResourceSearchFilters = Omit<components['schemas']['MatchResourcesRequest'], 'search'>;
+export type ResourceSearchFilters = Omit<
+  components['schemas']['MatchResourcesRequest'],
+  'search'
+>;
 
 /**
  * What `match.resources()` emits: the search-reply envelope, not just the
@@ -163,7 +191,10 @@ export type ResourceSearchFilters = Omit<components['schemas']['MatchResourcesRe
  * value, so a consumer can never pair the label with a different query's
  * list.
  */
-export type MatchedResources = Omit<components['schemas']['MatchResourcesResponse'], 'resources'> & {
+export type MatchedResources = Omit<
+  components['schemas']['MatchResourcesResponse'],
+  'resources'
+> & {
   resources: ResourceDescriptor[];
 };
 
@@ -182,7 +213,10 @@ export interface BrowseNamespace {
   resource(resourceId: ResourceId): CacheObservable<ResourceDescriptor>;
   resources(filters?: ResourceListFilters): CacheObservable<ResourceList>;
   annotations(resourceId: ResourceId): CacheObservable<Annotation[]>;
-  annotation(resourceId: ResourceId, annotationId: AnnotationId): CacheObservable<Annotation>;
+  annotation(
+    resourceId: ResourceId,
+    annotationId: AnnotationId,
+  ): CacheObservable<Annotation>;
   entityTypes(): CacheObservable<string[]>;
   tagSchemas(): CacheObservable<TagSchema[]>;
   /**
@@ -202,11 +236,21 @@ export interface BrowseNamespace {
    *  Never null — absence is named, so a caller can tell "not yet" from
    *  "never". */
   resourceAnchoredText(resourceId: ResourceId): Promise<AnchoredTextAnswer>;
-  resourceRepresentation(resourceId: ResourceId): Promise<{ data: ArrayBuffer; contentType: string }>;
-  resourceRepresentationStream(resourceId: ResourceId): Promise<{ stream: ReadableStream<Uint8Array>; contentType: string }>;
+  resourceRepresentation(
+    resourceId: ResourceId,
+  ): Promise<{ data: ArrayBuffer; contentType: string }>;
+  resourceRepresentationStream(
+    resourceId: ResourceId,
+  ): Promise<{ stream: ReadableStream<Uint8Array>; contentType: string }>;
   resourceEvents(resourceId: ResourceId): Promise<AttributedEvent[]>;
-  annotationHistory(resourceId: ResourceId, annotationId: AnnotationId): Promise<AnnotationHistoryResponse>;
-  files(dirPath?: string, sort?: 'name' | 'mtime' | 'annotationCount'): Promise<components['schemas']['BrowseFilesResponse']>;
+  annotationHistory(
+    resourceId: ResourceId,
+    annotationId: AnnotationId,
+  ): Promise<AnnotationHistoryResponse>;
+  files(
+    dirPath?: string,
+    sort?: 'name' | 'mtime' | 'annotationCount',
+  ): Promise<components['schemas']['BrowseFilesResponse']>;
   /**
    * What the KB says of itself — its committed name and domain, and the
    * working tree's branch — asked on every call. Never cached: a branch
@@ -273,7 +317,9 @@ export interface FrameNamespace {
 export interface MarkNamespace {
   // Annotation CRUD. `input.target.source` carries the resource id; the
   // namespace derives it for the bus payload, so callers don't pass it twice.
-  annotation(input: CreateAnnotationInput): Promise<{ annotationId: AnnotationId }>;
+  annotation(
+    input: CreateAnnotationInput,
+  ): Promise<{ annotationId: AnnotationId }>;
   delete(resourceId: ResourceId, annotationId: AnnotationId): Promise<void>;
 
   // Resource metadata
@@ -288,7 +334,11 @@ export interface MarkNamespace {
    * `browse.resources({ entityType })` and `getResourceEntityTypes`. Awaitable +
    * rejects on failure, like `delete`/`archive`.
    */
-  updateEntityTypes(resourceId: ResourceId, current: string[], updated: string[]): Promise<void>;
+  updateEntityTypes(
+    resourceId: ResourceId,
+    current: string[],
+    updated: string[],
+  ): Promise<void>;
 
   /**
    * Annotating a resource, delegated as a `mark` job. `params` state the
@@ -298,7 +348,10 @@ export interface MarkNamespace {
    * ⚠️ Cold: do NOT both `.subscribe(...)` and `await` the same instance —
    * that creates the job twice. Use `.run(onNext)` for progress + completion.
    */
-  delegate(resourceId: ResourceId, params: MarkJobParams): DelegationObservable<MarkJobCompletion>;
+  delegate(
+    resourceId: ResourceId,
+    params: MarkJobParams,
+  ): DelegationObservable<MarkJobCompletion>;
 
   // UI signals (fire-and-forget bus emits, local-bus fan-out)
   /** Request a new mark on `source` — the id routes the event to the state unit bound to that resource. */
@@ -330,7 +383,11 @@ export interface MarkNamespace {
  * Event prefix: mark:body-updated (shares mark event pipeline)
  */
 export interface BindNamespace {
-  body(resourceId: ResourceId, annotationId: AnnotationId, operations: BodyOperation[]): Promise<void>;
+  body(
+    resourceId: ResourceId,
+    annotationId: AnnotationId,
+    operations: BodyOperation[],
+  ): Promise<void>;
 
   /** UI signal: a reference-binding flow is requested for an annotation. */
   initiate(input: EventMap['bind:initiate']): void;
@@ -391,13 +448,19 @@ export interface MatchNamespace {
   ): StreamObservable<MatchSearchProgress>;
 
   /** Fire-and-forget variant: match-state-unit orchestrates the call and its result Observable. */
-  requestSearch(input: components['schemas']['MatchSearchRequest'], correlationId: string): void;
+  requestSearch(
+    input: components['schemas']['MatchSearchRequest'],
+    correlationId: string,
+  ): void;
 
   /**
    * Live query: the resources a text search finds, lexically or, when
    * nothing matches the text, by meaning.
    */
-  resources(search: string, filters?: ResourceSearchFilters): CacheObservable<MatchedResources>;
+  resources(
+    search: string,
+    filters?: ResourceSearchFilters,
+  ): CacheObservable<MatchedResources>;
 }
 
 /**
@@ -420,12 +483,17 @@ export interface YieldNamespace {
   // new resource to the reference; resource focus mints a source→derived
   // provenance annotation. A context without a usable focus throws
   // synchronously. `stallDeadlineMs` is the follower's own and is not sent.
-  delegate(params: GenerationJobParams, stallDeadlineMs?: number): DelegationObservable<YieldJobCompletion>;
+  delegate(
+    params: GenerationJobParams,
+    stallDeadlineMs?: number,
+  ): DelegationObservable<YieldJobCompletion>;
 
   // Clone
   cloneToken(resourceId: ResourceId): Promise<CloneResourceWithTokenResponse>;
   fromToken(token: string): Promise<ResourceDescriptor>;
-  createFromToken(options: CreateFromTokenOptions): Promise<{ resourceId: ResourceId }>;
+  createFromToken(
+    options: CreateFromTokenOptions,
+  ): Promise<{ resourceId: ResourceId }>;
 
   /** UI signal: user invoked the clone action from the resource-info panel. */
   clone(): void;
@@ -444,7 +512,10 @@ export interface BeckonNamespace {
   // Wire drives — beckon OTHER participants (guided-tour moves). Each
   // resolves with the subscriber count, absent when there is none
   // (ITransport.emit).
-  attention(resourceId: ResourceId, annotationId?: AnnotationId): Promise<number | undefined>;
+  attention(
+    resourceId: ResourceId,
+    annotationId?: AnnotationId,
+  ): Promise<number | undefined>;
   click(annotationId: AnnotationId): Promise<number | undefined>;
   openResource(resourceId: ResourceId): Promise<number | undefined>;
   sparkleAll(annotationId: AnnotationId): Promise<number | undefined>;
@@ -460,7 +531,9 @@ export interface JobNamespace {
   /** Live stream of `job:queued` events from the bus. */
   readonly queued$: Observable<EventMap['job:queued'] | FrameRefusal>;
   /** Live stream of `job:report-progress` events from the bus. */
-  readonly progress$: Observable<EventMap['job:report-progress'] | FrameRefusal>;
+  readonly progress$: Observable<
+    EventMap['job:report-progress'] | FrameRefusal
+  >;
   /** Live stream of `job:complete` events from the bus. */
   readonly complete$: Observable<EventMap['job:complete'] | FrameRefusal>;
   /** Live stream of `job:fail` events from the bus. */
@@ -473,7 +546,14 @@ export interface JobNamespace {
    * `timeout` ms from the first ask (`JOB_POLL_TIMEOUT_MS` when unnamed), the
    * asks and the waits between them counted.
    */
-  pollUntilComplete(jobId: JobId, options?: { interval?: number; timeout?: number; onProgress?: (status: JobStatusResponse) => void }): Promise<JobStatusResponse>;
+  pollUntilComplete(
+    jobId: JobId,
+    options?: {
+      interval?: number;
+      timeout?: number;
+      onProgress?: (status: JobStatusResponse) => void;
+    },
+  ): Promise<JobStatusResponse>;
   /** Cancel ONE job by id; resolves with whether the queue acted on it. */
   cancel(jobId: JobId): Promise<boolean>;
 

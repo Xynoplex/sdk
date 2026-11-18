@@ -7,7 +7,10 @@ import { HOVER_DELAY_MS, type XynologSession } from '@xynolog/sdk';
 import { SvgDrawingCanvas } from '../image-annotation/SvgDrawingCanvas';
 import { CodeMirrorRenderer } from '../CodeMirrorRenderer';
 import { segmentTextWithAnnotations } from '../../lib/text-segmentation';
-import type { SelectionMotivation, ShapeType } from '../annotation/AnnotateToolbar';
+import type {
+  SelectionMotivation,
+  ShapeType,
+} from '../annotation/AnnotateToolbar';
 import { useTranslations } from '../../contexts/TranslationContext';
 
 // Lazy-load the PDF component to avoid SSR issues with browser PDF.js loading.
@@ -21,7 +24,9 @@ function PdfViewerLoading() {
 }
 
 const PdfAnnotationCanvas = lazy(() =>
-  import('../pdf-annotation/PdfAnnotationCanvas.client').then((mod) => ({ default: mod.PdfAnnotationCanvas })),
+  import('../pdf-annotation/PdfAnnotationCanvas.client').then((mod) => ({
+    default: mod.PdfAnnotationCanvas,
+  })),
 );
 
 /**
@@ -62,7 +67,9 @@ export interface AnnotateMediaRendererProps {
 }
 
 /** Annotating media dispatch, keyed by the registry render mode. */
-export type AnnotateMediaRenderers = Partial<Record<string, ComponentType<AnnotateMediaRendererProps>>>;
+export type AnnotateMediaRenderers = Partial<
+  Record<string, ComponentType<AnnotateMediaRendererProps>>
+>;
 
 export function TextAnnotateRenderer({
   content,
@@ -142,7 +149,13 @@ export function PdfAnnotateRenderer({
 }: AnnotateMediaRendererProps) {
   if (!content) return null;
   return (
-    <Suspense fallback={<div className="xynolog-annotate-view__loading"><PdfViewerLoading /></div>}>
+    <Suspense
+      fallback={
+        <div className="xynolog-annotate-view__loading">
+          <PdfViewerLoading />
+        </div>
+      }
+    >
       <PdfAnnotationCanvas
         pdfUrl={content}
         resourceUri={resourceUri}
@@ -165,7 +178,10 @@ export function PdfAnnotateRenderer({
  * own PDF viewer, say) or add a mode without forking the view — the same seam
  * `defaultBrowseRenderers` gives the read-only path.
  */
-export const defaultAnnotateRenderers: Record<'text' | 'image' | 'pdf', ComponentType<AnnotateMediaRendererProps>> = {
+export const defaultAnnotateRenderers: Record<
+  'text' | 'image' | 'pdf',
+  ComponentType<AnnotateMediaRendererProps>
+> = {
   text: TextAnnotateRenderer,
   image: ImageAnnotateRenderer,
   pdf: PdfAnnotateRenderer,

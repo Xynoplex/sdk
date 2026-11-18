@@ -5,7 +5,10 @@ import { XynologBranding } from '../branding/XynologBranding';
 import { NavigationMenu } from '../navigation/NavigationMenu';
 import { ResizeHandle } from '../ResizeHandle';
 import { usePanelWidth } from '../../hooks/usePanelWidth';
-import type { LinkComponentProps, RouteBuilder } from '../../contexts/RoutingContext';
+import type {
+  LinkComponentProps,
+  RouteBuilder,
+} from '../../contexts/RoutingContext';
 import type { TranslateFn } from '../../types/translation';
 import './LeftSidebar.css';
 
@@ -18,11 +21,13 @@ interface LeftSidebarProps {
   routes: RouteBuilder;
   t: TranslateFn;
   tHome: TranslateFn;
-  children: React.ReactNode | ((
-    isCollapsed: boolean,
-    toggleCollapsed: () => void,
-    navigationMenu: NavigationMenuHelper
-  ) => React.ReactNode);
+  children:
+    | React.ReactNode
+    | ((
+        isCollapsed: boolean,
+        toggleCollapsed: () => void,
+        navigationMenu: NavigationMenuHelper,
+      ) => React.ReactNode);
   brandingLink?: string;
   collapsible?: boolean;
   storageKey?: string;
@@ -39,7 +44,7 @@ export function LeftSidebar({
   brandingLink = '/',
   collapsible = false,
   storageKey = 'leftSidebarCollapsed',
-  currentPath
+  currentPath,
 }: LeftSidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -47,9 +52,9 @@ export function LeftSidebar({
   // Only applies when not collapsed
   const { width, setWidth, minWidth, maxWidth } = usePanelWidth({
     defaultWidth: 256, // 16rem
-    minWidth: 192,     // 12rem
-    maxWidth: 400,     // 25rem
-    storageKey: 'xynolog-left-sidebar-width'
+    minWidth: 192, // 12rem
+    maxWidth: 400, // 25rem
+    storageKey: 'xynolog-left-sidebar-width',
   });
 
   // Load collapsed state from localStorage on mount (only if collapsible)
@@ -86,7 +91,9 @@ export function LeftSidebar({
     <aside
       className="xynolog-left-sidebar"
       data-collapsed={isCollapsed}
-      style={!isCollapsed ? { width: `${width}px`, position: 'relative' } : undefined}
+      style={
+        !isCollapsed ? { width: `${width}px`, position: 'relative' } : undefined
+      }
     >
       {/* Resize handle on right edge - only when expanded */}
       {!isCollapsed && (
@@ -113,9 +120,7 @@ export function LeftSidebar({
           {isCollapsed ? (
             // Collapsed: Just show "S" with gradient
             <div className="xynolog-left-sidebar__logo-collapsed">
-              <span className="xynolog-left-sidebar__logo-text">
-                S
-              </span>
+              <span className="xynolog-left-sidebar__logo-text">S</span>
             </div>
           ) : (
             // Expanded: Show branding without tagline, no extra padding
@@ -136,7 +141,9 @@ export function LeftSidebar({
         aria-label="Main navigation"
         className="xynolog-left-sidebar__content"
       >
-        {typeof children === 'function' ? children(isCollapsed, toggleCollapsed, navigationMenu) : children}
+        {typeof children === 'function'
+          ? children(isCollapsed, toggleCollapsed, navigationMenu)
+          : children}
       </nav>
     </aside>
   );

@@ -13,7 +13,13 @@
  */
 
 import { describe, test, expect, beforeEach, vi } from 'vitest';
-import { BRIDGED_CHANNELS, ERRORS_KEPT_FOR_FIRST_READER_COUNT, baseUrl, resourceId, type XynologError } from '@xynolog/core';
+import {
+  BRIDGED_CHANNELS,
+  ERRORS_KEPT_FOR_FIRST_READER_COUNT,
+  baseUrl,
+  resourceId,
+  type XynologError,
+} from '@xynolog/core';
 
 // Mock `ky` with a real `HTTPError` class — defined *inside* the factory to
 // avoid vitest's mock-hoisting TDZ — so the hook's `error instanceof HTTPError`
@@ -34,7 +40,10 @@ vi.mock('ky', () => {
     override name = 'TimeoutError';
   }
   return {
-    default: { create: vi.fn(), retry: vi.fn((options: unknown) => ({ forced: options })) },
+    default: {
+      create: vi.fn(),
+      retry: vi.fn((options: unknown) => ({ forced: options })),
+    },
     HTTPError,
     NetworkError,
     TimeoutError,
@@ -74,7 +83,11 @@ describe('HttpTransport ky hooks', () => {
     } as unknown as ReturnType<typeof ky.create>);
 
     vi.mocked(ky.create).mockClear();
-    transport = new HttpTransport({ baseUrl: testBaseUrl, channels: BRIDGED_CHANNELS, timeout: 10_000 });
+    transport = new HttpTransport({
+      baseUrl: testBaseUrl,
+      channels: BRIDGED_CHANNELS,
+      timeout: 10_000,
+    });
     hooks = vi.mocked(ky.create).mock.calls.at(-1)![0]!.hooks!;
   });
 
@@ -113,7 +126,11 @@ describe('HttpTransport ky hooks', () => {
     type State = Parameters<typeof beforeError>[0];
 
     const error = httpError(
-      { headers: new Headers(), status: 503, statusText: 'Service Unavailable' },
+      {
+        headers: new Headers(),
+        status: 503,
+        statusText: 'Service Unavailable',
+      },
       undefined,
     );
 
@@ -134,32 +151,54 @@ describe('HttpTransport ky hooks', () => {
   });
 
   test.each([
-    ['the connection failed', () => Object.assign(Object.create(NetworkError.prototype) as Error, { message: 'fetch failed', name: 'NetworkError' })],
-    ['the deadline passed', () => Object.assign(Object.create(TimeoutError.prototype) as Error, { message: 'Request timed out', name: 'TimeoutError' })],
-  ])('beforeError reports a request the gateway never answered (%s) as unavailable, on errors$, and throws it', async (_why, unanswered) => {
-    const beforeError = hooks.beforeError![0]!;
-    type State = Parameters<typeof beforeError>[0];
-    const emitted: XynologError[] = [];
-    const sub = transport.errors$.subscribe((e) => emitted.push(e));
+    [
+      'the connection failed',
+      () =>
+        Object.assign(Object.create(NetworkError.prototype) as Error, {
+          message: 'fetch failed',
+          name: 'NetworkError',
+        }),
+    ],
+    [
+      'the deadline passed',
+      () =>
+        Object.assign(Object.create(TimeoutError.prototype) as Error, {
+          message: 'Request timed out',
+          name: 'TimeoutError',
+        }),
+    ],
+  ])(
+    'beforeError reports a request the gateway never answered (%s) as unavailable, on errors$, and throws it',
+    async (_why, unanswered) => {
+      const beforeError = hooks.beforeError![0]!;
+      type State = Parameters<typeof beforeError>[0];
+      const emitted: XynologError[] = [];
+      const sub = transport.errors$.subscribe((e) => emitted.push(e));
 
-    const thrown = await Promise.resolve(
-      beforeError({
-        request: { method: 'GET', url: 'http://localhost:4000/api/status' } as unknown as State['request'],
-        options: {} as unknown as State['options'],
-        error: unanswered(),
-        retryCount: 0,
-      }),
-    ).then(
-      () => undefined,
-      (error: unknown) => error,
-    );
-    sub.unsubscribe();
+      const thrown = await Promise.resolve(
+        beforeError({
+          request: {
+            method: 'GET',
+            url: 'http://localhost:4000/api/status',
+          } as unknown as State['request'],
+          options: {} as unknown as State['options'],
+          error: unanswered(),
+          retryCount: 0,
+        }),
+      ).then(
+        () => undefined,
+        (error: unknown) => error,
+      );
+      sub.unsubscribe();
 
-    expect(thrown).toBeInstanceOf(APIError);
-    expect((thrown as APIError).code).toBe('unavailable');
-    expect((thrown as APIError).message).toMatch(/^GET \/api\/status got no answer: /);
-    expect(emitted).toEqual([thrown]);
-  });
+      expect(thrown).toBeInstanceOf(APIError);
+      expect((thrown as APIError).code).toBe('unavailable');
+      expect((thrown as APIError).message).toMatch(
+        /^GET \/api\/status got no answer: /,
+      );
+      expect(emitted).toEqual([thrown]);
+    },
+  );
 
   test('beforeError passes an error that is neither through untouched (no emission)', async () => {
     const beforeError = hooks.beforeError![0]!;
@@ -185,7 +224,10 @@ describe('HttpTransport ky hooks', () => {
     const afterResponse = hooks.afterResponse![0]!;
     type State = Parameters<typeof afterResponse>[0];
 
-    const response = { status: 200, statusText: 'OK' } as unknown as State['response'];
+    const response = {
+      status: 200,
+      statusText: 'OK',
+    } as unknown as State['response'];
 
     const returned = await afterResponse({
       request: {} as unknown as State['request'],
@@ -206,7 +248,10 @@ describe('HttpTransport ky hooks', () => {
         beforeError({
           request: {} as unknown as State['request'],
           options: {} as unknown as State['options'],
-          error: httpError({ headers: new Headers(), status: 404, statusText: 'Not Found' }, { error: said }),
+          error: httpError(
+            { headers: new Headers(), status: 404, statusText: 'Not Found' },
+            { error: said },
+          ),
           retryCount: 0,
         }),
       ).rejects.toBeInstanceOf(APIError);
@@ -220,7 +265,10 @@ describe('HttpTransport ky hooks', () => {
 
     test('its first reader, taken late, hears the latest ERRORS_KEPT_FOR_FIRST_READER_COUNT failures met before it, in order, the oldest dropped', async () => {
       const beyond = 5;
-      const refusals = Array.from({ length: ERRORS_KEPT_FOR_FIRST_READER_COUNT + beyond }, (_, n) => `refusal ${n}`);
+      const refusals = Array.from(
+        { length: ERRORS_KEPT_FOR_FIRST_READER_COUNT + beyond },
+        (_, n) => `refusal ${n}`,
+      );
       for (const said of refusals) await refuse(said);
 
       expect(heard()).toEqual(refusals.slice(beyond));
@@ -233,7 +281,11 @@ describe('HttpTransport ky hooks', () => {
       const second = heard();
       await refuse('after both read');
 
-      expect(first).toEqual(['before anyone read', 'before the second read', 'after both read']);
+      expect(first).toEqual([
+        'before anyone read',
+        'before the second read',
+        'after both read',
+      ]);
       expect(second).toEqual(['after both read']);
     });
 
@@ -243,7 +295,12 @@ describe('HttpTransport ky hooks', () => {
 
       let ended = false;
       const messages: string[] = [];
-      transport.errors$.subscribe({ next: (failure) => messages.push(failure.message), complete: () => { ended = true; } });
+      transport.errors$.subscribe({
+        next: (failure) => messages.push(failure.message),
+        complete: () => {
+          ended = true;
+        },
+      });
       expect(messages).toEqual([]);
       expect(ended).toBe(true);
     });
@@ -266,7 +323,10 @@ describe('HttpTransport ky hooks', () => {
 // to a caller is `http-transport.retry.test.ts`, which drives real ky.
 
 describe('HttpTransport shouldRetry — the transport retry rule', () => {
-  let shouldRetry: (state: { error: Error; retryCount: number }) => false | undefined;
+  let shouldRetry: (state: {
+    error: Error;
+    retryCount: number;
+  }) => false | undefined;
   let retryConfig: { statusCodes: number[] };
 
   beforeEach(() => {
@@ -282,20 +342,32 @@ describe('HttpTransport shouldRetry — the transport retry rule', () => {
       timeout: 10_000,
       tokenRefresher: async () => 'fresh-token',
     });
-    retryConfig = vi.mocked(ky.create).mock.calls.at(-1)![0]!.retry as typeof retryConfig;
-    shouldRetry = (retryConfig as unknown as { shouldRetry: typeof shouldRetry }).shouldRetry;
+    retryConfig = vi.mocked(ky.create).mock.calls.at(-1)![0]!
+      .retry as typeof retryConfig;
+    shouldRetry = (
+      retryConfig as unknown as { shouldRetry: typeof shouldRetry }
+    ).shouldRetry;
   });
 
   /** Ask the gate about a request of `method`, sent with `headers`, that failed with `status`, and the body ky read. */
-  function verdict(method: string, status: number, data?: unknown, headers = new Headers()) {
-    const error = Object.assign(httpError({ status, statusText: 'x', headers: new Headers() }, data), {
-      request: { method, headers },
-    });
+  function verdict(
+    method: string,
+    status: number,
+    data?: unknown,
+    headers = new Headers(),
+  ) {
+    const error = Object.assign(
+      httpError({ status, statusText: 'x', headers: new Headers() }, data),
+      {
+        request: { method, headers },
+      },
+    );
     return shouldRetry({ error, retryCount: 1 });
   }
 
   /** The header an upload carries, the same on every attempt at it. */
-  const keyHeaders = () => new Headers({ 'Idempotency-Key': '0b9e6c1e-7d4f-4c2a-9a51-3f0f7c1d2e8b' });
+  const keyHeaders = () =>
+    new Headers({ 'Idempotency-Key': '0b9e6c1e-7d4f-4c2a-9a51-3f0f7c1d2e8b' });
 
   test('a POST that got a 504 is NOT retried — it may already have been processed', () => {
     expect(verdict('POST', 504)).toBe(false);
@@ -305,7 +377,7 @@ describe('HttpTransport shouldRetry — the transport retry rule', () => {
     expect(verdict('POST', 502)).toBe(false);
   });
 
-  test('a POST that carries an Idempotency-Key and got a 502 or 503 is the rule\'s to retry — its repeat is answered as the first was', () => {
+  test("a POST that carries an Idempotency-Key and got a 502 or 503 is the rule's to retry — its repeat is answered as the first was", () => {
     expect(verdict('POST', 502, undefined, keyHeaders())).toBeUndefined();
     expect(verdict('POST', 503, undefined, keyHeaders())).toBeUndefined();
   });
@@ -323,11 +395,15 @@ describe('HttpTransport shouldRetry — the transport retry rule', () => {
     expect(verdict('GET', 401)).toBe(false);
     // A 429 `refusal-rate` says what a 401 says: the rule would retry it
     // after its Retry-After, with the token refused.
-    expect(verdict('GET', 429, { error: 'refused', code: 'refusal-rate' })).toBe(false);
+    expect(
+      verdict('GET', 429, { error: 'refused', code: 'refusal-rate' }),
+    ).toBe(false);
   });
 
-  test('a GET that met a limit is still the rule\'s to retry', () => {
-    expect(verdict('GET', 429, { error: 'slow down', code: 'emit-rate' })).toBeUndefined();
+  test("a GET that met a limit is still the rule's to retry", () => {
+    expect(
+      verdict('GET', 429, { error: 'slow down', code: 'emit-rate' }),
+    ).toBeUndefined();
   });
 
   test('a GET that got a 504 is retried — the gate must not over-narrow', () => {
@@ -350,10 +426,12 @@ describe('HttpTransport shouldRetry — the transport retry rule', () => {
   test('a non-HTTP error (socket hang up) is left to ky to decide', () => {
     // No status to classify. The rule answers only about statuses; transport
     // faults are ky's own retry domain and stay there.
-    expect(shouldRetry({ error: new Error('socket hang up'), retryCount: 1 })).toBeUndefined();
+    expect(
+      shouldRetry({ error: new Error('socket hang up'), retryCount: 1 }),
+    ).toBeUndefined();
   });
 
-  test('census: ky\'s statusCodes stay a SUPERSET of what the rule can approve', () => {
+  test("census: ky's statusCodes stay a SUPERSET of what the rule can approve", () => {
     // The gate can only reject what ky admits — a status the rule would
     // approve but the pre-filter omits is never retried, and nothing else
     // would fail. So the two may differ, but only in one direction.
@@ -361,9 +439,18 @@ describe('HttpTransport shouldRetry — the transport retry rule', () => {
 
     const approved = [];
     for (let status = 400; status < 600; status++) {
-      for (const method of ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS']) {
+      for (const method of [
+        'GET',
+        'POST',
+        'PUT',
+        'PATCH',
+        'DELETE',
+        'HEAD',
+        'OPTIONS',
+      ]) {
         for (const keyed of [false, true]) {
-          if (RETRY_RULES.transport.retryable({ status, method, keyed })) approved.push(status);
+          if (RETRY_RULES.transport.retryable({ status, method, keyed }))
+            approved.push(status);
         }
       }
     }
@@ -373,7 +460,11 @@ describe('HttpTransport shouldRetry — the transport retry rule', () => {
   });
 
   test('a transport that renews nothing is made again by the same rule', () => {
-    new HttpTransport({ baseUrl: testBaseUrl, channels: BRIDGED_CHANNELS, timeout: 10_000 });
+    new HttpTransport({
+      baseUrl: testBaseUrl,
+      channels: BRIDGED_CHANNELS,
+      timeout: 10_000,
+    });
     expect(vi.mocked(ky.create).mock.calls.at(-1)![0]!.retry).toBe(retryConfig);
   });
 });
@@ -386,12 +477,20 @@ describe('HttpTransport afterResponse — a refused credential is renewed once, 
     } as unknown as ReturnType<typeof ky.create>);
     vi.mocked(ky.create).mockClear();
     vi.mocked(ky.retry).mockClear();
-    new HttpTransport({ baseUrl: testBaseUrl, channels: BRIDGED_CHANNELS, timeout: 10_000, tokenRefresher: refresher });
+    new HttpTransport({
+      baseUrl: testBaseUrl,
+      channels: BRIDGED_CHANNELS,
+      timeout: 10_000,
+      tokenRefresher: refresher,
+    });
     const hooks = vi.mocked(ky.create).mock.calls.at(-1)![0]!.hooks!;
     // [0] is the logging passthrough; [1] renews.
     const renew = hooks.afterResponse![1]!;
     type State = Parameters<typeof renew>[0];
-    const request = { method: 'POST', headers: new Headers({ Authorization: 'Bearer refused-token' }) } as unknown as State['request'];
+    const request = {
+      method: 'POST',
+      headers: new Headers({ Authorization: 'Bearer refused-token' }),
+    } as unknown as State['request'];
     return {
       request,
       run: (response: Response, retryCount = 0) =>
@@ -404,26 +503,34 @@ describe('HttpTransport afterResponse — a refused credential is renewed once, 
     };
   }
 
-  const refusedToken = () => new Response(JSON.stringify({ error: 'Invalid token' }), { status: 401 });
-  const refusedByRate = (code: string) => new Response(JSON.stringify({ error: 'refused', code }), { status: 429 });
+  const refusedToken = () =>
+    new Response(JSON.stringify({ error: 'Invalid token' }), { status: 401 });
+  const refusedByRate = (code: string) =>
+    new Response(JSON.stringify({ error: 'refused', code }), { status: 429 });
 
   test('a 401 is sent again at once with the renewed token', async () => {
     const { request, run } = build(async () => 'fresh-token');
-    await expect(run(refusedToken())).resolves.toEqual({ forced: { delay: 0, code: 'credential-renewed' } });
+    await expect(run(refusedToken())).resolves.toEqual({
+      forced: { delay: 0, code: 'credential-renewed' },
+    });
     expect(request.headers.get('Authorization')).toBe('Bearer fresh-token');
   });
 
   test('the refresher is told the token the refused request carried', async () => {
     const refresher = vi.fn(async () => 'fresh-token');
     const { request, run } = build(refresher);
-    const carried = request.headers.get('Authorization')!.replace(/^Bearer /, '');
+    const carried = request.headers
+      .get('Authorization')!
+      .replace(/^Bearer /, '');
     await run(refusedToken());
     expect(refresher).toHaveBeenCalledWith(carried);
   });
 
   test('a 429 refusal-rate is a refused credential: renewed the same way, not waited out', async () => {
     const { request, run } = build(async () => 'fresh-token');
-    await expect(run(refusedByRate('refusal-rate'))).resolves.toEqual({ forced: { delay: 0, code: 'credential-renewed' } });
+    await expect(run(refusedByRate('refusal-rate'))).resolves.toEqual({
+      forced: { delay: 0, code: 'credential-renewed' },
+    });
     expect(request.headers.get('Authorization')).toBe('Bearer fresh-token');
   });
 
@@ -437,13 +544,21 @@ describe('HttpTransport afterResponse — a refused credential is renewed once, 
   test.each([
     ['gives no token', async () => null],
     ['gives the token refused', async () => 'refused-token'],
-    ['throws', async (): Promise<string | null> => { throw new Error('refresh endpoint down'); }],
-  ])('a refresher that %s leaves the refusal to fail, and nothing is sent again', async (_what, refresher) => {
-    const { request, run } = build(refresher);
-    await expect(run(refusedToken())).resolves.toBeUndefined();
-    expect(ky.retry).not.toHaveBeenCalled();
-    expect(request.headers.get('Authorization')).toBe('Bearer refused-token');
-  });
+    [
+      'throws',
+      async (): Promise<string | null> => {
+        throw new Error('refresh endpoint down');
+      },
+    ],
+  ])(
+    'a refresher that %s leaves the refusal to fail, and nothing is sent again',
+    async (_what, refresher) => {
+      const { request, run } = build(refresher);
+      await expect(run(refusedToken())).resolves.toBeUndefined();
+      expect(ky.retry).not.toHaveBeenCalled();
+      expect(request.headers.get('Authorization')).toBe('Bearer refused-token');
+    },
+  );
 
   test('the renewed request refused again is not renewed again: the refresher is asked once', async () => {
     const refresher = vi.fn(async () => 'another-token');
@@ -456,8 +571,17 @@ describe('HttpTransport afterResponse — a refused credential is renewed once, 
     vi.useFakeTimers();
     const refresher = vi.fn(async () => 'fresh-token');
     const { run } = build(refresher);
-    const begun = new TextEncoder().encode('{"error":"refused","code":"refusal-ra');
-    const unfinished = new Response(new ReadableStream<Uint8Array>({ start(controller) { controller.enqueue(begun); } }), { status: 429 });
+    const begun = new TextEncoder().encode(
+      '{"error":"refused","code":"refusal-ra',
+    );
+    const unfinished = new Response(
+      new ReadableStream<Uint8Array>({
+        start(controller) {
+          controller.enqueue(begun);
+        },
+      }),
+      { status: 429 },
+    );
     let settled = false;
     const renewing = Promise.resolve(run(unfinished)).then((result) => {
       settled = true;
@@ -481,19 +605,31 @@ describe('HttpTransport afterResponse — a refused credential is renewed once, 
 // harness; the ky mock above is irrelevant to the SSE path).
 
 import { BehaviorSubject } from 'rxjs';
-import { Bus, accessToken, type AccessToken, type ConnectionState } from '@xynolog/core';
+import {
+  Bus,
+  accessToken,
+  type AccessToken,
+  type ConnectionState,
+} from '@xynolog/core';
 import { mockFetch } from './helpers/mock-conn';
 
 describe('HttpTransport errors$ bridge (SSE connect refusals)', () => {
   test('a refused SSE connect surfaces on the transport errors$ under the code its status maps to', async () => {
     mockFetch.mockReset();
-    mockFetch.mockImplementation(async () => ({ ok: false, headers: new Headers(), status: 401, body: null }));
+    mockFetch.mockImplementation(async () => ({
+      ok: false,
+      headers: new Headers(),
+      status: 401,
+      body: null,
+    }));
 
     const transport = new HttpTransport({
       baseUrl: testBaseUrl,
       channels: BRIDGED_CHANNELS,
       timeout: 10_000,
-      token$: new BehaviorSubject<AccessToken | null>(accessToken('real-but-refused-tok')),
+      token$: new BehaviorSubject<AccessToken | null>(
+        accessToken('real-but-refused-tok'),
+      ),
     });
     const seen: XynologError[] = [];
     transport.errors$.subscribe((e) => seen.push(e));
@@ -512,13 +648,20 @@ describe('HttpTransport errors$ bridge (SSE connect refusals)', () => {
 
   test('a refused SSE connect met before anyone listened is heard by the first listener', async () => {
     mockFetch.mockReset();
-    mockFetch.mockImplementation(async () => ({ ok: false, headers: new Headers(), status: 401, body: null }));
+    mockFetch.mockImplementation(async () => ({
+      ok: false,
+      headers: new Headers(),
+      status: 401,
+      body: null,
+    }));
 
     const transport = new HttpTransport({
       baseUrl: testBaseUrl,
       channels: BRIDGED_CHANNELS,
       timeout: 10_000,
-      token$: new BehaviorSubject<AccessToken | null>(accessToken('real-but-refused-tok')),
+      token$: new BehaviorSubject<AccessToken | null>(
+        accessToken('real-but-refused-tok'),
+      ),
     });
     const states: ConnectionState[] = [];
     transport.state$.subscribe((state) => states.push(state));
@@ -547,11 +690,17 @@ describe('HttpTransport errors$ bridge (refused emits)', () => {
     }));
 
     // No token: the stream never opens, so the only request is the emit.
-    const transport = new HttpTransport({ baseUrl: testBaseUrl, channels: BRIDGED_CHANNELS, timeout: 10_000 });
+    const transport = new HttpTransport({
+      baseUrl: testBaseUrl,
+      channels: BRIDGED_CHANNELS,
+      timeout: 10_000,
+    });
     const seen: XynologError[] = [];
     transport.errors$.subscribe((e) => seen.push(e));
 
-    const thrown = await transport.emit('beckon:focus', { resourceId: resourceId('res-1') }).catch((error: unknown) => error);
+    const thrown = await transport
+      .emit('beckon:focus', { resourceId: resourceId('res-1') })
+      .catch((error: unknown) => error);
     expect(thrown).toBeInstanceOf(APIError);
     expect((thrown as APIError).code).toBe('bad-request');
     expect(seen).toEqual([thrown]);
@@ -562,22 +711,34 @@ describe('HttpTransport errors$ bridge (refused emits)', () => {
 
 describe('HttpTransport after dispose', () => {
   const request = (transport: HttpTransport) =>
-    new Bus(transport).request('browse:resource-requested', { resourceId: 'r' }, 200).catch((error: unknown) => error);
+    new Bus(transport)
+      .request('browse:resource-requested', { resourceId: 'r' }, 200)
+      .catch((error: unknown) => error);
 
   test('a request fails as closed at once: the transport does not build itself a new, unopened bus to wait on', async () => {
     mockFetch.mockReset();
-    const transport = new HttpTransport({ baseUrl: testBaseUrl, channels: BRIDGED_CHANNELS, timeout: 10_000 });
+    const transport = new HttpTransport({
+      baseUrl: testBaseUrl,
+      channels: BRIDGED_CHANNELS,
+      timeout: 10_000,
+    });
     // Its bus is made before it is disposed: something asked for the connection's state.
     transport.state$.subscribe().unsubscribe();
     transport.dispose();
 
     expect(await request(transport)).toMatchObject({ code: 'bus.closed' });
-    expect(mockFetch.mock.calls.filter(([url]) => String(url).endsWith('/bus/emit'))).toEqual([]);
+    expect(
+      mockFetch.mock.calls.filter(([url]) => String(url).endsWith('/bus/emit')),
+    ).toEqual([]);
   });
 
   test('the same holds for a transport disposed before it ever touched its bus', async () => {
     mockFetch.mockReset();
-    const transport = new HttpTransport({ baseUrl: testBaseUrl, channels: BRIDGED_CHANNELS, timeout: 10_000 });
+    const transport = new HttpTransport({
+      baseUrl: testBaseUrl,
+      channels: BRIDGED_CHANNELS,
+      timeout: 10_000,
+    });
     transport.dispose();
 
     expect(await request(transport)).toMatchObject({ code: 'bus.closed' });

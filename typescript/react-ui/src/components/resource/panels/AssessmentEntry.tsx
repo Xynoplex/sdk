@@ -98,7 +98,8 @@ export function AssessmentEntry({
       {/* Selected text quote */}
       {selectedText && (
         <div className="xynolog-annotation-entry__quote" data-type="assessment">
-          "{selectedText.substring(0, 100)}{selectedText.length > 100 ? '...' : ''}"
+          "{selectedText.substring(0, 100)}
+          {selectedText.length > 100 ? '...' : ''}"
         </div>
       )}
 
@@ -111,7 +112,10 @@ export function AssessmentEntry({
 
       {/* Metadata */}
       <div className="xynolog-annotation-entry__metadata">
-        {creatorName(assessment.creator) && <>By {creatorName(assessment.creator)} • </>}{formatRelativeTime(assessment.created || new Date().toISOString())}
+        {creatorName(assessment.creator) && (
+          <>By {creatorName(assessment.creator)} • </>
+        )}
+        {formatRelativeTime(assessment.created || new Date().toISOString())}
       </div>
       {assessment.generator && renderAgentLabels(assessment.generator) && (
         <div className="xynolog-annotation-entry__metadata">

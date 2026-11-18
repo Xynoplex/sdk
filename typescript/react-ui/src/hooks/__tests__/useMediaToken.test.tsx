@@ -13,7 +13,9 @@ import type { XynologClient } from '@xynolog/sdk';
 import { useMediaToken, type UseMediaTokenResult } from '../useMediaToken';
 
 function makeClient(token: string): XynologClient {
-  return { auth: { mediaToken: vi.fn(async () => ({ token })) } } as unknown as XynologClient;
+  return {
+    auth: { mediaToken: vi.fn(async () => ({ token })) },
+  } as unknown as XynologClient;
 }
 
 describe('useMediaToken', () => {
@@ -28,7 +30,9 @@ describe('useMediaToken', () => {
   });
 
   it('stays token-less (not loading) without a client', async () => {
-    const { result } = renderHook(() => useMediaToken(null, resourceId('res-1')));
+    const { result } = renderHook(() =>
+      useMediaToken(null, resourceId('res-1')),
+    );
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.token).toBeUndefined();
   });
@@ -38,7 +42,8 @@ describe('useMediaToken', () => {
     // that cannot mint or refresh — they would all break 5 minutes later,
     // with nothing in the UI explaining why.
     const { result, rerender } = renderHook(
-      ({ client }: { client: XynologClient | null }) => useMediaToken(client, resourceId('res-1')),
+      ({ client }: { client: XynologClient | null }) =>
+        useMediaToken(client, resourceId('res-1')),
       { initialProps: { client: makeClient('tok-1') } },
     );
     await waitFor(() => expect(result.current.token).toBe('tok-1'));
@@ -86,7 +91,10 @@ describe('useMediaToken — every render answers for its own inputs', () => {
 
   function renderRecording(initialClient: XynologClient) {
     const renders: Array<Inputs & UseMediaTokenResult> = [];
-    const initialProps: Inputs = { client: initialClient, id: resourceId('res-1') };
+    const initialProps: Inputs = {
+      client: initialClient,
+      id: resourceId('res-1'),
+    };
     const hook = renderHook(
       ({ client, id }: Inputs) => {
         const returned = useMediaToken(client, id);
@@ -136,7 +144,8 @@ describe('useMediaToken — every render answers for its own inputs', () => {
   // the token minted before the gap may have expired: the hook starts again
   // from "no token yet" instead of serving it for the length of a round trip.
   it('a returning client starts from no token, never the one minted before the gap', async () => {
-    const mediaToken = vi.fn()
+    const mediaToken = vi
+      .fn()
       .mockResolvedValueOnce({ token: 'tok-1' })
       .mockReturnValueOnce(new Promise(() => {})); // the re-mint, still in flight
     const client = { auth: { mediaToken } } as unknown as XynologClient;

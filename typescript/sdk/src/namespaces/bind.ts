@@ -1,4 +1,10 @@
-import type { ResourceId, AnnotationId, BodyOperation, EventBus, EventMap } from '@xynolog/core';
+import type {
+  ResourceId,
+  AnnotationId,
+  BodyOperation,
+  EventBus,
+  EventMap,
+} from '@xynolog/core';
 import type { ITransport } from '@xynolog/core';
 import { Bus } from '@xynolog/core';
 import type { BindNamespace as IBindNamespace } from './types';
@@ -13,16 +19,21 @@ export class BindNamespace implements IBindNamespace {
     this.wire = new Bus(transport);
   }
 
-  async body(resourceId: ResourceId, annotationId: AnnotationId, operations: BodyOperation[]): Promise<void> {
+  async body(
+    resourceId: ResourceId,
+    annotationId: AnnotationId,
+    operations: BodyOperation[],
+  ): Promise<void> {
     // Confirmed write: the bind handler forwards to mark:update-body, matches the
     // persisted outcome by correlationId, and replies on bind:body-updated /
     // bind:body-update-failed. Bus.request awaits that real outcome and REJECTS
     // on failure — it is not an optimistic fire-and-forget ack. Bus.request
     // mints the correlationId.
-    await this.wire.request(
-      'bind:update-body',
-      { annotationId, resourceId, operations },
-    );
+    await this.wire.request('bind:update-body', {
+      annotationId,
+      resourceId,
+      operations,
+    });
   }
 
   initiate(input: EventMap['bind:initiate']): void {

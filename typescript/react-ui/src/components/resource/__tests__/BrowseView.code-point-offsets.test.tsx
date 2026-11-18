@@ -13,7 +13,11 @@
 import { describe, it, expect } from 'vitest';
 import '@testing-library/jest-dom';
 import { annotationId, resourceId, type Annotation } from '@xynolog/core';
-import { createTestXynologWrapper, renderInEnglish, englishTranslationManager } from '../../../test-utils';
+import {
+  createTestXynologWrapper,
+  renderInEnglish,
+  englishTranslationManager,
+} from '../../../test-utils';
 import { BrowseView } from '../BrowseView';
 
 /** A heading, a blank line and a paragraph with bold words. 49 code points; its "words" are at 42 to 47, and at 44 to 49 in the string. */
@@ -23,7 +27,13 @@ const MARKDOWN = '# 😀 Title\n\nSome **bold 𝑥** text, then the words.\n';
 const PLAIN = '😀 first, then words';
 
 const RESOURCE = resourceId('res-1');
-const NO_ANNOTATIONS = { highlights: [], references: [], assessments: [], comments: [], tags: [] };
+const NO_ANNOTATIONS = {
+  highlights: [],
+  references: [],
+  assessments: [],
+  comments: [],
+  tags: [],
+};
 
 function highlight(id: string, start: number, end: number): Annotation {
   return {
@@ -31,12 +41,19 @@ function highlight(id: string, start: number, end: number): Annotation {
     type: 'Annotation',
     id: annotationId(id),
     motivation: 'highlighting',
-    target: { source: RESOURCE, selector: { type: 'TextPositionSelector', start, end } },
+    target: {
+      source: RESOURCE,
+      selector: { type: 'TextPositionSelector', start, end },
+    },
     created: '2026-01-01T00:00:00Z',
   };
 }
 
-function mount(content: string, mimeType: string, highlights: Annotation[]): HTMLElement {
+function mount(
+  content: string,
+  mimeType: string,
+  highlights: Annotation[],
+): HTMLElement {
   const { session } = createTestXynologWrapper();
   return renderInEnglish(
     <BrowseView
@@ -54,7 +71,9 @@ function mount(content: string, mimeType: string, highlights: Annotation[]): HTM
 
 /** The rendered text lit for an annotation: its spans' text, in order, as one. */
 function lit(container: HTMLElement, id: string): string {
-  return Array.from(container.querySelectorAll(`[data-annotation-id="${id}"]`)).map((span) => span.textContent).join('');
+  return Array.from(container.querySelectorAll(`[data-annotation-id="${id}"]`))
+    .map((span) => span.textContent)
+    .join('');
 }
 
 describe('a stored selector lights exactly its words over rendered markdown', () => {
@@ -71,14 +90,19 @@ describe('a stored selector lights exactly its words over rendered markdown', ()
   });
 
   it('from such a character, across the syntax that closes the bold words', () => {
-    const container = mount(MARKDOWN, 'text/markdown', [highlight('across', 23, 31)]);
+    const container = mount(MARKDOWN, 'text/markdown', [
+      highlight('across', 23, 31),
+    ]);
 
     // The source there is "𝑥** text"; the two asterisks are not rendered.
     expect(lit(container, 'across')).toBe('𝑥 text');
   });
 
   it('in a plain text, which the same renderer shows', () => {
-    const container = mount(PLAIN, 'text/plain', [highlight('first', 2, 7), highlight('words', 14, 19)]);
+    const container = mount(PLAIN, 'text/plain', [
+      highlight('first', 2, 7),
+      highlight('words', 14, 19),
+    ]);
 
     expect(lit(container, 'first')).toBe('first');
     expect(lit(container, 'words')).toBe('words');

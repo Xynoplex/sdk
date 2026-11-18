@@ -86,7 +86,11 @@ export type {
   EmittableChannel,
   AnchorRect,
 } from './bus-protocol';
-export { ENRICHED_EVENT_TYPES, CHANNEL_SCHEMAS, TRACE_FIELD } from './bus-protocol';
+export {
+  ENRICHED_EVENT_TYPES,
+  CHANNEL_SCHEMAS,
+  TRACE_FIELD,
+} from './bus-protocol';
 export type { EnrichedEventType } from './bus-protocol';
 
 // Payload type aliases (OpenAPI schema shortcuts used across the codebase)
@@ -122,7 +126,13 @@ export type { StoredEventLike } from './event-utils';
 export { getAnnotationIdFromEvent } from './event-utils';
 
 // Event bus (RxJS-based, framework-agnostic)
-export { EventBus, ScopedEventBus, type BusFrame, type BusEnvelope, type TraceCarrier } from './event-bus';
+export {
+  EventBus,
+  ScopedEventBus,
+  type BusFrame,
+  type BusEnvelope,
+  type TraceCarrier,
+} from './event-bus';
 export { relayFrames, type FrameSource, type FrameSink } from './relay-frames';
 
 // Which failures are worth another attempt, per context — one catalog so the
@@ -134,13 +144,28 @@ export type { RetryRule, RetryFacts } from './retry-rules';
 export type { Logger } from './logger';
 
 // Bus logging — Tier 1 cross-wire observability
-export { busLog, busLogEnabled, setBusLogTraceIdProvider, type BusOp } from './bus-log';
+export {
+  busLog,
+  busLogEnabled,
+  setBusLogTraceIdProvider,
+  type BusOp,
+} from './bus-log';
 
 // The annotation builders: what a worker turns a model's words into
 // annotations with. Every SDK has the three, and
 // protocol/specs/src/annotations/builder-cases.json holds them to one answer.
-export { reconcile, annotationOfSpan, annotationOfResource, SpanRefusedError } from './annotation-builders';
-export type { QuotedText, TextSpan, ReconciledSpan, AnchorMethod } from './annotation-builders';
+export {
+  reconcile,
+  annotationOfSpan,
+  annotationOfResource,
+  SpanRefusedError,
+} from './annotation-builders';
+export type {
+  QuotedText,
+  TextSpan,
+  ReconciledSpan,
+  AnchorMethod,
+} from './annotation-builders';
 
 // W3C Web Annotation accessors (target/body/selector helpers + type guards)
 export {
@@ -182,7 +207,11 @@ export type { PdfCoordinate } from './pdf-coordinates';
 
 // PDF text <-> geometry anchoring (locate/textUnder are inverses)
 export { locate, textUnder } from './pdf-anchoring';
-export type { AnchoredText, AnchoredTextAnswer, PdfTextItem } from './pdf-anchoring';
+export type {
+  AnchoredText,
+  AnchoredTextAnswer,
+  PdfTextItem,
+} from './pdf-anchoring';
 
 // ResourceDescriptor accessors
 export {
@@ -217,11 +246,22 @@ export {
   type ResourceScopedChannel,
   type UnscopedChannel,
 } from './bridged-channels';
-export { BRIDGED_CHANNELS, isResourceScopedChannel, type BridgedChannel } from './bridging';
+export {
+  BRIDGED_CHANNELS,
+  isResourceScopedChannel,
+  type BridgedChannel,
+} from './bridging';
 
 // Request/reply over the bus — the transport-neutral primitive.
 export { replyChannelsFor, BusRequestError } from './bus-request';
-export { Bus, FrameRefusal, asDeclared, type BusPrimitive, type Delivered, type Heard } from './bus';
+export {
+  Bus,
+  FrameRefusal,
+  asDeclared,
+  type BusPrimitive,
+  type Delivered,
+  type Heard,
+} from './bus';
 // The client's deadlines, retry budgets and stream cadence, generated from
 // protocol/specs/src/client/timing.json — the table every SDK generates from.
 export * from './client-timing';
@@ -243,7 +283,11 @@ export {
 } from './error-codes';
 export * from './oauth-clients';
 export * from './sign-in';
-export { BUS_OPERATIONS, type BusOperationKey, type BusOperationSpec } from './bus-operations';
+export {
+  BUS_OPERATIONS,
+  type BusOperationKey,
+  type BusOperationSpec,
+} from './bus-operations';
 export { LIMITS_OPERATIONS, type LimitsOperation } from './limits-operations';
 export {
   CHANNEL_ATTRS,
@@ -266,11 +310,7 @@ export type {
 } from './anchor-annotation';
 
 // Locale info table
-export {
-  LOCALES,
-  LOCALE_CODES,
-  formatLocaleDisplay,
-} from './locales';
+export { LOCALES, LOCALE_CODES, formatLocaleDisplay } from './locales';
 export type { LocaleCode, LocaleInfo } from './locales';
 
 // SVG utilities
@@ -291,12 +331,12 @@ export { extractContext } from './text-context';
 export { decodeWithCharset } from './text-encoding';
 
 // Schema validation helpers
-export {
-  JWTTokenSchema,
-  validateData,
-  isValidEmail,
+export { JWTTokenSchema, validateData, isValidEmail } from './validation';
+export type {
+  ValidationSuccess,
+  ValidationFailure,
+  ValidationResult,
 } from './validation';
-export type { ValidationSuccess, ValidationFailure, ValidationResult } from './validation';
 
 // Media-type registry (capability-tiered, keyed by the spec's SupportedMediaType enum)
 export {
@@ -357,7 +397,13 @@ export type { GraphViews } from './knowledge-graph-views';
 
 // Bounded retry with backoff — startup connections from long-running peers
 // to the gateway.
-export { retryWithBackoff, equalJitter, isRetryableRequestError, retryAfterMs, STARTUP_FETCH_RETRY } from './retry';
+export {
+  retryWithBackoff,
+  equalJitter,
+  isRetryableRequestError,
+  retryAfterMs,
+  STARTUP_FETCH_RETRY,
+} from './retry';
 export type { HttpStatusError, RetryPolicy, RetryAttemptInfo } from './retry';
 
 // Browser ↔ launcher KB discovery — the canonical served URL of the

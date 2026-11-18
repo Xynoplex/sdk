@@ -5,7 +5,13 @@ import '@testing-library/jest-dom';
 import { ErrorBoundary, AsyncErrorBoundary } from '../ErrorBoundary';
 
 // Component that throws an error
-function ThrowError({ shouldThrow = false, message = 'Test error' }: { shouldThrow?: boolean; message?: string }) {
+function ThrowError({
+  shouldThrow = false,
+  message = 'Test error',
+}: {
+  shouldThrow?: boolean;
+  message?: string;
+}) {
   if (shouldThrow) {
     throw new Error(message);
   }
@@ -29,7 +35,7 @@ describe('ErrorBoundary Component', () => {
       render(
         <ErrorBoundary>
           <div>Test Content</div>
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
 
       expect(screen.getByText('Test Content')).toBeInTheDocument();
@@ -41,7 +47,7 @@ describe('ErrorBoundary Component', () => {
           <div>Child 1</div>
           <div>Child 2</div>
           <div>Child 3</div>
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
 
       expect(screen.getByText('Child 1')).toBeInTheDocument();
@@ -55,7 +61,7 @@ describe('ErrorBoundary Component', () => {
           <div>
             <span>Nested content</span>
           </div>
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
 
       expect(screen.getByText('Nested content')).toBeInTheDocument();
@@ -67,11 +73,17 @@ describe('ErrorBoundary Component', () => {
       render(
         <ErrorBoundary>
           <ThrowError shouldThrow={true} />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
 
-      expect(screen.getByText('Oops! Something went wrong')).toBeInTheDocument();
-      expect(screen.getByText('We encountered an unexpected error. Please try again.')).toBeInTheDocument();
+      expect(
+        screen.getByText('Oops! Something went wrong'),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          'We encountered an unexpected error. Please try again.',
+        ),
+      ).toBeInTheDocument();
     });
 
     it('should display error message in development mode', () => {
@@ -81,10 +93,12 @@ describe('ErrorBoundary Component', () => {
       render(
         <ErrorBoundary>
           <ThrowError shouldThrow={true} message="Custom error message" />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
 
-      expect(screen.getByText('Error Details (Development Only)')).toBeInTheDocument();
+      expect(
+        screen.getByText('Error Details (Development Only)'),
+      ).toBeInTheDocument();
       expect(screen.getByText('Custom error message')).toBeInTheDocument();
 
       process.env.NODE_ENV = originalEnv;
@@ -97,10 +111,12 @@ describe('ErrorBoundary Component', () => {
       render(
         <ErrorBoundary>
           <ThrowError shouldThrow={true} message="Production error" />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
 
-      expect(screen.queryByText('Error Details (Development Only)')).not.toBeInTheDocument();
+      expect(
+        screen.queryByText('Error Details (Development Only)'),
+      ).not.toBeInTheDocument();
       expect(screen.queryByText('Production error')).not.toBeInTheDocument();
 
       process.env.NODE_ENV = originalEnv;
@@ -113,11 +129,13 @@ describe('ErrorBoundary Component', () => {
       render(
         <ErrorBoundary>
           <ThrowError shouldThrow={true} />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
 
       // Stack trace should be present
-      const preElement = screen.getByText('Error Details (Development Only)').parentElement?.querySelector('pre');
+      const preElement = screen
+        .getByText('Error Details (Development Only)')
+        .parentElement?.querySelector('pre');
       expect(preElement).toBeInTheDocument();
 
       process.env.NODE_ENV = originalEnv;
@@ -137,7 +155,7 @@ describe('ErrorBoundary Component', () => {
       render(
         <ErrorBoundary fallback={customFallback}>
           <ThrowError shouldThrow={true} message="Custom fallback error" />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
 
       expect(screen.getByText('Custom Error UI')).toBeInTheDocument();
@@ -151,10 +169,12 @@ describe('ErrorBoundary Component', () => {
       render(
         <ErrorBoundary fallback={customFallback}>
           <ThrowError shouldThrow={true} />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
 
-      expect(screen.queryByText('Oops! Something went wrong')).not.toBeInTheDocument();
+      expect(
+        screen.queryByText('Oops! Something went wrong'),
+      ).not.toBeInTheDocument();
       expect(screen.getByText('Custom Fallback')).toBeInTheDocument();
     });
   });
@@ -166,13 +186,13 @@ describe('ErrorBoundary Component', () => {
       render(
         <ErrorBoundary onError={onError}>
           <ThrowError shouldThrow={true} message="Callback test error" />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
 
       expect(onError).toHaveBeenCalledOnce();
       expect(onError).toHaveBeenCalledWith(
         expect.objectContaining({ message: 'Callback test error' }),
-        expect.objectContaining({ componentStack: expect.any(String) })
+        expect.objectContaining({ componentStack: expect.any(String) }),
       );
     });
 
@@ -182,7 +202,7 @@ describe('ErrorBoundary Component', () => {
       render(
         <ErrorBoundary onError={onError}>
           <div>No error</div>
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
 
       expect(onError).not.toHaveBeenCalled();
@@ -196,13 +216,13 @@ describe('ErrorBoundary Component', () => {
       render(
         <ErrorBoundary>
           <ThrowError shouldThrow={true} message="Console test error" />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
 
       expect(consoleErrorSpy).toHaveBeenCalledWith(
         'ErrorBoundary caught an error:',
         expect.objectContaining({ message: 'Console test error' }),
-        expect.objectContaining({ componentStack: expect.any(String) })
+        expect.objectContaining({ componentStack: expect.any(String) }),
       );
 
       process.env.NODE_ENV = originalEnv;
@@ -214,10 +234,12 @@ describe('ErrorBoundary Component', () => {
       render(
         <ErrorBoundary>
           <ThrowError shouldThrow={true} />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
 
-      expect(screen.getByText('Oops! Something went wrong')).toBeInTheDocument();
+      expect(
+        screen.getByText('Oops! Something went wrong'),
+      ).toBeInTheDocument();
       expect(screen.getByText('Try Again')).toBeInTheDocument();
     });
 
@@ -225,14 +247,21 @@ describe('ErrorBoundary Component', () => {
       const resetHandler = vi.fn();
       const customFallback = (_error: Error, reset: () => void) => (
         <div>
-          <button onClick={() => { resetHandler(); reset(); }}>Reset</button>
+          <button
+            onClick={() => {
+              resetHandler();
+              reset();
+            }}
+          >
+            Reset
+          </button>
         </div>
       );
 
       render(
         <ErrorBoundary fallback={customFallback}>
           <ThrowError shouldThrow={true} />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
 
       const resetButton = screen.getByText('Reset');
@@ -251,7 +280,7 @@ describe('ErrorBoundary Component', () => {
       const { rerender } = render(
         <ErrorBoundary fallback={customFallback}>
           <ThrowError shouldThrow={true} message="Initial error" />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
 
       expect(screen.getByText('Error: Initial error')).toBeInTheDocument();
@@ -266,7 +295,7 @@ describe('ErrorBoundary Component', () => {
       rerender(
         <ErrorBoundary fallback={customFallback}>
           <div>No error</div>
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
 
       expect(screen.getByText('No error')).toBeInTheDocument();
@@ -278,7 +307,7 @@ describe('ErrorBoundary Component', () => {
       render(
         <ErrorBoundary>
           <ThrowError shouldThrow={true} />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
 
       expect(screen.getByText('Go Home')).toBeInTheDocument();
@@ -295,7 +324,7 @@ describe('ErrorBoundary Component', () => {
       render(
         <ErrorBoundary>
           <ThrowError shouldThrow={true} />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
 
       const goHomeButton = screen.getByText('Go Home');
@@ -316,10 +345,12 @@ describe('ErrorBoundary Component', () => {
       const { container } = render(
         <ErrorBoundary>
           <ThrowError shouldThrow={true} />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
 
-      const wrapper = container.querySelector('.xynolog-error-boundary-container');
+      const wrapper = container.querySelector(
+        '.xynolog-error-boundary-container',
+      );
       expect(wrapper).toBeInTheDocument();
       expect(wrapper).toHaveClass('xynolog-error-boundary-container');
     });
@@ -328,7 +359,7 @@ describe('ErrorBoundary Component', () => {
       render(
         <ErrorBoundary>
           <ThrowError shouldThrow={true} />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
 
       const tryAgainButton = screen.getByText('Try Again');
@@ -350,20 +381,24 @@ describe('ErrorBoundary Component', () => {
       render(
         <ErrorBoundary>
           <ThrowEmptyError />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
 
-      expect(screen.getByText('Oops! Something went wrong')).toBeInTheDocument();
+      expect(
+        screen.getByText('Oops! Something went wrong'),
+      ).toBeInTheDocument();
     });
 
     it('should handle multiple errors from different children', () => {
       const { rerender } = render(
         <ErrorBoundary>
           <ThrowError shouldThrow={true} message="First error" />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
 
-      expect(screen.getByText('Oops! Something went wrong')).toBeInTheDocument();
+      expect(
+        screen.getByText('Oops! Something went wrong'),
+      ).toBeInTheDocument();
 
       const resetButton = screen.getByText('Try Again');
       fireEvent.click(resetButton);
@@ -371,10 +406,12 @@ describe('ErrorBoundary Component', () => {
       rerender(
         <ErrorBoundary>
           <ThrowError shouldThrow={true} message="Second error" />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
 
-      expect(screen.getByText('Oops! Something went wrong')).toBeInTheDocument();
+      expect(
+        screen.getByText('Oops! Something went wrong'),
+      ).toBeInTheDocument();
     });
 
     it('should handle error with long message', () => {
@@ -386,7 +423,7 @@ describe('ErrorBoundary Component', () => {
       render(
         <ErrorBoundary>
           <ThrowError shouldThrow={true} message={longMessage} />
-        </ErrorBoundary>
+        </ErrorBoundary>,
       );
 
       expect(screen.getByText(longMessage)).toBeInTheDocument();
@@ -410,7 +447,7 @@ describe('AsyncErrorBoundary Component', () => {
       render(
         <AsyncErrorBoundary>
           <div>Async Content</div>
-        </AsyncErrorBoundary>
+        </AsyncErrorBoundary>,
       );
 
       expect(screen.getByText('Async Content')).toBeInTheDocument();
@@ -422,10 +459,12 @@ describe('AsyncErrorBoundary Component', () => {
       render(
         <AsyncErrorBoundary>
           <ThrowError shouldThrow={true} message="Async error" />
-        </AsyncErrorBoundary>
+        </AsyncErrorBoundary>,
       );
 
-      expect(screen.getByText('Failed to load this section')).toBeInTheDocument();
+      expect(
+        screen.getByText('Failed to load this section'),
+      ).toBeInTheDocument();
       expect(screen.getByText('Async error')).toBeInTheDocument();
     });
 
@@ -433,7 +472,7 @@ describe('AsyncErrorBoundary Component', () => {
       render(
         <AsyncErrorBoundary>
           <ThrowError shouldThrow={true} />
-        </AsyncErrorBoundary>
+        </AsyncErrorBoundary>,
       );
 
       expect(screen.getByText('Retry')).toBeInTheDocument();
@@ -447,11 +486,13 @@ describe('AsyncErrorBoundary Component', () => {
       const { container } = render(
         <AsyncErrorBoundary>
           <ThrowEmptyError />
-        </AsyncErrorBoundary>
+        </AsyncErrorBoundary>,
       );
 
       expect(screen.getByText('Retry')).toBeInTheDocument();
-      expect(container.querySelector('.xynolog-async-error-message')).toBeEmptyDOMElement();
+      expect(
+        container.querySelector('.xynolog-async-error-message'),
+      ).toBeEmptyDOMElement();
     });
   });
 
@@ -460,10 +501,12 @@ describe('AsyncErrorBoundary Component', () => {
       render(
         <AsyncErrorBoundary>
           <ThrowError shouldThrow={true} />
-        </AsyncErrorBoundary>
+        </AsyncErrorBoundary>,
       );
 
-      expect(screen.getByText('Failed to load this section')).toBeInTheDocument();
+      expect(
+        screen.getByText('Failed to load this section'),
+      ).toBeInTheDocument();
       expect(screen.getByText('Retry')).toBeInTheDocument();
     });
 
@@ -471,7 +514,7 @@ describe('AsyncErrorBoundary Component', () => {
       render(
         <AsyncErrorBoundary>
           <ThrowError shouldThrow={true} />
-        </AsyncErrorBoundary>
+        </AsyncErrorBoundary>,
       );
 
       const retryButton = screen.getByText('Retry');
@@ -486,7 +529,7 @@ describe('AsyncErrorBoundary Component', () => {
       const { container } = render(
         <AsyncErrorBoundary>
           <ThrowError shouldThrow={true} />
-        </AsyncErrorBoundary>
+        </AsyncErrorBoundary>,
       );
 
       const wrapper = container.querySelector('.xynolog-async-error-boundary');
@@ -498,7 +541,7 @@ describe('AsyncErrorBoundary Component', () => {
       const { container } = render(
         <AsyncErrorBoundary>
           <ThrowError shouldThrow={true} />
-        </AsyncErrorBoundary>
+        </AsyncErrorBoundary>,
       );
 
       const icon = container.querySelector('svg');
@@ -513,7 +556,7 @@ describe('AsyncErrorBoundary Component', () => {
       render(
         <AsyncErrorBoundary>
           <ThrowError shouldThrow={true} message="Integration test" />
-        </AsyncErrorBoundary>
+        </AsyncErrorBoundary>,
       );
 
       expect(screen.getByText('Integration test')).toBeInTheDocument();

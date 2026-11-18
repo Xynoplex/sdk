@@ -11,7 +11,9 @@ import { trackList } from '../list-state';
 
 describe('trackList', () => {
   it('starts loading, with the empty value and no error', async () => {
-    const source = new BehaviorSubject<CacheState<string[]>>({ status: 'pending' });
+    const source = new BehaviorSubject<CacheState<string[]>>({
+      status: 'pending',
+    });
     const { state, dispose } = trackList<string[]>(() => source, []);
 
     expect(await firstValueFrom(state.loading$)).toBe(true);
@@ -21,7 +23,9 @@ describe('trackList', () => {
   });
 
   it('a value ends loading', async () => {
-    const source = new BehaviorSubject<CacheState<string[]>>({ status: 'pending' });
+    const source = new BehaviorSubject<CacheState<string[]>>({
+      status: 'pending',
+    });
     const { state, dispose } = trackList<string[]>(() => source, []);
 
     source.next({ status: 'ready', value: ['a'] });
@@ -38,7 +42,9 @@ describe('trackList', () => {
     source.next({ status: 'failed', error: new Error('Resource not found') });
 
     expect(await firstValueFrom(state.loading$)).toBe(false);
-    expect((await firstValueFrom(state.error$))?.message).toBe('Resource not found');
+    expect((await firstValueFrom(state.error$))?.message).toBe(
+      'Resource not found',
+    );
     dispose();
   });
 
@@ -53,7 +59,9 @@ describe('trackList', () => {
     // one that never resolves.
 
     it('enters revalidating — not loading — when the source returns to undefined', async () => {
-      const source = new BehaviorSubject<CacheState<string[]>>({ status: 'pending' });
+      const source = new BehaviorSubject<CacheState<string[]>>({
+        status: 'pending',
+      });
       const { state, dispose } = trackList<string[]>(() => source, []);
 
       source.next({ status: 'ready', value: ['first'] });
@@ -67,7 +75,9 @@ describe('trackList', () => {
     });
 
     it('loading$ never re-enters after the first value — a blocking spinner cannot latch', async () => {
-      const source = new BehaviorSubject<CacheState<string[]>>({ status: 'pending' });
+      const source = new BehaviorSubject<CacheState<string[]>>({
+        status: 'pending',
+      });
       const { state, dispose } = trackList<string[]>(() => source, []);
       const seen: boolean[] = [];
       state.loading$.subscribe((l) => seen.push(l));
@@ -81,7 +91,9 @@ describe('trackList', () => {
     });
 
     it('keeps the last value while re-loading, so the view can render stale-with-spinner', async () => {
-      const source = new BehaviorSubject<CacheState<string[]>>({ status: 'pending' });
+      const source = new BehaviorSubject<CacheState<string[]>>({
+        status: 'pending',
+      });
       const { state, dispose } = trackList<string[]>(() => source, []);
 
       source.next({ status: 'ready', value: ['first'] });
@@ -96,7 +108,11 @@ describe('trackList', () => {
       const filter$ = new BehaviorSubject<string>('');
       const keys = new Map<string, BehaviorSubject<CacheState<string[]>>>();
       const forKey = (k: string) => {
-        if (!keys.has(k)) keys.set(k, new BehaviorSubject<CacheState<string[]>>({ status: 'pending' }));
+        if (!keys.has(k))
+          keys.set(
+            k,
+            new BehaviorSubject<CacheState<string[]>>({ status: 'pending' }),
+          );
         return keys.get(k)!;
       };
 
@@ -166,11 +182,17 @@ describe('trackList', () => {
   });
 
   it('dispose is terminal and inert', async () => {
-    const source = new BehaviorSubject<CacheState<string[]>>({ status: 'pending' });
+    const source = new BehaviorSubject<CacheState<string[]>>({
+      status: 'pending',
+    });
     const { state, dispose } = trackList<string[]>(() => source, []);
 
     let completed = 0;
-    state.value$.subscribe({ complete: () => { completed += 1; } });
+    state.value$.subscribe({
+      complete: () => {
+        completed += 1;
+      },
+    });
 
     dispose();
     dispose();

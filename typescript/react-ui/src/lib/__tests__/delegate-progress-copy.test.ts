@@ -14,7 +14,11 @@
  */
 import { describe, it, expect } from 'vitest';
 import { MARK_MOTIVATIONS, type components } from '@xynolog/core';
-import { delegateProgressCopy, delegateSubjectCopy, delegateParamLabel } from '../delegate-progress-copy';
+import {
+  delegateProgressCopy,
+  delegateSubjectCopy,
+  delegateParamLabel,
+} from '../delegate-progress-copy';
 import en from '../../../translations/en.json';
 
 type JobProgressMessage = components['schemas']['JobProgressMessage'];
@@ -29,7 +33,8 @@ const spy = () => {
   return { t, calls };
 };
 
-const NAMESPACE = (en as Record<string, Record<string, string>>).DelegateProgress;
+const NAMESPACE = (en as Record<string, Record<string, string>>)
+  .DelegateProgress;
 
 /** Every member of the union, one per variant shape. */
 const ALL: Array<{ message: JobProgressMessage; key: string }> = [
@@ -38,12 +43,27 @@ const ALL: Array<{ message: JobProgressMessage; key: string }> = [
   { message: { code: 'analyzing-tags' }, key: 'codeAnalyzingTags' },
   { message: { code: 'generating-resource' }, key: 'codeGeneratingResource' },
   { message: { code: 'creating-resource' }, key: 'codeCreatingResource' },
-  { message: { code: 'complete-generated', truncated: false }, key: 'codeCompleteGenerated' },
+  {
+    message: { code: 'complete-generated', truncated: false },
+    key: 'codeCompleteGenerated',
+  },
   // A run cut off at the maxTokens ceiling completes, but never silently.
-  { message: { code: 'complete-generated', truncated: true }, key: 'codeCompleteGeneratedTruncated' },
-  { message: { code: 'detecting-entities', entityType: 'Person' }, key: 'codeDetectingEntities' },
-  { message: { code: 'creating-annotations', count: 3 }, key: 'codeCreatingAnnotations' },
-  { message: { code: 'creating-tag-annotations', count: 4 }, key: 'codeCreatingTagAnnotations' },
+  {
+    message: { code: 'complete-generated', truncated: true },
+    key: 'codeCompleteGeneratedTruncated',
+  },
+  {
+    message: { code: 'detecting-entities', entityType: 'Person' },
+    key: 'codeDetectingEntities',
+  },
+  {
+    message: { code: 'creating-annotations', count: 3 },
+    key: 'codeCreatingAnnotations',
+  },
+  {
+    message: { code: 'creating-tag-annotations', count: 4 },
+    key: 'codeCreatingTagAnnotations',
+  },
   {
     message: { code: 'complete-created', count: 7, motivation: 'linking' },
     key: 'codeCompleteCreated',
@@ -62,7 +82,9 @@ describe('delegateProgressCopy', () => {
     const copy = delegateProgressCopy(t);
     for (const { message } of ALL) copy(message);
 
-    const missing = [...new Set(calls.map((c) => c.key))].filter((k) => !(k in NAMESPACE));
+    const missing = [...new Set(calls.map((c) => c.key))].filter(
+      (k) => !(k in NAMESPACE),
+    );
     expect(missing).toEqual([]);
   });
 
@@ -74,7 +96,11 @@ describe('delegateProgressCopy', () => {
 
   it('words what was created from the job\'s motivation — "7 references" is two translated parts', () => {
     const { t, calls } = spy();
-    delegateProgressCopy(t)({ code: 'complete-created', count: 7, motivation: 'linking' });
+    delegateProgressCopy(t)({
+      code: 'complete-created',
+      count: 7,
+      motivation: 'linking',
+    });
     // The spy echoes the key, so the noun handed to the sentence is the noun's key.
     expect(calls).toEqual([
       { key: 'nounLinking' },
@@ -88,7 +114,11 @@ describe('delegateProgressCopy', () => {
     // A noun left behind by a motivation that is gone is copy nobody reads.
     const named = MARK_MOTIVATIONS.map((motivation) => {
       const { t, calls } = spy();
-      delegateProgressCopy(t)({ code: 'complete-created', count: 1, motivation });
+      delegateProgressCopy(t)({
+        code: 'complete-created',
+        count: 1,
+        motivation,
+      });
       return calls[0]!.key;
     });
     const held = Object.keys(NAMESPACE).filter((key) => key.startsWith('noun'));
@@ -100,7 +130,10 @@ describe('delegateProgressCopy', () => {
     // The code is a wire token. If it ever reached the string the user reads,
     // that is the untranslated leak this whole arc removed.
     const { t } = spy();
-    const out = delegateProgressCopy(t)({ code: 'detecting-entities', entityType: 'Person' });
+    const out = delegateProgressCopy(t)({
+      code: 'detecting-entities',
+      entityType: 'Person',
+    });
     expect(out).not.toContain('detecting-entities');
   });
 });
@@ -124,7 +157,11 @@ describe('delegateSubjectCopy', () => {
     const { t, calls } = spy();
     delegateSubjectCopy(t)(ENTITY_TYPE, 0, 3);
     expect(calls.map((c) => c.key)).toContain('subjectWithPosition');
-    expect(calls.at(-1)?.params).toMatchObject({ label: 'Person', done: 1, total: 3 });
+    expect(calls.at(-1)?.params).toMatchObject({
+      label: 'Person',
+      done: 1,
+      total: 3,
+    });
     expect('subjectWithPosition' in NAMESPACE).toBe(true);
   });
 
@@ -145,14 +182,18 @@ describe('delegateSubjectCopy', () => {
       delegateSubjectCopy(t)(current, 0, 2);
       expect(calls.map((c) => c.key)).toContain(key);
       expect(key in NAMESPACE).toBe(true);
-      expect(calls.at(-1)?.params?.kind).toBe(key);   // the spy echoes the key
+      expect(calls.at(-1)?.params?.kind).toBe(key); // the spy echoes the key
       expect(calls.at(-1)?.params?.kind).not.toBe(current.kind);
     }
   });
 
-  it('shows the item VALUE verbatim — it is the user/KB\'s word, not ours', () => {
+  it("shows the item VALUE verbatim — it is the user/KB's word, not ours", () => {
     const { t, calls } = spy();
-    delegateSubjectCopy(t)({ kind: 'category', value: 'Führungsverhalten' }, 1, 4);
+    delegateSubjectCopy(t)(
+      { kind: 'category', value: 'Führungsverhalten' },
+      1,
+      4,
+    );
     expect(calls.at(-1)?.params?.label).toBe('Führungsverhalten');
   });
 });
@@ -173,7 +214,8 @@ describe('delegateParamLabel', () => {
     // The codes are wire tokens — kebab-case and English. A user reading a
     // Japanese UI must never see "entity-types".
     const { t } = spy();
-    for (const code of CODES) expect(delegateParamLabel(t)(code)).not.toBe(code);
+    for (const code of CODES)
+      expect(delegateParamLabel(t)(code)).not.toBe(code);
   });
 
   it('falls back to the code for an unknown label rather than rendering nothing', () => {

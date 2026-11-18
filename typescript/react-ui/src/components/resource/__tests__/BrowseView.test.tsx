@@ -4,14 +4,21 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowseView } from '../BrowseView';
 import type { EventBus, EventMap } from '@xynolog/core';
 import type { XynologClient, XynologSession } from '@xynolog/sdk';
-import { createTestXynologWrapper, renderInEnglish, englishTranslationManager } from '../../../test-utils';
+import {
+  createTestXynologWrapper,
+  renderInEnglish,
+  englishTranslationManager,
+} from '../../../test-utils';
 
 import type { Annotation, AnnotationId } from '@xynolog/core';
 import { FrameRefusal, annotationId, resourceId } from '@xynolog/core';
 
 /** What the bus said, as its channel's payload: nothing bridges into this test's bus, so a refusal on it is the test's own fault. */
 function told<T>(payload: T | FrameRefusal): T {
-  if (payload instanceof FrameRefusal) throw new Error(`refused: ${payload.channel} ${payload.reason} ${payload.member}`);
+  if (payload instanceof FrameRefusal)
+    throw new Error(
+      `refused: ${payload.channel} ${payload.reason} ${payload.member}`,
+    );
   return payload;
 }
 
@@ -31,14 +38,20 @@ vi.mock('@xynolog/core', async () => {
     resourceId: vi.fn((id: string) => id),
     getExactText: vi.fn(() => 'exact text'),
     getTextPositionSelector: vi.fn(() => ({ start: 0, end: 10 })),
-    getTargetSelector: vi.fn(() => ({ type: 'TextPositionSelector', start: 0, end: 10 })),
+    getTargetSelector: vi.fn(() => ({
+      type: 'TextPositionSelector',
+      start: 0,
+      end: 10,
+    })),
     getBodySource: vi.fn(() => null),
   };
 });
 
 // Mock ReactMarkdown
 vi.mock('react-markdown', () => ({
-  default: ({ children }: { children: string }) => <div data-testid="markdown-content">{children}</div>,
+  default: ({ children }: { children: string }) => (
+    <div data-testid="markdown-content">{children}</div>
+  ),
 }));
 
 // Mock remark-gfm
@@ -89,7 +102,9 @@ vi.mock('../../annotation/AnnotateToolbar', () => ({
 type TrackedChannel = 'beckon:hover' | 'browse:click' | 'beckon:focus';
 
 /** One emit the tracker saw: its channel, and that channel's payload. */
-type TrackedEvent = { [K in TrackedChannel]: { event: K; payload: EventMap[K] } }[TrackedChannel];
+type TrackedEvent = {
+  [K in TrackedChannel]: { event: K; payload: EventMap[K] };
+}[TrackedChannel];
 
 function createEventTracker() {
   const events: TrackedEvent[] = [];
@@ -131,14 +146,17 @@ function makeSession(client: XynologClient): XynologSession {
 // client has no anchored text to answer with.
 const renderWithProviders = (
   component: React.ReactElement<React.ComponentProps<typeof BrowseView>>,
-  options: { sparkleAnnotationIds?: Set<string> } = {}
+  options: { sparkleAnnotationIds?: Set<string> } = {},
 ) => {
   const { XynologWrapper, client } = createTestXynologWrapper();
   const Wrapper = ({ children }: { children: React.ReactNode }) => (
     <XynologWrapper>{children}</XynologWrapper>
   );
   return renderInEnglish(
-    React.cloneElement(component, { session: makeSession(client), sparkleAnnotationIds: options.sparkleAnnotationIds }),
+    React.cloneElement(component, {
+      session: makeSession(client),
+      sparkleAnnotationIds: options.sparkleAnnotationIds,
+    }),
     { wrapper: Wrapper },
   );
 };
@@ -146,7 +164,7 @@ const renderWithProviders = (
 const renderWithEventTracking = (
   component: React.ReactElement<React.ComponentProps<typeof BrowseView>>,
   tracker: ReturnType<typeof createEventTracker>,
-  options: { sparkleAnnotationIds?: Set<string> } = {}
+  options: { sparkleAnnotationIds?: Set<string> } = {},
 ) => {
   const { XynologWrapper, eventBus, client } = createTestXynologWrapper();
   tracker._attach(eventBus);
@@ -154,13 +172,19 @@ const renderWithEventTracking = (
     <XynologWrapper>{children}</XynologWrapper>
   );
   return render(
-    React.cloneElement(component, { session: makeSession(client), sparkleAnnotationIds: options.sparkleAnnotationIds }),
+    React.cloneElement(component, {
+      session: makeSession(client),
+      sparkleAnnotationIds: options.sparkleAnnotationIds,
+    }),
     { wrapper: Wrapper },
   );
 };
 
 // Test data fixtures
-const createMockAnnotation = (motivation: Annotation['motivation'], id: string): Annotation => ({
+const createMockAnnotation = (
+  motivation: Annotation['motivation'],
+  id: string,
+): Annotation => ({
   '@context': 'http://www.w3.org/ns/anno.jsonld',
   id: id as AnnotationId,
   type: 'Annotation',
@@ -209,7 +233,9 @@ describe('BrowseView Component', () => {
     if (typeof document !== 'undefined') {
       document.querySelector = vi.fn();
       // Return a real (empty) NodeList so the mock matches the DOM signature.
-      const emptyNodeList = document.createDocumentFragment().querySelectorAll('*');
+      const emptyNodeList = document
+        .createDocumentFragment()
+        .querySelectorAll('*');
       document.querySelectorAll = vi.fn(() => emptyNodeList);
     }
   });
@@ -220,7 +246,12 @@ describe('BrowseView Component', () => {
 
   describe('Rendering', () => {
     it('should render markdown content in text mode', () => {
-      renderWithProviders(<BrowseView translationManager={englishTranslationManager} {...defaultProps} />);
+      renderWithProviders(
+        <BrowseView
+          translationManager={englishTranslationManager}
+          {...defaultProps}
+        />,
+      );
 
       expect(screen.getByTestId('markdown-content')).toBeInTheDocument();
       expect(screen.getByTestId('annotate-toolbar')).toBeInTheDocument();
@@ -229,20 +260,39 @@ describe('BrowseView Component', () => {
     it('should render the read-only annotation canvas for image mime types', () => {
       // A bare ImageViewer would silently drop the annotations prop, so image
       // marks would never paint in browse mode.
-      const { container } = renderWithProviders(<BrowseView translationManager={englishTranslationManager} {...defaultProps} mimeType="image/png" />);
+      const { container } = renderWithProviders(
+        <BrowseView
+          translationManager={englishTranslationManager}
+          {...defaultProps}
+          mimeType="image/png"
+        />,
+      );
 
-      expect(container.querySelector('.xynolog-svg-drawing-canvas')).toBeInTheDocument();
+      expect(
+        container.querySelector('.xynolog-svg-drawing-canvas'),
+      ).toBeInTheDocument();
     });
 
     it('should render unsupported message for unsupported mime types', () => {
-      renderWithProviders(<BrowseView translationManager={englishTranslationManager} {...defaultProps} mimeType="application/octet-stream" />);
+      renderWithProviders(
+        <BrowseView
+          translationManager={englishTranslationManager}
+          {...defaultProps}
+          mimeType="application/octet-stream"
+        />,
+      );
 
       expect(screen.getByText(/Preview not available/)).toBeInTheDocument();
       expect(screen.getByText('Download File')).toBeInTheDocument();
     });
 
     it('should apply correct data-mime-type attribute', () => {
-      const { container } = renderWithProviders(<BrowseView translationManager={englishTranslationManager} {...defaultProps} />);
+      const { container } = renderWithProviders(
+        <BrowseView
+          translationManager={englishTranslationManager}
+          {...defaultProps}
+        />,
+      );
 
       const browseView = container.querySelector('[data-mime-type="text"]');
       expect(browseView).toBeInTheDocument();
@@ -251,9 +301,16 @@ describe('BrowseView Component', () => {
 
   describe('Event Handling - Clean Enter/Exit Pattern', () => {
     it('should attach single click handler to container on mount', () => {
-      const { container } = renderWithProviders(<BrowseView translationManager={englishTranslationManager} {...defaultProps} />);
+      const { container } = renderWithProviders(
+        <BrowseView
+          translationManager={englishTranslationManager}
+          {...defaultProps}
+        />,
+      );
 
-      const browseContainer = container.querySelector('.xynolog-browse-view__content');
+      const browseContainer = container.querySelector(
+        '.xynolog-browse-view__content',
+      );
       expect(browseContainer).toBeInTheDocument();
 
       // Verify handler is attached by checking if the element exists
@@ -268,8 +325,12 @@ describe('BrowseView Component', () => {
       };
 
       const { container } = renderWithEventTracking(
-        <BrowseView translationManager={englishTranslationManager} {...defaultProps} annotations={annotations} />,
-        tracker
+        <BrowseView
+          translationManager={englishTranslationManager}
+          {...defaultProps}
+          annotations={annotations}
+        />,
+        tracker,
       );
 
       // Create mock annotation element
@@ -282,15 +343,20 @@ describe('BrowseView Component', () => {
         closest: vi.fn(() => mockAnnotationElement),
       };
 
-      const browseContainer = container.querySelector('.xynolog-browse-view__content');
+      const browseContainer = container.querySelector(
+        '.xynolog-browse-view__content',
+      );
 
       // Simulate mouseover event (fires once on enter)
       fireEvent.mouseOver(browseContainer!, { target: mockTarget });
 
       await waitFor(() => {
-        expect(tracker.events.some(e =>
-          e.event === 'beckon:hover' && e.payload?.annotationId === 'ref-1'
-        )).toBe(true);
+        expect(
+          tracker.events.some(
+            (e) =>
+              e.event === 'beckon:hover' && e.payload?.annotationId === 'ref-1',
+          ),
+        ).toBe(true);
       });
     });
 
@@ -302,11 +368,17 @@ describe('BrowseView Component', () => {
         references: [createMockAnnotation('linking', 'ref-1')],
       };
       const { container } = renderWithEventTracking(
-        <BrowseView translationManager={englishTranslationManager} {...defaultProps} annotations={annotations} />,
-        tracker
+        <BrowseView
+          translationManager={englishTranslationManager}
+          {...defaultProps}
+          annotations={annotations}
+        />,
+        tracker,
       );
 
-      const browseContainer = container.querySelector('.xynolog-browse-view__content');
+      const browseContainer = container.querySelector(
+        '.xynolog-browse-view__content',
+      );
 
       const mockAnnotationElement = document.createElement('span');
       mockAnnotationElement.setAttribute('data-annotation-id', 'ref-1');
@@ -321,22 +393,32 @@ describe('BrowseView Component', () => {
       // Now exit — should emit null
       fireEvent.mouseOut(browseContainer!, { target: mockTarget });
 
-      expect(tracker.events.some(e =>
-        e.event === 'beckon:hover' && e.payload?.annotationId === null
-      )).toBe(true);
+      expect(
+        tracker.events.some(
+          (e) => e.event === 'beckon:hover' && e.payload?.annotationId === null,
+        ),
+      ).toBe(true);
 
       vi.useRealTimers();
     });
 
     it('should not emit on mouseover when not over annotation', async () => {
       const tracker = createEventTracker();
-      const { container } = renderWithEventTracking(<BrowseView translationManager={englishTranslationManager} {...defaultProps} />, tracker);
+      const { container } = renderWithEventTracking(
+        <BrowseView
+          translationManager={englishTranslationManager}
+          {...defaultProps}
+        />,
+        tracker,
+      );
 
       const mockTargetNoAnnotation = {
         closest: vi.fn(() => null),
       };
 
-      const browseContainer = container.querySelector('.xynolog-browse-view__content');
+      const browseContainer = container.querySelector(
+        '.xynolog-browse-view__content',
+      );
 
       tracker.clear();
 
@@ -344,7 +426,7 @@ describe('BrowseView Component', () => {
       fireEvent.mouseOver(browseContainer!, { target: mockTargetNoAnnotation });
 
       // Should not emit any event
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
       expect(tracker.events.length).toBe(0);
     });
 
@@ -359,8 +441,12 @@ describe('BrowseView Component', () => {
       };
 
       const { container } = renderWithEventTracking(
-        <BrowseView translationManager={englishTranslationManager} {...defaultProps} annotations={annotations} />,
-        tracker
+        <BrowseView
+          translationManager={englishTranslationManager}
+          {...defaultProps}
+          annotations={annotations}
+        />,
+        tracker,
       );
 
       const mockAnnotation1 = document.createElement('span');
@@ -372,7 +458,9 @@ describe('BrowseView Component', () => {
       const mockTarget1 = { closest: vi.fn(() => mockAnnotation1) };
       const mockTarget2 = { closest: vi.fn(() => mockAnnotation2) };
 
-      const browseContainer = container.querySelector('.xynolog-browse-view__content');
+      const browseContainer = container.querySelector(
+        '.xynolog-browse-view__content',
+      );
 
       tracker.clear();
 
@@ -380,9 +468,12 @@ describe('BrowseView Component', () => {
       fireEvent.mouseOver(browseContainer!, { target: mockTarget1 });
 
       await waitFor(() => {
-        expect(tracker.events.some(e =>
-          e.event === 'beckon:hover' && e.payload?.annotationId === 'ref-1'
-        )).toBe(true);
+        expect(
+          tracker.events.some(
+            (e) =>
+              e.event === 'beckon:hover' && e.payload?.annotationId === 'ref-1',
+          ),
+        ).toBe(true);
       });
 
       tracker.clear();
@@ -391,9 +482,12 @@ describe('BrowseView Component', () => {
       fireEvent.mouseOut(browseContainer!, { target: mockTarget1 });
 
       await waitFor(() => {
-        expect(tracker.events.some(e =>
-          e.event === 'beckon:hover' && e.payload?.annotationId === null
-        )).toBe(true);
+        expect(
+          tracker.events.some(
+            (e) =>
+              e.event === 'beckon:hover' && e.payload?.annotationId === null,
+          ),
+        ).toBe(true);
       });
 
       tracker.clear();
@@ -402,9 +496,12 @@ describe('BrowseView Component', () => {
       fireEvent.mouseOver(browseContainer!, { target: mockTarget2 });
 
       await waitFor(() => {
-        expect(tracker.events.some(e =>
-          e.event === 'beckon:hover' && e.payload?.annotationId === 'ref-2'
-        )).toBe(true);
+        expect(
+          tracker.events.some(
+            (e) =>
+              e.event === 'beckon:hover' && e.payload?.annotationId === 'ref-2',
+          ),
+        ).toBe(true);
       });
     });
 
@@ -421,11 +518,17 @@ describe('BrowseView Component', () => {
       };
 
       const { container } = renderWithEventTracking(
-        <BrowseView translationManager={englishTranslationManager} {...defaultProps} annotations={annotations} />,
-        tracker
+        <BrowseView
+          translationManager={englishTranslationManager}
+          {...defaultProps}
+          annotations={annotations}
+        />,
+        tracker,
       );
 
-      const browseContainer = container.querySelector('.xynolog-browse-view__content');
+      const browseContainer = container.querySelector(
+        '.xynolog-browse-view__content',
+      );
 
       const clickCases = [
         { id: 'ref-1', type: 'reference', motivation: 'linking' },
@@ -437,16 +540,20 @@ describe('BrowseView Component', () => {
         const el = document.createElement('span');
         el.setAttribute('data-annotation-id', id);
         el.setAttribute('data-annotation-type', type);
-        const mockTarget = { closest: vi.fn(() => el) } as unknown as EventTarget;
+        const mockTarget = {
+          closest: vi.fn(() => el),
+        } as unknown as EventTarget;
 
         tracker.clear();
         fireEvent.click(browseContainer!, { target: mockTarget });
 
         await waitFor(() => {
-          expect(tracker.events.some(e =>
-            e.event === 'browse:click' &&
-            e.payload?.annotationId === id
-          )).toBe(true);
+          expect(
+            tracker.events.some(
+              (e) =>
+                e.event === 'browse:click' && e.payload?.annotationId === id,
+            ),
+          ).toBe(true);
         });
       }
     });
@@ -462,32 +569,47 @@ describe('BrowseView Component', () => {
       };
 
       const { container } = renderWithEventTracking(
-        <BrowseView translationManager={englishTranslationManager} {...defaultProps} annotations={annotations} />,
-        tracker
+        <BrowseView
+          translationManager={englishTranslationManager}
+          {...defaultProps}
+          annotations={annotations}
+        />,
+        tracker,
       );
 
       const el = document.createElement('span');
       el.setAttribute('data-annotation-id', 'highlight-1');
       el.setAttribute('data-annotation-type', 'highlight');
       const RECT: DOMRect = {
-        x: 10, y: 20, width: 30, height: 40,
-        top: 20, right: 40, bottom: 60, left: 10,
+        x: 10,
+        y: 20,
+        width: 30,
+        height: 40,
+        top: 20,
+        right: 40,
+        bottom: 60,
+        left: 10,
         toJSON: () => ({}),
       };
       el.getBoundingClientRect = () => RECT;
       const mockTarget = { closest: vi.fn(() => el) } as unknown as EventTarget;
 
-      const browseContainer = container.querySelector('.xynolog-browse-view__content');
+      const browseContainer = container.querySelector(
+        '.xynolog-browse-view__content',
+      );
       tracker.clear();
       fireEvent.click(browseContainer!, { target: mockTarget });
 
       await waitFor(() => {
-        expect(tracker.events.some(e =>
-          e.event === 'browse:click' &&
-          e.payload?.annotationId === 'highlight-1' &&
-          e.payload?.anchorRect?.left === 10 &&
-          e.payload?.anchorRect?.width === 30
-        )).toBe(true);
+        expect(
+          tracker.events.some(
+            (e) =>
+              e.event === 'browse:click' &&
+              e.payload?.annotationId === 'highlight-1' &&
+              e.payload?.anchorRect?.left === 10 &&
+              e.payload?.anchorRect?.width === 30,
+          ),
+        ).toBe(true);
       });
     });
 
@@ -503,8 +625,12 @@ describe('BrowseView Component', () => {
       };
 
       const { container } = renderWithEventTracking(
-        <BrowseView translationManager={englishTranslationManager} {...defaultProps} annotations={annotations} />,
-        tracker
+        <BrowseView
+          translationManager={englishTranslationManager}
+          {...defaultProps}
+          annotations={annotations}
+        />,
+        tracker,
       );
 
       const el = document.createElement('span');
@@ -516,26 +642,42 @@ describe('BrowseView Component', () => {
         isCollapsed: false,
       } as Selection);
 
-      const browseContainer = container.querySelector('.xynolog-browse-view__content');
+      const browseContainer = container.querySelector(
+        '.xynolog-browse-view__content',
+      );
       tracker.clear();
       fireEvent.click(browseContainer!, { target: mockTarget });
 
-      await new Promise(resolve => setTimeout(resolve, 50));
-      expect(tracker.events.filter(e => e.event === 'browse:click').length).toBe(0);
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      expect(
+        tracker.events.filter((e) => e.event === 'browse:click').length,
+      ).toBe(0);
     });
   });
 
   describe('Event Subscriptions', () => {
     it('should subscribe to beckon:hover event', () => {
       const tracker = createEventTracker();
-      renderWithEventTracking(<BrowseView translationManager={englishTranslationManager} {...defaultProps} />, tracker);
+      renderWithEventTracking(
+        <BrowseView
+          translationManager={englishTranslationManager}
+          {...defaultProps}
+        />,
+        tracker,
+      );
 
       expect(tracker.subscriptions.has('beckon:hover')).toBe(true);
     });
 
     it('should subscribe to beckon:focus event', () => {
       const tracker = createEventTracker();
-      renderWithEventTracking(<BrowseView translationManager={englishTranslationManager} {...defaultProps} />, tracker);
+      renderWithEventTracking(
+        <BrowseView
+          translationManager={englishTranslationManager}
+          {...defaultProps}
+        />,
+        tracker,
+      );
 
       expect(tracker.subscriptions.has('beckon:focus')).toBe(true);
     });
@@ -550,9 +692,16 @@ describe('BrowseView Component', () => {
         highlights: [createMockAnnotation('highlighting', 'new-annotation-1')],
       };
 
-      renderWithProviders(<BrowseView translationManager={englishTranslationManager} {...defaultProps} annotations={annotations} />, {
-        sparkleAnnotationIds
-      });
+      renderWithProviders(
+        <BrowseView
+          translationManager={englishTranslationManager}
+          {...defaultProps}
+          annotations={annotations}
+        />,
+        {
+          sparkleAnnotationIds,
+        },
+      );
 
       // Verify the sparkleAnnotationIds set contains the expected annotation
       // In the actual component, this triggers the sparkle class application
@@ -562,14 +711,17 @@ describe('BrowseView Component', () => {
 
   describe('Performance - Event Listener Efficiency', () => {
     it('should handle many annotations efficiently through event delegation', async () => {
-      const eventTracker: Array<{ event: string; annotationId: string | null }> = [];
+      const eventTracker: Array<{
+        event: string;
+        annotationId: string | null;
+      }> = [];
 
       const manyAnnotations = {
         highlights: Array.from({ length: 50 }, (_, i) =>
-          createMockAnnotation('highlighting', `highlight-${i}`)
+          createMockAnnotation('highlighting', `highlight-${i}`),
         ),
         references: Array.from({ length: 50 }, (_, i) =>
-          createMockAnnotation('linking', `ref-${i}`)
+          createMockAnnotation('linking', `ref-${i}`),
         ),
         assessments: [],
         comments: [],
@@ -578,19 +730,32 @@ describe('BrowseView Component', () => {
 
       const { XynologWrapper, eventBus, client } = createTestXynologWrapper();
       eventBus.on('beckon:hover').subscribe((payload) => {
-        eventTracker.push({ event: 'beckon:hover', annotationId: told(payload)?.annotationId ?? null });
+        eventTracker.push({
+          event: 'beckon:hover',
+          annotationId: told(payload)?.annotationId ?? null,
+        });
       });
       eventBus.on('browse:click').subscribe((payload) => {
-        eventTracker.push({ event: 'browse:click', annotationId: told(payload)?.annotationId ?? null });
+        eventTracker.push({
+          event: 'browse:click',
+          annotationId: told(payload)?.annotationId ?? null,
+        });
       });
 
       const { container } = render(
         <XynologWrapper>
-          <BrowseView translationManager={englishTranslationManager} {...defaultProps} annotations={manyAnnotations} session={makeSession(client)} />
-        </XynologWrapper>
+          <BrowseView
+            translationManager={englishTranslationManager}
+            {...defaultProps}
+            annotations={manyAnnotations}
+            session={makeSession(client)}
+          />
+        </XynologWrapper>,
       );
 
-      const browseContainer = container.querySelector('.xynolog-browse-view__content');
+      const browseContainer = container.querySelector(
+        '.xynolog-browse-view__content',
+      );
       expect(browseContainer).toBeInTheDocument();
 
       // Create mock annotation elements
@@ -603,17 +768,27 @@ describe('BrowseView Component', () => {
       mockHighlightElement.setAttribute('data-annotation-type', 'highlight');
 
       const mockRefTarget = { closest: vi.fn(() => mockRefElement) };
-      const mockHighlightTarget = { closest: vi.fn(() => mockHighlightElement) };
+      const mockHighlightTarget = {
+        closest: vi.fn(() => mockHighlightElement),
+      };
 
       // Verify event delegation works by simulating interactions
       fireEvent.mouseOver(browseContainer!, { target: mockRefTarget });
       await waitFor(() => {
-        expect(eventTracker.some(e => e.event === 'beckon:hover' && e.annotationId === 'ref-1')).toBe(true);
+        expect(
+          eventTracker.some(
+            (e) => e.event === 'beckon:hover' && e.annotationId === 'ref-1',
+          ),
+        ).toBe(true);
       });
 
       fireEvent.click(browseContainer!, { target: mockRefTarget });
       await waitFor(() => {
-        expect(eventTracker.some(e => e.event === 'browse:click' && e.annotationId === 'ref-1')).toBe(true);
+        expect(
+          eventTracker.some(
+            (e) => e.event === 'browse:click' && e.annotationId === 'ref-1',
+          ),
+        ).toBe(true);
       });
 
       // Highlights emit through the same delegated handler (all motivations)
@@ -621,7 +796,12 @@ describe('BrowseView Component', () => {
       fireEvent.click(browseContainer!, { target: mockHighlightTarget });
 
       await waitFor(() => {
-        expect(eventTracker.some(e => e.event === 'browse:click' && e.annotationId === 'highlight-1')).toBe(true);
+        expect(
+          eventTracker.some(
+            (e) =>
+              e.event === 'browse:click' && e.annotationId === 'highlight-1',
+          ),
+        ).toBe(true);
       });
 
       // The key insight: With event delegation, we can handle 100 annotations
@@ -632,9 +812,16 @@ describe('BrowseView Component', () => {
 
   describe('Cleanup', () => {
     it('should remove event listeners on unmount', () => {
-      const { unmount, container } = renderWithProviders(<BrowseView translationManager={englishTranslationManager} {...defaultProps} />);
+      const { unmount, container } = renderWithProviders(
+        <BrowseView
+          translationManager={englishTranslationManager}
+          {...defaultProps}
+        />,
+      );
 
-      const browseContainer = container.querySelector('.xynolog-browse-view__content');
+      const browseContainer = container.querySelector(
+        '.xynolog-browse-view__content',
+      );
 
       // Mock removeEventListener to verify cleanup
       const mockRemoveEventListener = vi.fn();
@@ -663,8 +850,14 @@ describe('BrowseView — beckon:focus is guarded by resourceId', () => {
         translationManager={englishTranslationManager}
         content="hello world"
         mimeType="text/plain"
-        resourceUri={resourceId("res-1")}
-        annotations={{ highlights: [], references: [], assessments: [], comments: [], tags: [] }}
+        resourceUri={resourceId('res-1')}
+        annotations={{
+          highlights: [],
+          references: [],
+          assessments: [],
+          comments: [],
+          tags: [],
+        }}
         session={session}
         annotateMode={false}
       />,
@@ -673,8 +866,14 @@ describe('BrowseView — beckon:focus is guarded by resourceId', () => {
 
     // Neither call may throw; the assertion that matters is the guard's
     // existence, pinned in AnnotateView where the scroll helper is mockable.
-    client.bus.emit('beckon:focus', { annotationId: annotationId('ann-7'), resourceId: resourceId('res-2') });
-    client.bus.emit('beckon:focus', { annotationId: annotationId('ann-7'), resourceId: resourceId('res-1') });
+    client.bus.emit('beckon:focus', {
+      annotationId: annotationId('ann-7'),
+      resourceId: resourceId('res-2'),
+    });
+    client.bus.emit('beckon:focus', {
+      annotationId: annotationId('ann-7'),
+      resourceId: resourceId('res-1'),
+    });
   });
 
   it('scrolls its content to the top on a focus naming this resource and no annotation, and on no other', () => {
@@ -684,14 +883,22 @@ describe('BrowseView — beckon:focus is guarded by resourceId', () => {
         translationManager={englishTranslationManager}
         content="hello world"
         mimeType="text/plain"
-        resourceUri={resourceId("res-1")}
-        annotations={{ highlights: [], references: [], assessments: [], comments: [], tags: [] }}
+        resourceUri={resourceId('res-1')}
+        annotations={{
+          highlights: [],
+          references: [],
+          assessments: [],
+          comments: [],
+          tags: [],
+        }}
         session={session}
         annotateMode={false}
       />,
     );
     // jsdom lays nothing out and gives an element no scrollTo of its own.
-    const content = container.querySelector<HTMLElement>('.xynolog-browse-view__content');
+    const content = container.querySelector<HTMLElement>(
+      '.xynolog-browse-view__content',
+    );
     if (!content) throw new Error('the view rendered no content to scroll');
     const scrollTo = vi.fn();
     content.scrollTo = scrollTo;
@@ -700,6 +907,9 @@ describe('BrowseView — beckon:focus is guarded by resourceId', () => {
     expect(scrollTo).not.toHaveBeenCalled();
 
     client.bus.emit('beckon:focus', { resourceId: resourceId('res-1') });
-    expect(scrollTo).toHaveBeenCalledExactlyOnceWith({ top: 0, behavior: 'smooth' });
+    expect(scrollTo).toHaveBeenCalledExactlyOnceWith({
+      top: 0,
+      behavior: 'smooth',
+    });
   });
 });

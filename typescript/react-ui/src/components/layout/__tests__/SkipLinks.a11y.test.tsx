@@ -24,7 +24,7 @@ describe('SkipLinks - Accessibility', () => {
         <div>
           <SkipLinks />
           <MainContent>Main content</MainContent>
-        </div>
+        </div>,
       );
 
       const results = await axe(container);
@@ -36,7 +36,9 @@ describe('SkipLinks - Accessibility', () => {
     it('should provide skip to main content link', () => {
       renderInEnglish(<SkipLinks />);
 
-      const skipLink = screen.getByRole('link', { name: /skip to main content/i });
+      const skipLink = screen.getByRole('link', {
+        name: /skip to main content/i,
+      });
       expect(skipLink).toBeInTheDocument();
     });
 
@@ -52,12 +54,16 @@ describe('SkipLinks - Accessibility', () => {
           <SkipLinks />
           <nav>Navigation</nav>
           <MainContent>Main content</MainContent>
-        </div>
+        </div>,
       );
 
-      const skipLink = screen.getByRole<HTMLAnchorElement>('link', { name: /skip to main content/i });
+      const skipLink = screen.getByRole<HTMLAnchorElement>('link', {
+        name: /skip to main content/i,
+      });
 
-      expect(document.querySelector(skipLink.hash)).toBe(screen.getByRole('main'));
+      expect(document.querySelector(skipLink.hash)).toBe(
+        screen.getByRole('main'),
+      );
     });
   });
 
@@ -83,7 +89,7 @@ describe('SkipLinks - Accessibility', () => {
         <div>
           <MainContent>Main content</MainContent>
           <button>Next focusable element</button>
-        </div>
+        </div>,
       );
 
       await user.tab();
@@ -92,7 +98,11 @@ describe('SkipLinks - Accessibility', () => {
     });
 
     it('should pass its props to the main element', () => {
-      render(<MainContent className="custom-class" style={{ minHeight: '100vh' }}>Main content</MainContent>);
+      render(
+        <MainContent className="custom-class" style={{ minHeight: '100vh' }}>
+          Main content
+        </MainContent>,
+      );
 
       const main = screen.getByRole('main');
       expect(main).toHaveClass('custom-class');
@@ -124,7 +134,7 @@ describe('SkipLinks - Accessibility', () => {
         <div>
           <SkipLinks />
           <button>Next focusable element</button>
-        </div>
+        </div>,
       );
 
       // Tab to the skip link
@@ -146,7 +156,7 @@ describe('SkipLinks - Accessibility', () => {
           <SkipLinks />
           <header>Header</header>
           <MainContent>Main content</MainContent>
-        </div>
+        </div>,
       );
 
       const skipLinks = container.querySelector('.xynolog-skip-links');
@@ -161,7 +171,9 @@ describe('SkipLinks - Accessibility', () => {
     it('should have descriptive link text', () => {
       renderInEnglish(<SkipLinks />);
 
-      expect(screen.getByRole('link')).toHaveTextContent(/skip to main content/i);
+      expect(screen.getByRole('link')).toHaveTextContent(
+        /skip to main content/i,
+      );
     });
 
     it('should have an accessible name', () => {
@@ -172,12 +184,19 @@ describe('SkipLinks - Accessibility', () => {
 
     it("should take its text from the provider's translations", () => {
       render(
-        <TranslationProvider translationManager={{ t: (namespace, key) => `${namespace}.${key}, as the reader's language has it` }}>
+        <TranslationProvider
+          translationManager={{
+            t: (namespace, key) =>
+              `${namespace}.${key}, as the reader's language has it`,
+          }}
+        >
           <SkipLinks />
-        </TranslationProvider>
+        </TranslationProvider>,
       );
 
-      expect(screen.getByRole('link')).toHaveTextContent("SkipLinks.mainContent, as the reader's language has it");
+      expect(screen.getByRole('link')).toHaveTextContent(
+        "SkipLinks.mainContent, as the reader's language has it",
+      );
     });
   });
 

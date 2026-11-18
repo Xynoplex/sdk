@@ -71,7 +71,10 @@ export interface MediaTypeCapabilities {
  * (.xml, .yaml, .js, .ts, .webm) resolve to the first row declaring the
  * extension.
  */
-export const MEDIA_TYPES = MEDIA_TYPE_ROWS satisfies Record<SupportedMediaType, MediaTypeCapabilities>;
+export const MEDIA_TYPES = MEDIA_TYPE_ROWS satisfies Record<
+  SupportedMediaType,
+  MediaTypeCapabilities
+>;
 
 // String-indexable view for lookups with runtime strings.
 const REGISTRY: Readonly<Record<string, MediaTypeCapabilities>> = MEDIA_TYPES;
@@ -88,12 +91,16 @@ export function baseMediaType(format: string): string {
  * base type (see `baseMediaType`); strings carrying parameters are not
  * members.
  */
-export function isSupportedMediaType(format: string): format is SupportedMediaType {
+export function isSupportedMediaType(
+  format: string,
+): format is SupportedMediaType {
   return Object.hasOwn(MEDIA_TYPES, format);
 }
 
 /** Capabilities for a format (parameters tolerated), or undefined on registry miss. */
-export function capabilitiesOf(format: string): MediaTypeCapabilities | undefined {
+export function capabilitiesOf(
+  format: string,
+): MediaTypeCapabilities | undefined {
   return REGISTRY[baseMediaType(format)];
 }
 
@@ -103,9 +110,13 @@ export function capabilitiesOf(format: string): MediaTypeCapabilities | undefine
  * text/plain. Lives beside the registry it reads; the SDK applies it when
  * deriving a clone upload's format and the CloneTokenManager's tests pin it.
  */
-export function cloneFormat(sourceMediaType: string | undefined): SupportedMediaType {
+export function cloneFormat(
+  sourceMediaType: string | undefined,
+): SupportedMediaType {
   const base = baseMediaType(sourceMediaType ?? 'text/plain');
-  return isSupportedMediaType(base) && capabilitiesOf(base)?.authorable ? base : 'text/plain';
+  return isSupportedMediaType(base) && capabilitiesOf(base)?.authorable
+    ? base
+    : 'text/plain';
 }
 
 /**
@@ -117,14 +128,15 @@ export function extensionForMediaType(format: string): string {
   return capabilitiesOf(format)?.extension ?? '.dat';
 }
 
-const EXTENSION_TO_MEDIA_TYPE: ReadonlyMap<string, SupportedMediaType> = (() => {
-  const map = new Map<string, SupportedMediaType>();
-  for (const type of Object.keys(MEDIA_TYPES) as SupportedMediaType[]) {
-    const ext = MEDIA_TYPES[type].extension;
-    if (!map.has(ext)) map.set(ext, type);
-  }
-  return map;
-})();
+const EXTENSION_TO_MEDIA_TYPE: ReadonlyMap<string, SupportedMediaType> =
+  (() => {
+    const map = new Map<string, SupportedMediaType>();
+    for (const type of Object.keys(MEDIA_TYPES) as SupportedMediaType[]) {
+      const ext = MEDIA_TYPES[type].extension;
+      if (!map.has(ext)) map.set(ext, type);
+    }
+    return map;
+  })();
 
 /**
  * Inverted registry: extension → media type, for the CLI and the upload
@@ -132,7 +144,9 @@ const EXTENSION_TO_MEDIA_TYPE: ReadonlyMap<string, SupportedMediaType> = (() => 
  * spellings. Returns undefined for unknown extensions — detection chains
  * fall back to 'application/octet-stream' themselves.
  */
-export function mediaTypeForExtension(ext: string): SupportedMediaType | undefined {
+export function mediaTypeForExtension(
+  ext: string,
+): SupportedMediaType | undefined {
   const lower = ext.trim().toLowerCase();
   const dotted = lower.startsWith('.') ? lower : `.${lower}`;
   return EXTENSION_TO_MEDIA_TYPE.get(EXTENSION_ALIASES[dotted] ?? dotted);
@@ -165,9 +179,9 @@ export function textSourceOf(format: string): TextSource {
  * default into the wrong answer. Private — `yieldsGeometryOf` is the surface.
  */
 const GEOMETRY_BY_STRATEGY: Record<TextSource, boolean> = {
-  'decode': false,
+  decode: false,
   'pdf-text-layer': true,
-  'none': false,
+  none: false,
 };
 
 /**
@@ -200,9 +214,9 @@ export function yieldsGeometryOf(format: string): boolean {
  * Private — `derivesTextOf` is the surface.
  */
 const DERIVED_TEXT_BY_STRATEGY: Record<TextSource, boolean> = {
-  'decode': false,
+  decode: false,
   'pdf-text-layer': true,
-  'none': false,
+  none: false,
 };
 
 /**
@@ -223,13 +237,11 @@ export function derivesTextOf(format: string): boolean {
 const REGISTRY_KEYS = Object.keys(MEDIA_TYPES) as SupportedMediaType[];
 
 /** Types offered in the compose editor's format dropdown. */
-export const AUTHORABLE_MEDIA_TYPES: readonly SupportedMediaType[] = REGISTRY_KEYS.filter(
-  (type) => MEDIA_TYPES[type].authorable,
-);
+export const AUTHORABLE_MEDIA_TYPES: readonly SupportedMediaType[] =
+  REGISTRY_KEYS.filter((type) => MEDIA_TYPES[type].authorable);
 
 /** Types the generation worker can produce as a yield artifact — what the
  *  Browser offers as a generation's `outputMediaType` reads this, not a local
  *  table. */
-export const GENERATABLE_MEDIA_TYPES: readonly SupportedMediaType[] = REGISTRY_KEYS.filter(
-  (type) => MEDIA_TYPES[type].generatable,
-);
+export const GENERATABLE_MEDIA_TYPES: readonly SupportedMediaType[] =
+  REGISTRY_KEYS.filter((type) => MEDIA_TYPES[type].generatable);

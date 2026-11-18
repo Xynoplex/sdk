@@ -22,7 +22,11 @@ const IDENTIFIER = /^[A-Za-z][A-Za-z0-9_]*$/;
 
 /** `value`, when it is a code or a name that says which kind of error it was. `Error` says none. */
 function kind(value: unknown): string | undefined {
-  return typeof value === 'string' && IDENTIFIER.test(value) && value !== 'Error' ? value : undefined;
+  return typeof value === 'string' &&
+    IDENTIFIER.test(value) &&
+    value !== 'Error'
+    ? value
+    : undefined;
 }
 
 /**
@@ -33,7 +37,12 @@ function kind(value: unknown): string | undefined {
 export function whyUnanswered(error: unknown): string {
   if (!isObject(error)) return 'Error';
   const cause = isObject(error['cause']) ? error['cause'] : undefined;
-  return kind(cause?.['code']) ?? kind(cause?.['name']) ?? kind(error['name']) ?? 'Error';
+  return (
+    kind(cause?.['code']) ??
+    kind(cause?.['name']) ??
+    kind(error['name']) ??
+    'Error'
+  );
 }
 
 /**
@@ -61,7 +70,10 @@ export class UnansweredError extends XynologError {
  * A body that stops coming is a request that got no answer, and `unanswered`
  * makes the failure of it.
  */
-export async function jsonOf(response: Response, unanswered: (error: unknown) => Error): Promise<unknown> {
+export async function jsonOf(
+  response: Response,
+  unanswered: (error: unknown) => Error,
+): Promise<unknown> {
   try {
     const body: unknown = await response.json();
     return body;

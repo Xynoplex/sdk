@@ -12,9 +12,12 @@ import { renderWithProviders } from '../../../test-utils';
 import { SearchModal } from '../SearchModal';
 
 vi.mock('@headlessui/react', () => ({
-  Dialog: ({ children }: { children: ReactNode }) => <div role="dialog">{children}</div>,
+  Dialog: ({ children }: { children: ReactNode }) => (
+    <div role="dialog">{children}</div>
+  ),
   DialogPanel: ({ children }: { children: ReactNode }) => <div>{children}</div>,
-  Transition: ({ show, children }: { show: boolean; children: ReactNode }) => (show ? <>{children}</> : null),
+  Transition: ({ show, children }: { show: boolean; children: ReactNode }) =>
+    show ? <>{children}</> : null,
   TransitionChild: ({ children }: { children: ReactNode }) => <>{children}</>,
 }));
 
@@ -33,7 +36,12 @@ const translations = {
 
 function open() {
   return renderWithProviders(
-    <SearchModal isOpen onClose={vi.fn()} onNavigate={vi.fn()} translations={translations} />,
+    <SearchModal
+      isOpen
+      onClose={vi.fn()}
+      onNavigate={vi.fn()}
+      translations={translations}
+    />,
   );
 }
 
@@ -42,8 +50,16 @@ describe('SearchModal translations', () => {
     open();
 
     expect(screen.getByPlaceholderText('[placeholder]')).toBeInTheDocument();
-    expect(screen.getByRole('textbox', { name: '[title]' })).toBeInTheDocument();
-    for (const shown of ['[startTyping]', '[navigate]', '[select]', '[close]', '[enter]']) {
+    expect(
+      screen.getByRole('textbox', { name: '[title]' }),
+    ).toBeInTheDocument();
+    for (const shown of [
+      '[startTyping]',
+      '[navigate]',
+      '[select]',
+      '[close]',
+      '[enter]',
+    ]) {
       expect(screen.getByText(shown)).toBeInTheDocument();
     }
   });
@@ -61,8 +77,13 @@ describe('SearchModal translations', () => {
     const elements = [
       // @ts-expect-error no translations
       <SearchModal isOpen onClose={vi.fn()} onNavigate={vi.fn()} />,
-      // @ts-expect-error a string is missing
-      <SearchModal isOpen onClose={vi.fn()} onNavigate={vi.fn()} translations={withoutEsc} />,
+      <SearchModal
+        isOpen
+        onClose={vi.fn()}
+        onNavigate={vi.fn()}
+        // @ts-expect-error a string is missing
+        translations={withoutEsc}
+      />,
     ];
 
     expect(elements).toHaveLength(2);

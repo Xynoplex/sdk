@@ -28,7 +28,11 @@ import { TRACE_FIELD, type EventMap } from './bus-protocol';
 import type { BusEnvelope, BusFrame } from './event-bus';
 import type { ConnectionState, ITransport } from './transport';
 import { EventBus } from './event-bus';
-import { BUS_OPERATIONS, REPLY_NAMES, type BusOperationKey } from './bus-operations';
+import {
+  BUS_OPERATIONS,
+  REPLY_NAMES,
+  type BusOperationKey,
+} from './bus-operations';
 import { asDeclared, type FrameRefusal } from './bus';
 import { BusRequestError } from './bus-request';
 import { RESOURCE_SCOPED_CHANNELS } from './bridged-channels';
@@ -91,7 +95,10 @@ export interface FaultyTransportConfig {
    * for a void ack (a reply that carries no `response`). Default:
    * `refuseUnscriptedOperation`, which throws naming the operation.
    */
-  makeResponse?: (operation: BusOperationKey, payload: Record<string, unknown>) => unknown;
+  makeResponse?: (
+    operation: BusOperationKey,
+    payload: Record<string, unknown>,
+  ) => unknown;
 }
 
 /**
@@ -123,7 +130,10 @@ function isOperation(channel: string): channel is BusOperationKey {
 /** Stable request identity: channel + sorted payload minus per-issue fields.
  *  The correlation key is not among them — it rides the envelope, so the
  *  payload is stable across retries of the same request. */
-export function retryKeyOf(channel: string, payload: Record<string, unknown>): string {
+export function retryKeyOf(
+  channel: string,
+  payload: Record<string, unknown>,
+): string {
   const entries = Object.entries(payload)
     .filter(([k]) => k !== TRACE_FIELD && k !== '_userId')
     .sort(([a], [b]) => (a < b ? -1 : 1));
@@ -151,7 +161,10 @@ export class FaultyTransport implements ITransport {
   /** The resources whose scopes are held, each with how many hold it. */
   private readonly scopeRefCounts = new Map<ResourceId, number>();
   private readonly schedule: readonly FaultAction[];
-  private readonly makeResponse: (op: BusOperationKey, payload: Record<string, unknown>) => unknown;
+  private readonly makeResponse: (
+    op: BusOperationKey,
+    payload: Record<string, unknown>,
+  ) => unknown;
   private readonly replyQueues = new Map<BusOperationKey, unknown[]>();
   private requestCount = 0;
   private readonly timers = new Set<ReturnType<typeof setTimeout>>();
@@ -204,16 +217,20 @@ export class FaultyTransport implements ITransport {
     const name = channel as string;
     if (!isOperation(name)) {
       // Non-request channel: forward as-is (scoped or global).
-      const target = envelope?.scope === undefined ? this.bus : this.bus.scope(envelope!.scope);
+      const target =
+        envelope?.scope === undefined
+          ? this.bus
+          : this.bus.scope(envelope!.scope);
       // `scope` is not repeated — targeting the scoped bus IS how it is set.
       target.emit(channel, payload, { correlationId: envelope?.correlationId });
       return 1;
     }
 
     const record = payload as Record<string, unknown>;
-    const action: FaultAction = this.schedule.length === 0
-      ? { kind: 'deliver' }
-      : this.schedule[this.requestCount % this.schedule.length]!;
+    const action: FaultAction =
+      this.schedule.length === 0
+        ? { kind: 'deliver' }
+        : this.schedule[this.requestCount % this.schedule.length]!;
     this.requestCount += 1;
     this.requestLog.push({
       channel: name,
@@ -225,7 +242,9 @@ export class FaultyTransport implements ITransport {
 
     if (action.kind === 'reject-emit') {
       // Models a /bus/emit 4xx: the request never reaches the bus.
-      throw new Error(`FaultyTransport: emit rejected by schedule (reject-emit) on ${name}`);
+      throw new Error(
+        `FaultyTransport: emit rejected by schedule (reject-emit) on ${name}`,
+      );
     }
 
     // The request itself is observable (handlers-eye view) to a reader of a
@@ -241,7 +260,10 @@ export class FaultyTransport implements ITransport {
     // `drop-reply` still consumes its queue entry: the gateway answered, the
     // wire ate it.
     const queue = this.replyQueues.get(name);
-    const response = queue && queue.length > 0 ? queue.shift() : this.makeResponse(name, record);
+    const response =
+      queue && queue.length > 0
+        ? queue.shift()
+        : this.makeResponse(name, record);
 
     // A reply that names what it answers for names what its request did, as a
     // gateway's does. Refused here, where it rejects the emit, rather than in
@@ -258,7 +280,8 @@ export class FaultyTransport implements ITransport {
 
     const reply = (): void => {
       if (this.disposed) return;
-      const replyPayload = response === undefined ? { ...named } : { ...named, response };
+      const replyPayload =
+        response === undefined ? { ...named } : { ...named, response };
       const resultChannel = BUS_OPERATIONS[name].result as keyof EventMap;
       // The key rides back on the envelope, never inside the reply payload.
       this.bus.emit(resultChannel, replyPayload as EventMap[keyof EventMap], {
@@ -275,7 +298,10 @@ export class FaultyTransport implements ITransport {
         queueMicrotask(reply);
         break;
       case 'delay': {
-        const t = setTimeout(() => { this.timers.delete(t); reply(); }, action.ms);
+        const t = setTimeout(() => {
+          this.timers.delete(t);
+          reply();
+        }, action.ms);
         this.timers.add(t);
         break;
       }
@@ -285,12 +311,17 @@ export class FaultyTransport implements ITransport {
     return 1;
   }
 
-  on<K extends keyof EventMap>(channel: K, handler: (payload: EventMap[K] | FrameRefusal) => void): () => void {
+  on<K extends keyof EventMap>(
+    channel: K,
+    handler: (payload: EventMap[K] | FrameRefusal) => void,
+  ): () => void {
     const sub = this.stream(channel).subscribe(handler);
     return () => sub.unsubscribe();
   }
 
-  stream<K extends keyof EventMap>(channel: K): Observable<EventMap[K] | FrameRefusal> {
+  stream<K extends keyof EventMap>(
+    channel: K,
+  ): Observable<EventMap[K] | FrameRefusal> {
     return this.frames(channel).pipe(map((frame) => frame.payload));
   }
 
@@ -307,7 +338,9 @@ export class FaultyTransport implements ITransport {
    * not given is refused at the call, as `bus.unsubscribed`: a frame on it
    * could never arrive.
    */
-  frames<K extends keyof EventMap>(channel: K): Observable<BusFrame<EventMap[K] | FrameRefusal>> {
+  frames<K extends keyof EventMap>(
+    channel: K,
+  ): Observable<BusFrame<EventMap[K] | FrameRefusal>> {
     if (!this.channels.has(channel) && !isResourceScopedChannel(channel)) {
       throw new BusRequestError(
         `Transport is not subscribed to ${channel as string} — a frame on it can never arrive on this connection. Give the transport the channel.`,
@@ -315,13 +348,16 @@ export class FaultyTransport implements ITransport {
         { channel },
       );
     }
-    return this.bus.channelStream(channel).pipe(
-      filter((frame) =>
-        frame.scope === undefined
-          ? this.channels.has(channel)
-          : isResourceScopedChannel(channel) && this.scopeRefCounts.has(frame.scope),
-      ),
-    );
+    return this.bus
+      .channelStream(channel)
+      .pipe(
+        filter((frame) =>
+          frame.scope === undefined
+            ? this.channels.has(channel)
+            : isResourceScopedChannel(channel) &&
+              this.scopeRefCounts.has(frame.scope),
+        ),
+      );
   }
 
   /**
@@ -339,7 +375,10 @@ export class FaultyTransport implements ITransport {
    * the scope is let go at its last release, and a release is idempotent.
    */
   subscribeToResource(resourceId: ResourceId): () => void {
-    this.scopeRefCounts.set(resourceId, (this.scopeRefCounts.get(resourceId) ?? 0) + 1);
+    this.scopeRefCounts.set(
+      resourceId,
+      (this.scopeRefCounts.get(resourceId) ?? 0) + 1,
+    );
     let released = false;
     return () => {
       if (released) return;
@@ -382,12 +421,20 @@ export class FaultyTransport implements ITransport {
       this,
       {
         // A payload that is not its channel's is published as its refusal, as a wire transport's bridge does.
-        emit: (channel, payload, envelope) => bus.emit(channel, asDeclared(channel, payload, envelope.correlationId), envelope),
+        emit: (channel, payload, envelope) =>
+          bus.emit(
+            channel,
+            asDeclared(channel, payload, envelope.correlationId),
+            envelope,
+          ),
       },
       [...this.channels, ...RESOURCE_SCOPED_CHANNELS],
       // `EventBus.emit` is synchronous, so this never fires.
       (channel, error) => {
-        throw new Error(`FaultyTransport: the bridge of ${channel as string} failed`, { cause: error });
+        throw new Error(
+          `FaultyTransport: the bridge of ${channel as string} failed`,
+          { cause: error },
+        );
       },
     );
   }

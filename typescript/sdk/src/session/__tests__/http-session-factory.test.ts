@@ -20,15 +20,33 @@ import { createHttpSessionFactory } from '../http-session-factory';
 import { createSessionSignals } from '../session-signals';
 import { XynologSessionError } from '../errors';
 import type { XynologSession } from '../xynolog-session';
-import { cacheKey, getStoredSession, lastEventIdKey, personKey, sessionKey } from '../storage';
+import {
+  cacheKey,
+  getStoredSession,
+  lastEventIdKey,
+  personKey,
+  sessionKey,
+} from '../storage';
 import { fakeGateway, renews } from './fake-gateway';
-import { freshJwt, seedStoredSession, SharedStorage, TestStorage, testSession, TEST_TOKEN_ENDPOINT } from './test-storage-helpers';
+import {
+  freshJwt,
+  seedStoredSession,
+  SharedStorage,
+  TestStorage,
+  testSession,
+  TEST_TOKEN_ENDPOINT,
+} from './test-storage-helpers';
 
 const KB = {
   id: 'kb-a',
   label: 'KB A',
   did: 'did:web:example.github.io:kb-a',
-  endpoint: { kind: 'http' as const, host: 'localhost', port: 4000, protocol: 'http' as const },
+  endpoint: {
+    kind: 'http' as const,
+    host: 'localhost',
+    port: 4000,
+    protocol: 'http' as const,
+  },
 };
 const GATEWAY = 'http://localhost:4000';
 
@@ -45,44 +63,59 @@ let refusesEveryone: boolean;
 
 /** The request's bearer, whichever way `fetch` was given it. */
 const bearerOf = (input: string | Request, init?: RequestInit): string => {
-  const headers = input instanceof Request ? input.headers : new Headers(init?.headers);
+  const headers =
+    input instanceof Request ? input.headers : new Headers(init?.headers);
   return (headers.get('authorization') ?? '').replace(/^Bearer /, '');
 };
 
 beforeEach(() => {
   asked = { who: [], streams: [], renewals: 0 };
   refusesEveryone = false;
-  vi.stubGlobal('fetch', async (input: string | Request, init?: RequestInit): Promise<Response> => {
-    const url = input instanceof Request ? input.url : input;
-    if (url === TEST_TOKEN_ENDPOINT) {
-      // An issuer that renews for as long as it is asked.
-      asked.renewals += 1;
-      return Response.json({ access_token: jwt(asked.renewals + 1), refresh_token: 'rotated' });
-    }
-    const total = asked.who.length + asked.streams.length;
-    // A session that asks without end is stopped here, by an answer that is no refusal.
-    if (total >= 200) return new Response(null, { status: 500 });
-    if (url === `${GATEWAY}/api/users/me`) {
-      asked.who.push(bearerOf(input, init));
-      return refusesEveryone
-        ? new Response(null, { status: 401 })
-        : Response.json({ did: 'did:web:example.org:users:alice', email: 'alice@example.org', name: 'Alice', image: null, domain: 'example.org' });
-    }
-    if (url === `${GATEWAY}/bus/subscribe`) {
-      asked.streams.push(bearerOf(input, init));
-      if (refusesEveryone) return new Response(null, { status: 401 });
-      // A stream that stays open and says nothing, until it is aborted.
-      return new Response(
-        new ReadableStream<Uint8Array>({
-          start(controller) {
-            init?.signal?.addEventListener('abort', () => controller.error(new DOMException('aborted', 'AbortError')));
-          },
-        }),
-        { headers: { 'content-type': 'text/event-stream' } },
-      );
-    }
-    return new Response(null, { status: 404 });
-  });
+  vi.stubGlobal(
+    'fetch',
+    async (input: string | Request, init?: RequestInit): Promise<Response> => {
+      const url = input instanceof Request ? input.url : input;
+      if (url === TEST_TOKEN_ENDPOINT) {
+        // An issuer that renews for as long as it is asked.
+        asked.renewals += 1;
+        return Response.json({
+          access_token: jwt(asked.renewals + 1),
+          refresh_token: 'rotated',
+        });
+      }
+      const total = asked.who.length + asked.streams.length;
+      // A session that asks without end is stopped here, by an answer that is no refusal.
+      if (total >= 200) return new Response(null, { status: 500 });
+      if (url === `${GATEWAY}/api/users/me`) {
+        asked.who.push(bearerOf(input, init));
+        return refusesEveryone
+          ? new Response(null, { status: 401 })
+          : Response.json({
+              did: 'did:web:example.org:users:alice',
+              email: 'alice@example.org',
+              name: 'Alice',
+              image: null,
+              domain: 'example.org',
+            });
+      }
+      if (url === `${GATEWAY}/bus/subscribe`) {
+        asked.streams.push(bearerOf(input, init));
+        if (refusesEveryone) return new Response(null, { status: 401 });
+        // A stream that stays open and says nothing, until it is aborted.
+        return new Response(
+          new ReadableStream<Uint8Array>({
+            start(controller) {
+              init?.signal?.addEventListener('abort', () =>
+                controller.error(new DOMException('aborted', 'AbortError')),
+              );
+            },
+          }),
+          { headers: { 'content-type': 'text/event-stream' } },
+        );
+      }
+      return new Response(null, { status: 404 });
+    },
+  );
 });
 
 afterEach(() => {
@@ -90,13 +123,19 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-const settled = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
+const settled = (ms: number): Promise<void> =>
+  new Promise((resolve) => setTimeout(resolve, ms));
 
 /** The session's own errors, read from its errors stream from the first thing it said; its transport's failures are left out. */
 function ownErrorsOf(session: XynologSession): XynologSessionError[] {
   const errors: XynologSessionError[] = [];
   session.errors$
-    .pipe(filter((error): error is XynologSessionError => error instanceof XynologSessionError))
+    .pipe(
+      filter(
+        (error): error is XynologSessionError =>
+          error instanceof XynologSessionError,
+      ),
+    )
     .subscribe((error) => errors.push(error));
   return errors;
 }
@@ -107,7 +146,11 @@ describe('a session over HTTP, starting on a stored credential', () => {
     const stored = jwt(1);
     seedStoredSession(storage, KB.id, stored, 'r');
 
-    const session = createHttpSessionFactory()({ kb: KB, storage, signals: createSessionSignals() });
+    const session = createHttpSessionFactory()({
+      kb: KB,
+      storage,
+      signals: createSessionSignals(),
+    });
     await session.ready;
     await settled(50);
 
@@ -119,7 +162,7 @@ describe('a session over HTTP, starting on a stored credential', () => {
     session.dispose();
   });
 
-  it('makes every request of a session with the fetch the factory is given, and none with the runtime\'s', async () => {
+  it("makes every request of a session with the fetch the factory is given, and none with the runtime's", async () => {
     const given = globalThis.fetch;
     const runtimes = vi.fn(async () => new Response(null, { status: 404 }));
     vi.stubGlobal('fetch', runtimes);
@@ -127,7 +170,11 @@ describe('a session over HTTP, starting on a stored credential', () => {
     const stored = jwt(1);
     seedStoredSession(storage, KB.id, stored, 'r');
 
-    const session = createHttpSessionFactory(given)({ kb: KB, storage, signals: createSessionSignals() });
+    const session = createHttpSessionFactory(given)({
+      kb: KB,
+      storage,
+      signals: createSessionSignals(),
+    });
     await session.ready;
     await settled(50);
 
@@ -157,7 +204,9 @@ describe('a session over HTTP, starting on a stored credential', () => {
 
     expect(asked.who).toHaveLength(2);
     expect(signals.sessionEnded$.getValue()).toEqual({ reason: 'refused' });
-    expect(errors.map((error) => error.code)).toEqual(['session.credential-refused']);
+    expect(errors.map((error) => error.code)).toEqual([
+      'session.credential-refused',
+    ]);
     expect(getStoredSession(storage, KB.id)).toBeNull();
 
     // And then the gateway and the issuer are left alone: the session's
@@ -186,7 +235,10 @@ describe('a session over HTTP, starting on a stored credential', () => {
 
     // The gateway stops accepting anything, and the issuer goes on renewing.
     refusesEveryone = true;
-    const refusal = await session.client.auth!.me().then(() => null, (error: unknown) => error);
+    const refusal = await session.client.auth!.me().then(
+      () => null,
+      (error: unknown) => error,
+    );
 
     // The request, refused; one renewal; the renewed token, asked about once and refused.
     expect(refusal).toMatchObject({ status: 401 });
@@ -195,7 +247,9 @@ describe('a session over HTTP, starting on a stored credential', () => {
     expect(asked.who[1]).toBe(stored);
     expect(asked.who[2]).not.toBe(stored);
     expect(signals.sessionEnded$.getValue()).toEqual({ reason: 'refused' });
-    expect(errors.map((error) => error.code)).toEqual(['session.credential-refused']);
+    expect(errors.map((error) => error.code)).toEqual([
+      'session.credential-refused',
+    ]);
     expect(getStoredSession(storage, KB.id)).toBeNull();
     expect(session.token$.getValue()).toBeNull();
 
@@ -212,14 +266,24 @@ describe('a session over HTTP, starting on a stored credential', () => {
 });
 
 describe('a session over HTTP whose gateway names its person only after it has started', () => {
-  const ALICE = { did: 'did:web:example.org:users:alice', email: 'alice@example.org', name: 'Alice', image: null, domain: 'example.org' };
+  const ALICE = {
+    did: 'did:web:example.org:users:alice',
+    email: 'alice@example.org',
+    name: 'Alice',
+    image: null,
+    domain: 'example.org',
+  };
 
   it("records the person on the stored sign-in when a renewal's ask names them, and reads what is kept for them then", async () => {
     const storage = new SharedStorage();
     const alice = personKey(ALICE.did);
-    keptPersister('resource', { storage, kbId: KB.id, personKey: alice })
-      .save(new Map([[resourceId('res-1'), mockResource('res-1', { name: 'kept' })]]));
-    storage.set(sessionKey(KB.id), JSON.stringify(testSession(freshJwt(), 'r')));
+    keptPersister('resource', { storage, kbId: KB.id, personKey: alice }).save(
+      new Map([[resourceId('res-1'), mockResource('res-1', { name: 'kept' })]]),
+    );
+    storage.set(
+      sessionKey(KB.id),
+      JSON.stringify(testSession(freshJwt(), 'r')),
+    );
     let reachable = false;
     const gateway = fakeGateway({
       whoIs: async () => {
@@ -230,7 +294,11 @@ describe('a session over HTTP whose gateway names its person only after it has s
       resourceName: 'fresh',
     });
 
-    const session = createHttpSessionFactory(gateway.fetch)({ kb: KB, storage, signals: createSessionSignals() });
+    const session = createHttpSessionFactory(gateway.fetch)({
+      kb: KB,
+      storage,
+      signals: createSessionSignals(),
+    });
     try {
       // The start could not ask who the token is: nobody is recorded.
       await session.ready;
@@ -239,10 +307,16 @@ describe('a session over HTTP whose gateway names its person only after it has s
       // A refusal renews the token, and the gateway is asked who the renewed one is.
       reachable = true;
       await session.refresh(session.token$.getValue());
-      await vi.waitFor(() => expect(getStoredSession(storage, KB.id)?.personKey).toBe(alice));
+      await vi.waitFor(() =>
+        expect(getStoredSession(storage, KB.id)?.personKey).toBe(alice),
+      );
 
       const read = await firstValueFrom(
-        session.client.browse.resource(resourceId('res-1')).pipe(filter(isReady), map((state) => state.value.name), take(1)),
+        session.client.browse.resource(resourceId('res-1')).pipe(
+          filter(isReady),
+          map((state) => state.value.name),
+          take(1),
+        ),
       );
       expect(read).toBe('kept');
     } finally {
@@ -254,7 +328,13 @@ describe('a session over HTTP whose gateway names its person only after it has s
 });
 
 describe('a session over HTTP whose stored sign-in cannot be read as its client writes', () => {
-  const JO = { did: 'did:web:example.org:users:jo', email: 'jo@example.org', name: 'Jo', image: null, domain: 'example.org' };
+  const JO = {
+    did: 'did:web:example.org:users:jo',
+    email: 'jo@example.org',
+    name: 'Jo',
+    image: null,
+    domain: 'example.org',
+  };
 
   /** A storage whose read of the knowledge base's stored sign-in fails while `failing` is set. */
   class FailingStorage extends SharedStorage {
@@ -274,14 +354,34 @@ describe('a session over HTTP whose stored sign-in cannot be read as its client 
     const storage = new FailingStorage();
     const jo = personKey(JO.did);
     /** Every key the client keeps jo's under: the stream's places, and each persisted query's. */
-    const josKeys = [lastEventIdKey(KB.id, jo), ...PERSISTED_QUERIES.map((query) => cacheKey(KB.id, jo, query))];
+    const josKeys = [
+      lastEventIdKey(KB.id, jo),
+      ...PERSISTED_QUERIES.map((query) => cacheKey(KB.id, jo, query)),
+    ];
     let josBefore: (string | null)[] = [];
-    storage.set(sessionKey(KB.id), JSON.stringify({ ...testSession(freshJwt(), 'r'), personKey: jo }));
-    const gateway = fakeGateway({ whoIs: async () => Response.json(JO), issuer: renews, resourceName: 'fresh' });
-    const session = createHttpSessionFactory(gateway.fetch)({ kb: KB, storage, signals: createSessionSignals() });
+    storage.set(
+      sessionKey(KB.id),
+      JSON.stringify({ ...testSession(freshJwt(), 'r'), personKey: jo }),
+    );
+    const gateway = fakeGateway({
+      whoIs: async () => Response.json(JO),
+      issuer: renews,
+      resourceName: 'fresh',
+    });
+    const session = createHttpSessionFactory(gateway.fetch)({
+      kb: KB,
+      storage,
+      signals: createSessionSignals(),
+    });
     const errors = ownErrorsOf(session);
     const nameOf = (id: string): Promise<string> =>
-      firstValueFrom(session.client.browse.resource(resourceId(id)).pipe(filter(isReady), map((state) => state.value.name), take(1)));
+      firstValueFrom(
+        session.client.browse.resource(resourceId(id)).pipe(
+          filter(isReady),
+          map((state) => state.value.name),
+          take(1),
+        ),
+      );
     try {
       await session.ready;
       // A value the client holds unwritten, whose save finds the stored sign-in unreadable.
@@ -317,7 +417,13 @@ describe('a session over HTTP whose stored sign-in cannot be read as its client 
  * the place back from it.
  */
 describe('a session over HTTP: the place of an event the refresher has taken, and its fetch in flight', () => {
-  const ALICE = { did: 'did:web:example.org:users:alice', email: 'alice@example.org', name: 'Alice', image: null, domain: 'example.org' };
+  const ALICE = {
+    did: 'did:web:example.org:users:alice',
+    email: 'alice@example.org',
+    name: 'Alice',
+    image: null,
+    domain: 'example.org',
+  };
   const RID = resourceId('res-1');
 
   /** A storage that counts the writes under each key. */
@@ -337,36 +443,66 @@ describe('a session over HTTP: the place of an event the refresher has taken, an
   it("a kept cache's write while the event's refetch is in flight carries no place, and the refetch's own save carries it", async () => {
     const storage = new CountingStorage();
     const alice = personKey(ALICE.did);
-    storage.set(sessionKey(KB.id), JSON.stringify({ ...testSession(freshJwt(), 'r'), personKey: alice }));
-    const gateway = fakeGateway({ whoIs: async () => Response.json(ALICE), issuer: renews, resourceName: 'named' });
+    storage.set(
+      sessionKey(KB.id),
+      JSON.stringify({ ...testSession(freshJwt(), 'r'), personKey: alice }),
+    );
+    const gateway = fakeGateway({
+      whoIs: async () => Response.json(ALICE),
+      issuer: renews,
+      resourceName: 'named',
+    });
     /** Each read of the resource's annotations, answered when the test says. */
     const annotationReads: Array<(answer: Response) => void> = [];
     const fetch: typeof globalThis.fetch = async (input, init) => {
-      const request = input instanceof Request ? input : new Request(input, init);
-      if (request.method === 'GET' && new URL(request.url).pathname === `/resources/${RID}/annotations`) {
-        return new Promise<Response>((answer) => { annotationReads.push(answer); });
+      const request =
+        input instanceof Request ? input : new Request(input, init);
+      if (
+        request.method === 'GET' &&
+        new URL(request.url).pathname === `/resources/${RID}/annotations`
+      ) {
+        return new Promise<Response>((answer) => {
+          annotationReads.push(answer);
+        });
       }
       return gateway.fetch(input, init);
     };
     const annotations = (count: number): Response => {
-      const held = Array.from({ length: count }, (_, i) => mockAnnotation(`ann-${i + 1}`));
+      const held = Array.from({ length: count }, (_, i) =>
+        mockAnnotation(`ann-${i + 1}`),
+      );
       return Response.json({ annotations: held, total: held.length });
     };
     const placesKey = lastEventIdKey(KB.id, alice);
     const resourceKey = cacheKey(KB.id, alice, 'resource');
 
-    const session = createHttpSessionFactory(fetch)({ kb: KB, storage, signals: createSessionSignals() });
+    const session = createHttpSessionFactory(fetch)({
+      kb: KB,
+      storage,
+      signals: createSessionSignals(),
+    });
     try {
       await session.ready;
       const { browse } = session.client;
-      const subscriptions = [browse.annotations(RID).subscribe(() => {}), browse.resource(RID).subscribe(() => {})];
+      const subscriptions = [
+        browse.annotations(RID).subscribe(() => {}),
+        browse.resource(RID).subscribe(() => {}),
+      ];
       await vi.waitFor(() => expect(annotationReads).toHaveLength(1));
       annotationReads.shift()!(annotations(0));
       await vi.waitFor(() => {
-        expect(storage.get(cacheKey(KB.id, alice, 'annotations'))).not.toBeNull();
+        expect(
+          storage.get(cacheKey(KB.id, alice, 'annotations')),
+        ).not.toBeNull();
         expect(storage.get(resourceKey)).not.toBeNull();
       });
-      await vi.waitFor(() => expect(gateway.connects.some(({ scoped }) => scoped?.some(({ scope }) => scope === RID))).toBe(true));
+      await vi.waitFor(() =>
+        expect(
+          gateway.connects.some(({ scoped }) =>
+            scoped?.some(({ scope }) => scope === RID),
+          ),
+        ).toBe(true),
+      );
 
       // The event is delivered; the refresher takes it, and the refetch it asks for is in flight.
       gateway.deliver(
@@ -391,13 +527,20 @@ describe('a session over HTTP: the place of an event the refresher has taken, an
       // Another kept cache writes its document meanwhile: the fetch in flight holds the place back.
       const resourceWrites = storage.writesOf(resourceKey);
       browse.invalidateResourceDetail(RID);
-      await vi.waitFor(() => expect(storage.writesOf(resourceKey)).toBeGreaterThan(resourceWrites));
-      expect(storage.get(placesKey), 'the place waits for the refetch in flight').toBeNull();
+      await vi.waitFor(() =>
+        expect(storage.writesOf(resourceKey)).toBeGreaterThan(resourceWrites),
+      );
+      expect(
+        storage.get(placesKey),
+        'the place waits for the refetch in flight',
+      ).toBeNull();
 
       // The refetch is answered, and its save carries the place.
       annotationReads.shift()!(annotations(1));
       await vi.waitFor(() => expect(storage.get(placesKey)).not.toBeNull());
-      expect(JSON.parse(storage.get(placesKey)!)).toEqual({ [RID]: 'p-res-1-2' });
+      expect(JSON.parse(storage.get(placesKey)!)).toEqual({
+        [RID]: 'p-res-1-2',
+      });
       for (const subscription of subscriptions) subscription.unsubscribe();
     } finally {
       session.client.dispose();

@@ -360,8 +360,10 @@ let writers =
            /** The encodings of the Encoding Standard whose labels every \
            reader of a resource's text refuses, by their names in lower case. \
            */\n\
-           export const REFUSED_ENCODINGS: ReadonlySet<string> = new \
-           Set([\"big5\", \"gbk\"]);\n"
+           export const REFUSED_ENCODINGS: ReadonlySet<string> = new Set([\n\
+          \  'big5',\n\
+          \  'gbk',\n\
+           ]);\n"
           (Encodings.Typescript.text (derived small)));
     case "the decoded encodings, as a series, and none where there are none"
       (fun () ->

@@ -1,9 +1,19 @@
 'use client';
 
-import { useState, useEffect, useRef, useImperativeHandle, type Ref } from 'react';
+import {
+  useState,
+  useEffect,
+  useRef,
+  useImperativeHandle,
+  type Ref,
+} from 'react';
 import { useTranslations } from '../../../contexts/TranslationContext';
 import type { Annotation, components } from '@xynolog/core';
-import { getAnnotationExactText, getCommentText, getTargetSource } from '@xynolog/core';
+import {
+  getAnnotationExactText,
+  getCommentText,
+  getTargetSource,
+} from '@xynolog/core';
 import type { XynologSession } from '@xynolog/sdk';
 import { useHoverEmitter } from '../../../hooks/useHoverEmitter';
 import { creatorName, renderAgentLabels } from './agent-label';
@@ -70,9 +80,15 @@ export function CommentEntry({
   // The body item that holds the words shown, exactly as the annotation holds
   // it: an edit replaces this item, and a replace whose old item differs from
   // the held one in any member changes nothing.
-  const bodyItems = comment.body === undefined ? [] : Array.isArray(comment.body) ? comment.body : [comment.body];
+  const bodyItems =
+    comment.body === undefined
+      ? []
+      : Array.isArray(comment.body)
+        ? comment.body
+        : [comment.body];
   const commentBody = bodyItems.find(
-    (item): item is TextualBody => item.type === 'TextualBody' && item.value === commentText,
+    (item): item is TextualBody =>
+      item.type === 'TextualBody' && item.value === commentText,
   );
 
   // Scroll into view when focused
@@ -97,19 +113,29 @@ export function CommentEntry({
     }
     setSaving(true);
     setSaveError(null);
-    saved.session.client.bind.body(getTargetSource(comment.target), comment.id, [
-      { op: 'replace', oldItem: heldBody, newItem: { ...heldBody, value: saved.text } },
-    ]).then(
-      () => {
-        setSaving(false);
-        setEdit(null);
-      },
-      (error: unknown) => {
-        // The editor stays open with the edit, and says why it was not saved.
-        setSaving(false);
-        setSaveError(t('saveFailed', { detail: error instanceof Error ? error.message : String(error) }));
-      },
-    );
+    saved.session.client.bind
+      .body(getTargetSource(comment.target), comment.id, [
+        {
+          op: 'replace',
+          oldItem: heldBody,
+          newItem: { ...heldBody, value: saved.text },
+        },
+      ])
+      .then(
+        () => {
+          setSaving(false);
+          setEdit(null);
+        },
+        (error: unknown) => {
+          // The editor stays open with the edit, and says why it was not saved.
+          setSaving(false);
+          setSaveError(
+            t('saveFailed', {
+              detail: error instanceof Error ? error.message : String(error),
+            }),
+          );
+        },
+      );
   };
 
   const handleCancel = () => {
@@ -131,13 +157,17 @@ export function CommentEntry({
       {/* Selected text quote - only for text annotations */}
       {selectedText && (
         <div className="xynolog-annotation-entry__quote" data-type="comment">
-          "{selectedText.substring(0, 100)}{selectedText.length > 100 ? '...' : ''}"
+          "{selectedText.substring(0, 100)}
+          {selectedText.length > 100 ? '...' : ''}"
         </div>
       )}
 
       {/* Comment body */}
       {edit && commentBody ? (
-        <div className="xynolog-annotation-entry__edit" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="xynolog-annotation-entry__edit"
+          onClick={(e) => e.stopPropagation()}
+        >
           <textarea
             value={edit.text}
             onChange={(e) => setEdit({ ...edit, text: e.target.value })}
@@ -147,7 +177,9 @@ export function CommentEntry({
             maxLength={2000}
           />
           {saveError && (
-            <p className="xynolog-error-message" role="alert">{saveError}</p>
+            <p className="xynolog-error-message" role="alert">
+              {saveError}
+            </p>
           )}
           <div className="xynolog-annotation-entry__edit-footer">
             <span className="xynolog-annotation-entry__char-count">
@@ -179,7 +211,10 @@ export function CommentEntry({
       {!(edit && commentBody) && (
         <div className="xynolog-annotation-entry__footer">
           <div className="xynolog-annotation-entry__metadata">
-            {creatorName(comment.creator) && <>By {creatorName(comment.creator)} • </>}{formatRelativeTime(comment.created || new Date().toISOString())}
+            {creatorName(comment.creator) && (
+              <>By {creatorName(comment.creator)} • </>
+            )}
+            {formatRelativeTime(comment.created || new Date().toISOString())}
           </div>
           {comment.generator && renderAgentLabels(comment.generator) && (
             <div className="xynolog-annotation-entry__metadata">
@@ -187,7 +222,10 @@ export function CommentEntry({
             </div>
           )}
           {annotateMode && session && commentBody && (
-            <div className="xynolog-annotation-entry__actions" onClick={(e) => e.stopPropagation()}>
+            <div
+              className="xynolog-annotation-entry__actions"
+              onClick={(e) => e.stopPropagation()}
+            >
               <button
                 onClick={() => handleEditClick(session)}
                 className="xynolog-text-button"

@@ -10,7 +10,7 @@ interface UseRovingTabIndexOptions {
 
 export function useRovingTabIndex<T extends HTMLElement>(
   itemCount: number,
-  options: UseRovingTabIndexOptions = {}
+  options: UseRovingTabIndexOptions = {},
 ) {
   const { orientation = 'horizontal', loop = true, cols = 1 } = options;
   const containerRef = useRef<T>(null);
@@ -21,33 +21,36 @@ export function useRovingTabIndex<T extends HTMLElement>(
     if (!containerRef.current) return [];
     return Array.from(
       containerRef.current.querySelectorAll<HTMLElement>(
-        '[role="button"]:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])'
-      )
+        '[role="button"]:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      ),
     );
   }, []);
 
   // Focus item at specific index
-  const focusItem = useCallback((index: number) => {
-    const items = getFocusableItems();
-    if (items.length === 0) return;
+  const focusItem = useCallback(
+    (index: number) => {
+      const items = getFocusableItems();
+      if (items.length === 0) return;
 
-    // Ensure index is within bounds
-    let targetIndex = index;
-    if (loop) {
-      targetIndex = ((index % items.length) + items.length) % items.length;
-    } else {
-      targetIndex = Math.max(0, Math.min(index, items.length - 1));
-    }
+      // Ensure index is within bounds
+      let targetIndex = index;
+      if (loop) {
+        targetIndex = ((index % items.length) + items.length) % items.length;
+      } else {
+        targetIndex = Math.max(0, Math.min(index, items.length - 1));
+      }
 
-    // Update tabindex attributes
-    items.forEach((item, i) => {
-      item.setAttribute('tabindex', i === targetIndex ? '0' : '-1');
-    });
+      // Update tabindex attributes
+      items.forEach((item, i) => {
+        item.setAttribute('tabindex', i === targetIndex ? '0' : '-1');
+      });
 
-    // Focus the target item
-    items[targetIndex]?.focus();
-    currentIndexRef.current = targetIndex;
-  }, [getFocusableItems, loop]);
+      // Focus the target item
+      items[targetIndex]?.focus();
+      currentIndexRef.current = targetIndex;
+    },
+    [getFocusableItems, loop],
+  );
 
   // Handle keyboard navigation
   const handleKeyDown = useCallback(
@@ -109,7 +112,7 @@ export function useRovingTabIndex<T extends HTMLElement>(
 
       focusItem(nextIndex);
     },
-    [orientation, cols, getFocusableItems, focusItem]
+    [orientation, cols, getFocusableItems, focusItem],
   );
 
   // Initialize tabindex on mount and when items change

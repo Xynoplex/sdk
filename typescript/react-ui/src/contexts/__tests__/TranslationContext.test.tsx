@@ -1,6 +1,10 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { TranslationProvider, useTranslationManager, useTranslations } from '../TranslationContext';
+import {
+  TranslationProvider,
+  useTranslationManager,
+  useTranslations,
+} from '../TranslationContext';
 import type { TranslationManager } from '../../types/TranslationManager';
 
 // Test component that uses the hook
@@ -26,17 +30,24 @@ describe('TranslationContext', () => {
       render(
         <TranslationProvider translationManager={mockManager}>
           <TestConsumer namespace="Toolbar" />
-        </TranslationProvider>
+        </TranslationProvider>,
       );
 
-      expect(screen.getByTestId('translation-1')).toHaveTextContent('Toolbar.key1');
-      expect(screen.getByTestId('translation-2')).toHaveTextContent('Toolbar.key2');
-      expect(screen.getByTestId('translation-missing')).toHaveTextContent('Toolbar.missingKey');
+      expect(screen.getByTestId('translation-1')).toHaveTextContent(
+        'Toolbar.key1',
+      );
+      expect(screen.getByTestId('translation-2')).toHaveTextContent(
+        'Toolbar.key2',
+      );
+      expect(screen.getByTestId('translation-missing')).toHaveTextContent(
+        'Toolbar.missingKey',
+      );
     });
 
     it('should support multiple namespaces', () => {
       const mockManager: TranslationManager = {
-        t: (namespace: string, key: string) => `Translated: ${namespace}/${key}`,
+        t: (namespace: string, key: string) =>
+          `Translated: ${namespace}/${key}`,
       };
 
       function MultiNamespaceConsumer() {
@@ -54,11 +65,15 @@ describe('TranslationContext', () => {
       render(
         <TranslationProvider translationManager={mockManager}>
           <MultiNamespaceConsumer />
-        </TranslationProvider>
+        </TranslationProvider>,
       );
 
-      expect(screen.getByTestId('toolbar')).toHaveTextContent('Translated: Toolbar/save');
-      expect(screen.getByTestId('footer')).toHaveTextContent('Translated: Footer/copyright');
+      expect(screen.getByTestId('toolbar')).toHaveTextContent(
+        'Translated: Toolbar/save',
+      );
+      expect(screen.getByTestId('footer')).toHaveTextContent(
+        'Translated: Footer/copyright',
+      );
     });
 
     it('should handle actual translations', () => {
@@ -95,7 +110,7 @@ describe('TranslationContext', () => {
       render(
         <TranslationProvider translationManager={mockManager}>
           <RealTranslationsConsumer />
-        </TranslationProvider>
+        </TranslationProvider>,
       );
 
       expect(screen.getByTestId('save-btn')).toHaveTextContent('Save');
@@ -129,24 +144,36 @@ describe('TranslationContext', () => {
       render(
         <TranslationProvider translationManager={mockManager}>
           <MissingTranslationConsumer />
-        </TranslationProvider>
+        </TranslationProvider>,
       );
 
       expect(screen.getByTestId('existing')).toHaveTextContent('Save');
       expect(screen.getByTestId('missing-key')).toHaveTextContent('missingKey');
-      expect(screen.getByTestId('missing-namespace')).toHaveTextContent('anyKey');
+      expect(screen.getByTestId('missing-namespace')).toHaveTextContent(
+        'anyKey',
+      );
     });
 
     it('takes a locale or a translation manager, and not neither or both', () => {
-      const manager: TranslationManager = { t: (namespace, key) => `${namespace}.${key}` };
+      const manager: TranslationManager = {
+        t: (namespace, key) => `${namespace}.${key}`,
+      };
 
       const elements = [
-        <TranslationProvider locale="en"><div /></TranslationProvider>,
-        <TranslationProvider translationManager={manager}><div /></TranslationProvider>,
+        <TranslationProvider locale="en">
+          <div />
+        </TranslationProvider>,
+        <TranslationProvider translationManager={manager}>
+          <div />
+        </TranslationProvider>,
         // @ts-expect-error neither a locale nor a translation manager
-        <TranslationProvider><div /></TranslationProvider>,
+        <TranslationProvider>
+          <div />
+        </TranslationProvider>,
         // @ts-expect-error both a locale and a translation manager
-        <TranslationProvider locale="en" translationManager={manager}><div /></TranslationProvider>,
+        <TranslationProvider locale="en" translationManager={manager}>
+          <div />
+        </TranslationProvider>,
       ];
 
       expect(elements).toHaveLength(4);
@@ -160,7 +187,7 @@ describe('TranslationContext', () => {
       render(
         <TranslationProvider translationManager={mockManager}>
           <div data-testid="child">Child content</div>
-        </TranslationProvider>
+        </TranslationProvider>,
       );
 
       expect(screen.getByTestId('child')).toHaveTextContent('Child content');
@@ -174,10 +201,12 @@ describe('TranslationContext', () => {
       const { rerender } = render(
         <TranslationProvider translationManager={mockManager1}>
           <TestConsumer namespace="Toolbar" />
-        </TranslationProvider>
+        </TranslationProvider>,
       );
 
-      expect(screen.getByTestId('translation-1')).toHaveTextContent('EN: Toolbar.key1');
+      expect(screen.getByTestId('translation-1')).toHaveTextContent(
+        'EN: Toolbar.key1',
+      );
 
       const mockManager2: TranslationManager = {
         t: (namespace: string, key: string) => `FR: ${namespace}.${key}`,
@@ -186,20 +215,24 @@ describe('TranslationContext', () => {
       rerender(
         <TranslationProvider translationManager={mockManager2}>
           <TestConsumer namespace="Toolbar" />
-        </TranslationProvider>
+        </TranslationProvider>,
       );
 
-      expect(screen.getByTestId('translation-1')).toHaveTextContent('FR: Toolbar.key1');
+      expect(screen.getByTestId('translation-1')).toHaveTextContent(
+        'FR: Toolbar.key1',
+      );
     });
 
     it('should call translation manager for each key', () => {
-      const tMock = vi.fn((namespace: string, key: string) => `${namespace}.${key}`);
+      const tMock = vi.fn(
+        (namespace: string, key: string) => `${namespace}.${key}`,
+      );
       const mockManager: TranslationManager = { t: tMock };
 
       render(
         <TranslationProvider translationManager={mockManager}>
           <TestConsumer namespace="Toolbar" />
-        </TranslationProvider>
+        </TranslationProvider>,
       );
 
       expect(tMock).toHaveBeenCalledWith('Toolbar', 'key1', undefined);
@@ -210,10 +243,13 @@ describe('TranslationContext', () => {
 
   describe('useTranslations', () => {
     it('throws when used outside a TranslationProvider', () => {
-      const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleError = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
 
-      expect(() => render(<TestConsumer namespace="Toolbar" />))
-        .toThrow('useTranslations must be used within a TranslationProvider');
+      expect(() => render(<TestConsumer namespace="Toolbar" />)).toThrow(
+        'useTranslations must be used within a TranslationProvider',
+      );
 
       consoleError.mockRestore();
     });
@@ -238,11 +274,15 @@ describe('TranslationContext', () => {
       render(
         <TranslationProvider translationManager={mockManager}>
           <ScopedConsumer />
-        </TranslationProvider>
+        </TranslationProvider>,
       );
 
-      expect(screen.getByTestId('toolbar-save')).toHaveTextContent('Toolbar/save');
-      expect(screen.getByTestId('footer-copyright')).toHaveTextContent('Footer/copyright');
+      expect(screen.getByTestId('toolbar-save')).toHaveTextContent(
+        'Toolbar/save',
+      );
+      expect(screen.getByTestId('footer-copyright')).toHaveTextContent(
+        'Footer/copyright',
+      );
     });
   });
 
@@ -263,10 +303,12 @@ describe('TranslationContext', () => {
       render(
         <TranslationProvider translationManager={customManager}>
           <TestConsumer namespace="Common" />
-        </TranslationProvider>
+        </TranslationProvider>,
       );
 
-      expect(screen.getByTestId('translation-1')).toHaveTextContent('[es] Common.key1');
+      expect(screen.getByTestId('translation-1')).toHaveTextContent(
+        '[es] Common.key1',
+      );
     });
 
     it('should work with nested providers', () => {
@@ -298,11 +340,15 @@ describe('TranslationContext', () => {
       render(
         <TranslationProvider translationManager={outerManager}>
           <OuterConsumer />
-        </TranslationProvider>
+        </TranslationProvider>,
       );
 
-      expect(screen.getByTestId('outer')).toHaveTextContent('OUTER: Outer.test');
-      expect(screen.getByTestId('inner')).toHaveTextContent('INNER: Inner.test');
+      expect(screen.getByTestId('outer')).toHaveTextContent(
+        'OUTER: Outer.test',
+      );
+      expect(screen.getByTestId('inner')).toHaveTextContent(
+        'INNER: Inner.test',
+      );
     });
   });
 
@@ -323,10 +369,12 @@ describe('TranslationContext', () => {
       render(
         <TranslationProvider translationManager={mockManager}>
           <EmptyNamespaceConsumer />
-        </TranslationProvider>
+        </TranslationProvider>,
       );
 
-      expect(screen.getByTestId('result')).toHaveTextContent('NO_NAMESPACE: key');
+      expect(screen.getByTestId('result')).toHaveTextContent(
+        'NO_NAMESPACE: key',
+      );
     });
 
     it('should handle empty key', () => {
@@ -345,7 +393,7 @@ describe('TranslationContext', () => {
       render(
         <TranslationProvider translationManager={mockManager}>
           <EmptyKeyConsumer />
-        </TranslationProvider>
+        </TranslationProvider>,
       );
 
       expect(screen.getByTestId('result')).toHaveTextContent('Toolbar: NO_KEY');
@@ -364,10 +412,12 @@ describe('TranslationContext', () => {
       render(
         <TranslationProvider translationManager={mockManager}>
           <SpecialCharsConsumer />
-        </TranslationProvider>
+        </TranslationProvider>,
       );
 
-      expect(screen.getByTestId('result')).toHaveTextContent('Tool-bar_v2::save.action#1');
+      expect(screen.getByTestId('result')).toHaveTextContent(
+        'Tool-bar_v2::save.action#1',
+      );
     });
 
     it('should handle very long translation strings', () => {
@@ -387,7 +437,7 @@ describe('TranslationContext', () => {
       render(
         <TranslationProvider translationManager={mockManager}>
           <LongTranslationConsumer />
-        </TranslationProvider>
+        </TranslationProvider>,
       );
 
       expect(screen.getByTestId('result')).toHaveTextContent(longTranslation);
@@ -409,11 +459,13 @@ describe('TranslationContext', () => {
       render(
         <TranslationProvider translationManager={mockManager}>
           <HtmlContentConsumer />
-        </TranslationProvider>
+        </TranslationProvider>,
       );
 
       // React renders text content, not HTML
-      expect(screen.getByTestId('result')).toHaveTextContent('<strong>Bold</strong> & "quoted"');
+      expect(screen.getByTestId('result')).toHaveTextContent(
+        '<strong>Bold</strong> & "quoted"',
+      );
     });
 
     it('should handle manager that returns numbers', () => {
@@ -432,14 +484,16 @@ describe('TranslationContext', () => {
       render(
         <TranslationProvider translationManager={mockManager}>
           <NumberConsumer />
-        </TranslationProvider>
+        </TranslationProvider>,
       );
 
       expect(screen.getByTestId('result')).toHaveTextContent('42');
     });
 
     it('should handle same namespace used multiple times', () => {
-      const tMock = vi.fn((namespace: string, key: string) => `${namespace}.${key}`);
+      const tMock = vi.fn(
+        (namespace: string, key: string) => `${namespace}.${key}`,
+      );
       const mockManager: TranslationManager = { t: tMock };
 
       function MultipleCallsConsumer() {
@@ -457,7 +511,7 @@ describe('TranslationContext', () => {
       render(
         <TranslationProvider translationManager={mockManager}>
           <MultipleCallsConsumer />
-        </TranslationProvider>
+        </TranslationProvider>,
       );
 
       expect(screen.getByTestId('first')).toHaveTextContent('Common.save');
@@ -473,10 +527,18 @@ describe('TranslationProvider with a locale', () => {
     // The first provider loads the strings. A second, mounted once they are
     // loaded, has nothing to wait for: a page with a viewer per message must
     // not see each one start blank.
-    render(<TranslationProvider locale="en"><span>first</span></TranslationProvider>);
+    render(
+      <TranslationProvider locale="en">
+        <span>first</span>
+      </TranslationProvider>,
+    );
     await screen.findByText('first');
 
-    render(<TranslationProvider locale="en"><span>second</span></TranslationProvider>);
+    render(
+      <TranslationProvider locale="en">
+        <span>second</span>
+      </TranslationProvider>,
+    );
     expect(screen.getByText('second')).toBeInTheDocument();
   });
 });
@@ -486,8 +548,10 @@ describe('useTranslationManager', () => {
     return <span>{useTranslationManager().t('Ns', 'key')}</span>;
   }
 
-  it('is the nearest provider\'s manager, to hand on to a view that takes the language', () => {
-    const manager: TranslationManager = { t: (namespace, key) => `${namespace}.${key}` };
+  it("is the nearest provider's manager, to hand on to a view that takes the language", () => {
+    const manager: TranslationManager = {
+      t: (namespace, key) => `${namespace}.${key}`,
+    };
     render(
       <TranslationProvider translationManager={manager}>
         <ManagerName />
@@ -497,10 +561,13 @@ describe('useTranslationManager', () => {
   });
 
   it('throws when used outside a TranslationProvider', () => {
-    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleError = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
 
-    expect(() => render(<ManagerName />))
-      .toThrow('useTranslationManager must be used within a TranslationProvider');
+    expect(() => render(<ManagerName />)).toThrow(
+      'useTranslationManager must be used within a TranslationProvider',
+    );
 
     consoleError.mockRestore();
   });

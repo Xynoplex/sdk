@@ -29,6 +29,8 @@ export function SkipLinks() {
  * The page's main landmark, and the element the skip link lands on.
  * `tabIndex={-1}` lets it take focus from the link without joining the tab order.
  */
-export function MainContent(props: Omit<ComponentProps<'main'>, 'id' | 'tabIndex'>) {
+export function MainContent(
+  props: Omit<ComponentProps<'main'>, 'id' | 'tabIndex'>,
+) {
   return <main {...props} id={MAIN_CONTENT_ID} tabIndex={-1} />;
 }

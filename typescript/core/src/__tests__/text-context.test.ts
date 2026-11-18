@@ -39,7 +39,7 @@ describe('extractContext', () => {
 // and the 32 of the context. The table (reconcile-cases.json) holds the
 // counts; this holds that `extractContext` itself is given offsets.
 describe('extractContext — offsets count code points', () => {
-  test('is given offsets, not a string\'s own positions', () => {
+  test("is given offsets, not a string's own positions", () => {
     const content = '😀 The quick brown fox jumps over the lazy dog.';
     const result = extractContext(content, 12, 21); // "brown fox"
     expect(result.prefix).toBe('😀 The quick ');

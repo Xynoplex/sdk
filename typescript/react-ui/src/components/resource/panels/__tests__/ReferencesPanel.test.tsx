@@ -4,9 +4,21 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import { ReferencesPanel } from '../ReferencesPanel';
-import type { Annotation, AnnotationId, EventBus, EventMap } from '@xynolog/core';
-import type { LinkComponentProps, RouteBuilder } from '../../../../contexts/RoutingContext';
-import { createMarkStateUnit, type MarkStateUnit, type XynologSession } from '@xynolog/sdk';
+import type {
+  Annotation,
+  AnnotationId,
+  EventBus,
+  EventMap,
+} from '@xynolog/core';
+import type {
+  LinkComponentProps,
+  RouteBuilder,
+} from '../../../../contexts/RoutingContext';
+import {
+  createMarkStateUnit,
+  type MarkStateUnit,
+  type XynologSession,
+} from '@xynolog/sdk';
 import { createTestXynologWrapper } from '../../../../test-utils';
 import { FrameRefusal, jobId, resourceId } from '@xynolog/core';
 
@@ -20,13 +32,18 @@ function createEventTracker() {
   const events: TrackedEvent[] = [];
   return {
     events,
-    clear: () => { events.length = 0; },
+    clear: () => {
+      events.length = 0;
+    },
     _attach(eventBus: EventBus) {
       const panelEvents = ['mark:submit'] as const;
       panelEvents.forEach((eventName) => {
         eventBus.on(eventName).subscribe((payload) => {
           // Nothing bridges into this test's bus: a refusal on it is the test's own fault.
-          if (payload instanceof FrameRefusal) throw new Error(`refused: ${payload.channel} ${payload.reason} ${payload.member}`);
+          if (payload instanceof FrameRefusal)
+            throw new Error(
+              `refused: ${payload.channel} ${payload.reason} ${payload.member}`,
+            );
           events.push({ event: eventName, payload });
         });
       });
@@ -49,7 +66,10 @@ beforeEach(() => {
   mark = createMarkStateUnit(session.client, resourceId('res-1'));
 });
 
-const renderWithEventBus = (component: React.ReactElement, tracker?: ReturnType<typeof createEventTracker>) => {
+const renderWithEventBus = (
+  component: React.ReactElement,
+  tracker?: ReturnType<typeof createEventTracker>,
+) => {
   if (tracker) tracker._attach(eventBus);
   const Wrapper = ({ children }: { children: React.ReactNode }) => (
     <XynologWrapper>{children}</XynologWrapper>
@@ -59,41 +79,47 @@ const renderWithEventBus = (component: React.ReactElement, tracker?: ReturnType<
 
 // Mock TranslationContext
 vi.mock('../../../../contexts/TranslationContext', () => ({
-  useTranslations: vi.fn(() => (key: string, params?: Record<string, unknown>) => {
-    const translations: Record<string, string> = {
-      annotateReferences: 'Annotate References',
-      selectEntityTypes: 'Select entity types',
-      noEntityTypes: 'No entity types available',
-      select: 'Select',
-      deselect: 'Deselect',
-      typesSelected: '{count} type(s) selected',
-      annotate: 'Annotate',
-      found: 'Found {count}',
-      includeDescriptiveReferences: 'Include descriptive references',
-      descriptiveReferencesTooltip: 'Also find phrases like \'the CEO\', \'the tech giant\', \'the physicist\' (in addition to names)',
-      cancel: 'Cancel',
-      createReference: 'Create Reference',
-      annotating: 'Annotating...',
-      // The widget's own strings come from the
-      // DelegateProgress namespace, not from this panel's.
-      inProgress: 'Annotating...',
-      complete: 'Annotation complete!',
-      failed: 'Annotation failed',
-    };
-    let result = translations[key] || key;
-    // Replace {count} with actual count value if provided
-    if (params?.count !== undefined) {
-      result = result.replace('{count}', String(params.count));
-    }
-    return result;
-  }),
-  TranslationProvider: ({ children }: { children: React.ReactNode }) => children,
+  useTranslations: vi.fn(
+    () => (key: string, params?: Record<string, unknown>) => {
+      const translations: Record<string, string> = {
+        annotateReferences: 'Annotate References',
+        selectEntityTypes: 'Select entity types',
+        noEntityTypes: 'No entity types available',
+        select: 'Select',
+        deselect: 'Deselect',
+        typesSelected: '{count} type(s) selected',
+        annotate: 'Annotate',
+        found: 'Found {count}',
+        includeDescriptiveReferences: 'Include descriptive references',
+        descriptiveReferencesTooltip:
+          "Also find phrases like 'the CEO', 'the tech giant', 'the physicist' (in addition to names)",
+        cancel: 'Cancel',
+        createReference: 'Create Reference',
+        annotating: 'Annotating...',
+        // The widget's own strings come from the
+        // DelegateProgress namespace, not from this panel's.
+        inProgress: 'Annotating...',
+        complete: 'Annotation complete!',
+        failed: 'Annotation failed',
+      };
+      let result = translations[key] || key;
+      // Replace {count} with actual count value if provided
+      if (params?.count !== undefined) {
+        result = result.replace('{count}', String(params.count));
+      }
+      return result;
+    },
+  ),
+  TranslationProvider: ({ children }: { children: React.ReactNode }) =>
+    children,
 }));
 
 describe('ReferencesPanel Component', () => {
   // Mock Link component
   const MockLink = ({ href, children, ...props }: LinkComponentProps) => (
-    <a href={href} {...props}>{children}</a>
+    <a href={href} {...props}>
+      {children}
+    </a>
   );
 
   // Mock routes
@@ -142,21 +168,32 @@ describe('ReferencesPanel Component', () => {
         source: resourceId('res-1'),
         selector: { type: 'TextQuoteSelector', exact: `text of ${id}` },
       },
-      body: { type: 'SpecificResource', source: resourceId('linked-doc'), purpose: 'linking' },
+      body: {
+        type: 'SpecificResource',
+        source: resourceId('linked-doc'),
+        purpose: 'linking',
+      },
     });
 
     it('sparkles exactly the entries named by sparkleAnnotationIds', () => {
       const { container } = renderWithEventBus(
         <ReferencesPanel
           {...panelProps()}
-          annotations={[linkingReference('ann-dark'), linkingReference('ann-lit')]}
+          annotations={[
+            linkingReference('ann-dark'),
+            linkingReference('ann-lit'),
+          ]}
           sparkleAnnotationIds={new Set(['ann-lit'])}
         />,
       );
 
-      const sparkling = container.querySelectorAll('.xynolog-reference-icon.annotation-sparkle');
+      const sparkling = container.querySelectorAll(
+        '.xynolog-reference-icon.annotation-sparkle',
+      );
       expect(sparkling).toHaveLength(1);
-      expect(sparkling[0]!.closest('.xynolog-annotation-entry')).toHaveTextContent('text of ann-lit');
+      expect(
+        sparkling[0]!.closest('.xynolog-annotation-entry'),
+      ).toHaveTextContent('text of ann-lit');
     });
   });
 
@@ -177,7 +214,9 @@ describe('ReferencesPanel Component', () => {
     });
 
     it('should show message when no entity types available', () => {
-      renderWithEventBus(<ReferencesPanel {...panelProps()} allEntityTypes={[]} />);
+      renderWithEventBus(
+        <ReferencesPanel {...panelProps()} allEntityTypes={[]} />,
+      );
 
       expect(screen.getByText('No entity types available')).toBeInTheDocument();
     });
@@ -200,23 +239,32 @@ describe('ReferencesPanel Component', () => {
     };
 
     const submitPayloads = (tracker: ReturnType<typeof createEventTracker>) =>
-      tracker.events.filter(e => e.event === 'mark:submit').map(e => e.payload);
+      tracker.events
+        .filter((e) => e.event === 'mark:submit')
+        .map((e) => e.payload);
 
     // The panel's own entity-type chips, not DelegateSection's identically
     // labelled ones.
     const renderPrompt = (tracker: ReturnType<typeof createEventTracker>) => {
       const { container } = renderWithEventBus(
-        <ReferencesPanel {...panelProps()} pendingAnnotation={pendingLinking} />,
+        <ReferencesPanel
+          {...panelProps()}
+          pendingAnnotation={pendingLinking}
+        />,
         tracker,
       );
-      return within(container.querySelector('.xynolog-annotation-prompt') as HTMLElement);
+      return within(
+        container.querySelector('.xynolog-annotation-prompt') as HTMLElement,
+      );
     };
 
     it('omits body entirely when no entity type is selected', async () => {
       const tracker = createEventTracker();
       const prompt = renderPrompt(tracker);
 
-      await userEvent.click(prompt.getByRole('button', { name: /create reference/i }));
+      await userEvent.click(
+        prompt.getByRole('button', { name: /create reference/i }),
+      );
 
       const [payload] = submitPayloads(tracker);
       expect(payload).toBeDefined();
@@ -228,7 +276,9 @@ describe('ReferencesPanel Component', () => {
       const prompt = renderPrompt(tracker);
 
       await userEvent.click(prompt.getByRole('button', { name: 'Person' }));
-      await userEvent.click(prompt.getByRole('button', { name: /create reference/i }));
+      await userEvent.click(
+        prompt.getByRole('button', { name: /create reference/i }),
+      );
 
       const [payload] = submitPayloads(tracker);
       expect(payload.body).toEqual([
@@ -316,7 +366,10 @@ describe('ReferencesPanel Component', () => {
       const personButton = screen.getByText('Person');
 
       // Before selection
-      expect(personButton).toHaveClass('xynolog-chip', 'xynolog-chip--selectable');
+      expect(personButton).toHaveClass(
+        'xynolog-chip',
+        'xynolog-chip--selectable',
+      );
       expect(personButton).toHaveAttribute('data-selected', 'false');
 
       await userEvent.click(personButton);
@@ -339,7 +392,10 @@ describe('ReferencesPanel Component', () => {
 
       const personButton = screen.getByText('Person');
 
-      expect(personButton).toHaveClass('xynolog-chip', 'xynolog-chip--selectable');
+      expect(personButton).toHaveClass(
+        'xynolog-chip',
+        'xynolog-chip--selectable',
+      );
     });
   });
 
@@ -364,7 +420,9 @@ describe('ReferencesPanel Component', () => {
     });
 
     it('asks the mark unit to delegate a linking job of the chosen types, descriptive references left out', async () => {
-      const requestDelegate = vi.spyOn(mark, 'requestDelegate').mockImplementation(() => {});
+      const requestDelegate = vi
+        .spyOn(mark, 'requestDelegate')
+        .mockImplementation(() => {});
       renderWithEventBus(<ReferencesPanel {...panelProps()} />);
 
       await userEvent.click(screen.getByText('Person'));
@@ -373,15 +431,19 @@ describe('ReferencesPanel Component', () => {
       const startButton = screen.getByTitle('Annotate');
       await userEvent.click(startButton);
 
-      expect(requestDelegate).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({
-        motivation: 'linking',
-        entityTypes: ['Person', 'Organization'],
-        includeDescriptiveReferences: false,
-      }));
+      expect(requestDelegate).toHaveBeenCalledExactlyOnceWith(
+        expect.objectContaining({
+          motivation: 'linking',
+          entityTypes: ['Person', 'Organization'],
+          includeDescriptiveReferences: false,
+        }),
+      );
     });
 
     it('delegates with descriptive references included when the box is checked', async () => {
-      const requestDelegate = vi.spyOn(mark, 'requestDelegate').mockImplementation(() => {});
+      const requestDelegate = vi
+        .spyOn(mark, 'requestDelegate')
+        .mockImplementation(() => {});
       renderWithEventBus(<ReferencesPanel {...panelProps()} />);
 
       await userEvent.click(screen.getByText('Person'));
@@ -394,17 +456,26 @@ describe('ReferencesPanel Component', () => {
       const startButton = screen.getByTitle('Annotate');
       await userEvent.click(startButton);
 
-      expect(requestDelegate).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({
-        motivation: 'linking',
-        entityTypes: ['Person'],
-        includeDescriptiveReferences: true,
-      }));
+      expect(requestDelegate).toHaveBeenCalledExactlyOnceWith(
+        expect.objectContaining({
+          motivation: 'linking',
+          entityTypes: ['Person'],
+          includeDescriptiveReferences: true,
+        }),
+      );
     });
 
     it('the control of a running job asks for that job to be cancelled, by its id', async () => {
-      const cancelSpy = vi.spyOn(session.client.job, 'cancel').mockResolvedValue(true);
+      const cancelSpy = vi
+        .spyOn(session.client.job, 'cancel')
+        .mockResolvedValue(true);
       renderWithEventBus(
-        <ReferencesPanel {...panelProps()} isDelegating={true} jobId={jobId('job-1')} progress={{ percentage: 0, completedItems: [] }} />,
+        <ReferencesPanel
+          {...panelProps()}
+          isDelegating={true}
+          jobId={jobId('job-1')}
+          progress={{ percentage: 0, completedItems: [] }}
+        />,
       );
 
       await userEvent.click(screen.getByTestId('xynolog-delegate-control'));
@@ -413,7 +484,13 @@ describe('ReferencesPanel Component', () => {
 
     it('a running job the queue has not named yet has no cancel control', () => {
       renderWithEventBus(
-        <ReferencesPanel {...panelProps()} isDelegating={true} jobId={null} cancelled={false} progress={{ percentage: 0, completedItems: [] }} />,
+        <ReferencesPanel
+          {...panelProps()}
+          isDelegating={true}
+          jobId={null}
+          cancelled={false}
+          progress={{ percentage: 0, completedItems: [] }}
+        />,
       );
 
       expect(screen.queryByTestId('xynolog-delegate-control')).toBeNull();
@@ -424,15 +501,20 @@ describe('ReferencesPanel Component', () => {
       // count goes through the same translations the panel builds for its
       // display, so it fails here if they drop it on the way.
       renderWithEventBus(
-        <ReferencesPanel {...panelProps()} isDelegating={true}
-          progress={{ percentage: 40, entitiesFound: 3, entitiesExpected: 10 }} />,
+        <ReferencesPanel
+          {...panelProps()}
+          isDelegating={true}
+          progress={{ percentage: 40, entitiesFound: 3, entitiesExpected: 10 }}
+        />,
       );
 
       expect(screen.getByTestId('xynolog-delegate-tally')).toBeInTheDocument();
     });
 
     it('should clear selected types after detection starts', async () => {
-      const { rerender } = renderWithEventBus(<ReferencesPanel {...panelProps()} />);
+      const { rerender } = renderWithEventBus(
+        <ReferencesPanel {...panelProps()} />,
+      );
 
       await userEvent.click(screen.getByText('Person'));
 
@@ -445,7 +527,7 @@ describe('ReferencesPanel Component', () => {
           {...panelProps()}
           isDelegating={true}
           progress={{ percentage: 0, completedItems: [] }}
-        />
+        />,
       );
 
       // Simulate detection completing
@@ -457,7 +539,7 @@ describe('ReferencesPanel Component', () => {
             percentage: 100,
             completedItems: [{ value: 'Person', foundCount: 5 }],
           }}
-        />
+        />,
       );
 
       // UI should reset but we can't directly test internal state
@@ -496,7 +578,7 @@ describe('ReferencesPanel Component', () => {
           {...panelProps()}
           isDelegating={true}
           progress={{ percentage: 0, completedItems: [] }}
-        />
+        />,
       );
 
       expect(screen.getByText('Annotating...')).toBeInTheDocument();
@@ -516,7 +598,7 @@ describe('ReferencesPanel Component', () => {
           {...panelProps()}
           isDelegating={true}
           progress={progress}
-        />
+        />,
       );
 
       // Real DelegateProgress renders the completed entity-type log.
@@ -537,15 +619,25 @@ describe('ReferencesPanel Component', () => {
             percentage: 100,
             completedItems: [{ value: 'Person', foundCount: 5 }],
           }}
-        />
+        />,
       );
       rerender(
-        <ReferencesPanel {...panelProps()} isDelegating={false} progress={null} />
+        <ReferencesPanel
+          {...panelProps()}
+          isDelegating={false}
+          progress={null}
+        />,
       );
 
-      expect(container.querySelector('.xynolog-annotation-log')).toBeInTheDocument();
-      expect(container.querySelector('.xynolog-annotation-log-item')).toBeInTheDocument();
-      expect(container.querySelector('.xynolog-delegate-widget__log')).not.toBeInTheDocument();
+      expect(
+        container.querySelector('.xynolog-annotation-log'),
+      ).toBeInTheDocument();
+      expect(
+        container.querySelector('.xynolog-annotation-log-item'),
+      ).toBeInTheDocument();
+      expect(
+        container.querySelector('.xynolog-delegate-widget__log'),
+      ).not.toBeInTheDocument();
     });
 
     it('should hide entity type selection during detection', () => {
@@ -554,7 +646,7 @@ describe('ReferencesPanel Component', () => {
           {...panelProps()}
           isDelegating={true}
           progress={{ percentage: 0, completedItems: [] }}
-        />
+        />,
       );
 
       expect(screen.queryByText('Select entity types')).not.toBeInTheDocument();
@@ -568,7 +660,7 @@ describe('ReferencesPanel Component', () => {
           isDelegating={true}
           jobId={jobId('job-1')}
           progress={{ percentage: 0, completedItems: [] }}
-        />
+        />,
       );
 
       // The control's label comes from the DelegateProgress namespace's `cancel`.
@@ -590,7 +682,7 @@ describe('ReferencesPanel Component', () => {
               { value: 'Organization', foundCount: 3 },
             ],
           }}
-        />
+        />,
       );
 
       // Parent clears progress after completion
@@ -599,7 +691,7 @@ describe('ReferencesPanel Component', () => {
           {...panelProps()}
           isDelegating={false}
           progress={null}
-        />
+        />,
       );
 
       expect(screen.getByText('Person:')).toBeInTheDocument();
@@ -615,11 +707,15 @@ describe('ReferencesPanel Component', () => {
             percentage: 100,
             completedItems: [{ value: 'Person', foundCount: 5 }],
           }}
-        />
+        />,
       );
 
       rerender(
-        <ReferencesPanel {...panelProps()} isDelegating={false} progress={null} />
+        <ReferencesPanel
+          {...panelProps()}
+          isDelegating={false}
+          progress={null}
+        />,
       );
       expect(screen.getByText(/Found.*5/i)).toBeInTheDocument();
     });
@@ -633,11 +729,15 @@ describe('ReferencesPanel Component', () => {
             percentage: 100,
             completedItems: [{ value: 'Person', foundCount: 5 }],
           }}
-        />
+        />,
       );
 
       rerender(
-        <ReferencesPanel {...panelProps()} isDelegating={false} progress={null} />
+        <ReferencesPanel
+          {...panelProps()}
+          isDelegating={false}
+          progress={null}
+        />,
       );
       expect(screen.getByText('✓')).toBeInTheDocument();
     });
@@ -651,11 +751,15 @@ describe('ReferencesPanel Component', () => {
             percentage: 100,
             completedItems: [{ value: 'Person', foundCount: 5 }],
           }}
-        />
+        />,
       );
 
       rerender(
-        <ReferencesPanel {...panelProps()} isDelegating={false} progress={null} />
+        <ReferencesPanel
+          {...panelProps()}
+          isDelegating={false}
+          progress={null}
+        />,
       );
 
       // Should show both the completed log AND the selection UI
@@ -672,11 +776,15 @@ describe('ReferencesPanel Component', () => {
             percentage: 100,
             completedItems: [{ value: 'Person', foundCount: 5 }],
           }}
-        />
+        />,
       );
 
       rerender(
-        <ReferencesPanel {...panelProps()} isDelegating={false} progress={null} />
+        <ReferencesPanel
+          {...panelProps()}
+          isDelegating={false}
+          progress={null}
+        />,
       );
 
       // Selection UI should be immediately available (no button click needed)
@@ -693,7 +801,7 @@ describe('ReferencesPanel Component', () => {
             percentage: 100,
             completedItems: [],
           }}
-        />
+        />,
       );
 
       // Should not show any log items. Terminal progress (dismissable) is
@@ -706,7 +814,9 @@ describe('ReferencesPanel Component', () => {
 
   describe('State Transitions', () => {
     it('should transition from idle to detecting', () => {
-      const { rerender } = renderWithEventBus(<ReferencesPanel {...panelProps()} />);
+      const { rerender } = renderWithEventBus(
+        <ReferencesPanel {...panelProps()} />,
+      );
 
       // Idle state
       expect(screen.getByText('Select entity types')).toBeInTheDocument();
@@ -717,7 +827,7 @@ describe('ReferencesPanel Component', () => {
           {...panelProps()}
           isDelegating={true}
           progress={{ percentage: 0, completedItems: [] }}
-        />
+        />,
       );
 
       // Detecting state
@@ -731,7 +841,7 @@ describe('ReferencesPanel Component', () => {
           {...panelProps()}
           isDelegating={true}
           progress={{ percentage: 0, completedItems: [] }}
-        />
+        />,
       );
 
       // Detecting
@@ -746,15 +856,21 @@ describe('ReferencesPanel Component', () => {
             percentage: 100,
             completedItems: [{ value: 'Person', foundCount: 5 }],
           }}
-        />
+        />,
       );
 
       // Then clear progress to show the log
       rerender(
-        <ReferencesPanel {...panelProps()} isDelegating={false} progress={null} />
+        <ReferencesPanel
+          {...panelProps()}
+          isDelegating={false}
+          progress={null}
+        />,
       );
 
-      expect(screen.queryByText('Annotation complete!')).not.toBeInTheDocument();
+      expect(
+        screen.queryByText('Annotation complete!'),
+      ).not.toBeInTheDocument();
       // Both log and selection UI should be visible
       expect(screen.getByText('Person:')).toBeInTheDocument();
       expect(screen.getByText('Select entity types')).toBeInTheDocument();
@@ -769,20 +885,22 @@ describe('ReferencesPanel Component', () => {
             percentage: 100,
             completedItems: [{ value: 'Person', foundCount: 5 }],
           }}
-        />
+        />,
       );
 
       // Clear progress to show the log
       rerender(
-        <ReferencesPanel {...panelProps()} isDelegating={false} progress={null} />
+        <ReferencesPanel
+          {...panelProps()}
+          isDelegating={false}
+          progress={null}
+        />,
       );
 
       // Selection UI should be immediately available
       expect(screen.getByText('Select entity types')).toBeInTheDocument();
 
-      rerender(
-        <ReferencesPanel {...panelProps()} />
-      );
+      rerender(<ReferencesPanel {...panelProps()} />);
 
       expect(screen.getByText('Select entity types')).toBeInTheDocument();
     });
@@ -791,7 +909,9 @@ describe('ReferencesPanel Component', () => {
   describe('Edge Cases', () => {
     it('should handle empty entity types array', () => {
       expect(() => {
-        renderWithEventBus(<ReferencesPanel {...panelProps()} allEntityTypes={[]} />);
+        renderWithEventBus(
+          <ReferencesPanel {...panelProps()} allEntityTypes={[]} />,
+        );
       }).not.toThrow();
     });
 
@@ -799,7 +919,9 @@ describe('ReferencesPanel Component', () => {
       const manyTypes = Array.from({ length: 50 }, (_, i) => `Type${i}`);
 
       expect(() => {
-        renderWithEventBus(<ReferencesPanel {...panelProps()} allEntityTypes={manyTypes} />);
+        renderWithEventBus(
+          <ReferencesPanel {...panelProps()} allEntityTypes={manyTypes} />,
+        );
       }).not.toThrow();
 
       expect(screen.getByText('Type0')).toBeInTheDocument();
@@ -809,9 +931,11 @@ describe('ReferencesPanel Component', () => {
     it('should handle entity types with special characters', () => {
       const specialTypes = ['Type-A', 'Type_B', 'Type.C', 'Type/D'];
 
-      renderWithEventBus(<ReferencesPanel {...panelProps()} allEntityTypes={specialTypes} />);
+      renderWithEventBus(
+        <ReferencesPanel {...panelProps()} allEntityTypes={specialTypes} />,
+      );
 
-      specialTypes.forEach(type => {
+      specialTypes.forEach((type) => {
         expect(screen.getByText(type)).toBeInTheDocument();
       });
     });
@@ -824,7 +948,7 @@ describe('ReferencesPanel Component', () => {
         await userEvent.click(screen.getByText(type));
       }
 
-      defaultProps.allEntityTypes.forEach(type => {
+      defaultProps.allEntityTypes.forEach((type) => {
         expect(screen.getByText(type)).toHaveAttribute('aria-pressed', 'true');
       });
 
@@ -833,7 +957,7 @@ describe('ReferencesPanel Component', () => {
         await userEvent.click(screen.getByText(type));
       }
 
-      defaultProps.allEntityTypes.forEach(type => {
+      defaultProps.allEntityTypes.forEach((type) => {
         expect(screen.getByText(type)).toHaveAttribute('aria-pressed', 'false');
       });
     });
@@ -861,7 +985,7 @@ describe('ReferencesPanel Component', () => {
             percentage: 100,
             completedItems: [{ value: 'Person', foundCount: 0 }],
           }}
-        />
+        />,
       );
 
       expect(screen.getByText(/Found.*0/i)).toBeInTheDocument();
@@ -875,7 +999,7 @@ describe('ReferencesPanel Component', () => {
             isDelegating={false}
             // @ts-expect-error — progress is JobProgress or null; this holds that undefined does not throw
             progress={undefined}
-          />
+          />,
         );
       }).not.toThrow();
     });
@@ -883,14 +1007,18 @@ describe('ReferencesPanel Component', () => {
 
   describe('Styling and Appearance', () => {
     it('should have proper panel structure', () => {
-      const { container } = renderWithEventBus(<ReferencesPanel {...panelProps()} />);
+      const { container } = renderWithEventBus(
+        <ReferencesPanel {...panelProps()} />,
+      );
 
       const panel = container.firstChild as HTMLElement;
       expect(panel).toHaveClass('xynolog-panel');
     });
 
     it('should support dark mode', () => {
-      const { container } = renderWithEventBus(<ReferencesPanel {...panelProps()} />);
+      const { container } = renderWithEventBus(
+        <ReferencesPanel {...panelProps()} />,
+      );
 
       const panel = container.firstChild as HTMLElement;
       expect(panel).toHaveClass('xynolog-panel');

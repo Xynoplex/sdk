@@ -20,9 +20,21 @@
 import { describe, it, expect, vi } from 'vitest';
 import { act, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import type { ResourceDescriptor as XynologResource, ResourceId, StoredEvent, EventOfType, UserId, EventMetadata, Annotation } from '@xynolog/core';
+import type {
+  ResourceDescriptor as XynologResource,
+  ResourceId,
+  StoredEvent,
+  EventOfType,
+  UserId,
+  EventMetadata,
+  Annotation,
+} from '@xynolog/core';
 import { annotationId, resourceId as makeResourceId } from '@xynolog/core';
-import { createTestXynologWrapper, renderInEnglish, englishTranslationManager } from '../../../test-utils';
+import {
+  createTestXynologWrapper,
+  renderInEnglish,
+  englishTranslationManager,
+} from '../../../test-utils';
 import { ResourceViewer } from '../ResourceViewer';
 
 const TEST_USER = 'did:web:test:users:test' as UserId;
@@ -65,7 +77,13 @@ function fakeMarkAdded(rIdStr: string): StoredEvent<EventOfType<'mark:added'>> {
   };
 }
 
-const annotations = { highlights: [], references: [], assessments: [], comments: [], tags: [] };
+const annotations = {
+  highlights: [],
+  references: [],
+  assessments: [],
+  comments: [],
+  tags: [],
+};
 
 function mountTwoViewers() {
   const wrapper = createTestXynologWrapper();
@@ -90,7 +108,8 @@ function mountTwoViewers() {
       />
     </>,
   );
-  for (const id of ['res-A', 'res-B']) wrapper.client.browse.annotations(makeResourceId(id)).subscribe(() => {});
+  for (const id of ['res-A', 'res-B'])
+    wrapper.client.browse.annotations(makeResourceId(id)).subscribe(() => {});
   spy.mockClear(); // only the event-driven invalidations count
   return { ...wrapper, spy };
 }

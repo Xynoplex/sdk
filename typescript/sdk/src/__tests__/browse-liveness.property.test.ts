@@ -41,8 +41,15 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { filter, map } from 'rxjs/operators';
 import type { Observable } from 'rxjs';
-import { BRIDGED_CHANNELS, EventBus, resourceId as makeResourceId } from '@xynolog/core';
-import { FaultyTransport, refuseUnscriptedOperation } from '@xynolog/core/testing';
+import {
+  BRIDGED_CHANNELS,
+  EventBus,
+  resourceId as makeResourceId,
+} from '@xynolog/core';
+import {
+  FaultyTransport,
+  refuseUnscriptedOperation,
+} from '@xynolog/core/testing';
 import { assertLivenessAxioms } from '@xynolog/core/testing/axioms';
 import { BrowseNamespace } from '../namespaces/browse';
 import { contentTransportSpies } from './helpers/in-memory-transport';
@@ -52,10 +59,16 @@ import { mockResource } from './fixtures/resource';
 const TIMEOUT_MS = 50;
 
 /** Registry-shaped replies for the ops this composition issues. */
-function makeResponse(operation: string, payload: Record<string, unknown>): unknown {
+function makeResponse(
+  operation: string,
+  payload: Record<string, unknown>,
+): unknown {
   switch (operation) {
     case 'browse:resource-requested':
-      return { resource: mockResource(String(payload.resourceId)), lastSequence: 1 };
+      return {
+        resource: mockResource(String(payload.resourceId)),
+        lastSequence: 1,
+      };
     case 'browse:events-requested':
       return { events: [], total: 0, resourceId: payload.resourceId };
     default:
@@ -71,9 +84,14 @@ function makeResponse(operation: string, payload: Record<string, unknown>): unkn
  * (whose L1 counts value-or-error notifications) a failed state is re-thrown,
  * which keeps the axiom's meaning: `pending` forever is the forbidden state.
  */
-function loaderOutputs(browse: BrowseNamespace, rid: string): Observable<unknown>[] {
+function loaderOutputs(
+  browse: BrowseNamespace,
+  rid: string,
+): Observable<unknown>[] {
   const id = makeResourceId(rid);
-  const settle = <T,>(obs: Observable<import('../cache').CacheState<T>>): Observable<T> =>
+  const settle = <T>(
+    obs: Observable<import('../cache').CacheState<T>>,
+  ): Observable<T> =>
     obs.pipe(
       filter((s) => s.status !== 'pending'),
       map((s) => {
@@ -109,7 +127,11 @@ describe('liveness axioms over the real BrowseNamespace composition', () => {
    * harness's finally block. Quote-bounded rid match — '"res-a"' must not
    * match the await path's '"res-await"'.
    */
-  const checkBreadcrumb = (transport: FaultyTransport, rids: readonly string[], l4Silent: string[]): void => {
+  const checkBreadcrumb = (
+    transport: FaultyTransport,
+    rids: readonly string[],
+    l4Silent: string[],
+  ): void => {
     const mountedFaults = transport.requestLog.filter(
       (e) =>
         (e.action.kind === 'drop-reply' || e.action.kind === 'reject-emit') &&
@@ -118,125 +140,123 @@ describe('liveness axioms over the real BrowseNamespace composition', () => {
     if (mountedFaults.length > 0 && warnSpy.mock.calls.length === 0) {
       l4Silent.push(
         `L4: run with mounts [${rids.join(',')}] consumed ` +
-        `${mountedFaults.length} mounted-rid fault(s) ` +
-        `(${mountedFaults.map((e) => e.action.kind).join(',')}) ` +
-        `but emitted zero breadcrumbs — silence under degradation`,
+          `${mountedFaults.length} mounted-rid fault(s) ` +
+          `(${mountedFaults.map((e) => e.action.kind).join(',')}) ` +
+          `but emitted zero breadcrumbs — silence under degradation`,
       );
     }
   };
 
-  it(
-    'L1/L2: concurrent distinct-rid loaders on a faulty wire — every subscription sees a value or an error, requests stay within the B14 budget',
-    async () => {
-      // Rotate mount shapes across property runs (fresh composition per run):
-      // the flagship 4-distinct repro, a duplicate-rid variant (exercises B3
-      // in-flight joining), a pair, and a single.
-      const RID_CONFIGS: string[][] = [
-        ['res-a', 'res-b', 'res-c', 'res-d'],
-        ['res-a', 'res-a', 'res-b'],
-        ['res-a', 'res-b'],
-        ['res-a'],
-      ];
-      let run = 0;
-      const l4Silent: string[] = [];
+  it('L1/L2: concurrent distinct-rid loaders on a faulty wire — every subscription sees a value or an error, requests stay within the B14 budget', async () => {
+    // Rotate mount shapes across property runs (fresh composition per run):
+    // the flagship 4-distinct repro, a duplicate-rid variant (exercises B3
+    // in-flight joining), a pair, and a single.
+    const RID_CONFIGS: string[][] = [
+      ['res-a', 'res-b', 'res-c', 'res-d'],
+      ['res-a', 'res-a', 'res-b'],
+      ['res-a', 'res-b'],
+      ['res-a'],
+    ];
+    let run = 0;
+    const l4Silent: string[] = [];
 
-      await assertLivenessAxioms({
-        timeoutMs: TIMEOUT_MS,
-        retryBudget: 1,
-        makeResponse,
-        setup: (transport: FaultyTransport) => {
-          const rids = RID_CONFIGS[run++ % RID_CONFIGS.length]!;
-          warnSpy.mockClear(); // per-run L4 window
-          const bus = new EventBus();
-          const browse = new BrowseNamespace(
-            transport,
-            bus,
-            contentTransportSpies(),
-            { busTimeoutMs: TIMEOUT_MS },
-          );
+    await assertLivenessAxioms({
+      timeoutMs: TIMEOUT_MS,
+      retryBudget: 1,
+      makeResponse,
+      setup: (transport: FaultyTransport) => {
+        const rids = RID_CONFIGS[run++ % RID_CONFIGS.length]!;
+        warnSpy.mockClear(); // per-run L4 window
+        const bus = new EventBus();
+        const browse = new BrowseNamespace(
+          transport,
+          bus,
+          contentTransportSpies(),
+          { busTimeoutMs: TIMEOUT_MS },
+        );
 
-          const outputs = rids.flatMap((rid) => loaderOutputs(browse, rid));
+        const outputs = rids.flatMap((rid) => loaderOutputs(browse, rid));
 
-          // Await-path settlements on rids DISJOINT from the mounts (see the
-          // module note on budget accounting). Both must settle — resolve or
-          // reject — within the bound; rejection is a permitted outcome.
-          const awaitRid = makeResourceId('res-await');
-          const settlements = [
-            browse.resource(awaitRid).fresh().then(
+        // Await-path settlements on rids DISJOINT from the mounts (see the
+        // module note on budget accounting). Both must settle — resolve or
+        // reject — within the bound; rejection is a permitted outcome.
+        const awaitRid = makeResourceId('res-await');
+        const settlements = [
+          browse
+            .resource(awaitRid)
+            .fresh()
+            .then(
               (v) => v,
               (e) => {
                 expect(e).toBeInstanceOf(Error);
                 return undefined;
               },
             ),
-            browse.events(awaitRid).fresh().then(
+          browse
+            .events(awaitRid)
+            .fresh()
+            .then(
               (v) => v,
               (e) => {
                 expect(e).toBeInstanceOf(Error);
                 return undefined;
               },
             ),
-          ];
+        ];
 
-          return {
-            outputs,
-            settlements,
-            teardown: () => {
-              checkBreadcrumb(transport, rids, l4Silent);
-              bus.destroy();
-            },
-          };
-        },
-      });
+        return {
+          outputs,
+          settlements,
+          teardown: () => {
+            checkBreadcrumb(transport, rids, l4Silent);
+            bus.destroy();
+          },
+        };
+      },
+    });
 
-      expect(l4Silent).toEqual([]);
-    },
-    60_000,
-  );
+    expect(l4Silent).toEqual([]);
+  }, 60_000);
 
-  it(
-    'L1/L2 hold across the invalidate path (budget widened for the sanctioned refetch chain)',
-    async () => {
-      const rids = ['res-x', 'res-y'];
-      const l4Silent: string[] = [];
+  it('L1/L2 hold across the invalidate path (budget widened for the sanctioned refetch chain)', async () => {
+    const rids = ['res-x', 'res-y'];
+    const l4Silent: string[] = [];
 
-      await assertLivenessAxioms({
-        timeoutMs: TIMEOUT_MS,
-        // One key may legitimately see the observe chain (1 + retry) PLUS the
-        // invalidate chain (1 + retry) = 4 issues = 1 + 3.
-        retryBudget: 3,
-        makeResponse,
-        setup: async (transport: FaultyTransport) => {
-          warnSpy.mockClear(); // per-run L4 window
-          const bus = new EventBus();
-          const browse = new BrowseNamespace(
-            transport,
-            bus,
-            contentTransportSpies(),
-            { busTimeoutMs: TIMEOUT_MS },
-          );
+    await assertLivenessAxioms({
+      timeoutMs: TIMEOUT_MS,
+      // One key may legitimately see the observe chain (1 + retry) PLUS the
+      // invalidate chain (1 + retry) = 4 issues = 1 + 3.
+      retryBudget: 3,
+      makeResponse,
+      setup: async (transport: FaultyTransport) => {
+        warnSpy.mockClear(); // per-run L4 window
+        const bus = new EventBus();
+        const browse = new BrowseNamespace(
+          transport,
+          bus,
+          contentTransportSpies(),
+          { busTimeoutMs: TIMEOUT_MS },
+        );
 
-          const outputs = rids.flatMap((rid) => loaderOutputs(browse, rid));
+        const outputs = rids.flatMap((rid) => loaderOutputs(browse, rid));
 
-          // Let the initial chains make some progress, then invalidate one
-          // resource mid-flight: a refetch racing the original chain (B9).
-          await new Promise<void>((r) => setTimeout(r, 0));
-          browse.invalidateResourceDetail(makeResourceId('res-x'));
+        // Let the initial chains make some progress, then invalidate one
+        // resource mid-flight: a refetch racing the original chain (B9).
+        await new Promise<void>((r) => setTimeout(r, 0));
+        browse.invalidateResourceDetail(makeResourceId('res-x'));
 
-          return {
-            outputs,
-            teardown: () => {
-              checkBreadcrumb(transport, rids, l4Silent);
-              bus.destroy();
-            },
-          };
-        },
-      });
+        return {
+          outputs,
+          teardown: () => {
+            checkBreadcrumb(transport, rids, l4Silent);
+            bus.destroy();
+          },
+        };
+      },
+    });
 
-      expect(l4Silent).toEqual([]);
-    },
-    60_000,
-  );
+    expect(l4Silent).toEqual([]);
+  }, 60_000);
 
   // ── L4 pair: each cache breadcrumb pinned individually (deterministic) ───
   //
@@ -248,21 +268,33 @@ describe('liveness axioms over the real BrowseNamespace composition', () => {
     // Every request drops its reply → attempt times out (RETRY warn) → the
     // B14 re-issue also drops → exhaustion (IDLE warn) + B15 error to the
     // value-less key's observers.
-    const transport = new FaultyTransport({ channels: BRIDGED_CHANNELS, schedule: [{ kind: 'drop-reply' }], makeResponse });
+    const transport = new FaultyTransport({
+      channels: BRIDGED_CHANNELS,
+      schedule: [{ kind: 'drop-reply' }],
+      makeResponse,
+    });
     const bus = new EventBus();
     const browse = new BrowseNamespace(
-      transport, bus, contentTransportSpies(), { busTimeoutMs: TIMEOUT_MS },
+      transport,
+      bus,
+      contentTransportSpies(),
+      { busTimeoutMs: TIMEOUT_MS },
     );
 
     try {
       const outputs = loaderOutputs(browse, 'res-trio');
-      await Promise.all(outputs.map(
-        (o) => new Promise<void>((resolve) => {
-          o.subscribe({ next: () => resolve(), error: () => resolve() });
-        }),
-      ));
+      await Promise.all(
+        outputs.map(
+          (o) =>
+            new Promise<void>((resolve) => {
+              o.subscribe({ next: () => resolve(), error: () => resolve() });
+            }),
+        ),
+      );
 
-      const warns: string[] = warnSpy.mock.calls.map((c: unknown[]) => String(c[0]));
+      const warns: string[] = warnSpy.mock.calls.map((c: unknown[]) =>
+        String(c[0]),
+      );
       expect(warns.some((w) => w.includes('[cache RETRY]'))).toBe(true);
       expect(warns.some((w) => w.includes('[cache IDLE]'))).toBe(true);
     } finally {

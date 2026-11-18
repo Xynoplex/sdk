@@ -71,18 +71,24 @@ export function textOffsets(text: string): TextOffsets {
     length,
     offsetAt(index: number): number {
       if (!Number.isInteger(index) || index < 0 || index > text.length) {
-        throw new RangeError(`position ${index} is not in a string of ${text.length} units`);
+        throw new RangeError(
+          `position ${index} is not in a string of ${text.length} units`,
+        );
       }
       // A pair that begins before `index` is wholly before it, or `index` is its second unit.
       const before = countBelow(pairs, index);
       if (before > 0 && pairs[before - 1]! + 1 === index) {
-        throw new RangeError(`position ${index} is inside a character: it has no offset`);
+        throw new RangeError(
+          `position ${index} is inside a character: it has no offset`,
+        );
       }
       return index - before;
     },
     indexAt(offset: number): number {
       if (!Number.isInteger(offset) || offset < 0 || offset > length) {
-        throw new RangeError(`offset ${offset} is not in a text of ${length} code points`);
+        throw new RangeError(
+          `offset ${offset} is not in a text of ${length} code points`,
+        );
       }
       // Each character outside the basic plane before the offset is one more unit of the string.
       return offset + countBelow(pairOffsets, offset);
@@ -95,7 +101,12 @@ export function textOffsets(text: string): TextOffsets {
  * of the two is an offset of the text, the first no greater than the second:
  * `indexAt` throws at a number that is no offset of the text.
  */
-export function between(text: string, offsets: TextOffsets, start: number, end: number): string {
+export function between(
+  text: string,
+  offsets: TextOffsets,
+  start: number,
+  end: number,
+): string {
   return text.slice(offsets.indexAt(start), offsets.indexAt(end));
 }
 
@@ -108,12 +119,17 @@ export function between(text: string, offsets: TextOffsets, start: number, end: 
  * text does not have those words there, character for character, and the
  * position has no offset: it is no place.
  */
-export function occurrencesOf(text: string, offsets: TextOffsets, words: string): number[] {
+export function occurrencesOf(
+  text: string,
+  offsets: TextOffsets,
+  words: string,
+): number[] {
   const places: number[] = [];
   let index = text.indexOf(words);
   while (index !== -1) {
     const end = index + words.length;
-    if (!isPairAt(text, index - 1) && !isPairAt(text, end - 1)) places.push(offsets.offsetAt(index));
+    if (!isPairAt(text, index - 1) && !isPairAt(text, end - 1))
+      places.push(offsets.offsetAt(index));
     // Words of no length are found at the end of the text too, and a search
     // from past the end finds them there again.
     index = index < text.length ? text.indexOf(words, index + 1) : -1;

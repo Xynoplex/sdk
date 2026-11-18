@@ -21,10 +21,12 @@ interface PendingAnnotation {
 }
 
 // Helper to extract display text from selector
-function getSelectorDisplayText(selector: Selector | Selector[]): string | null {
+function getSelectorDisplayText(
+  selector: Selector | Selector[],
+): string | null {
   if (Array.isArray(selector)) {
     // Text selectors: array of [TextPositionSelector, TextQuoteSelector]
-    const quoteSelector = selector.find(s => s.type === 'TextQuoteSelector');
+    const quoteSelector = selector.find((s) => s.type === 'TextQuoteSelector');
     if (quoteSelector && 'exact' in quoteSelector) {
       return quoteSelector.exact;
     }
@@ -93,7 +95,9 @@ export function AssessmentPanel({
 }: AssessmentPanelProps) {
   const t = useTranslations('AssessmentPanel');
   const [newAssessmentText, setNewAssessmentText] = useState('');
-  const [focusedAnnotationId, setFocusedAnnotationId] = useState<string | null>(null);
+  const [focusedAnnotationId, setFocusedAnnotationId] = useState<string | null>(
+    null,
+  );
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Direct ref management
@@ -110,13 +114,16 @@ export function AssessmentPanel({
   }, [annotations]);
 
   // Ref callback for entry components
-  const setEntryRef = useCallback((id: string, element: HTMLDivElement | null) => {
-    if (element) {
-      entryRefs.current.set(id, element);
-    } else {
-      entryRefs.current.delete(id);
-    }
-  }, []);
+  const setEntryRef = useCallback(
+    (id: string, element: HTMLDivElement | null) => {
+      if (element) {
+        entryRefs.current.set(id, element);
+      } else {
+        entryRefs.current.delete(id);
+      }
+    },
+    [],
+  );
 
   // Handle scrollToAnnotationId (click scroll)
   useEffect(() => {
@@ -126,7 +133,7 @@ export function AssessmentPanel({
       const elementTop = element.offsetTop;
       const containerHeight = containerRef.current.clientHeight;
       const elementHeight = element.offsetHeight;
-      const scrollTo = elementTop - (containerHeight / 2) + (elementHeight / 2);
+      const scrollTo = elementTop - containerHeight / 2 + elementHeight / 2;
       containerRef.current.scrollTo({ top: scrollTo, behavior: 'smooth' });
       element.classList.remove('xynolog-annotation-pulse');
       void element.offsetWidth;
@@ -144,12 +151,14 @@ export function AssessmentPanel({
     const container = containerRef.current;
     const elementRect = element.getBoundingClientRect();
     const containerRect = container.getBoundingClientRect();
-    const isVisible = elementRect.top >= containerRect.top && elementRect.bottom <= containerRect.bottom;
+    const isVisible =
+      elementRect.top >= containerRect.top &&
+      elementRect.bottom <= containerRect.bottom;
     if (!isVisible) {
       const elementTop = element.offsetTop;
       const containerHeight = container.clientHeight;
       const elementHeight = element.offsetHeight;
-      const scrollTo = elementTop - (containerHeight / 2) + (elementHeight / 2);
+      const scrollTo = elementTop - containerHeight / 2 + elementHeight / 2;
       container.scrollTo({ top: scrollTo, behavior: 'smooth' });
     }
 
@@ -194,10 +203,13 @@ export function AssessmentPanel({
   }, [pendingAnnotation, mark]);
 
   // Event handler for annotation clicks (a named callback rather than an inline arrow function)
-  const handleAnnotationClick = useCallback(({ annotationId }: { annotationId: string }) => {
-    setFocusedAnnotationId(annotationId);
-    setTimeout(() => setFocusedAnnotationId(null), 3000);
-  }, []);
+  const handleAnnotationClick = useCallback(
+    ({ annotationId }: { annotationId: string }) => {
+      setFocusedAnnotationId(annotationId);
+      setTimeout(() => setFocusedAnnotationId(null), 3000);
+    },
+    [],
+  );
 
   // Subscribe to click events - update focused state
   useSessionEventSubscriptions(session, {
@@ -213,7 +225,9 @@ export function AssessmentPanel({
         <div className="xynolog-annotation-prompt" data-type="assessment">
           <div className="xynolog-annotation-prompt__quote">
             {(() => {
-              const displayText = getSelectorDisplayText(pendingAnnotation.selector);
+              const displayText = getSelectorDisplayText(
+                pendingAnnotation.selector,
+              );
               if (displayText) {
                 return `"${displayText.substring(0, 100)}${displayText.length > 100 ? '...' : ''}"`;
               }
@@ -277,9 +291,7 @@ export function AssessmentPanel({
         {/* Assessments list */}
         <div className="xynolog-panel__list">
           {sortedAnnotations.length === 0 ? (
-            <p className="xynolog-panel__empty">
-              {t('noAssessments')}
-            </p>
+            <p className="xynolog-panel__empty">{t('noAssessments')}</p>
           ) : (
             sortedAnnotations.map((assessment) => (
               <AssessmentEntry
