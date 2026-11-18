@@ -1,8 +1,9 @@
 (* The job storage group: the names and subjects every implementation of the
    job queue uses on the broker (protocol/specs/src/jobs/storage.json), with
    the job types (JobType) and the motivations a mark job is told apart by
-   (MarkJobParams), for the TypeScript SDK; and, for the Haskell SDK, which
-   motivation each of MarkJobParams' branches is. Work queued by one
+   (MarkJobParams), for the TypeScript SDK; the names alone, for the Rust
+   SDK; and, for the Haskell SDK, which motivation each of MarkJobParams'
+   branches is. Work queued by one
    implementation survives a switch to another only if both name these
    alike. Each name is stated; the bucket's record is a component; JobType is
    an enum of words; and MarkJobParams is told apart by a mapping, whose every
@@ -248,5 +249,43 @@ let haskell t =
         };
   }
 
+(* The Rust SDK's names (rust/sdk/src/job_storage.rs), which a broker-side
+   implementation of the queue uses. *)
+let rust t =
+  let module R = Rust_syntax in
+  let s = t.table in
+  let constant name about value =
+    R.Const
+      {
+        doc = [ about ];
+        attrs = [];
+        vis = Pub;
+        name;
+        ty = R.str_ty;
+        value = R.Str value;
+      }
+  in
+  {
+    Output.path = "rust/sdk/src/generated/job_storage.rs";
+    text =
+      R.text
+        ~header:(Banner.lines ~from_:("protocol/specs/src/" ^ file) __FILE__)
+        [
+          constant "JOBS_STREAM"
+            "The work-queue stream every job is published into." s.stream.name;
+          constant "JOBS_SUBJECT_ROOT"
+            "The root of every job subject: a job is published on \
+             `<root>.<jobType>`."
+            s.stream.subject_root;
+          constant "JOBS_CONSUMER"
+            "The durable consumer that holds each job's message as its lease."
+            s.consumer.durable_name;
+          constant "JOBS_BUCKET"
+            ("The key-value bucket holding one " ^ s.bucket.record
+           ^ " per job, keyed by its id.")
+            s.bucket.name;
+        ];
+  }
+
 let files ~root:_ (spec : Spec.t) =
-  Result.map (fun t -> [ typescript t; haskell t ]) (derive spec)
+  Result.map (fun t -> [ typescript t; haskell t; rust t ]) (derive spec)

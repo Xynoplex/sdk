@@ -121,6 +121,1726 @@ pub const RESOURCE_SCOPED_CHANNELS: &[&str] = &[
 ];
 /// The field of a relayed frame's payload that carries the trace the frame was published under: an object of W3C's `traceparent` and, when it has one, `tracestate`. A frame the gateway relays over the stream has no headers of its own, so the gateway writes the field on its payload, and a receiver takes it off before the payload is delivered and continues the trace from it. No payload schema declares it, and no subscriber sees it. An emit carries its trace in its request's `traceparent` header, and its payload carries no such field.
 pub const TRACE_FIELD: &str = "_trace";
+/// Where a channel sits relative to the hub.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ChannelDirection {
+    /// Emitted toward it: an operation's request, or a command.
+    Outbound,
+    /// Delivered from it: a reply, or an event of an audience.
+    Inbound,
+    /// Never on the wire.
+    InProcess,
+}
+
+/// What a subscriber is promised about a frame on a channel when its stream drops (protocol/contract/TRANSPORT-CONTRACT.md § Delivery).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ChannelDelivery {
+    /// A recorded event on its resource's scope: what a subscriber missed is sent again.
+    Positioned,
+    /// The reply to a request, routed to the client that asked, and sent again while it is retained.
+    Correlated,
+    /// Every other frame. Nothing replays it.
+    Passing,
+}
+
+/// A channel's attributes.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct ChannelAttributes {
+    /// The event log keeps it: it is an event of the record.
+    pub recorded: bool,
+    pub direction: ChannelDirection,
+    /// Whether emitting it changes the knowledge base, or only asks it something; absent on a channel nobody emits.
+    pub writes: Option<bool>,
+    /// Absent exactly when the channel never crosses the wire.
+    pub delivery: Option<ChannelDelivery>,
+}
+
+/// Each channel's attributes, by its name.
+pub const CHANNEL_ATTRIBUTES: &[(&str, ChannelAttributes)] = &[
+    (
+        "yield:created",
+        ChannelAttributes {
+            recorded: true,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "yield:cloned",
+        ChannelAttributes {
+            recorded: true,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "yield:updated",
+        ChannelAttributes {
+            recorded: true,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "yield:moved",
+        ChannelAttributes {
+            recorded: true,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "yield:representation-added",
+        ChannelAttributes {
+            recorded: true,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Positioned),
+        },
+    ),
+    (
+        "yield:representation-removed",
+        ChannelAttributes {
+            recorded: true,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Positioned),
+        },
+    ),
+    (
+        "yield:create",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Outbound,
+            writes: Some(true),
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "yield:clone-persist",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Outbound,
+            writes: Some(true),
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "yield:update",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Outbound,
+            writes: Some(true),
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "yield:clone",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::InProcess,
+            writes: None,
+            delivery: None,
+        },
+    ),
+    (
+        "yield:clone-token-requested",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Outbound,
+            writes: Some(false),
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "yield:clone-resource-requested",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Outbound,
+            writes: Some(false),
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "yield:clone-create",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Outbound,
+            writes: Some(true),
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "yield:create-ok",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "yield:create-failed",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "yield:clone-persist-ok",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "yield:clone-persist-failed",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "yield:update-ok",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "yield:update-failed",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "yield:clone-token-generated",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "yield:clone-token-failed",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "yield:clone-resource-result",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "yield:clone-resource-failed",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "yield:clone-created",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "yield:clone-create-failed",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "mark:added",
+        ChannelAttributes {
+            recorded: true,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Positioned),
+        },
+    ),
+    (
+        "mark:removed",
+        ChannelAttributes {
+            recorded: true,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Positioned),
+        },
+    ),
+    (
+        "mark:body-updated",
+        ChannelAttributes {
+            recorded: true,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Positioned),
+        },
+    ),
+    (
+        "mark:entity-tag-added",
+        ChannelAttributes {
+            recorded: true,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Positioned),
+        },
+    ),
+    (
+        "mark:entity-tag-removed",
+        ChannelAttributes {
+            recorded: true,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Positioned),
+        },
+    ),
+    (
+        "mark:archived",
+        ChannelAttributes {
+            recorded: true,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Positioned),
+        },
+    ),
+    (
+        "mark:unarchived",
+        ChannelAttributes {
+            recorded: true,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Positioned),
+        },
+    ),
+    (
+        "mark:create-request",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Outbound,
+            writes: Some(true),
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "mark:delete",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Outbound,
+            writes: Some(true),
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "mark:update-body",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Outbound,
+            writes: Some(true),
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "mark:archive",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Outbound,
+            writes: Some(true),
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "mark:unarchive",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Outbound,
+            writes: Some(true),
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "mark:update-entity-types",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Outbound,
+            writes: Some(true),
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "mark:create-ok",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "mark:create-failed",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "mark:commit",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Outbound,
+            writes: Some(true),
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "mark:commit-ok",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "mark:commit-failed",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "mark:delete-ok",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "mark:delete-failed",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "mark:archive-ok",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "mark:archive-failed",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "mark:unarchive-ok",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "mark:unarchive-failed",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "mark:update-entity-types-ok",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "mark:update-entity-types-failed",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "mark:body-update-failed",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "mark:requested",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::InProcess,
+            writes: None,
+            delivery: None,
+        },
+    ),
+    (
+        "mark:submit",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::InProcess,
+            writes: None,
+            delivery: None,
+        },
+    ),
+    (
+        "mark:delegate-timeout",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::InProcess,
+            writes: None,
+            delivery: None,
+        },
+    ),
+    (
+        "mark:create-error",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::InProcess,
+            writes: None,
+            delivery: None,
+        },
+    ),
+    (
+        "mark:delete-error",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::InProcess,
+            writes: None,
+            delivery: None,
+        },
+    ),
+    (
+        "bind:body-error",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::InProcess,
+            writes: None,
+            delivery: None,
+        },
+    ),
+    (
+        "frame:entity-type-added",
+        ChannelAttributes {
+            recorded: true,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "frame:tag-schema-added",
+        ChannelAttributes {
+            recorded: true,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "frame:add-entity-type",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Outbound,
+            writes: Some(true),
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "frame:add-tag-schema",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Outbound,
+            writes: Some(true),
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "frame:entity-type-add-ok",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "frame:entity-type-add-failed",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "frame:tag-schema-add-ok",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "frame:tag-schema-add-failed",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "principal:profiled",
+        ChannelAttributes {
+            recorded: true,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "principal:profile",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Outbound,
+            writes: Some(true),
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "bind:initiate",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::InProcess,
+            writes: None,
+            delivery: None,
+        },
+    ),
+    (
+        "bind:update-body",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Outbound,
+            writes: Some(true),
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "bind:body-updated",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "bind:body-update-failed",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "match:search-requested",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Outbound,
+            writes: Some(false),
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "match:search-results",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "match:search-failed",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "match:resources-requested",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Outbound,
+            writes: Some(false),
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "match:resources-result",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "match:resources-failed",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "match:limits-requested",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Outbound,
+            writes: Some(false),
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "match:limits-result",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "match:limits-failed",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "gather:requested",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Outbound,
+            writes: Some(false),
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "gather:complete",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "gather:failed",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "gather:resource-requested",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Outbound,
+            writes: Some(false),
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "gather:resource-complete",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "gather:resource-failed",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "gather:summary-requested",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Outbound,
+            writes: Some(false),
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "gather:summary-result",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "gather:summary-failed",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "gather:referenced-by-requested",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Outbound,
+            writes: Some(false),
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "gather:referenced-by-result",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "gather:referenced-by-failed",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "gather:limits-requested",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Outbound,
+            writes: Some(false),
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "gather:limits-result",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "gather:limits-failed",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "browse:resource-requested",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Outbound,
+            writes: Some(false),
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "browse:resource-result",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "browse:resource-failed",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "browse:resources-requested",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Outbound,
+            writes: Some(false),
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "browse:resources-result",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "browse:resources-failed",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "browse:annotation-requested",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Outbound,
+            writes: Some(false),
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "browse:annotation-result",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "browse:annotation-failed",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "browse:events-requested",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Outbound,
+            writes: Some(false),
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "browse:events-result",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "browse:events-failed",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "browse:annotation-history-requested",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Outbound,
+            writes: Some(false),
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "browse:annotation-history-result",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "browse:annotation-history-failed",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "browse:entity-types-requested",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Outbound,
+            writes: Some(false),
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "browse:entity-types-result",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "browse:entity-types-failed",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "browse:tag-schemas-requested",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Outbound,
+            writes: Some(false),
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "browse:tag-schemas-result",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "browse:tag-schemas-failed",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "browse:engines-requested",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Outbound,
+            writes: Some(false),
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "browse:engines-result",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "browse:engines-failed",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "browse:profiles-requested",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Outbound,
+            writes: Some(false),
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "browse:profiles-result",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "browse:profiles-failed",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "browse:kb-requested",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Outbound,
+            writes: Some(false),
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "browse:kb-result",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "browse:kb-failed",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "browse:directory-requested",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Outbound,
+            writes: Some(false),
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "browse:directory-result",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "browse:directory-failed",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "browse:click",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "browse:resource-open",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "browse:resource-viewed",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "browse:entity-type-clicked",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::InProcess,
+            writes: None,
+            delivery: None,
+        },
+    ),
+    (
+        "panel:toggle",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::InProcess,
+            writes: None,
+            delivery: None,
+        },
+    ),
+    (
+        "panel:open",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::InProcess,
+            writes: None,
+            delivery: None,
+        },
+    ),
+    (
+        "panel:close",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::InProcess,
+            writes: None,
+            delivery: None,
+        },
+    ),
+    (
+        "shell:sidebar-toggle",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::InProcess,
+            writes: None,
+            delivery: None,
+        },
+    ),
+    (
+        "tabs:close",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::InProcess,
+            writes: None,
+            delivery: None,
+        },
+    ),
+    (
+        "tabs:reorder",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::InProcess,
+            writes: None,
+            delivery: None,
+        },
+    ),
+    (
+        "nav:link-clicked",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::InProcess,
+            writes: None,
+            delivery: None,
+        },
+    ),
+    (
+        "nav:push",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::InProcess,
+            writes: None,
+            delivery: None,
+        },
+    ),
+    (
+        "nav:external",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::InProcess,
+            writes: None,
+            delivery: None,
+        },
+    ),
+    (
+        "beckon:hover",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::InProcess,
+            writes: None,
+            delivery: None,
+        },
+    ),
+    (
+        "beckon:focus",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "beckon:sparkle",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "job:started",
+        ChannelAttributes {
+            recorded: true,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Positioned),
+        },
+    ),
+    (
+        "job:assigned",
+        ChannelAttributes {
+            recorded: true,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Positioned),
+        },
+    ),
+    (
+        "job:completed",
+        ChannelAttributes {
+            recorded: true,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Positioned),
+        },
+    ),
+    (
+        "job:failed",
+        ChannelAttributes {
+            recorded: true,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Positioned),
+        },
+    ),
+    (
+        "job:start",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Outbound,
+            writes: Some(true),
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "job:assign",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Outbound,
+            writes: Some(true),
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "job:report-progress",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "job:complete",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "job:fail",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "job:checkpoint",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Outbound,
+            writes: Some(true),
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "job:queued",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "job:cancel-requested",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Outbound,
+            writes: Some(true),
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "job:cancel",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Outbound,
+            writes: Some(true),
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "job:limits-requested",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Outbound,
+            writes: Some(false),
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "job:limits-result",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "job:limits-failed",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "job:status-requested",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Outbound,
+            writes: Some(false),
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "job:create",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Outbound,
+            writes: Some(true),
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "job:claim",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Outbound,
+            writes: Some(true),
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "job:status-result",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "job:status-failed",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "job:created",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "job:create-failed",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "job:claimed",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "job:claim-failed",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "job:cancel-ok",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "job:cancel-failed",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "weave:applied",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "smelt:settled",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "weave:rebuild",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Outbound,
+            writes: Some(true),
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "weave:rebuild-ok",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "weave:rebuild-failed",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "smelt:rebuild-anchors",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Outbound,
+            writes: Some(true),
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "smelt:rebuild-anchors-ok",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "smelt:rebuild-anchors-failed",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Correlated),
+        },
+    ),
+    (
+        "settings:theme-changed",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::InProcess,
+            writes: None,
+            delivery: None,
+        },
+    ),
+    (
+        "settings:line-numbers-toggled",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::InProcess,
+            writes: None,
+            delivery: None,
+        },
+    ),
+    (
+        "settings:locale-changed",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::InProcess,
+            writes: None,
+            delivery: None,
+        },
+    ),
+    (
+        "settings:hover-delay-changed",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::InProcess,
+            writes: None,
+            delivery: None,
+        },
+    ),
+    (
+        "bus:resume-gap",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "session:joined",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+    (
+        "session:left",
+        ChannelAttributes {
+            recorded: false,
+            direction: ChannelDirection::Inbound,
+            writes: None,
+            delivery: Some(ChannelDelivery::Passing),
+        },
+    ),
+];
 /// `yield:created`
 pub struct YieldCreated;
 impl Channel for YieldCreated {

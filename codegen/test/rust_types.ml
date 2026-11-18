@@ -8,7 +8,8 @@ open Fixture
 
 let generated ?(identifiers = []) ?(accessors = []) schemas root =
   Rust_syntax.text ~header:[]
-    (G.items (definitions schemas) { roots = [ root ]; identifiers; accessors })
+    (G.items (definitions schemas)
+       { roots = [ root ]; identifiers; accessors; elsewhere = [] })
 
 let thing pattern =
   [

@@ -201,6 +201,121 @@ let channel_items (bus : Registry.t) component (c : Reg.channel) =
 let no_channel =
   R.Macro ("panic", [ R.Str "{other} is no channel of the registry" ])
 
+(* Each channel's attributes, as Registry derives them: where it sits
+   relative to the hub, whether the record keeps it, whether emitting it
+   changes the knowledge base, and how it is delivered. *)
+let attributes (bus : Registry.t) =
+  let copy =
+    R.List
+      ( [ "derive" ],
+        List.map
+          (fun d -> R.Word [ d ])
+          [ "Debug"; "Clone"; "Copy"; "PartialEq"; "Eq" ] )
+  in
+  let enum name doc variants =
+    R.Enum
+      {
+        doc = [ doc ];
+        attrs = [ copy ];
+        vis = Pub;
+        name;
+        variants = List.map (fun (v, d) -> R.variant ~doc:[ d ] v) variants;
+      }
+  in
+  let direction : Registry.direction -> string = function
+    | Outbound -> "Outbound"
+    | Inbound -> "Inbound"
+    | In_process -> "InProcess"
+  in
+  let delivery : Registry.delivery -> string = function
+    | Positioned -> "Positioned"
+    | Correlated -> "Correlated"
+    | Passing -> "Passing"
+  in
+  let option f = function
+    | Some v -> R.Call (R.p "Some", [ f v ])
+    | None -> R.p "None"
+  in
+  [
+    enum "ChannelDirection" "Where a channel sits relative to the hub."
+      [
+        ("Outbound", "Emitted toward it: an operation's request, or a command.");
+        ("Inbound", "Delivered from it: a reply, or an event of an audience.");
+        ("InProcess", "Never on the wire.");
+      ];
+    R.Blank;
+    enum "ChannelDelivery"
+      "What a subscriber is promised about a frame on a channel when its \
+       stream drops (protocol/contract/TRANSPORT-CONTRACT.md § Delivery)."
+      [
+        ( "Positioned",
+          "A recorded event on its resource's scope: what a subscriber missed \
+           is sent again." );
+        ( "Correlated",
+          "The reply to a request, routed to the client that asked, and sent \
+           again while it is retained." );
+        ("Passing", "Every other frame. Nothing replays it.");
+      ];
+    R.Blank;
+    R.Struct_def
+      {
+        doc = [ "A channel's attributes." ];
+        attrs = [ copy ];
+        vis = Pub;
+        name = "ChannelAttributes";
+        body =
+          R.Fields
+            [
+              R.field
+                ~doc:[ "The event log keeps it: it is an event of the record." ]
+                "recorded" (R.named "bool");
+              R.field "direction" (R.named "ChannelDirection");
+              R.field
+                ~doc:
+                  [
+                    "Whether emitting it changes the knowledge base, or only \
+                     asks it something; absent on a channel nobody emits.";
+                  ]
+                "writes"
+                (R.named ~args:[ R.named "bool" ] "Option");
+              R.field
+                ~doc:
+                  [ "Absent exactly when the channel never crosses the wire." ]
+                "delivery"
+                (R.named ~args:[ R.named "ChannelDelivery" ] "Option");
+            ];
+      };
+    R.Blank;
+    constant
+      ~doc:[ "Each channel's attributes, by its name." ]
+      "CHANNEL_ATTRIBUTES"
+      (R.Ref
+         (None, R.Slice (R.Tuple_of [ R.str_ty; R.named "ChannelAttributes" ])))
+      (R.Ref_of
+         (R.Array
+            (List.map
+               (fun (a : Registry.attrs) ->
+                 R.Tuple
+                   [
+                     R.Str a.channel;
+                     R.Struct
+                       ( [ "ChannelAttributes" ],
+                         [
+                           ("recorded", R.Bool a.recorded);
+                           ( "direction",
+                             R.p ("ChannelDirection::" ^ direction a.direction)
+                           );
+                           ("writes", option (fun w -> R.Bool w) a.writes);
+                           ( "delivery",
+                             option
+                               (fun d -> R.p ("ChannelDelivery::" ^ delivery d))
+                               a.delivery );
+                         ],
+                         None );
+                   ])
+               bus.attrs)));
+  ]
+
 let channels (bus : Registry.t) component =
   let reg = bus.registry in
   let bridged =
@@ -277,6 +392,7 @@ let channels (bus : Registry.t) component =
                constant ~doc:[ reg.trace.meaning ] "TRACE_FIELD" R.str_ty
                  (R.Str reg.trace.field);
              ]
+            @ attributes bus
             @ List.concat_map (channel_items bus component) reg.channels
             @ List.map
                 (fun (o : Reg.operation) ->

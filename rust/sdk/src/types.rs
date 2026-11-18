@@ -37,7 +37,9 @@
 
 #![allow(clippy::enum_variant_names, clippy::large_enum_variant)]
 
-/// `$name` is the type of the component schema of its name.
+/// `$name` is the type of the component schema of its name. Exported for the
+/// types a crate beside the SDK generates from the same spec.
+#[macro_export]
 macro_rules! schema {
     ($name:ident) => {
         impl $crate::types::Schema for $name {
@@ -45,10 +47,10 @@ macro_rules! schema {
         }
     };
 }
-pub(crate) use schema;
 
 /// `$member` is the union `$union` wherever the union is wanted: its
-/// variant `$variant`.
+/// variant `$variant`. Exported as `schema!` is.
+#[macro_export]
 macro_rules! member {
     ($union:ident :: $variant:ident ($member:ident $(,)?)) => {
         impl From<$member> for $union {

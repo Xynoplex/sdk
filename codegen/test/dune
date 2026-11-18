@@ -63,6 +63,13 @@
  (libraries xynolog_codegen yojson unix))
 
 ; Run with the checkout's root, which is outside this project:
+; dune exec test/images_groups.exe -- ..
+(executable
+ (name images_groups)
+ (modules images_groups)
+ (libraries xynolog_codegen yojson unix))
+
+; Run with the checkout's root, which is outside this project:
 ; dune exec test/coverage_census.exe -- ..
 (executable
  (name coverage_census)
