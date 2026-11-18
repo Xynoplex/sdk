@@ -19,7 +19,7 @@ let accepts decoder text () =
 let schema = Schema.decode
 
 let retry =
-  {|{"$comment":"c","runBy":{"ocaml":["test"]},
+  {|{"$comment":"c",
      "rules":[{"why":"w","rule":"boot","status":503,"retries":true,"colour":"red"}],
      "retryAfter":[]}|}
 
@@ -64,16 +64,11 @@ let () =
                "x.json: /rules/0/colour: an unknown member");
           Alcotest.test_case "a case of a kind the table has none of" `Quick
             (refuses Tables.Retry_cases.decode
-               {|{"$comment":"c","runBy":{"ocaml":["t"]},
+               {|{"$comment":"c",
                   "rules":[{"why":"w","rule":"dawn","retries":true}],"retryAfter":[]}|}
                {|x.json: /rules/0/rule: "dawn" is none of boot, job, transport, refresh|});
-          Alcotest.test_case "a runner with no test" `Quick
-            (refuses Tables.Retry_cases.decode
-               {|{"$comment":"c","runBy":{"ocaml":[]},"rules":[],"retryAfter":[]}|}
-               "x.json: /runBy/ocaml: expected a non-empty array");
           Alcotest.test_case "a missing envelope" `Quick
-            (refuses Tables.Retry_cases.decode
-               {|{"runBy":{"ocaml":["t"]},"rules":[],"retryAfter":[]}|}
+            (refuses Tables.Retry_cases.decode {|{"rules":[],"retryAfter":[]}|}
                {|x.json: /: lacks the member "$comment"|});
         ] );
     ]

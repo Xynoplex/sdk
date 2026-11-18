@@ -1,11 +1,8 @@
 //! The state units against `protocol/specs/src/client/state-units.json`.
 //!
-//! Each case of a unit this SDK has is run as the table states it: its units
-//! are built over a scripted transport, driven step by step, and held to what
-//! the case says they hold and said. A unit that the names table
-//! (`protocol/specs/src/client/surface.json`, `stateUnits`) says this SDK lacks has its
-//! cases left unrun, as the surface test leaves a row's `absent` SDK: they run
-//! once the unit lands and its `absent` goes. What the table may say is held
+//! Each case is run as the table states it: its units are built over a
+//! scripted transport, driven step by step, and held to what the case says
+//! they hold and said. What the table may say is held
 //! by `.github/scripts/checks/check-state-unit-cases.mjs`; what a case cannot say, the
 //! axioms, each unit's own test holds.
 //!
@@ -42,9 +39,6 @@ use xynolog::transport::{Envelope, Frame, FrameRefusal, Lagged};
 use xynolog::types::{
     GatherAnnotationOptions, GatherResourceRequestOptions, GenerationJobParams, MarkJobParams,
 };
-
-/// The SDK this runner is, as the names table's `absent` names it.
-const SDK: &str = "rust";
 
 /// How many turns of the runtime a settle lets pass: enough for what any case
 /// sets going to run to its end, as a paused clock lets it.
@@ -127,26 +121,6 @@ where
         .map_err(|not_one: T::Err| format!("{name}: {not_one}"))
 }
 
-fn units_this_sdk_has() -> BTreeSet<String> {
-    let rows = NAMES
-        .get("stateUnits")
-        .and_then(Value::as_array)
-        .expect("the names table names its state units");
-    rows.iter()
-        .filter(|row| {
-            !row.get("absent")
-                .and_then(Value::as_object)
-                .is_some_and(|absent| absent.contains_key(SDK))
-        })
-        .map(|row| {
-            row.get("unit")
-                .and_then(Value::as_str)
-                .expect("a row names its unit")
-                .to_owned()
-        })
-        .collect()
-}
-
 fn cases() -> &'static [Value] {
     TABLE
         .get("cases")
@@ -158,15 +132,6 @@ fn unit_of(case: &Value) -> &str {
     case.get("unit")
         .and_then(Value::as_str)
         .expect("a case names its unit")
-}
-
-/// The cases of the units this SDK has.
-fn run() -> Vec<&'static Value> {
-    let has = units_this_sdk_has();
-    cases()
-        .iter()
-        .filter(|case| has.contains(unit_of(case)))
-        .collect()
 }
 
 fn fixture(name: &str) -> Result<&'static Value, String> {
@@ -383,7 +348,7 @@ impl Unit {
 
 type Make = fn(&Arc<XynologClient>, &Searches, &Map<String, Value>) -> Result<Unit, String>;
 
-/// How this SDK makes a unit it has, from the client and what the case makes
+/// How this SDK makes a unit, from the client and what the case makes
 /// it from.
 struct Maker {
     unit: &'static str,
@@ -1375,7 +1340,7 @@ fn played(case: &Value) -> Result<(), String> {
 /// Each step of each case this runner runs, with the unit its case is of.
 fn steps_run() -> Vec<(&'static str, &'static Map<String, Value>)> {
     let mut steps = Vec::new();
-    for case in run() {
+    for case in cases() {
         let unit = unit_of(case);
         let stated = case
             .get("steps")
@@ -1431,11 +1396,11 @@ fn members_read() -> BTreeSet<(String, String)> {
 // ── The tests ───────────────────────────────────────────────────────────
 
 #[test]
-fn this_sdk_makes_each_unit_it_has_cases_of_and_no_other() {
+fn this_sdk_makes_each_unit_the_table_has_cases_of_and_no_other() {
     // A unit the table states no case of (the cache, whose behaviour its own
     // tables hold) needs no maker here.
     let made: BTreeSet<&str> = makers().iter().map(|maker| maker.unit).collect();
-    let cased: BTreeSet<&str> = run().into_iter().map(unit_of).collect();
+    let cased: BTreeSet<&str> = cases().iter().map(unit_of).collect();
     assert_eq!(made, cased);
 }
 
@@ -1480,8 +1445,7 @@ fn every_member_a_case_reads_has_a_reader_and_every_reader_is_read() {
 
 #[test]
 fn a_unit_does_what_its_case_says() {
-    let run = run();
-    let failures: Vec<String> = run
+    let failures: Vec<String> = cases()
         .iter()
         .filter_map(|case| {
             played(case).err().map(|broken| {
@@ -1497,15 +1461,15 @@ fn a_unit_does_what_its_case_says() {
         failures.is_empty(),
         "{} of {} cases failed:\n\n{}",
         failures.len(),
-        run.len(),
+        cases().len(),
         failures.join("\n\n")
     );
 }
 
 #[test]
 fn the_runner_fails_a_case_whose_check_is_wrong() {
-    let mut told = run()
-        .into_iter()
+    let mut told = cases()
+        .iter()
         .find(|case| unit_of(case) == "match")
         .expect("a case of the match unit")
         .clone();

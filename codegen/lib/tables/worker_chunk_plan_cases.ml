@@ -287,12 +287,21 @@ let case_descent_result =
         recovered = Decode.optional o "recovered" case_descent_result_recovered;
       })
 
+type span = { from : int; to_ : int }
+
+let span =
+  Decode.obj (fun o : span ->
+      {
+        from = Decode.required o "from" Decode.int;
+        to_ = Decode.required o "to" Decode.int;
+      })
+
 type case_descent = {
   why : string;
   piece : string;
   overlap : int;
   replies : reply list;
-  asked : int list list;
+  asked : span list;
   result : case_descent_result option;
   raises : int option;
 }
@@ -305,7 +314,7 @@ let case_descent =
         piece = Decode.required o "piece" Decode.string;
         overlap = Decode.required o "overlap" Decode.int;
         replies = Decode.required o "replies" (Decode.list reply);
-        asked = Decode.required o "asked" (Decode.list (Decode.list Decode.int));
+        asked = Decode.required o "asked" (Decode.list span);
         result = Decode.optional o "result" case_descent_result;
         raises = Decode.optional o "raises" Decode.int;
       })
@@ -325,18 +334,12 @@ let case =
       ("descent", fun c -> (Descent (case_descent c) : case));
     ]
 
-type t = {
-  comment : string;
-  run_by : Case_table.run_by;
-  sizing : sizing;
-  cases : case list;
-}
+type t = { comment : string; sizing : sizing; cases : case list }
 
 let decode =
   Decode.obj (fun o : t ->
       {
         comment = Decode.required o "$comment" Decode.string;
-        run_by = Decode.required o "runBy" Case_table.run_by;
         sizing = Decode.required o "sizing" sizing;
         cases = Decode.required o "cases" (Decode.list case);
       })

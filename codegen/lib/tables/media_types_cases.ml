@@ -50,7 +50,6 @@ let text_source_item =
 
 type t = {
   comment : string;
-  run_by : Case_table.run_by;
   clone_format : clone_format_item list;
   storage_file_name : storage_file_name_item list;
   text_source : text_source_item list;
@@ -60,7 +59,6 @@ let decode =
   Decode.obj (fun o : t ->
       {
         comment = Decode.required o "$comment" Decode.string;
-        run_by = Decode.required o "runBy" Case_table.run_by;
         clone_format =
           Decode.required o "cloneFormat" (Decode.list clone_format_item);
         storage_file_name =

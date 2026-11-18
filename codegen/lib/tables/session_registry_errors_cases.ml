@@ -44,18 +44,12 @@ let closing_item =
           Decode.required o "registryErrors" (Decode.list Decode.string);
       })
 
-type t = {
-  comment : string;
-  run_by : Case_table.run_by;
-  cases : case list;
-  closing : closing_item list;
-}
+type t = { comment : string; cases : case list; closing : closing_item list }
 
 let decode =
   Decode.obj (fun o : t ->
       {
         comment = Decode.required o "$comment" Decode.string;
-        run_by = Decode.required o "runBy" Case_table.run_by;
         cases = Decode.required o "cases" (Decode.list case);
         closing = Decode.required o "closing" (Decode.list closing_item);
       })

@@ -25,9 +25,6 @@ use xynolog::testing::{
 use xynolog::transport::{Envelope, Frame, PutBinaryRequest};
 use xynolog::types::GatherAnnotationOptions;
 
-/// The SDK this runner is, as the table's `absent` names it.
-const SDK: &str = "rust";
-
 fn table() -> Value {
     serde_json::from_str(include_str!("../specs/client/surface.json"))
         .expect("the surface table is JSON")
@@ -734,9 +731,6 @@ async fn every_method_does_what_its_row_says() {
         let name = namespace["namespace"].as_str().expect("a namespace's name");
         for row in namespace["methods"].as_array().expect("methods") {
             let method = row["method"].as_str().expect("a method's name");
-            if row["absent"].get(SDK).is_some() {
-                continue;
-            }
             listed.push((name.to_owned(), method.to_owned()));
             let via = object(&row["via"]);
             let (kind, channel) = via

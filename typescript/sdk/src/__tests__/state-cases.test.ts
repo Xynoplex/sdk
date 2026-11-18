@@ -1,12 +1,9 @@
 /**
  * The state units against protocol/specs/src/client/state-units.json.
  *
- * Each case of a unit this SDK has is run as the table states it: its units
- * are built over a scripted transport, driven step by step, and held to what
- * the case says they hold and said. A unit that the names table
- * (protocol/specs/src/client/surface.json, `stateUnits`) says this SDK lacks has its
- * cases left unrun, as the surface test leaves a row's `absent` SDK: they run
- * once the unit lands and its `absent` goes. What the table may say is held by
+ * Each case is run as the table states it: its units are built over a
+ * scripted transport, driven step by step, and held to what the case says they
+ * hold and said. What the table may say is held by
  * .github/scripts/checks/check-state-unit-cases.mjs; what a case cannot say, the axioms,
  * each unit's own test holds.
  */
@@ -67,9 +64,6 @@ import {
   type SessionSignals,
 } from '../session/session-signals';
 
-/** The SDK this runner is, as the names table's `absent` names it. */
-const SDK = 'typescript';
-
 /** How many rounds a settle lets pass: enough for what any case sets going to run to its end, the clock held still. */
 const SETTLE_TURNS = 200;
 
@@ -98,7 +92,7 @@ const TABLE = read('client/state-units.json') as {
   cases: Case[];
 };
 const NAMES = read('client/surface.json') as {
-  stateUnits: Array<{ unit: string; absent?: Record<string, string> }>;
+  stateUnits: Array<{ unit: string }>;
 };
 const TIMING = new Map(
   (
@@ -235,7 +229,7 @@ const annotationOf = (args: Args): AnnotationId =>
   annotationId(text(args['annotationId'], 'annotationId'));
 
 /**
- * How this SDK makes each unit it has, from the client and what the case
+ * How this SDK makes each unit, from the client and what the case
  * makes it from. Each unit's methods and states are listed in full: the
  * compiler holds each list to the unit's own interface.
  */
@@ -434,13 +428,6 @@ const MAKERS: Record<string, Make> = {
     };
   },
 };
-
-const HAS = new Set(
-  NAMES.stateUnits
-    .filter((row) => row.absent?.[SDK] === undefined)
-    .map((row) => row.unit),
-);
-const RUN = TABLE.cases.filter((stated) => HAS.has(stated.unit));
 
 // ── The transport ───────────────────────────────────────────────────────
 
@@ -870,10 +857,10 @@ describe('the state units against protocol/specs/src/client/state-units.json', (
     vi.useRealTimers();
   });
 
-  it('makes each unit it has cases of, and no other', () => {
+  it('makes each unit the table has cases of, and no other', () => {
     // A unit the table states no case of (the cache, whose behaviour its own tables hold) needs no maker here.
     expect(new Set(Object.keys(MAKERS))).toEqual(
-      new Set(RUN.map((stated) => stated.unit)),
+      new Set(TABLE.cases.map((stated) => stated.unit)),
     );
   });
 
@@ -887,13 +874,15 @@ describe('the state units against protocol/specs/src/client/state-units.json', (
   });
 
   it.each(
-    RUN.map((stated) => [`${stated.unit}: ${stated.case}`, stated] as const),
+    TABLE.cases.map(
+      (stated) => [`${stated.unit}: ${stated.case}`, stated] as const,
+    ),
   )('%s', async (_name, stated) => {
     await play(stated);
   });
 
   it('fails a case whose check is wrong', async () => {
-    const match = RUN.find((stated) => stated.unit === 'match');
+    const match = TABLE.cases.find((stated) => stated.unit === 'match');
     if (match === undefined) throw new Error('the table has no case of match');
     const told: Case = structuredClone(match);
     told.steps = told.steps.map((step) =>

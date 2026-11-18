@@ -76,10 +76,7 @@ val enum : (string * 'a) list -> cursor -> 'a
 (** A string naming one of a closed set. *)
 
 val pair : (cursor -> 'a) -> (cursor -> 'b) -> cursor -> 'a * 'b
-
-val triple :
-  (cursor -> 'a) -> (cursor -> 'b) -> (cursor -> 'c) -> cursor -> 'a * 'b * 'c
-(** Arrays of exactly two or three elements, each of its own type. *)
+(** An array of exactly two elements, each of its own type. *)
 
 type nothing = |
 
