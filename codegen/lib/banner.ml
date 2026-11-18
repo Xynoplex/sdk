@@ -46,6 +46,13 @@ let ocaml ~from_ file =
   ^ ". Do not edit.\n   Regenerate: make generate (" ^ writer file
   ^ ") *)\n\n[@@@ocamlformat \"disable\"]\n"
 
+(* A generated Swift file's opening comment lines, without their [//]. *)
+let swift_lines ~from_ file =
+  [
+    "Generated from " ^ from_ ^ "; do not edit.";
+    "Regenerate: make generate (" ^ writer file ^ ")";
+  ]
+
 (* A generated Rust file's opening comment lines, without their [//]. *)
 let rust_lines ~from_ file =
   [

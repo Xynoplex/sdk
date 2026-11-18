@@ -30,4 +30,5 @@ let all =
     { name = "testing"; files = Testing.files };
     { name = "ocaml-sdk"; files = Ocaml_sdk.files };
     { name = "rust-types"; files = Rust_types.files };
+    { name = "swift-sdk"; files = Swift_sdk.files };
   ]

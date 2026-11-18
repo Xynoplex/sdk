@@ -1,6 +1,6 @@
-(* The gateway's component schemas as the Rust types are generated from
-   them: the document bundled (each file it names as a component, or that a
-   directory of schemas holds, is a schema by its name, and any other file a
+(* The gateway's component schemas as the Rust and Swift types are generated
+   from them: the document bundled (each file it names as a component, or that
+   a directory of schemas holds, is a schema by its name, and any other file a
    [$ref] names is written in its place, the [$ref]'s siblings with it gone),
    and OpenAPI's [nullable] as JSON Schema draft 7 states it: beside one
    [type], [null] is a second type; beside anything else, the schema is a
@@ -179,6 +179,8 @@ let header_schemas (r : Openapi.response) =
 
 type bundle = {
   definitions : definitions;
+  view : Schema.t -> t;
+      (** Any other schema, each file it names as the bundle names it. *)
   bodies : string list;
       (** Every component schema a request or response body of the paths names.
       *)
@@ -312,6 +314,7 @@ let bundle (spec : Spec.t) =
   in
   {
     definitions = { names; schema };
+    view = view ~named ~schemas;
     bodies =
       List.filter_map named (List.concat_map refs body_schemas)
       |> List.sort_uniq String.compare;

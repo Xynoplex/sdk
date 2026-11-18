@@ -2,7 +2,7 @@
    and the shapes it refuses. *)
 
 open Xynolog_codegen
-module D = Rust_types.Definitions
+module D = Definitions
 module G = Rust_types.Generate
 
 let case name test = Alcotest.test_case name `Quick test

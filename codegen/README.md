@@ -38,8 +38,8 @@ per language it writes:
   `python/sdk/src/xynolog`'s `channels.py` and `operations.py`.
 - `required`: what each component schema requires of a value, the table
   every SDK holds a reply to before it reads it. `Required.Shape` derives it
-  and states its rules. `Required.Table` writes it as JSON for Rust, Kotlin,
-  Swift, C# and Go, and `Required.Typescript`, `Required.Python` and
+  and states its rules. `Required.Table` writes it as JSON for Kotlin, C#
+  and Go, and `Required.Typescript`, `Required.Python` and
   `Required.Haskell` write it for theirs, Haskell's with each bus channel's
   payload and each HTTP operation's reply, which `Required.Event` derives
   for every reader of a channel's events. `Required.Go` holds it to the
@@ -151,13 +151,24 @@ per language it writes:
   groups each write the OCaml SDK's module of their own table. The OCaml
   SDK's tests read Protocol's case tables where the checkout holds them, as
   every SDK's do; no group copies a table into one.
+- `swift-sdk`: the Swift SDK's `Generated/Models.swift`, a model of every
+  component schema and the sign-in store's entry with the tables as typed
+  values, and its tests' `Generated/TestBridge.swift`, a round trip through
+  each model by its schema's name. `Swift_sdk.Models` declares the schemas,
+  `Swift_sdk.Table_decls` the tables, from the other groups' derivations
+  where they hold the same data, and `Swift_sdk.Spec_values` the tables
+  Swift holds as Protocol writes them, which the census holds to Protocol's
+  own members.
 
 `Text` measures and spells text: a width in code points, a word ended by
 ASCII white space, a string as JSON writes it or as a Go or Python literal
 of printable ASCII or an OCaml one, a camel-case name in upper or lower
 snake case, and a comment as Go, Python and TypeScript write one. `Python_layout` lays a Python
 statement out as ruff's formatter does at the SDK's line length, so a
-generated module is one `ruff format` leaves as it is. `Banner` is the line
+generated module is one `ruff format` leaves as it is. `Swift_syntax` is
+the Swift a writer builds, printed as swift-format 6.4.2 lays it out under
+`swift/sdk/.swift-format` through `Swift_layout`, so a generated Swift file
+is that formatter's fixed point. `Banner` is the line
 each generated file opens with, naming the module that writes it; a
 generated Python module also names the lint rules it is exempt from (a long
 line, an ambiguous character, the order of its imports and of its `__all__`,
