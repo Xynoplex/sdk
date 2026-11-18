@@ -12,6 +12,7 @@
  (depends
   (ocaml (= 5.5.2))
   (yojson (>= 3.0.0))
+  (ocamlformat-lib (= 0.29.0))
   (alcotest :with-test)
   (qcheck-core :with-test)
   (qcheck-alcotest :with-test)

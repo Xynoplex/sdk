@@ -5,7 +5,8 @@
    value of (log_facts.ml); and the offset cases the capability probe walks
    (probes/unicode_cases.ml). *)
 
-let string = Text.ocaml_quoted
+module O = Ocaml_syntax
+
 let discovery = "discovery/DiscoveryDocument.json"
 
 let files (spec : Spec.t) =
@@ -36,51 +37,57 @@ let files (spec : Spec.t) =
           };
         ]
   | Some versions ->
-      let file path ~from_ body =
-        { Output.path; text = Banner.ocaml ~from_ __FILE__ ^ body }
+      let file path ~from_ items =
+        O.implementation ~path ~banner:(Banner.ocaml ~from_ __FILE__) items
       in
       Ok
         [
           file "ocaml/sdk/lib/assertion_facts.ml"
             ~from_:"session/client-assertion-cases.json"
-            (Printf.sprintf
-               "let lifetime_seconds = %d\n\
-                let assertion_type = %s\n\
-                let grant_type = %s\n"
-               assertion.lifetime_seconds
-               (string assertion.assertion_type)
-               (string assertion.grant_type));
+            [
+              O.let_ "lifetime_seconds" (O.int assertion.lifetime_seconds);
+              O.let_ "assertion_type" (O.string assertion.assertion_type);
+              O.let_ "grant_type" (O.string assertion.grant_type);
+            ];
           file "ocaml/sdk/lib/registry_facts.ml"
             ~from_:("session/stored.json and " ^ discovery)
-            (String.concat ""
-               (List.map
-                  (fun (k : Tables.Session_stored.key) ->
-                    "let " ^ Text.snake k.member ^ " = " ^ string k.key ^ "\n")
-                  stored.keys)
-            ^ "let session_prefix = "
-            ^ string stored.session_key_prefix.prefix
-            ^ "\nlet discovery_versions = ["
-            ^ String.concat "; " (List.map string_of_int versions)
-            ^ "]\n");
+            (List.map
+               (fun (k : Tables.Session_stored.key) ->
+                 O.let_ (Text.snake k.member) (O.string k.key))
+               stored.keys
+            @ [
+                O.let_ "session_prefix"
+                  (O.string stored.session_key_prefix.prefix);
+                O.let_ "discovery_versions" (O.list (List.map O.int versions));
+              ]);
           file "ocaml/sdk/lib/log_facts.ml" ~from_:"bus/log-cases.json"
-            ("let credentials = ["
-            ^ String.concat "; "
-                (List.map string spec.tables.bus_log_cases.names)
-            ^ "]\n");
+            [
+              O.let_ "credentials"
+                (O.list (List.map O.string spec.tables.bus_log_cases.names));
+            ];
           file "ocaml/sdk/probes/unicode_cases.ml"
             ~from_:"text/offset-cases.json"
-            ("let cases = [\n"
-            ^ String.concat ";\n"
-                (List.map
-                   (fun (c : Tables.Text_offset_cases.case) ->
-                     Printf.sprintf "  (%s, %d, [%s])" (string c.text)
-                       c.code_points
-                       (String.concat "; "
-                          (List.map
-                             (fun (s : Tables.Text_offset_cases.span) ->
-                               Printf.sprintf "(%s, %d, %d, %d)"
-                                 (string s.exact) s.occurrence s.start s.end_)
-                             c.spans)))
-                   spec.tables.text_offset_cases.cases)
-            ^ "\n]\n");
+            [
+              O.let_ "cases"
+                (O.list
+                   (List.map
+                      (fun (c : Tables.Text_offset_cases.case) ->
+                        O.tuple
+                          [
+                            O.string c.text;
+                            O.int c.code_points;
+                            O.list
+                              (List.map
+                                 (fun (s : Tables.Text_offset_cases.span) ->
+                                   O.tuple
+                                     [
+                                       O.string s.exact;
+                                       O.int s.occurrence;
+                                       O.int s.start;
+                                       O.int s.end_;
+                                     ])
+                                 c.spans);
+                          ])
+                      spec.tables.text_offset_cases.cases));
+            ];
         ]

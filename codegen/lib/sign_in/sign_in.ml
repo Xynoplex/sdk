@@ -355,13 +355,15 @@ let typescript (entry : Flat.t) (o : Owner_only.t) (names : Contract.t) =
 let ocaml_owner_only (o : Owner_only.t) =
   List.map
     (fun dir ->
-      {
-        Output.path = "ocaml/sdk/" ^ dir ^ "/store_policy.ml";
-        text =
-          Banner.ocaml ~from_:"sign-in-store/owner-only.json" __FILE__
-          ^ "let directory_mode = 0o" ^ o.directory.octal
-          ^ "\nlet file_mode = 0o" ^ o.file.octal ^ "\n";
-      })
+      Ocaml_syntax.implementation
+        ~path:("ocaml/sdk/" ^ dir ^ "/store_policy.ml")
+        ~banner:(Banner.ocaml ~from_:"sign-in-store/owner-only.json" __FILE__)
+        [
+          Ocaml_syntax.let_ "directory_mode"
+            (Ocaml_syntax.integer ("0o" ^ o.directory.octal));
+          Ocaml_syntax.let_ "file_mode"
+            (Ocaml_syntax.integer ("0o" ^ o.file.octal));
+        ])
     [ "lib"; "probes" ]
 
 (* What the Haskell SDK's native store binding holds the store to

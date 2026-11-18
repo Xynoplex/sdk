@@ -1,8 +1,6 @@
 (* Generated from sdk-telemetry/telemetry.json. Do not edit.
    Regenerate: make generate (codegen/lib/telemetry/telemetry.ml) *)
 
-[@@@ocamlformat "disable"]
-
 let bus_emit = ("bus.emit:", Telemetry.Producer)
 let bus_recv = ("bus.recv:", Telemetry.Consumer)
 let content_put = ("content.put", Telemetry.Client)

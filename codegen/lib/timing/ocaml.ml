@@ -2,40 +2,39 @@
    value per entry under its name in snake case, a duration or a count as an
    int and a retry budget as a record. *)
 
-let header =
-  Banner.ocaml ~from_:("protocol/specs/src/" ^ Table.file) __FILE__ ^ "\n"
+module O = Ocaml_syntax
+
+let banner = Banner.ocaml ~from_:("protocol/specs/src/" ^ Table.file) __FILE__
 
 let retry =
-  "type retry = { attempts : int; initial_delay_ms : int; max_delay_ms : int }"
+  O.type_declaration "retry"
+    (Record
+       (List.map
+          (fun field -> (field, O.type_ "int"))
+          [ "attempts"; "initial_delay_ms"; "max_delay_ms" ]))
 
 let files (t : Table.t) =
-  let lines body = header ^ String.concat "\n" (retry :: body) ^ "\n" in
   [
-    {
-      Output.path = "ocaml/sdk/lib/client_timing.ml";
-      text =
-        lines
-          (List.map
-             (fun (e : Table.entry) ->
-               "let " ^ Text.snake e.name ^ " = "
-               ^
-               match e.value with
-               | Duration n | Count n -> string_of_int n
+    O.implementation ~path:"ocaml/sdk/lib/client_timing.ml" ~banner
+      (O.type_item retry
+      :: List.map
+           (fun (e : Table.entry) ->
+             O.let_ (Text.snake e.name)
+               (match e.value with
+               | Duration n | Count n -> O.int n
                | Budget b ->
-                   Printf.sprintf
-                     "{ attempts = %d; initial_delay_ms = %d; max_delay_ms = \
-                      %d }"
-                     b.attempts b.initial_delay_ms b.max_delay_ms)
-             t);
-    };
-    {
-      Output.path = "ocaml/sdk/lib/client_timing.mli";
-      text =
-        lines
-          (List.map
-             (fun (e : Table.entry) ->
-               "val " ^ Text.snake e.name ^ " : "
-               ^ match e.value with Budget _ -> "retry" | _ -> "int")
-             t);
-    };
+                   O.record
+                     [
+                       ("attempts", O.int b.attempts);
+                       ("initial_delay_ms", O.int b.initial_delay_ms);
+                       ("max_delay_ms", O.int b.max_delay_ms);
+                     ]))
+           t);
+    O.interface ~path:"ocaml/sdk/lib/client_timing.mli" ~banner
+      (O.type_spec retry
+      :: List.map
+           (fun (e : Table.entry) ->
+             O.val_ (Text.snake e.name)
+               (O.type_ (match e.value with Budget _ -> "retry" | _ -> "int")))
+           t);
   ]
