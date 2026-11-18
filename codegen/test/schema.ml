@@ -147,4 +147,22 @@ let () =
                 "children" true
                 (Schema.children every = List.init 9 leaf));
         ] );
+      ( "unread",
+        [
+          case "each keyword no SDK reads is one the model names" (fun () ->
+              let stated : Schema.t = Schema Schema.empty in
+              let every =
+                {
+                  Schema.empty with
+                  const = Some (Bool_literal true);
+                  property_names = Some stated;
+                  min_properties = Some 1;
+                  not_ = Some stated;
+                }
+              in
+              Alcotest.(check (list string))
+                "unread"
+                [ "const"; "propertyNames"; "minProperties"; "not" ]
+                (Schema.unread every));
+        ] );
     ]

@@ -565,15 +565,15 @@ let derive ~unrecognized components =
         type_;
         format = _;
         enum;
-        const;
+        const = _;
         default = _;
         example = _;
         nullable = _;
         properties;
         required;
         additional_properties;
-        property_names;
-        min_properties;
+        property_names = _;
+        min_properties = _;
         max_properties;
         items;
         min_items;
@@ -587,22 +587,14 @@ let derive ~unrecognized components =
         all_of;
         any_of;
         one_of;
-        not_;
+        not_ = _;
         discriminator;
       } =
         schema
       in
       List.iter
-        (fun (keyword, stated) ->
-          if stated then
-            refuse file at
-              "states %s, which the table does not know how to state" keyword)
-        [
-          ("const", const <> None);
-          ("propertyNames", property_names <> None);
-          ("minProperties", min_properties <> None);
-          ("not", not_ <> None);
-        ];
+        (refuse file at "states %s, which the table does not know how to state")
+        (Schema.unread schema);
       match ref_ with
       | Some reference -> Ref (referred reference)
       | None -> (

@@ -258,6 +258,15 @@ let keywords
       is "discriminator" discriminator;
     ]
 
+(* The keywords [schema] states that no SDK reads, in the order [keywords]
+   names them. An SDK that dropped one would accept what the schema refuses,
+   so a schema an SDK validates by states none. *)
+let unread schema =
+  List.filter
+    (fun keyword ->
+      List.mem keyword [ "const"; "propertyNames"; "minProperties"; "not" ])
+    (keywords schema)
+
 let type_name =
   Decode.enum
     [
