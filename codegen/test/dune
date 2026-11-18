@@ -116,6 +116,11 @@
  (libraries xynolog_codegen fixture yojson alcotest))
 
 (test
+ (name typescript_types)
+ (modules typescript_types)
+ (libraries xynolog_codegen fixture yojson alcotest))
+
+(test
  (name go_syntax)
  (modules go_syntax)
  (libraries xynolog_codegen alcotest))

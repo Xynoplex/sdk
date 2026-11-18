@@ -2,22 +2,20 @@
 
 What `@xynolog/core` exports, area by area, with an example of each. The small utilities have a guide of their own: [Utilities](Utilities.md).
 
-## OpenAPI Types (Generated)
+## Schema Types (Generated)
 
-TypeScript types generated from the OpenAPI specification - the **source of truth** for all API schemas:
+A type for each of the spec's component schemas - the **source of truth** for all API schemas:
 
 ```typescript
-import type { components, paths, operations } from '@xynolog/core';
+import type { components } from '@xynolog/core';
 
 type Annotation = components['schemas']['Annotation'];
 type Resource = components['schemas']['ResourceDescriptor'];
 type CreateAnnotationRequest = components['schemas']['CreateAnnotationRequest'];
 ```
 
-These types are generated during the build process:
-```bash
-npm run generate:openapi  # Bundles spec → generates types.ts
-```
+`src/types.ts` is generated from the spec's component schemas and committed;
+`make generate` writes it again after a change to the spec.
 
 The spec's validators and limits come from the same bundle, on the
 `@xynolog/core/openapi` subpath:

@@ -8,21 +8,21 @@
  * `browse.kb()` answers those (`describeConnection`).
  */
 
-import type { paths } from '@xynolog/core';
-import type { IGatewayOperations } from '@xynolog/core';
 import type {
-  SystemNamespace as ISystemNamespace,
-  ResponseContent,
-} from './types';
+  HealthCheckResponse,
+  IGatewayOperations,
+  StatusResponse,
+} from '@xynolog/core';
+import type { SystemNamespace as ISystemNamespace } from './types';
 
 export class SystemNamespace implements ISystemNamespace {
   constructor(private readonly gateway: IGatewayOperations) {}
 
-  async healthCheck(): Promise<ResponseContent<paths['/api/health']['get']>> {
+  async healthCheck(): Promise<HealthCheckResponse> {
     return this.gateway.healthCheck();
   }
 
-  async status(): Promise<ResponseContent<paths['/api/status']['get']>> {
+  async status(): Promise<StatusResponse> {
     return this.gateway.getStatus();
   }
 }

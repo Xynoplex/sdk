@@ -102,8 +102,8 @@ for (const name of names) {
 const code = standaloneCode(ajv, refs);
 mkdirSync(OUT_DIR, { recursive: true });
 writeFileSync(OUT_JS, BANNER + code);
-// Typed against the SAME `components['schemas']` that openapi-typescript emits
-// from the SAME bundle, so a validator and the type it guards cannot disagree —
+// Typed against the SAME `components['schemas']` that codegen writes from the
+// SAME schemas, so a validator and the type it guards cannot disagree —
 // and `validators.Typo` is a compile error rather than an undefined at runtime.
 writeFileSync(
   OUT_DTS,

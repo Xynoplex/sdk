@@ -207,6 +207,10 @@ per language it writes:
   as gofmt leaves it. It reads the schemas as Rust's types do, through `View`
   (a `$ref`'s schema, a union's members, an `allOf` as one object) and names
   what it writes in place by `Naming`.
+- `typescript-types`: the TypeScript SDK's `components['schemas']`
+  (`typescript/core/src/types.ts`), each component schema as a type written
+  as the schema states it, and each kind of id branded. `Typescript_syntax`
+  is the TypeScript it is built of, and Prettier lays it out.
 
 `Text` measures and spells text: a width in code points, a word ended by
 ASCII white space, a string as JSON writes it or as a Go or Python literal

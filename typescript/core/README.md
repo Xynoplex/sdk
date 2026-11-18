@@ -57,7 +57,7 @@ const audience = kbResource('xynoplex.github.io:xynoplex-caselaw-kb'); // 'https
 
 ## What a change must keep
 
-- **The spec is the source.** `src/types.ts`, the validators in `src/generated/`, and each module that opens `GENERATED FILE` are generated from [`protocol/specs/src`](../../../protocol/specs/src/), and never edited. The modules that open `GENERATED FILE` are committed, and `make generate` writes them; the rest is made when the package is built. Change the spec, then run `make generate` and `npm run generate:openapi --workspace=@xynolog/core`. A type written by hand that restates a schema is a second copy that nothing keeps true: use the spec's type, under the spec's name.
+- **The spec is the source.** The validators in `src/generated/` and each module that opens `GENERATED FILE`, `src/types.ts` among them, are generated from [`protocol/specs/src`](../../../protocol/specs/src/), and never edited. The modules that open `GENERATED FILE` are committed, and `make generate` writes them; the validators are made when the package is built. Change the spec, then run `make generate`. A type written by hand that restates a schema is a second copy that nothing keeps true: use the spec's type, under the spec's name.
 - **The main import runs in a browser.** It uses no Node builtin. The validators and the test issuer are reachable only by their subpaths, because of the weight they would add to every bundle, and `npm run lint:core-subpaths` fails a re-export of either from the root.
 - **It depends on no other Xynolog package.** Everything else depends on it.
 - **An id is made only by its constructor or its guard.** One kind is never assignable to another.
