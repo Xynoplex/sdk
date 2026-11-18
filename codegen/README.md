@@ -280,7 +280,11 @@ make test-codegen
 builds the project, checks its formatting, runs its tests, and reads the
 pinned Protocol with `xynolog-codegen read`, in the toolchain's container.
 `coverage_census.exe` holds the coverage records to the pinned Protocol
-and to the checkout, and `check-protocol-paths.py` then holds every sdk file the pinned Protocol names,
+and to the checkout. `boundary_census.exe` holds the imports between
+generated and hand-written modules in TypeScript's core and Python's SDK to
+one direction: no base module a generated one imports at run time comes back
+to it, and the generated modules are those the groups write.
+`protocol_paths_census.exe` holds every sdk file the pinned Protocol names,
 as `sdk/<path>` or as a link into this repository, to the files this checkout
 has.
 
