@@ -144,7 +144,7 @@ let modules ~from_ ~module_name ~test_name families =
   let families =
     List.sort (fun a b -> String.compare a.member b.member) families
   in
-  let banner = Banner.haskell_lines ~from_ __FILE__ in
+  let banner = Banner.lines ~from_ __FILE__ in
   let path name =
     "haskell/sdk/" ^ String.map (function '.' -> '/' | c -> c) name ^ ".hs"
   in

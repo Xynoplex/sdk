@@ -391,9 +391,7 @@ let haskell (t : T.t) (encodings : Encodings.Table.t) =
       H.text
         {
           banner =
-            Banner.haskell_lines
-              ~from_:(Encodings.Table.file ^ " and " ^ file)
-              __FILE__;
+            Banner.lines ~from_:(Encodings.Table.file ^ " and " ^ file) __FILE__;
           extensions = [ "OverloadedStrings" ];
           name = "Xynolog.Internal.Generated.Text";
           imports =
@@ -525,13 +523,136 @@ let ocaml (t : T.t) =
       ^ "]\n";
   }
 
+(* The registry as the Rust SDK reads it (rust/sdk/src/media_types.rs): an
+   enum per vocabulary, a row per media type in the registry's order, and
+   the row a clone falls back to, text/plain, which a person can author. *)
+let rust (t : T.t) =
+  let module R = Rust_syntax in
+  let vocabularies =
+    [
+      ("RenderMode", "The viewer a reader mounts for a type.", t.render);
+      ( "AnchoringModel",
+        "How an annotation is anchored in a type: by character offsets, or by \
+         geometry.",
+        t.anchoring );
+      ( "TextSource",
+        "Where a type's text comes from: decoded from its own bytes, derived \
+         by reading them, or nowhere.",
+        t.text_source );
+    ]
+  in
+  let vocabulary (name, doc, words) =
+    [
+      R.Enum
+        {
+          doc = [ doc ];
+          attrs =
+            [
+              R.List
+                ( [ "derive" ],
+                  List.map
+                    (fun w -> R.Word [ w ])
+                    [ "Debug"; "Clone"; "Copy"; "PartialEq"; "Eq"; "Hash" ] );
+            ];
+          vis = Pub;
+          name;
+          variants = List.map (fun w -> R.variant (R.pascal w)) words;
+        };
+      R.Blank;
+      R.Impl
+        {
+          generics = [];
+          trait_ = None;
+          for_ = R.named name;
+          items =
+            [
+              R.I_fn
+                (R.fn_
+                   ~doc:[ "The word the registry states." ]
+                   ~vis:Pub ~const:true "as_str" ~params:[ R.Self_value ]
+                   ~ret:R.static_str
+                   [
+                     R.Tail
+                       (R.Match
+                          ( R.p "self",
+                            List.map
+                              (fun w -> (R.Path [ name; R.pascal w ], R.Str w))
+                              words ));
+                   ]);
+            ];
+        };
+      R.Blank;
+    ]
+  in
+  let row (m : T.media_type) =
+    R.Struct
+      ( [ "MediaTypeCapabilities" ],
+        [
+          ("media_type", R.Str m.media_type);
+          ("extension", R.Str m.extension);
+          ("label", R.Str m.label);
+          ("render", R.Path [ "RenderMode"; R.pascal m.render ]);
+          ("anchoring", R.Path [ "AnchoringModel"; R.pascal m.anchoring ]);
+          ("text_source", R.Path [ "TextSource"; R.pascal m.text_source ]);
+          ("authorable", R.Bool m.authorable);
+          ("uploadable", R.Bool m.uploadable);
+          ("generatable", R.Bool m.generatable);
+        ],
+        None )
+  in
+  let capabilities = R.named "MediaTypeCapabilities" in
+  let constant doc name ty value =
+    R.Const { doc = [ doc ]; attrs = []; vis = Pub; name; ty; value }
+  in
+  let refuse message =
+    Error [ { Decode.file; pointer = "/mediaTypes"; message } ]
+  in
+  match
+    List.find_opt
+      (fun (m : T.media_type) -> m.media_type = "text/plain")
+      t.media_types
+  with
+  | None -> refuse "has no text/plain, which a clone falls back to"
+  | Some plain when not plain.authorable ->
+      refuse
+        "states text/plain is not authorable, and a clone falls back to it \
+         because it is"
+  | Some plain ->
+      Ok
+        {
+          Output.path = "rust/sdk/src/generated/media_types.rs";
+          text =
+            R.text
+              ~header:
+                (Banner.lines
+                   ~from_:"protocol/specs/src/media-types/registry.json"
+                   __FILE__)
+              (List.concat_map vocabulary vocabularies
+              @ [
+                  constant
+                    "Every media type a knowledge base admits, in the \
+                     registry's order."
+                    "MEDIA_TYPES"
+                    (R.Ref (None, R.Slice capabilities))
+                    (R.Ref_of (R.Array (List.map row t.media_types)));
+                  constant
+                    "Plain text: the format a clone takes when its source's is \
+                     not one a person can author."
+                    "PLAIN_TEXT" capabilities (row plain);
+                ]);
+        }
+
 let files ~root:_ (spec : Spec.t) =
   let registry =
     Result.bind (admitted spec) (derive spec.tables.media_types_registry)
   in
   let encodings = Encodings.Table.derive spec.tables.text_encoding_cases in
   match (registry, encodings) with
-  | Ok t, Ok e -> Ok [ go t; python t; typescript t; haskell t e; ocaml t ]
+  | Ok t, Ok e ->
+      Result.map
+        (fun rust ->
+          [ go t; python t; typescript t; haskell t e; ocaml t; rust ])
+        (rust t)
   | _ ->
       let errors = function Ok _ -> [] | Error e -> e in
       Error (errors registry @ errors encodings)

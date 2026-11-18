@@ -226,7 +226,7 @@ pub fn decode_representation(bytes: &[u8], media_type: &str) -> Result<String, T
 }
 
 #[cfg(feature = "charsets")]
-include!(concat!(env!("OUT_DIR"), "/refused_encodings.rs"));
+include!("generated/refused_encodings.rs");
 
 /// Every encoding of the Encoding Standard that a reader decodes, by
 /// `encoding_rs`: a label of one the table of encodings refuses is refused.
@@ -248,7 +248,7 @@ fn every_charset(label: Option<&str>, bytes: &[u8]) -> Result<String, String> {
 }
 
 #[cfg(any(test, not(feature = "charsets")))]
-include!(concat!(env!("OUT_DIR"), "/utf8_labels.rs"));
+include!("generated/utf8_labels.rs");
 
 /// UTF-8 alone, which is what a build without the `charsets` feature
 /// decodes. It reads a text as the rule says or refuses it, and reads

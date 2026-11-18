@@ -36,6 +36,50 @@ let refused specs ~why change expected =
     List.iter (Printf.eprintf "  %s\n") found;
     exit 1)
 
+(* A copy of the specs, changed, that the model reads must be refused by the
+   swift-sdk group with this refusal. *)
+let swift_refused specs ~why change expected =
+  let copied = Filename.concat (Filename.temp_dir "census" "") "src" in
+  copy specs copied;
+  change copied;
+  let found =
+    match Spec.load copied with
+    | Error errors ->
+        List.iter (fun e -> prerr_endline (Decode.error_to_string e)) errors;
+        Printf.eprintf "A copy that %s was not read\n" why;
+        exit 1
+    | Ok spec -> messages (Swift_sdk.files ~root:"" spec)
+  in
+  if found <> [ expected ] then (
+    Printf.eprintf
+      "A copy that %s was not refused by swift-sdk with:\n  %s\nbut with:\n" why
+      expected;
+    List.iter (Printf.eprintf "  %s\n") found;
+    exit 1)
+
+let rewrite path change =
+  write path (Yojson.Safe.to_string (change (Yojson.Safe.from_file path)))
+
+let members f = function
+  | `Assoc members -> `Assoc (f members)
+  | _ -> failwith "not an object"
+
+(* Each value of a table Swift's models hold as written, Spec_values', is the
+   table's own member as Protocol has it. *)
+let swift_values_are_the_tables specs (spec : Spec.t) =
+  List.iter
+    (fun (file, key, _, value) ->
+      let raw =
+        match Yojson.Safe.from_file (Filename.concat specs file) with
+        | `Assoc members -> List.assoc key members
+        | _ -> failwith (file ^ " is not an object")
+      in
+      if not (Yojson.Safe.equal raw value) then (
+        Printf.eprintf "Swift's %s of %s is not Protocol's:\n  %s\n" key file
+          (Yojson.Safe.to_string value);
+        exit 1))
+    (Swift_sdk.Spec_values.all spec.tables)
+
 let () =
   let specs =
     match Sys.argv with
@@ -45,7 +89,7 @@ let () =
         exit 2
   in
   (match Spec.load specs with
-  | Ok _ -> ()
+  | Ok spec -> swift_values_are_the_tables specs spec
   | Error errors ->
       List.iter (fun e -> prerr_endline (Decode.error_to_string e)) errors;
       Printf.eprintf "The pinned Protocol has %d refusals\n"
@@ -74,7 +118,61 @@ let () =
     (fun copied -> Sys.remove (Filename.concat copied "paths/api_health.json"))
     "openapi.json: /paths/~1api~1health/$ref: names paths/api_health.json, \
      which Protocol does not have";
+  let command_error copied change =
+    rewrite
+      (Filename.concat copied "components/schemas/CommandError.json")
+      (members change)
+  in
+  swift_refused specs ~why:"gives a failure channel no schema"
+    (fun copied ->
+      rewrite
+        (Filename.concat copied "bus/registry.json")
+        (members
+           (List.map (function
+             | "channels", `List channels ->
+                 ( "channels",
+                   `List
+                     (List.map
+                        (members (fun row ->
+                             if
+                               List.assoc_opt "schema" row
+                               = Some (`String "CommandError")
+                             then
+                               List.filter_map
+                                 (function
+                                   | "schema", _ -> None
+                                   | "shape", _ ->
+                                       Some ("shape", `String "empty")
+                                   | "validate", _ -> Some ("validate", `Null)
+                                   | member -> Some member)
+                                 row
+                             else row))
+                        channels) )
+             | member -> member))))
+    "openapi.json: /: failure channel has no schema";
+  swift_refused specs ~why:"makes a failure's message optional"
+    (fun copied ->
+      command_error copied
+        (List.map (function
+          | "required", _ -> ("required", `List [])
+          | member -> member)))
+    "openapi.json: /: failure message must be a required string";
+  swift_refused specs ~why:"makes a failure's message no string"
+    (fun copied ->
+      command_error copied
+        (List.map (function
+          | "properties", properties ->
+              ( "properties",
+                members
+                  (List.map (function
+                    | "message", _ ->
+                        ("message", `Assoc [ ("type", `String "integer") ])
+                    | member -> member))
+                  properties )
+          | member -> member)))
+    "openapi.json: /: failure message must be a required string";
   print_endline
     "The model reads every file of the pinned Protocol, and refuses a copy \
      with a stray file, a missing table, a dangling reference, an unknown \
-     keyword or a missing path item"
+     keyword or a missing path item; Swift's table values are Protocol's, and \
+     swift-sdk refuses a failure channel without a required string message"

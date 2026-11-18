@@ -61,9 +61,9 @@ let go (t : T.t) =
                 Regenerate: make generate (" ^ Banner.writer __FILE__
              ^ ")\n\
                 The TypeScript (typescript/core/src/oauth-clients.ts), Rust\n\
-                (rust/sdk/build.rs) and Python (xynolog.oauth_clients) SDKs \
-                generate\n\
-                from the same file.");
+                (rust/sdk/src/generated/oauth_clients.rs) and Python\n\
+                (xynolog.oauth_clients) SDKs are generated from the same file."
+              );
           package = "xynolog";
           imports = [];
           decls =
@@ -154,6 +154,32 @@ let ocaml (t : T.t) =
       ^ "\n";
   }
 
+let rust (t : T.t) =
+  let module R = Rust_syntax in
+  let constant name docs value =
+    R.Const
+      {
+        doc = [ docs ];
+        attrs = [];
+        vis = Pub;
+        name;
+        ty = R.str_ty;
+        value = R.Str value;
+      }
+  in
+  {
+    Output.path = "rust/sdk/src/generated/oauth_clients.rs";
+    text =
+      R.text
+        ~header:
+          (Banner.lines ~from_:"protocol/specs/src/session/oauth.json" __FILE__)
+        (List.map
+           (fun (c : T.client) ->
+             constant (String.uppercase_ascii c.name ^ "_CLIENT_ID") c.docs c.id)
+           t.clients
+        @ [ constant "SIGN_IN_SCOPE" t.scope.docs t.scope.value ]);
+  }
+
 (* The clients and the scope as the Haskell SDK names them
    (generated/.../OAuth.hs): a client's id by its name and ClientId, and the
    scope. *)
@@ -164,7 +190,7 @@ let haskell (t : T.t) =
     text =
       H.text
         {
-          banner = Banner.haskell_lines ~from_:file __FILE__;
+          banner = Banner.lines ~from_:file __FILE__;
           extensions = [ "OverloadedStrings" ];
           name = "Xynolog.Internal.Generated.OAuth";
           imports = [ H.import "Data.Text" ~items:[ Plain "Text" ] ];
@@ -179,5 +205,5 @@ let haskell (t : T.t) =
 
 let files ~root:_ (spec : Spec.t) =
   Result.map
-    (fun t -> [ go t; python t; typescript t; ocaml t; haskell t ])
+    (fun t -> [ go t; python t; typescript t; ocaml t; rust t; haskell t ])
     (derive spec.tables.session_oauth)
