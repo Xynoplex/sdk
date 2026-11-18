@@ -1,11 +1,16 @@
 -- Generated from protocol/specs/src; do not edit.
 -- Regenerate: make generate (codegen/lib/haskell_sdk/haskell_sdk.ml)
 {-# LANGUAGE OverloadedStrings #-}
-module Xynolog.Internal.Generated.Models.TabVerdict (TabVerdict(..)) where
-import Data.Aeson (FromJSON(..), ToJSON(..), Value(..))
+
+module Xynolog.Internal.Generated.Models.TabVerdict (TabVerdict (..)) where
+
+import Data.Aeson (FromJSON (..), ToJSON (..), Value (..))
 import Xynolog.Internal.Codec
+
 data TabVerdict = TabVerdictGone | TabVerdictReady | TabVerdictUnknown deriving (Eq, Show)
+
 instance FromJSON TabVerdict where parseJSON = checked "TabVerdict" $ \value -> if value == String "gone" then pure TabVerdictGone else if value == String "ready" then pure TabVerdictReady else if value == String "unknown" then pure TabVerdictUnknown else fail "unknown enumeration member"
+
 instance ToJSON TabVerdict where
   toJSON TabVerdictGone = String "gone"
   toJSON TabVerdictReady = String "ready"

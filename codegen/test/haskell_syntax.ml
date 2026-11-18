@@ -97,7 +97,7 @@ let cases =
       "an instance's context and head come before its clauses, a method's \
        patterns after its name"
       (writes
-         "instance ToJSON c => ToJSON (Event c) where\n\
+         "instance (ToJSON c) => ToJSON (Event c) where\n\
          \  toJSON (Done v) = object [\"kind\" .= (\"done\" :: Text), \"data\" \
           .= v]\n\
          \  toJSON Begun = object []"
@@ -142,12 +142,15 @@ let cases =
                  ] ))));
     case "an operator that is none is refused"
       (refuses (expr (Infix (Name "a", [ ("plus", Name "b") ]))));
-    case "a record writes a field a line, under its type's variables"
+    case
+      "a record writes a field a line, under its type's variables, and its \
+       deriving clause after"
       (writes
          "data State v = State\n\
-         \  { stateResults :: [v]\n\
-         \  , stateBusy :: Bool\n\
-         \  } deriving (Eq, Show)"
+         \  { stateResults :: [v],\n\
+         \    stateBusy :: Bool\n\
+         \  }\n\
+         \  deriving (Eq, Show)"
          (decl
             (H.record "State" ~params:[ "v" ] ~deriving:[ "Eq"; "Show" ]
                [
@@ -158,13 +161,15 @@ let cases =
       (refuses (decl (H.record "Empty" [])));
     case "a doc comment's line is one line"
       (refuses (decl (H.alias ~about:[ "two\nlines" ] "A" (T_name "B"))));
-    case "a module exports what it declares, in order"
+    case
+      "a module exports what it declares, in order, a blank line between its \
+       parts"
       (writes
          "-- Generated from x; do not edit.\n\
-          {-# LANGUAGE OverloadedStrings #-}\n\
-          module M (K(..), k) where\n\
-          import Data.Text (Text)\n\
-          data K = A deriving (Eq)\n\
+          {-# LANGUAGE OverloadedStrings #-}\n\n\
+          module M (K (..), k) where\n\n\
+          import Data.Text (Text)\n\n\
+          data K = A deriving (Eq)\n\n\
           k :: Text\n\
           k = \"a\"\n" (fun () ->
            H.text
@@ -218,7 +223,7 @@ let cases =
     case "a section of an operator waits for its left operand"
       (writes "(>= 0)" (expr (Section (">=", Int 0))));
     case "a record is built by its fields' names"
-      (writes "f (R { a = 1, b = g x })"
+      (writes "f (R {a = 1, b = g x})"
          (expr
             (Apply
                ( Name "f",
@@ -261,9 +266,9 @@ let cases =
             (Gadt { about = []; name = "R"; params = []; constructors = [] })));
     case "an opaque newtype is exported without its constructor"
       (writes
-         "module M (Id, Name(..)) where\n\
-          newtype Id = Id Text deriving (Eq)\n\
-          newtype Name = Name { nameText :: Text }\n" (fun () ->
+         "module M (Id, Name (..)) where\n\n\
+          newtype Id = Id Text deriving (Eq)\n\n\
+          newtype Name = Name {nameText :: Text}\n" (fun () ->
            H.text
              {
                banner = [];
@@ -293,7 +298,7 @@ let cases =
                  ];
              }));
     case "a private declaration is written but not exported"
-      (writes "module P (f) where\nf :: Int\nf = g\ng :: Int\ng = 1\n"
+      (writes "module P (f) where\n\nf :: Int\nf = g\n\ng :: Int\ng = 1\n"
          (fun () ->
            H.text
              {
@@ -308,7 +313,7 @@ let cases =
                  ];
              }));
     case "a module re-exports what it imports whole"
-      (writes "module T (module A) where\nimport A\n" (fun () ->
+      (writes "module T (module A) where\n\nimport A\n" (fun () ->
            H.text
              {
                banner = [];
@@ -316,6 +321,32 @@ let cases =
                name = "T";
                imports = [ H.import "A" ];
                body = [ Reexport "A" ];
+             }));
+    case
+      "imports are in ormolu's order: by module, and what each names by its \
+       spelling, operators last"
+      (writes
+         "module O () where\n\n\
+          import Data.Aeson (FromJSON (..), Value (Null, String), object, (.=))\n\
+          import Data.Map qualified as Map\n" (fun () ->
+           H.text
+             {
+               banner = [];
+               extensions = [];
+               name = "O";
+               imports =
+                 [
+                   H.import "Data.Map" ~qualified:"Map";
+                   H.import "Data.Aeson"
+                     ~items:
+                       [
+                         Op ".=";
+                         Plain "object";
+                         With ("Value", [ "String"; "Null" ]);
+                         All "FromJSON";
+                       ];
+                 ];
+               body = [];
              }));
     case "what a module uses is told by namespace" (fun () ->
         let used =

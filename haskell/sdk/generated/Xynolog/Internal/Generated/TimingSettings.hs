@@ -1,57 +1,64 @@
 -- Generated from protocol/specs/src/client/timing.json; do not edit.
 -- Regenerate: make generate (codegen/lib/timing/haskell.ml)
 {-# LANGUAGE OverloadedStrings #-}
-module Xynolog.Internal.Generated.TimingSettings (Settings(..), protocolSettings) where
+
+module Xynolog.Internal.Generated.TimingSettings (Settings (..), protocolSettings) where
+
 import Control.Monad (unless)
-import Data.Aeson (FromJSON(..), ToJSON(..), withObject, object, (.:), (.=))
-import qualified Data.Aeson.KeyMap as KM
-import qualified Xynolog.Timing as Base
+import Data.Aeson (FromJSON (..), ToJSON (..), object, withObject, (.:), (.=))
+import Data.Aeson.KeyMap qualified as KM
+import Xynolog.Timing qualified as Base
+
 data Settings = Settings
-  { busRequestTimeoutMs :: Integer
-  , emitTimeoutMs :: Integer
-  , emitRetry :: Base.RetryBudget
-  , httpRequestTimeoutMs :: Integer
-  , requestRetryPauseMs :: Integer
-  , streamOpenTimeoutMs :: Integer
-  , reconnectMs :: Integer
-  , maxReconnectMs :: Integer
-  , degradedThresholdMs :: Integer
-  , lingerMs :: Integer
-  , seenEventIdsCount :: Integer
-  , reconnectDebounceMs :: Integer
-  , lazyRemoveMs :: Integer
-  , refreshRetry :: Base.RetryBudget
-  , refreshBeforeExpMs :: Integer
-  , minRefreshDelayMs :: Integer
-  , devicePollMs :: Integer
-  , deviceSlowDownMs :: Integer
-  , devicePollFloorMs :: Integer
-  , invalidationWindowMs :: Integer
-  , saveDebounceMs :: Integer
-  , maxStoredBytesCount :: Integer
-  , errorsKeptForFirstReaderCount :: Integer
-  , jobSilenceMs :: Integer
-  , jobStatusPollMs :: Integer
-  , jobPollMs :: Integer
-  , jobPollTimeoutMs :: Integer
-  , generationStallFloorMs :: Integer
-  , generationStallPerTokenMs :: Integer
-  , generationStallAssumedTokensCount :: Integer
-  , delegateSilenceMs :: Integer
-  , jobClaimTimeoutMs :: Integer
-  , heldJobStallMs :: Integer
-  , heldJobStallCheckMs :: Integer
-  , markCommitTimeoutMs :: Integer
-  , generatedTextAsksCount :: Integer
-  , anchoredTextReaskMs :: Integer
-  , hoverDelayMs :: Integer
-  , searchDebounceMs :: Integer
-  , discoveryIntervalMs :: Integer
-  , checksAtOnceCount :: Integer
-  } deriving (Eq, Show)
+  { busRequestTimeoutMs :: Integer,
+    emitTimeoutMs :: Integer,
+    emitRetry :: Base.RetryBudget,
+    httpRequestTimeoutMs :: Integer,
+    requestRetryPauseMs :: Integer,
+    streamOpenTimeoutMs :: Integer,
+    reconnectMs :: Integer,
+    maxReconnectMs :: Integer,
+    degradedThresholdMs :: Integer,
+    lingerMs :: Integer,
+    seenEventIdsCount :: Integer,
+    reconnectDebounceMs :: Integer,
+    lazyRemoveMs :: Integer,
+    refreshRetry :: Base.RetryBudget,
+    refreshBeforeExpMs :: Integer,
+    minRefreshDelayMs :: Integer,
+    devicePollMs :: Integer,
+    deviceSlowDownMs :: Integer,
+    devicePollFloorMs :: Integer,
+    invalidationWindowMs :: Integer,
+    saveDebounceMs :: Integer,
+    maxStoredBytesCount :: Integer,
+    errorsKeptForFirstReaderCount :: Integer,
+    jobSilenceMs :: Integer,
+    jobStatusPollMs :: Integer,
+    jobPollMs :: Integer,
+    jobPollTimeoutMs :: Integer,
+    generationStallFloorMs :: Integer,
+    generationStallPerTokenMs :: Integer,
+    generationStallAssumedTokensCount :: Integer,
+    delegateSilenceMs :: Integer,
+    jobClaimTimeoutMs :: Integer,
+    heldJobStallMs :: Integer,
+    heldJobStallCheckMs :: Integer,
+    markCommitTimeoutMs :: Integer,
+    generatedTextAsksCount :: Integer,
+    anchoredTextReaskMs :: Integer,
+    hoverDelayMs :: Integer,
+    searchDebounceMs :: Integer,
+    discoveryIntervalMs :: Integer,
+    checksAtOnceCount :: Integer
+  }
+  deriving (Eq, Show)
+
 protocolSettings :: Settings
-protocolSettings = Settings { busRequestTimeoutMs = Base.busRequestTimeoutMs, emitTimeoutMs = Base.emitTimeoutMs, emitRetry = Base.emitRetry, httpRequestTimeoutMs = Base.httpRequestTimeoutMs, requestRetryPauseMs = Base.requestRetryPauseMs, streamOpenTimeoutMs = Base.streamOpenTimeoutMs, reconnectMs = Base.reconnectMs, maxReconnectMs = Base.maxReconnectMs, degradedThresholdMs = Base.degradedThresholdMs, lingerMs = Base.lingerMs, seenEventIdsCount = Base.seenEventIdsCount, reconnectDebounceMs = Base.reconnectDebounceMs, lazyRemoveMs = Base.lazyRemoveMs, refreshRetry = Base.refreshRetry, refreshBeforeExpMs = Base.refreshBeforeExpMs, minRefreshDelayMs = Base.minRefreshDelayMs, devicePollMs = Base.devicePollMs, deviceSlowDownMs = Base.deviceSlowDownMs, devicePollFloorMs = Base.devicePollFloorMs, invalidationWindowMs = Base.invalidationWindowMs, saveDebounceMs = Base.saveDebounceMs, maxStoredBytesCount = Base.maxStoredBytesCount, errorsKeptForFirstReaderCount = Base.errorsKeptForFirstReaderCount, jobSilenceMs = Base.jobSilenceMs, jobStatusPollMs = Base.jobStatusPollMs, jobPollMs = Base.jobPollMs, jobPollTimeoutMs = Base.jobPollTimeoutMs, generationStallFloorMs = Base.generationStallFloorMs, generationStallPerTokenMs = Base.generationStallPerTokenMs, generationStallAssumedTokensCount = Base.generationStallAssumedTokensCount, delegateSilenceMs = Base.delegateSilenceMs, jobClaimTimeoutMs = Base.jobClaimTimeoutMs, heldJobStallMs = Base.heldJobStallMs, heldJobStallCheckMs = Base.heldJobStallCheckMs, markCommitTimeoutMs = Base.markCommitTimeoutMs, generatedTextAsksCount = Base.generatedTextAsksCount, anchoredTextReaskMs = Base.anchoredTextReaskMs, hoverDelayMs = Base.hoverDelayMs, searchDebounceMs = Base.searchDebounceMs, discoveryIntervalMs = Base.discoveryIntervalMs, checksAtOnceCount = Base.checksAtOnceCount }
+protocolSettings = Settings {busRequestTimeoutMs = Base.busRequestTimeoutMs, emitTimeoutMs = Base.emitTimeoutMs, emitRetry = Base.emitRetry, httpRequestTimeoutMs = Base.httpRequestTimeoutMs, requestRetryPauseMs = Base.requestRetryPauseMs, streamOpenTimeoutMs = Base.streamOpenTimeoutMs, reconnectMs = Base.reconnectMs, maxReconnectMs = Base.maxReconnectMs, degradedThresholdMs = Base.degradedThresholdMs, lingerMs = Base.lingerMs, seenEventIdsCount = Base.seenEventIdsCount, reconnectDebounceMs = Base.reconnectDebounceMs, lazyRemoveMs = Base.lazyRemoveMs, refreshRetry = Base.refreshRetry, refreshBeforeExpMs = Base.refreshBeforeExpMs, minRefreshDelayMs = Base.minRefreshDelayMs, devicePollMs = Base.devicePollMs, deviceSlowDownMs = Base.deviceSlowDownMs, devicePollFloorMs = Base.devicePollFloorMs, invalidationWindowMs = Base.invalidationWindowMs, saveDebounceMs = Base.saveDebounceMs, maxStoredBytesCount = Base.maxStoredBytesCount, errorsKeptForFirstReaderCount = Base.errorsKeptForFirstReaderCount, jobSilenceMs = Base.jobSilenceMs, jobStatusPollMs = Base.jobStatusPollMs, jobPollMs = Base.jobPollMs, jobPollTimeoutMs = Base.jobPollTimeoutMs, generationStallFloorMs = Base.generationStallFloorMs, generationStallPerTokenMs = Base.generationStallPerTokenMs, generationStallAssumedTokensCount = Base.generationStallAssumedTokensCount, delegateSilenceMs = Base.delegateSilenceMs, jobClaimTimeoutMs = Base.jobClaimTimeoutMs, heldJobStallMs = Base.heldJobStallMs, heldJobStallCheckMs = Base.heldJobStallCheckMs, markCommitTimeoutMs = Base.markCommitTimeoutMs, generatedTextAsksCount = Base.generatedTextAsksCount, anchoredTextReaskMs = Base.anchoredTextReaskMs, hoverDelayMs = Base.hoverDelayMs, searchDebounceMs = Base.searchDebounceMs, discoveryIntervalMs = Base.discoveryIntervalMs, checksAtOnceCount = Base.checksAtOnceCount}
+
 instance ToJSON Settings where toJSON value = object ["busRequestTimeoutMs" .= busRequestTimeoutMs value, "emitTimeoutMs" .= emitTimeoutMs value, "emitRetry" .= emitRetry value, "httpRequestTimeoutMs" .= httpRequestTimeoutMs value, "requestRetryPauseMs" .= requestRetryPauseMs value, "streamOpenTimeoutMs" .= streamOpenTimeoutMs value, "reconnectMs" .= reconnectMs value, "maxReconnectMs" .= maxReconnectMs value, "degradedThresholdMs" .= degradedThresholdMs value, "lingerMs" .= lingerMs value, "seenEventIdsCount" .= seenEventIdsCount value, "reconnectDebounceMs" .= reconnectDebounceMs value, "lazyRemoveMs" .= lazyRemoveMs value, "refreshRetry" .= refreshRetry value, "refreshBeforeExpMs" .= refreshBeforeExpMs value, "minRefreshDelayMs" .= minRefreshDelayMs value, "devicePollMs" .= devicePollMs value, "deviceSlowDownMs" .= deviceSlowDownMs value, "devicePollFloorMs" .= devicePollFloorMs value, "invalidationWindowMs" .= invalidationWindowMs value, "saveDebounceMs" .= saveDebounceMs value, "maxStoredBytesCount" .= maxStoredBytesCount value, "errorsKeptForFirstReaderCount" .= errorsKeptForFirstReaderCount value, "jobSilenceMs" .= jobSilenceMs value, "jobStatusPollMs" .= jobStatusPollMs value, "jobPollMs" .= jobPollMs value, "jobPollTimeoutMs" .= jobPollTimeoutMs value, "generationStallFloorMs" .= generationStallFloorMs value, "generationStallPerTokenMs" .= generationStallPerTokenMs value, "generationStallAssumedTokensCount" .= generationStallAssumedTokensCount value, "delegateSilenceMs" .= delegateSilenceMs value, "jobClaimTimeoutMs" .= jobClaimTimeoutMs value, "heldJobStallMs" .= heldJobStallMs value, "heldJobStallCheckMs" .= heldJobStallCheckMs value, "markCommitTimeoutMs" .= markCommitTimeoutMs value, "generatedTextAsksCount" .= generatedTextAsksCount value, "anchoredTextReaskMs" .= anchoredTextReaskMs value, "hoverDelayMs" .= hoverDelayMs value, "searchDebounceMs" .= searchDebounceMs value, "discoveryIntervalMs" .= discoveryIntervalMs value, "checksAtOnceCount" .= checksAtOnceCount value]
+
 instance FromJSON Settings where
   parseJSON = withObject "Settings" $ \fields -> do
     unless (all (`elem` ["busRequestTimeoutMs", "emitTimeoutMs", "emitRetry", "httpRequestTimeoutMs", "requestRetryPauseMs", "streamOpenTimeoutMs", "reconnectMs", "maxReconnectMs", "degradedThresholdMs", "lingerMs", "seenEventIdsCount", "reconnectDebounceMs", "lazyRemoveMs", "refreshRetry", "refreshBeforeExpMs", "minRefreshDelayMs", "devicePollMs", "deviceSlowDownMs", "devicePollFloorMs", "invalidationWindowMs", "saveDebounceMs", "maxStoredBytesCount", "errorsKeptForFirstReaderCount", "jobSilenceMs", "jobStatusPollMs", "jobPollMs", "jobPollTimeoutMs", "generationStallFloorMs", "generationStallPerTokenMs", "generationStallAssumedTokensCount", "delegateSilenceMs", "jobClaimTimeoutMs", "heldJobStallMs", "heldJobStallCheckMs", "markCommitTimeoutMs", "generatedTextAsksCount", "anchoredTextReaskMs", "hoverDelayMs", "searchDebounceMs", "discoveryIntervalMs", "checksAtOnceCount"]) (KM.keys fields)) (fail "Unknown timing member")

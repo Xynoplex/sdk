@@ -165,7 +165,7 @@ let cases =
         | Ok t ->
             Alcotest.(check bool)
               "the spec holds its clock" true
-              (contains "  , livenessClock :: RetryOptions"
+              (contains "    livenessClock :: RetryOptions"
                  (Testing.haskell t).Output.text)
         | Error _ -> Alcotest.fail "refused");
     case "a record member Haskell gives no type is refused" (fun () ->
