@@ -22,7 +22,7 @@ let generated =
       match g.files ~root spec with
       | Ok files -> List.map (fun (f : Output.file) -> f.path) files
       | Error errors -> refused errors)
-    Groups.all
+    Groups.sdk
 
 let () =
   let checked =
