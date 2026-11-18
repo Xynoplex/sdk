@@ -355,11 +355,11 @@ let stamps component (schema : Schema.t) =
                (fun members -> Option.value members ~default:[])
                [ s.all_of; s.one_of; s.any_of ]))
       schema
-  and read (part, stamps) =
+  and read (part, own) =
     match part with
     | Schema.Schema { ref_ = Some reference; _ } ->
         stamped (referred component reference) ()
-    | _ -> stamps ()
+    | _ -> own ()
   in
   read (schema, stamped schema)
 

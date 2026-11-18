@@ -179,8 +179,8 @@ let rec cata ~boolean ~schema = function
 
 (* [cata], with each schema held beside its result: for a walk that reads
    what a child states as well as what the walk made of it. A walk whose
-   result is a function of what it is called with decides which children it
-   calls, and when. *)
+   result is a function of its context (a file, a pointer, a trail) calls
+   only the children it means to, in its own order. *)
 let rec para ~boolean ~schema = function
   | Boolean_schema b -> boolean b
   | Schema layer ->
