@@ -1196,12 +1196,12 @@ Apache-2.0. See [LICENSE](../../../LICENSE).
 
 [xynolog]: https://github.com/xynolog/sdk
 [pkg-go-dev]: https://pkg.go.dev/github.com/xynolog/sdk/go
-[introduction]: ../../../docs/builder/INTRODUCTION.md
-[quick-start]: ../../../docs/builder/QUICK-START.md
-[developer-guide]: ../../../docs/builder/DEVELOPER-GUIDE.md
-[skills]: ../../../docs/builder/skills
+[introduction]: https://github.com/xynolog/docs/blob/main/builder/INTRODUCTION.md
+[quick-start]: https://github.com/xynolog/docs/blob/main/builder/QUICK-START.md
+[developer-guide]: https://github.com/xynolog/docs/blob/main/builder/DEVELOPER-GUIDE.md
+[skills]: https://github.com/xynolog/docs/tree/main/builder/skills
 [flows]: ../../../protocol/contract/flows/README.md
-[reactive-model]: ../../../docs/builder/REACTIVE-MODEL.md
+[reactive-model]: https://github.com/xynolog/docs/blob/main/builder/REACTIVE-MODEL.md
 [protocol]: ../../../protocol/contract/README.md
 [transport-contract]: ../../../protocol/contract/TRANSPORT-CONTRACT.md
 [transport-http]: ../../../protocol/contract/TRANSPORT-HTTP.md
@@ -1223,6 +1223,6 @@ Apache-2.0. See [LICENSE](../../../LICENSE).
 [telemetry]: ../../../protocol/specs/src/sdk-telemetry/telemetry.json
 [bus-log]: ../../../protocol/contract/EVENT-BUS.md#wire-format-the-bus-log
 [package]: .
-[testing]: ../../../docs/contributor/TESTING.md
-[state-units]: ../../../docs/builder/STATE-UNITS.md
+[testing]: https://github.com/xynolog/docs/blob/main/contributor/TESTING.md
+[state-units]: https://github.com/xynolog/docs/blob/main/builder/STATE-UNITS.md
 [state-units-cases]: ../../../protocol/specs/src/client/state-units.json

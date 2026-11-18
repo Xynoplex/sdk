@@ -376,9 +376,9 @@ The models, the tables and the tests' dispatch are generated from `protocol/spec
 
 [protocol]: ../../protocol/contract/README.md
 [conformance]: ../../protocol/conformance/sdk/README.md
-[guide]: ../../../docs/builder/DEVELOPER-GUIDE.md
+[guide]: https://github.com/xynolog/docs/blob/main/builder/DEVELOPER-GUIDE.md
 [http-client]: https://github.com/swift-server/async-http-client
 [toolchain]: .swift-version
-[quick-start]: ../../../docs/builder/QUICK-START.md
+[quick-start]: https://github.com/xynolog/docs/blob/main/builder/QUICK-START.md
 [flows]: ../../protocol/contract/flows
-[sign-in]: ../../../docs/builder/SIGN-IN.md
+[sign-in]: https://github.com/xynolog/docs/blob/main/builder/SIGN-IN.md

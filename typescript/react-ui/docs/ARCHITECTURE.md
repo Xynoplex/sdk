@@ -169,7 +169,7 @@ without any separate event-bus provider.
 
 **📖 Complete Documentation:**
 - **[SERVICE-HOOK-COMPONENT.md](SERVICE-HOOK-COMPONENT.md)** - Three-layer architecture guide
-- **[EVENTS.md](../../../../docs/builder/react-ui/EVENTS.md)** - Event bus usage and patterns
+- **[EVENTS.md](https://github.com/xynolog/docs/blob/main/builder/react-ui/EVENTS.md)** - Event bus usage and patterns
 
 ---
 
@@ -272,7 +272,7 @@ const manager: TranslationManager = {
 </TranslationProvider>;
 ```
 
-See [SESSION.md](../../../../docs/builder/react-ui/SESSION.md) for details.
+See [SESSION.md](https://github.com/xynolog/docs/blob/main/builder/react-ui/SESSION.md) for details.
 
 ---
 
@@ -573,7 +573,7 @@ When making breaking changes:
 - Access tokens are **short-lived**; signing out revokes the refresh token at the issuer (RFC 7009), so no new access token can be obtained, and the one in hand expires within minutes
 - The access + refresh tokens are held in memory and persisted per-KB through the `SessionStorage` adapter; the short TTL plus revocation at the issuer are the XSS mitigation (the token lives in app-controlled storage, not a browser-managed credential)
 - Handle 401/403 globally — the active session's `SessionSignals` surface `SessionEndedModal` / `PermissionDeniedModal`
-- See the canonical [AUTHENTICATION.md](../../../../docs/operator/administration/AUTHENTICATION.md) for the full model
+- See the canonical [AUTHENTICATION.md](https://github.com/xynolog/docs/blob/main/operator/administration/AUTHENTICATION.md) for the full model
 
 ### XSS Prevention
 
@@ -757,9 +757,9 @@ See [STYLES.md](STYLES.md) for comprehensive CSS architecture and conventions.
 
 ## See Also
 
-- [EVENTS.md](../../../../docs/builder/react-ui/EVENTS.md) - Event-driven architecture and event bus usage
-- [SESSION.md](../../../../docs/builder/react-ui/SESSION.md) - Provider Pattern implementation
-- [API-INTEGRATION.md](../../../../docs/builder/react-ui/API-INTEGRATION.md) - API architecture
+- [EVENTS.md](https://github.com/xynolog/docs/blob/main/builder/react-ui/EVENTS.md) - Event-driven architecture and event bus usage
+- [SESSION.md](https://github.com/xynolog/docs/blob/main/builder/react-ui/SESSION.md) - Provider Pattern implementation
+- [API-INTEGRATION.md](https://github.com/xynolog/docs/blob/main/builder/react-ui/API-INTEGRATION.md) - API architecture
 - [TESTING.md](TESTING.md) - Testing architecture
 - [STYLES.md](STYLES.md) - CSS architecture and conventions
 - [CONTRIBUTING.md](../../../../CONTRIBUTING.md) - Project-wide code standards
