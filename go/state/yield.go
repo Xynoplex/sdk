@@ -161,11 +161,12 @@ func generated(result *api.YieldJobResult) *api.YieldJobDone {
 	if result == nil {
 		return nil
 	}
-	if declined, err := result.AsJobDeclined(); err == nil && declined.Declined == api.JobDeclinedDeclinedTrue {
+	var declined api.JobDeclined
+	if result.As(&declined) == nil && declined.Declined == api.JobDeclinedDeclinedTrue {
 		return nil
 	}
-	done, err := result.AsYieldJobDone()
-	if err != nil {
+	var done api.YieldJobDone
+	if result.As(&done) != nil {
 		return nil
 	}
 	return &done

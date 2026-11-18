@@ -22,7 +22,7 @@ func Annotate(ctx context.Context, client *xynolog.Client, resource api.Resource
 	fmt.Println(described.Name, len(text))
 
 	var highlighting api.MarkJobParams
-	if err := highlighting.FromHighlightingJobParams(api.HighlightingJobParams{Motivation: api.HighlightingJobParamsMotivationHighlighting}); err != nil {
+	if err := highlighting.From(api.HighlightingJobParams{Motivation: api.HighlightingJobParamsMotivationHighlighting}); err != nil {
 		return err
 	}
 	for event, err := range client.Mark.Delegate(resource, highlighting).Events(ctx) { // a job, followed

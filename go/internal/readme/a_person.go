@@ -29,8 +29,8 @@ func AsMe(ctx context.Context, kb api.KbTarget, home string) error {
 	if _, held, err := kept.Held(ctx); err != nil {
 		return err
 	} else if !held {
-		endpoint, err := kb.Endpoint.AsHttpEndpoint()
-		if err != nil {
+		var endpoint api.HttpEndpoint
+		if err := kb.Endpoint.As(&endpoint); err != nil {
 			return err
 		}
 		gateway, err := xynolog.GatewayURL(endpoint)

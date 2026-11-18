@@ -22,7 +22,7 @@ func Count(ctx context.Context, client *xynolog.Client, job *xynolog.HeldMarkJob
 	if err := job.Progress(ctx, api.JobProgress{Percentage: 50}); err != nil {
 		return result, err
 	}
-	err = result.FromMarkJobDone(api.MarkJobDone{Found: strings.Count(text, "\n"), Persisted: 0})
+	err = result.From(api.MarkJobDone{Found: strings.Count(text, "\n"), Persisted: 0})
 	return result, err
 }
 
@@ -33,7 +33,7 @@ func Run(ctx context.Context, client *xynolog.Client) error {
 	highlights.JobType = api.MarkJobFilterJobTypeMark
 	highlights.Params.Motivation = api.MotivationHighlighting
 	var accepts api.JobFilter
-	if err := accepts.FromMarkJobFilter(highlights); err != nil {
+	if err := accepts.From(highlights); err != nil {
 		return err
 	}
 	// Closing the claims stops the worker: a job it still holds is failed first, and the queue retries it.

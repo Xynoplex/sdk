@@ -78,62 +78,8 @@ let doc_of description =
 let describe (s : D.t) =
   match s with D.Node n -> doc_of n.description | _ -> []
 
-let reference (s : D.t) = match s with D.Ref name -> Some name | _ -> None
-
-let union (s : D.t) =
-  match s with
-  | D.Node { one_of = Some members; _ } -> Some members
-  | D.Node { any_of = Some members; _ } -> Some members
-  | _ -> None
-
-let node (s : D.t) = match s with D.Node n -> Some n | _ -> None
-
 let type_is t (s : D.t) =
   match s with D.Node { type_ = Some (D.One t'); _ } -> t = t' | _ -> false
-
-let refuse_const what (s : D.t) =
-  match s with
-  | D.Node { const = true; _ } ->
-      refuse
-        "%s: `const` is not OpenAPI 3.0: state the one value as an `enum` of \
-         one"
-        what
-  | _ -> ()
-
-(* The one string a schema admits, when it admits exactly one. *)
-let only_value (s : D.t) =
-  match s with
-  | D.Node { enum = Some [ Schema.String_literal v ]; _ } -> Some v
-  | _ -> None
-
-(* A schema that also admits null, as the schema without it. *)
-let without_null (s : D.t) =
-  match union s with
-  | Some members -> (
-      let others = List.filter (fun m -> m <> D.Null) members in
-      if List.length others = List.length members then None
-      else
-        match others with
-        | [ only ] -> Some only
-        | _ -> Some (D.Node { (D.node [ "anyOf" ]) with any_of = Some others }))
-  | None -> (
-      match s with
-      | D.Node ({ type_ = Some (D.Or_null t); _ } as n) ->
-          Some (D.Node { n with type_ = Some (D.One t) })
-      | _ -> None)
-
-(* The single value an object's discriminating property takes: the first of
-   its properties that admits exactly one string. *)
-let discriminant (s : D.t) =
-  match s with
-  | D.Node { properties = Some ps; _ } ->
-      List.find_map (fun (_, p) -> only_value p) ps
-  | _ -> None
-
-(* The variant an enum value is. A [+] is part of what a value says
-   ([text/x-c++] is not [text/x-c]), so it is spelled rather than dropped. *)
-let variant_of value =
-  R.pascal (String.concat " plus " (String.split_on_char '+' value))
 
 let is_upper c = c >= 'A' && c <= 'Z'
 
@@ -307,18 +253,6 @@ type state = {
 let schema st name = st.definitions.schema name
 let defined st name = List.mem name st.definitions.names
 
-(* Whether a schema is a string, following [$ref]s and unions of strings. *)
-let rec is_string st (s : D.t) =
-  match reference s with
-  | Some name -> is_string st (schema st name)
-  | None -> (
-      match union s with
-      | Some members -> List.for_all (is_string st) members
-      | None -> (
-          match s with
-          | D.Node { type_ = Some (D.One String); enum = None; _ } -> true
-          | _ -> false))
-
 let rec named st name =
   if not (Hashtbl.mem st.written name) then (
     let s = schema st name in
@@ -346,8 +280,7 @@ let rec named st name =
    is written in place: the two names together, and [Value] after them for
    as long as a component schema already has that name. *)
 and inline_name st owner property =
-  let rec free name = if defined st name then free (name ^ "Value") else name in
-  free (owner ^ R.pascal property)
+  Naming.inline ~defined:(defined st) owner property
 
 and inline st name s =
   Hashtbl.replace st.written name (declaration st name s);
@@ -389,8 +322,8 @@ and type_of st owner property (s : D.t) =
   | D.Ref name -> named st name
   | D.Node { keys = []; _ } -> R.named "serde_json::Value"
   | _ -> (
-      refuse_const what s;
-      match without_null s with
+      View.refuse_const what s;
+      match View.without_null s with
       | Some inner -> type_of st owner property inner
       | None -> (
           match s with
@@ -403,10 +336,11 @@ and type_of st owner property (s : D.t) =
           | D.Node { all_of = Some _; _ } ->
               inline st (inline_name st owner property) s
           | _ -> (
-              match union s with
+              match View.union s with
               | Some members ->
-                  List.iter (refuse_const what) members;
-                  if List.for_all (is_string st) members then string_ty
+                  List.iter (View.refuse_const what) members;
+                  if List.for_all (View.is_string st.definitions) members then
+                    string_ty
                   else inline st (inline_name st owner property) s
               | None -> (
                   match s with
@@ -472,19 +406,21 @@ and type_of st owner property (s : D.t) =
 
 and declaration st name (s : D.t) =
   let doc = describe s in
-  match union s with
+  match View.union s with
   | Some members ->
       let told_apart =
         match s with
         | D.Node { discriminator = Some property; _ } ->
-            Option.map (fun tags -> (property, tags)) (tags st property members)
+            Option.map
+              (fun tags -> (property, tags))
+              (View.tags st.definitions property members)
         | _ -> None
       in
       union_declaration st name members told_apart doc
   | None ->
       let owner = D.owners st.definitions name s in
       let s = D.meant s in
-      refuse_const name s;
+      View.refuse_const name s;
       let n =
         match s with
         | D.Node n -> n
@@ -492,7 +428,7 @@ and declaration st name (s : D.t) =
       in
       if n.enum <> None then enumeration name n doc
       else if List.mem name st.generation.identifiers then identifier name n doc
-      else if is_string st s then
+      else if View.is_string st.definitions s then
         [ R.Type_alias { doc; vis = Pub; name; ty = string_ty } ]
       else if n.type_ <> Some (D.One Object) then
         refuse "%s: a schema shape the generator does not know" name
@@ -508,7 +444,7 @@ and enumeration name (n : D.node) doc =
         | _ -> refuse "%s: an enum value is not a string" name)
       (Option.get n.enum)
   in
-  let variants = List.map (fun v -> (v, variant_of v)) values in
+  let variants = List.map (fun v -> (v, Naming.variant v)) values in
   List.iteri
     (fun i (_, variant) ->
       if
@@ -763,29 +699,6 @@ and identifier name (n : D.node) doc =
       eq (R.Ref (None, ty "str")) (R.Deref (R.p "other"));
     ]
 
-(* The value of [property] each member of a union states, when every member
-   is an object that must state it, each admits one value, and no two admit
-   the same: the property then says which member a value is. *)
-and tags st property members =
-  let rec go acc = function
-    | [] -> Some (List.rev acc)
-    | member :: rest -> (
-        let member =
-          D.meant
-            (match reference member with
-            | Some target -> schema st target
-            | None -> member)
-        in
-        match member with
-        | D.Node { required = Some required; properties = Some ps; _ }
-          when List.mem property required -> (
-            match Option.bind (List.assoc_opt property ps) only_value with
-            | Some tag when not (List.mem tag acc) -> go (tag :: acc) rest
-            | _ -> None)
-        | _ -> None)
-  in
-  go [] members
-
 and structure st name ~owner (n : D.node) doc =
   let properties = Option.value n.properties ~default:[] in
   let required = Option.value n.required ~default:[] in
@@ -823,8 +736,8 @@ and structure st name ~owner (n : D.node) doc =
             [ serde [ R.Name_value ("rename", R.Str property) ] ]
           else []
         in
-        let nullable = Option.is_some (without_null ps) in
-        let only_value = only_value (D.meant ps) in
+        let nullable = Option.is_some (View.without_null ps) in
+        let only_value = View.only_value (D.meant ps) in
         let is_required = List.mem property required in
         let make attrs t =
           R.field ~doc:(describe ps) ~attrs:(renamed @ attrs) field t
@@ -842,7 +755,8 @@ and structure st name ~owner (n : D.node) doc =
             | R.Named ([ t ], []) -> t
             | _ -> refuse "%s.%s: one value of no enumeration" name property
           in
-          add_set (field, path [ type_name; variant_of (Option.get only_value) ]);
+          add_set
+            (field, path [ type_name; Naming.variant (Option.get only_value) ]);
           make [] rust_type)
         else if is_required && rust_type = string_ty then (
           add_param (R.Param (field, R.Impl_of (generic "Into" [ string_ty ])));
@@ -956,7 +870,7 @@ and structure st name ~owner (n : D.node) doc =
   else [ declared; R.Blank ]
 
 and union_declaration st name members told_apart doc =
-  let prefix = common_prefix (List.filter_map reference members) in
+  let prefix = common_prefix (List.filter_map View.reference members) in
   let variants =
     List.fold_left
       (fun acc member ->
@@ -974,7 +888,7 @@ and union_declaration st name members told_apart doc =
           | D.Node { type_ = Some (D.One Object); max_properties = Some 0; _ }
             ->
               ("Empty", empty st)
-          | _ when is_string st member -> ("Text", string_ty)
+          | _ when View.is_string st.definitions member -> ("Text", string_ty)
           | D.Node { type_ = Some (D.One Array); items; _ } -> (
               match items with
               | Some items ->
@@ -984,8 +898,8 @@ and union_declaration st name members told_apart doc =
               (* An inline member is named by the one value its discriminant
                  takes, when it has one. *)
               let variant =
-                match discriminant member with
-                | Some d -> R.pascal d
+                match View.discriminant member with
+                | Some d -> Text.pascal d
                 | None -> "Object"
               in
               (variant, type_of st name variant member)
@@ -1119,7 +1033,10 @@ and union_declaration st name members told_apart doc =
     List.concat
       (List.map2
          (fun member (variant, rust_type) ->
-           if reference member <> None && not (is_string st member) then
+           if
+             View.reference member <> None
+             && not (View.is_string st.definitions member)
+           then
              [
                R.Macro_item
                  ( "member",
@@ -1136,7 +1053,7 @@ and union_declaration st name members told_apart doc =
 (* The method saying which value of the string enumeration [property] names
    a value of the union [name] states: its member's own. *)
 and discriminator_accessor st name property tags variants =
-  let vocabulary = R.pascal property in
+  let vocabulary = Text.pascal property in
   let values =
     if not (defined st vocabulary) then
       refuse "%s: told apart by `%s`, which names no string enumeration %s" name
@@ -1156,7 +1073,7 @@ and discriminator_accessor st name property tags variants =
           refuse "%s: a member states the `%s` `%s`, which is no %s" name
             property tag vocabulary;
         ( R.Call (path [ name; variant ], [ R.Wild ]),
-          path [ vocabulary; variant_of tag ] ))
+          path [ vocabulary; Naming.variant tag ] ))
       tags variants
   in
   impl (ty name)

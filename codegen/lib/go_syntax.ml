@@ -5,8 +5,9 @@
    printer, and every bracket the printer opens it closes.
 
    Layout is the printer's. Indentation is a tab a level. The specs of a
-   group, the fields of a struct and the elements of a literal written a line
-   each are aligned in runs, as gofmt aligns them: each cell but the last
+   group, the fields of a struct, the elements of a literal written a line
+   each, and the bodies of adjacent funcs written on their signatures' lines
+   are aligned in runs, as gofmt aligns them: each cell but the last
    padded out to its column's widest, then a space. A run ends at a blank
    line, before a comment, and on both sides of an item written over several
    lines. gofmt also ends a run at a key much longer than its neighbours';
@@ -23,7 +24,10 @@ type type_ =
   | Map of type_ * type_
   | Pointer of type_
   | Generic of string * type_ list
-  | Struct_type of (string list * type_) list  (** On one line. *)
+  | Struct_type of string list * type_
+      (** Of one field, on one line: gofmt keeps a struct on one line only when
+          it has one field, of a type 30 columns wide at most. A field of no
+          names is embedded. *)
   | Func_type of type_ list * type_ list
 
 (* Items written a line each: one after another, or a blank line between. *)
@@ -66,9 +70,11 @@ type stmt =
   | Range of { key : string; value : string; over : expr; body : stmt list }
   | Define of string list * expr
   | Assign of expr * expr
+  | Local_type of string * type_  (** [type name t], within a body. *)
 
 type spec = { doc : doc; name : string; type_ : type_ option; value : expr }
 
+(* A field of no names is the embedded [type_]. *)
 type field = {
   doc : doc;
   names : string list;
@@ -79,12 +85,13 @@ type field = {
 type method_ = { name : string; params : (string * type_) list }
 type results = Unnamed of type_ list | Named_results of (string * type_) list
 
-(* A body of statements, or one statement on the signature's line. *)
-type body = Block of stmt list | One_line of stmt
+(* A body of statements, one statement on the signature's line, or none:
+   [{}]. *)
+type body = Block of stmt list | One_line of stmt | Empty
 
 type func = {
   doc : doc;
-  receiver : (string * type_) option;
+  receiver : (string * type_) option;  (** Of no name where it is [""]. *)
   name : string;
   params : (string * type_) list;
   results : results;
@@ -158,13 +165,19 @@ let rec type_text = function
   | Map (k, v) -> "map[" ^ type_text k ^ "]" ^ type_text v
   | Pointer t -> "*" ^ type_text t
   | Generic (name, args) -> checked name ^ "[" ^ listed type_text args ^ "]"
-  | Struct_type fields ->
-      "struct{ "
-      ^ String.concat "; "
-          (List.map
-             (fun (names, t) -> listed checked names ^ " " ^ type_text t)
-             fields)
-      ^ " }"
+  | Struct_type (names, t) ->
+      let typed = type_text t in
+      if (if names = [] then 0 else 1) + Text.length typed > 30 then
+        invalid_arg
+          (Printf.sprintf
+             "Go_syntax: struct{ %s } is too wide for gofmt to keep on a line"
+             typed)
+      else
+        "struct{ "
+        ^ (match names with
+          | [] -> typed
+          | _ -> listed checked names ^ " " ^ typed)
+        ^ " }"
   | Func_type (params, results) ->
       "func(" ^ listed type_text params ^ ")" ^ results_text (Unnamed results)
 
@@ -273,7 +286,11 @@ let rec expr ~depth = function
         invalid_arg (Printf.sprintf "Go_syntax: %S is no octal number" digits)
   | Call (f, args) -> expr ~depth f ^ "(" ^ listed (expr ~depth) args ^ ")"
   | Instance (e, types) -> expr ~depth e ^ "[" ^ listed type_text types ^ "]"
-  | Convert (t, e) -> type_text t ^ "(" ^ expr ~depth e ^ ")"
+  | Convert (t, e) ->
+      (match t with
+        | Pointer _ | Func_type _ -> "(" ^ type_text t ^ ")"
+        | _ -> type_text t)
+      ^ "(" ^ expr ~depth e ^ ")"
   | Unary (op, e) ->
       (match op with Not -> "!" | Deref -> "*" | Address -> "&")
       ^ operand ~depth e
@@ -353,9 +370,13 @@ let rec stmt ~depth s =
       ^ " {\n" ^ block body ^ at ^ "}\n"
   | Define (names, value) -> at ^ listed checked names ^ " := " ^ e value ^ "\n"
   | Assign (target, value) -> at ^ e target ^ " = " ^ e value ^ "\n"
+  | Local_type (name, t) ->
+      at ^ "type " ^ checked name ^ " " ^ type_text t ^ "\n"
 
 let params_text params =
-  listed (fun (n, t) -> checked n ^ " " ^ type_text t) params
+  listed
+    (function "", t -> type_text t | n, t -> checked n ^ " " ^ type_text t)
+    params
 
 let with_doc doc text = String.concat "\n" (comment ~depth:0 doc @ [ text ])
 
@@ -376,7 +397,9 @@ let single keyword (s : spec) =
   with_doc s.doc (keyword ^ " " ^ String.concat " " (spec_cells ~depth:0 s))
 
 let field_cells (f : field) =
-  [ listed checked f.names; type_text f.type_ ]
+  (match f.names with
+    | [] -> [ type_text f.type_ ]
+    | names -> [ listed checked names; type_text f.type_ ])
   @ Option.to_list
       (Option.map
          (fun tag ->
@@ -384,6 +407,49 @@ let field_cells (f : field) =
              invalid_arg (Printf.sprintf "Go_syntax: tag %S holds a `" tag)
            else "`" ^ tag ^ "`")
          f.tag)
+
+let signature (f : func) =
+  "func "
+  ^ Option.fold ~none:""
+      ~some:(fun r -> "(" ^ params_text [ r ] ^ ") ")
+      f.receiver
+  ^ checked f.name ^ "(" ^ params_text f.params ^ ")" ^ results_text f.results
+
+(* A body on its signature's line, where gofmt keeps it there: the signature
+   and the body's statement together under 100 columns. *)
+let short_body (f : func) =
+  let fits body size =
+    if Text.length (signature f) + size < 100 then Some body else None
+  in
+  match f.body with
+  | One_line s ->
+      let line = String.trim (stmt ~depth:0 s) in
+      fits ("{ " ^ line ^ " }") (Text.length line)
+  | Empty -> fits "{}" 0
+  | Block _ -> None
+
+let func_text (f : func) =
+  match short_body f with
+  | Some body -> signature f ^ " " ^ body
+  | None ->
+      let body =
+        match f.body with
+        | Block body -> body
+        | One_line s -> [ s ]
+        | Empty -> []
+      in
+      signature f ^ " {\n"
+      ^ String.concat "" (List.map (stmt ~depth:1) body)
+      ^ "}"
+
+(* A declaration among adjacent ones: a func whose body is on its
+   signature's line, the bodies of a run of which gofmt aligns, or another. *)
+type placed = Short of func * string | Long of decl
+
+let placed = function
+  | Func f as d -> (
+      match short_body f with Some body -> Short (f, body) | None -> Long d)
+  | d -> Long d
 
 let rec decl = function
   | Comment doc -> String.concat "\n" (comment ~depth:0 doc)
@@ -406,6 +472,7 @@ let rec decl = function
         ^
         match def with
         | Is t -> type_text t
+        | Struct { fields = []; _ } -> "struct{}"
         | Struct { fields; spacing } ->
             "struct {\n"
             ^ rows ~depth:1 ~spacing
@@ -421,20 +488,14 @@ let rec decl = function
                      "\t" ^ checked m.name ^ "(" ^ params_text m.params ^ ")\n")
                    methods)
             ^ "}")
-  | Func (f : func) ->
-      with_doc f.doc
-        ("func "
-        ^ Option.fold ~none:""
-            ~some:(fun r -> "(" ^ params_text [ r ] ^ ") ")
-            f.receiver
-        ^ checked f.name ^ "(" ^ params_text f.params ^ ")"
-        ^ results_text f.results
-        ^
-        match f.body with
-        | One_line s -> " { " ^ String.trim (stmt ~depth:0 s) ^ " }"
-        | Block body ->
-            " {\n" ^ String.concat "" (List.map (stmt ~depth:1) body) ^ "}")
-  | Adjacent decls -> String.concat "\n" (List.map decl decls)
+  | Func f -> with_doc f.doc (func_text f)
+  | Adjacent decls ->
+      rows ~depth:0 ~spacing:Packed
+        ~about:(function Short ((f : func), _) -> f.doc | Long _ -> [])
+        ~spans:(function Short _ -> false | Long _ -> true)
+        ~cells:(function
+          | Short (f, body) -> [ signature f; body ] | Long d -> [ decl d ])
+        (List.map placed decls)
 
 let imports_text = function
   | [] -> ""

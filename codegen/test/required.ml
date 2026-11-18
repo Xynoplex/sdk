@@ -404,23 +404,12 @@ let string_shape =
 
 let go =
   let declared =
-    Required.Go.declared
-      "package api\n\n\
-       type A struct {\n\
-       type B = string\n\
-       type C = map[string]int\n\
-       \ttype D = string\n\
-       type (\n"
+    [ ("A", None); ("B", Some "string"); ("C", Some "map[string]int") ]
   in
   let check shapes =
     List.map Decode.error_to_string (Required.Go.check ~declared shapes)
   in
   [
-    case "the types a Go file declares" (fun () ->
-        Alcotest.(check (list (pair string (option string))))
-          "declared"
-          [ ("A", None); ("B", Some "string"); ("C", Some "map[string]int") ]
-          declared);
     case "an alias read as the kind its schema states" (fun () ->
         Alcotest.(check (list string))
           "refusals" []
@@ -442,7 +431,7 @@ let go =
         Alcotest.(check (list string))
           "refusals"
           [
-            "go/api/client_gen.go: /: writes C as an alias of map[string]int, \
+            "go/api/types_gen.go: /: writes C as an alias of map[string]int, \
              which is read as {\"kinds\":[\"object\"]}, and its schema \
              requires {\"kinds\":[\"object\"],\"closed\":[]} of it";
           ]
@@ -460,7 +449,7 @@ let go =
         Alcotest.(check (list string))
           "refusals"
           [
-            "go/api/client_gen.go: /: declares no type E, and E is a component \
+            "go/api/types_gen.go: /: declares no type E, and E is a component \
              of openapi.json";
           ]
           (check [ ("E", string_shape) ]));
