@@ -4,41 +4,11 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(ProtectedResourceMetadataJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record ProtectedResourceMetadata
 {
-    public required global::System.Collections.Generic.IReadOnlyList<string> AuthorizationServers { get; init; }
-    public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.ProtectedResourceMetadataBearerMethodsSupportedItem> BearerMethodsSupported { get; init; }
-    public required string Resource { get; init; }
-    public string? ResourceName { get; init; }
-}
-
-internal sealed class ProtectedResourceMetadataJsonConverter : global::System.Text.Json.Serialization.JsonConverter<ProtectedResourceMetadata>
-{
-    public override ProtectedResourceMetadata Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("ProtectedResourceMetadata", root);
-        return new ProtectedResourceMetadata
-        {
-            AuthorizationServers = global::Xynolog.Serialization.WireJson.ReadMember<global::System.Collections.Generic.IReadOnlyList<string>>(root, "authorization_servers", options),
-            BearerMethodsSupported = global::Xynolog.Serialization.WireJson.ReadMember<global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.ProtectedResourceMetadataBearerMethodsSupportedItem>>(root, "bearer_methods_supported", options),
-            Resource = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "resource", options),
-            ResourceName = root.TryGetProperty("resource_name", out var p3) ? global::Xynolog.Serialization.WireJson.Read<string>(p3, options) : null,
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, ProtectedResourceMetadata value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("authorization_servers", global::System.Text.Json.JsonSerializer.SerializeToElement(value.AuthorizationServers, options));
-        fields.Add("bearer_methods_supported", global::System.Text.Json.JsonSerializer.SerializeToElement(value.BearerMethodsSupported, options));
-        fields.Add("resource", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Resource, options));
-        if (value.ResourceName is not null)
-        {
-            fields.Add("resource_name", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ResourceName, options));
-        }
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "ProtectedResourceMetadata", fields);
-    }
+    [global::Xynolog.Serialization.Wire("authorization_servers")] public required global::System.Collections.Generic.IReadOnlyList<string> AuthorizationServers { get; init; }
+    [global::Xynolog.Serialization.Wire("bearer_methods_supported")] public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.ProtectedResourceMetadataBearerMethodsSupportedItem> BearerMethodsSupported { get; init; }
+    [global::Xynolog.Serialization.Wire("resource")] public required string Resource { get; init; }
+    [global::Xynolog.Serialization.Wire("resource_name")] public string? ResourceName { get; init; }
 }

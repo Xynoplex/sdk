@@ -4,31 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(ExtractionDeclinedJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record ExtractionDeclined
 {
-    public required global::Xynolog.Types.ExtractionDeclinedDeclined Declined { get; init; }
-    public string Kind => "declined";
-}
-
-internal sealed class ExtractionDeclinedJsonConverter : global::System.Text.Json.Serialization.JsonConverter<ExtractionDeclined>
-{
-    public override ExtractionDeclined Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("ExtractionDeclined", root);
-        return new ExtractionDeclined
-        {
-            Declined = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.ExtractionDeclinedDeclined>(root, "declined", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, ExtractionDeclined value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("declined", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Declined, options));
-        fields.Add("kind", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Kind, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "ExtractionDeclined", fields);
-    }
+    [global::Xynolog.Serialization.Wire("declined")] public required global::Xynolog.Types.ExtractionDeclinedReason Declined { get; init; }
+    [global::Xynolog.Serialization.Wire("kind")] public string Kind => "declined";
 }

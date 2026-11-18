@@ -4,41 +4,11 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(SmeltSettledJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record SmeltSettled
 {
-    public required string ContentChecksum { get; init; }
-    public required global::Xynolog.Types.SmeltSettledOutcome Outcome { get; init; }
-    public global::Xynolog.Types.SmeltSettledReason? Reason { get; init; }
-    public required global::Xynolog.Identifiers.ResourceId ResourceId { get; init; }
-}
-
-internal sealed class SmeltSettledJsonConverter : global::System.Text.Json.Serialization.JsonConverter<SmeltSettled>
-{
-    public override SmeltSettled Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("SmeltSettled", root);
-        return new SmeltSettled
-        {
-            ContentChecksum = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "contentChecksum", options),
-            Outcome = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.SmeltSettledOutcome>(root, "outcome", options),
-            Reason = root.TryGetProperty("reason", out var p2) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.SmeltSettledReason>(p2, options) : null,
-            ResourceId = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.ResourceId>(root, "resourceId", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, SmeltSettled value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("contentChecksum", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ContentChecksum, options));
-        fields.Add("outcome", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Outcome, options));
-        if (value.Reason is not null)
-        {
-            fields.Add("reason", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Reason, options));
-        }
-        fields.Add("resourceId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ResourceId, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "SmeltSettled", fields);
-    }
+    [global::Xynolog.Serialization.Wire("contentChecksum")] public required string ContentChecksum { get; init; }
+    [global::Xynolog.Serialization.Wire("outcome")] public required global::Xynolog.Types.SmeltSettledOutcome Outcome { get; init; }
+    [global::Xynolog.Serialization.Wire("reason")] public global::Xynolog.Types.SmeltSettledReason? Reason { get; init; }
+    [global::Xynolog.Serialization.Wire("resourceId")] public required global::Xynolog.Identifiers.ResourceId ResourceId { get; init; }
 }

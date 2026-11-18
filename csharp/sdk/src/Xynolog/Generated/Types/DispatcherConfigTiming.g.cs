@@ -4,47 +4,14 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(DispatcherConfigTimingJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record DispatcherConfigTiming
 {
-    public required long AckWaitMs { get; init; }
-    public required long BootDeadlineMs { get; init; }
-    public required long ProgressWriteIntervalMs { get; init; }
-    public required long RetentionMs { get; init; }
-    public required long RetentionSweepMs { get; init; }
-    public required long StaleRunningMs { get; init; }
-    public required long TickMs { get; init; }
-}
-
-internal sealed class DispatcherConfigTimingJsonConverter : global::System.Text.Json.Serialization.JsonConverter<DispatcherConfigTiming>
-{
-    public override DispatcherConfigTiming Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("DispatcherConfigTiming", root);
-        return new DispatcherConfigTiming
-        {
-            AckWaitMs = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "ackWaitMs", options),
-            BootDeadlineMs = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "bootDeadlineMs", options),
-            ProgressWriteIntervalMs = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "progressWriteIntervalMs", options),
-            RetentionMs = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "retentionMs", options),
-            RetentionSweepMs = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "retentionSweepMs", options),
-            StaleRunningMs = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "staleRunningMs", options),
-            TickMs = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "tickMs", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, DispatcherConfigTiming value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("ackWaitMs", global::System.Text.Json.JsonSerializer.SerializeToElement(value.AckWaitMs, options));
-        fields.Add("bootDeadlineMs", global::System.Text.Json.JsonSerializer.SerializeToElement(value.BootDeadlineMs, options));
-        fields.Add("progressWriteIntervalMs", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ProgressWriteIntervalMs, options));
-        fields.Add("retentionMs", global::System.Text.Json.JsonSerializer.SerializeToElement(value.RetentionMs, options));
-        fields.Add("retentionSweepMs", global::System.Text.Json.JsonSerializer.SerializeToElement(value.RetentionSweepMs, options));
-        fields.Add("staleRunningMs", global::System.Text.Json.JsonSerializer.SerializeToElement(value.StaleRunningMs, options));
-        fields.Add("tickMs", global::System.Text.Json.JsonSerializer.SerializeToElement(value.TickMs, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "DispatcherConfigTiming", fields);
-    }
+    [global::Xynolog.Serialization.Wire("ackWaitMs")] public required long AckWaitMs { get; init; }
+    [global::Xynolog.Serialization.Wire("bootDeadlineMs")] public required long BootDeadlineMs { get; init; }
+    [global::Xynolog.Serialization.Wire("progressWriteIntervalMs")] public required long ProgressWriteIntervalMs { get; init; }
+    [global::Xynolog.Serialization.Wire("retentionMs")] public required long RetentionMs { get; init; }
+    [global::Xynolog.Serialization.Wire("retentionSweepMs")] public required long RetentionSweepMs { get; init; }
+    [global::Xynolog.Serialization.Wire("staleRunningMs")] public required long StaleRunningMs { get; init; }
+    [global::Xynolog.Serialization.Wire("tickMs")] public required long TickMs { get; init; }
 }

@@ -4,32 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(GetResourceByTokenResponseJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record GetResourceByTokenResponse
 {
-    public required string ExpiresAt { get; init; }
-    public required global::Xynolog.Types.ResourceDescriptor SourceResource { get; init; }
-}
-
-internal sealed class GetResourceByTokenResponseJsonConverter : global::System.Text.Json.Serialization.JsonConverter<GetResourceByTokenResponse>
-{
-    public override GetResourceByTokenResponse Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("GetResourceByTokenResponse", root);
-        return new GetResourceByTokenResponse
-        {
-            ExpiresAt = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "expiresAt", options),
-            SourceResource = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.ResourceDescriptor>(root, "sourceResource", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, GetResourceByTokenResponse value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("expiresAt", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ExpiresAt, options));
-        fields.Add("sourceResource", global::System.Text.Json.JsonSerializer.SerializeToElement(value.SourceResource, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "GetResourceByTokenResponse", fields);
-    }
+    [global::Xynolog.Serialization.Wire("expiresAt")] public required string ExpiresAt { get; init; }
+    [global::Xynolog.Serialization.Wire("sourceResource")] public required global::Xynolog.Types.ResourceDescriptor SourceResource { get; init; }
 }

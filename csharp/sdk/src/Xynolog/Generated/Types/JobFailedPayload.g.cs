@@ -4,65 +4,15 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(JobFailedPayloadJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record JobFailedPayload
 {
-    public global::Xynolog.Identifiers.AnnotationId? AnnotationId { get; init; }
-    public long? Attempt { get; init; }
-    public global::Xynolog.Types.DurabilityEvidence? Durability { get; init; }
-    public required string Error { get; init; }
-    public global::Xynolog.Types.FailureClass? FailureClass { get; init; }
-    public required global::Xynolog.Identifiers.JobId JobId { get; init; }
-    public required global::Xynolog.Types.JobType JobType { get; init; }
-    public bool? WillRetry { get; init; }
-}
-
-internal sealed class JobFailedPayloadJsonConverter : global::System.Text.Json.Serialization.JsonConverter<JobFailedPayload>
-{
-    public override JobFailedPayload Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("JobFailedPayload", root);
-        return new JobFailedPayload
-        {
-            AnnotationId = root.TryGetProperty("annotationId", out var p0) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Identifiers.AnnotationId>(p0, options) : null,
-            Attempt = root.TryGetProperty("attempt", out var p1) ? global::Xynolog.Serialization.WireJson.Read<long>(p1, options) : null,
-            Durability = root.TryGetProperty("durability", out var p2) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.DurabilityEvidence>(p2, options) : null,
-            Error = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "error", options),
-            FailureClass = root.TryGetProperty("failureClass", out var p4) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.FailureClass>(p4, options) : null,
-            JobId = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.JobId>(root, "jobId", options),
-            JobType = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.JobType>(root, "jobType", options),
-            WillRetry = root.TryGetProperty("willRetry", out var p7) ? global::Xynolog.Serialization.WireJson.Read<bool>(p7, options) : null,
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, JobFailedPayload value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        if (value.AnnotationId is not null)
-        {
-            fields.Add("annotationId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.AnnotationId, options));
-        }
-        if (value.Attempt is not null)
-        {
-            fields.Add("attempt", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Attempt, options));
-        }
-        if (value.Durability is not null)
-        {
-            fields.Add("durability", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Durability, options));
-        }
-        fields.Add("error", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Error, options));
-        if (value.FailureClass is not null)
-        {
-            fields.Add("failureClass", global::System.Text.Json.JsonSerializer.SerializeToElement(value.FailureClass, options));
-        }
-        fields.Add("jobId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.JobId, options));
-        fields.Add("jobType", global::System.Text.Json.JsonSerializer.SerializeToElement(value.JobType, options));
-        if (value.WillRetry is not null)
-        {
-            fields.Add("willRetry", global::System.Text.Json.JsonSerializer.SerializeToElement(value.WillRetry, options));
-        }
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "JobFailedPayload", fields);
-    }
+    [global::Xynolog.Serialization.Wire("annotationId")] public global::Xynolog.Identifiers.AnnotationId? AnnotationId { get; init; }
+    [global::Xynolog.Serialization.Wire("attempt")] public long? Attempt { get; init; }
+    [global::Xynolog.Serialization.Wire("durability")] public global::Xynolog.Types.DurabilityEvidence? Durability { get; init; }
+    [global::Xynolog.Serialization.Wire("error")] public required string Error { get; init; }
+    [global::Xynolog.Serialization.Wire("failureClass")] public global::Xynolog.Types.FailureClass? FailureClass { get; init; }
+    [global::Xynolog.Serialization.Wire("jobId")] public required global::Xynolog.Identifiers.JobId JobId { get; init; }
+    [global::Xynolog.Serialization.Wire("jobType")] public required global::Xynolog.Types.JobType JobType { get; init; }
+    [global::Xynolog.Serialization.Wire("willRetry")] public bool? WillRetry { get; init; }
 }

@@ -4,46 +4,12 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(TaggingJobParamsJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record TaggingJobParams
 {
-    public required global::System.Collections.Generic.IReadOnlyList<string> Categories { get; init; }
-    public string? Language { get; init; }
-    public string Motivation => "tagging";
-    public required string SchemaId { get; init; }
-    public string? SourceLanguage { get; init; }
-}
-
-internal sealed class TaggingJobParamsJsonConverter : global::System.Text.Json.Serialization.JsonConverter<TaggingJobParams>
-{
-    public override TaggingJobParams Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("TaggingJobParams", root);
-        return new TaggingJobParams
-        {
-            Categories = global::Xynolog.Serialization.WireJson.ReadMember<global::System.Collections.Generic.IReadOnlyList<string>>(root, "categories", options),
-            Language = root.TryGetProperty("language", out var p1) ? global::Xynolog.Serialization.WireJson.Read<string>(p1, options) : null,
-            SchemaId = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "schemaId", options),
-            SourceLanguage = root.TryGetProperty("sourceLanguage", out var p3) ? global::Xynolog.Serialization.WireJson.Read<string>(p3, options) : null,
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, TaggingJobParams value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("categories", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Categories, options));
-        if (value.Language is not null)
-        {
-            fields.Add("language", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Language, options));
-        }
-        fields.Add("motivation", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Motivation, options));
-        fields.Add("schemaId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.SchemaId, options));
-        if (value.SourceLanguage is not null)
-        {
-            fields.Add("sourceLanguage", global::System.Text.Json.JsonSerializer.SerializeToElement(value.SourceLanguage, options));
-        }
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "TaggingJobParams", fields);
-    }
+    [global::Xynolog.Serialization.Wire("categories")] public required global::System.Collections.Generic.IReadOnlyList<string> Categories { get; init; }
+    [global::Xynolog.Serialization.Wire("language")] public string? Language { get; init; }
+    [global::Xynolog.Serialization.Wire("motivation")] public string Motivation => "tagging";
+    [global::Xynolog.Serialization.Wire("schemaId")] public required string SchemaId { get; init; }
+    [global::Xynolog.Serialization.Wire("sourceLanguage")] public string? SourceLanguage { get; init; }
 }

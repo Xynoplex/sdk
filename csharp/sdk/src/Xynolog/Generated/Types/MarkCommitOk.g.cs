@@ -4,29 +4,8 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(MarkCommitOkJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record MarkCommitOk
 {
-    public required global::Xynolog.Types.MarkCommitOkResponse Response { get; init; }
-}
-
-internal sealed class MarkCommitOkJsonConverter : global::System.Text.Json.Serialization.JsonConverter<MarkCommitOk>
-{
-    public override MarkCommitOk Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("MarkCommitOk", root);
-        return new MarkCommitOk
-        {
-            Response = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.MarkCommitOkResponse>(root, "response", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, MarkCommitOk value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("response", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Response, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "MarkCommitOk", fields);
-    }
+    [global::Xynolog.Serialization.Wire("response")] public required global::Xynolog.Types.MarkCommitOkResponse Response { get; init; }
 }

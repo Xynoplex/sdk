@@ -4,43 +4,12 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(JobCancelledJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record JobCancelled
 {
-    public required string CompletedAt { get; init; }
-    public required global::Xynolog.Types.JobMetadata Metadata { get; init; }
-    public required global::Xynolog.Types.JobParams Params { get; init; }
-    public string? StartedAt { get; init; }
-    public string Status => "cancelled";
-}
-
-internal sealed class JobCancelledJsonConverter : global::System.Text.Json.Serialization.JsonConverter<JobCancelled>
-{
-    public override JobCancelled Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("JobCancelled", root);
-        return new JobCancelled
-        {
-            CompletedAt = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "completedAt", options),
-            Metadata = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.JobMetadata>(root, "metadata", options),
-            Params = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.JobParams>(root, "params", options),
-            StartedAt = root.TryGetProperty("startedAt", out var p3) ? global::Xynolog.Serialization.WireJson.Read<string>(p3, options) : null,
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, JobCancelled value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("completedAt", global::System.Text.Json.JsonSerializer.SerializeToElement(value.CompletedAt, options));
-        fields.Add("metadata", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Metadata, options));
-        fields.Add("params", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Params, options));
-        if (value.StartedAt is not null)
-        {
-            fields.Add("startedAt", global::System.Text.Json.JsonSerializer.SerializeToElement(value.StartedAt, options));
-        }
-        fields.Add("status", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Status, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "JobCancelled", fields);
-    }
+    [global::Xynolog.Serialization.Wire("completedAt")] public required string CompletedAt { get; init; }
+    [global::Xynolog.Serialization.Wire("metadata")] public required global::Xynolog.Types.JobMetadata Metadata { get; init; }
+    [global::Xynolog.Serialization.Wire("params")] public required global::Xynolog.Types.JobParams Params { get; init; }
+    [global::Xynolog.Serialization.Wire("startedAt")] public string? StartedAt { get; init; }
+    [global::Xynolog.Serialization.Wire("status")] public string Status => "cancelled";
 }

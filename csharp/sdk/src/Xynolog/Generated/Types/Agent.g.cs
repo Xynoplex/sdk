@@ -4,39 +4,10 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(AgentJsonConverter))]
+[global::Xynolog.Serialization.WireUnion(typeof(Agent.AgentPersonCase), typeof(Agent.AgentOrganizationCase), typeof(Agent.AgentSoftwareCase))]
 public closed record Agent
 {
     public sealed record AgentPersonCase(global::Xynolog.Types.AgentPerson Value) : Agent;
     public sealed record AgentOrganizationCase(global::Xynolog.Types.AgentOrganization Value) : Agent;
     public sealed record AgentSoftwareCase(global::Xynolog.Types.AgentSoftware Value) : Agent;
-}
-
-internal sealed class AgentJsonConverter : global::System.Text.Json.Serialization.JsonConverter<Agent>
-{
-    public override Agent Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("Agent", root);
-        var variant = global::Xynolog.Serialization.WireJson.Variant("Agent", root);
-        return variant switch
-        {
-            0 => new Agent.AgentPersonCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.AgentPerson>(root, options)),
-            1 => new Agent.AgentOrganizationCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.AgentOrganization>(root, options)),
-            2 => new Agent.AgentSoftwareCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.AgentSoftware>(root, options)),
-            _ => throw new global::System.Text.Json.JsonException("No matching union variant."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, Agent value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        switch (value)
-        {
-            case Agent.AgentPersonCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            case Agent.AgentOrganizationCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            case Agent.AgentSoftwareCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            default: throw new global::System.Text.Json.JsonException("Unknown union variant.");
-        }
-    }
 }

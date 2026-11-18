@@ -4,113 +4,46 @@
 
 package xynolog.types
 
-import kotlinx.serialization.DeserializationStrategy
-import kotlinx.serialization.EncodeDefault
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationException
-import kotlinx.serialization.builtins.ListSerializer
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.descriptors.nullable
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonContentPolymorphicSerializer
-import kotlinx.serialization.json.JsonDecoder
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonEncoder
 import kotlinx.serialization.json.JsonIgnoreUnknownKeys
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.serializer
 import xynolog.identifiers.AnnotationId
 import xynolog.identifiers.JobId
 import xynolog.identifiers.ResourceId
-import xynolog.identifiers.UserId
 
-/**
- * The multipart upload that creates a resource. A client sends it to the gateway's `POST /resources`; the gateway forwards it untouched to the Archivist's `POST /resources`, which stores the bytes and records the resource. One body, two hops.
- */
+/** The multipart upload that creates a resource. A client sends it to the gateway's `POST /resources`; the gateway forwards it untouched to the Archivist's `POST /resources`, which stores the bytes and records the resource. One body, two hops. */
 @Serializable
 @JsonIgnoreUnknownKeys
 public data class ResourceUpload(
-    /**
-     * Human-readable resource name
-     */
-    @SerialName("name")
+    /** Human-readable resource name */
     public val name: String,
-    /**
-     * Binary content
-     */
-    @SerialName("file")
+    /** Binary content */
     public val file: String,
-    /**
-     * Media type of the content (e.g. text/plain, text/markdown, image/png)
-     */
-    @SerialName("format")
+    /** Media type of the content (e.g. text/plain, text/markdown, image/png) */
     public val format: String,
-    /**
-     * Where the content lives (file://... for local). Required — the client names the location; the server does not derive one.
-     */
-    @SerialName("storageUri")
+    /** Where the content lives (file://... for local). Required — the client names the location; the server does not derive one. */
     public val storageUri: String,
-    /**
-     * ISO 639-1 language code
-     */
-    @SerialName("language")
+    /** ISO 639-1 language code */
     public val language: String? = null,
-    /**
-     * JSON-stringified array of entity type names
-     */
-    @SerialName("entityTypes")
+    /** JSON-stringified array of entity type names */
     public val entityTypes: String? = null,
-    /**
-     * For AI-generated resources: the annotation that triggered generation. Nested into generatedFrom.annotationId on the persisted event.
-     */
-    @SerialName("sourceAnnotationId")
+    /** For AI-generated resources: the annotation that triggered generation. Nested into generatedFrom.annotationId on the persisted event. */
     @get:JvmExposeBoxed
     public val sourceAnnotationId: AnnotationId? = null,
-    /**
-     * For AI-generated resources: the source resource the generating annotation lives on. Nested into generatedFrom.resourceId on the persisted event.
-     */
-    @SerialName("sourceResourceId")
+    /** For AI-generated resources: the source resource the generating annotation lives on. Nested into generatedFrom.resourceId on the persisted event. */
     @get:JvmExposeBoxed
     public val sourceResourceId: ResourceId? = null,
-    /**
-     * For AI-generated resources: the prompt that drove generation
-     */
-    @SerialName("generationPrompt")
+    /** For AI-generated resources: the prompt that drove generation */
     public val generationPrompt: String? = null,
-    /**
-     * For AI-generated resources: JSON-stringified Agent naming the model/worker that produced the content. Its identity must be the uploading agent's own — the knowledge base refuses a generator naming anyone else. `creator` and `wasAttributedTo` are never sent; the knowledge base derives them from the cited job.
-     */
-    @SerialName("generator")
+    /** For AI-generated resources: JSON-stringified Agent naming the model/worker that produced the content. Its identity must be the uploading agent's own — the knowledge base refuses a generator naming anyone else. `creator` and `wasAttributedTo` are never sent; the knowledge base derives them from the cited job. */
     public val generator: String? = null,
-    /**
-     * The job this resource fulfils, when a worker is creating it. Forwarded onto yield:create; the knowledge base derives who requested the resource from the cited job's own events, and refuses a worker-role create that cites none. Absent for a person's own upload.
-     */
-    @SerialName("jobId")
+    /** The job this resource fulfils, when a worker is creating it. Forwarded onto yield:create; the knowledge base derives who requested the resource from the cited job's own events, and refuses a worker-role create that cites none. Absent for a person's own upload. */
     @get:JvmExposeBoxed
     public val jobId: JobId? = null,
-    /**
-     * 'true' or 'false' — whether the resource is a draft
-     */
-    @SerialName("isDraft")
+    /** 'true' or 'false' — whether the resource is a draft */
     public val isDraft: String? = null,
-    /**
-     * A clone token from `yield:clone-token-requested`. With it, the resource is created as a clone of the token's source, inheriting its entity types; `language`, `entityTypes` and the generation fields are then not read.
-     */
-    @SerialName("cloneToken")
+    /** A clone token from `yield:clone-token-requested`. With it, the resource is created as a clone of the token's source, inheriting its entity types; `language`, `entityTypes` and the generation fields are then not read. */
     public val cloneToken: String? = null,
-    /**
-     * With `cloneToken`: 'true' archives the source once the clone exists.
-     */
-    @SerialName("archiveOriginal")
+    /** With `cloneToken`: 'true' archives the source once the clone exists. */
     public val archiveOriginal: String? = null,
 ) {
     /** How Java makes a `ResourceUpload`: `builder` takes what it must state, a setter each thing it may, and `build` makes it. */
@@ -131,58 +64,24 @@ public data class ResourceUpload(
         private var cloneToken: String? = null
         private var archiveOriginal: String? = null
 
-        public fun language(language: String?): Builder {
-            this.language = language
-            return this
-        }
-
-        public fun entityTypes(entityTypes: String?): Builder {
-            this.entityTypes = entityTypes
-            return this
-        }
+        public fun language(language: String?): Builder = apply { this.language = language }
+        public fun entityTypes(entityTypes: String?): Builder = apply { this.entityTypes = entityTypes }
 
         @JvmExposeBoxed
-        public fun sourceAnnotationId(sourceAnnotationId: AnnotationId?): Builder {
-            this.sourceAnnotationId = sourceAnnotationId
-            return this
-        }
+        public fun sourceAnnotationId(sourceAnnotationId: AnnotationId?): Builder = apply { this.sourceAnnotationId = sourceAnnotationId }
 
         @JvmExposeBoxed
-        public fun sourceResourceId(sourceResourceId: ResourceId?): Builder {
-            this.sourceResourceId = sourceResourceId
-            return this
-        }
+        public fun sourceResourceId(sourceResourceId: ResourceId?): Builder = apply { this.sourceResourceId = sourceResourceId }
 
-        public fun generationPrompt(generationPrompt: String?): Builder {
-            this.generationPrompt = generationPrompt
-            return this
-        }
-
-        public fun generator(generator: String?): Builder {
-            this.generator = generator
-            return this
-        }
+        public fun generationPrompt(generationPrompt: String?): Builder = apply { this.generationPrompt = generationPrompt }
+        public fun generator(generator: String?): Builder = apply { this.generator = generator }
 
         @JvmExposeBoxed
-        public fun jobId(jobId: JobId?): Builder {
-            this.jobId = jobId
-            return this
-        }
+        public fun jobId(jobId: JobId?): Builder = apply { this.jobId = jobId }
 
-        public fun isDraft(isDraft: String?): Builder {
-            this.isDraft = isDraft
-            return this
-        }
-
-        public fun cloneToken(cloneToken: String?): Builder {
-            this.cloneToken = cloneToken
-            return this
-        }
-
-        public fun archiveOriginal(archiveOriginal: String?): Builder {
-            this.archiveOriginal = archiveOriginal
-            return this
-        }
+        public fun isDraft(isDraft: String?): Builder = apply { this.isDraft = isDraft }
+        public fun cloneToken(cloneToken: String?): Builder = apply { this.cloneToken = cloneToken }
+        public fun archiveOriginal(archiveOriginal: String?): Builder = apply { this.archiveOriginal = archiveOriginal }
 
         public fun build(): ResourceUpload = ResourceUpload(name = name, file = file, format = format, storageUri = storageUri, language = language, entityTypes = entityTypes, sourceAnnotationId = sourceAnnotationId, sourceResourceId = sourceResourceId, generationPrompt = generationPrompt, generator = generator, jobId = jobId, isDraft = isDraft, cloneToken = cloneToken, archiveOriginal = archiveOriginal)
     }

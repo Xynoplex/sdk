@@ -4,32 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(SmelterConfigChunkingJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record SmelterConfigChunking
 {
-    public required long ChunkSize { get; init; }
-    public required long Overlap { get; init; }
-}
-
-internal sealed class SmelterConfigChunkingJsonConverter : global::System.Text.Json.Serialization.JsonConverter<SmelterConfigChunking>
-{
-    public override SmelterConfigChunking Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("SmelterConfigChunking", root);
-        return new SmelterConfigChunking
-        {
-            ChunkSize = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "chunkSize", options),
-            Overlap = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "overlap", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, SmelterConfigChunking value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("chunkSize", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ChunkSize, options));
-        fields.Add("overlap", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Overlap, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "SmelterConfigChunking", fields);
-    }
+    [global::Xynolog.Serialization.Wire("chunkSize")] public required long ChunkSize { get; init; }
+    [global::Xynolog.Serialization.Wire("overlap")] public required long Overlap { get; init; }
 }

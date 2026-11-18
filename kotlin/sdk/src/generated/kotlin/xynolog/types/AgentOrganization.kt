@@ -1,53 +1,29 @@
 // Generated from the component schemas in protocol/specs/src; do not edit.
 // Regenerate: make generate (codegen/lib/kotlin_sdk/kotlin_sdk.ml)
-@file:OptIn(kotlinx.serialization.ExperimentalSerializationApi::class, kotlin.ExperimentalStdlibApi::class)
+@file:OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
 
 package xynolog.types
 
-import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.EncodeDefault
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.KSerializer
+import kotlinx.serialization.KeepGeneratedSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationException
-import kotlinx.serialization.builtins.ListSerializer
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.descriptors.nullable
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonContentPolymorphicSerializer
-import kotlinx.serialization.json.JsonDecoder
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonEncoder
-import kotlinx.serialization.json.JsonIgnoreUnknownKeys
+import kotlinx.serialization.Transient
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.serializer
-import xynolog.identifiers.AnnotationId
-import xynolog.identifiers.JobId
-import xynolog.identifiers.ResourceId
-import xynolog.identifiers.UserId
 
-/**
- * An organization — the Organization branch of Agent.
- */
+/** An organization — the Organization branch of Agent. */
 @Serializable(with = AgentOrganization.Serializer::class)
+@KeepGeneratedSerializer
 public data class AgentOrganization(
     @SerialName("@type")
     @EncodeDefault
     public val type: AgentOrganizationType = AgentOrganizationType.Organization,
     @SerialName("@id")
     public val id: String? = null,
-    @SerialName("name")
     public val name: String,
-    @SerialName("homepage")
     public val homepage: String? = null,
     /** Every property the schema does not name, as it came. */
+    @Transient
     public val rest: JsonObject = JsonObject(emptyMap()),
 ) : Agent {
     /** How Java makes a `AgentOrganization`: `builder` takes what it must state, a setter each thing it may, and `build` makes it. */
@@ -58,20 +34,9 @@ public data class AgentOrganization(
         private var homepage: String? = null
         private var rest: JsonObject = JsonObject(emptyMap())
 
-        public fun id(id: String?): Builder {
-            this.id = id
-            return this
-        }
-
-        public fun homepage(homepage: String?): Builder {
-            this.homepage = homepage
-            return this
-        }
-
-        public fun rest(rest: JsonObject): Builder {
-            this.rest = rest
-            return this
-        }
+        public fun id(id: String?): Builder = apply { this.id = id }
+        public fun homepage(homepage: String?): Builder = apply { this.homepage = homepage }
+        public fun rest(rest: JsonObject): Builder = apply { this.rest = rest }
 
         public fun build(): AgentOrganization = AgentOrganization(id = id, name = name, homepage = homepage, rest = rest)
     }
@@ -82,35 +47,9 @@ public data class AgentOrganization(
         public fun builder(name: String): Builder = Builder(name)
     }
 
-    @Serializable
-    internal data class Known(
-        @SerialName("@type")
-        @EncodeDefault
-        public val type: AgentOrganizationType = AgentOrganizationType.Organization,
-        @SerialName("@id")
-        public val id: String? = null,
-        @SerialName("name")
-        public val name: String,
-        @SerialName("homepage")
-        public val homepage: String? = null,
+    internal object Serializer : OpenObjectSerializer<AgentOrganization>(
+        AgentOrganization.generatedSerializer(),
+        AgentOrganization::rest,
+        { named, rest -> named.copy(rest = rest) },
     )
-
-    internal object Serializer : KSerializer<AgentOrganization> {
-        private val named: Set<String> = setOf("@type", "@id", "name", "homepage")
-
-        override val descriptor: SerialDescriptor = SerialDescriptor("xynolog.types.AgentOrganization", Known.serializer().descriptor)
-
-        override fun deserialize(decoder: Decoder): AgentOrganization {
-            val json = decoder as? JsonDecoder ?: throw SerializationException("a AgentOrganization is read from JSON alone")
-            val all = json.decodeJsonElement().jsonObject
-            val known = json.json.decodeFromJsonElement(Known.serializer(), JsonObject(all.filterKeys { it in named }))
-            return AgentOrganization(type = known.type, id = known.id, name = known.name, homepage = known.homepage, rest = JsonObject(all.filterKeys { it !in named }))
-        }
-
-        override fun serialize(encoder: Encoder, value: AgentOrganization) {
-            val json = encoder as? JsonEncoder ?: throw SerializationException("a AgentOrganization is written as JSON alone")
-            val known = json.json.encodeToJsonElement(Known.serializer(), Known(type = value.type, id = value.id, name = value.name, homepage = value.homepage)).jsonObject
-            json.encodeJsonElement(JsonObject(known + value.rest))
-        }
-    }
 }

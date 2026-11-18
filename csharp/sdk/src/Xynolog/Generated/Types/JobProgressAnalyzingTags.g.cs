@@ -4,28 +4,8 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(JobProgressAnalyzingTagsJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record JobProgressAnalyzingTags
 {
-    public string Code => "analyzing-tags";
-}
-
-internal sealed class JobProgressAnalyzingTagsJsonConverter : global::System.Text.Json.Serialization.JsonConverter<JobProgressAnalyzingTags>
-{
-    public override JobProgressAnalyzingTags Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("JobProgressAnalyzingTags", root);
-        return new JobProgressAnalyzingTags
-        {
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, JobProgressAnalyzingTags value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("code", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Code, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "JobProgressAnalyzingTags", fields);
-    }
+    [global::Xynolog.Serialization.Wire("code")] public string Code => "analyzing-tags";
 }

@@ -4,50 +4,20 @@
 
 package xynolog.types
 
-import kotlinx.serialization.DeserializationStrategy
-import kotlinx.serialization.EncodeDefault
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationException
-import kotlinx.serialization.builtins.ListSerializer
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.descriptors.nullable
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonContentPolymorphicSerializer
-import kotlinx.serialization.json.JsonDecoder
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonEncoder
 import kotlinx.serialization.json.JsonIgnoreUnknownKeys
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.serializer
-import xynolog.identifiers.AnnotationId
-import xynolog.identifiers.JobId
 import xynolog.identifiers.ResourceId
 import xynolog.identifiers.UserId
 
-/**
- * Bus command to rebuild the graph projection from the event log — the whole graph when resourceId is absent, one resource when present. Served by the Weaver; replaces direct rebuild access, which does not survive the Weaver's container split.
- */
+/** Bus command to rebuild the graph projection from the event log — the whole graph when resourceId is absent, one resource when present. Served by the Weaver; replaces direct rebuild access, which does not survive the Weaver's container split. */
 @Serializable
 @JsonIgnoreUnknownKeys
 public data class WeaveRebuildCommand(
-    /**
-     * When present, rebuild only this resource; otherwise clear and rebuild the entire graph.
-     */
-    @SerialName("resourceId")
+    /** When present, rebuild only this resource; otherwise clear and rebuild the entire graph. */
     @get:JvmExposeBoxed
     public val resourceId: ResourceId? = null,
-    /**
-     * Authenticated user's DID, injected by the /bus/emit gateway. Clients do not set this.
-     */
+    /** Authenticated user's DID, injected by the /bus/emit gateway. Clients do not set this. */
     @SerialName("_userId")
     @get:JvmExposeBoxed
     public val userId: UserId? = null,
@@ -58,16 +28,10 @@ public data class WeaveRebuildCommand(
         private var userId: UserId? = null
 
         @JvmExposeBoxed
-        public fun resourceId(resourceId: ResourceId?): Builder {
-            this.resourceId = resourceId
-            return this
-        }
+        public fun resourceId(resourceId: ResourceId?): Builder = apply { this.resourceId = resourceId }
 
         @JvmExposeBoxed
-        public fun userId(userId: UserId?): Builder {
-            this.userId = userId
-            return this
-        }
+        public fun userId(userId: UserId?): Builder = apply { this.userId = userId }
 
         public fun build(): WeaveRebuildCommand = WeaveRebuildCommand(resourceId = resourceId, userId = userId)
     }

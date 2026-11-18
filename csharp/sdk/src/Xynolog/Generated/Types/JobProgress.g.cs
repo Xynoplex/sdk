@@ -4,89 +4,18 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(JobProgressJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record JobProgress
 {
-    public global::Xynolog.Identifiers.AnnotationId? AnnotationId { get; init; }
-    public global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.JobProgressCompletedItemsItem>? CompletedItems { get; init; }
-    public global::Xynolog.Types.JobProgressCurrent? Current { get; init; }
-    public long? EntitiesEmitted { get; init; }
-    public long? EntitiesExpected { get; init; }
-    public long? EntitiesFound { get; init; }
-    public global::Xynolog.Types.JobProgressMessage? Message { get; init; }
-    public required double Percentage { get; init; }
-    public long? Processed { get; init; }
-    public global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.JobProgressRequestParamsItem>? RequestParams { get; init; }
-    public long? Total { get; init; }
-}
-
-internal sealed class JobProgressJsonConverter : global::System.Text.Json.Serialization.JsonConverter<JobProgress>
-{
-    public override JobProgress Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("JobProgress", root);
-        return new JobProgress
-        {
-            AnnotationId = root.TryGetProperty("annotationId", out var p0) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Identifiers.AnnotationId>(p0, options) : null,
-            CompletedItems = root.TryGetProperty("completedItems", out var p1) ? global::Xynolog.Serialization.WireJson.Read<global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.JobProgressCompletedItemsItem>>(p1, options) : null,
-            Current = root.TryGetProperty("current", out var p2) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.JobProgressCurrent>(p2, options) : null,
-            EntitiesEmitted = root.TryGetProperty("entitiesEmitted", out var p3) ? global::Xynolog.Serialization.WireJson.Read<long>(p3, options) : null,
-            EntitiesExpected = root.TryGetProperty("entitiesExpected", out var p4) ? global::Xynolog.Serialization.WireJson.Read<long>(p4, options) : null,
-            EntitiesFound = root.TryGetProperty("entitiesFound", out var p5) ? global::Xynolog.Serialization.WireJson.Read<long>(p5, options) : null,
-            Message = root.TryGetProperty("message", out var p6) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.JobProgressMessage>(p6, options) : null,
-            Percentage = global::Xynolog.Serialization.WireJson.ReadMember<double>(root, "percentage", options),
-            Processed = root.TryGetProperty("processed", out var p8) ? global::Xynolog.Serialization.WireJson.Read<long>(p8, options) : null,
-            RequestParams = root.TryGetProperty("requestParams", out var p9) ? global::Xynolog.Serialization.WireJson.Read<global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.JobProgressRequestParamsItem>>(p9, options) : null,
-            Total = root.TryGetProperty("total", out var p10) ? global::Xynolog.Serialization.WireJson.Read<long>(p10, options) : null,
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, JobProgress value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        if (value.AnnotationId is not null)
-        {
-            fields.Add("annotationId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.AnnotationId, options));
-        }
-        if (value.CompletedItems is not null)
-        {
-            fields.Add("completedItems", global::System.Text.Json.JsonSerializer.SerializeToElement(value.CompletedItems, options));
-        }
-        if (value.Current is not null)
-        {
-            fields.Add("current", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Current, options));
-        }
-        if (value.EntitiesEmitted is not null)
-        {
-            fields.Add("entitiesEmitted", global::System.Text.Json.JsonSerializer.SerializeToElement(value.EntitiesEmitted, options));
-        }
-        if (value.EntitiesExpected is not null)
-        {
-            fields.Add("entitiesExpected", global::System.Text.Json.JsonSerializer.SerializeToElement(value.EntitiesExpected, options));
-        }
-        if (value.EntitiesFound is not null)
-        {
-            fields.Add("entitiesFound", global::System.Text.Json.JsonSerializer.SerializeToElement(value.EntitiesFound, options));
-        }
-        if (value.Message is not null)
-        {
-            fields.Add("message", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Message, options));
-        }
-        fields.Add("percentage", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Percentage, options));
-        if (value.Processed is not null)
-        {
-            fields.Add("processed", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Processed, options));
-        }
-        if (value.RequestParams is not null)
-        {
-            fields.Add("requestParams", global::System.Text.Json.JsonSerializer.SerializeToElement(value.RequestParams, options));
-        }
-        if (value.Total is not null)
-        {
-            fields.Add("total", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Total, options));
-        }
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "JobProgress", fields);
-    }
+    [global::Xynolog.Serialization.Wire("annotationId")] public global::Xynolog.Identifiers.AnnotationId? AnnotationId { get; init; }
+    [global::Xynolog.Serialization.Wire("completedItems")] public global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.JobProgressCompletedItemsItem>? CompletedItems { get; init; }
+    [global::Xynolog.Serialization.Wire("current")] public global::Xynolog.Types.JobProgressCurrent? Current { get; init; }
+    [global::Xynolog.Serialization.Wire("entitiesEmitted")] public long? EntitiesEmitted { get; init; }
+    [global::Xynolog.Serialization.Wire("entitiesExpected")] public long? EntitiesExpected { get; init; }
+    [global::Xynolog.Serialization.Wire("entitiesFound")] public long? EntitiesFound { get; init; }
+    [global::Xynolog.Serialization.Wire("message")] public global::Xynolog.Types.JobProgressMessage? Message { get; init; }
+    [global::Xynolog.Serialization.Wire("percentage")] public required double Percentage { get; init; }
+    [global::Xynolog.Serialization.Wire("processed")] public long? Processed { get; init; }
+    [global::Xynolog.Serialization.Wire("requestParams")] public global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.JobProgressRequestParamsItem>? RequestParams { get; init; }
+    [global::Xynolog.Serialization.Wire("total")] public long? Total { get; init; }
 }

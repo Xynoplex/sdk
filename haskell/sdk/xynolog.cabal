@@ -231,6 +231,7 @@ library internal
     Xynolog.Internal.Generated.Models.BindBodyUpdated
     Xynolog.Internal.Generated.Models.BindInitiateCommand
     Xynolog.Internal.Generated.Models.BindUpdateBodyCommand
+    Xynolog.Internal.Generated.Models.BodyOperation
     Xynolog.Internal.Generated.Models.BodyOperationAdd
     Xynolog.Internal.Generated.Models.BodyOperationRemove
     Xynolog.Internal.Generated.Models.BodyOperationReplace
@@ -315,6 +316,8 @@ library internal
     Xynolog.Internal.Generated.Models.Expected
     Xynolog.Internal.Generated.Models.ExtractedText
     Xynolog.Internal.Generated.Models.ExtractionDeclined
+    Xynolog.Internal.Generated.Models.ExtractionDeclinedReason
+    Xynolog.Internal.Generated.Models.ExtractionMethod
     Xynolog.Internal.Generated.Models.ExtractionOutcome
     Xynolog.Internal.Generated.Models.FailureClass
     Xynolog.Internal.Generated.Models.FileEntry
@@ -468,8 +471,13 @@ library internal
     Xynolog.Internal.Generated.Models.Neo4jGraphConfig
     Xynolog.Internal.Generated.Models.NeptuneGraphConfig
     Xynolog.Internal.Generated.Models.NewKnowledgeBase
+    Xynolog.Internal.Generated.Models.OcrConfidence
     Xynolog.Internal.Generated.Models.OllamaEmbeddingConfig
+    Xynolog.Internal.Generated.Models.OneOrMoreAgents
+    Xynolog.Internal.Generated.Models.OneOrMoreStrings
+    Xynolog.Internal.Generated.Models.OneOrMoreUris
     Xynolog.Internal.Generated.Models.OpenResource
+    Xynolog.Internal.Generated.Models.PdfClass
     Xynolog.Internal.Generated.Models.PdfCoordinate
     Xynolog.Internal.Generated.Models.PdfTextItem
     Xynolog.Internal.Generated.Models.PendingAuthorization
@@ -504,6 +512,8 @@ library internal
     Xynolog.Internal.Generated.Models.ScoredResource
     Xynolog.Internal.Generated.Models.Selector
     Xynolog.Internal.Generated.Models.SemanticMatch
+    Xynolog.Internal.Generated.Models.ServiceAddress
+    Xynolog.Internal.Generated.Models.ServiceIdentity
     Xynolog.Internal.Generated.Models.SessionEndReason
     Xynolog.Internal.Generated.Models.SessionEnded
     Xynolog.Internal.Generated.Models.SessionJoinedEvent
@@ -568,6 +578,7 @@ library internal
     Xynolog.Internal.Generated.Models.YieldJobResult
     Xynolog.Internal.Generated.Models.YieldUpdateCommand
     Xynolog.Internal.Generated.Models.YieldUpdateOk
+    Xynolog.Internal.Generated.Models.YieldedResource
   autogen-modules: Paths_xynolog
 
 test-suite schema-cases

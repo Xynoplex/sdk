@@ -4,67 +4,15 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(AgentPersonJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record AgentPerson
 {
-    public string? Id { get; init; }
-    public string Type => "Person";
-    public string? Email { get; init; }
-    public string? EmailSha1 { get; init; }
-    public string? Homepage { get; init; }
-    public string? Name { get; init; }
-    public string? Nickname { get; init; }
-    public global::System.Collections.Generic.IReadOnlyDictionary<string, global::System.Text.Json.JsonElement> AdditionalProperties { get; init; } = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-}
-
-internal sealed class AgentPersonJsonConverter : global::System.Text.Json.Serialization.JsonConverter<AgentPerson>
-{
-    public override AgentPerson Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("AgentPerson", root);
-        return new AgentPerson
-        {
-            Id = root.TryGetProperty("@id", out var p0) ? global::Xynolog.Serialization.WireJson.Read<string>(p0, options) : null,
-            Email = root.TryGetProperty("email", out var p1) ? global::Xynolog.Serialization.WireJson.Read<string>(p1, options) : null,
-            EmailSha1 = root.TryGetProperty("email_sha1", out var p2) ? global::Xynolog.Serialization.WireJson.Read<string>(p2, options) : null,
-            Homepage = root.TryGetProperty("homepage", out var p3) ? global::Xynolog.Serialization.WireJson.Read<string>(p3, options) : null,
-            Name = root.TryGetProperty("name", out var p4) ? global::Xynolog.Serialization.WireJson.Read<string>(p4, options) : null,
-            Nickname = root.TryGetProperty("nickname", out var p5) ? global::Xynolog.Serialization.WireJson.Read<string>(p5, options) : null,
-            AdditionalProperties = global::Xynolog.Serialization.WireJson.Extra(root, new string[] { "@id", "@type", "email", "email_sha1", "homepage", "name", "nickname" }),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, AgentPerson value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        if (value.Id is not null)
-        {
-            fields.Add("@id", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Id, options));
-        }
-        fields.Add("@type", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Type, options));
-        if (value.Email is not null)
-        {
-            fields.Add("email", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Email, options));
-        }
-        if (value.EmailSha1 is not null)
-        {
-            fields.Add("email_sha1", global::System.Text.Json.JsonSerializer.SerializeToElement(value.EmailSha1, options));
-        }
-        if (value.Homepage is not null)
-        {
-            fields.Add("homepage", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Homepage, options));
-        }
-        if (value.Name is not null)
-        {
-            fields.Add("name", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Name, options));
-        }
-        if (value.Nickname is not null)
-        {
-            fields.Add("nickname", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Nickname, options));
-        }
-        foreach (var pair in value.AdditionalProperties) { fields.Add(pair.Key, pair.Value); }
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "AgentPerson", fields);
-    }
+    [global::Xynolog.Serialization.Wire("@id")] public string? Id { get; init; }
+    [global::Xynolog.Serialization.Wire("@type")] public string Type => "Person";
+    [global::Xynolog.Serialization.Wire("email")] public string? Email { get; init; }
+    [global::Xynolog.Serialization.Wire("email_sha1")] public string? EmailSha1 { get; init; }
+    [global::Xynolog.Serialization.Wire("homepage")] public string? Homepage { get; init; }
+    [global::Xynolog.Serialization.Wire("name")] public string? Name { get; init; }
+    [global::Xynolog.Serialization.Wire("nickname")] public string? Nickname { get; init; }
+    [global::Xynolog.Serialization.WireRest] public global::System.Collections.Generic.IReadOnlyDictionary<string, global::System.Text.Json.JsonElement> AdditionalProperties { get; init; } = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
 }

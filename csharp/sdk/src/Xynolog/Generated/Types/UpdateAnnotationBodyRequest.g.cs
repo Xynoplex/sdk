@@ -4,32 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(UpdateAnnotationBodyRequestJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record UpdateAnnotationBodyRequest
 {
-    public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.UpdateAnnotationBodyRequestOperationsItem> Operations { get; init; }
-    public required global::Xynolog.Identifiers.ResourceId ResourceId { get; init; }
-}
-
-internal sealed class UpdateAnnotationBodyRequestJsonConverter : global::System.Text.Json.Serialization.JsonConverter<UpdateAnnotationBodyRequest>
-{
-    public override UpdateAnnotationBodyRequest Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("UpdateAnnotationBodyRequest", root);
-        return new UpdateAnnotationBodyRequest
-        {
-            Operations = global::Xynolog.Serialization.WireJson.ReadMember<global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.UpdateAnnotationBodyRequestOperationsItem>>(root, "operations", options),
-            ResourceId = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.ResourceId>(root, "resourceId", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, UpdateAnnotationBodyRequest value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("operations", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Operations, options));
-        fields.Add("resourceId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ResourceId, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "UpdateAnnotationBodyRequest", fields);
-    }
+    [global::Xynolog.Serialization.Wire("operations")] public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.BodyOperation> Operations { get; init; }
+    [global::Xynolog.Serialization.Wire("resourceId")] public required global::Xynolog.Identifiers.ResourceId ResourceId { get; init; }
 }

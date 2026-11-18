@@ -4,32 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(JobRecordJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record JobRecord
 {
-    public required global::Xynolog.Types.Job Job { get; init; }
-    public required string LastProgressAt { get; init; }
-}
-
-internal sealed class JobRecordJsonConverter : global::System.Text.Json.Serialization.JsonConverter<JobRecord>
-{
-    public override JobRecord Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("JobRecord", root);
-        return new JobRecord
-        {
-            Job = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.Job>(root, "job", options),
-            LastProgressAt = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "lastProgressAt", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, JobRecord value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("job", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Job, options));
-        fields.Add("lastProgressAt", global::System.Text.Json.JsonSerializer.SerializeToElement(value.LastProgressAt, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "JobRecord", fields);
-    }
+    [global::Xynolog.Serialization.Wire("job")] public required global::Xynolog.Types.Job Job { get; init; }
+    [global::Xynolog.Serialization.Wire("lastProgressAt")] public required string LastProgressAt { get; init; }
 }

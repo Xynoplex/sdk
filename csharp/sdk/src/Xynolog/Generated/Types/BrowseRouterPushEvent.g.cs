@@ -4,35 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(BrowseRouterPushEventJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record BrowseRouterPushEvent
 {
-    public required string Path { get; init; }
-    public string? Reason { get; init; }
-}
-
-internal sealed class BrowseRouterPushEventJsonConverter : global::System.Text.Json.Serialization.JsonConverter<BrowseRouterPushEvent>
-{
-    public override BrowseRouterPushEvent Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("BrowseRouterPushEvent", root);
-        return new BrowseRouterPushEvent
-        {
-            Path = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "path", options),
-            Reason = root.TryGetProperty("reason", out var p1) ? global::Xynolog.Serialization.WireJson.Read<string>(p1, options) : null,
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, BrowseRouterPushEvent value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("path", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Path, options));
-        if (value.Reason is not null)
-        {
-            fields.Add("reason", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Reason, options));
-        }
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "BrowseRouterPushEvent", fields);
-    }
+    [global::Xynolog.Serialization.Wire("path")] public required string Path { get; init; }
+    [global::Xynolog.Serialization.Wire("reason")] public string? Reason { get; init; }
 }

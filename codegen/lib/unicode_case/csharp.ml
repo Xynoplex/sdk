@@ -10,6 +10,7 @@ let path = "csharp/sdk/src/Xynolog/Generated/UnicodeCase.g.cs"
 let span name points =
   C.Expression_property
     {
+      attributes = [];
       modifiers = [ Private; Static ];
       type_ = C.Generic ("global::System.ReadOnlySpan", [ C.T "int" ]);
       name;

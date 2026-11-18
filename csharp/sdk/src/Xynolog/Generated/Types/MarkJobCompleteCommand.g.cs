@@ -4,58 +4,14 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(MarkJobCompleteCommandJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record MarkJobCompleteCommand
 {
-    public global::Xynolog.Identifiers.UserId? UserId { get; init; }
-    public long? Attempt { get; init; }
-    public global::Xynolog.Types.DurabilityEvidence? Durability { get; init; }
-    public required global::Xynolog.Identifiers.JobId JobId { get; init; }
-    public string JobType => "mark";
-    public required global::Xynolog.Identifiers.ResourceId ResourceId { get; init; }
-    public global::Xynolog.Types.MarkJobResult? Result { get; init; }
-}
-
-internal sealed class MarkJobCompleteCommandJsonConverter : global::System.Text.Json.Serialization.JsonConverter<MarkJobCompleteCommand>
-{
-    public override MarkJobCompleteCommand Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("MarkJobCompleteCommand", root);
-        return new MarkJobCompleteCommand
-        {
-            UserId = root.TryGetProperty("_userId", out var p0) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Identifiers.UserId>(p0, options) : null,
-            Attempt = root.TryGetProperty("attempt", out var p1) ? global::Xynolog.Serialization.WireJson.Read<long>(p1, options) : null,
-            Durability = root.TryGetProperty("durability", out var p2) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.DurabilityEvidence>(p2, options) : null,
-            JobId = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.JobId>(root, "jobId", options),
-            ResourceId = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.ResourceId>(root, "resourceId", options),
-            Result = root.TryGetProperty("result", out var p5) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.MarkJobResult>(p5, options) : null,
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, MarkJobCompleteCommand value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        if (value.UserId is not null)
-        {
-            fields.Add("_userId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.UserId, options));
-        }
-        if (value.Attempt is not null)
-        {
-            fields.Add("attempt", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Attempt, options));
-        }
-        if (value.Durability is not null)
-        {
-            fields.Add("durability", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Durability, options));
-        }
-        fields.Add("jobId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.JobId, options));
-        fields.Add("jobType", global::System.Text.Json.JsonSerializer.SerializeToElement(value.JobType, options));
-        fields.Add("resourceId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ResourceId, options));
-        if (value.Result is not null)
-        {
-            fields.Add("result", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Result, options));
-        }
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "MarkJobCompleteCommand", fields);
-    }
+    [global::Xynolog.Serialization.Wire("_userId")] public global::Xynolog.Identifiers.UserId? UserId { get; init; }
+    [global::Xynolog.Serialization.Wire("attempt")] public long? Attempt { get; init; }
+    [global::Xynolog.Serialization.Wire("durability")] public global::Xynolog.Types.DurabilityEvidence? Durability { get; init; }
+    [global::Xynolog.Serialization.Wire("jobId")] public required global::Xynolog.Identifiers.JobId JobId { get; init; }
+    [global::Xynolog.Serialization.Wire("jobType")] public string JobType => "mark";
+    [global::Xynolog.Serialization.Wire("resourceId")] public required global::Xynolog.Identifiers.ResourceId ResourceId { get; init; }
+    [global::Xynolog.Serialization.Wire("result")] public global::Xynolog.Types.MarkJobResult? Result { get; init; }
 }

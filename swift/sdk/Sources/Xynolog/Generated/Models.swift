@@ -236,10 +236,10 @@ public indirect enum AnchoredTextAnswer: Codable, Sendable {
 }
 
 public struct AnchoredTextDeclinedEntry: Codable, Sendable {
-  public var declined: AnchoredTextDeclinedEntryDeclined
+  public var declined: ExtractionDeclinedReason
   public var stamp: String
   public let v: AnchoredTextDeclinedEntryV
-  public init(declined: AnchoredTextDeclinedEntryDeclined, stamp: String) {
+  public init(declined: ExtractionDeclinedReason, stamp: String) {
     self.declined = declined
     self.stamp = stamp
     self.v = .value
@@ -257,13 +257,6 @@ public struct AnchoredTextDeclinedEntry: Codable, Sendable {
     try c.encode(self.stamp, as: "stamp")
     try c.encode(self.v, as: "v")
   }
-}
-
-public enum AnchoredTextDeclinedEntryDeclined: String, Codable, Sendable, CaseIterable {
-  case noTextLayer = "no-text-layer"
-  case encrypted = "encrypted"
-  case corrupt = "corrupt"
-  case tooLarge = "too-large"
 }
 
 public enum AnchoredTextDeclinedEntryV: Codable, Sendable {
@@ -323,17 +316,16 @@ public indirect enum AnchoredTextEntry: Codable, Sendable {
 
 public struct AnchoredTextExtractedEntry: Codable, Sendable {
   public var lines: [AnchoredTextExtractedEntryLinesItem]
-  public var method: AnchoredTextExtractedEntryMethod
-  public var ocrConfidence: AnchoredTextExtractedEntryOcrConfidence?
-  public var pdfClass: AnchoredTextExtractedEntryPdfClass?
+  public var method: ExtractionMethod
+  public var ocrConfidence: OcrConfidence?
+  public var pdfClass: PdfClass?
   public var stamp: String
   public var text: String
   public var unreadPages: [Int]?
   public let v: AnchoredTextExtractedEntryV
   public init(
-    lines: [AnchoredTextExtractedEntryLinesItem], method: AnchoredTextExtractedEntryMethod,
-    ocrConfidence: AnchoredTextExtractedEntryOcrConfidence? = nil,
-    pdfClass: AnchoredTextExtractedEntryPdfClass? = nil, stamp: String, text: String,
+    lines: [AnchoredTextExtractedEntryLinesItem], method: ExtractionMethod,
+    ocrConfidence: OcrConfidence? = nil, pdfClass: PdfClass? = nil, stamp: String, text: String,
     unreadPages: [Int]? = nil
   ) {
     self.lines = lines
@@ -400,47 +392,6 @@ public struct AnchoredTextExtractedEntryLinesItem: Codable, Sendable {
   }
 }
 
-public enum AnchoredTextExtractedEntryMethod: String, Codable, Sendable, CaseIterable {
-  case textPassthrough = "text-passthrough"
-  case pdfTextLayer = "pdf-text-layer"
-  case table = "table"
-  case form = "form"
-  case ocr = "ocr"
-}
-
-public struct AnchoredTextExtractedEntryOcrConfidence: Codable, Sendable {
-  public var lowConfidenceWords: Int
-  public var mean: Double
-  public var totalWords: Int
-  public init(lowConfidenceWords: Int, mean: Double, totalWords: Int) {
-    self.lowConfidenceWords = lowConfidenceWords
-    self.mean = mean
-    self.totalWords = totalWords
-  }
-  public init(from decoder: any Decoder) throws {
-    let c = try decoder.container(keyedBy: WireKey.self)
-    self.lowConfidenceWords = try c.value("lowConfidenceWords")
-    self.mean = try c.value("mean")
-    self.totalWords = try c.value("totalWords")
-  }
-  public func encode(to encoder: any Encoder) throws {
-    var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.lowConfidenceWords, as: "lowConfidenceWords")
-    try c.encode(self.mean, as: "mean")
-    try c.encode(self.totalWords, as: "totalWords")
-  }
-}
-
-public enum AnchoredTextExtractedEntryPdfClass: String, Codable, Sendable, CaseIterable {
-  case a = "A"
-  case b = "B"
-  case c = "C"
-  case d = "D"
-  case e = "E"
-  case f = "F"
-  case g = "G"
-}
-
 public enum AnchoredTextExtractedEntryV: Codable, Sendable {
   case value
   public init(from decoder: any Decoder) throws {
@@ -497,18 +448,17 @@ public struct Annotation: Codable, Sendable {
   public var body: AnnotationBodies?
   public var created: String
   public var creator: Agent?
-  public var generator: AnnotationGenerator?
+  public var generator: OneOrMoreAgents?
   public var id: AnnotationId
   public var modified: String?
   public var motivation: Motivation
   public var target: AnnotationTargetValue
   public let type: AnnotationType
-  public var wasAttributedTo: AnnotationWasAttributedTo?
+  public var wasAttributedTo: OneOrMoreAgents?
   public init(
     body: AnnotationBodies? = nil, created: String, creator: Agent? = nil,
-    generator: AnnotationGenerator? = nil, id: AnnotationId, modified: String? = nil,
-    motivation: Motivation, target: AnnotationTargetValue,
-    wasAttributedTo: AnnotationWasAttributedTo? = nil
+    generator: OneOrMoreAgents? = nil, id: AnnotationId, modified: String? = nil,
+    motivation: Motivation, target: AnnotationTargetValue, wasAttributedTo: OneOrMoreAgents? = nil
   ) {
     self.context = .httpWwwW3OrgNsAnnoJsonld
     self.body = body
@@ -618,9 +568,8 @@ public indirect enum AnnotationBody: Codable, Sendable {
 
 public struct AnnotationBodyUpdatedPayload: Codable, Sendable {
   public var annotationId: AnnotationId
-  public var operations: [AnnotationBodyUpdatedPayloadOperationsItem]
-  public init(annotationId: AnnotationId, operations: [AnnotationBodyUpdatedPayloadOperationsItem])
-  {
+  public var operations: [BodyOperation]
+  public init(annotationId: AnnotationId, operations: [BodyOperation]) {
     self.annotationId = annotationId
     self.operations = operations
   }
@@ -636,63 +585,8 @@ public struct AnnotationBodyUpdatedPayload: Codable, Sendable {
   }
 }
 
-public indirect enum AnnotationBodyUpdatedPayloadOperationsItem: Codable, Sendable {
-  case bodyOperationAdd(BodyOperationAdd)
-  case bodyOperationRemove(BodyOperationRemove)
-  case bodyOperationReplace(BodyOperationReplace)
-  public init(from decoder: any Decoder) throws {
-    if let value = try? BodyOperationAdd(from: decoder) {
-      self = .bodyOperationAdd(value)
-      return
-    }
-    if let value = try? BodyOperationRemove(from: decoder) {
-      self = .bodyOperationRemove(value)
-      return
-    }
-    if let value = try? BodyOperationReplace(from: decoder) {
-      self = .bodyOperationReplace(value)
-      return
-    }
-    throw DecodingError.dataCorrupted(
-      .init(
-        codingPath: decoder.codingPath,
-        debugDescription: "no member of AnnotationBodyUpdatedPayloadOperationsItem fits"))
-  }
-  public func encode(to encoder: any Encoder) throws {
-    switch self {
-    case .bodyOperationAdd(let value): try value.encode(to: encoder)
-    case .bodyOperationRemove(let value): try value.encode(to: encoder)
-    case .bodyOperationReplace(let value): try value.encode(to: encoder)
-    }
-  }
-}
-
 public enum AnnotationContext: String, Codable, Sendable, CaseIterable {
   case httpWwwW3OrgNsAnnoJsonld = "http://www.w3.org/ns/anno.jsonld"
-}
-
-public indirect enum AnnotationGenerator: Codable, Sendable {
-  case agent(Agent)
-  case list([Agent])
-  public init(from decoder: any Decoder) throws {
-    if let value = try? Agent(from: decoder) {
-      self = .agent(value)
-      return
-    }
-    if let value = try? [Agent](from: decoder) {
-      self = .list(value)
-      return
-    }
-    throw DecodingError.dataCorrupted(
-      .init(
-        codingPath: decoder.codingPath, debugDescription: "no member of AnnotationGenerator fits"))
-  }
-  public func encode(to encoder: any Encoder) throws {
-    switch self {
-    case .agent(let value): try value.encode(to: encoder)
-    case .list(let value): try value.encode(to: encoder)
-    }
-  }
 }
 
 public struct AnnotationId: Hashable, Sendable, Codable, CustomStringConvertible {
@@ -828,36 +722,11 @@ public enum AnnotationType: String, Codable, Sendable, CaseIterable {
   case annotation = "Annotation"
 }
 
-public indirect enum AnnotationWasAttributedTo: Codable, Sendable {
-  case agent(Agent)
-  case list([Agent])
-  public init(from decoder: any Decoder) throws {
-    if let value = try? Agent(from: decoder) {
-      self = .agent(value)
-      return
-    }
-    if let value = try? [Agent](from: decoder) {
-      self = .list(value)
-      return
-    }
-    throw DecodingError.dataCorrupted(
-      .init(
-        codingPath: decoder.codingPath,
-        debugDescription: "no member of AnnotationWasAttributedTo fits"))
-  }
-  public func encode(to encoder: any Encoder) throws {
-    switch self {
-    case .agent(let value): try value.encode(to: encoder)
-    case .list(let value): try value.encode(to: encoder)
-    }
-  }
-}
-
 public struct ArchivistConfig: Codable, Sendable {
   public var anchoredTextDir: String
   public var engines: ArchivistEngines
   public var gatewayUrl: String
-  public var identity: ArchivistConfigIdentity
+  public var identity: ServiceIdentity
   public var logFormat: LogFormat
   public var logLevel: LogLevel
   public var port: Int
@@ -867,8 +736,8 @@ public struct ArchivistConfig: Codable, Sendable {
   public var stateHome: String
   public init(
     anchoredTextDir: String, engines: ArchivistEngines, gatewayUrl: String,
-    identity: ArchivistConfigIdentity, logFormat: LogFormat, logLevel: LogLevel, port: Int,
-    root: String, skipRebuild: Bool, staging: ArchivistConfigStaging, stateHome: String
+    identity: ServiceIdentity, logFormat: LogFormat, logLevel: LogLevel, port: Int, root: String,
+    skipRebuild: Bool, staging: ArchivistConfigStaging, stateHome: String
   ) {
     self.anchoredTextDir = anchoredTextDir
     self.engines = engines
@@ -914,22 +783,6 @@ public struct ArchivistConfig: Codable, Sendable {
     try c.encode(self.skipRebuild, as: "skipRebuild")
     try c.encode(self.staging, as: "staging")
     try c.encode(self.stateHome, as: "stateHome")
-  }
-}
-
-public struct ArchivistConfigIdentity: Codable, Sendable {
-  public var issuer: String
-  public init(issuer: String) {
-    self.issuer = issuer
-  }
-  public init(from decoder: any Decoder) throws {
-    let c = try decoder.container(keyedBy: WireKey.self)
-    try c.refuseUnknown(["issuer"], in: "ArchivistConfigIdentity")
-    self.issuer = try c.value("issuer")
-  }
-  public func encode(to encoder: any Encoder) throws {
-    var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.issuer, as: "issuer")
   }
 }
 
@@ -1385,10 +1238,39 @@ public struct BindUpdateBodyCommand: Codable, Sendable {
   }
 }
 
+public indirect enum BodyOperation: Codable, Sendable {
+  case bodyOperationAdd(BodyOperationAdd)
+  case bodyOperationRemove(BodyOperationRemove)
+  case bodyOperationReplace(BodyOperationReplace)
+  public init(from decoder: any Decoder) throws {
+    if let value = try? BodyOperationAdd(from: decoder) {
+      self = .bodyOperationAdd(value)
+      return
+    }
+    if let value = try? BodyOperationRemove(from: decoder) {
+      self = .bodyOperationRemove(value)
+      return
+    }
+    if let value = try? BodyOperationReplace(from: decoder) {
+      self = .bodyOperationReplace(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(codingPath: decoder.codingPath, debugDescription: "no member of BodyOperation fits"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .bodyOperationAdd(let value): try value.encode(to: encoder)
+    case .bodyOperationRemove(let value): try value.encode(to: encoder)
+    case .bodyOperationReplace(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
 public struct BodyOperationAdd: Codable, Sendable {
-  public var item: BodyOperationAddItem
+  public var item: AnnotationBody
   public let op: BodyOperationAddOp
-  public init(item: BodyOperationAddItem) {
+  public init(item: AnnotationBody) {
     self.item = item
     self.op = .add
   }
@@ -1404,38 +1286,14 @@ public struct BodyOperationAdd: Codable, Sendable {
   }
 }
 
-public indirect enum BodyOperationAddItem: Codable, Sendable {
-  case textualBody(TextualBody)
-  case specificResource(SpecificResource)
-  public init(from decoder: any Decoder) throws {
-    if let value = try? TextualBody(from: decoder) {
-      self = .textualBody(value)
-      return
-    }
-    if let value = try? SpecificResource(from: decoder) {
-      self = .specificResource(value)
-      return
-    }
-    throw DecodingError.dataCorrupted(
-      .init(
-        codingPath: decoder.codingPath, debugDescription: "no member of BodyOperationAddItem fits"))
-  }
-  public func encode(to encoder: any Encoder) throws {
-    switch self {
-    case .textualBody(let value): try value.encode(to: encoder)
-    case .specificResource(let value): try value.encode(to: encoder)
-    }
-  }
-}
-
 public enum BodyOperationAddOp: String, Codable, Sendable, CaseIterable {
   case add = "add"
 }
 
 public struct BodyOperationRemove: Codable, Sendable {
-  public var item: BodyOperationRemoveItem
+  public var item: AnnotationBody
   public let op: BodyOperationRemoveOp
-  public init(item: BodyOperationRemoveItem) {
+  public init(item: AnnotationBody) {
     self.item = item
     self.op = .remove
   }
@@ -1451,40 +1309,15 @@ public struct BodyOperationRemove: Codable, Sendable {
   }
 }
 
-public indirect enum BodyOperationRemoveItem: Codable, Sendable {
-  case textualBody(TextualBody)
-  case specificResource(SpecificResource)
-  public init(from decoder: any Decoder) throws {
-    if let value = try? TextualBody(from: decoder) {
-      self = .textualBody(value)
-      return
-    }
-    if let value = try? SpecificResource(from: decoder) {
-      self = .specificResource(value)
-      return
-    }
-    throw DecodingError.dataCorrupted(
-      .init(
-        codingPath: decoder.codingPath,
-        debugDescription: "no member of BodyOperationRemoveItem fits"))
-  }
-  public func encode(to encoder: any Encoder) throws {
-    switch self {
-    case .textualBody(let value): try value.encode(to: encoder)
-    case .specificResource(let value): try value.encode(to: encoder)
-    }
-  }
-}
-
 public enum BodyOperationRemoveOp: String, Codable, Sendable, CaseIterable {
   case remove = "remove"
 }
 
 public struct BodyOperationReplace: Codable, Sendable {
-  public var newItem: BodyOperationReplaceNewItem
-  public var oldItem: BodyOperationReplaceOldItem
+  public var newItem: AnnotationBody
+  public var oldItem: AnnotationBody
   public let op: BodyOperationReplaceOp
-  public init(newItem: BodyOperationReplaceNewItem, oldItem: BodyOperationReplaceOldItem) {
+  public init(newItem: AnnotationBody, oldItem: AnnotationBody) {
     self.newItem = newItem
     self.oldItem = oldItem
     self.op = .replace
@@ -1500,56 +1333,6 @@ public struct BodyOperationReplace: Codable, Sendable {
     try c.encode(self.newItem, as: "newItem")
     try c.encode(self.oldItem, as: "oldItem")
     try c.encode(self.op, as: "op")
-  }
-}
-
-public indirect enum BodyOperationReplaceNewItem: Codable, Sendable {
-  case textualBody(TextualBody)
-  case specificResource(SpecificResource)
-  public init(from decoder: any Decoder) throws {
-    if let value = try? TextualBody(from: decoder) {
-      self = .textualBody(value)
-      return
-    }
-    if let value = try? SpecificResource(from: decoder) {
-      self = .specificResource(value)
-      return
-    }
-    throw DecodingError.dataCorrupted(
-      .init(
-        codingPath: decoder.codingPath,
-        debugDescription: "no member of BodyOperationReplaceNewItem fits"))
-  }
-  public func encode(to encoder: any Encoder) throws {
-    switch self {
-    case .textualBody(let value): try value.encode(to: encoder)
-    case .specificResource(let value): try value.encode(to: encoder)
-    }
-  }
-}
-
-public indirect enum BodyOperationReplaceOldItem: Codable, Sendable {
-  case textualBody(TextualBody)
-  case specificResource(SpecificResource)
-  public init(from decoder: any Decoder) throws {
-    if let value = try? TextualBody(from: decoder) {
-      self = .textualBody(value)
-      return
-    }
-    if let value = try? SpecificResource(from: decoder) {
-      self = .specificResource(value)
-      return
-    }
-    throw DecodingError.dataCorrupted(
-      .init(
-        codingPath: decoder.codingPath,
-        debugDescription: "no member of BodyOperationReplaceOldItem fits"))
-  }
-  public func encode(to encoder: any Encoder) throws {
-    switch self {
-    case .textualBody(let value): try value.encode(to: encoder)
-    case .specificResource(let value): try value.encode(to: encoder)
-    }
   }
 }
 
@@ -2892,7 +2675,7 @@ public enum DiscoveryDocumentVersion: Codable, Sendable {
 
 public struct DispatcherConfig: Codable, Sendable {
   public var gatewayUrl: String
-  public var identity: DispatcherConfigIdentity
+  public var identity: ServiceIdentity
   public var kb: KbIdentity
   public var logFormat: LogFormat
   public var logLevel: LogLevel
@@ -2900,7 +2683,7 @@ public struct DispatcherConfig: Codable, Sendable {
   public var queue: DispatcherConfigQueue
   public var timing: DispatcherConfigTiming
   public init(
-    gatewayUrl: String, identity: DispatcherConfigIdentity, kb: KbIdentity, logFormat: LogFormat,
+    gatewayUrl: String, identity: ServiceIdentity, kb: KbIdentity, logFormat: LogFormat,
     logLevel: LogLevel, port: Int, queue: DispatcherConfigQueue, timing: DispatcherConfigTiming
   ) {
     self.gatewayUrl = gatewayUrl
@@ -2936,22 +2719,6 @@ public struct DispatcherConfig: Codable, Sendable {
     try c.encode(self.port, as: "port")
     try c.encode(self.queue, as: "queue")
     try c.encode(self.timing, as: "timing")
-  }
-}
-
-public struct DispatcherConfigIdentity: Codable, Sendable {
-  public var issuer: String
-  public init(issuer: String) {
-    self.issuer = issuer
-  }
-  public init(from decoder: any Decoder) throws {
-    let c = try decoder.container(keyedBy: WireKey.self)
-    try c.refuseUnknown(["issuer"], in: "DispatcherConfigIdentity")
-    self.issuer = try c.value("issuer")
-  }
-  public func encode(to encoder: any Encoder) throws {
-    var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.issuer, as: "issuer")
   }
 }
 
@@ -3297,15 +3064,14 @@ public struct EventMetadata: Codable, Sendable {
 public struct ExtractedText: Codable, Sendable {
   public var items: [PdfTextItem]
   public let kind: ExtractedTextKind
-  public var method: ExtractedTextMethod
-  public var ocrConfidence: ExtractedTextOcrConfidence?
-  public var pdfClass: ExtractedTextPdfClass?
+  public var method: ExtractionMethod
+  public var ocrConfidence: OcrConfidence?
+  public var pdfClass: PdfClass?
   public var text: String
   public var unreadPages: [Int]?
   public init(
-    items: [PdfTextItem], method: ExtractedTextMethod,
-    ocrConfidence: ExtractedTextOcrConfidence? = nil, pdfClass: ExtractedTextPdfClass? = nil,
-    text: String, unreadPages: [Int]? = nil
+    items: [PdfTextItem], method: ExtractionMethod, ocrConfidence: OcrConfidence? = nil,
+    pdfClass: PdfClass? = nil, text: String, unreadPages: [Int]? = nil
   ) {
     self.items = items
     self.kind = .extracted
@@ -3341,51 +3107,10 @@ public enum ExtractedTextKind: String, Codable, Sendable, CaseIterable {
   case extracted = "extracted"
 }
 
-public enum ExtractedTextMethod: String, Codable, Sendable, CaseIterable {
-  case textPassthrough = "text-passthrough"
-  case pdfTextLayer = "pdf-text-layer"
-  case table = "table"
-  case form = "form"
-  case ocr = "ocr"
-}
-
-public struct ExtractedTextOcrConfidence: Codable, Sendable {
-  public var lowConfidenceWords: Int
-  public var mean: Double
-  public var totalWords: Int
-  public init(lowConfidenceWords: Int, mean: Double, totalWords: Int) {
-    self.lowConfidenceWords = lowConfidenceWords
-    self.mean = mean
-    self.totalWords = totalWords
-  }
-  public init(from decoder: any Decoder) throws {
-    let c = try decoder.container(keyedBy: WireKey.self)
-    self.lowConfidenceWords = try c.value("lowConfidenceWords")
-    self.mean = try c.value("mean")
-    self.totalWords = try c.value("totalWords")
-  }
-  public func encode(to encoder: any Encoder) throws {
-    var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.lowConfidenceWords, as: "lowConfidenceWords")
-    try c.encode(self.mean, as: "mean")
-    try c.encode(self.totalWords, as: "totalWords")
-  }
-}
-
-public enum ExtractedTextPdfClass: String, Codable, Sendable, CaseIterable {
-  case a = "A"
-  case b = "B"
-  case c = "C"
-  case d = "D"
-  case e = "E"
-  case f = "F"
-  case g = "G"
-}
-
 public struct ExtractionDeclined: Codable, Sendable {
-  public var declined: ExtractionDeclinedDeclined
+  public var declined: ExtractionDeclinedReason
   public let kind: ExtractionDeclinedKind
-  public init(declined: ExtractionDeclinedDeclined) {
+  public init(declined: ExtractionDeclinedReason) {
     self.declined = declined
     self.kind = .declined
   }
@@ -3401,15 +3126,23 @@ public struct ExtractionDeclined: Codable, Sendable {
   }
 }
 
-public enum ExtractionDeclinedDeclined: String, Codable, Sendable, CaseIterable {
+public enum ExtractionDeclinedKind: String, Codable, Sendable, CaseIterable {
+  case declined = "declined"
+}
+
+public enum ExtractionDeclinedReason: String, Codable, Sendable, CaseIterable {
   case noTextLayer = "no-text-layer"
   case encrypted = "encrypted"
   case corrupt = "corrupt"
   case tooLarge = "too-large"
 }
 
-public enum ExtractionDeclinedKind: String, Codable, Sendable, CaseIterable {
-  case declined = "declined"
+public enum ExtractionMethod: String, Codable, Sendable, CaseIterable {
+  case textPassthrough = "text-passthrough"
+  case pdfTextLayer = "pdf-text-layer"
+  case table = "table"
+  case form = "form"
+  case ocr = "ocr"
 }
 
 public indirect enum ExtractionOutcome: Codable, Sendable {
@@ -3570,7 +3303,7 @@ public struct FrameAddTagSchemaCommand: Codable, Sendable {
 }
 
 public struct GatewayConfig: Codable, Sendable {
-  public var archivist: GatewayConfigArchivist
+  public var archivist: ServiceAddress
   public var capacity: GatewayConfigCapacity
   public var identity: GatewayConfigIdentity
   public var kb: KbIdentity
@@ -3580,9 +3313,9 @@ public struct GatewayConfig: Codable, Sendable {
   public var publicUrl: String
   public var signal: GatewayConfigSignal
   public init(
-    archivist: GatewayConfigArchivist, capacity: GatewayConfigCapacity,
-    identity: GatewayConfigIdentity, kb: KbIdentity, logFormat: LogFormat, logLevel: LogLevel,
-    port: Int, publicUrl: String, signal: GatewayConfigSignal
+    archivist: ServiceAddress, capacity: GatewayConfigCapacity, identity: GatewayConfigIdentity,
+    kb: KbIdentity, logFormat: LogFormat, logLevel: LogLevel, port: Int, publicUrl: String,
+    signal: GatewayConfigSignal
   ) {
     self.archivist = archivist
     self.capacity = capacity
@@ -3622,26 +3355,6 @@ public struct GatewayConfig: Codable, Sendable {
     try c.encode(self.port, as: "port")
     try c.encode(self.publicUrl, as: "publicUrl")
     try c.encode(self.signal, as: "signal")
-  }
-}
-
-public struct GatewayConfigArchivist: Codable, Sendable {
-  public var host: String
-  public var port: Int
-  public init(host: String, port: Int) {
-    self.host = host
-    self.port = port
-  }
-  public init(from decoder: any Decoder) throws {
-    let c = try decoder.container(keyedBy: WireKey.self)
-    try c.refuseUnknown(["host", "port"], in: "GatewayConfigArchivist")
-    self.host = try c.value("host")
-    self.port = try c.value("port")
-  }
-  public func encode(to encoder: any Encoder) throws {
-    var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.host, as: "host")
-    try c.encode(self.port, as: "port")
   }
 }
 
@@ -6856,13 +6569,13 @@ public indirect enum KnowledgeGraphNodesItem: Codable, Sendable {
 }
 
 public struct LibrarianConfig: Codable, Sendable {
-  public var archivist: LibrarianConfigArchivist
+  public var archivist: ServiceAddress
   public var embedding: EmbeddingConfig
   public var gatewayUrl: String
   public var gather: LibrarianConfigGather
   public var gatherer: LibrarianEngineConfig
   public var graph: GraphConfig
-  public var identity: LibrarianConfigIdentity
+  public var identity: ServiceIdentity
   public var kb: KbIdentity
   public var logFormat: LogFormat
   public var logLevel: LogLevel
@@ -6872,9 +6585,9 @@ public struct LibrarianConfig: Codable, Sendable {
   public var search: LibrarianConfigSearch
   public var vectors: VectorsConfig
   public init(
-    archivist: LibrarianConfigArchivist, embedding: EmbeddingConfig, gatewayUrl: String,
+    archivist: ServiceAddress, embedding: EmbeddingConfig, gatewayUrl: String,
     gather: LibrarianConfigGather, gatherer: LibrarianEngineConfig, graph: GraphConfig,
-    identity: LibrarianConfigIdentity, kb: KbIdentity, logFormat: LogFormat, logLevel: LogLevel,
+    identity: ServiceIdentity, kb: KbIdentity, logFormat: LogFormat, logLevel: LogLevel,
     matcher: LibrarianEngineConfig, modelCatalogue: String, port: Int,
     search: LibrarianConfigSearch, vectors: VectorsConfig
   ) {
@@ -6937,26 +6650,6 @@ public struct LibrarianConfig: Codable, Sendable {
   }
 }
 
-public struct LibrarianConfigArchivist: Codable, Sendable {
-  public var host: String
-  public var port: Int
-  public init(host: String, port: Int) {
-    self.host = host
-    self.port = port
-  }
-  public init(from decoder: any Decoder) throws {
-    let c = try decoder.container(keyedBy: WireKey.self)
-    try c.refuseUnknown(["host", "port"], in: "LibrarianConfigArchivist")
-    self.host = try c.value("host")
-    self.port = try c.value("port")
-  }
-  public func encode(to encoder: any Encoder) throws {
-    var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.host, as: "host")
-    try c.encode(self.port, as: "port")
-  }
-}
-
 public struct LibrarianConfigGather: Codable, Sendable {
   public var settleTimeoutMs: Int
   public init(settleTimeoutMs: Int) {
@@ -6970,22 +6663,6 @@ public struct LibrarianConfigGather: Codable, Sendable {
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
     try c.encode(self.settleTimeoutMs, as: "settleTimeoutMs")
-  }
-}
-
-public struct LibrarianConfigIdentity: Codable, Sendable {
-  public var issuer: String
-  public init(issuer: String) {
-    self.issuer = issuer
-  }
-  public init(from decoder: any Decoder) throws {
-    let c = try decoder.container(keyedBy: WireKey.self)
-    try c.refuseUnknown(["issuer"], in: "LibrarianConfigIdentity")
-    self.issuer = try c.value("issuer")
-  }
-  public func encode(to encoder: any Encoder) throws {
-    var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.issuer, as: "issuer")
   }
 }
 
@@ -7722,11 +7399,11 @@ public struct MarkUnarchiveCommand: Codable, Sendable {
 public struct MarkUpdateBodyCommand: Codable, Sendable {
   public var _userId: UserId?
   public var annotationId: AnnotationId
-  public var operations: [MarkUpdateBodyCommandOperationsItem]
+  public var operations: [BodyOperation]
   public var resourceId: ResourceId
   public init(
-    _userId: UserId? = nil, annotationId: AnnotationId,
-    operations: [MarkUpdateBodyCommandOperationsItem], resourceId: ResourceId
+    _userId: UserId? = nil, annotationId: AnnotationId, operations: [BodyOperation],
+    resourceId: ResourceId
   ) {
     self._userId = _userId
     self.annotationId = annotationId
@@ -7746,37 +7423,6 @@ public struct MarkUpdateBodyCommand: Codable, Sendable {
     try c.encode(self.annotationId, as: "annotationId")
     try c.encode(self.operations, as: "operations")
     try c.encode(self.resourceId, as: "resourceId")
-  }
-}
-
-public indirect enum MarkUpdateBodyCommandOperationsItem: Codable, Sendable {
-  case bodyOperationAdd(BodyOperationAdd)
-  case bodyOperationRemove(BodyOperationRemove)
-  case bodyOperationReplace(BodyOperationReplace)
-  public init(from decoder: any Decoder) throws {
-    if let value = try? BodyOperationAdd(from: decoder) {
-      self = .bodyOperationAdd(value)
-      return
-    }
-    if let value = try? BodyOperationRemove(from: decoder) {
-      self = .bodyOperationRemove(value)
-      return
-    }
-    if let value = try? BodyOperationReplace(from: decoder) {
-      self = .bodyOperationReplace(value)
-      return
-    }
-    throw DecodingError.dataCorrupted(
-      .init(
-        codingPath: decoder.codingPath,
-        debugDescription: "no member of MarkUpdateBodyCommandOperationsItem fits"))
-  }
-  public func encode(to encoder: any Encoder) throws {
-    switch self {
-    case .bodyOperationAdd(let value): try value.encode(to: encoder)
-    case .bodyOperationRemove(let value): try value.encode(to: encoder)
-    case .bodyOperationReplace(let value): try value.encode(to: encoder)
-    }
   }
 }
 
@@ -8158,6 +7804,29 @@ public struct NewKnowledgeBase: Codable, Sendable {
   }
 }
 
+public struct OcrConfidence: Codable, Sendable {
+  public var lowConfidenceWords: Int
+  public var mean: Double
+  public var totalWords: Int
+  public init(lowConfidenceWords: Int, mean: Double, totalWords: Int) {
+    self.lowConfidenceWords = lowConfidenceWords
+    self.mean = mean
+    self.totalWords = totalWords
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.lowConfidenceWords = try c.value("lowConfidenceWords")
+    self.mean = try c.value("mean")
+    self.totalWords = try c.value("totalWords")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.lowConfidenceWords, as: "lowConfidenceWords")
+    try c.encode(self.mean, as: "mean")
+    try c.encode(self.totalWords, as: "totalWords")
+  }
+}
+
 public struct OllamaEmbeddingConfig: Codable, Sendable {
   public var baseUrl: String
   public var model: String
@@ -8184,6 +7853,85 @@ public struct OllamaEmbeddingConfig: Codable, Sendable {
 
 public enum OllamaEmbeddingConfigType: String, Codable, Sendable, CaseIterable {
   case ollama = "ollama"
+}
+
+public indirect enum OneOrMoreAgents: Codable, Sendable {
+  case agent(Agent)
+  case list([Agent])
+  public init(from decoder: any Decoder) throws {
+    if let value = try? Agent(from: decoder) {
+      self = .agent(value)
+      return
+    }
+    if let value = try? [Agent](from: decoder) {
+      self = .list(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(codingPath: decoder.codingPath, debugDescription: "no member of OneOrMoreAgents fits"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .agent(let value): try value.encode(to: encoder)
+    case .list(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public indirect enum OneOrMoreStrings: Codable, Sendable {
+  case text(String)
+  case list([String])
+  public init(from decoder: any Decoder) throws {
+    if let value = try? String(from: decoder) {
+      self = .text(value)
+      return
+    }
+    if let value = try? [String](from: decoder) {
+      self = .list(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(codingPath: decoder.codingPath, debugDescription: "no member of OneOrMoreStrings fits"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .text(let value): try value.encode(to: encoder)
+    case .list(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public indirect enum OneOrMoreUris: Codable, Sendable {
+  case text(String)
+  case list([String])
+  public init(from decoder: any Decoder) throws {
+    if let value = try? String(from: decoder) {
+      self = .text(value)
+      return
+    }
+    if let value = try? [String](from: decoder) {
+      self = .list(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(codingPath: decoder.codingPath, debugDescription: "no member of OneOrMoreUris fits"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .text(let value): try value.encode(to: encoder)
+    case .list(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public enum PdfClass: String, Codable, Sendable, CaseIterable {
+  case a = "A"
+  case b = "B"
+  case c = "C"
+  case d = "D"
+  case e = "E"
+  case f = "F"
+  case g = "G"
 }
 
 public struct PdfTextItem: Codable, Sendable {
@@ -8414,10 +8162,10 @@ public typealias ReplyEventId = String
 
 public struct Representation: Codable, Sendable {
   public var id: String?
-  public var type: RepresentationType?
+  public var type: OneOrMoreStrings?
   public var byteSize: Int?
   public var checksum: String?
-  public var conformsTo: RepresentationConformsTo?
+  public var conformsTo: OneOrMoreUris?
   public var created: String?
   public var duration: Double?
   public var encoding: String?
@@ -8432,12 +8180,12 @@ public struct Representation: Codable, Sendable {
   public var width: Int?
   public var rest: [String: JSONValue]
   public init(
-    id: String? = nil, type: RepresentationType? = nil, byteSize: Int? = nil,
-    checksum: String? = nil, conformsTo: RepresentationConformsTo? = nil, created: String? = nil,
-    duration: Double? = nil, encoding: String? = nil, filename: String? = nil, height: Int? = nil,
-    language: String? = nil, mediaType: String, modified: String? = nil,
-    rel: RepresentationRel? = nil, storageUri: String? = nil, tags: [String]? = nil,
-    width: Int? = nil, rest: [String: JSONValue] = [:]
+    id: String? = nil, type: OneOrMoreStrings? = nil, byteSize: Int? = nil, checksum: String? = nil,
+    conformsTo: OneOrMoreUris? = nil, created: String? = nil, duration: Double? = nil,
+    encoding: String? = nil, filename: String? = nil, height: Int? = nil, language: String? = nil,
+    mediaType: String, modified: String? = nil, rel: RepresentationRel? = nil,
+    storageUri: String? = nil, tags: [String]? = nil, width: Int? = nil,
+    rest: [String: JSONValue] = [:]
   ) {
     self.id = id
     self.type = type
@@ -8527,31 +8275,6 @@ public struct RepresentationAddedPayload: Codable, Sendable {
   }
 }
 
-public indirect enum RepresentationConformsTo: Codable, Sendable {
-  case text(String)
-  case list([String])
-  public init(from decoder: any Decoder) throws {
-    if let value = try? String(from: decoder) {
-      self = .text(value)
-      return
-    }
-    if let value = try? [String](from: decoder) {
-      self = .list(value)
-      return
-    }
-    throw DecodingError.dataCorrupted(
-      .init(
-        codingPath: decoder.codingPath,
-        debugDescription: "no member of RepresentationConformsTo fits"))
-  }
-  public func encode(to encoder: any Encoder) throws {
-    switch self {
-    case .text(let value): try value.encode(to: encoder)
-    case .list(let value): try value.encode(to: encoder)
-    }
-  }
-}
-
 public struct RepresentationNotFound: Codable, Sendable {
   public var code: RepresentationNotFoundCode
   public var details: JSONValue?
@@ -8610,30 +8333,6 @@ public struct RepresentationRemovedPayload: Codable, Sendable {
   }
 }
 
-public indirect enum RepresentationType: Codable, Sendable {
-  case text(String)
-  case list([String])
-  public init(from decoder: any Decoder) throws {
-    if let value = try? String(from: decoder) {
-      self = .text(value)
-      return
-    }
-    if let value = try? [String](from: decoder) {
-      self = .list(value)
-      return
-    }
-    throw DecodingError.dataCorrupted(
-      .init(
-        codingPath: decoder.codingPath, debugDescription: "no member of RepresentationType fits"))
-  }
-  public func encode(to encoder: any Encoder) throws {
-    switch self {
-    case .text(let value): try value.encode(to: encoder)
-    case .list(let value): try value.encode(to: encoder)
-    }
-  }
-}
-
 public struct ResourceAnnotations: Codable, Sendable {
   public var annotations: [Annotation]
   public var resourceId: ResourceId
@@ -8688,12 +8387,11 @@ public struct ResourceClonedPayload: Codable, Sendable {
   public var name: String
   public var parentResourceId: ResourceId
   public var storageUri: String?
-  public var wasAttributedTo: ResourceClonedPayloadWasAttributedTo?
+  public var wasAttributedTo: OneOrMoreAgents?
   public init(
     contentByteSize: Int? = nil, contentChecksum: String, creator: Agent? = nil,
     entityTypes: [String]? = nil, format: ContentFormat, language: String? = nil, name: String,
-    parentResourceId: ResourceId, storageUri: String? = nil,
-    wasAttributedTo: ResourceClonedPayloadWasAttributedTo? = nil
+    parentResourceId: ResourceId, storageUri: String? = nil, wasAttributedTo: OneOrMoreAgents? = nil
   ) {
     self.contentByteSize = contentByteSize
     self.contentChecksum = contentChecksum
@@ -8734,31 +8432,6 @@ public struct ResourceClonedPayload: Codable, Sendable {
   }
 }
 
-public indirect enum ResourceClonedPayloadWasAttributedTo: Codable, Sendable {
-  case agent(Agent)
-  case list([Agent])
-  public init(from decoder: any Decoder) throws {
-    if let value = try? Agent(from: decoder) {
-      self = .agent(value)
-      return
-    }
-    if let value = try? [Agent](from: decoder) {
-      self = .list(value)
-      return
-    }
-    throw DecodingError.dataCorrupted(
-      .init(
-        codingPath: decoder.codingPath,
-        debugDescription: "no member of ResourceClonedPayloadWasAttributedTo fits"))
-  }
-  public func encode(to encoder: any Encoder) throws {
-    switch self {
-    case .agent(let value): try value.encode(to: encoder)
-    case .list(let value): try value.encode(to: encoder)
-    }
-  }
-}
-
 public struct ResourceCreatedPayload: Codable, Sendable {
   public var contentByteSize: Int?
   public var contentChecksum: String
@@ -8767,20 +8440,20 @@ public struct ResourceCreatedPayload: Codable, Sendable {
   public var format: ContentFormat
   public var generatedFrom: ResourceCreatedPayloadGeneratedFrom?
   public var generationPrompt: String?
-  public var generator: ResourceCreatedPayloadGenerator?
+  public var generator: OneOrMoreAgents?
   public var isDraft: Bool?
   public var jobId: JobId?
   public var language: String?
   public var name: String
   public var storageUri: String?
-  public var wasAttributedTo: ResourceCreatedPayloadWasAttributedTo?
+  public var wasAttributedTo: OneOrMoreAgents?
   public init(
     contentByteSize: Int? = nil, contentChecksum: String, creator: Agent? = nil,
     entityTypes: [String]? = nil, format: ContentFormat,
     generatedFrom: ResourceCreatedPayloadGeneratedFrom? = nil, generationPrompt: String? = nil,
-    generator: ResourceCreatedPayloadGenerator? = nil, isDraft: Bool? = nil, jobId: JobId? = nil,
+    generator: OneOrMoreAgents? = nil, isDraft: Bool? = nil, jobId: JobId? = nil,
     language: String? = nil, name: String, storageUri: String? = nil,
-    wasAttributedTo: ResourceCreatedPayloadWasAttributedTo? = nil
+    wasAttributedTo: OneOrMoreAgents? = nil
   ) {
     self.contentByteSize = contentByteSize
     self.contentChecksum = contentChecksum
@@ -8852,69 +8525,19 @@ public struct ResourceCreatedPayloadGeneratedFrom: Codable, Sendable {
   }
 }
 
-public indirect enum ResourceCreatedPayloadGenerator: Codable, Sendable {
-  case agent(Agent)
-  case list([Agent])
-  public init(from decoder: any Decoder) throws {
-    if let value = try? Agent(from: decoder) {
-      self = .agent(value)
-      return
-    }
-    if let value = try? [Agent](from: decoder) {
-      self = .list(value)
-      return
-    }
-    throw DecodingError.dataCorrupted(
-      .init(
-        codingPath: decoder.codingPath,
-        debugDescription: "no member of ResourceCreatedPayloadGenerator fits"))
-  }
-  public func encode(to encoder: any Encoder) throws {
-    switch self {
-    case .agent(let value): try value.encode(to: encoder)
-    case .list(let value): try value.encode(to: encoder)
-    }
-  }
-}
-
-public indirect enum ResourceCreatedPayloadWasAttributedTo: Codable, Sendable {
-  case agent(Agent)
-  case list([Agent])
-  public init(from decoder: any Decoder) throws {
-    if let value = try? Agent(from: decoder) {
-      self = .agent(value)
-      return
-    }
-    if let value = try? [Agent](from: decoder) {
-      self = .list(value)
-      return
-    }
-    throw DecodingError.dataCorrupted(
-      .init(
-        codingPath: decoder.codingPath,
-        debugDescription: "no member of ResourceCreatedPayloadWasAttributedTo fits"))
-  }
-  public func encode(to encoder: any Encoder) throws {
-    switch self {
-    case .agent(let value): try value.encode(to: encoder)
-    case .list(let value): try value.encode(to: encoder)
-    }
-  }
-}
-
 public struct ResourceDescriptor: Codable, Sendable {
   public var context: ResourceDescriptorContext
   public var id: ResourceId
-  public var type: ResourceDescriptorType?
-  public var about: ResourceDescriptorAbout?
+  public var type: OneOrMoreStrings?
+  public var about: OneOrMoreStrings?
   public var archived: Bool?
   public var availableFormats: [String]?
-  public var conformsTo: ResourceDescriptorConformsTo?
+  public var conformsTo: OneOrMoreUris?
   public var dateCreated: String?
   public var dateModified: String?
   public var description: String?
   public var entityTypes: [String]?
-  public var generator: ResourceDescriptorGenerator?
+  public var generator: OneOrMoreAgents?
   public var hasPart: [String]?
   public var identifier: ResourceDescriptorIdentifier?
   public var isDraft: Bool?
@@ -8927,20 +8550,19 @@ public struct ResourceDescriptor: Codable, Sendable {
   public var sourceAnnotationId: AnnotationId?
   public var sourceResourceId: ResourceId?
   public var version: String?
-  public var wasAttributedTo: ResourceDescriptorWasAttributedTo?
+  public var wasAttributedTo: OneOrMoreAgents?
   public var wasDerivedFrom: ResourceDescriptorWasDerivedFrom?
   public var rest: [String: JSONValue]
   public init(
-    context: ResourceDescriptorContext, id: ResourceId, type: ResourceDescriptorType? = nil,
-    about: ResourceDescriptorAbout? = nil, archived: Bool? = nil, availableFormats: [String]? = nil,
-    conformsTo: ResourceDescriptorConformsTo? = nil, dateCreated: String? = nil,
-    dateModified: String? = nil, description: String? = nil, entityTypes: [String]? = nil,
-    generator: ResourceDescriptorGenerator? = nil, hasPart: [String]? = nil,
-    identifier: ResourceDescriptorIdentifier? = nil, isDraft: Bool? = nil,
+    context: ResourceDescriptorContext, id: ResourceId, type: OneOrMoreStrings? = nil,
+    about: OneOrMoreStrings? = nil, archived: Bool? = nil, availableFormats: [String]? = nil,
+    conformsTo: OneOrMoreUris? = nil, dateCreated: String? = nil, dateModified: String? = nil,
+    description: String? = nil, entityTypes: [String]? = nil, generator: OneOrMoreAgents? = nil,
+    hasPart: [String]? = nil, identifier: ResourceDescriptorIdentifier? = nil, isDraft: Bool? = nil,
     isPartOf: [String]? = nil, license: String? = nil, name: String, originatedFrom: String? = nil,
     representations: ResourceDescriptorRepresentations, sameAs: [String]? = nil,
     sourceAnnotationId: AnnotationId? = nil, sourceResourceId: ResourceId? = nil,
-    version: String? = nil, wasAttributedTo: ResourceDescriptorWasAttributedTo? = nil,
+    version: String? = nil, wasAttributedTo: OneOrMoreAgents? = nil,
     wasDerivedFrom: ResourceDescriptorWasDerivedFrom? = nil, rest: [String: JSONValue] = [:]
   ) {
     self.context = context
@@ -9047,56 +8669,6 @@ public struct ResourceDescriptor: Codable, Sendable {
   }
 }
 
-public indirect enum ResourceDescriptorAbout: Codable, Sendable {
-  case text(String)
-  case list([String])
-  public init(from decoder: any Decoder) throws {
-    if let value = try? String(from: decoder) {
-      self = .text(value)
-      return
-    }
-    if let value = try? [String](from: decoder) {
-      self = .list(value)
-      return
-    }
-    throw DecodingError.dataCorrupted(
-      .init(
-        codingPath: decoder.codingPath,
-        debugDescription: "no member of ResourceDescriptorAbout fits"))
-  }
-  public func encode(to encoder: any Encoder) throws {
-    switch self {
-    case .text(let value): try value.encode(to: encoder)
-    case .list(let value): try value.encode(to: encoder)
-    }
-  }
-}
-
-public indirect enum ResourceDescriptorConformsTo: Codable, Sendable {
-  case text(String)
-  case list([String])
-  public init(from decoder: any Decoder) throws {
-    if let value = try? String(from: decoder) {
-      self = .text(value)
-      return
-    }
-    if let value = try? [String](from: decoder) {
-      self = .list(value)
-      return
-    }
-    throw DecodingError.dataCorrupted(
-      .init(
-        codingPath: decoder.codingPath,
-        debugDescription: "no member of ResourceDescriptorConformsTo fits"))
-  }
-  public func encode(to encoder: any Encoder) throws {
-    switch self {
-    case .text(let value): try value.encode(to: encoder)
-    case .list(let value): try value.encode(to: encoder)
-    }
-  }
-}
-
 public indirect enum ResourceDescriptorContext: Codable, Sendable {
   case text(String)
   case empty([String: JSONValue])
@@ -9149,31 +8721,6 @@ public indirect enum ResourceDescriptorContextListItem: Codable, Sendable {
     switch self {
     case .text(let value): try value.encode(to: encoder)
     case .empty(let value): try value.encode(to: encoder)
-    }
-  }
-}
-
-public indirect enum ResourceDescriptorGenerator: Codable, Sendable {
-  case agent(Agent)
-  case list([Agent])
-  public init(from decoder: any Decoder) throws {
-    if let value = try? Agent(from: decoder) {
-      self = .agent(value)
-      return
-    }
-    if let value = try? [Agent](from: decoder) {
-      self = .list(value)
-      return
-    }
-    throw DecodingError.dataCorrupted(
-      .init(
-        codingPath: decoder.codingPath,
-        debugDescription: "no member of ResourceDescriptorGenerator fits"))
-  }
-  public func encode(to encoder: any Encoder) throws {
-    switch self {
-    case .agent(let value): try value.encode(to: encoder)
-    case .list(let value): try value.encode(to: encoder)
     }
   }
 }
@@ -9259,56 +8806,6 @@ public indirect enum ResourceDescriptorRepresentations: Codable, Sendable {
   public func encode(to encoder: any Encoder) throws {
     switch self {
     case .representation(let value): try value.encode(to: encoder)
-    case .list(let value): try value.encode(to: encoder)
-    }
-  }
-}
-
-public indirect enum ResourceDescriptorType: Codable, Sendable {
-  case text(String)
-  case list([String])
-  public init(from decoder: any Decoder) throws {
-    if let value = try? String(from: decoder) {
-      self = .text(value)
-      return
-    }
-    if let value = try? [String](from: decoder) {
-      self = .list(value)
-      return
-    }
-    throw DecodingError.dataCorrupted(
-      .init(
-        codingPath: decoder.codingPath, debugDescription: "no member of ResourceDescriptorType fits"
-      ))
-  }
-  public func encode(to encoder: any Encoder) throws {
-    switch self {
-    case .text(let value): try value.encode(to: encoder)
-    case .list(let value): try value.encode(to: encoder)
-    }
-  }
-}
-
-public indirect enum ResourceDescriptorWasAttributedTo: Codable, Sendable {
-  case agent(Agent)
-  case list([Agent])
-  public init(from decoder: any Decoder) throws {
-    if let value = try? Agent(from: decoder) {
-      self = .agent(value)
-      return
-    }
-    if let value = try? [Agent](from: decoder) {
-      self = .list(value)
-      return
-    }
-    throw DecodingError.dataCorrupted(
-      .init(
-        codingPath: decoder.codingPath,
-        debugDescription: "no member of ResourceDescriptorWasAttributedTo fits"))
-  }
-  public func encode(to encoder: any Encoder) throws {
-    switch self {
-    case .agent(let value): try value.encode(to: encoder)
     case .list(let value): try value.encode(to: encoder)
     }
   }
@@ -9542,16 +9039,16 @@ public struct ResourceView: Codable, Sendable {
 public struct ScoredResource: Codable, Sendable {
   public var context: ScoredResourceContext
   public var id: ResourceId
-  public var type: ScoredResourceType?
-  public var about: ScoredResourceAbout?
+  public var type: OneOrMoreStrings?
+  public var about: OneOrMoreStrings?
   public var archived: Bool?
   public var availableFormats: [String]?
-  public var conformsTo: ScoredResourceConformsTo?
+  public var conformsTo: OneOrMoreUris?
   public var dateCreated: String?
   public var dateModified: String?
   public var description: String?
   public var entityTypes: [String]?
-  public var generator: ScoredResourceGenerator?
+  public var generator: OneOrMoreAgents?
   public var hasPart: [String]?
   public var identifier: ScoredResourceIdentifier?
   public var isDraft: Bool?
@@ -9566,20 +9063,19 @@ public struct ScoredResource: Codable, Sendable {
   public var sourceAnnotationId: AnnotationId?
   public var sourceResourceId: ResourceId?
   public var version: String?
-  public var wasAttributedTo: ScoredResourceWasAttributedTo?
+  public var wasAttributedTo: OneOrMoreAgents?
   public var wasDerivedFrom: ScoredResourceWasDerivedFrom?
   public init(
-    context: ScoredResourceContext, id: ResourceId, type: ScoredResourceType? = nil,
-    about: ScoredResourceAbout? = nil, archived: Bool? = nil, availableFormats: [String]? = nil,
-    conformsTo: ScoredResourceConformsTo? = nil, dateCreated: String? = nil,
-    dateModified: String? = nil, description: String? = nil, entityTypes: [String]? = nil,
-    generator: ScoredResourceGenerator? = nil, hasPart: [String]? = nil,
-    identifier: ScoredResourceIdentifier? = nil, isDraft: Bool? = nil, isPartOf: [String]? = nil,
-    license: String? = nil, matchReason: String? = nil, name: String, originatedFrom: String? = nil,
-    representations: ScoredResourceRepresentations, sameAs: [String]? = nil, score: Double? = nil,
-    sourceAnnotationId: AnnotationId? = nil, sourceResourceId: ResourceId? = nil,
-    version: String? = nil, wasAttributedTo: ScoredResourceWasAttributedTo? = nil,
-    wasDerivedFrom: ScoredResourceWasDerivedFrom? = nil
+    context: ScoredResourceContext, id: ResourceId, type: OneOrMoreStrings? = nil,
+    about: OneOrMoreStrings? = nil, archived: Bool? = nil, availableFormats: [String]? = nil,
+    conformsTo: OneOrMoreUris? = nil, dateCreated: String? = nil, dateModified: String? = nil,
+    description: String? = nil, entityTypes: [String]? = nil, generator: OneOrMoreAgents? = nil,
+    hasPart: [String]? = nil, identifier: ScoredResourceIdentifier? = nil, isDraft: Bool? = nil,
+    isPartOf: [String]? = nil, license: String? = nil, matchReason: String? = nil, name: String,
+    originatedFrom: String? = nil, representations: ScoredResourceRepresentations,
+    sameAs: [String]? = nil, score: Double? = nil, sourceAnnotationId: AnnotationId? = nil,
+    sourceResourceId: ResourceId? = nil, version: String? = nil,
+    wasAttributedTo: OneOrMoreAgents? = nil, wasDerivedFrom: ScoredResourceWasDerivedFrom? = nil
   ) {
     self.context = context
     self.id = id
@@ -9674,55 +9170,6 @@ public struct ScoredResource: Codable, Sendable {
   }
 }
 
-public indirect enum ScoredResourceAbout: Codable, Sendable {
-  case text(String)
-  case list([String])
-  public init(from decoder: any Decoder) throws {
-    if let value = try? String(from: decoder) {
-      self = .text(value)
-      return
-    }
-    if let value = try? [String](from: decoder) {
-      self = .list(value)
-      return
-    }
-    throw DecodingError.dataCorrupted(
-      .init(
-        codingPath: decoder.codingPath, debugDescription: "no member of ScoredResourceAbout fits"))
-  }
-  public func encode(to encoder: any Encoder) throws {
-    switch self {
-    case .text(let value): try value.encode(to: encoder)
-    case .list(let value): try value.encode(to: encoder)
-    }
-  }
-}
-
-public indirect enum ScoredResourceConformsTo: Codable, Sendable {
-  case text(String)
-  case list([String])
-  public init(from decoder: any Decoder) throws {
-    if let value = try? String(from: decoder) {
-      self = .text(value)
-      return
-    }
-    if let value = try? [String](from: decoder) {
-      self = .list(value)
-      return
-    }
-    throw DecodingError.dataCorrupted(
-      .init(
-        codingPath: decoder.codingPath,
-        debugDescription: "no member of ScoredResourceConformsTo fits"))
-  }
-  public func encode(to encoder: any Encoder) throws {
-    switch self {
-    case .text(let value): try value.encode(to: encoder)
-    case .list(let value): try value.encode(to: encoder)
-    }
-  }
-}
-
 public indirect enum ScoredResourceContext: Codable, Sendable {
   case text(String)
   case empty([String: JSONValue])
@@ -9775,31 +9222,6 @@ public indirect enum ScoredResourceContextListItem: Codable, Sendable {
     switch self {
     case .text(let value): try value.encode(to: encoder)
     case .empty(let value): try value.encode(to: encoder)
-    }
-  }
-}
-
-public indirect enum ScoredResourceGenerator: Codable, Sendable {
-  case agent(Agent)
-  case list([Agent])
-  public init(from decoder: any Decoder) throws {
-    if let value = try? Agent(from: decoder) {
-      self = .agent(value)
-      return
-    }
-    if let value = try? [Agent](from: decoder) {
-      self = .list(value)
-      return
-    }
-    throw DecodingError.dataCorrupted(
-      .init(
-        codingPath: decoder.codingPath,
-        debugDescription: "no member of ScoredResourceGenerator fits"))
-  }
-  public func encode(to encoder: any Encoder) throws {
-    switch self {
-    case .agent(let value): try value.encode(to: encoder)
-    case .list(let value): try value.encode(to: encoder)
     }
   }
 }
@@ -9885,55 +9307,6 @@ public indirect enum ScoredResourceRepresentations: Codable, Sendable {
   public func encode(to encoder: any Encoder) throws {
     switch self {
     case .representation(let value): try value.encode(to: encoder)
-    case .list(let value): try value.encode(to: encoder)
-    }
-  }
-}
-
-public indirect enum ScoredResourceType: Codable, Sendable {
-  case text(String)
-  case list([String])
-  public init(from decoder: any Decoder) throws {
-    if let value = try? String(from: decoder) {
-      self = .text(value)
-      return
-    }
-    if let value = try? [String](from: decoder) {
-      self = .list(value)
-      return
-    }
-    throw DecodingError.dataCorrupted(
-      .init(
-        codingPath: decoder.codingPath, debugDescription: "no member of ScoredResourceType fits"))
-  }
-  public func encode(to encoder: any Encoder) throws {
-    switch self {
-    case .text(let value): try value.encode(to: encoder)
-    case .list(let value): try value.encode(to: encoder)
-    }
-  }
-}
-
-public indirect enum ScoredResourceWasAttributedTo: Codable, Sendable {
-  case agent(Agent)
-  case list([Agent])
-  public init(from decoder: any Decoder) throws {
-    if let value = try? Agent(from: decoder) {
-      self = .agent(value)
-      return
-    }
-    if let value = try? [Agent](from: decoder) {
-      self = .list(value)
-      return
-    }
-    throw DecodingError.dataCorrupted(
-      .init(
-        codingPath: decoder.codingPath,
-        debugDescription: "no member of ScoredResourceWasAttributedTo fits"))
-  }
-  public func encode(to encoder: any Encoder) throws {
-    switch self {
-    case .agent(let value): try value.encode(to: encoder)
     case .list(let value): try value.encode(to: encoder)
     }
   }
@@ -10032,6 +9405,42 @@ public struct SemanticMatch: Codable, Sendable {
     try c.encode(self.resourceName, as: "resourceName")
     try c.encode(self.score, as: "score")
     try c.encode(self.text, as: "text")
+  }
+}
+
+public struct ServiceAddress: Codable, Sendable {
+  public var host: String
+  public var port: Int
+  public init(host: String, port: Int) {
+    self.host = host
+    self.port = port
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(["host", "port"], in: "ServiceAddress")
+    self.host = try c.value("host")
+    self.port = try c.value("port")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.host, as: "host")
+    try c.encode(self.port, as: "port")
+  }
+}
+
+public struct ServiceIdentity: Codable, Sendable {
+  public var issuer: String
+  public init(issuer: String) {
+    self.issuer = issuer
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(["issuer"], in: "ServiceIdentity")
+    self.issuer = try c.value("issuer")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.issuer, as: "issuer")
   }
 }
 
@@ -10235,12 +9644,12 @@ public enum SmeltSettledReason: String, Codable, Sendable, CaseIterable {
 }
 
 public struct SmelterConfig: Codable, Sendable {
-  public var archivist: SmelterConfigArchivist
+  public var archivist: ServiceAddress
   public var chunking: SmelterConfigChunking
   public var cursorsPath: CursorsPath
   public var embedding: EmbeddingConfig
   public var gatewayUrl: String
-  public var identity: SmelterConfigIdentity
+  public var identity: ServiceIdentity
   public var kb: KbIdentity
   public var logFormat: LogFormat
   public var logLevel: LogLevel
@@ -10248,8 +9657,8 @@ public struct SmelterConfig: Codable, Sendable {
   public var port: Int
   public var vectors: VectorsConfig
   public init(
-    archivist: SmelterConfigArchivist, chunking: SmelterConfigChunking, cursorsPath: CursorsPath,
-    embedding: EmbeddingConfig, gatewayUrl: String, identity: SmelterConfigIdentity, kb: KbIdentity,
+    archivist: ServiceAddress, chunking: SmelterConfigChunking, cursorsPath: CursorsPath,
+    embedding: EmbeddingConfig, gatewayUrl: String, identity: ServiceIdentity, kb: KbIdentity,
     logFormat: LogFormat, logLevel: LogLevel, pdfsAtOnce: Int, port: Int, vectors: VectorsConfig
   ) {
     self.archivist = archivist
@@ -10302,26 +9711,6 @@ public struct SmelterConfig: Codable, Sendable {
   }
 }
 
-public struct SmelterConfigArchivist: Codable, Sendable {
-  public var host: String
-  public var port: Int
-  public init(host: String, port: Int) {
-    self.host = host
-    self.port = port
-  }
-  public init(from decoder: any Decoder) throws {
-    let c = try decoder.container(keyedBy: WireKey.self)
-    try c.refuseUnknown(["host", "port"], in: "SmelterConfigArchivist")
-    self.host = try c.value("host")
-    self.port = try c.value("port")
-  }
-  public func encode(to encoder: any Encoder) throws {
-    var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.host, as: "host")
-    try c.encode(self.port, as: "port")
-  }
-}
-
 public struct SmelterConfigChunking: Codable, Sendable {
   public var chunkSize: Int
   public var overlap: Int
@@ -10339,22 +9728,6 @@ public struct SmelterConfigChunking: Codable, Sendable {
     var c = encoder.container(keyedBy: WireKey.self)
     try c.encode(self.chunkSize, as: "chunkSize")
     try c.encode(self.overlap, as: "overlap")
-  }
-}
-
-public struct SmelterConfigIdentity: Codable, Sendable {
-  public var issuer: String
-  public init(issuer: String) {
-    self.issuer = issuer
-  }
-  public init(from decoder: any Decoder) throws {
-    let c = try decoder.container(keyedBy: WireKey.self)
-    try c.refuseUnknown(["issuer"], in: "SmelterConfigIdentity")
-    self.issuer = try c.value("issuer")
-  }
-  public func encode(to encoder: any Encoder) throws {
-    var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.issuer, as: "issuer")
   }
 }
 
@@ -11183,9 +10556,9 @@ public struct UnitCursor: Codable, Sendable {
 }
 
 public struct UpdateAnnotationBodyRequest: Codable, Sendable {
-  public var operations: [UpdateAnnotationBodyRequestOperationsItem]
+  public var operations: [BodyOperation]
   public var resourceId: ResourceId
-  public init(operations: [UpdateAnnotationBodyRequestOperationsItem], resourceId: ResourceId) {
+  public init(operations: [BodyOperation], resourceId: ResourceId) {
     self.operations = operations
     self.resourceId = resourceId
   }
@@ -11198,37 +10571,6 @@ public struct UpdateAnnotationBodyRequest: Codable, Sendable {
     var c = encoder.container(keyedBy: WireKey.self)
     try c.encode(self.operations, as: "operations")
     try c.encode(self.resourceId, as: "resourceId")
-  }
-}
-
-public indirect enum UpdateAnnotationBodyRequestOperationsItem: Codable, Sendable {
-  case bodyOperationAdd(BodyOperationAdd)
-  case bodyOperationRemove(BodyOperationRemove)
-  case bodyOperationReplace(BodyOperationReplace)
-  public init(from decoder: any Decoder) throws {
-    if let value = try? BodyOperationAdd(from: decoder) {
-      self = .bodyOperationAdd(value)
-      return
-    }
-    if let value = try? BodyOperationRemove(from: decoder) {
-      self = .bodyOperationRemove(value)
-      return
-    }
-    if let value = try? BodyOperationReplace(from: decoder) {
-      self = .bodyOperationReplace(value)
-      return
-    }
-    throw DecodingError.dataCorrupted(
-      .init(
-        codingPath: decoder.codingPath,
-        debugDescription: "no member of UpdateAnnotationBodyRequestOperationsItem fits"))
-  }
-  public func encode(to encoder: any Encoder) throws {
-    switch self {
-    case .bodyOperationAdd(let value): try value.encode(to: encoder)
-    case .bodyOperationRemove(let value): try value.encode(to: encoder)
-    case .bodyOperationReplace(let value): try value.encode(to: encoder)
-    }
   }
 }
 
@@ -11392,19 +10734,18 @@ public struct WeaveRebuildCommand: Codable, Sendable {
 }
 
 public struct WeaverConfig: Codable, Sendable {
-  public var archivist: WeaverConfigArchivist
+  public var archivist: ServiceAddress
   public var cursorsPath: CursorsPath
   public var gatewayUrl: String
   public var graph: GraphConfig
-  public var identity: WeaverConfigIdentity
+  public var identity: ServiceIdentity
   public var kb: KbIdentity
   public var logFormat: LogFormat
   public var logLevel: LogLevel
   public var port: Int
   public init(
-    archivist: WeaverConfigArchivist, cursorsPath: CursorsPath, gatewayUrl: String,
-    graph: GraphConfig, identity: WeaverConfigIdentity, kb: KbIdentity, logFormat: LogFormat,
-    logLevel: LogLevel, port: Int
+    archivist: ServiceAddress, cursorsPath: CursorsPath, gatewayUrl: String, graph: GraphConfig,
+    identity: ServiceIdentity, kb: KbIdentity, logFormat: LogFormat, logLevel: LogLevel, port: Int
   ) {
     self.archivist = archivist
     self.cursorsPath = cursorsPath
@@ -11444,42 +10785,6 @@ public struct WeaverConfig: Codable, Sendable {
     try c.encode(self.logFormat, as: "logFormat")
     try c.encode(self.logLevel, as: "logLevel")
     try c.encode(self.port, as: "port")
-  }
-}
-
-public struct WeaverConfigArchivist: Codable, Sendable {
-  public var host: String
-  public var port: Int
-  public init(host: String, port: Int) {
-    self.host = host
-    self.port = port
-  }
-  public init(from decoder: any Decoder) throws {
-    let c = try decoder.container(keyedBy: WireKey.self)
-    try c.refuseUnknown(["host", "port"], in: "WeaverConfigArchivist")
-    self.host = try c.value("host")
-    self.port = try c.value("port")
-  }
-  public func encode(to encoder: any Encoder) throws {
-    var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.host, as: "host")
-    try c.encode(self.port, as: "port")
-  }
-}
-
-public struct WeaverConfigIdentity: Codable, Sendable {
-  public var issuer: String
-  public init(issuer: String) {
-    self.issuer = issuer
-  }
-  public init(from decoder: any Decoder) throws {
-    let c = try decoder.container(keyedBy: WireKey.self)
-    try c.refuseUnknown(["issuer"], in: "WeaverConfigIdentity")
-    self.issuer = try c.value("issuer")
-  }
-  public func encode(to encoder: any Encoder) throws {
-    var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.issuer, as: "issuer")
   }
 }
 
@@ -11783,8 +11088,8 @@ public struct YieldCloneCreateCommand: Codable, Sendable {
 }
 
 public struct YieldCloneCreated: Codable, Sendable {
-  public var response: YieldCloneCreatedResponse
-  public init(response: YieldCloneCreatedResponse) {
+  public var response: YieldedResource
+  public init(response: YieldedResource) {
     self.response = response
   }
   public init(from decoder: any Decoder) throws {
@@ -11794,21 +11099,6 @@ public struct YieldCloneCreated: Codable, Sendable {
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
     try c.encode(self.response, as: "response")
-  }
-}
-
-public struct YieldCloneCreatedResponse: Codable, Sendable {
-  public var resourceId: ResourceId
-  public init(resourceId: ResourceId) {
-    self.resourceId = resourceId
-  }
-  public init(from decoder: any Decoder) throws {
-    let c = try decoder.container(keyedBy: WireKey.self)
-    self.resourceId = try c.value("resourceId")
-  }
-  public func encode(to encoder: any Encoder) throws {
-    var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.resourceId, as: "resourceId")
   }
 }
 
@@ -11864,8 +11154,8 @@ public struct YieldClonePersistCommand: Codable, Sendable {
 }
 
 public struct YieldClonePersistOk: Codable, Sendable {
-  public var response: YieldClonePersistOkResponse
-  public init(response: YieldClonePersistOkResponse) {
+  public var response: YieldedResource
+  public init(response: YieldedResource) {
     self.response = response
   }
   public init(from decoder: any Decoder) throws {
@@ -11875,21 +11165,6 @@ public struct YieldClonePersistOk: Codable, Sendable {
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
     try c.encode(self.response, as: "response")
-  }
-}
-
-public struct YieldClonePersistOkResponse: Codable, Sendable {
-  public var resourceId: ResourceId
-  public init(resourceId: ResourceId) {
-    self.resourceId = resourceId
-  }
-  public init(from decoder: any Decoder) throws {
-    let c = try decoder.container(keyedBy: WireKey.self)
-    self.resourceId = try c.value("resourceId")
-  }
-  public func encode(to encoder: any Encoder) throws {
-    var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.resourceId, as: "resourceId")
   }
 }
 
@@ -11932,7 +11207,7 @@ public struct YieldCreateCommand: Codable, Sendable {
   public var format: ContentFormat
   public var generatedFrom: YieldCreateCommandGeneratedFrom?
   public var generationPrompt: String?
-  public var generator: YieldCreateCommandGenerator?
+  public var generator: OneOrMoreAgents?
   public var isDraft: Bool?
   public var jobId: JobId?
   public var language: String?
@@ -11942,7 +11217,7 @@ public struct YieldCreateCommand: Codable, Sendable {
     _roles: [String]? = nil, _userId: UserId? = nil, byteSize: Int, contentChecksum: String,
     entityTypes: [String]? = nil, format: ContentFormat,
     generatedFrom: YieldCreateCommandGeneratedFrom? = nil, generationPrompt: String? = nil,
-    generator: YieldCreateCommandGenerator? = nil, isDraft: Bool? = nil, jobId: JobId? = nil,
+    generator: OneOrMoreAgents? = nil, isDraft: Bool? = nil, jobId: JobId? = nil,
     language: String? = nil, name: String, storageUri: String
   ) {
     self._roles = _roles
@@ -12015,34 +11290,9 @@ public struct YieldCreateCommandGeneratedFrom: Codable, Sendable {
   }
 }
 
-public indirect enum YieldCreateCommandGenerator: Codable, Sendable {
-  case agent(Agent)
-  case list([Agent])
-  public init(from decoder: any Decoder) throws {
-    if let value = try? Agent(from: decoder) {
-      self = .agent(value)
-      return
-    }
-    if let value = try? [Agent](from: decoder) {
-      self = .list(value)
-      return
-    }
-    throw DecodingError.dataCorrupted(
-      .init(
-        codingPath: decoder.codingPath,
-        debugDescription: "no member of YieldCreateCommandGenerator fits"))
-  }
-  public func encode(to encoder: any Encoder) throws {
-    switch self {
-    case .agent(let value): try value.encode(to: encoder)
-    case .list(let value): try value.encode(to: encoder)
-    }
-  }
-}
-
 public struct YieldCreateOk: Codable, Sendable {
-  public var response: YieldCreateOkResponse
-  public init(response: YieldCreateOkResponse) {
+  public var response: YieldedResource
+  public init(response: YieldedResource) {
     self.response = response
   }
   public init(from decoder: any Decoder) throws {
@@ -12052,21 +11302,6 @@ public struct YieldCreateOk: Codable, Sendable {
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
     try c.encode(self.response, as: "response")
-  }
-}
-
-public struct YieldCreateOkResponse: Codable, Sendable {
-  public var resourceId: ResourceId
-  public init(resourceId: ResourceId) {
-    self.resourceId = resourceId
-  }
-  public init(from decoder: any Decoder) throws {
-    let c = try decoder.container(keyedBy: WireKey.self)
-    self.resourceId = try c.value("resourceId")
-  }
-  public func encode(to encoder: any Encoder) throws {
-    var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.resourceId, as: "resourceId")
   }
 }
 
@@ -12290,8 +11525,8 @@ public struct YieldUpdateCommand: Codable, Sendable {
 }
 
 public struct YieldUpdateOk: Codable, Sendable {
-  public var response: YieldUpdateOkResponse
-  public init(response: YieldUpdateOkResponse) {
+  public var response: YieldedResource
+  public init(response: YieldedResource) {
     self.response = response
   }
   public init(from decoder: any Decoder) throws {
@@ -12304,7 +11539,7 @@ public struct YieldUpdateOk: Codable, Sendable {
   }
 }
 
-public struct YieldUpdateOkResponse: Codable, Sendable {
+public struct YieldedResource: Codable, Sendable {
   public var resourceId: ResourceId
   public init(resourceId: ResourceId) {
     self.resourceId = resourceId
@@ -14133,11 +13368,8 @@ internal let requiredSchemas: [String: Shape] = {
   shapes["AnchoredTextDeclinedEntry"] = Shape(
     kinds: [.object], required: ["v", "stamp", "declined"],
     members: [
-      "declined": Shape(
-        kinds: [.string],
-        enumeration: [
-          .string("no-text-layer"), .string("encrypted"), .string("corrupt"), .string("too-large"),
-        ]), "stamp": Shape(kinds: [.string], minLength: 1),
+      "declined": Shape(ref: "ExtractionDeclinedReason"),
+      "stamp": Shape(kinds: [.string], minLength: 1),
       "v": Shape(kinds: [.integer], enumeration: [.number(3.0)]),
     ], closed: ["declined", "stamp", "v"])
   shapes["AnchoredTextEntries"] = Shape(
@@ -14164,25 +13396,9 @@ internal let requiredSchemas: [String: Shape] = {
               items: Shape(
                 kinds: [.array], minItems: 4, maxItems: 4, items: Shape(kinds: [.number]))),
             "y": Shape(kinds: [.number]),
-          ], closed: ["h", "p", "words", "y"])),
-      "method": Shape(
-        kinds: [.string],
-        enumeration: [
-          .string("text-passthrough"), .string("pdf-text-layer"), .string("table"), .string("form"),
-          .string("ocr"),
-        ]),
-      "ocrConfidence": Shape(
-        kinds: [.object], required: ["mean", "lowConfidenceWords", "totalWords"],
-        members: [
-          "lowConfidenceWords": Shape(kinds: [.integer]), "mean": Shape(kinds: [.number]),
-          "totalWords": Shape(kinds: [.integer]),
-        ]),
-      "pdfClass": Shape(
-        kinds: [.string],
-        enumeration: [
-          .string("A"), .string("B"), .string("C"), .string("D"), .string("E"), .string("F"),
-          .string("G"),
-        ]), "stamp": Shape(kinds: [.string], minLength: 1), "text": Shape(kinds: [.string]),
+          ], closed: ["h", "p", "words", "y"])), "method": Shape(ref: "ExtractionMethod"),
+      "ocrConfidence": Shape(ref: "OcrConfidence"), "pdfClass": Shape(ref: "PdfClass"),
+      "stamp": Shape(kinds: [.string], minLength: 1), "text": Shape(kinds: [.string]),
       "unreadPages": Shape(kinds: [.array], items: Shape(kinds: [.integer])),
       "v": Shape(kinds: [.integer], enumeration: [.number(3.0)]),
     ],
@@ -14213,22 +13429,14 @@ internal let requiredSchemas: [String: Shape] = {
       "@context": Shape(
         kinds: [.string], enumeration: [.string("http://www.w3.org/ns/anno.jsonld")]),
       "body": Shape(ref: "AnnotationBodies"), "created": Shape(kinds: [.string]),
-      "creator": Shape(ref: "Agent"),
-      "generator": Shape(
-        kinds: [.object, .array],
-        oneOf: [
-          Shape(ref: "Agent"), Shape(kinds: [.array], minItems: 1, items: Shape(ref: "Agent")),
-        ]), "id": Shape(ref: "AnnotationId"), "modified": Shape(kinds: [.string]),
+      "creator": Shape(ref: "Agent"), "generator": Shape(ref: "OneOrMoreAgents"),
+      "id": Shape(ref: "AnnotationId"), "modified": Shape(kinds: [.string]),
       "motivation": Shape(ref: "Motivation"),
       "target": Shape(
         kinds: [.object, .string],
         oneOf: [Shape(ref: "ResourceId"), Shape(ref: "AnnotationTarget")]),
       "type": Shape(kinds: [.string], enumeration: [.string("Annotation")]),
-      "wasAttributedTo": Shape(
-        kinds: [.object, .array],
-        oneOf: [
-          Shape(ref: "Agent"), Shape(kinds: [.array], minItems: 1, items: Shape(ref: "Agent")),
-        ]),
+      "wasAttributedTo": Shape(ref: "OneOrMoreAgents"),
     ])
   shapes["AnnotationAddedPayload"] = Shape(
     kinds: [.object], required: ["annotation"],
@@ -14247,14 +13455,7 @@ internal let requiredSchemas: [String: Shape] = {
     kinds: [.object], required: ["annotationId", "operations"],
     members: [
       "annotationId": Shape(ref: "AnnotationId"),
-      "operations": Shape(
-        kinds: [.array],
-        items: Shape(
-          kinds: [.object],
-          oneOf: [
-            Shape(ref: "BodyOperationAdd"), Shape(ref: "BodyOperationRemove"),
-            Shape(ref: "BodyOperationReplace"),
-          ])),
+      "operations": Shape(kinds: [.array], items: Shape(ref: "BodyOperation")),
     ])
   shapes["AnnotationId"] = Shape(
     kinds: [.string],
@@ -14281,10 +13482,8 @@ internal let requiredSchemas: [String: Shape] = {
       "anchoredTextDir": Shape(kinds: [.string], minLength: 1),
       "engines": Shape(ref: "ArchivistEngines"),
       "gatewayUrl": Shape(kinds: [.string], minLength: 1),
-      "identity": Shape(
-        kinds: [.object], required: ["issuer"],
-        members: ["issuer": Shape(kinds: [.string], minLength: 1)], closed: ["issuer"]),
-      "logFormat": Shape(ref: "LogFormat"), "logLevel": Shape(ref: "LogLevel"),
+      "identity": Shape(ref: "ServiceIdentity"), "logFormat": Shape(ref: "LogFormat"),
+      "logLevel": Shape(ref: "LogLevel"),
       "port": Shape(kinds: [.integer], minimum: 1.0, maximum: 65535.0),
       "root": Shape(kinds: [.string], minLength: 1), "skipRebuild": Shape(kinds: [.boolean]),
       "staging": Shape(
@@ -14394,27 +13593,28 @@ internal let requiredSchemas: [String: Shape] = {
       "operations": Shape(kinds: [.array], items: Shape(ref: "BindBodyOperation")),
       "resourceId": Shape(ref: "ResourceId"),
     ])
+  shapes["BodyOperation"] = Shape(
+    kinds: [.object],
+    oneOf: [
+      Shape(ref: "BodyOperationAdd"), Shape(ref: "BodyOperationRemove"),
+      Shape(ref: "BodyOperationReplace"),
+    ])
   shapes["BodyOperationAdd"] = Shape(
     kinds: [.object], required: ["op", "item"],
     members: [
-      "item": Shape(
-        kinds: [.object], oneOf: [Shape(ref: "TextualBody"), Shape(ref: "SpecificResource")]),
+      "item": Shape(ref: "AnnotationBody"),
       "op": Shape(kinds: [.string], enumeration: [.string("add")]),
     ])
   shapes["BodyOperationRemove"] = Shape(
     kinds: [.object], required: ["op", "item"],
     members: [
-      "item": Shape(
-        kinds: [.object], oneOf: [Shape(ref: "TextualBody"), Shape(ref: "SpecificResource")]),
+      "item": Shape(ref: "AnnotationBody"),
       "op": Shape(kinds: [.string], enumeration: [.string("remove")]),
     ])
   shapes["BodyOperationReplace"] = Shape(
     kinds: [.object], required: ["op", "oldItem", "newItem"],
     members: [
-      "newItem": Shape(
-        kinds: [.object], oneOf: [Shape(ref: "TextualBody"), Shape(ref: "SpecificResource")]),
-      "oldItem": Shape(
-        kinds: [.object], oneOf: [Shape(ref: "TextualBody"), Shape(ref: "SpecificResource")]),
+      "newItem": Shape(ref: "AnnotationBody"), "oldItem": Shape(ref: "AnnotationBody"),
       "op": Shape(kinds: [.string], enumeration: [.string("replace")]),
     ])
   shapes["BodyPurpose"] = Shape(
@@ -14709,11 +13909,8 @@ internal let requiredSchemas: [String: Shape] = {
     required: ["kb", "gatewayUrl", "identity", "queue", "port", "timing", "logLevel", "logFormat"],
     members: [
       "gatewayUrl": Shape(kinds: [.string], minLength: 1),
-      "identity": Shape(
-        kinds: [.object], required: ["issuer"],
-        members: ["issuer": Shape(kinds: [.string], minLength: 1)], closed: ["issuer"]),
-      "kb": Shape(ref: "KbIdentity"), "logFormat": Shape(ref: "LogFormat"),
-      "logLevel": Shape(ref: "LogLevel"),
+      "identity": Shape(ref: "ServiceIdentity"), "kb": Shape(ref: "KbIdentity"),
+      "logFormat": Shape(ref: "LogFormat"), "logLevel": Shape(ref: "LogLevel"),
       "port": Shape(kinds: [.integer], minimum: 1.0, maximum: 65535.0),
       "queue": Shape(
         kinds: [.object], required: ["servers"],
@@ -14816,34 +14013,27 @@ internal let requiredSchemas: [String: Shape] = {
         kinds: [.object], required: ["kind", "method"],
         members: [
           "kind": Shape(kinds: [.string], enumeration: [.string("extracted")]),
-          "method": Shape(
-            kinds: [.string],
-            enumeration: [
-              .string("text-passthrough"), .string("pdf-text-layer"), .string("table"),
-              .string("form"), .string("ocr"),
-            ]),
-          "ocrConfidence": Shape(
-            kinds: [.object], required: ["mean", "lowConfidenceWords", "totalWords"],
-            members: [
-              "lowConfidenceWords": Shape(kinds: [.integer]), "mean": Shape(kinds: [.number]),
-              "totalWords": Shape(kinds: [.integer]),
-            ]),
-          "pdfClass": Shape(
-            kinds: [.string],
-            enumeration: [
-              .string("A"), .string("B"), .string("C"), .string("D"), .string("E"), .string("F"),
-              .string("G"),
-            ]), "unreadPages": Shape(kinds: [.array], items: Shape(kinds: [.integer])),
+          "method": Shape(ref: "ExtractionMethod"), "ocrConfidence": Shape(ref: "OcrConfidence"),
+          "pdfClass": Shape(ref: "PdfClass"),
+          "unreadPages": Shape(kinds: [.array], items: Shape(kinds: [.integer])),
         ]),
     ])
   shapes["ExtractionDeclined"] = Shape(
     kinds: [.object], required: ["kind", "declined"],
     members: [
-      "declined": Shape(
-        kinds: [.string],
-        enumeration: [
-          .string("no-text-layer"), .string("encrypted"), .string("corrupt"), .string("too-large"),
-        ]), "kind": Shape(kinds: [.string], enumeration: [.string("declined")]),
+      "declined": Shape(ref: "ExtractionDeclinedReason"),
+      "kind": Shape(kinds: [.string], enumeration: [.string("declined")]),
+    ])
+  shapes["ExtractionDeclinedReason"] = Shape(
+    kinds: [.string],
+    enumeration: [
+      .string("no-text-layer"), .string("encrypted"), .string("corrupt"), .string("too-large"),
+    ])
+  shapes["ExtractionMethod"] = Shape(
+    kinds: [.string],
+    enumeration: [
+      .string("text-passthrough"), .string("pdf-text-layer"), .string("table"), .string("form"),
+      .string("ocr"),
     ])
   shapes["ExtractionOutcome"] = Shape(
     kinds: [.object], oneOf: [Shape(ref: "ExtractedText"), Shape(ref: "ExtractionDeclined")],
@@ -14885,12 +14075,7 @@ internal let requiredSchemas: [String: Shape] = {
       "capacity",
     ],
     members: [
-      "archivist": Shape(
-        kinds: [.object], required: ["host", "port"],
-        members: [
-          "host": Shape(kinds: [.string], minLength: 1),
-          "port": Shape(kinds: [.integer], minimum: 1.0, maximum: 65535.0),
-        ], closed: ["host", "port"]),
+      "archivist": Shape(ref: "ServiceAddress"),
       "capacity": Shape(
         kinds: [.object], required: ["queuedBytes", "connections"],
         members: [
@@ -15566,21 +14751,13 @@ internal let requiredSchemas: [String: Shape] = {
       "gatherer", "modelCatalogue", "gather", "search", "port", "logLevel", "logFormat",
     ],
     members: [
-      "archivist": Shape(
-        kinds: [.object], required: ["host", "port"],
-        members: [
-          "host": Shape(kinds: [.string], minLength: 1),
-          "port": Shape(kinds: [.integer], minimum: 1.0, maximum: 65535.0),
-        ], closed: ["host", "port"]), "embedding": Shape(ref: "EmbeddingConfig"),
+      "archivist": Shape(ref: "ServiceAddress"), "embedding": Shape(ref: "EmbeddingConfig"),
       "gatewayUrl": Shape(kinds: [.string], minLength: 1),
       "gather": Shape(
         kinds: [.object], required: ["settleTimeoutMs"],
         members: ["settleTimeoutMs": Shape(kinds: [.integer], minimum: 1.0)],
         closed: ["settleTimeoutMs"]), "gatherer": Shape(ref: "LibrarianEngineConfig"),
-      "graph": Shape(ref: "GraphConfig"),
-      "identity": Shape(
-        kinds: [.object], required: ["issuer"],
-        members: ["issuer": Shape(kinds: [.string], minLength: 1)], closed: ["issuer"]),
+      "graph": Shape(ref: "GraphConfig"), "identity": Shape(ref: "ServiceIdentity"),
       "kb": Shape(ref: "KbIdentity"), "logFormat": Shape(ref: "LogFormat"),
       "logLevel": Shape(ref: "LogLevel"), "matcher": Shape(ref: "LibrarianEngineConfig"),
       "modelCatalogue": Shape(kinds: [.string], minLength: 1),
@@ -15775,14 +14952,8 @@ internal let requiredSchemas: [String: Shape] = {
     kinds: [.object], required: ["annotationId", "resourceId", "operations"],
     members: [
       "_userId": Shape(ref: "UserId"), "annotationId": Shape(ref: "AnnotationId"),
-      "operations": Shape(
-        kinds: [.array],
-        items: Shape(
-          kinds: [.object],
-          oneOf: [
-            Shape(ref: "BodyOperationAdd"), Shape(ref: "BodyOperationRemove"),
-            Shape(ref: "BodyOperationReplace"),
-          ])), "resourceId": Shape(ref: "ResourceId"),
+      "operations": Shape(kinds: [.array], items: Shape(ref: "BodyOperation")),
+      "resourceId": Shape(ref: "ResourceId"),
     ])
   shapes["MarkUpdateEntityTypesCommand"] = Shape(
     kinds: [.object], required: ["resourceId", "currentEntityTypes", "updatedEntityTypes"],
@@ -15871,6 +15042,12 @@ internal let requiredSchemas: [String: Shape] = {
       "did": Shape(kinds: [.string]), "endpoint": Shape(ref: "KbEndpoint"),
       "label": Shape(kinds: [.string]), "lastRead": Shape(ref: "KbRead"),
     ])
+  shapes["OcrConfidence"] = Shape(
+    kinds: [.object], required: ["mean", "lowConfidenceWords", "totalWords"],
+    members: [
+      "lowConfidenceWords": Shape(kinds: [.integer]), "mean": Shape(kinds: [.number]),
+      "totalWords": Shape(kinds: [.integer]),
+    ])
   shapes["OllamaEmbeddingConfig"] = Shape(
     kinds: [.object], required: ["type", "model", "baseUrl"],
     members: [
@@ -15878,6 +15055,25 @@ internal let requiredSchemas: [String: Shape] = {
       "model": Shape(kinds: [.string], minLength: 1),
       "type": Shape(kinds: [.string], enumeration: [.string("ollama")]),
     ], closed: ["baseUrl", "model", "type"])
+  shapes["OneOrMoreAgents"] = Shape(
+    kinds: [.object, .array],
+    oneOf: [Shape(ref: "Agent"), Shape(kinds: [.array], minItems: 1, items: Shape(ref: "Agent"))])
+  shapes["OneOrMoreStrings"] = Shape(
+    kinds: [.array, .string],
+    oneOf: [
+      Shape(kinds: [.string]), Shape(kinds: [.array], minItems: 1, items: Shape(kinds: [.string])),
+    ])
+  shapes["OneOrMoreUris"] = Shape(
+    kinds: [.array, .string],
+    oneOf: [
+      Shape(kinds: [.string]), Shape(kinds: [.array], minItems: 1, items: Shape(kinds: [.string])),
+    ])
+  shapes["PdfClass"] = Shape(
+    kinds: [.string],
+    enumeration: [
+      .string("A"), .string("B"), .string("C"), .string("D"), .string("E"), .string("F"),
+      .string("G"),
+    ])
   shapes["PdfTextItem"] = Shape(
     kinds: [.object], required: ["start", "end", "page", "x", "y", "width", "height"],
     members: [
@@ -15932,20 +15128,13 @@ internal let requiredSchemas: [String: Shape] = {
   shapes["Representation"] = Shape(
     kinds: [.object], required: ["mediaType"],
     members: [
-      "@id": Shape(kinds: [.string]),
-      "@type": Shape(
-        kinds: [.array, .string],
-        oneOf: [
-          Shape(kinds: [.string]),
-          Shape(kinds: [.array], minItems: 1, items: Shape(kinds: [.string])),
-        ]), "byteSize": Shape(kinds: [.integer], minimum: 0.0), "checksum": Shape(kinds: [.string]),
-      "conformsTo": Shape(
-        kinds: [.array, .string],
-        oneOf: [Shape(kinds: [.string]), Shape(kinds: [.array], items: Shape(kinds: [.string]))]),
-      "created": Shape(kinds: [.string]), "duration": Shape(kinds: [.number], minimum: 0.0),
-      "encoding": Shape(kinds: [.string]), "filename": Shape(kinds: [.string]),
-      "height": Shape(kinds: [.integer], minimum: 0.0), "language": Shape(kinds: [.string]),
-      "mediaType": Shape(kinds: [.string]), "modified": Shape(kinds: [.string]),
+      "@id": Shape(kinds: [.string]), "@type": Shape(ref: "OneOrMoreStrings"),
+      "byteSize": Shape(kinds: [.integer], minimum: 0.0), "checksum": Shape(kinds: [.string]),
+      "conformsTo": Shape(ref: "OneOrMoreUris"), "created": Shape(kinds: [.string]),
+      "duration": Shape(kinds: [.number], minimum: 0.0), "encoding": Shape(kinds: [.string]),
+      "filename": Shape(kinds: [.string]), "height": Shape(kinds: [.integer], minimum: 0.0),
+      "language": Shape(kinds: [.string]), "mediaType": Shape(kinds: [.string]),
+      "modified": Shape(kinds: [.string]),
       "rel": Shape(
         kinds: [.string],
         enumeration: [
@@ -15988,10 +15177,7 @@ internal let requiredSchemas: [String: Shape] = {
       "entityTypes": Shape(kinds: [.array], items: Shape(kinds: [.string])),
       "format": Shape(ref: "ContentFormat"), "language": Shape(kinds: [.string]),
       "name": Shape(kinds: [.string]), "parentResourceId": Shape(ref: "ResourceId"),
-      "storageUri": Shape(kinds: [.string]),
-      "wasAttributedTo": Shape(
-        kinds: [.object, .array],
-        oneOf: [Shape(ref: "Agent"), Shape(kinds: [.array], items: Shape(ref: "Agent"))]),
+      "storageUri": Shape(kinds: [.string]), "wasAttributedTo": Shape(ref: "OneOrMoreAgents"),
     ])
   shapes["ResourceCreatedPayload"] = Shape(
     kinds: [.object], required: ["name", "format", "contentChecksum"],
@@ -16004,16 +15190,10 @@ internal let requiredSchemas: [String: Shape] = {
         kinds: [.object], required: ["resourceId"],
         members: [
           "annotationId": Shape(ref: "AnnotationId"), "resourceId": Shape(ref: "ResourceId"),
-        ]), "generationPrompt": Shape(kinds: [.string]),
-      "generator": Shape(
-        kinds: [.object, .array],
-        oneOf: [Shape(ref: "Agent"), Shape(kinds: [.array], items: Shape(ref: "Agent"))]),
+        ]), "generationPrompt": Shape(kinds: [.string]), "generator": Shape(ref: "OneOrMoreAgents"),
       "isDraft": Shape(kinds: [.boolean]), "jobId": Shape(ref: "JobId"),
       "language": Shape(kinds: [.string]), "name": Shape(kinds: [.string]),
-      "storageUri": Shape(kinds: [.string]),
-      "wasAttributedTo": Shape(
-        kinds: [.object, .array],
-        oneOf: [Shape(ref: "Agent"), Shape(kinds: [.array], items: Shape(ref: "Agent"))]),
+      "storageUri": Shape(kinds: [.string]), "wasAttributedTo": Shape(ref: "OneOrMoreAgents"),
     ])
   shapes["ResourceDescriptor"] = Shape(
     kinds: [.object], required: ["@context", "@id", "name", "representations"],
@@ -16026,29 +15206,13 @@ internal let requiredSchemas: [String: Shape] = {
             kinds: [.array],
             items: Shape(
               kinds: [.object, .string], oneOf: [Shape(kinds: [.string]), Shape(kinds: [.object])])),
-        ]), "@id": Shape(ref: "ResourceId"),
-      "@type": Shape(
-        kinds: [.array, .string],
-        oneOf: [
-          Shape(kinds: [.string]),
-          Shape(kinds: [.array], minItems: 1, items: Shape(kinds: [.string])),
-        ]),
-      "about": Shape(
-        kinds: [.array, .string],
-        oneOf: [
-          Shape(kinds: [.string]),
-          Shape(kinds: [.array], minItems: 1, items: Shape(kinds: [.string])),
-        ]), "archived": Shape(kinds: [.boolean]),
+        ]), "@id": Shape(ref: "ResourceId"), "@type": Shape(ref: "OneOrMoreStrings"),
+      "about": Shape(ref: "OneOrMoreStrings"), "archived": Shape(kinds: [.boolean]),
       "availableFormats": Shape(kinds: [.array], items: Shape(kinds: [.string])),
-      "conformsTo": Shape(
-        kinds: [.array, .string],
-        oneOf: [Shape(kinds: [.string]), Shape(kinds: [.array], items: Shape(kinds: [.string]))]),
-      "dateCreated": Shape(kinds: [.string]), "dateModified": Shape(kinds: [.string]),
-      "description": Shape(kinds: [.string]),
+      "conformsTo": Shape(ref: "OneOrMoreUris"), "dateCreated": Shape(kinds: [.string]),
+      "dateModified": Shape(kinds: [.string]), "description": Shape(kinds: [.string]),
       "entityTypes": Shape(kinds: [.array], items: Shape(kinds: [.string])),
-      "generator": Shape(
-        kinds: [.object, .array],
-        oneOf: [Shape(ref: "Agent"), Shape(kinds: [.array], items: Shape(ref: "Agent"))]),
+      "generator": Shape(ref: "OneOrMoreAgents"),
       "hasPart": Shape(kinds: [.array], items: Shape(kinds: [.string])),
       "identifier": Shape(
         kinds: [.object, .array, .string],
@@ -16072,9 +15236,7 @@ internal let requiredSchemas: [String: Shape] = {
         ]), "sameAs": Shape(kinds: [.array], items: Shape(kinds: [.string])),
       "sourceAnnotationId": Shape(ref: "AnnotationId"),
       "sourceResourceId": Shape(ref: "ResourceId"), "version": Shape(kinds: [.string]),
-      "wasAttributedTo": Shape(
-        kinds: [.object, .array],
-        oneOf: [Shape(ref: "Agent"), Shape(kinds: [.array], items: Shape(ref: "Agent"))]),
+      "wasAttributedTo": Shape(ref: "OneOrMoreAgents"),
       "wasDerivedFrom": Shape(
         kinds: [.array, .string],
         oneOf: [Shape(ref: "ResourceId"), Shape(kinds: [.array], items: Shape(ref: "ResourceId"))]),
@@ -16140,6 +15302,15 @@ internal let requiredSchemas: [String: Shape] = {
       "resourceName": Shape(kinds: [.string]), "score": Shape(kinds: [.number]),
       "text": Shape(kinds: [.string]),
     ])
+  shapes["ServiceAddress"] = Shape(
+    kinds: [.object], required: ["host", "port"],
+    members: [
+      "host": Shape(kinds: [.string], minLength: 1),
+      "port": Shape(kinds: [.integer], minimum: 1.0, maximum: 65535.0),
+    ], closed: ["host", "port"])
+  shapes["ServiceIdentity"] = Shape(
+    kinds: [.object], required: ["issuer"],
+    members: ["issuer": Shape(kinds: [.string], minLength: 1)], closed: ["issuer"])
   shapes["SessionJoinedEvent"] = Shape(
     kinds: [.object], required: ["participant", "connectionId"],
     members: ["connectionId": Shape(kinds: [.string]), "participant": Shape(ref: "UserId")])
@@ -16179,12 +15350,7 @@ internal let requiredSchemas: [String: Shape] = {
       "cursorsPath", "port", "logLevel", "logFormat",
     ],
     members: [
-      "archivist": Shape(
-        kinds: [.object], required: ["host", "port"],
-        members: [
-          "host": Shape(kinds: [.string], minLength: 1),
-          "port": Shape(kinds: [.integer], minimum: 1.0, maximum: 65535.0),
-        ], closed: ["host", "port"]),
+      "archivist": Shape(ref: "ServiceAddress"),
       "chunking": Shape(
         kinds: [.object], required: ["chunkSize", "overlap"],
         members: [
@@ -16193,11 +15359,9 @@ internal let requiredSchemas: [String: Shape] = {
         ], closed: ["chunkSize", "overlap"]), "cursorsPath": Shape(ref: "CursorsPath"),
       "embedding": Shape(ref: "EmbeddingConfig"),
       "gatewayUrl": Shape(kinds: [.string], minLength: 1),
-      "identity": Shape(
-        kinds: [.object], required: ["issuer"],
-        members: ["issuer": Shape(kinds: [.string], minLength: 1)], closed: ["issuer"]),
-      "kb": Shape(ref: "KbIdentity"), "logFormat": Shape(ref: "LogFormat"),
-      "logLevel": Shape(ref: "LogLevel"), "pdfsAtOnce": Shape(kinds: [.integer], minimum: 1.0),
+      "identity": Shape(ref: "ServiceIdentity"), "kb": Shape(ref: "KbIdentity"),
+      "logFormat": Shape(ref: "LogFormat"), "logLevel": Shape(ref: "LogLevel"),
+      "pdfsAtOnce": Shape(kinds: [.integer], minimum: 1.0),
       "port": Shape(kinds: [.integer], minimum: 1.0, maximum: 65535.0),
       "vectors": Shape(ref: "VectorsConfig"),
     ],
@@ -16330,14 +15494,8 @@ internal let requiredSchemas: [String: Shape] = {
   shapes["UpdateAnnotationBodyRequest"] = Shape(
     kinds: [.object], required: ["resourceId", "operations"],
     members: [
-      "operations": Shape(
-        kinds: [.array], minItems: 1,
-        items: Shape(
-          kinds: [.object],
-          oneOf: [
-            Shape(ref: "BodyOperationAdd"), Shape(ref: "BodyOperationRemove"),
-            Shape(ref: "BodyOperationReplace"),
-          ])), "resourceId": Shape(ref: "ResourceId"),
+      "operations": Shape(kinds: [.array], minItems: 1, items: Shape(ref: "BodyOperation")),
+      "resourceId": Shape(ref: "ResourceId"),
     ])
   shapes["UserId"] = Shape(
     kinds: [.string],
@@ -16382,18 +15540,10 @@ internal let requiredSchemas: [String: Shape] = {
       "logFormat",
     ],
     members: [
-      "archivist": Shape(
-        kinds: [.object], required: ["host", "port"],
-        members: [
-          "host": Shape(kinds: [.string], minLength: 1),
-          "port": Shape(kinds: [.integer], minimum: 1.0, maximum: 65535.0),
-        ], closed: ["host", "port"]), "cursorsPath": Shape(ref: "CursorsPath"),
+      "archivist": Shape(ref: "ServiceAddress"), "cursorsPath": Shape(ref: "CursorsPath"),
       "gatewayUrl": Shape(kinds: [.string], minLength: 1), "graph": Shape(ref: "GraphConfig"),
-      "identity": Shape(
-        kinds: [.object], required: ["issuer"],
-        members: ["issuer": Shape(kinds: [.string], minLength: 1)], closed: ["issuer"]),
-      "kb": Shape(ref: "KbIdentity"), "logFormat": Shape(ref: "LogFormat"),
-      "logLevel": Shape(ref: "LogLevel"),
+      "identity": Shape(ref: "ServiceIdentity"), "kb": Shape(ref: "KbIdentity"),
+      "logFormat": Shape(ref: "LogFormat"), "logLevel": Shape(ref: "LogLevel"),
       "port": Shape(kinds: [.integer], minimum: 1.0, maximum: 65535.0),
     ],
     closed: [
@@ -16480,12 +15630,7 @@ internal let requiredSchemas: [String: Shape] = {
       "storageUri": Shape(kinds: [.string]), "token": Shape(kinds: [.string]),
     ])
   shapes["YieldCloneCreated"] = Shape(
-    kinds: [.object], required: ["response"],
-    members: [
-      "response": Shape(
-        kinds: [.object], required: ["resourceId"],
-        members: ["resourceId": Shape(ref: "ResourceId")])
-    ])
+    kinds: [.object], required: ["response"], members: ["response": Shape(ref: "YieldedResource")])
   shapes["YieldClonePersistCommand"] = Shape(
     kinds: [.object],
     required: ["name", "storageUri", "contentChecksum", "byteSize", "format", "parentResourceId"],
@@ -16498,12 +15643,7 @@ internal let requiredSchemas: [String: Shape] = {
       "storageUri": Shape(kinds: [.string]),
     ])
   shapes["YieldClonePersistOk"] = Shape(
-    kinds: [.object], required: ["response"],
-    members: [
-      "response": Shape(
-        kinds: [.object], required: ["resourceId"],
-        members: ["resourceId": Shape(ref: "ResourceId")])
-    ])
+    kinds: [.object], required: ["response"], members: ["response": Shape(ref: "YieldedResource")])
   shapes["YieldCloneResourceRequest"] = Shape(
     kinds: [.object], required: ["token"], members: ["token": Shape(kinds: [.string])])
   shapes["YieldCloneTokenRequest"] = Shape(
@@ -16520,21 +15660,13 @@ internal let requiredSchemas: [String: Shape] = {
         kinds: [.object],
         members: [
           "annotationId": Shape(ref: "AnnotationId"), "resourceId": Shape(ref: "ResourceId"),
-        ]), "generationPrompt": Shape(kinds: [.string]),
-      "generator": Shape(
-        kinds: [.object, .array],
-        oneOf: [Shape(ref: "Agent"), Shape(kinds: [.array], items: Shape(ref: "Agent"))]),
+        ]), "generationPrompt": Shape(kinds: [.string]), "generator": Shape(ref: "OneOrMoreAgents"),
       "isDraft": Shape(kinds: [.boolean]), "jobId": Shape(ref: "JobId"),
       "language": Shape(kinds: [.string]), "name": Shape(kinds: [.string]),
       "storageUri": Shape(kinds: [.string]),
     ])
   shapes["YieldCreateOk"] = Shape(
-    kinds: [.object], required: ["response"],
-    members: [
-      "response": Shape(
-        kinds: [.object], required: ["resourceId"],
-        members: ["resourceId": Shape(ref: "ResourceId")])
-    ])
+    kinds: [.object], required: ["response"], members: ["response": Shape(ref: "YieldedResource")])
   shapes["YieldJobCompleteCommand"] = Shape(
     kinds: [.object], required: ["resourceId", "jobId", "jobType"],
     members: [
@@ -16580,12 +15712,9 @@ internal let requiredSchemas: [String: Shape] = {
       "storageUri": Shape(kinds: [.string]),
     ])
   shapes["YieldUpdateOk"] = Shape(
-    kinds: [.object], required: ["response"],
-    members: [
-      "response": Shape(
-        kinds: [.object], required: ["resourceId"],
-        members: ["resourceId": Shape(ref: "ResourceId")])
-    ])
+    kinds: [.object], required: ["response"], members: ["response": Shape(ref: "YieldedResource")])
+  shapes["YieldedResource"] = Shape(
+    kinds: [.object], required: ["resourceId"], members: ["resourceId": Shape(ref: "ResourceId")])
   return shapes
 }()
 internal let requiredPayloadShapes: [String: Shape] = {

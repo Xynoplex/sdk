@@ -4,31 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(BusPingMessageJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record BusPingMessage
 {
-    public required string Data { get; init; }
-    public string Event => "ping";
-}
-
-internal sealed class BusPingMessageJsonConverter : global::System.Text.Json.Serialization.JsonConverter<BusPingMessage>
-{
-    public override BusPingMessage Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("BusPingMessage", root);
-        return new BusPingMessage
-        {
-            Data = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "data", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, BusPingMessage value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("data", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Data, options));
-        fields.Add("event", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Event, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "BusPingMessage", fields);
-    }
+    [global::Xynolog.Serialization.Wire("data")] public required string Data { get; init; }
+    [global::Xynolog.Serialization.Wire("event")] public string Event => "ping";
 }

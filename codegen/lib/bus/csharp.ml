@@ -68,7 +68,15 @@ let member channel =
           (String.split_on_char ':' channel)))
 
 let property ~modifiers type_ name value =
-  C.Property { modifiers; type_; name; accessors = [ Get ]; value = Some value }
+  C.Property
+    {
+      attributes = [];
+      modifiers;
+      type_;
+      name;
+      accessors = [ Get ];
+      value = Some value;
+    }
 
 let readings_type =
   C.Generic

@@ -4,35 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(LogFormatJsonConverter))]
+[global::Xynolog.Serialization.WireEnum]
 public enum LogFormat
 {
-    Json,
-    Simple,
-}
-
-internal sealed class LogFormatJsonConverter : global::System.Text.Json.Serialization.JsonConverter<LogFormat>
-{
-    public override LogFormat Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("LogFormat", root);
-        return root.GetString() switch
-        {
-            "json" => LogFormat.Json,
-            "simple" => LogFormat.Simple,
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, LogFormat value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        writer.WriteStringValue(value switch
-        {
-            LogFormat.Json => "json",
-            LogFormat.Simple => "simple",
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        });
-    }
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("json")] Json,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("simple")] Simple,
 }

@@ -4,29 +4,8 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(GetReferencedByResponseReferencedByItemTargetSelectorJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record GetReferencedByResponseReferencedByItemTargetSelector
 {
-    public required string Exact { get; init; }
-}
-
-internal sealed class GetReferencedByResponseReferencedByItemTargetSelectorJsonConverter : global::System.Text.Json.Serialization.JsonConverter<GetReferencedByResponseReferencedByItemTargetSelector>
-{
-    public override GetReferencedByResponseReferencedByItemTargetSelector Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("GetReferencedByResponseReferencedByItemTargetSelector", root);
-        return new GetReferencedByResponseReferencedByItemTargetSelector
-        {
-            Exact = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "exact", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, GetReferencedByResponseReferencedByItemTargetSelector value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("exact", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Exact, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "GetReferencedByResponseReferencedByItemTargetSelector", fields);
-    }
+    [global::Xynolog.Serialization.Wire("exact")] public required string Exact { get; init; }
 }

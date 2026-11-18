@@ -4,35 +4,10 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(WorkerEngineHealthActiveJobJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record WorkerEngineHealthActiveJob
 {
-    public required global::Xynolog.Identifiers.JobId JobId { get; init; }
-    public required string Since { get; init; }
-    public required global::Xynolog.Types.JobType Type { get; init; }
-}
-
-internal sealed class WorkerEngineHealthActiveJobJsonConverter : global::System.Text.Json.Serialization.JsonConverter<WorkerEngineHealthActiveJob>
-{
-    public override WorkerEngineHealthActiveJob Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("WorkerEngineHealthActiveJob", root);
-        return new WorkerEngineHealthActiveJob
-        {
-            JobId = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.JobId>(root, "jobId", options),
-            Since = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "since", options),
-            Type = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.JobType>(root, "type", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, WorkerEngineHealthActiveJob value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("jobId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.JobId, options));
-        fields.Add("since", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Since, options));
-        fields.Add("type", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Type, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "WorkerEngineHealthActiveJob", fields);
-    }
+    [global::Xynolog.Serialization.Wire("jobId")] public required global::Xynolog.Identifiers.JobId JobId { get; init; }
+    [global::Xynolog.Serialization.Wire("since")] public required string Since { get; init; }
+    [global::Xynolog.Serialization.Wire("type")] public required global::Xynolog.Types.JobType Type { get; init; }
 }

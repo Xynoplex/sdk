@@ -4,53 +4,15 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(StoredEventResponseJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record StoredEventResponse
 {
-    public required string Id { get; init; }
-    public required global::Xynolog.Types.EventMetadata Metadata { get; init; }
-    public required global::System.Text.Json.JsonElement Payload { get; init; }
-    public global::Xynolog.Identifiers.ResourceId? ResourceId { get; init; }
-    public required string Timestamp { get; init; }
-    public required string Type { get; init; }
-    public required global::Xynolog.Identifiers.UserId UserId { get; init; }
-    public required long Version { get; init; }
-}
-
-internal sealed class StoredEventResponseJsonConverter : global::System.Text.Json.Serialization.JsonConverter<StoredEventResponse>
-{
-    public override StoredEventResponse Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("StoredEventResponse", root);
-        return new StoredEventResponse
-        {
-            Id = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "id", options),
-            Metadata = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.EventMetadata>(root, "metadata", options),
-            Payload = global::Xynolog.Serialization.WireJson.ReadMember<global::System.Text.Json.JsonElement>(root, "payload", options),
-            ResourceId = root.TryGetProperty("resourceId", out var p3) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Identifiers.ResourceId>(p3, options) : null,
-            Timestamp = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "timestamp", options),
-            Type = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "type", options),
-            UserId = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.UserId>(root, "userId", options),
-            Version = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "version", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, StoredEventResponse value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("id", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Id, options));
-        fields.Add("metadata", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Metadata, options));
-        fields.Add("payload", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Payload, options));
-        if (value.ResourceId is not null)
-        {
-            fields.Add("resourceId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ResourceId, options));
-        }
-        fields.Add("timestamp", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Timestamp, options));
-        fields.Add("type", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Type, options));
-        fields.Add("userId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.UserId, options));
-        fields.Add("version", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Version, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "StoredEventResponse", fields);
-    }
+    [global::Xynolog.Serialization.Wire("id")] public required string Id { get; init; }
+    [global::Xynolog.Serialization.Wire("metadata")] public required global::Xynolog.Types.EventMetadata Metadata { get; init; }
+    [global::Xynolog.Serialization.Wire("payload")] public required global::System.Text.Json.JsonElement Payload { get; init; }
+    [global::Xynolog.Serialization.Wire("resourceId")] public global::Xynolog.Identifiers.ResourceId? ResourceId { get; init; }
+    [global::Xynolog.Serialization.Wire("timestamp")] public required string Timestamp { get; init; }
+    [global::Xynolog.Serialization.Wire("type")] public required string Type { get; init; }
+    [global::Xynolog.Serialization.Wire("userId")] public required global::Xynolog.Identifiers.UserId UserId { get; init; }
+    [global::Xynolog.Serialization.Wire("version")] public required long Version { get; init; }
 }

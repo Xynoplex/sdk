@@ -4,74 +4,29 @@
 
 package xynolog.types
 
-import kotlinx.serialization.DeserializationStrategy
-import kotlinx.serialization.EncodeDefault
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationException
-import kotlinx.serialization.builtins.ListSerializer
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.descriptors.nullable
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonContentPolymorphicSerializer
-import kotlinx.serialization.json.JsonDecoder
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonEncoder
 import kotlinx.serialization.json.JsonIgnoreUnknownKeys
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.serializer
 import xynolog.identifiers.AnnotationId
-import xynolog.identifiers.JobId
 import xynolog.identifiers.ResourceId
-import xynolog.identifiers.UserId
 
 @Serializable
 @JsonIgnoreUnknownKeys
 public data class SemanticMatch(
-    /**
-     * The chunk text that matched
-     */
-    @SerialName("text")
+    /** The chunk text that matched */
     public val text: String,
-    /**
-     * Source resource ID
-     */
-    @SerialName("resourceId")
+    /** Source resource ID */
     @get:JvmExposeBoxed
     public val resourceId: ResourceId,
-    /**
-     * The source resource's display name, resolved from its view at gather time. Required: a match card must name its source, and corpus matches routinely come from outside the graph neighborhood, so there is no node to borrow a name from. A match whose source no longer resolves to a view is dropped by the producer rather than served nameless.
-     */
-    @SerialName("resourceName")
+    /** The source resource's display name, resolved from its view at gather time. Required: a match card must name its source, and corpus matches routinely come from outside the graph neighborhood, so there is no node to borrow a name from. A match whose source no longer resolves to a view is dropped by the producer rather than served nameless. */
     public val resourceName: String,
-    /**
-     * Source annotation ID, if the match is from an annotation
-     */
-    @SerialName("annotationId")
+    /** Source annotation ID, if the match is from an annotation */
     @get:JvmExposeBoxed
     public val annotationId: AnnotationId? = null,
-    /**
-     * Cosine similarity score (0-1)
-     */
-    @SerialName("score")
+    /** Cosine similarity score (0-1) */
     public val score: Double,
-    /**
-     * Entity types on the matched passage
-     */
-    @SerialName("entityTypes")
+    /** Entity types on the matched passage */
     public val entityTypes: kotlin.collections.List<String>? = null,
-    /**
-     * True when this passage's text was recognized from pixels (OCR of a scanned page) rather than read from the document. Absent means read directly — the common case — so the flag is only present where it changes how the text should be trusted. It travels with the passage because a consumer receives the chunk with no document attached and cannot recompute how the text was obtained.
-     */
-    @SerialName("machineRead")
+    /** True when this passage's text was recognized from pixels (OCR of a scanned page) rather than read from the document. Absent means read directly — the common case — so the flag is only present where it changes how the text should be trusted. It travels with the passage because a consumer receives the chunk with no document attached and cannot recompute how the text was obtained. */
     public val machineRead: Boolean? = null,
 ) {
     /** How Java makes a `SemanticMatch`: `builder` takes what it must state, a setter each thing it may, and `build` makes it. */
@@ -86,20 +41,10 @@ public data class SemanticMatch(
         private var machineRead: Boolean? = null
 
         @JvmExposeBoxed
-        public fun annotationId(annotationId: AnnotationId?): Builder {
-            this.annotationId = annotationId
-            return this
-        }
+        public fun annotationId(annotationId: AnnotationId?): Builder = apply { this.annotationId = annotationId }
 
-        public fun entityTypes(entityTypes: kotlin.collections.List<String>?): Builder {
-            this.entityTypes = entityTypes
-            return this
-        }
-
-        public fun machineRead(machineRead: Boolean?): Builder {
-            this.machineRead = machineRead
-            return this
-        }
+        public fun entityTypes(entityTypes: kotlin.collections.List<String>?): Builder = apply { this.entityTypes = entityTypes }
+        public fun machineRead(machineRead: Boolean?): Builder = apply { this.machineRead = machineRead }
 
         public fun build(): SemanticMatch = SemanticMatch(text = text, resourceId = resourceId, resourceName = resourceName, annotationId = annotationId, score = score, entityTypes = entityTypes, machineRead = machineRead)
     }

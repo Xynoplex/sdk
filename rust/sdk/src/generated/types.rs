@@ -309,11 +309,11 @@ pub struct Annotation {
     pub modified: Option<String>,
     /// Web Annotation generator — the Software peer that produced the annotation, when software did. Absent for a person's own annotation. An emitter may supply it to carry the model's parameters, but its identity must be the emitter's own: the knowledge base refuses a generator naming anyone else, and supplies it from the verified emitter when omitted. One producer per write — a write carrying the array form is refused.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub generator: Option<AnnotationGenerator>,
+    pub generator: Option<OneOrMoreAgents>,
     /// PROV-O wasAttributedTo — every party responsible for this annotation, DERIVED by the knowledge base from `creator` and the verified executor of the write: `[creator, generator]` when one agent requested the work and software produced it; collapsed to the one agent when requester and producer are the same. Never accepted from an emitter.
     #[serde(rename = "wasAttributedTo")]
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub was_attributed_to: Option<AnnotationWasAttributedTo>,
+    pub was_attributed_to: Option<OneOrMoreAgents>,
 }
 
 impl Annotation {
@@ -410,28 +410,10 @@ schema!(AnnotationBody);
 pub struct AnnotationBodyUpdatedPayload {
     #[serde(rename = "annotationId")]
     pub annotation_id: AnnotationId,
-    pub operations: Vec<AnnotationBodyUpdatedPayloadOperationsItem>,
+    pub operations: Vec<BodyOperation>,
 }
 
 schema!(AnnotationBodyUpdatedPayload);
-
-#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
-#[serde(untagged)]
-pub enum AnnotationBodyUpdatedPayloadOperationsItem {
-    Add(BodyOperationAdd),
-    Remove(BodyOperationRemove),
-    Replace(BodyOperationReplace),
-}
-
-member!(AnnotationBodyUpdatedPayloadOperationsItem::Add(
-    BodyOperationAdd,
-));
-member!(AnnotationBodyUpdatedPayloadOperationsItem::Remove(
-    BodyOperationRemove,
-));
-member!(AnnotationBodyUpdatedPayloadOperationsItem::Replace(
-    BodyOperationReplace,
-));
 
 /// W3C Web Annotation JSON-LD context
 #[derive(
@@ -450,16 +432,6 @@ impl AnnotationContext {
         }
     }
 }
-
-/// Web Annotation generator — the Software peer that produced the annotation, when software did. Absent for a person's own annotation. An emitter may supply it to carry the model's parameters, but its identity must be the emitter's own: the knowledge base refuses a generator naming anyone else, and supplies it from the verified emitter when omitted. One producer per write — a write carrying the array form is refused.
-#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
-#[serde(untagged)]
-pub enum AnnotationGenerator {
-    Agent(Agent),
-    List(Vec<Agent>),
-}
-
-member!(AnnotationGenerator::Agent(Agent));
 
 /// An annotation's id: a name, never the annotation's URI. 1 to 128 of the letters `A`–`Z` and `a`–`z`, the digits, `_` and `-`. It is one segment of a URL and one name in a file system, and it is held to that wherever it enters: a gateway refuses a payload that carries anything else. How one is made is no part of the rule.
 #[derive(
@@ -646,16 +618,6 @@ impl AnnotationType {
         }
     }
 }
-
-/// PROV-O wasAttributedTo — every party responsible for this annotation, DERIVED by the knowledge base from `creator` and the verified executor of the write: `[creator, generator]` when one agent requested the work and software produced it; collapsed to the one agent when requester and producer are the same. Never accepted from an emitter.
-#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
-#[serde(untagged)]
-pub enum AnnotationWasAttributedTo {
-    Agent(Agent),
-    List(Vec<Agent>),
-}
-
-member!(AnnotationWasAttributedTo::Agent(Agent));
 
 /// What an assessing job takes: passages of the resource are marked, each with an assessment the model writes.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -953,15 +915,29 @@ impl BindUpdateBodyCommand {
 
 schema!(BindUpdateBodyCommand);
 
+/// One change to an annotation's bodies: a body added, a body removed, or one body replaced by another.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum BodyOperation {
+    Add(BodyOperationAdd),
+    Remove(BodyOperationRemove),
+    Replace(BodyOperationReplace),
+}
+
+member!(BodyOperation::Add(BodyOperationAdd));
+member!(BodyOperation::Remove(BodyOperationRemove));
+member!(BodyOperation::Replace(BodyOperationReplace));
+schema!(BodyOperation);
+
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct BodyOperationAdd {
     pub op: BodyOperationAddOp,
-    pub item: BodyOperationAddItem,
+    pub item: AnnotationBody,
 }
 
 impl BodyOperationAdd {
     /// The `BodyOperationAdd` that states these and nothing else.
-    pub fn new(item: BodyOperationAddItem) -> Self {
+    pub fn new(item: AnnotationBody) -> Self {
         Self {
             op: BodyOperationAddOp::Add,
             item,
@@ -970,16 +946,6 @@ impl BodyOperationAdd {
 }
 
 schema!(BodyOperationAdd);
-
-#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
-#[serde(untagged)]
-pub enum BodyOperationAddItem {
-    TextualBody(TextualBody),
-    SpecificResource(SpecificResource),
-}
-
-member!(BodyOperationAddItem::TextualBody(TextualBody));
-member!(BodyOperationAddItem::SpecificResource(SpecificResource));
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -1001,12 +967,12 @@ impl BodyOperationAddOp {
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct BodyOperationRemove {
     pub op: BodyOperationRemoveOp,
-    pub item: BodyOperationRemoveItem,
+    pub item: AnnotationBody,
 }
 
 impl BodyOperationRemove {
     /// The `BodyOperationRemove` that states these and nothing else.
-    pub fn new(item: BodyOperationRemoveItem) -> Self {
+    pub fn new(item: AnnotationBody) -> Self {
         Self {
             op: BodyOperationRemoveOp::Remove,
             item,
@@ -1015,16 +981,6 @@ impl BodyOperationRemove {
 }
 
 schema!(BodyOperationRemove);
-
-#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
-#[serde(untagged)]
-pub enum BodyOperationRemoveItem {
-    TextualBody(TextualBody),
-    SpecificResource(SpecificResource),
-}
-
-member!(BodyOperationRemoveItem::TextualBody(TextualBody));
-member!(BodyOperationRemoveItem::SpecificResource(SpecificResource));
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -1047,17 +1003,14 @@ impl BodyOperationRemoveOp {
 pub struct BodyOperationReplace {
     pub op: BodyOperationReplaceOp,
     #[serde(rename = "oldItem")]
-    pub old_item: BodyOperationReplaceOldItem,
+    pub old_item: AnnotationBody,
     #[serde(rename = "newItem")]
-    pub new_item: BodyOperationReplaceNewItem,
+    pub new_item: AnnotationBody,
 }
 
 impl BodyOperationReplace {
     /// The `BodyOperationReplace` that states these and nothing else.
-    pub fn new(
-        old_item: BodyOperationReplaceOldItem,
-        new_item: BodyOperationReplaceNewItem,
-    ) -> Self {
+    pub fn new(old_item: AnnotationBody, new_item: AnnotationBody) -> Self {
         Self {
             op: BodyOperationReplaceOp::Replace,
             old_item,
@@ -1067,30 +1020,6 @@ impl BodyOperationReplace {
 }
 
 schema!(BodyOperationReplace);
-
-#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
-#[serde(untagged)]
-pub enum BodyOperationReplaceNewItem {
-    TextualBody(TextualBody),
-    SpecificResource(SpecificResource),
-}
-
-member!(BodyOperationReplaceNewItem::TextualBody(TextualBody));
-member!(BodyOperationReplaceNewItem::SpecificResource(
-    SpecificResource,
-));
-
-#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
-#[serde(untagged)]
-pub enum BodyOperationReplaceOldItem {
-    TextualBody(TextualBody),
-    SpecificResource(SpecificResource),
-}
-
-member!(BodyOperationReplaceOldItem::TextualBody(TextualBody));
-member!(BodyOperationReplaceOldItem::SpecificResource(
-    SpecificResource,
-));
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -2522,15 +2451,15 @@ pub struct ExtractedText {
     /// Discriminant — both ExtractionOutcome members carry `kind`, single-valued: the category here, the detail in `method`.
     pub kind: ExtractedTextKind,
     /// How the text was extracted.
-    pub method: ExtractedTextMethod,
+    pub method: ExtractionMethod,
     /// PDF classification, when the source was a PDF.
     #[serde(rename = "pdfClass")]
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub pdf_class: Option<ExtractedTextPdfClass>,
+    pub pdf_class: Option<PdfClass>,
     /// How well the engine read the pixels, when any of this text came from OCR.
     #[serde(rename = "ocrConfidence")]
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub ocr_confidence: Option<ExtractedTextOcrConfidence>,
+    pub ocr_confidence: Option<OcrConfidence>,
     /// 1-indexed pages this extraction could not read — present only for partially covered documents (class C).
     #[serde(rename = "unreadPages")]
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -2539,11 +2468,7 @@ pub struct ExtractedText {
 
 impl ExtractedText {
     /// The `ExtractedText` that states these and nothing else.
-    pub fn new(
-        text: impl Into<String>,
-        items: Vec<PdfTextItem>,
-        method: ExtractedTextMethod,
-    ) -> Self {
+    pub fn new(text: impl Into<String>, items: Vec<PdfTextItem>, method: ExtractionMethod) -> Self {
         Self {
             text: text.into(),
             items,
@@ -2576,96 +2501,18 @@ impl ExtractedTextKind {
     }
 }
 
-/// How the text was extracted.
-#[derive(
-    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
-)]
-pub enum ExtractedTextMethod {
-    #[serde(rename = "text-passthrough")]
-    TextPassthrough,
-    #[serde(rename = "pdf-text-layer")]
-    PdfTextLayer,
-    #[serde(rename = "table")]
-    Table,
-    #[serde(rename = "form")]
-    Form,
-    #[serde(rename = "ocr")]
-    Ocr,
-}
-
-impl ExtractedTextMethod {
-    /// The value as the wire spells it.
-    pub const fn as_str(&self) -> &'static str {
-        match self {
-            ExtractedTextMethod::TextPassthrough => "text-passthrough",
-            ExtractedTextMethod::PdfTextLayer => "pdf-text-layer",
-            ExtractedTextMethod::Table => "table",
-            ExtractedTextMethod::Form => "form",
-            ExtractedTextMethod::Ocr => "ocr",
-        }
-    }
-}
-
-/// How well the engine read the pixels, when any of this text came from OCR.
-#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
-pub struct ExtractedTextOcrConfidence {
-    /// Mean per-word confidence, 0-100.
-    pub mean: f64,
-    /// Words the engine was unsure of.
-    #[serde(rename = "lowConfidenceWords")]
-    pub low_confidence_words: i64,
-    #[serde(rename = "totalWords")]
-    pub total_words: i64,
-}
-
-/// PDF classification, when the source was a PDF.
-#[derive(
-    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
-)]
-pub enum ExtractedTextPdfClass {
-    #[serde(rename = "A")]
-    A,
-    #[serde(rename = "B")]
-    B,
-    #[serde(rename = "C")]
-    C,
-    #[serde(rename = "D")]
-    D,
-    #[serde(rename = "E")]
-    E,
-    #[serde(rename = "F")]
-    F,
-    #[serde(rename = "G")]
-    G,
-}
-
-impl ExtractedTextPdfClass {
-    /// The value as the wire spells it.
-    pub const fn as_str(&self) -> &'static str {
-        match self {
-            ExtractedTextPdfClass::A => "A",
-            ExtractedTextPdfClass::B => "B",
-            ExtractedTextPdfClass::C => "C",
-            ExtractedTextPdfClass::D => "D",
-            ExtractedTextPdfClass::E => "E",
-            ExtractedTextPdfClass::F => "F",
-            ExtractedTextPdfClass::G => "G",
-        }
-    }
-}
-
 /// A named decline: extraction ran and yielded nothing, by class. A first-class, cacheable outcome — 'we ran and there was nothing' costs a full recognition pass to discover.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct ExtractionDeclined {
     /// Discriminant — both ExtractionOutcome members carry `kind`, single-valued: the category here, the detail in `declined`.
     pub kind: ExtractionDeclinedKind,
     /// Why extraction yielded nothing, by class.
-    pub declined: ExtractionDeclinedDeclined,
+    pub declined: ExtractionDeclinedReason,
 }
 
 impl ExtractionDeclined {
     /// The `ExtractionDeclined` that states these and nothing else.
-    pub fn new(declined: ExtractionDeclinedDeclined) -> Self {
+    pub fn new(declined: ExtractionDeclinedReason) -> Self {
         Self {
             kind: ExtractionDeclinedKind::Declined,
             declined,
@@ -2674,33 +2521,6 @@ impl ExtractionDeclined {
 }
 
 schema!(ExtractionDeclined);
-
-/// Why extraction yielded nothing, by class.
-#[derive(
-    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
-)]
-pub enum ExtractionDeclinedDeclined {
-    #[serde(rename = "no-text-layer")]
-    NoTextLayer,
-    #[serde(rename = "encrypted")]
-    Encrypted,
-    #[serde(rename = "corrupt")]
-    Corrupt,
-    #[serde(rename = "too-large")]
-    TooLarge,
-}
-
-impl ExtractionDeclinedDeclined {
-    /// The value as the wire spells it.
-    pub const fn as_str(&self) -> &'static str {
-        match self {
-            ExtractionDeclinedDeclined::NoTextLayer => "no-text-layer",
-            ExtractionDeclinedDeclined::Encrypted => "encrypted",
-            ExtractionDeclinedDeclined::Corrupt => "corrupt",
-            ExtractionDeclinedDeclined::TooLarge => "too-large",
-        }
-    }
-}
 
 /// Discriminant — both ExtractionOutcome members carry `kind`, single-valued: the category here, the detail in `declined`.
 #[derive(
@@ -2719,6 +2539,67 @@ impl ExtractionDeclinedKind {
         }
     }
 }
+
+/// Why extraction yielded nothing, by class.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum ExtractionDeclinedReason {
+    #[serde(rename = "no-text-layer")]
+    NoTextLayer,
+    #[serde(rename = "encrypted")]
+    Encrypted,
+    #[serde(rename = "corrupt")]
+    Corrupt,
+    #[serde(rename = "too-large")]
+    TooLarge,
+}
+
+impl ExtractionDeclinedReason {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            ExtractionDeclinedReason::NoTextLayer => "no-text-layer",
+            ExtractionDeclinedReason::Encrypted => "encrypted",
+            ExtractionDeclinedReason::Corrupt => "corrupt",
+            ExtractionDeclinedReason::TooLarge => "too-large",
+        }
+    }
+}
+
+schema!(ExtractionDeclinedReason);
+
+/// How a text was extracted: a plain text taken as it is, a PDF's text layer read, a grid written as rows, a filled form's values read, or pixels read by OCR.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum ExtractionMethod {
+    #[serde(rename = "text-passthrough")]
+    TextPassthrough,
+    #[serde(rename = "pdf-text-layer")]
+    PdfTextLayer,
+    #[serde(rename = "table")]
+    Table,
+    #[serde(rename = "form")]
+    Form,
+    #[serde(rename = "ocr")]
+    Ocr,
+}
+
+impl ExtractionMethod {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            ExtractionMethod::TextPassthrough => "text-passthrough",
+            ExtractionMethod::PdfTextLayer => "pdf-text-layer",
+            ExtractionMethod::Table => "table",
+            ExtractionMethod::Form => "form",
+            ExtractionMethod::Ocr => "ocr",
+        }
+    }
+}
+
+schema!(ExtractionMethod);
 
 /// The class of a job's failure, stated by the worker, where the failure is still typed: at the gateway it is already text, and classing a failure by its text is what this exists to avoid. A job no worker concluded, because its worker stopped reporting, is classed by the dispatcher, as 'transient'. Each value is a claim. 'transient': nothing about the request was judged (the worker's own bound ran out, the provider said not now), so another attempt may succeed. 'deterministic': the same request cannot succeed on a second attempt. 'withheld': the model's provider had the request and withheld its answer, by a refusal or a content filter, and the same request is withheld again; nothing broke. A 'deterministic' or a 'withheld' failure is not retried, whatever retry budget is left. ABSENT means the failure was not classified, which is not the claim 'transient' makes; it is retried as a transient one is. Only a failure known to be deterministic or withheld is called so: calling a transient failure either one halves reliability, where the reverse costs one wasted attempt.
 #[derive(
@@ -6874,7 +6755,7 @@ pub struct MarkUpdateBodyCommand {
     pub annotation_id: AnnotationId,
     #[serde(rename = "resourceId")]
     pub resource_id: ResourceId,
-    pub operations: Vec<MarkUpdateBodyCommandOperationsItem>,
+    pub operations: Vec<BodyOperation>,
 }
 
 impl MarkUpdateBodyCommand {
@@ -6882,7 +6763,7 @@ impl MarkUpdateBodyCommand {
     pub fn new(
         annotation_id: AnnotationId,
         resource_id: ResourceId,
-        operations: Vec<MarkUpdateBodyCommandOperationsItem>,
+        operations: Vec<BodyOperation>,
     ) -> Self {
         Self {
             _user_id: None,
@@ -6894,22 +6775,6 @@ impl MarkUpdateBodyCommand {
 }
 
 schema!(MarkUpdateBodyCommand);
-
-#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
-#[serde(untagged)]
-pub enum MarkUpdateBodyCommandOperationsItem {
-    Add(BodyOperationAdd),
-    Remove(BodyOperationRemove),
-    Replace(BodyOperationReplace),
-}
-
-member!(MarkUpdateBodyCommandOperationsItem::Add(BodyOperationAdd));
-member!(MarkUpdateBodyCommandOperationsItem::Remove(
-    BodyOperationRemove,
-));
-member!(MarkUpdateBodyCommandOperationsItem::Replace(
-    BodyOperationReplace,
-));
 
 /// Bus command to replace the entity types on a resource.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -7207,6 +7072,89 @@ impl NewKnowledgeBase {
 
 schema!(NewKnowledgeBase);
 
+/// How well an OCR engine read the pixels.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct OcrConfidence {
+    /// Mean per-word confidence, 0-100.
+    pub mean: f64,
+    /// Words the engine was unsure of.
+    #[serde(rename = "lowConfidenceWords")]
+    pub low_confidence_words: i64,
+    #[serde(rename = "totalWords")]
+    pub total_words: i64,
+}
+
+schema!(OcrConfidence);
+
+/// One Agent, or a non-empty list of them: the parties PROV-O and the Web Annotation model let a resource or an annotation name in one place, as one agent or several.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum OneOrMoreAgents {
+    Agent(Agent),
+    List(Vec<Agent>),
+}
+
+member!(OneOrMoreAgents::Agent(Agent));
+schema!(OneOrMoreAgents);
+
+/// One string, or a non-empty list of them: a JSON-LD term that may take one value or several.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum OneOrMoreStrings {
+    Text(String),
+    List(Vec<String>),
+}
+
+schema!(OneOrMoreStrings);
+
+/// One URI, or a non-empty list of them: a JSON-LD term that may name one resource or several.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(untagged)]
+pub enum OneOrMoreUris {
+    Text(String),
+    List(Vec<String>),
+}
+
+schema!(OneOrMoreUris);
+
+/// The class a PDF is sorted into, which decides how its text is read. smelter/extraction-cases.json states what each class is.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum PdfClass {
+    #[serde(rename = "A")]
+    A,
+    #[serde(rename = "B")]
+    B,
+    #[serde(rename = "C")]
+    C,
+    #[serde(rename = "D")]
+    D,
+    #[serde(rename = "E")]
+    E,
+    #[serde(rename = "F")]
+    F,
+    #[serde(rename = "G")]
+    G,
+}
+
+impl PdfClass {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            PdfClass::A => "A",
+            PdfClass::B => "B",
+            PdfClass::C => "C",
+            PdfClass::D => "D",
+            PdfClass::E => "E",
+            PdfClass::F => "F",
+            PdfClass::G => "G",
+        }
+    }
+}
+
+schema!(PdfClass);
+
 /// One positioned text run. Coordinates are PDF points with the origin at the bottom-left of the page, Y increasing upward; the flip to canvas pixels happens in the browser.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct PdfTextItem {
@@ -7328,7 +7276,7 @@ pub struct Representation {
     /// Type(s), e.g., schema:MediaObject.
     #[serde(rename = "@type")]
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub r#type: Option<RepresentationType>,
+    pub r#type: Option<OneOrMoreStrings>,
     /// MIME/media type (e.g., text/markdown, image/png).
     #[serde(rename = "mediaType")]
     pub media_type: String,
@@ -7367,7 +7315,7 @@ pub struct Representation {
     /// Profile/shape the bytes conform to (e.g., a JSON profile or SVG profile).
     #[serde(rename = "conformsTo")]
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub conforms_to: Option<RepresentationConformsTo>,
+    pub conforms_to: Option<OneOrMoreUris>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub tags: Option<Vec<String>>,
     /// Semantics of this rendition relative to the resource (e.g., original, thumbnail, preview, derived).
@@ -7414,14 +7362,6 @@ pub struct RepresentationAddedPayload {
 
 schema!(RepresentationAddedPayload);
 
-/// Profile/shape the bytes conform to (e.g., a JSON profile or SVG profile).
-#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
-#[serde(untagged)]
-pub enum RepresentationConformsTo {
-    Text(String),
-    List(Vec<String>),
-}
-
 /// Semantics of this rendition relative to the resource (e.g., original, thumbnail, preview, derived).
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
@@ -7464,14 +7404,6 @@ pub struct RepresentationRemovedPayload {
 
 schema!(RepresentationRemovedPayload);
 
-/// Type(s), e.g., schema:MediaObject.
-#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
-#[serde(untagged)]
-pub enum RepresentationType {
-    Text(String),
-    List(Vec<String>),
-}
-
 /// Payload for mark:archived domain event
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct ResourceArchivedPayload {
@@ -7507,7 +7439,7 @@ pub struct ResourceClonedPayload {
     /// PROV-O wasAttributedTo, derived at write time: the cloner alone. The value the resource view carries.
     #[serde(rename = "wasAttributedTo")]
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub was_attributed_to: Option<ResourceClonedPayloadWasAttributedTo>,
+    pub was_attributed_to: Option<OneOrMoreAgents>,
 }
 
 impl ResourceClonedPayload {
@@ -7534,16 +7466,6 @@ impl ResourceClonedPayload {
 }
 
 schema!(ResourceClonedPayload);
-
-/// PROV-O wasAttributedTo, derived at write time: the cloner alone. The value the resource view carries.
-#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
-#[serde(untagged)]
-pub enum ResourceClonedPayloadWasAttributedTo {
-    Agent(Agent),
-    List(Vec<Agent>),
-}
-
-member!(ResourceClonedPayloadWasAttributedTo::Agent(Agent));
 
 /// Payload for yield:created domain event
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -7580,13 +7502,13 @@ pub struct ResourceCreatedPayload {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub generation_prompt: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub generator: Option<ResourceCreatedPayloadGenerator>,
+    pub generator: Option<OneOrMoreAgents>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub creator: Option<Agent>,
     /// PROV-O wasAttributedTo, derived at write time from `creator` and the executor: both parties when they differ, one when they are the same. The value the resource view carries; readers do not re-derive it.
     #[serde(rename = "wasAttributedTo")]
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub was_attributed_to: Option<ResourceCreatedPayloadWasAttributedTo>,
+    pub was_attributed_to: Option<OneOrMoreAgents>,
 }
 
 impl ResourceCreatedPayload {
@@ -7637,25 +7559,6 @@ impl ResourceCreatedPayloadGeneratedFrom {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
-#[serde(untagged)]
-pub enum ResourceCreatedPayloadGenerator {
-    Agent(Agent),
-    List(Vec<Agent>),
-}
-
-member!(ResourceCreatedPayloadGenerator::Agent(Agent));
-
-/// PROV-O wasAttributedTo, derived at write time from `creator` and the executor: both parties when they differ, one when they are the same. The value the resource view carries; readers do not re-derive it.
-#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
-#[serde(untagged)]
-pub enum ResourceCreatedPayloadWasAttributedTo {
-    Agent(Agent),
-    List(Vec<Agent>),
-}
-
-member!(ResourceCreatedPayloadWasAttributedTo::Agent(Agent));
-
 /// Metadata about a resource (1:1 with its URI). JSON-LD subject is @id. Link to concrete bytes via representations.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct ResourceDescriptor {
@@ -7668,7 +7571,7 @@ pub struct ResourceDescriptor {
     /// Type(s) of the resource (IRIs/CURIEs via @context).
     #[serde(rename = "@type")]
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub r#type: Option<ResourceDescriptorType>,
+    pub r#type: Option<OneOrMoreStrings>,
     pub name: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
@@ -7677,7 +7580,7 @@ pub struct ResourceDescriptor {
     pub identifier: Option<ResourceDescriptorIdentifier>,
     /// Topics (IRIs or strings).
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub about: Option<ResourceDescriptorAbout>,
+    pub about: Option<OneOrMoreStrings>,
     /// Equivalent/authoritative references.
     #[serde(rename = "sameAs")]
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -7705,14 +7608,14 @@ pub struct ResourceDescriptor {
     /// W3C PROV — every party responsible for this resource, derived by the knowledge base at creation from verified identities: `[requester, generator]` for a resource a job produced, collapsed to the one agent when the requester produced it. Never accepted from an emitter.
     #[serde(rename = "wasAttributedTo")]
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub was_attributed_to: Option<ResourceDescriptorWasAttributedTo>,
+    pub was_attributed_to: Option<OneOrMoreAgents>,
     /// Software peer that produced this resource (W3C Web Annotation model). Its identity is the verified emitter of the create; the parameters are the producer's to state.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub generator: Option<ResourceDescriptorGenerator>,
+    pub generator: Option<OneOrMoreAgents>,
     /// Profile/shape URI this resource description conforms to.
     #[serde(rename = "conformsTo")]
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub conforms_to: Option<ResourceDescriptorConformsTo>,
+    pub conforms_to: Option<OneOrMoreUris>,
     /// Convenience set summarizing media types across representations.
     #[serde(rename = "availableFormats")]
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -7789,22 +7692,6 @@ impl ResourceDescriptor {
 
 schema!(ResourceDescriptor);
 
-/// Topics (IRIs or strings).
-#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
-#[serde(untagged)]
-pub enum ResourceDescriptorAbout {
-    Text(String),
-    List(Vec<String>),
-}
-
-/// Profile/shape URI this resource description conforms to.
-#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
-#[serde(untagged)]
-pub enum ResourceDescriptorConformsTo {
-    Text(String),
-    List(Vec<String>),
-}
-
 /// JSON-LD context; URI, object, or array of these.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 #[serde(untagged)]
@@ -7820,16 +7707,6 @@ pub enum ResourceDescriptorContextItem {
     Text(String),
     Object(serde_json::Map<String, serde_json::Value>),
 }
-
-/// Software peer that produced this resource (W3C Web Annotation model). Its identity is the verified emitter of the create; the parameters are the producer's to state.
-#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
-#[serde(untagged)]
-pub enum ResourceDescriptorGenerator {
-    Agent(Agent),
-    List(Vec<Agent>),
-}
-
-member!(ResourceDescriptorGenerator::Agent(Agent));
 
 /// Persistent identifiers (e.g., DOI, URN).
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -7865,24 +7742,6 @@ pub enum ResourceDescriptorRepresentations {
 member!(ResourceDescriptorRepresentations::Representation(
     Representation,
 ));
-
-/// Type(s) of the resource (IRIs/CURIEs via @context).
-#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
-#[serde(untagged)]
-pub enum ResourceDescriptorType {
-    Text(String),
-    List(Vec<String>),
-}
-
-/// W3C PROV — every party responsible for this resource, derived by the knowledge base at creation from verified identities: `[requester, generator]` for a resource a job produced, collapsed to the one agent when the requester produced it. Never accepted from an emitter.
-#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
-#[serde(untagged)]
-pub enum ResourceDescriptorWasAttributedTo {
-    Agent(Agent),
-    List(Vec<Agent>),
-}
-
-member!(ResourceDescriptorWasAttributedTo::Agent(Agent));
 
 /// W3C PROV: the resource, or resources, this one was derived from, each by its id
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -8052,7 +7911,7 @@ pub struct ScoredResource {
     /// Type(s) of the resource (IRIs/CURIEs via @context).
     #[serde(rename = "@type")]
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub r#type: Option<ScoredResourceType>,
+    pub r#type: Option<OneOrMoreStrings>,
     pub name: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
@@ -8061,7 +7920,7 @@ pub struct ScoredResource {
     pub identifier: Option<ScoredResourceIdentifier>,
     /// Topics (IRIs or strings).
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub about: Option<ScoredResourceAbout>,
+    pub about: Option<OneOrMoreStrings>,
     /// Equivalent/authoritative references.
     #[serde(rename = "sameAs")]
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -8089,14 +7948,14 @@ pub struct ScoredResource {
     /// W3C PROV — every party responsible for this resource, derived by the knowledge base at creation from verified identities: `[requester, generator]` for a resource a job produced, collapsed to the one agent when the requester produced it. Never accepted from an emitter.
     #[serde(rename = "wasAttributedTo")]
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub was_attributed_to: Option<ScoredResourceWasAttributedTo>,
+    pub was_attributed_to: Option<OneOrMoreAgents>,
     /// Software peer that produced this resource (W3C Web Annotation model). Its identity is the verified emitter of the create; the parameters are the producer's to state.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub generator: Option<ScoredResourceGenerator>,
+    pub generator: Option<OneOrMoreAgents>,
     /// Profile/shape URI this resource description conforms to.
     #[serde(rename = "conformsTo")]
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub conforms_to: Option<ScoredResourceConformsTo>,
+    pub conforms_to: Option<OneOrMoreUris>,
     /// Convenience set summarizing media types across representations.
     #[serde(rename = "availableFormats")]
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -8178,22 +8037,6 @@ impl ScoredResource {
 
 schema!(ScoredResource);
 
-/// Topics (IRIs or strings).
-#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
-#[serde(untagged)]
-pub enum ScoredResourceAbout {
-    Text(String),
-    List(Vec<String>),
-}
-
-/// Profile/shape URI this resource description conforms to.
-#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
-#[serde(untagged)]
-pub enum ScoredResourceConformsTo {
-    Text(String),
-    List(Vec<String>),
-}
-
 /// JSON-LD context; URI, object, or array of these.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 #[serde(untagged)]
@@ -8209,16 +8052,6 @@ pub enum ScoredResourceContextItem {
     Text(String),
     Object(serde_json::Map<String, serde_json::Value>),
 }
-
-/// Software peer that produced this resource (W3C Web Annotation model). Its identity is the verified emitter of the create; the parameters are the producer's to state.
-#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
-#[serde(untagged)]
-pub enum ScoredResourceGenerator {
-    Agent(Agent),
-    List(Vec<Agent>),
-}
-
-member!(ScoredResourceGenerator::Agent(Agent));
 
 /// Persistent identifiers (e.g., DOI, URN).
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -8254,24 +8087,6 @@ pub enum ScoredResourceRepresentations {
 member!(ScoredResourceRepresentations::Representation(
     Representation,
 ));
-
-/// Type(s) of the resource (IRIs/CURIEs via @context).
-#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
-#[serde(untagged)]
-pub enum ScoredResourceType {
-    Text(String),
-    List(Vec<String>),
-}
-
-/// W3C PROV — every party responsible for this resource, derived by the knowledge base at creation from verified identities: `[requester, generator]` for a resource a job produced, collapsed to the one agent when the requester produced it. Never accepted from an emitter.
-#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
-#[serde(untagged)]
-pub enum ScoredResourceWasAttributedTo {
-    Agent(Agent),
-    List(Vec<Agent>),
-}
-
-member!(ScoredResourceWasAttributedTo::Agent(Agent));
 
 /// W3C PROV: the resource, or resources, this one was derived from, each by its id
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -9333,16 +9148,10 @@ schema!(YieldCloneCreateCommand);
 /// Success response after creating a cloned resource.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct YieldCloneCreated {
-    pub response: YieldCloneCreatedResponse,
+    pub response: YieldedResource,
 }
 
 schema!(YieldCloneCreated);
-
-#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
-pub struct YieldCloneCreatedResponse {
-    #[serde(rename = "resourceId")]
-    pub resource_id: ResourceId,
-}
 
 /// Command: stow an already-uploaded clone's bytes and append `yield:cloned`.
 ///
@@ -9407,17 +9216,10 @@ schema!(YieldClonePersistCommand);
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct YieldClonePersistOk {
     /// The clone's identity — a new resource, distinct from its parent.
-    pub response: YieldClonePersistOkResponse,
+    pub response: YieldedResource,
 }
 
 schema!(YieldClonePersistOk);
-
-/// The clone's identity — a new resource, distinct from its parent.
-#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
-pub struct YieldClonePersistOkResponse {
-    #[serde(rename = "resourceId")]
-    pub resource_id: ResourceId,
-}
 
 /// Bus command to request cloning a resource using a clone token.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -9475,7 +9277,7 @@ pub struct YieldCreateCommand {
     pub generation_prompt: Option<String>,
     /// The Software peer that produced the content, when software did. Its identity must be the emitter's own — the knowledge base refuses a generator naming anyone else, and supplies it from the verified emitter when omitted. `creator` and `wasAttributedTo` are never sent; the knowledge base derives them from the emitter and the cited job.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub generator: Option<YieldCreateCommandGenerator>,
+    pub generator: Option<OneOrMoreAgents>,
 }
 
 impl YieldCreateCommand {
@@ -9518,31 +9320,14 @@ pub struct YieldCreateCommandGeneratedFrom {
     pub annotation_id: Option<AnnotationId>,
 }
 
-/// The Software peer that produced the content, when software did. Its identity must be the emitter's own — the knowledge base refuses a generator naming anyone else, and supplies it from the verified emitter when omitted. `creator` and `wasAttributedTo` are never sent; the knowledge base derives them from the emitter and the cited job.
-#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
-#[serde(untagged)]
-pub enum YieldCreateCommandGenerator {
-    Agent(Agent),
-    List(Vec<Agent>),
-}
-
-member!(YieldCreateCommandGenerator::Agent(Agent));
-
 /// Success reply after creating a yielded resource, matched to the originating command by correlationId.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct YieldCreateOk {
     /// The created resource's identity.
-    pub response: YieldCreateOkResponse,
+    pub response: YieldedResource,
 }
 
 schema!(YieldCreateOk);
-
-/// The created resource's identity.
-#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
-pub struct YieldCreateOkResponse {
-    #[serde(rename = "resourceId")]
-    pub resource_id: ResourceId,
-}
 
 /// A `yield` job's worker says the job is complete, with what a `yield` job reports.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -9817,14 +9602,16 @@ schema!(YieldUpdateCommand);
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct YieldUpdateOk {
     /// The updated resource's identity.
-    pub response: YieldUpdateOkResponse,
+    pub response: YieldedResource,
 }
 
 schema!(YieldUpdateOk);
 
-/// The updated resource's identity.
+/// The resource a yield command wrote, by its id.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
-pub struct YieldUpdateOkResponse {
+pub struct YieldedResource {
     #[serde(rename = "resourceId")]
     pub resource_id: ResourceId,
 }
+
+schema!(YieldedResource);

@@ -4,26 +4,7 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(JobStoredProgressObjectJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record JobStoredProgressObject
 {
-}
-
-internal sealed class JobStoredProgressObjectJsonConverter : global::System.Text.Json.Serialization.JsonConverter<JobStoredProgressObject>
-{
-    public override JobStoredProgressObject Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("JobStoredProgressObject", root);
-        return new JobStoredProgressObject
-        {
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, JobStoredProgressObject value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "JobStoredProgressObject", fields);
-    }
 }

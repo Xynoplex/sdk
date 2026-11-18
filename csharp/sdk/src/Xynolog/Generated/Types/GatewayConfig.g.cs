@@ -4,53 +4,16 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(GatewayConfigJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record GatewayConfig
 {
-    public required global::Xynolog.Types.GatewayConfigArchivist Archivist { get; init; }
-    public required global::Xynolog.Types.GatewayConfigCapacity Capacity { get; init; }
-    public required global::Xynolog.Types.GatewayConfigIdentity Identity { get; init; }
-    public required global::Xynolog.Types.KbIdentity Kb { get; init; }
-    public required global::Xynolog.Types.LogFormat LogFormat { get; init; }
-    public required global::Xynolog.Types.LogLevel LogLevel { get; init; }
-    public required long Port { get; init; }
-    public required string PublicUrl { get; init; }
-    public required global::Xynolog.Types.GatewayConfigSignal Signal { get; init; }
-}
-
-internal sealed class GatewayConfigJsonConverter : global::System.Text.Json.Serialization.JsonConverter<GatewayConfig>
-{
-    public override GatewayConfig Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("GatewayConfig", root);
-        return new GatewayConfig
-        {
-            Archivist = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.GatewayConfigArchivist>(root, "archivist", options),
-            Capacity = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.GatewayConfigCapacity>(root, "capacity", options),
-            Identity = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.GatewayConfigIdentity>(root, "identity", options),
-            Kb = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.KbIdentity>(root, "kb", options),
-            LogFormat = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.LogFormat>(root, "logFormat", options),
-            LogLevel = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.LogLevel>(root, "logLevel", options),
-            Port = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "port", options),
-            PublicUrl = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "publicUrl", options),
-            Signal = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.GatewayConfigSignal>(root, "signal", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, GatewayConfig value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("archivist", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Archivist, options));
-        fields.Add("capacity", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Capacity, options));
-        fields.Add("identity", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Identity, options));
-        fields.Add("kb", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Kb, options));
-        fields.Add("logFormat", global::System.Text.Json.JsonSerializer.SerializeToElement(value.LogFormat, options));
-        fields.Add("logLevel", global::System.Text.Json.JsonSerializer.SerializeToElement(value.LogLevel, options));
-        fields.Add("port", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Port, options));
-        fields.Add("publicUrl", global::System.Text.Json.JsonSerializer.SerializeToElement(value.PublicUrl, options));
-        fields.Add("signal", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Signal, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "GatewayConfig", fields);
-    }
+    [global::Xynolog.Serialization.Wire("archivist")] public required global::Xynolog.Types.ServiceAddress Archivist { get; init; }
+    [global::Xynolog.Serialization.Wire("capacity")] public required global::Xynolog.Types.GatewayConfigCapacity Capacity { get; init; }
+    [global::Xynolog.Serialization.Wire("identity")] public required global::Xynolog.Types.GatewayConfigIdentity Identity { get; init; }
+    [global::Xynolog.Serialization.Wire("kb")] public required global::Xynolog.Types.KbIdentity Kb { get; init; }
+    [global::Xynolog.Serialization.Wire("logFormat")] public required global::Xynolog.Types.LogFormat LogFormat { get; init; }
+    [global::Xynolog.Serialization.Wire("logLevel")] public required global::Xynolog.Types.LogLevel LogLevel { get; init; }
+    [global::Xynolog.Serialization.Wire("port")] public required long Port { get; init; }
+    [global::Xynolog.Serialization.Wire("publicUrl")] public required string PublicUrl { get; init; }
+    [global::Xynolog.Serialization.Wire("signal")] public required global::Xynolog.Types.GatewayConfigSignal Signal { get; init; }
 }

@@ -4,46 +4,12 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(AgentOrganizationJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record AgentOrganization
 {
-    public string? Id { get; init; }
-    public string Type => "Organization";
-    public string? Homepage { get; init; }
-    public required string Name { get; init; }
-    public global::System.Collections.Generic.IReadOnlyDictionary<string, global::System.Text.Json.JsonElement> AdditionalProperties { get; init; } = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-}
-
-internal sealed class AgentOrganizationJsonConverter : global::System.Text.Json.Serialization.JsonConverter<AgentOrganization>
-{
-    public override AgentOrganization Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("AgentOrganization", root);
-        return new AgentOrganization
-        {
-            Id = root.TryGetProperty("@id", out var p0) ? global::Xynolog.Serialization.WireJson.Read<string>(p0, options) : null,
-            Homepage = root.TryGetProperty("homepage", out var p1) ? global::Xynolog.Serialization.WireJson.Read<string>(p1, options) : null,
-            Name = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "name", options),
-            AdditionalProperties = global::Xynolog.Serialization.WireJson.Extra(root, new string[] { "@id", "@type", "homepage", "name" }),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, AgentOrganization value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        if (value.Id is not null)
-        {
-            fields.Add("@id", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Id, options));
-        }
-        fields.Add("@type", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Type, options));
-        if (value.Homepage is not null)
-        {
-            fields.Add("homepage", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Homepage, options));
-        }
-        fields.Add("name", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Name, options));
-        foreach (var pair in value.AdditionalProperties) { fields.Add(pair.Key, pair.Value); }
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "AgentOrganization", fields);
-    }
+    [global::Xynolog.Serialization.Wire("@id")] public string? Id { get; init; }
+    [global::Xynolog.Serialization.Wire("@type")] public string Type => "Organization";
+    [global::Xynolog.Serialization.Wire("homepage")] public string? Homepage { get; init; }
+    [global::Xynolog.Serialization.Wire("name")] public required string Name { get; init; }
+    [global::Xynolog.Serialization.WireRest] public global::System.Collections.Generic.IReadOnlyDictionary<string, global::System.Text.Json.JsonElement> AdditionalProperties { get; init; } = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
 }

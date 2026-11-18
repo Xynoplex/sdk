@@ -4,36 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(AnnotationTargetValueJsonConverter))]
+[global::Xynolog.Serialization.WireUnion(typeof(AnnotationTargetValue.ResourceIdCase), typeof(AnnotationTargetValue.AnnotationTargetCase))]
 public closed record AnnotationTargetValue
 {
     public sealed record ResourceIdCase(global::Xynolog.Identifiers.ResourceId Value) : AnnotationTargetValue;
     public sealed record AnnotationTargetCase(global::Xynolog.Types.AnnotationTarget Value) : AnnotationTargetValue;
-}
-
-internal sealed class AnnotationTargetValueJsonConverter : global::System.Text.Json.Serialization.JsonConverter<AnnotationTargetValue>
-{
-    public override AnnotationTargetValue Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("AnnotationTargetValue", root);
-        var variant = global::Xynolog.Serialization.WireJson.Variant("AnnotationTargetValue", root);
-        return variant switch
-        {
-            0 => new AnnotationTargetValue.ResourceIdCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Identifiers.ResourceId>(root, options)),
-            1 => new AnnotationTargetValue.AnnotationTargetCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.AnnotationTarget>(root, options)),
-            _ => throw new global::System.Text.Json.JsonException("No matching union variant."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, AnnotationTargetValue value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        switch (value)
-        {
-            case AnnotationTargetValue.ResourceIdCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            case AnnotationTargetValue.AnnotationTargetCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            default: throw new global::System.Text.Json.JsonException("Unknown union variant.");
-        }
-    }
 }

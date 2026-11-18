@@ -4,37 +4,10 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(FragmentSelectorJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record FragmentSelector
 {
-    public string? ConformsTo { get; init; }
-    public string Type => "FragmentSelector";
-    public required string Value { get; init; }
-}
-
-internal sealed class FragmentSelectorJsonConverter : global::System.Text.Json.Serialization.JsonConverter<FragmentSelector>
-{
-    public override FragmentSelector Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("FragmentSelector", root);
-        return new FragmentSelector
-        {
-            ConformsTo = root.TryGetProperty("conformsTo", out var p0) ? global::Xynolog.Serialization.WireJson.Read<string>(p0, options) : null,
-            Value = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "value", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, FragmentSelector value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        if (value.ConformsTo is not null)
-        {
-            fields.Add("conformsTo", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ConformsTo, options));
-        }
-        fields.Add("type", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Type, options));
-        fields.Add("value", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Value, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "FragmentSelector", fields);
-    }
+    [global::Xynolog.Serialization.Wire("conformsTo")] public string? ConformsTo { get; init; }
+    [global::Xynolog.Serialization.Wire("type")] public string Type => "FragmentSelector";
+    [global::Xynolog.Serialization.Wire("value")] public required string Value { get; init; }
 }

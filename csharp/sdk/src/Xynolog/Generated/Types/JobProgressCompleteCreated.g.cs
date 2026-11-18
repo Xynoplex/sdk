@@ -4,34 +4,10 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(JobProgressCompleteCreatedJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record JobProgressCompleteCreated
 {
-    public string Code => "complete-created";
-    public required long Count { get; init; }
-    public required global::Xynolog.Types.Motivation Motivation { get; init; }
-}
-
-internal sealed class JobProgressCompleteCreatedJsonConverter : global::System.Text.Json.Serialization.JsonConverter<JobProgressCompleteCreated>
-{
-    public override JobProgressCompleteCreated Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("JobProgressCompleteCreated", root);
-        return new JobProgressCompleteCreated
-        {
-            Count = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "count", options),
-            Motivation = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.Motivation>(root, "motivation", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, JobProgressCompleteCreated value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("code", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Code, options));
-        fields.Add("count", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Count, options));
-        fields.Add("motivation", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Motivation, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "JobProgressCompleteCreated", fields);
-    }
+    [global::Xynolog.Serialization.Wire("code")] public string Code => "complete-created";
+    [global::Xynolog.Serialization.Wire("count")] public required long Count { get; init; }
+    [global::Xynolog.Serialization.Wire("motivation")] public required global::Xynolog.Types.Motivation Motivation { get; init; }
 }

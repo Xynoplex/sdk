@@ -4,44 +4,12 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(YieldUpdateCommandJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record YieldUpdateCommand
 {
-    public global::Xynolog.Identifiers.UserId? UserId { get; init; }
-    public required long ByteSize { get; init; }
-    public required string ContentChecksum { get; init; }
-    public required global::Xynolog.Identifiers.ResourceId ResourceId { get; init; }
-    public required string StorageUri { get; init; }
-}
-
-internal sealed class YieldUpdateCommandJsonConverter : global::System.Text.Json.Serialization.JsonConverter<YieldUpdateCommand>
-{
-    public override YieldUpdateCommand Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("YieldUpdateCommand", root);
-        return new YieldUpdateCommand
-        {
-            UserId = root.TryGetProperty("_userId", out var p0) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Identifiers.UserId>(p0, options) : null,
-            ByteSize = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "byteSize", options),
-            ContentChecksum = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "contentChecksum", options),
-            ResourceId = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.ResourceId>(root, "resourceId", options),
-            StorageUri = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "storageUri", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, YieldUpdateCommand value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        if (value.UserId is not null)
-        {
-            fields.Add("_userId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.UserId, options));
-        }
-        fields.Add("byteSize", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ByteSize, options));
-        fields.Add("contentChecksum", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ContentChecksum, options));
-        fields.Add("resourceId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ResourceId, options));
-        fields.Add("storageUri", global::System.Text.Json.JsonSerializer.SerializeToElement(value.StorageUri, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "YieldUpdateCommand", fields);
-    }
+    [global::Xynolog.Serialization.Wire("_userId")] public global::Xynolog.Identifiers.UserId? UserId { get; init; }
+    [global::Xynolog.Serialization.Wire("byteSize")] public required long ByteSize { get; init; }
+    [global::Xynolog.Serialization.Wire("contentChecksum")] public required string ContentChecksum { get; init; }
+    [global::Xynolog.Serialization.Wire("resourceId")] public required global::Xynolog.Identifiers.ResourceId ResourceId { get; init; }
+    [global::Xynolog.Serialization.Wire("storageUri")] public required string StorageUri { get; init; }
 }

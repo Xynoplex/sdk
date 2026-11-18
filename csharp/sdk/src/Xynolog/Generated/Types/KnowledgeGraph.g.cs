@@ -4,38 +4,10 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(KnowledgeGraphJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record KnowledgeGraph
 {
-    public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.KnowledgeGraphEdgesItem> Edges { get; init; }
-    public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.KnowledgeGraphNodesItem> Nodes { get; init; }
-    public bool? Truncated { get; init; }
-}
-
-internal sealed class KnowledgeGraphJsonConverter : global::System.Text.Json.Serialization.JsonConverter<KnowledgeGraph>
-{
-    public override KnowledgeGraph Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("KnowledgeGraph", root);
-        return new KnowledgeGraph
-        {
-            Edges = global::Xynolog.Serialization.WireJson.ReadMember<global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.KnowledgeGraphEdgesItem>>(root, "edges", options),
-            Nodes = global::Xynolog.Serialization.WireJson.ReadMember<global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.KnowledgeGraphNodesItem>>(root, "nodes", options),
-            Truncated = root.TryGetProperty("truncated", out var p2) ? global::Xynolog.Serialization.WireJson.Read<bool>(p2, options) : null,
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, KnowledgeGraph value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("edges", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Edges, options));
-        fields.Add("nodes", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Nodes, options));
-        if (value.Truncated is not null)
-        {
-            fields.Add("truncated", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Truncated, options));
-        }
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "KnowledgeGraph", fields);
-    }
+    [global::Xynolog.Serialization.Wire("edges")] public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.KnowledgeGraphEdgesItem> Edges { get; init; }
+    [global::Xynolog.Serialization.Wire("nodes")] public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.KnowledgeGraphNodesItem> Nodes { get; init; }
+    [global::Xynolog.Serialization.Wire("truncated")] public bool? Truncated { get; init; }
 }

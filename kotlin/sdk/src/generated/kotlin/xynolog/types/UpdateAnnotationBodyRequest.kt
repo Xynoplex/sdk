@@ -4,54 +4,23 @@
 
 package xynolog.types
 
-import kotlinx.serialization.DeserializationStrategy
-import kotlinx.serialization.EncodeDefault
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationException
-import kotlinx.serialization.builtins.ListSerializer
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.descriptors.nullable
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonContentPolymorphicSerializer
-import kotlinx.serialization.json.JsonDecoder
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonEncoder
 import kotlinx.serialization.json.JsonIgnoreUnknownKeys
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.serializer
-import xynolog.identifiers.AnnotationId
-import xynolog.identifiers.JobId
 import xynolog.identifiers.ResourceId
-import xynolog.identifiers.UserId
 
 @Serializable
 @JsonIgnoreUnknownKeys
 public data class UpdateAnnotationBodyRequest(
-    /**
-     * Resource ID containing the annotation (required for O(1) Layer 3 lookup)
-     */
-    @SerialName("resourceId")
+    /** Resource ID containing the annotation (required for O(1) Layer 3 lookup) */
     @get:JvmExposeBoxed
     public val resourceId: ResourceId,
-    /**
-     * Array of body modification operations to apply
-     */
-    @SerialName("operations")
-    public val operations: kotlin.collections.List<UpdateAnnotationBodyRequestOperationsItem>,
+    /** Array of body modification operations to apply */
+    public val operations: kotlin.collections.List<BodyOperation>,
 ) {
     /** How Java makes a `UpdateAnnotationBodyRequest`: `builder` takes what it must state, a setter each thing it may, and `build` makes it. */
     public class Builder internal constructor(
         private val resourceId: ResourceId,
-        private val operations: kotlin.collections.List<UpdateAnnotationBodyRequestOperationsItem>,
+        private val operations: kotlin.collections.List<BodyOperation>,
     ) {
         public fun build(): UpdateAnnotationBodyRequest = UpdateAnnotationBodyRequest(resourceId = resourceId, operations = operations)
     }
@@ -60,6 +29,6 @@ public data class UpdateAnnotationBodyRequest(
         /** A builder of a `UpdateAnnotationBodyRequest` that states these, and what its setters add. */
         @JvmStatic
         @JvmExposeBoxed
-        public fun builder(resourceId: ResourceId, operations: kotlin.collections.List<UpdateAnnotationBodyRequestOperationsItem>): Builder = Builder(resourceId, operations)
+        public fun builder(resourceId: ResourceId, operations: kotlin.collections.List<BodyOperation>): Builder = Builder(resourceId, operations)
     }
 }

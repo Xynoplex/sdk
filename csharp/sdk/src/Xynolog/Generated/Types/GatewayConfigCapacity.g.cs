@@ -4,32 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(GatewayConfigCapacityJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record GatewayConfigCapacity
 {
-    public required long Connections { get; init; }
-    public required long QueuedBytes { get; init; }
-}
-
-internal sealed class GatewayConfigCapacityJsonConverter : global::System.Text.Json.Serialization.JsonConverter<GatewayConfigCapacity>
-{
-    public override GatewayConfigCapacity Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("GatewayConfigCapacity", root);
-        return new GatewayConfigCapacity
-        {
-            Connections = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "connections", options),
-            QueuedBytes = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "queuedBytes", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, GatewayConfigCapacity value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("connections", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Connections, options));
-        fields.Add("queuedBytes", global::System.Text.Json.JsonSerializer.SerializeToElement(value.QueuedBytes, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "GatewayConfigCapacity", fields);
-    }
+    [global::Xynolog.Serialization.Wire("connections")] public required long Connections { get; init; }
+    [global::Xynolog.Serialization.Wire("queuedBytes")] public required long QueuedBytes { get; init; }
 }

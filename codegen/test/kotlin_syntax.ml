@@ -43,15 +43,9 @@ let cases =
                ( K.Binary (K.Name "a", K.Or, K.Name "b"),
                  K.Or,
                  K.Binary (K.Name "c", K.Or, K.Name "d") ))));
-    case
-      "a throw stands bare as a right operand, and a safe cast is \
-       parenthesised as a receiver"
-      (writes "(x as? T)?.y ?: throw E()"
-         (expr
-            (K.Binary
-               ( K.Safe (K.As_safe (K.Name "x", K.Type "T"), "y"),
-                 K.Elvis,
-                 K.Throw (K.call (K.Name "E") []) ))));
+    case "a throw stands bare as a right operand"
+      (writes "a || throw E()"
+         (expr (K.Binary (K.Name "a", K.Or, K.Throw (K.call (K.Name "E") [])))));
     case "a range is written close"
       (writes "c in 1..9"
          (expr
@@ -69,8 +63,7 @@ let cases =
                  (K.Lambda ([ "c" ], K.Binary (K.Name "c", K.Eq, K.Int 1)))
                (K.Name "xs.all") [])));
     case "a when's branches are a line each, its else last"
-      (writes
-         "when (x) {\n    \"a\", \"b\" -> 1\n    is T -> 2\n    else -> 3\n}"
+      (writes "when (x) {\n    \"a\", \"b\" -> 1\n    else -> 3\n}"
          (expr
             (K.When
                {
@@ -81,7 +74,6 @@ let cases =
                        conditions = [ K.Equal (K.Str "a"); K.Equal (K.Str "b") ];
                        result = K.Int 1;
                      };
-                     { conditions = [ K.Is (K.Type "T") ]; result = K.Int 2 };
                      { conditions = []; result = K.Int 3 };
                    ];
                })));
@@ -231,6 +223,33 @@ let cases =
                imports = [ "kotlin.E"; "java.D"; "kotlinx.C"; "a.B" ];
                decls = [ K.property ~value:(K.Same_line (K.Int 1)) "x" ];
              }));
+    case "an assignment is written as a lambda's body"
+      (writes "x.apply { this.a = b }"
+         (expr
+            (K.call
+               ~lambda:
+                 (K.Lambda ([], K.Assigning (K.Member (K.This, "a"), K.Name "b")))
+               (K.Name "x.apply") [])));
+    case "an assignment anywhere else is refused"
+      (refuses (expr (K.Assigning (K.Name "a", K.Name "b"))));
+    case
+      "what declarations reference: a qualified name's first part, a member, \
+       an annotation, and the types they name" (fun () ->
+        Alcotest.(check (list string))
+          "names"
+          [ "A"; "B"; "C"; "Json"; "N"; "jsonObject" ]
+          (K.referenced
+             [
+               K.property
+                 ~annotations:[ K.annotation "N" ]
+                 ~type_:(K.Generic ("A", [ K.Nullable (K.Type "B") ]))
+                 ~value:
+                   (K.Same_line
+                      (K.Member
+                         ( K.call (K.Name "Json.parse") [ K.Name "C" ],
+                           "jsonObject" )))
+                 "x";
+             ]));
     case "a name imported twice is refused"
       (refuses (fun () -> String.concat "," (K.import_order [ "a.B"; "a.B" ])));
   ]

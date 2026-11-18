@@ -4,71 +4,22 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(LibrarianConfigJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record LibrarianConfig
 {
-    public required global::Xynolog.Types.LibrarianConfigArchivist Archivist { get; init; }
-    public required global::Xynolog.Types.EmbeddingConfig Embedding { get; init; }
-    public required string GatewayUrl { get; init; }
-    public required global::Xynolog.Types.LibrarianConfigGather Gather { get; init; }
-    public required global::Xynolog.Types.LibrarianEngineConfig Gatherer { get; init; }
-    public required global::Xynolog.Types.GraphConfig Graph { get; init; }
-    public required global::Xynolog.Types.LibrarianConfigIdentity Identity { get; init; }
-    public required global::Xynolog.Types.KbIdentity Kb { get; init; }
-    public required global::Xynolog.Types.LogFormat LogFormat { get; init; }
-    public required global::Xynolog.Types.LogLevel LogLevel { get; init; }
-    public required global::Xynolog.Types.LibrarianEngineConfig Matcher { get; init; }
-    public required string ModelCatalogue { get; init; }
-    public required long Port { get; init; }
-    public required global::Xynolog.Types.LibrarianConfigSearch Search { get; init; }
-    public required global::Xynolog.Types.VectorsConfig Vectors { get; init; }
-}
-
-internal sealed class LibrarianConfigJsonConverter : global::System.Text.Json.Serialization.JsonConverter<LibrarianConfig>
-{
-    public override LibrarianConfig Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("LibrarianConfig", root);
-        return new LibrarianConfig
-        {
-            Archivist = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.LibrarianConfigArchivist>(root, "archivist", options),
-            Embedding = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.EmbeddingConfig>(root, "embedding", options),
-            GatewayUrl = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "gatewayUrl", options),
-            Gather = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.LibrarianConfigGather>(root, "gather", options),
-            Gatherer = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.LibrarianEngineConfig>(root, "gatherer", options),
-            Graph = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.GraphConfig>(root, "graph", options),
-            Identity = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.LibrarianConfigIdentity>(root, "identity", options),
-            Kb = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.KbIdentity>(root, "kb", options),
-            LogFormat = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.LogFormat>(root, "logFormat", options),
-            LogLevel = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.LogLevel>(root, "logLevel", options),
-            Matcher = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.LibrarianEngineConfig>(root, "matcher", options),
-            ModelCatalogue = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "modelCatalogue", options),
-            Port = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "port", options),
-            Search = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.LibrarianConfigSearch>(root, "search", options),
-            Vectors = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.VectorsConfig>(root, "vectors", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, LibrarianConfig value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("archivist", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Archivist, options));
-        fields.Add("embedding", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Embedding, options));
-        fields.Add("gatewayUrl", global::System.Text.Json.JsonSerializer.SerializeToElement(value.GatewayUrl, options));
-        fields.Add("gather", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Gather, options));
-        fields.Add("gatherer", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Gatherer, options));
-        fields.Add("graph", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Graph, options));
-        fields.Add("identity", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Identity, options));
-        fields.Add("kb", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Kb, options));
-        fields.Add("logFormat", global::System.Text.Json.JsonSerializer.SerializeToElement(value.LogFormat, options));
-        fields.Add("logLevel", global::System.Text.Json.JsonSerializer.SerializeToElement(value.LogLevel, options));
-        fields.Add("matcher", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Matcher, options));
-        fields.Add("modelCatalogue", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ModelCatalogue, options));
-        fields.Add("port", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Port, options));
-        fields.Add("search", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Search, options));
-        fields.Add("vectors", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Vectors, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "LibrarianConfig", fields);
-    }
+    [global::Xynolog.Serialization.Wire("archivist")] public required global::Xynolog.Types.ServiceAddress Archivist { get; init; }
+    [global::Xynolog.Serialization.Wire("embedding")] public required global::Xynolog.Types.EmbeddingConfig Embedding { get; init; }
+    [global::Xynolog.Serialization.Wire("gatewayUrl")] public required string GatewayUrl { get; init; }
+    [global::Xynolog.Serialization.Wire("gather")] public required global::Xynolog.Types.LibrarianConfigGather Gather { get; init; }
+    [global::Xynolog.Serialization.Wire("gatherer")] public required global::Xynolog.Types.LibrarianEngineConfig Gatherer { get; init; }
+    [global::Xynolog.Serialization.Wire("graph")] public required global::Xynolog.Types.GraphConfig Graph { get; init; }
+    [global::Xynolog.Serialization.Wire("identity")] public required global::Xynolog.Types.ServiceIdentity Identity { get; init; }
+    [global::Xynolog.Serialization.Wire("kb")] public required global::Xynolog.Types.KbIdentity Kb { get; init; }
+    [global::Xynolog.Serialization.Wire("logFormat")] public required global::Xynolog.Types.LogFormat LogFormat { get; init; }
+    [global::Xynolog.Serialization.Wire("logLevel")] public required global::Xynolog.Types.LogLevel LogLevel { get; init; }
+    [global::Xynolog.Serialization.Wire("matcher")] public required global::Xynolog.Types.LibrarianEngineConfig Matcher { get; init; }
+    [global::Xynolog.Serialization.Wire("modelCatalogue")] public required string ModelCatalogue { get; init; }
+    [global::Xynolog.Serialization.Wire("port")] public required long Port { get; init; }
+    [global::Xynolog.Serialization.Wire("search")] public required global::Xynolog.Types.LibrarianConfigSearch Search { get; init; }
+    [global::Xynolog.Serialization.Wire("vectors")] public required global::Xynolog.Types.VectorsConfig Vectors { get; init; }
 }

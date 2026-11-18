@@ -4,31 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(JobProgressDetectingEntitiesJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record JobProgressDetectingEntities
 {
-    public string Code => "detecting-entities";
-    public required string EntityType { get; init; }
-}
-
-internal sealed class JobProgressDetectingEntitiesJsonConverter : global::System.Text.Json.Serialization.JsonConverter<JobProgressDetectingEntities>
-{
-    public override JobProgressDetectingEntities Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("JobProgressDetectingEntities", root);
-        return new JobProgressDetectingEntities
-        {
-            EntityType = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "entityType", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, JobProgressDetectingEntities value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("code", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Code, options));
-        fields.Add("entityType", global::System.Text.Json.JsonSerializer.SerializeToElement(value.EntityType, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "JobProgressDetectingEntities", fields);
-    }
+    [global::Xynolog.Serialization.Wire("code")] public string Code => "detecting-entities";
+    [global::Xynolog.Serialization.Wire("entityType")] public required string EntityType { get; init; }
 }

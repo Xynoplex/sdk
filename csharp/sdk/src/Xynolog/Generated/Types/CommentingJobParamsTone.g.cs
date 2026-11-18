@@ -4,41 +4,11 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(CommentingJobParamsToneJsonConverter))]
+[global::Xynolog.Serialization.WireEnum]
 public enum CommentingJobParamsTone
 {
-    Scholarly,
-    Explanatory,
-    Conversational,
-    Technical,
-}
-
-internal sealed class CommentingJobParamsToneJsonConverter : global::System.Text.Json.Serialization.JsonConverter<CommentingJobParamsTone>
-{
-    public override CommentingJobParamsTone Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("CommentingJobParamsTone", root);
-        return root.GetString() switch
-        {
-            "scholarly" => CommentingJobParamsTone.Scholarly,
-            "explanatory" => CommentingJobParamsTone.Explanatory,
-            "conversational" => CommentingJobParamsTone.Conversational,
-            "technical" => CommentingJobParamsTone.Technical,
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, CommentingJobParamsTone value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        writer.WriteStringValue(value switch
-        {
-            CommentingJobParamsTone.Scholarly => "scholarly",
-            CommentingJobParamsTone.Explanatory => "explanatory",
-            CommentingJobParamsTone.Conversational => "conversational",
-            CommentingJobParamsTone.Technical => "technical",
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        });
-    }
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("scholarly")] Scholarly,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("explanatory")] Explanatory,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("conversational")] Conversational,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("technical")] Technical,
 }

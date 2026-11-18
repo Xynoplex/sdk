@@ -4,31 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(BodyOperationRemoveJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record BodyOperationRemove
 {
-    public required global::Xynolog.Types.BodyOperationRemoveItem Item { get; init; }
-    public string Op => "remove";
-}
-
-internal sealed class BodyOperationRemoveJsonConverter : global::System.Text.Json.Serialization.JsonConverter<BodyOperationRemove>
-{
-    public override BodyOperationRemove Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("BodyOperationRemove", root);
-        return new BodyOperationRemove
-        {
-            Item = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.BodyOperationRemoveItem>(root, "item", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, BodyOperationRemove value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("item", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Item, options));
-        fields.Add("op", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Op, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "BodyOperationRemove", fields);
-    }
+    [global::Xynolog.Serialization.Wire("item")] public required global::Xynolog.Types.AnnotationBody Item { get; init; }
+    [global::Xynolog.Serialization.Wire("op")] public string Op => "remove";
 }

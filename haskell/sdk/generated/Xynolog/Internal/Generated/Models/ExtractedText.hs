@@ -2,21 +2,23 @@
 -- Regenerate: make generate (codegen/lib/haskell_sdk/haskell_sdk.ml)
 {-# LANGUAGE OverloadedStrings #-}
 
-module Xynolog.Internal.Generated.Models.ExtractedText (ExtractedText (..), ExtractedTextKind (..), ExtractedTextMethod (..), ExtractedTextOcrConfidence (..), ExtractedTextPdfClass (..)) where
+module Xynolog.Internal.Generated.Models.ExtractedText (ExtractedText (..), ExtractedTextKind (..)) where
 
 import Data.Aeson (FromJSON (..), ToJSON (..), Value (..), withObject, (.:))
 import Data.Aeson.KeyMap qualified as KM
-import Data.Scientific (Scientific)
 import Data.Text (Text)
 import Xynolog.Internal.Codec
+import Xynolog.Internal.Generated.Models.ExtractionMethod
+import Xynolog.Internal.Generated.Models.OcrConfidence
+import Xynolog.Internal.Generated.Models.PdfClass
 import Xynolog.Internal.Generated.Models.PdfTextItem
 
 data ExtractedText = ExtractedText
   { extractedTextItems :: [PdfTextItem],
     extractedTextKind :: ExtractedTextKind,
-    extractedTextMethod :: ExtractedTextMethod,
-    extractedTextOcrConfidence :: Maybe ExtractedTextOcrConfidence,
-    extractedTextPdfClass :: Maybe ExtractedTextPdfClass,
+    extractedTextMethod :: ExtractionMethod,
+    extractedTextOcrConfidence :: Maybe OcrConfidence,
+    extractedTextPdfClass :: Maybe PdfClass,
     extractedTextText :: Text,
     extractedTextUnreadPages :: Maybe [Integer],
     extractedTextAdditionalProperties :: KM.KeyMap Value
@@ -32,39 +34,3 @@ data ExtractedTextKind = ExtractedTextKindExtracted deriving (Eq, Show)
 instance FromJSON ExtractedTextKind where parseJSON = checked "ExtractedTextKind" $ \value -> if value == String "extracted" then pure ExtractedTextKindExtracted else fail "unknown enumeration member"
 
 instance ToJSON ExtractedTextKind where toJSON ExtractedTextKindExtracted = String "extracted"
-
-data ExtractedTextMethod = ExtractedTextMethodTextU2d_passthrough | ExtractedTextMethodPdfU2d_textU2d_layer | ExtractedTextMethodTable | ExtractedTextMethodForm | ExtractedTextMethodOcr deriving (Eq, Show)
-
-instance FromJSON ExtractedTextMethod where parseJSON = checked "ExtractedTextMethod" $ \value -> if value == String "text-passthrough" then pure ExtractedTextMethodTextU2d_passthrough else if value == String "pdf-text-layer" then pure ExtractedTextMethodPdfU2d_textU2d_layer else if value == String "table" then pure ExtractedTextMethodTable else if value == String "form" then pure ExtractedTextMethodForm else if value == String "ocr" then pure ExtractedTextMethodOcr else fail "unknown enumeration member"
-
-instance ToJSON ExtractedTextMethod where
-  toJSON ExtractedTextMethodTextU2d_passthrough = String "text-passthrough"
-  toJSON ExtractedTextMethodPdfU2d_textU2d_layer = String "pdf-text-layer"
-  toJSON ExtractedTextMethodTable = String "table"
-  toJSON ExtractedTextMethodForm = String "form"
-  toJSON ExtractedTextMethodOcr = String "ocr"
-
-data ExtractedTextOcrConfidence = ExtractedTextOcrConfidence
-  { extractedTextOcrConfidenceLowConfidenceWords :: Integer,
-    extractedTextOcrConfidenceMean :: Scientific,
-    extractedTextOcrConfidenceTotalWords :: Integer,
-    extractedTextOcrConfidenceAdditionalProperties :: KM.KeyMap Value
-  }
-  deriving (Eq, Show)
-
-instance FromJSON ExtractedTextOcrConfidence where parseJSON = checked "ExtractedTextOcrConfidence" $ withObject "ExtractedTextOcrConfidence" (\fields -> ExtractedTextOcrConfidence <$> (fields .: "lowConfidenceWords") <*> (fields .: "mean") <*> (fields .: "totalWords") <*> traverse parseJSON (withoutFields ["lowConfidenceWords", "mean", "totalWords"] fields))
-
-instance ToJSON ExtractedTextOcrConfidence where toJSON value = Object (KM.fromList (concat [[("lowConfidenceWords", toJSON (extractedTextOcrConfidenceLowConfidenceWords value))], [("mean", toJSON (extractedTextOcrConfidenceMean value))], [("totalWords", toJSON (extractedTextOcrConfidenceTotalWords value))]]) <> fmap toJSON (withoutFields ["lowConfidenceWords", "mean", "totalWords"] (extractedTextOcrConfidenceAdditionalProperties value)))
-
-data ExtractedTextPdfClass = ExtractedTextPdfClassA | ExtractedTextPdfClassB | ExtractedTextPdfClassC | ExtractedTextPdfClassD | ExtractedTextPdfClassE | ExtractedTextPdfClassF | ExtractedTextPdfClassG deriving (Eq, Show)
-
-instance FromJSON ExtractedTextPdfClass where parseJSON = checked "ExtractedTextPdfClass" $ \value -> if value == String "A" then pure ExtractedTextPdfClassA else if value == String "B" then pure ExtractedTextPdfClassB else if value == String "C" then pure ExtractedTextPdfClassC else if value == String "D" then pure ExtractedTextPdfClassD else if value == String "E" then pure ExtractedTextPdfClassE else if value == String "F" then pure ExtractedTextPdfClassF else if value == String "G" then pure ExtractedTextPdfClassG else fail "unknown enumeration member"
-
-instance ToJSON ExtractedTextPdfClass where
-  toJSON ExtractedTextPdfClassA = String "A"
-  toJSON ExtractedTextPdfClassB = String "B"
-  toJSON ExtractedTextPdfClassC = String "C"
-  toJSON ExtractedTextPdfClassD = String "D"
-  toJSON ExtractedTextPdfClassE = String "E"
-  toJSON ExtractedTextPdfClassF = String "F"
-  toJSON ExtractedTextPdfClassG = String "G"

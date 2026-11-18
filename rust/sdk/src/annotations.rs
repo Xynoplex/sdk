@@ -60,9 +60,9 @@ use crate::errors::SpanRefusal;
 use crate::rfc3339;
 use crate::text_offsets::Offsets;
 use crate::types::{
-    Agent, AnchoredText, Annotation, AnnotationBodies, AnnotationBody, AnnotationGenerator,
-    AnnotationSelector, AnnotationTarget, AnnotationTargetType, AnnotationTargetValue, BodyPurpose,
-    FragmentSelector, Motivation, PdfTextItem, ResourceId, Selector, TextPositionSelector,
+    Agent, AnchoredText, Annotation, AnnotationBodies, AnnotationBody, AnnotationSelector,
+    AnnotationTarget, AnnotationTargetType, AnnotationTargetValue, BodyPurpose, FragmentSelector,
+    Motivation, OneOrMoreAgents, PdfTextItem, ResourceId, Selector, TextPositionSelector,
     TextQuoteSelector,
 };
 use quote::Place;
@@ -510,7 +510,7 @@ fn annotation(
     let id = id::annotation_id(&target.source, motivation, anchor, body.as_ref());
     Annotation {
         body,
-        generator: generator.cloned().map(AnnotationGenerator::Agent),
+        generator: generator.cloned().map(OneOrMoreAgents::Agent),
         ..Annotation::new(
             id,
             motivation,

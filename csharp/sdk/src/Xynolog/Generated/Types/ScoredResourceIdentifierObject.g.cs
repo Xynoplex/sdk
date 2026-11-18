@@ -4,47 +4,11 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(ScoredResourceIdentifierObjectJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record ScoredResourceIdentifierObject
 {
-    public string? Id { get; init; }
-    public string? Scheme { get; init; }
-    public string? Value { get; init; }
-    public global::System.Collections.Generic.IReadOnlyDictionary<string, global::System.Text.Json.JsonElement> AdditionalProperties { get; init; } = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-}
-
-internal sealed class ScoredResourceIdentifierObjectJsonConverter : global::System.Text.Json.Serialization.JsonConverter<ScoredResourceIdentifierObject>
-{
-    public override ScoredResourceIdentifierObject Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("ScoredResourceIdentifierObject", root);
-        return new ScoredResourceIdentifierObject
-        {
-            Id = root.TryGetProperty("@id", out var p0) ? global::Xynolog.Serialization.WireJson.Read<string>(p0, options) : null,
-            Scheme = root.TryGetProperty("scheme", out var p1) ? global::Xynolog.Serialization.WireJson.Read<string>(p1, options) : null,
-            Value = root.TryGetProperty("value", out var p2) ? global::Xynolog.Serialization.WireJson.Read<string>(p2, options) : null,
-            AdditionalProperties = global::Xynolog.Serialization.WireJson.Extra(root, new string[] { "@id", "scheme", "value" }),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, ScoredResourceIdentifierObject value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        if (value.Id is not null)
-        {
-            fields.Add("@id", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Id, options));
-        }
-        if (value.Scheme is not null)
-        {
-            fields.Add("scheme", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Scheme, options));
-        }
-        if (value.Value is not null)
-        {
-            fields.Add("value", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Value, options));
-        }
-        foreach (var pair in value.AdditionalProperties) { fields.Add(pair.Key, pair.Value); }
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "ScoredResourceIdentifierObject", fields);
-    }
+    [global::Xynolog.Serialization.Wire("@id")] public string? Id { get; init; }
+    [global::Xynolog.Serialization.Wire("scheme")] public string? Scheme { get; init; }
+    [global::Xynolog.Serialization.Wire("value")] public string? Value { get; init; }
+    [global::Xynolog.Serialization.WireRest] public global::System.Collections.Generic.IReadOnlyDictionary<string, global::System.Text.Json.JsonElement> AdditionalProperties { get; init; } = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
 }

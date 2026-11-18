@@ -4,36 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(AnnotationSelectorJsonConverter))]
+[global::Xynolog.Serialization.WireUnion(typeof(AnnotationSelector.SelectorCase), typeof(AnnotationSelector.ArrayCase))]
 public closed record AnnotationSelector
 {
     public sealed record SelectorCase(global::Xynolog.Types.Selector Value) : AnnotationSelector;
     public sealed record ArrayCase(global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.Selector> Value) : AnnotationSelector;
-}
-
-internal sealed class AnnotationSelectorJsonConverter : global::System.Text.Json.Serialization.JsonConverter<AnnotationSelector>
-{
-    public override AnnotationSelector Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("AnnotationSelector", root);
-        var variant = global::Xynolog.Serialization.WireJson.Variant("AnnotationSelector", root);
-        return variant switch
-        {
-            0 => new AnnotationSelector.SelectorCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.Selector>(root, options)),
-            1 => new AnnotationSelector.ArrayCase(global::Xynolog.Serialization.WireJson.Read<global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.Selector>>(root, options)),
-            _ => throw new global::System.Text.Json.JsonException("No matching union variant."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, AnnotationSelector value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        switch (value)
-        {
-            case AnnotationSelector.SelectorCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            case AnnotationSelector.ArrayCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            default: throw new global::System.Text.Json.JsonException("Unknown union variant.");
-        }
-    }
 }

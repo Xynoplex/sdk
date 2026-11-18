@@ -2,7 +2,7 @@
 -- Regenerate: make generate (codegen/lib/haskell_sdk/haskell_sdk.ml)
 {-# LANGUAGE OverloadedStrings #-}
 
-module Xynolog.Internal.Generated.Models.DispatcherConfig (DispatcherConfig (..), DispatcherConfigIdentity (..), DispatcherConfigQueue (..), DispatcherConfigTiming (..)) where
+module Xynolog.Internal.Generated.Models.DispatcherConfig (DispatcherConfig (..), DispatcherConfigQueue (..), DispatcherConfigTiming (..)) where
 
 import Data.Aeson (FromJSON (..), ToJSON (..), Value (..), withObject, (.:))
 import Data.Aeson.KeyMap qualified as KM
@@ -11,10 +11,11 @@ import Xynolog.Internal.Codec
 import Xynolog.Internal.Generated.Models.KbIdentity
 import Xynolog.Internal.Generated.Models.LogFormat
 import Xynolog.Internal.Generated.Models.LogLevel
+import Xynolog.Internal.Generated.Models.ServiceIdentity
 
 data DispatcherConfig = DispatcherConfig
   { dispatcherConfigGatewayUrl :: Text,
-    dispatcherConfigIdentity :: DispatcherConfigIdentity,
+    dispatcherConfigIdentity :: ServiceIdentity,
     dispatcherConfigKb :: KbIdentity,
     dispatcherConfigLogFormat :: LogFormat,
     dispatcherConfigLogLevel :: LogLevel,
@@ -27,15 +28,6 @@ data DispatcherConfig = DispatcherConfig
 instance FromJSON DispatcherConfig where parseJSON = checked "DispatcherConfig" $ withObject "DispatcherConfig" (\fields -> DispatcherConfig <$> (fields .: "gatewayUrl") <*> (fields .: "identity") <*> (fields .: "kb") <*> (fields .: "logFormat") <*> (fields .: "logLevel") <*> (fields .: "port") <*> (fields .: "queue") <*> (fields .: "timing"))
 
 instance ToJSON DispatcherConfig where toJSON value = Object (KM.fromList (concat [[("gatewayUrl", toJSON (dispatcherConfigGatewayUrl value))], [("identity", toJSON (dispatcherConfigIdentity value))], [("kb", toJSON (dispatcherConfigKb value))], [("logFormat", toJSON (dispatcherConfigLogFormat value))], [("logLevel", toJSON (dispatcherConfigLogLevel value))], [("port", toJSON (dispatcherConfigPort value))], [("queue", toJSON (dispatcherConfigQueue value))], [("timing", toJSON (dispatcherConfigTiming value))]]))
-
-data DispatcherConfigIdentity = DispatcherConfigIdentity
-  { dispatcherConfigIdentityIssuer :: Text
-  }
-  deriving (Eq, Show)
-
-instance FromJSON DispatcherConfigIdentity where parseJSON = checked "DispatcherConfigIdentity" $ withObject "DispatcherConfigIdentity" (\fields -> DispatcherConfigIdentity <$> (fields .: "issuer"))
-
-instance ToJSON DispatcherConfigIdentity where toJSON value = Object (KM.fromList (concat [[("issuer", toJSON (dispatcherConfigIdentityIssuer value))]]))
 
 data DispatcherConfigQueue = DispatcherConfigQueue
   { dispatcherConfigQueuePasswordEnv :: Maybe Text,

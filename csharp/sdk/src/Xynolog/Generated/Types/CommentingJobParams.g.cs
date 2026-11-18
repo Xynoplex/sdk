@@ -4,58 +4,13 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(CommentingJobParamsJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record CommentingJobParams
 {
-    public double? Density { get; init; }
-    public string? Instructions { get; init; }
-    public string? Language { get; init; }
-    public string Motivation => "commenting";
-    public string? SourceLanguage { get; init; }
-    public global::Xynolog.Types.CommentingJobParamsTone? Tone { get; init; }
-}
-
-internal sealed class CommentingJobParamsJsonConverter : global::System.Text.Json.Serialization.JsonConverter<CommentingJobParams>
-{
-    public override CommentingJobParams Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("CommentingJobParams", root);
-        return new CommentingJobParams
-        {
-            Density = root.TryGetProperty("density", out var p0) ? global::Xynolog.Serialization.WireJson.Read<double>(p0, options) : null,
-            Instructions = root.TryGetProperty("instructions", out var p1) ? global::Xynolog.Serialization.WireJson.Read<string>(p1, options) : null,
-            Language = root.TryGetProperty("language", out var p2) ? global::Xynolog.Serialization.WireJson.Read<string>(p2, options) : null,
-            SourceLanguage = root.TryGetProperty("sourceLanguage", out var p3) ? global::Xynolog.Serialization.WireJson.Read<string>(p3, options) : null,
-            Tone = root.TryGetProperty("tone", out var p4) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.CommentingJobParamsTone>(p4, options) : null,
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, CommentingJobParams value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        if (value.Density is not null)
-        {
-            fields.Add("density", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Density, options));
-        }
-        if (value.Instructions is not null)
-        {
-            fields.Add("instructions", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Instructions, options));
-        }
-        if (value.Language is not null)
-        {
-            fields.Add("language", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Language, options));
-        }
-        fields.Add("motivation", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Motivation, options));
-        if (value.SourceLanguage is not null)
-        {
-            fields.Add("sourceLanguage", global::System.Text.Json.JsonSerializer.SerializeToElement(value.SourceLanguage, options));
-        }
-        if (value.Tone is not null)
-        {
-            fields.Add("tone", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Tone, options));
-        }
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "CommentingJobParams", fields);
-    }
+    [global::Xynolog.Serialization.Wire("density")] public double? Density { get; init; }
+    [global::Xynolog.Serialization.Wire("instructions")] public string? Instructions { get; init; }
+    [global::Xynolog.Serialization.Wire("language")] public string? Language { get; init; }
+    [global::Xynolog.Serialization.Wire("motivation")] public string Motivation => "commenting";
+    [global::Xynolog.Serialization.Wire("sourceLanguage")] public string? SourceLanguage { get; init; }
+    [global::Xynolog.Serialization.Wire("tone")] public global::Xynolog.Types.CommentingJobParamsTone? Tone { get; init; }
 }

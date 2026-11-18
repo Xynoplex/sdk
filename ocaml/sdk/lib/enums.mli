@@ -28,6 +28,20 @@ module Durability_evidence : sig
   val of_string : string -> t option
 end
 
+module Extraction_declined_reason : sig
+  type t = No_text_layer | Encrypted | Corrupt | Too_large
+
+  val to_string : t -> string
+  val of_string : string -> t option
+end
+
+module Extraction_method : sig
+  type t = Text_passthrough | Pdf_text_layer | Table | Form | Ocr
+
+  val to_string : t -> string
+  val of_string : string -> t option
+end
+
 module Failure_class : sig
   type t = Transient | Deterministic | Withheld
 
@@ -58,6 +72,13 @@ end
 
 module Motivation : sig
   type t = Assessing | Commenting | Highlighting | Linking | Tagging
+
+  val to_string : t -> string
+  val of_string : string -> t option
+end
+
+module Pdf_class : sig
+  type t = A | B | C | D | E | F | G
 
   val to_string : t -> string
   val of_string : string -> t option

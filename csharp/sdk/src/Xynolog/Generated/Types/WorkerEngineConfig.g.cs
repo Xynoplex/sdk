@@ -4,41 +4,11 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(WorkerEngineConfigJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record WorkerEngineConfig
 {
-    public string? ApiKeyEnv { get; init; }
-    public required string BaseUrl { get; init; }
-    public required global::Xynolog.Types.Engine Engine { get; init; }
-    public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.JobFilter> Jobs { get; init; }
-}
-
-internal sealed class WorkerEngineConfigJsonConverter : global::System.Text.Json.Serialization.JsonConverter<WorkerEngineConfig>
-{
-    public override WorkerEngineConfig Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("WorkerEngineConfig", root);
-        return new WorkerEngineConfig
-        {
-            ApiKeyEnv = root.TryGetProperty("apiKeyEnv", out var p0) ? global::Xynolog.Serialization.WireJson.Read<string>(p0, options) : null,
-            BaseUrl = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "baseUrl", options),
-            Engine = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.Engine>(root, "engine", options),
-            Jobs = global::Xynolog.Serialization.WireJson.ReadMember<global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.JobFilter>>(root, "jobs", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, WorkerEngineConfig value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        if (value.ApiKeyEnv is not null)
-        {
-            fields.Add("apiKeyEnv", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ApiKeyEnv, options));
-        }
-        fields.Add("baseUrl", global::System.Text.Json.JsonSerializer.SerializeToElement(value.BaseUrl, options));
-        fields.Add("engine", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Engine, options));
-        fields.Add("jobs", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Jobs, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "WorkerEngineConfig", fields);
-    }
+    [global::Xynolog.Serialization.Wire("apiKeyEnv")] public string? ApiKeyEnv { get; init; }
+    [global::Xynolog.Serialization.Wire("baseUrl")] public required string BaseUrl { get; init; }
+    [global::Xynolog.Serialization.Wire("engine")] public required global::Xynolog.Types.Engine Engine { get; init; }
+    [global::Xynolog.Serialization.Wire("jobs")] public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.JobFilter> Jobs { get; init; }
 }

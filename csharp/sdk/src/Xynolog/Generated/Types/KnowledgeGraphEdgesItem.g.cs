@@ -4,47 +4,12 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(KnowledgeGraphEdgesItemJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record KnowledgeGraphEdgesItem
 {
-    public bool? Bidirectional { get; init; }
-    public global::System.Collections.Generic.IReadOnlyDictionary<string, global::System.Text.Json.JsonElement>? Metadata { get; init; }
-    public required string Source { get; init; }
-    public required string Target { get; init; }
-    public required string Type { get; init; }
-}
-
-internal sealed class KnowledgeGraphEdgesItemJsonConverter : global::System.Text.Json.Serialization.JsonConverter<KnowledgeGraphEdgesItem>
-{
-    public override KnowledgeGraphEdgesItem Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("KnowledgeGraphEdgesItem", root);
-        return new KnowledgeGraphEdgesItem
-        {
-            Bidirectional = root.TryGetProperty("bidirectional", out var p0) ? global::Xynolog.Serialization.WireJson.Read<bool>(p0, options) : null,
-            Metadata = root.TryGetProperty("metadata", out var p1) ? global::Xynolog.Serialization.WireJson.Read<global::System.Collections.Generic.IReadOnlyDictionary<string, global::System.Text.Json.JsonElement>>(p1, options) : null,
-            Source = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "source", options),
-            Target = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "target", options),
-            Type = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "type", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, KnowledgeGraphEdgesItem value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        if (value.Bidirectional is not null)
-        {
-            fields.Add("bidirectional", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Bidirectional, options));
-        }
-        if (value.Metadata is not null)
-        {
-            fields.Add("metadata", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Metadata, options));
-        }
-        fields.Add("source", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Source, options));
-        fields.Add("target", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Target, options));
-        fields.Add("type", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Type, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "KnowledgeGraphEdgesItem", fields);
-    }
+    [global::Xynolog.Serialization.Wire("bidirectional")] public bool? Bidirectional { get; init; }
+    [global::Xynolog.Serialization.Wire("metadata")] public global::System.Collections.Generic.IReadOnlyDictionary<string, global::System.Text.Json.JsonElement>? Metadata { get; init; }
+    [global::Xynolog.Serialization.Wire("source")] public required string Source { get; init; }
+    [global::Xynolog.Serialization.Wire("target")] public required string Target { get; init; }
+    [global::Xynolog.Serialization.Wire("type")] public required string Type { get; init; }
 }

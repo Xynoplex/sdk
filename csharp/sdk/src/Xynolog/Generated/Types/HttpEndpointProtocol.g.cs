@@ -4,35 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(HttpEndpointProtocolJsonConverter))]
+[global::Xynolog.Serialization.WireEnum]
 public enum HttpEndpointProtocol
 {
-    Http,
-    Https,
-}
-
-internal sealed class HttpEndpointProtocolJsonConverter : global::System.Text.Json.Serialization.JsonConverter<HttpEndpointProtocol>
-{
-    public override HttpEndpointProtocol Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("HttpEndpointProtocol", root);
-        return root.GetString() switch
-        {
-            "http" => HttpEndpointProtocol.Http,
-            "https" => HttpEndpointProtocol.Https,
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, HttpEndpointProtocol value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        writer.WriteStringValue(value switch
-        {
-            HttpEndpointProtocol.Http => "http",
-            HttpEndpointProtocol.Https => "https",
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        });
-    }
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("http")] Http,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("https")] Https,
 }

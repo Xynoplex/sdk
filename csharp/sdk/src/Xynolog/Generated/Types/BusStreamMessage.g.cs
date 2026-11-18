@@ -4,36 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(BusStreamMessageJsonConverter))]
+[global::Xynolog.Serialization.WireUnion(typeof(BusStreamMessage.BusEventMessageCase), typeof(BusStreamMessage.BusPingMessageCase))]
 public closed record BusStreamMessage
 {
     public sealed record BusEventMessageCase(global::Xynolog.Types.BusEventMessage Value) : BusStreamMessage;
     public sealed record BusPingMessageCase(global::Xynolog.Types.BusPingMessage Value) : BusStreamMessage;
-}
-
-internal sealed class BusStreamMessageJsonConverter : global::System.Text.Json.Serialization.JsonConverter<BusStreamMessage>
-{
-    public override BusStreamMessage Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("BusStreamMessage", root);
-        var variant = global::Xynolog.Serialization.WireJson.Variant("BusStreamMessage", root);
-        return variant switch
-        {
-            0 => new BusStreamMessage.BusEventMessageCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.BusEventMessage>(root, options)),
-            1 => new BusStreamMessage.BusPingMessageCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.BusPingMessage>(root, options)),
-            _ => throw new global::System.Text.Json.JsonException("No matching union variant."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, BusStreamMessage value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        switch (value)
-        {
-            case BusStreamMessage.BusEventMessageCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            case BusStreamMessage.BusPingMessageCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            default: throw new global::System.Text.Json.JsonException("Unknown union variant.");
-        }
-    }
 }

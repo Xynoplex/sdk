@@ -66,6 +66,42 @@ module Durability_evidence = struct
     | _ -> None
 end
 
+module Extraction_declined_reason = struct
+  type t = No_text_layer | Encrypted | Corrupt | Too_large
+
+  let to_string = function
+    | No_text_layer -> "no-text-layer"
+    | Encrypted -> "encrypted"
+    | Corrupt -> "corrupt"
+    | Too_large -> "too-large"
+
+  let of_string = function
+    | "no-text-layer" -> Some No_text_layer
+    | "encrypted" -> Some Encrypted
+    | "corrupt" -> Some Corrupt
+    | "too-large" -> Some Too_large
+    | _ -> None
+end
+
+module Extraction_method = struct
+  type t = Text_passthrough | Pdf_text_layer | Table | Form | Ocr
+
+  let to_string = function
+    | Text_passthrough -> "text-passthrough"
+    | Pdf_text_layer -> "pdf-text-layer"
+    | Table -> "table"
+    | Form -> "form"
+    | Ocr -> "ocr"
+
+  let of_string = function
+    | "text-passthrough" -> Some Text_passthrough
+    | "pdf-text-layer" -> Some Pdf_text_layer
+    | "table" -> Some Table
+    | "form" -> Some Form
+    | "ocr" -> Some Ocr
+    | _ -> None
+end
+
 module Failure_class = struct
   type t = Transient | Deterministic | Withheld
 
@@ -138,6 +174,29 @@ module Motivation = struct
     | "highlighting" -> Some Highlighting
     | "linking" -> Some Linking
     | "tagging" -> Some Tagging
+    | _ -> None
+end
+
+module Pdf_class = struct
+  type t = A | B | C | D | E | F | G
+
+  let to_string = function
+    | A -> "A"
+    | B -> "B"
+    | C -> "C"
+    | D -> "D"
+    | E -> "E"
+    | F -> "F"
+    | G -> "G"
+
+  let of_string = function
+    | "A" -> Some A
+    | "B" -> Some B
+    | "C" -> Some C
+    | "D" -> Some D
+    | "E" -> Some E
+    | "F" -> Some F
+    | "G" -> Some G
     | _ -> None
 end
 

@@ -4,47 +4,12 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(GatheredContextJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record GatheredContext
 {
-    public required global::Xynolog.Types.GatheredContextFocus Focus { get; init; }
-    public required global::Xynolog.Types.KnowledgeGraph Graph { get; init; }
-    public string? InferredRelationshipSummary { get; init; }
-    public required global::Xynolog.Types.GatheredContextMetadata Metadata { get; init; }
-    public global::Xynolog.Types.GatheredContextSemanticContext? SemanticContext { get; init; }
-}
-
-internal sealed class GatheredContextJsonConverter : global::System.Text.Json.Serialization.JsonConverter<GatheredContext>
-{
-    public override GatheredContext Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("GatheredContext", root);
-        return new GatheredContext
-        {
-            Focus = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.GatheredContextFocus>(root, "focus", options),
-            Graph = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.KnowledgeGraph>(root, "graph", options),
-            InferredRelationshipSummary = root.TryGetProperty("inferredRelationshipSummary", out var p2) ? global::Xynolog.Serialization.WireJson.Read<string>(p2, options) : null,
-            Metadata = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.GatheredContextMetadata>(root, "metadata", options),
-            SemanticContext = root.TryGetProperty("semanticContext", out var p4) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.GatheredContextSemanticContext>(p4, options) : null,
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, GatheredContext value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("focus", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Focus, options));
-        fields.Add("graph", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Graph, options));
-        if (value.InferredRelationshipSummary is not null)
-        {
-            fields.Add("inferredRelationshipSummary", global::System.Text.Json.JsonSerializer.SerializeToElement(value.InferredRelationshipSummary, options));
-        }
-        fields.Add("metadata", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Metadata, options));
-        if (value.SemanticContext is not null)
-        {
-            fields.Add("semanticContext", global::System.Text.Json.JsonSerializer.SerializeToElement(value.SemanticContext, options));
-        }
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "GatheredContext", fields);
-    }
+    [global::Xynolog.Serialization.Wire("focus")] public required global::Xynolog.Types.GatheredContextFocus Focus { get; init; }
+    [global::Xynolog.Serialization.Wire("graph")] public required global::Xynolog.Types.KnowledgeGraph Graph { get; init; }
+    [global::Xynolog.Serialization.Wire("inferredRelationshipSummary")] public string? InferredRelationshipSummary { get; init; }
+    [global::Xynolog.Serialization.Wire("metadata")] public required global::Xynolog.Types.GatheredContextMetadata Metadata { get; init; }
+    [global::Xynolog.Serialization.Wire("semanticContext")] public global::Xynolog.Types.GatheredContextSemanticContext? SemanticContext { get; init; }
 }

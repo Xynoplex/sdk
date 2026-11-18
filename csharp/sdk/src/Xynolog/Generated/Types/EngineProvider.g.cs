@@ -4,50 +4,14 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(EngineProviderJsonConverter))]
+[global::Xynolog.Serialization.WireEnum]
 public enum EngineProvider
 {
-    Anthropic,
-    Google,
-    Llamacpp,
-    Ollama,
-    Openai,
-    Together,
-    Vllm,
-}
-
-internal sealed class EngineProviderJsonConverter : global::System.Text.Json.Serialization.JsonConverter<EngineProvider>
-{
-    public override EngineProvider Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("EngineProvider", root);
-        return root.GetString() switch
-        {
-            "anthropic" => EngineProvider.Anthropic,
-            "google" => EngineProvider.Google,
-            "llamacpp" => EngineProvider.Llamacpp,
-            "ollama" => EngineProvider.Ollama,
-            "openai" => EngineProvider.Openai,
-            "together" => EngineProvider.Together,
-            "vllm" => EngineProvider.Vllm,
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, EngineProvider value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        writer.WriteStringValue(value switch
-        {
-            EngineProvider.Anthropic => "anthropic",
-            EngineProvider.Google => "google",
-            EngineProvider.Llamacpp => "llamacpp",
-            EngineProvider.Ollama => "ollama",
-            EngineProvider.Openai => "openai",
-            EngineProvider.Together => "together",
-            EngineProvider.Vllm => "vllm",
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        });
-    }
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("anthropic")] Anthropic,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("google")] Google,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("llamacpp")] Llamacpp,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("ollama")] Ollama,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("openai")] Openai,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("together")] Together,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("vllm")] Vllm,
 }
