@@ -36,15 +36,13 @@ let text (shapes : (string * Shape.shape) list) =
                    readonly = true;
                    key = "Name";
                    in_ =
-                     T_keyof
-                       (T_index (T_name "components", T_str (Single, "schemas")));
+                     T_keyof (T_index (T_name "components", T_str "schemas"));
                    value = T_name "Shape";
                  })
             (T.rows
                (List.map
                   (fun (name, shape) ->
-                    T.entry
-                      (Quoted (Double, name))
+                    T.entry (Quoted name)
                       (Json (Shape.to_json ~pairs:false shape)))
                   shapes));
         ];

@@ -290,11 +290,20 @@ let typescript =
 import type { components } from './types';
 
 /** The live queries a client's cache answers. */
-export const CACHE_QUERIES = ['thing', 'items', 'names', 'deep', 'labels'] as const;
+export const CACHE_QUERIES = [
+  'thing',
+  'items',
+  'names',
+  'deep',
+  'labels',
+] as const;
 export type CacheQuery = (typeof CACHE_QUERIES)[number];
 
 /** The live queries whose answers a client keeps across its lives, for the person signed in. */
-export const PERSISTED_QUERIES = ['thing', 'deep'] as const;
+export const PERSISTED_QUERIES = [
+  'thing',
+  'deep',
+] as const;
 export type PersistedQuery = (typeof PERSISTED_QUERIES)[number];
 
 /** What each live query is asked for per: a resource, an annotation, or the filters it is asked with; `whole` for one asked for whole, whose one answer is kept under `wholeKey`. */
@@ -310,10 +319,20 @@ export type CachePer = typeof CACHE_PER;
 /** What each live query's cache holds, its `value`: the component, and the members within it the value is, outermost first. */
 export const CACHE_VALUES = {
   'thing': { component: 'Thing', members: [] },
-  'items': { component: 'Thing', members: ['items'] },
-  'names': { component: 'Thing', members: ['inner', 'names'] },
-  'deep': { component: 'Thing', members: ['items'] },
-  'labels': { component: 'Thing', members: ['loose', 'deep'] },
+  'items': { component: 'Thing', members: [
+    'items',
+  ] },
+  'names': { component: 'Thing', members: [
+    'inner',
+    'names',
+  ] },
+  'deep': { component: 'Thing', members: [
+    'items',
+  ] },
+  'labels': { component: 'Thing', members: [
+    'loose',
+    'deep',
+  ] },
 } as const satisfies { readonly [Q in CacheQuery]: { readonly component: keyof components['schemas']; readonly members: readonly string[] } };
 
 /** The type of what each live query's cache holds: `CACHE_VALUES`'s component, member within member. */
@@ -351,19 +370,61 @@ export interface CacheRefresh {
 /** What each trigger does: a channel's events; `reopened`, the stream open again after a drop; or `unreadable`, an event on one of these channels that cannot be read. */
 export const CACHE_REFRESH = {
   /** Docs. */
-  'reopened': [{ reach: 'held', names: {}, refetches: ['thing', 'names'], writes: [], removes: [] }],
+  'reopened': [
+    { reach: 'held', names: {}, refetches: [
+      'thing',
+      'names',
+    ], writes: [], removes: [] },
+  ],
   /** Docs. */
-  'unreadable': [{ reach: 'held', names: {}, refetches: ['thing', 'items', 'names'], writes: [], removes: [] }],
+  'unreadable': [
+    { reach: 'held', names: {}, refetches: [
+      'thing',
+      'items',
+      'names',
+    ], writes: [], removes: [] },
+  ],
   /** enriched: It changed, and says how. unenriched: It changed. */
-  'demo:changed': [{ when: 'enriched', reach: 'subject', names: { resource: ['resourceId'], annotation: ['annotation', 'id'] }, carries: ['annotation'], refetches: ['thing'], writes: ['items'], removes: [] }, { when: 'unenriched', reach: 'subject', names: { resource: ['resourceId'], annotation: ['payload', 'annotationId'] }, refetches: ['items', 'thing'], writes: [], removes: ['names'] }],
+  'demo:changed': [
+    { when: 'enriched', reach: 'subject', names: { resource: [
+      'resourceId',
+    ], annotation: [
+      'annotation',
+      'id',
+    ] }, carries: [
+      'annotation',
+    ], refetches: [
+      'thing',
+    ], writes: [
+      'items',
+    ], removes: [] },
+    { when: 'unenriched', reach: 'subject', names: { resource: [
+      'resourceId',
+    ], annotation: [
+      'payload',
+      'annotationId',
+    ] }, refetches: [
+      'items',
+      'thing',
+    ], writes: [], removes: [
+      'names',
+    ] },
+  ],
   /** Something *\/ was said. */
-  'demo:said': [{ reach: 'subject', names: {}, refetches: ['names'], writes: [], removes: [] }],
+  'demo:said': [
+    { reach: 'subject', names: {}, refetches: [
+      'names',
+    ], writes: [], removes: [] },
+  ],
 } as const satisfies Record<string, readonly CacheRefresh[]>;
 
 export type CacheRefreshTrigger = keyof typeof CACHE_REFRESH;
 
 /** The triggers that are channels of the bus. */
-export const CACHE_REFRESH_CHANNELS = ['demo:changed', 'demo:said'] as const;
+export const CACHE_REFRESH_CHANNELS = [
+  'demo:changed',
+  'demo:said',
+] as const;
 export type CacheRefreshChannel = (typeof CACHE_REFRESH_CHANNELS)[number];
 |xx}
 

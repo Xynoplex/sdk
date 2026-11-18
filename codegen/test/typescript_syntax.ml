@@ -18,21 +18,9 @@ let name n = T.Name n
 
 let cases =
   [
-    case "a string is quoted as it is stated"
-      (writes {|['it\'s', "say \"hi\""]|}
-         (expr
-            (T.Array
-               {
-                 layout = Inline;
-                 elements =
-                   [
-                     T.element (Str (Single, "it's"));
-                     T.element (Str (Double, "say \"hi\""));
-                   ];
-               })));
-    case "packed has no space after a comma"
-      (writes {|["a","b"]|}
-         (expr (T.strings ~quote:Double Packed [ "a"; "b" ])));
+    case "a string is in single quotes, a quote in it escaped"
+      (writes "[\n  'it\\'s',\n  'say \"hi\"',\n]"
+         (expr (T.strings [ "it's"; "say \"hi\"" ])));
     case "a name that is none is refused" (refuses (expr (name "a-b")));
     case "an operand that binds tighter is bare"
       (writes {|a === undefined || f(a)|}
@@ -42,12 +30,8 @@ let cases =
                  Or,
                  Call (name "f", [ name "a" ]) ))));
     case "an operand as tight and on the left is bare"
-      (writes {|"x" + owner + "y"|}
-         (expr
-            (Binary
-               ( Binary (Str (Double, "x"), Plus, name "owner"),
-                 Plus,
-                 Str (Double, "y") ))));
+      (writes {|'x' + owner + 'y'|}
+         (expr (Binary (Binary (Str "x", Plus, name "owner"), Plus, Str "y"))));
     case "an operand as tight and on the right is refused"
       (refuses
          (expr (Binary (name "a", Plus, Binary (name "b", Plus, name "c")))));
@@ -71,20 +55,17 @@ let cases =
             (T.Object
                {
                  layout = Inline;
-                 column = None;
                  entries = [ T.entry ~about:[ Doc "x" ] (Ident "a") (Int 1) ];
                })));
-    case "a row's inline value aligns its second entry"
-      (writes "{\n  'a':   { x: 1,   y: 2 },\n}"
+    case "a row holds an inline object"
+      (writes "{\n  'a': { x: 1, y: 2 },\n}"
          (expr
-            (T.rows ~column:9
+            (T.rows
                [
-                 T.entry
-                   (Quoted (Single, "a"))
+                 T.entry (Quoted "a")
                    (Object
                       {
                         layout = Inline;
-                        column = Some 19;
                         entries =
                           [
                             T.entry (Ident "x") (Int 1);
@@ -92,15 +73,6 @@ let cases =
                           ];
                       });
                ])));
-    case "an inline object's column is a row's"
-      (refuses
-         (expr
-            (T.Object
-               {
-                 layout = Inline;
-                 column = Some 4;
-                 entries = [ T.entry (Ident "a") (Int 1) ];
-               })));
     case "a conditional in rows opens on a line of its own"
       (writes
          "type If<K extends string> =\n  K extends 'a'\n    ? never\n    : K;"
@@ -111,7 +83,7 @@ let cases =
                   {
                     layout = Rows;
                     check = T_name "K";
-                    extends = T_str (Single, "a");
+                    extends = T_str "a";
                     then_ = T_name "never";
                     else_ = T_name "K";
                   }))));

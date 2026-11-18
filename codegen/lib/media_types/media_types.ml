@@ -299,15 +299,14 @@ let python (t : T.t) =
 
 let typescript (t : T.t) =
   let module S = Typescript_syntax in
-  let text value = S.Str (Single, value) in
+  let text value = S.Str value in
   let union name words =
-    S.type_alias name (T_union (List.map (fun w -> S.T_str (Single, w)) words))
+    S.type_alias name (T_union (List.map (fun w -> S.T_str w) words))
   in
   let attrs (r : T.media_type) =
     S.Object
       {
         layout = Inline;
-        column = None;
         entries =
           [
             S.entry (Ident "extension") (text r.extension);
@@ -348,7 +347,7 @@ let typescript (t : T.t) =
                 (S.rows
                    (List.map
                       (fun (r : T.media_type) ->
-                        S.entry (Quoted (Single, r.media_type)) (attrs r))
+                        S.entry (Quoted r.media_type) (attrs r))
                       t.media_types));
               S.const "EXTENSION_ALIASES"
                 ~about:
@@ -366,7 +365,7 @@ let typescript (t : T.t) =
                        ] ))
                 (S.rows
                    (List.map
-                      (fun (a, e) -> S.entry (Quoted (Single, a)) (text e))
+                      (fun (a, e) -> S.entry (Quoted a) (text e))
                       t.extension_aliases));
             ];
         };

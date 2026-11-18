@@ -261,7 +261,7 @@ let typescript (entry : Flat.t) (o : Owner_only.t) (names : Contract.t) =
       (Ident f.name) (T_name "string")
   in
   let check (f : Flat.field) =
-    let member = S.Index (Name "value", Str (Double, f.name)) in
+    let member = S.Index (Name "value", Str f.name) in
     let is_string = S.Call (Name "isString", [ member ]) in
     if f.required then is_string
     else Paren (Binary (Binary (member, Strict_eq, Undefined), Or, is_string))
@@ -327,20 +327,20 @@ let typescript (entry : Flat.t) (o : Owner_only.t) (names : Contract.t) =
                       Return
                         (Binary
                            ( Binary
-                               ( Str (Double, o.directory_access_list.before),
+                               ( Str o.directory_access_list.before,
                                  Plus,
                                  Name "owner" ),
                              Plus,
-                             Str (Double, o.directory_access_list.after) ));
+                             Str o.directory_access_list.after ));
                     ];
                 };
               constant "SIGN_IN_STORE_FILE"
                 "The document's name in the state home: one sign-in per stack."
-                (Str (Double, names.document));
+                (Str names.document);
               constant "SIGN_IN_STORE_LOCK"
                 "The name, beside the document, of the file every writer locks \
                  from before its read until after its rename."
-                (Str (Double, names.lock));
+                (Str names.lock);
               constant "SIGN_IN_STORE_WINDOWS_OFFSET_HIGH"
                 "On Windows, the high 32 bits of the offset of the one byte of \
                  the lock file that is locked: far past anything the file \

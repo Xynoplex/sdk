@@ -25,7 +25,7 @@ let text (t : Table.t) =
                    lower case.";
               ]
             ~annotation:(T_generic ("ReadonlySet", [ T_name "string" ]))
-            (New ("Set", [ T.strings ~quote:Double Inline t.refused ]));
+            (New ("Set", [ T.strings t.refused ]));
         ];
     }
 
