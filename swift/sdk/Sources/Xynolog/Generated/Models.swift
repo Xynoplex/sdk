@@ -44,33 +44,20 @@ public struct AgentOrganization: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.id = c.contains(WireKey("@id")) ? try c.decode(String.self, forKey: WireKey("@id")) : nil
-    self.type = try c.decode(AgentOrganizationType.self, forKey: WireKey("@type"))
-    self.homepage =
-      c.contains(WireKey("homepage")) ? try c.decode(String.self, forKey: WireKey("homepage")) : nil
-    self.name = try c.decode(String.self, forKey: WireKey("name"))
-    rest = [:]
-    for key in c.allKeys
-    where !Set<String>(["@id", "@type", "homepage", "name"]).contains(key.stringValue) {
-      rest[key.stringValue] = try c.decode(JSONValue.self, forKey: key)
-    }
+    self.id = try c.ifPresent("@id")
+    self.type = try c.value("@type")
+    self.homepage = try c.ifPresent("homepage")
+    self.name = try c.value("name")
+    rest = try c.rest(excluding: ["@id", "@type", "homepage", "name"])
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    for (key, value) in rest {
-      guard !Set<String>(["@id", "@type", "homepage", "name"]).contains(key) else {
-        throw EncodingError.invalidValue(
-          value,
-          .init(
-            codingPath: encoder.codingPath,
-            debugDescription: "rest overrides a named property of AgentOrganization"))
-      }
-      try c.encode(value, forKey: WireKey(key))
-    }
-    try c.encodeIfPresent(self.id, forKey: WireKey("@id"))
-    try c.encode(self.type, forKey: WireKey("@type"))
-    try c.encodeIfPresent(self.homepage, forKey: WireKey("homepage"))
-    try c.encode(self.name, forKey: WireKey("name"))
+    try c.encode(
+      rest: rest, excluding: ["@id", "@type", "homepage", "name"], of: "AgentOrganization")
+    try c.encodeIfPresent(self.id, as: "@id")
+    try c.encode(self.type, as: "@type")
+    try c.encodeIfPresent(self.homepage, as: "homepage")
+    try c.encode(self.name, as: "name")
   }
 }
 
@@ -102,47 +89,30 @@ public struct AgentPerson: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.id = c.contains(WireKey("@id")) ? try c.decode(String.self, forKey: WireKey("@id")) : nil
-    self.type = try c.decode(AgentPersonType.self, forKey: WireKey("@type"))
-    self.email =
-      c.contains(WireKey("email")) ? try c.decode(String.self, forKey: WireKey("email")) : nil
-    self.emailSha1 =
-      c.contains(WireKey("email_sha1"))
-      ? try c.decode(String.self, forKey: WireKey("email_sha1")) : nil
-    self.homepage =
-      c.contains(WireKey("homepage")) ? try c.decode(String.self, forKey: WireKey("homepage")) : nil
-    self.name =
-      c.contains(WireKey("name")) ? try c.decode(String.self, forKey: WireKey("name")) : nil
-    self.nickname =
-      c.contains(WireKey("nickname")) ? try c.decode(String.self, forKey: WireKey("nickname")) : nil
-    rest = [:]
-    for key in c.allKeys
-    where !Set<String>(["@id", "@type", "email", "email_sha1", "homepage", "name", "nickname"])
-      .contains(key.stringValue)
-    { rest[key.stringValue] = try c.decode(JSONValue.self, forKey: key) }
+    self.id = try c.ifPresent("@id")
+    self.type = try c.value("@type")
+    self.email = try c.ifPresent("email")
+    self.emailSha1 = try c.ifPresent("email_sha1")
+    self.homepage = try c.ifPresent("homepage")
+    self.name = try c.ifPresent("name")
+    self.nickname = try c.ifPresent("nickname")
+    rest = try c.rest(excluding: [
+      "@id", "@type", "email", "email_sha1", "homepage", "name", "nickname",
+    ])
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    for (key, value) in rest {
-      guard
-        !Set<String>(["@id", "@type", "email", "email_sha1", "homepage", "name", "nickname"])
-          .contains(key)
-      else {
-        throw EncodingError.invalidValue(
-          value,
-          .init(
-            codingPath: encoder.codingPath,
-            debugDescription: "rest overrides a named property of AgentPerson"))
-      }
-      try c.encode(value, forKey: WireKey(key))
-    }
-    try c.encodeIfPresent(self.id, forKey: WireKey("@id"))
-    try c.encode(self.type, forKey: WireKey("@type"))
-    try c.encodeIfPresent(self.email, forKey: WireKey("email"))
-    try c.encodeIfPresent(self.emailSha1, forKey: WireKey("email_sha1"))
-    try c.encodeIfPresent(self.homepage, forKey: WireKey("homepage"))
-    try c.encodeIfPresent(self.name, forKey: WireKey("name"))
-    try c.encodeIfPresent(self.nickname, forKey: WireKey("nickname"))
+    try c.encode(
+      rest: rest,
+      excluding: ["@id", "@type", "email", "email_sha1", "homepage", "name", "nickname"],
+      of: "AgentPerson")
+    try c.encodeIfPresent(self.id, as: "@id")
+    try c.encode(self.type, as: "@type")
+    try c.encodeIfPresent(self.email, as: "email")
+    try c.encodeIfPresent(self.emailSha1, as: "email_sha1")
+    try c.encodeIfPresent(self.homepage, as: "homepage")
+    try c.encodeIfPresent(self.name, as: "name")
+    try c.encodeIfPresent(self.nickname, as: "nickname")
   }
 }
 
@@ -172,42 +142,25 @@ public struct AgentSoftware: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.id = c.contains(WireKey("@id")) ? try c.decode(String.self, forKey: WireKey("@id")) : nil
-    self.type = try c.decode(AgentSoftwareType.self, forKey: WireKey("@type"))
-    self.model =
-      c.contains(WireKey("model")) ? try c.decode(String.self, forKey: WireKey("model")) : nil
-    self.name =
-      c.contains(WireKey("name")) ? try c.decode(String.self, forKey: WireKey("name")) : nil
-    self.parameters =
-      c.contains(WireKey("parameters"))
-      ? try c.decode([String: JSONValue].self, forKey: WireKey("parameters")) : nil
-    self.provider =
-      c.contains(WireKey("provider")) ? try c.decode(String.self, forKey: WireKey("provider")) : nil
-    rest = [:]
-    for key in c.allKeys
-    where !Set<String>(["@id", "@type", "model", "name", "parameters", "provider"]).contains(
-      key.stringValue)
-    { rest[key.stringValue] = try c.decode(JSONValue.self, forKey: key) }
+    self.id = try c.ifPresent("@id")
+    self.type = try c.value("@type")
+    self.model = try c.ifPresent("model")
+    self.name = try c.ifPresent("name")
+    self.parameters = try c.ifPresent("parameters")
+    self.provider = try c.ifPresent("provider")
+    rest = try c.rest(excluding: ["@id", "@type", "model", "name", "parameters", "provider"])
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    for (key, value) in rest {
-      guard !Set<String>(["@id", "@type", "model", "name", "parameters", "provider"]).contains(key)
-      else {
-        throw EncodingError.invalidValue(
-          value,
-          .init(
-            codingPath: encoder.codingPath,
-            debugDescription: "rest overrides a named property of AgentSoftware"))
-      }
-      try c.encode(value, forKey: WireKey(key))
-    }
-    try c.encodeIfPresent(self.id, forKey: WireKey("@id"))
-    try c.encode(self.type, forKey: WireKey("@type"))
-    try c.encodeIfPresent(self.model, forKey: WireKey("model"))
-    try c.encodeIfPresent(self.name, forKey: WireKey("name"))
-    try c.encodeIfPresent(self.parameters, forKey: WireKey("parameters"))
-    try c.encodeIfPresent(self.provider, forKey: WireKey("provider"))
+    try c.encode(
+      rest: rest, excluding: ["@id", "@type", "model", "name", "parameters", "provider"],
+      of: "AgentSoftware")
+    try c.encodeIfPresent(self.id, as: "@id")
+    try c.encode(self.type, as: "@type")
+    try c.encodeIfPresent(self.model, as: "model")
+    try c.encodeIfPresent(self.name, as: "name")
+    try c.encodeIfPresent(self.parameters, as: "parameters")
+    try c.encodeIfPresent(self.provider, as: "provider")
   }
 }
 
@@ -224,13 +177,13 @@ public struct AnchoredText: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.items = try c.decode([PdfTextItem].self, forKey: WireKey("items"))
-    self.text = try c.decode(String.self, forKey: WireKey("text"))
+    self.items = try c.value("items")
+    self.text = try c.value("text")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.items, forKey: WireKey("items"))
-    try c.encode(self.text, forKey: WireKey("text"))
+    try c.encode(self.items, as: "items")
+    try c.encode(self.text, as: "text")
   }
 }
 
@@ -241,11 +194,11 @@ public struct AnchoredTextAbsent: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.kind = try c.decode(AnchoredTextAbsentKind.self, forKey: WireKey("kind"))
+    self.kind = try c.value("kind")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.kind, forKey: WireKey("kind"))
+    try c.encode(self.kind, as: "kind")
   }
 }
 
@@ -293,22 +246,16 @@ public struct AnchoredTextDeclinedEntry: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["declined", "stamp", "v"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in AnchoredTextDeclinedEntry")
-    }
-    self.declined = try c.decode(
-      AnchoredTextDeclinedEntryDeclined.self, forKey: WireKey("declined"))
-    self.stamp = try c.decode(String.self, forKey: WireKey("stamp"))
-    self.v = try c.decode(AnchoredTextDeclinedEntryV.self, forKey: WireKey("v"))
+    try c.refuseUnknown(["declined", "stamp", "v"], in: "AnchoredTextDeclinedEntry")
+    self.declined = try c.value("declined")
+    self.stamp = try c.value("stamp")
+    self.v = try c.value("v")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.declined, forKey: WireKey("declined"))
-    try c.encode(self.stamp, forKey: WireKey("stamp"))
-    try c.encode(self.v, forKey: WireKey("v"))
+    try c.encode(self.declined, as: "declined")
+    try c.encode(self.stamp, as: "stamp")
+    try c.encode(self.v, as: "v")
   }
 }
 
@@ -341,15 +288,12 @@ public struct AnchoredTextEntries: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: { !Set<String>(["checksums"]).contains($0.stringValue) }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in AnchoredTextEntries")
-    }
-    self.checksums = try c.decode([String].self, forKey: WireKey("checksums"))
+    try c.refuseUnknown(["checksums"], in: "AnchoredTextEntries")
+    self.checksums = try c.value("checksums")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.checksums, forKey: WireKey("checksums"))
+    try c.encode(self.checksums, as: "checksums")
   }
 }
 
@@ -403,40 +347,28 @@ public struct AnchoredTextExtractedEntry: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>([
-        "lines", "method", "ocrConfidence", "pdfClass", "stamp", "text", "unreadPages", "v",
-      ]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in AnchoredTextExtractedEntry")
-    }
-    self.lines = try c.decode([AnchoredTextExtractedEntryLinesItem].self, forKey: WireKey("lines"))
-    self.method = try c.decode(AnchoredTextExtractedEntryMethod.self, forKey: WireKey("method"))
-    self.ocrConfidence =
-      c.contains(WireKey("ocrConfidence"))
-      ? try c.decode(AnchoredTextExtractedEntryOcrConfidence.self, forKey: WireKey("ocrConfidence"))
-      : nil
-    self.pdfClass =
-      c.contains(WireKey("pdfClass"))
-      ? try c.decode(AnchoredTextExtractedEntryPdfClass.self, forKey: WireKey("pdfClass")) : nil
-    self.stamp = try c.decode(String.self, forKey: WireKey("stamp"))
-    self.text = try c.decode(String.self, forKey: WireKey("text"))
-    self.unreadPages =
-      c.contains(WireKey("unreadPages"))
-      ? try c.decode([Int].self, forKey: WireKey("unreadPages")) : nil
-    self.v = try c.decode(AnchoredTextExtractedEntryV.self, forKey: WireKey("v"))
+    try c.refuseUnknown(
+      ["lines", "method", "ocrConfidence", "pdfClass", "stamp", "text", "unreadPages", "v"],
+      in: "AnchoredTextExtractedEntry")
+    self.lines = try c.value("lines")
+    self.method = try c.value("method")
+    self.ocrConfidence = try c.ifPresent("ocrConfidence")
+    self.pdfClass = try c.ifPresent("pdfClass")
+    self.stamp = try c.value("stamp")
+    self.text = try c.value("text")
+    self.unreadPages = try c.ifPresent("unreadPages")
+    self.v = try c.value("v")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.lines, forKey: WireKey("lines"))
-    try c.encode(self.method, forKey: WireKey("method"))
-    try c.encodeIfPresent(self.ocrConfidence, forKey: WireKey("ocrConfidence"))
-    try c.encodeIfPresent(self.pdfClass, forKey: WireKey("pdfClass"))
-    try c.encode(self.stamp, forKey: WireKey("stamp"))
-    try c.encode(self.text, forKey: WireKey("text"))
-    try c.encodeIfPresent(self.unreadPages, forKey: WireKey("unreadPages"))
-    try c.encode(self.v, forKey: WireKey("v"))
+    try c.encode(self.lines, as: "lines")
+    try c.encode(self.method, as: "method")
+    try c.encodeIfPresent(self.ocrConfidence, as: "ocrConfidence")
+    try c.encodeIfPresent(self.pdfClass, as: "pdfClass")
+    try c.encode(self.stamp, as: "stamp")
+    try c.encode(self.text, as: "text")
+    try c.encodeIfPresent(self.unreadPages, as: "unreadPages")
+    try c.encode(self.v, as: "v")
   }
 }
 
@@ -453,24 +385,18 @@ public struct AnchoredTextExtractedEntryLinesItem: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["h", "p", "words", "y"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c,
-        debugDescription: "unknown property in AnchoredTextExtractedEntryLinesItem")
-    }
-    self.h = try c.decode(Double.self, forKey: WireKey("h"))
-    self.p = try c.decode(Int.self, forKey: WireKey("p"))
-    self.words = try c.decode([[Double]].self, forKey: WireKey("words"))
-    self.y = try c.decode(Double.self, forKey: WireKey("y"))
+    try c.refuseUnknown(["h", "p", "words", "y"], in: "AnchoredTextExtractedEntryLinesItem")
+    self.h = try c.value("h")
+    self.p = try c.value("p")
+    self.words = try c.value("words")
+    self.y = try c.value("y")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.h, forKey: WireKey("h"))
-    try c.encode(self.p, forKey: WireKey("p"))
-    try c.encode(self.words, forKey: WireKey("words"))
-    try c.encode(self.y, forKey: WireKey("y"))
+    try c.encode(self.h, as: "h")
+    try c.encode(self.p, as: "p")
+    try c.encode(self.words, as: "words")
+    try c.encode(self.y, as: "y")
   }
 }
 
@@ -493,15 +419,15 @@ public struct AnchoredTextExtractedEntryOcrConfidence: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.lowConfidenceWords = try c.decode(Int.self, forKey: WireKey("lowConfidenceWords"))
-    self.mean = try c.decode(Double.self, forKey: WireKey("mean"))
-    self.totalWords = try c.decode(Int.self, forKey: WireKey("totalWords"))
+    self.lowConfidenceWords = try c.value("lowConfidenceWords")
+    self.mean = try c.value("mean")
+    self.totalWords = try c.value("totalWords")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.lowConfidenceWords, forKey: WireKey("lowConfidenceWords"))
-    try c.encode(self.mean, forKey: WireKey("mean"))
-    try c.encode(self.totalWords, forKey: WireKey("totalWords"))
+    try c.encode(self.lowConfidenceWords, as: "lowConfidenceWords")
+    try c.encode(self.mean, as: "mean")
+    try c.encode(self.totalWords, as: "totalWords")
   }
 }
 
@@ -537,15 +463,12 @@ public struct AnchoredTextStamp: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: { !Set<String>(["stamp"]).contains($0.stringValue) }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in AnchoredTextStamp")
-    }
-    self.stamp = try c.decode(String.self, forKey: WireKey("stamp"))
+    try c.refuseUnknown(["stamp"], in: "AnchoredTextStamp")
+    self.stamp = try c.value("stamp")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.stamp, forKey: WireKey("stamp"))
+    try c.encode(self.stamp, as: "stamp")
   }
 }
 
@@ -558,19 +481,14 @@ public struct AnchoredTextWrite: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["contentChecksum", "entry"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in AnchoredTextWrite")
-    }
-    self.contentChecksum = try c.decode(String.self, forKey: WireKey("contentChecksum"))
-    self.entry = try c.decode(AnchoredTextEntry.self, forKey: WireKey("entry"))
+    try c.refuseUnknown(["contentChecksum", "entry"], in: "AnchoredTextWrite")
+    self.contentChecksum = try c.value("contentChecksum")
+    self.entry = try c.value("entry")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.contentChecksum, forKey: WireKey("contentChecksum"))
-    try c.encode(self.entry, forKey: WireKey("entry"))
+    try c.encode(self.contentChecksum, as: "contentChecksum")
+    try c.encode(self.entry, as: "entry")
   }
 }
 
@@ -606,39 +524,31 @@ public struct Annotation: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.context = try c.decode(AnnotationContext.self, forKey: WireKey("@context"))
-    self.body =
-      c.contains(WireKey("body"))
-      ? try c.decode(AnnotationBodies.self, forKey: WireKey("body")) : nil
-    self.created = try c.decode(String.self, forKey: WireKey("created"))
-    self.creator =
-      c.contains(WireKey("creator")) ? try c.decode(Agent.self, forKey: WireKey("creator")) : nil
-    self.generator =
-      c.contains(WireKey("generator"))
-      ? try c.decode(AnnotationGenerator.self, forKey: WireKey("generator")) : nil
-    self.id = try c.decode(AnnotationId.self, forKey: WireKey("id"))
-    self.modified =
-      c.contains(WireKey("modified")) ? try c.decode(String.self, forKey: WireKey("modified")) : nil
-    self.motivation = try c.decode(Motivation.self, forKey: WireKey("motivation"))
-    self.target = try c.decode(AnnotationTargetValue.self, forKey: WireKey("target"))
-    self.type = try c.decode(AnnotationType.self, forKey: WireKey("type"))
-    self.wasAttributedTo =
-      c.contains(WireKey("wasAttributedTo"))
-      ? try c.decode(AnnotationWasAttributedTo.self, forKey: WireKey("wasAttributedTo")) : nil
+    self.context = try c.value("@context")
+    self.body = try c.ifPresent("body")
+    self.created = try c.value("created")
+    self.creator = try c.ifPresent("creator")
+    self.generator = try c.ifPresent("generator")
+    self.id = try c.value("id")
+    self.modified = try c.ifPresent("modified")
+    self.motivation = try c.value("motivation")
+    self.target = try c.value("target")
+    self.type = try c.value("type")
+    self.wasAttributedTo = try c.ifPresent("wasAttributedTo")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.context, forKey: WireKey("@context"))
-    try c.encodeIfPresent(self.body, forKey: WireKey("body"))
-    try c.encode(self.created, forKey: WireKey("created"))
-    try c.encodeIfPresent(self.creator, forKey: WireKey("creator"))
-    try c.encodeIfPresent(self.generator, forKey: WireKey("generator"))
-    try c.encode(self.id, forKey: WireKey("id"))
-    try c.encodeIfPresent(self.modified, forKey: WireKey("modified"))
-    try c.encode(self.motivation, forKey: WireKey("motivation"))
-    try c.encode(self.target, forKey: WireKey("target"))
-    try c.encode(self.type, forKey: WireKey("type"))
-    try c.encodeIfPresent(self.wasAttributedTo, forKey: WireKey("wasAttributedTo"))
+    try c.encode(self.context, as: "@context")
+    try c.encodeIfPresent(self.body, as: "body")
+    try c.encode(self.created, as: "created")
+    try c.encodeIfPresent(self.creator, as: "creator")
+    try c.encodeIfPresent(self.generator, as: "generator")
+    try c.encode(self.id, as: "id")
+    try c.encodeIfPresent(self.modified, as: "modified")
+    try c.encode(self.motivation, as: "motivation")
+    try c.encode(self.target, as: "target")
+    try c.encode(self.type, as: "type")
+    try c.encodeIfPresent(self.wasAttributedTo, as: "wasAttributedTo")
   }
 }
 
@@ -651,15 +561,13 @@ public struct AnnotationAddedPayload: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.annotation = try c.decode(Annotation.self, forKey: WireKey("annotation"))
-    self.contentChecksum =
-      c.contains(WireKey("contentChecksum"))
-      ? try c.decode(String.self, forKey: WireKey("contentChecksum")) : nil
+    self.annotation = try c.value("annotation")
+    self.contentChecksum = try c.ifPresent("contentChecksum")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.annotation, forKey: WireKey("annotation"))
-    try c.encodeIfPresent(self.contentChecksum, forKey: WireKey("contentChecksum"))
+    try c.encode(self.annotation, as: "annotation")
+    try c.encodeIfPresent(self.contentChecksum, as: "contentChecksum")
   }
 }
 
@@ -718,14 +626,13 @@ public struct AnnotationBodyUpdatedPayload: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.annotationId = try c.decode(AnnotationId.self, forKey: WireKey("annotationId"))
-    self.operations = try c.decode(
-      [AnnotationBodyUpdatedPayloadOperationsItem].self, forKey: WireKey("operations"))
+    self.annotationId = try c.value("annotationId")
+    self.operations = try c.value("operations")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.annotationId, forKey: WireKey("annotationId"))
-    try c.encode(self.operations, forKey: WireKey("operations"))
+    try c.encode(self.annotationId, as: "annotationId")
+    try c.encode(self.operations, as: "operations")
   }
 }
 
@@ -831,11 +738,11 @@ public struct AnnotationRemovedPayload: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.annotationId = try c.decode(AnnotationId.self, forKey: WireKey("annotationId"))
+    self.annotationId = try c.value("annotationId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.annotationId, forKey: WireKey("annotationId"))
+    try c.encode(self.annotationId, as: "annotationId")
   }
 }
 
@@ -876,19 +783,15 @@ public struct AnnotationTarget: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.selector =
-      c.contains(WireKey("selector"))
-      ? try c.decode(AnnotationSelector.self, forKey: WireKey("selector")) : nil
-    self.source = try c.decode(ResourceId.self, forKey: WireKey("source"))
-    self.type =
-      c.contains(WireKey("type"))
-      ? try c.decode(AnnotationTargetType.self, forKey: WireKey("type")) : nil
+    self.selector = try c.ifPresent("selector")
+    self.source = try c.value("source")
+    self.type = try c.ifPresent("type")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.selector, forKey: WireKey("selector"))
-    try c.encode(self.source, forKey: WireKey("source"))
-    try c.encodeIfPresent(self.type, forKey: WireKey("type"))
+    try c.encodeIfPresent(self.selector, as: "selector")
+    try c.encode(self.source, as: "source")
+    try c.encodeIfPresent(self.type, as: "type")
   }
 }
 
@@ -981,40 +884,36 @@ public struct ArchivistConfig: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>([
+    try c.refuseUnknown(
+      [
         "anchoredTextDir", "engines", "gatewayUrl", "identity", "logFormat", "logLevel", "port",
         "root", "skipRebuild", "staging", "stateHome",
-      ]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in ArchivistConfig")
-    }
-    self.anchoredTextDir = try c.decode(String.self, forKey: WireKey("anchoredTextDir"))
-    self.engines = try c.decode(ArchivistEngines.self, forKey: WireKey("engines"))
-    self.gatewayUrl = try c.decode(String.self, forKey: WireKey("gatewayUrl"))
-    self.identity = try c.decode(ArchivistConfigIdentity.self, forKey: WireKey("identity"))
-    self.logFormat = try c.decode(LogFormat.self, forKey: WireKey("logFormat"))
-    self.logLevel = try c.decode(LogLevel.self, forKey: WireKey("logLevel"))
-    self.port = try c.decode(Int.self, forKey: WireKey("port"))
-    self.root = try c.decode(String.self, forKey: WireKey("root"))
-    self.skipRebuild = try c.decode(Bool.self, forKey: WireKey("skipRebuild"))
-    self.staging = try c.decode(ArchivistConfigStaging.self, forKey: WireKey("staging"))
-    self.stateHome = try c.decode(String.self, forKey: WireKey("stateHome"))
+      ], in: "ArchivistConfig")
+    self.anchoredTextDir = try c.value("anchoredTextDir")
+    self.engines = try c.value("engines")
+    self.gatewayUrl = try c.value("gatewayUrl")
+    self.identity = try c.value("identity")
+    self.logFormat = try c.value("logFormat")
+    self.logLevel = try c.value("logLevel")
+    self.port = try c.value("port")
+    self.root = try c.value("root")
+    self.skipRebuild = try c.value("skipRebuild")
+    self.staging = try c.value("staging")
+    self.stateHome = try c.value("stateHome")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.anchoredTextDir, forKey: WireKey("anchoredTextDir"))
-    try c.encode(self.engines, forKey: WireKey("engines"))
-    try c.encode(self.gatewayUrl, forKey: WireKey("gatewayUrl"))
-    try c.encode(self.identity, forKey: WireKey("identity"))
-    try c.encode(self.logFormat, forKey: WireKey("logFormat"))
-    try c.encode(self.logLevel, forKey: WireKey("logLevel"))
-    try c.encode(self.port, forKey: WireKey("port"))
-    try c.encode(self.root, forKey: WireKey("root"))
-    try c.encode(self.skipRebuild, forKey: WireKey("skipRebuild"))
-    try c.encode(self.staging, forKey: WireKey("staging"))
-    try c.encode(self.stateHome, forKey: WireKey("stateHome"))
+    try c.encode(self.anchoredTextDir, as: "anchoredTextDir")
+    try c.encode(self.engines, as: "engines")
+    try c.encode(self.gatewayUrl, as: "gatewayUrl")
+    try c.encode(self.identity, as: "identity")
+    try c.encode(self.logFormat, as: "logFormat")
+    try c.encode(self.logLevel, as: "logLevel")
+    try c.encode(self.port, as: "port")
+    try c.encode(self.root, as: "root")
+    try c.encode(self.skipRebuild, as: "skipRebuild")
+    try c.encode(self.staging, as: "staging")
+    try c.encode(self.stateHome, as: "stateHome")
   }
 }
 
@@ -1025,15 +924,12 @@ public struct ArchivistConfigIdentity: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: { !Set<String>(["issuer"]).contains($0.stringValue) }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in ArchivistConfigIdentity")
-    }
-    self.issuer = try c.decode(String.self, forKey: WireKey("issuer"))
+    try c.refuseUnknown(["issuer"], in: "ArchivistConfigIdentity")
+    self.issuer = try c.value("issuer")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.issuer, forKey: WireKey("issuer"))
+    try c.encode(self.issuer, as: "issuer")
   }
 }
 
@@ -1046,19 +942,14 @@ public struct ArchivistConfigStaging: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["flushMs", "maxWaitMs"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in ArchivistConfigStaging")
-    }
-    self.flushMs = try c.decode(Int.self, forKey: WireKey("flushMs"))
-    self.maxWaitMs = try c.decode(Int.self, forKey: WireKey("maxWaitMs"))
+    try c.refuseUnknown(["flushMs", "maxWaitMs"], in: "ArchivistConfigStaging")
+    self.flushMs = try c.value("flushMs")
+    self.maxWaitMs = try c.value("maxWaitMs")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.flushMs, forKey: WireKey("flushMs"))
-    try c.encode(self.maxWaitMs, forKey: WireKey("maxWaitMs"))
+    try c.encode(self.flushMs, as: "flushMs")
+    try c.encode(self.maxWaitMs, as: "maxWaitMs")
   }
 }
 
@@ -1071,19 +962,14 @@ public struct ArchivistEngines: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["actors", "jobs"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in ArchivistEngines")
-    }
-    self.actors = try c.decode(ArchivistEnginesActors.self, forKey: WireKey("actors"))
-    self.jobs = try c.decode(ArchivistEnginesJobs.self, forKey: WireKey("jobs"))
+    try c.refuseUnknown(["actors", "jobs"], in: "ArchivistEngines")
+    self.actors = try c.value("actors")
+    self.jobs = try c.value("jobs")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.actors, forKey: WireKey("actors"))
-    try c.encode(self.jobs, forKey: WireKey("jobs"))
+    try c.encode(self.actors, as: "actors")
+    try c.encode(self.jobs, as: "jobs")
   }
 }
 
@@ -1096,21 +982,14 @@ public struct ArchivistEnginesActors: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["gatherer", "matcher"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in ArchivistEnginesActors")
-    }
-    self.gatherer =
-      c.contains(WireKey("gatherer")) ? try c.decode(Engine.self, forKey: WireKey("gatherer")) : nil
-    self.matcher =
-      c.contains(WireKey("matcher")) ? try c.decode(Engine.self, forKey: WireKey("matcher")) : nil
+    try c.refuseUnknown(["gatherer", "matcher"], in: "ArchivistEnginesActors")
+    self.gatherer = try c.ifPresent("gatherer")
+    self.matcher = try c.ifPresent("matcher")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.gatherer, forKey: WireKey("gatherer"))
-    try c.encodeIfPresent(self.matcher, forKey: WireKey("matcher"))
+    try c.encodeIfPresent(self.gatherer, as: "gatherer")
+    try c.encodeIfPresent(self.matcher, as: "matcher")
   }
 }
 
@@ -1123,22 +1002,14 @@ public struct ArchivistEnginesJobs: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["mark", "yield"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in ArchivistEnginesJobs")
-    }
-    self.mark =
-      c.contains(WireKey("mark"))
-      ? try c.decode(ArchivistEnginesJobsMark.self, forKey: WireKey("mark")) : nil
-    self.yield =
-      c.contains(WireKey("yield")) ? try c.decode(Engine.self, forKey: WireKey("yield")) : nil
+    try c.refuseUnknown(["mark", "yield"], in: "ArchivistEnginesJobs")
+    self.mark = try c.ifPresent("mark")
+    self.yield = try c.ifPresent("yield")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.mark, forKey: WireKey("mark"))
-    try c.encodeIfPresent(self.yield, forKey: WireKey("yield"))
+    try c.encodeIfPresent(self.mark, as: "mark")
+    try c.encodeIfPresent(self.yield, as: "yield")
   }
 }
 
@@ -1160,34 +1031,22 @@ public struct ArchivistEnginesJobsMark: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["assessing", "commenting", "highlighting", "linking", "tagging"]).contains(
-        $0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in ArchivistEnginesJobsMark")
-    }
-    self.assessing =
-      c.contains(WireKey("assessing"))
-      ? try c.decode(Engine.self, forKey: WireKey("assessing")) : nil
-    self.commenting =
-      c.contains(WireKey("commenting"))
-      ? try c.decode(Engine.self, forKey: WireKey("commenting")) : nil
-    self.highlighting =
-      c.contains(WireKey("highlighting"))
-      ? try c.decode(Engine.self, forKey: WireKey("highlighting")) : nil
-    self.linking =
-      c.contains(WireKey("linking")) ? try c.decode(Engine.self, forKey: WireKey("linking")) : nil
-    self.tagging =
-      c.contains(WireKey("tagging")) ? try c.decode(Engine.self, forKey: WireKey("tagging")) : nil
+    try c.refuseUnknown(
+      ["assessing", "commenting", "highlighting", "linking", "tagging"],
+      in: "ArchivistEnginesJobsMark")
+    self.assessing = try c.ifPresent("assessing")
+    self.commenting = try c.ifPresent("commenting")
+    self.highlighting = try c.ifPresent("highlighting")
+    self.linking = try c.ifPresent("linking")
+    self.tagging = try c.ifPresent("tagging")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.assessing, forKey: WireKey("assessing"))
-    try c.encodeIfPresent(self.commenting, forKey: WireKey("commenting"))
-    try c.encodeIfPresent(self.highlighting, forKey: WireKey("highlighting"))
-    try c.encodeIfPresent(self.linking, forKey: WireKey("linking"))
-    try c.encodeIfPresent(self.tagging, forKey: WireKey("tagging"))
+    try c.encodeIfPresent(self.assessing, as: "assessing")
+    try c.encodeIfPresent(self.commenting, as: "commenting")
+    try c.encodeIfPresent(self.highlighting, as: "highlighting")
+    try c.encodeIfPresent(self.linking, as: "linking")
+    try c.encodeIfPresent(self.tagging, as: "tagging")
   }
 }
 
@@ -1200,13 +1059,13 @@ public struct ArchivistEventsResponse: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.events = try c.decode([StoredEventResponse].self, forKey: WireKey("events"))
-    self.lastSequence = try c.decode(Int.self, forKey: WireKey("lastSequence"))
+    self.events = try c.value("events")
+    self.lastSequence = try c.value("lastSequence")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.events, forKey: WireKey("events"))
-    try c.encode(self.lastSequence, forKey: WireKey("lastSequence"))
+    try c.encode(self.events, as: "events")
+    try c.encode(self.lastSequence, as: "lastSequence")
   }
 }
 
@@ -1219,13 +1078,13 @@ public struct ArchivistHealth: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.actors = try c.decode([String].self, forKey: WireKey("actors"))
-    self.status = try c.decode(ArchivistHealthStatus.self, forKey: WireKey("status"))
+    self.actors = try c.value("actors")
+    self.status = try c.value("status")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.actors, forKey: WireKey("actors"))
-    try c.encode(self.status, forKey: WireKey("status"))
+    try c.encode(self.actors, as: "actors")
+    try c.encode(self.status, as: "status")
   }
 }
 
@@ -1242,19 +1101,14 @@ public struct ArchivistStream: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["lastSequence", "resourceId"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in ArchivistStream")
-    }
-    self.lastSequence = try c.decode(Int.self, forKey: WireKey("lastSequence"))
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    try c.refuseUnknown(["lastSequence", "resourceId"], in: "ArchivistStream")
+    self.lastSequence = try c.value("lastSequence")
+    self.resourceId = try c.value("resourceId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.lastSequence, forKey: WireKey("lastSequence"))
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encode(self.lastSequence, as: "lastSequence")
+    try c.encode(self.resourceId, as: "resourceId")
   }
 }
 
@@ -1265,15 +1119,12 @@ public struct ArchivistStreamsResponse: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: { !Set<String>(["streams"]).contains($0.stringValue) }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in ArchivistStreamsResponse")
-    }
-    self.streams = try c.decode([ArchivistStream].self, forKey: WireKey("streams"))
+    try c.refuseUnknown(["streams"], in: "ArchivistStreamsResponse")
+    self.streams = try c.value("streams")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.streams, forKey: WireKey("streams"))
+    try c.encode(self.streams, as: "streams")
   }
 }
 
@@ -1297,36 +1148,24 @@ public struct AssessingJobParams: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["density", "instructions", "language", "motivation", "sourceLanguage", "tone"])
-        .contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in AssessingJobParams")
-    }
-    self.density =
-      c.contains(WireKey("density")) ? try c.decode(Double.self, forKey: WireKey("density")) : nil
-    self.instructions =
-      c.contains(WireKey("instructions"))
-      ? try c.decode(String.self, forKey: WireKey("instructions")) : nil
-    self.language =
-      c.contains(WireKey("language")) ? try c.decode(String.self, forKey: WireKey("language")) : nil
-    self.motivation = try c.decode(AssessingJobParamsMotivation.self, forKey: WireKey("motivation"))
-    self.sourceLanguage =
-      c.contains(WireKey("sourceLanguage"))
-      ? try c.decode(String.self, forKey: WireKey("sourceLanguage")) : nil
-    self.tone =
-      c.contains(WireKey("tone"))
-      ? try c.decode(AssessingJobParamsTone.self, forKey: WireKey("tone")) : nil
+    try c.refuseUnknown(
+      ["density", "instructions", "language", "motivation", "sourceLanguage", "tone"],
+      in: "AssessingJobParams")
+    self.density = try c.ifPresent("density")
+    self.instructions = try c.ifPresent("instructions")
+    self.language = try c.ifPresent("language")
+    self.motivation = try c.value("motivation")
+    self.sourceLanguage = try c.ifPresent("sourceLanguage")
+    self.tone = try c.ifPresent("tone")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.density, forKey: WireKey("density"))
-    try c.encodeIfPresent(self.instructions, forKey: WireKey("instructions"))
-    try c.encodeIfPresent(self.language, forKey: WireKey("language"))
-    try c.encode(self.motivation, forKey: WireKey("motivation"))
-    try c.encodeIfPresent(self.sourceLanguage, forKey: WireKey("sourceLanguage"))
-    try c.encodeIfPresent(self.tone, forKey: WireKey("tone"))
+    try c.encodeIfPresent(self.density, as: "density")
+    try c.encodeIfPresent(self.instructions, as: "instructions")
+    try c.encodeIfPresent(self.language, as: "language")
+    try c.encode(self.motivation, as: "motivation")
+    try c.encodeIfPresent(self.sourceLanguage, as: "sourceLanguage")
+    try c.encodeIfPresent(self.tone, as: "tone")
   }
 }
 
@@ -1367,29 +1206,27 @@ public struct AttributedEvent: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.agent = try c.decode(Agent.self, forKey: WireKey("agent"))
-    self.id = try c.decode(String.self, forKey: WireKey("id"))
-    self.metadata = try c.decode(EventMetadata.self, forKey: WireKey("metadata"))
-    self.payload = try c.decode([String: JSONValue].self, forKey: WireKey("payload"))
-    self.resourceId =
-      c.contains(WireKey("resourceId"))
-      ? try c.decode(ResourceId.self, forKey: WireKey("resourceId")) : nil
-    self.timestamp = try c.decode(String.self, forKey: WireKey("timestamp"))
-    self.type = try c.decode(String.self, forKey: WireKey("type"))
-    self.userId = try c.decode(UserId.self, forKey: WireKey("userId"))
-    self.version = try c.decode(Int.self, forKey: WireKey("version"))
+    self.agent = try c.value("agent")
+    self.id = try c.value("id")
+    self.metadata = try c.value("metadata")
+    self.payload = try c.value("payload")
+    self.resourceId = try c.ifPresent("resourceId")
+    self.timestamp = try c.value("timestamp")
+    self.type = try c.value("type")
+    self.userId = try c.value("userId")
+    self.version = try c.value("version")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.agent, forKey: WireKey("agent"))
-    try c.encode(self.id, forKey: WireKey("id"))
-    try c.encode(self.metadata, forKey: WireKey("metadata"))
-    try c.encode(self.payload, forKey: WireKey("payload"))
-    try c.encodeIfPresent(self.resourceId, forKey: WireKey("resourceId"))
-    try c.encode(self.timestamp, forKey: WireKey("timestamp"))
-    try c.encode(self.type, forKey: WireKey("type"))
-    try c.encode(self.userId, forKey: WireKey("userId"))
-    try c.encode(self.version, forKey: WireKey("version"))
+    try c.encode(self.agent, as: "agent")
+    try c.encode(self.id, as: "id")
+    try c.encode(self.metadata, as: "metadata")
+    try c.encode(self.payload, as: "payload")
+    try c.encodeIfPresent(self.resourceId, as: "resourceId")
+    try c.encode(self.timestamp, as: "timestamp")
+    try c.encode(self.type, as: "type")
+    try c.encode(self.userId, as: "userId")
+    try c.encode(self.version, as: "version")
   }
 }
 
@@ -1402,15 +1239,13 @@ public struct BeckonFocusEvent: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.annotationId =
-      c.contains(WireKey("annotationId"))
-      ? try c.decode(AnnotationId.self, forKey: WireKey("annotationId")) : nil
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self.annotationId = try c.ifPresent("annotationId")
+    self.resourceId = try c.value("resourceId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.annotationId, forKey: WireKey("annotationId"))
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encodeIfPresent(self.annotationId, as: "annotationId")
+    try c.encode(self.resourceId, as: "resourceId")
   }
 }
 
@@ -1421,11 +1256,11 @@ public struct BeckonHoverEvent: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.annotationId = try c.decode(Optional<AnnotationId>.self, forKey: WireKey("annotationId"))
+    self.annotationId = try c.value("annotationId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.annotationId, forKey: WireKey("annotationId"))
+    try c.encode(self.annotationId, as: "annotationId")
   }
 }
 
@@ -1436,11 +1271,11 @@ public struct BeckonSparkleEvent: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.annotationId = try c.decode(AnnotationId.self, forKey: WireKey("annotationId"))
+    self.annotationId = try c.value("annotationId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.annotationId, forKey: WireKey("annotationId"))
+    try c.encode(self.annotationId, as: "annotationId")
   }
 }
 
@@ -1460,22 +1295,17 @@ public struct BindBodyOperation: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.item =
-      c.contains(WireKey("item")) ? try c.decode(AnnotationBody.self, forKey: WireKey("item")) : nil
-    self.newItem =
-      c.contains(WireKey("newItem"))
-      ? try c.decode(AnnotationBody.self, forKey: WireKey("newItem")) : nil
-    self.oldItem =
-      c.contains(WireKey("oldItem"))
-      ? try c.decode(AnnotationBody.self, forKey: WireKey("oldItem")) : nil
-    self.op = try c.decode(BindBodyOperationOp.self, forKey: WireKey("op"))
+    self.item = try c.ifPresent("item")
+    self.newItem = try c.ifPresent("newItem")
+    self.oldItem = try c.ifPresent("oldItem")
+    self.op = try c.value("op")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.item, forKey: WireKey("item"))
-    try c.encodeIfPresent(self.newItem, forKey: WireKey("newItem"))
-    try c.encodeIfPresent(self.oldItem, forKey: WireKey("oldItem"))
-    try c.encode(self.op, forKey: WireKey("op"))
+    try c.encodeIfPresent(self.item, as: "item")
+    try c.encodeIfPresent(self.newItem, as: "newItem")
+    try c.encodeIfPresent(self.oldItem, as: "oldItem")
+    try c.encode(self.op, as: "op")
   }
 }
 
@@ -1511,17 +1341,17 @@ public struct BindInitiateCommand: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.annotationId = try c.decode(AnnotationId.self, forKey: WireKey("annotationId"))
-    self.defaultTitle = try c.decode(String.self, forKey: WireKey("defaultTitle"))
-    self.entityTypes = try c.decode([String].self, forKey: WireKey("entityTypes"))
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self.annotationId = try c.value("annotationId")
+    self.defaultTitle = try c.value("defaultTitle")
+    self.entityTypes = try c.value("entityTypes")
+    self.resourceId = try c.value("resourceId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.annotationId, forKey: WireKey("annotationId"))
-    try c.encode(self.defaultTitle, forKey: WireKey("defaultTitle"))
-    try c.encode(self.entityTypes, forKey: WireKey("entityTypes"))
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encode(self.annotationId, as: "annotationId")
+    try c.encode(self.defaultTitle, as: "defaultTitle")
+    try c.encode(self.entityTypes, as: "entityTypes")
+    try c.encode(self.resourceId, as: "resourceId")
   }
 }
 
@@ -1541,18 +1371,17 @@ public struct BindUpdateBodyCommand: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self._userId =
-      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
-    self.annotationId = try c.decode(AnnotationId.self, forKey: WireKey("annotationId"))
-    self.operations = try c.decode([BindBodyOperation].self, forKey: WireKey("operations"))
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self._userId = try c.ifPresent("_userId")
+    self.annotationId = try c.value("annotationId")
+    self.operations = try c.value("operations")
+    self.resourceId = try c.value("resourceId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
-    try c.encode(self.annotationId, forKey: WireKey("annotationId"))
-    try c.encode(self.operations, forKey: WireKey("operations"))
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encodeIfPresent(self._userId, as: "_userId")
+    try c.encode(self.annotationId, as: "annotationId")
+    try c.encode(self.operations, as: "operations")
+    try c.encode(self.resourceId, as: "resourceId")
   }
 }
 
@@ -1565,13 +1394,13 @@ public struct BodyOperationAdd: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.item = try c.decode(BodyOperationAddItem.self, forKey: WireKey("item"))
-    self.op = try c.decode(BodyOperationAddOp.self, forKey: WireKey("op"))
+    self.item = try c.value("item")
+    self.op = try c.value("op")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.item, forKey: WireKey("item"))
-    try c.encode(self.op, forKey: WireKey("op"))
+    try c.encode(self.item, as: "item")
+    try c.encode(self.op, as: "op")
   }
 }
 
@@ -1612,13 +1441,13 @@ public struct BodyOperationRemove: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.item = try c.decode(BodyOperationRemoveItem.self, forKey: WireKey("item"))
-    self.op = try c.decode(BodyOperationRemoveOp.self, forKey: WireKey("op"))
+    self.item = try c.value("item")
+    self.op = try c.value("op")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.item, forKey: WireKey("item"))
-    try c.encode(self.op, forKey: WireKey("op"))
+    try c.encode(self.item, as: "item")
+    try c.encode(self.op, as: "op")
   }
 }
 
@@ -1662,15 +1491,15 @@ public struct BodyOperationReplace: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.newItem = try c.decode(BodyOperationReplaceNewItem.self, forKey: WireKey("newItem"))
-    self.oldItem = try c.decode(BodyOperationReplaceOldItem.self, forKey: WireKey("oldItem"))
-    self.op = try c.decode(BodyOperationReplaceOp.self, forKey: WireKey("op"))
+    self.newItem = try c.value("newItem")
+    self.oldItem = try c.value("oldItem")
+    self.op = try c.value("op")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.newItem, forKey: WireKey("newItem"))
-    try c.encode(self.oldItem, forKey: WireKey("oldItem"))
-    try c.encode(self.op, forKey: WireKey("op"))
+    try c.encode(self.newItem, as: "newItem")
+    try c.encode(self.oldItem, as: "oldItem")
+    try c.encode(self.op, as: "op")
   }
 }
 
@@ -1753,13 +1582,13 @@ public struct BrowseAnnotationHistoryRequest: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.annotationId = try c.decode(AnnotationId.self, forKey: WireKey("annotationId"))
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self.annotationId = try c.value("annotationId")
+    self.resourceId = try c.value("resourceId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.annotationId, forKey: WireKey("annotationId"))
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encode(self.annotationId, as: "annotationId")
+    try c.encode(self.resourceId, as: "resourceId")
   }
 }
 
@@ -1770,11 +1599,11 @@ public struct BrowseAnnotationHistoryResult: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.response = try c.decode(GetAnnotationHistoryResponse.self, forKey: WireKey("response"))
+    self.response = try c.value("response")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.response, forKey: WireKey("response"))
+    try c.encode(self.response, as: "response")
   }
 }
 
@@ -1787,13 +1616,13 @@ public struct BrowseAnnotationRequest: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.annotationId = try c.decode(AnnotationId.self, forKey: WireKey("annotationId"))
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self.annotationId = try c.value("annotationId")
+    self.resourceId = try c.value("resourceId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.annotationId, forKey: WireKey("annotationId"))
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encode(self.annotationId, as: "annotationId")
+    try c.encode(self.resourceId, as: "resourceId")
   }
 }
 
@@ -1804,11 +1633,11 @@ public struct BrowseAnnotationResult: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.response = try c.decode(GetAnnotationResponse.self, forKey: WireKey("response"))
+    self.response = try c.value("response")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.response, forKey: WireKey("response"))
+    try c.encode(self.response, as: "response")
   }
 }
 
@@ -1819,11 +1648,11 @@ public struct BrowseClickEvent: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.annotationId = try c.decode(AnnotationId.self, forKey: WireKey("annotationId"))
+    self.annotationId = try c.value("annotationId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.annotationId, forKey: WireKey("annotationId"))
+    try c.encode(self.annotationId, as: "annotationId")
   }
 }
 
@@ -1842,20 +1671,17 @@ public struct BrowseDirectoryFailed: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.code =
-      c.contains(WireKey("code"))
-      ? try c.decode(BrowseDirectoryFailedCode.self, forKey: WireKey("code")) : nil
-    self.details =
-      c.contains(WireKey("details")) ? try c.decode(String.self, forKey: WireKey("details")) : nil
-    self.message = try c.decode(String.self, forKey: WireKey("message"))
-    self.path = try c.decode(String.self, forKey: WireKey("path"))
+    self.code = try c.ifPresent("code")
+    self.details = try c.ifPresent("details")
+    self.message = try c.value("message")
+    self.path = try c.value("path")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.code, forKey: WireKey("code"))
-    try c.encodeIfPresent(self.details, forKey: WireKey("details"))
-    try c.encode(self.message, forKey: WireKey("message"))
-    try c.encode(self.path, forKey: WireKey("path"))
+    try c.encodeIfPresent(self.code, as: "code")
+    try c.encodeIfPresent(self.details, as: "details")
+    try c.encode(self.message, as: "message")
+    try c.encode(self.path, as: "path")
   }
 }
 
@@ -1875,15 +1701,13 @@ public struct BrowseDirectoryRequest: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.path = try c.decode(String.self, forKey: WireKey("path"))
-    self.sort =
-      c.contains(WireKey("sort"))
-      ? try c.decode(BrowseDirectoryRequestSort.self, forKey: WireKey("sort")) : nil
+    self.path = try c.value("path")
+    self.sort = try c.ifPresent("sort")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.path, forKey: WireKey("path"))
-    try c.encodeIfPresent(self.sort, forKey: WireKey("sort"))
+    try c.encode(self.path, as: "path")
+    try c.encodeIfPresent(self.sort, as: "sort")
   }
 }
 
@@ -1900,11 +1724,11 @@ public struct BrowseDirectoryResult: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.response = try c.decode(BrowseDirectoryResultResponse.self, forKey: WireKey("response"))
+    self.response = try c.value("response")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.response, forKey: WireKey("response"))
+    try c.encode(self.response, as: "response")
   }
 }
 
@@ -1917,13 +1741,13 @@ public struct BrowseDirectoryResultResponse: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.entries = try c.decode([DirectoryEntry].self, forKey: WireKey("entries"))
-    self.path = try c.decode(String.self, forKey: WireKey("path"))
+    self.entries = try c.value("entries")
+    self.path = try c.value("path")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.entries, forKey: WireKey("entries"))
-    try c.encode(self.path, forKey: WireKey("path"))
+    try c.encode(self.entries, as: "entries")
+    try c.encode(self.path, as: "path")
   }
 }
 
@@ -1945,11 +1769,11 @@ public struct BrowseEnginesResult: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.response = try c.decode(BrowseEnginesResultResponse.self, forKey: WireKey("response"))
+    self.response = try c.value("response")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.response, forKey: WireKey("response"))
+    try c.encode(self.response, as: "response")
   }
 }
 
@@ -1960,11 +1784,11 @@ public struct BrowseEnginesResultResponse: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.engines = try c.decode([EngineEntry].self, forKey: WireKey("engines"))
+    self.engines = try c.value("engines")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.engines, forKey: WireKey("engines"))
+    try c.encode(self.engines, as: "engines")
   }
 }
 
@@ -1975,11 +1799,11 @@ public struct BrowseEntityTypeClickedEvent: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.entityType = try c.decode(String.self, forKey: WireKey("entityType"))
+    self.entityType = try c.value("entityType")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.entityType, forKey: WireKey("entityType"))
+    try c.encode(self.entityType, as: "entityType")
   }
 }
 
@@ -2001,11 +1825,11 @@ public struct BrowseEntityTypesResult: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.response = try c.decode(GetEntityTypesResponse.self, forKey: WireKey("response"))
+    self.response = try c.value("response")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.response, forKey: WireKey("response"))
+    try c.encode(self.response, as: "response")
   }
 }
 
@@ -2023,20 +1847,17 @@ public struct BrowseEventsRequest: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.limit =
-      c.contains(WireKey("limit")) ? try c.decode(Int.self, forKey: WireKey("limit")) : nil
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
-    self.type =
-      c.contains(WireKey("type")) ? try c.decode(String.self, forKey: WireKey("type")) : nil
-    self.userId =
-      c.contains(WireKey("userId")) ? try c.decode(UserId.self, forKey: WireKey("userId")) : nil
+    self.limit = try c.ifPresent("limit")
+    self.resourceId = try c.value("resourceId")
+    self.type = try c.ifPresent("type")
+    self.userId = try c.ifPresent("userId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.limit, forKey: WireKey("limit"))
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
-    try c.encodeIfPresent(self.type, forKey: WireKey("type"))
-    try c.encodeIfPresent(self.userId, forKey: WireKey("userId"))
+    try c.encodeIfPresent(self.limit, as: "limit")
+    try c.encode(self.resourceId, as: "resourceId")
+    try c.encodeIfPresent(self.type, as: "type")
+    try c.encodeIfPresent(self.userId, as: "userId")
   }
 }
 
@@ -2047,11 +1868,11 @@ public struct BrowseEventsResult: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.response = try c.decode(GetEventsResponse.self, forKey: WireKey("response"))
+    self.response = try c.value("response")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.response, forKey: WireKey("response"))
+    try c.encode(self.response, as: "response")
   }
 }
 
@@ -2064,15 +1885,13 @@ public struct BrowseExternalNavigateEvent: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.resourceId =
-      c.contains(WireKey("resourceId"))
-      ? try c.decode(ResourceId.self, forKey: WireKey("resourceId")) : nil
-    self.url = try c.decode(String.self, forKey: WireKey("url"))
+    self.resourceId = try c.ifPresent("resourceId")
+    self.url = try c.value("url")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.resourceId, forKey: WireKey("resourceId"))
-    try c.encode(self.url, forKey: WireKey("url"))
+    try c.encodeIfPresent(self.resourceId, as: "resourceId")
+    try c.encode(self.url, as: "url")
   }
 }
 
@@ -2085,19 +1904,14 @@ public struct BrowseFilesResponse: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["entries", "path"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in BrowseFilesResponse")
-    }
-    self.entries = try c.decode([DirectoryEntry].self, forKey: WireKey("entries"))
-    self.path = try c.decode(String.self, forKey: WireKey("path"))
+    try c.refuseUnknown(["entries", "path"], in: "BrowseFilesResponse")
+    self.entries = try c.value("entries")
+    self.path = try c.value("path")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.entries, forKey: WireKey("entries"))
-    try c.encode(self.path, forKey: WireKey("path"))
+    try c.encode(self.entries, as: "entries")
+    try c.encode(self.path, as: "path")
   }
 }
 
@@ -2119,11 +1933,11 @@ public struct BrowseKbResult: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.response = try c.decode(KbDescription.self, forKey: WireKey("response"))
+    self.response = try c.value("response")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.response, forKey: WireKey("response"))
+    try c.encode(self.response, as: "response")
   }
 }
 
@@ -2136,14 +1950,13 @@ public struct BrowseLinkClickedEvent: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.href = try c.decode(String.self, forKey: WireKey("href"))
-    self.label =
-      c.contains(WireKey("label")) ? try c.decode(String.self, forKey: WireKey("label")) : nil
+    self.href = try c.value("href")
+    self.label = try c.ifPresent("label")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.href, forKey: WireKey("href"))
-    try c.encodeIfPresent(self.label, forKey: WireKey("label"))
+    try c.encode(self.href, as: "href")
+    try c.encodeIfPresent(self.label, as: "label")
   }
 }
 
@@ -2160,19 +1973,15 @@ public struct BrowsePanelOpenEvent: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.motivation =
-      c.contains(WireKey("motivation"))
-      ? try c.decode(Motivation.self, forKey: WireKey("motivation")) : nil
-    self.panel = try c.decode(String.self, forKey: WireKey("panel"))
-    self.scrollToAnnotationId =
-      c.contains(WireKey("scrollToAnnotationId"))
-      ? try c.decode(AnnotationId.self, forKey: WireKey("scrollToAnnotationId")) : nil
+    self.motivation = try c.ifPresent("motivation")
+    self.panel = try c.value("panel")
+    self.scrollToAnnotationId = try c.ifPresent("scrollToAnnotationId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.motivation, forKey: WireKey("motivation"))
-    try c.encode(self.panel, forKey: WireKey("panel"))
-    try c.encodeIfPresent(self.scrollToAnnotationId, forKey: WireKey("scrollToAnnotationId"))
+    try c.encodeIfPresent(self.motivation, as: "motivation")
+    try c.encode(self.panel, as: "panel")
+    try c.encodeIfPresent(self.scrollToAnnotationId, as: "scrollToAnnotationId")
   }
 }
 
@@ -2183,11 +1992,11 @@ public struct BrowsePanelToggleEvent: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.panel = try c.decode(String.self, forKey: WireKey("panel"))
+    self.panel = try c.value("panel")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.panel, forKey: WireKey("panel"))
+    try c.encode(self.panel, as: "panel")
   }
 }
 
@@ -2198,15 +2007,12 @@ public struct BrowseProfilesRequest: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: { !Set<String>(["dids"]).contains($0.stringValue) }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in BrowseProfilesRequest")
-    }
-    self.dids = try c.decode([UserId].self, forKey: WireKey("dids"))
+    try c.refuseUnknown(["dids"], in: "BrowseProfilesRequest")
+    self.dids = try c.value("dids")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.dids, forKey: WireKey("dids"))
+    try c.encode(self.dids, as: "dids")
   }
 }
 
@@ -2217,11 +2023,11 @@ public struct BrowseProfilesResult: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.response = try c.decode(BrowseProfilesResultResponse.self, forKey: WireKey("response"))
+    self.response = try c.value("response")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.response, forKey: WireKey("response"))
+    try c.encode(self.response, as: "response")
   }
 }
 
@@ -2232,15 +2038,12 @@ public struct BrowseProfilesResultResponse: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: { !Set<String>(["profiles"]).contains($0.stringValue) }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in BrowseProfilesResultResponse")
-    }
-    self.profiles = try c.decode([String: Profile].self, forKey: WireKey("profiles"))
+    try c.refuseUnknown(["profiles"], in: "BrowseProfilesResultResponse")
+    self.profiles = try c.value("profiles")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.profiles, forKey: WireKey("profiles"))
+    try c.encode(self.profiles, as: "profiles")
   }
 }
 
@@ -2251,11 +2054,11 @@ public struct BrowseResourceCloseEvent: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self.resourceId = try c.value("resourceId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encode(self.resourceId, as: "resourceId")
   }
 }
 
@@ -2266,11 +2069,11 @@ public struct BrowseResourceOpenEvent: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self.resourceId = try c.value("resourceId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encode(self.resourceId, as: "resourceId")
   }
 }
 
@@ -2283,13 +2086,13 @@ public struct BrowseResourceReorderEvent: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.newIndex = try c.decode(Int.self, forKey: WireKey("newIndex"))
-    self.oldIndex = try c.decode(Int.self, forKey: WireKey("oldIndex"))
+    self.newIndex = try c.value("newIndex")
+    self.oldIndex = try c.value("oldIndex")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.newIndex, forKey: WireKey("newIndex"))
-    try c.encode(self.oldIndex, forKey: WireKey("oldIndex"))
+    try c.encode(self.newIndex, as: "newIndex")
+    try c.encode(self.oldIndex, as: "oldIndex")
   }
 }
 
@@ -2300,11 +2103,11 @@ public struct BrowseResourceRequest: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self.resourceId = try c.value("resourceId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encode(self.resourceId, as: "resourceId")
   }
 }
 
@@ -2315,11 +2118,11 @@ public struct BrowseResourceResult: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.response = try c.decode(BrowseResourceResultResponse.self, forKey: WireKey("response"))
+    self.response = try c.value("response")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.response, forKey: WireKey("response"))
+    try c.encode(self.response, as: "response")
   }
 }
 
@@ -2332,19 +2135,14 @@ public struct BrowseResourceResultResponse: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["lastSequence", "resource"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in BrowseResourceResultResponse")
-    }
-    self.lastSequence = try c.decode(Int.self, forKey: WireKey("lastSequence"))
-    self.resource = try c.decode(ResourceDescriptor.self, forKey: WireKey("resource"))
+    try c.refuseUnknown(["lastSequence", "resource"], in: "BrowseResourceResultResponse")
+    self.lastSequence = try c.value("lastSequence")
+    self.resource = try c.value("resource")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.lastSequence, forKey: WireKey("lastSequence"))
-    try c.encode(self.resource, forKey: WireKey("resource"))
+    try c.encode(self.lastSequence, as: "lastSequence")
+    try c.encode(self.resource, as: "resource")
   }
 }
 
@@ -2355,11 +2153,11 @@ public struct BrowseResourceViewedEvent: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self.resourceId = try c.value("resourceId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encode(self.resourceId, as: "resourceId")
   }
 }
 
@@ -2378,22 +2176,17 @@ public struct BrowseResourcesRequest: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.archived =
-      c.contains(WireKey("archived")) ? try c.decode(Bool.self, forKey: WireKey("archived")) : nil
-    self.entityType =
-      c.contains(WireKey("entityType"))
-      ? try c.decode(String.self, forKey: WireKey("entityType")) : nil
-    self.limit =
-      c.contains(WireKey("limit")) ? try c.decode(Int.self, forKey: WireKey("limit")) : nil
-    self.offset =
-      c.contains(WireKey("offset")) ? try c.decode(Int.self, forKey: WireKey("offset")) : nil
+    self.archived = try c.ifPresent("archived")
+    self.entityType = try c.ifPresent("entityType")
+    self.limit = try c.ifPresent("limit")
+    self.offset = try c.ifPresent("offset")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.archived, forKey: WireKey("archived"))
-    try c.encodeIfPresent(self.entityType, forKey: WireKey("entityType"))
-    try c.encodeIfPresent(self.limit, forKey: WireKey("limit"))
-    try c.encodeIfPresent(self.offset, forKey: WireKey("offset"))
+    try c.encodeIfPresent(self.archived, as: "archived")
+    try c.encodeIfPresent(self.entityType, as: "entityType")
+    try c.encodeIfPresent(self.limit, as: "limit")
+    try c.encodeIfPresent(self.offset, as: "offset")
   }
 }
 
@@ -2404,11 +2197,11 @@ public struct BrowseResourcesResult: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.response = try c.decode(ListResourcesResponse.self, forKey: WireKey("response"))
+    self.response = try c.value("response")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.response, forKey: WireKey("response"))
+    try c.encode(self.response, as: "response")
   }
 }
 
@@ -2421,14 +2214,13 @@ public struct BrowseRouterPushEvent: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.path = try c.decode(String.self, forKey: WireKey("path"))
-    self.reason =
-      c.contains(WireKey("reason")) ? try c.decode(String.self, forKey: WireKey("reason")) : nil
+    self.path = try c.value("path")
+    self.reason = try c.ifPresent("reason")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.path, forKey: WireKey("path"))
-    try c.encodeIfPresent(self.reason, forKey: WireKey("reason"))
+    try c.encode(self.path, as: "path")
+    try c.encodeIfPresent(self.reason, as: "reason")
   }
 }
 
@@ -2450,11 +2242,11 @@ public struct BrowseTagSchemasResult: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.response = try c.decode(GetTagSchemasResponse.self, forKey: WireKey("response"))
+    self.response = try c.value("response")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.response, forKey: WireKey("response"))
+    try c.encode(self.response, as: "response")
   }
 }
 
@@ -2465,13 +2257,11 @@ public struct BusEmitAccepted: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.subscribers =
-      c.contains(WireKey("subscribers"))
-      ? try c.decode(Int.self, forKey: WireKey("subscribers")) : nil
+    self.subscribers = try c.ifPresent("subscribers")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.subscribers, forKey: WireKey("subscribers"))
+    try c.encodeIfPresent(self.subscribers, as: "subscribers")
   }
 }
 
@@ -2493,23 +2283,19 @@ public struct BusEmitRequest: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.channel = try c.decode(String.self, forKey: WireKey("channel"))
-    self.clientId =
-      c.contains(WireKey("clientId")) ? try c.decode(String.self, forKey: WireKey("clientId")) : nil
-    self.correlationId =
-      c.contains(WireKey("correlationId"))
-      ? try c.decode(String.self, forKey: WireKey("correlationId")) : nil
-    self.payload = try c.decode([String: JSONValue].self, forKey: WireKey("payload"))
-    self.scope =
-      c.contains(WireKey("scope")) ? try c.decode(ResourceId.self, forKey: WireKey("scope")) : nil
+    self.channel = try c.value("channel")
+    self.clientId = try c.ifPresent("clientId")
+    self.correlationId = try c.ifPresent("correlationId")
+    self.payload = try c.value("payload")
+    self.scope = try c.ifPresent("scope")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.channel, forKey: WireKey("channel"))
-    try c.encodeIfPresent(self.clientId, forKey: WireKey("clientId"))
-    try c.encodeIfPresent(self.correlationId, forKey: WireKey("correlationId"))
-    try c.encode(self.payload, forKey: WireKey("payload"))
-    try c.encodeIfPresent(self.scope, forKey: WireKey("scope"))
+    try c.encode(self.channel, as: "channel")
+    try c.encodeIfPresent(self.clientId, as: "clientId")
+    try c.encodeIfPresent(self.correlationId, as: "correlationId")
+    try c.encode(self.payload, as: "payload")
+    try c.encodeIfPresent(self.scope, as: "scope")
   }
 }
 
@@ -2518,10 +2304,7 @@ public struct BusEmptyPayload: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: { !Set<String>([]).contains($0.stringValue) }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in BusEmptyPayload")
-    }
+    try c.refuseUnknown([], in: "BusEmptyPayload")
   }
   public func encode(to encoder: any Encoder) throws {
     _ = encoder.container(keyedBy: WireKey.self)
@@ -2539,21 +2322,16 @@ public struct BusEventMessage: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["data", "event", "id"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in BusEventMessage")
-    }
-    self.data = try c.decode(BusFrame.self, forKey: WireKey("data"))
-    self.event = try c.decode(BusEventMessageEvent.self, forKey: WireKey("event"))
-    self.id = try c.decode(BusEventMessageId.self, forKey: WireKey("id"))
+    try c.refuseUnknown(["data", "event", "id"], in: "BusEventMessage")
+    self.data = try c.value("data")
+    self.event = try c.value("event")
+    self.id = try c.value("id")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.data, forKey: WireKey("data"))
-    try c.encode(self.event, forKey: WireKey("event"))
-    try c.encode(self.id, forKey: WireKey("id"))
+    try c.encode(self.data, as: "data")
+    try c.encode(self.event, as: "event")
+    try c.encode(self.id, as: "id")
   }
 }
 
@@ -2607,26 +2385,18 @@ public struct BusFrame: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["channel", "correlationId", "payload", "scope"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in BusFrame")
-    }
-    self.channel = try c.decode(String.self, forKey: WireKey("channel"))
-    self.correlationId =
-      c.contains(WireKey("correlationId"))
-      ? try c.decode(String.self, forKey: WireKey("correlationId")) : nil
-    self.payload = try c.decode([String: JSONValue].self, forKey: WireKey("payload"))
-    self.scope =
-      c.contains(WireKey("scope")) ? try c.decode(ResourceId.self, forKey: WireKey("scope")) : nil
+    try c.refuseUnknown(["channel", "correlationId", "payload", "scope"], in: "BusFrame")
+    self.channel = try c.value("channel")
+    self.correlationId = try c.ifPresent("correlationId")
+    self.payload = try c.value("payload")
+    self.scope = try c.ifPresent("scope")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.channel, forKey: WireKey("channel"))
-    try c.encodeIfPresent(self.correlationId, forKey: WireKey("correlationId"))
-    try c.encode(self.payload, forKey: WireKey("payload"))
-    try c.encodeIfPresent(self.scope, forKey: WireKey("scope"))
+    try c.encode(self.channel, as: "channel")
+    try c.encodeIfPresent(self.correlationId, as: "correlationId")
+    try c.encode(self.payload, as: "payload")
+    try c.encodeIfPresent(self.scope, as: "scope")
   }
 }
 
@@ -2639,19 +2409,14 @@ public struct BusPingMessage: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["data", "event"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in BusPingMessage")
-    }
-    self.data = try c.decode(String.self, forKey: WireKey("data"))
-    self.event = try c.decode(BusPingMessageEvent.self, forKey: WireKey("event"))
+    try c.refuseUnknown(["data", "event"], in: "BusPingMessage")
+    self.data = try c.value("data")
+    self.event = try c.value("event")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.data, forKey: WireKey("data"))
-    try c.encode(self.event, forKey: WireKey("event"))
+    try c.encode(self.data, as: "data")
+    try c.encode(self.event, as: "event")
   }
 }
 
@@ -2670,21 +2435,16 @@ public struct BusResumeGap: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["lastSeenId", "reason", "scope"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in BusResumeGap")
-    }
-    self.lastSeenId = try c.decode(String.self, forKey: WireKey("lastSeenId"))
-    self.reason = try c.decode(BusResumeGapReason.self, forKey: WireKey("reason"))
-    self.scope = try c.decode(ResourceId.self, forKey: WireKey("scope"))
+    try c.refuseUnknown(["lastSeenId", "reason", "scope"], in: "BusResumeGap")
+    self.lastSeenId = try c.value("lastSeenId")
+    self.reason = try c.value("reason")
+    self.scope = try c.value("scope")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.lastSeenId, forKey: WireKey("lastSeenId"))
-    try c.encode(self.reason, forKey: WireKey("reason"))
-    try c.encode(self.scope, forKey: WireKey("scope"))
+    try c.encode(self.lastSeenId, as: "lastSeenId")
+    try c.encode(self.reason, as: "reason")
+    try c.encode(self.scope, as: "scope")
   }
 }
 
@@ -2734,28 +2494,19 @@ public struct BusSubscribeRequest: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["clientId", "global", "pendingReplies", "scoped"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in BusSubscribeRequest")
-    }
-    self.clientId = try c.decode(String.self, forKey: WireKey("clientId"))
-    self.global =
-      c.contains(WireKey("global")) ? try c.decode([String].self, forKey: WireKey("global")) : nil
-    self.pendingReplies =
-      c.contains(WireKey("pendingReplies"))
-      ? try c.decode([String].self, forKey: WireKey("pendingReplies")) : nil
-    self.scoped =
-      c.contains(WireKey("scoped"))
-      ? try c.decode([BusSubscribeRequestScopedItem].self, forKey: WireKey("scoped")) : nil
+    try c.refuseUnknown(
+      ["clientId", "global", "pendingReplies", "scoped"], in: "BusSubscribeRequest")
+    self.clientId = try c.value("clientId")
+    self.global = try c.ifPresent("global")
+    self.pendingReplies = try c.ifPresent("pendingReplies")
+    self.scoped = try c.ifPresent("scoped")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.clientId, forKey: WireKey("clientId"))
-    try c.encodeIfPresent(self.global, forKey: WireKey("global"))
-    try c.encodeIfPresent(self.pendingReplies, forKey: WireKey("pendingReplies"))
-    try c.encodeIfPresent(self.scoped, forKey: WireKey("scoped"))
+    try c.encode(self.clientId, as: "clientId")
+    try c.encodeIfPresent(self.global, as: "global")
+    try c.encodeIfPresent(self.pendingReplies, as: "pendingReplies")
+    try c.encodeIfPresent(self.scoped, as: "scoped")
   }
 }
 
@@ -2770,23 +2521,16 @@ public struct BusSubscribeRequestScopedItem: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["channels", "lastEventId", "scope"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in BusSubscribeRequestScopedItem")
-    }
-    self.channels = try c.decode([String].self, forKey: WireKey("channels"))
-    self.lastEventId =
-      c.contains(WireKey("lastEventId"))
-      ? try c.decode(String.self, forKey: WireKey("lastEventId")) : nil
-    self.scope = try c.decode(ResourceId.self, forKey: WireKey("scope"))
+    try c.refuseUnknown(["channels", "lastEventId", "scope"], in: "BusSubscribeRequestScopedItem")
+    self.channels = try c.value("channels")
+    self.lastEventId = try c.ifPresent("lastEventId")
+    self.scope = try c.value("scope")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.channels, forKey: WireKey("channels"))
-    try c.encodeIfPresent(self.lastEventId, forKey: WireKey("lastEventId"))
-    try c.encode(self.scope, forKey: WireKey("scope"))
+    try c.encode(self.channels, as: "channels")
+    try c.encodeIfPresent(self.lastEventId, as: "lastEventId")
+    try c.encode(self.scope, as: "scope")
   }
 }
 
@@ -2801,15 +2545,15 @@ public struct CloneResourceWithTokenResponse: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.expiresAt = try c.decode(String.self, forKey: WireKey("expiresAt"))
-    self.resource = try c.decode(ResourceDescriptor.self, forKey: WireKey("resource"))
-    self.token = try c.decode(String.self, forKey: WireKey("token"))
+    self.expiresAt = try c.value("expiresAt")
+    self.resource = try c.value("resource")
+    self.token = try c.value("token")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.expiresAt, forKey: WireKey("expiresAt"))
-    try c.encode(self.resource, forKey: WireKey("resource"))
-    try c.encode(self.token, forKey: WireKey("token"))
+    try c.encode(self.expiresAt, as: "expiresAt")
+    try c.encode(self.resource, as: "resource")
+    try c.encode(self.token, as: "token")
   }
 }
 
@@ -2824,18 +2568,15 @@ public struct CommandError: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.code =
-      c.contains(WireKey("code"))
-      ? try c.decode(CommandErrorCode.self, forKey: WireKey("code")) : nil
-    self.details =
-      c.contains(WireKey("details")) ? try c.decode(String.self, forKey: WireKey("details")) : nil
-    self.message = try c.decode(String.self, forKey: WireKey("message"))
+    self.code = try c.ifPresent("code")
+    self.details = try c.ifPresent("details")
+    self.message = try c.value("message")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.code, forKey: WireKey("code"))
-    try c.encodeIfPresent(self.details, forKey: WireKey("details"))
-    try c.encode(self.message, forKey: WireKey("message"))
+    try c.encodeIfPresent(self.code, as: "code")
+    try c.encodeIfPresent(self.details, as: "details")
+    try c.encode(self.message, as: "message")
   }
 }
 
@@ -2866,37 +2607,24 @@ public struct CommentingJobParams: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["density", "instructions", "language", "motivation", "sourceLanguage", "tone"])
-        .contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in CommentingJobParams")
-    }
-    self.density =
-      c.contains(WireKey("density")) ? try c.decode(Double.self, forKey: WireKey("density")) : nil
-    self.instructions =
-      c.contains(WireKey("instructions"))
-      ? try c.decode(String.self, forKey: WireKey("instructions")) : nil
-    self.language =
-      c.contains(WireKey("language")) ? try c.decode(String.self, forKey: WireKey("language")) : nil
-    self.motivation = try c.decode(
-      CommentingJobParamsMotivation.self, forKey: WireKey("motivation"))
-    self.sourceLanguage =
-      c.contains(WireKey("sourceLanguage"))
-      ? try c.decode(String.self, forKey: WireKey("sourceLanguage")) : nil
-    self.tone =
-      c.contains(WireKey("tone"))
-      ? try c.decode(CommentingJobParamsTone.self, forKey: WireKey("tone")) : nil
+    try c.refuseUnknown(
+      ["density", "instructions", "language", "motivation", "sourceLanguage", "tone"],
+      in: "CommentingJobParams")
+    self.density = try c.ifPresent("density")
+    self.instructions = try c.ifPresent("instructions")
+    self.language = try c.ifPresent("language")
+    self.motivation = try c.value("motivation")
+    self.sourceLanguage = try c.ifPresent("sourceLanguage")
+    self.tone = try c.ifPresent("tone")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.density, forKey: WireKey("density"))
-    try c.encodeIfPresent(self.instructions, forKey: WireKey("instructions"))
-    try c.encodeIfPresent(self.language, forKey: WireKey("language"))
-    try c.encode(self.motivation, forKey: WireKey("motivation"))
-    try c.encodeIfPresent(self.sourceLanguage, forKey: WireKey("sourceLanguage"))
-    try c.encodeIfPresent(self.tone, forKey: WireKey("tone"))
+    try c.encodeIfPresent(self.density, as: "density")
+    try c.encodeIfPresent(self.instructions, as: "instructions")
+    try c.encodeIfPresent(self.language, as: "language")
+    try c.encode(self.motivation, as: "motivation")
+    try c.encodeIfPresent(self.sourceLanguage, as: "sourceLanguage")
+    try c.encodeIfPresent(self.tone, as: "tone")
   }
 }
 
@@ -2927,16 +2655,15 @@ public struct ContextualSummaryResponse: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.context = try c.decode(ContextualSummaryResponseContext.self, forKey: WireKey("context"))
-    self.relevantFields = try c.decode(
-      ContextualSummaryResponseRelevantFields.self, forKey: WireKey("relevantFields"))
-    self.summary = try c.decode(String.self, forKey: WireKey("summary"))
+    self.context = try c.value("context")
+    self.relevantFields = try c.value("relevantFields")
+    self.summary = try c.value("summary")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.context, forKey: WireKey("context"))
-    try c.encode(self.relevantFields, forKey: WireKey("relevantFields"))
-    try c.encode(self.summary, forKey: WireKey("summary"))
+    try c.encode(self.context, as: "context")
+    try c.encode(self.relevantFields, as: "relevantFields")
+    try c.encode(self.summary, as: "summary")
   }
 }
 
@@ -2951,17 +2678,15 @@ public struct ContextualSummaryResponseContext: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.after =
-      c.contains(WireKey("after")) ? try c.decode(String.self, forKey: WireKey("after")) : nil
-    self.before =
-      c.contains(WireKey("before")) ? try c.decode(String.self, forKey: WireKey("before")) : nil
-    self.selected = try c.decode(String.self, forKey: WireKey("selected"))
+    self.after = try c.ifPresent("after")
+    self.before = try c.ifPresent("before")
+    self.selected = try c.value("selected")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.after, forKey: WireKey("after"))
-    try c.encodeIfPresent(self.before, forKey: WireKey("before"))
-    try c.encode(self.selected, forKey: WireKey("selected"))
+    try c.encodeIfPresent(self.after, as: "after")
+    try c.encodeIfPresent(self.before, as: "before")
+    try c.encode(self.selected, as: "selected")
   }
 }
 
@@ -2976,22 +2701,17 @@ public struct ContextualSummaryResponseRelevantFields: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["entityTypes", "resourceId", "resourceName"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c,
-        debugDescription: "unknown property in ContextualSummaryResponseRelevantFields")
-    }
-    self.entityTypes = try c.decode([String].self, forKey: WireKey("entityTypes"))
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
-    self.resourceName = try c.decode(String.self, forKey: WireKey("resourceName"))
+    try c.refuseUnknown(
+      ["entityTypes", "resourceId", "resourceName"], in: "ContextualSummaryResponseRelevantFields")
+    self.entityTypes = try c.value("entityTypes")
+    self.resourceId = try c.value("resourceId")
+    self.resourceName = try c.value("resourceName")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.entityTypes, forKey: WireKey("entityTypes"))
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
-    try c.encode(self.resourceName, forKey: WireKey("resourceName"))
+    try c.encode(self.entityTypes, as: "entityTypes")
+    try c.encode(self.resourceId, as: "resourceId")
+    try c.encode(self.resourceName, as: "resourceName")
   }
 }
 
@@ -3006,17 +2726,15 @@ public struct CreateAnnotationRequest: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.body =
-      c.contains(WireKey("body"))
-      ? try c.decode(AnnotationBodies.self, forKey: WireKey("body")) : nil
-    self.motivation = try c.decode(Motivation.self, forKey: WireKey("motivation"))
-    self.target = try c.decode(AnnotationTarget.self, forKey: WireKey("target"))
+    self.body = try c.ifPresent("body")
+    self.motivation = try c.value("motivation")
+    self.target = try c.value("target")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.body, forKey: WireKey("body"))
-    try c.encode(self.motivation, forKey: WireKey("motivation"))
-    try c.encode(self.target, forKey: WireKey("target"))
+    try c.encodeIfPresent(self.body, as: "body")
+    try c.encode(self.motivation, as: "motivation")
+    try c.encode(self.target, as: "target")
   }
 }
 
@@ -3027,11 +2745,11 @@ public struct CreateResourceResponse: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self.resourceId = try c.value("resourceId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encode(self.resourceId, as: "resourceId")
   }
 }
 
@@ -3050,23 +2768,18 @@ public struct DirEntry: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["mtime", "name", "path", "type"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in DirEntry")
-    }
-    self.mtime = try c.decode(String.self, forKey: WireKey("mtime"))
-    self.name = try c.decode(String.self, forKey: WireKey("name"))
-    self.path = try c.decode(String.self, forKey: WireKey("path"))
-    self.type = try c.decode(DirEntryType.self, forKey: WireKey("type"))
+    try c.refuseUnknown(["mtime", "name", "path", "type"], in: "DirEntry")
+    self.mtime = try c.value("mtime")
+    self.name = try c.value("name")
+    self.path = try c.value("path")
+    self.type = try c.value("type")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.mtime, forKey: WireKey("mtime"))
-    try c.encode(self.name, forKey: WireKey("name"))
-    try c.encode(self.path, forKey: WireKey("path"))
-    try c.encode(self.type, forKey: WireKey("type"))
+    try c.encode(self.mtime, as: "mtime")
+    try c.encode(self.name, as: "name")
+    try c.encode(self.path, as: "path")
+    try c.encode(self.type, as: "type")
   }
 }
 
@@ -3118,25 +2831,23 @@ public struct DiscoveredKB: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.did = try c.decode(String.self, forKey: WireKey("did"))
-    self.host = try c.decode(String.self, forKey: WireKey("host"))
-    self.managedBy = try c.decode(String.self, forKey: WireKey("managedBy"))
-    self.placement = try c.decode(DiscoveredKBPlacement.self, forKey: WireKey("placement"))
-    self.port = try c.decode(Int.self, forKey: WireKey("port"))
-    self.repo =
-      c.contains(WireKey("repo")) ? try c.decode(String.self, forKey: WireKey("repo")) : nil
-    self.siteName =
-      c.contains(WireKey("siteName")) ? try c.decode(String.self, forKey: WireKey("siteName")) : nil
+    self.did = try c.value("did")
+    self.host = try c.value("host")
+    self.managedBy = try c.value("managedBy")
+    self.placement = try c.value("placement")
+    self.port = try c.value("port")
+    self.repo = try c.ifPresent("repo")
+    self.siteName = try c.ifPresent("siteName")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.did, forKey: WireKey("did"))
-    try c.encode(self.host, forKey: WireKey("host"))
-    try c.encode(self.managedBy, forKey: WireKey("managedBy"))
-    try c.encode(self.placement, forKey: WireKey("placement"))
-    try c.encode(self.port, forKey: WireKey("port"))
-    try c.encodeIfPresent(self.repo, forKey: WireKey("repo"))
-    try c.encodeIfPresent(self.siteName, forKey: WireKey("siteName"))
+    try c.encode(self.did, as: "did")
+    try c.encode(self.host, as: "host")
+    try c.encode(self.managedBy, as: "managedBy")
+    try c.encode(self.placement, as: "placement")
+    try c.encode(self.port, as: "port")
+    try c.encodeIfPresent(self.repo, as: "repo")
+    try c.encodeIfPresent(self.siteName, as: "siteName")
   }
 }
 
@@ -3154,13 +2865,13 @@ public struct DiscoveryDocument: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.kbs = try c.decode([DiscoveredKB].self, forKey: WireKey("kbs"))
-    self.version = try c.decode(DiscoveryDocumentVersion.self, forKey: WireKey("version"))
+    self.kbs = try c.value("kbs")
+    self.version = try c.value("version")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.kbs, forKey: WireKey("kbs"))
-    try c.encode(self.version, forKey: WireKey("version"))
+    try c.encode(self.kbs, as: "kbs")
+    try c.encode(self.version, as: "version")
   }
 }
 
@@ -3203,33 +2914,28 @@ public struct DispatcherConfig: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>([
-        "gatewayUrl", "identity", "kb", "logFormat", "logLevel", "port", "queue", "timing",
-      ]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in DispatcherConfig")
-    }
-    self.gatewayUrl = try c.decode(String.self, forKey: WireKey("gatewayUrl"))
-    self.identity = try c.decode(DispatcherConfigIdentity.self, forKey: WireKey("identity"))
-    self.kb = try c.decode(KbIdentity.self, forKey: WireKey("kb"))
-    self.logFormat = try c.decode(LogFormat.self, forKey: WireKey("logFormat"))
-    self.logLevel = try c.decode(LogLevel.self, forKey: WireKey("logLevel"))
-    self.port = try c.decode(Int.self, forKey: WireKey("port"))
-    self.queue = try c.decode(DispatcherConfigQueue.self, forKey: WireKey("queue"))
-    self.timing = try c.decode(DispatcherConfigTiming.self, forKey: WireKey("timing"))
+    try c.refuseUnknown(
+      ["gatewayUrl", "identity", "kb", "logFormat", "logLevel", "port", "queue", "timing"],
+      in: "DispatcherConfig")
+    self.gatewayUrl = try c.value("gatewayUrl")
+    self.identity = try c.value("identity")
+    self.kb = try c.value("kb")
+    self.logFormat = try c.value("logFormat")
+    self.logLevel = try c.value("logLevel")
+    self.port = try c.value("port")
+    self.queue = try c.value("queue")
+    self.timing = try c.value("timing")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.gatewayUrl, forKey: WireKey("gatewayUrl"))
-    try c.encode(self.identity, forKey: WireKey("identity"))
-    try c.encode(self.kb, forKey: WireKey("kb"))
-    try c.encode(self.logFormat, forKey: WireKey("logFormat"))
-    try c.encode(self.logLevel, forKey: WireKey("logLevel"))
-    try c.encode(self.port, forKey: WireKey("port"))
-    try c.encode(self.queue, forKey: WireKey("queue"))
-    try c.encode(self.timing, forKey: WireKey("timing"))
+    try c.encode(self.gatewayUrl, as: "gatewayUrl")
+    try c.encode(self.identity, as: "identity")
+    try c.encode(self.kb, as: "kb")
+    try c.encode(self.logFormat, as: "logFormat")
+    try c.encode(self.logLevel, as: "logLevel")
+    try c.encode(self.port, as: "port")
+    try c.encode(self.queue, as: "queue")
+    try c.encode(self.timing, as: "timing")
   }
 }
 
@@ -3240,15 +2946,12 @@ public struct DispatcherConfigIdentity: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: { !Set<String>(["issuer"]).contains($0.stringValue) }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in DispatcherConfigIdentity")
-    }
-    self.issuer = try c.decode(String.self, forKey: WireKey("issuer"))
+    try c.refuseUnknown(["issuer"], in: "DispatcherConfigIdentity")
+    self.issuer = try c.value("issuer")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.issuer, forKey: WireKey("issuer"))
+    try c.encode(self.issuer, as: "issuer")
   }
 }
 
@@ -3263,24 +2966,16 @@ public struct DispatcherConfigQueue: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["passwordEnv", "servers", "userEnv"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in DispatcherConfigQueue")
-    }
-    self.passwordEnv =
-      c.contains(WireKey("passwordEnv"))
-      ? try c.decode(String.self, forKey: WireKey("passwordEnv")) : nil
-    self.servers = try c.decode(String.self, forKey: WireKey("servers"))
-    self.userEnv =
-      c.contains(WireKey("userEnv")) ? try c.decode(String.self, forKey: WireKey("userEnv")) : nil
+    try c.refuseUnknown(["passwordEnv", "servers", "userEnv"], in: "DispatcherConfigQueue")
+    self.passwordEnv = try c.ifPresent("passwordEnv")
+    self.servers = try c.value("servers")
+    self.userEnv = try c.ifPresent("userEnv")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.passwordEnv, forKey: WireKey("passwordEnv"))
-    try c.encode(self.servers, forKey: WireKey("servers"))
-    try c.encodeIfPresent(self.userEnv, forKey: WireKey("userEnv"))
+    try c.encodeIfPresent(self.passwordEnv, as: "passwordEnv")
+    try c.encode(self.servers, as: "servers")
+    try c.encodeIfPresent(self.userEnv, as: "userEnv")
   }
 }
 
@@ -3306,33 +3001,28 @@ public struct DispatcherConfigTiming: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>([
+    try c.refuseUnknown(
+      [
         "ackWaitMs", "bootDeadlineMs", "progressWriteIntervalMs", "retentionMs", "retentionSweepMs",
         "staleRunningMs", "tickMs",
-      ]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in DispatcherConfigTiming")
-    }
-    self.ackWaitMs = try c.decode(Int.self, forKey: WireKey("ackWaitMs"))
-    self.bootDeadlineMs = try c.decode(Int.self, forKey: WireKey("bootDeadlineMs"))
-    self.progressWriteIntervalMs = try c.decode(
-      Int.self, forKey: WireKey("progressWriteIntervalMs"))
-    self.retentionMs = try c.decode(Int.self, forKey: WireKey("retentionMs"))
-    self.retentionSweepMs = try c.decode(Int.self, forKey: WireKey("retentionSweepMs"))
-    self.staleRunningMs = try c.decode(Int.self, forKey: WireKey("staleRunningMs"))
-    self.tickMs = try c.decode(Int.self, forKey: WireKey("tickMs"))
+      ], in: "DispatcherConfigTiming")
+    self.ackWaitMs = try c.value("ackWaitMs")
+    self.bootDeadlineMs = try c.value("bootDeadlineMs")
+    self.progressWriteIntervalMs = try c.value("progressWriteIntervalMs")
+    self.retentionMs = try c.value("retentionMs")
+    self.retentionSweepMs = try c.value("retentionSweepMs")
+    self.staleRunningMs = try c.value("staleRunningMs")
+    self.tickMs = try c.value("tickMs")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.ackWaitMs, forKey: WireKey("ackWaitMs"))
-    try c.encode(self.bootDeadlineMs, forKey: WireKey("bootDeadlineMs"))
-    try c.encode(self.progressWriteIntervalMs, forKey: WireKey("progressWriteIntervalMs"))
-    try c.encode(self.retentionMs, forKey: WireKey("retentionMs"))
-    try c.encode(self.retentionSweepMs, forKey: WireKey("retentionSweepMs"))
-    try c.encode(self.staleRunningMs, forKey: WireKey("staleRunningMs"))
-    try c.encode(self.tickMs, forKey: WireKey("tickMs"))
+    try c.encode(self.ackWaitMs, as: "ackWaitMs")
+    try c.encode(self.bootDeadlineMs, as: "bootDeadlineMs")
+    try c.encode(self.progressWriteIntervalMs, as: "progressWriteIntervalMs")
+    try c.encode(self.retentionMs, as: "retentionMs")
+    try c.encode(self.retentionSweepMs, as: "retentionSweepMs")
+    try c.encode(self.staleRunningMs, as: "staleRunningMs")
+    try c.encode(self.tickMs, as: "tickMs")
   }
 }
 
@@ -3345,19 +3035,14 @@ public struct DispatcherHealth: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["queue", "status"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in DispatcherHealth")
-    }
-    self.queue = try c.decode(DispatcherHealthQueue.self, forKey: WireKey("queue"))
-    self.status = try c.decode(DispatcherHealthStatus.self, forKey: WireKey("status"))
+    try c.refuseUnknown(["queue", "status"], in: "DispatcherHealth")
+    self.queue = try c.value("queue")
+    self.status = try c.value("status")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.queue, forKey: WireKey("queue"))
-    try c.encode(self.status, forKey: WireKey("status"))
+    try c.encode(self.queue, as: "queue")
+    try c.encode(self.status, as: "status")
   }
 }
 
@@ -3407,19 +3092,14 @@ public struct Engine: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["model", "provider"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in Engine")
-    }
-    self.model = try c.decode(String.self, forKey: WireKey("model"))
-    self.provider = try c.decode(EngineProvider.self, forKey: WireKey("provider"))
+    try c.refuseUnknown(["model", "provider"], in: "Engine")
+    self.model = try c.value("model")
+    self.provider = try c.value("provider")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.model, forKey: WireKey("model"))
-    try c.encode(self.provider, forKey: WireKey("provider"))
+    try c.encode(self.model, as: "model")
+    try c.encode(self.provider, as: "provider")
   }
 }
 
@@ -3432,20 +3112,14 @@ public struct EngineEntry: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["engine", "jobs"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in EngineEntry")
-    }
-    self.engine = try c.decode(Engine.self, forKey: WireKey("engine"))
-    self.jobs =
-      c.contains(WireKey("jobs")) ? try c.decode([JobFilter].self, forKey: WireKey("jobs")) : nil
+    try c.refuseUnknown(["engine", "jobs"], in: "EngineEntry")
+    self.engine = try c.value("engine")
+    self.jobs = try c.ifPresent("jobs")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.engine, forKey: WireKey("engine"))
-    try c.encodeIfPresent(self.jobs, forKey: WireKey("jobs"))
+    try c.encode(self.engine, as: "engine")
+    try c.encodeIfPresent(self.jobs, as: "jobs")
   }
 }
 
@@ -3458,19 +3132,14 @@ public struct EngineLimits: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["engine", "limits"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in EngineLimits")
-    }
-    self.engine = try c.decode(Engine.self, forKey: WireKey("engine"))
-    self.limits = try c.decode(InferenceLimits.self, forKey: WireKey("limits"))
+    try c.refuseUnknown(["engine", "limits"], in: "EngineLimits")
+    self.engine = try c.value("engine")
+    self.limits = try c.value("limits")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.engine, forKey: WireKey("engine"))
-    try c.encode(self.limits, forKey: WireKey("limits"))
+    try c.encode(self.engine, as: "engine")
+    try c.encode(self.limits, as: "limits")
   }
 }
 
@@ -3511,31 +3180,27 @@ public struct EnrichedResourceEvent: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.annotation =
-      c.contains(WireKey("annotation"))
-      ? try c.decode(Annotation.self, forKey: WireKey("annotation")) : nil
-    self.id = try c.decode(String.self, forKey: WireKey("id"))
-    self.metadata = try c.decode(EventMetadata.self, forKey: WireKey("metadata"))
-    self.payload = try c.decode([String: JSONValue].self, forKey: WireKey("payload"))
-    self.resourceId =
-      c.contains(WireKey("resourceId"))
-      ? try c.decode(ResourceId.self, forKey: WireKey("resourceId")) : nil
-    self.timestamp = try c.decode(String.self, forKey: WireKey("timestamp"))
-    self.type = try c.decode(String.self, forKey: WireKey("type"))
-    self.userId = try c.decode(UserId.self, forKey: WireKey("userId"))
-    self.version = try c.decode(Int.self, forKey: WireKey("version"))
+    self.annotation = try c.ifPresent("annotation")
+    self.id = try c.value("id")
+    self.metadata = try c.value("metadata")
+    self.payload = try c.value("payload")
+    self.resourceId = try c.ifPresent("resourceId")
+    self.timestamp = try c.value("timestamp")
+    self.type = try c.value("type")
+    self.userId = try c.value("userId")
+    self.version = try c.value("version")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.annotation, forKey: WireKey("annotation"))
-    try c.encode(self.id, forKey: WireKey("id"))
-    try c.encode(self.metadata, forKey: WireKey("metadata"))
-    try c.encode(self.payload, forKey: WireKey("payload"))
-    try c.encodeIfPresent(self.resourceId, forKey: WireKey("resourceId"))
-    try c.encode(self.timestamp, forKey: WireKey("timestamp"))
-    try c.encode(self.type, forKey: WireKey("type"))
-    try c.encode(self.userId, forKey: WireKey("userId"))
-    try c.encode(self.version, forKey: WireKey("version"))
+    try c.encodeIfPresent(self.annotation, as: "annotation")
+    try c.encode(self.id, as: "id")
+    try c.encode(self.metadata, as: "metadata")
+    try c.encode(self.payload, as: "payload")
+    try c.encodeIfPresent(self.resourceId, as: "resourceId")
+    try c.encode(self.timestamp, as: "timestamp")
+    try c.encode(self.type, as: "type")
+    try c.encode(self.userId, as: "userId")
+    try c.encode(self.version, as: "version")
   }
 }
 
@@ -3546,11 +3211,11 @@ public struct EntityTagChangedPayload: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.entityType = try c.decode(String.self, forKey: WireKey("entityType"))
+    self.entityType = try c.value("entityType")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.entityType, forKey: WireKey("entityType"))
+    try c.encode(self.entityType, as: "entityType")
   }
 }
 
@@ -3561,11 +3226,11 @@ public struct EntityTypeAddedPayload: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.entityType = try c.decode(String.self, forKey: WireKey("entityType"))
+    self.entityType = try c.value("entityType")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.entityType, forKey: WireKey("entityType"))
+    try c.encode(self.entityType, as: "entityType")
   }
 }
 
@@ -3576,16 +3241,12 @@ public struct EntityTypesProjection: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: { !Set<String>(["entityTypes"]).contains($0.stringValue) })
-    {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in EntityTypesProjection")
-    }
-    self.entityTypes = try c.decode([String].self, forKey: WireKey("entityTypes"))
+    try c.refuseUnknown(["entityTypes"], in: "EntityTypesProjection")
+    self.entityTypes = try c.value("entityTypes")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.entityTypes, forKey: WireKey("entityTypes"))
+    try c.encode(self.entityTypes, as: "entityTypes")
   }
 }
 
@@ -3604,21 +3265,17 @@ public struct ErrorResponse: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.code =
-      c.contains(WireKey("code")) ? try c.decode(String.self, forKey: WireKey("code")) : nil
-    self.details =
-      c.contains(WireKey("details"))
-      ? try c.decode(JSONValue.self, forKey: WireKey("details")) : nil
-    self.error = try c.decode(String.self, forKey: WireKey("error"))
-    self.hint =
-      c.contains(WireKey("hint")) ? try c.decode(String.self, forKey: WireKey("hint")) : nil
+    self.code = try c.ifPresent("code")
+    self.details = try c.ifPresent("details")
+    self.error = try c.value("error")
+    self.hint = try c.ifPresent("hint")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.code, forKey: WireKey("code"))
-    try c.encodeIfPresent(self.details, forKey: WireKey("details"))
-    try c.encode(self.error, forKey: WireKey("error"))
-    try c.encodeIfPresent(self.hint, forKey: WireKey("hint"))
+    try c.encodeIfPresent(self.code, as: "code")
+    try c.encodeIfPresent(self.details, as: "details")
+    try c.encode(self.error, as: "error")
+    try c.encodeIfPresent(self.hint, as: "hint")
   }
 }
 
@@ -3629,11 +3286,11 @@ public struct EventMetadata: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.sequenceNumber = try c.decode(Int.self, forKey: WireKey("sequenceNumber"))
+    self.sequenceNumber = try c.value("sequenceNumber")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.sequenceNumber, forKey: WireKey("sequenceNumber"))
+    try c.encode(self.sequenceNumber, as: "sequenceNumber")
   }
 }
 
@@ -3660,29 +3317,23 @@ public struct ExtractedText: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.items = try c.decode([PdfTextItem].self, forKey: WireKey("items"))
-    self.kind = try c.decode(ExtractedTextKind.self, forKey: WireKey("kind"))
-    self.method = try c.decode(ExtractedTextMethod.self, forKey: WireKey("method"))
-    self.ocrConfidence =
-      c.contains(WireKey("ocrConfidence"))
-      ? try c.decode(ExtractedTextOcrConfidence.self, forKey: WireKey("ocrConfidence")) : nil
-    self.pdfClass =
-      c.contains(WireKey("pdfClass"))
-      ? try c.decode(ExtractedTextPdfClass.self, forKey: WireKey("pdfClass")) : nil
-    self.text = try c.decode(String.self, forKey: WireKey("text"))
-    self.unreadPages =
-      c.contains(WireKey("unreadPages"))
-      ? try c.decode([Int].self, forKey: WireKey("unreadPages")) : nil
+    self.items = try c.value("items")
+    self.kind = try c.value("kind")
+    self.method = try c.value("method")
+    self.ocrConfidence = try c.ifPresent("ocrConfidence")
+    self.pdfClass = try c.ifPresent("pdfClass")
+    self.text = try c.value("text")
+    self.unreadPages = try c.ifPresent("unreadPages")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.items, forKey: WireKey("items"))
-    try c.encode(self.kind, forKey: WireKey("kind"))
-    try c.encode(self.method, forKey: WireKey("method"))
-    try c.encodeIfPresent(self.ocrConfidence, forKey: WireKey("ocrConfidence"))
-    try c.encodeIfPresent(self.pdfClass, forKey: WireKey("pdfClass"))
-    try c.encode(self.text, forKey: WireKey("text"))
-    try c.encodeIfPresent(self.unreadPages, forKey: WireKey("unreadPages"))
+    try c.encode(self.items, as: "items")
+    try c.encode(self.kind, as: "kind")
+    try c.encode(self.method, as: "method")
+    try c.encodeIfPresent(self.ocrConfidence, as: "ocrConfidence")
+    try c.encodeIfPresent(self.pdfClass, as: "pdfClass")
+    try c.encode(self.text, as: "text")
+    try c.encodeIfPresent(self.unreadPages, as: "unreadPages")
   }
 }
 
@@ -3709,15 +3360,15 @@ public struct ExtractedTextOcrConfidence: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.lowConfidenceWords = try c.decode(Int.self, forKey: WireKey("lowConfidenceWords"))
-    self.mean = try c.decode(Double.self, forKey: WireKey("mean"))
-    self.totalWords = try c.decode(Int.self, forKey: WireKey("totalWords"))
+    self.lowConfidenceWords = try c.value("lowConfidenceWords")
+    self.mean = try c.value("mean")
+    self.totalWords = try c.value("totalWords")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.lowConfidenceWords, forKey: WireKey("lowConfidenceWords"))
-    try c.encode(self.mean, forKey: WireKey("mean"))
-    try c.encode(self.totalWords, forKey: WireKey("totalWords"))
+    try c.encode(self.lowConfidenceWords, as: "lowConfidenceWords")
+    try c.encode(self.mean, as: "mean")
+    try c.encode(self.totalWords, as: "totalWords")
   }
 }
 
@@ -3740,13 +3391,13 @@ public struct ExtractionDeclined: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.declined = try c.decode(ExtractionDeclinedDeclined.self, forKey: WireKey("declined"))
-    self.kind = try c.decode(ExtractionDeclinedKind.self, forKey: WireKey("kind"))
+    self.declined = try c.value("declined")
+    self.kind = try c.value("kind")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.declined, forKey: WireKey("declined"))
-    try c.encode(self.kind, forKey: WireKey("kind"))
+    try c.encode(self.declined, as: "declined")
+    try c.encode(self.kind, as: "kind")
   }
 }
 
@@ -3818,45 +3469,34 @@ public struct FileEntry: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>([
+    try c.refuseUnknown(
+      [
         "annotationCount", "creator", "entityTypes", "mtime", "name", "path", "resourceId", "size",
         "tracked", "type",
-      ]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in FileEntry")
-    }
-    self.annotationCount =
-      c.contains(WireKey("annotationCount"))
-      ? try c.decode(Int.self, forKey: WireKey("annotationCount")) : nil
-    self.creator =
-      c.contains(WireKey("creator")) ? try c.decode(String.self, forKey: WireKey("creator")) : nil
-    self.entityTypes =
-      c.contains(WireKey("entityTypes"))
-      ? try c.decode([String].self, forKey: WireKey("entityTypes")) : nil
-    self.mtime = try c.decode(String.self, forKey: WireKey("mtime"))
-    self.name = try c.decode(String.self, forKey: WireKey("name"))
-    self.path = try c.decode(String.self, forKey: WireKey("path"))
-    self.resourceId =
-      c.contains(WireKey("resourceId"))
-      ? try c.decode(ResourceId.self, forKey: WireKey("resourceId")) : nil
-    self.size = try c.decode(Int.self, forKey: WireKey("size"))
-    self.tracked = try c.decode(Bool.self, forKey: WireKey("tracked"))
-    self.type = try c.decode(FileEntryType.self, forKey: WireKey("type"))
+      ], in: "FileEntry")
+    self.annotationCount = try c.ifPresent("annotationCount")
+    self.creator = try c.ifPresent("creator")
+    self.entityTypes = try c.ifPresent("entityTypes")
+    self.mtime = try c.value("mtime")
+    self.name = try c.value("name")
+    self.path = try c.value("path")
+    self.resourceId = try c.ifPresent("resourceId")
+    self.size = try c.value("size")
+    self.tracked = try c.value("tracked")
+    self.type = try c.value("type")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.annotationCount, forKey: WireKey("annotationCount"))
-    try c.encodeIfPresent(self.creator, forKey: WireKey("creator"))
-    try c.encodeIfPresent(self.entityTypes, forKey: WireKey("entityTypes"))
-    try c.encode(self.mtime, forKey: WireKey("mtime"))
-    try c.encode(self.name, forKey: WireKey("name"))
-    try c.encode(self.path, forKey: WireKey("path"))
-    try c.encodeIfPresent(self.resourceId, forKey: WireKey("resourceId"))
-    try c.encode(self.size, forKey: WireKey("size"))
-    try c.encode(self.tracked, forKey: WireKey("tracked"))
-    try c.encode(self.type, forKey: WireKey("type"))
+    try c.encodeIfPresent(self.annotationCount, as: "annotationCount")
+    try c.encodeIfPresent(self.creator, as: "creator")
+    try c.encodeIfPresent(self.entityTypes, as: "entityTypes")
+    try c.encode(self.mtime, as: "mtime")
+    try c.encode(self.name, as: "name")
+    try c.encode(self.path, as: "path")
+    try c.encodeIfPresent(self.resourceId, as: "resourceId")
+    try c.encode(self.size, as: "size")
+    try c.encode(self.tracked, as: "tracked")
+    try c.encode(self.type, as: "type")
   }
 }
 
@@ -3875,17 +3515,15 @@ public struct FragmentSelector: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.conformsTo =
-      c.contains(WireKey("conformsTo"))
-      ? try c.decode(String.self, forKey: WireKey("conformsTo")) : nil
-    self.type = try c.decode(FragmentSelectorType.self, forKey: WireKey("type"))
-    self.value = try c.decode(String.self, forKey: WireKey("value"))
+    self.conformsTo = try c.ifPresent("conformsTo")
+    self.type = try c.value("type")
+    self.value = try c.value("value")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.conformsTo, forKey: WireKey("conformsTo"))
-    try c.encode(self.type, forKey: WireKey("type"))
-    try c.encode(self.value, forKey: WireKey("value"))
+    try c.encodeIfPresent(self.conformsTo, as: "conformsTo")
+    try c.encode(self.type, as: "type")
+    try c.encode(self.value, as: "value")
   }
 }
 
@@ -3902,14 +3540,13 @@ public struct FrameAddEntityTypeCommand: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self._userId =
-      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
-    self.tag = try c.decode(String.self, forKey: WireKey("tag"))
+    self._userId = try c.ifPresent("_userId")
+    self.tag = try c.value("tag")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
-    try c.encode(self.tag, forKey: WireKey("tag"))
+    try c.encodeIfPresent(self._userId, as: "_userId")
+    try c.encode(self.tag, as: "tag")
   }
 }
 
@@ -3922,14 +3559,13 @@ public struct FrameAddTagSchemaCommand: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self._userId =
-      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
-    self.schema = try c.decode(TagSchema.self, forKey: WireKey("schema"))
+    self._userId = try c.ifPresent("_userId")
+    self.schema = try c.value("schema")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
-    try c.encode(self.schema, forKey: WireKey("schema"))
+    try c.encodeIfPresent(self._userId, as: "_userId")
+    try c.encode(self.schema, as: "schema")
   }
 }
 
@@ -3960,36 +3596,32 @@ public struct GatewayConfig: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>([
+    try c.refuseUnknown(
+      [
         "archivist", "capacity", "identity", "kb", "logFormat", "logLevel", "port", "publicUrl",
         "signal",
-      ]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in GatewayConfig")
-    }
-    self.archivist = try c.decode(GatewayConfigArchivist.self, forKey: WireKey("archivist"))
-    self.capacity = try c.decode(GatewayConfigCapacity.self, forKey: WireKey("capacity"))
-    self.identity = try c.decode(GatewayConfigIdentity.self, forKey: WireKey("identity"))
-    self.kb = try c.decode(KbIdentity.self, forKey: WireKey("kb"))
-    self.logFormat = try c.decode(LogFormat.self, forKey: WireKey("logFormat"))
-    self.logLevel = try c.decode(LogLevel.self, forKey: WireKey("logLevel"))
-    self.port = try c.decode(Int.self, forKey: WireKey("port"))
-    self.publicUrl = try c.decode(String.self, forKey: WireKey("publicUrl"))
-    self.signal = try c.decode(GatewayConfigSignal.self, forKey: WireKey("signal"))
+      ], in: "GatewayConfig")
+    self.archivist = try c.value("archivist")
+    self.capacity = try c.value("capacity")
+    self.identity = try c.value("identity")
+    self.kb = try c.value("kb")
+    self.logFormat = try c.value("logFormat")
+    self.logLevel = try c.value("logLevel")
+    self.port = try c.value("port")
+    self.publicUrl = try c.value("publicUrl")
+    self.signal = try c.value("signal")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.archivist, forKey: WireKey("archivist"))
-    try c.encode(self.capacity, forKey: WireKey("capacity"))
-    try c.encode(self.identity, forKey: WireKey("identity"))
-    try c.encode(self.kb, forKey: WireKey("kb"))
-    try c.encode(self.logFormat, forKey: WireKey("logFormat"))
-    try c.encode(self.logLevel, forKey: WireKey("logLevel"))
-    try c.encode(self.port, forKey: WireKey("port"))
-    try c.encode(self.publicUrl, forKey: WireKey("publicUrl"))
-    try c.encode(self.signal, forKey: WireKey("signal"))
+    try c.encode(self.archivist, as: "archivist")
+    try c.encode(self.capacity, as: "capacity")
+    try c.encode(self.identity, as: "identity")
+    try c.encode(self.kb, as: "kb")
+    try c.encode(self.logFormat, as: "logFormat")
+    try c.encode(self.logLevel, as: "logLevel")
+    try c.encode(self.port, as: "port")
+    try c.encode(self.publicUrl, as: "publicUrl")
+    try c.encode(self.signal, as: "signal")
   }
 }
 
@@ -4002,18 +3634,14 @@ public struct GatewayConfigArchivist: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: { !Set<String>(["host", "port"]).contains($0.stringValue) })
-    {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in GatewayConfigArchivist")
-    }
-    self.host = try c.decode(String.self, forKey: WireKey("host"))
-    self.port = try c.decode(Int.self, forKey: WireKey("port"))
+    try c.refuseUnknown(["host", "port"], in: "GatewayConfigArchivist")
+    self.host = try c.value("host")
+    self.port = try c.value("port")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.host, forKey: WireKey("host"))
-    try c.encode(self.port, forKey: WireKey("port"))
+    try c.encode(self.host, as: "host")
+    try c.encode(self.port, as: "port")
   }
 }
 
@@ -4026,19 +3654,14 @@ public struct GatewayConfigCapacity: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["connections", "queuedBytes"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in GatewayConfigCapacity")
-    }
-    self.connections = try c.decode(Int.self, forKey: WireKey("connections"))
-    self.queuedBytes = try c.decode(Int.self, forKey: WireKey("queuedBytes"))
+    try c.refuseUnknown(["connections", "queuedBytes"], in: "GatewayConfigCapacity")
+    self.connections = try c.value("connections")
+    self.queuedBytes = try c.value("queuedBytes")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.connections, forKey: WireKey("connections"))
-    try c.encode(self.queuedBytes, forKey: WireKey("queuedBytes"))
+    try c.encode(self.connections, as: "connections")
+    try c.encode(self.queuedBytes, as: "queuedBytes")
   }
 }
 
@@ -4051,19 +3674,14 @@ public struct GatewayConfigIdentity: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["issuer", "subjectClaim"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in GatewayConfigIdentity")
-    }
-    self.issuer = try c.decode(String.self, forKey: WireKey("issuer"))
-    self.subjectClaim = try c.decode(String.self, forKey: WireKey("subjectClaim"))
+    try c.refuseUnknown(["issuer", "subjectClaim"], in: "GatewayConfigIdentity")
+    self.issuer = try c.value("issuer")
+    self.subjectClaim = try c.value("subjectClaim")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.issuer, forKey: WireKey("issuer"))
-    try c.encode(self.subjectClaim, forKey: WireKey("subjectClaim"))
+    try c.encode(self.issuer, as: "issuer")
+    try c.encode(self.subjectClaim, as: "subjectClaim")
   }
 }
 
@@ -4083,27 +3701,18 @@ public struct GatewayConfigSignal: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["passwordEnv", "servers", "type", "userEnv"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in GatewayConfigSignal")
-    }
-    self.passwordEnv =
-      c.contains(WireKey("passwordEnv"))
-      ? try c.decode(String.self, forKey: WireKey("passwordEnv")) : nil
-    self.servers =
-      c.contains(WireKey("servers")) ? try c.decode(String.self, forKey: WireKey("servers")) : nil
-    self.type = try c.decode(GatewayConfigSignalType.self, forKey: WireKey("type"))
-    self.userEnv =
-      c.contains(WireKey("userEnv")) ? try c.decode(String.self, forKey: WireKey("userEnv")) : nil
+    try c.refuseUnknown(["passwordEnv", "servers", "type", "userEnv"], in: "GatewayConfigSignal")
+    self.passwordEnv = try c.ifPresent("passwordEnv")
+    self.servers = try c.ifPresent("servers")
+    self.type = try c.value("type")
+    self.userEnv = try c.ifPresent("userEnv")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.passwordEnv, forKey: WireKey("passwordEnv"))
-    try c.encodeIfPresent(self.servers, forKey: WireKey("servers"))
-    try c.encode(self.type, forKey: WireKey("type"))
-    try c.encodeIfPresent(self.userEnv, forKey: WireKey("userEnv"))
+    try c.encodeIfPresent(self.passwordEnv, as: "passwordEnv")
+    try c.encodeIfPresent(self.servers, as: "servers")
+    try c.encode(self.type, as: "type")
+    try c.encodeIfPresent(self.userEnv, as: "userEnv")
   }
 }
 
@@ -4121,13 +3730,13 @@ public struct GatherAnnotationComplete: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.annotationId = try c.decode(AnnotationId.self, forKey: WireKey("annotationId"))
-    self.response = try c.decode(GatheredContext.self, forKey: WireKey("response"))
+    self.annotationId = try c.value("annotationId")
+    self.response = try c.value("response")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.annotationId, forKey: WireKey("annotationId"))
-    try c.encode(self.response, forKey: WireKey("response"))
+    try c.encode(self.annotationId, as: "annotationId")
+    try c.encode(self.response, as: "response")
   }
 }
 
@@ -4144,21 +3753,15 @@ public struct GatherAnnotationOptions: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.contextWindow =
-      c.contains(WireKey("contextWindow"))
-      ? try c.decode(Int.self, forKey: WireKey("contextWindow")) : nil
-    self.includeSourceContext =
-      c.contains(WireKey("includeSourceContext"))
-      ? try c.decode(Bool.self, forKey: WireKey("includeSourceContext")) : nil
-    self.includeTargetContext =
-      c.contains(WireKey("includeTargetContext"))
-      ? try c.decode(Bool.self, forKey: WireKey("includeTargetContext")) : nil
+    self.contextWindow = try c.ifPresent("contextWindow")
+    self.includeSourceContext = try c.ifPresent("includeSourceContext")
+    self.includeTargetContext = try c.ifPresent("includeTargetContext")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.contextWindow, forKey: WireKey("contextWindow"))
-    try c.encodeIfPresent(self.includeSourceContext, forKey: WireKey("includeSourceContext"))
-    try c.encodeIfPresent(self.includeTargetContext, forKey: WireKey("includeTargetContext"))
+    try c.encodeIfPresent(self.contextWindow, as: "contextWindow")
+    try c.encodeIfPresent(self.includeSourceContext, as: "includeSourceContext")
+    try c.encodeIfPresent(self.includeTargetContext, as: "includeTargetContext")
   }
 }
 
@@ -4175,17 +3778,15 @@ public struct GatherAnnotationRequest: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.annotationId = try c.decode(AnnotationId.self, forKey: WireKey("annotationId"))
-    self.options =
-      c.contains(WireKey("options"))
-      ? try c.decode(GatherAnnotationOptions.self, forKey: WireKey("options")) : nil
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self.annotationId = try c.value("annotationId")
+    self.options = try c.ifPresent("options")
+    self.resourceId = try c.value("resourceId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.annotationId, forKey: WireKey("annotationId"))
-    try c.encodeIfPresent(self.options, forKey: WireKey("options"))
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encode(self.annotationId, as: "annotationId")
+    try c.encodeIfPresent(self.options, as: "options")
+    try c.encode(self.resourceId, as: "resourceId")
   }
 }
 
@@ -4205,20 +3806,17 @@ public struct GatherFailed: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.annotationId = try c.decode(AnnotationId.self, forKey: WireKey("annotationId"))
-    self.code =
-      c.contains(WireKey("code"))
-      ? try c.decode(GatherFailedCode.self, forKey: WireKey("code")) : nil
-    self.details =
-      c.contains(WireKey("details")) ? try c.decode(String.self, forKey: WireKey("details")) : nil
-    self.message = try c.decode(String.self, forKey: WireKey("message"))
+    self.annotationId = try c.value("annotationId")
+    self.code = try c.ifPresent("code")
+    self.details = try c.ifPresent("details")
+    self.message = try c.value("message")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.annotationId, forKey: WireKey("annotationId"))
-    try c.encodeIfPresent(self.code, forKey: WireKey("code"))
-    try c.encodeIfPresent(self.details, forKey: WireKey("details"))
-    try c.encode(self.message, forKey: WireKey("message"))
+    try c.encode(self.annotationId, as: "annotationId")
+    try c.encodeIfPresent(self.code, as: "code")
+    try c.encodeIfPresent(self.details, as: "details")
+    try c.encode(self.message, as: "message")
   }
 }
 
@@ -4238,15 +3836,13 @@ public struct GatherReferencedByRequest: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.motivation =
-      c.contains(WireKey("motivation"))
-      ? try c.decode(Motivation.self, forKey: WireKey("motivation")) : nil
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self.motivation = try c.ifPresent("motivation")
+    self.resourceId = try c.value("resourceId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.motivation, forKey: WireKey("motivation"))
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encodeIfPresent(self.motivation, as: "motivation")
+    try c.encode(self.resourceId, as: "resourceId")
   }
 }
 
@@ -4257,11 +3853,11 @@ public struct GatherReferencedByResult: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.response = try c.decode(GetReferencedByResponse.self, forKey: WireKey("response"))
+    self.response = try c.value("response")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.response, forKey: WireKey("response"))
+    try c.encode(self.response, as: "response")
   }
 }
 
@@ -4274,13 +3870,13 @@ public struct GatherResourceComplete: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
-    self.response = try c.decode(GatheredContext.self, forKey: WireKey("response"))
+    self.resourceId = try c.value("resourceId")
+    self.response = try c.value("response")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
-    try c.encode(self.response, forKey: WireKey("response"))
+    try c.encode(self.resourceId, as: "resourceId")
+    try c.encode(self.response, as: "response")
   }
 }
 
@@ -4300,20 +3896,17 @@ public struct GatherResourceFailed: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.code =
-      c.contains(WireKey("code"))
-      ? try c.decode(GatherResourceFailedCode.self, forKey: WireKey("code")) : nil
-    self.details =
-      c.contains(WireKey("details")) ? try c.decode(String.self, forKey: WireKey("details")) : nil
-    self.message = try c.decode(String.self, forKey: WireKey("message"))
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self.code = try c.ifPresent("code")
+    self.details = try c.ifPresent("details")
+    self.message = try c.value("message")
+    self.resourceId = try c.value("resourceId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.code, forKey: WireKey("code"))
-    try c.encodeIfPresent(self.details, forKey: WireKey("details"))
-    try c.encode(self.message, forKey: WireKey("message"))
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encodeIfPresent(self.code, as: "code")
+    try c.encodeIfPresent(self.details, as: "details")
+    try c.encode(self.message, as: "message")
+    try c.encode(self.resourceId, as: "resourceId")
   }
 }
 
@@ -4342,28 +3935,19 @@ public struct GatherResourceOptions: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.depth =
-      c.contains(WireKey("depth")) ? try c.decode(Int.self, forKey: WireKey("depth")) : nil
-    self.excludeEntityTypes =
-      c.contains(WireKey("excludeEntityTypes"))
-      ? try c.decode([String].self, forKey: WireKey("excludeEntityTypes")) : nil
-    self.includeContent =
-      c.contains(WireKey("includeContent"))
-      ? try c.decode(Bool.self, forKey: WireKey("includeContent")) : nil
-    self.includeSummary =
-      c.contains(WireKey("includeSummary"))
-      ? try c.decode(Bool.self, forKey: WireKey("includeSummary")) : nil
-    self.maxResources =
-      c.contains(WireKey("maxResources"))
-      ? try c.decode(Int.self, forKey: WireKey("maxResources")) : nil
+    self.depth = try c.ifPresent("depth")
+    self.excludeEntityTypes = try c.ifPresent("excludeEntityTypes")
+    self.includeContent = try c.ifPresent("includeContent")
+    self.includeSummary = try c.ifPresent("includeSummary")
+    self.maxResources = try c.ifPresent("maxResources")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.depth, forKey: WireKey("depth"))
-    try c.encodeIfPresent(self.excludeEntityTypes, forKey: WireKey("excludeEntityTypes"))
-    try c.encodeIfPresent(self.includeContent, forKey: WireKey("includeContent"))
-    try c.encodeIfPresent(self.includeSummary, forKey: WireKey("includeSummary"))
-    try c.encodeIfPresent(self.maxResources, forKey: WireKey("maxResources"))
+    try c.encodeIfPresent(self.depth, as: "depth")
+    try c.encodeIfPresent(self.excludeEntityTypes, as: "excludeEntityTypes")
+    try c.encodeIfPresent(self.includeContent, as: "includeContent")
+    try c.encodeIfPresent(self.includeSummary, as: "includeSummary")
+    try c.encodeIfPresent(self.maxResources, as: "maxResources")
   }
 }
 
@@ -4376,13 +3960,13 @@ public struct GatherResourceRequest: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.options = try c.decode(GatherResourceRequestOptions.self, forKey: WireKey("options"))
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self.options = try c.value("options")
+    self.resourceId = try c.value("resourceId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.options, forKey: WireKey("options"))
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encode(self.options, as: "options")
+    try c.encode(self.resourceId, as: "resourceId")
   }
 }
 
@@ -4404,21 +3988,19 @@ public struct GatherResourceRequestOptions: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.depth = try c.decode(Int.self, forKey: WireKey("depth"))
-    self.excludeEntityTypes =
-      c.contains(WireKey("excludeEntityTypes"))
-      ? try c.decode([String].self, forKey: WireKey("excludeEntityTypes")) : nil
-    self.includeContent = try c.decode(Bool.self, forKey: WireKey("includeContent"))
-    self.includeSummary = try c.decode(Bool.self, forKey: WireKey("includeSummary"))
-    self.maxResources = try c.decode(Int.self, forKey: WireKey("maxResources"))
+    self.depth = try c.value("depth")
+    self.excludeEntityTypes = try c.ifPresent("excludeEntityTypes")
+    self.includeContent = try c.value("includeContent")
+    self.includeSummary = try c.value("includeSummary")
+    self.maxResources = try c.value("maxResources")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.depth, forKey: WireKey("depth"))
-    try c.encodeIfPresent(self.excludeEntityTypes, forKey: WireKey("excludeEntityTypes"))
-    try c.encode(self.includeContent, forKey: WireKey("includeContent"))
-    try c.encode(self.includeSummary, forKey: WireKey("includeSummary"))
-    try c.encode(self.maxResources, forKey: WireKey("maxResources"))
+    try c.encode(self.depth, as: "depth")
+    try c.encodeIfPresent(self.excludeEntityTypes, as: "excludeEntityTypes")
+    try c.encode(self.includeContent, as: "includeContent")
+    try c.encode(self.includeSummary, as: "includeSummary")
+    try c.encode(self.maxResources, as: "maxResources")
   }
 }
 
@@ -4431,13 +4013,13 @@ public struct GatherSummaryRequest: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.annotationId = try c.decode(AnnotationId.self, forKey: WireKey("annotationId"))
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self.annotationId = try c.value("annotationId")
+    self.resourceId = try c.value("resourceId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.annotationId, forKey: WireKey("annotationId"))
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encode(self.annotationId, as: "annotationId")
+    try c.encode(self.resourceId, as: "resourceId")
   }
 }
 
@@ -4459,24 +4041,19 @@ public struct GatheredContext: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.focus = try c.decode(GatheredContextFocus.self, forKey: WireKey("focus"))
-    self.graph = try c.decode(KnowledgeGraph.self, forKey: WireKey("graph"))
-    self.inferredRelationshipSummary =
-      c.contains(WireKey("inferredRelationshipSummary"))
-      ? try c.decode(String.self, forKey: WireKey("inferredRelationshipSummary")) : nil
-    self.metadata = try c.decode(GatheredContextMetadata.self, forKey: WireKey("metadata"))
-    self.semanticContext =
-      c.contains(WireKey("semanticContext"))
-      ? try c.decode(GatheredContextSemanticContext.self, forKey: WireKey("semanticContext")) : nil
+    self.focus = try c.value("focus")
+    self.graph = try c.value("graph")
+    self.inferredRelationshipSummary = try c.ifPresent("inferredRelationshipSummary")
+    self.metadata = try c.value("metadata")
+    self.semanticContext = try c.ifPresent("semanticContext")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.focus, forKey: WireKey("focus"))
-    try c.encode(self.graph, forKey: WireKey("graph"))
-    try c.encodeIfPresent(
-      self.inferredRelationshipSummary, forKey: WireKey("inferredRelationshipSummary"))
-    try c.encode(self.metadata, forKey: WireKey("metadata"))
-    try c.encodeIfPresent(self.semanticContext, forKey: WireKey("semanticContext"))
+    try c.encode(self.focus, as: "focus")
+    try c.encode(self.graph, as: "graph")
+    try c.encodeIfPresent(self.inferredRelationshipSummary, as: "inferredRelationshipSummary")
+    try c.encode(self.metadata, as: "metadata")
+    try c.encodeIfPresent(self.semanticContext, as: "semanticContext")
   }
 }
 
@@ -4528,31 +4105,23 @@ public struct GatheredContextFocusAnnotation: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.annotation = try c.decode(Annotation.self, forKey: WireKey("annotation"))
-    self.kind = try c.decode(GatheredContextFocusAnnotationKind.self, forKey: WireKey("kind"))
-    self.selected =
-      c.contains(WireKey("selected"))
-      ? try c.decode(GatheredContextFocusAnnotationSelected.self, forKey: WireKey("selected")) : nil
-    self.sourceResource = try c.decode(ResourceDescriptor.self, forKey: WireKey("sourceResource"))
-    self.targetContext =
-      c.contains(WireKey("targetContext"))
-      ? try c.decode(
-        GatheredContextFocusAnnotationTargetContext.self, forKey: WireKey("targetContext")) : nil
-    self.targetResource =
-      c.contains(WireKey("targetResource"))
-      ? try c.decode(ResourceDescriptor.self, forKey: WireKey("targetResource")) : nil
-    self.userHint =
-      c.contains(WireKey("userHint")) ? try c.decode(String.self, forKey: WireKey("userHint")) : nil
+    self.annotation = try c.value("annotation")
+    self.kind = try c.value("kind")
+    self.selected = try c.ifPresent("selected")
+    self.sourceResource = try c.value("sourceResource")
+    self.targetContext = try c.ifPresent("targetContext")
+    self.targetResource = try c.ifPresent("targetResource")
+    self.userHint = try c.ifPresent("userHint")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.annotation, forKey: WireKey("annotation"))
-    try c.encode(self.kind, forKey: WireKey("kind"))
-    try c.encodeIfPresent(self.selected, forKey: WireKey("selected"))
-    try c.encode(self.sourceResource, forKey: WireKey("sourceResource"))
-    try c.encodeIfPresent(self.targetContext, forKey: WireKey("targetContext"))
-    try c.encodeIfPresent(self.targetResource, forKey: WireKey("targetResource"))
-    try c.encodeIfPresent(self.userHint, forKey: WireKey("userHint"))
+    try c.encode(self.annotation, as: "annotation")
+    try c.encode(self.kind, as: "kind")
+    try c.encodeIfPresent(self.selected, as: "selected")
+    try c.encode(self.sourceResource, as: "sourceResource")
+    try c.encodeIfPresent(self.targetContext, as: "targetContext")
+    try c.encodeIfPresent(self.targetResource, as: "targetResource")
+    try c.encodeIfPresent(self.userHint, as: "userHint")
   }
 }
 
@@ -4571,17 +4140,15 @@ public struct GatheredContextFocusAnnotationSelected: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.after =
-      c.contains(WireKey("after")) ? try c.decode(String.self, forKey: WireKey("after")) : nil
-    self.before =
-      c.contains(WireKey("before")) ? try c.decode(String.self, forKey: WireKey("before")) : nil
-    self.text = try c.decode(String.self, forKey: WireKey("text"))
+    self.after = try c.ifPresent("after")
+    self.before = try c.ifPresent("before")
+    self.text = try c.value("text")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.after, forKey: WireKey("after"))
-    try c.encodeIfPresent(self.before, forKey: WireKey("before"))
-    try c.encode(self.text, forKey: WireKey("text"))
+    try c.encodeIfPresent(self.after, as: "after")
+    try c.encodeIfPresent(self.before, as: "before")
+    try c.encode(self.text, as: "text")
   }
 }
 
@@ -4594,14 +4161,13 @@ public struct GatheredContextFocusAnnotationTargetContext: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.content = try c.decode(String.self, forKey: WireKey("content"))
-    self.summary =
-      c.contains(WireKey("summary")) ? try c.decode(String.self, forKey: WireKey("summary")) : nil
+    self.content = try c.value("content")
+    self.summary = try c.ifPresent("summary")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.content, forKey: WireKey("content"))
-    try c.encodeIfPresent(self.summary, forKey: WireKey("summary"))
+    try c.encode(self.content, as: "content")
+    try c.encodeIfPresent(self.summary, as: "summary")
   }
 }
 
@@ -4623,24 +4189,19 @@ public struct GatheredContextFocusResource: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.content =
-      c.contains(WireKey("content"))
-      ? try c.decode(GatheredContextFocusResourceContent.self, forKey: WireKey("content")) : nil
-    self.kind = try c.decode(GatheredContextFocusResourceKind.self, forKey: WireKey("kind"))
-    self.resource = try c.decode(ResourceDescriptor.self, forKey: WireKey("resource"))
-    self.suggestedReferences =
-      c.contains(WireKey("suggestedReferences"))
-      ? try c.decode([String].self, forKey: WireKey("suggestedReferences")) : nil
-    self.summary =
-      c.contains(WireKey("summary")) ? try c.decode(String.self, forKey: WireKey("summary")) : nil
+    self.content = try c.ifPresent("content")
+    self.kind = try c.value("kind")
+    self.resource = try c.value("resource")
+    self.suggestedReferences = try c.ifPresent("suggestedReferences")
+    self.summary = try c.ifPresent("summary")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.content, forKey: WireKey("content"))
-    try c.encode(self.kind, forKey: WireKey("kind"))
-    try c.encode(self.resource, forKey: WireKey("resource"))
-    try c.encodeIfPresent(self.suggestedReferences, forKey: WireKey("suggestedReferences"))
-    try c.encodeIfPresent(self.summary, forKey: WireKey("summary"))
+    try c.encodeIfPresent(self.content, as: "content")
+    try c.encode(self.kind, as: "kind")
+    try c.encode(self.resource, as: "resource")
+    try c.encodeIfPresent(self.suggestedReferences, as: "suggestedReferences")
+    try c.encodeIfPresent(self.summary, as: "summary")
   }
 }
 
@@ -4653,16 +4214,13 @@ public struct GatheredContextFocusResourceContent: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.main =
-      c.contains(WireKey("main")) ? try c.decode(String.self, forKey: WireKey("main")) : nil
-    self.related =
-      c.contains(WireKey("related"))
-      ? try c.decode([String: String].self, forKey: WireKey("related")) : nil
+    self.main = try c.ifPresent("main")
+    self.related = try c.ifPresent("related")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.main, forKey: WireKey("main"))
-    try c.encodeIfPresent(self.related, forKey: WireKey("related"))
+    try c.encodeIfPresent(self.main, as: "main")
+    try c.encodeIfPresent(self.related, as: "related")
   }
 }
 
@@ -4686,24 +4244,17 @@ public struct GatheredContextMetadata: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.entityTypeFrequencies =
-      c.contains(WireKey("entityTypeFrequencies"))
-      ? try c.decode([String: Int].self, forKey: WireKey("entityTypeFrequencies")) : nil
-    self.entityTypes =
-      c.contains(WireKey("entityTypes"))
-      ? try c.decode([String].self, forKey: WireKey("entityTypes")) : nil
-    self.language =
-      c.contains(WireKey("language")) ? try c.decode(String.self, forKey: WireKey("language")) : nil
-    self.resourceType =
-      c.contains(WireKey("resourceType"))
-      ? try c.decode(String.self, forKey: WireKey("resourceType")) : nil
+    self.entityTypeFrequencies = try c.ifPresent("entityTypeFrequencies")
+    self.entityTypes = try c.ifPresent("entityTypes")
+    self.language = try c.ifPresent("language")
+    self.resourceType = try c.ifPresent("resourceType")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.entityTypeFrequencies, forKey: WireKey("entityTypeFrequencies"))
-    try c.encodeIfPresent(self.entityTypes, forKey: WireKey("entityTypes"))
-    try c.encodeIfPresent(self.language, forKey: WireKey("language"))
-    try c.encodeIfPresent(self.resourceType, forKey: WireKey("resourceType"))
+    try c.encodeIfPresent(self.entityTypeFrequencies, as: "entityTypeFrequencies")
+    try c.encodeIfPresent(self.entityTypes, as: "entityTypes")
+    try c.encodeIfPresent(self.language, as: "language")
+    try c.encodeIfPresent(self.resourceType, as: "resourceType")
   }
 }
 
@@ -4716,15 +4267,13 @@ public struct GatheredContextSemanticContext: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.excludedEntityTypes =
-      c.contains(WireKey("excludedEntityTypes"))
-      ? try c.decode([String].self, forKey: WireKey("excludedEntityTypes")) : nil
-    self.similar = try c.decode([SemanticMatch].self, forKey: WireKey("similar"))
+    self.excludedEntityTypes = try c.ifPresent("excludedEntityTypes")
+    self.similar = try c.value("similar")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.excludedEntityTypes, forKey: WireKey("excludedEntityTypes"))
-    try c.encode(self.similar, forKey: WireKey("similar"))
+    try c.encodeIfPresent(self.excludedEntityTypes, as: "excludedEntityTypes")
+    try c.encode(self.similar, as: "similar")
   }
 }
 
@@ -4764,50 +4313,35 @@ public struct GenerationJobParams: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.cite = c.contains(WireKey("cite")) ? try c.decode(Bool.self, forKey: WireKey("cite")) : nil
-    self.context = try c.decode(GatheredContext.self, forKey: WireKey("context"))
-    self.entityTypes =
-      c.contains(WireKey("entityTypes"))
-      ? try c.decode([String].self, forKey: WireKey("entityTypes")) : nil
-    self.language =
-      c.contains(WireKey("language")) ? try c.decode(String.self, forKey: WireKey("language")) : nil
-    self.maxTokens =
-      c.contains(WireKey("maxTokens"))
-      ? try c.decode(Double.self, forKey: WireKey("maxTokens")) : nil
-    self.outputMediaType =
-      c.contains(WireKey("outputMediaType"))
-      ? try c.decode(SupportedMediaType.self, forKey: WireKey("outputMediaType")) : nil
-    self.prompt =
-      c.contains(WireKey("prompt")) ? try c.decode(String.self, forKey: WireKey("prompt")) : nil
-    self.sourceLanguage =
-      c.contains(WireKey("sourceLanguage"))
-      ? try c.decode(String.self, forKey: WireKey("sourceLanguage")) : nil
-    self.storageUri = try c.decode(String.self, forKey: WireKey("storageUri"))
-    self.structure =
-      c.contains(WireKey("structure"))
-      ? try c.decode(String.self, forKey: WireKey("structure")) : nil
-    self.task =
-      c.contains(WireKey("task")) ? try c.decode(String.self, forKey: WireKey("task")) : nil
-    self.temperature =
-      c.contains(WireKey("temperature"))
-      ? try c.decode(Double.self, forKey: WireKey("temperature")) : nil
-    self.title = try c.decode(String.self, forKey: WireKey("title"))
+    self.cite = try c.ifPresent("cite")
+    self.context = try c.value("context")
+    self.entityTypes = try c.ifPresent("entityTypes")
+    self.language = try c.ifPresent("language")
+    self.maxTokens = try c.ifPresent("maxTokens")
+    self.outputMediaType = try c.ifPresent("outputMediaType")
+    self.prompt = try c.ifPresent("prompt")
+    self.sourceLanguage = try c.ifPresent("sourceLanguage")
+    self.storageUri = try c.value("storageUri")
+    self.structure = try c.ifPresent("structure")
+    self.task = try c.ifPresent("task")
+    self.temperature = try c.ifPresent("temperature")
+    self.title = try c.value("title")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.cite, forKey: WireKey("cite"))
-    try c.encode(self.context, forKey: WireKey("context"))
-    try c.encodeIfPresent(self.entityTypes, forKey: WireKey("entityTypes"))
-    try c.encodeIfPresent(self.language, forKey: WireKey("language"))
-    try c.encodeIfPresent(self.maxTokens, forKey: WireKey("maxTokens"))
-    try c.encodeIfPresent(self.outputMediaType, forKey: WireKey("outputMediaType"))
-    try c.encodeIfPresent(self.prompt, forKey: WireKey("prompt"))
-    try c.encodeIfPresent(self.sourceLanguage, forKey: WireKey("sourceLanguage"))
-    try c.encode(self.storageUri, forKey: WireKey("storageUri"))
-    try c.encodeIfPresent(self.structure, forKey: WireKey("structure"))
-    try c.encodeIfPresent(self.task, forKey: WireKey("task"))
-    try c.encodeIfPresent(self.temperature, forKey: WireKey("temperature"))
-    try c.encode(self.title, forKey: WireKey("title"))
+    try c.encodeIfPresent(self.cite, as: "cite")
+    try c.encode(self.context, as: "context")
+    try c.encodeIfPresent(self.entityTypes, as: "entityTypes")
+    try c.encodeIfPresent(self.language, as: "language")
+    try c.encodeIfPresent(self.maxTokens, as: "maxTokens")
+    try c.encodeIfPresent(self.outputMediaType, as: "outputMediaType")
+    try c.encodeIfPresent(self.prompt, as: "prompt")
+    try c.encodeIfPresent(self.sourceLanguage, as: "sourceLanguage")
+    try c.encode(self.storageUri, as: "storageUri")
+    try c.encodeIfPresent(self.structure, as: "structure")
+    try c.encodeIfPresent(self.task, as: "task")
+    try c.encodeIfPresent(self.temperature, as: "temperature")
+    try c.encode(self.title, as: "title")
   }
 }
 
@@ -4845,48 +4379,33 @@ public struct GenerationJobRequest: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.cite = c.contains(WireKey("cite")) ? try c.decode(Bool.self, forKey: WireKey("cite")) : nil
-    self.entityTypes =
-      c.contains(WireKey("entityTypes"))
-      ? try c.decode([String].self, forKey: WireKey("entityTypes")) : nil
-    self.language =
-      c.contains(WireKey("language")) ? try c.decode(String.self, forKey: WireKey("language")) : nil
-    self.maxTokens =
-      c.contains(WireKey("maxTokens"))
-      ? try c.decode(Double.self, forKey: WireKey("maxTokens")) : nil
-    self.outputMediaType =
-      c.contains(WireKey("outputMediaType"))
-      ? try c.decode(SupportedMediaType.self, forKey: WireKey("outputMediaType")) : nil
-    self.prompt =
-      c.contains(WireKey("prompt")) ? try c.decode(String.self, forKey: WireKey("prompt")) : nil
-    self.sourceLanguage =
-      c.contains(WireKey("sourceLanguage"))
-      ? try c.decode(String.self, forKey: WireKey("sourceLanguage")) : nil
-    self.storageUri = try c.decode(String.self, forKey: WireKey("storageUri"))
-    self.structure =
-      c.contains(WireKey("structure"))
-      ? try c.decode(String.self, forKey: WireKey("structure")) : nil
-    self.task =
-      c.contains(WireKey("task")) ? try c.decode(String.self, forKey: WireKey("task")) : nil
-    self.temperature =
-      c.contains(WireKey("temperature"))
-      ? try c.decode(Double.self, forKey: WireKey("temperature")) : nil
-    self.title = try c.decode(String.self, forKey: WireKey("title"))
+    self.cite = try c.ifPresent("cite")
+    self.entityTypes = try c.ifPresent("entityTypes")
+    self.language = try c.ifPresent("language")
+    self.maxTokens = try c.ifPresent("maxTokens")
+    self.outputMediaType = try c.ifPresent("outputMediaType")
+    self.prompt = try c.ifPresent("prompt")
+    self.sourceLanguage = try c.ifPresent("sourceLanguage")
+    self.storageUri = try c.value("storageUri")
+    self.structure = try c.ifPresent("structure")
+    self.task = try c.ifPresent("task")
+    self.temperature = try c.ifPresent("temperature")
+    self.title = try c.value("title")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.cite, forKey: WireKey("cite"))
-    try c.encodeIfPresent(self.entityTypes, forKey: WireKey("entityTypes"))
-    try c.encodeIfPresent(self.language, forKey: WireKey("language"))
-    try c.encodeIfPresent(self.maxTokens, forKey: WireKey("maxTokens"))
-    try c.encodeIfPresent(self.outputMediaType, forKey: WireKey("outputMediaType"))
-    try c.encodeIfPresent(self.prompt, forKey: WireKey("prompt"))
-    try c.encodeIfPresent(self.sourceLanguage, forKey: WireKey("sourceLanguage"))
-    try c.encode(self.storageUri, forKey: WireKey("storageUri"))
-    try c.encodeIfPresent(self.structure, forKey: WireKey("structure"))
-    try c.encodeIfPresent(self.task, forKey: WireKey("task"))
-    try c.encodeIfPresent(self.temperature, forKey: WireKey("temperature"))
-    try c.encode(self.title, forKey: WireKey("title"))
+    try c.encodeIfPresent(self.cite, as: "cite")
+    try c.encodeIfPresent(self.entityTypes, as: "entityTypes")
+    try c.encodeIfPresent(self.language, as: "language")
+    try c.encodeIfPresent(self.maxTokens, as: "maxTokens")
+    try c.encodeIfPresent(self.outputMediaType, as: "outputMediaType")
+    try c.encodeIfPresent(self.prompt, as: "prompt")
+    try c.encodeIfPresent(self.sourceLanguage, as: "sourceLanguage")
+    try c.encode(self.storageUri, as: "storageUri")
+    try c.encodeIfPresent(self.structure, as: "structure")
+    try c.encodeIfPresent(self.task, as: "task")
+    try c.encodeIfPresent(self.temperature, as: "temperature")
+    try c.encode(self.title, as: "title")
   }
 }
 
@@ -4905,17 +4424,17 @@ public struct GetAnnotationHistoryResponse: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.annotationId = try c.decode(AnnotationId.self, forKey: WireKey("annotationId"))
-    self.events = try c.decode([AttributedEvent].self, forKey: WireKey("events"))
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
-    self.total = try c.decode(Double.self, forKey: WireKey("total"))
+    self.annotationId = try c.value("annotationId")
+    self.events = try c.value("events")
+    self.resourceId = try c.value("resourceId")
+    self.total = try c.value("total")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.annotationId, forKey: WireKey("annotationId"))
-    try c.encode(self.events, forKey: WireKey("events"))
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
-    try c.encode(self.total, forKey: WireKey("total"))
+    try c.encode(self.annotationId, as: "annotationId")
+    try c.encode(self.events, as: "events")
+    try c.encode(self.resourceId, as: "resourceId")
+    try c.encode(self.total, as: "total")
   }
 }
 
@@ -4932,16 +4451,15 @@ public struct GetAnnotationResponse: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.annotation = try c.decode(Annotation.self, forKey: WireKey("annotation"))
-    self.resolvedResource = try c.decode(
-      Optional<ResourceDescriptor>.self, forKey: WireKey("resolvedResource"))
-    self.resource = try c.decode(Optional<ResourceDescriptor>.self, forKey: WireKey("resource"))
+    self.annotation = try c.value("annotation")
+    self.resolvedResource = try c.value("resolvedResource")
+    self.resource = try c.value("resource")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.annotation, forKey: WireKey("annotation"))
-    try c.encode(self.resolvedResource, forKey: WireKey("resolvedResource"))
-    try c.encode(self.resource, forKey: WireKey("resource"))
+    try c.encode(self.annotation, as: "annotation")
+    try c.encode(self.resolvedResource, as: "resolvedResource")
+    try c.encode(self.resource, as: "resource")
   }
 }
 
@@ -4956,25 +4474,15 @@ public struct GetAnnotationsResponse: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.annotations = try c.decode([Annotation].self, forKey: WireKey("annotations"))
-    if !c.contains(WireKey("motivation")) {
-      self.motivation = .absent
-    } else if try c.decodeNil(forKey: WireKey("motivation")) {
-      self.motivation = .null
-    } else {
-      self.motivation = .value(try c.decode(Motivation.self, forKey: WireKey("motivation")))
-    }
-    self.total = try c.decode(Double.self, forKey: WireKey("total"))
+    self.annotations = try c.value("annotations")
+    self.motivation = try c.stated("motivation")
+    self.total = try c.value("total")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.annotations, forKey: WireKey("annotations"))
-    switch self.motivation {
-    case .absent: break
-    case .null: try c.encodeNil(forKey: WireKey("motivation"))
-    case .value(let value): try c.encode(value, forKey: WireKey("motivation"))
-    }
-    try c.encode(self.total, forKey: WireKey("total"))
+    try c.encode(self.annotations, as: "annotations")
+    try c.encode(stated: self.motivation, as: "motivation")
+    try c.encode(self.total, as: "total")
   }
 }
 
@@ -4985,11 +4493,11 @@ public struct GetEntityTypesResponse: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.entityTypes = try c.decode([String].self, forKey: WireKey("entityTypes"))
+    self.entityTypes = try c.value("entityTypes")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.entityTypes, forKey: WireKey("entityTypes"))
+    try c.encode(self.entityTypes, as: "entityTypes")
   }
 }
 
@@ -5004,15 +4512,15 @@ public struct GetEventsResponse: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.events = try c.decode([AttributedEvent].self, forKey: WireKey("events"))
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
-    self.total = try c.decode(Double.self, forKey: WireKey("total"))
+    self.events = try c.value("events")
+    self.resourceId = try c.value("resourceId")
+    self.total = try c.value("total")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.events, forKey: WireKey("events"))
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
-    try c.encode(self.total, forKey: WireKey("total"))
+    try c.encode(self.events, as: "events")
+    try c.encode(self.resourceId, as: "resourceId")
+    try c.encode(self.total, as: "total")
   }
 }
 
@@ -5023,12 +4531,11 @@ public struct GetReferencedByResponse: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.referencedBy = try c.decode(
-      [GetReferencedByResponseReferencedByItem].self, forKey: WireKey("referencedBy"))
+    self.referencedBy = try c.value("referencedBy")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.referencedBy, forKey: WireKey("referencedBy"))
+    try c.encode(self.referencedBy, as: "referencedBy")
   }
 }
 
@@ -5046,18 +4553,15 @@ public struct GetReferencedByResponseReferencedByItem: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.id = try c.decode(AnnotationId.self, forKey: WireKey("id"))
-    self.resourceName =
-      c.contains(WireKey("resourceName"))
-      ? try c.decode(String.self, forKey: WireKey("resourceName")) : nil
-    self.target = try c.decode(
-      GetReferencedByResponseReferencedByItemTarget.self, forKey: WireKey("target"))
+    self.id = try c.value("id")
+    self.resourceName = try c.ifPresent("resourceName")
+    self.target = try c.value("target")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.id, forKey: WireKey("id"))
-    try c.encodeIfPresent(self.resourceName, forKey: WireKey("resourceName"))
-    try c.encode(self.target, forKey: WireKey("target"))
+    try c.encode(self.id, as: "id")
+    try c.encodeIfPresent(self.resourceName, as: "resourceName")
+    try c.encode(self.target, as: "target")
   }
 }
 
@@ -5070,14 +4574,13 @@ public struct GetReferencedByResponseReferencedByItemTarget: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.selector = try c.decode(
-      GetReferencedByResponseReferencedByItemTargetSelector.self, forKey: WireKey("selector"))
-    self.source = try c.decode(ResourceId.self, forKey: WireKey("source"))
+    self.selector = try c.value("selector")
+    self.source = try c.value("source")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.selector, forKey: WireKey("selector"))
-    try c.encode(self.source, forKey: WireKey("source"))
+    try c.encode(self.selector, as: "selector")
+    try c.encode(self.source, as: "source")
   }
 }
 
@@ -5088,11 +4591,11 @@ public struct GetReferencedByResponseReferencedByItemTargetSelector: Codable, Se
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.exact = try c.decode(String.self, forKey: WireKey("exact"))
+    self.exact = try c.value("exact")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.exact, forKey: WireKey("exact"))
+    try c.encode(self.exact, as: "exact")
   }
 }
 
@@ -5105,13 +4608,13 @@ public struct GetResourceByTokenResponse: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.expiresAt = try c.decode(String.self, forKey: WireKey("expiresAt"))
-    self.sourceResource = try c.decode(ResourceDescriptor.self, forKey: WireKey("sourceResource"))
+    self.expiresAt = try c.value("expiresAt")
+    self.sourceResource = try c.value("sourceResource")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.expiresAt, forKey: WireKey("expiresAt"))
-    try c.encode(self.sourceResource, forKey: WireKey("sourceResource"))
+    try c.encode(self.expiresAt, as: "expiresAt")
+    try c.encode(self.sourceResource, as: "sourceResource")
   }
 }
 
@@ -5124,13 +4627,13 @@ public struct GetResourceResponse: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.annotations = try c.decode([Annotation].self, forKey: WireKey("annotations"))
-    self.resource = try c.decode(ResourceDescriptor.self, forKey: WireKey("resource"))
+    self.annotations = try c.value("annotations")
+    self.resource = try c.value("resource")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.annotations, forKey: WireKey("annotations"))
-    try c.encode(self.resource, forKey: WireKey("resource"))
+    try c.encode(self.annotations, as: "annotations")
+    try c.encode(self.resource, as: "resource")
   }
 }
 
@@ -5141,11 +4644,11 @@ public struct GetTagSchemasResponse: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.tagSchemas = try c.decode([TagSchema].self, forKey: WireKey("tagSchemas"))
+    self.tagSchemas = try c.value("tagSchemas")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.tagSchemas, forKey: WireKey("tagSchemas"))
+    try c.encode(self.tagSchemas, as: "tagSchemas")
   }
 }
 
@@ -5169,25 +4672,21 @@ public struct GraphAnnotationNode: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.annotation = try c.decode(Annotation.self, forKey: WireKey("annotation"))
-    self.entityTypes =
-      c.contains(WireKey("entityTypes"))
-      ? try c.decode([String].self, forKey: WireKey("entityTypes")) : nil
-    self.id = try c.decode(AnnotationId.self, forKey: WireKey("id"))
-    self.label = try c.decode(String.self, forKey: WireKey("label"))
-    self.metadata =
-      c.contains(WireKey("metadata"))
-      ? try c.decode([String: JSONValue].self, forKey: WireKey("metadata")) : nil
-    self.type = try c.decode(GraphAnnotationNodeType.self, forKey: WireKey("type"))
+    self.annotation = try c.value("annotation")
+    self.entityTypes = try c.ifPresent("entityTypes")
+    self.id = try c.value("id")
+    self.label = try c.value("label")
+    self.metadata = try c.ifPresent("metadata")
+    self.type = try c.value("type")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.annotation, forKey: WireKey("annotation"))
-    try c.encodeIfPresent(self.entityTypes, forKey: WireKey("entityTypes"))
-    try c.encode(self.id, forKey: WireKey("id"))
-    try c.encode(self.label, forKey: WireKey("label"))
-    try c.encodeIfPresent(self.metadata, forKey: WireKey("metadata"))
-    try c.encode(self.type, forKey: WireKey("type"))
+    try c.encode(self.annotation, as: "annotation")
+    try c.encodeIfPresent(self.entityTypes, as: "entityTypes")
+    try c.encode(self.id, as: "id")
+    try c.encode(self.label, as: "label")
+    try c.encodeIfPresent(self.metadata, as: "metadata")
+    try c.encode(self.type, as: "type")
   }
 }
 
@@ -5241,23 +4740,19 @@ public struct GraphResourceNode: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.entityTypes =
-      c.contains(WireKey("entityTypes"))
-      ? try c.decode([String].self, forKey: WireKey("entityTypes")) : nil
-    self.id = try c.decode(ResourceId.self, forKey: WireKey("id"))
-    self.label = try c.decode(String.self, forKey: WireKey("label"))
-    self.metadata =
-      c.contains(WireKey("metadata"))
-      ? try c.decode([String: JSONValue].self, forKey: WireKey("metadata")) : nil
-    self.type = try c.decode(GraphResourceNodeType.self, forKey: WireKey("type"))
+    self.entityTypes = try c.ifPresent("entityTypes")
+    self.id = try c.value("id")
+    self.label = try c.value("label")
+    self.metadata = try c.ifPresent("metadata")
+    self.type = try c.value("type")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.entityTypes, forKey: WireKey("entityTypes"))
-    try c.encode(self.id, forKey: WireKey("id"))
-    try c.encode(self.label, forKey: WireKey("label"))
-    try c.encodeIfPresent(self.metadata, forKey: WireKey("metadata"))
-    try c.encode(self.type, forKey: WireKey("type"))
+    try c.encodeIfPresent(self.entityTypes, as: "entityTypes")
+    try c.encode(self.id, as: "id")
+    try c.encode(self.label, as: "label")
+    try c.encodeIfPresent(self.metadata, as: "metadata")
+    try c.encode(self.type, as: "type")
   }
 }
 
@@ -5278,17 +4773,17 @@ public struct HealthResponse: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.message = try c.decode(String.self, forKey: WireKey("message"))
-    self.status = try c.decode(String.self, forKey: WireKey("status"))
-    self.timestamp = try c.decode(String.self, forKey: WireKey("timestamp"))
-    self.version = try c.decode(String.self, forKey: WireKey("version"))
+    self.message = try c.value("message")
+    self.status = try c.value("status")
+    self.timestamp = try c.value("timestamp")
+    self.version = try c.value("version")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.message, forKey: WireKey("message"))
-    try c.encode(self.status, forKey: WireKey("status"))
-    try c.encode(self.timestamp, forKey: WireKey("timestamp"))
-    try c.encode(self.version, forKey: WireKey("version"))
+    try c.encode(self.message, as: "message")
+    try c.encode(self.status, as: "status")
+    try c.encode(self.timestamp, as: "timestamp")
+    try c.encode(self.version, as: "version")
   }
 }
 
@@ -5312,25 +4807,21 @@ public struct HeldSignIn: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.access = try c.decode(String.self, forKey: WireKey("access"))
-    self.clientId = try c.decode(String.self, forKey: WireKey("clientId"))
-    self.personKey =
-      c.contains(WireKey("personKey"))
-      ? try c.decode(String.self, forKey: WireKey("personKey")) : nil
-    self.refresh = try c.decode(String.self, forKey: WireKey("refresh"))
-    self.revocationEndpoint =
-      c.contains(WireKey("revocationEndpoint"))
-      ? try c.decode(String.self, forKey: WireKey("revocationEndpoint")) : nil
-    self.tokenEndpoint = try c.decode(String.self, forKey: WireKey("tokenEndpoint"))
+    self.access = try c.value("access")
+    self.clientId = try c.value("clientId")
+    self.personKey = try c.ifPresent("personKey")
+    self.refresh = try c.value("refresh")
+    self.revocationEndpoint = try c.ifPresent("revocationEndpoint")
+    self.tokenEndpoint = try c.value("tokenEndpoint")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.access, forKey: WireKey("access"))
-    try c.encode(self.clientId, forKey: WireKey("clientId"))
-    try c.encodeIfPresent(self.personKey, forKey: WireKey("personKey"))
-    try c.encode(self.refresh, forKey: WireKey("refresh"))
-    try c.encodeIfPresent(self.revocationEndpoint, forKey: WireKey("revocationEndpoint"))
-    try c.encode(self.tokenEndpoint, forKey: WireKey("tokenEndpoint"))
+    try c.encode(self.access, as: "access")
+    try c.encode(self.clientId, as: "clientId")
+    try c.encodeIfPresent(self.personKey, as: "personKey")
+    try c.encode(self.refresh, as: "refresh")
+    try c.encodeIfPresent(self.revocationEndpoint, as: "revocationEndpoint")
+    try c.encode(self.tokenEndpoint, as: "tokenEndpoint")
   }
 }
 
@@ -5347,30 +4838,19 @@ public struct HighlightingJobParams: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["density", "instructions", "motivation", "sourceLanguage"]).contains(
-        $0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in HighlightingJobParams")
-    }
-    self.density =
-      c.contains(WireKey("density")) ? try c.decode(Double.self, forKey: WireKey("density")) : nil
-    self.instructions =
-      c.contains(WireKey("instructions"))
-      ? try c.decode(String.self, forKey: WireKey("instructions")) : nil
-    self.motivation = try c.decode(
-      HighlightingJobParamsMotivation.self, forKey: WireKey("motivation"))
-    self.sourceLanguage =
-      c.contains(WireKey("sourceLanguage"))
-      ? try c.decode(String.self, forKey: WireKey("sourceLanguage")) : nil
+    try c.refuseUnknown(
+      ["density", "instructions", "motivation", "sourceLanguage"], in: "HighlightingJobParams")
+    self.density = try c.ifPresent("density")
+    self.instructions = try c.ifPresent("instructions")
+    self.motivation = try c.value("motivation")
+    self.sourceLanguage = try c.ifPresent("sourceLanguage")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.density, forKey: WireKey("density"))
-    try c.encodeIfPresent(self.instructions, forKey: WireKey("instructions"))
-    try c.encode(self.motivation, forKey: WireKey("motivation"))
-    try c.encodeIfPresent(self.sourceLanguage, forKey: WireKey("sourceLanguage"))
+    try c.encodeIfPresent(self.density, as: "density")
+    try c.encodeIfPresent(self.instructions, as: "instructions")
+    try c.encode(self.motivation, as: "motivation")
+    try c.encodeIfPresent(self.sourceLanguage, as: "sourceLanguage")
   }
 }
 
@@ -5391,17 +4871,17 @@ public struct HttpEndpoint: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.host = try c.decode(String.self, forKey: WireKey("host"))
-    self.kind = try c.decode(HttpEndpointKind.self, forKey: WireKey("kind"))
-    self.port = try c.decode(Int.self, forKey: WireKey("port"))
-    self.`protocol` = try c.decode(HttpEndpointProtocol.self, forKey: WireKey("protocol"))
+    self.host = try c.value("host")
+    self.kind = try c.value("kind")
+    self.port = try c.value("port")
+    self.`protocol` = try c.value("protocol")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.host, forKey: WireKey("host"))
-    try c.encode(self.kind, forKey: WireKey("kind"))
-    try c.encode(self.port, forKey: WireKey("port"))
-    try c.encode(self.`protocol`, forKey: WireKey("protocol"))
+    try c.encode(self.host, as: "host")
+    try c.encode(self.kind, as: "kind")
+    try c.encode(self.port, as: "port")
+    try c.encode(self.`protocol`, as: "protocol")
   }
 }
 
@@ -5425,17 +4905,15 @@ public struct InferenceLimits: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.acceptsTemperature =
-      c.contains(WireKey("acceptsTemperature"))
-      ? try c.decode(Bool.self, forKey: WireKey("acceptsTemperature")) : nil
-    self.contextTokens = try c.decode(Double.self, forKey: WireKey("contextTokens"))
-    self.maxOutputTokens = try c.decode(Double.self, forKey: WireKey("maxOutputTokens"))
+    self.acceptsTemperature = try c.ifPresent("acceptsTemperature")
+    self.contextTokens = try c.value("contextTokens")
+    self.maxOutputTokens = try c.value("maxOutputTokens")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.acceptsTemperature, forKey: WireKey("acceptsTemperature"))
-    try c.encode(self.contextTokens, forKey: WireKey("contextTokens"))
-    try c.encode(self.maxOutputTokens, forKey: WireKey("maxOutputTokens"))
+    try c.encodeIfPresent(self.acceptsTemperature, as: "acceptsTemperature")
+    try c.encode(self.contextTokens, as: "contextTokens")
+    try c.encode(self.maxOutputTokens, as: "maxOutputTokens")
   }
 }
 
@@ -5457,11 +4935,11 @@ public struct InferenceLimitsResult: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.response = try c.decode(InferenceLimitsResultResponse.self, forKey: WireKey("response"))
+    self.response = try c.value("response")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.response, forKey: WireKey("response"))
+    try c.encode(self.response, as: "response")
   }
 }
 
@@ -5472,11 +4950,11 @@ public struct InferenceLimitsResultResponse: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.limits = try c.decode([EngineLimits].self, forKey: WireKey("limits"))
+    self.limits = try c.value("limits")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.limits, forKey: WireKey("limits"))
+    try c.encode(self.limits, as: "limits")
   }
 }
 
@@ -5491,21 +4969,16 @@ public struct JanusGraphConfig: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["host", "port", "type"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in JanusGraphConfig")
-    }
-    self.host = try c.decode(String.self, forKey: WireKey("host"))
-    self.port = try c.decode(Int.self, forKey: WireKey("port"))
-    self.type = try c.decode(JanusGraphConfigType.self, forKey: WireKey("type"))
+    try c.refuseUnknown(["host", "port", "type"], in: "JanusGraphConfig")
+    self.host = try c.value("host")
+    self.port = try c.value("port")
+    self.type = try c.value("type")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.host, forKey: WireKey("host"))
-    try c.encode(self.port, forKey: WireKey("port"))
-    try c.encode(self.type, forKey: WireKey("type"))
+    try c.encode(self.host, as: "host")
+    try c.encode(self.port, as: "port")
+    try c.encode(self.type, as: "type")
   }
 }
 
@@ -5564,22 +5037,21 @@ public struct JobAssignCommand: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self._userId =
-      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
-    self.holder = try c.decode(UserId.self, forKey: WireKey("holder"))
-    self.jobId = try c.decode(JobId.self, forKey: WireKey("jobId"))
-    self.jobType = try c.decode(JobType.self, forKey: WireKey("jobType"))
-    self.requester = try c.decode(UserId.self, forKey: WireKey("requester"))
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self._userId = try c.ifPresent("_userId")
+    self.holder = try c.value("holder")
+    self.jobId = try c.value("jobId")
+    self.jobType = try c.value("jobType")
+    self.requester = try c.value("requester")
+    self.resourceId = try c.value("resourceId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
-    try c.encode(self.holder, forKey: WireKey("holder"))
-    try c.encode(self.jobId, forKey: WireKey("jobId"))
-    try c.encode(self.jobType, forKey: WireKey("jobType"))
-    try c.encode(self.requester, forKey: WireKey("requester"))
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encodeIfPresent(self._userId, as: "_userId")
+    try c.encode(self.holder, as: "holder")
+    try c.encode(self.jobId, as: "jobId")
+    try c.encode(self.jobType, as: "jobType")
+    try c.encode(self.requester, as: "requester")
+    try c.encode(self.resourceId, as: "resourceId")
   }
 }
 
@@ -5600,19 +5072,19 @@ public struct JobAssignedPayload: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.holder = try c.decode(UserId.self, forKey: WireKey("holder"))
-    self.jobId = try c.decode(JobId.self, forKey: WireKey("jobId"))
-    self.jobType = try c.decode(JobType.self, forKey: WireKey("jobType"))
-    self.requester = try c.decode(UserId.self, forKey: WireKey("requester"))
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self.holder = try c.value("holder")
+    self.jobId = try c.value("jobId")
+    self.jobType = try c.value("jobType")
+    self.requester = try c.value("requester")
+    self.resourceId = try c.value("resourceId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.holder, forKey: WireKey("holder"))
-    try c.encode(self.jobId, forKey: WireKey("jobId"))
-    try c.encode(self.jobType, forKey: WireKey("jobType"))
-    try c.encode(self.requester, forKey: WireKey("requester"))
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encode(self.holder, as: "holder")
+    try c.encode(self.jobId, as: "jobId")
+    try c.encode(self.jobType, as: "jobType")
+    try c.encode(self.requester, as: "requester")
+    try c.encode(self.resourceId, as: "resourceId")
   }
 }
 
@@ -5638,30 +5110,23 @@ public struct JobCancelCommand: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self._userId =
-      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
-    self.annotationId =
-      c.contains(WireKey("annotationId"))
-      ? try c.decode(AnnotationId.self, forKey: WireKey("annotationId")) : nil
-    self.completedUnits =
-      c.contains(WireKey("completedUnits"))
-      ? try c.decode([String].self, forKey: WireKey("completedUnits")) : nil
-    self.jobId = try c.decode(JobId.self, forKey: WireKey("jobId"))
-    self.jobType = try c.decode(JobType.self, forKey: WireKey("jobType"))
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
-    self.unitCursors =
-      c.contains(WireKey("unitCursors"))
-      ? try c.decode([String: UnitCursor].self, forKey: WireKey("unitCursors")) : nil
+    self._userId = try c.ifPresent("_userId")
+    self.annotationId = try c.ifPresent("annotationId")
+    self.completedUnits = try c.ifPresent("completedUnits")
+    self.jobId = try c.value("jobId")
+    self.jobType = try c.value("jobType")
+    self.resourceId = try c.value("resourceId")
+    self.unitCursors = try c.ifPresent("unitCursors")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
-    try c.encodeIfPresent(self.annotationId, forKey: WireKey("annotationId"))
-    try c.encodeIfPresent(self.completedUnits, forKey: WireKey("completedUnits"))
-    try c.encode(self.jobId, forKey: WireKey("jobId"))
-    try c.encode(self.jobType, forKey: WireKey("jobType"))
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
-    try c.encodeIfPresent(self.unitCursors, forKey: WireKey("unitCursors"))
+    try c.encodeIfPresent(self._userId, as: "_userId")
+    try c.encodeIfPresent(self.annotationId, as: "annotationId")
+    try c.encodeIfPresent(self.completedUnits, as: "completedUnits")
+    try c.encode(self.jobId, as: "jobId")
+    try c.encode(self.jobType, as: "jobType")
+    try c.encode(self.resourceId, as: "resourceId")
+    try c.encodeIfPresent(self.unitCursors, as: "unitCursors")
   }
 }
 
@@ -5672,11 +5137,11 @@ public struct JobCancelRequest: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.jobId = try c.decode(JobId.self, forKey: WireKey("jobId"))
+    self.jobId = try c.value("jobId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.jobId, forKey: WireKey("jobId"))
+    try c.encode(self.jobId, as: "jobId")
   }
 }
 
@@ -5687,11 +5152,11 @@ public struct JobCancelResult: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.cancelled = try c.decode(Bool.self, forKey: WireKey("cancelled"))
+    self.cancelled = try c.value("cancelled")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.cancelled, forKey: WireKey("cancelled"))
+    try c.encode(self.cancelled, as: "cancelled")
   }
 }
 
@@ -5712,28 +5177,21 @@ public struct JobCancelled: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["completedAt", "metadata", "params", "startedAt", "status"]).contains(
-        $0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in JobCancelled")
-    }
-    self.completedAt = try c.decode(String.self, forKey: WireKey("completedAt"))
-    self.metadata = try c.decode(JobMetadata.self, forKey: WireKey("metadata"))
-    self.params = try c.decode(JobParams.self, forKey: WireKey("params"))
-    self.startedAt =
-      c.contains(WireKey("startedAt"))
-      ? try c.decode(String.self, forKey: WireKey("startedAt")) : nil
-    self.status = try c.decode(JobCancelledStatus.self, forKey: WireKey("status"))
+    try c.refuseUnknown(
+      ["completedAt", "metadata", "params", "startedAt", "status"], in: "JobCancelled")
+    self.completedAt = try c.value("completedAt")
+    self.metadata = try c.value("metadata")
+    self.params = try c.value("params")
+    self.startedAt = try c.ifPresent("startedAt")
+    self.status = try c.value("status")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.completedAt, forKey: WireKey("completedAt"))
-    try c.encode(self.metadata, forKey: WireKey("metadata"))
-    try c.encode(self.params, forKey: WireKey("params"))
-    try c.encodeIfPresent(self.startedAt, forKey: WireKey("startedAt"))
-    try c.encode(self.status, forKey: WireKey("status"))
+    try c.encode(self.completedAt, as: "completedAt")
+    try c.encode(self.metadata, as: "metadata")
+    try c.encode(self.params, as: "params")
+    try c.encodeIfPresent(self.startedAt, as: "startedAt")
+    try c.encode(self.status, as: "status")
   }
 }
 
@@ -5757,20 +5215,17 @@ public struct JobCheckpointCommand: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self._userId =
-      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
-    self.completedUnits = try c.decode([String].self, forKey: WireKey("completedUnits"))
-    self.jobId = try c.decode(JobId.self, forKey: WireKey("jobId"))
-    self.unitCursors =
-      c.contains(WireKey("unitCursors"))
-      ? try c.decode([String: UnitCursor].self, forKey: WireKey("unitCursors")) : nil
+    self._userId = try c.ifPresent("_userId")
+    self.completedUnits = try c.value("completedUnits")
+    self.jobId = try c.value("jobId")
+    self.unitCursors = try c.ifPresent("unitCursors")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
-    try c.encode(self.completedUnits, forKey: WireKey("completedUnits"))
-    try c.encode(self.jobId, forKey: WireKey("jobId"))
-    try c.encodeIfPresent(self.unitCursors, forKey: WireKey("unitCursors"))
+    try c.encodeIfPresent(self._userId, as: "_userId")
+    try c.encode(self.completedUnits, as: "completedUnits")
+    try c.encode(self.jobId, as: "jobId")
+    try c.encodeIfPresent(self.unitCursors, as: "unitCursors")
   }
 }
 
@@ -5785,17 +5240,15 @@ public struct JobClaimCommand: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self._roles =
-      c.contains(WireKey("_roles")) ? try c.decode([String].self, forKey: WireKey("_roles")) : nil
-    self._userId =
-      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
-    self.accepts = try c.decode([JobFilter].self, forKey: WireKey("accepts"))
+    self._roles = try c.ifPresent("_roles")
+    self._userId = try c.ifPresent("_userId")
+    self.accepts = try c.value("accepts")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self._roles, forKey: WireKey("_roles"))
-    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
-    try c.encode(self.accepts, forKey: WireKey("accepts"))
+    try c.encodeIfPresent(self._roles, as: "_roles")
+    try c.encodeIfPresent(self._userId, as: "_userId")
+    try c.encode(self.accepts, as: "accepts")
   }
 }
 
@@ -5806,15 +5259,12 @@ public struct JobClaimedResult: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: { !Set<String>(["response"]).contains($0.stringValue) }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in JobClaimedResult")
-    }
-    self.response = try c.decode(JobRunning.self, forKey: WireKey("response"))
+    try c.refuseUnknown(["response"], in: "JobClaimedResult")
+    self.response = try c.value("response")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.response, forKey: WireKey("response"))
+    try c.encode(self.response, as: "response")
   }
 }
 
@@ -5838,28 +5288,23 @@ public struct JobComplete: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["completedAt", "metadata", "params", "result", "startedAt", "status"]).contains(
-        $0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in JobComplete")
-    }
-    self.completedAt = try c.decode(String.self, forKey: WireKey("completedAt"))
-    self.metadata = try c.decode(JobMetadata.self, forKey: WireKey("metadata"))
-    self.params = try c.decode(JobParams.self, forKey: WireKey("params"))
-    self.result = try c.decode(JobStoredResult.self, forKey: WireKey("result"))
-    self.startedAt = try c.decode(String.self, forKey: WireKey("startedAt"))
-    self.status = try c.decode(JobCompleteStatus.self, forKey: WireKey("status"))
+    try c.refuseUnknown(
+      ["completedAt", "metadata", "params", "result", "startedAt", "status"], in: "JobComplete")
+    self.completedAt = try c.value("completedAt")
+    self.metadata = try c.value("metadata")
+    self.params = try c.value("params")
+    self.result = try c.value("result")
+    self.startedAt = try c.value("startedAt")
+    self.status = try c.value("status")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.completedAt, forKey: WireKey("completedAt"))
-    try c.encode(self.metadata, forKey: WireKey("metadata"))
-    try c.encode(self.params, forKey: WireKey("params"))
-    try c.encode(self.result, forKey: WireKey("result"))
-    try c.encode(self.startedAt, forKey: WireKey("startedAt"))
-    try c.encode(self.status, forKey: WireKey("status"))
+    try c.encode(self.completedAt, as: "completedAt")
+    try c.encode(self.metadata, as: "metadata")
+    try c.encode(self.params, as: "params")
+    try c.encode(self.result, as: "result")
+    try c.encode(self.startedAt, as: "startedAt")
+    try c.encode(self.status, as: "status")
   }
 }
 
@@ -5919,44 +5364,29 @@ public struct JobCompletedPayload: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.annotationId =
-      c.contains(WireKey("annotationId"))
-      ? try c.decode(AnnotationId.self, forKey: WireKey("annotationId")) : nil
-    self.annotationUri =
-      c.contains(WireKey("annotationUri"))
-      ? try c.decode(String.self, forKey: WireKey("annotationUri")) : nil
-    self.attempt =
-      c.contains(WireKey("attempt")) ? try c.decode(Int.self, forKey: WireKey("attempt")) : nil
-    self.durability =
-      c.contains(WireKey("durability"))
-      ? try c.decode(DurabilityEvidence.self, forKey: WireKey("durability")) : nil
-    self.foundCount =
-      c.contains(WireKey("foundCount"))
-      ? try c.decode(Int.self, forKey: WireKey("foundCount")) : nil
-    self.jobId = try c.decode(JobId.self, forKey: WireKey("jobId"))
-    self.jobType = try c.decode(JobType.self, forKey: WireKey("jobType"))
-    self.result =
-      c.contains(WireKey("result"))
-      ? try c.decode([String: JSONValue].self, forKey: WireKey("result")) : nil
-    self.resultResourceId =
-      c.contains(WireKey("resultResourceId"))
-      ? try c.decode(ResourceId.self, forKey: WireKey("resultResourceId")) : nil
-    self.totalSteps =
-      c.contains(WireKey("totalSteps"))
-      ? try c.decode(Int.self, forKey: WireKey("totalSteps")) : nil
+    self.annotationId = try c.ifPresent("annotationId")
+    self.annotationUri = try c.ifPresent("annotationUri")
+    self.attempt = try c.ifPresent("attempt")
+    self.durability = try c.ifPresent("durability")
+    self.foundCount = try c.ifPresent("foundCount")
+    self.jobId = try c.value("jobId")
+    self.jobType = try c.value("jobType")
+    self.result = try c.ifPresent("result")
+    self.resultResourceId = try c.ifPresent("resultResourceId")
+    self.totalSteps = try c.ifPresent("totalSteps")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.annotationId, forKey: WireKey("annotationId"))
-    try c.encodeIfPresent(self.annotationUri, forKey: WireKey("annotationUri"))
-    try c.encodeIfPresent(self.attempt, forKey: WireKey("attempt"))
-    try c.encodeIfPresent(self.durability, forKey: WireKey("durability"))
-    try c.encodeIfPresent(self.foundCount, forKey: WireKey("foundCount"))
-    try c.encode(self.jobId, forKey: WireKey("jobId"))
-    try c.encode(self.jobType, forKey: WireKey("jobType"))
-    try c.encodeIfPresent(self.result, forKey: WireKey("result"))
-    try c.encodeIfPresent(self.resultResourceId, forKey: WireKey("resultResourceId"))
-    try c.encodeIfPresent(self.totalSteps, forKey: WireKey("totalSteps"))
+    try c.encodeIfPresent(self.annotationId, as: "annotationId")
+    try c.encodeIfPresent(self.annotationUri, as: "annotationUri")
+    try c.encodeIfPresent(self.attempt, as: "attempt")
+    try c.encodeIfPresent(self.durability, as: "durability")
+    try c.encodeIfPresent(self.foundCount, as: "foundCount")
+    try c.encode(self.jobId, as: "jobId")
+    try c.encode(self.jobType, as: "jobType")
+    try c.encodeIfPresent(self.result, as: "result")
+    try c.encodeIfPresent(self.resultResourceId, as: "resultResourceId")
+    try c.encodeIfPresent(self.totalSteps, as: "totalSteps")
   }
 }
 
@@ -5990,11 +5420,11 @@ public struct JobCreatedResult: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.response = try c.decode(JobCreatedResultResponse.self, forKey: WireKey("response"))
+    self.response = try c.value("response")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.response, forKey: WireKey("response"))
+    try c.encode(self.response, as: "response")
   }
 }
 
@@ -6005,11 +5435,11 @@ public struct JobCreatedResultResponse: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.jobId = try c.decode(JobId.self, forKey: WireKey("jobId"))
+    self.jobId = try c.value("jobId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.jobId, forKey: WireKey("jobId"))
+    try c.encode(self.jobId, as: "jobId")
   }
 }
 
@@ -6022,19 +5452,14 @@ public struct JobDeclined: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["declined", "reason"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in JobDeclined")
-    }
-    self.declined = try c.decode(JobDeclinedDeclined.self, forKey: WireKey("declined"))
-    self.reason = try c.decode(JobDeclinedReason.self, forKey: WireKey("reason"))
+    try c.refuseUnknown(["declined", "reason"], in: "JobDeclined")
+    self.declined = try c.value("declined")
+    self.reason = try c.value("reason")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.declined, forKey: WireKey("declined"))
-    try c.encode(self.reason, forKey: WireKey("reason"))
+    try c.encode(self.declined, as: "declined")
+    try c.encode(self.reason, as: "reason")
   }
 }
 
@@ -6095,46 +5520,33 @@ public struct JobFailCommand: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self._userId =
-      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
-    self.annotationId =
-      c.contains(WireKey("annotationId"))
-      ? try c.decode(AnnotationId.self, forKey: WireKey("annotationId")) : nil
-    self.attempt =
-      c.contains(WireKey("attempt")) ? try c.decode(Int.self, forKey: WireKey("attempt")) : nil
-    self.completedUnits =
-      c.contains(WireKey("completedUnits"))
-      ? try c.decode([String].self, forKey: WireKey("completedUnits")) : nil
-    self.durability =
-      c.contains(WireKey("durability"))
-      ? try c.decode(DurabilityEvidence.self, forKey: WireKey("durability")) : nil
-    self.error = try c.decode(String.self, forKey: WireKey("error"))
-    self.failureClass =
-      c.contains(WireKey("failureClass"))
-      ? try c.decode(FailureClass.self, forKey: WireKey("failureClass")) : nil
-    self.jobId = try c.decode(JobId.self, forKey: WireKey("jobId"))
-    self.jobType = try c.decode(JobType.self, forKey: WireKey("jobType"))
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
-    self.unitCursors =
-      c.contains(WireKey("unitCursors"))
-      ? try c.decode([String: UnitCursor].self, forKey: WireKey("unitCursors")) : nil
-    self.willRetry =
-      c.contains(WireKey("willRetry")) ? try c.decode(Bool.self, forKey: WireKey("willRetry")) : nil
+    self._userId = try c.ifPresent("_userId")
+    self.annotationId = try c.ifPresent("annotationId")
+    self.attempt = try c.ifPresent("attempt")
+    self.completedUnits = try c.ifPresent("completedUnits")
+    self.durability = try c.ifPresent("durability")
+    self.error = try c.value("error")
+    self.failureClass = try c.ifPresent("failureClass")
+    self.jobId = try c.value("jobId")
+    self.jobType = try c.value("jobType")
+    self.resourceId = try c.value("resourceId")
+    self.unitCursors = try c.ifPresent("unitCursors")
+    self.willRetry = try c.ifPresent("willRetry")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
-    try c.encodeIfPresent(self.annotationId, forKey: WireKey("annotationId"))
-    try c.encodeIfPresent(self.attempt, forKey: WireKey("attempt"))
-    try c.encodeIfPresent(self.completedUnits, forKey: WireKey("completedUnits"))
-    try c.encodeIfPresent(self.durability, forKey: WireKey("durability"))
-    try c.encode(self.error, forKey: WireKey("error"))
-    try c.encodeIfPresent(self.failureClass, forKey: WireKey("failureClass"))
-    try c.encode(self.jobId, forKey: WireKey("jobId"))
-    try c.encode(self.jobType, forKey: WireKey("jobType"))
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
-    try c.encodeIfPresent(self.unitCursors, forKey: WireKey("unitCursors"))
-    try c.encodeIfPresent(self.willRetry, forKey: WireKey("willRetry"))
+    try c.encodeIfPresent(self._userId, as: "_userId")
+    try c.encodeIfPresent(self.annotationId, as: "annotationId")
+    try c.encodeIfPresent(self.attempt, as: "attempt")
+    try c.encodeIfPresent(self.completedUnits, as: "completedUnits")
+    try c.encodeIfPresent(self.durability, as: "durability")
+    try c.encode(self.error, as: "error")
+    try c.encodeIfPresent(self.failureClass, as: "failureClass")
+    try c.encode(self.jobId, as: "jobId")
+    try c.encode(self.jobType, as: "jobType")
+    try c.encode(self.resourceId, as: "resourceId")
+    try c.encodeIfPresent(self.unitCursors, as: "unitCursors")
+    try c.encodeIfPresent(self.willRetry, as: "willRetry")
   }
 }
 
@@ -6160,35 +5572,26 @@ public struct JobFailed: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>([
-        "completedAt", "error", "failureClass", "metadata", "params", "startedAt", "status",
-      ]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in JobFailed")
-    }
-    self.completedAt = try c.decode(String.self, forKey: WireKey("completedAt"))
-    self.error = try c.decode(String.self, forKey: WireKey("error"))
-    self.failureClass =
-      c.contains(WireKey("failureClass"))
-      ? try c.decode(FailureClass.self, forKey: WireKey("failureClass")) : nil
-    self.metadata = try c.decode(JobMetadata.self, forKey: WireKey("metadata"))
-    self.params = try c.decode(JobParams.self, forKey: WireKey("params"))
-    self.startedAt =
-      c.contains(WireKey("startedAt"))
-      ? try c.decode(String.self, forKey: WireKey("startedAt")) : nil
-    self.status = try c.decode(JobFailedStatus.self, forKey: WireKey("status"))
+    try c.refuseUnknown(
+      ["completedAt", "error", "failureClass", "metadata", "params", "startedAt", "status"],
+      in: "JobFailed")
+    self.completedAt = try c.value("completedAt")
+    self.error = try c.value("error")
+    self.failureClass = try c.ifPresent("failureClass")
+    self.metadata = try c.value("metadata")
+    self.params = try c.value("params")
+    self.startedAt = try c.ifPresent("startedAt")
+    self.status = try c.value("status")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.completedAt, forKey: WireKey("completedAt"))
-    try c.encode(self.error, forKey: WireKey("error"))
-    try c.encodeIfPresent(self.failureClass, forKey: WireKey("failureClass"))
-    try c.encode(self.metadata, forKey: WireKey("metadata"))
-    try c.encode(self.params, forKey: WireKey("params"))
-    try c.encodeIfPresent(self.startedAt, forKey: WireKey("startedAt"))
-    try c.encode(self.status, forKey: WireKey("status"))
+    try c.encode(self.completedAt, as: "completedAt")
+    try c.encode(self.error, as: "error")
+    try c.encodeIfPresent(self.failureClass, as: "failureClass")
+    try c.encode(self.metadata, as: "metadata")
+    try c.encode(self.params, as: "params")
+    try c.encodeIfPresent(self.startedAt, as: "startedAt")
+    try c.encode(self.status, as: "status")
   }
 }
 
@@ -6217,33 +5620,25 @@ public struct JobFailedPayload: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.annotationId =
-      c.contains(WireKey("annotationId"))
-      ? try c.decode(AnnotationId.self, forKey: WireKey("annotationId")) : nil
-    self.attempt =
-      c.contains(WireKey("attempt")) ? try c.decode(Int.self, forKey: WireKey("attempt")) : nil
-    self.durability =
-      c.contains(WireKey("durability"))
-      ? try c.decode(DurabilityEvidence.self, forKey: WireKey("durability")) : nil
-    self.error = try c.decode(String.self, forKey: WireKey("error"))
-    self.failureClass =
-      c.contains(WireKey("failureClass"))
-      ? try c.decode(FailureClass.self, forKey: WireKey("failureClass")) : nil
-    self.jobId = try c.decode(JobId.self, forKey: WireKey("jobId"))
-    self.jobType = try c.decode(JobType.self, forKey: WireKey("jobType"))
-    self.willRetry =
-      c.contains(WireKey("willRetry")) ? try c.decode(Bool.self, forKey: WireKey("willRetry")) : nil
+    self.annotationId = try c.ifPresent("annotationId")
+    self.attempt = try c.ifPresent("attempt")
+    self.durability = try c.ifPresent("durability")
+    self.error = try c.value("error")
+    self.failureClass = try c.ifPresent("failureClass")
+    self.jobId = try c.value("jobId")
+    self.jobType = try c.value("jobType")
+    self.willRetry = try c.ifPresent("willRetry")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.annotationId, forKey: WireKey("annotationId"))
-    try c.encodeIfPresent(self.attempt, forKey: WireKey("attempt"))
-    try c.encodeIfPresent(self.durability, forKey: WireKey("durability"))
-    try c.encode(self.error, forKey: WireKey("error"))
-    try c.encodeIfPresent(self.failureClass, forKey: WireKey("failureClass"))
-    try c.encode(self.jobId, forKey: WireKey("jobId"))
-    try c.encode(self.jobType, forKey: WireKey("jobType"))
-    try c.encodeIfPresent(self.willRetry, forKey: WireKey("willRetry"))
+    try c.encodeIfPresent(self.annotationId, as: "annotationId")
+    try c.encodeIfPresent(self.attempt, as: "attempt")
+    try c.encodeIfPresent(self.durability, as: "durability")
+    try c.encode(self.error, as: "error")
+    try c.encodeIfPresent(self.failureClass, as: "failureClass")
+    try c.encode(self.jobId, as: "jobId")
+    try c.encode(self.jobType, as: "jobType")
+    try c.encodeIfPresent(self.willRetry, as: "willRetry")
   }
 }
 
@@ -6331,38 +5726,30 @@ public struct JobMetadata: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>([
+    try c.refuseUnknown(
+      [
         "completedUnits", "created", "id", "maxRetries", "retryCount", "type", "unitCursors",
         "userId",
-      ]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in JobMetadata")
-    }
-    self.completedUnits =
-      c.contains(WireKey("completedUnits"))
-      ? try c.decode([String].self, forKey: WireKey("completedUnits")) : nil
-    self.created = try c.decode(String.self, forKey: WireKey("created"))
-    self.id = try c.decode(JobId.self, forKey: WireKey("id"))
-    self.maxRetries = try c.decode(Int.self, forKey: WireKey("maxRetries"))
-    self.retryCount = try c.decode(Int.self, forKey: WireKey("retryCount"))
-    self.type = try c.decode(JobType.self, forKey: WireKey("type"))
-    self.unitCursors =
-      c.contains(WireKey("unitCursors"))
-      ? try c.decode([String: UnitCursor].self, forKey: WireKey("unitCursors")) : nil
-    self.userId = try c.decode(UserId.self, forKey: WireKey("userId"))
+      ], in: "JobMetadata")
+    self.completedUnits = try c.ifPresent("completedUnits")
+    self.created = try c.value("created")
+    self.id = try c.value("id")
+    self.maxRetries = try c.value("maxRetries")
+    self.retryCount = try c.value("retryCount")
+    self.type = try c.value("type")
+    self.unitCursors = try c.ifPresent("unitCursors")
+    self.userId = try c.value("userId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.completedUnits, forKey: WireKey("completedUnits"))
-    try c.encode(self.created, forKey: WireKey("created"))
-    try c.encode(self.id, forKey: WireKey("id"))
-    try c.encode(self.maxRetries, forKey: WireKey("maxRetries"))
-    try c.encode(self.retryCount, forKey: WireKey("retryCount"))
-    try c.encode(self.type, forKey: WireKey("type"))
-    try c.encodeIfPresent(self.unitCursors, forKey: WireKey("unitCursors"))
-    try c.encode(self.userId, forKey: WireKey("userId"))
+    try c.encodeIfPresent(self.completedUnits, as: "completedUnits")
+    try c.encode(self.created, as: "created")
+    try c.encode(self.id, as: "id")
+    try c.encode(self.maxRetries, as: "maxRetries")
+    try c.encode(self.retryCount, as: "retryCount")
+    try c.encode(self.type, as: "type")
+    try c.encodeIfPresent(self.unitCursors, as: "unitCursors")
+    try c.encode(self.userId, as: "userId")
   }
 }
 
@@ -6377,28 +5764,15 @@ public struct JobParams: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
-    self.schema =
-      c.contains(WireKey("schema")) ? try c.decode(TagSchema.self, forKey: WireKey("schema")) : nil
-    rest = [:]
-    for key in c.allKeys where !Set<String>(["resourceId", "schema"]).contains(key.stringValue) {
-      rest[key.stringValue] = try c.decode(JSONValue.self, forKey: key)
-    }
+    self.resourceId = try c.value("resourceId")
+    self.schema = try c.ifPresent("schema")
+    rest = try c.rest(excluding: ["resourceId", "schema"])
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    for (key, value) in rest {
-      guard !Set<String>(["resourceId", "schema"]).contains(key) else {
-        throw EncodingError.invalidValue(
-          value,
-          .init(
-            codingPath: encoder.codingPath,
-            debugDescription: "rest overrides a named property of JobParams"))
-      }
-      try c.encode(value, forKey: WireKey(key))
-    }
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
-    try c.encodeIfPresent(self.schema, forKey: WireKey("schema"))
+    try c.encode(rest: rest, excluding: ["resourceId", "schema"], of: "JobParams")
+    try c.encode(self.resourceId, as: "resourceId")
+    try c.encodeIfPresent(self.schema, as: "schema")
   }
 }
 
@@ -6413,21 +5787,16 @@ public struct JobPending: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["metadata", "params", "status"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in JobPending")
-    }
-    self.metadata = try c.decode(JobMetadata.self, forKey: WireKey("metadata"))
-    self.params = try c.decode(JobParams.self, forKey: WireKey("params"))
-    self.status = try c.decode(JobPendingStatus.self, forKey: WireKey("status"))
+    try c.refuseUnknown(["metadata", "params", "status"], in: "JobPending")
+    self.metadata = try c.value("metadata")
+    self.params = try c.value("params")
+    self.status = try c.value("status")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.metadata, forKey: WireKey("metadata"))
-    try c.encode(self.params, forKey: WireKey("params"))
-    try c.encode(self.status, forKey: WireKey("status"))
+    try c.encode(self.metadata, as: "metadata")
+    try c.encode(self.params, as: "params")
+    try c.encode(self.status, as: "status")
   }
 }
 
@@ -6467,49 +5836,31 @@ public struct JobProgress: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.annotationId =
-      c.contains(WireKey("annotationId"))
-      ? try c.decode(AnnotationId.self, forKey: WireKey("annotationId")) : nil
-    self.completedItems =
-      c.contains(WireKey("completedItems"))
-      ? try c.decode([JobProgressCompletedItemsItem].self, forKey: WireKey("completedItems")) : nil
-    self.current =
-      c.contains(WireKey("current"))
-      ? try c.decode(JobProgressCurrent.self, forKey: WireKey("current")) : nil
-    self.entitiesEmitted =
-      c.contains(WireKey("entitiesEmitted"))
-      ? try c.decode(Int.self, forKey: WireKey("entitiesEmitted")) : nil
-    self.entitiesExpected =
-      c.contains(WireKey("entitiesExpected"))
-      ? try c.decode(Int.self, forKey: WireKey("entitiesExpected")) : nil
-    self.entitiesFound =
-      c.contains(WireKey("entitiesFound"))
-      ? try c.decode(Int.self, forKey: WireKey("entitiesFound")) : nil
-    self.message =
-      c.contains(WireKey("message"))
-      ? try c.decode(JobProgressMessage.self, forKey: WireKey("message")) : nil
-    self.percentage = try c.decode(Double.self, forKey: WireKey("percentage"))
-    self.processed =
-      c.contains(WireKey("processed")) ? try c.decode(Int.self, forKey: WireKey("processed")) : nil
-    self.requestParams =
-      c.contains(WireKey("requestParams"))
-      ? try c.decode([JobProgressRequestParamsItem].self, forKey: WireKey("requestParams")) : nil
-    self.total =
-      c.contains(WireKey("total")) ? try c.decode(Int.self, forKey: WireKey("total")) : nil
+    self.annotationId = try c.ifPresent("annotationId")
+    self.completedItems = try c.ifPresent("completedItems")
+    self.current = try c.ifPresent("current")
+    self.entitiesEmitted = try c.ifPresent("entitiesEmitted")
+    self.entitiesExpected = try c.ifPresent("entitiesExpected")
+    self.entitiesFound = try c.ifPresent("entitiesFound")
+    self.message = try c.ifPresent("message")
+    self.percentage = try c.value("percentage")
+    self.processed = try c.ifPresent("processed")
+    self.requestParams = try c.ifPresent("requestParams")
+    self.total = try c.ifPresent("total")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.annotationId, forKey: WireKey("annotationId"))
-    try c.encodeIfPresent(self.completedItems, forKey: WireKey("completedItems"))
-    try c.encodeIfPresent(self.current, forKey: WireKey("current"))
-    try c.encodeIfPresent(self.entitiesEmitted, forKey: WireKey("entitiesEmitted"))
-    try c.encodeIfPresent(self.entitiesExpected, forKey: WireKey("entitiesExpected"))
-    try c.encodeIfPresent(self.entitiesFound, forKey: WireKey("entitiesFound"))
-    try c.encodeIfPresent(self.message, forKey: WireKey("message"))
-    try c.encode(self.percentage, forKey: WireKey("percentage"))
-    try c.encodeIfPresent(self.processed, forKey: WireKey("processed"))
-    try c.encodeIfPresent(self.requestParams, forKey: WireKey("requestParams"))
-    try c.encodeIfPresent(self.total, forKey: WireKey("total"))
+    try c.encodeIfPresent(self.annotationId, as: "annotationId")
+    try c.encodeIfPresent(self.completedItems, as: "completedItems")
+    try c.encodeIfPresent(self.current, as: "current")
+    try c.encodeIfPresent(self.entitiesEmitted, as: "entitiesEmitted")
+    try c.encodeIfPresent(self.entitiesExpected, as: "entitiesExpected")
+    try c.encodeIfPresent(self.entitiesFound, as: "entitiesFound")
+    try c.encodeIfPresent(self.message, as: "message")
+    try c.encode(self.percentage, as: "percentage")
+    try c.encodeIfPresent(self.processed, as: "processed")
+    try c.encodeIfPresent(self.requestParams, as: "requestParams")
+    try c.encodeIfPresent(self.total, as: "total")
   }
 }
 
@@ -6520,11 +5871,11 @@ public struct JobProgressAnalyzing: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.code = try c.decode(JobProgressAnalyzingCode.self, forKey: WireKey("code"))
+    self.code = try c.value("code")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.code, forKey: WireKey("code"))
+    try c.encode(self.code, as: "code")
   }
 }
 
@@ -6539,11 +5890,11 @@ public struct JobProgressAnalyzingTags: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.code = try c.decode(JobProgressAnalyzingTagsCode.self, forKey: WireKey("code"))
+    self.code = try c.value("code")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.code, forKey: WireKey("code"))
+    try c.encode(self.code, as: "code")
   }
 }
 
@@ -6562,15 +5913,15 @@ public struct JobProgressCompleteCreated: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.code = try c.decode(JobProgressCompleteCreatedCode.self, forKey: WireKey("code"))
-    self.count = try c.decode(Int.self, forKey: WireKey("count"))
-    self.motivation = try c.decode(Motivation.self, forKey: WireKey("motivation"))
+    self.code = try c.value("code")
+    self.count = try c.value("count")
+    self.motivation = try c.value("motivation")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.code, forKey: WireKey("code"))
-    try c.encode(self.count, forKey: WireKey("count"))
-    try c.encode(self.motivation, forKey: WireKey("motivation"))
+    try c.encode(self.code, as: "code")
+    try c.encode(self.count, as: "count")
+    try c.encode(self.motivation, as: "motivation")
   }
 }
 
@@ -6587,13 +5938,13 @@ public struct JobProgressCompleteGenerated: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.code = try c.decode(JobProgressCompleteGeneratedCode.self, forKey: WireKey("code"))
-    self.truncated = try c.decode(Bool.self, forKey: WireKey("truncated"))
+    self.code = try c.value("code")
+    self.truncated = try c.value("truncated")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.code, forKey: WireKey("code"))
-    try c.encode(self.truncated, forKey: WireKey("truncated"))
+    try c.encode(self.code, as: "code")
+    try c.encode(self.truncated, as: "truncated")
   }
 }
 
@@ -6617,22 +5968,17 @@ public struct JobProgressCompletedItemsItem: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.foundCount = try c.decode(Int.self, forKey: WireKey("foundCount"))
-    self.persistedCount =
-      c.contains(WireKey("persistedCount"))
-      ? try c.decode(Int.self, forKey: WireKey("persistedCount")) : nil
-    self.underReported =
-      c.contains(WireKey("underReported"))
-      ? try c.decode(
-        JobProgressCompletedItemsItemUnderReported.self, forKey: WireKey("underReported")) : nil
-    self.value = try c.decode(String.self, forKey: WireKey("value"))
+    self.foundCount = try c.value("foundCount")
+    self.persistedCount = try c.ifPresent("persistedCount")
+    self.underReported = try c.ifPresent("underReported")
+    self.value = try c.value("value")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.foundCount, forKey: WireKey("foundCount"))
-    try c.encodeIfPresent(self.persistedCount, forKey: WireKey("persistedCount"))
-    try c.encodeIfPresent(self.underReported, forKey: WireKey("underReported"))
-    try c.encode(self.value, forKey: WireKey("value"))
+    try c.encode(self.foundCount, as: "foundCount")
+    try c.encodeIfPresent(self.persistedCount, as: "persistedCount")
+    try c.encodeIfPresent(self.underReported, as: "underReported")
+    try c.encode(self.value, as: "value")
   }
 }
 
@@ -6647,15 +5993,15 @@ public struct JobProgressCompletedItemsItemUnderReported: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.counted = try c.decode(Int.self, forKey: WireKey("counted"))
-    self.found = try c.decode(Int.self, forKey: WireKey("found"))
-    self.pieces = try c.decode(Int.self, forKey: WireKey("pieces"))
+    self.counted = try c.value("counted")
+    self.found = try c.value("found")
+    self.pieces = try c.value("pieces")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.counted, forKey: WireKey("counted"))
-    try c.encode(self.found, forKey: WireKey("found"))
-    try c.encode(self.pieces, forKey: WireKey("pieces"))
+    try c.encode(self.counted, as: "counted")
+    try c.encode(self.found, as: "found")
+    try c.encode(self.pieces, as: "pieces")
   }
 }
 
@@ -6668,13 +6014,13 @@ public struct JobProgressCreatingAnnotations: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.code = try c.decode(JobProgressCreatingAnnotationsCode.self, forKey: WireKey("code"))
-    self.count = try c.decode(Int.self, forKey: WireKey("count"))
+    self.code = try c.value("code")
+    self.count = try c.value("count")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.code, forKey: WireKey("code"))
-    try c.encode(self.count, forKey: WireKey("count"))
+    try c.encode(self.code, as: "code")
+    try c.encode(self.count, as: "count")
   }
 }
 
@@ -6689,11 +6035,11 @@ public struct JobProgressCreatingResource: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.code = try c.decode(JobProgressCreatingResourceCode.self, forKey: WireKey("code"))
+    self.code = try c.value("code")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.code, forKey: WireKey("code"))
+    try c.encode(self.code, as: "code")
   }
 }
 
@@ -6710,13 +6056,13 @@ public struct JobProgressCreatingTagAnnotations: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.code = try c.decode(JobProgressCreatingTagAnnotationsCode.self, forKey: WireKey("code"))
-    self.count = try c.decode(Int.self, forKey: WireKey("count"))
+    self.code = try c.value("code")
+    self.count = try c.value("count")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.code, forKey: WireKey("code"))
-    try c.encode(self.count, forKey: WireKey("count"))
+    try c.encode(self.code, as: "code")
+    try c.encode(self.count, as: "count")
   }
 }
 
@@ -6733,13 +6079,13 @@ public struct JobProgressCurrent: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.kind = try c.decode(JobProgressCurrentKind.self, forKey: WireKey("kind"))
-    self.value = try c.decode(String.self, forKey: WireKey("value"))
+    self.kind = try c.value("kind")
+    self.value = try c.value("value")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.kind, forKey: WireKey("kind"))
-    try c.encode(self.value, forKey: WireKey("value"))
+    try c.encode(self.kind, as: "kind")
+    try c.encode(self.value, as: "value")
   }
 }
 
@@ -6757,13 +6103,13 @@ public struct JobProgressDetectingEntities: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.code = try c.decode(JobProgressDetectingEntitiesCode.self, forKey: WireKey("code"))
-    self.entityType = try c.decode(String.self, forKey: WireKey("entityType"))
+    self.code = try c.value("code")
+    self.entityType = try c.value("entityType")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.code, forKey: WireKey("code"))
-    try c.encode(self.entityType, forKey: WireKey("entityType"))
+    try c.encode(self.code, as: "code")
+    try c.encode(self.entityType, as: "entityType")
   }
 }
 
@@ -6778,11 +6124,11 @@ public struct JobProgressGeneratingResource: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.code = try c.decode(JobProgressGeneratingResourceCode.self, forKey: WireKey("code"))
+    self.code = try c.value("code")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.code, forKey: WireKey("code"))
+    try c.encode(self.code, as: "code")
   }
 }
 
@@ -6797,11 +6143,11 @@ public struct JobProgressLoading: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.code = try c.decode(JobProgressLoadingCode.self, forKey: WireKey("code"))
+    self.code = try c.value("code")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.code, forKey: WireKey("code"))
+    try c.encode(self.code, as: "code")
   }
 }
 
@@ -6874,13 +6220,13 @@ public struct JobProgressRequestParamsItem: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.label = try c.decode(JobProgressRequestParamsItemLabel.self, forKey: WireKey("label"))
-    self.value = try c.decode(String.self, forKey: WireKey("value"))
+    self.label = try c.value("label")
+    self.value = try c.value("value")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.label, forKey: WireKey("label"))
-    try c.encode(self.value, forKey: WireKey("value"))
+    try c.encode(self.label, as: "label")
+    try c.encode(self.value, as: "value")
   }
 }
 
@@ -6922,19 +6268,14 @@ public struct JobRecord: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["job", "lastProgressAt"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in JobRecord")
-    }
-    self.job = try c.decode(Job.self, forKey: WireKey("job"))
-    self.lastProgressAt = try c.decode(String.self, forKey: WireKey("lastProgressAt"))
+    try c.refuseUnknown(["job", "lastProgressAt"], in: "JobRecord")
+    self.job = try c.value("job")
+    self.lastProgressAt = try c.value("lastProgressAt")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.job, forKey: WireKey("job"))
-    try c.encode(self.lastProgressAt, forKey: WireKey("lastProgressAt"))
+    try c.encode(self.job, as: "job")
+    try c.encode(self.lastProgressAt, as: "lastProgressAt")
   }
 }
 
@@ -6962,31 +6303,25 @@ public struct JobReportProgressCommand: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self._userId =
-      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
-    self.annotationId =
-      c.contains(WireKey("annotationId"))
-      ? try c.decode(AnnotationId.self, forKey: WireKey("annotationId")) : nil
-    self.attempt =
-      c.contains(WireKey("attempt")) ? try c.decode(Int.self, forKey: WireKey("attempt")) : nil
-    self.jobId = try c.decode(JobId.self, forKey: WireKey("jobId"))
-    self.jobType = try c.decode(JobType.self, forKey: WireKey("jobType"))
-    self.percentage = try c.decode(Double.self, forKey: WireKey("percentage"))
-    self.progress =
-      c.contains(WireKey("progress"))
-      ? try c.decode(JobProgress.self, forKey: WireKey("progress")) : nil
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self._userId = try c.ifPresent("_userId")
+    self.annotationId = try c.ifPresent("annotationId")
+    self.attempt = try c.ifPresent("attempt")
+    self.jobId = try c.value("jobId")
+    self.jobType = try c.value("jobType")
+    self.percentage = try c.value("percentage")
+    self.progress = try c.ifPresent("progress")
+    self.resourceId = try c.value("resourceId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
-    try c.encodeIfPresent(self.annotationId, forKey: WireKey("annotationId"))
-    try c.encodeIfPresent(self.attempt, forKey: WireKey("attempt"))
-    try c.encode(self.jobId, forKey: WireKey("jobId"))
-    try c.encode(self.jobType, forKey: WireKey("jobType"))
-    try c.encode(self.percentage, forKey: WireKey("percentage"))
-    try c.encodeIfPresent(self.progress, forKey: WireKey("progress"))
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encodeIfPresent(self._userId, as: "_userId")
+    try c.encodeIfPresent(self.annotationId, as: "annotationId")
+    try c.encodeIfPresent(self.attempt, as: "attempt")
+    try c.encode(self.jobId, as: "jobId")
+    try c.encode(self.jobType, as: "jobType")
+    try c.encode(self.percentage, as: "percentage")
+    try c.encodeIfPresent(self.progress, as: "progress")
+    try c.encode(self.resourceId, as: "resourceId")
   }
 }
 
@@ -7036,26 +6371,21 @@ public struct JobRunning: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["metadata", "params", "progress", "startedAt", "status"]).contains(
-        $0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in JobRunning")
-    }
-    self.metadata = try c.decode(JobMetadata.self, forKey: WireKey("metadata"))
-    self.params = try c.decode(JobParams.self, forKey: WireKey("params"))
-    self.progress = try c.decode(JobStoredProgress.self, forKey: WireKey("progress"))
-    self.startedAt = try c.decode(String.self, forKey: WireKey("startedAt"))
-    self.status = try c.decode(JobRunningStatus.self, forKey: WireKey("status"))
+    try c.refuseUnknown(
+      ["metadata", "params", "progress", "startedAt", "status"], in: "JobRunning")
+    self.metadata = try c.value("metadata")
+    self.params = try c.value("params")
+    self.progress = try c.value("progress")
+    self.startedAt = try c.value("startedAt")
+    self.status = try c.value("status")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.metadata, forKey: WireKey("metadata"))
-    try c.encode(self.params, forKey: WireKey("params"))
-    try c.encode(self.progress, forKey: WireKey("progress"))
-    try c.encode(self.startedAt, forKey: WireKey("startedAt"))
-    try c.encode(self.status, forKey: WireKey("status"))
+    try c.encode(self.metadata, as: "metadata")
+    try c.encode(self.params, as: "params")
+    try c.encode(self.progress, as: "progress")
+    try c.encode(self.startedAt, as: "startedAt")
+    try c.encode(self.status, as: "status")
   }
 }
 
@@ -7083,25 +6413,21 @@ public struct JobStartCommand: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self._userId =
-      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
-    self.annotationId =
-      c.contains(WireKey("annotationId"))
-      ? try c.decode(AnnotationId.self, forKey: WireKey("annotationId")) : nil
-    self.attempt =
-      c.contains(WireKey("attempt")) ? try c.decode(Int.self, forKey: WireKey("attempt")) : nil
-    self.jobId = try c.decode(JobId.self, forKey: WireKey("jobId"))
-    self.jobType = try c.decode(JobType.self, forKey: WireKey("jobType"))
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self._userId = try c.ifPresent("_userId")
+    self.annotationId = try c.ifPresent("annotationId")
+    self.attempt = try c.ifPresent("attempt")
+    self.jobId = try c.value("jobId")
+    self.jobType = try c.value("jobType")
+    self.resourceId = try c.value("resourceId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
-    try c.encodeIfPresent(self.annotationId, forKey: WireKey("annotationId"))
-    try c.encodeIfPresent(self.attempt, forKey: WireKey("attempt"))
-    try c.encode(self.jobId, forKey: WireKey("jobId"))
-    try c.encode(self.jobType, forKey: WireKey("jobType"))
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encodeIfPresent(self._userId, as: "_userId")
+    try c.encodeIfPresent(self.annotationId, as: "annotationId")
+    try c.encodeIfPresent(self.attempt, as: "attempt")
+    try c.encode(self.jobId, as: "jobId")
+    try c.encode(self.jobType, as: "jobType")
+    try c.encode(self.resourceId, as: "resourceId")
   }
 }
 
@@ -7120,21 +6446,17 @@ public struct JobStartedPayload: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.annotationId =
-      c.contains(WireKey("annotationId"))
-      ? try c.decode(AnnotationId.self, forKey: WireKey("annotationId")) : nil
-    self.jobId = try c.decode(JobId.self, forKey: WireKey("jobId"))
-    self.jobType = try c.decode(JobType.self, forKey: WireKey("jobType"))
-    self.totalSteps =
-      c.contains(WireKey("totalSteps"))
-      ? try c.decode(Int.self, forKey: WireKey("totalSteps")) : nil
+    self.annotationId = try c.ifPresent("annotationId")
+    self.jobId = try c.value("jobId")
+    self.jobType = try c.value("jobType")
+    self.totalSteps = try c.ifPresent("totalSteps")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.annotationId, forKey: WireKey("annotationId"))
-    try c.encode(self.jobId, forKey: WireKey("jobId"))
-    try c.encode(self.jobType, forKey: WireKey("jobType"))
-    try c.encodeIfPresent(self.totalSteps, forKey: WireKey("totalSteps"))
+    try c.encodeIfPresent(self.annotationId, as: "annotationId")
+    try c.encode(self.jobId, as: "jobId")
+    try c.encode(self.jobType, as: "jobType")
+    try c.encodeIfPresent(self.totalSteps, as: "totalSteps")
   }
 }
 
@@ -7145,11 +6467,11 @@ public struct JobStatusRequest: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.jobId = try c.decode(JobId.self, forKey: WireKey("jobId"))
+    self.jobId = try c.value("jobId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.jobId, forKey: WireKey("jobId"))
+    try c.encode(self.jobId, as: "jobId")
   }
 }
 
@@ -7185,42 +6507,31 @@ public struct JobStatusResponse: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.completedAt =
-      c.contains(WireKey("completedAt"))
-      ? try c.decode(String.self, forKey: WireKey("completedAt")) : nil
-    self.created = try c.decode(String.self, forKey: WireKey("created"))
-    self.error =
-      c.contains(WireKey("error")) ? try c.decode(String.self, forKey: WireKey("error")) : nil
-    self.failureClass =
-      c.contains(WireKey("failureClass"))
-      ? try c.decode(FailureClass.self, forKey: WireKey("failureClass")) : nil
-    self.jobId = try c.decode(JobId.self, forKey: WireKey("jobId"))
-    self.progress =
-      c.contains(WireKey("progress"))
-      ? try c.decode(JobStoredProgress.self, forKey: WireKey("progress")) : nil
-    self.result =
-      c.contains(WireKey("result"))
-      ? try c.decode(JobStoredResult.self, forKey: WireKey("result")) : nil
-    self.startedAt =
-      c.contains(WireKey("startedAt"))
-      ? try c.decode(String.self, forKey: WireKey("startedAt")) : nil
-    self.status = try c.decode(JobStatusResponseStatus.self, forKey: WireKey("status"))
-    self.type = try c.decode(JobType.self, forKey: WireKey("type"))
-    self.userId = try c.decode(UserId.self, forKey: WireKey("userId"))
+    self.completedAt = try c.ifPresent("completedAt")
+    self.created = try c.value("created")
+    self.error = try c.ifPresent("error")
+    self.failureClass = try c.ifPresent("failureClass")
+    self.jobId = try c.value("jobId")
+    self.progress = try c.ifPresent("progress")
+    self.result = try c.ifPresent("result")
+    self.startedAt = try c.ifPresent("startedAt")
+    self.status = try c.value("status")
+    self.type = try c.value("type")
+    self.userId = try c.value("userId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.completedAt, forKey: WireKey("completedAt"))
-    try c.encode(self.created, forKey: WireKey("created"))
-    try c.encodeIfPresent(self.error, forKey: WireKey("error"))
-    try c.encodeIfPresent(self.failureClass, forKey: WireKey("failureClass"))
-    try c.encode(self.jobId, forKey: WireKey("jobId"))
-    try c.encodeIfPresent(self.progress, forKey: WireKey("progress"))
-    try c.encodeIfPresent(self.result, forKey: WireKey("result"))
-    try c.encodeIfPresent(self.startedAt, forKey: WireKey("startedAt"))
-    try c.encode(self.status, forKey: WireKey("status"))
-    try c.encode(self.type, forKey: WireKey("type"))
-    try c.encode(self.userId, forKey: WireKey("userId"))
+    try c.encodeIfPresent(self.completedAt, as: "completedAt")
+    try c.encode(self.created, as: "created")
+    try c.encodeIfPresent(self.error, as: "error")
+    try c.encodeIfPresent(self.failureClass, as: "failureClass")
+    try c.encode(self.jobId, as: "jobId")
+    try c.encodeIfPresent(self.progress, as: "progress")
+    try c.encodeIfPresent(self.result, as: "result")
+    try c.encodeIfPresent(self.startedAt, as: "startedAt")
+    try c.encode(self.status, as: "status")
+    try c.encode(self.type, as: "type")
+    try c.encode(self.userId, as: "userId")
   }
 }
 
@@ -7239,11 +6550,11 @@ public struct JobStatusResult: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.response = try c.decode(JobStatusResponse.self, forKey: WireKey("response"))
+    self.response = try c.value("response")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.response, forKey: WireKey("response"))
+    try c.encode(self.response, as: "response")
   }
 }
 
@@ -7276,10 +6587,7 @@ public struct JobStoredProgressEmpty: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: { !Set<String>([]).contains($0.stringValue) }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in JobStoredProgressEmpty")
-    }
+    try c.refuseUnknown([], in: "JobStoredProgressEmpty")
   }
   public func encode(to encoder: any Encoder) throws {
     _ = encoder.container(keyedBy: WireKey.self)
@@ -7314,10 +6622,7 @@ public struct JobStoredResultEmpty: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: { !Set<String>([]).contains($0.stringValue) }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in JobStoredResultEmpty")
-    }
+    try c.refuseUnknown([], in: "JobStoredResultEmpty")
   }
   public func encode(to encoder: any Encoder) throws {
     _ = encoder.container(keyedBy: WireKey.self)
@@ -7340,17 +6645,15 @@ public struct KbDescription: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.domain = try c.decode(String.self, forKey: WireKey("domain"))
-    self.gitBranch =
-      c.contains(WireKey("gitBranch"))
-      ? try c.decode(String.self, forKey: WireKey("gitBranch")) : nil
-    self.name = try c.decode(String.self, forKey: WireKey("name"))
+    self.domain = try c.value("domain")
+    self.gitBranch = try c.ifPresent("gitBranch")
+    self.name = try c.value("name")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.domain, forKey: WireKey("domain"))
-    try c.encodeIfPresent(self.gitBranch, forKey: WireKey("gitBranch"))
-    try c.encode(self.name, forKey: WireKey("name"))
+    try c.encode(self.domain, as: "domain")
+    try c.encodeIfPresent(self.gitBranch, as: "gitBranch")
+    try c.encode(self.name, as: "name")
   }
 }
 
@@ -7385,19 +6688,14 @@ public struct KbIdentity: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["domain", "name"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in KbIdentity")
-    }
-    self.domain = try c.decode(String.self, forKey: WireKey("domain"))
-    self.name = try c.decode(String.self, forKey: WireKey("name"))
+    try c.refuseUnknown(["domain", "name"], in: "KbIdentity")
+    self.domain = try c.value("domain")
+    self.name = try c.value("name")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.domain, forKey: WireKey("domain"))
-    try c.encode(self.name, forKey: WireKey("name"))
+    try c.encode(self.domain, as: "domain")
+    try c.encode(self.name, as: "name")
   }
 }
 
@@ -7410,15 +6708,13 @@ public struct KbRead: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.at = try c.decode(String.self, forKey: WireKey("at"))
-    self.gitBranch =
-      c.contains(WireKey("gitBranch"))
-      ? try c.decode(String.self, forKey: WireKey("gitBranch")) : nil
+    self.at = try c.value("at")
+    self.gitBranch = try c.ifPresent("gitBranch")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.at, forKey: WireKey("at"))
-    try c.encodeIfPresent(self.gitBranch, forKey: WireKey("gitBranch"))
+    try c.encode(self.at, as: "at")
+    try c.encodeIfPresent(self.gitBranch, as: "gitBranch")
   }
 }
 
@@ -7433,15 +6729,15 @@ public struct KbTarget: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.endpoint = try c.decode(KbEndpoint.self, forKey: WireKey("endpoint"))
-    self.id = try c.decode(String.self, forKey: WireKey("id"))
-    self.label = try c.decode(String.self, forKey: WireKey("label"))
+    self.endpoint = try c.value("endpoint")
+    self.id = try c.value("id")
+    self.label = try c.value("label")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.endpoint, forKey: WireKey("endpoint"))
-    try c.encode(self.id, forKey: WireKey("id"))
-    try c.encode(self.label, forKey: WireKey("label"))
+    try c.encode(self.endpoint, as: "endpoint")
+    try c.encode(self.id, as: "id")
+    try c.encode(self.label, as: "label")
   }
 }
 
@@ -7461,20 +6757,19 @@ public struct KnowledgeBase: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.did = try c.decode(String.self, forKey: WireKey("did"))
-    self.endpoint = try c.decode(KbEndpoint.self, forKey: WireKey("endpoint"))
-    self.id = try c.decode(String.self, forKey: WireKey("id"))
-    self.label = try c.decode(String.self, forKey: WireKey("label"))
-    self.lastRead =
-      c.contains(WireKey("lastRead")) ? try c.decode(KbRead.self, forKey: WireKey("lastRead")) : nil
+    self.did = try c.value("did")
+    self.endpoint = try c.value("endpoint")
+    self.id = try c.value("id")
+    self.label = try c.value("label")
+    self.lastRead = try c.ifPresent("lastRead")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.did, forKey: WireKey("did"))
-    try c.encode(self.endpoint, forKey: WireKey("endpoint"))
-    try c.encode(self.id, forKey: WireKey("id"))
-    try c.encode(self.label, forKey: WireKey("label"))
-    try c.encodeIfPresent(self.lastRead, forKey: WireKey("lastRead"))
+    try c.encode(self.did, as: "did")
+    try c.encode(self.endpoint, as: "endpoint")
+    try c.encode(self.id, as: "id")
+    try c.encode(self.label, as: "label")
+    try c.encodeIfPresent(self.lastRead, as: "lastRead")
   }
 }
 
@@ -7491,16 +6786,15 @@ public struct KnowledgeGraph: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.edges = try c.decode([KnowledgeGraphEdgesItem].self, forKey: WireKey("edges"))
-    self.nodes = try c.decode([KnowledgeGraphNodesItem].self, forKey: WireKey("nodes"))
-    self.truncated =
-      c.contains(WireKey("truncated")) ? try c.decode(Bool.self, forKey: WireKey("truncated")) : nil
+    self.edges = try c.value("edges")
+    self.nodes = try c.value("nodes")
+    self.truncated = try c.ifPresent("truncated")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.edges, forKey: WireKey("edges"))
-    try c.encode(self.nodes, forKey: WireKey("nodes"))
-    try c.encodeIfPresent(self.truncated, forKey: WireKey("truncated"))
+    try c.encode(self.edges, as: "edges")
+    try c.encode(self.nodes, as: "nodes")
+    try c.encodeIfPresent(self.truncated, as: "truncated")
   }
 }
 
@@ -7522,23 +6816,19 @@ public struct KnowledgeGraphEdgesItem: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.bidirectional =
-      c.contains(WireKey("bidirectional"))
-      ? try c.decode(Bool.self, forKey: WireKey("bidirectional")) : nil
-    self.metadata =
-      c.contains(WireKey("metadata"))
-      ? try c.decode([String: JSONValue].self, forKey: WireKey("metadata")) : nil
-    self.source = try c.decode(String.self, forKey: WireKey("source"))
-    self.target = try c.decode(String.self, forKey: WireKey("target"))
-    self.type = try c.decode(String.self, forKey: WireKey("type"))
+    self.bidirectional = try c.ifPresent("bidirectional")
+    self.metadata = try c.ifPresent("metadata")
+    self.source = try c.value("source")
+    self.target = try c.value("target")
+    self.type = try c.value("type")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.bidirectional, forKey: WireKey("bidirectional"))
-    try c.encodeIfPresent(self.metadata, forKey: WireKey("metadata"))
-    try c.encode(self.source, forKey: WireKey("source"))
-    try c.encode(self.target, forKey: WireKey("target"))
-    try c.encode(self.type, forKey: WireKey("type"))
+    try c.encodeIfPresent(self.bidirectional, as: "bidirectional")
+    try c.encodeIfPresent(self.metadata, as: "metadata")
+    try c.encode(self.source, as: "source")
+    try c.encode(self.target, as: "target")
+    try c.encode(self.type, as: "type")
   }
 }
 
@@ -7606,48 +6896,44 @@ public struct LibrarianConfig: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>([
+    try c.refuseUnknown(
+      [
         "archivist", "embedding", "gatewayUrl", "gather", "gatherer", "graph", "identity", "kb",
         "logFormat", "logLevel", "matcher", "modelCatalogue", "port", "search", "vectors",
-      ]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in LibrarianConfig")
-    }
-    self.archivist = try c.decode(LibrarianConfigArchivist.self, forKey: WireKey("archivist"))
-    self.embedding = try c.decode(EmbeddingConfig.self, forKey: WireKey("embedding"))
-    self.gatewayUrl = try c.decode(String.self, forKey: WireKey("gatewayUrl"))
-    self.gather = try c.decode(LibrarianConfigGather.self, forKey: WireKey("gather"))
-    self.gatherer = try c.decode(LibrarianEngineConfig.self, forKey: WireKey("gatherer"))
-    self.graph = try c.decode(GraphConfig.self, forKey: WireKey("graph"))
-    self.identity = try c.decode(LibrarianConfigIdentity.self, forKey: WireKey("identity"))
-    self.kb = try c.decode(KbIdentity.self, forKey: WireKey("kb"))
-    self.logFormat = try c.decode(LogFormat.self, forKey: WireKey("logFormat"))
-    self.logLevel = try c.decode(LogLevel.self, forKey: WireKey("logLevel"))
-    self.matcher = try c.decode(LibrarianEngineConfig.self, forKey: WireKey("matcher"))
-    self.modelCatalogue = try c.decode(String.self, forKey: WireKey("modelCatalogue"))
-    self.port = try c.decode(Int.self, forKey: WireKey("port"))
-    self.search = try c.decode(LibrarianConfigSearch.self, forKey: WireKey("search"))
-    self.vectors = try c.decode(VectorsConfig.self, forKey: WireKey("vectors"))
+      ], in: "LibrarianConfig")
+    self.archivist = try c.value("archivist")
+    self.embedding = try c.value("embedding")
+    self.gatewayUrl = try c.value("gatewayUrl")
+    self.gather = try c.value("gather")
+    self.gatherer = try c.value("gatherer")
+    self.graph = try c.value("graph")
+    self.identity = try c.value("identity")
+    self.kb = try c.value("kb")
+    self.logFormat = try c.value("logFormat")
+    self.logLevel = try c.value("logLevel")
+    self.matcher = try c.value("matcher")
+    self.modelCatalogue = try c.value("modelCatalogue")
+    self.port = try c.value("port")
+    self.search = try c.value("search")
+    self.vectors = try c.value("vectors")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.archivist, forKey: WireKey("archivist"))
-    try c.encode(self.embedding, forKey: WireKey("embedding"))
-    try c.encode(self.gatewayUrl, forKey: WireKey("gatewayUrl"))
-    try c.encode(self.gather, forKey: WireKey("gather"))
-    try c.encode(self.gatherer, forKey: WireKey("gatherer"))
-    try c.encode(self.graph, forKey: WireKey("graph"))
-    try c.encode(self.identity, forKey: WireKey("identity"))
-    try c.encode(self.kb, forKey: WireKey("kb"))
-    try c.encode(self.logFormat, forKey: WireKey("logFormat"))
-    try c.encode(self.logLevel, forKey: WireKey("logLevel"))
-    try c.encode(self.matcher, forKey: WireKey("matcher"))
-    try c.encode(self.modelCatalogue, forKey: WireKey("modelCatalogue"))
-    try c.encode(self.port, forKey: WireKey("port"))
-    try c.encode(self.search, forKey: WireKey("search"))
-    try c.encode(self.vectors, forKey: WireKey("vectors"))
+    try c.encode(self.archivist, as: "archivist")
+    try c.encode(self.embedding, as: "embedding")
+    try c.encode(self.gatewayUrl, as: "gatewayUrl")
+    try c.encode(self.gather, as: "gather")
+    try c.encode(self.gatherer, as: "gatherer")
+    try c.encode(self.graph, as: "graph")
+    try c.encode(self.identity, as: "identity")
+    try c.encode(self.kb, as: "kb")
+    try c.encode(self.logFormat, as: "logFormat")
+    try c.encode(self.logLevel, as: "logLevel")
+    try c.encode(self.matcher, as: "matcher")
+    try c.encode(self.modelCatalogue, as: "modelCatalogue")
+    try c.encode(self.port, as: "port")
+    try c.encode(self.search, as: "search")
+    try c.encode(self.vectors, as: "vectors")
   }
 }
 
@@ -7660,18 +6946,14 @@ public struct LibrarianConfigArchivist: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: { !Set<String>(["host", "port"]).contains($0.stringValue) })
-    {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in LibrarianConfigArchivist")
-    }
-    self.host = try c.decode(String.self, forKey: WireKey("host"))
-    self.port = try c.decode(Int.self, forKey: WireKey("port"))
+    try c.refuseUnknown(["host", "port"], in: "LibrarianConfigArchivist")
+    self.host = try c.value("host")
+    self.port = try c.value("port")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.host, forKey: WireKey("host"))
-    try c.encode(self.port, forKey: WireKey("port"))
+    try c.encode(self.host, as: "host")
+    try c.encode(self.port, as: "port")
   }
 }
 
@@ -7682,17 +6964,12 @@ public struct LibrarianConfigGather: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["settleTimeoutMs"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in LibrarianConfigGather")
-    }
-    self.settleTimeoutMs = try c.decode(Int.self, forKey: WireKey("settleTimeoutMs"))
+    try c.refuseUnknown(["settleTimeoutMs"], in: "LibrarianConfigGather")
+    self.settleTimeoutMs = try c.value("settleTimeoutMs")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.settleTimeoutMs, forKey: WireKey("settleTimeoutMs"))
+    try c.encode(self.settleTimeoutMs, as: "settleTimeoutMs")
   }
 }
 
@@ -7703,15 +6980,12 @@ public struct LibrarianConfigIdentity: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: { !Set<String>(["issuer"]).contains($0.stringValue) }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in LibrarianConfigIdentity")
-    }
-    self.issuer = try c.decode(String.self, forKey: WireKey("issuer"))
+    try c.refuseUnknown(["issuer"], in: "LibrarianConfigIdentity")
+    self.issuer = try c.value("issuer")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.issuer, forKey: WireKey("issuer"))
+    try c.encode(self.issuer, as: "issuer")
   }
 }
 
@@ -7722,16 +6996,12 @@ public struct LibrarianConfigSearch: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: { !Set<String>(["semanticFloor"]).contains($0.stringValue) }
-    ) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in LibrarianConfigSearch")
-    }
-    self.semanticFloor = try c.decode(Double.self, forKey: WireKey("semanticFloor"))
+    try c.refuseUnknown(["semanticFloor"], in: "LibrarianConfigSearch")
+    self.semanticFloor = try c.value("semanticFloor")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.semanticFloor, forKey: WireKey("semanticFloor"))
+    try c.encode(self.semanticFloor, as: "semanticFloor")
   }
 }
 
@@ -7746,23 +7016,16 @@ public struct LibrarianEngineConfig: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["apiKeyEnv", "baseUrl", "engine"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in LibrarianEngineConfig")
-    }
-    self.apiKeyEnv =
-      c.contains(WireKey("apiKeyEnv"))
-      ? try c.decode(String.self, forKey: WireKey("apiKeyEnv")) : nil
-    self.baseUrl = try c.decode(String.self, forKey: WireKey("baseUrl"))
-    self.engine = try c.decode(Engine.self, forKey: WireKey("engine"))
+    try c.refuseUnknown(["apiKeyEnv", "baseUrl", "engine"], in: "LibrarianEngineConfig")
+    self.apiKeyEnv = try c.ifPresent("apiKeyEnv")
+    self.baseUrl = try c.value("baseUrl")
+    self.engine = try c.value("engine")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.apiKeyEnv, forKey: WireKey("apiKeyEnv"))
-    try c.encode(self.baseUrl, forKey: WireKey("baseUrl"))
-    try c.encode(self.engine, forKey: WireKey("engine"))
+    try c.encodeIfPresent(self.apiKeyEnv, as: "apiKeyEnv")
+    try c.encode(self.baseUrl, as: "baseUrl")
+    try c.encode(self.engine, as: "engine")
   }
 }
 
@@ -7780,20 +7043,17 @@ public struct LimitRefusal: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.code = try c.decode(LimitRefusalCode.self, forKey: WireKey("code"))
-    self.details =
-      c.contains(WireKey("details"))
-      ? try c.decode(JSONValue.self, forKey: WireKey("details")) : nil
-    self.error = try c.decode(String.self, forKey: WireKey("error"))
-    self.hint =
-      c.contains(WireKey("hint")) ? try c.decode(String.self, forKey: WireKey("hint")) : nil
+    self.code = try c.value("code")
+    self.details = try c.ifPresent("details")
+    self.error = try c.value("error")
+    self.hint = try c.ifPresent("hint")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.code, forKey: WireKey("code"))
-    try c.encodeIfPresent(self.details, forKey: WireKey("details"))
-    try c.encode(self.error, forKey: WireKey("error"))
-    try c.encodeIfPresent(self.hint, forKey: WireKey("hint"))
+    try c.encode(self.code, as: "code")
+    try c.encodeIfPresent(self.details, as: "details")
+    try c.encode(self.error, as: "error")
+    try c.encodeIfPresent(self.hint, as: "hint")
   }
 }
 
@@ -7823,33 +7083,22 @@ public struct LinkingJobParams: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>([
-        "entityTypes", "includeDescriptiveReferences", "language", "motivation", "sourceLanguage",
-      ]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in LinkingJobParams")
-    }
-    self.entityTypes = try c.decode([String].self, forKey: WireKey("entityTypes"))
-    self.includeDescriptiveReferences =
-      c.contains(WireKey("includeDescriptiveReferences"))
-      ? try c.decode(Bool.self, forKey: WireKey("includeDescriptiveReferences")) : nil
-    self.language =
-      c.contains(WireKey("language")) ? try c.decode(String.self, forKey: WireKey("language")) : nil
-    self.motivation = try c.decode(LinkingJobParamsMotivation.self, forKey: WireKey("motivation"))
-    self.sourceLanguage =
-      c.contains(WireKey("sourceLanguage"))
-      ? try c.decode(String.self, forKey: WireKey("sourceLanguage")) : nil
+    try c.refuseUnknown(
+      ["entityTypes", "includeDescriptiveReferences", "language", "motivation", "sourceLanguage"],
+      in: "LinkingJobParams")
+    self.entityTypes = try c.value("entityTypes")
+    self.includeDescriptiveReferences = try c.ifPresent("includeDescriptiveReferences")
+    self.language = try c.ifPresent("language")
+    self.motivation = try c.value("motivation")
+    self.sourceLanguage = try c.ifPresent("sourceLanguage")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.entityTypes, forKey: WireKey("entityTypes"))
-    try c.encodeIfPresent(
-      self.includeDescriptiveReferences, forKey: WireKey("includeDescriptiveReferences"))
-    try c.encodeIfPresent(self.language, forKey: WireKey("language"))
-    try c.encode(self.motivation, forKey: WireKey("motivation"))
-    try c.encodeIfPresent(self.sourceLanguage, forKey: WireKey("sourceLanguage"))
+    try c.encode(self.entityTypes, as: "entityTypes")
+    try c.encodeIfPresent(self.includeDescriptiveReferences, as: "includeDescriptiveReferences")
+    try c.encodeIfPresent(self.language, as: "language")
+    try c.encode(self.motivation, as: "motivation")
+    try c.encodeIfPresent(self.sourceLanguage, as: "sourceLanguage")
   }
 }
 
@@ -7870,17 +7119,17 @@ public struct ListResourcesResponse: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.limit = try c.decode(Double.self, forKey: WireKey("limit"))
-    self.offset = try c.decode(Double.self, forKey: WireKey("offset"))
-    self.resources = try c.decode([ResourceDescriptor].self, forKey: WireKey("resources"))
-    self.total = try c.decode(Double.self, forKey: WireKey("total"))
+    self.limit = try c.value("limit")
+    self.offset = try c.value("offset")
+    self.resources = try c.value("resources")
+    self.total = try c.value("total")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.limit, forKey: WireKey("limit"))
-    try c.encode(self.offset, forKey: WireKey("offset"))
-    try c.encode(self.resources, forKey: WireKey("resources"))
-    try c.encode(self.total, forKey: WireKey("total"))
+    try c.encode(self.limit, as: "limit")
+    try c.encode(self.offset, as: "offset")
+    try c.encode(self.resources, as: "resources")
+    try c.encode(self.total, as: "total")
   }
 }
 
@@ -7893,13 +7142,13 @@ public struct LocalEndpoint: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.kbId = try c.decode(String.self, forKey: WireKey("kbId"))
-    self.kind = try c.decode(LocalEndpointKind.self, forKey: WireKey("kind"))
+    self.kbId = try c.value("kbId")
+    self.kind = try c.value("kind")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.kbId, forKey: WireKey("kbId"))
-    try c.encode(self.kind, forKey: WireKey("kind"))
+    try c.encode(self.kbId, as: "kbId")
+    try c.encode(self.kind, as: "kind")
   }
 }
 
@@ -7935,21 +7184,17 @@ public struct MarkArchiveCommand: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self._userId =
-      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
-    self.keepFile =
-      c.contains(WireKey("keepFile")) ? try c.decode(Bool.self, forKey: WireKey("keepFile")) : nil
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
-    self.storageUri =
-      c.contains(WireKey("storageUri"))
-      ? try c.decode(String.self, forKey: WireKey("storageUri")) : nil
+    self._userId = try c.ifPresent("_userId")
+    self.keepFile = try c.ifPresent("keepFile")
+    self.resourceId = try c.value("resourceId")
+    self.storageUri = try c.ifPresent("storageUri")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
-    try c.encodeIfPresent(self.keepFile, forKey: WireKey("keepFile"))
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
-    try c.encodeIfPresent(self.storageUri, forKey: WireKey("storageUri"))
+    try c.encodeIfPresent(self._userId, as: "_userId")
+    try c.encodeIfPresent(self.keepFile, as: "keepFile")
+    try c.encode(self.resourceId, as: "resourceId")
+    try c.encodeIfPresent(self.storageUri, as: "storageUri")
   }
 }
 
@@ -7971,22 +7216,19 @@ public struct MarkCommitCommand: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self._roles =
-      c.contains(WireKey("_roles")) ? try c.decode([String].self, forKey: WireKey("_roles")) : nil
-    self._userId =
-      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
-    self.annotations = try c.decode([Annotation].self, forKey: WireKey("annotations"))
-    self.jobId =
-      c.contains(WireKey("jobId")) ? try c.decode(JobId.self, forKey: WireKey("jobId")) : nil
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self._roles = try c.ifPresent("_roles")
+    self._userId = try c.ifPresent("_userId")
+    self.annotations = try c.value("annotations")
+    self.jobId = try c.ifPresent("jobId")
+    self.resourceId = try c.value("resourceId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self._roles, forKey: WireKey("_roles"))
-    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
-    try c.encode(self.annotations, forKey: WireKey("annotations"))
-    try c.encodeIfPresent(self.jobId, forKey: WireKey("jobId"))
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encodeIfPresent(self._roles, as: "_roles")
+    try c.encodeIfPresent(self._userId, as: "_userId")
+    try c.encode(self.annotations, as: "annotations")
+    try c.encodeIfPresent(self.jobId, as: "jobId")
+    try c.encode(self.resourceId, as: "resourceId")
   }
 }
 
@@ -7997,11 +7239,11 @@ public struct MarkCommitOk: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.response = try c.decode(MarkCommitOkResponse.self, forKey: WireKey("response"))
+    self.response = try c.value("response")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.response, forKey: WireKey("response"))
+    try c.encode(self.response, as: "response")
   }
 }
 
@@ -8014,13 +7256,13 @@ public struct MarkCommitOkResponse: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.annotationIds = try c.decode([AnnotationId].self, forKey: WireKey("annotationIds"))
-    self.persisted = try c.decode(Int.self, forKey: WireKey("persisted"))
+    self.annotationIds = try c.value("annotationIds")
+    self.persisted = try c.value("persisted")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.annotationIds, forKey: WireKey("annotationIds"))
-    try c.encode(self.persisted, forKey: WireKey("persisted"))
+    try c.encode(self.annotationIds, as: "annotationIds")
+    try c.encode(self.persisted, as: "persisted")
   }
 }
 
@@ -8031,11 +7273,11 @@ public struct MarkCreateOk: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.response = try c.decode(MarkCreateOkResponse.self, forKey: WireKey("response"))
+    self.response = try c.value("response")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.response, forKey: WireKey("response"))
+    try c.encode(self.response, as: "response")
   }
 }
 
@@ -8046,11 +7288,11 @@ public struct MarkCreateOkResponse: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.annotationId = try c.decode(AnnotationId.self, forKey: WireKey("annotationId"))
+    self.annotationId = try c.value("annotationId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.annotationId, forKey: WireKey("annotationId"))
+    try c.encode(self.annotationId, as: "annotationId")
   }
 }
 
@@ -8063,13 +7305,13 @@ public struct MarkCreateRequest: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.request = try c.decode(CreateAnnotationRequest.self, forKey: WireKey("request"))
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self.request = try c.value("request")
+    self.resourceId = try c.value("resourceId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.request, forKey: WireKey("request"))
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encode(self.request, as: "request")
+    try c.encode(self.resourceId, as: "resourceId")
   }
 }
 
@@ -8082,13 +7324,13 @@ public struct MarkDelegateTimeoutEvent: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.motivation = try c.decode(Motivation.self, forKey: WireKey("motivation"))
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self.motivation = try c.value("motivation")
+    self.resourceId = try c.value("resourceId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.motivation, forKey: WireKey("motivation"))
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encode(self.motivation, as: "motivation")
+    try c.encode(self.resourceId, as: "resourceId")
   }
 }
 
@@ -8103,18 +7345,15 @@ public struct MarkDeleteCommand: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self._userId =
-      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
-    self.annotationId = try c.decode(AnnotationId.self, forKey: WireKey("annotationId"))
-    self.resourceId =
-      c.contains(WireKey("resourceId"))
-      ? try c.decode(ResourceId.self, forKey: WireKey("resourceId")) : nil
+    self._userId = try c.ifPresent("_userId")
+    self.annotationId = try c.value("annotationId")
+    self.resourceId = try c.ifPresent("resourceId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
-    try c.encode(self.annotationId, forKey: WireKey("annotationId"))
-    try c.encodeIfPresent(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encodeIfPresent(self._userId, as: "_userId")
+    try c.encode(self.annotationId, as: "annotationId")
+    try c.encodeIfPresent(self.resourceId, as: "resourceId")
   }
 }
 
@@ -8125,11 +7364,11 @@ public struct MarkDeleteOk: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.response = try c.decode(MarkDeleteOkResponse.self, forKey: WireKey("response"))
+    self.response = try c.value("response")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.response, forKey: WireKey("response"))
+    try c.encode(self.response, as: "response")
   }
 }
 
@@ -8140,11 +7379,11 @@ public struct MarkDeleteOkResponse: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.annotationId = try c.decode(AnnotationId.self, forKey: WireKey("annotationId"))
+    self.annotationId = try c.value("annotationId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.annotationId, forKey: WireKey("annotationId"))
+    try c.encode(self.annotationId, as: "annotationId")
   }
 }
 
@@ -8170,29 +7409,23 @@ public struct MarkJobCompleteCommand: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self._userId =
-      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
-    self.attempt =
-      c.contains(WireKey("attempt")) ? try c.decode(Int.self, forKey: WireKey("attempt")) : nil
-    self.durability =
-      c.contains(WireKey("durability"))
-      ? try c.decode(DurabilityEvidence.self, forKey: WireKey("durability")) : nil
-    self.jobId = try c.decode(JobId.self, forKey: WireKey("jobId"))
-    self.jobType = try c.decode(MarkJobCompleteCommandJobType.self, forKey: WireKey("jobType"))
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
-    self.result =
-      c.contains(WireKey("result"))
-      ? try c.decode(MarkJobResult.self, forKey: WireKey("result")) : nil
+    self._userId = try c.ifPresent("_userId")
+    self.attempt = try c.ifPresent("attempt")
+    self.durability = try c.ifPresent("durability")
+    self.jobId = try c.value("jobId")
+    self.jobType = try c.value("jobType")
+    self.resourceId = try c.value("resourceId")
+    self.result = try c.ifPresent("result")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
-    try c.encodeIfPresent(self.attempt, forKey: WireKey("attempt"))
-    try c.encodeIfPresent(self.durability, forKey: WireKey("durability"))
-    try c.encode(self.jobId, forKey: WireKey("jobId"))
-    try c.encode(self.jobType, forKey: WireKey("jobType"))
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
-    try c.encodeIfPresent(self.result, forKey: WireKey("result"))
+    try c.encodeIfPresent(self._userId, as: "_userId")
+    try c.encodeIfPresent(self.attempt, as: "attempt")
+    try c.encodeIfPresent(self.durability, as: "durability")
+    try c.encode(self.jobId, as: "jobId")
+    try c.encode(self.jobType, as: "jobType")
+    try c.encode(self.resourceId, as: "resourceId")
+    try c.encodeIfPresent(self.result, as: "result")
   }
 }
 
@@ -8217,28 +7450,21 @@ public struct MarkJobCreateCommand: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["_roles", "_userId", "jobType", "params", "resourceId"]).contains(
-        $0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in MarkJobCreateCommand")
-    }
-    self._roles =
-      c.contains(WireKey("_roles")) ? try c.decode([String].self, forKey: WireKey("_roles")) : nil
-    self._userId =
-      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
-    self.jobType = try c.decode(MarkJobCreateCommandJobType.self, forKey: WireKey("jobType"))
-    self.params = try c.decode(MarkJobParams.self, forKey: WireKey("params"))
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    try c.refuseUnknown(
+      ["_roles", "_userId", "jobType", "params", "resourceId"], in: "MarkJobCreateCommand")
+    self._roles = try c.ifPresent("_roles")
+    self._userId = try c.ifPresent("_userId")
+    self.jobType = try c.value("jobType")
+    self.params = try c.value("params")
+    self.resourceId = try c.value("resourceId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self._roles, forKey: WireKey("_roles"))
-    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
-    try c.encode(self.jobType, forKey: WireKey("jobType"))
-    try c.encode(self.params, forKey: WireKey("params"))
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encodeIfPresent(self._roles, as: "_roles")
+    try c.encodeIfPresent(self._userId, as: "_userId")
+    try c.encode(self.jobType, as: "jobType")
+    try c.encode(self.params, as: "params")
+    try c.encode(self.resourceId, as: "resourceId")
   }
 }
 
@@ -8266,36 +7492,24 @@ public struct MarkJobDone: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>([
-        "byCategory", "errors", "found", "persisted", "uncheckedPieces", "underReportedPieces",
-      ]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in MarkJobDone")
-    }
-    self.byCategory =
-      c.contains(WireKey("byCategory"))
-      ? try c.decode([String: Int].self, forKey: WireKey("byCategory")) : nil
-    self.errors =
-      c.contains(WireKey("errors")) ? try c.decode(Int.self, forKey: WireKey("errors")) : nil
-    self.found = try c.decode(Int.self, forKey: WireKey("found"))
-    self.persisted = try c.decode(Int.self, forKey: WireKey("persisted"))
-    self.uncheckedPieces =
-      c.contains(WireKey("uncheckedPieces"))
-      ? try c.decode(Int.self, forKey: WireKey("uncheckedPieces")) : nil
-    self.underReportedPieces =
-      c.contains(WireKey("underReportedPieces"))
-      ? try c.decode(Int.self, forKey: WireKey("underReportedPieces")) : nil
+    try c.refuseUnknown(
+      ["byCategory", "errors", "found", "persisted", "uncheckedPieces", "underReportedPieces"],
+      in: "MarkJobDone")
+    self.byCategory = try c.ifPresent("byCategory")
+    self.errors = try c.ifPresent("errors")
+    self.found = try c.value("found")
+    self.persisted = try c.value("persisted")
+    self.uncheckedPieces = try c.ifPresent("uncheckedPieces")
+    self.underReportedPieces = try c.ifPresent("underReportedPieces")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.byCategory, forKey: WireKey("byCategory"))
-    try c.encodeIfPresent(self.errors, forKey: WireKey("errors"))
-    try c.encode(self.found, forKey: WireKey("found"))
-    try c.encode(self.persisted, forKey: WireKey("persisted"))
-    try c.encodeIfPresent(self.uncheckedPieces, forKey: WireKey("uncheckedPieces"))
-    try c.encodeIfPresent(self.underReportedPieces, forKey: WireKey("underReportedPieces"))
+    try c.encodeIfPresent(self.byCategory, as: "byCategory")
+    try c.encodeIfPresent(self.errors, as: "errors")
+    try c.encode(self.found, as: "found")
+    try c.encode(self.persisted, as: "persisted")
+    try c.encodeIfPresent(self.uncheckedPieces, as: "uncheckedPieces")
+    try c.encodeIfPresent(self.underReportedPieces, as: "underReportedPieces")
   }
 }
 
@@ -8308,19 +7522,14 @@ public struct MarkJobFilter: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["jobType", "params"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in MarkJobFilter")
-    }
-    self.jobType = try c.decode(MarkJobFilterJobType.self, forKey: WireKey("jobType"))
-    self.params = try c.decode(MarkJobFilterParams.self, forKey: WireKey("params"))
+    try c.refuseUnknown(["jobType", "params"], in: "MarkJobFilter")
+    self.jobType = try c.value("jobType")
+    self.params = try c.value("params")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.jobType, forKey: WireKey("jobType"))
-    try c.encode(self.params, forKey: WireKey("params"))
+    try c.encode(self.jobType, as: "jobType")
+    try c.encode(self.params, as: "params")
   }
 }
 
@@ -8335,15 +7544,12 @@ public struct MarkJobFilterParams: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: { !Set<String>(["motivation"]).contains($0.stringValue) }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in MarkJobFilterParams")
-    }
-    self.motivation = try c.decode(Motivation.self, forKey: WireKey("motivation"))
+    try c.refuseUnknown(["motivation"], in: "MarkJobFilterParams")
+    self.motivation = try c.value("motivation")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.motivation, forKey: WireKey("motivation"))
+    try c.encode(self.motivation, as: "motivation")
   }
 }
 
@@ -8394,19 +7600,19 @@ public struct MarkJobQueuedEvent: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.jobId = try c.decode(JobId.self, forKey: WireKey("jobId"))
-    self.jobType = try c.decode(MarkJobQueuedEventJobType.self, forKey: WireKey("jobType"))
-    self.params = try c.decode(MarkJobParams.self, forKey: WireKey("params"))
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
-    self.userId = try c.decode(UserId.self, forKey: WireKey("userId"))
+    self.jobId = try c.value("jobId")
+    self.jobType = try c.value("jobType")
+    self.params = try c.value("params")
+    self.resourceId = try c.value("resourceId")
+    self.userId = try c.value("userId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.jobId, forKey: WireKey("jobId"))
-    try c.encode(self.jobType, forKey: WireKey("jobType"))
-    try c.encode(self.params, forKey: WireKey("params"))
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
-    try c.encode(self.userId, forKey: WireKey("userId"))
+    try c.encode(self.jobId, as: "jobId")
+    try c.encode(self.jobType, as: "jobType")
+    try c.encode(self.params, as: "params")
+    try c.encode(self.resourceId, as: "resourceId")
+    try c.encode(self.userId, as: "userId")
   }
 }
 
@@ -8448,15 +7654,15 @@ public struct MarkRequestedEvent: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.motivation = try c.decode(Motivation.self, forKey: WireKey("motivation"))
-    self.selector = try c.decode(AnnotationSelector.self, forKey: WireKey("selector"))
-    self.source = try c.decode(ResourceId.self, forKey: WireKey("source"))
+    self.motivation = try c.value("motivation")
+    self.selector = try c.value("selector")
+    self.source = try c.value("source")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.motivation, forKey: WireKey("motivation"))
-    try c.encode(self.selector, forKey: WireKey("selector"))
-    try c.encode(self.source, forKey: WireKey("source"))
+    try c.encode(self.motivation, as: "motivation")
+    try c.encode(self.selector, as: "selector")
+    try c.encode(self.source, as: "source")
   }
 }
 
@@ -8476,19 +7682,17 @@ public struct MarkSubmitEvent: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.body =
-      c.contains(WireKey("body"))
-      ? try c.decode(AnnotationBodies.self, forKey: WireKey("body")) : nil
-    self.motivation = try c.decode(Motivation.self, forKey: WireKey("motivation"))
-    self.selector = try c.decode(AnnotationSelector.self, forKey: WireKey("selector"))
-    self.source = try c.decode(ResourceId.self, forKey: WireKey("source"))
+    self.body = try c.ifPresent("body")
+    self.motivation = try c.value("motivation")
+    self.selector = try c.value("selector")
+    self.source = try c.value("source")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.body, forKey: WireKey("body"))
-    try c.encode(self.motivation, forKey: WireKey("motivation"))
-    try c.encode(self.selector, forKey: WireKey("selector"))
-    try c.encode(self.source, forKey: WireKey("source"))
+    try c.encodeIfPresent(self.body, as: "body")
+    try c.encode(self.motivation, as: "motivation")
+    try c.encode(self.selector, as: "selector")
+    try c.encode(self.source, as: "source")
   }
 }
 
@@ -8503,18 +7707,15 @@ public struct MarkUnarchiveCommand: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self._userId =
-      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
-    self.storageUri =
-      c.contains(WireKey("storageUri"))
-      ? try c.decode(String.self, forKey: WireKey("storageUri")) : nil
+    self._userId = try c.ifPresent("_userId")
+    self.resourceId = try c.value("resourceId")
+    self.storageUri = try c.ifPresent("storageUri")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
-    try c.encodeIfPresent(self.storageUri, forKey: WireKey("storageUri"))
+    try c.encodeIfPresent(self._userId, as: "_userId")
+    try c.encode(self.resourceId, as: "resourceId")
+    try c.encodeIfPresent(self.storageUri, as: "storageUri")
   }
 }
 
@@ -8534,19 +7735,17 @@ public struct MarkUpdateBodyCommand: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self._userId =
-      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
-    self.annotationId = try c.decode(AnnotationId.self, forKey: WireKey("annotationId"))
-    self.operations = try c.decode(
-      [MarkUpdateBodyCommandOperationsItem].self, forKey: WireKey("operations"))
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self._userId = try c.ifPresent("_userId")
+    self.annotationId = try c.value("annotationId")
+    self.operations = try c.value("operations")
+    self.resourceId = try c.value("resourceId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
-    try c.encode(self.annotationId, forKey: WireKey("annotationId"))
-    try c.encode(self.operations, forKey: WireKey("operations"))
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encodeIfPresent(self._userId, as: "_userId")
+    try c.encode(self.annotationId, as: "annotationId")
+    try c.encode(self.operations, as: "operations")
+    try c.encode(self.resourceId, as: "resourceId")
   }
 }
 
@@ -8597,18 +7796,17 @@ public struct MarkUpdateEntityTypesCommand: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self._userId =
-      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
-    self.currentEntityTypes = try c.decode([String].self, forKey: WireKey("currentEntityTypes"))
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
-    self.updatedEntityTypes = try c.decode([String].self, forKey: WireKey("updatedEntityTypes"))
+    self._userId = try c.ifPresent("_userId")
+    self.currentEntityTypes = try c.value("currentEntityTypes")
+    self.resourceId = try c.value("resourceId")
+    self.updatedEntityTypes = try c.value("updatedEntityTypes")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
-    try c.encode(self.currentEntityTypes, forKey: WireKey("currentEntityTypes"))
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
-    try c.encode(self.updatedEntityTypes, forKey: WireKey("updatedEntityTypes"))
+    try c.encodeIfPresent(self._userId, as: "_userId")
+    try c.encode(self.currentEntityTypes, as: "currentEntityTypes")
+    try c.encode(self.resourceId, as: "resourceId")
+    try c.encode(self.updatedEntityTypes, as: "updatedEntityTypes")
   }
 }
 
@@ -8630,24 +7828,19 @@ public struct MatchResourcesRequest: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.archived =
-      c.contains(WireKey("archived")) ? try c.decode(Bool.self, forKey: WireKey("archived")) : nil
-    self.entityType =
-      c.contains(WireKey("entityType"))
-      ? try c.decode(String.self, forKey: WireKey("entityType")) : nil
-    self.limit =
-      c.contains(WireKey("limit")) ? try c.decode(Int.self, forKey: WireKey("limit")) : nil
-    self.offset =
-      c.contains(WireKey("offset")) ? try c.decode(Int.self, forKey: WireKey("offset")) : nil
-    self.search = try c.decode(String.self, forKey: WireKey("search"))
+    self.archived = try c.ifPresent("archived")
+    self.entityType = try c.ifPresent("entityType")
+    self.limit = try c.ifPresent("limit")
+    self.offset = try c.ifPresent("offset")
+    self.search = try c.value("search")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.archived, forKey: WireKey("archived"))
-    try c.encodeIfPresent(self.entityType, forKey: WireKey("entityType"))
-    try c.encodeIfPresent(self.limit, forKey: WireKey("limit"))
-    try c.encodeIfPresent(self.offset, forKey: WireKey("offset"))
-    try c.encode(self.search, forKey: WireKey("search"))
+    try c.encodeIfPresent(self.archived, as: "archived")
+    try c.encodeIfPresent(self.entityType, as: "entityType")
+    try c.encodeIfPresent(self.limit, as: "limit")
+    try c.encodeIfPresent(self.offset, as: "offset")
+    try c.encode(self.search, as: "search")
   }
 }
 
@@ -8669,20 +7862,19 @@ public struct MatchResourcesResponse: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.limit = try c.decode(Int.self, forKey: WireKey("limit"))
-    self.matchKind = try c.decode(
-      MatchResourcesResponseMatchKind.self, forKey: WireKey("matchKind"))
-    self.offset = try c.decode(Int.self, forKey: WireKey("offset"))
-    self.resources = try c.decode([ResourceDescriptor].self, forKey: WireKey("resources"))
-    self.total = try c.decode(Int.self, forKey: WireKey("total"))
+    self.limit = try c.value("limit")
+    self.matchKind = try c.value("matchKind")
+    self.offset = try c.value("offset")
+    self.resources = try c.value("resources")
+    self.total = try c.value("total")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.limit, forKey: WireKey("limit"))
-    try c.encode(self.matchKind, forKey: WireKey("matchKind"))
-    try c.encode(self.offset, forKey: WireKey("offset"))
-    try c.encode(self.resources, forKey: WireKey("resources"))
-    try c.encode(self.total, forKey: WireKey("total"))
+    try c.encode(self.limit, as: "limit")
+    try c.encode(self.matchKind, as: "matchKind")
+    try c.encode(self.offset, as: "offset")
+    try c.encode(self.resources, as: "resources")
+    try c.encode(self.total, as: "total")
   }
 }
 
@@ -8698,11 +7890,11 @@ public struct MatchResourcesResult: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.response = try c.decode(MatchResourcesResponse.self, forKey: WireKey("response"))
+    self.response = try c.value("response")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.response, forKey: WireKey("response"))
+    try c.encode(self.response, as: "response")
   }
 }
 
@@ -8722,20 +7914,17 @@ public struct MatchSearchFailed: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.code =
-      c.contains(WireKey("code"))
-      ? try c.decode(MatchSearchFailedCode.self, forKey: WireKey("code")) : nil
-    self.details =
-      c.contains(WireKey("details")) ? try c.decode(String.self, forKey: WireKey("details")) : nil
-    self.message = try c.decode(String.self, forKey: WireKey("message"))
-    self.referenceId = try c.decode(AnnotationId.self, forKey: WireKey("referenceId"))
+    self.code = try c.ifPresent("code")
+    self.details = try c.ifPresent("details")
+    self.message = try c.value("message")
+    self.referenceId = try c.value("referenceId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.code, forKey: WireKey("code"))
-    try c.encodeIfPresent(self.details, forKey: WireKey("details"))
-    try c.encode(self.message, forKey: WireKey("message"))
-    try c.encode(self.referenceId, forKey: WireKey("referenceId"))
+    try c.encodeIfPresent(self.code, as: "code")
+    try c.encodeIfPresent(self.details, as: "details")
+    try c.encode(self.message, as: "message")
+    try c.encode(self.referenceId, as: "referenceId")
   }
 }
 
@@ -8764,22 +7953,19 @@ public struct MatchSearchRequest: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.context = try c.decode(GatheredContext.self, forKey: WireKey("context"))
-    self.limit =
-      c.contains(WireKey("limit")) ? try c.decode(Int.self, forKey: WireKey("limit")) : nil
-    self.referenceId = try c.decode(AnnotationId.self, forKey: WireKey("referenceId"))
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
-    self.useSemanticScoring =
-      c.contains(WireKey("useSemanticScoring"))
-      ? try c.decode(Bool.self, forKey: WireKey("useSemanticScoring")) : nil
+    self.context = try c.value("context")
+    self.limit = try c.ifPresent("limit")
+    self.referenceId = try c.value("referenceId")
+    self.resourceId = try c.value("resourceId")
+    self.useSemanticScoring = try c.ifPresent("useSemanticScoring")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.context, forKey: WireKey("context"))
-    try c.encodeIfPresent(self.limit, forKey: WireKey("limit"))
-    try c.encode(self.referenceId, forKey: WireKey("referenceId"))
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
-    try c.encodeIfPresent(self.useSemanticScoring, forKey: WireKey("useSemanticScoring"))
+    try c.encode(self.context, as: "context")
+    try c.encodeIfPresent(self.limit, as: "limit")
+    try c.encode(self.referenceId, as: "referenceId")
+    try c.encode(self.resourceId, as: "resourceId")
+    try c.encodeIfPresent(self.useSemanticScoring, as: "useSemanticScoring")
   }
 }
 
@@ -8792,13 +7978,13 @@ public struct MatchSearchResult: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.referenceId = try c.decode(AnnotationId.self, forKey: WireKey("referenceId"))
-    self.response = try c.decode([ScoredResource].self, forKey: WireKey("response"))
+    self.referenceId = try c.value("referenceId")
+    self.response = try c.value("response")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.referenceId, forKey: WireKey("referenceId"))
-    try c.encode(self.response, forKey: WireKey("response"))
+    try c.encode(self.referenceId, as: "referenceId")
+    try c.encode(self.response, as: "response")
   }
 }
 
@@ -8809,11 +7995,11 @@ public struct MediaTokenRequest: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self.resourceId = try c.value("resourceId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encode(self.resourceId, as: "resourceId")
   }
 }
 
@@ -8824,11 +8010,11 @@ public struct MediaTokenResponse: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.token = try c.decode(String.self, forKey: WireKey("token"))
+    self.token = try c.value("token")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.token, forKey: WireKey("token"))
+    try c.encode(self.token, as: "token")
   }
 }
 
@@ -8839,15 +8025,12 @@ public struct MemoryGraphConfig: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: { !Set<String>(["type"]).contains($0.stringValue) }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in MemoryGraphConfig")
-    }
-    self.type = try c.decode(MemoryGraphConfigType.self, forKey: WireKey("type"))
+    try c.refuseUnknown(["type"], in: "MemoryGraphConfig")
+    self.type = try c.value("type")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.type, forKey: WireKey("type"))
+    try c.encode(self.type, as: "type")
   }
 }
 
@@ -8862,15 +8045,12 @@ public struct MemoryVectorsConfig: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: { !Set<String>(["type"]).contains($0.stringValue) }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in MemoryVectorsConfig")
-    }
-    self.type = try c.decode(MemoryVectorsConfigType.self, forKey: WireKey("type"))
+    try c.refuseUnknown(["type"], in: "MemoryVectorsConfig")
+    self.type = try c.value("type")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.type, forKey: WireKey("type"))
+    try c.encode(self.type, as: "type")
   }
 }
 
@@ -8901,25 +8081,21 @@ public struct Neo4jGraphConfig: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["database", "passwordEnv", "type", "uri", "username"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in Neo4jGraphConfig")
-    }
-    self.database = try c.decode(String.self, forKey: WireKey("database"))
-    self.passwordEnv = try c.decode(String.self, forKey: WireKey("passwordEnv"))
-    self.type = try c.decode(Neo4jGraphConfigType.self, forKey: WireKey("type"))
-    self.uri = try c.decode(String.self, forKey: WireKey("uri"))
-    self.username = try c.decode(String.self, forKey: WireKey("username"))
+    try c.refuseUnknown(
+      ["database", "passwordEnv", "type", "uri", "username"], in: "Neo4jGraphConfig")
+    self.database = try c.value("database")
+    self.passwordEnv = try c.value("passwordEnv")
+    self.type = try c.value("type")
+    self.uri = try c.value("uri")
+    self.username = try c.value("username")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.database, forKey: WireKey("database"))
-    try c.encode(self.passwordEnv, forKey: WireKey("passwordEnv"))
-    try c.encode(self.type, forKey: WireKey("type"))
-    try c.encode(self.uri, forKey: WireKey("uri"))
-    try c.encode(self.username, forKey: WireKey("username"))
+    try c.encode(self.database, as: "database")
+    try c.encode(self.passwordEnv, as: "passwordEnv")
+    try c.encode(self.type, as: "type")
+    try c.encode(self.uri, as: "uri")
+    try c.encode(self.username, as: "username")
   }
 }
 
@@ -8938,21 +8114,16 @@ public struct NeptuneGraphConfig: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["endpoint", "port", "type"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in NeptuneGraphConfig")
-    }
-    self.endpoint = try c.decode(String.self, forKey: WireKey("endpoint"))
-    self.port = try c.decode(Int.self, forKey: WireKey("port"))
-    self.type = try c.decode(NeptuneGraphConfigType.self, forKey: WireKey("type"))
+    try c.refuseUnknown(["endpoint", "port", "type"], in: "NeptuneGraphConfig")
+    self.endpoint = try c.value("endpoint")
+    self.port = try c.value("port")
+    self.type = try c.value("type")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.endpoint, forKey: WireKey("endpoint"))
-    try c.encode(self.port, forKey: WireKey("port"))
-    try c.encode(self.type, forKey: WireKey("type"))
+    try c.encode(self.endpoint, as: "endpoint")
+    try c.encode(self.port, as: "port")
+    try c.encode(self.type, as: "type")
   }
 }
 
@@ -8973,18 +8144,17 @@ public struct NewKnowledgeBase: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.did = try c.decode(String.self, forKey: WireKey("did"))
-    self.endpoint = try c.decode(KbEndpoint.self, forKey: WireKey("endpoint"))
-    self.label = try c.decode(String.self, forKey: WireKey("label"))
-    self.lastRead =
-      c.contains(WireKey("lastRead")) ? try c.decode(KbRead.self, forKey: WireKey("lastRead")) : nil
+    self.did = try c.value("did")
+    self.endpoint = try c.value("endpoint")
+    self.label = try c.value("label")
+    self.lastRead = try c.ifPresent("lastRead")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.did, forKey: WireKey("did"))
-    try c.encode(self.endpoint, forKey: WireKey("endpoint"))
-    try c.encode(self.label, forKey: WireKey("label"))
-    try c.encodeIfPresent(self.lastRead, forKey: WireKey("lastRead"))
+    try c.encode(self.did, as: "did")
+    try c.encode(self.endpoint, as: "endpoint")
+    try c.encode(self.label, as: "label")
+    try c.encodeIfPresent(self.lastRead, as: "lastRead")
   }
 }
 
@@ -8999,21 +8169,16 @@ public struct OllamaEmbeddingConfig: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["baseUrl", "model", "type"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in OllamaEmbeddingConfig")
-    }
-    self.baseUrl = try c.decode(String.self, forKey: WireKey("baseUrl"))
-    self.model = try c.decode(String.self, forKey: WireKey("model"))
-    self.type = try c.decode(OllamaEmbeddingConfigType.self, forKey: WireKey("type"))
+    try c.refuseUnknown(["baseUrl", "model", "type"], in: "OllamaEmbeddingConfig")
+    self.baseUrl = try c.value("baseUrl")
+    self.model = try c.value("model")
+    self.type = try c.value("type")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.baseUrl, forKey: WireKey("baseUrl"))
-    try c.encode(self.model, forKey: WireKey("model"))
-    try c.encode(self.type, forKey: WireKey("type"))
+    try c.encode(self.baseUrl, as: "baseUrl")
+    try c.encode(self.model, as: "model")
+    try c.encode(self.type, as: "type")
   }
 }
 
@@ -9041,23 +8206,23 @@ public struct PdfTextItem: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.end = try c.decode(Int.self, forKey: WireKey("end"))
-    self.height = try c.decode(Double.self, forKey: WireKey("height"))
-    self.page = try c.decode(Int.self, forKey: WireKey("page"))
-    self.start = try c.decode(Int.self, forKey: WireKey("start"))
-    self.width = try c.decode(Double.self, forKey: WireKey("width"))
-    self.x = try c.decode(Double.self, forKey: WireKey("x"))
-    self.y = try c.decode(Double.self, forKey: WireKey("y"))
+    self.end = try c.value("end")
+    self.height = try c.value("height")
+    self.page = try c.value("page")
+    self.start = try c.value("start")
+    self.width = try c.value("width")
+    self.x = try c.value("x")
+    self.y = try c.value("y")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.end, forKey: WireKey("end"))
-    try c.encode(self.height, forKey: WireKey("height"))
-    try c.encode(self.page, forKey: WireKey("page"))
-    try c.encode(self.start, forKey: WireKey("start"))
-    try c.encode(self.width, forKey: WireKey("width"))
-    try c.encode(self.x, forKey: WireKey("x"))
-    try c.encode(self.y, forKey: WireKey("y"))
+    try c.encode(self.end, as: "end")
+    try c.encode(self.height, as: "height")
+    try c.encode(self.page, as: "page")
+    try c.encode(self.start, as: "start")
+    try c.encode(self.width, as: "width")
+    try c.encode(self.x, as: "x")
+    try c.encode(self.y, as: "y")
   }
 }
 
@@ -9072,14 +8237,13 @@ public struct PrincipalProfileCommand: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self._userId =
-      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
-    self.name = try c.decode(String.self, forKey: WireKey("name"))
+    self._userId = try c.ifPresent("_userId")
+    self.name = try c.value("name")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
-    try c.encode(self.name, forKey: WireKey("name"))
+    try c.encodeIfPresent(self._userId, as: "_userId")
+    try c.encode(self.name, as: "name")
   }
 }
 
@@ -9090,11 +8254,11 @@ public struct PrincipalProfiledPayload: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.name = try c.decode(String.self, forKey: WireKey("name"))
+    self.name = try c.value("name")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.name, forKey: WireKey("name"))
+    try c.encode(self.name, as: "name")
   }
 }
 
@@ -9107,19 +8271,14 @@ public struct Profile: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["name", "since"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in Profile")
-    }
-    self.name = try c.decode(String.self, forKey: WireKey("name"))
-    self.since = try c.decode(String.self, forKey: WireKey("since"))
+    try c.refuseUnknown(["name", "since"], in: "Profile")
+    self.name = try c.value("name")
+    self.since = try c.value("since")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.name, forKey: WireKey("name"))
-    try c.encode(self.since, forKey: WireKey("since"))
+    try c.encode(self.name, as: "name")
+    try c.encode(self.since, as: "since")
   }
 }
 
@@ -9130,15 +8289,12 @@ public struct ProfilesProjection: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: { !Set<String>(["profiles"]).contains($0.stringValue) }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in ProfilesProjection")
-    }
-    self.profiles = try c.decode([String: Profile].self, forKey: WireKey("profiles"))
+    try c.refuseUnknown(["profiles"], in: "ProfilesProjection")
+    self.profiles = try c.value("profiles")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.profiles, forKey: WireKey("profiles"))
+    try c.encode(self.profiles, as: "profiles")
   }
 }
 
@@ -9159,30 +8315,20 @@ public struct ProtectedResourceMetadata: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>([
-        "authorization_servers", "bearer_methods_supported", "resource", "resource_name",
-      ]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in ProtectedResourceMetadata")
-    }
-    self.authorizationServers = try c.decode(
-      [String].self, forKey: WireKey("authorization_servers"))
-    self.bearerMethodsSupported = try c.decode(
-      [ProtectedResourceMetadataBearerMethodsSupportedItem].self,
-      forKey: WireKey("bearer_methods_supported"))
-    self.resource = try c.decode(String.self, forKey: WireKey("resource"))
-    self.resourceName =
-      c.contains(WireKey("resource_name"))
-      ? try c.decode(String.self, forKey: WireKey("resource_name")) : nil
+    try c.refuseUnknown(
+      ["authorization_servers", "bearer_methods_supported", "resource", "resource_name"],
+      in: "ProtectedResourceMetadata")
+    self.authorizationServers = try c.value("authorization_servers")
+    self.bearerMethodsSupported = try c.value("bearer_methods_supported")
+    self.resource = try c.value("resource")
+    self.resourceName = try c.ifPresent("resource_name")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.authorizationServers, forKey: WireKey("authorization_servers"))
-    try c.encode(self.bearerMethodsSupported, forKey: WireKey("bearer_methods_supported"))
-    try c.encode(self.resource, forKey: WireKey("resource"))
-    try c.encodeIfPresent(self.resourceName, forKey: WireKey("resource_name"))
+    try c.encode(self.authorizationServers, as: "authorization_servers")
+    try c.encode(self.bearerMethodsSupported, as: "bearer_methods_supported")
+    try c.encode(self.resource, as: "resource")
+    try c.encodeIfPresent(self.resourceName, as: "resource_name")
   }
 }
 
@@ -9205,23 +8351,18 @@ public struct QdrantVectorsConfig: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["host", "port", "tokenEnv", "type"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in QdrantVectorsConfig")
-    }
-    self.host = try c.decode(String.self, forKey: WireKey("host"))
-    self.port = try c.decode(Int.self, forKey: WireKey("port"))
-    self.tokenEnv = try c.decode(String.self, forKey: WireKey("tokenEnv"))
-    self.type = try c.decode(QdrantVectorsConfigType.self, forKey: WireKey("type"))
+    try c.refuseUnknown(["host", "port", "tokenEnv", "type"], in: "QdrantVectorsConfig")
+    self.host = try c.value("host")
+    self.port = try c.value("port")
+    self.tokenEnv = try c.value("tokenEnv")
+    self.type = try c.value("type")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.host, forKey: WireKey("host"))
-    try c.encode(self.port, forKey: WireKey("port"))
-    try c.encode(self.tokenEnv, forKey: WireKey("tokenEnv"))
-    try c.encode(self.type, forKey: WireKey("type"))
+    try c.encode(self.host, as: "host")
+    try c.encode(self.port, as: "port")
+    try c.encode(self.tokenEnv, as: "tokenEnv")
+    try c.encode(self.type, as: "type")
   }
 }
 
@@ -9249,34 +8390,23 @@ public struct ReceivedFrame: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["channel", "correlationId", "eventId", "payload", "scope", "trace"]).contains(
-        $0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in ReceivedFrame")
-    }
-    self.channel = try c.decode(String.self, forKey: WireKey("channel"))
-    self.correlationId =
-      c.contains(WireKey("correlationId"))
-      ? try c.decode(String.self, forKey: WireKey("correlationId")) : nil
-    self.eventId =
-      c.contains(WireKey("eventId")) ? try c.decode(String.self, forKey: WireKey("eventId")) : nil
-    self.payload = try c.decode([String: JSONValue].self, forKey: WireKey("payload"))
-    self.scope =
-      c.contains(WireKey("scope")) ? try c.decode(ResourceId.self, forKey: WireKey("scope")) : nil
-    self.trace =
-      c.contains(WireKey("trace"))
-      ? try c.decode([String: String].self, forKey: WireKey("trace")) : nil
+    try c.refuseUnknown(
+      ["channel", "correlationId", "eventId", "payload", "scope", "trace"], in: "ReceivedFrame")
+    self.channel = try c.value("channel")
+    self.correlationId = try c.ifPresent("correlationId")
+    self.eventId = try c.ifPresent("eventId")
+    self.payload = try c.value("payload")
+    self.scope = try c.ifPresent("scope")
+    self.trace = try c.ifPresent("trace")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.channel, forKey: WireKey("channel"))
-    try c.encodeIfPresent(self.correlationId, forKey: WireKey("correlationId"))
-    try c.encodeIfPresent(self.eventId, forKey: WireKey("eventId"))
-    try c.encode(self.payload, forKey: WireKey("payload"))
-    try c.encodeIfPresent(self.scope, forKey: WireKey("scope"))
-    try c.encodeIfPresent(self.trace, forKey: WireKey("trace"))
+    try c.encode(self.channel, as: "channel")
+    try c.encodeIfPresent(self.correlationId, as: "correlationId")
+    try c.encodeIfPresent(self.eventId, as: "eventId")
+    try c.encode(self.payload, as: "payload")
+    try c.encodeIfPresent(self.scope, as: "scope")
+    try c.encodeIfPresent(self.trace, as: "trace")
   }
 }
 
@@ -9330,87 +8460,55 @@ public struct Representation: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.id = c.contains(WireKey("@id")) ? try c.decode(String.self, forKey: WireKey("@id")) : nil
-    self.type =
-      c.contains(WireKey("@type"))
-      ? try c.decode(RepresentationType.self, forKey: WireKey("@type")) : nil
-    self.byteSize =
-      c.contains(WireKey("byteSize")) ? try c.decode(Int.self, forKey: WireKey("byteSize")) : nil
-    self.checksum =
-      c.contains(WireKey("checksum")) ? try c.decode(String.self, forKey: WireKey("checksum")) : nil
-    self.conformsTo =
-      c.contains(WireKey("conformsTo"))
-      ? try c.decode(RepresentationConformsTo.self, forKey: WireKey("conformsTo")) : nil
-    self.created =
-      c.contains(WireKey("created")) ? try c.decode(String.self, forKey: WireKey("created")) : nil
-    self.duration =
-      c.contains(WireKey("duration")) ? try c.decode(Double.self, forKey: WireKey("duration")) : nil
-    self.encoding =
-      c.contains(WireKey("encoding")) ? try c.decode(String.self, forKey: WireKey("encoding")) : nil
-    self.filename =
-      c.contains(WireKey("filename")) ? try c.decode(String.self, forKey: WireKey("filename")) : nil
-    self.height =
-      c.contains(WireKey("height")) ? try c.decode(Int.self, forKey: WireKey("height")) : nil
-    self.language =
-      c.contains(WireKey("language")) ? try c.decode(String.self, forKey: WireKey("language")) : nil
-    self.mediaType = try c.decode(String.self, forKey: WireKey("mediaType"))
-    self.modified =
-      c.contains(WireKey("modified")) ? try c.decode(String.self, forKey: WireKey("modified")) : nil
-    self.rel =
-      c.contains(WireKey("rel"))
-      ? try c.decode(RepresentationRel.self, forKey: WireKey("rel")) : nil
-    self.storageUri =
-      c.contains(WireKey("storageUri"))
-      ? try c.decode(String.self, forKey: WireKey("storageUri")) : nil
-    self.tags =
-      c.contains(WireKey("tags")) ? try c.decode([String].self, forKey: WireKey("tags")) : nil
-    self.width =
-      c.contains(WireKey("width")) ? try c.decode(Int.self, forKey: WireKey("width")) : nil
-    rest = [:]
-    for key in c.allKeys
-    where !Set<String>([
+    self.id = try c.ifPresent("@id")
+    self.type = try c.ifPresent("@type")
+    self.byteSize = try c.ifPresent("byteSize")
+    self.checksum = try c.ifPresent("checksum")
+    self.conformsTo = try c.ifPresent("conformsTo")
+    self.created = try c.ifPresent("created")
+    self.duration = try c.ifPresent("duration")
+    self.encoding = try c.ifPresent("encoding")
+    self.filename = try c.ifPresent("filename")
+    self.height = try c.ifPresent("height")
+    self.language = try c.ifPresent("language")
+    self.mediaType = try c.value("mediaType")
+    self.modified = try c.ifPresent("modified")
+    self.rel = try c.ifPresent("rel")
+    self.storageUri = try c.ifPresent("storageUri")
+    self.tags = try c.ifPresent("tags")
+    self.width = try c.ifPresent("width")
+    rest = try c.rest(excluding: [
       "@id", "@type", "byteSize", "checksum", "conformsTo", "created", "duration", "encoding",
       "filename", "height", "language", "mediaType", "modified", "rel", "storageUri", "tags",
       "width",
-    ]).contains(key.stringValue) {
-      rest[key.stringValue] = try c.decode(JSONValue.self, forKey: key)
-    }
+    ])
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    for (key, value) in rest {
-      guard
-        !Set<String>([
-          "@id", "@type", "byteSize", "checksum", "conformsTo", "created", "duration", "encoding",
-          "filename", "height", "language", "mediaType", "modified", "rel", "storageUri", "tags",
-          "width",
-        ]).contains(key)
-      else {
-        throw EncodingError.invalidValue(
-          value,
-          .init(
-            codingPath: encoder.codingPath,
-            debugDescription: "rest overrides a named property of Representation"))
-      }
-      try c.encode(value, forKey: WireKey(key))
-    }
-    try c.encodeIfPresent(self.id, forKey: WireKey("@id"))
-    try c.encodeIfPresent(self.type, forKey: WireKey("@type"))
-    try c.encodeIfPresent(self.byteSize, forKey: WireKey("byteSize"))
-    try c.encodeIfPresent(self.checksum, forKey: WireKey("checksum"))
-    try c.encodeIfPresent(self.conformsTo, forKey: WireKey("conformsTo"))
-    try c.encodeIfPresent(self.created, forKey: WireKey("created"))
-    try c.encodeIfPresent(self.duration, forKey: WireKey("duration"))
-    try c.encodeIfPresent(self.encoding, forKey: WireKey("encoding"))
-    try c.encodeIfPresent(self.filename, forKey: WireKey("filename"))
-    try c.encodeIfPresent(self.height, forKey: WireKey("height"))
-    try c.encodeIfPresent(self.language, forKey: WireKey("language"))
-    try c.encode(self.mediaType, forKey: WireKey("mediaType"))
-    try c.encodeIfPresent(self.modified, forKey: WireKey("modified"))
-    try c.encodeIfPresent(self.rel, forKey: WireKey("rel"))
-    try c.encodeIfPresent(self.storageUri, forKey: WireKey("storageUri"))
-    try c.encodeIfPresent(self.tags, forKey: WireKey("tags"))
-    try c.encodeIfPresent(self.width, forKey: WireKey("width"))
+    try c.encode(
+      rest: rest,
+      excluding: [
+        "@id", "@type", "byteSize", "checksum", "conformsTo", "created", "duration", "encoding",
+        "filename", "height", "language", "mediaType", "modified", "rel", "storageUri", "tags",
+        "width",
+      ], of: "Representation")
+    try c.encodeIfPresent(self.id, as: "@id")
+    try c.encodeIfPresent(self.type, as: "@type")
+    try c.encodeIfPresent(self.byteSize, as: "byteSize")
+    try c.encodeIfPresent(self.checksum, as: "checksum")
+    try c.encodeIfPresent(self.conformsTo, as: "conformsTo")
+    try c.encodeIfPresent(self.created, as: "created")
+    try c.encodeIfPresent(self.duration, as: "duration")
+    try c.encodeIfPresent(self.encoding, as: "encoding")
+    try c.encodeIfPresent(self.filename, as: "filename")
+    try c.encodeIfPresent(self.height, as: "height")
+    try c.encodeIfPresent(self.language, as: "language")
+    try c.encode(self.mediaType, as: "mediaType")
+    try c.encodeIfPresent(self.modified, as: "modified")
+    try c.encodeIfPresent(self.rel, as: "rel")
+    try c.encodeIfPresent(self.storageUri, as: "storageUri")
+    try c.encodeIfPresent(self.tags, as: "tags")
+    try c.encodeIfPresent(self.width, as: "width")
   }
 }
 
@@ -9421,11 +8519,11 @@ public struct RepresentationAddedPayload: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.representation = try c.decode(Representation.self, forKey: WireKey("representation"))
+    self.representation = try c.value("representation")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.representation, forKey: WireKey("representation"))
+    try c.encode(self.representation, as: "representation")
   }
 }
 
@@ -9469,20 +8567,17 @@ public struct RepresentationNotFound: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.code = try c.decode(RepresentationNotFoundCode.self, forKey: WireKey("code"))
-    self.details =
-      c.contains(WireKey("details"))
-      ? try c.decode(JSONValue.self, forKey: WireKey("details")) : nil
-    self.error = try c.decode(String.self, forKey: WireKey("error"))
-    self.hint =
-      c.contains(WireKey("hint")) ? try c.decode(String.self, forKey: WireKey("hint")) : nil
+    self.code = try c.value("code")
+    self.details = try c.ifPresent("details")
+    self.error = try c.value("error")
+    self.hint = try c.ifPresent("hint")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.code, forKey: WireKey("code"))
-    try c.encodeIfPresent(self.details, forKey: WireKey("details"))
-    try c.encode(self.error, forKey: WireKey("error"))
-    try c.encodeIfPresent(self.hint, forKey: WireKey("hint"))
+    try c.encode(self.code, as: "code")
+    try c.encodeIfPresent(self.details, as: "details")
+    try c.encode(self.error, as: "error")
+    try c.encodeIfPresent(self.hint, as: "hint")
   }
 }
 
@@ -9507,11 +8602,11 @@ public struct RepresentationRemovedPayload: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.checksum = try c.decode(String.self, forKey: WireKey("checksum"))
+    self.checksum = try c.value("checksum")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.checksum, forKey: WireKey("checksum"))
+    try c.encode(self.checksum, as: "checksum")
   }
 }
 
@@ -9552,23 +8647,19 @@ public struct ResourceAnnotations: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["annotations", "resourceId", "updatedAt", "version"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in ResourceAnnotations")
-    }
-    self.annotations = try c.decode([Annotation].self, forKey: WireKey("annotations"))
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
-    self.updatedAt = try c.decode(String.self, forKey: WireKey("updatedAt"))
-    self.version = try c.decode(Int.self, forKey: WireKey("version"))
+    try c.refuseUnknown(
+      ["annotations", "resourceId", "updatedAt", "version"], in: "ResourceAnnotations")
+    self.annotations = try c.value("annotations")
+    self.resourceId = try c.value("resourceId")
+    self.updatedAt = try c.value("updatedAt")
+    self.version = try c.value("version")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.annotations, forKey: WireKey("annotations"))
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
-    try c.encode(self.updatedAt, forKey: WireKey("updatedAt"))
-    try c.encode(self.version, forKey: WireKey("version"))
+    try c.encode(self.annotations, as: "annotations")
+    try c.encode(self.resourceId, as: "resourceId")
+    try c.encode(self.updatedAt, as: "updatedAt")
+    try c.encode(self.version, as: "version")
   }
 }
 
@@ -9579,12 +8670,11 @@ public struct ResourceArchivedPayload: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.reason =
-      c.contains(WireKey("reason")) ? try c.decode(String.self, forKey: WireKey("reason")) : nil
+    self.reason = try c.ifPresent("reason")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.reason, forKey: WireKey("reason"))
+    try c.encodeIfPresent(self.reason, as: "reason")
   }
 }
 
@@ -9618,40 +8708,29 @@ public struct ResourceClonedPayload: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.contentByteSize =
-      c.contains(WireKey("contentByteSize"))
-      ? try c.decode(Int.self, forKey: WireKey("contentByteSize")) : nil
-    self.contentChecksum = try c.decode(String.self, forKey: WireKey("contentChecksum"))
-    self.creator =
-      c.contains(WireKey("creator")) ? try c.decode(Agent.self, forKey: WireKey("creator")) : nil
-    self.entityTypes =
-      c.contains(WireKey("entityTypes"))
-      ? try c.decode([String].self, forKey: WireKey("entityTypes")) : nil
-    self.format = try c.decode(ContentFormat.self, forKey: WireKey("format"))
-    self.language =
-      c.contains(WireKey("language")) ? try c.decode(String.self, forKey: WireKey("language")) : nil
-    self.name = try c.decode(String.self, forKey: WireKey("name"))
-    self.parentResourceId = try c.decode(ResourceId.self, forKey: WireKey("parentResourceId"))
-    self.storageUri =
-      c.contains(WireKey("storageUri"))
-      ? try c.decode(String.self, forKey: WireKey("storageUri")) : nil
-    self.wasAttributedTo =
-      c.contains(WireKey("wasAttributedTo"))
-      ? try c.decode(ResourceClonedPayloadWasAttributedTo.self, forKey: WireKey("wasAttributedTo"))
-      : nil
+    self.contentByteSize = try c.ifPresent("contentByteSize")
+    self.contentChecksum = try c.value("contentChecksum")
+    self.creator = try c.ifPresent("creator")
+    self.entityTypes = try c.ifPresent("entityTypes")
+    self.format = try c.value("format")
+    self.language = try c.ifPresent("language")
+    self.name = try c.value("name")
+    self.parentResourceId = try c.value("parentResourceId")
+    self.storageUri = try c.ifPresent("storageUri")
+    self.wasAttributedTo = try c.ifPresent("wasAttributedTo")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.contentByteSize, forKey: WireKey("contentByteSize"))
-    try c.encode(self.contentChecksum, forKey: WireKey("contentChecksum"))
-    try c.encodeIfPresent(self.creator, forKey: WireKey("creator"))
-    try c.encodeIfPresent(self.entityTypes, forKey: WireKey("entityTypes"))
-    try c.encode(self.format, forKey: WireKey("format"))
-    try c.encodeIfPresent(self.language, forKey: WireKey("language"))
-    try c.encode(self.name, forKey: WireKey("name"))
-    try c.encode(self.parentResourceId, forKey: WireKey("parentResourceId"))
-    try c.encodeIfPresent(self.storageUri, forKey: WireKey("storageUri"))
-    try c.encodeIfPresent(self.wasAttributedTo, forKey: WireKey("wasAttributedTo"))
+    try c.encodeIfPresent(self.contentByteSize, as: "contentByteSize")
+    try c.encode(self.contentChecksum, as: "contentChecksum")
+    try c.encodeIfPresent(self.creator, as: "creator")
+    try c.encodeIfPresent(self.entityTypes, as: "entityTypes")
+    try c.encode(self.format, as: "format")
+    try c.encodeIfPresent(self.language, as: "language")
+    try c.encode(self.name, as: "name")
+    try c.encode(self.parentResourceId, as: "parentResourceId")
+    try c.encodeIfPresent(self.storageUri, as: "storageUri")
+    try c.encodeIfPresent(self.wasAttributedTo, as: "wasAttributedTo")
   }
 }
 
@@ -9720,57 +8799,37 @@ public struct ResourceCreatedPayload: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.contentByteSize =
-      c.contains(WireKey("contentByteSize"))
-      ? try c.decode(Int.self, forKey: WireKey("contentByteSize")) : nil
-    self.contentChecksum = try c.decode(String.self, forKey: WireKey("contentChecksum"))
-    self.creator =
-      c.contains(WireKey("creator")) ? try c.decode(Agent.self, forKey: WireKey("creator")) : nil
-    self.entityTypes =
-      c.contains(WireKey("entityTypes"))
-      ? try c.decode([String].self, forKey: WireKey("entityTypes")) : nil
-    self.format = try c.decode(ContentFormat.self, forKey: WireKey("format"))
-    self.generatedFrom =
-      c.contains(WireKey("generatedFrom"))
-      ? try c.decode(ResourceCreatedPayloadGeneratedFrom.self, forKey: WireKey("generatedFrom"))
-      : nil
-    self.generationPrompt =
-      c.contains(WireKey("generationPrompt"))
-      ? try c.decode(String.self, forKey: WireKey("generationPrompt")) : nil
-    self.generator =
-      c.contains(WireKey("generator"))
-      ? try c.decode(ResourceCreatedPayloadGenerator.self, forKey: WireKey("generator")) : nil
-    self.isDraft =
-      c.contains(WireKey("isDraft")) ? try c.decode(Bool.self, forKey: WireKey("isDraft")) : nil
-    self.jobId =
-      c.contains(WireKey("jobId")) ? try c.decode(JobId.self, forKey: WireKey("jobId")) : nil
-    self.language =
-      c.contains(WireKey("language")) ? try c.decode(String.self, forKey: WireKey("language")) : nil
-    self.name = try c.decode(String.self, forKey: WireKey("name"))
-    self.storageUri =
-      c.contains(WireKey("storageUri"))
-      ? try c.decode(String.self, forKey: WireKey("storageUri")) : nil
-    self.wasAttributedTo =
-      c.contains(WireKey("wasAttributedTo"))
-      ? try c.decode(ResourceCreatedPayloadWasAttributedTo.self, forKey: WireKey("wasAttributedTo"))
-      : nil
+    self.contentByteSize = try c.ifPresent("contentByteSize")
+    self.contentChecksum = try c.value("contentChecksum")
+    self.creator = try c.ifPresent("creator")
+    self.entityTypes = try c.ifPresent("entityTypes")
+    self.format = try c.value("format")
+    self.generatedFrom = try c.ifPresent("generatedFrom")
+    self.generationPrompt = try c.ifPresent("generationPrompt")
+    self.generator = try c.ifPresent("generator")
+    self.isDraft = try c.ifPresent("isDraft")
+    self.jobId = try c.ifPresent("jobId")
+    self.language = try c.ifPresent("language")
+    self.name = try c.value("name")
+    self.storageUri = try c.ifPresent("storageUri")
+    self.wasAttributedTo = try c.ifPresent("wasAttributedTo")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.contentByteSize, forKey: WireKey("contentByteSize"))
-    try c.encode(self.contentChecksum, forKey: WireKey("contentChecksum"))
-    try c.encodeIfPresent(self.creator, forKey: WireKey("creator"))
-    try c.encodeIfPresent(self.entityTypes, forKey: WireKey("entityTypes"))
-    try c.encode(self.format, forKey: WireKey("format"))
-    try c.encodeIfPresent(self.generatedFrom, forKey: WireKey("generatedFrom"))
-    try c.encodeIfPresent(self.generationPrompt, forKey: WireKey("generationPrompt"))
-    try c.encodeIfPresent(self.generator, forKey: WireKey("generator"))
-    try c.encodeIfPresent(self.isDraft, forKey: WireKey("isDraft"))
-    try c.encodeIfPresent(self.jobId, forKey: WireKey("jobId"))
-    try c.encodeIfPresent(self.language, forKey: WireKey("language"))
-    try c.encode(self.name, forKey: WireKey("name"))
-    try c.encodeIfPresent(self.storageUri, forKey: WireKey("storageUri"))
-    try c.encodeIfPresent(self.wasAttributedTo, forKey: WireKey("wasAttributedTo"))
+    try c.encodeIfPresent(self.contentByteSize, as: "contentByteSize")
+    try c.encode(self.contentChecksum, as: "contentChecksum")
+    try c.encodeIfPresent(self.creator, as: "creator")
+    try c.encodeIfPresent(self.entityTypes, as: "entityTypes")
+    try c.encode(self.format, as: "format")
+    try c.encodeIfPresent(self.generatedFrom, as: "generatedFrom")
+    try c.encodeIfPresent(self.generationPrompt, as: "generationPrompt")
+    try c.encodeIfPresent(self.generator, as: "generator")
+    try c.encodeIfPresent(self.isDraft, as: "isDraft")
+    try c.encodeIfPresent(self.jobId, as: "jobId")
+    try c.encodeIfPresent(self.language, as: "language")
+    try c.encode(self.name, as: "name")
+    try c.encodeIfPresent(self.storageUri, as: "storageUri")
+    try c.encodeIfPresent(self.wasAttributedTo, as: "wasAttributedTo")
   }
 }
 
@@ -9783,15 +8842,13 @@ public struct ResourceCreatedPayloadGeneratedFrom: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.annotationId =
-      c.contains(WireKey("annotationId"))
-      ? try c.decode(AnnotationId.self, forKey: WireKey("annotationId")) : nil
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self.annotationId = try c.ifPresent("annotationId")
+    self.resourceId = try c.value("resourceId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.annotationId, forKey: WireKey("annotationId"))
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encodeIfPresent(self.annotationId, as: "annotationId")
+    try c.encode(self.resourceId, as: "resourceId")
   }
 }
 
@@ -9916,130 +8973,77 @@ public struct ResourceDescriptor: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.context = try c.decode(ResourceDescriptorContext.self, forKey: WireKey("@context"))
-    self.id = try c.decode(ResourceId.self, forKey: WireKey("@id"))
-    self.type =
-      c.contains(WireKey("@type"))
-      ? try c.decode(ResourceDescriptorType.self, forKey: WireKey("@type")) : nil
-    self.about =
-      c.contains(WireKey("about"))
-      ? try c.decode(ResourceDescriptorAbout.self, forKey: WireKey("about")) : nil
-    self.archived =
-      c.contains(WireKey("archived")) ? try c.decode(Bool.self, forKey: WireKey("archived")) : nil
-    self.availableFormats =
-      c.contains(WireKey("availableFormats"))
-      ? try c.decode([String].self, forKey: WireKey("availableFormats")) : nil
-    self.conformsTo =
-      c.contains(WireKey("conformsTo"))
-      ? try c.decode(ResourceDescriptorConformsTo.self, forKey: WireKey("conformsTo")) : nil
-    self.dateCreated =
-      c.contains(WireKey("dateCreated"))
-      ? try c.decode(String.self, forKey: WireKey("dateCreated")) : nil
-    self.dateModified =
-      c.contains(WireKey("dateModified"))
-      ? try c.decode(String.self, forKey: WireKey("dateModified")) : nil
-    self.description =
-      c.contains(WireKey("description"))
-      ? try c.decode(String.self, forKey: WireKey("description")) : nil
-    self.entityTypes =
-      c.contains(WireKey("entityTypes"))
-      ? try c.decode([String].self, forKey: WireKey("entityTypes")) : nil
-    self.generator =
-      c.contains(WireKey("generator"))
-      ? try c.decode(ResourceDescriptorGenerator.self, forKey: WireKey("generator")) : nil
-    self.hasPart =
-      c.contains(WireKey("hasPart")) ? try c.decode([String].self, forKey: WireKey("hasPart")) : nil
-    self.identifier =
-      c.contains(WireKey("identifier"))
-      ? try c.decode(ResourceDescriptorIdentifier.self, forKey: WireKey("identifier")) : nil
-    self.isDraft =
-      c.contains(WireKey("isDraft")) ? try c.decode(Bool.self, forKey: WireKey("isDraft")) : nil
-    self.isPartOf =
-      c.contains(WireKey("isPartOf"))
-      ? try c.decode([String].self, forKey: WireKey("isPartOf")) : nil
-    self.license =
-      c.contains(WireKey("license")) ? try c.decode(String.self, forKey: WireKey("license")) : nil
-    self.name = try c.decode(String.self, forKey: WireKey("name"))
-    self.originatedFrom =
-      c.contains(WireKey("originatedFrom"))
-      ? try c.decode(String.self, forKey: WireKey("originatedFrom")) : nil
-    self.representations = try c.decode(
-      ResourceDescriptorRepresentations.self, forKey: WireKey("representations"))
-    self.sameAs =
-      c.contains(WireKey("sameAs")) ? try c.decode([String].self, forKey: WireKey("sameAs")) : nil
-    self.sourceAnnotationId =
-      c.contains(WireKey("sourceAnnotationId"))
-      ? try c.decode(AnnotationId.self, forKey: WireKey("sourceAnnotationId")) : nil
-    self.sourceResourceId =
-      c.contains(WireKey("sourceResourceId"))
-      ? try c.decode(ResourceId.self, forKey: WireKey("sourceResourceId")) : nil
-    self.version =
-      c.contains(WireKey("version")) ? try c.decode(String.self, forKey: WireKey("version")) : nil
-    self.wasAttributedTo =
-      c.contains(WireKey("wasAttributedTo"))
-      ? try c.decode(ResourceDescriptorWasAttributedTo.self, forKey: WireKey("wasAttributedTo"))
-      : nil
-    self.wasDerivedFrom =
-      c.contains(WireKey("wasDerivedFrom"))
-      ? try c.decode(ResourceDescriptorWasDerivedFrom.self, forKey: WireKey("wasDerivedFrom")) : nil
-    rest = [:]
-    for key in c.allKeys
-    where !Set<String>([
+    self.context = try c.value("@context")
+    self.id = try c.value("@id")
+    self.type = try c.ifPresent("@type")
+    self.about = try c.ifPresent("about")
+    self.archived = try c.ifPresent("archived")
+    self.availableFormats = try c.ifPresent("availableFormats")
+    self.conformsTo = try c.ifPresent("conformsTo")
+    self.dateCreated = try c.ifPresent("dateCreated")
+    self.dateModified = try c.ifPresent("dateModified")
+    self.description = try c.ifPresent("description")
+    self.entityTypes = try c.ifPresent("entityTypes")
+    self.generator = try c.ifPresent("generator")
+    self.hasPart = try c.ifPresent("hasPart")
+    self.identifier = try c.ifPresent("identifier")
+    self.isDraft = try c.ifPresent("isDraft")
+    self.isPartOf = try c.ifPresent("isPartOf")
+    self.license = try c.ifPresent("license")
+    self.name = try c.value("name")
+    self.originatedFrom = try c.ifPresent("originatedFrom")
+    self.representations = try c.value("representations")
+    self.sameAs = try c.ifPresent("sameAs")
+    self.sourceAnnotationId = try c.ifPresent("sourceAnnotationId")
+    self.sourceResourceId = try c.ifPresent("sourceResourceId")
+    self.version = try c.ifPresent("version")
+    self.wasAttributedTo = try c.ifPresent("wasAttributedTo")
+    self.wasDerivedFrom = try c.ifPresent("wasDerivedFrom")
+    rest = try c.rest(excluding: [
       "@context", "@id", "@type", "about", "archived", "availableFormats", "conformsTo",
       "dateCreated", "dateModified", "description", "entityTypes", "generator", "hasPart",
       "identifier", "isDraft", "isPartOf", "license", "name", "originatedFrom", "representations",
       "sameAs", "sourceAnnotationId", "sourceResourceId", "version", "wasAttributedTo",
       "wasDerivedFrom",
-    ]).contains(key.stringValue) {
-      rest[key.stringValue] = try c.decode(JSONValue.self, forKey: key)
-    }
+    ])
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    for (key, value) in rest {
-      guard
-        !Set<String>([
-          "@context", "@id", "@type", "about", "archived", "availableFormats", "conformsTo",
-          "dateCreated", "dateModified", "description", "entityTypes", "generator", "hasPart",
-          "identifier", "isDraft", "isPartOf", "license", "name", "originatedFrom",
-          "representations", "sameAs", "sourceAnnotationId", "sourceResourceId", "version",
-          "wasAttributedTo", "wasDerivedFrom",
-        ]).contains(key)
-      else {
-        throw EncodingError.invalidValue(
-          value,
-          .init(
-            codingPath: encoder.codingPath,
-            debugDescription: "rest overrides a named property of ResourceDescriptor"))
-      }
-      try c.encode(value, forKey: WireKey(key))
-    }
-    try c.encode(self.context, forKey: WireKey("@context"))
-    try c.encode(self.id, forKey: WireKey("@id"))
-    try c.encodeIfPresent(self.type, forKey: WireKey("@type"))
-    try c.encodeIfPresent(self.about, forKey: WireKey("about"))
-    try c.encodeIfPresent(self.archived, forKey: WireKey("archived"))
-    try c.encodeIfPresent(self.availableFormats, forKey: WireKey("availableFormats"))
-    try c.encodeIfPresent(self.conformsTo, forKey: WireKey("conformsTo"))
-    try c.encodeIfPresent(self.dateCreated, forKey: WireKey("dateCreated"))
-    try c.encodeIfPresent(self.dateModified, forKey: WireKey("dateModified"))
-    try c.encodeIfPresent(self.description, forKey: WireKey("description"))
-    try c.encodeIfPresent(self.entityTypes, forKey: WireKey("entityTypes"))
-    try c.encodeIfPresent(self.generator, forKey: WireKey("generator"))
-    try c.encodeIfPresent(self.hasPart, forKey: WireKey("hasPart"))
-    try c.encodeIfPresent(self.identifier, forKey: WireKey("identifier"))
-    try c.encodeIfPresent(self.isDraft, forKey: WireKey("isDraft"))
-    try c.encodeIfPresent(self.isPartOf, forKey: WireKey("isPartOf"))
-    try c.encodeIfPresent(self.license, forKey: WireKey("license"))
-    try c.encode(self.name, forKey: WireKey("name"))
-    try c.encodeIfPresent(self.originatedFrom, forKey: WireKey("originatedFrom"))
-    try c.encode(self.representations, forKey: WireKey("representations"))
-    try c.encodeIfPresent(self.sameAs, forKey: WireKey("sameAs"))
-    try c.encodeIfPresent(self.sourceAnnotationId, forKey: WireKey("sourceAnnotationId"))
-    try c.encodeIfPresent(self.sourceResourceId, forKey: WireKey("sourceResourceId"))
-    try c.encodeIfPresent(self.version, forKey: WireKey("version"))
-    try c.encodeIfPresent(self.wasAttributedTo, forKey: WireKey("wasAttributedTo"))
-    try c.encodeIfPresent(self.wasDerivedFrom, forKey: WireKey("wasDerivedFrom"))
+    try c.encode(
+      rest: rest,
+      excluding: [
+        "@context", "@id", "@type", "about", "archived", "availableFormats", "conformsTo",
+        "dateCreated", "dateModified", "description", "entityTypes", "generator", "hasPart",
+        "identifier", "isDraft", "isPartOf", "license", "name", "originatedFrom", "representations",
+        "sameAs", "sourceAnnotationId", "sourceResourceId", "version", "wasAttributedTo",
+        "wasDerivedFrom",
+      ], of: "ResourceDescriptor")
+    try c.encode(self.context, as: "@context")
+    try c.encode(self.id, as: "@id")
+    try c.encodeIfPresent(self.type, as: "@type")
+    try c.encodeIfPresent(self.about, as: "about")
+    try c.encodeIfPresent(self.archived, as: "archived")
+    try c.encodeIfPresent(self.availableFormats, as: "availableFormats")
+    try c.encodeIfPresent(self.conformsTo, as: "conformsTo")
+    try c.encodeIfPresent(self.dateCreated, as: "dateCreated")
+    try c.encodeIfPresent(self.dateModified, as: "dateModified")
+    try c.encodeIfPresent(self.description, as: "description")
+    try c.encodeIfPresent(self.entityTypes, as: "entityTypes")
+    try c.encodeIfPresent(self.generator, as: "generator")
+    try c.encodeIfPresent(self.hasPart, as: "hasPart")
+    try c.encodeIfPresent(self.identifier, as: "identifier")
+    try c.encodeIfPresent(self.isDraft, as: "isDraft")
+    try c.encodeIfPresent(self.isPartOf, as: "isPartOf")
+    try c.encodeIfPresent(self.license, as: "license")
+    try c.encode(self.name, as: "name")
+    try c.encodeIfPresent(self.originatedFrom, as: "originatedFrom")
+    try c.encode(self.representations, as: "representations")
+    try c.encodeIfPresent(self.sameAs, as: "sameAs")
+    try c.encodeIfPresent(self.sourceAnnotationId, as: "sourceAnnotationId")
+    try c.encodeIfPresent(self.sourceResourceId, as: "sourceResourceId")
+    try c.encodeIfPresent(self.version, as: "version")
+    try c.encodeIfPresent(self.wasAttributedTo, as: "wasAttributedTo")
+    try c.encodeIfPresent(self.wasDerivedFrom, as: "wasDerivedFrom")
   }
 }
 
@@ -10220,32 +9224,18 @@ public struct ResourceDescriptorIdentifierObject: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.id = c.contains(WireKey("@id")) ? try c.decode(String.self, forKey: WireKey("@id")) : nil
-    self.scheme =
-      c.contains(WireKey("scheme")) ? try c.decode(String.self, forKey: WireKey("scheme")) : nil
-    self.value =
-      c.contains(WireKey("value")) ? try c.decode(String.self, forKey: WireKey("value")) : nil
-    rest = [:]
-    for key in c.allKeys where !Set<String>(["@id", "scheme", "value"]).contains(key.stringValue) {
-      rest[key.stringValue] = try c.decode(JSONValue.self, forKey: key)
-    }
+    self.id = try c.ifPresent("@id")
+    self.scheme = try c.ifPresent("scheme")
+    self.value = try c.ifPresent("value")
+    rest = try c.rest(excluding: ["@id", "scheme", "value"])
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    for (key, value) in rest {
-      guard !Set<String>(["@id", "scheme", "value"]).contains(key) else {
-        throw EncodingError.invalidValue(
-          value,
-          .init(
-            codingPath: encoder.codingPath,
-            debugDescription:
-              "rest overrides a named property of ResourceDescriptorIdentifierObject"))
-      }
-      try c.encode(value, forKey: WireKey(key))
-    }
-    try c.encodeIfPresent(self.id, forKey: WireKey("@id"))
-    try c.encodeIfPresent(self.scheme, forKey: WireKey("scheme"))
-    try c.encodeIfPresent(self.value, forKey: WireKey("value"))
+    try c.encode(
+      rest: rest, excluding: ["@id", "scheme", "value"], of: "ResourceDescriptorIdentifierObject")
+    try c.encodeIfPresent(self.id, as: "@id")
+    try c.encodeIfPresent(self.scheme, as: "scheme")
+    try c.encodeIfPresent(self.value, as: "value")
   }
 }
 
@@ -10358,13 +9348,13 @@ public struct ResourceErrorEvent: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.message = try c.decode(String.self, forKey: WireKey("message"))
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self.message = try c.value("message")
+    self.resourceId = try c.value("resourceId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.message, forKey: WireKey("message"))
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encode(self.message, as: "message")
+    try c.encode(self.resourceId, as: "resourceId")
   }
 }
 
@@ -10413,13 +9403,13 @@ public struct ResourceMovedPayload: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.fromUri = try c.decode(String.self, forKey: WireKey("fromUri"))
-    self.toUri = try c.decode(String.self, forKey: WireKey("toUri"))
+    self.fromUri = try c.value("fromUri")
+    self.toUri = try c.value("toUri")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.fromUri, forKey: WireKey("fromUri"))
-    try c.encode(self.toUri, forKey: WireKey("toUri"))
+    try c.encode(self.fromUri, as: "fromUri")
+    try c.encode(self.toUri, as: "toUri")
   }
 }
 
@@ -10443,15 +9433,13 @@ public struct ResourceUpdatedPayload: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.contentByteSize =
-      c.contains(WireKey("contentByteSize"))
-      ? try c.decode(Int.self, forKey: WireKey("contentByteSize")) : nil
-    self.contentChecksum = try c.decode(String.self, forKey: WireKey("contentChecksum"))
+    self.contentByteSize = try c.ifPresent("contentByteSize")
+    self.contentChecksum = try c.value("contentChecksum")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.contentByteSize, forKey: WireKey("contentByteSize"))
-    try c.encode(self.contentChecksum, forKey: WireKey("contentChecksum"))
+    try c.encodeIfPresent(self.contentByteSize, as: "contentByteSize")
+    try c.encode(self.contentChecksum, as: "contentChecksum")
   }
 }
 
@@ -10493,54 +9481,37 @@ public struct ResourceUpload: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.archiveOriginal =
-      c.contains(WireKey("archiveOriginal"))
-      ? try c.decode(String.self, forKey: WireKey("archiveOriginal")) : nil
-    self.cloneToken =
-      c.contains(WireKey("cloneToken"))
-      ? try c.decode(String.self, forKey: WireKey("cloneToken")) : nil
-    self.entityTypes =
-      c.contains(WireKey("entityTypes"))
-      ? try c.decode(String.self, forKey: WireKey("entityTypes")) : nil
-    self.file = try c.decode(String.self, forKey: WireKey("file"))
-    self.format = try c.decode(String.self, forKey: WireKey("format"))
-    self.generationPrompt =
-      c.contains(WireKey("generationPrompt"))
-      ? try c.decode(String.self, forKey: WireKey("generationPrompt")) : nil
-    self.generator =
-      c.contains(WireKey("generator"))
-      ? try c.decode(String.self, forKey: WireKey("generator")) : nil
-    self.isDraft =
-      c.contains(WireKey("isDraft")) ? try c.decode(String.self, forKey: WireKey("isDraft")) : nil
-    self.jobId =
-      c.contains(WireKey("jobId")) ? try c.decode(JobId.self, forKey: WireKey("jobId")) : nil
-    self.language =
-      c.contains(WireKey("language")) ? try c.decode(String.self, forKey: WireKey("language")) : nil
-    self.name = try c.decode(String.self, forKey: WireKey("name"))
-    self.sourceAnnotationId =
-      c.contains(WireKey("sourceAnnotationId"))
-      ? try c.decode(AnnotationId.self, forKey: WireKey("sourceAnnotationId")) : nil
-    self.sourceResourceId =
-      c.contains(WireKey("sourceResourceId"))
-      ? try c.decode(ResourceId.self, forKey: WireKey("sourceResourceId")) : nil
-    self.storageUri = try c.decode(String.self, forKey: WireKey("storageUri"))
+    self.archiveOriginal = try c.ifPresent("archiveOriginal")
+    self.cloneToken = try c.ifPresent("cloneToken")
+    self.entityTypes = try c.ifPresent("entityTypes")
+    self.file = try c.value("file")
+    self.format = try c.value("format")
+    self.generationPrompt = try c.ifPresent("generationPrompt")
+    self.generator = try c.ifPresent("generator")
+    self.isDraft = try c.ifPresent("isDraft")
+    self.jobId = try c.ifPresent("jobId")
+    self.language = try c.ifPresent("language")
+    self.name = try c.value("name")
+    self.sourceAnnotationId = try c.ifPresent("sourceAnnotationId")
+    self.sourceResourceId = try c.ifPresent("sourceResourceId")
+    self.storageUri = try c.value("storageUri")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.archiveOriginal, forKey: WireKey("archiveOriginal"))
-    try c.encodeIfPresent(self.cloneToken, forKey: WireKey("cloneToken"))
-    try c.encodeIfPresent(self.entityTypes, forKey: WireKey("entityTypes"))
-    try c.encode(self.file, forKey: WireKey("file"))
-    try c.encode(self.format, forKey: WireKey("format"))
-    try c.encodeIfPresent(self.generationPrompt, forKey: WireKey("generationPrompt"))
-    try c.encodeIfPresent(self.generator, forKey: WireKey("generator"))
-    try c.encodeIfPresent(self.isDraft, forKey: WireKey("isDraft"))
-    try c.encodeIfPresent(self.jobId, forKey: WireKey("jobId"))
-    try c.encodeIfPresent(self.language, forKey: WireKey("language"))
-    try c.encode(self.name, forKey: WireKey("name"))
-    try c.encodeIfPresent(self.sourceAnnotationId, forKey: WireKey("sourceAnnotationId"))
-    try c.encodeIfPresent(self.sourceResourceId, forKey: WireKey("sourceResourceId"))
-    try c.encode(self.storageUri, forKey: WireKey("storageUri"))
+    try c.encodeIfPresent(self.archiveOriginal, as: "archiveOriginal")
+    try c.encodeIfPresent(self.cloneToken, as: "cloneToken")
+    try c.encodeIfPresent(self.entityTypes, as: "entityTypes")
+    try c.encode(self.file, as: "file")
+    try c.encode(self.format, as: "format")
+    try c.encodeIfPresent(self.generationPrompt, as: "generationPrompt")
+    try c.encodeIfPresent(self.generator, as: "generator")
+    try c.encodeIfPresent(self.isDraft, as: "isDraft")
+    try c.encodeIfPresent(self.jobId, as: "jobId")
+    try c.encodeIfPresent(self.language, as: "language")
+    try c.encode(self.name, as: "name")
+    try c.encodeIfPresent(self.sourceAnnotationId, as: "sourceAnnotationId")
+    try c.encodeIfPresent(self.sourceResourceId, as: "sourceResourceId")
+    try c.encode(self.storageUri, as: "storageUri")
   }
 }
 
@@ -10555,21 +9526,16 @@ public struct ResourceView: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["annotations", "lastSequence", "resource"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in ResourceView")
-    }
-    self.annotations = try c.decode(ResourceAnnotations.self, forKey: WireKey("annotations"))
-    self.lastSequence = try c.decode(Int.self, forKey: WireKey("lastSequence"))
-    self.resource = try c.decode(ResourceDescriptor.self, forKey: WireKey("resource"))
+    try c.refuseUnknown(["annotations", "lastSequence", "resource"], in: "ResourceView")
+    self.annotations = try c.value("annotations")
+    self.lastSequence = try c.value("lastSequence")
+    self.resource = try c.value("resource")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.annotations, forKey: WireKey("annotations"))
-    try c.encode(self.lastSequence, forKey: WireKey("lastSequence"))
-    try c.encode(self.resource, forKey: WireKey("resource"))
+    try c.encode(self.annotations, as: "annotations")
+    try c.encode(self.lastSequence, as: "lastSequence")
+    try c.encode(self.resource, as: "resource")
   }
 }
 
@@ -10646,107 +9612,65 @@ public struct ScoredResource: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.context = try c.decode(ScoredResourceContext.self, forKey: WireKey("@context"))
-    self.id = try c.decode(ResourceId.self, forKey: WireKey("@id"))
-    self.type =
-      c.contains(WireKey("@type"))
-      ? try c.decode(ScoredResourceType.self, forKey: WireKey("@type")) : nil
-    self.about =
-      c.contains(WireKey("about"))
-      ? try c.decode(ScoredResourceAbout.self, forKey: WireKey("about")) : nil
-    self.archived =
-      c.contains(WireKey("archived")) ? try c.decode(Bool.self, forKey: WireKey("archived")) : nil
-    self.availableFormats =
-      c.contains(WireKey("availableFormats"))
-      ? try c.decode([String].self, forKey: WireKey("availableFormats")) : nil
-    self.conformsTo =
-      c.contains(WireKey("conformsTo"))
-      ? try c.decode(ScoredResourceConformsTo.self, forKey: WireKey("conformsTo")) : nil
-    self.dateCreated =
-      c.contains(WireKey("dateCreated"))
-      ? try c.decode(String.self, forKey: WireKey("dateCreated")) : nil
-    self.dateModified =
-      c.contains(WireKey("dateModified"))
-      ? try c.decode(String.self, forKey: WireKey("dateModified")) : nil
-    self.description =
-      c.contains(WireKey("description"))
-      ? try c.decode(String.self, forKey: WireKey("description")) : nil
-    self.entityTypes =
-      c.contains(WireKey("entityTypes"))
-      ? try c.decode([String].self, forKey: WireKey("entityTypes")) : nil
-    self.generator =
-      c.contains(WireKey("generator"))
-      ? try c.decode(ScoredResourceGenerator.self, forKey: WireKey("generator")) : nil
-    self.hasPart =
-      c.contains(WireKey("hasPart")) ? try c.decode([String].self, forKey: WireKey("hasPart")) : nil
-    self.identifier =
-      c.contains(WireKey("identifier"))
-      ? try c.decode(ScoredResourceIdentifier.self, forKey: WireKey("identifier")) : nil
-    self.isDraft =
-      c.contains(WireKey("isDraft")) ? try c.decode(Bool.self, forKey: WireKey("isDraft")) : nil
-    self.isPartOf =
-      c.contains(WireKey("isPartOf"))
-      ? try c.decode([String].self, forKey: WireKey("isPartOf")) : nil
-    self.license =
-      c.contains(WireKey("license")) ? try c.decode(String.self, forKey: WireKey("license")) : nil
-    self.matchReason =
-      c.contains(WireKey("matchReason"))
-      ? try c.decode(String.self, forKey: WireKey("matchReason")) : nil
-    self.name = try c.decode(String.self, forKey: WireKey("name"))
-    self.originatedFrom =
-      c.contains(WireKey("originatedFrom"))
-      ? try c.decode(String.self, forKey: WireKey("originatedFrom")) : nil
-    self.representations = try c.decode(
-      ScoredResourceRepresentations.self, forKey: WireKey("representations"))
-    self.sameAs =
-      c.contains(WireKey("sameAs")) ? try c.decode([String].self, forKey: WireKey("sameAs")) : nil
-    self.score =
-      c.contains(WireKey("score")) ? try c.decode(Double.self, forKey: WireKey("score")) : nil
-    self.sourceAnnotationId =
-      c.contains(WireKey("sourceAnnotationId"))
-      ? try c.decode(AnnotationId.self, forKey: WireKey("sourceAnnotationId")) : nil
-    self.sourceResourceId =
-      c.contains(WireKey("sourceResourceId"))
-      ? try c.decode(ResourceId.self, forKey: WireKey("sourceResourceId")) : nil
-    self.version =
-      c.contains(WireKey("version")) ? try c.decode(String.self, forKey: WireKey("version")) : nil
-    self.wasAttributedTo =
-      c.contains(WireKey("wasAttributedTo"))
-      ? try c.decode(ScoredResourceWasAttributedTo.self, forKey: WireKey("wasAttributedTo")) : nil
-    self.wasDerivedFrom =
-      c.contains(WireKey("wasDerivedFrom"))
-      ? try c.decode(ScoredResourceWasDerivedFrom.self, forKey: WireKey("wasDerivedFrom")) : nil
+    self.context = try c.value("@context")
+    self.id = try c.value("@id")
+    self.type = try c.ifPresent("@type")
+    self.about = try c.ifPresent("about")
+    self.archived = try c.ifPresent("archived")
+    self.availableFormats = try c.ifPresent("availableFormats")
+    self.conformsTo = try c.ifPresent("conformsTo")
+    self.dateCreated = try c.ifPresent("dateCreated")
+    self.dateModified = try c.ifPresent("dateModified")
+    self.description = try c.ifPresent("description")
+    self.entityTypes = try c.ifPresent("entityTypes")
+    self.generator = try c.ifPresent("generator")
+    self.hasPart = try c.ifPresent("hasPart")
+    self.identifier = try c.ifPresent("identifier")
+    self.isDraft = try c.ifPresent("isDraft")
+    self.isPartOf = try c.ifPresent("isPartOf")
+    self.license = try c.ifPresent("license")
+    self.matchReason = try c.ifPresent("matchReason")
+    self.name = try c.value("name")
+    self.originatedFrom = try c.ifPresent("originatedFrom")
+    self.representations = try c.value("representations")
+    self.sameAs = try c.ifPresent("sameAs")
+    self.score = try c.ifPresent("score")
+    self.sourceAnnotationId = try c.ifPresent("sourceAnnotationId")
+    self.sourceResourceId = try c.ifPresent("sourceResourceId")
+    self.version = try c.ifPresent("version")
+    self.wasAttributedTo = try c.ifPresent("wasAttributedTo")
+    self.wasDerivedFrom = try c.ifPresent("wasDerivedFrom")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.context, forKey: WireKey("@context"))
-    try c.encode(self.id, forKey: WireKey("@id"))
-    try c.encodeIfPresent(self.type, forKey: WireKey("@type"))
-    try c.encodeIfPresent(self.about, forKey: WireKey("about"))
-    try c.encodeIfPresent(self.archived, forKey: WireKey("archived"))
-    try c.encodeIfPresent(self.availableFormats, forKey: WireKey("availableFormats"))
-    try c.encodeIfPresent(self.conformsTo, forKey: WireKey("conformsTo"))
-    try c.encodeIfPresent(self.dateCreated, forKey: WireKey("dateCreated"))
-    try c.encodeIfPresent(self.dateModified, forKey: WireKey("dateModified"))
-    try c.encodeIfPresent(self.description, forKey: WireKey("description"))
-    try c.encodeIfPresent(self.entityTypes, forKey: WireKey("entityTypes"))
-    try c.encodeIfPresent(self.generator, forKey: WireKey("generator"))
-    try c.encodeIfPresent(self.hasPart, forKey: WireKey("hasPart"))
-    try c.encodeIfPresent(self.identifier, forKey: WireKey("identifier"))
-    try c.encodeIfPresent(self.isDraft, forKey: WireKey("isDraft"))
-    try c.encodeIfPresent(self.isPartOf, forKey: WireKey("isPartOf"))
-    try c.encodeIfPresent(self.license, forKey: WireKey("license"))
-    try c.encodeIfPresent(self.matchReason, forKey: WireKey("matchReason"))
-    try c.encode(self.name, forKey: WireKey("name"))
-    try c.encodeIfPresent(self.originatedFrom, forKey: WireKey("originatedFrom"))
-    try c.encode(self.representations, forKey: WireKey("representations"))
-    try c.encodeIfPresent(self.sameAs, forKey: WireKey("sameAs"))
-    try c.encodeIfPresent(self.score, forKey: WireKey("score"))
-    try c.encodeIfPresent(self.sourceAnnotationId, forKey: WireKey("sourceAnnotationId"))
-    try c.encodeIfPresent(self.sourceResourceId, forKey: WireKey("sourceResourceId"))
-    try c.encodeIfPresent(self.version, forKey: WireKey("version"))
-    try c.encodeIfPresent(self.wasAttributedTo, forKey: WireKey("wasAttributedTo"))
-    try c.encodeIfPresent(self.wasDerivedFrom, forKey: WireKey("wasDerivedFrom"))
+    try c.encode(self.context, as: "@context")
+    try c.encode(self.id, as: "@id")
+    try c.encodeIfPresent(self.type, as: "@type")
+    try c.encodeIfPresent(self.about, as: "about")
+    try c.encodeIfPresent(self.archived, as: "archived")
+    try c.encodeIfPresent(self.availableFormats, as: "availableFormats")
+    try c.encodeIfPresent(self.conformsTo, as: "conformsTo")
+    try c.encodeIfPresent(self.dateCreated, as: "dateCreated")
+    try c.encodeIfPresent(self.dateModified, as: "dateModified")
+    try c.encodeIfPresent(self.description, as: "description")
+    try c.encodeIfPresent(self.entityTypes, as: "entityTypes")
+    try c.encodeIfPresent(self.generator, as: "generator")
+    try c.encodeIfPresent(self.hasPart, as: "hasPart")
+    try c.encodeIfPresent(self.identifier, as: "identifier")
+    try c.encodeIfPresent(self.isDraft, as: "isDraft")
+    try c.encodeIfPresent(self.isPartOf, as: "isPartOf")
+    try c.encodeIfPresent(self.license, as: "license")
+    try c.encodeIfPresent(self.matchReason, as: "matchReason")
+    try c.encode(self.name, as: "name")
+    try c.encodeIfPresent(self.originatedFrom, as: "originatedFrom")
+    try c.encode(self.representations, as: "representations")
+    try c.encodeIfPresent(self.sameAs, as: "sameAs")
+    try c.encodeIfPresent(self.score, as: "score")
+    try c.encodeIfPresent(self.sourceAnnotationId, as: "sourceAnnotationId")
+    try c.encodeIfPresent(self.sourceResourceId, as: "sourceResourceId")
+    try c.encodeIfPresent(self.version, as: "version")
+    try c.encodeIfPresent(self.wasAttributedTo, as: "wasAttributedTo")
+    try c.encodeIfPresent(self.wasDerivedFrom, as: "wasDerivedFrom")
   }
 }
 
@@ -10926,31 +9850,18 @@ public struct ScoredResourceIdentifierObject: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.id = c.contains(WireKey("@id")) ? try c.decode(String.self, forKey: WireKey("@id")) : nil
-    self.scheme =
-      c.contains(WireKey("scheme")) ? try c.decode(String.self, forKey: WireKey("scheme")) : nil
-    self.value =
-      c.contains(WireKey("value")) ? try c.decode(String.self, forKey: WireKey("value")) : nil
-    rest = [:]
-    for key in c.allKeys where !Set<String>(["@id", "scheme", "value"]).contains(key.stringValue) {
-      rest[key.stringValue] = try c.decode(JSONValue.self, forKey: key)
-    }
+    self.id = try c.ifPresent("@id")
+    self.scheme = try c.ifPresent("scheme")
+    self.value = try c.ifPresent("value")
+    rest = try c.rest(excluding: ["@id", "scheme", "value"])
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    for (key, value) in rest {
-      guard !Set<String>(["@id", "scheme", "value"]).contains(key) else {
-        throw EncodingError.invalidValue(
-          value,
-          .init(
-            codingPath: encoder.codingPath,
-            debugDescription: "rest overrides a named property of ScoredResourceIdentifierObject"))
-      }
-      try c.encode(value, forKey: WireKey(key))
-    }
-    try c.encodeIfPresent(self.id, forKey: WireKey("@id"))
-    try c.encodeIfPresent(self.scheme, forKey: WireKey("scheme"))
-    try c.encodeIfPresent(self.value, forKey: WireKey("value"))
+    try c.encode(
+      rest: rest, excluding: ["@id", "scheme", "value"], of: "ScoredResourceIdentifierObject")
+    try c.encodeIfPresent(self.id, as: "@id")
+    try c.encodeIfPresent(self.scheme, as: "scheme")
+    try c.encodeIfPresent(self.value, as: "value")
   }
 }
 
@@ -11104,29 +10015,23 @@ public struct SemanticMatch: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.annotationId =
-      c.contains(WireKey("annotationId"))
-      ? try c.decode(AnnotationId.self, forKey: WireKey("annotationId")) : nil
-    self.entityTypes =
-      c.contains(WireKey("entityTypes"))
-      ? try c.decode([String].self, forKey: WireKey("entityTypes")) : nil
-    self.machineRead =
-      c.contains(WireKey("machineRead"))
-      ? try c.decode(Bool.self, forKey: WireKey("machineRead")) : nil
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
-    self.resourceName = try c.decode(String.self, forKey: WireKey("resourceName"))
-    self.score = try c.decode(Double.self, forKey: WireKey("score"))
-    self.text = try c.decode(String.self, forKey: WireKey("text"))
+    self.annotationId = try c.ifPresent("annotationId")
+    self.entityTypes = try c.ifPresent("entityTypes")
+    self.machineRead = try c.ifPresent("machineRead")
+    self.resourceId = try c.value("resourceId")
+    self.resourceName = try c.value("resourceName")
+    self.score = try c.value("score")
+    self.text = try c.value("text")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.annotationId, forKey: WireKey("annotationId"))
-    try c.encodeIfPresent(self.entityTypes, forKey: WireKey("entityTypes"))
-    try c.encodeIfPresent(self.machineRead, forKey: WireKey("machineRead"))
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
-    try c.encode(self.resourceName, forKey: WireKey("resourceName"))
-    try c.encode(self.score, forKey: WireKey("score"))
-    try c.encode(self.text, forKey: WireKey("text"))
+    try c.encodeIfPresent(self.annotationId, as: "annotationId")
+    try c.encodeIfPresent(self.entityTypes, as: "entityTypes")
+    try c.encodeIfPresent(self.machineRead, as: "machineRead")
+    try c.encode(self.resourceId, as: "resourceId")
+    try c.encode(self.resourceName, as: "resourceName")
+    try c.encode(self.score, as: "score")
+    try c.encode(self.text, as: "text")
   }
 }
 
@@ -11139,13 +10044,13 @@ public struct SessionJoinedEvent: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.connectionId = try c.decode(String.self, forKey: WireKey("connectionId"))
-    self.participant = try c.decode(UserId.self, forKey: WireKey("participant"))
+    self.connectionId = try c.value("connectionId")
+    self.participant = try c.value("participant")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.connectionId, forKey: WireKey("connectionId"))
-    try c.encode(self.participant, forKey: WireKey("participant"))
+    try c.encode(self.connectionId, as: "connectionId")
+    try c.encode(self.participant, as: "participant")
   }
 }
 
@@ -11158,13 +10063,13 @@ public struct SessionLeftEvent: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.connectionId = try c.decode(String.self, forKey: WireKey("connectionId"))
-    self.participant = try c.decode(UserId.self, forKey: WireKey("participant"))
+    self.connectionId = try c.value("connectionId")
+    self.participant = try c.value("participant")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.connectionId, forKey: WireKey("connectionId"))
-    try c.encode(self.participant, forKey: WireKey("participant"))
+    try c.encode(self.connectionId, as: "connectionId")
+    try c.encode(self.participant, as: "participant")
   }
 }
 
@@ -11175,11 +10080,11 @@ public struct SettingsHoverDelayChangedEvent: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.hoverDelayMs = try c.decode(Int.self, forKey: WireKey("hoverDelayMs"))
+    self.hoverDelayMs = try c.value("hoverDelayMs")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.hoverDelayMs, forKey: WireKey("hoverDelayMs"))
+    try c.encode(self.hoverDelayMs, as: "hoverDelayMs")
   }
 }
 
@@ -11190,11 +10095,11 @@ public struct SettingsLocaleChangedEvent: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.locale = try c.decode(String.self, forKey: WireKey("locale"))
+    self.locale = try c.value("locale")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.locale, forKey: WireKey("locale"))
+    try c.encode(self.locale, as: "locale")
   }
 }
 
@@ -11205,11 +10110,11 @@ public struct SettingsThemeChangedEvent: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.theme = try c.decode(SettingsThemeChangedEventTheme.self, forKey: WireKey("theme"))
+    self.theme = try c.value("theme")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.theme, forKey: WireKey("theme"))
+    try c.encode(self.theme, as: "theme")
   }
 }
 
@@ -11244,32 +10149,25 @@ public struct SignIn: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.email =
-      c.contains(WireKey("email")) ? try c.decode(String.self, forKey: WireKey("email")) : nil
-    self.expiresAt =
-      c.contains(WireKey("expiresAt"))
-      ? try c.decode(String.self, forKey: WireKey("expiresAt")) : nil
-    self.issuer = try c.decode(String.self, forKey: WireKey("issuer"))
-    self.obtainedAt = try c.decode(String.self, forKey: WireKey("obtainedAt"))
-    self.refreshToken =
-      c.contains(WireKey("refreshToken"))
-      ? try c.decode(String.self, forKey: WireKey("refreshToken")) : nil
-    self.revocationEndpoint =
-      c.contains(WireKey("revocationEndpoint"))
-      ? try c.decode(String.self, forKey: WireKey("revocationEndpoint")) : nil
-    self.token = try c.decode(String.self, forKey: WireKey("token"))
-    self.tokenEndpoint = try c.decode(String.self, forKey: WireKey("tokenEndpoint"))
+    self.email = try c.ifPresent("email")
+    self.expiresAt = try c.ifPresent("expiresAt")
+    self.issuer = try c.value("issuer")
+    self.obtainedAt = try c.value("obtainedAt")
+    self.refreshToken = try c.ifPresent("refreshToken")
+    self.revocationEndpoint = try c.ifPresent("revocationEndpoint")
+    self.token = try c.value("token")
+    self.tokenEndpoint = try c.value("tokenEndpoint")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.email, forKey: WireKey("email"))
-    try c.encodeIfPresent(self.expiresAt, forKey: WireKey("expiresAt"))
-    try c.encode(self.issuer, forKey: WireKey("issuer"))
-    try c.encode(self.obtainedAt, forKey: WireKey("obtainedAt"))
-    try c.encodeIfPresent(self.refreshToken, forKey: WireKey("refreshToken"))
-    try c.encodeIfPresent(self.revocationEndpoint, forKey: WireKey("revocationEndpoint"))
-    try c.encode(self.token, forKey: WireKey("token"))
-    try c.encode(self.tokenEndpoint, forKey: WireKey("tokenEndpoint"))
+    try c.encodeIfPresent(self.email, as: "email")
+    try c.encodeIfPresent(self.expiresAt, as: "expiresAt")
+    try c.encode(self.issuer, as: "issuer")
+    try c.encode(self.obtainedAt, as: "obtainedAt")
+    try c.encodeIfPresent(self.refreshToken, as: "refreshToken")
+    try c.encodeIfPresent(self.revocationEndpoint, as: "revocationEndpoint")
+    try c.encode(self.token, as: "token")
+    try c.encode(self.tokenEndpoint, as: "tokenEndpoint")
   }
 }
 
@@ -11282,16 +10180,13 @@ public struct SmeltRebuildAnchorsCommand: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self._userId =
-      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
-    self.resourceId =
-      c.contains(WireKey("resourceId"))
-      ? try c.decode(ResourceId.self, forKey: WireKey("resourceId")) : nil
+    self._userId = try c.ifPresent("_userId")
+    self.resourceId = try c.ifPresent("resourceId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
-    try c.encodeIfPresent(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encodeIfPresent(self._userId, as: "_userId")
+    try c.encodeIfPresent(self.resourceId, as: "resourceId")
   }
 }
 
@@ -11311,19 +10206,17 @@ public struct SmeltSettled: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.contentChecksum = try c.decode(String.self, forKey: WireKey("contentChecksum"))
-    self.outcome = try c.decode(SmeltSettledOutcome.self, forKey: WireKey("outcome"))
-    self.reason =
-      c.contains(WireKey("reason"))
-      ? try c.decode(SmeltSettledReason.self, forKey: WireKey("reason")) : nil
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self.contentChecksum = try c.value("contentChecksum")
+    self.outcome = try c.value("outcome")
+    self.reason = try c.ifPresent("reason")
+    self.resourceId = try c.value("resourceId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.contentChecksum, forKey: WireKey("contentChecksum"))
-    try c.encode(self.outcome, forKey: WireKey("outcome"))
-    try c.encodeIfPresent(self.reason, forKey: WireKey("reason"))
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encode(self.contentChecksum, as: "contentChecksum")
+    try c.encode(self.outcome, as: "outcome")
+    try c.encodeIfPresent(self.reason, as: "reason")
+    try c.encode(self.resourceId, as: "resourceId")
   }
 }
 
@@ -11374,42 +10267,38 @@ public struct SmelterConfig: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>([
+    try c.refuseUnknown(
+      [
         "archivist", "chunking", "cursorsPath", "embedding", "gatewayUrl", "identity", "kb",
         "logFormat", "logLevel", "pdfsAtOnce", "port", "vectors",
-      ]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in SmelterConfig")
-    }
-    self.archivist = try c.decode(SmelterConfigArchivist.self, forKey: WireKey("archivist"))
-    self.chunking = try c.decode(SmelterConfigChunking.self, forKey: WireKey("chunking"))
-    self.cursorsPath = try c.decode(CursorsPath.self, forKey: WireKey("cursorsPath"))
-    self.embedding = try c.decode(EmbeddingConfig.self, forKey: WireKey("embedding"))
-    self.gatewayUrl = try c.decode(String.self, forKey: WireKey("gatewayUrl"))
-    self.identity = try c.decode(SmelterConfigIdentity.self, forKey: WireKey("identity"))
-    self.kb = try c.decode(KbIdentity.self, forKey: WireKey("kb"))
-    self.logFormat = try c.decode(LogFormat.self, forKey: WireKey("logFormat"))
-    self.logLevel = try c.decode(LogLevel.self, forKey: WireKey("logLevel"))
-    self.pdfsAtOnce = try c.decode(Int.self, forKey: WireKey("pdfsAtOnce"))
-    self.port = try c.decode(Int.self, forKey: WireKey("port"))
-    self.vectors = try c.decode(VectorsConfig.self, forKey: WireKey("vectors"))
+      ], in: "SmelterConfig")
+    self.archivist = try c.value("archivist")
+    self.chunking = try c.value("chunking")
+    self.cursorsPath = try c.value("cursorsPath")
+    self.embedding = try c.value("embedding")
+    self.gatewayUrl = try c.value("gatewayUrl")
+    self.identity = try c.value("identity")
+    self.kb = try c.value("kb")
+    self.logFormat = try c.value("logFormat")
+    self.logLevel = try c.value("logLevel")
+    self.pdfsAtOnce = try c.value("pdfsAtOnce")
+    self.port = try c.value("port")
+    self.vectors = try c.value("vectors")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.archivist, forKey: WireKey("archivist"))
-    try c.encode(self.chunking, forKey: WireKey("chunking"))
-    try c.encode(self.cursorsPath, forKey: WireKey("cursorsPath"))
-    try c.encode(self.embedding, forKey: WireKey("embedding"))
-    try c.encode(self.gatewayUrl, forKey: WireKey("gatewayUrl"))
-    try c.encode(self.identity, forKey: WireKey("identity"))
-    try c.encode(self.kb, forKey: WireKey("kb"))
-    try c.encode(self.logFormat, forKey: WireKey("logFormat"))
-    try c.encode(self.logLevel, forKey: WireKey("logLevel"))
-    try c.encode(self.pdfsAtOnce, forKey: WireKey("pdfsAtOnce"))
-    try c.encode(self.port, forKey: WireKey("port"))
-    try c.encode(self.vectors, forKey: WireKey("vectors"))
+    try c.encode(self.archivist, as: "archivist")
+    try c.encode(self.chunking, as: "chunking")
+    try c.encode(self.cursorsPath, as: "cursorsPath")
+    try c.encode(self.embedding, as: "embedding")
+    try c.encode(self.gatewayUrl, as: "gatewayUrl")
+    try c.encode(self.identity, as: "identity")
+    try c.encode(self.kb, as: "kb")
+    try c.encode(self.logFormat, as: "logFormat")
+    try c.encode(self.logLevel, as: "logLevel")
+    try c.encode(self.pdfsAtOnce, as: "pdfsAtOnce")
+    try c.encode(self.port, as: "port")
+    try c.encode(self.vectors, as: "vectors")
   }
 }
 
@@ -11422,18 +10311,14 @@ public struct SmelterConfigArchivist: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: { !Set<String>(["host", "port"]).contains($0.stringValue) })
-    {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in SmelterConfigArchivist")
-    }
-    self.host = try c.decode(String.self, forKey: WireKey("host"))
-    self.port = try c.decode(Int.self, forKey: WireKey("port"))
+    try c.refuseUnknown(["host", "port"], in: "SmelterConfigArchivist")
+    self.host = try c.value("host")
+    self.port = try c.value("port")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.host, forKey: WireKey("host"))
-    try c.encode(self.port, forKey: WireKey("port"))
+    try c.encode(self.host, as: "host")
+    try c.encode(self.port, as: "port")
   }
 }
 
@@ -11446,19 +10331,14 @@ public struct SmelterConfigChunking: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["chunkSize", "overlap"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in SmelterConfigChunking")
-    }
-    self.chunkSize = try c.decode(Int.self, forKey: WireKey("chunkSize"))
-    self.overlap = try c.decode(Int.self, forKey: WireKey("overlap"))
+    try c.refuseUnknown(["chunkSize", "overlap"], in: "SmelterConfigChunking")
+    self.chunkSize = try c.value("chunkSize")
+    self.overlap = try c.value("overlap")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.chunkSize, forKey: WireKey("chunkSize"))
-    try c.encode(self.overlap, forKey: WireKey("overlap"))
+    try c.encode(self.chunkSize, as: "chunkSize")
+    try c.encode(self.overlap, as: "overlap")
   }
 }
 
@@ -11469,15 +10349,12 @@ public struct SmelterConfigIdentity: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: { !Set<String>(["issuer"]).contains($0.stringValue) }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in SmelterConfigIdentity")
-    }
-    self.issuer = try c.decode(String.self, forKey: WireKey("issuer"))
+    try c.refuseUnknown(["issuer"], in: "SmelterConfigIdentity")
+    self.issuer = try c.value("issuer")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.issuer, forKey: WireKey("issuer"))
+    try c.encode(self.issuer, as: "issuer")
   }
 }
 
@@ -11503,26 +10380,23 @@ public struct SpecCacheQueriesItem: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.asks =
-      c.contains(WireKey("asks")) ? try c.decode(String.self, forKey: WireKey("asks")) : nil
-    self.docs = try c.decode(String.self, forKey: WireKey("docs"))
-    self.name = try c.decode(String.self, forKey: WireKey("name"))
-    self.per = c.contains(WireKey("per")) ? try c.decode(String.self, forKey: WireKey("per")) : nil
-    self.persisted =
-      c.contains(WireKey("persisted")) ? try c.decode(Bool.self, forKey: WireKey("persisted")) : nil
-    self.reads =
-      c.contains(WireKey("reads")) ? try c.decode(String.self, forKey: WireKey("reads")) : nil
-    self.value = try c.decode(SpecCacheQueriesItemValue.self, forKey: WireKey("value"))
+    self.asks = try c.ifPresent("asks")
+    self.docs = try c.value("docs")
+    self.name = try c.value("name")
+    self.per = try c.ifPresent("per")
+    self.persisted = try c.ifPresent("persisted")
+    self.reads = try c.ifPresent("reads")
+    self.value = try c.value("value")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.asks, forKey: WireKey("asks"))
-    try c.encode(self.docs, forKey: WireKey("docs"))
-    try c.encode(self.name, forKey: WireKey("name"))
-    try c.encodeIfPresent(self.per, forKey: WireKey("per"))
-    try c.encodeIfPresent(self.persisted, forKey: WireKey("persisted"))
-    try c.encodeIfPresent(self.reads, forKey: WireKey("reads"))
-    try c.encode(self.value, forKey: WireKey("value"))
+    try c.encodeIfPresent(self.asks, as: "asks")
+    try c.encode(self.docs, as: "docs")
+    try c.encode(self.name, as: "name")
+    try c.encodeIfPresent(self.per, as: "per")
+    try c.encodeIfPresent(self.persisted, as: "persisted")
+    try c.encodeIfPresent(self.reads, as: "reads")
+    try c.encode(self.value, as: "value")
   }
 }
 
@@ -11533,11 +10407,11 @@ public struct SpecCacheQueriesItemValue: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.ref = try c.decode(String.self, forKey: WireKey("$ref"))
+    self.ref = try c.value("$ref")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.ref, forKey: WireKey("$ref"))
+    try c.encode(self.ref, as: "$ref")
   }
 }
 
@@ -11561,26 +10435,21 @@ public struct SpecEncodingsItem: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.bytes =
-      c.contains(WireKey("bytes")) ? try c.decode(String.self, forKey: WireKey("bytes")) : nil
-    self.encoding = try c.decode(String.self, forKey: WireKey("encoding"))
-    self.everyByte =
-      c.contains(WireKey("everyByte"))
-      ? try c.decode(String.self, forKey: WireKey("everyByte")) : nil
-    self.labels = try c.decode([String].self, forKey: WireKey("labels"))
-    self.refused =
-      c.contains(WireKey("refused")) ? try c.decode(Bool.self, forKey: WireKey("refused")) : nil
-    self.text =
-      c.contains(WireKey("text")) ? try c.decode(String.self, forKey: WireKey("text")) : nil
+    self.bytes = try c.ifPresent("bytes")
+    self.encoding = try c.value("encoding")
+    self.everyByte = try c.ifPresent("everyByte")
+    self.labels = try c.value("labels")
+    self.refused = try c.ifPresent("refused")
+    self.text = try c.ifPresent("text")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.bytes, forKey: WireKey("bytes"))
-    try c.encode(self.encoding, forKey: WireKey("encoding"))
-    try c.encodeIfPresent(self.everyByte, forKey: WireKey("everyByte"))
-    try c.encode(self.labels, forKey: WireKey("labels"))
-    try c.encodeIfPresent(self.refused, forKey: WireKey("refused"))
-    try c.encodeIfPresent(self.text, forKey: WireKey("text"))
+    try c.encodeIfPresent(self.bytes, as: "bytes")
+    try c.encode(self.encoding, as: "encoding")
+    try c.encodeIfPresent(self.everyByte, as: "everyByte")
+    try c.encode(self.labels, as: "labels")
+    try c.encodeIfPresent(self.refused, as: "refused")
+    try c.encodeIfPresent(self.text, as: "text")
   }
 }
 
@@ -11610,27 +10479,27 @@ public struct SpecMediaTypesItem: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.anchoring = try c.decode(String.self, forKey: WireKey("anchoring"))
-    self.authorable = try c.decode(Bool.self, forKey: WireKey("authorable"))
-    self.`extension` = try c.decode(String.self, forKey: WireKey("extension"))
-    self.generatable = try c.decode(Bool.self, forKey: WireKey("generatable"))
-    self.label = try c.decode(String.self, forKey: WireKey("label"))
-    self.mediaType = try c.decode(String.self, forKey: WireKey("mediaType"))
-    self.render = try c.decode(String.self, forKey: WireKey("render"))
-    self.textSource = try c.decode(String.self, forKey: WireKey("textSource"))
-    self.uploadable = try c.decode(Bool.self, forKey: WireKey("uploadable"))
+    self.anchoring = try c.value("anchoring")
+    self.authorable = try c.value("authorable")
+    self.`extension` = try c.value("extension")
+    self.generatable = try c.value("generatable")
+    self.label = try c.value("label")
+    self.mediaType = try c.value("mediaType")
+    self.render = try c.value("render")
+    self.textSource = try c.value("textSource")
+    self.uploadable = try c.value("uploadable")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.anchoring, forKey: WireKey("anchoring"))
-    try c.encode(self.authorable, forKey: WireKey("authorable"))
-    try c.encode(self.`extension`, forKey: WireKey("extension"))
-    try c.encode(self.generatable, forKey: WireKey("generatable"))
-    try c.encode(self.label, forKey: WireKey("label"))
-    try c.encode(self.mediaType, forKey: WireKey("mediaType"))
-    try c.encode(self.render, forKey: WireKey("render"))
-    try c.encode(self.textSource, forKey: WireKey("textSource"))
-    try c.encode(self.uploadable, forKey: WireKey("uploadable"))
+    try c.encode(self.anchoring, as: "anchoring")
+    try c.encode(self.authorable, as: "authorable")
+    try c.encode(self.`extension`, as: "extension")
+    try c.encode(self.generatable, as: "generatable")
+    try c.encode(self.label, as: "label")
+    try c.encode(self.mediaType, as: "mediaType")
+    try c.encode(self.render, as: "render")
+    try c.encode(self.textSource, as: "textSource")
+    try c.encode(self.uploadable, as: "uploadable")
   }
 }
 
@@ -11645,15 +10514,15 @@ public struct SpecOauthClientsItem: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.docs = try c.decode(String.self, forKey: WireKey("docs"))
-    self.id = try c.decode(String.self, forKey: WireKey("id"))
-    self.name = try c.decode(String.self, forKey: WireKey("name"))
+    self.docs = try c.value("docs")
+    self.id = try c.value("id")
+    self.name = try c.value("name")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.docs, forKey: WireKey("docs"))
-    try c.encode(self.id, forKey: WireKey("id"))
-    try c.encode(self.name, forKey: WireKey("name"))
+    try c.encode(self.docs, as: "docs")
+    try c.encode(self.id, as: "id")
+    try c.encode(self.name, as: "name")
   }
 }
 
@@ -11666,13 +10535,13 @@ public struct SpecOwnerOnlyDirectory: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.docs = try c.decode(String.self, forKey: WireKey("docs"))
-    self.value = try c.decode(String.self, forKey: WireKey("value"))
+    self.docs = try c.value("docs")
+    self.value = try c.value("value")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.docs, forKey: WireKey("docs"))
-    try c.encode(self.value, forKey: WireKey("value"))
+    try c.encode(self.docs, as: "docs")
+    try c.encode(self.value, as: "value")
   }
 }
 
@@ -11685,13 +10554,13 @@ public struct SpecOwnerOnlyFile: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.docs = try c.decode(String.self, forKey: WireKey("docs"))
-    self.value = try c.decode(String.self, forKey: WireKey("value"))
+    self.docs = try c.value("docs")
+    self.value = try c.value("value")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.docs, forKey: WireKey("docs"))
-    try c.encode(self.value, forKey: WireKey("value"))
+    try c.encode(self.docs, as: "docs")
+    try c.encode(self.value, as: "value")
   }
 }
 
@@ -11704,13 +10573,13 @@ public struct SpecSignInScope: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.docs = try c.decode(String.self, forKey: WireKey("docs"))
-    self.value = try c.decode(String.self, forKey: WireKey("value"))
+    self.docs = try c.value("docs")
+    self.value = try c.value("value")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.docs, forKey: WireKey("docs"))
-    try c.encode(self.value, forKey: WireKey("value"))
+    try c.encode(self.docs, as: "docs")
+    try c.encode(self.value, as: "value")
   }
 }
 
@@ -11732,20 +10601,19 @@ public struct SpecTelemetryMetricsItem: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.attributes = try c.decode(
-      [SpecTelemetryMetricsItemAttributesItem].self, forKey: WireKey("attributes"))
-    self.instrument = try c.decode(String.self, forKey: WireKey("instrument"))
-    self.meaning = try c.decode(String.self, forKey: WireKey("meaning"))
-    self.name = try c.decode(String.self, forKey: WireKey("name"))
-    self.transport = try c.decode(String.self, forKey: WireKey("transport"))
+    self.attributes = try c.value("attributes")
+    self.instrument = try c.value("instrument")
+    self.meaning = try c.value("meaning")
+    self.name = try c.value("name")
+    self.transport = try c.value("transport")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.attributes, forKey: WireKey("attributes"))
-    try c.encode(self.instrument, forKey: WireKey("instrument"))
-    try c.encode(self.meaning, forKey: WireKey("meaning"))
-    try c.encode(self.name, forKey: WireKey("name"))
-    try c.encode(self.transport, forKey: WireKey("transport"))
+    try c.encode(self.attributes, as: "attributes")
+    try c.encode(self.instrument, as: "instrument")
+    try c.encode(self.meaning, as: "meaning")
+    try c.encode(self.name, as: "name")
+    try c.encode(self.transport, as: "transport")
   }
 }
 
@@ -11758,14 +10626,13 @@ public struct SpecTelemetryMetricsItemAttributesItem: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.key = try c.decode(String.self, forKey: WireKey("key"))
-    self.only =
-      c.contains(WireKey("only")) ? try c.decode(String.self, forKey: WireKey("only")) : nil
+    self.key = try c.value("key")
+    self.only = try c.ifPresent("only")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.key, forKey: WireKey("key"))
-    try c.encodeIfPresent(self.only, forKey: WireKey("only"))
+    try c.encode(self.key, as: "key")
+    try c.encodeIfPresent(self.only, as: "only")
   }
 }
 
@@ -11787,20 +10654,19 @@ public struct SpecTelemetrySpansItem: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.attributes = try c.decode(
-      [SpecTelemetrySpansItemAttributesItem].self, forKey: WireKey("attributes"))
-    self.kind = try c.decode(String.self, forKey: WireKey("kind"))
-    self.meaning = try c.decode(String.self, forKey: WireKey("meaning"))
-    self.name = try c.decode(String.self, forKey: WireKey("name"))
-    self.transport = try c.decode(String.self, forKey: WireKey("transport"))
+    self.attributes = try c.value("attributes")
+    self.kind = try c.value("kind")
+    self.meaning = try c.value("meaning")
+    self.name = try c.value("name")
+    self.transport = try c.value("transport")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.attributes, forKey: WireKey("attributes"))
-    try c.encode(self.kind, forKey: WireKey("kind"))
-    try c.encode(self.meaning, forKey: WireKey("meaning"))
-    try c.encode(self.name, forKey: WireKey("name"))
-    try c.encode(self.transport, forKey: WireKey("transport"))
+    try c.encode(self.attributes, as: "attributes")
+    try c.encode(self.kind, as: "kind")
+    try c.encode(self.meaning, as: "meaning")
+    try c.encode(self.name, as: "name")
+    try c.encode(self.transport, as: "transport")
   }
 }
 
@@ -11815,17 +10681,15 @@ public struct SpecTelemetrySpansItemAttributesItem: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.key = try c.decode(String.self, forKey: WireKey("key"))
-    self.only =
-      c.contains(WireKey("only")) ? try c.decode(String.self, forKey: WireKey("only")) : nil
-    self.values =
-      c.contains(WireKey("values")) ? try c.decode([String].self, forKey: WireKey("values")) : nil
+    self.key = try c.value("key")
+    self.only = try c.ifPresent("only")
+    self.values = try c.ifPresent("values")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.key, forKey: WireKey("key"))
-    try c.encodeIfPresent(self.only, forKey: WireKey("only"))
-    try c.encodeIfPresent(self.values, forKey: WireKey("values"))
+    try c.encode(self.key, as: "key")
+    try c.encodeIfPresent(self.only, as: "only")
+    try c.encodeIfPresent(self.values, as: "values")
   }
 }
 
@@ -11840,17 +10704,15 @@ public struct SpecificResource: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.purpose =
-      c.contains(WireKey("purpose"))
-      ? try c.decode(BodyPurpose.self, forKey: WireKey("purpose")) : nil
-    self.source = try c.decode(ResourceId.self, forKey: WireKey("source"))
-    self.type = try c.decode(SpecificResourceType.self, forKey: WireKey("type"))
+    self.purpose = try c.ifPresent("purpose")
+    self.source = try c.value("source")
+    self.type = try c.value("type")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.purpose, forKey: WireKey("purpose"))
-    try c.encode(self.source, forKey: WireKey("source"))
-    try c.encode(self.type, forKey: WireKey("type"))
+    try c.encodeIfPresent(self.purpose, as: "purpose")
+    try c.encode(self.source, as: "source")
+    try c.encode(self.type, as: "type")
   }
 }
 
@@ -11876,21 +10738,19 @@ public struct StatusResponse: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.authenticatedAs =
-      c.contains(WireKey("authenticatedAs"))
-      ? try c.decode(String.self, forKey: WireKey("authenticatedAs")) : nil
-    self.features = try c.decode(StatusResponseFeatures.self, forKey: WireKey("features"))
-    self.message = try c.decode(String.self, forKey: WireKey("message"))
-    self.status = try c.decode(String.self, forKey: WireKey("status"))
-    self.version = try c.decode(String.self, forKey: WireKey("version"))
+    self.authenticatedAs = try c.ifPresent("authenticatedAs")
+    self.features = try c.value("features")
+    self.message = try c.value("message")
+    self.status = try c.value("status")
+    self.version = try c.value("version")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.authenticatedAs, forKey: WireKey("authenticatedAs"))
-    try c.encode(self.features, forKey: WireKey("features"))
-    try c.encode(self.message, forKey: WireKey("message"))
-    try c.encode(self.status, forKey: WireKey("status"))
-    try c.encode(self.version, forKey: WireKey("version"))
+    try c.encodeIfPresent(self.authenticatedAs, as: "authenticatedAs")
+    try c.encode(self.features, as: "features")
+    try c.encode(self.message, as: "message")
+    try c.encode(self.status, as: "status")
+    try c.encode(self.version, as: "version")
   }
 }
 
@@ -11903,13 +10763,13 @@ public struct StatusResponseFeatures: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.collaboration = try c.decode(String.self, forKey: WireKey("collaboration"))
-    self.semanticContent = try c.decode(String.self, forKey: WireKey("semanticContent"))
+    self.collaboration = try c.value("collaboration")
+    self.semanticContent = try c.value("semanticContent")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.collaboration, forKey: WireKey("collaboration"))
-    try c.encode(self.semanticContent, forKey: WireKey("semanticContent"))
+    try c.encode(self.collaboration, as: "collaboration")
+    try c.encode(self.semanticContent, as: "semanticContent")
   }
 }
 
@@ -11922,19 +10782,14 @@ public struct StorageUriEntry: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["resourceId", "uri"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in StorageUriEntry")
-    }
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
-    self.uri = try c.decode(String.self, forKey: WireKey("uri"))
+    try c.refuseUnknown(["resourceId", "uri"], in: "StorageUriEntry")
+    self.resourceId = try c.value("resourceId")
+    self.uri = try c.value("uri")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
-    try c.encode(self.uri, forKey: WireKey("uri"))
+    try c.encode(self.resourceId, as: "resourceId")
+    try c.encode(self.uri, as: "uri")
   }
 }
 
@@ -11962,27 +10817,25 @@ public struct StoredEventResponse: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.id = try c.decode(String.self, forKey: WireKey("id"))
-    self.metadata = try c.decode(EventMetadata.self, forKey: WireKey("metadata"))
-    self.payload = try c.decode([String: JSONValue].self, forKey: WireKey("payload"))
-    self.resourceId =
-      c.contains(WireKey("resourceId"))
-      ? try c.decode(ResourceId.self, forKey: WireKey("resourceId")) : nil
-    self.timestamp = try c.decode(String.self, forKey: WireKey("timestamp"))
-    self.type = try c.decode(String.self, forKey: WireKey("type"))
-    self.userId = try c.decode(UserId.self, forKey: WireKey("userId"))
-    self.version = try c.decode(Int.self, forKey: WireKey("version"))
+    self.id = try c.value("id")
+    self.metadata = try c.value("metadata")
+    self.payload = try c.value("payload")
+    self.resourceId = try c.ifPresent("resourceId")
+    self.timestamp = try c.value("timestamp")
+    self.type = try c.value("type")
+    self.userId = try c.value("userId")
+    self.version = try c.value("version")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.id, forKey: WireKey("id"))
-    try c.encode(self.metadata, forKey: WireKey("metadata"))
-    try c.encode(self.payload, forKey: WireKey("payload"))
-    try c.encodeIfPresent(self.resourceId, forKey: WireKey("resourceId"))
-    try c.encode(self.timestamp, forKey: WireKey("timestamp"))
-    try c.encode(self.type, forKey: WireKey("type"))
-    try c.encode(self.userId, forKey: WireKey("userId"))
-    try c.encode(self.version, forKey: WireKey("version"))
+    try c.encode(self.id, as: "id")
+    try c.encode(self.metadata, as: "metadata")
+    try c.encode(self.payload, as: "payload")
+    try c.encodeIfPresent(self.resourceId, as: "resourceId")
+    try c.encode(self.timestamp, as: "timestamp")
+    try c.encode(self.type, as: "type")
+    try c.encode(self.userId, as: "userId")
+    try c.encode(self.version, as: "version")
   }
 }
 
@@ -12064,13 +10917,13 @@ public struct SvgSelector: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.type = try c.decode(SvgSelectorType.self, forKey: WireKey("type"))
-    self.value = try c.decode(String.self, forKey: WireKey("value"))
+    self.type = try c.value("type")
+    self.value = try c.value("value")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.type, forKey: WireKey("type"))
-    try c.encode(self.value, forKey: WireKey("value"))
+    try c.encode(self.type, as: "type")
+    try c.encode(self.value, as: "value")
   }
 }
 
@@ -12089,15 +10942,15 @@ public struct TagCategory: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.description = try c.decode(String.self, forKey: WireKey("description"))
-    self.examples = try c.decode([String].self, forKey: WireKey("examples"))
-    self.name = try c.decode(String.self, forKey: WireKey("name"))
+    self.description = try c.value("description")
+    self.examples = try c.value("examples")
+    self.name = try c.value("name")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.description, forKey: WireKey("description"))
-    try c.encode(self.examples, forKey: WireKey("examples"))
-    try c.encode(self.name, forKey: WireKey("name"))
+    try c.encode(self.description, as: "description")
+    try c.encode(self.examples, as: "examples")
+    try c.encode(self.name, as: "name")
   }
 }
 
@@ -12116,19 +10969,19 @@ public struct TagSchema: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.description = try c.decode(String.self, forKey: WireKey("description"))
-    self.domain = try c.decode(String.self, forKey: WireKey("domain"))
-    self.id = try c.decode(String.self, forKey: WireKey("id"))
-    self.name = try c.decode(String.self, forKey: WireKey("name"))
-    self.tags = try c.decode([TagCategory].self, forKey: WireKey("tags"))
+    self.description = try c.value("description")
+    self.domain = try c.value("domain")
+    self.id = try c.value("id")
+    self.name = try c.value("name")
+    self.tags = try c.value("tags")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.description, forKey: WireKey("description"))
-    try c.encode(self.domain, forKey: WireKey("domain"))
-    try c.encode(self.id, forKey: WireKey("id"))
-    try c.encode(self.name, forKey: WireKey("name"))
-    try c.encode(self.tags, forKey: WireKey("tags"))
+    try c.encode(self.description, as: "description")
+    try c.encode(self.domain, as: "domain")
+    try c.encode(self.id, as: "id")
+    try c.encode(self.name, as: "name")
+    try c.encode(self.tags, as: "tags")
   }
 }
 
@@ -12139,11 +10992,11 @@ public struct TagSchemaAddedPayload: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.schema = try c.decode(TagSchema.self, forKey: WireKey("schema"))
+    self.schema = try c.value("schema")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.schema, forKey: WireKey("schema"))
+    try c.encode(self.schema, as: "schema")
   }
 }
 
@@ -12154,15 +11007,12 @@ public struct TagSchemasProjection: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: { !Set<String>(["tagSchemas"]).contains($0.stringValue) }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in TagSchemasProjection")
-    }
-    self.tagSchemas = try c.decode([TagSchema].self, forKey: WireKey("tagSchemas"))
+    try c.refuseUnknown(["tagSchemas"], in: "TagSchemasProjection")
+    self.tagSchemas = try c.value("tagSchemas")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.tagSchemas, forKey: WireKey("tagSchemas"))
+    try c.encode(self.tagSchemas, as: "tagSchemas")
   }
 }
 
@@ -12183,29 +11033,22 @@ public struct TaggingJobParams: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["categories", "language", "motivation", "schemaId", "sourceLanguage"]).contains(
-        $0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in TaggingJobParams")
-    }
-    self.categories = try c.decode([String].self, forKey: WireKey("categories"))
-    self.language =
-      c.contains(WireKey("language")) ? try c.decode(String.self, forKey: WireKey("language")) : nil
-    self.motivation = try c.decode(TaggingJobParamsMotivation.self, forKey: WireKey("motivation"))
-    self.schemaId = try c.decode(String.self, forKey: WireKey("schemaId"))
-    self.sourceLanguage =
-      c.contains(WireKey("sourceLanguage"))
-      ? try c.decode(String.self, forKey: WireKey("sourceLanguage")) : nil
+    try c.refuseUnknown(
+      ["categories", "language", "motivation", "schemaId", "sourceLanguage"], in: "TaggingJobParams"
+    )
+    self.categories = try c.value("categories")
+    self.language = try c.ifPresent("language")
+    self.motivation = try c.value("motivation")
+    self.schemaId = try c.value("schemaId")
+    self.sourceLanguage = try c.ifPresent("sourceLanguage")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.categories, forKey: WireKey("categories"))
-    try c.encodeIfPresent(self.language, forKey: WireKey("language"))
-    try c.encode(self.motivation, forKey: WireKey("motivation"))
-    try c.encode(self.schemaId, forKey: WireKey("schemaId"))
-    try c.encodeIfPresent(self.sourceLanguage, forKey: WireKey("sourceLanguage"))
+    try c.encode(self.categories, as: "categories")
+    try c.encodeIfPresent(self.language, as: "language")
+    try c.encode(self.motivation, as: "motivation")
+    try c.encode(self.schemaId, as: "schemaId")
+    try c.encodeIfPresent(self.sourceLanguage, as: "sourceLanguage")
   }
 }
 
@@ -12224,15 +11067,15 @@ public struct TextPositionSelector: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.end = try c.decode(Int.self, forKey: WireKey("end"))
-    self.start = try c.decode(Int.self, forKey: WireKey("start"))
-    self.type = try c.decode(TextPositionSelectorType.self, forKey: WireKey("type"))
+    self.end = try c.value("end")
+    self.start = try c.value("start")
+    self.type = try c.value("type")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.end, forKey: WireKey("end"))
-    try c.encode(self.start, forKey: WireKey("start"))
-    try c.encode(self.type, forKey: WireKey("type"))
+    try c.encode(self.end, as: "end")
+    try c.encode(self.start, as: "start")
+    try c.encode(self.type, as: "type")
   }
 }
 
@@ -12253,19 +11096,17 @@ public struct TextQuoteSelector: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.exact = try c.decode(String.self, forKey: WireKey("exact"))
-    self.prefix =
-      c.contains(WireKey("prefix")) ? try c.decode(String.self, forKey: WireKey("prefix")) : nil
-    self.suffix =
-      c.contains(WireKey("suffix")) ? try c.decode(String.self, forKey: WireKey("suffix")) : nil
-    self.type = try c.decode(TextQuoteSelectorType.self, forKey: WireKey("type"))
+    self.exact = try c.value("exact")
+    self.prefix = try c.ifPresent("prefix")
+    self.suffix = try c.ifPresent("suffix")
+    self.type = try c.value("type")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.exact, forKey: WireKey("exact"))
-    try c.encodeIfPresent(self.prefix, forKey: WireKey("prefix"))
-    try c.encodeIfPresent(self.suffix, forKey: WireKey("suffix"))
-    try c.encode(self.type, forKey: WireKey("type"))
+    try c.encode(self.exact, as: "exact")
+    try c.encodeIfPresent(self.prefix, as: "prefix")
+    try c.encodeIfPresent(self.suffix, as: "suffix")
+    try c.encode(self.type, as: "type")
   }
 }
 
@@ -12290,23 +11131,19 @@ public struct TextualBody: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.format =
-      c.contains(WireKey("format")) ? try c.decode(String.self, forKey: WireKey("format")) : nil
-    self.language =
-      c.contains(WireKey("language")) ? try c.decode(String.self, forKey: WireKey("language")) : nil
-    self.purpose =
-      c.contains(WireKey("purpose"))
-      ? try c.decode(BodyPurpose.self, forKey: WireKey("purpose")) : nil
-    self.type = try c.decode(TextualBodyType.self, forKey: WireKey("type"))
-    self.value = try c.decode(String.self, forKey: WireKey("value"))
+    self.format = try c.ifPresent("format")
+    self.language = try c.ifPresent("language")
+    self.purpose = try c.ifPresent("purpose")
+    self.type = try c.value("type")
+    self.value = try c.value("value")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.format, forKey: WireKey("format"))
-    try c.encodeIfPresent(self.language, forKey: WireKey("language"))
-    try c.encodeIfPresent(self.purpose, forKey: WireKey("purpose"))
-    try c.encode(self.type, forKey: WireKey("type"))
-    try c.encode(self.value, forKey: WireKey("value"))
+    try c.encodeIfPresent(self.format, as: "format")
+    try c.encodeIfPresent(self.language, as: "language")
+    try c.encodeIfPresent(self.purpose, as: "purpose")
+    try c.encode(self.type, as: "type")
+    try c.encode(self.value, as: "value")
   }
 }
 
@@ -12329,19 +11166,19 @@ public struct UnitCursor: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.emitted = try c.decode(Int.self, forKey: WireKey("emitted"))
-    self.errors = try c.decode(Int.self, forKey: WireKey("errors"))
-    self.found = try c.decode(Int.self, forKey: WireKey("found"))
-    self.next = try c.decode(Int.self, forKey: WireKey("next"))
-    self.size = try c.decode(Int.self, forKey: WireKey("size"))
+    self.emitted = try c.value("emitted")
+    self.errors = try c.value("errors")
+    self.found = try c.value("found")
+    self.next = try c.value("next")
+    self.size = try c.value("size")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.emitted, forKey: WireKey("emitted"))
-    try c.encode(self.errors, forKey: WireKey("errors"))
-    try c.encode(self.found, forKey: WireKey("found"))
-    try c.encode(self.next, forKey: WireKey("next"))
-    try c.encode(self.size, forKey: WireKey("size"))
+    try c.encode(self.emitted, as: "emitted")
+    try c.encode(self.errors, as: "errors")
+    try c.encode(self.found, as: "found")
+    try c.encode(self.next, as: "next")
+    try c.encode(self.size, as: "size")
   }
 }
 
@@ -12354,14 +11191,13 @@ public struct UpdateAnnotationBodyRequest: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.operations = try c.decode(
-      [UpdateAnnotationBodyRequestOperationsItem].self, forKey: WireKey("operations"))
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self.operations = try c.value("operations")
+    self.resourceId = try c.value("resourceId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.operations, forKey: WireKey("operations"))
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encode(self.operations, as: "operations")
+    try c.encode(self.resourceId, as: "resourceId")
   }
 }
 
@@ -12447,19 +11283,19 @@ public struct UserResponse: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.did = try c.decode(UserId.self, forKey: WireKey("did"))
-    self.domain = try c.decode(String.self, forKey: WireKey("domain"))
-    self.email = try c.decode(Optional<String>.self, forKey: WireKey("email"))
-    self.image = try c.decode(Optional<String>.self, forKey: WireKey("image"))
-    self.name = try c.decode(Optional<String>.self, forKey: WireKey("name"))
+    self.did = try c.value("did")
+    self.domain = try c.value("domain")
+    self.email = try c.value("email")
+    self.image = try c.value("image")
+    self.name = try c.value("name")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.did, forKey: WireKey("did"))
-    try c.encode(self.domain, forKey: WireKey("domain"))
-    try c.encode(self.email, forKey: WireKey("email"))
-    try c.encode(self.image, forKey: WireKey("image"))
-    try c.encode(self.name, forKey: WireKey("name"))
+    try c.encode(self.did, as: "did")
+    try c.encode(self.domain, as: "domain")
+    try c.encode(self.email, as: "email")
+    try c.encode(self.image, as: "image")
+    try c.encode(self.name, as: "name")
   }
 }
 
@@ -12498,23 +11334,18 @@ public struct VoyageEmbeddingConfig: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["apiKeyEnv", "endpoint", "model", "type"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in VoyageEmbeddingConfig")
-    }
-    self.apiKeyEnv = try c.decode(String.self, forKey: WireKey("apiKeyEnv"))
-    self.endpoint = try c.decode(String.self, forKey: WireKey("endpoint"))
-    self.model = try c.decode(String.self, forKey: WireKey("model"))
-    self.type = try c.decode(VoyageEmbeddingConfigType.self, forKey: WireKey("type"))
+    try c.refuseUnknown(["apiKeyEnv", "endpoint", "model", "type"], in: "VoyageEmbeddingConfig")
+    self.apiKeyEnv = try c.value("apiKeyEnv")
+    self.endpoint = try c.value("endpoint")
+    self.model = try c.value("model")
+    self.type = try c.value("type")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.apiKeyEnv, forKey: WireKey("apiKeyEnv"))
-    try c.encode(self.endpoint, forKey: WireKey("endpoint"))
-    try c.encode(self.model, forKey: WireKey("model"))
-    try c.encode(self.type, forKey: WireKey("type"))
+    try c.encode(self.apiKeyEnv, as: "apiKeyEnv")
+    try c.encode(self.endpoint, as: "endpoint")
+    try c.encode(self.model, as: "model")
+    try c.encode(self.type, as: "type")
   }
 }
 
@@ -12531,13 +11362,13 @@ public struct WeaveApplied: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
-    self.sequenceNumber = try c.decode(Int.self, forKey: WireKey("sequenceNumber"))
+    self.resourceId = try c.value("resourceId")
+    self.sequenceNumber = try c.value("sequenceNumber")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
-    try c.encode(self.sequenceNumber, forKey: WireKey("sequenceNumber"))
+    try c.encode(self.resourceId, as: "resourceId")
+    try c.encode(self.sequenceNumber, as: "sequenceNumber")
   }
 }
 
@@ -12550,16 +11381,13 @@ public struct WeaveRebuildCommand: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self._userId =
-      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
-    self.resourceId =
-      c.contains(WireKey("resourceId"))
-      ? try c.decode(ResourceId.self, forKey: WireKey("resourceId")) : nil
+    self._userId = try c.ifPresent("_userId")
+    self.resourceId = try c.ifPresent("resourceId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
-    try c.encodeIfPresent(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encodeIfPresent(self._userId, as: "_userId")
+    try c.encodeIfPresent(self.resourceId, as: "resourceId")
   }
 }
 
@@ -12590,36 +11418,32 @@ public struct WeaverConfig: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>([
+    try c.refuseUnknown(
+      [
         "archivist", "cursorsPath", "gatewayUrl", "graph", "identity", "kb", "logFormat",
         "logLevel", "port",
-      ]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in WeaverConfig")
-    }
-    self.archivist = try c.decode(WeaverConfigArchivist.self, forKey: WireKey("archivist"))
-    self.cursorsPath = try c.decode(CursorsPath.self, forKey: WireKey("cursorsPath"))
-    self.gatewayUrl = try c.decode(String.self, forKey: WireKey("gatewayUrl"))
-    self.graph = try c.decode(GraphConfig.self, forKey: WireKey("graph"))
-    self.identity = try c.decode(WeaverConfigIdentity.self, forKey: WireKey("identity"))
-    self.kb = try c.decode(KbIdentity.self, forKey: WireKey("kb"))
-    self.logFormat = try c.decode(LogFormat.self, forKey: WireKey("logFormat"))
-    self.logLevel = try c.decode(LogLevel.self, forKey: WireKey("logLevel"))
-    self.port = try c.decode(Int.self, forKey: WireKey("port"))
+      ], in: "WeaverConfig")
+    self.archivist = try c.value("archivist")
+    self.cursorsPath = try c.value("cursorsPath")
+    self.gatewayUrl = try c.value("gatewayUrl")
+    self.graph = try c.value("graph")
+    self.identity = try c.value("identity")
+    self.kb = try c.value("kb")
+    self.logFormat = try c.value("logFormat")
+    self.logLevel = try c.value("logLevel")
+    self.port = try c.value("port")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.archivist, forKey: WireKey("archivist"))
-    try c.encode(self.cursorsPath, forKey: WireKey("cursorsPath"))
-    try c.encode(self.gatewayUrl, forKey: WireKey("gatewayUrl"))
-    try c.encode(self.graph, forKey: WireKey("graph"))
-    try c.encode(self.identity, forKey: WireKey("identity"))
-    try c.encode(self.kb, forKey: WireKey("kb"))
-    try c.encode(self.logFormat, forKey: WireKey("logFormat"))
-    try c.encode(self.logLevel, forKey: WireKey("logLevel"))
-    try c.encode(self.port, forKey: WireKey("port"))
+    try c.encode(self.archivist, as: "archivist")
+    try c.encode(self.cursorsPath, as: "cursorsPath")
+    try c.encode(self.gatewayUrl, as: "gatewayUrl")
+    try c.encode(self.graph, as: "graph")
+    try c.encode(self.identity, as: "identity")
+    try c.encode(self.kb, as: "kb")
+    try c.encode(self.logFormat, as: "logFormat")
+    try c.encode(self.logLevel, as: "logLevel")
+    try c.encode(self.port, as: "port")
   }
 }
 
@@ -12632,18 +11456,14 @@ public struct WeaverConfigArchivist: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: { !Set<String>(["host", "port"]).contains($0.stringValue) })
-    {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in WeaverConfigArchivist")
-    }
-    self.host = try c.decode(String.self, forKey: WireKey("host"))
-    self.port = try c.decode(Int.self, forKey: WireKey("port"))
+    try c.refuseUnknown(["host", "port"], in: "WeaverConfigArchivist")
+    self.host = try c.value("host")
+    self.port = try c.value("port")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.host, forKey: WireKey("host"))
-    try c.encode(self.port, forKey: WireKey("port"))
+    try c.encode(self.host, as: "host")
+    try c.encode(self.port, as: "port")
   }
 }
 
@@ -12654,15 +11474,12 @@ public struct WeaverConfigIdentity: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: { !Set<String>(["issuer"]).contains($0.stringValue) }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in WeaverConfigIdentity")
-    }
-    self.issuer = try c.decode(String.self, forKey: WireKey("issuer"))
+    try c.refuseUnknown(["issuer"], in: "WeaverConfigIdentity")
+    self.issuer = try c.value("issuer")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.issuer, forKey: WireKey("issuer"))
+    try c.encode(self.issuer, as: "issuer")
   }
 }
 
@@ -12684,27 +11501,21 @@ public struct WorkerConfig: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["knowledgeBases", "logFormat", "logLevel", "modelCatalogue", "port"]).contains(
-        $0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in WorkerConfig")
-    }
-    self.knowledgeBases = try c.decode(
-      [WorkerKnowledgeBaseConfig].self, forKey: WireKey("knowledgeBases"))
-    self.logFormat = try c.decode(LogFormat.self, forKey: WireKey("logFormat"))
-    self.logLevel = try c.decode(LogLevel.self, forKey: WireKey("logLevel"))
-    self.modelCatalogue = try c.decode(String.self, forKey: WireKey("modelCatalogue"))
-    self.port = try c.decode(Int.self, forKey: WireKey("port"))
+    try c.refuseUnknown(
+      ["knowledgeBases", "logFormat", "logLevel", "modelCatalogue", "port"], in: "WorkerConfig")
+    self.knowledgeBases = try c.value("knowledgeBases")
+    self.logFormat = try c.value("logFormat")
+    self.logLevel = try c.value("logLevel")
+    self.modelCatalogue = try c.value("modelCatalogue")
+    self.port = try c.value("port")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.knowledgeBases, forKey: WireKey("knowledgeBases"))
-    try c.encode(self.logFormat, forKey: WireKey("logFormat"))
-    try c.encode(self.logLevel, forKey: WireKey("logLevel"))
-    try c.encode(self.modelCatalogue, forKey: WireKey("modelCatalogue"))
-    try c.encode(self.port, forKey: WireKey("port"))
+    try c.encode(self.knowledgeBases, as: "knowledgeBases")
+    try c.encode(self.logFormat, as: "logFormat")
+    try c.encode(self.logLevel, as: "logLevel")
+    try c.encode(self.modelCatalogue, as: "modelCatalogue")
+    try c.encode(self.port, as: "port")
   }
 }
 
@@ -12721,25 +11532,18 @@ public struct WorkerEngineConfig: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["apiKeyEnv", "baseUrl", "engine", "jobs"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in WorkerEngineConfig")
-    }
-    self.apiKeyEnv =
-      c.contains(WireKey("apiKeyEnv"))
-      ? try c.decode(String.self, forKey: WireKey("apiKeyEnv")) : nil
-    self.baseUrl = try c.decode(String.self, forKey: WireKey("baseUrl"))
-    self.engine = try c.decode(Engine.self, forKey: WireKey("engine"))
-    self.jobs = try c.decode([JobFilter].self, forKey: WireKey("jobs"))
+    try c.refuseUnknown(["apiKeyEnv", "baseUrl", "engine", "jobs"], in: "WorkerEngineConfig")
+    self.apiKeyEnv = try c.ifPresent("apiKeyEnv")
+    self.baseUrl = try c.value("baseUrl")
+    self.engine = try c.value("engine")
+    self.jobs = try c.value("jobs")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.apiKeyEnv, forKey: WireKey("apiKeyEnv"))
-    try c.encode(self.baseUrl, forKey: WireKey("baseUrl"))
-    try c.encode(self.engine, forKey: WireKey("engine"))
-    try c.encode(self.jobs, forKey: WireKey("jobs"))
+    try c.encodeIfPresent(self.apiKeyEnv, as: "apiKeyEnv")
+    try c.encode(self.baseUrl, as: "baseUrl")
+    try c.encode(self.engine, as: "engine")
+    try c.encode(self.jobs, as: "jobs")
   }
 }
 
@@ -12768,36 +11572,30 @@ public struct WorkerEngineHealth: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>([
+    try c.refuseUnknown(
+      [
         "activeJob", "engine", "jobs", "jobsCompleted", "lastActivityAt", "lastClaimAt",
         "lastFinishedAt", "lastQueuedEventAt",
-      ]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in WorkerEngineHealth")
-    }
-    self.activeJob = try c.decode(
-      Optional<WorkerEngineHealthActiveJob>.self, forKey: WireKey("activeJob"))
-    self.engine = try c.decode(Engine.self, forKey: WireKey("engine"))
-    self.jobs = try c.decode([JobFilter].self, forKey: WireKey("jobs"))
-    self.jobsCompleted = try c.decode(Int.self, forKey: WireKey("jobsCompleted"))
-    self.lastActivityAt = try c.decode(Optional<String>.self, forKey: WireKey("lastActivityAt"))
-    self.lastClaimAt = try c.decode(Optional<String>.self, forKey: WireKey("lastClaimAt"))
-    self.lastFinishedAt = try c.decode(Optional<String>.self, forKey: WireKey("lastFinishedAt"))
-    self.lastQueuedEventAt = try c.decode(
-      Optional<String>.self, forKey: WireKey("lastQueuedEventAt"))
+      ], in: "WorkerEngineHealth")
+    self.activeJob = try c.value("activeJob")
+    self.engine = try c.value("engine")
+    self.jobs = try c.value("jobs")
+    self.jobsCompleted = try c.value("jobsCompleted")
+    self.lastActivityAt = try c.value("lastActivityAt")
+    self.lastClaimAt = try c.value("lastClaimAt")
+    self.lastFinishedAt = try c.value("lastFinishedAt")
+    self.lastQueuedEventAt = try c.value("lastQueuedEventAt")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.activeJob, forKey: WireKey("activeJob"))
-    try c.encode(self.engine, forKey: WireKey("engine"))
-    try c.encode(self.jobs, forKey: WireKey("jobs"))
-    try c.encode(self.jobsCompleted, forKey: WireKey("jobsCompleted"))
-    try c.encode(self.lastActivityAt, forKey: WireKey("lastActivityAt"))
-    try c.encode(self.lastClaimAt, forKey: WireKey("lastClaimAt"))
-    try c.encode(self.lastFinishedAt, forKey: WireKey("lastFinishedAt"))
-    try c.encode(self.lastQueuedEventAt, forKey: WireKey("lastQueuedEventAt"))
+    try c.encode(self.activeJob, as: "activeJob")
+    try c.encode(self.engine, as: "engine")
+    try c.encode(self.jobs, as: "jobs")
+    try c.encode(self.jobsCompleted, as: "jobsCompleted")
+    try c.encode(self.lastActivityAt, as: "lastActivityAt")
+    try c.encode(self.lastClaimAt, as: "lastClaimAt")
+    try c.encode(self.lastFinishedAt, as: "lastFinishedAt")
+    try c.encode(self.lastQueuedEventAt, as: "lastQueuedEventAt")
   }
 }
 
@@ -12812,21 +11610,16 @@ public struct WorkerEngineHealthActiveJob: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["jobId", "since", "type"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in WorkerEngineHealthActiveJob")
-    }
-    self.jobId = try c.decode(JobId.self, forKey: WireKey("jobId"))
-    self.since = try c.decode(String.self, forKey: WireKey("since"))
-    self.type = try c.decode(JobType.self, forKey: WireKey("type"))
+    try c.refuseUnknown(["jobId", "since", "type"], in: "WorkerEngineHealthActiveJob")
+    self.jobId = try c.value("jobId")
+    self.since = try c.value("since")
+    self.type = try c.value("type")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.jobId, forKey: WireKey("jobId"))
-    try c.encode(self.since, forKey: WireKey("since"))
-    try c.encode(self.type, forKey: WireKey("type"))
+    try c.encode(self.jobId, as: "jobId")
+    try c.encode(self.since, as: "since")
+    try c.encode(self.type, as: "type")
   }
 }
 
@@ -12839,20 +11632,14 @@ public struct WorkerHealth: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["knowledgeBases", "status"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in WorkerHealth")
-    }
-    self.knowledgeBases = try c.decode(
-      [WorkerKnowledgeBaseHealth].self, forKey: WireKey("knowledgeBases"))
-    self.status = try c.decode(WorkerHealthStatus.self, forKey: WireKey("status"))
+    try c.refuseUnknown(["knowledgeBases", "status"], in: "WorkerHealth")
+    self.knowledgeBases = try c.value("knowledgeBases")
+    self.status = try c.value("status")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.knowledgeBases, forKey: WireKey("knowledgeBases"))
-    try c.encode(self.status, forKey: WireKey("status"))
+    try c.encode(self.knowledgeBases, as: "knowledgeBases")
+    try c.encode(self.status, as: "status")
   }
 }
 
@@ -12876,24 +11663,19 @@ public struct WorkerKnowledgeBaseConfig: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["domain", "engines", "gatewayUrl", "identity"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in WorkerKnowledgeBaseConfig")
-    }
-    self.domain = try c.decode(String.self, forKey: WireKey("domain"))
-    self.engines = try c.decode([WorkerEngineConfig].self, forKey: WireKey("engines"))
-    self.gatewayUrl = try c.decode(String.self, forKey: WireKey("gatewayUrl"))
-    self.identity = try c.decode(
-      WorkerKnowledgeBaseConfigIdentity.self, forKey: WireKey("identity"))
+    try c.refuseUnknown(
+      ["domain", "engines", "gatewayUrl", "identity"], in: "WorkerKnowledgeBaseConfig")
+    self.domain = try c.value("domain")
+    self.engines = try c.value("engines")
+    self.gatewayUrl = try c.value("gatewayUrl")
+    self.identity = try c.value("identity")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.domain, forKey: WireKey("domain"))
-    try c.encode(self.engines, forKey: WireKey("engines"))
-    try c.encode(self.gatewayUrl, forKey: WireKey("gatewayUrl"))
-    try c.encode(self.identity, forKey: WireKey("identity"))
+    try c.encode(self.domain, as: "domain")
+    try c.encode(self.engines, as: "engines")
+    try c.encode(self.gatewayUrl, as: "gatewayUrl")
+    try c.encode(self.identity, as: "identity")
   }
 }
 
@@ -12906,20 +11688,14 @@ public struct WorkerKnowledgeBaseConfigIdentity: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["clientId", "issuer"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c,
-        debugDescription: "unknown property in WorkerKnowledgeBaseConfigIdentity")
-    }
-    self.clientId = try c.decode(String.self, forKey: WireKey("clientId"))
-    self.issuer = try c.decode(String.self, forKey: WireKey("issuer"))
+    try c.refuseUnknown(["clientId", "issuer"], in: "WorkerKnowledgeBaseConfigIdentity")
+    self.clientId = try c.value("clientId")
+    self.issuer = try c.value("issuer")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.clientId, forKey: WireKey("clientId"))
-    try c.encode(self.issuer, forKey: WireKey("issuer"))
+    try c.encode(self.clientId, as: "clientId")
+    try c.encode(self.issuer, as: "issuer")
   }
 }
 
@@ -12939,25 +11715,18 @@ public struct WorkerKnowledgeBaseHealth: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["did", "domain", "engines", "state"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in WorkerKnowledgeBaseHealth")
-    }
-    self.did = c.contains(WireKey("did")) ? try c.decode(String.self, forKey: WireKey("did")) : nil
-    self.domain = try c.decode(String.self, forKey: WireKey("domain"))
-    self.engines =
-      c.contains(WireKey("engines"))
-      ? try c.decode([WorkerEngineHealth].self, forKey: WireKey("engines")) : nil
-    self.state = try c.decode(WorkerKnowledgeBaseHealthState.self, forKey: WireKey("state"))
+    try c.refuseUnknown(["did", "domain", "engines", "state"], in: "WorkerKnowledgeBaseHealth")
+    self.did = try c.ifPresent("did")
+    self.domain = try c.value("domain")
+    self.engines = try c.ifPresent("engines")
+    self.state = try c.value("state")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.did, forKey: WireKey("did"))
-    try c.encode(self.domain, forKey: WireKey("domain"))
-    try c.encodeIfPresent(self.engines, forKey: WireKey("engines"))
-    try c.encode(self.state, forKey: WireKey("state"))
+    try c.encodeIfPresent(self.did, as: "did")
+    try c.encode(self.domain, as: "domain")
+    try c.encodeIfPresent(self.engines, as: "engines")
+    try c.encode(self.state, as: "state")
   }
 }
 
@@ -12991,28 +11760,25 @@ public struct YieldCloneCreateCommand: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self._userId =
-      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
-    self.archiveOriginal =
-      c.contains(WireKey("archiveOriginal"))
-      ? try c.decode(Bool.self, forKey: WireKey("archiveOriginal")) : nil
-    self.byteSize = try c.decode(Int.self, forKey: WireKey("byteSize"))
-    self.contentChecksum = try c.decode(String.self, forKey: WireKey("contentChecksum"))
-    self.format = try c.decode(ContentFormat.self, forKey: WireKey("format"))
-    self.name = try c.decode(String.self, forKey: WireKey("name"))
-    self.storageUri = try c.decode(String.self, forKey: WireKey("storageUri"))
-    self.token = try c.decode(String.self, forKey: WireKey("token"))
+    self._userId = try c.ifPresent("_userId")
+    self.archiveOriginal = try c.ifPresent("archiveOriginal")
+    self.byteSize = try c.value("byteSize")
+    self.contentChecksum = try c.value("contentChecksum")
+    self.format = try c.value("format")
+    self.name = try c.value("name")
+    self.storageUri = try c.value("storageUri")
+    self.token = try c.value("token")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
-    try c.encodeIfPresent(self.archiveOriginal, forKey: WireKey("archiveOriginal"))
-    try c.encode(self.byteSize, forKey: WireKey("byteSize"))
-    try c.encode(self.contentChecksum, forKey: WireKey("contentChecksum"))
-    try c.encode(self.format, forKey: WireKey("format"))
-    try c.encode(self.name, forKey: WireKey("name"))
-    try c.encode(self.storageUri, forKey: WireKey("storageUri"))
-    try c.encode(self.token, forKey: WireKey("token"))
+    try c.encodeIfPresent(self._userId, as: "_userId")
+    try c.encodeIfPresent(self.archiveOriginal, as: "archiveOriginal")
+    try c.encode(self.byteSize, as: "byteSize")
+    try c.encode(self.contentChecksum, as: "contentChecksum")
+    try c.encode(self.format, as: "format")
+    try c.encode(self.name, as: "name")
+    try c.encode(self.storageUri, as: "storageUri")
+    try c.encode(self.token, as: "token")
   }
 }
 
@@ -13023,11 +11789,11 @@ public struct YieldCloneCreated: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.response = try c.decode(YieldCloneCreatedResponse.self, forKey: WireKey("response"))
+    self.response = try c.value("response")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.response, forKey: WireKey("response"))
+    try c.encode(self.response, as: "response")
   }
 }
 
@@ -13038,11 +11804,11 @@ public struct YieldCloneCreatedResponse: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self.resourceId = try c.value("resourceId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encode(self.resourceId, as: "resourceId")
   }
 }
 
@@ -13073,31 +11839,27 @@ public struct YieldClonePersistCommand: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self._userId =
-      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
-    self.byteSize = try c.decode(Int.self, forKey: WireKey("byteSize"))
-    self.contentChecksum = try c.decode(String.self, forKey: WireKey("contentChecksum"))
-    self.entityTypes =
-      c.contains(WireKey("entityTypes"))
-      ? try c.decode([String].self, forKey: WireKey("entityTypes")) : nil
-    self.format = try c.decode(ContentFormat.self, forKey: WireKey("format"))
-    self.language =
-      c.contains(WireKey("language")) ? try c.decode(String.self, forKey: WireKey("language")) : nil
-    self.name = try c.decode(String.self, forKey: WireKey("name"))
-    self.parentResourceId = try c.decode(ResourceId.self, forKey: WireKey("parentResourceId"))
-    self.storageUri = try c.decode(String.self, forKey: WireKey("storageUri"))
+    self._userId = try c.ifPresent("_userId")
+    self.byteSize = try c.value("byteSize")
+    self.contentChecksum = try c.value("contentChecksum")
+    self.entityTypes = try c.ifPresent("entityTypes")
+    self.format = try c.value("format")
+    self.language = try c.ifPresent("language")
+    self.name = try c.value("name")
+    self.parentResourceId = try c.value("parentResourceId")
+    self.storageUri = try c.value("storageUri")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
-    try c.encode(self.byteSize, forKey: WireKey("byteSize"))
-    try c.encode(self.contentChecksum, forKey: WireKey("contentChecksum"))
-    try c.encodeIfPresent(self.entityTypes, forKey: WireKey("entityTypes"))
-    try c.encode(self.format, forKey: WireKey("format"))
-    try c.encodeIfPresent(self.language, forKey: WireKey("language"))
-    try c.encode(self.name, forKey: WireKey("name"))
-    try c.encode(self.parentResourceId, forKey: WireKey("parentResourceId"))
-    try c.encode(self.storageUri, forKey: WireKey("storageUri"))
+    try c.encodeIfPresent(self._userId, as: "_userId")
+    try c.encode(self.byteSize, as: "byteSize")
+    try c.encode(self.contentChecksum, as: "contentChecksum")
+    try c.encodeIfPresent(self.entityTypes, as: "entityTypes")
+    try c.encode(self.format, as: "format")
+    try c.encodeIfPresent(self.language, as: "language")
+    try c.encode(self.name, as: "name")
+    try c.encode(self.parentResourceId, as: "parentResourceId")
+    try c.encode(self.storageUri, as: "storageUri")
   }
 }
 
@@ -13108,11 +11870,11 @@ public struct YieldClonePersistOk: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.response = try c.decode(YieldClonePersistOkResponse.self, forKey: WireKey("response"))
+    self.response = try c.value("response")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.response, forKey: WireKey("response"))
+    try c.encode(self.response, as: "response")
   }
 }
 
@@ -13123,11 +11885,11 @@ public struct YieldClonePersistOkResponse: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self.resourceId = try c.value("resourceId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encode(self.resourceId, as: "resourceId")
   }
 }
 
@@ -13138,11 +11900,11 @@ public struct YieldCloneResourceRequest: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.token = try c.decode(String.self, forKey: WireKey("token"))
+    self.token = try c.value("token")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.token, forKey: WireKey("token"))
+    try c.encode(self.token, as: "token")
   }
 }
 
@@ -13153,11 +11915,11 @@ public struct YieldCloneTokenRequest: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self.resourceId = try c.value("resourceId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encode(self.resourceId, as: "resourceId")
   }
 }
 
@@ -13200,50 +11962,37 @@ public struct YieldCreateCommand: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self._roles =
-      c.contains(WireKey("_roles")) ? try c.decode([String].self, forKey: WireKey("_roles")) : nil
-    self._userId =
-      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
-    self.byteSize = try c.decode(Int.self, forKey: WireKey("byteSize"))
-    self.contentChecksum = try c.decode(String.self, forKey: WireKey("contentChecksum"))
-    self.entityTypes =
-      c.contains(WireKey("entityTypes"))
-      ? try c.decode([String].self, forKey: WireKey("entityTypes")) : nil
-    self.format = try c.decode(ContentFormat.self, forKey: WireKey("format"))
-    self.generatedFrom =
-      c.contains(WireKey("generatedFrom"))
-      ? try c.decode(YieldCreateCommandGeneratedFrom.self, forKey: WireKey("generatedFrom")) : nil
-    self.generationPrompt =
-      c.contains(WireKey("generationPrompt"))
-      ? try c.decode(String.self, forKey: WireKey("generationPrompt")) : nil
-    self.generator =
-      c.contains(WireKey("generator"))
-      ? try c.decode(YieldCreateCommandGenerator.self, forKey: WireKey("generator")) : nil
-    self.isDraft =
-      c.contains(WireKey("isDraft")) ? try c.decode(Bool.self, forKey: WireKey("isDraft")) : nil
-    self.jobId =
-      c.contains(WireKey("jobId")) ? try c.decode(JobId.self, forKey: WireKey("jobId")) : nil
-    self.language =
-      c.contains(WireKey("language")) ? try c.decode(String.self, forKey: WireKey("language")) : nil
-    self.name = try c.decode(String.self, forKey: WireKey("name"))
-    self.storageUri = try c.decode(String.self, forKey: WireKey("storageUri"))
+    self._roles = try c.ifPresent("_roles")
+    self._userId = try c.ifPresent("_userId")
+    self.byteSize = try c.value("byteSize")
+    self.contentChecksum = try c.value("contentChecksum")
+    self.entityTypes = try c.ifPresent("entityTypes")
+    self.format = try c.value("format")
+    self.generatedFrom = try c.ifPresent("generatedFrom")
+    self.generationPrompt = try c.ifPresent("generationPrompt")
+    self.generator = try c.ifPresent("generator")
+    self.isDraft = try c.ifPresent("isDraft")
+    self.jobId = try c.ifPresent("jobId")
+    self.language = try c.ifPresent("language")
+    self.name = try c.value("name")
+    self.storageUri = try c.value("storageUri")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self._roles, forKey: WireKey("_roles"))
-    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
-    try c.encode(self.byteSize, forKey: WireKey("byteSize"))
-    try c.encode(self.contentChecksum, forKey: WireKey("contentChecksum"))
-    try c.encodeIfPresent(self.entityTypes, forKey: WireKey("entityTypes"))
-    try c.encode(self.format, forKey: WireKey("format"))
-    try c.encodeIfPresent(self.generatedFrom, forKey: WireKey("generatedFrom"))
-    try c.encodeIfPresent(self.generationPrompt, forKey: WireKey("generationPrompt"))
-    try c.encodeIfPresent(self.generator, forKey: WireKey("generator"))
-    try c.encodeIfPresent(self.isDraft, forKey: WireKey("isDraft"))
-    try c.encodeIfPresent(self.jobId, forKey: WireKey("jobId"))
-    try c.encodeIfPresent(self.language, forKey: WireKey("language"))
-    try c.encode(self.name, forKey: WireKey("name"))
-    try c.encode(self.storageUri, forKey: WireKey("storageUri"))
+    try c.encodeIfPresent(self._roles, as: "_roles")
+    try c.encodeIfPresent(self._userId, as: "_userId")
+    try c.encode(self.byteSize, as: "byteSize")
+    try c.encode(self.contentChecksum, as: "contentChecksum")
+    try c.encodeIfPresent(self.entityTypes, as: "entityTypes")
+    try c.encode(self.format, as: "format")
+    try c.encodeIfPresent(self.generatedFrom, as: "generatedFrom")
+    try c.encodeIfPresent(self.generationPrompt, as: "generationPrompt")
+    try c.encodeIfPresent(self.generator, as: "generator")
+    try c.encodeIfPresent(self.isDraft, as: "isDraft")
+    try c.encodeIfPresent(self.jobId, as: "jobId")
+    try c.encodeIfPresent(self.language, as: "language")
+    try c.encode(self.name, as: "name")
+    try c.encode(self.storageUri, as: "storageUri")
   }
 }
 
@@ -13256,17 +12005,13 @@ public struct YieldCreateCommandGeneratedFrom: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.annotationId =
-      c.contains(WireKey("annotationId"))
-      ? try c.decode(AnnotationId.self, forKey: WireKey("annotationId")) : nil
-    self.resourceId =
-      c.contains(WireKey("resourceId"))
-      ? try c.decode(ResourceId.self, forKey: WireKey("resourceId")) : nil
+    self.annotationId = try c.ifPresent("annotationId")
+    self.resourceId = try c.ifPresent("resourceId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self.annotationId, forKey: WireKey("annotationId"))
-    try c.encodeIfPresent(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encodeIfPresent(self.annotationId, as: "annotationId")
+    try c.encodeIfPresent(self.resourceId, as: "resourceId")
   }
 }
 
@@ -13302,11 +12047,11 @@ public struct YieldCreateOk: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.response = try c.decode(YieldCreateOkResponse.self, forKey: WireKey("response"))
+    self.response = try c.value("response")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.response, forKey: WireKey("response"))
+    try c.encode(self.response, as: "response")
   }
 }
 
@@ -13317,11 +12062,11 @@ public struct YieldCreateOkResponse: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self.resourceId = try c.value("resourceId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encode(self.resourceId, as: "resourceId")
   }
 }
 
@@ -13350,33 +12095,25 @@ public struct YieldJobCompleteCommand: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self._userId =
-      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
-    self.annotationId =
-      c.contains(WireKey("annotationId"))
-      ? try c.decode(AnnotationId.self, forKey: WireKey("annotationId")) : nil
-    self.attempt =
-      c.contains(WireKey("attempt")) ? try c.decode(Int.self, forKey: WireKey("attempt")) : nil
-    self.durability =
-      c.contains(WireKey("durability"))
-      ? try c.decode(DurabilityEvidence.self, forKey: WireKey("durability")) : nil
-    self.jobId = try c.decode(JobId.self, forKey: WireKey("jobId"))
-    self.jobType = try c.decode(YieldJobCompleteCommandJobType.self, forKey: WireKey("jobType"))
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
-    self.result =
-      c.contains(WireKey("result"))
-      ? try c.decode(YieldJobResult.self, forKey: WireKey("result")) : nil
+    self._userId = try c.ifPresent("_userId")
+    self.annotationId = try c.ifPresent("annotationId")
+    self.attempt = try c.ifPresent("attempt")
+    self.durability = try c.ifPresent("durability")
+    self.jobId = try c.value("jobId")
+    self.jobType = try c.value("jobType")
+    self.resourceId = try c.value("resourceId")
+    self.result = try c.ifPresent("result")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
-    try c.encodeIfPresent(self.annotationId, forKey: WireKey("annotationId"))
-    try c.encodeIfPresent(self.attempt, forKey: WireKey("attempt"))
-    try c.encodeIfPresent(self.durability, forKey: WireKey("durability"))
-    try c.encode(self.jobId, forKey: WireKey("jobId"))
-    try c.encode(self.jobType, forKey: WireKey("jobType"))
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
-    try c.encodeIfPresent(self.result, forKey: WireKey("result"))
+    try c.encodeIfPresent(self._userId, as: "_userId")
+    try c.encodeIfPresent(self.annotationId, as: "annotationId")
+    try c.encodeIfPresent(self.attempt, as: "attempt")
+    try c.encodeIfPresent(self.durability, as: "durability")
+    try c.encode(self.jobId, as: "jobId")
+    try c.encode(self.jobType, as: "jobType")
+    try c.encode(self.resourceId, as: "resourceId")
+    try c.encodeIfPresent(self.result, as: "result")
   }
 }
 
@@ -13397,25 +12134,18 @@ public struct YieldJobCreateCommand: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["_roles", "_userId", "jobType", "params"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in YieldJobCreateCommand")
-    }
-    self._roles =
-      c.contains(WireKey("_roles")) ? try c.decode([String].self, forKey: WireKey("_roles")) : nil
-    self._userId =
-      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
-    self.jobType = try c.decode(YieldJobCreateCommandJobType.self, forKey: WireKey("jobType"))
-    self.params = try c.decode(GenerationJobParams.self, forKey: WireKey("params"))
+    try c.refuseUnknown(["_roles", "_userId", "jobType", "params"], in: "YieldJobCreateCommand")
+    self._roles = try c.ifPresent("_roles")
+    self._userId = try c.ifPresent("_userId")
+    self.jobType = try c.value("jobType")
+    self.params = try c.value("params")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self._roles, forKey: WireKey("_roles"))
-    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
-    try c.encode(self.jobType, forKey: WireKey("jobType"))
-    try c.encode(self.params, forKey: WireKey("params"))
+    try c.encodeIfPresent(self._roles, as: "_roles")
+    try c.encodeIfPresent(self._userId, as: "_userId")
+    try c.encode(self.jobType, as: "jobType")
+    try c.encode(self.params, as: "params")
   }
 }
 
@@ -13434,21 +12164,16 @@ public struct YieldJobDone: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: {
-      !Set<String>(["resourceId", "resourceName", "truncated"]).contains($0.stringValue)
-    }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in YieldJobDone")
-    }
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
-    self.resourceName = try c.decode(String.self, forKey: WireKey("resourceName"))
-    self.truncated = try c.decode(Bool.self, forKey: WireKey("truncated"))
+    try c.refuseUnknown(["resourceId", "resourceName", "truncated"], in: "YieldJobDone")
+    self.resourceId = try c.value("resourceId")
+    self.resourceName = try c.value("resourceName")
+    self.truncated = try c.value("truncated")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
-    try c.encode(self.resourceName, forKey: WireKey("resourceName"))
-    try c.encode(self.truncated, forKey: WireKey("truncated"))
+    try c.encode(self.resourceId, as: "resourceId")
+    try c.encode(self.resourceName, as: "resourceName")
+    try c.encode(self.truncated, as: "truncated")
   }
 }
 
@@ -13459,15 +12184,12 @@ public struct YieldJobFilter: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if let key = c.allKeys.first(where: { !Set<String>(["jobType"]).contains($0.stringValue) }) {
-      throw DecodingError.dataCorruptedError(
-        forKey: key, in: c, debugDescription: "unknown property in YieldJobFilter")
-    }
-    self.jobType = try c.decode(YieldJobFilterJobType.self, forKey: WireKey("jobType"))
+    try c.refuseUnknown(["jobType"], in: "YieldJobFilter")
+    self.jobType = try c.value("jobType")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.jobType, forKey: WireKey("jobType"))
+    try c.encode(self.jobType, as: "jobType")
   }
 }
 
@@ -13490,19 +12212,19 @@ public struct YieldJobQueuedEvent: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.jobId = try c.decode(JobId.self, forKey: WireKey("jobId"))
-    self.jobType = try c.decode(YieldJobQueuedEventJobType.self, forKey: WireKey("jobType"))
-    self.params = try c.decode(GenerationJobRequest.self, forKey: WireKey("params"))
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
-    self.userId = try c.decode(UserId.self, forKey: WireKey("userId"))
+    self.jobId = try c.value("jobId")
+    self.jobType = try c.value("jobType")
+    self.params = try c.value("params")
+    self.resourceId = try c.value("resourceId")
+    self.userId = try c.value("userId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.jobId, forKey: WireKey("jobId"))
-    try c.encode(self.jobType, forKey: WireKey("jobType"))
-    try c.encode(self.params, forKey: WireKey("params"))
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
-    try c.encode(self.userId, forKey: WireKey("userId"))
+    try c.encode(self.jobId, as: "jobId")
+    try c.encode(self.jobType, as: "jobType")
+    try c.encode(self.params, as: "params")
+    try c.encode(self.resourceId, as: "resourceId")
+    try c.encode(self.userId, as: "userId")
   }
 }
 
@@ -13551,20 +12273,19 @@ public struct YieldUpdateCommand: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self._userId =
-      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
-    self.byteSize = try c.decode(Int.self, forKey: WireKey("byteSize"))
-    self.contentChecksum = try c.decode(String.self, forKey: WireKey("contentChecksum"))
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
-    self.storageUri = try c.decode(String.self, forKey: WireKey("storageUri"))
+    self._userId = try c.ifPresent("_userId")
+    self.byteSize = try c.value("byteSize")
+    self.contentChecksum = try c.value("contentChecksum")
+    self.resourceId = try c.value("resourceId")
+    self.storageUri = try c.value("storageUri")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
-    try c.encode(self.byteSize, forKey: WireKey("byteSize"))
-    try c.encode(self.contentChecksum, forKey: WireKey("contentChecksum"))
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
-    try c.encode(self.storageUri, forKey: WireKey("storageUri"))
+    try c.encodeIfPresent(self._userId, as: "_userId")
+    try c.encode(self.byteSize, as: "byteSize")
+    try c.encode(self.contentChecksum, as: "contentChecksum")
+    try c.encode(self.resourceId, as: "resourceId")
+    try c.encode(self.storageUri, as: "storageUri")
   }
 }
 
@@ -13575,11 +12296,11 @@ public struct YieldUpdateOk: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.response = try c.decode(YieldUpdateOkResponse.self, forKey: WireKey("response"))
+    self.response = try c.value("response")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.response, forKey: WireKey("response"))
+    try c.encode(self.response, as: "response")
   }
 }
 
@@ -13590,11 +12311,11 @@ public struct YieldUpdateOkResponse: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self.resourceId = try c.value("resourceId")
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encode(self.resourceId, as: "resourceId")
   }
 }
 
