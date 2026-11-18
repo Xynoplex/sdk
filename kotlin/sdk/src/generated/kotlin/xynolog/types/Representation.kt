@@ -49,8 +49,7 @@ public data class Representation(
     /** Every property the schema does not name, as it came. */
     @Transient
     public val rest: JsonObject = JsonObject(emptyMap()),
-) : ResourceDescriptorRepresentations,
-    ScoredResourceRepresentations {
+) : ResourceDescriptorRepresentations {
     /** How Java makes a `Representation`: `builder` takes what it must state, a setter each thing it may, and `build` makes it. */
     public class Builder internal constructor(
         private val mediaType: String,

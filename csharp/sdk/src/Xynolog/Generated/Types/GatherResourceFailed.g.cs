@@ -7,7 +7,7 @@ namespace Xynolog.Types;
 [global::Xynolog.Serialization.WireObject]
 public sealed record GatherResourceFailed
 {
-    [global::Xynolog.Serialization.Wire("code")] public global::Xynolog.Types.GatherResourceFailedCode? Code { get; init; }
+    [global::Xynolog.Serialization.Wire("code")] public global::Xynolog.Types.CommandErrorCode? Code { get; init; }
     [global::Xynolog.Serialization.Wire("details")] public string? Details { get; init; }
     [global::Xynolog.Serialization.Wire("message")] public required string Message { get; init; }
     [global::Xynolog.Serialization.Wire("resourceId")] public required global::Xynolog.Identifiers.ResourceId ResourceId { get; init; }

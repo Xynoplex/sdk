@@ -16,3 +16,12 @@ fn owner_only_directory_access_list(owner: &str) -> String {
     ]
     .concat()
 }
+/// A file's access list on Windows, which the launcher gives each file it keeps to its owner, in SDDL, with `owner` where the SID of the user it runs as goes: the directory's list, with nothing handed down, since a file has nothing beneath it. Full access for that user, the system and the administrators, and nobody else, protected, so nothing is inherited from above.
+#[cfg(windows)]
+#[expect(
+    dead_code,
+    reason = "the store's files inherit the directory's list; only the launcher gives a file its own"
+)]
+fn owner_only_file_access_list(owner: &str) -> String {
+    ["D:PAI(A;;FA;;;", owner, ")(A;;FA;;;SY)(A;;FA;;;BA)"].concat()
+}

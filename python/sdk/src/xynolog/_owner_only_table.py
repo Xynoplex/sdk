@@ -6,7 +6,7 @@
 
 from typing import Final
 
-__all__ = ["DIRECTORY_MODE", "FILE_MODE", "directory_access_list"]
+__all__ = ["DIRECTORY_MODE", "FILE_MODE", "directory_access_list", "file_access_list"]
 
 # The directory's mode, in octal, on a system that has modes: its owner reads, writes and enters
 # it, and nobody else does.
@@ -25,3 +25,13 @@ def directory_access_list(owner: str) -> str:
     everything made in the directory, and protected, so nothing is inherited from above.
     """
     return "D:PAI(A;OICI;FA;;;" + owner + ")(A;OICI;FA;;;SY)(A;OICI;FA;;;BA)"
+
+
+def file_access_list(owner: str) -> str:
+    """A file's access list on Windows, which the launcher gives each file it keeps to its owner,
+    in SDDL, with `owner` where the SID of the user it runs as goes: the directory's list, with
+    nothing handed down, since a file has nothing beneath it. Full access for that user, the
+    system and the administrators, and nobody else, protected, so nothing is inherited from
+    above.
+    """
+    return "D:PAI(A;;FA;;;" + owner + ")(A;;FA;;;SY)(A;;FA;;;BA)"

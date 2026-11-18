@@ -1,7 +1,8 @@
 (* How the Rust SDK's writer of the sign-in store keeps its directory and
    its files to their owner (rust/sdk/src/sign_in_store.rs): the modes, on a
-   system that has modes, and the access list Windows gives the directory,
-   made for the user whose SID goes where the file's list says [{owner}]. *)
+   system that has modes, and the access lists Windows gives the directory
+   and a file, each made for the user whose SID goes where the list says
+   [{owner}]. *)
 
 module R = Rust_syntax
 
@@ -19,6 +20,19 @@ let mode name (m : Owner_only.mode) =
       value = R.Octal (int_of_string ("0o" ^ m.octal));
     }
 
+let access_list ~attrs name (l : Owner_only.access_list) =
+  R.Fn
+    (R.fn_ ~doc:[ l.docs ] ~attrs:(cfg "windows" :: attrs) name
+       ~params:[ R.Param ("owner", R.str_ty) ]
+       ~ret:(R.named "String")
+       [
+         R.Tail
+           (R.Method
+              ( R.Array [ R.Str l.before; R.p "owner"; R.Str l.after ],
+                "concat",
+                [] ));
+       ])
+
 let file (o : Owner_only.t) =
   {
     Output.path;
@@ -30,24 +44,21 @@ let file (o : Owner_only.t) =
         [
           mode "OWNER_ONLY_DIRECTORY_MODE" o.directory;
           mode "OWNER_ONLY_FILE_MODE" o.file;
-          R.Fn
-            (R.fn_
-               ~doc:[ o.directory_access_list.docs ]
-               ~attrs:[ cfg "windows" ]
-               "owner_only_directory_access_list"
-               ~params:[ R.Param ("owner", R.str_ty) ]
-               ~ret:(R.named "String")
-               [
-                 R.Tail
-                   (R.Method
-                      ( R.Array
-                          [
-                            R.Str o.directory_access_list.before;
-                            R.p "owner";
-                            R.Str o.directory_access_list.after;
-                          ],
-                        "concat",
-                        [] ));
-               ]);
+          access_list ~attrs:[] "owner_only_directory_access_list"
+            o.directory_access_list;
+          access_list "owner_only_file_access_list" o.file_access_list
+            ~attrs:
+              [
+                R.List
+                  ( [ "expect" ],
+                    [
+                      R.Word [ "dead_code" ];
+                      R.Name_value
+                        ( "reason",
+                          R.Str
+                            "the store's files inherit the directory's list; \
+                             only the launcher gives a file its own" );
+                    ] );
+              ];
         ];
   }

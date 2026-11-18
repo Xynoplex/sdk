@@ -303,7 +303,8 @@ and declaration_with t ~modifiers n raw =
     match s with
     | D.Ref r -> alias (named t r)
     | _ when single_ref s <> None -> alias (named t (Option.get (single_ref s)))
-    | D.Node { all_of = Some _; _ } -> object_ t ~modifiers n (merged t s)
+    | D.Node { all_of = Some _; _ } ->
+        object_ t ~modifiers ~owner:(D.owners t.definitions n s) n (merged t s)
     | D.Node { one_of = Some members; _ } | D.Node { any_of = Some members; _ }
       ->
         union t ~modifiers n members s
@@ -319,7 +320,7 @@ and declaration_with t ~modifiers n raw =
                 | None, Some (D.Bool true) -> alias (dictionary_of json_value)
                 | None, Some ((D.Ref _ | D.Node _) as value) ->
                     alias (dictionary_of (type_ t n "Value" value))
-                | _ -> object_ t ~modifiers n s)
+                | _ -> object_ t ~modifiers ~owner:(fun _ -> n) n s)
             | Schema.String -> alias string_type
             | Schema.Integer -> alias (S.Named "Int")
             | Schema.Number -> alias (S.Named "Double")
@@ -330,7 +331,7 @@ and declaration_with t ~modifiers n raw =
                 | Some item -> alias (S.Array_of (type_ t n "Item" item)))))
     | D.Null | D.Bool _ -> refuse "%s: no schema" n
 
-and object_ t ~modifiers n s =
+and object_ t ~modifiers ~owner n s =
   let node = node_of s in
   let properties =
     List.sort
@@ -367,7 +368,7 @@ and object_ t ~modifiers n s =
               | _ -> Some (S.Implicit_member "value"))
           | _ -> None
         in
-        let type_ = type_ t n wire raw in
+        let type_ = type_ t (owner wire) wire raw in
         let declared =
           if (not is_required) && nullable then S.Generic ("Stated", [ type_ ])
           else if (not is_required) || nullable then S.Optional type_

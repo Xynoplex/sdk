@@ -207,6 +207,23 @@ let python_owner_only (o : Owner_only.t) =
     P.assign ~about:[ Prose m.docs ] ~annotation:(P.Name "Final")
       ~value:(P.Octal m.octal) name
   in
+  let access_list name (l : Owner_only.access_list) =
+    P.Def
+      {
+        name;
+        params = [ ("owner", P.Name "str") ];
+        returns = P.Name "str";
+        doc = Some (Wrapped l.docs);
+        body =
+          [
+            P.Return
+              (P.Binary
+                 ( P.Binary (P.Str l.before, P.Add, P.Name "owner"),
+                   P.Add,
+                   P.Str l.after ));
+          ];
+      }
+  in
   {
     Output.path = "python/sdk/src/xynolog/_owner_only_table.py";
     text =
@@ -233,27 +250,12 @@ let python_owner_only (o : Owner_only.t) =
                              "DIRECTORY_MODE";
                              "FILE_MODE";
                              "directory_access_list";
+                             "file_access_list";
                            ])));
               constant "DIRECTORY_MODE" o.directory;
               constant "FILE_MODE" o.file;
-              P.Def
-                {
-                  name = "directory_access_list";
-                  params = [ ("owner", P.Name "str") ];
-                  returns = P.Name "str";
-                  doc = Some (Wrapped o.directory_access_list.docs);
-                  body =
-                    [
-                      P.Return
-                        (P.Binary
-                           ( P.Binary
-                               ( P.Str o.directory_access_list.before,
-                                 P.Add,
-                                 P.Name "owner" ),
-                             P.Add,
-                             P.Str o.directory_access_list.after ));
-                    ];
-                };
+              access_list "directory_access_list" o.directory_access_list;
+              access_list "file_access_list" o.file_access_list;
             ];
         };
   }
@@ -371,16 +373,17 @@ let ocaml_owner_only (o : Owner_only.t) =
 
 (* What the Haskell SDK's native store binding holds the store to
    (generated/.../xynolog_store_policy.h): the owner-only modes, the
-   directory's access list with the owner's SID in its place, and the one byte of the lock file
-   a Windows writer locks; and the names of the store's files
-   (generated/.../SignInStore.hs). *)
+   directory's and a file's access lists, each with the owner's SID in its
+   place, and the one byte of the lock file a Windows writer locks; and the
+   names of the store's files (generated/.../SignInStore.hs). *)
 let haskell (o : Owner_only.t) (names : Contract.t) =
   let module H = Haskell_syntax in
   let generated = "haskell/sdk/generated/Xynolog/Internal/Generated/" in
-  let access =
-    o.directory_access_list.before ^ Owner_only.owner
-    ^ o.directory_access_list.after
+  let written (l : Owner_only.access_list) =
+    l.before ^ Owner_only.owner ^ l.after
   in
+  let directory_access = written o.directory_access_list in
+  let file_access = written o.file_access_list in
   let c_string text =
     "\""
     ^ String.concat ""
@@ -389,59 +392,70 @@ let haskell (o : Owner_only.t) (names : Contract.t) =
            (List.of_seq (String.to_seq text)))
     ^ "\""
   in
-  if not (String.for_all (fun c -> Char.code c < 128) access) then
-    Error
-      [
+  let not_ascii (pointer, access) =
+    if String.for_all (fun c -> Char.code c < 128) access then None
+    else
+      Some
         {
           Decode.file = Owner_only.file;
-          pointer = "/directoryAccessList/value";
+          pointer;
           message = "is not ASCII, which the native binding's access list is";
-        };
-      ]
-  else
-    Ok
+        }
+  in
+  match
+    List.filter_map not_ascii
       [
-        {
-          Output.path = generated ^ "xynolog_store_policy.h";
-          text =
-            String.concat "\n"
-              [
-                "/* Generated from " ^ Contract.file ^ " and " ^ Owner_only.file
-                ^ "; do not edit.";
-                "   Regenerate: " ^ regenerate ^ " */";
-                "#define XYNOLOG_DIRECTORY_MODE 0" ^ o.directory.octal;
-                "#define XYNOLOG_FILE_MODE 0" ^ o.file.octal;
-                "#define XYNOLOG_DIRECTORY_ACCESS_LIST " ^ c_string access;
-                "#define XYNOLOG_LOCK_HIGH 0x" ^ names.offset_high;
-                "#define XYNOLOG_LOCK_BYTES 1";
-              ]
-            ^ "\n";
-        };
-        {
-          Output.path = generated ^ "SignInStore.hs";
-          text =
-            H.text
-              {
-                banner = Banner.lines ~from_:Contract.file __FILE__;
-                extensions = [];
-                name = "Xynolog.Internal.Generated.SignInStore";
-                imports = [];
-                body =
-                  [
-                    Values
-                      {
-                        about = [];
-                        type_ = T_name "FilePath";
-                        values =
-                          [
-                            ("signInFileName", Str names.document);
-                            ("signInLockName", Str names.lock);
-                          ];
-                      };
-                  ];
-              };
-        };
+        ("/directoryAccessList/value", directory_access);
+        ("/fileAccessList/value", file_access);
       ]
+  with
+  | _ :: _ as refusals -> Error refusals
+  | [] ->
+      Ok
+        [
+          {
+            Output.path = generated ^ "xynolog_store_policy.h";
+            text =
+              String.concat "\n"
+                [
+                  "/* Generated from " ^ Contract.file ^ " and "
+                  ^ Owner_only.file ^ "; do not edit.";
+                  "   Regenerate: " ^ regenerate ^ " */";
+                  "#define XYNOLOG_DIRECTORY_MODE 0" ^ o.directory.octal;
+                  "#define XYNOLOG_FILE_MODE 0" ^ o.file.octal;
+                  "#define XYNOLOG_DIRECTORY_ACCESS_LIST "
+                  ^ c_string directory_access;
+                  "#define XYNOLOG_FILE_ACCESS_LIST " ^ c_string file_access;
+                  "#define XYNOLOG_LOCK_HIGH 0x" ^ names.offset_high;
+                  "#define XYNOLOG_LOCK_BYTES 1";
+                ]
+              ^ "\n";
+          };
+          {
+            Output.path = generated ^ "SignInStore.hs";
+            text =
+              H.text
+                {
+                  banner = Banner.lines ~from_:Contract.file __FILE__;
+                  extensions = [];
+                  name = "Xynolog.Internal.Generated.SignInStore";
+                  imports = [];
+                  body =
+                    [
+                      Values
+                        {
+                          about = [];
+                          type_ = T_name "FilePath";
+                          values =
+                            [
+                              ("signInFileName", Str names.document);
+                              ("signInLockName", Str names.lock);
+                            ];
+                        };
+                    ];
+                };
+          };
+        ]
 
 let files ~root (spec : Spec.t) =
   let entry =

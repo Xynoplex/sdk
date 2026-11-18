@@ -335,6 +335,11 @@ and object_ state name ~attribute d =
   let s = layer name d.schema in
   if s.type_ <> Some [ Object ] && s.all_of = None then
     refuse "%s is not an object schema." name;
+  let owner =
+    Inherited.of_schemas
+      ~find:(fun n -> (definition state n).schema)
+      ~referenced name d.schema
+  in
   let fields =
     List.map
       (fun (wire, ((schema, _) as node)) ->
@@ -346,7 +351,7 @@ and object_ state name ~attribute d =
         let type_ =
           match constant with
           | Some _ -> C.T "string"
-          | None -> type_of state name field node
+          | None -> type_of state (owner wire) field node
         in
         { wire; name = field; type_; required; nullable; constant })
       (List.sort (fun (a, _) (b, _) -> String.compare a b) properties)

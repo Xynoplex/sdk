@@ -1440,13 +1440,12 @@ public struct BrowseClickEvent: Codable, Sendable {
 }
 
 public struct BrowseDirectoryFailed: Codable, Sendable {
-  public var code: BrowseDirectoryFailedCode?
+  public var code: CommandErrorCode?
   public var details: String?
   public var message: String
   public var path: String
-  public init(
-    code: BrowseDirectoryFailedCode? = nil, details: String? = nil, message: String, path: String
-  ) {
+  public init(code: CommandErrorCode? = nil, details: String? = nil, message: String, path: String)
+  {
     self.code = code
     self.details = details
     self.message = message
@@ -1466,13 +1465,6 @@ public struct BrowseDirectoryFailed: Codable, Sendable {
     try c.encode(self.message, as: "message")
     try c.encode(self.path, as: "path")
   }
-}
-
-public enum BrowseDirectoryFailedCode: String, Codable, Sendable, CaseIterable {
-  case peerUnavailable = "peer-unavailable"
-  case notFound = "not-found"
-  case unauthorized = "unauthorized"
-  case nonePending = "none-pending"
 }
 
 public struct BrowseDirectoryRequest: Codable, Sendable {
@@ -3505,11 +3497,11 @@ public struct GatherAnnotationRequest: Codable, Sendable {
 
 public struct GatherFailed: Codable, Sendable {
   public var annotationId: AnnotationId
-  public var code: GatherFailedCode?
+  public var code: CommandErrorCode?
   public var details: String?
   public var message: String
   public init(
-    annotationId: AnnotationId, code: GatherFailedCode? = nil, details: String? = nil,
+    annotationId: AnnotationId, code: CommandErrorCode? = nil, details: String? = nil,
     message: String
   ) {
     self.annotationId = annotationId
@@ -3531,13 +3523,6 @@ public struct GatherFailed: Codable, Sendable {
     try c.encodeIfPresent(self.details, as: "details")
     try c.encode(self.message, as: "message")
   }
-}
-
-public enum GatherFailedCode: String, Codable, Sendable, CaseIterable {
-  case peerUnavailable = "peer-unavailable"
-  case notFound = "not-found"
-  case unauthorized = "unauthorized"
-  case nonePending = "none-pending"
 }
 
 public struct GatherReferencedByRequest: Codable, Sendable {
@@ -3594,13 +3579,12 @@ public struct GatherResourceComplete: Codable, Sendable {
 }
 
 public struct GatherResourceFailed: Codable, Sendable {
-  public var code: GatherResourceFailedCode?
+  public var code: CommandErrorCode?
   public var details: String?
   public var message: String
   public var resourceId: ResourceId
   public init(
-    code: GatherResourceFailedCode? = nil, details: String? = nil, message: String,
-    resourceId: ResourceId
+    code: CommandErrorCode? = nil, details: String? = nil, message: String, resourceId: ResourceId
   ) {
     self.code = code
     self.details = details
@@ -3621,13 +3605,6 @@ public struct GatherResourceFailed: Codable, Sendable {
     try c.encode(self.message, as: "message")
     try c.encode(self.resourceId, as: "resourceId")
   }
-}
-
-public enum GatherResourceFailedCode: String, Codable, Sendable, CaseIterable {
-  case peerUnavailable = "peer-unavailable"
-  case notFound = "not-found"
-  case unauthorized = "unauthorized"
-  case nonePending = "none-pending"
 }
 
 public struct GatherResourceOptions: Codable, Sendable {
@@ -7545,12 +7522,12 @@ public struct MatchResourcesResult: Codable, Sendable {
 }
 
 public struct MatchSearchFailed: Codable, Sendable {
-  public var code: MatchSearchFailedCode?
+  public var code: CommandErrorCode?
   public var details: String?
   public var message: String
   public var referenceId: AnnotationId
   public init(
-    code: MatchSearchFailedCode? = nil, details: String? = nil, message: String,
+    code: CommandErrorCode? = nil, details: String? = nil, message: String,
     referenceId: AnnotationId
   ) {
     self.code = code
@@ -7572,13 +7549,6 @@ public struct MatchSearchFailed: Codable, Sendable {
     try c.encode(self.message, as: "message")
     try c.encode(self.referenceId, as: "referenceId")
   }
-}
-
-public enum MatchSearchFailedCode: String, Codable, Sendable, CaseIterable {
-  case peerUnavailable = "peer-unavailable"
-  case notFound = "not-found"
-  case unauthorized = "unauthorized"
-  case nonePending = "none-pending"
 }
 
 public struct MatchSearchRequest: Codable, Sendable {
@@ -9037,7 +9007,7 @@ public struct ResourceView: Codable, Sendable {
 }
 
 public struct ScoredResource: Codable, Sendable {
-  public var context: ScoredResourceContext
+  public var context: ResourceDescriptorContext
   public var id: ResourceId
   public var type: OneOrMoreStrings?
   public var about: OneOrMoreStrings?
@@ -9050,32 +9020,32 @@ public struct ScoredResource: Codable, Sendable {
   public var entityTypes: [String]?
   public var generator: OneOrMoreAgents?
   public var hasPart: [String]?
-  public var identifier: ScoredResourceIdentifier?
+  public var identifier: ResourceDescriptorIdentifier?
   public var isDraft: Bool?
   public var isPartOf: [String]?
   public var license: String?
   public var matchReason: String?
   public var name: String
   public var originatedFrom: String?
-  public var representations: ScoredResourceRepresentations
+  public var representations: ResourceDescriptorRepresentations
   public var sameAs: [String]?
   public var score: Double?
   public var sourceAnnotationId: AnnotationId?
   public var sourceResourceId: ResourceId?
   public var version: String?
   public var wasAttributedTo: OneOrMoreAgents?
-  public var wasDerivedFrom: ScoredResourceWasDerivedFrom?
+  public var wasDerivedFrom: ResourceDescriptorWasDerivedFrom?
   public init(
-    context: ScoredResourceContext, id: ResourceId, type: OneOrMoreStrings? = nil,
+    context: ResourceDescriptorContext, id: ResourceId, type: OneOrMoreStrings? = nil,
     about: OneOrMoreStrings? = nil, archived: Bool? = nil, availableFormats: [String]? = nil,
     conformsTo: OneOrMoreUris? = nil, dateCreated: String? = nil, dateModified: String? = nil,
     description: String? = nil, entityTypes: [String]? = nil, generator: OneOrMoreAgents? = nil,
-    hasPart: [String]? = nil, identifier: ScoredResourceIdentifier? = nil, isDraft: Bool? = nil,
+    hasPart: [String]? = nil, identifier: ResourceDescriptorIdentifier? = nil, isDraft: Bool? = nil,
     isPartOf: [String]? = nil, license: String? = nil, matchReason: String? = nil, name: String,
-    originatedFrom: String? = nil, representations: ScoredResourceRepresentations,
+    originatedFrom: String? = nil, representations: ResourceDescriptorRepresentations,
     sameAs: [String]? = nil, score: Double? = nil, sourceAnnotationId: AnnotationId? = nil,
     sourceResourceId: ResourceId? = nil, version: String? = nil,
-    wasAttributedTo: OneOrMoreAgents? = nil, wasDerivedFrom: ScoredResourceWasDerivedFrom? = nil
+    wasAttributedTo: OneOrMoreAgents? = nil, wasDerivedFrom: ResourceDescriptorWasDerivedFrom? = nil
   ) {
     self.context = context
     self.id = id
@@ -9167,173 +9137,6 @@ public struct ScoredResource: Codable, Sendable {
     try c.encodeIfPresent(self.version, as: "version")
     try c.encodeIfPresent(self.wasAttributedTo, as: "wasAttributedTo")
     try c.encodeIfPresent(self.wasDerivedFrom, as: "wasDerivedFrom")
-  }
-}
-
-public indirect enum ScoredResourceContext: Codable, Sendable {
-  case text(String)
-  case empty([String: JSONValue])
-  case list([ScoredResourceContextListItem])
-  public init(from decoder: any Decoder) throws {
-    if let value = try? String(from: decoder) {
-      self = .text(value)
-      return
-    }
-    if let value = try? [String: JSONValue](from: decoder) {
-      self = .empty(value)
-      return
-    }
-    if let value = try? [ScoredResourceContextListItem](from: decoder) {
-      self = .list(value)
-      return
-    }
-    throw DecodingError.dataCorrupted(
-      .init(
-        codingPath: decoder.codingPath, debugDescription: "no member of ScoredResourceContext fits")
-    )
-  }
-  public func encode(to encoder: any Encoder) throws {
-    switch self {
-    case .text(let value): try value.encode(to: encoder)
-    case .empty(let value): try value.encode(to: encoder)
-    case .list(let value): try value.encode(to: encoder)
-    }
-  }
-}
-
-public indirect enum ScoredResourceContextListItem: Codable, Sendable {
-  case text(String)
-  case empty([String: JSONValue])
-  public init(from decoder: any Decoder) throws {
-    if let value = try? String(from: decoder) {
-      self = .text(value)
-      return
-    }
-    if let value = try? [String: JSONValue](from: decoder) {
-      self = .empty(value)
-      return
-    }
-    throw DecodingError.dataCorrupted(
-      .init(
-        codingPath: decoder.codingPath,
-        debugDescription: "no member of ScoredResourceContextListItem fits"))
-  }
-  public func encode(to encoder: any Encoder) throws {
-    switch self {
-    case .text(let value): try value.encode(to: encoder)
-    case .empty(let value): try value.encode(to: encoder)
-    }
-  }
-}
-
-public indirect enum ScoredResourceIdentifier: Codable, Sendable {
-  case text(String)
-  case list([String])
-  case object(ScoredResourceIdentifierObject)
-  public init(from decoder: any Decoder) throws {
-    if let value = try? String(from: decoder) {
-      self = .text(value)
-      return
-    }
-    if let value = try? [String](from: decoder) {
-      self = .list(value)
-      return
-    }
-    if let value = try? ScoredResourceIdentifierObject(from: decoder) {
-      self = .object(value)
-      return
-    }
-    throw DecodingError.dataCorrupted(
-      .init(
-        codingPath: decoder.codingPath,
-        debugDescription: "no member of ScoredResourceIdentifier fits"))
-  }
-  public func encode(to encoder: any Encoder) throws {
-    switch self {
-    case .text(let value): try value.encode(to: encoder)
-    case .list(let value): try value.encode(to: encoder)
-    case .object(let value): try value.encode(to: encoder)
-    }
-  }
-}
-
-public struct ScoredResourceIdentifierObject: Codable, Sendable {
-  public var id: String?
-  public var scheme: String?
-  public var value: String?
-  public var rest: [String: JSONValue]
-  public init(
-    id: String? = nil, scheme: String? = nil, value: String? = nil, rest: [String: JSONValue] = [:]
-  ) {
-    self.id = id
-    self.scheme = scheme
-    self.value = value
-    self.rest = rest
-  }
-  public init(from decoder: any Decoder) throws {
-    let c = try decoder.container(keyedBy: WireKey.self)
-    self.id = try c.ifPresent("@id")
-    self.scheme = try c.ifPresent("scheme")
-    self.value = try c.ifPresent("value")
-    rest = try c.rest(excluding: ["@id", "scheme", "value"])
-  }
-  public func encode(to encoder: any Encoder) throws {
-    var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(
-      rest: rest, excluding: ["@id", "scheme", "value"], of: "ScoredResourceIdentifierObject")
-    try c.encodeIfPresent(self.id, as: "@id")
-    try c.encodeIfPresent(self.scheme, as: "scheme")
-    try c.encodeIfPresent(self.value, as: "value")
-  }
-}
-
-public indirect enum ScoredResourceRepresentations: Codable, Sendable {
-  case representation(Representation)
-  case list([Representation])
-  public init(from decoder: any Decoder) throws {
-    if let value = try? Representation(from: decoder) {
-      self = .representation(value)
-      return
-    }
-    if let value = try? [Representation](from: decoder) {
-      self = .list(value)
-      return
-    }
-    throw DecodingError.dataCorrupted(
-      .init(
-        codingPath: decoder.codingPath,
-        debugDescription: "no member of ScoredResourceRepresentations fits"))
-  }
-  public func encode(to encoder: any Encoder) throws {
-    switch self {
-    case .representation(let value): try value.encode(to: encoder)
-    case .list(let value): try value.encode(to: encoder)
-    }
-  }
-}
-
-public indirect enum ScoredResourceWasDerivedFrom: Codable, Sendable {
-  case resourceId(ResourceId)
-  case list([ResourceId])
-  public init(from decoder: any Decoder) throws {
-    if let value = try? ResourceId(from: decoder) {
-      self = .resourceId(value)
-      return
-    }
-    if let value = try? [ResourceId](from: decoder) {
-      self = .list(value)
-      return
-    }
-    throw DecodingError.dataCorrupted(
-      .init(
-        codingPath: decoder.codingPath,
-        debugDescription: "no member of ScoredResourceWasDerivedFrom fits"))
-  }
-  public func encode(to encoder: any Encoder) throws {
-    switch self {
-    case .resourceId(let value): try value.encode(to: encoder)
-    case .list(let value): try value.encode(to: encoder)
-    }
   }
 }
 

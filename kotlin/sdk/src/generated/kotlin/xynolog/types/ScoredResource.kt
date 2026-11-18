@@ -16,7 +16,7 @@ import xynolog.identifiers.ResourceId
 public data class ScoredResource(
     /** JSON-LD context; URI, object, or array of these. */
     @SerialName("@context")
-    public val context: ScoredResourceContext,
+    public val context: ResourceDescriptorContext,
     /** The id of the resource being described. */
     @SerialName("@id")
     @get:JvmExposeBoxed
@@ -27,7 +27,7 @@ public data class ScoredResource(
     public val name: String,
     public val description: String? = null,
     /** Persistent identifiers (e.g., DOI, URN). */
-    public val identifier: ScoredResourceIdentifier? = null,
+    public val identifier: ResourceDescriptorIdentifier? = null,
     /** Topics (IRIs or strings). */
     public val about: OneOrMoreStrings? = null,
     /** Equivalent/authoritative references. */
@@ -39,7 +39,7 @@ public data class ScoredResource(
     public val dateCreated: String? = null,
     public val dateModified: String? = null,
     /** W3C PROV: the resource, or resources, this one was derived from, each by its id */
-    public val wasDerivedFrom: ScoredResourceWasDerivedFrom? = null,
+    public val wasDerivedFrom: ResourceDescriptorWasDerivedFrom? = null,
     /** W3C PROV — every party responsible for this resource, derived by the knowledge base at creation from verified identities: `[requester, generator]` for a resource a job produced, collapsed to the one agent when the requester produced it. Never accepted from an emitter. */
     public val wasAttributedTo: OneOrMoreAgents? = null,
     /** Software peer that produced this resource (W3C Web Annotation model). Its identity is the verified emitter of the create; the parameters are the producer's to state. */
@@ -49,7 +49,7 @@ public data class ScoredResource(
     /** Convenience set summarizing media types across representations. */
     public val availableFormats: kotlin.collections.List<String>? = null,
     /** Managed or referenced byte-level renditions of this resource. */
-    public val representations: ScoredResourceRepresentations,
+    public val representations: ResourceDescriptorRepresentations,
     /** Application-specific: Whether this resource is archived */
     public val archived: Boolean? = null,
     /** Application-specific: Entity types for this resource */
@@ -71,14 +71,14 @@ public data class ScoredResource(
 ) {
     /** How Java makes a `ScoredResource`: `builder` takes what it must state, a setter each thing it may, and `build` makes it. */
     public class Builder internal constructor(
-        private val context: ScoredResourceContext,
+        private val context: ResourceDescriptorContext,
         private val id: ResourceId,
         private val name: String,
-        private val representations: ScoredResourceRepresentations,
+        private val representations: ResourceDescriptorRepresentations,
     ) {
         private var type: OneOrMoreStrings? = null
         private var description: String? = null
-        private var identifier: ScoredResourceIdentifier? = null
+        private var identifier: ResourceDescriptorIdentifier? = null
         private var about: OneOrMoreStrings? = null
         private var sameAs: kotlin.collections.List<String>? = null
         private var isPartOf: kotlin.collections.List<String>? = null
@@ -87,7 +87,7 @@ public data class ScoredResource(
         private var version: String? = null
         private var dateCreated: String? = null
         private var dateModified: String? = null
-        private var wasDerivedFrom: ScoredResourceWasDerivedFrom? = null
+        private var wasDerivedFrom: ResourceDescriptorWasDerivedFrom? = null
         private var wasAttributedTo: OneOrMoreAgents? = null
         private var generator: OneOrMoreAgents? = null
         private var conformsTo: OneOrMoreUris? = null
@@ -103,7 +103,7 @@ public data class ScoredResource(
 
         public fun type(type: OneOrMoreStrings?): Builder = apply { this.type = type }
         public fun description(description: String?): Builder = apply { this.description = description }
-        public fun identifier(identifier: ScoredResourceIdentifier?): Builder = apply { this.identifier = identifier }
+        public fun identifier(identifier: ResourceDescriptorIdentifier?): Builder = apply { this.identifier = identifier }
         public fun about(about: OneOrMoreStrings?): Builder = apply { this.about = about }
         public fun sameAs(sameAs: kotlin.collections.List<String>?): Builder = apply { this.sameAs = sameAs }
         public fun isPartOf(isPartOf: kotlin.collections.List<String>?): Builder = apply { this.isPartOf = isPartOf }
@@ -112,7 +112,7 @@ public data class ScoredResource(
         public fun version(version: String?): Builder = apply { this.version = version }
         public fun dateCreated(dateCreated: String?): Builder = apply { this.dateCreated = dateCreated }
         public fun dateModified(dateModified: String?): Builder = apply { this.dateModified = dateModified }
-        public fun wasDerivedFrom(wasDerivedFrom: ScoredResourceWasDerivedFrom?): Builder = apply { this.wasDerivedFrom = wasDerivedFrom }
+        public fun wasDerivedFrom(wasDerivedFrom: ResourceDescriptorWasDerivedFrom?): Builder = apply { this.wasDerivedFrom = wasDerivedFrom }
         public fun wasAttributedTo(wasAttributedTo: OneOrMoreAgents?): Builder = apply { this.wasAttributedTo = wasAttributedTo }
         public fun generator(generator: OneOrMoreAgents?): Builder = apply { this.generator = generator }
         public fun conformsTo(conformsTo: OneOrMoreUris?): Builder = apply { this.conformsTo = conformsTo }
@@ -138,6 +138,6 @@ public data class ScoredResource(
         /** A builder of a `ScoredResource` that states these, and what its setters add. */
         @JvmStatic
         @JvmExposeBoxed
-        public fun builder(context: ScoredResourceContext, id: ResourceId, name: String, representations: ScoredResourceRepresentations): Builder = Builder(context, id, name, representations)
+        public fun builder(context: ResourceDescriptorContext, id: ResourceId, name: String, representations: ResourceDescriptorRepresentations): Builder = Builder(context, id, name, representations)
     }
 }

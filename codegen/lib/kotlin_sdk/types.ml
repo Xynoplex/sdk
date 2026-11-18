@@ -187,12 +187,14 @@ type spec = {
   component_of_file : (string * string) list;
 }
 
+let component spec (r : Decode.reference) =
+  match Decode.resolve r with
+  | file, "" when List.mem_assoc file spec.component_of_file ->
+      List.assoc file spec.component_of_file
+  | _ -> refuse "$ref %s is not a component schema" r.target
+
 let reference spec = function
-  | Ref r -> (
-      match Decode.resolve r with
-      | file, "" when List.mem_assoc file spec.component_of_file ->
-          Some (List.assoc file spec.component_of_file)
-      | _ -> refuse "$ref %s is not a component schema" r.target)
+  | Ref r -> Some (component spec r)
   | Bool_node _ | Null_type | Node _ -> None
 
 let schema spec name =
@@ -236,6 +238,8 @@ type written =
 type state = {
   spec : spec;
   written : (string, written) Hashtbl.t;
+  inlined : (string, node) Hashtbl.t;
+      (** The schema each type written in place was written from. *)
   identifiers_written : (string, K.decl) Hashtbl.t;
   unions_of : (string, string list) Hashtbl.t;
 }
@@ -244,6 +248,7 @@ let state spec =
   {
     spec;
     written = Hashtbl.create 512;
+    inlined = Hashtbl.create 256;
     identifiers_written = Hashtbl.create 8;
     unions_of = Hashtbl.create 512;
   }
@@ -307,15 +312,21 @@ let rec named st name =
    long as a schema already has that name. *)
 and inline_name st owner property =
   let rec free name =
-    if List.mem_assoc name st.spec.definitions || Hashtbl.mem st.written name
-    then free (name ^ "Value")
+    if List.mem_assoc name st.spec.definitions then free (name ^ "Value")
     else name
   in
   free (owner ^ Names.pascal property)
 
 and inline st name n =
-  Hashtbl.replace st.written name Pending;
-  Hashtbl.replace st.written name (declaration st name n);
+  (match Hashtbl.find_opt st.inlined name with
+  | Some written when written = n -> ()
+  | Some _ -> refuse "two different schemas written in place as %s" name
+  | None when Hashtbl.mem st.written name ->
+      refuse "a schema written in place as %s, which another type is" name
+  | None ->
+      Hashtbl.replace st.inlined name n;
+      Hashtbl.replace st.written name Pending;
+      Hashtbl.replace st.written name (declaration st name n));
   t name
 
 (* The Kotlin type of a value [owner]'s property [property] holds, not null. *)
@@ -414,10 +425,15 @@ and declaration st name raw : written =
       in
       union_declaration st name members told_apart about
   | None -> (
-      match all_of raw with
-      | Some members ->
-          object_declaration st name (merged st name members) about
-      | None -> (
+      match (all_of raw, keywords raw) with
+      | Some members, Some s ->
+          object_declaration st name
+            ~owner:
+              (Inherited.of_schemas
+                 ~find:(fun n -> List.assoc n st.spec.definitions)
+                 ~referenced:(component st.spec) name (Schema.Schema s))
+            (merged st name members) about
+      | _ -> (
           refuse_const name raw;
           match enum raw with
           | Some values ->
@@ -433,6 +449,7 @@ and declaration st name raw : written =
                 refuse "%s: a schema shape the generator does not know" name
               else
                 object_declaration st name
+                  ~owner:(fun _ -> name)
                   {
                     stated_properties =
                       Option.value ~default:[] (properties raw);
@@ -495,8 +512,8 @@ and property st owner wire n required =
   in
   { wire; name; type_; about; boxed; form }
 
-and object_declaration st name { stated_properties; required_names; beside }
-    about : written =
+and object_declaration st name ~owner
+    { stated_properties; required_names; beside } about : written =
   let open_ =
     match beside with
     | Some (Boolean_schema true) -> true
@@ -530,7 +547,8 @@ and object_declaration st name { stated_properties; required_names; beside }
       let props =
         List.map
           (fun (wire, s) ->
-            property st name wire (node s) (List.mem wire required_names))
+            property st (owner wire) wire (node s)
+              (List.mem wire required_names))
           stated_properties
       in
       List.iteri
