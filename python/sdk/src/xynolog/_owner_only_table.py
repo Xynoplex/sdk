@@ -6,7 +6,7 @@
 
 from typing import Final
 
-__all__ = ["DIRECTORY_MODE", "FILE_MODE", "access_list"]
+__all__ = ["DIRECTORY_MODE", "FILE_MODE", "directory_access_list"]
 
 # The directory's mode, in octal, on a system that has modes: its owner reads, writes and enters
 # it, and nobody else does.
@@ -18,7 +18,7 @@ DIRECTORY_MODE: Final = 0o700
 FILE_MODE: Final = 0o600
 
 
-def access_list(owner: str) -> str:
+def directory_access_list(owner: str) -> str:
     """The directory's access list on Windows, where a mode keeps nobody out, in SDDL, with `owner`
     where the SID of the user the writer runs as goes (its process token's user): full access
     for that user, the system and the administrators, and nobody else. It is handed down to
