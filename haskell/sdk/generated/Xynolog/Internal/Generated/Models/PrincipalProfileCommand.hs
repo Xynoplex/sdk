@@ -1,16 +1,22 @@
 -- Generated from protocol/specs/src; do not edit.
 -- Regenerate: make generate (codegen/lib/haskell_sdk/haskell_sdk.ml)
 {-# LANGUAGE OverloadedStrings #-}
-module Xynolog.Internal.Generated.Models.PrincipalProfileCommand (PrincipalProfileCommand(..)) where
-import Data.Aeson (FromJSON(..), ToJSON(..), Value(..), withObject, (.:))
-import qualified Data.Aeson.KeyMap as KM
+
+module Xynolog.Internal.Generated.Models.PrincipalProfileCommand (PrincipalProfileCommand (..)) where
+
+import Data.Aeson (FromJSON (..), ToJSON (..), Value (..), withObject, (.:))
+import Data.Aeson.KeyMap qualified as KM
 import Data.Text (Text)
 import Xynolog.Internal.Codec
 import Xynolog.Internal.Generated.Models.UserId
+
 data PrincipalProfileCommand = PrincipalProfileCommand
-  { principalProfileCommandU5f_userId :: Maybe UserId
-  , principalProfileCommandName :: Text
-  , principalProfileCommandAdditionalProperties :: KM.KeyMap Value
-  } deriving (Eq, Show)
+  { principalProfileCommandU5f_userId :: Maybe UserId,
+    principalProfileCommandName :: Text,
+    principalProfileCommandAdditionalProperties :: KM.KeyMap Value
+  }
+  deriving (Eq, Show)
+
 instance FromJSON PrincipalProfileCommand where parseJSON = checked "PrincipalProfileCommand" $ withObject "PrincipalProfileCommand" (\fields -> PrincipalProfileCommand <$> optional fields "_userId" <*> (fields .: "name") <*> traverse parseJSON (withoutFields ["_userId", "name"] fields))
+
 instance ToJSON PrincipalProfileCommand where toJSON value = Object (KM.fromList (concat [optionalPair "_userId" (principalProfileCommandU5f_userId value), [("name", toJSON (principalProfileCommandName value))]]) <> fmap toJSON (withoutFields ["_userId", "name"] (principalProfileCommandAdditionalProperties value)))

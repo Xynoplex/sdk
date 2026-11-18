@@ -1,0 +1,4 @@
+-- The formatter test-haskell checks the SDK with, pinned by the freeze
+-- file beside this one. The project builds no package of its own.
+optional-packages: ./*.cabal
+extra-packages: ormolu

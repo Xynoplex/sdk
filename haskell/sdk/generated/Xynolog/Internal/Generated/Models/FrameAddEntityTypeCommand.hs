@@ -1,16 +1,22 @@
 -- Generated from protocol/specs/src; do not edit.
 -- Regenerate: make generate (codegen/lib/haskell_sdk/haskell_sdk.ml)
 {-# LANGUAGE OverloadedStrings #-}
-module Xynolog.Internal.Generated.Models.FrameAddEntityTypeCommand (FrameAddEntityTypeCommand(..)) where
-import Data.Aeson (FromJSON(..), ToJSON(..), Value(..), withObject, (.:))
-import qualified Data.Aeson.KeyMap as KM
+
+module Xynolog.Internal.Generated.Models.FrameAddEntityTypeCommand (FrameAddEntityTypeCommand (..)) where
+
+import Data.Aeson (FromJSON (..), ToJSON (..), Value (..), withObject, (.:))
+import Data.Aeson.KeyMap qualified as KM
 import Data.Text (Text)
 import Xynolog.Internal.Codec
 import Xynolog.Internal.Generated.Models.UserId
+
 data FrameAddEntityTypeCommand = FrameAddEntityTypeCommand
-  { frameAddEntityTypeCommandU5f_userId :: Maybe UserId
-  , frameAddEntityTypeCommandTag :: Text
-  , frameAddEntityTypeCommandAdditionalProperties :: KM.KeyMap Value
-  } deriving (Eq, Show)
+  { frameAddEntityTypeCommandU5f_userId :: Maybe UserId,
+    frameAddEntityTypeCommandTag :: Text,
+    frameAddEntityTypeCommandAdditionalProperties :: KM.KeyMap Value
+  }
+  deriving (Eq, Show)
+
 instance FromJSON FrameAddEntityTypeCommand where parseJSON = checked "FrameAddEntityTypeCommand" $ withObject "FrameAddEntityTypeCommand" (\fields -> FrameAddEntityTypeCommand <$> optional fields "_userId" <*> (fields .: "tag") <*> traverse parseJSON (withoutFields ["_userId", "tag"] fields))
+
 instance ToJSON FrameAddEntityTypeCommand where toJSON value = Object (KM.fromList (concat [optionalPair "_userId" (frameAddEntityTypeCommandU5f_userId value), [("tag", toJSON (frameAddEntityTypeCommandTag value))]]) <> fmap toJSON (withoutFields ["_userId", "tag"] (frameAddEntityTypeCommandAdditionalProperties value)))

@@ -1,11 +1,16 @@
 -- Generated from protocol/specs/src; do not edit.
 -- Regenerate: make generate (codegen/lib/haskell_sdk/haskell_sdk.ml)
 {-# LANGUAGE OverloadedStrings #-}
-module Xynolog.Internal.Generated.Models.LogLevel (LogLevel(..)) where
-import Data.Aeson (FromJSON(..), ToJSON(..), Value(..))
+
+module Xynolog.Internal.Generated.Models.LogLevel (LogLevel (..)) where
+
+import Data.Aeson (FromJSON (..), ToJSON (..), Value (..))
 import Xynolog.Internal.Codec
+
 data LogLevel = LogLevelError | LogLevelWarn | LogLevelInfo | LogLevelHttp | LogLevelDebug deriving (Eq, Show)
+
 instance FromJSON LogLevel where parseJSON = checked "LogLevel" $ \value -> if value == String "error" then pure LogLevelError else if value == String "warn" then pure LogLevelWarn else if value == String "info" then pure LogLevelInfo else if value == String "http" then pure LogLevelHttp else if value == String "debug" then pure LogLevelDebug else fail "unknown enumeration member"
+
 instance ToJSON LogLevel where
   toJSON LogLevelError = String "error"
   toJSON LogLevelWarn = String "warn"

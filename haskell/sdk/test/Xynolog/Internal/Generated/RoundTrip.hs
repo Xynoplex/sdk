@@ -1,11 +1,14 @@
 -- Generated from protocol/specs/src; do not edit.
 -- Regenerate: make generate (codegen/lib/haskell_sdk/haskell_sdk.ml)
 {-# LANGUAGE OverloadedStrings #-}
+
 module Xynolog.Internal.Generated.RoundTrip (roundTrip) where
+
 import Data.Aeson (Value, parseJSON, toJSON)
 import Data.Aeson.Types (parseEither)
 import Data.Text (Text)
 import Xynolog.Types
+
 roundTrip :: Text -> Value -> Either String Value
 roundTrip name value = case name of
   "Agent" -> toJSON <$> (parseEither parseJSON value :: Either String Agent)

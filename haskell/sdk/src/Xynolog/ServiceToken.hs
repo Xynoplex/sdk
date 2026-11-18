@@ -1,29 +1,32 @@
-{-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+
 -- | One service account's lazy client-credentials grant. No private key or
 -- secret is sent to a gateway; only the issuer receives the account's proof.
 module Xynolog.ServiceToken (ServiceToken, newServiceTokenSecret, newServiceTokenKey, token, renew, authorization, dispose) where
 
 import Control.Concurrent.MVar
-import Control.Exception (throwIO, try, SomeException)
+import Control.Exception (SomeException, throwIO, try)
 import Crypto.PubKey.RSA.Types (PrivateKey)
 import Crypto.Random (getRandomBytes)
-import qualified Data.ByteString as Bytes
-import qualified Data.ByteString.Base64.URL as Base64
+import Data.ByteString qualified as Bytes
+import Data.ByteString.Base64.URL qualified as Base64
 import Data.Scientific (Scientific)
 import Data.Text (Text)
-import qualified Data.Text as Text
+import Data.Text qualified as Text
 import Data.Text.Encoding (decodeUtf8)
-import qualified Xynolog.ClientAssertion as Assertion
-import Xynolog.Errors (SignInError(..))
-import qualified Xynolog.ErrorCodes as Code
+import Xynolog.ClientAssertion qualified as Assertion
+import Xynolog.ErrorCodes qualified as Code
+import Xynolog.Errors (SignInError (..))
 import Xynolog.Internal.Generated.ServiceProof (secretProof)
-import qualified Xynolog.Internal.Issuer as Issuer
-import qualified Xynolog.Internal.Lifetime as Lifetime
-import qualified Xynolog.Retry as Retry
-import qualified Xynolog.Tokens as Tokens
+import Xynolog.Internal.Issuer qualified as Issuer
+import Xynolog.Internal.Lifetime qualified as Lifetime
+import Xynolog.Retry qualified as Retry
+import Xynolog.Tokens qualified as Tokens
 
-data ServiceToken = ServiceToken Issuer.IssuerOptions Text (Text -> IO [(Text,Text)]) (MVar Held) Lifetime.Lifetime
-data Held = Held (Maybe Text) (Maybe (Text,Integer))
+data ServiceToken = ServiceToken Issuer.IssuerOptions Text (Text -> IO [(Text, Text)]) (MVar Held) Lifetime.Lifetime
+
+data Held = Held (Maybe Text) (Maybe (Text, Integer))
 
 newServiceTokenSecret :: Issuer.IssuerOptions -> Text -> Text -> Text -> IO ServiceToken
 newServiceTokenSecret options authority identity secret =
@@ -35,28 +38,33 @@ newServiceTokenKey options authority identity key wallNow = make options authori
   nonce <- decodeUtf8 . Base64.encodeUnpadded <$> (getRandomBytes 24 :: IO Bytes.ByteString)
   Assertion.assertionForm key identity endpoint issued nonce
 
-make :: Issuer.IssuerOptions -> Text -> (Text -> IO [(Text,Text)]) -> IO ServiceToken
-make options authority proof = ServiceToken options authority proof <$> newMVar (Held Nothing Nothing)
-  <*> Lifetime.newLifetime "Service token is closed"
+make :: Issuer.IssuerOptions -> Text -> (Text -> IO [(Text, Text)]) -> IO ServiceToken
+make options authority proof =
+  ServiceToken options authority proof
+    <$> newMVar (Held Nothing Nothing)
+    <*> Lifetime.newLifetime "Service token is closed"
 
 token :: ServiceToken -> IO Text
 token value = acquire value Nothing
+
 renew :: ServiceToken -> Text -> IO Text
 renew value refused = acquire value (Just refused)
+
 authorization :: ServiceToken -> IO Text
-authorization value = ("Bearer "<>) <$> token value
+authorization value = ("Bearer " <>) <$> token value
 
 acquireEndpoint :: Issuer.IssuerOptions -> Text -> Maybe Text -> IO Text
 acquireEndpoint _ _ (Just endpoint) = pure endpoint
-acquireEndpoint options authority Nothing = Issuer.configuration options authority
-  >>= Issuer.requiredText Code.SignInDiscovery "token_endpoint"
+acquireEndpoint options authority Nothing =
+  Issuer.configuration options authority
+    >>= Issuer.requiredText Code.SignInDiscovery "token_endpoint"
 
 acquire :: ServiceToken -> Maybe Text -> IO Text
 acquire (ServiceToken options authority proof held lifetime) refused = Lifetime.run lifetime $ do
   answer <- modifyMVar held $ \(Held endpoint cached) -> do
     now <- Retry.retryNow (Issuer.issuerTime options)
     case cached of
-      Just (access,due) | now<due && Just access/=refused -> pure (Held endpoint cached,Right access)
+      Just (access, due) | now < due && Just access /= refused -> pure (Held endpoint cached, Right access)
       _ -> do
         address <- acquireEndpoint options authority endpoint
         -- The endpoint was learned successfully even if the grant fails. A
@@ -64,23 +72,32 @@ acquire (ServiceToken options authority proof held lifetime) refused = Lifetime.
         granted <- try $ do
           form <- proof address
           Issuer.Answer status body <- Issuer.requestJson options Code.SignInExchange address (Just form)
-          unlessGood status (status>=200 && status<300)
+          unlessGood status (status >= 200 && status < 300)
           access <- Issuer.requiredText Code.SignInExchange "access_token" body
           unlessGood status (not (Text.null access))
           instant <- Retry.retryNow (Issuer.issuerTime options)
           let reuse = case Issuer.number "expires_in" body of
                 Nothing -> Nothing
-                Just seconds | seconds<=0 -> Nothing
-                Just seconds -> Just (access,instant+ceiling
-                  (min seconds (Tokens.renewalDelay (Issuer.issuerTiming options) seconds seconds)*1000000000))
-          pure (reuse,access)
+                Just seconds | seconds <= 0 -> Nothing
+                Just seconds ->
+                  Just
+                    ( access,
+                      instant
+                        + ceiling
+                          (min seconds (Tokens.renewalDelay (Issuer.issuerTiming options) seconds seconds) * 1000000000)
+                    )
+          pure (reuse, access)
         case granted of
-          Left (failure :: SomeException) -> pure (Held (Just address) Nothing,Left failure)
-          Right (reuse,access) -> pure (Held (Just address) reuse,Right access)
+          Left (failure :: SomeException) -> pure (Held (Just address) Nothing, Left failure)
+          Right (reuse, access) -> pure (Held (Just address) reuse, Right access)
   either throwIO pure answer
   where
-    unlessGood status good = if good then pure () else throwIO
-      (SignInError Code.SignInExchange "The issuer refused the account grant" (Just status))
+    unlessGood status good =
+      if good
+        then pure ()
+        else
+          throwIO
+            (SignInError Code.SignInExchange "The issuer refused the account grant" (Just status))
 
 dispose :: ServiceToken -> IO ()
 dispose (ServiceToken _ _ _ _ lifetime) = Lifetime.close lifetime

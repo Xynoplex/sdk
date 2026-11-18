@@ -1,8 +1,8 @@
-module Xynolog.Timing.Settings (Settings(..), protocolSettings, withOverrides) where
+module Xynolog.Timing.Settings (Settings (..), protocolSettings, withOverrides) where
 
-import Data.Aeson (Result(..), Value(..), fromJSON, toJSON)
-import qualified Data.Aeson.KeyMap as KM
-import Xynolog.Internal.Generated.TimingSettings (Settings(..), protocolSettings)
+import Data.Aeson (Result (..), Value (..), fromJSON, toJSON)
+import Data.Aeson.KeyMap qualified as KM
+import Xynolog.Internal.Generated.TimingSettings (Settings (..), protocolSettings)
 
 -- | Protocol's timing with each member 'overrides' states in its place.
 withOverrides :: Value -> Either String Settings

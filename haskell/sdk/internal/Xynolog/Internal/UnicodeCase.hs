@@ -7,8 +7,8 @@
 module Xynolog.Internal.UnicodeCase (lowerChar, finalChar, isCased, caseIgnorable, whiteSpace) where
 
 import Data.Char (ord)
-import qualified Data.IntMap.Strict as Map
-import qualified Xynolog.Internal.Generated.UnicodeCase as Table
+import Data.IntMap.Strict qualified as Map
+import Xynolog.Internal.Generated.UnicodeCase qualified as Table
 
 -- | A character lower-cased, and lower-cased where it ends a word.
 lowerChar, finalChar :: Char -> String

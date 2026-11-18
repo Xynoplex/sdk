@@ -4,15 +4,15 @@ module WorkerCases (workerCases) where
 
 import Control.Monad (forM_, unless)
 import Data.Aeson (Value, eitherDecodeStrict', parseJSON, withObject, (.:))
-import qualified Data.Aeson.KeyMap as KM
+import Data.Aeson.KeyMap qualified as KM
 import Data.Aeson.Types (Parser, parseEither)
-import qualified Data.ByteString as Bytes
+import Data.ByteString qualified as Bytes
 import Data.Text (Text)
-import qualified Data.Text as T
+import Data.Text qualified as T
+import System.FilePath ((</>))
 import Xynolog.Claims (willRetryAfter)
 import Xynolog.JobFilter (jobMatchesFilter)
-import Xynolog.Types (FailureClass, JobFilter, JobMetadata(..))
-import System.FilePath ((</>))
+import Xynolog.Types (FailureClass, JobFilter, JobMetadata (..))
 
 readCases :: FilePath -> (Value -> Parser row) -> IO [row]
 readCases path parser = do
@@ -40,6 +40,6 @@ workerCases root metadata = do
     unless (jobMatchesFilter filterValue job == expected) (ioError (userError ("job filter: " ++ T.unpack why)))
   retries <- readCases (root </> "protocol/specs/src/jobs/retry-cases.json") retryCase
   forM_ retries $ \(why, retryCount, maxRetries, failure, expected) -> do
-    let budget = metadata { jobMetadataRetryCount = retryCount, jobMetadataMaxRetries = maxRetries }
+    let budget = metadata {jobMetadataRetryCount = retryCount, jobMetadataMaxRetries = maxRetries}
     unless (willRetryAfter budget failure == expected) (ioError (userError ("job retry: " ++ T.unpack why)))
   putStrLn ("PASS all " ++ show (length filters) ++ " job-filter and " ++ show (length retries) ++ " job-retry cases")

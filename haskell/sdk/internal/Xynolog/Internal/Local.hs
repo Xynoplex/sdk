@@ -1,18 +1,20 @@
-{-# LANGUAGE GADTs, OverloadedStrings #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE OverloadedStrings #-}
+
 module Xynolog.Internal.Local (signal, signalWithCorrelation, events) where
 
 import Control.Concurrent.STM (STM, throwSTM)
-import Data.Aeson (Value(..))
+import Data.Aeson (Value (..))
 import Data.Text (Text)
-import qualified Data.Text as T
-import Xynolog.Channels
-import qualified Xynolog.ErrorCodes as Codes
-import Xynolog.Errors (TransportError(..))
-import Xynolog.Internal.Bus (Heard, decoded)
-import qualified Xynolog.Internal.Transport as Local
-import Xynolog.Types (BusFrame(..), BusFramePayload(..), ResourceId)
+import Data.Text qualified as T
 import Streaming (Of, Stream)
-import qualified Streaming.Prelude as Stream
+import Streaming.Prelude qualified as Stream
+import Xynolog.Channels
+import Xynolog.ErrorCodes qualified as Codes
+import Xynolog.Errors (TransportError (..))
+import Xynolog.Internal.Bus (Heard, decoded)
+import Xynolog.Internal.Transport qualified as Local
+import Xynolog.Types (BusFrame (..), BusFramePayload (..), ResourceId)
 
 scopeOf :: ScopeArg scope -> Maybe ResourceId
 scopeOf NoScope = Nothing
@@ -27,11 +29,17 @@ signalWithCorrelation bus channel payload scope correlation = case encodePayload
     Right _ -> Local.localSTM bus (Local.Frame (BusFrame (channelName channel) correlation (BusFramePayload fields) (scopeOf scope)) Nothing)
     Left reason -> invalid (T.pack reason)
   _ -> invalid "local payload is not an object"
-  where invalid :: Text -> STM ()
-        invalid reason = throwSTM (TransportError Codes.TransportError reason Nothing Nothing)
+  where
+    invalid :: Text -> STM ()
+    invalid reason = throwSTM (TransportError Codes.TransportError reason Nothing Nothing)
 
-events :: Local.EventBus -> Channel scope payload -> ScopeArg scope
-  -> (Stream (Of (Heard payload)) IO () -> IO result) -> IO result
+events ::
+  Local.EventBus ->
+  Channel scope payload ->
+  ScopeArg scope ->
+  (Stream (Of (Heard payload)) IO () -> IO result) ->
+  IO result
 events bus channel scope consume = Local.events bus (channelName channel) $ \frames ->
   consume (Stream.map (decoded channel) (Stream.filter matches frames))
-  where matches frame = maybe True (\resource -> Local.carriedScope frame == Just resource) (scopeOf scope)
+  where
+    matches frame = maybe True (\resource -> Local.carriedScope frame == Just resource) (scopeOf scope)

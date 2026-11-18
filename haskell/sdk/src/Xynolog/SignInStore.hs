@@ -1,60 +1,73 @@
 {-# LANGUAGE OverloadedStrings #-}
+
 -- | The launcher-compatible tokens.json store. Reads see whole documents;
 -- every change holds tokens.lock through an atomic sibling-file replacement.
 module Xynolog.SignInStore
-  ( SignInStore, SignInStoreOptions(..), newSignInStore, path, signInFileName, stateDirectory, thisSystem
-  , signIns, signIn, entry
-  ) where
+  ( SignInStore,
+    SignInStoreOptions (..),
+    newSignInStore,
+    path,
+    signInFileName,
+    stateDirectory,
+    thisSystem,
+    signIns,
+    signIn,
+    entry,
+  )
+where
 
 import Control.Concurrent.MVar
 import Control.Exception (IOException, bracketOnError, catch, finally, throwIO)
 import Control.Monad (unless, when)
-import Data.Aeson (Object, Value(..), eitherDecodeStrict', encode, fromJSON, Result(..), toJSON)
-import qualified Data.Aeson.Key as Key
-import qualified Data.Aeson.KeyMap as KM
 import Crypto.Random (getRandomBytes)
-import qualified Data.ByteString as Bytes
-import qualified Data.ByteString.Base64.URL as Base64
-import qualified Data.ByteString.Char8 as Char8
-import qualified Data.ByteString.Lazy as Lazy
-import qualified Data.Map.Strict as Map
+import Data.Aeson (Object, Result (..), Value (..), eitherDecodeStrict', encode, fromJSON, toJSON)
+import Data.Aeson.Key qualified as Key
+import Data.Aeson.KeyMap qualified as KM
+import Data.ByteString qualified as Bytes
+import Data.ByteString.Base64.URL qualified as Base64
+import Data.ByteString.Char8 qualified as Char8
+import Data.ByteString.Lazy qualified as Lazy
+import Data.Map.Strict qualified as Map
 import Data.Text (Text)
-import qualified Data.Text as Text
-import Data.Time (UTCTime, formatTime, defaultTimeLocale)
+import Data.Text qualified as Text
+import Data.Time (UTCTime, defaultTimeLocale, formatTime)
 import Data.Time.Clock.POSIX (posixSecondsToUTCTime, utcTimeToPOSIXSeconds)
 import Data.Time.Format.ISO8601 (iso8601ParseM)
-import qualified Xynolog.Internal.NativeStore as Native
-import Xynolog.Internal.Generated.SignInStore (signInFileName)
-import qualified Xynolog.Internal.Generated.SignInStore as Policy
-import qualified Xynolog.Internal.Generated.OAuth as OAuth
-import qualified Xynolog.Internal.SignIn as SignIn
-import qualified Xynolog.Retry as Retry
-import qualified Xynolog.Tokens as Tokens
-import Xynolog.Errors (SignInError(..))
-import Xynolog.ErrorCodes (SignInCode(SignInExchange))
-import Xynolog.Types (SignIn(..), StoredSession(..))
-import System.Directory (createDirectoryIfMissing, renameFile, removeFile)
+import System.Directory (createDirectoryIfMissing, removeFile, renameFile)
 import System.FilePath (takeDirectory, takeFileName, (</>))
-import qualified System.FilePath.Posix as Posix
-import qualified System.FilePath.Windows as Windows
-import System.IO (IOMode(WriteMode), openBinaryFile, hClose, hFlush, hIsClosed)
+import System.FilePath.Posix qualified as Posix
+import System.FilePath.Windows qualified as Windows
+import System.IO (IOMode (WriteMode), hClose, hFlush, hIsClosed, openBinaryFile)
 import System.IO.Error (isDoesNotExistError)
-import qualified System.Info as System
+import System.Info qualified as System
+import Xynolog.ErrorCodes (SignInCode (SignInExchange))
+import Xynolog.Errors (SignInError (..))
+import Xynolog.Internal.Generated.OAuth qualified as OAuth
+import Xynolog.Internal.Generated.SignInStore (signInFileName)
+import Xynolog.Internal.Generated.SignInStore qualified as Policy
+import Xynolog.Internal.NativeStore qualified as Native
+import Xynolog.Internal.SignIn qualified as SignIn
+import Xynolog.Retry qualified as Retry
+import Xynolog.Tokens qualified as Tokens
+import Xynolog.Types (SignIn (..), StoredSession (..))
 
 data SignInStoreOptions = SignInStoreOptions
-  { signInStoreTime :: Retry.RetryOptions
-  , signInStoreLockRetryMs :: Integer
-  -- ^ A positive interval on the caller's clock between nonblocking attempts.
-  , signInStoreWallNow :: IO UTCTime
+  { signInStoreTime :: Retry.RetryOptions,
+    -- | A positive interval on the caller's clock between nonblocking attempts.
+    signInStoreLockRetryMs :: Integer,
+    signInStoreWallNow :: IO UTCTime
   }
+
 data SignInStore = SignInStore SignInStoreOptions FilePath (MVar ())
 
 newSignInStore :: SignInStoreOptions -> FilePath -> IO SignInStore
 newSignInStore options filename = do
-  when (null filename || '\0' `elem` filename || takeFileName filename `elem` ["", ".", ".."])
+  when
+    (null filename || '\0' `elem` filename || takeFileName filename `elem` ["", ".", ".."])
     (ioError (userError "The sign-in store needs a named file path"))
-  when (signInStoreLockRetryMs options<=0) (ioError (userError "Sign-in lock retry interval must be positive"))
+  when (signInStoreLockRetryMs options <= 0) (ioError (userError "Sign-in lock retry interval must be positive"))
   SignInStore options filename <$> newMVar ()
+
 path :: SignInStore -> FilePath
 path (SignInStore _ filename _) = filename
 
@@ -64,17 +77,20 @@ stateDirectory :: Text -> Maybe FilePath -> Maybe FilePath -> Maybe FilePath -> 
 stateDirectory system home xdg local = do
   base <- nonempty home
   pure $ case system of
-    "macos" -> foldl (Posix.</>) base ["Library","Application Support","xynolog"]
-    "windows" -> maybe (foldl (Windows.</>) base ["AppData","Local","xynolog"]) (Windows.</> "xynolog") (nonempty local)
-    _ -> maybe (foldl (Posix.</>) base [".local","state","xynolog"]) (Posix.</> "xynolog") (nonempty xdg)
-  where nonempty value = value >>= \text -> if null text then Nothing else Just text
+    "macos" -> foldl (Posix.</>) base ["Library", "Application Support", "xynolog"]
+    "windows" -> maybe (foldl (Windows.</>) base ["AppData", "Local", "xynolog"]) (Windows.</> "xynolog") (nonempty local)
+    _ -> maybe (foldl (Posix.</>) base [".local", "state", "xynolog"]) (Posix.</> "xynolog") (nonempty xdg)
+  where
+    nonempty value = value >>= \text -> if null text then Nothing else Just text
+
 thisSystem :: Text
 thisSystem = case System.os of "darwin" -> "macos"; "mingw32" -> "windows"; other -> Text.pack other
 
 readDocument :: SignInStore -> IO Object
 readDocument store = do
-  content <- (Just <$> Bytes.readFile (path store)) `catch` \failure ->
-    if isDoesNotExistError failure then pure Nothing else throwIO (failure::IOException)
+  content <-
+    (Just <$> Bytes.readFile (path store)) `catch` \failure ->
+      if isDoesNotExistError failure then pure Nothing else throwIO (failure :: IOException)
   case content of
     Nothing -> pure KM.empty
     Just bytes -> case eitherDecodeStrict' bytes of
@@ -85,20 +101,23 @@ record :: Value -> Maybe SignIn
 record value = case fromJSON value of
   Success parsed | validDate (signInObtainedAt parsed) && maybe True validDate (signInExpiresAt parsed) -> Just parsed
   _ -> Nothing
-  where validDate text = case iso8601ParseM (Text.unpack text) :: Maybe UTCTime of Just _ -> True; _ -> False
-signIns :: SignInStore -> IO (Map.Map Text SignIn)
-signIns store = Map.fromList . map (\(key,value) -> (Key.toText key,value)) . KM.toList . KM.mapMaybe record <$> readDocument store
-signIn :: SignInStore -> Text -> IO (Maybe SignIn)
-signIn store key = (>>=record) . KM.lookup (Key.fromText key) <$> readDocument store
+  where
+    validDate text = case iso8601ParseM (Text.unpack text) :: Maybe UTCTime of Just _ -> True; _ -> False
 
-change :: SignInStore -> (Object -> IO (Maybe Object,result)) -> IO result
+signIns :: SignInStore -> IO (Map.Map Text SignIn)
+signIns store = Map.fromList . map (\(key, value) -> (Key.toText key, value)) . KM.toList . KM.mapMaybe record <$> readDocument store
+
+signIn :: SignInStore -> Text -> IO (Maybe SignIn)
+signIn store key = (>>= record) . KM.lookup (Key.fromText key) <$> readDocument store
+
+change :: SignInStore -> (Object -> IO (Maybe Object, result)) -> IO result
 change store@(SignInStore options filename turn) transform = withMVar turn $ \() -> do
-  let directory=takeDirectory filename
+  let directory = takeDirectory filename
   createDirectoryIfMissing True directory
   Native.withLock (signInStoreTime options) (signInStoreLockRetryMs options) (directory </> Policy.signInLockName) $ do
     Native.ownerOnly directory
     document <- readDocument store
-    (next,result) <- transform document
+    (next, result) <- transform document
     mapM_ (writeDocument store) next
     pure result
 
@@ -107,11 +126,13 @@ writeDocument store document = do
   -- Named here, not by openBinaryTempFile: on Windows that names its file with
   -- GetTempFileNameW, which refuses a directory longer than MAX_PATH.
   suffix <- Char8.unpack . Base64.encodeUnpadded <$> (getRandomBytes 16 :: IO Bytes.ByteString)
-  let temporary=path store<>".tmp"<>suffix
+  let temporary = path store <> ".tmp" <> suffix
       cleanup handle = do
         closed <- hIsClosed handle
-        (unless closed (hClose handle)) `finally` (removeFile temporary `catch` \failure ->
-          if isDoesNotExistError failure then pure () else throwIO (failure::IOException))
+        (unless closed (hClose handle))
+          `finally` ( removeFile temporary `catch` \failure ->
+                        if isDoesNotExistError failure then pure () else throwIO (failure :: IOException)
+                    )
   bracketOnError (openBinaryFile temporary WriteMode) cleanup $ \handle -> do
     Native.fileMode temporary
     Lazy.hPut handle (encode (Object document))
@@ -122,48 +143,78 @@ writeDocument store document = do
 asStored :: SignIn -> Maybe StoredSession
 asStored value = do
   refresh <- signInRefreshToken value
-  if Text.null refresh then Nothing else pure (StoredSession (signInToken value) OAuth.scriptClientId Nothing refresh
-    (signInRevocationEndpoint value) (signInTokenEndpoint value) KM.empty)
+  if Text.null refresh
+    then Nothing
+    else
+      pure
+        ( StoredSession
+            (signInToken value)
+            OAuth.scriptClientId
+            Nothing
+            refresh
+            (signInRevocationEndpoint value)
+            (signInTokenEndpoint value)
+            KM.empty
+        )
 
-writtenTimes :: SignInStoreOptions -> Text -> IO (Text,Maybe Text)
+writtenTimes :: SignInStoreOptions -> Text -> IO (Text, Maybe Text)
 writtenTimes options access = do
   now <- signInStoreWallNow options
-  let format=Text.pack . formatTime defaultTimeLocale "%Y-%m-%dT%H:%M:%SZ"
+  let format = Text.pack . formatTime defaultTimeLocale "%Y-%m-%dT%H:%M:%SZ"
       expiry = format . posixSecondsToUTCTime . fromInteger . floor <$> Tokens.tokenExpiry access
       obtained = format (posixSecondsToUTCTime (fromInteger (floor (utcTimeToPOSIXSeconds now))))
-  pure (obtained,expiry)
+  pure (obtained, expiry)
 
 stamp :: SignInStoreOptions -> SignIn -> Text -> Text -> IO SignIn
 stamp options before access refresh = do
-  (obtained,expiry) <- writtenTimes options access
-  pure before { signInToken=access, signInRefreshToken=Just refresh,signInObtainedAt=obtained,signInExpiresAt=expiry }
+  (obtained, expiry) <- writtenTimes options access
+  pure before {signInToken = access, signInRefreshToken = Just refresh, signInObtainedAt = obtained, signInExpiresAt = expiry}
 
 entry :: SignInStore -> Text -> SignIn.KeptSignIn
-entry store@(SignInStore options _ _) identity = SignIn.KeptSignIn
-  (signIn store identity >>= pure . (>>=asStored))
-  (\held -> do
-    unless (storedSessionClientId held==OAuth.scriptClientId)
-      (throwIO (SignInError SignInExchange "The launcher store keeps only grants of the script client" Nothing))
-    issuer <- case Tokens.textClaim (storedSessionAccess held) "iss" of
-      Just value | not (Text.null value) -> pure value
-      _ -> throwIO (SignInError SignInExchange "The sign-in was not kept: its token names no issuer" Nothing)
-    change store $ \document -> do
-      (obtained,expiry) <- writtenTimes options (storedSessionAccess held)
-      let written=SignIn (Tokens.textClaim (storedSessionAccess held) "email") expiry issuer obtained
-            (Just (storedSessionRefresh held)) (storedSessionRevocationEndpoint held) (storedSessionAccess held) (storedSessionTokenEndpoint held) KM.empty
-      pure (Just (KM.insert (Key.fromText identity) (toJSON written) document),()))
-  (\before issued -> change store $ \document -> do
-    let current=KM.lookup (Key.fromText identity) document >>= record
-    case current of
-      Nothing -> pure (Nothing,Nothing)
-      Just original -> case SignIn.rotation (asStored original) before issued of
-        SignIn.Gone -> pure (Nothing,Nothing)
-        SignIn.AlreadyRenewed access -> pure (Nothing,Just access)
-        SignIn.WriteTokens next -> do
-          written <- stamp options original (storedSessionAccess next) (storedSessionRefresh next)
-          pure (Just (KM.insert (Key.fromText identity) (toJSON written) document),Just (storedSessionAccess next)))
-  (change store $ \document -> pure (if KM.member (Key.fromText identity) document
-    then Just (KM.delete (Key.fromText identity) document) else Nothing,()))
-  (const (pure Nothing))
-  -- The launcher's document has no place for a person.
-  (\_ _ -> pure False)
+entry store@(SignInStore options _ _) identity =
+  SignIn.KeptSignIn
+    (signIn store identity >>= pure . (>>= asStored))
+    ( \held -> do
+        unless
+          (storedSessionClientId held == OAuth.scriptClientId)
+          (throwIO (SignInError SignInExchange "The launcher store keeps only grants of the script client" Nothing))
+        issuer <- case Tokens.textClaim (storedSessionAccess held) "iss" of
+          Just value | not (Text.null value) -> pure value
+          _ -> throwIO (SignInError SignInExchange "The sign-in was not kept: its token names no issuer" Nothing)
+        change store $ \document -> do
+          (obtained, expiry) <- writtenTimes options (storedSessionAccess held)
+          let written =
+                SignIn
+                  (Tokens.textClaim (storedSessionAccess held) "email")
+                  expiry
+                  issuer
+                  obtained
+                  (Just (storedSessionRefresh held))
+                  (storedSessionRevocationEndpoint held)
+                  (storedSessionAccess held)
+                  (storedSessionTokenEndpoint held)
+                  KM.empty
+          pure (Just (KM.insert (Key.fromText identity) (toJSON written) document), ())
+    )
+    ( \before issued -> change store $ \document -> do
+        let current = KM.lookup (Key.fromText identity) document >>= record
+        case current of
+          Nothing -> pure (Nothing, Nothing)
+          Just original -> case SignIn.rotation (asStored original) before issued of
+            SignIn.Gone -> pure (Nothing, Nothing)
+            SignIn.AlreadyRenewed access -> pure (Nothing, Just access)
+            SignIn.WriteTokens next -> do
+              written <- stamp options original (storedSessionAccess next) (storedSessionRefresh next)
+              pure (Just (KM.insert (Key.fromText identity) (toJSON written) document), Just (storedSessionAccess next))
+    )
+    ( change store $ \document ->
+        pure
+          ( if KM.member (Key.fromText identity) document
+              then Just (KM.delete (Key.fromText identity) document)
+              else Nothing,
+            ()
+          )
+    )
+    (const (pure Nothing))
+    -- The launcher's document has no place for a person.
+    (\_ _ -> pure False)
