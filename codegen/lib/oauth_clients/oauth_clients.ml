@@ -190,7 +190,7 @@ let haskell (t : T.t) =
     text =
       H.text
         {
-          banner = Banner.haskell_lines ~from_:file __FILE__;
+          banner = Banner.lines ~from_:file __FILE__;
           extensions = [ "OverloadedStrings" ];
           name = "Xynolog.Internal.Generated.OAuth";
           imports = [ H.import "Data.Text" ~items:[ Plain "Text" ] ];

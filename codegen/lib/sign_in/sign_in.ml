@@ -414,7 +414,7 @@ let haskell (o : Owner_only.t) (names : Contract.t) =
           text =
             H.text
               {
-                banner = Banner.haskell_lines ~from_:Contract.file __FILE__;
+                banner = Banner.lines ~from_:Contract.file __FILE__;
                 extensions = [];
                 name = "Xynolog.Internal.Generated.SignInStore";
                 imports = [];

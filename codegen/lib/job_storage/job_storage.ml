@@ -210,7 +210,7 @@ let haskell t =
       H.text
         {
           banner =
-            Banner.haskell_lines
+            Banner.lines
               ~from_:
                 ("protocol/specs/src/" ^ mark_params
                ^ " and protocol/specs/src/" ^ motivation)

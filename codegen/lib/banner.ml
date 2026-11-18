@@ -4,8 +4,8 @@
 
 let writer file = "codegen/" ^ file
 
-(* A generated Rust or Swift file's opening comment lines, without their
-   [//]. *)
+(* A generated Rust, Swift or Haskell file's opening comment lines, without
+   their [//] or [--]. *)
 let lines ~from_ file =
   [
     "Generated from " ^ from_ ^ "; do not edit.";
@@ -19,13 +19,6 @@ let lines ~from_ file =
    it, as ruff format, the drift gate and the type checkers do.
    python/sdk/scripts/generate_models.py writes the same line. *)
 let python_exempt = "ruff: noqa: E501, I001, RUF002, RUF022, RUF100"
-
-(* A generated Haskell module's opening comment lines, without their [--]. *)
-let haskell_lines ~from_ file =
-  [
-    "Generated from " ^ from_ ^ "; do not edit.";
-    "Regenerate: make generate (" ^ writer file ^ ")";
-  ]
 
 (* A generated Python module's opening comment lines, without their [#]. *)
 let python_lines ~from_ file =
