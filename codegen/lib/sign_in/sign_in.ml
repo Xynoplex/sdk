@@ -102,12 +102,13 @@ let go_owner_only (o : Owner_only.t) =
           imports = [ [ "os" ] ];
           decls =
             [
-              mode "ownerOnlyDirMode" o.directory;
-              mode "ownerOnlyFileMode" o.file;
+              mode "OwnerOnlyDirMode" o.directory;
+              mode "OwnerOnlyFileMode" o.file;
               G.func
-                ~doc:(G.prose ("ownerOnlyAccessList: " ^ o.access_list.docs))
+                ~doc:(G.prose ("OwnerOnlyDirAccessList: " ^ o.access_list.docs))
                 ~params:[ ("owner", G.Named "string") ]
-                ~results:(G.Unnamed [ G.Named "string" ]) "ownerOnlyAccessList"
+                ~results:(G.Unnamed [ G.Named "string" ])
+                "OwnerOnlyDirAccessList"
                 (G.Block
                    [
                      G.Return
