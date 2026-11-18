@@ -1,13 +1,13 @@
 # Haskell conformance drivers
 
-`Main.hs` implements the shared [wire driver protocol](../../../../protocol/conformance/sdk/README.md#the-driver-protocol)
+`Main.hs` implements the shared [wire driver protocol](https://github.com/xynolog/protocol/blob/main/conformance/sdk/README.md#the-driver-protocol)
 using only the public `xynolog` library. Operations run concurrently; subscriptions
 register before their acknowledgements, cancellation joins abandoned work, and
 EOF closes the client and its reporters. The operation census compares the actual
 dispatcher with the protocol's complete operation table.
 
 With `--worker`, it implements the shared
-[worker driver protocol](../../../../protocol/conformance/worker/README.md#the-worker-driver)
+[worker driver protocol](https://github.com/xynolog/protocol/blob/main/conformance/worker/README.md#the-worker-driver)
 over `Xynolog.Worker`. The transport subscribes to the generated worker channel
 profiles. Claims, lifecycle messages, commit probes, cancellations, stalls and
 vitals all use the public SDK. Each job is run in a span parented by the carrier
