@@ -1,0 +1,18233 @@
+// Generated from protocol/specs/src; do not edit.
+// Regenerate: make generate (codegen/lib/swift_sdk/swift_sdk.ml)
+import Foundation
+
+public indirect enum Agent: Codable, Sendable {
+  case agentPerson(AgentPerson)
+  case agentOrganization(AgentOrganization)
+  case agentSoftware(AgentSoftware)
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    let tag = try c.decode(String.self, forKey: WireKey("@type"))
+    switch tag {
+    case "Person": self = .agentPerson(try AgentPerson(from: decoder))
+    case "Organization": self = .agentOrganization(try AgentOrganization(from: decoder))
+    case "Software": self = .agentSoftware(try AgentSoftware(from: decoder))
+    default:
+      throw DecodingError.dataCorruptedError(
+        forKey: WireKey("@type"), in: c, debugDescription: "unknown Agent discriminator")
+    }
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .agentPerson(let value): try value.encode(to: encoder)
+    case .agentOrganization(let value): try value.encode(to: encoder)
+    case .agentSoftware(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public struct AgentOrganization: Codable, Sendable {
+  public var id: String?
+  public let type: AgentOrganizationType
+  public var homepage: String?
+  public var name: String
+  public var rest: [String: JSONValue]
+  public init(
+    id: String? = nil, homepage: String? = nil, name: String, rest: [String: JSONValue] = [:]
+  ) {
+    self.id = id
+    self.type = .organization
+    self.homepage = homepage
+    self.name = name
+    self.rest = rest
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.id = c.contains(WireKey("@id")) ? try c.decode(String.self, forKey: WireKey("@id")) : nil
+    self.type = try c.decode(AgentOrganizationType.self, forKey: WireKey("@type"))
+    self.homepage =
+      c.contains(WireKey("homepage")) ? try c.decode(String.self, forKey: WireKey("homepage")) : nil
+    self.name = try c.decode(String.self, forKey: WireKey("name"))
+    rest = [:]
+    for key in c.allKeys
+    where !Set<String>(["@id", "@type", "homepage", "name"]).contains(key.stringValue) {
+      rest[key.stringValue] = try c.decode(JSONValue.self, forKey: key)
+    }
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    for (key, value) in rest {
+      guard !Set<String>(["@id", "@type", "homepage", "name"]).contains(key) else {
+        throw EncodingError.invalidValue(
+          value,
+          .init(
+            codingPath: encoder.codingPath,
+            debugDescription: "rest overrides a named property of AgentOrganization"))
+      }
+      try c.encode(value, forKey: WireKey(key))
+    }
+    try c.encodeIfPresent(self.id, forKey: WireKey("@id"))
+    try c.encode(self.type, forKey: WireKey("@type"))
+    try c.encodeIfPresent(self.homepage, forKey: WireKey("homepage"))
+    try c.encode(self.name, forKey: WireKey("name"))
+  }
+}
+
+public enum AgentOrganizationType: String, Codable, Sendable, CaseIterable {
+  case organization = "Organization"
+}
+
+public struct AgentPerson: Codable, Sendable {
+  public var id: String?
+  public let type: AgentPersonType
+  public var email: String?
+  public var emailSha1: String?
+  public var homepage: String?
+  public var name: String?
+  public var nickname: String?
+  public var rest: [String: JSONValue]
+  public init(
+    id: String? = nil, email: String? = nil, emailSha1: String? = nil, homepage: String? = nil,
+    name: String? = nil, nickname: String? = nil, rest: [String: JSONValue] = [:]
+  ) {
+    self.id = id
+    self.type = .person
+    self.email = email
+    self.emailSha1 = emailSha1
+    self.homepage = homepage
+    self.name = name
+    self.nickname = nickname
+    self.rest = rest
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.id = c.contains(WireKey("@id")) ? try c.decode(String.self, forKey: WireKey("@id")) : nil
+    self.type = try c.decode(AgentPersonType.self, forKey: WireKey("@type"))
+    self.email =
+      c.contains(WireKey("email")) ? try c.decode(String.self, forKey: WireKey("email")) : nil
+    self.emailSha1 =
+      c.contains(WireKey("email_sha1"))
+      ? try c.decode(String.self, forKey: WireKey("email_sha1")) : nil
+    self.homepage =
+      c.contains(WireKey("homepage")) ? try c.decode(String.self, forKey: WireKey("homepage")) : nil
+    self.name =
+      c.contains(WireKey("name")) ? try c.decode(String.self, forKey: WireKey("name")) : nil
+    self.nickname =
+      c.contains(WireKey("nickname")) ? try c.decode(String.self, forKey: WireKey("nickname")) : nil
+    rest = [:]
+    for key in c.allKeys
+    where !Set<String>(["@id", "@type", "email", "email_sha1", "homepage", "name", "nickname"])
+      .contains(key.stringValue)
+    { rest[key.stringValue] = try c.decode(JSONValue.self, forKey: key) }
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    for (key, value) in rest {
+      guard
+        !Set<String>(["@id", "@type", "email", "email_sha1", "homepage", "name", "nickname"])
+          .contains(key)
+      else {
+        throw EncodingError.invalidValue(
+          value,
+          .init(
+            codingPath: encoder.codingPath,
+            debugDescription: "rest overrides a named property of AgentPerson"))
+      }
+      try c.encode(value, forKey: WireKey(key))
+    }
+    try c.encodeIfPresent(self.id, forKey: WireKey("@id"))
+    try c.encode(self.type, forKey: WireKey("@type"))
+    try c.encodeIfPresent(self.email, forKey: WireKey("email"))
+    try c.encodeIfPresent(self.emailSha1, forKey: WireKey("email_sha1"))
+    try c.encodeIfPresent(self.homepage, forKey: WireKey("homepage"))
+    try c.encodeIfPresent(self.name, forKey: WireKey("name"))
+    try c.encodeIfPresent(self.nickname, forKey: WireKey("nickname"))
+  }
+}
+
+public enum AgentPersonType: String, Codable, Sendable, CaseIterable {
+  case person = "Person"
+}
+
+public struct AgentSoftware: Codable, Sendable {
+  public var id: String?
+  public let type: AgentSoftwareType
+  public var model: String?
+  public var name: String?
+  public var parameters: [String: JSONValue]?
+  public var provider: String?
+  public var rest: [String: JSONValue]
+  public init(
+    id: String? = nil, model: String? = nil, name: String? = nil,
+    parameters: [String: JSONValue]? = nil, provider: String? = nil, rest: [String: JSONValue] = [:]
+  ) {
+    self.id = id
+    self.type = .software
+    self.model = model
+    self.name = name
+    self.parameters = parameters
+    self.provider = provider
+    self.rest = rest
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.id = c.contains(WireKey("@id")) ? try c.decode(String.self, forKey: WireKey("@id")) : nil
+    self.type = try c.decode(AgentSoftwareType.self, forKey: WireKey("@type"))
+    self.model =
+      c.contains(WireKey("model")) ? try c.decode(String.self, forKey: WireKey("model")) : nil
+    self.name =
+      c.contains(WireKey("name")) ? try c.decode(String.self, forKey: WireKey("name")) : nil
+    self.parameters =
+      c.contains(WireKey("parameters"))
+      ? try c.decode([String: JSONValue].self, forKey: WireKey("parameters")) : nil
+    self.provider =
+      c.contains(WireKey("provider")) ? try c.decode(String.self, forKey: WireKey("provider")) : nil
+    rest = [:]
+    for key in c.allKeys
+    where !Set<String>(["@id", "@type", "model", "name", "parameters", "provider"]).contains(
+      key.stringValue)
+    { rest[key.stringValue] = try c.decode(JSONValue.self, forKey: key) }
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    for (key, value) in rest {
+      guard !Set<String>(["@id", "@type", "model", "name", "parameters", "provider"]).contains(key)
+      else {
+        throw EncodingError.invalidValue(
+          value,
+          .init(
+            codingPath: encoder.codingPath,
+            debugDescription: "rest overrides a named property of AgentSoftware"))
+      }
+      try c.encode(value, forKey: WireKey(key))
+    }
+    try c.encodeIfPresent(self.id, forKey: WireKey("@id"))
+    try c.encode(self.type, forKey: WireKey("@type"))
+    try c.encodeIfPresent(self.model, forKey: WireKey("model"))
+    try c.encodeIfPresent(self.name, forKey: WireKey("name"))
+    try c.encodeIfPresent(self.parameters, forKey: WireKey("parameters"))
+    try c.encodeIfPresent(self.provider, forKey: WireKey("provider"))
+  }
+}
+
+public enum AgentSoftwareType: String, Codable, Sendable, CaseIterable {
+  case software = "Software"
+}
+
+public struct AnchoredText: Codable, Sendable {
+  public var items: [PdfTextItem]
+  public var text: String
+  public init(items: [PdfTextItem], text: String) {
+    self.items = items
+    self.text = text
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.items = try c.decode([PdfTextItem].self, forKey: WireKey("items"))
+    self.text = try c.decode(String.self, forKey: WireKey("text"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.items, forKey: WireKey("items"))
+    try c.encode(self.text, forKey: WireKey("text"))
+  }
+}
+
+public struct AnchoredTextAbsent: Codable, Sendable {
+  public var kind: AnchoredTextAbsentKind
+  public init(kind: AnchoredTextAbsentKind) {
+    self.kind = kind
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.kind = try c.decode(AnchoredTextAbsentKind.self, forKey: WireKey("kind"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.kind, forKey: WireKey("kind"))
+  }
+}
+
+public enum AnchoredTextAbsentKind: String, Codable, Sendable, CaseIterable {
+  case notYet = "not-yet"
+  case noMap = "no-map"
+  case unknown = "unknown"
+}
+
+public indirect enum AnchoredTextAnswer: Codable, Sendable {
+  case extractedText(ExtractedText)
+  case extractionDeclined(ExtractionDeclined)
+  case anchoredTextAbsent(AnchoredTextAbsent)
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    let tag = try c.decode(String.self, forKey: WireKey("kind"))
+    switch tag {
+    case "extracted": self = .extractedText(try ExtractedText(from: decoder))
+    case "declined": self = .extractionDeclined(try ExtractionDeclined(from: decoder))
+    case "not-yet", "no-map", "unknown":
+      self = .anchoredTextAbsent(try AnchoredTextAbsent(from: decoder))
+    default:
+      throw DecodingError.dataCorruptedError(
+        forKey: WireKey("kind"), in: c, debugDescription: "unknown AnchoredTextAnswer discriminator"
+      )
+    }
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .extractedText(let value): try value.encode(to: encoder)
+    case .extractionDeclined(let value): try value.encode(to: encoder)
+    case .anchoredTextAbsent(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public struct AnchoredTextDeclinedEntry: Codable, Sendable {
+  public var declined: AnchoredTextDeclinedEntryDeclined
+  public var stamp: String
+  public let v: AnchoredTextDeclinedEntryV
+  public init(declined: AnchoredTextDeclinedEntryDeclined, stamp: String) {
+    self.declined = declined
+    self.stamp = stamp
+    self.v = .value
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["declined", "stamp", "v"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in AnchoredTextDeclinedEntry")
+    }
+    self.declined = try c.decode(
+      AnchoredTextDeclinedEntryDeclined.self, forKey: WireKey("declined"))
+    self.stamp = try c.decode(String.self, forKey: WireKey("stamp"))
+    self.v = try c.decode(AnchoredTextDeclinedEntryV.self, forKey: WireKey("v"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.declined, forKey: WireKey("declined"))
+    try c.encode(self.stamp, forKey: WireKey("stamp"))
+    try c.encode(self.v, forKey: WireKey("v"))
+  }
+}
+
+public enum AnchoredTextDeclinedEntryDeclined: String, Codable, Sendable, CaseIterable {
+  case noTextLayer = "no-text-layer"
+  case encrypted = "encrypted"
+  case corrupt = "corrupt"
+  case tooLarge = "too-large"
+}
+
+public enum AnchoredTextDeclinedEntryV: Codable, Sendable {
+  case value
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.singleValueContainer()
+    guard try c.decode(Int.self) == 3 else {
+      throw DecodingError.dataCorruptedError(in: c, debugDescription: "AnchoredTextDeclinedEntryV")
+    }
+    self = .value
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.singleValueContainer()
+    try c.encode(3)
+  }
+}
+
+public struct AnchoredTextEntries: Codable, Sendable {
+  public var checksums: [String]
+  public init(checksums: [String]) {
+    self.checksums = checksums
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: { !Set<String>(["checksums"]).contains($0.stringValue) }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in AnchoredTextEntries")
+    }
+    self.checksums = try c.decode([String].self, forKey: WireKey("checksums"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.checksums, forKey: WireKey("checksums"))
+  }
+}
+
+public indirect enum AnchoredTextEntry: Codable, Sendable {
+  case anchoredTextExtractedEntry(AnchoredTextExtractedEntry)
+  case anchoredTextDeclinedEntry(AnchoredTextDeclinedEntry)
+  public init(from decoder: any Decoder) throws {
+    if let value = try? AnchoredTextExtractedEntry(from: decoder) {
+      self = .anchoredTextExtractedEntry(value)
+      return
+    }
+    if let value = try? AnchoredTextDeclinedEntry(from: decoder) {
+      self = .anchoredTextDeclinedEntry(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(codingPath: decoder.codingPath, debugDescription: "no member of AnchoredTextEntry fits")
+    )
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .anchoredTextExtractedEntry(let value): try value.encode(to: encoder)
+    case .anchoredTextDeclinedEntry(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public struct AnchoredTextExtractedEntry: Codable, Sendable {
+  public var lines: [AnchoredTextExtractedEntryLinesItem]
+  public var method: AnchoredTextExtractedEntryMethod
+  public var ocrConfidence: AnchoredTextExtractedEntryOcrConfidence?
+  public var pdfClass: AnchoredTextExtractedEntryPdfClass?
+  public var stamp: String
+  public var text: String
+  public var unreadPages: [Int]?
+  public let v: AnchoredTextExtractedEntryV
+  public init(
+    lines: [AnchoredTextExtractedEntryLinesItem], method: AnchoredTextExtractedEntryMethod,
+    ocrConfidence: AnchoredTextExtractedEntryOcrConfidence? = nil,
+    pdfClass: AnchoredTextExtractedEntryPdfClass? = nil, stamp: String, text: String,
+    unreadPages: [Int]? = nil
+  ) {
+    self.lines = lines
+    self.method = method
+    self.ocrConfidence = ocrConfidence
+    self.pdfClass = pdfClass
+    self.stamp = stamp
+    self.text = text
+    self.unreadPages = unreadPages
+    self.v = .value
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>([
+        "lines", "method", "ocrConfidence", "pdfClass", "stamp", "text", "unreadPages", "v",
+      ]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in AnchoredTextExtractedEntry")
+    }
+    self.lines = try c.decode([AnchoredTextExtractedEntryLinesItem].self, forKey: WireKey("lines"))
+    self.method = try c.decode(AnchoredTextExtractedEntryMethod.self, forKey: WireKey("method"))
+    self.ocrConfidence =
+      c.contains(WireKey("ocrConfidence"))
+      ? try c.decode(AnchoredTextExtractedEntryOcrConfidence.self, forKey: WireKey("ocrConfidence"))
+      : nil
+    self.pdfClass =
+      c.contains(WireKey("pdfClass"))
+      ? try c.decode(AnchoredTextExtractedEntryPdfClass.self, forKey: WireKey("pdfClass")) : nil
+    self.stamp = try c.decode(String.self, forKey: WireKey("stamp"))
+    self.text = try c.decode(String.self, forKey: WireKey("text"))
+    self.unreadPages =
+      c.contains(WireKey("unreadPages"))
+      ? try c.decode([Int].self, forKey: WireKey("unreadPages")) : nil
+    self.v = try c.decode(AnchoredTextExtractedEntryV.self, forKey: WireKey("v"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.lines, forKey: WireKey("lines"))
+    try c.encode(self.method, forKey: WireKey("method"))
+    try c.encodeIfPresent(self.ocrConfidence, forKey: WireKey("ocrConfidence"))
+    try c.encodeIfPresent(self.pdfClass, forKey: WireKey("pdfClass"))
+    try c.encode(self.stamp, forKey: WireKey("stamp"))
+    try c.encode(self.text, forKey: WireKey("text"))
+    try c.encodeIfPresent(self.unreadPages, forKey: WireKey("unreadPages"))
+    try c.encode(self.v, forKey: WireKey("v"))
+  }
+}
+
+public struct AnchoredTextExtractedEntryLinesItem: Codable, Sendable {
+  public var h: Double
+  public var p: Int
+  public var words: [[Double]]
+  public var y: Double
+  public init(h: Double, p: Int, words: [[Double]], y: Double) {
+    self.h = h
+    self.p = p
+    self.words = words
+    self.y = y
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["h", "p", "words", "y"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c,
+        debugDescription: "unknown property in AnchoredTextExtractedEntryLinesItem")
+    }
+    self.h = try c.decode(Double.self, forKey: WireKey("h"))
+    self.p = try c.decode(Int.self, forKey: WireKey("p"))
+    self.words = try c.decode([[Double]].self, forKey: WireKey("words"))
+    self.y = try c.decode(Double.self, forKey: WireKey("y"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.h, forKey: WireKey("h"))
+    try c.encode(self.p, forKey: WireKey("p"))
+    try c.encode(self.words, forKey: WireKey("words"))
+    try c.encode(self.y, forKey: WireKey("y"))
+  }
+}
+
+public enum AnchoredTextExtractedEntryMethod: String, Codable, Sendable, CaseIterable {
+  case textPassthrough = "text-passthrough"
+  case pdfTextLayer = "pdf-text-layer"
+  case table = "table"
+  case form = "form"
+  case ocr = "ocr"
+}
+
+public struct AnchoredTextExtractedEntryOcrConfidence: Codable, Sendable {
+  public var lowConfidenceWords: Int
+  public var mean: Double
+  public var totalWords: Int
+  public init(lowConfidenceWords: Int, mean: Double, totalWords: Int) {
+    self.lowConfidenceWords = lowConfidenceWords
+    self.mean = mean
+    self.totalWords = totalWords
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.lowConfidenceWords = try c.decode(Int.self, forKey: WireKey("lowConfidenceWords"))
+    self.mean = try c.decode(Double.self, forKey: WireKey("mean"))
+    self.totalWords = try c.decode(Int.self, forKey: WireKey("totalWords"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.lowConfidenceWords, forKey: WireKey("lowConfidenceWords"))
+    try c.encode(self.mean, forKey: WireKey("mean"))
+    try c.encode(self.totalWords, forKey: WireKey("totalWords"))
+  }
+}
+
+public enum AnchoredTextExtractedEntryPdfClass: String, Codable, Sendable, CaseIterable {
+  case a = "A"
+  case b = "B"
+  case c = "C"
+  case d = "D"
+  case e = "E"
+  case f = "F"
+  case g = "G"
+}
+
+public enum AnchoredTextExtractedEntryV: Codable, Sendable {
+  case value
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.singleValueContainer()
+    guard try c.decode(Int.self) == 3 else {
+      throw DecodingError.dataCorruptedError(in: c, debugDescription: "AnchoredTextExtractedEntryV")
+    }
+    self = .value
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.singleValueContainer()
+    try c.encode(3)
+  }
+}
+
+public struct AnchoredTextStamp: Codable, Sendable {
+  public var stamp: String
+  public init(stamp: String) {
+    self.stamp = stamp
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: { !Set<String>(["stamp"]).contains($0.stringValue) }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in AnchoredTextStamp")
+    }
+    self.stamp = try c.decode(String.self, forKey: WireKey("stamp"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.stamp, forKey: WireKey("stamp"))
+  }
+}
+
+public struct AnchoredTextWrite: Codable, Sendable {
+  public var contentChecksum: String
+  public var entry: AnchoredTextEntry
+  public init(contentChecksum: String, entry: AnchoredTextEntry) {
+    self.contentChecksum = contentChecksum
+    self.entry = entry
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["contentChecksum", "entry"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in AnchoredTextWrite")
+    }
+    self.contentChecksum = try c.decode(String.self, forKey: WireKey("contentChecksum"))
+    self.entry = try c.decode(AnchoredTextEntry.self, forKey: WireKey("entry"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.contentChecksum, forKey: WireKey("contentChecksum"))
+    try c.encode(self.entry, forKey: WireKey("entry"))
+  }
+}
+
+public struct Annotation: Codable, Sendable {
+  public let context: AnnotationContext
+  public var body: AnnotationBodies?
+  public var created: String
+  public var creator: Agent?
+  public var generator: AnnotationGenerator?
+  public var id: AnnotationId
+  public var modified: String?
+  public var motivation: Motivation
+  public var target: AnnotationTargetValue
+  public let type: AnnotationType
+  public var wasAttributedTo: AnnotationWasAttributedTo?
+  public init(
+    body: AnnotationBodies? = nil, created: String, creator: Agent? = nil,
+    generator: AnnotationGenerator? = nil, id: AnnotationId, modified: String? = nil,
+    motivation: Motivation, target: AnnotationTargetValue,
+    wasAttributedTo: AnnotationWasAttributedTo? = nil
+  ) {
+    self.context = .httpWwwW3OrgNsAnnoJsonld
+    self.body = body
+    self.created = created
+    self.creator = creator
+    self.generator = generator
+    self.id = id
+    self.modified = modified
+    self.motivation = motivation
+    self.target = target
+    self.type = .annotation
+    self.wasAttributedTo = wasAttributedTo
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.context = try c.decode(AnnotationContext.self, forKey: WireKey("@context"))
+    self.body =
+      c.contains(WireKey("body"))
+      ? try c.decode(AnnotationBodies.self, forKey: WireKey("body")) : nil
+    self.created = try c.decode(String.self, forKey: WireKey("created"))
+    self.creator =
+      c.contains(WireKey("creator")) ? try c.decode(Agent.self, forKey: WireKey("creator")) : nil
+    self.generator =
+      c.contains(WireKey("generator"))
+      ? try c.decode(AnnotationGenerator.self, forKey: WireKey("generator")) : nil
+    self.id = try c.decode(AnnotationId.self, forKey: WireKey("id"))
+    self.modified =
+      c.contains(WireKey("modified")) ? try c.decode(String.self, forKey: WireKey("modified")) : nil
+    self.motivation = try c.decode(Motivation.self, forKey: WireKey("motivation"))
+    self.target = try c.decode(AnnotationTargetValue.self, forKey: WireKey("target"))
+    self.type = try c.decode(AnnotationType.self, forKey: WireKey("type"))
+    self.wasAttributedTo =
+      c.contains(WireKey("wasAttributedTo"))
+      ? try c.decode(AnnotationWasAttributedTo.self, forKey: WireKey("wasAttributedTo")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.context, forKey: WireKey("@context"))
+    try c.encodeIfPresent(self.body, forKey: WireKey("body"))
+    try c.encode(self.created, forKey: WireKey("created"))
+    try c.encodeIfPresent(self.creator, forKey: WireKey("creator"))
+    try c.encodeIfPresent(self.generator, forKey: WireKey("generator"))
+    try c.encode(self.id, forKey: WireKey("id"))
+    try c.encodeIfPresent(self.modified, forKey: WireKey("modified"))
+    try c.encode(self.motivation, forKey: WireKey("motivation"))
+    try c.encode(self.target, forKey: WireKey("target"))
+    try c.encode(self.type, forKey: WireKey("type"))
+    try c.encodeIfPresent(self.wasAttributedTo, forKey: WireKey("wasAttributedTo"))
+  }
+}
+
+public struct AnnotationAddedPayload: Codable, Sendable {
+  public var annotation: Annotation
+  public var contentChecksum: String?
+  public init(annotation: Annotation, contentChecksum: String? = nil) {
+    self.annotation = annotation
+    self.contentChecksum = contentChecksum
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.annotation = try c.decode(Annotation.self, forKey: WireKey("annotation"))
+    self.contentChecksum =
+      c.contains(WireKey("contentChecksum"))
+      ? try c.decode(String.self, forKey: WireKey("contentChecksum")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.annotation, forKey: WireKey("annotation"))
+    try c.encodeIfPresent(self.contentChecksum, forKey: WireKey("contentChecksum"))
+  }
+}
+
+public indirect enum AnnotationBodies: Codable, Sendable {
+  case annotationBody(AnnotationBody)
+  case list([AnnotationBody])
+  public init(from decoder: any Decoder) throws {
+    if let value = try? AnnotationBody(from: decoder) {
+      self = .annotationBody(value)
+      return
+    }
+    if let value = try? [AnnotationBody](from: decoder) {
+      self = .list(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(codingPath: decoder.codingPath, debugDescription: "no member of AnnotationBodies fits"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .annotationBody(let value): try value.encode(to: encoder)
+    case .list(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public indirect enum AnnotationBody: Codable, Sendable {
+  case textualBody(TextualBody)
+  case specificResource(SpecificResource)
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    let tag = try c.decode(String.self, forKey: WireKey("type"))
+    switch tag {
+    case "TextualBody": self = .textualBody(try TextualBody(from: decoder))
+    case "SpecificResource": self = .specificResource(try SpecificResource(from: decoder))
+    default:
+      throw DecodingError.dataCorruptedError(
+        forKey: WireKey("type"), in: c, debugDescription: "unknown AnnotationBody discriminator")
+    }
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .textualBody(let value): try value.encode(to: encoder)
+    case .specificResource(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public struct AnnotationBodyUpdatedPayload: Codable, Sendable {
+  public var annotationId: AnnotationId
+  public var operations: [AnnotationBodyUpdatedPayloadOperationsItem]
+  public init(annotationId: AnnotationId, operations: [AnnotationBodyUpdatedPayloadOperationsItem])
+  {
+    self.annotationId = annotationId
+    self.operations = operations
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.annotationId = try c.decode(AnnotationId.self, forKey: WireKey("annotationId"))
+    self.operations = try c.decode(
+      [AnnotationBodyUpdatedPayloadOperationsItem].self, forKey: WireKey("operations"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.annotationId, forKey: WireKey("annotationId"))
+    try c.encode(self.operations, forKey: WireKey("operations"))
+  }
+}
+
+public indirect enum AnnotationBodyUpdatedPayloadOperationsItem: Codable, Sendable {
+  case bodyOperationAdd(BodyOperationAdd)
+  case bodyOperationRemove(BodyOperationRemove)
+  case bodyOperationReplace(BodyOperationReplace)
+  public init(from decoder: any Decoder) throws {
+    if let value = try? BodyOperationAdd(from: decoder) {
+      self = .bodyOperationAdd(value)
+      return
+    }
+    if let value = try? BodyOperationRemove(from: decoder) {
+      self = .bodyOperationRemove(value)
+      return
+    }
+    if let value = try? BodyOperationReplace(from: decoder) {
+      self = .bodyOperationReplace(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(
+        codingPath: decoder.codingPath,
+        debugDescription: "no member of AnnotationBodyUpdatedPayloadOperationsItem fits"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .bodyOperationAdd(let value): try value.encode(to: encoder)
+    case .bodyOperationRemove(let value): try value.encode(to: encoder)
+    case .bodyOperationReplace(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public enum AnnotationContext: String, Codable, Sendable, CaseIterable {
+  case httpWwwW3OrgNsAnnoJsonld = "http://www.w3.org/ns/anno.jsonld"
+}
+
+public indirect enum AnnotationGenerator: Codable, Sendable {
+  case agent(Agent)
+  case list([Agent])
+  public init(from decoder: any Decoder) throws {
+    if let value = try? Agent(from: decoder) {
+      self = .agent(value)
+      return
+    }
+    if let value = try? [Agent](from: decoder) {
+      self = .list(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(
+        codingPath: decoder.codingPath, debugDescription: "no member of AnnotationGenerator fits"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .agent(let value): try value.encode(to: encoder)
+    case .list(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public struct AnnotationId: Hashable, Sendable, Codable, CustomStringConvertible {
+  public let value: String
+  public var description: String { value }
+  public init(_ value: String) throws {
+    guard value.unicodeScalars.starts(with: "".unicodeScalars) else {
+      throw InvalidIdentifier(kind: "AnnotationId", pattern: "^[A-Za-z0-9_-]{1,128}$", value: value)
+    }
+    let scalars = value.unicodeScalars.dropFirst(0)
+    guard scalars.count >= 1 && scalars.count <= 128,
+      scalars.allSatisfy({ c in
+        (65...90).contains(c.value) || (97...122).contains(c.value) || (48...57).contains(c.value)
+          || c.value == 95 || c.value == 45
+      })
+    else {
+      throw InvalidIdentifier(kind: "AnnotationId", pattern: "^[A-Za-z0-9_-]{1,128}$", value: value)
+    }
+    self.value = value
+  }
+  public static func parse(_ value: String) -> Self? { try? Self(value) }
+  public static func == (lhs: Self, rhs: Self) -> Bool {
+    lhs.value.utf8.elementsEqual(rhs.value.utf8)
+  }
+  public func hash(into hasher: inout Hasher) { for byte in value.utf8 { hasher.combine(byte) } }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.singleValueContainer()
+    let value = try c.decode(String.self)
+    do { try self.init(value) } catch {
+      throw DecodingError.dataCorruptedError(in: c, debugDescription: String(describing: error))
+    }
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.singleValueContainer()
+    try c.encode(value)
+  }
+}
+
+public struct AnnotationRemovedPayload: Codable, Sendable {
+  public var annotationId: AnnotationId
+  public init(annotationId: AnnotationId) {
+    self.annotationId = annotationId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.annotationId = try c.decode(AnnotationId.self, forKey: WireKey("annotationId"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.annotationId, forKey: WireKey("annotationId"))
+  }
+}
+
+public indirect enum AnnotationSelector: Codable, Sendable {
+  case selector(Selector)
+  case list([Selector])
+  public init(from decoder: any Decoder) throws {
+    if let value = try? Selector(from: decoder) {
+      self = .selector(value)
+      return
+    }
+    if let value = try? [Selector](from: decoder) {
+      self = .list(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(
+        codingPath: decoder.codingPath, debugDescription: "no member of AnnotationSelector fits"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .selector(let value): try value.encode(to: encoder)
+    case .list(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public struct AnnotationTarget: Codable, Sendable {
+  public var selector: AnnotationSelector?
+  public var source: ResourceId
+  public var type: AnnotationTargetType?
+  public init(
+    selector: AnnotationSelector? = nil, source: ResourceId, type: AnnotationTargetType? = nil
+  ) {
+    self.selector = selector
+    self.source = source
+    self.type = type
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.selector =
+      c.contains(WireKey("selector"))
+      ? try c.decode(AnnotationSelector.self, forKey: WireKey("selector")) : nil
+    self.source = try c.decode(ResourceId.self, forKey: WireKey("source"))
+    self.type =
+      c.contains(WireKey("type"))
+      ? try c.decode(AnnotationTargetType.self, forKey: WireKey("type")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.selector, forKey: WireKey("selector"))
+    try c.encode(self.source, forKey: WireKey("source"))
+    try c.encodeIfPresent(self.type, forKey: WireKey("type"))
+  }
+}
+
+public enum AnnotationTargetType: String, Codable, Sendable, CaseIterable {
+  case specificResource = "SpecificResource"
+}
+
+public indirect enum AnnotationTargetValue: Codable, Sendable {
+  case resourceId(ResourceId)
+  case annotationTarget(AnnotationTarget)
+  public init(from decoder: any Decoder) throws {
+    if let value = try? ResourceId(from: decoder) {
+      self = .resourceId(value)
+      return
+    }
+    if let value = try? AnnotationTarget(from: decoder) {
+      self = .annotationTarget(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(
+        codingPath: decoder.codingPath, debugDescription: "no member of AnnotationTargetValue fits")
+    )
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .resourceId(let value): try value.encode(to: encoder)
+    case .annotationTarget(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public enum AnnotationType: String, Codable, Sendable, CaseIterable {
+  case annotation = "Annotation"
+}
+
+public indirect enum AnnotationWasAttributedTo: Codable, Sendable {
+  case agent(Agent)
+  case list([Agent])
+  public init(from decoder: any Decoder) throws {
+    if let value = try? Agent(from: decoder) {
+      self = .agent(value)
+      return
+    }
+    if let value = try? [Agent](from: decoder) {
+      self = .list(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(
+        codingPath: decoder.codingPath,
+        debugDescription: "no member of AnnotationWasAttributedTo fits"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .agent(let value): try value.encode(to: encoder)
+    case .list(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public struct ArchivistConfig: Codable, Sendable {
+  public var anchoredTextDir: String
+  public var engines: ArchivistEngines
+  public var gatewayUrl: String
+  public var identity: ArchivistConfigIdentity
+  public var logFormat: LogFormat
+  public var logLevel: LogLevel
+  public var port: Int
+  public var root: String
+  public var skipRebuild: Bool
+  public var staging: ArchivistConfigStaging
+  public var stateHome: String
+  public init(
+    anchoredTextDir: String, engines: ArchivistEngines, gatewayUrl: String,
+    identity: ArchivistConfigIdentity, logFormat: LogFormat, logLevel: LogLevel, port: Int,
+    root: String, skipRebuild: Bool, staging: ArchivistConfigStaging, stateHome: String
+  ) {
+    self.anchoredTextDir = anchoredTextDir
+    self.engines = engines
+    self.gatewayUrl = gatewayUrl
+    self.identity = identity
+    self.logFormat = logFormat
+    self.logLevel = logLevel
+    self.port = port
+    self.root = root
+    self.skipRebuild = skipRebuild
+    self.staging = staging
+    self.stateHome = stateHome
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>([
+        "anchoredTextDir", "engines", "gatewayUrl", "identity", "logFormat", "logLevel", "port",
+        "root", "skipRebuild", "staging", "stateHome",
+      ]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in ArchivistConfig")
+    }
+    self.anchoredTextDir = try c.decode(String.self, forKey: WireKey("anchoredTextDir"))
+    self.engines = try c.decode(ArchivistEngines.self, forKey: WireKey("engines"))
+    self.gatewayUrl = try c.decode(String.self, forKey: WireKey("gatewayUrl"))
+    self.identity = try c.decode(ArchivistConfigIdentity.self, forKey: WireKey("identity"))
+    self.logFormat = try c.decode(LogFormat.self, forKey: WireKey("logFormat"))
+    self.logLevel = try c.decode(LogLevel.self, forKey: WireKey("logLevel"))
+    self.port = try c.decode(Int.self, forKey: WireKey("port"))
+    self.root = try c.decode(String.self, forKey: WireKey("root"))
+    self.skipRebuild = try c.decode(Bool.self, forKey: WireKey("skipRebuild"))
+    self.staging = try c.decode(ArchivistConfigStaging.self, forKey: WireKey("staging"))
+    self.stateHome = try c.decode(String.self, forKey: WireKey("stateHome"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.anchoredTextDir, forKey: WireKey("anchoredTextDir"))
+    try c.encode(self.engines, forKey: WireKey("engines"))
+    try c.encode(self.gatewayUrl, forKey: WireKey("gatewayUrl"))
+    try c.encode(self.identity, forKey: WireKey("identity"))
+    try c.encode(self.logFormat, forKey: WireKey("logFormat"))
+    try c.encode(self.logLevel, forKey: WireKey("logLevel"))
+    try c.encode(self.port, forKey: WireKey("port"))
+    try c.encode(self.root, forKey: WireKey("root"))
+    try c.encode(self.skipRebuild, forKey: WireKey("skipRebuild"))
+    try c.encode(self.staging, forKey: WireKey("staging"))
+    try c.encode(self.stateHome, forKey: WireKey("stateHome"))
+  }
+}
+
+public struct ArchivistConfigIdentity: Codable, Sendable {
+  public var issuer: String
+  public init(issuer: String) {
+    self.issuer = issuer
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: { !Set<String>(["issuer"]).contains($0.stringValue) }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in ArchivistConfigIdentity")
+    }
+    self.issuer = try c.decode(String.self, forKey: WireKey("issuer"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.issuer, forKey: WireKey("issuer"))
+  }
+}
+
+public struct ArchivistConfigStaging: Codable, Sendable {
+  public var flushMs: Int
+  public var maxWaitMs: Int
+  public init(flushMs: Int, maxWaitMs: Int) {
+    self.flushMs = flushMs
+    self.maxWaitMs = maxWaitMs
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["flushMs", "maxWaitMs"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in ArchivistConfigStaging")
+    }
+    self.flushMs = try c.decode(Int.self, forKey: WireKey("flushMs"))
+    self.maxWaitMs = try c.decode(Int.self, forKey: WireKey("maxWaitMs"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.flushMs, forKey: WireKey("flushMs"))
+    try c.encode(self.maxWaitMs, forKey: WireKey("maxWaitMs"))
+  }
+}
+
+public struct ArchivistEngines: Codable, Sendable {
+  public var actors: ArchivistEnginesActors
+  public var jobs: ArchivistEnginesJobs
+  public init(actors: ArchivistEnginesActors, jobs: ArchivistEnginesJobs) {
+    self.actors = actors
+    self.jobs = jobs
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["actors", "jobs"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in ArchivistEngines")
+    }
+    self.actors = try c.decode(ArchivistEnginesActors.self, forKey: WireKey("actors"))
+    self.jobs = try c.decode(ArchivistEnginesJobs.self, forKey: WireKey("jobs"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.actors, forKey: WireKey("actors"))
+    try c.encode(self.jobs, forKey: WireKey("jobs"))
+  }
+}
+
+public struct ArchivistEnginesActors: Codable, Sendable {
+  public var gatherer: Engine?
+  public var matcher: Engine?
+  public init(gatherer: Engine? = nil, matcher: Engine? = nil) {
+    self.gatherer = gatherer
+    self.matcher = matcher
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["gatherer", "matcher"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in ArchivistEnginesActors")
+    }
+    self.gatherer =
+      c.contains(WireKey("gatherer")) ? try c.decode(Engine.self, forKey: WireKey("gatherer")) : nil
+    self.matcher =
+      c.contains(WireKey("matcher")) ? try c.decode(Engine.self, forKey: WireKey("matcher")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.gatherer, forKey: WireKey("gatherer"))
+    try c.encodeIfPresent(self.matcher, forKey: WireKey("matcher"))
+  }
+}
+
+public struct ArchivistEnginesJobs: Codable, Sendable {
+  public var mark: ArchivistEnginesJobsMark?
+  public var yield: Engine?
+  public init(mark: ArchivistEnginesJobsMark? = nil, yield: Engine? = nil) {
+    self.mark = mark
+    self.yield = yield
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["mark", "yield"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in ArchivistEnginesJobs")
+    }
+    self.mark =
+      c.contains(WireKey("mark"))
+      ? try c.decode(ArchivistEnginesJobsMark.self, forKey: WireKey("mark")) : nil
+    self.yield =
+      c.contains(WireKey("yield")) ? try c.decode(Engine.self, forKey: WireKey("yield")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.mark, forKey: WireKey("mark"))
+    try c.encodeIfPresent(self.yield, forKey: WireKey("yield"))
+  }
+}
+
+public struct ArchivistEnginesJobsMark: Codable, Sendable {
+  public var assessing: Engine?
+  public var commenting: Engine?
+  public var highlighting: Engine?
+  public var linking: Engine?
+  public var tagging: Engine?
+  public init(
+    assessing: Engine? = nil, commenting: Engine? = nil, highlighting: Engine? = nil,
+    linking: Engine? = nil, tagging: Engine? = nil
+  ) {
+    self.assessing = assessing
+    self.commenting = commenting
+    self.highlighting = highlighting
+    self.linking = linking
+    self.tagging = tagging
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["assessing", "commenting", "highlighting", "linking", "tagging"]).contains(
+        $0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in ArchivistEnginesJobsMark")
+    }
+    self.assessing =
+      c.contains(WireKey("assessing"))
+      ? try c.decode(Engine.self, forKey: WireKey("assessing")) : nil
+    self.commenting =
+      c.contains(WireKey("commenting"))
+      ? try c.decode(Engine.self, forKey: WireKey("commenting")) : nil
+    self.highlighting =
+      c.contains(WireKey("highlighting"))
+      ? try c.decode(Engine.self, forKey: WireKey("highlighting")) : nil
+    self.linking =
+      c.contains(WireKey("linking")) ? try c.decode(Engine.self, forKey: WireKey("linking")) : nil
+    self.tagging =
+      c.contains(WireKey("tagging")) ? try c.decode(Engine.self, forKey: WireKey("tagging")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.assessing, forKey: WireKey("assessing"))
+    try c.encodeIfPresent(self.commenting, forKey: WireKey("commenting"))
+    try c.encodeIfPresent(self.highlighting, forKey: WireKey("highlighting"))
+    try c.encodeIfPresent(self.linking, forKey: WireKey("linking"))
+    try c.encodeIfPresent(self.tagging, forKey: WireKey("tagging"))
+  }
+}
+
+public struct ArchivistEventsResponse: Codable, Sendable {
+  public var events: [StoredEventResponse]
+  public var lastSequence: Int
+  public init(events: [StoredEventResponse], lastSequence: Int) {
+    self.events = events
+    self.lastSequence = lastSequence
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.events = try c.decode([StoredEventResponse].self, forKey: WireKey("events"))
+    self.lastSequence = try c.decode(Int.self, forKey: WireKey("lastSequence"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.events, forKey: WireKey("events"))
+    try c.encode(self.lastSequence, forKey: WireKey("lastSequence"))
+  }
+}
+
+public struct ArchivistHealth: Codable, Sendable {
+  public var actors: [String]
+  public let status: ArchivistHealthStatus
+  public init(actors: [String]) {
+    self.actors = actors
+    self.status = .ok
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.actors = try c.decode([String].self, forKey: WireKey("actors"))
+    self.status = try c.decode(ArchivistHealthStatus.self, forKey: WireKey("status"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.actors, forKey: WireKey("actors"))
+    try c.encode(self.status, forKey: WireKey("status"))
+  }
+}
+
+public enum ArchivistHealthStatus: String, Codable, Sendable, CaseIterable {
+  case ok = "ok"
+}
+
+public struct ArchivistStream: Codable, Sendable {
+  public var lastSequence: Int
+  public var resourceId: ResourceId
+  public init(lastSequence: Int, resourceId: ResourceId) {
+    self.lastSequence = lastSequence
+    self.resourceId = resourceId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["lastSequence", "resourceId"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in ArchivistStream")
+    }
+    self.lastSequence = try c.decode(Int.self, forKey: WireKey("lastSequence"))
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.lastSequence, forKey: WireKey("lastSequence"))
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+  }
+}
+
+public struct ArchivistStreamsResponse: Codable, Sendable {
+  public var streams: [ArchivistStream]
+  public init(streams: [ArchivistStream]) {
+    self.streams = streams
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: { !Set<String>(["streams"]).contains($0.stringValue) }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in ArchivistStreamsResponse")
+    }
+    self.streams = try c.decode([ArchivistStream].self, forKey: WireKey("streams"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.streams, forKey: WireKey("streams"))
+  }
+}
+
+public struct AssessingJobParams: Codable, Sendable {
+  public var density: Double?
+  public var instructions: String?
+  public var language: String?
+  public let motivation: AssessingJobParamsMotivation
+  public var sourceLanguage: String?
+  public var tone: AssessingJobParamsTone?
+  public init(
+    density: Double? = nil, instructions: String? = nil, language: String? = nil,
+    sourceLanguage: String? = nil, tone: AssessingJobParamsTone? = nil
+  ) {
+    self.density = density
+    self.instructions = instructions
+    self.language = language
+    self.motivation = .assessing
+    self.sourceLanguage = sourceLanguage
+    self.tone = tone
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["density", "instructions", "language", "motivation", "sourceLanguage", "tone"])
+        .contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in AssessingJobParams")
+    }
+    self.density =
+      c.contains(WireKey("density")) ? try c.decode(Double.self, forKey: WireKey("density")) : nil
+    self.instructions =
+      c.contains(WireKey("instructions"))
+      ? try c.decode(String.self, forKey: WireKey("instructions")) : nil
+    self.language =
+      c.contains(WireKey("language")) ? try c.decode(String.self, forKey: WireKey("language")) : nil
+    self.motivation = try c.decode(AssessingJobParamsMotivation.self, forKey: WireKey("motivation"))
+    self.sourceLanguage =
+      c.contains(WireKey("sourceLanguage"))
+      ? try c.decode(String.self, forKey: WireKey("sourceLanguage")) : nil
+    self.tone =
+      c.contains(WireKey("tone"))
+      ? try c.decode(AssessingJobParamsTone.self, forKey: WireKey("tone")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.density, forKey: WireKey("density"))
+    try c.encodeIfPresent(self.instructions, forKey: WireKey("instructions"))
+    try c.encodeIfPresent(self.language, forKey: WireKey("language"))
+    try c.encode(self.motivation, forKey: WireKey("motivation"))
+    try c.encodeIfPresent(self.sourceLanguage, forKey: WireKey("sourceLanguage"))
+    try c.encodeIfPresent(self.tone, forKey: WireKey("tone"))
+  }
+}
+
+public enum AssessingJobParamsMotivation: String, Codable, Sendable, CaseIterable {
+  case assessing = "assessing"
+}
+
+public enum AssessingJobParamsTone: String, Codable, Sendable, CaseIterable {
+  case analytical = "analytical"
+  case critical = "critical"
+  case balanced = "balanced"
+  case constructive = "constructive"
+}
+
+public struct AttributedEvent: Codable, Sendable {
+  public var agent: Agent
+  public var id: String
+  public var metadata: EventMetadata
+  public var payload: [String: JSONValue]
+  public var resourceId: ResourceId?
+  public var timestamp: String
+  public var type: String
+  public var userId: UserId
+  public var version: Int
+  public init(
+    agent: Agent, id: String, metadata: EventMetadata, payload: [String: JSONValue],
+    resourceId: ResourceId? = nil, timestamp: String, type: String, userId: UserId, version: Int
+  ) {
+    self.agent = agent
+    self.id = id
+    self.metadata = metadata
+    self.payload = payload
+    self.resourceId = resourceId
+    self.timestamp = timestamp
+    self.type = type
+    self.userId = userId
+    self.version = version
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.agent = try c.decode(Agent.self, forKey: WireKey("agent"))
+    self.id = try c.decode(String.self, forKey: WireKey("id"))
+    self.metadata = try c.decode(EventMetadata.self, forKey: WireKey("metadata"))
+    self.payload = try c.decode([String: JSONValue].self, forKey: WireKey("payload"))
+    self.resourceId =
+      c.contains(WireKey("resourceId"))
+      ? try c.decode(ResourceId.self, forKey: WireKey("resourceId")) : nil
+    self.timestamp = try c.decode(String.self, forKey: WireKey("timestamp"))
+    self.type = try c.decode(String.self, forKey: WireKey("type"))
+    self.userId = try c.decode(UserId.self, forKey: WireKey("userId"))
+    self.version = try c.decode(Int.self, forKey: WireKey("version"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.agent, forKey: WireKey("agent"))
+    try c.encode(self.id, forKey: WireKey("id"))
+    try c.encode(self.metadata, forKey: WireKey("metadata"))
+    try c.encode(self.payload, forKey: WireKey("payload"))
+    try c.encodeIfPresent(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encode(self.timestamp, forKey: WireKey("timestamp"))
+    try c.encode(self.type, forKey: WireKey("type"))
+    try c.encode(self.userId, forKey: WireKey("userId"))
+    try c.encode(self.version, forKey: WireKey("version"))
+  }
+}
+
+public struct BeckonFocusEvent: Codable, Sendable {
+  public var annotationId: AnnotationId?
+  public var resourceId: ResourceId
+  public init(annotationId: AnnotationId? = nil, resourceId: ResourceId) {
+    self.annotationId = annotationId
+    self.resourceId = resourceId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.annotationId =
+      c.contains(WireKey("annotationId"))
+      ? try c.decode(AnnotationId.self, forKey: WireKey("annotationId")) : nil
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.annotationId, forKey: WireKey("annotationId"))
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+  }
+}
+
+public struct BeckonHoverEvent: Codable, Sendable {
+  public var annotationId: AnnotationId?
+  public init(annotationId: AnnotationId?) {
+    self.annotationId = annotationId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.annotationId = try c.decode(Optional<AnnotationId>.self, forKey: WireKey("annotationId"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.annotationId, forKey: WireKey("annotationId"))
+  }
+}
+
+public struct BeckonSparkleEvent: Codable, Sendable {
+  public var annotationId: AnnotationId
+  public init(annotationId: AnnotationId) {
+    self.annotationId = annotationId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.annotationId = try c.decode(AnnotationId.self, forKey: WireKey("annotationId"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.annotationId, forKey: WireKey("annotationId"))
+  }
+}
+
+public struct BindBodyOperation: Codable, Sendable {
+  public var item: AnnotationBody?
+  public var newItem: AnnotationBody?
+  public var oldItem: AnnotationBody?
+  public var op: BindBodyOperationOp
+  public init(
+    item: AnnotationBody? = nil, newItem: AnnotationBody? = nil, oldItem: AnnotationBody? = nil,
+    op: BindBodyOperationOp
+  ) {
+    self.item = item
+    self.newItem = newItem
+    self.oldItem = oldItem
+    self.op = op
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.item =
+      c.contains(WireKey("item")) ? try c.decode(AnnotationBody.self, forKey: WireKey("item")) : nil
+    self.newItem =
+      c.contains(WireKey("newItem"))
+      ? try c.decode(AnnotationBody.self, forKey: WireKey("newItem")) : nil
+    self.oldItem =
+      c.contains(WireKey("oldItem"))
+      ? try c.decode(AnnotationBody.self, forKey: WireKey("oldItem")) : nil
+    self.op = try c.decode(BindBodyOperationOp.self, forKey: WireKey("op"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.item, forKey: WireKey("item"))
+    try c.encodeIfPresent(self.newItem, forKey: WireKey("newItem"))
+    try c.encodeIfPresent(self.oldItem, forKey: WireKey("oldItem"))
+    try c.encode(self.op, forKey: WireKey("op"))
+  }
+}
+
+public enum BindBodyOperationOp: String, Codable, Sendable, CaseIterable {
+  case add = "add"
+  case remove = "remove"
+  case replace = "replace"
+}
+
+public struct BindBodyUpdated: Codable, Sendable {
+  public init() {
+  }
+  public init(from decoder: any Decoder) throws {
+    _ = try decoder.container(keyedBy: WireKey.self)
+  }
+  public func encode(to encoder: any Encoder) throws {
+    _ = encoder.container(keyedBy: WireKey.self)
+  }
+}
+
+public struct BindInitiateCommand: Codable, Sendable {
+  public var annotationId: AnnotationId
+  public var defaultTitle: String
+  public var entityTypes: [String]
+  public var resourceId: ResourceId
+  public init(
+    annotationId: AnnotationId, defaultTitle: String, entityTypes: [String], resourceId: ResourceId
+  ) {
+    self.annotationId = annotationId
+    self.defaultTitle = defaultTitle
+    self.entityTypes = entityTypes
+    self.resourceId = resourceId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.annotationId = try c.decode(AnnotationId.self, forKey: WireKey("annotationId"))
+    self.defaultTitle = try c.decode(String.self, forKey: WireKey("defaultTitle"))
+    self.entityTypes = try c.decode([String].self, forKey: WireKey("entityTypes"))
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.annotationId, forKey: WireKey("annotationId"))
+    try c.encode(self.defaultTitle, forKey: WireKey("defaultTitle"))
+    try c.encode(self.entityTypes, forKey: WireKey("entityTypes"))
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+  }
+}
+
+public struct BindUpdateBodyCommand: Codable, Sendable {
+  public var _userId: UserId?
+  public var annotationId: AnnotationId
+  public var operations: [BindBodyOperation]
+  public var resourceId: ResourceId
+  public init(
+    _userId: UserId? = nil, annotationId: AnnotationId, operations: [BindBodyOperation],
+    resourceId: ResourceId
+  ) {
+    self._userId = _userId
+    self.annotationId = annotationId
+    self.operations = operations
+    self.resourceId = resourceId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self._userId =
+      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
+    self.annotationId = try c.decode(AnnotationId.self, forKey: WireKey("annotationId"))
+    self.operations = try c.decode([BindBodyOperation].self, forKey: WireKey("operations"))
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
+    try c.encode(self.annotationId, forKey: WireKey("annotationId"))
+    try c.encode(self.operations, forKey: WireKey("operations"))
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+  }
+}
+
+public struct BodyOperationAdd: Codable, Sendable {
+  public var item: BodyOperationAddItem
+  public let op: BodyOperationAddOp
+  public init(item: BodyOperationAddItem) {
+    self.item = item
+    self.op = .add
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.item = try c.decode(BodyOperationAddItem.self, forKey: WireKey("item"))
+    self.op = try c.decode(BodyOperationAddOp.self, forKey: WireKey("op"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.item, forKey: WireKey("item"))
+    try c.encode(self.op, forKey: WireKey("op"))
+  }
+}
+
+public indirect enum BodyOperationAddItem: Codable, Sendable {
+  case textualBody(TextualBody)
+  case specificResource(SpecificResource)
+  public init(from decoder: any Decoder) throws {
+    if let value = try? TextualBody(from: decoder) {
+      self = .textualBody(value)
+      return
+    }
+    if let value = try? SpecificResource(from: decoder) {
+      self = .specificResource(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(
+        codingPath: decoder.codingPath, debugDescription: "no member of BodyOperationAddItem fits"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .textualBody(let value): try value.encode(to: encoder)
+    case .specificResource(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public enum BodyOperationAddOp: String, Codable, Sendable, CaseIterable {
+  case add = "add"
+}
+
+public struct BodyOperationRemove: Codable, Sendable {
+  public var item: BodyOperationRemoveItem
+  public let op: BodyOperationRemoveOp
+  public init(item: BodyOperationRemoveItem) {
+    self.item = item
+    self.op = .remove
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.item = try c.decode(BodyOperationRemoveItem.self, forKey: WireKey("item"))
+    self.op = try c.decode(BodyOperationRemoveOp.self, forKey: WireKey("op"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.item, forKey: WireKey("item"))
+    try c.encode(self.op, forKey: WireKey("op"))
+  }
+}
+
+public indirect enum BodyOperationRemoveItem: Codable, Sendable {
+  case textualBody(TextualBody)
+  case specificResource(SpecificResource)
+  public init(from decoder: any Decoder) throws {
+    if let value = try? TextualBody(from: decoder) {
+      self = .textualBody(value)
+      return
+    }
+    if let value = try? SpecificResource(from: decoder) {
+      self = .specificResource(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(
+        codingPath: decoder.codingPath,
+        debugDescription: "no member of BodyOperationRemoveItem fits"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .textualBody(let value): try value.encode(to: encoder)
+    case .specificResource(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public enum BodyOperationRemoveOp: String, Codable, Sendable, CaseIterable {
+  case remove = "remove"
+}
+
+public struct BodyOperationReplace: Codable, Sendable {
+  public var newItem: BodyOperationReplaceNewItem
+  public var oldItem: BodyOperationReplaceOldItem
+  public let op: BodyOperationReplaceOp
+  public init(newItem: BodyOperationReplaceNewItem, oldItem: BodyOperationReplaceOldItem) {
+    self.newItem = newItem
+    self.oldItem = oldItem
+    self.op = .replace
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.newItem = try c.decode(BodyOperationReplaceNewItem.self, forKey: WireKey("newItem"))
+    self.oldItem = try c.decode(BodyOperationReplaceOldItem.self, forKey: WireKey("oldItem"))
+    self.op = try c.decode(BodyOperationReplaceOp.self, forKey: WireKey("op"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.newItem, forKey: WireKey("newItem"))
+    try c.encode(self.oldItem, forKey: WireKey("oldItem"))
+    try c.encode(self.op, forKey: WireKey("op"))
+  }
+}
+
+public indirect enum BodyOperationReplaceNewItem: Codable, Sendable {
+  case textualBody(TextualBody)
+  case specificResource(SpecificResource)
+  public init(from decoder: any Decoder) throws {
+    if let value = try? TextualBody(from: decoder) {
+      self = .textualBody(value)
+      return
+    }
+    if let value = try? SpecificResource(from: decoder) {
+      self = .specificResource(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(
+        codingPath: decoder.codingPath,
+        debugDescription: "no member of BodyOperationReplaceNewItem fits"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .textualBody(let value): try value.encode(to: encoder)
+    case .specificResource(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public indirect enum BodyOperationReplaceOldItem: Codable, Sendable {
+  case textualBody(TextualBody)
+  case specificResource(SpecificResource)
+  public init(from decoder: any Decoder) throws {
+    if let value = try? TextualBody(from: decoder) {
+      self = .textualBody(value)
+      return
+    }
+    if let value = try? SpecificResource(from: decoder) {
+      self = .specificResource(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(
+        codingPath: decoder.codingPath,
+        debugDescription: "no member of BodyOperationReplaceOldItem fits"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .textualBody(let value): try value.encode(to: encoder)
+    case .specificResource(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public enum BodyOperationReplaceOp: String, Codable, Sendable, CaseIterable {
+  case replace = "replace"
+}
+
+public enum BodyPurpose: String, Codable, Sendable, CaseIterable {
+  case assessing = "assessing"
+  case bookmarking = "bookmarking"
+  case classifying = "classifying"
+  case commenting = "commenting"
+  case describing = "describing"
+  case editing = "editing"
+  case highlighting = "highlighting"
+  case identifying = "identifying"
+  case linking = "linking"
+  case moderating = "moderating"
+  case questioning = "questioning"
+  case replying = "replying"
+  case tagging = "tagging"
+}
+
+public struct BrowseAnnotationHistoryRequest: Codable, Sendable {
+  public var annotationId: AnnotationId
+  public var resourceId: ResourceId
+  public init(annotationId: AnnotationId, resourceId: ResourceId) {
+    self.annotationId = annotationId
+    self.resourceId = resourceId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.annotationId = try c.decode(AnnotationId.self, forKey: WireKey("annotationId"))
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.annotationId, forKey: WireKey("annotationId"))
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+  }
+}
+
+public struct BrowseAnnotationHistoryResult: Codable, Sendable {
+  public var response: GetAnnotationHistoryResponse
+  public init(response: GetAnnotationHistoryResponse) {
+    self.response = response
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.response = try c.decode(GetAnnotationHistoryResponse.self, forKey: WireKey("response"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.response, forKey: WireKey("response"))
+  }
+}
+
+public struct BrowseAnnotationRequest: Codable, Sendable {
+  public var annotationId: AnnotationId
+  public var resourceId: ResourceId
+  public init(annotationId: AnnotationId, resourceId: ResourceId) {
+    self.annotationId = annotationId
+    self.resourceId = resourceId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.annotationId = try c.decode(AnnotationId.self, forKey: WireKey("annotationId"))
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.annotationId, forKey: WireKey("annotationId"))
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+  }
+}
+
+public struct BrowseAnnotationResult: Codable, Sendable {
+  public var response: GetAnnotationResponse
+  public init(response: GetAnnotationResponse) {
+    self.response = response
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.response = try c.decode(GetAnnotationResponse.self, forKey: WireKey("response"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.response, forKey: WireKey("response"))
+  }
+}
+
+public struct BrowseClickEvent: Codable, Sendable {
+  public var annotationId: AnnotationId
+  public init(annotationId: AnnotationId) {
+    self.annotationId = annotationId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.annotationId = try c.decode(AnnotationId.self, forKey: WireKey("annotationId"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.annotationId, forKey: WireKey("annotationId"))
+  }
+}
+
+public struct BrowseDirectoryFailed: Codable, Sendable {
+  public var code: BrowseDirectoryFailedCode?
+  public var details: String?
+  public var message: String
+  public var path: String
+  public init(
+    code: BrowseDirectoryFailedCode? = nil, details: String? = nil, message: String, path: String
+  ) {
+    self.code = code
+    self.details = details
+    self.message = message
+    self.path = path
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.code =
+      c.contains(WireKey("code"))
+      ? try c.decode(BrowseDirectoryFailedCode.self, forKey: WireKey("code")) : nil
+    self.details =
+      c.contains(WireKey("details")) ? try c.decode(String.self, forKey: WireKey("details")) : nil
+    self.message = try c.decode(String.self, forKey: WireKey("message"))
+    self.path = try c.decode(String.self, forKey: WireKey("path"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.code, forKey: WireKey("code"))
+    try c.encodeIfPresent(self.details, forKey: WireKey("details"))
+    try c.encode(self.message, forKey: WireKey("message"))
+    try c.encode(self.path, forKey: WireKey("path"))
+  }
+}
+
+public enum BrowseDirectoryFailedCode: String, Codable, Sendable, CaseIterable {
+  case peerUnavailable = "peer-unavailable"
+  case notFound = "not-found"
+  case unauthorized = "unauthorized"
+  case nonePending = "none-pending"
+}
+
+public struct BrowseDirectoryRequest: Codable, Sendable {
+  public var path: String
+  public var sort: BrowseDirectoryRequestSort?
+  public init(path: String, sort: BrowseDirectoryRequestSort? = nil) {
+    self.path = path
+    self.sort = sort
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.path = try c.decode(String.self, forKey: WireKey("path"))
+    self.sort =
+      c.contains(WireKey("sort"))
+      ? try c.decode(BrowseDirectoryRequestSort.self, forKey: WireKey("sort")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.path, forKey: WireKey("path"))
+    try c.encodeIfPresent(self.sort, forKey: WireKey("sort"))
+  }
+}
+
+public enum BrowseDirectoryRequestSort: String, Codable, Sendable, CaseIterable {
+  case name = "name"
+  case mtime = "mtime"
+  case annotationCount = "annotationCount"
+}
+
+public struct BrowseDirectoryResult: Codable, Sendable {
+  public var response: BrowseDirectoryResultResponse
+  public init(response: BrowseDirectoryResultResponse) {
+    self.response = response
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.response = try c.decode(BrowseDirectoryResultResponse.self, forKey: WireKey("response"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.response, forKey: WireKey("response"))
+  }
+}
+
+public struct BrowseDirectoryResultResponse: Codable, Sendable {
+  public var entries: [DirectoryEntry]
+  public var path: String
+  public init(entries: [DirectoryEntry], path: String) {
+    self.entries = entries
+    self.path = path
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.entries = try c.decode([DirectoryEntry].self, forKey: WireKey("entries"))
+    self.path = try c.decode(String.self, forKey: WireKey("path"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.entries, forKey: WireKey("entries"))
+    try c.encode(self.path, forKey: WireKey("path"))
+  }
+}
+
+public struct BrowseEnginesRequest: Codable, Sendable {
+  public init() {
+  }
+  public init(from decoder: any Decoder) throws {
+    _ = try decoder.container(keyedBy: WireKey.self)
+  }
+  public func encode(to encoder: any Encoder) throws {
+    _ = encoder.container(keyedBy: WireKey.self)
+  }
+}
+
+public struct BrowseEnginesResult: Codable, Sendable {
+  public var response: BrowseEnginesResultResponse
+  public init(response: BrowseEnginesResultResponse) {
+    self.response = response
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.response = try c.decode(BrowseEnginesResultResponse.self, forKey: WireKey("response"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.response, forKey: WireKey("response"))
+  }
+}
+
+public struct BrowseEnginesResultResponse: Codable, Sendable {
+  public var engines: [EngineEntry]
+  public init(engines: [EngineEntry]) {
+    self.engines = engines
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.engines = try c.decode([EngineEntry].self, forKey: WireKey("engines"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.engines, forKey: WireKey("engines"))
+  }
+}
+
+public struct BrowseEntityTypeClickedEvent: Codable, Sendable {
+  public var entityType: String
+  public init(entityType: String) {
+    self.entityType = entityType
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.entityType = try c.decode(String.self, forKey: WireKey("entityType"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.entityType, forKey: WireKey("entityType"))
+  }
+}
+
+public struct BrowseEntityTypesRequest: Codable, Sendable {
+  public init() {
+  }
+  public init(from decoder: any Decoder) throws {
+    _ = try decoder.container(keyedBy: WireKey.self)
+  }
+  public func encode(to encoder: any Encoder) throws {
+    _ = encoder.container(keyedBy: WireKey.self)
+  }
+}
+
+public struct BrowseEntityTypesResult: Codable, Sendable {
+  public var response: GetEntityTypesResponse
+  public init(response: GetEntityTypesResponse) {
+    self.response = response
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.response = try c.decode(GetEntityTypesResponse.self, forKey: WireKey("response"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.response, forKey: WireKey("response"))
+  }
+}
+
+public struct BrowseEventsRequest: Codable, Sendable {
+  public var limit: Int?
+  public var resourceId: ResourceId
+  public var type: String?
+  public var userId: UserId?
+  public init(limit: Int? = nil, resourceId: ResourceId, type: String? = nil, userId: UserId? = nil)
+  {
+    self.limit = limit
+    self.resourceId = resourceId
+    self.type = type
+    self.userId = userId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.limit =
+      c.contains(WireKey("limit")) ? try c.decode(Int.self, forKey: WireKey("limit")) : nil
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self.type =
+      c.contains(WireKey("type")) ? try c.decode(String.self, forKey: WireKey("type")) : nil
+    self.userId =
+      c.contains(WireKey("userId")) ? try c.decode(UserId.self, forKey: WireKey("userId")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.limit, forKey: WireKey("limit"))
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encodeIfPresent(self.type, forKey: WireKey("type"))
+    try c.encodeIfPresent(self.userId, forKey: WireKey("userId"))
+  }
+}
+
+public struct BrowseEventsResult: Codable, Sendable {
+  public var response: GetEventsResponse
+  public init(response: GetEventsResponse) {
+    self.response = response
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.response = try c.decode(GetEventsResponse.self, forKey: WireKey("response"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.response, forKey: WireKey("response"))
+  }
+}
+
+public struct BrowseExternalNavigateEvent: Codable, Sendable {
+  public var resourceId: ResourceId?
+  public var url: String
+  public init(resourceId: ResourceId? = nil, url: String) {
+    self.resourceId = resourceId
+    self.url = url
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.resourceId =
+      c.contains(WireKey("resourceId"))
+      ? try c.decode(ResourceId.self, forKey: WireKey("resourceId")) : nil
+    self.url = try c.decode(String.self, forKey: WireKey("url"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encode(self.url, forKey: WireKey("url"))
+  }
+}
+
+public struct BrowseFilesResponse: Codable, Sendable {
+  public var entries: [DirectoryEntry]
+  public var path: String
+  public init(entries: [DirectoryEntry], path: String) {
+    self.entries = entries
+    self.path = path
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["entries", "path"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in BrowseFilesResponse")
+    }
+    self.entries = try c.decode([DirectoryEntry].self, forKey: WireKey("entries"))
+    self.path = try c.decode(String.self, forKey: WireKey("path"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.entries, forKey: WireKey("entries"))
+    try c.encode(self.path, forKey: WireKey("path"))
+  }
+}
+
+public struct BrowseKbRequest: Codable, Sendable {
+  public init() {
+  }
+  public init(from decoder: any Decoder) throws {
+    _ = try decoder.container(keyedBy: WireKey.self)
+  }
+  public func encode(to encoder: any Encoder) throws {
+    _ = encoder.container(keyedBy: WireKey.self)
+  }
+}
+
+public struct BrowseKbResult: Codable, Sendable {
+  public var response: KbDescription
+  public init(response: KbDescription) {
+    self.response = response
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.response = try c.decode(KbDescription.self, forKey: WireKey("response"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.response, forKey: WireKey("response"))
+  }
+}
+
+public struct BrowseLinkClickedEvent: Codable, Sendable {
+  public var href: String
+  public var label: String?
+  public init(href: String, label: String? = nil) {
+    self.href = href
+    self.label = label
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.href = try c.decode(String.self, forKey: WireKey("href"))
+    self.label =
+      c.contains(WireKey("label")) ? try c.decode(String.self, forKey: WireKey("label")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.href, forKey: WireKey("href"))
+    try c.encodeIfPresent(self.label, forKey: WireKey("label"))
+  }
+}
+
+public struct BrowsePanelOpenEvent: Codable, Sendable {
+  public var motivation: Motivation?
+  public var panel: String
+  public var scrollToAnnotationId: AnnotationId?
+  public init(
+    motivation: Motivation? = nil, panel: String, scrollToAnnotationId: AnnotationId? = nil
+  ) {
+    self.motivation = motivation
+    self.panel = panel
+    self.scrollToAnnotationId = scrollToAnnotationId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.motivation =
+      c.contains(WireKey("motivation"))
+      ? try c.decode(Motivation.self, forKey: WireKey("motivation")) : nil
+    self.panel = try c.decode(String.self, forKey: WireKey("panel"))
+    self.scrollToAnnotationId =
+      c.contains(WireKey("scrollToAnnotationId"))
+      ? try c.decode(AnnotationId.self, forKey: WireKey("scrollToAnnotationId")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.motivation, forKey: WireKey("motivation"))
+    try c.encode(self.panel, forKey: WireKey("panel"))
+    try c.encodeIfPresent(self.scrollToAnnotationId, forKey: WireKey("scrollToAnnotationId"))
+  }
+}
+
+public struct BrowsePanelToggleEvent: Codable, Sendable {
+  public var panel: String
+  public init(panel: String) {
+    self.panel = panel
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.panel = try c.decode(String.self, forKey: WireKey("panel"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.panel, forKey: WireKey("panel"))
+  }
+}
+
+public struct BrowseProfilesRequest: Codable, Sendable {
+  public var dids: [UserId]
+  public init(dids: [UserId]) {
+    self.dids = dids
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: { !Set<String>(["dids"]).contains($0.stringValue) }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in BrowseProfilesRequest")
+    }
+    self.dids = try c.decode([UserId].self, forKey: WireKey("dids"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.dids, forKey: WireKey("dids"))
+  }
+}
+
+public struct BrowseProfilesResult: Codable, Sendable {
+  public var response: BrowseProfilesResultResponse
+  public init(response: BrowseProfilesResultResponse) {
+    self.response = response
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.response = try c.decode(BrowseProfilesResultResponse.self, forKey: WireKey("response"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.response, forKey: WireKey("response"))
+  }
+}
+
+public struct BrowseProfilesResultResponse: Codable, Sendable {
+  public var profiles: [String: Profile]
+  public init(profiles: [String: Profile]) {
+    self.profiles = profiles
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: { !Set<String>(["profiles"]).contains($0.stringValue) }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in BrowseProfilesResultResponse")
+    }
+    self.profiles = try c.decode([String: Profile].self, forKey: WireKey("profiles"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.profiles, forKey: WireKey("profiles"))
+  }
+}
+
+public struct BrowseResourceCloseEvent: Codable, Sendable {
+  public var resourceId: ResourceId
+  public init(resourceId: ResourceId) {
+    self.resourceId = resourceId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+  }
+}
+
+public struct BrowseResourceOpenEvent: Codable, Sendable {
+  public var resourceId: ResourceId
+  public init(resourceId: ResourceId) {
+    self.resourceId = resourceId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+  }
+}
+
+public struct BrowseResourceReorderEvent: Codable, Sendable {
+  public var newIndex: Int
+  public var oldIndex: Int
+  public init(newIndex: Int, oldIndex: Int) {
+    self.newIndex = newIndex
+    self.oldIndex = oldIndex
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.newIndex = try c.decode(Int.self, forKey: WireKey("newIndex"))
+    self.oldIndex = try c.decode(Int.self, forKey: WireKey("oldIndex"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.newIndex, forKey: WireKey("newIndex"))
+    try c.encode(self.oldIndex, forKey: WireKey("oldIndex"))
+  }
+}
+
+public struct BrowseResourceRequest: Codable, Sendable {
+  public var resourceId: ResourceId
+  public init(resourceId: ResourceId) {
+    self.resourceId = resourceId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+  }
+}
+
+public struct BrowseResourceResult: Codable, Sendable {
+  public var response: BrowseResourceResultResponse
+  public init(response: BrowseResourceResultResponse) {
+    self.response = response
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.response = try c.decode(BrowseResourceResultResponse.self, forKey: WireKey("response"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.response, forKey: WireKey("response"))
+  }
+}
+
+public struct BrowseResourceResultResponse: Codable, Sendable {
+  public var lastSequence: Int
+  public var resource: ResourceDescriptor
+  public init(lastSequence: Int, resource: ResourceDescriptor) {
+    self.lastSequence = lastSequence
+    self.resource = resource
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["lastSequence", "resource"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in BrowseResourceResultResponse")
+    }
+    self.lastSequence = try c.decode(Int.self, forKey: WireKey("lastSequence"))
+    self.resource = try c.decode(ResourceDescriptor.self, forKey: WireKey("resource"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.lastSequence, forKey: WireKey("lastSequence"))
+    try c.encode(self.resource, forKey: WireKey("resource"))
+  }
+}
+
+public struct BrowseResourceViewedEvent: Codable, Sendable {
+  public var resourceId: ResourceId
+  public init(resourceId: ResourceId) {
+    self.resourceId = resourceId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+  }
+}
+
+public struct BrowseResourcesRequest: Codable, Sendable {
+  public var archived: Bool?
+  public var entityType: String?
+  public var limit: Int?
+  public var offset: Int?
+  public init(
+    archived: Bool? = nil, entityType: String? = nil, limit: Int? = nil, offset: Int? = nil
+  ) {
+    self.archived = archived
+    self.entityType = entityType
+    self.limit = limit
+    self.offset = offset
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.archived =
+      c.contains(WireKey("archived")) ? try c.decode(Bool.self, forKey: WireKey("archived")) : nil
+    self.entityType =
+      c.contains(WireKey("entityType"))
+      ? try c.decode(String.self, forKey: WireKey("entityType")) : nil
+    self.limit =
+      c.contains(WireKey("limit")) ? try c.decode(Int.self, forKey: WireKey("limit")) : nil
+    self.offset =
+      c.contains(WireKey("offset")) ? try c.decode(Int.self, forKey: WireKey("offset")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.archived, forKey: WireKey("archived"))
+    try c.encodeIfPresent(self.entityType, forKey: WireKey("entityType"))
+    try c.encodeIfPresent(self.limit, forKey: WireKey("limit"))
+    try c.encodeIfPresent(self.offset, forKey: WireKey("offset"))
+  }
+}
+
+public struct BrowseResourcesResult: Codable, Sendable {
+  public var response: ListResourcesResponse
+  public init(response: ListResourcesResponse) {
+    self.response = response
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.response = try c.decode(ListResourcesResponse.self, forKey: WireKey("response"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.response, forKey: WireKey("response"))
+  }
+}
+
+public struct BrowseRouterPushEvent: Codable, Sendable {
+  public var path: String
+  public var reason: String?
+  public init(path: String, reason: String? = nil) {
+    self.path = path
+    self.reason = reason
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.path = try c.decode(String.self, forKey: WireKey("path"))
+    self.reason =
+      c.contains(WireKey("reason")) ? try c.decode(String.self, forKey: WireKey("reason")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.path, forKey: WireKey("path"))
+    try c.encodeIfPresent(self.reason, forKey: WireKey("reason"))
+  }
+}
+
+public struct BrowseTagSchemasRequest: Codable, Sendable {
+  public init() {
+  }
+  public init(from decoder: any Decoder) throws {
+    _ = try decoder.container(keyedBy: WireKey.self)
+  }
+  public func encode(to encoder: any Encoder) throws {
+    _ = encoder.container(keyedBy: WireKey.self)
+  }
+}
+
+public struct BrowseTagSchemasResult: Codable, Sendable {
+  public var response: GetTagSchemasResponse
+  public init(response: GetTagSchemasResponse) {
+    self.response = response
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.response = try c.decode(GetTagSchemasResponse.self, forKey: WireKey("response"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.response, forKey: WireKey("response"))
+  }
+}
+
+public struct BusEmitAccepted: Codable, Sendable {
+  public var subscribers: Int?
+  public init(subscribers: Int? = nil) {
+    self.subscribers = subscribers
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.subscribers =
+      c.contains(WireKey("subscribers"))
+      ? try c.decode(Int.self, forKey: WireKey("subscribers")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.subscribers, forKey: WireKey("subscribers"))
+  }
+}
+
+public struct BusEmitRequest: Codable, Sendable {
+  public var channel: String
+  public var clientId: String?
+  public var correlationId: String?
+  public var payload: [String: JSONValue]
+  public var scope: ResourceId?
+  public init(
+    channel: String, clientId: String? = nil, correlationId: String? = nil,
+    payload: [String: JSONValue], scope: ResourceId? = nil
+  ) {
+    self.channel = channel
+    self.clientId = clientId
+    self.correlationId = correlationId
+    self.payload = payload
+    self.scope = scope
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.channel = try c.decode(String.self, forKey: WireKey("channel"))
+    self.clientId =
+      c.contains(WireKey("clientId")) ? try c.decode(String.self, forKey: WireKey("clientId")) : nil
+    self.correlationId =
+      c.contains(WireKey("correlationId"))
+      ? try c.decode(String.self, forKey: WireKey("correlationId")) : nil
+    self.payload = try c.decode([String: JSONValue].self, forKey: WireKey("payload"))
+    self.scope =
+      c.contains(WireKey("scope")) ? try c.decode(ResourceId.self, forKey: WireKey("scope")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.channel, forKey: WireKey("channel"))
+    try c.encodeIfPresent(self.clientId, forKey: WireKey("clientId"))
+    try c.encodeIfPresent(self.correlationId, forKey: WireKey("correlationId"))
+    try c.encode(self.payload, forKey: WireKey("payload"))
+    try c.encodeIfPresent(self.scope, forKey: WireKey("scope"))
+  }
+}
+
+public struct BusEmptyPayload: Codable, Sendable {
+  public init() {
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: { !Set<String>([]).contains($0.stringValue) }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in BusEmptyPayload")
+    }
+  }
+  public func encode(to encoder: any Encoder) throws {
+    _ = encoder.container(keyedBy: WireKey.self)
+  }
+}
+
+public struct BusEventMessage: Codable, Sendable {
+  public var data: BusFrame
+  public let event: BusEventMessageEvent
+  public var id: BusEventMessageId
+  public init(data: BusFrame, id: BusEventMessageId) {
+    self.data = data
+    self.event = .busEvent
+    self.id = id
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["data", "event", "id"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in BusEventMessage")
+    }
+    self.data = try c.decode(BusFrame.self, forKey: WireKey("data"))
+    self.event = try c.decode(BusEventMessageEvent.self, forKey: WireKey("event"))
+    self.id = try c.decode(BusEventMessageId.self, forKey: WireKey("id"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.data, forKey: WireKey("data"))
+    try c.encode(self.event, forKey: WireKey("event"))
+    try c.encode(self.id, forKey: WireKey("id"))
+  }
+}
+
+public enum BusEventMessageEvent: String, Codable, Sendable, CaseIterable {
+  case busEvent = "bus-event"
+}
+
+public indirect enum BusEventMessageId: Codable, Sendable {
+  case persistedEventId(PersistedEventId)
+  case replyEventId(ReplyEventId)
+  case ephemeralEventId(EphemeralEventId)
+  public init(from decoder: any Decoder) throws {
+    if let value = try? PersistedEventId(from: decoder) {
+      self = .persistedEventId(value)
+      return
+    }
+    if let value = try? ReplyEventId(from: decoder) {
+      self = .replyEventId(value)
+      return
+    }
+    if let value = try? EphemeralEventId(from: decoder) {
+      self = .ephemeralEventId(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(codingPath: decoder.codingPath, debugDescription: "no member of BusEventMessageId fits")
+    )
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .persistedEventId(let value): try value.encode(to: encoder)
+    case .replyEventId(let value): try value.encode(to: encoder)
+    case .ephemeralEventId(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public struct BusFrame: Codable, Sendable {
+  public var channel: String
+  public var correlationId: String?
+  public var payload: [String: JSONValue]
+  public var scope: ResourceId?
+  public init(
+    channel: String, correlationId: String? = nil, payload: [String: JSONValue],
+    scope: ResourceId? = nil
+  ) {
+    self.channel = channel
+    self.correlationId = correlationId
+    self.payload = payload
+    self.scope = scope
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["channel", "correlationId", "payload", "scope"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in BusFrame")
+    }
+    self.channel = try c.decode(String.self, forKey: WireKey("channel"))
+    self.correlationId =
+      c.contains(WireKey("correlationId"))
+      ? try c.decode(String.self, forKey: WireKey("correlationId")) : nil
+    self.payload = try c.decode([String: JSONValue].self, forKey: WireKey("payload"))
+    self.scope =
+      c.contains(WireKey("scope")) ? try c.decode(ResourceId.self, forKey: WireKey("scope")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.channel, forKey: WireKey("channel"))
+    try c.encodeIfPresent(self.correlationId, forKey: WireKey("correlationId"))
+    try c.encode(self.payload, forKey: WireKey("payload"))
+    try c.encodeIfPresent(self.scope, forKey: WireKey("scope"))
+  }
+}
+
+public struct BusPingMessage: Codable, Sendable {
+  public var data: String
+  public let event: BusPingMessageEvent
+  public init(data: String) {
+    self.data = data
+    self.event = .ping
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["data", "event"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in BusPingMessage")
+    }
+    self.data = try c.decode(String.self, forKey: WireKey("data"))
+    self.event = try c.decode(BusPingMessageEvent.self, forKey: WireKey("event"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.data, forKey: WireKey("data"))
+    try c.encode(self.event, forKey: WireKey("event"))
+  }
+}
+
+public enum BusPingMessageEvent: String, Codable, Sendable, CaseIterable {
+  case ping = "ping"
+}
+
+public struct BusResumeGap: Codable, Sendable {
+  public var lastSeenId: String
+  public var reason: BusResumeGapReason
+  public var scope: ResourceId
+  public init(lastSeenId: String, reason: BusResumeGapReason, scope: ResourceId) {
+    self.lastSeenId = lastSeenId
+    self.reason = reason
+    self.scope = scope
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["lastSeenId", "reason", "scope"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in BusResumeGap")
+    }
+    self.lastSeenId = try c.decode(String.self, forKey: WireKey("lastSeenId"))
+    self.reason = try c.decode(BusResumeGapReason.self, forKey: WireKey("reason"))
+    self.scope = try c.decode(ResourceId.self, forKey: WireKey("scope"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.lastSeenId, forKey: WireKey("lastSeenId"))
+    try c.encode(self.reason, forKey: WireKey("reason"))
+    try c.encode(self.scope, forKey: WireKey("scope"))
+  }
+}
+
+public enum BusResumeGapReason: String, Codable, Sendable, CaseIterable {
+  case unparseableLastEventId = "unparseable-last-event-id"
+  case scopeMismatch = "scope-mismatch"
+  case retentionExceeded = "retention-exceeded"
+  case queryError = "query-error"
+}
+
+public indirect enum BusStreamMessage: Codable, Sendable {
+  case busEventMessage(BusEventMessage)
+  case busPingMessage(BusPingMessage)
+  public init(from decoder: any Decoder) throws {
+    if let value = try? BusEventMessage(from: decoder) {
+      self = .busEventMessage(value)
+      return
+    }
+    if let value = try? BusPingMessage(from: decoder) {
+      self = .busPingMessage(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(codingPath: decoder.codingPath, debugDescription: "no member of BusStreamMessage fits"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .busEventMessage(let value): try value.encode(to: encoder)
+    case .busPingMessage(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public struct BusSubscribeRequest: Codable, Sendable {
+  public var clientId: String
+  public var global: [String]?
+  public var pendingReplies: [String]?
+  public var scoped: [BusSubscribeRequestScopedItem]?
+  public init(
+    clientId: String, global: [String]? = nil, pendingReplies: [String]? = nil,
+    scoped: [BusSubscribeRequestScopedItem]? = nil
+  ) {
+    self.clientId = clientId
+    self.global = global
+    self.pendingReplies = pendingReplies
+    self.scoped = scoped
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["clientId", "global", "pendingReplies", "scoped"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in BusSubscribeRequest")
+    }
+    self.clientId = try c.decode(String.self, forKey: WireKey("clientId"))
+    self.global =
+      c.contains(WireKey("global")) ? try c.decode([String].self, forKey: WireKey("global")) : nil
+    self.pendingReplies =
+      c.contains(WireKey("pendingReplies"))
+      ? try c.decode([String].self, forKey: WireKey("pendingReplies")) : nil
+    self.scoped =
+      c.contains(WireKey("scoped"))
+      ? try c.decode([BusSubscribeRequestScopedItem].self, forKey: WireKey("scoped")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.clientId, forKey: WireKey("clientId"))
+    try c.encodeIfPresent(self.global, forKey: WireKey("global"))
+    try c.encodeIfPresent(self.pendingReplies, forKey: WireKey("pendingReplies"))
+    try c.encodeIfPresent(self.scoped, forKey: WireKey("scoped"))
+  }
+}
+
+public struct BusSubscribeRequestScopedItem: Codable, Sendable {
+  public var channels: [String]
+  public var lastEventId: String?
+  public var scope: ResourceId
+  public init(channels: [String], lastEventId: String? = nil, scope: ResourceId) {
+    self.channels = channels
+    self.lastEventId = lastEventId
+    self.scope = scope
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["channels", "lastEventId", "scope"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in BusSubscribeRequestScopedItem")
+    }
+    self.channels = try c.decode([String].self, forKey: WireKey("channels"))
+    self.lastEventId =
+      c.contains(WireKey("lastEventId"))
+      ? try c.decode(String.self, forKey: WireKey("lastEventId")) : nil
+    self.scope = try c.decode(ResourceId.self, forKey: WireKey("scope"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.channels, forKey: WireKey("channels"))
+    try c.encodeIfPresent(self.lastEventId, forKey: WireKey("lastEventId"))
+    try c.encode(self.scope, forKey: WireKey("scope"))
+  }
+}
+
+public struct CloneResourceWithTokenResponse: Codable, Sendable {
+  public var expiresAt: String
+  public var resource: ResourceDescriptor
+  public var token: String
+  public init(expiresAt: String, resource: ResourceDescriptor, token: String) {
+    self.expiresAt = expiresAt
+    self.resource = resource
+    self.token = token
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.expiresAt = try c.decode(String.self, forKey: WireKey("expiresAt"))
+    self.resource = try c.decode(ResourceDescriptor.self, forKey: WireKey("resource"))
+    self.token = try c.decode(String.self, forKey: WireKey("token"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.expiresAt, forKey: WireKey("expiresAt"))
+    try c.encode(self.resource, forKey: WireKey("resource"))
+    try c.encode(self.token, forKey: WireKey("token"))
+  }
+}
+
+public struct CommandError: Codable, Sendable {
+  public var code: CommandErrorCode?
+  public var details: String?
+  public var message: String
+  public init(code: CommandErrorCode? = nil, details: String? = nil, message: String) {
+    self.code = code
+    self.details = details
+    self.message = message
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.code =
+      c.contains(WireKey("code"))
+      ? try c.decode(CommandErrorCode.self, forKey: WireKey("code")) : nil
+    self.details =
+      c.contains(WireKey("details")) ? try c.decode(String.self, forKey: WireKey("details")) : nil
+    self.message = try c.decode(String.self, forKey: WireKey("message"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.code, forKey: WireKey("code"))
+    try c.encodeIfPresent(self.details, forKey: WireKey("details"))
+    try c.encode(self.message, forKey: WireKey("message"))
+  }
+}
+
+public enum CommandErrorCode: String, Codable, Sendable, CaseIterable {
+  case peerUnavailable = "peer-unavailable"
+  case notFound = "not-found"
+  case unauthorized = "unauthorized"
+  case nonePending = "none-pending"
+}
+
+public struct CommentingJobParams: Codable, Sendable {
+  public var density: Double?
+  public var instructions: String?
+  public var language: String?
+  public let motivation: CommentingJobParamsMotivation
+  public var sourceLanguage: String?
+  public var tone: CommentingJobParamsTone?
+  public init(
+    density: Double? = nil, instructions: String? = nil, language: String? = nil,
+    sourceLanguage: String? = nil, tone: CommentingJobParamsTone? = nil
+  ) {
+    self.density = density
+    self.instructions = instructions
+    self.language = language
+    self.motivation = .commenting
+    self.sourceLanguage = sourceLanguage
+    self.tone = tone
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["density", "instructions", "language", "motivation", "sourceLanguage", "tone"])
+        .contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in CommentingJobParams")
+    }
+    self.density =
+      c.contains(WireKey("density")) ? try c.decode(Double.self, forKey: WireKey("density")) : nil
+    self.instructions =
+      c.contains(WireKey("instructions"))
+      ? try c.decode(String.self, forKey: WireKey("instructions")) : nil
+    self.language =
+      c.contains(WireKey("language")) ? try c.decode(String.self, forKey: WireKey("language")) : nil
+    self.motivation = try c.decode(
+      CommentingJobParamsMotivation.self, forKey: WireKey("motivation"))
+    self.sourceLanguage =
+      c.contains(WireKey("sourceLanguage"))
+      ? try c.decode(String.self, forKey: WireKey("sourceLanguage")) : nil
+    self.tone =
+      c.contains(WireKey("tone"))
+      ? try c.decode(CommentingJobParamsTone.self, forKey: WireKey("tone")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.density, forKey: WireKey("density"))
+    try c.encodeIfPresent(self.instructions, forKey: WireKey("instructions"))
+    try c.encodeIfPresent(self.language, forKey: WireKey("language"))
+    try c.encode(self.motivation, forKey: WireKey("motivation"))
+    try c.encodeIfPresent(self.sourceLanguage, forKey: WireKey("sourceLanguage"))
+    try c.encodeIfPresent(self.tone, forKey: WireKey("tone"))
+  }
+}
+
+public enum CommentingJobParamsMotivation: String, Codable, Sendable, CaseIterable {
+  case commenting = "commenting"
+}
+
+public enum CommentingJobParamsTone: String, Codable, Sendable, CaseIterable {
+  case scholarly = "scholarly"
+  case explanatory = "explanatory"
+  case conversational = "conversational"
+  case technical = "technical"
+}
+
+public typealias ContentFormat = String
+
+public struct ContextualSummaryResponse: Codable, Sendable {
+  public var context: ContextualSummaryResponseContext
+  public var relevantFields: ContextualSummaryResponseRelevantFields
+  public var summary: String
+  public init(
+    context: ContextualSummaryResponseContext,
+    relevantFields: ContextualSummaryResponseRelevantFields, summary: String
+  ) {
+    self.context = context
+    self.relevantFields = relevantFields
+    self.summary = summary
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.context = try c.decode(ContextualSummaryResponseContext.self, forKey: WireKey("context"))
+    self.relevantFields = try c.decode(
+      ContextualSummaryResponseRelevantFields.self, forKey: WireKey("relevantFields"))
+    self.summary = try c.decode(String.self, forKey: WireKey("summary"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.context, forKey: WireKey("context"))
+    try c.encode(self.relevantFields, forKey: WireKey("relevantFields"))
+    try c.encode(self.summary, forKey: WireKey("summary"))
+  }
+}
+
+public struct ContextualSummaryResponseContext: Codable, Sendable {
+  public var after: String?
+  public var before: String?
+  public var selected: String
+  public init(after: String? = nil, before: String? = nil, selected: String) {
+    self.after = after
+    self.before = before
+    self.selected = selected
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.after =
+      c.contains(WireKey("after")) ? try c.decode(String.self, forKey: WireKey("after")) : nil
+    self.before =
+      c.contains(WireKey("before")) ? try c.decode(String.self, forKey: WireKey("before")) : nil
+    self.selected = try c.decode(String.self, forKey: WireKey("selected"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.after, forKey: WireKey("after"))
+    try c.encodeIfPresent(self.before, forKey: WireKey("before"))
+    try c.encode(self.selected, forKey: WireKey("selected"))
+  }
+}
+
+public struct ContextualSummaryResponseRelevantFields: Codable, Sendable {
+  public var entityTypes: [String]
+  public var resourceId: ResourceId
+  public var resourceName: String
+  public init(entityTypes: [String], resourceId: ResourceId, resourceName: String) {
+    self.entityTypes = entityTypes
+    self.resourceId = resourceId
+    self.resourceName = resourceName
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["entityTypes", "resourceId", "resourceName"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c,
+        debugDescription: "unknown property in ContextualSummaryResponseRelevantFields")
+    }
+    self.entityTypes = try c.decode([String].self, forKey: WireKey("entityTypes"))
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self.resourceName = try c.decode(String.self, forKey: WireKey("resourceName"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.entityTypes, forKey: WireKey("entityTypes"))
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encode(self.resourceName, forKey: WireKey("resourceName"))
+  }
+}
+
+public struct CreateAnnotationRequest: Codable, Sendable {
+  public var body: AnnotationBodies?
+  public var motivation: Motivation
+  public var target: AnnotationTarget
+  public init(body: AnnotationBodies? = nil, motivation: Motivation, target: AnnotationTarget) {
+    self.body = body
+    self.motivation = motivation
+    self.target = target
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.body =
+      c.contains(WireKey("body"))
+      ? try c.decode(AnnotationBodies.self, forKey: WireKey("body")) : nil
+    self.motivation = try c.decode(Motivation.self, forKey: WireKey("motivation"))
+    self.target = try c.decode(AnnotationTarget.self, forKey: WireKey("target"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.body, forKey: WireKey("body"))
+    try c.encode(self.motivation, forKey: WireKey("motivation"))
+    try c.encode(self.target, forKey: WireKey("target"))
+  }
+}
+
+public struct CreateResourceResponse: Codable, Sendable {
+  public var resourceId: ResourceId
+  public init(resourceId: ResourceId) {
+    self.resourceId = resourceId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+  }
+}
+
+public typealias CursorsPath = String
+
+public struct DirEntry: Codable, Sendable {
+  public var mtime: String
+  public var name: String
+  public var path: String
+  public let type: DirEntryType
+  public init(mtime: String, name: String, path: String) {
+    self.mtime = mtime
+    self.name = name
+    self.path = path
+    self.type = .dir
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["mtime", "name", "path", "type"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in DirEntry")
+    }
+    self.mtime = try c.decode(String.self, forKey: WireKey("mtime"))
+    self.name = try c.decode(String.self, forKey: WireKey("name"))
+    self.path = try c.decode(String.self, forKey: WireKey("path"))
+    self.type = try c.decode(DirEntryType.self, forKey: WireKey("type"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.mtime, forKey: WireKey("mtime"))
+    try c.encode(self.name, forKey: WireKey("name"))
+    try c.encode(self.path, forKey: WireKey("path"))
+    try c.encode(self.type, forKey: WireKey("type"))
+  }
+}
+
+public enum DirEntryType: String, Codable, Sendable, CaseIterable {
+  case dir = "dir"
+}
+
+public indirect enum DirectoryEntry: Codable, Sendable {
+  case fileEntry(FileEntry)
+  case dirEntry(DirEntry)
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    let tag = try c.decode(String.self, forKey: WireKey("type"))
+    switch tag {
+    case "file": self = .fileEntry(try FileEntry(from: decoder))
+    case "dir": self = .dirEntry(try DirEntry(from: decoder))
+    default:
+      throw DecodingError.dataCorruptedError(
+        forKey: WireKey("type"), in: c, debugDescription: "unknown DirectoryEntry discriminator")
+    }
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .fileEntry(let value): try value.encode(to: encoder)
+    case .dirEntry(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public struct DiscoveredKB: Codable, Sendable {
+  public var did: String
+  public var host: String
+  public var managedBy: String
+  public var placement: DiscoveredKBPlacement
+  public var port: Int
+  public var repo: String?
+  public var siteName: String?
+  public init(
+    did: String, host: String, managedBy: String, placement: DiscoveredKBPlacement, port: Int,
+    repo: String? = nil, siteName: String? = nil
+  ) {
+    self.did = did
+    self.host = host
+    self.managedBy = managedBy
+    self.placement = placement
+    self.port = port
+    self.repo = repo
+    self.siteName = siteName
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.did = try c.decode(String.self, forKey: WireKey("did"))
+    self.host = try c.decode(String.self, forKey: WireKey("host"))
+    self.managedBy = try c.decode(String.self, forKey: WireKey("managedBy"))
+    self.placement = try c.decode(DiscoveredKBPlacement.self, forKey: WireKey("placement"))
+    self.port = try c.decode(Int.self, forKey: WireKey("port"))
+    self.repo =
+      c.contains(WireKey("repo")) ? try c.decode(String.self, forKey: WireKey("repo")) : nil
+    self.siteName =
+      c.contains(WireKey("siteName")) ? try c.decode(String.self, forKey: WireKey("siteName")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.did, forKey: WireKey("did"))
+    try c.encode(self.host, forKey: WireKey("host"))
+    try c.encode(self.managedBy, forKey: WireKey("managedBy"))
+    try c.encode(self.placement, forKey: WireKey("placement"))
+    try c.encode(self.port, forKey: WireKey("port"))
+    try c.encodeIfPresent(self.repo, forKey: WireKey("repo"))
+    try c.encodeIfPresent(self.siteName, forKey: WireKey("siteName"))
+  }
+}
+
+public enum DiscoveredKBPlacement: String, Codable, Sendable, CaseIterable {
+  case local = "local"
+  case codespace = "codespace"
+}
+
+public struct DiscoveryDocument: Codable, Sendable {
+  public var kbs: [DiscoveredKB]
+  public let version: DiscoveryDocumentVersion
+  public init(kbs: [DiscoveredKB]) {
+    self.kbs = kbs
+    self.version = .value
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.kbs = try c.decode([DiscoveredKB].self, forKey: WireKey("kbs"))
+    self.version = try c.decode(DiscoveryDocumentVersion.self, forKey: WireKey("version"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.kbs, forKey: WireKey("kbs"))
+    try c.encode(self.version, forKey: WireKey("version"))
+  }
+}
+
+public enum DiscoveryDocumentVersion: Codable, Sendable {
+  case value
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.singleValueContainer()
+    guard try c.decode(Int.self) == 1 else {
+      throw DecodingError.dataCorruptedError(in: c, debugDescription: "DiscoveryDocumentVersion")
+    }
+    self = .value
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.singleValueContainer()
+    try c.encode(1)
+  }
+}
+
+public struct DispatcherConfig: Codable, Sendable {
+  public var gatewayUrl: String
+  public var identity: DispatcherConfigIdentity
+  public var kb: KbIdentity
+  public var logFormat: LogFormat
+  public var logLevel: LogLevel
+  public var port: Int
+  public var queue: DispatcherConfigQueue
+  public var timing: DispatcherConfigTiming
+  public init(
+    gatewayUrl: String, identity: DispatcherConfigIdentity, kb: KbIdentity, logFormat: LogFormat,
+    logLevel: LogLevel, port: Int, queue: DispatcherConfigQueue, timing: DispatcherConfigTiming
+  ) {
+    self.gatewayUrl = gatewayUrl
+    self.identity = identity
+    self.kb = kb
+    self.logFormat = logFormat
+    self.logLevel = logLevel
+    self.port = port
+    self.queue = queue
+    self.timing = timing
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>([
+        "gatewayUrl", "identity", "kb", "logFormat", "logLevel", "port", "queue", "timing",
+      ]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in DispatcherConfig")
+    }
+    self.gatewayUrl = try c.decode(String.self, forKey: WireKey("gatewayUrl"))
+    self.identity = try c.decode(DispatcherConfigIdentity.self, forKey: WireKey("identity"))
+    self.kb = try c.decode(KbIdentity.self, forKey: WireKey("kb"))
+    self.logFormat = try c.decode(LogFormat.self, forKey: WireKey("logFormat"))
+    self.logLevel = try c.decode(LogLevel.self, forKey: WireKey("logLevel"))
+    self.port = try c.decode(Int.self, forKey: WireKey("port"))
+    self.queue = try c.decode(DispatcherConfigQueue.self, forKey: WireKey("queue"))
+    self.timing = try c.decode(DispatcherConfigTiming.self, forKey: WireKey("timing"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.gatewayUrl, forKey: WireKey("gatewayUrl"))
+    try c.encode(self.identity, forKey: WireKey("identity"))
+    try c.encode(self.kb, forKey: WireKey("kb"))
+    try c.encode(self.logFormat, forKey: WireKey("logFormat"))
+    try c.encode(self.logLevel, forKey: WireKey("logLevel"))
+    try c.encode(self.port, forKey: WireKey("port"))
+    try c.encode(self.queue, forKey: WireKey("queue"))
+    try c.encode(self.timing, forKey: WireKey("timing"))
+  }
+}
+
+public struct DispatcherConfigIdentity: Codable, Sendable {
+  public var issuer: String
+  public init(issuer: String) {
+    self.issuer = issuer
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: { !Set<String>(["issuer"]).contains($0.stringValue) }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in DispatcherConfigIdentity")
+    }
+    self.issuer = try c.decode(String.self, forKey: WireKey("issuer"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.issuer, forKey: WireKey("issuer"))
+  }
+}
+
+public struct DispatcherConfigQueue: Codable, Sendable {
+  public var passwordEnv: String?
+  public var servers: String
+  public var userEnv: String?
+  public init(passwordEnv: String? = nil, servers: String, userEnv: String? = nil) {
+    self.passwordEnv = passwordEnv
+    self.servers = servers
+    self.userEnv = userEnv
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["passwordEnv", "servers", "userEnv"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in DispatcherConfigQueue")
+    }
+    self.passwordEnv =
+      c.contains(WireKey("passwordEnv"))
+      ? try c.decode(String.self, forKey: WireKey("passwordEnv")) : nil
+    self.servers = try c.decode(String.self, forKey: WireKey("servers"))
+    self.userEnv =
+      c.contains(WireKey("userEnv")) ? try c.decode(String.self, forKey: WireKey("userEnv")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.passwordEnv, forKey: WireKey("passwordEnv"))
+    try c.encode(self.servers, forKey: WireKey("servers"))
+    try c.encodeIfPresent(self.userEnv, forKey: WireKey("userEnv"))
+  }
+}
+
+public struct DispatcherConfigTiming: Codable, Sendable {
+  public var ackWaitMs: Int
+  public var bootDeadlineMs: Int
+  public var progressWriteIntervalMs: Int
+  public var retentionMs: Int
+  public var retentionSweepMs: Int
+  public var staleRunningMs: Int
+  public var tickMs: Int
+  public init(
+    ackWaitMs: Int, bootDeadlineMs: Int, progressWriteIntervalMs: Int, retentionMs: Int,
+    retentionSweepMs: Int, staleRunningMs: Int, tickMs: Int
+  ) {
+    self.ackWaitMs = ackWaitMs
+    self.bootDeadlineMs = bootDeadlineMs
+    self.progressWriteIntervalMs = progressWriteIntervalMs
+    self.retentionMs = retentionMs
+    self.retentionSweepMs = retentionSweepMs
+    self.staleRunningMs = staleRunningMs
+    self.tickMs = tickMs
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>([
+        "ackWaitMs", "bootDeadlineMs", "progressWriteIntervalMs", "retentionMs", "retentionSweepMs",
+        "staleRunningMs", "tickMs",
+      ]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in DispatcherConfigTiming")
+    }
+    self.ackWaitMs = try c.decode(Int.self, forKey: WireKey("ackWaitMs"))
+    self.bootDeadlineMs = try c.decode(Int.self, forKey: WireKey("bootDeadlineMs"))
+    self.progressWriteIntervalMs = try c.decode(
+      Int.self, forKey: WireKey("progressWriteIntervalMs"))
+    self.retentionMs = try c.decode(Int.self, forKey: WireKey("retentionMs"))
+    self.retentionSweepMs = try c.decode(Int.self, forKey: WireKey("retentionSweepMs"))
+    self.staleRunningMs = try c.decode(Int.self, forKey: WireKey("staleRunningMs"))
+    self.tickMs = try c.decode(Int.self, forKey: WireKey("tickMs"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.ackWaitMs, forKey: WireKey("ackWaitMs"))
+    try c.encode(self.bootDeadlineMs, forKey: WireKey("bootDeadlineMs"))
+    try c.encode(self.progressWriteIntervalMs, forKey: WireKey("progressWriteIntervalMs"))
+    try c.encode(self.retentionMs, forKey: WireKey("retentionMs"))
+    try c.encode(self.retentionSweepMs, forKey: WireKey("retentionSweepMs"))
+    try c.encode(self.staleRunningMs, forKey: WireKey("staleRunningMs"))
+    try c.encode(self.tickMs, forKey: WireKey("tickMs"))
+  }
+}
+
+public struct DispatcherHealth: Codable, Sendable {
+  public let queue: DispatcherHealthQueue
+  public let status: DispatcherHealthStatus
+  public init() {
+    self.queue = .jetstream
+    self.status = .ok
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["queue", "status"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in DispatcherHealth")
+    }
+    self.queue = try c.decode(DispatcherHealthQueue.self, forKey: WireKey("queue"))
+    self.status = try c.decode(DispatcherHealthStatus.self, forKey: WireKey("status"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.queue, forKey: WireKey("queue"))
+    try c.encode(self.status, forKey: WireKey("status"))
+  }
+}
+
+public enum DispatcherHealthQueue: String, Codable, Sendable, CaseIterable {
+  case jetstream = "jetstream"
+}
+
+public enum DispatcherHealthStatus: String, Codable, Sendable, CaseIterable {
+  case ok = "ok"
+}
+
+public enum DurabilityEvidence: String, Codable, Sendable, CaseIterable {
+  case acknowledged = "acknowledged"
+  case probeConfirmed = "probe-confirmed"
+  case probeRefused = "probe-refused"
+  case probeUnreachable = "probe-unreachable"
+}
+
+public indirect enum EmbeddingConfig: Codable, Sendable {
+  case ollamaEmbeddingConfig(OllamaEmbeddingConfig)
+  case voyageEmbeddingConfig(VoyageEmbeddingConfig)
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    let tag = try c.decode(String.self, forKey: WireKey("type"))
+    switch tag {
+    case "ollama": self = .ollamaEmbeddingConfig(try OllamaEmbeddingConfig(from: decoder))
+    case "voyage": self = .voyageEmbeddingConfig(try VoyageEmbeddingConfig(from: decoder))
+    default:
+      throw DecodingError.dataCorruptedError(
+        forKey: WireKey("type"), in: c, debugDescription: "unknown EmbeddingConfig discriminator")
+    }
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .ollamaEmbeddingConfig(let value): try value.encode(to: encoder)
+    case .voyageEmbeddingConfig(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public struct Engine: Codable, Sendable {
+  public var model: String
+  public var provider: EngineProvider
+  public init(model: String, provider: EngineProvider) {
+    self.model = model
+    self.provider = provider
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["model", "provider"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in Engine")
+    }
+    self.model = try c.decode(String.self, forKey: WireKey("model"))
+    self.provider = try c.decode(EngineProvider.self, forKey: WireKey("provider"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.model, forKey: WireKey("model"))
+    try c.encode(self.provider, forKey: WireKey("provider"))
+  }
+}
+
+public struct EngineEntry: Codable, Sendable {
+  public var engine: Engine
+  public var jobs: [JobFilter]?
+  public init(engine: Engine, jobs: [JobFilter]? = nil) {
+    self.engine = engine
+    self.jobs = jobs
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["engine", "jobs"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in EngineEntry")
+    }
+    self.engine = try c.decode(Engine.self, forKey: WireKey("engine"))
+    self.jobs =
+      c.contains(WireKey("jobs")) ? try c.decode([JobFilter].self, forKey: WireKey("jobs")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.engine, forKey: WireKey("engine"))
+    try c.encodeIfPresent(self.jobs, forKey: WireKey("jobs"))
+  }
+}
+
+public struct EngineLimits: Codable, Sendable {
+  public var engine: Engine
+  public var limits: InferenceLimits
+  public init(engine: Engine, limits: InferenceLimits) {
+    self.engine = engine
+    self.limits = limits
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["engine", "limits"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in EngineLimits")
+    }
+    self.engine = try c.decode(Engine.self, forKey: WireKey("engine"))
+    self.limits = try c.decode(InferenceLimits.self, forKey: WireKey("limits"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.engine, forKey: WireKey("engine"))
+    try c.encode(self.limits, forKey: WireKey("limits"))
+  }
+}
+
+public enum EngineProvider: String, Codable, Sendable, CaseIterable {
+  case anthropic = "anthropic"
+  case google = "google"
+  case llamacpp = "llamacpp"
+  case ollama = "ollama"
+  case openai = "openai"
+  case together = "together"
+  case vllm = "vllm"
+}
+
+public struct EnrichedResourceEvent: Codable, Sendable {
+  public var annotation: Annotation?
+  public var id: String
+  public var metadata: EventMetadata
+  public var payload: [String: JSONValue]
+  public var resourceId: ResourceId?
+  public var timestamp: String
+  public var type: String
+  public var userId: UserId
+  public var version: Int
+  public init(
+    annotation: Annotation? = nil, id: String, metadata: EventMetadata,
+    payload: [String: JSONValue], resourceId: ResourceId? = nil, timestamp: String, type: String,
+    userId: UserId, version: Int
+  ) {
+    self.annotation = annotation
+    self.id = id
+    self.metadata = metadata
+    self.payload = payload
+    self.resourceId = resourceId
+    self.timestamp = timestamp
+    self.type = type
+    self.userId = userId
+    self.version = version
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.annotation =
+      c.contains(WireKey("annotation"))
+      ? try c.decode(Annotation.self, forKey: WireKey("annotation")) : nil
+    self.id = try c.decode(String.self, forKey: WireKey("id"))
+    self.metadata = try c.decode(EventMetadata.self, forKey: WireKey("metadata"))
+    self.payload = try c.decode([String: JSONValue].self, forKey: WireKey("payload"))
+    self.resourceId =
+      c.contains(WireKey("resourceId"))
+      ? try c.decode(ResourceId.self, forKey: WireKey("resourceId")) : nil
+    self.timestamp = try c.decode(String.self, forKey: WireKey("timestamp"))
+    self.type = try c.decode(String.self, forKey: WireKey("type"))
+    self.userId = try c.decode(UserId.self, forKey: WireKey("userId"))
+    self.version = try c.decode(Int.self, forKey: WireKey("version"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.annotation, forKey: WireKey("annotation"))
+    try c.encode(self.id, forKey: WireKey("id"))
+    try c.encode(self.metadata, forKey: WireKey("metadata"))
+    try c.encode(self.payload, forKey: WireKey("payload"))
+    try c.encodeIfPresent(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encode(self.timestamp, forKey: WireKey("timestamp"))
+    try c.encode(self.type, forKey: WireKey("type"))
+    try c.encode(self.userId, forKey: WireKey("userId"))
+    try c.encode(self.version, forKey: WireKey("version"))
+  }
+}
+
+public struct EntityTagChangedPayload: Codable, Sendable {
+  public var entityType: String
+  public init(entityType: String) {
+    self.entityType = entityType
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.entityType = try c.decode(String.self, forKey: WireKey("entityType"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.entityType, forKey: WireKey("entityType"))
+  }
+}
+
+public struct EntityTypeAddedPayload: Codable, Sendable {
+  public var entityType: String
+  public init(entityType: String) {
+    self.entityType = entityType
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.entityType = try c.decode(String.self, forKey: WireKey("entityType"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.entityType, forKey: WireKey("entityType"))
+  }
+}
+
+public struct EntityTypesProjection: Codable, Sendable {
+  public var entityTypes: [String]
+  public init(entityTypes: [String]) {
+    self.entityTypes = entityTypes
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: { !Set<String>(["entityTypes"]).contains($0.stringValue) })
+    {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in EntityTypesProjection")
+    }
+    self.entityTypes = try c.decode([String].self, forKey: WireKey("entityTypes"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.entityTypes, forKey: WireKey("entityTypes"))
+  }
+}
+
+public typealias EphemeralEventId = String
+
+public struct ErrorResponse: Codable, Sendable {
+  public var code: String?
+  public var details: JSONValue?
+  public var error: String
+  public var hint: String?
+  public init(code: String? = nil, details: JSONValue? = nil, error: String, hint: String? = nil) {
+    self.code = code
+    self.details = details
+    self.error = error
+    self.hint = hint
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.code =
+      c.contains(WireKey("code")) ? try c.decode(String.self, forKey: WireKey("code")) : nil
+    self.details =
+      c.contains(WireKey("details"))
+      ? try c.decode(JSONValue.self, forKey: WireKey("details")) : nil
+    self.error = try c.decode(String.self, forKey: WireKey("error"))
+    self.hint =
+      c.contains(WireKey("hint")) ? try c.decode(String.self, forKey: WireKey("hint")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.code, forKey: WireKey("code"))
+    try c.encodeIfPresent(self.details, forKey: WireKey("details"))
+    try c.encode(self.error, forKey: WireKey("error"))
+    try c.encodeIfPresent(self.hint, forKey: WireKey("hint"))
+  }
+}
+
+public struct EventMetadata: Codable, Sendable {
+  public var sequenceNumber: Int
+  public init(sequenceNumber: Int) {
+    self.sequenceNumber = sequenceNumber
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.sequenceNumber = try c.decode(Int.self, forKey: WireKey("sequenceNumber"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.sequenceNumber, forKey: WireKey("sequenceNumber"))
+  }
+}
+
+public struct ExtractedText: Codable, Sendable {
+  public var items: [PdfTextItem]
+  public let kind: ExtractedTextKind
+  public var method: ExtractedTextMethod
+  public var ocrConfidence: ExtractedTextOcrConfidence?
+  public var pdfClass: ExtractedTextPdfClass?
+  public var text: String
+  public var unreadPages: [Int]?
+  public init(
+    items: [PdfTextItem], method: ExtractedTextMethod,
+    ocrConfidence: ExtractedTextOcrConfidence? = nil, pdfClass: ExtractedTextPdfClass? = nil,
+    text: String, unreadPages: [Int]? = nil
+  ) {
+    self.items = items
+    self.kind = .extracted
+    self.method = method
+    self.ocrConfidence = ocrConfidence
+    self.pdfClass = pdfClass
+    self.text = text
+    self.unreadPages = unreadPages
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.items = try c.decode([PdfTextItem].self, forKey: WireKey("items"))
+    self.kind = try c.decode(ExtractedTextKind.self, forKey: WireKey("kind"))
+    self.method = try c.decode(ExtractedTextMethod.self, forKey: WireKey("method"))
+    self.ocrConfidence =
+      c.contains(WireKey("ocrConfidence"))
+      ? try c.decode(ExtractedTextOcrConfidence.self, forKey: WireKey("ocrConfidence")) : nil
+    self.pdfClass =
+      c.contains(WireKey("pdfClass"))
+      ? try c.decode(ExtractedTextPdfClass.self, forKey: WireKey("pdfClass")) : nil
+    self.text = try c.decode(String.self, forKey: WireKey("text"))
+    self.unreadPages =
+      c.contains(WireKey("unreadPages"))
+      ? try c.decode([Int].self, forKey: WireKey("unreadPages")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.items, forKey: WireKey("items"))
+    try c.encode(self.kind, forKey: WireKey("kind"))
+    try c.encode(self.method, forKey: WireKey("method"))
+    try c.encodeIfPresent(self.ocrConfidence, forKey: WireKey("ocrConfidence"))
+    try c.encodeIfPresent(self.pdfClass, forKey: WireKey("pdfClass"))
+    try c.encode(self.text, forKey: WireKey("text"))
+    try c.encodeIfPresent(self.unreadPages, forKey: WireKey("unreadPages"))
+  }
+}
+
+public enum ExtractedTextKind: String, Codable, Sendable, CaseIterable {
+  case extracted = "extracted"
+}
+
+public enum ExtractedTextMethod: String, Codable, Sendable, CaseIterable {
+  case textPassthrough = "text-passthrough"
+  case pdfTextLayer = "pdf-text-layer"
+  case table = "table"
+  case form = "form"
+  case ocr = "ocr"
+}
+
+public struct ExtractedTextOcrConfidence: Codable, Sendable {
+  public var lowConfidenceWords: Int
+  public var mean: Double
+  public var totalWords: Int
+  public init(lowConfidenceWords: Int, mean: Double, totalWords: Int) {
+    self.lowConfidenceWords = lowConfidenceWords
+    self.mean = mean
+    self.totalWords = totalWords
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.lowConfidenceWords = try c.decode(Int.self, forKey: WireKey("lowConfidenceWords"))
+    self.mean = try c.decode(Double.self, forKey: WireKey("mean"))
+    self.totalWords = try c.decode(Int.self, forKey: WireKey("totalWords"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.lowConfidenceWords, forKey: WireKey("lowConfidenceWords"))
+    try c.encode(self.mean, forKey: WireKey("mean"))
+    try c.encode(self.totalWords, forKey: WireKey("totalWords"))
+  }
+}
+
+public enum ExtractedTextPdfClass: String, Codable, Sendable, CaseIterable {
+  case a = "A"
+  case b = "B"
+  case c = "C"
+  case d = "D"
+  case e = "E"
+  case f = "F"
+  case g = "G"
+}
+
+public struct ExtractionDeclined: Codable, Sendable {
+  public var declined: ExtractionDeclinedDeclined
+  public let kind: ExtractionDeclinedKind
+  public init(declined: ExtractionDeclinedDeclined) {
+    self.declined = declined
+    self.kind = .declined
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.declined = try c.decode(ExtractionDeclinedDeclined.self, forKey: WireKey("declined"))
+    self.kind = try c.decode(ExtractionDeclinedKind.self, forKey: WireKey("kind"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.declined, forKey: WireKey("declined"))
+    try c.encode(self.kind, forKey: WireKey("kind"))
+  }
+}
+
+public enum ExtractionDeclinedDeclined: String, Codable, Sendable, CaseIterable {
+  case noTextLayer = "no-text-layer"
+  case encrypted = "encrypted"
+  case corrupt = "corrupt"
+  case tooLarge = "too-large"
+}
+
+public enum ExtractionDeclinedKind: String, Codable, Sendable, CaseIterable {
+  case declined = "declined"
+}
+
+public indirect enum ExtractionOutcome: Codable, Sendable {
+  case extractedText(ExtractedText)
+  case extractionDeclined(ExtractionDeclined)
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    let tag = try c.decode(String.self, forKey: WireKey("kind"))
+    switch tag {
+    case "extracted": self = .extractedText(try ExtractedText(from: decoder))
+    case "declined": self = .extractionDeclined(try ExtractionDeclined(from: decoder))
+    default:
+      throw DecodingError.dataCorruptedError(
+        forKey: WireKey("kind"), in: c, debugDescription: "unknown ExtractionOutcome discriminator")
+    }
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .extractedText(let value): try value.encode(to: encoder)
+    case .extractionDeclined(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public enum FailureClass: String, Codable, Sendable, CaseIterable {
+  case transient = "transient"
+  case deterministic = "deterministic"
+  case withheld = "withheld"
+}
+
+public struct FileEntry: Codable, Sendable {
+  public var annotationCount: Int?
+  public var creator: String?
+  public var entityTypes: [String]?
+  public var mtime: String
+  public var name: String
+  public var path: String
+  public var resourceId: ResourceId?
+  public var size: Int
+  public var tracked: Bool
+  public let type: FileEntryType
+  public init(
+    annotationCount: Int? = nil, creator: String? = nil, entityTypes: [String]? = nil,
+    mtime: String, name: String, path: String, resourceId: ResourceId? = nil, size: Int,
+    tracked: Bool
+  ) {
+    self.annotationCount = annotationCount
+    self.creator = creator
+    self.entityTypes = entityTypes
+    self.mtime = mtime
+    self.name = name
+    self.path = path
+    self.resourceId = resourceId
+    self.size = size
+    self.tracked = tracked
+    self.type = .file
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>([
+        "annotationCount", "creator", "entityTypes", "mtime", "name", "path", "resourceId", "size",
+        "tracked", "type",
+      ]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in FileEntry")
+    }
+    self.annotationCount =
+      c.contains(WireKey("annotationCount"))
+      ? try c.decode(Int.self, forKey: WireKey("annotationCount")) : nil
+    self.creator =
+      c.contains(WireKey("creator")) ? try c.decode(String.self, forKey: WireKey("creator")) : nil
+    self.entityTypes =
+      c.contains(WireKey("entityTypes"))
+      ? try c.decode([String].self, forKey: WireKey("entityTypes")) : nil
+    self.mtime = try c.decode(String.self, forKey: WireKey("mtime"))
+    self.name = try c.decode(String.self, forKey: WireKey("name"))
+    self.path = try c.decode(String.self, forKey: WireKey("path"))
+    self.resourceId =
+      c.contains(WireKey("resourceId"))
+      ? try c.decode(ResourceId.self, forKey: WireKey("resourceId")) : nil
+    self.size = try c.decode(Int.self, forKey: WireKey("size"))
+    self.tracked = try c.decode(Bool.self, forKey: WireKey("tracked"))
+    self.type = try c.decode(FileEntryType.self, forKey: WireKey("type"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.annotationCount, forKey: WireKey("annotationCount"))
+    try c.encodeIfPresent(self.creator, forKey: WireKey("creator"))
+    try c.encodeIfPresent(self.entityTypes, forKey: WireKey("entityTypes"))
+    try c.encode(self.mtime, forKey: WireKey("mtime"))
+    try c.encode(self.name, forKey: WireKey("name"))
+    try c.encode(self.path, forKey: WireKey("path"))
+    try c.encodeIfPresent(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encode(self.size, forKey: WireKey("size"))
+    try c.encode(self.tracked, forKey: WireKey("tracked"))
+    try c.encode(self.type, forKey: WireKey("type"))
+  }
+}
+
+public enum FileEntryType: String, Codable, Sendable, CaseIterable {
+  case file = "file"
+}
+
+public struct FragmentSelector: Codable, Sendable {
+  public var conformsTo: String?
+  public let type: FragmentSelectorType
+  public var value: String
+  public init(conformsTo: String? = nil, value: String) {
+    self.conformsTo = conformsTo
+    self.type = .fragmentSelector
+    self.value = value
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.conformsTo =
+      c.contains(WireKey("conformsTo"))
+      ? try c.decode(String.self, forKey: WireKey("conformsTo")) : nil
+    self.type = try c.decode(FragmentSelectorType.self, forKey: WireKey("type"))
+    self.value = try c.decode(String.self, forKey: WireKey("value"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.conformsTo, forKey: WireKey("conformsTo"))
+    try c.encode(self.type, forKey: WireKey("type"))
+    try c.encode(self.value, forKey: WireKey("value"))
+  }
+}
+
+public enum FragmentSelectorType: String, Codable, Sendable, CaseIterable {
+  case fragmentSelector = "FragmentSelector"
+}
+
+public struct FrameAddEntityTypeCommand: Codable, Sendable {
+  public var _userId: UserId?
+  public var tag: String
+  public init(_userId: UserId? = nil, tag: String) {
+    self._userId = _userId
+    self.tag = tag
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self._userId =
+      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
+    self.tag = try c.decode(String.self, forKey: WireKey("tag"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
+    try c.encode(self.tag, forKey: WireKey("tag"))
+  }
+}
+
+public struct FrameAddTagSchemaCommand: Codable, Sendable {
+  public var _userId: UserId?
+  public var schema: TagSchema
+  public init(_userId: UserId? = nil, schema: TagSchema) {
+    self._userId = _userId
+    self.schema = schema
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self._userId =
+      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
+    self.schema = try c.decode(TagSchema.self, forKey: WireKey("schema"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
+    try c.encode(self.schema, forKey: WireKey("schema"))
+  }
+}
+
+public struct GatewayConfig: Codable, Sendable {
+  public var archivist: GatewayConfigArchivist
+  public var capacity: GatewayConfigCapacity
+  public var identity: GatewayConfigIdentity
+  public var kb: KbIdentity
+  public var logFormat: LogFormat
+  public var logLevel: LogLevel
+  public var port: Int
+  public var publicUrl: String
+  public var signal: GatewayConfigSignal
+  public init(
+    archivist: GatewayConfigArchivist, capacity: GatewayConfigCapacity,
+    identity: GatewayConfigIdentity, kb: KbIdentity, logFormat: LogFormat, logLevel: LogLevel,
+    port: Int, publicUrl: String, signal: GatewayConfigSignal
+  ) {
+    self.archivist = archivist
+    self.capacity = capacity
+    self.identity = identity
+    self.kb = kb
+    self.logFormat = logFormat
+    self.logLevel = logLevel
+    self.port = port
+    self.publicUrl = publicUrl
+    self.signal = signal
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>([
+        "archivist", "capacity", "identity", "kb", "logFormat", "logLevel", "port", "publicUrl",
+        "signal",
+      ]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in GatewayConfig")
+    }
+    self.archivist = try c.decode(GatewayConfigArchivist.self, forKey: WireKey("archivist"))
+    self.capacity = try c.decode(GatewayConfigCapacity.self, forKey: WireKey("capacity"))
+    self.identity = try c.decode(GatewayConfigIdentity.self, forKey: WireKey("identity"))
+    self.kb = try c.decode(KbIdentity.self, forKey: WireKey("kb"))
+    self.logFormat = try c.decode(LogFormat.self, forKey: WireKey("logFormat"))
+    self.logLevel = try c.decode(LogLevel.self, forKey: WireKey("logLevel"))
+    self.port = try c.decode(Int.self, forKey: WireKey("port"))
+    self.publicUrl = try c.decode(String.self, forKey: WireKey("publicUrl"))
+    self.signal = try c.decode(GatewayConfigSignal.self, forKey: WireKey("signal"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.archivist, forKey: WireKey("archivist"))
+    try c.encode(self.capacity, forKey: WireKey("capacity"))
+    try c.encode(self.identity, forKey: WireKey("identity"))
+    try c.encode(self.kb, forKey: WireKey("kb"))
+    try c.encode(self.logFormat, forKey: WireKey("logFormat"))
+    try c.encode(self.logLevel, forKey: WireKey("logLevel"))
+    try c.encode(self.port, forKey: WireKey("port"))
+    try c.encode(self.publicUrl, forKey: WireKey("publicUrl"))
+    try c.encode(self.signal, forKey: WireKey("signal"))
+  }
+}
+
+public struct GatewayConfigArchivist: Codable, Sendable {
+  public var host: String
+  public var port: Int
+  public init(host: String, port: Int) {
+    self.host = host
+    self.port = port
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: { !Set<String>(["host", "port"]).contains($0.stringValue) })
+    {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in GatewayConfigArchivist")
+    }
+    self.host = try c.decode(String.self, forKey: WireKey("host"))
+    self.port = try c.decode(Int.self, forKey: WireKey("port"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.host, forKey: WireKey("host"))
+    try c.encode(self.port, forKey: WireKey("port"))
+  }
+}
+
+public struct GatewayConfigCapacity: Codable, Sendable {
+  public var connections: Int
+  public var queuedBytes: Int
+  public init(connections: Int, queuedBytes: Int) {
+    self.connections = connections
+    self.queuedBytes = queuedBytes
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["connections", "queuedBytes"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in GatewayConfigCapacity")
+    }
+    self.connections = try c.decode(Int.self, forKey: WireKey("connections"))
+    self.queuedBytes = try c.decode(Int.self, forKey: WireKey("queuedBytes"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.connections, forKey: WireKey("connections"))
+    try c.encode(self.queuedBytes, forKey: WireKey("queuedBytes"))
+  }
+}
+
+public struct GatewayConfigIdentity: Codable, Sendable {
+  public var issuer: String
+  public var subjectClaim: String
+  public init(issuer: String, subjectClaim: String) {
+    self.issuer = issuer
+    self.subjectClaim = subjectClaim
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["issuer", "subjectClaim"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in GatewayConfigIdentity")
+    }
+    self.issuer = try c.decode(String.self, forKey: WireKey("issuer"))
+    self.subjectClaim = try c.decode(String.self, forKey: WireKey("subjectClaim"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.issuer, forKey: WireKey("issuer"))
+    try c.encode(self.subjectClaim, forKey: WireKey("subjectClaim"))
+  }
+}
+
+public struct GatewayConfigSignal: Codable, Sendable {
+  public var passwordEnv: String?
+  public var servers: String?
+  public var type: GatewayConfigSignalType
+  public var userEnv: String?
+  public init(
+    passwordEnv: String? = nil, servers: String? = nil, type: GatewayConfigSignalType,
+    userEnv: String? = nil
+  ) {
+    self.passwordEnv = passwordEnv
+    self.servers = servers
+    self.type = type
+    self.userEnv = userEnv
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["passwordEnv", "servers", "type", "userEnv"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in GatewayConfigSignal")
+    }
+    self.passwordEnv =
+      c.contains(WireKey("passwordEnv"))
+      ? try c.decode(String.self, forKey: WireKey("passwordEnv")) : nil
+    self.servers =
+      c.contains(WireKey("servers")) ? try c.decode(String.self, forKey: WireKey("servers")) : nil
+    self.type = try c.decode(GatewayConfigSignalType.self, forKey: WireKey("type"))
+    self.userEnv =
+      c.contains(WireKey("userEnv")) ? try c.decode(String.self, forKey: WireKey("userEnv")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.passwordEnv, forKey: WireKey("passwordEnv"))
+    try c.encodeIfPresent(self.servers, forKey: WireKey("servers"))
+    try c.encode(self.type, forKey: WireKey("type"))
+    try c.encodeIfPresent(self.userEnv, forKey: WireKey("userEnv"))
+  }
+}
+
+public enum GatewayConfigSignalType: String, Codable, Sendable, CaseIterable {
+  case inProcess = "in-process"
+  case nats = "nats"
+}
+
+public struct GatherAnnotationComplete: Codable, Sendable {
+  public var annotationId: AnnotationId
+  public var response: GatheredContext
+  public init(annotationId: AnnotationId, response: GatheredContext) {
+    self.annotationId = annotationId
+    self.response = response
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.annotationId = try c.decode(AnnotationId.self, forKey: WireKey("annotationId"))
+    self.response = try c.decode(GatheredContext.self, forKey: WireKey("response"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.annotationId, forKey: WireKey("annotationId"))
+    try c.encode(self.response, forKey: WireKey("response"))
+  }
+}
+
+public struct GatherAnnotationOptions: Codable, Sendable {
+  public var contextWindow: Int?
+  public var includeSourceContext: Bool?
+  public var includeTargetContext: Bool?
+  public init(
+    contextWindow: Int? = nil, includeSourceContext: Bool? = nil, includeTargetContext: Bool? = nil
+  ) {
+    self.contextWindow = contextWindow
+    self.includeSourceContext = includeSourceContext
+    self.includeTargetContext = includeTargetContext
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.contextWindow =
+      c.contains(WireKey("contextWindow"))
+      ? try c.decode(Int.self, forKey: WireKey("contextWindow")) : nil
+    self.includeSourceContext =
+      c.contains(WireKey("includeSourceContext"))
+      ? try c.decode(Bool.self, forKey: WireKey("includeSourceContext")) : nil
+    self.includeTargetContext =
+      c.contains(WireKey("includeTargetContext"))
+      ? try c.decode(Bool.self, forKey: WireKey("includeTargetContext")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.contextWindow, forKey: WireKey("contextWindow"))
+    try c.encodeIfPresent(self.includeSourceContext, forKey: WireKey("includeSourceContext"))
+    try c.encodeIfPresent(self.includeTargetContext, forKey: WireKey("includeTargetContext"))
+  }
+}
+
+public struct GatherAnnotationRequest: Codable, Sendable {
+  public var annotationId: AnnotationId
+  public var options: GatherAnnotationOptions?
+  public var resourceId: ResourceId
+  public init(
+    annotationId: AnnotationId, options: GatherAnnotationOptions? = nil, resourceId: ResourceId
+  ) {
+    self.annotationId = annotationId
+    self.options = options
+    self.resourceId = resourceId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.annotationId = try c.decode(AnnotationId.self, forKey: WireKey("annotationId"))
+    self.options =
+      c.contains(WireKey("options"))
+      ? try c.decode(GatherAnnotationOptions.self, forKey: WireKey("options")) : nil
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.annotationId, forKey: WireKey("annotationId"))
+    try c.encodeIfPresent(self.options, forKey: WireKey("options"))
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+  }
+}
+
+public struct GatherFailed: Codable, Sendable {
+  public var annotationId: AnnotationId
+  public var code: GatherFailedCode?
+  public var details: String?
+  public var message: String
+  public init(
+    annotationId: AnnotationId, code: GatherFailedCode? = nil, details: String? = nil,
+    message: String
+  ) {
+    self.annotationId = annotationId
+    self.code = code
+    self.details = details
+    self.message = message
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.annotationId = try c.decode(AnnotationId.self, forKey: WireKey("annotationId"))
+    self.code =
+      c.contains(WireKey("code"))
+      ? try c.decode(GatherFailedCode.self, forKey: WireKey("code")) : nil
+    self.details =
+      c.contains(WireKey("details")) ? try c.decode(String.self, forKey: WireKey("details")) : nil
+    self.message = try c.decode(String.self, forKey: WireKey("message"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.annotationId, forKey: WireKey("annotationId"))
+    try c.encodeIfPresent(self.code, forKey: WireKey("code"))
+    try c.encodeIfPresent(self.details, forKey: WireKey("details"))
+    try c.encode(self.message, forKey: WireKey("message"))
+  }
+}
+
+public enum GatherFailedCode: String, Codable, Sendable, CaseIterable {
+  case peerUnavailable = "peer-unavailable"
+  case notFound = "not-found"
+  case unauthorized = "unauthorized"
+  case nonePending = "none-pending"
+}
+
+public struct GatherReferencedByRequest: Codable, Sendable {
+  public var motivation: Motivation?
+  public var resourceId: ResourceId
+  public init(motivation: Motivation? = nil, resourceId: ResourceId) {
+    self.motivation = motivation
+    self.resourceId = resourceId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.motivation =
+      c.contains(WireKey("motivation"))
+      ? try c.decode(Motivation.self, forKey: WireKey("motivation")) : nil
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.motivation, forKey: WireKey("motivation"))
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+  }
+}
+
+public struct GatherReferencedByResult: Codable, Sendable {
+  public var response: GetReferencedByResponse
+  public init(response: GetReferencedByResponse) {
+    self.response = response
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.response = try c.decode(GetReferencedByResponse.self, forKey: WireKey("response"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.response, forKey: WireKey("response"))
+  }
+}
+
+public struct GatherResourceComplete: Codable, Sendable {
+  public var resourceId: ResourceId
+  public var response: GatheredContext
+  public init(resourceId: ResourceId, response: GatheredContext) {
+    self.resourceId = resourceId
+    self.response = response
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self.response = try c.decode(GatheredContext.self, forKey: WireKey("response"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encode(self.response, forKey: WireKey("response"))
+  }
+}
+
+public struct GatherResourceFailed: Codable, Sendable {
+  public var code: GatherResourceFailedCode?
+  public var details: String?
+  public var message: String
+  public var resourceId: ResourceId
+  public init(
+    code: GatherResourceFailedCode? = nil, details: String? = nil, message: String,
+    resourceId: ResourceId
+  ) {
+    self.code = code
+    self.details = details
+    self.message = message
+    self.resourceId = resourceId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.code =
+      c.contains(WireKey("code"))
+      ? try c.decode(GatherResourceFailedCode.self, forKey: WireKey("code")) : nil
+    self.details =
+      c.contains(WireKey("details")) ? try c.decode(String.self, forKey: WireKey("details")) : nil
+    self.message = try c.decode(String.self, forKey: WireKey("message"))
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.code, forKey: WireKey("code"))
+    try c.encodeIfPresent(self.details, forKey: WireKey("details"))
+    try c.encode(self.message, forKey: WireKey("message"))
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+  }
+}
+
+public enum GatherResourceFailedCode: String, Codable, Sendable, CaseIterable {
+  case peerUnavailable = "peer-unavailable"
+  case notFound = "not-found"
+  case unauthorized = "unauthorized"
+  case nonePending = "none-pending"
+}
+
+public struct GatherResourceOptions: Codable, Sendable {
+  public var depth: Int?
+  public var excludeEntityTypes: [String]?
+  public var includeContent: Bool?
+  public var includeSummary: Bool?
+  public var maxResources: Int?
+  public init(
+    depth: Int? = nil, excludeEntityTypes: [String]? = nil, includeContent: Bool? = nil,
+    includeSummary: Bool? = nil, maxResources: Int? = nil
+  ) {
+    self.depth = depth
+    self.excludeEntityTypes = excludeEntityTypes
+    self.includeContent = includeContent
+    self.includeSummary = includeSummary
+    self.maxResources = maxResources
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.depth =
+      c.contains(WireKey("depth")) ? try c.decode(Int.self, forKey: WireKey("depth")) : nil
+    self.excludeEntityTypes =
+      c.contains(WireKey("excludeEntityTypes"))
+      ? try c.decode([String].self, forKey: WireKey("excludeEntityTypes")) : nil
+    self.includeContent =
+      c.contains(WireKey("includeContent"))
+      ? try c.decode(Bool.self, forKey: WireKey("includeContent")) : nil
+    self.includeSummary =
+      c.contains(WireKey("includeSummary"))
+      ? try c.decode(Bool.self, forKey: WireKey("includeSummary")) : nil
+    self.maxResources =
+      c.contains(WireKey("maxResources"))
+      ? try c.decode(Int.self, forKey: WireKey("maxResources")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.depth, forKey: WireKey("depth"))
+    try c.encodeIfPresent(self.excludeEntityTypes, forKey: WireKey("excludeEntityTypes"))
+    try c.encodeIfPresent(self.includeContent, forKey: WireKey("includeContent"))
+    try c.encodeIfPresent(self.includeSummary, forKey: WireKey("includeSummary"))
+    try c.encodeIfPresent(self.maxResources, forKey: WireKey("maxResources"))
+  }
+}
+
+public struct GatherResourceRequest: Codable, Sendable {
+  public var options: GatherResourceRequestOptions
+  public var resourceId: ResourceId
+  public init(options: GatherResourceRequestOptions, resourceId: ResourceId) {
+    self.options = options
+    self.resourceId = resourceId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.options = try c.decode(GatherResourceRequestOptions.self, forKey: WireKey("options"))
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.options, forKey: WireKey("options"))
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+  }
+}
+
+public struct GatherResourceRequestOptions: Codable, Sendable {
+  public var depth: Int
+  public var excludeEntityTypes: [String]?
+  public var includeContent: Bool
+  public var includeSummary: Bool
+  public var maxResources: Int
+  public init(
+    depth: Int, excludeEntityTypes: [String]? = nil, includeContent: Bool, includeSummary: Bool,
+    maxResources: Int
+  ) {
+    self.depth = depth
+    self.excludeEntityTypes = excludeEntityTypes
+    self.includeContent = includeContent
+    self.includeSummary = includeSummary
+    self.maxResources = maxResources
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.depth = try c.decode(Int.self, forKey: WireKey("depth"))
+    self.excludeEntityTypes =
+      c.contains(WireKey("excludeEntityTypes"))
+      ? try c.decode([String].self, forKey: WireKey("excludeEntityTypes")) : nil
+    self.includeContent = try c.decode(Bool.self, forKey: WireKey("includeContent"))
+    self.includeSummary = try c.decode(Bool.self, forKey: WireKey("includeSummary"))
+    self.maxResources = try c.decode(Int.self, forKey: WireKey("maxResources"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.depth, forKey: WireKey("depth"))
+    try c.encodeIfPresent(self.excludeEntityTypes, forKey: WireKey("excludeEntityTypes"))
+    try c.encode(self.includeContent, forKey: WireKey("includeContent"))
+    try c.encode(self.includeSummary, forKey: WireKey("includeSummary"))
+    try c.encode(self.maxResources, forKey: WireKey("maxResources"))
+  }
+}
+
+public struct GatherSummaryRequest: Codable, Sendable {
+  public var annotationId: AnnotationId
+  public var resourceId: ResourceId
+  public init(annotationId: AnnotationId, resourceId: ResourceId) {
+    self.annotationId = annotationId
+    self.resourceId = resourceId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.annotationId = try c.decode(AnnotationId.self, forKey: WireKey("annotationId"))
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.annotationId, forKey: WireKey("annotationId"))
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+  }
+}
+
+public struct GatheredContext: Codable, Sendable {
+  public var focus: GatheredContextFocus
+  public var graph: KnowledgeGraph
+  public var inferredRelationshipSummary: String?
+  public var metadata: GatheredContextMetadata
+  public var semanticContext: GatheredContextSemanticContext?
+  public init(
+    focus: GatheredContextFocus, graph: KnowledgeGraph, inferredRelationshipSummary: String? = nil,
+    metadata: GatheredContextMetadata, semanticContext: GatheredContextSemanticContext? = nil
+  ) {
+    self.focus = focus
+    self.graph = graph
+    self.inferredRelationshipSummary = inferredRelationshipSummary
+    self.metadata = metadata
+    self.semanticContext = semanticContext
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.focus = try c.decode(GatheredContextFocus.self, forKey: WireKey("focus"))
+    self.graph = try c.decode(KnowledgeGraph.self, forKey: WireKey("graph"))
+    self.inferredRelationshipSummary =
+      c.contains(WireKey("inferredRelationshipSummary"))
+      ? try c.decode(String.self, forKey: WireKey("inferredRelationshipSummary")) : nil
+    self.metadata = try c.decode(GatheredContextMetadata.self, forKey: WireKey("metadata"))
+    self.semanticContext =
+      c.contains(WireKey("semanticContext"))
+      ? try c.decode(GatheredContextSemanticContext.self, forKey: WireKey("semanticContext")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.focus, forKey: WireKey("focus"))
+    try c.encode(self.graph, forKey: WireKey("graph"))
+    try c.encodeIfPresent(
+      self.inferredRelationshipSummary, forKey: WireKey("inferredRelationshipSummary"))
+    try c.encode(self.metadata, forKey: WireKey("metadata"))
+    try c.encodeIfPresent(self.semanticContext, forKey: WireKey("semanticContext"))
+  }
+}
+
+public indirect enum GatheredContextFocus: Codable, Sendable {
+  case annotation(GatheredContextFocusAnnotation)
+  case resource(GatheredContextFocusResource)
+  public init(from decoder: any Decoder) throws {
+    if let value = try? GatheredContextFocusAnnotation(from: decoder) {
+      self = .annotation(value)
+      return
+    }
+    if let value = try? GatheredContextFocusResource(from: decoder) {
+      self = .resource(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(
+        codingPath: decoder.codingPath, debugDescription: "no member of GatheredContextFocus fits"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .annotation(let value): try value.encode(to: encoder)
+    case .resource(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public struct GatheredContextFocusAnnotation: Codable, Sendable {
+  public var annotation: Annotation
+  public let kind: GatheredContextFocusAnnotationKind
+  public var selected: GatheredContextFocusAnnotationSelected?
+  public var sourceResource: ResourceDescriptor
+  public var targetContext: GatheredContextFocusAnnotationTargetContext?
+  public var targetResource: ResourceDescriptor?
+  public var userHint: String?
+  public init(
+    annotation: Annotation, selected: GatheredContextFocusAnnotationSelected? = nil,
+    sourceResource: ResourceDescriptor,
+    targetContext: GatheredContextFocusAnnotationTargetContext? = nil,
+    targetResource: ResourceDescriptor? = nil, userHint: String? = nil
+  ) {
+    self.annotation = annotation
+    self.kind = .annotation
+    self.selected = selected
+    self.sourceResource = sourceResource
+    self.targetContext = targetContext
+    self.targetResource = targetResource
+    self.userHint = userHint
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.annotation = try c.decode(Annotation.self, forKey: WireKey("annotation"))
+    self.kind = try c.decode(GatheredContextFocusAnnotationKind.self, forKey: WireKey("kind"))
+    self.selected =
+      c.contains(WireKey("selected"))
+      ? try c.decode(GatheredContextFocusAnnotationSelected.self, forKey: WireKey("selected")) : nil
+    self.sourceResource = try c.decode(ResourceDescriptor.self, forKey: WireKey("sourceResource"))
+    self.targetContext =
+      c.contains(WireKey("targetContext"))
+      ? try c.decode(
+        GatheredContextFocusAnnotationTargetContext.self, forKey: WireKey("targetContext")) : nil
+    self.targetResource =
+      c.contains(WireKey("targetResource"))
+      ? try c.decode(ResourceDescriptor.self, forKey: WireKey("targetResource")) : nil
+    self.userHint =
+      c.contains(WireKey("userHint")) ? try c.decode(String.self, forKey: WireKey("userHint")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.annotation, forKey: WireKey("annotation"))
+    try c.encode(self.kind, forKey: WireKey("kind"))
+    try c.encodeIfPresent(self.selected, forKey: WireKey("selected"))
+    try c.encode(self.sourceResource, forKey: WireKey("sourceResource"))
+    try c.encodeIfPresent(self.targetContext, forKey: WireKey("targetContext"))
+    try c.encodeIfPresent(self.targetResource, forKey: WireKey("targetResource"))
+    try c.encodeIfPresent(self.userHint, forKey: WireKey("userHint"))
+  }
+}
+
+public enum GatheredContextFocusAnnotationKind: String, Codable, Sendable, CaseIterable {
+  case annotation = "annotation"
+}
+
+public struct GatheredContextFocusAnnotationSelected: Codable, Sendable {
+  public var after: String?
+  public var before: String?
+  public var text: String
+  public init(after: String? = nil, before: String? = nil, text: String) {
+    self.after = after
+    self.before = before
+    self.text = text
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.after =
+      c.contains(WireKey("after")) ? try c.decode(String.self, forKey: WireKey("after")) : nil
+    self.before =
+      c.contains(WireKey("before")) ? try c.decode(String.self, forKey: WireKey("before")) : nil
+    self.text = try c.decode(String.self, forKey: WireKey("text"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.after, forKey: WireKey("after"))
+    try c.encodeIfPresent(self.before, forKey: WireKey("before"))
+    try c.encode(self.text, forKey: WireKey("text"))
+  }
+}
+
+public struct GatheredContextFocusAnnotationTargetContext: Codable, Sendable {
+  public var content: String
+  public var summary: String?
+  public init(content: String, summary: String? = nil) {
+    self.content = content
+    self.summary = summary
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.content = try c.decode(String.self, forKey: WireKey("content"))
+    self.summary =
+      c.contains(WireKey("summary")) ? try c.decode(String.self, forKey: WireKey("summary")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.content, forKey: WireKey("content"))
+    try c.encodeIfPresent(self.summary, forKey: WireKey("summary"))
+  }
+}
+
+public struct GatheredContextFocusResource: Codable, Sendable {
+  public var content: GatheredContextFocusResourceContent?
+  public let kind: GatheredContextFocusResourceKind
+  public var resource: ResourceDescriptor
+  public var suggestedReferences: [String]?
+  public var summary: String?
+  public init(
+    content: GatheredContextFocusResourceContent? = nil, resource: ResourceDescriptor,
+    suggestedReferences: [String]? = nil, summary: String? = nil
+  ) {
+    self.content = content
+    self.kind = .resource
+    self.resource = resource
+    self.suggestedReferences = suggestedReferences
+    self.summary = summary
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.content =
+      c.contains(WireKey("content"))
+      ? try c.decode(GatheredContextFocusResourceContent.self, forKey: WireKey("content")) : nil
+    self.kind = try c.decode(GatheredContextFocusResourceKind.self, forKey: WireKey("kind"))
+    self.resource = try c.decode(ResourceDescriptor.self, forKey: WireKey("resource"))
+    self.suggestedReferences =
+      c.contains(WireKey("suggestedReferences"))
+      ? try c.decode([String].self, forKey: WireKey("suggestedReferences")) : nil
+    self.summary =
+      c.contains(WireKey("summary")) ? try c.decode(String.self, forKey: WireKey("summary")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.content, forKey: WireKey("content"))
+    try c.encode(self.kind, forKey: WireKey("kind"))
+    try c.encode(self.resource, forKey: WireKey("resource"))
+    try c.encodeIfPresent(self.suggestedReferences, forKey: WireKey("suggestedReferences"))
+    try c.encodeIfPresent(self.summary, forKey: WireKey("summary"))
+  }
+}
+
+public struct GatheredContextFocusResourceContent: Codable, Sendable {
+  public var main: String?
+  public var related: [String: String]?
+  public init(main: String? = nil, related: [String: String]? = nil) {
+    self.main = main
+    self.related = related
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.main =
+      c.contains(WireKey("main")) ? try c.decode(String.self, forKey: WireKey("main")) : nil
+    self.related =
+      c.contains(WireKey("related"))
+      ? try c.decode([String: String].self, forKey: WireKey("related")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.main, forKey: WireKey("main"))
+    try c.encodeIfPresent(self.related, forKey: WireKey("related"))
+  }
+}
+
+public enum GatheredContextFocusResourceKind: String, Codable, Sendable, CaseIterable {
+  case resource = "resource"
+}
+
+public struct GatheredContextMetadata: Codable, Sendable {
+  public var entityTypeFrequencies: [String: Int]?
+  public var entityTypes: [String]?
+  public var language: String?
+  public var resourceType: String?
+  public init(
+    entityTypeFrequencies: [String: Int]? = nil, entityTypes: [String]? = nil,
+    language: String? = nil, resourceType: String? = nil
+  ) {
+    self.entityTypeFrequencies = entityTypeFrequencies
+    self.entityTypes = entityTypes
+    self.language = language
+    self.resourceType = resourceType
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.entityTypeFrequencies =
+      c.contains(WireKey("entityTypeFrequencies"))
+      ? try c.decode([String: Int].self, forKey: WireKey("entityTypeFrequencies")) : nil
+    self.entityTypes =
+      c.contains(WireKey("entityTypes"))
+      ? try c.decode([String].self, forKey: WireKey("entityTypes")) : nil
+    self.language =
+      c.contains(WireKey("language")) ? try c.decode(String.self, forKey: WireKey("language")) : nil
+    self.resourceType =
+      c.contains(WireKey("resourceType"))
+      ? try c.decode(String.self, forKey: WireKey("resourceType")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.entityTypeFrequencies, forKey: WireKey("entityTypeFrequencies"))
+    try c.encodeIfPresent(self.entityTypes, forKey: WireKey("entityTypes"))
+    try c.encodeIfPresent(self.language, forKey: WireKey("language"))
+    try c.encodeIfPresent(self.resourceType, forKey: WireKey("resourceType"))
+  }
+}
+
+public struct GatheredContextSemanticContext: Codable, Sendable {
+  public var excludedEntityTypes: [String]?
+  public var similar: [SemanticMatch]
+  public init(excludedEntityTypes: [String]? = nil, similar: [SemanticMatch]) {
+    self.excludedEntityTypes = excludedEntityTypes
+    self.similar = similar
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.excludedEntityTypes =
+      c.contains(WireKey("excludedEntityTypes"))
+      ? try c.decode([String].self, forKey: WireKey("excludedEntityTypes")) : nil
+    self.similar = try c.decode([SemanticMatch].self, forKey: WireKey("similar"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.excludedEntityTypes, forKey: WireKey("excludedEntityTypes"))
+    try c.encode(self.similar, forKey: WireKey("similar"))
+  }
+}
+
+public struct GenerationJobParams: Codable, Sendable {
+  public var cite: Bool?
+  public var context: GatheredContext
+  public var entityTypes: [String]?
+  public var language: String?
+  public var maxTokens: Double?
+  public var outputMediaType: SupportedMediaType?
+  public var prompt: String?
+  public var sourceLanguage: String?
+  public var storageUri: String
+  public var structure: String?
+  public var task: String?
+  public var temperature: Double?
+  public var title: String
+  public init(
+    cite: Bool? = nil, context: GatheredContext, entityTypes: [String]? = nil,
+    language: String? = nil, maxTokens: Double? = nil, outputMediaType: SupportedMediaType? = nil,
+    prompt: String? = nil, sourceLanguage: String? = nil, storageUri: String,
+    structure: String? = nil, task: String? = nil, temperature: Double? = nil, title: String
+  ) {
+    self.cite = cite
+    self.context = context
+    self.entityTypes = entityTypes
+    self.language = language
+    self.maxTokens = maxTokens
+    self.outputMediaType = outputMediaType
+    self.prompt = prompt
+    self.sourceLanguage = sourceLanguage
+    self.storageUri = storageUri
+    self.structure = structure
+    self.task = task
+    self.temperature = temperature
+    self.title = title
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.cite = c.contains(WireKey("cite")) ? try c.decode(Bool.self, forKey: WireKey("cite")) : nil
+    self.context = try c.decode(GatheredContext.self, forKey: WireKey("context"))
+    self.entityTypes =
+      c.contains(WireKey("entityTypes"))
+      ? try c.decode([String].self, forKey: WireKey("entityTypes")) : nil
+    self.language =
+      c.contains(WireKey("language")) ? try c.decode(String.self, forKey: WireKey("language")) : nil
+    self.maxTokens =
+      c.contains(WireKey("maxTokens"))
+      ? try c.decode(Double.self, forKey: WireKey("maxTokens")) : nil
+    self.outputMediaType =
+      c.contains(WireKey("outputMediaType"))
+      ? try c.decode(SupportedMediaType.self, forKey: WireKey("outputMediaType")) : nil
+    self.prompt =
+      c.contains(WireKey("prompt")) ? try c.decode(String.self, forKey: WireKey("prompt")) : nil
+    self.sourceLanguage =
+      c.contains(WireKey("sourceLanguage"))
+      ? try c.decode(String.self, forKey: WireKey("sourceLanguage")) : nil
+    self.storageUri = try c.decode(String.self, forKey: WireKey("storageUri"))
+    self.structure =
+      c.contains(WireKey("structure"))
+      ? try c.decode(String.self, forKey: WireKey("structure")) : nil
+    self.task =
+      c.contains(WireKey("task")) ? try c.decode(String.self, forKey: WireKey("task")) : nil
+    self.temperature =
+      c.contains(WireKey("temperature"))
+      ? try c.decode(Double.self, forKey: WireKey("temperature")) : nil
+    self.title = try c.decode(String.self, forKey: WireKey("title"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.cite, forKey: WireKey("cite"))
+    try c.encode(self.context, forKey: WireKey("context"))
+    try c.encodeIfPresent(self.entityTypes, forKey: WireKey("entityTypes"))
+    try c.encodeIfPresent(self.language, forKey: WireKey("language"))
+    try c.encodeIfPresent(self.maxTokens, forKey: WireKey("maxTokens"))
+    try c.encodeIfPresent(self.outputMediaType, forKey: WireKey("outputMediaType"))
+    try c.encodeIfPresent(self.prompt, forKey: WireKey("prompt"))
+    try c.encodeIfPresent(self.sourceLanguage, forKey: WireKey("sourceLanguage"))
+    try c.encode(self.storageUri, forKey: WireKey("storageUri"))
+    try c.encodeIfPresent(self.structure, forKey: WireKey("structure"))
+    try c.encodeIfPresent(self.task, forKey: WireKey("task"))
+    try c.encodeIfPresent(self.temperature, forKey: WireKey("temperature"))
+    try c.encode(self.title, forKey: WireKey("title"))
+  }
+}
+
+public struct GenerationJobRequest: Codable, Sendable {
+  public var cite: Bool?
+  public var entityTypes: [String]?
+  public var language: String?
+  public var maxTokens: Double?
+  public var outputMediaType: SupportedMediaType?
+  public var prompt: String?
+  public var sourceLanguage: String?
+  public var storageUri: String
+  public var structure: String?
+  public var task: String?
+  public var temperature: Double?
+  public var title: String
+  public init(
+    cite: Bool? = nil, entityTypes: [String]? = nil, language: String? = nil,
+    maxTokens: Double? = nil, outputMediaType: SupportedMediaType? = nil, prompt: String? = nil,
+    sourceLanguage: String? = nil, storageUri: String, structure: String? = nil,
+    task: String? = nil, temperature: Double? = nil, title: String
+  ) {
+    self.cite = cite
+    self.entityTypes = entityTypes
+    self.language = language
+    self.maxTokens = maxTokens
+    self.outputMediaType = outputMediaType
+    self.prompt = prompt
+    self.sourceLanguage = sourceLanguage
+    self.storageUri = storageUri
+    self.structure = structure
+    self.task = task
+    self.temperature = temperature
+    self.title = title
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.cite = c.contains(WireKey("cite")) ? try c.decode(Bool.self, forKey: WireKey("cite")) : nil
+    self.entityTypes =
+      c.contains(WireKey("entityTypes"))
+      ? try c.decode([String].self, forKey: WireKey("entityTypes")) : nil
+    self.language =
+      c.contains(WireKey("language")) ? try c.decode(String.self, forKey: WireKey("language")) : nil
+    self.maxTokens =
+      c.contains(WireKey("maxTokens"))
+      ? try c.decode(Double.self, forKey: WireKey("maxTokens")) : nil
+    self.outputMediaType =
+      c.contains(WireKey("outputMediaType"))
+      ? try c.decode(SupportedMediaType.self, forKey: WireKey("outputMediaType")) : nil
+    self.prompt =
+      c.contains(WireKey("prompt")) ? try c.decode(String.self, forKey: WireKey("prompt")) : nil
+    self.sourceLanguage =
+      c.contains(WireKey("sourceLanguage"))
+      ? try c.decode(String.self, forKey: WireKey("sourceLanguage")) : nil
+    self.storageUri = try c.decode(String.self, forKey: WireKey("storageUri"))
+    self.structure =
+      c.contains(WireKey("structure"))
+      ? try c.decode(String.self, forKey: WireKey("structure")) : nil
+    self.task =
+      c.contains(WireKey("task")) ? try c.decode(String.self, forKey: WireKey("task")) : nil
+    self.temperature =
+      c.contains(WireKey("temperature"))
+      ? try c.decode(Double.self, forKey: WireKey("temperature")) : nil
+    self.title = try c.decode(String.self, forKey: WireKey("title"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.cite, forKey: WireKey("cite"))
+    try c.encodeIfPresent(self.entityTypes, forKey: WireKey("entityTypes"))
+    try c.encodeIfPresent(self.language, forKey: WireKey("language"))
+    try c.encodeIfPresent(self.maxTokens, forKey: WireKey("maxTokens"))
+    try c.encodeIfPresent(self.outputMediaType, forKey: WireKey("outputMediaType"))
+    try c.encodeIfPresent(self.prompt, forKey: WireKey("prompt"))
+    try c.encodeIfPresent(self.sourceLanguage, forKey: WireKey("sourceLanguage"))
+    try c.encode(self.storageUri, forKey: WireKey("storageUri"))
+    try c.encodeIfPresent(self.structure, forKey: WireKey("structure"))
+    try c.encodeIfPresent(self.task, forKey: WireKey("task"))
+    try c.encodeIfPresent(self.temperature, forKey: WireKey("temperature"))
+    try c.encode(self.title, forKey: WireKey("title"))
+  }
+}
+
+public struct GetAnnotationHistoryResponse: Codable, Sendable {
+  public var annotationId: AnnotationId
+  public var events: [AttributedEvent]
+  public var resourceId: ResourceId
+  public var total: Double
+  public init(
+    annotationId: AnnotationId, events: [AttributedEvent], resourceId: ResourceId, total: Double
+  ) {
+    self.annotationId = annotationId
+    self.events = events
+    self.resourceId = resourceId
+    self.total = total
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.annotationId = try c.decode(AnnotationId.self, forKey: WireKey("annotationId"))
+    self.events = try c.decode([AttributedEvent].self, forKey: WireKey("events"))
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self.total = try c.decode(Double.self, forKey: WireKey("total"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.annotationId, forKey: WireKey("annotationId"))
+    try c.encode(self.events, forKey: WireKey("events"))
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encode(self.total, forKey: WireKey("total"))
+  }
+}
+
+public struct GetAnnotationResponse: Codable, Sendable {
+  public var annotation: Annotation
+  public var resolvedResource: ResourceDescriptor?
+  public var resource: ResourceDescriptor?
+  public init(
+    annotation: Annotation, resolvedResource: ResourceDescriptor?, resource: ResourceDescriptor?
+  ) {
+    self.annotation = annotation
+    self.resolvedResource = resolvedResource
+    self.resource = resource
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.annotation = try c.decode(Annotation.self, forKey: WireKey("annotation"))
+    self.resolvedResource = try c.decode(
+      Optional<ResourceDescriptor>.self, forKey: WireKey("resolvedResource"))
+    self.resource = try c.decode(Optional<ResourceDescriptor>.self, forKey: WireKey("resource"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.annotation, forKey: WireKey("annotation"))
+    try c.encode(self.resolvedResource, forKey: WireKey("resolvedResource"))
+    try c.encode(self.resource, forKey: WireKey("resource"))
+  }
+}
+
+public struct GetAnnotationsResponse: Codable, Sendable {
+  public var annotations: [Annotation]
+  public var motivation: Stated<Motivation>
+  public var total: Double
+  public init(annotations: [Annotation], motivation: Stated<Motivation> = .absent, total: Double) {
+    self.annotations = annotations
+    self.motivation = motivation
+    self.total = total
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.annotations = try c.decode([Annotation].self, forKey: WireKey("annotations"))
+    if !c.contains(WireKey("motivation")) {
+      self.motivation = .absent
+    } else if try c.decodeNil(forKey: WireKey("motivation")) {
+      self.motivation = .null
+    } else {
+      self.motivation = .value(try c.decode(Motivation.self, forKey: WireKey("motivation")))
+    }
+    self.total = try c.decode(Double.self, forKey: WireKey("total"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.annotations, forKey: WireKey("annotations"))
+    switch self.motivation {
+    case .absent: break
+    case .null: try c.encodeNil(forKey: WireKey("motivation"))
+    case .value(let value): try c.encode(value, forKey: WireKey("motivation"))
+    }
+    try c.encode(self.total, forKey: WireKey("total"))
+  }
+}
+
+public struct GetEntityTypesResponse: Codable, Sendable {
+  public var entityTypes: [String]
+  public init(entityTypes: [String]) {
+    self.entityTypes = entityTypes
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.entityTypes = try c.decode([String].self, forKey: WireKey("entityTypes"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.entityTypes, forKey: WireKey("entityTypes"))
+  }
+}
+
+public struct GetEventsResponse: Codable, Sendable {
+  public var events: [AttributedEvent]
+  public var resourceId: ResourceId
+  public var total: Double
+  public init(events: [AttributedEvent], resourceId: ResourceId, total: Double) {
+    self.events = events
+    self.resourceId = resourceId
+    self.total = total
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.events = try c.decode([AttributedEvent].self, forKey: WireKey("events"))
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self.total = try c.decode(Double.self, forKey: WireKey("total"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.events, forKey: WireKey("events"))
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encode(self.total, forKey: WireKey("total"))
+  }
+}
+
+public struct GetReferencedByResponse: Codable, Sendable {
+  public var referencedBy: [GetReferencedByResponseReferencedByItem]
+  public init(referencedBy: [GetReferencedByResponseReferencedByItem]) {
+    self.referencedBy = referencedBy
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.referencedBy = try c.decode(
+      [GetReferencedByResponseReferencedByItem].self, forKey: WireKey("referencedBy"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.referencedBy, forKey: WireKey("referencedBy"))
+  }
+}
+
+public struct GetReferencedByResponseReferencedByItem: Codable, Sendable {
+  public var id: AnnotationId
+  public var resourceName: String?
+  public var target: GetReferencedByResponseReferencedByItemTarget
+  public init(
+    id: AnnotationId, resourceName: String? = nil,
+    target: GetReferencedByResponseReferencedByItemTarget
+  ) {
+    self.id = id
+    self.resourceName = resourceName
+    self.target = target
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.id = try c.decode(AnnotationId.self, forKey: WireKey("id"))
+    self.resourceName =
+      c.contains(WireKey("resourceName"))
+      ? try c.decode(String.self, forKey: WireKey("resourceName")) : nil
+    self.target = try c.decode(
+      GetReferencedByResponseReferencedByItemTarget.self, forKey: WireKey("target"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.id, forKey: WireKey("id"))
+    try c.encodeIfPresent(self.resourceName, forKey: WireKey("resourceName"))
+    try c.encode(self.target, forKey: WireKey("target"))
+  }
+}
+
+public struct GetReferencedByResponseReferencedByItemTarget: Codable, Sendable {
+  public var selector: GetReferencedByResponseReferencedByItemTargetSelector
+  public var source: ResourceId
+  public init(selector: GetReferencedByResponseReferencedByItemTargetSelector, source: ResourceId) {
+    self.selector = selector
+    self.source = source
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.selector = try c.decode(
+      GetReferencedByResponseReferencedByItemTargetSelector.self, forKey: WireKey("selector"))
+    self.source = try c.decode(ResourceId.self, forKey: WireKey("source"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.selector, forKey: WireKey("selector"))
+    try c.encode(self.source, forKey: WireKey("source"))
+  }
+}
+
+public struct GetReferencedByResponseReferencedByItemTargetSelector: Codable, Sendable {
+  public var exact: String
+  public init(exact: String) {
+    self.exact = exact
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.exact = try c.decode(String.self, forKey: WireKey("exact"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.exact, forKey: WireKey("exact"))
+  }
+}
+
+public struct GetResourceByTokenResponse: Codable, Sendable {
+  public var expiresAt: String
+  public var sourceResource: ResourceDescriptor
+  public init(expiresAt: String, sourceResource: ResourceDescriptor) {
+    self.expiresAt = expiresAt
+    self.sourceResource = sourceResource
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.expiresAt = try c.decode(String.self, forKey: WireKey("expiresAt"))
+    self.sourceResource = try c.decode(ResourceDescriptor.self, forKey: WireKey("sourceResource"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.expiresAt, forKey: WireKey("expiresAt"))
+    try c.encode(self.sourceResource, forKey: WireKey("sourceResource"))
+  }
+}
+
+public struct GetResourceResponse: Codable, Sendable {
+  public var annotations: [Annotation]
+  public var resource: ResourceDescriptor
+  public init(annotations: [Annotation], resource: ResourceDescriptor) {
+    self.annotations = annotations
+    self.resource = resource
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.annotations = try c.decode([Annotation].self, forKey: WireKey("annotations"))
+    self.resource = try c.decode(ResourceDescriptor.self, forKey: WireKey("resource"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.annotations, forKey: WireKey("annotations"))
+    try c.encode(self.resource, forKey: WireKey("resource"))
+  }
+}
+
+public struct GetTagSchemasResponse: Codable, Sendable {
+  public var tagSchemas: [TagSchema]
+  public init(tagSchemas: [TagSchema]) {
+    self.tagSchemas = tagSchemas
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.tagSchemas = try c.decode([TagSchema].self, forKey: WireKey("tagSchemas"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.tagSchemas, forKey: WireKey("tagSchemas"))
+  }
+}
+
+public struct GraphAnnotationNode: Codable, Sendable {
+  public var annotation: Annotation
+  public var entityTypes: [String]?
+  public var id: AnnotationId
+  public var label: String
+  public var metadata: [String: JSONValue]?
+  public let type: GraphAnnotationNodeType
+  public init(
+    annotation: Annotation, entityTypes: [String]? = nil, id: AnnotationId, label: String,
+    metadata: [String: JSONValue]? = nil
+  ) {
+    self.annotation = annotation
+    self.entityTypes = entityTypes
+    self.id = id
+    self.label = label
+    self.metadata = metadata
+    self.type = .annotation
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.annotation = try c.decode(Annotation.self, forKey: WireKey("annotation"))
+    self.entityTypes =
+      c.contains(WireKey("entityTypes"))
+      ? try c.decode([String].self, forKey: WireKey("entityTypes")) : nil
+    self.id = try c.decode(AnnotationId.self, forKey: WireKey("id"))
+    self.label = try c.decode(String.self, forKey: WireKey("label"))
+    self.metadata =
+      c.contains(WireKey("metadata"))
+      ? try c.decode([String: JSONValue].self, forKey: WireKey("metadata")) : nil
+    self.type = try c.decode(GraphAnnotationNodeType.self, forKey: WireKey("type"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.annotation, forKey: WireKey("annotation"))
+    try c.encodeIfPresent(self.entityTypes, forKey: WireKey("entityTypes"))
+    try c.encode(self.id, forKey: WireKey("id"))
+    try c.encode(self.label, forKey: WireKey("label"))
+    try c.encodeIfPresent(self.metadata, forKey: WireKey("metadata"))
+    try c.encode(self.type, forKey: WireKey("type"))
+  }
+}
+
+public enum GraphAnnotationNodeType: String, Codable, Sendable, CaseIterable {
+  case annotation = "annotation"
+}
+
+public indirect enum GraphConfig: Codable, Sendable {
+  case neo4jGraphConfig(Neo4jGraphConfig)
+  case janusGraphConfig(JanusGraphConfig)
+  case neptuneGraphConfig(NeptuneGraphConfig)
+  case memoryGraphConfig(MemoryGraphConfig)
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    let tag = try c.decode(String.self, forKey: WireKey("type"))
+    switch tag {
+    case "neo4j": self = .neo4jGraphConfig(try Neo4jGraphConfig(from: decoder))
+    case "janusgraph": self = .janusGraphConfig(try JanusGraphConfig(from: decoder))
+    case "neptune": self = .neptuneGraphConfig(try NeptuneGraphConfig(from: decoder))
+    case "memory": self = .memoryGraphConfig(try MemoryGraphConfig(from: decoder))
+    default:
+      throw DecodingError.dataCorruptedError(
+        forKey: WireKey("type"), in: c, debugDescription: "unknown GraphConfig discriminator")
+    }
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .neo4jGraphConfig(let value): try value.encode(to: encoder)
+    case .janusGraphConfig(let value): try value.encode(to: encoder)
+    case .neptuneGraphConfig(let value): try value.encode(to: encoder)
+    case .memoryGraphConfig(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public struct GraphResourceNode: Codable, Sendable {
+  public var entityTypes: [String]?
+  public var id: ResourceId
+  public var label: String
+  public var metadata: [String: JSONValue]?
+  public let type: GraphResourceNodeType
+  public init(
+    entityTypes: [String]? = nil, id: ResourceId, label: String,
+    metadata: [String: JSONValue]? = nil
+  ) {
+    self.entityTypes = entityTypes
+    self.id = id
+    self.label = label
+    self.metadata = metadata
+    self.type = .resource
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.entityTypes =
+      c.contains(WireKey("entityTypes"))
+      ? try c.decode([String].self, forKey: WireKey("entityTypes")) : nil
+    self.id = try c.decode(ResourceId.self, forKey: WireKey("id"))
+    self.label = try c.decode(String.self, forKey: WireKey("label"))
+    self.metadata =
+      c.contains(WireKey("metadata"))
+      ? try c.decode([String: JSONValue].self, forKey: WireKey("metadata")) : nil
+    self.type = try c.decode(GraphResourceNodeType.self, forKey: WireKey("type"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.entityTypes, forKey: WireKey("entityTypes"))
+    try c.encode(self.id, forKey: WireKey("id"))
+    try c.encode(self.label, forKey: WireKey("label"))
+    try c.encodeIfPresent(self.metadata, forKey: WireKey("metadata"))
+    try c.encode(self.type, forKey: WireKey("type"))
+  }
+}
+
+public enum GraphResourceNodeType: String, Codable, Sendable, CaseIterable {
+  case resource = "resource"
+}
+
+public struct HealthResponse: Codable, Sendable {
+  public var message: String
+  public var status: String
+  public var timestamp: String
+  public var version: String
+  public init(message: String, status: String, timestamp: String, version: String) {
+    self.message = message
+    self.status = status
+    self.timestamp = timestamp
+    self.version = version
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.message = try c.decode(String.self, forKey: WireKey("message"))
+    self.status = try c.decode(String.self, forKey: WireKey("status"))
+    self.timestamp = try c.decode(String.self, forKey: WireKey("timestamp"))
+    self.version = try c.decode(String.self, forKey: WireKey("version"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.message, forKey: WireKey("message"))
+    try c.encode(self.status, forKey: WireKey("status"))
+    try c.encode(self.timestamp, forKey: WireKey("timestamp"))
+    try c.encode(self.version, forKey: WireKey("version"))
+  }
+}
+
+public struct HeldSignIn: Codable, Sendable {
+  public var access: String
+  public var clientId: String
+  public var personKey: String?
+  public var refresh: String
+  public var revocationEndpoint: String?
+  public var tokenEndpoint: String
+  public init(
+    access: String, clientId: String, personKey: String? = nil, refresh: String,
+    revocationEndpoint: String? = nil, tokenEndpoint: String
+  ) {
+    self.access = access
+    self.clientId = clientId
+    self.personKey = personKey
+    self.refresh = refresh
+    self.revocationEndpoint = revocationEndpoint
+    self.tokenEndpoint = tokenEndpoint
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.access = try c.decode(String.self, forKey: WireKey("access"))
+    self.clientId = try c.decode(String.self, forKey: WireKey("clientId"))
+    self.personKey =
+      c.contains(WireKey("personKey"))
+      ? try c.decode(String.self, forKey: WireKey("personKey")) : nil
+    self.refresh = try c.decode(String.self, forKey: WireKey("refresh"))
+    self.revocationEndpoint =
+      c.contains(WireKey("revocationEndpoint"))
+      ? try c.decode(String.self, forKey: WireKey("revocationEndpoint")) : nil
+    self.tokenEndpoint = try c.decode(String.self, forKey: WireKey("tokenEndpoint"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.access, forKey: WireKey("access"))
+    try c.encode(self.clientId, forKey: WireKey("clientId"))
+    try c.encodeIfPresent(self.personKey, forKey: WireKey("personKey"))
+    try c.encode(self.refresh, forKey: WireKey("refresh"))
+    try c.encodeIfPresent(self.revocationEndpoint, forKey: WireKey("revocationEndpoint"))
+    try c.encode(self.tokenEndpoint, forKey: WireKey("tokenEndpoint"))
+  }
+}
+
+public struct HighlightingJobParams: Codable, Sendable {
+  public var density: Double?
+  public var instructions: String?
+  public let motivation: HighlightingJobParamsMotivation
+  public var sourceLanguage: String?
+  public init(density: Double? = nil, instructions: String? = nil, sourceLanguage: String? = nil) {
+    self.density = density
+    self.instructions = instructions
+    self.motivation = .highlighting
+    self.sourceLanguage = sourceLanguage
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["density", "instructions", "motivation", "sourceLanguage"]).contains(
+        $0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in HighlightingJobParams")
+    }
+    self.density =
+      c.contains(WireKey("density")) ? try c.decode(Double.self, forKey: WireKey("density")) : nil
+    self.instructions =
+      c.contains(WireKey("instructions"))
+      ? try c.decode(String.self, forKey: WireKey("instructions")) : nil
+    self.motivation = try c.decode(
+      HighlightingJobParamsMotivation.self, forKey: WireKey("motivation"))
+    self.sourceLanguage =
+      c.contains(WireKey("sourceLanguage"))
+      ? try c.decode(String.self, forKey: WireKey("sourceLanguage")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.density, forKey: WireKey("density"))
+    try c.encodeIfPresent(self.instructions, forKey: WireKey("instructions"))
+    try c.encode(self.motivation, forKey: WireKey("motivation"))
+    try c.encodeIfPresent(self.sourceLanguage, forKey: WireKey("sourceLanguage"))
+  }
+}
+
+public enum HighlightingJobParamsMotivation: String, Codable, Sendable, CaseIterable {
+  case highlighting = "highlighting"
+}
+
+public struct HttpEndpoint: Codable, Sendable {
+  public var host: String
+  public let kind: HttpEndpointKind
+  public var port: Int
+  public var `protocol`: HttpEndpointProtocol
+  public init(host: String, port: Int, `protocol`: HttpEndpointProtocol) {
+    self.host = host
+    self.kind = .http
+    self.port = port
+    self.`protocol` = `protocol`
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.host = try c.decode(String.self, forKey: WireKey("host"))
+    self.kind = try c.decode(HttpEndpointKind.self, forKey: WireKey("kind"))
+    self.port = try c.decode(Int.self, forKey: WireKey("port"))
+    self.`protocol` = try c.decode(HttpEndpointProtocol.self, forKey: WireKey("protocol"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.host, forKey: WireKey("host"))
+    try c.encode(self.kind, forKey: WireKey("kind"))
+    try c.encode(self.port, forKey: WireKey("port"))
+    try c.encode(self.`protocol`, forKey: WireKey("protocol"))
+  }
+}
+
+public enum HttpEndpointKind: String, Codable, Sendable, CaseIterable {
+  case http = "http"
+}
+
+public enum HttpEndpointProtocol: String, Codable, Sendable, CaseIterable {
+  case http = "http"
+  case https = "https"
+}
+
+public struct InferenceLimits: Codable, Sendable {
+  public var acceptsTemperature: Bool?
+  public var contextTokens: Double
+  public var maxOutputTokens: Double
+  public init(acceptsTemperature: Bool? = nil, contextTokens: Double, maxOutputTokens: Double) {
+    self.acceptsTemperature = acceptsTemperature
+    self.contextTokens = contextTokens
+    self.maxOutputTokens = maxOutputTokens
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.acceptsTemperature =
+      c.contains(WireKey("acceptsTemperature"))
+      ? try c.decode(Bool.self, forKey: WireKey("acceptsTemperature")) : nil
+    self.contextTokens = try c.decode(Double.self, forKey: WireKey("contextTokens"))
+    self.maxOutputTokens = try c.decode(Double.self, forKey: WireKey("maxOutputTokens"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.acceptsTemperature, forKey: WireKey("acceptsTemperature"))
+    try c.encode(self.contextTokens, forKey: WireKey("contextTokens"))
+    try c.encode(self.maxOutputTokens, forKey: WireKey("maxOutputTokens"))
+  }
+}
+
+public struct InferenceLimitsRequest: Codable, Sendable {
+  public init() {
+  }
+  public init(from decoder: any Decoder) throws {
+    _ = try decoder.container(keyedBy: WireKey.self)
+  }
+  public func encode(to encoder: any Encoder) throws {
+    _ = encoder.container(keyedBy: WireKey.self)
+  }
+}
+
+public struct InferenceLimitsResult: Codable, Sendable {
+  public var response: InferenceLimitsResultResponse
+  public init(response: InferenceLimitsResultResponse) {
+    self.response = response
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.response = try c.decode(InferenceLimitsResultResponse.self, forKey: WireKey("response"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.response, forKey: WireKey("response"))
+  }
+}
+
+public struct InferenceLimitsResultResponse: Codable, Sendable {
+  public var limits: [EngineLimits]
+  public init(limits: [EngineLimits]) {
+    self.limits = limits
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.limits = try c.decode([EngineLimits].self, forKey: WireKey("limits"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.limits, forKey: WireKey("limits"))
+  }
+}
+
+public struct JanusGraphConfig: Codable, Sendable {
+  public var host: String
+  public var port: Int
+  public let type: JanusGraphConfigType
+  public init(host: String, port: Int) {
+    self.host = host
+    self.port = port
+    self.type = .janusgraph
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["host", "port", "type"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in JanusGraphConfig")
+    }
+    self.host = try c.decode(String.self, forKey: WireKey("host"))
+    self.port = try c.decode(Int.self, forKey: WireKey("port"))
+    self.type = try c.decode(JanusGraphConfigType.self, forKey: WireKey("type"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.host, forKey: WireKey("host"))
+    try c.encode(self.port, forKey: WireKey("port"))
+    try c.encode(self.type, forKey: WireKey("type"))
+  }
+}
+
+public enum JanusGraphConfigType: String, Codable, Sendable, CaseIterable {
+  case janusgraph = "janusgraph"
+}
+
+public indirect enum Job: Codable, Sendable {
+  case jobPending(JobPending)
+  case jobRunning(JobRunning)
+  case jobComplete(JobComplete)
+  case jobFailed(JobFailed)
+  case jobCancelled(JobCancelled)
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    let tag = try c.decode(String.self, forKey: WireKey("status"))
+    switch tag {
+    case "pending": self = .jobPending(try JobPending(from: decoder))
+    case "running": self = .jobRunning(try JobRunning(from: decoder))
+    case "complete": self = .jobComplete(try JobComplete(from: decoder))
+    case "failed": self = .jobFailed(try JobFailed(from: decoder))
+    case "cancelled": self = .jobCancelled(try JobCancelled(from: decoder))
+    default:
+      throw DecodingError.dataCorruptedError(
+        forKey: WireKey("status"), in: c, debugDescription: "unknown Job discriminator")
+    }
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .jobPending(let value): try value.encode(to: encoder)
+    case .jobRunning(let value): try value.encode(to: encoder)
+    case .jobComplete(let value): try value.encode(to: encoder)
+    case .jobFailed(let value): try value.encode(to: encoder)
+    case .jobCancelled(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public struct JobAssignCommand: Codable, Sendable {
+  public var _userId: UserId?
+  public var holder: UserId
+  public var jobId: JobId
+  public var jobType: JobType
+  public var requester: UserId
+  public var resourceId: ResourceId
+  public init(
+    _userId: UserId? = nil, holder: UserId, jobId: JobId, jobType: JobType, requester: UserId,
+    resourceId: ResourceId
+  ) {
+    self._userId = _userId
+    self.holder = holder
+    self.jobId = jobId
+    self.jobType = jobType
+    self.requester = requester
+    self.resourceId = resourceId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self._userId =
+      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
+    self.holder = try c.decode(UserId.self, forKey: WireKey("holder"))
+    self.jobId = try c.decode(JobId.self, forKey: WireKey("jobId"))
+    self.jobType = try c.decode(JobType.self, forKey: WireKey("jobType"))
+    self.requester = try c.decode(UserId.self, forKey: WireKey("requester"))
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
+    try c.encode(self.holder, forKey: WireKey("holder"))
+    try c.encode(self.jobId, forKey: WireKey("jobId"))
+    try c.encode(self.jobType, forKey: WireKey("jobType"))
+    try c.encode(self.requester, forKey: WireKey("requester"))
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+  }
+}
+
+public struct JobAssignedPayload: Codable, Sendable {
+  public var holder: UserId
+  public var jobId: JobId
+  public var jobType: JobType
+  public var requester: UserId
+  public var resourceId: ResourceId
+  public init(
+    holder: UserId, jobId: JobId, jobType: JobType, requester: UserId, resourceId: ResourceId
+  ) {
+    self.holder = holder
+    self.jobId = jobId
+    self.jobType = jobType
+    self.requester = requester
+    self.resourceId = resourceId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.holder = try c.decode(UserId.self, forKey: WireKey("holder"))
+    self.jobId = try c.decode(JobId.self, forKey: WireKey("jobId"))
+    self.jobType = try c.decode(JobType.self, forKey: WireKey("jobType"))
+    self.requester = try c.decode(UserId.self, forKey: WireKey("requester"))
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.holder, forKey: WireKey("holder"))
+    try c.encode(self.jobId, forKey: WireKey("jobId"))
+    try c.encode(self.jobType, forKey: WireKey("jobType"))
+    try c.encode(self.requester, forKey: WireKey("requester"))
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+  }
+}
+
+public struct JobCancelCommand: Codable, Sendable {
+  public var _userId: UserId?
+  public var annotationId: AnnotationId?
+  public var completedUnits: [String]?
+  public var jobId: JobId
+  public var jobType: JobType
+  public var resourceId: ResourceId
+  public var unitCursors: [String: UnitCursor]?
+  public init(
+    _userId: UserId? = nil, annotationId: AnnotationId? = nil, completedUnits: [String]? = nil,
+    jobId: JobId, jobType: JobType, resourceId: ResourceId, unitCursors: [String: UnitCursor]? = nil
+  ) {
+    self._userId = _userId
+    self.annotationId = annotationId
+    self.completedUnits = completedUnits
+    self.jobId = jobId
+    self.jobType = jobType
+    self.resourceId = resourceId
+    self.unitCursors = unitCursors
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self._userId =
+      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
+    self.annotationId =
+      c.contains(WireKey("annotationId"))
+      ? try c.decode(AnnotationId.self, forKey: WireKey("annotationId")) : nil
+    self.completedUnits =
+      c.contains(WireKey("completedUnits"))
+      ? try c.decode([String].self, forKey: WireKey("completedUnits")) : nil
+    self.jobId = try c.decode(JobId.self, forKey: WireKey("jobId"))
+    self.jobType = try c.decode(JobType.self, forKey: WireKey("jobType"))
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self.unitCursors =
+      c.contains(WireKey("unitCursors"))
+      ? try c.decode([String: UnitCursor].self, forKey: WireKey("unitCursors")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
+    try c.encodeIfPresent(self.annotationId, forKey: WireKey("annotationId"))
+    try c.encodeIfPresent(self.completedUnits, forKey: WireKey("completedUnits"))
+    try c.encode(self.jobId, forKey: WireKey("jobId"))
+    try c.encode(self.jobType, forKey: WireKey("jobType"))
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encodeIfPresent(self.unitCursors, forKey: WireKey("unitCursors"))
+  }
+}
+
+public struct JobCancelRequest: Codable, Sendable {
+  public var jobId: JobId
+  public init(jobId: JobId) {
+    self.jobId = jobId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.jobId = try c.decode(JobId.self, forKey: WireKey("jobId"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.jobId, forKey: WireKey("jobId"))
+  }
+}
+
+public struct JobCancelResult: Codable, Sendable {
+  public var cancelled: Bool
+  public init(cancelled: Bool) {
+    self.cancelled = cancelled
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.cancelled = try c.decode(Bool.self, forKey: WireKey("cancelled"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.cancelled, forKey: WireKey("cancelled"))
+  }
+}
+
+public struct JobCancelled: Codable, Sendable {
+  public var completedAt: String
+  public var metadata: JobMetadata
+  public var params: JobParams
+  public var startedAt: String?
+  public let status: JobCancelledStatus
+  public init(
+    completedAt: String, metadata: JobMetadata, params: JobParams, startedAt: String? = nil
+  ) {
+    self.completedAt = completedAt
+    self.metadata = metadata
+    self.params = params
+    self.startedAt = startedAt
+    self.status = .cancelled
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["completedAt", "metadata", "params", "startedAt", "status"]).contains(
+        $0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in JobCancelled")
+    }
+    self.completedAt = try c.decode(String.self, forKey: WireKey("completedAt"))
+    self.metadata = try c.decode(JobMetadata.self, forKey: WireKey("metadata"))
+    self.params = try c.decode(JobParams.self, forKey: WireKey("params"))
+    self.startedAt =
+      c.contains(WireKey("startedAt"))
+      ? try c.decode(String.self, forKey: WireKey("startedAt")) : nil
+    self.status = try c.decode(JobCancelledStatus.self, forKey: WireKey("status"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.completedAt, forKey: WireKey("completedAt"))
+    try c.encode(self.metadata, forKey: WireKey("metadata"))
+    try c.encode(self.params, forKey: WireKey("params"))
+    try c.encodeIfPresent(self.startedAt, forKey: WireKey("startedAt"))
+    try c.encode(self.status, forKey: WireKey("status"))
+  }
+}
+
+public enum JobCancelledStatus: String, Codable, Sendable, CaseIterable {
+  case cancelled = "cancelled"
+}
+
+public struct JobCheckpointCommand: Codable, Sendable {
+  public var _userId: UserId?
+  public var completedUnits: [String]
+  public var jobId: JobId
+  public var unitCursors: [String: UnitCursor]?
+  public init(
+    _userId: UserId? = nil, completedUnits: [String], jobId: JobId,
+    unitCursors: [String: UnitCursor]? = nil
+  ) {
+    self._userId = _userId
+    self.completedUnits = completedUnits
+    self.jobId = jobId
+    self.unitCursors = unitCursors
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self._userId =
+      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
+    self.completedUnits = try c.decode([String].self, forKey: WireKey("completedUnits"))
+    self.jobId = try c.decode(JobId.self, forKey: WireKey("jobId"))
+    self.unitCursors =
+      c.contains(WireKey("unitCursors"))
+      ? try c.decode([String: UnitCursor].self, forKey: WireKey("unitCursors")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
+    try c.encode(self.completedUnits, forKey: WireKey("completedUnits"))
+    try c.encode(self.jobId, forKey: WireKey("jobId"))
+    try c.encodeIfPresent(self.unitCursors, forKey: WireKey("unitCursors"))
+  }
+}
+
+public struct JobClaimCommand: Codable, Sendable {
+  public var _roles: [String]?
+  public var _userId: UserId?
+  public var accepts: [JobFilter]
+  public init(_roles: [String]? = nil, _userId: UserId? = nil, accepts: [JobFilter]) {
+    self._roles = _roles
+    self._userId = _userId
+    self.accepts = accepts
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self._roles =
+      c.contains(WireKey("_roles")) ? try c.decode([String].self, forKey: WireKey("_roles")) : nil
+    self._userId =
+      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
+    self.accepts = try c.decode([JobFilter].self, forKey: WireKey("accepts"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self._roles, forKey: WireKey("_roles"))
+    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
+    try c.encode(self.accepts, forKey: WireKey("accepts"))
+  }
+}
+
+public struct JobClaimedResult: Codable, Sendable {
+  public var response: JobRunning
+  public init(response: JobRunning) {
+    self.response = response
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: { !Set<String>(["response"]).contains($0.stringValue) }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in JobClaimedResult")
+    }
+    self.response = try c.decode(JobRunning.self, forKey: WireKey("response"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.response, forKey: WireKey("response"))
+  }
+}
+
+public struct JobComplete: Codable, Sendable {
+  public var completedAt: String
+  public var metadata: JobMetadata
+  public var params: JobParams
+  public var result: JobStoredResult
+  public var startedAt: String
+  public let status: JobCompleteStatus
+  public init(
+    completedAt: String, metadata: JobMetadata, params: JobParams, result: JobStoredResult,
+    startedAt: String
+  ) {
+    self.completedAt = completedAt
+    self.metadata = metadata
+    self.params = params
+    self.result = result
+    self.startedAt = startedAt
+    self.status = .complete
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["completedAt", "metadata", "params", "result", "startedAt", "status"]).contains(
+        $0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in JobComplete")
+    }
+    self.completedAt = try c.decode(String.self, forKey: WireKey("completedAt"))
+    self.metadata = try c.decode(JobMetadata.self, forKey: WireKey("metadata"))
+    self.params = try c.decode(JobParams.self, forKey: WireKey("params"))
+    self.result = try c.decode(JobStoredResult.self, forKey: WireKey("result"))
+    self.startedAt = try c.decode(String.self, forKey: WireKey("startedAt"))
+    self.status = try c.decode(JobCompleteStatus.self, forKey: WireKey("status"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.completedAt, forKey: WireKey("completedAt"))
+    try c.encode(self.metadata, forKey: WireKey("metadata"))
+    try c.encode(self.params, forKey: WireKey("params"))
+    try c.encode(self.result, forKey: WireKey("result"))
+    try c.encode(self.startedAt, forKey: WireKey("startedAt"))
+    try c.encode(self.status, forKey: WireKey("status"))
+  }
+}
+
+public indirect enum JobCompleteCommand: Codable, Sendable {
+  case markJobCompleteCommand(MarkJobCompleteCommand)
+  case yieldJobCompleteCommand(YieldJobCompleteCommand)
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    let tag = try c.decode(String.self, forKey: WireKey("jobType"))
+    switch tag {
+    case "mark": self = .markJobCompleteCommand(try MarkJobCompleteCommand(from: decoder))
+    case "yield": self = .yieldJobCompleteCommand(try YieldJobCompleteCommand(from: decoder))
+    default:
+      throw DecodingError.dataCorruptedError(
+        forKey: WireKey("jobType"), in: c,
+        debugDescription: "unknown JobCompleteCommand discriminator")
+    }
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .markJobCompleteCommand(let value): try value.encode(to: encoder)
+    case .yieldJobCompleteCommand(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public enum JobCompleteStatus: String, Codable, Sendable, CaseIterable {
+  case complete = "complete"
+}
+
+public struct JobCompletedPayload: Codable, Sendable {
+  public var annotationId: AnnotationId?
+  public var annotationUri: String?
+  public var attempt: Int?
+  public var durability: DurabilityEvidence?
+  public var foundCount: Int?
+  public var jobId: JobId
+  public var jobType: JobType
+  public var result: [String: JSONValue]?
+  public var resultResourceId: ResourceId?
+  public var totalSteps: Int?
+  public init(
+    annotationId: AnnotationId? = nil, annotationUri: String? = nil, attempt: Int? = nil,
+    durability: DurabilityEvidence? = nil, foundCount: Int? = nil, jobId: JobId, jobType: JobType,
+    result: [String: JSONValue]? = nil, resultResourceId: ResourceId? = nil, totalSteps: Int? = nil
+  ) {
+    self.annotationId = annotationId
+    self.annotationUri = annotationUri
+    self.attempt = attempt
+    self.durability = durability
+    self.foundCount = foundCount
+    self.jobId = jobId
+    self.jobType = jobType
+    self.result = result
+    self.resultResourceId = resultResourceId
+    self.totalSteps = totalSteps
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.annotationId =
+      c.contains(WireKey("annotationId"))
+      ? try c.decode(AnnotationId.self, forKey: WireKey("annotationId")) : nil
+    self.annotationUri =
+      c.contains(WireKey("annotationUri"))
+      ? try c.decode(String.self, forKey: WireKey("annotationUri")) : nil
+    self.attempt =
+      c.contains(WireKey("attempt")) ? try c.decode(Int.self, forKey: WireKey("attempt")) : nil
+    self.durability =
+      c.contains(WireKey("durability"))
+      ? try c.decode(DurabilityEvidence.self, forKey: WireKey("durability")) : nil
+    self.foundCount =
+      c.contains(WireKey("foundCount"))
+      ? try c.decode(Int.self, forKey: WireKey("foundCount")) : nil
+    self.jobId = try c.decode(JobId.self, forKey: WireKey("jobId"))
+    self.jobType = try c.decode(JobType.self, forKey: WireKey("jobType"))
+    self.result =
+      c.contains(WireKey("result"))
+      ? try c.decode([String: JSONValue].self, forKey: WireKey("result")) : nil
+    self.resultResourceId =
+      c.contains(WireKey("resultResourceId"))
+      ? try c.decode(ResourceId.self, forKey: WireKey("resultResourceId")) : nil
+    self.totalSteps =
+      c.contains(WireKey("totalSteps"))
+      ? try c.decode(Int.self, forKey: WireKey("totalSteps")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.annotationId, forKey: WireKey("annotationId"))
+    try c.encodeIfPresent(self.annotationUri, forKey: WireKey("annotationUri"))
+    try c.encodeIfPresent(self.attempt, forKey: WireKey("attempt"))
+    try c.encodeIfPresent(self.durability, forKey: WireKey("durability"))
+    try c.encodeIfPresent(self.foundCount, forKey: WireKey("foundCount"))
+    try c.encode(self.jobId, forKey: WireKey("jobId"))
+    try c.encode(self.jobType, forKey: WireKey("jobType"))
+    try c.encodeIfPresent(self.result, forKey: WireKey("result"))
+    try c.encodeIfPresent(self.resultResourceId, forKey: WireKey("resultResourceId"))
+    try c.encodeIfPresent(self.totalSteps, forKey: WireKey("totalSteps"))
+  }
+}
+
+public indirect enum JobCreateCommand: Codable, Sendable {
+  case markJobCreateCommand(MarkJobCreateCommand)
+  case yieldJobCreateCommand(YieldJobCreateCommand)
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    let tag = try c.decode(String.self, forKey: WireKey("jobType"))
+    switch tag {
+    case "mark": self = .markJobCreateCommand(try MarkJobCreateCommand(from: decoder))
+    case "yield": self = .yieldJobCreateCommand(try YieldJobCreateCommand(from: decoder))
+    default:
+      throw DecodingError.dataCorruptedError(
+        forKey: WireKey("jobType"), in: c,
+        debugDescription: "unknown JobCreateCommand discriminator")
+    }
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .markJobCreateCommand(let value): try value.encode(to: encoder)
+    case .yieldJobCreateCommand(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public struct JobCreatedResult: Codable, Sendable {
+  public var response: JobCreatedResultResponse
+  public init(response: JobCreatedResultResponse) {
+    self.response = response
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.response = try c.decode(JobCreatedResultResponse.self, forKey: WireKey("response"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.response, forKey: WireKey("response"))
+  }
+}
+
+public struct JobCreatedResultResponse: Codable, Sendable {
+  public var jobId: JobId
+  public init(jobId: JobId) {
+    self.jobId = jobId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.jobId = try c.decode(JobId.self, forKey: WireKey("jobId"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.jobId, forKey: WireKey("jobId"))
+  }
+}
+
+public struct JobDeclined: Codable, Sendable {
+  public let declined: JobDeclinedDeclined
+  public var reason: JobDeclinedReason
+  public init(reason: JobDeclinedReason) {
+    self.declined = .value
+    self.reason = reason
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["declined", "reason"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in JobDeclined")
+    }
+    self.declined = try c.decode(JobDeclinedDeclined.self, forKey: WireKey("declined"))
+    self.reason = try c.decode(JobDeclinedReason.self, forKey: WireKey("reason"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.declined, forKey: WireKey("declined"))
+    try c.encode(self.reason, forKey: WireKey("reason"))
+  }
+}
+
+public enum JobDeclinedDeclined: Codable, Sendable {
+  case value
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.singleValueContainer()
+    guard try c.decode(Bool.self) == true else {
+      throw DecodingError.dataCorruptedError(in: c, debugDescription: "JobDeclinedDeclined")
+    }
+    self = .value
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.singleValueContainer()
+    try c.encode(true)
+  }
+}
+
+public enum JobDeclinedReason: String, Codable, Sendable, CaseIterable {
+  case noTextLayer = "no-text-layer"
+  case encrypted = "encrypted"
+  case corrupt = "corrupt"
+  case tooLarge = "too-large"
+  case empty = "empty"
+}
+
+public struct JobFailCommand: Codable, Sendable {
+  public var _userId: UserId?
+  public var annotationId: AnnotationId?
+  public var attempt: Int?
+  public var completedUnits: [String]?
+  public var durability: DurabilityEvidence?
+  public var error: String
+  public var failureClass: FailureClass?
+  public var jobId: JobId
+  public var jobType: JobType
+  public var resourceId: ResourceId
+  public var unitCursors: [String: UnitCursor]?
+  public var willRetry: Bool?
+  public init(
+    _userId: UserId? = nil, annotationId: AnnotationId? = nil, attempt: Int? = nil,
+    completedUnits: [String]? = nil, durability: DurabilityEvidence? = nil, error: String,
+    failureClass: FailureClass? = nil, jobId: JobId, jobType: JobType, resourceId: ResourceId,
+    unitCursors: [String: UnitCursor]? = nil, willRetry: Bool? = nil
+  ) {
+    self._userId = _userId
+    self.annotationId = annotationId
+    self.attempt = attempt
+    self.completedUnits = completedUnits
+    self.durability = durability
+    self.error = error
+    self.failureClass = failureClass
+    self.jobId = jobId
+    self.jobType = jobType
+    self.resourceId = resourceId
+    self.unitCursors = unitCursors
+    self.willRetry = willRetry
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self._userId =
+      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
+    self.annotationId =
+      c.contains(WireKey("annotationId"))
+      ? try c.decode(AnnotationId.self, forKey: WireKey("annotationId")) : nil
+    self.attempt =
+      c.contains(WireKey("attempt")) ? try c.decode(Int.self, forKey: WireKey("attempt")) : nil
+    self.completedUnits =
+      c.contains(WireKey("completedUnits"))
+      ? try c.decode([String].self, forKey: WireKey("completedUnits")) : nil
+    self.durability =
+      c.contains(WireKey("durability"))
+      ? try c.decode(DurabilityEvidence.self, forKey: WireKey("durability")) : nil
+    self.error = try c.decode(String.self, forKey: WireKey("error"))
+    self.failureClass =
+      c.contains(WireKey("failureClass"))
+      ? try c.decode(FailureClass.self, forKey: WireKey("failureClass")) : nil
+    self.jobId = try c.decode(JobId.self, forKey: WireKey("jobId"))
+    self.jobType = try c.decode(JobType.self, forKey: WireKey("jobType"))
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self.unitCursors =
+      c.contains(WireKey("unitCursors"))
+      ? try c.decode([String: UnitCursor].self, forKey: WireKey("unitCursors")) : nil
+    self.willRetry =
+      c.contains(WireKey("willRetry")) ? try c.decode(Bool.self, forKey: WireKey("willRetry")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
+    try c.encodeIfPresent(self.annotationId, forKey: WireKey("annotationId"))
+    try c.encodeIfPresent(self.attempt, forKey: WireKey("attempt"))
+    try c.encodeIfPresent(self.completedUnits, forKey: WireKey("completedUnits"))
+    try c.encodeIfPresent(self.durability, forKey: WireKey("durability"))
+    try c.encode(self.error, forKey: WireKey("error"))
+    try c.encodeIfPresent(self.failureClass, forKey: WireKey("failureClass"))
+    try c.encode(self.jobId, forKey: WireKey("jobId"))
+    try c.encode(self.jobType, forKey: WireKey("jobType"))
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encodeIfPresent(self.unitCursors, forKey: WireKey("unitCursors"))
+    try c.encodeIfPresent(self.willRetry, forKey: WireKey("willRetry"))
+  }
+}
+
+public struct JobFailed: Codable, Sendable {
+  public var completedAt: String
+  public var error: String
+  public var failureClass: FailureClass?
+  public var metadata: JobMetadata
+  public var params: JobParams
+  public var startedAt: String?
+  public let status: JobFailedStatus
+  public init(
+    completedAt: String, error: String, failureClass: FailureClass? = nil, metadata: JobMetadata,
+    params: JobParams, startedAt: String? = nil
+  ) {
+    self.completedAt = completedAt
+    self.error = error
+    self.failureClass = failureClass
+    self.metadata = metadata
+    self.params = params
+    self.startedAt = startedAt
+    self.status = .failed
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>([
+        "completedAt", "error", "failureClass", "metadata", "params", "startedAt", "status",
+      ]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in JobFailed")
+    }
+    self.completedAt = try c.decode(String.self, forKey: WireKey("completedAt"))
+    self.error = try c.decode(String.self, forKey: WireKey("error"))
+    self.failureClass =
+      c.contains(WireKey("failureClass"))
+      ? try c.decode(FailureClass.self, forKey: WireKey("failureClass")) : nil
+    self.metadata = try c.decode(JobMetadata.self, forKey: WireKey("metadata"))
+    self.params = try c.decode(JobParams.self, forKey: WireKey("params"))
+    self.startedAt =
+      c.contains(WireKey("startedAt"))
+      ? try c.decode(String.self, forKey: WireKey("startedAt")) : nil
+    self.status = try c.decode(JobFailedStatus.self, forKey: WireKey("status"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.completedAt, forKey: WireKey("completedAt"))
+    try c.encode(self.error, forKey: WireKey("error"))
+    try c.encodeIfPresent(self.failureClass, forKey: WireKey("failureClass"))
+    try c.encode(self.metadata, forKey: WireKey("metadata"))
+    try c.encode(self.params, forKey: WireKey("params"))
+    try c.encodeIfPresent(self.startedAt, forKey: WireKey("startedAt"))
+    try c.encode(self.status, forKey: WireKey("status"))
+  }
+}
+
+public struct JobFailedPayload: Codable, Sendable {
+  public var annotationId: AnnotationId?
+  public var attempt: Int?
+  public var durability: DurabilityEvidence?
+  public var error: String
+  public var failureClass: FailureClass?
+  public var jobId: JobId
+  public var jobType: JobType
+  public var willRetry: Bool?
+  public init(
+    annotationId: AnnotationId? = nil, attempt: Int? = nil, durability: DurabilityEvidence? = nil,
+    error: String, failureClass: FailureClass? = nil, jobId: JobId, jobType: JobType,
+    willRetry: Bool? = nil
+  ) {
+    self.annotationId = annotationId
+    self.attempt = attempt
+    self.durability = durability
+    self.error = error
+    self.failureClass = failureClass
+    self.jobId = jobId
+    self.jobType = jobType
+    self.willRetry = willRetry
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.annotationId =
+      c.contains(WireKey("annotationId"))
+      ? try c.decode(AnnotationId.self, forKey: WireKey("annotationId")) : nil
+    self.attempt =
+      c.contains(WireKey("attempt")) ? try c.decode(Int.self, forKey: WireKey("attempt")) : nil
+    self.durability =
+      c.contains(WireKey("durability"))
+      ? try c.decode(DurabilityEvidence.self, forKey: WireKey("durability")) : nil
+    self.error = try c.decode(String.self, forKey: WireKey("error"))
+    self.failureClass =
+      c.contains(WireKey("failureClass"))
+      ? try c.decode(FailureClass.self, forKey: WireKey("failureClass")) : nil
+    self.jobId = try c.decode(JobId.self, forKey: WireKey("jobId"))
+    self.jobType = try c.decode(JobType.self, forKey: WireKey("jobType"))
+    self.willRetry =
+      c.contains(WireKey("willRetry")) ? try c.decode(Bool.self, forKey: WireKey("willRetry")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.annotationId, forKey: WireKey("annotationId"))
+    try c.encodeIfPresent(self.attempt, forKey: WireKey("attempt"))
+    try c.encodeIfPresent(self.durability, forKey: WireKey("durability"))
+    try c.encode(self.error, forKey: WireKey("error"))
+    try c.encodeIfPresent(self.failureClass, forKey: WireKey("failureClass"))
+    try c.encode(self.jobId, forKey: WireKey("jobId"))
+    try c.encode(self.jobType, forKey: WireKey("jobType"))
+    try c.encodeIfPresent(self.willRetry, forKey: WireKey("willRetry"))
+  }
+}
+
+public enum JobFailedStatus: String, Codable, Sendable, CaseIterable {
+  case failed = "failed"
+}
+
+public indirect enum JobFilter: Codable, Sendable {
+  case markJobFilter(MarkJobFilter)
+  case yieldJobFilter(YieldJobFilter)
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    let tag = try c.decode(String.self, forKey: WireKey("jobType"))
+    switch tag {
+    case "mark": self = .markJobFilter(try MarkJobFilter(from: decoder))
+    case "yield": self = .yieldJobFilter(try YieldJobFilter(from: decoder))
+    default:
+      throw DecodingError.dataCorruptedError(
+        forKey: WireKey("jobType"), in: c, debugDescription: "unknown JobFilter discriminator")
+    }
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .markJobFilter(let value): try value.encode(to: encoder)
+    case .yieldJobFilter(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public struct JobId: Hashable, Sendable, Codable, CustomStringConvertible {
+  public let value: String
+  public var description: String { value }
+  public init(_ value: String) throws {
+    guard value.unicodeScalars.starts(with: "".unicodeScalars) else {
+      throw InvalidIdentifier(kind: "JobId", pattern: "^[A-Za-z0-9_-]{1,128}$", value: value)
+    }
+    let scalars = value.unicodeScalars.dropFirst(0)
+    guard scalars.count >= 1 && scalars.count <= 128,
+      scalars.allSatisfy({ c in
+        (65...90).contains(c.value) || (97...122).contains(c.value) || (48...57).contains(c.value)
+          || c.value == 95 || c.value == 45
+      })
+    else { throw InvalidIdentifier(kind: "JobId", pattern: "^[A-Za-z0-9_-]{1,128}$", value: value) }
+    self.value = value
+  }
+  public static func parse(_ value: String) -> Self? { try? Self(value) }
+  public static func == (lhs: Self, rhs: Self) -> Bool {
+    lhs.value.utf8.elementsEqual(rhs.value.utf8)
+  }
+  public func hash(into hasher: inout Hasher) { for byte in value.utf8 { hasher.combine(byte) } }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.singleValueContainer()
+    let value = try c.decode(String.self)
+    do { try self.init(value) } catch {
+      throw DecodingError.dataCorruptedError(in: c, debugDescription: String(describing: error))
+    }
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.singleValueContainer()
+    try c.encode(value)
+  }
+}
+
+public struct JobMetadata: Codable, Sendable {
+  public var completedUnits: [String]?
+  public var created: String
+  public var id: JobId
+  public var maxRetries: Int
+  public var retryCount: Int
+  public var type: JobType
+  public var unitCursors: [String: UnitCursor]?
+  public var userId: UserId
+  public init(
+    completedUnits: [String]? = nil, created: String, id: JobId, maxRetries: Int, retryCount: Int,
+    type: JobType, unitCursors: [String: UnitCursor]? = nil, userId: UserId
+  ) {
+    self.completedUnits = completedUnits
+    self.created = created
+    self.id = id
+    self.maxRetries = maxRetries
+    self.retryCount = retryCount
+    self.type = type
+    self.unitCursors = unitCursors
+    self.userId = userId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>([
+        "completedUnits", "created", "id", "maxRetries", "retryCount", "type", "unitCursors",
+        "userId",
+      ]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in JobMetadata")
+    }
+    self.completedUnits =
+      c.contains(WireKey("completedUnits"))
+      ? try c.decode([String].self, forKey: WireKey("completedUnits")) : nil
+    self.created = try c.decode(String.self, forKey: WireKey("created"))
+    self.id = try c.decode(JobId.self, forKey: WireKey("id"))
+    self.maxRetries = try c.decode(Int.self, forKey: WireKey("maxRetries"))
+    self.retryCount = try c.decode(Int.self, forKey: WireKey("retryCount"))
+    self.type = try c.decode(JobType.self, forKey: WireKey("type"))
+    self.unitCursors =
+      c.contains(WireKey("unitCursors"))
+      ? try c.decode([String: UnitCursor].self, forKey: WireKey("unitCursors")) : nil
+    self.userId = try c.decode(UserId.self, forKey: WireKey("userId"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.completedUnits, forKey: WireKey("completedUnits"))
+    try c.encode(self.created, forKey: WireKey("created"))
+    try c.encode(self.id, forKey: WireKey("id"))
+    try c.encode(self.maxRetries, forKey: WireKey("maxRetries"))
+    try c.encode(self.retryCount, forKey: WireKey("retryCount"))
+    try c.encode(self.type, forKey: WireKey("type"))
+    try c.encodeIfPresent(self.unitCursors, forKey: WireKey("unitCursors"))
+    try c.encode(self.userId, forKey: WireKey("userId"))
+  }
+}
+
+public struct JobParams: Codable, Sendable {
+  public var resourceId: ResourceId
+  public var schema: TagSchema?
+  public var rest: [String: JSONValue]
+  public init(resourceId: ResourceId, schema: TagSchema? = nil, rest: [String: JSONValue] = [:]) {
+    self.resourceId = resourceId
+    self.schema = schema
+    self.rest = rest
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self.schema =
+      c.contains(WireKey("schema")) ? try c.decode(TagSchema.self, forKey: WireKey("schema")) : nil
+    rest = [:]
+    for key in c.allKeys where !Set<String>(["resourceId", "schema"]).contains(key.stringValue) {
+      rest[key.stringValue] = try c.decode(JSONValue.self, forKey: key)
+    }
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    for (key, value) in rest {
+      guard !Set<String>(["resourceId", "schema"]).contains(key) else {
+        throw EncodingError.invalidValue(
+          value,
+          .init(
+            codingPath: encoder.codingPath,
+            debugDescription: "rest overrides a named property of JobParams"))
+      }
+      try c.encode(value, forKey: WireKey(key))
+    }
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encodeIfPresent(self.schema, forKey: WireKey("schema"))
+  }
+}
+
+public struct JobPending: Codable, Sendable {
+  public var metadata: JobMetadata
+  public var params: JobParams
+  public let status: JobPendingStatus
+  public init(metadata: JobMetadata, params: JobParams) {
+    self.metadata = metadata
+    self.params = params
+    self.status = .pending
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["metadata", "params", "status"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in JobPending")
+    }
+    self.metadata = try c.decode(JobMetadata.self, forKey: WireKey("metadata"))
+    self.params = try c.decode(JobParams.self, forKey: WireKey("params"))
+    self.status = try c.decode(JobPendingStatus.self, forKey: WireKey("status"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.metadata, forKey: WireKey("metadata"))
+    try c.encode(self.params, forKey: WireKey("params"))
+    try c.encode(self.status, forKey: WireKey("status"))
+  }
+}
+
+public enum JobPendingStatus: String, Codable, Sendable, CaseIterable {
+  case pending = "pending"
+}
+
+public struct JobProgress: Codable, Sendable {
+  public var annotationId: AnnotationId?
+  public var completedItems: [JobProgressCompletedItemsItem]?
+  public var current: JobProgressCurrent?
+  public var entitiesEmitted: Int?
+  public var entitiesExpected: Int?
+  public var entitiesFound: Int?
+  public var message: JobProgressMessage?
+  public var percentage: Double
+  public var processed: Int?
+  public var requestParams: [JobProgressRequestParamsItem]?
+  public var total: Int?
+  public init(
+    annotationId: AnnotationId? = nil, completedItems: [JobProgressCompletedItemsItem]? = nil,
+    current: JobProgressCurrent? = nil, entitiesEmitted: Int? = nil, entitiesExpected: Int? = nil,
+    entitiesFound: Int? = nil, message: JobProgressMessage? = nil, percentage: Double,
+    processed: Int? = nil, requestParams: [JobProgressRequestParamsItem]? = nil, total: Int? = nil
+  ) {
+    self.annotationId = annotationId
+    self.completedItems = completedItems
+    self.current = current
+    self.entitiesEmitted = entitiesEmitted
+    self.entitiesExpected = entitiesExpected
+    self.entitiesFound = entitiesFound
+    self.message = message
+    self.percentage = percentage
+    self.processed = processed
+    self.requestParams = requestParams
+    self.total = total
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.annotationId =
+      c.contains(WireKey("annotationId"))
+      ? try c.decode(AnnotationId.self, forKey: WireKey("annotationId")) : nil
+    self.completedItems =
+      c.contains(WireKey("completedItems"))
+      ? try c.decode([JobProgressCompletedItemsItem].self, forKey: WireKey("completedItems")) : nil
+    self.current =
+      c.contains(WireKey("current"))
+      ? try c.decode(JobProgressCurrent.self, forKey: WireKey("current")) : nil
+    self.entitiesEmitted =
+      c.contains(WireKey("entitiesEmitted"))
+      ? try c.decode(Int.self, forKey: WireKey("entitiesEmitted")) : nil
+    self.entitiesExpected =
+      c.contains(WireKey("entitiesExpected"))
+      ? try c.decode(Int.self, forKey: WireKey("entitiesExpected")) : nil
+    self.entitiesFound =
+      c.contains(WireKey("entitiesFound"))
+      ? try c.decode(Int.self, forKey: WireKey("entitiesFound")) : nil
+    self.message =
+      c.contains(WireKey("message"))
+      ? try c.decode(JobProgressMessage.self, forKey: WireKey("message")) : nil
+    self.percentage = try c.decode(Double.self, forKey: WireKey("percentage"))
+    self.processed =
+      c.contains(WireKey("processed")) ? try c.decode(Int.self, forKey: WireKey("processed")) : nil
+    self.requestParams =
+      c.contains(WireKey("requestParams"))
+      ? try c.decode([JobProgressRequestParamsItem].self, forKey: WireKey("requestParams")) : nil
+    self.total =
+      c.contains(WireKey("total")) ? try c.decode(Int.self, forKey: WireKey("total")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.annotationId, forKey: WireKey("annotationId"))
+    try c.encodeIfPresent(self.completedItems, forKey: WireKey("completedItems"))
+    try c.encodeIfPresent(self.current, forKey: WireKey("current"))
+    try c.encodeIfPresent(self.entitiesEmitted, forKey: WireKey("entitiesEmitted"))
+    try c.encodeIfPresent(self.entitiesExpected, forKey: WireKey("entitiesExpected"))
+    try c.encodeIfPresent(self.entitiesFound, forKey: WireKey("entitiesFound"))
+    try c.encodeIfPresent(self.message, forKey: WireKey("message"))
+    try c.encode(self.percentage, forKey: WireKey("percentage"))
+    try c.encodeIfPresent(self.processed, forKey: WireKey("processed"))
+    try c.encodeIfPresent(self.requestParams, forKey: WireKey("requestParams"))
+    try c.encodeIfPresent(self.total, forKey: WireKey("total"))
+  }
+}
+
+public struct JobProgressAnalyzing: Codable, Sendable {
+  public let code: JobProgressAnalyzingCode
+  public init() {
+    self.code = .analyzing
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.code = try c.decode(JobProgressAnalyzingCode.self, forKey: WireKey("code"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.code, forKey: WireKey("code"))
+  }
+}
+
+public enum JobProgressAnalyzingCode: String, Codable, Sendable, CaseIterable {
+  case analyzing = "analyzing"
+}
+
+public struct JobProgressAnalyzingTags: Codable, Sendable {
+  public let code: JobProgressAnalyzingTagsCode
+  public init() {
+    self.code = .analyzingTags
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.code = try c.decode(JobProgressAnalyzingTagsCode.self, forKey: WireKey("code"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.code, forKey: WireKey("code"))
+  }
+}
+
+public enum JobProgressAnalyzingTagsCode: String, Codable, Sendable, CaseIterable {
+  case analyzingTags = "analyzing-tags"
+}
+
+public struct JobProgressCompleteCreated: Codable, Sendable {
+  public let code: JobProgressCompleteCreatedCode
+  public var count: Int
+  public var motivation: Motivation
+  public init(count: Int, motivation: Motivation) {
+    self.code = .completeCreated
+    self.count = count
+    self.motivation = motivation
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.code = try c.decode(JobProgressCompleteCreatedCode.self, forKey: WireKey("code"))
+    self.count = try c.decode(Int.self, forKey: WireKey("count"))
+    self.motivation = try c.decode(Motivation.self, forKey: WireKey("motivation"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.code, forKey: WireKey("code"))
+    try c.encode(self.count, forKey: WireKey("count"))
+    try c.encode(self.motivation, forKey: WireKey("motivation"))
+  }
+}
+
+public enum JobProgressCompleteCreatedCode: String, Codable, Sendable, CaseIterable {
+  case completeCreated = "complete-created"
+}
+
+public struct JobProgressCompleteGenerated: Codable, Sendable {
+  public let code: JobProgressCompleteGeneratedCode
+  public var truncated: Bool
+  public init(truncated: Bool) {
+    self.code = .completeGenerated
+    self.truncated = truncated
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.code = try c.decode(JobProgressCompleteGeneratedCode.self, forKey: WireKey("code"))
+    self.truncated = try c.decode(Bool.self, forKey: WireKey("truncated"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.code, forKey: WireKey("code"))
+    try c.encode(self.truncated, forKey: WireKey("truncated"))
+  }
+}
+
+public enum JobProgressCompleteGeneratedCode: String, Codable, Sendable, CaseIterable {
+  case completeGenerated = "complete-generated"
+}
+
+public struct JobProgressCompletedItemsItem: Codable, Sendable {
+  public var foundCount: Int
+  public var persistedCount: Int?
+  public var underReported: JobProgressCompletedItemsItemUnderReported?
+  public var value: String
+  public init(
+    foundCount: Int, persistedCount: Int? = nil,
+    underReported: JobProgressCompletedItemsItemUnderReported? = nil, value: String
+  ) {
+    self.foundCount = foundCount
+    self.persistedCount = persistedCount
+    self.underReported = underReported
+    self.value = value
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.foundCount = try c.decode(Int.self, forKey: WireKey("foundCount"))
+    self.persistedCount =
+      c.contains(WireKey("persistedCount"))
+      ? try c.decode(Int.self, forKey: WireKey("persistedCount")) : nil
+    self.underReported =
+      c.contains(WireKey("underReported"))
+      ? try c.decode(
+        JobProgressCompletedItemsItemUnderReported.self, forKey: WireKey("underReported")) : nil
+    self.value = try c.decode(String.self, forKey: WireKey("value"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.foundCount, forKey: WireKey("foundCount"))
+    try c.encodeIfPresent(self.persistedCount, forKey: WireKey("persistedCount"))
+    try c.encodeIfPresent(self.underReported, forKey: WireKey("underReported"))
+    try c.encode(self.value, forKey: WireKey("value"))
+  }
+}
+
+public struct JobProgressCompletedItemsItemUnderReported: Codable, Sendable {
+  public var counted: Int
+  public var found: Int
+  public var pieces: Int
+  public init(counted: Int, found: Int, pieces: Int) {
+    self.counted = counted
+    self.found = found
+    self.pieces = pieces
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.counted = try c.decode(Int.self, forKey: WireKey("counted"))
+    self.found = try c.decode(Int.self, forKey: WireKey("found"))
+    self.pieces = try c.decode(Int.self, forKey: WireKey("pieces"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.counted, forKey: WireKey("counted"))
+    try c.encode(self.found, forKey: WireKey("found"))
+    try c.encode(self.pieces, forKey: WireKey("pieces"))
+  }
+}
+
+public struct JobProgressCreatingAnnotations: Codable, Sendable {
+  public let code: JobProgressCreatingAnnotationsCode
+  public var count: Int
+  public init(count: Int) {
+    self.code = .creatingAnnotations
+    self.count = count
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.code = try c.decode(JobProgressCreatingAnnotationsCode.self, forKey: WireKey("code"))
+    self.count = try c.decode(Int.self, forKey: WireKey("count"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.code, forKey: WireKey("code"))
+    try c.encode(self.count, forKey: WireKey("count"))
+  }
+}
+
+public enum JobProgressCreatingAnnotationsCode: String, Codable, Sendable, CaseIterable {
+  case creatingAnnotations = "creating-annotations"
+}
+
+public struct JobProgressCreatingResource: Codable, Sendable {
+  public let code: JobProgressCreatingResourceCode
+  public init() {
+    self.code = .creatingResource
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.code = try c.decode(JobProgressCreatingResourceCode.self, forKey: WireKey("code"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.code, forKey: WireKey("code"))
+  }
+}
+
+public enum JobProgressCreatingResourceCode: String, Codable, Sendable, CaseIterable {
+  case creatingResource = "creating-resource"
+}
+
+public struct JobProgressCreatingTagAnnotations: Codable, Sendable {
+  public let code: JobProgressCreatingTagAnnotationsCode
+  public var count: Int
+  public init(count: Int) {
+    self.code = .creatingTagAnnotations
+    self.count = count
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.code = try c.decode(JobProgressCreatingTagAnnotationsCode.self, forKey: WireKey("code"))
+    self.count = try c.decode(Int.self, forKey: WireKey("count"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.code, forKey: WireKey("code"))
+    try c.encode(self.count, forKey: WireKey("count"))
+  }
+}
+
+public enum JobProgressCreatingTagAnnotationsCode: String, Codable, Sendable, CaseIterable {
+  case creatingTagAnnotations = "creating-tag-annotations"
+}
+
+public struct JobProgressCurrent: Codable, Sendable {
+  public var kind: JobProgressCurrentKind
+  public var value: String
+  public init(kind: JobProgressCurrentKind, value: String) {
+    self.kind = kind
+    self.value = value
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.kind = try c.decode(JobProgressCurrentKind.self, forKey: WireKey("kind"))
+    self.value = try c.decode(String.self, forKey: WireKey("value"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.kind, forKey: WireKey("kind"))
+    try c.encode(self.value, forKey: WireKey("value"))
+  }
+}
+
+public enum JobProgressCurrentKind: String, Codable, Sendable, CaseIterable {
+  case entityType = "entity-type"
+  case category = "category"
+}
+
+public struct JobProgressDetectingEntities: Codable, Sendable {
+  public let code: JobProgressDetectingEntitiesCode
+  public var entityType: String
+  public init(entityType: String) {
+    self.code = .detectingEntities
+    self.entityType = entityType
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.code = try c.decode(JobProgressDetectingEntitiesCode.self, forKey: WireKey("code"))
+    self.entityType = try c.decode(String.self, forKey: WireKey("entityType"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.code, forKey: WireKey("code"))
+    try c.encode(self.entityType, forKey: WireKey("entityType"))
+  }
+}
+
+public enum JobProgressDetectingEntitiesCode: String, Codable, Sendable, CaseIterable {
+  case detectingEntities = "detecting-entities"
+}
+
+public struct JobProgressGeneratingResource: Codable, Sendable {
+  public let code: JobProgressGeneratingResourceCode
+  public init() {
+    self.code = .generatingResource
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.code = try c.decode(JobProgressGeneratingResourceCode.self, forKey: WireKey("code"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.code, forKey: WireKey("code"))
+  }
+}
+
+public enum JobProgressGeneratingResourceCode: String, Codable, Sendable, CaseIterable {
+  case generatingResource = "generating-resource"
+}
+
+public struct JobProgressLoading: Codable, Sendable {
+  public let code: JobProgressLoadingCode
+  public init() {
+    self.code = .loading
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.code = try c.decode(JobProgressLoadingCode.self, forKey: WireKey("code"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.code, forKey: WireKey("code"))
+  }
+}
+
+public enum JobProgressLoadingCode: String, Codable, Sendable, CaseIterable {
+  case loading = "loading"
+}
+
+public indirect enum JobProgressMessage: Codable, Sendable {
+  case jobProgressLoading(JobProgressLoading)
+  case jobProgressAnalyzing(JobProgressAnalyzing)
+  case jobProgressAnalyzingTags(JobProgressAnalyzingTags)
+  case jobProgressGeneratingResource(JobProgressGeneratingResource)
+  case jobProgressCreatingResource(JobProgressCreatingResource)
+  case jobProgressCompleteGenerated(JobProgressCompleteGenerated)
+  case jobProgressDetectingEntities(JobProgressDetectingEntities)
+  case jobProgressCreatingAnnotations(JobProgressCreatingAnnotations)
+  case jobProgressCreatingTagAnnotations(JobProgressCreatingTagAnnotations)
+  case jobProgressCompleteCreated(JobProgressCompleteCreated)
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    let tag = try c.decode(String.self, forKey: WireKey("code"))
+    switch tag {
+    case "loading": self = .jobProgressLoading(try JobProgressLoading(from: decoder))
+    case "analyzing": self = .jobProgressAnalyzing(try JobProgressAnalyzing(from: decoder))
+    case "analyzing-tags":
+      self = .jobProgressAnalyzingTags(try JobProgressAnalyzingTags(from: decoder))
+    case "generating-resource":
+      self = .jobProgressGeneratingResource(try JobProgressGeneratingResource(from: decoder))
+    case "creating-resource":
+      self = .jobProgressCreatingResource(try JobProgressCreatingResource(from: decoder))
+    case "complete-generated":
+      self = .jobProgressCompleteGenerated(try JobProgressCompleteGenerated(from: decoder))
+    case "detecting-entities":
+      self = .jobProgressDetectingEntities(try JobProgressDetectingEntities(from: decoder))
+    case "creating-annotations":
+      self = .jobProgressCreatingAnnotations(try JobProgressCreatingAnnotations(from: decoder))
+    case "creating-tag-annotations":
+      self = .jobProgressCreatingTagAnnotations(
+        try JobProgressCreatingTagAnnotations(from: decoder))
+    case "complete-created":
+      self = .jobProgressCompleteCreated(try JobProgressCompleteCreated(from: decoder))
+    default:
+      throw DecodingError.dataCorruptedError(
+        forKey: WireKey("code"), in: c, debugDescription: "unknown JobProgressMessage discriminator"
+      )
+    }
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .jobProgressLoading(let value): try value.encode(to: encoder)
+    case .jobProgressAnalyzing(let value): try value.encode(to: encoder)
+    case .jobProgressAnalyzingTags(let value): try value.encode(to: encoder)
+    case .jobProgressGeneratingResource(let value): try value.encode(to: encoder)
+    case .jobProgressCreatingResource(let value): try value.encode(to: encoder)
+    case .jobProgressCompleteGenerated(let value): try value.encode(to: encoder)
+    case .jobProgressDetectingEntities(let value): try value.encode(to: encoder)
+    case .jobProgressCreatingAnnotations(let value): try value.encode(to: encoder)
+    case .jobProgressCreatingTagAnnotations(let value): try value.encode(to: encoder)
+    case .jobProgressCompleteCreated(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public struct JobProgressRequestParamsItem: Codable, Sendable {
+  public var label: JobProgressRequestParamsItemLabel
+  public var value: String
+  public init(label: JobProgressRequestParamsItemLabel, value: String) {
+    self.label = label
+    self.value = value
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.label = try c.decode(JobProgressRequestParamsItemLabel.self, forKey: WireKey("label"))
+    self.value = try c.decode(String.self, forKey: WireKey("value"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.label, forKey: WireKey("label"))
+    try c.encode(self.value, forKey: WireKey("value"))
+  }
+}
+
+public enum JobProgressRequestParamsItemLabel: String, Codable, Sendable, CaseIterable {
+  case entityTypes = "entity-types"
+  case instructions = "instructions"
+  case tone = "tone"
+  case density = "density"
+}
+
+public indirect enum JobQueuedEvent: Codable, Sendable {
+  case markJobQueuedEvent(MarkJobQueuedEvent)
+  case yieldJobQueuedEvent(YieldJobQueuedEvent)
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    let tag = try c.decode(String.self, forKey: WireKey("jobType"))
+    switch tag {
+    case "mark": self = .markJobQueuedEvent(try MarkJobQueuedEvent(from: decoder))
+    case "yield": self = .yieldJobQueuedEvent(try YieldJobQueuedEvent(from: decoder))
+    default:
+      throw DecodingError.dataCorruptedError(
+        forKey: WireKey("jobType"), in: c, debugDescription: "unknown JobQueuedEvent discriminator")
+    }
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .markJobQueuedEvent(let value): try value.encode(to: encoder)
+    case .yieldJobQueuedEvent(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public struct JobRecord: Codable, Sendable {
+  public var job: Job
+  public var lastProgressAt: String
+  public init(job: Job, lastProgressAt: String) {
+    self.job = job
+    self.lastProgressAt = lastProgressAt
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["job", "lastProgressAt"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in JobRecord")
+    }
+    self.job = try c.decode(Job.self, forKey: WireKey("job"))
+    self.lastProgressAt = try c.decode(String.self, forKey: WireKey("lastProgressAt"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.job, forKey: WireKey("job"))
+    try c.encode(self.lastProgressAt, forKey: WireKey("lastProgressAt"))
+  }
+}
+
+public struct JobReportProgressCommand: Codable, Sendable {
+  public var _userId: UserId?
+  public var annotationId: AnnotationId?
+  public var attempt: Int?
+  public var jobId: JobId
+  public var jobType: JobType
+  public var percentage: Double
+  public var progress: JobProgress?
+  public var resourceId: ResourceId
+  public init(
+    _userId: UserId? = nil, annotationId: AnnotationId? = nil, attempt: Int? = nil, jobId: JobId,
+    jobType: JobType, percentage: Double, progress: JobProgress? = nil, resourceId: ResourceId
+  ) {
+    self._userId = _userId
+    self.annotationId = annotationId
+    self.attempt = attempt
+    self.jobId = jobId
+    self.jobType = jobType
+    self.percentage = percentage
+    self.progress = progress
+    self.resourceId = resourceId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self._userId =
+      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
+    self.annotationId =
+      c.contains(WireKey("annotationId"))
+      ? try c.decode(AnnotationId.self, forKey: WireKey("annotationId")) : nil
+    self.attempt =
+      c.contains(WireKey("attempt")) ? try c.decode(Int.self, forKey: WireKey("attempt")) : nil
+    self.jobId = try c.decode(JobId.self, forKey: WireKey("jobId"))
+    self.jobType = try c.decode(JobType.self, forKey: WireKey("jobType"))
+    self.percentage = try c.decode(Double.self, forKey: WireKey("percentage"))
+    self.progress =
+      c.contains(WireKey("progress"))
+      ? try c.decode(JobProgress.self, forKey: WireKey("progress")) : nil
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
+    try c.encodeIfPresent(self.annotationId, forKey: WireKey("annotationId"))
+    try c.encodeIfPresent(self.attempt, forKey: WireKey("attempt"))
+    try c.encode(self.jobId, forKey: WireKey("jobId"))
+    try c.encode(self.jobType, forKey: WireKey("jobType"))
+    try c.encode(self.percentage, forKey: WireKey("percentage"))
+    try c.encodeIfPresent(self.progress, forKey: WireKey("progress"))
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+  }
+}
+
+public indirect enum JobResult: Codable, Sendable {
+  case markJobDone(MarkJobDone)
+  case yieldJobDone(YieldJobDone)
+  case jobDeclined(JobDeclined)
+  public init(from decoder: any Decoder) throws {
+    if let value = try? MarkJobDone(from: decoder) {
+      self = .markJobDone(value)
+      return
+    }
+    if let value = try? YieldJobDone(from: decoder) {
+      self = .yieldJobDone(value)
+      return
+    }
+    if let value = try? JobDeclined(from: decoder) {
+      self = .jobDeclined(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(codingPath: decoder.codingPath, debugDescription: "no member of JobResult fits"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .markJobDone(let value): try value.encode(to: encoder)
+    case .yieldJobDone(let value): try value.encode(to: encoder)
+    case .jobDeclined(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public struct JobRunning: Codable, Sendable {
+  public var metadata: JobMetadata
+  public var params: JobParams
+  public var progress: JobStoredProgress
+  public var startedAt: String
+  public let status: JobRunningStatus
+  public init(
+    metadata: JobMetadata, params: JobParams, progress: JobStoredProgress, startedAt: String
+  ) {
+    self.metadata = metadata
+    self.params = params
+    self.progress = progress
+    self.startedAt = startedAt
+    self.status = .running
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["metadata", "params", "progress", "startedAt", "status"]).contains(
+        $0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in JobRunning")
+    }
+    self.metadata = try c.decode(JobMetadata.self, forKey: WireKey("metadata"))
+    self.params = try c.decode(JobParams.self, forKey: WireKey("params"))
+    self.progress = try c.decode(JobStoredProgress.self, forKey: WireKey("progress"))
+    self.startedAt = try c.decode(String.self, forKey: WireKey("startedAt"))
+    self.status = try c.decode(JobRunningStatus.self, forKey: WireKey("status"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.metadata, forKey: WireKey("metadata"))
+    try c.encode(self.params, forKey: WireKey("params"))
+    try c.encode(self.progress, forKey: WireKey("progress"))
+    try c.encode(self.startedAt, forKey: WireKey("startedAt"))
+    try c.encode(self.status, forKey: WireKey("status"))
+  }
+}
+
+public enum JobRunningStatus: String, Codable, Sendable, CaseIterable {
+  case running = "running"
+}
+
+public struct JobStartCommand: Codable, Sendable {
+  public var _userId: UserId?
+  public var annotationId: AnnotationId?
+  public var attempt: Int?
+  public var jobId: JobId
+  public var jobType: JobType
+  public var resourceId: ResourceId
+  public init(
+    _userId: UserId? = nil, annotationId: AnnotationId? = nil, attempt: Int? = nil, jobId: JobId,
+    jobType: JobType, resourceId: ResourceId
+  ) {
+    self._userId = _userId
+    self.annotationId = annotationId
+    self.attempt = attempt
+    self.jobId = jobId
+    self.jobType = jobType
+    self.resourceId = resourceId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self._userId =
+      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
+    self.annotationId =
+      c.contains(WireKey("annotationId"))
+      ? try c.decode(AnnotationId.self, forKey: WireKey("annotationId")) : nil
+    self.attempt =
+      c.contains(WireKey("attempt")) ? try c.decode(Int.self, forKey: WireKey("attempt")) : nil
+    self.jobId = try c.decode(JobId.self, forKey: WireKey("jobId"))
+    self.jobType = try c.decode(JobType.self, forKey: WireKey("jobType"))
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
+    try c.encodeIfPresent(self.annotationId, forKey: WireKey("annotationId"))
+    try c.encodeIfPresent(self.attempt, forKey: WireKey("attempt"))
+    try c.encode(self.jobId, forKey: WireKey("jobId"))
+    try c.encode(self.jobType, forKey: WireKey("jobType"))
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+  }
+}
+
+public struct JobStartedPayload: Codable, Sendable {
+  public var annotationId: AnnotationId?
+  public var jobId: JobId
+  public var jobType: JobType
+  public var totalSteps: Int?
+  public init(
+    annotationId: AnnotationId? = nil, jobId: JobId, jobType: JobType, totalSteps: Int? = nil
+  ) {
+    self.annotationId = annotationId
+    self.jobId = jobId
+    self.jobType = jobType
+    self.totalSteps = totalSteps
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.annotationId =
+      c.contains(WireKey("annotationId"))
+      ? try c.decode(AnnotationId.self, forKey: WireKey("annotationId")) : nil
+    self.jobId = try c.decode(JobId.self, forKey: WireKey("jobId"))
+    self.jobType = try c.decode(JobType.self, forKey: WireKey("jobType"))
+    self.totalSteps =
+      c.contains(WireKey("totalSteps"))
+      ? try c.decode(Int.self, forKey: WireKey("totalSteps")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.annotationId, forKey: WireKey("annotationId"))
+    try c.encode(self.jobId, forKey: WireKey("jobId"))
+    try c.encode(self.jobType, forKey: WireKey("jobType"))
+    try c.encodeIfPresent(self.totalSteps, forKey: WireKey("totalSteps"))
+  }
+}
+
+public struct JobStatusRequest: Codable, Sendable {
+  public var jobId: JobId
+  public init(jobId: JobId) {
+    self.jobId = jobId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.jobId = try c.decode(JobId.self, forKey: WireKey("jobId"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.jobId, forKey: WireKey("jobId"))
+  }
+}
+
+public struct JobStatusResponse: Codable, Sendable {
+  public var completedAt: String?
+  public var created: String
+  public var error: String?
+  public var failureClass: FailureClass?
+  public var jobId: JobId
+  public var progress: JobStoredProgress?
+  public var result: JobStoredResult?
+  public var startedAt: String?
+  public var status: JobStatusResponseStatus
+  public var type: JobType
+  public var userId: UserId
+  public init(
+    completedAt: String? = nil, created: String, error: String? = nil,
+    failureClass: FailureClass? = nil, jobId: JobId, progress: JobStoredProgress? = nil,
+    result: JobStoredResult? = nil, startedAt: String? = nil, status: JobStatusResponseStatus,
+    type: JobType, userId: UserId
+  ) {
+    self.completedAt = completedAt
+    self.created = created
+    self.error = error
+    self.failureClass = failureClass
+    self.jobId = jobId
+    self.progress = progress
+    self.result = result
+    self.startedAt = startedAt
+    self.status = status
+    self.type = type
+    self.userId = userId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.completedAt =
+      c.contains(WireKey("completedAt"))
+      ? try c.decode(String.self, forKey: WireKey("completedAt")) : nil
+    self.created = try c.decode(String.self, forKey: WireKey("created"))
+    self.error =
+      c.contains(WireKey("error")) ? try c.decode(String.self, forKey: WireKey("error")) : nil
+    self.failureClass =
+      c.contains(WireKey("failureClass"))
+      ? try c.decode(FailureClass.self, forKey: WireKey("failureClass")) : nil
+    self.jobId = try c.decode(JobId.self, forKey: WireKey("jobId"))
+    self.progress =
+      c.contains(WireKey("progress"))
+      ? try c.decode(JobStoredProgress.self, forKey: WireKey("progress")) : nil
+    self.result =
+      c.contains(WireKey("result"))
+      ? try c.decode(JobStoredResult.self, forKey: WireKey("result")) : nil
+    self.startedAt =
+      c.contains(WireKey("startedAt"))
+      ? try c.decode(String.self, forKey: WireKey("startedAt")) : nil
+    self.status = try c.decode(JobStatusResponseStatus.self, forKey: WireKey("status"))
+    self.type = try c.decode(JobType.self, forKey: WireKey("type"))
+    self.userId = try c.decode(UserId.self, forKey: WireKey("userId"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.completedAt, forKey: WireKey("completedAt"))
+    try c.encode(self.created, forKey: WireKey("created"))
+    try c.encodeIfPresent(self.error, forKey: WireKey("error"))
+    try c.encodeIfPresent(self.failureClass, forKey: WireKey("failureClass"))
+    try c.encode(self.jobId, forKey: WireKey("jobId"))
+    try c.encodeIfPresent(self.progress, forKey: WireKey("progress"))
+    try c.encodeIfPresent(self.result, forKey: WireKey("result"))
+    try c.encodeIfPresent(self.startedAt, forKey: WireKey("startedAt"))
+    try c.encode(self.status, forKey: WireKey("status"))
+    try c.encode(self.type, forKey: WireKey("type"))
+    try c.encode(self.userId, forKey: WireKey("userId"))
+  }
+}
+
+public enum JobStatusResponseStatus: String, Codable, Sendable, CaseIterable {
+  case pending = "pending"
+  case running = "running"
+  case complete = "complete"
+  case failed = "failed"
+  case cancelled = "cancelled"
+}
+
+public struct JobStatusResult: Codable, Sendable {
+  public var response: JobStatusResponse
+  public init(response: JobStatusResponse) {
+    self.response = response
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.response = try c.decode(JobStatusResponse.self, forKey: WireKey("response"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.response, forKey: WireKey("response"))
+  }
+}
+
+public indirect enum JobStoredProgress: Codable, Sendable {
+  case jobProgress(JobProgress)
+  case empty(JobStoredProgressEmpty)
+  public init(from decoder: any Decoder) throws {
+    if let value = try? JobProgress(from: decoder) {
+      self = .jobProgress(value)
+      return
+    }
+    if let value = try? JobStoredProgressEmpty(from: decoder) {
+      self = .empty(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(codingPath: decoder.codingPath, debugDescription: "no member of JobStoredProgress fits")
+    )
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .jobProgress(let value): try value.encode(to: encoder)
+    case .empty(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public struct JobStoredProgressEmpty: Codable, Sendable {
+  public init() {
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: { !Set<String>([]).contains($0.stringValue) }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in JobStoredProgressEmpty")
+    }
+  }
+  public func encode(to encoder: any Encoder) throws {
+    _ = encoder.container(keyedBy: WireKey.self)
+  }
+}
+
+public indirect enum JobStoredResult: Codable, Sendable {
+  case jobResult(JobResult)
+  case empty(JobStoredResultEmpty)
+  public init(from decoder: any Decoder) throws {
+    if let value = try? JobResult(from: decoder) {
+      self = .jobResult(value)
+      return
+    }
+    if let value = try? JobStoredResultEmpty(from: decoder) {
+      self = .empty(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(codingPath: decoder.codingPath, debugDescription: "no member of JobStoredResult fits"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .jobResult(let value): try value.encode(to: encoder)
+    case .empty(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public struct JobStoredResultEmpty: Codable, Sendable {
+  public init() {
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: { !Set<String>([]).contains($0.stringValue) }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in JobStoredResultEmpty")
+    }
+  }
+  public func encode(to encoder: any Encoder) throws {
+    _ = encoder.container(keyedBy: WireKey.self)
+  }
+}
+
+public enum JobType: String, Codable, Sendable, CaseIterable {
+  case mark = "mark"
+  case yield = "yield"
+}
+
+public struct KbDescription: Codable, Sendable {
+  public var domain: String
+  public var gitBranch: String?
+  public var name: String
+  public init(domain: String, gitBranch: String? = nil, name: String) {
+    self.domain = domain
+    self.gitBranch = gitBranch
+    self.name = name
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.domain = try c.decode(String.self, forKey: WireKey("domain"))
+    self.gitBranch =
+      c.contains(WireKey("gitBranch"))
+      ? try c.decode(String.self, forKey: WireKey("gitBranch")) : nil
+    self.name = try c.decode(String.self, forKey: WireKey("name"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.domain, forKey: WireKey("domain"))
+    try c.encodeIfPresent(self.gitBranch, forKey: WireKey("gitBranch"))
+    try c.encode(self.name, forKey: WireKey("name"))
+  }
+}
+
+public indirect enum KbEndpoint: Codable, Sendable {
+  case httpEndpoint(HttpEndpoint)
+  case localEndpoint(LocalEndpoint)
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    let tag = try c.decode(String.self, forKey: WireKey("kind"))
+    switch tag {
+    case "http": self = .httpEndpoint(try HttpEndpoint(from: decoder))
+    case "local": self = .localEndpoint(try LocalEndpoint(from: decoder))
+    default:
+      throw DecodingError.dataCorruptedError(
+        forKey: WireKey("kind"), in: c, debugDescription: "unknown KbEndpoint discriminator")
+    }
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .httpEndpoint(let value): try value.encode(to: encoder)
+    case .localEndpoint(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public struct KbIdentity: Codable, Sendable {
+  public var domain: String
+  public var name: String
+  public init(domain: String, name: String) {
+    self.domain = domain
+    self.name = name
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["domain", "name"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in KbIdentity")
+    }
+    self.domain = try c.decode(String.self, forKey: WireKey("domain"))
+    self.name = try c.decode(String.self, forKey: WireKey("name"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.domain, forKey: WireKey("domain"))
+    try c.encode(self.name, forKey: WireKey("name"))
+  }
+}
+
+public struct KbRead: Codable, Sendable {
+  public var at: String
+  public var gitBranch: String?
+  public init(at: String, gitBranch: String? = nil) {
+    self.at = at
+    self.gitBranch = gitBranch
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.at = try c.decode(String.self, forKey: WireKey("at"))
+    self.gitBranch =
+      c.contains(WireKey("gitBranch"))
+      ? try c.decode(String.self, forKey: WireKey("gitBranch")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.at, forKey: WireKey("at"))
+    try c.encodeIfPresent(self.gitBranch, forKey: WireKey("gitBranch"))
+  }
+}
+
+public struct KbTarget: Codable, Sendable {
+  public var endpoint: KbEndpoint
+  public var id: String
+  public var label: String
+  public init(endpoint: KbEndpoint, id: String, label: String) {
+    self.endpoint = endpoint
+    self.id = id
+    self.label = label
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.endpoint = try c.decode(KbEndpoint.self, forKey: WireKey("endpoint"))
+    self.id = try c.decode(String.self, forKey: WireKey("id"))
+    self.label = try c.decode(String.self, forKey: WireKey("label"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.endpoint, forKey: WireKey("endpoint"))
+    try c.encode(self.id, forKey: WireKey("id"))
+    try c.encode(self.label, forKey: WireKey("label"))
+  }
+}
+
+public struct KnowledgeBase: Codable, Sendable {
+  public var did: String
+  public var endpoint: KbEndpoint
+  public var id: String
+  public var label: String
+  public var lastRead: KbRead?
+  public init(did: String, endpoint: KbEndpoint, id: String, label: String, lastRead: KbRead? = nil)
+  {
+    self.did = did
+    self.endpoint = endpoint
+    self.id = id
+    self.label = label
+    self.lastRead = lastRead
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.did = try c.decode(String.self, forKey: WireKey("did"))
+    self.endpoint = try c.decode(KbEndpoint.self, forKey: WireKey("endpoint"))
+    self.id = try c.decode(String.self, forKey: WireKey("id"))
+    self.label = try c.decode(String.self, forKey: WireKey("label"))
+    self.lastRead =
+      c.contains(WireKey("lastRead")) ? try c.decode(KbRead.self, forKey: WireKey("lastRead")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.did, forKey: WireKey("did"))
+    try c.encode(self.endpoint, forKey: WireKey("endpoint"))
+    try c.encode(self.id, forKey: WireKey("id"))
+    try c.encode(self.label, forKey: WireKey("label"))
+    try c.encodeIfPresent(self.lastRead, forKey: WireKey("lastRead"))
+  }
+}
+
+public struct KnowledgeGraph: Codable, Sendable {
+  public var edges: [KnowledgeGraphEdgesItem]
+  public var nodes: [KnowledgeGraphNodesItem]
+  public var truncated: Bool?
+  public init(
+    edges: [KnowledgeGraphEdgesItem], nodes: [KnowledgeGraphNodesItem], truncated: Bool? = nil
+  ) {
+    self.edges = edges
+    self.nodes = nodes
+    self.truncated = truncated
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.edges = try c.decode([KnowledgeGraphEdgesItem].self, forKey: WireKey("edges"))
+    self.nodes = try c.decode([KnowledgeGraphNodesItem].self, forKey: WireKey("nodes"))
+    self.truncated =
+      c.contains(WireKey("truncated")) ? try c.decode(Bool.self, forKey: WireKey("truncated")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.edges, forKey: WireKey("edges"))
+    try c.encode(self.nodes, forKey: WireKey("nodes"))
+    try c.encodeIfPresent(self.truncated, forKey: WireKey("truncated"))
+  }
+}
+
+public struct KnowledgeGraphEdgesItem: Codable, Sendable {
+  public var bidirectional: Bool?
+  public var metadata: [String: JSONValue]?
+  public var source: String
+  public var target: String
+  public var type: String
+  public init(
+    bidirectional: Bool? = nil, metadata: [String: JSONValue]? = nil, source: String,
+    target: String, type: String
+  ) {
+    self.bidirectional = bidirectional
+    self.metadata = metadata
+    self.source = source
+    self.target = target
+    self.type = type
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.bidirectional =
+      c.contains(WireKey("bidirectional"))
+      ? try c.decode(Bool.self, forKey: WireKey("bidirectional")) : nil
+    self.metadata =
+      c.contains(WireKey("metadata"))
+      ? try c.decode([String: JSONValue].self, forKey: WireKey("metadata")) : nil
+    self.source = try c.decode(String.self, forKey: WireKey("source"))
+    self.target = try c.decode(String.self, forKey: WireKey("target"))
+    self.type = try c.decode(String.self, forKey: WireKey("type"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.bidirectional, forKey: WireKey("bidirectional"))
+    try c.encodeIfPresent(self.metadata, forKey: WireKey("metadata"))
+    try c.encode(self.source, forKey: WireKey("source"))
+    try c.encode(self.target, forKey: WireKey("target"))
+    try c.encode(self.type, forKey: WireKey("type"))
+  }
+}
+
+public indirect enum KnowledgeGraphNodesItem: Codable, Sendable {
+  case graphResourceNode(GraphResourceNode)
+  case graphAnnotationNode(GraphAnnotationNode)
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    let tag = try c.decode(String.self, forKey: WireKey("type"))
+    switch tag {
+    case "resource": self = .graphResourceNode(try GraphResourceNode(from: decoder))
+    case "annotation": self = .graphAnnotationNode(try GraphAnnotationNode(from: decoder))
+    default:
+      throw DecodingError.dataCorruptedError(
+        forKey: WireKey("type"), in: c,
+        debugDescription: "unknown KnowledgeGraphNodesItem discriminator")
+    }
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .graphResourceNode(let value): try value.encode(to: encoder)
+    case .graphAnnotationNode(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public struct LibrarianConfig: Codable, Sendable {
+  public var archivist: LibrarianConfigArchivist
+  public var embedding: EmbeddingConfig
+  public var gatewayUrl: String
+  public var gather: LibrarianConfigGather
+  public var gatherer: LibrarianEngineConfig
+  public var graph: GraphConfig
+  public var identity: LibrarianConfigIdentity
+  public var kb: KbIdentity
+  public var logFormat: LogFormat
+  public var logLevel: LogLevel
+  public var matcher: LibrarianEngineConfig
+  public var modelCatalogue: String
+  public var port: Int
+  public var search: LibrarianConfigSearch
+  public var vectors: VectorsConfig
+  public init(
+    archivist: LibrarianConfigArchivist, embedding: EmbeddingConfig, gatewayUrl: String,
+    gather: LibrarianConfigGather, gatherer: LibrarianEngineConfig, graph: GraphConfig,
+    identity: LibrarianConfigIdentity, kb: KbIdentity, logFormat: LogFormat, logLevel: LogLevel,
+    matcher: LibrarianEngineConfig, modelCatalogue: String, port: Int,
+    search: LibrarianConfigSearch, vectors: VectorsConfig
+  ) {
+    self.archivist = archivist
+    self.embedding = embedding
+    self.gatewayUrl = gatewayUrl
+    self.gather = gather
+    self.gatherer = gatherer
+    self.graph = graph
+    self.identity = identity
+    self.kb = kb
+    self.logFormat = logFormat
+    self.logLevel = logLevel
+    self.matcher = matcher
+    self.modelCatalogue = modelCatalogue
+    self.port = port
+    self.search = search
+    self.vectors = vectors
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>([
+        "archivist", "embedding", "gatewayUrl", "gather", "gatherer", "graph", "identity", "kb",
+        "logFormat", "logLevel", "matcher", "modelCatalogue", "port", "search", "vectors",
+      ]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in LibrarianConfig")
+    }
+    self.archivist = try c.decode(LibrarianConfigArchivist.self, forKey: WireKey("archivist"))
+    self.embedding = try c.decode(EmbeddingConfig.self, forKey: WireKey("embedding"))
+    self.gatewayUrl = try c.decode(String.self, forKey: WireKey("gatewayUrl"))
+    self.gather = try c.decode(LibrarianConfigGather.self, forKey: WireKey("gather"))
+    self.gatherer = try c.decode(LibrarianEngineConfig.self, forKey: WireKey("gatherer"))
+    self.graph = try c.decode(GraphConfig.self, forKey: WireKey("graph"))
+    self.identity = try c.decode(LibrarianConfigIdentity.self, forKey: WireKey("identity"))
+    self.kb = try c.decode(KbIdentity.self, forKey: WireKey("kb"))
+    self.logFormat = try c.decode(LogFormat.self, forKey: WireKey("logFormat"))
+    self.logLevel = try c.decode(LogLevel.self, forKey: WireKey("logLevel"))
+    self.matcher = try c.decode(LibrarianEngineConfig.self, forKey: WireKey("matcher"))
+    self.modelCatalogue = try c.decode(String.self, forKey: WireKey("modelCatalogue"))
+    self.port = try c.decode(Int.self, forKey: WireKey("port"))
+    self.search = try c.decode(LibrarianConfigSearch.self, forKey: WireKey("search"))
+    self.vectors = try c.decode(VectorsConfig.self, forKey: WireKey("vectors"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.archivist, forKey: WireKey("archivist"))
+    try c.encode(self.embedding, forKey: WireKey("embedding"))
+    try c.encode(self.gatewayUrl, forKey: WireKey("gatewayUrl"))
+    try c.encode(self.gather, forKey: WireKey("gather"))
+    try c.encode(self.gatherer, forKey: WireKey("gatherer"))
+    try c.encode(self.graph, forKey: WireKey("graph"))
+    try c.encode(self.identity, forKey: WireKey("identity"))
+    try c.encode(self.kb, forKey: WireKey("kb"))
+    try c.encode(self.logFormat, forKey: WireKey("logFormat"))
+    try c.encode(self.logLevel, forKey: WireKey("logLevel"))
+    try c.encode(self.matcher, forKey: WireKey("matcher"))
+    try c.encode(self.modelCatalogue, forKey: WireKey("modelCatalogue"))
+    try c.encode(self.port, forKey: WireKey("port"))
+    try c.encode(self.search, forKey: WireKey("search"))
+    try c.encode(self.vectors, forKey: WireKey("vectors"))
+  }
+}
+
+public struct LibrarianConfigArchivist: Codable, Sendable {
+  public var host: String
+  public var port: Int
+  public init(host: String, port: Int) {
+    self.host = host
+    self.port = port
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: { !Set<String>(["host", "port"]).contains($0.stringValue) })
+    {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in LibrarianConfigArchivist")
+    }
+    self.host = try c.decode(String.self, forKey: WireKey("host"))
+    self.port = try c.decode(Int.self, forKey: WireKey("port"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.host, forKey: WireKey("host"))
+    try c.encode(self.port, forKey: WireKey("port"))
+  }
+}
+
+public struct LibrarianConfigGather: Codable, Sendable {
+  public var settleTimeoutMs: Int
+  public init(settleTimeoutMs: Int) {
+    self.settleTimeoutMs = settleTimeoutMs
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["settleTimeoutMs"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in LibrarianConfigGather")
+    }
+    self.settleTimeoutMs = try c.decode(Int.self, forKey: WireKey("settleTimeoutMs"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.settleTimeoutMs, forKey: WireKey("settleTimeoutMs"))
+  }
+}
+
+public struct LibrarianConfigIdentity: Codable, Sendable {
+  public var issuer: String
+  public init(issuer: String) {
+    self.issuer = issuer
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: { !Set<String>(["issuer"]).contains($0.stringValue) }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in LibrarianConfigIdentity")
+    }
+    self.issuer = try c.decode(String.self, forKey: WireKey("issuer"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.issuer, forKey: WireKey("issuer"))
+  }
+}
+
+public struct LibrarianConfigSearch: Codable, Sendable {
+  public var semanticFloor: Double
+  public init(semanticFloor: Double) {
+    self.semanticFloor = semanticFloor
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: { !Set<String>(["semanticFloor"]).contains($0.stringValue) }
+    ) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in LibrarianConfigSearch")
+    }
+    self.semanticFloor = try c.decode(Double.self, forKey: WireKey("semanticFloor"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.semanticFloor, forKey: WireKey("semanticFloor"))
+  }
+}
+
+public struct LibrarianEngineConfig: Codable, Sendable {
+  public var apiKeyEnv: String?
+  public var baseUrl: String
+  public var engine: Engine
+  public init(apiKeyEnv: String? = nil, baseUrl: String, engine: Engine) {
+    self.apiKeyEnv = apiKeyEnv
+    self.baseUrl = baseUrl
+    self.engine = engine
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["apiKeyEnv", "baseUrl", "engine"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in LibrarianEngineConfig")
+    }
+    self.apiKeyEnv =
+      c.contains(WireKey("apiKeyEnv"))
+      ? try c.decode(String.self, forKey: WireKey("apiKeyEnv")) : nil
+    self.baseUrl = try c.decode(String.self, forKey: WireKey("baseUrl"))
+    self.engine = try c.decode(Engine.self, forKey: WireKey("engine"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.apiKeyEnv, forKey: WireKey("apiKeyEnv"))
+    try c.encode(self.baseUrl, forKey: WireKey("baseUrl"))
+    try c.encode(self.engine, forKey: WireKey("engine"))
+  }
+}
+
+public struct LimitRefusal: Codable, Sendable {
+  public var code: LimitRefusalCode
+  public var details: JSONValue?
+  public var error: String
+  public var hint: String?
+  public init(code: LimitRefusalCode, details: JSONValue? = nil, error: String, hint: String? = nil)
+  {
+    self.code = code
+    self.details = details
+    self.error = error
+    self.hint = hint
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.code = try c.decode(LimitRefusalCode.self, forKey: WireKey("code"))
+    self.details =
+      c.contains(WireKey("details"))
+      ? try c.decode(JSONValue.self, forKey: WireKey("details")) : nil
+    self.error = try c.decode(String.self, forKey: WireKey("error"))
+    self.hint =
+      c.contains(WireKey("hint")) ? try c.decode(String.self, forKey: WireKey("hint")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.code, forKey: WireKey("code"))
+    try c.encodeIfPresent(self.details, forKey: WireKey("details"))
+    try c.encode(self.error, forKey: WireKey("error"))
+    try c.encodeIfPresent(self.hint, forKey: WireKey("hint"))
+  }
+}
+
+public enum LimitRefusalCode: String, Codable, Sendable, CaseIterable {
+  case streams = "streams"
+  case emitRate = "emit-rate"
+  case unansweredRequests = "unanswered-requests"
+  case capacity = "capacity"
+  case refusalRate = "refusal-rate"
+}
+
+public struct LinkingJobParams: Codable, Sendable {
+  public var entityTypes: [String]
+  public var includeDescriptiveReferences: Bool?
+  public var language: String?
+  public let motivation: LinkingJobParamsMotivation
+  public var sourceLanguage: String?
+  public init(
+    entityTypes: [String], includeDescriptiveReferences: Bool? = nil, language: String? = nil,
+    sourceLanguage: String? = nil
+  ) {
+    self.entityTypes = entityTypes
+    self.includeDescriptiveReferences = includeDescriptiveReferences
+    self.language = language
+    self.motivation = .linking
+    self.sourceLanguage = sourceLanguage
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>([
+        "entityTypes", "includeDescriptiveReferences", "language", "motivation", "sourceLanguage",
+      ]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in LinkingJobParams")
+    }
+    self.entityTypes = try c.decode([String].self, forKey: WireKey("entityTypes"))
+    self.includeDescriptiveReferences =
+      c.contains(WireKey("includeDescriptiveReferences"))
+      ? try c.decode(Bool.self, forKey: WireKey("includeDescriptiveReferences")) : nil
+    self.language =
+      c.contains(WireKey("language")) ? try c.decode(String.self, forKey: WireKey("language")) : nil
+    self.motivation = try c.decode(LinkingJobParamsMotivation.self, forKey: WireKey("motivation"))
+    self.sourceLanguage =
+      c.contains(WireKey("sourceLanguage"))
+      ? try c.decode(String.self, forKey: WireKey("sourceLanguage")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.entityTypes, forKey: WireKey("entityTypes"))
+    try c.encodeIfPresent(
+      self.includeDescriptiveReferences, forKey: WireKey("includeDescriptiveReferences"))
+    try c.encodeIfPresent(self.language, forKey: WireKey("language"))
+    try c.encode(self.motivation, forKey: WireKey("motivation"))
+    try c.encodeIfPresent(self.sourceLanguage, forKey: WireKey("sourceLanguage"))
+  }
+}
+
+public enum LinkingJobParamsMotivation: String, Codable, Sendable, CaseIterable {
+  case linking = "linking"
+}
+
+public struct ListResourcesResponse: Codable, Sendable {
+  public var limit: Double
+  public var offset: Double
+  public var resources: [ResourceDescriptor]
+  public var total: Double
+  public init(limit: Double, offset: Double, resources: [ResourceDescriptor], total: Double) {
+    self.limit = limit
+    self.offset = offset
+    self.resources = resources
+    self.total = total
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.limit = try c.decode(Double.self, forKey: WireKey("limit"))
+    self.offset = try c.decode(Double.self, forKey: WireKey("offset"))
+    self.resources = try c.decode([ResourceDescriptor].self, forKey: WireKey("resources"))
+    self.total = try c.decode(Double.self, forKey: WireKey("total"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.limit, forKey: WireKey("limit"))
+    try c.encode(self.offset, forKey: WireKey("offset"))
+    try c.encode(self.resources, forKey: WireKey("resources"))
+    try c.encode(self.total, forKey: WireKey("total"))
+  }
+}
+
+public struct LocalEndpoint: Codable, Sendable {
+  public var kbId: String
+  public let kind: LocalEndpointKind
+  public init(kbId: String) {
+    self.kbId = kbId
+    self.kind = .local
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.kbId = try c.decode(String.self, forKey: WireKey("kbId"))
+    self.kind = try c.decode(LocalEndpointKind.self, forKey: WireKey("kind"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.kbId, forKey: WireKey("kbId"))
+    try c.encode(self.kind, forKey: WireKey("kind"))
+  }
+}
+
+public enum LocalEndpointKind: String, Codable, Sendable, CaseIterable {
+  case local = "local"
+}
+
+public enum LogFormat: String, Codable, Sendable, CaseIterable {
+  case json = "json"
+  case simple = "simple"
+}
+
+public enum LogLevel: String, Codable, Sendable, CaseIterable {
+  case error = "error"
+  case warn = "warn"
+  case info = "info"
+  case http = "http"
+  case debug = "debug"
+}
+
+public struct MarkArchiveCommand: Codable, Sendable {
+  public var _userId: UserId?
+  public var keepFile: Bool?
+  public var resourceId: ResourceId
+  public var storageUri: String?
+  public init(
+    _userId: UserId? = nil, keepFile: Bool? = nil, resourceId: ResourceId, storageUri: String? = nil
+  ) {
+    self._userId = _userId
+    self.keepFile = keepFile
+    self.resourceId = resourceId
+    self.storageUri = storageUri
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self._userId =
+      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
+    self.keepFile =
+      c.contains(WireKey("keepFile")) ? try c.decode(Bool.self, forKey: WireKey("keepFile")) : nil
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self.storageUri =
+      c.contains(WireKey("storageUri"))
+      ? try c.decode(String.self, forKey: WireKey("storageUri")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
+    try c.encodeIfPresent(self.keepFile, forKey: WireKey("keepFile"))
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encodeIfPresent(self.storageUri, forKey: WireKey("storageUri"))
+  }
+}
+
+public struct MarkCommitCommand: Codable, Sendable {
+  public var _roles: [String]?
+  public var _userId: UserId?
+  public var annotations: [Annotation]
+  public var jobId: JobId?
+  public var resourceId: ResourceId
+  public init(
+    _roles: [String]? = nil, _userId: UserId? = nil, annotations: [Annotation], jobId: JobId? = nil,
+    resourceId: ResourceId
+  ) {
+    self._roles = _roles
+    self._userId = _userId
+    self.annotations = annotations
+    self.jobId = jobId
+    self.resourceId = resourceId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self._roles =
+      c.contains(WireKey("_roles")) ? try c.decode([String].self, forKey: WireKey("_roles")) : nil
+    self._userId =
+      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
+    self.annotations = try c.decode([Annotation].self, forKey: WireKey("annotations"))
+    self.jobId =
+      c.contains(WireKey("jobId")) ? try c.decode(JobId.self, forKey: WireKey("jobId")) : nil
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self._roles, forKey: WireKey("_roles"))
+    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
+    try c.encode(self.annotations, forKey: WireKey("annotations"))
+    try c.encodeIfPresent(self.jobId, forKey: WireKey("jobId"))
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+  }
+}
+
+public struct MarkCommitOk: Codable, Sendable {
+  public var response: MarkCommitOkResponse
+  public init(response: MarkCommitOkResponse) {
+    self.response = response
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.response = try c.decode(MarkCommitOkResponse.self, forKey: WireKey("response"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.response, forKey: WireKey("response"))
+  }
+}
+
+public struct MarkCommitOkResponse: Codable, Sendable {
+  public var annotationIds: [AnnotationId]
+  public var persisted: Int
+  public init(annotationIds: [AnnotationId], persisted: Int) {
+    self.annotationIds = annotationIds
+    self.persisted = persisted
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.annotationIds = try c.decode([AnnotationId].self, forKey: WireKey("annotationIds"))
+    self.persisted = try c.decode(Int.self, forKey: WireKey("persisted"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.annotationIds, forKey: WireKey("annotationIds"))
+    try c.encode(self.persisted, forKey: WireKey("persisted"))
+  }
+}
+
+public struct MarkCreateOk: Codable, Sendable {
+  public var response: MarkCreateOkResponse
+  public init(response: MarkCreateOkResponse) {
+    self.response = response
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.response = try c.decode(MarkCreateOkResponse.self, forKey: WireKey("response"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.response, forKey: WireKey("response"))
+  }
+}
+
+public struct MarkCreateOkResponse: Codable, Sendable {
+  public var annotationId: AnnotationId
+  public init(annotationId: AnnotationId) {
+    self.annotationId = annotationId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.annotationId = try c.decode(AnnotationId.self, forKey: WireKey("annotationId"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.annotationId, forKey: WireKey("annotationId"))
+  }
+}
+
+public struct MarkCreateRequest: Codable, Sendable {
+  public var request: CreateAnnotationRequest
+  public var resourceId: ResourceId
+  public init(request: CreateAnnotationRequest, resourceId: ResourceId) {
+    self.request = request
+    self.resourceId = resourceId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.request = try c.decode(CreateAnnotationRequest.self, forKey: WireKey("request"))
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.request, forKey: WireKey("request"))
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+  }
+}
+
+public struct MarkDelegateTimeoutEvent: Codable, Sendable {
+  public var motivation: Motivation
+  public var resourceId: ResourceId
+  public init(motivation: Motivation, resourceId: ResourceId) {
+    self.motivation = motivation
+    self.resourceId = resourceId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.motivation = try c.decode(Motivation.self, forKey: WireKey("motivation"))
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.motivation, forKey: WireKey("motivation"))
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+  }
+}
+
+public struct MarkDeleteCommand: Codable, Sendable {
+  public var _userId: UserId?
+  public var annotationId: AnnotationId
+  public var resourceId: ResourceId?
+  public init(_userId: UserId? = nil, annotationId: AnnotationId, resourceId: ResourceId? = nil) {
+    self._userId = _userId
+    self.annotationId = annotationId
+    self.resourceId = resourceId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self._userId =
+      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
+    self.annotationId = try c.decode(AnnotationId.self, forKey: WireKey("annotationId"))
+    self.resourceId =
+      c.contains(WireKey("resourceId"))
+      ? try c.decode(ResourceId.self, forKey: WireKey("resourceId")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
+    try c.encode(self.annotationId, forKey: WireKey("annotationId"))
+    try c.encodeIfPresent(self.resourceId, forKey: WireKey("resourceId"))
+  }
+}
+
+public struct MarkDeleteOk: Codable, Sendable {
+  public var response: MarkDeleteOkResponse
+  public init(response: MarkDeleteOkResponse) {
+    self.response = response
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.response = try c.decode(MarkDeleteOkResponse.self, forKey: WireKey("response"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.response, forKey: WireKey("response"))
+  }
+}
+
+public struct MarkDeleteOkResponse: Codable, Sendable {
+  public var annotationId: AnnotationId
+  public init(annotationId: AnnotationId) {
+    self.annotationId = annotationId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.annotationId = try c.decode(AnnotationId.self, forKey: WireKey("annotationId"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.annotationId, forKey: WireKey("annotationId"))
+  }
+}
+
+public struct MarkJobCompleteCommand: Codable, Sendable {
+  public var _userId: UserId?
+  public var attempt: Int?
+  public var durability: DurabilityEvidence?
+  public var jobId: JobId
+  public let jobType: MarkJobCompleteCommandJobType
+  public var resourceId: ResourceId
+  public var result: MarkJobResult?
+  public init(
+    _userId: UserId? = nil, attempt: Int? = nil, durability: DurabilityEvidence? = nil,
+    jobId: JobId, resourceId: ResourceId, result: MarkJobResult? = nil
+  ) {
+    self._userId = _userId
+    self.attempt = attempt
+    self.durability = durability
+    self.jobId = jobId
+    self.jobType = .mark
+    self.resourceId = resourceId
+    self.result = result
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self._userId =
+      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
+    self.attempt =
+      c.contains(WireKey("attempt")) ? try c.decode(Int.self, forKey: WireKey("attempt")) : nil
+    self.durability =
+      c.contains(WireKey("durability"))
+      ? try c.decode(DurabilityEvidence.self, forKey: WireKey("durability")) : nil
+    self.jobId = try c.decode(JobId.self, forKey: WireKey("jobId"))
+    self.jobType = try c.decode(MarkJobCompleteCommandJobType.self, forKey: WireKey("jobType"))
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self.result =
+      c.contains(WireKey("result"))
+      ? try c.decode(MarkJobResult.self, forKey: WireKey("result")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
+    try c.encodeIfPresent(self.attempt, forKey: WireKey("attempt"))
+    try c.encodeIfPresent(self.durability, forKey: WireKey("durability"))
+    try c.encode(self.jobId, forKey: WireKey("jobId"))
+    try c.encode(self.jobType, forKey: WireKey("jobType"))
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encodeIfPresent(self.result, forKey: WireKey("result"))
+  }
+}
+
+public enum MarkJobCompleteCommandJobType: String, Codable, Sendable, CaseIterable {
+  case mark = "mark"
+}
+
+public struct MarkJobCreateCommand: Codable, Sendable {
+  public var _roles: [String]?
+  public var _userId: UserId?
+  public let jobType: MarkJobCreateCommandJobType
+  public var params: MarkJobParams
+  public var resourceId: ResourceId
+  public init(
+    _roles: [String]? = nil, _userId: UserId? = nil, params: MarkJobParams, resourceId: ResourceId
+  ) {
+    self._roles = _roles
+    self._userId = _userId
+    self.jobType = .mark
+    self.params = params
+    self.resourceId = resourceId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["_roles", "_userId", "jobType", "params", "resourceId"]).contains(
+        $0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in MarkJobCreateCommand")
+    }
+    self._roles =
+      c.contains(WireKey("_roles")) ? try c.decode([String].self, forKey: WireKey("_roles")) : nil
+    self._userId =
+      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
+    self.jobType = try c.decode(MarkJobCreateCommandJobType.self, forKey: WireKey("jobType"))
+    self.params = try c.decode(MarkJobParams.self, forKey: WireKey("params"))
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self._roles, forKey: WireKey("_roles"))
+    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
+    try c.encode(self.jobType, forKey: WireKey("jobType"))
+    try c.encode(self.params, forKey: WireKey("params"))
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+  }
+}
+
+public enum MarkJobCreateCommandJobType: String, Codable, Sendable, CaseIterable {
+  case mark = "mark"
+}
+
+public struct MarkJobDone: Codable, Sendable {
+  public var byCategory: [String: Int]?
+  public var errors: Int?
+  public var found: Int
+  public var persisted: Int
+  public var uncheckedPieces: Int?
+  public var underReportedPieces: Int?
+  public init(
+    byCategory: [String: Int]? = nil, errors: Int? = nil, found: Int, persisted: Int,
+    uncheckedPieces: Int? = nil, underReportedPieces: Int? = nil
+  ) {
+    self.byCategory = byCategory
+    self.errors = errors
+    self.found = found
+    self.persisted = persisted
+    self.uncheckedPieces = uncheckedPieces
+    self.underReportedPieces = underReportedPieces
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>([
+        "byCategory", "errors", "found", "persisted", "uncheckedPieces", "underReportedPieces",
+      ]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in MarkJobDone")
+    }
+    self.byCategory =
+      c.contains(WireKey("byCategory"))
+      ? try c.decode([String: Int].self, forKey: WireKey("byCategory")) : nil
+    self.errors =
+      c.contains(WireKey("errors")) ? try c.decode(Int.self, forKey: WireKey("errors")) : nil
+    self.found = try c.decode(Int.self, forKey: WireKey("found"))
+    self.persisted = try c.decode(Int.self, forKey: WireKey("persisted"))
+    self.uncheckedPieces =
+      c.contains(WireKey("uncheckedPieces"))
+      ? try c.decode(Int.self, forKey: WireKey("uncheckedPieces")) : nil
+    self.underReportedPieces =
+      c.contains(WireKey("underReportedPieces"))
+      ? try c.decode(Int.self, forKey: WireKey("underReportedPieces")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.byCategory, forKey: WireKey("byCategory"))
+    try c.encodeIfPresent(self.errors, forKey: WireKey("errors"))
+    try c.encode(self.found, forKey: WireKey("found"))
+    try c.encode(self.persisted, forKey: WireKey("persisted"))
+    try c.encodeIfPresent(self.uncheckedPieces, forKey: WireKey("uncheckedPieces"))
+    try c.encodeIfPresent(self.underReportedPieces, forKey: WireKey("underReportedPieces"))
+  }
+}
+
+public struct MarkJobFilter: Codable, Sendable {
+  public let jobType: MarkJobFilterJobType
+  public var params: MarkJobFilterParams
+  public init(params: MarkJobFilterParams) {
+    self.jobType = .mark
+    self.params = params
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["jobType", "params"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in MarkJobFilter")
+    }
+    self.jobType = try c.decode(MarkJobFilterJobType.self, forKey: WireKey("jobType"))
+    self.params = try c.decode(MarkJobFilterParams.self, forKey: WireKey("params"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.jobType, forKey: WireKey("jobType"))
+    try c.encode(self.params, forKey: WireKey("params"))
+  }
+}
+
+public enum MarkJobFilterJobType: String, Codable, Sendable, CaseIterable {
+  case mark = "mark"
+}
+
+public struct MarkJobFilterParams: Codable, Sendable {
+  public var motivation: Motivation
+  public init(motivation: Motivation) {
+    self.motivation = motivation
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: { !Set<String>(["motivation"]).contains($0.stringValue) }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in MarkJobFilterParams")
+    }
+    self.motivation = try c.decode(Motivation.self, forKey: WireKey("motivation"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.motivation, forKey: WireKey("motivation"))
+  }
+}
+
+public indirect enum MarkJobParams: Codable, Sendable {
+  case highlightingJobParams(HighlightingJobParams)
+  case commentingJobParams(CommentingJobParams)
+  case assessingJobParams(AssessingJobParams)
+  case linkingJobParams(LinkingJobParams)
+  case taggingJobParams(TaggingJobParams)
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    let tag = try c.decode(String.self, forKey: WireKey("motivation"))
+    switch tag {
+    case "highlighting": self = .highlightingJobParams(try HighlightingJobParams(from: decoder))
+    case "commenting": self = .commentingJobParams(try CommentingJobParams(from: decoder))
+    case "assessing": self = .assessingJobParams(try AssessingJobParams(from: decoder))
+    case "linking": self = .linkingJobParams(try LinkingJobParams(from: decoder))
+    case "tagging": self = .taggingJobParams(try TaggingJobParams(from: decoder))
+    default:
+      throw DecodingError.dataCorruptedError(
+        forKey: WireKey("motivation"), in: c,
+        debugDescription: "unknown MarkJobParams discriminator")
+    }
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .highlightingJobParams(let value): try value.encode(to: encoder)
+    case .commentingJobParams(let value): try value.encode(to: encoder)
+    case .assessingJobParams(let value): try value.encode(to: encoder)
+    case .linkingJobParams(let value): try value.encode(to: encoder)
+    case .taggingJobParams(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public struct MarkJobQueuedEvent: Codable, Sendable {
+  public var jobId: JobId
+  public let jobType: MarkJobQueuedEventJobType
+  public var params: MarkJobParams
+  public var resourceId: ResourceId
+  public var userId: UserId
+  public init(jobId: JobId, params: MarkJobParams, resourceId: ResourceId, userId: UserId) {
+    self.jobId = jobId
+    self.jobType = .mark
+    self.params = params
+    self.resourceId = resourceId
+    self.userId = userId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.jobId = try c.decode(JobId.self, forKey: WireKey("jobId"))
+    self.jobType = try c.decode(MarkJobQueuedEventJobType.self, forKey: WireKey("jobType"))
+    self.params = try c.decode(MarkJobParams.self, forKey: WireKey("params"))
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self.userId = try c.decode(UserId.self, forKey: WireKey("userId"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.jobId, forKey: WireKey("jobId"))
+    try c.encode(self.jobType, forKey: WireKey("jobType"))
+    try c.encode(self.params, forKey: WireKey("params"))
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encode(self.userId, forKey: WireKey("userId"))
+  }
+}
+
+public enum MarkJobQueuedEventJobType: String, Codable, Sendable, CaseIterable {
+  case mark = "mark"
+}
+
+public indirect enum MarkJobResult: Codable, Sendable {
+  case markJobDone(MarkJobDone)
+  case jobDeclined(JobDeclined)
+  public init(from decoder: any Decoder) throws {
+    if let value = try? MarkJobDone(from: decoder) {
+      self = .markJobDone(value)
+      return
+    }
+    if let value = try? JobDeclined(from: decoder) {
+      self = .jobDeclined(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(codingPath: decoder.codingPath, debugDescription: "no member of MarkJobResult fits"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .markJobDone(let value): try value.encode(to: encoder)
+    case .jobDeclined(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public struct MarkRequestedEvent: Codable, Sendable {
+  public var motivation: Motivation
+  public var selector: AnnotationSelector
+  public var source: ResourceId
+  public init(motivation: Motivation, selector: AnnotationSelector, source: ResourceId) {
+    self.motivation = motivation
+    self.selector = selector
+    self.source = source
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.motivation = try c.decode(Motivation.self, forKey: WireKey("motivation"))
+    self.selector = try c.decode(AnnotationSelector.self, forKey: WireKey("selector"))
+    self.source = try c.decode(ResourceId.self, forKey: WireKey("source"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.motivation, forKey: WireKey("motivation"))
+    try c.encode(self.selector, forKey: WireKey("selector"))
+    try c.encode(self.source, forKey: WireKey("source"))
+  }
+}
+
+public struct MarkSubmitEvent: Codable, Sendable {
+  public var body: AnnotationBodies?
+  public var motivation: Motivation
+  public var selector: AnnotationSelector
+  public var source: ResourceId
+  public init(
+    body: AnnotationBodies? = nil, motivation: Motivation, selector: AnnotationSelector,
+    source: ResourceId
+  ) {
+    self.body = body
+    self.motivation = motivation
+    self.selector = selector
+    self.source = source
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.body =
+      c.contains(WireKey("body"))
+      ? try c.decode(AnnotationBodies.self, forKey: WireKey("body")) : nil
+    self.motivation = try c.decode(Motivation.self, forKey: WireKey("motivation"))
+    self.selector = try c.decode(AnnotationSelector.self, forKey: WireKey("selector"))
+    self.source = try c.decode(ResourceId.self, forKey: WireKey("source"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.body, forKey: WireKey("body"))
+    try c.encode(self.motivation, forKey: WireKey("motivation"))
+    try c.encode(self.selector, forKey: WireKey("selector"))
+    try c.encode(self.source, forKey: WireKey("source"))
+  }
+}
+
+public struct MarkUnarchiveCommand: Codable, Sendable {
+  public var _userId: UserId?
+  public var resourceId: ResourceId
+  public var storageUri: String?
+  public init(_userId: UserId? = nil, resourceId: ResourceId, storageUri: String? = nil) {
+    self._userId = _userId
+    self.resourceId = resourceId
+    self.storageUri = storageUri
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self._userId =
+      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self.storageUri =
+      c.contains(WireKey("storageUri"))
+      ? try c.decode(String.self, forKey: WireKey("storageUri")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encodeIfPresent(self.storageUri, forKey: WireKey("storageUri"))
+  }
+}
+
+public struct MarkUpdateBodyCommand: Codable, Sendable {
+  public var _userId: UserId?
+  public var annotationId: AnnotationId
+  public var operations: [MarkUpdateBodyCommandOperationsItem]
+  public var resourceId: ResourceId
+  public init(
+    _userId: UserId? = nil, annotationId: AnnotationId,
+    operations: [MarkUpdateBodyCommandOperationsItem], resourceId: ResourceId
+  ) {
+    self._userId = _userId
+    self.annotationId = annotationId
+    self.operations = operations
+    self.resourceId = resourceId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self._userId =
+      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
+    self.annotationId = try c.decode(AnnotationId.self, forKey: WireKey("annotationId"))
+    self.operations = try c.decode(
+      [MarkUpdateBodyCommandOperationsItem].self, forKey: WireKey("operations"))
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
+    try c.encode(self.annotationId, forKey: WireKey("annotationId"))
+    try c.encode(self.operations, forKey: WireKey("operations"))
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+  }
+}
+
+public indirect enum MarkUpdateBodyCommandOperationsItem: Codable, Sendable {
+  case bodyOperationAdd(BodyOperationAdd)
+  case bodyOperationRemove(BodyOperationRemove)
+  case bodyOperationReplace(BodyOperationReplace)
+  public init(from decoder: any Decoder) throws {
+    if let value = try? BodyOperationAdd(from: decoder) {
+      self = .bodyOperationAdd(value)
+      return
+    }
+    if let value = try? BodyOperationRemove(from: decoder) {
+      self = .bodyOperationRemove(value)
+      return
+    }
+    if let value = try? BodyOperationReplace(from: decoder) {
+      self = .bodyOperationReplace(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(
+        codingPath: decoder.codingPath,
+        debugDescription: "no member of MarkUpdateBodyCommandOperationsItem fits"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .bodyOperationAdd(let value): try value.encode(to: encoder)
+    case .bodyOperationRemove(let value): try value.encode(to: encoder)
+    case .bodyOperationReplace(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public struct MarkUpdateEntityTypesCommand: Codable, Sendable {
+  public var _userId: UserId?
+  public var currentEntityTypes: [String]
+  public var resourceId: ResourceId
+  public var updatedEntityTypes: [String]
+  public init(
+    _userId: UserId? = nil, currentEntityTypes: [String], resourceId: ResourceId,
+    updatedEntityTypes: [String]
+  ) {
+    self._userId = _userId
+    self.currentEntityTypes = currentEntityTypes
+    self.resourceId = resourceId
+    self.updatedEntityTypes = updatedEntityTypes
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self._userId =
+      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
+    self.currentEntityTypes = try c.decode([String].self, forKey: WireKey("currentEntityTypes"))
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self.updatedEntityTypes = try c.decode([String].self, forKey: WireKey("updatedEntityTypes"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
+    try c.encode(self.currentEntityTypes, forKey: WireKey("currentEntityTypes"))
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encode(self.updatedEntityTypes, forKey: WireKey("updatedEntityTypes"))
+  }
+}
+
+public struct MatchResourcesRequest: Codable, Sendable {
+  public var archived: Bool?
+  public var entityType: String?
+  public var limit: Int?
+  public var offset: Int?
+  public var search: String
+  public init(
+    archived: Bool? = nil, entityType: String? = nil, limit: Int? = nil, offset: Int? = nil,
+    search: String
+  ) {
+    self.archived = archived
+    self.entityType = entityType
+    self.limit = limit
+    self.offset = offset
+    self.search = search
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.archived =
+      c.contains(WireKey("archived")) ? try c.decode(Bool.self, forKey: WireKey("archived")) : nil
+    self.entityType =
+      c.contains(WireKey("entityType"))
+      ? try c.decode(String.self, forKey: WireKey("entityType")) : nil
+    self.limit =
+      c.contains(WireKey("limit")) ? try c.decode(Int.self, forKey: WireKey("limit")) : nil
+    self.offset =
+      c.contains(WireKey("offset")) ? try c.decode(Int.self, forKey: WireKey("offset")) : nil
+    self.search = try c.decode(String.self, forKey: WireKey("search"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.archived, forKey: WireKey("archived"))
+    try c.encodeIfPresent(self.entityType, forKey: WireKey("entityType"))
+    try c.encodeIfPresent(self.limit, forKey: WireKey("limit"))
+    try c.encodeIfPresent(self.offset, forKey: WireKey("offset"))
+    try c.encode(self.search, forKey: WireKey("search"))
+  }
+}
+
+public struct MatchResourcesResponse: Codable, Sendable {
+  public var limit: Int
+  public var matchKind: MatchResourcesResponseMatchKind
+  public var offset: Int
+  public var resources: [ResourceDescriptor]
+  public var total: Int
+  public init(
+    limit: Int, matchKind: MatchResourcesResponseMatchKind, offset: Int,
+    resources: [ResourceDescriptor], total: Int
+  ) {
+    self.limit = limit
+    self.matchKind = matchKind
+    self.offset = offset
+    self.resources = resources
+    self.total = total
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.limit = try c.decode(Int.self, forKey: WireKey("limit"))
+    self.matchKind = try c.decode(
+      MatchResourcesResponseMatchKind.self, forKey: WireKey("matchKind"))
+    self.offset = try c.decode(Int.self, forKey: WireKey("offset"))
+    self.resources = try c.decode([ResourceDescriptor].self, forKey: WireKey("resources"))
+    self.total = try c.decode(Int.self, forKey: WireKey("total"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.limit, forKey: WireKey("limit"))
+    try c.encode(self.matchKind, forKey: WireKey("matchKind"))
+    try c.encode(self.offset, forKey: WireKey("offset"))
+    try c.encode(self.resources, forKey: WireKey("resources"))
+    try c.encode(self.total, forKey: WireKey("total"))
+  }
+}
+
+public enum MatchResourcesResponseMatchKind: String, Codable, Sendable, CaseIterable {
+  case lexical = "lexical"
+  case semantic = "semantic"
+}
+
+public struct MatchResourcesResult: Codable, Sendable {
+  public var response: MatchResourcesResponse
+  public init(response: MatchResourcesResponse) {
+    self.response = response
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.response = try c.decode(MatchResourcesResponse.self, forKey: WireKey("response"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.response, forKey: WireKey("response"))
+  }
+}
+
+public struct MatchSearchFailed: Codable, Sendable {
+  public var code: MatchSearchFailedCode?
+  public var details: String?
+  public var message: String
+  public var referenceId: AnnotationId
+  public init(
+    code: MatchSearchFailedCode? = nil, details: String? = nil, message: String,
+    referenceId: AnnotationId
+  ) {
+    self.code = code
+    self.details = details
+    self.message = message
+    self.referenceId = referenceId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.code =
+      c.contains(WireKey("code"))
+      ? try c.decode(MatchSearchFailedCode.self, forKey: WireKey("code")) : nil
+    self.details =
+      c.contains(WireKey("details")) ? try c.decode(String.self, forKey: WireKey("details")) : nil
+    self.message = try c.decode(String.self, forKey: WireKey("message"))
+    self.referenceId = try c.decode(AnnotationId.self, forKey: WireKey("referenceId"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.code, forKey: WireKey("code"))
+    try c.encodeIfPresent(self.details, forKey: WireKey("details"))
+    try c.encode(self.message, forKey: WireKey("message"))
+    try c.encode(self.referenceId, forKey: WireKey("referenceId"))
+  }
+}
+
+public enum MatchSearchFailedCode: String, Codable, Sendable, CaseIterable {
+  case peerUnavailable = "peer-unavailable"
+  case notFound = "not-found"
+  case unauthorized = "unauthorized"
+  case nonePending = "none-pending"
+}
+
+public struct MatchSearchRequest: Codable, Sendable {
+  public var context: GatheredContext
+  public var limit: Int?
+  public var referenceId: AnnotationId
+  public var resourceId: ResourceId
+  public var useSemanticScoring: Bool?
+  public init(
+    context: GatheredContext, limit: Int? = nil, referenceId: AnnotationId, resourceId: ResourceId,
+    useSemanticScoring: Bool? = nil
+  ) {
+    self.context = context
+    self.limit = limit
+    self.referenceId = referenceId
+    self.resourceId = resourceId
+    self.useSemanticScoring = useSemanticScoring
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.context = try c.decode(GatheredContext.self, forKey: WireKey("context"))
+    self.limit =
+      c.contains(WireKey("limit")) ? try c.decode(Int.self, forKey: WireKey("limit")) : nil
+    self.referenceId = try c.decode(AnnotationId.self, forKey: WireKey("referenceId"))
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self.useSemanticScoring =
+      c.contains(WireKey("useSemanticScoring"))
+      ? try c.decode(Bool.self, forKey: WireKey("useSemanticScoring")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.context, forKey: WireKey("context"))
+    try c.encodeIfPresent(self.limit, forKey: WireKey("limit"))
+    try c.encode(self.referenceId, forKey: WireKey("referenceId"))
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encodeIfPresent(self.useSemanticScoring, forKey: WireKey("useSemanticScoring"))
+  }
+}
+
+public struct MatchSearchResult: Codable, Sendable {
+  public var referenceId: AnnotationId
+  public var response: [ScoredResource]
+  public init(referenceId: AnnotationId, response: [ScoredResource]) {
+    self.referenceId = referenceId
+    self.response = response
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.referenceId = try c.decode(AnnotationId.self, forKey: WireKey("referenceId"))
+    self.response = try c.decode([ScoredResource].self, forKey: WireKey("response"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.referenceId, forKey: WireKey("referenceId"))
+    try c.encode(self.response, forKey: WireKey("response"))
+  }
+}
+
+public struct MediaTokenRequest: Codable, Sendable {
+  public var resourceId: ResourceId
+  public init(resourceId: ResourceId) {
+    self.resourceId = resourceId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+  }
+}
+
+public struct MediaTokenResponse: Codable, Sendable {
+  public var token: String
+  public init(token: String) {
+    self.token = token
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.token = try c.decode(String.self, forKey: WireKey("token"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.token, forKey: WireKey("token"))
+  }
+}
+
+public struct MemoryGraphConfig: Codable, Sendable {
+  public let type: MemoryGraphConfigType
+  public init() {
+    self.type = .memory
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: { !Set<String>(["type"]).contains($0.stringValue) }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in MemoryGraphConfig")
+    }
+    self.type = try c.decode(MemoryGraphConfigType.self, forKey: WireKey("type"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.type, forKey: WireKey("type"))
+  }
+}
+
+public enum MemoryGraphConfigType: String, Codable, Sendable, CaseIterable {
+  case memory = "memory"
+}
+
+public struct MemoryVectorsConfig: Codable, Sendable {
+  public let type: MemoryVectorsConfigType
+  public init() {
+    self.type = .memory
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: { !Set<String>(["type"]).contains($0.stringValue) }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in MemoryVectorsConfig")
+    }
+    self.type = try c.decode(MemoryVectorsConfigType.self, forKey: WireKey("type"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.type, forKey: WireKey("type"))
+  }
+}
+
+public enum MemoryVectorsConfigType: String, Codable, Sendable, CaseIterable {
+  case memory = "memory"
+}
+
+public enum Motivation: String, Codable, Sendable, CaseIterable {
+  case assessing = "assessing"
+  case commenting = "commenting"
+  case highlighting = "highlighting"
+  case linking = "linking"
+  case tagging = "tagging"
+}
+
+public struct Neo4jGraphConfig: Codable, Sendable {
+  public var database: String
+  public var passwordEnv: String
+  public let type: Neo4jGraphConfigType
+  public var uri: String
+  public var username: String
+  public init(database: String, passwordEnv: String, uri: String, username: String) {
+    self.database = database
+    self.passwordEnv = passwordEnv
+    self.type = .neo4j
+    self.uri = uri
+    self.username = username
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["database", "passwordEnv", "type", "uri", "username"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in Neo4jGraphConfig")
+    }
+    self.database = try c.decode(String.self, forKey: WireKey("database"))
+    self.passwordEnv = try c.decode(String.self, forKey: WireKey("passwordEnv"))
+    self.type = try c.decode(Neo4jGraphConfigType.self, forKey: WireKey("type"))
+    self.uri = try c.decode(String.self, forKey: WireKey("uri"))
+    self.username = try c.decode(String.self, forKey: WireKey("username"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.database, forKey: WireKey("database"))
+    try c.encode(self.passwordEnv, forKey: WireKey("passwordEnv"))
+    try c.encode(self.type, forKey: WireKey("type"))
+    try c.encode(self.uri, forKey: WireKey("uri"))
+    try c.encode(self.username, forKey: WireKey("username"))
+  }
+}
+
+public enum Neo4jGraphConfigType: String, Codable, Sendable, CaseIterable {
+  case neo4j = "neo4j"
+}
+
+public struct NeptuneGraphConfig: Codable, Sendable {
+  public var endpoint: String
+  public var port: Int
+  public let type: NeptuneGraphConfigType
+  public init(endpoint: String, port: Int) {
+    self.endpoint = endpoint
+    self.port = port
+    self.type = .neptune
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["endpoint", "port", "type"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in NeptuneGraphConfig")
+    }
+    self.endpoint = try c.decode(String.self, forKey: WireKey("endpoint"))
+    self.port = try c.decode(Int.self, forKey: WireKey("port"))
+    self.type = try c.decode(NeptuneGraphConfigType.self, forKey: WireKey("type"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.endpoint, forKey: WireKey("endpoint"))
+    try c.encode(self.port, forKey: WireKey("port"))
+    try c.encode(self.type, forKey: WireKey("type"))
+  }
+}
+
+public enum NeptuneGraphConfigType: String, Codable, Sendable, CaseIterable {
+  case neptune = "neptune"
+}
+
+public struct NewKnowledgeBase: Codable, Sendable {
+  public var did: String
+  public var endpoint: KbEndpoint
+  public var label: String
+  public var lastRead: KbRead?
+  public init(did: String, endpoint: KbEndpoint, label: String, lastRead: KbRead? = nil) {
+    self.did = did
+    self.endpoint = endpoint
+    self.label = label
+    self.lastRead = lastRead
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.did = try c.decode(String.self, forKey: WireKey("did"))
+    self.endpoint = try c.decode(KbEndpoint.self, forKey: WireKey("endpoint"))
+    self.label = try c.decode(String.self, forKey: WireKey("label"))
+    self.lastRead =
+      c.contains(WireKey("lastRead")) ? try c.decode(KbRead.self, forKey: WireKey("lastRead")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.did, forKey: WireKey("did"))
+    try c.encode(self.endpoint, forKey: WireKey("endpoint"))
+    try c.encode(self.label, forKey: WireKey("label"))
+    try c.encodeIfPresent(self.lastRead, forKey: WireKey("lastRead"))
+  }
+}
+
+public struct OllamaEmbeddingConfig: Codable, Sendable {
+  public var baseUrl: String
+  public var model: String
+  public let type: OllamaEmbeddingConfigType
+  public init(baseUrl: String, model: String) {
+    self.baseUrl = baseUrl
+    self.model = model
+    self.type = .ollama
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["baseUrl", "model", "type"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in OllamaEmbeddingConfig")
+    }
+    self.baseUrl = try c.decode(String.self, forKey: WireKey("baseUrl"))
+    self.model = try c.decode(String.self, forKey: WireKey("model"))
+    self.type = try c.decode(OllamaEmbeddingConfigType.self, forKey: WireKey("type"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.baseUrl, forKey: WireKey("baseUrl"))
+    try c.encode(self.model, forKey: WireKey("model"))
+    try c.encode(self.type, forKey: WireKey("type"))
+  }
+}
+
+public enum OllamaEmbeddingConfigType: String, Codable, Sendable, CaseIterable {
+  case ollama = "ollama"
+}
+
+public struct PdfTextItem: Codable, Sendable {
+  public var end: Int
+  public var height: Double
+  public var page: Int
+  public var start: Int
+  public var width: Double
+  public var x: Double
+  public var y: Double
+  public init(end: Int, height: Double, page: Int, start: Int, width: Double, x: Double, y: Double)
+  {
+    self.end = end
+    self.height = height
+    self.page = page
+    self.start = start
+    self.width = width
+    self.x = x
+    self.y = y
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.end = try c.decode(Int.self, forKey: WireKey("end"))
+    self.height = try c.decode(Double.self, forKey: WireKey("height"))
+    self.page = try c.decode(Int.self, forKey: WireKey("page"))
+    self.start = try c.decode(Int.self, forKey: WireKey("start"))
+    self.width = try c.decode(Double.self, forKey: WireKey("width"))
+    self.x = try c.decode(Double.self, forKey: WireKey("x"))
+    self.y = try c.decode(Double.self, forKey: WireKey("y"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.end, forKey: WireKey("end"))
+    try c.encode(self.height, forKey: WireKey("height"))
+    try c.encode(self.page, forKey: WireKey("page"))
+    try c.encode(self.start, forKey: WireKey("start"))
+    try c.encode(self.width, forKey: WireKey("width"))
+    try c.encode(self.x, forKey: WireKey("x"))
+    try c.encode(self.y, forKey: WireKey("y"))
+  }
+}
+
+public typealias PersistedEventId = String
+
+public struct PrincipalProfileCommand: Codable, Sendable {
+  public var _userId: UserId?
+  public var name: String
+  public init(_userId: UserId? = nil, name: String) {
+    self._userId = _userId
+    self.name = name
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self._userId =
+      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
+    self.name = try c.decode(String.self, forKey: WireKey("name"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
+    try c.encode(self.name, forKey: WireKey("name"))
+  }
+}
+
+public struct PrincipalProfiledPayload: Codable, Sendable {
+  public var name: String
+  public init(name: String) {
+    self.name = name
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.name = try c.decode(String.self, forKey: WireKey("name"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.name, forKey: WireKey("name"))
+  }
+}
+
+public struct Profile: Codable, Sendable {
+  public var name: String
+  public var since: String
+  public init(name: String, since: String) {
+    self.name = name
+    self.since = since
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["name", "since"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in Profile")
+    }
+    self.name = try c.decode(String.self, forKey: WireKey("name"))
+    self.since = try c.decode(String.self, forKey: WireKey("since"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.name, forKey: WireKey("name"))
+    try c.encode(self.since, forKey: WireKey("since"))
+  }
+}
+
+public struct ProfilesProjection: Codable, Sendable {
+  public var profiles: [String: Profile]
+  public init(profiles: [String: Profile]) {
+    self.profiles = profiles
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: { !Set<String>(["profiles"]).contains($0.stringValue) }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in ProfilesProjection")
+    }
+    self.profiles = try c.decode([String: Profile].self, forKey: WireKey("profiles"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.profiles, forKey: WireKey("profiles"))
+  }
+}
+
+public struct ProtectedResourceMetadata: Codable, Sendable {
+  public var authorizationServers: [String]
+  public var bearerMethodsSupported: [ProtectedResourceMetadataBearerMethodsSupportedItem]
+  public var resource: String
+  public var resourceName: String?
+  public init(
+    authorizationServers: [String],
+    bearerMethodsSupported: [ProtectedResourceMetadataBearerMethodsSupportedItem], resource: String,
+    resourceName: String? = nil
+  ) {
+    self.authorizationServers = authorizationServers
+    self.bearerMethodsSupported = bearerMethodsSupported
+    self.resource = resource
+    self.resourceName = resourceName
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>([
+        "authorization_servers", "bearer_methods_supported", "resource", "resource_name",
+      ]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in ProtectedResourceMetadata")
+    }
+    self.authorizationServers = try c.decode(
+      [String].self, forKey: WireKey("authorization_servers"))
+    self.bearerMethodsSupported = try c.decode(
+      [ProtectedResourceMetadataBearerMethodsSupportedItem].self,
+      forKey: WireKey("bearer_methods_supported"))
+    self.resource = try c.decode(String.self, forKey: WireKey("resource"))
+    self.resourceName =
+      c.contains(WireKey("resource_name"))
+      ? try c.decode(String.self, forKey: WireKey("resource_name")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.authorizationServers, forKey: WireKey("authorization_servers"))
+    try c.encode(self.bearerMethodsSupported, forKey: WireKey("bearer_methods_supported"))
+    try c.encode(self.resource, forKey: WireKey("resource"))
+    try c.encodeIfPresent(self.resourceName, forKey: WireKey("resource_name"))
+  }
+}
+
+public enum ProtectedResourceMetadataBearerMethodsSupportedItem: String, Codable, Sendable,
+  CaseIterable
+{
+  case header = "header"
+}
+
+public struct QdrantVectorsConfig: Codable, Sendable {
+  public var host: String
+  public var port: Int
+  public var tokenEnv: String
+  public let type: QdrantVectorsConfigType
+  public init(host: String, port: Int, tokenEnv: String) {
+    self.host = host
+    self.port = port
+    self.tokenEnv = tokenEnv
+    self.type = .qdrant
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["host", "port", "tokenEnv", "type"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in QdrantVectorsConfig")
+    }
+    self.host = try c.decode(String.self, forKey: WireKey("host"))
+    self.port = try c.decode(Int.self, forKey: WireKey("port"))
+    self.tokenEnv = try c.decode(String.self, forKey: WireKey("tokenEnv"))
+    self.type = try c.decode(QdrantVectorsConfigType.self, forKey: WireKey("type"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.host, forKey: WireKey("host"))
+    try c.encode(self.port, forKey: WireKey("port"))
+    try c.encode(self.tokenEnv, forKey: WireKey("tokenEnv"))
+    try c.encode(self.type, forKey: WireKey("type"))
+  }
+}
+
+public enum QdrantVectorsConfigType: String, Codable, Sendable, CaseIterable {
+  case qdrant = "qdrant"
+}
+
+public struct ReceivedFrame: Codable, Sendable {
+  public var channel: String
+  public var correlationId: String?
+  public var eventId: String?
+  public var payload: [String: JSONValue]
+  public var scope: ResourceId?
+  public var trace: [String: String]?
+  public init(
+    channel: String, correlationId: String? = nil, eventId: String? = nil,
+    payload: [String: JSONValue], scope: ResourceId? = nil, trace: [String: String]? = nil
+  ) {
+    self.channel = channel
+    self.correlationId = correlationId
+    self.eventId = eventId
+    self.payload = payload
+    self.scope = scope
+    self.trace = trace
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["channel", "correlationId", "eventId", "payload", "scope", "trace"]).contains(
+        $0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in ReceivedFrame")
+    }
+    self.channel = try c.decode(String.self, forKey: WireKey("channel"))
+    self.correlationId =
+      c.contains(WireKey("correlationId"))
+      ? try c.decode(String.self, forKey: WireKey("correlationId")) : nil
+    self.eventId =
+      c.contains(WireKey("eventId")) ? try c.decode(String.self, forKey: WireKey("eventId")) : nil
+    self.payload = try c.decode([String: JSONValue].self, forKey: WireKey("payload"))
+    self.scope =
+      c.contains(WireKey("scope")) ? try c.decode(ResourceId.self, forKey: WireKey("scope")) : nil
+    self.trace =
+      c.contains(WireKey("trace"))
+      ? try c.decode([String: String].self, forKey: WireKey("trace")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.channel, forKey: WireKey("channel"))
+    try c.encodeIfPresent(self.correlationId, forKey: WireKey("correlationId"))
+    try c.encodeIfPresent(self.eventId, forKey: WireKey("eventId"))
+    try c.encode(self.payload, forKey: WireKey("payload"))
+    try c.encodeIfPresent(self.scope, forKey: WireKey("scope"))
+    try c.encodeIfPresent(self.trace, forKey: WireKey("trace"))
+  }
+}
+
+public typealias ReplyEventId = String
+
+public struct Representation: Codable, Sendable {
+  public var id: String?
+  public var type: RepresentationType?
+  public var byteSize: Int?
+  public var checksum: String?
+  public var conformsTo: RepresentationConformsTo?
+  public var created: String?
+  public var duration: Double?
+  public var encoding: String?
+  public var filename: String?
+  public var height: Int?
+  public var language: String?
+  public var mediaType: String
+  public var modified: String?
+  public var rel: RepresentationRel?
+  public var storageUri: String?
+  public var tags: [String]?
+  public var width: Int?
+  public var rest: [String: JSONValue]
+  public init(
+    id: String? = nil, type: RepresentationType? = nil, byteSize: Int? = nil,
+    checksum: String? = nil, conformsTo: RepresentationConformsTo? = nil, created: String? = nil,
+    duration: Double? = nil, encoding: String? = nil, filename: String? = nil, height: Int? = nil,
+    language: String? = nil, mediaType: String, modified: String? = nil,
+    rel: RepresentationRel? = nil, storageUri: String? = nil, tags: [String]? = nil,
+    width: Int? = nil, rest: [String: JSONValue] = [:]
+  ) {
+    self.id = id
+    self.type = type
+    self.byteSize = byteSize
+    self.checksum = checksum
+    self.conformsTo = conformsTo
+    self.created = created
+    self.duration = duration
+    self.encoding = encoding
+    self.filename = filename
+    self.height = height
+    self.language = language
+    self.mediaType = mediaType
+    self.modified = modified
+    self.rel = rel
+    self.storageUri = storageUri
+    self.tags = tags
+    self.width = width
+    self.rest = rest
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.id = c.contains(WireKey("@id")) ? try c.decode(String.self, forKey: WireKey("@id")) : nil
+    self.type =
+      c.contains(WireKey("@type"))
+      ? try c.decode(RepresentationType.self, forKey: WireKey("@type")) : nil
+    self.byteSize =
+      c.contains(WireKey("byteSize")) ? try c.decode(Int.self, forKey: WireKey("byteSize")) : nil
+    self.checksum =
+      c.contains(WireKey("checksum")) ? try c.decode(String.self, forKey: WireKey("checksum")) : nil
+    self.conformsTo =
+      c.contains(WireKey("conformsTo"))
+      ? try c.decode(RepresentationConformsTo.self, forKey: WireKey("conformsTo")) : nil
+    self.created =
+      c.contains(WireKey("created")) ? try c.decode(String.self, forKey: WireKey("created")) : nil
+    self.duration =
+      c.contains(WireKey("duration")) ? try c.decode(Double.self, forKey: WireKey("duration")) : nil
+    self.encoding =
+      c.contains(WireKey("encoding")) ? try c.decode(String.self, forKey: WireKey("encoding")) : nil
+    self.filename =
+      c.contains(WireKey("filename")) ? try c.decode(String.self, forKey: WireKey("filename")) : nil
+    self.height =
+      c.contains(WireKey("height")) ? try c.decode(Int.self, forKey: WireKey("height")) : nil
+    self.language =
+      c.contains(WireKey("language")) ? try c.decode(String.self, forKey: WireKey("language")) : nil
+    self.mediaType = try c.decode(String.self, forKey: WireKey("mediaType"))
+    self.modified =
+      c.contains(WireKey("modified")) ? try c.decode(String.self, forKey: WireKey("modified")) : nil
+    self.rel =
+      c.contains(WireKey("rel"))
+      ? try c.decode(RepresentationRel.self, forKey: WireKey("rel")) : nil
+    self.storageUri =
+      c.contains(WireKey("storageUri"))
+      ? try c.decode(String.self, forKey: WireKey("storageUri")) : nil
+    self.tags =
+      c.contains(WireKey("tags")) ? try c.decode([String].self, forKey: WireKey("tags")) : nil
+    self.width =
+      c.contains(WireKey("width")) ? try c.decode(Int.self, forKey: WireKey("width")) : nil
+    rest = [:]
+    for key in c.allKeys
+    where !Set<String>([
+      "@id", "@type", "byteSize", "checksum", "conformsTo", "created", "duration", "encoding",
+      "filename", "height", "language", "mediaType", "modified", "rel", "storageUri", "tags",
+      "width",
+    ]).contains(key.stringValue) {
+      rest[key.stringValue] = try c.decode(JSONValue.self, forKey: key)
+    }
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    for (key, value) in rest {
+      guard
+        !Set<String>([
+          "@id", "@type", "byteSize", "checksum", "conformsTo", "created", "duration", "encoding",
+          "filename", "height", "language", "mediaType", "modified", "rel", "storageUri", "tags",
+          "width",
+        ]).contains(key)
+      else {
+        throw EncodingError.invalidValue(
+          value,
+          .init(
+            codingPath: encoder.codingPath,
+            debugDescription: "rest overrides a named property of Representation"))
+      }
+      try c.encode(value, forKey: WireKey(key))
+    }
+    try c.encodeIfPresent(self.id, forKey: WireKey("@id"))
+    try c.encodeIfPresent(self.type, forKey: WireKey("@type"))
+    try c.encodeIfPresent(self.byteSize, forKey: WireKey("byteSize"))
+    try c.encodeIfPresent(self.checksum, forKey: WireKey("checksum"))
+    try c.encodeIfPresent(self.conformsTo, forKey: WireKey("conformsTo"))
+    try c.encodeIfPresent(self.created, forKey: WireKey("created"))
+    try c.encodeIfPresent(self.duration, forKey: WireKey("duration"))
+    try c.encodeIfPresent(self.encoding, forKey: WireKey("encoding"))
+    try c.encodeIfPresent(self.filename, forKey: WireKey("filename"))
+    try c.encodeIfPresent(self.height, forKey: WireKey("height"))
+    try c.encodeIfPresent(self.language, forKey: WireKey("language"))
+    try c.encode(self.mediaType, forKey: WireKey("mediaType"))
+    try c.encodeIfPresent(self.modified, forKey: WireKey("modified"))
+    try c.encodeIfPresent(self.rel, forKey: WireKey("rel"))
+    try c.encodeIfPresent(self.storageUri, forKey: WireKey("storageUri"))
+    try c.encodeIfPresent(self.tags, forKey: WireKey("tags"))
+    try c.encodeIfPresent(self.width, forKey: WireKey("width"))
+  }
+}
+
+public struct RepresentationAddedPayload: Codable, Sendable {
+  public var representation: Representation
+  public init(representation: Representation) {
+    self.representation = representation
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.representation = try c.decode(Representation.self, forKey: WireKey("representation"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.representation, forKey: WireKey("representation"))
+  }
+}
+
+public indirect enum RepresentationConformsTo: Codable, Sendable {
+  case text(String)
+  case list([String])
+  public init(from decoder: any Decoder) throws {
+    if let value = try? String(from: decoder) {
+      self = .text(value)
+      return
+    }
+    if let value = try? [String](from: decoder) {
+      self = .list(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(
+        codingPath: decoder.codingPath,
+        debugDescription: "no member of RepresentationConformsTo fits"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .text(let value): try value.encode(to: encoder)
+    case .list(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public struct RepresentationNotFound: Codable, Sendable {
+  public var code: RepresentationNotFoundCode
+  public var details: JSONValue?
+  public var error: String
+  public var hint: String?
+  public init(
+    code: RepresentationNotFoundCode, details: JSONValue? = nil, error: String, hint: String? = nil
+  ) {
+    self.code = code
+    self.details = details
+    self.error = error
+    self.hint = hint
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.code = try c.decode(RepresentationNotFoundCode.self, forKey: WireKey("code"))
+    self.details =
+      c.contains(WireKey("details"))
+      ? try c.decode(JSONValue.self, forKey: WireKey("details")) : nil
+    self.error = try c.decode(String.self, forKey: WireKey("error"))
+    self.hint =
+      c.contains(WireKey("hint")) ? try c.decode(String.self, forKey: WireKey("hint")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.code, forKey: WireKey("code"))
+    try c.encodeIfPresent(self.details, forKey: WireKey("details"))
+    try c.encode(self.error, forKey: WireKey("error"))
+    try c.encodeIfPresent(self.hint, forKey: WireKey("hint"))
+  }
+}
+
+public enum RepresentationNotFoundCode: String, Codable, Sendable, CaseIterable {
+  case resource = "resource"
+  case representation = "representation"
+}
+
+public enum RepresentationRel: String, Codable, Sendable, CaseIterable {
+  case original = "original"
+  case thumbnail = "thumbnail"
+  case preview = "preview"
+  case optimized = "optimized"
+  case derived = "derived"
+  case other = "other"
+}
+
+public struct RepresentationRemovedPayload: Codable, Sendable {
+  public var checksum: String
+  public init(checksum: String) {
+    self.checksum = checksum
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.checksum = try c.decode(String.self, forKey: WireKey("checksum"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.checksum, forKey: WireKey("checksum"))
+  }
+}
+
+public indirect enum RepresentationType: Codable, Sendable {
+  case text(String)
+  case list([String])
+  public init(from decoder: any Decoder) throws {
+    if let value = try? String(from: decoder) {
+      self = .text(value)
+      return
+    }
+    if let value = try? [String](from: decoder) {
+      self = .list(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(
+        codingPath: decoder.codingPath, debugDescription: "no member of RepresentationType fits"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .text(let value): try value.encode(to: encoder)
+    case .list(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public struct ResourceAnnotations: Codable, Sendable {
+  public var annotations: [Annotation]
+  public var resourceId: ResourceId
+  public var updatedAt: String
+  public var version: Int
+  public init(annotations: [Annotation], resourceId: ResourceId, updatedAt: String, version: Int) {
+    self.annotations = annotations
+    self.resourceId = resourceId
+    self.updatedAt = updatedAt
+    self.version = version
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["annotations", "resourceId", "updatedAt", "version"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in ResourceAnnotations")
+    }
+    self.annotations = try c.decode([Annotation].self, forKey: WireKey("annotations"))
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self.updatedAt = try c.decode(String.self, forKey: WireKey("updatedAt"))
+    self.version = try c.decode(Int.self, forKey: WireKey("version"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.annotations, forKey: WireKey("annotations"))
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encode(self.updatedAt, forKey: WireKey("updatedAt"))
+    try c.encode(self.version, forKey: WireKey("version"))
+  }
+}
+
+public struct ResourceArchivedPayload: Codable, Sendable {
+  public var reason: String?
+  public init(reason: String? = nil) {
+    self.reason = reason
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.reason =
+      c.contains(WireKey("reason")) ? try c.decode(String.self, forKey: WireKey("reason")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.reason, forKey: WireKey("reason"))
+  }
+}
+
+public struct ResourceClonedPayload: Codable, Sendable {
+  public var contentByteSize: Int?
+  public var contentChecksum: String
+  public var creator: Agent?
+  public var entityTypes: [String]?
+  public var format: ContentFormat
+  public var language: String?
+  public var name: String
+  public var parentResourceId: ResourceId
+  public var storageUri: String?
+  public var wasAttributedTo: ResourceClonedPayloadWasAttributedTo?
+  public init(
+    contentByteSize: Int? = nil, contentChecksum: String, creator: Agent? = nil,
+    entityTypes: [String]? = nil, format: ContentFormat, language: String? = nil, name: String,
+    parentResourceId: ResourceId, storageUri: String? = nil,
+    wasAttributedTo: ResourceClonedPayloadWasAttributedTo? = nil
+  ) {
+    self.contentByteSize = contentByteSize
+    self.contentChecksum = contentChecksum
+    self.creator = creator
+    self.entityTypes = entityTypes
+    self.format = format
+    self.language = language
+    self.name = name
+    self.parentResourceId = parentResourceId
+    self.storageUri = storageUri
+    self.wasAttributedTo = wasAttributedTo
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.contentByteSize =
+      c.contains(WireKey("contentByteSize"))
+      ? try c.decode(Int.self, forKey: WireKey("contentByteSize")) : nil
+    self.contentChecksum = try c.decode(String.self, forKey: WireKey("contentChecksum"))
+    self.creator =
+      c.contains(WireKey("creator")) ? try c.decode(Agent.self, forKey: WireKey("creator")) : nil
+    self.entityTypes =
+      c.contains(WireKey("entityTypes"))
+      ? try c.decode([String].self, forKey: WireKey("entityTypes")) : nil
+    self.format = try c.decode(ContentFormat.self, forKey: WireKey("format"))
+    self.language =
+      c.contains(WireKey("language")) ? try c.decode(String.self, forKey: WireKey("language")) : nil
+    self.name = try c.decode(String.self, forKey: WireKey("name"))
+    self.parentResourceId = try c.decode(ResourceId.self, forKey: WireKey("parentResourceId"))
+    self.storageUri =
+      c.contains(WireKey("storageUri"))
+      ? try c.decode(String.self, forKey: WireKey("storageUri")) : nil
+    self.wasAttributedTo =
+      c.contains(WireKey("wasAttributedTo"))
+      ? try c.decode(ResourceClonedPayloadWasAttributedTo.self, forKey: WireKey("wasAttributedTo"))
+      : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.contentByteSize, forKey: WireKey("contentByteSize"))
+    try c.encode(self.contentChecksum, forKey: WireKey("contentChecksum"))
+    try c.encodeIfPresent(self.creator, forKey: WireKey("creator"))
+    try c.encodeIfPresent(self.entityTypes, forKey: WireKey("entityTypes"))
+    try c.encode(self.format, forKey: WireKey("format"))
+    try c.encodeIfPresent(self.language, forKey: WireKey("language"))
+    try c.encode(self.name, forKey: WireKey("name"))
+    try c.encode(self.parentResourceId, forKey: WireKey("parentResourceId"))
+    try c.encodeIfPresent(self.storageUri, forKey: WireKey("storageUri"))
+    try c.encodeIfPresent(self.wasAttributedTo, forKey: WireKey("wasAttributedTo"))
+  }
+}
+
+public indirect enum ResourceClonedPayloadWasAttributedTo: Codable, Sendable {
+  case agent(Agent)
+  case list([Agent])
+  public init(from decoder: any Decoder) throws {
+    if let value = try? Agent(from: decoder) {
+      self = .agent(value)
+      return
+    }
+    if let value = try? [Agent](from: decoder) {
+      self = .list(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(
+        codingPath: decoder.codingPath,
+        debugDescription: "no member of ResourceClonedPayloadWasAttributedTo fits"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .agent(let value): try value.encode(to: encoder)
+    case .list(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public struct ResourceCreatedPayload: Codable, Sendable {
+  public var contentByteSize: Int?
+  public var contentChecksum: String
+  public var creator: Agent?
+  public var entityTypes: [String]?
+  public var format: ContentFormat
+  public var generatedFrom: ResourceCreatedPayloadGeneratedFrom?
+  public var generationPrompt: String?
+  public var generator: ResourceCreatedPayloadGenerator?
+  public var isDraft: Bool?
+  public var jobId: JobId?
+  public var language: String?
+  public var name: String
+  public var storageUri: String?
+  public var wasAttributedTo: ResourceCreatedPayloadWasAttributedTo?
+  public init(
+    contentByteSize: Int? = nil, contentChecksum: String, creator: Agent? = nil,
+    entityTypes: [String]? = nil, format: ContentFormat,
+    generatedFrom: ResourceCreatedPayloadGeneratedFrom? = nil, generationPrompt: String? = nil,
+    generator: ResourceCreatedPayloadGenerator? = nil, isDraft: Bool? = nil, jobId: JobId? = nil,
+    language: String? = nil, name: String, storageUri: String? = nil,
+    wasAttributedTo: ResourceCreatedPayloadWasAttributedTo? = nil
+  ) {
+    self.contentByteSize = contentByteSize
+    self.contentChecksum = contentChecksum
+    self.creator = creator
+    self.entityTypes = entityTypes
+    self.format = format
+    self.generatedFrom = generatedFrom
+    self.generationPrompt = generationPrompt
+    self.generator = generator
+    self.isDraft = isDraft
+    self.jobId = jobId
+    self.language = language
+    self.name = name
+    self.storageUri = storageUri
+    self.wasAttributedTo = wasAttributedTo
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.contentByteSize =
+      c.contains(WireKey("contentByteSize"))
+      ? try c.decode(Int.self, forKey: WireKey("contentByteSize")) : nil
+    self.contentChecksum = try c.decode(String.self, forKey: WireKey("contentChecksum"))
+    self.creator =
+      c.contains(WireKey("creator")) ? try c.decode(Agent.self, forKey: WireKey("creator")) : nil
+    self.entityTypes =
+      c.contains(WireKey("entityTypes"))
+      ? try c.decode([String].self, forKey: WireKey("entityTypes")) : nil
+    self.format = try c.decode(ContentFormat.self, forKey: WireKey("format"))
+    self.generatedFrom =
+      c.contains(WireKey("generatedFrom"))
+      ? try c.decode(ResourceCreatedPayloadGeneratedFrom.self, forKey: WireKey("generatedFrom"))
+      : nil
+    self.generationPrompt =
+      c.contains(WireKey("generationPrompt"))
+      ? try c.decode(String.self, forKey: WireKey("generationPrompt")) : nil
+    self.generator =
+      c.contains(WireKey("generator"))
+      ? try c.decode(ResourceCreatedPayloadGenerator.self, forKey: WireKey("generator")) : nil
+    self.isDraft =
+      c.contains(WireKey("isDraft")) ? try c.decode(Bool.self, forKey: WireKey("isDraft")) : nil
+    self.jobId =
+      c.contains(WireKey("jobId")) ? try c.decode(JobId.self, forKey: WireKey("jobId")) : nil
+    self.language =
+      c.contains(WireKey("language")) ? try c.decode(String.self, forKey: WireKey("language")) : nil
+    self.name = try c.decode(String.self, forKey: WireKey("name"))
+    self.storageUri =
+      c.contains(WireKey("storageUri"))
+      ? try c.decode(String.self, forKey: WireKey("storageUri")) : nil
+    self.wasAttributedTo =
+      c.contains(WireKey("wasAttributedTo"))
+      ? try c.decode(ResourceCreatedPayloadWasAttributedTo.self, forKey: WireKey("wasAttributedTo"))
+      : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.contentByteSize, forKey: WireKey("contentByteSize"))
+    try c.encode(self.contentChecksum, forKey: WireKey("contentChecksum"))
+    try c.encodeIfPresent(self.creator, forKey: WireKey("creator"))
+    try c.encodeIfPresent(self.entityTypes, forKey: WireKey("entityTypes"))
+    try c.encode(self.format, forKey: WireKey("format"))
+    try c.encodeIfPresent(self.generatedFrom, forKey: WireKey("generatedFrom"))
+    try c.encodeIfPresent(self.generationPrompt, forKey: WireKey("generationPrompt"))
+    try c.encodeIfPresent(self.generator, forKey: WireKey("generator"))
+    try c.encodeIfPresent(self.isDraft, forKey: WireKey("isDraft"))
+    try c.encodeIfPresent(self.jobId, forKey: WireKey("jobId"))
+    try c.encodeIfPresent(self.language, forKey: WireKey("language"))
+    try c.encode(self.name, forKey: WireKey("name"))
+    try c.encodeIfPresent(self.storageUri, forKey: WireKey("storageUri"))
+    try c.encodeIfPresent(self.wasAttributedTo, forKey: WireKey("wasAttributedTo"))
+  }
+}
+
+public struct ResourceCreatedPayloadGeneratedFrom: Codable, Sendable {
+  public var annotationId: AnnotationId?
+  public var resourceId: ResourceId
+  public init(annotationId: AnnotationId? = nil, resourceId: ResourceId) {
+    self.annotationId = annotationId
+    self.resourceId = resourceId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.annotationId =
+      c.contains(WireKey("annotationId"))
+      ? try c.decode(AnnotationId.self, forKey: WireKey("annotationId")) : nil
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.annotationId, forKey: WireKey("annotationId"))
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+  }
+}
+
+public indirect enum ResourceCreatedPayloadGenerator: Codable, Sendable {
+  case agent(Agent)
+  case list([Agent])
+  public init(from decoder: any Decoder) throws {
+    if let value = try? Agent(from: decoder) {
+      self = .agent(value)
+      return
+    }
+    if let value = try? [Agent](from: decoder) {
+      self = .list(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(
+        codingPath: decoder.codingPath,
+        debugDescription: "no member of ResourceCreatedPayloadGenerator fits"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .agent(let value): try value.encode(to: encoder)
+    case .list(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public indirect enum ResourceCreatedPayloadWasAttributedTo: Codable, Sendable {
+  case agent(Agent)
+  case list([Agent])
+  public init(from decoder: any Decoder) throws {
+    if let value = try? Agent(from: decoder) {
+      self = .agent(value)
+      return
+    }
+    if let value = try? [Agent](from: decoder) {
+      self = .list(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(
+        codingPath: decoder.codingPath,
+        debugDescription: "no member of ResourceCreatedPayloadWasAttributedTo fits"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .agent(let value): try value.encode(to: encoder)
+    case .list(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public struct ResourceDescriptor: Codable, Sendable {
+  public var context: ResourceDescriptorContext
+  public var id: ResourceId
+  public var type: ResourceDescriptorType?
+  public var about: ResourceDescriptorAbout?
+  public var archived: Bool?
+  public var availableFormats: [String]?
+  public var conformsTo: ResourceDescriptorConformsTo?
+  public var dateCreated: String?
+  public var dateModified: String?
+  public var description: String?
+  public var entityTypes: [String]?
+  public var generator: ResourceDescriptorGenerator?
+  public var hasPart: [String]?
+  public var identifier: ResourceDescriptorIdentifier?
+  public var isDraft: Bool?
+  public var isPartOf: [String]?
+  public var license: String?
+  public var name: String
+  public var originatedFrom: String?
+  public var representations: ResourceDescriptorRepresentations
+  public var sameAs: [String]?
+  public var sourceAnnotationId: AnnotationId?
+  public var sourceResourceId: ResourceId?
+  public var version: String?
+  public var wasAttributedTo: ResourceDescriptorWasAttributedTo?
+  public var wasDerivedFrom: ResourceDescriptorWasDerivedFrom?
+  public var rest: [String: JSONValue]
+  public init(
+    context: ResourceDescriptorContext, id: ResourceId, type: ResourceDescriptorType? = nil,
+    about: ResourceDescriptorAbout? = nil, archived: Bool? = nil, availableFormats: [String]? = nil,
+    conformsTo: ResourceDescriptorConformsTo? = nil, dateCreated: String? = nil,
+    dateModified: String? = nil, description: String? = nil, entityTypes: [String]? = nil,
+    generator: ResourceDescriptorGenerator? = nil, hasPart: [String]? = nil,
+    identifier: ResourceDescriptorIdentifier? = nil, isDraft: Bool? = nil,
+    isPartOf: [String]? = nil, license: String? = nil, name: String, originatedFrom: String? = nil,
+    representations: ResourceDescriptorRepresentations, sameAs: [String]? = nil,
+    sourceAnnotationId: AnnotationId? = nil, sourceResourceId: ResourceId? = nil,
+    version: String? = nil, wasAttributedTo: ResourceDescriptorWasAttributedTo? = nil,
+    wasDerivedFrom: ResourceDescriptorWasDerivedFrom? = nil, rest: [String: JSONValue] = [:]
+  ) {
+    self.context = context
+    self.id = id
+    self.type = type
+    self.about = about
+    self.archived = archived
+    self.availableFormats = availableFormats
+    self.conformsTo = conformsTo
+    self.dateCreated = dateCreated
+    self.dateModified = dateModified
+    self.description = description
+    self.entityTypes = entityTypes
+    self.generator = generator
+    self.hasPart = hasPart
+    self.identifier = identifier
+    self.isDraft = isDraft
+    self.isPartOf = isPartOf
+    self.license = license
+    self.name = name
+    self.originatedFrom = originatedFrom
+    self.representations = representations
+    self.sameAs = sameAs
+    self.sourceAnnotationId = sourceAnnotationId
+    self.sourceResourceId = sourceResourceId
+    self.version = version
+    self.wasAttributedTo = wasAttributedTo
+    self.wasDerivedFrom = wasDerivedFrom
+    self.rest = rest
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.context = try c.decode(ResourceDescriptorContext.self, forKey: WireKey("@context"))
+    self.id = try c.decode(ResourceId.self, forKey: WireKey("@id"))
+    self.type =
+      c.contains(WireKey("@type"))
+      ? try c.decode(ResourceDescriptorType.self, forKey: WireKey("@type")) : nil
+    self.about =
+      c.contains(WireKey("about"))
+      ? try c.decode(ResourceDescriptorAbout.self, forKey: WireKey("about")) : nil
+    self.archived =
+      c.contains(WireKey("archived")) ? try c.decode(Bool.self, forKey: WireKey("archived")) : nil
+    self.availableFormats =
+      c.contains(WireKey("availableFormats"))
+      ? try c.decode([String].self, forKey: WireKey("availableFormats")) : nil
+    self.conformsTo =
+      c.contains(WireKey("conformsTo"))
+      ? try c.decode(ResourceDescriptorConformsTo.self, forKey: WireKey("conformsTo")) : nil
+    self.dateCreated =
+      c.contains(WireKey("dateCreated"))
+      ? try c.decode(String.self, forKey: WireKey("dateCreated")) : nil
+    self.dateModified =
+      c.contains(WireKey("dateModified"))
+      ? try c.decode(String.self, forKey: WireKey("dateModified")) : nil
+    self.description =
+      c.contains(WireKey("description"))
+      ? try c.decode(String.self, forKey: WireKey("description")) : nil
+    self.entityTypes =
+      c.contains(WireKey("entityTypes"))
+      ? try c.decode([String].self, forKey: WireKey("entityTypes")) : nil
+    self.generator =
+      c.contains(WireKey("generator"))
+      ? try c.decode(ResourceDescriptorGenerator.self, forKey: WireKey("generator")) : nil
+    self.hasPart =
+      c.contains(WireKey("hasPart")) ? try c.decode([String].self, forKey: WireKey("hasPart")) : nil
+    self.identifier =
+      c.contains(WireKey("identifier"))
+      ? try c.decode(ResourceDescriptorIdentifier.self, forKey: WireKey("identifier")) : nil
+    self.isDraft =
+      c.contains(WireKey("isDraft")) ? try c.decode(Bool.self, forKey: WireKey("isDraft")) : nil
+    self.isPartOf =
+      c.contains(WireKey("isPartOf"))
+      ? try c.decode([String].self, forKey: WireKey("isPartOf")) : nil
+    self.license =
+      c.contains(WireKey("license")) ? try c.decode(String.self, forKey: WireKey("license")) : nil
+    self.name = try c.decode(String.self, forKey: WireKey("name"))
+    self.originatedFrom =
+      c.contains(WireKey("originatedFrom"))
+      ? try c.decode(String.self, forKey: WireKey("originatedFrom")) : nil
+    self.representations = try c.decode(
+      ResourceDescriptorRepresentations.self, forKey: WireKey("representations"))
+    self.sameAs =
+      c.contains(WireKey("sameAs")) ? try c.decode([String].self, forKey: WireKey("sameAs")) : nil
+    self.sourceAnnotationId =
+      c.contains(WireKey("sourceAnnotationId"))
+      ? try c.decode(AnnotationId.self, forKey: WireKey("sourceAnnotationId")) : nil
+    self.sourceResourceId =
+      c.contains(WireKey("sourceResourceId"))
+      ? try c.decode(ResourceId.self, forKey: WireKey("sourceResourceId")) : nil
+    self.version =
+      c.contains(WireKey("version")) ? try c.decode(String.self, forKey: WireKey("version")) : nil
+    self.wasAttributedTo =
+      c.contains(WireKey("wasAttributedTo"))
+      ? try c.decode(ResourceDescriptorWasAttributedTo.self, forKey: WireKey("wasAttributedTo"))
+      : nil
+    self.wasDerivedFrom =
+      c.contains(WireKey("wasDerivedFrom"))
+      ? try c.decode(ResourceDescriptorWasDerivedFrom.self, forKey: WireKey("wasDerivedFrom")) : nil
+    rest = [:]
+    for key in c.allKeys
+    where !Set<String>([
+      "@context", "@id", "@type", "about", "archived", "availableFormats", "conformsTo",
+      "dateCreated", "dateModified", "description", "entityTypes", "generator", "hasPart",
+      "identifier", "isDraft", "isPartOf", "license", "name", "originatedFrom", "representations",
+      "sameAs", "sourceAnnotationId", "sourceResourceId", "version", "wasAttributedTo",
+      "wasDerivedFrom",
+    ]).contains(key.stringValue) {
+      rest[key.stringValue] = try c.decode(JSONValue.self, forKey: key)
+    }
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    for (key, value) in rest {
+      guard
+        !Set<String>([
+          "@context", "@id", "@type", "about", "archived", "availableFormats", "conformsTo",
+          "dateCreated", "dateModified", "description", "entityTypes", "generator", "hasPart",
+          "identifier", "isDraft", "isPartOf", "license", "name", "originatedFrom",
+          "representations", "sameAs", "sourceAnnotationId", "sourceResourceId", "version",
+          "wasAttributedTo", "wasDerivedFrom",
+        ]).contains(key)
+      else {
+        throw EncodingError.invalidValue(
+          value,
+          .init(
+            codingPath: encoder.codingPath,
+            debugDescription: "rest overrides a named property of ResourceDescriptor"))
+      }
+      try c.encode(value, forKey: WireKey(key))
+    }
+    try c.encode(self.context, forKey: WireKey("@context"))
+    try c.encode(self.id, forKey: WireKey("@id"))
+    try c.encodeIfPresent(self.type, forKey: WireKey("@type"))
+    try c.encodeIfPresent(self.about, forKey: WireKey("about"))
+    try c.encodeIfPresent(self.archived, forKey: WireKey("archived"))
+    try c.encodeIfPresent(self.availableFormats, forKey: WireKey("availableFormats"))
+    try c.encodeIfPresent(self.conformsTo, forKey: WireKey("conformsTo"))
+    try c.encodeIfPresent(self.dateCreated, forKey: WireKey("dateCreated"))
+    try c.encodeIfPresent(self.dateModified, forKey: WireKey("dateModified"))
+    try c.encodeIfPresent(self.description, forKey: WireKey("description"))
+    try c.encodeIfPresent(self.entityTypes, forKey: WireKey("entityTypes"))
+    try c.encodeIfPresent(self.generator, forKey: WireKey("generator"))
+    try c.encodeIfPresent(self.hasPart, forKey: WireKey("hasPart"))
+    try c.encodeIfPresent(self.identifier, forKey: WireKey("identifier"))
+    try c.encodeIfPresent(self.isDraft, forKey: WireKey("isDraft"))
+    try c.encodeIfPresent(self.isPartOf, forKey: WireKey("isPartOf"))
+    try c.encodeIfPresent(self.license, forKey: WireKey("license"))
+    try c.encode(self.name, forKey: WireKey("name"))
+    try c.encodeIfPresent(self.originatedFrom, forKey: WireKey("originatedFrom"))
+    try c.encode(self.representations, forKey: WireKey("representations"))
+    try c.encodeIfPresent(self.sameAs, forKey: WireKey("sameAs"))
+    try c.encodeIfPresent(self.sourceAnnotationId, forKey: WireKey("sourceAnnotationId"))
+    try c.encodeIfPresent(self.sourceResourceId, forKey: WireKey("sourceResourceId"))
+    try c.encodeIfPresent(self.version, forKey: WireKey("version"))
+    try c.encodeIfPresent(self.wasAttributedTo, forKey: WireKey("wasAttributedTo"))
+    try c.encodeIfPresent(self.wasDerivedFrom, forKey: WireKey("wasDerivedFrom"))
+  }
+}
+
+public indirect enum ResourceDescriptorAbout: Codable, Sendable {
+  case text(String)
+  case list([String])
+  public init(from decoder: any Decoder) throws {
+    if let value = try? String(from: decoder) {
+      self = .text(value)
+      return
+    }
+    if let value = try? [String](from: decoder) {
+      self = .list(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(
+        codingPath: decoder.codingPath,
+        debugDescription: "no member of ResourceDescriptorAbout fits"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .text(let value): try value.encode(to: encoder)
+    case .list(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public indirect enum ResourceDescriptorConformsTo: Codable, Sendable {
+  case text(String)
+  case list([String])
+  public init(from decoder: any Decoder) throws {
+    if let value = try? String(from: decoder) {
+      self = .text(value)
+      return
+    }
+    if let value = try? [String](from: decoder) {
+      self = .list(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(
+        codingPath: decoder.codingPath,
+        debugDescription: "no member of ResourceDescriptorConformsTo fits"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .text(let value): try value.encode(to: encoder)
+    case .list(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public indirect enum ResourceDescriptorContext: Codable, Sendable {
+  case text(String)
+  case empty([String: JSONValue])
+  case list([ResourceDescriptorContextListItem])
+  public init(from decoder: any Decoder) throws {
+    if let value = try? String(from: decoder) {
+      self = .text(value)
+      return
+    }
+    if let value = try? [String: JSONValue](from: decoder) {
+      self = .empty(value)
+      return
+    }
+    if let value = try? [ResourceDescriptorContextListItem](from: decoder) {
+      self = .list(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(
+        codingPath: decoder.codingPath,
+        debugDescription: "no member of ResourceDescriptorContext fits"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .text(let value): try value.encode(to: encoder)
+    case .empty(let value): try value.encode(to: encoder)
+    case .list(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public indirect enum ResourceDescriptorContextListItem: Codable, Sendable {
+  case text(String)
+  case empty([String: JSONValue])
+  public init(from decoder: any Decoder) throws {
+    if let value = try? String(from: decoder) {
+      self = .text(value)
+      return
+    }
+    if let value = try? [String: JSONValue](from: decoder) {
+      self = .empty(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(
+        codingPath: decoder.codingPath,
+        debugDescription: "no member of ResourceDescriptorContextListItem fits"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .text(let value): try value.encode(to: encoder)
+    case .empty(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public indirect enum ResourceDescriptorGenerator: Codable, Sendable {
+  case agent(Agent)
+  case list([Agent])
+  public init(from decoder: any Decoder) throws {
+    if let value = try? Agent(from: decoder) {
+      self = .agent(value)
+      return
+    }
+    if let value = try? [Agent](from: decoder) {
+      self = .list(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(
+        codingPath: decoder.codingPath,
+        debugDescription: "no member of ResourceDescriptorGenerator fits"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .agent(let value): try value.encode(to: encoder)
+    case .list(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public indirect enum ResourceDescriptorIdentifier: Codable, Sendable {
+  case text(String)
+  case list([String])
+  case object(ResourceDescriptorIdentifierObject)
+  public init(from decoder: any Decoder) throws {
+    if let value = try? String(from: decoder) {
+      self = .text(value)
+      return
+    }
+    if let value = try? [String](from: decoder) {
+      self = .list(value)
+      return
+    }
+    if let value = try? ResourceDescriptorIdentifierObject(from: decoder) {
+      self = .object(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(
+        codingPath: decoder.codingPath,
+        debugDescription: "no member of ResourceDescriptorIdentifier fits"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .text(let value): try value.encode(to: encoder)
+    case .list(let value): try value.encode(to: encoder)
+    case .object(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public struct ResourceDescriptorIdentifierObject: Codable, Sendable {
+  public var id: String?
+  public var scheme: String?
+  public var value: String?
+  public var rest: [String: JSONValue]
+  public init(
+    id: String? = nil, scheme: String? = nil, value: String? = nil, rest: [String: JSONValue] = [:]
+  ) {
+    self.id = id
+    self.scheme = scheme
+    self.value = value
+    self.rest = rest
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.id = c.contains(WireKey("@id")) ? try c.decode(String.self, forKey: WireKey("@id")) : nil
+    self.scheme =
+      c.contains(WireKey("scheme")) ? try c.decode(String.self, forKey: WireKey("scheme")) : nil
+    self.value =
+      c.contains(WireKey("value")) ? try c.decode(String.self, forKey: WireKey("value")) : nil
+    rest = [:]
+    for key in c.allKeys where !Set<String>(["@id", "scheme", "value"]).contains(key.stringValue) {
+      rest[key.stringValue] = try c.decode(JSONValue.self, forKey: key)
+    }
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    for (key, value) in rest {
+      guard !Set<String>(["@id", "scheme", "value"]).contains(key) else {
+        throw EncodingError.invalidValue(
+          value,
+          .init(
+            codingPath: encoder.codingPath,
+            debugDescription:
+              "rest overrides a named property of ResourceDescriptorIdentifierObject"))
+      }
+      try c.encode(value, forKey: WireKey(key))
+    }
+    try c.encodeIfPresent(self.id, forKey: WireKey("@id"))
+    try c.encodeIfPresent(self.scheme, forKey: WireKey("scheme"))
+    try c.encodeIfPresent(self.value, forKey: WireKey("value"))
+  }
+}
+
+public indirect enum ResourceDescriptorRepresentations: Codable, Sendable {
+  case representation(Representation)
+  case list([Representation])
+  public init(from decoder: any Decoder) throws {
+    if let value = try? Representation(from: decoder) {
+      self = .representation(value)
+      return
+    }
+    if let value = try? [Representation](from: decoder) {
+      self = .list(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(
+        codingPath: decoder.codingPath,
+        debugDescription: "no member of ResourceDescriptorRepresentations fits"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .representation(let value): try value.encode(to: encoder)
+    case .list(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public indirect enum ResourceDescriptorType: Codable, Sendable {
+  case text(String)
+  case list([String])
+  public init(from decoder: any Decoder) throws {
+    if let value = try? String(from: decoder) {
+      self = .text(value)
+      return
+    }
+    if let value = try? [String](from: decoder) {
+      self = .list(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(
+        codingPath: decoder.codingPath, debugDescription: "no member of ResourceDescriptorType fits"
+      ))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .text(let value): try value.encode(to: encoder)
+    case .list(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public indirect enum ResourceDescriptorWasAttributedTo: Codable, Sendable {
+  case agent(Agent)
+  case list([Agent])
+  public init(from decoder: any Decoder) throws {
+    if let value = try? Agent(from: decoder) {
+      self = .agent(value)
+      return
+    }
+    if let value = try? [Agent](from: decoder) {
+      self = .list(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(
+        codingPath: decoder.codingPath,
+        debugDescription: "no member of ResourceDescriptorWasAttributedTo fits"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .agent(let value): try value.encode(to: encoder)
+    case .list(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public indirect enum ResourceDescriptorWasDerivedFrom: Codable, Sendable {
+  case resourceId(ResourceId)
+  case list([ResourceId])
+  public init(from decoder: any Decoder) throws {
+    if let value = try? ResourceId(from: decoder) {
+      self = .resourceId(value)
+      return
+    }
+    if let value = try? [ResourceId](from: decoder) {
+      self = .list(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(
+        codingPath: decoder.codingPath,
+        debugDescription: "no member of ResourceDescriptorWasDerivedFrom fits"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .resourceId(let value): try value.encode(to: encoder)
+    case .list(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public struct ResourceErrorEvent: Codable, Sendable {
+  public var message: String
+  public var resourceId: ResourceId
+  public init(message: String, resourceId: ResourceId) {
+    self.message = message
+    self.resourceId = resourceId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.message = try c.decode(String.self, forKey: WireKey("message"))
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.message, forKey: WireKey("message"))
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+  }
+}
+
+public struct ResourceId: Hashable, Sendable, Codable, CustomStringConvertible {
+  public let value: String
+  public var description: String { value }
+  public init(_ value: String) throws {
+    guard value.unicodeScalars.starts(with: "".unicodeScalars) else {
+      throw InvalidIdentifier(kind: "ResourceId", pattern: "^[A-Za-z0-9_-]{1,128}$", value: value)
+    }
+    let scalars = value.unicodeScalars.dropFirst(0)
+    guard scalars.count >= 1 && scalars.count <= 128,
+      scalars.allSatisfy({ c in
+        (65...90).contains(c.value) || (97...122).contains(c.value) || (48...57).contains(c.value)
+          || c.value == 95 || c.value == 45
+      })
+    else {
+      throw InvalidIdentifier(kind: "ResourceId", pattern: "^[A-Za-z0-9_-]{1,128}$", value: value)
+    }
+    self.value = value
+  }
+  public static func parse(_ value: String) -> Self? { try? Self(value) }
+  public static func == (lhs: Self, rhs: Self) -> Bool {
+    lhs.value.utf8.elementsEqual(rhs.value.utf8)
+  }
+  public func hash(into hasher: inout Hasher) { for byte in value.utf8 { hasher.combine(byte) } }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.singleValueContainer()
+    let value = try c.decode(String.self)
+    do { try self.init(value) } catch {
+      throw DecodingError.dataCorruptedError(in: c, debugDescription: String(describing: error))
+    }
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.singleValueContainer()
+    try c.encode(value)
+  }
+}
+
+public struct ResourceMovedPayload: Codable, Sendable {
+  public var fromUri: String
+  public var toUri: String
+  public init(fromUri: String, toUri: String) {
+    self.fromUri = fromUri
+    self.toUri = toUri
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.fromUri = try c.decode(String.self, forKey: WireKey("fromUri"))
+    self.toUri = try c.decode(String.self, forKey: WireKey("toUri"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.fromUri, forKey: WireKey("fromUri"))
+    try c.encode(self.toUri, forKey: WireKey("toUri"))
+  }
+}
+
+public struct ResourceUnarchivedPayload: Codable, Sendable {
+  public init() {
+  }
+  public init(from decoder: any Decoder) throws {
+    _ = try decoder.container(keyedBy: WireKey.self)
+  }
+  public func encode(to encoder: any Encoder) throws {
+    _ = encoder.container(keyedBy: WireKey.self)
+  }
+}
+
+public struct ResourceUpdatedPayload: Codable, Sendable {
+  public var contentByteSize: Int?
+  public var contentChecksum: String
+  public init(contentByteSize: Int? = nil, contentChecksum: String) {
+    self.contentByteSize = contentByteSize
+    self.contentChecksum = contentChecksum
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.contentByteSize =
+      c.contains(WireKey("contentByteSize"))
+      ? try c.decode(Int.self, forKey: WireKey("contentByteSize")) : nil
+    self.contentChecksum = try c.decode(String.self, forKey: WireKey("contentChecksum"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.contentByteSize, forKey: WireKey("contentByteSize"))
+    try c.encode(self.contentChecksum, forKey: WireKey("contentChecksum"))
+  }
+}
+
+public struct ResourceUpload: Codable, Sendable {
+  public var archiveOriginal: String?
+  public var cloneToken: String?
+  public var entityTypes: String?
+  public var file: String
+  public var format: String
+  public var generationPrompt: String?
+  public var generator: String?
+  public var isDraft: String?
+  public var jobId: JobId?
+  public var language: String?
+  public var name: String
+  public var sourceAnnotationId: AnnotationId?
+  public var sourceResourceId: ResourceId?
+  public var storageUri: String
+  public init(
+    archiveOriginal: String? = nil, cloneToken: String? = nil, entityTypes: String? = nil,
+    file: String, format: String, generationPrompt: String? = nil, generator: String? = nil,
+    isDraft: String? = nil, jobId: JobId? = nil, language: String? = nil, name: String,
+    sourceAnnotationId: AnnotationId? = nil, sourceResourceId: ResourceId? = nil, storageUri: String
+  ) {
+    self.archiveOriginal = archiveOriginal
+    self.cloneToken = cloneToken
+    self.entityTypes = entityTypes
+    self.file = file
+    self.format = format
+    self.generationPrompt = generationPrompt
+    self.generator = generator
+    self.isDraft = isDraft
+    self.jobId = jobId
+    self.language = language
+    self.name = name
+    self.sourceAnnotationId = sourceAnnotationId
+    self.sourceResourceId = sourceResourceId
+    self.storageUri = storageUri
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.archiveOriginal =
+      c.contains(WireKey("archiveOriginal"))
+      ? try c.decode(String.self, forKey: WireKey("archiveOriginal")) : nil
+    self.cloneToken =
+      c.contains(WireKey("cloneToken"))
+      ? try c.decode(String.self, forKey: WireKey("cloneToken")) : nil
+    self.entityTypes =
+      c.contains(WireKey("entityTypes"))
+      ? try c.decode(String.self, forKey: WireKey("entityTypes")) : nil
+    self.file = try c.decode(String.self, forKey: WireKey("file"))
+    self.format = try c.decode(String.self, forKey: WireKey("format"))
+    self.generationPrompt =
+      c.contains(WireKey("generationPrompt"))
+      ? try c.decode(String.self, forKey: WireKey("generationPrompt")) : nil
+    self.generator =
+      c.contains(WireKey("generator"))
+      ? try c.decode(String.self, forKey: WireKey("generator")) : nil
+    self.isDraft =
+      c.contains(WireKey("isDraft")) ? try c.decode(String.self, forKey: WireKey("isDraft")) : nil
+    self.jobId =
+      c.contains(WireKey("jobId")) ? try c.decode(JobId.self, forKey: WireKey("jobId")) : nil
+    self.language =
+      c.contains(WireKey("language")) ? try c.decode(String.self, forKey: WireKey("language")) : nil
+    self.name = try c.decode(String.self, forKey: WireKey("name"))
+    self.sourceAnnotationId =
+      c.contains(WireKey("sourceAnnotationId"))
+      ? try c.decode(AnnotationId.self, forKey: WireKey("sourceAnnotationId")) : nil
+    self.sourceResourceId =
+      c.contains(WireKey("sourceResourceId"))
+      ? try c.decode(ResourceId.self, forKey: WireKey("sourceResourceId")) : nil
+    self.storageUri = try c.decode(String.self, forKey: WireKey("storageUri"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.archiveOriginal, forKey: WireKey("archiveOriginal"))
+    try c.encodeIfPresent(self.cloneToken, forKey: WireKey("cloneToken"))
+    try c.encodeIfPresent(self.entityTypes, forKey: WireKey("entityTypes"))
+    try c.encode(self.file, forKey: WireKey("file"))
+    try c.encode(self.format, forKey: WireKey("format"))
+    try c.encodeIfPresent(self.generationPrompt, forKey: WireKey("generationPrompt"))
+    try c.encodeIfPresent(self.generator, forKey: WireKey("generator"))
+    try c.encodeIfPresent(self.isDraft, forKey: WireKey("isDraft"))
+    try c.encodeIfPresent(self.jobId, forKey: WireKey("jobId"))
+    try c.encodeIfPresent(self.language, forKey: WireKey("language"))
+    try c.encode(self.name, forKey: WireKey("name"))
+    try c.encodeIfPresent(self.sourceAnnotationId, forKey: WireKey("sourceAnnotationId"))
+    try c.encodeIfPresent(self.sourceResourceId, forKey: WireKey("sourceResourceId"))
+    try c.encode(self.storageUri, forKey: WireKey("storageUri"))
+  }
+}
+
+public struct ResourceView: Codable, Sendable {
+  public var annotations: ResourceAnnotations
+  public var lastSequence: Int
+  public var resource: ResourceDescriptor
+  public init(annotations: ResourceAnnotations, lastSequence: Int, resource: ResourceDescriptor) {
+    self.annotations = annotations
+    self.lastSequence = lastSequence
+    self.resource = resource
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["annotations", "lastSequence", "resource"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in ResourceView")
+    }
+    self.annotations = try c.decode(ResourceAnnotations.self, forKey: WireKey("annotations"))
+    self.lastSequence = try c.decode(Int.self, forKey: WireKey("lastSequence"))
+    self.resource = try c.decode(ResourceDescriptor.self, forKey: WireKey("resource"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.annotations, forKey: WireKey("annotations"))
+    try c.encode(self.lastSequence, forKey: WireKey("lastSequence"))
+    try c.encode(self.resource, forKey: WireKey("resource"))
+  }
+}
+
+public struct ScoredResource: Codable, Sendable {
+  public var context: ScoredResourceContext
+  public var id: ResourceId
+  public var type: ScoredResourceType?
+  public var about: ScoredResourceAbout?
+  public var archived: Bool?
+  public var availableFormats: [String]?
+  public var conformsTo: ScoredResourceConformsTo?
+  public var dateCreated: String?
+  public var dateModified: String?
+  public var description: String?
+  public var entityTypes: [String]?
+  public var generator: ScoredResourceGenerator?
+  public var hasPart: [String]?
+  public var identifier: ScoredResourceIdentifier?
+  public var isDraft: Bool?
+  public var isPartOf: [String]?
+  public var license: String?
+  public var matchReason: String?
+  public var name: String
+  public var originatedFrom: String?
+  public var representations: ScoredResourceRepresentations
+  public var sameAs: [String]?
+  public var score: Double?
+  public var sourceAnnotationId: AnnotationId?
+  public var sourceResourceId: ResourceId?
+  public var version: String?
+  public var wasAttributedTo: ScoredResourceWasAttributedTo?
+  public var wasDerivedFrom: ScoredResourceWasDerivedFrom?
+  public init(
+    context: ScoredResourceContext, id: ResourceId, type: ScoredResourceType? = nil,
+    about: ScoredResourceAbout? = nil, archived: Bool? = nil, availableFormats: [String]? = nil,
+    conformsTo: ScoredResourceConformsTo? = nil, dateCreated: String? = nil,
+    dateModified: String? = nil, description: String? = nil, entityTypes: [String]? = nil,
+    generator: ScoredResourceGenerator? = nil, hasPart: [String]? = nil,
+    identifier: ScoredResourceIdentifier? = nil, isDraft: Bool? = nil, isPartOf: [String]? = nil,
+    license: String? = nil, matchReason: String? = nil, name: String, originatedFrom: String? = nil,
+    representations: ScoredResourceRepresentations, sameAs: [String]? = nil, score: Double? = nil,
+    sourceAnnotationId: AnnotationId? = nil, sourceResourceId: ResourceId? = nil,
+    version: String? = nil, wasAttributedTo: ScoredResourceWasAttributedTo? = nil,
+    wasDerivedFrom: ScoredResourceWasDerivedFrom? = nil
+  ) {
+    self.context = context
+    self.id = id
+    self.type = type
+    self.about = about
+    self.archived = archived
+    self.availableFormats = availableFormats
+    self.conformsTo = conformsTo
+    self.dateCreated = dateCreated
+    self.dateModified = dateModified
+    self.description = description
+    self.entityTypes = entityTypes
+    self.generator = generator
+    self.hasPart = hasPart
+    self.identifier = identifier
+    self.isDraft = isDraft
+    self.isPartOf = isPartOf
+    self.license = license
+    self.matchReason = matchReason
+    self.name = name
+    self.originatedFrom = originatedFrom
+    self.representations = representations
+    self.sameAs = sameAs
+    self.score = score
+    self.sourceAnnotationId = sourceAnnotationId
+    self.sourceResourceId = sourceResourceId
+    self.version = version
+    self.wasAttributedTo = wasAttributedTo
+    self.wasDerivedFrom = wasDerivedFrom
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.context = try c.decode(ScoredResourceContext.self, forKey: WireKey("@context"))
+    self.id = try c.decode(ResourceId.self, forKey: WireKey("@id"))
+    self.type =
+      c.contains(WireKey("@type"))
+      ? try c.decode(ScoredResourceType.self, forKey: WireKey("@type")) : nil
+    self.about =
+      c.contains(WireKey("about"))
+      ? try c.decode(ScoredResourceAbout.self, forKey: WireKey("about")) : nil
+    self.archived =
+      c.contains(WireKey("archived")) ? try c.decode(Bool.self, forKey: WireKey("archived")) : nil
+    self.availableFormats =
+      c.contains(WireKey("availableFormats"))
+      ? try c.decode([String].self, forKey: WireKey("availableFormats")) : nil
+    self.conformsTo =
+      c.contains(WireKey("conformsTo"))
+      ? try c.decode(ScoredResourceConformsTo.self, forKey: WireKey("conformsTo")) : nil
+    self.dateCreated =
+      c.contains(WireKey("dateCreated"))
+      ? try c.decode(String.self, forKey: WireKey("dateCreated")) : nil
+    self.dateModified =
+      c.contains(WireKey("dateModified"))
+      ? try c.decode(String.self, forKey: WireKey("dateModified")) : nil
+    self.description =
+      c.contains(WireKey("description"))
+      ? try c.decode(String.self, forKey: WireKey("description")) : nil
+    self.entityTypes =
+      c.contains(WireKey("entityTypes"))
+      ? try c.decode([String].self, forKey: WireKey("entityTypes")) : nil
+    self.generator =
+      c.contains(WireKey("generator"))
+      ? try c.decode(ScoredResourceGenerator.self, forKey: WireKey("generator")) : nil
+    self.hasPart =
+      c.contains(WireKey("hasPart")) ? try c.decode([String].self, forKey: WireKey("hasPart")) : nil
+    self.identifier =
+      c.contains(WireKey("identifier"))
+      ? try c.decode(ScoredResourceIdentifier.self, forKey: WireKey("identifier")) : nil
+    self.isDraft =
+      c.contains(WireKey("isDraft")) ? try c.decode(Bool.self, forKey: WireKey("isDraft")) : nil
+    self.isPartOf =
+      c.contains(WireKey("isPartOf"))
+      ? try c.decode([String].self, forKey: WireKey("isPartOf")) : nil
+    self.license =
+      c.contains(WireKey("license")) ? try c.decode(String.self, forKey: WireKey("license")) : nil
+    self.matchReason =
+      c.contains(WireKey("matchReason"))
+      ? try c.decode(String.self, forKey: WireKey("matchReason")) : nil
+    self.name = try c.decode(String.self, forKey: WireKey("name"))
+    self.originatedFrom =
+      c.contains(WireKey("originatedFrom"))
+      ? try c.decode(String.self, forKey: WireKey("originatedFrom")) : nil
+    self.representations = try c.decode(
+      ScoredResourceRepresentations.self, forKey: WireKey("representations"))
+    self.sameAs =
+      c.contains(WireKey("sameAs")) ? try c.decode([String].self, forKey: WireKey("sameAs")) : nil
+    self.score =
+      c.contains(WireKey("score")) ? try c.decode(Double.self, forKey: WireKey("score")) : nil
+    self.sourceAnnotationId =
+      c.contains(WireKey("sourceAnnotationId"))
+      ? try c.decode(AnnotationId.self, forKey: WireKey("sourceAnnotationId")) : nil
+    self.sourceResourceId =
+      c.contains(WireKey("sourceResourceId"))
+      ? try c.decode(ResourceId.self, forKey: WireKey("sourceResourceId")) : nil
+    self.version =
+      c.contains(WireKey("version")) ? try c.decode(String.self, forKey: WireKey("version")) : nil
+    self.wasAttributedTo =
+      c.contains(WireKey("wasAttributedTo"))
+      ? try c.decode(ScoredResourceWasAttributedTo.self, forKey: WireKey("wasAttributedTo")) : nil
+    self.wasDerivedFrom =
+      c.contains(WireKey("wasDerivedFrom"))
+      ? try c.decode(ScoredResourceWasDerivedFrom.self, forKey: WireKey("wasDerivedFrom")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.context, forKey: WireKey("@context"))
+    try c.encode(self.id, forKey: WireKey("@id"))
+    try c.encodeIfPresent(self.type, forKey: WireKey("@type"))
+    try c.encodeIfPresent(self.about, forKey: WireKey("about"))
+    try c.encodeIfPresent(self.archived, forKey: WireKey("archived"))
+    try c.encodeIfPresent(self.availableFormats, forKey: WireKey("availableFormats"))
+    try c.encodeIfPresent(self.conformsTo, forKey: WireKey("conformsTo"))
+    try c.encodeIfPresent(self.dateCreated, forKey: WireKey("dateCreated"))
+    try c.encodeIfPresent(self.dateModified, forKey: WireKey("dateModified"))
+    try c.encodeIfPresent(self.description, forKey: WireKey("description"))
+    try c.encodeIfPresent(self.entityTypes, forKey: WireKey("entityTypes"))
+    try c.encodeIfPresent(self.generator, forKey: WireKey("generator"))
+    try c.encodeIfPresent(self.hasPart, forKey: WireKey("hasPart"))
+    try c.encodeIfPresent(self.identifier, forKey: WireKey("identifier"))
+    try c.encodeIfPresent(self.isDraft, forKey: WireKey("isDraft"))
+    try c.encodeIfPresent(self.isPartOf, forKey: WireKey("isPartOf"))
+    try c.encodeIfPresent(self.license, forKey: WireKey("license"))
+    try c.encodeIfPresent(self.matchReason, forKey: WireKey("matchReason"))
+    try c.encode(self.name, forKey: WireKey("name"))
+    try c.encodeIfPresent(self.originatedFrom, forKey: WireKey("originatedFrom"))
+    try c.encode(self.representations, forKey: WireKey("representations"))
+    try c.encodeIfPresent(self.sameAs, forKey: WireKey("sameAs"))
+    try c.encodeIfPresent(self.score, forKey: WireKey("score"))
+    try c.encodeIfPresent(self.sourceAnnotationId, forKey: WireKey("sourceAnnotationId"))
+    try c.encodeIfPresent(self.sourceResourceId, forKey: WireKey("sourceResourceId"))
+    try c.encodeIfPresent(self.version, forKey: WireKey("version"))
+    try c.encodeIfPresent(self.wasAttributedTo, forKey: WireKey("wasAttributedTo"))
+    try c.encodeIfPresent(self.wasDerivedFrom, forKey: WireKey("wasDerivedFrom"))
+  }
+}
+
+public indirect enum ScoredResourceAbout: Codable, Sendable {
+  case text(String)
+  case list([String])
+  public init(from decoder: any Decoder) throws {
+    if let value = try? String(from: decoder) {
+      self = .text(value)
+      return
+    }
+    if let value = try? [String](from: decoder) {
+      self = .list(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(
+        codingPath: decoder.codingPath, debugDescription: "no member of ScoredResourceAbout fits"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .text(let value): try value.encode(to: encoder)
+    case .list(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public indirect enum ScoredResourceConformsTo: Codable, Sendable {
+  case text(String)
+  case list([String])
+  public init(from decoder: any Decoder) throws {
+    if let value = try? String(from: decoder) {
+      self = .text(value)
+      return
+    }
+    if let value = try? [String](from: decoder) {
+      self = .list(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(
+        codingPath: decoder.codingPath,
+        debugDescription: "no member of ScoredResourceConformsTo fits"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .text(let value): try value.encode(to: encoder)
+    case .list(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public indirect enum ScoredResourceContext: Codable, Sendable {
+  case text(String)
+  case empty([String: JSONValue])
+  case list([ScoredResourceContextListItem])
+  public init(from decoder: any Decoder) throws {
+    if let value = try? String(from: decoder) {
+      self = .text(value)
+      return
+    }
+    if let value = try? [String: JSONValue](from: decoder) {
+      self = .empty(value)
+      return
+    }
+    if let value = try? [ScoredResourceContextListItem](from: decoder) {
+      self = .list(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(
+        codingPath: decoder.codingPath, debugDescription: "no member of ScoredResourceContext fits")
+    )
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .text(let value): try value.encode(to: encoder)
+    case .empty(let value): try value.encode(to: encoder)
+    case .list(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public indirect enum ScoredResourceContextListItem: Codable, Sendable {
+  case text(String)
+  case empty([String: JSONValue])
+  public init(from decoder: any Decoder) throws {
+    if let value = try? String(from: decoder) {
+      self = .text(value)
+      return
+    }
+    if let value = try? [String: JSONValue](from: decoder) {
+      self = .empty(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(
+        codingPath: decoder.codingPath,
+        debugDescription: "no member of ScoredResourceContextListItem fits"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .text(let value): try value.encode(to: encoder)
+    case .empty(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public indirect enum ScoredResourceGenerator: Codable, Sendable {
+  case agent(Agent)
+  case list([Agent])
+  public init(from decoder: any Decoder) throws {
+    if let value = try? Agent(from: decoder) {
+      self = .agent(value)
+      return
+    }
+    if let value = try? [Agent](from: decoder) {
+      self = .list(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(
+        codingPath: decoder.codingPath,
+        debugDescription: "no member of ScoredResourceGenerator fits"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .agent(let value): try value.encode(to: encoder)
+    case .list(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public indirect enum ScoredResourceIdentifier: Codable, Sendable {
+  case text(String)
+  case list([String])
+  case object(ScoredResourceIdentifierObject)
+  public init(from decoder: any Decoder) throws {
+    if let value = try? String(from: decoder) {
+      self = .text(value)
+      return
+    }
+    if let value = try? [String](from: decoder) {
+      self = .list(value)
+      return
+    }
+    if let value = try? ScoredResourceIdentifierObject(from: decoder) {
+      self = .object(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(
+        codingPath: decoder.codingPath,
+        debugDescription: "no member of ScoredResourceIdentifier fits"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .text(let value): try value.encode(to: encoder)
+    case .list(let value): try value.encode(to: encoder)
+    case .object(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public struct ScoredResourceIdentifierObject: Codable, Sendable {
+  public var id: String?
+  public var scheme: String?
+  public var value: String?
+  public var rest: [String: JSONValue]
+  public init(
+    id: String? = nil, scheme: String? = nil, value: String? = nil, rest: [String: JSONValue] = [:]
+  ) {
+    self.id = id
+    self.scheme = scheme
+    self.value = value
+    self.rest = rest
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.id = c.contains(WireKey("@id")) ? try c.decode(String.self, forKey: WireKey("@id")) : nil
+    self.scheme =
+      c.contains(WireKey("scheme")) ? try c.decode(String.self, forKey: WireKey("scheme")) : nil
+    self.value =
+      c.contains(WireKey("value")) ? try c.decode(String.self, forKey: WireKey("value")) : nil
+    rest = [:]
+    for key in c.allKeys where !Set<String>(["@id", "scheme", "value"]).contains(key.stringValue) {
+      rest[key.stringValue] = try c.decode(JSONValue.self, forKey: key)
+    }
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    for (key, value) in rest {
+      guard !Set<String>(["@id", "scheme", "value"]).contains(key) else {
+        throw EncodingError.invalidValue(
+          value,
+          .init(
+            codingPath: encoder.codingPath,
+            debugDescription: "rest overrides a named property of ScoredResourceIdentifierObject"))
+      }
+      try c.encode(value, forKey: WireKey(key))
+    }
+    try c.encodeIfPresent(self.id, forKey: WireKey("@id"))
+    try c.encodeIfPresent(self.scheme, forKey: WireKey("scheme"))
+    try c.encodeIfPresent(self.value, forKey: WireKey("value"))
+  }
+}
+
+public indirect enum ScoredResourceRepresentations: Codable, Sendable {
+  case representation(Representation)
+  case list([Representation])
+  public init(from decoder: any Decoder) throws {
+    if let value = try? Representation(from: decoder) {
+      self = .representation(value)
+      return
+    }
+    if let value = try? [Representation](from: decoder) {
+      self = .list(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(
+        codingPath: decoder.codingPath,
+        debugDescription: "no member of ScoredResourceRepresentations fits"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .representation(let value): try value.encode(to: encoder)
+    case .list(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public indirect enum ScoredResourceType: Codable, Sendable {
+  case text(String)
+  case list([String])
+  public init(from decoder: any Decoder) throws {
+    if let value = try? String(from: decoder) {
+      self = .text(value)
+      return
+    }
+    if let value = try? [String](from: decoder) {
+      self = .list(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(
+        codingPath: decoder.codingPath, debugDescription: "no member of ScoredResourceType fits"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .text(let value): try value.encode(to: encoder)
+    case .list(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public indirect enum ScoredResourceWasAttributedTo: Codable, Sendable {
+  case agent(Agent)
+  case list([Agent])
+  public init(from decoder: any Decoder) throws {
+    if let value = try? Agent(from: decoder) {
+      self = .agent(value)
+      return
+    }
+    if let value = try? [Agent](from: decoder) {
+      self = .list(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(
+        codingPath: decoder.codingPath,
+        debugDescription: "no member of ScoredResourceWasAttributedTo fits"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .agent(let value): try value.encode(to: encoder)
+    case .list(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public indirect enum ScoredResourceWasDerivedFrom: Codable, Sendable {
+  case resourceId(ResourceId)
+  case list([ResourceId])
+  public init(from decoder: any Decoder) throws {
+    if let value = try? ResourceId(from: decoder) {
+      self = .resourceId(value)
+      return
+    }
+    if let value = try? [ResourceId](from: decoder) {
+      self = .list(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(
+        codingPath: decoder.codingPath,
+        debugDescription: "no member of ScoredResourceWasDerivedFrom fits"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .resourceId(let value): try value.encode(to: encoder)
+    case .list(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public indirect enum Selector: Codable, Sendable {
+  case textPositionSelector(TextPositionSelector)
+  case textQuoteSelector(TextQuoteSelector)
+  case svgSelector(SvgSelector)
+  case fragmentSelector(FragmentSelector)
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    let tag = try c.decode(String.self, forKey: WireKey("type"))
+    switch tag {
+    case "TextPositionSelector":
+      self = .textPositionSelector(try TextPositionSelector(from: decoder))
+    case "TextQuoteSelector": self = .textQuoteSelector(try TextQuoteSelector(from: decoder))
+    case "SvgSelector": self = .svgSelector(try SvgSelector(from: decoder))
+    case "FragmentSelector": self = .fragmentSelector(try FragmentSelector(from: decoder))
+    default:
+      throw DecodingError.dataCorruptedError(
+        forKey: WireKey("type"), in: c, debugDescription: "unknown Selector discriminator")
+    }
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .textPositionSelector(let value): try value.encode(to: encoder)
+    case .textQuoteSelector(let value): try value.encode(to: encoder)
+    case .svgSelector(let value): try value.encode(to: encoder)
+    case .fragmentSelector(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public struct SemanticMatch: Codable, Sendable {
+  public var annotationId: AnnotationId?
+  public var entityTypes: [String]?
+  public var machineRead: Bool?
+  public var resourceId: ResourceId
+  public var resourceName: String
+  public var score: Double
+  public var text: String
+  public init(
+    annotationId: AnnotationId? = nil, entityTypes: [String]? = nil, machineRead: Bool? = nil,
+    resourceId: ResourceId, resourceName: String, score: Double, text: String
+  ) {
+    self.annotationId = annotationId
+    self.entityTypes = entityTypes
+    self.machineRead = machineRead
+    self.resourceId = resourceId
+    self.resourceName = resourceName
+    self.score = score
+    self.text = text
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.annotationId =
+      c.contains(WireKey("annotationId"))
+      ? try c.decode(AnnotationId.self, forKey: WireKey("annotationId")) : nil
+    self.entityTypes =
+      c.contains(WireKey("entityTypes"))
+      ? try c.decode([String].self, forKey: WireKey("entityTypes")) : nil
+    self.machineRead =
+      c.contains(WireKey("machineRead"))
+      ? try c.decode(Bool.self, forKey: WireKey("machineRead")) : nil
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self.resourceName = try c.decode(String.self, forKey: WireKey("resourceName"))
+    self.score = try c.decode(Double.self, forKey: WireKey("score"))
+    self.text = try c.decode(String.self, forKey: WireKey("text"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.annotationId, forKey: WireKey("annotationId"))
+    try c.encodeIfPresent(self.entityTypes, forKey: WireKey("entityTypes"))
+    try c.encodeIfPresent(self.machineRead, forKey: WireKey("machineRead"))
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encode(self.resourceName, forKey: WireKey("resourceName"))
+    try c.encode(self.score, forKey: WireKey("score"))
+    try c.encode(self.text, forKey: WireKey("text"))
+  }
+}
+
+public struct SessionJoinedEvent: Codable, Sendable {
+  public var connectionId: String
+  public var participant: UserId
+  public init(connectionId: String, participant: UserId) {
+    self.connectionId = connectionId
+    self.participant = participant
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.connectionId = try c.decode(String.self, forKey: WireKey("connectionId"))
+    self.participant = try c.decode(UserId.self, forKey: WireKey("participant"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.connectionId, forKey: WireKey("connectionId"))
+    try c.encode(self.participant, forKey: WireKey("participant"))
+  }
+}
+
+public struct SessionLeftEvent: Codable, Sendable {
+  public var connectionId: String
+  public var participant: UserId
+  public init(connectionId: String, participant: UserId) {
+    self.connectionId = connectionId
+    self.participant = participant
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.connectionId = try c.decode(String.self, forKey: WireKey("connectionId"))
+    self.participant = try c.decode(UserId.self, forKey: WireKey("participant"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.connectionId, forKey: WireKey("connectionId"))
+    try c.encode(self.participant, forKey: WireKey("participant"))
+  }
+}
+
+public struct SettingsHoverDelayChangedEvent: Codable, Sendable {
+  public var hoverDelayMs: Int
+  public init(hoverDelayMs: Int) {
+    self.hoverDelayMs = hoverDelayMs
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.hoverDelayMs = try c.decode(Int.self, forKey: WireKey("hoverDelayMs"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.hoverDelayMs, forKey: WireKey("hoverDelayMs"))
+  }
+}
+
+public struct SettingsLocaleChangedEvent: Codable, Sendable {
+  public var locale: String
+  public init(locale: String) {
+    self.locale = locale
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.locale = try c.decode(String.self, forKey: WireKey("locale"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.locale, forKey: WireKey("locale"))
+  }
+}
+
+public struct SettingsThemeChangedEvent: Codable, Sendable {
+  public var theme: SettingsThemeChangedEventTheme
+  public init(theme: SettingsThemeChangedEventTheme) {
+    self.theme = theme
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.theme = try c.decode(SettingsThemeChangedEventTheme.self, forKey: WireKey("theme"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.theme, forKey: WireKey("theme"))
+  }
+}
+
+public enum SettingsThemeChangedEventTheme: String, Codable, Sendable, CaseIterable {
+  case light = "light"
+  case dark = "dark"
+  case system = "system"
+}
+
+public struct SignIn: Codable, Sendable {
+  public var email: String?
+  public var expiresAt: String?
+  public var issuer: String
+  public var obtainedAt: String
+  public var refreshToken: String?
+  public var revocationEndpoint: String?
+  public var token: String
+  public var tokenEndpoint: String
+  public init(
+    email: String? = nil, expiresAt: String? = nil, issuer: String, obtainedAt: String,
+    refreshToken: String? = nil, revocationEndpoint: String? = nil, token: String,
+    tokenEndpoint: String
+  ) {
+    self.email = email
+    self.expiresAt = expiresAt
+    self.issuer = issuer
+    self.obtainedAt = obtainedAt
+    self.refreshToken = refreshToken
+    self.revocationEndpoint = revocationEndpoint
+    self.token = token
+    self.tokenEndpoint = tokenEndpoint
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.email =
+      c.contains(WireKey("email")) ? try c.decode(String.self, forKey: WireKey("email")) : nil
+    self.expiresAt =
+      c.contains(WireKey("expiresAt"))
+      ? try c.decode(String.self, forKey: WireKey("expiresAt")) : nil
+    self.issuer = try c.decode(String.self, forKey: WireKey("issuer"))
+    self.obtainedAt = try c.decode(String.self, forKey: WireKey("obtainedAt"))
+    self.refreshToken =
+      c.contains(WireKey("refreshToken"))
+      ? try c.decode(String.self, forKey: WireKey("refreshToken")) : nil
+    self.revocationEndpoint =
+      c.contains(WireKey("revocationEndpoint"))
+      ? try c.decode(String.self, forKey: WireKey("revocationEndpoint")) : nil
+    self.token = try c.decode(String.self, forKey: WireKey("token"))
+    self.tokenEndpoint = try c.decode(String.self, forKey: WireKey("tokenEndpoint"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.email, forKey: WireKey("email"))
+    try c.encodeIfPresent(self.expiresAt, forKey: WireKey("expiresAt"))
+    try c.encode(self.issuer, forKey: WireKey("issuer"))
+    try c.encode(self.obtainedAt, forKey: WireKey("obtainedAt"))
+    try c.encodeIfPresent(self.refreshToken, forKey: WireKey("refreshToken"))
+    try c.encodeIfPresent(self.revocationEndpoint, forKey: WireKey("revocationEndpoint"))
+    try c.encode(self.token, forKey: WireKey("token"))
+    try c.encode(self.tokenEndpoint, forKey: WireKey("tokenEndpoint"))
+  }
+}
+
+public struct SmeltRebuildAnchorsCommand: Codable, Sendable {
+  public var _userId: UserId?
+  public var resourceId: ResourceId?
+  public init(_userId: UserId? = nil, resourceId: ResourceId? = nil) {
+    self._userId = _userId
+    self.resourceId = resourceId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self._userId =
+      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
+    self.resourceId =
+      c.contains(WireKey("resourceId"))
+      ? try c.decode(ResourceId.self, forKey: WireKey("resourceId")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
+    try c.encodeIfPresent(self.resourceId, forKey: WireKey("resourceId"))
+  }
+}
+
+public struct SmeltSettled: Codable, Sendable {
+  public var contentChecksum: String
+  public var outcome: SmeltSettledOutcome
+  public var reason: SmeltSettledReason?
+  public var resourceId: ResourceId
+  public init(
+    contentChecksum: String, outcome: SmeltSettledOutcome, reason: SmeltSettledReason? = nil,
+    resourceId: ResourceId
+  ) {
+    self.contentChecksum = contentChecksum
+    self.outcome = outcome
+    self.reason = reason
+    self.resourceId = resourceId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.contentChecksum = try c.decode(String.self, forKey: WireKey("contentChecksum"))
+    self.outcome = try c.decode(SmeltSettledOutcome.self, forKey: WireKey("outcome"))
+    self.reason =
+      c.contains(WireKey("reason"))
+      ? try c.decode(SmeltSettledReason.self, forKey: WireKey("reason")) : nil
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.contentChecksum, forKey: WireKey("contentChecksum"))
+    try c.encode(self.outcome, forKey: WireKey("outcome"))
+    try c.encodeIfPresent(self.reason, forKey: WireKey("reason"))
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+  }
+}
+
+public enum SmeltSettledOutcome: String, Codable, Sendable, CaseIterable {
+  case indexed = "indexed"
+  case skipped = "skipped"
+}
+
+public enum SmeltSettledReason: String, Codable, Sendable, CaseIterable {
+  case noExtractor = "no-extractor"
+  case empty = "empty"
+  case noTextLayer = "no-text-layer"
+  case encrypted = "encrypted"
+  case corrupt = "corrupt"
+  case tooLarge = "too-large"
+}
+
+public struct SmelterConfig: Codable, Sendable {
+  public var archivist: SmelterConfigArchivist
+  public var chunking: SmelterConfigChunking
+  public var cursorsPath: CursorsPath
+  public var embedding: EmbeddingConfig
+  public var gatewayUrl: String
+  public var identity: SmelterConfigIdentity
+  public var kb: KbIdentity
+  public var logFormat: LogFormat
+  public var logLevel: LogLevel
+  public var pdfsAtOnce: Int
+  public var port: Int
+  public var vectors: VectorsConfig
+  public init(
+    archivist: SmelterConfigArchivist, chunking: SmelterConfigChunking, cursorsPath: CursorsPath,
+    embedding: EmbeddingConfig, gatewayUrl: String, identity: SmelterConfigIdentity, kb: KbIdentity,
+    logFormat: LogFormat, logLevel: LogLevel, pdfsAtOnce: Int, port: Int, vectors: VectorsConfig
+  ) {
+    self.archivist = archivist
+    self.chunking = chunking
+    self.cursorsPath = cursorsPath
+    self.embedding = embedding
+    self.gatewayUrl = gatewayUrl
+    self.identity = identity
+    self.kb = kb
+    self.logFormat = logFormat
+    self.logLevel = logLevel
+    self.pdfsAtOnce = pdfsAtOnce
+    self.port = port
+    self.vectors = vectors
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>([
+        "archivist", "chunking", "cursorsPath", "embedding", "gatewayUrl", "identity", "kb",
+        "logFormat", "logLevel", "pdfsAtOnce", "port", "vectors",
+      ]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in SmelterConfig")
+    }
+    self.archivist = try c.decode(SmelterConfigArchivist.self, forKey: WireKey("archivist"))
+    self.chunking = try c.decode(SmelterConfigChunking.self, forKey: WireKey("chunking"))
+    self.cursorsPath = try c.decode(CursorsPath.self, forKey: WireKey("cursorsPath"))
+    self.embedding = try c.decode(EmbeddingConfig.self, forKey: WireKey("embedding"))
+    self.gatewayUrl = try c.decode(String.self, forKey: WireKey("gatewayUrl"))
+    self.identity = try c.decode(SmelterConfigIdentity.self, forKey: WireKey("identity"))
+    self.kb = try c.decode(KbIdentity.self, forKey: WireKey("kb"))
+    self.logFormat = try c.decode(LogFormat.self, forKey: WireKey("logFormat"))
+    self.logLevel = try c.decode(LogLevel.self, forKey: WireKey("logLevel"))
+    self.pdfsAtOnce = try c.decode(Int.self, forKey: WireKey("pdfsAtOnce"))
+    self.port = try c.decode(Int.self, forKey: WireKey("port"))
+    self.vectors = try c.decode(VectorsConfig.self, forKey: WireKey("vectors"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.archivist, forKey: WireKey("archivist"))
+    try c.encode(self.chunking, forKey: WireKey("chunking"))
+    try c.encode(self.cursorsPath, forKey: WireKey("cursorsPath"))
+    try c.encode(self.embedding, forKey: WireKey("embedding"))
+    try c.encode(self.gatewayUrl, forKey: WireKey("gatewayUrl"))
+    try c.encode(self.identity, forKey: WireKey("identity"))
+    try c.encode(self.kb, forKey: WireKey("kb"))
+    try c.encode(self.logFormat, forKey: WireKey("logFormat"))
+    try c.encode(self.logLevel, forKey: WireKey("logLevel"))
+    try c.encode(self.pdfsAtOnce, forKey: WireKey("pdfsAtOnce"))
+    try c.encode(self.port, forKey: WireKey("port"))
+    try c.encode(self.vectors, forKey: WireKey("vectors"))
+  }
+}
+
+public struct SmelterConfigArchivist: Codable, Sendable {
+  public var host: String
+  public var port: Int
+  public init(host: String, port: Int) {
+    self.host = host
+    self.port = port
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: { !Set<String>(["host", "port"]).contains($0.stringValue) })
+    {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in SmelterConfigArchivist")
+    }
+    self.host = try c.decode(String.self, forKey: WireKey("host"))
+    self.port = try c.decode(Int.self, forKey: WireKey("port"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.host, forKey: WireKey("host"))
+    try c.encode(self.port, forKey: WireKey("port"))
+  }
+}
+
+public struct SmelterConfigChunking: Codable, Sendable {
+  public var chunkSize: Int
+  public var overlap: Int
+  public init(chunkSize: Int, overlap: Int) {
+    self.chunkSize = chunkSize
+    self.overlap = overlap
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["chunkSize", "overlap"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in SmelterConfigChunking")
+    }
+    self.chunkSize = try c.decode(Int.self, forKey: WireKey("chunkSize"))
+    self.overlap = try c.decode(Int.self, forKey: WireKey("overlap"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.chunkSize, forKey: WireKey("chunkSize"))
+    try c.encode(self.overlap, forKey: WireKey("overlap"))
+  }
+}
+
+public struct SmelterConfigIdentity: Codable, Sendable {
+  public var issuer: String
+  public init(issuer: String) {
+    self.issuer = issuer
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: { !Set<String>(["issuer"]).contains($0.stringValue) }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in SmelterConfigIdentity")
+    }
+    self.issuer = try c.decode(String.self, forKey: WireKey("issuer"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.issuer, forKey: WireKey("issuer"))
+  }
+}
+
+public struct SpecCacheQueriesItem: Codable, Sendable {
+  public var asks: String?
+  public var docs: String
+  public var name: String
+  public var per: String?
+  public var persisted: Bool?
+  public var reads: String?
+  public var value: SpecCacheQueriesItemValue
+  public init(
+    asks: String? = nil, docs: String, name: String, per: String? = nil, persisted: Bool? = nil,
+    reads: String? = nil, value: SpecCacheQueriesItemValue
+  ) {
+    self.asks = asks
+    self.docs = docs
+    self.name = name
+    self.per = per
+    self.persisted = persisted
+    self.reads = reads
+    self.value = value
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.asks =
+      c.contains(WireKey("asks")) ? try c.decode(String.self, forKey: WireKey("asks")) : nil
+    self.docs = try c.decode(String.self, forKey: WireKey("docs"))
+    self.name = try c.decode(String.self, forKey: WireKey("name"))
+    self.per = c.contains(WireKey("per")) ? try c.decode(String.self, forKey: WireKey("per")) : nil
+    self.persisted =
+      c.contains(WireKey("persisted")) ? try c.decode(Bool.self, forKey: WireKey("persisted")) : nil
+    self.reads =
+      c.contains(WireKey("reads")) ? try c.decode(String.self, forKey: WireKey("reads")) : nil
+    self.value = try c.decode(SpecCacheQueriesItemValue.self, forKey: WireKey("value"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.asks, forKey: WireKey("asks"))
+    try c.encode(self.docs, forKey: WireKey("docs"))
+    try c.encode(self.name, forKey: WireKey("name"))
+    try c.encodeIfPresent(self.per, forKey: WireKey("per"))
+    try c.encodeIfPresent(self.persisted, forKey: WireKey("persisted"))
+    try c.encodeIfPresent(self.reads, forKey: WireKey("reads"))
+    try c.encode(self.value, forKey: WireKey("value"))
+  }
+}
+
+public struct SpecCacheQueriesItemValue: Codable, Sendable {
+  public var ref: String
+  public init(ref: String) {
+    self.ref = ref
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.ref = try c.decode(String.self, forKey: WireKey("$ref"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.ref, forKey: WireKey("$ref"))
+  }
+}
+
+public struct SpecEncodingsItem: Codable, Sendable {
+  public var bytes: String?
+  public var encoding: String
+  public var everyByte: String?
+  public var labels: [String]
+  public var refused: Bool?
+  public var text: String?
+  public init(
+    bytes: String? = nil, encoding: String, everyByte: String? = nil, labels: [String],
+    refused: Bool? = nil, text: String? = nil
+  ) {
+    self.bytes = bytes
+    self.encoding = encoding
+    self.everyByte = everyByte
+    self.labels = labels
+    self.refused = refused
+    self.text = text
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.bytes =
+      c.contains(WireKey("bytes")) ? try c.decode(String.self, forKey: WireKey("bytes")) : nil
+    self.encoding = try c.decode(String.self, forKey: WireKey("encoding"))
+    self.everyByte =
+      c.contains(WireKey("everyByte"))
+      ? try c.decode(String.self, forKey: WireKey("everyByte")) : nil
+    self.labels = try c.decode([String].self, forKey: WireKey("labels"))
+    self.refused =
+      c.contains(WireKey("refused")) ? try c.decode(Bool.self, forKey: WireKey("refused")) : nil
+    self.text =
+      c.contains(WireKey("text")) ? try c.decode(String.self, forKey: WireKey("text")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.bytes, forKey: WireKey("bytes"))
+    try c.encode(self.encoding, forKey: WireKey("encoding"))
+    try c.encodeIfPresent(self.everyByte, forKey: WireKey("everyByte"))
+    try c.encode(self.labels, forKey: WireKey("labels"))
+    try c.encodeIfPresent(self.refused, forKey: WireKey("refused"))
+    try c.encodeIfPresent(self.text, forKey: WireKey("text"))
+  }
+}
+
+public struct SpecMediaTypesItem: Codable, Sendable {
+  public var anchoring: String
+  public var authorable: Bool
+  public var `extension`: String
+  public var generatable: Bool
+  public var label: String
+  public var mediaType: String
+  public var render: String
+  public var textSource: String
+  public var uploadable: Bool
+  public init(
+    anchoring: String, authorable: Bool, `extension`: String, generatable: Bool, label: String,
+    mediaType: String, render: String, textSource: String, uploadable: Bool
+  ) {
+    self.anchoring = anchoring
+    self.authorable = authorable
+    self.`extension` = `extension`
+    self.generatable = generatable
+    self.label = label
+    self.mediaType = mediaType
+    self.render = render
+    self.textSource = textSource
+    self.uploadable = uploadable
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.anchoring = try c.decode(String.self, forKey: WireKey("anchoring"))
+    self.authorable = try c.decode(Bool.self, forKey: WireKey("authorable"))
+    self.`extension` = try c.decode(String.self, forKey: WireKey("extension"))
+    self.generatable = try c.decode(Bool.self, forKey: WireKey("generatable"))
+    self.label = try c.decode(String.self, forKey: WireKey("label"))
+    self.mediaType = try c.decode(String.self, forKey: WireKey("mediaType"))
+    self.render = try c.decode(String.self, forKey: WireKey("render"))
+    self.textSource = try c.decode(String.self, forKey: WireKey("textSource"))
+    self.uploadable = try c.decode(Bool.self, forKey: WireKey("uploadable"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.anchoring, forKey: WireKey("anchoring"))
+    try c.encode(self.authorable, forKey: WireKey("authorable"))
+    try c.encode(self.`extension`, forKey: WireKey("extension"))
+    try c.encode(self.generatable, forKey: WireKey("generatable"))
+    try c.encode(self.label, forKey: WireKey("label"))
+    try c.encode(self.mediaType, forKey: WireKey("mediaType"))
+    try c.encode(self.render, forKey: WireKey("render"))
+    try c.encode(self.textSource, forKey: WireKey("textSource"))
+    try c.encode(self.uploadable, forKey: WireKey("uploadable"))
+  }
+}
+
+public struct SpecOauthClientsItem: Codable, Sendable {
+  public var docs: String
+  public var id: String
+  public var name: String
+  public init(docs: String, id: String, name: String) {
+    self.docs = docs
+    self.id = id
+    self.name = name
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.docs = try c.decode(String.self, forKey: WireKey("docs"))
+    self.id = try c.decode(String.self, forKey: WireKey("id"))
+    self.name = try c.decode(String.self, forKey: WireKey("name"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.docs, forKey: WireKey("docs"))
+    try c.encode(self.id, forKey: WireKey("id"))
+    try c.encode(self.name, forKey: WireKey("name"))
+  }
+}
+
+public struct SpecOwnerOnlyDirectory: Codable, Sendable {
+  public var docs: String
+  public var value: String
+  public init(docs: String, value: String) {
+    self.docs = docs
+    self.value = value
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.docs = try c.decode(String.self, forKey: WireKey("docs"))
+    self.value = try c.decode(String.self, forKey: WireKey("value"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.docs, forKey: WireKey("docs"))
+    try c.encode(self.value, forKey: WireKey("value"))
+  }
+}
+
+public struct SpecOwnerOnlyFile: Codable, Sendable {
+  public var docs: String
+  public var value: String
+  public init(docs: String, value: String) {
+    self.docs = docs
+    self.value = value
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.docs = try c.decode(String.self, forKey: WireKey("docs"))
+    self.value = try c.decode(String.self, forKey: WireKey("value"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.docs, forKey: WireKey("docs"))
+    try c.encode(self.value, forKey: WireKey("value"))
+  }
+}
+
+public struct SpecSignInScope: Codable, Sendable {
+  public var docs: String
+  public var value: String
+  public init(docs: String, value: String) {
+    self.docs = docs
+    self.value = value
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.docs = try c.decode(String.self, forKey: WireKey("docs"))
+    self.value = try c.decode(String.self, forKey: WireKey("value"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.docs, forKey: WireKey("docs"))
+    try c.encode(self.value, forKey: WireKey("value"))
+  }
+}
+
+public struct SpecTelemetryMetricsItem: Codable, Sendable {
+  public var attributes: [SpecTelemetryMetricsItemAttributesItem]
+  public var instrument: String
+  public var meaning: String
+  public var name: String
+  public var transport: String
+  public init(
+    attributes: [SpecTelemetryMetricsItemAttributesItem], instrument: String, meaning: String,
+    name: String, transport: String
+  ) {
+    self.attributes = attributes
+    self.instrument = instrument
+    self.meaning = meaning
+    self.name = name
+    self.transport = transport
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.attributes = try c.decode(
+      [SpecTelemetryMetricsItemAttributesItem].self, forKey: WireKey("attributes"))
+    self.instrument = try c.decode(String.self, forKey: WireKey("instrument"))
+    self.meaning = try c.decode(String.self, forKey: WireKey("meaning"))
+    self.name = try c.decode(String.self, forKey: WireKey("name"))
+    self.transport = try c.decode(String.self, forKey: WireKey("transport"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.attributes, forKey: WireKey("attributes"))
+    try c.encode(self.instrument, forKey: WireKey("instrument"))
+    try c.encode(self.meaning, forKey: WireKey("meaning"))
+    try c.encode(self.name, forKey: WireKey("name"))
+    try c.encode(self.transport, forKey: WireKey("transport"))
+  }
+}
+
+public struct SpecTelemetryMetricsItemAttributesItem: Codable, Sendable {
+  public var key: String
+  public var only: String?
+  public init(key: String, only: String? = nil) {
+    self.key = key
+    self.only = only
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.key = try c.decode(String.self, forKey: WireKey("key"))
+    self.only =
+      c.contains(WireKey("only")) ? try c.decode(String.self, forKey: WireKey("only")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.key, forKey: WireKey("key"))
+    try c.encodeIfPresent(self.only, forKey: WireKey("only"))
+  }
+}
+
+public struct SpecTelemetrySpansItem: Codable, Sendable {
+  public var attributes: [SpecTelemetrySpansItemAttributesItem]
+  public var kind: String
+  public var meaning: String
+  public var name: String
+  public var transport: String
+  public init(
+    attributes: [SpecTelemetrySpansItemAttributesItem], kind: String, meaning: String, name: String,
+    transport: String
+  ) {
+    self.attributes = attributes
+    self.kind = kind
+    self.meaning = meaning
+    self.name = name
+    self.transport = transport
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.attributes = try c.decode(
+      [SpecTelemetrySpansItemAttributesItem].self, forKey: WireKey("attributes"))
+    self.kind = try c.decode(String.self, forKey: WireKey("kind"))
+    self.meaning = try c.decode(String.self, forKey: WireKey("meaning"))
+    self.name = try c.decode(String.self, forKey: WireKey("name"))
+    self.transport = try c.decode(String.self, forKey: WireKey("transport"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.attributes, forKey: WireKey("attributes"))
+    try c.encode(self.kind, forKey: WireKey("kind"))
+    try c.encode(self.meaning, forKey: WireKey("meaning"))
+    try c.encode(self.name, forKey: WireKey("name"))
+    try c.encode(self.transport, forKey: WireKey("transport"))
+  }
+}
+
+public struct SpecTelemetrySpansItemAttributesItem: Codable, Sendable {
+  public var key: String
+  public var only: String?
+  public var values: [String]?
+  public init(key: String, only: String? = nil, values: [String]? = nil) {
+    self.key = key
+    self.only = only
+    self.values = values
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.key = try c.decode(String.self, forKey: WireKey("key"))
+    self.only =
+      c.contains(WireKey("only")) ? try c.decode(String.self, forKey: WireKey("only")) : nil
+    self.values =
+      c.contains(WireKey("values")) ? try c.decode([String].self, forKey: WireKey("values")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.key, forKey: WireKey("key"))
+    try c.encodeIfPresent(self.only, forKey: WireKey("only"))
+    try c.encodeIfPresent(self.values, forKey: WireKey("values"))
+  }
+}
+
+public struct SpecificResource: Codable, Sendable {
+  public var purpose: BodyPurpose?
+  public var source: ResourceId
+  public let type: SpecificResourceType
+  public init(purpose: BodyPurpose? = nil, source: ResourceId) {
+    self.purpose = purpose
+    self.source = source
+    self.type = .specificResource
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.purpose =
+      c.contains(WireKey("purpose"))
+      ? try c.decode(BodyPurpose.self, forKey: WireKey("purpose")) : nil
+    self.source = try c.decode(ResourceId.self, forKey: WireKey("source"))
+    self.type = try c.decode(SpecificResourceType.self, forKey: WireKey("type"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.purpose, forKey: WireKey("purpose"))
+    try c.encode(self.source, forKey: WireKey("source"))
+    try c.encode(self.type, forKey: WireKey("type"))
+  }
+}
+
+public enum SpecificResourceType: String, Codable, Sendable, CaseIterable {
+  case specificResource = "SpecificResource"
+}
+
+public struct StatusResponse: Codable, Sendable {
+  public var authenticatedAs: String?
+  public var features: StatusResponseFeatures
+  public var message: String
+  public var status: String
+  public var version: String
+  public init(
+    authenticatedAs: String? = nil, features: StatusResponseFeatures, message: String,
+    status: String, version: String
+  ) {
+    self.authenticatedAs = authenticatedAs
+    self.features = features
+    self.message = message
+    self.status = status
+    self.version = version
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.authenticatedAs =
+      c.contains(WireKey("authenticatedAs"))
+      ? try c.decode(String.self, forKey: WireKey("authenticatedAs")) : nil
+    self.features = try c.decode(StatusResponseFeatures.self, forKey: WireKey("features"))
+    self.message = try c.decode(String.self, forKey: WireKey("message"))
+    self.status = try c.decode(String.self, forKey: WireKey("status"))
+    self.version = try c.decode(String.self, forKey: WireKey("version"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.authenticatedAs, forKey: WireKey("authenticatedAs"))
+    try c.encode(self.features, forKey: WireKey("features"))
+    try c.encode(self.message, forKey: WireKey("message"))
+    try c.encode(self.status, forKey: WireKey("status"))
+    try c.encode(self.version, forKey: WireKey("version"))
+  }
+}
+
+public struct StatusResponseFeatures: Codable, Sendable {
+  public var collaboration: String
+  public var semanticContent: String
+  public init(collaboration: String, semanticContent: String) {
+    self.collaboration = collaboration
+    self.semanticContent = semanticContent
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.collaboration = try c.decode(String.self, forKey: WireKey("collaboration"))
+    self.semanticContent = try c.decode(String.self, forKey: WireKey("semanticContent"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.collaboration, forKey: WireKey("collaboration"))
+    try c.encode(self.semanticContent, forKey: WireKey("semanticContent"))
+  }
+}
+
+public struct StorageUriEntry: Codable, Sendable {
+  public var resourceId: ResourceId
+  public var uri: String
+  public init(resourceId: ResourceId, uri: String) {
+    self.resourceId = resourceId
+    self.uri = uri
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["resourceId", "uri"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in StorageUriEntry")
+    }
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self.uri = try c.decode(String.self, forKey: WireKey("uri"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encode(self.uri, forKey: WireKey("uri"))
+  }
+}
+
+public struct StoredEventResponse: Codable, Sendable {
+  public var id: String
+  public var metadata: EventMetadata
+  public var payload: [String: JSONValue]
+  public var resourceId: ResourceId?
+  public var timestamp: String
+  public var type: String
+  public var userId: UserId
+  public var version: Int
+  public init(
+    id: String, metadata: EventMetadata, payload: [String: JSONValue],
+    resourceId: ResourceId? = nil, timestamp: String, type: String, userId: UserId, version: Int
+  ) {
+    self.id = id
+    self.metadata = metadata
+    self.payload = payload
+    self.resourceId = resourceId
+    self.timestamp = timestamp
+    self.type = type
+    self.userId = userId
+    self.version = version
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.id = try c.decode(String.self, forKey: WireKey("id"))
+    self.metadata = try c.decode(EventMetadata.self, forKey: WireKey("metadata"))
+    self.payload = try c.decode([String: JSONValue].self, forKey: WireKey("payload"))
+    self.resourceId =
+      c.contains(WireKey("resourceId"))
+      ? try c.decode(ResourceId.self, forKey: WireKey("resourceId")) : nil
+    self.timestamp = try c.decode(String.self, forKey: WireKey("timestamp"))
+    self.type = try c.decode(String.self, forKey: WireKey("type"))
+    self.userId = try c.decode(UserId.self, forKey: WireKey("userId"))
+    self.version = try c.decode(Int.self, forKey: WireKey("version"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.id, forKey: WireKey("id"))
+    try c.encode(self.metadata, forKey: WireKey("metadata"))
+    try c.encode(self.payload, forKey: WireKey("payload"))
+    try c.encodeIfPresent(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encode(self.timestamp, forKey: WireKey("timestamp"))
+    try c.encode(self.type, forKey: WireKey("type"))
+    try c.encode(self.userId, forKey: WireKey("userId"))
+    try c.encode(self.version, forKey: WireKey("version"))
+  }
+}
+
+public enum SupportedMediaType: String, Codable, Sendable, CaseIterable {
+  case textPlain = "text/plain"
+  case textMarkdown = "text/markdown"
+  case textHtml = "text/html"
+  case textCss = "text/css"
+  case textCsv = "text/csv"
+  case textXml = "text/xml"
+  case applicationJson = "application/json"
+  case applicationXml = "application/xml"
+  case applicationYaml = "application/yaml"
+  case applicationXYaml = "application/x-yaml"
+  case applicationPdf = "application/pdf"
+  case applicationMsword = "application/msword"
+  case applicationVndOpenxmlformatsOfficedocumentWordprocessingmlDocument =
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+  case applicationVndMsExcel = "application/vnd.ms-excel"
+  case applicationVndOpenxmlformatsOfficedocumentSpreadsheetmlSheet =
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  case applicationVndMsPowerpoint = "application/vnd.ms-powerpoint"
+  case applicationVndOpenxmlformatsOfficedocumentPresentationmlPresentation =
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+  case applicationZip = "application/zip"
+  case applicationGzip = "application/gzip"
+  case applicationXTar = "application/x-tar"
+  case applicationX7zCompressed = "application/x-7z-compressed"
+  case applicationOctetStream = "application/octet-stream"
+  case applicationWasm = "application/wasm"
+  case imagePng = "image/png"
+  case imageJpeg = "image/jpeg"
+  case imageGif = "image/gif"
+  case imageWebp = "image/webp"
+  case imageSvgPlusXml = "image/svg+xml"
+  case imageBmp = "image/bmp"
+  case imageTiff = "image/tiff"
+  case imageXIcon = "image/x-icon"
+  case videoMp4 = "video/mp4"
+  case videoMpeg = "video/mpeg"
+  case videoWebm = "video/webm"
+  case videoOgg = "video/ogg"
+  case videoQuicktime = "video/quicktime"
+  case videoXMsvideo = "video/x-msvideo"
+  case audioMpeg = "audio/mpeg"
+  case audioWav = "audio/wav"
+  case audioOgg = "audio/ogg"
+  case audioWebm = "audio/webm"
+  case audioAac = "audio/aac"
+  case audioFlac = "audio/flac"
+  case textJavascript = "text/javascript"
+  case applicationJavascript = "application/javascript"
+  case textXTypescript = "text/x-typescript"
+  case applicationTypescript = "application/typescript"
+  case textXPython = "text/x-python"
+  case textXJava = "text/x-java"
+  case textXC = "text/x-c"
+  case textXCPlusPlus = "text/x-c++"
+  case textXCsharp = "text/x-csharp"
+  case textXGo = "text/x-go"
+  case textXRust = "text/x-rust"
+  case textXRuby = "text/x-ruby"
+  case textXPhp = "text/x-php"
+  case textXSwift = "text/x-swift"
+  case textXKotlin = "text/x-kotlin"
+  case textXShell = "text/x-shell"
+  case fontWoff = "font/woff"
+  case fontWoff2 = "font/woff2"
+  case fontTtf = "font/ttf"
+  case fontOtf = "font/otf"
+}
+
+public struct SvgSelector: Codable, Sendable {
+  public let type: SvgSelectorType
+  public var value: String
+  public init(value: String) {
+    self.type = .svgSelector
+    self.value = value
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.type = try c.decode(SvgSelectorType.self, forKey: WireKey("type"))
+    self.value = try c.decode(String.self, forKey: WireKey("value"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.type, forKey: WireKey("type"))
+    try c.encode(self.value, forKey: WireKey("value"))
+  }
+}
+
+public enum SvgSelectorType: String, Codable, Sendable, CaseIterable {
+  case svgSelector = "SvgSelector"
+}
+
+public struct TagCategory: Codable, Sendable {
+  public var description: String
+  public var examples: [String]
+  public var name: String
+  public init(description: String, examples: [String], name: String) {
+    self.description = description
+    self.examples = examples
+    self.name = name
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.description = try c.decode(String.self, forKey: WireKey("description"))
+    self.examples = try c.decode([String].self, forKey: WireKey("examples"))
+    self.name = try c.decode(String.self, forKey: WireKey("name"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.description, forKey: WireKey("description"))
+    try c.encode(self.examples, forKey: WireKey("examples"))
+    try c.encode(self.name, forKey: WireKey("name"))
+  }
+}
+
+public struct TagSchema: Codable, Sendable {
+  public var description: String
+  public var domain: String
+  public var id: String
+  public var name: String
+  public var tags: [TagCategory]
+  public init(description: String, domain: String, id: String, name: String, tags: [TagCategory]) {
+    self.description = description
+    self.domain = domain
+    self.id = id
+    self.name = name
+    self.tags = tags
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.description = try c.decode(String.self, forKey: WireKey("description"))
+    self.domain = try c.decode(String.self, forKey: WireKey("domain"))
+    self.id = try c.decode(String.self, forKey: WireKey("id"))
+    self.name = try c.decode(String.self, forKey: WireKey("name"))
+    self.tags = try c.decode([TagCategory].self, forKey: WireKey("tags"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.description, forKey: WireKey("description"))
+    try c.encode(self.domain, forKey: WireKey("domain"))
+    try c.encode(self.id, forKey: WireKey("id"))
+    try c.encode(self.name, forKey: WireKey("name"))
+    try c.encode(self.tags, forKey: WireKey("tags"))
+  }
+}
+
+public struct TagSchemaAddedPayload: Codable, Sendable {
+  public var schema: TagSchema
+  public init(schema: TagSchema) {
+    self.schema = schema
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.schema = try c.decode(TagSchema.self, forKey: WireKey("schema"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.schema, forKey: WireKey("schema"))
+  }
+}
+
+public struct TagSchemasProjection: Codable, Sendable {
+  public var tagSchemas: [TagSchema]
+  public init(tagSchemas: [TagSchema]) {
+    self.tagSchemas = tagSchemas
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: { !Set<String>(["tagSchemas"]).contains($0.stringValue) }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in TagSchemasProjection")
+    }
+    self.tagSchemas = try c.decode([TagSchema].self, forKey: WireKey("tagSchemas"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.tagSchemas, forKey: WireKey("tagSchemas"))
+  }
+}
+
+public struct TaggingJobParams: Codable, Sendable {
+  public var categories: [String]
+  public var language: String?
+  public let motivation: TaggingJobParamsMotivation
+  public var schemaId: String
+  public var sourceLanguage: String?
+  public init(
+    categories: [String], language: String? = nil, schemaId: String, sourceLanguage: String? = nil
+  ) {
+    self.categories = categories
+    self.language = language
+    self.motivation = .tagging
+    self.schemaId = schemaId
+    self.sourceLanguage = sourceLanguage
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["categories", "language", "motivation", "schemaId", "sourceLanguage"]).contains(
+        $0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in TaggingJobParams")
+    }
+    self.categories = try c.decode([String].self, forKey: WireKey("categories"))
+    self.language =
+      c.contains(WireKey("language")) ? try c.decode(String.self, forKey: WireKey("language")) : nil
+    self.motivation = try c.decode(TaggingJobParamsMotivation.self, forKey: WireKey("motivation"))
+    self.schemaId = try c.decode(String.self, forKey: WireKey("schemaId"))
+    self.sourceLanguage =
+      c.contains(WireKey("sourceLanguage"))
+      ? try c.decode(String.self, forKey: WireKey("sourceLanguage")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.categories, forKey: WireKey("categories"))
+    try c.encodeIfPresent(self.language, forKey: WireKey("language"))
+    try c.encode(self.motivation, forKey: WireKey("motivation"))
+    try c.encode(self.schemaId, forKey: WireKey("schemaId"))
+    try c.encodeIfPresent(self.sourceLanguage, forKey: WireKey("sourceLanguage"))
+  }
+}
+
+public enum TaggingJobParamsMotivation: String, Codable, Sendable, CaseIterable {
+  case tagging = "tagging"
+}
+
+public struct TextPositionSelector: Codable, Sendable {
+  public var end: Int
+  public var start: Int
+  public let type: TextPositionSelectorType
+  public init(end: Int, start: Int) {
+    self.end = end
+    self.start = start
+    self.type = .textPositionSelector
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.end = try c.decode(Int.self, forKey: WireKey("end"))
+    self.start = try c.decode(Int.self, forKey: WireKey("start"))
+    self.type = try c.decode(TextPositionSelectorType.self, forKey: WireKey("type"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.end, forKey: WireKey("end"))
+    try c.encode(self.start, forKey: WireKey("start"))
+    try c.encode(self.type, forKey: WireKey("type"))
+  }
+}
+
+public enum TextPositionSelectorType: String, Codable, Sendable, CaseIterable {
+  case textPositionSelector = "TextPositionSelector"
+}
+
+public struct TextQuoteSelector: Codable, Sendable {
+  public var exact: String
+  public var prefix: String?
+  public var suffix: String?
+  public let type: TextQuoteSelectorType
+  public init(exact: String, prefix: String? = nil, suffix: String? = nil) {
+    self.exact = exact
+    self.prefix = prefix
+    self.suffix = suffix
+    self.type = .textQuoteSelector
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.exact = try c.decode(String.self, forKey: WireKey("exact"))
+    self.prefix =
+      c.contains(WireKey("prefix")) ? try c.decode(String.self, forKey: WireKey("prefix")) : nil
+    self.suffix =
+      c.contains(WireKey("suffix")) ? try c.decode(String.self, forKey: WireKey("suffix")) : nil
+    self.type = try c.decode(TextQuoteSelectorType.self, forKey: WireKey("type"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.exact, forKey: WireKey("exact"))
+    try c.encodeIfPresent(self.prefix, forKey: WireKey("prefix"))
+    try c.encodeIfPresent(self.suffix, forKey: WireKey("suffix"))
+    try c.encode(self.type, forKey: WireKey("type"))
+  }
+}
+
+public enum TextQuoteSelectorType: String, Codable, Sendable, CaseIterable {
+  case textQuoteSelector = "TextQuoteSelector"
+}
+
+public struct TextualBody: Codable, Sendable {
+  public var format: String?
+  public var language: String?
+  public var purpose: BodyPurpose?
+  public let type: TextualBodyType
+  public var value: String
+  public init(
+    format: String? = nil, language: String? = nil, purpose: BodyPurpose? = nil, value: String
+  ) {
+    self.format = format
+    self.language = language
+    self.purpose = purpose
+    self.type = .textualBody
+    self.value = value
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.format =
+      c.contains(WireKey("format")) ? try c.decode(String.self, forKey: WireKey("format")) : nil
+    self.language =
+      c.contains(WireKey("language")) ? try c.decode(String.self, forKey: WireKey("language")) : nil
+    self.purpose =
+      c.contains(WireKey("purpose"))
+      ? try c.decode(BodyPurpose.self, forKey: WireKey("purpose")) : nil
+    self.type = try c.decode(TextualBodyType.self, forKey: WireKey("type"))
+    self.value = try c.decode(String.self, forKey: WireKey("value"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.format, forKey: WireKey("format"))
+    try c.encodeIfPresent(self.language, forKey: WireKey("language"))
+    try c.encodeIfPresent(self.purpose, forKey: WireKey("purpose"))
+    try c.encode(self.type, forKey: WireKey("type"))
+    try c.encode(self.value, forKey: WireKey("value"))
+  }
+}
+
+public enum TextualBodyType: String, Codable, Sendable, CaseIterable {
+  case textualBody = "TextualBody"
+}
+
+public struct UnitCursor: Codable, Sendable {
+  public var emitted: Int
+  public var errors: Int
+  public var found: Int
+  public var next: Int
+  public var size: Int
+  public init(emitted: Int, errors: Int, found: Int, next: Int, size: Int) {
+    self.emitted = emitted
+    self.errors = errors
+    self.found = found
+    self.next = next
+    self.size = size
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.emitted = try c.decode(Int.self, forKey: WireKey("emitted"))
+    self.errors = try c.decode(Int.self, forKey: WireKey("errors"))
+    self.found = try c.decode(Int.self, forKey: WireKey("found"))
+    self.next = try c.decode(Int.self, forKey: WireKey("next"))
+    self.size = try c.decode(Int.self, forKey: WireKey("size"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.emitted, forKey: WireKey("emitted"))
+    try c.encode(self.errors, forKey: WireKey("errors"))
+    try c.encode(self.found, forKey: WireKey("found"))
+    try c.encode(self.next, forKey: WireKey("next"))
+    try c.encode(self.size, forKey: WireKey("size"))
+  }
+}
+
+public struct UpdateAnnotationBodyRequest: Codable, Sendable {
+  public var operations: [UpdateAnnotationBodyRequestOperationsItem]
+  public var resourceId: ResourceId
+  public init(operations: [UpdateAnnotationBodyRequestOperationsItem], resourceId: ResourceId) {
+    self.operations = operations
+    self.resourceId = resourceId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.operations = try c.decode(
+      [UpdateAnnotationBodyRequestOperationsItem].self, forKey: WireKey("operations"))
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.operations, forKey: WireKey("operations"))
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+  }
+}
+
+public indirect enum UpdateAnnotationBodyRequestOperationsItem: Codable, Sendable {
+  case bodyOperationAdd(BodyOperationAdd)
+  case bodyOperationRemove(BodyOperationRemove)
+  case bodyOperationReplace(BodyOperationReplace)
+  public init(from decoder: any Decoder) throws {
+    if let value = try? BodyOperationAdd(from: decoder) {
+      self = .bodyOperationAdd(value)
+      return
+    }
+    if let value = try? BodyOperationRemove(from: decoder) {
+      self = .bodyOperationRemove(value)
+      return
+    }
+    if let value = try? BodyOperationReplace(from: decoder) {
+      self = .bodyOperationReplace(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(
+        codingPath: decoder.codingPath,
+        debugDescription: "no member of UpdateAnnotationBodyRequestOperationsItem fits"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .bodyOperationAdd(let value): try value.encode(to: encoder)
+    case .bodyOperationRemove(let value): try value.encode(to: encoder)
+    case .bodyOperationReplace(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public struct UserId: Hashable, Sendable, Codable, CustomStringConvertible {
+  public let value: String
+  public var description: String { value }
+  public init(_ value: String) throws {
+    guard value.unicodeScalars.starts(with: "did:".unicodeScalars) else {
+      throw InvalidIdentifier(kind: "UserId", pattern: "^did:\\S+$", value: value)
+    }
+    let scalars = value.unicodeScalars.dropFirst(4)
+    guard scalars.count >= 1,
+      scalars.allSatisfy({ c in
+        !(c.value == 9 || c.value == 10 || c.value == 11 || c.value == 12 || c.value == 13
+          || c.value == 32 || c.value == 160 || c.value == 5760 || (8192...8202).contains(c.value)
+          || c.value == 8232 || c.value == 8233 || c.value == 8239 || c.value == 8287
+          || c.value == 12288 || c.value == 65279)
+      })
+    else { throw InvalidIdentifier(kind: "UserId", pattern: "^did:\\S+$", value: value) }
+    self.value = value
+  }
+  public static func parse(_ value: String) -> Self? { try? Self(value) }
+  public static func == (lhs: Self, rhs: Self) -> Bool {
+    lhs.value.utf8.elementsEqual(rhs.value.utf8)
+  }
+  public func hash(into hasher: inout Hasher) { for byte in value.utf8 { hasher.combine(byte) } }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.singleValueContainer()
+    let value = try c.decode(String.self)
+    do { try self.init(value) } catch {
+      throw DecodingError.dataCorruptedError(in: c, debugDescription: String(describing: error))
+    }
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.singleValueContainer()
+    try c.encode(value)
+  }
+}
+
+public struct UserResponse: Codable, Sendable {
+  public var did: UserId
+  public var domain: String
+  public var email: String?
+  public var image: String?
+  public var name: String?
+  public init(did: UserId, domain: String, email: String?, image: String?, name: String?) {
+    self.did = did
+    self.domain = domain
+    self.email = email
+    self.image = image
+    self.name = name
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.did = try c.decode(UserId.self, forKey: WireKey("did"))
+    self.domain = try c.decode(String.self, forKey: WireKey("domain"))
+    self.email = try c.decode(Optional<String>.self, forKey: WireKey("email"))
+    self.image = try c.decode(Optional<String>.self, forKey: WireKey("image"))
+    self.name = try c.decode(Optional<String>.self, forKey: WireKey("name"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.did, forKey: WireKey("did"))
+    try c.encode(self.domain, forKey: WireKey("domain"))
+    try c.encode(self.email, forKey: WireKey("email"))
+    try c.encode(self.image, forKey: WireKey("image"))
+    try c.encode(self.name, forKey: WireKey("name"))
+  }
+}
+
+public indirect enum VectorsConfig: Codable, Sendable {
+  case qdrantVectorsConfig(QdrantVectorsConfig)
+  case memoryVectorsConfig(MemoryVectorsConfig)
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    let tag = try c.decode(String.self, forKey: WireKey("type"))
+    switch tag {
+    case "qdrant": self = .qdrantVectorsConfig(try QdrantVectorsConfig(from: decoder))
+    case "memory": self = .memoryVectorsConfig(try MemoryVectorsConfig(from: decoder))
+    default:
+      throw DecodingError.dataCorruptedError(
+        forKey: WireKey("type"), in: c, debugDescription: "unknown VectorsConfig discriminator")
+    }
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .qdrantVectorsConfig(let value): try value.encode(to: encoder)
+    case .memoryVectorsConfig(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public struct VoyageEmbeddingConfig: Codable, Sendable {
+  public var apiKeyEnv: String
+  public var endpoint: String
+  public var model: String
+  public let type: VoyageEmbeddingConfigType
+  public init(apiKeyEnv: String, endpoint: String, model: String) {
+    self.apiKeyEnv = apiKeyEnv
+    self.endpoint = endpoint
+    self.model = model
+    self.type = .voyage
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["apiKeyEnv", "endpoint", "model", "type"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in VoyageEmbeddingConfig")
+    }
+    self.apiKeyEnv = try c.decode(String.self, forKey: WireKey("apiKeyEnv"))
+    self.endpoint = try c.decode(String.self, forKey: WireKey("endpoint"))
+    self.model = try c.decode(String.self, forKey: WireKey("model"))
+    self.type = try c.decode(VoyageEmbeddingConfigType.self, forKey: WireKey("type"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.apiKeyEnv, forKey: WireKey("apiKeyEnv"))
+    try c.encode(self.endpoint, forKey: WireKey("endpoint"))
+    try c.encode(self.model, forKey: WireKey("model"))
+    try c.encode(self.type, forKey: WireKey("type"))
+  }
+}
+
+public enum VoyageEmbeddingConfigType: String, Codable, Sendable, CaseIterable {
+  case voyage = "voyage"
+}
+
+public struct WeaveApplied: Codable, Sendable {
+  public var resourceId: ResourceId
+  public var sequenceNumber: Int
+  public init(resourceId: ResourceId, sequenceNumber: Int) {
+    self.resourceId = resourceId
+    self.sequenceNumber = sequenceNumber
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self.sequenceNumber = try c.decode(Int.self, forKey: WireKey("sequenceNumber"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encode(self.sequenceNumber, forKey: WireKey("sequenceNumber"))
+  }
+}
+
+public struct WeaveRebuildCommand: Codable, Sendable {
+  public var _userId: UserId?
+  public var resourceId: ResourceId?
+  public init(_userId: UserId? = nil, resourceId: ResourceId? = nil) {
+    self._userId = _userId
+    self.resourceId = resourceId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self._userId =
+      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
+    self.resourceId =
+      c.contains(WireKey("resourceId"))
+      ? try c.decode(ResourceId.self, forKey: WireKey("resourceId")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
+    try c.encodeIfPresent(self.resourceId, forKey: WireKey("resourceId"))
+  }
+}
+
+public struct WeaverConfig: Codable, Sendable {
+  public var archivist: WeaverConfigArchivist
+  public var cursorsPath: CursorsPath
+  public var gatewayUrl: String
+  public var graph: GraphConfig
+  public var identity: WeaverConfigIdentity
+  public var kb: KbIdentity
+  public var logFormat: LogFormat
+  public var logLevel: LogLevel
+  public var port: Int
+  public init(
+    archivist: WeaverConfigArchivist, cursorsPath: CursorsPath, gatewayUrl: String,
+    graph: GraphConfig, identity: WeaverConfigIdentity, kb: KbIdentity, logFormat: LogFormat,
+    logLevel: LogLevel, port: Int
+  ) {
+    self.archivist = archivist
+    self.cursorsPath = cursorsPath
+    self.gatewayUrl = gatewayUrl
+    self.graph = graph
+    self.identity = identity
+    self.kb = kb
+    self.logFormat = logFormat
+    self.logLevel = logLevel
+    self.port = port
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>([
+        "archivist", "cursorsPath", "gatewayUrl", "graph", "identity", "kb", "logFormat",
+        "logLevel", "port",
+      ]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in WeaverConfig")
+    }
+    self.archivist = try c.decode(WeaverConfigArchivist.self, forKey: WireKey("archivist"))
+    self.cursorsPath = try c.decode(CursorsPath.self, forKey: WireKey("cursorsPath"))
+    self.gatewayUrl = try c.decode(String.self, forKey: WireKey("gatewayUrl"))
+    self.graph = try c.decode(GraphConfig.self, forKey: WireKey("graph"))
+    self.identity = try c.decode(WeaverConfigIdentity.self, forKey: WireKey("identity"))
+    self.kb = try c.decode(KbIdentity.self, forKey: WireKey("kb"))
+    self.logFormat = try c.decode(LogFormat.self, forKey: WireKey("logFormat"))
+    self.logLevel = try c.decode(LogLevel.self, forKey: WireKey("logLevel"))
+    self.port = try c.decode(Int.self, forKey: WireKey("port"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.archivist, forKey: WireKey("archivist"))
+    try c.encode(self.cursorsPath, forKey: WireKey("cursorsPath"))
+    try c.encode(self.gatewayUrl, forKey: WireKey("gatewayUrl"))
+    try c.encode(self.graph, forKey: WireKey("graph"))
+    try c.encode(self.identity, forKey: WireKey("identity"))
+    try c.encode(self.kb, forKey: WireKey("kb"))
+    try c.encode(self.logFormat, forKey: WireKey("logFormat"))
+    try c.encode(self.logLevel, forKey: WireKey("logLevel"))
+    try c.encode(self.port, forKey: WireKey("port"))
+  }
+}
+
+public struct WeaverConfigArchivist: Codable, Sendable {
+  public var host: String
+  public var port: Int
+  public init(host: String, port: Int) {
+    self.host = host
+    self.port = port
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: { !Set<String>(["host", "port"]).contains($0.stringValue) })
+    {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in WeaverConfigArchivist")
+    }
+    self.host = try c.decode(String.self, forKey: WireKey("host"))
+    self.port = try c.decode(Int.self, forKey: WireKey("port"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.host, forKey: WireKey("host"))
+    try c.encode(self.port, forKey: WireKey("port"))
+  }
+}
+
+public struct WeaverConfigIdentity: Codable, Sendable {
+  public var issuer: String
+  public init(issuer: String) {
+    self.issuer = issuer
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: { !Set<String>(["issuer"]).contains($0.stringValue) }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in WeaverConfigIdentity")
+    }
+    self.issuer = try c.decode(String.self, forKey: WireKey("issuer"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.issuer, forKey: WireKey("issuer"))
+  }
+}
+
+public struct WorkerConfig: Codable, Sendable {
+  public var knowledgeBases: [WorkerKnowledgeBaseConfig]
+  public var logFormat: LogFormat
+  public var logLevel: LogLevel
+  public var modelCatalogue: String
+  public var port: Int
+  public init(
+    knowledgeBases: [WorkerKnowledgeBaseConfig], logFormat: LogFormat, logLevel: LogLevel,
+    modelCatalogue: String, port: Int
+  ) {
+    self.knowledgeBases = knowledgeBases
+    self.logFormat = logFormat
+    self.logLevel = logLevel
+    self.modelCatalogue = modelCatalogue
+    self.port = port
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["knowledgeBases", "logFormat", "logLevel", "modelCatalogue", "port"]).contains(
+        $0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in WorkerConfig")
+    }
+    self.knowledgeBases = try c.decode(
+      [WorkerKnowledgeBaseConfig].self, forKey: WireKey("knowledgeBases"))
+    self.logFormat = try c.decode(LogFormat.self, forKey: WireKey("logFormat"))
+    self.logLevel = try c.decode(LogLevel.self, forKey: WireKey("logLevel"))
+    self.modelCatalogue = try c.decode(String.self, forKey: WireKey("modelCatalogue"))
+    self.port = try c.decode(Int.self, forKey: WireKey("port"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.knowledgeBases, forKey: WireKey("knowledgeBases"))
+    try c.encode(self.logFormat, forKey: WireKey("logFormat"))
+    try c.encode(self.logLevel, forKey: WireKey("logLevel"))
+    try c.encode(self.modelCatalogue, forKey: WireKey("modelCatalogue"))
+    try c.encode(self.port, forKey: WireKey("port"))
+  }
+}
+
+public struct WorkerEngineConfig: Codable, Sendable {
+  public var apiKeyEnv: String?
+  public var baseUrl: String
+  public var engine: Engine
+  public var jobs: [JobFilter]
+  public init(apiKeyEnv: String? = nil, baseUrl: String, engine: Engine, jobs: [JobFilter]) {
+    self.apiKeyEnv = apiKeyEnv
+    self.baseUrl = baseUrl
+    self.engine = engine
+    self.jobs = jobs
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["apiKeyEnv", "baseUrl", "engine", "jobs"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in WorkerEngineConfig")
+    }
+    self.apiKeyEnv =
+      c.contains(WireKey("apiKeyEnv"))
+      ? try c.decode(String.self, forKey: WireKey("apiKeyEnv")) : nil
+    self.baseUrl = try c.decode(String.self, forKey: WireKey("baseUrl"))
+    self.engine = try c.decode(Engine.self, forKey: WireKey("engine"))
+    self.jobs = try c.decode([JobFilter].self, forKey: WireKey("jobs"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.apiKeyEnv, forKey: WireKey("apiKeyEnv"))
+    try c.encode(self.baseUrl, forKey: WireKey("baseUrl"))
+    try c.encode(self.engine, forKey: WireKey("engine"))
+    try c.encode(self.jobs, forKey: WireKey("jobs"))
+  }
+}
+
+public struct WorkerEngineHealth: Codable, Sendable {
+  public var activeJob: WorkerEngineHealthActiveJob?
+  public var engine: Engine
+  public var jobs: [JobFilter]
+  public var jobsCompleted: Int
+  public var lastActivityAt: String?
+  public var lastClaimAt: String?
+  public var lastFinishedAt: String?
+  public var lastQueuedEventAt: String?
+  public init(
+    activeJob: WorkerEngineHealthActiveJob?, engine: Engine, jobs: [JobFilter], jobsCompleted: Int,
+    lastActivityAt: String?, lastClaimAt: String?, lastFinishedAt: String?,
+    lastQueuedEventAt: String?
+  ) {
+    self.activeJob = activeJob
+    self.engine = engine
+    self.jobs = jobs
+    self.jobsCompleted = jobsCompleted
+    self.lastActivityAt = lastActivityAt
+    self.lastClaimAt = lastClaimAt
+    self.lastFinishedAt = lastFinishedAt
+    self.lastQueuedEventAt = lastQueuedEventAt
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>([
+        "activeJob", "engine", "jobs", "jobsCompleted", "lastActivityAt", "lastClaimAt",
+        "lastFinishedAt", "lastQueuedEventAt",
+      ]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in WorkerEngineHealth")
+    }
+    self.activeJob = try c.decode(
+      Optional<WorkerEngineHealthActiveJob>.self, forKey: WireKey("activeJob"))
+    self.engine = try c.decode(Engine.self, forKey: WireKey("engine"))
+    self.jobs = try c.decode([JobFilter].self, forKey: WireKey("jobs"))
+    self.jobsCompleted = try c.decode(Int.self, forKey: WireKey("jobsCompleted"))
+    self.lastActivityAt = try c.decode(Optional<String>.self, forKey: WireKey("lastActivityAt"))
+    self.lastClaimAt = try c.decode(Optional<String>.self, forKey: WireKey("lastClaimAt"))
+    self.lastFinishedAt = try c.decode(Optional<String>.self, forKey: WireKey("lastFinishedAt"))
+    self.lastQueuedEventAt = try c.decode(
+      Optional<String>.self, forKey: WireKey("lastQueuedEventAt"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.activeJob, forKey: WireKey("activeJob"))
+    try c.encode(self.engine, forKey: WireKey("engine"))
+    try c.encode(self.jobs, forKey: WireKey("jobs"))
+    try c.encode(self.jobsCompleted, forKey: WireKey("jobsCompleted"))
+    try c.encode(self.lastActivityAt, forKey: WireKey("lastActivityAt"))
+    try c.encode(self.lastClaimAt, forKey: WireKey("lastClaimAt"))
+    try c.encode(self.lastFinishedAt, forKey: WireKey("lastFinishedAt"))
+    try c.encode(self.lastQueuedEventAt, forKey: WireKey("lastQueuedEventAt"))
+  }
+}
+
+public struct WorkerEngineHealthActiveJob: Codable, Sendable {
+  public var jobId: JobId
+  public var since: String
+  public var type: JobType
+  public init(jobId: JobId, since: String, type: JobType) {
+    self.jobId = jobId
+    self.since = since
+    self.type = type
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["jobId", "since", "type"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in WorkerEngineHealthActiveJob")
+    }
+    self.jobId = try c.decode(JobId.self, forKey: WireKey("jobId"))
+    self.since = try c.decode(String.self, forKey: WireKey("since"))
+    self.type = try c.decode(JobType.self, forKey: WireKey("type"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.jobId, forKey: WireKey("jobId"))
+    try c.encode(self.since, forKey: WireKey("since"))
+    try c.encode(self.type, forKey: WireKey("type"))
+  }
+}
+
+public struct WorkerHealth: Codable, Sendable {
+  public var knowledgeBases: [WorkerKnowledgeBaseHealth]
+  public let status: WorkerHealthStatus
+  public init(knowledgeBases: [WorkerKnowledgeBaseHealth]) {
+    self.knowledgeBases = knowledgeBases
+    self.status = .ok
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["knowledgeBases", "status"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in WorkerHealth")
+    }
+    self.knowledgeBases = try c.decode(
+      [WorkerKnowledgeBaseHealth].self, forKey: WireKey("knowledgeBases"))
+    self.status = try c.decode(WorkerHealthStatus.self, forKey: WireKey("status"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.knowledgeBases, forKey: WireKey("knowledgeBases"))
+    try c.encode(self.status, forKey: WireKey("status"))
+  }
+}
+
+public enum WorkerHealthStatus: String, Codable, Sendable, CaseIterable {
+  case ok = "ok"
+}
+
+public struct WorkerKnowledgeBaseConfig: Codable, Sendable {
+  public var domain: String
+  public var engines: [WorkerEngineConfig]
+  public var gatewayUrl: String
+  public var identity: WorkerKnowledgeBaseConfigIdentity
+  public init(
+    domain: String, engines: [WorkerEngineConfig], gatewayUrl: String,
+    identity: WorkerKnowledgeBaseConfigIdentity
+  ) {
+    self.domain = domain
+    self.engines = engines
+    self.gatewayUrl = gatewayUrl
+    self.identity = identity
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["domain", "engines", "gatewayUrl", "identity"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in WorkerKnowledgeBaseConfig")
+    }
+    self.domain = try c.decode(String.self, forKey: WireKey("domain"))
+    self.engines = try c.decode([WorkerEngineConfig].self, forKey: WireKey("engines"))
+    self.gatewayUrl = try c.decode(String.self, forKey: WireKey("gatewayUrl"))
+    self.identity = try c.decode(
+      WorkerKnowledgeBaseConfigIdentity.self, forKey: WireKey("identity"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.domain, forKey: WireKey("domain"))
+    try c.encode(self.engines, forKey: WireKey("engines"))
+    try c.encode(self.gatewayUrl, forKey: WireKey("gatewayUrl"))
+    try c.encode(self.identity, forKey: WireKey("identity"))
+  }
+}
+
+public struct WorkerKnowledgeBaseConfigIdentity: Codable, Sendable {
+  public var clientId: String
+  public var issuer: String
+  public init(clientId: String, issuer: String) {
+    self.clientId = clientId
+    self.issuer = issuer
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["clientId", "issuer"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c,
+        debugDescription: "unknown property in WorkerKnowledgeBaseConfigIdentity")
+    }
+    self.clientId = try c.decode(String.self, forKey: WireKey("clientId"))
+    self.issuer = try c.decode(String.self, forKey: WireKey("issuer"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.clientId, forKey: WireKey("clientId"))
+    try c.encode(self.issuer, forKey: WireKey("issuer"))
+  }
+}
+
+public struct WorkerKnowledgeBaseHealth: Codable, Sendable {
+  public var did: String?
+  public var domain: String
+  public var engines: [WorkerEngineHealth]?
+  public var state: WorkerKnowledgeBaseHealthState
+  public init(
+    did: String? = nil, domain: String, engines: [WorkerEngineHealth]? = nil,
+    state: WorkerKnowledgeBaseHealthState
+  ) {
+    self.did = did
+    self.domain = domain
+    self.engines = engines
+    self.state = state
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["did", "domain", "engines", "state"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in WorkerKnowledgeBaseHealth")
+    }
+    self.did = c.contains(WireKey("did")) ? try c.decode(String.self, forKey: WireKey("did")) : nil
+    self.domain = try c.decode(String.self, forKey: WireKey("domain"))
+    self.engines =
+      c.contains(WireKey("engines"))
+      ? try c.decode([WorkerEngineHealth].self, forKey: WireKey("engines")) : nil
+    self.state = try c.decode(WorkerKnowledgeBaseHealthState.self, forKey: WireKey("state"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.did, forKey: WireKey("did"))
+    try c.encode(self.domain, forKey: WireKey("domain"))
+    try c.encodeIfPresent(self.engines, forKey: WireKey("engines"))
+    try c.encode(self.state, forKey: WireKey("state"))
+  }
+}
+
+public enum WorkerKnowledgeBaseHealthState: String, Codable, Sendable, CaseIterable {
+  case starting = "starting"
+  case working = "working"
+  case refused = "refused"
+}
+
+public struct YieldCloneCreateCommand: Codable, Sendable {
+  public var _userId: UserId?
+  public var archiveOriginal: Bool?
+  public var byteSize: Int
+  public var contentChecksum: String
+  public var format: ContentFormat
+  public var name: String
+  public var storageUri: String
+  public var token: String
+  public init(
+    _userId: UserId? = nil, archiveOriginal: Bool? = nil, byteSize: Int, contentChecksum: String,
+    format: ContentFormat, name: String, storageUri: String, token: String
+  ) {
+    self._userId = _userId
+    self.archiveOriginal = archiveOriginal
+    self.byteSize = byteSize
+    self.contentChecksum = contentChecksum
+    self.format = format
+    self.name = name
+    self.storageUri = storageUri
+    self.token = token
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self._userId =
+      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
+    self.archiveOriginal =
+      c.contains(WireKey("archiveOriginal"))
+      ? try c.decode(Bool.self, forKey: WireKey("archiveOriginal")) : nil
+    self.byteSize = try c.decode(Int.self, forKey: WireKey("byteSize"))
+    self.contentChecksum = try c.decode(String.self, forKey: WireKey("contentChecksum"))
+    self.format = try c.decode(ContentFormat.self, forKey: WireKey("format"))
+    self.name = try c.decode(String.self, forKey: WireKey("name"))
+    self.storageUri = try c.decode(String.self, forKey: WireKey("storageUri"))
+    self.token = try c.decode(String.self, forKey: WireKey("token"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
+    try c.encodeIfPresent(self.archiveOriginal, forKey: WireKey("archiveOriginal"))
+    try c.encode(self.byteSize, forKey: WireKey("byteSize"))
+    try c.encode(self.contentChecksum, forKey: WireKey("contentChecksum"))
+    try c.encode(self.format, forKey: WireKey("format"))
+    try c.encode(self.name, forKey: WireKey("name"))
+    try c.encode(self.storageUri, forKey: WireKey("storageUri"))
+    try c.encode(self.token, forKey: WireKey("token"))
+  }
+}
+
+public struct YieldCloneCreated: Codable, Sendable {
+  public var response: YieldCloneCreatedResponse
+  public init(response: YieldCloneCreatedResponse) {
+    self.response = response
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.response = try c.decode(YieldCloneCreatedResponse.self, forKey: WireKey("response"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.response, forKey: WireKey("response"))
+  }
+}
+
+public struct YieldCloneCreatedResponse: Codable, Sendable {
+  public var resourceId: ResourceId
+  public init(resourceId: ResourceId) {
+    self.resourceId = resourceId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+  }
+}
+
+public struct YieldClonePersistCommand: Codable, Sendable {
+  public var _userId: UserId?
+  public var byteSize: Int
+  public var contentChecksum: String
+  public var entityTypes: [String]?
+  public var format: ContentFormat
+  public var language: String?
+  public var name: String
+  public var parentResourceId: ResourceId
+  public var storageUri: String
+  public init(
+    _userId: UserId? = nil, byteSize: Int, contentChecksum: String, entityTypes: [String]? = nil,
+    format: ContentFormat, language: String? = nil, name: String, parentResourceId: ResourceId,
+    storageUri: String
+  ) {
+    self._userId = _userId
+    self.byteSize = byteSize
+    self.contentChecksum = contentChecksum
+    self.entityTypes = entityTypes
+    self.format = format
+    self.language = language
+    self.name = name
+    self.parentResourceId = parentResourceId
+    self.storageUri = storageUri
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self._userId =
+      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
+    self.byteSize = try c.decode(Int.self, forKey: WireKey("byteSize"))
+    self.contentChecksum = try c.decode(String.self, forKey: WireKey("contentChecksum"))
+    self.entityTypes =
+      c.contains(WireKey("entityTypes"))
+      ? try c.decode([String].self, forKey: WireKey("entityTypes")) : nil
+    self.format = try c.decode(ContentFormat.self, forKey: WireKey("format"))
+    self.language =
+      c.contains(WireKey("language")) ? try c.decode(String.self, forKey: WireKey("language")) : nil
+    self.name = try c.decode(String.self, forKey: WireKey("name"))
+    self.parentResourceId = try c.decode(ResourceId.self, forKey: WireKey("parentResourceId"))
+    self.storageUri = try c.decode(String.self, forKey: WireKey("storageUri"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
+    try c.encode(self.byteSize, forKey: WireKey("byteSize"))
+    try c.encode(self.contentChecksum, forKey: WireKey("contentChecksum"))
+    try c.encodeIfPresent(self.entityTypes, forKey: WireKey("entityTypes"))
+    try c.encode(self.format, forKey: WireKey("format"))
+    try c.encodeIfPresent(self.language, forKey: WireKey("language"))
+    try c.encode(self.name, forKey: WireKey("name"))
+    try c.encode(self.parentResourceId, forKey: WireKey("parentResourceId"))
+    try c.encode(self.storageUri, forKey: WireKey("storageUri"))
+  }
+}
+
+public struct YieldClonePersistOk: Codable, Sendable {
+  public var response: YieldClonePersistOkResponse
+  public init(response: YieldClonePersistOkResponse) {
+    self.response = response
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.response = try c.decode(YieldClonePersistOkResponse.self, forKey: WireKey("response"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.response, forKey: WireKey("response"))
+  }
+}
+
+public struct YieldClonePersistOkResponse: Codable, Sendable {
+  public var resourceId: ResourceId
+  public init(resourceId: ResourceId) {
+    self.resourceId = resourceId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+  }
+}
+
+public struct YieldCloneResourceRequest: Codable, Sendable {
+  public var token: String
+  public init(token: String) {
+    self.token = token
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.token = try c.decode(String.self, forKey: WireKey("token"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.token, forKey: WireKey("token"))
+  }
+}
+
+public struct YieldCloneTokenRequest: Codable, Sendable {
+  public var resourceId: ResourceId
+  public init(resourceId: ResourceId) {
+    self.resourceId = resourceId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+  }
+}
+
+public struct YieldCreateCommand: Codable, Sendable {
+  public var _roles: [String]?
+  public var _userId: UserId?
+  public var byteSize: Int
+  public var contentChecksum: String
+  public var entityTypes: [String]?
+  public var format: ContentFormat
+  public var generatedFrom: YieldCreateCommandGeneratedFrom?
+  public var generationPrompt: String?
+  public var generator: YieldCreateCommandGenerator?
+  public var isDraft: Bool?
+  public var jobId: JobId?
+  public var language: String?
+  public var name: String
+  public var storageUri: String
+  public init(
+    _roles: [String]? = nil, _userId: UserId? = nil, byteSize: Int, contentChecksum: String,
+    entityTypes: [String]? = nil, format: ContentFormat,
+    generatedFrom: YieldCreateCommandGeneratedFrom? = nil, generationPrompt: String? = nil,
+    generator: YieldCreateCommandGenerator? = nil, isDraft: Bool? = nil, jobId: JobId? = nil,
+    language: String? = nil, name: String, storageUri: String
+  ) {
+    self._roles = _roles
+    self._userId = _userId
+    self.byteSize = byteSize
+    self.contentChecksum = contentChecksum
+    self.entityTypes = entityTypes
+    self.format = format
+    self.generatedFrom = generatedFrom
+    self.generationPrompt = generationPrompt
+    self.generator = generator
+    self.isDraft = isDraft
+    self.jobId = jobId
+    self.language = language
+    self.name = name
+    self.storageUri = storageUri
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self._roles =
+      c.contains(WireKey("_roles")) ? try c.decode([String].self, forKey: WireKey("_roles")) : nil
+    self._userId =
+      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
+    self.byteSize = try c.decode(Int.self, forKey: WireKey("byteSize"))
+    self.contentChecksum = try c.decode(String.self, forKey: WireKey("contentChecksum"))
+    self.entityTypes =
+      c.contains(WireKey("entityTypes"))
+      ? try c.decode([String].self, forKey: WireKey("entityTypes")) : nil
+    self.format = try c.decode(ContentFormat.self, forKey: WireKey("format"))
+    self.generatedFrom =
+      c.contains(WireKey("generatedFrom"))
+      ? try c.decode(YieldCreateCommandGeneratedFrom.self, forKey: WireKey("generatedFrom")) : nil
+    self.generationPrompt =
+      c.contains(WireKey("generationPrompt"))
+      ? try c.decode(String.self, forKey: WireKey("generationPrompt")) : nil
+    self.generator =
+      c.contains(WireKey("generator"))
+      ? try c.decode(YieldCreateCommandGenerator.self, forKey: WireKey("generator")) : nil
+    self.isDraft =
+      c.contains(WireKey("isDraft")) ? try c.decode(Bool.self, forKey: WireKey("isDraft")) : nil
+    self.jobId =
+      c.contains(WireKey("jobId")) ? try c.decode(JobId.self, forKey: WireKey("jobId")) : nil
+    self.language =
+      c.contains(WireKey("language")) ? try c.decode(String.self, forKey: WireKey("language")) : nil
+    self.name = try c.decode(String.self, forKey: WireKey("name"))
+    self.storageUri = try c.decode(String.self, forKey: WireKey("storageUri"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self._roles, forKey: WireKey("_roles"))
+    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
+    try c.encode(self.byteSize, forKey: WireKey("byteSize"))
+    try c.encode(self.contentChecksum, forKey: WireKey("contentChecksum"))
+    try c.encodeIfPresent(self.entityTypes, forKey: WireKey("entityTypes"))
+    try c.encode(self.format, forKey: WireKey("format"))
+    try c.encodeIfPresent(self.generatedFrom, forKey: WireKey("generatedFrom"))
+    try c.encodeIfPresent(self.generationPrompt, forKey: WireKey("generationPrompt"))
+    try c.encodeIfPresent(self.generator, forKey: WireKey("generator"))
+    try c.encodeIfPresent(self.isDraft, forKey: WireKey("isDraft"))
+    try c.encodeIfPresent(self.jobId, forKey: WireKey("jobId"))
+    try c.encodeIfPresent(self.language, forKey: WireKey("language"))
+    try c.encode(self.name, forKey: WireKey("name"))
+    try c.encode(self.storageUri, forKey: WireKey("storageUri"))
+  }
+}
+
+public struct YieldCreateCommandGeneratedFrom: Codable, Sendable {
+  public var annotationId: AnnotationId?
+  public var resourceId: ResourceId?
+  public init(annotationId: AnnotationId? = nil, resourceId: ResourceId? = nil) {
+    self.annotationId = annotationId
+    self.resourceId = resourceId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.annotationId =
+      c.contains(WireKey("annotationId"))
+      ? try c.decode(AnnotationId.self, forKey: WireKey("annotationId")) : nil
+    self.resourceId =
+      c.contains(WireKey("resourceId"))
+      ? try c.decode(ResourceId.self, forKey: WireKey("resourceId")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.annotationId, forKey: WireKey("annotationId"))
+    try c.encodeIfPresent(self.resourceId, forKey: WireKey("resourceId"))
+  }
+}
+
+public indirect enum YieldCreateCommandGenerator: Codable, Sendable {
+  case agent(Agent)
+  case list([Agent])
+  public init(from decoder: any Decoder) throws {
+    if let value = try? Agent(from: decoder) {
+      self = .agent(value)
+      return
+    }
+    if let value = try? [Agent](from: decoder) {
+      self = .list(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(
+        codingPath: decoder.codingPath,
+        debugDescription: "no member of YieldCreateCommandGenerator fits"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .agent(let value): try value.encode(to: encoder)
+    case .list(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public struct YieldCreateOk: Codable, Sendable {
+  public var response: YieldCreateOkResponse
+  public init(response: YieldCreateOkResponse) {
+    self.response = response
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.response = try c.decode(YieldCreateOkResponse.self, forKey: WireKey("response"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.response, forKey: WireKey("response"))
+  }
+}
+
+public struct YieldCreateOkResponse: Codable, Sendable {
+  public var resourceId: ResourceId
+  public init(resourceId: ResourceId) {
+    self.resourceId = resourceId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+  }
+}
+
+public struct YieldJobCompleteCommand: Codable, Sendable {
+  public var _userId: UserId?
+  public var annotationId: AnnotationId?
+  public var attempt: Int?
+  public var durability: DurabilityEvidence?
+  public var jobId: JobId
+  public let jobType: YieldJobCompleteCommandJobType
+  public var resourceId: ResourceId
+  public var result: YieldJobResult?
+  public init(
+    _userId: UserId? = nil, annotationId: AnnotationId? = nil, attempt: Int? = nil,
+    durability: DurabilityEvidence? = nil, jobId: JobId, resourceId: ResourceId,
+    result: YieldJobResult? = nil
+  ) {
+    self._userId = _userId
+    self.annotationId = annotationId
+    self.attempt = attempt
+    self.durability = durability
+    self.jobId = jobId
+    self.jobType = .yield
+    self.resourceId = resourceId
+    self.result = result
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self._userId =
+      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
+    self.annotationId =
+      c.contains(WireKey("annotationId"))
+      ? try c.decode(AnnotationId.self, forKey: WireKey("annotationId")) : nil
+    self.attempt =
+      c.contains(WireKey("attempt")) ? try c.decode(Int.self, forKey: WireKey("attempt")) : nil
+    self.durability =
+      c.contains(WireKey("durability"))
+      ? try c.decode(DurabilityEvidence.self, forKey: WireKey("durability")) : nil
+    self.jobId = try c.decode(JobId.self, forKey: WireKey("jobId"))
+    self.jobType = try c.decode(YieldJobCompleteCommandJobType.self, forKey: WireKey("jobType"))
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self.result =
+      c.contains(WireKey("result"))
+      ? try c.decode(YieldJobResult.self, forKey: WireKey("result")) : nil
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
+    try c.encodeIfPresent(self.annotationId, forKey: WireKey("annotationId"))
+    try c.encodeIfPresent(self.attempt, forKey: WireKey("attempt"))
+    try c.encodeIfPresent(self.durability, forKey: WireKey("durability"))
+    try c.encode(self.jobId, forKey: WireKey("jobId"))
+    try c.encode(self.jobType, forKey: WireKey("jobType"))
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encodeIfPresent(self.result, forKey: WireKey("result"))
+  }
+}
+
+public enum YieldJobCompleteCommandJobType: String, Codable, Sendable, CaseIterable {
+  case yield = "yield"
+}
+
+public struct YieldJobCreateCommand: Codable, Sendable {
+  public var _roles: [String]?
+  public var _userId: UserId?
+  public let jobType: YieldJobCreateCommandJobType
+  public var params: GenerationJobParams
+  public init(_roles: [String]? = nil, _userId: UserId? = nil, params: GenerationJobParams) {
+    self._roles = _roles
+    self._userId = _userId
+    self.jobType = .yield
+    self.params = params
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["_roles", "_userId", "jobType", "params"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in YieldJobCreateCommand")
+    }
+    self._roles =
+      c.contains(WireKey("_roles")) ? try c.decode([String].self, forKey: WireKey("_roles")) : nil
+    self._userId =
+      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
+    self.jobType = try c.decode(YieldJobCreateCommandJobType.self, forKey: WireKey("jobType"))
+    self.params = try c.decode(GenerationJobParams.self, forKey: WireKey("params"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self._roles, forKey: WireKey("_roles"))
+    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
+    try c.encode(self.jobType, forKey: WireKey("jobType"))
+    try c.encode(self.params, forKey: WireKey("params"))
+  }
+}
+
+public enum YieldJobCreateCommandJobType: String, Codable, Sendable, CaseIterable {
+  case yield = "yield"
+}
+
+public struct YieldJobDone: Codable, Sendable {
+  public var resourceId: ResourceId
+  public var resourceName: String
+  public var truncated: Bool
+  public init(resourceId: ResourceId, resourceName: String, truncated: Bool) {
+    self.resourceId = resourceId
+    self.resourceName = resourceName
+    self.truncated = truncated
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: {
+      !Set<String>(["resourceId", "resourceName", "truncated"]).contains($0.stringValue)
+    }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in YieldJobDone")
+    }
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self.resourceName = try c.decode(String.self, forKey: WireKey("resourceName"))
+    self.truncated = try c.decode(Bool.self, forKey: WireKey("truncated"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encode(self.resourceName, forKey: WireKey("resourceName"))
+    try c.encode(self.truncated, forKey: WireKey("truncated"))
+  }
+}
+
+public struct YieldJobFilter: Codable, Sendable {
+  public let jobType: YieldJobFilterJobType
+  public init() {
+    self.jobType = .yield
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    if let key = c.allKeys.first(where: { !Set<String>(["jobType"]).contains($0.stringValue) }) {
+      throw DecodingError.dataCorruptedError(
+        forKey: key, in: c, debugDescription: "unknown property in YieldJobFilter")
+    }
+    self.jobType = try c.decode(YieldJobFilterJobType.self, forKey: WireKey("jobType"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.jobType, forKey: WireKey("jobType"))
+  }
+}
+
+public enum YieldJobFilterJobType: String, Codable, Sendable, CaseIterable {
+  case yield = "yield"
+}
+
+public struct YieldJobQueuedEvent: Codable, Sendable {
+  public var jobId: JobId
+  public let jobType: YieldJobQueuedEventJobType
+  public var params: GenerationJobRequest
+  public var resourceId: ResourceId
+  public var userId: UserId
+  public init(jobId: JobId, params: GenerationJobRequest, resourceId: ResourceId, userId: UserId) {
+    self.jobId = jobId
+    self.jobType = .yield
+    self.params = params
+    self.resourceId = resourceId
+    self.userId = userId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.jobId = try c.decode(JobId.self, forKey: WireKey("jobId"))
+    self.jobType = try c.decode(YieldJobQueuedEventJobType.self, forKey: WireKey("jobType"))
+    self.params = try c.decode(GenerationJobRequest.self, forKey: WireKey("params"))
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self.userId = try c.decode(UserId.self, forKey: WireKey("userId"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.jobId, forKey: WireKey("jobId"))
+    try c.encode(self.jobType, forKey: WireKey("jobType"))
+    try c.encode(self.params, forKey: WireKey("params"))
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encode(self.userId, forKey: WireKey("userId"))
+  }
+}
+
+public enum YieldJobQueuedEventJobType: String, Codable, Sendable, CaseIterable {
+  case yield = "yield"
+}
+
+public indirect enum YieldJobResult: Codable, Sendable {
+  case yieldJobDone(YieldJobDone)
+  case jobDeclined(JobDeclined)
+  public init(from decoder: any Decoder) throws {
+    if let value = try? YieldJobDone(from: decoder) {
+      self = .yieldJobDone(value)
+      return
+    }
+    if let value = try? JobDeclined(from: decoder) {
+      self = .jobDeclined(value)
+      return
+    }
+    throw DecodingError.dataCorrupted(
+      .init(codingPath: decoder.codingPath, debugDescription: "no member of YieldJobResult fits"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .yieldJobDone(let value): try value.encode(to: encoder)
+    case .jobDeclined(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public struct YieldUpdateCommand: Codable, Sendable {
+  public var _userId: UserId?
+  public var byteSize: Int
+  public var contentChecksum: String
+  public var resourceId: ResourceId
+  public var storageUri: String
+  public init(
+    _userId: UserId? = nil, byteSize: Int, contentChecksum: String, resourceId: ResourceId,
+    storageUri: String
+  ) {
+    self._userId = _userId
+    self.byteSize = byteSize
+    self.contentChecksum = contentChecksum
+    self.resourceId = resourceId
+    self.storageUri = storageUri
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self._userId =
+      c.contains(WireKey("_userId")) ? try c.decode(UserId.self, forKey: WireKey("_userId")) : nil
+    self.byteSize = try c.decode(Int.self, forKey: WireKey("byteSize"))
+    self.contentChecksum = try c.decode(String.self, forKey: WireKey("contentChecksum"))
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+    self.storageUri = try c.decode(String.self, forKey: WireKey("storageUri"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self._userId, forKey: WireKey("_userId"))
+    try c.encode(self.byteSize, forKey: WireKey("byteSize"))
+    try c.encode(self.contentChecksum, forKey: WireKey("contentChecksum"))
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+    try c.encode(self.storageUri, forKey: WireKey("storageUri"))
+  }
+}
+
+public struct YieldUpdateOk: Codable, Sendable {
+  public var response: YieldUpdateOkResponse
+  public init(response: YieldUpdateOkResponse) {
+    self.response = response
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.response = try c.decode(YieldUpdateOkResponse.self, forKey: WireKey("response"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.response, forKey: WireKey("response"))
+  }
+}
+
+public struct YieldUpdateOkResponse: Codable, Sendable {
+  public var resourceId: ResourceId
+  public init(resourceId: ResourceId) {
+    self.resourceId = resourceId
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.resourceId = try c.decode(ResourceId.self, forKey: WireKey("resourceId"))
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.resourceId, forKey: WireKey("resourceId"))
+  }
+}
+
+extension ReceivedFrame {
+  internal init(_ frame: BusFrame, trace: [String: String]?, eventId: String?) {
+    self.init(
+      channel: frame.channel, correlationId: frame.correlationId, eventId: eventId,
+      payload: frame.payload, scope: frame.scope, trace: trace)
+  }
+}
+internal struct RetryBudget: Sendable {
+  let attempts: Int
+  let initialDelayMs: Int
+  let maxDelayMs: Int
+}
+internal enum Timings {
+  static let busRequestTimeoutMs: Int = 30000
+  static let emitTimeoutMs: Int = 30000
+  static let emitRetry = RetryBudget(attempts: 4, initialDelayMs: 1000, maxDelayMs: 4000)
+  static let httpRequestTimeoutMs: Int = 30000
+  static let requestRetryPauseMs: Int = 300
+  static let streamOpenTimeoutMs: Int = 30000
+  static let reconnectMs: Int = 5000
+  static let maxReconnectMs: Int = 60000
+  static let degradedThresholdMs: Int = 3000
+  static let lingerMs: Int = 1000
+  static let seenEventIdsCount: Int = 512
+  static let reconnectDebounceMs: Int = 100
+  static let lazyRemoveMs: Int = 5000
+  static let refreshRetry = RetryBudget(attempts: 4, initialDelayMs: 500, maxDelayMs: 4000)
+  static let refreshBeforeExpMs: Int = 300000
+  static let minRefreshDelayMs: Int = 10000
+  static let devicePollMs: Int = 5000
+  static let deviceSlowDownMs: Int = 5000
+  static let devicePollFloorMs: Int = 1000
+  static let invalidationWindowMs: Int = 1000
+  static let saveDebounceMs: Int = 50
+  static let maxStoredBytesCount: Int = 2_097_152
+  static let errorsKeptForFirstReaderCount: Int = 100
+  static let jobSilenceMs: Int = 10000
+  static let jobStatusPollMs: Int = 5000
+  static let jobPollMs: Int = 1000
+  static let jobPollTimeoutMs: Int = 60000
+  static let generationStallFloorMs: Int = 120000
+  static let generationStallPerTokenMs: Int = 75
+  static let generationStallAssumedTokensCount: Int = 500
+  static let delegateSilenceMs: Int = 180000
+  static let jobClaimTimeoutMs: Int = 10000
+  static let heldJobStallMs: Int = 900000
+  static let heldJobStallCheckMs: Int = 60000
+  static let markCommitTimeoutMs: Int = 60000
+  static let generatedTextAsksCount: Int = 8
+  static let anchoredTextReaskMs: Int = 5000
+  static let hoverDelayMs: Int = 150
+  static let searchDebounceMs: Int = 250
+  static let discoveryIntervalMs: Int = 5000
+  static let checksAtOnceCount: Int = 4
+}
+public enum TransportSpan: String, Codable, Sendable, CaseIterable {
+  case busEmitChannel = "bus.emit:{channel}"
+  case busRecvChannel = "bus.recv:{channel}"
+  case contentPut = "content.put"
+  case contentGet = "content.get"
+  case contentGetGraph = "content.get_graph"
+  case contentGetAnchoredText = "content.get_anchored_text"
+  case contentGetAnnotations = "content.get_annotations"
+}
+public enum TransportMetric: String, Codable, Sendable, CaseIterable {
+  case xynologBusSent = "xynolog.bus.sent"
+}
+public enum BusRequestErrorCode: String, Codable, Sendable, CaseIterable {
+  case busTimeout = "bus.timeout"
+  case busRejected = "bus.rejected"
+  case busClosed = "bus.closed"
+  case busNotFound = "bus.not-found"
+  case busUnsubscribed = "bus.unsubscribed"
+  case busPeerUnavailable = "bus.peer-unavailable"
+  case busUnauthorized = "bus.unauthorized"
+  case busNonePending = "bus.none-pending"
+}
+public enum ControlErrorCode: String, Codable, Sendable, CaseIterable {
+  case controlInvalidParams = "control.invalid-params"
+  case controlUnsupportedApiVersion = "control.unsupported-api-version"
+  case controlInvalidRequest = "control.invalid-request"
+  case controlInvalidService = "control.invalid-service"
+  case controlInvalidValue = "control.invalid-value"
+  case controlUnknownSetting = "control.unknown-setting"
+  case controlTargetRequired = "control.target-required"
+  case controlTargetAmbiguous = "control.target-ambiguous"
+  case controlRootNotFound = "control.root-not-found"
+  case controlRootNotRegistered = "control.root-not-registered"
+  case controlStackNotRunning = "control.stack-not-running"
+  case controlStackRunning = "control.stack-running"
+  case controlStartInProgress = "control.start-in-progress"
+  case controlRuntimeUnavailable = "control.runtime-unavailable"
+  case controlDependencyUnavailable = "control.dependency-unavailable"
+  case controlUnreachable = "control.unreachable"
+  case controlConfirmationRequired = "control.confirmation-required"
+  case controlUnreadableState = "control.unreadable-state"
+  case controlAlreadySignedIn = "control.already-signed-in"
+  case controlSignInFailed = "control.sign-in-failed"
+  case controlCancelled = "control.cancelled"
+  case controlFailed = "control.failed"
+}
+public enum JobErrorCode: String, Codable, Sendable, CaseIterable {
+  case jobFailed = "job.failed"
+  case jobCancelled = "job.cancelled"
+  case jobStalled = "job.stalled"
+}
+public enum KbIdentityErrorCode: String, Codable, Sendable, CaseIterable {
+  case unreachable = "unreachable"
+  case notReported = "not-reported"
+}
+public enum SessionErrorCode: String, Codable, Sendable, CaseIterable {
+  case sessionConstructFailed = "session.construct-failed"
+  case sessionAuthFailed = "session.auth-failed"
+  case sessionRefreshExhausted = "session.refresh-exhausted"
+  case sessionCredentialRefused = "session.credential-refused"
+  case sessionKeepFailed = "session.keep-failed"
+  case sessionSaveRefused = "session.save-refused"
+}
+public enum SignInErrorCode: String, Codable, Sendable, CaseIterable {
+  case noIssuer = "no-issuer"
+  case discovery = "discovery"
+  case noPending = "no-pending"
+  case state = "state"
+  case denied = "denied"
+  case expired = "expired"
+  case aborted = "aborted"
+  case exchange = "exchange"
+}
+public enum SpanRefusalErrorCode: String, Codable, Sendable, CaseIterable {
+  case spanOutOfRange = "span-out-of-range"
+  case exactMismatch = "exact-mismatch"
+  case prefixMismatch = "prefix-mismatch"
+  case suffixMismatch = "suffix-mismatch"
+  case nothingLocated = "nothing-located"
+  case exactNotCovered = "exact-not-covered"
+  case itemOutOfRange = "item-out-of-range"
+}
+public enum TransportErrorCode: String, Codable, Sendable, CaseIterable {
+  case unauthorized = "unauthorized"
+  case forbidden = "forbidden"
+  case notFound = "not-found"
+  case conflict = "conflict"
+  case badRequest = "bad-request"
+  case unprocessable = "unprocessable"
+  case rateLimited = "rate-limited"
+  case unavailable = "unavailable"
+  case error = "error"
+}
+internal func transportErrorCode(for status: Int) -> TransportErrorCode {
+  if status == 401 { return .unauthorized }
+  if status == 403 { return .forbidden }
+  if status == 404 { return .notFound }
+  if status == 409 { return .conflict }
+  if status == 400 { return .badRequest }
+  if status == 422 { return .unprocessable }
+  if status == 429 { return .rateLimited }
+  if status >= 500 { return .unavailable }
+  return .error
+}
+internal func busRequestCode(for wire: CommandErrorCode) -> BusRequestErrorCode {
+  switch wire {
+  case .peerUnavailable: return .busPeerUnavailable
+  case .notFound: return .busNotFound
+  case .unauthorized: return .busUnauthorized
+  case .nonePending: return .busNonePending
+  }
+}
+internal let unrecognizedBusFailure: BusRequestErrorCode = .busRejected
+internal let telemetrySpans: [SpecTelemetrySpansItem] = [
+  SpecTelemetrySpansItem(
+    attributes: [
+      SpecTelemetrySpansItemAttributesItem(key: "bus.channel"),
+      SpecTelemetrySpansItemAttributesItem(
+        key: "bus.scope", only: "on a frame in a resource scope"),
+      SpecTelemetrySpansItemAttributesItem(
+        key: "thread.id",
+        only: "when the host OpenTelemetry API supplies its runtime thread identity"),
+    ], kind: "producer", meaning: "A frame the client sent, in the trace of the work that sent it.",
+    name: "bus.emit:{channel}", transport: "bus"),
+  SpecTelemetrySpansItem(
+    attributes: [
+      SpecTelemetrySpansItemAttributesItem(key: "bus.channel"),
+      SpecTelemetrySpansItemAttributesItem(
+        key: "bus.scope", only: "on a frame in a resource scope"),
+      SpecTelemetrySpansItemAttributesItem(
+        key: "thread.id",
+        only: "when the host OpenTelemetry API supplies its runtime thread identity"),
+    ], kind: "consumer",
+    meaning:
+      "A frame the client received, and the work done for it, in the trace the frame was sent under.",
+    name: "bus.recv:{channel}", transport: "bus"),
+  SpecTelemetrySpansItem(
+    attributes: [
+      SpecTelemetrySpansItemAttributesItem(key: "content.format"),
+      SpecTelemetrySpansItemAttributesItem(key: "content.size_bytes"),
+      SpecTelemetrySpansItemAttributesItem(
+        key: "thread.id",
+        only: "when the host OpenTelemetry API supplies its runtime thread identity"),
+    ], kind: "client", meaning: "An upload.", name: "content.put", transport: "content"),
+  SpecTelemetrySpansItem(
+    attributes: [
+      SpecTelemetrySpansItemAttributesItem(key: "resource.id"),
+      SpecTelemetrySpansItemAttributesItem(
+        key: "content.stream", only: "on a read taken as a stream", values: ["true"]),
+      SpecTelemetrySpansItemAttributesItem(
+        key: "thread.id",
+        only: "when the host OpenTelemetry API supplies its runtime thread identity"),
+    ], kind: "client", meaning: "A read of a resource's bytes.", name: "content.get",
+    transport: "content"),
+  SpecTelemetrySpansItem(
+    attributes: [
+      SpecTelemetrySpansItemAttributesItem(key: "resource.id"),
+      SpecTelemetrySpansItemAttributesItem(
+        key: "thread.id",
+        only: "when the host OpenTelemetry API supplies its runtime thread identity"),
+    ], kind: "client", meaning: "A read of a resource's description.", name: "content.get_graph",
+    transport: "content"),
+  SpecTelemetrySpansItem(
+    attributes: [
+      SpecTelemetrySpansItemAttributesItem(key: "resource.id"),
+      SpecTelemetrySpansItemAttributesItem(
+        key: "thread.id",
+        only: "when the host OpenTelemetry API supplies its runtime thread identity"),
+    ], kind: "client", meaning: "A read of a resource's anchored text.",
+    name: "content.get_anchored_text", transport: "content"),
+  SpecTelemetrySpansItem(
+    attributes: [
+      SpecTelemetrySpansItemAttributesItem(key: "resource.id"),
+      SpecTelemetrySpansItemAttributesItem(
+        key: "thread.id",
+        only: "when the host OpenTelemetry API supplies its runtime thread identity"),
+    ], kind: "client", meaning: "A read of a resource's annotations.",
+    name: "content.get_annotations", transport: "content"),
+]
+internal let telemetryMetrics: [SpecTelemetryMetricsItem] = [
+  SpecTelemetryMetricsItem(
+    attributes: [
+      SpecTelemetryMetricsItemAttributesItem(key: "bus.channel"),
+      SpecTelemetryMetricsItemAttributesItem(
+        key: "bus.scope", only: "on an emit in a resource scope"),
+    ], instrument: "counter", meaning: "Emits the client sent.", name: "xynolog.bus.sent",
+    transport: "bus")
+]
+internal let oauthClients: [SpecOauthClientsItem] = [
+  SpecOauthClientsItem(
+    docs:
+      "An application a person uses: the authorization-code grant with PKCE (RFC 7636), at a redirect address the registration lists.",
+    id: "xynolog-browser", name: "browser"),
+  SpecOauthClientsItem(
+    docs:
+      "A process with no browser of its own, and the launcher: the device authorization grant (RFC 8628).",
+    id: "xynolog-cli", name: "script"),
+]
+internal let signInScope: SpecSignInScope = SpecSignInScope(
+  docs:
+    "What every sign-in asks for. `offline_access` asks for a refresh token that outlives the issuer's own browser session: a session with a knowledge base is renewed for weeks, not minutes.",
+  value: "openid email profile offline_access")
+internal let ownerOnlyDirectory: SpecOwnerOnlyDirectory = SpecOwnerOnlyDirectory(
+  docs:
+    "The directory's mode, in octal, on a system that has modes: its owner reads, writes and enters it, and nobody else does.",
+  value: "0700")
+internal let ownerOnlyFile: SpecOwnerOnlyFile = SpecOwnerOnlyFile(
+  docs:
+    "The mode, in octal, on a system that has modes, that a writer makes tokens.json's temporary file and its lock with, and the launcher its own files in its state home: its owner reads and writes each, and nobody else does.",
+  value: "0600")
+internal let mediaTypes: [SpecMediaTypesItem] = [
+  SpecMediaTypesItem(
+    anchoring: "text-selector", authorable: true, extension: ".md", generatable: true,
+    label: "Markdown", mediaType: "text/markdown", render: "text", textSource: "decode",
+    uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "text-selector", authorable: true, extension: ".txt", generatable: true,
+    label: "Plain Text", mediaType: "text/plain", render: "text", textSource: "decode",
+    uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "text-selector", authorable: true, extension: ".html", generatable: false,
+    label: "HTML", mediaType: "text/html", render: "text", textSource: "decode", uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "text-selector", authorable: false, extension: ".json", generatable: false,
+    label: "JSON", mediaType: "application/json", render: "text", textSource: "decode",
+    uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "spatial", authorable: false, extension: ".png", generatable: false,
+    label: "PNG image", mediaType: "image/png", render: "image", textSource: "none",
+    uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "spatial", authorable: false, extension: ".jpg", generatable: false,
+    label: "JPEG image", mediaType: "image/jpeg", render: "image", textSource: "none",
+    uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "spatial", authorable: false, extension: ".pdf", generatable: true, label: "PDF",
+    mediaType: "application/pdf", render: "pdf", textSource: "pdf-text-layer", uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".css", generatable: false, label: "CSS",
+    mediaType: "text/css", render: "none", textSource: "decode", uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".csv", generatable: false, label: "CSV",
+    mediaType: "text/csv", render: "none", textSource: "decode", uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".xml", generatable: false, label: "XML",
+    mediaType: "text/xml", render: "none", textSource: "decode", uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".xml", generatable: false, label: "XML",
+    mediaType: "application/xml", render: "none", textSource: "decode", uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".yaml", generatable: false, label: "YAML",
+    mediaType: "application/yaml", render: "none", textSource: "decode", uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".yaml", generatable: false, label: "YAML",
+    mediaType: "application/x-yaml", render: "none", textSource: "decode", uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".js", generatable: false, label: "JavaScript",
+    mediaType: "text/javascript", render: "none", textSource: "decode", uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".js", generatable: false, label: "JavaScript",
+    mediaType: "application/javascript", render: "none", textSource: "decode", uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".ts", generatable: false, label: "TypeScript",
+    mediaType: "text/x-typescript", render: "none", textSource: "decode", uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".ts", generatable: false, label: "TypeScript",
+    mediaType: "application/typescript", render: "none", textSource: "decode", uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".py", generatable: false,
+    label: "Python source", mediaType: "text/x-python", render: "none", textSource: "decode",
+    uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".java", generatable: false,
+    label: "Java source", mediaType: "text/x-java", render: "none", textSource: "decode",
+    uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".c", generatable: false, label: "C source",
+    mediaType: "text/x-c", render: "none", textSource: "decode", uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".cpp", generatable: false,
+    label: "C++ source", mediaType: "text/x-c++", render: "none", textSource: "decode",
+    uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".cs", generatable: false, label: "C# source",
+    mediaType: "text/x-csharp", render: "none", textSource: "decode", uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".go", generatable: false, label: "Go source",
+    mediaType: "text/x-go", render: "none", textSource: "decode", uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".rs", generatable: false,
+    label: "Rust source", mediaType: "text/x-rust", render: "none", textSource: "decode",
+    uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".rb", generatable: false,
+    label: "Ruby source", mediaType: "text/x-ruby", render: "none", textSource: "decode",
+    uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".php", generatable: false,
+    label: "PHP source", mediaType: "text/x-php", render: "none", textSource: "decode",
+    uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".swift", generatable: false,
+    label: "Swift source", mediaType: "text/x-swift", render: "none", textSource: "decode",
+    uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".kt", generatable: false,
+    label: "Kotlin source", mediaType: "text/x-kotlin", render: "none", textSource: "decode",
+    uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".sh", generatable: false,
+    label: "Shell script", mediaType: "text/x-shell", render: "none", textSource: "decode",
+    uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".doc", generatable: false,
+    label: "Word document (legacy)", mediaType: "application/msword", render: "none",
+    textSource: "none", uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".docx", generatable: false,
+    label: "Word document",
+    mediaType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    render: "none", textSource: "none", uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".xls", generatable: false,
+    label: "Excel spreadsheet (legacy)", mediaType: "application/vnd.ms-excel", render: "none",
+    textSource: "none", uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".xlsx", generatable: false,
+    label: "Excel spreadsheet",
+    mediaType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", render: "none",
+    textSource: "none", uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".ppt", generatable: false,
+    label: "PowerPoint presentation (legacy)", mediaType: "application/vnd.ms-powerpoint",
+    render: "none", textSource: "none", uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".pptx", generatable: false,
+    label: "PowerPoint presentation",
+    mediaType: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    render: "none", textSource: "none", uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".zip", generatable: false,
+    label: "ZIP archive", mediaType: "application/zip", render: "none", textSource: "none",
+    uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".gz", generatable: false,
+    label: "Gzip archive", mediaType: "application/gzip", render: "none", textSource: "none",
+    uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".tar", generatable: false,
+    label: "TAR archive", mediaType: "application/x-tar", render: "none", textSource: "none",
+    uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".7z", generatable: false, label: "7z archive",
+    mediaType: "application/x-7z-compressed", render: "none", textSource: "none", uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".bin", generatable: false, label: "Binary",
+    mediaType: "application/octet-stream", render: "none", textSource: "none", uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".wasm", generatable: false,
+    label: "WebAssembly module", mediaType: "application/wasm", render: "none", textSource: "none",
+    uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".gif", generatable: false, label: "GIF image",
+    mediaType: "image/gif", render: "none", textSource: "none", uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".webp", generatable: false,
+    label: "WebP image", mediaType: "image/webp", render: "none", textSource: "none",
+    uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".svg", generatable: false, label: "SVG image",
+    mediaType: "image/svg+xml", render: "none", textSource: "none", uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".bmp", generatable: false, label: "BMP image",
+    mediaType: "image/bmp", render: "none", textSource: "none", uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".tiff", generatable: false,
+    label: "TIFF image", mediaType: "image/tiff", render: "none", textSource: "none",
+    uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".ico", generatable: false, label: "Icon",
+    mediaType: "image/x-icon", render: "none", textSource: "none", uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".mp4", generatable: false, label: "MP4 video",
+    mediaType: "video/mp4", render: "none", textSource: "none", uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".mpeg", generatable: false,
+    label: "MPEG video", mediaType: "video/mpeg", render: "none", textSource: "none",
+    uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".webm", generatable: false,
+    label: "WebM video", mediaType: "video/webm", render: "none", textSource: "none",
+    uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".ogv", generatable: false, label: "Ogg video",
+    mediaType: "video/ogg", render: "none", textSource: "none", uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".mov", generatable: false,
+    label: "QuickTime video", mediaType: "video/quicktime", render: "none", textSource: "none",
+    uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".avi", generatable: false, label: "AVI video",
+    mediaType: "video/x-msvideo", render: "none", textSource: "none", uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".mp3", generatable: false, label: "MP3 audio",
+    mediaType: "audio/mpeg", render: "none", textSource: "none", uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".wav", generatable: false, label: "WAV audio",
+    mediaType: "audio/wav", render: "none", textSource: "none", uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".ogg", generatable: false, label: "Ogg audio",
+    mediaType: "audio/ogg", render: "none", textSource: "none", uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".webm", generatable: false,
+    label: "WebM audio", mediaType: "audio/webm", render: "none", textSource: "none",
+    uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".aac", generatable: false, label: "AAC audio",
+    mediaType: "audio/aac", render: "none", textSource: "none", uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".flac", generatable: false,
+    label: "FLAC audio", mediaType: "audio/flac", render: "none", textSource: "none",
+    uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".woff", generatable: false,
+    label: "WOFF font", mediaType: "font/woff", render: "none", textSource: "none", uploadable: true
+  ),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".woff2", generatable: false,
+    label: "WOFF2 font", mediaType: "font/woff2", render: "none", textSource: "none",
+    uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".ttf", generatable: false,
+    label: "TrueType font", mediaType: "font/ttf", render: "none", textSource: "none",
+    uploadable: true),
+  SpecMediaTypesItem(
+    anchoring: "none", authorable: false, extension: ".otf", generatable: false,
+    label: "OpenType font", mediaType: "font/otf", render: "none", textSource: "none",
+    uploadable: true),
+]
+internal let encodings: [SpecEncodingsItem] = [
+  SpecEncodingsItem(
+    bytes: "c3 a9", encoding: "utf-8",
+    labels: [
+      "unicode-1-1-utf-8", "unicode11utf8", "unicode20utf8", "utf-8", "utf8", "x-unicode20utf8",
+    ], text: "é"),
+  SpecEncodingsItem(
+    bytes: "00 e9", encoding: "utf-16be", labels: ["unicodefffe", "utf-16be"], text: "é"),
+  SpecEncodingsItem(
+    bytes: "e9 00", encoding: "utf-16le",
+    labels: [
+      "csunicode", "iso-10646-ucs-2", "ucs-2", "unicode", "unicodefeff", "utf-16", "utf-16le",
+    ], text: "é"),
+  SpecEncodingsItem(
+    encoding: "ibm866",
+    everyByte:
+      "\u{0}\u{1}\u{2}\u{3}\u{4}\u{5}\u{6}\u{7}\u{8}\u{9}\u{a}\u{b}\u{c}\u{d}\u{e}\u{f}\u{10}\u{11}\u{12}\u{13}\u{14}\u{15}\u{16}\u{17}\u{18}\u{19}\u{1a}\u{1b}\u{1c}\u{1d}\u{1e}\u{1f} !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\u{7f}АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдежзийклмноп░▒▓│┤╡╢╖╕╣║╗╝╜╛┐└┴┬├─┼╞╟╚╔╩╦╠═╬╧╨╤╥╙╘╒╓╫╪┘┌█▄▌▐▀рстуфхцчшщъыьэюяЁёЄєЇїЎў°∙·√№¤■ ",
+    labels: ["866", "cp866", "csibm866", "ibm866"]),
+  SpecEncodingsItem(
+    encoding: "iso-8859-10",
+    everyByte:
+      "\u{0}\u{1}\u{2}\u{3}\u{4}\u{5}\u{6}\u{7}\u{8}\u{9}\u{a}\u{b}\u{c}\u{d}\u{e}\u{f}\u{10}\u{11}\u{12}\u{13}\u{14}\u{15}\u{16}\u{17}\u{18}\u{19}\u{1a}\u{1b}\u{1c}\u{1d}\u{1e}\u{1f} !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\u{7f}\u{80}\u{81}\u{82}\u{83}\u{84}\u{85}\u{86}\u{87}\u{88}\u{89}\u{8a}\u{8b}\u{8c}\u{8d}\u{8e}\u{8f}\u{90}\u{91}\u{92}\u{93}\u{94}\u{95}\u{96}\u{97}\u{98}\u{99}\u{9a}\u{9b}\u{9c}\u{9d}\u{9e}\u{9f} ĄĒĢĪĨĶ§ĻĐŠŦŽ­ŪŊ°ąēģīĩķ·ļđšŧž―ūŋĀÁÂÃÄÅÆĮČÉĘËĖÍÎÏÐŅŌÓÔÕÖŨØŲÚÛÜÝÞßāáâãäåæįčéęëėíîïðņōóôõöũøųúûüýþĸ",
+    labels: ["csisolatin6", "iso-8859-10", "iso-ir-157", "iso8859-10", "iso885910", "l6", "latin6"]),
+  SpecEncodingsItem(
+    encoding: "iso-8859-13",
+    everyByte:
+      "\u{0}\u{1}\u{2}\u{3}\u{4}\u{5}\u{6}\u{7}\u{8}\u{9}\u{a}\u{b}\u{c}\u{d}\u{e}\u{f}\u{10}\u{11}\u{12}\u{13}\u{14}\u{15}\u{16}\u{17}\u{18}\u{19}\u{1a}\u{1b}\u{1c}\u{1d}\u{1e}\u{1f} !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\u{7f}\u{80}\u{81}\u{82}\u{83}\u{84}\u{85}\u{86}\u{87}\u{88}\u{89}\u{8a}\u{8b}\u{8c}\u{8d}\u{8e}\u{8f}\u{90}\u{91}\u{92}\u{93}\u{94}\u{95}\u{96}\u{97}\u{98}\u{99}\u{9a}\u{9b}\u{9c}\u{9d}\u{9e}\u{9f} ”¢£¤„¦§Ø©Ŗ«¬­®Æ°±²³“µ¶·ø¹ŗ»¼½¾æĄĮĀĆÄÅĘĒČÉŹĖĢĶĪĻŠŃŅÓŌÕÖ×ŲŁŚŪÜŻŽßąįāćäåęēčéźėģķīļšńņóōõö÷ųłśūüżž’",
+    labels: ["iso-8859-13", "iso8859-13", "iso885913"]),
+  SpecEncodingsItem(
+    encoding: "iso-8859-14",
+    everyByte:
+      "\u{0}\u{1}\u{2}\u{3}\u{4}\u{5}\u{6}\u{7}\u{8}\u{9}\u{a}\u{b}\u{c}\u{d}\u{e}\u{f}\u{10}\u{11}\u{12}\u{13}\u{14}\u{15}\u{16}\u{17}\u{18}\u{19}\u{1a}\u{1b}\u{1c}\u{1d}\u{1e}\u{1f} !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\u{7f}\u{80}\u{81}\u{82}\u{83}\u{84}\u{85}\u{86}\u{87}\u{88}\u{89}\u{8a}\u{8b}\u{8c}\u{8d}\u{8e}\u{8f}\u{90}\u{91}\u{92}\u{93}\u{94}\u{95}\u{96}\u{97}\u{98}\u{99}\u{9a}\u{9b}\u{9c}\u{9d}\u{9e}\u{9f} Ḃḃ£ĊċḊ§Ẁ©ẂḋỲ­®ŸḞḟĠġṀṁ¶ṖẁṗẃṠỳẄẅṡÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏŴÑÒÓÔÕÖṪØÙÚÛÜÝŶßàáâãäåæçèéêëìíîïŵñòóôõöṫøùúûüýŷÿ",
+    labels: ["iso-8859-14", "iso8859-14", "iso885914"]),
+  SpecEncodingsItem(
+    encoding: "iso-8859-15",
+    everyByte:
+      "\u{0}\u{1}\u{2}\u{3}\u{4}\u{5}\u{6}\u{7}\u{8}\u{9}\u{a}\u{b}\u{c}\u{d}\u{e}\u{f}\u{10}\u{11}\u{12}\u{13}\u{14}\u{15}\u{16}\u{17}\u{18}\u{19}\u{1a}\u{1b}\u{1c}\u{1d}\u{1e}\u{1f} !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\u{7f}\u{80}\u{81}\u{82}\u{83}\u{84}\u{85}\u{86}\u{87}\u{88}\u{89}\u{8a}\u{8b}\u{8c}\u{8d}\u{8e}\u{8f}\u{90}\u{91}\u{92}\u{93}\u{94}\u{95}\u{96}\u{97}\u{98}\u{99}\u{9a}\u{9b}\u{9c}\u{9d}\u{9e}\u{9f} ¡¢£€¥Š§š©ª«¬­®¯°±²³Žµ¶·ž¹º»ŒœŸ¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ",
+    labels: ["csisolatin9", "iso-8859-15", "iso8859-15", "iso885915", "iso_8859-15", "l9"]),
+  SpecEncodingsItem(
+    encoding: "iso-8859-16",
+    everyByte:
+      "\u{0}\u{1}\u{2}\u{3}\u{4}\u{5}\u{6}\u{7}\u{8}\u{9}\u{a}\u{b}\u{c}\u{d}\u{e}\u{f}\u{10}\u{11}\u{12}\u{13}\u{14}\u{15}\u{16}\u{17}\u{18}\u{19}\u{1a}\u{1b}\u{1c}\u{1d}\u{1e}\u{1f} !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\u{7f}\u{80}\u{81}\u{82}\u{83}\u{84}\u{85}\u{86}\u{87}\u{88}\u{89}\u{8a}\u{8b}\u{8c}\u{8d}\u{8e}\u{8f}\u{90}\u{91}\u{92}\u{93}\u{94}\u{95}\u{96}\u{97}\u{98}\u{99}\u{9a}\u{9b}\u{9c}\u{9d}\u{9e}\u{9f} ĄąŁ€„Š§š©Ș«Ź­źŻ°±ČłŽ”¶·žčș»ŒœŸżÀÁÂĂÄĆÆÇÈÉÊËÌÍÎÏĐŃÒÓÔŐÖŚŰÙÚÛÜĘȚßàáâăäćæçèéêëìíîïđńòóôőöśűùúûüęțÿ",
+    labels: ["iso-8859-16"]),
+  SpecEncodingsItem(
+    encoding: "iso-8859-2",
+    everyByte:
+      "\u{0}\u{1}\u{2}\u{3}\u{4}\u{5}\u{6}\u{7}\u{8}\u{9}\u{a}\u{b}\u{c}\u{d}\u{e}\u{f}\u{10}\u{11}\u{12}\u{13}\u{14}\u{15}\u{16}\u{17}\u{18}\u{19}\u{1a}\u{1b}\u{1c}\u{1d}\u{1e}\u{1f} !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\u{7f}\u{80}\u{81}\u{82}\u{83}\u{84}\u{85}\u{86}\u{87}\u{88}\u{89}\u{8a}\u{8b}\u{8c}\u{8d}\u{8e}\u{8f}\u{90}\u{91}\u{92}\u{93}\u{94}\u{95}\u{96}\u{97}\u{98}\u{99}\u{9a}\u{9b}\u{9c}\u{9d}\u{9e}\u{9f} Ą˘Ł¤ĽŚ§¨ŠŞŤŹ­ŽŻ°ą˛ł´ľśˇ¸šşťź˝žżŔÁÂĂÄĹĆÇČÉĘËĚÍÎĎĐŃŇÓÔŐÖ×ŘŮÚŰÜÝŢßŕáâăäĺćçčéęëěíîďđńňóôőö÷řůúűüýţ˙",
+    labels: [
+      "csisolatin2", "iso-8859-2", "iso-ir-101", "iso8859-2", "iso88592", "iso_8859-2",
+      "iso_8859-2:1987", "l2", "latin2",
+    ]),
+  SpecEncodingsItem(
+    encoding: "iso-8859-3",
+    everyByte:
+      "\u{0}\u{1}\u{2}\u{3}\u{4}\u{5}\u{6}\u{7}\u{8}\u{9}\u{a}\u{b}\u{c}\u{d}\u{e}\u{f}\u{10}\u{11}\u{12}\u{13}\u{14}\u{15}\u{16}\u{17}\u{18}\u{19}\u{1a}\u{1b}\u{1c}\u{1d}\u{1e}\u{1f} !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\u{7f}\u{80}\u{81}\u{82}\u{83}\u{84}\u{85}\u{86}\u{87}\u{88}\u{89}\u{8a}\u{8b}\u{8c}\u{8d}\u{8e}\u{8f}\u{90}\u{91}\u{92}\u{93}\u{94}\u{95}\u{96}\u{97}\u{98}\u{99}\u{9a}\u{9b}\u{9c}\u{9d}\u{9e}\u{9f} Ħ˘£¤�Ĥ§¨İŞĞĴ­�Ż°ħ²³´µĥ·¸ışğĵ½�żÀÁÂ�ÄĊĈÇÈÉÊËÌÍÎÏ�ÑÒÓÔĠÖ×ĜÙÚÛÜŬŜßàáâ�äċĉçèéêëìíîï�ñòóôġö÷ĝùúûüŭŝ˙",
+    labels: [
+      "csisolatin3", "iso-8859-3", "iso-ir-109", "iso8859-3", "iso88593", "iso_8859-3",
+      "iso_8859-3:1988", "l3", "latin3",
+    ]),
+  SpecEncodingsItem(
+    encoding: "iso-8859-4",
+    everyByte:
+      "\u{0}\u{1}\u{2}\u{3}\u{4}\u{5}\u{6}\u{7}\u{8}\u{9}\u{a}\u{b}\u{c}\u{d}\u{e}\u{f}\u{10}\u{11}\u{12}\u{13}\u{14}\u{15}\u{16}\u{17}\u{18}\u{19}\u{1a}\u{1b}\u{1c}\u{1d}\u{1e}\u{1f} !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\u{7f}\u{80}\u{81}\u{82}\u{83}\u{84}\u{85}\u{86}\u{87}\u{88}\u{89}\u{8a}\u{8b}\u{8c}\u{8d}\u{8e}\u{8f}\u{90}\u{91}\u{92}\u{93}\u{94}\u{95}\u{96}\u{97}\u{98}\u{99}\u{9a}\u{9b}\u{9c}\u{9d}\u{9e}\u{9f} ĄĸŖ¤ĨĻ§¨ŠĒĢŦ­Ž¯°ą˛ŗ´ĩļˇ¸šēģŧŊžŋĀÁÂÃÄÅÆĮČÉĘËĖÍÎĪĐŅŌĶÔÕÖ×ØŲÚÛÜŨŪßāáâãäåæįčéęëėíîīđņōķôõö÷øųúûüũū˙",
+    labels: [
+      "csisolatin4", "iso-8859-4", "iso-ir-110", "iso8859-4", "iso88594", "iso_8859-4",
+      "iso_8859-4:1988", "l4", "latin4",
+    ]),
+  SpecEncodingsItem(
+    encoding: "iso-8859-5",
+    everyByte:
+      "\u{0}\u{1}\u{2}\u{3}\u{4}\u{5}\u{6}\u{7}\u{8}\u{9}\u{a}\u{b}\u{c}\u{d}\u{e}\u{f}\u{10}\u{11}\u{12}\u{13}\u{14}\u{15}\u{16}\u{17}\u{18}\u{19}\u{1a}\u{1b}\u{1c}\u{1d}\u{1e}\u{1f} !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\u{7f}\u{80}\u{81}\u{82}\u{83}\u{84}\u{85}\u{86}\u{87}\u{88}\u{89}\u{8a}\u{8b}\u{8c}\u{8d}\u{8e}\u{8f}\u{90}\u{91}\u{92}\u{93}\u{94}\u{95}\u{96}\u{97}\u{98}\u{99}\u{9a}\u{9b}\u{9c}\u{9d}\u{9e}\u{9f} ЁЂЃЄЅІЇЈЉЊЋЌ­ЎЏАБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдежзийклмнопрстуфхцчшщъыьэюя№ёђѓєѕіїјљњћќ§ўџ",
+    labels: [
+      "csisolatincyrillic", "cyrillic", "iso-8859-5", "iso-ir-144", "iso8859-5", "iso88595",
+      "iso_8859-5", "iso_8859-5:1988",
+    ]),
+  SpecEncodingsItem(
+    encoding: "iso-8859-6",
+    everyByte:
+      "\u{0}\u{1}\u{2}\u{3}\u{4}\u{5}\u{6}\u{7}\u{8}\u{9}\u{a}\u{b}\u{c}\u{d}\u{e}\u{f}\u{10}\u{11}\u{12}\u{13}\u{14}\u{15}\u{16}\u{17}\u{18}\u{19}\u{1a}\u{1b}\u{1c}\u{1d}\u{1e}\u{1f} !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\u{7f}\u{80}\u{81}\u{82}\u{83}\u{84}\u{85}\u{86}\u{87}\u{88}\u{89}\u{8a}\u{8b}\u{8c}\u{8d}\u{8e}\u{8f}\u{90}\u{91}\u{92}\u{93}\u{94}\u{95}\u{96}\u{97}\u{98}\u{99}\u{9a}\u{9b}\u{9c}\u{9d}\u{9e}\u{9f} ���¤�������،­�������������؛���؟�ءآأؤإئابةتثجحخدذرزسشصضطظعغ�����ـفقكلمنهوىيًٌٍَُِّْ�������������",
+    labels: [
+      "arabic", "asmo-708", "csiso88596e", "csiso88596i", "csisolatinarabic", "ecma-114",
+      "iso-8859-6", "iso-8859-6-e", "iso-8859-6-i", "iso-ir-127", "iso8859-6", "iso88596",
+      "iso_8859-6", "iso_8859-6:1987",
+    ]),
+  SpecEncodingsItem(
+    encoding: "iso-8859-7",
+    everyByte:
+      "\u{0}\u{1}\u{2}\u{3}\u{4}\u{5}\u{6}\u{7}\u{8}\u{9}\u{a}\u{b}\u{c}\u{d}\u{e}\u{f}\u{10}\u{11}\u{12}\u{13}\u{14}\u{15}\u{16}\u{17}\u{18}\u{19}\u{1a}\u{1b}\u{1c}\u{1d}\u{1e}\u{1f} !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\u{7f}\u{80}\u{81}\u{82}\u{83}\u{84}\u{85}\u{86}\u{87}\u{88}\u{89}\u{8a}\u{8b}\u{8c}\u{8d}\u{8e}\u{8f}\u{90}\u{91}\u{92}\u{93}\u{94}\u{95}\u{96}\u{97}\u{98}\u{99}\u{9a}\u{9b}\u{9c}\u{9d}\u{9e}\u{9f} ‘’£€₯¦§¨©ͺ«¬­�―°±²³΄΅Ά·ΈΉΊ»Ό½ΎΏΐΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡ�ΣΤΥΦΧΨΩΪΫάέήίΰαβγδεζηθικλμνξοπρςστυφχψωϊϋόύώ�",
+    labels: [
+      "csisolatingreek", "ecma-118", "elot_928", "greek", "greek8", "iso-8859-7", "iso-ir-126",
+      "iso8859-7", "iso88597", "iso_8859-7", "iso_8859-7:1987", "sun_eu_greek",
+    ]),
+  SpecEncodingsItem(
+    encoding: "iso-8859-8",
+    everyByte:
+      "\u{0}\u{1}\u{2}\u{3}\u{4}\u{5}\u{6}\u{7}\u{8}\u{9}\u{a}\u{b}\u{c}\u{d}\u{e}\u{f}\u{10}\u{11}\u{12}\u{13}\u{14}\u{15}\u{16}\u{17}\u{18}\u{19}\u{1a}\u{1b}\u{1c}\u{1d}\u{1e}\u{1f} !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\u{7f}\u{80}\u{81}\u{82}\u{83}\u{84}\u{85}\u{86}\u{87}\u{88}\u{89}\u{8a}\u{8b}\u{8c}\u{8d}\u{8e}\u{8f}\u{90}\u{91}\u{92}\u{93}\u{94}\u{95}\u{96}\u{97}\u{98}\u{99}\u{9a}\u{9b}\u{9c}\u{9d}\u{9e}\u{9f} �¢£¤¥¦§¨©×«¬­®¯°±²³´µ¶·¸¹÷»¼½¾��������������������������������‗אבגדהוזחטיךכלםמןנסעףפץצקרשת��‎‏�",
+    labels: [
+      "csiso88598e", "csisolatinhebrew", "hebrew", "iso-8859-8", "iso-8859-8-e", "iso-ir-138",
+      "iso8859-8", "iso88598", "iso_8859-8", "iso_8859-8:1988", "visual",
+    ]),
+  SpecEncodingsItem(
+    encoding: "iso-8859-8-i",
+    everyByte:
+      "\u{0}\u{1}\u{2}\u{3}\u{4}\u{5}\u{6}\u{7}\u{8}\u{9}\u{a}\u{b}\u{c}\u{d}\u{e}\u{f}\u{10}\u{11}\u{12}\u{13}\u{14}\u{15}\u{16}\u{17}\u{18}\u{19}\u{1a}\u{1b}\u{1c}\u{1d}\u{1e}\u{1f} !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\u{7f}\u{80}\u{81}\u{82}\u{83}\u{84}\u{85}\u{86}\u{87}\u{88}\u{89}\u{8a}\u{8b}\u{8c}\u{8d}\u{8e}\u{8f}\u{90}\u{91}\u{92}\u{93}\u{94}\u{95}\u{96}\u{97}\u{98}\u{99}\u{9a}\u{9b}\u{9c}\u{9d}\u{9e}\u{9f} �¢£¤¥¦§¨©×«¬­®¯°±²³´µ¶·¸¹÷»¼½¾��������������������������������‗אבגדהוזחטיךכלםמןנסעףפץצקרשת��‎‏�",
+    labels: ["csiso88598i", "iso-8859-8-i", "logical"]),
+  SpecEncodingsItem(
+    encoding: "koi8-r",
+    everyByte:
+      "\u{0}\u{1}\u{2}\u{3}\u{4}\u{5}\u{6}\u{7}\u{8}\u{9}\u{a}\u{b}\u{c}\u{d}\u{e}\u{f}\u{10}\u{11}\u{12}\u{13}\u{14}\u{15}\u{16}\u{17}\u{18}\u{19}\u{1a}\u{1b}\u{1c}\u{1d}\u{1e}\u{1f} !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\u{7f}─│┌┐└┘├┤┬┴┼▀▄█▌▐░▒▓⌠■∙√≈≤≥ ⌡°²·÷═║╒ё╓╔╕╖╗╘╙╚╛╜╝╞╟╠╡Ё╢╣╤╥╦╧╨╩╪╫╬©юабцдефгхийклмнопярстужвьызшэщчъЮАБЦДЕФГХИЙКЛМНОПЯРСТУЖВЬЫЗШЭЩЧЪ",
+    labels: ["cskoi8r", "koi", "koi8", "koi8-r", "koi8_r"]),
+  SpecEncodingsItem(
+    encoding: "koi8-u",
+    everyByte:
+      "\u{0}\u{1}\u{2}\u{3}\u{4}\u{5}\u{6}\u{7}\u{8}\u{9}\u{a}\u{b}\u{c}\u{d}\u{e}\u{f}\u{10}\u{11}\u{12}\u{13}\u{14}\u{15}\u{16}\u{17}\u{18}\u{19}\u{1a}\u{1b}\u{1c}\u{1d}\u{1e}\u{1f} !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\u{7f}─│┌┐└┘├┤┬┴┼▀▄█▌▐░▒▓⌠■∙√≈≤≥ ⌡°²·÷═║╒ёє╔ії╗╘╙╚╛ґў╞╟╠╡ЁЄ╣ІЇ╦╧╨╩╪ҐЎ©юабцдефгхийклмнопярстужвьызшэщчъЮАБЦДЕФГХИЙКЛМНОПЯРСТУЖВЬЫЗШЭЩЧЪ",
+    labels: ["koi8-ru", "koi8-u"]),
+  SpecEncodingsItem(
+    encoding: "macintosh",
+    everyByte:
+      "\u{0}\u{1}\u{2}\u{3}\u{4}\u{5}\u{6}\u{7}\u{8}\u{9}\u{a}\u{b}\u{c}\u{d}\u{e}\u{f}\u{10}\u{11}\u{12}\u{13}\u{14}\u{15}\u{16}\u{17}\u{18}\u{19}\u{1a}\u{1b}\u{1c}\u{1d}\u{1e}\u{1f} !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\u{7f}ÄÅÇÉÑÖÜáàâäãåçéèêëíìîïñóòôöõúùûü†°¢£§•¶ß®©™´¨≠ÆØ∞±≤≥¥µ∂∑∏π∫ªºΩæø¿¡¬√ƒ≈∆«»… ÀÃÕŒœ–—“”‘’÷◊ÿŸ⁄€‹›ﬁﬂ‡·‚„‰ÂÊÁËÈÍÎÏÌÓÔÒÚÛÙıˆ˜¯˘˙˚¸˝˛ˇ",
+    labels: ["csmacintosh", "mac", "macintosh", "x-mac-roman"]),
+  SpecEncodingsItem(
+    encoding: "windows-1250",
+    everyByte:
+      "\u{0}\u{1}\u{2}\u{3}\u{4}\u{5}\u{6}\u{7}\u{8}\u{9}\u{a}\u{b}\u{c}\u{d}\u{e}\u{f}\u{10}\u{11}\u{12}\u{13}\u{14}\u{15}\u{16}\u{17}\u{18}\u{19}\u{1a}\u{1b}\u{1c}\u{1d}\u{1e}\u{1f} !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\u{7f}€\u{81}‚\u{83}„…†‡\u{88}‰Š‹ŚŤŽŹ\u{90}‘’“”•–—\u{98}™š›śťžź ˇ˘Ł¤Ą¦§¨©Ş«¬­®Ż°±˛ł´µ¶·¸ąş»Ľ˝ľżŔÁÂĂÄĹĆÇČÉĘËĚÍÎĎĐŃŇÓÔŐÖ×ŘŮÚŰÜÝŢßŕáâăäĺćçčéęëěíîďđńňóôőö÷řůúűüýţ˙",
+    labels: ["cp1250", "windows-1250", "x-cp1250"]),
+  SpecEncodingsItem(
+    encoding: "windows-1251",
+    everyByte:
+      "\u{0}\u{1}\u{2}\u{3}\u{4}\u{5}\u{6}\u{7}\u{8}\u{9}\u{a}\u{b}\u{c}\u{d}\u{e}\u{f}\u{10}\u{11}\u{12}\u{13}\u{14}\u{15}\u{16}\u{17}\u{18}\u{19}\u{1a}\u{1b}\u{1c}\u{1d}\u{1e}\u{1f} !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\u{7f}ЂЃ‚ѓ„…†‡€‰Љ‹ЊЌЋЏђ‘’“”•–—\u{98}™љ›њќћџ ЎўЈ¤Ґ¦§Ё©Є«¬­®Ї°±Ііґµ¶·ё№є»јЅѕїАБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдежзийклмнопрстуфхцчшщъыьэюя",
+    labels: ["cp1251", "windows-1251", "x-cp1251"]),
+  SpecEncodingsItem(
+    encoding: "windows-1252",
+    everyByte:
+      "\u{0}\u{1}\u{2}\u{3}\u{4}\u{5}\u{6}\u{7}\u{8}\u{9}\u{a}\u{b}\u{c}\u{d}\u{e}\u{f}\u{10}\u{11}\u{12}\u{13}\u{14}\u{15}\u{16}\u{17}\u{18}\u{19}\u{1a}\u{1b}\u{1c}\u{1d}\u{1e}\u{1f} !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\u{7f}€\u{81}‚ƒ„…†‡ˆ‰Š‹Œ\u{8d}Ž\u{8f}\u{90}‘’“”•–—˜™š›œ\u{9d}žŸ ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ",
+    labels: [
+      "ansi_x3.4-1968", "ascii", "cp1252", "cp819", "csisolatin1", "ibm819", "iso-8859-1",
+      "iso-ir-100", "iso8859-1", "iso88591", "iso_8859-1", "iso_8859-1:1987", "l1", "latin1",
+      "us-ascii", "windows-1252", "x-cp1252",
+    ]),
+  SpecEncodingsItem(
+    encoding: "windows-1253",
+    everyByte:
+      "\u{0}\u{1}\u{2}\u{3}\u{4}\u{5}\u{6}\u{7}\u{8}\u{9}\u{a}\u{b}\u{c}\u{d}\u{e}\u{f}\u{10}\u{11}\u{12}\u{13}\u{14}\u{15}\u{16}\u{17}\u{18}\u{19}\u{1a}\u{1b}\u{1c}\u{1d}\u{1e}\u{1f} !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\u{7f}€\u{81}‚ƒ„…†‡\u{88}‰\u{8a}‹\u{8c}\u{8d}\u{8e}\u{8f}\u{90}‘’“”•–—\u{98}™\u{9a}›\u{9c}\u{9d}\u{9e}\u{9f} ΅Ά£¤¥¦§¨©�«¬­®―°±²³΄µ¶·ΈΉΊ»Ό½ΎΏΐΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡ�ΣΤΥΦΧΨΩΪΫάέήίΰαβγδεζηθικλμνξοπρςστυφχψωϊϋόύώ�",
+    labels: ["cp1253", "windows-1253", "x-cp1253"]),
+  SpecEncodingsItem(
+    encoding: "windows-1254",
+    everyByte:
+      "\u{0}\u{1}\u{2}\u{3}\u{4}\u{5}\u{6}\u{7}\u{8}\u{9}\u{a}\u{b}\u{c}\u{d}\u{e}\u{f}\u{10}\u{11}\u{12}\u{13}\u{14}\u{15}\u{16}\u{17}\u{18}\u{19}\u{1a}\u{1b}\u{1c}\u{1d}\u{1e}\u{1f} !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\u{7f}€\u{81}‚ƒ„…†‡ˆ‰Š‹Œ\u{8d}\u{8e}\u{8f}\u{90}‘’“”•–—˜™š›œ\u{9d}\u{9e}Ÿ ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏĞÑÒÓÔÕÖ×ØÙÚÛÜİŞßàáâãäåæçèéêëìíîïğñòóôõö÷øùúûüışÿ",
+    labels: [
+      "cp1254", "csisolatin5", "iso-8859-9", "iso-ir-148", "iso8859-9", "iso88599", "iso_8859-9",
+      "iso_8859-9:1989", "l5", "latin5", "windows-1254", "x-cp1254",
+    ]),
+  SpecEncodingsItem(
+    encoding: "windows-1255",
+    everyByte:
+      "\u{0}\u{1}\u{2}\u{3}\u{4}\u{5}\u{6}\u{7}\u{8}\u{9}\u{a}\u{b}\u{c}\u{d}\u{e}\u{f}\u{10}\u{11}\u{12}\u{13}\u{14}\u{15}\u{16}\u{17}\u{18}\u{19}\u{1a}\u{1b}\u{1c}\u{1d}\u{1e}\u{1f} !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\u{7f}€\u{81}‚ƒ„…†‡ˆ‰\u{8a}‹\u{8c}\u{8d}\u{8e}\u{8f}\u{90}‘’“”•–—˜™\u{9a}›\u{9c}\u{9d}\u{9e}\u{9f} ¡¢£₪¥¦§¨©×«¬­®¯°±²³´µ¶·¸¹÷»¼½¾¿ְֱֲֳִֵֶַָֹֺֻּֽ־ֿ׀ׁׂ׃װױײ׳״�������אבגדהוזחטיךכלםמןנסעףפץצקרשת��‎‏�",
+    labels: ["cp1255", "windows-1255", "x-cp1255"]),
+  SpecEncodingsItem(
+    encoding: "windows-1256",
+    everyByte:
+      "\u{0}\u{1}\u{2}\u{3}\u{4}\u{5}\u{6}\u{7}\u{8}\u{9}\u{a}\u{b}\u{c}\u{d}\u{e}\u{f}\u{10}\u{11}\u{12}\u{13}\u{14}\u{15}\u{16}\u{17}\u{18}\u{19}\u{1a}\u{1b}\u{1c}\u{1d}\u{1e}\u{1f} !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\u{7f}€پ‚ƒ„…†‡ˆ‰ٹ‹Œچژڈگ‘’“”•–—ک™ڑ›œ‌‍ں ،¢£¤¥¦§¨©ھ«¬­®¯°±²³´µ¶·¸¹؛»¼½¾؟ہءآأؤإئابةتثجحخدذرزسشصض×طظعغـفقكàلâمنهوçèéêëىيîïًٌٍَôُِ÷ّùْûü‎‏ے",
+    labels: ["cp1256", "windows-1256", "x-cp1256"]),
+  SpecEncodingsItem(
+    encoding: "windows-1257",
+    everyByte:
+      "\u{0}\u{1}\u{2}\u{3}\u{4}\u{5}\u{6}\u{7}\u{8}\u{9}\u{a}\u{b}\u{c}\u{d}\u{e}\u{f}\u{10}\u{11}\u{12}\u{13}\u{14}\u{15}\u{16}\u{17}\u{18}\u{19}\u{1a}\u{1b}\u{1c}\u{1d}\u{1e}\u{1f} !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\u{7f}€\u{81}‚\u{83}„…†‡\u{88}‰\u{8a}‹\u{8c}¨ˇ¸\u{90}‘’“”•–—\u{98}™\u{9a}›\u{9c}¯˛\u{9f} �¢£¤�¦§Ø©Ŗ«¬­®Æ°±²³´µ¶·ø¹ŗ»¼½¾æĄĮĀĆÄÅĘĒČÉŹĖĢĶĪĻŠŃŅÓŌÕÖ×ŲŁŚŪÜŻŽßąįāćäåęēčéźėģķīļšńņóōõö÷ųłśūüżž˙",
+    labels: ["cp1257", "windows-1257", "x-cp1257"]),
+  SpecEncodingsItem(
+    encoding: "windows-1258",
+    everyByte:
+      "\u{0}\u{1}\u{2}\u{3}\u{4}\u{5}\u{6}\u{7}\u{8}\u{9}\u{a}\u{b}\u{c}\u{d}\u{e}\u{f}\u{10}\u{11}\u{12}\u{13}\u{14}\u{15}\u{16}\u{17}\u{18}\u{19}\u{1a}\u{1b}\u{1c}\u{1d}\u{1e}\u{1f} !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\u{7f}€\u{81}‚ƒ„…†‡ˆ‰\u{8a}‹Œ\u{8d}\u{8e}\u{8f}\u{90}‘’“”•–—˜™\u{9a}›œ\u{9d}\u{9e}Ÿ ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂĂÄÅÆÇÈÉÊË̀ÍÎÏĐÑ̉ÓÔƠÖ×ØÙÚÛÜỮßàáâăäåæçèéêë́íîïđṇ̃óôơö÷øùúûüư₫ÿ",
+    labels: ["cp1258", "windows-1258", "x-cp1258"]),
+  SpecEncodingsItem(
+    encoding: "windows-874",
+    everyByte:
+      "\u{0}\u{1}\u{2}\u{3}\u{4}\u{5}\u{6}\u{7}\u{8}\u{9}\u{a}\u{b}\u{c}\u{d}\u{e}\u{f}\u{10}\u{11}\u{12}\u{13}\u{14}\u{15}\u{16}\u{17}\u{18}\u{19}\u{1a}\u{1b}\u{1c}\u{1d}\u{1e}\u{1f} !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\u{7f}€\u{81}\u{82}\u{83}\u{84}…\u{86}\u{87}\u{88}\u{89}\u{8a}\u{8b}\u{8c}\u{8d}\u{8e}\u{8f}\u{90}‘’“”•–—\u{98}\u{99}\u{9a}\u{9b}\u{9c}\u{9d}\u{9e}\u{9f} กขฃคฅฆงจฉชซฌญฎฏฐฑฒณดตถทธนบปผฝพฟภมยรฤลฦวศษสหฬอฮฯะัาำิีึืฺุู����฿เแโใไๅๆ็่้๊๋์ํ๎๏๐๑๒๓๔๕๖๗๘๙๚๛����",
+    labels: ["dos-874", "iso-8859-11", "iso8859-11", "iso885911", "tis-620", "windows-874"]),
+  SpecEncodingsItem(
+    encoding: "x-mac-cyrillic",
+    everyByte:
+      "\u{0}\u{1}\u{2}\u{3}\u{4}\u{5}\u{6}\u{7}\u{8}\u{9}\u{a}\u{b}\u{c}\u{d}\u{e}\u{f}\u{10}\u{11}\u{12}\u{13}\u{14}\u{15}\u{16}\u{17}\u{18}\u{19}\u{1a}\u{1b}\u{1c}\u{1d}\u{1e}\u{1f} !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\u{7f}АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ†°Ґ£§•¶І®©™Ђђ≠Ѓѓ∞±≤≥іµґЈЄєЇїЉљЊњјЅ¬√ƒ≈∆«»… ЋћЌќѕ–—“”‘’÷„ЎўЏџ№Ёёяабвгдежзийклмнопрстуфхцчшщъыьэю€",
+    labels: ["x-mac-cyrillic", "x-mac-ukrainian"]),
+  SpecEncodingsItem(
+    encoding: "x-user-defined",
+    everyByte:
+      "\u{0}\u{1}\u{2}\u{3}\u{4}\u{5}\u{6}\u{7}\u{8}\u{9}\u{a}\u{b}\u{c}\u{d}\u{e}\u{f}\u{10}\u{11}\u{12}\u{13}\u{14}\u{15}\u{16}\u{17}\u{18}\u{19}\u{1a}\u{1b}\u{1c}\u{1d}\u{1e}\u{1f} !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\u{7f}",
+    labels: ["x-user-defined"]),
+  SpecEncodingsItem(
+    encoding: "big5", labels: ["big5", "big5-hkscs", "cn-big5", "csbig5", "x-x-big5"], refused: true
+  ),
+  SpecEncodingsItem(
+    encoding: "euc-jp", labels: ["cseucpkdfmtjapanese", "euc-jp", "x-euc-jp"], refused: true),
+  SpecEncodingsItem(
+    encoding: "euc-kr",
+    labels: [
+      "cseuckr", "csksc56011987", "euc-kr", "iso-ir-149", "korean", "ks_c_5601-1987",
+      "ks_c_5601-1989", "ksc5601", "ksc_5601", "windows-949",
+    ], refused: true), SpecEncodingsItem(encoding: "gb18030", labels: ["gb18030"], refused: true),
+  SpecEncodingsItem(
+    encoding: "gbk",
+    labels: [
+      "chinese", "csgb2312", "csiso58gb231280", "gb2312", "gb_2312", "gb_2312-80", "gbk",
+      "iso-ir-58", "x-gbk",
+    ], refused: true),
+  SpecEncodingsItem(
+    encoding: "iso-2022-jp", labels: ["csiso2022jp", "iso-2022-jp"], refused: true),
+  SpecEncodingsItem(
+    encoding: "shift_jis",
+    labels: [
+      "csshiftjis", "ms932", "ms_kanji", "shift-jis", "shift_jis", "sjis", "windows-31j", "x-sjis",
+    ], refused: true),
+  SpecEncodingsItem(
+    encoding: "replacement",
+    labels: [
+      "csiso2022kr", "hz-gb-2312", "iso-2022-cn", "iso-2022-cn-ext", "iso-2022-kr", "replacement",
+    ], refused: true),
+]
+internal let cacheQueries: [SpecCacheQueriesItem] = [
+  SpecCacheQueriesItem(
+    asks: "browse:resource-requested", docs: "A resource's description.", name: "resource",
+    per: "resource", persisted: true,
+    value: SpecCacheQueriesItemValue(ref: "../components/schemas/ResourceDescriptor.json")),
+  SpecCacheQueriesItem(
+    docs: "The annotations of a resource.", name: "annotations", per: "resource", persisted: true,
+    reads: "GET /resources/{id}/annotations",
+    value: SpecCacheQueriesItemValue(ref: "../components/schemas/GetAnnotationsResponse.json")),
+  SpecCacheQueriesItem(
+    asks: "browse:annotation-requested", docs: "One annotation.", name: "annotation",
+    per: "annotation", persisted: true,
+    value: SpecCacheQueriesItemValue(ref: "../components/schemas/Annotation.json")),
+  SpecCacheQueriesItem(
+    asks: "browse:events-requested", docs: "The recorded history of a resource.", name: "events",
+    per: "resource",
+    value: SpecCacheQueriesItemValue(
+      ref: "../components/schemas/GetEventsResponse.json#/properties/events")),
+  SpecCacheQueriesItem(
+    asks: "gather:referenced-by-requested",
+    docs: "The annotations elsewhere that refer to a resource.", name: "referencedBy",
+    per: "resource",
+    value: SpecCacheQueriesItemValue(
+      ref: "../components/schemas/GetReferencedByResponse.json#/properties/referencedBy")),
+  SpecCacheQueriesItem(
+    asks: "browse:resources-requested",
+    docs:
+      "A list of resources, one per set of filters asked for. It is a query's answer, kept fresh by what every client hears and by the events of the resources whose scope the client holds, and by nothing else: a resource archived, unarchived or retagged elsewhere, by someone else, does not refresh it.",
+    name: "resources", per: "filters",
+    value: SpecCacheQueriesItemValue(ref: "../components/schemas/ListResourcesResponse.json")),
+  SpecCacheQueriesItem(
+    asks: "match:resources-requested",
+    docs:
+      "The resources a text search found, one per search and set of filters asked for. A query's answer like `resources`, and kept fresh by the same events and no others.",
+    name: "matchedResources", per: "filters",
+    value: SpecCacheQueriesItemValue(ref: "../components/schemas/MatchResourcesResponse.json")),
+  SpecCacheQueriesItem(
+    asks: "browse:entity-types-requested", docs: "The knowledge base's entity types.",
+    name: "entityTypes", persisted: true,
+    value: SpecCacheQueriesItemValue(
+      ref: "../components/schemas/GetEntityTypesResponse.json#/properties/entityTypes")),
+  SpecCacheQueriesItem(
+    asks: "browse:tag-schemas-requested", docs: "The knowledge base's tag schemas.",
+    name: "tagSchemas", persisted: true,
+    value: SpecCacheQueriesItemValue(
+      ref: "../components/schemas/GetTagSchemasResponse.json#/properties/tagSchemas")),
+  SpecCacheQueriesItem(
+    asks: "browse:engines-requested",
+    docs:
+      "The knowledge base's engines, joined with the limits each inference key holder reports: asking again asks every `<flow>:limits-requested` operation of the registry again too.",
+    name: "engines",
+    value: SpecCacheQueriesItemValue(
+      ref: "../components/schemas/BrowseEnginesResult.json#/properties/response/properties/engines")
+  ),
+]
+internal let credentialNames: [String] = [
+  "token", "cloneToken", "accessToken", "access_token", "refreshToken", "refresh_token", "apiKey",
+  "api_key", "clientSecret", "client_secret", "secret", "password", "authorization",
+  "Authorization", "x-api-key", "x-goog-api-key",
+]
+internal let extensionAliases: [String: String] = [
+  ".htm": ".html",
+  ".jpeg": ".jpg",
+  ".markdown": ".md",
+  ".yml": ".yaml",
+]
+internal let traceField = "_trace"
+public struct Channel<Payload: Codable & Sendable>: Sendable {
+  public let name: String
+  let stamps: Set<String>
+}
+public struct ScopedChannel<Payload: Codable & Sendable>: Sendable {
+  public let name: String
+  let stamps: Set<String>
+}
+public struct ResponseEnvelope<Payload: Codable & Sendable>: Codable, Sendable {
+  public let response: Payload
+}
+public struct Operation<
+  Request: Codable & Sendable, Result: Codable & Sendable, Failure: Codable & Sendable
+>: Sendable {
+  let request: Channel<Request>
+  let result: Channel<Result>
+  let failure: Channel<Failure>
+  let replyNames: [String]
+}
+public enum Channels {
+  public static let yieldCreated: Channel<StoredEventResponse> = .init(
+    name: "yield:created", stamps: Set([]))
+  public static let yieldCloned: Channel<StoredEventResponse> = .init(
+    name: "yield:cloned", stamps: Set([]))
+  public static let yieldUpdated: Channel<StoredEventResponse> = .init(
+    name: "yield:updated", stamps: Set([]))
+  public static let yieldMoved: Channel<StoredEventResponse> = .init(
+    name: "yield:moved", stamps: Set([]))
+  public static let yieldRepresentationAdded: ScopedChannel<StoredEventResponse> = .init(
+    name: "yield:representation-added", stamps: Set([]))
+  public static let yieldRepresentationRemoved: ScopedChannel<StoredEventResponse> = .init(
+    name: "yield:representation-removed", stamps: Set([]))
+  public static let yieldCreate: Channel<YieldCreateCommand> = .init(
+    name: "yield:create", stamps: Set(["_roles", "_userId"]))
+  public static let yieldClonePersist: Channel<YieldClonePersistCommand> = .init(
+    name: "yield:clone-persist", stamps: Set(["_userId"]))
+  public static let yieldUpdate: Channel<YieldUpdateCommand> = .init(
+    name: "yield:update", stamps: Set(["_userId"]))
+  public static let yieldClone: Channel<BusEmptyPayload> = .init(
+    name: "yield:clone", stamps: Set([]))
+  public static let yieldCloneTokenRequested: Channel<YieldCloneTokenRequest> = .init(
+    name: "yield:clone-token-requested", stamps: Set([]))
+  public static let yieldCloneResourceRequested: Channel<YieldCloneResourceRequest> = .init(
+    name: "yield:clone-resource-requested", stamps: Set([]))
+  public static let yieldCloneCreate: Channel<YieldCloneCreateCommand> = .init(
+    name: "yield:clone-create", stamps: Set(["_userId"]))
+  public static let yieldCreateOk: Channel<YieldCreateOk> = .init(
+    name: "yield:create-ok", stamps: Set([]))
+  public static let yieldCreateFailed: Channel<CommandError> = .init(
+    name: "yield:create-failed", stamps: Set([]))
+  public static let yieldClonePersistOk: Channel<YieldClonePersistOk> = .init(
+    name: "yield:clone-persist-ok", stamps: Set([]))
+  public static let yieldClonePersistFailed: Channel<CommandError> = .init(
+    name: "yield:clone-persist-failed", stamps: Set([]))
+  public static let yieldUpdateOk: Channel<YieldUpdateOk> = .init(
+    name: "yield:update-ok", stamps: Set([]))
+  public static let yieldUpdateFailed: Channel<CommandError> = .init(
+    name: "yield:update-failed", stamps: Set([]))
+  public static let yieldCloneTokenGenerated:
+    Channel<ResponseEnvelope<CloneResourceWithTokenResponse>> = .init(
+      name: "yield:clone-token-generated", stamps: Set([]))
+  public static let yieldCloneTokenFailed: Channel<CommandError> = .init(
+    name: "yield:clone-token-failed", stamps: Set([]))
+  public static let yieldCloneResourceResult:
+    Channel<ResponseEnvelope<GetResourceByTokenResponse>> = .init(
+      name: "yield:clone-resource-result", stamps: Set([]))
+  public static let yieldCloneResourceFailed: Channel<CommandError> = .init(
+    name: "yield:clone-resource-failed", stamps: Set([]))
+  public static let yieldCloneCreated: Channel<YieldCloneCreated> = .init(
+    name: "yield:clone-created", stamps: Set([]))
+  public static let yieldCloneCreateFailed: Channel<CommandError> = .init(
+    name: "yield:clone-create-failed", stamps: Set([]))
+  public static let markAdded: ScopedChannel<EnrichedResourceEvent> = .init(
+    name: "mark:added", stamps: Set([]))
+  public static let markRemoved: ScopedChannel<StoredEventResponse> = .init(
+    name: "mark:removed", stamps: Set([]))
+  public static let markBodyUpdated: ScopedChannel<EnrichedResourceEvent> = .init(
+    name: "mark:body-updated", stamps: Set([]))
+  public static let markEntityTagAdded: ScopedChannel<StoredEventResponse> = .init(
+    name: "mark:entity-tag-added", stamps: Set([]))
+  public static let markEntityTagRemoved: ScopedChannel<StoredEventResponse> = .init(
+    name: "mark:entity-tag-removed", stamps: Set([]))
+  public static let markArchived: ScopedChannel<StoredEventResponse> = .init(
+    name: "mark:archived", stamps: Set([]))
+  public static let markUnarchived: ScopedChannel<StoredEventResponse> = .init(
+    name: "mark:unarchived", stamps: Set([]))
+  public static let markCreateRequest: Channel<MarkCreateRequest> = .init(
+    name: "mark:create-request", stamps: Set([]))
+  public static let markDelete: Channel<MarkDeleteCommand> = .init(
+    name: "mark:delete", stamps: Set(["_userId"]))
+  public static let markUpdateBody: Channel<MarkUpdateBodyCommand> = .init(
+    name: "mark:update-body", stamps: Set(["_userId"]))
+  public static let markArchive: Channel<MarkArchiveCommand> = .init(
+    name: "mark:archive", stamps: Set(["_userId"]))
+  public static let markUnarchive: Channel<MarkUnarchiveCommand> = .init(
+    name: "mark:unarchive", stamps: Set(["_userId"]))
+  public static let markUpdateEntityTypes: Channel<MarkUpdateEntityTypesCommand> = .init(
+    name: "mark:update-entity-types", stamps: Set(["_userId"]))
+  public static let markCreateOk: Channel<MarkCreateOk> = .init(
+    name: "mark:create-ok", stamps: Set([]))
+  public static let markCreateFailed: Channel<CommandError> = .init(
+    name: "mark:create-failed", stamps: Set([]))
+  public static let markCommit: Channel<MarkCommitCommand> = .init(
+    name: "mark:commit", stamps: Set(["_roles", "_userId"]))
+  public static let markCommitOk: Channel<MarkCommitOk> = .init(
+    name: "mark:commit-ok", stamps: Set([]))
+  public static let markCommitFailed: Channel<CommandError> = .init(
+    name: "mark:commit-failed", stamps: Set([]))
+  public static let markDeleteOk: Channel<MarkDeleteOk> = .init(
+    name: "mark:delete-ok", stamps: Set([]))
+  public static let markDeleteFailed: Channel<CommandError> = .init(
+    name: "mark:delete-failed", stamps: Set([]))
+  public static let markArchiveOk: Channel<BusEmptyPayload> = .init(
+    name: "mark:archive-ok", stamps: Set([]))
+  public static let markArchiveFailed: Channel<CommandError> = .init(
+    name: "mark:archive-failed", stamps: Set([]))
+  public static let markUnarchiveOk: Channel<BusEmptyPayload> = .init(
+    name: "mark:unarchive-ok", stamps: Set([]))
+  public static let markUnarchiveFailed: Channel<CommandError> = .init(
+    name: "mark:unarchive-failed", stamps: Set([]))
+  public static let markUpdateEntityTypesOk: Channel<BusEmptyPayload> = .init(
+    name: "mark:update-entity-types-ok", stamps: Set([]))
+  public static let markUpdateEntityTypesFailed: Channel<CommandError> = .init(
+    name: "mark:update-entity-types-failed", stamps: Set([]))
+  public static let markBodyUpdateFailed: Channel<CommandError> = .init(
+    name: "mark:body-update-failed", stamps: Set([]))
+  public static let markRequested: Channel<MarkRequestedEvent> = .init(
+    name: "mark:requested", stamps: Set([]))
+  public static let markSubmit: Channel<MarkSubmitEvent> = .init(
+    name: "mark:submit", stamps: Set([]))
+  public static let markDelegateTimeout: Channel<MarkDelegateTimeoutEvent> = .init(
+    name: "mark:delegate-timeout", stamps: Set([]))
+  public static let markCreateError: Channel<ResourceErrorEvent> = .init(
+    name: "mark:create-error", stamps: Set([]))
+  public static let markDeleteError: Channel<ResourceErrorEvent> = .init(
+    name: "mark:delete-error", stamps: Set([]))
+  public static let bindBodyError: Channel<ResourceErrorEvent> = .init(
+    name: "bind:body-error", stamps: Set([]))
+  public static let frameEntityTypeAdded: Channel<StoredEventResponse> = .init(
+    name: "frame:entity-type-added", stamps: Set([]))
+  public static let frameTagSchemaAdded: Channel<StoredEventResponse> = .init(
+    name: "frame:tag-schema-added", stamps: Set([]))
+  public static let frameAddEntityType: Channel<FrameAddEntityTypeCommand> = .init(
+    name: "frame:add-entity-type", stamps: Set(["_userId"]))
+  public static let frameAddTagSchema: Channel<FrameAddTagSchemaCommand> = .init(
+    name: "frame:add-tag-schema", stamps: Set(["_userId"]))
+  public static let frameEntityTypeAddOk: Channel<BusEmptyPayload> = .init(
+    name: "frame:entity-type-add-ok", stamps: Set([]))
+  public static let frameEntityTypeAddFailed: Channel<CommandError> = .init(
+    name: "frame:entity-type-add-failed", stamps: Set([]))
+  public static let frameTagSchemaAddOk: Channel<BusEmptyPayload> = .init(
+    name: "frame:tag-schema-add-ok", stamps: Set([]))
+  public static let frameTagSchemaAddFailed: Channel<CommandError> = .init(
+    name: "frame:tag-schema-add-failed", stamps: Set([]))
+  public static let principalProfiled: Channel<StoredEventResponse> = .init(
+    name: "principal:profiled", stamps: Set([]))
+  public static let principalProfile: Channel<PrincipalProfileCommand> = .init(
+    name: "principal:profile", stamps: Set(["_userId"]))
+  public static let bindInitiate: Channel<BindInitiateCommand> = .init(
+    name: "bind:initiate", stamps: Set([]))
+  public static let bindUpdateBody: Channel<BindUpdateBodyCommand> = .init(
+    name: "bind:update-body", stamps: Set(["_userId"]))
+  public static let bindBodyUpdated: Channel<BindBodyUpdated> = .init(
+    name: "bind:body-updated", stamps: Set([]))
+  public static let bindBodyUpdateFailed: Channel<CommandError> = .init(
+    name: "bind:body-update-failed", stamps: Set([]))
+  public static let matchSearchRequested: Channel<MatchSearchRequest> = .init(
+    name: "match:search-requested", stamps: Set([]))
+  public static let matchSearchResults: Channel<MatchSearchResult> = .init(
+    name: "match:search-results", stamps: Set([]))
+  public static let matchSearchFailed: Channel<MatchSearchFailed> = .init(
+    name: "match:search-failed", stamps: Set([]))
+  public static let matchResourcesRequested: Channel<MatchResourcesRequest> = .init(
+    name: "match:resources-requested", stamps: Set([]))
+  public static let matchResourcesResult: Channel<MatchResourcesResult> = .init(
+    name: "match:resources-result", stamps: Set([]))
+  public static let matchResourcesFailed: Channel<CommandError> = .init(
+    name: "match:resources-failed", stamps: Set([]))
+  public static let matchLimitsRequested: Channel<InferenceLimitsRequest> = .init(
+    name: "match:limits-requested", stamps: Set([]))
+  public static let matchLimitsResult: Channel<InferenceLimitsResult> = .init(
+    name: "match:limits-result", stamps: Set([]))
+  public static let matchLimitsFailed: Channel<CommandError> = .init(
+    name: "match:limits-failed", stamps: Set([]))
+  public static let gatherRequested: Channel<GatherAnnotationRequest> = .init(
+    name: "gather:requested", stamps: Set([]))
+  public static let gatherComplete: Channel<GatherAnnotationComplete> = .init(
+    name: "gather:complete", stamps: Set([]))
+  public static let gatherFailed: Channel<GatherFailed> = .init(
+    name: "gather:failed", stamps: Set([]))
+  public static let gatherResourceRequested: Channel<GatherResourceRequest> = .init(
+    name: "gather:resource-requested", stamps: Set([]))
+  public static let gatherResourceComplete: Channel<GatherResourceComplete> = .init(
+    name: "gather:resource-complete", stamps: Set([]))
+  public static let gatherResourceFailed: Channel<GatherResourceFailed> = .init(
+    name: "gather:resource-failed", stamps: Set([]))
+  public static let gatherSummaryRequested: Channel<GatherSummaryRequest> = .init(
+    name: "gather:summary-requested", stamps: Set([]))
+  public static let gatherSummaryResult: Channel<ResponseEnvelope<ContextualSummaryResponse>> =
+    .init(name: "gather:summary-result", stamps: Set([]))
+  public static let gatherSummaryFailed: Channel<CommandError> = .init(
+    name: "gather:summary-failed", stamps: Set([]))
+  public static let gatherReferencedByRequested: Channel<GatherReferencedByRequest> = .init(
+    name: "gather:referenced-by-requested", stamps: Set([]))
+  public static let gatherReferencedByResult: Channel<GatherReferencedByResult> = .init(
+    name: "gather:referenced-by-result", stamps: Set([]))
+  public static let gatherReferencedByFailed: Channel<CommandError> = .init(
+    name: "gather:referenced-by-failed", stamps: Set([]))
+  public static let gatherLimitsRequested: Channel<InferenceLimitsRequest> = .init(
+    name: "gather:limits-requested", stamps: Set([]))
+  public static let gatherLimitsResult: Channel<InferenceLimitsResult> = .init(
+    name: "gather:limits-result", stamps: Set([]))
+  public static let gatherLimitsFailed: Channel<CommandError> = .init(
+    name: "gather:limits-failed", stamps: Set([]))
+  public static let browseResourceRequested: Channel<BrowseResourceRequest> = .init(
+    name: "browse:resource-requested", stamps: Set([]))
+  public static let browseResourceResult: Channel<BrowseResourceResult> = .init(
+    name: "browse:resource-result", stamps: Set([]))
+  public static let browseResourceFailed: Channel<CommandError> = .init(
+    name: "browse:resource-failed", stamps: Set([]))
+  public static let browseResourcesRequested: Channel<BrowseResourcesRequest> = .init(
+    name: "browse:resources-requested", stamps: Set([]))
+  public static let browseResourcesResult: Channel<BrowseResourcesResult> = .init(
+    name: "browse:resources-result", stamps: Set([]))
+  public static let browseResourcesFailed: Channel<CommandError> = .init(
+    name: "browse:resources-failed", stamps: Set([]))
+  public static let browseAnnotationRequested: Channel<BrowseAnnotationRequest> = .init(
+    name: "browse:annotation-requested", stamps: Set([]))
+  public static let browseAnnotationResult: Channel<BrowseAnnotationResult> = .init(
+    name: "browse:annotation-result", stamps: Set([]))
+  public static let browseAnnotationFailed: Channel<CommandError> = .init(
+    name: "browse:annotation-failed", stamps: Set([]))
+  public static let browseEventsRequested: Channel<BrowseEventsRequest> = .init(
+    name: "browse:events-requested", stamps: Set([]))
+  public static let browseEventsResult: Channel<BrowseEventsResult> = .init(
+    name: "browse:events-result", stamps: Set([]))
+  public static let browseEventsFailed: Channel<CommandError> = .init(
+    name: "browse:events-failed", stamps: Set([]))
+  public static let browseAnnotationHistoryRequested: Channel<BrowseAnnotationHistoryRequest> =
+    .init(name: "browse:annotation-history-requested", stamps: Set([]))
+  public static let browseAnnotationHistoryResult: Channel<BrowseAnnotationHistoryResult> = .init(
+    name: "browse:annotation-history-result", stamps: Set([]))
+  public static let browseAnnotationHistoryFailed: Channel<CommandError> = .init(
+    name: "browse:annotation-history-failed", stamps: Set([]))
+  public static let browseEntityTypesRequested: Channel<BrowseEntityTypesRequest> = .init(
+    name: "browse:entity-types-requested", stamps: Set([]))
+  public static let browseEntityTypesResult: Channel<BrowseEntityTypesResult> = .init(
+    name: "browse:entity-types-result", stamps: Set([]))
+  public static let browseEntityTypesFailed: Channel<CommandError> = .init(
+    name: "browse:entity-types-failed", stamps: Set([]))
+  public static let browseTagSchemasRequested: Channel<BrowseTagSchemasRequest> = .init(
+    name: "browse:tag-schemas-requested", stamps: Set([]))
+  public static let browseTagSchemasResult: Channel<BrowseTagSchemasResult> = .init(
+    name: "browse:tag-schemas-result", stamps: Set([]))
+  public static let browseTagSchemasFailed: Channel<CommandError> = .init(
+    name: "browse:tag-schemas-failed", stamps: Set([]))
+  public static let browseEnginesRequested: Channel<BrowseEnginesRequest> = .init(
+    name: "browse:engines-requested", stamps: Set([]))
+  public static let browseEnginesResult: Channel<BrowseEnginesResult> = .init(
+    name: "browse:engines-result", stamps: Set([]))
+  public static let browseEnginesFailed: Channel<CommandError> = .init(
+    name: "browse:engines-failed", stamps: Set([]))
+  public static let browseProfilesRequested: Channel<BrowseProfilesRequest> = .init(
+    name: "browse:profiles-requested", stamps: Set([]))
+  public static let browseProfilesResult: Channel<BrowseProfilesResult> = .init(
+    name: "browse:profiles-result", stamps: Set([]))
+  public static let browseProfilesFailed: Channel<CommandError> = .init(
+    name: "browse:profiles-failed", stamps: Set([]))
+  public static let browseKbRequested: Channel<BrowseKbRequest> = .init(
+    name: "browse:kb-requested", stamps: Set([]))
+  public static let browseKbResult: Channel<BrowseKbResult> = .init(
+    name: "browse:kb-result", stamps: Set([]))
+  public static let browseKbFailed: Channel<CommandError> = .init(
+    name: "browse:kb-failed", stamps: Set([]))
+  public static let browseDirectoryRequested: Channel<BrowseDirectoryRequest> = .init(
+    name: "browse:directory-requested", stamps: Set([]))
+  public static let browseDirectoryResult: Channel<BrowseDirectoryResult> = .init(
+    name: "browse:directory-result", stamps: Set([]))
+  public static let browseDirectoryFailed: Channel<BrowseDirectoryFailed> = .init(
+    name: "browse:directory-failed", stamps: Set([]))
+  public static let browseClick: Channel<BrowseClickEvent> = .init(
+    name: "browse:click", stamps: Set([]))
+  public static let browseResourceOpen: Channel<BrowseResourceOpenEvent> = .init(
+    name: "browse:resource-open", stamps: Set([]))
+  public static let browseResourceViewed: Channel<BrowseResourceViewedEvent> = .init(
+    name: "browse:resource-viewed", stamps: Set([]))
+  public static let browseEntityTypeClicked: Channel<BrowseEntityTypeClickedEvent> = .init(
+    name: "browse:entity-type-clicked", stamps: Set([]))
+  public static let panelToggle: Channel<BrowsePanelToggleEvent> = .init(
+    name: "panel:toggle", stamps: Set([]))
+  public static let panelOpen: Channel<BrowsePanelOpenEvent> = .init(
+    name: "panel:open", stamps: Set([]))
+  public static let panelClose: Channel<BusEmptyPayload> = .init(
+    name: "panel:close", stamps: Set([]))
+  public static let shellSidebarToggle: Channel<BusEmptyPayload> = .init(
+    name: "shell:sidebar-toggle", stamps: Set([]))
+  public static let tabsClose: Channel<BrowseResourceCloseEvent> = .init(
+    name: "tabs:close", stamps: Set([]))
+  public static let tabsReorder: Channel<BrowseResourceReorderEvent> = .init(
+    name: "tabs:reorder", stamps: Set([]))
+  public static let navLinkClicked: Channel<BrowseLinkClickedEvent> = .init(
+    name: "nav:link-clicked", stamps: Set([]))
+  public static let navPush: Channel<BrowseRouterPushEvent> = .init(
+    name: "nav:push", stamps: Set([]))
+  public static let navExternal: Channel<BrowseExternalNavigateEvent> = .init(
+    name: "nav:external", stamps: Set([]))
+  public static let beckonHover: Channel<BeckonHoverEvent> = .init(
+    name: "beckon:hover", stamps: Set([]))
+  public static let beckonFocus: Channel<BeckonFocusEvent> = .init(
+    name: "beckon:focus", stamps: Set([]))
+  public static let beckonSparkle: Channel<BeckonSparkleEvent> = .init(
+    name: "beckon:sparkle", stamps: Set([]))
+  public static let jobStarted: ScopedChannel<StoredEventResponse> = .init(
+    name: "job:started", stamps: Set([]))
+  public static let jobAssigned: ScopedChannel<StoredEventResponse> = .init(
+    name: "job:assigned", stamps: Set([]))
+  public static let jobCompleted: ScopedChannel<StoredEventResponse> = .init(
+    name: "job:completed", stamps: Set([]))
+  public static let jobFailed: ScopedChannel<StoredEventResponse> = .init(
+    name: "job:failed", stamps: Set([]))
+  public static let jobStart: Channel<JobStartCommand> = .init(
+    name: "job:start", stamps: Set(["_userId"]))
+  public static let jobAssign: Channel<JobAssignCommand> = .init(
+    name: "job:assign", stamps: Set(["_userId"]))
+  public static let jobReportProgress: Channel<JobReportProgressCommand> = .init(
+    name: "job:report-progress", stamps: Set(["_userId"]))
+  public static let jobComplete: Channel<JobCompleteCommand> = .init(
+    name: "job:complete", stamps: Set(["_userId"]))
+  public static let jobFail: Channel<JobFailCommand> = .init(
+    name: "job:fail", stamps: Set(["_userId"]))
+  public static let jobCheckpoint: Channel<JobCheckpointCommand> = .init(
+    name: "job:checkpoint", stamps: Set(["_userId"]))
+  public static let jobQueued: Channel<JobQueuedEvent> = .init(name: "job:queued", stamps: Set([]))
+  public static let jobCancelRequested: Channel<JobCancelRequest> = .init(
+    name: "job:cancel-requested", stamps: Set([]))
+  public static let jobCancel: Channel<JobCancelCommand> = .init(
+    name: "job:cancel", stamps: Set(["_userId"]))
+  public static let jobLimitsRequested: Channel<InferenceLimitsRequest> = .init(
+    name: "job:limits-requested", stamps: Set([]))
+  public static let jobLimitsResult: Channel<InferenceLimitsResult> = .init(
+    name: "job:limits-result", stamps: Set([]))
+  public static let jobLimitsFailed: Channel<CommandError> = .init(
+    name: "job:limits-failed", stamps: Set([]))
+  public static let jobStatusRequested: Channel<JobStatusRequest> = .init(
+    name: "job:status-requested", stamps: Set([]))
+  public static let jobCreate: Channel<JobCreateCommand> = .init(
+    name: "job:create", stamps: Set(["_roles", "_userId"]))
+  public static let jobClaim: Channel<JobClaimCommand> = .init(
+    name: "job:claim", stamps: Set(["_roles", "_userId"]))
+  public static let jobStatusResult: Channel<JobStatusResult> = .init(
+    name: "job:status-result", stamps: Set([]))
+  public static let jobStatusFailed: Channel<CommandError> = .init(
+    name: "job:status-failed", stamps: Set([]))
+  public static let jobCreated: Channel<JobCreatedResult> = .init(
+    name: "job:created", stamps: Set([]))
+  public static let jobCreateFailed: Channel<CommandError> = .init(
+    name: "job:create-failed", stamps: Set([]))
+  public static let jobClaimed: Channel<JobClaimedResult> = .init(
+    name: "job:claimed", stamps: Set([]))
+  public static let jobClaimFailed: Channel<CommandError> = .init(
+    name: "job:claim-failed", stamps: Set([]))
+  public static let jobCancelOk: Channel<ResponseEnvelope<JobCancelResult>> = .init(
+    name: "job:cancel-ok", stamps: Set([]))
+  public static let jobCancelFailed: Channel<CommandError> = .init(
+    name: "job:cancel-failed", stamps: Set([]))
+  public static let weaveApplied: Channel<WeaveApplied> = .init(
+    name: "weave:applied", stamps: Set([]))
+  public static let smeltSettled: Channel<SmeltSettled> = .init(
+    name: "smelt:settled", stamps: Set([]))
+  public static let weaveRebuild: Channel<WeaveRebuildCommand> = .init(
+    name: "weave:rebuild", stamps: Set(["_userId"]))
+  public static let weaveRebuildOk: Channel<BusEmptyPayload> = .init(
+    name: "weave:rebuild-ok", stamps: Set([]))
+  public static let weaveRebuildFailed: Channel<CommandError> = .init(
+    name: "weave:rebuild-failed", stamps: Set([]))
+  public static let smeltRebuildAnchors: Channel<SmeltRebuildAnchorsCommand> = .init(
+    name: "smelt:rebuild-anchors", stamps: Set(["_userId"]))
+  public static let smeltRebuildAnchorsOk: Channel<BusEmptyPayload> = .init(
+    name: "smelt:rebuild-anchors-ok", stamps: Set([]))
+  public static let smeltRebuildAnchorsFailed: Channel<CommandError> = .init(
+    name: "smelt:rebuild-anchors-failed", stamps: Set([]))
+  public static let settingsThemeChanged: Channel<SettingsThemeChangedEvent> = .init(
+    name: "settings:theme-changed", stamps: Set([]))
+  public static let settingsLineNumbersToggled: Channel<BusEmptyPayload> = .init(
+    name: "settings:line-numbers-toggled", stamps: Set([]))
+  public static let settingsLocaleChanged: Channel<SettingsLocaleChangedEvent> = .init(
+    name: "settings:locale-changed", stamps: Set([]))
+  public static let settingsHoverDelayChanged: Channel<SettingsHoverDelayChangedEvent> = .init(
+    name: "settings:hover-delay-changed", stamps: Set([]))
+  public static let busResumeGap: Channel<BusResumeGap> = .init(
+    name: "bus:resume-gap", stamps: Set([]))
+  public static let sessionJoined: Channel<SessionJoinedEvent> = .init(
+    name: "session:joined", stamps: Set([]))
+  public static let sessionLeft: Channel<SessionLeftEvent> = .init(
+    name: "session:left", stamps: Set([]))
+}
+public enum Operations {
+  public static let bindUpdateBody:
+    Operation<BindUpdateBodyCommand, BindBodyUpdated, CommandError> = .init(
+      request: Channels.bindUpdateBody, result: Channels.bindBodyUpdated,
+      failure: Channels.bindBodyUpdateFailed, replyNames: [])
+  public static let browseResourceRequested:
+    Operation<BrowseResourceRequest, BrowseResourceResult, CommandError> = .init(
+      request: Channels.browseResourceRequested, result: Channels.browseResourceResult,
+      failure: Channels.browseResourceFailed, replyNames: [])
+  public static let browseResourcesRequested:
+    Operation<BrowseResourcesRequest, BrowseResourcesResult, CommandError> = .init(
+      request: Channels.browseResourcesRequested, result: Channels.browseResourcesResult,
+      failure: Channels.browseResourcesFailed, replyNames: [])
+  public static let browseAnnotationRequested:
+    Operation<BrowseAnnotationRequest, BrowseAnnotationResult, CommandError> = .init(
+      request: Channels.browseAnnotationRequested, result: Channels.browseAnnotationResult,
+      failure: Channels.browseAnnotationFailed, replyNames: [])
+  public static let browseAnnotationHistoryRequested:
+    Operation<BrowseAnnotationHistoryRequest, BrowseAnnotationHistoryResult, CommandError> = .init(
+      request: Channels.browseAnnotationHistoryRequested,
+      result: Channels.browseAnnotationHistoryResult,
+      failure: Channels.browseAnnotationHistoryFailed, replyNames: [])
+  public static let browseEventsRequested:
+    Operation<BrowseEventsRequest, BrowseEventsResult, CommandError> = .init(
+      request: Channels.browseEventsRequested, result: Channels.browseEventsResult,
+      failure: Channels.browseEventsFailed, replyNames: [])
+  public static let browseEntityTypesRequested:
+    Operation<BrowseEntityTypesRequest, BrowseEntityTypesResult, CommandError> = .init(
+      request: Channels.browseEntityTypesRequested, result: Channels.browseEntityTypesResult,
+      failure: Channels.browseEntityTypesFailed, replyNames: [])
+  public static let browseTagSchemasRequested:
+    Operation<BrowseTagSchemasRequest, BrowseTagSchemasResult, CommandError> = .init(
+      request: Channels.browseTagSchemasRequested, result: Channels.browseTagSchemasResult,
+      failure: Channels.browseTagSchemasFailed, replyNames: [])
+  public static let browseEnginesRequested:
+    Operation<BrowseEnginesRequest, BrowseEnginesResult, CommandError> = .init(
+      request: Channels.browseEnginesRequested, result: Channels.browseEnginesResult,
+      failure: Channels.browseEnginesFailed, replyNames: [])
+  public static let browseProfilesRequested:
+    Operation<BrowseProfilesRequest, BrowseProfilesResult, CommandError> = .init(
+      request: Channels.browseProfilesRequested, result: Channels.browseProfilesResult,
+      failure: Channels.browseProfilesFailed, replyNames: [])
+  public static let browseKbRequested: Operation<BrowseKbRequest, BrowseKbResult, CommandError> =
+    .init(
+      request: Channels.browseKbRequested, result: Channels.browseKbResult,
+      failure: Channels.browseKbFailed, replyNames: [])
+  public static let browseDirectoryRequested:
+    Operation<BrowseDirectoryRequest, BrowseDirectoryResult, BrowseDirectoryFailed> = .init(
+      request: Channels.browseDirectoryRequested, result: Channels.browseDirectoryResult,
+      failure: Channels.browseDirectoryFailed, replyNames: [])
+  public static let frameAddEntityType:
+    Operation<FrameAddEntityTypeCommand, BusEmptyPayload, CommandError> = .init(
+      request: Channels.frameAddEntityType, result: Channels.frameEntityTypeAddOk,
+      failure: Channels.frameEntityTypeAddFailed, replyNames: [])
+  public static let frameAddTagSchema:
+    Operation<FrameAddTagSchemaCommand, BusEmptyPayload, CommandError> = .init(
+      request: Channels.frameAddTagSchema, result: Channels.frameTagSchemaAddOk,
+      failure: Channels.frameTagSchemaAddFailed, replyNames: [])
+  public static let gatherRequested:
+    Operation<GatherAnnotationRequest, GatherAnnotationComplete, GatherFailed> = .init(
+      request: Channels.gatherRequested, result: Channels.gatherComplete,
+      failure: Channels.gatherFailed, replyNames: ["annotationId"])
+  public static let gatherResourceRequested:
+    Operation<GatherResourceRequest, GatherResourceComplete, GatherResourceFailed> = .init(
+      request: Channels.gatherResourceRequested, result: Channels.gatherResourceComplete,
+      failure: Channels.gatherResourceFailed, replyNames: ["resourceId"])
+  public static let gatherSummaryRequested:
+    Operation<GatherSummaryRequest, ResponseEnvelope<ContextualSummaryResponse>, CommandError> =
+      .init(
+        request: Channels.gatherSummaryRequested, result: Channels.gatherSummaryResult,
+        failure: Channels.gatherSummaryFailed, replyNames: [])
+  public static let gatherReferencedByRequested:
+    Operation<GatherReferencedByRequest, GatherReferencedByResult, CommandError> = .init(
+      request: Channels.gatherReferencedByRequested, result: Channels.gatherReferencedByResult,
+      failure: Channels.gatherReferencedByFailed, replyNames: [])
+  public static let gatherLimitsRequested:
+    Operation<InferenceLimitsRequest, InferenceLimitsResult, CommandError> = .init(
+      request: Channels.gatherLimitsRequested, result: Channels.gatherLimitsResult,
+      failure: Channels.gatherLimitsFailed, replyNames: [])
+  public static let jobCreate: Operation<JobCreateCommand, JobCreatedResult, CommandError> = .init(
+    request: Channels.jobCreate, result: Channels.jobCreated, failure: Channels.jobCreateFailed,
+    replyNames: [])
+  public static let jobStatusRequested: Operation<JobStatusRequest, JobStatusResult, CommandError> =
+    .init(
+      request: Channels.jobStatusRequested, result: Channels.jobStatusResult,
+      failure: Channels.jobStatusFailed, replyNames: [])
+  public static let jobLimitsRequested:
+    Operation<InferenceLimitsRequest, InferenceLimitsResult, CommandError> = .init(
+      request: Channels.jobLimitsRequested, result: Channels.jobLimitsResult,
+      failure: Channels.jobLimitsFailed, replyNames: [])
+  public static let jobCancelRequested:
+    Operation<JobCancelRequest, ResponseEnvelope<JobCancelResult>, CommandError> = .init(
+      request: Channels.jobCancelRequested, result: Channels.jobCancelOk,
+      failure: Channels.jobCancelFailed, replyNames: [])
+  public static let jobClaim: Operation<JobClaimCommand, JobClaimedResult, CommandError> = .init(
+    request: Channels.jobClaim, result: Channels.jobClaimed, failure: Channels.jobClaimFailed,
+    replyNames: [])
+  public static let markCreateRequest: Operation<MarkCreateRequest, MarkCreateOk, CommandError> =
+    .init(
+      request: Channels.markCreateRequest, result: Channels.markCreateOk,
+      failure: Channels.markCreateFailed, replyNames: [])
+  public static let markCommit: Operation<MarkCommitCommand, MarkCommitOk, CommandError> = .init(
+    request: Channels.markCommit, result: Channels.markCommitOk, failure: Channels.markCommitFailed,
+    replyNames: [])
+  public static let markDelete: Operation<MarkDeleteCommand, MarkDeleteOk, CommandError> = .init(
+    request: Channels.markDelete, result: Channels.markDeleteOk, failure: Channels.markDeleteFailed,
+    replyNames: [])
+  public static let markArchive: Operation<MarkArchiveCommand, BusEmptyPayload, CommandError> =
+    .init(
+      request: Channels.markArchive, result: Channels.markArchiveOk,
+      failure: Channels.markArchiveFailed, replyNames: [])
+  public static let markUnarchive: Operation<MarkUnarchiveCommand, BusEmptyPayload, CommandError> =
+    .init(
+      request: Channels.markUnarchive, result: Channels.markUnarchiveOk,
+      failure: Channels.markUnarchiveFailed, replyNames: [])
+  public static let markUpdateEntityTypes:
+    Operation<MarkUpdateEntityTypesCommand, BusEmptyPayload, CommandError> = .init(
+      request: Channels.markUpdateEntityTypes, result: Channels.markUpdateEntityTypesOk,
+      failure: Channels.markUpdateEntityTypesFailed, replyNames: [])
+  public static let matchSearchRequested:
+    Operation<MatchSearchRequest, MatchSearchResult, MatchSearchFailed> = .init(
+      request: Channels.matchSearchRequested, result: Channels.matchSearchResults,
+      failure: Channels.matchSearchFailed, replyNames: ["referenceId"])
+  public static let matchResourcesRequested:
+    Operation<MatchResourcesRequest, MatchResourcesResult, CommandError> = .init(
+      request: Channels.matchResourcesRequested, result: Channels.matchResourcesResult,
+      failure: Channels.matchResourcesFailed, replyNames: [])
+  public static let matchLimitsRequested:
+    Operation<InferenceLimitsRequest, InferenceLimitsResult, CommandError> = .init(
+      request: Channels.matchLimitsRequested, result: Channels.matchLimitsResult,
+      failure: Channels.matchLimitsFailed, replyNames: [])
+  public static let weaveRebuild: Operation<WeaveRebuildCommand, BusEmptyPayload, CommandError> =
+    .init(
+      request: Channels.weaveRebuild, result: Channels.weaveRebuildOk,
+      failure: Channels.weaveRebuildFailed, replyNames: [])
+  public static let smeltRebuildAnchors:
+    Operation<SmeltRebuildAnchorsCommand, BusEmptyPayload, CommandError> = .init(
+      request: Channels.smeltRebuildAnchors, result: Channels.smeltRebuildAnchorsOk,
+      failure: Channels.smeltRebuildAnchorsFailed, replyNames: [])
+  public static let yieldCreate: Operation<YieldCreateCommand, YieldCreateOk, CommandError> = .init(
+    request: Channels.yieldCreate, result: Channels.yieldCreateOk,
+    failure: Channels.yieldCreateFailed, replyNames: [])
+  public static let yieldClonePersist:
+    Operation<YieldClonePersistCommand, YieldClonePersistOk, CommandError> = .init(
+      request: Channels.yieldClonePersist, result: Channels.yieldClonePersistOk,
+      failure: Channels.yieldClonePersistFailed, replyNames: [])
+  public static let yieldUpdate: Operation<YieldUpdateCommand, YieldUpdateOk, CommandError> = .init(
+    request: Channels.yieldUpdate, result: Channels.yieldUpdateOk,
+    failure: Channels.yieldUpdateFailed, replyNames: [])
+  public static let yieldCloneCreate:
+    Operation<YieldCloneCreateCommand, YieldCloneCreated, CommandError> = .init(
+      request: Channels.yieldCloneCreate, result: Channels.yieldCloneCreated,
+      failure: Channels.yieldCloneCreateFailed, replyNames: [])
+  public static let yieldCloneResourceRequested:
+    Operation<YieldCloneResourceRequest, ResponseEnvelope<GetResourceByTokenResponse>, CommandError> =
+      .init(
+        request: Channels.yieldCloneResourceRequested, result: Channels.yieldCloneResourceResult,
+        failure: Channels.yieldCloneResourceFailed, replyNames: [])
+  public static let yieldCloneTokenRequested:
+    Operation<
+      YieldCloneTokenRequest, ResponseEnvelope<CloneResourceWithTokenResponse>, CommandError
+    > = .init(
+      request: Channels.yieldCloneTokenRequested, result: Channels.yieldCloneTokenGenerated,
+      failure: Channels.yieldCloneTokenFailed, replyNames: [])
+  public static let limits:
+    [Operation<InferenceLimitsRequest, InferenceLimitsResult, CommandError>] = [
+      gatherLimitsRequested, jobLimitsRequested, matchLimitsRequested,
+    ]
+}
+internal let wireOperations: [String: WireOperation] = [
+  "bind:update-body": WireOperation(
+    result: "bind:body-updated", resultStamps: Channels.bindBodyUpdated.stamps,
+    failure: "bind:body-update-failed", failureStamps: Channels.bindBodyUpdateFailed.stamps,
+    request: {
+      try projectWire(BindUpdateBodyCommand.self, $0, stamps: Channels.bindUpdateBody.stamps)
+    },
+    response: { try projectWire(BindBodyUpdated.self, $0, stamps: Channels.bindBodyUpdated.stamps) }
+  ),
+  "browse:resource-requested": WireOperation(
+    result: "browse:resource-result", resultStamps: Channels.browseResourceResult.stamps,
+    failure: "browse:resource-failed", failureStamps: Channels.browseResourceFailed.stamps,
+    request: {
+      try projectWire(
+        BrowseResourceRequest.self, $0, stamps: Channels.browseResourceRequested.stamps)
+    },
+    response: {
+      try projectWire(BrowseResourceResult.self, $0, stamps: Channels.browseResourceResult.stamps)
+    }),
+  "browse:resources-requested": WireOperation(
+    result: "browse:resources-result", resultStamps: Channels.browseResourcesResult.stamps,
+    failure: "browse:resources-failed", failureStamps: Channels.browseResourcesFailed.stamps,
+    request: {
+      try projectWire(
+        BrowseResourcesRequest.self, $0, stamps: Channels.browseResourcesRequested.stamps)
+    },
+    response: {
+      try projectWire(BrowseResourcesResult.self, $0, stamps: Channels.browseResourcesResult.stamps)
+    }),
+  "browse:annotation-requested": WireOperation(
+    result: "browse:annotation-result", resultStamps: Channels.browseAnnotationResult.stamps,
+    failure: "browse:annotation-failed", failureStamps: Channels.browseAnnotationFailed.stamps,
+    request: {
+      try projectWire(
+        BrowseAnnotationRequest.self, $0, stamps: Channels.browseAnnotationRequested.stamps)
+    },
+    response: {
+      try projectWire(
+        BrowseAnnotationResult.self, $0, stamps: Channels.browseAnnotationResult.stamps)
+    }),
+  "browse:annotation-history-requested": WireOperation(
+    result: "browse:annotation-history-result",
+    resultStamps: Channels.browseAnnotationHistoryResult.stamps,
+    failure: "browse:annotation-history-failed",
+    failureStamps: Channels.browseAnnotationHistoryFailed.stamps,
+    request: {
+      try projectWire(
+        BrowseAnnotationHistoryRequest.self, $0,
+        stamps: Channels.browseAnnotationHistoryRequested.stamps)
+    },
+    response: {
+      try projectWire(
+        BrowseAnnotationHistoryResult.self, $0,
+        stamps: Channels.browseAnnotationHistoryResult.stamps)
+    }),
+  "browse:events-requested": WireOperation(
+    result: "browse:events-result", resultStamps: Channels.browseEventsResult.stamps,
+    failure: "browse:events-failed", failureStamps: Channels.browseEventsFailed.stamps,
+    request: {
+      try projectWire(BrowseEventsRequest.self, $0, stamps: Channels.browseEventsRequested.stamps)
+    },
+    response: {
+      try projectWire(BrowseEventsResult.self, $0, stamps: Channels.browseEventsResult.stamps)
+    }),
+  "browse:entity-types-requested": WireOperation(
+    result: "browse:entity-types-result", resultStamps: Channels.browseEntityTypesResult.stamps,
+    failure: "browse:entity-types-failed", failureStamps: Channels.browseEntityTypesFailed.stamps,
+    request: {
+      try projectWire(
+        BrowseEntityTypesRequest.self, $0, stamps: Channels.browseEntityTypesRequested.stamps)
+    },
+    response: {
+      try projectWire(
+        BrowseEntityTypesResult.self, $0, stamps: Channels.browseEntityTypesResult.stamps)
+    }),
+  "browse:tag-schemas-requested": WireOperation(
+    result: "browse:tag-schemas-result", resultStamps: Channels.browseTagSchemasResult.stamps,
+    failure: "browse:tag-schemas-failed", failureStamps: Channels.browseTagSchemasFailed.stamps,
+    request: {
+      try projectWire(
+        BrowseTagSchemasRequest.self, $0, stamps: Channels.browseTagSchemasRequested.stamps)
+    },
+    response: {
+      try projectWire(
+        BrowseTagSchemasResult.self, $0, stamps: Channels.browseTagSchemasResult.stamps)
+    }),
+  "browse:engines-requested": WireOperation(
+    result: "browse:engines-result", resultStamps: Channels.browseEnginesResult.stamps,
+    failure: "browse:engines-failed", failureStamps: Channels.browseEnginesFailed.stamps,
+    request: {
+      try projectWire(BrowseEnginesRequest.self, $0, stamps: Channels.browseEnginesRequested.stamps)
+    },
+    response: {
+      try projectWire(BrowseEnginesResult.self, $0, stamps: Channels.browseEnginesResult.stamps)
+    }),
+  "browse:profiles-requested": WireOperation(
+    result: "browse:profiles-result", resultStamps: Channels.browseProfilesResult.stamps,
+    failure: "browse:profiles-failed", failureStamps: Channels.browseProfilesFailed.stamps,
+    request: {
+      try projectWire(
+        BrowseProfilesRequest.self, $0, stamps: Channels.browseProfilesRequested.stamps)
+    },
+    response: {
+      try projectWire(BrowseProfilesResult.self, $0, stamps: Channels.browseProfilesResult.stamps)
+    }),
+  "browse:kb-requested": WireOperation(
+    result: "browse:kb-result", resultStamps: Channels.browseKbResult.stamps,
+    failure: "browse:kb-failed", failureStamps: Channels.browseKbFailed.stamps,
+    request: {
+      try projectWire(BrowseKbRequest.self, $0, stamps: Channels.browseKbRequested.stamps)
+    },
+    response: { try projectWire(BrowseKbResult.self, $0, stamps: Channels.browseKbResult.stamps) }),
+  "browse:directory-requested": WireOperation(
+    result: "browse:directory-result", resultStamps: Channels.browseDirectoryResult.stamps,
+    failure: "browse:directory-failed", failureStamps: Channels.browseDirectoryFailed.stamps,
+    request: {
+      try projectWire(
+        BrowseDirectoryRequest.self, $0, stamps: Channels.browseDirectoryRequested.stamps)
+    },
+    response: {
+      try projectWire(BrowseDirectoryResult.self, $0, stamps: Channels.browseDirectoryResult.stamps)
+    }),
+  "frame:add-entity-type": WireOperation(
+    result: "frame:entity-type-add-ok", resultStamps: Channels.frameEntityTypeAddOk.stamps,
+    failure: "frame:entity-type-add-failed",
+    failureStamps: Channels.frameEntityTypeAddFailed.stamps,
+    request: {
+      try projectWire(
+        FrameAddEntityTypeCommand.self, $0, stamps: Channels.frameAddEntityType.stamps)
+    },
+    response: {
+      try projectWire(BusEmptyPayload.self, $0, stamps: Channels.frameEntityTypeAddOk.stamps)
+    }),
+  "frame:add-tag-schema": WireOperation(
+    result: "frame:tag-schema-add-ok", resultStamps: Channels.frameTagSchemaAddOk.stamps,
+    failure: "frame:tag-schema-add-failed", failureStamps: Channels.frameTagSchemaAddFailed.stamps,
+    request: {
+      try projectWire(FrameAddTagSchemaCommand.self, $0, stamps: Channels.frameAddTagSchema.stamps)
+    },
+    response: {
+      try projectWire(BusEmptyPayload.self, $0, stamps: Channels.frameTagSchemaAddOk.stamps)
+    }),
+  "gather:requested": WireOperation(
+    result: "gather:complete", resultStamps: Channels.gatherComplete.stamps,
+    failure: "gather:failed", failureStamps: Channels.gatherFailed.stamps,
+    request: {
+      try projectWire(GatherAnnotationRequest.self, $0, stamps: Channels.gatherRequested.stamps)
+    },
+    response: {
+      try projectWire(GatherAnnotationComplete.self, $0, stamps: Channels.gatherComplete.stamps)
+    }),
+  "gather:resource-requested": WireOperation(
+    result: "gather:resource-complete", resultStamps: Channels.gatherResourceComplete.stamps,
+    failure: "gather:resource-failed", failureStamps: Channels.gatherResourceFailed.stamps,
+    request: {
+      try projectWire(
+        GatherResourceRequest.self, $0, stamps: Channels.gatherResourceRequested.stamps)
+    },
+    response: {
+      try projectWire(
+        GatherResourceComplete.self, $0, stamps: Channels.gatherResourceComplete.stamps)
+    }),
+  "gather:summary-requested": WireOperation(
+    result: "gather:summary-result", resultStamps: Channels.gatherSummaryResult.stamps,
+    failure: "gather:summary-failed", failureStamps: Channels.gatherSummaryFailed.stamps,
+    request: {
+      try projectWire(GatherSummaryRequest.self, $0, stamps: Channels.gatherSummaryRequested.stamps)
+    },
+    response: {
+      try projectWire(
+        ResponseEnvelope<ContextualSummaryResponse>.self, $0,
+        stamps: Channels.gatherSummaryResult.stamps)
+    }),
+  "gather:referenced-by-requested": WireOperation(
+    result: "gather:referenced-by-result", resultStamps: Channels.gatherReferencedByResult.stamps,
+    failure: "gather:referenced-by-failed", failureStamps: Channels.gatherReferencedByFailed.stamps,
+    request: {
+      try projectWire(
+        GatherReferencedByRequest.self, $0, stamps: Channels.gatherReferencedByRequested.stamps)
+    },
+    response: {
+      try projectWire(
+        GatherReferencedByResult.self, $0, stamps: Channels.gatherReferencedByResult.stamps)
+    }),
+  "gather:limits-requested": WireOperation(
+    result: "gather:limits-result", resultStamps: Channels.gatherLimitsResult.stamps,
+    failure: "gather:limits-failed", failureStamps: Channels.gatherLimitsFailed.stamps,
+    request: {
+      try projectWire(
+        InferenceLimitsRequest.self, $0, stamps: Channels.gatherLimitsRequested.stamps)
+    },
+    response: {
+      try projectWire(InferenceLimitsResult.self, $0, stamps: Channels.gatherLimitsResult.stamps)
+    }),
+  "job:create": WireOperation(
+    result: "job:created", resultStamps: Channels.jobCreated.stamps, failure: "job:create-failed",
+    failureStamps: Channels.jobCreateFailed.stamps,
+    request: { try projectWire(JobCreateCommand.self, $0, stamps: Channels.jobCreate.stamps) },
+    response: { try projectWire(JobCreatedResult.self, $0, stamps: Channels.jobCreated.stamps) }),
+  "job:status-requested": WireOperation(
+    result: "job:status-result", resultStamps: Channels.jobStatusResult.stamps,
+    failure: "job:status-failed", failureStamps: Channels.jobStatusFailed.stamps,
+    request: {
+      try projectWire(JobStatusRequest.self, $0, stamps: Channels.jobStatusRequested.stamps)
+    },
+    response: { try projectWire(JobStatusResult.self, $0, stamps: Channels.jobStatusResult.stamps) }
+  ),
+  "job:limits-requested": WireOperation(
+    result: "job:limits-result", resultStamps: Channels.jobLimitsResult.stamps,
+    failure: "job:limits-failed", failureStamps: Channels.jobLimitsFailed.stamps,
+    request: {
+      try projectWire(InferenceLimitsRequest.self, $0, stamps: Channels.jobLimitsRequested.stamps)
+    },
+    response: {
+      try projectWire(InferenceLimitsResult.self, $0, stamps: Channels.jobLimitsResult.stamps)
+    }),
+  "job:cancel-requested": WireOperation(
+    result: "job:cancel-ok", resultStamps: Channels.jobCancelOk.stamps,
+    failure: "job:cancel-failed", failureStamps: Channels.jobCancelFailed.stamps,
+    request: {
+      try projectWire(JobCancelRequest.self, $0, stamps: Channels.jobCancelRequested.stamps)
+    },
+    response: {
+      try projectWire(
+        ResponseEnvelope<JobCancelResult>.self, $0, stamps: Channels.jobCancelOk.stamps)
+    }),
+  "job:claim": WireOperation(
+    result: "job:claimed", resultStamps: Channels.jobClaimed.stamps, failure: "job:claim-failed",
+    failureStamps: Channels.jobClaimFailed.stamps,
+    request: { try projectWire(JobClaimCommand.self, $0, stamps: Channels.jobClaim.stamps) },
+    response: { try projectWire(JobClaimedResult.self, $0, stamps: Channels.jobClaimed.stamps) }),
+  "mark:create-request": WireOperation(
+    result: "mark:create-ok", resultStamps: Channels.markCreateOk.stamps,
+    failure: "mark:create-failed", failureStamps: Channels.markCreateFailed.stamps,
+    request: {
+      try projectWire(MarkCreateRequest.self, $0, stamps: Channels.markCreateRequest.stamps)
+    }, response: { try projectWire(MarkCreateOk.self, $0, stamps: Channels.markCreateOk.stamps) }),
+  "mark:commit": WireOperation(
+    result: "mark:commit-ok", resultStamps: Channels.markCommitOk.stamps,
+    failure: "mark:commit-failed", failureStamps: Channels.markCommitFailed.stamps,
+    request: { try projectWire(MarkCommitCommand.self, $0, stamps: Channels.markCommit.stamps) },
+    response: { try projectWire(MarkCommitOk.self, $0, stamps: Channels.markCommitOk.stamps) }),
+  "mark:delete": WireOperation(
+    result: "mark:delete-ok", resultStamps: Channels.markDeleteOk.stamps,
+    failure: "mark:delete-failed", failureStamps: Channels.markDeleteFailed.stamps,
+    request: { try projectWire(MarkDeleteCommand.self, $0, stamps: Channels.markDelete.stamps) },
+    response: { try projectWire(MarkDeleteOk.self, $0, stamps: Channels.markDeleteOk.stamps) }),
+  "mark:archive": WireOperation(
+    result: "mark:archive-ok", resultStamps: Channels.markArchiveOk.stamps,
+    failure: "mark:archive-failed", failureStamps: Channels.markArchiveFailed.stamps,
+    request: { try projectWire(MarkArchiveCommand.self, $0, stamps: Channels.markArchive.stamps) },
+    response: { try projectWire(BusEmptyPayload.self, $0, stamps: Channels.markArchiveOk.stamps) }),
+  "mark:unarchive": WireOperation(
+    result: "mark:unarchive-ok", resultStamps: Channels.markUnarchiveOk.stamps,
+    failure: "mark:unarchive-failed", failureStamps: Channels.markUnarchiveFailed.stamps,
+    request: {
+      try projectWire(MarkUnarchiveCommand.self, $0, stamps: Channels.markUnarchive.stamps)
+    },
+    response: { try projectWire(BusEmptyPayload.self, $0, stamps: Channels.markUnarchiveOk.stamps) }
+  ),
+  "mark:update-entity-types": WireOperation(
+    result: "mark:update-entity-types-ok", resultStamps: Channels.markUpdateEntityTypesOk.stamps,
+    failure: "mark:update-entity-types-failed",
+    failureStamps: Channels.markUpdateEntityTypesFailed.stamps,
+    request: {
+      try projectWire(
+        MarkUpdateEntityTypesCommand.self, $0, stamps: Channels.markUpdateEntityTypes.stamps)
+    },
+    response: {
+      try projectWire(BusEmptyPayload.self, $0, stamps: Channels.markUpdateEntityTypesOk.stamps)
+    }),
+  "match:search-requested": WireOperation(
+    result: "match:search-results", resultStamps: Channels.matchSearchResults.stamps,
+    failure: "match:search-failed", failureStamps: Channels.matchSearchFailed.stamps,
+    request: {
+      try projectWire(MatchSearchRequest.self, $0, stamps: Channels.matchSearchRequested.stamps)
+    },
+    response: {
+      try projectWire(MatchSearchResult.self, $0, stamps: Channels.matchSearchResults.stamps)
+    }),
+  "match:resources-requested": WireOperation(
+    result: "match:resources-result", resultStamps: Channels.matchResourcesResult.stamps,
+    failure: "match:resources-failed", failureStamps: Channels.matchResourcesFailed.stamps,
+    request: {
+      try projectWire(
+        MatchResourcesRequest.self, $0, stamps: Channels.matchResourcesRequested.stamps)
+    },
+    response: {
+      try projectWire(MatchResourcesResult.self, $0, stamps: Channels.matchResourcesResult.stamps)
+    }),
+  "match:limits-requested": WireOperation(
+    result: "match:limits-result", resultStamps: Channels.matchLimitsResult.stamps,
+    failure: "match:limits-failed", failureStamps: Channels.matchLimitsFailed.stamps,
+    request: {
+      try projectWire(InferenceLimitsRequest.self, $0, stamps: Channels.matchLimitsRequested.stamps)
+    },
+    response: {
+      try projectWire(InferenceLimitsResult.self, $0, stamps: Channels.matchLimitsResult.stamps)
+    }),
+  "weave:rebuild": WireOperation(
+    result: "weave:rebuild-ok", resultStamps: Channels.weaveRebuildOk.stamps,
+    failure: "weave:rebuild-failed", failureStamps: Channels.weaveRebuildFailed.stamps,
+    request: {
+      try projectWire(WeaveRebuildCommand.self, $0, stamps: Channels.weaveRebuild.stamps)
+    },
+    response: { try projectWire(BusEmptyPayload.self, $0, stamps: Channels.weaveRebuildOk.stamps) }),
+  "smelt:rebuild-anchors": WireOperation(
+    result: "smelt:rebuild-anchors-ok", resultStamps: Channels.smeltRebuildAnchorsOk.stamps,
+    failure: "smelt:rebuild-anchors-failed",
+    failureStamps: Channels.smeltRebuildAnchorsFailed.stamps,
+    request: {
+      try projectWire(
+        SmeltRebuildAnchorsCommand.self, $0, stamps: Channels.smeltRebuildAnchors.stamps)
+    },
+    response: {
+      try projectWire(BusEmptyPayload.self, $0, stamps: Channels.smeltRebuildAnchorsOk.stamps)
+    }),
+  "yield:create": WireOperation(
+    result: "yield:create-ok", resultStamps: Channels.yieldCreateOk.stamps,
+    failure: "yield:create-failed", failureStamps: Channels.yieldCreateFailed.stamps,
+    request: { try projectWire(YieldCreateCommand.self, $0, stamps: Channels.yieldCreate.stamps) },
+    response: { try projectWire(YieldCreateOk.self, $0, stamps: Channels.yieldCreateOk.stamps) }),
+  "yield:clone-persist": WireOperation(
+    result: "yield:clone-persist-ok", resultStamps: Channels.yieldClonePersistOk.stamps,
+    failure: "yield:clone-persist-failed", failureStamps: Channels.yieldClonePersistFailed.stamps,
+    request: {
+      try projectWire(YieldClonePersistCommand.self, $0, stamps: Channels.yieldClonePersist.stamps)
+    },
+    response: {
+      try projectWire(YieldClonePersistOk.self, $0, stamps: Channels.yieldClonePersistOk.stamps)
+    }),
+  "yield:update": WireOperation(
+    result: "yield:update-ok", resultStamps: Channels.yieldUpdateOk.stamps,
+    failure: "yield:update-failed", failureStamps: Channels.yieldUpdateFailed.stamps,
+    request: { try projectWire(YieldUpdateCommand.self, $0, stamps: Channels.yieldUpdate.stamps) },
+    response: { try projectWire(YieldUpdateOk.self, $0, stamps: Channels.yieldUpdateOk.stamps) }),
+  "yield:clone-create": WireOperation(
+    result: "yield:clone-created", resultStamps: Channels.yieldCloneCreated.stamps,
+    failure: "yield:clone-create-failed", failureStamps: Channels.yieldCloneCreateFailed.stamps,
+    request: {
+      try projectWire(YieldCloneCreateCommand.self, $0, stamps: Channels.yieldCloneCreate.stamps)
+    },
+    response: {
+      try projectWire(YieldCloneCreated.self, $0, stamps: Channels.yieldCloneCreated.stamps)
+    }),
+  "yield:clone-resource-requested": WireOperation(
+    result: "yield:clone-resource-result", resultStamps: Channels.yieldCloneResourceResult.stamps,
+    failure: "yield:clone-resource-failed", failureStamps: Channels.yieldCloneResourceFailed.stamps,
+    request: {
+      try projectWire(
+        YieldCloneResourceRequest.self, $0, stamps: Channels.yieldCloneResourceRequested.stamps)
+    },
+    response: {
+      try projectWire(
+        ResponseEnvelope<GetResourceByTokenResponse>.self, $0,
+        stamps: Channels.yieldCloneResourceResult.stamps)
+    }),
+  "yield:clone-token-requested": WireOperation(
+    result: "yield:clone-token-generated", resultStamps: Channels.yieldCloneTokenGenerated.stamps,
+    failure: "yield:clone-token-failed", failureStamps: Channels.yieldCloneTokenFailed.stamps,
+    request: {
+      try projectWire(
+        YieldCloneTokenRequest.self, $0, stamps: Channels.yieldCloneTokenRequested.stamps)
+    },
+    response: {
+      try projectWire(
+        ResponseEnvelope<CloneResourceWithTokenResponse>.self, $0,
+        stamps: Channels.yieldCloneTokenGenerated.stamps)
+    }),
+]
+/// The global channels a full client's transport is given: every channel delivered to everyone, and every operation's reply channels.
+public let bridgedChannels = [
+  "beckon:focus", "beckon:sparkle", "bind:body-update-failed", "bind:body-updated",
+  "browse:annotation-failed", "browse:annotation-history-failed",
+  "browse:annotation-history-result", "browse:annotation-result", "browse:click",
+  "browse:directory-failed", "browse:directory-result", "browse:engines-failed",
+  "browse:engines-result", "browse:entity-types-failed", "browse:entity-types-result",
+  "browse:events-failed", "browse:events-result", "browse:kb-failed", "browse:kb-result",
+  "browse:profiles-failed", "browse:profiles-result", "browse:resource-failed",
+  "browse:resource-open", "browse:resource-result", "browse:resource-viewed",
+  "browse:resources-failed", "browse:resources-result", "browse:tag-schemas-failed",
+  "browse:tag-schemas-result", "bus:resume-gap", "frame:entity-type-add-failed",
+  "frame:entity-type-add-ok", "frame:entity-type-added", "frame:tag-schema-add-failed",
+  "frame:tag-schema-add-ok", "frame:tag-schema-added", "gather:complete", "gather:failed",
+  "gather:limits-failed", "gather:limits-result", "gather:referenced-by-failed",
+  "gather:referenced-by-result", "gather:resource-complete", "gather:resource-failed",
+  "gather:summary-failed", "gather:summary-result", "job:cancel-failed", "job:cancel-ok",
+  "job:claim-failed", "job:claimed", "job:complete", "job:create-failed", "job:created", "job:fail",
+  "job:limits-failed", "job:limits-result", "job:report-progress", "job:status-failed",
+  "job:status-result", "mark:archive-failed", "mark:archive-ok", "mark:commit-failed",
+  "mark:commit-ok", "mark:create-failed", "mark:create-ok", "mark:delete-failed", "mark:delete-ok",
+  "mark:unarchive-failed", "mark:unarchive-ok", "mark:update-entity-types-failed",
+  "mark:update-entity-types-ok", "match:limits-failed", "match:limits-result",
+  "match:resources-failed", "match:resources-result", "match:search-failed", "match:search-results",
+  "session:joined", "session:left", "smelt:rebuild-anchors-failed", "smelt:rebuild-anchors-ok",
+  "smelt:settled", "weave:rebuild-failed", "weave:rebuild-ok", "yield:clone-create-failed",
+  "yield:clone-created", "yield:clone-persist-failed", "yield:clone-persist-ok",
+  "yield:clone-resource-failed", "yield:clone-resource-result", "yield:clone-token-failed",
+  "yield:clone-token-generated", "yield:cloned", "yield:create-failed", "yield:create-ok",
+  "yield:created", "yield:moved", "yield:update-failed", "yield:update-ok", "yield:updated",
+]
+/// The channels delivered to a transport for each resource whose scope it holds, as the registry orders them.
+package let resourceScopedChannels = [
+  "mark:body-updated", "yield:representation-added", "yield:representation-removed", "mark:added",
+  "mark:removed", "mark:entity-tag-added", "mark:entity-tag-removed", "mark:archived",
+  "mark:unarchived", "job:started", "job:assigned", "job:completed", "job:failed",
+]
+internal let storedEventChannels = [
+  "yield:created", "yield:cloned", "yield:updated", "yield:moved", "yield:representation-added",
+  "yield:representation-removed", "mark:added", "mark:removed", "mark:body-updated",
+  "mark:entity-tag-added", "mark:entity-tag-removed", "mark:archived", "mark:unarchived",
+  "frame:entity-type-added", "frame:tag-schema-added", "principal:profiled", "job:started",
+  "job:assigned", "job:completed", "job:failed",
+]
+internal let requiredSchemas: [String: Shape] = {
+  var shapes: [String: Shape] = [:]
+  shapes["Agent"] = Shape(
+    kinds: [.object],
+    oneOf: [
+      Shape(ref: "AgentPerson"), Shape(ref: "AgentOrganization"), Shape(ref: "AgentSoftware"),
+    ],
+    discriminator: Discriminator(
+      property: "@type", mapping: ["Organization": 1, "Person": 0, "Software": 2]))
+  shapes["AgentOrganization"] = Shape(
+    kinds: [.object], required: ["@type", "name"],
+    members: [
+      "@id": Shape(kinds: [.string]),
+      "@type": Shape(kinds: [.string], enumeration: [.string("Organization")]),
+      "homepage": Shape(kinds: [.string]), "name": Shape(kinds: [.string]),
+    ])
+  shapes["AgentPerson"] = Shape(
+    kinds: [.object], required: ["@type"],
+    members: [
+      "@id": Shape(kinds: [.string]),
+      "@type": Shape(kinds: [.string], enumeration: [.string("Person")]),
+      "email": Shape(kinds: [.string]), "email_sha1": Shape(kinds: [.string]),
+      "homepage": Shape(kinds: [.string]), "name": Shape(kinds: [.string]),
+      "nickname": Shape(kinds: [.string]),
+    ])
+  shapes["AgentSoftware"] = Shape(
+    kinds: [.object], required: ["@type"],
+    members: [
+      "@id": Shape(kinds: [.string]),
+      "@type": Shape(kinds: [.string], enumeration: [.string("Software")]),
+      "model": Shape(kinds: [.string]), "name": Shape(kinds: [.string]),
+      "parameters": Shape(kinds: [.object]), "provider": Shape(kinds: [.string]),
+    ])
+  shapes["AnchoredText"] = Shape(
+    kinds: [.object], required: ["text", "items"],
+    members: [
+      "items": Shape(kinds: [.array], items: Shape(ref: "PdfTextItem")),
+      "text": Shape(kinds: [.string]),
+    ])
+  shapes["AnchoredTextAbsent"] = Shape(
+    kinds: [.object], required: ["kind"],
+    members: [
+      "kind": Shape(
+        kinds: [.string], enumeration: [.string("not-yet"), .string("no-map"), .string("unknown")])
+    ])
+  shapes["AnchoredTextAnswer"] = Shape(
+    kinds: [.object],
+    oneOf: [
+      Shape(ref: "ExtractedText"), Shape(ref: "ExtractionDeclined"),
+      Shape(ref: "AnchoredTextAbsent"),
+    ],
+    discriminator: Discriminator(
+      property: "kind",
+      mapping: ["declined": 1, "extracted": 0, "no-map": 2, "not-yet": 2, "unknown": 2]))
+  shapes["AnchoredTextDeclinedEntry"] = Shape(
+    kinds: [.object], required: ["v", "stamp", "declined"],
+    members: [
+      "declined": Shape(
+        kinds: [.string],
+        enumeration: [
+          .string("no-text-layer"), .string("encrypted"), .string("corrupt"), .string("too-large"),
+        ]), "stamp": Shape(kinds: [.string], minLength: 1),
+      "v": Shape(kinds: [.integer], enumeration: [.number(3.0)]),
+    ], closed: ["declined", "stamp", "v"])
+  shapes["AnchoredTextEntries"] = Shape(
+    kinds: [.object], required: ["checksums"],
+    members: [
+      "checksums": Shape(
+        kinds: [.array],
+        items: Shape(kinds: [.string], pattern: [Step(of: [48...57, 97...102], min: 64, max: 64)]))
+    ], closed: ["checksums"])
+  shapes["AnchoredTextEntry"] = Shape(
+    kinds: [.object],
+    oneOf: [Shape(ref: "AnchoredTextExtractedEntry"), Shape(ref: "AnchoredTextDeclinedEntry")])
+  shapes["AnchoredTextExtractedEntry"] = Shape(
+    kinds: [.object], required: ["v", "stamp", "text", "lines", "method"],
+    members: [
+      "lines": Shape(
+        kinds: [.array],
+        items: Shape(
+          kinds: [.object], required: ["p", "y", "h", "words"],
+          members: [
+            "h": Shape(kinds: [.number]), "p": Shape(kinds: [.integer]),
+            "words": Shape(
+              kinds: [.array],
+              items: Shape(
+                kinds: [.array], minItems: 4, maxItems: 4, items: Shape(kinds: [.number]))),
+            "y": Shape(kinds: [.number]),
+          ], closed: ["h", "p", "words", "y"])),
+      "method": Shape(
+        kinds: [.string],
+        enumeration: [
+          .string("text-passthrough"), .string("pdf-text-layer"), .string("table"), .string("form"),
+          .string("ocr"),
+        ]),
+      "ocrConfidence": Shape(
+        kinds: [.object], required: ["mean", "lowConfidenceWords", "totalWords"],
+        members: [
+          "lowConfidenceWords": Shape(kinds: [.integer]), "mean": Shape(kinds: [.number]),
+          "totalWords": Shape(kinds: [.integer]),
+        ]),
+      "pdfClass": Shape(
+        kinds: [.string],
+        enumeration: [
+          .string("A"), .string("B"), .string("C"), .string("D"), .string("E"), .string("F"),
+          .string("G"),
+        ]), "stamp": Shape(kinds: [.string], minLength: 1), "text": Shape(kinds: [.string]),
+      "unreadPages": Shape(kinds: [.array], items: Shape(kinds: [.integer])),
+      "v": Shape(kinds: [.integer], enumeration: [.number(3.0)]),
+    ],
+    closed: ["lines", "method", "ocrConfidence", "pdfClass", "stamp", "text", "unreadPages", "v"])
+  shapes["AnchoredTextStamp"] = Shape(
+    kinds: [.object], required: ["stamp"],
+    members: [
+      "stamp": Shape(
+        kinds: [.string],
+        pattern: [
+          Step(
+            of: [
+              0...8, 14...31, 33...159, 161...5759, 5761...8191, 8203...8231, 8234...8238,
+              8240...8286, 8288...12287, 12289...65278, 65280...1_114_111,
+            ], min: 1, max: nil)
+        ], minLength: 1)
+    ], closed: ["stamp"])
+  shapes["AnchoredTextWrite"] = Shape(
+    kinds: [.object], required: ["contentChecksum", "entry"],
+    members: [
+      "contentChecksum": Shape(
+        kinds: [.string], pattern: [Step(of: [48...57, 97...102], min: 64, max: 64)]),
+      "entry": Shape(ref: "AnchoredTextEntry"),
+    ], closed: ["contentChecksum", "entry"])
+  shapes["Annotation"] = Shape(
+    kinds: [.object], required: ["@context", "type", "id", "motivation", "target", "created"],
+    members: [
+      "@context": Shape(
+        kinds: [.string], enumeration: [.string("http://www.w3.org/ns/anno.jsonld")]),
+      "body": Shape(ref: "AnnotationBodies"), "created": Shape(kinds: [.string]),
+      "creator": Shape(ref: "Agent"),
+      "generator": Shape(
+        kinds: [.object, .array],
+        oneOf: [
+          Shape(ref: "Agent"), Shape(kinds: [.array], minItems: 1, items: Shape(ref: "Agent")),
+        ]), "id": Shape(ref: "AnnotationId"), "modified": Shape(kinds: [.string]),
+      "motivation": Shape(ref: "Motivation"),
+      "target": Shape(
+        kinds: [.object, .string],
+        oneOf: [Shape(ref: "ResourceId"), Shape(ref: "AnnotationTarget")]),
+      "type": Shape(kinds: [.string], enumeration: [.string("Annotation")]),
+      "wasAttributedTo": Shape(
+        kinds: [.object, .array],
+        oneOf: [
+          Shape(ref: "Agent"), Shape(kinds: [.array], minItems: 1, items: Shape(ref: "Agent")),
+        ]),
+    ])
+  shapes["AnnotationAddedPayload"] = Shape(
+    kinds: [.object], required: ["annotation"],
+    members: ["annotation": Shape(ref: "Annotation"), "contentChecksum": Shape(kinds: [.string])])
+  shapes["AnnotationBodies"] = Shape(
+    kinds: [.object, .array],
+    oneOf: [
+      Shape(ref: "AnnotationBody"),
+      Shape(kinds: [.array], minItems: 1, items: Shape(ref: "AnnotationBody")),
+    ])
+  shapes["AnnotationBody"] = Shape(
+    kinds: [.object], oneOf: [Shape(ref: "TextualBody"), Shape(ref: "SpecificResource")],
+    discriminator: Discriminator(
+      property: "type", mapping: ["SpecificResource": 1, "TextualBody": 0]))
+  shapes["AnnotationBodyUpdatedPayload"] = Shape(
+    kinds: [.object], required: ["annotationId", "operations"],
+    members: [
+      "annotationId": Shape(ref: "AnnotationId"),
+      "operations": Shape(
+        kinds: [.array],
+        items: Shape(
+          kinds: [.object],
+          oneOf: [
+            Shape(ref: "BodyOperationAdd"), Shape(ref: "BodyOperationRemove"),
+            Shape(ref: "BodyOperationReplace"),
+          ])),
+    ])
+  shapes["AnnotationId"] = Shape(
+    kinds: [.string],
+    pattern: [Step(of: [45...45, 48...57, 65...90, 95...95, 97...122], min: 1, max: 128)])
+  shapes["AnnotationRemovedPayload"] = Shape(
+    kinds: [.object], required: ["annotationId"],
+    members: ["annotationId": Shape(ref: "AnnotationId")])
+  shapes["AnnotationSelector"] = Shape(
+    kinds: [.object, .array],
+    oneOf: [Shape(ref: "Selector"), Shape(kinds: [.array], items: Shape(ref: "Selector"))])
+  shapes["AnnotationTarget"] = Shape(
+    kinds: [.object], required: ["source"],
+    members: [
+      "selector": Shape(ref: "AnnotationSelector"), "source": Shape(ref: "ResourceId"),
+      "type": Shape(kinds: [.string], enumeration: [.string("SpecificResource")]),
+    ])
+  shapes["ArchivistConfig"] = Shape(
+    kinds: [.object],
+    required: [
+      "gatewayUrl", "identity", "root", "stateHome", "anchoredTextDir", "engines", "port",
+      "skipRebuild", "staging", "logLevel", "logFormat",
+    ],
+    members: [
+      "anchoredTextDir": Shape(kinds: [.string], minLength: 1),
+      "engines": Shape(ref: "ArchivistEngines"),
+      "gatewayUrl": Shape(kinds: [.string], minLength: 1),
+      "identity": Shape(
+        kinds: [.object], required: ["issuer"],
+        members: ["issuer": Shape(kinds: [.string], minLength: 1)], closed: ["issuer"]),
+      "logFormat": Shape(ref: "LogFormat"), "logLevel": Shape(ref: "LogLevel"),
+      "port": Shape(kinds: [.integer], minimum: 1.0, maximum: 65535.0),
+      "root": Shape(kinds: [.string], minLength: 1), "skipRebuild": Shape(kinds: [.boolean]),
+      "staging": Shape(
+        kinds: [.object], required: ["flushMs", "maxWaitMs"],
+        members: [
+          "flushMs": Shape(kinds: [.integer], minimum: 1.0),
+          "maxWaitMs": Shape(kinds: [.integer], minimum: 1.0),
+        ], closed: ["flushMs", "maxWaitMs"]), "stateHome": Shape(kinds: [.string], minLength: 1),
+    ],
+    closed: [
+      "anchoredTextDir", "engines", "gatewayUrl", "identity", "logFormat", "logLevel", "port",
+      "root", "skipRebuild", "staging", "stateHome",
+    ])
+  shapes["ArchivistEngines"] = Shape(
+    kinds: [.object], required: ["jobs", "actors"],
+    members: [
+      "actors": Shape(
+        kinds: [.object],
+        members: ["gatherer": Shape(ref: "Engine"), "matcher": Shape(ref: "Engine")],
+        closed: ["gatherer", "matcher"]),
+      "jobs": Shape(
+        kinds: [.object],
+        members: [
+          "mark": Shape(
+            kinds: [.object],
+            members: [
+              "assessing": Shape(ref: "Engine"), "commenting": Shape(ref: "Engine"),
+              "highlighting": Shape(ref: "Engine"), "linking": Shape(ref: "Engine"),
+              "tagging": Shape(ref: "Engine"),
+            ], closed: ["assessing", "commenting", "highlighting", "linking", "tagging"]),
+          "yield": Shape(ref: "Engine"),
+        ], closed: ["mark", "yield"]),
+    ], closed: ["actors", "jobs"])
+  shapes["ArchivistEventsResponse"] = Shape(
+    kinds: [.object], required: ["events", "lastSequence"],
+    members: [
+      "events": Shape(kinds: [.array], items: Shape(ref: "StoredEventResponse")),
+      "lastSequence": Shape(kinds: [.integer], minimum: 0.0),
+    ])
+  shapes["ArchivistHealth"] = Shape(
+    kinds: [.object], required: ["status", "actors"],
+    members: [
+      "actors": Shape(kinds: [.array], items: Shape(kinds: [.string])),
+      "status": Shape(kinds: [.string], enumeration: [.string("ok")]),
+    ])
+  shapes["ArchivistStream"] = Shape(
+    kinds: [.object], required: ["resourceId", "lastSequence"],
+    members: [
+      "lastSequence": Shape(kinds: [.integer], minimum: 0.0),
+      "resourceId": Shape(ref: "ResourceId"),
+    ], closed: ["lastSequence", "resourceId"])
+  shapes["ArchivistStreamsResponse"] = Shape(
+    kinds: [.object], required: ["streams"],
+    members: ["streams": Shape(kinds: [.array], items: Shape(ref: "ArchivistStream"))],
+    closed: ["streams"])
+  shapes["AssessingJobParams"] = Shape(
+    kinds: [.object], required: ["motivation"],
+    members: [
+      "density": Shape(kinds: [.number]), "instructions": Shape(kinds: [.string]),
+      "language": Shape(kinds: [.string]),
+      "motivation": Shape(kinds: [.string], enumeration: [.string("assessing")]),
+      "sourceLanguage": Shape(kinds: [.string]),
+      "tone": Shape(
+        kinds: [.string],
+        enumeration: [
+          .string("analytical"), .string("critical"), .string("balanced"), .string("constructive"),
+        ]),
+    ], closed: ["density", "instructions", "language", "motivation", "sourceLanguage", "tone"])
+  shapes["AttributedEvent"] = Shape(
+    kinds: [.object],
+    allOf: [
+      Shape(ref: "StoredEventResponse"),
+      Shape(kinds: [.object], required: ["agent"], members: ["agent": Shape(ref: "Agent")]),
+    ])
+  shapes["BeckonFocusEvent"] = Shape(
+    kinds: [.object], required: ["resourceId"],
+    members: ["annotationId": Shape(ref: "AnnotationId"), "resourceId": Shape(ref: "ResourceId")])
+  shapes["BeckonHoverEvent"] = Shape(
+    kinds: [.object], required: ["annotationId"],
+    members: [
+      "annotationId": Shape(
+        kinds: [.string, .null], oneOf: [Shape(kinds: [.null]), Shape(ref: "AnnotationId")])
+    ])
+  shapes["BeckonSparkleEvent"] = Shape(
+    kinds: [.object], required: ["annotationId"],
+    members: ["annotationId": Shape(ref: "AnnotationId")])
+  shapes["BindBodyOperation"] = Shape(
+    kinds: [.object], required: ["op"],
+    members: [
+      "item": Shape(ref: "AnnotationBody"), "newItem": Shape(ref: "AnnotationBody"),
+      "oldItem": Shape(ref: "AnnotationBody"),
+      "op": Shape(
+        kinds: [.string], enumeration: [.string("add"), .string("remove"), .string("replace")]),
+    ])
+  shapes["BindBodyUpdated"] = Shape(kinds: [.object])
+  shapes["BindInitiateCommand"] = Shape(
+    kinds: [.object], required: ["annotationId", "resourceId", "defaultTitle", "entityTypes"],
+    members: [
+      "annotationId": Shape(ref: "AnnotationId"), "defaultTitle": Shape(kinds: [.string]),
+      "entityTypes": Shape(kinds: [.array], items: Shape(kinds: [.string])),
+      "resourceId": Shape(ref: "ResourceId"),
+    ])
+  shapes["BindUpdateBodyCommand"] = Shape(
+    kinds: [.object], required: ["annotationId", "resourceId", "operations"],
+    members: [
+      "_userId": Shape(ref: "UserId"), "annotationId": Shape(ref: "AnnotationId"),
+      "operations": Shape(kinds: [.array], items: Shape(ref: "BindBodyOperation")),
+      "resourceId": Shape(ref: "ResourceId"),
+    ])
+  shapes["BodyOperationAdd"] = Shape(
+    kinds: [.object], required: ["op", "item"],
+    members: [
+      "item": Shape(
+        kinds: [.object], oneOf: [Shape(ref: "TextualBody"), Shape(ref: "SpecificResource")]),
+      "op": Shape(kinds: [.string], enumeration: [.string("add")]),
+    ])
+  shapes["BodyOperationRemove"] = Shape(
+    kinds: [.object], required: ["op", "item"],
+    members: [
+      "item": Shape(
+        kinds: [.object], oneOf: [Shape(ref: "TextualBody"), Shape(ref: "SpecificResource")]),
+      "op": Shape(kinds: [.string], enumeration: [.string("remove")]),
+    ])
+  shapes["BodyOperationReplace"] = Shape(
+    kinds: [.object], required: ["op", "oldItem", "newItem"],
+    members: [
+      "newItem": Shape(
+        kinds: [.object], oneOf: [Shape(ref: "TextualBody"), Shape(ref: "SpecificResource")]),
+      "oldItem": Shape(
+        kinds: [.object], oneOf: [Shape(ref: "TextualBody"), Shape(ref: "SpecificResource")]),
+      "op": Shape(kinds: [.string], enumeration: [.string("replace")]),
+    ])
+  shapes["BodyPurpose"] = Shape(
+    kinds: [.string],
+    enumeration: [
+      .string("assessing"), .string("bookmarking"), .string("classifying"), .string("commenting"),
+      .string("describing"), .string("editing"), .string("highlighting"), .string("identifying"),
+      .string("linking"), .string("moderating"), .string("questioning"), .string("replying"),
+      .string("tagging"),
+    ])
+  shapes["BrowseAnnotationHistoryRequest"] = Shape(
+    kinds: [.object], required: ["resourceId", "annotationId"],
+    members: ["annotationId": Shape(ref: "AnnotationId"), "resourceId": Shape(ref: "ResourceId")])
+  shapes["BrowseAnnotationHistoryResult"] = Shape(
+    kinds: [.object], required: ["response"],
+    members: ["response": Shape(ref: "GetAnnotationHistoryResponse")])
+  shapes["BrowseAnnotationRequest"] = Shape(
+    kinds: [.object], required: ["resourceId", "annotationId"],
+    members: ["annotationId": Shape(ref: "AnnotationId"), "resourceId": Shape(ref: "ResourceId")])
+  shapes["BrowseAnnotationResult"] = Shape(
+    kinds: [.object], required: ["response"],
+    members: ["response": Shape(ref: "GetAnnotationResponse")])
+  shapes["BrowseClickEvent"] = Shape(
+    kinds: [.object], required: ["annotationId"],
+    members: ["annotationId": Shape(ref: "AnnotationId")])
+  shapes["BrowseDirectoryFailed"] = Shape(
+    kinds: [.object],
+    allOf: [
+      Shape(ref: "CommandError"),
+      Shape(kinds: [.object], required: ["path"], members: ["path": Shape(kinds: [.string])]),
+    ])
+  shapes["BrowseDirectoryRequest"] = Shape(
+    kinds: [.object], required: ["path"],
+    members: [
+      "path": Shape(kinds: [.string]),
+      "sort": Shape(
+        kinds: [.string],
+        enumeration: [.string("name"), .string("mtime"), .string("annotationCount")]),
+    ])
+  shapes["BrowseDirectoryResult"] = Shape(
+    kinds: [.object], required: ["response"],
+    members: ["response": Shape(ref: "BrowseDirectoryResultResponse")])
+  shapes["BrowseDirectoryResultResponse"] = Shape(
+    kinds: [.object], required: ["path", "entries"],
+    members: [
+      "entries": Shape(kinds: [.array], items: Shape(ref: "DirectoryEntry")),
+      "path": Shape(kinds: [.string]),
+    ])
+  shapes["BrowseEnginesRequest"] = Shape(kinds: [.object])
+  shapes["BrowseEnginesResult"] = Shape(
+    kinds: [.object], required: ["response"],
+    members: [
+      "response": Shape(
+        kinds: [.object], required: ["engines"],
+        members: ["engines": Shape(kinds: [.array], items: Shape(ref: "EngineEntry"))])
+    ])
+  shapes["BrowseEntityTypeClickedEvent"] = Shape(
+    kinds: [.object], required: ["entityType"], members: ["entityType": Shape(kinds: [.string])])
+  shapes["BrowseEntityTypesRequest"] = Shape(kinds: [.object])
+  shapes["BrowseEntityTypesResult"] = Shape(
+    kinds: [.object], required: ["response"],
+    members: ["response": Shape(ref: "GetEntityTypesResponse")])
+  shapes["BrowseEventsRequest"] = Shape(
+    kinds: [.object], required: ["resourceId"],
+    members: [
+      "limit": Shape(kinds: [.integer]), "resourceId": Shape(ref: "ResourceId"),
+      "type": Shape(kinds: [.string]), "userId": Shape(ref: "UserId"),
+    ])
+  shapes["BrowseEventsResult"] = Shape(
+    kinds: [.object], required: ["response"], members: ["response": Shape(ref: "GetEventsResponse")]
+  )
+  shapes["BrowseExternalNavigateEvent"] = Shape(
+    kinds: [.object], required: ["url"],
+    members: ["resourceId": Shape(ref: "ResourceId"), "url": Shape(kinds: [.string])])
+  shapes["BrowseFilesResponse"] = Shape(
+    kinds: [.object], required: ["path", "entries"],
+    members: [
+      "entries": Shape(kinds: [.array], items: Shape(ref: "DirectoryEntry")),
+      "path": Shape(kinds: [.string]),
+    ], closed: ["entries", "path"])
+  shapes["BrowseKbRequest"] = Shape(kinds: [.object])
+  shapes["BrowseKbResult"] = Shape(
+    kinds: [.object], required: ["response"], members: ["response": Shape(ref: "KbDescription")])
+  shapes["BrowseLinkClickedEvent"] = Shape(
+    kinds: [.object], required: ["href"],
+    members: ["href": Shape(kinds: [.string]), "label": Shape(kinds: [.string])])
+  shapes["BrowsePanelOpenEvent"] = Shape(
+    kinds: [.object], required: ["panel"],
+    members: [
+      "motivation": Shape(ref: "Motivation"), "panel": Shape(kinds: [.string]),
+      "scrollToAnnotationId": Shape(ref: "AnnotationId"),
+    ])
+  shapes["BrowsePanelToggleEvent"] = Shape(
+    kinds: [.object], required: ["panel"], members: ["panel": Shape(kinds: [.string])])
+  shapes["BrowseProfilesRequest"] = Shape(
+    kinds: [.object], required: ["dids"],
+    members: [
+      "dids": Shape(kinds: [.array], minItems: 1, maxItems: 500, items: Shape(ref: "UserId"))
+    ], closed: ["dids"])
+  shapes["BrowseProfilesResult"] = Shape(
+    kinds: [.object], required: ["response"],
+    members: [
+      "response": Shape(
+        kinds: [.object], required: ["profiles"],
+        members: ["profiles": Shape(kinds: [.object], values: Shape(ref: "Profile"))],
+        closed: ["profiles"])
+    ])
+  shapes["BrowseResourceCloseEvent"] = Shape(
+    kinds: [.object], required: ["resourceId"], members: ["resourceId": Shape(ref: "ResourceId")])
+  shapes["BrowseResourceOpenEvent"] = Shape(
+    kinds: [.object], required: ["resourceId"], members: ["resourceId": Shape(ref: "ResourceId")])
+  shapes["BrowseResourceReorderEvent"] = Shape(
+    kinds: [.object], required: ["oldIndex", "newIndex"],
+    members: ["newIndex": Shape(kinds: [.integer]), "oldIndex": Shape(kinds: [.integer])])
+  shapes["BrowseResourceRequest"] = Shape(
+    kinds: [.object], required: ["resourceId"], members: ["resourceId": Shape(ref: "ResourceId")])
+  shapes["BrowseResourceResult"] = Shape(
+    kinds: [.object], required: ["response"],
+    members: [
+      "response": Shape(
+        kinds: [.object], required: ["resource", "lastSequence"],
+        members: [
+          "lastSequence": Shape(kinds: [.integer], minimum: 1.0),
+          "resource": Shape(ref: "ResourceDescriptor"),
+        ], closed: ["lastSequence", "resource"])
+    ])
+  shapes["BrowseResourceViewedEvent"] = Shape(
+    kinds: [.object], required: ["resourceId"], members: ["resourceId": Shape(ref: "ResourceId")])
+  shapes["BrowseResourcesRequest"] = Shape(
+    kinds: [.object],
+    members: [
+      "archived": Shape(kinds: [.boolean]), "entityType": Shape(kinds: [.string]),
+      "limit": Shape(kinds: [.integer], minimum: 1.0),
+      "offset": Shape(kinds: [.integer], minimum: 0.0),
+    ])
+  shapes["BrowseResourcesResult"] = Shape(
+    kinds: [.object], required: ["response"],
+    members: ["response": Shape(ref: "ListResourcesResponse")])
+  shapes["BrowseRouterPushEvent"] = Shape(
+    kinds: [.object], required: ["path"],
+    members: ["path": Shape(kinds: [.string]), "reason": Shape(kinds: [.string])])
+  shapes["BrowseTagSchemasRequest"] = Shape(kinds: [.object])
+  shapes["BrowseTagSchemasResult"] = Shape(
+    kinds: [.object], required: ["response"],
+    members: ["response": Shape(ref: "GetTagSchemasResponse")])
+  shapes["BusEmitAccepted"] = Shape(
+    kinds: [.object], members: ["subscribers": Shape(kinds: [.integer], minimum: 0.0)])
+  shapes["BusEmitRequest"] = Shape(
+    kinds: [.object], required: ["channel", "payload"],
+    members: [
+      "channel": Shape(kinds: [.string], minLength: 1), "clientId": Shape(kinds: [.string]),
+      "correlationId": Shape(kinds: [.string], minLength: 1), "payload": Shape(kinds: [.object]),
+      "scope": Shape(ref: "ResourceId"),
+    ])
+  shapes["BusEventMessage"] = Shape(
+    kinds: [.object], required: ["event", "id", "data"],
+    members: [
+      "data": Shape(ref: "BusFrame"),
+      "event": Shape(kinds: [.string], enumeration: [.string("bus-event")]),
+      "id": Shape(
+        kinds: [.string],
+        oneOf: [
+          Shape(ref: "PersistedEventId"), Shape(ref: "ReplyEventId"),
+          Shape(ref: "EphemeralEventId"),
+        ]),
+    ], closed: ["data", "event", "id"])
+  shapes["BusFrame"] = Shape(
+    kinds: [.object], required: ["channel", "payload"],
+    members: [
+      "channel": Shape(kinds: [.string], minLength: 1),
+      "correlationId": Shape(kinds: [.string], minLength: 1), "payload": Shape(kinds: [.object]),
+      "scope": Shape(ref: "ResourceId"),
+    ], closed: ["channel", "correlationId", "payload", "scope"])
+  shapes["BusPingMessage"] = Shape(
+    kinds: [.object], required: ["event", "data"],
+    members: [
+      "data": Shape(kinds: [.string], maxLength: 0),
+      "event": Shape(kinds: [.string], enumeration: [.string("ping")]),
+    ], closed: ["data", "event"])
+  shapes["BusResumeGap"] = Shape(
+    kinds: [.object], required: ["scope", "lastSeenId", "reason"],
+    members: [
+      "lastSeenId": Shape(kinds: [.string]),
+      "reason": Shape(
+        kinds: [.string],
+        enumeration: [
+          .string("unparseable-last-event-id"), .string("scope-mismatch"),
+          .string("retention-exceeded"), .string("query-error"),
+        ]), "scope": Shape(ref: "ResourceId"),
+    ], closed: ["lastSeenId", "reason", "scope"])
+  shapes["BusStreamMessage"] = Shape(
+    kinds: [.object], oneOf: [Shape(ref: "BusEventMessage"), Shape(ref: "BusPingMessage")])
+  shapes["BusSubscribeRequest"] = Shape(
+    kinds: [.object], required: ["clientId"],
+    members: [
+      "clientId": Shape(kinds: [.string], minLength: 1),
+      "global": Shape(kinds: [.array], items: Shape(kinds: [.string], minLength: 1)),
+      "pendingReplies": Shape(
+        kinds: [.array], maxItems: 256, items: Shape(kinds: [.string], minLength: 1)),
+      "scoped": Shape(
+        kinds: [.array], maxItems: 512,
+        items: Shape(
+          kinds: [.object], required: ["scope", "channels"],
+          members: [
+            "channels": Shape(
+              kinds: [.array], minItems: 1, items: Shape(kinds: [.string], minLength: 1)),
+            "lastEventId": Shape(kinds: [.string]), "scope": Shape(ref: "ResourceId"),
+          ], closed: ["channels", "lastEventId", "scope"])),
+    ], closed: ["clientId", "global", "pendingReplies", "scoped"])
+  shapes["CloneResourceWithTokenResponse"] = Shape(
+    kinds: [.object], required: ["token", "expiresAt", "resource"],
+    members: [
+      "expiresAt": Shape(kinds: [.string]), "resource": Shape(ref: "ResourceDescriptor"),
+      "token": Shape(kinds: [.string]),
+    ])
+  shapes["CommandError"] = Shape(
+    kinds: [.object], required: ["message"],
+    members: [
+      "code": Shape(
+        kinds: [.string],
+        recognized: ["peer-unavailable", "not-found", "unauthorized", "none-pending"]),
+      "details": Shape(kinds: [.string]), "message": Shape(kinds: [.string]),
+    ])
+  shapes["CommentingJobParams"] = Shape(
+    kinds: [.object], required: ["motivation"],
+    members: [
+      "density": Shape(kinds: [.number]), "instructions": Shape(kinds: [.string]),
+      "language": Shape(kinds: [.string]),
+      "motivation": Shape(kinds: [.string], enumeration: [.string("commenting")]),
+      "sourceLanguage": Shape(kinds: [.string]),
+      "tone": Shape(
+        kinds: [.string],
+        enumeration: [
+          .string("scholarly"), .string("explanatory"), .string("conversational"),
+          .string("technical"),
+        ]),
+    ], closed: ["density", "instructions", "language", "motivation", "sourceLanguage", "tone"])
+  shapes["ContentFormat"] = Shape(kinds: [.string])
+  shapes["ContextualSummaryResponse"] = Shape(
+    kinds: [.object], required: ["summary", "relevantFields", "context"],
+    members: [
+      "context": Shape(
+        kinds: [.object], required: ["selected"],
+        members: [
+          "after": Shape(kinds: [.string]), "before": Shape(kinds: [.string]),
+          "selected": Shape(kinds: [.string]),
+        ]),
+      "relevantFields": Shape(
+        kinds: [.object], required: ["resourceId", "resourceName", "entityTypes"],
+        members: [
+          "entityTypes": Shape(kinds: [.array], items: Shape(kinds: [.string])),
+          "resourceId": Shape(ref: "ResourceId"), "resourceName": Shape(kinds: [.string]),
+        ], closed: ["entityTypes", "resourceId", "resourceName"]),
+      "summary": Shape(kinds: [.string]),
+    ])
+  shapes["CreateAnnotationRequest"] = Shape(
+    kinds: [.object], required: ["target", "motivation"],
+    members: [
+      "body": Shape(ref: "AnnotationBodies"), "motivation": Shape(ref: "Motivation"),
+      "target": Shape(ref: "AnnotationTarget"),
+    ])
+  shapes["CreateResourceResponse"] = Shape(
+    kinds: [.object], required: ["resourceId"], members: ["resourceId": Shape(ref: "ResourceId")])
+  shapes["CursorsPath"] = Shape(kinds: [.string], minLength: 1)
+  shapes["DirEntry"] = Shape(
+    kinds: [.object], required: ["type", "name", "path", "mtime"],
+    members: [
+      "mtime": Shape(kinds: [.string]), "name": Shape(kinds: [.string]),
+      "path": Shape(kinds: [.string]),
+      "type": Shape(kinds: [.string], enumeration: [.string("dir")]),
+    ], closed: ["mtime", "name", "path", "type"])
+  shapes["DirectoryEntry"] = Shape(
+    kinds: [.object], oneOf: [Shape(ref: "FileEntry"), Shape(ref: "DirEntry")],
+    discriminator: Discriminator(property: "type", mapping: ["dir": 1, "file": 0]))
+  shapes["DiscoveredKB"] = Shape(
+    kinds: [.object], required: ["host", "port", "placement", "did", "managedBy"],
+    members: [
+      "did": Shape(kinds: [.string]), "host": Shape(kinds: [.string]),
+      "managedBy": Shape(kinds: [.string]),
+      "placement": Shape(kinds: [.string], enumeration: [.string("local"), .string("codespace")]),
+      "port": Shape(kinds: [.integer]), "repo": Shape(kinds: [.string]),
+      "siteName": Shape(kinds: [.string]),
+    ])
+  shapes["DiscoveryDocument"] = Shape(
+    kinds: [.object], required: ["version", "kbs"],
+    members: [
+      "kbs": Shape(kinds: [.array], items: Shape(ref: "DiscoveredKB")),
+      "version": Shape(kinds: [.integer], enumeration: [.number(1.0)]),
+    ])
+  shapes["DispatcherConfig"] = Shape(
+    kinds: [.object],
+    required: ["kb", "gatewayUrl", "identity", "queue", "port", "timing", "logLevel", "logFormat"],
+    members: [
+      "gatewayUrl": Shape(kinds: [.string], minLength: 1),
+      "identity": Shape(
+        kinds: [.object], required: ["issuer"],
+        members: ["issuer": Shape(kinds: [.string], minLength: 1)], closed: ["issuer"]),
+      "kb": Shape(ref: "KbIdentity"), "logFormat": Shape(ref: "LogFormat"),
+      "logLevel": Shape(ref: "LogLevel"),
+      "port": Shape(kinds: [.integer], minimum: 1.0, maximum: 65535.0),
+      "queue": Shape(
+        kinds: [.object], required: ["servers"],
+        members: [
+          "passwordEnv": Shape(kinds: [.string], minLength: 1),
+          "servers": Shape(kinds: [.string], minLength: 1),
+          "userEnv": Shape(kinds: [.string], minLength: 1),
+        ], closed: ["passwordEnv", "servers", "userEnv"]),
+      "timing": Shape(
+        kinds: [.object],
+        required: [
+          "tickMs", "staleRunningMs", "ackWaitMs", "retentionMs", "retentionSweepMs",
+          "progressWriteIntervalMs", "bootDeadlineMs",
+        ],
+        members: [
+          "ackWaitMs": Shape(kinds: [.integer], minimum: 1.0),
+          "bootDeadlineMs": Shape(kinds: [.integer], minimum: 1.0),
+          "progressWriteIntervalMs": Shape(kinds: [.integer], minimum: 1.0),
+          "retentionMs": Shape(kinds: [.integer], minimum: 1.0),
+          "retentionSweepMs": Shape(kinds: [.integer], minimum: 1.0),
+          "staleRunningMs": Shape(kinds: [.integer], minimum: 1.0),
+          "tickMs": Shape(kinds: [.integer], minimum: 1.0),
+        ],
+        closed: [
+          "ackWaitMs", "bootDeadlineMs", "progressWriteIntervalMs", "retentionMs",
+          "retentionSweepMs", "staleRunningMs", "tickMs",
+        ]),
+    ], closed: ["gatewayUrl", "identity", "kb", "logFormat", "logLevel", "port", "queue", "timing"])
+  shapes["DispatcherHealth"] = Shape(
+    kinds: [.object], required: ["status", "queue"],
+    members: [
+      "queue": Shape(kinds: [.string], enumeration: [.string("jetstream")]),
+      "status": Shape(kinds: [.string], enumeration: [.string("ok")]),
+    ], closed: ["queue", "status"])
+  shapes["DurabilityEvidence"] = Shape(
+    kinds: [.string],
+    enumeration: [
+      .string("acknowledged"), .string("probe-confirmed"), .string("probe-refused"),
+      .string("probe-unreachable"),
+    ])
+  shapes["EmbeddingConfig"] = Shape(
+    kinds: [.object],
+    oneOf: [Shape(ref: "OllamaEmbeddingConfig"), Shape(ref: "VoyageEmbeddingConfig")],
+    discriminator: Discriminator(property: "type", mapping: ["ollama": 0, "voyage": 1]))
+  shapes["Engine"] = Shape(
+    kinds: [.object], required: ["provider", "model"],
+    members: [
+      "model": Shape(kinds: [.string], minLength: 1),
+      "provider": Shape(
+        kinds: [.string],
+        enumeration: [
+          .string("anthropic"), .string("google"), .string("llamacpp"), .string("ollama"),
+          .string("openai"), .string("together"), .string("vllm"),
+        ]),
+    ], closed: ["model", "provider"])
+  shapes["EngineEntry"] = Shape(
+    kinds: [.object], required: ["engine"],
+    members: [
+      "engine": Shape(ref: "Engine"),
+      "jobs": Shape(kinds: [.array], items: Shape(ref: "JobFilter")),
+    ], closed: ["engine", "jobs"])
+  shapes["EngineLimits"] = Shape(
+    kinds: [.object], required: ["engine", "limits"],
+    members: ["engine": Shape(ref: "Engine"), "limits": Shape(ref: "InferenceLimits")],
+    closed: ["engine", "limits"])
+  shapes["EnrichedResourceEvent"] = Shape(
+    kinds: [.object],
+    allOf: [
+      Shape(ref: "StoredEventResponse"),
+      Shape(kinds: [.object], members: ["annotation": Shape(ref: "Annotation")]),
+    ])
+  shapes["EntityTagChangedPayload"] = Shape(
+    kinds: [.object], required: ["entityType"], members: ["entityType": Shape(kinds: [.string])])
+  shapes["EntityTypeAddedPayload"] = Shape(
+    kinds: [.object], required: ["entityType"], members: ["entityType": Shape(kinds: [.string])])
+  shapes["EntityTypesProjection"] = Shape(
+    kinds: [.object], required: ["entityTypes"],
+    members: ["entityTypes": Shape(kinds: [.array], items: Shape(kinds: [.string]))],
+    closed: ["entityTypes"])
+  shapes["EphemeralEventId"] = Shape(
+    kinds: [.string],
+    pattern: [
+      Step(of: [101...101], min: 1, max: 1), Step(of: [45...45], min: 1, max: 1),
+      Step(of: [0...57, 59...1_114_111], min: 1, max: nil),
+    ])
+  shapes["ErrorResponse"] = Shape(
+    kinds: [.object], required: ["error"],
+    members: [
+      "code": Shape(kinds: [.string]), "error": Shape(kinds: [.string]),
+      "hint": Shape(kinds: [.string]),
+    ])
+  shapes["EventMetadata"] = Shape(
+    kinds: [.object], required: ["sequenceNumber"],
+    members: ["sequenceNumber": Shape(kinds: [.integer])])
+  shapes["ExtractedText"] = Shape(
+    kinds: [.object],
+    allOf: [
+      Shape(ref: "AnchoredText"),
+      Shape(
+        kinds: [.object], required: ["kind", "method"],
+        members: [
+          "kind": Shape(kinds: [.string], enumeration: [.string("extracted")]),
+          "method": Shape(
+            kinds: [.string],
+            enumeration: [
+              .string("text-passthrough"), .string("pdf-text-layer"), .string("table"),
+              .string("form"), .string("ocr"),
+            ]),
+          "ocrConfidence": Shape(
+            kinds: [.object], required: ["mean", "lowConfidenceWords", "totalWords"],
+            members: [
+              "lowConfidenceWords": Shape(kinds: [.integer]), "mean": Shape(kinds: [.number]),
+              "totalWords": Shape(kinds: [.integer]),
+            ]),
+          "pdfClass": Shape(
+            kinds: [.string],
+            enumeration: [
+              .string("A"), .string("B"), .string("C"), .string("D"), .string("E"), .string("F"),
+              .string("G"),
+            ]), "unreadPages": Shape(kinds: [.array], items: Shape(kinds: [.integer])),
+        ]),
+    ])
+  shapes["ExtractionDeclined"] = Shape(
+    kinds: [.object], required: ["kind", "declined"],
+    members: [
+      "declined": Shape(
+        kinds: [.string],
+        enumeration: [
+          .string("no-text-layer"), .string("encrypted"), .string("corrupt"), .string("too-large"),
+        ]), "kind": Shape(kinds: [.string], enumeration: [.string("declined")]),
+    ])
+  shapes["ExtractionOutcome"] = Shape(
+    kinds: [.object], oneOf: [Shape(ref: "ExtractedText"), Shape(ref: "ExtractionDeclined")],
+    discriminator: Discriminator(property: "kind", mapping: ["declined": 1, "extracted": 0]))
+  shapes["FailureClass"] = Shape(
+    kinds: [.string],
+    enumeration: [.string("transient"), .string("deterministic"), .string("withheld")])
+  shapes["FileEntry"] = Shape(
+    kinds: [.object], required: ["type", "name", "path", "size", "mtime", "tracked"],
+    members: [
+      "annotationCount": Shape(kinds: [.integer]), "creator": Shape(kinds: [.string]),
+      "entityTypes": Shape(kinds: [.array], items: Shape(kinds: [.string])),
+      "mtime": Shape(kinds: [.string]), "name": Shape(kinds: [.string]),
+      "path": Shape(kinds: [.string]), "resourceId": Shape(ref: "ResourceId"),
+      "size": Shape(kinds: [.integer]), "tracked": Shape(kinds: [.boolean]),
+      "type": Shape(kinds: [.string], enumeration: [.string("file")]),
+    ],
+    closed: [
+      "annotationCount", "creator", "entityTypes", "mtime", "name", "path", "resourceId", "size",
+      "tracked", "type",
+    ])
+  shapes["FragmentSelector"] = Shape(
+    kinds: [.object], required: ["type", "value"],
+    members: [
+      "conformsTo": Shape(kinds: [.string]),
+      "type": Shape(kinds: [.string], enumeration: [.string("FragmentSelector")]),
+      "value": Shape(kinds: [.string]),
+    ])
+  shapes["FrameAddEntityTypeCommand"] = Shape(
+    kinds: [.object], required: ["tag"],
+    members: ["_userId": Shape(ref: "UserId"), "tag": Shape(kinds: [.string])])
+  shapes["FrameAddTagSchemaCommand"] = Shape(
+    kinds: [.object], required: ["schema"],
+    members: ["_userId": Shape(ref: "UserId"), "schema": Shape(ref: "TagSchema")])
+  shapes["GatewayConfig"] = Shape(
+    kinds: [.object],
+    required: [
+      "kb", "port", "publicUrl", "identity", "archivist", "signal", "logLevel", "logFormat",
+      "capacity",
+    ],
+    members: [
+      "archivist": Shape(
+        kinds: [.object], required: ["host", "port"],
+        members: [
+          "host": Shape(kinds: [.string], minLength: 1),
+          "port": Shape(kinds: [.integer], minimum: 1.0, maximum: 65535.0),
+        ], closed: ["host", "port"]),
+      "capacity": Shape(
+        kinds: [.object], required: ["queuedBytes", "connections"],
+        members: [
+          "connections": Shape(kinds: [.integer], minimum: 1.0),
+          "queuedBytes": Shape(kinds: [.integer], minimum: 1.0),
+        ], closed: ["connections", "queuedBytes"]),
+      "identity": Shape(
+        kinds: [.object], required: ["issuer", "subjectClaim"],
+        members: [
+          "issuer": Shape(kinds: [.string], minLength: 1),
+          "subjectClaim": Shape(kinds: [.string], minLength: 1),
+        ], closed: ["issuer", "subjectClaim"]), "kb": Shape(ref: "KbIdentity"),
+      "logFormat": Shape(ref: "LogFormat"), "logLevel": Shape(ref: "LogLevel"),
+      "port": Shape(kinds: [.integer], minimum: 1.0, maximum: 65535.0),
+      "publicUrl": Shape(kinds: [.string], minLength: 1),
+      "signal": Shape(
+        kinds: [.object], required: ["type"],
+        members: [
+          "passwordEnv": Shape(kinds: [.string], minLength: 1),
+          "servers": Shape(kinds: [.string], minLength: 1),
+          "type": Shape(kinds: [.string], enumeration: [.string("in-process"), .string("nats")]),
+          "userEnv": Shape(kinds: [.string], minLength: 1),
+        ], closed: ["passwordEnv", "servers", "type", "userEnv"]),
+    ],
+    closed: [
+      "archivist", "capacity", "identity", "kb", "logFormat", "logLevel", "port", "publicUrl",
+      "signal",
+    ])
+  shapes["GatherAnnotationComplete"] = Shape(
+    kinds: [.object], required: ["annotationId", "response"],
+    members: [
+      "annotationId": Shape(ref: "AnnotationId"), "response": Shape(ref: "GatheredContext"),
+    ])
+  shapes["GatherAnnotationOptions"] = Shape(
+    kinds: [.object],
+    members: [
+      "contextWindow": Shape(kinds: [.integer], minimum: 100.0, maximum: 5000.0),
+      "includeSourceContext": Shape(kinds: [.boolean]),
+      "includeTargetContext": Shape(kinds: [.boolean]),
+    ])
+  shapes["GatherAnnotationRequest"] = Shape(
+    kinds: [.object], required: ["annotationId", "resourceId"],
+    members: [
+      "annotationId": Shape(ref: "AnnotationId"), "options": Shape(ref: "GatherAnnotationOptions"),
+      "resourceId": Shape(ref: "ResourceId"),
+    ])
+  shapes["GatherFailed"] = Shape(
+    kinds: [.object],
+    allOf: [
+      Shape(ref: "CommandError"),
+      Shape(
+        kinds: [.object], required: ["annotationId"],
+        members: ["annotationId": Shape(ref: "AnnotationId")]),
+    ])
+  shapes["GatherReferencedByRequest"] = Shape(
+    kinds: [.object], required: ["resourceId"],
+    members: ["motivation": Shape(ref: "Motivation"), "resourceId": Shape(ref: "ResourceId")])
+  shapes["GatherReferencedByResult"] = Shape(
+    kinds: [.object], required: ["response"],
+    members: ["response": Shape(ref: "GetReferencedByResponse")])
+  shapes["GatherResourceComplete"] = Shape(
+    kinds: [.object], required: ["resourceId", "response"],
+    members: ["resourceId": Shape(ref: "ResourceId"), "response": Shape(ref: "GatheredContext")])
+  shapes["GatherResourceFailed"] = Shape(
+    kinds: [.object],
+    allOf: [
+      Shape(ref: "CommandError"),
+      Shape(
+        kinds: [.object], required: ["resourceId"],
+        members: ["resourceId": Shape(ref: "ResourceId")]),
+    ])
+  shapes["GatherResourceRequest"] = Shape(
+    kinds: [.object], required: ["resourceId", "options"],
+    members: [
+      "options": Shape(ref: "GatherResourceRequestOptions"), "resourceId": Shape(ref: "ResourceId"),
+    ])
+  shapes["GatherResourceRequestOptions"] = Shape(
+    kinds: [.object], required: ["depth", "maxResources", "includeContent", "includeSummary"],
+    members: [
+      "depth": Shape(kinds: [.integer], minimum: 1.0, maximum: 3.0),
+      "excludeEntityTypes": Shape(kinds: [.array], items: Shape(kinds: [.string])),
+      "includeContent": Shape(kinds: [.boolean]), "includeSummary": Shape(kinds: [.boolean]),
+      "maxResources": Shape(kinds: [.integer], minimum: 1.0, maximum: 200.0),
+    ])
+  shapes["GatherSummaryRequest"] = Shape(
+    kinds: [.object], required: ["annotationId", "resourceId"],
+    members: ["annotationId": Shape(ref: "AnnotationId"), "resourceId": Shape(ref: "ResourceId")])
+  shapes["GatheredContext"] = Shape(
+    kinds: [.object], required: ["focus", "graph", "metadata"],
+    members: [
+      "focus": Shape(
+        kinds: [.object],
+        oneOf: [
+          Shape(
+            kinds: [.object], required: ["kind", "annotation", "sourceResource"],
+            members: [
+              "annotation": Shape(ref: "Annotation"),
+              "kind": Shape(kinds: [.string], enumeration: [.string("annotation")]),
+              "selected": Shape(
+                kinds: [.object], required: ["text"],
+                members: [
+                  "after": Shape(kinds: [.string]), "before": Shape(kinds: [.string]),
+                  "text": Shape(kinds: [.string]),
+                ]), "sourceResource": Shape(ref: "ResourceDescriptor"),
+              "targetContext": Shape(
+                kinds: [.object], required: ["content"],
+                members: ["content": Shape(kinds: [.string]), "summary": Shape(kinds: [.string])]),
+              "targetResource": Shape(ref: "ResourceDescriptor"),
+              "userHint": Shape(kinds: [.string]),
+            ]),
+          Shape(
+            kinds: [.object], required: ["kind", "resource"],
+            members: [
+              "content": Shape(
+                kinds: [.object],
+                members: [
+                  "main": Shape(kinds: [.string]),
+                  "related": Shape(kinds: [.object], values: Shape(kinds: [.string])),
+                ]), "kind": Shape(kinds: [.string], enumeration: [.string("resource")]),
+              "resource": Shape(ref: "ResourceDescriptor"),
+              "suggestedReferences": Shape(kinds: [.array], items: Shape(kinds: [.string])),
+              "summary": Shape(kinds: [.string]),
+            ]),
+        ]), "graph": Shape(ref: "KnowledgeGraph"),
+      "inferredRelationshipSummary": Shape(kinds: [.string]),
+      "metadata": Shape(
+        kinds: [.object],
+        members: [
+          "entityTypeFrequencies": Shape(kinds: [.object], values: Shape(kinds: [.integer])),
+          "entityTypes": Shape(kinds: [.array], items: Shape(kinds: [.string])),
+          "language": Shape(kinds: [.string]), "resourceType": Shape(kinds: [.string]),
+        ]),
+      "semanticContext": Shape(
+        kinds: [.object], required: ["similar"],
+        members: [
+          "excludedEntityTypes": Shape(kinds: [.array], items: Shape(kinds: [.string])),
+          "similar": Shape(kinds: [.array], items: Shape(ref: "SemanticMatch")),
+        ]),
+    ])
+  shapes["GenerationJobParams"] = Shape(
+    kinds: [.object],
+    allOf: [
+      Shape(ref: "GenerationJobRequest"),
+      Shape(
+        kinds: [.object], required: ["context"], members: ["context": Shape(ref: "GatheredContext")]
+      ),
+    ])
+  shapes["GenerationJobRequest"] = Shape(
+    kinds: [.object], required: ["title", "storageUri"],
+    members: [
+      "cite": Shape(kinds: [.boolean]),
+      "entityTypes": Shape(kinds: [.array], items: Shape(kinds: [.string])),
+      "language": Shape(kinds: [.string]), "maxTokens": Shape(kinds: [.number]),
+      "outputMediaType": Shape(ref: "SupportedMediaType"), "prompt": Shape(kinds: [.string]),
+      "sourceLanguage": Shape(kinds: [.string]),
+      "storageUri": Shape(kinds: [.string], minLength: 1), "structure": Shape(kinds: [.string]),
+      "task": Shape(kinds: [.string]), "temperature": Shape(kinds: [.number]),
+      "title": Shape(kinds: [.string], minLength: 1),
+    ])
+  shapes["GetAnnotationHistoryResponse"] = Shape(
+    kinds: [.object], required: ["events", "total", "annotationId", "resourceId"],
+    members: [
+      "annotationId": Shape(ref: "AnnotationId"),
+      "events": Shape(kinds: [.array], items: Shape(ref: "AttributedEvent")),
+      "resourceId": Shape(ref: "ResourceId"), "total": Shape(kinds: [.number]),
+    ])
+  shapes["GetAnnotationResponse"] = Shape(
+    kinds: [.object], required: ["annotation", "resource", "resolvedResource"],
+    members: [
+      "annotation": Shape(ref: "Annotation"),
+      "resolvedResource": Shape(
+        kinds: [.object, .null], oneOf: [Shape(kinds: [.null]), Shape(ref: "ResourceDescriptor")]),
+      "resource": Shape(
+        kinds: [.object, .null], oneOf: [Shape(kinds: [.null]), Shape(ref: "ResourceDescriptor")]),
+    ])
+  shapes["GetAnnotationsResponse"] = Shape(
+    kinds: [.object], required: ["annotations", "total"],
+    members: [
+      "annotations": Shape(kinds: [.array], items: Shape(ref: "Annotation")),
+      "motivation": Shape(
+        kinds: [.string, .null], oneOf: [Shape(kinds: [.null]), Shape(ref: "Motivation")]),
+      "total": Shape(kinds: [.number]),
+    ])
+  shapes["GetEntityTypesResponse"] = Shape(
+    kinds: [.object], required: ["entityTypes"],
+    members: ["entityTypes": Shape(kinds: [.array], items: Shape(kinds: [.string]))])
+  shapes["GetEventsResponse"] = Shape(
+    kinds: [.object], required: ["events", "total", "resourceId"],
+    members: [
+      "events": Shape(kinds: [.array], items: Shape(ref: "AttributedEvent")),
+      "resourceId": Shape(ref: "ResourceId"), "total": Shape(kinds: [.number]),
+    ])
+  shapes["GetReferencedByResponse"] = Shape(
+    kinds: [.object], required: ["referencedBy"],
+    members: [
+      "referencedBy": Shape(
+        kinds: [.array], items: Shape(ref: "GetReferencedByResponseReferencedByItem"))
+    ])
+  shapes["GetReferencedByResponseReferencedByItem"] = Shape(
+    kinds: [.object], required: ["id", "target"],
+    members: [
+      "id": Shape(ref: "AnnotationId"), "resourceName": Shape(kinds: [.string], minLength: 1),
+      "target": Shape(
+        kinds: [.object], required: ["source", "selector"],
+        members: [
+          "selector": Shape(
+            kinds: [.object], required: ["exact"], members: ["exact": Shape(kinds: [.string])]),
+          "source": Shape(ref: "ResourceId"),
+        ]),
+    ])
+  shapes["GetResourceByTokenResponse"] = Shape(
+    kinds: [.object], required: ["sourceResource", "expiresAt"],
+    members: [
+      "expiresAt": Shape(kinds: [.string]), "sourceResource": Shape(ref: "ResourceDescriptor"),
+    ])
+  shapes["GetResourceResponse"] = Shape(
+    kinds: [.object], required: ["resource", "annotations"],
+    members: [
+      "annotations": Shape(kinds: [.array], items: Shape(ref: "Annotation")),
+      "resource": Shape(ref: "ResourceDescriptor"),
+    ])
+  shapes["GetTagSchemasResponse"] = Shape(
+    kinds: [.object], required: ["tagSchemas"],
+    members: ["tagSchemas": Shape(kinds: [.array], items: Shape(ref: "TagSchema"))])
+  shapes["GraphAnnotationNode"] = Shape(
+    kinds: [.object], required: ["id", "type", "label", "annotation"],
+    members: [
+      "annotation": Shape(ref: "Annotation"),
+      "entityTypes": Shape(kinds: [.array], items: Shape(kinds: [.string])),
+      "id": Shape(ref: "AnnotationId"), "label": Shape(kinds: [.string]),
+      "metadata": Shape(kinds: [.object]),
+      "type": Shape(kinds: [.string], enumeration: [.string("annotation")]),
+    ])
+  shapes["GraphConfig"] = Shape(
+    kinds: [.object],
+    oneOf: [
+      Shape(ref: "Neo4jGraphConfig"), Shape(ref: "JanusGraphConfig"),
+      Shape(ref: "NeptuneGraphConfig"), Shape(ref: "MemoryGraphConfig"),
+    ],
+    discriminator: Discriminator(
+      property: "type", mapping: ["janusgraph": 1, "memory": 3, "neo4j": 0, "neptune": 2]))
+  shapes["GraphResourceNode"] = Shape(
+    kinds: [.object], required: ["id", "type", "label"],
+    members: [
+      "entityTypes": Shape(kinds: [.array], items: Shape(kinds: [.string])),
+      "id": Shape(ref: "ResourceId"), "label": Shape(kinds: [.string]),
+      "metadata": Shape(kinds: [.object]),
+      "type": Shape(kinds: [.string], enumeration: [.string("resource")]),
+    ])
+  shapes["HealthResponse"] = Shape(
+    kinds: [.object], required: ["status", "message", "version", "timestamp"],
+    members: [
+      "message": Shape(kinds: [.string]), "status": Shape(kinds: [.string]),
+      "timestamp": Shape(kinds: [.string]), "version": Shape(kinds: [.string]),
+    ])
+  shapes["HighlightingJobParams"] = Shape(
+    kinds: [.object], required: ["motivation"],
+    members: [
+      "density": Shape(kinds: [.number]), "instructions": Shape(kinds: [.string]),
+      "motivation": Shape(kinds: [.string], enumeration: [.string("highlighting")]),
+      "sourceLanguage": Shape(kinds: [.string]),
+    ], closed: ["density", "instructions", "motivation", "sourceLanguage"])
+  shapes["HttpEndpoint"] = Shape(
+    kinds: [.object], required: ["kind", "host", "port", "protocol"],
+    members: [
+      "host": Shape(kinds: [.string]),
+      "kind": Shape(kinds: [.string], enumeration: [.string("http")]),
+      "port": Shape(kinds: [.integer], minimum: 1.0, maximum: 65535.0),
+      "protocol": Shape(kinds: [.string], enumeration: [.string("http"), .string("https")]),
+    ])
+  shapes["InferenceLimits"] = Shape(
+    kinds: [.object], required: ["contextTokens", "maxOutputTokens"],
+    members: [
+      "acceptsTemperature": Shape(kinds: [.boolean]), "contextTokens": Shape(kinds: [.number]),
+      "maxOutputTokens": Shape(kinds: [.number]),
+    ])
+  shapes["InferenceLimitsRequest"] = Shape(kinds: [.object])
+  shapes["InferenceLimitsResult"] = Shape(
+    kinds: [.object], required: ["response"],
+    members: [
+      "response": Shape(
+        kinds: [.object], required: ["limits"],
+        members: ["limits": Shape(kinds: [.array], items: Shape(ref: "EngineLimits"))])
+    ])
+  shapes["JanusGraphConfig"] = Shape(
+    kinds: [.object], required: ["type", "host", "port"],
+    members: [
+      "host": Shape(kinds: [.string], minLength: 1),
+      "port": Shape(kinds: [.integer], minimum: 1.0, maximum: 65535.0),
+      "type": Shape(kinds: [.string], enumeration: [.string("janusgraph")]),
+    ], closed: ["host", "port", "type"])
+  shapes["Job"] = Shape(
+    kinds: [.object],
+    oneOf: [
+      Shape(ref: "JobPending"), Shape(ref: "JobRunning"), Shape(ref: "JobComplete"),
+      Shape(ref: "JobFailed"), Shape(ref: "JobCancelled"),
+    ],
+    discriminator: Discriminator(
+      property: "status",
+      mapping: ["cancelled": 4, "complete": 2, "failed": 3, "pending": 0, "running": 1]))
+  shapes["JobAssignCommand"] = Shape(
+    kinds: [.object], required: ["jobId", "jobType", "resourceId", "holder", "requester"],
+    members: [
+      "_userId": Shape(ref: "UserId"), "holder": Shape(ref: "UserId"), "jobId": Shape(ref: "JobId"),
+      "jobType": Shape(ref: "JobType"), "requester": Shape(ref: "UserId"),
+      "resourceId": Shape(ref: "ResourceId"),
+    ])
+  shapes["JobAssignedPayload"] = Shape(
+    kinds: [.object], required: ["jobId", "jobType", "resourceId", "holder", "requester"],
+    members: [
+      "holder": Shape(ref: "UserId"), "jobId": Shape(ref: "JobId"),
+      "jobType": Shape(ref: "JobType"), "requester": Shape(ref: "UserId"),
+      "resourceId": Shape(ref: "ResourceId"),
+    ])
+  shapes["JobCancelCommand"] = Shape(
+    kinds: [.object], required: ["resourceId", "jobId", "jobType"],
+    members: [
+      "_userId": Shape(ref: "UserId"), "annotationId": Shape(ref: "AnnotationId"),
+      "completedUnits": Shape(kinds: [.array], items: Shape(kinds: [.string])),
+      "jobId": Shape(ref: "JobId"), "jobType": Shape(ref: "JobType"),
+      "resourceId": Shape(ref: "ResourceId"),
+      "unitCursors": Shape(kinds: [.object], values: Shape(ref: "UnitCursor")),
+    ])
+  shapes["JobCancelRequest"] = Shape(
+    kinds: [.object], required: ["jobId"], members: ["jobId": Shape(ref: "JobId")])
+  shapes["JobCancelResult"] = Shape(
+    kinds: [.object], required: ["cancelled"], members: ["cancelled": Shape(kinds: [.boolean])])
+  shapes["JobCancelled"] = Shape(
+    kinds: [.object], required: ["status", "metadata", "params", "completedAt"],
+    members: [
+      "completedAt": Shape(kinds: [.string]), "metadata": Shape(ref: "JobMetadata"),
+      "params": Shape(ref: "JobParams"), "startedAt": Shape(kinds: [.string]),
+      "status": Shape(kinds: [.string], enumeration: [.string("cancelled")]),
+    ], closed: ["completedAt", "metadata", "params", "startedAt", "status"])
+  shapes["JobCheckpointCommand"] = Shape(
+    kinds: [.object], required: ["jobId", "completedUnits"],
+    members: [
+      "_userId": Shape(ref: "UserId"),
+      "completedUnits": Shape(kinds: [.array], items: Shape(kinds: [.string])),
+      "jobId": Shape(ref: "JobId"),
+      "unitCursors": Shape(kinds: [.object], values: Shape(ref: "UnitCursor")),
+    ])
+  shapes["JobClaimCommand"] = Shape(
+    kinds: [.object], required: ["accepts"],
+    members: [
+      "_roles": Shape(kinds: [.array], items: Shape(kinds: [.string])),
+      "_userId": Shape(ref: "UserId"),
+      "accepts": Shape(kinds: [.array], minItems: 1, items: Shape(ref: "JobFilter")),
+    ])
+  shapes["JobClaimedResult"] = Shape(
+    kinds: [.object], required: ["response"], members: ["response": Shape(ref: "JobRunning")],
+    closed: ["response"])
+  shapes["JobComplete"] = Shape(
+    kinds: [.object],
+    required: ["status", "metadata", "params", "startedAt", "completedAt", "result"],
+    members: [
+      "completedAt": Shape(kinds: [.string]), "metadata": Shape(ref: "JobMetadata"),
+      "params": Shape(ref: "JobParams"), "result": Shape(ref: "JobStoredResult"),
+      "startedAt": Shape(kinds: [.string]),
+      "status": Shape(kinds: [.string], enumeration: [.string("complete")]),
+    ], closed: ["completedAt", "metadata", "params", "result", "startedAt", "status"])
+  shapes["JobCompleteCommand"] = Shape(
+    kinds: [.object],
+    oneOf: [Shape(ref: "MarkJobCompleteCommand"), Shape(ref: "YieldJobCompleteCommand")],
+    discriminator: Discriminator(property: "jobType", mapping: ["mark": 0, "yield": 1]))
+  shapes["JobCompletedPayload"] = Shape(
+    kinds: [.object], required: ["jobId", "jobType"],
+    members: [
+      "annotationId": Shape(ref: "AnnotationId"), "annotationUri": Shape(kinds: [.string]),
+      "attempt": Shape(kinds: [.integer]), "durability": Shape(ref: "DurabilityEvidence"),
+      "foundCount": Shape(kinds: [.integer]), "jobId": Shape(ref: "JobId"),
+      "jobType": Shape(ref: "JobType"), "result": Shape(kinds: [.object]),
+      "resultResourceId": Shape(ref: "ResourceId"), "totalSteps": Shape(kinds: [.integer]),
+    ])
+  shapes["JobCreateCommand"] = Shape(
+    kinds: [.object],
+    oneOf: [Shape(ref: "MarkJobCreateCommand"), Shape(ref: "YieldJobCreateCommand")],
+    discriminator: Discriminator(property: "jobType", mapping: ["mark": 0, "yield": 1]))
+  shapes["JobCreatedResult"] = Shape(
+    kinds: [.object], required: ["response"],
+    members: ["response": Shape(ref: "JobCreatedResultResponse")])
+  shapes["JobCreatedResultResponse"] = Shape(
+    kinds: [.object], required: ["jobId"], members: ["jobId": Shape(ref: "JobId")])
+  shapes["JobDeclined"] = Shape(
+    kinds: [.object], required: ["declined", "reason"],
+    members: [
+      "declined": Shape(kinds: [.boolean], enumeration: [.bool(true)]),
+      "reason": Shape(
+        kinds: [.string],
+        enumeration: [
+          .string("no-text-layer"), .string("encrypted"), .string("corrupt"), .string("too-large"),
+          .string("empty"),
+        ]),
+    ], closed: ["declined", "reason"])
+  shapes["JobFailCommand"] = Shape(
+    kinds: [.object], required: ["resourceId", "jobId", "jobType", "error"],
+    members: [
+      "_userId": Shape(ref: "UserId"), "annotationId": Shape(ref: "AnnotationId"),
+      "attempt": Shape(kinds: [.integer]),
+      "completedUnits": Shape(kinds: [.array], items: Shape(kinds: [.string])),
+      "durability": Shape(ref: "DurabilityEvidence"), "error": Shape(kinds: [.string]),
+      "failureClass": Shape(ref: "FailureClass"), "jobId": Shape(ref: "JobId"),
+      "jobType": Shape(ref: "JobType"), "resourceId": Shape(ref: "ResourceId"),
+      "unitCursors": Shape(kinds: [.object], values: Shape(ref: "UnitCursor")),
+      "willRetry": Shape(kinds: [.boolean]),
+    ])
+  shapes["JobFailed"] = Shape(
+    kinds: [.object], required: ["status", "metadata", "params", "completedAt", "error"],
+    members: [
+      "completedAt": Shape(kinds: [.string]), "error": Shape(kinds: [.string]),
+      "failureClass": Shape(ref: "FailureClass"), "metadata": Shape(ref: "JobMetadata"),
+      "params": Shape(ref: "JobParams"), "startedAt": Shape(kinds: [.string]),
+      "status": Shape(kinds: [.string], enumeration: [.string("failed")]),
+    ],
+    closed: ["completedAt", "error", "failureClass", "metadata", "params", "startedAt", "status"])
+  shapes["JobFailedPayload"] = Shape(
+    kinds: [.object], required: ["jobId", "jobType", "error"],
+    members: [
+      "annotationId": Shape(ref: "AnnotationId"), "attempt": Shape(kinds: [.integer]),
+      "durability": Shape(ref: "DurabilityEvidence"), "error": Shape(kinds: [.string]),
+      "failureClass": Shape(ref: "FailureClass"), "jobId": Shape(ref: "JobId"),
+      "jobType": Shape(ref: "JobType"), "willRetry": Shape(kinds: [.boolean]),
+    ])
+  shapes["JobFilter"] = Shape(
+    kinds: [.object], oneOf: [Shape(ref: "MarkJobFilter"), Shape(ref: "YieldJobFilter")],
+    discriminator: Discriminator(property: "jobType", mapping: ["mark": 0, "yield": 1]))
+  shapes["JobId"] = Shape(
+    kinds: [.string],
+    pattern: [Step(of: [45...45, 48...57, 65...90, 95...95, 97...122], min: 1, max: 128)])
+  shapes["JobMetadata"] = Shape(
+    kinds: [.object], required: ["id", "type", "userId", "created", "retryCount", "maxRetries"],
+    members: [
+      "completedUnits": Shape(kinds: [.array], items: Shape(kinds: [.string])),
+      "created": Shape(kinds: [.string]), "id": Shape(ref: "JobId"),
+      "maxRetries": Shape(kinds: [.integer], minimum: 0.0),
+      "retryCount": Shape(kinds: [.integer], minimum: 0.0), "type": Shape(ref: "JobType"),
+      "unitCursors": Shape(kinds: [.object], values: Shape(ref: "UnitCursor")),
+      "userId": Shape(ref: "UserId"),
+    ],
+    closed: [
+      "completedUnits", "created", "id", "maxRetries", "retryCount", "type", "unitCursors",
+      "userId",
+    ])
+  shapes["JobParams"] = Shape(
+    kinds: [.object], required: ["resourceId"],
+    members: ["resourceId": Shape(ref: "ResourceId"), "schema": Shape(ref: "TagSchema")])
+  shapes["JobPending"] = Shape(
+    kinds: [.object], required: ["status", "metadata", "params"],
+    members: [
+      "metadata": Shape(ref: "JobMetadata"), "params": Shape(ref: "JobParams"),
+      "status": Shape(kinds: [.string], enumeration: [.string("pending")]),
+    ], closed: ["metadata", "params", "status"])
+  shapes["JobProgress"] = Shape(
+    kinds: [.object], required: ["percentage"],
+    members: [
+      "annotationId": Shape(ref: "AnnotationId"),
+      "completedItems": Shape(
+        kinds: [.array],
+        items: Shape(
+          kinds: [.object], required: ["value", "foundCount"],
+          members: [
+            "foundCount": Shape(kinds: [.integer]), "persistedCount": Shape(kinds: [.integer]),
+            "underReported": Shape(
+              kinds: [.object], required: ["pieces", "found", "counted"],
+              members: [
+                "counted": Shape(kinds: [.integer]), "found": Shape(kinds: [.integer]),
+                "pieces": Shape(kinds: [.integer]),
+              ]), "value": Shape(kinds: [.string]),
+          ])),
+      "current": Shape(
+        kinds: [.object], required: ["kind", "value"],
+        members: [
+          "kind": Shape(
+            kinds: [.string], enumeration: [.string("entity-type"), .string("category")]),
+          "value": Shape(kinds: [.string]),
+        ]), "entitiesEmitted": Shape(kinds: [.integer]),
+      "entitiesExpected": Shape(kinds: [.integer]), "entitiesFound": Shape(kinds: [.integer]),
+      "message": Shape(ref: "JobProgressMessage"), "percentage": Shape(kinds: [.number]),
+      "processed": Shape(kinds: [.integer]),
+      "requestParams": Shape(
+        kinds: [.array],
+        items: Shape(
+          kinds: [.object], required: ["label", "value"],
+          members: [
+            "label": Shape(
+              kinds: [.string],
+              enumeration: [
+                .string("entity-types"), .string("instructions"), .string("tone"),
+                .string("density"),
+              ]), "value": Shape(kinds: [.string]),
+          ])), "total": Shape(kinds: [.integer]),
+    ])
+  shapes["JobProgressAnalyzing"] = Shape(
+    kinds: [.object], required: ["code"],
+    members: ["code": Shape(kinds: [.string], enumeration: [.string("analyzing")])])
+  shapes["JobProgressAnalyzingTags"] = Shape(
+    kinds: [.object], required: ["code"],
+    members: ["code": Shape(kinds: [.string], enumeration: [.string("analyzing-tags")])])
+  shapes["JobProgressCompleteCreated"] = Shape(
+    kinds: [.object], required: ["code", "count", "motivation"],
+    members: [
+      "code": Shape(kinds: [.string], enumeration: [.string("complete-created")]),
+      "count": Shape(kinds: [.integer]), "motivation": Shape(ref: "Motivation"),
+    ])
+  shapes["JobProgressCompleteGenerated"] = Shape(
+    kinds: [.object], required: ["code", "truncated"],
+    members: [
+      "code": Shape(kinds: [.string], enumeration: [.string("complete-generated")]),
+      "truncated": Shape(kinds: [.boolean]),
+    ])
+  shapes["JobProgressCreatingAnnotations"] = Shape(
+    kinds: [.object], required: ["code", "count"],
+    members: [
+      "code": Shape(kinds: [.string], enumeration: [.string("creating-annotations")]),
+      "count": Shape(kinds: [.integer]),
+    ])
+  shapes["JobProgressCreatingResource"] = Shape(
+    kinds: [.object], required: ["code"],
+    members: ["code": Shape(kinds: [.string], enumeration: [.string("creating-resource")])])
+  shapes["JobProgressCreatingTagAnnotations"] = Shape(
+    kinds: [.object], required: ["code", "count"],
+    members: [
+      "code": Shape(kinds: [.string], enumeration: [.string("creating-tag-annotations")]),
+      "count": Shape(kinds: [.integer]),
+    ])
+  shapes["JobProgressDetectingEntities"] = Shape(
+    kinds: [.object], required: ["code", "entityType"],
+    members: [
+      "code": Shape(kinds: [.string], enumeration: [.string("detecting-entities")]),
+      "entityType": Shape(kinds: [.string]),
+    ])
+  shapes["JobProgressGeneratingResource"] = Shape(
+    kinds: [.object], required: ["code"],
+    members: ["code": Shape(kinds: [.string], enumeration: [.string("generating-resource")])])
+  shapes["JobProgressLoading"] = Shape(
+    kinds: [.object], required: ["code"],
+    members: ["code": Shape(kinds: [.string], enumeration: [.string("loading")])])
+  shapes["JobProgressMessage"] = Shape(
+    kinds: [.object],
+    oneOf: [
+      Shape(ref: "JobProgressLoading"), Shape(ref: "JobProgressAnalyzing"),
+      Shape(ref: "JobProgressAnalyzingTags"), Shape(ref: "JobProgressGeneratingResource"),
+      Shape(ref: "JobProgressCreatingResource"), Shape(ref: "JobProgressCompleteGenerated"),
+      Shape(ref: "JobProgressDetectingEntities"), Shape(ref: "JobProgressCreatingAnnotations"),
+      Shape(ref: "JobProgressCreatingTagAnnotations"), Shape(ref: "JobProgressCompleteCreated"),
+    ],
+    discriminator: Discriminator(
+      property: "code",
+      mapping: [
+        "analyzing": 1, "analyzing-tags": 2, "complete-created": 9, "complete-generated": 5,
+        "creating-annotations": 7, "creating-resource": 4, "creating-tag-annotations": 8,
+        "detecting-entities": 6, "generating-resource": 3, "loading": 0,
+      ]))
+  shapes["JobQueuedEvent"] = Shape(
+    kinds: [.object], oneOf: [Shape(ref: "MarkJobQueuedEvent"), Shape(ref: "YieldJobQueuedEvent")],
+    discriminator: Discriminator(property: "jobType", mapping: ["mark": 0, "yield": 1]))
+  shapes["JobRecord"] = Shape(
+    kinds: [.object], required: ["job", "lastProgressAt"],
+    members: ["job": Shape(ref: "Job"), "lastProgressAt": Shape(kinds: [.string])],
+    closed: ["job", "lastProgressAt"])
+  shapes["JobReportProgressCommand"] = Shape(
+    kinds: [.object], required: ["resourceId", "jobId", "jobType", "percentage"],
+    members: [
+      "_userId": Shape(ref: "UserId"), "annotationId": Shape(ref: "AnnotationId"),
+      "attempt": Shape(kinds: [.integer]), "jobId": Shape(ref: "JobId"),
+      "jobType": Shape(ref: "JobType"), "percentage": Shape(kinds: [.number]),
+      "progress": Shape(ref: "JobProgress"), "resourceId": Shape(ref: "ResourceId"),
+    ])
+  shapes["JobResult"] = Shape(
+    kinds: [.object],
+    oneOf: [Shape(ref: "MarkJobDone"), Shape(ref: "YieldJobDone"), Shape(ref: "JobDeclined")])
+  shapes["JobRunning"] = Shape(
+    kinds: [.object], required: ["status", "metadata", "params", "startedAt", "progress"],
+    members: [
+      "metadata": Shape(ref: "JobMetadata"), "params": Shape(ref: "JobParams"),
+      "progress": Shape(ref: "JobStoredProgress"), "startedAt": Shape(kinds: [.string]),
+      "status": Shape(kinds: [.string], enumeration: [.string("running")]),
+    ], closed: ["metadata", "params", "progress", "startedAt", "status"])
+  shapes["JobStartCommand"] = Shape(
+    kinds: [.object], required: ["resourceId", "jobId", "jobType"],
+    members: [
+      "_userId": Shape(ref: "UserId"), "annotationId": Shape(ref: "AnnotationId"),
+      "attempt": Shape(kinds: [.integer]), "jobId": Shape(ref: "JobId"),
+      "jobType": Shape(ref: "JobType"), "resourceId": Shape(ref: "ResourceId"),
+    ])
+  shapes["JobStartedPayload"] = Shape(
+    kinds: [.object], required: ["jobId", "jobType"],
+    members: [
+      "annotationId": Shape(ref: "AnnotationId"), "jobId": Shape(ref: "JobId"),
+      "jobType": Shape(ref: "JobType"), "totalSteps": Shape(kinds: [.integer]),
+    ])
+  shapes["JobStatusRequest"] = Shape(
+    kinds: [.object], required: ["jobId"], members: ["jobId": Shape(ref: "JobId")])
+  shapes["JobStatusResponse"] = Shape(
+    kinds: [.object], required: ["jobId", "type", "status", "userId", "created"],
+    members: [
+      "completedAt": Shape(kinds: [.string]), "created": Shape(kinds: [.string]),
+      "error": Shape(kinds: [.string]), "failureClass": Shape(ref: "FailureClass"),
+      "jobId": Shape(ref: "JobId"), "progress": Shape(ref: "JobStoredProgress"),
+      "result": Shape(ref: "JobStoredResult"), "startedAt": Shape(kinds: [.string]),
+      "status": Shape(
+        kinds: [.string],
+        enumeration: [
+          .string("pending"), .string("running"), .string("complete"), .string("failed"),
+          .string("cancelled"),
+        ]), "type": Shape(ref: "JobType"), "userId": Shape(ref: "UserId"),
+    ])
+  shapes["JobStatusResult"] = Shape(
+    kinds: [.object], required: ["response"], members: ["response": Shape(ref: "JobStatusResponse")]
+  )
+  shapes["JobStoredProgress"] = Shape(
+    kinds: [.object], oneOf: [Shape(ref: "JobProgress"), Shape(kinds: [.object], closed: [])])
+  shapes["JobStoredResult"] = Shape(
+    kinds: [.object], oneOf: [Shape(ref: "JobResult"), Shape(kinds: [.object], closed: [])])
+  shapes["JobType"] = Shape(kinds: [.string], enumeration: [.string("mark"), .string("yield")])
+  shapes["KbDescription"] = Shape(
+    kinds: [.object], required: ["name", "domain"],
+    members: [
+      "domain": Shape(kinds: [.string]), "gitBranch": Shape(kinds: [.string]),
+      "name": Shape(kinds: [.string]),
+    ])
+  shapes["KbEndpoint"] = Shape(
+    kinds: [.object], oneOf: [Shape(ref: "HttpEndpoint"), Shape(ref: "LocalEndpoint")],
+    discriminator: Discriminator(property: "kind", mapping: ["http": 0, "local": 1]))
+  shapes["KbIdentity"] = Shape(
+    kinds: [.object], required: ["name", "domain"],
+    members: [
+      "domain": Shape(
+        kinds: [.string],
+        pattern: [
+          Step(
+            of: [
+              0...8, 14...31, 33...159, 161...5759, 5761...8191, 8203...8231, 8234...8238,
+              8240...8286, 8288...12287, 12289...65278, 65280...1_114_111,
+            ], min: 1, max: nil)
+        ], minLength: 1), "name": Shape(kinds: [.string], minLength: 1),
+    ], closed: ["domain", "name"])
+  shapes["KbRead"] = Shape(
+    kinds: [.object], required: ["at"],
+    members: ["at": Shape(kinds: [.string]), "gitBranch": Shape(kinds: [.string])])
+  shapes["KbTarget"] = Shape(
+    kinds: [.object], required: ["id", "label", "endpoint"],
+    members: [
+      "endpoint": Shape(ref: "KbEndpoint"), "id": Shape(kinds: [.string]),
+      "label": Shape(kinds: [.string]),
+    ])
+  shapes["KnowledgeBase"] = Shape(
+    kinds: [.object], allOf: [Shape(ref: "KbTarget"), Shape(ref: "NewKnowledgeBase")])
+  shapes["KnowledgeGraph"] = Shape(
+    kinds: [.object], required: ["nodes", "edges"],
+    members: [
+      "edges": Shape(
+        kinds: [.array],
+        items: Shape(
+          kinds: [.object], required: ["source", "target", "type"],
+          members: [
+            "bidirectional": Shape(kinds: [.boolean]), "metadata": Shape(kinds: [.object]),
+            "source": Shape(kinds: [.string]), "target": Shape(kinds: [.string]),
+            "type": Shape(kinds: [.string]),
+          ])),
+      "nodes": Shape(
+        kinds: [.array],
+        items: Shape(
+          kinds: [.object],
+          oneOf: [Shape(ref: "GraphResourceNode"), Shape(ref: "GraphAnnotationNode")],
+          discriminator: Discriminator(property: "type", mapping: ["annotation": 1, "resource": 0]))
+      ), "truncated": Shape(kinds: [.boolean]),
+    ])
+  shapes["LibrarianConfig"] = Shape(
+    kinds: [.object],
+    required: [
+      "kb", "gatewayUrl", "identity", "archivist", "graph", "vectors", "embedding", "matcher",
+      "gatherer", "modelCatalogue", "gather", "search", "port", "logLevel", "logFormat",
+    ],
+    members: [
+      "archivist": Shape(
+        kinds: [.object], required: ["host", "port"],
+        members: [
+          "host": Shape(kinds: [.string], minLength: 1),
+          "port": Shape(kinds: [.integer], minimum: 1.0, maximum: 65535.0),
+        ], closed: ["host", "port"]), "embedding": Shape(ref: "EmbeddingConfig"),
+      "gatewayUrl": Shape(kinds: [.string], minLength: 1),
+      "gather": Shape(
+        kinds: [.object], required: ["settleTimeoutMs"],
+        members: ["settleTimeoutMs": Shape(kinds: [.integer], minimum: 1.0)],
+        closed: ["settleTimeoutMs"]), "gatherer": Shape(ref: "LibrarianEngineConfig"),
+      "graph": Shape(ref: "GraphConfig"),
+      "identity": Shape(
+        kinds: [.object], required: ["issuer"],
+        members: ["issuer": Shape(kinds: [.string], minLength: 1)], closed: ["issuer"]),
+      "kb": Shape(ref: "KbIdentity"), "logFormat": Shape(ref: "LogFormat"),
+      "logLevel": Shape(ref: "LogLevel"), "matcher": Shape(ref: "LibrarianEngineConfig"),
+      "modelCatalogue": Shape(kinds: [.string], minLength: 1),
+      "port": Shape(kinds: [.integer], minimum: 1.0, maximum: 65535.0),
+      "search": Shape(
+        kinds: [.object], required: ["semanticFloor"],
+        members: ["semanticFloor": Shape(kinds: [.number], minimum: 0.0, maximum: 1.0)],
+        closed: ["semanticFloor"]), "vectors": Shape(ref: "VectorsConfig"),
+    ],
+    closed: [
+      "archivist", "embedding", "gatewayUrl", "gather", "gatherer", "graph", "identity", "kb",
+      "logFormat", "logLevel", "matcher", "modelCatalogue", "port", "search", "vectors",
+    ])
+  shapes["LibrarianEngineConfig"] = Shape(
+    kinds: [.object], required: ["engine", "baseUrl"],
+    members: [
+      "apiKeyEnv": Shape(kinds: [.string], minLength: 1),
+      "baseUrl": Shape(kinds: [.string], minLength: 1), "engine": Shape(ref: "Engine"),
+    ], closed: ["apiKeyEnv", "baseUrl", "engine"])
+  shapes["LimitRefusal"] = Shape(
+    kinds: [.object],
+    allOf: [
+      Shape(ref: "ErrorResponse"),
+      Shape(
+        kinds: [.object], required: ["code"],
+        members: [
+          "code": Shape(
+            kinds: [.string],
+            enumeration: [
+              .string("streams"), .string("emit-rate"), .string("unanswered-requests"),
+              .string("capacity"), .string("refusal-rate"),
+            ])
+        ]),
+    ])
+  shapes["LinkingJobParams"] = Shape(
+    kinds: [.object], required: ["motivation", "entityTypes"],
+    members: [
+      "entityTypes": Shape(kinds: [.array], minItems: 1, items: Shape(kinds: [.string])),
+      "includeDescriptiveReferences": Shape(kinds: [.boolean]), "language": Shape(kinds: [.string]),
+      "motivation": Shape(kinds: [.string], enumeration: [.string("linking")]),
+      "sourceLanguage": Shape(kinds: [.string]),
+    ],
+    closed: [
+      "entityTypes", "includeDescriptiveReferences", "language", "motivation", "sourceLanguage",
+    ])
+  shapes["ListResourcesResponse"] = Shape(
+    kinds: [.object], required: ["resources", "total", "offset", "limit"],
+    members: [
+      "limit": Shape(kinds: [.number]), "offset": Shape(kinds: [.number]),
+      "resources": Shape(kinds: [.array], items: Shape(ref: "ResourceDescriptor")),
+      "total": Shape(kinds: [.number]),
+    ])
+  shapes["LocalEndpoint"] = Shape(
+    kinds: [.object], required: ["kind", "kbId"],
+    members: [
+      "kbId": Shape(kinds: [.string]),
+      "kind": Shape(kinds: [.string], enumeration: [.string("local")]),
+    ])
+  shapes["LogFormat"] = Shape(kinds: [.string], enumeration: [.string("json"), .string("simple")])
+  shapes["LogLevel"] = Shape(
+    kinds: [.string],
+    enumeration: [
+      .string("error"), .string("warn"), .string("info"), .string("http"), .string("debug"),
+    ])
+  shapes["MarkArchiveCommand"] = Shape(
+    kinds: [.object], required: ["resourceId"],
+    members: [
+      "_userId": Shape(ref: "UserId"), "keepFile": Shape(kinds: [.boolean]),
+      "resourceId": Shape(ref: "ResourceId"), "storageUri": Shape(kinds: [.string]),
+    ])
+  shapes["MarkCommitCommand"] = Shape(
+    kinds: [.object], required: ["resourceId", "annotations"],
+    members: [
+      "_roles": Shape(kinds: [.array], items: Shape(kinds: [.string])),
+      "_userId": Shape(ref: "UserId"),
+      "annotations": Shape(kinds: [.array], items: Shape(ref: "Annotation")),
+      "jobId": Shape(ref: "JobId"), "resourceId": Shape(ref: "ResourceId"),
+    ])
+  shapes["MarkCommitOk"] = Shape(
+    kinds: [.object], required: ["response"],
+    members: [
+      "response": Shape(
+        kinds: [.object], required: ["persisted", "annotationIds"],
+        members: [
+          "annotationIds": Shape(kinds: [.array], items: Shape(ref: "AnnotationId")),
+          "persisted": Shape(kinds: [.integer]),
+        ])
+    ])
+  shapes["MarkCreateOk"] = Shape(
+    kinds: [.object], required: ["response"],
+    members: ["response": Shape(ref: "MarkCreateOkResponse")])
+  shapes["MarkCreateOkResponse"] = Shape(
+    kinds: [.object], required: ["annotationId"],
+    members: ["annotationId": Shape(ref: "AnnotationId")])
+  shapes["MarkCreateRequest"] = Shape(
+    kinds: [.object], required: ["resourceId", "request"],
+    members: [
+      "request": Shape(ref: "CreateAnnotationRequest"), "resourceId": Shape(ref: "ResourceId"),
+    ])
+  shapes["MarkDelegateTimeoutEvent"] = Shape(
+    kinds: [.object], required: ["resourceId", "motivation"],
+    members: ["motivation": Shape(ref: "Motivation"), "resourceId": Shape(ref: "ResourceId")])
+  shapes["MarkDeleteCommand"] = Shape(
+    kinds: [.object], required: ["annotationId"],
+    members: [
+      "_userId": Shape(ref: "UserId"), "annotationId": Shape(ref: "AnnotationId"),
+      "resourceId": Shape(ref: "ResourceId"),
+    ])
+  shapes["MarkDeleteOk"] = Shape(
+    kinds: [.object], required: ["response"],
+    members: [
+      "response": Shape(
+        kinds: [.object], required: ["annotationId"],
+        members: ["annotationId": Shape(ref: "AnnotationId")])
+    ])
+  shapes["MarkJobCompleteCommand"] = Shape(
+    kinds: [.object], required: ["resourceId", "jobId", "jobType"],
+    members: [
+      "_userId": Shape(ref: "UserId"), "attempt": Shape(kinds: [.integer]),
+      "durability": Shape(ref: "DurabilityEvidence"), "jobId": Shape(ref: "JobId"),
+      "jobType": Shape(kinds: [.string], enumeration: [.string("mark")]),
+      "resourceId": Shape(ref: "ResourceId"), "result": Shape(ref: "MarkJobResult"),
+    ])
+  shapes["MarkJobCreateCommand"] = Shape(
+    kinds: [.object], required: ["jobType", "resourceId", "params"],
+    members: [
+      "_roles": Shape(kinds: [.array], items: Shape(kinds: [.string])),
+      "_userId": Shape(ref: "UserId"),
+      "jobType": Shape(kinds: [.string], enumeration: [.string("mark")]),
+      "params": Shape(ref: "MarkJobParams"), "resourceId": Shape(ref: "ResourceId"),
+    ], closed: ["_roles", "_userId", "jobType", "params", "resourceId"])
+  shapes["MarkJobDone"] = Shape(
+    kinds: [.object], required: ["found", "persisted"],
+    members: [
+      "byCategory": Shape(kinds: [.object], values: Shape(kinds: [.integer])),
+      "errors": Shape(kinds: [.integer], minimum: 1.0),
+      "found": Shape(kinds: [.integer], minimum: 0.0),
+      "persisted": Shape(kinds: [.integer], minimum: 0.0),
+      "uncheckedPieces": Shape(kinds: [.integer], minimum: 1.0),
+      "underReportedPieces": Shape(kinds: [.integer]),
+    ],
+    closed: [
+      "byCategory", "errors", "found", "persisted", "uncheckedPieces", "underReportedPieces",
+    ])
+  shapes["MarkJobFilter"] = Shape(
+    kinds: [.object], required: ["jobType", "params"],
+    members: [
+      "jobType": Shape(kinds: [.string], enumeration: [.string("mark")]),
+      "params": Shape(
+        kinds: [.object], required: ["motivation"],
+        members: ["motivation": Shape(ref: "Motivation")], closed: ["motivation"]),
+    ], closed: ["jobType", "params"])
+  shapes["MarkJobParams"] = Shape(
+    kinds: [.object],
+    oneOf: [
+      Shape(ref: "HighlightingJobParams"), Shape(ref: "CommentingJobParams"),
+      Shape(ref: "AssessingJobParams"), Shape(ref: "LinkingJobParams"),
+      Shape(ref: "TaggingJobParams"),
+    ],
+    discriminator: Discriminator(
+      property: "motivation",
+      mapping: ["assessing": 2, "commenting": 1, "highlighting": 0, "linking": 3, "tagging": 4]))
+  shapes["MarkJobQueuedEvent"] = Shape(
+    kinds: [.object], required: ["jobId", "jobType", "resourceId", "userId", "params"],
+    members: [
+      "jobId": Shape(ref: "JobId"),
+      "jobType": Shape(kinds: [.string], enumeration: [.string("mark")]),
+      "params": Shape(ref: "MarkJobParams"), "resourceId": Shape(ref: "ResourceId"),
+      "userId": Shape(ref: "UserId"),
+    ])
+  shapes["MarkJobResult"] = Shape(
+    kinds: [.object], oneOf: [Shape(ref: "MarkJobDone"), Shape(ref: "JobDeclined")])
+  shapes["MarkRequestedEvent"] = Shape(
+    kinds: [.object], required: ["source", "selector", "motivation"],
+    members: [
+      "motivation": Shape(ref: "Motivation"), "selector": Shape(ref: "AnnotationSelector"),
+      "source": Shape(ref: "ResourceId"),
+    ])
+  shapes["MarkSubmitEvent"] = Shape(
+    kinds: [.object], required: ["source", "motivation", "selector"],
+    members: [
+      "body": Shape(ref: "AnnotationBodies"), "motivation": Shape(ref: "Motivation"),
+      "selector": Shape(ref: "AnnotationSelector"), "source": Shape(ref: "ResourceId"),
+    ])
+  shapes["MarkUnarchiveCommand"] = Shape(
+    kinds: [.object], required: ["resourceId"],
+    members: [
+      "_userId": Shape(ref: "UserId"), "resourceId": Shape(ref: "ResourceId"),
+      "storageUri": Shape(kinds: [.string]),
+    ])
+  shapes["MarkUpdateBodyCommand"] = Shape(
+    kinds: [.object], required: ["annotationId", "resourceId", "operations"],
+    members: [
+      "_userId": Shape(ref: "UserId"), "annotationId": Shape(ref: "AnnotationId"),
+      "operations": Shape(
+        kinds: [.array],
+        items: Shape(
+          kinds: [.object],
+          oneOf: [
+            Shape(ref: "BodyOperationAdd"), Shape(ref: "BodyOperationRemove"),
+            Shape(ref: "BodyOperationReplace"),
+          ])), "resourceId": Shape(ref: "ResourceId"),
+    ])
+  shapes["MarkUpdateEntityTypesCommand"] = Shape(
+    kinds: [.object], required: ["resourceId", "currentEntityTypes", "updatedEntityTypes"],
+    members: [
+      "_userId": Shape(ref: "UserId"),
+      "currentEntityTypes": Shape(kinds: [.array], items: Shape(kinds: [.string])),
+      "resourceId": Shape(ref: "ResourceId"),
+      "updatedEntityTypes": Shape(kinds: [.array], items: Shape(kinds: [.string])),
+    ])
+  shapes["MatchResourcesRequest"] = Shape(
+    kinds: [.object], required: ["search"],
+    members: [
+      "archived": Shape(kinds: [.boolean]), "entityType": Shape(kinds: [.string]),
+      "limit": Shape(kinds: [.integer], minimum: 1.0, maximum: 200.0),
+      "offset": Shape(kinds: [.integer], minimum: 0.0), "search": Shape(kinds: [.string]),
+    ])
+  shapes["MatchResourcesResponse"] = Shape(
+    kinds: [.object], required: ["resources", "total", "offset", "limit", "matchKind"],
+    members: [
+      "limit": Shape(kinds: [.integer], minimum: 1.0),
+      "matchKind": Shape(kinds: [.string], enumeration: [.string("lexical"), .string("semantic")]),
+      "offset": Shape(kinds: [.integer], minimum: 0.0),
+      "resources": Shape(kinds: [.array], items: Shape(ref: "ResourceDescriptor")),
+      "total": Shape(kinds: [.integer], minimum: 0.0),
+    ])
+  shapes["MatchResourcesResult"] = Shape(
+    kinds: [.object], required: ["response"],
+    members: ["response": Shape(ref: "MatchResourcesResponse")])
+  shapes["MatchSearchFailed"] = Shape(
+    kinds: [.object],
+    allOf: [
+      Shape(ref: "CommandError"),
+      Shape(
+        kinds: [.object], required: ["referenceId"],
+        members: ["referenceId": Shape(ref: "AnnotationId")]),
+    ])
+  shapes["MatchSearchRequest"] = Shape(
+    kinds: [.object], required: ["resourceId", "referenceId", "context"],
+    members: [
+      "context": Shape(ref: "GatheredContext"),
+      "limit": Shape(kinds: [.integer], minimum: 1.0, maximum: 200.0),
+      "referenceId": Shape(ref: "AnnotationId"), "resourceId": Shape(ref: "ResourceId"),
+      "useSemanticScoring": Shape(kinds: [.boolean]),
+    ])
+  shapes["MatchSearchResult"] = Shape(
+    kinds: [.object], required: ["referenceId", "response"],
+    members: [
+      "referenceId": Shape(ref: "AnnotationId"),
+      "response": Shape(kinds: [.array], items: Shape(ref: "ScoredResource")),
+    ])
+  shapes["MediaTokenRequest"] = Shape(
+    kinds: [.object], required: ["resourceId"], members: ["resourceId": Shape(ref: "ResourceId")])
+  shapes["MediaTokenResponse"] = Shape(
+    kinds: [.object], required: ["token"], members: ["token": Shape(kinds: [.string])])
+  shapes["MemoryGraphConfig"] = Shape(
+    kinds: [.object], required: ["type"],
+    members: ["type": Shape(kinds: [.string], enumeration: [.string("memory")])], closed: ["type"])
+  shapes["MemoryVectorsConfig"] = Shape(
+    kinds: [.object], required: ["type"],
+    members: ["type": Shape(kinds: [.string], enumeration: [.string("memory")])], closed: ["type"])
+  shapes["Motivation"] = Shape(
+    kinds: [.string],
+    enumeration: [
+      .string("assessing"), .string("commenting"), .string("highlighting"), .string("linking"),
+      .string("tagging"),
+    ])
+  shapes["Neo4jGraphConfig"] = Shape(
+    kinds: [.object], required: ["type", "uri", "username", "passwordEnv", "database"],
+    members: [
+      "database": Shape(kinds: [.string], minLength: 1),
+      "passwordEnv": Shape(kinds: [.string], minLength: 1),
+      "type": Shape(kinds: [.string], enumeration: [.string("neo4j")]),
+      "uri": Shape(kinds: [.string], minLength: 1),
+      "username": Shape(kinds: [.string], minLength: 1),
+    ], closed: ["database", "passwordEnv", "type", "uri", "username"])
+  shapes["NeptuneGraphConfig"] = Shape(
+    kinds: [.object], required: ["type", "endpoint", "port"],
+    members: [
+      "endpoint": Shape(kinds: [.string], minLength: 1),
+      "port": Shape(kinds: [.integer], minimum: 1.0, maximum: 65535.0),
+      "type": Shape(kinds: [.string], enumeration: [.string("neptune")]),
+    ], closed: ["endpoint", "port", "type"])
+  shapes["NewKnowledgeBase"] = Shape(
+    kinds: [.object], required: ["label", "endpoint", "did"],
+    members: [
+      "did": Shape(kinds: [.string]), "endpoint": Shape(ref: "KbEndpoint"),
+      "label": Shape(kinds: [.string]), "lastRead": Shape(ref: "KbRead"),
+    ])
+  shapes["OllamaEmbeddingConfig"] = Shape(
+    kinds: [.object], required: ["type", "model", "baseUrl"],
+    members: [
+      "baseUrl": Shape(kinds: [.string], minLength: 1),
+      "model": Shape(kinds: [.string], minLength: 1),
+      "type": Shape(kinds: [.string], enumeration: [.string("ollama")]),
+    ], closed: ["baseUrl", "model", "type"])
+  shapes["PdfTextItem"] = Shape(
+    kinds: [.object], required: ["start", "end", "page", "x", "y", "width", "height"],
+    members: [
+      "end": Shape(kinds: [.integer], minimum: 0.0), "height": Shape(kinds: [.number]),
+      "page": Shape(kinds: [.integer]), "start": Shape(kinds: [.integer], minimum: 0.0),
+      "width": Shape(kinds: [.number]), "x": Shape(kinds: [.number]), "y": Shape(kinds: [.number]),
+    ])
+  shapes["PersistedEventId"] = Shape(
+    kinds: [.string],
+    pattern: [
+      Step(of: [112...112], min: 1, max: 1), Step(of: [45...45], min: 1, max: 1),
+      Step(of: [0...9, 11...12, 14...8231, 8234...1_114_111], min: 1, max: nil),
+      Step(of: [45...45], min: 1, max: 1), Step(of: [48...57], min: 1, max: nil),
+    ])
+  shapes["PrincipalProfileCommand"] = Shape(
+    kinds: [.object], required: ["name"],
+    members: ["_userId": Shape(ref: "UserId"), "name": Shape(kinds: [.string])])
+  shapes["PrincipalProfiledPayload"] = Shape(
+    kinds: [.object], required: ["name"], members: ["name": Shape(kinds: [.string])])
+  shapes["Profile"] = Shape(
+    kinds: [.object], required: ["name", "since"],
+    members: ["name": Shape(kinds: [.string]), "since": Shape(kinds: [.string])],
+    closed: ["name", "since"])
+  shapes["ProfilesProjection"] = Shape(
+    kinds: [.object], required: ["profiles"],
+    members: ["profiles": Shape(kinds: [.object], values: Shape(ref: "Profile"))],
+    closed: ["profiles"])
+  shapes["ProtectedResourceMetadata"] = Shape(
+    kinds: [.object], required: ["resource", "authorization_servers", "bearer_methods_supported"],
+    members: [
+      "authorization_servers": Shape(kinds: [.array], items: Shape(kinds: [.string])),
+      "bearer_methods_supported": Shape(
+        kinds: [.array], items: Shape(kinds: [.string], enumeration: [.string("header")])),
+      "resource": Shape(kinds: [.string]), "resource_name": Shape(kinds: [.string]),
+    ], closed: ["authorization_servers", "bearer_methods_supported", "resource", "resource_name"])
+  shapes["QdrantVectorsConfig"] = Shape(
+    kinds: [.object], required: ["type", "host", "port", "tokenEnv"],
+    members: [
+      "host": Shape(kinds: [.string], minLength: 1),
+      "port": Shape(kinds: [.integer], minimum: 1.0, maximum: 65535.0),
+      "tokenEnv": Shape(kinds: [.string], minLength: 1),
+      "type": Shape(kinds: [.string], enumeration: [.string("qdrant")]),
+    ], closed: ["host", "port", "tokenEnv", "type"])
+  shapes["ReplyEventId"] = Shape(
+    kinds: [.string],
+    pattern: [
+      Step(of: [101...101], min: 1, max: 1), Step(of: [45...45], min: 1, max: 1),
+      Step(of: [0...57, 59...1_114_111], min: 1, max: nil), Step(of: [58...58], min: 1, max: 1),
+      Step(of: [0...57, 59...1_114_111], min: 1, max: nil), Step(of: [58...58], min: 1, max: 1),
+      Step(of: [0...9, 11...12, 14...8231, 8234...1_114_111], min: 1, max: nil),
+    ])
+  shapes["Representation"] = Shape(
+    kinds: [.object], required: ["mediaType"],
+    members: [
+      "@id": Shape(kinds: [.string]),
+      "@type": Shape(
+        kinds: [.array, .string],
+        oneOf: [
+          Shape(kinds: [.string]),
+          Shape(kinds: [.array], minItems: 1, items: Shape(kinds: [.string])),
+        ]), "byteSize": Shape(kinds: [.integer], minimum: 0.0), "checksum": Shape(kinds: [.string]),
+      "conformsTo": Shape(
+        kinds: [.array, .string],
+        oneOf: [Shape(kinds: [.string]), Shape(kinds: [.array], items: Shape(kinds: [.string]))]),
+      "created": Shape(kinds: [.string]), "duration": Shape(kinds: [.number], minimum: 0.0),
+      "encoding": Shape(kinds: [.string]), "filename": Shape(kinds: [.string]),
+      "height": Shape(kinds: [.integer], minimum: 0.0), "language": Shape(kinds: [.string]),
+      "mediaType": Shape(kinds: [.string]), "modified": Shape(kinds: [.string]),
+      "rel": Shape(
+        kinds: [.string],
+        enumeration: [
+          .string("original"), .string("thumbnail"), .string("preview"), .string("optimized"),
+          .string("derived"), .string("other"),
+        ]), "storageUri": Shape(kinds: [.string]),
+      "tags": Shape(kinds: [.array], items: Shape(kinds: [.string])),
+      "width": Shape(kinds: [.integer], minimum: 0.0),
+    ])
+  shapes["RepresentationAddedPayload"] = Shape(
+    kinds: [.object], required: ["representation"],
+    members: ["representation": Shape(ref: "Representation")])
+  shapes["RepresentationNotFound"] = Shape(
+    kinds: [.object],
+    allOf: [
+      Shape(ref: "ErrorResponse"),
+      Shape(
+        kinds: [.object], required: ["code"],
+        members: [
+          "code": Shape(
+            kinds: [.string], enumeration: [.string("resource"), .string("representation")])
+        ]),
+    ])
+  shapes["RepresentationRemovedPayload"] = Shape(
+    kinds: [.object], required: ["checksum"], members: ["checksum": Shape(kinds: [.string])])
+  shapes["ResourceAnnotations"] = Shape(
+    kinds: [.object], required: ["resourceId", "annotations", "version", "updatedAt"],
+    members: [
+      "annotations": Shape(kinds: [.array], items: Shape(ref: "Annotation")),
+      "resourceId": Shape(ref: "ResourceId"), "updatedAt": Shape(kinds: [.string]),
+      "version": Shape(kinds: [.integer], minimum: 0.0),
+    ], closed: ["annotations", "resourceId", "updatedAt", "version"])
+  shapes["ResourceArchivedPayload"] = Shape(
+    kinds: [.object], members: ["reason": Shape(kinds: [.string])])
+  shapes["ResourceClonedPayload"] = Shape(
+    kinds: [.object], required: ["name", "format", "contentChecksum", "parentResourceId"],
+    members: [
+      "contentByteSize": Shape(kinds: [.integer]), "contentChecksum": Shape(kinds: [.string]),
+      "creator": Shape(ref: "Agent"),
+      "entityTypes": Shape(kinds: [.array], items: Shape(kinds: [.string])),
+      "format": Shape(ref: "ContentFormat"), "language": Shape(kinds: [.string]),
+      "name": Shape(kinds: [.string]), "parentResourceId": Shape(ref: "ResourceId"),
+      "storageUri": Shape(kinds: [.string]),
+      "wasAttributedTo": Shape(
+        kinds: [.object, .array],
+        oneOf: [Shape(ref: "Agent"), Shape(kinds: [.array], items: Shape(ref: "Agent"))]),
+    ])
+  shapes["ResourceCreatedPayload"] = Shape(
+    kinds: [.object], required: ["name", "format", "contentChecksum"],
+    members: [
+      "contentByteSize": Shape(kinds: [.integer]), "contentChecksum": Shape(kinds: [.string]),
+      "creator": Shape(ref: "Agent"),
+      "entityTypes": Shape(kinds: [.array], items: Shape(kinds: [.string])),
+      "format": Shape(ref: "ContentFormat"),
+      "generatedFrom": Shape(
+        kinds: [.object], required: ["resourceId"],
+        members: [
+          "annotationId": Shape(ref: "AnnotationId"), "resourceId": Shape(ref: "ResourceId"),
+        ]), "generationPrompt": Shape(kinds: [.string]),
+      "generator": Shape(
+        kinds: [.object, .array],
+        oneOf: [Shape(ref: "Agent"), Shape(kinds: [.array], items: Shape(ref: "Agent"))]),
+      "isDraft": Shape(kinds: [.boolean]), "jobId": Shape(ref: "JobId"),
+      "language": Shape(kinds: [.string]), "name": Shape(kinds: [.string]),
+      "storageUri": Shape(kinds: [.string]),
+      "wasAttributedTo": Shape(
+        kinds: [.object, .array],
+        oneOf: [Shape(ref: "Agent"), Shape(kinds: [.array], items: Shape(ref: "Agent"))]),
+    ])
+  shapes["ResourceDescriptor"] = Shape(
+    kinds: [.object], required: ["@context", "@id", "name", "representations"],
+    members: [
+      "@context": Shape(
+        kinds: [.object, .array, .string],
+        oneOf: [
+          Shape(kinds: [.string]), Shape(kinds: [.object]),
+          Shape(
+            kinds: [.array],
+            items: Shape(
+              kinds: [.object, .string], oneOf: [Shape(kinds: [.string]), Shape(kinds: [.object])])),
+        ]), "@id": Shape(ref: "ResourceId"),
+      "@type": Shape(
+        kinds: [.array, .string],
+        oneOf: [
+          Shape(kinds: [.string]),
+          Shape(kinds: [.array], minItems: 1, items: Shape(kinds: [.string])),
+        ]),
+      "about": Shape(
+        kinds: [.array, .string],
+        oneOf: [
+          Shape(kinds: [.string]),
+          Shape(kinds: [.array], minItems: 1, items: Shape(kinds: [.string])),
+        ]), "archived": Shape(kinds: [.boolean]),
+      "availableFormats": Shape(kinds: [.array], items: Shape(kinds: [.string])),
+      "conformsTo": Shape(
+        kinds: [.array, .string],
+        oneOf: [Shape(kinds: [.string]), Shape(kinds: [.array], items: Shape(kinds: [.string]))]),
+      "dateCreated": Shape(kinds: [.string]), "dateModified": Shape(kinds: [.string]),
+      "description": Shape(kinds: [.string]),
+      "entityTypes": Shape(kinds: [.array], items: Shape(kinds: [.string])),
+      "generator": Shape(
+        kinds: [.object, .array],
+        oneOf: [Shape(ref: "Agent"), Shape(kinds: [.array], items: Shape(ref: "Agent"))]),
+      "hasPart": Shape(kinds: [.array], items: Shape(kinds: [.string])),
+      "identifier": Shape(
+        kinds: [.object, .array, .string],
+        oneOf: [
+          Shape(kinds: [.string]),
+          Shape(kinds: [.array], minItems: 1, items: Shape(kinds: [.string])),
+          Shape(
+            kinds: [.object],
+            members: [
+              "@id": Shape(kinds: [.string]), "scheme": Shape(kinds: [.string]),
+              "value": Shape(kinds: [.string]),
+            ]),
+        ]), "isDraft": Shape(kinds: [.boolean]),
+      "isPartOf": Shape(kinds: [.array], items: Shape(kinds: [.string])),
+      "license": Shape(kinds: [.string]), "name": Shape(kinds: [.string]),
+      "originatedFrom": Shape(kinds: [.string]),
+      "representations": Shape(
+        kinds: [.object, .array],
+        oneOf: [
+          Shape(ref: "Representation"), Shape(kinds: [.array], items: Shape(ref: "Representation")),
+        ]), "sameAs": Shape(kinds: [.array], items: Shape(kinds: [.string])),
+      "sourceAnnotationId": Shape(ref: "AnnotationId"),
+      "sourceResourceId": Shape(ref: "ResourceId"), "version": Shape(kinds: [.string]),
+      "wasAttributedTo": Shape(
+        kinds: [.object, .array],
+        oneOf: [Shape(ref: "Agent"), Shape(kinds: [.array], items: Shape(ref: "Agent"))]),
+      "wasDerivedFrom": Shape(
+        kinds: [.array, .string],
+        oneOf: [Shape(ref: "ResourceId"), Shape(kinds: [.array], items: Shape(ref: "ResourceId"))]),
+    ])
+  shapes["ResourceErrorEvent"] = Shape(
+    kinds: [.object], required: ["resourceId", "message"],
+    members: ["message": Shape(kinds: [.string]), "resourceId": Shape(ref: "ResourceId")])
+  shapes["ResourceId"] = Shape(
+    kinds: [.string],
+    pattern: [Step(of: [45...45, 48...57, 65...90, 95...95, 97...122], min: 1, max: 128)])
+  shapes["ResourceMovedPayload"] = Shape(
+    kinds: [.object], required: ["fromUri", "toUri"],
+    members: ["fromUri": Shape(kinds: [.string]), "toUri": Shape(kinds: [.string])])
+  shapes["ResourceUnarchivedPayload"] = Shape(kinds: [.object])
+  shapes["ResourceUpdatedPayload"] = Shape(
+    kinds: [.object], required: ["contentChecksum"],
+    members: [
+      "contentByteSize": Shape(kinds: [.integer]), "contentChecksum": Shape(kinds: [.string]),
+    ])
+  shapes["ResourceUpload"] = Shape(
+    kinds: [.object], required: ["name", "file", "format", "storageUri"],
+    members: [
+      "archiveOriginal": Shape(kinds: [.string]), "cloneToken": Shape(kinds: [.string]),
+      "entityTypes": Shape(kinds: [.string]), "file": Shape(kinds: [.string]),
+      "format": Shape(kinds: [.string]), "generationPrompt": Shape(kinds: [.string]),
+      "generator": Shape(kinds: [.string]), "isDraft": Shape(kinds: [.string]),
+      "jobId": Shape(ref: "JobId"), "language": Shape(kinds: [.string]),
+      "name": Shape(kinds: [.string]), "sourceAnnotationId": Shape(ref: "AnnotationId"),
+      "sourceResourceId": Shape(ref: "ResourceId"), "storageUri": Shape(kinds: [.string]),
+    ])
+  shapes["ResourceView"] = Shape(
+    kinds: [.object], required: ["resource", "annotations", "lastSequence"],
+    members: [
+      "annotations": Shape(ref: "ResourceAnnotations"),
+      "lastSequence": Shape(kinds: [.integer], minimum: 1.0),
+      "resource": Shape(ref: "ResourceDescriptor"),
+    ], closed: ["annotations", "lastSequence", "resource"])
+  shapes["ScoredResource"] = Shape(
+    kinds: [.object],
+    allOf: [
+      Shape(ref: "ResourceDescriptor"),
+      Shape(
+        kinds: [.object],
+        members: ["matchReason": Shape(kinds: [.string]), "score": Shape(kinds: [.number])]),
+    ])
+  shapes["Selector"] = Shape(
+    kinds: [.object],
+    oneOf: [
+      Shape(ref: "TextPositionSelector"), Shape(ref: "TextQuoteSelector"),
+      Shape(ref: "SvgSelector"), Shape(ref: "FragmentSelector"),
+    ],
+    discriminator: Discriminator(
+      property: "type",
+      mapping: [
+        "FragmentSelector": 3, "SvgSelector": 2, "TextPositionSelector": 0, "TextQuoteSelector": 1,
+      ]))
+  shapes["SemanticMatch"] = Shape(
+    kinds: [.object], required: ["text", "resourceId", "resourceName", "score"],
+    members: [
+      "annotationId": Shape(ref: "AnnotationId"),
+      "entityTypes": Shape(kinds: [.array], items: Shape(kinds: [.string])),
+      "machineRead": Shape(kinds: [.boolean]), "resourceId": Shape(ref: "ResourceId"),
+      "resourceName": Shape(kinds: [.string]), "score": Shape(kinds: [.number]),
+      "text": Shape(kinds: [.string]),
+    ])
+  shapes["SessionJoinedEvent"] = Shape(
+    kinds: [.object], required: ["participant", "connectionId"],
+    members: ["connectionId": Shape(kinds: [.string]), "participant": Shape(ref: "UserId")])
+  shapes["SessionLeftEvent"] = Shape(
+    kinds: [.object], required: ["participant", "connectionId"],
+    members: ["connectionId": Shape(kinds: [.string]), "participant": Shape(ref: "UserId")])
+  shapes["SettingsHoverDelayChangedEvent"] = Shape(
+    kinds: [.object], required: ["hoverDelayMs"],
+    members: ["hoverDelayMs": Shape(kinds: [.integer])])
+  shapes["SettingsLocaleChangedEvent"] = Shape(
+    kinds: [.object], required: ["locale"], members: ["locale": Shape(kinds: [.string])])
+  shapes["SettingsThemeChangedEvent"] = Shape(
+    kinds: [.object], required: ["theme"],
+    members: [
+      "theme": Shape(
+        kinds: [.string], enumeration: [.string("light"), .string("dark"), .string("system")])
+    ])
+  shapes["SmeltRebuildAnchorsCommand"] = Shape(
+    kinds: [.object],
+    members: ["_userId": Shape(ref: "UserId"), "resourceId": Shape(ref: "ResourceId")])
+  shapes["SmeltSettled"] = Shape(
+    kinds: [.object], required: ["resourceId", "contentChecksum", "outcome"],
+    members: [
+      "contentChecksum": Shape(kinds: [.string]),
+      "outcome": Shape(kinds: [.string], enumeration: [.string("indexed"), .string("skipped")]),
+      "reason": Shape(
+        kinds: [.string],
+        enumeration: [
+          .string("no-extractor"), .string("empty"), .string("no-text-layer"), .string("encrypted"),
+          .string("corrupt"), .string("too-large"),
+        ]), "resourceId": Shape(ref: "ResourceId"),
+    ])
+  shapes["SmelterConfig"] = Shape(
+    kinds: [.object],
+    required: [
+      "kb", "gatewayUrl", "identity", "archivist", "embedding", "vectors", "chunking", "pdfsAtOnce",
+      "cursorsPath", "port", "logLevel", "logFormat",
+    ],
+    members: [
+      "archivist": Shape(
+        kinds: [.object], required: ["host", "port"],
+        members: [
+          "host": Shape(kinds: [.string], minLength: 1),
+          "port": Shape(kinds: [.integer], minimum: 1.0, maximum: 65535.0),
+        ], closed: ["host", "port"]),
+      "chunking": Shape(
+        kinds: [.object], required: ["chunkSize", "overlap"],
+        members: [
+          "chunkSize": Shape(kinds: [.integer], minimum: 1.0),
+          "overlap": Shape(kinds: [.integer], minimum: 0.0),
+        ], closed: ["chunkSize", "overlap"]), "cursorsPath": Shape(ref: "CursorsPath"),
+      "embedding": Shape(ref: "EmbeddingConfig"),
+      "gatewayUrl": Shape(kinds: [.string], minLength: 1),
+      "identity": Shape(
+        kinds: [.object], required: ["issuer"],
+        members: ["issuer": Shape(kinds: [.string], minLength: 1)], closed: ["issuer"]),
+      "kb": Shape(ref: "KbIdentity"), "logFormat": Shape(ref: "LogFormat"),
+      "logLevel": Shape(ref: "LogLevel"), "pdfsAtOnce": Shape(kinds: [.integer], minimum: 1.0),
+      "port": Shape(kinds: [.integer], minimum: 1.0, maximum: 65535.0),
+      "vectors": Shape(ref: "VectorsConfig"),
+    ],
+    closed: [
+      "archivist", "chunking", "cursorsPath", "embedding", "gatewayUrl", "identity", "kb",
+      "logFormat", "logLevel", "pdfsAtOnce", "port", "vectors",
+    ])
+  shapes["SpecificResource"] = Shape(
+    kinds: [.object], required: ["type", "source"],
+    members: [
+      "purpose": Shape(ref: "BodyPurpose"), "source": Shape(ref: "ResourceId"),
+      "type": Shape(kinds: [.string], enumeration: [.string("SpecificResource")]),
+    ])
+  shapes["StatusResponse"] = Shape(
+    kinds: [.object], required: ["status", "version", "features", "message"],
+    members: [
+      "authenticatedAs": Shape(kinds: [.string]),
+      "features": Shape(
+        kinds: [.object], required: ["semanticContent", "collaboration"],
+        members: [
+          "collaboration": Shape(kinds: [.string]), "semanticContent": Shape(kinds: [.string]),
+        ]), "message": Shape(kinds: [.string]), "status": Shape(kinds: [.string]),
+      "version": Shape(kinds: [.string]),
+    ])
+  shapes["StorageUriEntry"] = Shape(
+    kinds: [.object], required: ["uri", "resourceId"],
+    members: ["resourceId": Shape(ref: "ResourceId"), "uri": Shape(kinds: [.string])],
+    closed: ["resourceId", "uri"])
+  shapes["StoredEventResponse"] = Shape(
+    kinds: [.object],
+    required: ["id", "type", "timestamp", "userId", "version", "payload", "metadata"],
+    members: [
+      "id": Shape(kinds: [.string]), "metadata": Shape(ref: "EventMetadata"),
+      "payload": Shape(kinds: [.object]), "resourceId": Shape(ref: "ResourceId"),
+      "timestamp": Shape(kinds: [.string]), "type": Shape(kinds: [.string]),
+      "userId": Shape(ref: "UserId"), "version": Shape(kinds: [.integer]),
+    ])
+  shapes["SupportedMediaType"] = Shape(
+    kinds: [.string],
+    enumeration: [
+      .string("text/plain"), .string("text/markdown"), .string("text/html"), .string("text/css"),
+      .string("text/csv"), .string("text/xml"), .string("application/json"),
+      .string("application/xml"), .string("application/yaml"), .string("application/x-yaml"),
+      .string("application/pdf"), .string("application/msword"),
+      .string("application/vnd.openxmlformats-officedocument.wordprocessingml.document"),
+      .string("application/vnd.ms-excel"),
+      .string("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
+      .string("application/vnd.ms-powerpoint"),
+      .string("application/vnd.openxmlformats-officedocument.presentationml.presentation"),
+      .string("application/zip"), .string("application/gzip"), .string("application/x-tar"),
+      .string("application/x-7z-compressed"), .string("application/octet-stream"),
+      .string("application/wasm"), .string("image/png"), .string("image/jpeg"),
+      .string("image/gif"), .string("image/webp"), .string("image/svg+xml"), .string("image/bmp"),
+      .string("image/tiff"), .string("image/x-icon"), .string("video/mp4"), .string("video/mpeg"),
+      .string("video/webm"), .string("video/ogg"), .string("video/quicktime"),
+      .string("video/x-msvideo"), .string("audio/mpeg"), .string("audio/wav"), .string("audio/ogg"),
+      .string("audio/webm"), .string("audio/aac"), .string("audio/flac"),
+      .string("text/javascript"), .string("application/javascript"), .string("text/x-typescript"),
+      .string("application/typescript"), .string("text/x-python"), .string("text/x-java"),
+      .string("text/x-c"), .string("text/x-c++"), .string("text/x-csharp"), .string("text/x-go"),
+      .string("text/x-rust"), .string("text/x-ruby"), .string("text/x-php"),
+      .string("text/x-swift"), .string("text/x-kotlin"), .string("text/x-shell"),
+      .string("font/woff"), .string("font/woff2"), .string("font/ttf"), .string("font/otf"),
+    ])
+  shapes["SvgSelector"] = Shape(
+    kinds: [.object], required: ["type", "value"],
+    members: [
+      "type": Shape(kinds: [.string], enumeration: [.string("SvgSelector")]),
+      "value": Shape(kinds: [.string]),
+    ])
+  shapes["TagCategory"] = Shape(
+    kinds: [.object], required: ["name", "description", "examples"],
+    members: [
+      "description": Shape(kinds: [.string]),
+      "examples": Shape(kinds: [.array], items: Shape(kinds: [.string])),
+      "name": Shape(kinds: [.string]),
+    ])
+  shapes["TagSchema"] = Shape(
+    kinds: [.object], required: ["id", "name", "description", "domain", "tags"],
+    members: [
+      "description": Shape(kinds: [.string]), "domain": Shape(kinds: [.string]),
+      "id": Shape(kinds: [.string]), "name": Shape(kinds: [.string]),
+      "tags": Shape(kinds: [.array], items: Shape(ref: "TagCategory")),
+    ])
+  shapes["TagSchemaAddedPayload"] = Shape(
+    kinds: [.object], required: ["schema"], members: ["schema": Shape(ref: "TagSchema")])
+  shapes["TagSchemasProjection"] = Shape(
+    kinds: [.object], required: ["tagSchemas"],
+    members: ["tagSchemas": Shape(kinds: [.array], items: Shape(ref: "TagSchema"))],
+    closed: ["tagSchemas"])
+  shapes["TaggingJobParams"] = Shape(
+    kinds: [.object], required: ["motivation", "schemaId", "categories"],
+    members: [
+      "categories": Shape(kinds: [.array], minItems: 1, items: Shape(kinds: [.string])),
+      "language": Shape(kinds: [.string]),
+      "motivation": Shape(kinds: [.string], enumeration: [.string("tagging")]),
+      "schemaId": Shape(kinds: [.string], minLength: 1), "sourceLanguage": Shape(kinds: [.string]),
+    ], closed: ["categories", "language", "motivation", "schemaId", "sourceLanguage"])
+  shapes["TextPositionSelector"] = Shape(
+    kinds: [.object], required: ["type", "start", "end"],
+    members: [
+      "end": Shape(kinds: [.integer], minimum: 0.0),
+      "start": Shape(kinds: [.integer], minimum: 0.0),
+      "type": Shape(kinds: [.string], enumeration: [.string("TextPositionSelector")]),
+    ])
+  shapes["TextQuoteSelector"] = Shape(
+    kinds: [.object], required: ["type", "exact"],
+    members: [
+      "exact": Shape(kinds: [.string]), "prefix": Shape(kinds: [.string]),
+      "suffix": Shape(kinds: [.string]),
+      "type": Shape(kinds: [.string], enumeration: [.string("TextQuoteSelector")]),
+    ])
+  shapes["TextualBody"] = Shape(
+    kinds: [.object], required: ["type", "value"],
+    members: [
+      "format": Shape(kinds: [.string]), "language": Shape(kinds: [.string]),
+      "purpose": Shape(ref: "BodyPurpose"),
+      "type": Shape(kinds: [.string], enumeration: [.string("TextualBody")]),
+      "value": Shape(kinds: [.string]),
+    ])
+  shapes["UnitCursor"] = Shape(
+    kinds: [.object], required: ["next", "size", "found", "emitted", "errors"],
+    members: [
+      "emitted": Shape(kinds: [.integer], minimum: 0.0),
+      "errors": Shape(kinds: [.integer], minimum: 0.0),
+      "found": Shape(kinds: [.integer], minimum: 0.0),
+      "next": Shape(kinds: [.integer], minimum: 0.0),
+      "size": Shape(kinds: [.integer], minimum: 1.0),
+    ])
+  shapes["UpdateAnnotationBodyRequest"] = Shape(
+    kinds: [.object], required: ["resourceId", "operations"],
+    members: [
+      "operations": Shape(
+        kinds: [.array], minItems: 1,
+        items: Shape(
+          kinds: [.object],
+          oneOf: [
+            Shape(ref: "BodyOperationAdd"), Shape(ref: "BodyOperationRemove"),
+            Shape(ref: "BodyOperationReplace"),
+          ])), "resourceId": Shape(ref: "ResourceId"),
+    ])
+  shapes["UserId"] = Shape(
+    kinds: [.string],
+    pattern: [
+      Step(of: [100...100], min: 1, max: 1), Step(of: [105...105], min: 1, max: 1),
+      Step(of: [100...100], min: 1, max: 1), Step(of: [58...58], min: 1, max: 1),
+      Step(
+        of: [
+          0...8, 14...31, 33...159, 161...5759, 5761...8191, 8203...8231, 8234...8238, 8240...8286,
+          8288...12287, 12289...65278, 65280...1_114_111,
+        ], min: 1, max: nil),
+    ])
+  shapes["UserResponse"] = Shape(
+    kinds: [.object], required: ["did", "email", "name", "image", "domain"],
+    members: [
+      "did": Shape(ref: "UserId"), "domain": Shape(kinds: [.string]),
+      "email": Shape(kinds: [.string, .null]), "image": Shape(kinds: [.string, .null]),
+      "name": Shape(kinds: [.string, .null]),
+    ])
+  shapes["VectorsConfig"] = Shape(
+    kinds: [.object],
+    oneOf: [Shape(ref: "QdrantVectorsConfig"), Shape(ref: "MemoryVectorsConfig")],
+    discriminator: Discriminator(property: "type", mapping: ["memory": 1, "qdrant": 0]))
+  shapes["VoyageEmbeddingConfig"] = Shape(
+    kinds: [.object], required: ["type", "model", "endpoint", "apiKeyEnv"],
+    members: [
+      "apiKeyEnv": Shape(kinds: [.string], minLength: 1),
+      "endpoint": Shape(kinds: [.string], minLength: 1),
+      "model": Shape(kinds: [.string], minLength: 1),
+      "type": Shape(kinds: [.string], enumeration: [.string("voyage")]),
+    ], closed: ["apiKeyEnv", "endpoint", "model", "type"])
+  shapes["WeaveApplied"] = Shape(
+    kinds: [.object], required: ["resourceId", "sequenceNumber"],
+    members: ["resourceId": Shape(ref: "ResourceId"), "sequenceNumber": Shape(kinds: [.integer])])
+  shapes["WeaveRebuildCommand"] = Shape(
+    kinds: [.object],
+    members: ["_userId": Shape(ref: "UserId"), "resourceId": Shape(ref: "ResourceId")])
+  shapes["WeaverConfig"] = Shape(
+    kinds: [.object],
+    required: [
+      "kb", "gatewayUrl", "identity", "archivist", "graph", "cursorsPath", "port", "logLevel",
+      "logFormat",
+    ],
+    members: [
+      "archivist": Shape(
+        kinds: [.object], required: ["host", "port"],
+        members: [
+          "host": Shape(kinds: [.string], minLength: 1),
+          "port": Shape(kinds: [.integer], minimum: 1.0, maximum: 65535.0),
+        ], closed: ["host", "port"]), "cursorsPath": Shape(ref: "CursorsPath"),
+      "gatewayUrl": Shape(kinds: [.string], minLength: 1), "graph": Shape(ref: "GraphConfig"),
+      "identity": Shape(
+        kinds: [.object], required: ["issuer"],
+        members: ["issuer": Shape(kinds: [.string], minLength: 1)], closed: ["issuer"]),
+      "kb": Shape(ref: "KbIdentity"), "logFormat": Shape(ref: "LogFormat"),
+      "logLevel": Shape(ref: "LogLevel"),
+      "port": Shape(kinds: [.integer], minimum: 1.0, maximum: 65535.0),
+    ],
+    closed: [
+      "archivist", "cursorsPath", "gatewayUrl", "graph", "identity", "kb", "logFormat", "logLevel",
+      "port",
+    ])
+  shapes["WorkerConfig"] = Shape(
+    kinds: [.object],
+    required: ["knowledgeBases", "modelCatalogue", "port", "logLevel", "logFormat"],
+    members: [
+      "knowledgeBases": Shape(
+        kinds: [.array], minItems: 1, items: Shape(ref: "WorkerKnowledgeBaseConfig")),
+      "logFormat": Shape(ref: "LogFormat"), "logLevel": Shape(ref: "LogLevel"),
+      "modelCatalogue": Shape(kinds: [.string], minLength: 1),
+      "port": Shape(kinds: [.integer], minimum: 1.0, maximum: 65535.0),
+    ], closed: ["knowledgeBases", "logFormat", "logLevel", "modelCatalogue", "port"])
+  shapes["WorkerEngineConfig"] = Shape(
+    kinds: [.object], required: ["engine", "jobs", "baseUrl"],
+    members: [
+      "apiKeyEnv": Shape(kinds: [.string], minLength: 1),
+      "baseUrl": Shape(kinds: [.string], minLength: 1), "engine": Shape(ref: "Engine"),
+      "jobs": Shape(kinds: [.array], minItems: 1, items: Shape(ref: "JobFilter")),
+    ], closed: ["apiKeyEnv", "baseUrl", "engine", "jobs"])
+  shapes["WorkerEngineHealth"] = Shape(
+    kinds: [.object],
+    required: [
+      "engine", "jobs", "lastQueuedEventAt", "lastClaimAt", "lastFinishedAt", "lastActivityAt",
+      "activeJob", "jobsCompleted",
+    ],
+    members: [
+      "activeJob": Shape(
+        kinds: [.object, .null], required: ["jobId", "type", "since"],
+        members: [
+          "jobId": Shape(ref: "JobId"), "since": Shape(kinds: [.string]),
+          "type": Shape(ref: "JobType"),
+        ], closed: ["jobId", "since", "type"]), "engine": Shape(ref: "Engine"),
+      "jobs": Shape(kinds: [.array], minItems: 1, items: Shape(ref: "JobFilter")),
+      "jobsCompleted": Shape(kinds: [.integer], minimum: 0.0),
+      "lastActivityAt": Shape(kinds: [.string, .null]),
+      "lastClaimAt": Shape(kinds: [.string, .null]),
+      "lastFinishedAt": Shape(kinds: [.string, .null]),
+      "lastQueuedEventAt": Shape(kinds: [.string, .null]),
+    ],
+    closed: [
+      "activeJob", "engine", "jobs", "jobsCompleted", "lastActivityAt", "lastClaimAt",
+      "lastFinishedAt", "lastQueuedEventAt",
+    ])
+  shapes["WorkerHealth"] = Shape(
+    kinds: [.object], required: ["status", "knowledgeBases"],
+    members: [
+      "knowledgeBases": Shape(
+        kinds: [.array], minItems: 1, items: Shape(ref: "WorkerKnowledgeBaseHealth")),
+      "status": Shape(kinds: [.string], enumeration: [.string("ok")]),
+    ], closed: ["knowledgeBases", "status"])
+  shapes["WorkerKnowledgeBaseConfig"] = Shape(
+    kinds: [.object], required: ["domain", "gatewayUrl", "identity", "engines"],
+    members: [
+      "domain": Shape(kinds: [.string], minLength: 1),
+      "engines": Shape(kinds: [.array], minItems: 1, items: Shape(ref: "WorkerEngineConfig")),
+      "gatewayUrl": Shape(kinds: [.string], minLength: 1),
+      "identity": Shape(
+        kinds: [.object], required: ["issuer", "clientId"],
+        members: [
+          "clientId": Shape(kinds: [.string], minLength: 1),
+          "issuer": Shape(kinds: [.string], minLength: 1),
+        ], closed: ["clientId", "issuer"]),
+    ], closed: ["domain", "engines", "gatewayUrl", "identity"])
+  shapes["WorkerKnowledgeBaseHealth"] = Shape(
+    kinds: [.object], required: ["domain", "state"],
+    members: [
+      "did": Shape(kinds: [.string], minLength: 1), "domain": Shape(kinds: [.string], minLength: 1),
+      "engines": Shape(kinds: [.array], minItems: 1, items: Shape(ref: "WorkerEngineHealth")),
+      "state": Shape(
+        kinds: [.string],
+        enumeration: [.string("starting"), .string("working"), .string("refused")]),
+    ], closed: ["did", "domain", "engines", "state"])
+  shapes["YieldCloneCreateCommand"] = Shape(
+    kinds: [.object],
+    required: ["token", "name", "storageUri", "contentChecksum", "byteSize", "format"],
+    members: [
+      "_userId": Shape(ref: "UserId"), "archiveOriginal": Shape(kinds: [.boolean]),
+      "byteSize": Shape(kinds: [.integer]), "contentChecksum": Shape(kinds: [.string]),
+      "format": Shape(ref: "ContentFormat"), "name": Shape(kinds: [.string]),
+      "storageUri": Shape(kinds: [.string]), "token": Shape(kinds: [.string]),
+    ])
+  shapes["YieldCloneCreated"] = Shape(
+    kinds: [.object], required: ["response"],
+    members: [
+      "response": Shape(
+        kinds: [.object], required: ["resourceId"],
+        members: ["resourceId": Shape(ref: "ResourceId")])
+    ])
+  shapes["YieldClonePersistCommand"] = Shape(
+    kinds: [.object],
+    required: ["name", "storageUri", "contentChecksum", "byteSize", "format", "parentResourceId"],
+    members: [
+      "_userId": Shape(ref: "UserId"), "byteSize": Shape(kinds: [.integer]),
+      "contentChecksum": Shape(kinds: [.string]),
+      "entityTypes": Shape(kinds: [.array], items: Shape(kinds: [.string])),
+      "format": Shape(ref: "ContentFormat"), "language": Shape(kinds: [.string]),
+      "name": Shape(kinds: [.string]), "parentResourceId": Shape(ref: "ResourceId"),
+      "storageUri": Shape(kinds: [.string]),
+    ])
+  shapes["YieldClonePersistOk"] = Shape(
+    kinds: [.object], required: ["response"],
+    members: [
+      "response": Shape(
+        kinds: [.object], required: ["resourceId"],
+        members: ["resourceId": Shape(ref: "ResourceId")])
+    ])
+  shapes["YieldCloneResourceRequest"] = Shape(
+    kinds: [.object], required: ["token"], members: ["token": Shape(kinds: [.string])])
+  shapes["YieldCloneTokenRequest"] = Shape(
+    kinds: [.object], required: ["resourceId"], members: ["resourceId": Shape(ref: "ResourceId")])
+  shapes["YieldCreateCommand"] = Shape(
+    kinds: [.object], required: ["name", "storageUri", "contentChecksum", "byteSize", "format"],
+    members: [
+      "_roles": Shape(kinds: [.array], items: Shape(kinds: [.string])),
+      "_userId": Shape(ref: "UserId"), "byteSize": Shape(kinds: [.integer]),
+      "contentChecksum": Shape(kinds: [.string]),
+      "entityTypes": Shape(kinds: [.array], items: Shape(kinds: [.string])),
+      "format": Shape(ref: "ContentFormat"),
+      "generatedFrom": Shape(
+        kinds: [.object],
+        members: [
+          "annotationId": Shape(ref: "AnnotationId"), "resourceId": Shape(ref: "ResourceId"),
+        ]), "generationPrompt": Shape(kinds: [.string]),
+      "generator": Shape(
+        kinds: [.object, .array],
+        oneOf: [Shape(ref: "Agent"), Shape(kinds: [.array], items: Shape(ref: "Agent"))]),
+      "isDraft": Shape(kinds: [.boolean]), "jobId": Shape(ref: "JobId"),
+      "language": Shape(kinds: [.string]), "name": Shape(kinds: [.string]),
+      "storageUri": Shape(kinds: [.string]),
+    ])
+  shapes["YieldCreateOk"] = Shape(
+    kinds: [.object], required: ["response"],
+    members: [
+      "response": Shape(
+        kinds: [.object], required: ["resourceId"],
+        members: ["resourceId": Shape(ref: "ResourceId")])
+    ])
+  shapes["YieldJobCompleteCommand"] = Shape(
+    kinds: [.object], required: ["resourceId", "jobId", "jobType"],
+    members: [
+      "_userId": Shape(ref: "UserId"), "annotationId": Shape(ref: "AnnotationId"),
+      "attempt": Shape(kinds: [.integer]), "durability": Shape(ref: "DurabilityEvidence"),
+      "jobId": Shape(ref: "JobId"),
+      "jobType": Shape(kinds: [.string], enumeration: [.string("yield")]),
+      "resourceId": Shape(ref: "ResourceId"), "result": Shape(ref: "YieldJobResult"),
+    ])
+  shapes["YieldJobCreateCommand"] = Shape(
+    kinds: [.object], required: ["jobType", "params"],
+    members: [
+      "_roles": Shape(kinds: [.array], items: Shape(kinds: [.string])),
+      "_userId": Shape(ref: "UserId"),
+      "jobType": Shape(kinds: [.string], enumeration: [.string("yield")]),
+      "params": Shape(ref: "GenerationJobParams"),
+    ], closed: ["_roles", "_userId", "jobType", "params"])
+  shapes["YieldJobDone"] = Shape(
+    kinds: [.object], required: ["resourceId", "resourceName", "truncated"],
+    members: [
+      "resourceId": Shape(ref: "ResourceId"), "resourceName": Shape(kinds: [.string]),
+      "truncated": Shape(kinds: [.boolean]),
+    ], closed: ["resourceId", "resourceName", "truncated"])
+  shapes["YieldJobFilter"] = Shape(
+    kinds: [.object], required: ["jobType"],
+    members: ["jobType": Shape(kinds: [.string], enumeration: [.string("yield")])],
+    closed: ["jobType"])
+  shapes["YieldJobQueuedEvent"] = Shape(
+    kinds: [.object], required: ["jobId", "jobType", "resourceId", "userId", "params"],
+    members: [
+      "jobId": Shape(ref: "JobId"),
+      "jobType": Shape(kinds: [.string], enumeration: [.string("yield")]),
+      "params": Shape(ref: "GenerationJobRequest"), "resourceId": Shape(ref: "ResourceId"),
+      "userId": Shape(ref: "UserId"),
+    ])
+  shapes["YieldJobResult"] = Shape(
+    kinds: [.object], oneOf: [Shape(ref: "YieldJobDone"), Shape(ref: "JobDeclined")])
+  shapes["YieldUpdateCommand"] = Shape(
+    kinds: [.object], required: ["resourceId", "storageUri", "contentChecksum", "byteSize"],
+    members: [
+      "_userId": Shape(ref: "UserId"), "byteSize": Shape(kinds: [.integer]),
+      "contentChecksum": Shape(kinds: [.string]), "resourceId": Shape(ref: "ResourceId"),
+      "storageUri": Shape(kinds: [.string]),
+    ])
+  shapes["YieldUpdateOk"] = Shape(
+    kinds: [.object], required: ["response"],
+    members: [
+      "response": Shape(
+        kinds: [.object], required: ["resourceId"],
+        members: ["resourceId": Shape(ref: "ResourceId")])
+    ])
+  return shapes
+}()
+internal let requiredPayloadShapes: [String: Shape] = {
+  var shapes: [String: Shape] = [:]
+  shapes["beckon:focus"] = Shape(ref: "BeckonFocusEvent")
+  shapes["beckon:hover"] = Shape(ref: "BeckonHoverEvent")
+  shapes["beckon:sparkle"] = Shape(ref: "BeckonSparkleEvent")
+  shapes["bind:body-error"] = Shape(ref: "ResourceErrorEvent")
+  shapes["bind:body-update-failed"] = Shape(ref: "CommandError")
+  shapes["bind:body-updated"] = Shape(ref: "BindBodyUpdated")
+  shapes["bind:initiate"] = Shape(ref: "BindInitiateCommand")
+  shapes["bind:update-body"] = Shape(ref: "BindUpdateBodyCommand")
+  shapes["browse:annotation-failed"] = Shape(ref: "CommandError")
+  shapes["browse:annotation-history-failed"] = Shape(ref: "CommandError")
+  shapes["browse:annotation-history-requested"] = Shape(ref: "BrowseAnnotationHistoryRequest")
+  shapes["browse:annotation-history-result"] = Shape(ref: "BrowseAnnotationHistoryResult")
+  shapes["browse:annotation-requested"] = Shape(ref: "BrowseAnnotationRequest")
+  shapes["browse:annotation-result"] = Shape(ref: "BrowseAnnotationResult")
+  shapes["browse:click"] = Shape(ref: "BrowseClickEvent")
+  shapes["browse:directory-failed"] = Shape(ref: "BrowseDirectoryFailed")
+  shapes["browse:directory-requested"] = Shape(ref: "BrowseDirectoryRequest")
+  shapes["browse:directory-result"] = Shape(ref: "BrowseDirectoryResult")
+  shapes["browse:engines-failed"] = Shape(ref: "CommandError")
+  shapes["browse:engines-requested"] = Shape(ref: "BrowseEnginesRequest")
+  shapes["browse:engines-result"] = Shape(ref: "BrowseEnginesResult")
+  shapes["browse:entity-type-clicked"] = Shape(ref: "BrowseEntityTypeClickedEvent")
+  shapes["browse:entity-types-failed"] = Shape(ref: "CommandError")
+  shapes["browse:entity-types-requested"] = Shape(ref: "BrowseEntityTypesRequest")
+  shapes["browse:entity-types-result"] = Shape(ref: "BrowseEntityTypesResult")
+  shapes["browse:events-failed"] = Shape(ref: "CommandError")
+  shapes["browse:events-requested"] = Shape(ref: "BrowseEventsRequest")
+  shapes["browse:events-result"] = Shape(ref: "BrowseEventsResult")
+  shapes["browse:kb-failed"] = Shape(ref: "CommandError")
+  shapes["browse:kb-requested"] = Shape(ref: "BrowseKbRequest")
+  shapes["browse:kb-result"] = Shape(ref: "BrowseKbResult")
+  shapes["browse:profiles-failed"] = Shape(ref: "CommandError")
+  shapes["browse:profiles-requested"] = Shape(ref: "BrowseProfilesRequest")
+  shapes["browse:profiles-result"] = Shape(ref: "BrowseProfilesResult")
+  shapes["browse:resource-failed"] = Shape(ref: "CommandError")
+  shapes["browse:resource-open"] = Shape(ref: "BrowseResourceOpenEvent")
+  shapes["browse:resource-requested"] = Shape(ref: "BrowseResourceRequest")
+  shapes["browse:resource-result"] = Shape(ref: "BrowseResourceResult")
+  shapes["browse:resource-viewed"] = Shape(ref: "BrowseResourceViewedEvent")
+  shapes["browse:resources-failed"] = Shape(ref: "CommandError")
+  shapes["browse:resources-requested"] = Shape(ref: "BrowseResourcesRequest")
+  shapes["browse:resources-result"] = Shape(ref: "BrowseResourcesResult")
+  shapes["browse:tag-schemas-failed"] = Shape(ref: "CommandError")
+  shapes["browse:tag-schemas-requested"] = Shape(ref: "BrowseTagSchemasRequest")
+  shapes["browse:tag-schemas-result"] = Shape(ref: "BrowseTagSchemasResult")
+  shapes["bus:resume-gap"] = Shape(ref: "BusResumeGap")
+  shapes["frame:add-entity-type"] = Shape(ref: "FrameAddEntityTypeCommand")
+  shapes["frame:add-tag-schema"] = Shape(ref: "FrameAddTagSchemaCommand")
+  shapes["frame:entity-type-add-failed"] = Shape(ref: "CommandError")
+  shapes["frame:entity-type-add-ok"] = Shape(kinds: [.object])
+  shapes["frame:entity-type-added"] = Shape(ref: "StoredEventResponse")
+  shapes["frame:tag-schema-add-failed"] = Shape(ref: "CommandError")
+  shapes["frame:tag-schema-add-ok"] = Shape(kinds: [.object])
+  shapes["frame:tag-schema-added"] = Shape(ref: "StoredEventResponse")
+  shapes["gather:complete"] = Shape(ref: "GatherAnnotationComplete")
+  shapes["gather:failed"] = Shape(ref: "GatherFailed")
+  shapes["gather:limits-failed"] = Shape(ref: "CommandError")
+  shapes["gather:limits-requested"] = Shape(ref: "InferenceLimitsRequest")
+  shapes["gather:limits-result"] = Shape(ref: "InferenceLimitsResult")
+  shapes["gather:referenced-by-failed"] = Shape(ref: "CommandError")
+  shapes["gather:referenced-by-requested"] = Shape(ref: "GatherReferencedByRequest")
+  shapes["gather:referenced-by-result"] = Shape(ref: "GatherReferencedByResult")
+  shapes["gather:requested"] = Shape(ref: "GatherAnnotationRequest")
+  shapes["gather:resource-complete"] = Shape(ref: "GatherResourceComplete")
+  shapes["gather:resource-failed"] = Shape(ref: "GatherResourceFailed")
+  shapes["gather:resource-requested"] = Shape(ref: "GatherResourceRequest")
+  shapes["gather:summary-failed"] = Shape(ref: "CommandError")
+  shapes["gather:summary-requested"] = Shape(ref: "GatherSummaryRequest")
+  shapes["gather:summary-result"] = Shape(
+    kinds: [.object], required: ["response"],
+    members: ["response": Shape(ref: "ContextualSummaryResponse")])
+  shapes["job:assign"] = Shape(ref: "JobAssignCommand")
+  shapes["job:assigned"] = Shape(ref: "StoredEventResponse")
+  shapes["job:cancel"] = Shape(ref: "JobCancelCommand")
+  shapes["job:cancel-failed"] = Shape(ref: "CommandError")
+  shapes["job:cancel-ok"] = Shape(
+    kinds: [.object], required: ["response"], members: ["response": Shape(ref: "JobCancelResult")])
+  shapes["job:cancel-requested"] = Shape(ref: "JobCancelRequest")
+  shapes["job:checkpoint"] = Shape(ref: "JobCheckpointCommand")
+  shapes["job:claim"] = Shape(ref: "JobClaimCommand")
+  shapes["job:claim-failed"] = Shape(ref: "CommandError")
+  shapes["job:claimed"] = Shape(ref: "JobClaimedResult")
+  shapes["job:complete"] = Shape(ref: "JobCompleteCommand")
+  shapes["job:completed"] = Shape(ref: "StoredEventResponse")
+  shapes["job:create"] = Shape(ref: "JobCreateCommand")
+  shapes["job:create-failed"] = Shape(ref: "CommandError")
+  shapes["job:created"] = Shape(ref: "JobCreatedResult")
+  shapes["job:fail"] = Shape(ref: "JobFailCommand")
+  shapes["job:failed"] = Shape(ref: "StoredEventResponse")
+  shapes["job:limits-failed"] = Shape(ref: "CommandError")
+  shapes["job:limits-requested"] = Shape(ref: "InferenceLimitsRequest")
+  shapes["job:limits-result"] = Shape(ref: "InferenceLimitsResult")
+  shapes["job:queued"] = Shape(ref: "JobQueuedEvent")
+  shapes["job:report-progress"] = Shape(ref: "JobReportProgressCommand")
+  shapes["job:start"] = Shape(ref: "JobStartCommand")
+  shapes["job:started"] = Shape(ref: "StoredEventResponse")
+  shapes["job:status-failed"] = Shape(ref: "CommandError")
+  shapes["job:status-requested"] = Shape(ref: "JobStatusRequest")
+  shapes["job:status-result"] = Shape(ref: "JobStatusResult")
+  shapes["mark:added"] = Shape(ref: "EnrichedResourceEvent")
+  shapes["mark:archive"] = Shape(ref: "MarkArchiveCommand")
+  shapes["mark:archive-failed"] = Shape(ref: "CommandError")
+  shapes["mark:archive-ok"] = Shape(kinds: [.object])
+  shapes["mark:archived"] = Shape(ref: "StoredEventResponse")
+  shapes["mark:body-update-failed"] = Shape(ref: "CommandError")
+  shapes["mark:body-updated"] = Shape(ref: "EnrichedResourceEvent")
+  shapes["mark:commit"] = Shape(ref: "MarkCommitCommand")
+  shapes["mark:commit-failed"] = Shape(ref: "CommandError")
+  shapes["mark:commit-ok"] = Shape(ref: "MarkCommitOk")
+  shapes["mark:create-error"] = Shape(ref: "ResourceErrorEvent")
+  shapes["mark:create-failed"] = Shape(ref: "CommandError")
+  shapes["mark:create-ok"] = Shape(ref: "MarkCreateOk")
+  shapes["mark:create-request"] = Shape(ref: "MarkCreateRequest")
+  shapes["mark:delegate-timeout"] = Shape(ref: "MarkDelegateTimeoutEvent")
+  shapes["mark:delete"] = Shape(ref: "MarkDeleteCommand")
+  shapes["mark:delete-error"] = Shape(ref: "ResourceErrorEvent")
+  shapes["mark:delete-failed"] = Shape(ref: "CommandError")
+  shapes["mark:delete-ok"] = Shape(ref: "MarkDeleteOk")
+  shapes["mark:entity-tag-added"] = Shape(ref: "StoredEventResponse")
+  shapes["mark:entity-tag-removed"] = Shape(ref: "StoredEventResponse")
+  shapes["mark:removed"] = Shape(ref: "StoredEventResponse")
+  shapes["mark:requested"] = Shape(ref: "MarkRequestedEvent")
+  shapes["mark:submit"] = Shape(ref: "MarkSubmitEvent")
+  shapes["mark:unarchive"] = Shape(ref: "MarkUnarchiveCommand")
+  shapes["mark:unarchive-failed"] = Shape(ref: "CommandError")
+  shapes["mark:unarchive-ok"] = Shape(kinds: [.object])
+  shapes["mark:unarchived"] = Shape(ref: "StoredEventResponse")
+  shapes["mark:update-body"] = Shape(ref: "MarkUpdateBodyCommand")
+  shapes["mark:update-entity-types"] = Shape(ref: "MarkUpdateEntityTypesCommand")
+  shapes["mark:update-entity-types-failed"] = Shape(ref: "CommandError")
+  shapes["mark:update-entity-types-ok"] = Shape(kinds: [.object])
+  shapes["match:limits-failed"] = Shape(ref: "CommandError")
+  shapes["match:limits-requested"] = Shape(ref: "InferenceLimitsRequest")
+  shapes["match:limits-result"] = Shape(ref: "InferenceLimitsResult")
+  shapes["match:resources-failed"] = Shape(ref: "CommandError")
+  shapes["match:resources-requested"] = Shape(ref: "MatchResourcesRequest")
+  shapes["match:resources-result"] = Shape(ref: "MatchResourcesResult")
+  shapes["match:search-failed"] = Shape(ref: "MatchSearchFailed")
+  shapes["match:search-requested"] = Shape(ref: "MatchSearchRequest")
+  shapes["match:search-results"] = Shape(ref: "MatchSearchResult")
+  shapes["nav:external"] = Shape(ref: "BrowseExternalNavigateEvent")
+  shapes["nav:link-clicked"] = Shape(ref: "BrowseLinkClickedEvent")
+  shapes["nav:push"] = Shape(ref: "BrowseRouterPushEvent")
+  shapes["panel:close"] = Shape(kinds: [.object])
+  shapes["panel:open"] = Shape(ref: "BrowsePanelOpenEvent")
+  shapes["panel:toggle"] = Shape(ref: "BrowsePanelToggleEvent")
+  shapes["principal:profile"] = Shape(ref: "PrincipalProfileCommand")
+  shapes["principal:profiled"] = Shape(ref: "StoredEventResponse")
+  shapes["session:joined"] = Shape(ref: "SessionJoinedEvent")
+  shapes["session:left"] = Shape(ref: "SessionLeftEvent")
+  shapes["settings:hover-delay-changed"] = Shape(ref: "SettingsHoverDelayChangedEvent")
+  shapes["settings:line-numbers-toggled"] = Shape(kinds: [.object])
+  shapes["settings:locale-changed"] = Shape(ref: "SettingsLocaleChangedEvent")
+  shapes["settings:theme-changed"] = Shape(ref: "SettingsThemeChangedEvent")
+  shapes["shell:sidebar-toggle"] = Shape(kinds: [.object])
+  shapes["smelt:rebuild-anchors"] = Shape(ref: "SmeltRebuildAnchorsCommand")
+  shapes["smelt:rebuild-anchors-failed"] = Shape(ref: "CommandError")
+  shapes["smelt:rebuild-anchors-ok"] = Shape(kinds: [.object])
+  shapes["smelt:settled"] = Shape(ref: "SmeltSettled")
+  shapes["tabs:close"] = Shape(ref: "BrowseResourceCloseEvent")
+  shapes["tabs:reorder"] = Shape(ref: "BrowseResourceReorderEvent")
+  shapes["weave:applied"] = Shape(ref: "WeaveApplied")
+  shapes["weave:rebuild"] = Shape(ref: "WeaveRebuildCommand")
+  shapes["weave:rebuild-failed"] = Shape(ref: "CommandError")
+  shapes["weave:rebuild-ok"] = Shape(kinds: [.object])
+  shapes["yield:clone"] = Shape(kinds: [.object])
+  shapes["yield:clone-create"] = Shape(ref: "YieldCloneCreateCommand")
+  shapes["yield:clone-create-failed"] = Shape(ref: "CommandError")
+  shapes["yield:clone-created"] = Shape(ref: "YieldCloneCreated")
+  shapes["yield:clone-persist"] = Shape(ref: "YieldClonePersistCommand")
+  shapes["yield:clone-persist-failed"] = Shape(ref: "CommandError")
+  shapes["yield:clone-persist-ok"] = Shape(ref: "YieldClonePersistOk")
+  shapes["yield:clone-resource-failed"] = Shape(ref: "CommandError")
+  shapes["yield:clone-resource-requested"] = Shape(ref: "YieldCloneResourceRequest")
+  shapes["yield:clone-resource-result"] = Shape(
+    kinds: [.object], required: ["response"],
+    members: ["response": Shape(ref: "GetResourceByTokenResponse")])
+  shapes["yield:clone-token-failed"] = Shape(ref: "CommandError")
+  shapes["yield:clone-token-generated"] = Shape(
+    kinds: [.object], required: ["response"],
+    members: ["response": Shape(ref: "CloneResourceWithTokenResponse")])
+  shapes["yield:clone-token-requested"] = Shape(ref: "YieldCloneTokenRequest")
+  shapes["yield:cloned"] = Shape(ref: "StoredEventResponse")
+  shapes["yield:create"] = Shape(ref: "YieldCreateCommand")
+  shapes["yield:create-failed"] = Shape(ref: "CommandError")
+  shapes["yield:create-ok"] = Shape(ref: "YieldCreateOk")
+  shapes["yield:created"] = Shape(ref: "StoredEventResponse")
+  shapes["yield:moved"] = Shape(ref: "StoredEventResponse")
+  shapes["yield:representation-added"] = Shape(ref: "StoredEventResponse")
+  shapes["yield:representation-removed"] = Shape(ref: "StoredEventResponse")
+  shapes["yield:update"] = Shape(ref: "YieldUpdateCommand")
+  shapes["yield:update-failed"] = Shape(ref: "CommandError")
+  shapes["yield:update-ok"] = Shape(ref: "YieldUpdateOk")
+  shapes["yield:updated"] = Shape(ref: "StoredEventResponse")
+  return shapes
+}()
+internal enum CacheQuery: String, Codable, Sendable, CaseIterable {
+  case resource = "resource"
+  case annotations = "annotations"
+  case annotation = "annotation"
+  case events = "events"
+  case referencedBy = "referencedBy"
+  case resources = "resources"
+  case matchedResources = "matchedResources"
+  case entityTypes = "entityTypes"
+  case tagSchemas = "tagSchemas"
+  case engines = "engines"
+}
+internal enum CacheRefreshTrigger: String, Codable, Sendable, CaseIterable {
+  case reopened = "reopened"
+  case unreadable = "unreadable"
+  case busResumeGap = "bus:resume-gap"
+  case markAdded = "mark:added"
+  case markRemoved = "mark:removed"
+  case markDeleteOk = "mark:delete-ok"
+  case markBodyUpdated = "mark:body-updated"
+  case markEntityTagAdded = "mark:entity-tag-added"
+  case markEntityTagRemoved = "mark:entity-tag-removed"
+  case markArchived = "mark:archived"
+  case markUnarchived = "mark:unarchived"
+  case yieldCreated = "yield:created"
+  case yieldUpdated = "yield:updated"
+  case yieldCloned = "yield:cloned"
+  case yieldMoved = "yield:moved"
+  case frameEntityTypeAdded = "frame:entity-type-added"
+  case frameTagSchemaAdded = "frame:tag-schema-added"
+}
+internal enum CacheRefreshWhen: String, Codable, Sendable, CaseIterable {
+  case enriched = "enriched"
+  case unenriched = "unenriched"
+}
+internal enum CacheRefreshReach: String, Codable, Sendable, CaseIterable {
+  case subject = "subject"
+  case held = "held"
+}
+/// What one trigger does to the cache. `resource` and `annotation` are the ways into its
+/// event's payload to the keys a `subject` row reaches, and `carries` the way to the value
+/// it writes: each the names of the members it is within, and its own.
+internal struct CacheRefreshRow: Sendable {
+  let on: CacheRefreshTrigger
+  let when: CacheRefreshWhen?
+  let reach: CacheRefreshReach
+  let resource: [String]?
+  let annotation: [String]?
+  let carries: [String]?
+  let refetches: [CacheQuery]
+  let writes: [CacheQuery]
+  let removes: [CacheQuery]
+}
+internal let cacheRefresh: [CacheRefreshRow] = [
+  CacheRefreshRow(
+    on: .reopened, when: nil, reach: .held, resource: nil, annotation: nil, carries: nil,
+    refetches: [.resources, .matchedResources, .resource, .entityTypes, .tagSchemas, .engines],
+    writes: [], removes: []),
+  CacheRefreshRow(
+    on: .unreadable, when: nil, reach: .held, resource: nil, annotation: nil, carries: nil,
+    refetches: [
+      .resource, .annotations, .annotation, .events, .referencedBy, .resources, .matchedResources,
+      .entityTypes, .tagSchemas, .engines,
+    ], writes: [], removes: []),
+  CacheRefreshRow(
+    on: .busResumeGap, when: nil, reach: .subject, resource: ["scope"], annotation: nil,
+    carries: nil, refetches: [.annotations, .annotation, .resource, .events, .referencedBy],
+    writes: [], removes: []),
+  CacheRefreshRow(
+    on: .markAdded, when: nil, reach: .subject, resource: ["resourceId"], annotation: nil,
+    carries: nil, refetches: [.annotations, .events], writes: [], removes: []),
+  CacheRefreshRow(
+    on: .markRemoved, when: nil, reach: .subject, resource: ["resourceId"],
+    annotation: ["payload", "annotationId"], carries: nil, refetches: [.annotations, .events],
+    writes: [], removes: [.annotation]),
+  CacheRefreshRow(
+    on: .markDeleteOk, when: nil, reach: .subject, resource: nil,
+    annotation: ["response", "annotationId"], carries: nil, refetches: [], writes: [],
+    removes: [.annotation]),
+  CacheRefreshRow(
+    on: .markBodyUpdated, when: .enriched, reach: .subject, resource: ["resourceId"],
+    annotation: ["annotation", "id"], carries: ["annotation"], refetches: [.events],
+    writes: [.annotations, .annotation], removes: []),
+  CacheRefreshRow(
+    on: .markBodyUpdated, when: .unenriched, reach: .subject, resource: ["resourceId"],
+    annotation: ["payload", "annotationId"], carries: nil,
+    refetches: [.annotations, .annotation, .events], writes: [], removes: []),
+  CacheRefreshRow(
+    on: .markEntityTagAdded, when: nil, reach: .subject, resource: ["resourceId"], annotation: nil,
+    carries: nil, refetches: [.annotations, .resource, .events], writes: [], removes: []),
+  CacheRefreshRow(
+    on: .markEntityTagRemoved, when: nil, reach: .subject, resource: ["resourceId"],
+    annotation: nil, carries: nil, refetches: [.annotations, .resource, .events], writes: [],
+    removes: []),
+  CacheRefreshRow(
+    on: .markArchived, when: nil, reach: .subject, resource: ["resourceId"], annotation: nil,
+    carries: nil, refetches: [.resource, .resources, .matchedResources], writes: [], removes: []),
+  CacheRefreshRow(
+    on: .markUnarchived, when: nil, reach: .subject, resource: ["resourceId"], annotation: nil,
+    carries: nil, refetches: [.resource, .resources, .matchedResources], writes: [], removes: []),
+  CacheRefreshRow(
+    on: .yieldCreated, when: nil, reach: .subject, resource: ["resourceId"], annotation: nil,
+    carries: nil, refetches: [.resource, .resources, .matchedResources], writes: [], removes: []),
+  CacheRefreshRow(
+    on: .yieldUpdated, when: nil, reach: .subject, resource: ["resourceId"], annotation: nil,
+    carries: nil, refetches: [.resource, .resources, .matchedResources], writes: [], removes: []),
+  CacheRefreshRow(
+    on: .yieldCloned, when: nil, reach: .subject, resource: ["resourceId"], annotation: nil,
+    carries: nil, refetches: [.resource, .resources, .matchedResources], writes: [], removes: []),
+  CacheRefreshRow(
+    on: .yieldMoved, when: nil, reach: .subject, resource: ["resourceId"], annotation: nil,
+    carries: nil, refetches: [.resource, .resources, .matchedResources], writes: [], removes: []),
+  CacheRefreshRow(
+    on: .frameEntityTypeAdded, when: nil, reach: .subject, resource: nil, annotation: nil,
+    carries: nil, refetches: [.entityTypes], writes: [], removes: []),
+  CacheRefreshRow(
+    on: .frameTagSchemaAdded, when: nil, reach: .subject, resource: nil, annotation: nil,
+    carries: nil, refetches: [.tagSchemas], writes: [], removes: []),
+]
+/// The triggers that are channels of the bus, with the stamps each payload declares.
+internal let cacheRefreshChannels: [CacheRefreshTrigger: Set<String>] = [
+  .busResumeGap: Channels.busResumeGap.stamps,
+  .markAdded: Channels.markAdded.stamps,
+  .markRemoved: Channels.markRemoved.stamps,
+  .markDeleteOk: Channels.markDeleteOk.stamps,
+  .markBodyUpdated: Channels.markBodyUpdated.stamps,
+  .markEntityTagAdded: Channels.markEntityTagAdded.stamps,
+  .markEntityTagRemoved: Channels.markEntityTagRemoved.stamps,
+  .markArchived: Channels.markArchived.stamps,
+  .markUnarchived: Channels.markUnarchived.stamps,
+  .yieldCreated: Channels.yieldCreated.stamps,
+  .yieldUpdated: Channels.yieldUpdated.stamps,
+  .yieldCloned: Channels.yieldCloned.stamps,
+  .yieldMoved: Channels.yieldMoved.stamps,
+  .frameEntityTypeAdded: Channels.frameEntityTypeAdded.stamps,
+  .frameTagSchemaAdded: Channels.frameTagSchemaAdded.stamps,
+]
+/// The live queries whose answers a client keeps across its lives, for the person
+/// signed in.
+internal enum KeptQuery: String, Codable, Sendable, CaseIterable {
+  case resource = "resource"
+  case annotations = "annotations"
+  case annotation = "annotation"
+  case entityTypes = "entityTypes"
+  case tagSchemas = "tagSchemas"
+}
+internal typealias KeptResource = ResourceDescriptor
+internal typealias KeptAnnotations = GetAnnotationsResponse
+internal typealias KeptAnnotation = Annotation
+internal typealias KeptEntityTypes = [String]
+internal typealias KeptTagSchemas = [TagSchema]
+extension KeptQuery {
+  /// What `text` keeps of this query: each entry whose key and value it keeps.
+  func document(_ text: String?) -> KeptDocument {
+    switch self {
+    case .resource: KeptDocument(text, keys: ResourceId.self, values: KeptResource.self)
+    case .annotations: KeptDocument(text, keys: ResourceId.self, values: KeptAnnotations.self)
+    case .annotation: KeptDocument(text, keys: AnnotationId.self, values: KeptAnnotation.self)
+    case .entityTypes: KeptDocument(text, keys: WholeKey.self, values: KeptEntityTypes.self)
+    case .tagSchemas: KeptDocument(text, keys: WholeKey.self, values: KeptTagSchemas.self)
+    }
+  }
+}
+internal let wholeKey = "_"
+internal let cacheDocumentVersion = 1
+internal let keptPlace = "PersistedEventId"
