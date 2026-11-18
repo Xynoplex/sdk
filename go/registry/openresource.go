@@ -26,49 +26,25 @@ type OpenResource struct {
 	StorageURI string `json:"storageUri,omitempty"`
 }
 
-// TabVerdict is what checking one open resource against its knowledge base
-// concluded.
-type TabVerdict string
-
-const (
-	// TabGone: the knowledge base said the resource does not exist.
-	TabGone TabVerdict = "gone"
-	// TabReady: the knowledge base has it, and said what it is.
-	TabReady TabVerdict = "ready"
-	// TabUnknown: the check failed some other way.
-	TabUnknown TabVerdict = "unknown"
-)
-
-// TabCheck is one open resource's verdict.
-//
-// TabGone is the only verdict that removes, and it means the knowledge base
-// said the resource does not exist, not that the check failed. A transport
-// failure, a timeout and a peer that is down are all TabUnknown, and an
-// unknown resource stays open: closing everything because a service was
-// briefly down would be worse than the stale entries this removes.
-type TabCheck struct {
-	Verdict TabVerdict
-	// Name and MediaType are what the knowledge base said of a resource it
-	// has, a TabReady's alone. MediaType is "" when it said none.
-	Name      string
-	MediaType string
-}
-
 // ApplyTabChecks applies each verdict to list: it drops what is gone, takes
 // the name and media type of what was found, and leaves everything else as it
 // was. One with no verdict is left: it was opened while the checks were in
-// flight.
-func ApplyTabChecks(list []OpenResource, checks map[api.ResourceId]TabCheck) []OpenResource {
+// flight. Only gone removes: closing everything because a service was briefly
+// down would be worse than the stale entries this removes.
+func ApplyTabChecks(list []OpenResource, checks map[api.ResourceId]api.TabCheck) []OpenResource {
 	kept := []OpenResource{}
 	for _, tab := range list {
-		check, checked := checks[tab.ID]
-		switch {
-		case checked && check.Verdict == TabGone:
-			continue
-		case checked && check.Verdict == TabReady:
-			tab.Name = check.Name
-			if check.MediaType != "" {
-				tab.MediaType = check.MediaType
+		if check, checked := checks[tab.ID]; checked {
+			// A check that states no verdict of its members leaves the tab.
+			member, _ := check.ValueByDiscriminator()
+			switch verdict := member.(type) {
+			case api.TabCheckGone:
+				continue
+			case api.TabCheckReady:
+				tab.Name = verdict.Name
+				if verdict.MediaType != nil {
+					tab.MediaType = *verdict.MediaType
+				}
 			}
 		}
 		kept = append(kept, tab)

@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	xynolog "github.com/xynolog/sdk/go"
+	"github.com/xynolog/sdk/go/api"
 )
 
 // noSessions is the factory of a registry with no knowledge bases, which asks
@@ -21,7 +22,7 @@ func (noSessions) Session(context.Context, SessionFactoryOptions) (*xynolog.Sess
 	panic("a registry with no knowledge bases asks for no session")
 }
 
-func (noSessions) Revoke(context.Context, StoredSession) {}
+func (noSessions) Revoke(context.Context, api.StoredSession) {}
 
 // unread is a registry with no knowledge bases, so it brings up no session.
 func unread(t *testing.T) *XynologBrowser {

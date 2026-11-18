@@ -25,26 +25,26 @@ import xynolog.discovery.Managed;
 import xynolog.http.AuthorizationKt;
 import xynolog.http.HttpSessionFactory;
 import xynolog.identifiers.ResourceId;
-import xynolog.registry.KbReadKind;
-import xynolog.registry.KbSessionStatus;
 import xynolog.registry.KeepingKt;
 import xynolog.registry.OpenKt;
 import xynolog.registry.OpenResource;
 import xynolog.registry.XynologBrowser;
 import xynolog.registry.XynologBrowserConfig;
 import xynolog.registry.StoredKt;
-import xynolog.registry.StoredSession;
-import xynolog.registry.TabCheck;
-import xynolog.registry.TabVerdict;
-import xynolog.session.SessionEndReason;
-import xynolog.session.SessionEnded;
 import xynolog.session.SessionSignals;
 import xynolog.storage.MemoryStorage;
 import xynolog.storage.SessionStorage;
 import xynolog.testing.ScriptedSessions;
 import xynolog.testing.SharedStorage;
+import xynolog.types.KbReadVerdictNoVerdict;
+import xynolog.types.KbSessionStatus;
 import xynolog.types.KnowledgeBase;
 import xynolog.types.LocalEndpoint;
+import xynolog.types.SessionEndReason;
+import xynolog.types.SessionEnded;
+import xynolog.types.StoredSession;
+import xynolog.types.TabCheckGone;
+import xynolog.types.TabCheckReady;
 
 /**
  * The registry of knowledge bases, discovery and a redirect sign-in as a Java
@@ -97,7 +97,7 @@ final class RegistryTest {
             // Nothing is opened without a live session, and with none there is nothing to ask.
             browser.addOpenResource(new ResourceId("res-1"), "One");
             assertEquals(List.of(), browser.getOpenResources().getValue());
-            assertEquals(KbReadKind.NoVerdict, browser.readActiveKbFuture().get(10, SECONDS).getKind());
+            assertInstanceOf(KbReadVerdictNoVerdict.class, browser.readActiveKbFuture().get(10, SECONDS));
         }
     }
 
@@ -169,8 +169,8 @@ final class RegistryTest {
         List<OpenResource> ordered = OpenKt.sortOpenResources(List.of(later, first));
         assertEquals(List.of(first, later), ordered);
         List<OpenResource> kept = OpenKt.applyTabChecks(ordered, Map.of(
-                new ResourceId("first"), new TabCheck(TabVerdict.Gone),
-                new ResourceId("later"), new TabCheck(TabVerdict.Ready, "Its name now")));
+                new ResourceId("first"), TabCheckGone.builder().build(),
+                new ResourceId("later"), TabCheckReady.builder("Its name now").build()));
         assertEquals(1, kept.size());
         assertEquals("Its name now", kept.get(0).getName());
         assertEquals("text/plain", kept.get(0).getMediaType());
@@ -180,8 +180,8 @@ final class RegistryTest {
     void theSessionsSignalsAreReadFromJava() throws Exception {
         try (SessionSignals signals = new SessionSignals()) {
             assertEquals(Optional.empty(), first(signals.getSessionEnded().asPublisher()).get(10, SECONDS));
-            signals.notifySessionEnded(SessionEndReason.EXPIRED);
-            assertEquals(Optional.of(new SessionEnded(SessionEndReason.EXPIRED)), first(signals.getSessionEnded().asPublisher()).get(10, SECONDS));
+            signals.notifySessionEnded(SessionEndReason.Expired);
+            assertEquals(Optional.of(new SessionEnded(SessionEndReason.Expired)), first(signals.getSessionEnded().asPublisher()).get(10, SECONDS));
             signals.acknowledgeSessionEnded();
             assertNull(signals.getSessionEnded().getValue());
         }

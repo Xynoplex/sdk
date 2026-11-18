@@ -134,7 +134,7 @@ type world struct {
 	answered *api.UserResponse
 	// holding is the token the session held as each ask was made.
 	holding []string
-	told    []xynolog.SessionEndReason
+	told    []api.SessionEndReason
 	// heard is what the session says on its errors stream, and closed ends
 	// it, its client and the client's transport.
 	heard  *hearing
@@ -191,7 +191,7 @@ func (w *world) start(t *testing.T) *xynolog.Session {
 		Kept:     w.kept,
 		Refresh:  w.refresh,
 		Validate: w.validate,
-		OnAuthFailed: func(reason xynolog.SessionEndReason) {
+		OnAuthFailed: func(reason api.SessionEndReason) {
 			w.mu.Lock()
 			defer w.mu.Unlock()
 			w.told = append(w.told, reason)
@@ -398,9 +398,9 @@ func isAsStated(t *testing.T, row sessionRow, w *world, session *xynolog.Session
 	told := slices.Clone(w.told)
 	w.mu.Unlock()
 	errs := codes(ownErrors(w.heard.rest(t, w.closed)))
-	var wantTold []xynolog.SessionEndReason
+	var wantTold []api.SessionEndReason
 	if row.Told != nil {
-		wantTold = []xynolog.SessionEndReason{xynolog.SessionEndReason(*row.Told)}
+		wantTold = []api.SessionEndReason{api.SessionEndReason(*row.Told)}
 	}
 	if !slices.Equal(told, wantTold) {
 		t.Errorf("%s: told %v, want %v", row.Why, told, wantTold)
@@ -1495,12 +1495,12 @@ func TestASignInUnreadableAtARenewalIsARenewalWithNoAnswer(t *testing.T) {
 					t.Fatal(err)
 				}
 				var mu sync.Mutex
-				var told []xynolog.SessionEndReason
+				var told []api.SessionEndReason
 				client := testClient()
 				session, err := xynolog.ResumeSession(context.Background(), xynolog.ResumeConfig{
 					Kb: localTarget(t), Client: client.Client, Kept: kept, Token: xynolog.NewVariable(""),
 					HTTP: &http.Client{}, Timing: timing, SkipAskingWhoTokenIs: true,
-					OnAuthFailed: func(reason xynolog.SessionEndReason) {
+					OnAuthFailed: func(reason api.SessionEndReason) {
 						mu.Lock()
 						defer mu.Unlock()
 						told = append(told, reason)
@@ -1564,7 +1564,7 @@ func TestARenewalAfterWhichTheSignInCannotBeReadDoesNotEndTheSession(t *testing.
 		held := keptUnexpired(t, kept.MemorySignIn)
 		var mu sync.Mutex
 		renewals := 0
-		var told []xynolog.SessionEndReason
+		var told []api.SessionEndReason
 		session, heard, _ := started(t, testClient(), xynolog.SessionConfig{
 			Kb: api.KbTarget{Id: kb}, Token: xynolog.NewVariable(""), Kept: kept,
 			// Nothing to renew with, as far as the renewal can tell.
@@ -1574,7 +1574,7 @@ func TestARenewalAfterWhichTheSignInCannotBeReadDoesNotEndTheSession(t *testing.
 				renewals++
 				return "", nil
 			},
-			OnAuthFailed: func(reason xynolog.SessionEndReason) {
+			OnAuthFailed: func(reason api.SessionEndReason) {
 				mu.Lock()
 				defer mu.Unlock()
 				told = append(told, reason)

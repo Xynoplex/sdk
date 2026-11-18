@@ -30,7 +30,7 @@ func cacheKey(_ kbId: String, _ personKey: String, _ query: KeptQuery) -> String
 /// Deletes what every client kept on the knowledge base `kbId` of the person `forgotten`, a saved
 /// sign-in just forgotten, named: each persisted query's document and the stream's places. A
 /// sign-in that named nobody leaves everything.
-func forgetKept(_ storage: any SessionStorage, kbId: String, of forgotten: HeldSignIn?) throws {
+func forgetKept(_ storage: any SessionStorage, kbId: String, of forgotten: StoredSession?) throws {
   guard let person = forgotten?.personKey else { return }
   for query in KeptQuery.allCases { try storage.delete(cacheKey(kbId, person, query)) }
   try storage.delete(lastEventIdKey(kbId, person))
@@ -50,8 +50,8 @@ func decodedStorage<Value: Decodable>(_ type: Value.Type, _ text: String?) -> Va
   return try? JSONDecoder().decode(type, from: Data(text.utf8))
 }
 
-public func storedSession(_ storage: any SessionStorage, kbId: String) throws -> HeldSignIn? {
-  decodedStorage(HeldSignIn.self, try storage.get(sessionKey(kbId)))
+public func storedSession(_ storage: any SessionStorage, kbId: String) throws -> StoredSession? {
+  decodedStorage(StoredSession.self, try storage.get(sessionKey(kbId)))
 }
 
 /// Saves `session`, a new sign-in, as the knowledge base `kbId`'s in the place of the saved one,
@@ -60,7 +60,7 @@ public func storedSession(_ storage: any SessionStorage, kbId: String) throws ->
 /// theirs. Every save of a new sign-in into a storage is this one; a renewal is no new sign-in, and
 /// keeps its person (``SignInKept/renewed(read:access:refresh:)``).
 public func storeSession(
-  _ storage: any SessionStorage, kbId: String, session: HeldSignIn
+  _ storage: any SessionStorage, kbId: String, session: StoredSession
 ) throws {
   try forgetKept(storage, kbId: kbId, of: swapStoredSession(storage, kbId: kbId, with: session))
 }
@@ -74,15 +74,15 @@ public func clearStoredSession(_ storage: any SessionStorage, kbId: String) thro
 /// Puts `signIn` (nil: nothing) in the place of the knowledge base `kbId`'s stored sign-in in one
 /// update, and gives the one it replaced: the person whose keys forgetting it deletes.
 func swapStoredSession(
-  _ storage: any SessionStorage, kbId: String, with signIn: HeldSignIn?
-) throws -> HeldSignIn? {
+  _ storage: any SessionStorage, kbId: String, with signIn: StoredSession?
+) throws -> StoredSession? {
   let text = try signIn.map { try storedText($0) }
   let replaced = Mutex<String?>(nil)
   try storage.update(sessionKey(kbId)) { old in
     replaced.withLock { $0 = old }
     return text
   }
-  return decodedStorage(HeldSignIn.self, replaced.withLock { $0 })
+  return decodedStorage(StoredSession.self, replaced.withLock { $0 })
 }
 
 func readKnowledgeBases(_ text: String?) -> [KnowledgeBase] {
@@ -108,16 +108,16 @@ struct RegistryKept: SignInKept {
   let storage: any SessionStorage
   let kbId: String
 
-  func held() async throws -> HeldSignIn? { try storedSession(storage, kbId: kbId) }
-  func keep(_ signIn: HeldSignIn) async throws {
+  func held() async throws -> StoredSession? { try storedSession(storage, kbId: kbId) }
+  func keep(_ signIn: StoredSession) async throws {
     try storeSession(storage, kbId: kbId, session: signIn)
   }
   func forget() async throws { try clearStoredSession(storage, kbId: kbId) }
 
-  func renewed(read: HeldSignIn, access: String, refresh: String) async throws -> String? {
+  func renewed(read: StoredSession, access: String, refresh: String) async throws -> String? {
     let answer = Mutex<String?>(nil)
     try storage.update(sessionKey(kbId)) { text in
-      guard let current = decodedStorage(HeldSignIn.self, text) else { return text }
+      guard let current = decodedStorage(StoredSession.self, text) else { return text }
       guard current.access == read.access, current.refresh == read.refresh else {
         answer.withLock { $0 = current.access }
         return text
@@ -135,7 +135,7 @@ struct RegistryKept: SignInKept {
   func recordPersonKey(holding access: String, _ personKey: String) async throws -> Bool {
     let recorded = Mutex(false)
     try storage.update(sessionKey(kbId)) { text in
-      guard var current = decodedStorage(HeldSignIn.self, text), current.access == access else {
+      guard var current = decodedStorage(StoredSession.self, text), current.access == access else {
         return text
       }
       guard current.personKey == nil else {

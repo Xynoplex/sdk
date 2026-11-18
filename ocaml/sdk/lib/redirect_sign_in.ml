@@ -1,8 +1,3 @@
-type connection_identity = Registry.connection_identity = {
-  did : string;
-  description : [ `KbDescription ] Models.t;
-}
-
 type identity_unverifiable_error = string
 
 type begin_authorization_options = {

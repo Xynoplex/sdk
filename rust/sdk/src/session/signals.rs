@@ -16,58 +16,8 @@
 
 use crate::state::Held;
 use crate::state_unit::StateUnit;
-use serde::{Serialize, Serializer};
+use crate::types::{KbIdentityConflict, PermissionDenied, SessionEndReason, SessionEnded};
 use tokio::sync::watch;
-
-/// Why a session ended: its issuer refused to renew its token (`Expired`), or
-/// the gateway refused a token its issuer had just issued (`Refused`). The
-/// vocabulary is protocol/specs/src/session/cases.json's `told`.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum SessionEndReason {
-    Expired,
-    Refused,
-}
-
-impl SessionEndReason {
-    /// The reason as protocol/specs/src/session/cases.json names it.
-    pub fn as_str(self) -> &'static str {
-        match self {
-            SessionEndReason::Expired => "expired",
-            SessionEndReason::Refused => "refused",
-        }
-    }
-}
-
-impl Serialize for SessionEndReason {
-    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        serializer.serialize_str(self.as_str())
-    }
-}
-
-/// A session ended, and why.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct SessionEnded {
-    pub reason: SessionEndReason,
-}
-
-/// A request was refused for lack of permission. `detail` is the refusal's
-/// own message, untranslated; none when there is none.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct PermissionDenied {
-    pub detail: Option<String>,
-}
-
-/// What a registered entry said it was, and what answered. Both, because
-/// neither alone can be acted on: a person has to recognise which knowledge
-/// base they registered and which one is there now.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct KbIdentityConflict {
-    pub expected_did: String,
-    pub observed_did: String,
-}
 
 /// See the module's documentation.
 pub struct SessionSignals {

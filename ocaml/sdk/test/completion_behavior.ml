@@ -483,7 +483,12 @@ let real_delivery () =
           {|{"name":"Test","domain":"kb.example"}|}
         |> Result.get_ok
       in
-      Ok (test.session, { Registry.did = "did:web:kb.example"; description }));
+      Ok
+        ( test.session,
+          {
+            Records.Connection_identity.did = "did:web:kb.example";
+            description;
+          } ));
   let factory = Testing.factory scripted in
   let registry_storage : Registry.storage =
     {

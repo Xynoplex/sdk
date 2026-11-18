@@ -10,39 +10,6 @@ type storage = {
   remove : string -> unit;
 }
 
-type stored_session = {
-  access : string;
-  refresh : string;
-  client_id : string;
-  token_endpoint : string;
-  revocation_endpoint : string option;
-}
-
-type expected = { did : string; name : string option }
-
-type connection_identity = {
-  did : string;
-  description : [ `KbDescription ] Models.t;
-}
-
-type signed_in = {
-  endpoint : endpoint;
-  description : [ `KbDescription ] Models.t;
-  session : stored_session;
-  kb_id : string option;
-  expected_did : string option;
-  expected_name : string option;
-}
-
-type sign_in_outcome = { kb : knowledge_base; expected : expected option }
-
-type kb_read_verdict =
-  | Recorded
-  | Conflict of { observed_did : string; observed_name : string }
-  | NoVerdict
-
-type kb_session_status = Authenticated | Expired | SignedOut
-
 type open_resource = {
   id : string;
   name : string;
@@ -52,11 +19,6 @@ type open_resource = {
   storage_uri : string option;
 }
 
-type tab_check =
-  | Gone
-  | Ready of { name : string; media_type : string option }
-  | Unknown
-
 type session_factory_options = {
   kb : knowledge_base;
   storage : storage;
@@ -65,7 +27,7 @@ type session_factory_options = {
 
 type session_factory =
   session_factory_options ->
-  (State_units.Session.t * connection_identity, string) result
+  (State_units.Session.t * Records.Connection_identity.t, string) result
 (** Builds the knowledge base's session, and reads none of its errors: the
     registry reads them from the first thing the session said. The registry
     makes the [signals] it is handed for the session. *)
@@ -93,9 +55,12 @@ val active_id : xynolog_browser -> string option
 val active_client : xynolog_browser -> Client.t option
 
 val record_sign_in :
-  xynolog_browser -> signed_in -> (sign_in_outcome, string) result
+  xynolog_browser ->
+  Records.Signed_in.t ->
+  (Records.Sign_in_outcome.t, string) result
 
-val describe_connection : Client.t -> (connection_identity, string) result
+val describe_connection :
+  Client.t -> (Records.Connection_identity.t, string) result
 
 val activate :
   xynolog_browser -> string -> (State_units.Session.t, activation_error) result
@@ -127,7 +92,7 @@ val close : xynolog_browser -> unit
     flush meets is said on [errors], and then ends [errors]. *)
 
 val sign_out : xynolog_browser -> string -> unit
-val session_status : xynolog_browser -> string -> kb_session_status
+val session_status : xynolog_browser -> string -> Enums.Kb_session_status.t
 
 val http_session_factory :
   (session_factory_options -> (State_units.Session.t, string) result) ->
@@ -136,7 +101,9 @@ val http_session_factory :
 val sort_open_resources : open_resource list -> open_resource list
 
 val apply_tab_checks :
-  open_resource list -> (string * tab_check) list -> open_resource list
+  open_resource list ->
+  (string * Records.Tab_check.t) list ->
+  open_resource list
 
 val knowledge_bases_key : string
 val active_key : string
@@ -144,8 +111,8 @@ val open_resources_by_kb_key : string
 val last_viewed_resource_by_kb_key : string
 val session_key : string -> string
 val kb_of_session_key : string -> string option
-val stored_session : storage -> string -> stored_session option
-val store_session : storage -> string -> stored_session -> unit
+val stored_session : storage -> string -> Records.Stored_session.t option
+val store_session : storage -> string -> Records.Stored_session.t -> unit
 val clear_stored_session : storage -> string -> unit
 val load_knowledge_bases : storage -> knowledge_base list
 val save_knowledge_bases : storage -> knowledge_base list -> unit
@@ -159,8 +126,8 @@ val set_last_viewed : xynolog_browser -> kb_id:string -> string option -> unit
 val pending_authorization_key : string
 
 type kept_sign_in = {
-  held : unit -> stored_session option;
-  keep : stored_session -> unit;
+  held : unit -> Records.Stored_session.t option;
+  keep : Records.Stored_session.t -> unit;
   forget : unit -> unit;
 }
 
@@ -203,6 +170,6 @@ val complete_sign_in :
   callback:string ->
   describe:
     (endpoint -> access:string -> ([ `KbDescription ] Models.t, string) result) ->
-  (sign_in_outcome, string) result
+  (Records.Sign_in_outcome.t, string) result
 (** Consumes the pending sign-in before exchanging the code. [describe] reads
     the verified knowledge-base description using the new credentials. *)

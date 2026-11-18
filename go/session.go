@@ -29,18 +29,6 @@ import (
 	"github.com/xynolog/sdk/go/internal/kept"
 )
 
-// SessionEndReason is why a session ended, as its host is told: not a
-// sentence. What a person reads is the host's to say, in their language.
-type SessionEndReason string
-
-const (
-	// SessionEndExpired: its issuer refused to renew its token.
-	SessionEndExpired SessionEndReason = "expired"
-	// SessionEndRefused: the gateway refused a token its issuer had just
-	// issued.
-	SessionEndRefused SessionEndReason = "refused"
-)
-
 // HeldSignIn is what is kept of a sign-in: the tokens an issuer issued, the
 // client they were issued to, and the issuer's endpoints a renewal and a
 // sign-out need, learned once at sign-in so no session asks again.
@@ -167,7 +155,7 @@ type SessionConfig struct {
 	// service's session asks nobody.
 	Validate func(ctx context.Context, token string) (api.UserResponse, error)
 	// OnAuthFailed is told why the session ended, when it ends. May be nil.
-	OnAuthFailed func(SessionEndReason)
+	OnAuthFailed func(api.SessionEndReason)
 	Timing       Timing
 	// Random is what the jitter of a renewal tried again after it got no
 	// answer is drawn from, as EqualJitter draws it.
@@ -398,7 +386,7 @@ func (s *Session) Refresh(_ context.Context, refused string) (string, bool) {
 		// A gateway that could not be asked refused nothing.
 		var refused *TransportError
 		if errors.As(err, &refused) && refused.Code == TransportErrorCodeUnauthorized && held {
-			s.signedOut(SessionEndRefused, &SessionError{Code: SessionErrorCodeCredentialRefused, Message: justIssuedAndRefused, KbID: s.config.Kb.Id})
+			s.signedOut(api.SessionEndReasonRefused, &SessionError{Code: SessionErrorCodeCredentialRefused, Message: justIssuedAndRefused, KbID: s.config.Kb.Id})
 		}
 	} else if held {
 		s.user.Set(&user)
@@ -556,12 +544,12 @@ func (s *Session) unrenewed(failure error) {
 		s.failed(err)
 		return
 	}
-	s.signedOut(SessionEndExpired, err)
+	s.signedOut(api.SessionEndReasonExpired, err)
 }
 
 // signedOut is the session's end, whichever way it ended: its credential is
 // forgotten, and its host is told why.
-func (s *Session) signedOut(told SessionEndReason, err *SessionError) {
+func (s *Session) signedOut(told api.SessionEndReason, err *SessionError) {
 	s.unanswered.Set(false)
 	s.config.Token.Set("")
 	s.user.Set(nil)
@@ -655,7 +643,7 @@ func (s *Session) start(kept HeldSignIn, has, withheld bool) {
 // about next, given to the transport, or false when there is none.
 func (s *Session) answerAtStart(token, held string, justIssued bool) (string, bool) {
 	if justIssued {
-		s.signedOut(SessionEndRefused, &SessionError{Code: SessionErrorCodeCredentialRefused, Message: justIssuedAndRefused, KbID: s.config.Kb.Id})
+		s.signedOut(api.SessionEndReasonRefused, &SessionError{Code: SessionErrorCodeCredentialRefused, Message: justIssuedAndRefused, KbID: s.config.Kb.Id})
 		return "", false
 	}
 	// The session's token changed while the gateway was asked: it fell due

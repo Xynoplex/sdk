@@ -11,8 +11,8 @@
 //!
 //! Every position and every length here counts Unicode code points.
 
-use super::MatchQuality;
 use crate::text_offsets::Offsets;
+use crate::types::MatchQuality;
 
 /// A span of a text, as two offsets: the code points from `start` up to but
 /// not including `end`.

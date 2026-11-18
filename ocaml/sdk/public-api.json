@@ -145,7 +145,7 @@
     "lib/discovery.mli": "c9924f5e42d374573dc62eb9aa405126a28769a0ce72b65a2187aae704c33747",
     "lib/dune": "24d5479fcb9187d59547c0cf81851fbcd0ba31d1742c33bc2348b74fd3edb7da",
     "lib/encoding_facts.ml": "dc9602d08894d9a3bd5334cb3254218f7a74dad0528d552acb00cec4061bb9bb",
-    "lib/enums.ml": "c6a59761d10dbc3d2db779ec9a9f808381c8c19362984c5eb2a8cd4a03e48bc5",
+    "lib/enums.ml": "6c448b6389865cc8987c536d47f483221fb8d2eff0b8aad696da5d4857809f5c",
     "lib/error_codes.ml": "8b3cdc0715ef66280788464e79517d7a00147913e88e9c065ed13c396c84bb93",
     "lib/frame.ml": "6e0ba59a959758ccdc672cec1d8d802be2f882a5d1354ded4e5ab21398716d54",
     "lib/gather.ml": "c1b78c87f2e5c35a9636e61aa0ca9b1477a41341f38acda6ff396cb380b3d3b7",
@@ -190,11 +190,11 @@
     "lib/pattern.ml": "a41d5ebb9ebc0eee59522a4d883e2a5281202c4fbebb0a2040b267961bf677ad",
     "lib/record_reader.ml": "053aa7e17c38b3cedb840b7623fd666e17717a5bbe8e1087b56aaf05d8ac3d89",
     "lib/record_reader.mli": "8f988856668a1d426cb6384fa2bf2703d6d791be33f82c8db87c2e1fd1919ce5",
-    "lib/records.ml": "6397f77092bc40c69bea8dbe8e4789bde5b755d923ef97737e244443369ea2d1",
-    "lib/redirect_sign_in.ml": "0d4bab713f5a86ddd705b15dca1aa01919702bfc5484469d104c9a1776d723fd",
+    "lib/records.ml": "4c3280cc6da43dda56f6450297e62947eca691e62acc8aae0e052244ece739a8",
+    "lib/redirect_sign_in.ml": "c0f36739c64b48556f18b04b1849e5033a500e681fc6ea0aa7bc357b4e8fb935",
     "lib/refusals.ml": "53b42a4d41b53e88968f5010a843038ffa0ddbcd842f390ce88acba818ad15d1",
-    "lib/registry.ml": "c93ac089204cf0e3a42301c82df77ad129a39253735ad969483f5699bd88b23c",
-    "lib/registry.mli": "387a4e570ce45abf0a381bdf6fcd88a5eb522859475707bf91d45e4dc2af825c",
+    "lib/registry.ml": "9436c228637460c8845759b1e4ac309088ec54ab805fbdc16331481ed8b5f97c",
+    "lib/registry.mli": "007fe6fa9bb2ef09341bd496474b7ed14a9d19ead3576cde56650ccd3f457184",
     "lib/registry_facts.ml": "ad2d706c130785002585a0797b2ec8a070790257bd364a85b34f51f839dfcd63",
     "lib/resources.ml": "99f49caf9937bf6754e62b0011196873fdfbc1488ed90817a49fcd292d6a9fd4",
     "lib/resources.mli": "681c8d831db9af64fc28b7b91b6e913bf992f99529f2a3edb7f0d16121b10bf2",
@@ -215,10 +215,10 @@
     "lib/session.ml": "9c113a57dca817eda4ef9e843ee120bf8aa489bd7c541d11cbb14ed0f85af0cf",
     "lib/session.mli": "de5dbaf4f50a8e948c17af22ce15078074b6e570440459429ffbeee93fbe0ba7",
     "lib/session_notices.ml": "cccea843423b06e5802f1675a614063b9533b8a5ea8038fa19d76db1f8eeec59",
-    "lib/session_signals.ml": "dba5deb3b0b7804f9296bd220a4b919824c565cb77e69cc9e816c9866eb7dc1d",
-    "lib/session_signals.mli": "f7fcf9e704a1a62abe71aac063076d71dc45f8f7c7c9c2ac5ed9a961dc02835d",
-    "lib/session_state.ml": "9d74e5b62c1335cfd2fbcfb4a6fa18b5628ffdb26dbfdaadf765d1f6bc969ff4",
-    "lib/session_state.mli": "80fd3922b0ce149e425640284c249703f452b711cee4cd77598127ef16cc6582",
+    "lib/session_signals.ml": "7241256a68a2a0b4703d06a95d7867cc4f739268c32612fe1401c924608acef4",
+    "lib/session_signals.mli": "75d9e803669a38f99e84aa96938790d283100139f1dc35ae9a28d642fe21db5b",
+    "lib/session_state.ml": "7d3752fb039db97758080e839678beab12f5022fce698d2bd688ee2827b8b818",
+    "lib/session_state.mli": "9e7179985cf0a05b166d65ddb7e6f4600eadf55361884240fe76aa18802cc13e",
     "lib/sign_in_store.ml": "ff8140c731f1a6484ecebbf4566c8fb1ba8c30c215fb9a3ffbd7d84a25e3db1e",
     "lib/sign_in_store.mli": "e6d3f45d44a69f6becfc3079c6055341ab5c53cb93bb74da150edbb86704f1eb",
     "lib/state_task.ml": "2061a7893545d7ecf7f52b0235c21fa2a5346ef3c65334e043e63dd7dfc74c8c",
@@ -1430,6 +1430,86 @@
     {
       "kind": "value",
       "path": "Xynolog.Enums.Supported_media_type.of_string",
+      "declaration": "val of_string : string -> t option"
+    },
+    {
+      "kind": "module",
+      "path": "Xynolog.Enums.Kb_session_status",
+      "declaration": "module Kb_session_status :\n  sig\n    type t = Authenticated | Expired | Signed_out\n    val to_string : t -> string\n    val of_string : string -> t option\n  end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Enums.Kb_session_status.t",
+      "declaration": "type t = Authenticated | Expired | Signed_out",
+      "representation": "variant",
+      "constructors": [
+        "Authenticated",
+        "Expired",
+        "Signed_out"
+      ],
+      "variants": [
+        {
+          "name": "Authenticated",
+          "fields": [],
+          "unit": true
+        },
+        {
+          "name": "Expired",
+          "fields": [],
+          "unit": true
+        },
+        {
+          "name": "Signed_out",
+          "fields": [],
+          "unit": true
+        }
+      ]
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Enums.Kb_session_status.to_string",
+      "declaration": "val to_string : t -> string"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Enums.Kb_session_status.of_string",
+      "declaration": "val of_string : string -> t option"
+    },
+    {
+      "kind": "module",
+      "path": "Xynolog.Enums.Session_end_reason",
+      "declaration": "module Session_end_reason :\n  sig\n    type t = Expired | Refused\n    val to_string : t -> string\n    val of_string : string -> t option\n  end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Enums.Session_end_reason.t",
+      "declaration": "type t = Expired | Refused",
+      "representation": "variant",
+      "constructors": [
+        "Expired",
+        "Refused"
+      ],
+      "variants": [
+        {
+          "name": "Expired",
+          "fields": [],
+          "unit": true
+        },
+        {
+          "name": "Refused",
+          "fields": [],
+          "unit": true
+        }
+      ]
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Enums.Session_end_reason.to_string",
+      "declaration": "val to_string : t -> string"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Enums.Session_end_reason.of_string",
       "declaration": "val of_string : string -> t option"
     },
     {
@@ -13547,6 +13627,204 @@
     },
     {
       "kind": "module",
+      "path": "Xynolog.Records.Connection_identity",
+      "declaration": "module Connection_identity :\n  sig\n    type t = {\n      did : string;\n      description : [ `KbDescription ] Xynolog__.Models.t;\n    }\n  end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Records.Connection_identity.t",
+      "declaration": "type t = {\n  did : string;\n  description : [ `KbDescription ] Xynolog__.Models.t;\n}",
+      "representation": "record",
+      "fields": [
+        "did",
+        "description"
+      ]
+    },
+    {
+      "kind": "module",
+      "path": "Xynolog.Records.Expected",
+      "declaration": "module Expected : sig type t = { did : string; name : string option; } end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Records.Expected.t",
+      "declaration": "type t = { did : string; name : string option; }",
+      "representation": "record",
+      "fields": [
+        "did",
+        "name"
+      ]
+    },
+    {
+      "kind": "module",
+      "path": "Xynolog.Records.Kb_read_verdict",
+      "declaration": "module Kb_read_verdict :\n  sig\n    type t =\n        Recorded\n      | Conflict of { observed_did : string; observed_name : string; }\n      | NoVerdict\n  end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Records.Kb_read_verdict.t",
+      "declaration": "type t =\n    Recorded\n  | Conflict of { observed_did : string; observed_name : string; }\n  | NoVerdict",
+      "representation": "variant",
+      "constructors": [
+        "Recorded",
+        "Conflict",
+        "NoVerdict"
+      ],
+      "variants": [
+        {
+          "name": "Recorded",
+          "fields": [],
+          "unit": true
+        },
+        {
+          "name": "Conflict",
+          "fields": [
+            "observed_did",
+            "observed_name"
+          ],
+          "unit": false
+        },
+        {
+          "name": "NoVerdict",
+          "fields": [],
+          "unit": true
+        }
+      ]
+    },
+    {
+      "kind": "module",
+      "path": "Xynolog.Records.Tab_check",
+      "declaration": "module Tab_check :\n  sig\n    type t =\n        Gone\n      | Ready of { name : string; media_type : string option; }\n      | Unknown\n  end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Records.Tab_check.t",
+      "declaration": "type t =\n    Gone\n  | Ready of { name : string; media_type : string option; }\n  | Unknown",
+      "representation": "variant",
+      "constructors": [
+        "Gone",
+        "Ready",
+        "Unknown"
+      ],
+      "variants": [
+        {
+          "name": "Gone",
+          "fields": [],
+          "unit": true
+        },
+        {
+          "name": "Ready",
+          "fields": [
+            "name",
+            "media_type"
+          ],
+          "unit": false
+        },
+        {
+          "name": "Unknown",
+          "fields": [],
+          "unit": true
+        }
+      ]
+    },
+    {
+      "kind": "module",
+      "path": "Xynolog.Records.Session_ended",
+      "declaration": "module Session_ended :\n  sig type t = { reason : Xynolog__.Enums.Session_end_reason.t; } end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Records.Session_ended.t",
+      "declaration": "type t = { reason : Xynolog__.Enums.Session_end_reason.t; }",
+      "representation": "record",
+      "fields": [
+        "reason"
+      ]
+    },
+    {
+      "kind": "module",
+      "path": "Xynolog.Records.Permission_denied",
+      "declaration": "module Permission_denied : sig type t = { detail : string option; } end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Records.Permission_denied.t",
+      "declaration": "type t = { detail : string option; }",
+      "representation": "record",
+      "fields": [
+        "detail"
+      ]
+    },
+    {
+      "kind": "module",
+      "path": "Xynolog.Records.Kb_identity_conflict",
+      "declaration": "module Kb_identity_conflict :\n  sig type t = { expected_did : string; observed_did : string; } end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Records.Kb_identity_conflict.t",
+      "declaration": "type t = { expected_did : string; observed_did : string; }",
+      "representation": "record",
+      "fields": [
+        "expected_did",
+        "observed_did"
+      ]
+    },
+    {
+      "kind": "module",
+      "path": "Xynolog.Records.Stored_session",
+      "declaration": "module Stored_session :\n  sig\n    type t = {\n      access : string;\n      refresh : string;\n      client_id : string;\n      token_endpoint : string;\n      revocation_endpoint : string option;\n      person_key : string option;\n    }\n  end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Records.Stored_session.t",
+      "declaration": "type t = {\n  access : string;\n  refresh : string;\n  client_id : string;\n  token_endpoint : string;\n  revocation_endpoint : string option;\n  person_key : string option;\n}",
+      "representation": "record",
+      "fields": [
+        "access",
+        "refresh",
+        "client_id",
+        "token_endpoint",
+        "revocation_endpoint",
+        "person_key"
+      ]
+    },
+    {
+      "kind": "module",
+      "path": "Xynolog.Records.Signed_in",
+      "declaration": "module Signed_in :\n  sig\n    type t = {\n      endpoint : [ `KbEndpoint ] Xynolog__.Models.t;\n      description : [ `KbDescription ] Xynolog__.Models.t;\n      session : Stored_session.t;\n      kb_id : string option;\n      expected_did : string option;\n      expected_name : string option;\n    }\n  end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Records.Signed_in.t",
+      "declaration": "type t = {\n  endpoint : [ `KbEndpoint ] Xynolog__.Models.t;\n  description : [ `KbDescription ] Xynolog__.Models.t;\n  session : Stored_session.t;\n  kb_id : string option;\n  expected_did : string option;\n  expected_name : string option;\n}",
+      "representation": "record",
+      "fields": [
+        "endpoint",
+        "description",
+        "session",
+        "kb_id",
+        "expected_did",
+        "expected_name"
+      ]
+    },
+    {
+      "kind": "module",
+      "path": "Xynolog.Records.Sign_in_outcome",
+      "declaration": "module Sign_in_outcome :\n  sig\n    type t = {\n      kb : [ `KnowledgeBase ] Xynolog__.Models.t;\n      expected : Expected.t option;\n    }\n  end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Records.Sign_in_outcome.t",
+      "declaration": "type t = {\n  kb : [ `KnowledgeBase ] Xynolog__.Models.t;\n  expected : Expected.t option;\n}",
+      "representation": "record",
+      "fields": [
+        "kb",
+        "expected"
+      ]
+    },
+    {
+      "kind": "module",
       "path": "Xynolog.Wire_stream",
       "declaration": "module Wire_stream = Xynolog__.Wire_stream",
       "alias": "Xynolog__.Wire_stream"
@@ -19582,122 +19860,6 @@
     },
     {
       "kind": "type",
-      "path": "Xynolog.Registry.stored_session",
-      "declaration": "type stored_session = {\n  access : string;\n  refresh : string;\n  client_id : string;\n  token_endpoint : string;\n  revocation_endpoint : string option;\n}",
-      "representation": "record",
-      "fields": [
-        "access",
-        "refresh",
-        "client_id",
-        "token_endpoint",
-        "revocation_endpoint"
-      ]
-    },
-    {
-      "kind": "type",
-      "path": "Xynolog.Registry.expected",
-      "declaration": "type expected = { did : string; name : string option; }",
-      "representation": "record",
-      "fields": [
-        "did",
-        "name"
-      ]
-    },
-    {
-      "kind": "type",
-      "path": "Xynolog.Registry.connection_identity",
-      "declaration": "type connection_identity = {\n  did : string;\n  description : [ `KbDescription ] Xynolog__.Models.t;\n}",
-      "representation": "record",
-      "fields": [
-        "did",
-        "description"
-      ]
-    },
-    {
-      "kind": "type",
-      "path": "Xynolog.Registry.signed_in",
-      "declaration": "type signed_in = {\n  endpoint : endpoint;\n  description : [ `KbDescription ] Xynolog__.Models.t;\n  session : stored_session;\n  kb_id : string option;\n  expected_did : string option;\n  expected_name : string option;\n}",
-      "representation": "record",
-      "fields": [
-        "endpoint",
-        "description",
-        "session",
-        "kb_id",
-        "expected_did",
-        "expected_name"
-      ]
-    },
-    {
-      "kind": "type",
-      "path": "Xynolog.Registry.sign_in_outcome",
-      "declaration": "type sign_in_outcome = { kb : knowledge_base; expected : expected option; }",
-      "representation": "record",
-      "fields": [
-        "kb",
-        "expected"
-      ]
-    },
-    {
-      "kind": "type",
-      "path": "Xynolog.Registry.kb_read_verdict",
-      "declaration": "type kb_read_verdict =\n    Recorded\n  | Conflict of { observed_did : string; observed_name : string; }\n  | NoVerdict",
-      "representation": "variant",
-      "constructors": [
-        "Recorded",
-        "Conflict",
-        "NoVerdict"
-      ],
-      "variants": [
-        {
-          "name": "Recorded",
-          "fields": [],
-          "unit": true
-        },
-        {
-          "name": "Conflict",
-          "fields": [
-            "observed_did",
-            "observed_name"
-          ],
-          "unit": false
-        },
-        {
-          "name": "NoVerdict",
-          "fields": [],
-          "unit": true
-        }
-      ]
-    },
-    {
-      "kind": "type",
-      "path": "Xynolog.Registry.kb_session_status",
-      "declaration": "type kb_session_status = Authenticated | Expired | SignedOut",
-      "representation": "variant",
-      "constructors": [
-        "Authenticated",
-        "Expired",
-        "SignedOut"
-      ],
-      "variants": [
-        {
-          "name": "Authenticated",
-          "fields": [],
-          "unit": true
-        },
-        {
-          "name": "Expired",
-          "fields": [],
-          "unit": true
-        },
-        {
-          "name": "SignedOut",
-          "fields": [],
-          "unit": true
-        }
-      ]
-    },
-    {
-      "kind": "type",
       "path": "Xynolog.Registry.open_resource",
       "declaration": "type open_resource = {\n  id : string;\n  name : string;\n  opened_at : int;\n  order : int;\n  media_type : string option;\n  storage_uri : string option;\n}",
       "representation": "record",
@@ -19708,37 +19870,6 @@
         "order",
         "media_type",
         "storage_uri"
-      ]
-    },
-    {
-      "kind": "type",
-      "path": "Xynolog.Registry.tab_check",
-      "declaration": "type tab_check =\n    Gone\n  | Ready of { name : string; media_type : string option; }\n  | Unknown",
-      "representation": "variant",
-      "constructors": [
-        "Gone",
-        "Ready",
-        "Unknown"
-      ],
-      "variants": [
-        {
-          "name": "Gone",
-          "fields": [],
-          "unit": true
-        },
-        {
-          "name": "Ready",
-          "fields": [
-            "name",
-            "media_type"
-          ],
-          "unit": false
-        },
-        {
-          "name": "Unknown",
-          "fields": [],
-          "unit": true
-        }
       ]
     },
     {
@@ -19755,7 +19886,7 @@
     {
       "kind": "type",
       "path": "Xynolog.Registry.session_factory",
-      "declaration": "type session_factory =\n    session_factory_options ->\n    (Xynolog__.State_units.Session.t * connection_identity, string) result",
+      "declaration": "type session_factory =\n    session_factory_options ->\n    (Xynolog__.State_units.Session.t *\n     Xynolog__.Records.Connection_identity.t, string)\n    result",
       "representation": "abstract"
     },
     {
@@ -19832,12 +19963,12 @@
     {
       "kind": "value",
       "path": "Xynolog.Registry.record_sign_in",
-      "declaration": "val record_sign_in :\n  xynolog_browser -> signed_in -> (sign_in_outcome, string) result"
+      "declaration": "val record_sign_in :\n  xynolog_browser ->\n  Xynolog__.Records.Signed_in.t ->\n  (Xynolog__.Records.Sign_in_outcome.t, string) result"
     },
     {
       "kind": "value",
       "path": "Xynolog.Registry.describe_connection",
-      "declaration": "val describe_connection :\n  Xynolog__.Client.t -> (connection_identity, string) result"
+      "declaration": "val describe_connection :\n  Xynolog__.Client.t ->\n  (Xynolog__.Records.Connection_identity.t, string) result"
     },
     {
       "kind": "value",
@@ -19862,7 +19993,7 @@
     {
       "kind": "value",
       "path": "Xynolog.Registry.session_status",
-      "declaration": "val session_status : xynolog_browser -> string -> kb_session_status"
+      "declaration": "val session_status :\n  xynolog_browser -> string -> Xynolog__.Enums.Kb_session_status.t"
     },
     {
       "kind": "value",
@@ -19877,7 +20008,7 @@
     {
       "kind": "value",
       "path": "Xynolog.Registry.apply_tab_checks",
-      "declaration": "val apply_tab_checks :\n  open_resource list -> (string * tab_check) list -> open_resource list"
+      "declaration": "val apply_tab_checks :\n  open_resource list ->\n  (string * Xynolog__.Records.Tab_check.t) list -> open_resource list"
     },
     {
       "kind": "value",
@@ -19912,12 +20043,12 @@
     {
       "kind": "value",
       "path": "Xynolog.Registry.stored_session",
-      "declaration": "val stored_session : storage -> string -> stored_session option"
+      "declaration": "val stored_session :\n  storage -> string -> Xynolog__.Records.Stored_session.t option"
     },
     {
       "kind": "value",
       "path": "Xynolog.Registry.store_session",
-      "declaration": "val store_session : storage -> string -> stored_session -> unit"
+      "declaration": "val store_session :\n  storage -> string -> Xynolog__.Records.Stored_session.t -> unit"
     },
     {
       "kind": "value",
@@ -19962,7 +20093,7 @@
     {
       "kind": "type",
       "path": "Xynolog.Registry.kept_sign_in",
-      "declaration": "type kept_sign_in = {\n  held : unit -> stored_session option;\n  keep : stored_session -> unit;\n  forget : unit -> unit;\n}",
+      "declaration": "type kept_sign_in = {\n  held : unit -> Xynolog__.Records.Stored_session.t option;\n  keep : Xynolog__.Records.Stored_session.t -> unit;\n  forget : unit -> unit;\n}",
       "representation": "record",
       "fields": [
         "held",
@@ -19998,7 +20129,7 @@
     {
       "kind": "value",
       "path": "Xynolog.Registry.complete_sign_in",
-      "declaration": "val complete_sign_in :\n  xynolog_browser ->\n  http:Xynolog__.Oauth.http ->\n  callback:string ->\n  describe:(endpoint ->\n            access:string ->\n            ([ `KbDescription ] Xynolog__.Models.t, string) result) ->\n  (sign_in_outcome, string) result"
+      "declaration": "val complete_sign_in :\n  xynolog_browser ->\n  http:Xynolog__.Oauth.http ->\n  callback:string ->\n  describe:(endpoint ->\n            access:string ->\n            ([ `KbDescription ] Xynolog__.Models.t, string) result) ->\n  (Xynolog__.Records.Sign_in_outcome.t, string) result"
     },
     {
       "kind": "module",
@@ -20174,34 +20305,6 @@
     },
     {
       "kind": "type",
-      "path": "Xynolog.State_units.Session_signals.session_ended",
-      "declaration": "type session_ended = { reason : string; }",
-      "representation": "record",
-      "fields": [
-        "reason"
-      ]
-    },
-    {
-      "kind": "type",
-      "path": "Xynolog.State_units.Session_signals.permission_denied",
-      "declaration": "type permission_denied = { detail : string option; }",
-      "representation": "record",
-      "fields": [
-        "detail"
-      ]
-    },
-    {
-      "kind": "type",
-      "path": "Xynolog.State_units.Session_signals.kb_identity_conflict",
-      "declaration": "type kb_identity_conflict = { expected_did : string; observed_did : string; }",
-      "representation": "record",
-      "fields": [
-        "expected_did",
-        "observed_did"
-      ]
-    },
-    {
-      "kind": "type",
       "path": "Xynolog.State_units.Session_signals.t",
       "declaration": "type t",
       "representation": "abstract"
@@ -20214,22 +20317,22 @@
     {
       "kind": "value",
       "path": "Xynolog.State_units.Session_signals.session_ended",
-      "declaration": "val session_ended : t -> session_ended option Xynolog__.State_value.t"
+      "declaration": "val session_ended :\n  t -> Xynolog__.Records.Session_ended.t option Xynolog__.State_value.t"
     },
     {
       "kind": "value",
       "path": "Xynolog.State_units.Session_signals.permission_denied",
-      "declaration": "val permission_denied : t -> permission_denied option Xynolog__.State_value.t"
+      "declaration": "val permission_denied :\n  t -> Xynolog__.Records.Permission_denied.t option Xynolog__.State_value.t"
     },
     {
       "kind": "value",
       "path": "Xynolog.State_units.Session_signals.kb_identity_conflict",
-      "declaration": "val kb_identity_conflict :\n  t -> kb_identity_conflict option Xynolog__.State_value.t"
+      "declaration": "val kb_identity_conflict :\n  t ->\n  Xynolog__.Records.Kb_identity_conflict.t option Xynolog__.State_value.t"
     },
     {
       "kind": "value",
       "path": "Xynolog.State_units.Session_signals.notify_session_ended",
-      "declaration": "val notify_session_ended : t -> reason:string -> unit"
+      "declaration": "val notify_session_ended :\n  t -> reason:Xynolog__.Enums.Session_end_reason.t -> unit"
     },
     {
       "kind": "value",
@@ -20239,7 +20342,7 @@
     {
       "kind": "value",
       "path": "Xynolog.State_units.Session_signals.notify_kb_identity_conflict",
-      "declaration": "val notify_kb_identity_conflict : t -> kb_identity_conflict -> unit"
+      "declaration": "val notify_kb_identity_conflict :\n  t -> Xynolog__.Records.Kb_identity_conflict.t -> unit"
     },
     {
       "kind": "value",
@@ -20574,31 +20677,9 @@
       "representation": "abstract"
     },
     {
-      "kind": "type",
-      "path": "Xynolog.State_units.Session.end_reason",
-      "declaration": "type end_reason = Expired | Refused",
-      "representation": "variant",
-      "constructors": [
-        "Expired",
-        "Refused"
-      ],
-      "variants": [
-        {
-          "name": "Expired",
-          "fields": [],
-          "unit": true
-        },
-        {
-          "name": "Refused",
-          "fields": [],
-          "unit": true
-        }
-      ]
-    },
-    {
       "kind": "value",
       "path": "Xynolog.State_units.Session.make",
-      "declaration": "val make :\n  ?on_auth_failed:(end_reason -> unit) ->\n  id:string ->\n  kb:[ `KnowledgeBase ] Xynolog__.Models.t -> Xynolog__.Client.t -> t"
+      "declaration": "val make :\n  ?on_auth_failed:(Xynolog__.Enums.Session_end_reason.t -> unit) ->\n  id:string ->\n  kb:[ `KnowledgeBase ] Xynolog__.Models.t -> Xynolog__.Client.t -> t"
     },
     {
       "kind": "value",
@@ -20754,34 +20835,6 @@
     },
     {
       "kind": "type",
-      "path": "Xynolog.Session_notices.session_ended",
-      "declaration": "type session_ended =\n  Xynolog__Session_signals.session_ended = {\n  reason : string;\n}",
-      "representation": "record",
-      "fields": [
-        "reason"
-      ]
-    },
-    {
-      "kind": "type",
-      "path": "Xynolog.Session_notices.permission_denied",
-      "declaration": "type permission_denied =\n  Xynolog__Session_signals.permission_denied = {\n  detail : string option;\n}",
-      "representation": "record",
-      "fields": [
-        "detail"
-      ]
-    },
-    {
-      "kind": "type",
-      "path": "Xynolog.Session_notices.kb_identity_conflict",
-      "declaration": "type kb_identity_conflict =\n  Xynolog__Session_signals.kb_identity_conflict = {\n  expected_did : string;\n  observed_did : string;\n}",
-      "representation": "record",
-      "fields": [
-        "expected_did",
-        "observed_did"
-      ]
-    },
-    {
-      "kind": "type",
       "path": "Xynolog.Session_notices.t",
       "declaration": "type t = Xynolog__Session_signals.t",
       "representation": "abstract"
@@ -20794,22 +20847,22 @@
     {
       "kind": "value",
       "path": "Xynolog.Session_notices.session_ended",
-      "declaration": "val session_ended : t -> session_ended option Xynolog__.State_value.t"
+      "declaration": "val session_ended :\n  t -> Xynolog__.Records.Session_ended.t option Xynolog__.State_value.t"
     },
     {
       "kind": "value",
       "path": "Xynolog.Session_notices.permission_denied",
-      "declaration": "val permission_denied : t -> permission_denied option Xynolog__.State_value.t"
+      "declaration": "val permission_denied :\n  t -> Xynolog__.Records.Permission_denied.t option Xynolog__.State_value.t"
     },
     {
       "kind": "value",
       "path": "Xynolog.Session_notices.kb_identity_conflict",
-      "declaration": "val kb_identity_conflict :\n  t -> kb_identity_conflict option Xynolog__.State_value.t"
+      "declaration": "val kb_identity_conflict :\n  t ->\n  Xynolog__.Records.Kb_identity_conflict.t option Xynolog__.State_value.t"
     },
     {
       "kind": "value",
       "path": "Xynolog.Session_notices.notify_session_ended",
-      "declaration": "val notify_session_ended : t -> reason:string -> unit"
+      "declaration": "val notify_session_ended :\n  t -> reason:Xynolog__.Enums.Session_end_reason.t -> unit"
     },
     {
       "kind": "value",
@@ -20819,7 +20872,7 @@
     {
       "kind": "value",
       "path": "Xynolog.Session_notices.notify_kb_identity_conflict",
-      "declaration": "val notify_kb_identity_conflict : t -> kb_identity_conflict -> unit"
+      "declaration": "val notify_kb_identity_conflict :\n  t -> Xynolog__.Records.Kb_identity_conflict.t -> unit"
     },
     {
       "kind": "value",
@@ -21496,16 +21549,6 @@
     },
     {
       "kind": "type",
-      "path": "Xynolog.Redirect_sign_in.connection_identity",
-      "declaration": "type connection_identity =\n  Xynolog__.Registry.connection_identity = {\n  did : string;\n  description : [ `KbDescription ] Xynolog__.Models.t;\n}",
-      "representation": "record",
-      "fields": [
-        "did",
-        "description"
-      ]
-    },
-    {
-      "kind": "type",
       "path": "Xynolog.Redirect_sign_in.identity_unverifiable_error",
       "declaration": "type identity_unverifiable_error = string",
       "representation": "abstract"
@@ -21562,7 +21605,7 @@
     {
       "kind": "value",
       "path": "Xynolog.Redirect_sign_in.describe_connection",
-      "declaration": "val describe_connection :\n  Xynolog__.Client.t ->\n  (Xynolog__.Registry.connection_identity, string) result"
+      "declaration": "val describe_connection :\n  Xynolog__.Client.t ->\n  (Xynolog__.Records.Connection_identity.t, string) result"
     },
     {
       "kind": "value",

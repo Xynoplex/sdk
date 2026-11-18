@@ -2414,6 +2414,26 @@ public enum CommentingJobParamsTone: String, Codable, Sendable, CaseIterable {
   case technical = "technical"
 }
 
+public struct ConnectionIdentity: Codable, Sendable {
+  public var description: KbDescription
+  public var did: UserId
+  public init(description: KbDescription, did: UserId) {
+    self.description = description
+    self.did = did
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(["description", "did"], in: "ConnectionIdentity")
+    self.description = try c.value("description")
+    self.did = try c.value("did")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.description, as: "description")
+    try c.encode(self.did, as: "did")
+  }
+}
+
 public typealias ContentFormat = String
 
 public struct ContextualSummaryResponse: Codable, Sendable {
@@ -3050,6 +3070,26 @@ public struct EventMetadata: Codable, Sendable {
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
     try c.encode(self.sequenceNumber, as: "sequenceNumber")
+  }
+}
+
+public struct Expected: Codable, Sendable {
+  public var did: String
+  public var name: String?
+  public init(did: String, name: String? = nil) {
+    self.did = did
+    self.name = name
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(["did", "name"], in: "Expected")
+    self.did = try c.value("did")
+    self.name = try c.ifPresent("name")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.did, as: "did")
+    try c.encodeIfPresent(self.name, as: "name")
   }
 }
 
@@ -4474,44 +4514,6 @@ public struct HealthResponse: Codable, Sendable {
     try c.encode(self.status, as: "status")
     try c.encode(self.timestamp, as: "timestamp")
     try c.encode(self.version, as: "version")
-  }
-}
-
-public struct HeldSignIn: Codable, Sendable {
-  public var access: String
-  public var clientId: String
-  public var personKey: String?
-  public var refresh: String
-  public var revocationEndpoint: String?
-  public var tokenEndpoint: String
-  public init(
-    access: String, clientId: String, personKey: String? = nil, refresh: String,
-    revocationEndpoint: String? = nil, tokenEndpoint: String
-  ) {
-    self.access = access
-    self.clientId = clientId
-    self.personKey = personKey
-    self.refresh = refresh
-    self.revocationEndpoint = revocationEndpoint
-    self.tokenEndpoint = tokenEndpoint
-  }
-  public init(from decoder: any Decoder) throws {
-    let c = try decoder.container(keyedBy: WireKey.self)
-    self.access = try c.value("access")
-    self.clientId = try c.value("clientId")
-    self.personKey = try c.ifPresent("personKey")
-    self.refresh = try c.value("refresh")
-    self.revocationEndpoint = try c.ifPresent("revocationEndpoint")
-    self.tokenEndpoint = try c.value("tokenEndpoint")
-  }
-  public func encode(to encoder: any Encoder) throws {
-    var c = encoder.container(keyedBy: WireKey.self)
-    try c.encode(self.access, as: "access")
-    try c.encode(self.clientId, as: "clientId")
-    try c.encodeIfPresent(self.personKey, as: "personKey")
-    try c.encode(self.refresh, as: "refresh")
-    try c.encodeIfPresent(self.revocationEndpoint, as: "revocationEndpoint")
-    try c.encode(self.tokenEndpoint, as: "tokenEndpoint")
   }
 }
 
@@ -6389,6 +6391,26 @@ public struct KbIdentity: Codable, Sendable {
   }
 }
 
+public struct KbIdentityConflict: Codable, Sendable {
+  public var expectedDid: String
+  public var observedDid: String
+  public init(expectedDid: String, observedDid: String) {
+    self.expectedDid = expectedDid
+    self.observedDid = observedDid
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(["expectedDid", "observedDid"], in: "KbIdentityConflict")
+    self.expectedDid = try c.value("expectedDid")
+    self.observedDid = try c.value("observedDid")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.expectedDid, as: "expectedDid")
+    try c.encode(self.observedDid, as: "observedDid")
+  }
+}
+
 public struct KbRead: Codable, Sendable {
   public var at: String
   public var gitBranch: String?
@@ -6406,6 +6428,99 @@ public struct KbRead: Codable, Sendable {
     try c.encode(self.at, as: "at")
     try c.encodeIfPresent(self.gitBranch, as: "gitBranch")
   }
+}
+
+public enum KbReadKind: String, Codable, Sendable, CaseIterable {
+  case recorded = "recorded"
+  case conflict = "conflict"
+  case noVerdict = "no-verdict"
+}
+
+public indirect enum KbReadVerdict: Codable, Sendable {
+  case recorded(KbReadVerdictRecorded)
+  case conflict(KbReadVerdictConflict)
+  case noVerdict(KbReadVerdictNoVerdict)
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    let tag = try c.decode(String.self, forKey: WireKey("kind"))
+    switch tag {
+    case "recorded": self = .recorded(try KbReadVerdictRecorded(from: decoder))
+    case "conflict": self = .conflict(try KbReadVerdictConflict(from: decoder))
+    case "no-verdict": self = .noVerdict(try KbReadVerdictNoVerdict(from: decoder))
+    default:
+      throw DecodingError.dataCorruptedError(
+        forKey: WireKey("kind"), in: c, debugDescription: "unknown KbReadVerdict discriminator")
+    }
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .recorded(let value): try value.encode(to: encoder)
+    case .conflict(let value): try value.encode(to: encoder)
+    case .noVerdict(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public struct KbReadVerdictConflict: Codable, Sendable {
+  public let kind: KbReadKind
+  public var observedDid: String
+  public var observedName: String
+  public init(observedDid: String, observedName: String) {
+    self.kind = .conflict
+    self.observedDid = observedDid
+    self.observedName = observedName
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(["kind", "observedDid", "observedName"], in: "KbReadVerdictConflict")
+    self.kind = try c.value("kind")
+    self.observedDid = try c.value("observedDid")
+    self.observedName = try c.value("observedName")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.kind, as: "kind")
+    try c.encode(self.observedDid, as: "observedDid")
+    try c.encode(self.observedName, as: "observedName")
+  }
+}
+
+public struct KbReadVerdictNoVerdict: Codable, Sendable {
+  public let kind: KbReadKind
+  public init() {
+    self.kind = .noVerdict
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(["kind"], in: "KbReadVerdictNoVerdict")
+    self.kind = try c.value("kind")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.kind, as: "kind")
+  }
+}
+
+public struct KbReadVerdictRecorded: Codable, Sendable {
+  public let kind: KbReadKind
+  public init() {
+    self.kind = .recorded
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(["kind"], in: "KbReadVerdictRecorded")
+    self.kind = try c.value("kind")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.kind, as: "kind")
+  }
+}
+
+public enum KbSessionStatus: String, Codable, Sendable, CaseIterable {
+  case authenticated = "authenticated"
+  case expired = "expired"
+  case signedOut = "signed-out"
 }
 
 public struct KbTarget: Codable, Sendable {
@@ -7944,6 +8059,22 @@ public struct PdfTextItem: Codable, Sendable {
   }
 }
 
+public struct PermissionDenied: Codable, Sendable {
+  public var detail: String?
+  public init(detail: String?) {
+    self.detail = detail
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(["detail"], in: "PermissionDenied")
+    self.detail = try c.value("detail")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.detail, as: "detail")
+  }
+}
+
 public typealias PersistedEventId = String
 
 public struct PrincipalProfileCommand: Codable, Sendable {
@@ -9266,6 +9397,27 @@ public struct ServiceIdentity: Codable, Sendable {
   }
 }
 
+public enum SessionEndReason: String, Codable, Sendable, CaseIterable {
+  case expired = "expired"
+  case refused = "refused"
+}
+
+public struct SessionEnded: Codable, Sendable {
+  public var reason: SessionEndReason
+  public init(reason: SessionEndReason) {
+    self.reason = reason
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(["reason"], in: "SessionEnded")
+    self.reason = try c.value("reason")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.reason, as: "reason")
+  }
+}
+
 public struct SessionJoinedEvent: Codable, Sendable {
   public var connectionId: String
   public var participant: UserId
@@ -9399,6 +9551,66 @@ public struct SignIn: Codable, Sendable {
     try c.encodeIfPresent(self.revocationEndpoint, as: "revocationEndpoint")
     try c.encode(self.token, as: "token")
     try c.encode(self.tokenEndpoint, as: "tokenEndpoint")
+  }
+}
+
+public struct SignInOutcome: Codable, Sendable {
+  public var expected: Expected?
+  public var kb: KnowledgeBase
+  public init(expected: Expected? = nil, kb: KnowledgeBase) {
+    self.expected = expected
+    self.kb = kb
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(["expected", "kb"], in: "SignInOutcome")
+    self.expected = try c.ifPresent("expected")
+    self.kb = try c.value("kb")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.expected, as: "expected")
+    try c.encode(self.kb, as: "kb")
+  }
+}
+
+public struct SignedIn: Codable, Sendable {
+  public var description: KbDescription
+  public var endpoint: KbEndpoint
+  public var expectedDid: String?
+  public var expectedName: String?
+  public var kbId: String?
+  public var session: StoredSession
+  public init(
+    description: KbDescription, endpoint: KbEndpoint, expectedDid: String? = nil,
+    expectedName: String? = nil, kbId: String? = nil, session: StoredSession
+  ) {
+    self.description = description
+    self.endpoint = endpoint
+    self.expectedDid = expectedDid
+    self.expectedName = expectedName
+    self.kbId = kbId
+    self.session = session
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(
+      ["description", "endpoint", "expectedDid", "expectedName", "kbId", "session"], in: "SignedIn")
+    self.description = try c.value("description")
+    self.endpoint = try c.value("endpoint")
+    self.expectedDid = try c.ifPresent("expectedDid")
+    self.expectedName = try c.ifPresent("expectedName")
+    self.kbId = try c.ifPresent("kbId")
+    self.session = try c.value("session")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.description, as: "description")
+    try c.encode(self.endpoint, as: "endpoint")
+    try c.encodeIfPresent(self.expectedDid, as: "expectedDid")
+    try c.encodeIfPresent(self.expectedName, as: "expectedName")
+    try c.encodeIfPresent(self.kbId, as: "kbId")
+    try c.encode(self.session, as: "session")
   }
 }
 
@@ -10034,6 +10246,44 @@ public struct StoredEventResponse: Codable, Sendable {
   }
 }
 
+public struct StoredSession: Codable, Sendable {
+  public var access: String
+  public var clientId: String
+  public var personKey: String?
+  public var refresh: String
+  public var revocationEndpoint: String?
+  public var tokenEndpoint: String
+  public init(
+    access: String, clientId: String, personKey: String? = nil, refresh: String,
+    revocationEndpoint: String? = nil, tokenEndpoint: String
+  ) {
+    self.access = access
+    self.clientId = clientId
+    self.personKey = personKey
+    self.refresh = refresh
+    self.revocationEndpoint = revocationEndpoint
+    self.tokenEndpoint = tokenEndpoint
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    self.access = try c.value("access")
+    self.clientId = try c.value("clientId")
+    self.personKey = try c.ifPresent("personKey")
+    self.refresh = try c.value("refresh")
+    self.revocationEndpoint = try c.ifPresent("revocationEndpoint")
+    self.tokenEndpoint = try c.value("tokenEndpoint")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.access, as: "access")
+    try c.encode(self.clientId, as: "clientId")
+    try c.encodeIfPresent(self.personKey, as: "personKey")
+    try c.encode(self.refresh, as: "refresh")
+    try c.encodeIfPresent(self.revocationEndpoint, as: "revocationEndpoint")
+    try c.encode(self.tokenEndpoint, as: "tokenEndpoint")
+  }
+}
+
 public enum SupportedMediaType: String, Codable, Sendable, CaseIterable {
   case textPlain = "text/plain"
   case textMarkdown = "text/markdown"
@@ -10124,6 +10374,93 @@ public struct SvgSelector: Codable, Sendable {
 
 public enum SvgSelectorType: String, Codable, Sendable, CaseIterable {
   case svgSelector = "SvgSelector"
+}
+
+public indirect enum TabCheck: Codable, Sendable {
+  case gone(TabCheckGone)
+  case ready(TabCheckReady)
+  case unknown(TabCheckUnknown)
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    let tag = try c.decode(String.self, forKey: WireKey("verdict"))
+    switch tag {
+    case "gone": self = .gone(try TabCheckGone(from: decoder))
+    case "ready": self = .ready(try TabCheckReady(from: decoder))
+    case "unknown": self = .unknown(try TabCheckUnknown(from: decoder))
+    default:
+      throw DecodingError.dataCorruptedError(
+        forKey: WireKey("verdict"), in: c, debugDescription: "unknown TabCheck discriminator")
+    }
+  }
+  public func encode(to encoder: any Encoder) throws {
+    switch self {
+    case .gone(let value): try value.encode(to: encoder)
+    case .ready(let value): try value.encode(to: encoder)
+    case .unknown(let value): try value.encode(to: encoder)
+    }
+  }
+}
+
+public struct TabCheckGone: Codable, Sendable {
+  public let verdict: TabVerdict
+  public init() {
+    self.verdict = .gone
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(["verdict"], in: "TabCheckGone")
+    self.verdict = try c.value("verdict")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.verdict, as: "verdict")
+  }
+}
+
+public struct TabCheckReady: Codable, Sendable {
+  public var mediaType: String?
+  public var name: String
+  public let verdict: TabVerdict
+  public init(mediaType: String? = nil, name: String) {
+    self.mediaType = mediaType
+    self.name = name
+    self.verdict = .ready
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(["mediaType", "name", "verdict"], in: "TabCheckReady")
+    self.mediaType = try c.ifPresent("mediaType")
+    self.name = try c.value("name")
+    self.verdict = try c.value("verdict")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encodeIfPresent(self.mediaType, as: "mediaType")
+    try c.encode(self.name, as: "name")
+    try c.encode(self.verdict, as: "verdict")
+  }
+}
+
+public struct TabCheckUnknown: Codable, Sendable {
+  public let verdict: TabVerdict
+  public init() {
+    self.verdict = .unknown
+  }
+  public init(from decoder: any Decoder) throws {
+    let c = try decoder.container(keyedBy: WireKey.self)
+    try c.refuseUnknown(["verdict"], in: "TabCheckUnknown")
+    self.verdict = try c.value("verdict")
+  }
+  public func encode(to encoder: any Encoder) throws {
+    var c = encoder.container(keyedBy: WireKey.self)
+    try c.encode(self.verdict, as: "verdict")
+  }
+}
+
+public enum TabVerdict: String, Codable, Sendable, CaseIterable {
+  case gone = "gone"
+  case ready = "ready"
+  case unknown = "unknown"
 }
 
 public struct TagCategory: Codable, Sendable {

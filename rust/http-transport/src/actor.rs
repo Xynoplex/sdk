@@ -38,7 +38,9 @@ use xynolog::retry::{equal_jitter, retry_after};
 use xynolog::timing::{DEGRADED_THRESHOLD, MAX_RECONNECT, RECONNECT_DEBOUNCE};
 use xynolog::transport::{ConnectionState, Frame, FrameRefusal, StreamId, TraceCarrier};
 use xynolog::types::ResourceId;
-use xynolog::types::{BusFrame, BusSubscribeRequest, BusSubscribeRequestScopedItem};
+use xynolog::types::{
+    BusEventMessageEvent, BusFrame, BusSubscribeRequest, BusSubscribeRequestScopedItem,
+};
 
 pub(crate) enum Command {
     /// A resource's scope got its first hold.
@@ -804,7 +806,7 @@ async fn connection(
     let mut body = response.bytes_stream();
     while let Some(Ok(read)) = body.next().await {
         for event in parser.feed(&read) {
-            if event.event != "bus-event" || event.data.is_empty() {
+            if event.event != BusEventMessageEvent::BusEvent.as_str() || event.data.is_empty() {
                 continue;
             }
             let frame = Event::Frame {
@@ -882,7 +884,8 @@ mod tests {
         GatherFailed, Request,
     };
     use xynolog::event_bus::EventBus;
-    use xynolog::transport::{FrameRefusalReason, Lagged};
+    use xynolog::transport::Lagged;
+    use xynolog::types::FrameRefusalReason;
 
     #[test]
     fn the_ids_remembered_are_the_last_ones_delivered() {

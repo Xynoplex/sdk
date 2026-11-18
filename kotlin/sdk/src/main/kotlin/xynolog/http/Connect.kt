@@ -1,5 +1,3 @@
-@file:OptIn(kotlin.ExperimentalStdlibApi::class)
-
 package xynolog.http
 
 import kotlinx.coroutines.CoroutineScope
@@ -15,9 +13,9 @@ import xynolog.errors.BusRequestErrorCode
 import xynolog.errors.IdentityUnverifiableError
 import xynolog.errors.IdentityUnverifiableReason
 import xynolog.errors.XynologError
-import xynolog.identifiers.UserId
 import xynolog.identity.kbDid
 import xynolog.telemetry.futureOf
+import xynolog.types.ConnectionIdentity
 import xynolog.types.HttpEndpoint
 import xynolog.types.KbDescription
 import java.net.http.HttpClient
@@ -25,9 +23,6 @@ import java.util.concurrent.CompletableFuture
 import kotlin.coroutines.CoroutineContext
 import kotlin.random.Random
 import kotlin.time.TimeSource
-
-/** Who the knowledge base at an address says it is: its did, and how it describes itself. */
-public data class ConnectionIdentity @JvmExposeBoxed constructor(@get:JvmExposeBoxed public val did: UserId, public val description: KbDescription)
 
 /**
  * Ask the knowledge base at `target` what it is, with a token just issued. It

@@ -380,11 +380,11 @@ func TestASessionClosedWhileItsSignInIsRenewedGivesTheRefusalNoTokenAndKeepsTheR
 		wire.Close()
 	}()
 	var mu sync.Mutex
-	var ended []SessionEndReason
+	var ended []api.SessionEndReason
 	session, err := ResumeSession(context.Background(), ResumeConfig{
 		Kb: gatewayTarget(t, "local", s.gateway.URL), Client: client, Kept: entry, Token: token,
 		HTTP: &http.Client{}, Timing: quickTiming(),
-		OnAuthFailed: func(reason SessionEndReason) {
+		OnAuthFailed: func(reason api.SessionEndReason) {
 			mu.Lock()
 			defer mu.Unlock()
 			ended = append(ended, reason)

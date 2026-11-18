@@ -86,7 +86,7 @@ let refusals =
     case "a reference to no schema is refused"
       (refuses
          [ ("X", {|{"$ref":"./Absent.json"}|}) ]
-         "No component schema names Absent.");
+         "./Absent.json names no schema the models are made from");
     case "a member of no type it can be is refused"
       (refuses
          [ ("X", object_ {|"a":{"description":"Anything?"}|}) ]
@@ -128,14 +128,33 @@ let refusals =
          ~payloads:[ ("X", {|{"type":"object","maxProperties":0}|}) ]
          [ ("X", object_ {|"a":{"type":"string"}|}) ]
          "X is named twice among the schemas the models are made from");
-    case "a reference into a file is refused"
+    case "a reference into a file no root is read from is refused"
       (refuses
          [
            ("X", object_ {|"a":{"$ref":"./Y.json#/properties/b"}|});
            ("Y", object_ {|"b":{"type":"string"}|});
          ]
-         "./Y.json#/properties/b names a place within a file, which names no \
-          model");
+         "./Y.json#/properties/b names no schema the models are made from");
+    case "a reference into a file names the root read from there" (fun () ->
+        match
+          M.make ~identifiers:[]
+            ~roots:
+              [
+                ( "X",
+                  file "X",
+                  definition "X"
+                    (object_ {|"a":{"$ref":"../../client/t.json#/types/Y"}|}) );
+                ( "Y",
+                  "client/t.json#/types/Y",
+                  definition "Y" (object_ {|"b":{"type":"string"}|}) );
+              ]
+            ~made:[]
+        with
+        | Ok t ->
+            Alcotest.(check (list string))
+              "models" [ "X"; "Y" ]
+              (List.map (fun (name, _, _) -> name) t.models)
+        | Error message -> Alcotest.failf "refused: %s" message);
     case "patternProperties is unread"
       (unread {|{"type":"object","patternProperties":{"x":{"type":"string"}}}|});
     case "a format other than the spec's is unread"

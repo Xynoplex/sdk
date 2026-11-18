@@ -2,31 +2,6 @@ public protocol StateUnit: Sendable {
   func dispose()
 }
 
-public struct SessionEnded: Codable, Sendable {
-  public let reason: SessionEndReason
-}
-
-public struct PermissionDenied: Encodable, Sendable {
-  public let detail: String?
-
-  private enum CodingKeys: String, CodingKey { case detail }
-
-  public func encode(to encoder: any Encoder) throws {
-    var container = encoder.container(keyedBy: CodingKeys.self)
-    try container.encode(detail, forKey: .detail)
-  }
-}
-
-public struct KbIdentityConflict: Codable, Sendable {
-  public let expectedDid: String
-  public let observedDid: String
-
-  public init(expectedDid: String, observedDid: String) {
-    self.expectedDid = expectedDid
-    self.observedDid = observedDid
-  }
-}
-
 public final class SessionSignals: StateUnit {
   public let sessionEnded = Watched<SessionEnded?>(nil)
   public let permissionDenied = Watched<PermissionDenied?>(nil)

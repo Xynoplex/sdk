@@ -1148,9 +1148,6 @@ let kept models ~shapes (refresh : Tables.Client_refresh.t)
 let declarations models ~(spec : Spec.t) ~view ~shapes ~timing ~codes
     ~wire_codes =
   let tables = spec.tables in
-  ignore
-    (M.inline models ~modifiers:[ "public" ] "" "HeldSignIn"
-       (view tables.session_stored.stored_session));
   (match M.schema models "GatherResourceRequestOptions" with
   | D.Node n ->
       ignore

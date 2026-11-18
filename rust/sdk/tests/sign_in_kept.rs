@@ -2,7 +2,8 @@
 //! lives: held until it is forgotten, renewed against what it holds, and
 //! naming the person the gateway said its token is, recorded as one step.
 
-use xynolog::session::{MemorySignIn, SignInKept, StoredSession, person_key};
+use xynolog::session::{MemorySignIn, SignInKept, person_key};
+use xynolog::types::StoredSession;
 
 fn signed_in(access: &str, refresh: &str) -> StoredSession {
     StoredSession {

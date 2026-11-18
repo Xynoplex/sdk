@@ -4,9 +4,9 @@
 //! (`crate::sign_in_store::SignInStore::entry`), and a script that keeps
 //! nothing past its process in memory (`MemorySignIn`).
 
-use super::stored::StoredSession;
 use crate::locked;
 use crate::transport::BoxFuture;
+use crate::types::StoredSession;
 use std::error::Error;
 use std::sync::Mutex;
 

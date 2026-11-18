@@ -24,15 +24,13 @@ use xynolog::client::XynologClient;
 use xynolog::errors::{BusRequestError, BusRequestErrorCode, XynologError};
 use xynolog::testing::{FaultAction, FaultyTransport, TestClientOptions, create_test_client};
 use xynolog::timing::ERRORS_KEPT_FOR_FIRST_READER_COUNT;
-use xynolog::transport::{
-    ConnectionState, Events, Frame, FrameRefusal, FrameRefusalReason, TraceCarrier,
-};
+use xynolog::transport::{ConnectionState, Events, Frame, FrameRefusal, TraceCarrier};
 use xynolog::types::DurabilityEvidence::{
     Acknowledged, ProbeConfirmed, ProbeRefused, ProbeUnreachable,
 };
 use xynolog::types::{
-    Annotation, DurabilityEvidence, FailureClass, JobFilter, JobProgress, JobType, MarkJobDone,
-    ResourceId, YieldJobResult,
+    Annotation, DurabilityEvidence, FailureClass, FrameRefusalReason, JobFilter, JobProgress,
+    JobType, MarkJobDone, ResourceId, YieldJobResult,
 };
 
 /// What the stand-in dispatcher answers the next claims with, and what the

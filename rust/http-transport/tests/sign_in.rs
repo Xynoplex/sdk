@@ -47,9 +47,9 @@ use xynolog::identity::agent_did;
 use xynolog::refresh::CacheQuery;
 use xynolog::roles::{AGENT_KIND, KIND_CLAIM, is_agent};
 use xynolog::session::{
-    MemorySignIn, OpenedSession, SessionEndReason, SignInKept, StoredSession, XynologBrowser,
-    XynologBrowserConfig, XynologSession, cache_key, kept_in, last_event_id_key, person_key,
-    save_knowledge_bases, store_session, stored_session,
+    MemorySignIn, OpenedSession, SignInKept, XynologBrowser, XynologBrowserConfig, XynologSession,
+    cache_key, kept_in, last_event_id_key, person_key, save_knowledge_bases, store_session,
+    stored_session,
 };
 use xynolog::sign_in_store::{FILE_NAME, SignInStore};
 use xynolog::storage::{
@@ -64,6 +64,7 @@ use xynolog::types::{
     JobCompleteCommand, JobProgress, KbEndpoint, KbTarget, KnowledgeBase, LocalEndpoint,
     MarkJobDone, MarkJobFilter, MarkJobFilterParams, Motivation, PrincipalProfileCommand,
 };
+use xynolog::types::{SessionEndReason, StoredSession};
 use xynolog_http_transport::agent::{AgentSignInError, AgentToken};
 use xynolog_http_transport::client::client;
 use xynolog_http_transport::client_assertion::{JWT_BEARER, LIFETIME_SECONDS, thumbprint};

@@ -67,7 +67,7 @@ public actor ScriptedSessions: SessionFactory {
   private let random: RandomSource
   private var renewals: [Renewal] = []
   private var transports: [String: [ScriptedTransport]] = [:]
-  public private(set) var revoked: [HeldSignIn] = []
+  public private(set) var revoked: [StoredSession] = []
   public private(set) var renewed = 0
 
   public init(
@@ -120,5 +120,5 @@ public actor ScriptedSessions: SessionFactory {
     }
   }
 
-  public func revoke(_ session: HeldSignIn) { revoked.append(session) }
+  public func revoke(_ session: StoredSession) { revoked.append(session) }
 }

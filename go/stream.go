@@ -823,7 +823,7 @@ func (s *stream) read(ctx context.Context, conn uint64, token string, body api.B
 	for {
 		n, err := response.Body.Read(buffer)
 		for _, event := range parser.feed(buffer[:n]) {
-			if event.event != "bus-event" || event.data == "" {
+			if event.event != string(api.BusEventMessageEventBusEvent) || event.data == "" {
 				continue
 			}
 			if !report(streamEvent{kind: eventFrame, id: event.id, hasID: event.hasID, data: event.data}) {

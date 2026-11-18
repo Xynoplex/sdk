@@ -107,7 +107,7 @@ private final class SayingSessions: SessionFactory {
     return opened
   }
 
-  func revoke(_ session: HeldSignIn) async {}
+  func revoke(_ session: StoredSession) async {}
 }
 
 /// Waits for what the registry does with the last thing a case's session `said`: says it on its
@@ -167,9 +167,9 @@ private func saidUntilTheLastIsRead(
     do {
       _ = try await browser.signedIn(
         SignedIn(
-          endpoint: .httpEndpoint(HttpEndpoint(host: "localhost", port: 4000, protocol: .http)),
           description: KbDescription(domain: "example.org", name: "KB"),
-          session: HeldSignIn(
+          endpoint: .httpEndpoint(HttpEndpoint(host: "localhost", port: 4000, protocol: .http)),
+          session: StoredSession(
             access: held, clientId: "browser", refresh: "refresh", tokenEndpoint: "issuer")))
       let opened = try #require(browser.activeSession.value, "\(why): no session is active")
       let signals = try #require(browser.activeSignals.value, "\(why): no session is active")
@@ -232,9 +232,9 @@ private func overAnUnreadRegistry(
   do {
     _ = try await browser.signedIn(
       SignedIn(
-        endpoint: .httpEndpoint(HttpEndpoint(host: "localhost", port: 4000, protocol: .http)),
         description: KbDescription(domain: "example.org", name: "KB"),
-        session: HeldSignIn(
+        endpoint: .httpEndpoint(HttpEndpoint(host: "localhost", port: 4000, protocol: .http)),
+        session: StoredSession(
           access: held, clientId: "browser", refresh: "refresh", tokenEndpoint: "issuer")))
     let opened = try #require(browser.activeSession.value, "no session is active")
     let signals = try #require(browser.activeSignals.value, "no session is active")

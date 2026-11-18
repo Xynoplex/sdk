@@ -9,6 +9,8 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import xynolog.StateUnit
+import xynolog.types.SessionEndReason
+import xynolog.types.SessionEnded
 
 /** The next notice told, which is to come at once: one that never comes fails, rather than waits for good. */
 private suspend fun <T> Channel<T>.next(): T = withTimeout(1_000) { receive() }
@@ -21,17 +23,17 @@ class SessionSignalsTest {
         val told = Channel<SessionEnded?>(Channel.UNLIMITED)
         val reading = launch(Dispatchers.Unconfined) { signals.sessionEnded.collect { told.send(it) } }
         assertNull(told.next())
-        signals.notifySessionEnded(SessionEndReason.EXPIRED)
-        assertEquals(SessionEnded(SessionEndReason.EXPIRED), told.next())
+        signals.notifySessionEnded(SessionEndReason.Expired)
+        assertEquals(SessionEnded(SessionEndReason.Expired), told.next())
         // The same notice again is told again: a host shows it again.
-        signals.notifySessionEnded(SessionEndReason.EXPIRED)
-        assertEquals(SessionEnded(SessionEndReason.EXPIRED), told.next())
+        signals.notifySessionEnded(SessionEndReason.Expired)
+        assertEquals(SessionEnded(SessionEndReason.Expired), told.next())
         signals.acknowledgeSessionEnded()
         assertNull(told.next())
         // Closed, every reader ends, and what is raised after is told to nobody.
         signals.close()
         withTimeout(1_000) { reading.join() }
-        signals.notifySessionEnded(SessionEndReason.REFUSED)
+        signals.notifySessionEnded(SessionEndReason.Refused)
         assertNull(signals.sessionEnded.value)
         assertNull(told.tryReceive().getOrNull())
     }

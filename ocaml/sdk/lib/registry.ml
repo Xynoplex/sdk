@@ -9,39 +9,6 @@ type storage = {
   remove : string -> unit;
 }
 
-type stored_session = {
-  access : string;
-  refresh : string;
-  client_id : string;
-  token_endpoint : string;
-  revocation_endpoint : string option;
-}
-
-type expected = { did : string; name : string option }
-
-type connection_identity = {
-  did : string;
-  description : [ `KbDescription ] Models.t;
-}
-
-type signed_in = {
-  endpoint : endpoint;
-  description : [ `KbDescription ] Models.t;
-  session : stored_session;
-  kb_id : string option;
-  expected_did : string option;
-  expected_name : string option;
-}
-
-type sign_in_outcome = { kb : knowledge_base; expected : expected option }
-
-type kb_read_verdict =
-  | Recorded
-  | Conflict of { observed_did : string; observed_name : string }
-  | NoVerdict
-
-type kb_session_status = Authenticated | Expired | SignedOut
-
 type open_resource = {
   id : string;
   name : string;
@@ -51,11 +18,6 @@ type open_resource = {
   storage_uri : string option;
 }
 
-type tab_check =
-  | Gone
-  | Ready of { name : string; media_type : string option }
-  | Unknown
-
 type session_factory_options = {
   kb : knowledge_base;
   storage : storage;
@@ -64,7 +26,7 @@ type session_factory_options = {
 
 type session_factory =
   session_factory_options ->
-  (State_units.Session.t * connection_identity, string) result
+  (State_units.Session.t * Records.Connection_identity.t, string) result
 
 type xynolog_browser_config = {
   storage : storage;
@@ -137,17 +99,18 @@ let decode_session source =
   let* token_endpoint = optional "tokenEndpoint" fields in
   Some
     {
-      access;
+      Records.Stored_session.access;
       refresh;
       client_id;
       token_endpoint;
       revocation_endpoint = optional "revocationEndpoint" fields;
+      person_key = optional "personKey" fields;
     }
 
 let optional_field key value =
   Option.to_list (Option.map (fun value -> (key, text value)) value)
 
-let encode_session session =
+let encode_session (session : Records.Stored_session.t) =
   json
     (`Assoc
        ([
@@ -156,7 +119,8 @@ let encode_session session =
           ("clientId", text session.client_id);
           ("tokenEndpoint", text session.token_endpoint);
         ]
-       @ optional_field "revocationEndpoint" session.revocation_endpoint))
+       @ optional_field "revocationEndpoint" session.revocation_endpoint
+       @ optional_field "personKey" session.person_key))
 
 let stored_session (storage : storage) id =
   Option.bind (storage.read (session_key id)) decode_session
@@ -201,7 +165,7 @@ let apply_tab_checks tabs checks =
   List.filter_map
     (fun tab ->
       match List.assoc_opt tab.id checks with
-      | Some Gone -> None
+      | Some Records.Tab_check.Gone -> None
       | Some (Ready { name; media_type }) -> Some { tab with name; media_type }
       | _ -> Some tab)
     tabs
@@ -305,10 +269,13 @@ let describe_connection client =
               if domain = "" then Error "kb.identity-not-reported"
               else
                 Ok
-                  ({ did = Identity.knowledge_base_did domain; description }
-                    : connection_identity)))
+                  {
+                    Records.Connection_identity.did =
+                      Identity.knowledge_base_did domain;
+                    description;
+                  }))
 
-let with_identity ~id ~endpoint (identity : connection_identity) =
+let with_identity ~id ~endpoint (identity : Records.Connection_identity.t) =
   let info = Records.Kb_description.of_model identity.description in
   let source =
     `Assoc
@@ -321,13 +288,14 @@ let with_identity ~id ~endpoint (identity : connection_identity) =
   in
   Result.get_ok (Models.decode Models.knowledge_base (json source))
 
-let record_sign_in browser (signed : signed_in) =
+let record_sign_in browser (signed : Records.Signed_in.t) =
   let info = Records.Kb_description.of_model signed.description in
   if info.domain = "" then Error "kb.identity-not-reported"
   else
     let identity =
       {
-        did = Identity.knowledge_base_did info.domain;
+        Records.Connection_identity.did =
+          Identity.knowledge_base_did info.domain;
         description = signed.description;
       }
     in
@@ -371,10 +339,10 @@ let record_sign_in browser (signed : signed_in) =
           disconnect browser;
           let expected =
             Option.map
-              (fun did -> { did; name = signed.expected_name })
+              (fun did -> { Records.Expected.did; name = signed.expected_name })
               signed.expected_did
           in
-          Ok { kb; expected })
+          Ok { Records.Sign_in_outcome.kb; expected })
 
 let activate browser key =
   let begun =
@@ -433,7 +401,7 @@ let activate browser key =
 
 let session_status browser key =
   match stored_session browser.config.storage key with
-  | None -> SignedOut
+  | None -> Enums.Kb_session_status.Signed_out
   | Some session -> (
       match Session.token_expiry session.access with
       | Some expiry when expiry <= Clock.wall_now browser.config.clock ->
@@ -534,8 +502,8 @@ let set_last_viewed browser ~kb_id resource =
 let pending_authorization_key = Registry_facts.pending_authorization_key
 
 type kept_sign_in = {
-  held : unit -> stored_session option;
-  keep : stored_session -> unit;
+  held : unit -> Records.Stored_session.t option;
+  keep : Records.Stored_session.t -> unit;
   forget : unit -> unit;
 }
 
@@ -619,7 +587,7 @@ let start_kept_session browser ~sw ~http id =
     ~sw ~clock:browser.config.clock
     ~initial_token:
       (Option.map
-         (fun session -> session.access)
+         (fun (session : Records.Stored_session.t) -> session.access)
          (stored_session browser.config.storage id))
     ~renew:(renew_kept browser ~http id)
     ()
@@ -688,15 +656,16 @@ let complete_sign_in browser ~http ~callback ~describe =
   let fields = object_ body in
   record_sign_in browser
     {
-      endpoint;
+      Records.Signed_in.endpoint;
       description;
       session =
         {
-          access = tokens.access_token;
+          Records.Stored_session.access = tokens.access_token;
           refresh;
           client_id = Oauth_facts.browser;
           token_endpoint = Oauth.token_endpoint issuer;
           revocation_endpoint = Oauth.revocation_endpoint issuer;
+          person_key = None;
         };
       kb_id = optional "kbId" fields;
       expected_did = optional "expectedDid" fields;

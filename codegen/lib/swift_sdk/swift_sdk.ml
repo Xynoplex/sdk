@@ -1,5 +1,6 @@
-(* The swift-sdk group: the Swift SDK's models of every component schema and
-   the sign-in store's entry, with the tables as typed values
+(* The swift-sdk group: the Swift SDK's models of every component schema, the
+   records Protocol states in its tables ([Table_records]) and the sign-in
+   store's entry, with the tables as typed values
    (swift/sdk/Sources/Xynolog/Generated/Models.swift), and its test bridge
    (swift/sdk/Tests/XynologTests/Generated/TestBridge.swift). Models declares
    the schemas, Table_decls the tables, Test_bridge the bridge. *)
@@ -31,9 +32,12 @@ let swift_files (spec : Spec.t) =
       | Some s -> bundle.view s
       | None -> D.refuse "Protocol has no %s" sign_in_file
     in
+    let records = List.map (fun (_, name, _) -> name) (D.records spec) in
     let definitions =
       {
-        D.names = List.sort String.compare ("SignIn" :: bundle.definitions.names);
+        D.names =
+          List.sort String.compare
+            (("SignIn" :: records) @ bundle.definitions.names);
         schema =
           (fun n ->
             if n = "SignIn" then sign_in else bundle.definitions.schema n);

@@ -38,13 +38,15 @@ use xynolog::errors::{
 use xynolog::resume::CoupledBookmarks;
 use xynolog::session::{
     BROWSER_CLIENT_ID, OnAuthFailed, OpenedSession, Refresh, SCRIPT_CLIENT_ID, SessionFactory,
-    SessionFactoryOptions, SessionRenewer, SignInKept, SignInOutcome, SignedIn, StoredSession,
-    Validate, XynologBrowser, XynologSession, XynologSessionConfig, kept_in, last_event_id_key,
-    person_key, stored_session,
+    SessionFactoryOptions, SessionRenewer, SignInKept, Validate, XynologBrowser, XynologSession,
+    XynologSessionConfig, kept_in, last_event_id_key, person_key, stored_session,
 };
 use xynolog::storage::SessionStorage;
 use xynolog::transport::BoxFuture;
-use xynolog::types::{HttpEndpoint, KbDescription, KbEndpoint, KbTarget, UserId};
+use xynolog::types::{
+    ConnectionIdentity, HttpEndpoint, KbEndpoint, KbTarget, SignInOutcome, SignedIn, StoredSession,
+    UserId,
+};
 
 /// What a session over a gateway is built with.
 pub struct HttpSession {
@@ -537,13 +539,6 @@ impl SessionFactory for HttpSessionFactory {
 }
 
 // ── What a completed sign-in learns ─────────────────────────────────────
-
-/// Who the knowledge base at an address says it is.
-#[derive(Debug, Clone, PartialEq)]
-pub struct ConnectionIdentity {
-    pub did: UserId,
-    pub description: KbDescription,
-}
 
 /// Ask the knowledge base at `target` what it is, with a token just issued.
 /// It describes itself only to a caller that is signed in, so this is asked

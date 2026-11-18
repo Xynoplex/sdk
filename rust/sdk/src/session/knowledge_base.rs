@@ -134,18 +134,6 @@ impl KnowledgeBase {
     }
 }
 
-/// What the credential stored for a knowledge base says, read without
-/// asking anyone.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum KbSessionStatus {
-    /// A token is stored and has not expired.
-    Authenticated,
-    /// A token is stored and has expired.
-    Expired,
-    /// Nothing is stored.
-    SignedOut,
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -1,8 +1,7 @@
 type t
-type end_reason = Expired | Refused
 
 val make :
-  ?on_auth_failed:(end_reason -> unit) ->
+  ?on_auth_failed:(Enums.Session_end_reason.t -> unit) ->
   id:string ->
   kb:[ `KnowledgeBase ] Models.t ->
   Client.t ->

@@ -43,8 +43,6 @@ import xynolog.identifiers.AnnotationId
 import xynolog.identifiers.ResourceId
 import xynolog.namespaces.CONTEXT_WINDOW
 import xynolog.sameJson
-import xynolog.session.KbIdentityConflict
-import xynolog.session.SessionEndReason
 import xynolog.session.SessionSignals
 import xynolog.testing.FaultyTransport
 import xynolog.testing.RequestLogEntry
@@ -52,8 +50,10 @@ import xynolog.transport.Frame
 import xynolog.transport.Watched
 import xynolog.types.AnnotationSelector
 import xynolog.types.GenerationJobParams
+import xynolog.types.KbIdentityConflict
 import xynolog.types.MarkJobParams
 import xynolog.types.Motivation
+import xynolog.types.SessionEndReason
 import xynolog.types.wireJson
 import kotlin.coroutines.CoroutineContext
 
@@ -289,14 +289,14 @@ private fun signals(): Made {
     return Made(
         signals,
         mapOf(
-            "sessionEnded" to State(signals.sessionEnded) { held -> Held.Wire(held?.let { JsonObject(mapOf("reason" to JsonPrimitive(it.reason.wire))) } ?: JsonNull) },
+            "sessionEnded" to State(signals.sessionEnded) { held -> Held.Wire(held?.let { JsonObject(mapOf("reason" to JsonPrimitive(it.reason.value))) } ?: JsonNull) },
             "permissionDenied" to State(signals.permissionDenied) { held -> Held.Wire(held?.let { JsonObject(mapOf("detail" to JsonPrimitive(it.detail))) } ?: JsonNull) },
             "kbIdentityConflict" to State(signals.kbIdentityConflict) { held ->
                 Held.Wire(held?.let { JsonObject(mapOf("expectedDid" to JsonPrimitive(it.expectedDid), "observedDid" to JsonPrimitive(it.observedDid))) } ?: JsonNull)
             },
         ),
         mapOf(
-            "notifySessionEnded" to { args -> signals.notifySessionEnded(SessionEndReason.entries.single { it.wire == args.getValue("reason").text() }) },
+            "notifySessionEnded" to { args -> signals.notifySessionEnded(SessionEndReason.entries.single { it.value == args.getValue("reason").text() }) },
             "notifyPermissionDenied" to { args -> signals.notifyPermissionDenied(args.getValue("detail").jsonPrimitive.contentOrNull) },
             "notifyKbIdentityConflict" to { args ->
                 val conflict = args.getValue("conflict").jsonObject

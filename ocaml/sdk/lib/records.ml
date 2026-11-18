@@ -1,4 +1,4 @@
-(* Generated from OpenAPI object components and discriminator mappings. Do not edit.
+(* Generated from OpenAPI object components and discriminator mappings, and the records of Protocol's tables. Do not edit.
    Regenerate: make generate (codegen/lib/ocaml_sdk/records.ml) *)
 
 open Record_reader
@@ -7159,4 +7159,64 @@ module Vectors_config = struct
         | "memory" -> Some (Memory (Memory_vectors_config.project fields))
         | _ -> None)
     | _ -> None
+end
+
+module Connection_identity = struct
+  type t = { did : string; description : [ `KbDescription ] Models.t }
+end
+
+module Expected = struct
+  type t = { did : string; name : string option }
+end
+
+module Kb_read_verdict = struct
+  type t =
+    | Recorded
+    | Conflict of { observed_did : string; observed_name : string }
+    | NoVerdict
+end
+
+module Tab_check = struct
+  type t =
+    | Gone
+    | Ready of { name : string; media_type : string option }
+    | Unknown
+end
+
+module Session_ended = struct
+  type t = { reason : Enums.Session_end_reason.t }
+end
+
+module Permission_denied = struct
+  type t = { detail : string option }
+end
+
+module Kb_identity_conflict = struct
+  type t = { expected_did : string; observed_did : string }
+end
+
+module Stored_session = struct
+  type t = {
+    access : string;
+    refresh : string;
+    client_id : string;
+    token_endpoint : string;
+    revocation_endpoint : string option;
+    person_key : string option;
+  }
+end
+
+module Signed_in = struct
+  type t = {
+    endpoint : [ `KbEndpoint ] Models.t;
+    description : [ `KbDescription ] Models.t;
+    session : Stored_session.t;
+    kb_id : string option;
+    expected_did : string option;
+    expected_name : string option;
+  }
+end
+
+module Sign_in_outcome = struct
+  type t = { kb : [ `KnowledgeBase ] Models.t; expected : Expected.t option }
 end

@@ -61,7 +61,7 @@ type ScriptedSessions struct {
 	renewals       []Renewal
 	renewed        int
 	built          []builtFor
-	revoked        []registry.StoredSession
+	revoked        []api.StoredSession
 }
 
 type builtFor struct {
@@ -152,7 +152,7 @@ func (s *ScriptedSessions) Transports(kbID string) []*FaultyTransport {
 }
 
 // Revoked is every stored session the factory was told to revoke, in order.
-func (s *ScriptedSessions) Revoked() []registry.StoredSession {
+func (s *ScriptedSessions) Revoked() []api.StoredSession {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	return slices.Clone(s.revoked)
@@ -233,7 +233,7 @@ func (s *ScriptedSessions) Session(ctx context.Context, options registry.Session
 	return session, end, nil
 }
 
-func (s *ScriptedSessions) Revoke(_ context.Context, stored registry.StoredSession) {
+func (s *ScriptedSessions) Revoke(_ context.Context, stored api.StoredSession) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.revoked = append(s.revoked, stored)

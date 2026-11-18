@@ -3,19 +3,10 @@ package xynolog.session
 import xynolog.StateUnit
 import xynolog.transport.Variable
 import xynolog.transport.Watched
-
-/** A session ended, and why. */
-public data class SessionEnded(public val reason: SessionEndReason)
-
-/** A request was refused for lack of permission. `detail` is the refusal's own message, untranslated; null when there is none. */
-public data class PermissionDenied(public val detail: String?)
-
-/**
- * What a registered entry said it was, and what answered. Both, because
- * neither alone can be acted on: a person has to recognise which knowledge
- * base they registered and which one is there now.
- */
-public data class KbIdentityConflict(public val expectedDid: String, public val observedDid: String)
+import xynolog.types.KbIdentityConflict
+import xynolog.types.PermissionDenied
+import xynolog.types.SessionEndReason
+import xynolog.types.SessionEnded
 
 /**
  * What a host shows about a session, apart from the session: that it ended,

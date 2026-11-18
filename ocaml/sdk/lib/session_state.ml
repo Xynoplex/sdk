@@ -43,8 +43,6 @@ let refresh t ?refused () =
   State_value.set (snd t.user) (if held = None then None else t.confirmed);
   result
 
-type end_reason = Expired | Refused
-
 let make ?(on_auth_failed = ignore) ~id ~kb client =
   let session = Client.session client in
   let bus = Client.subscription client in
@@ -102,12 +100,12 @@ let make ?(on_auth_failed = ignore) ~id ~kb client =
             t.confirmed <- None;
             own Error_codes.Session.credential_refused
               "The gateway refused a token the issuer had just issued";
-            on_auth_failed Refused;
+            on_auth_failed Enums.Session_end_reason.Refused;
             Session.Refused)
     | Session.Refused when refused <> None ->
         t.confirmed <- None;
         refresh_exhausted ();
-        on_auth_failed Expired;
+        on_auth_failed Enums.Session_end_reason.Expired;
         outcome
     | Session.Unavailable ->
         if !refresh_context = `Expired then auth_failed ()

@@ -69,66 +69,6 @@ type XynologBrowserConfig struct {
 	SessionFactory SessionFactory
 }
 
-// SignedIn is what a completed sign-in learned: where it was, who the
-// knowledge base there says it is, the tokens, and what the person believed
-// they were signing in to.
-type SignedIn struct {
-	Endpoint api.KbEndpoint
-	// Description is what the knowledge base said of itself, asked with the
-	// new token.
-	Description api.KbDescription
-	Session     StoredSession
-	// KbID is the registered entry the person re-authenticated; "" when it
-	// was none.
-	KbID string
-	// ExpectedDid and ExpectedName are the did and the name of a row the
-	// person clicked; "" when it was none.
-	ExpectedDid  string
-	ExpectedName string
-}
-
-// Expected is what a person believed they were signing in to.
-type Expected struct {
-	Did string
-	// Name is "" when nothing was named.
-	Name string
-}
-
-// SignInOutcome is the entry a sign-in landed on, and what the person
-// believed, so a host can set the two against each other and say when they
-// differ. The sign-in stands either way: the knowledge base that answered is
-// the one reached.
-type SignInOutcome struct {
-	Kb api.KnowledgeBase
-	// Expected is nil when the person named nothing.
-	Expected *Expected
-}
-
-// KbReadKind is what a knowledge base said when it was asked to describe
-// itself, read against the entry it was asked as.
-type KbReadKind string
-
-const (
-	// KbReadRecorded: it answered as that entry, and its name and branch are
-	// on it now.
-	KbReadRecorded KbReadKind = "recorded"
-	// KbReadConflict: a different knowledge base answered. Its did and the
-	// name it gave itself are on the verdict and nowhere else: the entry is
-	// as it was.
-	KbReadConflict KbReadKind = "conflict"
-	// KbReadNoVerdict: it did not answer, or could not say who it is.
-	// Evidence of nothing.
-	KbReadNoVerdict KbReadKind = "no-verdict"
-)
-
-// KbReadVerdict is one reading of a knowledge base against its entry.
-type KbReadVerdict struct {
-	Kind KbReadKind
-	// ObservedDid and ObservedName are a KbReadConflict's alone.
-	ObservedDid  string
-	ObservedName string
-}
-
 // XynologBrowser is a registry of knowledge bases: see the package's
 // documentation.
 type XynologBrowser struct {
@@ -296,7 +236,7 @@ func (b *XynologBrowser) Bus() *xynolog.EventBus { return b.bus }
 // AddKb registers a knowledge base that a sign-in reached, keeps its tokens,
 // and makes it the active one, returning once its session is up or known not
 // to be.
-func (b *XynologBrowser) AddKb(input api.NewKnowledgeBase, session StoredSession) (api.KnowledgeBase, error) {
+func (b *XynologBrowser) AddKb(input api.NewKnowledgeBase, session api.StoredSession) (api.KnowledgeBase, error) {
 	kb := api.KnowledgeBase{Id: uuid.NewString(), Label: input.Label, Did: input.Did, Endpoint: input.Endpoint, LastRead: input.LastRead}
 	if err := StoreSession(b.storage, kb.Id, session); err != nil {
 		return api.KnowledgeBase{}, err
@@ -359,15 +299,15 @@ func (b *XynologBrowser) UpdateKb(id string, label *string, lastRead *api.KbRead
 
 // KbSessionStatus is what the credential stored for a knowledge base says,
 // read without asking anyone.
-func (b *XynologBrowser) KbSessionStatus(kbID string) KbSessionStatus {
+func (b *XynologBrowser) KbSessionStatus(kbID string) api.KbSessionStatus {
 	stored, ok := StoredSessionOf(b.storage, kbID)
 	switch {
 	case !ok:
-		return KbSessionSignedOut
+		return api.KbSessionStatusSignedOut
 	case xynolog.IsTokenExpired(stored.Access, time.Now()):
-		return KbSessionExpired
+		return api.KbSessionStatusExpired
 	default:
-		return KbSessionAuthenticated
+		return api.KbSessionStatusAuthenticated
 	}
 }
 
@@ -382,7 +322,7 @@ func (b *XynologBrowser) SetActiveKb(id string) error { return b.setActiveKb(id)
 // sign-in names nobody until its gateway names them, so keeping one forgets
 // the saved sign-in it replaces, once the client has closed, so nothing its
 // closing writes is left.
-func (b *XynologBrowser) SignIn(id string, session StoredSession) error {
+func (b *XynologBrowser) SignIn(id string, session api.StoredSession) error {
 	if b.closed.Load() {
 		return nil
 	}
@@ -407,10 +347,10 @@ func (b *XynologBrowser) SignIn(id string, session StoredSession) error {
 // entry for the knowledge base that answered (see the package's
 // documentation). A description whose domain no did can hold is refused, and
 // nothing is registered.
-func (b *XynologBrowser) SignedIn(signedIn SignedIn) (SignInOutcome, error) {
+func (b *XynologBrowser) SignedIn(signedIn api.SignedIn) (api.SignInOutcome, error) {
 	did, err := xynolog.KbDid(signedIn.Description.Domain)
 	if err != nil {
-		return SignInOutcome{}, err
+		return api.SignInOutcome{}, err
 	}
 	label := signedIn.Description.Name
 	lastRead := kbReadOf(signedIn.Description, time.Now())
@@ -424,31 +364,31 @@ func (b *XynologBrowser) SignedIn(signedIn SignedIn) (SignInOutcome, error) {
 	// An address with several entries singles out no belief of its own.
 	var believed *api.KnowledgeBase
 	switch {
-	case signedIn.KbID != "":
-		if i := slices.IndexFunc(kbs, func(kb api.KnowledgeBase) bool { return kb.Id == signedIn.KbID }); i >= 0 {
+	case signedIn.KbId != nil:
+		if i := slices.IndexFunc(kbs, func(kb api.KnowledgeBase) bool { return kb.Id == *signedIn.KbId }); i >= 0 {
 			believed = &kbs[i]
 		}
 	case len(atAddress) == 1:
 		believed = &atAddress[0]
 	}
-	var expected *Expected
+	var expected *api.Expected
 	switch {
-	case signedIn.ExpectedDid != "":
-		expected = &Expected{Did: signedIn.ExpectedDid, Name: signedIn.ExpectedName}
+	case signedIn.ExpectedDid != nil:
+		expected = &api.Expected{Did: *signedIn.ExpectedDid, Name: signedIn.ExpectedName}
 	case believed != nil:
-		expected = &Expected{Did: believed.Did, Name: believed.Label}
+		expected = &api.Expected{Did: believed.Did, Name: new(believed.Label)}
 	}
 
 	if i := slices.IndexFunc(atAddress, func(kb api.KnowledgeBase) bool { return kb.Did == did.String() }); i >= 0 {
 		kb := atAddress[i]
 		kb.Label, kb.LastRead = label, &lastRead
 		if err := b.UpdateKb(kb.Id, &label, &lastRead); err != nil {
-			return SignInOutcome{}, err
+			return api.SignInOutcome{}, err
 		}
-		return SignInOutcome{Kb: kb, Expected: expected}, b.SignIn(kb.Id, signedIn.Session)
+		return api.SignInOutcome{Kb: kb, Expected: expected}, b.SignIn(kb.Id, signedIn.Session)
 	}
 	kb, err := b.AddKb(api.NewKnowledgeBase{Label: label, Did: did.String(), Endpoint: signedIn.Endpoint, LastRead: &lastRead}, signedIn.Session)
-	return SignInOutcome{Kb: kb, Expected: expected}, err
+	return api.SignInOutcome{Kb: kb, Expected: expected}, err
 }
 
 // SignOut signs out of a knowledge base: its tokens are forgotten, and the
@@ -562,10 +502,10 @@ func (b *XynologBrowser) SetLastViewedResource(id api.ResourceId) error {
 // says what it answered. Asking is not activating: an answer as the entry is
 // recorded on it, and a different knowledge base answering is reported.
 // Nothing is voided and nothing raised.
-func (b *XynologBrowser) ReadActiveKb(ctx context.Context) (KbReadVerdict, error) {
+func (b *XynologBrowser) ReadActiveKb(ctx context.Context) (api.KbReadVerdict, error) {
 	session, kbID := b.activeSession.Value(), b.activeKbID.Value()
 	if session == nil || kbID == "" {
-		return KbReadVerdict{Kind: KbReadNoVerdict}, nil
+		return noVerdict()
 	}
 	return b.readKb(ctx, session, kbID)
 }
@@ -1051,11 +991,15 @@ func (b *XynologBrowser) validateOpenResources(session *xynolog.Session) error {
 	if err != nil {
 		return err
 	}
-	if verdict.Kind == KbReadConflict {
+	read, err := verdict.ValueByDiscriminator()
+	if err != nil {
+		return err
+	}
+	if conflict, ok := read.(api.KbReadVerdictConflict); ok {
 		// The read was of this session's knowledge base: what it voids is the
 		// active one's, so only while this is still the active one.
 		if isLive() {
-			return b.voidForConflict(kbID, verdict.ObservedDid)
+			return b.voidForConflict(kbID, conflict.ObservedDid)
 		}
 		return nil
 	}
@@ -1075,7 +1019,7 @@ func (b *XynologBrowser) validateOpenResources(session *xynolog.Session) error {
 	}
 	close(ids)
 	var mu sync.Mutex
-	checks := map[api.ResourceId]TabCheck{}
+	checks := map[api.ResourceId]api.TabCheck{}
 	var lanes sync.WaitGroup
 	for range xynolog.DefaultTiming().ChecksAtOnceCount {
 		lanes.Go(func() {
@@ -1101,33 +1045,44 @@ func (b *XynologBrowser) validateOpenResources(session *xynolog.Session) error {
 // A did is read one way only. It is not unique, so one that differs says a
 // different knowledge base answered, and one that matches says nothing about
 // what is in it: that is each resource's own check.
-func (b *XynologBrowser) readKb(ctx context.Context, session *xynolog.Session, kbID string) (KbReadVerdict, error) {
+func (b *XynologBrowser) readKb(ctx context.Context, session *xynolog.Session, kbID string) (api.KbReadVerdict, error) {
 	kbs := b.knowledgeBases.Value()
 	i := slices.IndexFunc(kbs, func(kb api.KnowledgeBase) bool { return kb.Id == kbID })
 	if i < 0 {
-		return KbReadVerdict{Kind: KbReadNoVerdict}, nil
+		return noVerdict()
 	}
 	description, err := session.Client().Browse.Kb(ctx)
 	if err != nil {
-		return KbReadVerdict{Kind: KbReadNoVerdict}, nil
+		return noVerdict()
 	}
 	observed, err := xynolog.KbDid(description.Domain)
 	if err != nil {
 		// A domain no did can hold is a knowledge base that could not say who
 		// it is.
-		return KbReadVerdict{Kind: KbReadNoVerdict}, nil
+		return noVerdict()
 	}
+	var verdict api.KbReadVerdict
 	if observed.String() != kbs[i].Did {
-		return KbReadVerdict{Kind: KbReadConflict, ObservedDid: observed.String(), ObservedName: description.Name}, nil
+		err := verdict.From(api.KbReadVerdictConflict{ObservedDid: observed.String(), ObservedName: description.Name})
+		return verdict, err
 	}
 	if b.closed.Load() {
-		return KbReadVerdict{Kind: KbReadNoVerdict}, nil
+		return noVerdict()
 	}
 	read := kbReadOf(description, time.Now())
 	if err := b.UpdateKb(kbID, &description.Name, &read); err != nil {
-		return KbReadVerdict{}, err
+		return api.KbReadVerdict{}, err
 	}
-	return KbReadVerdict{Kind: KbReadRecorded}, nil
+	err = verdict.From(api.KbReadVerdictRecorded{})
+	return verdict, err
+}
+
+// noVerdict is the verdict of a knowledge base that did not answer, or could
+// not say who it is: evidence of nothing.
+func noVerdict() (api.KbReadVerdict, error) {
+	var verdict api.KbReadVerdict
+	err := verdict.From(api.KbReadVerdictNoVerdict{})
+	return verdict, err
 }
 
 // voidForConflict is what an activation does when a different knowledge base
@@ -1147,24 +1102,35 @@ func (b *XynologBrowser) voidForConflict(kbID, observedDid string) error {
 		return err
 	}
 	if signals := b.activeSignals.Value(); signals != nil {
-		signals.NotifyKbIdentityConflict(xynolog.KbIdentityConflict{ExpectedDid: kbs[i].Did, ObservedDid: observedDid})
+		signals.NotifyKbIdentityConflict(api.KbIdentityConflict{ExpectedDid: kbs[i].Did, ObservedDid: observedDid})
 	}
 	return nil
 }
 
 // checkOpenResource is one open resource's verdict. Asking for it freshly
 // also puts what it answered in the client's cache, where a viewer reads it.
-func checkOpenResource(ctx context.Context, session *xynolog.Session, id api.ResourceId) TabCheck {
+func checkOpenResource(ctx context.Context, session *xynolog.Session, id api.ResourceId) api.TabCheck {
+	var check api.TabCheck
+	var written error
 	descriptor, err := session.Client().Browse.Resource(id).Fresh(ctx)
-	if err == nil {
-		// A descriptor with no primary representation states no media type.
-		mediaType, _, _ := xynolog.PrimaryMediaType(descriptor)
-		return TabCheck{Verdict: TabReady, Name: descriptor.Name, MediaType: mediaType}
-	}
 	var refusal *xynolog.BusRequestError
-	if errors.As(err, &refusal) && refusal.Code == xynolog.BusRequestErrorCodeNotFound {
-		return TabCheck{Verdict: TabGone}
+	switch {
+	case err == nil:
+		ready := api.TabCheckReady{Name: descriptor.Name}
+		// A descriptor with no primary representation states no media type.
+		if mediaType, _, _ := xynolog.PrimaryMediaType(descriptor); mediaType != "" {
+			ready.MediaType = &mediaType
+		}
+		written = check.From(ready)
+	case errors.As(err, &refusal) && refusal.Code == xynolog.BusRequestErrorCodeNotFound:
+		written = check.From(api.TabCheckGone{})
+	default:
+		// Anything else is a symptom, not a verdict.
+		written = check.From(api.TabCheckUnknown{})
 	}
-	// Anything else is a symptom, not a verdict.
-	return TabCheck{Verdict: TabUnknown}
+	if written != nil {
+		// A member of the union always writes.
+		panic(written)
+	}
+	return check
 }

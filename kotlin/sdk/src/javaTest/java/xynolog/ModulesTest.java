@@ -36,7 +36,6 @@ import xynolog.errors.IdentityUnverifiableReason;
 import xynolog.http.AuthorizationKt;
 import xynolog.http.BeginAuthorizationOptions;
 import xynolog.http.ConnectKt;
-import xynolog.http.ConnectionIdentity;
 import xynolog.http.EndpointKt;
 import xynolog.http.HttpSessionFactory;
 import xynolog.http.IssuerEndpoints;
@@ -44,15 +43,11 @@ import xynolog.http.PendingAuthorization;
 import xynolog.http.SessionsKt;
 import xynolog.identifiers.ResourceId;
 import xynolog.identifiers.UserId;
-import xynolog.registry.Expected;
 import xynolog.registry.KeepingKt;
 import xynolog.registry.XynologBrowser;
 import xynolog.registry.XynologBrowserConfig;
 import xynolog.registry.SessionFactoryOptions;
-import xynolog.registry.SignInOutcome;
-import xynolog.registry.SignedIn;
 import xynolog.registry.StoredKt;
-import xynolog.registry.StoredSession;
 import xynolog.retry.RetryKt;
 import xynolog.retry.RetryPolicy;
 import xynolog.session.SessionSignals;
@@ -64,12 +59,17 @@ import xynolog.transport.TransportKt;
 import xynolog.types.AgentSoftware;
 import xynolog.types.Annotation;
 import xynolog.types.AnnotationSelector;
+import xynolog.types.ConnectionIdentity;
+import xynolog.types.Expected;
 import xynolog.types.HttpEndpoint;
 import xynolog.types.HttpEndpointProtocol;
 import xynolog.types.KbDescription;
 import xynolog.types.KnowledgeBase;
 import xynolog.types.LocalEndpoint;
 import xynolog.types.Motivation;
+import xynolog.types.SignInOutcome;
+import xynolog.types.SignedIn;
+import xynolog.types.StoredSession;
 
 /**
  * The modules a Java program reaches past the client: an annotation's
@@ -207,7 +207,7 @@ final class ModulesTest {
         assertNotNull(KeepingKt.keptIn(storage, "kb-a"));
 
         StoredSession session = new StoredSession("an-access-token", "a-refresh-token", "xynolog-browser", "https://issuer.example/token", null, null);
-        SignedIn signedIn = new SignedIn(kb.getEndpoint(), KbDescription.builder("A KB", "kb.example").build(), session);
+        SignedIn signedIn = SignedIn.builder(kb.getEndpoint(), KbDescription.builder("A KB", "kb.example").build(), session).build();
         assertEquals(session, signedIn.getSession());
         SignInOutcome outcome = new SignInOutcome(kb, new Expected("did:web:kb.example", "A KB"));
         assertEquals("A KB", outcome.getExpected().getName());

@@ -756,8 +756,7 @@ generated modules are. Refresh
 `public-api.json` after library source changes;
 GHC supplies the reachable types, constructors, and signatures through the
 public Cabal modules, including re-exports. The census checks source
-freshness; the Haskell job compares actual compiled exports. All shared
-client-surface sections include Haskell.
+freshness; the Haskell job compares actual compiled exports.
 
 ### What the checks cover
 
@@ -777,9 +776,8 @@ polling, delegation, invalidation windows and held-job stalls. Every shared
 session startup/refusal case also runs, including recovery after an unanswered
 renewal. Issuer tests use byte-level HTTP connections for discovery, PKCE,
 one-shot callbacks, atomic grant rotation and revocation.
-`npm run lint:haskell-complete` rejects any remaining Haskell table exemption,
-missing census reader or missing parity conformance driver. CI runs it as
-**Haskell SDK Completion**, separately from checks of the implemented surface.
+`make test-codegen`'s coverage census holds every case table to a Haskell
+test that names it, or to the reason Haskell runs none.
 
 Runtime tests also cover atomic publication of raw replies before request
 continuations, channel/correlation matching, tracking cleanup on cancellation,

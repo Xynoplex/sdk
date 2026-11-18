@@ -22,11 +22,12 @@ use std::error::Error;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use xynolog::errors::SignInError;
-use xynolog::session::{MemorySignIn, SignInKept, StoredSession, kept_in, person_key};
+use xynolog::session::{MemorySignIn, SignInKept, kept_in, person_key};
 use xynolog::sign_in_store::{FILE_NAME, SignInStore};
 use xynolog::storage::{InMemorySessionStorage, SessionStorage};
 use xynolog::timing::{HTTP_REQUEST_TIMEOUT, REFRESH_RETRY};
 use xynolog::transport::BoxFuture;
+use xynolog::types::StoredSession;
 
 const ALICE: &str = "did:web:example.org:users:alice";
 

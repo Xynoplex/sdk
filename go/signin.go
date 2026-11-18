@@ -90,7 +90,7 @@ type ResumeConfig struct {
 	// refusal asked for.
 	SkipAskingWhoTokenIs bool
 	// OnAuthFailed is the session's (SessionConfig).
-	OnAuthFailed func(SessionEndReason)
+	OnAuthFailed func(api.SessionEndReason)
 }
 
 // ResumeSession starts a session over the sign-in config.Kept holds, renewed
@@ -193,7 +193,7 @@ type SessionFromKeptConfig struct {
 	// closing, writes it again. Nil keeps nothing.
 	Storage SessionStorage
 	// OnAuthFailed is the session's (SessionConfig).
-	OnAuthFailed func(SessionEndReason)
+	OnAuthFailed func(api.SessionEndReason)
 }
 
 // SessionFromKept is a session with config.Kb over the sign-in config.Kept

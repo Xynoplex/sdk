@@ -14,7 +14,8 @@ use xynolog::channels::{
 use xynolog::errors::{TransportErrorCode, XynologError};
 use xynolog::testing::as_id;
 use xynolog::testing::{FaultAction, FaultyTransport};
-use xynolog::transport::{Envelope, Frame, FrameRefusal, FrameRefusalReason, Transport};
+use xynolog::transport::{Envelope, Frame, FrameRefusal, Transport};
+use xynolog::types::FrameRefusalReason;
 use xynolog::types::{
     Annotation, AnnotationBodies, AnnotationTargetValue, BeckonFocusEvent,
     BrowseEntityTypesRequest, GetAnnotationsResponse, ResourceId,

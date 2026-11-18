@@ -62,8 +62,8 @@ use crate::text_offsets::Offsets;
 use crate::types::{
     Agent, AnchoredText, Annotation, AnnotationBodies, AnnotationBody, AnnotationSelector,
     AnnotationTarget, AnnotationTargetType, AnnotationTargetValue, BodyPurpose, FragmentSelector,
-    Motivation, OneOrMoreAgents, PdfTextItem, ResourceId, Selector, TextPositionSelector,
-    TextQuoteSelector,
+    MatchQuality, Motivation, OneOrMoreAgents, PdfTextItem, ResourceId, Selector,
+    TextPositionSelector, TextQuoteSelector,
 };
 use quote::Place;
 use std::time::SystemTime;
@@ -273,30 +273,6 @@ impl TextSpan {
             exact: exact.into(),
             prefix: None,
             suffix: None,
-        }
-    }
-}
-
-/// Which looser search found words a text does not have character for
-/// character.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum MatchQuality {
-    /// Without regard to white space, or to the forms of quotation marks and
-    /// dashes.
-    Normalized,
-    /// Without regard to letter case.
-    CaseInsensitive,
-    /// Within a twentieth of the words' length in edits.
-    Fuzzy,
-}
-
-impl MatchQuality {
-    /// The value as the tables spell it.
-    pub const fn as_str(&self) -> &'static str {
-        match self {
-            MatchQuality::Normalized => "normalized",
-            MatchQuality::CaseInsensitive => "case-insensitive",
-            MatchQuality::Fuzzy => "fuzzy",
         }
     }
 }

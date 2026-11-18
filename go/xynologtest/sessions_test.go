@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"reflect"
 	"strings"
 	"sync"
 	"testing"
@@ -146,7 +147,7 @@ func (a *asked) of(kbID string) registry.SessionFactoryOptions {
 
 func (a *asked) signedIn(t *testing.T, kbID string) {
 	t.Helper()
-	if err := registry.StoreSession(a.storage, kbID, registry.StoredSession{Access: goodToken(), Refresh: "r", ClientID: "xynolog-browser", TokenEndpoint: "https://issuer.test/token"}); err != nil {
+	if err := registry.StoreSession(a.storage, kbID, api.StoredSession{Access: goodToken(), Refresh: "r", ClientId: "xynolog-browser", TokenEndpoint: "https://issuer.test/token"}); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -363,9 +364,9 @@ func TestScriptedSessionsCanRefuseToBuildAndKeepWhatWasRevoked(t *testing.T) {
 			t.Error("no session was built once building was allowed again")
 		}
 
-		stored := registry.StoredSession{Access: "a", Refresh: "r", ClientID: "xynolog-browser", TokenEndpoint: "https://issuer.test/token", RevocationEndpoint: "https://issuer.test/revoke"}
+		stored := api.StoredSession{Access: "a", Refresh: "r", ClientId: "xynolog-browser", TokenEndpoint: "https://issuer.test/token", RevocationEndpoint: new("https://issuer.test/revoke")}
 		sessions.Revoke(context.Background(), stored)
-		if revoked := sessions.Revoked(); len(revoked) != 1 || revoked[0] != stored {
+		if revoked := sessions.Revoked(); !reflect.DeepEqual(revoked, []api.StoredSession{stored}) {
 			t.Errorf("revoked: %+v", revoked)
 		}
 	})
