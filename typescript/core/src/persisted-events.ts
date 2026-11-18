@@ -52,19 +52,26 @@ export type StatedPersistedEventCatalog = {
  * an upcast at every seam.
  */
 type PersistedEventCatalog = {
-  [K in keyof StatedPersistedEventCatalog]: K extends keyof EventPayloadRefinements
+  [
+    K in keyof StatedPersistedEventCatalog
+  ]: K extends keyof EventPayloadRefinements
     ? EventPayloadRefinements[K]
     : StatedPersistedEventCatalog[K];
 };
 
 /** System event types — persisted events that have no resourceId. */
-type SystemEventType = 'frame:entity-type-added' | 'frame:tag-schema-added' | 'principal:profiled';
+type SystemEventType =
+  'frame:entity-type-added' | 'frame:tag-schema-added' | 'principal:profiled';
 
 /** Extract the concrete persisted event type for a given type string. */
 export type EventOfType<K extends keyof PersistedEventCatalog> =
   K extends SystemEventType
     ? EventBase & { type: K; payload: PersistedEventCatalog[K] }
-    : EventBase & { type: K; resourceId: ResourceId; payload: PersistedEventCatalog[K] };
+    : EventBase & {
+        type: K;
+        resourceId: ResourceId;
+        payload: PersistedEventCatalog[K];
+      };
 
 /** The union of all persisted event types. Discriminated on `type`. */
 export type PersistedEvent = {

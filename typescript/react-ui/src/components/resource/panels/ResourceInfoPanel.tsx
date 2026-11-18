@@ -1,6 +1,11 @@
 'use client';
 
-import type { AnchoredTextAnswer, JobId, ResourceId, YieldJobDone } from '@xynolog/core';
+import type {
+  AnchoredTextAnswer,
+  JobId,
+  ResourceId,
+  YieldJobDone,
+} from '@xynolog/core';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslations } from '../../../contexts/TranslationContext';
 import { readyValue, type XynologSession } from '@xynolog/sdk';
@@ -99,12 +104,16 @@ export function ResourceInfoPanel({
   // row renders the wire's own vocabulary, translated; `unknown` and
   // not-yet-asked render NO row: no claim, no invented state. The bridged
   // settle for THIS resource refreshes in place.
-  const [textLayerKind, setTextLayerKind] = useState<AnchoredTextAnswer['kind'] | null>(null);
+  const [textLayerKind, setTextLayerKind] = useState<
+    AnchoredTextAnswer['kind'] | null
+  >(null);
   const refreshTextLayer = useCallback(() => {
     if (!session) return;
     session.client.browse.resourceAnchoredText(resourceId).then(
       (answer) => setTextLayerKind(answer.kind),
-      () => { /* transport failure: keep whatever stood — no claim */ },
+      () => {
+        /* transport failure: keep whatever stood — no claim */
+      },
     );
   }, [session, resourceId]);
   useEffect(() => {
@@ -114,21 +123,26 @@ export function ResourceInfoPanel({
   useEventSubscription('smelt:settled', (settled) => {
     if (settled.resourceId === resourceId) refreshTextLayer();
   });
-  const showTextLayerRow = textLayerKind !== null && textLayerKind !== 'unknown';
+  const showTextLayerRow =
+    textLayerKind !== null && textLayerKind !== 'unknown';
 
   // Single attribution surface. `wasAttributedTo` is the canonical list
   // of responsible parties; if a producer set only `generator` we
   // render that as the attribution chain.
   const attribution: Agent[] = wasAttributedTo
-    ? (Array.isArray(wasAttributedTo) ? wasAttributedTo : [wasAttributedTo])
-    : (generator ? (Array.isArray(generator) ? generator : [generator]) : []);
+    ? Array.isArray(wasAttributedTo)
+      ? wasAttributedTo
+      : [wasAttributedTo]
+    : generator
+      ? Array.isArray(generator)
+        ? generator
+        : [generator]
+      : [];
 
   return (
     <div className="xynolog-resource-info-panel">
       {/* Panel Title */}
-      <h3 className="xynolog-resource-info-panel__title">
-        {t('title')}
-      </h3>
+      <h3 className="xynolog-resource-info-panel__title">{t('title')}</h3>
 
       {/* Locale Section */}
       <div className="xynolog-resource-info-panel__section">
@@ -145,13 +159,19 @@ export function ResourceInfoPanel({
       </div>
 
       {/* Representation Section */}
-      {(primaryMediaType || primaryByteSize !== undefined || showTextLayerRow) && (
+      {(primaryMediaType ||
+        primaryByteSize !== undefined ||
+        showTextLayerRow) && (
         <div className="xynolog-resource-info-panel__section">
-          <h3 className="xynolog-resource-info-panel__heading">{t('representation')}</h3>
+          <h3 className="xynolog-resource-info-panel__heading">
+            {t('representation')}
+          </h3>
           <div className="xynolog-resource-info-panel__field-group">
             {primaryMediaType && (
               <div>
-                <span className="xynolog-resource-info-panel__label">{t('mediaType')}</span>
+                <span className="xynolog-resource-info-panel__label">
+                  {t('mediaType')}
+                </span>
                 <span className="xynolog-resource-info-panel__value">
                   {primaryMediaType}
                 </span>
@@ -159,7 +179,9 @@ export function ResourceInfoPanel({
             )}
             {primaryByteSize !== undefined && (
               <div>
-                <span className="xynolog-resource-info-panel__label">{t('byteSize')}</span>
+                <span className="xynolog-resource-info-panel__label">
+                  {t('byteSize')}
+                </span>
                 <span className="xynolog-resource-info-panel__value">
                   {primaryByteSize.toLocaleString()} bytes
                 </span>
@@ -167,18 +189,28 @@ export function ResourceInfoPanel({
             )}
             {showTextLayerRow && (
               <div>
-                <span className="xynolog-resource-info-panel__label">{t('textLayer')}</span>
-                <span className="xynolog-resource-info-panel__value" data-kind={textLayerKind}>
-                  {textLayerKind === 'extracted' ? t('textLayerReady')
-                    : textLayerKind === 'not-yet' ? t('textLayerPreparing')
-                    : textLayerKind === 'declined' ? t('textLayerNone')
-                    : t('textLayerNotApplicable')}
+                <span className="xynolog-resource-info-panel__label">
+                  {t('textLayer')}
+                </span>
+                <span
+                  className="xynolog-resource-info-panel__value"
+                  data-kind={textLayerKind}
+                >
+                  {textLayerKind === 'extracted'
+                    ? t('textLayerReady')
+                    : textLayerKind === 'not-yet'
+                      ? t('textLayerPreparing')
+                      : textLayerKind === 'declined'
+                        ? t('textLayerNone')
+                        : t('textLayerNotApplicable')}
                 </span>
               </div>
             )}
             {storageUri && (
               <div>
-                <span className="xynolog-resource-info-panel__label">{t('storageUri')}</span>
+                <span className="xynolog-resource-info-panel__label">
+                  {t('storageUri')}
+                </span>
                 <span className="xynolog-resource-info-panel__value">
                   {storageUri}
                 </span>
@@ -189,13 +221,20 @@ export function ResourceInfoPanel({
       )}
 
       {/* Provenance Section */}
-      {(dateCreated || dateModified || attribution.length > 0 || wasDerivedFrom) && (
+      {(dateCreated ||
+        dateModified ||
+        attribution.length > 0 ||
+        wasDerivedFrom) && (
         <div className="xynolog-resource-info-panel__section">
-          <h3 className="xynolog-resource-info-panel__heading">{t('provenance')}</h3>
+          <h3 className="xynolog-resource-info-panel__heading">
+            {t('provenance')}
+          </h3>
           <div className="xynolog-resource-info-panel__field-group">
             {dateCreated && (
               <div>
-                <span className="xynolog-resource-info-panel__label">{t('createdAt')}</span>
+                <span className="xynolog-resource-info-panel__label">
+                  {t('createdAt')}
+                </span>
                 <span className="xynolog-resource-info-panel__value">
                   {new Date(dateCreated).toLocaleString()}
                 </span>
@@ -203,7 +242,9 @@ export function ResourceInfoPanel({
             )}
             {dateModified && (
               <div>
-                <span className="xynolog-resource-info-panel__label">{t('modifiedAt')}</span>
+                <span className="xynolog-resource-info-panel__label">
+                  {t('modifiedAt')}
+                </span>
                 <span className="xynolog-resource-info-panel__value">
                   {new Date(dateModified).toLocaleString()}
                 </span>
@@ -211,7 +252,9 @@ export function ResourceInfoPanel({
             )}
             {attribution.length > 0 && (
               <div>
-                <span className="xynolog-resource-info-panel__label">{t('attributedTo')}</span>
+                <span className="xynolog-resource-info-panel__label">
+                  {t('attributedTo')}
+                </span>
                 <span className="xynolog-resource-info-panel__value">
                   {attribution.map(renderAgentLabel).join(', ')}
                 </span>
@@ -219,10 +262,20 @@ export function ResourceInfoPanel({
             )}
             {wasDerivedFrom && (
               <div>
-                <span className="xynolog-resource-info-panel__label">{t('derivedFrom')}</span>
+                <span className="xynolog-resource-info-panel__label">
+                  {t('derivedFrom')}
+                </span>
                 <span className="xynolog-resource-info-panel__value">
-                  {(Array.isArray(wasDerivedFrom) ? wasDerivedFrom : [wasDerivedFrom]).map((id, i) => (
-                    <DerivedFromLink key={id} session={session} id={id} first={i === 0} />
+                  {(Array.isArray(wasDerivedFrom)
+                    ? wasDerivedFrom
+                    : [wasDerivedFrom]
+                  ).map((id, i) => (
+                    <DerivedFromLink
+                      key={id}
+                      session={session}
+                      id={id}
+                      first={i === 0}
+                    />
                   ))}
                 </span>
               </div>
@@ -234,14 +287,12 @@ export function ResourceInfoPanel({
       {/* Entity Type Tags Section */}
       {documentEntityTypes.length > 0 && (
         <div className="xynolog-resource-info-panel__section">
-          <h3 className="xynolog-resource-info-panel__heading">{t('entityTypeTags')}</h3>
+          <h3 className="xynolog-resource-info-panel__heading">
+            {t('entityTypeTags')}
+          </h3>
           <div className="xynolog-resource-info-panel__tag-list">
             {documentEntityTypes.map((tag) => (
-              <span
-                key={tag}
-                className="xynolog-tag"
-                data-variant="blue"
-              >
+              <span key={tag} className="xynolog-tag" data-variant="blue">
                 {tag}
               </span>
             ))}
@@ -259,20 +310,29 @@ export function ResourceInfoPanel({
           isDelegating={isGenerating}
           cancelled={generationCancelled}
           progress={generationProgress}
-          controls={delegatedJobControls(session, generationJobId ?? null, onDismissProgress)}
+          controls={delegatedJobControls(
+            session,
+            generationJobId ?? null,
+            onDismissProgress,
+          )}
           progressProps={{
-            ...(generationOutcome ? {
-              outcome: {
-                label: generationOutcome.resourceName,
-                onOpen: () => session?.client.browse.openResource(generationOutcome.resourceId),
-              },
-              // The terminal sentence derives from the OUTCOME, not the final
-              // progress frame — whose fire-and-forget emit can lose the race
-              // with job:complete and leave "creating…" beside a ✅.
-              endedMessage: generationOutcome.truncated
-                ? ta('codeCompleteGeneratedTruncated')
-                : ta('codeCompleteGenerated'),
-            } : {}),
+            ...(generationOutcome
+              ? {
+                  outcome: {
+                    label: generationOutcome.resourceName,
+                    onOpen: () =>
+                      session?.client.browse.openResource(
+                        generationOutcome.resourceId,
+                      ),
+                  },
+                  // The terminal sentence derives from the OUTCOME, not the final
+                  // progress frame — whose fire-and-forget emit can lose the race
+                  // with job:complete and leave "creating…" beside a ✅.
+                  endedMessage: generationOutcome.truncated
+                    ? ta('codeCompleteGeneratedTruncated')
+                    : ta('codeCompleteGenerated'),
+                }
+              : {}),
             translations: delegateProgressTranslations(ta),
           }}
           form={
@@ -345,7 +405,11 @@ export function ResourceInfoPanel({
  *
  * @emits browse:resource-open - Open the source resource. Payload: { resourceId: string }
  */
-function DerivedFromLink({ session, id, first }: {
+function DerivedFromLink({
+  session,
+  id,
+  first,
+}: {
   session: XynologSession | null;
   id: ResourceId;
   first: boolean;
@@ -353,14 +417,17 @@ function DerivedFromLink({ session, id, first }: {
   // `browse.resource` is stable per id (cache + scope wrappers memoize), so
   // subscribing straight off the render read is safe; `failed` is an emission,
   // never a stream error, so `readyValue` covers every unresolved state.
-  const descriptor = useObservable(session ? session.client.browse.resource(id) : null);
+  const descriptor = useObservable(
+    session ? session.client.browse.resource(id) : null,
+  );
   const name = descriptor ? readyValue(descriptor)?.name : undefined;
   return (
     <button
       className="xynolog-resource-info-panel__link"
       onClick={() => session?.client.browse.openResource(id)}
     >
-      {!first && ', '}{name ?? id}
+      {!first && ', '}
+      {name ?? id}
     </button>
   );
 }

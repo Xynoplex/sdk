@@ -28,12 +28,9 @@ let banner =
       ]
     __FILE__
 
-let value_column_schemas = 38
-let value_column_operations = 41
-let failure_column_operations = 85
-let str text = T.T_str (Single, text)
-let word text = T.Str (Single, text)
-let channel_key channel = T.Quoted (Single, channel)
+let str text = T.T_str text
+let word text = T.Str text
+let channel_key channel = T.Quoted channel
 
 (* How a section heads a part of a listing: the event map's between two
    rules of [=], a schema's or an operation's on one rule of [─]. *)
@@ -76,7 +73,7 @@ let satisfies_channels value =
 let channel_list ?(about = []) name channels ~of_ =
   T.const name ~about ~as_const:true
     ~satisfies:(T_readonly (T_array (T_name of_)))
-    (T.array Rows (List.map word channels))
+    (T.array (List.map word channels))
 
 let payload_type (c : R.channel) : T.type_ =
   match c.payload with
@@ -93,18 +90,14 @@ let payload_type (c : R.channel) : T.type_ =
 let payload_schema (c : R.channel) =
   let one name schema =
     T.Object
-      {
-        layout = Inline;
-        column = None;
-        entries = [ T.entry (Ident name) (word schema) ];
-      }
+      { layout = Inline; entries = [ T.entry (Ident name) (word schema) ] }
   in
   match c.payload with
   | Schema { schema; _ } -> one "payload" schema
   | Envelope { schema } -> one "response" schema
   | Stored_event { enriched; _ } ->
       one "payload" (Registry.stored_event_component ~enriched)
-  | Void | Empty -> T.Object { layout = Inline; column = None; entries = [] }
+  | Void | Empty -> T.Object { layout = Inline; entries = [] }
 
 let protocol (bus : Registry.t) =
   let reg = bus.registry in
@@ -211,7 +204,7 @@ let protocol (bus : Registry.t) =
             ~about:[ Doc_prose reg.docs.channel_schemas ]
             ~satisfies:
               (satisfies_channels (T_union [ component_name; T_name "null" ]))
-            (T.rows ~column:value_column_schemas
+            (T.rows
                (with_docs Rule
                   (fun (c : R.channel) -> c.schema_docs)
                   (fun ~about ~trailing (c : R.channel) ->
@@ -249,10 +242,10 @@ let protocol (bus : Registry.t) =
               ]
             ~satisfies:
               (satisfies_channels (T_readonly (T_array (T_name "string"))))
-            (T.rows ~column:value_column_schemas
+            (T.rows
                (List.map
                   (fun (channel, stamps) ->
-                    T.entry (channel_key channel) (T.strings Inline stamps))
+                    T.entry (channel_key channel) (T.strings stamps))
                   bus.stamps));
           T.const "CHANNEL_PAYLOADS" ~as_const:true
             ~about:
@@ -290,7 +283,7 @@ let protocol (bus : Registry.t) =
                           ] );
                       T_generic ("Record", [ T_name "string"; T_name "never" ]);
                     ]))
-            (T.rows ~column:value_column_schemas
+            (T.rows
                (List.map
                   (fun (c : R.channel) ->
                     T.entry (channel_key c.channel) (payload_schema c))
@@ -543,7 +536,7 @@ let operations (bus : Registry.t) =
                            T_name "EmittableChannel"; T_name "BusOperationSpec";
                          ] );
                    ] ))
-            (T.rows ~column:value_column_operations
+            (T.rows
                (with_docs Rule
                   (fun (o : R.operation) -> o.docs)
                   (fun ~about ~trailing (o : R.operation) ->
@@ -551,7 +544,6 @@ let operations (bus : Registry.t) =
                       (Object
                          {
                            layout = Inline;
-                           column = Some failure_column_operations;
                            entries =
                              [
                                T.entry (Ident "result") (word o.result);
@@ -621,10 +613,10 @@ let operations (bus : Registry.t) =
                                            ] ));
                                 ])));
                  })
-            (T.rows ~column:value_column_operations
+            (T.rows
                (List.map
                   (fun (request, names) ->
-                    T.entry (channel_key request) (T.strings Inline names))
+                    T.entry (channel_key request) (T.strings names))
                   bus.reply_names));
         ];
     }
@@ -687,7 +679,6 @@ let classification (bus : Registry.t) =
     T.Object
       {
         layout = Inline;
-        column = None;
         entries =
           [
             field "recorded" (Bool a.recorded);
@@ -788,7 +779,7 @@ let classification (bus : Registry.t) =
             };
           T.const "CHANNEL_ATTRS" ~as_const:true
             ~satisfies:(satisfies_channels (T_name "ChannelAttrs"))
-            (T.rows ~column:value_column_schemas
+            (T.rows
                (List.map
                   (fun (a : Registry.attrs) ->
                     T.entry (channel_key a.channel) (attrs a))

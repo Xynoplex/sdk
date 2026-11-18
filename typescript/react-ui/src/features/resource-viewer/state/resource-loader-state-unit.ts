@@ -35,7 +35,9 @@ export function createResourceLoaderStateUnit(
   resourceId: ResourceId,
 ): ResourceLoaderStateUnit {
   const { client } = session;
-  const resource$ = new BehaviorSubject<ResourceDescriptor | undefined>(undefined);
+  const resource$ = new BehaviorSubject<ResourceDescriptor | undefined>(
+    undefined,
+  );
   const error$ = new BehaviorSubject<Error | null>(null);
 
   let subscription: Subscription | null = null;
@@ -56,7 +58,8 @@ export function createResourceLoaderStateUnit(
         error$.next(st.error);
         return;
       }
-      if (st.status === 'ready' && error$.getValue() !== null) error$.next(null);
+      if (st.status === 'ready' && error$.getValue() !== null)
+        error$.next(null);
       resource$.next(readyValue(st));
     });
   };

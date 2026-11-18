@@ -14,7 +14,11 @@ import type { ToolbarPanelsProps } from '../../../components/Toolbar';
 import { resourceId } from '@xynolog/core';
 import type { ResourceDescriptor } from '@xynolog/core';
 
-const createMockResource = (id: string, name: string, entityTypes: string[] = []): ResourceDescriptor => ({
+const createMockResource = (
+  id: string,
+  name: string,
+  entityTypes: string[] = [],
+): ResourceDescriptor => ({
   '@context': 'https://www.w3.org/ns/anno.jsonld',
   '@id': resourceId(id),
   '@type': 'schema:DigitalDocument',
@@ -26,7 +30,9 @@ const createMockResource = (id: string, name: string, entityTypes: string[] = []
   representations: [],
 });
 
-const createMockProps = (overrides?: Partial<ResourceDiscoveryPageProps>): ResourceDiscoveryPageProps => ({
+const createMockProps = (
+  overrides?: Partial<ResourceDiscoveryPageProps>,
+): ResourceDiscoveryPageProps => ({
   recentDocuments: [],
   searchDocuments: [],
   entityTypes: [],
@@ -51,17 +57,20 @@ const createMockProps = (overrides?: Partial<ResourceDiscoveryPageProps>): Resou
     all: 'All',
     recentResources: 'Recent Resources',
     searchResults: (count: number) => `${count} results found`,
-    documentsTaggedWith: (entityType: string) => `Documents tagged with ${entityType}`,
+    documentsTaggedWith: (entityType: string) =>
+      `Documents tagged with ${entityType}`,
     noResultsFound: (query: string) => `No results found for "${query}"`,
     noResourcesAvailable: 'No resources available',
     composeFirstResource: 'Compose First Resource',
     archived: 'Archived',
     created: 'Created:',
     recentFailed: 'Could not load resources.',
-  retry: 'Try again',
-  loadingKnowledgeBase: 'Loading knowledge base...',
+    retry: 'Try again',
+    loadingKnowledgeBase: 'Loading knowledge base...',
   },
-  ToolbarPanels: ({ children }: ToolbarPanelsProps) => <div data-testid="toolbar-panels">{children}</div>,
+  ToolbarPanels: ({ children }: ToolbarPanelsProps) => (
+    <div data-testid="toolbar-panels">{children}</div>
+  ),
   ...overrides,
 });
 
@@ -126,9 +135,7 @@ describe('ResourceDiscoveryPage', () => {
     });
   });
 
-
-  beforeEach(() => {
-  });
+  beforeEach(() => {});
 
   describe('Basic Rendering', () => {
     it('renders without crashing', () => {
@@ -143,22 +150,30 @@ describe('ResourceDiscoveryPage', () => {
       renderWithProviders(<ResourceDiscoveryPage {...props} />);
 
       expect(screen.getByText('Discover Resources')).toBeInTheDocument();
-      expect(screen.getByText('Search and browse available resources')).toBeInTheDocument();
+      expect(
+        screen.getByText('Search and browse available resources'),
+      ).toBeInTheDocument();
     });
 
     it('renders search input', () => {
       const props = createMockProps();
       renderWithProviders(<ResourceDiscoveryPage {...props} />);
 
-      expect(screen.getByPlaceholderText('Search resources...')).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText('Search resources...'),
+      ).toBeInTheDocument();
     });
 
     it('renders toolbar component', () => {
       const props = createMockProps();
-      const { container } = renderWithProviders(<ResourceDiscoveryPage {...props} />);
+      const { container } = renderWithProviders(
+        <ResourceDiscoveryPage {...props} />,
+      );
 
       // Toolbar renders with context="simple" - check for toolbar element
-      const toolbar = container.querySelector('.xynolog-toolbar[data-context="simple"]');
+      const toolbar = container.querySelector(
+        '.xynolog-toolbar[data-context="simple"]',
+      );
       expect(toolbar).toBeInTheDocument();
     });
   });
@@ -215,14 +230,18 @@ describe('ResourceDiscoveryPage', () => {
       const props = createMockProps({ recentDocuments: [] });
       renderWithProviders(<ResourceDiscoveryPage {...props} />);
 
-      expect(screen.getByRole('button', { name: 'Compose First Resource' })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: 'Compose First Resource' }),
+      ).toBeInTheDocument();
     });
 
     it('calls onNavigateToCompose when compose button clicked', () => {
       const props = createMockProps({ recentDocuments: [] });
       renderWithProviders(<ResourceDiscoveryPage {...props} />);
 
-      const button = screen.getByRole('button', { name: 'Compose First Resource' });
+      const button = screen.getByRole('button', {
+        name: 'Compose First Resource',
+      });
       fireEvent.click(button);
 
       expect(props.onNavigateToCompose).toHaveBeenCalledTimes(1);
@@ -234,7 +253,9 @@ describe('ResourceDiscoveryPage', () => {
       const props = createMockProps({ searchQuery: 'hello' });
       renderWithProviders(<ResourceDiscoveryPage {...props} />);
 
-      const input = screen.getByPlaceholderText('Search resources...') as HTMLInputElement;
+      const input = screen.getByPlaceholderText(
+        'Search resources...',
+      ) as HTMLInputElement;
       expect(input.value).toBe('hello');
     });
 
@@ -287,7 +308,9 @@ describe('ResourceDiscoveryPage', () => {
       });
       renderWithProviders(<ResourceDiscoveryPage {...props} />);
 
-      expect(screen.getByText('No results found for "nonexistent"')).toBeInTheDocument();
+      expect(
+        screen.getByText('No results found for "nonexistent"'),
+      ).toBeInTheDocument();
     });
 
     it('does not show no-results warning while still searching', () => {
@@ -311,9 +334,15 @@ describe('ResourceDiscoveryPage', () => {
 
       expect(screen.getByText('Filter by type')).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'All' })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'Document' })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'Article' })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'Report' })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: 'Document' }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: 'Article' }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: 'Report' }),
+      ).toBeInTheDocument();
     });
 
     it('calls onSelectedEntityTypeChange when a filter chip is clicked', () => {
@@ -339,7 +368,9 @@ describe('ResourceDiscoveryPage', () => {
       });
       renderWithProviders(<ResourceDiscoveryPage {...props} />);
 
-      expect(screen.getByText('Documents tagged with Document')).toBeInTheDocument();
+      expect(
+        screen.getByText('Documents tagged with Document'),
+      ).toBeInTheDocument();
     });
 
     it('calls onSelectedEntityTypeChange with empty string when "All" is clicked', () => {
@@ -381,7 +412,9 @@ describe('ResourceDiscoveryPage', () => {
       });
       renderWithProviders(<ResourceDiscoveryPage {...props} />);
 
-      const card = screen.getByRole('button', { name: /Open resource: Test Document/ });
+      const card = screen.getByRole('button', {
+        name: /Open resource: Test Document/,
+      });
       fireEvent.click(card);
 
       expect(props.onNavigateToResource).toHaveBeenCalledWith('test-123');

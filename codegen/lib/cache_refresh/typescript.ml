@@ -5,14 +5,14 @@
 module T = Typescript_syntax
 
 let path = "typescript/core/src/cache-refresh.ts"
-let list = T.strings Inline
-let str text = T.T_str (Single, text)
+let list = T.strings
+let str text = T.T_str text
 let readonly_array t = T.T_readonly (T_array t)
-let inline entries = T.Object { layout = Inline; column = None; entries }
+let inline entries = T.Object { layout = Inline; entries }
 
 let row (r : Table.row) =
   let field name value = T.entry (Ident name) value in
-  let word w = T.Str (Single, w) in
+  let word w = T.Str w in
   inline
     (Option.to_list
        (Option.map
@@ -109,7 +109,7 @@ let text (t : Table.t) =
                      })
                 (T.rows
                    (each (fun (q : Table.query) ->
-                        T.entry (Quoted (Single, q.name)) (Str (Single, per q)))));
+                        T.entry (Quoted q.name) (Str (per q)))));
               T.type_alias "CachePer" (T_typeof "CACHE_PER");
             ];
           T.const "CACHE_VALUES" ~as_const:true
@@ -140,12 +140,10 @@ let text (t : Table.t) =
                  })
             (T.rows
                (each (fun (q : Table.query) ->
-                    T.entry
-                      (Quoted (Single, q.name))
+                    T.entry (Quoted q.name)
                       (inline
                          [
-                           T.entry (Ident "component")
-                             (Str (Single, q.value.component));
+                           T.entry (Ident "component") (Str q.value.component);
                            T.entry (Ident "members") (list q.value.members);
                          ]))));
           interface
@@ -154,8 +152,7 @@ let text (t : Table.t) =
                `CACHE_VALUES`'s component, member within member."
             "CacheValues"
             (each (fun (q : Table.query) ->
-                 T.member
-                   (Quoted (Single, q.name))
+                 T.member (Quoted q.name)
                    (List.fold_left
                       (fun t m -> T.T_index (t, str m))
                       (T.schema q.value.component)
@@ -238,9 +235,8 @@ let text (t : Table.t) =
             (T.rows
                (List.map
                   (fun (trigger : Table.trigger) ->
-                    T.entry ~about:[ Doc trigger.docs ]
-                      (Quoted (Single, trigger.on))
-                      (T.array Inline (List.map row trigger.rows)))
+                    T.entry ~about:[ Doc trigger.docs ] (Quoted trigger.on)
+                      (T.array (List.map row trigger.rows)))
                   t.triggers));
           T.type_alias "CacheRefreshTrigger"
             (T_keyof (T_typeof "CACHE_REFRESH"));

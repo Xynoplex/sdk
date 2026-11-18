@@ -21,7 +21,7 @@ export interface ScrollToAnnotationOptions {
 export function scrollAnnotationIntoView(
   annotationId: string | null,
   rootElement: HTMLElement,
-  options: ScrollToAnnotationOptions = {}
+  options: ScrollToAnnotationOptions = {},
 ): boolean {
   if (!annotationId) return false;
 
@@ -29,17 +29,17 @@ export function scrollAnnotationIntoView(
 
   // Find the annotation element
   const element = rootElement.querySelector(
-    `[data-annotation-id="${CSS.escape(annotationId)}"]`
+    `[data-annotation-id="${CSS.escape(annotationId)}"]`,
   ) as HTMLElement;
 
   if (!element) return false;
 
   // Find the scroll container - try multiple possible container classes
-  const scrollContainer = (
-    element.closest('.xynolog-browse-view__content') ||
+  const scrollContainer = (element.closest('.xynolog-browse-view__content') ||
     element.closest('.xynolog-annotate-view__content') ||
-    element.closest('.xynolog-document-viewer__scrollable-body')
-  ) as HTMLElement;
+    element.closest(
+      '.xynolog-document-viewer__scrollable-body',
+    )) as HTMLElement;
 
   if (scrollContainer) {
     // Check if element is already visible
@@ -55,7 +55,7 @@ export function scrollAnnotationIntoView(
       const elementTop = element.offsetTop;
       const containerHeight = scrollContainer.clientHeight;
       const elementHeight = element.offsetHeight;
-      const scrollTo = elementTop - (containerHeight / 2) + (elementHeight / 2);
+      const scrollTo = elementTop - containerHeight / 2 + elementHeight / 2;
 
       scrollContainer.scrollTo({ top: scrollTo, behavior });
     }

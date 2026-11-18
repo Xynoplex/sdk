@@ -1,6 +1,12 @@
 'use client';
 
-import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react';
+import {
+  Dialog,
+  DialogPanel,
+  DialogTitle,
+  Transition,
+  TransitionChild,
+} from '@headlessui/react';
 import { useXynolog } from '../../session/XynologProvider';
 import { useObservable } from '../../hooks/useObservable';
 import { useTranslations } from '../../contexts/TranslationContext';
@@ -22,7 +28,8 @@ export function PermissionDeniedModal() {
   const t = useTranslations('PermissionDeniedModal');
   const signals = useObservable(useXynolog().activeSignals$);
   const permissionDenied = useObservable(signals?.permissionDenied$) ?? null;
-  const acknowledgePermissionDenied = () => signals?.acknowledgePermissionDenied();
+  const acknowledgePermissionDenied = () =>
+    signals?.acknowledgePermissionDenied();
   const showModal = permissionDenied !== null;
   const detail = permissionDenied?.detail ?? null;
 
@@ -68,8 +75,23 @@ export function PermissionDeniedModal() {
               <DialogPanel className="xynolog-modal__panel xynolog-modal__panel--medium">
                 <div className="xynolog-modal__icon-wrapper">
                   <div className="xynolog-modal__icon">
-                    <svg style={{ width: '1.5rem', height: '1.5rem', color: 'var(--xynolog-color-amber-600, #d97706)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    <svg
+                      style={{
+                        width: '1.5rem',
+                        height: '1.5rem',
+                        color: 'var(--xynolog-color-amber-600, #d97706)',
+                      }}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                      />
                     </svg>
                   </div>
                 </div>
@@ -80,25 +102,34 @@ export function PermissionDeniedModal() {
                   </DialogTitle>
                 </div>
 
-                <div style={{
-                  padding: '0.75rem',
-                  backgroundColor: 'var(--xynolog-bg-secondary)',
-                  borderRadius: 'var(--xynolog-radius-md, 0.375rem)',
-                  border: '1px solid var(--xynolog-border-primary)',
-                  fontSize: 'var(--xynolog-text-sm, 0.875rem)',
-                  marginBottom: '1rem',
-                }}>
-                  <p style={{ color: 'var(--xynolog-text-secondary)', marginBottom: '0.5rem' }}>
+                <div
+                  style={{
+                    padding: '0.75rem',
+                    backgroundColor: 'var(--xynolog-bg-secondary)',
+                    borderRadius: 'var(--xynolog-radius-md, 0.375rem)',
+                    border: '1px solid var(--xynolog-border-primary)',
+                    fontSize: 'var(--xynolog-text-sm, 0.875rem)',
+                    marginBottom: '1rem',
+                  }}
+                >
+                  <p
+                    style={{
+                      color: 'var(--xynolog-text-secondary)',
+                      marginBottom: '0.5rem',
+                    }}
+                  >
                     {t('reasonsIntro')}
                   </p>
-                  <ul style={{
-                    listStyle: 'disc',
-                    listStylePosition: 'inside',
-                    color: 'var(--xynolog-text-tertiary)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '0.25rem',
-                  }}>
+                  <ul
+                    style={{
+                      listStyle: 'disc',
+                      listStylePosition: 'inside',
+                      color: 'var(--xynolog-text-tertiary)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '0.25rem',
+                    }}
+                  >
                     <li>{t('reasonPermissions')}</li>
                     <li>{t('reasonRestricted')}</li>
                     <li>{t('reasonAccountType')}</li>
@@ -106,19 +137,28 @@ export function PermissionDeniedModal() {
                 </div>
 
                 {detail !== null && (
-                  <figure style={{
-                    margin: '0 0 1rem',
-                    fontSize: 'var(--xynolog-text-sm, 0.875rem)',
-                  }}>
-                    <figcaption style={{ color: 'var(--xynolog-text-secondary)', marginBottom: '0.25rem' }}>
+                  <figure
+                    style={{
+                      margin: '0 0 1rem',
+                      fontSize: 'var(--xynolog-text-sm, 0.875rem)',
+                    }}
+                  >
+                    <figcaption
+                      style={{
+                        color: 'var(--xynolog-text-secondary)',
+                        marginBottom: '0.25rem',
+                      }}
+                    >
                       {t('detailLabel')}
                     </figcaption>
-                    <blockquote style={{
-                      margin: 0,
-                      paddingLeft: '0.75rem',
-                      borderLeft: '2px solid var(--xynolog-border-primary)',
-                      color: 'var(--xynolog-text-primary)',
-                    }}>
+                    <blockquote
+                      style={{
+                        margin: 0,
+                        paddingLeft: '0.75rem',
+                        borderLeft: '2px solid var(--xynolog-border-primary)',
+                        color: 'var(--xynolog-text-primary)',
+                      }}
+                    >
                       {detail}
                     </blockquote>
                   </figure>
@@ -140,7 +180,14 @@ export function PermissionDeniedModal() {
                     {t('goHome')}
                   </button>
                 </div>
-                <div className="xynolog-modal__actions" style={{ marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid var(--xynolog-border-primary)' }}>
+                <div
+                  className="xynolog-modal__actions"
+                  style={{
+                    marginTop: '0.5rem',
+                    paddingTop: '0.5rem',
+                    borderTop: '1px solid var(--xynolog-border-primary)',
+                  }}
+                >
                   <button
                     type="button"
                     onClick={handleSwitchAccount}

@@ -29,10 +29,14 @@ describe('useObservable', () => {
 
     expect(result.current).toBe(1);
 
-    act(() => { subject.next(2); });
+    act(() => {
+      subject.next(2);
+    });
     expect(result.current).toBe(2);
 
-    act(() => { subject.next(3); });
+    act(() => {
+      subject.next(3);
+    });
     expect(result.current).toBe(3);
   });
 
@@ -45,7 +49,9 @@ describe('useObservable', () => {
 
     // This would throw "Can't perform a React state update on an unmounted component"
     // in older React versions; here we just verify no error is thrown
-    act(() => { subject.next(99); });
+    act(() => {
+      subject.next(99);
+    });
     expect(result.current).toBe(0); // still the last value before unmount
   });
 
@@ -55,7 +61,9 @@ describe('useObservable', () => {
 
     expect(result.current).toBe('a');
 
-    act(() => { obs = new BehaviorSubject<string>('b'); });
+    act(() => {
+      obs = new BehaviorSubject<string>('b');
+    });
     rerender();
 
     expect(result.current).toBe('b');
@@ -67,7 +75,9 @@ describe('useObservable', () => {
 
     expect(result.current).toEqual({ count: 0 });
 
-    act(() => { subject.next({ count: 5 }); });
+    act(() => {
+      subject.next({ count: 5 });
+    });
     expect(result.current).toEqual({ count: 5 });
   });
 
@@ -77,7 +87,9 @@ describe('useObservable', () => {
 
     expect(result.current).toBe('value');
 
-    act(() => { subject.next(undefined); });
+    act(() => {
+      subject.next(undefined);
+    });
     expect(result.current).toBeUndefined();
   });
 
@@ -88,13 +100,17 @@ describe('useObservable', () => {
     // key's observable).
 
     it('handles the error instead of letting RxJS rethrow it', () => {
-      const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleError = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
       const subject = new Subject<string>();
       renderHook(() => useObservable(subject));
 
       // With no error handler attached this throws out of `.error()`.
       expect(() => {
-        act(() => { subject.error(new Error('Resource not found')); });
+        act(() => {
+          subject.error(new Error('Resource not found'));
+        });
       }).not.toThrow();
 
       expect(consoleError).toHaveBeenCalled();
@@ -102,14 +118,22 @@ describe('useObservable', () => {
     });
 
     it('keeps the last emitted value and reports the reason', () => {
-      const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleError = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
       const subject = new BehaviorSubject<string>('last-good');
       const { result } = renderHook(() => useObservable(subject));
 
-      act(() => { subject.error(new Error('boom')); });
+      act(() => {
+        subject.error(new Error('boom'));
+      });
 
       expect(result.current).toBe('last-good');
-      expect(consoleError.mock.calls.some((c) => c.some((a) => String(a).includes('boom')))).toBe(true);
+      expect(
+        consoleError.mock.calls.some((c) =>
+          c.some((a) => String(a).includes('boom')),
+        ),
+      ).toBe(true);
       consoleError.mockRestore();
     });
   });
@@ -121,7 +145,9 @@ describe('useObservable', () => {
     // Spy on the subscribe method to capture unsubscribe
     const originalSubscribe = firstSubject.subscribe.bind(firstSubject);
     vi.spyOn(firstSubject, 'subscribe').mockImplementation((...args) => {
-      const sub = originalSubscribe(...(args as Parameters<typeof originalSubscribe>));
+      const sub = originalSubscribe(
+        ...(args as Parameters<typeof originalSubscribe>),
+      );
       const originalUnsub = sub.unsubscribe.bind(sub);
       sub.unsubscribe = () => {
         unsubscribeSpy();
@@ -136,7 +162,9 @@ describe('useObservable', () => {
     const { rerender } = renderHook(() => useObservable(currentObs));
 
     // Switch observable
-    act(() => { currentObs = secondSubject; });
+    act(() => {
+      currentObs = secondSubject;
+    });
     rerender();
 
     expect(unsubscribeSpy).toHaveBeenCalled();

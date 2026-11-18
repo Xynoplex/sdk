@@ -37,19 +37,28 @@ export interface XynologProviderProps {
   children: ReactNode;
 }
 
-export function XynologProvider({ browser, storage, sessionFactory, children }: XynologProviderProps) {
+export function XynologProvider({
+  browser,
+  storage,
+  sessionFactory,
+  children,
+}: XynologProviderProps) {
   // `useMemo` here is a stable read, not a factory: `getBrowser()` returns
   // the module singleton, so re-renders observe the same instance. The
   // first call to `getBrowser` wins; subsequent renders see the same
   // instance regardless of prop changes.
   const value = useMemo(
-    () => browser ?? getBrowser({
-      storage: storage ?? new WebBrowserStorage(),
-      sessionFactory: sessionFactory ?? createHttpSessionFactory(),
-    }),
+    () =>
+      browser ??
+      getBrowser({
+        storage: storage ?? new WebBrowserStorage(),
+        sessionFactory: sessionFactory ?? createHttpSessionFactory(),
+      }),
     [browser, storage, sessionFactory],
   );
-  return <XynologContext.Provider value={value}>{children}</XynologContext.Provider>;
+  return (
+    <XynologContext.Provider value={value}>{children}</XynologContext.Provider>
+  );
 }
 
 export function useXynolog(): XynologBrowser {

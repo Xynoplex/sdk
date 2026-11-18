@@ -40,7 +40,9 @@ import { base64url, isJwtExpired, kbGatewayUrl } from './storage';
 // `crypto.subtle` and `crypto.randomUUID` exist only in a secure context, and
 // a sign-in has to work from an origin that is not one, so reaching for either
 // here does not compile.
-declare const crypto: { getRandomValues<T extends ArrayBufferView>(array: T): T };
+declare const crypto: {
+  getRandomValues<T extends ArrayBufferView>(array: T): T;
+};
 
 export { BROWSER_CLIENT_ID, SCRIPT_CLIENT_ID };
 export type { SignInErrorCode };
@@ -60,19 +62,33 @@ export interface IssuerEndpoints {
  * its endpoints (OpenID discovery). A client that knows a gateway's address
  * knows everything — no configuration on this side.
  */
-export async function discoverIssuer(target: HttpEndpoint, fetch?: typeof globalThis.fetch): Promise<IssuerEndpoints> {
+export async function discoverIssuer(
+  target: HttpEndpoint,
+  fetch?: typeof globalThis.fetch,
+): Promise<IssuerEndpoints> {
   // It asks one HTTP question and awaits no operation's reply, so its stream names no channel.
-  const transport = new HttpTransport({ baseUrl: baseUrl(kbGatewayUrl(target)), channels: [], ...(fetch ? { fetch } : {}) });
+  const transport = new HttpTransport({
+    baseUrl: baseUrl(kbGatewayUrl(target)),
+    channels: [],
+    ...(fetch ? { fetch } : {}),
+  });
   let issuer: string;
   try {
     const metadata = await transport.getProtectedResourceMetadata();
     const [first] = metadata.authorization_servers;
-    if (!first) throw new SignInError('no-issuer', 'The knowledge base trusts no external issuer');
+    if (!first)
+      throw new SignInError(
+        'no-issuer',
+        'The knowledge base trusts no external issuer',
+      );
     issuer = first;
   } catch (err) {
     if (err instanceof SignInError) throw err;
     if (err instanceof APIError && err.status === 404) {
-      throw new SignInError('no-issuer', 'The knowledge base trusts no external issuer');
+      throw new SignInError(
+        'no-issuer',
+        'The knowledge base trusts no external issuer',
+      );
     }
     throw new SignInError(
       'discovery',
@@ -83,33 +99,49 @@ export async function discoverIssuer(target: HttpEndpoint, fetch?: typeof global
   }
 
   const unanswered = (error: unknown) =>
-    new SignInError('discovery', `Issuer ${issuer}: discovery was not answered: ${whyUnanswered(error)}`);
+    new SignInError(
+      'discovery',
+      `Issuer ${issuer}: discovery was not answered: ${whyUnanswered(error)}`,
+    );
   const doc = await withinDeadline(HTTP_REQUEST_TIMEOUT_MS, async (signal) => {
-    const response = await fetchOf(fetch)(`${issuer.replace(/\/$/, '')}/.well-known/openid-configuration`, {
-      headers: { Accept: 'application/json' },
-      signal,
-    }).catch((error: unknown) => {
+    const response = await fetchOf(fetch)(
+      `${issuer.replace(/\/$/, '')}/.well-known/openid-configuration`,
+      {
+        headers: { Accept: 'application/json' },
+        signal,
+      },
+    ).catch((error: unknown) => {
       throw unanswered(error);
     });
     if (!response.ok) {
-      throw new SignInError('discovery', `Issuer ${issuer}: discovery answered HTTP ${response.status}`);
+      throw new SignInError(
+        'discovery',
+        `Issuer ${issuer}: discovery answered HTTP ${response.status}`,
+      );
     }
     return jsonOf(response, unanswered);
   });
   if (
-    !isObject(doc)
-    || doc['issuer'] !== issuer
-    || !isString(doc['authorization_endpoint'])
-    || !isString(doc['token_endpoint'])
+    !isObject(doc) ||
+    doc['issuer'] !== issuer ||
+    !isString(doc['authorization_endpoint']) ||
+    !isString(doc['token_endpoint'])
   ) {
-    throw new SignInError('discovery', `Issuer ${issuer}: its discovery document is not an OpenID configuration for it`);
+    throw new SignInError(
+      'discovery',
+      `Issuer ${issuer}: its discovery document is not an OpenID configuration for it`,
+    );
   }
   return {
     issuer,
     authorization: doc['authorization_endpoint'],
     token: doc['token_endpoint'],
-    ...(isString(doc['device_authorization_endpoint']) ? { device: doc['device_authorization_endpoint'] } : {}),
-    ...(isString(doc['revocation_endpoint']) ? { revocation: doc['revocation_endpoint'] } : {}),
+    ...(isString(doc['device_authorization_endpoint'])
+      ? { device: doc['device_authorization_endpoint'] }
+      : {}),
+    ...(isString(doc['revocation_endpoint'])
+      ? { revocation: doc['revocation_endpoint'] }
+      : {}),
   };
 }
 
@@ -160,7 +192,11 @@ export interface BeginAuthorizationOptions {
  * pending sign-in, and return the URL the host navigates the user to. The
  * knowledge base and its issuer are asked with `fetch`, or the runtime's own.
  */
-export async function beginAuthorization(opts: BeginAuthorizationOptions, pending: SessionStorage, fetch?: typeof globalThis.fetch): Promise<string> {
+export async function beginAuthorization(
+  opts: BeginAuthorizationOptions,
+  pending: SessionStorage,
+  fetch?: typeof globalThis.fetch,
+): Promise<string> {
   const issuer = await discoverIssuer(opts.target, fetch);
   const verifier = randomUrlSafe(48);
   const state = randomUrlSafe(24);
@@ -209,7 +245,8 @@ export async function completeAuthorization(
     return null;
   });
   const record = taken === null ? null : parsePending(taken);
-  if (!record) throw new SignInError('no-pending', 'No sign-in is pending here');
+  if (!record)
+    throw new SignInError('no-pending', 'No sign-in is pending here');
 
   const url = new URL(callbackUrl);
   const error = url.searchParams.get('error');
@@ -220,22 +257,39 @@ export async function completeAuthorization(
     );
   }
   if (url.searchParams.get('state') !== record.state) {
-    throw new SignInError('state', 'The sign-in response does not belong to the pending sign-in');
+    throw new SignInError(
+      'state',
+      'The sign-in response does not belong to the pending sign-in',
+    );
   }
   const code = url.searchParams.get('code');
-  if (!code) throw new SignInError('exchange', 'The sign-in response carries no authorization code');
+  if (!code)
+    throw new SignInError(
+      'exchange',
+      'The sign-in response carries no authorization code',
+    );
 
-  const tokens = await tokenGrant(record.issuer.token, {
-    grant_type: 'authorization_code',
-    code,
-    redirect_uri: record.redirectUri,
-    client_id: BROWSER_CLIENT_ID,
-    code_verifier: record.verifier,
-  }, fetch);
+  const tokens = await tokenGrant(
+    record.issuer.token,
+    {
+      grant_type: 'authorization_code',
+      code,
+      redirect_uri: record.redirectUri,
+      client_id: BROWSER_CLIENT_ID,
+      code_verifier: record.verifier,
+    },
+    fetch,
+  );
   if (!tokens.refresh) {
-    throw new SignInError('exchange', 'The issuer returned no refresh token — the session could not outlive its first access token');
+    throw new SignInError(
+      'exchange',
+      'The issuer returned no refresh token — the session could not outlive its first access token',
+    );
   }
-  return { pending: record, tokens: { access: tokens.access, refresh: tokens.refresh } };
+  return {
+    pending: record,
+    tokens: { access: tokens.access, refresh: tokens.refresh },
+  };
 }
 
 function parsePending(raw: string): PendingAuthorization | null {
@@ -246,28 +300,53 @@ function parsePending(raw: string): PendingAuthorization | null {
     return null;
   }
   if (!isObject(value)) return null;
-  const { state, verifier, redirectUri, target, issuer, kbId, expectedDid, expectedName } = value;
-  if (!isString(state) || !isString(verifier) || !isString(redirectUri)) return null;
+  const {
+    state,
+    verifier,
+    redirectUri,
+    target,
+    issuer,
+    kbId,
+    expectedDid,
+    expectedName,
+  } = value;
+  if (!isString(state) || !isString(verifier) || !isString(redirectUri))
+    return null;
   if (
-    !isObject(target) || target['kind'] !== 'http' || !isString(target['host'])
-    || typeof target['port'] !== 'number' || (target['protocol'] !== 'http' && target['protocol'] !== 'https')
+    !isObject(target) ||
+    target['kind'] !== 'http' ||
+    !isString(target['host']) ||
+    typeof target['port'] !== 'number' ||
+    (target['protocol'] !== 'http' && target['protocol'] !== 'https')
   ) {
     return null;
   }
-  if (!isObject(issuer) || !isString(issuer['issuer']) || !isString(issuer['authorization']) || !isString(issuer['token'])) {
+  if (
+    !isObject(issuer) ||
+    !isString(issuer['issuer']) ||
+    !isString(issuer['authorization']) ||
+    !isString(issuer['token'])
+  ) {
     return null;
   }
   return {
     state,
     verifier,
     redirectUri,
-    target: { kind: 'http', host: target['host'], port: target['port'], protocol: target['protocol'] },
+    target: {
+      kind: 'http',
+      host: target['host'],
+      port: target['port'],
+      protocol: target['protocol'],
+    },
     issuer: {
       issuer: issuer['issuer'],
       authorization: issuer['authorization'],
       token: issuer['token'],
       ...(isString(issuer['device']) ? { device: issuer['device'] } : {}),
-      ...(isString(issuer['revocation']) ? { revocation: issuer['revocation'] } : {}),
+      ...(isString(issuer['revocation'])
+        ? { revocation: issuer['revocation'] }
+        : {}),
     },
     ...(isString(kbId) ? { kbId } : {}),
     ...(isString(expectedDid) ? { expectedDid } : {}),
@@ -289,11 +368,18 @@ async function postForm(
   form: Record<string, string>,
   fetch: typeof globalThis.fetch | undefined,
 ): Promise<{ status: number; body: Record<string, unknown> | null }> {
-  const unanswered = (error: unknown) => new SignInError('exchange', `The issuer did not answer: ${whyUnanswered(error)}`);
+  const unanswered = (error: unknown) =>
+    new SignInError(
+      'exchange',
+      `The issuer did not answer: ${whyUnanswered(error)}`,
+    );
   return withinDeadline(HTTP_REQUEST_TIMEOUT_MS, async (signal) => {
     const response = await fetchOf(fetch)(endpoint, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'application/json' },
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        Accept: 'application/json',
+      },
       body: new URLSearchParams(form),
       signal,
     }).catch((error: unknown) => {
@@ -311,7 +397,9 @@ function oauthError(body: Record<string, unknown> | null): string | undefined {
 function refusal(status: number, body: Record<string, unknown> | null): string {
   const code = oauthError(body);
   if (!code) return `HTTP ${status}`;
-  return body && isString(body['error_description']) ? `${code}: ${body['error_description']}` : code;
+  return body && isString(body['error_description'])
+    ? `${code}: ${body['error_description']}`
+    : code;
 }
 
 async function tokenGrant(
@@ -321,9 +409,18 @@ async function tokenGrant(
 ): Promise<{ access: string; refresh?: string }> {
   const { status, body } = await postForm(endpoint, form, fetch);
   if (status !== 200 || !body || !isString(body['access_token'])) {
-    throw new SignInError('exchange', `The issuer refused the token request (${refusal(status, body)})`, status);
+    throw new SignInError(
+      'exchange',
+      `The issuer refused the token request (${refusal(status, body)})`,
+      status,
+    );
   }
-  return { access: body['access_token'], ...(isString(body['refresh_token']) ? { refresh: body['refresh_token'] } : {}) };
+  return {
+    access: body['access_token'],
+    ...(isString(body['refresh_token'])
+      ? { refresh: body['refresh_token'] }
+      : {}),
+  };
 }
 
 /**
@@ -336,11 +433,15 @@ export async function refreshAtIssuer(
   refreshToken: string,
   fetch?: typeof globalThis.fetch,
 ): Promise<IssuedTokens> {
-  const tokens = await tokenGrant(tokenEndpoint, {
-    grant_type: 'refresh_token',
-    refresh_token: refreshToken,
-    client_id: clientId,
-  }, fetch);
+  const tokens = await tokenGrant(
+    tokenEndpoint,
+    {
+      grant_type: 'refresh_token',
+      refresh_token: refreshToken,
+      client_id: clientId,
+    },
+    fetch,
+  );
   return { access: tokens.access, refresh: tokens.refresh ?? refreshToken };
 }
 
@@ -393,13 +494,21 @@ export async function renewKept(
     const { access, refresh } = await retryWithBackoff(
       () => {
         attempts += 1;
-        return refreshAtIssuer(held.tokenEndpoint, held.clientId, held.refresh, fetch);
+        return refreshAtIssuer(
+          held.tokenEndpoint,
+          held.clientId,
+          held.refresh,
+          fetch,
+        );
       },
       // `status` absent means `fetch` threw before a response existed, which
       // the rule reads as transient — the one place absence means "try again".
-      (error) => RETRY_RULES.refresh.retryable(
-        error instanceof SignInError && error.status !== undefined ? { status: error.status } : {},
-      ),
+      (error) =>
+        RETRY_RULES.refresh.retryable(
+          error instanceof SignInError && error.status !== undefined
+            ? { status: error.status }
+            : {},
+        ),
       REFRESH_RETRY,
     );
     // Kept against what is kept NOW, as one step, not what was read before
@@ -434,12 +543,20 @@ export async function revokeAtIssuer(
   refreshToken: string,
   fetch?: typeof globalThis.fetch,
 ): Promise<void> {
-  const { status } = await postForm(revocationEndpoint, {
-    token: refreshToken,
-    token_type_hint: 'refresh_token',
-    client_id: clientId,
-  }, fetch);
-  if (status !== 200) throw new SignInError('exchange', `The issuer refused the revocation (HTTP ${status})`);
+  const { status } = await postForm(
+    revocationEndpoint,
+    {
+      token: refreshToken,
+      token_type_hint: 'refresh_token',
+      client_id: clientId,
+    },
+    fetch,
+  );
+  if (status !== 200)
+    throw new SignInError(
+      'exchange',
+      `The issuer refused the revocation (HTTP ${status})`,
+    );
 }
 
 // ---------- Device authorization grant (a script) ----------
@@ -465,41 +582,79 @@ export interface DeviceGrantOptions {
  * code, the person approves it wherever they have one, and this polls the
  * token endpoint at the issuer's interval until the tokens arrive.
  */
-export async function signInWithDeviceGrant(opts: DeviceGrantOptions): Promise<{ issuer: IssuerEndpoints; tokens: IssuedTokens }> {
+export async function signInWithDeviceGrant(
+  opts: DeviceGrantOptions,
+): Promise<{ issuer: IssuerEndpoints; tokens: IssuedTokens }> {
   const issuer = await discoverIssuer(opts.target, opts.fetch);
   if (!issuer.device) {
-    throw new SignInError('discovery', `Issuer ${issuer.issuer} offers no device authorization endpoint — the device grant needs one enabled for client ${SCRIPT_CLIENT_ID}`);
+    throw new SignInError(
+      'discovery',
+      `Issuer ${issuer.issuer} offers no device authorization endpoint — the device grant needs one enabled for client ${SCRIPT_CLIENT_ID}`,
+    );
   }
-  const { status, body } = await postForm(issuer.device, { client_id: SCRIPT_CLIENT_ID, scope: SIGN_IN_SCOPE }, opts.fetch);
+  const { status, body } = await postForm(
+    issuer.device,
+    { client_id: SCRIPT_CLIENT_ID, scope: SIGN_IN_SCOPE },
+    opts.fetch,
+  );
   const expiresIn = body?.['expires_in'];
   if (
-    status !== 200 || !body
-    || !isString(body['device_code']) || !isString(body['user_code']) || !isString(body['verification_uri'])
-    || typeof expiresIn !== 'number' || expiresIn < 0
+    status !== 200 ||
+    !body ||
+    !isString(body['device_code']) ||
+    !isString(body['user_code']) ||
+    !isString(body['verification_uri']) ||
+    typeof expiresIn !== 'number' ||
+    expiresIn < 0
   ) {
-    throw new SignInError('exchange', `The issuer refused the device authorization request (${refusal(status, body)})`);
+    throw new SignInError(
+      'exchange',
+      `The issuer refused the device authorization request (${refusal(status, body)})`,
+    );
   }
   opts.onCode({
     userCode: body['user_code'],
     verificationUri: body['verification_uri'],
-    ...(isString(body['verification_uri_complete']) ? { verificationUriComplete: body['verification_uri_complete'] } : {}),
+    ...(isString(body['verification_uri_complete'])
+      ? { verificationUriComplete: body['verification_uri_complete'] }
+      : {}),
     expiresIn,
   });
 
-  let interval = Math.max(typeof body['interval'] === 'number' ? body['interval'] * 1000 : DEVICE_POLL_MS, DEVICE_POLL_FLOOR_MS);
+  let interval = Math.max(
+    typeof body['interval'] === 'number'
+      ? body['interval'] * 1000
+      : DEVICE_POLL_MS,
+    DEVICE_POLL_FLOOR_MS,
+  );
   const deadline = Date.now() + expiresIn * 1000;
   for (;;) {
     await sleep(interval, opts.signal);
-    if (Date.now() > deadline) throw new SignInError('expired', 'The code expired before it was approved');
-    const poll = await postForm(issuer.token, {
-      grant_type: DEVICE_GRANT,
-      device_code: body['device_code'],
-      client_id: SCRIPT_CLIENT_ID,
-    }, opts.fetch);
-    if (poll.status === 200 && poll.body && isString(poll.body['access_token'])) {
+    if (Date.now() > deadline)
+      throw new SignInError(
+        'expired',
+        'The code expired before it was approved',
+      );
+    const poll = await postForm(
+      issuer.token,
+      {
+        grant_type: DEVICE_GRANT,
+        device_code: body['device_code'],
+        client_id: SCRIPT_CLIENT_ID,
+      },
+      opts.fetch,
+    );
+    if (
+      poll.status === 200 &&
+      poll.body &&
+      isString(poll.body['access_token'])
+    ) {
       const refresh = poll.body['refresh_token'];
       if (!isString(refresh)) {
-        throw new SignInError('exchange', 'The issuer returned no refresh token — the session could not outlive its first access token');
+        throw new SignInError(
+          'exchange',
+          'The issuer returned no refresh token — the session could not outlive its first access token',
+        );
       }
       return { issuer, tokens: { access: poll.body['access_token'], refresh } };
     }
@@ -512,9 +667,15 @@ export async function signInWithDeviceGrant(opts: DeviceGrantOptions): Promise<{
       case 'access_denied':
         throw new SignInError('denied', 'The sign-in was denied at the issuer');
       case 'expired_token':
-        throw new SignInError('expired', 'The code expired before it was approved');
+        throw new SignInError(
+          'expired',
+          'The code expired before it was approved',
+        );
       default:
-        throw new SignInError('exchange', `The issuer refused the token request (${refusal(poll.status, poll.body)})`);
+        throw new SignInError(
+          'exchange',
+          `The issuer refused the token request (${refusal(poll.status, poll.body)})`,
+        );
     }
   }
 }

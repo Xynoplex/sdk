@@ -1,11 +1,20 @@
 'use client';
 
-import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  useMemo,
+} from 'react';
 import { delegateProgressTranslations } from '../../../lib/delegate-progress-copy';
 import { useTranslations } from '../../../contexts/TranslationContext';
 import type { MarkStateUnit, XynologSession } from '@xynolog/sdk';
 import { useSessionEventSubscriptions } from '../../../hooks/useSessionEventSubscriptions';
-import type { RouteBuilder, LinkComponentProps } from '../../../contexts/RoutingContext';
+import type {
+  RouteBuilder,
+  LinkComponentProps,
+} from '../../../contexts/RoutingContext';
 import { markJobControls } from '../../../lib/delegated-job-controls';
 import { DelegateShell } from './DelegateShell';
 import { ItemFoundLog } from '../../ItemFoundLog';
@@ -19,7 +28,8 @@ type JobProgress = components['schemas']['JobProgress'];
 
 import type { Annotation } from '@xynolog/core';
 type Motivation = components['schemas']['Motivation'];
-type ReferencedBy = components['schemas']['GetReferencedByResponse']['referencedBy'][number];
+type ReferencedBy =
+  components['schemas']['GetReferencedByResponse']['referencedBy'][number];
 
 // Unified pending annotation type
 interface PendingAnnotation {
@@ -28,10 +38,12 @@ interface PendingAnnotation {
 }
 
 // Helper to extract display text from selector
-function getSelectorDisplayText(selector: Selector | Selector[]): string | null {
+function getSelectorDisplayText(
+  selector: Selector | Selector[],
+): string | null {
   if (Array.isArray(selector)) {
     // Text selectors: array of [TextPositionSelector, TextQuoteSelector]
-    const quoteSelector = selector.find(s => s.type === 'TextQuoteSelector');
+    const quoteSelector = selector.find((s) => s.type === 'TextQuoteSelector');
     if (quoteSelector && 'exact' in quoteSelector) {
       return quoteSelector.exact;
     }
@@ -143,10 +155,16 @@ export function ReferencesPanel({
   // lives in one namespace so the same words aren't re-translated per panel.
   const ta = useTranslations('DelegateProgress');
   const [selectedEntityTypes, setSelectedEntityTypes] = useState<string[]>([]);
-  const [lastAnnotationLog, setLastDetectionLog] = useState<Array<{ value: string; foundCount: number }> | null>(null);
+  const [lastAnnotationLog, setLastDetectionLog] = useState<Array<{
+    value: string;
+    foundCount: number;
+  }> | null>(null);
   const [pendingEntityTypes, setPendingEntityTypes] = useState<string[]>([]);
-  const [includeDescriptiveReferences, setIncludeDescriptiveReferences] = useState(false);
-  const [focusedAnnotationId, setFocusedAnnotationId] = useState<string | null>(null);
+  const [includeDescriptiveReferences, setIncludeDescriptiveReferences] =
+    useState(false);
+  const [focusedAnnotationId, setFocusedAnnotationId] = useState<string | null>(
+    null,
+  );
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Direct ref management
@@ -163,13 +181,16 @@ export function ReferencesPanel({
   }, [annotations]);
 
   // Ref callback for entry components
-  const setEntryRef = useCallback((id: string, element: HTMLDivElement | null) => {
-    if (element) {
-      entryRefs.current.set(id, element);
-    } else {
-      entryRefs.current.delete(id);
-    }
-  }, []);
+  const setEntryRef = useCallback(
+    (id: string, element: HTMLDivElement | null) => {
+      if (element) {
+        entryRefs.current.set(id, element);
+      } else {
+        entryRefs.current.delete(id);
+      }
+    },
+    [],
+  );
 
   // Handle scrollToAnnotationId (click scroll)
   useEffect(() => {
@@ -182,7 +203,7 @@ export function ReferencesPanel({
       const elementTop = element.offsetTop;
       const containerHeight = containerRef.current.clientHeight;
       const elementHeight = element.offsetHeight;
-      const scrollTo = elementTop - (containerHeight / 2) + (elementHeight / 2);
+      const scrollTo = elementTop - containerHeight / 2 + elementHeight / 2;
 
       // Scroll to center
       containerRef.current.scrollTo({ top: scrollTo, behavior: 'smooth' });
@@ -197,7 +218,10 @@ export function ReferencesPanel({
         onScrollCompleted();
       }
     } else {
-      console.warn('[ReferencesPanel] Element not found for scrollToAnnotationId:', scrollToAnnotationId);
+      console.warn(
+        '[ReferencesPanel] Element not found for scrollToAnnotationId:',
+        scrollToAnnotationId,
+      );
     }
   }, [scrollToAnnotationId]);
 
@@ -222,7 +246,7 @@ export function ReferencesPanel({
       const elementTop = element.offsetTop;
       const containerHeight = container.clientHeight;
       const elementHeight = element.offsetHeight;
-      const scrollTo = elementTop - (containerHeight / 2) + (elementHeight / 2);
+      const scrollTo = elementTop - containerHeight / 2 + elementHeight / 2;
 
       container.scrollTo({ top: scrollTo, behavior: 'smooth' });
     }
@@ -232,10 +256,13 @@ export function ReferencesPanel({
 
   // Subscribe to click events - update focused state
   // Event handler for annotation clicks (a named callback rather than an inline arrow function)
-  const handleAnnotationClick = useCallback(({ annotationId }: { annotationId: string }) => {
-    setFocusedAnnotationId(annotationId);
-    setTimeout(() => setFocusedAnnotationId(null), 3000);
-  }, []);
+  const handleAnnotationClick = useCallback(
+    ({ annotationId }: { annotationId: string }) => {
+      setFocusedAnnotationId(annotationId);
+      setTimeout(() => setFocusedAnnotationId(null), 3000);
+    },
+    [],
+  );
 
   useSessionEventSubscriptions(session, {
     'browse:click': handleAnnotationClick,
@@ -279,10 +306,8 @@ export function ReferencesPanel({
   }, [isDelegating, progress?.completedItems]); // Both dependencies needed to annotation completion
 
   const togglePendingEntityType = (type: string) => {
-    setPendingEntityTypes(prev =>
-      prev.includes(type)
-        ? prev.filter(t => t !== type)
-        : [...prev, type]
+    setPendingEntityTypes((prev) =>
+      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type],
     );
   };
 
@@ -296,7 +321,15 @@ export function ReferencesPanel({
         // Entity types are optional, and MarkSubmitEvent.body is minItems:1 —
         // an empty array is a 400, not an empty annotation.
         ...(entityType
-          ? { body: [{ type: 'TextualBody' as const, value: entityType, purpose: 'tagging' as const }] }
+          ? {
+              body: [
+                {
+                  type: 'TextualBody' as const,
+                  value: entityType,
+                  purpose: 'tagging' as const,
+                },
+              ],
+            }
           : {}),
       });
       setPendingEntityTypes([]);
@@ -327,7 +360,9 @@ export function ReferencesPanel({
         <div className="xynolog-annotation-prompt" data-type="reference">
           <div className="xynolog-annotation-prompt__quote">
             {(() => {
-              const displayText = getSelectorDisplayText(pendingAnnotation.selector);
+              const displayText = getSelectorDisplayText(
+                pendingAnnotation.selector,
+              );
               if (displayText) {
                 return `"${displayText.substring(0, 100)}${displayText.length > 100 ? '...' : ''}"`;
               }
@@ -348,7 +383,9 @@ export function ReferencesPanel({
                     key={type}
                     onClick={() => togglePendingEntityType(type)}
                     className="xynolog-tag-selector__item"
-                    data-selected={pendingEntityTypes.includes(type) ? 'true' : 'false'}
+                    data-selected={
+                      pendingEntityTypes.includes(type) ? 'true' : 'false'
+                    }
                   >
                     {type}
                   </button>
@@ -396,7 +433,8 @@ export function ReferencesPanel({
               translations: delegateProgressTranslations(ta, {
                 found: (count: number) => t('found', { count }),
                 // Rendered only when the wire prices a denominator.
-                tally: (found: number, expected: number) => t('tally', { found, expected }),
+                tally: (found: number, expected: number) =>
+                  t('tally', { found, expected }),
               }),
             }}
             form={
@@ -420,10 +458,10 @@ export function ReferencesPanel({
                         <button
                           key={type}
                           onClick={() => {
-                            setSelectedEntityTypes(prev =>
+                            setSelectedEntityTypes((prev) =>
                               prev.includes(type)
-                                ? prev.filter(t => t !== type)
-                                : [...prev, type]
+                                ? prev.filter((t) => t !== type)
+                                : [...prev, type],
                             );
                           }}
                           aria-pressed={selectedEntityTypes.includes(type)}
@@ -436,7 +474,9 @@ export function ReferencesPanel({
                       ))
                     ) : (
                       <p className="xynolog-delegate-widget__no-types">
-                        {entityTypesError ? t('entityTypesFailed') : t('noEntityTypes')}
+                        {entityTypesError
+                          ? t('entityTypesFailed')
+                          : t('noEntityTypes')}
                       </p>
                     )}
                   </div>
@@ -455,7 +495,9 @@ export function ReferencesPanel({
                     <input
                       type="checkbox"
                       checked={includeDescriptiveReferences}
-                      onChange={(e) => setIncludeDescriptiveReferences(e.target.checked)}
+                      onChange={(e) =>
+                        setIncludeDescriptiveReferences(e.target.checked)
+                      }
                       className="xynolog-delegate-widget__checkbox"
                     />
                     <span>{t('includeDescriptiveReferences')}</span>
@@ -520,7 +562,9 @@ export function ReferencesPanel({
             <h3 className="xynolog-panel__subtitle">
               {t('incomingReferences')} ({referencedBy.length})
               {referencedByLoading && !referencedByError && (
-                <span className="xynolog-panel__loading-indicator">({t('loading')})</span>
+                <span className="xynolog-panel__loading-indicator">
+                  ({t('loading')})
+                </span>
               )}
             </h3>
           </div>
@@ -547,7 +591,10 @@ export function ReferencesPanel({
                 const resourceId = ref.target.source;
 
                 return (
-                  <div key={ref.id} className="xynolog-reference-item xynolog-reference-item--incoming">
+                  <div
+                    key={ref.id}
+                    className="xynolog-reference-item xynolog-reference-item--incoming"
+                  >
                     <div className="xynolog-reference-item__header">
                       <span className="xynolog-reference-item__title">
                         {ref.resourceName || t('untitledResource')}
@@ -569,7 +616,9 @@ export function ReferencesPanel({
             </div>
           ) : (
             <p className="xynolog-panel__empty-message xynolog-panel__empty-message--small">
-              {referencedByLoading ? t('loadingEllipsis') : t('noIncomingReferences')}
+              {referencedByLoading
+                ? t('loadingEllipsis')
+                : t('noIncomingReferences')}
             </p>
           )}
         </div>

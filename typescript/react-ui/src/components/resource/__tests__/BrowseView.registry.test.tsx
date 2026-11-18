@@ -13,25 +13,39 @@ import type { MediaRendererProps } from '../browse-renderers';
 import { resourceId, EventBus } from '@xynolog/core';
 import { englishTranslationManager } from '../../../test-utils';
 
-vi.mock('../../annotation/AnnotateToolbar', () => ({ AnnotateToolbar: () => null }));
+vi.mock('../../annotation/AnnotateToolbar', () => ({
+  AnnotateToolbar: () => null,
+}));
 
-const emptyAnnotations = { highlights: [], references: [], assessments: [], comments: [], tags: [] };
+const emptyAnnotations = {
+  highlights: [],
+  references: [],
+  assessments: [],
+  comments: [],
+  tags: [],
+};
 
 function fakeSession(): XynologSession {
   return {
-    client: { bus: new EventBus(), browse: { click: vi.fn() }, beckon: { hover: vi.fn() } },
+    client: {
+      bus: new EventBus(),
+      browse: { click: vi.fn() },
+      beckon: { hover: vi.fn() },
+    },
   } as unknown as XynologSession;
 }
 
 describe('BrowseView — media-renderer registry', () => {
   it('uses a custom renderer from the `renderers` override', () => {
-    const CustomText = ({ content }: MediaRendererProps) => <div>custom-render: {content}</div>;
+    const CustomText = ({ content }: MediaRendererProps) => (
+      <div>custom-render: {content}</div>
+    );
     render(
       <BrowseView
         translationManager={englishTranslationManager}
         content="the-body"
         mimeType="text/plain"
-        resourceUri={resourceId("res-1")}
+        resourceUri={resourceId('res-1')}
         annotations={emptyAnnotations}
         annotateMode={false}
         session={fakeSession()}

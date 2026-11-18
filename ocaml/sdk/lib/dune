@@ -5,6 +5,7 @@
   annotation_id
   pattern
   client_timing
+  record_reader
   schema_shape
   schema_shapes
   schema_codec

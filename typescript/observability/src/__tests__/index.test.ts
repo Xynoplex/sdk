@@ -48,13 +48,17 @@ import {
 } from '../index';
 
 const spanExporter = new InMemorySpanExporter();
-const metricExporter = new InMemoryMetricExporter(AggregationTemporality.CUMULATIVE);
+const metricExporter = new InMemoryMetricExporter(
+  AggregationTemporality.CUMULATIVE,
+);
 let metricReader: PeriodicExportingMetricReader;
 let tracerProvider: TracerProvider;
 let meterProvider: MeterProvider;
 
 beforeAll(() => {
-  context.setGlobalContextManager(new AsyncLocalStorageContextManager().enable());
+  context.setGlobalContextManager(
+    new AsyncLocalStorageContextManager().enable(),
+  );
   propagation.setGlobalPropagator(new W3CTraceContextPropagator());
 
   tracerProvider = new TracerProvider({
@@ -101,7 +105,11 @@ describe('withSpan', () => {
 
   it('records exception, sets ERROR status, and rethrows', async () => {
     const err = new Error('boom');
-    await expect(withSpan('unit.fail', async () => { throw err; })).rejects.toBe(err);
+    await expect(
+      withSpan('unit.fail', async () => {
+        throw err;
+      }),
+    ).rejects.toBe(err);
     const span = findSpan('unit.fail');
     expect(span).toBeDefined();
     expect(span!.status.code).toBe(SpanStatusCode.ERROR);
@@ -111,7 +119,9 @@ describe('withSpan', () => {
 
   it('coerces non-Error throws to a string status message', async () => {
     await expect(
-      withSpan('unit.fail-str', async () => { throw 'oops'; }),
+      withSpan('unit.fail-str', async () => {
+        throw 'oops';
+      }),
     ).rejects.toBe('oops');
     const span = findSpan('unit.fail-str');
     expect(span!.status.code).toBe(SpanStatusCode.ERROR);
@@ -147,14 +157,20 @@ describe('getActiveTraceparent', () => {
       observed = getActiveTraceparent();
     });
     expect(observed).toBeDefined();
-    expect(observed!.traceparent).toMatch(/^00-[0-9a-f]{32}-[0-9a-f]{16}-[0-9a-f]{2}$/);
+    expect(observed!.traceparent).toMatch(
+      /^00-[0-9a-f]{32}-[0-9a-f]{16}-[0-9a-f]{2}$/,
+    );
   });
 });
 
 describe('extractTraceparent', () => {
   it('returns the carrier and strips the field from the payload', () => {
-    const traceparent = '00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01';
-    const payload: Record<string, unknown> = { foo: 'bar', _trace: { traceparent } };
+    const traceparent =
+      '00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01';
+    const payload: Record<string, unknown> = {
+      foo: 'bar',
+      _trace: { traceparent },
+    };
 
     const carrier = extractTraceparent(payload);
 
@@ -304,9 +320,13 @@ describe('recordBusSent', () => {
     expect(metricsByName.has('xynolog.bus.emit')).toBe(false);
     const counter = metricsByName.get('xynolog.bus.sent');
     expect(counter).toBeDefined();
-    const withScope = counter!.find((d) => d.attributes['bus.scope'] === 'res-1');
+    const withScope = counter!.find(
+      (d) => d.attributes['bus.scope'] === 'res-1',
+    );
     expect(withScope?.value).toBe(1);
-    const withoutScope = counter!.find((d) => d.attributes['bus.scope'] === undefined);
+    const withoutScope = counter!.find(
+      (d) => d.attributes['bus.scope'] === undefined,
+    );
     expect(withoutScope?.value).toBe(1);
   });
 });

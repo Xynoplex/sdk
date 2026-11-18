@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { creatorName, renderAgentLabel, renderAgentLabels } from '../agent-label';
+import {
+  creatorName,
+  renderAgentLabel,
+  renderAgentLabels,
+} from '../agent-label';
 import type { components } from '@xynolog/core';
 
 type Agent = components['schemas']['Agent'];
@@ -14,7 +18,9 @@ describe('renderAgentLabel', () => {
         provider: 'ollama',
         model: 'gemma2:27b',
       };
-      expect(renderAgentLabel(agent)).toBe('my-highlighter (ollama gemma2:27b)');
+      expect(renderAgentLabel(agent)).toBe(
+        'my-highlighter (ollama gemma2:27b)',
+      );
     });
 
     it('is labeled by its name and its model when it states no provider', () => {
@@ -66,7 +72,9 @@ describe('renderAgentLabel', () => {
         '@type': 'Software',
         '@id': 'did:web:example.com:agents:xynolog-worker',
       };
-      expect(renderAgentLabel(agent)).toBe('did:web:example.com:agents:xynolog-worker');
+      expect(renderAgentLabel(agent)).toBe(
+        'did:web:example.com:agents:xynolog-worker',
+      );
     });
   });
 
@@ -96,7 +104,9 @@ describe('renderAgentLabel', () => {
         '@id': 'did:web:example.com:users:bob%40example.com',
         name: '',
       } as unknown as Agent;
-      expect(renderAgentLabel(agent)).toBe('did:web:example.com:users:bob%40example.com');
+      expect(renderAgentLabel(agent)).toBe(
+        'did:web:example.com:users:bob%40example.com',
+      );
     });
 
     it('has no label when nothing identifies the agent', () => {
@@ -119,6 +129,8 @@ describe('an agent that names itself in no way', () => {
   it('has no creator name', () => {
     expect(creatorName(nameless)).toBeUndefined();
     expect(creatorName(undefined)).toBeUndefined();
-    expect(creatorName('did:web:example.com:users:bob')).toBe('did:web:example.com:users:bob');
+    expect(creatorName('did:web:example.com:users:bob')).toBe(
+      'did:web:example.com:users:bob',
+    );
   });
 });

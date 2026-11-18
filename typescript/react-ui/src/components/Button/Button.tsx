@@ -16,7 +16,8 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   /**
    * The visual variant of the button
    */
-  variant?: 'primary' | 'secondary' | 'tertiary' | 'danger' | 'warning' | 'ghost';
+  variant?:
+    'primary' | 'secondary' | 'tertiary' | 'danger' | 'warning' | 'ghost';
 
   /**
    * The size of the button
@@ -70,80 +71,77 @@ export function Button({
   ref,
   ...props
 }: ButtonProps) {
-    const isDisabled = disabled || loading;
+  const isDisabled = disabled || loading;
 
-    return (
-      <button
-        ref={ref}
-        type={type}
-        data-variant={variant}
-        data-size={size}
-        data-loading={loading ? 'true' : undefined}
-        data-full-width={fullWidth ? 'true' : undefined}
-        data-icon-only={iconOnly ? 'true' : undefined}
-        data-active={active ? 'true' : undefined}
-        data-disabled={isDisabled ? 'true' : undefined}
-        className={clsx('xynolog-button', className)}
-        disabled={isDisabled}
-        aria-busy={loading}
-        aria-disabled={isDisabled}
-        {...props}
-      >
-        {/* Loading spinner */}
-        {loading && (
-          <span
-            className="xynolog-button-spinner"
-            aria-label="Loading"
+  return (
+    <button
+      ref={ref}
+      type={type}
+      data-variant={variant}
+      data-size={size}
+      data-loading={loading ? 'true' : undefined}
+      data-full-width={fullWidth ? 'true' : undefined}
+      data-icon-only={iconOnly ? 'true' : undefined}
+      data-active={active ? 'true' : undefined}
+      data-disabled={isDisabled ? 'true' : undefined}
+      className={clsx('xynolog-button', className)}
+      disabled={isDisabled}
+      aria-busy={loading}
+      aria-disabled={isDisabled}
+      {...props}
+    >
+      {/* Loading spinner */}
+      {loading && (
+        <span className="xynolog-button-spinner" aria-label="Loading">
+          <svg
+            className="xynolog-spinner-svg"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            width="1em"
+            height="1em"
           >
-            <svg
-              className="xynolog-spinner-svg"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              width="1em"
-              height="1em"
-            >
-              <circle
-                className="xynolog-spinner-circle"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-                strokeLinecap="round"
-                opacity="0.25"
-              />
-              <path
-                className="xynolog-spinner-path"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              />
-            </svg>
-          </span>
-        )}
+            <circle
+              className="xynolog-spinner-circle"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+              strokeLinecap="round"
+              opacity="0.25"
+            />
+            <path
+              className="xynolog-spinner-path"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            />
+          </svg>
+        </span>
+      )}
 
-        {/* Left icon */}
-        {leftIcon && !loading && (
-          <span className="xynolog-button-icon xynolog-button-icon-left">
-            {leftIcon}
-          </span>
-        )}
+      {/* Left icon */}
+      {leftIcon && !loading && (
+        <span className="xynolog-button-icon xynolog-button-icon-left">
+          {leftIcon}
+        </span>
+      )}
 
-        {/* Button content */}
-        {!iconOnly && children && (
-          <span className="xynolog-button-content">{children}</span>
-        )}
+      {/* Button content */}
+      {!iconOnly && children && (
+        <span className="xynolog-button-content">{children}</span>
+      )}
 
-        {/* Icon-only content (centered) */}
-        {iconOnly && children}
+      {/* Icon-only content (centered) */}
+      {iconOnly && children}
 
-        {/* Right icon */}
-        {rightIcon && !loading && (
-          <span className="xynolog-button-icon xynolog-button-icon-right">
-            {rightIcon}
-          </span>
-        )}
-      </button>
+      {/* Right icon */}
+      {rightIcon && !loading && (
+        <span className="xynolog-button-icon xynolog-button-icon-right">
+          {rightIcon}
+        </span>
+      )}
+    </button>
   );
 }
 

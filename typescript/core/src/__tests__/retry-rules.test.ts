@@ -26,8 +26,14 @@ describe('RETRY_RULES', () => {
     // ignore it — a method-free 429 is deliberately `false` for transport, since
     // "not stated" reads as unsafe rather than as permission.
     for (const rule of Object.values(RETRY_RULES)) {
-      expect(rule.retryable({ status: 429, method: 'GET' }), `${rule.name} on 429`).toBe(true);
-      expect(rule.retryable({ status: 403, method: 'GET' }), `${rule.name} on 403`).toBe(false);
+      expect(
+        rule.retryable({ status: 429, method: 'GET' }),
+        `${rule.name} on 429`,
+      ).toBe(true);
+      expect(
+        rule.retryable({ status: 403, method: 'GET' }),
+        `${rule.name} on 403`,
+      ).toBe(false);
     }
   });
 
@@ -37,14 +43,21 @@ describe('RETRY_RULES', () => {
     // rationale, and does not claim to: there is no source to check one against.
     for (const rule of Object.values(RETRY_RULES)) {
       expect(rule.name).toMatch(/\S/);
-      expect(rule.rationale.length, `${rule.name} rationale`).toBeGreaterThan(80);
+      expect(rule.rationale.length, `${rule.name} rationale`).toBeGreaterThan(
+        80,
+      );
     }
   });
 
   it('is the only way to reach a rule, so a new one cannot be unreachable-but-forgotten', () => {
     // Reachability IS the census gate: rules are not exported individually, so a
     // rule absent from this record cannot be consumed by anyone.
-    expect(Object.keys(RETRY_RULES).sort()).toEqual(['boot', 'job', 'refresh', 'transport']);
+    expect(Object.keys(RETRY_RULES).sort()).toEqual([
+      'boot',
+      'job',
+      'refresh',
+      'transport',
+    ]);
     expect(Object.isFrozen(RETRY_RULES)).toBe(true);
   });
 
@@ -65,7 +78,9 @@ describe('RETRY_RULES', () => {
 
     it('an issuer saying "not now" is transient', () => {
       for (const status of [408, 429, 500, 502, 503, 504]) {
-        expect(RETRY_RULES.refresh.retryable({ status }), `on ${status}`).toBe(true);
+        expect(RETRY_RULES.refresh.retryable({ status }), `on ${status}`).toBe(
+          true,
+        );
       }
     });
 
@@ -98,17 +113,27 @@ describe('RETRY_RULES', () => {
     // The dimension a ReadonlySet<number> cannot express, and the reason the
     // taxonomy is not typed as one. The transport's retry gate consumes this.
     it('does not retry a 401 on any method — a refused credential is renewed before the rule is asked', () => {
-      expect(RETRY_RULES.transport.retryable({ status: 401, method: 'POST' })).toBe(false);
-      expect(RETRY_RULES.transport.retryable({ status: 401, method: 'GET' })).toBe(false);
+      expect(
+        RETRY_RULES.transport.retryable({ status: 401, method: 'POST' }),
+      ).toBe(false);
+      expect(
+        RETRY_RULES.transport.retryable({ status: 401, method: 'GET' }),
+      ).toBe(false);
     });
 
     it('retries a 5xx only on methods that are safe to repeat', () => {
       // The live hazard: a POST /resources that gets a 502 may already have been
       // processed, and the Stower mints a fresh UUID — so a retry writes a
       // SECOND resource whose id the caller never learns.
-      expect(RETRY_RULES.transport.retryable({ status: 502, method: 'GET' })).toBe(true);
-      expect(RETRY_RULES.transport.retryable({ status: 502, method: 'POST' })).toBe(false);
-      expect(RETRY_RULES.transport.retryable({ status: 504, method: 'PATCH' })).toBe(false);
+      expect(
+        RETRY_RULES.transport.retryable({ status: 502, method: 'GET' }),
+      ).toBe(true);
+      expect(
+        RETRY_RULES.transport.retryable({ status: 502, method: 'POST' }),
+      ).toBe(false);
+      expect(
+        RETRY_RULES.transport.retryable({ status: 504, method: 'PATCH' }),
+      ).toBe(false);
     });
 
     it('treats an unstated method as unsafe', () => {
@@ -120,15 +145,38 @@ describe('RETRY_RULES', () => {
     it('retries a 5xx on a POST that carries an Idempotency-Key, and on no other POST', () => {
       // The server answers a keyed repeat as it answered the first, so an upload
       // that got a 502 is sent again without making a second resource.
-      expect(RETRY_RULES.transport.retryable({ status: 502, method: 'POST', keyed: true })).toBe(true);
-      expect(RETRY_RULES.transport.retryable({ status: 502, method: 'POST', keyed: false })).toBe(false);
-      expect(RETRY_RULES.transport.retryable({ status: 502, method: 'POST' })).toBe(false);
-      expect(RETRY_RULES.transport.retryable({ status: 503, keyed: true })).toBe(true);
+      expect(
+        RETRY_RULES.transport.retryable({
+          status: 502,
+          method: 'POST',
+          keyed: true,
+        }),
+      ).toBe(true);
+      expect(
+        RETRY_RULES.transport.retryable({
+          status: 502,
+          method: 'POST',
+          keyed: false,
+        }),
+      ).toBe(false);
+      expect(
+        RETRY_RULES.transport.retryable({ status: 502, method: 'POST' }),
+      ).toBe(false);
+      expect(
+        RETRY_RULES.transport.retryable({ status: 503, keyed: true }),
+      ).toBe(true);
     });
 
     it('keeps a refusal final on a keyed request: a key makes a repeat harmless, not a refused request acceptable', () => {
       for (const status of [400, 401, 403, 422]) {
-        expect(RETRY_RULES.transport.retryable({ status, method: 'POST', keyed: true }), `on ${status}`).toBe(false);
+        expect(
+          RETRY_RULES.transport.retryable({
+            status,
+            method: 'POST',
+            keyed: true,
+          }),
+          `on ${status}`,
+        ).toBe(false);
       }
     });
   });
@@ -136,7 +184,9 @@ describe('RETRY_RULES', () => {
   describe('the boot and job rules ignore method, and say so by accepting facts without one', () => {
     it('answers the same with or without a method', () => {
       for (const rule of [RETRY_RULES.boot, RETRY_RULES.job]) {
-        expect(rule.retryable({ status: 503 })).toBe(rule.retryable({ status: 503, method: 'POST' }));
+        expect(rule.retryable({ status: 503 })).toBe(
+          rule.retryable({ status: 503, method: 'POST' }),
+        );
       }
     });
   });
@@ -147,10 +197,14 @@ describe('RETRY_RULES', () => {
     // cannot be mistaken for a taxonomy bug.
     const { isRetryableRequestError } = await import('../retry');
     for (const status of [429, 503, 504]) {
-      expect(isRetryableRequestError(Object.assign(new Error('x'), { status }))).toBe(true);
+      expect(
+        isRetryableRequestError(Object.assign(new Error('x'), { status })),
+      ).toBe(true);
     }
     for (const status of [400, 401, 403, 404, 500]) {
-      expect(isRetryableRequestError(Object.assign(new Error('x'), { status }))).toBe(false);
+      expect(
+        isRetryableRequestError(Object.assign(new Error('x'), { status })),
+      ).toBe(false);
     }
   });
 });

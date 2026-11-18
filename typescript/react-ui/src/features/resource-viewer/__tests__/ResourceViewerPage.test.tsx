@@ -17,8 +17,17 @@ import { createTestXynologWrapper, renderInEnglish } from '../../../test-utils';
 import type { LinkComponentProps } from '../../../contexts/RoutingContext';
 import type { ToolbarPanelsProps } from '../../../components/Toolbar';
 import type { AnnotationHistory } from '../../../components/resource/AnnotationHistory';
-import type { BodyOperation, EventMap, ResourceDescriptor, ResourceId, UserId } from '@xynolog/core';
-import { annotationId as makeAnnotationId, resourceId as makeResourceId } from '@xynolog/core';
+import type {
+  BodyOperation,
+  EventMap,
+  ResourceDescriptor,
+  ResourceId,
+  UserId,
+} from '@xynolog/core';
+import {
+  annotationId as makeAnnotationId,
+  resourceId as makeResourceId,
+} from '@xynolog/core';
 
 // jsdom doesn't implement window.matchMedia — mock it for useTheme
 Object.defineProperty(window, 'matchMedia', {
@@ -39,7 +48,6 @@ Object.defineProperty(window, 'matchMedia', {
 vi.mock('../../../hooks/useResourceContent', () => ({
   useResourceContent: () => ({ content: 'Test content', loading: false }),
 }));
-
 
 // Stub XynologBrowser whose activeSession$ emits a session carrying a real
 // XynologClient over the SDK's in-memory doubles. The real client surface lets
@@ -68,9 +76,9 @@ const { stubBrowser, stubClient } = vi.hoisted(() => {
 });
 
 vi.mock('../../../session/XynologProvider', async () => {
-  const actual = await vi.importActual<typeof import('../../../session/XynologProvider')>(
-    '../../../session/XynologProvider'
-  );
+  const actual = await vi.importActual<
+    typeof import('../../../session/XynologProvider')
+  >('../../../session/XynologProvider');
   return {
     ...actual,
     useXynolog: () => stubBrowser,
@@ -78,7 +86,9 @@ vi.mock('../../../session/XynologProvider', async () => {
 });
 
 const capturedHistory = vi.hoisted(() => {
-  const captured: { props: React.ComponentProps<typeof AnnotationHistory> | null } = { props: null };
+  const captured: {
+    props: React.ComponentProps<typeof AnnotationHistory> | null;
+  } = { props: null };
   return captured;
 });
 
@@ -97,20 +107,31 @@ vi.mock('@xynolog/react-ui', async () => {
   const actual = await vi.importActual('@xynolog/react-ui');
   return {
     ...actual,
-    ResourceViewer: ({ resource }: { resource: ResourceDescriptor }) => <div data-testid="resource-viewer">{resource.name}</div>,
+    ResourceViewer: ({ resource }: { resource: ResourceDescriptor }) => (
+      <div data-testid="resource-viewer">{resource.name}</div>
+    ),
     Toolbar: () => <div data-testid="toolbar">Toolbar</div>,
-    ToolbarPanels: ({ children }: ToolbarPanelsProps) => <div data-testid="toolbar-panels">{children}</div>,
-    UnifiedAnnotationsPanel: () => <div data-testid="annotations-panel">Annotations</div>,
-    AnnotationHistory: (props: React.ComponentProps<typeof AnnotationHistory>) => {
+    ToolbarPanels: ({ children }: ToolbarPanelsProps) => (
+      <div data-testid="toolbar-panels">{children}</div>
+    ),
+    UnifiedAnnotationsPanel: () => (
+      <div data-testid="annotations-panel">Annotations</div>
+    ),
+    AnnotationHistory: (
+      props: React.ComponentProps<typeof AnnotationHistory>,
+    ) => {
       capturedHistory.props = props;
       return <div data-testid="history-panel">History</div>;
     },
     ResourceInfoPanel: () => <div data-testid="info-panel">Info</div>,
-    CollaborationPanel: () => <div data-testid="collaboration-panel">Collaboration</div>,
+    CollaborationPanel: () => (
+      <div data-testid="collaboration-panel">Collaboration</div>
+    ),
     JsonLdPanel: () => <div data-testid="jsonld-panel">JSON-LD</div>,
     ErrorBoundary: ({ children }: { children?: React.ReactNode }) => children,
     createCancelDetectionHandler: () => vi.fn(),
-    useDebouncedCallback: <A extends unknown[]>(fn: (...args: A) => unknown) => fn,
+    useDebouncedCallback: <A extends unknown[]>(fn: (...args: A) => unknown) =>
+      fn,
     supportsDetection: () => false,
     useResourceLoadingAnnouncements: () => ({
       announceResourceLoading: vi.fn(),
@@ -133,7 +154,8 @@ const sparkleContext = vi.hoisted(() => ({
 
 vi.mock('../../../contexts/ResourceAnnotationsContext', () => ({
   useResourceAnnotations: () => sparkleContext,
-  ResourceAnnotationsProvider: ({ children }: { children: React.ReactNode }) => children,
+  ResourceAnnotationsProvider: ({ children }: { children: React.ReactNode }) =>
+    children,
 }));
 
 // Capture what ResourceViewerPage passes to useOutcomeToasts. The real hook is a
@@ -152,16 +174,22 @@ const mockUseEventSubscriptions = vi.fn();
 const mockUseResourceEventSubscriptions = vi.fn();
 vi.mock('../../../contexts/useEventSubscription', () => ({
   useEventSubscription: vi.fn(),
-  useEventSubscriptions: (...args: unknown[]) => mockUseEventSubscriptions(...args),
-  useResourceEventSubscriptions: (...args: unknown[]) => mockUseResourceEventSubscriptions(...args),
+  useEventSubscriptions: (...args: unknown[]) =>
+    mockUseEventSubscriptions(...args),
+  useResourceEventSubscriptions: (...args: unknown[]) =>
+    mockUseResourceEventSubscriptions(...args),
 }));
 
 vi.mock('@/components/toolbar/ToolbarPanels', () => ({
-  ToolbarPanels: ({ children }: ToolbarPanelsProps) => <div data-testid="toolbar-panels">{children}</div>,
+  ToolbarPanels: ({ children }: ToolbarPanelsProps) => (
+    <div data-testid="toolbar-panels">{children}</div>
+  ),
 }));
 
 // Create mock props matching ResourceViewerPageProps
-const createMockProps = (overrides?: Partial<ResourceViewerPageProps>): ResourceViewerPageProps => ({
+const createMockProps = (
+  overrides?: Partial<ResourceViewerPageProps>,
+): ResourceViewerPageProps => ({
   resource: {
     '@context': 'https://www.w3.org/ns/anno.jsonld',
     '@id': 'test-123' as ResourceId,
@@ -180,8 +208,13 @@ const createMockProps = (overrides?: Partial<ResourceViewerPageProps>): Resource
   },
   rUri: makeResourceId('test-123'),
   locale: 'en',
-  Link: ({ href, children }: LinkComponentProps) => <a href={href}>{children}</a>,
-  routes: { resourceDetail: (id) => `/know/resource/${id}`, knowledge: () => '/know' },
+  Link: ({ href, children }: LinkComponentProps) => (
+    <a href={href}>{children}</a>
+  ),
+  routes: {
+    resourceDetail: (id) => `/know/resource/${id}`,
+    knowledge: () => '/know',
+  },
   refetchDocument: vi.fn().mockResolvedValue(undefined),
   streamStatus: 'open' as const,
   ToolbarPanels: ({ children, activePanel }: ToolbarPanelsProps) =>
@@ -196,12 +229,10 @@ const renderWithProviders = (ui: React.ReactElement) => {
     <ThemeProvider>
       <LineNumbersProvider>
         <ToastProvider>
-          <XynologWrapper>
-            {ui}
-          </XynologWrapper>
+          <XynologWrapper>{ui}</XynologWrapper>
         </ToastProvider>
       </LineNumbersProvider>
-    </ThemeProvider>
+    </ThemeProvider>,
   );
 };
 
@@ -227,7 +258,9 @@ describe('ResourceViewerPage — outcome toasts reach the user', () => {
 // page turns exactly that into a sparkle. The harness mocks
 // useResourceEventSubscriptions, so the pin drives the captured handler directly.
 describe('ResourceViewerPage — resolution sparkles', () => {
-  const bodyUpdated = (operations: BodyOperation[]): EventMap['mark:body-updated'] => ({
+  const bodyUpdated = (
+    operations: BodyOperation[],
+  ): EventMap['mark:body-updated'] => ({
     id: 'evt-1',
     timestamp: '2026-08-21T12:00:00Z',
     resourceId: makeResourceId('test-123'),
@@ -243,8 +276,12 @@ describe('ResourceViewerPage — resolution sparkles', () => {
     sparkleContext.triggerSparkleAnimation.mockClear();
     renderWithProviders(<ResourceViewerPage {...createMockProps()} />);
     // Read for the page's own resource, whose scope the subscription holds.
-    const [resource, map] = mockUseResourceEventSubscriptions.mock.calls.at(-1) as
-      [string, Record<string, (event: EventMap['mark:body-updated']) => void>];
+    const [resource, map] = mockUseResourceEventSubscriptions.mock.calls.at(
+      -1,
+    ) as [
+      string,
+      Record<string, (event: EventMap['mark:body-updated']) => void>,
+    ];
     expect(resource).toBe('test-123');
     return map['mark:body-updated'];
   };
@@ -253,19 +290,39 @@ describe('ResourceViewerPage — resolution sparkles', () => {
     const handler = renderAndGetHandler();
     expect(handler).toBeDefined();
 
-    handler!(bodyUpdated([
-      { op: 'add', item: { type: 'SpecificResource', source: makeResourceId('res-target'), purpose: 'linking' } },
-    ]));
+    handler!(
+      bodyUpdated([
+        {
+          op: 'add',
+          item: {
+            type: 'SpecificResource',
+            source: makeResourceId('res-target'),
+            purpose: 'linking',
+          },
+        },
+      ]),
+    );
 
-    expect(sparkleContext.triggerSparkleAnimation).toHaveBeenCalledWith('ann-7');
+    expect(sparkleContext.triggerSparkleAnimation).toHaveBeenCalledWith(
+      'ann-7',
+    );
   });
 
   it('unlink (remove-only operations) stays dark', () => {
     const handler = renderAndGetHandler();
 
-    handler?.(bodyUpdated([
-      { op: 'remove', item: { type: 'SpecificResource', source: makeResourceId('res-target'), purpose: 'linking' } },
-    ]));
+    handler?.(
+      bodyUpdated([
+        {
+          op: 'remove',
+          item: {
+            type: 'SpecificResource',
+            source: makeResourceId('res-target'),
+            purpose: 'linking',
+          },
+        },
+      ]),
+    );
 
     expect(sparkleContext.triggerSparkleAnimation).not.toHaveBeenCalled();
   });
@@ -273,9 +330,14 @@ describe('ResourceViewerPage — resolution sparkles', () => {
   it('a TextualBody add stays dark', () => {
     const handler = renderAndGetHandler();
 
-    handler?.(bodyUpdated([
-      { op: 'add', item: { type: 'TextualBody', value: 'Person', purpose: 'tagging' } },
-    ]));
+    handler?.(
+      bodyUpdated([
+        {
+          op: 'add',
+          item: { type: 'TextualBody', value: 'Person', purpose: 'tagging' },
+        },
+      ]),
+    );
 
     expect(sparkleContext.triggerSparkleAnimation).not.toHaveBeenCalled();
   });
@@ -297,25 +359,34 @@ describe('ResourceViewerPage — navigation goes through the host routes', () =>
   it('opens a resource at routes.resourceDetail', () => {
     renderAndGetHandlers()['browse:resource-open']({ resourceId: 'res-9' });
 
-    expect(stubBrowser.emit).toHaveBeenCalledWith('nav:push', { path: '/know/resource/res-9', reason: 'reference-link' });
+    expect(stubBrowser.emit).toHaveBeenCalledWith('nav:push', {
+      path: '/know/resource/res-9',
+      reason: 'reference-link',
+    });
   });
 
   it('filters by an entity type at routes.knowledge', () => {
-    renderAndGetHandlers()['browse:entity-type-clicked']({ entityType: 'Person Name' });
+    renderAndGetHandlers()['browse:entity-type-clicked']({
+      entityType: 'Person Name',
+    });
 
-    expect(stubBrowser.emit).toHaveBeenCalledWith('nav:push', { path: '/know?entityType=Person%20Name', reason: 'entity-type-filter' });
+    expect(stubBrowser.emit).toHaveBeenCalledWith('nav:push', {
+      path: '/know?entityType=Person%20Name',
+      reason: 'entity-type-filter',
+    });
   });
 });
 
 describe('ResourceViewerPage', () => {
-
   describe('Basic Rendering', () => {
     it('renders without crashing', () => {
       const props = createMockProps();
       renderWithProviders(<ResourceViewerPage {...props} />);
 
       // Check for header element specifically
-      expect(screen.getByRole('heading', { name: 'Test Resource' })).toBeInTheDocument();
+      expect(
+        screen.getByRole('heading', { name: 'Test Resource' }),
+      ).toBeInTheDocument();
     });
 
     it('displays resource name in header', () => {
@@ -328,7 +399,9 @@ describe('ResourceViewerPage', () => {
 
       renderWithProviders(<ResourceViewerPage {...props} />);
 
-      expect(screen.getByRole('heading', { name: 'My Special Resource' })).toBeInTheDocument();
+      expect(
+        screen.getByRole('heading', { name: 'My Special Resource' }),
+      ).toBeInTheDocument();
     });
 
     it('renders toolbar component', () => {
@@ -371,12 +444,17 @@ describe('ResourceViewerPage', () => {
       expect(capturedHistory.props).not.toBeNull();
 
       const focused: Array<EventMap['beckon:focus']> = [];
-      const sub = stubClient.bus.on('beckon:focus').subscribe((focus: EventMap['beckon:focus']) => focused.push(focus));
+      const sub = stubClient.bus
+        .on('beckon:focus')
+        .subscribe((focus: EventMap['beckon:focus']) => focused.push(focus));
 
       const { onEventClick } = historyProps();
-      if (!onEventClick) throw new Error('the page gave the history no onEventClick');
+      if (!onEventClick)
+        throw new Error('the page gave the history no onEventClick');
       onEventClick(makeAnnotationId('ann-42'));
-      expect(focused).toEqual([{ resourceId: 'test-123', annotationId: 'ann-42' }]);
+      expect(focused).toEqual([
+        { resourceId: 'test-123', annotationId: 'ann-42' },
+      ]);
 
       sub.unsubscribe();
       localStorage.clear();
@@ -484,7 +562,9 @@ describe('ResourceViewerPage', () => {
 
       renderWithProviders(<ResourceViewerPage {...props} />);
 
-      expect(screen.getByRole('heading', { name: 'Different Resource Name' })).toBeInTheDocument();
+      expect(
+        screen.getByRole('heading', { name: 'Different Resource Name' }),
+      ).toBeInTheDocument();
     });
   });
 });

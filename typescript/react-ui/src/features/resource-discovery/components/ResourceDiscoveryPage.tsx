@@ -7,7 +7,10 @@
 
 import React, { useCallback, useRef } from 'react';
 import { getResourceId } from '@xynolog/core';
-import { COMMON_PANELS, type ToolbarPanelType } from '../../../state/shell-state-unit';
+import {
+  COMMON_PANELS,
+  type ToolbarPanelType,
+} from '../../../state/shell-state-unit';
 import { useRovingTabIndex } from '../../../hooks/useRovingTabIndex';
 import { Toolbar, type ToolbarPanelsProps } from '../../../components/Toolbar';
 import { ResourceCard } from './ResourceCard';
@@ -111,13 +114,13 @@ export function ResourceDiscoveryPage({
   // Roving tabindex for entity type filters
   const entityFilterRoving = useRovingTabIndex<HTMLDivElement>(
     entityTypes.length + 1, // +1 for "All" button
-    { orientation: 'horizontal' }
+    { orientation: 'horizontal' },
   );
 
   // Roving tabindex for document grid
   const documentGridRoving = useRovingTabIndex<HTMLDivElement>(
     filteredResources.length,
-    { orientation: 'grid', cols: 2 } // 2 columns on medium+ screens
+    { orientation: 'grid', cols: 2 }, // 2 columns on medium+ screens
   );
 
   // Store navigation callback in ref to avoid re-creating openResource
@@ -137,7 +140,12 @@ export function ResourceDiscoveryPage({
       <div className="xynolog-page__loading">
         <p className="xynolog-page__loading-text">{t.recentFailed}</p>
         {onRetryRecent && (
-          <button type="button" onClick={onRetryRecent} className="xynolog-button" data-variant="secondary">
+          <button
+            type="button"
+            onClick={onRetryRecent}
+            className="xynolog-button"
+            data-variant="secondary"
+          >
             {t.retry}
           </button>
         )}
@@ -154,18 +162,19 @@ export function ResourceDiscoveryPage({
     );
   }
 
-  const showNoResultsWarning = hasSearchQuery && searchDocuments.length === 0 && !isSearching;
+  const showNoResultsWarning =
+    hasSearchQuery && searchDocuments.length === 0 && !isSearching;
 
   return (
-    <div className={`xynolog-page${activePanel && COMMON_PANELS.includes(activePanel) ? ' xynolog-page--panel-open' : ''}`}>
+    <div
+      className={`xynolog-page${activePanel && COMMON_PANELS.includes(activePanel) ? ' xynolog-page--panel-open' : ''}`}
+    >
       {/* Main Content Area */}
       <div className="xynolog-page__content">
         {/* Page Header */}
         <div className="xynolog-page__header">
           <h1 className="xynolog-page__title">{t.title}</h1>
-          <p className="xynolog-page__subtitle">
-            {t.subtitle}
-          </p>
+          <p className="xynolog-page__subtitle">{t.subtitle}</p>
         </div>
 
         {/* Search and Filter Section */}
@@ -182,7 +191,10 @@ export function ResourceDiscoveryPage({
                 aria-label={t.searchPlaceholder}
               />
               {isSearching && (
-                <span className="xynolog-card__search-status" aria-live="polite">
+                <span
+                  className="xynolog-card__search-status"
+                  aria-live="polite"
+                >
                   {t.searching}
                 </span>
               )}
@@ -234,8 +246,7 @@ export function ResourceDiscoveryPage({
                 ? t.searchResults(searchDocuments.length)
                 : selectedEntityType
                   ? t.documentsTaggedWith(selectedEntityType)
-                  : t.recentResources
-              }
+                  : t.recentResources}
             </h3>
 
             {/* Label it, minimally. Someone who searches "kitten" and gets
@@ -245,15 +256,17 @@ export function ResourceDiscoveryPage({
                 empty page, so it never competes with a better answer.
                 `aria-live` because the results it explains arrive without any
                 control being activated. */}
-            {hasSearchQuery && searchMatchKind === 'semantic' && searchDocuments.length > 0 && (
-              <p
-                className="xynolog-card__documents-note"
-                data-testid="xynolog-semantic-match-notice"
-                aria-live="polite"
-              >
-                {t.semanticFallbackNotice}
-              </p>
-            )}
+            {hasSearchQuery &&
+              searchMatchKind === 'semantic' &&
+              searchDocuments.length > 0 && (
+                <p
+                  className="xynolog-card__documents-note"
+                  data-testid="xynolog-semantic-match-notice"
+                  aria-live="polite"
+                >
+                  {t.semanticFallbackNotice}
+                </p>
+              )}
 
             {showNoResultsWarning && (
               <div className="xynolog-card__warning">
@@ -271,16 +284,18 @@ export function ResourceDiscoveryPage({
                 role="group"
                 aria-label="Document grid"
               >
-                {filteredResources.map((resource: ResourceDescriptor, index: number) => (
-                  <ResourceCard
-                    key={getResourceId(resource)}
-                    resource={resource}
-                    onOpen={openResource}
-                    tabIndex={index === 0 ? 0 : -1}
-                    archivedLabel={t.archived}
-                    createdLabel={t.created}
-                  />
-                ))}
+                {filteredResources.map(
+                  (resource: ResourceDescriptor, index: number) => (
+                    <ResourceCard
+                      key={getResourceId(resource)}
+                      resource={resource}
+                      onOpen={openResource}
+                      tabIndex={index === 0 ? 0 : -1}
+                      archivedLabel={t.archived}
+                      createdLabel={t.created}
+                    />
+                  ),
+                )}
               </div>
             ) : (
               <div className="xynolog-card__empty">
@@ -304,16 +319,10 @@ export function ResourceDiscoveryPage({
       {/* Right Sidebar - Panels and Toolbar */}
       <div className="xynolog-page__sidebar">
         {/* Panels Container */}
-        <ToolbarPanels
-          activePanel={activePanel}
-          theme={theme}
-        />
+        <ToolbarPanels activePanel={activePanel} theme={theme} />
 
         {/* Toolbar - Always visible on the right */}
-        <Toolbar
-          context="simple"
-          activePanel={activePanel}
-        />
+        <Toolbar context="simple" activePanel={activePanel} />
       </div>
     </div>
   );

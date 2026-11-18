@@ -1,40 +1,58 @@
 import { BehaviorSubject, type Subscription } from 'rxjs';
 import type { XynologClient } from '../../client';
-import { FrameRefusal, watched, type AnnotationId, type ResourceId, type StateUnit, type Watched } from '@xynolog/core';
+import {
+  FrameRefusal,
+  watched,
+  type AnnotationId,
+  type ResourceId,
+  type StateUnit,
+  type Watched,
+} from '@xynolog/core';
 
 export interface BeckonStateUnit extends StateUnit {
   hoveredAnnotationId$: Watched<AnnotationId | null>;
   focus(annotationId: AnnotationId): void;
 }
 
-export function createBeckonStateUnit(client: XynologClient, resourceId: ResourceId): BeckonStateUnit {
+export function createBeckonStateUnit(
+  client: XynologClient,
+  resourceId: ResourceId,
+): BeckonStateUnit {
   const subs: Subscription[] = [];
   const hovered$ = new BehaviorSubject<AnnotationId | null>(null);
   let disposed = false;
 
   // A signal whose payload is not its channel's names nothing to hover or focus.
-  subs.push(client.bus.on('beckon:hover').subscribe((hover) => {
-    if (hover instanceof FrameRefusal) return;
-    const { annotationId } = hover;
-    hovered$.next(annotationId as AnnotationId | null);
-    if (annotationId) {
-      client.bus.emit('beckon:sparkle', { annotationId });
-    }
-  }));
+  subs.push(
+    client.bus.on('beckon:hover').subscribe((hover) => {
+      if (hover instanceof FrameRefusal) return;
+      const { annotationId } = hover;
+      hovered$.next(annotationId as AnnotationId | null);
+      if (annotationId) {
+        client.bus.emit('beckon:sparkle', { annotationId });
+      }
+    }),
+  );
 
-  subs.push(client.bus.on('browse:click').subscribe((click) => {
-    if (click instanceof FrameRefusal) return;
-    client.bus.emit('beckon:focus', { resourceId, annotationId: click.annotationId });
-  }));
+  subs.push(
+    client.bus.on('browse:click').subscribe((click) => {
+      if (click instanceof FrameRefusal) return;
+      client.bus.emit('beckon:focus', {
+        resourceId,
+        annotationId: click.annotationId,
+      });
+    }),
+  );
 
   return {
     hoveredAnnotationId$: watched(hovered$),
     focus: (annotationId) => {
-      if (!disposed) client.bus.emit('beckon:focus', { resourceId, annotationId });
+      if (!disposed)
+        client.bus.emit('beckon:focus', { resourceId, annotationId });
     },
     dispose() {
       disposed = true;
-      subs.forEach(s => s.unsubscribe());
+      subs.forEach((s) => s.unsubscribe());
       hovered$.complete();
     },
   };

@@ -1,10 +1,25 @@
 'use client';
 
 import { useEffect, useMemo, useRef } from 'react';
-import { EditorView, Decoration, DecorationSet, lineNumbers } from '@codemirror/view';
-import { EditorState, RangeSetBuilder, StateField, StateEffect, Compartment } from '@codemirror/state';
+import {
+  EditorView,
+  Decoration,
+  DecorationSet,
+  lineNumbers,
+} from '@codemirror/view';
+import {
+  EditorState,
+  RangeSetBuilder,
+  StateField,
+  StateEffect,
+  Compartment,
+} from '@codemirror/state';
 import { markdown } from '@codemirror/lang-markdown';
-import { ReferenceResolutionWidget, showWidgetPreview, hideWidgetPreview } from '../lib/codemirror-widgets';
+import {
+  ReferenceResolutionWidget,
+  showWidgetPreview,
+  hideWidgetPreview,
+} from '../lib/codemirror-widgets';
 import { scrollAnnotationIntoView } from '../lib/scroll-utils';
 import { annotationId as toAnnotationId, textOffsets } from '@xynolog/core';
 import { isReference } from '@xynolog/core';
@@ -65,7 +80,7 @@ const updateWidgetsEffect = StateEffect.define<WidgetUpdate>();
 // Build CodeMirror decorations from pure metadata
 function buildAnnotationDecorations(
   segments: TextSegment[],
-  sparkleAnnotationIds?: Set<string>
+  sparkleAnnotationIds?: Set<string>,
 ): DecorationSet {
   const builder = new RangeSetBuilder<Decoration>();
   const entries = computeAnnotationDecorations(segments, sparkleAnnotationIds);
@@ -77,7 +92,9 @@ function buildAnnotationDecorations(
         'data-annotation-id': meta.annotationId,
         'data-annotation-type': meta.annotationType,
         ...(meta.strategy ? { 'data-anchor-strategy': meta.strategy } : {}),
-        ...(meta.confidence ? { 'data-anchor-confidence': meta.confidence } : {}),
+        ...(meta.confidence
+          ? { 'data-anchor-confidence': meta.confidence }
+          : {}),
         title: meta.tooltip,
       },
     });
@@ -98,13 +115,16 @@ function createAnnotationDecorationsField() {
 
       for (const effect of tr.effects) {
         if (effect.is(updateAnnotationsEffect)) {
-          decorations = buildAnnotationDecorations(effect.value.segments, effect.value.sparkleAnnotationIds);
+          decorations = buildAnnotationDecorations(
+            effect.value.segments,
+            effect.value.sparkleAnnotationIds,
+          );
         }
       }
 
       return decorations;
     },
-    provide: field => EditorView.decorations.from(field)
+    provide: (field) => EditorView.decorations.from(field),
   });
 }
 
@@ -112,10 +132,14 @@ function createAnnotationDecorationsField() {
 function buildWidgetDecorations(
   segments: TextSegment[],
   generatingReferenceId: string | null | undefined,
-  getTargetResourceName?: (resourceId: string) => string | undefined
+  getTargetResourceName?: (resourceId: string) => string | undefined,
 ): DecorationSet {
   const builder = new RangeSetBuilder<Decoration>();
-  const widgetMetas = computeWidgetDecorations(segments, generatingReferenceId, getTargetResourceName);
+  const widgetMetas = computeWidgetDecorations(
+    segments,
+    generatingReferenceId,
+    getTargetResourceName,
+  );
 
   // ReferenceResolutionWidget needs the full annotation objects
   const annotationsByEnd = new Map<number, TextSegment>();
@@ -132,9 +156,13 @@ function buildWidgetDecorations(
     const widget = new ReferenceResolutionWidget(
       segment.annotation,
       meta.targetName,
-      meta.isGenerating
+      meta.isGenerating,
     );
-    builder.add(meta.position, meta.position, Decoration.widget({ widget, side: 1 }));
+    builder.add(
+      meta.position,
+      meta.position,
+      Decoration.widget({ widget, side: 1 }),
+    );
   }
 
   return builder.finish();
@@ -153,14 +181,14 @@ const widgetDecorationsField = StateField.define<DecorationSet>({
         decorations = buildWidgetDecorations(
           effect.value.segments,
           effect.value.generatingReferenceId,
-          effect.value.getTargetResourceName
+          effect.value.getTargetResourceName,
         );
       }
     }
 
     return decorations;
   },
-  provide: field => EditorView.decorations.from(field)
+  provide: (field) => EditorView.decorations.from(field),
 });
 
 /**
@@ -180,7 +208,7 @@ export function CodeMirrorRenderer({
   session,
   getTargetResourceName,
   generatingReferenceId,
-  hoverDelayMs
+  hoverDelayMs,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
@@ -189,7 +217,10 @@ export function CodeMirrorRenderer({
   // A segment is at offsets into the content, in code points. The editor's
   // document is indexed in UTF-16 code units and holds each line break as one,
   // so the segments are placed in it through the content's conversions.
-  const positions = useMemo(() => documentPositions(content, textOffsets(content)), [content]);
+  const positions = useMemo(
+    () => documentPositions(content, textOffsets(content)),
+    [content],
+  );
   const convertedSegments = convertSegmentPositions(segments, positions);
 
   // Index segments by annotation ID for O(1) click lookups
@@ -236,28 +267,35 @@ export function CodeMirrorRenderer({
         EditorView.domEventHandlers({
           click: (event, _view) => {
             const target = event.target as HTMLElement;
-            if (sessionRef.current && handleAnnotationClick(target, segmentsByIdRef.current, sessionRef.current)) {
+            if (
+              sessionRef.current &&
+              handleAnnotationClick(
+                target,
+                segmentsByIdRef.current,
+                sessionRef.current,
+              )
+            ) {
               event.preventDefault();
               return true;
             }
             return false;
-          }
+          },
         }),
         // Style the editor
         EditorView.baseTheme({
           '&.cm-editor': {
             height: '100%',
-            outline: 'none'
+            outline: 'none',
           },
           '&.cm-editor.cm-focused': {
-            outline: 'none'
+            outline: 'none',
           },
           '.cm-scroller': {
             overflow: 'visible !important',
-            height: 'auto !important'
+            height: 'auto !important',
           },
           '.cm-content, .cm-gutters': {
-            minHeight: '0 !important'
+            minHeight: '0 !important',
           },
           '.cm-content': {
             padding: sourceView ? '1rem' : '0',
@@ -265,30 +303,30 @@ export function CodeMirrorRenderer({
             fontSize: sourceView ? '0.875rem' : 'inherit',
             lineHeight: '1.6',
             whiteSpace: sourceView ? 'pre-wrap' : 'pre',
-            caretColor: 'var(--cm-cursor-color, #000000)'
+            caretColor: 'var(--cm-cursor-color, #000000)',
           },
           '.cm-line': {
             padding: '0',
-            wordBreak: sourceView ? 'break-word' : 'normal'
+            wordBreak: sourceView ? 'break-word' : 'normal',
           },
           '.cm-gutters': {
             backgroundColor: 'transparent',
             border: 'none',
-            paddingRight: '0.5rem'
+            paddingRight: '0.5rem',
           },
           '.cm-lineNumbers .cm-gutterElement': {
             minWidth: '2rem',
             color: 'rgb(156, 163, 175)',
-            opacity: '0.7'
-          }
-        })
-      ]
+            opacity: '0.7',
+          },
+        }),
+      ],
     });
 
     // Create editor view
     const view = new EditorView({
       state,
-      parent: containerRef.current
+      parent: containerRef.current,
     });
 
     viewRef.current = view;
@@ -299,13 +337,14 @@ export function CodeMirrorRenderer({
 
     const dwell = createHoverDwell(
       (id) => sessionRef.current?.client.beckon.hover(id),
-      hoverDelayMs
+      hoverDelayMs,
     );
 
     const handleMouseOver = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       const annotationElement = target.closest('[data-annotation-id]');
-      const annotationId = annotationElement?.getAttribute('data-annotation-id');
+      const annotationId =
+        annotationElement?.getAttribute('data-annotation-id');
       if (annotationId) dwell.enter(toAnnotationId(annotationId));
     };
 
@@ -380,10 +419,10 @@ export function CodeMirrorRenderer({
       changes: {
         from: 0,
         to: viewRef.current.state.doc.length,
-        insert: content
+        insert: content,
       },
       // Restore cursor position if possible
-      selection: selection.from <= content.length ? selection : undefined
+      selection: selection.from <= content.length ? selection : undefined,
     });
 
     contentRef.current = content;
@@ -394,7 +433,9 @@ export function CodeMirrorRenderer({
     if (!viewRef.current) return;
 
     viewRef.current.dispatch({
-      effects: lineNumbersCompartment.current.reconfigure(showLineNumbers ? lineNumbers() : [])
+      effects: lineNumbersCompartment.current.reconfigure(
+        showLineNumbers ? lineNumbers() : [],
+      ),
     });
   }, [showLineNumbers]);
 
@@ -403,7 +444,10 @@ export function CodeMirrorRenderer({
     if (!viewRef.current) return;
 
     viewRef.current.dispatch({
-      effects: updateAnnotationsEffect.of({ segments: convertedSegments, ...(sparkleAnnotationIds && { sparkleAnnotationIds }) })
+      effects: updateAnnotationsEffect.of({
+        segments: convertedSegments,
+        ...(sparkleAnnotationIds && { sparkleAnnotationIds }),
+      }),
     });
   }, [convertedSegments, sparkleAnnotationIds]);
 
@@ -415,8 +459,8 @@ export function CodeMirrorRenderer({
       effects: updateWidgetsEffect.of({
         segments: convertedSegments,
         generatingReferenceId,
-        getTargetResourceName: getTargetResourceNameRef.current
-      })
+        getTargetResourceName: getTargetResourceNameRef.current,
+      }),
     });
   }, [convertedSegments, enableWidgets, generatingReferenceId]);
 
@@ -428,14 +472,18 @@ export function CodeMirrorRenderer({
 
     // Find the annotation element in the DOM
     const element = view.contentDOM.querySelector(
-      `[data-annotation-id="${CSS.escape(hoveredAnnotationId)}"]`
+      `[data-annotation-id="${CSS.escape(hoveredAnnotationId)}"]`,
     ) as HTMLElement;
 
     if (!element) return undefined;
 
     // Find the actual scroll container - could be annotate view or document viewer
-    const scrollContainer = (element.closest('.xynolog-annotate-view__content') ||
-                            element.closest('.xynolog-document-viewer__scrollable-body')) as HTMLElement;
+    const scrollContainer = (element.closest(
+      '.xynolog-annotate-view__content',
+    ) ||
+      element.closest(
+        '.xynolog-document-viewer__scrollable-body',
+      )) as HTMLElement;
 
     if (scrollContainer) {
       // Check visibility within the scroll container, not window
@@ -451,7 +499,7 @@ export function CodeMirrorRenderer({
         const elementTop = element.offsetTop;
         const containerHeight = scrollContainer.clientHeight;
         const elementHeight = element.offsetHeight;
-        const scrollTo = elementTop - (containerHeight / 2) + (elementHeight / 2);
+        const scrollTo = elementTop - containerHeight / 2 + elementHeight / 2;
 
         scrollContainer.scrollTo({ top: scrollTo, behavior: 'smooth' });
       }
@@ -475,8 +523,14 @@ export function CodeMirrorRenderer({
   }, [scrollToAnnotationId]);
 
   const containerClasses = sourceView
-    ? "xynolog-codemirror xynolog-codemirror--source"
-    : "xynolog-codemirror";
+    ? 'xynolog-codemirror xynolog-codemirror--source'
+    : 'xynolog-codemirror';
 
-  return <div ref={containerRef} className={containerClasses} data-markdown-container />;
+  return (
+    <div
+      ref={containerRef}
+      className={containerClasses}
+      data-markdown-container
+    />
+  );
 }

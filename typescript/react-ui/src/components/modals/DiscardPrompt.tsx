@@ -15,7 +15,13 @@ interface DiscardPromptProps {
   onKeepEditing: () => void;
 }
 
-export function DiscardPrompt({ prompt, discardLabel, keepLabel, onDiscard, onKeepEditing }: DiscardPromptProps) {
+export function DiscardPrompt({
+  prompt,
+  discardLabel,
+  keepLabel,
+  onDiscard,
+  onKeepEditing,
+}: DiscardPromptProps) {
   return (
     <div className="xynolog-wizard__discard-prompt" role="alert">
       <span className="xynolog-wizard__discard-prompt-text">{prompt}</span>

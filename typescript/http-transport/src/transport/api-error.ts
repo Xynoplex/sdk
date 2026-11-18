@@ -10,13 +10,25 @@
  * predicate could only agree with one of them.
  */
 
-import { XynologError, isObject, isRetryableRequestError, isString, retryAfterMs, transportErrorCodeForStatus, whyUnanswered, type TransportErrorCode, type HttpStatusError, type components } from '@xynolog/core';
+import {
+  XynologError,
+  isObject,
+  isRetryableRequestError,
+  isString,
+  retryAfterMs,
+  transportErrorCodeForStatus,
+  whyUnanswered,
+  type TransportErrorCode,
+  type HttpStatusError,
+  type components,
+} from '@xynolog/core';
 
 /**
  * The limit that answers only a request whose token has already failed
  * verification: it says what a 401 says.
  */
-const REFUSAL_RATE = 'refusal-rate' satisfies components['schemas']['LimitRefusal']['code'];
+const REFUSAL_RATE =
+  'refusal-rate' satisfies components['schemas']['LimitRefusal']['code'];
 
 /**
  * Whether a refusal refuses the request's credential: a 401, or a 429 whose
@@ -25,7 +37,10 @@ const REFUSAL_RATE = 'refusal-rate' satisfies components['schemas']['LimitRefusa
  * request is renewed or fails, and is never retried with the token refused.
  */
 export function refusesCredential(status: number, body: unknown): boolean {
-  return status === 401 || (status === 429 && isObject(body) && body['code'] === REFUSAL_RATE);
+  return (
+    status === 401 ||
+    (status === 429 && isObject(body) && body['code'] === REFUSAL_RATE)
+  );
 }
 
 /**
@@ -81,7 +96,9 @@ export class APIError extends XynologError {
     body: unknown,
     retryAfterMs: number | undefined,
   ): APIError {
-    const code = refusesCredential(status, body) ? 'unauthorized' : transportErrorCodeForStatus(status);
+    const code = refusesCredential(status, body)
+      ? 'unauthorized'
+      : transportErrorCodeForStatus(status);
     return new APIError(message, code, status, statusText, body, retryAfterMs);
   }
 
@@ -90,8 +107,19 @@ export class APIError extends XynologError {
    * the gateway's own words when its body states them (`ErrorResponse.error`),
    * with the body as it came, and with the wait its `Retry-After` states.
    */
-  static refusal(status: number, statusText: string, body: unknown, retryAfter: string | null): APIError {
-    return APIError.fromStatus(gatewayWords(body) ?? `HTTP ${status}: ${statusText}`, status, statusText, body, retryAfterMs(retryAfter));
+  static refusal(
+    status: number,
+    statusText: string,
+    body: unknown,
+    retryAfter: string | null,
+  ): APIError {
+    return APIError.fromStatus(
+      gatewayWords(body) ?? `HTTP ${status}: ${statusText}`,
+      status,
+      statusText,
+      body,
+      retryAfterMs(retryAfter),
+    );
   }
 
   /**
@@ -101,7 +129,14 @@ export class APIError extends XynologError {
    * `statusText` names which ending it was.
    */
   static withoutResponse(message: string, statusText: string): APIError {
-    return new APIError(message, 'unavailable', 0, statusText, undefined, undefined);
+    return new APIError(
+      message,
+      'unavailable',
+      0,
+      statusText,
+      undefined,
+      undefined,
+    );
   }
 
   /**
@@ -112,7 +147,10 @@ export class APIError extends XynologError {
    * (`whyUnanswered`).
    */
   static unanswered(what: string, error: unknown): APIError {
-    return APIError.withoutResponse(`${what} got no answer: ${whyUnanswered(error)}`, error instanceof Error ? error.name : 'Error');
+    return APIError.withoutResponse(
+      `${what} got no answer: ${whyUnanswered(error)}`,
+      error instanceof Error ? error.name : 'Error',
+    );
   }
 }
 
@@ -129,7 +167,13 @@ export class APIError extends XynologError {
  * dies of a retryable error**, so it is pinned by the compiler rather than by
  * a test.
  */
-const _conformsToRetryContract: HttpStatusError = APIError.fromStatus('', 0, '', undefined, undefined);
+const _conformsToRetryContract: HttpStatusError = APIError.fromStatus(
+  '',
+  0,
+  '',
+  undefined,
+  undefined,
+);
 void _conformsToRetryContract;
 
 /**
@@ -138,5 +182,8 @@ void _conformsToRetryContract;
  * final and never sent again with the token refused, whatever its status.
  */
 export function retryableUnlessRefused(error: unknown): boolean {
-  return !(error instanceof APIError && error.code === 'unauthorized') && isRetryableRequestError(error);
+  return (
+    !(error instanceof APIError && error.code === 'unauthorized') &&
+    isRetryableRequestError(error)
+  );
 }

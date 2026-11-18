@@ -17,7 +17,11 @@
  */
 
 import { BehaviorSubject } from 'rxjs';
-import { HttpTransport, HttpContentTransport, currentUserOf } from '@xynolog/http-transport';
+import {
+  HttpTransport,
+  HttpContentTransport,
+  currentUserOf,
+} from '@xynolog/http-transport';
 import { BRIDGED_CHANNELS, baseUrl, type AccessToken } from '@xynolog/core';
 import { XynologClient } from '../client';
 import { personKeeping } from '../cache-persister';
@@ -27,7 +31,9 @@ import { kbGatewayUrl, keptIn } from './storage';
 import { renewKept } from './oauth';
 import type { SessionFactory, SessionFactoryOptions } from './session-factory';
 
-export function createHttpSessionFactory(fetch?: typeof globalThis.fetch): SessionFactory {
+export function createHttpSessionFactory(
+  fetch?: typeof globalThis.fetch,
+): SessionFactory {
   const inFlightRefreshes = new Map<string, Promise<string | null>>();
 
   return (opts: SessionFactoryOptions): XynologSession => {
@@ -51,7 +57,9 @@ export function createHttpSessionFactory(fetch?: typeof globalThis.fetch): Sessi
      * dedup through `inFlightRefreshes`, so simultaneous 401s trigger only
      * one refresh grant.
      */
-    const performRefresh = async (holding: string | null): Promise<string | null> => {
+    const performRefresh = async (
+      holding: string | null,
+    ): Promise<string | null> => {
       const existing = inFlightRefreshes.get(kb.id);
       if (existing) return existing;
 
@@ -69,7 +77,9 @@ export function createHttpSessionFactory(fetch?: typeof globalThis.fetch): Sessi
     // the caches, kept from the start when the kept sign-in names its
     // person; until the gateway names them otherwise, nothing is kept. What
     // goes wrong with it, the session says on its errors.
-    const keeps = personKeeping(storage, kb.id, signIn, (error) => sayOn(session, error));
+    const keeps = personKeeping(storage, kb.id, signIn, (error) =>
+      sayOn(session, error),
+    );
 
     // Build transport stack: factory owns token$ and threads it through
     // transport (which reads it on every request) and session (which
@@ -82,12 +92,21 @@ export function createHttpSessionFactory(fetch?: typeof globalThis.fetch): Sessi
       token$,
       channels: BRIDGED_CHANNELS,
       tokenRefresher: (refused) => session.refresh(refused),
-      ...(keeps.fromStart === null ? {} : { loadLastEventIds: keeps.fromStart.places.loadLastEventIds }),
+      ...(keeps.fromStart === null
+        ? {}
+        : { loadLastEventIds: keeps.fromStart.places.loadLastEventIds }),
       saveLastEventId: keeps.saveLastEventId,
       ...(fetch ? { fetch } : {}),
     });
     const content = new HttpContentTransport(transport);
-    const client = new XynologClient(transport, content, transport, keeps.fromStart === null ? {} : { cachePersistence: keeps.fromStart.persistence });
+    const client = new XynologClient(
+      transport,
+      content,
+      transport,
+      keeps.fromStart === null
+        ? {}
+        : { cachePersistence: keeps.fromStart.persistence },
+    );
     // B17-Q (C1): the places wait for what the client keeps to be at rest —
     // a bystander document write must not carry an id whose event some other
     // cache is still absorbing (mid-refetch, mid-debounce, or a refetch the

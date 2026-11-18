@@ -66,7 +66,9 @@ export function ConfigureSearchStep({
         <select
           id="wizard-limit"
           value={config.limit}
-          onChange={(e) => onConfigChange({ ...config, limit: parseInt(e.target.value) })}
+          onChange={(e) =>
+            onConfigChange({ ...config, limit: parseInt(e.target.value) })
+          }
           className="xynolog-select"
         >
           <option value={1}>1</option>
@@ -82,17 +84,27 @@ export function ConfigureSearchStep({
           <input
             type="checkbox"
             checked={config.useSemanticScoring}
-            onChange={(e) => onConfigChange({ ...config, useSemanticScoring: e.target.checked })}
+            onChange={(e) =>
+              onConfigChange({
+                ...config,
+                useSemanticScoring: e.target.checked,
+              })
+            }
           />
           {t.semanticScoring}
         </label>
-        <p className="xynolog-form__help">
-          {t.semanticScoringHelp}
-        </p>
+        <p className="xynolog-form__help">{t.semanticScoringHelp}</p>
       </div>
 
       {searchError && (
-        <div role="alert" style={{ textAlign: 'center', padding: '0.5rem 0', color: 'var(--xynolog-color-red-600)' }}>
+        <div
+          role="alert"
+          style={{
+            textAlign: 'center',
+            padding: '0.5rem 0',
+            color: 'var(--xynolog-color-red-600)',
+          }}
+        >
           {t.searchFailed}: {searchError}
         </div>
       )}
@@ -100,7 +112,12 @@ export function ConfigureSearchStep({
       <WizardFooter
         backLabel={t.back}
         onBack={onBack}
-        primary={{ label: t.search, pendingLabel: t.searching, pending: isSearching, type: 'submit' }}
+        primary={{
+          label: t.search,
+          pendingLabel: t.searching,
+          pending: isSearching,
+          type: 'submit',
+        }}
       />
     </form>
   );

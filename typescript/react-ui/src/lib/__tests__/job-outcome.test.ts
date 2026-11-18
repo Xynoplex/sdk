@@ -5,8 +5,12 @@ import { declineReason } from '../job-outcome';
 
 describe('declineReason', () => {
   it('returns the typed reason, never a wire-supplied sentence', () => {
-    expect(declineReason({ declined: true, reason: 'no-text-layer' })).toBe('no-text-layer');
-    expect(declineReason({ declined: true, reason: 'encrypted' })).toBe('encrypted');
+    expect(declineReason({ declined: true, reason: 'no-text-layer' })).toBe(
+      'no-text-layer',
+    );
+    expect(declineReason({ declined: true, reason: 'encrypted' })).toBe(
+      'encrypted',
+    );
   });
 
   it('is null for an ordinary result', () => {
@@ -18,6 +22,8 @@ describe('declineReason', () => {
   it('is null for a reason outside the vocabulary — never renders a raw string', () => {
     // A reason this client does not know has no copy; showing the bare token
     // would be an untranslated leak.
-    expect(declineReason({ declined: true, reason: 'something-new' })).toBeNull();
+    expect(
+      declineReason({ declined: true, reason: 'something-new' }),
+    ).toBeNull();
   });
 });

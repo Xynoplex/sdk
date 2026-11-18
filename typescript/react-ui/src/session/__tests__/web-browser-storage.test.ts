@@ -45,11 +45,20 @@ describe('WebBrowserStorage', () => {
     const heard: Array<[string, string | null]> = [];
 
     const stop = storage.subscribe((key, value) => heard.push([key, value]));
-    window.dispatchEvent(new StorageEvent('storage', { key: 'k', newValue: 'from-there' }));
-    window.dispatchEvent(new StorageEvent('storage', { key: 'k', newValue: null }));
+    window.dispatchEvent(
+      new StorageEvent('storage', { key: 'k', newValue: 'from-there' }),
+    );
+    window.dispatchEvent(
+      new StorageEvent('storage', { key: 'k', newValue: null }),
+    );
     stop();
-    window.dispatchEvent(new StorageEvent('storage', { key: 'k', newValue: 'unheard' }));
+    window.dispatchEvent(
+      new StorageEvent('storage', { key: 'k', newValue: 'unheard' }),
+    );
 
-    expect(heard).toEqual([['k', 'from-there'], ['k', null]]);
+    expect(heard).toEqual([
+      ['k', 'from-there'],
+      ['k', null],
+    ]);
   });
 });

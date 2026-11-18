@@ -38,7 +38,9 @@ describe('UserMenuSkeleton', () => {
 
     it('should have aria-label', () => {
       const { container } = render(<UserMenuSkeleton />);
-      const skeleton = container.querySelector('[aria-label="Loading user menu"]');
+      const skeleton = container.querySelector(
+        '[aria-label="Loading user menu"]',
+      );
       expect(skeleton).toBeInTheDocument();
     });
 
@@ -92,10 +94,12 @@ describe('UserMenuSkeleton', () => {
           <UserMenuSkeleton />
           <UserMenuSkeleton />
           <UserMenuSkeleton />
-        </div>
+        </div>,
       );
 
-      const skeletons = container.querySelectorAll('.xynolog-user-menu-skeleton');
+      const skeletons = container.querySelectorAll(
+        '.xynolog-user-menu-skeleton',
+      );
       expect(skeletons).toHaveLength(3);
     });
 
@@ -104,12 +108,12 @@ describe('UserMenuSkeleton', () => {
         <div>
           <UserMenuSkeleton />
           <UserMenuSkeleton />
-        </div>
+        </div>,
       );
 
       const srTexts = container.querySelectorAll('.xynolog-sr-only');
       expect(srTexts).toHaveLength(2);
-      srTexts.forEach(text => {
+      srTexts.forEach((text) => {
         expect(text).toHaveTextContent('Loading user menu...');
       });
     });
@@ -122,10 +126,12 @@ describe('UserMenuSkeleton', () => {
           <nav>
             <UserMenuSkeleton />
           </nav>
-        </header>
+        </header>,
       );
 
-      expect(container.querySelector('.xynolog-user-menu-skeleton')).toBeInTheDocument();
+      expect(
+        container.querySelector('.xynolog-user-menu-skeleton'),
+      ).toBeInTheDocument();
     });
 
     it('should work alongside other elements', () => {
@@ -134,11 +140,13 @@ describe('UserMenuSkeleton', () => {
           <span>Before</span>
           <UserMenuSkeleton />
           <span>After</span>
-        </div>
+        </div>,
       );
 
       expect(screen.getByText('Before')).toBeInTheDocument();
-      expect(container.querySelector('.xynolog-user-menu-skeleton')).toBeInTheDocument();
+      expect(
+        container.querySelector('.xynolog-user-menu-skeleton'),
+      ).toBeInTheDocument();
       expect(screen.getByText('After')).toBeInTheDocument();
     });
   });
@@ -148,7 +156,9 @@ describe('UserMenuSkeleton', () => {
       // UserMenuSkeleton has no props interface
       // This test ensures it renders correctly with no props
       const { container } = render(<UserMenuSkeleton />);
-      expect(container.querySelector('.xynolog-user-menu-skeleton')).toBeInTheDocument();
+      expect(
+        container.querySelector('.xynolog-user-menu-skeleton'),
+      ).toBeInTheDocument();
     });
   });
 

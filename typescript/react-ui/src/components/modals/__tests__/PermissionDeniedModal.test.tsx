@@ -9,7 +9,15 @@
  * history.
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi, type Mock } from 'vitest';
+import {
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  vi,
+  type Mock,
+} from 'vitest';
 import { screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import {
@@ -21,7 +29,10 @@ import { PermissionDeniedModal } from '../PermissionDeniedModal';
 import en from '../../../../translations/en.json';
 import ja from '../../../../translations/ja.json';
 
-vi.mock('@headlessui/react', () => import('../../../__tests__/plain-headlessui'));
+vi.mock(
+  '@headlessui/react',
+  () => import('../../../__tests__/plain-headlessui'),
+);
 
 const english = createMockTranslationManager(en);
 const japanese = createMockTranslationManager(ja);
@@ -66,7 +77,9 @@ describe('PermissionDeniedModal', () => {
   describe('when permission-denied is raised', () => {
     it('shows its own copy: title, the reasons, and every button', () => {
       renderWithProviders(<PermissionDeniedModal />, {
-        browser: createTestBrowserWithSignals({ permissionDenied: { detail: null } }),
+        browser: createTestBrowserWithSignals({
+          permissionDenied: { detail: null },
+        }),
         translationManager: english,
       });
 
@@ -76,34 +89,50 @@ describe('PermissionDeniedModal', () => {
       expect(screen.getByText(m.reasonPermissions)).toBeInTheDocument();
       expect(screen.getByText(m.reasonRestricted)).toBeInTheDocument();
       expect(screen.getByText(m.reasonAccountType)).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: m.goBack })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: m.goHome })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: m.switchAccount })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: m.goBack }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: m.goHome }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: m.switchAccount }),
+      ).toBeInTheDocument();
     });
 
     it("shows the gateway's words beneath, unaltered and marked as the knowledge base's", () => {
       renderWithProviders(<PermissionDeniedModal />, {
-        browser: createTestBrowserWithSignals({ permissionDenied: { detail: SAID } }),
+        browser: createTestBrowserWithSignals({
+          permissionDenied: { detail: SAID },
+        }),
         translationManager: english,
       });
 
       const said = screen.getByText(SAID);
       expect(said.tagName).toBe('BLOCKQUOTE');
-      expect(said.closest('figure')).toHaveTextContent(en.PermissionDeniedModal.detailLabel);
+      expect(said.closest('figure')).toHaveTextContent(
+        en.PermissionDeniedModal.detailLabel,
+      );
     });
 
     it('a gateway that said nothing shows no detail, and no label for one', () => {
       renderWithProviders(<PermissionDeniedModal />, {
-        browser: createTestBrowserWithSignals({ permissionDenied: { detail: null } }),
+        browser: createTestBrowserWithSignals({
+          permissionDenied: { detail: null },
+        }),
         translationManager: english,
       });
 
-      expect(screen.queryByText(en.PermissionDeniedModal.detailLabel)).not.toBeInTheDocument();
+      expect(
+        screen.queryByText(en.PermissionDeniedModal.detailLabel),
+      ).not.toBeInTheDocument();
     });
 
     it("a person using the application in Japanese reads its copy in Japanese, and the gateway's words as it wrote them", () => {
       renderWithProviders(<PermissionDeniedModal />, {
-        browser: createTestBrowserWithSignals({ permissionDenied: { detail: SAID } }),
+        browser: createTestBrowserWithSignals({
+          permissionDenied: { detail: SAID },
+        }),
         translationManager: japanese,
       });
 
@@ -112,11 +141,17 @@ describe('PermissionDeniedModal', () => {
       expect(screen.getByText(m.title)).toBeInTheDocument();
       expect(screen.getByText(m.reasonsIntro)).toBeInTheDocument();
       expect(screen.getByText(m.reasonPermissions)).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: m.goBack })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: m.switchAccount })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: m.goBack }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: m.switchAccount }),
+      ).toBeInTheDocument();
       expect(screen.getByText(m.detailLabel)).toBeInTheDocument();
       expect(screen.getByText(SAID)).toBeInTheDocument();
-      expect(screen.queryByText(en.PermissionDeniedModal.title)).not.toBeInTheDocument();
+      expect(
+        screen.queryByText(en.PermissionDeniedModal.title),
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -131,7 +166,9 @@ describe('PermissionDeniedModal', () => {
         translationManager: english,
       });
 
-      fireEvent.click(screen.getByRole('button', { name: en.PermissionDeniedModal.goBack }));
+      fireEvent.click(
+        screen.getByRole('button', { name: en.PermissionDeniedModal.goBack }),
+      );
 
       expect(ack).toHaveBeenCalled();
       expect(mockHistoryBack).toHaveBeenCalled();
@@ -147,7 +184,9 @@ describe('PermissionDeniedModal', () => {
         translationManager: english,
       });
 
-      fireEvent.click(screen.getByRole('button', { name: en.PermissionDeniedModal.goHome }));
+      fireEvent.click(
+        screen.getByRole('button', { name: en.PermissionDeniedModal.goHome }),
+      );
 
       expect(ack).toHaveBeenCalled();
       expect(mockLocation.href).toBe('/');
@@ -164,10 +203,16 @@ describe('PermissionDeniedModal', () => {
         translationManager: english,
       });
 
-      fireEvent.click(screen.getByRole('button', { name: en.PermissionDeniedModal.switchAccount }));
+      fireEvent.click(
+        screen.getByRole('button', {
+          name: en.PermissionDeniedModal.switchAccount,
+        }),
+      );
 
       expect(ack).toHaveBeenCalled();
-      expect(mockLocation.href).toBe('/auth/connect?callbackUrl=%2Fadmin%2Fusers');
+      expect(mockLocation.href).toBe(
+        '/auth/connect?callbackUrl=%2Fadmin%2Fusers',
+      );
     });
   });
 });

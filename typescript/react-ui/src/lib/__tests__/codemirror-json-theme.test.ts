@@ -10,17 +10,34 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, it, expect } from 'vitest';
 
-const theme = readFileSync(resolve(process.cwd(), 'src/lib/codemirror-json-theme.ts'), 'utf8');
-const variables = readFileSync(resolve(process.cwd(), 'src/styles/variables.css'), 'utf8');
+const theme = readFileSync(
+  resolve(process.cwd(), 'src/lib/codemirror-json-theme.ts'),
+  'utf8',
+);
+const variables = readFileSync(
+  resolve(process.cwd(), 'src/styles/variables.css'),
+  'utf8',
+);
 
-const used = [...new Set([...theme.matchAll(/var\((--xynolog-[a-z0-9-]+)\)/g)].map((match) => match[1]!))];
+const used = [
+  ...new Set(
+    [...theme.matchAll(/var\((--xynolog-[a-z0-9-]+)\)/g)].map(
+      (match) => match[1]!,
+    ),
+  ),
+];
 
 /** The text of the stylesheet's block that `opening` opens, to its closing brace. */
 function block(opening: string): string {
   const at = variables.indexOf(opening);
-  if (at === -1) throw new Error(`variables.css has no block opened by ${opening}`);
+  if (at === -1)
+    throw new Error(`variables.css has no block opened by ${opening}`);
   let depth = 0;
-  for (let index = variables.indexOf('{', at); index < variables.length; index++) {
+  for (
+    let index = variables.indexOf('{', at);
+    index < variables.length;
+    index++
+  ) {
     if (variables[index] === '{') depth++;
     if (variables[index] === '}') {
       depth--;
@@ -42,9 +59,12 @@ describe('the JSON theme', () => {
     expect(used.length).toBeGreaterThan(0);
   });
 
-  it.each(themeBlocks)('has every variable it uses set in the %s block', (opening) => {
-    const declared = block(opening);
-    const missing = used.filter((name) => !declared.includes(`${name}:`));
-    expect(missing).toEqual([]);
-  });
+  it.each(themeBlocks)(
+    'has every variable it uses set in the %s block',
+    (opening) => {
+      const declared = block(opening);
+      const missing = used.filter((name) => !declared.includes(`${name}:`));
+      expect(missing).toEqual([]);
+    },
+  );
 });

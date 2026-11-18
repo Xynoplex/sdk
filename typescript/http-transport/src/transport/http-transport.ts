@@ -10,7 +10,14 @@
  * once at construction.
  */
 
-import ky, { HTTPError, NetworkError, TimeoutError, type AfterResponseState, type KyInstance, type RetryOptions } from 'ky';
+import ky, {
+  HTTPError,
+  NetworkError,
+  TimeoutError,
+  type AfterResponseState,
+  type KyInstance,
+  type RetryOptions,
+} from 'ky';
 import { BehaviorSubject, Observable } from 'rxjs';
 import type {
   AccessToken,
@@ -28,7 +35,11 @@ import {
   relayFrames,
 } from '@xynolog/core';
 import { SpanKind, recordBusSent, withSpan } from '@xynolog/observability';
-import { createActorStateUnit, renewedToken, type ActorStateUnit } from './actor-state-unit';
+import {
+  createActorStateUnit,
+  renewedToken,
+  type ActorStateUnit,
+} from './actor-state-unit';
 import { APIError, refusalBody, refusesCredential } from './api-error';
 import { declaredBody } from './declared-body';
 import { fetchOf } from './fetch-of';
@@ -40,10 +51,20 @@ import type {
   StatusResponse,
   UserResponse,
 } from '@xynolog/core';
-import { asDeclared, HTTP_REQUEST_TIMEOUT_MS, REQUEST_RETRY_PAUSE_MS, RETRY_RULES, RESOURCE_SCOPED_CHANNELS, watched, type RetryPolicy, type Watched } from '@xynolog/core';
+import {
+  asDeclared,
+  HTTP_REQUEST_TIMEOUT_MS,
+  REQUEST_RETRY_PAUSE_MS,
+  RETRY_RULES,
+  RESOURCE_SCOPED_CHANNELS,
+  watched,
+  type RetryPolicy,
+  type Watched,
+} from '@xynolog/core';
 import type { BusEnvelope, BusFrame, FrameRefusal } from '@xynolog/core';
 
-type ProtectedResourceMetadata = components['schemas']['ProtectedResourceMetadata'];
+type ProtectedResourceMetadata =
+  components['schemas']['ProtectedResourceMetadata'];
 
 /**
  * Renews a token the gateway refused. `refused` is the token the refused
@@ -114,7 +135,12 @@ export interface HttpTransportConfig {
  */
 function refusalOf(error: HTTPError): APIError {
   const { response, data } = error;
-  return APIError.refusal(response.status, response.statusText, data, response.headers.get('retry-after'));
+  return APIError.refusal(
+    response.status,
+    response.statusText,
+    data,
+    response.headers.get('retry-after'),
+  );
 }
 
 /**
@@ -122,7 +148,10 @@ function refusalOf(error: HTTPError): APIError {
  * the refusal it reports: a body not read by then, or not read at all, is
  * `''`, a refusal that says nothing.
  */
-async function refusalText(response: Response, deadlineMs: number): Promise<string> {
+async function refusalText(
+  response: Response,
+  deadlineMs: number,
+): Promise<string> {
   if (response.body === null) return '';
   const reader = response.body.getReader();
   let cut = false;
@@ -152,7 +181,10 @@ async function refusalText(response: Response, deadlineMs: number): Promise<stri
  * request's own deadline passed.
  */
 function unansweredOf(request: Request, error: Error): APIError {
-  return APIError.withoutResponse(`${request.method} ${new URL(request.url).pathname} got no answer: ${error.message}`, error.name);
+  return APIError.withoutResponse(
+    `${request.method} ${new URL(request.url).pathname} got no answer: ${error.message}`,
+    error.name,
+  );
 }
 
 /**
@@ -167,7 +199,12 @@ function unansweredOf(request: Request, error: Error): APIError {
  * have made each of them the error the caller is given. `unanswered` is told
  * of it before it is thrown. Anything else is handed back as it is.
  */
-async function asked<T>(method: string, path: string, ask: () => PromiseLike<T>, unanswered?: (failure: APIError) => void): Promise<T> {
+async function asked<T>(
+  method: string,
+  path: string,
+  ask: () => PromiseLike<T>,
+  unanswered?: (failure: APIError) => void,
+): Promise<T> {
   try {
     return await ask();
   } catch (error) {
@@ -185,13 +222,15 @@ async function asked<T>(method: string, path: string, ask: () => PromiseLike<T>,
  */
 function reportedAs(request: Request, error: Error): Error {
   if (error instanceof HTTPError) return refusalOf(error);
-  if (error instanceof NetworkError || error instanceof TimeoutError) return unansweredOf(request, error);
+  if (error instanceof NetworkError || error instanceof TimeoutError)
+    return unansweredOf(request, error);
   return error;
 }
 
 /** Whether ky's refused request had its credential refused: ky has read the body by the time it asks. */
 const refusedCredential = (error: Error): boolean =>
-  error instanceof HTTPError && refusesCredential(error.response.status, error.data);
+  error instanceof HTTPError &&
+  refusesCredential(error.response.status, error.data);
 
 /**
  * How every request is made a second time, whether or not anything renews
@@ -248,23 +287,33 @@ const CURRENT_USER = '/api/users/me';
  * session asks this of a credential it found stored, before it trusts it.
  * The request is sent with `fetch`, or the runtime's own.
  */
-export function currentUserOf(baseUrl: BaseUrl, token: AccessToken, fetch?: typeof globalThis.fetch): Promise<UserResponse> {
+export function currentUserOf(
+  baseUrl: BaseUrl,
+  token: AccessToken,
+  fetch?: typeof globalThis.fetch,
+): Promise<UserResponse> {
   return asked('GET', CURRENT_USER, async () =>
-    declaredBody('UserResponse', 'GET', CURRENT_USER, await ky.get(`${withoutTrailingSlash(baseUrl)}${CURRENT_USER}`, {
-      headers: { Authorization: `Bearer ${token}` },
-      timeout: HTTP_REQUEST_TIMEOUT_MS,
-      retry: RETRY,
-      fetch: fetchOf(fetch),
-      hooks: {
-        beforeError: [
-          async ({ request, error }) => {
-            const reported = reportedAs(request, error);
-            if (reported !== error) throw reported;
-            return error;
-          },
-        ],
-      },
-    })));
+    declaredBody(
+      'UserResponse',
+      'GET',
+      CURRENT_USER,
+      await ky.get(`${withoutTrailingSlash(baseUrl)}${CURRENT_USER}`, {
+        headers: { Authorization: `Bearer ${token}` },
+        timeout: HTTP_REQUEST_TIMEOUT_MS,
+        retry: RETRY,
+        fetch: fetchOf(fetch),
+        hooks: {
+          beforeError: [
+            async ({ request, error }) => {
+              const reported = reportedAs(request, error);
+              if (reported !== error) throw reported;
+              return error;
+            },
+          ],
+        },
+      }),
+    ),
+  );
 }
 
 export class HttpTransport implements ITransport, IGatewayOperations {
@@ -303,11 +352,17 @@ export class HttpTransport implements ITransport, IGatewayOperations {
   private readonly config: HttpTransportConfig;
 
   constructor(config: HttpTransportConfig) {
-    const { baseUrl, timeout = HTTP_REQUEST_TIMEOUT_MS, logger, tokenRefresher } = config;
+    const {
+      baseUrl,
+      timeout = HTTP_REQUEST_TIMEOUT_MS,
+      logger,
+      tokenRefresher,
+    } = config;
     this.config = config;
 
     this.baseUrl = withoutTrailingSlash(baseUrl);
-    this.token$ = config.token$ ?? watched(new BehaviorSubject<AccessToken | null>(null));
+    this.token$ =
+      config.token$ ?? watched(new BehaviorSubject<AccessToken | null>(null));
     this.logger = logger;
 
     this.http = ky.create({
@@ -352,12 +407,19 @@ export class HttpTransport implements ITransport, IGatewayOperations {
                 // refusal goes on to `beforeError` as `unauthorized`. So does a
                 // refusal of the renewed token: the forced retry spent the one
                 // attempt `limit` allows, so nothing sends it a third time.
-                async ({ request, response, retryCount }: AfterResponseState) => {
+                async ({
+                  request,
+                  response,
+                  retryCount,
+                }: AfterResponseState) => {
                   if (response.ok || retryCount > 0) return undefined;
                   const said = await refusalText(response, timeout);
-                  if (!refusesCredential(response.status, refusalBody(said))) return undefined;
+                  if (!refusesCredential(response.status, refusalBody(said)))
+                    return undefined;
                   const sent = request.headers.get('Authorization');
-                  const renewed = await this.renewal(sent === null ? null : sent.replace(/^Bearer /, ''));
+                  const renewed = await this.renewal(
+                    sent === null ? null : sent.replace(/^Bearer /, ''),
+                  );
                   if (renewed === null) return undefined;
                   try {
                     request.headers.set('Authorization', `Bearer ${renewed}`);
@@ -414,20 +476,40 @@ export class HttpTransport implements ITransport, IGatewayOperations {
         baseUrl: this.baseUrl,
         token: () => this.token$.getValue() ?? '',
         channels: [...this.config.channels],
-        ...(this.config.loadLastEventIds ? { loadLastEventIds: this.config.loadLastEventIds } : {}),
-        ...(this.config.saveLastEventId ? { saveLastEventId: this.config.saveLastEventId } : {}),
-        ...(this.config.reconnectMs !== undefined ? { reconnectMs: this.config.reconnectMs } : {}),
-        ...(this.config.streamOpenTimeoutMs !== undefined ? { streamOpenTimeoutMs: this.config.streamOpenTimeoutMs } : {}),
-        ...(this.config.timeout !== undefined ? { httpRequestTimeoutMs: this.config.timeout } : {}),
-        ...(this.config.lazyRemoveMs !== undefined ? { lazyRemoveMs: this.config.lazyRemoveMs } : {}),
-        ...(this.config.lingerMs !== undefined ? { lingerMs: this.config.lingerMs } : {}),
-        ...(this.config.emitRetry !== undefined ? { emitRetry: this.config.emitRetry } : {}),
-        ...(this.config.seenEventIdsCount !== undefined ? { seenEventIdsCount: this.config.seenEventIdsCount } : {}),
+        ...(this.config.loadLastEventIds
+          ? { loadLastEventIds: this.config.loadLastEventIds }
+          : {}),
+        ...(this.config.saveLastEventId
+          ? { saveLastEventId: this.config.saveLastEventId }
+          : {}),
+        ...(this.config.reconnectMs !== undefined
+          ? { reconnectMs: this.config.reconnectMs }
+          : {}),
+        ...(this.config.streamOpenTimeoutMs !== undefined
+          ? { streamOpenTimeoutMs: this.config.streamOpenTimeoutMs }
+          : {}),
+        ...(this.config.timeout !== undefined
+          ? { httpRequestTimeoutMs: this.config.timeout }
+          : {}),
+        ...(this.config.lazyRemoveMs !== undefined
+          ? { lazyRemoveMs: this.config.lazyRemoveMs }
+          : {}),
+        ...(this.config.lingerMs !== undefined
+          ? { lingerMs: this.config.lingerMs }
+          : {}),
+        ...(this.config.emitRetry !== undefined
+          ? { emitRetry: this.config.emitRetry }
+          : {}),
+        ...(this.config.seenEventIdsCount !== undefined
+          ? { seenEventIdsCount: this.config.seenEventIdsCount }
+          : {}),
         ...(this.config.fetch ? { fetch: this.config.fetch } : {}),
         // The SAME hook a refused request is renewed with — the stream asks
         // it once per outage before parking `unauthenticated`, an emit once
         // per emit, and no second refresh mechanism exists.
-        ...(this.config.tokenRefresher ? { tokenRefresher: this.config.tokenRefresher } : {}),
+        ...(this.config.tokenRefresher
+          ? { tokenRefresher: this.config.tokenRefresher }
+          : {}),
       });
       // Refused connects surface on the transport's contract stream too —
       // an SSE subscribe IS an HTTP request, refused as an `APIError` like
@@ -449,14 +531,20 @@ export class HttpTransport implements ITransport, IGatewayOperations {
         {
           emit: (channel, payload, envelope) => {
             // A payload that is not its channel's is published as its refusal.
-            const declared = asDeclared(channel, payload, envelope?.correlationId);
-            for (const bus of this.bridges) bus.emit(channel, declared, envelope);
+            const declared = asDeclared(
+              channel,
+              payload,
+              envelope?.correlationId,
+            );
+            for (const bus of this.bridges)
+              bus.emit(channel, declared, envelope);
           },
         },
         [...this.config.channels, ...RESOURCE_SCOPED_CHANNELS],
         // `EventBus.emit` is synchronous, so this never fires; it is the
         // honest answer rather than an omission the relay has to guard against.
-        (channel, error) => this.logger?.error('Bridge relay failed', { channel, error }),
+        (channel, error) =>
+          this.logger?.error('Bridge relay failed', { channel, error }),
       );
     }
     return this._actor;
@@ -470,7 +558,13 @@ export class HttpTransport implements ITransport, IGatewayOperations {
     envelope?: BusEnvelope,
     signal?: AbortSignal,
   ): Promise<number | undefined> {
-    busLog('EMIT', channel as string, payload, envelope?.scope, envelope?.correlationId);
+    busLog(
+      'EMIT',
+      channel as string,
+      payload,
+      envelope?.scope,
+      envelope?.correlationId,
+    );
     recordBusSent(channel as string, envelope?.scope);
     return withSpan(
       `bus.emit:${channel as string}`,
@@ -481,7 +575,8 @@ export class HttpTransport implements ITransport, IGatewayOperations {
           // A refused emit is a transport failure like any other, so it is
           // reported where the others are before its caller hears it. One
           // its caller gave up is not the transport's failure.
-          if (error instanceof XynologError && !signal?.aborted) this.pushError(error);
+          if (error instanceof XynologError && !signal?.aborted)
+            this.pushError(error);
           throw error;
         }
       },
@@ -503,11 +598,15 @@ export class HttpTransport implements ITransport, IGatewayOperations {
     return () => sub.unsubscribe();
   }
 
-  stream<K extends keyof EventMap>(channel: K): Observable<EventMap[K] | FrameRefusal> {
+  stream<K extends keyof EventMap>(
+    channel: K,
+  ): Observable<EventMap[K] | FrameRefusal> {
     return this.actor.stream(channel);
   }
 
-  frames<K extends keyof EventMap>(channel: K): Observable<BusFrame<EventMap[K] | FrameRefusal>> {
+  frames<K extends keyof EventMap>(
+    channel: K,
+  ): Observable<BusFrame<EventMap[K] | FrameRefusal>> {
     return this.actor.frames(channel);
   }
 
@@ -612,21 +711,45 @@ export class HttpTransport implements ITransport, IGatewayOperations {
 
   async getCurrentUser(): Promise<UserResponse> {
     return this.ask('GET', CURRENT_USER, async (http) =>
-      declaredBody('UserResponse', 'GET', CURRENT_USER, await http.get(`${this.baseUrl}${CURRENT_USER}`, { headers: this.authHeaders() }), (failure) =>
-        this.pushError(failure)));
+      declaredBody(
+        'UserResponse',
+        'GET',
+        CURRENT_USER,
+        await http.get(`${this.baseUrl}${CURRENT_USER}`, {
+          headers: this.authHeaders(),
+        }),
+        (failure) => this.pushError(failure),
+      ),
+    );
   }
 
   async getProtectedResourceMetadata(): Promise<ProtectedResourceMetadata> {
     const path = '/.well-known/oauth-protected-resource';
     return this.ask('GET', path, async (http) =>
-      declaredBody('ProtectedResourceMetadata', 'GET', path, await http.get(`${this.baseUrl}${path}`), (failure) => this.pushError(failure)));
+      declaredBody(
+        'ProtectedResourceMetadata',
+        'GET',
+        path,
+        await http.get(`${this.baseUrl}${path}`),
+        (failure) => this.pushError(failure),
+      ),
+    );
   }
 
   async getMediaToken(resourceId: ResourceId): Promise<{ token: string }> {
     const path = '/api/tokens/media';
     return this.ask('POST', path, async (http) =>
-      declaredBody('MediaTokenResponse', 'POST', path, await http.post(`${this.baseUrl}${path}`, { json: { resourceId }, headers: this.authHeaders() }), (failure) =>
-        this.pushError(failure)));
+      declaredBody(
+        'MediaTokenResponse',
+        'POST',
+        path,
+        await http.post(`${this.baseUrl}${path}`, {
+          json: { resourceId },
+          headers: this.authHeaders(),
+        }),
+        (failure) => this.pushError(failure),
+      ),
+    );
   }
 
   // ── System status ─────────────────────────────────────────────────────
@@ -634,13 +757,31 @@ export class HttpTransport implements ITransport, IGatewayOperations {
   async healthCheck(): Promise<HealthCheckResponse> {
     const path = '/api/health';
     return this.ask('GET', path, async (http) =>
-      declaredBody('HealthResponse', 'GET', path, await http.get(`${this.baseUrl}${path}`, { headers: this.authHeaders() }), (failure) => this.pushError(failure)));
+      declaredBody(
+        'HealthResponse',
+        'GET',
+        path,
+        await http.get(`${this.baseUrl}${path}`, {
+          headers: this.authHeaders(),
+        }),
+        (failure) => this.pushError(failure),
+      ),
+    );
   }
 
   async getStatus(): Promise<StatusResponse> {
     const path = '/api/status';
     return this.ask('GET', path, async (http) =>
-      declaredBody('StatusResponse', 'GET', path, await http.get(`${this.baseUrl}${path}`, { headers: this.authHeaders() }), (failure) => this.pushError(failure)));
+      declaredBody(
+        'StatusResponse',
+        'GET',
+        path,
+        await http.get(`${this.baseUrl}${path}`, {
+          headers: this.authHeaders(),
+        }),
+        (failure) => this.pushError(failure),
+      ),
+    );
   }
 
   // ── Internal: how the content transport asks ──────────────────────────
@@ -652,8 +793,17 @@ export class HttpTransport implements ITransport, IGatewayOperations {
    * one the runtime will not make is reported as the others are, as a
    * request that got no answer, on `errors$`.
    */
-  ask<T>(method: string, path: string, make: (http: KyInstance) => PromiseLike<T>): Promise<T> {
-    return asked(method, path, () => make(this.http), (failure) => this.pushError(failure));
+  ask<T>(
+    method: string,
+    path: string,
+    make: (http: KyInstance) => PromiseLike<T>,
+  ): Promise<T> {
+    return asked(
+      method,
+      path,
+      () => make(this.http),
+      (failure) => this.pushError(failure),
+    );
   }
 
   /**

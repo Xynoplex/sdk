@@ -174,8 +174,8 @@ func AsMe(ctx context.Context, kb api.KbTarget, home string) error {
 	if _, held, err := kept.Held(ctx); err != nil {
 		return err
 	} else if !held {
-		endpoint, err := kb.Endpoint.AsHttpEndpoint()
-		if err != nil {
+		var endpoint api.HttpEndpoint
+		if err := kb.Endpoint.As(&endpoint); err != nil {
 			return err
 		}
 		gateway, err := xynolog.GatewayURL(endpoint)
@@ -309,7 +309,7 @@ func Summarize(ctx context.Context, client *xynolog.Client, paper []byte) (summa
 
 	// Annotate: a model reads it and marks each mention of a concept.
 	var linking api.MarkJobParams
-	if err := linking.FromLinkingJobParams(api.LinkingJobParams{Motivation: api.LinkingJobParamsMotivationLinking, EntityTypes: []string{"Concept"}}); err != nil {
+	if err := linking.From(api.LinkingJobParams{Motivation: api.LinkingJobParamsMotivationLinking, EntityTypes: []string{"Concept"}}); err != nil {
 		return api.ResourceId{}, false, err
 	}
 	if _, err := client.Mark.Delegate(paperID, linking).Wait(ctx); err != nil {
@@ -337,10 +337,12 @@ func Summarize(ctx context.Context, client *xynolog.Client, paper []byte) (summa
 	if done.Result == nil {
 		return api.ResourceId{}, false, nil
 	}
-	if declined, err := done.Result.AsJobDeclined(); err == nil && declined.Declined == api.JobDeclinedDeclinedTrue {
+	var declined api.JobDeclined
+	if done.Result.As(&declined) == nil && declined.Declined == api.JobDeclinedDeclinedTrue {
 		return api.ResourceId{}, false, nil
 	}
-	made, err := done.Result.AsYieldJobDone()
+	var made api.YieldJobDone
+	err = done.Result.As(&made)
 	return made.ResourceId, err == nil, err
 }
 ```
@@ -388,7 +390,7 @@ func Annotate(ctx context.Context, client *xynolog.Client, resource api.Resource
 	fmt.Println(described.Name, len(text))
 
 	var highlighting api.MarkJobParams
-	if err := highlighting.FromHighlightingJobParams(api.HighlightingJobParams{Motivation: api.HighlightingJobParamsMotivationHighlighting}); err != nil {
+	if err := highlighting.From(api.HighlightingJobParams{Motivation: api.HighlightingJobParamsMotivationHighlighting}); err != nil {
 		return err
 	}
 	for event, err := range client.Mark.Delegate(resource, highlighting).Events(ctx) { // a job, followed
@@ -622,7 +624,7 @@ func Count(ctx context.Context, client *xynolog.Client, job *xynolog.HeldMarkJob
 	if err := job.Progress(ctx, api.JobProgress{Percentage: 50}); err != nil {
 		return result, err
 	}
-	err = result.FromMarkJobDone(api.MarkJobDone{Found: strings.Count(text, "\n"), Persisted: 0})
+	err = result.From(api.MarkJobDone{Found: strings.Count(text, "\n"), Persisted: 0})
 	return result, err
 }
 
@@ -633,7 +635,7 @@ func Run(ctx context.Context, client *xynolog.Client) error {
 	highlights.JobType = api.MarkJobFilterJobTypeMark
 	highlights.Params.Motivation = api.MotivationHighlighting
 	var accepts api.JobFilter
-	if err := accepts.FromMarkJobFilter(highlights); err != nil {
+	if err := accepts.From(highlights); err != nil {
 		return err
 	}
 	// Closing the claims stops the worker: a job it still holds is failed first, and the queue retries it.

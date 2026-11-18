@@ -7,7 +7,12 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import * as builders from '../annotation-builders';
-import { annotationOfResource, annotationOfSpan, SpanRefusedError, type TextSpan } from '../annotation-builders';
+import {
+  annotationOfResource,
+  annotationOfSpan,
+  SpanRefusedError,
+  type TextSpan,
+} from '../annotation-builders';
 import type { Annotation } from '../annotation-types';
 import type { Motivation } from '../branded-types';
 import { resourceId } from '../identifiers';
@@ -26,7 +31,8 @@ type SpanCase = {
   motivation: Motivation;
   span: TextSpan;
   body?: Annotation['body'];
-} & ({ text: string } | { anchored: AnchoredText }) & Answer;
+} & ({ text: string } | { anchored: AnchoredText }) &
+  Answer;
 
 interface ResourceCase {
   why: string;
@@ -43,7 +49,13 @@ const table: {
   cases: SpanCase[];
   resources: ResourceCase[];
 } = JSON.parse(
-  readFileSync(new URL('../../../../protocol/specs/src/annotations/builder-cases.json', import.meta.url), 'utf8'),
+  readFileSync(
+    new URL(
+      '../../../../protocol/specs/src/annotations/builder-cases.json',
+      import.meta.url,
+    ),
+    'utf8',
+  ),
 );
 
 /**
@@ -52,17 +64,31 @@ const table: {
  * `code`, is generated from.
  */
 const REFUSALS: string[] = (
-  JSON.parse(readFileSync(new URL('../../../../protocol/specs/src/errors/codes.json', import.meta.url), 'utf8')) as {
+  JSON.parse(
+    readFileSync(
+      new URL(
+        '../../../../protocol/specs/src/errors/codes.json',
+        import.meta.url,
+      ),
+      'utf8',
+    ),
+  ) as {
     spanRefusal: { codes: Array<{ code: string }> };
   }
 ).spanRefusal.codes.map((entry) => entry.code);
 
 /** The annotation with the members the table cannot state taken out, each first checked to be an instant. */
-function stated(annotation: Annotation, unstated: string[]): Record<string, unknown> {
+function stated(
+  annotation: Annotation,
+  unstated: string[],
+): Record<string, unknown> {
   const rest: Record<string, unknown> = { ...annotation };
   for (const member of unstated) {
     const at = rest[member];
-    expect(typeof at === 'string' && new Date(at).toISOString() === at, `${member}: ${String(at)}`).toBe(true);
+    expect(
+      typeof at === 'string' && new Date(at).toISOString() === at,
+      `${member}: ${String(at)}`,
+    ).toBe(true);
     delete rest[member];
   }
   return rest;
@@ -80,7 +106,9 @@ function thrownBy(build: () => unknown): unknown {
 
 describe('the annotation builders (protocol/specs/src/annotations/builder-cases.json)', () => {
   it('are the ones the table names, and the module has nothing else but the error a refused span is', () => {
-    expect(Object.keys(builders).sort()).toEqual([...table.builders, 'SpanRefusedError'].sort());
+    expect(Object.keys(builders).sort()).toEqual(
+      [...table.builders, 'SpanRefusedError'].sort(),
+    );
   });
 
   it('has cases of each kind', () => {
@@ -89,23 +117,37 @@ describe('the annotation builders (protocol/specs/src/annotations/builder-cases.
   });
 
   it('can give the refusals the cases name, and no other', () => {
-    const named = new Set(table.cases.flatMap((built) => ('refused' in built ? [built.refused] : [])));
+    const named = new Set(
+      table.cases.flatMap((built) =>
+        'refused' in built ? [built.refused] : [],
+      ),
+    );
     expect([...named].sort()).toEqual([...REFUSALS].sort());
   });
 
   for (const built of table.cases) {
     it(built.why, () => {
       const { resourceId: id, generator, motivation, span, body } = built;
-      const of = { resourceId: resourceId(id), generator, motivation, span, ...(body !== undefined ? { body } : {}) };
+      const of = {
+        resourceId: resourceId(id),
+        generator,
+        motivation,
+        span,
+        ...(body !== undefined ? { body } : {}),
+      };
       const build = () =>
-        'text' in built ? annotationOfSpan({ ...of, text: built.text }) : annotationOfSpan({ ...of, anchored: built.anchored });
+        'text' in built
+          ? annotationOfSpan({ ...of, text: built.text })
+          : annotationOfSpan({ ...of, anchored: built.anchored });
 
       if ('refused' in built) {
         const refusal = thrownBy(build);
         expect(refusal).toBeInstanceOf(SpanRefusedError);
         expect((refusal as SpanRefusedError).code).toBe(built.refused);
       } else {
-        expect(stated(build(), table.unstated.cases)).toStrictEqual(built.annotation);
+        expect(stated(build(), table.unstated.cases)).toStrictEqual(
+          built.annotation,
+        );
       }
     });
   }
@@ -119,7 +161,9 @@ describe('the annotation builders (protocol/specs/src/annotations/builder-cases.
         ...(generator !== undefined ? { generator } : {}),
         ...(body !== undefined ? { body } : {}),
       });
-      expect(stated(annotation, table.unstated.resources)).toStrictEqual(built.annotation);
+      expect(stated(annotation, table.unstated.resources)).toStrictEqual(
+        built.annotation,
+      );
     });
   }
 });

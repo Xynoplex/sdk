@@ -16,7 +16,9 @@ describe('a channel read by name', () => {
     const held = vi.spyOn(transport, 'subscribeToResource');
     const seen: string[] = [];
 
-    const stop = subscribeChannel(client, 'beckon:hover', (hover) => seen.push(String(hover.annotationId)));
+    const stop = subscribeChannel(client, 'beckon:hover', (hover) =>
+      seen.push(String(hover.annotationId)),
+    );
     client.bus.emit('beckon:hover', { annotationId: null });
     stop();
     client.bus.emit('beckon:hover', { annotationId: null });
@@ -30,7 +32,9 @@ describe('a channel read by name', () => {
     const held = vi.spyOn(transport, 'subscribeToResource');
 
     // @ts-expect-error — mark:archived is delivered on its resource's scope, so it is read on the wire for its resource
-    expect(() => subscribeChannel(client, 'mark:archived', () => {})).toThrow(/mark:archived.*wire\.frames/);
+    expect(() => subscribeChannel(client, 'mark:archived', () => {})).toThrow(
+      /mark:archived.*wire\.frames/,
+    );
     expect(held).not.toHaveBeenCalled();
   });
 });

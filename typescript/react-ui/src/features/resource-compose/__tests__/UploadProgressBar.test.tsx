@@ -8,7 +8,9 @@ import { UploadProgressBar } from '../components/UploadProgressBar';
 describe('UploadProgressBar', () => {
   describe('null progress', () => {
     it('renders nothing when progress is null', () => {
-      const { container } = render(<UploadProgressBar progress={null} label="Upload" />);
+      const { container } = render(
+        <UploadProgressBar progress={null} label="Upload" />,
+      );
       expect(container.firstChild).toBeNull();
     });
   });
@@ -34,10 +36,14 @@ describe('UploadProgressBar', () => {
     });
 
     it('renders an indeterminate bar (no role=progressbar in this phase)', () => {
-      const { container } = render(<UploadProgressBar progress={started} label="Upload" />);
+      const { container } = render(
+        <UploadProgressBar progress={started} label="Upload" />,
+      );
       expect(screen.getByRole('status')).toBeInTheDocument();
       expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
-      expect(container.querySelector('.xynolog-progress--indeterminate')).not.toBeNull();
+      expect(
+        container.querySelector('.xynolog-progress--indeterminate'),
+      ).not.toBeNull();
     });
 
     it('marks the live region polite for assistive tech', () => {
@@ -101,8 +107,12 @@ describe('UploadProgressBar', () => {
         bytesUploaded: 750,
         totalBytes: 1000,
       };
-      const { container } = render(<UploadProgressBar progress={progress} label="Upload" />);
-      const fill = container.querySelector('.xynolog-progress__fill') as HTMLElement;
+      const { container } = render(
+        <UploadProgressBar progress={progress} label="Upload" />,
+      );
+      const fill = container.querySelector(
+        '.xynolog-progress__fill',
+      ) as HTMLElement;
       expect(fill).not.toBeNull();
       expect(fill.style.width).toBe('75%');
     });
@@ -113,8 +123,12 @@ describe('UploadProgressBar', () => {
         bytesUploaded: 100,
         totalBytes: 1000,
       };
-      const { container } = render(<UploadProgressBar progress={progress} label="Upload" />);
-      expect(container.querySelector('.xynolog-progress--indeterminate')).toBeNull();
+      const { container } = render(
+        <UploadProgressBar progress={progress} label="Upload" />,
+      );
+      expect(
+        container.querySelector('.xynolog-progress--indeterminate'),
+      ).toBeNull();
     });
 
     it('uses the custom label in determinate mode', () => {
@@ -169,9 +183,15 @@ describe('UploadProgressBar', () => {
         bytesUploaded: 100,
         totalBytes: 0,
       };
-      const { container } = render(<UploadProgressBar progress={progress} label="Upload" />);
-      expect(container.querySelector('.xynolog-progress--indeterminate')).not.toBeNull();
-      const fill = container.querySelector('.xynolog-progress__fill') as HTMLElement;
+      const { container } = render(
+        <UploadProgressBar progress={progress} label="Upload" />,
+      );
+      expect(
+        container.querySelector('.xynolog-progress--indeterminate'),
+      ).not.toBeNull();
+      const fill = container.querySelector(
+        '.xynolog-progress__fill',
+      ) as HTMLElement;
       expect(fill.style.width).toBe('');
     });
   });
@@ -201,8 +221,12 @@ describe('UploadProgressBar', () => {
     });
 
     it('applies the success fill modifier and full width', () => {
-      const { container } = render(<UploadProgressBar progress={finished} label="Upload" />);
-      const fill = container.querySelector('.xynolog-progress__fill--success') as HTMLElement;
+      const { container } = render(
+        <UploadProgressBar progress={finished} label="Upload" />,
+      );
+      const fill = container.querySelector(
+        '.xynolog-progress__fill--success',
+      ) as HTMLElement;
       expect(fill).not.toBeNull();
       expect(fill.style.width).toBe('100%');
     });

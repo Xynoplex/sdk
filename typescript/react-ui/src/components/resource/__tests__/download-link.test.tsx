@@ -20,16 +20,28 @@ import { AnnotateView } from '../AnnotateView';
 import { BrowseView } from '../BrowseView';
 import { englishTranslationManager } from '../../../test-utils';
 
-vi.mock('../../annotation/AnnotateToolbar', () => ({ AnnotateToolbar: () => null }));
+vi.mock('../../annotation/AnnotateToolbar', () => ({
+  AnnotateToolbar: () => null,
+}));
 vi.mock('../../CodeMirrorRenderer', () => ({ CodeMirrorRenderer: () => null }));
-vi.mock('../../image-annotation/SvgDrawingCanvas', () => ({ SvgDrawingCanvas: () => null }));
-vi.mock('react-markdown', () => ({ default: ({ children }: { children: string }) => <div>{children}</div> }));
+vi.mock('../../image-annotation/SvgDrawingCanvas', () => ({
+  SvgDrawingCanvas: () => null,
+}));
+vi.mock('react-markdown', () => ({
+  default: ({ children }: { children: string }) => <div>{children}</div>,
+}));
 vi.mock('remark-gfm', () => ({ default: () => ({}) }));
 
 const GATEWAY = 'http://gateway.test:4000';
 const UNSUPPORTED = 'application/octet-stream';
 
-const emptyAnnotations = { highlights: [], references: [], assessments: [], comments: [], tags: [] };
+const emptyAnnotations = {
+  highlights: [],
+  references: [],
+  assessments: [],
+  comments: [],
+  tags: [],
+};
 const uiState: AnnotationUIState = {
   selectedMotivation: null,
   selectedClick: 'detail',
@@ -45,7 +57,9 @@ function sessionMinting(token: string): XynologSession {
 
 /** A session whose token request never settles — the in-flight case. */
 function sessionPending(): XynologSession {
-  return fakeSession({ auth: { mediaToken: vi.fn(() => new Promise<never>(() => {})) } });
+  return fakeSession({
+    auth: { mediaToken: vi.fn(() => new Promise<never>(() => {})) },
+  });
 }
 
 /**
@@ -89,41 +103,69 @@ const browseProps = (session: XynologSession) => ({
 });
 
 const VIEWS = [
-  { name: 'AnnotateView', render: (s: XynologSession) => render(<AnnotateView translationManager={englishTranslationManager} {...annotateProps(s)} />) },
-  { name: 'BrowseView', render: (s: XynologSession) => render(<BrowseView translationManager={englishTranslationManager} {...browseProps(s)} />) },
+  {
+    name: 'AnnotateView',
+    render: (s: XynologSession) =>
+      render(
+        <AnnotateView
+          translationManager={englishTranslationManager}
+          {...annotateProps(s)}
+        />,
+      ),
+  },
+  {
+    name: 'BrowseView',
+    render: (s: XynologSession) =>
+      render(
+        <BrowseView
+          translationManager={englishTranslationManager}
+          {...browseProps(s)}
+        />,
+      ),
+  },
 ] as const;
 
-describe.each(VIEWS)('$name — unsupported-media download link', ({ render: renderView }) => {
-  it('points at the gateway origin and carries the media token', async () => {
-    renderView(sessionMinting('tok-abc'));
+describe.each(VIEWS)(
+  '$name — unsupported-media download link',
+  ({ render: renderView }) => {
+    it('points at the gateway origin and carries the media token', async () => {
+      renderView(sessionMinting('tok-abc'));
 
-    const link = await screen.findByRole('link', { name: 'Download File' });
-    expect(link).toHaveAttribute('href', `${GATEWAY}/api/resources/res-1?token=tok-abc`);
-    expect(link).toHaveAttribute('download');
-  });
-
-  it('renders no href while the token is still in flight', async () => {
-    renderView(sessionPending());
-
-    // The affordance stays on screen — it is just not yet actionable. What it
-    // must NOT do is offer a URL already known to fail.
-    expect(await screen.findByText('Download File')).toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: 'Download File' })).not.toBeInTheDocument();
-  });
-
-  it('renders no href when the client has no auth namespace', async () => {
-    renderView(sessionWithoutAuth());
-
-    expect(await screen.findByText('Download File')).toBeInTheDocument();
-    await waitFor(() => {
-      expect(screen.queryByRole('link', { name: 'Download File' })).not.toBeInTheDocument();
+      const link = await screen.findByRole('link', { name: 'Download File' });
+      expect(link).toHaveAttribute(
+        'href',
+        `${GATEWAY}/api/resources/res-1?token=tok-abc`,
+      );
+      expect(link).toHaveAttribute('download');
     });
-  });
 
-  it('never builds a host-relative URL', async () => {
-    renderView(sessionMinting('tok-abc'));
+    it('renders no href while the token is still in flight', async () => {
+      renderView(sessionPending());
 
-    const link = await screen.findByRole('link', { name: 'Download File' });
-    expect(link.getAttribute('href')).not.toMatch(/^\//);
-  });
-});
+      // The affordance stays on screen — it is just not yet actionable. What it
+      // must NOT do is offer a URL already known to fail.
+      expect(await screen.findByText('Download File')).toBeInTheDocument();
+      expect(
+        screen.queryByRole('link', { name: 'Download File' }),
+      ).not.toBeInTheDocument();
+    });
+
+    it('renders no href when the client has no auth namespace', async () => {
+      renderView(sessionWithoutAuth());
+
+      expect(await screen.findByText('Download File')).toBeInTheDocument();
+      await waitFor(() => {
+        expect(
+          screen.queryByRole('link', { name: 'Download File' }),
+        ).not.toBeInTheDocument();
+      });
+    });
+
+    it('never builds a host-relative URL', async () => {
+      renderView(sessionMinting('tok-abc'));
+
+      const link = await screen.findByRole('link', { name: 'Download File' });
+      expect(link.getAttribute('href')).not.toMatch(/^\//);
+    });
+  },
+);

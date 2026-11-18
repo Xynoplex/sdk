@@ -19,11 +19,11 @@ import { locate, type AnchoredText } from '../pdf-anchoring';
 const LAYER: AnchoredText = {
   text: 'Hello world again\nSecond line\nElsewhere',
   items: [
-    { start: 0, end: 5, page: 1, x: 72, y: 700, width: 30, height: 12 },   // Hello
+    { start: 0, end: 5, page: 1, x: 72, y: 700, width: 30, height: 12 }, // Hello
     { start: 6, end: 11, page: 1, x: 106, y: 700, width: 32, height: 12 }, // world
-    { start: 12, end: 17, page: 1, x: 142, y: 700, width: 30, height: 12 },// again
+    { start: 12, end: 17, page: 1, x: 142, y: 700, width: 30, height: 12 }, // again
     { start: 18, end: 24, page: 1, x: 72, y: 680, width: 38, height: 12 }, // Second
-    { start: 25, end: 29, page: 1, x: 114, y: 680, width: 22, height: 12 },// line
+    { start: 25, end: 29, page: 1, x: 114, y: 680, width: 22, height: 12 }, // line
     { start: 30, end: 39, page: 2, x: 72, y: 700, width: 50, height: 12 }, // Elsewhere
   ],
 };
@@ -73,8 +73,11 @@ describe('locate', () => {
     // rather than filtering `items` a second time.
     const { overlap } = locate(LAYER, 0, 17);
 
-    expect(overlap.map((i) => LAYER.text.slice(i.start, i.end)))
-      .toEqual(['Hello', 'world', 'again']);
+    expect(overlap.map((i) => LAYER.text.slice(i.start, i.end))).toEqual([
+      'Hello',
+      'world',
+      'again',
+    ]);
   });
 
   it('answers empty for a span no run covers', () => {
@@ -123,7 +126,7 @@ describe('locate', () => {
       expect(rects).toHaveLength(2);
     });
 
-    it('takes the bounding box over a grouped line, not the first run\'s', () => {
+    it("takes the bounding box over a grouped line, not the first run's", () => {
       // y is the minimum and height reaches the tallest top, so a grouped line
       // encloses every run in it rather than clipping the lower one.
       const { rects } = locate(drifted(698.5), 0, 2);

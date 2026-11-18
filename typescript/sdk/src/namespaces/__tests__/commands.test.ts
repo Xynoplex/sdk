@@ -1,7 +1,20 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { resourceContextFor, annotationContextFor } from '../../__tests__/fixtures/gathered-context';
+import {
+  resourceContextFor,
+  annotationContextFor,
+} from '../../__tests__/fixtures/gathered-context';
 import { mockResource } from '../../__tests__/fixtures/resource';
-import { BUS_REQUEST_TIMEOUT_MS, EventBus, FrameRefusal, JOB_SILENCE_MS, JOB_STATUS_POLL_MS, resourceId, annotationId, jobId, userId } from '@xynolog/core';
+import {
+  BUS_REQUEST_TIMEOUT_MS,
+  EventBus,
+  FrameRefusal,
+  JOB_SILENCE_MS,
+  JOB_STATUS_POLL_MS,
+  resourceId,
+  annotationId,
+  jobId,
+  userId,
+} from '@xynolog/core';
 import { MarkNamespace } from '../mark';
 import { BindNamespace } from '../bind';
 import { GatherNamespace } from '../gather';
@@ -10,15 +23,28 @@ import { YieldNamespace } from '../yield';
 import { JobNamespace } from '../job';
 import { JobFailedError } from '../job-status-poll';
 import type { JobEvent, UploadProgress } from '../../awaitable';
-import type { EventMap, IGatewayOperations, ITransport, IContentTransport, GatheredContext } from '@xynolog/core';
-import { inMemoryTransport, gatewayOperationSpies } from '../../__tests__/helpers/in-memory-transport';
+import type {
+  EventMap,
+  IGatewayOperations,
+  ITransport,
+  IContentTransport,
+  GatheredContext,
+} from '@xynolog/core';
+import {
+  inMemoryTransport,
+  gatewayOperationSpies,
+} from '../../__tests__/helpers/in-memory-transport';
 
 const RID = resourceId('res-1');
 const AID = annotationId('ann-1');
 const JID = jobId('j1');
 const UID = userId('did:web:test:users:u');
 // What the dispatcher holds for job `j1` whatever its type and status.
-const J1_STORED = { jobId: JID, userId: UID, created: '2026-01-01T00:00:00.000Z' };
+const J1_STORED = {
+  jobId: JID,
+  userId: UID,
+  created: '2026-01-01T00:00:00.000Z',
+};
 // The job's resource is derived FROM the focus — these fixtures carry RID/AID so
 // the derivation pins below compare against known values.
 const CTX_RES = resourceContextFor('res-1');
@@ -28,7 +54,10 @@ const REF = annotationId('ref-1');
 const CTX_REF = annotationContextFor('res-1', 'ref-1');
 
 /** Answers the request being handled, on any channel, with that channel's payload. */
-type Reply = <K extends keyof EventMap>(channel: K, payload: EventMap[K]) => void;
+type Reply = <K extends keyof EventMap>(
+  channel: K,
+  payload: EventMap[K],
+) => void;
 
 /**
  * Mock transport whose `emit(channel, payload, envelope)` looks up a handler
@@ -41,13 +70,20 @@ type Reply = <K extends keyof EventMap>(channel: K, payload: EventMap[K]) => voi
  */
 function createMockTransport(
   responses: Partial<Record<keyof EventMap, (reply: Reply) => void>> = {},
-): { transport: ITransport; emitSpy: ReturnType<typeof vi.fn>; transportBus: EventBus } {
+): {
+  transport: ITransport;
+  emitSpy: ReturnType<typeof vi.fn>;
+  transportBus: EventBus;
+} {
   const transportBus = new EventBus();
   const emitSpy = vi.fn();
 
-  const replyTo = (correlationId: string): Reply =>
+  const replyTo =
+    (correlationId: string): Reply =>
     <K extends keyof EventMap>(channel: K, payload: EventMap[K]) => {
-      queueMicrotask(() => { transportBus.emit(channel, payload, { correlationId }); });
+      queueMicrotask(() => {
+        transportBus.emit(channel, payload, { correlationId });
+      });
     };
 
   const transport: ITransport & IGatewayOperations = {
@@ -59,7 +95,9 @@ function createMockTransport(
         if (!handler) return;
         const correlationId = envelope?.correlationId;
         if (correlationId === undefined) {
-          throw new Error(`mock transport: ${channel} has a scripted reply but was emitted with no correlationId to answer`);
+          throw new Error(
+            `mock transport: ${channel} has a scripted reply but was emitted with no correlationId to answer`,
+          );
         }
         handler(replyTo(correlationId));
       },
@@ -91,29 +129,46 @@ describe('MarkNamespace', () => {
   beforeEach(() => {
     eventBus = new EventBus();
     const mock = createMockTransport({
-      'job:create': (reply) => reply('job:created', { response: { jobId: JID } }),
+      'job:create': (reply) =>
+        reply('job:created', { response: { jobId: JID } }),
     });
     mark = new MarkNamespace(mock.transport, eventBus);
   });
 
   it('annotation() emits mark:create-request on bus', async () => {
     const mock = createMockTransport({
-      'job:create': (reply) => reply('job:created', { response: { jobId: JID } }),
-      'mark:create-request': (reply) => reply('mark:create-ok', { response: { annotationId: annotationId('ann-new') } }),
+      'job:create': (reply) =>
+        reply('job:created', { response: { jobId: JID } }),
+      'mark:create-request': (reply) =>
+        reply('mark:create-ok', {
+          response: { annotationId: annotationId('ann-new') },
+        }),
     });
     const m = new MarkNamespace(mock.transport, eventBus);
-    const result = await m.annotation({ motivation: 'highlighting', target: { source: RID } });
-    expect(mock.emitSpy).toHaveBeenCalledWith('mark:create-request', expect.objectContaining({ resourceId: RID }), expect.objectContaining({ correlationId: expect.any(String) }));
+    const result = await m.annotation({
+      motivation: 'highlighting',
+      target: { source: RID },
+    });
+    expect(mock.emitSpy).toHaveBeenCalledWith(
+      'mark:create-request',
+      expect.objectContaining({ resourceId: RID }),
+      expect.objectContaining({ correlationId: expect.any(String) }),
+    );
     expect(result.annotationId).toBe('ann-new');
   });
 
   it('delete() emits mark:delete and resolves on mark:delete-ok', async () => {
     const mock = createMockTransport({
-      'mark:delete': (reply) => reply('mark:delete-ok', { response: { annotationId: AID } }),
+      'mark:delete': (reply) =>
+        reply('mark:delete-ok', { response: { annotationId: AID } }),
     });
     const m = new MarkNamespace(mock.transport, eventBus);
     await m.delete(RID, AID);
-    expect(mock.emitSpy).toHaveBeenCalledWith('mark:delete', expect.objectContaining({ annotationId: AID, resourceId: RID }), expect.objectContaining({ correlationId: expect.any(String) }));
+    expect(mock.emitSpy).toHaveBeenCalledWith(
+      'mark:delete',
+      expect.objectContaining({ annotationId: AID, resourceId: RID }),
+      expect.objectContaining({ correlationId: expect.any(String) }),
+    );
   });
 
   it('delete() REJECTS on mark:delete-failed — a delete failure is not silently dropped', async () => {
@@ -122,7 +177,11 @@ describe('MarkNamespace', () => {
     const assertion = expect(m.delete(RID, AID)).rejects.toThrow(/denied/);
     await new Promise((r) => setTimeout(r, 10));
     const cid = mock.emitSpy.mock.calls[0]?.[2]?.correlationId as string;
-    mock.transportBus.emit('mark:delete-failed', { message: 'denied' }, { correlationId: cid });
+    mock.transportBus.emit(
+      'mark:delete-failed',
+      { message: 'denied' },
+      { correlationId: cid },
+    );
     await assertion;
   });
 
@@ -132,7 +191,11 @@ describe('MarkNamespace', () => {
     });
     const m = new MarkNamespace(mock.transport, eventBus);
     await m.archive(RID);
-    expect(mock.emitSpy).toHaveBeenCalledWith('mark:archive', expect.objectContaining({ resourceId: RID }), expect.objectContaining({ correlationId: expect.any(String) }));
+    expect(mock.emitSpy).toHaveBeenCalledWith(
+      'mark:archive',
+      expect.objectContaining({ resourceId: RID }),
+      expect.objectContaining({ correlationId: expect.any(String) }),
+    );
   });
 
   it('archive() REJECTS on mark:archive-failed — an archive failure is not silently dropped', async () => {
@@ -141,7 +204,11 @@ describe('MarkNamespace', () => {
     const assertion = expect(m.archive(RID)).rejects.toThrow(/archive boom/);
     await new Promise((r) => setTimeout(r, 10));
     const cid = mock.emitSpy.mock.calls[0]?.[2]?.correlationId as string;
-    mock.transportBus.emit('mark:archive-failed', { message: 'archive boom' }, { correlationId: cid });
+    mock.transportBus.emit(
+      'mark:archive-failed',
+      { message: 'archive boom' },
+      { correlationId: cid },
+    );
     await assertion;
   });
 
@@ -151,60 +218,93 @@ describe('MarkNamespace', () => {
     });
     const m = new MarkNamespace(mock.transport, eventBus);
     await m.unarchive(RID);
-    expect(mock.emitSpy).toHaveBeenCalledWith('mark:unarchive', expect.objectContaining({ resourceId: RID }), expect.objectContaining({ correlationId: expect.any(String) }));
+    expect(mock.emitSpy).toHaveBeenCalledWith(
+      'mark:unarchive',
+      expect.objectContaining({ resourceId: RID }),
+      expect.objectContaining({ correlationId: expect.any(String) }),
+    );
   });
 
   it('unarchive() REJECTS on mark:unarchive-failed (a failure is never a silent no-op)', async () => {
     const mock = createMockTransport();
     const m = new MarkNamespace(mock.transport, eventBus);
-    const assertion = expect(m.unarchive(RID)).rejects.toThrow(/file not found/);
+    const assertion = expect(m.unarchive(RID)).rejects.toThrow(
+      /file not found/,
+    );
     await new Promise((r) => setTimeout(r, 10));
     const cid = mock.emitSpy.mock.calls[0]?.[2]?.correlationId as string;
-    mock.transportBus.emit('mark:unarchive-failed', { message: 'Cannot unarchive: file not found at x' }, { correlationId: cid });
+    mock.transportBus.emit(
+      'mark:unarchive-failed',
+      { message: 'Cannot unarchive: file not found at x' },
+      { correlationId: cid },
+    );
     await assertion;
   });
 
   it('updateEntityTypes() emits mark:update-entity-types (diff payload) and resolves on -ok', async () => {
     const mock = createMockTransport({
-      'mark:update-entity-types': (reply) => reply('mark:update-entity-types-ok', {}),
+      'mark:update-entity-types': (reply) =>
+        reply('mark:update-entity-types-ok', {}),
     });
     const m = new MarkNamespace(mock.transport, eventBus);
     await m.updateEntityTypes(RID, ['A'], ['A', 'B']);
-    expect(mock.emitSpy).toHaveBeenCalledWith('mark:update-entity-types', expect.objectContaining({
-      resourceId: RID,
-      currentEntityTypes: ['A'],
-      updatedEntityTypes: ['A', 'B'],
-    }), expect.objectContaining({ correlationId: expect.any(String) }));
+    expect(mock.emitSpy).toHaveBeenCalledWith(
+      'mark:update-entity-types',
+      expect.objectContaining({
+        resourceId: RID,
+        currentEntityTypes: ['A'],
+        updatedEntityTypes: ['A', 'B'],
+      }),
+      expect.objectContaining({ correlationId: expect.any(String) }),
+    );
   });
 
   it('updateEntityTypes() REJECTS on mark:update-entity-types-failed — a tag write failure is not silently dropped', async () => {
     const mock = createMockTransport();
     const m = new MarkNamespace(mock.transport, eventBus);
-    const assertion = expect(m.updateEntityTypes(RID, [], ['Person'])).rejects.toThrow(/rejected/);
+    const assertion = expect(
+      m.updateEntityTypes(RID, [], ['Person']),
+    ).rejects.toThrow(/rejected/);
     await new Promise((r) => setTimeout(r, 10));
     const cid = mock.emitSpy.mock.calls[0]?.[2]?.correlationId as string;
-    mock.transportBus.emit('mark:update-entity-types-failed', { message: 'rejected by handler' }, { correlationId: cid });
+    mock.transportBus.emit(
+      'mark:update-entity-types-failed',
+      { message: 'rejected by handler' },
+      { correlationId: cid },
+    );
     await assertion;
   });
 
   it('delegate() returns Observable that emits on job:report-progress', async () => {
     const progress: JobEvent[] = [];
     const completed = new Promise<void>((resolve) => {
-      mark.delegate(RID, { motivation: 'linking', entityTypes: ['Person'] }).subscribe({
-        next: (p) => progress.push(p),
-        complete: () => resolve(),
-      });
+      mark
+        .delegate(RID, { motivation: 'linking', entityTypes: ['Person'] })
+        .subscribe({
+          next: (p) => progress.push(p),
+          complete: () => resolve(),
+        });
     });
 
     await new Promise((r) => setTimeout(r, 10));
     // Unified lifecycle: filter by the jobId (`j1`) assigned by job:create.
     // delegate() forwards the inner `progress` field as the Observable's `next`.
     eventBus.emit('job:report-progress', {
-      jobId: JID, resourceId: RID, _userId: UID, jobType: 'mark',
-      percentage: 50, progress: { percentage: 50, message: { code: 'detecting-entities', entityType: 'Person' } },
+      jobId: JID,
+      resourceId: RID,
+      _userId: UID,
+      jobType: 'mark',
+      percentage: 50,
+      progress: {
+        percentage: 50,
+        message: { code: 'detecting-entities', entityType: 'Person' },
+      },
     });
     eventBus.emit('job:complete', {
-      jobId: JID, resourceId: RID, _userId: UID, jobType: 'mark',
+      jobId: JID,
+      resourceId: RID,
+      _userId: UID,
+      jobType: 'mark',
       result: { found: 3, persisted: 3 },
     });
 
@@ -217,24 +317,39 @@ describe('MarkNamespace', () => {
   it("delegate() gives the job's id first, as the queue answered its creation, ahead of a frame it held", async () => {
     const events: JobEvent[] = [];
     const completed = new Promise<void>((resolve) => {
-      mark.delegate(RID, { motivation: 'linking', entityTypes: ['Person'] }).subscribe({
-        next: (e) => events.push(e),
-        complete: () => resolve(),
-      });
+      mark
+        .delegate(RID, { motivation: 'linking', entityTypes: ['Person'] })
+        .subscribe({
+          next: (e) => events.push(e),
+          complete: () => resolve(),
+        });
     });
 
     // Published before the creation is answered: held until the id is known.
     eventBus.emit('job:report-progress', {
-      jobId: JID, resourceId: RID, _userId: UID, jobType: 'mark',
-      percentage: 10, progress: { percentage: 10 },
+      jobId: JID,
+      resourceId: RID,
+      _userId: UID,
+      jobType: 'mark',
+      percentage: 10,
+      progress: { percentage: 10 },
     });
     expect(events).toEqual([]);
 
     await new Promise((r) => setTimeout(r, 10));
-    eventBus.emit('job:complete', { jobId: JID, resourceId: RID, _userId: UID, jobType: 'mark' });
+    eventBus.emit('job:complete', {
+      jobId: JID,
+      resourceId: RID,
+      _userId: UID,
+      jobType: 'mark',
+    });
     await completed;
 
-    expect(events.map((e) => e.kind)).toEqual(['created', 'progress', 'complete']);
+    expect(events.map((e) => e.kind)).toEqual([
+      'created',
+      'progress',
+      'complete',
+    ]);
     expect(events[0]).toEqual({ kind: 'created', data: { jobId: JID } });
   });
 
@@ -242,13 +357,17 @@ describe('MarkNamespace', () => {
     vi.useFakeTimers();
     const bus = new EventBus();
     const mock = createMockTransport({
-      'job:create': (reply) => reply('job:created', { response: { jobId: JID } }),
-      'job:status-requested': (reply) => reply('job:status-result', {
-        response: {
-          ...J1_STORED, type: 'mark', status: 'complete',
-          result: { found: 5, persisted: 5 },
-        },
-      }),
+      'job:create': (reply) =>
+        reply('job:created', { response: { jobId: JID } }),
+      'job:status-requested': (reply) =>
+        reply('job:status-result', {
+          response: {
+            ...J1_STORED,
+            type: 'mark',
+            status: 'complete',
+            result: { found: 5, persisted: 5 },
+          },
+        }),
     });
     const m = new MarkNamespace(mock.transport, bus);
 
@@ -256,13 +375,19 @@ describe('MarkNamespace', () => {
     let completed = false;
     m.delegate(RID, { motivation: 'highlighting' }).subscribe({
       next: (p) => progress.push(p),
-      complete: () => { completed = true; },
+      complete: () => {
+        completed = true;
+      },
     });
 
     await vi.advanceTimersByTimeAsync(100);
     await vi.advanceTimersByTimeAsync(16_000);
 
-    expect(mock.emitSpy).toHaveBeenCalledWith('job:status-requested', expect.any(Object), expect.objectContaining({ correlationId: expect.any(String) }));
+    expect(mock.emitSpy).toHaveBeenCalledWith(
+      'job:status-requested',
+      expect.any(Object),
+      expect.objectContaining({ correlationId: expect.any(String) }),
+    );
     expect(completed).toBe(true);
 
     bus.destroy();
@@ -270,14 +395,24 @@ describe('MarkNamespace', () => {
   });
 
   it("delegate() awaited gives the mark job's completion, its result a mark job's", async () => {
-    const done = mark.delegate(RID, { motivation: 'highlighting' }).run(() => {});
+    const done = mark
+      .delegate(RID, { motivation: 'highlighting' })
+      .run(() => {});
     await new Promise((r) => setTimeout(r, 10));
-    eventBus.emit('job:complete', { jobId: JID, resourceId: RID, jobType: 'mark', result: { found: 3, persisted: 2, errors: 1 } });
+    eventBus.emit('job:complete', {
+      jobId: JID,
+      resourceId: RID,
+      jobType: 'mark',
+      result: { found: 3, persisted: 2, errors: 1 },
+    });
 
     const completion = await done;
     // Typed by the verb: a mark job's result is its counts or a decline, so
     // one narrowing reads the counts.
-    const counts = completion.result && 'found' in completion.result ? completion.result : undefined;
+    const counts =
+      completion.result && 'found' in completion.result
+        ? completion.result
+        : undefined;
     expect(counts).toEqual({ found: 3, persisted: 2, errors: 1 });
   });
 
@@ -285,28 +420,43 @@ describe('MarkNamespace', () => {
     vi.useFakeTimers();
     const bus = new EventBus();
     const mock = createMockTransport({
-      'job:create': (reply) => reply('job:created', { response: { jobId: JID } }),
-      'job:status-requested': (reply) => reply('job:status-result', {
-        response: {
-          ...J1_STORED, type: 'mark', status: 'complete',
-          result: { resourceId: resourceId('res-made'), resourceName: 'Made', truncated: false },
-        },
-      }),
+      'job:create': (reply) =>
+        reply('job:created', { response: { jobId: JID } }),
+      'job:status-requested': (reply) =>
+        reply('job:status-result', {
+          response: {
+            ...J1_STORED,
+            type: 'mark',
+            status: 'complete',
+            result: {
+              resourceId: resourceId('res-made'),
+              resourceName: 'Made',
+              truncated: false,
+            },
+          },
+        }),
     });
     const m = new MarkNamespace(mock.transport, bus);
 
     let failure: unknown;
     let completed = false;
     m.delegate(RID, { motivation: 'highlighting' }).subscribe({
-      error: (e) => { failure = e; },
-      complete: () => { completed = true; },
+      error: (e) => {
+        failure = e;
+      },
+      complete: () => {
+        completed = true;
+      },
     });
     await vi.advanceTimersByTimeAsync(100);
     await vi.advanceTimersByTimeAsync(16_000);
 
     expect(completed).toBe(false);
     // Not a failed job: the transport's code for a failure no other names.
-    expect(failure).toMatchObject({ code: 'error', message: "The status of job j1 is not a completed mark job's" });
+    expect(failure).toMatchObject({
+      code: 'error',
+      message: "The status of job j1 is not a completed mark job's",
+    });
 
     bus.destroy();
     vi.useRealTimers();
@@ -314,34 +464,54 @@ describe('MarkNamespace', () => {
 
   it("delegate() errors on a job:complete of its job that is another verb's", async () => {
     const failed = new Promise<Error>((resolve) => {
-      mark.delegate(RID, { motivation: 'highlighting' }).subscribe({ error: resolve });
+      mark
+        .delegate(RID, { motivation: 'highlighting' })
+        .subscribe({ error: resolve });
     });
     await new Promise((r) => setTimeout(r, 10));
     eventBus.emit('job:complete', {
-      jobId: JID, resourceId: RID, jobType: 'yield',
-      result: { resourceId: resourceId('res-made'), resourceName: 'Made', truncated: false },
+      jobId: JID,
+      resourceId: RID,
+      jobType: 'yield',
+      result: {
+        resourceId: resourceId('res-made'),
+        resourceName: 'Made',
+        truncated: false,
+      },
     });
 
-    expect(await failed).toMatchObject({ code: 'error', message: "A job:complete of job j1 is not a completed mark job's" });
+    expect(await failed).toMatchObject({
+      code: 'error',
+      message: "A job:complete of job j1 is not a completed mark job's",
+    });
   });
 
   it('delegate() SSE completion wins over polling', async () => {
     vi.useFakeTimers();
     const bus = new EventBus();
     const mock = createMockTransport({
-      'job:create': (reply) => reply('job:created', { response: { jobId: JID } }),
+      'job:create': (reply) =>
+        reply('job:created', { response: { jobId: JID } }),
     });
     const m = new MarkNamespace(mock.transport, bus);
 
     let completed = false;
-    m.delegate(RID, { motivation: 'linking', entityTypes: ['Person'] }).subscribe({
+    m.delegate(RID, {
+      motivation: 'linking',
+      entityTypes: ['Person'],
+    }).subscribe({
       next: () => {},
-      complete: () => { completed = true; },
+      complete: () => {
+        completed = true;
+      },
     });
 
     await vi.advanceTimersByTimeAsync(100);
     bus.emit('job:complete', {
-      jobId: JID, resourceId: RID, _userId: UID, jobType: 'mark',
+      jobId: JID,
+      resourceId: RID,
+      _userId: UID,
+      jobType: 'mark',
       result: { found: 0, persisted: 0 },
     });
     expect(completed).toBe(true);
@@ -354,21 +524,32 @@ describe('MarkNamespace', () => {
     vi.useFakeTimers();
     const bus = new EventBus();
     const mock = createMockTransport({
-      'job:create': (reply) => reply('job:created', { response: { jobId: JID } }),
+      'job:create': (reply) =>
+        reply('job:created', { response: { jobId: JID } }),
     });
     const m = new MarkNamespace(mock.transport, bus);
 
-    m.delegate(RID, { motivation: 'highlighting' }).subscribe({ next: () => {}, error: () => {} });
+    m.delegate(RID, { motivation: 'highlighting' }).subscribe({
+      next: () => {},
+      error: () => {},
+    });
 
     await vi.advanceTimersByTimeAsync(100);
     await vi.advanceTimersByTimeAsync(9_000);
     bus.emit('job:report-progress', {
-      jobId: JID, resourceId: RID, _userId: UID, jobType: 'mark',
-      percentage: 50, progress: { percentage: 50, message: { code: 'analyzing' } },
+      jobId: JID,
+      resourceId: RID,
+      _userId: UID,
+      jobType: 'mark',
+      percentage: 50,
+      progress: { percentage: 50, message: { code: 'analyzing' } },
     });
 
     await vi.advanceTimersByTimeAsync(9_000);
-    expect(mock.emitSpy).not.toHaveBeenCalledWith('job:status-requested', expect.any(Object));
+    expect(mock.emitSpy).not.toHaveBeenCalledWith(
+      'job:status-requested',
+      expect.any(Object),
+    );
 
     bus.destroy();
     vi.useRealTimers();
@@ -385,7 +566,8 @@ describe('MarkNamespace', () => {
   it('delegate() survives a retryable failure and completes on the later terminal', async () => {
     const bus = new EventBus();
     const mock = createMockTransport({
-      'job:create': (reply) => reply('job:created', { response: { jobId: JID } }),
+      'job:create': (reply) =>
+        reply('job:created', { response: { jobId: JID } }),
     });
     const m = new MarkNamespace(mock.transport, bus);
 
@@ -394,34 +576,47 @@ describe('MarkNamespace', () => {
     let completed = false;
     m.delegate(RID, { motivation: 'highlighting' }).subscribe({
       next: (e) => events.push(e.kind),
-      error: (e: Error) => { errored = e; },
-      complete: () => { completed = true; },
+      error: (e: Error) => {
+        errored = e;
+      },
+      complete: () => {
+        completed = true;
+      },
     });
     await new Promise((r) => setTimeout(r, 0));
 
-    const fail = (willRetry: boolean) => bus.emit('job:fail', {
-      jobId: JID, resourceId: RID, jobType: 'mark',
-      error: 'transient blip', willRetry,
-    });
+    const fail = (willRetry: boolean) =>
+      bus.emit('job:fail', {
+        jobId: JID,
+        resourceId: RID,
+        jobType: 'mark',
+        error: 'transient blip',
+        willRetry,
+      });
 
     fail(true);
-    expect(errored).toBeNull();          // the run is not over
+    expect(errored).toBeNull(); // the run is not over
     expect(completed).toBe(false);
 
     // Progress must keep flowing on the retried attempt, too — a
     // takeUntil(fail$) would silence it even when the stream survives.
     bus.emit('job:report-progress', {
-      jobId: JID, resourceId: RID, jobType: 'mark',
-      percentage: 20, progress: { percentage: 20 },
+      jobId: JID,
+      resourceId: RID,
+      jobType: 'mark',
+      percentage: 20,
+      progress: { percentage: 20 },
     });
 
     bus.emit('job:complete', {
-      jobId: JID, resourceId: RID, jobType: 'mark',
+      jobId: JID,
+      resourceId: RID,
+      jobType: 'mark',
     });
 
     expect(errored).toBeNull();
     expect(completed).toBe(true);
-    expect(events).toContain('failed');   // surfaced as an EVENT, not a throw
+    expect(events).toContain('failed'); // surfaced as an EVENT, not a throw
     expect(events).toContain('progress'); // and the retry's progress arrived
     expect(events).toContain('complete');
 
@@ -435,7 +630,8 @@ describe('MarkNamespace', () => {
   it('delegate() reports a refused frame of the lifecycle once its job has an id, and follows on to the completion', async () => {
     const bus = new EventBus();
     const mock = createMockTransport({
-      'job:create': (reply) => reply('job:created', { response: { jobId: JID } }),
+      'job:create': (reply) =>
+        reply('job:created', { response: { jobId: JID } }),
     });
     const m = new MarkNamespace(mock.transport, bus);
 
@@ -443,19 +639,54 @@ describe('MarkNamespace', () => {
     let completed = false;
     m.delegate(RID, { motivation: 'highlighting' }).subscribe({
       next: (e) => events.push(e),
-      complete: () => { completed = true; },
+      complete: () => {
+        completed = true;
+      },
     });
     // Before the reply to job:create is handled.
-    bus.emit('job:fail', new FrameRefusal('job:fail', 'payload.error', 'lacks', { jobId: JID }, undefined));
+    bus.emit(
+      'job:fail',
+      new FrameRefusal(
+        'job:fail',
+        'payload.error',
+        'lacks',
+        { jobId: JID },
+        undefined,
+      ),
+    );
     await new Promise((r) => setTimeout(r, 0));
 
-    bus.emit('job:report-progress', new FrameRefusal('job:report-progress', 'payload.jobId', 'lacks', { percentage: 10 }, undefined));
+    bus.emit(
+      'job:report-progress',
+      new FrameRefusal(
+        'job:report-progress',
+        'payload.jobId',
+        'lacks',
+        { percentage: 10 },
+        undefined,
+      ),
+    );
     expect(completed).toBe(false);
     bus.emit('job:complete', { jobId: JID, resourceId: RID, jobType: 'mark' });
 
-    expect(events.map((e) => e.kind)).toEqual(['created', 'refused', 'refused', 'complete']);
-    expect(events[1]).toEqual({ kind: 'refused', data: { channel: 'job:fail', member: 'payload.error', reason: 'lacks' } });
-    expect(events[2]).toEqual({ kind: 'refused', data: { channel: 'job:report-progress', member: 'payload.jobId', reason: 'lacks' } });
+    expect(events.map((e) => e.kind)).toEqual([
+      'created',
+      'refused',
+      'refused',
+      'complete',
+    ]);
+    expect(events[1]).toEqual({
+      kind: 'refused',
+      data: { channel: 'job:fail', member: 'payload.error', reason: 'lacks' },
+    });
+    expect(events[2]).toEqual({
+      kind: 'refused',
+      data: {
+        channel: 'job:report-progress',
+        member: 'payload.jobId',
+        reason: 'lacks',
+      },
+    });
     expect(completed).toBe(true);
 
     bus.destroy();
@@ -465,17 +696,34 @@ describe('MarkNamespace', () => {
     vi.useFakeTimers();
     const bus = new EventBus();
     const mock = createMockTransport({
-      'job:create': (reply) => reply('job:created', { response: { jobId: JID } }),
+      'job:create': (reply) =>
+        reply('job:created', { response: { jobId: JID } }),
     });
     const m = new MarkNamespace(mock.transport, bus);
-    m.delegate(RID, { motivation: 'highlighting' }).subscribe({ next: () => {}, error: () => {} });
+    m.delegate(RID, { motivation: 'highlighting' }).subscribe({
+      next: () => {},
+      error: () => {},
+    });
 
     await vi.advanceTimersByTimeAsync(100);
     await vi.advanceTimersByTimeAsync(JOB_SILENCE_MS - 1_000);
-    bus.emit('job:complete', new FrameRefusal('job:complete', 'payload.jobId', 'lacks', { resourceId: RID, jobType: 'mark' }, undefined));
+    bus.emit(
+      'job:complete',
+      new FrameRefusal(
+        'job:complete',
+        'payload.jobId',
+        'lacks',
+        { resourceId: RID, jobType: 'mark' },
+        undefined,
+      ),
+    );
     await vi.advanceTimersByTimeAsync(1_000);
 
-    expect(mock.emitSpy).toHaveBeenCalledWith('job:status-requested', { jobId: JID }, expect.objectContaining({ correlationId: expect.any(String) }));
+    expect(mock.emitSpy).toHaveBeenCalledWith(
+      'job:status-requested',
+      { jobId: JID },
+      expect.objectContaining({ correlationId: expect.any(String) }),
+    );
 
     bus.destroy();
     vi.useRealTimers();
@@ -484,16 +732,26 @@ describe('MarkNamespace', () => {
   it('delegate() still errors when the failure IS terminal', async () => {
     const bus = new EventBus();
     const mock = createMockTransport({
-      'job:create': (reply) => reply('job:created', { response: { jobId: JID } }),
+      'job:create': (reply) =>
+        reply('job:created', { response: { jobId: JID } }),
     });
     const m = new MarkNamespace(mock.transport, bus);
 
     const err = await new Promise<Error>((resolve) => {
-      m.delegate(RID, { motivation: 'highlighting' }).subscribe({ error: resolve });
-      setTimeout(() => bus.emit('job:fail', {
-        jobId: JID, resourceId: RID, jobType: 'mark',
-        error: 'budget spent', willRetry: false,
-      }), 0);
+      m.delegate(RID, { motivation: 'highlighting' }).subscribe({
+        error: resolve,
+      });
+      setTimeout(
+        () =>
+          bus.emit('job:fail', {
+            jobId: JID,
+            resourceId: RID,
+            jobType: 'mark',
+            error: 'budget spent',
+            willRetry: false,
+          }),
+        0,
+      );
     });
     expect(err.message).toBe('budget spent');
     // A failure a caller can route on: the code every SDK reports for it.
@@ -506,57 +764,92 @@ describe('MarkNamespace', () => {
   it('delegate() treats an ABSENT willRetry as terminal — an older worker must not hang the stream', async () => {
     const bus = new EventBus();
     const mock = createMockTransport({
-      'job:create': (reply) => reply('job:created', { response: { jobId: JID } }),
+      'job:create': (reply) =>
+        reply('job:created', { response: { jobId: JID } }),
     });
     const m = new MarkNamespace(mock.transport, bus);
 
     const err = await new Promise<Error>((resolve) => {
-      m.delegate(RID, { motivation: 'highlighting' }).subscribe({ error: resolve });
-      setTimeout(() => bus.emit('job:fail', {
-        jobId: JID, resourceId: RID, jobType: 'mark',
-        error: 'no field',
-      }), 0);
+      m.delegate(RID, { motivation: 'highlighting' }).subscribe({
+        error: resolve,
+      });
+      setTimeout(
+        () =>
+          bus.emit('job:fail', {
+            jobId: JID,
+            resourceId: RID,
+            jobType: 'mark',
+            error: 'no field',
+          }),
+        0,
+      );
     });
     expect(err.message).toBe('no field');
     bus.destroy();
   });
 
-  it('delegate() ends as cancelled when the job\'s status says it was', async () => {
+  it("delegate() ends as cancelled when the job's status says it was", async () => {
     vi.useFakeTimers();
     const bus = new EventBus();
     const mock = createMockTransport({
-      'job:create': (reply) => reply('job:created', { response: { jobId: JID } }),
-      'job:status-requested': (reply) => reply('job:status-result', {
-        response: { ...J1_STORED, type: 'mark', status: 'cancelled' },
-      }),
+      'job:create': (reply) =>
+        reply('job:created', { response: { jobId: JID } }),
+      'job:status-requested': (reply) =>
+        reply('job:status-result', {
+          response: { ...J1_STORED, type: 'mark', status: 'cancelled' },
+        }),
     });
     const m = new MarkNamespace(mock.transport, bus);
 
     let failure: unknown;
-    m.delegate(RID, { motivation: 'highlighting' }).subscribe({ error: (e) => { failure = e; } });
+    m.delegate(RID, { motivation: 'highlighting' }).subscribe({
+      error: (e) => {
+        failure = e;
+      },
+    });
     await vi.advanceTimersByTimeAsync(100);
     await vi.advanceTimersByTimeAsync(16_000);
 
-    expect(failure).toMatchObject({ name: 'JobCancelledError', code: 'job.cancelled', message: 'The job was cancelled', jobId: 'j1' });
+    expect(failure).toMatchObject({
+      name: 'JobCancelledError',
+      code: 'job.cancelled',
+      message: 'The job was cancelled',
+      jobId: 'j1',
+    });
     // Asked about once: a cancelled job is over.
-    expect(mock.emitSpy.mock.calls.filter(([channel]) => channel === 'job:status-requested')).toHaveLength(1);
+    expect(
+      mock.emitSpy.mock.calls.filter(
+        ([channel]) => channel === 'job:status-requested',
+      ),
+    ).toHaveLength(1);
     bus.destroy();
     vi.useRealTimers();
   });
 
-  it('delegate() reports a failure it learned from the job\'s status under the same code', async () => {
+  it("delegate() reports a failure it learned from the job's status under the same code", async () => {
     vi.useFakeTimers();
     const bus = new EventBus();
     const mock = createMockTransport({
-      'job:create': (reply) => reply('job:created', { response: { jobId: JID } }),
-      'job:status-requested': (reply) => reply('job:status-result', {
-        response: { ...J1_STORED, type: 'mark', status: 'failed', error: 'worker gave up' },
-      }),
+      'job:create': (reply) =>
+        reply('job:created', { response: { jobId: JID } }),
+      'job:status-requested': (reply) =>
+        reply('job:status-result', {
+          response: {
+            ...J1_STORED,
+            type: 'mark',
+            status: 'failed',
+            error: 'worker gave up',
+          },
+        }),
     });
     const m = new MarkNamespace(mock.transport, bus);
 
     let failure: unknown;
-    m.delegate(RID, { motivation: 'highlighting' }).subscribe({ error: (e) => { failure = e; } });
+    m.delegate(RID, { motivation: 'highlighting' }).subscribe({
+      error: (e) => {
+        failure = e;
+      },
+    });
     await vi.advanceTimersByTimeAsync(100);
     await vi.advanceTimersByTimeAsync(16_000);
 
@@ -571,18 +864,31 @@ describe('MarkNamespace', () => {
     vi.useFakeTimers();
     const bus = new EventBus();
     const mock = createMockTransport({
-      'job:create': (reply) => reply('job:created', { response: { jobId: JID } }),
-      'job:status-requested': (reply) => reply('job:status-failed', { message: 'the queue is not answering' }),
+      'job:create': (reply) =>
+        reply('job:created', { response: { jobId: JID } }),
+      'job:status-requested': (reply) =>
+        reply('job:status-failed', { message: 'the queue is not answering' }),
     });
     const m = new MarkNamespace(mock.transport, bus);
 
     let ended = false;
-    m.delegate(RID, { motivation: 'highlighting' }).subscribe({ error: () => { ended = true; }, complete: () => { ended = true; } });
+    m.delegate(RID, { motivation: 'highlighting' }).subscribe({
+      error: () => {
+        ended = true;
+      },
+      complete: () => {
+        ended = true;
+      },
+    });
     await vi.advanceTimersByTimeAsync(100);
     await vi.advanceTimersByTimeAsync(16_000);
 
     // A refused ask is a XynologError: the job is still followed, and asked about again.
-    expect(mock.emitSpy.mock.calls.filter(([channel]) => channel === 'job:status-requested')).toHaveLength(2);
+    expect(
+      mock.emitSpy.mock.calls.filter(
+        ([channel]) => channel === 'job:status-requested',
+      ),
+    ).toHaveLength(2);
     expect(ended).toBe(false);
     bus.destroy();
     vi.useRealTimers();
@@ -592,14 +898,20 @@ describe('MarkNamespace', () => {
     vi.useFakeTimers();
     const bus = new EventBus();
     const mock = createMockTransport({
-      'job:create': (reply) => reply('job:created', { response: { jobId: JID } }),
+      'job:create': (reply) =>
+        reply('job:created', { response: { jobId: JID } }),
       // Never answered: each ask is settled only by its own deadline.
       'job:status-requested': () => {},
     });
     const m = new MarkNamespace(mock.transport, bus);
-    const asked = () => mock.emitSpy.mock.calls.filter(([channel]) => channel === 'job:status-requested');
+    const asked = () =>
+      mock.emitSpy.mock.calls.filter(
+        ([channel]) => channel === 'job:status-requested',
+      );
 
-    m.delegate(RID, { motivation: 'highlighting' }).subscribe({ error: () => {} });
+    m.delegate(RID, { motivation: 'highlighting' }).subscribe({
+      error: () => {},
+    });
     await vi.advanceTimersByTimeAsync(100);
     // The silence, then four polls, all inside the first ask's deadline.
     await vi.advanceTimersByTimeAsync(JOB_SILENCE_MS + 4 * JOB_STATUS_POLL_MS);
@@ -616,19 +928,30 @@ describe('MarkNamespace', () => {
     const bus = new EventBus();
     const broken = new TypeError('the transport broke');
     const mock = createMockTransport({
-      'job:create': (reply) => reply('job:created', { response: { jobId: JID } }),
-      'job:status-requested': () => { throw broken; },
+      'job:create': (reply) =>
+        reply('job:created', { response: { jobId: JID } }),
+      'job:status-requested': () => {
+        throw broken;
+      },
     });
     const m = new MarkNamespace(mock.transport, bus);
 
     let failure: unknown;
-    m.delegate(RID, { motivation: 'highlighting' }).subscribe({ error: (e) => { failure = e; } });
+    m.delegate(RID, { motivation: 'highlighting' }).subscribe({
+      error: (e) => {
+        failure = e;
+      },
+    });
     await vi.advanceTimersByTimeAsync(100);
     await vi.advanceTimersByTimeAsync(16_000);
 
     expect(failure).toBe(broken);
     // Asked about once: the follower ended there.
-    expect(mock.emitSpy.mock.calls.filter(([channel]) => channel === 'job:status-requested')).toHaveLength(1);
+    expect(
+      mock.emitSpy.mock.calls.filter(
+        ([channel]) => channel === 'job:status-requested',
+      ),
+    ).toHaveLength(1);
     bus.destroy();
     vi.useRealTimers();
   });
@@ -642,23 +965,41 @@ describe('BindNamespace', () => {
       'bind:update-body': (reply) => reply('bind:body-updated', {}),
     });
     const bind = new BindNamespace(mock.transport, new EventBus());
-    await bind.body(RID, AID, [{ op: 'add', item: { type: 'SpecificResource', source: resourceId('res-2') } }]);
-    expect(mock.emitSpy).toHaveBeenCalledWith('bind:update-body', expect.objectContaining({
-      annotationId: AID,
-      resourceId: RID,
-      operations: expect.any(Array),
-    }), expect.objectContaining({ correlationId: expect.any(String) }));
+    await bind.body(RID, AID, [
+      {
+        op: 'add',
+        item: { type: 'SpecificResource', source: resourceId('res-2') },
+      },
+    ]);
+    expect(mock.emitSpy).toHaveBeenCalledWith(
+      'bind:update-body',
+      expect.objectContaining({
+        annotationId: AID,
+        resourceId: RID,
+        operations: expect.any(Array),
+      }),
+      expect.objectContaining({ correlationId: expect.any(String) }),
+    );
   });
 
   it('body() REJECTS on bind:body-update-failed — a bind failure is not silently dropped', async () => {
     const mock = createMockTransport();
     const bind = new BindNamespace(mock.transport, new EventBus());
     const assertion = expect(
-      bind.body(RID, AID, [{ op: 'add', item: { type: 'SpecificResource', source: resourceId('res-2') } }]),
+      bind.body(RID, AID, [
+        {
+          op: 'add',
+          item: { type: 'SpecificResource', source: resourceId('res-2') },
+        },
+      ]),
     ).rejects.toThrow(/rejected/);
     await new Promise((r) => setTimeout(r, 10));
     const cid = mock.emitSpy.mock.calls[0]?.[2]?.correlationId as string;
-    mock.transportBus.emit('bind:body-update-failed', { message: 'rejected by handler' }, { correlationId: cid });
+    mock.transportBus.emit(
+      'bind:body-update-failed',
+      { message: 'rejected by handler' },
+      { correlationId: cid },
+    );
     await assertion;
   });
 });
@@ -678,29 +1019,41 @@ describe('GatherNamespace', () => {
   });
 
   it('annotation() emits gather:requested on bus', () => {
-    const asking = gather.annotation(RID, AID, { contextWindow: 2000 }).subscribe(() => {});
-    return new Promise<void>((resolve) => setTimeout(() => {
-      expect(emitSpy).toHaveBeenCalledWith('gather:requested', expect.objectContaining({
-        annotationId: AID,
-        resourceId: RID,
-        options: { contextWindow: 2000 },
-      }), expect.objectContaining({ correlationId: expect.any(String) }));
-      // Abandons the request, which nobody answers here.
-      asking.unsubscribe();
-      resolve();
-    }, 20));
+    const asking = gather
+      .annotation(RID, AID, { contextWindow: 2000 })
+      .subscribe(() => {});
+    return new Promise<void>((resolve) =>
+      setTimeout(() => {
+        expect(emitSpy).toHaveBeenCalledWith(
+          'gather:requested',
+          expect.objectContaining({
+            annotationId: AID,
+            resourceId: RID,
+            options: { contextWindow: 2000 },
+          }),
+          expect.objectContaining({ correlationId: expect.any(String) }),
+        );
+        // Abandons the request, which nobody answers here.
+        asking.unsubscribe();
+        resolve();
+      }, 20),
+    );
   });
 
   it('annotation() completes on gather:complete', async () => {
     const answered = new GatherNamespace(
       createMockTransport({
-        'gather:requested': (reply) => reply('gather:complete', { annotationId: AID, response: CTX_ANN }),
+        'gather:requested': (reply) =>
+          reply('gather:complete', { annotationId: AID, response: CTX_ANN }),
       }).transport,
       eventBus,
     );
     const gathered: unknown[] = [];
     await new Promise<void>((resolve) => {
-      answered.annotation(RID, AID).subscribe({ next: (result) => gathered.push(result), complete: () => resolve() });
+      answered.annotation(RID, AID).subscribe({
+        next: (result) => gathered.push(result),
+        complete: () => resolve(),
+      });
     });
     expect(gathered).toEqual([{ annotationId: AID, response: CTX_ANN }]);
   });
@@ -708,12 +1061,15 @@ describe('GatherNamespace', () => {
   it('annotation() errors on gather:failed', async () => {
     const refused = new GatherNamespace(
       createMockTransport({
-        'gather:requested': (reply) => reply('gather:failed', { annotationId: AID, message: 'boom' }),
+        'gather:requested': (reply) =>
+          reply('gather:failed', { annotationId: AID, message: 'boom' }),
       }).transport,
       eventBus,
     );
     const err = await new Promise<Error>((resolve) => {
-      refused.annotation(RID, AID).subscribe({ error: (error: Error) => resolve(error) });
+      refused
+        .annotation(RID, AID)
+        .subscribe({ error: (error: Error) => resolve(error) });
     });
     expect(err.message).toBe('boom');
   });
@@ -735,27 +1091,37 @@ describe('MatchNamespace', () => {
 
   it('search() emits match:search-requested on bus', () => {
     const asking = match.search(RID, REF, CTX_REF).subscribe(() => {});
-    return new Promise<void>((resolve) => setTimeout(() => {
-      expect(emitSpy).toHaveBeenCalledWith('match:search-requested', expect.objectContaining({
-        resourceId: RID,
-        referenceId: 'ref-1',
-      }), expect.objectContaining({ correlationId: expect.any(String) }));
-      // Abandons the request, which nobody answers here.
-      asking.unsubscribe();
-      resolve();
-    }, 20));
+    return new Promise<void>((resolve) =>
+      setTimeout(() => {
+        expect(emitSpy).toHaveBeenCalledWith(
+          'match:search-requested',
+          expect.objectContaining({
+            resourceId: RID,
+            referenceId: 'ref-1',
+          }),
+          expect.objectContaining({ correlationId: expect.any(String) }),
+        );
+        // Abandons the request, which nobody answers here.
+        asking.unsubscribe();
+        resolve();
+      }, 20),
+    );
   });
 
   it('search() completes on match:search-results', async () => {
     const answered = new MatchNamespace(
       createMockTransport({
-        'match:search-requested': (reply) => reply('match:search-results', { referenceId: REF, response: [] }),
+        'match:search-requested': (reply) =>
+          reply('match:search-results', { referenceId: REF, response: [] }),
       }).transport,
       eventBus,
     );
     const results: unknown[] = [];
     await new Promise<void>((resolve) => {
-      answered.search(RID, REF, CTX_REF).subscribe({ next: (result) => results.push(result), complete: () => resolve() });
+      answered.search(RID, REF, CTX_REF).subscribe({
+        next: (result) => results.push(result),
+        complete: () => resolve(),
+      });
     });
     expect(results).toEqual([{ referenceId: REF, response: [] }]);
   });
@@ -763,12 +1129,18 @@ describe('MatchNamespace', () => {
   it('search() errors on match:search-failed, with what went wrong', async () => {
     const refused = new MatchNamespace(
       createMockTransport({
-        'match:search-requested': (reply) => reply('match:search-failed', { referenceId: REF, message: 'no results' }),
+        'match:search-requested': (reply) =>
+          reply('match:search-failed', {
+            referenceId: REF,
+            message: 'no results',
+          }),
       }).transport,
       eventBus,
     );
     const err = await new Promise<Error>((resolve) => {
-      refused.search(RID, REF, CTX_REF).subscribe({ error: (error: Error) => resolve(error) });
+      refused
+        .search(RID, REF, CTX_REF)
+        .subscribe({ error: (error: Error) => resolve(error) });
     });
     expect(err.message).toBe('no results');
   });
@@ -782,7 +1154,8 @@ describe('JobNamespace', () => {
   it('cancel(jobId) targets one job and resolves with whether the queue acted on it', async () => {
     const bus = new EventBus();
     const mock = createMockTransport({
-      'job:cancel-requested': (reply) => reply('job:cancel-ok', { response: { cancelled: true } }),
+      'job:cancel-requested': (reply) =>
+        reply('job:cancel-ok', { response: { cancelled: true } }),
     });
     const j = new JobNamespace(mock.transport, bus);
 
@@ -798,10 +1171,16 @@ describe('JobNamespace', () => {
   it('cancel(jobId) REJECTS on job:cancel-failed (a queue error is not swallowed)', async () => {
     const mock = createMockTransport();
     const job = new JobNamespace(mock.transport, new EventBus());
-    const assertion = expect(job.cancel(jobId('j-42'))).rejects.toThrow(/queue down/);
+    const assertion = expect(job.cancel(jobId('j-42'))).rejects.toThrow(
+      /queue down/,
+    );
     await new Promise((r) => setTimeout(r, 10));
     const cid = mock.emitSpy.mock.calls[0]?.[2]?.correlationId as string;
-    mock.transportBus.emit('job:cancel-failed', { message: 'queue down' }, { correlationId: cid });
+    mock.transportBus.emit(
+      'job:cancel-failed',
+      { message: 'queue down' },
+      { correlationId: cid },
+    );
     await assertion;
   });
 });
@@ -810,14 +1189,20 @@ describe('JobNamespace.pollUntilComplete', () => {
   it('a job that does not end within the time allowed fails as a timeout, under its code', async () => {
     vi.useFakeTimers();
     const mock = createMockTransport({
-      'job:status-requested': (reply) => reply('job:status-result', {
-        response: { ...J1_STORED, type: 'mark', status: 'running' },
-      }),
+      'job:status-requested': (reply) =>
+        reply('job:status-result', {
+          response: { ...J1_STORED, type: 'mark', status: 'running' },
+        }),
     });
     const job = new JobNamespace(mock.transport, new EventBus());
 
-    const polling = job.pollUntilComplete(jobId('j1'), { interval: 10, timeout: 50 });
-    const refusal = expect(polling).rejects.toMatchObject({ code: 'bus.timeout' });
+    const polling = job.pollUntilComplete(jobId('j1'), {
+      interval: 10,
+      timeout: 50,
+    });
+    const refusal = expect(polling).rejects.toMatchObject({
+      code: 'bus.timeout',
+    });
     await vi.advanceTimersByTimeAsync(200);
     await refusal;
     vi.useRealTimers();
@@ -834,17 +1219,28 @@ describe('YieldNamespace', () => {
     eventBus = new EventBus();
     content = makeMockContent();
     const mock = createMockTransport({
-      'yield:clone-token-requested': (reply) => reply('yield:clone-token-generated', {
-        response: { token: 'tok', expiresAt: '2026-01-01', resource: mockResource('res-1') },
-      }),
-      'job:create': (reply) => reply('job:created', { response: { jobId: JID } }),
+      'yield:clone-token-requested': (reply) =>
+        reply('yield:clone-token-generated', {
+          response: {
+            token: 'tok',
+            expiresAt: '2026-01-01',
+            resource: mockResource('res-1'),
+          },
+        }),
+      'job:create': (reply) =>
+        reply('job:created', { response: { jobId: JID } }),
     });
     emitSpy = mock.emitSpy;
     yld = new YieldNamespace(mock.transport, eventBus, content);
   });
 
   it('resource() delegates to content.putBinary', async () => {
-    const result = await yld.resource({ name: 'doc', file: new File(['hi'], 'doc.txt'), format: 'text/plain', storageUri: 'file://x' });
+    const result = await yld.resource({
+      name: 'doc',
+      file: new File(['hi'], 'doc.txt'),
+      format: 'text/plain',
+      storageUri: 'file://x',
+    });
     expect(content.putBinary).toHaveBeenCalled();
     expect(result.resourceId).toBe('res-new');
   });
@@ -853,19 +1249,32 @@ describe('YieldNamespace', () => {
     // Capture the onProgress hook so we can drive byte progress from
     // outside the namespace, simulating what HttpContentTransport's XHR
     // path would feed in.
-    let captured: { onProgress?: (e: { bytesUploaded: number; totalBytes: number }) => void } = {};
+    let captured: {
+      onProgress?: (e: { bytesUploaded: number; totalBytes: number }) => void;
+    } = {};
     let resolveUpload!: (value: { resourceId: string }) => void;
-    const uploadPromise = new Promise<{ resourceId: string }>((r) => { resolveUpload = r; });
-    (content.putBinary as ReturnType<typeof vi.fn>).mockImplementation((_req: unknown, opts: typeof captured) => {
-      captured = opts ?? {};
-      return uploadPromise;
+    const uploadPromise = new Promise<{ resourceId: string }>((r) => {
+      resolveUpload = r;
     });
+    (content.putBinary as ReturnType<typeof vi.fn>).mockImplementation(
+      (_req: unknown, opts: typeof captured) => {
+        captured = opts ?? {};
+        return uploadPromise;
+      },
+    );
 
     const events: UploadProgress[] = [];
     const file = Buffer.from(new Uint8Array(1024)); // 1 KB pre-flight size
-    yld.resource({ name: 'doc', file, format: 'text/plain', storageUri: 'file://x' }).subscribe({
-      next: (e) => events.push(e),
-    });
+    yld
+      .resource({
+        name: 'doc',
+        file,
+        format: 'text/plain',
+        storageUri: 'file://x',
+      })
+      .subscribe({
+        next: (e) => events.push(e),
+      });
 
     // `started` fires synchronously on subscribe.
     expect(events).toEqual([{ phase: 'started', totalBytes: 1024 }]);
@@ -891,23 +1300,35 @@ describe('YieldNamespace', () => {
   });
 
   it('resource() falls back to pre-flight totalBytes when the transport reports total=0', async () => {
-    let captured: { onProgress?: (e: { bytesUploaded: number; totalBytes: number }) => void } = {};
-    (content.putBinary as ReturnType<typeof vi.fn>).mockImplementation((_req: unknown, opts: typeof captured) => {
-      captured = opts ?? {};
-      return new Promise(() => { /* never resolves; we only assert progress shape here */ });
-    });
+    let captured: {
+      onProgress?: (e: { bytesUploaded: number; totalBytes: number }) => void;
+    } = {};
+    (content.putBinary as ReturnType<typeof vi.fn>).mockImplementation(
+      (_req: unknown, opts: typeof captured) => {
+        captured = opts ?? {};
+        return new Promise(() => {
+          /* never resolves; we only assert progress shape here */
+        });
+      },
+    );
 
     const events: UploadProgress[] = [];
-    yld.resource({
-      name: 'doc',
-      file: Buffer.from(new Uint8Array(2048)),
-      format: 'text/plain',
-      storageUri: 'file://x',
-    }).subscribe({ next: (e) => events.push(e) });
+    yld
+      .resource({
+        name: 'doc',
+        file: Buffer.from(new Uint8Array(2048)),
+        format: 'text/plain',
+        storageUri: 'file://x',
+      })
+      .subscribe({ next: (e) => events.push(e) });
 
     captured.onProgress?.({ bytesUploaded: 256, totalBytes: 0 });
 
-    expect(events.at(-1)).toEqual({ phase: 'progress', bytesUploaded: 256, totalBytes: 2048 });
+    expect(events.at(-1)).toEqual({
+      phase: 'progress',
+      bytesUploaded: 256,
+      totalBytes: 2048,
+    });
   });
 
   it('resource() aborts the in-flight upload when the subscriber unsubscribes', () => {
@@ -915,16 +1336,20 @@ describe('YieldNamespace', () => {
     (content.putBinary as ReturnType<typeof vi.fn>).mockImplementation(
       (_req: unknown, opts: { signal?: AbortSignal }) => {
         capturedSignal = opts?.signal;
-        return new Promise(() => { /* never resolves */ });
+        return new Promise(() => {
+          /* never resolves */
+        });
       },
     );
 
-    const sub = yld.resource({
-      name: 'doc',
-      file: Buffer.from('xx'),
-      format: 'text/plain',
-      storageUri: 'file://x',
-    }).subscribe({ next: () => {} });
+    const sub = yld
+      .resource({
+        name: 'doc',
+        file: Buffer.from('xx'),
+        format: 'text/plain',
+        storageUri: 'file://x',
+      })
+      .subscribe({ next: () => {} });
 
     expect(capturedSignal?.aborted).toBe(false);
     sub.unsubscribe();
@@ -932,172 +1357,308 @@ describe('YieldNamespace', () => {
   });
 
   it('delegate(annotation focus) sends NO ids — the context is the wire truth', () => {
-    yld.delegate({ title: 'T', storageUri: 'file://x', context: CTX_ANN }).subscribe(() => {});
-    return new Promise<void>((resolve) => setTimeout(() => {
-      const call = emitSpy.mock.calls.find((c: unknown[]) => c[0] === 'job:create');
-      const payload = call![1] as Record<string, unknown>;
-      expect(payload.jobType).toBe('yield');
-      // The server derives both ids from params.context.focus; a
-      // caller-supplied id is REJECTED there, so the sdk must not send
-      // either.
-      expect('resourceId' in payload).toBe(false);
-      const params = payload.params as Record<string, unknown>;
-      expect('referenceId' in params).toBe(false);
-      expect(params.context).toBe(CTX_ANN);
-      resolve();
-    }, 20));
+    yld
+      .delegate({ title: 'T', storageUri: 'file://x', context: CTX_ANN })
+      .subscribe(() => {});
+    return new Promise<void>((resolve) =>
+      setTimeout(() => {
+        const call = emitSpy.mock.calls.find(
+          (c: unknown[]) => c[0] === 'job:create',
+        );
+        const payload = call![1] as Record<string, unknown>;
+        expect(payload.jobType).toBe('yield');
+        // The server derives both ids from params.context.focus; a
+        // caller-supplied id is REJECTED there, so the sdk must not send
+        // either.
+        expect('resourceId' in payload).toBe(false);
+        const params = payload.params as Record<string, unknown>;
+        expect('referenceId' in params).toBe(false);
+        expect(params.context).toBe(CTX_ANN);
+        resolve();
+      }, 20),
+    );
   });
 
   it('delegate throws loudly on a context with no usable focus — never guesses', () => {
     // The one place a cast remains, deliberately: it models a context whose
     // type history was severed (wire JSON, storage, a hand-built object).
-    expect(() => yld.delegate({ title: 'T', storageUri: 'file://x', context: {} as GatheredContext }))
-      .toThrow(/gather\.resource|gather\.annotation/);
+    expect(() =>
+      yld.delegate({
+        title: 'T',
+        storageUri: 'file://x',
+        context: {} as GatheredContext,
+      }),
+    ).toThrow(/gather\.resource|gather\.annotation/);
   });
 
   it('delegate(resource focus) sends NO ids; the context rides in params', () => {
-    yld.delegate({ title: 'T', storageUri: 'file://x', context: CTX_RES }).subscribe(() => {});
-    return new Promise<void>((resolve) => setTimeout(() => {
-      const call = emitSpy.mock.calls.find((c: unknown[]) => c[0] === 'job:create');
-      const payload = call![1] as Record<string, unknown>;
-      expect(payload.jobType).toBe('yield');
-      expect('resourceId' in payload).toBe(false);
-      const params = payload.params as Record<string, unknown>;
-      expect('referenceId' in params).toBe(false);
-      expect(params.context).toBe(CTX_RES);
-      resolve();
-    }, 20));
+    yld
+      .delegate({ title: 'T', storageUri: 'file://x', context: CTX_RES })
+      .subscribe(() => {});
+    return new Promise<void>((resolve) =>
+      setTimeout(() => {
+        const call = emitSpy.mock.calls.find(
+          (c: unknown[]) => c[0] === 'job:create',
+        );
+        const payload = call![1] as Record<string, unknown>;
+        expect(payload.jobType).toBe('yield');
+        expect('resourceId' in payload).toBe(false);
+        const params = payload.params as Record<string, unknown>;
+        expect('referenceId' in params).toBe(false);
+        expect(params.context).toBe(CTX_RES);
+        resolve();
+      }, 20),
+    );
   });
 
   it('delegate({ outputMediaType }) [resource focus] carries outputMediaType into job:create params', () => {
-    yld.delegate({ title: 'T', storageUri: 'file://x', outputMediaType: 'text/plain', context: CTX_RES }).subscribe(() => {});
-    return new Promise<void>((resolve) => setTimeout(() => {
-      expect(emitSpy).toHaveBeenCalledWith('job:create', expect.objectContaining({
-        params: expect.objectContaining({ outputMediaType: 'text/plain' }),
-      }), expect.objectContaining({ correlationId: expect.any(String) }));
-      resolve();
-    }, 20));
+    yld
+      .delegate({
+        title: 'T',
+        storageUri: 'file://x',
+        outputMediaType: 'text/plain',
+        context: CTX_RES,
+      })
+      .subscribe(() => {});
+    return new Promise<void>((resolve) =>
+      setTimeout(() => {
+        expect(emitSpy).toHaveBeenCalledWith(
+          'job:create',
+          expect.objectContaining({
+            params: expect.objectContaining({ outputMediaType: 'text/plain' }),
+          }),
+          expect.objectContaining({ correlationId: expect.any(String) }),
+        );
+        resolve();
+      }, 20),
+    );
   });
 
   it('delegate({ outputMediaType }) [annotation focus] carries outputMediaType into job:create params', () => {
-    yld.delegate({ title: 'T', storageUri: 'file://x', outputMediaType: 'text/plain', context: CTX_ANN }).subscribe(() => {});
-    return new Promise<void>((resolve) => setTimeout(() => {
-      expect(emitSpy).toHaveBeenCalledWith('job:create', expect.objectContaining({
-        params: expect.objectContaining({ outputMediaType: 'text/plain' }),
-      }), expect.objectContaining({ correlationId: expect.any(String) }));
-      resolve();
-    }, 20));
+    yld
+      .delegate({
+        title: 'T',
+        storageUri: 'file://x',
+        outputMediaType: 'text/plain',
+        context: CTX_ANN,
+      })
+      .subscribe(() => {});
+    return new Promise<void>((resolve) =>
+      setTimeout(() => {
+        expect(emitSpy).toHaveBeenCalledWith(
+          'job:create',
+          expect.objectContaining({
+            params: expect.objectContaining({ outputMediaType: 'text/plain' }),
+          }),
+          expect.objectContaining({ correlationId: expect.any(String) }),
+        );
+        resolve();
+      }, 20),
+    );
   });
 
   it('delegate({ task, structure }) [resource focus] carries both into job:create params', () => {
     // The Q&A recipe these options exist for: task frames the ask, structure
     // forces the shape. The worker's template branches on both.
-    yld.delegate({ title: 'T', storageUri: 'file://x', task: 'answer', structure: 'prose', context: CTX_RES }).subscribe(() => {});
-    return new Promise<void>((resolve) => setTimeout(() => {
-      expect(emitSpy).toHaveBeenCalledWith('job:create', expect.objectContaining({
-        params: expect.objectContaining({ task: 'answer', structure: 'prose' }),
-      }), expect.objectContaining({ correlationId: expect.any(String) }));
-      resolve();
-    }, 20));
+    yld
+      .delegate({
+        title: 'T',
+        storageUri: 'file://x',
+        task: 'answer',
+        structure: 'prose',
+        context: CTX_RES,
+      })
+      .subscribe(() => {});
+    return new Promise<void>((resolve) =>
+      setTimeout(() => {
+        expect(emitSpy).toHaveBeenCalledWith(
+          'job:create',
+          expect.objectContaining({
+            params: expect.objectContaining({
+              task: 'answer',
+              structure: 'prose',
+            }),
+          }),
+          expect.objectContaining({ correlationId: expect.any(String) }),
+        );
+        resolve();
+      }, 20),
+    );
   });
 
   it('delegate({ task, structure }) [annotation focus] carries both — including an open-union custom string', () => {
     // structure 'chat' is the third canonical; task exercises the
     // (string & {}) escape hatch — the SDK must pass it through verbatim.
-    yld.delegate({ title: 'T', storageUri: 'file://x', task: 'translate to French', structure: 'chat', context: CTX_ANN }).subscribe(() => {});
-    return new Promise<void>((resolve) => setTimeout(() => {
-      expect(emitSpy).toHaveBeenCalledWith('job:create', expect.objectContaining({
-        params: expect.objectContaining({ task: 'translate to French', structure: 'chat' }),
-      }), expect.objectContaining({ correlationId: expect.any(String) }));
-      resolve();
-    }, 20));
+    yld
+      .delegate({
+        title: 'T',
+        storageUri: 'file://x',
+        task: 'translate to French',
+        structure: 'chat',
+        context: CTX_ANN,
+      })
+      .subscribe(() => {});
+    return new Promise<void>((resolve) =>
+      setTimeout(() => {
+        expect(emitSpy).toHaveBeenCalledWith(
+          'job:create',
+          expect.objectContaining({
+            params: expect.objectContaining({
+              task: 'translate to French',
+              structure: 'chat',
+            }),
+          }),
+          expect.objectContaining({ correlationId: expect.any(String) }),
+        );
+        resolve();
+      }, 20),
+    );
   });
 
   it('unset task/structure reach job:create as undefined — the SDK invents no defaults', () => {
     // Unset structure ⇒ the worker emits NO structure directive. That
     // only holds if the SDK leaves the fields untouched (undefined keys
     // vanish at JSON serialization on the wire).
-    yld.delegate({ title: 'T', storageUri: 'file://x', context: CTX_RES }).subscribe(() => {});
-    return new Promise<void>((resolve) => setTimeout(() => {
-      const call = emitSpy.mock.calls.find((c: unknown[]) => c[0] === 'job:create');
-      const params = (call![1] as { params: Record<string, unknown> }).params;
-      expect(params.task).toBeUndefined();
-      expect(params.structure).toBeUndefined();
-      resolve();
-    }, 20));
+    yld
+      .delegate({ title: 'T', storageUri: 'file://x', context: CTX_RES })
+      .subscribe(() => {});
+    return new Promise<void>((resolve) =>
+      setTimeout(() => {
+        const call = emitSpy.mock.calls.find(
+          (c: unknown[]) => c[0] === 'job:create',
+        );
+        const params = (call![1] as { params: Record<string, unknown> }).params;
+        expect(params.task).toBeUndefined();
+        expect(params.structure).toBeUndefined();
+        resolve();
+      }, 20),
+    );
   });
 
   it('delegate({ cite: true }) [resource focus] carries cite into job:create params', () => {
-    yld.delegate({ title: 'T', storageUri: 'file://x', cite: true, context: CTX_RES }).subscribe(() => {});
-    return new Promise<void>((resolve) => setTimeout(() => {
-      expect(emitSpy).toHaveBeenCalledWith('job:create', expect.objectContaining({
-        params: expect.objectContaining({ cite: true }),
-      }), expect.objectContaining({ correlationId: expect.any(String) }));
-      resolve();
-    }, 20));
+    yld
+      .delegate({
+        title: 'T',
+        storageUri: 'file://x',
+        cite: true,
+        context: CTX_RES,
+      })
+      .subscribe(() => {});
+    return new Promise<void>((resolve) =>
+      setTimeout(() => {
+        expect(emitSpy).toHaveBeenCalledWith(
+          'job:create',
+          expect.objectContaining({
+            params: expect.objectContaining({ cite: true }),
+          }),
+          expect.objectContaining({ correlationId: expect.any(String) }),
+        );
+        resolve();
+      }, 20),
+    );
   });
 
   it('delegate({ cite: true }) [annotation focus] carries cite into job:create params', () => {
-    yld.delegate({ title: 'T', storageUri: 'file://x', cite: true, context: CTX_ANN }).subscribe(() => {});
-    return new Promise<void>((resolve) => setTimeout(() => {
-      expect(emitSpy).toHaveBeenCalledWith('job:create', expect.objectContaining({
-        params: expect.objectContaining({ cite: true }),
-      }), expect.objectContaining({ correlationId: expect.any(String) }));
-      resolve();
-    }, 20));
+    yld
+      .delegate({
+        title: 'T',
+        storageUri: 'file://x',
+        cite: true,
+        context: CTX_ANN,
+      })
+      .subscribe(() => {});
+    return new Promise<void>((resolve) =>
+      setTimeout(() => {
+        expect(emitSpy).toHaveBeenCalledWith(
+          'job:create',
+          expect.objectContaining({
+            params: expect.objectContaining({ cite: true }),
+          }),
+          expect.objectContaining({ correlationId: expect.any(String) }),
+        );
+        resolve();
+      }, 20),
+    );
   });
 
   it('unset cite reaches job:create as undefined — the resolver gates on presence', () => {
     // The worker parses/strips [[..]] tokens ONLY when cite is set: double-
     // bracketed text is legitimate content otherwise. An SDK-invented
     // default would corrupt non-citing generations.
-    yld.delegate({ title: 'T', storageUri: 'file://x', context: CTX_RES }).subscribe(() => {});
-    return new Promise<void>((resolve) => setTimeout(() => {
-      const call = emitSpy.mock.calls.find((c: unknown[]) => c[0] === 'job:create');
-      const params = (call![1] as { params: Record<string, unknown> }).params;
-      expect(params.cite).toBeUndefined();
-      resolve();
-    }, 20));
+    yld
+      .delegate({ title: 'T', storageUri: 'file://x', context: CTX_RES })
+      .subscribe(() => {});
+    return new Promise<void>((resolve) =>
+      setTimeout(() => {
+        const call = emitSpy.mock.calls.find(
+          (c: unknown[]) => c[0] === 'job:create',
+        );
+        const params = (call![1] as { params: Record<string, unknown> }).params;
+        expect(params.cite).toBeUndefined();
+        resolve();
+      }, 20),
+    );
   });
 
   it('delegate({ entityTypes }) carries entityTypes through into job:create params', () => {
     // entityTypes must survive from the caller's params to the
     // bus payload: dropped there, synthesized resources go un-stamped at
     // schema-layer queries.
-    yld.delegate({
-      title: 'T',
-      storageUri: 'file://x',
-      entityTypes: ['Character', 'Hero'],
-      context: CTX_ANN,
-    }).subscribe(() => {});
-    return new Promise<void>((resolve) => setTimeout(() => {
-      expect(emitSpy).toHaveBeenCalledWith('job:create', expect.objectContaining({
-        jobType: 'yield',
-        params: expect.objectContaining({
-          entityTypes: ['Character', 'Hero'],
-        }),
-      }), expect.objectContaining({ correlationId: expect.any(String) }));
-      resolve();
-    }, 20));
+    yld
+      .delegate({
+        title: 'T',
+        storageUri: 'file://x',
+        entityTypes: ['Character', 'Hero'],
+        context: CTX_ANN,
+      })
+      .subscribe(() => {});
+    return new Promise<void>((resolve) =>
+      setTimeout(() => {
+        expect(emitSpy).toHaveBeenCalledWith(
+          'job:create',
+          expect.objectContaining({
+            jobType: 'yield',
+            params: expect.objectContaining({
+              entityTypes: ['Character', 'Hero'],
+            }),
+          }),
+          expect.objectContaining({ correlationId: expect.any(String) }),
+        );
+        resolve();
+      }, 20),
+    );
   });
 
   it('delegate() emits progress and completes on job:complete', async () => {
     const progress: JobEvent[] = [];
     const completed = new Promise<void>((resolve) => {
-      yld.delegate({ title: 'T', storageUri: 'file://x', context: CTX_ANN }).subscribe({
-        next: (p) => progress.push(p),
-        complete: () => resolve(),
-      });
+      yld
+        .delegate({ title: 'T', storageUri: 'file://x', context: CTX_ANN })
+        .subscribe({
+          next: (p) => progress.push(p),
+          complete: () => resolve(),
+        });
     });
 
     await new Promise((r) => setTimeout(r, 20));
     eventBus.emit('job:report-progress', {
-      jobId: JID, resourceId: RID, _userId: UID, jobType: 'yield',
-      percentage: 50, progress: { percentage: 50, message: { code: 'generating-resource' } },
+      jobId: JID,
+      resourceId: RID,
+      _userId: UID,
+      jobType: 'yield',
+      percentage: 50,
+      progress: { percentage: 50, message: { code: 'generating-resource' } },
     });
     eventBus.emit('job:complete', {
-      jobId: JID, resourceId: RID, _userId: UID, jobType: 'yield',
-      result: { resourceId: resourceId('res-new'), resourceName: 'T', truncated: false },
+      jobId: JID,
+      resourceId: RID,
+      _userId: UID,
+      jobType: 'yield',
+      result: {
+        resourceId: resourceId('res-new'),
+        resourceName: 'T',
+        truncated: false,
+      },
     });
 
     await completed;
@@ -1106,34 +1667,56 @@ describe('YieldNamespace', () => {
 
   it('cloneToken() uses bus request', async () => {
     const result = await yld.cloneToken(RID);
-    expect(result).toEqual({ token: 'tok', expiresAt: '2026-01-01', resource: mockResource('res-1') });
+    expect(result).toEqual({
+      token: 'tok',
+      expiresAt: '2026-01-01',
+      resource: mockResource('res-1'),
+    });
   });
 
   it('delegate() falls back to job polling when SSE is silent', async () => {
     vi.useFakeTimers();
     const bus = new EventBus();
     const mock = createMockTransport({
-      'job:create': (reply) => reply('job:created', { response: { jobId: JID } }),
-      'job:status-requested': (reply) => reply('job:status-result', {
-        response: {
-          ...J1_STORED, type: 'yield', status: 'complete',
-          result: { resourceId: resourceId('res-poll'), resourceName: 'T', truncated: false },
-        },
-      }),
+      'job:create': (reply) =>
+        reply('job:created', { response: { jobId: JID } }),
+      'job:status-requested': (reply) =>
+        reply('job:status-result', {
+          response: {
+            ...J1_STORED,
+            type: 'yield',
+            status: 'complete',
+            result: {
+              resourceId: resourceId('res-poll'),
+              resourceName: 'T',
+              truncated: false,
+            },
+          },
+        }),
     });
     const y = new YieldNamespace(mock.transport, bus, makeMockContent());
 
     const progress: unknown[] = [];
     let completed = false;
-    y.delegate({ title: 'T', storageUri: 'file://x', context: annotationContextFor('res-1', 'ann-1') }).subscribe({
+    y.delegate({
+      title: 'T',
+      storageUri: 'file://x',
+      context: annotationContextFor('res-1', 'ann-1'),
+    }).subscribe({
       next: (p) => progress.push(p),
-      complete: () => { completed = true; },
+      complete: () => {
+        completed = true;
+      },
     });
 
     await vi.advanceTimersByTimeAsync(100);
     await vi.advanceTimersByTimeAsync(16_000);
 
-    expect(mock.emitSpy).toHaveBeenCalledWith('job:status-requested', expect.any(Object), expect.objectContaining({ correlationId: expect.any(String) }));
+    expect(mock.emitSpy).toHaveBeenCalledWith(
+      'job:status-requested',
+      expect.any(Object),
+      expect.objectContaining({ correlationId: expect.any(String) }),
+    );
     expect(completed).toBe(true);
 
     bus.destroy();
@@ -1144,20 +1727,34 @@ describe('YieldNamespace', () => {
     vi.useFakeTimers();
     const bus = new EventBus();
     const mock = createMockTransport({
-      'job:create': (reply) => reply('job:created', { response: { jobId: JID } }),
+      'job:create': (reply) =>
+        reply('job:created', { response: { jobId: JID } }),
     });
     const y = new YieldNamespace(mock.transport, bus, makeMockContent());
 
     let completed = false;
-    y.delegate({ title: 'T', storageUri: 'file://x', context: annotationContextFor('res-1', 'ann-1') }).subscribe({
+    y.delegate({
+      title: 'T',
+      storageUri: 'file://x',
+      context: annotationContextFor('res-1', 'ann-1'),
+    }).subscribe({
       next: () => {},
-      complete: () => { completed = true; },
+      complete: () => {
+        completed = true;
+      },
     });
 
     await vi.advanceTimersByTimeAsync(100);
     bus.emit('job:complete', {
-      jobId: JID, resourceId: RID, _userId: UID, jobType: 'yield',
-      result: { resourceId: resourceId('res-new'), resourceName: 'T', truncated: false },
+      jobId: JID,
+      resourceId: RID,
+      _userId: UID,
+      jobType: 'yield',
+      result: {
+        resourceId: resourceId('res-new'),
+        resourceName: 'T',
+        truncated: false,
+      },
     });
     expect(completed).toBe(true);
 
@@ -1189,20 +1786,33 @@ describe('YieldNamespace', () => {
 // (2) guard does NOT fire when the consumer is still subscribed → error
 // propagates as expected.
 
-function makeDeferred<T>(): { promise: Promise<T>; resolve: (v: T) => void; reject: (e: Error) => void } {
+function makeDeferred<T>(): {
+  promise: Promise<T>;
+  resolve: (v: T) => void;
+  reject: (e: Error) => void;
+} {
   let resolve!: (v: T) => void;
   let reject!: (e: Error) => void;
-  const promise = new Promise<T>((res, rej) => { resolve = res; reject = rej; });
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
   return { promise, resolve, reject };
 }
 
 /** Build a transport whose `emit` always returns the supplied promise. */
-function makeDeferredEmitTransport(emitPromise: Promise<unknown>): { transport: ITransport; emitSpy: ReturnType<typeof vi.fn>; bus: EventBus } {
+function makeDeferredEmitTransport(emitPromise: Promise<unknown>): {
+  transport: ITransport;
+  emitSpy: ReturnType<typeof vi.fn>;
+  bus: EventBus;
+} {
   const bus = new EventBus();
   const emitSpy = vi.fn().mockReturnValue(emitPromise);
   const transport: ITransport & IGatewayOperations = {
     ...inMemoryTransport({
-      onEmit: (channel, payload, envelope) => { void emitSpy(channel, payload, envelope); },
+      onEmit: (channel, payload, envelope) => {
+        void emitSpy(channel, payload, envelope);
+      },
     }),
     ...gatewayOperationSpies(),
   };
@@ -1282,11 +1892,19 @@ describe('late-rejection guards', () => {
   it('yield.delegate does NOT propagate a late Bus.request rejection after the consumer unsubscribes', async () => {
     const { promise, reject } = makeDeferred<void>();
     const { transport, bus } = makeDeferredEmitTransport(promise);
-    const yld = new YieldNamespace(transport, new EventBus(), makeMockContent());
+    const yld = new YieldNamespace(
+      transport,
+      new EventBus(),
+      makeMockContent(),
+    );
 
     const errors: Error[] = [];
     const sub = yld
-      .delegate({ title: 'T', storageUri: 'file://x', context: annotationContextFor('res-1', 'ann-1') })
+      .delegate({
+        title: 'T',
+        storageUri: 'file://x',
+        context: annotationContextFor('res-1', 'ann-1'),
+      })
       .subscribe({
         next: () => {},
         error: (e: Error) => errors.push(e),
@@ -1341,10 +1959,17 @@ describe('YieldNamespace.resource — runtime fallback when Buffer is unavailabl
 
     const events: UploadProgress[] = [];
     const errors: unknown[] = [];
-    yld.resource({ name: 'doc', file, format: 'text/plain', storageUri: 'file://x' }).subscribe({
-      next: (e) => events.push(e),
-      error: (e) => errors.push(e),
-    });
+    yld
+      .resource({
+        name: 'doc',
+        file,
+        format: 'text/plain',
+        storageUri: 'file://x',
+      })
+      .subscribe({
+        next: (e) => events.push(e),
+        error: (e) => errors.push(e),
+      });
 
     // Without the typeof guard this throws `Buffer is not defined`
     // synchronously before `started` ever fires. With it, the Buffer
@@ -1359,12 +1984,22 @@ describe('YieldNamespace.resource — runtime fallback when Buffer is unavailabl
 
   it('passes the File through to content.putBinary unchanged', async () => {
     const file = new File([new Uint8Array(1024)], 'doc.bin');
-    yld.resource({ name: 'doc', file, format: 'text/plain', storageUri: 'file://x' }).subscribe();
+    yld
+      .resource({
+        name: 'doc',
+        file,
+        format: 'text/plain',
+        storageUri: 'file://x',
+      })
+      .subscribe();
 
     await new Promise((r) => setTimeout(r, 0));
     expect(content.putBinary).toHaveBeenCalledWith(
       expect.objectContaining({ file, name: 'doc' }),
-      expect.objectContaining({ onProgress: expect.any(Function), signal: expect.any(AbortSignal) }),
+      expect.objectContaining({
+        onProgress: expect.any(Function),
+        signal: expect.any(AbortSignal),
+      }),
     );
   });
 });

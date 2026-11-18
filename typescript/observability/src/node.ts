@@ -91,14 +91,23 @@ export function metricsExporterKind(
  * or out of range is logged and treated as unset, as the spec requires:
  * `parentbased_always_on`, and a ratio of 1.
  */
-function samplerFromEnvironment(name: string | undefined, arg: string | undefined): Sampler {
+function samplerFromEnvironment(
+  name: string | undefined,
+  arg: string | undefined,
+): Sampler {
   const ratio = (): number => {
-    const value = arg === undefined || arg.trim() === '' ? Number.NaN : Number(arg.trim());
+    const value =
+      arg === undefined || arg.trim() === '' ? Number.NaN : Number(arg.trim());
     if (value >= 0 && value <= 1) return value;
-    diag.error(`OTEL_TRACES_SAMPLER_ARG=${JSON.stringify(arg)} is no ratio from 0 to 1; using 1`);
+    diag.error(
+      `OTEL_TRACES_SAMPLER_ARG=${JSON.stringify(arg)} is no ratio from 0 to 1; using 1`,
+    );
     return 1;
   };
-  const named = name === undefined || name.trim() === '' ? 'parentbased_always_on' : name.trim();
+  const named =
+    name === undefined || name.trim() === ''
+      ? 'parentbased_always_on'
+      : name.trim();
   switch (named) {
     case 'always_on':
       return new AlwaysOnSampler();
@@ -111,9 +120,13 @@ function samplerFromEnvironment(name: string | undefined, arg: string | undefine
     case 'parentbased_always_off':
       return new ParentBasedSampler({ root: new AlwaysOffSampler() });
     case 'parentbased_traceidratio':
-      return new ParentBasedSampler({ root: new TraceIdRatioBasedSampler(ratio()) });
+      return new ParentBasedSampler({
+        root: new TraceIdRatioBasedSampler(ratio()),
+      });
     default:
-      diag.error(`OTEL_TRACES_SAMPLER=${JSON.stringify(named)} is no sampler this package makes; using parentbased_always_on`);
+      diag.error(
+        `OTEL_TRACES_SAMPLER=${JSON.stringify(named)} is no sampler this package makes; using parentbased_always_on`,
+      );
       return new ParentBasedSampler({ root: new AlwaysOnSampler() });
   }
 }
@@ -127,7 +140,9 @@ function samplerFromEnvironment(name: string | undefined, arg: string | undefine
  * Metrics export at `OTEL_METRIC_EXPORT_INTERVAL` ms (default 30s) to
  * the same `OTEL_EXPORTER_OTLP_ENDPOINT` as traces.
  */
-export function initObservabilityNode(config: NodeObservabilityConfig): boolean {
+export function initObservabilityNode(
+  config: NodeObservabilityConfig,
+): boolean {
   if (tracerProviderInstance) return false;
   if (process.env['OTEL_SDK_DISABLED'] === 'true') return false;
 
@@ -146,16 +161,23 @@ export function initObservabilityNode(config: NodeObservabilityConfig): boolean 
   });
 
   // Trace SDK
-  const traceExporter = endpoint ? new OTLPTraceExporter() : new ConsoleSpanExporter();
+  const traceExporter = endpoint
+    ? new OTLPTraceExporter()
+    : new ConsoleSpanExporter();
   tracerProviderInstance = new TracerProvider({
     resource,
-    sampler: samplerFromEnvironment(process.env['OTEL_TRACES_SAMPLER'], process.env['OTEL_TRACES_SAMPLER_ARG']),
+    sampler: samplerFromEnvironment(
+      process.env['OTEL_TRACES_SAMPLER'],
+      process.env['OTEL_TRACES_SAMPLER_ARG'],
+    ),
     spanProcessors: [new BatchSpanProcessor({ exporter: traceExporter })],
   });
 
   // Async-context propagation across `await` boundaries — what NodeSDK
   // installs internally.
-  context.setGlobalContextManager(new AsyncLocalStorageContextManager().enable());
+  context.setGlobalContextManager(
+    new AsyncLocalStorageContextManager().enable(),
+  );
   trace.setGlobalTracerProvider(tracerProviderInstance);
 
   // W3C trace-context propagator. Without this, `propagation.inject`
@@ -168,7 +190,8 @@ export function initObservabilityNode(config: NodeObservabilityConfig): boolean 
 
   // Traces follow the endpoint; metrics additionally honour OTEL_METRICS_EXPORTER.
   const metricExporter =
-    metricsExporterKind(endpoint, process.env['OTEL_METRICS_EXPORTER']) === 'console'
+    metricsExporterKind(endpoint, process.env['OTEL_METRICS_EXPORTER']) ===
+    'console'
       ? new ConsoleMetricExporter()
       : new OTLPMetricExporter();
   const intervalRaw = process.env['OTEL_METRIC_EXPORT_INTERVAL'];
@@ -181,9 +204,10 @@ export function initObservabilityNode(config: NodeObservabilityConfig): boolean 
     readers: [
       new PeriodicExportingMetricReader({
         exporter: metricExporter,
-        exportIntervalMillis: Number.isFinite(exportIntervalMillis) && exportIntervalMillis > 0
-          ? exportIntervalMillis
-          : DEFAULT_METRIC_EXPORT_INTERVAL_MS,
+        exportIntervalMillis:
+          Number.isFinite(exportIntervalMillis) && exportIntervalMillis > 0
+            ? exportIntervalMillis
+            : DEFAULT_METRIC_EXPORT_INTERVAL_MS,
       }),
     ],
   });

@@ -15,9 +15,9 @@ export class WebBrowserStorage implements SessionStorage {
     if (typeof window === 'undefined') {
       throw new Error(
         'WebBrowserStorage is client-only. It must not be constructed on ' +
-        'the server — a single process-wide instance would leak tokens ' +
-        'between HTTP requests. Wrap any code path that constructs this ' +
-        'in "use client".',
+          'the server — a single process-wide instance would leak tokens ' +
+          'between HTTP requests. Wrap any code path that constructs this ' +
+          'in "use client".',
       );
     }
   }
@@ -41,7 +41,9 @@ export class WebBrowserStorage implements SessionStorage {
     else localStorage.setItem(key, next);
   }
 
-  subscribe(handler: (key: string, newValue: string | null) => void): () => void {
+  subscribe(
+    handler: (key: string, newValue: string | null) => void,
+  ): () => void {
     const listener = (e: StorageEvent): void => {
       if (e.key === null) return;
       handler(e.key, e.newValue);

@@ -12,18 +12,33 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { occurrencesOf, textOffsets } from '../text-offsets';
 
-interface Span { exact: string; occurrence: number; start: number; end: number }
-interface Case { why: string; text: string; codePoints: number; spans: Span[] }
+interface Span {
+  exact: string;
+  occurrence: number;
+  start: number;
+  end: number;
+}
+interface Case {
+  why: string;
+  text: string;
+  codePoints: number;
+  spans: Span[];
+}
 
 const TABLE = 'protocol/specs/src/text/offset-cases.json';
-const table: { cases: Case[] } = JSON.parse(readFileSync(resolve(__dirname, '../../../..', TABLE), 'utf8'));
+const table: { cases: Case[] } = JSON.parse(
+  readFileSync(resolve(__dirname, '../../../..', TABLE), 'utf8'),
+);
 
 /** Where the string holds the n-th occurrence of `exact`, in the string's own count. */
 function found(text: string, exact: string, occurrence: number): number {
   let at = -1;
   for (let n = 0; n < occurrence; n++) {
     at = text.indexOf(exact, at + 1);
-    if (at === -1) throw new Error(`"${text}" has no occurrence ${occurrence} of "${exact}"`);
+    if (at === -1)
+      throw new Error(
+        `"${text}" has no occurrence ${occurrence} of "${exact}"`,
+      );
   }
   return at;
 }
@@ -31,7 +46,9 @@ function found(text: string, exact: string, occurrence: number): number {
 describe('a text offset counts code points (protocol/specs/src/text/offset-cases.json)', () => {
   it('has cases, and one at least with a character outside the basic plane', () => {
     expect(table.cases.length).toBeGreaterThan(0);
-    expect(table.cases.some(({ text }) => /[\u{10000}-\u{10FFFF}]/u.test(text))).toBe(true);
+    expect(
+      table.cases.some(({ text }) => /[\u{10000}-\u{10FFFF}]/u.test(text)),
+    ).toBe(true);
   });
 
   describe.each(table.cases)('$why', ({ text, codePoints, spans }) => {
@@ -41,15 +58,23 @@ describe('a text offset counts code points (protocol/specs/src/text/offset-cases
       expect(offsets.length).toBe(codePoints);
     });
 
-    it.each(spans)('"$exact" ($occurrence): found in the string, it is given the table\'s offsets', ({ exact, occurrence, start, end }) => {
-      const index = found(text, exact, occurrence);
-      expect(offsets.offsetAt(index)).toBe(start);
-      expect(offsets.offsetAt(index + exact.length)).toBe(end);
-    });
+    it.each(spans)(
+      '"$exact" ($occurrence): found in the string, it is given the table\'s offsets',
+      ({ exact, occurrence, start, end }) => {
+        const index = found(text, exact, occurrence);
+        expect(offsets.offsetAt(index)).toBe(start);
+        expect(offsets.offsetAt(index + exact.length)).toBe(end);
+      },
+    );
 
-    it.each(spans)('"$exact" ($occurrence): the table\'s offsets, taken into the string, are its words', ({ exact, start, end }) => {
-      expect(text.slice(offsets.indexAt(start), offsets.indexAt(end))).toBe(exact);
-    });
+    it.each(spans)(
+      '"$exact" ($occurrence): the table\'s offsets, taken into the string, are its words',
+      ({ exact, start, end }) => {
+        expect(text.slice(offsets.indexAt(start), offsets.indexAt(end))).toBe(
+          exact,
+        );
+      },
+    );
   });
 });
 
@@ -59,16 +84,24 @@ describe('what textOffsets refuses', () => {
   const offsets = textOffsets('a😀b');
 
   it('a position inside a character has no offset', () => {
-    expect(() => offsets.offsetAt(2)).toThrow('position 2 is inside a character');
+    expect(() => offsets.offsetAt(2)).toThrow(
+      'position 2 is inside a character',
+    );
   });
 
-  it.each([-1, 5, 1.5, Number.NaN])('a position the string does not have: %s', (index) => {
-    expect(() => offsets.offsetAt(index)).toThrow(RangeError);
-  });
+  it.each([-1, 5, 1.5, Number.NaN])(
+    'a position the string does not have: %s',
+    (index) => {
+      expect(() => offsets.offsetAt(index)).toThrow(RangeError);
+    },
+  );
 
-  it.each([-1, 4, 0.5, Number.NaN])('an offset the text does not have: %s', (offset) => {
-    expect(() => offsets.indexAt(offset)).toThrow(RangeError);
-  });
+  it.each([-1, 4, 0.5, Number.NaN])(
+    'an offset the text does not have: %s',
+    (offset) => {
+      expect(() => offsets.indexAt(offset)).toThrow(RangeError);
+    },
+  );
 
   it('the end of the text is a position and an offset, each way', () => {
     expect(offsets.offsetAt(4)).toBe(3);
@@ -95,16 +128,21 @@ describe('what textOffsets refuses', () => {
 // it answers offsets, and only where the text has the words character for
 // character.
 describe('occurrencesOf', () => {
-  const places = (text: string, words: string): number[] => occurrencesOf(text, textOffsets(text), words);
+  const places = (text: string, words: string): number[] =>
+    occurrencesOf(text, textOffsets(text), words);
 
-  it.each(table.cases.flatMap(({ text, spans }) => spans.map((span) => ({ text, ...span }))))(
+  it.each(
+    table.cases.flatMap(({ text, spans }) =>
+      spans.map((span) => ({ text, ...span })),
+    ),
+  )(
     '"$exact" ($occurrence) of "$text" is at the table\'s offset',
     ({ text, exact, occurrence, start }) => {
       expect(places(text, exact)[occurrence - 1]).toBe(start);
     },
   );
 
-  it('answers every place, in the text\'s order, and places may overlap', () => {
+  it("answers every place, in the text's order, and places may overlap", () => {
     expect(places('banana', 'ana')).toEqual([1, 3]);
     expect(places('ab 🎉 ab', 'ab')).toEqual([0, 5]);
   });

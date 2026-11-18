@@ -1,10 +1,19 @@
 import { BehaviorSubject, type Subscription } from 'rxjs';
 import type { XynologClient } from '../../client';
-import { watched, type AnnotationId, type GatheredContext, type ResourceId, type StateUnit, type Watched } from '@xynolog/core';
+import {
+  watched,
+  type AnnotationId,
+  type GatheredContext,
+  type ResourceId,
+  type StateUnit,
+  type Watched,
+} from '@xynolog/core';
 import type { GatherNamespace } from '../../namespaces/types';
 
 /** The options `client.gather.annotation` takes — one shape, referenced not duplicated. */
-export type AnnotationGatherOptions = Parameters<GatherNamespace['annotation']>[2];
+export type AnnotationGatherOptions = Parameters<
+  GatherNamespace['annotation']
+>[2];
 /** The options `client.gather.resource` takes — one shape, referenced not duplicated. */
 export type ResourceGatherOptions = Parameters<GatherNamespace['resource']>[1];
 
@@ -27,7 +36,10 @@ export interface GatherStateUnit extends StateUnit {
    * the unit itself, as every gather is: a gather asked of one resource's unit
    * reaches no other.
    */
-  gatherAnnotation(annotationId: AnnotationId, options?: AnnotationGatherOptions): void;
+  gatherAnnotation(
+    annotationId: AnnotationId,
+    options?: AnnotationGatherOptions,
+  ): void;
   /** Gather a resource-focus context. */
   gatherResource(resourceId: ResourceId, options?: ResourceGatherOptions): void;
 }
@@ -50,12 +62,16 @@ export function createGatherStateUnit(
   // after dispose is dropped here (A5b).
   let disposed = false;
 
-  const gatherResource = (rid: ResourceId, options?: ResourceGatherOptions): void => {
+  const gatherResource = (
+    rid: ResourceId,
+    options?: ResourceGatherOptions,
+  ): void => {
     if (disposed) return;
     resourceLoading$.next(true);
     resourceError$.next(null);
     resourceContext$.next(null);
-    client.gather.resource(rid, options)
+    client.gather
+      .resource(rid, options)
       .then((ctx) => {
         if (disposed) return;
         resourceContext$.next(ctx);
@@ -63,31 +79,38 @@ export function createGatherStateUnit(
       })
       .catch((err: unknown) => {
         if (disposed) return;
-        resourceError$.next(err instanceof Error ? err : new Error(String(err)));
+        resourceError$.next(
+          err instanceof Error ? err : new Error(String(err)),
+        );
         resourceLoading$.next(false);
       });
   };
 
-  const gatherAnnotation = (annotationId: AnnotationId, options?: AnnotationGatherOptions): void => {
+  const gatherAnnotation = (
+    annotationId: AnnotationId,
+    options?: AnnotationGatherOptions,
+  ): void => {
     if (disposed) return;
     loading$.next(true);
     error$.next(null);
     context$.next(null);
     annotationId$.next(annotationId);
 
-    const gatherSub = client.gather.annotation(resourceId, annotationId, options).subscribe({
-      next: (gathered) => {
-        context$.next(gathered.response);
-        loading$.next(false);
-      },
-      error: (err) => {
-        error$.next(err instanceof Error ? err : new Error(String(err)));
-        loading$.next(false);
-      },
-      complete: () => {
-        loading$.next(false);
-      },
-    });
+    const gatherSub = client.gather
+      .annotation(resourceId, annotationId, options)
+      .subscribe({
+        next: (gathered) => {
+          context$.next(gathered.response);
+          loading$.next(false);
+        },
+        error: (err) => {
+          error$.next(err instanceof Error ? err : new Error(String(err)));
+          loading$.next(false);
+        },
+        complete: () => {
+          loading$.next(false);
+        },
+      });
     subs.push(gatherSub);
   };
 
@@ -103,7 +126,7 @@ export function createGatherStateUnit(
     gatherResource,
     dispose() {
       disposed = true;
-      subs.forEach(s => s.unsubscribe());
+      subs.forEach((s) => s.unsubscribe());
       context$.complete();
       loading$.complete();
       error$.complete();

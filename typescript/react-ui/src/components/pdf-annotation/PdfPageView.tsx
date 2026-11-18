@@ -15,11 +15,17 @@ import {
   pdfToCanvasCoordinates,
   type CanvasRectangle,
 } from '../../lib/pdf-coordinates';
-import { renderPdfPageToDataUrl, type PDFDocumentProxy } from '../../lib/browser-pdfjs';
+import {
+  renderPdfPageToDataUrl,
+  type PDFDocumentProxy,
+} from '../../lib/browser-pdfjs';
 // Type-only, so this leaves no runtime edge back to the parent module.
 import type { DrawingMode } from './PdfAnnotationCanvas';
 
-function getMotivationColor(motivation: SelectionMotivation | null): { stroke: string; fill: string } {
+function getMotivationColor(motivation: SelectionMotivation | null): {
+  stroke: string;
+  fill: string;
+} {
   if (!motivation) {
     return { stroke: 'rgb(156, 163, 175)', fill: 'rgba(156, 163, 175, 0.2)' };
   }
@@ -106,8 +112,14 @@ export function PdfPageView({
   hoverDelayMs,
 }: PdfPageViewProps) {
   const [pageImageUrl, setPageImageUrl] = useState<string | null>(null);
-  const [pageDimensions, setPageDimensions] = useState<{ width: number; height: number } | null>(null);
-  const [displayDimensions, setDisplayDimensions] = useState<{ width: number; height: number } | null>(null);
+  const [pageDimensions, setPageDimensions] = useState<{
+    width: number;
+    height: number;
+  } | null>(null);
+  const [displayDimensions, setDisplayDimensions] = useState<{
+    width: number;
+    height: number;
+  } | null>(null);
   /** Translation KEY, not text: `t` is a new closure each render, so keeping
    *  it out of the load effect's deps is what stops a reload loop. */
   const [errorKey, setErrorKey] = useState<string | null>(null);
@@ -154,7 +166,7 @@ export function PdfPageView({
       if (imageRef.current) {
         setDisplayDimensions({
           width: imageRef.current.clientWidth,
-          height: imageRef.current.clientHeight
+          height: imageRef.current.clientHeight,
         });
       }
     };
@@ -172,7 +184,9 @@ export function PdfPageView({
       }
     } catch (error) {
       // Fallback for browsers without ResizeObserver support
-      console.warn('ResizeObserver not supported, falling back to window resize listener');
+      console.warn(
+        'ResizeObserver not supported, falling back to window resize listener',
+      );
       window.addEventListener('resize', updateDisplayDimensions);
     }
 
@@ -186,38 +200,51 @@ export function PdfPageView({
   }, [pageImageUrl]);
 
   // Mouse event handlers for drawing
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    if (!drawing) return;
-    if (!imageRef.current) return;
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      if (!drawing) return;
+      if (!imageRef.current) return;
 
-    const rect = imageRef.current.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / zoom;
-    const y = (e.clientY - rect.top) / zoom;
+      const rect = imageRef.current.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / zoom;
+      const y = (e.clientY - rect.top) / zoom;
 
-    // Clear any previous selection when starting new drawing
-    setIsDrawing(true);
-    setSelection({
-      startX: x,
-      startY: y,
-      endX: x,
-      endY: y
-    });
-  }, [drawing, zoom]);
+      // Clear any previous selection when starting new drawing
+      setIsDrawing(true);
+      setSelection({
+        startX: x,
+        startY: y,
+        endX: x,
+        endY: y,
+      });
+    },
+    [drawing, zoom],
+  );
 
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    if (!isDrawing || !selection || !imageRef.current) return;
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      if (!isDrawing || !selection || !imageRef.current) return;
 
-    const rect = imageRef.current.getBoundingClientRect();
+      const rect = imageRef.current.getBoundingClientRect();
 
-    setSelection({
-      ...selection,
-      endX: (e.clientX - rect.left) / zoom,
-      endY: (e.clientY - rect.top) / zoom
-    });
-  }, [isDrawing, selection, zoom]);
+      setSelection({
+        ...selection,
+        endX: (e.clientX - rect.left) / zoom,
+        endY: (e.clientY - rect.top) / zoom,
+      });
+    },
+    [isDrawing, selection, zoom],
+  );
 
   const handleMouseUp = useCallback(() => {
-    if (!isDrawing || !selection || !pageDimensions || !displayDimensions || !session || !drawing) {
+    if (
+      !isDrawing ||
+      !selection ||
+      !pageDimensions ||
+      !displayDimensions ||
+      !session ||
+      !drawing
+    ) {
       setIsDrawing(false);
       setSelection(null);
       return;
@@ -226,7 +253,7 @@ export function PdfPageView({
     // Calculate drag distance
     const dragDistance = Math.sqrt(
       Math.pow(selection.endX - selection.startX, 2) +
-      Math.pow(selection.endY - selection.startY, 2)
+        Math.pow(selection.endY - selection.startY, 2),
     );
 
     // Minimum drag threshold in pixels (10px)
@@ -239,8 +266,12 @@ export function PdfPageView({
         // annotation's viewport rect for the emission below, where it rides
         // the click as its anchor.
         let hitRect: AnchorRect | undefined;
-        const hit = rectsForPage(existingAnnotations, pageNumber).find(r => {
-          const rect = pdfToCanvasCoordinates(r.coord, pageDimensions.height, 1.0);
+        const hit = rectsForPage(existingAnnotations, pageNumber).find((r) => {
+          const rect = pdfToCanvasCoordinates(
+            r.coord,
+            pageDimensions.height,
+            1.0,
+          );
 
           // Scale to display coordinates
           const scaleX = displayDimensions.width / pageDimensions.width;
@@ -251,14 +282,19 @@ export function PdfPageView({
           const displayWidth = rect.width * scaleX;
           const displayHeight = rect.height * scaleY;
 
-          const inside = (
+          const inside =
             selection.endX >= displayX &&
             selection.endX <= displayX + displayWidth &&
             selection.endY >= displayY &&
-            selection.endY <= displayY + displayHeight
-          );
+            selection.endY <= displayY + displayHeight;
           if (inside && imageRef.current) {
-            hitRect = toViewportAnchorRect(imageRef.current.getBoundingClientRect(), displayX * zoom, displayY * zoom, displayWidth * zoom, displayHeight * zoom);
+            hitRect = toViewportAnchorRect(
+              imageRef.current.getBoundingClientRect(),
+              displayX * zoom,
+              displayY * zoom,
+              displayWidth * zoom,
+              displayHeight * zoom,
+            );
           }
           return inside;
         });
@@ -286,7 +322,7 @@ export function PdfPageView({
       startX: selection.startX * scaleX,
       startY: selection.startY * scaleY,
       endX: selection.endX * scaleX,
-      endY: selection.endY * scaleY
+      endY: selection.endY * scaleY,
     };
 
     // Convert canvas coordinates to PDF coordinates
@@ -295,7 +331,7 @@ export function PdfPageView({
       pageNumber,
       pageDimensions.width,
       pageDimensions.height,
-      1.0 // Use scale 1.0 since we already scaled to native coords
+      1.0, // Use scale 1.0 since we already scaled to native coords
     );
 
     // Create FragmentSelector
@@ -319,7 +355,9 @@ export function PdfPageView({
             conformsTo: 'http://tools.ietf.org/rfc/rfc3778',
             value: fragmentSelector,
           },
-          ...(quoted ? [{ type: 'TextQuoteSelector' as const, exact: quoted }] : []),
+          ...(quoted
+            ? [{ type: 'TextQuoteSelector' as const, exact: quoted }]
+            : []),
         ],
         selectedMotivation,
       );
@@ -330,7 +368,19 @@ export function PdfPageView({
     setIsDrawing(false);
     // Note: We keep selection so the preview remains visible
     // It will be cleared when drawingMode changes or user starts new selection
-  }, [isDrawing, selection, pageNumber, pageDimensions, displayDimensions, selectedMotivation, existingAnnotations, session, resourceUri, drawing, zoom]);
+  }, [
+    isDrawing,
+    selection,
+    pageNumber,
+    pageDimensions,
+    displayDimensions,
+    selectedMotivation,
+    existingAnnotations,
+    session,
+    resourceUri,
+    drawing,
+    zoom,
+  ]);
 
   // Every FragmentSelector rect on this page — one per line for a multi-line
   // (multi-selector) annotation, exactly one for a manual annotation.
@@ -342,7 +392,9 @@ export function PdfPageView({
   const { stroke, fill } = getMotivationColor(selectedMotivation ?? null);
 
   if (errorKey) {
-    return <div className="xynolog-pdf-annotation-canvas__error">{t(errorKey)}</div>;
+    return (
+      <div className="xynolog-pdf-annotation-canvas__error">{t(errorKey)}</div>
+    );
   }
 
   return (
@@ -375,7 +427,7 @@ export function PdfPageView({
                 if (imageRef.current) {
                   setDisplayDimensions({
                     width: imageRef.current.clientWidth,
-                    height: imageRef.current.clientHeight
+                    height: imageRef.current.clientHeight,
                   });
                 }
               });
@@ -394,8 +446,12 @@ export function PdfPageView({
               height={displayDimensions.height}
             >
               {/* Render existing annotations for this page */}
-              {pageRects.map(r => {
-                const rect = pdfToCanvasCoordinates(r.coord, pageDimensions.height, 1.0);
+              {pageRects.map((r) => {
+                const rect = pdfToCanvasCoordinates(
+                  r.coord,
+                  pageDimensions.height,
+                  1.0,
+                );
 
                 // Scale to display coordinates
                 const scaleX = displayDimensions.width / pageDimensions.width;
@@ -405,8 +461,10 @@ export function PdfPageView({
                 const isSelected = r.annId === selectedAnnotationId;
 
                 // Colour by the annotation's own motivation (not the toolbar's).
-                const annMotivation = r.annotation.motivation as SelectionMotivation | null;
-                const { stroke: annStroke, fill: annFill } = getMotivationColor(annMotivation);
+                const annMotivation = r.annotation
+                  .motivation as SelectionMotivation | null;
+                const { stroke: annStroke, fill: annFill } =
+                  getMotivationColor(annMotivation);
 
                 return (
                   <rect
@@ -421,9 +479,14 @@ export function PdfPageView({
                     style={{
                       pointerEvents: 'auto',
                       cursor: 'pointer',
-                      opacity: isSelected ? 1 : isHovered ? 0.9 : 0.7
+                      opacity: isSelected ? 1 : isHovered ? 0.9 : 0.7,
                     }}
-                    onClick={(e) => session?.client.browse.click(r.annId, e.currentTarget.getBoundingClientRect())}
+                    onClick={(e) =>
+                      session?.client.browse.click(
+                        r.annId,
+                        e.currentTarget.getBoundingClientRect(),
+                      )
+                    }
                     onMouseEnter={() => dwell?.enter(r.annId)}
                     onMouseLeave={() => dwell?.leave()}
                   />
@@ -431,28 +494,31 @@ export function PdfPageView({
               })}
 
               {/* Render current selection while drawing or awaiting save */}
-              {selection && (() => {
-                const rectX = Math.min(selection.startX, selection.endX);
-                const rectY = Math.min(selection.startY, selection.endY);
-                const rectWidth = Math.abs(selection.endX - selection.startX);
-                const rectHeight = Math.abs(selection.endY - selection.startY);
+              {selection &&
+                (() => {
+                  const rectX = Math.min(selection.startX, selection.endX);
+                  const rectY = Math.min(selection.startY, selection.endY);
+                  const rectWidth = Math.abs(selection.endX - selection.startX);
+                  const rectHeight = Math.abs(
+                    selection.endY - selection.startY,
+                  );
 
-                // PDF only supports rectangle shapes (FragmentSelector with viewrect)
-                // Circle/polygon are disabled in the UI for PDF media types
-                return (
-                  <rect
-                    x={rectX}
-                    y={rectY}
-                    width={rectWidth}
-                    height={rectHeight}
-                    stroke={stroke}
-                    strokeWidth={2}
-                    strokeDasharray="5,5"
-                    fill={fill}
-                    pointerEvents="none"
-                  />
-                );
-              })()}
+                  // PDF only supports rectangle shapes (FragmentSelector with viewrect)
+                  // Circle/polygon are disabled in the UI for PDF media types
+                  return (
+                    <rect
+                      x={rectX}
+                      y={rectY}
+                      width={rectWidth}
+                      height={rectHeight}
+                      stroke={stroke}
+                      strokeWidth={2}
+                      strokeDasharray="5,5"
+                      fill={fill}
+                      pointerEvents="none"
+                    />
+                  );
+                })()}
             </svg>
           </div>
         </div>

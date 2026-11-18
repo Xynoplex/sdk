@@ -9,7 +9,10 @@
 import { resourceId } from '@xynolog/core';
 import type { ResourceDescriptor } from '@xynolog/core';
 
-export function mockResource(id: string, overrides: Partial<ResourceDescriptor> = {}): ResourceDescriptor {
+export function mockResource(
+  id: string,
+  overrides: Partial<ResourceDescriptor> = {},
+): ResourceDescriptor {
   return {
     '@context': 'https://xynolog.dev/context/v1',
     '@id': resourceId(id),

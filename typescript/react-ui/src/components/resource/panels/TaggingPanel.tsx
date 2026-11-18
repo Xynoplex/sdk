@@ -25,10 +25,12 @@ interface PendingAnnotation {
 }
 
 // Helper to extract display text from selector
-function getSelectorDisplayText(selector: Selector | Selector[]): string | null {
+function getSelectorDisplayText(
+  selector: Selector | Selector[],
+): string | null {
   if (Array.isArray(selector)) {
     // Text selectors: array of [TextPositionSelector, TextQuoteSelector]
-    const quoteSelector = selector.find(s => s.type === 'TextQuoteSelector');
+    const quoteSelector = selector.find((s) => s.type === 'TextQuoteSelector');
     if (quoteSelector && 'exact' in quoteSelector) {
       return quoteSelector.exact;
     }
@@ -112,15 +114,19 @@ export function TaggingPanel({
   // The cache state unwrapped to value-or-undefined, with the third outcome
   // explicit — a failed registry read renders like still-loading here: this
   // panel has no failure state for it.
-  const schemasObserved = schemasState && isReady(schemasState) ? schemasState.value : undefined;
+  const schemasObserved =
+    schemasState && isReady(schemasState) ? schemasState.value : undefined;
   const schemas = schemasObserved ?? [];
   // True only AFTER the registry has resolved AND it's empty — distinct
   // from the initial-loading state (`schemasObserved === undefined`),
   // which renders nothing rather than an empty-state message.
-  const noSchemasRegistered = schemasObserved !== undefined && schemasObserved.length === 0;
+  const noSchemasRegistered =
+    schemasObserved !== undefined && schemasObserved.length === 0;
 
   const [selectedSchemaId, setSelectedSchemaId] = useState<string>('');
-  const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
+  const [selectedCategories, setSelectedCategories] = useState<Set<string>>(
+    new Set(),
+  );
 
   // Default the schema selection to the first registered schema once
   // the registry resolves. We don't reset on schemas changing to avoid
@@ -130,15 +136,20 @@ export function TaggingPanel({
       setSelectedSchemaId(schemas[0]!.id);
     }
   }, [schemas, selectedSchemaId]);
-  const [focusedAnnotationId, setFocusedAnnotationId] = useState<string | null>(null);
+  const [focusedAnnotationId, setFocusedAnnotationId] = useState<string | null>(
+    null,
+  );
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Subscribe to click events - update focused state
   // Event handler for annotation clicks (a named callback rather than an inline arrow function)
-  const handleAnnotationClick = useCallback(({ annotationId }: { annotationId: string }) => {
-    setFocusedAnnotationId(annotationId);
-    setTimeout(() => setFocusedAnnotationId(null), 3000);
-  }, []);
+  const handleAnnotationClick = useCallback(
+    ({ annotationId }: { annotationId: string }) => {
+      setFocusedAnnotationId(annotationId);
+      setTimeout(() => setFocusedAnnotationId(null), 3000);
+    },
+    [],
+  );
 
   useSessionEventSubscriptions(session, {
     'browse:click': handleAnnotationClick,
@@ -158,13 +169,16 @@ export function TaggingPanel({
   }, [annotations]);
 
   // Ref callback for entry components
-  const setEntryRef = useCallback((id: string, element: HTMLDivElement | null) => {
-    if (element) {
-      entryRefs.current.set(id, element);
-    } else {
-      entryRefs.current.delete(id);
-    }
-  }, []);
+  const setEntryRef = useCallback(
+    (id: string, element: HTMLDivElement | null) => {
+      if (element) {
+        entryRefs.current.set(id, element);
+      } else {
+        entryRefs.current.delete(id);
+      }
+    },
+    [],
+  );
 
   // Handle scrollToAnnotationId (click scroll)
   useEffect(() => {
@@ -174,7 +188,7 @@ export function TaggingPanel({
       const elementTop = element.offsetTop;
       const containerHeight = containerRef.current.clientHeight;
       const elementHeight = element.offsetHeight;
-      const scrollTo = elementTop - (containerHeight / 2) + (elementHeight / 2);
+      const scrollTo = elementTop - containerHeight / 2 + elementHeight / 2;
       containerRef.current.scrollTo({ top: scrollTo, behavior: 'smooth' });
       element.classList.remove('xynolog-annotation-pulse');
       void element.offsetWidth;
@@ -192,19 +206,21 @@ export function TaggingPanel({
     const container = containerRef.current;
     const elementRect = element.getBoundingClientRect();
     const containerRect = container.getBoundingClientRect();
-    const isVisible = elementRect.top >= containerRect.top && elementRect.bottom <= containerRect.bottom;
+    const isVisible =
+      elementRect.top >= containerRect.top &&
+      elementRect.bottom <= containerRect.bottom;
     if (!isVisible) {
       const elementTop = element.offsetTop;
       const containerHeight = container.clientHeight;
       const elementHeight = element.offsetHeight;
-      const scrollTo = elementTop - (containerHeight / 2) + (elementHeight / 2);
+      const scrollTo = elementTop - containerHeight / 2 + elementHeight / 2;
       container.scrollTo({ top: scrollTo, behavior: 'smooth' });
     }
 
     // Pulse effect is handled by isHovered prop on TagEntry
   }, [hoveredAnnotationId]);
 
-  const selectedSchema = schemas.find(s => s.id === selectedSchemaId);
+  const selectedSchema = schemas.find((s) => s.id === selectedSchemaId);
 
   const handleSchemaChange = (schemaId: string) => {
     setSelectedSchemaId(schemaId);
@@ -223,7 +239,7 @@ export function TaggingPanel({
 
   const handleSelectAll = () => {
     if (selectedSchema) {
-      setSelectedCategories(new Set(selectedSchema.tags.map(t => t.name)));
+      setSelectedCategories(new Set(selectedSchema.tags.map((t) => t.name)));
     }
   };
 
@@ -275,7 +291,9 @@ export function TaggingPanel({
             <div className="xynolog-annotation-prompt__quote">
               <p className="xynolog-annotation-prompt__text">
                 {(() => {
-                  const displayText = getSelectorDisplayText(pendingAnnotation.selector);
+                  const displayText = getSelectorDisplayText(
+                    pendingAnnotation.selector,
+                  );
                   if (displayText) {
                     return `"${displayText.substring(0, 100)}${displayText.length > 100 ? '...' : ''}"`;
                   }
@@ -303,7 +321,7 @@ export function TaggingPanel({
                   onChange={(e) => handleSchemaChange(e.target.value)}
                   className="xynolog-select"
                 >
-                  {schemas.map(schema => (
+                  {schemas.map((schema) => (
                     <option key={schema.id} value={schema.id}>
                       {schema.name}
                     </option>
@@ -344,7 +362,9 @@ export function TaggingPanel({
                 >
                   <option value="">{t('chooseCategory')}</option>
                   {selectedSchema.tags.map((tag) => (
-                    <option key={tag.name} value={tag.name}>{tag.name}</option>
+                    <option key={tag.name} value={tag.name}>
+                      {tag.name}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -377,94 +397,126 @@ export function TaggingPanel({
             }}
             form={
               <>
-                  {/* Empty-state — registry has resolved with no schemas. */}
-                  {noSchemasRegistered && (
-                    <p className="xynolog-form__help" data-type="tag-no-schemas">
-                      {t('noSchemas')}
-                    </p>
-                  )}
+                {/* Empty-state — registry has resolved with no schemas. */}
+                {noSchemasRegistered && (
+                  <p className="xynolog-form__help" data-type="tag-no-schemas">
+                    {t('noSchemas')}
+                  </p>
+                )}
 
-                  {/* Schema Selector */}
-                  {!noSchemasRegistered && (
-                    <div className="xynolog-form-field">
-                      <label className="xynolog-form-field__label">
-                        {t('selectSchema')}
-                      </label>
-                      <select
-                        value={selectedSchemaId}
-                        onChange={(e) => handleSchemaChange(e.target.value)}
-                        className="xynolog-select"
-                      >
-                        {schemas.map(schema => (
-                          <option key={schema.id} value={schema.id}>
-                            {schema.name}
-                          </option>
-                        ))}
-                      </select>
-                      {selectedSchema && (
-                        <p className="xynolog-form__help">
-                          {selectedSchema.description}
-                        </p>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Category Selector */}
-                  {selectedSchema && (
-                    <div className="xynolog-form-field">
-                      <label className="xynolog-form-field__label">
-                        {t('selectCategories')}
-                      </label>
-                      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
-                        <button
-                          onClick={handleSelectAll}
-                          type="button"
-                          className="xynolog-button--secondary"
-                          style={{ fontSize: 'var(--xynolog-text-xs)', padding: '0.25rem 0.5rem' }}
-                        >
-                          {t('selectAll')}
-                        </button>
-                        <button
-                          onClick={handleDeselectAll}
-                          type="button"
-                          className="xynolog-button--secondary"
-                          style={{ fontSize: 'var(--xynolog-text-xs)', padding: '0.25rem 0.5rem' }}
-                        >
-                          {t('deselectAll')}
-                        </button>
-                      </div>
-
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                        {selectedSchema.tags.map(category => (
-                          <div key={category.name} className="xynolog-form__checkbox-field">
-                            <input
-                              type="checkbox"
-                              id={`category-${category.name.replace(/\s+/g, '-')}`}
-                              checked={selectedCategories.has(category.name)}
-                              onChange={() => handleCategoryToggle(category.name)}
-                              className="xynolog-checkbox"
-                            />
-                            <label
-                              htmlFor={`category-${category.name.replace(/\s+/g, '-')}`}
-                              className="xynolog-form__checkbox-label"
-                              style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}
-                            >
-                              <span style={{ fontWeight: 500 }}>
-                                {category.name}
-                              </span>
-                              <span style={{ fontSize: 'var(--xynolog-text-xs)', color: 'var(--xynolog-text-secondary)' }}>
-                                {category.description}
-                              </span>
-                            </label>
-                          </div>
-                        ))}
-                      </div>
-
+                {/* Schema Selector */}
+                {!noSchemasRegistered && (
+                  <div className="xynolog-form-field">
+                    <label className="xynolog-form-field__label">
+                      {t('selectSchema')}
+                    </label>
+                    <select
+                      value={selectedSchemaId}
+                      onChange={(e) => handleSchemaChange(e.target.value)}
+                      className="xynolog-select"
+                    >
+                      {schemas.map((schema) => (
+                        <option key={schema.id} value={schema.id}>
+                          {schema.name}
+                        </option>
+                      ))}
+                    </select>
+                    {selectedSchema && (
                       <p className="xynolog-form__help">
-                        {t('categoriesSelected', { count: selectedCategories.size })}
+                        {selectedSchema.description}
                       </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Category Selector */}
+                {selectedSchema && (
+                  <div className="xynolog-form-field">
+                    <label className="xynolog-form-field__label">
+                      {t('selectCategories')}
+                    </label>
+                    <div
+                      style={{
+                        display: 'flex',
+                        gap: '0.5rem',
+                        marginBottom: '0.75rem',
+                      }}
+                    >
+                      <button
+                        onClick={handleSelectAll}
+                        type="button"
+                        className="xynolog-button--secondary"
+                        style={{
+                          fontSize: 'var(--xynolog-text-xs)',
+                          padding: '0.25rem 0.5rem',
+                        }}
+                      >
+                        {t('selectAll')}
+                      </button>
+                      <button
+                        onClick={handleDeselectAll}
+                        type="button"
+                        className="xynolog-button--secondary"
+                        style={{
+                          fontSize: 'var(--xynolog-text-xs)',
+                          padding: '0.25rem 0.5rem',
+                        }}
+                      >
+                        {t('deselectAll')}
+                      </button>
                     </div>
-                  )}
+
+                    <div
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '0.75rem',
+                      }}
+                    >
+                      {selectedSchema.tags.map((category) => (
+                        <div
+                          key={category.name}
+                          className="xynolog-form__checkbox-field"
+                        >
+                          <input
+                            type="checkbox"
+                            id={`category-${category.name.replace(/\s+/g, '-')}`}
+                            checked={selectedCategories.has(category.name)}
+                            onChange={() => handleCategoryToggle(category.name)}
+                            className="xynolog-checkbox"
+                          />
+                          <label
+                            htmlFor={`category-${category.name.replace(/\s+/g, '-')}`}
+                            className="xynolog-form__checkbox-label"
+                            style={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: '0.25rem',
+                            }}
+                          >
+                            <span style={{ fontWeight: 500 }}>
+                              {category.name}
+                            </span>
+                            <span
+                              style={{
+                                fontSize: 'var(--xynolog-text-xs)',
+                                color: 'var(--xynolog-text-secondary)',
+                              }}
+                            >
+                              {category.description}
+                            </span>
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+
+                    <p className="xynolog-form__help">
+                      {t('categoriesSelected', {
+                        count: selectedCategories.size,
+                      })}
+                    </p>
+                  </div>
+                )}
                 {/* Delegate button */}
                 <button
                   onClick={handleDelegate}
@@ -476,7 +528,6 @@ export function TaggingPanel({
                   <span className="xynolog-button-icon">✨</span>
                   <span>{t('annotate')}</span>
                 </button>
-
               </>
             }
           />
@@ -485,9 +536,7 @@ export function TaggingPanel({
         {/* Tags list */}
         <div className="xynolog-panel__list">
           {sortedAnnotations.length === 0 ? (
-            <p className="xynolog-panel__empty">
-              {t('noTags')}
-            </p>
+            <p className="xynolog-panel__empty">{t('noTags')}</p>
           ) : (
             sortedAnnotations.map((tag) => (
               <TagEntry

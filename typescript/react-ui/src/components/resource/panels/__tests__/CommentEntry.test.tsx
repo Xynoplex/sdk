@@ -1,7 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import React from 'react';
 import { screen, fireEvent, waitFor } from '@testing-library/react';
-import { renderWithProviders, createTestXynologWrapper } from '../../../../test-utils';
+import {
+  renderWithProviders,
+  createTestXynologWrapper,
+} from '../../../../test-utils';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import { CommentEntry } from '../CommentEntry';
@@ -12,17 +15,22 @@ import type { Annotation, AnnotationId, EventBus } from '@xynolog/core';
 
 // Mock TranslationContext
 vi.mock('../../../../contexts/TranslationContext', () => ({
-  useTranslations: vi.fn(() => (key: string, params?: Record<string, string>) => {
-    const translations: Record<string, string> = {
-      edit: 'Edit',
-      save: 'Save',
-      cancel: 'Cancel',
-      saveFailed: 'Couldn’t save the comment: {{detail}}',
-    };
-    const text = translations[key] || key;
-    return params?.detail === undefined ? text : text.replace('{{detail}}', params.detail);
-  }),
-  TranslationProvider: ({ children }: { children: React.ReactNode }) => children,
+  useTranslations: vi.fn(
+    () => (key: string, params?: Record<string, string>) => {
+      const translations: Record<string, string> = {
+        edit: 'Edit',
+        save: 'Save',
+        cancel: 'Cancel',
+        saveFailed: 'Couldn’t save the comment: {{detail}}',
+      };
+      const text = translations[key] || key;
+      return params?.detail === undefined
+        ? text
+        : text.replace('{{detail}}', params.detail);
+    },
+  ),
+  TranslationProvider: ({ children }: { children: React.ReactNode }) =>
+    children,
 }));
 
 // Mock @xynolog/http-transport utilities
@@ -35,11 +43,19 @@ vi.mock('@xynolog/core', async () => {
   };
 });
 
-import { getCommentText, getAnnotationExactText, resourceId } from '@xynolog/core';
+import {
+  getCommentText,
+  getAnnotationExactText,
+  resourceId,
+} from '@xynolog/core';
 import type { MockedFunction } from 'vitest';
 
-const mockGetCommentText = getCommentText as MockedFunction<typeof getCommentText>;
-const mockGetAnnotationExactText = getAnnotationExactText as MockedFunction<typeof getAnnotationExactText>;
+const mockGetCommentText = getCommentText as MockedFunction<
+  typeof getCommentText
+>;
+const mockGetAnnotationExactText = getAnnotationExactText as MockedFunction<
+  typeof getAnnotationExactText
+>;
 
 // Test data fixtures
 const createMockComment = (overrides?: Partial<Annotation>): Annotation => ({
@@ -77,7 +93,10 @@ const mockCommentStates = {
     body: [
       {
         type: 'TextualBody',
-        value: 'This is a very long comment that exceeds the typical length and should test text wrapping and display handling. '.repeat(5),
+        value:
+          'This is a very long comment that exceeds the typical length and should test text wrapping and display handling. '.repeat(
+            5,
+          ),
         purpose: 'commenting',
       },
     ],
@@ -134,7 +153,9 @@ describe('CommentEntry Component', () => {
     });
 
     it('should render selected text quote', () => {
-      const { container } = renderWithProviders(<CommentEntry session={session} {...defaultProps} />);
+      const { container } = renderWithProviders(
+        <CommentEntry session={session} {...defaultProps} />,
+      );
 
       const quote = container.querySelector('.xynolog-annotation-entry__quote');
       expect(quote).toBeInTheDocument();
@@ -147,7 +168,9 @@ describe('CommentEntry Component', () => {
 
       renderWithProviders(<CommentEntry session={session} {...defaultProps} />);
 
-      expect(screen.getByText(new RegExp(`"${'A'.repeat(100)}`))).toBeInTheDocument();
+      expect(
+        screen.getByText(new RegExp(`"${'A'.repeat(100)}`)),
+      ).toBeInTheDocument();
       expect(screen.getByText(/\.\.\./)).toBeInTheDocument();
     });
 
@@ -157,7 +180,7 @@ describe('CommentEntry Component', () => {
           session={session}
           {...defaultProps}
           comment={mockCommentStates.withCreatorObject}
-        />
+        />,
       );
 
       expect(screen.getByText(/John Doe/)).toBeInTheDocument();
@@ -178,10 +201,12 @@ describe('CommentEntry Component', () => {
           session={session}
           {...defaultProps}
           comment={commentWithoutCreator}
-        />
+        />,
       );
 
-      const metadata = container.querySelector('.xynolog-annotation-entry__metadata');
+      const metadata = container.querySelector(
+        '.xynolog-annotation-entry__metadata',
+      );
       expect(metadata).toBeInTheDocument();
       expect(metadata?.textContent).not.toMatch(/By|Unknown/);
     });
@@ -192,10 +217,12 @@ describe('CommentEntry Component', () => {
           session={session}
           {...defaultProps}
           comment={mockCommentStates.recentComment}
-        />
+        />,
       );
 
-      expect(screen.getByText(/just now|seconds? ago|minutes? ago/)).toBeInTheDocument();
+      expect(
+        screen.getByText(/just now|seconds? ago|minutes? ago/),
+      ).toBeInTheDocument();
     });
 
     it('should format relative time correctly for old comments', () => {
@@ -204,7 +231,7 @@ describe('CommentEntry Component', () => {
           session={session}
           {...defaultProps}
           comment={mockCommentStates.oldComment}
-        />
+        />,
       );
 
       expect(screen.getByText(/days? ago|\d+\/\d+\/\d+/)).toBeInTheDocument();
@@ -214,7 +241,7 @@ describe('CommentEntry Component', () => {
   describe('Focus State', () => {
     it('should apply focus styles when focused', () => {
       const { container } = renderWithProviders(
-        <CommentEntry session={session} {...defaultProps} isFocused={true} />
+        <CommentEntry session={session} {...defaultProps} isFocused={true} />,
       );
 
       const commentDiv = container.querySelector('.xynolog-annotation-entry');
@@ -224,7 +251,7 @@ describe('CommentEntry Component', () => {
 
     it('should not apply focus styles when not focused', () => {
       const { container } = renderWithProviders(
-        <CommentEntry session={session} {...defaultProps} isFocused={false} />
+        <CommentEntry session={session} {...defaultProps} isFocused={false} />,
       );
 
       const commentDiv = container.querySelector('.xynolog-skeleton-outline');
@@ -236,14 +263,16 @@ describe('CommentEntry Component', () => {
       Element.prototype.scrollIntoView = mockScrollIntoView;
 
       const { rerender } = renderWithProviders(
-        <CommentEntry session={session} {...defaultProps} isFocused={false} />
+        <CommentEntry session={session} {...defaultProps} isFocused={false} />,
       );
 
       // Clear any initial calls
       mockScrollIntoView.mockClear();
 
       // Becomes focused
-      rerender(<CommentEntry session={session} {...defaultProps} isFocused={true} />);
+      rerender(
+        <CommentEntry session={session} {...defaultProps} isFocused={true} />,
+      );
 
       await waitFor(() => {
         expect(mockScrollIntoView).toHaveBeenCalledWith({
@@ -259,7 +288,7 @@ describe('CommentEntry Component', () => {
       const clickHandler = vi.fn();
 
       const { container } = renderWithProviders(
-        <CommentEntry session={session} {...defaultProps} />
+        <CommentEntry session={session} {...defaultProps} />,
       );
 
       // Subscribe to actual event on real event bus
@@ -269,7 +298,7 @@ describe('CommentEntry Component', () => {
       await userEvent.click(commentDiv);
 
       expect(clickHandler).toHaveBeenCalledWith({
-        annotationId: 'comment-1'
+        annotationId: 'comment-1',
       });
 
       // Clean up
@@ -277,7 +306,9 @@ describe('CommentEntry Component', () => {
     });
 
     it('should be clickable with cursor-pointer class', () => {
-      const { container } = renderWithProviders(<CommentEntry session={session} {...defaultProps} />);
+      const { container } = renderWithProviders(
+        <CommentEntry session={session} {...defaultProps} />,
+      );
 
       const commentDiv = container.firstChild as HTMLElement;
       expect(commentDiv).toHaveClass('xynolog-annotation-entry');
@@ -290,7 +321,7 @@ describe('CommentEntry Component', () => {
       const hoverHandler = vi.fn();
 
       const { container } = renderWithProviders(
-        <CommentEntry session={session} {...defaultProps} />
+        <CommentEntry session={session} {...defaultProps} />,
       );
 
       // Subscribe to actual event
@@ -317,7 +348,7 @@ describe('CommentEntry Component', () => {
       const hoverHandler = vi.fn();
 
       const { container } = renderWithProviders(
-        <CommentEntry session={session} {...defaultProps} />
+        <CommentEntry session={session} {...defaultProps} />,
       );
 
       // Subscribe to actual event
@@ -342,7 +373,7 @@ describe('CommentEntry Component', () => {
       const hoverHandler = vi.fn();
 
       const { container } = renderWithProviders(
-        <CommentEntry session={session} {...defaultProps} />
+        <CommentEntry session={session} {...defaultProps} />,
       );
 
       const subscription = eventBus.on('beckon:hover').subscribe(hoverHandler);
@@ -353,7 +384,9 @@ describe('CommentEntry Component', () => {
 
       fireEvent.mouseLeave(commentDiv);
 
-      expect(hoverHandler).toHaveBeenNthCalledWith(1, { annotationId: 'comment-1' });
+      expect(hoverHandler).toHaveBeenNthCalledWith(1, {
+        annotationId: 'comment-1',
+      });
       expect(hoverHandler).toHaveBeenNthCalledWith(2, { annotationId: null });
 
       subscription.unsubscribe();
@@ -362,7 +395,7 @@ describe('CommentEntry Component', () => {
 
     it('should handle hover events without errors', () => {
       const { container } = renderWithProviders(
-        <CommentEntry session={session} {...defaultProps} />
+        <CommentEntry session={session} {...defaultProps} />,
       );
 
       const commentDiv = container.firstChild as HTMLElement;
@@ -413,9 +446,7 @@ describe('CommentEntry Component', () => {
 
     it('should stop event propagation when clicking textarea in edit mode', async () => {
       const clickHandler = vi.fn();
-      renderWithProviders(
-        <CommentEntry session={session} {...defaultProps} />
-      );
+      renderWithProviders(<CommentEntry session={session} {...defaultProps} />);
 
       const subscription = eventBus.on('browse:click').subscribe(clickHandler);
 
@@ -463,7 +494,9 @@ describe('CommentEntry Component', () => {
     });
 
     it('saves an edit as the replace of the comment body item it was made from', async () => {
-      const bindSpy = vi.spyOn(BindNamespace.prototype, 'body').mockResolvedValue(undefined);
+      const bindSpy = vi
+        .spyOn(BindNamespace.prototype, 'body')
+        .mockResolvedValue(undefined);
       renderWithProviders(<CommentEntry session={session} {...defaultProps} />);
 
       await userEvent.click(screen.getByText('Edit'));
@@ -474,11 +507,21 @@ describe('CommentEntry Component', () => {
 
       // The old item is the body item exactly as the annotation holds it, so
       // the replace finds it; only its words change.
-      expect(bindSpy).toHaveBeenCalledWith('resource-1', 'comment-1', [{
-        op: 'replace',
-        oldItem: { type: 'TextualBody', value: 'This is a test comment', purpose: 'commenting' },
-        newItem: { type: 'TextualBody', value: 'Updated comment', purpose: 'commenting' },
-      }]);
+      expect(bindSpy).toHaveBeenCalledWith('resource-1', 'comment-1', [
+        {
+          op: 'replace',
+          oldItem: {
+            type: 'TextualBody',
+            value: 'This is a test comment',
+            purpose: 'commenting',
+          },
+          newItem: {
+            type: 'TextualBody',
+            value: 'Updated comment',
+            purpose: 'commenting',
+          },
+        },
+      ]);
       await waitFor(() => {
         expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
       });
@@ -487,7 +530,9 @@ describe('CommentEntry Component', () => {
     });
 
     it('keeps the editor open with the edit when the save is refused, and says why', async () => {
-      const bindSpy = vi.spyOn(BindNamespace.prototype, 'body').mockRejectedValue(new Error('the annotation is gone'));
+      const bindSpy = vi
+        .spyOn(BindNamespace.prototype, 'body')
+        .mockRejectedValue(new Error('the annotation is gone'));
       renderWithProviders(<CommentEntry session={session} {...defaultProps} />);
 
       await userEvent.click(screen.getByText('Edit'));
@@ -496,14 +541,18 @@ describe('CommentEntry Component', () => {
       await userEvent.type(textarea, 'Updated comment');
       await userEvent.click(screen.getByText('Save'));
 
-      expect(await screen.findByRole('alert')).toHaveTextContent('Couldn’t save the comment: the annotation is gone');
+      expect(await screen.findByRole('alert')).toHaveTextContent(
+        'Couldn’t save the comment: the annotation is gone',
+      );
       expect(screen.getByRole('textbox')).toHaveValue('Updated comment');
 
       bindSpy.mockRestore();
     });
 
     it('closes without sending anything when the text is unchanged', async () => {
-      const bindSpy = vi.spyOn(BindNamespace.prototype, 'body').mockResolvedValue(undefined);
+      const bindSpy = vi
+        .spyOn(BindNamespace.prototype, 'body')
+        .mockResolvedValue(undefined);
       renderWithProviders(<CommentEntry session={session} {...defaultProps} />);
 
       await userEvent.click(screen.getByText('Edit'));
@@ -533,9 +582,7 @@ describe('CommentEntry Component', () => {
 
     it('should not emit any update when cancel is clicked', async () => {
       const clickHandler = vi.fn();
-      renderWithProviders(
-        <CommentEntry session={session} {...defaultProps} />
-      );
+      renderWithProviders(<CommentEntry session={session} {...defaultProps} />);
 
       const subscription = eventBus.on('browse:click').subscribe(clickHandler);
 
@@ -553,14 +600,18 @@ describe('CommentEntry Component', () => {
 
   describe('Styling and Appearance', () => {
     it('should have proper border and padding styles', () => {
-      const { container } = renderWithProviders(<CommentEntry session={session} {...defaultProps} />);
+      const { container } = renderWithProviders(
+        <CommentEntry session={session} {...defaultProps} />,
+      );
 
       const commentDiv = container.firstChild as HTMLElement;
       expect(commentDiv).toHaveClass('xynolog-annotation-entry');
     });
 
     it('should have hover styles when not focused', () => {
-      const { container } = renderWithProviders(<CommentEntry session={session} {...defaultProps} />);
+      const { container } = renderWithProviders(
+        <CommentEntry session={session} {...defaultProps} />,
+      );
 
       const commentDiv = container.firstChild as HTMLElement;
       expect(commentDiv).toHaveClass('xynolog-annotation-entry');
@@ -568,7 +619,9 @@ describe('CommentEntry Component', () => {
     });
 
     it('should support dark mode classes', () => {
-      const { container } = renderWithProviders(<CommentEntry session={session} {...defaultProps} />);
+      const { container } = renderWithProviders(
+        <CommentEntry session={session} {...defaultProps} />,
+      );
 
       const commentDiv = container.firstChild as HTMLElement;
       expect(commentDiv).toHaveClass('xynolog-annotation-entry');
@@ -576,10 +629,14 @@ describe('CommentEntry Component', () => {
 
     it('should render comment text with whitespace preserved', () => {
       mockGetCommentText.mockReturnValue('Line 1\nLine 2\nLine 3');
-      const { container } = renderWithProviders(<CommentEntry session={session} {...defaultProps} />);
+      const { container } = renderWithProviders(
+        <CommentEntry session={session} {...defaultProps} />,
+      );
 
       // Look for the comment text in the annotation entry
-      const commentContent = container.querySelector('.xynolog-annotation-entry__body');
+      const commentContent = container.querySelector(
+        '.xynolog-annotation-entry__body',
+      );
       expect(commentContent).toBeInTheDocument();
     });
   });
@@ -587,7 +644,9 @@ describe('CommentEntry Component', () => {
   describe('Edge Cases', () => {
     it('should handle empty comment text', () => {
       mockGetCommentText.mockReturnValue('');
-      const { container } = renderWithProviders(<CommentEntry session={session} {...defaultProps} />);
+      const { container } = renderWithProviders(
+        <CommentEntry session={session} {...defaultProps} />,
+      );
 
       // Check that the annotation entry exists even with empty text
       const commentDiv = container.querySelector('.xynolog-annotation-entry');
@@ -598,7 +657,9 @@ describe('CommentEntry Component', () => {
       mockGetAnnotationExactText.mockReturnValue('');
 
       expect(() => {
-        renderWithProviders(<CommentEntry session={session} {...defaultProps} />);
+        renderWithProviders(
+          <CommentEntry session={session} {...defaultProps} />,
+        );
       }).not.toThrow();
     });
 
@@ -608,23 +669,38 @@ describe('CommentEntry Component', () => {
 
       expect(() => {
         renderWithProviders(
-          <CommentEntry session={session} {...defaultProps} comment={commentWithoutTimestamp} />
+          <CommentEntry
+            session={session}
+            {...defaultProps}
+            comment={commentWithoutTimestamp}
+          />,
         );
       }).not.toThrow();
     });
 
     it('should handle very long comment text', () => {
-      const longText = 'This is a very long comment that exceeds the typical length and should test text wrapping and display handling. '.repeat(5);
+      const longText =
+        'This is a very long comment that exceeds the typical length and should test text wrapping and display handling. '.repeat(
+          5,
+        );
       mockGetCommentText.mockReturnValue(longText);
 
       renderWithProviders(
-        <CommentEntry session={session} {...defaultProps} comment={mockCommentStates.withLongText} />
+        <CommentEntry
+          session={session}
+          {...defaultProps}
+          comment={mockCommentStates.withLongText}
+        />,
       );
 
       // Use a more flexible matcher for long text
-      expect(screen.getByText((content) =>
-        content.includes('This is a very long comment') && content.length > 500
-      )).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          (content) =>
+            content.includes('This is a very long comment') &&
+            content.length > 500,
+        ),
+      ).toBeInTheDocument();
     });
 
     it('should handle rapid edit/cancel cycles', async () => {

@@ -20,8 +20,15 @@ import type { GenerationConfig } from '../ConfigureGenerationStep';
 import { ResourceGenerateModal } from '../ResourceGenerateModal';
 
 const RESOURCE_CONTEXT = {
-  focus: { kind: 'resource', resource: { '@id': 'res-1', name: 'My Resource' }, summary: 'A short summary' },
-  graph: { nodes: [{ id: 'res-1', type: 'resource', label: 'My Resource' }], edges: [] },
+  focus: {
+    kind: 'resource',
+    resource: { '@id': 'res-1', name: 'My Resource' },
+    summary: 'A short summary',
+  },
+  graph: {
+    nodes: [{ id: 'res-1', type: 'resource', label: 'My Resource' }],
+    edges: [],
+  },
   metadata: {},
 } as unknown as GatheredContext;
 
@@ -40,7 +47,8 @@ const T = {
   connectionsLabel: 'Connections',
   citedByLabel: 'Cited by',
   graphPaneTitle: 'In the graph',
-  graphEmpty: 'No links yet.', resourceLinkLabel: 'Resource link',
+  graphEmpty: 'No links yet.',
+  resourceLinkLabel: 'Resource link',
   corpusPaneTitle: 'In the corpus',
   corpusEmpty: 'Nothing similar in the corpus.',
   excludedReceipt: '{{types}} excluded from this recall',
@@ -60,7 +68,8 @@ const T = {
   maxLengthHelp: 'Max help',
   maxLengthCeiling: 'Limited to {{maxOutputTokens}} tokens by {{model}}.',
   outputFormat: 'Format',
-  formatExtensionMismatch: 'Save location must end in {{extension}} to match the selected format.',
+  formatExtensionMismatch:
+    'Save location must end in {{extension}} to match the selected format.',
   generate: 'Generate',
   discardDraftPrompt: 'Discard this draft?',
   discardDraft: 'Discard',
@@ -69,10 +78,14 @@ const T = {
 };
 
 let onClose: Mock<() => void>;
-let onGenerateSubmit: Mock<(resourceId: string, config: GenerationConfig) => void>;
+let onGenerateSubmit: Mock<
+  (resourceId: string, config: GenerationConfig) => void
+>;
 let onGather: Mock<(options: ResourceGatherOptions) => void>;
 
-function renderModal(props: Partial<React.ComponentProps<typeof ResourceGenerateModal>> = {}) {
+function renderModal(
+  props: Partial<React.ComponentProps<typeof ResourceGenerateModal>> = {},
+) {
   return render(
     <ResourceGenerateModal
       isOpen
@@ -96,7 +109,8 @@ describe('ResourceGenerateModal', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     onClose = vi.fn<() => void>();
-    onGenerateSubmit = vi.fn<(resourceId: string, config: GenerationConfig) => void>();
+    onGenerateSubmit =
+      vi.fn<(resourceId: string, config: GenerationConfig) => void>();
     onGather = vi.fn<(options: ResourceGatherOptions) => void>();
     // jsdom doesn't implement scrollIntoView; GatherContextStep may call it.
     Element.prototype.scrollIntoView = vi.fn();
@@ -117,7 +131,9 @@ describe('ResourceGenerateModal', () => {
     expect(screen.getByLabelText(T.includeContent)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Person' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Topic' })).toBeInTheDocument();
-    expect(baseElement.querySelector('.xynolog-wizard__step-scroll')).not.toBeNull();
+    expect(
+      baseElement.querySelector('.xynolog-wizard__step-scroll'),
+    ).not.toBeNull();
     expect(screen.queryByText(T.graphPaneTitle)).not.toBeInTheDocument();
     expect(screen.queryByLabelText(T.resourceTitle)).not.toBeInTheDocument();
   });
@@ -128,8 +144,15 @@ describe('ResourceGenerateModal', () => {
     // owner already holds it.
     const { baseElement } = renderModal({ gatherLoading: true });
     fireEvent.click(screen.getByRole('button', { name: /Gather/ }));
-    expect(onGather).toHaveBeenCalledWith({ includeContent: true, includeSummary: true, depth: 2, maxResources: 10 });
-    expect(baseElement.querySelector('.xynolog-gather__loading')).not.toBeNull();
+    expect(onGather).toHaveBeenCalledWith({
+      includeContent: true,
+      includeSummary: true,
+      depth: 2,
+      maxResources: 10,
+    });
+    expect(
+      baseElement.querySelector('.xynolog-gather__loading'),
+    ).not.toBeNull();
     // The form's job is done: it folds into a one-line receipt of what THIS
     // gather asked for, and the evidence leads the pane. The form stays
     // mounted (hidden) so its values survive for the expand path.
@@ -144,15 +167,20 @@ describe('ResourceGenerateModal', () => {
     renderModal();
     fireEvent.click(screen.getByRole('button', { name: 'Person' }));
     fireEvent.click(screen.getByRole('button', { name: /Gather/ }));
-    expect(screen.getByTitle(T.editGather).textContent)
-      .toContain('Person excluded from this recall');
+    expect(screen.getByTitle(T.editGather).textContent).toContain(
+      'Person excluded from this recall',
+    );
   });
 
   it('the receipt expands back to the form — values preserved — and re-gather collapses again', () => {
     renderModal({ gatherContext: RESOURCE_CONTEXT });
-    fireEvent.change(screen.getByLabelText(T.gatherDepth), { target: { value: '3' } });
+    fireEvent.change(screen.getByLabelText(T.gatherDepth), {
+      target: { value: '3' },
+    });
     fireEvent.click(screen.getByRole('button', { name: /Gather/ }));
-    expect(screen.getByTitle(T.editGather).textContent).toContain(`${T.gatherDepth} 3`);
+    expect(screen.getByTitle(T.editGather).textContent).toContain(
+      `${T.gatherDepth} 3`,
+    );
 
     fireEvent.click(screen.getByTitle(T.editGather));
     const depthInput = screen.getByLabelText(T.gatherDepth);
@@ -163,8 +191,12 @@ describe('ResourceGenerateModal', () => {
     fireEvent.change(depthInput, { target: { value: '1' } });
     fireEvent.click(screen.getByRole('button', { name: /Gather/ }));
     expect(onGather).toHaveBeenCalledTimes(2);
-    expect(onGather).toHaveBeenLastCalledWith(expect.objectContaining({ depth: 1 }));
-    expect(screen.getByTitle(T.editGather).textContent).toContain(`${T.gatherDepth} 1`);
+    expect(onGather).toHaveBeenLastCalledWith(
+      expect.objectContaining({ depth: 1 }),
+    );
+    expect(screen.getByTitle(T.editGather).textContent).toContain(
+      `${T.gatherDepth} 1`,
+    );
   });
 
   it('threads crossed-off entity types into the gather options as the exclude list', () => {
@@ -206,8 +238,12 @@ describe('ResourceGenerateModal', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /Gather/ }));
 
-    fireEvent.change(screen.getByLabelText(T.resourceTitle), { target: { value: 'Generated Doc' } });
-    fireEvent.change(screen.getByLabelText(T.saveLocation), { target: { value: 'generated/out.md' } });
+    fireEvent.change(screen.getByLabelText(T.resourceTitle), {
+      target: { value: 'Generated Doc' },
+    });
+    fireEvent.change(screen.getByLabelText(T.saveLocation), {
+      target: { value: 'generated/out.md' },
+    });
     fireEvent.click(screen.getByRole('button', { name: /Generate/ }));
 
     expect(onGenerateSubmit).toHaveBeenCalledTimes(1);
@@ -230,14 +266,23 @@ describe('ResourceGenerateModal', () => {
     renderModal({ gatherContext: RESOURCE_CONTEXT });
     fireEvent.click(screen.getByRole('button', { name: /Gather/ }));
 
-    fireEvent.change(screen.getByLabelText(T.resourceTitle), { target: { value: 'Generated Doc' } });
-    fireEvent.change(screen.getByLabelText(T.saveLocation), { target: { value: 'generated/out.pdf' } });
-    fireEvent.change(screen.getByLabelText(T.outputFormat), { target: { value: 'application/pdf' } });
+    fireEvent.change(screen.getByLabelText(T.resourceTitle), {
+      target: { value: 'Generated Doc' },
+    });
+    fireEvent.change(screen.getByLabelText(T.saveLocation), {
+      target: { value: 'generated/out.pdf' },
+    });
+    fireEvent.change(screen.getByLabelText(T.outputFormat), {
+      target: { value: 'application/pdf' },
+    });
     fireEvent.click(screen.getByRole('button', { name: /Generate/ }));
 
     expect(onGenerateSubmit).toHaveBeenCalledWith(
       'res-1',
-      expect.objectContaining({ outputMediaType: 'application/pdf', storageUri: 'file://generated/out.pdf' }),
+      expect.objectContaining({
+        outputMediaType: 'application/pdf',
+        storageUri: 'file://generated/out.pdf',
+      }),
     );
   });
 
@@ -249,10 +294,18 @@ describe('ResourceGenerateModal', () => {
 
     render(
       <ResourceGenerateModal
-        isOpen onClose={onClose} resourceId="res-1" defaultTitle="Default Title"
-        locale="en" entityTypeOptions={['Person', 'Topic']} onGenerateSubmit={onGenerateSubmit}
-        gatherContext={null} gatherLoading={false} gatherError={new Error('boom')}
-        onGather={onGather} translations={T}
+        isOpen
+        onClose={onClose}
+        resourceId="res-1"
+        defaultTitle="Default Title"
+        locale="en"
+        entityTypeOptions={['Person', 'Topic']}
+        onGenerateSubmit={onGenerateSubmit}
+        gatherContext={null}
+        gatherLoading={false}
+        gatherError={new Error('boom')}
+        onGather={onGather}
+        translations={T}
       />,
     );
     fireEvent.click(screen.getAllByRole('button', { name: /Gather/ }).at(-1)!);
@@ -288,10 +341,18 @@ describe('ResourceGenerateModal', () => {
     const latest = vi.fn<() => void>();
     rerender(
       <ResourceGenerateModal
-        isOpen onClose={latest} resourceId="res-1" defaultTitle="Default Title"
-        locale="en" entityTypeOptions={['Person', 'Topic']} onGenerateSubmit={onGenerateSubmit}
-        gatherContext={null} gatherLoading={false} gatherError={null}
-        onGather={onGather} translations={T}
+        isOpen
+        onClose={latest}
+        resourceId="res-1"
+        defaultTitle="Default Title"
+        locale="en"
+        entityTypeOptions={['Person', 'Topic']}
+        onGenerateSubmit={onGenerateSubmit}
+        gatherContext={null}
+        gatherLoading={false}
+        gatherError={null}
+        onGather={onGather}
+        translations={T}
       />,
     );
     fireEvent.click(screen.getByLabelText('Close'));
@@ -306,18 +367,34 @@ describe('ResourceGenerateModal', () => {
     // that matters: the draft re-seeds then.
     const { rerender } = render(
       <ResourceGenerateModal
-        isOpen={false} onClose={onClose} resourceId="res-1" defaultTitle=""
-        locale="en" entityTypeOptions={[]} onGenerateSubmit={onGenerateSubmit}
-        gatherContext={RESOURCE_CONTEXT} gatherLoading={false} gatherError={null}
-        onGather={onGather} translations={T}
+        isOpen={false}
+        onClose={onClose}
+        resourceId="res-1"
+        defaultTitle=""
+        locale="en"
+        entityTypeOptions={[]}
+        onGenerateSubmit={onGenerateSubmit}
+        gatherContext={RESOURCE_CONTEXT}
+        gatherLoading={false}
+        gatherError={null}
+        onGather={onGather}
+        translations={T}
       />,
     );
     rerender(
       <ResourceGenerateModal
-        isOpen onClose={onClose} resourceId="res-1" defaultTitle="PB"
-        locale="en" entityTypeOptions={[]} onGenerateSubmit={onGenerateSubmit}
-        gatherContext={RESOURCE_CONTEXT} gatherLoading={false} gatherError={null}
-        onGather={onGather} translations={T}
+        isOpen
+        onClose={onClose}
+        resourceId="res-1"
+        defaultTitle="PB"
+        locale="en"
+        entityTypeOptions={[]}
+        onGenerateSubmit={onGenerateSubmit}
+        gatherContext={RESOURCE_CONTEXT}
+        gatherLoading={false}
+        gatherError={null}
+        onGather={onGather}
+        translations={T}
       />,
     );
     fireEvent.click(screen.getByRole('button', { name: /Gather/ }));
@@ -330,17 +407,21 @@ describe('ResourceGenerateModal', () => {
 
     const scroll = baseElement.querySelector('.xynolog-wizard__step-scroll');
     expect(scroll).not.toBeNull();
-    expect(scroll!.querySelector('.xynolog-gather__outer')).not.toBeNull();      // the evidence
-    expect(screen.getByText(T.graphPaneTitle)).toBeInTheDocument();              // graph pane up
-    expect(screen.getByLabelText(T.resourceTitle)).toBeInTheDocument();          // the form, below
-    for (const form of Array.from(scroll!.querySelectorAll('form.xynolog-form'))) {
+    expect(scroll!.querySelector('.xynolog-gather__outer')).not.toBeNull(); // the evidence
+    expect(screen.getByText(T.graphPaneTitle)).toBeInTheDocument(); // graph pane up
+    expect(screen.getByLabelText(T.resourceTitle)).toBeInTheDocument(); // the form, below
+    for (const form of Array.from(
+      scroll!.querySelectorAll('form.xynolog-form'),
+    )) {
       expect(form.className).not.toContain('xynolog-form--scrollable');
     }
   });
 
   it('the panel carries the widened class', () => {
     const { baseElement } = renderModal();
-    const panel = baseElement.querySelector('.xynolog-search-modal__panel--gather');
+    const panel = baseElement.querySelector(
+      '.xynolog-search-modal__panel--gather',
+    );
     expect(panel).not.toBeNull();
     expect(panel!.className).toContain('xynolog-search-modal__panel--wide');
   });
@@ -349,8 +430,12 @@ describe('ResourceGenerateModal', () => {
     // The modal renders via a HeadlessUI portal, so query the whole document.
     const { baseElement } = renderModal({ gatherContext: RESOURCE_CONTEXT });
     const footerPins = () => {
-      expect(baseElement.querySelector('.xynolog-modal__actions--wizard')).not.toBeNull();
-      expect(baseElement.querySelectorAll('.xynolog-button--flex')).toHaveLength(0);
+      expect(
+        baseElement.querySelector('.xynolog-modal__actions--wizard'),
+      ).not.toBeNull();
+      expect(
+        baseElement.querySelectorAll('.xynolog-button--flex'),
+      ).toHaveLength(0);
       const footerButtons = Array.from(
         baseElement.querySelectorAll('.xynolog-modal__actions button'),
       ).map((b) => b.textContent ?? '');
@@ -376,7 +461,9 @@ describe('ResourceGenerateModal — dismissal guards typed work', () => {
   it('a typed save location guards dismissal; Keep editing stays, Discard closes', () => {
     renderModal({ gatherContext: RESOURCE_CONTEXT });
     fireEvent.click(screen.getByRole('button', { name: /Gather/ })); // reveal the stack
-    fireEvent.change(screen.getByLabelText(T.saveLocation), { target: { value: 'generated/out.md' } });
+    fireEvent.change(screen.getByLabelText(T.saveLocation), {
+      target: { value: 'generated/out.md' },
+    });
 
     fireEvent.click(screen.getByLabelText('Close'));
     expect(onClose).not.toHaveBeenCalled();
@@ -384,7 +471,9 @@ describe('ResourceGenerateModal — dismissal guards typed work', () => {
 
     fireEvent.click(screen.getByRole('button', { name: T.keepEditing }));
     expect(screen.queryByText(T.discardDraftPrompt)).not.toBeInTheDocument();
-    expect(screen.getByLabelText(T.saveLocation)).toHaveValue('generated/out.md');
+    expect(screen.getByLabelText(T.saveLocation)).toHaveValue(
+      'generated/out.md',
+    );
     expect(onClose).not.toHaveBeenCalled();
 
     fireEvent.click(screen.getByLabelText('Close'));
@@ -405,14 +494,25 @@ describe('ResourceGenerateModal — dismissal guards typed work', () => {
     // The source resource's name loads asynchronously: the baseline moves
     // while the modal is open, the user has typed nothing. Dirtiness compares
     // against what was SEEDED, not the live prop.
-    const { rerender } = renderModal({ defaultTitle: '', gatherContext: RESOURCE_CONTEXT });
+    const { rerender } = renderModal({
+      defaultTitle: '',
+      gatherContext: RESOURCE_CONTEXT,
+    });
     fireEvent.click(screen.getByRole('button', { name: /Gather/ }));
     rerender(
       <ResourceGenerateModal
-        isOpen onClose={onClose} resourceId="res-1" defaultTitle="Loaded Name"
-        locale="en" entityTypeOptions={['Person', 'Topic']} onGenerateSubmit={onGenerateSubmit}
-        gatherContext={RESOURCE_CONTEXT} gatherLoading={false} gatherError={null}
-        onGather={onGather} translations={T}
+        isOpen
+        onClose={onClose}
+        resourceId="res-1"
+        defaultTitle="Loaded Name"
+        locale="en"
+        entityTypeOptions={['Person', 'Topic']}
+        onGenerateSubmit={onGenerateSubmit}
+        gatherContext={RESOURCE_CONTEXT}
+        gatherLoading={false}
+        gatherError={null}
+        onGather={onGather}
+        translations={T}
       />,
     );
 

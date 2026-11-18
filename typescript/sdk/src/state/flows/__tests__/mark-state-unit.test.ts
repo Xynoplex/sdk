@@ -2,18 +2,25 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 import { Observable } from 'rxjs';
 import { FrameRefusal, resourceId as makeResourceId } from '@xynolog/core';
 import { createMarkStateUnit, type MarkStateUnit } from '../mark-state-unit';
-import { makeTestClient, type TestClient } from '../../../__tests__/test-client';
+import {
+  makeTestClient,
+  type TestClient,
+} from '../../../__tests__/test-client';
 import { assertStateUnitAxioms } from '@xynolog/core/testing/axioms';
 
 const RID = makeResourceId('res-1');
 
-function withMark(overrides: Partial<{
-  annotation: ReturnType<typeof vi.fn>;
-  delegate: ReturnType<typeof vi.fn>;
-}> = {}): TestClient {
+function withMark(
+  overrides: Partial<{
+    annotation: ReturnType<typeof vi.fn>;
+    delegate: ReturnType<typeof vi.fn>;
+  }> = {},
+): TestClient {
   return makeTestClient({
     mark: {
-      annotation: overrides.annotation ?? vi.fn().mockResolvedValue({ annotationId: 'ann-new' }),
+      annotation:
+        overrides.annotation ??
+        vi.fn().mockResolvedValue({ annotationId: 'ann-new' }),
       delegate: overrides.delegate ?? vi.fn(() => new Observable(() => {})),
     },
   });
@@ -22,7 +29,9 @@ function withMark(overrides: Partial<{
 describe('createMarkStateUnit', () => {
   let tc: TestClient;
 
-  afterEach(() => { tc?.bus.destroy(); });
+  afterEach(() => {
+    tc?.bus.destroy();
+  });
 
   it('does not emit panel:open on mark:requested (view layer handles panel)', () => {
     // The view component is responsible for opening the annotations panel
@@ -32,9 +41,17 @@ describe('createMarkStateUnit', () => {
     tc = withMark();
     const stateUnit = createMarkStateUnit(tc.client, RID);
     const panels: string[] = [];
-    tc.bus.on('panel:open').subscribe(e => panels.push(e instanceof FrameRefusal ? e.channel : e.panel));
+    tc.bus
+      .on('panel:open')
+      .subscribe((e) =>
+        panels.push(e instanceof FrameRefusal ? e.channel : e.panel),
+      );
 
-    tc.bus.emit('mark:requested', { source: RID, selector: { type: 'TextQuoteSelector', exact: 'a passage' }, motivation: 'highlighting' });
+    tc.bus.emit('mark:requested', {
+      source: RID,
+      selector: { type: 'TextQuoteSelector', exact: 'a passage' },
+      motivation: 'highlighting',
+    });
     expect(panels).toEqual([]);
     stateUnit.dispose();
   });
@@ -45,10 +62,24 @@ describe('MarkStateUnit — StateUnit axioms', () => {
     assertStateUnitAxioms<MarkStateUnit>({
       setup: () => {
         const tc = withMark();
-        return { unit: createMarkStateUnit(tc.client, RID), teardown: () => tc.bus.destroy() };
+        return {
+          unit: createMarkStateUnit(tc.client, RID),
+          teardown: () => tc.bus.destroy(),
+        };
       },
-      surfaces: (u) => [u.pendingAnnotation$, u.delegatingMotivation$, u.progress$, u.progressMotivation$, u.jobId$, u.failure$],
-      invocations: (u) => [() => u.requestDelegate({ motivation: 'highlighting' }), () => u.cancelPending(), () => u.dismissProgress()],
+      surfaces: (u) => [
+        u.pendingAnnotation$,
+        u.delegatingMotivation$,
+        u.progress$,
+        u.progressMotivation$,
+        u.jobId$,
+        u.failure$,
+      ],
+      invocations: (u) => [
+        () => u.requestDelegate({ motivation: 'highlighting' }),
+        () => u.cancelPending(),
+        () => u.dismissProgress(),
+      ],
     });
   });
 });

@@ -18,7 +18,11 @@ function inertTransport(): ITransport {
 describe('browse.click anchorRect payload contract', () => {
   it('omits the anchorRect key entirely when no geometry is passed', () => {
     const bus = new EventBus();
-    const browse = new BrowseNamespace(inertTransport(), bus, {} as unknown as IContentTransport);
+    const browse = new BrowseNamespace(
+      inertTransport(),
+      bus,
+      {} as unknown as IContentTransport,
+    );
 
     const payloads: object[] = [];
     bus.on('browse:click').subscribe((p) => payloads.push(p));
@@ -32,13 +36,24 @@ describe('browse.click anchorRect payload contract', () => {
 
   it('carries the anchorRect verbatim when geometry is passed', () => {
     const bus = new EventBus();
-    const browse = new BrowseNamespace(inertTransport(), bus, {} as unknown as IContentTransport);
+    const browse = new BrowseNamespace(
+      inertTransport(),
+      bus,
+      {} as unknown as IContentTransport,
+    );
 
     const payloads: object[] = [];
     bus.on('browse:click').subscribe((p) => payloads.push(p));
 
     const anchorRect: AnchorRect = {
-      x: 1, y: 2, width: 3, height: 4, top: 2, right: 4, bottom: 6, left: 1,
+      x: 1,
+      y: 2,
+      width: 3,
+      height: 4,
+      top: 2,
+      right: 4,
+      bottom: 6,
+      left: 1,
     };
     browse.click(annotationId('a1'), anchorRect);
 

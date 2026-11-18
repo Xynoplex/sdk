@@ -1,6 +1,18 @@
 import { BehaviorSubject, type Subscription } from 'rxjs';
 import type { XynologClient } from '../../client';
-import { DELEGATE_SILENCE_MS, FrameRefusal, watched, type JobId, type MarkJobParams, type Motivation, type ResourceId, type Selector, type StateUnit, type Watched, type components } from '@xynolog/core';
+import {
+  DELEGATE_SILENCE_MS,
+  FrameRefusal,
+  watched,
+  type JobId,
+  type MarkJobParams,
+  type Motivation,
+  type ResourceId,
+  type Selector,
+  type StateUnit,
+  type Watched,
+  type components,
+} from '@xynolog/core';
 import { JobCancelledError } from '../../namespaces/job-status-poll';
 
 type JobProgress = components['schemas']['JobProgress'];
@@ -51,7 +63,9 @@ export function createMarkStateUnit(
   resourceId: ResourceId,
 ): MarkStateUnit {
   const subs: Subscription[] = [];
-  const pendingAnnotation$ = new BehaviorSubject<PendingAnnotation | null>(null);
+  const pendingAnnotation$ = new BehaviorSubject<PendingAnnotation | null>(
+    null,
+  );
   const delegatingMotivation$ = new BehaviorSubject<Motivation | null>(null);
   const progress$ = new BehaviorSubject<JobProgress | null>(null);
   const progressMotivation$ = new BehaviorSubject<Motivation | null>(null);
@@ -76,35 +90,45 @@ export function createMarkStateUnit(
   // becomes non-null: the unit updates state, and UI side effects belong to
   // the view, where the host's bus is.
   // A signal whose payload is not its channel's names no resource it is for.
-  subs.push(client.bus.on('mark:requested').subscribe((event) => {
-    if (event instanceof FrameRefusal || event.source !== resourceId) return;
-    pendingAnnotation$.next({ selector: event.selector as Selector | Selector[], motivation: event.motivation });
-  }));
-
-  subs.push(client.bus.on('mark:submit').subscribe(async (event) => {
-    if (event instanceof FrameRefusal || event.source !== resourceId) return;
-    try {
-      await client.mark.annotation({
+  subs.push(
+    client.bus.on('mark:requested').subscribe((event) => {
+      if (event instanceof FrameRefusal || event.source !== resourceId) return;
+      pendingAnnotation$.next({
+        selector: event.selector as Selector | Selector[],
         motivation: event.motivation,
-        target: { source: resourceId, selector: event.selector as Selector },
-        body: event.body,
       });
-      if (disposed) return;
-      // The composer closes HERE, not on `mark:create-ok`. The wire reply
-      // carries no `resourceId` (MarkCreateOk is `{ response: { annotationId } }`),
-      // so it could not be told apart: with two viewers on one session,
-      // creating an annotation in either would discard the other's
-      // in-progress selection. Clearing in the flow that owns the pending state
-      // is correlated by construction. A host that wants to cancel a composer
-      // calls `cancelPending`.
-      pendingAnnotation$.next(null);
-    } catch (error) {
-      if (disposed) return;
-      // Client-local, resource-stamped UI notification — the wire reply
-      // (mark:create-failed) is Bus.request plumbing, not for UI consumption.
-      client.bus.emit('mark:create-error', { resourceId, message: error instanceof Error ? error.message : String(error) });
-    }
-  }));
+    }),
+  );
+
+  subs.push(
+    client.bus.on('mark:submit').subscribe(async (event) => {
+      if (event instanceof FrameRefusal || event.source !== resourceId) return;
+      try {
+        await client.mark.annotation({
+          motivation: event.motivation,
+          target: { source: resourceId, selector: event.selector as Selector },
+          body: event.body,
+        });
+        if (disposed) return;
+        // The composer closes HERE, not on `mark:create-ok`. The wire reply
+        // carries no `resourceId` (MarkCreateOk is `{ response: { annotationId } }`),
+        // so it could not be told apart: with two viewers on one session,
+        // creating an annotation in either would discard the other's
+        // in-progress selection. Clearing in the flow that owns the pending state
+        // is correlated by construction. A host that wants to cancel a composer
+        // calls `cancelPending`.
+        pendingAnnotation$.next(null);
+      } catch (error) {
+        if (disposed) return;
+        // Client-local, resource-stamped UI notification — the wire reply
+        // (mark:create-failed) is Bus.request plumbing, not for UI consumption.
+        client.bus.emit('mark:create-error', {
+          resourceId,
+          message: error instanceof Error ? error.message : String(error),
+        });
+      }
+    }),
+  );
 
   // A delegated job. `mark.delegate` creates the job and follows it: it gives the
   // job's progress on `next`, completes on `job:complete`, errors on a
@@ -138,7 +162,10 @@ export function createMarkStateUnit(
     // the job saying something: the silence goes on being counted past it.
     let staleTimer: ReturnType<typeof setTimeout> | null = null;
     const clearStale = () => {
-      if (staleTimer) { clearTimeout(staleTimer); staleTimer = null; }
+      if (staleTimer) {
+        clearTimeout(staleTimer);
+        staleTimer = null;
+      }
     };
     const armStale = () => {
       clearStale();
@@ -190,7 +217,9 @@ export function createMarkStateUnit(
         // Why it ended is said before the end itself, so no reader sees an
         // ended job that has no reason yet.
         clearStale();
-        failure$.next(error instanceof Error ? error : new Error(String(error)));
+        failure$.next(
+          error instanceof Error ? error : new Error(String(error)),
+        );
         // A cancellation is announced by nothing else, and the job's commits
         // stand: its display stays, to say so. A real failure: `job:fail`
         // already toasts it through the outcome channel, so its display goes.
@@ -226,7 +255,7 @@ export function createMarkStateUnit(
     },
     dispose() {
       disposed = true;
-      subs.forEach(s => s.unsubscribe());
+      subs.forEach((s) => s.unsubscribe());
       pendingAnnotation$.complete();
       delegatingMotivation$.complete();
       progress$.complete();

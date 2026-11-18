@@ -85,6 +85,9 @@ module Pattern = struct
   let tuple patterns = Pat.tuple (List.map (fun p -> (None, p)) patterns) Closed
   let or_ left right = Pat.or_ left right
 
+  (* [(pattern : type_)]. *)
+  let constraint_ pattern type_ = Pat.constraint_ pattern type_
+
   (* A record of [fields], each a pattern; [open_], it may have more. *)
   let record ?(open_ = false) fields =
     Pat.record

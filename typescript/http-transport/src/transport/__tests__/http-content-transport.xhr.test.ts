@@ -12,7 +12,12 @@
 
 import util from 'node:util';
 import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
-import { BRIDGED_CHANNELS, REQUEST_RETRY_PAUSE_MS, baseUrl, resourceId } from '@xynolog/core';
+import {
+  BRIDGED_CHANNELS,
+  REQUEST_RETRY_PAUSE_MS,
+  baseUrl,
+  resourceId,
+} from '@xynolog/core';
 import type { KyInstance } from 'ky';
 
 vi.mock('ky', () => ({
@@ -30,7 +35,10 @@ import { BehaviorSubject } from 'rxjs';
 // inside this jsdom environment (whose undici body path lacks `Buffer`,
 // yielding unhandled rejections). This suite is about the XHR upload path
 // only — park the SSE fetch on a never-resolving promise.
-vi.stubGlobal('fetch', vi.fn(() => new Promise(() => {})));
+vi.stubGlobal(
+  'fetch',
+  vi.fn(() => new Promise(() => {})),
+);
 
 class FakeXHR {
   static instances: FakeXHR[] = [];
@@ -74,7 +82,11 @@ class FakeXHR {
 
   // Test helpers — fire the lifecycle events explicitly.
   fireProgress(loaded: number, total: number, lengthComputable = true): void {
-    this.upload.onprogress?.({ loaded, total, lengthComputable } as ProgressEvent);
+    this.upload.onprogress?.({
+      loaded,
+      total,
+      lengthComputable,
+    } as ProgressEvent);
   }
   fireSuccess(status: number, body: unknown): void {
     this.status = status;
@@ -95,7 +107,9 @@ class FakeXHR {
 
 const testBaseUrl = baseUrl('http://test.example.com');
 
-function makeTransportAndContent(tokenRefresher?: () => Promise<string | null>) {
+function makeTransportAndContent(
+  tokenRefresher?: () => Promise<string | null>,
+) {
   const mockKy: Partial<KyInstance> = {
     post: vi.fn(),
     get: vi.fn(),
@@ -120,7 +134,9 @@ describe('HttpContentTransport.putBinary — XHR path', () => {
   beforeEach(() => {
     originalXHR = globalThis.XMLHttpRequest;
     FakeXHR.instances = [];
-    (globalThis as unknown as { XMLHttpRequest: typeof FakeXHR }).XMLHttpRequest = FakeXHR;
+    (
+      globalThis as unknown as { XMLHttpRequest: typeof FakeXHR }
+    ).XMLHttpRequest = FakeXHR;
   });
 
   afterEach(() => {
@@ -134,23 +150,42 @@ describe('HttpContentTransport.putBinary — XHR path', () => {
     class RefusingXHR extends FakeXHR {
       override setRequestHeader(name: string, value: string): void {
         if (name === 'Authorization') {
-          throw new DOMException(`Failed to execute 'setRequestHeader' on 'XMLHttpRequest': '${value}' is not a valid HTTP header field value.`, 'SyntaxError');
+          throw new DOMException(
+            `Failed to execute 'setRequestHeader' on 'XMLHttpRequest': '${value}' is not a valid HTTP header field value.`,
+            'SyntaxError',
+          );
         }
         super.setRequestHeader(name, value);
       }
     }
-    (globalThis as unknown as { XMLHttpRequest: typeof FakeXHR }).XMLHttpRequest = RefusingXHR;
+    (
+      globalThis as unknown as { XMLHttpRequest: typeof FakeXHR }
+    ).XMLHttpRequest = RefusingXHR;
     const { transport, content, token$ } = makeTransportAndContent();
     token$.next(`one line\nand ${carried}`);
     const reported: unknown[] = [];
     transport.errors$.subscribe((error) => reported.push(error));
 
     const failure: unknown = await content
-      .putBinary({ name: 'a note', file: Buffer.from('a note'), format: 'text/plain', storageUri: 'file://a-note.txt' }, { onProgress: vi.fn() })
+      .putBinary(
+        {
+          name: 'a note',
+          file: Buffer.from('a note'),
+          format: 'text/plain',
+          storageUri: 'file://a-note.txt',
+        },
+        { onProgress: vi.fn() },
+      )
       .catch((e: unknown) => e);
 
-    expect(util.inspect(failure, { depth: 6 })).not.toContain(carried.slice(0, 6));
-    expect(failure).toMatchObject({ name: 'APIError', code: 'unavailable', message: 'POST /resources got no answer: SyntaxError' });
+    expect(util.inspect(failure, { depth: 6 })).not.toContain(
+      carried.slice(0, 6),
+    );
+    expect(failure).toMatchObject({
+      name: 'APIError',
+      code: 'unavailable',
+      message: 'POST /resources got no answer: SyntaxError',
+    });
     expect(reported).toEqual([failure]);
     expect(FakeXHR.instances[0]!.sendCalls).toEqual([]);
   });
@@ -197,7 +232,9 @@ describe('HttpContentTransport.putBinary — XHR path', () => {
 
     expect(FakeXHR.instances).toHaveLength(1);
     const xhr = FakeXHR.instances[0]!;
-    expect(xhr.openCalls).toEqual([{ method: 'POST', url: `${testBaseUrl}/resources` }]);
+    expect(xhr.openCalls).toEqual([
+      { method: 'POST', url: `${testBaseUrl}/resources` },
+    ]);
     expect(xhr.sendCalls).toHaveLength(1);
 
     xhr.fireSuccess(201, { resourceId: 'new-res-1' });
@@ -209,7 +246,12 @@ describe('HttpContentTransport.putBinary — XHR path', () => {
     const onProgress = vi.fn();
 
     const promise = content.putBinary(
-      { name: 'a', file: Buffer.from('xx'), format: 'text/plain', storageUri: 'file://a' },
+      {
+        name: 'a',
+        file: Buffer.from('xx'),
+        format: 'text/plain',
+        storageUri: 'file://a',
+      },
       { onProgress },
     );
 
@@ -219,9 +261,18 @@ describe('HttpContentTransport.putBinary — XHR path', () => {
     xhr.fireProgress(4096, 4096);
 
     expect(onProgress).toHaveBeenCalledTimes(3);
-    expect(onProgress.mock.calls[0]?.[0]).toEqual({ bytesUploaded: 1024, totalBytes: 4096 });
-    expect(onProgress.mock.calls[1]?.[0]).toEqual({ bytesUploaded: 2048, totalBytes: 4096 });
-    expect(onProgress.mock.calls[2]?.[0]).toEqual({ bytesUploaded: 4096, totalBytes: 4096 });
+    expect(onProgress.mock.calls[0]?.[0]).toEqual({
+      bytesUploaded: 1024,
+      totalBytes: 4096,
+    });
+    expect(onProgress.mock.calls[1]?.[0]).toEqual({
+      bytesUploaded: 2048,
+      totalBytes: 4096,
+    });
+    expect(onProgress.mock.calls[2]?.[0]).toEqual({
+      bytesUploaded: 4096,
+      totalBytes: 4096,
+    });
 
     xhr.fireSuccess(201, { resourceId: 'r' });
     await promise;
@@ -232,12 +283,20 @@ describe('HttpContentTransport.putBinary — XHR path', () => {
     const onProgress = vi.fn();
 
     const promise = content.putBinary(
-      { name: 'a', file: Buffer.from('xx'), format: 'text/plain', storageUri: 'file://a' },
+      {
+        name: 'a',
+        file: Buffer.from('xx'),
+        format: 'text/plain',
+        storageUri: 'file://a',
+      },
       { onProgress },
     );
 
     FakeXHR.instances[0]!.fireProgress(512, 0, false);
-    expect(onProgress.mock.calls[0]?.[0]).toEqual({ bytesUploaded: 512, totalBytes: 0 });
+    expect(onProgress.mock.calls[0]?.[0]).toEqual({
+      bytesUploaded: 512,
+      totalBytes: 0,
+    });
 
     FakeXHR.instances[0]!.fireSuccess(201, { resourceId: 'r' });
     await promise;
@@ -247,13 +306,23 @@ describe('HttpContentTransport.putBinary — XHR path', () => {
     const { content } = makeTransportAndContent();
 
     const promise = content.putBinary(
-      { name: 'a', file: Buffer.from('xx'), format: 'text/plain', storageUri: 'file://a' },
+      {
+        name: 'a',
+        file: Buffer.from('xx'),
+        format: 'text/plain',
+        storageUri: 'file://a',
+      },
       { onProgress: vi.fn() },
     );
 
     const xhr = FakeXHR.instances[0]!;
-    const authHeader = xhr.setRequestHeaderCalls.find((h) => h.name === 'Authorization');
-    expect(authHeader).toEqual({ name: 'Authorization', value: 'Bearer test-token-abc' });
+    const authHeader = xhr.setRequestHeaderCalls.find(
+      (h) => h.name === 'Authorization',
+    );
+    expect(authHeader).toEqual({
+      name: 'Authorization',
+      value: 'Bearer test-token-abc',
+    });
 
     xhr.fireSuccess(201, { resourceId: 'r' });
     await promise;
@@ -267,11 +336,18 @@ describe('HttpContentTransport.putBinary — XHR path', () => {
     transport.errors$.subscribe((e) => errors.push(e));
 
     const promise = content.putBinary(
-      { name: 'a', file: Buffer.from('xx'), format: 'text/plain', storageUri: 'file://a' },
+      {
+        name: 'a',
+        file: Buffer.from('xx'),
+        format: 'text/plain',
+        storageUri: 'file://a',
+      },
       { onProgress },
     );
 
-    FakeXHR.instances[0]!.fireFailure(403, 'Forbidden', { error: 'no permission' });
+    FakeXHR.instances[0]!.fireFailure(403, 'Forbidden', {
+      error: 'no permission',
+    });
 
     await expect(promise).rejects.toBeInstanceOf(APIError);
     await promise.catch((err) => {
@@ -290,7 +366,12 @@ describe('HttpContentTransport.putBinary — XHR path', () => {
     transport.errors$.subscribe((e) => errors.push(e));
 
     const promise = content.putBinary(
-      { name: 'a', file: Buffer.from('xx'), format: 'text/plain', storageUri: 'file://a' },
+      {
+        name: 'a',
+        file: Buffer.from('xx'),
+        format: 'text/plain',
+        storageUri: 'file://a',
+      },
       { onProgress: vi.fn() },
     );
     const xhr = FakeXHR.instances[0]!;
@@ -299,9 +380,17 @@ describe('HttpContentTransport.putBinary — XHR path', () => {
     xhr.responseText = '<html>a proxy page</html>';
     xhr.onload?.();
 
-    const refusal = await promise.then(() => undefined, (thrown: unknown) => thrown);
+    const refusal = await promise.then(
+      () => undefined,
+      (thrown: unknown) => thrown,
+    );
     expect(refusal).toBeInstanceOf(APIError);
-    expect(refusal).toMatchObject({ code: 'error', status: 200, message: 'POST /resources answered what is not its declared body: it is malformed' });
+    expect(refusal).toMatchObject({
+      code: 'error',
+      status: 200,
+      message:
+        'POST /resources answered what is not its declared body: it is malformed',
+    });
     expect(errors).toEqual([refusal]);
   });
 
@@ -313,7 +402,12 @@ describe('HttpContentTransport.putBinary — XHR path', () => {
     const progress: number[] = [];
 
     const promise = content.putBinary(
-      { name: 'a', file: Buffer.from('xx'), format: 'text/plain', storageUri: 'file://a' },
+      {
+        name: 'a',
+        file: Buffer.from('xx'),
+        format: 'text/plain',
+        storageUri: 'file://a',
+      },
       { onProgress: ({ bytesUploaded }) => progress.push(bytesUploaded) },
     );
     const first = FakeXHR.instances[0]!;
@@ -322,18 +416,30 @@ describe('HttpContentTransport.putBinary — XHR path', () => {
 
     await vi.waitFor(() => expect(FakeXHR.instances).toHaveLength(2));
     const second = FakeXHR.instances[1]!;
-    expect(second.setRequestHeaderCalls).toContainEqual({ name: 'Authorization', value: 'Bearer renewed-token' });
-    const keyOf = (xhr: FakeXHR) => xhr.setRequestHeaderCalls.find((h) => h.name === 'Idempotency-Key')?.value;
+    expect(second.setRequestHeaderCalls).toContainEqual({
+      name: 'Authorization',
+      value: 'Bearer renewed-token',
+    });
+    const keyOf = (xhr: FakeXHR) =>
+      xhr.setRequestHeaderCalls.find((h) => h.name === 'Idempotency-Key')
+        ?.value;
     expect(keyOf(first)).toEqual(expect.any(String));
-    expect(keyOf(second), 'the second sending is the same upload').toBe(keyOf(first));
+    expect(keyOf(second), 'the second sending is the same upload').toBe(
+      keyOf(first),
+    );
     second.fireProgress(30, 100);
     second.fireProgress(100, 100);
     second.fireSuccess(201, { resourceId: 'r-1' });
 
     await expect(promise).resolves.toEqual({ resourceId: 'r-1' });
     expect(refresher).toHaveBeenCalledTimes(1);
-    expect(errors, 'a renewed upload that is accepted reports nothing').toEqual([]);
-    expect(progress, 'the second sending is reported only past the first').toEqual([60, 100]);
+    expect(errors, 'a renewed upload that is accepted reports nothing').toEqual(
+      [],
+    );
+    expect(
+      progress,
+      'the second sending is reported only past the first',
+    ).toEqual([60, 100]);
   });
 
   test('a 429 refusal-rate is renewed as a 401 is; refused again, it fails as unauthorized with its 429, once, and is not sent a third time', async () => {
@@ -341,10 +447,19 @@ describe('HttpContentTransport.putBinary — XHR path', () => {
     const { content, transport } = makeTransportAndContent(refresher);
     const errors: unknown[] = [];
     transport.errors$.subscribe((e) => errors.push(e));
-    const refused = { error: 'The requests this holder has had refused have used their allowance', code: 'refusal-rate' };
+    const refused = {
+      error:
+        'The requests this holder has had refused have used their allowance',
+      code: 'refusal-rate',
+    };
 
     const promise = content.putBinary(
-      { name: 'a', file: Buffer.from('xx'), format: 'text/plain', storageUri: 'file://a' },
+      {
+        name: 'a',
+        file: Buffer.from('xx'),
+        format: 'text/plain',
+        storageUri: 'file://a',
+      },
       { onProgress: vi.fn() },
     );
     FakeXHR.instances[0]!.fireFailure(429, 'Too Many Requests', refused);
@@ -365,10 +480,17 @@ describe('HttpContentTransport.putBinary — XHR path', () => {
     transport.errors$.subscribe((e) => errors.push(e));
 
     const promise = content.putBinary(
-      { name: 'a', file: Buffer.from('xx'), format: 'text/plain', storageUri: 'file://a' },
+      {
+        name: 'a',
+        file: Buffer.from('xx'),
+        format: 'text/plain',
+        storageUri: 'file://a',
+      },
       { onProgress: vi.fn() },
     );
-    FakeXHR.instances[0]!.fireFailure(401, 'Unauthorized', { error: 'Invalid token' });
+    FakeXHR.instances[0]!.fireFailure(401, 'Unauthorized', {
+      error: 'Invalid token',
+    });
 
     const err = (await promise.catch((e: unknown) => e)) as APIError;
     expect(err).toMatchObject({ code: 'unauthorized', status: 401 });
@@ -380,13 +502,22 @@ describe('HttpContentTransport.putBinary — XHR path', () => {
     const { content } = makeTransportAndContent();
 
     const promise = content.putBinary(
-      { name: 'a', file: Buffer.from('xx'), format: 'text/plain', storageUri: 'file://a' },
+      {
+        name: 'a',
+        file: Buffer.from('xx'),
+        format: 'text/plain',
+        storageUri: 'file://a',
+      },
       { onProgress: vi.fn() },
     );
 
-    FakeXHR.instances[0]!.fireFailure(503, 'Service Unavailable', { error: 'down' });
+    FakeXHR.instances[0]!.fireFailure(503, 'Service Unavailable', {
+      error: 'down',
+    });
     await vi.waitFor(() => expect(FakeXHR.instances).toHaveLength(2));
-    FakeXHR.instances[1]!.fireFailure(503, 'Service Unavailable', { error: 'down' });
+    FakeXHR.instances[1]!.fireFailure(503, 'Service Unavailable', {
+      error: 'down',
+    });
 
     const err = (await promise.catch((e) => e)) as APIError;
     expect(err).toBeInstanceOf(APIError);
@@ -401,7 +532,12 @@ describe('HttpContentTransport.putBinary — XHR path', () => {
     transport.errors$.subscribe((e) => errors.push(e));
 
     const promise = content.putBinary(
-      { name: 'a', file: Buffer.from('xx'), format: 'text/plain', storageUri: 'file://a' },
+      {
+        name: 'a',
+        file: Buffer.from('xx'),
+        format: 'text/plain',
+        storageUri: 'file://a',
+      },
       { onProgress: vi.fn() },
     );
 
@@ -418,8 +554,15 @@ describe('HttpContentTransport.putBinary — XHR path', () => {
   });
 
   describe('sent once more, with the same key and form, when a repeat is answered as the first was', () => {
-    const note = { name: 'a', file: Buffer.from('xx'), format: 'text/plain', storageUri: 'file://a' } as const;
-    const keyOf = (xhr: FakeXHR) => xhr.setRequestHeaderCalls.find((h) => h.name === 'Idempotency-Key')?.value;
+    const note = {
+      name: 'a',
+      file: Buffer.from('xx'),
+      format: 'text/plain',
+      storageUri: 'file://a',
+    } as const;
+    const keyOf = (xhr: FakeXHR) =>
+      xhr.setRequestHeaderCalls.find((h) => h.name === 'Idempotency-Key')
+        ?.value;
 
     test('answered 503, then 202: it resolves, the 503 is not reported, and progress never goes back', async () => {
       const { content, transport } = makeTransportAndContent();
@@ -427,22 +570,33 @@ describe('HttpContentTransport.putBinary — XHR path', () => {
       transport.errors$.subscribe((e) => errors.push(e));
       const progress: number[] = [];
 
-      const promise = content.putBinary(note, { onProgress: ({ bytesUploaded }) => progress.push(bytesUploaded) });
+      const promise = content.putBinary(note, {
+        onProgress: ({ bytesUploaded }) => progress.push(bytesUploaded),
+      });
       const first = FakeXHR.instances[0]!;
       first.fireProgress(60, 100);
-      first.fireFailure(503, 'Service Unavailable', { error: 'The Archivist is not answering' });
+      first.fireFailure(503, 'Service Unavailable', {
+        error: 'The Archivist is not answering',
+      });
 
       await vi.waitFor(() => expect(FakeXHR.instances).toHaveLength(2));
       const second = FakeXHR.instances[1]!;
       expect(keyOf(first)).toEqual(expect.any(String));
-      expect(keyOf(second), 'the second sending is the same upload').toBe(keyOf(first));
-      expect(second.sendCalls[0], 'the same fields and bytes').toBe(first.sendCalls[0]);
+      expect(keyOf(second), 'the second sending is the same upload').toBe(
+        keyOf(first),
+      );
+      expect(second.sendCalls[0], 'the same fields and bytes').toBe(
+        first.sendCalls[0],
+      );
       second.fireProgress(30, 100);
       second.fireProgress(100, 100);
       second.fireSuccess(202, { resourceId: 'r-1' });
 
       await expect(promise).resolves.toEqual({ resourceId: 'r-1' });
-      expect(errors, 'an upload accepted the second time reports nothing').toEqual([]);
+      expect(
+        errors,
+        'an upload accepted the second time reports nothing',
+      ).toEqual([]);
       expect(progress).toEqual([60, 100]);
     });
 
@@ -462,14 +616,18 @@ describe('HttpContentTransport.putBinary — XHR path', () => {
       expect(errors).toEqual([]);
     });
 
-    for (const [stated, waited] of [[undefined, REQUEST_RETRY_PAUSE_MS], ['2', 2000]] as const) {
+    for (const [stated, waited] of [
+      [undefined, REQUEST_RETRY_PAUSE_MS],
+      ['2', 2000],
+    ] as const) {
       test(`waits ${waited} ms first${stated === undefined ? '' : ', the Retry-After its answer states'}`, async () => {
         const { content } = makeTransportAndContent();
         vi.useFakeTimers();
         try {
           const promise = content.putBinary(note, { onProgress: vi.fn() });
           const first = FakeXHR.instances[0]!;
-          if (stated !== undefined) first.responseHeaders['retry-after'] = stated;
+          if (stated !== undefined)
+            first.responseHeaders['retry-after'] = stated;
           first.fireFailure(503, 'Service Unavailable', { error: 'busy' });
 
           await vi.advanceTimersByTimeAsync(waited - 1);
@@ -485,67 +643,98 @@ describe('HttpContentTransport.putBinary — XHR path', () => {
       });
     }
 
-    for (const [status, statusText, code] of [[400, 'Bad Request', 'bad-request'], [422, 'Unprocessable Content', 'unprocessable']] as const) {
+    for (const [status, statusText, code] of [
+      [400, 'Bad Request', 'bad-request'],
+      [422, 'Unprocessable Content', 'unprocessable'],
+    ] as const) {
       test(`answered ${status}, it is not sent again: a key makes a repeat harmless, not a refused upload acceptable`, async () => {
         const { content, transport } = makeTransportAndContent();
         const errors: unknown[] = [];
         transport.errors$.subscribe((e) => errors.push(e));
 
         const promise = content.putBinary(note, { onProgress: vi.fn() });
-        FakeXHR.instances[0]!.fireFailure(status, statusText, { error: 'refused' });
+        FakeXHR.instances[0]!.fireFailure(status, statusText, {
+          error: 'refused',
+        });
 
         const err = (await promise.catch((e: unknown) => e)) as APIError;
         expect(err).toMatchObject({ name: 'APIError', status, code });
         expect(errors).toEqual([err]);
-        await new Promise((waited) => setTimeout(waited, REQUEST_RETRY_PAUSE_MS + 100));
+        await new Promise((waited) =>
+          setTimeout(waited, REQUEST_RETRY_PAUSE_MS + 100),
+        );
         expect(FakeXHR.instances).toHaveLength(1);
       });
     }
 
-    test('cancelled as its sending fails, before the wait begins, it rejects with its caller\'s reason and is not sent again', async () => {
+    test("cancelled as its sending fails, before the wait begins, it rejects with its caller's reason and is not sent again", async () => {
       const { content, transport } = makeTransportAndContent();
       const errors: unknown[] = [];
       transport.errors$.subscribe((e) => errors.push(e));
       const controller = new AbortController();
 
-      const promise = content.putBinary(note, { onProgress: vi.fn(), signal: controller.signal });
-      FakeXHR.instances[0]!.fireFailure(503, 'Service Unavailable', { error: 'busy' });
+      const promise = content.putBinary(note, {
+        onProgress: vi.fn(),
+        signal: controller.signal,
+      });
+      FakeXHR.instances[0]!.fireFailure(503, 'Service Unavailable', {
+        error: 'busy',
+      });
       controller.abort();
 
-      expect(await promise.catch((e: unknown) => e)).toBe(controller.signal.reason);
-      await new Promise((waited) => setTimeout(waited, REQUEST_RETRY_PAUSE_MS + 100));
+      expect(await promise.catch((e: unknown) => e)).toBe(
+        controller.signal.reason,
+      );
+      await new Promise((waited) =>
+        setTimeout(waited, REQUEST_RETRY_PAUSE_MS + 100),
+      );
       expect(FakeXHR.instances).toHaveLength(1);
-      expect(errors, 'a cancellation its caller asked for is not a transport failure').toEqual([]);
+      expect(
+        errors,
+        'a cancellation its caller asked for is not a transport failure',
+      ).toEqual([]);
     });
 
-    test('cancelled while it waits to be sent again, it rejects with its caller\'s reason and is not sent again', async () => {
+    test("cancelled while it waits to be sent again, it rejects with its caller's reason and is not sent again", async () => {
       const { content, transport } = makeTransportAndContent();
       const errors: unknown[] = [];
       transport.errors$.subscribe((e) => errors.push(e));
       const controller = new AbortController();
       vi.useFakeTimers();
       try {
-        const outcome = content.putBinary(note, { onProgress: vi.fn(), signal: controller.signal }).catch((e: unknown) => e);
-        FakeXHR.instances[0]!.fireFailure(503, 'Service Unavailable', { error: 'busy' });
+        const outcome = content
+          .putBinary(note, { onProgress: vi.fn(), signal: controller.signal })
+          .catch((e: unknown) => e);
+        FakeXHR.instances[0]!.fireFailure(503, 'Service Unavailable', {
+          error: 'busy',
+        });
         await vi.advanceTimersByTimeAsync(REQUEST_RETRY_PAUSE_MS - 1);
         controller.abort();
 
         expect(await outcome).toBe(controller.signal.reason);
         await vi.advanceTimersByTimeAsync(REQUEST_RETRY_PAUSE_MS);
         expect(FakeXHR.instances).toHaveLength(1);
-        expect(errors, 'a cancellation its caller asked for is not a transport failure').toEqual([]);
+        expect(
+          errors,
+          'a cancellation its caller asked for is not a transport failure',
+        ).toEqual([]);
       } finally {
         vi.useRealTimers();
       }
     });
 
-    test('given its caller\'s signal, never cancelled, it is sent again once the wait is over', async () => {
+    test("given its caller's signal, never cancelled, it is sent again once the wait is over", async () => {
       const { content } = makeTransportAndContent();
       const controller = new AbortController();
       vi.useFakeTimers();
       try {
-        const promise = content.putBinary(note, { onProgress: vi.fn(), signal: controller.signal });
-        FakeXHR.instances[0]!.fireFailure(503, 'Service Unavailable', { error: 'busy' });
+        const promise = content.putBinary(note, {
+          onProgress: vi.fn(),
+          signal: controller.signal,
+        });
+        FakeXHR.instances[0]!.fireFailure(503, 'Service Unavailable', {
+          error: 'busy',
+        });
 
         await vi.advanceTimersByTimeAsync(REQUEST_RETRY_PAUSE_MS - 1);
         expect(FakeXHR.instances).toHaveLength(1);
@@ -568,7 +757,12 @@ describe('HttpContentTransport.putBinary — XHR path', () => {
     transport.errors$.subscribe((e) => errors.push(e));
 
     const promise = content.putBinary(
-      { name: 'a', file: Buffer.from('xx'), format: 'text/plain', storageUri: 'file://a' },
+      {
+        name: 'a',
+        file: Buffer.from('xx'),
+        format: 'text/plain',
+        storageUri: 'file://a',
+      },
       { onProgress: vi.fn(), signal: controller.signal },
     );
 
@@ -580,7 +774,9 @@ describe('HttpContentTransport.putBinary — XHR path', () => {
     expect(xhr.abortCalled).toBe(1);
     // Cancelled, it rejects with its caller's reason, as an abandoned bus
     // request does, and as the upload does where there is no XMLHttpRequest.
-    expect(await promise.catch((e: unknown) => e)).toBe(controller.signal.reason);
+    expect(await promise.catch((e: unknown) => e)).toBe(
+      controller.signal.reason,
+    );
     // A cancel the caller asked for is theirs alone, not a transport error.
     expect(errors).toEqual([]);
   });
@@ -594,7 +790,12 @@ describe('HttpContentTransport.putBinary — XHR path', () => {
     transport.errors$.subscribe((e) => errors.push(e));
 
     const promise = content.putBinary(
-      { name: 'a', file: Buffer.from('xx'), format: 'text/plain', storageUri: 'file://a' },
+      {
+        name: 'a',
+        file: Buffer.from('xx'),
+        format: 'text/plain',
+        storageUri: 'file://a',
+      },
       { signal: controller.signal },
     );
 
@@ -602,7 +803,9 @@ describe('HttpContentTransport.putBinary — XHR path', () => {
     expect(FakeXHR.instances).toHaveLength(1);
     expect(FakeXHR.instances[0]!.sendCalls).toHaveLength(0);
 
-    expect(await promise.catch((e: unknown) => e)).toBe(controller.signal.reason);
+    expect(await promise.catch((e: unknown) => e)).toBe(
+      controller.signal.reason,
+    );
     expect(errors).toEqual([]);
   });
 
@@ -642,18 +845,28 @@ describe('HttpContentTransport.putBinary — where there is no XMLHttpRequest', 
   beforeEach(() => {
     // An earlier test's stub may still be installed.
     savedXHR = globalThis.XMLHttpRequest;
-    delete (globalThis as unknown as { XMLHttpRequest?: unknown }).XMLHttpRequest;
+    delete (globalThis as unknown as { XMLHttpRequest?: unknown })
+      .XMLHttpRequest;
   });
 
   afterEach(() => {
     if (savedXHR !== undefined) {
-      (globalThis as unknown as { XMLHttpRequest: typeof globalThis.XMLHttpRequest }).XMLHttpRequest = savedXHR;
+      (
+        globalThis as unknown as {
+          XMLHttpRequest: typeof globalThis.XMLHttpRequest;
+        }
+      ).XMLHttpRequest = savedXHR;
     }
     vi.clearAllMocks();
   });
 
   const posted = (mockKy: Partial<KyInstance>) =>
-    vi.mocked(mockKy.post!).mock.calls[0]![1] as { body: unknown; signal?: AbortSignal; timeout?: unknown; headers: Record<string, string> };
+    vi.mocked(mockKy.post!).mock.calls[0]![1] as {
+      body: unknown;
+      signal?: AbortSignal;
+      timeout?: unknown;
+      headers: Record<string, string>;
+    };
 
   test('given only a `signal`, it goes through ky with that signal and the form as its body', async () => {
     const { content, mockKy } = makeTransportAndContent();
@@ -663,7 +876,12 @@ describe('HttpContentTransport.putBinary — where there is no XMLHttpRequest', 
 
     const controller = new AbortController();
     const result = await content.putBinary(
-      { name: 'a', file: Buffer.from('xx'), format: 'text/plain', storageUri: 'file://a' },
+      {
+        name: 'a',
+        file: Buffer.from('xx'),
+        format: 'text/plain',
+        storageUri: 'file://a',
+      },
       { signal: controller.signal },
     );
 
@@ -682,7 +900,12 @@ describe('HttpContentTransport.putBinary — where there is no XMLHttpRequest', 
     const onProgress = vi.fn();
     const controller = new AbortController();
     const result = await content.putBinary(
-      { name: 'a', file: Buffer.from('xx'), format: 'text/plain', storageUri: 'file://a' },
+      {
+        name: 'a',
+        file: Buffer.from('xx'),
+        format: 'text/plain',
+        storageUri: 'file://a',
+      },
       { onProgress, signal: controller.signal },
     );
 
@@ -706,7 +929,12 @@ describe('HttpContentTransport.putBinary — where there is no XMLHttpRequest', 
       json: vi.fn().mockResolvedValue({ resourceId: 'r' }),
     } as never);
 
-    await content.putBinary({ name: 'a', file: Buffer.from('xx'), format: 'text/plain', storageUri: 'file://a' });
+    await content.putBinary({
+      name: 'a',
+      file: Buffer.from('xx'),
+      format: 'text/plain',
+      storageUri: 'file://a',
+    });
 
     expect(posted(mockKy).timeout).toBe(false);
   });
@@ -733,7 +961,8 @@ describe('HttpContentTransport.putBinary — runtime fallback when Buffer is una
 
   afterEach(() => {
     if (savedBuffer !== undefined) {
-      (globalThis as unknown as { Buffer: typeof globalThis.Buffer }).Buffer = savedBuffer;
+      (globalThis as unknown as { Buffer: typeof globalThis.Buffer }).Buffer =
+        savedBuffer;
     }
     vi.clearAllMocks();
   });

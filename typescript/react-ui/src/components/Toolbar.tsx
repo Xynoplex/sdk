@@ -35,7 +35,7 @@ export interface ToolbarPanelsProps {
 export function Toolbar<T extends string = string>({
   context,
   activePanel,
-  isArchived = false
+  isArchived = false,
 }: ToolbarProps<T>) {
   const t = useTranslations('Toolbar');
   const xynolog = useXynolog();
@@ -60,7 +60,12 @@ export function Toolbar<T extends string = string>({
               aria-pressed={activePanel === 'annotations'}
               title={t('annotations')}
             >
-              <span className="xynolog-toolbar-icon xynolog-toolbar-icon-large" aria-hidden="true">A</span>
+              <span
+                className="xynolog-toolbar-icon xynolog-toolbar-icon-large"
+                aria-hidden="true"
+              >
+                A
+              </span>
             </button>
           )}
 
@@ -74,7 +79,9 @@ export function Toolbar<T extends string = string>({
             aria-pressed={activePanel === 'info'}
             title={t('resourceInfo')}
           >
-            <span className="xynolog-toolbar-icon" aria-hidden="true">ℹ️</span>
+            <span className="xynolog-toolbar-icon" aria-hidden="true">
+              ℹ️
+            </span>
           </button>
 
           {/* History Icon */}
@@ -87,7 +94,9 @@ export function Toolbar<T extends string = string>({
             aria-pressed={activePanel === 'history'}
             title={t('history')}
           >
-            <span className="xynolog-toolbar-icon" aria-hidden="true">📒</span>
+            <span className="xynolog-toolbar-icon" aria-hidden="true">
+              📒
+            </span>
           </button>
 
           {/* JSON-LD Icon */}
@@ -100,7 +109,9 @@ export function Toolbar<T extends string = string>({
             aria-pressed={activePanel === 'jsonld'}
             title="JSON-LD"
           >
-            <span className="xynolog-toolbar-icon" aria-hidden="true">🌐</span>
+            <span className="xynolog-toolbar-icon" aria-hidden="true">
+              🌐
+            </span>
           </button>
 
           {/* Collaboration Icon */}
@@ -113,7 +124,9 @@ export function Toolbar<T extends string = string>({
             aria-pressed={activePanel === 'collaboration'}
             title={t('collaboration')}
           >
-            <span className="xynolog-toolbar-icon" aria-hidden="true">👥</span>
+            <span className="xynolog-toolbar-icon" aria-hidden="true">
+              👥
+            </span>
           </button>
         </>
       )}
@@ -128,8 +141,22 @@ export function Toolbar<T extends string = string>({
         aria-pressed={activePanel === 'knowledge-base'}
         title={t('knowledgeBase')}
       >
-        <svg className="xynolog-toolbar-icon" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" width="20" height="20">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 5.625c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125" />
+        <svg
+          className="xynolog-toolbar-icon"
+          aria-hidden="true"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth={1.5}
+          stroke="currentColor"
+          width="20"
+          height="20"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 5.625c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125"
+          />
         </svg>
       </button>
 
@@ -143,7 +170,9 @@ export function Toolbar<T extends string = string>({
         aria-pressed={activePanel === 'user'}
         title={t('userAccount')}
       >
-        <span className="xynolog-toolbar-icon" aria-hidden="true">👤</span>
+        <span className="xynolog-toolbar-icon" aria-hidden="true">
+          👤
+        </span>
       </button>
 
       {/* Settings Icon - always visible without scrolling */}
@@ -156,7 +185,9 @@ export function Toolbar<T extends string = string>({
         aria-pressed={activePanel === 'settings'}
         title={t('settings')}
       >
-        <span className="xynolog-toolbar-icon" aria-hidden="true">⚙️</span>
+        <span className="xynolog-toolbar-icon" aria-hidden="true">
+          ⚙️
+        </span>
       </button>
     </div>
   );

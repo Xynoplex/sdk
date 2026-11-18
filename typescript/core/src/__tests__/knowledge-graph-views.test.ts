@@ -12,19 +12,41 @@ describe('deriveViews', () => {
   it('derives connections from main→peer edges (name, entityTypes, bidirectional)', () => {
     const graph: KnowledgeGraph = {
       nodes: [
-        { id: resourceId('res-main'), type: 'resource', label: 'Main', entityTypes: ['Paper'] },
-        { id: resourceId('res-peer'), type: 'resource', label: 'Peer', entityTypes: ['Author'] },
+        {
+          id: resourceId('res-main'),
+          type: 'resource',
+          label: 'Main',
+          entityTypes: ['Paper'],
+        },
+        {
+          id: resourceId('res-peer'),
+          type: 'resource',
+          label: 'Peer',
+          entityTypes: ['Author'],
+        },
       ],
       // relationshipType is a free string a stored connection can name anything —
       // even 'cites'. Derivation is structural (endpoints), so this stays a
       // connection and never leaks into citedBy (a citation is an annotation node).
-      edges: [{ source: 'res-main', target: 'res-peer', type: 'cites', bidirectional: true }],
+      edges: [
+        {
+          source: 'res-main',
+          target: 'res-peer',
+          type: 'cites',
+          bidirectional: true,
+        },
+      ],
     };
 
     const views = deriveViews(graph, 'res-main');
 
     expect(views.connections).toEqual([
-      { resourceId: 'res-peer', resourceName: 'Peer', entityTypes: ['Author'], bidirectional: true },
+      {
+        resourceId: 'res-peer',
+        resourceName: 'Peer',
+        entityTypes: ['Author'],
+        bidirectional: true,
+      },
     ]);
   });
 
@@ -39,13 +61,38 @@ describe('deriveViews', () => {
     });
     const graph: KnowledgeGraph = {
       nodes: [
-        { id: resourceId('res-main'), type: 'resource', label: 'Main', entityTypes: [] },
-        { id: resourceId('res-citing'), type: 'resource', label: 'Citing Paper', entityTypes: [] },
+        {
+          id: resourceId('res-main'),
+          type: 'resource',
+          label: 'Main',
+          entityTypes: [],
+        },
+        {
+          id: resourceId('res-citing'),
+          type: 'resource',
+          label: 'Citing Paper',
+          entityTypes: [],
+        },
         // two citations from the SAME resource: two annotation nodes, ONE citedBy row
-        { id: annotationId('ann-cite-1'), type: 'annotation', label: 'linking', annotation: ann('ann-cite-1', 'res-citing') },
-        { id: annotationId('ann-cite-2'), type: 'annotation', label: 'linking', annotation: ann('ann-cite-2', 'res-citing') },
+        {
+          id: annotationId('ann-cite-1'),
+          type: 'annotation',
+          label: 'linking',
+          annotation: ann('ann-cite-1', 'res-citing'),
+        },
+        {
+          id: annotationId('ann-cite-2'),
+          type: 'annotation',
+          label: 'linking',
+          annotation: ann('ann-cite-2', 'res-citing'),
+        },
         // a citer whose view was missing at build time: no resource node → raw-id label
-        { id: annotationId('ann-noview'), type: 'annotation', label: 'linking', annotation: ann('ann-noview', 'res-noview') },
+        {
+          id: annotationId('ann-noview'),
+          type: 'annotation',
+          label: 'linking',
+          annotation: ann('ann-noview', 'res-noview'),
+        },
       ],
       edges: [
         { source: 'ann-cite-1', target: 'res-citing', type: 'annotation-of' },
@@ -77,13 +124,47 @@ describe('deriveViews', () => {
     });
     const graph: KnowledgeGraph = {
       nodes: [
-        { id: resourceId('res-main'), type: 'resource', label: 'Main', entityTypes: [] },
-        { id: resourceId('res-other'), type: 'resource', label: 'Other', entityTypes: [] },
-        { id: annotationId('ann-focal'), type: 'annotation', label: 'commenting', entityTypes: ['Focal'], annotation: ann('ann-focal', 'res-main') },
-        { id: annotationId('ann-sib-1'), type: 'annotation', label: 'linking', entityTypes: ['Author', 'Org'], annotation: ann('ann-sib-1', 'res-main') },
-        { id: annotationId('ann-sib-2'), type: 'annotation', label: 'commenting', entityTypes: ['Org'], annotation: ann('ann-sib-2', 'res-main') },
+        {
+          id: resourceId('res-main'),
+          type: 'resource',
+          label: 'Main',
+          entityTypes: [],
+        },
+        {
+          id: resourceId('res-other'),
+          type: 'resource',
+          label: 'Other',
+          entityTypes: [],
+        },
+        {
+          id: annotationId('ann-focal'),
+          type: 'annotation',
+          label: 'commenting',
+          entityTypes: ['Focal'],
+          annotation: ann('ann-focal', 'res-main'),
+        },
+        {
+          id: annotationId('ann-sib-1'),
+          type: 'annotation',
+          label: 'linking',
+          entityTypes: ['Author', 'Org'],
+          annotation: ann('ann-sib-1', 'res-main'),
+        },
+        {
+          id: annotationId('ann-sib-2'),
+          type: 'annotation',
+          label: 'commenting',
+          entityTypes: ['Org'],
+          annotation: ann('ann-sib-2', 'res-main'),
+        },
         // a CITING annotation lives on another resource — not a sibling
-        { id: annotationId('ann-citing'), type: 'annotation', label: 'linking', entityTypes: ['Leaky'], annotation: ann('ann-citing', 'res-other') },
+        {
+          id: annotationId('ann-citing'),
+          type: 'annotation',
+          label: 'linking',
+          entityTypes: ['Leaky'],
+          annotation: ann('ann-citing', 'res-other'),
+        },
       ],
       edges: [
         { source: 'ann-focal', target: 'res-main', type: 'annotation-of' },
@@ -103,7 +184,14 @@ describe('deriveViews', () => {
 
   it('returns empty views for a graph with only the main node', () => {
     const graph: KnowledgeGraph = {
-      nodes: [{ id: resourceId('res-main'), type: 'resource', label: 'Main', entityTypes: [] }],
+      nodes: [
+        {
+          id: resourceId('res-main'),
+          type: 'resource',
+          label: 'Main',
+          entityTypes: [],
+        },
+      ],
       edges: [],
     };
 

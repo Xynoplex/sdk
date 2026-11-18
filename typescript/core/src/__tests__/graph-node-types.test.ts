@@ -45,23 +45,44 @@ function describeNode(n: GraphNode): string {
 
 describe('KnowledgeGraph node — the union discriminates', () => {
   it('narrows both members by type, castless', () => {
-    expect(describeNode({ id: resourceId('r-1'), type: 'resource', label: 'Main' })).toBe('Main');
-    expect(describeNode({ id: annotationId('ann-cite'), type: 'annotation', label: 'linking', annotation: W3C }))
-      .toBe('linking: linking');
+    expect(
+      describeNode({ id: resourceId('r-1'), type: 'resource', label: 'Main' }),
+    ).toBe('Main');
+    expect(
+      describeNode({
+        id: annotationId('ann-cite'),
+        type: 'annotation',
+        label: 'linking',
+        annotation: W3C,
+      }),
+    ).toBe('linking: linking');
   });
 
   it('an annotation node without its annotation is a skeleton the union forbids', () => {
     // @ts-expect-error — the node is the annotation's graph presence, whole
-    const skeleton: GraphNode = { id: annotationId('ann-cite'), type: 'annotation', label: 'linking' };
+    const skeleton: GraphNode = {
+      id: annotationId('ann-cite'),
+      type: 'annotation',
+      label: 'linking',
+    };
     expect(skeleton).toBeDefined();
   });
 });
 
 describe('SemanticMatch — the card can name its source', () => {
   it('resourceName is required', () => {
-    const named: SemanticMatch = { text: 't', resourceId: resourceId('r-1'), resourceName: 'The Source', score: 0.91 };
+    const named: SemanticMatch = {
+      text: 't',
+      resourceId: resourceId('r-1'),
+      resourceName: 'The Source',
+      score: 0.91,
+    };
     // @ts-expect-error — resourceName is required: a match names its source
-    const nameless: SemanticMatch = { text: 't', resourceId: resourceId('r-1'), score: 0.91 };
+    const nameless: SemanticMatch = {
+      text: 't',
+      resourceId: resourceId('r-1'),
+      score: 0.91,
+    };
     expect({ named, nameless }).toBeDefined();
   });
 });

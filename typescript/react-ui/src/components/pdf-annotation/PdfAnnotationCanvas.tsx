@@ -10,7 +10,10 @@ import { PdfPageView, type PageDrawing } from './PdfPageView';
 import { useTranslations } from '../../contexts/TranslationContext';
 import { HOVER_DELAY_MS, type XynologSession } from '@xynolog/sdk';
 import type { SelectionMotivation } from '../annotation/AnnotateToolbar';
-import { loadPdfDocument, type PDFDocumentProxy } from '../../lib/browser-pdfjs';
+import {
+  loadPdfDocument,
+  type PDFDocumentProxy,
+} from '../../lib/browser-pdfjs';
 import './PdfAnnotationCanvas.css';
 
 export type DrawingMode = 'rectangle' | 'circle' | 'polygon' | null;
@@ -62,7 +65,11 @@ const SCROLL_AXIS: 'vertical' | 'horizontal' = 'vertical';
 /** Scroll a target within the scrollport the PDF viewer owns. Avoid
  *  scrollIntoView: it is allowed to move every scrollable ancestor, which
  *  makes embedded/zoomed viewers sensitive to host layout. */
-function scrollWithin(scrollport: HTMLElement | null, target: HTMLElement | null, align: 'start' | 'nearest'): void {
+function scrollWithin(
+  scrollport: HTMLElement | null,
+  target: HTMLElement | null,
+  align: 'start' | 'nearest',
+): void {
   if (!target) return;
   if (!scrollport || typeof scrollport.scrollTo !== 'function') {
     target.scrollIntoView?.({ block: align });
@@ -71,7 +78,9 @@ function scrollWithin(scrollport: HTMLElement | null, target: HTMLElement | null
   const portRect = scrollport.getBoundingClientRect();
   const targetRect = target.getBoundingClientRect();
   const top = targetRect.top - (portRect.top + scrollport.clientTop);
-  const bottom = targetRect.bottom - (portRect.top + scrollport.clientTop + scrollport.clientHeight);
+  const bottom =
+    targetRect.bottom -
+    (portRect.top + scrollport.clientTop + scrollport.clientHeight);
   if (align === 'nearest' && top >= 0 && bottom <= 0) return;
   scrollport.scrollTo({ top: scrollport.scrollTop + top, behavior: 'instant' });
 }
@@ -114,7 +123,7 @@ export function PdfAnnotationCanvas({
   hoverDelayMs = HOVER_DELAY_MS,
   zoom = 1,
   ownsScrollport = true,
-  pageLayout = 'paged'
+  pageLayout = 'paged',
 }: PdfAnnotationCanvasProps) {
   // PDF state
   const [pdfDoc, setPdfDoc] = useState<PDFDocumentProxy | null>(null);
@@ -130,7 +139,10 @@ export function PdfAnnotationCanvas({
    * depends on the column's width, and reserving raster pixels would make
    * the column's height lurch on every mount.
    */
-  const [pageShape, setPageShape] = useState<{ aspect: number; rasterWidth: number } | null>(null);
+  const [pageShape, setPageShape] = useState<{
+    aspect: number;
+    rasterWidth: number;
+  } | null>(null);
   /** Measured inner width of the column — the other half of the reservation. */
   const [columnWidth, setColumnWidth] = useState<number | null>(null);
   const scrollportRef = useRef<HTMLDivElement>(null);
@@ -207,9 +219,10 @@ export function PdfAnnotationCanvas({
    */
   const anchoredText = useAnchoredText(session, resourceUri);
   const drawing = useMemo<PageDrawing | null>(
-    () => (anchoredText.status === 'held' && drawingMode
-      ? { mode: drawingMode, text: anchoredText.text }
-      : null),
+    () =>
+      anchoredText.status === 'held' && drawingMode
+        ? { mode: drawingMode, text: anchoredText.text }
+        : null,
     [anchoredText, drawingMode],
   );
 
@@ -234,12 +247,17 @@ export function PdfAnnotationCanvas({
     };
   }, [pageLayout]);
 
-  const slotHeight = estimateSlotHeight(columnWidth, pageShape?.rasterWidth ?? null, pageShape?.aspect ?? null)
+  const slotHeight =
+    estimateSlotHeight(
+      columnWidth,
+      pageShape?.rasterWidth ?? null,
+      pageShape?.aspect ?? null,
+    ) ??
     // Before the column has been measured there is still a sane reservation:
     // the raster's own height. Wrong in a narrow column, but every slot is
     // wrong by the SAME amount, so the column is at least internally
     // consistent until the first measurement lands.
-    ?? (pageShape ? Math.round(pageShape.rasterWidth * pageShape.aspect) : null);
+    (pageShape ? Math.round(pageShape.rasterWidth * pageShape.aspect) : null);
 
   // The mount window. Slots report their own visibility; a page is mounted
   // while its slot intersects (widened by PRELOAD_MARGIN so the next page is
@@ -262,13 +280,18 @@ export function PdfAnnotationCanvas({
             return next;
           });
         },
-        { root: ownsScrollport ? scrollportRef.current : null, rootMargin: PRELOAD_MARGIN },
+        {
+          root: ownsScrollport ? scrollportRef.current : null,
+          rootMargin: PRELOAD_MARGIN,
+        },
       );
     } catch {
       // No IntersectionObserver: mount every page rather than none. Correct,
       // simply not virtualized — the same posture as the ResizeObserver
       // fallback in PdfPageView.
-      setVisiblePages(new Set(Array.from({ length: numPages }, (_, i) => i + 1)));
+      setVisiblePages(
+        new Set(Array.from({ length: numPages }, (_, i) => i + 1)),
+      );
       return;
     }
 
@@ -281,18 +304,21 @@ export function PdfAnnotationCanvas({
     // the page indicator.
     let onscreen: IntersectionObserver | null = null;
     try {
-      onscreen = new IntersectionObserver((entries) => {
-        setOnscreenPages((prev) => {
-          const next = new Set(prev);
-          for (const entry of entries) {
-            const page = Number((entry.target as HTMLElement).dataset.page);
-            if (!page) continue;
-            if (entry.isIntersecting) next.add(page);
-            else next.delete(page);
-          }
-          return next;
-        });
-      }, { root: ownsScrollport ? scrollportRef.current : null });
+      onscreen = new IntersectionObserver(
+        (entries) => {
+          setOnscreenPages((prev) => {
+            const next = new Set(prev);
+            for (const entry of entries) {
+              const page = Number((entry.target as HTMLElement).dataset.page);
+              if (!page) continue;
+              if (entry.isIntersecting) next.add(page);
+              else next.delete(page);
+            }
+            return next;
+          });
+        },
+        { root: ownsScrollport ? scrollportRef.current : null },
+      );
       onscreenRef.current = onscreen;
       for (const el of slotRefs.current.values()) onscreen.observe(el);
     } catch {
@@ -329,18 +355,28 @@ export function PdfAnnotationCanvas({
   /** Keeps the current page's rectangle in view as the reader scrolls. */
   const currentTickRef = useRef<HTMLButtonElement>(null);
 
-  const scrollToPage = useCallback((page: number) => {
-    scrollWithin(ownsScrollport ? scrollportRef.current : null, slotRefs.current.get(page) ?? null, 'start');
-  }, [ownsScrollport]);
+  const scrollToPage = useCallback(
+    (page: number) => {
+      scrollWithin(
+        ownsScrollport ? scrollportRef.current : null,
+        slotRefs.current.get(page) ?? null,
+        'start',
+      );
+    },
+    [ownsScrollport],
+  );
 
   // In the column the reader decides which page they are on by scrolling, so
   // the indicator reports rather than controls: the topmost page actually ON
   // SCREEN. NOT `visiblePages` — that set is deliberately widened by
   // PRELOAD_MARGIN to mount pages before they are reached, so reading it here
   // would name a page still a viewport away.
-  const currentPage = pageLayout === 'scroll'
-    ? (onscreenPages.size > 0 ? Math.min(...onscreenPages) : 1)
-    : pageNumber;
+  const currentPage =
+    pageLayout === 'scroll'
+      ? onscreenPages.size > 0
+        ? Math.min(...onscreenPages)
+        : 1
+      : pageNumber;
 
   /**
    * Left/Right step pages.
@@ -367,7 +403,13 @@ export function PdfAnnotationCanvas({
       if (e.metaKey || e.ctrlKey || e.altKey) return; // browser/OS navigation
       const el = e.target as HTMLElement | null;
       const tag = el?.tagName;
-      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || el?.isContentEditable) return;
+      if (
+        tag === 'INPUT' ||
+        tag === 'TEXTAREA' ||
+        tag === 'SELECT' ||
+        el?.isContentEditable
+      )
+        return;
 
       const next = FORWARD.includes(e.key) ? currentPage + 1 : currentPage - 1;
       if (next < 1 || next > numPages) return;
@@ -387,7 +429,9 @@ export function PdfAnnotationCanvas({
     const strip = stripRef.current;
     const clip = scrollportRef.current;
     if (pageLayout !== 'scroll' || !ownsScrollport || !strip || !clip) return;
-    const size = () => { strip.style.maxHeight = `${clip.clientHeight}px`; };
+    const size = () => {
+      strip.style.maxHeight = `${clip.clientHeight}px`;
+    };
     size();
     let observer: ResizeObserver | null = null;
     try {
@@ -414,12 +458,16 @@ export function PdfAnnotationCanvas({
     // modality — sits on a page that is no longer current: two rectangles
     // claiming to be "here". Guarding on ownership means scrolling with the
     // mouse never snatches focus from whatever the reader was doing.
-    const active = typeof document !== 'undefined' ? document.activeElement : null;
-    if (active && stripRef.current?.contains(active) && active !== currentTickRef.current) {
+    const active =
+      typeof document !== 'undefined' ? document.activeElement : null;
+    if (
+      active &&
+      stripRef.current?.contains(active) &&
+      active !== currentTickRef.current
+    ) {
       currentTickRef.current?.focus();
     }
   }, [currentPage]);
-
 
   const pageProps = {
     scale,
@@ -435,7 +483,9 @@ export function PdfAnnotationCanvas({
   };
 
   if (errorKey) {
-    return <div className="xynolog-pdf-annotation-canvas__error">{t(errorKey)}</div>;
+    return (
+      <div className="xynolog-pdf-annotation-canvas__error">{t(errorKey)}</div>
+    );
   }
 
   return (
@@ -443,62 +493,81 @@ export function PdfAnnotationCanvas({
       ref={scrollportRef}
       className="xynolog-pdf-annotation-canvas"
       data-page-layout={pageLayout}
-      data-resource-scrollport={pageLayout === 'scroll' && ownsScrollport ? '' : undefined}
+      data-resource-scrollport={
+        pageLayout === 'scroll' && ownsScrollport ? '' : undefined
+      }
       data-annotate-deferred={anchoredText.status === 'held' ? 'false' : 'true'}
     >
-      {isLoading && <div className="xynolog-pdf-annotation-canvas__loading">{t('loading')}</div>}
+      {isLoading && (
+        <div className="xynolog-pdf-annotation-canvas__loading">
+          {t('loading')}
+        </div>
+      )}
       <AnchoredTextNotice status={anchoredText.status} />
 
       {pdfDoc && pageLayout === 'scroll' ? (
-        <div className="xynolog-pdf-annotation-canvas__viewport" data-axis={SCROLL_AXIS}>
-        {numPages > 0 && pageShape && (
+        <div
+          className="xynolog-pdf-annotation-canvas__viewport"
+          data-axis={SCROLL_AXIS}
+        >
+          {numPages > 0 && pageShape && (
+            <div
+              className="xynolog-pdf-annotation-canvas__strip"
+              data-axis={SCROLL_AXIS}
+              data-scroller="true"
+              aria-orientation={SCROLL_AXIS}
+              ref={stripRef}
+            >
+              {Array.from({ length: numPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  type="button"
+                  data-page={page}
+                  className="xynolog-pdf-annotation-canvas__strip-page"
+                  style={{
+                    height: `${Math.round(STRIP_PAGE_WIDTH * pageShape.aspect)}px`,
+                  }}
+                  aria-label={t('pageOf', { page, total: numPages })}
+                  tabIndex={page === currentPage ? 0 : -1}
+                  {...(page === currentPage
+                    ? { 'aria-current': 'page' as const }
+                    : {})}
+                  ref={page === currentPage ? currentTickRef : undefined}
+                  onClick={() => scrollToPage(page)}
+                >
+                  {page}
+                </button>
+              ))}
+            </div>
+          )}
           <div
-            className="xynolog-pdf-annotation-canvas__strip"
+            className="xynolog-pdf-annotation-canvas__column"
             data-axis={SCROLL_AXIS}
-            data-scroller="true"
-            aria-orientation={SCROLL_AXIS}
-            ref={stripRef}
+            ref={columnRef}
+            style={{ zoom }}
           >
             {Array.from({ length: numPages }, (_, i) => i + 1).map((page) => (
-              <button
+              <div
                 key={page}
-                type="button"
+                ref={registerSlot}
                 data-page={page}
-                className="xynolog-pdf-annotation-canvas__strip-page"
-                style={{ height: `${Math.round(STRIP_PAGE_WIDTH * pageShape.aspect)}px` }}
-                aria-label={t('pageOf', { page, total: numPages })}
-                tabIndex={page === currentPage ? 0 : -1}
-                {...(page === currentPage ? { 'aria-current': 'page' as const } : {})}
-                ref={page === currentPage ? currentTickRef : undefined}
-                onClick={() => scrollToPage(page)}
+                className="xynolog-pdf-annotation-canvas__slot"
+                // min-height, and applied whether or not the page is mounted:
+                // releasing it on mount would make the scrollbar jump. `min`
+                // rather than a fixed height so a page that renders slightly
+                // taller expands instead of clipping.
+                style={slotHeight ? { minHeight: slotHeight } : undefined}
               >
-                {page}
-              </button>
+                {visiblePages.has(page) && (
+                  <PdfPageView doc={pdfDoc} pageNumber={page} {...pageProps} />
+                )}
+              </div>
             ))}
           </div>
-        )}
-        <div className="xynolog-pdf-annotation-canvas__column" data-axis={SCROLL_AXIS} ref={columnRef} style={{ zoom }}>
-          {Array.from({ length: numPages }, (_, i) => i + 1).map((page) => (
-            <div
-              key={page}
-              ref={registerSlot}
-              data-page={page}
-              className="xynolog-pdf-annotation-canvas__slot"
-              // min-height, and applied whether or not the page is mounted:
-              // releasing it on mount would make the scrollbar jump. `min`
-              // rather than a fixed height so a page that renders slightly
-              // taller expands instead of clipping.
-              style={slotHeight ? { minHeight: slotHeight } : undefined}
-            >
-              {visiblePages.has(page) && (
-                <PdfPageView doc={pdfDoc} pageNumber={page} {...pageProps} />
-              )}
-            </div>
-          ))}
-        </div>
         </div>
       ) : (
-        pdfDoc && !isLoading && (
+        pdfDoc &&
+        !isLoading && (
           // `key` is load-bearing: without it React reuses this instance
           // across page changes, so the previous page's raster and load error
           // survive into the next page — a stale overlay, a rectangle drawn
@@ -506,17 +575,29 @@ export function PdfAnnotationCanvas({
           // never clears. Each page is a different thing; mounting it as one
           // resets all of it.
           <div style={{ zoom }}>
-            <PdfPageView key={pageNumber} doc={pdfDoc} pageNumber={pageNumber} {...pageProps} />
+            <PdfPageView
+              key={pageNumber}
+              doc={pdfDoc}
+              pageNumber={pageNumber}
+              {...pageProps}
+            />
           </div>
         )
       )}
 
       {/* Page navigation controls */}
       {numPages > 0 && (
-        <nav className="xynolog-pdf-annotation-canvas__controls" aria-label={t('pagination')}>
+        <nav
+          className="xynolog-pdf-annotation-canvas__controls"
+          aria-label={t('pagination')}
+        >
           <button
             disabled={currentPage <= 1}
-            onClick={() => (pageLayout === 'scroll' ? scrollToPage(currentPage - 1) : setPageNumber(pageNumber - 1))}
+            onClick={() =>
+              pageLayout === 'scroll'
+                ? scrollToPage(currentPage - 1)
+                : setPageNumber(pageNumber - 1)
+            }
             className="xynolog-pdf-annotation-canvas__button"
           >
             {t('previous')}
@@ -527,12 +608,19 @@ export function PdfAnnotationCanvas({
             activated at all — so a screen-reader user who scrolls would
             otherwise get silence.
           */}
-          <span className="xynolog-pdf-annotation-canvas__page-info" aria-live="polite">
+          <span
+            className="xynolog-pdf-annotation-canvas__page-info"
+            aria-live="polite"
+          >
             {t('pageOf', { page: currentPage, total: numPages })}
           </span>
           <button
             disabled={currentPage >= numPages}
-            onClick={() => (pageLayout === 'scroll' ? scrollToPage(currentPage + 1) : setPageNumber(pageNumber + 1))}
+            onClick={() =>
+              pageLayout === 'scroll'
+                ? scrollToPage(currentPage + 1)
+                : setPageNumber(pageNumber + 1)
+            }
             className="xynolog-pdf-annotation-canvas__button"
           >
             {t('next')}

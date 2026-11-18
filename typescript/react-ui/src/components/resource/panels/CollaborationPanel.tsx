@@ -59,13 +59,17 @@ export function CollaborationPanel({
   eventCount,
   lastEventTimestamp,
   knowledgeBaseName,
-  engines = []
+  engines = [],
 }: Props) {
   const t = useTranslations('CollaborationPanel');
 
   // Healthy = live, or briefly flapping. Only genuinely sustained
   // disconnects surface as "Disconnected" in the UI.
-  const isHealthy = state === 'open' || state === 'reconnecting' || state === 'initial' || state === 'connecting';
+  const isHealthy =
+    state === 'open' ||
+    state === 'reconnecting' ||
+    state === 'initial' ||
+    state === 'connecting';
 
   // Format last sync time
   let lastSyncText: string;
@@ -99,12 +103,16 @@ export function CollaborationPanel({
   return (
     <div className="xynolog-collaboration-panel">
       {/* Panel Title */}
-      <h3 className="xynolog-collaboration-panel__title">
-        {t('title')}
-      </h3>
+      <h3 className="xynolog-collaboration-panel__title">{t('title')}</h3>
 
       {knowledgeBaseName && (
-        <div style={{ padding: '0 0.75rem 0.5rem', fontSize: '0.8rem', color: 'var(--xynolog-color-neutral-400)' }}>
+        <div
+          style={{
+            padding: '0 0.75rem 0.5rem',
+            fontSize: '0.8rem',
+            color: 'var(--xynolog-color-neutral-400)',
+          }}
+        >
           {knowledgeBaseName}
         </div>
       )}
@@ -139,13 +147,12 @@ export function CollaborationPanel({
         {/* Last sync */}
         <div className="xynolog-collaboration-panel__details">
           <div>
-            <span className="xynolog-collaboration-panel__label">{t('lastSync')}</span> {lastSyncText}
+            <span className="xynolog-collaboration-panel__label">
+              {t('lastSync')}
+            </span>{' '}
+            {lastSyncText}
           </div>
-          <div>
-            {isHealthy
-              ? t('realtimeActive')
-              : t('reconnecting')}
-          </div>
+          <div>{isHealthy ? t('realtimeActive') : t('reconnecting')}</div>
         </div>
       </div>
 
@@ -165,7 +172,9 @@ export function CollaborationPanel({
             const ceiling = !limits
               ? null
               : limits.maxOutputTokens === limits.contextTokens
-                ? t('sharedWindow', { contextTokens: formatTokens(limits.contextTokens) })
+                ? t('sharedWindow', {
+                    contextTokens: formatTokens(limits.contextTokens),
+                  })
                 : t('ceilings', {
                     contextTokens: formatTokens(limits.contextTokens),
                     maxOutputTokens: formatTokens(limits.maxOutputTokens),
@@ -187,7 +196,13 @@ export function CollaborationPanel({
                 </div>
                 {entry.jobs && entry.jobs.length > 0 && (
                   <div className="xynolog-collaboration-panel__engine-jobs">
-                    {entry.jobs.map((filter) => (filter.jobType === 'mark' ? filter.params.motivation : filter.jobType)).join(', ')}
+                    {entry.jobs
+                      .map((filter) =>
+                        filter.jobType === 'mark'
+                          ? filter.params.motivation
+                          : filter.jobType,
+                      )
+                      .join(', ')}
                   </div>
                 )}
                 {ceiling && (
@@ -203,9 +218,7 @@ export function CollaborationPanel({
 
       {/* Sharing Section - Placeholder for future */}
       <div className="xynolog-collaboration-panel__section xynolog-collaboration-panel__section--bordered">
-        <h3 className="xynolog-collaboration-panel__heading">
-          {t('sharing')}
-        </h3>
+        <h3 className="xynolog-collaboration-panel__heading">{t('sharing')}</h3>
         <p className="xynolog-collaboration-panel__description">
           {t('collaborationComingSoon')}
         </p>

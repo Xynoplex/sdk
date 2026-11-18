@@ -14,9 +14,21 @@
  * whatever the passed-in `SessionStorage` does.
  */
 
-import { MIN_REFRESH_DELAY_MS, PERSISTED_QUERIES, REFRESH_BEFORE_EXP_MS, isObject, isString, uuidV4 } from '@xynolog/core';
+import {
+  MIN_REFRESH_DELAY_MS,
+  PERSISTED_QUERIES,
+  REFRESH_BEFORE_EXP_MS,
+  isObject,
+  isString,
+  uuidV4,
+} from '@xynolog/core';
 
-import type { HttpEndpoint, KbRead, KnowledgeBase, PersistedQuery } from '@xynolog/core';
+import type {
+  HttpEndpoint,
+  KbRead,
+  KnowledgeBase,
+  PersistedQuery,
+} from '@xynolog/core';
 import type { SessionStorage } from './session-storage';
 import type { SignInKept } from './sign-in-kept';
 import { sha256 } from './sha256';
@@ -51,7 +63,10 @@ export const LAST_VIEWED_RESOURCE_BY_KB_KEY = 'xynolog.lastViewedResourceByKb';
  * lifetime is not ours to correct and the client is the only place that can be
  * right for every issuer.
  */
-export function refreshDelayMs(token: string, now: number = Date.now()): number | null {
+export function refreshDelayMs(
+  token: string,
+  now: number = Date.now(),
+): number | null {
   const claims = parseJwtClaims(token);
   if (!claims?.exp) return null;
 
@@ -59,7 +74,9 @@ export function refreshDelayMs(token: string, now: number = Date.now()): number 
   // `exp - iat` is the lifetime the issuer chose. Without `iat` — not every
   // issuer sends one — the remaining life is the only lifetime observable,
   // and halving that is bounded too, which is the property that matters.
-  const lifetimeMs = claims.iat ? (claims.exp - claims.iat) * 1000 : expMs - now;
+  const lifetimeMs = claims.iat
+    ? (claims.exp - claims.iat) * 1000
+    : expMs - now;
   const marginMs = Math.min(REFRESH_BEFORE_EXP_MS, Math.max(0, lifetimeMs) / 2);
 
   return Math.max(MIN_REFRESH_DELAY_MS, expMs - marginMs - now);
@@ -108,7 +125,10 @@ function jwtPayload(token: string): unknown {
  */
 function decodeBase64Url(segment: string): string {
   const base64 = segment.replace(/-/g, '+').replace(/_/g, '/');
-  const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), '=');
+  const padded = base64.padEnd(
+    base64.length + ((4 - (base64.length % 4)) % 4),
+    '=',
+  );
   const binary = atob(padded);
   const bytes = Uint8Array.from(binary, (ch) => ch.charCodeAt(0));
   return new TextDecoder().decode(bytes);
@@ -140,14 +160,19 @@ export function sessionKey(kbId: string): string {
 
 /** The knowledge base whose session `key` is kept under; null when it is no session's key. */
 export function kbOfSessionKey(key: string): string | null {
-  return key.startsWith(SESSION_PREFIX) ? key.slice(SESSION_PREFIX.length) : null;
+  return key.startsWith(SESSION_PREFIX)
+    ? key.slice(SESSION_PREFIX.length)
+    : null;
 }
 
 /** Unpadded base64url (RFC 4648 §5). */
 export function base64url(bytes: Uint8Array): string {
   let binary = '';
   for (const b of bytes) binary += String.fromCharCode(b);
-  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  return btoa(binary)
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
 }
 
 /**
@@ -165,7 +190,11 @@ export function lastEventIdKey(kbId: string, personKey: string): string {
 }
 
 /** The key a persisted query's values are kept under, in a knowledge base, for one person. */
-export function cacheKey(kbId: string, personKey: string, query: PersistedQuery): string {
+export function cacheKey(
+  kbId: string,
+  personKey: string,
+  query: PersistedQuery,
+): string {
   return `${CACHE_PREFIX}${kbId}.${personKey}.${query}`;
 }
 
@@ -174,14 +203,22 @@ export function cacheKey(kbId: string, personKey: string, query: PersistedQuery)
  * query's values and the stream's places. What forgetting a saved sign-in
  * that named them does, however it is forgotten.
  */
-export function forgetKept(storage: SessionStorage, kbId: string, personKey: string): void {
-  for (const query of PERSISTED_QUERIES) storage.delete(cacheKey(kbId, personKey, query));
+export function forgetKept(
+  storage: SessionStorage,
+  kbId: string,
+  personKey: string,
+): void {
+  for (const query of PERSISTED_QUERIES)
+    storage.delete(cacheKey(kbId, personKey, query));
   storage.delete(lastEventIdKey(kbId, personKey));
 }
 
 // ---------- Per-KB session storage ----------
 
-export function getStoredSession(storage: SessionStorage, kbId: string): StoredSession | null {
+export function getStoredSession(
+  storage: SessionStorage,
+  kbId: string,
+): StoredSession | null {
   return storedSessionIn(storage.get(sessionKey(kbId)));
 }
 
@@ -191,17 +228,23 @@ export function storedSessionIn(raw: string | null): StoredSession | null {
   try {
     const parsed: unknown = JSON.parse(raw);
     if (
-      isObject(parsed)
-      && isString(parsed['access']) && isString(parsed['refresh'])
-      && isString(parsed['clientId']) && isString(parsed['tokenEndpoint'])
+      isObject(parsed) &&
+      isString(parsed['access']) &&
+      isString(parsed['refresh']) &&
+      isString(parsed['clientId']) &&
+      isString(parsed['tokenEndpoint'])
     ) {
       return {
         access: parsed['access'],
         refresh: parsed['refresh'],
         clientId: parsed['clientId'],
         tokenEndpoint: parsed['tokenEndpoint'],
-        ...(isString(parsed['revocationEndpoint']) ? { revocationEndpoint: parsed['revocationEndpoint'] } : {}),
-        ...(isString(parsed['personKey']) ? { personKey: parsed['personKey'] } : {}),
+        ...(isString(parsed['revocationEndpoint'])
+          ? { revocationEndpoint: parsed['revocationEndpoint'] }
+          : {}),
+        ...(isString(parsed['personKey'])
+          ? { personKey: parsed['personKey'] }
+          : {}),
       };
     }
   } catch {
@@ -219,9 +262,14 @@ export function storedSessionIn(raw: string | null): StoredSession | null {
  * may still write as it closes, a registry's sign-in, swaps the sign-in
  * instead, and deletes once the client has closed.
  */
-export function setStoredSession(storage: SessionStorage, kbId: string, session: StoredSession): void {
+export function setStoredSession(
+  storage: SessionStorage,
+  kbId: string,
+  session: StoredSession,
+): void {
   const replaced = swapStoredSession(storage, kbId, session);
-  if (replaced !== null && replaced.personKey !== undefined) forgetKept(storage, kbId, replaced.personKey);
+  if (replaced !== null && replaced.personKey !== undefined)
+    forgetKept(storage, kbId, replaced.personKey);
 }
 
 /**
@@ -230,7 +278,11 @@ export function setStoredSession(storage: SessionStorage, kbId: string, session:
  * was kept for the person that one named is the caller's to delete with
  * {@link forgetKept}, once nothing open can write it back.
  */
-export function swapStoredSession(storage: SessionStorage, kbId: string, session: StoredSession): StoredSession | null {
+export function swapStoredSession(
+  storage: SessionStorage,
+  kbId: string,
+  session: StoredSession,
+): StoredSession | null {
   let replaced: StoredSession | null = null;
   storage.update(sessionKey(kbId), (raw) => {
     replaced = storedSessionIn(raw);
@@ -245,7 +297,10 @@ export function swapStoredSession(storage: SessionStorage, kbId: string, session
  * the caller's to delete with {@link forgetKept}, once nothing open can write
  * it back.
  */
-export function takeStoredSession(storage: SessionStorage, kbId: string): StoredSession | null {
+export function takeStoredSession(
+  storage: SessionStorage,
+  kbId: string,
+): StoredSession | null {
   let taken: StoredSession | null = null;
   storage.update(sessionKey(kbId), (raw) => {
     taken = storedSessionIn(raw);
@@ -260,9 +315,13 @@ export function takeStoredSession(storage: SessionStorage, kbId: string): Stored
  * registry's sign-out or removal, takes the sign-in instead, and deletes once
  * the client has closed.
  */
-export function clearStoredSession(storage: SessionStorage, kbId: string): void {
+export function clearStoredSession(
+  storage: SessionStorage,
+  kbId: string,
+): void {
   const forgotten = takeStoredSession(storage, kbId);
-  if (forgotten !== null && forgotten.personKey !== undefined) forgetKept(storage, kbId, forgotten.personKey);
+  if (forgotten !== null && forgotten.personKey !== undefined)
+    forgetKept(storage, kbId, forgotten.personKey);
 }
 
 /**
@@ -285,7 +344,10 @@ export function keptIn(storage: SessionStorage, kbId: string): SignInKept {
           given = null;
           return raw;
         }
-        if (current.access !== read.access || current.refresh !== read.refresh) {
+        if (
+          current.access !== read.access ||
+          current.refresh !== read.refresh
+        ) {
           given = current.access;
           return raw;
         }
@@ -348,9 +410,11 @@ function isKnowledgeBase(entry: unknown): entry is KnowledgeBase {
   const ep = e.endpoint as Record<string, unknown> | undefined;
   if (!ep || typeof ep !== 'object') return false;
   if (ep.kind === 'http') {
-    return typeof ep.host === 'string'
-      && typeof ep.port === 'number'
-      && (ep.protocol === 'http' || ep.protocol === 'https');
+    return (
+      typeof ep.host === 'string' &&
+      typeof ep.port === 'number' &&
+      (ep.protocol === 'http' || ep.protocol === 'https')
+    );
   }
   if (ep.kind === 'local') {
     return typeof ep.kbId === 'string';
@@ -392,10 +456,16 @@ export function loadKnowledgeBases(storage: SessionStorage): KnowledgeBase[] {
 
 function kbReadOf(value: unknown): KbRead | undefined {
   if (!isObject(value) || !isString(value['at'])) return undefined;
-  return { at: value['at'], ...(isString(value['gitBranch']) ? { gitBranch: value['gitBranch'] } : {}) };
+  return {
+    at: value['at'],
+    ...(isString(value['gitBranch']) ? { gitBranch: value['gitBranch'] } : {}),
+  };
 }
 
-export function saveKnowledgeBases(storage: SessionStorage, knowledgeBases: KnowledgeBase[]): void {
+export function saveKnowledgeBases(
+  storage: SessionStorage,
+  knowledgeBases: KnowledgeBase[],
+): void {
   storage.set(STORAGE_KEY, JSON.stringify(knowledgeBases));
 }
 
@@ -411,7 +481,8 @@ export function defaultProtocol(host: string): 'http' | 'https' {
  * a hyphen. `localhost` and a dotted address are such names; a host with a
  * slash, a colon or a query is not (protocol/specs/src/session/gateway-url-cases.json).
  */
-const HOSTNAME_RE = /^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+const HOSTNAME_RE =
+  /^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 
 export function isValidHostname(host: string): boolean {
   return HOSTNAME_RE.test(host);

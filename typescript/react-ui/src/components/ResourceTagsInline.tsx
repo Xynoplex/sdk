@@ -71,7 +71,10 @@ export function ResourceTagsInline({
     <div className="xynolog-resource-tags-inline xynolog-resource-tags-inline--editing">
       <div className="xynolog-resource-tags-list">
         {tags.map((tag) => (
-          <span key={tag} className="xynolog-resource-tag xynolog-resource-tag--editable">
+          <span
+            key={tag}
+            className="xynolog-resource-tag xynolog-resource-tag--editable"
+          >
             {tag}
             <button
               type="button"

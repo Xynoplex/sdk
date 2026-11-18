@@ -21,11 +21,14 @@ const PAYLOAD = { tag: 'Person' };
 
 /** The first frame to land on `bus` for `channel`, or undefined. */
 const firstFrame = (bus: EventBus, channel: typeof CHANNEL | typeof OTHER) =>
-  firstValueFrom(bus.frames(channel).pipe(take(1), timeout(500))).catch(() => undefined);
+  firstValueFrom(bus.frames(channel).pipe(take(1), timeout(500))).catch(
+    () => undefined,
+  );
 
 /** A sink that records what it was handed, with a configurable emit result. */
 function recordingSink(result: (n: number) => unknown = () => 1) {
-  const seen: Array<{ channel: string; payload: unknown; envelope: unknown }> = [];
+  const seen: Array<{ channel: string; payload: unknown; envelope: unknown }> =
+    [];
   let n = 0;
   const sink: FrameSink = {
     emit: ((channel: unknown, payload: unknown, envelope: unknown) => {
@@ -63,12 +66,19 @@ describe('relayFrames', () => {
     // produce the input this branch exists for. A TRANSPORT source can — its
     // `BusEvent` declares `scope` — so this stands in for one.
     const scoped: FrameSource = {
-      frames: (() => of({ payload: PAYLOAD, correlationId: 'cid-1', scope: resourceId('r-1') })) as FrameSource['frames'],
+      frames: (() =>
+        of({
+          payload: PAYLOAD,
+          correlationId: 'cid-1',
+          scope: resourceId('r-1'),
+        })) as FrameSource['frames'],
     };
     const { sink, seen } = recordingSink();
     relayFrames(scoped, sink, [CHANNEL], () => {});
     await vi.waitFor(() => expect(seen).toHaveLength(1));
-    expect(seen[0]!.envelope, 'scope must not cross the hop').toEqual({ correlationId: 'cid-1' });
+    expect(seen[0]!.envelope, 'scope must not cross the hop').toEqual({
+      correlationId: 'cid-1',
+    });
   });
 
   it('catches an async sink’s rejection through the required onError', async () => {
@@ -76,7 +86,9 @@ describe('relayFrames', () => {
     // nothing would turn every sink rejection into an unhandled promise
     // rejection inside the one function all relays go through.
     const from = new EventBus();
-    const { sink } = recordingSink(() => Promise.reject(new Error('sink down')));
+    const { sink } = recordingSink(() =>
+      Promise.reject(new Error('sink down')),
+    );
     const onError = vi.fn();
     try {
       relayFrames(from, sink, [CHANNEL], onError);
@@ -95,9 +107,15 @@ describe('relayFrames', () => {
       // every single-channel assertion above it.
       relayFrames(from, sink, [CHANNEL, OTHER], () => {});
       from.emit(CHANNEL, PAYLOAD, { correlationId: 'cid-a' });
-      from.emit(OTHER, { annotationId: 'ann-1' } as never, { correlationId: 'cid-b' });
+      from.emit(OTHER, { annotationId: 'ann-1' } as never, {
+        correlationId: 'cid-b',
+      });
       await vi.waitFor(() => expect(seen).toHaveLength(2));
-      expect(seen[0]).toEqual({ channel: CHANNEL, payload: PAYLOAD, envelope: { correlationId: 'cid-a' } });
+      expect(seen[0]).toEqual({
+        channel: CHANNEL,
+        payload: PAYLOAD,
+        envelope: { correlationId: 'cid-a' },
+      });
       expect(seen[1]!.channel).toBe(OTHER);
       expect(seen[1]!.envelope).toEqual({ correlationId: 'cid-b' });
     } finally {
@@ -108,12 +126,22 @@ describe('relayFrames', () => {
   it('passes on a refusal its source bus carries, in place of the payload, as it passes on any frame', async () => {
     const from = new EventBus();
     const { sink, seen } = recordingSink();
-    const refused = new FrameRefusal(CHANNEL, 'payload.tag', 'lacks', {}, undefined);
+    const refused = new FrameRefusal(
+      CHANNEL,
+      'payload.tag',
+      'lacks',
+      {},
+      undefined,
+    );
     try {
       relayFrames(from, sink, [CHANNEL], () => {});
       from.emit(CHANNEL, refused, { correlationId: 'cid-r' });
       await vi.waitFor(() => expect(seen).toHaveLength(1));
-      expect(seen[0]).toEqual({ channel: CHANNEL, payload: refused, envelope: { correlationId: 'cid-r' } });
+      expect(seen[0]).toEqual({
+        channel: CHANNEL,
+        payload: refused,
+        envelope: { correlationId: 'cid-r' },
+      });
       expect(seen[0]!.payload).toBe(refused);
     } finally {
       from.destroy();
@@ -126,7 +154,9 @@ describe('relayFrames', () => {
     const { sink } = recordingSink(() => Promise.reject(boom));
     const errors: Array<{ channel: unknown; error: unknown }> = [];
     try {
-      relayFrames(from, sink, [CHANNEL], (channel, error) => errors.push({ channel, error }));
+      relayFrames(from, sink, [CHANNEL], (channel, error) =>
+        errors.push({ channel, error }),
+      );
       from.emit(CHANNEL, PAYLOAD, { correlationId: 'cid-fail' });
       await vi.waitFor(() => expect(errors).toHaveLength(1));
       expect(errors[0]).toEqual({ channel: CHANNEL, error: boom });
@@ -143,7 +173,10 @@ describe('relayFrames', () => {
       relayFrames(from, sink, [CHANNEL], onError);
       from.emit(CHANNEL, PAYLOAD, { correlationId: 'cid-sync' });
       await vi.waitFor(() => expect(seen).toHaveLength(1));
-      expect(onError, 'a sync sink has no rejection to report').not.toHaveBeenCalled();
+      expect(
+        onError,
+        'a sync sink has no rejection to report',
+      ).not.toHaveBeenCalled();
     } finally {
       from.destroy();
     }

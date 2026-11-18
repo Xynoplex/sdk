@@ -11,7 +11,8 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { uuidV4 } from '../id-generation';
 
-const DASHED_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+const DASHED_V4 =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 
 describe('id generation in an insecure browsing context (no crypto.randomUUID)', () => {
   beforeEach(() => {

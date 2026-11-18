@@ -12,8 +12,16 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { isObject, type CacheValues, type PersistedQuery } from '@xynolog/core';
 import { createCache, type Cache } from '../cache';
-import { KEPT_QUERIES, coupledLastEventId, keptPersister, type KeptKey } from '../cache-persister';
-import { InMemorySessionStorage, type SessionStorage } from '../session/session-storage';
+import {
+  KEPT_QUERIES,
+  coupledLastEventId,
+  keptPersister,
+  type KeptKey,
+} from '../cache-persister';
+import {
+  InMemorySessionStorage,
+  type SessionStorage,
+} from '../session/session-storage';
 import { cacheKey, lastEventIdKey, personKey } from '../session/storage';
 
 type Entry = [unknown, unknown];
@@ -40,28 +48,47 @@ interface Places extends Stored {
   kept: Record<string, string>;
 }
 
-const TABLE = fileURLToPath(new URL('../../../../protocol/specs/src/session/cache-cases.json', import.meta.url));
-const table = JSON.parse(readFileSync(TABLE, 'utf8')) as { cases: Load[]; writes: Write[]; refusedWrites: Write[]; places: Places[] };
+const TABLE = fileURLToPath(
+  new URL(
+    '../../../../protocol/specs/src/session/cache-cases.json',
+    import.meta.url,
+  ),
+);
+const table = JSON.parse(readFileSync(TABLE, 'utf8')) as {
+  cases: Load[];
+  writes: Write[];
+  refusedWrites: Write[];
+  places: Places[];
+};
 
 /** The knowledge base and the person each case's documents and places are kept for. */
-const KEPT_FOR = { kbId: 'kb-cases', personKey: personKey('did:web:example.org:users:jo') };
+const KEPT_FOR = {
+  kbId: 'kb-cases',
+  personKey: personKey('did:web:example.org:users:jo'),
+};
 
-const isKept = (name: string): name is PersistedQuery => Object.hasOwn(KEPT_QUERIES, name);
+const isKept = (name: string): name is PersistedQuery =>
+  Object.hasOwn(KEPT_QUERIES, name);
 
 function keptQuery(name: string): PersistedQuery {
-  if (!isKept(name)) throw new Error(`the table keeps ${name}, and this SDK keeps no ${name}`);
+  if (!isKept(name))
+    throw new Error(`the table keeps ${name}, and this SDK keeps no ${name}`);
   return name;
 }
 
 /** The text a case keeps under its key. */
 function text(stated: Stored): string {
-  if ((stated.stored === undefined) === (stated.storedText === undefined)) throw new Error(`${stated.name}: states not exactly one of stored and storedText`);
+  if ((stated.stored === undefined) === (stated.storedText === undefined))
+    throw new Error(
+      `${stated.name}: states not exactly one of stored and storedText`,
+    );
   if (stated.storedText !== undefined) return stated.storedText;
   return JSON.stringify(stated.stored);
 }
 
 /** Entries by key, as the document writes each key: their order is no part of the rule. */
-const asMap = (entries: Entry[]): Map<string, unknown> => new Map(entries.map(([key, value]) => [JSON.stringify(key), value]));
+const asMap = (entries: Entry[]): Map<string, unknown> =>
+  new Map(entries.map(([key, value]) => [JSON.stringify(key), value]));
 
 /** What a load of `query`'s document keeps of `source`. */
 function loaded(query: PersistedQuery, source: string): Entry[] {
@@ -75,16 +102,26 @@ function loaded(query: PersistedQuery, source: string): Entry[] {
  * `query`'s cache, saving through its persister to `storage`, once it holds `held`: each answer set into
  * the cache by its own path. Its save runs on the next turn of the event loop, or when it is disposed.
  */
-function holding<Q extends PersistedQuery>(query: Q, held: Entry[], storage: SessionStorage): Cache<KeptKey<Q>, CacheValues[Q]> {
+function holding<Q extends PersistedQuery>(
+  query: Q,
+  held: Entry[],
+  storage: SessionStorage,
+): Cache<KeptKey<Q>, CacheValues[Q]> {
   const { key: isKey, value: isValue } = KEPT_QUERIES[query];
   const cache = createCache<KeptKey<Q>, CacheValues[Q]>(
     async (key) => {
       throw new Error(`a cache that is only written fetched ${key}`);
     },
-    { persister: keptPersister(query, { storage, ...KEPT_FOR }), saveDebounceMs: 0 },
+    {
+      persister: keptPersister(query, { storage, ...KEPT_FOR }),
+      saveDebounceMs: 0,
+    },
   );
   for (const [key, value] of held) {
-    if (!isKey(key) || !isValue(value)) throw new Error(`${query} holds no ${JSON.stringify(key)}: ${JSON.stringify(value)}`);
+    if (!isKey(key) || !isValue(value))
+      throw new Error(
+        `${query} holds no ${JSON.stringify(key)}: ${JSON.stringify(value)}`,
+      );
     cache.set(key, value);
   }
   return cache;
@@ -92,7 +129,9 @@ function holding<Q extends PersistedQuery>(query: Q, held: Entry[], storage: Ses
 
 /** The document kept under `query`'s key, as JSON. */
 function documentOf(storage: SessionStorage, query: PersistedQuery): unknown {
-  const document = storage.get(cacheKey(KEPT_FOR.kbId, KEPT_FOR.personKey, query));
+  const document = storage.get(
+    cacheKey(KEPT_FOR.kbId, KEPT_FOR.personKey, query),
+  );
   if (document === null) throw new Error(`a save of ${query} wrote nothing`);
   return JSON.parse(document);
 }
@@ -118,7 +157,10 @@ class RefusingFirstWrite extends InMemorySessionStorage {
     super.set(key, value);
   }
 
-  override update(key: string, change: (stored: string | null) => string | null): void {
+  override update(
+    key: string,
+    change: (stored: string | null) => string | null,
+  ): void {
     this.refuse(key);
     super.update(key, change);
   }
@@ -131,44 +173,80 @@ class RefusingFirstWrite extends InMemorySessionStorage {
 }
 
 const isStamped = (entry: unknown): entry is [unknown, unknown, number] =>
-  Array.isArray(entry) && entry.length === 3 && Number.isInteger(entry[2]) && entry[2] >= 0;
+  Array.isArray(entry) &&
+  entry.length === 3 &&
+  Number.isInteger(entry[2]) &&
+  entry[2] >= 0;
 
 /** The document a save wrote, held to the one the table writes: its members, its version, and its entries as a map, each stamped. */
 function expectWritten(stated: Write, document: unknown): void {
-  if (!isObject(document)) throw new Error(`${stated.name}: the save wrote ${JSON.stringify(document)}, which is no object`);
-  expect(Object.keys(document).sort(), 'the members of the document').toEqual(Object.keys(stated.written).sort());
+  if (!isObject(document))
+    throw new Error(
+      `${stated.name}: the save wrote ${JSON.stringify(document)}, which is no object`,
+    );
+  expect(Object.keys(document).sort(), 'the members of the document').toEqual(
+    Object.keys(stated.written).sort(),
+  );
   expect(document['version']).toBe(stated.written.version);
   const entries = document['entries'];
-  if (!Array.isArray(entries)) throw new Error(`${stated.name}: the save wrote entries ${JSON.stringify(entries)}, which are no list`);
-  for (const entry of entries) expect(isStamped(entry), `${JSON.stringify(entry)} is a key, a value and a stamp of at least 0`).toBe(true);
-  expect(asMap(entries.filter(isStamped).map(([key, value]): Entry => [key, value]))).toEqual(asMap(stated.written.entries));
+  if (!Array.isArray(entries))
+    throw new Error(
+      `${stated.name}: the save wrote entries ${JSON.stringify(entries)}, which are no list`,
+    );
+  for (const entry of entries)
+    expect(
+      isStamped(entry),
+      `${JSON.stringify(entry)} is a key, a value and a stamp of at least 0`,
+    ).toBe(true);
+  expect(
+    asMap(entries.filter(isStamped).map(([key, value]): Entry => [key, value])),
+  ).toEqual(asMap(stated.written.entries));
 }
 
 describe("the cache case table (protocol/specs/src/session/cache-cases.json), through this SDK's persisters", () => {
   it.each(table.cases)('$name: keeps what the table keeps', (stated) => {
-    expect(asMap(loaded(keptQuery(stated.query), text(stated)))).toEqual(asMap(stated.kept));
+    expect(asMap(loaded(keptQuery(stated.query), text(stated)))).toEqual(
+      asMap(stated.kept),
+    );
   });
 
-  it.each(table.writes)('$name: writes the document the table writes', (stated) => {
-    expectWritten(stated, written(keptQuery(stated.query), stated.held));
-  });
+  it.each(table.writes)(
+    '$name: writes the document the table writes',
+    (stated) => {
+      expectWritten(stated, written(keptQuery(stated.query), stated.held));
+    },
+  );
 
-  it.each(table.refusedWrites)('$name: still owes its save after the refusal, and disposal writes the document the table writes', async (stated) => {
-    const query = keptQuery(stated.query);
-    const storage = new RefusingFirstWrite(cacheKey(KEPT_FOR.kbId, KEPT_FOR.personKey, query));
-    const cache = holding(query, stated.held, storage);
-    // The save runs, and the storage refuses it.
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(storage.refusals, 'the storage refused the save').toBe(1);
-    expect(cache.persistencePending(), 'the save the storage refused is still owed').toBe(true);
-    cache.dispose();
-    expectWritten(stated, documentOf(storage, query));
-  });
+  it.each(table.refusedWrites)(
+    '$name: still owes its save after the refusal, and disposal writes the document the table writes',
+    async (stated) => {
+      const query = keptQuery(stated.query);
+      const storage = new RefusingFirstWrite(
+        cacheKey(KEPT_FOR.kbId, KEPT_FOR.personKey, query),
+      );
+      const cache = holding(query, stated.held, storage);
+      // The save runs, and the storage refuses it.
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(storage.refusals, 'the storage refused the save').toBe(1);
+      expect(
+        cache.persistencePending(),
+        'the save the storage refused is still owed',
+      ).toBe(true);
+      cache.dispose();
+      expectWritten(stated, documentOf(storage, query));
+    },
+  );
 
   it.each(table.places)('$name: keeps the places the table keeps', (stated) => {
     const storage = new InMemorySessionStorage();
-    storage.set(lastEventIdKey(KEPT_FOR.kbId, KEPT_FOR.personKey), text(stated));
-    const kept = coupledLastEventId(storage, lastEventIdKey(KEPT_FOR.kbId, KEPT_FOR.personKey)).loadLastEventIds();
+    storage.set(
+      lastEventIdKey(KEPT_FOR.kbId, KEPT_FOR.personKey),
+      text(stated),
+    );
+    const kept = coupledLastEventId(
+      storage,
+      lastEventIdKey(KEPT_FOR.kbId, KEPT_FOR.personKey),
+    ).loadLastEventIds();
     expect(kept === null ? {} : Object.fromEntries(kept)).toEqual(stated.kept);
   });
 });

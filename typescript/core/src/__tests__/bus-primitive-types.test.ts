@@ -24,12 +24,17 @@ import type { EventMap, BusPrimitive, FrameRefusal } from '../index';
  * described above could pass a weaker test.
  */
 type Equals<A, B> =
-  (<T>() => T extends A ? 1 : 2) extends (<T>() => T extends B ? 1 : 2) ? true : false;
+  (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2
+    ? true
+    : false;
 
 /** Payloads are INFERRED from the channel argument — no type argument given. */
 function inferenceProbe(bus: BusPrimitive) {
   const added = bus.stream('mark:added');
-  const exact: Equals<typeof added, Observable<EventMap['mark:added'] | FrameRefusal>> = true;
+  const exact: Equals<
+    typeof added,
+    Observable<EventMap['mark:added'] | FrameRefusal>
+  > = true;
 
   // Guards against a signature that types every channel the same way:
   // `Observable<StoredEvent>` would satisfy the assertion above on its own.
@@ -57,7 +62,9 @@ describe('BusPrimitive.stream is typed by its channel', () => {
   it('carries the spec payload whole — the field a hand-written copy drops', () => {
     // A hand-written { jobId, jobType, resourceId } for `job:queued` omits
     // `userId`, the DID the audit trail needs. Derived, it cannot.
-    const hasUserId: 'userId' extends keyof EventMap['job:queued'] ? true : false = true;
+    const hasUserId: 'userId' extends keyof EventMap['job:queued']
+      ? true
+      : false = true;
     expect(hasUserId).toBe(true);
   });
 });

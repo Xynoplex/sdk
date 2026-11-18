@@ -8,7 +8,11 @@
  * cache-cases.test.ts.
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { coupledLastEventId, sessionStoragePersister, type EntryDecoder } from '../cache-persister';
+import {
+  coupledLastEventId,
+  sessionStoragePersister,
+  type EntryDecoder,
+} from '../cache-persister';
 import type { SessionStorage } from '../session/session-storage';
 import { personKey } from '../session/storage';
 import { TestStorage } from '../session/__tests__/test-storage-helpers';
@@ -25,7 +29,8 @@ const TEXT: EntryDecoder<string, string> = { key: isString, value: isString };
 /** Entries of any text key and a named value. */
 const NAMED: EntryDecoder<string, { name: string }> = {
   key: isString,
-  value: (json): json is { name: string } => isObject(json) && isString(json['name']),
+  value: (json): json is { name: string } =>
+    isObject(json) && isString(json['name']),
 };
 
 describe('sessionStoragePersister (B17)', () => {
@@ -42,10 +47,23 @@ describe('sessionStoragePersister (B17)', () => {
   });
 
   it('round-trips a map through the storage adapter', () => {
-    const writer = sessionStoragePersister({ storage, storageKey: KEY, decode: NAMED });
-    writer.save(new Map([['r1', { name: 'One' }], ['r2', { name: 'Two' }]]));
+    const writer = sessionStoragePersister({
+      storage,
+      storageKey: KEY,
+      decode: NAMED,
+    });
+    writer.save(
+      new Map([
+        ['r1', { name: 'One' }],
+        ['r2', { name: 'Two' }],
+      ]),
+    );
 
-    const reader = sessionStoragePersister({ storage, storageKey: KEY, decode: NAMED });
+    const reader = sessionStoragePersister({
+      storage,
+      storageKey: KEY,
+      decode: NAMED,
+    });
     const loaded = reader.load();
 
     expect(loaded).not.toBeNull();
@@ -55,7 +73,11 @@ describe('sessionStoragePersister (B17)', () => {
 
   it('reads as empty on parse garbage — never throws', () => {
     storage.set(KEY, '{not json');
-    const persister = sessionStoragePersister({ storage, storageKey: KEY, decode: TEXT });
+    const persister = sessionStoragePersister({
+      storage,
+      storageKey: KEY,
+      decode: TEXT,
+    });
     expect(persister.load()).toBeNull();
   });
 
@@ -70,11 +92,26 @@ describe('sessionStoragePersister (B17)', () => {
 
     persister.save(new Map([['old', 'x'.repeat(100)]]));
     vi.setSystemTime(2_000_000);
-    persister.save(new Map([['old', 'x'.repeat(100)], ['mid', 'y'.repeat(100)]]));
+    persister.save(
+      new Map([
+        ['old', 'x'.repeat(100)],
+        ['mid', 'y'.repeat(100)],
+      ]),
+    );
     vi.setSystemTime(3_000_000);
-    persister.save(new Map([['old', 'x'.repeat(100)], ['mid', 'y'.repeat(100)], ['new', 'z'.repeat(100)]]));
+    persister.save(
+      new Map([
+        ['old', 'x'.repeat(100)],
+        ['mid', 'y'.repeat(100)],
+        ['new', 'z'.repeat(100)],
+      ]),
+    );
 
-    const loaded = sessionStoragePersister({ storage, storageKey: KEY, decode: TEXT }).load();
+    const loaded = sessionStoragePersister({
+      storage,
+      storageKey: KEY,
+      decode: TEXT,
+    }).load();
     expect(loaded).not.toBeNull();
     // 'old' carries the earliest stamp — evicted first.
     expect(loaded!.has('old')).toBe(false);
@@ -93,9 +130,18 @@ describe('sessionStoragePersister (B17)', () => {
 
     persister.save(new Map([['old', '€'.repeat(60)]]));
     vi.setSystemTime(2_000_000);
-    persister.save(new Map([['old', '€'.repeat(60)], ['new', '€'.repeat(60)]]));
+    persister.save(
+      new Map([
+        ['old', '€'.repeat(60)],
+        ['new', '€'.repeat(60)],
+      ]),
+    );
 
-    const loaded = sessionStoragePersister({ storage, storageKey: KEY, decode: TEXT }).load();
+    const loaded = sessionStoragePersister({
+      storage,
+      storageKey: KEY,
+      decode: TEXT,
+    }).load();
     expect(loaded).not.toBeNull();
     expect(loaded!.has('old')).toBe(false);
     expect(loaded!.has('new')).toBe(true);
@@ -110,13 +156,17 @@ describe('coupledLastEventId (B17 — the bookmark rides the cache flush)', () =
     const inner = new TestStorage();
     const storage: SessionStorage = {
       get: (k) => inner.get(k),
-      set: (k, v) => { writes.push([k, v]); inner.set(k, v); },
+      set: (k, v) => {
+        writes.push([k, v]);
+        inner.set(k, v);
+      },
       delete: (k) => inner.delete(k),
-      update: (k, change) => inner.update(k, (stored) => {
-        const next = change(stored);
-        if (next !== null) writes.push([k, next]);
-        return next;
-      }),
+      update: (k, change) =>
+        inner.update(k, (stored) => {
+          const next = change(stored);
+          if (next !== null) writes.push([k, next]);
+          return next;
+        }),
       subscribe: (handler) => inner.subscribe(handler),
     };
     return { storage, writes, inner };
@@ -139,7 +189,10 @@ describe('coupledLastEventId (B17 — the bookmark rides the cache flush)', () =
     coupled.saveLastEventId(resourceId('res-1'), 'p-res-1-47');
     coupled.storage.set('xynolog.cache.kb-1.resource', '{"doc":1}');
 
-    expect(writes.map(([k]) => k)).toEqual(['xynolog.cache.kb-1.resource', ID_KEY]);
+    expect(writes.map(([k]) => k)).toEqual([
+      'xynolog.cache.kb-1.resource',
+      ID_KEY,
+    ]);
     expect(JSON.parse(storage.get(ID_KEY)!)).toEqual({ 'res-1': 'p-res-1-47' });
   });
 
@@ -150,9 +203,16 @@ describe('coupledLastEventId (B17 — the bookmark rides the cache flush)', () =
     const { client } = createTestClient({
       content: {
         ...inMemoryContent(),
-        getAnnotations: () => new Promise<GetAnnotationsResponse>((_, reject) => { refusals.push(reject); }),
+        getAnnotations: () =>
+          new Promise<GetAnnotationsResponse>((_, reject) => {
+            refusals.push(reject);
+          }),
       },
-      cachePersistence: { storage: coupled.storage, kbId: 'kb-1', personKey: personKey('did:web:example.org:users:jo') },
+      cachePersistence: {
+        storage: coupled.storage,
+        kbId: 'kb-1',
+        personKey: personKey('did:web:example.org:users:jo'),
+      },
     });
     coupled.coupleTo(client);
     // A kept cache's fetch is in flight: the client is not at rest.
@@ -166,12 +226,18 @@ describe('coupledLastEventId (B17 — the bookmark rides the cache flush)', () =
     expect(storage.get(ID_KEY)).toBeNull();
 
     // The fetch fails, and nothing is in flight or owed: the client is at rest, having written nothing.
-    refusals.forEach((refuse) => refuse(new Error('the gateway refused the read')));
+    refusals.forEach((refuse) =>
+      refuse(new Error('the gateway refused the read')),
+    );
     await expect(asked).rejects.toThrow('the gateway refused the read');
     coupled.storage.update('xynolog.cache.kb-1.resource', () => '{"doc":2}');
 
     // Document first, ids second.
-    expect(writes.map(([k]) => k)).toEqual(['xynolog.cache.kb-1.resource', 'xynolog.cache.kb-1.resource', ID_KEY]);
+    expect(writes.map(([k]) => k)).toEqual([
+      'xynolog.cache.kb-1.resource',
+      'xynolog.cache.kb-1.resource',
+      ID_KEY,
+    ]);
     expect(JSON.parse(storage.get(ID_KEY)!)).toEqual({ 'res-1': 'p-res-1-47' });
     client.dispose();
   });
@@ -195,7 +261,10 @@ describe('coupledLastEventId (B17 — the bookmark rides the cache flush)', () =
     coupled.storage.set('xynolog.cache.kb-1.annotations', '{"doc":2}');
     coupled.storage.set('xynolog.cache.kb-1.resource', '{"doc":3}');
 
-    expect(JSON.parse(storage.get(ID_KEY)!)).toEqual({ 'res-1': 'p-res-1-48', 'res-2': 'p-res-2-5' });
+    expect(JSON.parse(storage.get(ID_KEY)!)).toEqual({
+      'res-1': 'p-res-1-48',
+      'res-2': 'p-res-2-5',
+    });
     expect(writes.filter(([k]) => k === ID_KEY)).toHaveLength(1);
   });
 
@@ -208,7 +277,10 @@ describe('coupledLastEventId (B17 — the bookmark rides the cache flush)', () =
     coupled.saveLastEventId(resourceId('res-2'), 'p-res-2-9');
     coupled.storage.set('xynolog.cache.kb-1.annotations', '{"doc":2}');
 
-    expect(JSON.parse(storage.get(ID_KEY)!)).toEqual({ 'res-1': 'p-res-1-47', 'res-2': 'p-res-2-9' });
+    expect(JSON.parse(storage.get(ID_KEY)!)).toEqual({
+      'res-1': 'p-res-1-47',
+      'res-2': 'p-res-2-9',
+    });
   });
 
   it('loadLastEventIds round-trips what a flush persisted', () => {
@@ -217,7 +289,9 @@ describe('coupledLastEventId (B17 — the bookmark rides the cache flush)', () =
     coupled.saveLastEventId(resourceId('res-1'), 'p-res-1-47');
     coupled.storage.set('xynolog.cache.kb-1.resource', '{"doc":1}');
 
-    expect(coupledLastEventId(storage, ID_KEY).loadLastEventIds()).toEqual(new Map([['res-1', 'p-res-1-47']]));
+    expect(coupledLastEventId(storage, ID_KEY).loadLastEventIds()).toEqual(
+      new Map([['res-1', 'p-res-1-47']]),
+    );
   });
 
   it('a stored place under a key that is not a resource id is not loaded', () => {
@@ -225,12 +299,22 @@ describe('coupledLastEventId (B17 — the bookmark rides the cache flush)', () =
     // the rule refuses could only be sent as a `scope` the gateway refuses,
     // so it is left behind and the places beside it are kept.
     const { storage } = recordingStorage();
-    storage.set(ID_KEY, JSON.stringify({ 'not an id': 'p-x-1', 'a/b': 'p-y-2', 'res-1': 'p-res-1-47', 'res-2': 7 }));
+    storage.set(
+      ID_KEY,
+      JSON.stringify({
+        'not an id': 'p-x-1',
+        'a/b': 'p-y-2',
+        'res-1': 'p-res-1-47',
+        'res-2': 7,
+      }),
+    );
 
-    expect(coupledLastEventId(storage, ID_KEY).loadLastEventIds()).toEqual(new Map([['res-1', 'p-res-1-47']]));
+    expect(coupledLastEventId(storage, ID_KEY).loadLastEventIds()).toEqual(
+      new Map([['res-1', 'p-res-1-47']]),
+    );
   });
 
-  it('an id that is no persisted event\'s id is never kept as a place', () => {
+  it("an id that is no persisted event's id is never kept as a place", () => {
     const { storage } = recordingStorage();
     const coupled = coupledLastEventId(storage, ID_KEY);
 

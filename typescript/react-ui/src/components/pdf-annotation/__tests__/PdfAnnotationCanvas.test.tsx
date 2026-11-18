@@ -15,7 +15,10 @@ import { TranslationProvider } from '../../../contexts/TranslationContext';
 import { defaultMocks, renderInEnglish } from '../../../test-utils';
 import { resourceId, annotationId, parseFragmentSelector } from '@xynolog/core';
 import { pdfToCanvasCoordinates } from '../../../lib/pdf-coordinates';
-import { loadPdfDocument, renderPdfPageToDataUrl } from '../../../lib/browser-pdfjs';
+import {
+  loadPdfDocument,
+  renderPdfPageToDataUrl,
+} from '../../../lib/browser-pdfjs';
 
 import type { Annotation, AnchoredTextAnswer } from '@xynolog/core';
 
@@ -41,10 +44,10 @@ const mockPage = () => ({
     width: 612,
     height: 792,
     scale: 1.0,
-    rotation: 0
+    rotation: 0,
   }),
   render: vi.fn().mockReturnValue({
-    promise: Promise.resolve()
+    promise: Promise.resolve(),
   }),
 });
 
@@ -57,20 +60,19 @@ vi.mock('../../../lib/browser-pdfjs', () => ({
         width: 612,
         height: 792,
         scale: 1.0,
-        rotation: 0
+        rotation: 0,
       }),
       render: vi.fn().mockReturnValue({
-        promise: Promise.resolve()
+        promise: Promise.resolve(),
       }),
-    })
+    }),
   }),
   renderPdfPageToDataUrl: vi.fn().mockResolvedValue({
     dataUrl: 'data:image/png;base64,mock',
     width: 612,
-    height: 792
-  })
+    height: 792,
+  }),
 }));
-
 
 /**
  * jsdom has no IntersectionObserver. This stub records what the component
@@ -85,7 +87,10 @@ function stubIntersectionObserver() {
   const margins = new Map<IntersectionObserverCallback, string>();
   let observeCalls = 0;
   class FakeIO {
-    constructor(private cb: IntersectionObserverCallback, options?: IntersectionObserverInit) {
+    constructor(
+      private cb: IntersectionObserverCallback,
+      options?: IntersectionObserverInit,
+    ) {
       margins.set(cb, options?.rootMargin ?? '0px');
     }
     observe(el: Element) {
@@ -94,7 +99,8 @@ function stubIntersectionObserver() {
     }
     unobserve(el: Element) {
       for (let i = observed.length - 1; i >= 0; i--) {
-        if (observed[i]!.el === el && observed[i]!.cb === this.cb) observed.splice(i, 1);
+        if (observed[i]!.el === el && observed[i]!.cb === this.cb)
+          observed.splice(i, 1);
       }
     }
     disconnect() {
@@ -102,7 +108,9 @@ function stubIntersectionObserver() {
         if (observed[i]!.cb === this.cb) observed.splice(i, 1);
       }
     }
-    takeRecords() { return []; }
+    takeRecords() {
+      return [];
+    }
   }
   vi.stubGlobal('IntersectionObserver', FakeIO);
 
@@ -111,15 +119,22 @@ function stubIntersectionObserver() {
    *  selected observer has registered — that entry would reach nobody, and the
    *  test would only find out a second later, from an empty mount list. */
   function fireFor(visible: number[], match: (rootMargin: string) => boolean) {
-    const byCb = new Map<IntersectionObserverCallback, IntersectionObserverEntry[]>();
+    const byCb = new Map<
+      IntersectionObserverCallback,
+      IntersectionObserverEntry[]
+    >();
     const reached = new Set<number>();
     for (const { el, cb } of observed) {
       if (!match(margins.get(cb) ?? '0px')) continue;
       const page = Number((el as HTMLElement).dataset.page);
       reached.add(page);
-      byCb.set(cb, [...(byCb.get(cb) ?? []), {
-        target: el, isIntersecting: visible.includes(page),
-      } as unknown as IntersectionObserverEntry]);
+      byCb.set(cb, [
+        ...(byCb.get(cb) ?? []),
+        {
+          target: el,
+          isIntersecting: visible.includes(page),
+        } as unknown as IntersectionObserverEntry,
+      ]);
     }
     const unreached = visible.filter((page) => !reached.has(page));
     if (unreached.length > 0) {
@@ -127,7 +142,9 @@ function stubIntersectionObserver() {
         `fire([${visible}]): no observer has registered page ${unreached} yet — wait on io.observedPages() first`,
       );
     }
-    act(() => { for (const [cb, entries] of byCb) cb(entries, {} as IntersectionObserver); });
+    act(() => {
+      for (const [cb, entries] of byCb) cb(entries, {} as IntersectionObserver);
+    });
   }
 
   /** Only the bare observer — what the reader can actually see. */
@@ -145,7 +162,9 @@ function stubIntersectionObserver() {
    * same effect pass, so a page appearing here means both have it.)
    */
   function observedPages(): number[] {
-    const pages = new Set(observed.map(({ el }) => Number((el as HTMLElement).dataset.page)));
+    const pages = new Set(
+      observed.map(({ el }) => Number((el as HTMLElement).dataset.page)),
+    );
     return [...pages].sort((a, b) => a - b);
   }
 
@@ -191,10 +210,11 @@ describe('PdfAnnotationCanvas', () => {
 
   test('renders loading state initially', () => {
     renderInEnglish(
-      <PdfAnnotationCanvas resourceUri={resourceId("res-1")}
+      <PdfAnnotationCanvas
+        resourceUri={resourceId('res-1')}
         pdfUrl={mockPdfUrl}
         drawingMode={null}
-      />
+      />,
     );
 
     expect(screen.getByText(/loading pdf/i)).toBeInTheDocument();
@@ -202,26 +222,30 @@ describe('PdfAnnotationCanvas', () => {
 
   test('renders page navigation controls after loading', async () => {
     renderInEnglish(
-      <PdfAnnotationCanvas resourceUri={resourceId("res-1")}
+      <PdfAnnotationCanvas
+        resourceUri={resourceId('res-1')}
         pdfUrl={mockPdfUrl}
         drawingMode={null}
-      />
+      />,
     );
 
     await waitFor(() => {
       expect(screen.getByText(/page 1 of 3/i)).toBeInTheDocument();
     });
 
-    expect(screen.getByRole('button', { name: /previous/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /previous/i }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /next/i })).toBeInTheDocument();
   });
 
   test('previous button is disabled on first page', async () => {
     renderInEnglish(
-      <PdfAnnotationCanvas resourceUri={resourceId("res-1")}
+      <PdfAnnotationCanvas
+        resourceUri={resourceId('res-1')}
         pdfUrl={mockPdfUrl}
         drawingMode={null}
-      />
+      />,
     );
 
     await waitFor(() => {
@@ -234,10 +258,11 @@ describe('PdfAnnotationCanvas', () => {
 
   test('next button is disabled on last page', async () => {
     renderInEnglish(
-      <PdfAnnotationCanvas resourceUri={resourceId("res-1")}
+      <PdfAnnotationCanvas
+        resourceUri={resourceId('res-1')}
         pdfUrl={mockPdfUrl}
         drawingMode={null}
-      />
+      />,
     );
 
     const user = userEvent.setup();
@@ -270,20 +295,21 @@ describe('PdfAnnotationCanvas', () => {
           selector: {
             type: 'FragmentSelector',
             value: 'page=1&viewrect=100,200,150,100',
-            conformsTo: 'http://tools.ietf.org/rfc/rfc3778'
-          }
+            conformsTo: 'http://tools.ietf.org/rfc/rfc3778',
+          },
         },
         motivation: 'highlighting',
-        created: new Date().toISOString()
-      }
+        created: new Date().toISOString(),
+      },
     ];
 
     renderInEnglish(
-      <PdfAnnotationCanvas resourceUri={resourceId("res-1")}
+      <PdfAnnotationCanvas
+        resourceUri={resourceId('res-1')}
         pdfUrl={mockPdfUrl}
         existingAnnotations={mockAnnotations}
         drawingMode={null}
-      />
+      />,
     );
 
     await waitFor(() => {
@@ -293,13 +319,23 @@ describe('PdfAnnotationCanvas', () => {
     // jsdom doesn't fire image onLoad or provide clientWidth/clientHeight.
     // Wait for the image element to appear, then simulate load with dimensions.
     await waitFor(() => {
-      const img = document.querySelector('.xynolog-pdf-annotation-canvas__image') as HTMLImageElement;
+      const img = document.querySelector(
+        '.xynolog-pdf-annotation-canvas__image',
+      ) as HTMLImageElement;
       expect(img).toBeInTheDocument();
     });
 
-    const img = document.querySelector('.xynolog-pdf-annotation-canvas__image') as HTMLImageElement;
-    Object.defineProperty(img, 'clientWidth', { value: 612, configurable: true });
-    Object.defineProperty(img, 'clientHeight', { value: 792, configurable: true });
+    const img = document.querySelector(
+      '.xynolog-pdf-annotation-canvas__image',
+    ) as HTMLImageElement;
+    Object.defineProperty(img, 'clientWidth', {
+      value: 612,
+      configurable: true,
+    });
+    Object.defineProperty(img, 'clientHeight', {
+      value: 792,
+      configurable: true,
+    });
     fireEvent.load(img);
 
     await waitFor(() => {
@@ -316,7 +352,10 @@ describe('PdfAnnotationCanvas', () => {
     const click = vi.fn();
     const session = {
       client: {
-        browse: { click, resourceAnchoredText: vi.fn().mockResolvedValue(SERVED_TEXT) },
+        browse: {
+          click,
+          resourceAnchoredText: vi.fn().mockResolvedValue(SERVED_TEXT),
+        },
         beckon: { hover: vi.fn() },
       },
     } as unknown as import('@xynolog/sdk').XynologSession;
@@ -331,39 +370,54 @@ describe('PdfAnnotationCanvas', () => {
           selector: {
             type: 'FragmentSelector',
             value: 'page=1&viewrect=100,200,150,100',
-            conformsTo: 'http://tools.ietf.org/rfc/rfc3778'
-          }
+            conformsTo: 'http://tools.ietf.org/rfc/rfc3778',
+          },
         },
         motivation: 'highlighting',
-        created: new Date().toISOString()
-      }
+        created: new Date().toISOString(),
+      },
     ];
 
     renderInEnglish(
-      <PdfAnnotationCanvas resourceUri={resourceId("res-1")}
+      <PdfAnnotationCanvas
+        resourceUri={resourceId('res-1')}
         pdfUrl={mockPdfUrl}
         existingAnnotations={mockAnnotations}
         drawingMode={null}
         session={session}
-      />
+      />,
     );
 
     await waitFor(() => {
-      const img = document.querySelector('.xynolog-pdf-annotation-canvas__image') as HTMLImageElement;
+      const img = document.querySelector(
+        '.xynolog-pdf-annotation-canvas__image',
+      ) as HTMLImageElement;
       expect(img).toBeInTheDocument();
     });
 
-    const img = document.querySelector('.xynolog-pdf-annotation-canvas__image') as HTMLImageElement;
-    Object.defineProperty(img, 'clientWidth', { value: 612, configurable: true });
-    Object.defineProperty(img, 'clientHeight', { value: 792, configurable: true });
+    const img = document.querySelector(
+      '.xynolog-pdf-annotation-canvas__image',
+    ) as HTMLImageElement;
+    Object.defineProperty(img, 'clientWidth', {
+      value: 612,
+      configurable: true,
+    });
+    Object.defineProperty(img, 'clientHeight', {
+      value: 792,
+      configurable: true,
+    });
     fireEvent.load(img);
 
     await waitFor(() => {
-      const rects = document.querySelector('.xynolog-pdf-annotation-canvas__svg')?.querySelectorAll('rect');
+      const rects = document
+        .querySelector('.xynolog-pdf-annotation-canvas__svg')
+        ?.querySelectorAll('rect');
       expect(rects?.length).toBeGreaterThan(0);
     });
 
-    const annotationRect = document.querySelector('.xynolog-pdf-annotation-canvas__svg')!.querySelector('rect')!;
+    const annotationRect = document
+      .querySelector('.xynolog-pdf-annotation-canvas__svg')!
+      .querySelector('rect')!;
     fireEvent.click(annotationRect);
 
     expect(click).toHaveBeenCalledTimes(1);
@@ -381,7 +435,10 @@ describe('PdfAnnotationCanvas', () => {
     const click = vi.fn();
     const session = {
       client: {
-        browse: { click, resourceAnchoredText: vi.fn().mockResolvedValue(SERVED_TEXT) },
+        browse: {
+          click,
+          resourceAnchoredText: vi.fn().mockResolvedValue(SERVED_TEXT),
+        },
         beckon: { hover: vi.fn() },
       },
     } as unknown as import('@xynolog/sdk').XynologSession;
@@ -397,42 +454,57 @@ describe('PdfAnnotationCanvas', () => {
           selector: {
             type: 'FragmentSelector',
             value: fragmentValue,
-            conformsTo: 'http://tools.ietf.org/rfc/rfc3778'
-          }
+            conformsTo: 'http://tools.ietf.org/rfc/rfc3778',
+          },
         },
         motivation: 'highlighting',
-        created: new Date().toISOString()
-      }
+        created: new Date().toISOString(),
+      },
     ];
 
     renderInEnglish(
-      <PdfAnnotationCanvas resourceUri={resourceId("res-1")}
+      <PdfAnnotationCanvas
+        resourceUri={resourceId('res-1')}
         pdfUrl={mockPdfUrl}
         existingAnnotations={mockAnnotations}
         drawingMode="rectangle"
         selectedMotivation="highlighting"
         session={session}
-      />
+      />,
     );
 
     await waitFor(() => {
-      const img = document.querySelector('.xynolog-pdf-annotation-canvas__image') as HTMLImageElement;
+      const img = document.querySelector(
+        '.xynolog-pdf-annotation-canvas__image',
+      ) as HTMLImageElement;
       expect(img).toBeInTheDocument();
     });
 
-    const img = document.querySelector('.xynolog-pdf-annotation-canvas__image') as HTMLImageElement;
-    Object.defineProperty(img, 'clientWidth', { value: 612, configurable: true });
-    Object.defineProperty(img, 'clientHeight', { value: 792, configurable: true });
+    const img = document.querySelector(
+      '.xynolog-pdf-annotation-canvas__image',
+    ) as HTMLImageElement;
+    Object.defineProperty(img, 'clientWidth', {
+      value: 612,
+      configurable: true,
+    });
+    Object.defineProperty(img, 'clientHeight', {
+      value: 792,
+      configurable: true,
+    });
     fireEvent.load(img);
 
     await waitFor(() => {
-      const rects = document.querySelector('.xynolog-pdf-annotation-canvas__svg')?.querySelectorAll('rect');
+      const rects = document
+        .querySelector('.xynolog-pdf-annotation-canvas__svg')
+        ?.querySelectorAll('rect');
       expect(rects?.length).toBeGreaterThan(0);
     });
     // The hit-test runs on a gesture the canvas takes, and it takes one only
     // while it holds the document's text.
     await waitFor(() => {
-      expect(document.querySelector('.xynolog-pdf-annotation-canvas')).toHaveAttribute('data-annotate-deferred', 'false');
+      expect(
+        document.querySelector('.xynolog-pdf-annotation-canvas'),
+      ).toHaveAttribute('data-annotate-deferred', 'false');
     });
 
     const pdfCoord = parseFragmentSelector(fragmentValue)!;
@@ -440,7 +512,9 @@ describe('PdfAnnotationCanvas', () => {
 
     // Sub-10px gesture at the annotation's display-rect center (image rect is
     // zeros in jsdom, so client coordinates are display coordinates).
-    const canvasContainer = document.querySelector('.xynolog-pdf-annotation-canvas__container')!;
+    const canvasContainer = document.querySelector(
+      '.xynolog-pdf-annotation-canvas__container',
+    )!;
     const clickX = displayRect.x + displayRect.width / 2;
     const clickY = displayRect.y + displayRect.height / 2;
     fireEvent.mouseDown(canvasContainer, { clientX: clickX, clientY: clickY });
@@ -478,12 +552,13 @@ describe('PdfAnnotationCanvas', () => {
     } as unknown as import('@xynolog/sdk').XynologSession;
 
     renderInEnglish(
-      <PdfAnnotationCanvas resourceUri={resourceId("res-1")}
+      <PdfAnnotationCanvas
+        resourceUri={resourceId('res-1')}
         pdfUrl={mockPdfUrl}
         drawingMode="rectangle"
         selectedMotivation="highlighting"
         session={session}
-      />
+      />,
     );
 
     await waitFor(() => {
@@ -494,22 +569,37 @@ describe('PdfAnnotationCanvas', () => {
     }
 
     const pageImage = () =>
-      document.querySelector(`.xynolog-pdf-annotation-canvas__image[alt="PDF page ${onPage}"]`);
+      document.querySelector(
+        `.xynolog-pdf-annotation-canvas__image[alt="PDF page ${onPage}"]`,
+      );
     await waitFor(() => {
       expect(pageImage()).toBeInTheDocument();
     });
 
     const img = pageImage() as HTMLImageElement;
-    Object.defineProperty(img, 'clientWidth', { value: 612, configurable: true });
-    Object.defineProperty(img, 'clientHeight', { value: 792, configurable: true });
+    Object.defineProperty(img, 'clientWidth', {
+      value: 612,
+      configurable: true,
+    });
+    Object.defineProperty(img, 'clientHeight', {
+      value: 792,
+      configurable: true,
+    });
     fireEvent.load(img);
 
     await waitFor(() => {
-      expect(document.querySelector('.xynolog-pdf-annotation-canvas')).toHaveAttribute('data-annotate-deferred', 'false');
+      expect(
+        document.querySelector('.xynolog-pdf-annotation-canvas'),
+      ).toHaveAttribute('data-annotate-deferred', 'false');
     });
 
-    const container = document.querySelector('.xynolog-pdf-annotation-canvas__container')!;
-    fireEvent.mouseDown(container, { clientX: drag.fromX, clientY: drag.fromY });
+    const container = document.querySelector(
+      '.xynolog-pdf-annotation-canvas__container',
+    )!;
+    fireEvent.mouseDown(container, {
+      clientX: drag.fromX,
+      clientY: drag.fromY,
+    });
     fireEvent.mouseMove(container, { clientX: drag.toX, clientY: drag.toY });
     fireEvent.mouseUp(container, { clientX: drag.toX, clientY: drag.toY });
 
@@ -517,7 +607,13 @@ describe('PdfAnnotationCanvas', () => {
   }
 
   /** A box a little larger than a line of text: what a hand draws around it. */
-  function aroundLine(line: { page: number; x: number; y: number; width: number; height: number }) {
+  function aroundLine(line: {
+    page: number;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  }) {
     const box = pdfToCanvasCoordinates(line, 792, 1.0);
     return {
       fromX: box.x - 2,
@@ -534,7 +630,10 @@ describe('PdfAnnotationCanvas', () => {
   // A hand-drawn rectangle that stores geometry and nothing else shows blank
   // in every panel that quotes an annotation.
   test('a drawn rectangle carries the text it was drawn around', async () => {
-    const request = await drawRectangle(aroundLine(HELLO_WORLD_LINE), SERVED_TEXT);
+    const request = await drawRectangle(
+      aroundLine(HELLO_WORLD_LINE),
+      SERVED_TEXT,
+    );
 
     await waitFor(() => expect(request).toHaveBeenCalledTimes(1));
 
@@ -554,10 +653,16 @@ describe('PdfAnnotationCanvas', () => {
   // A PDF's text has one producer. This page has a text layer pdf.js could
   // read, and it says something ELSE: a canvas that read it would quote the
   // layer's words, or never ask Xynolog at all.
-  test('the quote is cut from the served text — pdf.js is never asked for the page\'s text', async () => {
+  test("the quote is cut from the served text — pdf.js is never asked for the page's text", async () => {
     const getTextContent = vi.fn().mockResolvedValue({
       items: [
-        { str: 'words pdf.js read', transform: [1, 0, 0, 1, 72, 700], width: 66, height: 12, hasEOL: true },
+        {
+          str: 'words pdf.js read',
+          transform: [1, 0, 0, 1, 72, 700],
+          width: 66,
+          height: 12,
+          hasEOL: true,
+        },
       ],
     });
     vi.mocked(loadPdfDocument).mockResolvedValueOnce({
@@ -565,7 +670,10 @@ describe('PdfAnnotationCanvas', () => {
       getPage: vi.fn().mockResolvedValue({ ...mockPage(), getTextContent }),
     } as unknown as Awaited<ReturnType<typeof loadPdfDocument>>);
 
-    const request = await drawRectangle(aroundLine(HELLO_WORLD_LINE), SERVED_TEXT);
+    const request = await drawRectangle(
+      aroundLine(HELLO_WORLD_LINE),
+      SERVED_TEXT,
+    );
 
     await waitFor(() => expect(request).toHaveBeenCalledTimes(1));
     expect(request.mock.calls[0][1]).toEqual([
@@ -578,7 +686,10 @@ describe('PdfAnnotationCanvas', () => {
   test('a rectangle over blank space carries geometry only', async () => {
     // Between the two lines of text — nothing under the box. An empty-string
     // quote would assert the box was drawn around nothing, so emit no quote.
-    const request = await drawRectangle({ fromX: 40, fromY: 120, toX: 200, toY: 150 }, SERVED_TEXT);
+    const request = await drawRectangle(
+      { fromX: 40, fromY: 120, toX: 200, toY: 150 },
+      SERVED_TEXT,
+    );
 
     await waitFor(() => expect(request).toHaveBeenCalledTimes(1));
 
@@ -594,7 +705,7 @@ describe('PdfAnnotationCanvas', () => {
   // code point and two UTF-16 units, so page 2's offsets are not positions in
   // the JavaScript string: a canvas that sliced the text itself would cut
   // "\nsecon" where the word is "second".
-  test('a rectangle on page 2 quotes page 2\'s words out of the whole document\'s text', async () => {
+  test("a rectangle on page 2 quotes page 2's words out of the whole document's text", async () => {
     const request = await drawRectangle(
       aroundLine({ ...HELLO_WORLD_LINE, page: 2 }),
       {
@@ -605,7 +716,15 @@ describe('PdfAnnotationCanvas', () => {
           { start: 0, end: 5, page: 1, x: 72, y: 700, width: 30, height: 12 },
           { start: 6, end: 7, page: 1, x: 106, y: 700, width: 32, height: 12 },
           { start: 8, end: 14, page: 2, x: 72, y: 700, width: 30, height: 12 },
-          { start: 15, end: 19, page: 2, x: 106, y: 700, width: 32, height: 12 },
+          {
+            start: 15,
+            end: 19,
+            page: 2,
+            x: 106,
+            y: 700,
+            width: 32,
+            height: 12,
+          },
         ],
       },
       2,
@@ -613,7 +732,10 @@ describe('PdfAnnotationCanvas', () => {
 
     await waitFor(() => expect(request).toHaveBeenCalledTimes(1));
     expect(request.mock.calls[0][1]).toEqual([
-      expect.objectContaining({ type: 'FragmentSelector', value: expect.stringContaining('page=2&viewrect=') }),
+      expect.objectContaining({
+        type: 'FragmentSelector',
+        value: expect.stringContaining('page=2&viewrect='),
+      }),
       { type: 'TextQuoteSelector', exact: 'second page' },
     ]);
   });
@@ -630,11 +752,12 @@ describe('PdfAnnotationCanvas', () => {
     } as unknown as import('@xynolog/sdk').XynologSession;
 
     renderInEnglish(
-      <PdfAnnotationCanvas resourceUri={resourceId("res-1")}
+      <PdfAnnotationCanvas
+        resourceUri={resourceId('res-1')}
         pdfUrl={mockPdfUrl}
         drawingMode={null}
         session={session}
-      />
+      />,
     );
 
     const user = userEvent.setup();
@@ -680,11 +803,12 @@ describe('PdfAnnotationCanvas', () => {
       fivePageDoc();
 
       renderInEnglish(
-        <PdfAnnotationCanvas resourceUri={resourceId("res-1")}
+        <PdfAnnotationCanvas
+          resourceUri={resourceId('res-1')}
           pdfUrl={mockPdfUrl}
           drawingMode={null}
           pageLayout="scroll"
-        />
+        />,
       );
 
       await waitFor(() => {
@@ -695,7 +819,9 @@ describe('PdfAnnotationCanvas', () => {
 
       io.fire([1, 2]);
       await waitFor(() => expect(mountedPages()).toEqual([1, 2]));
-      expect(document.querySelectorAll('.xynolog-pdf-annotation-canvas__slot')).toHaveLength(5);
+      expect(
+        document.querySelectorAll('.xynolog-pdf-annotation-canvas__slot'),
+      ).toHaveLength(5);
     });
 
     test('releases a page that scrolls out of the window', async () => {
@@ -703,11 +829,12 @@ describe('PdfAnnotationCanvas', () => {
       fivePageDoc();
 
       renderInEnglish(
-        <PdfAnnotationCanvas resourceUri={resourceId("res-1")}
+        <PdfAnnotationCanvas
+          resourceUri={resourceId('res-1')}
           pdfUrl={mockPdfUrl}
           drawingMode={null}
           pageLayout="scroll"
-        />
+        />,
       );
       await waitFor(() => {
         expect(io.observedPages()).toHaveLength(5);
@@ -732,11 +859,12 @@ describe('PdfAnnotationCanvas', () => {
       fivePageDoc();
 
       renderInEnglish(
-        <PdfAnnotationCanvas resourceUri={resourceId("res-1")}
+        <PdfAnnotationCanvas
+          resourceUri={resourceId('res-1')}
           pdfUrl={mockPdfUrl}
           drawingMode={null}
           pageLayout="scroll"
-        />
+        />,
       );
       await waitFor(() => {
         expect(io.observedPages()).toHaveLength(5);
@@ -757,16 +885,20 @@ describe('PdfAnnotationCanvas', () => {
 
       const resourceAnchoredText = vi.fn().mockResolvedValue(SERVED_TEXT);
       const session = {
-        client: { beckon: { hover: vi.fn() }, browse: { resourceAnchoredText } },
+        client: {
+          beckon: { hover: vi.fn() },
+          browse: { resourceAnchoredText },
+        },
       } as unknown as import('@xynolog/sdk').XynologSession;
 
       renderInEnglish(
-        <PdfAnnotationCanvas resourceUri={resourceId("res-1")}
+        <PdfAnnotationCanvas
+          resourceUri={resourceId('res-1')}
           pdfUrl={mockPdfUrl}
           drawingMode={null}
           pageLayout="scroll"
           session={session}
-        />
+        />,
       );
       await waitFor(() => {
         expect(io.observedPages()).toHaveLength(5);
@@ -789,23 +921,27 @@ describe('PdfAnnotationCanvas', () => {
       fivePageDoc();
 
       renderInEnglish(
-        <PdfAnnotationCanvas resourceUri={resourceId("res-1")}
+        <PdfAnnotationCanvas
+          resourceUri={resourceId('res-1')}
           pdfUrl={mockPdfUrl}
           drawingMode={null}
           pageLayout="scroll"
-        />
+        />,
       );
       await waitFor(() => {
         expect(io.observedPages()).toHaveLength(5);
       });
 
       const slotOf = (page: number) =>
-        document.querySelector(`.xynolog-pdf-annotation-canvas__slot[data-page="${page}"]`) as HTMLElement;
+        document.querySelector(
+          `.xynolog-pdf-annotation-canvas__slot[data-page="${page}"]`,
+        ) as HTMLElement;
 
       // Read whichever property expresses the reservation, so the pin is
       // about the CONTRACT (space is reserved, and mounting does not release
       // it) rather than about which CSS property implements it.
-      const reserved = (el: HTMLElement) => el.style.minHeight || el.style.height;
+      const reserved = (el: HTMLElement) =>
+        el.style.minHeight || el.style.height;
 
       io.fire([1]);
       await waitFor(() => expect(mountedPages()).toEqual([1]));
@@ -829,18 +965,21 @@ describe('PdfAnnotationCanvas', () => {
         client: {
           mark: { request },
           beckon: { hover: vi.fn() },
-          browse: { resourceAnchoredText: vi.fn().mockResolvedValue(SERVED_TEXT) },
+          browse: {
+            resourceAnchoredText: vi.fn().mockResolvedValue(SERVED_TEXT),
+          },
         },
       } as unknown as import('@xynolog/sdk').XynologSession;
 
       renderInEnglish(
-        <PdfAnnotationCanvas resourceUri={resourceId("res-1")}
+        <PdfAnnotationCanvas
+          resourceUri={resourceId('res-1')}
           pdfUrl={mockPdfUrl}
           drawingMode="rectangle"
           selectedMotivation="highlighting"
           session={session}
           pageLayout="scroll"
-        />
+        />,
       );
       await waitFor(() => {
         expect(io.observedPages()).toHaveLength(5);
@@ -849,17 +988,31 @@ describe('PdfAnnotationCanvas', () => {
       io.fire([2, 3]);
       await waitFor(() => expect(mountedPages()).toEqual([2, 3]));
       await waitFor(() => {
-        expect(document.querySelector('.xynolog-pdf-annotation-canvas')).toHaveAttribute('data-annotate-deferred', 'false');
+        expect(
+          document.querySelector('.xynolog-pdf-annotation-canvas'),
+        ).toHaveAttribute('data-annotate-deferred', 'false');
       });
 
       // Draw on page 3's container, not page 2's.
-      const slot3 = document.querySelector('.xynolog-pdf-annotation-canvas__slot[data-page="3"]')!;
-      const img = slot3.querySelector('.xynolog-pdf-annotation-canvas__image') as HTMLImageElement;
-      Object.defineProperty(img, 'clientWidth', { value: 612, configurable: true });
-      Object.defineProperty(img, 'clientHeight', { value: 792, configurable: true });
+      const slot3 = document.querySelector(
+        '.xynolog-pdf-annotation-canvas__slot[data-page="3"]',
+      )!;
+      const img = slot3.querySelector(
+        '.xynolog-pdf-annotation-canvas__image',
+      ) as HTMLImageElement;
+      Object.defineProperty(img, 'clientWidth', {
+        value: 612,
+        configurable: true,
+      });
+      Object.defineProperty(img, 'clientHeight', {
+        value: 792,
+        configurable: true,
+      });
       fireEvent.load(img);
 
-      const container = slot3.querySelector('.xynolog-pdf-annotation-canvas__container')!;
+      const container = slot3.querySelector(
+        '.xynolog-pdf-annotation-canvas__container',
+      )!;
       fireEvent.mouseDown(container, { clientX: 40, clientY: 40 });
       fireEvent.mouseMove(container, { clientX: 200, clientY: 160 });
       fireEvent.mouseUp(container, { clientX: 200, clientY: 160 });
@@ -876,18 +1029,21 @@ describe('PdfAnnotationCanvas', () => {
       const session = {
         client: {
           beckon: { hover: vi.fn() },
-          browse: { resourceAnchoredText: vi.fn().mockResolvedValue(SERVED_TEXT) },
+          browse: {
+            resourceAnchoredText: vi.fn().mockResolvedValue(SERVED_TEXT),
+          },
         },
       } as unknown as import('@xynolog/sdk').XynologSession;
 
       renderInEnglish(
-        <PdfAnnotationCanvas resourceUri={resourceId("res-1")}
+        <PdfAnnotationCanvas
+          resourceUri={resourceId('res-1')}
           pdfUrl={mockPdfUrl}
           drawingMode="rectangle"
           selectedMotivation="highlighting"
           session={session}
           pageLayout="scroll"
-        />
+        />,
       );
 
       await waitFor(() => {
@@ -897,8 +1053,9 @@ describe('PdfAnnotationCanvas', () => {
       await waitFor(() => expect(mountedPages()).toEqual([1]));
       // Drawing still works in the column: the container is the page's own.
       await waitFor(() => {
-        expect(document.querySelector('.xynolog-pdf-annotation-canvas__container'))
-          .toHaveAttribute('data-drawing-mode', 'rectangle');
+        expect(
+          document.querySelector('.xynolog-pdf-annotation-canvas__container'),
+        ).toHaveAttribute('data-drawing-mode', 'rectangle');
       });
     });
 
@@ -913,22 +1070,27 @@ describe('PdfAnnotationCanvas', () => {
       fivePageDoc();
 
       renderInEnglish(
-        <PdfAnnotationCanvas resourceUri={resourceId("res-1")}
+        <PdfAnnotationCanvas
+          resourceUri={resourceId('res-1')}
           pdfUrl={mockPdfUrl}
           drawingMode={null}
           pageLayout="scroll"
-        />
+        />,
       );
       await waitFor(() => {
         expect(io.observedPages()).toHaveLength(5);
       });
 
-      const ticks = () => document.querySelectorAll('.xynolog-pdf-annotation-canvas__strip-page');
+      const ticks = () =>
+        document.querySelectorAll('.xynolog-pdf-annotation-canvas__strip-page');
       await waitFor(() => expect(ticks()).toHaveLength(5));
 
       io.fire([3, 4]);
       await waitFor(() => {
-        expect(document.querySelector('[aria-current="page"]')).toHaveAttribute('data-page', '3');
+        expect(document.querySelector('[aria-current="page"]')).toHaveAttribute(
+          'data-page',
+          '3',
+        );
       });
     });
 
@@ -940,23 +1102,35 @@ describe('PdfAnnotationCanvas', () => {
       document.body.appendChild(host);
 
       renderInEnglish(
-        <PdfAnnotationCanvas resourceUri={resourceId("res-1")}
+        <PdfAnnotationCanvas
+          resourceUri={resourceId('res-1')}
           pdfUrl={mockPdfUrl}
           drawingMode={null}
           pageLayout="scroll"
         />,
         { container: host },
       );
-      const viewer = host.querySelector('.xynolog-pdf-annotation-canvas') as HTMLElement;
-      Object.defineProperty(viewer, 'clientHeight', { value: 513, configurable: true });
+      const viewer = host.querySelector(
+        '.xynolog-pdf-annotation-canvas',
+      ) as HTMLElement;
+      Object.defineProperty(viewer, 'clientHeight', {
+        value: 513,
+        configurable: true,
+      });
       window.dispatchEvent(new Event('resize'));
       await waitFor(() => {
         expect(io.observedPages()).toHaveLength(5);
-        expect(document.querySelectorAll('.xynolog-pdf-annotation-canvas__strip-page')).toHaveLength(5);
+        expect(
+          document.querySelectorAll(
+            '.xynolog-pdf-annotation-canvas__strip-page',
+          ),
+        ).toHaveLength(5);
       });
       io.fire([1]);
 
-      const strip = document.querySelector('.xynolog-pdf-annotation-canvas__strip') as HTMLElement;
+      const strip = document.querySelector(
+        '.xynolog-pdf-annotation-canvas__strip',
+      ) as HTMLElement;
       await waitFor(() => expect(strip.style.maxHeight).toBe('513px'));
     });
 
@@ -968,19 +1142,26 @@ describe('PdfAnnotationCanvas', () => {
         .mockImplementation(() => {});
 
       renderInEnglish(
-        <PdfAnnotationCanvas resourceUri={resourceId("res-1")}
+        <PdfAnnotationCanvas
+          resourceUri={resourceId('res-1')}
           pdfUrl={mockPdfUrl}
           drawingMode={null}
           pageLayout="scroll"
-        />
+        />,
       );
       await waitFor(() => {
         expect(io.observedPages()).toHaveLength(5);
-        expect(document.querySelectorAll('.xynolog-pdf-annotation-canvas__strip-page')).toHaveLength(5);
+        expect(
+          document.querySelectorAll(
+            '.xynolog-pdf-annotation-canvas__strip-page',
+          ),
+        ).toHaveLength(5);
       });
       io.fire([1]);
 
-      const tick4 = document.querySelector('.xynolog-pdf-annotation-canvas__strip-page[data-page="4"]')!;
+      const tick4 = document.querySelector(
+        '.xynolog-pdf-annotation-canvas__strip-page[data-page="4"]',
+      )!;
       fireEvent.click(tick4);
 
       expect(scrollIntoView).toHaveBeenCalled();
@@ -1000,11 +1181,12 @@ describe('PdfAnnotationCanvas', () => {
         .mockImplementation(() => {});
 
       renderInEnglish(
-        <PdfAnnotationCanvas resourceUri={resourceId("res-1")}
+        <PdfAnnotationCanvas
+          resourceUri={resourceId('res-1')}
           pdfUrl={mockPdfUrl}
           drawingMode={null}
           pageLayout="scroll"
-        />
+        />,
       );
       await waitFor(() => {
         expect(io.observedPages()).toHaveLength(5);
@@ -1044,11 +1226,12 @@ describe('PdfAnnotationCanvas', () => {
         .mockImplementation(() => {});
 
       renderInEnglish(
-        <PdfAnnotationCanvas resourceUri={resourceId("res-1")}
+        <PdfAnnotationCanvas
+          resourceUri={resourceId('res-1')}
           pdfUrl={mockPdfUrl}
           drawingMode={null}
           pageLayout="scroll"
-        />
+        />,
       );
       await waitFor(() => {
         expect(io.observedPages()).toHaveLength(5);
@@ -1081,30 +1264,41 @@ describe('PdfAnnotationCanvas', () => {
       // snatches focus away from whatever the reader was doing.
       const io = stubIntersectionObserver();
       fivePageDoc();
-      vi.spyOn(Element.prototype, 'scrollIntoView').mockImplementation(() => {});
+      vi.spyOn(Element.prototype, 'scrollIntoView').mockImplementation(
+        () => {},
+      );
 
       renderInEnglish(
-        <PdfAnnotationCanvas resourceUri={resourceId("res-1")}
+        <PdfAnnotationCanvas
+          resourceUri={resourceId('res-1')}
           pdfUrl={mockPdfUrl}
           drawingMode={null}
           pageLayout="scroll"
-        />
+        />,
       );
       await waitFor(() => {
         expect(io.observedPages()).toHaveLength(5);
-        expect(document.querySelectorAll('.xynolog-pdf-annotation-canvas__strip-page')).toHaveLength(5);
+        expect(
+          document.querySelectorAll(
+            '.xynolog-pdf-annotation-canvas__strip-page',
+          ),
+        ).toHaveLength(5);
       });
       io.fire([1]);
       await waitFor(() => expect(mountedPages()).toEqual([1]));
 
       const tick = (page: number) =>
-        document.querySelector(`.xynolog-pdf-annotation-canvas__strip-page[data-page="${page}"]`) as HTMLButtonElement;
+        document.querySelector(
+          `.xynolog-pdf-annotation-canvas__strip-page[data-page="${page}"]`,
+        ) as HTMLButtonElement;
 
       tick(2).focus();
       fireEvent.click(tick(2));
       io.fire([3]);
 
-      await waitFor(() => expect(tick(3)).toHaveAttribute('aria-current', 'page'));
+      await waitFor(() =>
+        expect(tick(3)).toHaveAttribute('aria-current', 'page'),
+      );
       expect(document.activeElement).toBe(tick(3));
     });
 
@@ -1114,23 +1308,33 @@ describe('PdfAnnotationCanvas', () => {
       // with arrows (which already page the document).
       const io = stubIntersectionObserver();
       fivePageDoc();
-      vi.spyOn(Element.prototype, 'scrollIntoView').mockImplementation(() => {});
+      vi.spyOn(Element.prototype, 'scrollIntoView').mockImplementation(
+        () => {},
+      );
 
       renderInEnglish(
-        <PdfAnnotationCanvas resourceUri={resourceId("res-1")}
+        <PdfAnnotationCanvas
+          resourceUri={resourceId('res-1')}
           pdfUrl={mockPdfUrl}
           drawingMode={null}
           pageLayout="scroll"
-        />
+        />,
       );
       await waitFor(() => {
         expect(io.observedPages()).toHaveLength(5);
-        expect(document.querySelectorAll('.xynolog-pdf-annotation-canvas__strip-page')).toHaveLength(5);
+        expect(
+          document.querySelectorAll(
+            '.xynolog-pdf-annotation-canvas__strip-page',
+          ),
+        ).toHaveLength(5);
       });
       io.fire([1]);
 
-      const tabbable = [...document.querySelectorAll('.xynolog-pdf-annotation-canvas__strip-page')]
-        .filter((el) => (el as HTMLElement).tabIndex === 0);
+      const tabbable = [
+        ...document.querySelectorAll(
+          '.xynolog-pdf-annotation-canvas__strip-page',
+        ),
+      ].filter((el) => (el as HTMLElement).tabIndex === 0);
       expect(tabbable).toHaveLength(1);
       expect(tabbable[0]).toHaveAttribute('data-page', '1');
     });
@@ -1142,23 +1346,34 @@ describe('PdfAnnotationCanvas', () => {
       // change of one value rather than a second layout.
       const io = stubIntersectionObserver();
       fivePageDoc();
-      vi.spyOn(Element.prototype, 'scrollIntoView').mockImplementation(() => {});
+      vi.spyOn(Element.prototype, 'scrollIntoView').mockImplementation(
+        () => {},
+      );
 
       renderInEnglish(
-        <PdfAnnotationCanvas resourceUri={resourceId("res-1")}
+        <PdfAnnotationCanvas
+          resourceUri={resourceId('res-1')}
           pdfUrl={mockPdfUrl}
           drawingMode={null}
           pageLayout="scroll"
-        />
+        />,
       );
       await waitFor(() => {
         expect(io.observedPages()).toHaveLength(5);
-        expect(document.querySelectorAll('.xynolog-pdf-annotation-canvas__strip-page')).toHaveLength(5);
+        expect(
+          document.querySelectorAll(
+            '.xynolog-pdf-annotation-canvas__strip-page',
+          ),
+        ).toHaveLength(5);
       });
       io.fire([1]);
 
-      const column = document.querySelector('.xynolog-pdf-annotation-canvas__column')!;
-      const strip = document.querySelector('.xynolog-pdf-annotation-canvas__strip')!;
+      const column = document.querySelector(
+        '.xynolog-pdf-annotation-canvas__column',
+      )!;
+      const strip = document.querySelector(
+        '.xynolog-pdf-annotation-canvas__strip',
+      )!;
 
       // One axis, declared in one place, read by both.
       expect(column).toHaveAttribute('data-axis', 'vertical');
@@ -1169,7 +1384,9 @@ describe('PdfAnnotationCanvas', () => {
       // conventional place for a page rail (Preview, Acrobat), and the
       // reader's eye finds it before the page rather than after it.
       expect(strip.nextElementSibling).toBe(column);
-      expect(strip.parentElement).toHaveClass('xynolog-pdf-annotation-canvas__viewport');
+      expect(strip.parentElement).toHaveClass(
+        'xynolog-pdf-annotation-canvas__viewport',
+      );
     });
 
     test('each strip rectangle shows its page number', async () => {
@@ -1178,29 +1395,41 @@ describe('PdfAnnotationCanvas', () => {
       // reader wants from it on a long document.
       const io = stubIntersectionObserver();
       fivePageDoc();
-      vi.spyOn(Element.prototype, 'scrollIntoView').mockImplementation(() => {});
+      vi.spyOn(Element.prototype, 'scrollIntoView').mockImplementation(
+        () => {},
+      );
 
       renderInEnglish(
-        <PdfAnnotationCanvas resourceUri={resourceId("res-1")}
+        <PdfAnnotationCanvas
+          resourceUri={resourceId('res-1')}
           pdfUrl={mockPdfUrl}
           drawingMode={null}
           pageLayout="scroll"
-        />
+        />,
       );
       await waitFor(() => {
         expect(io.observedPages()).toHaveLength(5);
-        expect(document.querySelectorAll('.xynolog-pdf-annotation-canvas__strip-page')).toHaveLength(5);
+        expect(
+          document.querySelectorAll(
+            '.xynolog-pdf-annotation-canvas__strip-page',
+          ),
+        ).toHaveLength(5);
       });
       io.fire([1]);
 
       const tick = (page: number) =>
-        document.querySelector(`.xynolog-pdf-annotation-canvas__strip-page[data-page="${page}"]`)!;
+        document.querySelector(
+          `.xynolog-pdf-annotation-canvas__strip-page[data-page="${page}"]`,
+        )!;
       expect(tick(1)).toHaveTextContent('1');
       expect(tick(5)).toHaveTextContent('5');
 
       // The accessible name keeps the context the bare digit loses, and
       // still contains the visible text (WCAG 2.5.3 Label in Name).
-      expect(tick(5)).toHaveAttribute('aria-label', expect.stringContaining('5'));
+      expect(tick(5)).toHaveAttribute(
+        'aria-label',
+        expect.stringContaining('5'),
+      );
     });
 
     test('zoom scales PDF pages without scaling the numbered page rail', async () => {
@@ -1208,21 +1437,25 @@ describe('PdfAnnotationCanvas', () => {
       fivePageDoc();
 
       renderInEnglish(
-        <PdfAnnotationCanvas resourceUri={resourceId("res-1")}
+        <PdfAnnotationCanvas
+          resourceUri={resourceId('res-1')}
           pdfUrl={mockPdfUrl}
           drawingMode={null}
           pageLayout="scroll"
           zoom={1.75}
-        />
+        />,
       );
       await waitFor(() => expect(io.observedPages()).toHaveLength(5));
 
-      const column = document.querySelector('.xynolog-pdf-annotation-canvas__column') as HTMLElement;
-      const strip = document.querySelector('.xynolog-pdf-annotation-canvas__strip') as HTMLElement;
+      const column = document.querySelector(
+        '.xynolog-pdf-annotation-canvas__column',
+      ) as HTMLElement;
+      const strip = document.querySelector(
+        '.xynolog-pdf-annotation-canvas__strip',
+      ) as HTMLElement;
       expect(column.style.zoom).toBe('1.75');
       expect(strip.style.zoom).toBe('');
     });
-
 
     test('the column does not add a second scrollbar inside the scrolling pane', async () => {
       // The strip and a nested column scrollbar would be two controls for one
@@ -1231,14 +1464,17 @@ describe('PdfAnnotationCanvas', () => {
       // height of its own — that produces scroll-within-scroll.
       const io = stubIntersectionObserver();
       fivePageDoc();
-      vi.spyOn(Element.prototype, 'scrollIntoView').mockImplementation(() => {});
+      vi.spyOn(Element.prototype, 'scrollIntoView').mockImplementation(
+        () => {},
+      );
 
       renderInEnglish(
-        <PdfAnnotationCanvas resourceUri={resourceId("res-1")}
+        <PdfAnnotationCanvas
+          resourceUri={resourceId('res-1')}
           pdfUrl={mockPdfUrl}
           drawingMode={null}
           pageLayout="scroll"
-        />
+        />,
       );
       await waitFor(() => {
         expect(io.observedPages()).toHaveLength(5);
@@ -1247,12 +1483,15 @@ describe('PdfAnnotationCanvas', () => {
 
       // jsdom applies no stylesheet, so assert the CONTRACT the CSS keys off:
       // the column declares the axis but claims no scroll role of its own.
-      const column = document.querySelector('.xynolog-pdf-annotation-canvas__column')!;
+      const column = document.querySelector(
+        '.xynolog-pdf-annotation-canvas__column',
+      )!;
       expect(column).toHaveAttribute('data-axis', 'vertical');
       expect(column).not.toHaveAttribute('data-scroller');
       // The strip is the one that scrolls independently, and silently.
-      expect(document.querySelector('.xynolog-pdf-annotation-canvas__strip'))
-        .toHaveAttribute('data-scroller', 'true');
+      expect(
+        document.querySelector('.xynolog-pdf-annotation-canvas__strip'),
+      ).toHaveAttribute('data-scroller', 'true');
     });
 
     test('the indicator reports a page the reader can SEE, not a preloaded one', async () => {
@@ -1262,11 +1501,17 @@ describe('PdfAnnotationCanvas', () => {
       // off-screen — it must come from actual visibility.
       const io = stubIntersectionObserver();
       fivePageDoc();
-      vi.spyOn(Element.prototype, 'scrollIntoView').mockImplementation(() => {});
+      vi.spyOn(Element.prototype, 'scrollIntoView').mockImplementation(
+        () => {},
+      );
 
       renderInEnglish(
-        <PdfAnnotationCanvas resourceUri={resourceId("res-1")} pdfUrl={mockPdfUrl}
-          drawingMode={null} pageLayout="scroll" />
+        <PdfAnnotationCanvas
+          resourceUri={resourceId('res-1')}
+          pdfUrl={mockPdfUrl}
+          drawingMode={null}
+          pageLayout="scroll"
+        />,
       );
       await waitFor(() => {
         expect(io.observedPages()).toHaveLength(5);
@@ -1277,11 +1522,14 @@ describe('PdfAnnotationCanvas', () => {
       io.fireOnscreen([3]);
 
       await waitFor(() => {
-        expect(document.querySelector('[aria-current="page"]')).toHaveAttribute('data-page', '3');
+        expect(document.querySelector('[aria-current="page"]')).toHaveAttribute(
+          'data-page',
+          '3',
+        );
       });
     });
 
-    test('paged navigation does not carry one page\'s state onto the next', async () => {
+    test("paged navigation does not carry one page's state onto the next", async () => {
       // A single PdfPageView reused in the paged layout as `pageNumber`
       // changes would keep its state across the switch: the previous page's
       // raster shows briefly under the new page's overlay, a drag over it
@@ -1293,27 +1541,37 @@ describe('PdfAnnotationCanvas', () => {
       // consumed there and never reach the page view.
       const failingDoc = {
         numPages: 3,
-        getPage: vi.fn((n: number) => (n === 1
-          ? Promise.reject(new Error('page 1 is broken'))
-          : Promise.resolve(mockPage()))),
+        getPage: vi.fn((n: number) =>
+          n === 1
+            ? Promise.reject(new Error('page 1 is broken'))
+            : Promise.resolve(mockPage()),
+        ),
       };
       vi.mocked(loadPdfDocument).mockResolvedValueOnce(
         failingDoc as unknown as Awaited<ReturnType<typeof loadPdfDocument>>,
       );
 
       renderInEnglish(
-        <PdfAnnotationCanvas resourceUri={resourceId("res-1")} pdfUrl={mockPdfUrl} drawingMode={null} />
+        <PdfAnnotationCanvas
+          resourceUri={resourceId('res-1')}
+          pdfUrl={mockPdfUrl}
+          drawingMode={null}
+        />,
       );
 
       await waitFor(() => {
-        expect(document.querySelector('.xynolog-pdf-annotation-canvas__error')).toBeInTheDocument();
+        expect(
+          document.querySelector('.xynolog-pdf-annotation-canvas__error'),
+        ).toBeInTheDocument();
       });
 
       fireEvent.click(screen.getByRole('button', { name: /next/i }));
 
       // Page 2 loads fine; the failure belonged to page 1 and must not persist.
       await waitFor(() => {
-        expect(document.querySelector('.xynolog-pdf-annotation-canvas__error')).not.toBeInTheDocument();
+        expect(
+          document.querySelector('.xynolog-pdf-annotation-canvas__error'),
+        ).not.toBeInTheDocument();
       });
     });
 
@@ -1323,15 +1581,23 @@ describe('PdfAnnotationCanvas', () => {
       // rather than nothing.
       fivePageDoc();
       vi.stubGlobal('IntersectionObserver', undefined);
-      vi.spyOn(Element.prototype, 'scrollIntoView').mockImplementation(() => {});
+      vi.spyOn(Element.prototype, 'scrollIntoView').mockImplementation(
+        () => {},
+      );
 
       renderInEnglish(
-        <PdfAnnotationCanvas resourceUri={resourceId("res-1")} pdfUrl={mockPdfUrl}
-          drawingMode={null} pageLayout="scroll" />
+        <PdfAnnotationCanvas
+          resourceUri={resourceId('res-1')}
+          pdfUrl={mockPdfUrl}
+          drawingMode={null}
+          pageLayout="scroll"
+        />,
       );
 
       await waitFor(() => {
-        expect(document.querySelectorAll('.xynolog-pdf-annotation-canvas__image')).toHaveLength(5);
+        expect(
+          document.querySelectorAll('.xynolog-pdf-annotation-canvas__image'),
+        ).toHaveLength(5);
       });
     });
 
@@ -1343,15 +1609,22 @@ describe('PdfAnnotationCanvas', () => {
         .mockImplementation(() => {});
 
       renderInEnglish(
-        <PdfAnnotationCanvas resourceUri={resourceId("res-1")} pdfUrl={mockPdfUrl}
-          drawingMode={null} pageLayout="scroll" />
+        <PdfAnnotationCanvas
+          resourceUri={resourceId('res-1')}
+          pdfUrl={mockPdfUrl}
+          drawingMode={null}
+          pageLayout="scroll"
+        />,
       );
       await waitFor(() => {
         expect(io.observedPages()).toHaveLength(5);
       });
       io.fire([3]);
       await waitFor(() => {
-        expect(document.querySelector('[aria-current="page"]')).toHaveAttribute('data-page', '3');
+        expect(document.querySelector('[aria-current="page"]')).toHaveAttribute(
+          'data-page',
+          '3',
+        );
       });
 
       scrollIntoView.mockClear();
@@ -1367,17 +1640,20 @@ describe('PdfAnnotationCanvas', () => {
 
     test('keeps the paged layout when no layout is requested', async () => {
       renderInEnglish(
-        <PdfAnnotationCanvas resourceUri={resourceId("res-1")}
+        <PdfAnnotationCanvas
+          resourceUri={resourceId('res-1')}
           pdfUrl={mockPdfUrl}
           drawingMode="rectangle"
           selectedMotivation="highlighting"
-        />
+        />,
       );
 
       await waitFor(() => {
         expect(screen.getByText(/page 1 of 3/i)).toBeInTheDocument();
       });
-      expect(document.querySelectorAll('.xynolog-pdf-annotation-canvas__slot')).toHaveLength(0);
+      expect(
+        document.querySelectorAll('.xynolog-pdf-annotation-canvas__slot'),
+      ).toHaveLength(0);
       expect(screen.getByRole('button', { name: /next/i })).toBeInTheDocument();
     });
   });
@@ -1388,17 +1664,31 @@ describe('PdfAnnotationCanvas', () => {
   // than from a literal that happens to read the same in English.
   describe('viewer chrome', () => {
     const renderTranslated = (ui: React.ReactElement) =>
-      renderInEnglish(<TranslationProvider translationManager={defaultMocks.translationManager}>{ui}</TranslationProvider>);
+      renderInEnglish(
+        <TranslationProvider
+          translationManager={defaultMocks.translationManager}
+        >
+          {ui}
+        </TranslationProvider>,
+      );
 
     test('takes its controls and page indicator from translations', async () => {
       renderTranslated(
-        <PdfAnnotationCanvas resourceUri={resourceId("res-1")} pdfUrl={mockPdfUrl} drawingMode={null} />
+        <PdfAnnotationCanvas
+          resourceUri={resourceId('res-1')}
+          pdfUrl={mockPdfUrl}
+          drawingMode={null}
+        />,
       );
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: 'PdfViewer.previous' })).toBeInTheDocument();
+        expect(
+          screen.getByRole('button', { name: 'PdfViewer.previous' }),
+        ).toBeInTheDocument();
       });
-      expect(screen.getByRole('button', { name: 'PdfViewer.next' })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: 'PdfViewer.next' }),
+      ).toBeInTheDocument();
       expect(screen.getByText(/PdfViewer\.pageOf/)).toBeInTheDocument();
       expect(screen.queryByText('Previous')).not.toBeInTheDocument();
       expect(screen.queryByText(/^Page 1 of 3$/)).not.toBeInTheDocument();
@@ -1406,13 +1696,21 @@ describe('PdfAnnotationCanvas', () => {
 
     test('announces page changes — a silent indicator is invisible to a screen reader', async () => {
       renderTranslated(
-        <PdfAnnotationCanvas resourceUri={resourceId("res-1")} pdfUrl={mockPdfUrl} drawingMode={null} />
+        <PdfAnnotationCanvas
+          resourceUri={resourceId('res-1')}
+          pdfUrl={mockPdfUrl}
+          drawingMode={null}
+        />,
       );
 
       await waitFor(() => {
-        expect(document.querySelector('.xynolog-pdf-annotation-canvas__page-info')).toBeInTheDocument();
+        expect(
+          document.querySelector('.xynolog-pdf-annotation-canvas__page-info'),
+        ).toBeInTheDocument();
       });
-      const indicator = document.querySelector('.xynolog-pdf-annotation-canvas__page-info')!;
+      const indicator = document.querySelector(
+        '.xynolog-pdf-annotation-canvas__page-info',
+      )!;
       expect(indicator).toHaveAttribute('aria-live', 'polite');
       // The pager is a navigation landmark, not loose buttons in the page.
       expect(screen.getByRole('navigation')).toBeInTheDocument();

@@ -4,7 +4,37 @@
 // Regenerate:  make generate  (codegen/lib/locales/locales.ml)
 
 /** The code of every supported language, in the registry's order. */
-export const LOCALE_CODES = ['ar', 'bn', 'cs', 'da', 'de', 'el', 'en', 'es', 'fa', 'fi', 'fr', 'he', 'hi', 'id', 'it', 'ja', 'ko', 'ms', 'nl', 'no', 'pl', 'pt', 'ro', 'sv', 'th', 'tr', 'uk', 'vi', 'zh'] as const;
+export const LOCALE_CODES = [
+  'ar',
+  'bn',
+  'cs',
+  'da',
+  'de',
+  'el',
+  'en',
+  'es',
+  'fa',
+  'fi',
+  'fr',
+  'he',
+  'hi',
+  'id',
+  'it',
+  'ja',
+  'ko',
+  'ms',
+  'nl',
+  'no',
+  'pl',
+  'pt',
+  'ro',
+  'sv',
+  'th',
+  'tr',
+  'uk',
+  'vi',
+  'zh',
+] as const;
 
 /** The code of a supported language. */
 export type LocaleCode = (typeof LOCALE_CODES)[number];

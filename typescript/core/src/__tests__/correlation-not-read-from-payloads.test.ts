@@ -42,7 +42,10 @@ import { REPO, stripComments, typeScriptFiles } from './repository-files';
  */
 const PAYLOAD_READS: ReadonlyArray<readonly [string, RegExp]> = [
   ['navigates into a payload', /\.\s*payload\s*\??\.\s*correlationId/g],
-  ['reaches the key through a cast', /\bas\s+[^;\n]*?\)\s*\??\.\s*correlationId/g],
+  [
+    'reaches the key through a cast',
+    /\bas\s+[^;\n]*?\)\s*\??\.\s*correlationId/g,
+  ],
 ];
 
 describe('nothing reads correlationId out of a payload', () => {

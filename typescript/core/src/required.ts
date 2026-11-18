@@ -19,7 +19,8 @@ import type { components } from './types';
 type SchemaName = keyof components['schemas'];
 
 /** The kind of a JSON value, as a schema names it. An integer is a number with no fractional part. */
-type Kind = 'object' | 'array' | 'string' | 'integer' | 'number' | 'boolean' | 'null';
+type Kind =
+  'object' | 'array' | 'string' | 'integer' | 'number' | 'boolean' | 'null';
 
 /** One step of a pattern: at least `min` of a text's next code points, and at most `max` (none: any number), each in one of the ranges `of`. */
 interface Step {
@@ -49,7 +50,10 @@ export interface Shape {
   readonly items?: Shape;
   readonly values?: Shape;
   readonly oneOf?: readonly Shape[];
-  readonly discriminator?: { readonly property: string; readonly mapping: { readonly [value: string]: number } };
+  readonly discriminator?: {
+    readonly property: string;
+    readonly mapping: { readonly [value: string]: number };
+  };
   readonly allOf?: readonly Shape[];
 }
 
@@ -105,38 +109,56 @@ function allows(kinds: readonly Kind[] | undefined, value: unknown): boolean {
   if (kinds === undefined) return true;
   const kind = kindOf(value);
   if (kind === undefined) return false;
-  return kinds.includes(kind) || (kinds.includes('integer') && Number.isInteger(value));
+  return (
+    kinds.includes(kind) ||
+    (kinds.includes('integer') && Number.isInteger(value))
+  );
 }
 
 /** `shape`, or the component it refers to. */
 function resolved(shape: Shape): Shape {
-  return shape.ref === undefined ? shape : resolved(REQUIRED_SCHEMAS[shape.ref]);
+  return shape.ref === undefined
+    ? shape
+    : resolved(REQUIRED_SCHEMAS[shape.ref]);
 }
 
 /** The way to `name` within the member at `way`: their names joined by a dot; `name` alone within the value itself. */
-export const within = (way: string, name: string): string => (way === '' ? name : `${way}.${name}`);
+export const within = (way: string, name: string): string =>
+  way === '' ? name : `${way}.${name}`;
 
 /** Whether `count` is at least `least` and at most `most`, where each is stated. */
-const counted = (least: number | undefined, count: number, most: number | undefined): boolean =>
-  (least === undefined || count >= least) && (most === undefined || count <= most);
+const counted = (
+  least: number | undefined,
+  count: number,
+  most: number | undefined,
+): boolean =>
+  (least === undefined || count >= least) &&
+  (most === undefined || count <= most);
 
 /**
  * Whether the code points from `at` are of `steps`: the first step takes as
  * many of them as it may, and gives them back one by one until the steps
  * after it take the rest.
  */
-function matches(steps: readonly Step[], points: readonly number[], at: number): boolean {
+function matches(
+  steps: readonly Step[],
+  points: readonly number[],
+  at: number,
+): boolean {
   const [first, ...rest] = steps;
   if (first === undefined) return at === points.length;
   let taken = 0;
   while (
     at + taken < points.length &&
     (first.max === undefined || taken < first.max) &&
-    first.of.some(([from, to]) => from <= points[at + taken]! && points[at + taken]! <= to)
+    first.of.some(
+      ([from, to]) => from <= points[at + taken]! && points[at + taken]! <= to,
+    )
   ) {
     taken += 1;
   }
-  for (; taken >= first.min; taken -= 1) if (matches(rest, points, at + taken)) return true;
+  for (; taken >= first.min; taken -= 1)
+    if (matches(rest, points, at + taken)) return true;
   return false;
 }
 
@@ -146,20 +168,32 @@ function matches(steps: readonly Step[], points: readonly number[], at: number):
  * array has as many items as it allows.
  */
 function isAsStated(shape: Shape, value: unknown): boolean {
-  if (shape.enum !== undefined && !shape.enum.some((one) => one === value)) return false;
+  if (shape.enum !== undefined && !shape.enum.some((one) => one === value))
+    return false;
   if (typeof value === 'string') {
     const points = Array.from(value, (point) => point.codePointAt(0)!);
-    return counted(shape.minLength, points.length, shape.maxLength) && (shape.pattern === undefined || matches(shape.pattern, points, 0));
+    return (
+      counted(shape.minLength, points.length, shape.maxLength) &&
+      (shape.pattern === undefined || matches(shape.pattern, points, 0))
+    );
   }
-  if (typeof value === 'number') return counted(shape.minimum, value, shape.maximum);
-  if (Array.isArray(value)) return counted(shape.minItems, value.length, shape.maxItems);
+  if (typeof value === 'number')
+    return counted(shape.minimum, value, shape.maximum);
+  if (Array.isArray(value))
+    return counted(shape.minItems, value.length, shape.maxItems);
   return true;
 }
 
 /** The first fault `value` has as a value of `shape`, from `way`; each member to leave out of what is read is added to `leftOut`. */
-function faultAt(shape: Shape, value: unknown, way: string, leftOut: LeftOut): Fault | undefined {
+function faultAt(
+  shape: Shape,
+  value: unknown,
+  way: string,
+  leftOut: LeftOut,
+): Fault | undefined {
   const own = resolved(shape);
-  if (!allows(own.kinds, value) || !isAsStated(own, value)) return { member: way, reason: 'malformed' };
+  if (!allows(own.kinds, value) || !isAsStated(own, value))
+    return { member: way, reason: 'malformed' };
   if (isObject(value)) {
     const fault = faultOfMembers(own, value, way, leftOut);
     if (fault !== undefined) return fault;
@@ -171,7 +205,13 @@ function faultAt(shape: Shape, value: unknown, way: string, leftOut: LeftOut): F
     }
   }
   if (own.oneOf !== undefined) {
-    const fault = faultOfOneOf(own.oneOf, own.discriminator, value, way, leftOut);
+    const fault = faultOfOneOf(
+      own.oneOf,
+      own.discriminator,
+      value,
+      way,
+      leftOut,
+    );
     if (fault !== undefined) return fault;
   }
   if (own.allOf !== undefined) {
@@ -184,12 +224,22 @@ function faultAt(shape: Shape, value: unknown, way: string, leftOut: LeftOut): F
 }
 
 /** The first fault of an object in the members `shape` requires, in what its members are, in the members it may not carry, and in its values. */
-function faultOfMembers(shape: Shape, object: Record<string, unknown>, way: string, leftOut: LeftOut): Fault | undefined {
+function faultOfMembers(
+  shape: Shape,
+  object: Record<string, unknown>,
+  way: string,
+  leftOut: LeftOut,
+): Fault | undefined {
   for (const name of shape.required ?? []) {
     const held = object[name];
     const member = shape.members?.[name];
     // A member that is undefined is one JSON does not carry.
-    if (held === undefined || (held === null && member !== undefined && !allows(resolved(member).kinds, null))) {
+    if (
+      held === undefined ||
+      (held === null &&
+        member !== undefined &&
+        !allows(resolved(member).kinds, null))
+    ) {
       return { member: within(way, name), reason: 'lacks' };
     }
   }
@@ -197,7 +247,11 @@ function faultOfMembers(shape: Shape, object: Record<string, unknown>, way: stri
     const held = object[name];
     if (held === undefined || held === null) continue;
     const { recognized } = resolved(member);
-    if (recognized !== undefined && typeof held === 'string' && !recognized.includes(held)) {
+    if (
+      recognized !== undefined &&
+      typeof held === 'string' &&
+      !recognized.includes(held)
+    ) {
       leaveOut(leftOut, object, name);
       continue;
     }
@@ -206,8 +260,11 @@ function faultOfMembers(shape: Shape, object: Record<string, unknown>, way: stri
   }
   const { closed } = shape;
   if (closed !== undefined) {
-    const unnamed = Object.keys(object).filter((name) => object[name] !== undefined && !closed.includes(name)).sort(byCodePoint)[0];
-    if (unnamed !== undefined) return { member: within(way, unnamed), reason: 'malformed' };
+    const unnamed = Object.keys(object)
+      .filter((name) => object[name] !== undefined && !closed.includes(name))
+      .sort(byCodePoint)[0];
+    if (unnamed !== undefined)
+      return { member: within(way, unnamed), reason: 'malformed' };
   }
   if (shape.values !== undefined) {
     for (const key of Object.keys(object).sort(byCodePoint)) {
@@ -225,11 +282,22 @@ function faultOfMembers(shape: Shape, object: Record<string, unknown>, way: stri
  * the first one's when each has one; and a value no variant allows is
  * malformed.
  */
-function faultOfOneOf(variants: readonly Shape[], discriminator: Shape['discriminator'], value: unknown, way: string, leftOut: LeftOut): Fault | undefined {
-  let candidates = variants.filter((variant) => allows(resolved(variant).kinds, value));
+function faultOfOneOf(
+  variants: readonly Shape[],
+  discriminator: Shape['discriminator'],
+  value: unknown,
+  way: string,
+  leftOut: LeftOut,
+): Fault | undefined {
+  let candidates = variants.filter((variant) =>
+    allows(resolved(variant).kinds, value),
+  );
   if (isObject(value) && discriminator !== undefined) {
     const named = value[discriminator.property];
-    const at = typeof named === 'string' && Object.hasOwn(discriminator.mapping, named) ? discriminator.mapping[named] : undefined;
+    const at =
+      typeof named === 'string' && Object.hasOwn(discriminator.mapping, named)
+        ? discriminator.mapping[named]
+        : undefined;
     const variant = at === undefined ? undefined : variants[at];
     if (variant !== undefined) candidates = [variant];
   }
@@ -239,7 +307,8 @@ function faultOfOneOf(variants: readonly Shape[], discriminator: Shape['discrimi
     const tried: LeftOut = new Map();
     const fault = faultAt(candidate, value, way, tried);
     if (fault === undefined) {
-      for (const [object, names] of tried) for (const name of names) leaveOut(leftOut, object, name);
+      for (const [object, names] of tried)
+        for (const name of names) leaveOut(leftOut, object, name);
       return undefined;
     }
     if (first === undefined) first = fault;
@@ -283,5 +352,7 @@ export function readOfShape(shape: Shape, value: unknown): Reading {
 /** What every SDK says of `fault`, as it refuses what has it: `it has no \`member\``, `its \`member\` is malformed`, or `it is malformed`. */
 export function said(fault: Fault): string {
   if (fault.reason === 'lacks') return `it has no \`${fault.member}\``;
-  return fault.member === '' ? 'it is malformed' : `its \`${fault.member}\` is malformed`;
+  return fault.member === ''
+    ? 'it is malformed'
+    : `its \`${fault.member}\` is malformed`;
 }

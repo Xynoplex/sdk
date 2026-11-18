@@ -1,7 +1,16 @@
 import util from 'node:util';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { firstValueFrom } from 'rxjs';
-import { EMIT_RETRY, EMIT_TIMEOUT_MS, HTTP_REQUEST_TIMEOUT_MS, RECONNECT_MS, STREAM_OPEN_TIMEOUT_MS, annotationId, resourceId, type XynologError } from '@xynolog/core';
+import {
+  EMIT_RETRY,
+  EMIT_TIMEOUT_MS,
+  HTTP_REQUEST_TIMEOUT_MS,
+  RECONNECT_MS,
+  STREAM_OPEN_TIMEOUT_MS,
+  annotationId,
+  resourceId,
+  type XynologError,
+} from '@xynolog/core';
 import { createActorStateUnit, type ActorStateUnit } from '../actor-state-unit';
 import { assertStateUnitAxioms } from '@xynolog/core/testing/axioms';
 // The SSE/fetch harness lives in helpers/mock-conn.ts (shared with the
@@ -44,14 +53,28 @@ describe('createActorStateUnit', () => {
 
     stateUnit.start();
 
-    const gathered = firstValueFrom(
-      stateUnit.stream('gather:requested'),
-    );
+    const gathered = firstValueFrom(stateUnit.stream('gather:requested'));
 
     await vi.waitFor(() => expect(mockFetch).toHaveBeenCalled());
 
-    sse.push(sseChunk('bus-event', JSON.stringify({ channel: 'match:requested', payload: { id: 'other' } })));
-    sse.push(sseChunk('bus-event', JSON.stringify({ channel: 'gather:requested', payload: { resourceId: 'res-1' } })));
+    sse.push(
+      sseChunk(
+        'bus-event',
+        JSON.stringify({
+          channel: 'match:requested',
+          payload: { id: 'other' },
+        }),
+      ),
+    );
+    sse.push(
+      sseChunk(
+        'bus-event',
+        JSON.stringify({
+          channel: 'gather:requested',
+          payload: { resourceId: 'res-1' },
+        }),
+      ),
+    );
 
     const result = await gathered;
     expect(result).toEqual({ resourceId: 'res-1' });
@@ -68,7 +91,9 @@ describe('createActorStateUnit', () => {
       channels: ['gather:requested'],
     });
     const told: { code: string; message: string }[] = [];
-    stateUnit.errors$.subscribe((error) => told.push({ code: error.code, message: error.message }));
+    stateUnit.errors$.subscribe((error) =>
+      told.push({ code: error.code, message: error.message }),
+    );
 
     stateUnit.start();
 
@@ -76,14 +101,38 @@ describe('createActorStateUnit', () => {
 
     await vi.waitFor(() => expect(mockFetch).toHaveBeenCalled());
 
-    sse.push(sseChunk('bus-event', '{"channel": "gather:requested", "payload": {'));
-    sse.push(sseChunk('bus-event', JSON.stringify({ payload: { resourceId: 'res-1' } })));
-    sse.push(sseChunk('bus-event', JSON.stringify({ channel: 7, payload: { resourceId: 'res-1' } })));
-    sse.push(sseChunk('bus-event', JSON.stringify({ channel: 'gather:requested', payload: { resourceId: 'after' } })));
+    sse.push(
+      sseChunk('bus-event', '{"channel": "gather:requested", "payload": {'),
+    );
+    sse.push(
+      sseChunk(
+        'bus-event',
+        JSON.stringify({ payload: { resourceId: 'res-1' } }),
+      ),
+    );
+    sse.push(
+      sseChunk(
+        'bus-event',
+        JSON.stringify({ channel: 7, payload: { resourceId: 'res-1' } }),
+      ),
+    );
+    sse.push(
+      sseChunk(
+        'bus-event',
+        JSON.stringify({
+          channel: 'gather:requested',
+          payload: { resourceId: 'after' },
+        }),
+      ),
+    );
 
     expect(await gathered).toEqual({ resourceId: 'after' });
     expect(told).toEqual(
-      ['it is malformed', 'it has no `channel`', 'its `channel` is malformed'].map((said) => ({
+      [
+        'it is malformed',
+        'it has no `channel`',
+        'its `channel` is malformed',
+      ].map((said) => ({
         code: 'error',
         message: `the stream carried what is not a frame: ${said}`,
       })),
@@ -107,10 +156,19 @@ describe('createActorStateUnit', () => {
 
     const results1: unknown[] = [];
     const results2: unknown[] = [];
-    const sub1 = stateUnit.stream('beckon:hover').subscribe((v) => results1.push(v));
-    const sub2 = stateUnit.stream('beckon:hover').subscribe((v) => results2.push(v));
+    const sub1 = stateUnit
+      .stream('beckon:hover')
+      .subscribe((v) => results1.push(v));
+    const sub2 = stateUnit
+      .stream('beckon:hover')
+      .subscribe((v) => results2.push(v));
 
-    sse.push(sseChunk('bus-event', JSON.stringify({ channel: 'beckon:hover', payload: { n: 1 } })));
+    sse.push(
+      sseChunk(
+        'bus-event',
+        JSON.stringify({ channel: 'beckon:hover', payload: { n: 1 } }),
+      ),
+    );
 
     await vi.waitFor(() => expect(results1).toHaveLength(1));
 
@@ -133,12 +191,17 @@ describe('createActorStateUnit', () => {
 
     await stateUnit.emit('beckon:hover', { annotationId: annotationId('a-1') });
 
-    const [url, opts] = mockFetch.mock.calls[0] as [string, { method?: string; body: string; headers: Record<string, string> }];
+    const [url, opts] = mockFetch.mock.calls[0] as [
+      string,
+      { method?: string; body: string; headers: Record<string, string> },
+    ];
     expect(url).toBe('http://localhost:4000/bus/emit');
     expect(opts.method).toBe('POST');
     expect(opts.headers).toEqual({
       'Content-Type': 'application/json',
-      'Idempotency-Key': expect.stringMatching(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/),
+      'Idempotency-Key': expect.stringMatching(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
+      ),
       Authorization: 'Bearer tok',
     });
     // Parsed, not string-compared: the body carries `clientId` (the routing
@@ -185,20 +248,30 @@ describe('createActorStateUnit', () => {
     // The no-hang guarantee is what this pins — it is the budget, not the
     // first failure, that bounds the wait.
     vi.useFakeTimers();
-    mockFetch.mockImplementation((_url: string, opts: { signal: AbortSignal }) => new Promise((_resolve, reject) => {
-      opts.signal.addEventListener('abort', () => reject(opts.signal.reason), { once: true });
-    }));
+    mockFetch.mockImplementation(
+      (_url: string, opts: { signal: AbortSignal }) =>
+        new Promise((_resolve, reject) => {
+          opts.signal.addEventListener(
+            'abort',
+            () => reject(opts.signal.reason),
+            { once: true },
+          );
+        }),
+    );
     const stateUnit = createActorStateUnit({
       baseUrl: 'http://localhost:4000',
       token: 'tok',
       channels: [],
     });
 
-    const rejects = expect(stateUnit.emit('beckon:hover', { annotationId: annotationId('a-1') }))
-      .rejects.toThrow('/bus/emit got no answer: TimeoutError');
+    const rejects = expect(
+      stateUnit.emit('beckon:hover', { annotationId: annotationId('a-1') }),
+    ).rejects.toThrow('/bus/emit got no answer: TimeoutError');
     await vi.advanceTimersByTimeAsync(EMIT_TIMEOUT_MS - 1);
     expect(mockFetch).toHaveBeenCalledTimes(1);
-    await vi.advanceTimersByTimeAsync(EMIT_RETRY.attempts * (EMIT_TIMEOUT_MS + EMIT_RETRY.maxDelayMs));
+    await vi.advanceTimersByTimeAsync(
+      EMIT_RETRY.attempts * (EMIT_TIMEOUT_MS + EMIT_RETRY.maxDelayMs),
+    );
     await rejects;
     expect(mockFetch).toHaveBeenCalledTimes(EMIT_RETRY.attempts);
 
@@ -217,7 +290,9 @@ describe('createActorStateUnit', () => {
       emitRetry: { attempts: 2, initialDelayMs: 1, maxDelayMs: 1 },
     });
 
-    await expect(stateUnit.emit('beckon:hover', { annotationId: annotationId('a-1') })).rejects.toMatchObject({
+    await expect(
+      stateUnit.emit('beckon:hover', { annotationId: annotationId('a-1') }),
+    ).rejects.toMatchObject({
       name: 'APIError',
       code: 'unavailable',
       message: '/bus/emit got no answer: TypeError',
@@ -227,7 +302,7 @@ describe('createActorStateUnit', () => {
     stateUnit.dispose();
   });
 
-  it('an emit whose fetch rejects in a browser\'s words is sent again, with the same key, and a second emit has its own', async () => {
+  it("an emit whose fetch rejects in a browser's words is sent again, with the same key, and a second emit has its own", async () => {
     // A browser rejects a fetch that got no answer with a TypeError in its
     // own words and no cause; that is no answer as much as Node's is.
     mockFetch
@@ -241,10 +316,17 @@ describe('createActorStateUnit', () => {
       emitRetry: { attempts: 2, initialDelayMs: 1, maxDelayMs: 1 },
     });
 
-    await expect(stateUnit.emit('beckon:hover', { annotationId: annotationId('a-1') })).resolves.toBeUndefined();
+    await expect(
+      stateUnit.emit('beckon:hover', { annotationId: annotationId('a-1') }),
+    ).resolves.toBeUndefined();
     await stateUnit.emit('beckon:hover', { annotationId: annotationId('a-2') });
 
-    const keys = mockFetch.mock.calls.map(([, opts]) => (opts as { headers: Record<string, string> }).headers['Idempotency-Key']);
+    const keys = mockFetch.mock.calls.map(
+      ([, opts]) =>
+        (opts as { headers: Record<string, string> }).headers[
+          'Idempotency-Key'
+        ],
+    );
     expect(keys).toHaveLength(3);
     expect(keys[0]).toEqual(expect.any(String));
     expect(keys[1], 'every attempt at one emit carries its key').toBe(keys[0]);
@@ -271,10 +353,18 @@ describe('createActorStateUnit', () => {
       emitRetry: { attempts: 2, initialDelayMs: 1, maxDelayMs: 1 },
     });
 
-    const failure: unknown = await stateUnit.emit('beckon:hover', { annotationId: annotationId('a-1') }).catch((e: unknown) => e);
+    const failure: unknown = await stateUnit
+      .emit('beckon:hover', { annotationId: annotationId('a-1') })
+      .catch((e: unknown) => e);
 
-    expect(util.inspect(failure, { depth: 6 })).not.toContain(carried.slice(0, 6));
-    expect(failure).toMatchObject({ name: 'APIError', code: 'unavailable', message: '/bus/emit got no answer: TypeError' });
+    expect(util.inspect(failure, { depth: 6 })).not.toContain(
+      carried.slice(0, 6),
+    );
+    expect(failure).toMatchObject({
+      name: 'APIError',
+      code: 'unavailable',
+      message: '/bus/emit got no answer: TypeError',
+    });
 
     stateUnit.dispose();
   });
@@ -290,7 +380,7 @@ describe('createActorStateUnit', () => {
     vi.useFakeTimers();
     const stateUnit = createActorStateUnit({
       baseUrl: 'http://localhost:4000',
-      token: () => '',              // the shape `token$.getValue() ?? ''` produces
+      token: () => '', // the shape `token$.getValue() ?? ''` produces
       channels: ['beckon:hover'],
     });
 
@@ -323,7 +413,10 @@ describe('createActorStateUnit', () => {
     token = 'fresh-tok';
     await vi.advanceTimersByTimeAsync(10_000);
     expect(mockFetch).toHaveBeenCalledTimes(1);
-    const [, opts] = mockFetch.mock.calls[0] as [string, { headers: Record<string, string> }];
+    const [, opts] = mockFetch.mock.calls[0] as [
+      string,
+      { headers: Record<string, string> },
+    ];
     expect(opts.headers['Authorization']).toBe('Bearer fresh-tok');
 
     stateUnit.dispose();
@@ -339,7 +432,12 @@ describe('createActorStateUnit', () => {
   // the credential gate instead.
 
   it('a refused connect surfaces its status as structured data — 401 distinguishable from 500', async () => {
-    mockFetch.mockResolvedValueOnce({ ok: false, headers: new Headers(), status: 401, body: null });
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      headers: new Headers(),
+      status: 401,
+      body: null,
+    });
     const rejected = createActorStateUnit({
       baseUrl: 'http://localhost:4000',
       token: 'expired-but-real-tok',
@@ -352,7 +450,12 @@ describe('createActorStateUnit', () => {
     expect(seen401[0]).toMatchObject({ status: 401 });
     rejected.dispose();
 
-    mockFetch.mockResolvedValueOnce({ ok: false, headers: new Headers(), status: 500, body: null });
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      headers: new Headers(),
+      status: 500,
+      body: null,
+    });
     const erroring = createActorStateUnit({
       baseUrl: 'http://localhost:4000',
       token: 'fine-tok',
@@ -376,7 +479,12 @@ describe('createActorStateUnit', () => {
   it('a refused credential is asked about a bounded number of times, then the actor waits — and recovers when a DIFFERENT token appears', async () => {
     vi.useFakeTimers();
     let token = 'revoked-tok';
-    mockFetch.mockImplementation(async () => ({ ok: false, headers: new Headers(), status: 401, body: null }));
+    mockFetch.mockImplementation(async () => ({
+      ok: false,
+      headers: new Headers(),
+      status: 401,
+      body: null,
+    }));
     const stateUnit = createActorStateUnit({
       baseUrl: 'http://localhost:4000',
       token: () => token,
@@ -384,7 +492,9 @@ describe('createActorStateUnit', () => {
       reconnectMs: 5_000,
     });
     let lastState = '';
-    stateUnit.state$.subscribe((s) => { lastState = s; });
+    stateUnit.state$.subscribe((s) => {
+      lastState = s;
+    });
 
     stateUnit.start();
     await vi.advanceTimersByTimeAsync(600_000); // ten minutes of a dead credential
@@ -410,7 +520,12 @@ describe('createActorStateUnit', () => {
 
   it('a downed gateway (503) is retried on a GROWING interval — and still recovers (backoff is not auth-specific)', async () => {
     vi.useFakeTimers();
-    mockFetch.mockImplementation(async () => ({ ok: false, headers: new Headers(), status: 503, body: null }));
+    mockFetch.mockImplementation(async () => ({
+      ok: false,
+      headers: new Headers(),
+      status: 503,
+      body: null,
+    }));
     const stateUnit = createActorStateUnit({
       baseUrl: 'http://localhost:4000',
       token: 'fine-tok',
@@ -418,7 +533,9 @@ describe('createActorStateUnit', () => {
       reconnectMs: 5_000,
     });
     let lastState = '';
-    stateUnit.state$.subscribe((s) => { lastState = s; });
+    stateUnit.state$.subscribe((s) => {
+      lastState = s;
+    });
 
     stateUnit.start();
     await vi.advanceTimersByTimeAsync(60_000);
@@ -451,12 +568,16 @@ describe('createActorStateUnit', () => {
     let token = 'expired-tok';
     // Mirrors the real composition: session.refresh() rotates token$ (the
     // getter's source) and returns the new token.
-    const refresher = vi.fn(async () => { token = 'fresh-tok'; return 'fresh-tok'; });
+    const refresher = vi.fn(async () => {
+      token = 'fresh-tok';
+      return 'fresh-tok';
+    });
     const sse = createSSEStream();
-    mockFetch.mockImplementation(async (_url: string, opts: { headers: Record<string, string> }) =>
-      opts.headers['Authorization'] === 'Bearer fresh-tok'
-        ? { ok: true, status: 200, body: sse.stream }
-        : { ok: false, headers: new Headers(), status: 401, body: null },
+    mockFetch.mockImplementation(
+      async (_url: string, opts: { headers: Record<string, string> }) =>
+        opts.headers['Authorization'] === 'Bearer fresh-tok'
+          ? { ok: true, status: 200, body: sse.stream }
+          : { ok: false, headers: new Headers(), status: 401, body: null },
     );
     const stateUnit = createActorStateUnit({
       baseUrl: 'http://localhost:4000',
@@ -466,7 +587,9 @@ describe('createActorStateUnit', () => {
       tokenRefresher: refresher,
     });
     let lastState = '';
-    stateUnit.state$.subscribe((s) => { lastState = s; });
+    stateUnit.state$.subscribe((s) => {
+      lastState = s;
+    });
 
     stateUnit.start();
     // Prompt: well inside one flat tick — the refresh-driven reconnect must
@@ -474,7 +597,10 @@ describe('createActorStateUnit', () => {
     await vi.advanceTimersByTimeAsync(1_000);
     expect(refresher).toHaveBeenCalledTimes(1);
     expect(mockFetch).toHaveBeenCalledTimes(2);
-    const [, retryOpts] = mockFetch.mock.calls[1] as [string, { headers: Record<string, string> }];
+    const [, retryOpts] = mockFetch.mock.calls[1] as [
+      string,
+      { headers: Record<string, string> },
+    ];
     expect(retryOpts.headers['Authorization']).toBe('Bearer fresh-tok');
     expect(lastState).toBe('open');
 
@@ -487,8 +613,15 @@ describe('createActorStateUnit', () => {
     // A refresher that THROWS (network down mid-refresh) — the defensive
     // case; session.refresh() is non-throwing, but the hook is
     // caller-supplied and the actor must not inherit an unhandled rejection.
-    const refresher = vi.fn(async () => { throw new Error('ECONNREFUSED'); });
-    mockFetch.mockImplementation(async () => ({ ok: false, headers: new Headers(), status: 401, body: null }));
+    const refresher = vi.fn(async () => {
+      throw new Error('ECONNREFUSED');
+    });
+    mockFetch.mockImplementation(async () => ({
+      ok: false,
+      headers: new Headers(),
+      status: 401,
+      body: null,
+    }));
     const stateUnit = createActorStateUnit({
       baseUrl: 'http://localhost:4000',
       token: 'revoked-tok',
@@ -497,7 +630,9 @@ describe('createActorStateUnit', () => {
       tokenRefresher: refresher,
     });
     let lastState = '';
-    stateUnit.state$.subscribe((s) => { lastState = s; });
+    stateUnit.state$.subscribe((s) => {
+      lastState = s;
+    });
 
     stateUnit.start();
     await vi.advanceTimersByTimeAsync(600_000);
@@ -512,8 +647,16 @@ describe('createActorStateUnit', () => {
   it('a refreshed token that is ALSO refused parks the actor — the refresher is not consulted again', async () => {
     vi.useFakeTimers();
     let token = 'expired-tok';
-    const refresher = vi.fn(async () => { token = 'also-bad-tok'; return 'also-bad-tok'; });
-    mockFetch.mockImplementation(async () => ({ ok: false, headers: new Headers(), status: 401, body: null }));
+    const refresher = vi.fn(async () => {
+      token = 'also-bad-tok';
+      return 'also-bad-tok';
+    });
+    mockFetch.mockImplementation(async () => ({
+      ok: false,
+      headers: new Headers(),
+      status: 401,
+      body: null,
+    }));
     const stateUnit = createActorStateUnit({
       baseUrl: 'http://localhost:4000',
       token: () => token,
@@ -522,7 +665,9 @@ describe('createActorStateUnit', () => {
       tokenRefresher: refresher,
     });
     let lastState = '';
-    stateUnit.state$.subscribe((s) => { lastState = s; });
+    stateUnit.state$.subscribe((s) => {
+      lastState = s;
+    });
 
     stateUnit.start();
     await vi.advanceTimersByTimeAsync(600_000);
@@ -537,7 +682,10 @@ describe('createActorStateUnit', () => {
   });
 
   it('emit resolves with the subscriber count from the response body', async () => {
-    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({ subscribers: 3 }) });
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ subscribers: 3 }),
+    });
 
     const stateUnit = createActorStateUnit({
       baseUrl: 'http://localhost:4000',
@@ -545,7 +693,9 @@ describe('createActorStateUnit', () => {
       channels: [],
     });
 
-    await expect(stateUnit.emit('beckon:hover', { annotationId: annotationId('a-1') })).resolves.toBe(3);
+    await expect(
+      stateUnit.emit('beckon:hover', { annotationId: annotationId('a-1') }),
+    ).resolves.toBe(3);
 
     stateUnit.dispose();
   });
@@ -555,7 +705,10 @@ describe('createActorStateUnit', () => {
     // so its BusEmitAccepted carries no `subscribers`. That is no count
     // (`undefined`; the Go client's `counted == false`), never an empty room.
     mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({}) });
-    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({ subscribers: 0 }) });
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ subscribers: 0 }),
+    });
 
     const stateUnit = createActorStateUnit({
       baseUrl: 'http://localhost:4000',
@@ -563,8 +716,12 @@ describe('createActorStateUnit', () => {
       channels: [],
     });
 
-    await expect(stateUnit.emit('beckon:hover', { annotationId: annotationId('a-1') })).resolves.toBeUndefined();
-    await expect(stateUnit.emit('beckon:hover', { annotationId: annotationId('a-2') })).resolves.toBe(0);
+    await expect(
+      stateUnit.emit('beckon:hover', { annotationId: annotationId('a-1') }),
+    ).resolves.toBeUndefined();
+    await expect(
+      stateUnit.emit('beckon:hover', { annotationId: annotationId('a-2') }),
+    ).resolves.toBe(0);
 
     stateUnit.dispose();
   });
@@ -572,7 +729,12 @@ describe('createActorStateUnit', () => {
   it('emit resolves undefined when an accepted emit has an unreadable body', async () => {
     // The emit was accepted, so rejecting would misreport it as failed; the
     // count is simply unknown.
-    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => { throw new Error('no body'); } });
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => {
+        throw new Error('no body');
+      },
+    });
 
     const stateUnit = createActorStateUnit({
       baseUrl: 'http://localhost:4000',
@@ -580,7 +742,9 @@ describe('createActorStateUnit', () => {
       channels: [],
     });
 
-    await expect(stateUnit.emit('beckon:hover', { annotationId: annotationId('a-1') })).resolves.toBeUndefined();
+    await expect(
+      stateUnit.emit('beckon:hover', { annotationId: annotationId('a-1') }),
+    ).resolves.toBeUndefined();
 
     stateUnit.dispose();
   });
@@ -605,8 +769,9 @@ describe('createActorStateUnit', () => {
       channels: [],
     });
 
-    await expect(stateUnit.emit('beckon:hover', { annotationId: annotationId('a-1') }))
-      .rejects.toThrow(/400.*Bus emit validation failed/);
+    await expect(
+      stateUnit.emit('beckon:hover', { annotationId: annotationId('a-1') }),
+    ).rejects.toThrow(/400.*Bus emit validation failed/);
 
     stateUnit.dispose();
   });
@@ -615,12 +780,24 @@ describe('createActorStateUnit', () => {
     // Rejecting a 429 on the first attempt would let one rate-limit refusal
     // fail whatever the emit is part of — a projector's boot pass, say.
     // Retry is compliance with the gateway's own instruction, not optimism.
-    mockFetch.mockResolvedValueOnce({ ok: false, headers: new Headers(), status: 429, statusText: 'Too Many Requests', text: async () => 'retry when one settles' });
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      headers: new Headers(),
+      status: 429,
+      statusText: 'Too Many Requests',
+      text: async () => 'retry when one settles',
+    });
     mockFetch.mockResolvedValueOnce({ ok: true });
 
-    const stateUnit = createActorStateUnit({ baseUrl: 'http://localhost:4000', token: 'tok', channels: [] });
+    const stateUnit = createActorStateUnit({
+      baseUrl: 'http://localhost:4000',
+      token: 'tok',
+      channels: [],
+    });
 
-    await expect(stateUnit.emit('beckon:hover', { annotationId: annotationId('a-1') })).resolves.toBeUndefined();
+    await expect(
+      stateUnit.emit('beckon:hover', { annotationId: annotationId('a-1') }),
+    ).resolves.toBeUndefined();
     expect(mockFetch).toHaveBeenCalledTimes(2);
 
     stateUnit.dispose();
@@ -631,11 +808,23 @@ describe('createActorStateUnit', () => {
     // 429 and 401 both mean "the gateway answered", and only one of them is an
     // invitation to try again. Retrying auth failures would burn the budget and
     // delay a real error reaching the caller.
-    mockFetch.mockResolvedValue({ ok: false, headers: new Headers(), status: 401, statusText: 'Unauthorized', text: async () => 'token expired' });
+    mockFetch.mockResolvedValue({
+      ok: false,
+      headers: new Headers(),
+      status: 401,
+      statusText: 'Unauthorized',
+      text: async () => 'token expired',
+    });
 
-    const stateUnit = createActorStateUnit({ baseUrl: 'http://localhost:4000', token: 'tok', channels: [] });
+    const stateUnit = createActorStateUnit({
+      baseUrl: 'http://localhost:4000',
+      token: 'tok',
+      channels: [],
+    });
 
-    await expect(stateUnit.emit('beckon:hover', { annotationId: annotationId('a-1') })).rejects.toThrow(/401/);
+    await expect(
+      stateUnit.emit('beckon:hover', { annotationId: annotationId('a-1') }),
+    ).rejects.toThrow(/401/);
     expect(mockFetch).toHaveBeenCalledTimes(1);
 
     stateUnit.dispose();
@@ -645,12 +834,23 @@ describe('createActorStateUnit', () => {
     // A predicate that recovered the status by parsing it back out of prose
     // would be a second statement of the same fact, in the fragile direction —
     // and `isRetryableRequestError` reads the field.
-    mockFetch.mockResolvedValue({ ok: false, headers: new Headers(), status: 403, statusText: 'Forbidden', text: async () => 'nope' });
+    mockFetch.mockResolvedValue({
+      ok: false,
+      headers: new Headers(),
+      status: 403,
+      statusText: 'Forbidden',
+      text: async () => 'nope',
+    });
 
-    const stateUnit = createActorStateUnit({ baseUrl: 'http://localhost:4000', token: 'tok', channels: [] });
+    const stateUnit = createActorStateUnit({
+      baseUrl: 'http://localhost:4000',
+      token: 'tok',
+      channels: [],
+    });
 
-    await expect(stateUnit.emit('beckon:hover', { annotationId: annotationId('a-1') }))
-      .rejects.toMatchObject({ name: 'APIError', status: 403 });
+    await expect(
+      stateUnit.emit('beckon:hover', { annotationId: annotationId('a-1') }),
+    ).rejects.toMatchObject({ name: 'APIError', status: 403 });
 
     stateUnit.dispose();
   });
@@ -669,7 +869,11 @@ describe('createActorStateUnit', () => {
     const unscoped = JSON.parse(mockFetch.mock.calls[0][1].body);
     expect(unscoped.scope).toBeUndefined();
 
-    await stateUnit.emit('beckon:hover', { annotationId: annotationId('a-2') }, { scope: resourceId('res-99') });
+    await stateUnit.emit(
+      'beckon:hover',
+      { annotationId: annotationId('a-2') },
+      { scope: resourceId('res-99') },
+    );
     const scoped = JSON.parse(mockFetch.mock.calls[1][1].body);
     expect(scoped.scope).toBe('res-99');
 
@@ -733,9 +937,16 @@ describe('createActorStateUnit', () => {
     // never reconnects. The double never answers and, as fetch does, rejects
     // with its signal's reason when that signal is aborted.
     vi.useFakeTimers();
-    mockFetch.mockImplementation((_url: string, opts: { signal: AbortSignal }) => new Promise((_resolve, reject) => {
-      opts.signal.addEventListener('abort', () => reject(opts.signal.reason), { once: true });
-    }));
+    mockFetch.mockImplementation(
+      (_url: string, opts: { signal: AbortSignal }) =>
+        new Promise((_resolve, reject) => {
+          opts.signal.addEventListener(
+            'abort',
+            () => reject(opts.signal.reason),
+            { once: true },
+          );
+        }),
+    );
     const stateUnit = createActorStateUnit({
       baseUrl: 'http://localhost:4000',
       token: 'tok',
@@ -763,7 +974,7 @@ describe('createActorStateUnit', () => {
     vi.useRealTimers();
   });
 
-  it('the deadline on a connect\'s answer does not reach a stream that opened, however long it carries nothing', async () => {
+  it("the deadline on a connect's answer does not reach a stream that opened, however long it carries nothing", async () => {
     vi.useFakeTimers();
     const conn = mockConn();
     const stateUnit = createActorStateUnit({
@@ -784,7 +995,7 @@ describe('createActorStateUnit', () => {
     vi.useRealTimers();
   });
 
-  it('a refused connect is reported in the gateway\'s words', async () => {
+  it("a refused connect is reported in the gateway's words", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: false,
       status: 503,
@@ -803,7 +1014,9 @@ describe('createActorStateUnit', () => {
 
     stateUnit.start();
     await vi.waitFor(() => expect(refusals).toHaveLength(1));
-    expect(refusals[0]!.message).toBe('SSE connect failed: 503: the gateway is draining');
+    expect(refusals[0]!.message).toBe(
+      'SSE connect failed: 503: the gateway is draining',
+    );
 
     stateUnit.dispose();
   });
@@ -815,16 +1028,23 @@ describe('createActorStateUnit', () => {
     // fetch's does, fails with its signal's reason when that signal is
     // aborted.
     vi.useFakeTimers();
-    mockFetch.mockImplementationOnce(async (_url: string, opts: { signal: AbortSignal }) => ({
-      ok: false,
-      status: 503,
-      statusText: 'Service Unavailable',
-      headers: new Headers(),
-      body: {},
-      text: () => new Promise((_resolve, reject) => {
-        opts.signal.addEventListener('abort', () => reject(opts.signal.reason), { once: true });
+    mockFetch.mockImplementationOnce(
+      async (_url: string, opts: { signal: AbortSignal }) => ({
+        ok: false,
+        status: 503,
+        statusText: 'Service Unavailable',
+        headers: new Headers(),
+        body: {},
+        text: () =>
+          new Promise((_resolve, reject) => {
+            opts.signal.addEventListener(
+              'abort',
+              () => reject(opts.signal.reason),
+              { once: true },
+            );
+          }),
       }),
-    }));
+    );
     const conn = mockConn();
     const stateUnit = createActorStateUnit({
       baseUrl: 'http://localhost:4000',
@@ -841,7 +1061,9 @@ describe('createActorStateUnit', () => {
     expect(refusals).toEqual([]);
 
     await vi.advanceTimersByTimeAsync(1);
-    expect(refusals).toMatchObject([{ message: 'SSE connect failed: 503', status: 503 }]);
+    expect(refusals).toMatchObject([
+      { message: 'SSE connect failed: 503', status: 503 },
+    ]);
     // The backoff's first wait is at most `RECONNECT_MS`.
     await vi.advanceTimersByTimeAsync(RECONNECT_MS);
     expect(mockFetch).toHaveBeenCalledTimes(2);
@@ -873,7 +1095,10 @@ describe('createActorStateUnit', () => {
     await vi.waitFor(() => expect(mockFetch).toHaveBeenCalled());
 
     const payload = { blob: 'x'.repeat(5000) };
-    const frame = sseChunk('bus-event', JSON.stringify({ channel: 'beckon:hover', payload }));
+    const frame = sseChunk(
+      'bus-event',
+      JSON.stringify({ channel: 'beckon:hover', payload }),
+    );
 
     // Split the frame into three chunks at points that fall inside the
     // data line and before the terminating "\n\n".
@@ -911,22 +1136,37 @@ describe('createActorStateUnit', () => {
     await vi.waitFor(() => expect(mockFetch).toHaveBeenCalled());
 
     const payload = { blob: 'y'.repeat(50_000) };
-    const frame = sseChunk('bus-event', JSON.stringify({ channel: 'beckon:hover', payload }));
+    const frame = sseChunk(
+      'bus-event',
+      JSON.stringify({ channel: 'beckon:hover', payload }),
+    );
     // Many small slices; 599 is coprime with the frame length's structure,
     // so cuts land mid-line, on header boundaries, and inside the trailer.
     for (let i = 0; i < frame.length; i += 599) {
       sse.push(frame.slice(i, i + 599));
     }
     // A boundary exactly on the newline that terminates the data line.
-    const two = sseChunk('bus-event', JSON.stringify({ channel: 'beckon:hover', payload: { n: 1 } }));
+    const two = sseChunk(
+      'bus-event',
+      JSON.stringify({ channel: 'beckon:hover', payload: { n: 1 } }),
+    );
     const cut = two.indexOf('\n', two.indexOf('data: ')) + 1;
     sse.push(two.slice(0, cut));
     sse.push(two.slice(cut));
     // Two complete events plus the head of a third in one read; the tail
     // of the third arrives separately.
-    const third = sseChunk('bus-event', JSON.stringify({ channel: 'beckon:hover', payload: { n: 2 } }));
-    const fourth = sseChunk('bus-event', JSON.stringify({ channel: 'beckon:hover', payload: { n: 3 } }));
-    const fifth = sseChunk('bus-event', JSON.stringify({ channel: 'beckon:hover', payload: { n: 4 } }));
+    const third = sseChunk(
+      'bus-event',
+      JSON.stringify({ channel: 'beckon:hover', payload: { n: 2 } }),
+    );
+    const fourth = sseChunk(
+      'bus-event',
+      JSON.stringify({ channel: 'beckon:hover', payload: { n: 3 } }),
+    );
+    const fifth = sseChunk(
+      'bus-event',
+      JSON.stringify({ channel: 'beckon:hover', payload: { n: 4 } }),
+    );
     sse.push(third + fourth + fifth.slice(0, 10));
     sse.push(fifth.slice(10));
 
@@ -976,7 +1216,12 @@ describe('createActorStateUnit', () => {
     await vi.waitFor(() => expect(mockFetch).toHaveBeenCalled());
 
     sse.push(sseChunk('ping', ''));
-    sse.push(sseChunk('bus-event', JSON.stringify({ channel: 'beckon:hover', payload: { n: 1 } })));
+    sse.push(
+      sseChunk(
+        'bus-event',
+        JSON.stringify({ channel: 'beckon:hover', payload: { n: 1 } }),
+      ),
+    );
 
     await vi.waitFor(() => expect(results).toHaveLength(1));
     expect(results).toEqual([{ n: 1 }]);
@@ -1064,7 +1309,13 @@ describe('createActorStateUnit', () => {
     const before = states.length;
 
     // The handoff's connect is refused; the next one opens.
-    mockFetch.mockResolvedValueOnce({ ok: false, status: 503, statusText: 'Service Unavailable', headers: new Headers(), body: null });
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 503,
+      statusText: 'Service Unavailable',
+      headers: new Headers(),
+      body: null,
+    });
     mockSSEResponse();
     stateUnit.addChannels(['mark:added'], resourceId('res-1'));
     await vi.waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(3));
@@ -1073,7 +1324,9 @@ describe('createActorStateUnit', () => {
     expect(failures).toMatchObject([{ status: 503 }]);
     expect(states.slice(before)).toEqual([]);
     // The retry carried the changed subscription.
-    expect(JSON.parse(mockFetch.mock.calls[2]![1].body).scoped).toEqual([{ scope: 'res-1', channels: ['mark:added'] }]);
+    expect(JSON.parse(mockFetch.mock.calls[2]![1].body).scoped).toEqual([
+      { scope: 'res-1', channels: ['mark:added'] },
+    ]);
 
     stateUnit.dispose();
   });
@@ -1096,11 +1349,19 @@ describe('createActorStateUnit', () => {
     stateUnit.addChannels(['mark:added'], resourceId('res-1'));
     await vi.waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(2));
     sse1.close();
-    await vi.waitFor(() => expect(states.slice(before)).toEqual(['reconnecting', 'connecting']));
+    await vi.waitFor(() =>
+      expect(states.slice(before)).toEqual(['reconnecting', 'connecting']),
+    );
 
     // No retry is owed, with reconnectMs far off: the connect in flight opens the stream.
     c2.open();
-    await vi.waitFor(() => expect(states.slice(before)).toEqual(['reconnecting', 'connecting', 'open']));
+    await vi.waitFor(() =>
+      expect(states.slice(before)).toEqual([
+        'reconnecting',
+        'connecting',
+        'open',
+      ]),
+    );
     expect(mockFetch).toHaveBeenCalledTimes(2);
 
     stateUnit.dispose();
@@ -1152,93 +1413,107 @@ describe('createActorStateUnit', () => {
     stateUnit.dispose();
   });
 
-  it('enters `degraded` after staying in `reconnecting` past the threshold', { timeout: 10_000 }, async () => {
-    // Uses real timers: fake-timer interaction with ReadableStream and
-    // fetch mocks is fragile enough (the stream close propagates via a
-    // real microtask) that a 3-ish-second real-time wait is the cleanest
-    // way to exercise the degraded timer.
-    const sse = mockSSEResponse();
+  it(
+    'enters `degraded` after staying in `reconnecting` past the threshold',
+    { timeout: 10_000 },
+    async () => {
+      // Uses real timers: fake-timer interaction with ReadableStream and
+      // fetch mocks is fragile enough (the stream close propagates via a
+      // real microtask) that a 3-ish-second real-time wait is the cleanest
+      // way to exercise the degraded timer.
+      const sse = mockSSEResponse();
 
-    const stateUnit = createActorStateUnit({
-      baseUrl: 'http://localhost:4000',
-      token: 'tok',
-      channels: ['beckon:hover'],
-      // Long enough that the retry timer doesn't fire during the wait;
-      // we want to stay in `reconnecting`.
-      reconnectMs: 10_000,
-    });
+      const stateUnit = createActorStateUnit({
+        baseUrl: 'http://localhost:4000',
+        token: 'tok',
+        channels: ['beckon:hover'],
+        // Long enough that the retry timer doesn't fire during the wait;
+        // we want to stay in `reconnecting`.
+        reconnectMs: 10_000,
+      });
 
-    const states: string[] = [];
-    stateUnit.state$.subscribe((s) => states.push(s));
+      const states: string[] = [];
+      stateUnit.state$.subscribe((s) => states.push(s));
 
-    stateUnit.start();
-    await vi.waitFor(() => expect(states).toContain('open'));
-
-    // Close the stream → reader.read returns done, while loop exits,
-    // transition to `reconnecting`.
-    sse.close();
-    await vi.waitFor(() => expect(states).toContain('reconnecting'));
-
-    // Wait ~3 real seconds for the degraded timer to fire.
-    await new Promise((r) => setTimeout(r, 3_100));
-    expect(states).toContain('degraded');
-
-    stateUnit.dispose();
-  });
-
-  it('recovers (does not crash) when a channel-set change fires while degraded', { timeout: 12_000 }, async () => {
-    // A channel-set change while `degraded` schedules a reconnect. A
-    // `transition()` that threw on an edge the state machine rejects would
-    // throw from inside the reconnect timer, an uncaught exception that kills
-    // the host process. With no stream live, the change's connect is the
-    // recovery: `degraded → connecting → open`.
-    const sse1 = mockSSEResponse();
-    mockSSEResponse(); // for the recovery reconnect
-
-    const stateUnit = createActorStateUnit({
-      baseUrl: 'http://localhost:4000',
-      token: 'tok',
-      channels: ['beckon:hover'],
-      // Long, so the retry timer doesn't fire during the wait — we want to
-      // sit in `reconnecting` long enough to cross the degraded threshold.
-      reconnectMs: 10_000,
-    });
-
-    const states: string[] = [];
-    stateUnit.state$.subscribe((s) => states.push(s));
-
-    // A listener keeps an uncaught throw from the reconnect timer from
-    // tearing down the test worker, and lets us assert it didn't happen.
-    const uncaught: Error[] = [];
-    const onUncaught = (e: Error) => uncaught.push(e);
-    process.on('uncaughtException', onUncaught);
-
-    try {
       stateUnit.start();
       await vi.waitFor(() => expect(states).toContain('open'));
 
-      // Drop the stream → reconnecting, then wait past the degraded threshold.
-      sse1.close();
+      // Close the stream → reader.read returns done, while loop exits,
+      // transition to `reconnecting`.
+      sse.close();
       await vi.waitFor(() => expect(states).toContain('reconnecting'));
+
+      // Wait ~3 real seconds for the degraded timer to fire.
       await new Promise((r) => setTimeout(r, 3_100));
       expect(states).toContain('degraded');
 
-      const fetchesBefore = mockFetch.mock.calls.length;
-
-      // Channel-set change while degraded → schedules a reconnect.
-      stateUnit.addChannels(['mark:added'], resourceId('res-1'));
-
-      // Must attempt a reconnect (new fetch) and head back to `open`, by the
-      // one edge that leaves `degraded` for a connect.
-      await vi.waitFor(() => expect(states[states.length - 1]).toBe('open'), { timeout: 3_000 });
-      expect(states.slice(states.indexOf('degraded'))).toEqual(['degraded', 'connecting', 'open']);
-      expect(mockFetch.mock.calls.length).toBeGreaterThan(fetchesBefore);
-      expect(uncaught.map((e) => e.message)).toEqual([]);
-    } finally {
-      process.off('uncaughtException', onUncaught);
       stateUnit.dispose();
-    }
-  });
+    },
+  );
+
+  it(
+    'recovers (does not crash) when a channel-set change fires while degraded',
+    { timeout: 12_000 },
+    async () => {
+      // A channel-set change while `degraded` schedules a reconnect. A
+      // `transition()` that threw on an edge the state machine rejects would
+      // throw from inside the reconnect timer, an uncaught exception that kills
+      // the host process. With no stream live, the change's connect is the
+      // recovery: `degraded → connecting → open`.
+      const sse1 = mockSSEResponse();
+      mockSSEResponse(); // for the recovery reconnect
+
+      const stateUnit = createActorStateUnit({
+        baseUrl: 'http://localhost:4000',
+        token: 'tok',
+        channels: ['beckon:hover'],
+        // Long, so the retry timer doesn't fire during the wait — we want to
+        // sit in `reconnecting` long enough to cross the degraded threshold.
+        reconnectMs: 10_000,
+      });
+
+      const states: string[] = [];
+      stateUnit.state$.subscribe((s) => states.push(s));
+
+      // A listener keeps an uncaught throw from the reconnect timer from
+      // tearing down the test worker, and lets us assert it didn't happen.
+      const uncaught: Error[] = [];
+      const onUncaught = (e: Error) => uncaught.push(e);
+      process.on('uncaughtException', onUncaught);
+
+      try {
+        stateUnit.start();
+        await vi.waitFor(() => expect(states).toContain('open'));
+
+        // Drop the stream → reconnecting, then wait past the degraded threshold.
+        sse1.close();
+        await vi.waitFor(() => expect(states).toContain('reconnecting'));
+        await new Promise((r) => setTimeout(r, 3_100));
+        expect(states).toContain('degraded');
+
+        const fetchesBefore = mockFetch.mock.calls.length;
+
+        // Channel-set change while degraded → schedules a reconnect.
+        stateUnit.addChannels(['mark:added'], resourceId('res-1'));
+
+        // Must attempt a reconnect (new fetch) and head back to `open`, by the
+        // one edge that leaves `degraded` for a connect.
+        await vi.waitFor(() => expect(states[states.length - 1]).toBe('open'), {
+          timeout: 3_000,
+        });
+        expect(states.slice(states.indexOf('degraded'))).toEqual([
+          'degraded',
+          'connecting',
+          'open',
+        ]);
+        expect(mockFetch.mock.calls.length).toBeGreaterThan(fetchesBefore);
+        expect(uncaught.map((e) => e.message)).toEqual([]);
+      } finally {
+        process.off('uncaughtException', onUncaught);
+        stateUnit.dispose();
+      }
+    },
+  );
 
   it('stop() after stop(), and dispose() after that, do not throw', async () => {
     // The state machine is internal; the public API is stop()/dispose().
@@ -1285,7 +1560,11 @@ describe('createActorStateUnit', () => {
 
     sse.push(
       'event: bus-event\nid: p-res-1-48\ndata: ' +
-        JSON.stringify({ channel: 'mark:added', payload: { foo: 'bar' }, scope: 'res-1' }) +
+        JSON.stringify({
+          channel: 'mark:added',
+          payload: { foo: 'bar' },
+          scope: 'res-1',
+        }) +
         '\n\n',
     );
 
@@ -1386,10 +1665,15 @@ describe('createActorStateUnit', () => {
     await vi.waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(2));
 
     // New connection still connecting; the result arrives on the live old one.
-    c1.sse.push(sseChunk('bus-event', JSON.stringify({
-      channel: 'browse:events-result',
-      payload: { correlationId: 'x', events: [] },
-    })));
+    c1.sse.push(
+      sseChunk(
+        'bus-event',
+        JSON.stringify({
+          channel: 'browse:events-result',
+          payload: { correlationId: 'x', events: [] },
+        }),
+      ),
+    );
 
     await vi.waitFor(() => expect(received).toHaveLength(1));
     expect(received[0]).toEqual({ correlationId: 'x', events: [] });
@@ -1416,7 +1700,9 @@ describe('createActorStateUnit', () => {
       channels: ['browse:resource-result'],
     });
     const received: unknown[] = [];
-    stateUnit.stream('browse:resource-result').subscribe((p) => received.push(p));
+    stateUnit
+      .stream('browse:resource-result')
+      .subscribe((p) => received.push(p));
     stateUnit.start();
     await vi.waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(1));
 
@@ -1430,11 +1716,16 @@ describe('createActorStateUnit', () => {
 
     // A correlated reply the gateway wrote to the old socket around the
     // handover arrives on the OLD connection — it must still be delivered.
-    c1.sse.push(sseChunkId(
-      'bus-event',
-      JSON.stringify({ channel: 'browse:resource-result', payload: { correlationId: 'c-lost', response: {} } }),
-      'e-browse:resource-result:c-lost',
-    ));
+    c1.sse.push(
+      sseChunkId(
+        'bus-event',
+        JSON.stringify({
+          channel: 'browse:resource-result',
+          payload: { correlationId: 'c-lost', response: {} },
+        }),
+        'e-browse:resource-result:c-lost',
+      ),
+    );
 
     await vi.waitFor(() => expect(received).toHaveLength(1));
     expect(received[0]).toMatchObject({ correlationId: 'c-lost' });
@@ -1454,7 +1745,9 @@ describe('createActorStateUnit', () => {
       channels: ['browse:resource-result'],
     });
     const received: unknown[] = [];
-    stateUnit.stream('browse:resource-result').subscribe((p) => received.push(p));
+    stateUnit
+      .stream('browse:resource-result')
+      .subscribe((p) => received.push(p));
     stateUnit.start();
     await vi.waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(1));
 
@@ -1466,7 +1759,10 @@ describe('createActorStateUnit', () => {
 
     const frame = sseChunkId(
       'bus-event',
-      JSON.stringify({ channel: 'browse:resource-result', payload: { correlationId: 'c-dup', response: {} } }),
+      JSON.stringify({
+        channel: 'browse:resource-result',
+        payload: { correlationId: 'c-dup', response: {} },
+      }),
       'e-browse:resource-result:c-dup',
     );
     c1.sse.push(frame);
@@ -1589,7 +1885,12 @@ describe('ActorStateUnit — StateUnit axioms', () => {
     // exercised by the suite above. Here we pin the lifecycle contract on the owned
     // `state$` (A5/A6/inert). `events$` is internal (reached via stream()), not a field.
     assertStateUnitAxioms<ActorStateUnit>({
-      setup: () => createActorStateUnit({ baseUrl: 'http://localhost:4000', token: 'tok', channels: ['gather:requested'] }),
+      setup: () =>
+        createActorStateUnit({
+          baseUrl: 'http://localhost:4000',
+          token: 'tok',
+          channels: ['gather:requested'],
+        }),
       surfaces: (u) => [u.state$],
     });
   });
@@ -1609,7 +1910,9 @@ describe('multi-scope subscription matrix', () => {
     clientId: string;
   };
   const bodyOf = (callIndex: number): MatrixBody =>
-    JSON.parse((mockFetch.mock.calls[callIndex]![1] as { body: string }).body) as MatrixBody;
+    JSON.parse(
+      (mockFetch.mock.calls[callIndex]![1] as { body: string }).body,
+    ) as MatrixBody;
 
   it('connects via POST with the subscription matrix body (no query params, no Last-Event-ID header)', async () => {
     mockSSEResponse();
@@ -1621,7 +1924,10 @@ describe('multi-scope subscription matrix', () => {
     su.start();
     await vi.waitFor(() => expect(mockFetch).toHaveBeenCalled());
 
-    const [url, opts] = mockFetch.mock.calls[0] as [string, { method?: string; body?: string; headers: Record<string, string> }];
+    const [url, opts] = mockFetch.mock.calls[0] as [
+      string,
+      { method?: string; body?: string; headers: Record<string, string> },
+    ];
     expect(url).toBe('http://localhost:4000/bus/subscribe');
     expect(opts.method).toBe('POST');
     expect(JSON.parse(opts.body!)).toEqual({
@@ -1689,9 +1995,13 @@ describe('multi-scope subscription matrix', () => {
     await new Promise((r) => setTimeout(r, 150));
     expect(mockFetch).toHaveBeenCalledTimes(2);
     // The lazy window elapses — now the reconnect fires, without res-A.
-    await vi.waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(3), { timeout: 1000 });
+    await vi.waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(3), {
+      timeout: 1000,
+    });
     const body = bodyOf(2);
-    expect(body.scoped).toEqual([expect.objectContaining({ scope: 'res-B', channels: ['mark:added'] })]);
+    expect(body.scoped).toEqual([
+      expect.objectContaining({ scope: 'res-B', channels: ['mark:added'] }),
+    ]);
 
     su.dispose();
   });
@@ -1737,16 +2047,24 @@ describe('multi-scope subscription matrix', () => {
     su.addChannels(['mark:added'], resourceId('res-A'));
     await vi.waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(2));
 
-    sse2.push(sseChunkId(
-      'bus-event',
-      JSON.stringify({ channel: 'mark:added', payload: { seq: 5 }, scope: 'res-A' }),
-      'p-res-A-5',
-    ));
-    sse2.push(sseChunkId(
-      'bus-event',
-      JSON.stringify({ channel: 'mark:added', payload: {}, scope: 'res-A' }),
-      'e-conn-9',
-    ));
+    sse2.push(
+      sseChunkId(
+        'bus-event',
+        JSON.stringify({
+          channel: 'mark:added',
+          payload: { seq: 5 },
+          scope: 'res-A',
+        }),
+        'p-res-A-5',
+      ),
+    );
+    sse2.push(
+      sseChunkId(
+        'bus-event',
+        JSON.stringify({ channel: 'mark:added', payload: {}, scope: 'res-A' }),
+        'e-conn-9',
+      ),
+    );
     await new Promise((r) => setTimeout(r, 20));
 
     mockSSEResponse();
@@ -1798,25 +2116,37 @@ describe('multi-scope subscription matrix', () => {
     const sse2 = mockSSEResponse();
     su.addChannels(['mark:added'], resourceId('res-A'));
     await vi.waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(2));
-    sse2.push(sseChunkId(
-      'bus-event',
-      JSON.stringify({ channel: 'mark:added', payload: { seq: 5 }, scope: 'res-A' }),
-      'p-res-A-5',
-    ));
+    sse2.push(
+      sseChunkId(
+        'bus-event',
+        JSON.stringify({
+          channel: 'mark:added',
+          payload: { seq: 5 },
+          scope: 'res-A',
+        }),
+        'p-res-A-5',
+      ),
+    );
     await new Promise((r) => setTimeout(r, 20));
 
     // res-A has a place of its own, delivered on this stream; res-B has none.
-    su.restoreLastEventIds(new Map([
-      [resourceId('res-A'), 'p-res-A-1'],
-      [resourceId('res-B'), 'p-res-B-7'],
-    ]));
+    su.restoreLastEventIds(
+      new Map([
+        [resourceId('res-A'), 'p-res-A-1'],
+        [resourceId('res-B'), 'p-res-B-7'],
+      ]),
+    );
     mockSSEResponse();
     su.addChannels(['mark:added'], resourceId('res-B'));
     await vi.waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(3));
 
     const body = bodyOf(2);
-    expect(body.scoped.find((s) => s.scope === 'res-A')?.lastEventId).toBe('p-res-A-5');
-    expect(body.scoped.find((s) => s.scope === 'res-B')?.lastEventId).toBe('p-res-B-7');
+    expect(body.scoped.find((s) => s.scope === 'res-A')?.lastEventId).toBe(
+      'p-res-A-5',
+    );
+    expect(body.scoped.find((s) => s.scope === 'res-B')?.lastEventId).toBe(
+      'p-res-B-7',
+    );
 
     su.dispose();
   });
@@ -1839,14 +2169,20 @@ describe('multi-scope subscription matrix', () => {
     mockSSEResponse();
     su.addChannels(['mark:added'], resourceId('res-A')); // trigger a reconnect
     await vi.waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(2));
-    expect((bodyOf(1) as unknown as { pendingReplies: string[] }).pendingReplies.sort()).toEqual(['cid-1', 'cid-2']);
+    expect(
+      (
+        bodyOf(1) as unknown as { pendingReplies: string[] }
+      ).pendingReplies.sort(),
+    ).toEqual(['cid-1', 'cid-2']);
 
     release();
     release(); // idempotent — must not touch cid-2
     mockSSEResponse();
     su.addChannels(['mark:added'], resourceId('res-B'));
     await vi.waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(3));
-    expect((bodyOf(2) as unknown as { pendingReplies: string[] }).pendingReplies).toEqual(['cid-2']);
+    expect(
+      (bodyOf(2) as unknown as { pendingReplies: string[] }).pendingReplies,
+    ).toEqual(['cid-2']);
 
     su.dispose();
   });
@@ -1863,16 +2199,24 @@ describe('multi-scope subscription matrix', () => {
     su.start();
     await vi.waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(1));
 
-    sse.push(sseChunkId(
-      'bus-event',
-      JSON.stringify({ channel: 'mark:added', payload: { seq: 7 }, scope: 'res-A' }),
-      'p-res-A-7',
-    ));
-    sse.push(sseChunkId(
-      'bus-event',
-      JSON.stringify({ channel: 'mark:added', payload: {}, scope: 'res-A' }),
-      'e-conn-3',
-    ));
+    sse.push(
+      sseChunkId(
+        'bus-event',
+        JSON.stringify({
+          channel: 'mark:added',
+          payload: { seq: 7 },
+          scope: 'res-A',
+        }),
+        'p-res-A-7',
+      ),
+    );
+    sse.push(
+      sseChunkId(
+        'bus-event',
+        JSON.stringify({ channel: 'mark:added', payload: {}, scope: 'res-A' }),
+        'e-conn-3',
+      ),
+    );
 
     await vi.waitFor(() => expect(saved.length).toBeGreaterThan(0));
     expect(saved).toEqual([['res-A', 'p-res-A-7']]);
@@ -1885,11 +2229,16 @@ describe('multi-scope subscription matrix', () => {
   // reconnect must present the same address, or the claim the gateway
   // recorded at emit stops matching the connection that carries the reply.
 
-  const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+  const UUID_V4 =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 
   it('subscribes with a UUIDv4 clientId', async () => {
     mockSSEResponse();
-    const su = createActorStateUnit({ baseUrl: 'http://localhost:4000', token: 'tok', channels: ['global:ch'] });
+    const su = createActorStateUnit({
+      baseUrl: 'http://localhost:4000',
+      token: 'tok',
+      channels: ['global:ch'],
+    });
     su.start();
     await vi.waitFor(() => expect(mockFetch).toHaveBeenCalled());
 
@@ -1899,7 +2248,11 @@ describe('multi-scope subscription matrix', () => {
 
   it('presents the SAME clientId across a reconnect — per actor, not per connection', async () => {
     mockSSEResponse();
-    const su = createActorStateUnit({ baseUrl: 'http://localhost:4000', token: 'tok', channels: ['global:ch'] });
+    const su = createActorStateUnit({
+      baseUrl: 'http://localhost:4000',
+      token: 'tok',
+      channels: ['global:ch'],
+    });
     su.start();
     await vi.waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(1));
 
@@ -1917,10 +2270,18 @@ describe('multi-scope subscription matrix', () => {
 
   it('two actors are two addresses', async () => {
     mockSSEResponse();
-    const a = createActorStateUnit({ baseUrl: 'http://localhost:4000', token: 'tok', channels: ['global:ch'] });
+    const a = createActorStateUnit({
+      baseUrl: 'http://localhost:4000',
+      token: 'tok',
+      channels: ['global:ch'],
+    });
     a.start();
     await vi.waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(1));
-    const b = createActorStateUnit({ baseUrl: 'http://localhost:4000', token: 'tok', channels: ['global:ch'] });
+    const b = createActorStateUnit({
+      baseUrl: 'http://localhost:4000',
+      token: 'tok',
+      channels: ['global:ch'],
+    });
     b.start();
     await vi.waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(2));
 
@@ -1931,20 +2292,27 @@ describe('multi-scope subscription matrix', () => {
 
   it('emit carries the same clientId, TOP-LEVEL — a wire field like scope, never inside payload', async () => {
     mockSSEResponse();
-    const su = createActorStateUnit({ baseUrl: 'http://localhost:4000', token: 'tok', channels: ['global:ch'] });
+    const su = createActorStateUnit({
+      baseUrl: 'http://localhost:4000',
+      token: 'tok',
+      channels: ['global:ch'],
+    });
     su.start();
     await vi.waitFor(() => expect(mockFetch).toHaveBeenCalledTimes(1));
     const subscribed = bodyOf(0).clientId;
 
-    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => ({ subscribers: 1 }) });
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ subscribers: 1 }),
+    });
     await su.emit('beckon:hover', { annotationId: annotationId('a-1') });
 
-    const emitBody = JSON.parse((mockFetch.mock.calls[1]![1] as { body: string }).body) as
-      { clientId?: string; payload: Record<string, unknown> };
+    const emitBody = JSON.parse(
+      (mockFetch.mock.calls[1]![1] as { body: string }).body,
+    ) as { clientId?: string; payload: Record<string, unknown> };
     expect(subscribed).toMatch(UUID_V4);
     expect(emitBody.clientId).toBe(subscribed);
     expect(emitBody.payload).not.toHaveProperty('clientId');
     su.dispose();
   });
-
 });

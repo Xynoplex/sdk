@@ -27,7 +27,8 @@ export class KeptForFirstReader<T> {
       return;
     }
     this.#kept.push(value);
-    if (this.#kept.length > ERRORS_KEPT_FOR_FIRST_READER_COUNT) this.#kept.shift();
+    if (this.#kept.length > ERRORS_KEPT_FOR_FIRST_READER_COUNT)
+      this.#kept.shift();
   }
 
   /** End the stream for every reader, dropping what was kept for a first who has not come. */

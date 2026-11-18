@@ -7,7 +7,11 @@
 
 import type { EventName } from './bus-protocol';
 import { BUS_OPERATIONS } from './bus-operations';
-import { BRIDGED_BROADCASTS, RESOURCE_SCOPED_CHANNELS, type ResourceScopedChannel } from './bridged-channels';
+import {
+  BRIDGED_BROADCASTS,
+  RESOURCE_SCOPED_CHANNELS,
+  type ResourceScopedChannel,
+} from './bridged-channels';
 
 // Every operation's result + failure channel bridges, by construction. Type and runtime are derived from the same `BUS_OPERATIONS`.
 
@@ -21,12 +25,12 @@ type RegistryReply = OpSpecs['result'] | OpSpecs['failure'];
 // array is `BridgedChannel[]` with no narrowing assertion. The runtime proof
 // that this derived set is exactly the intended one is the equality test in
 // __tests__/bus-invariants.test.ts.
-const REGISTRY_REPLIES = (Object.keys(BUS_OPERATIONS) as (keyof typeof BUS_OPERATIONS)[]).flatMap(
-  (key) => {
-    const op = BUS_OPERATIONS[key];
-    return [op.result, op.failure];
-  },
-);
+const REGISTRY_REPLIES = (
+  Object.keys(BUS_OPERATIONS) as (keyof typeof BUS_OPERATIONS)[]
+).flatMap((key) => {
+  const op = BUS_OPERATIONS[key];
+  return [op.result, op.failure];
+});
 
 /**
  * BRIDGED_CHANNELS
@@ -59,11 +63,14 @@ export const BRIDGED_CHANNELS: readonly BridgedChannel[] = [
  * over a concrete transport. See the family note on `EventName` in
  * bus-protocol.ts (emit on an `EmittableChannel`, subscribe on a `BridgedChannel`).
  */
-export type BridgedChannel = RegistryReply | (typeof BRIDGED_BROADCASTS)[number];
+export type BridgedChannel =
+  RegistryReply | (typeof BRIDGED_BROADCASTS)[number];
 
 const SCOPED: ReadonlySet<EventName> = new Set(RESOURCE_SCOPED_CHANNELS);
 
 /** Whether `channel` is delivered on a resource's scope. */
-export function isResourceScopedChannel(channel: EventName): channel is ResourceScopedChannel {
+export function isResourceScopedChannel(
+  channel: EventName,
+): channel is ResourceScopedChannel {
   return SCOPED.has(channel);
 }

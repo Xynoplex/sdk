@@ -17,7 +17,11 @@ function PdfViewerLoading() {
   return <>{t('viewerLoading')}</>;
 }
 
-const PdfAnnotationCanvas = lazy(() => import('../pdf-annotation/PdfAnnotationCanvas.client').then(mod => ({ default: mod.PdfAnnotationCanvas })));
+const PdfAnnotationCanvas = lazy(() =>
+  import('../pdf-annotation/PdfAnnotationCanvas.client').then((mod) => ({
+    default: mod.PdfAnnotationCanvas,
+  })),
+);
 
 /**
  * Common props for a read-only ("browse") media renderer. `content` is decoded
@@ -43,9 +47,15 @@ export interface MediaRendererProps {
 }
 
 /** Read-only media dispatch, keyed by the registry render mode. */
-export type BrowseMediaRenderers = Partial<Record<string, ComponentType<MediaRendererProps>>>;
+export type BrowseMediaRenderers = Partial<
+  Record<string, ComponentType<MediaRendererProps>>
+>;
 
-const MemoizedMarkdown = memo(function MemoizedMarkdown({ content }: { content: string }) {
+const MemoizedMarkdown = memo(function MemoizedMarkdown({
+  content,
+}: {
+  content: string;
+}) {
   // No annotation plugins: annotations are applied as a DOM overlay after paint.
   return <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>;
 });
@@ -54,7 +64,13 @@ export function TextBrowseRenderer({ content }: MediaRendererProps) {
   return <MemoizedMarkdown content={content} />;
 }
 
-export function ImageBrowseRenderer({ content, resourceUri, annotations, session, zoom = 1 }: MediaRendererProps) {
+export function ImageBrowseRenderer({
+  content,
+  resourceUri,
+  annotations,
+  session,
+  zoom = 1,
+}: MediaRendererProps) {
   // The annotate-mode canvas, read-only (drawingMode=null): paints SvgSelector
   // shapes over the image and routes click/hover via the session — the same
   // shapes browse mode silently dropped when this was a bare ImageViewer.
@@ -71,9 +87,22 @@ export function ImageBrowseRenderer({ content, resourceUri, annotations, session
   );
 }
 
-export function PdfBrowseRenderer({ content, resourceUri, annotations, session, zoom = 1, ownsScrollport = true }: MediaRendererProps) {
+export function PdfBrowseRenderer({
+  content,
+  resourceUri,
+  annotations,
+  session,
+  zoom = 1,
+  ownsScrollport = true,
+}: MediaRendererProps) {
   return (
-    <Suspense fallback={<div className="xynolog-browse-view__loading"><PdfViewerLoading /></div>}>
+    <Suspense
+      fallback={
+        <div className="xynolog-browse-view__loading">
+          <PdfViewerLoading />
+        </div>
+      }
+    >
       <PdfAnnotationCanvas
         pdfUrl={content}
         resourceUri={resourceUri}
@@ -94,7 +123,10 @@ export function PdfBrowseRenderer({ content, resourceUri, annotations, session, 
  * override on top of these, so a host can swap one renderer (e.g. its own PDF
  * viewer) or add a mode without forking the view.
  */
-export const defaultBrowseRenderers: Record<'text' | 'image' | 'pdf', ComponentType<MediaRendererProps>> = {
+export const defaultBrowseRenderers: Record<
+  'text' | 'image' | 'pdf',
+  ComponentType<MediaRendererProps>
+> = {
   text: TextBrowseRenderer,
   image: ImageBrowseRenderer,
   pdf: PdfBrowseRenderer,

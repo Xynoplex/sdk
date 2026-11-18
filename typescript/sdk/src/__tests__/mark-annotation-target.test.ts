@@ -38,8 +38,11 @@ function makeTransport() {
     // compile error rather than something a cast on the transport hides.
     // A push verb, not a handle: `on` is read-only by design, and the write
     // path is `emit`.
-    push: <K extends keyof EventMap>(channel: K, payload: EventMap[K], correlationId?: string) =>
-      bus.emit(channel, payload, { correlationId }),
+    push: <K extends keyof EventMap>(
+      channel: K,
+      payload: EventMap[K],
+      correlationId?: string,
+    ) => bus.emit(channel, payload, { correlationId }),
     getLastChannel: () => lastChannel,
     getLastPayload: () => lastPayload,
     getLastCorrelationId: () => lastCorrelationId,
@@ -57,7 +60,8 @@ describe('mark.annotation — selector-less (whole-resource) target', () => {
   }
 
   it('forwards a source-only target (a resource edge) with NO selector and resolves', async () => {
-    const { mark, push, getLastChannel, getLastPayload, getLastCorrelationId } = makeMark();
+    const { mark, push, getLastChannel, getLastPayload, getLastCorrelationId } =
+      makeMark();
     // Claim→Source edge: the target is the whole claim resource (no selector);
     // the body is a SpecificResource pointing at the source resource.
     const input: CreateAnnotationInput = {
@@ -75,9 +79,16 @@ describe('mark.annotation — selector-less (whole-resource) target', () => {
     const req = payload.request as CreateAnnotationInput;
     expect(req.target.source).toBe('res-claim-1');
     expect(req.target.selector).toBeUndefined(); // ← the pin: no selector injected or required
-    expect(req.body).toEqual({ type: 'SpecificResource', source: 'res-source-1' });
+    expect(req.body).toEqual({
+      type: 'SpecificResource',
+      source: 'res-source-1',
+    });
 
-    push('mark:create-ok', { response: { annotationId: annotationId('ann-1') } }, getLastCorrelationId());
+    push(
+      'mark:create-ok',
+      { response: { annotationId: annotationId('ann-1') } },
+      getLastCorrelationId(),
+    );
 
     expect(await promise).toEqual({ annotationId: 'ann-1' });
   });
@@ -86,7 +97,10 @@ describe('mark.annotation — selector-less (whole-resource) target', () => {
     const { mark, push, getLastPayload, getLastCorrelationId } = makeMark();
     const input: CreateAnnotationInput = {
       motivation: 'commenting',
-      target: { source: resourceId('res-doc-1'), selector: { type: 'TextPositionSelector', start: 0, end: 10 } },
+      target: {
+        source: resourceId('res-doc-1'),
+        selector: { type: 'TextPositionSelector', start: 0, end: 10 },
+      },
       body: { type: 'TextualBody', value: 'note' },
     };
 
@@ -94,9 +108,17 @@ describe('mark.annotation — selector-less (whole-resource) target', () => {
     await Promise.resolve();
 
     const req = getLastPayload()!.request as CreateAnnotationInput;
-    expect(req.target.selector).toEqual({ type: 'TextPositionSelector', start: 0, end: 10 });
+    expect(req.target.selector).toEqual({
+      type: 'TextPositionSelector',
+      start: 0,
+      end: 10,
+    });
 
-    push('mark:create-ok', { response: { annotationId: annotationId('ann-2') } }, getLastCorrelationId());
+    push(
+      'mark:create-ok',
+      { response: { annotationId: annotationId('ann-2') } },
+      getLastCorrelationId(),
+    );
     await promise;
   });
 });

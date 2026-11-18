@@ -32,7 +32,11 @@ const provenanceRef = (id: string, newResourceId: string): Annotation => ({
   created: '2026-08-21T12:00:00Z',
   modified: '2026-08-21T12:00:00Z',
   target: { source: makeResourceId('res-src') },
-  body: { type: 'SpecificResource', source: makeResourceId(newResourceId), purpose: 'linking' },
+  body: {
+    type: 'SpecificResource',
+    source: makeResourceId(newResourceId),
+    purpose: 'linking',
+  },
 });
 
 type HookProps = { outcome: YieldJobDone | null; annotations: Annotation[] };
@@ -40,7 +44,8 @@ type HookProps = { outcome: YieldJobDone | null; annotations: Annotation[] };
 const renderArrival = (initial: HookProps) => {
   const onReveal = vi.fn<(annotationId: string) => void>();
   const utils = renderHook(
-    ({ outcome, annotations }: HookProps) => useGenerationArrival(outcome, annotations, onReveal),
+    ({ outcome, annotations }: HookProps) =>
+      useGenerationArrival(outcome, annotations, onReveal),
     { initialProps: initial },
   );
   return { ...utils, onReveal };
@@ -48,7 +53,10 @@ const renderArrival = (initial: HookProps) => {
 
 describe('useGenerationArrival', () => {
   it('a fresh outcome with its provenance edge present reveals once', () => {
-    const { rerender, onReveal } = renderArrival({ outcome: null, annotations: [] });
+    const { rerender, onReveal } = renderArrival({
+      outcome: null,
+      annotations: [],
+    });
     rerender({
       outcome: outcomeFor('res-new'),
       annotations: [provenanceRef('ann-prov', 'res-new')],
@@ -60,7 +68,10 @@ describe('useGenerationArrival', () => {
   it('re-renders with the same outcome do not re-reveal', () => {
     const o = outcomeFor('res-new');
     const anns = [provenanceRef('ann-prov', 'res-new')];
-    const { rerender, onReveal } = renderArrival({ outcome: null, annotations: [] });
+    const { rerender, onReveal } = renderArrival({
+      outcome: null,
+      annotations: [],
+    });
     rerender({ outcome: o, annotations: anns });
     rerender({ outcome: o, annotations: anns });
     rerender({ outcome: o, annotations: [...anns] });
@@ -74,7 +85,10 @@ describe('useGenerationArrival', () => {
     // not an arrival.
     const held = outcomeFor('res-new');
     const anns = [provenanceRef('ann-prov', 'res-new')];
-    const { rerender, onReveal } = renderArrival({ outcome: held, annotations: anns });
+    const { rerender, onReveal } = renderArrival({
+      outcome: held,
+      annotations: anns,
+    });
     rerender({ outcome: held, annotations: anns });
     rerender({ outcome: held, annotations: [...anns] });
     expect(onReveal).not.toHaveBeenCalled();
@@ -84,7 +98,10 @@ describe('useGenerationArrival', () => {
     // The commit of the provenance ref is awaited before job:complete, so
     // in practice the edge is already projected — this pin covers the
     // ordering anyway.
-    const { rerender, onReveal } = renderArrival({ outcome: null, annotations: [] });
+    const { rerender, onReveal } = renderArrival({
+      outcome: null,
+      annotations: [],
+    });
     rerender({ outcome: outcomeFor('res-new'), annotations: [] });
     expect(onReveal).not.toHaveBeenCalled();
     rerender({
@@ -96,21 +113,30 @@ describe('useGenerationArrival', () => {
   });
 
   it("a second run's outcome reveals its own edge", () => {
-    const { rerender, onReveal } = renderArrival({ outcome: null, annotations: [] });
+    const { rerender, onReveal } = renderArrival({
+      outcome: null,
+      annotations: [],
+    });
     rerender({
       outcome: outcomeFor('res-new-1'),
       annotations: [provenanceRef('ann-1', 'res-new-1')],
     });
     rerender({
       outcome: outcomeFor('res-new-2'),
-      annotations: [provenanceRef('ann-1', 'res-new-1'), provenanceRef('ann-2', 'res-new-2')],
+      annotations: [
+        provenanceRef('ann-1', 'res-new-1'),
+        provenanceRef('ann-2', 'res-new-2'),
+      ],
     });
     expect(onReveal).toHaveBeenCalledTimes(2);
     expect(onReveal).toHaveBeenLastCalledWith('ann-2');
   });
 
   it('an unrelated linking annotation is not the edge — no reveal without a match', () => {
-    const { rerender, onReveal } = renderArrival({ outcome: null, annotations: [] });
+    const { rerender, onReveal } = renderArrival({
+      outcome: null,
+      annotations: [],
+    });
     rerender({
       outcome: outcomeFor('res-new'),
       annotations: [provenanceRef('ann-other', 'res-elsewhere')],

@@ -67,10 +67,26 @@ describe('scroll-utils', () => {
 
     // Mock getBoundingClientRect to indicate element is not visible
     el.getBoundingClientRect = vi.fn(() => ({
-      top: -100, bottom: -60, left: 0, right: 100, width: 100, height: 40, x: 0, y: -100, toJSON: () => {},
+      top: -100,
+      bottom: -60,
+      left: 0,
+      right: 100,
+      width: 100,
+      height: 40,
+      x: 0,
+      y: -100,
+      toJSON: () => {},
     }));
     container.getBoundingClientRect = vi.fn(() => ({
-      top: 0, bottom: 500, left: 0, right: 800, width: 800, height: 500, x: 0, y: 0, toJSON: () => {},
+      top: 0,
+      bottom: 500,
+      left: 0,
+      right: 800,
+      width: 800,
+      height: 500,
+      x: 0,
+      y: 0,
+      toJSON: () => {},
     }));
 
     container.appendChild(el);
@@ -93,10 +109,26 @@ describe('scroll-utils', () => {
 
     // Mock getBoundingClientRect to indicate element IS visible
     el.getBoundingClientRect = vi.fn(() => ({
-      top: 100, bottom: 140, left: 0, right: 100, width: 100, height: 40, x: 0, y: 100, toJSON: () => {},
+      top: 100,
+      bottom: 140,
+      left: 0,
+      right: 100,
+      width: 100,
+      height: 40,
+      x: 0,
+      y: 100,
+      toJSON: () => {},
     }));
     container.getBoundingClientRect = vi.fn(() => ({
-      top: 0, bottom: 500, left: 0, right: 800, width: 800, height: 500, x: 0, y: 0, toJSON: () => {},
+      top: 0,
+      bottom: 500,
+      left: 0,
+      right: 800,
+      width: 800,
+      height: 500,
+      x: 0,
+      y: 0,
+      toJSON: () => {},
     }));
 
     container.appendChild(el);
@@ -111,6 +143,8 @@ describe('scroll-utils', () => {
     el.setAttribute('data-annotation-id', 'http://example.com/ann/1');
     root.appendChild(el);
 
-    expect(scrollAnnotationIntoView('http://example.com/ann/1', root)).toBe(true);
+    expect(scrollAnnotationIntoView('http://example.com/ann/1', root)).toBe(
+      true,
+    );
   });
 });

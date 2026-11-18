@@ -37,14 +37,19 @@ export interface StoredEventLike {
  * A `mark:added` carries the annotation; a `mark:removed` and a
  * `mark:body-updated` name it by id.
  */
-export function getAnnotationIdFromEvent(event: StoredEventLike): AnnotationId | null {
+export function getAnnotationIdFromEvent(
+  event: StoredEventLike,
+): AnnotationId | null {
   const payload = event.payload;
   if (!isObject(payload)) return null;
 
   let id: unknown;
   if (event.type === 'mark:added') {
     id = isObject(payload.annotation) ? payload.annotation.id : undefined;
-  } else if (event.type === 'mark:removed' || event.type === 'mark:body-updated') {
+  } else if (
+    event.type === 'mark:removed' ||
+    event.type === 'mark:body-updated'
+  ) {
     id = payload.annotationId;
   }
   return isString(id) && isAnnotationId(id) ? id : null;

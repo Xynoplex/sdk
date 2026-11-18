@@ -1,6 +1,18 @@
 import { Observable, Subject, share } from 'rxjs';
-import { Bus, FrameRefusal, JOB_SILENCE_MS, JOB_STATUS_POLL_MS, XynologError } from '@xynolog/core';
-import type { EventBus, EventMap, ITransport, JobErrorCode, components } from '@xynolog/core';
+import {
+  Bus,
+  FrameRefusal,
+  JOB_SILENCE_MS,
+  JOB_STATUS_POLL_MS,
+  XynologError,
+} from '@xynolog/core';
+import type {
+  EventBus,
+  EventMap,
+  ITransport,
+  JobErrorCode,
+  components,
+} from '@xynolog/core';
 
 type JobStatusResponse = components['schemas']['JobStatusResponse'];
 type FailureClass = components['schemas']['FailureClass'];
@@ -35,7 +47,9 @@ export class JobCancelledError extends XynologError {
   declare code: JobErrorCode;
 
   constructor(public readonly jobId: string) {
-    super('The job was cancelled', 'job.cancelled' satisfies JobErrorCode, { jobId });
+    super('The job was cancelled', 'job.cancelled' satisfies JobErrorCode, {
+      jobId,
+    });
     this.name = 'JobCancelledError';
   }
 }
@@ -87,8 +101,14 @@ export class JobStatusPoll {
   }
 
   stop(): void {
-    if (this.silence) { clearTimeout(this.silence); this.silence = null; }
-    if (this.polling) { clearInterval(this.polling); this.polling = null; }
+    if (this.silence) {
+      clearTimeout(this.silence);
+      this.silence = null;
+    }
+    if (this.polling) {
+      clearInterval(this.polling);
+      this.polling = null;
+    }
   }
 
   private ask(jobId: string): void {
@@ -123,7 +143,9 @@ export class JobFrames {
   private jobId: string | null = null;
   private held: Array<() => void> = [];
   private readonly refusals = new Subject<FrameRefusal>();
-  private readonly channels: { readonly [K in JobFrameChannel]: Observable<EventMap[K]> };
+  private readonly channels: {
+    readonly [K in JobFrameChannel]: Observable<EventMap[K]>;
+  };
 
   /** The frames refused, by their transport or as their channel's, on the job's channels while they are read: each names no job, so any may be this job's. */
   readonly refused$: Observable<FrameRefusal> = this.refusals.asObservable();
@@ -166,4 +188,3 @@ export class JobFrames {
     for (const deliver of held) deliver();
   }
 }
-

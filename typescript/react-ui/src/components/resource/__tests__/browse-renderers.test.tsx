@@ -11,9 +11,16 @@ import { resourceId } from '@xynolog/core';
 import { describe, it, expect } from 'vitest';
 import { render } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { TextBrowseRenderer, defaultBrowseRenderers } from '../browse-renderers';
+import {
+  TextBrowseRenderer,
+  defaultBrowseRenderers,
+} from '../browse-renderers';
 
-const base = { mimeType: 'text/markdown', resourceUri: resourceId('res-1'), annotations: [] };
+const base = {
+  mimeType: 'text/markdown',
+  resourceUri: resourceId('res-1'),
+  annotations: [],
+};
 
 describe('browse-renderers — markdown-as-prose', () => {
   it('TextBrowseRenderer is the default `text` renderer', () => {
@@ -22,12 +29,17 @@ describe('browse-renderers — markdown-as-prose', () => {
 
   it('renders markdown as formatted HTML, not raw source', () => {
     const { container } = render(
-      <TextBrowseRenderer content={'# Big Heading\n\nsome **bold** and a [link](https://x.test).'} {...base} />,
+      <TextBrowseRenderer
+        content={'# Big Heading\n\nsome **bold** and a [link](https://x.test).'}
+        {...base}
+      />,
     );
     // Formatted: heading / strong / anchor elements exist (react-markdown output).
     expect(container.querySelector('h1')?.textContent).toBe('Big Heading');
     expect(container.querySelector('strong')?.textContent).toBe('bold');
-    expect(container.querySelector('a')?.getAttribute('href')).toBe('https://x.test');
+    expect(container.querySelector('a')?.getAttribute('href')).toBe(
+      'https://x.test',
+    );
     // NOT raw: the literal markdown syntax must not survive to the text content.
     expect(container.textContent).not.toContain('# Big Heading');
     expect(container.textContent).not.toContain('**bold**');

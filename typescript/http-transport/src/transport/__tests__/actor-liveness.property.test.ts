@@ -27,9 +27,18 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import * as fc from 'fast-check';
 import { Subject, map } from 'rxjs';
-import { assertExactlyOnceDelivery, type DeliverySubject, type DeliveryOp } from '@xynolog/core/testing/axioms';
+import {
+  assertExactlyOnceDelivery,
+  type DeliverySubject,
+  type DeliveryOp,
+} from '@xynolog/core/testing/axioms';
 import { createActorStateUnit } from '../actor-state-unit';
-import { mockFetch, mockConn, createSSEStream, sseChunkId } from './helpers/mock-conn';
+import {
+  mockFetch,
+  mockConn,
+  createSSEStream,
+  sseChunkId,
+} from './helpers/mock-conn';
 import { resourceId } from '@xynolog/core';
 
 const CHANNEL = 'browse:resource-result';
@@ -124,7 +133,11 @@ function realActorSubject(): DeliverySubject {
         // `correlationId` carries the generated id.
         sseChunkId(
           'bus-event',
-          JSON.stringify({ channel: CHANNEL, correlationId: id, payload: { response: {} } }),
+          JSON.stringify({
+            channel: CHANNEL,
+            correlationId: id,
+            payload: { response: {} },
+          }),
           `e-test:${id}`,
         ),
       );
@@ -145,7 +158,9 @@ function realActorSubject(): DeliverySubject {
         const before = mockFetch.mock.calls.length;
         await vi.advanceTimersByTimeAsync(150); // past RECONNECT_DEBOUNCE_MS
         if (mockFetch.mock.calls.length <= before) {
-          throw new Error('adapter: debounced reconnect did not issue a new fetch');
+          throw new Error(
+            'adapter: debounced reconnect did not issue a new fetch',
+          );
         }
       }
     },
@@ -166,7 +181,9 @@ function realActorSubject(): DeliverySubject {
         // arrived without one is a delivery that lost its routing, so it
         // fails the property rather than silently shortening the sequence.
         if (frame.correlationId === undefined) {
-          throw new Error(`delivered ${CHANNEL} frame carried no correlationId`);
+          throw new Error(
+            `delivered ${CHANNEL} frame carried no correlationId`,
+          );
         }
         return frame.correlationId;
       }),
@@ -197,10 +214,16 @@ describe('L3 — delivery across lifecycle transitions', () => {
         setup: abortAtHandoverSubject,
         // Pin the minimal losing interleaving, as the axiom harness's own
         // teeth tests do: the write's frame is queued when the abort lands.
-        opsArb: fc.constant(['write', 'write', 'transition'] as readonly DeliveryOp[]),
+        opsArb: fc.constant([
+          'write',
+          'write',
+          'transition',
+        ] as readonly DeliveryOp[]),
         numRuns: 3,
       }),
-    ).rejects.toThrow(/^L3: .*delivered 0 times.*retire by drain, never by abort/s);
+    ).rejects.toThrow(
+      /^L3: .*delivered 0 times.*retire by drain, never by abort/s,
+    );
   });
 
   it('holds over the real actor across generated write/handover interleavings', async () => {
@@ -263,15 +286,26 @@ describe('L4 — [bus LINGER] fires for a superseded-connection delivery', () =>
     c2.open();
     await new Promise((r) => setTimeout(r, 20));
 
-    c1.sse.push(sseChunkId(
-      'bus-event',
-      JSON.stringify({ channel: CHANNEL, payload: { correlationId: 'c-l4', response: {} } }),
-      `e-${CHANNEL}:c-l4`,
-    ));
+    c1.sse.push(
+      sseChunkId(
+        'bus-event',
+        JSON.stringify({
+          channel: CHANNEL,
+          payload: { correlationId: 'c-l4', response: {} },
+        }),
+        `e-${CHANNEL}:c-l4`,
+      ),
+    );
     await vi.waitFor(() => expect(received).toHaveLength(1));
 
     const debugs = vi.mocked(console.debug).mock.calls.map((c) => String(c[0]));
-    expect(debugs.some((d) => d.includes(`[bus LINGER] ${CHANNEL} delivered on superseded connection`))).toBe(true);
+    expect(
+      debugs.some((d) =>
+        d.includes(
+          `[bus LINGER] ${CHANNEL} delivered on superseded connection`,
+        ),
+      ),
+    ).toBe(true);
 
     actor.dispose();
   });

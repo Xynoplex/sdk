@@ -31,7 +31,9 @@ import type { KbDescription, KbRead, KbTarget } from '@xynolog/core';
 export function kbRead(description: KbDescription, at: Date): KbRead {
   return {
     at: at.toISOString(),
-    ...(description.gitBranch !== undefined ? { gitBranch: description.gitBranch } : {}),
+    ...(description.gitBranch !== undefined
+      ? { gitBranch: description.gitBranch }
+      : {}),
   };
 }
 
