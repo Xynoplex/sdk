@@ -1278,7 +1278,11 @@ fn oauth_clients(table: &Value) -> String {
 /// gives the directory, made for the user whose SID goes where the file's list
 /// says `{owner}`.
 fn owner_only(table: &Value) -> String {
-    let list = text(&table["directoryAccessList"], "value", "the owner-only access list");
+    let list = text(
+        &table["directoryAccessList"],
+        "value",
+        "the owner-only access list",
+    );
     let parts: Vec<&str> = list.split("{owner}").collect();
     assert!(
         parts.len() == 2,
@@ -1309,8 +1313,12 @@ fn owner_only(table: &Value) -> String {
     let _ = writeln!(
         code,
         "/// {}\n#[cfg(windows)]\nfn owner_only_access_list(owner: &str) -> String {{\n    [{:?}, owner, {:?}].concat()\n}}",
-        text(&table["directoryAccessList"], "docs", "the owner-only access list")
-            .replace("`{owner}`", "`owner`"),
+        text(
+            &table["directoryAccessList"],
+            "docs",
+            "the owner-only access list"
+        )
+        .replace("`{owner}`", "`owner`"),
         parts[0],
         parts[1]
     );
