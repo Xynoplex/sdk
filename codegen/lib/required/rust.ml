@@ -1,6 +1,8 @@
 (* What each component requires, as the Rust SDK holds it
-   (rust/sdk/src/required.rs): each shape a Shape whose parts it does not
-   state are NONE's, its parts in the order the table states them. *)
+   (rust/sdk/src/required.rs): a reference by [reference], a value of some
+   kinds that states nothing else by [of], and any other shape a Shape whose
+   parts it does not state are NONE's, its parts in the order the table
+   states them. *)
 
 module R = Rust_syntax
 
@@ -15,10 +17,8 @@ let literal : Schema.literal -> R.expr = function
   | Bool_literal b -> R.call "Listed::Boolean" [ R.Bool b ]
 
 let rec shape : Shape.shape -> R.expr = function
-  | Ref name ->
-      R.Struct
-        ([ "Shape" ], [ ("reference", some (R.Str name)) ], Some (R.p "NONE"))
-  | Shape b ->
+  | Ref name -> R.call "reference" [ R.Str name ]
+  | Shape b -> (
       let part name write = Option.map (fun v -> (name, write v)) in
       let nonempty name write = function
         | [] -> None
@@ -103,7 +103,9 @@ let rec shape : Shape.shape -> R.expr = function
               b.all_of;
           ]
       in
-      R.Struct ([ "Shape" ], fields, Some (R.p "NONE"))
+      match fields with
+      | [ ("kinds", R.Call (_, [ kinds ])) ] -> R.call "of" [ kinds ]
+      | _ -> R.Struct ([ "Shape" ], fields, Some (R.p "NONE")))
 
 let file (shapes : (string * Shape.shape) list) =
   {
