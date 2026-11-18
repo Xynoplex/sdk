@@ -35,35 +35,36 @@ let str text = T.T_str (Single, text)
 let word text = T.Str (Single, text)
 let channel_key channel = T.Quoted (Single, channel)
 
-(* The registry's lead lines are a row's, two spaces in; the first row's first
-   is the line its block opens on. *)
-let lead ~first (docs : R.docs) =
-  let row l =
-    if l = "" then l
-    else if String.starts_with ~prefix:"  " l then
-      String.sub l 2 (String.length l - 2)
-    else
-      invalid_arg
-        (Printf.sprintf "bus/typescript: the lead line %S is not a row's" l)
-  in
-  let lines =
-    match (first, docs.lead) with
-    | false, lines -> lines
-    | true, "" :: lines -> lines
-    | true, [] -> []
-    | true, l :: _ ->
-        invalid_arg
-          (Printf.sprintf
-             "bus/typescript: the first lead line %S opens no block" l)
-  in
-  match List.map row lines with [] -> [] | lines -> [ T.Spec lines ]
+(* How a section heads a part of a listing: the event map's between two
+   rules of [=], a schema's or an operation's on one rule of [─]. *)
+type heading = Banner | Rule
 
-(* Each item with its lead lines and trailing comment. *)
-let with_docs docs make items =
-  List.mapi
-    (fun i item ->
+let section heading title : T.comment list =
+  match heading with
+  | Banner ->
+      let rule = T.Line (String.make 72 '=') in
+      [ rule; Line_prose [ Words title ]; rule ]
+  | Rule ->
+      let head = "── " ^ title ^ " " in
+      let rule = max 3 (64 - Text.length head) in
+      [ Line (head ^ String.concat "" (List.init rule (fun _ -> "─"))) ]
+
+(* What the registry writes before an entry, as comments. *)
+let lead heading (docs : R.docs) =
+  List.concat_map
+    (function
+      | R.Break -> [ T.Gap ]
+      | Section title -> section heading title
+      | Comment prose -> [ Line_prose prose ]
+      | Doc prose -> [ Doc_prose prose ])
+    docs.lead
+
+(* Each item with its lead and trailing note. *)
+let with_docs heading docs make items =
+  List.map
+    (fun item ->
       let d : R.docs = docs item in
-      make ~about:(lead ~first:(i = 0) d) ~trailing:d.trailing item)
+      make ~about:(lead heading d) ~trailing:d.trailing item)
     items
 
 let schemas = T.T_index (T_name "components", str "schemas")
@@ -149,7 +150,7 @@ let protocol (bus : Registry.t) =
             ~about:[ Doc "Each channel's payload as the registry states it." ]
             (T_object
                ( Rows,
-                 with_docs
+                 with_docs Banner
                    (fun (c : R.channel) -> c.docs)
                    (fun ~about ~trailing (c : R.channel) ->
                      T.member ~about ~trailing (channel_key c.channel)
@@ -193,10 +194,10 @@ let protocol (bus : Registry.t) =
               from = "./bus-ui-types";
             };
           T.type_alias "EventName"
-            ~about:[ Spec [ reg.docs.event_name ] ]
+            ~about:[ Doc_prose reg.docs.event_name ]
             (T_keyof (T_name "EventMap"));
           channel_list "ENRICHED_EVENT_TYPES"
-            ~about:[ Spec [ reg.docs.enriched_events ] ]
+            ~about:[ Doc_prose reg.docs.enriched_events ]
             ~of_:"PersistedEventType"
             (List.filter_map
                (fun (c : R.channel) ->
@@ -207,11 +208,11 @@ let protocol (bus : Registry.t) =
           T.type_alias "EnrichedEventType"
             (T_index (T_typeof "ENRICHED_EVENT_TYPES", T_name "number"));
           T.const "CHANNEL_SCHEMAS" ~as_const:true
-            ~about:[ Spec [ reg.docs.channel_schemas ] ]
+            ~about:[ Doc_prose reg.docs.channel_schemas ]
             ~satisfies:
               (satisfies_channels (T_union [ component_name; T_name "null" ]))
             (T.rows ~column:value_column_schemas
-               (with_docs
+               (with_docs Rule
                   (fun (c : R.channel) -> c.schema_docs)
                   (fun ~about ~trailing (c : R.channel) ->
                     T.entry ~about ~trailing (channel_key c.channel)
@@ -220,7 +221,7 @@ let protocol (bus : Registry.t) =
                       | Some validate -> word validate))
                   (channels reg.channel_order.schemas)));
           T.type_alias "EmittableChannel"
-            ~about:[ Spec [ reg.docs.emittable_channel ] ]
+            ~about:[ Doc_prose reg.docs.emittable_channel ]
             (T_index
                ( mapped "K" (T_name "EventName")
                    (T_conditional
@@ -543,7 +544,7 @@ let operations (bus : Registry.t) =
                          ] );
                    ] ))
             (T.rows ~column:value_column_operations
-               (with_docs
+               (with_docs Rule
                   (fun (o : R.operation) -> o.docs)
                   (fun ~about ~trailing (o : R.operation) ->
                     T.entry ~about ~trailing (channel_key o.request)
@@ -637,7 +638,7 @@ let bridged (bus : Registry.t) =
         [
           T.import ~type_only:true [ "EventName" ] "./bus-protocol";
           channel_list "BRIDGED_BROADCASTS"
-            ~about:[ Spec [ reg.audience.doc ] ]
+            ~about:[ Doc_prose reg.audience.doc ]
             ~of_:"EventName" reg.audience.everyone;
           channel_list "RESOURCE_SCOPED_CHANNELS"
             ~about:
@@ -773,7 +774,7 @@ let classification (bus : Registry.t) =
                   T.member ~readonly:true (Ident "direction")
                     (T_name "ChannelDirection");
                   T.member ~readonly:true ~optional:true (Ident "writes")
-                    ~about:[ Spec [ reg.effect_.doc ] ]
+                    ~about:[ Doc_prose reg.effect_.doc ]
                     (T_name "boolean");
                   T.member ~readonly:true ~optional:true (Ident "delivery")
                     ~about:

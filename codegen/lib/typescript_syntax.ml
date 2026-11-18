@@ -18,13 +18,17 @@
 type quote = Single | Double
 
 (* [Doc] is a doc comment on one line; [Block] one of several lines; [Line]
-   a line comment; [Spec] lines a spec states as comments, written as they
-   are behind the indentation. *)
+   a line comment. [Doc_prose] and [Line_prose] are a spec's prose as a doc
+   comment and as line comments, wrapped within [comment_width] columns; a
+   doc of one paragraph that fits is on one line. [Gap] is a blank line,
+   where a listing breaks. *)
 type comment =
   | Doc of string
   | Block of string list
   | Line of string
-  | Spec of string list
+  | Doc_prose of Text.paragraph list
+  | Line_prose of Text.paragraph list
+  | Gap
 
 type layout = Inline | Packed | Rows
 type key = Ident of string | Quoted of quote * string
@@ -68,7 +72,8 @@ and member = {
   key : key;
   optional : bool;
   type_ : type_;
-  member_trailing : string;  (** A line comment after it, on its line. *)
+  member_trailing : string;
+      (** A line comment's text after it, on its line; [""] for none. *)
 }
 
 type binary = And | Or | Strict_eq | Ge | Plus
@@ -256,6 +261,8 @@ let refuse_newline what text =
     invalid_arg
       (Printf.sprintf "Typescript_syntax: %s %S is two lines" what text)
 
+let comment_width = 80
+
 (* [comment]'s lines at [depth]. *)
 let comment_lines ~depth comment =
   let at = indentation depth in
@@ -277,11 +284,33 @@ let comment_lines ~depth comment =
              else " " ^ Text.replace_all ~sub:"*/" ~by:"*\\/" l)
            lines
       @ [ at ^ " */" ]
-  | Spec lines ->
-      List.concat_map (fun l -> String.split_on_char '\n' l) lines
-      |> List.map (fun l -> if l = "" then "" else at ^ l)
+  | Doc_prose paragraphs -> (
+      let escape = Text.replace_all ~sub:"*/" ~by:"*\\/" in
+      match paragraphs with
+      | [ Text.Words text ]
+        when Text.length (at ^ Text.doc_comment text) <= comment_width ->
+          [ at ^ Text.doc_comment text ]
+      | _ ->
+          (at ^ "/**")
+          :: List.map
+               (fun l -> at ^ " *" ^ if l = "" then "" else " " ^ escape l)
+               (Text.paragraphs ~lead:(at ^ " * ") ~width:comment_width
+                  paragraphs)
+          @ [ at ^ " */" ])
+  | Line_prose paragraphs ->
+      List.map
+        (fun l -> at ^ "//" ^ if l = "" then "" else " " ^ l)
+        (Text.paragraphs ~lead:(at ^ "// ") ~width:comment_width paragraphs)
+  | Gap -> [ "" ]
 
 let comments ~depth about = List.concat_map (comment_lines ~depth) about
+
+(* A line comment after a row, on its line; [""] is none. *)
+let trailing_comment = function
+  | "" -> ""
+  | note ->
+      refuse_newline "a trailing comment" note;
+      " // " ^ note
 
 (* How tightly an operator binds, as JavaScript ranks them. *)
 let precedence = function
@@ -381,7 +410,7 @@ and object_type ~depth layout members =
                     (comments ~depth:(depth + 1) m.about))
                ^ indentation (depth + 1)
                ^ member_text ~depth:(depth + 1) m
-               ^ (if m.member_trailing = "" then "" else " " ^ m.member_trailing)
+               ^ trailing_comment m.member_trailing
                ^ "\n")
              members)
       ^ indentation depth ^ "}"
@@ -485,8 +514,7 @@ let rec expr ~depth = function
                          ^ " }"
                      | value -> lead ^ expr ~depth:(depth + 1) value)
                    ^ ","
-                   ^ (if e.entry_trailing = "" then ""
-                      else " " ^ e.entry_trailing)
+                   ^ trailing_comment e.entry_trailing
                    ^ "\n")
                  entries)
           ^ indentation depth ^ "}")
@@ -558,9 +586,7 @@ and row ~depth about text trailing =
   String.concat ""
     (List.map (fun l -> l ^ "\n") (comments ~depth:(depth + 1) about))
   ^ indentation (depth + 1)
-  ^ text
-  ^ (if trailing = "" then "" else " " ^ trailing)
-  ^ "\n"
+  ^ text ^ trailing_comment trailing ^ "\n"
 
 let rec stmt ~depth = function
   | Return e -> "return " ^ expr ~depth e ^ ";"
