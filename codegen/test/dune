@@ -53,7 +53,7 @@
 (executable
  (name census)
  (modules census)
- (libraries xynolog_codegen))
+ (libraries xynolog_codegen yojson))
 
 (test
  (name typescript_syntax)
@@ -68,6 +68,26 @@
 (test
  (name client_types)
  (modules client_types)
+ (libraries xynolog_codegen yojson alcotest))
+
+(test
+ (name rust_syntax)
+ (modules rust_syntax)
+ (libraries xynolog_codegen alcotest))
+
+(test
+ (name rust_types)
+ (modules rust_types)
+ (libraries xynolog_codegen yojson alcotest))
+
+(test
+ (name swift_syntax)
+ (modules swift_syntax)
+ (libraries xynolog_codegen alcotest))
+
+(test
+ (name swift_sdk)
+ (modules swift_sdk)
  (libraries xynolog_codegen yojson alcotest))
 
 (test

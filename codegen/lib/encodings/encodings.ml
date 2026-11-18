@@ -9,14 +9,17 @@ module Go = Go
 module Python = Python
 module Typescript = Typescript
 module Ocaml = Ocaml
+module Rust = Rust
 
 let files ~root:_ (spec : Spec.t) =
-  Result.map
-    (fun t ->
-      [
-        Go.file t;
-        Python.file t;
-        Typescript.file t;
-        Ocaml.file spec.tables.text_encoding_cases;
-      ])
-    (Table.derive spec.tables.text_encoding_cases)
+  let ( let* ) = Result.bind in
+  let* t = Table.derive spec.tables.text_encoding_cases in
+  let* rust = Rust.files spec.tables.text_encoding_cases in
+  Ok
+    ([
+       Go.file t;
+       Python.file t;
+       Typescript.file t;
+       Ocaml.file spec.tables.text_encoding_cases;
+     ]
+    @ rust)

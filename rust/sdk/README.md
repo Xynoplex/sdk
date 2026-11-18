@@ -612,7 +612,6 @@ environment and says what it found.
 |---|---|
 | [`xynolog-http-transport`](../http-transport/README.md) | The transport over a gateway, and signing in. A program that reaches a knowledge base uses it. |
 | [`xynolog-telemetry`](../telemetry/README.md) | The spans and counts the transport reports, to whatever OpenTelemetry an application installs. Its README says how to turn tracing on. |
-| [`xynolog-codegen`](../codegen/README.md) | The build-time generator of `xynolog::types`. Cargo builds it for you. |
 
 ## License
 

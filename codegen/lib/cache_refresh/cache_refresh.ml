@@ -11,6 +11,7 @@ module Python = Python
 module Typescript = Typescript
 module Haskell = Haskell
 module Ocaml = Ocaml
+module Rust = Rust
 
 let ( let* ) = Result.bind
 
@@ -78,7 +79,9 @@ let context (spec : Spec.t) =
 let files ~root:_ (spec : Spec.t) =
   let* context = context spec in
   let* t = Table.derive context spec.tables.client_refresh in
+  let* rust = Rust.files spec.tables.client_refresh t in
   Ok
     ([ Go.file t; Python.file t; Typescript.file t ]
     @ Haskell.files t
-    @ [ Ocaml.file spec.tables.client_refresh ])
+    @ [ Ocaml.file spec.tables.client_refresh ]
+    @ rust)

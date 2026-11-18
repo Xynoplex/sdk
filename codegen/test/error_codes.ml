@@ -395,8 +395,8 @@ let go =
   {|// Code generated from protocol/specs/src/errors/codes.json; DO NOT EDIT.
 //
 // Regenerate: make generate (codegen/lib/error_codes/go.ml)
-// The TypeScript and Python vocabularies are generated from the same table,
-// and Rust's by its SDK's build script.
+// The TypeScript, Python and Rust vocabularies are generated from the same
+// table.
 
 package xynolog
 

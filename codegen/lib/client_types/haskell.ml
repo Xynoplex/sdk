@@ -186,7 +186,7 @@ let record_module ~shape name =
       text =
         H.text
           {
-            banner = Banner.haskell_lines ~from_:(from_type name) __FILE__;
+            banner = Banner.lines ~from_:(from_type name) __FILE__;
             extensions = [ "OverloadedStrings" ];
             name = module_;
             imports =
@@ -393,7 +393,7 @@ let operation_reports ~shape =
         H.text
           {
             banner =
-              Banner.haskell_lines
+              Banner.lines
                 ~from_:
                   (from_type "JobEvent" ^ ", " ^ from_type "UploadProgress"
                  ^ " and "
@@ -462,9 +462,7 @@ let service_proof ~grant_type (form : member list) =
         H.text
           {
             banner =
-              Banner.haskell_lines
-                ~from_:("protocol/specs/src/" ^ Model.form)
-                __FILE__;
+              Banner.lines ~from_:("protocol/specs/src/" ^ Model.form) __FILE__;
             extensions = [ "OverloadedStrings" ];
             name = "Xynolog.Internal.Generated.ServiceProof";
             imports =

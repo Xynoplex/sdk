@@ -8,6 +8,7 @@
 module Flat = Flat
 module Owner_only = Owner_only
 module Contract = Contract
+module Rust = Rust
 
 let schema_file = "sign-in-store/SignIn.json"
 let snake name = String.lowercase_ascii (Text.upper_snake name)
@@ -100,12 +101,13 @@ let go_owner_only (o : Owner_only.t) =
           imports = [ [ "os" ] ];
           decls =
             [
-              mode "ownerOnlyDirMode" o.directory;
-              mode "ownerOnlyFileMode" o.file;
+              mode "OwnerOnlyDirMode" o.directory;
+              mode "OwnerOnlyFileMode" o.file;
               G.func
-                ~doc:(G.prose ("ownerOnlyAccessList: " ^ o.access_list.docs))
+                ~doc:(G.prose ("OwnerOnlyDirAccessList: " ^ o.access_list.docs))
                 ~params:[ ("owner", G.Named "string") ]
-                ~results:(G.Unnamed [ G.Named "string" ]) "ownerOnlyAccessList"
+                ~results:(G.Unnamed [ G.Named "string" ])
+                "OwnerOnlyDirAccessList"
                 (G.Block
                    [
                      G.Return
@@ -415,7 +417,7 @@ let haskell (o : Owner_only.t) (names : Contract.t) =
           text =
             H.text
               {
-                banner = Banner.haskell_lines ~from_:Contract.file __FILE__;
+                banner = Banner.lines ~from_:Contract.file __FILE__;
                 extensions = [];
                 name = "Xynolog.Internal.Generated.SignInStore";
                 imports = [];
@@ -462,6 +464,7 @@ let files ~root (spec : Spec.t) =
             python_entry entry;
             python_owner_only o;
             typescript entry o names;
+            Rust.file o;
           ]
           @ ocaml_owner_only o @ haskell_files)
         (haskell o names)

@@ -79,7 +79,7 @@ impl Operation {
     }
 }
 
-include!(concat!(env!("OUT_DIR"), "/operations.rs"));
+include!("generated/operations.rs");
 
 /// The operation `request` is the request of, as the registry declares it.
 pub fn operation(request: &str) -> Option<&'static Operation> {

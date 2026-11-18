@@ -120,7 +120,6 @@ four more functions:
 |---|---|
 | [`xynolog`](../sdk/README.md) | The SDK's client. |
 | [`xynolog-http-transport`](../http-transport/README.md) | The transport over a gateway, which reports through this crate. |
-| [`xynolog-codegen`](../codegen/README.md) | The build-time generator of the SDK's types. Cargo builds it for you. |
 
 ## Contributing
 

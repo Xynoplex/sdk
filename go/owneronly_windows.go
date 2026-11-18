@@ -27,7 +27,7 @@ const (
 )
 
 // ownerOnlyDir keeps a directory, and everything created in it from then on,
-// to its owner, with the sign-in store's access list (ownerOnlyAccessList),
+// to its owner, with the sign-in store's access list (OwnerOnlyDirAccessList),
 // which the launcher gives its state home too. A mode keeps nobody out on
 // Windows; the access list is what does. A directory
 // that has the list already is left as it is: setting a list hands it down to
@@ -49,7 +49,7 @@ func ownerOnlyDir(dir string) error {
 	if err != nil {
 		return fmt.Errorf("cannot name the current user: %w", err)
 	}
-	sddl, err := syscall.UTF16PtrFromString(ownerOnlyAccessList(owner))
+	sddl, err := syscall.UTF16PtrFromString(OwnerOnlyDirAccessList(owner))
 	if err != nil {
 		return err
 	}

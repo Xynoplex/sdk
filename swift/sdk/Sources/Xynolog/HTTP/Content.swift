@@ -349,7 +349,7 @@ extension HttpTransport: ContentTransport {
   }
   public func getResourceGraph(_ resource: ResourceId) async throws -> GetResourceResponse {
     let read = transportSpan(
-      .contentGet_graph, attributes: ["resource.id": .string(resource.value)])
+      .contentGetGraph, attributes: ["resource.id": .string(resource.value)])
     defer { read.end() }
     return try await answer(
       GetResourceResponse.self, path: "/resources/\(resource.value)/jsonld",
@@ -357,7 +357,7 @@ extension HttpTransport: ContentTransport {
   }
   public func getAnnotations(_ resource: ResourceId) async throws -> GetAnnotationsResponse {
     let read = transportSpan(
-      .contentGet_annotations, attributes: ["resource.id": .string(resource.value)])
+      .contentGetAnnotations, attributes: ["resource.id": .string(resource.value)])
     defer { read.end() }
     return try await answer(
       GetAnnotationsResponse.self, path: "/resources/\(resource.value)/annotations",
@@ -365,7 +365,7 @@ extension HttpTransport: ContentTransport {
   }
   public func getAnchoredText(_ resource: ResourceId) async throws -> AnchoredTextAnswer {
     let read = transportSpan(
-      .contentGet_anchored_text, attributes: ["resource.id": .string(resource.value)])
+      .contentGetAnchoredText, attributes: ["resource.id": .string(resource.value)])
     defer { read.end() }
     return try await answer(
       AnchoredTextAnswer.self, path: "/resources/\(resource.value)/anchored-text",

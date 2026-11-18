@@ -3,4 +3,4 @@
 //! client waits as long, and tries as often, as another. A transport takes
 //! overrides of the ones a test must not wait out.
 
-include!(concat!(env!("OUT_DIR"), "/timing.rs"));
+include!("generated/timing.rs");
