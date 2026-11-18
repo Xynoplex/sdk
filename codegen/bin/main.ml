@@ -2,12 +2,10 @@ open Xynolog_codegen
 
 let usage =
   "usage: xynolog-codegen read ROOT\n\
-  \       xynolog-codegen generate ROOT [GROUP ...]\n\
-  \       xynolog-codegen check ROOT [GROUP ...]\n\n\
+  \       xynolog-codegen generate ROOT [GROUP ...]\n\n\
    ROOT is the sdk checkout, whose protocol/specs/src the model reads. read \
    reads it and writes nothing; generate writes each group's files under ROOT, \
-   every group when none is named; check compares them with the committed \
-   files and writes nothing. The groups: "
+   every group when none is named, and names each file it writes. The groups: "
   ^ String.concat ", " (List.map (fun (g : Groups.group) -> g.name) Groups.all)
 
 let refused errors =
@@ -62,13 +60,4 @@ let () =
         (List.length spec.responses)
         (List.length spec.schemas)
   | _ :: "generate" :: root :: names -> Output.write ~root (files root names)
-  | _ :: "check" :: root :: names -> (
-      match Output.check ~root (files root names) with
-      | [] -> ()
-      | drifted ->
-          Printf.eprintf
-            "%d generated files differ from what their generators write: run \
-             make generate\n"
-            (List.length drifted);
-          exit 1)
   | _ -> bad_usage ()

@@ -824,30 +824,34 @@ let text =
 
 let output =
   [
-    case "the drift gate" (fun () ->
+    case "a write replaces each file that differs" (fun () ->
         let root = Filename.temp_dir "groups" "" in
         let file path text = { Output.path; text } in
+        Output.write ~root
+          [ file "a/same.txt" "same\n"; file "a/differs.txt" "old\n" ];
         let files =
           [
             file "a/same.txt" "same\n";
             file "a/differs.txt" "new\n";
             file "b/absent.txt" "x\n";
+            file "c/laid-out.ts" "export const x = 1\n";
           ]
         in
-        Output.write ~root
-          [ file "a/same.txt" "same\n"; file "a/differs.txt" "old\n" ];
-        Alcotest.(check (list string))
-          "drifted"
-          [ "a/differs.txt"; "b/absent.txt" ]
-          (List.map
-             (fun (f : Output.file) -> f.path)
-             (Output.check ~root files));
         Output.write ~root files;
-        Alcotest.(check (list string))
-          "drifted after a write" []
+        Alcotest.(check (list (option string)))
+          "written"
+          (List.map (fun (f : Output.file) -> Some f.text) files)
+          (List.map (Output.committed ~root) files));
+    case "Prettier lays out the TypeScript files" (fun () ->
+        Alcotest.(check (list bool))
+          "laid out" [ true; false; false ]
           (List.map
-             (fun (f : Output.file) -> f.path)
-             (Output.check ~root files)));
+             (fun path -> Output.prettier { Output.path; text = "" })
+             [
+               "typescript/core/src/a.ts";
+               "go/a.go";
+               "typescript/core/README.md";
+             ]));
   ]
 
 let () =
