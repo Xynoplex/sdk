@@ -41,7 +41,7 @@ type row = {
 type kind = Reopened | Unreadable | Channel of { scoped : bool }
 
 type trigger = {
-  on : string;
+  name : string; (* A channel's, or what befalls the stream. *)
   kind : kind;
   docs : string; (* A split trigger's rows' docs, each behind its split. *)
   rows : row list;
@@ -70,8 +70,8 @@ type context = {
       (* Each component's name, its file and its schema. *)
 }
 
-let reopened = "reopened"
-let unreadable = "unreadable"
+let reopened = T.stream_name Reopened
+let unreadable = T.stream_name Unreadable
 
 (* The gateway writes it itself, on the stream whose subscription it is
    about: it cannot be missed, though nothing replays it. *)
@@ -325,32 +325,37 @@ let derive context (table : T.t) =
     List.filter_map
       (fun (i, (r : T.refresh_item)) ->
         let at = Printf.sprintf "/refresh/%d" i in
-        let channel = List.assoc_opt r.on context.channels in
+        let name = T.trigger_name r.trigger in
+        let channel =
+          match r.trigger with
+          | On on -> List.assoc_opt on context.channels
+          | Stream _ -> None
+        in
         (* A row that states no reach reaches its subject, as Node's
            generators read it; the table's own comment does not say. *)
         let reach : T.reach =
           match r.reach with Some reach -> reach | None -> Subject
         in
         let kind =
-          match channel with
-          | Some c -> Some (Channel { scoped = c.scoped })
-          | None when r.on = reopened -> Some Reopened
-          | None when r.on = unreadable -> Some Unreadable
-          | None ->
+          match (r.trigger, channel) with
+          | Stream Reopened, _ -> Some Reopened
+          | Stream Unreadable, _ -> Some Unreadable
+          | On _, Some c -> Some (Channel { scoped = c.scoped })
+          | On on, None ->
               refuse (at ^ "/on")
-                (Printf.sprintf
-                   "is %s, which is neither a channel of the registry nor \
-                    reopened nor unreadable"
-                   (Text.quoted r.on));
+                (Printf.sprintf "is %s, which is no channel of the registry"
+                   (Text.quoted on));
               None
         in
-        let no_event () = Option.is_some kind && Option.is_none channel in
-        if no_event () && reach <> Held then
+        let no_event =
+          match r.trigger with Stream _ -> true | On _ -> false
+        in
+        if no_event && reach <> Held then
           refuse at
             (Printf.sprintf
-               "is on %s, which is no event: it names no subject and reaches \
-                what is held"
-               r.on);
+               "is of the stream %s, which is no event: it names no subject \
+                and reaches what is held"
+               name);
         (match r.when_ with
         | Some _
           when not
@@ -359,21 +364,23 @@ let derive context (table : T.t) =
                     channel) ->
             refuse (at ^ "/when")
               (Printf.sprintf
-                 "splits %s, which the registry does not say is enriched" r.on)
+                 "splits %s, which the registry does not say is enriched" name)
         | _ -> ());
         let named slot text ~ends =
           Option.bind text (fun text ->
               Option.bind channel (fun c ->
-                  way ~at:(at ^ "/names/" ^ slot) ~on:r.on c text ~ends))
+                  way ~at:(at ^ "/names/" ^ slot) ~on:name c text ~ends))
         in
         let resource, annotation =
           match r.names with
           | None -> (None, None)
           | Some names ->
-              if no_event () then
+              if no_event then
                 refuse (at ^ "/names")
                   (Printf.sprintf
-                     "is on %s, which is no event, so it names no subject" r.on)
+                     "is of the stream %s, which is no event, so it names no \
+                      subject"
+                     name)
               else if reach = Held then
                 refuse (at ^ "/names")
                   "names a subject, on a row that reaches what is held";
@@ -383,7 +390,7 @@ let derive context (table : T.t) =
                     (Printf.sprintf
                        "names a resource, and the registry says %s's events \
                         are the knowledge base's, of no resource"
-                       r.on)
+                       name)
               | _ -> ());
               ( named "resource" names.resource ~ends:"ResourceId",
                 named "annotation" names.annotation ~ends:"AnnotationId" )
@@ -392,14 +399,15 @@ let derive context (table : T.t) =
           Option.bind r.carries (fun text ->
               match channel with
               | None ->
-                  if no_event () then
+                  if no_event then
                     refuse (at ^ "/carries")
                       (Printf.sprintf
-                         "is on %s, which is no event, so it carries no value"
-                         r.on);
+                         "is of the stream %s, which is no event, so it \
+                          carries no value"
+                         name);
                   None
               | Some c ->
-                  way ~at:(at ^ "/carries") ~on:r.on c text ~ends:"Annotation")
+                  way ~at:(at ^ "/carries") ~on:name c text ~ends:"Annotation")
         in
         let list = Option.value ~default:[] in
         if Option.is_some r.carries <> Option.is_some r.writes then
@@ -413,12 +421,12 @@ let derive context (table : T.t) =
         | Some Unenriched when Option.is_some r.carries ->
             refuse (at ^ "/when") "is unenriched, so it carries nothing"
         | _ -> ());
-        let key = (r.on, r.when_) in
+        let key = (r.trigger, r.when_) in
         (match Hashtbl.find_opt stated key with
         | Some j ->
             refuse at
               (Printf.sprintf
-                 "is on %s%s again, which /refresh/%d states already" r.on
+                 "is on %s%s again, which /refresh/%d states already" name
                  (match r.when_ with
                  | Some Enriched -> " (enriched)"
                  | Some Unenriched -> " (unenriched)"
@@ -464,60 +472,67 @@ let derive context (table : T.t) =
           kind)
       (List.mapi (fun i r -> (i, r)) table.refresh)
   in
-  let row_of on =
-    List.find_opt (fun (_, (r : T.refresh_item), _, _) -> r.on = on) rows
+  let row_of trigger =
+    List.find_opt
+      (fun (_, (r : T.refresh_item), _, _) -> r.trigger = trigger)
+      rows
   in
-  if Option.is_none (row_of reopened) then
-    refuse "/refresh" "has no row for reopened";
-  if Option.is_none (row_of unreadable) then
-    refuse "/refresh" "has no row for unreadable";
+  List.iter
+    (fun (name, stream) ->
+      if Option.is_none (row_of (Stream stream)) then
+        refuse "/refresh" ("has no row for the stream " ^ name))
+    T.streams;
   (* What a row may do follows from how its trigger is delivered
      (protocol/contract/TRANSPORT-CONTRACT.md § Delivery): a passing frame is
      lost while the stream is down, so a row it triggers only refetches, and
      reopened refetches the same, which repairs the miss. *)
   List.iter
     (fun (i, (r : T.refresh_item), _, row) ->
-      match List.assoc_opt r.on context.channels with
-      | Some c when c.passing && r.on <> resume_gap ->
-          let at = Printf.sprintf "/refresh/%d" i in
-          List.iter
-            (fun (act, queries) ->
-              if queries <> [] then
-                refuse
-                  (at ^ "/" ^ act)
-                  (Printf.sprintf
-                     "%s %s, and %s's frames are passing: one lost must leave \
-                      the cache right"
-                     act
-                     (String.concat ", " queries)
-                     r.on))
-            [ ("writes", row.writes); ("removes", row.removes) ];
-          Option.iter
-            (fun (_, _, _, repairing) ->
-              match
-                List.filter
-                  (fun q -> not (List.mem q repairing.refetches))
-                  row.refetches
-              with
-              | [] -> ()
-              | unrepaired ->
-                  let named = String.concat ", " unrepaired in
-                  refuse (at ^ "/refetches")
-                    (Printf.sprintf
-                       "refetches %s, which nothing replays to a client whose \
-                        stream was down: reopened must refetch %s too"
-                       named named))
-            (row_of reopened)
+      match r.trigger with
+      | On on when on <> resume_gap -> (
+          match List.assoc_opt on context.channels with
+          | Some c when c.passing ->
+              let at = Printf.sprintf "/refresh/%d" i in
+              List.iter
+                (fun (act, queries) ->
+                  if queries <> [] then
+                    refuse
+                      (at ^ "/" ^ act)
+                      (Printf.sprintf
+                         "%s %s, and %s's frames are passing: one lost must \
+                          leave the cache right"
+                         act
+                         (String.concat ", " queries)
+                         on))
+                [ ("writes", row.writes); ("removes", row.removes) ];
+              Option.iter
+                (fun (_, _, _, repairing) ->
+                  match
+                    List.filter
+                      (fun q -> not (List.mem q repairing.refetches))
+                      row.refetches
+                  with
+                  | [] -> ()
+                  | unrepaired ->
+                      let named = String.concat ", " unrepaired in
+                      refuse (at ^ "/refetches")
+                        (Printf.sprintf
+                           "refetches %s, which nothing replays to a client \
+                            whose stream was down: reopened must refetch %s \
+                            too"
+                           named named))
+                (row_of (Stream Reopened))
+          | _ -> ())
       | _ -> ())
     rows;
   let triggers =
     List.filter_map
       (fun (i, (r : T.refresh_item), kind, _) ->
-        match row_of r.on with
+        match row_of r.trigger with
         | Some (first, _, _, _) when first = i ->
             let mine =
               List.filter
-                (fun (_, (s : T.refresh_item), _, _) -> s.on = r.on)
+                (fun (_, (s : T.refresh_item), _, _) -> s.trigger = r.trigger)
                 rows
             in
             let splits =
@@ -533,7 +548,7 @@ let derive context (table : T.t) =
                 (Printf.sprintf
                    "splits %s, so it has a row for each of enriched and \
                     unenriched and no other"
-                   r.on);
+                   (T.trigger_name r.trigger));
             let docs =
               match mine with
               | [ (_, (s : T.refresh_item), _, _) ] -> s.docs
@@ -550,7 +565,7 @@ let derive context (table : T.t) =
             in
             Some
               {
-                on = r.on;
+                name = T.trigger_name r.trigger;
                 kind;
                 docs;
                 rows = List.map (fun (_, _, _, row) -> row) mine;

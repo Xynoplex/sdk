@@ -109,8 +109,10 @@ let names pairs =
       (List.map (fun (k, v) -> Printf.sprintf "%S:%s" k (Text.quoted v)) pairs)
   ^ "}"
 
-let row ?when_ ?reach ?names ?carries ?refetches ?writes ?removes
-    ?(docs = "Docs.") on =
+(* A row of the trigger [member] names: a channel's ("on") or the stream's
+   ("stream"). *)
+let trigger member ?when_ ?reach ?names ?carries ?refetches ?writes ?removes
+    ?(docs = "Docs.") name =
   let string key value =
     Option.map (fun v -> Printf.sprintf "%S:%s" key (Text.quoted v)) value
   in
@@ -125,7 +127,7 @@ let row ?when_ ?reach ?names ?carries ?refetches ?writes ?removes
   ^ String.concat ","
       (List.filter_map Fun.id
          [
-           string "on" (Some on);
+           string member (Some name);
            string "when" when_;
            string "reach" reach;
            Option.map (Printf.sprintf {|"names":%s|}) names;
@@ -136,6 +138,9 @@ let row ?when_ ?reach ?names ?carries ?refetches ?writes ?removes
            string "docs" (Some docs);
          ])
   ^ "}"
+
+let row = trigger "on"
+let stream = trigger "stream"
 
 let queries =
   [
@@ -149,10 +154,10 @@ let queries =
       ~docs:"Names.";
   ]
 
-let reopened = row "reopened" ~reach:"held" ~refetches:[ "thing"; "names" ]
+let reopened = stream "reopened" ~reach:"held" ~refetches:[ "thing"; "names" ]
 
 let unreadable =
-  row "unreadable" ~reach:"held" ~refetches:[ "thing"; "items"; "names" ]
+  stream "unreadable" ~reach:"held" ~refetches:[ "thing"; "items"; "names" ]
 
 let enriched =
   row "demo:changed" ~when_:"enriched"
@@ -291,17 +296,17 @@ let the_model =
       (model_refuses
          (table
             [
-              {|{"on":"reopened","reach":"held","refetches":["thing"],"docs":"D.","invalidates":["thing"]}|};
+              {|{"stream":"reopened","reach":"held","refetches":["thing"],"docs":"D.","invalidates":["thing"]}|};
             ])
          "/refresh/0/invalidates: an unknown member");
     case "a row with empty docs is refused"
       (model_refuses
          (table
-            [ row "reopened" ~reach:"held" ~refetches:[ "thing" ] ~docs:"" ])
+            [ stream "reopened" ~reach:"held" ~refetches:[ "thing" ] ~docs:"" ])
          "/refresh/0/docs: expected a non-empty string");
     case "a reach that is neither is refused"
       (model_refuses
-         (table [ row "reopened" ~reach:"all" ~refetches:[ "thing" ] ])
+         (table [ stream "reopened" ~reach:"all" ~refetches:[ "thing" ] ])
          "/refresh/0/reach: \"all\" is none of subject, held");
     case "a split that is neither is refused"
       (model_refuses
@@ -310,7 +315,7 @@ let the_model =
          "/refresh/0/when: \"sometimes\" is none of enriched, unenriched");
     case "an empty act is refused"
       (model_refuses
-         (table [ row "reopened" ~reach:"held" ~refetches:[] ])
+         (table [ stream "reopened" ~reach:"held" ~refetches:[] ])
          "/refresh/0/refetches: expected a non-empty array");
     case "a name of no slot is refused"
       (model_refuses
@@ -355,7 +360,7 @@ let row_summary (r : Table.row) =
     ]
 
 let trigger_summary (t : Table.trigger) =
-  ( t.on,
+  ( t.name,
     (match t.kind with
     | Reopened -> "reopened"
     | Unreadable -> "unreadable"
@@ -367,8 +372,8 @@ let trigger_summary (t : Table.trigger) =
 (* The rows of a table whose one query is [thing]. *)
 let alone =
   [
-    row "reopened" ~reach:"held" ~refetches:[ "thing" ];
-    row "unreadable" ~reach:"held" ~refetches:[ "thing" ];
+    stream "reopened" ~reach:"held" ~refetches:[ "thing" ];
+    stream "unreadable" ~reach:"held" ~refetches:[ "thing" ];
   ]
 
 let query_value ?per:(p = "resource") ?(persisted = false) member =
@@ -536,8 +541,8 @@ let the_queries =
          (table
             ~queries:[ query "Thing" ~asks:"demo:get-requested" ~value:thing ]
             [
-              row "reopened" ~reach:"held" ~refetches:[ "Thing" ];
-              row "unreadable" ~reach:"held" ~refetches:[ "Thing" ];
+              stream "reopened" ~reach:"held" ~refetches:[ "Thing" ];
+              stream "unreadable" ~reach:"held" ~refetches:[ "Thing" ];
             ])
          [
            "/queries/0/name: is \"Thing\", which is not a query's name: a \
@@ -548,8 +553,8 @@ let the_queries =
          (table
             ~queries:[ query "thing2" ~asks:"demo:get-requested" ~value:thing ]
             [
-              row "reopened" ~reach:"held" ~refetches:[ "thing2" ];
-              row "unreadable" ~reach:"held" ~refetches:[ "thing2" ];
+              stream "reopened" ~reach:"held" ~refetches:[ "thing2" ];
+              stream "unreadable" ~reach:"held" ~refetches:[ "thing2" ];
             ])
          [
            "/queries/0/name: is \"thing2\", which is not a query's name: a \
@@ -604,51 +609,79 @@ let the_rows =
           ]
           (List.map
              (fun t ->
-               let on, kind, docs, rows = trigger_summary t in
-               (on, (kind, (docs, rows))))
+               let name, kind, docs, rows = trigger_summary t in
+               (name, (kind, (docs, rows))))
              (derived (table rows)).triggers));
-    case
-      "a trigger that is neither a channel nor reopened nor unreadable is \
-       refused"
+    case "a row on what is no channel of the registry is refused"
       (refuses
          (table (rows @ [ row "demo:nope" ~refetches:[ "thing" ] ]))
          [
-           "/refresh/5/on: is \"demo:nope\", which is neither a channel of the \
-            registry nor reopened nor unreadable";
+           "/refresh/5/on: is \"demo:nope\", which is no channel of the \
+            registry";
          ]);
+    case "a row on reopened, which is the stream's, is refused"
+      (refuses
+         (table
+            (rows @ [ row "reopened" ~reach:"held" ~refetches:[ "thing" ] ]))
+         [
+           "/refresh/5/on: is \"reopened\", which is no channel of the registry";
+         ]);
+    case
+      "a row of what befalls the stream that is neither reopened nor \
+       unreadable is refused"
+      (model_refuses
+         (table
+            (rows @ [ stream "closed" ~reach:"held" ~refetches:[ "thing" ] ]))
+         "/refresh/5/stream: \"closed\" is none of reopened, unreadable");
+    case "a row both on a channel and of the stream is refused"
+      (model_refuses
+         (table
+            [
+              {|{"on":"demo:said","stream":"reopened","reach":"held","refetches":["thing"],"docs":"D."}|};
+            ])
+         "/refresh/0: is on a channel and of the stream: a row has one trigger");
+    case "a row neither on a channel nor of the stream is refused"
+      (model_refuses
+         (table [ {|{"reach":"held","refetches":["thing"],"docs":"D."}|} ])
+         "/refresh/0: is neither on a channel nor of the stream: a row has one \
+          trigger");
     case "a trigger that is no event, reaching its subject, is refused"
       (refuses
          (table
-            [ row "reopened" ~refetches:[ "thing"; "names" ]; unreadable; said ])
+            [
+              stream "reopened" ~refetches:[ "thing"; "names" ];
+              unreadable;
+              said;
+            ])
          [
-           "/refresh/0: is on reopened, which is no event: it names no subject \
-            and reaches what is held";
+           "/refresh/0: is of the stream reopened, which is no event: it names \
+            no subject and reaches what is held";
          ]);
     case "a trigger that is no event, naming a subject, is refused"
       (refuses
          (table
             [
-              row "reopened" ~reach:"held"
+              stream "reopened" ~reach:"held"
                 ~names:(names [ ("resource", "resourceId") ])
                 ~refetches:[ "thing"; "names" ];
               unreadable;
               said;
             ])
          [
-           "/refresh/0/names: is on reopened, which is no event, so it names \
-            no subject";
+           "/refresh/0/names: is of the stream reopened, which is no event, so \
+            it names no subject";
          ]);
     case "a trigger that is no event, carrying a value, is refused"
       (refuses
          (table
             [
-              row "unreadable" ~reach:"held" ~carries:"annotation"
+              stream "unreadable" ~reach:"held" ~carries:"annotation"
                 ~writes:[ "items" ];
               reopened;
             ])
          [
-           "/refresh/0/carries: is on unreadable, which is no event, so it \
-            carries no value";
+           "/refresh/0/carries: is of the stream unreadable, which is no \
+            event, so it carries no value";
          ]);
     case "a row that names a subject and reaches what is held is refused"
       (refuses
@@ -903,9 +936,11 @@ let the_rows =
             at least";
          ]);
     case "a table with no row for reopened is refused"
-      (refuses (table [ unreadable ]) [ "/refresh: has no row for reopened" ]);
+      (refuses (table [ unreadable ])
+         [ "/refresh: has no row for the stream reopened" ]);
     case "a table with no row for unreadable is refused"
-      (refuses (table [ reopened ]) [ "/refresh: has no row for unreadable" ]);
+      (refuses (table [ reopened ])
+         [ "/refresh: has no row for the stream unreadable" ]);
     case "a passing trigger that writes is refused"
       (refuses
          (table

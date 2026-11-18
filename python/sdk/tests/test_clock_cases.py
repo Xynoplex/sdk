@@ -5,8 +5,9 @@ whose clock moves only when the case moves it (`aio.StillLoop`), at this SDK's
 timings, which are the table's, and with the lowest draw the jitter's random
 source can give. A `pass` stops the clock at each instant a timer falls due,
 in turn, and lets what falls due run there, so a wait ends at the instant it
-was set to end, or the case fails. What the table may say is held by
-`.github/scripts/checks/specs/check-case-tables.mjs`.
+was set to end, or the case fails. What the table may say is held by its
+schema, `protocol/specs/src/client/ClientClockCases.json`, which
+`protocol/scripts/checks/specs/check-tables.mjs` holds it to.
 """
 
 import asyncio

@@ -17,9 +17,10 @@ Pointer of the value refused; nothing is defaulted.
   uses.
 - `Openapi`: the two OpenAPI documents, their path items and responses.
 - `Tables`: one module per table, case table or registry, each typed to its
-  leaves. A table has no schema of its own, so its module is a mirror of its
-  instances, and the strict decoder is its census: a member, a case kind or a
-  table that Protocol adds stops the run until the module knows it.
+  leaves. Its module is a mirror of the table's instances, not read from the
+  schema Protocol keeps beside the table, and the strict decoder is its
+  census: a member, a case kind or a table that Protocol adds stops the run
+  until the module knows it.
 - `Spec`: every file accounted for, and every `$ref` resolved to a file of
   the kind its place calls for.
 - `Normalize`: what an `allOf` means, its parts merged keyword by keyword
@@ -215,6 +216,14 @@ writes:
   (`typescript/core/src/types.ts`), each component schema as a type written
   as the schema states it, and each kind of id branded. `Typescript_syntax`
   is the TypeScript it is built of, and Prettier lays it out.
+- `python-types`: the Python SDK's `xynolog/types.py`, a frozen `WireModel`
+  for every component schema that is an object and a type alias for every
+  other, but the kinds of id, which it imports from `xynolog.identifiers`. A
+  model states types and no rules: what a value must be beyond its type is
+  the `required` table's. What a schema writes in place is named by
+  `Naming`, and each declaration follows every one it names, so pydantic
+  builds each model as the module runs. `Python_syntax` is the Python it is
+  built of.
 
 ### cli's groups
 

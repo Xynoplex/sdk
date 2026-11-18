@@ -34,7 +34,7 @@ The main import runs in a browser. What cannot is on a subpath:
 
 | Import | |
 |---|---|
-| `@xynolog/core/openapi` | The spec's validators, compiled when the package is built, and its limits |
+| `@xynolog/core/openapi` | The spec's limits |
 | `@xynolog/core/testing` | The test doubles every layer shares |
 | `@xynolog/core/testing/axioms` | Property-based harnesses for state units and transports. They need `fast-check` |
 | `@xynolog/core/testing/issuer` | An OIDC issuer in one process, for tests that verify tokens |
@@ -57,8 +57,8 @@ const audience = kbResource('xynoplex.github.io:xynoplex-caselaw-kb'); // 'https
 
 ## What a change must keep
 
-- **The spec is the source.** The validators in `src/generated/` and each module that opens `GENERATED FILE`, `src/types.ts` among them, are generated from [`protocol/specs/src`](../../../protocol/specs/src/), and never edited. The modules that open `GENERATED FILE` are committed, and `make generate` writes them; the validators are made when the package is built. Change the spec, then run `make generate`. A type written by hand that restates a schema is a second copy that nothing keeps true: use the spec's type, under the spec's name.
-- **The main import runs in a browser.** It uses no Node builtin. The validators and the test issuer are reachable only by their subpaths, because of the weight they would add to every bundle, and `npm run lint:core-subpaths` fails a re-export of either from the root.
+- **The spec is the source.** Each module that opens `GENERATED FILE`, `src/types.ts` among them, is generated from [`protocol/specs/src`](../../../protocol/specs/src/), and never edited. Those modules are committed, and `make generate` writes them. Change the spec, then run `make generate`. A type written by hand that restates a schema is a second copy that nothing keeps true: use the spec's type, under the spec's name.
+- **The main import runs in a browser.** It uses no Node builtin. The test issuer is reachable only by its subpath, because of the weight `jose` would add to every bundle, and `npm run lint:core-subpaths` fails a re-export of it from the root.
 - **It depends on no other Xynolog package.** Everything else depends on it.
 - **An id is made only by its constructor or its guard.** One kind is never assignable to another.
 - **Its tests read every package.** Three census tests here walk the source of all of `packages/`, `apps/` and `images/`, tests included, so a change somewhere else can fail this package's suite.

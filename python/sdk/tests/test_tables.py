@@ -8,7 +8,7 @@ from pathlib import PurePosixPath
 from typing import get_args
 
 from pydantic import BaseModel, JsonValue
-from spec import SPEC, objects, read, text
+from spec import SPEC, JsonObject, objects, read, text
 
 from xynolog import error_codes, refresh, storage_keys, stored, timing
 from xynolog import types as wire
@@ -104,10 +104,11 @@ def test_the_refresh_table_names_every_query_and_every_trigger() -> None:
     assert list(get_args(refresh.CacheQuery.__value__)) == queries
 
     rows = objects(table["refresh"], "refresh")
-    triggers = list(dict.fromkeys(text(row["on"], "a trigger") for row in rows))
+    triggers = list(dict.fromkeys(trigger_of(row) for row in rows))
     assert list(refresh.CACHE_REFRESH) == triggers
     assert list(get_args(refresh.CacheRefreshTrigger.__value__)) == triggers
-    channels = [trigger for trigger in triggers if trigger in CHANNELS]
+    channels = list(dict.fromkeys(text(row["on"], "a channel") for row in rows if "on" in row))
+    assert all(channel in CHANNELS for channel in channels)
     assert list(refresh.CACHE_REFRESH_CHANNELS) == channels
     assert list(get_args(refresh.CacheRefreshChannel.__value__)) == channels
     assert sum(len(held) for held in refresh.CACHE_REFRESH.values()) == len(rows)
@@ -124,8 +125,14 @@ def test_the_refresh_table_names_every_query_and_every_trigger() -> None:
             and list(held.refetches) == row.get("refetches", [])
             and list(held.writes) == row.get("writes", [])
             and list(held.removes) == row.get("removes", [])
-            for held in by_trigger[text(row["on"], "a trigger")]
+            for held in by_trigger[trigger_of(row)]
         )
+
+
+def trigger_of(row: JsonObject) -> str:
+    """A row's trigger: the channel it is `on`, or what befalls the `stream`; one, and not both."""
+    assert ("on" in row) != ("stream" in row), f"a row is on a channel or of the stream, and not both: {row}"
+    return text(row["on"] if "on" in row else row["stream"], "a trigger")
 
 
 def way(names: refresh.CacheRefreshWay | None) -> str | None:

@@ -20,11 +20,11 @@ import {
   XynologError,
   accessToken,
   baseUrl,
+  faultOf,
   resourceId,
   type AccessToken,
   type JobFilter,
 } from '@xynolog/core';
-import { formatErrors, validators } from '@xynolog/core/openapi';
 import type { TraceCarrier } from '@xynolog/core';
 import {
   SpanKind,
@@ -52,6 +52,12 @@ import {
 } from '@xynolog/sdk';
 
 type Arguments = Record<string, unknown>;
+
+/** A class of a failure, as its own schema reads it. */
+const isFailureClass = (
+  value: unknown,
+): value is NonNullable<JobFailure['failureClass']> =>
+  faultOf('FailureClass', value) === undefined;
 
 /** The suite sent something this driver cannot act on: the suite's mistake, never the worker's. */
 class Misuse extends Error {}
@@ -351,9 +357,9 @@ const operations: Record<
   async fail(args) {
     // A class is one the spec names, as its own schema reads it.
     const failureClass = args['failureClass'];
-    if (failureClass !== undefined && !validators.FailureClass(failureClass))
+    if (failureClass !== undefined && !isFailureClass(failureClass))
       throw new Misuse(
-        `failureClass is no class of a failure: ${formatErrors(validators.FailureClass.errors)}`,
+        `failureClass is no class of a failure: ${JSON.stringify(failureClass)}`,
       );
     const said: JobFailure = {
       ...checkpoint(args),

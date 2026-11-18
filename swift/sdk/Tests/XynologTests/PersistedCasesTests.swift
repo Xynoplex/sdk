@@ -13,10 +13,10 @@ import Testing
 // keys it keeps them under (`keys`), what forgetting a stored sign-in deletes, however it is
 // forgotten (`forget`), what a session of a registry reads, records and restores from its start
 // (`startup`), what it still writes once another context changes its stored sign-in (`crossTab`),
-// and once what holds its sign-in in this process changes it (`holder`), and the place its stream
+// and once what holds its sign-in in this process changes it (`inProcess`), and the place its stream
 // resumes a scope from (`resumeFrom`). The sessions of `forget`'s expiry and refusal, of
 // `startup`, of `resumeFrom` and of `crossTab` are the registry's own, made by
-// HttpSessionFactory over a gateway and an issuer in this process; `holder`'s is a script's, made
+// HttpSessionFactory over a gateway and an issuer in this process; `inProcess`'s is a script's, made
 // by sessionFromKept over a MemorySignIn. A script's session whose sign-in cannot be read when its
 // client saves keeps nothing more, and says so once on its errors, as one whose closing save
 // cannot read it does before they end, and one whose sign-in cannot record who the gateway named
@@ -782,7 +782,7 @@ private func archivedEvent(of scope: ResourceId, id: String) throws -> String {
 
 // ── crossTab ────────────────────────────────────────────────────────────
 
-/// How a `crossTab` or `holder` row changes kb-a's sign-in, kept for jo.
+/// How a `crossTab` or `inProcess` row changes kb-a's sign-in, kept for jo.
 private enum SignInChange: Sendable {
   case forget
   /// A new sign-in kept in its place, naming the person whose key this is, or nobody.
@@ -869,7 +869,7 @@ private enum SignInChange: Sendable {
   }
 }
 
-// ── holder ──────────────────────────────────────────────────────────────
+// ── inProcess ───────────────────────────────────────────────────────────
 
 @Test func aScriptSessionWritesNothingOnceWhatHoldsItsSignInNoLongerNamesItsPerson() async throws {
   let table = try casesTable()
@@ -877,7 +877,7 @@ private enum SignInChange: Sendable {
   let resourceKey = try keysOf(table, kbId: "kb-a", personKey: jo).query("resource")
   let user = try JSONEncoder().encode(required(table, "whoAmI"))
   let asked = try ResourceId("res-1")
-  for value in try required(table, "holder").array {
+  for value in try required(table, "inProcess").array {
     let row = try value.object
     let why = try required(row, "why").text
     let saved = try required(row, "saved") == .bool(true)

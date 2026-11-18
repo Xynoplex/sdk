@@ -122,7 +122,7 @@ let text (t : Table.t) =
               (List
                  (List.concat_map
                     (fun (trigger : Table.trigger) ->
-                      List.map (row trigger.on) trigger.rows)
+                      List.map (row trigger.name) trigger.rows)
                     t.triggers));
             H.value "channels" words
               ~about:[ "The triggers that are channels of the bus." ]
@@ -130,7 +130,7 @@ let text (t : Table.t) =
                  (List.filter_map
                     (fun (trigger : Table.trigger) ->
                       match trigger.kind with
-                      | Channel _ -> Some (H.Str trigger.on)
+                      | Channel _ -> Some (H.Str trigger.name)
                       | Reopened | Unreadable -> None)
                     t.triggers));
             Values

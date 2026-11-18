@@ -53,7 +53,7 @@ let text (t : Table.t) =
     List.filter_map
       (fun (trigger : Table.trigger) ->
         match trigger.kind with
-        | Channel _ -> Some trigger.on
+        | Channel _ -> Some trigger.name
         | Reopened | Unreadable -> None)
       t.triggers
   in
@@ -145,7 +145,9 @@ let text (t : Table.t) =
                   one of the\n\
                   table's channels that cannot be read.")
             "CacheRefreshTrigger"
-            (List.map (fun (trigger : Table.trigger) -> trigger.on) t.triggers);
+            (List.map
+               (fun (trigger : Table.trigger) -> trigger.name)
+               t.triggers);
           literal
             ~about:[ Line "The triggers that are channels of the bus." ]
             "CacheRefreshChannel" channels;
@@ -212,7 +214,7 @@ let text (t : Table.t) =
                            (List.map
                               (fun (trigger : Table.trigger) ->
                                 P.element ~about:[ Prose trigger.docs ]
-                                  ~label:(Key (P.Str trigger.on))
+                                  ~label:(Key (P.Str trigger.name))
                                   (P.tuple ~magic:true
                                      (List.map
                                         (fun r -> P.item (row r))

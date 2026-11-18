@@ -12,7 +12,7 @@ private func asJSON<Value: Encodable>(_ value: Value) throws -> JSONValue {
     ("sdk-telemetry/telemetry.json", "spans", try asJSON(telemetrySpans)),
     ("sdk-telemetry/telemetry.json", "metrics", try asJSON(telemetryMetrics)),
     ("session/oauth.json", "clients", try asJSON(oauthClients)),
-    ("session/oauth.json", "scope", try asJSON(signInScope)),
+    ("session/oauth.json", "scopes", try asJSON(signInScope)),
     ("sign-in-store/owner-only.json", "directoryMode", try asJSON(ownerOnlyDirectory)),
     ("sign-in-store/owner-only.json", "fileMode", try asJSON(ownerOnlyFile)),
     ("media-types/registry.json", "mediaTypes", try asJSON(mediaTypes)),
@@ -43,7 +43,7 @@ private func asJSON<Value: Encodable>(_ value: Value) throws -> JSONValue {
   #expect(stated.count == cacheRefresh.count)
   for (row, generated) in zip(stated, cacheRefresh) {
     let names = try row["names"]?.object
-    #expect(try required(row, "on").text == generated.on.rawValue)
+    #expect(try (row["on"] ?? required(row, "stream")).text == generated.trigger.rawValue)
     #expect(try row["when"]?.text == generated.when?.rawValue)
     #expect(try (row["reach"]?.text ?? "subject") == generated.reach.rawValue)
     #expect(try way(names?["resource"]) == generated.resource)
@@ -53,8 +53,9 @@ private func asJSON<Value: Encodable>(_ value: Value) throws -> JSONValue {
     #expect(try queries(row["writes"]) == generated.writes.map(\.rawValue))
     #expect(try queries(row["removes"]) == generated.removes.map(\.rawValue))
   }
-  let triggers = Set(try stated.map { try required($0, "on").text })
-  #expect(Set(cacheRefreshChannels.keys.map(\.rawValue)) == triggers.intersection(channels))
+  let onChannels = Set(try stated.compactMap { try $0["on"]?.text })
+  #expect(onChannels.isSubset(of: channels))
+  #expect(Set(cacheRefreshChannels.keys.map(\.rawValue)) == onChannels)
 }
 
 /// What a live query's cache holds, as client/refresh.json's `value` names it: a component, and

@@ -14,7 +14,9 @@ import Testing
 // it, at this SDK's timings, which are the table's, and with a random source whose every draw is
 // the lowest it can give. A `pass` moves the clock to each instant a sleeper falls due on the way,
 // in turn, and lets what falls due run there, so a wait ends at the instant it was set to end, or
-// the case fails. What the table may say is held by .github/scripts/checks/specs/check-case-tables.mjs.
+// the case fails. What the table may say is held by its schema,
+// protocol/specs/src/client/ClientClockCases.json, which
+// protocol/scripts/checks/specs/check-tables.mjs holds it to.
 
 private func clockCases() throws -> [[String: JSONValue]] {
   try required(Spec.read("client/clock-cases.json").object, "cases").array.map { try $0.object }

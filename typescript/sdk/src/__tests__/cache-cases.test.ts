@@ -24,7 +24,11 @@ import {
 } from '../session/session-storage';
 import { cacheKey, lastEventIdKey, personKey } from '../session/storage';
 
-type Entry = [unknown, unknown];
+/** An entry as the table states it: its key and its value. */
+interface Entry {
+  key: unknown;
+  value: unknown;
+}
 
 interface Stored {
   name: string;
@@ -88,14 +92,14 @@ function text(stated: Stored): string {
 
 /** Entries by key, as the document writes each key: their order is no part of the rule. */
 const asMap = (entries: Entry[]): Map<string, unknown> =>
-  new Map(entries.map(([key, value]) => [JSON.stringify(key), value]));
+  new Map(entries.map(({ key, value }) => [JSON.stringify(key), value]));
 
 /** What a load of `query`'s document keeps of `source`. */
 function loaded(query: PersistedQuery, source: string): Entry[] {
   const storage = new InMemorySessionStorage();
   storage.set(cacheKey(KEPT_FOR.kbId, KEPT_FOR.personKey, query), source);
   const kept = keptPersister(query, { storage, ...KEPT_FOR }).load();
-  return kept === null ? [] : [...kept];
+  return kept === null ? [] : [...kept].map(([key, value]) => ({ key, value }));
 }
 
 /**
@@ -117,7 +121,7 @@ function holding<Q extends PersistedQuery>(
       saveDebounceMs: 0,
     },
   );
-  for (const [key, value] of held) {
+  for (const { key, value } of held) {
     if (!isKey(key) || !isValue(value))
       throw new Error(
         `${query} holds no ${JSON.stringify(key)}: ${JSON.stringify(value)}`,
@@ -199,7 +203,9 @@ function expectWritten(stated: Write, document: unknown): void {
       `${JSON.stringify(entry)} is a key, a value and a stamp of at least 0`,
     ).toBe(true);
   expect(
-    asMap(entries.filter(isStamped).map(([key, value]): Entry => [key, value])),
+    asMap(
+      entries.filter(isStamped).map(([key, value]): Entry => ({ key, value })),
+    ),
   ).toEqual(asMap(stated.written.entries));
 }
 

@@ -62,9 +62,18 @@ let names =
 
 type reach = Subject | Held
 type when_ = Enriched | Unenriched
+type stream = Reopened | Unreadable
+type trigger = On of string | Stream of stream
+
+let streams = [ ("reopened", Reopened); ("unreadable", Unreadable) ]
+let stream_name stream = fst (List.find (fun (_, s) -> s = stream) streams)
+
+(* A channel's trigger is named by its channel, the stream's by what befalls
+   it. *)
+let trigger_name = function On channel -> channel | Stream s -> stream_name s
 
 type refresh_item = {
-  on : string;
+  trigger : trigger;
   when_ : when_ option;
   reach : reach option;
   names : names option;
@@ -77,7 +86,21 @@ type refresh_item = {
 
 let refresh_item =
   Decode.obj (fun o : refresh_item ->
-      let on = Decode.required o "on" Decode.string in
+      let cursor = Decode.at o in
+      let trigger =
+        match
+          (Decode.has_member "on" cursor, Decode.has_member "stream" cursor)
+        with
+        | true, true ->
+            Decode.refuse cursor
+              "is on a channel and of the stream: a row has one trigger"
+        | true, false -> On (Decode.required o "on" Decode.string)
+        | false, true ->
+            Stream (Decode.required o "stream" (Decode.enum streams))
+        | false, false ->
+            Decode.refuse cursor
+              "is neither on a channel nor of the stream: a row has one trigger"
+      in
       let when_ =
         Decode.optional o "when"
           (Decode.enum [ ("enriched", Enriched); ("unenriched", Unenriched) ])
@@ -95,7 +118,17 @@ let refresh_item =
       let writes = act "writes" in
       let removes = act "removes" in
       let docs = Decode.required o "docs" Decode.non_empty_string in
-      { on; when_; reach; names; carries; refetches; writes; removes; docs })
+      {
+        trigger;
+        when_;
+        reach;
+        names;
+        carries;
+        refetches;
+        writes;
+        removes;
+        docs;
+      })
 
 type t = { comment : string; queries : query list; refresh : refresh_item list }
 
