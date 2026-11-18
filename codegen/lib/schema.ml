@@ -169,6 +169,58 @@ let map f layer =
     not_;
   }
 
+(* [map], for an [f] that may refuse: the layer of its results, or its first
+   refusal in [children]'s order. *)
+let traverse f layer =
+  let ( let* ) = Result.bind in
+  let one = function
+    | None -> Ok None
+    | Some s -> Result.map Option.some (f s)
+  in
+  let list g xs =
+    Result.map List.rev
+      (List.fold_left
+         (fun found x ->
+           let* found = found in
+           let* y = g x in
+           Ok (y :: found))
+         (Ok []) xs)
+  in
+  let each = function
+    | None -> Ok None
+    | Some xs -> Result.map Option.some (list f xs)
+  in
+  let* properties =
+    match layer.properties with
+    | None -> Ok None
+    | Some ps ->
+        Result.map Option.some
+          (list
+             (fun (name, s) ->
+               let* s = f s in
+               Ok (name, s))
+             ps)
+  in
+  let* additional_properties = one layer.additional_properties in
+  let* property_names = one layer.property_names in
+  let* items = one layer.items in
+  let* all_of = each layer.all_of in
+  let* any_of = each layer.any_of in
+  let* one_of = each layer.one_of in
+  let* not_ = one layer.not_ in
+  Ok
+    {
+      layer with
+      properties;
+      additional_properties;
+      property_names;
+      items;
+      all_of;
+      any_of;
+      one_of;
+      not_;
+    }
+
 (* The one recursion over a schema: each schema it holds is folded first, in
    [children]'s order, and [schema] is given the layer of their results. It
    stops at a [$ref]: a walk that follows one is given what resolves it, and

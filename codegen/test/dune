@@ -126,6 +126,11 @@
  (libraries xynolog_codegen alcotest qcheck-core qcheck-alcotest))
 
 (test
+ (name merges)
+ (modules merges)
+ (libraries xynolog_codegen yojson alcotest))
+
+(test
  (name ocaml_syntax)
  (modules ocaml_syntax)
  (libraries xynolog_codegen compiler-libs.common ocamlformat-lib alcotest))

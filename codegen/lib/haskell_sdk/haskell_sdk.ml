@@ -6,7 +6,6 @@
    writes the Haskell SDK's module of it itself. *)
 
 module Normalize = Normalize
-module Merged = Merged
 module Models = Models
 module Companions = Companions
 module Definitions = Definitions
@@ -197,6 +196,22 @@ let files ~root (spec : Spec.t) =
   let* manifest =
     within "haskell/sdk/xynolog.cabal.in" (manifest ~root models.module_names)
   in
+  let* validated =
+    let find name =
+      match List.assoc_opt name models.definitions with
+      | Some s -> Ok s
+      | None -> Error ("unknown schema reference: " ^ name)
+    in
+    let merged = Normalize.everywhere ~find in
+    Spec.all
+      (List.map
+         (fun (name, _) ->
+           match merged name with
+           | Ok s -> Ok (name, s)
+           | Error message ->
+               Error (refused "openapi.json" (name ^ ": " ^ message)))
+         models.definitions)
+  in
   let unrecognized =
     Error_codes.Haskell.code_constructor "busRequest"
       spec.tables.errors_codes.bus_request.unrecognized_failure
@@ -211,8 +226,7 @@ let files ~root (spec : Spec.t) =
         file ~under:"generated"
           (Companions.schemas_module
              ~banner:(banner "protocol/specs/src")
-             models.definitions);
-        Merged.file models.definitions;
+             validated);
         file ~under:"test"
           (Companions.round_trip_module
              ~banner:(banner "protocol/specs/src")

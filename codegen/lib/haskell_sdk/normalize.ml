@@ -1,7 +1,7 @@
-(* A schema's [allOf] merged into the one object it describes, as the Haskell
-   SDK's Xynolog.Internal.Schema.normalize merges it at run time: each part,
-   a reference expanded, merged keyword by keyword, then the schema's own
-   keywords on top. Bounds tighten, [required] and [enum] combine, a closed
+(* A schema's [allOf] merged into the one object it describes, for the
+   Haskell SDK's types and for the schemas it validates against, which hold no
+   [allOf]: each part, a reference expanded, merged keyword by keyword, then
+   the schema's own keywords on top. Bounds tighten, [required] and [enum] combine, a closed
    object stays closed, and keywords that must agree are refused when they
    don't; any other keyword is the last part's. A property two parts state
    differently is the [allOf] of both. *)
@@ -194,3 +194,41 @@ let normalize ~find schema =
       schema
   in
   (expand schema).whole []
+
+(* Each schema [find] names, by its name, with every [allOf] in it merged:
+   what each node holds is merged first, then the node's own [allOf], each
+   part that refers to a schema given that schema merged, and then what that
+   merge makes, which states a property two parts state differently as the
+   [allOf] of both. A schema whose merge needs its own is refused: written
+   merged, it would never end. *)
+let everywhere ~find =
+  let written = Hashtbl.create 64 in
+  let rec named within name =
+    match Hashtbl.find_opt written name with
+    | Some s -> Ok s
+    | None ->
+        let* () =
+          if List.mem name within then
+            Error ("recursive schema intersection: " ^ name)
+          else Ok ()
+        in
+        let* s = find name in
+        let* s = merged (name :: within) s in
+        Hashtbl.replace written name s;
+        Ok s
+  and merged within = function
+    | Schema.Boolean_schema _ as b -> Ok b
+    | Schema l -> (
+        let each l =
+          Result.map
+            (fun l -> Schema.Schema l)
+            (Schema.traverse (merged within) l)
+        in
+        let* s = each l in
+        match s with
+        | Schema { all_of = Some _; _ } ->
+            let* l = normalize ~find:(named within) s in
+            each l
+        | s -> Ok s)
+  in
+  named []

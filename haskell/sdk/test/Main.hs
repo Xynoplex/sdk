@@ -69,7 +69,7 @@ import Xynolog.Internal.Generated.RoundTrip (roundTrip)
 import Xynolog.Internal.Generated.Schemas (schemas)
 import Xynolog.Internal.Generated.TimingValues (timingValues)
 import Xynolog.Internal.Required qualified as Required
-import Xynolog.Internal.Schema (checkSchema, normalize, validate, validateNamed)
+import Xynolog.Internal.Schema (checkSchema, validate, validateNamed)
 import Xynolog.Retry qualified as Retry
 import Xynolog.Timing.Settings qualified as TimingSettings
 
@@ -91,15 +91,14 @@ at :: Key.Key -> Value -> Value
 at key value = maybe Null id (KM.lookup key (object value))
 
 sample :: Int -> Value -> Either String Value
-sample depth original
+sample depth schema
   | depth > 40 = Left "required schema recursion exceeds sample budget"
   | otherwise = do
-      normalized <- normalize schemas original
-      let fields = object normalized
+      let fields = object schema
           nested = sample (depth + 1)
-          choose candidates = case filter (either (const False) (const True) . validate schemas normalized) candidates of
+          choose candidates = case filter (either (const False) (const True) . validate schemas schema) candidates of
             value : _ -> Right value
-            [] -> Left ("no valid generated sample for " ++ show normalized)
+            [] -> Left ("no valid generated sample for " ++ show schema)
       case KM.lookup "$ref" fields of
         Just (String reference) -> case Map.lookup (T.pack (takeBaseName (T.unpack reference))) schemas of
           Just target -> nested target
@@ -117,10 +116,10 @@ sample depth original
               Just (String "boolean") -> Right (Bool False)
               Just (String "array") -> do
                 let size = case KM.lookup "minItems" fields of Just (Number n) -> ceiling n; _ -> 0
-                items <- mapM (const (nested (at "items" normalized))) [1 :: Int .. size]
+                items <- mapM (const (nested (at "items" schema))) [1 :: Int .. size]
                 choose [Array (V.fromList items)]
               Just (String "object") -> do
-                let properties = object (at "properties" normalized)
+                let properties = object (at "properties" schema)
                 required <-
                   mapM
                     ( \key -> case key of
@@ -130,7 +129,7 @@ sample depth original
                           (,) member <$> nested definition
                         _ -> Left "required name is not a string"
                     )
-                    (array (at "required" normalized))
+                    (array (at "required" schema))
                 choose [Object (KM.fromList required)]
               Nothing -> Right Null
               _ -> Left "sample shape unsupported"
@@ -149,9 +148,8 @@ schemaCases root = do
     either (ioError . userError . ((T.unpack name ++ ": ") ++)) pure (checkSchema schemas definition)
     value <- either (ioError . userError . ((T.unpack name ++ ": ") ++)) pure (sample 0 definition)
     expectRoundTrip name value
-    normalized <- either (ioError . userError) pure (normalize schemas definition)
-    let properties = object (at "properties" normalized)
-        required = array (at "required" normalized)
+    let properties = object (at "properties" definition)
+        required = array (at "required" definition)
     forM_ (KM.toList properties) $ \(key, field) -> do
       if at "nullable" field /= Bool True
         then pure ()
@@ -161,78 +159,18 @@ schemaCases root = do
             then pure ()
             else expectRoundTrip name (Object (KM.delete key (object value)))
     case value of
-      Object fields | at "type" normalized == String "object" && at "additionalProperties" normalized /= Bool False && at "maxProperties" normalized == Null -> do
-        extra <- case at "additionalProperties" normalized of
+      Object fields | at "type" definition == String "object" && at "additionalProperties" definition /= Bool False && at "maxProperties" definition == Null -> do
+        extra <- case at "additionalProperties" definition of
           typed@(Object _) -> either (ioError . userError) pure (sample 0 typed)
           _ -> pure (Number 18446744073709551617)
         expectRoundTrip name (Object (KM.insert "__haskell_probe" extra fields))
       _ -> pure ()
-    case at "enum" normalized of
+    case at "enum" definition of
       Array values -> do
         mapM_ (expectRoundTrip name) values
         let unknown candidate = if String candidate `V.elem` values then unknown (candidate <> "_") else candidate
         require (T.unpack name ++ " accepted an unknown enum member") (isLeft (roundTrip name (String (unknown "__haskell_unknown"))))
       _ -> pure ()
-
--- The generator's merge of each allOf (test/fixtures/merged-schemas.json, which
--- codegen/lib/haskell_sdk/merged.ml writes) is exactly what normalize gives,
--- and the nodes stating an allOf are the ones it lists.
-mergedCases :: FilePath -> IO ()
-mergedCases root = do
-  fixture <- readJSON (root </> "haskell/sdk/test/fixtures/merged-schemas.json")
-  listed <- forM (array (at "merged" fixture)) $ \entry -> do
-    (name, path) <- case (at "schema" entry, at "at" entry) of
-      (String name, Array segments) | Just path <- traverse segment (toList segments) -> pure (name, path)
-      _ -> ioError (userError ("malformed merged-schema entry: " ++ show entry))
-    expected <- case (KM.lookup "merged" (object entry), KM.lookup "refused" (object entry)) of
-      (Just merged, Nothing) -> pure (Right merged)
-      (Nothing, Just (String refusal)) -> pure (Left (T.unpack refusal))
-      _ -> ioError (userError ("merged-schema entry states neither a merge nor a refusal: " ++ show entry))
-    node <-
-      maybe
-        (ioError (userError ("no allOf node at " ++ show (name, path))))
-        pure
-        (Map.lookup name schemas >>= descend path)
-    let found = normalize schemas node
-    pure ((name, path), if found == expected then Nothing else Just (show (name, path) ++ "\n  generator: " ++ show expected ++ "\n  runtime:   " ++ show found))
-  let disagreements = [reason | (_, Just reason) <- listed]
-      places = map fst listed
-      stated = [(name, path) | (name, schema) <- Map.toAscList schemas, path <- stating [] schema]
-  require ("normalize and the generator merge these allOf differently:\n" ++ unlines disagreements) (null disagreements)
-  require "merged-schemas.json lists a node twice" (Set.size (Set.fromList places) == length places)
-  require
-    ( "merged-schemas.json differs from the nodes stating an allOf; missing: "
-        ++ show (Set.toList (Set.difference (Set.fromList stated) (Set.fromList places)))
-        ++ ", extra: "
-        ++ show (Set.toList (Set.difference (Set.fromList places) (Set.fromList stated)))
-    )
-    (Set.fromList stated == Set.fromList places)
-  putStrLn ("PASS normalize merges each of " ++ show (length places) ++ " allOf as the generator does")
-  where
-    segment (String text) = Just text
-    segment _ = Nothing
-    descend [] value = Just value
-    descend (key : rest) (Object fields) = KM.lookup (Key.fromText key) fields >>= descend rest
-    descend (index : rest) (Array items) = case reads (T.unpack index) of
-      [(i, "")] -> items V.!? i >>= descend rest
-      _ -> Nothing
-    descend _ _ = Nothing
-    stating :: [Text] -> Value -> [[Text]]
-    stating path (Object fields) =
-      [reverse path | KM.member "allOf" fields]
-        ++ concat
-          [ stating (Key.toText key : "properties" : path) property
-          | Just (Object properties) <- [KM.lookup "properties" fields],
-            (key, property) <- KM.toList properties
-          ]
-        ++ concat [stating (Key.toText key : path) child | key <- ["additionalProperties", "items"], Just child <- [KM.lookup key fields]]
-        ++ concat
-          [ stating (T.pack (show i) : Key.toText key : path) part
-          | key <- ["allOf", "anyOf", "oneOf"],
-            Just (Array parts) <- [KM.lookup key fields],
-            (i, part) <- zip [0 :: Int ..] (toList parts)
-          ]
-    stating _ _ = []
 
 identifierCases :: FilePath -> IO ()
 identifierCases root = do
@@ -455,7 +393,6 @@ runCases root = do
   forM_ ["\n", "\r", "\x2028", "\x2029"] $ \separator ->
     require "ECMAScript dot matched line terminator" (isLeft (validate schemas dot (String ("x" <> separator <> "z"))))
   schemaCases root
-  mergedCases root
   specification <- readJSON (root </> "protocol/specs/src/openapi.json")
   forM_ (KM.keys (object (at "schemas" (at "components" specification)))) $ \key -> do
     let name = Key.toText key

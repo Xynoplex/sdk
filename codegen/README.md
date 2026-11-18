@@ -171,9 +171,8 @@ per language it writes:
   the client registry's records, the stored session's, the HTTP routes'
   bodies and the bus's envelopes, each `allOf` merged into one object, a
   module per cycle of references, with `Xynolog.Types`, the schemas it
-  validates against and the round trips its tests drive; each `allOf` in
-  those schemas as the generator merges it, which the SDK's runtime merge
-  must give (`test/fixtures/merged-schemas.json`); its HTTP routes and
+  validates against, each `allOf` in them merged, and the round trips its
+  tests drive; its HTTP routes and
   what a refused credential is, from the reference transport; its
   transport's facts, from `TRANSPORT-HTTP.md`; its bus's channels and
   operations, with each operation's failure; the worker's channels and
