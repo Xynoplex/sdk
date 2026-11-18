@@ -179,6 +179,8 @@ let header_schemas (r : Openapi.response) =
 
 type bundle = {
   definitions : definitions;
+  view : Schema.t -> t;
+      (** Any other schema, each file it names as the bundle names it. *)
   bodies : string list;
       (** Every component schema a request or response body of the paths names.
       *)
@@ -312,6 +314,7 @@ let bundle (spec : Spec.t) =
   in
   {
     definitions = { names; schema };
+    view = view ~named ~schemas;
     bodies =
       List.filter_map named (List.concat_map refs body_schemas)
       |> List.sort_uniq String.compare;
