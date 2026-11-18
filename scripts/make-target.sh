@@ -149,8 +149,11 @@ case "${1:-}" in
     ;;
   test-codegen)
     # The generator's model reads every file of the pinned Protocol, and
-    # refuses a copy of it that has what the model does not know. Every sdk
-    # path the pinned Protocol names is one this checkout has.
+    # refuses a copy of it that has what the model does not know. Every case
+    # table is run by a named test of each SDK, or absent from it for a
+    # reason, and every surface item an SDK lacks is one Protocol has, with a
+    # reason. Every sdk path the pinned Protocol names is one this checkout
+    # has.
     ocaml_toolchain_image
     in_container xynolog-ocaml-toolchain '
       cd /tmp/sdk/codegen
@@ -158,6 +161,7 @@ case "${1:-}" in
       find bin lib test -name "*.ml*" | sort | xargs dune exec -- ocamlformat --check
       dune runtest
       dune exec -- ./test/census.exe ../protocol/specs/src
+      dune exec -- ./test/coverage_census.exe ..
       dune exec -- xynolog-codegen read ..
       python3 check-boundary.py ..
       python3 check-protocol-paths.py .. ../protocol' --memory 4g
