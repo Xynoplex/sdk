@@ -1,8 +1,6 @@
 package xynolog.registry
 
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
@@ -10,7 +8,6 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.JsonDecoder
-import kotlinx.serialization.json.JsonIgnoreUnknownKeys
 import kotlinx.serialization.json.JsonPrimitive
 import xynolog.Timings
 import xynolog.bus.faultOfSchema
@@ -126,28 +123,3 @@ internal class KeptQuery<K : Any, V : Any>(
     /** Keep the query's cache among `caches` in `persistence` from now on. */
     fun attach(caches: KeptCaches, persistence: CachePersistence): Unit = cache(caches).attach(persister(persistence))
 }
-
-/**
- * What is kept of a sign-in: the tokens an issuer issued, the client they
- * were issued to, the issuer's endpoints a renewal and a sign-out need,
- * learned once at sign-in so no session asks again, and whom the gateway said
- * the tokens are, once it has. Tokens, never a password. A stored value that
- * lacks a member it requires is no session.
- */
-@OptIn(ExperimentalSerializationApi::class)
-@Serializable
-@JsonIgnoreUnknownKeys
-public data class StoredSession(
-    /** The access token: short-lived, sent as a Bearer token. */
-    public val access: String,
-    /** The refresh token: what renews the access token at the issuer without another sign-in. */
-    public val refresh: String,
-    /** The client the tokens were issued to, which a renewal and a revocation name. */
-    public val clientId: String,
-    /** The issuer's token endpoint, where the refresh grant is made. */
-    public val tokenEndpoint: String,
-    /** The issuer's revocation endpoint (RFC 7009), where a sign-out tells it to forget the refresh token. Null when the issuer has none. */
-    public val revocationEndpoint: String? = null,
-    /** The key of the person the gateway said this sign-in's token is (`personKey`). Null until a gateway has named them: a renewal keeps it, a new sign-in has none. */
-    public val personKey: String? = null,
-)

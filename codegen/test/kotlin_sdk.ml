@@ -21,7 +21,7 @@ let spec ?(identifiers = []) schemas : T.spec =
   {
     definitions = List.map decoded schemas;
     identifiers;
-    component_of_file = List.map (fun (name, _) -> (file name, name)) schemas;
+    name_of_key = List.map (fun (name, _) -> (file name, name)) schemas;
   }
 
 let generated ?identifiers schemas =

@@ -35,7 +35,6 @@ import xynolog.http.waitFor
 import xynolog.identifiers.ResourceId
 import xynolog.identity.kbDid
 import xynolog.resources.primaryMediaType
-import xynolog.session.KbIdentityConflict
 import xynolog.session.OpenedSession
 import xynolog.session.SessionSignals
 import xynolog.session.XynologSession
@@ -46,13 +45,27 @@ import xynolog.transport.Broadcast
 import xynolog.transport.Events
 import xynolog.transport.Variable
 import xynolog.transport.Watched
+import xynolog.types.Expected
 import xynolog.types.HttpEndpoint
 import xynolog.types.KbDescription
 import xynolog.types.KbEndpoint
+import xynolog.types.KbIdentityConflict
 import xynolog.types.KbRead
+import xynolog.types.KbReadVerdict
+import xynolog.types.KbReadVerdictConflict
+import xynolog.types.KbReadVerdictNoVerdict
+import xynolog.types.KbReadVerdictRecorded
+import xynolog.types.KbSessionStatus
 import xynolog.types.KnowledgeBase
 import xynolog.types.LocalEndpoint
 import xynolog.types.NewKnowledgeBase
+import xynolog.types.SignInOutcome
+import xynolog.types.SignedIn
+import xynolog.types.StoredSession
+import xynolog.types.TabCheck
+import xynolog.types.TabCheckGone
+import xynolog.types.TabCheckReady
+import xynolog.types.TabCheckUnknown
 import xynolog.types.wireJson
 import java.time.Instant
 import java.time.ZoneOffset
@@ -63,63 +76,11 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.random.Random
 import kotlin.time.TimeSource
 
-/**
- * What a completed sign-in learned: where it was, who the knowledge base
- * there says it is, the tokens, and what the person believed they were
- * signing in to.
- */
-public data class SignedIn @JvmOverloads constructor(
-    public val endpoint: KbEndpoint,
-    /** What the knowledge base said of itself, asked with the new token. */
-    public val description: KbDescription,
-    public val session: StoredSession,
-    /** The registered entry the person re-authenticated; null when it was none. */
-    public val kbId: String? = null,
-    /** The did of a row the person clicked; null when it was none. */
-    public val expectedDid: String? = null,
-    /** The name of a row the person clicked; null when it was none. */
-    public val expectedName: String? = null,
-)
-
-/** What a person believed they were signing in to. `name` is null when nothing was named. */
-public data class Expected(public val did: String, public val name: String?)
-
-/**
- * The entry a sign-in landed on, and what the person believed: null when they
- * named nothing. A host sets the two against each other and says when they
- * differ. The sign-in stands either way: the knowledge base that answered is
- * the one reached.
- */
-public data class SignInOutcome(public val kb: KnowledgeBase, public val expected: Expected?)
-
-/**
- * What a knowledge base said when it was asked to describe itself, read
- * against the entry it was asked as: it answered as that entry, and its name
- * and branch are on it now; a different knowledge base answered, whose did and
- * name are on the verdict and nowhere else; or it did not answer, or could not
- * say who it is, which is evidence of nothing.
- */
-public enum class KbReadKind(
-    /** The kind as every SDK spells it. */
-    public val wire: String,
-) {
-    Recorded("recorded"),
-    Conflict("conflict"),
-    NoVerdict("no-verdict"),
-}
-
-/** One reading of a knowledge base against its entry. `observedDid` and `observedName` are a `Conflict`'s alone: the knowledge base that answered. */
-public data class KbReadVerdict @JvmOverloads constructor(
-    public val kind: KbReadKind,
-    public val observedDid: String? = null,
-    public val observedName: String? = null,
-)
-
 private val OPEN_BY_KB = MapSerializer(String.serializer(), ListSerializer(OpenResource.serializer()))
 
 private val VIEWED_BY_KB = MapSerializer(String.serializer(), ResourceId.serializer())
 
-private val NO_VERDICT = KbReadVerdict(KbReadKind.NoVerdict)
+private val NO_VERDICT = KbReadVerdictNoVerdict()
 
 /** A time as RFC 3339, in UTC, to the millisecond, as every SDK writes what a knowledge base last said. */
 private val AT = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneOffset.UTC)
@@ -149,12 +110,12 @@ private fun constructFailed(refused: XynologError, kbId: String): SessionError =
 /** One open resource's verdict. Asking for it freshly also puts what it answered in the client's cache, where a viewer reads it. */
 private suspend fun checked(session: XynologSession, resourceId: ResourceId): TabCheck = try {
     val descriptor = session.client.browse.resource(resourceId).fresh()
-    TabCheck(TabVerdict.Ready, descriptor.name, primaryMediaType(descriptor))
+    TabCheckReady(name = descriptor.name, mediaType = primaryMediaType(descriptor))
 } catch (refusal: BusRequestError) {
-    TabCheck(if (refusal.reason == BusRequestErrorCode.NotFound) TabVerdict.Gone else TabVerdict.Unknown)
+    if (refusal.reason == BusRequestErrorCode.NotFound) TabCheckGone() else TabCheckUnknown()
 } catch (_: XynologError) {
     // Anything else is a symptom, not a verdict.
-    TabCheck(TabVerdict.Unknown)
+    TabCheckUnknown()
 }
 
 /** A live session, what a host is shown of it, and the reading of its errors (`reading`), which goes on until they end: closing it ends the session and what it was opened over, its client first, then the signals. */
@@ -720,10 +681,9 @@ public class XynologBrowser(config: XynologBrowserConfig) : AutoCloseable {
         val kbId = session.kb.id
         // Who it is, first: if a different knowledge base is answering, every answer about a resource would be an answer to a question asked of the wrong one.
         val verdict = readKb(session, kbId)
-        if (verdict.kind == KbReadKind.Conflict) {
+        if (verdict is KbReadVerdictConflict) {
             // The read was of this session's knowledge base: what it voids is the active one's, so only while this is still the active one.
-            val observed = verdict.observedDid
-            if (isLive(session) && observed != null) voidForConflict(kbId, observed)
+            if (isLive(session)) voidForConflict(kbId, verdict.observedDid)
             return
         }
         // What the storage holds, not what is in memory: another context may have opened a resource before this session came up.
@@ -759,10 +719,10 @@ public class XynologBrowser(config: XynologBrowserConfig) : AutoCloseable {
             // A domain no did can hold: a knowledge base that could not say who it is.
             return NO_VERDICT
         }
-        if (observed != entry.did) return KbReadVerdict(KbReadKind.Conflict, observed, description.name)
+        if (observed != entry.did) return KbReadVerdictConflict(observedDid = observed, observedName = description.name)
         if (closing) return NO_VERDICT
         updateKb(kbId, description.name, readNow(description))
-        return KbReadVerdict(KbReadKind.Recorded)
+        return KbReadVerdictRecorded()
     }
 
     /** A different knowledge base answered for the active entry: what claims to be about its contents is voided, both at once, and the conflict is raised. Registering the one that answered is a person's act. */

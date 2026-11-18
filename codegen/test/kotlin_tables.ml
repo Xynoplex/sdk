@@ -34,7 +34,7 @@ let types schemas =
     Types.definitions =
       List.map (fun (name, text) -> (name, schema_of text)) schemas;
     identifiers = [ "ResourceId"; "AnnotationId" ];
-    component_of_file =
+    name_of_key =
       List.map
         (fun (name, _) -> ("components/schemas/" ^ name ^ ".json", name))
         schemas;

@@ -180,18 +180,18 @@ let refuse_const what n =
       what
 
 (* What a generation reads: the schemas it writes, by name, the kinds of id
-   among them, and the component each schema file is. *)
+   among them, and the name of each schema a [$ref] names, by where it points
+   ([Table_records.key]). *)
 type spec = {
   definitions : (string * Schema.t) list;
   identifiers : string list;
-  component_of_file : (string * string) list;
+  name_of_key : (string * string) list;
 }
 
 let component spec (r : Decode.reference) =
-  match Decode.resolve r with
-  | file, "" when List.mem_assoc file spec.component_of_file ->
-      List.assoc file spec.component_of_file
-  | _ -> refuse "$ref %s is not a component schema" r.target
+  match List.assoc_opt (Table_records.key r) spec.name_of_key with
+  | Some name -> name
+  | None -> refuse "$ref %s names no schema the types write" r.target
 
 let reference spec = function
   | Ref r -> Some (component spec r)

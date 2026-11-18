@@ -26,6 +26,7 @@ import xynolog.signin.SignInKept
 import xynolog.types.HttpEndpoint
 import xynolog.types.HttpEndpointProtocol
 import xynolog.types.KbTarget
+import xynolog.types.SessionEndReason
 import xynolog.types.UserResponse
 import xynolog.types.wireJson
 import java.io.IOException

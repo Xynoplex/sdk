@@ -7,6 +7,7 @@ import xynolog.session.SessionSignals
 import xynolog.storage.SessionStorage
 import xynolog.telemetry.futureOf
 import xynolog.types.KnowledgeBase
+import xynolog.types.StoredSession
 import java.util.concurrent.CompletableFuture
 import kotlin.coroutines.CoroutineContext
 import kotlin.random.Random
@@ -65,17 +66,3 @@ public data class XynologBrowserConfig @JvmOverloads constructor(
     public val clock: TimeSource = TimeSource.Monotonic,
     public val random: Random = Random.Default,
 )
-
-/**
- * What the credential stored for a knowledge base says, read without asking
- * anyone: a token is stored and has not expired, a token is stored and has
- * expired, or nothing is stored.
- */
-public enum class KbSessionStatus(
-    /** The status as every SDK spells it. */
-    public val wire: String,
-) {
-    Authenticated("authenticated"),
-    Expired("expired"),
-    SignedOut("signed-out"),
-}
