@@ -15,21 +15,15 @@ import (
 	"github.com/xynolog/sdk/go/bus"
 )
 
-// ConnectionIdentity is who the knowledge base at an address says it is.
-type ConnectionIdentity struct {
-	Did         api.UserId
-	Description api.KbDescription
-}
-
 // DescribeConnection asks the knowledge base at target what it is, with a
 // token just issued, the jitter of its emit's retries drawn from random as
 // EqualJitter draws it. The failure is an *IdentityUnverifiableError: the
 // knowledge base was not reached, or it answered that it cannot say what it
 // is.
-func DescribeConnection(ctx context.Context, target api.HttpEndpoint, access string, client *http.Client, timing Timing, random *rand.Rand) (ConnectionIdentity, error) {
+func DescribeConnection(ctx context.Context, target api.HttpEndpoint, access string, client *http.Client, timing Timing, random *rand.Rand) (api.ConnectionIdentity, error) {
 	baseURL, err := GatewayURL(target)
 	if err != nil {
-		return ConnectionIdentity{}, &IdentityUnverifiableError{Reason: IdentityUnverifiableReasonUnreachable, Detail: err.Error()}
+		return api.ConnectionIdentity{}, &IdentityUnverifiableError{Reason: IdentityUnverifiableReasonUnreachable, Detail: err.Error()}
 	}
 	// A client of this one operation: it hears its replies and nothing else.
 	transport := NewHTTPTransport(HTTPTransportConfig{
@@ -49,14 +43,14 @@ func DescribeConnection(ctx context.Context, target api.HttpEndpoint, access str
 		// it is. Anything else is not having reached it.
 		var refusal *BusRequestError
 		if errors.As(err, &refusal) && refusal.Code == BusRequestErrorCodeRejected {
-			return ConnectionIdentity{}, &IdentityUnverifiableError{Reason: IdentityUnverifiableReasonNotReported, Detail: refusal.Error()}
+			return api.ConnectionIdentity{}, &IdentityUnverifiableError{Reason: IdentityUnverifiableReasonNotReported, Detail: refusal.Error()}
 		}
-		return ConnectionIdentity{}, &IdentityUnverifiableError{Reason: IdentityUnverifiableReasonUnreachable, Detail: err.Error()}
+		return api.ConnectionIdentity{}, &IdentityUnverifiableError{Reason: IdentityUnverifiableReasonUnreachable, Detail: err.Error()}
 	}
 	did, err := KbDid(description.Domain)
 	if err != nil {
 		// A domain no DID can hold says nothing of who this is.
-		return ConnectionIdentity{}, &IdentityUnverifiableError{Reason: IdentityUnverifiableReasonNotReported, Detail: err.Error()}
+		return api.ConnectionIdentity{}, &IdentityUnverifiableError{Reason: IdentityUnverifiableReasonNotReported, Detail: err.Error()}
 	}
-	return ConnectionIdentity{Did: did, Description: description}, nil
+	return api.ConnectionIdentity{Did: did, Description: description}, nil
 }

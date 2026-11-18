@@ -67,10 +67,10 @@ func TestWhatAHostShowsAboutASessionIsThereExactlyWhenTheSessionIs(t *testing.T)
 
 // ── Signing in ──────────────────────────────────────────────────────────
 
-func signedIn(t *testing.T, at api.KbEndpoint, said json.RawMessage, refresh string) registry.SignedIn {
+func signedIn(t *testing.T, at api.KbEndpoint, said json.RawMessage, refresh string) api.SignedIn {
 	var description api.KbDescription
 	must(t, json.Unmarshal(said, &description))
-	return registry.SignedIn{Endpoint: at, Description: description, Session: tokens(refresh)}
+	return api.SignedIn{Endpoint: at, Description: description, Session: tokens(refresh)}
 }
 
 func TestNewTokensForTheActiveKnowledgeBaseReplaceItsSession(t *testing.T) {
@@ -116,14 +116,14 @@ func TestASignInReportsWhatThePersonBelievedTheyClicked(t *testing.T) {
 	bubble(t, func(t *testing.T, w *world) {
 		browser := w.browser()
 		believed := signedIn(t, endpoint("localhost", 4000), description("KB A", "example.org:kb-a", ""), "r")
-		believed.ExpectedDid, believed.ExpectedName = didB, "KB B"
+		believed.ExpectedDid, believed.ExpectedName = new(didB), new("KB B")
 
 		outcome, err := browser.SignedIn(believed)
 		must(t, err)
 
 		// The knowledge base that answered is the one registered. What was
 		// believed is said back, for a host to set against it.
-		if outcome.Kb.Did != didA || !reflect.DeepEqual(outcome.Expected, &registry.Expected{Did: didB, Name: "KB B"}) {
+		if outcome.Kb.Did != didA || !reflect.DeepEqual(outcome.Expected, &api.Expected{Did: didB, Name: new("KB B")}) {
 			t.Errorf("the outcome is %+v, expected %+v", outcome.Kb, outcome.Expected)
 		}
 	})
@@ -137,7 +137,7 @@ func TestASignInToARegisteredKnowledgeBaseTakesWhatItAndTheIssuerNowSay(t *testi
 				first := live(t, browser)
 				again := signedIn(t, endpoint("localhost", 4000), description("KB A, renamed", "example.org:kb-a", "feature"), "r2")
 				if byID {
-					again.KbID = kbA
+					again.KbId = new(kbA)
 				}
 
 				outcome, err := browser.SignedIn(again)
@@ -148,7 +148,7 @@ func TestASignInToARegisteredKnowledgeBaseTakesWhatItAndTheIssuerNowSay(t *testi
 					t.Errorf("the entry is %+v of %+v", outcome.Kb, browser.KnowledgeBases().Value())
 				}
 				// What was believed is the entry as it was, under the label it had.
-				if !reflect.DeepEqual(outcome.Expected, &registry.Expected{Did: didA, Name: "KB A"}) {
+				if !reflect.DeepEqual(outcome.Expected, &api.Expected{Did: didA, Name: new("KB A")}) {
 					t.Errorf("expected: %+v", outcome.Expected)
 				}
 				if refresh, _ := w.storedRefresh(kbA); refresh != "r2" {
@@ -172,7 +172,7 @@ func TestASignInADifferentKnowledgeBaseAnswersLeavesTheEntryAndLandsOnANewOne(t 
 		browser := w.browser()
 		live(t, browser)
 		landing := signedIn(t, endpoint("localhost", 4000), description("KB B", "example.org:kb-b", "other"), "for-b")
-		landing.KbID = kbA
+		landing.KbId = new(kbA)
 
 		outcome, err := browser.SignedIn(landing)
 		must(t, err)
@@ -183,7 +183,7 @@ func TestASignInADifferentKnowledgeBaseAnswersLeavesTheEntryAndLandsOnANewOne(t 
 		if !same(t, kbs[0], believed) {
 			t.Errorf("the entry believed is now %+v", kbs[0])
 		}
-		if after, _ := registry.StoredSessionOf(w.storage, kbA); after != before {
+		if after, _ := registry.StoredSessionOf(w.storage, kbA); !reflect.DeepEqual(after, before) {
 			t.Error("the entry believed has other credentials")
 		}
 		// The knowledge base that answered has an entry of its own, at the same
@@ -197,7 +197,7 @@ func TestASignInADifferentKnowledgeBaseAnswersLeavesTheEntryAndLandsOnANewOne(t 
 		if refresh, _ := w.storedRefresh(outcome.Kb.Id); refresh != "for-b" {
 			t.Errorf("the stored refresh token is %q", refresh)
 		}
-		if !reflect.DeepEqual(outcome.Expected, &registry.Expected{Did: didA, Name: "KB A"}) {
+		if !reflect.DeepEqual(outcome.Expected, &api.Expected{Did: didA, Name: new("KB A")}) {
 			t.Errorf("expected: %+v", outcome.Expected)
 		}
 	})
@@ -272,7 +272,7 @@ func TestSigningOutForgetsTheTokensClosesTheSessionAndHasTheIssuerTold(t *testin
 		if sessionOf(browser) != "" || !closed(w.factory.sessions.Transports(kbA)[0]) {
 			t.Error("the session is not closed")
 		}
-		if revoked := w.factory.sessions.Revoked(); !reflect.DeepEqual(revoked, []registry.StoredSession{before}) {
+		if revoked := w.factory.sessions.Revoked(); !reflect.DeepEqual(revoked, []api.StoredSession{before}) {
 			t.Errorf("revoked: %+v", revoked)
 		}
 		// Still registered, and still the active one: only signed out.
@@ -285,7 +285,7 @@ func TestSigningOutForgetsTheTokensClosesTheSessionAndHasTheIssuerTold(t *testin
 		default:
 			t.Error("the list was not said again")
 		}
-		if status := browser.KbSessionStatus(kbA); status != registry.KbSessionSignedOut {
+		if status := browser.KbSessionStatus(kbA); status != api.KbSessionStatusSignedOut {
 			t.Errorf("the status is %s", status)
 		}
 
@@ -564,7 +564,7 @@ func TestAResourceAnotherContextOpenedWhileTheChecksRanIsLeftOpen(t *testing.T) 
 	})
 }
 
-func conflict(browser *registry.XynologBrowser) *xynolog.KbIdentityConflict {
+func conflict(browser *registry.XynologBrowser) *api.KbIdentityConflict {
 	if signals := browser.ActiveSignals().Value(); signals != nil {
 		return signals.KbIdentityConflict().Value()
 	}
@@ -587,7 +587,7 @@ func TestADifferentKnowledgeBaseAnsweringVoidsWhatWasOpenAndIsRaised(t *testing.
 		if !equalStrings(w.storedOpen(kbB), []string{"b1"}) || !reflect.DeepEqual(w.storedLastViewed(), map[string]string{kbB: "b1"}) {
 			t.Errorf("B's: open %v, last viewed %v", w.storedOpen(kbB), w.storedLastViewed())
 		}
-		if got := conflict(browser); got == nil || *got != (xynolog.KbIdentityConflict{ExpectedDid: didA, ObservedDid: didB}) {
+		if got := conflict(browser); got == nil || *got != (api.KbIdentityConflict{ExpectedDid: didA, ObservedDid: didB}) {
 			t.Errorf("the conflict raised is %+v", got)
 		}
 		// The entry is as it was written: nothing of the other is put on it.
@@ -651,8 +651,8 @@ func TestNoAnswerAndARefusalToSayAreNoVerdictAndVoidNothing(t *testing.T) {
 				if asked := w.factory.askedAbout(kbA); !equalStrings(asked, []string{"a1"}) {
 					t.Errorf("A was asked about %v", asked)
 				}
-				if verdict, err := browser.ReadActiveKb(context.Background()); err != nil || verdict.Kind != registry.KbReadNoVerdict {
-					t.Errorf("asked again, it says %+v, %v", verdict, err)
+				if kind := readAgain(t, browser); kind != api.KbReadKindNoVerdict {
+					t.Errorf("asked again, it says %s", kind)
 				}
 			})
 		})
@@ -668,8 +668,8 @@ func TestAskingTheActiveKnowledgeBaseAgainRecordsWhatItSaysNow(t *testing.T) {
 		asked := w.factory.askedWho(kbA)
 
 		w.factory.says(kbA, description("KB A", "example.org:kb-a", ""))
-		if verdict, err := browser.ReadActiveKb(context.Background()); err != nil || verdict.Kind != registry.KbReadRecorded {
-			t.Fatalf("asked again, it says %+v, %v", verdict, err)
+		if kind := readAgain(t, browser); kind != api.KbReadKindRecorded {
+			t.Fatalf("asked again, it says %s", kind)
 		}
 
 		if got := w.factory.askedWho(kbA); got != asked+1 {
@@ -694,8 +694,10 @@ func TestAskingAgainReportsADifferentKnowledgeBaseAndActsOnNothing(t *testing.T)
 		verdict, err := browser.ReadActiveKb(context.Background())
 		must(t, err)
 
-		if verdict != (registry.KbReadVerdict{Kind: registry.KbReadConflict, ObservedDid: didB, ObservedName: "KB B"}) {
-			t.Errorf("asked again, it says %+v", verdict)
+		said, err := verdict.ValueByDiscriminator()
+		must(t, err)
+		if said != (api.KbReadVerdictConflict{Kind: api.KbReadVerdictConflictKindConflict, ObservedDid: didB, ObservedName: "KB B"}) {
+			t.Errorf("asked again, it says %+v", said)
 		}
 		// Asking is not activating: nothing is voided, and nothing is raised.
 		if !equalStrings(open(browser), []string{"a1"}) || browser.LastViewedResource().Value().String() != "a1" || conflict(browser) != nil {
@@ -718,8 +720,8 @@ func TestAskingAgainDoesNotRaiseAConflictThatWasAcknowledged(t *testing.T) {
 		}
 		browser.ActiveSignals().Value().AcknowledgeKbIdentityConflict()
 
-		if verdict, err := browser.ReadActiveKb(context.Background()); err != nil || verdict.Kind != registry.KbReadConflict {
-			t.Errorf("asked again, it says %+v, %v", verdict, err)
+		if kind := readAgain(t, browser); kind != api.KbReadKindConflict {
+			t.Errorf("asked again, it says %s", kind)
 		}
 		if conflict(browser) != nil {
 			t.Error("asking again raised the conflict again")
@@ -729,10 +731,21 @@ func TestAskingAgainDoesNotRaiseAConflictThatWasAcknowledged(t *testing.T) {
 
 func TestWithNoSessionThereIsNothingToAsk(t *testing.T) {
 	bubble(t, func(t *testing.T, w *world) {
-		if verdict, err := w.browser().ReadActiveKb(context.Background()); err != nil || verdict.Kind != registry.KbReadNoVerdict {
-			t.Errorf("with no session, it says %+v, %v", verdict, err)
+		if kind := readAgain(t, w.browser()); kind != api.KbReadKindNoVerdict {
+			t.Errorf("with no session, it says %s", kind)
 		}
 	})
+}
+
+// readAgain is the kind of verdict the active knowledge base gives, asked
+// again.
+func readAgain(t *testing.T, browser *registry.XynologBrowser) api.KbReadKind {
+	t.Helper()
+	verdict, err := browser.ReadActiveKb(context.Background())
+	must(t, err)
+	kind, err := verdict.Discriminator()
+	must(t, err)
+	return api.KbReadKind(kind)
 }
 
 // ── What the session's transport fails at ───────────────────────────────
@@ -741,14 +754,14 @@ func refusal(code xynolog.TransportErrorCode, status int) *xynolog.TransportErro
 	return &xynolog.TransportError{Code: code, Message: fmt.Sprintf("HTTP %d", status)}
 }
 
-func sessionEnded(browser *registry.XynologBrowser) *xynolog.SessionEnded {
+func sessionEnded(browser *registry.XynologBrowser) *api.SessionEnded {
 	if signals := browser.ActiveSignals().Value(); signals != nil {
 		return signals.SessionEnded().Value()
 	}
 	return nil
 }
 
-func denied(browser *registry.XynologBrowser) *xynolog.PermissionDenied {
+func denied(browser *registry.XynologBrowser) *api.PermissionDenied {
 	if signals := browser.ActiveSignals().Value(); signals != nil {
 		return signals.PermissionDenied().Value()
 	}
@@ -812,7 +825,7 @@ func (f *startedSessions) Session(ctx context.Context, options registry.SessionF
 	return session, end, nil
 }
 
-func (*startedSessions) Revoke(context.Context, registry.StoredSession) {}
+func (*startedSessions) Revoke(context.Context, api.StoredSession) {}
 
 // renewals is the token each renewal was handed, in order.
 func (f *startedSessions) renewals() []string {

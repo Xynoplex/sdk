@@ -299,8 +299,8 @@ func (s *stage) registered(t *testing.T, kbID string) api.KnowledgeBase {
 	return api.KnowledgeBase{Id: kbID, Label: "KB A", Did: didA, Endpoint: at}
 }
 
-func (s *stage) stored(access, refresh string) registry.StoredSession {
-	return registry.StoredSession{Access: access, Refresh: refresh, ClientID: xynolog.BrowserClientID, TokenEndpoint: s.issuer.URL + "/token", RevocationEndpoint: s.issuer.URL + "/revoke"}
+func (s *stage) stored(access, refresh string) api.StoredSession {
+	return api.StoredSession{Access: access, Refresh: refresh, ClientId: xynolog.BrowserClientID, TokenEndpoint: s.issuer.URL + "/token", RevocationEndpoint: new(s.issuer.URL + "/revoke")}
 }
 
 // alicesKey is the key of the person the stage's gateway says every token is,
@@ -308,7 +308,7 @@ func (s *stage) stored(access, refresh string) registry.StoredSession {
 var alicesKey = xynolog.PersonKey("did:web:example.org:users:alice")
 
 // naming is stored, naming the person whose key is personKey.
-func naming(stored registry.StoredSession, personKey string) registry.StoredSession {
+func naming(stored api.StoredSession, personKey string) api.StoredSession {
 	stored.PersonKey = &personKey
 	return stored
 }

@@ -485,7 +485,7 @@ var invokers = map[string]invoker{
 		return err
 	}},
 	"sessionSignals.notifySessionEnded": {[]string{"reason"}, func(unit xynolog.StateUnit, args map[string]any) error {
-		reason, err := takes[xynolog.SessionEndReason](args, "reason")
+		reason, err := takes[api.SessionEndReason](args, "reason")
 		if err == nil {
 			unit.(*xynolog.SessionSignals).NotifySessionEnded(reason)
 		}
@@ -499,7 +499,7 @@ var invokers = map[string]invoker{
 		return err
 	}},
 	"sessionSignals.notifyKbIdentityConflict": {[]string{"conflict"}, func(unit xynolog.StateUnit, args map[string]any) error {
-		conflict, err := takes[xynolog.KbIdentityConflict](args, "conflict")
+		conflict, err := takes[api.KbIdentityConflict](args, "conflict")
 		if err == nil {
 			unit.(*xynolog.SessionSignals).NotifyKbIdentityConflict(conflict)
 		}

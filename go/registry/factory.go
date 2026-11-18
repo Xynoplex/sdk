@@ -41,7 +41,7 @@ type SessionFactory interface {
 	// forgotten, so its refresh token is good for nothing. Best effort: the
 	// sign-out has happened whether or not the issuer hears of it, and the
 	// registry does not wait for it.
-	Revoke(ctx context.Context, stored StoredSession)
+	Revoke(ctx context.Context, stored api.StoredSession)
 }
 
 // HttpSessionFactory builds the session of each knowledge base a registry
@@ -77,10 +77,10 @@ func (f HttpSessionFactory) Session(ctx context.Context, options SessionFactoryO
 	})
 }
 
-func (f HttpSessionFactory) Revoke(ctx context.Context, stored StoredSession) {
-	if stored.RevocationEndpoint == "" {
+func (f HttpSessionFactory) Revoke(ctx context.Context, stored api.StoredSession) {
+	if stored.RevocationEndpoint == nil {
 		return
 	}
 	// Best effort, as the interface says: the sign-out stands either way.
-	_ = xynolog.Issuer{HTTP: f.HTTP, Timing: f.Timing, Random: f.Random}.Revoke(ctx, stored.RevocationEndpoint, stored.ClientID, stored.Refresh)
+	_ = xynolog.Issuer{HTTP: f.HTTP, Timing: f.Timing, Random: f.Random}.Revoke(ctx, *stored.RevocationEndpoint, stored.ClientId, stored.Refresh)
 }

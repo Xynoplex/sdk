@@ -1847,6 +1847,15 @@ func (e CommentingJobParamsTone) Valid() bool {
 	return false
 }
 
+// ConnectionIdentity Who the knowledge base at an address says it is, asked
+// with a token just issued, before any entry is made for it.
+type ConnectionIdentity struct {
+	// Description What it says of itself.
+	Description KbDescription `json:"description"`
+	// Did The did it reports for itself.
+	Did UserId `json:"did"`
+}
+
 // ContentFormat Content format as a MIME type, optionally with parameters.
 // The base type (everything before the first ';') MUST be a
 // SupportedMediaType; parameters such as charset are preserved as metadata.
@@ -2404,6 +2413,15 @@ type ErrorResponse struct {
 type EventMetadata struct {
 	// SequenceNumber Monotonic position in the event log (ordering authority)
 	SequenceNumber int `json:"sequenceNumber"`
+}
+
+// Expected What a person believed they were signing in to: the did and the
+// name of the row they clicked, or of the entry they signed in to again.
+type Expected struct {
+	// Did The did they believed it has.
+	Did string `json:"did"`
+	// Name The name they believed it has. Absent when they had none.
+	Name *string `json:"name,omitempty"`
 }
 
 // ExtractedText A successful extraction: the anchored text plus its
@@ -5084,6 +5102,16 @@ type KbIdentity struct {
 	Name string `json:"name"`
 }
 
+// KbIdentityConflict A different knowledge base answers at a registered
+// address. Both dids, because neither alone says what to do: a person has to
+// recognise which knowledge base they registered and which one answers.
+type KbIdentityConflict struct {
+	// ExpectedDid The did the entry records.
+	ExpectedDid string `json:"expectedDid"`
+	// ObservedDid The did the knowledge base that answered reported.
+	ObservedDid string `json:"observedDid"`
+}
+
 // KbRead When a knowledge base last described itself, and what it said beyond
 // its name. A client shows it as current only while a session to the
 // knowledge base is live, and as of `at` otherwise.
@@ -5093,6 +5121,168 @@ type KbRead struct {
 	// GitBranch The branch of the knowledge base's working tree then. Absent
 	// when the working tree was not a git checkout.
 	GitBranch *string `json:"gitBranch,omitempty"`
+}
+
+// KbReadKind What reading the active knowledge base against its entry
+// concluded.
+type KbReadKind string
+
+// The values of KbReadKind.
+const (
+	KbReadKindRecorded  KbReadKind = "recorded"
+	KbReadKindConflict  KbReadKind = "conflict"
+	KbReadKindNoVerdict KbReadKind = "no-verdict"
+)
+
+// Valid is whether e is one of KbReadKind's values.
+func (e KbReadKind) Valid() bool {
+	switch e {
+	case KbReadKindRecorded, KbReadKindConflict, KbReadKindNoVerdict:
+		return true
+	}
+	return false
+}
+
+// KbReadVerdict What a knowledge base said when it was asked to describe
+// itself, read against the entry it was asked as.
+type KbReadVerdict struct {
+	union[kbReadVerdictMember]
+}
+
+// kbReadVerdictMember is a member of KbReadVerdict: KbReadVerdictRecorded,
+// KbReadVerdictConflict, KbReadVerdictNoVerdict.
+type kbReadVerdictMember interface {
+	memberOfKbReadVerdict()
+}
+
+// Discriminator is the `kind` this value states.
+func (u KbReadVerdict) Discriminator() (string, error) { return u.stated("kind") }
+
+// ValueByDiscriminator is the member this value's `kind` names.
+func (u KbReadVerdict) ValueByDiscriminator() (any, error) {
+	tag, err := u.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch tag {
+	case "recorded":
+		return as[KbReadVerdictRecorded](u.union)
+	case "conflict":
+		return as[KbReadVerdictConflict](u.union)
+	case "no-verdict":
+		return as[KbReadVerdictNoVerdict](u.union)
+	}
+	return nil, unnamedMember("KbReadVerdict", "kind", tag)
+}
+
+// KbReadVerdictConflict A different knowledge base answered. Its did and the
+// name it gave itself are here and nowhere else: the entry is as it was.
+type KbReadVerdictConflict struct {
+	// Kind What reading the active knowledge base against its entry concluded.
+	Kind KbReadVerdictConflictKind `json:"kind"`
+	// ObservedDid The did the knowledge base that answered reported.
+	ObservedDid string `json:"observedDid"`
+	// ObservedName The name the knowledge base that answered gave itself.
+	ObservedName string `json:"observedName"`
+}
+
+func (KbReadVerdictConflict) memberOfKbReadVerdict() {}
+func (KbReadVerdictConflict) told() (string, string) { return "kind", "conflict" }
+
+// KbReadVerdictConflictKind What reading the active knowledge base against
+// its entry concluded.
+type KbReadVerdictConflictKind string
+
+// The values of KbReadVerdictConflictKind.
+const (
+	KbReadVerdictConflictKindConflict KbReadVerdictConflictKind = "conflict"
+)
+
+// Valid is whether e is one of KbReadVerdictConflictKind's values.
+func (e KbReadVerdictConflictKind) Valid() bool {
+	switch e {
+	case KbReadVerdictConflictKindConflict:
+		return true
+	}
+	return false
+}
+
+// KbReadVerdictNoVerdict It did not answer, or could not say who it is.
+// Evidence of nothing.
+type KbReadVerdictNoVerdict struct {
+	// Kind What reading the active knowledge base against its entry concluded.
+	Kind KbReadVerdictNoVerdictKind `json:"kind"`
+}
+
+func (KbReadVerdictNoVerdict) memberOfKbReadVerdict() {}
+func (KbReadVerdictNoVerdict) told() (string, string) { return "kind", "no-verdict" }
+
+// KbReadVerdictNoVerdictKind What reading the active knowledge base against
+// its entry concluded.
+type KbReadVerdictNoVerdictKind string
+
+// The values of KbReadVerdictNoVerdictKind.
+const (
+	KbReadVerdictNoVerdictKindNoVerdict KbReadVerdictNoVerdictKind = "no-verdict"
+)
+
+// Valid is whether e is one of KbReadVerdictNoVerdictKind's values.
+func (e KbReadVerdictNoVerdictKind) Valid() bool {
+	switch e {
+	case KbReadVerdictNoVerdictKindNoVerdict:
+		return true
+	}
+	return false
+}
+
+// KbReadVerdictRecorded It answered as that entry, and its name and branch
+// are on the entry now.
+type KbReadVerdictRecorded struct {
+	// Kind What reading the active knowledge base against its entry concluded.
+	Kind KbReadVerdictRecordedKind `json:"kind"`
+}
+
+func (KbReadVerdictRecorded) memberOfKbReadVerdict() {}
+func (KbReadVerdictRecorded) told() (string, string) { return "kind", "recorded" }
+
+// KbReadVerdictRecordedKind What reading the active knowledge base against
+// its entry concluded.
+type KbReadVerdictRecordedKind string
+
+// The values of KbReadVerdictRecordedKind.
+const (
+	KbReadVerdictRecordedKindRecorded KbReadVerdictRecordedKind = "recorded"
+)
+
+// Valid is whether e is one of KbReadVerdictRecordedKind's values.
+func (e KbReadVerdictRecordedKind) Valid() bool {
+	switch e {
+	case KbReadVerdictRecordedKindRecorded:
+		return true
+	}
+	return false
+}
+
+// KbSessionStatus What the credential stored for a knowledge base says, read
+// without asking anyone: `authenticated`, a token is stored and has not
+// expired; `expired`, a token is stored and has expired; `signed-out`,
+// nothing is stored.
+type KbSessionStatus string
+
+// The values of KbSessionStatus.
+const (
+	KbSessionStatusAuthenticated KbSessionStatus = "authenticated"
+	KbSessionStatusExpired       KbSessionStatus = "expired"
+	KbSessionStatusSignedOut     KbSessionStatus = "signed-out"
+)
+
+// Valid is whether e is one of KbSessionStatus's values.
+func (e KbSessionStatus) Valid() bool {
+	switch e {
+	case KbSessionStatusAuthenticated, KbSessionStatusExpired, KbSessionStatusSignedOut:
+		return true
+	}
+	return false
 }
 
 // KbTarget Where to connect to a knowledge base: an endpoint, and the labels
@@ -6330,6 +6520,12 @@ type PdfTextItem struct {
 	Y     float64 `json:"y"`
 }
 
+// PermissionDenied A request was refused for lack of permission.
+type PermissionDenied struct {
+	// Detail The refusal's own message, untranslated; null when it gave none.
+	Detail *string `json:"detail"`
+}
+
 // PersistedEventId `p-<scope>-<sequenceNumber>` — the id of a persisted event
 // delivered on a scoped subscription. Resumable: send it back as that scope's
 // `lastEventId`. Stable across connections, so a client dedups by it.
@@ -7184,6 +7380,32 @@ type ServiceIdentity struct {
 	Issuer string `json:"issuer"`
 }
 
+// SessionEndReason Why a session ended: `expired`, the issuer refused to
+// renew its token; `refused`, the gateway refused a token its issuer had just
+// issued.
+type SessionEndReason string
+
+// The values of SessionEndReason.
+const (
+	SessionEndReasonExpired SessionEndReason = "expired"
+	SessionEndReasonRefused SessionEndReason = "refused"
+)
+
+// Valid is whether e is one of SessionEndReason's values.
+func (e SessionEndReason) Valid() bool {
+	switch e {
+	case SessionEndReasonExpired, SessionEndReasonRefused:
+		return true
+	}
+	return false
+}
+
+// SessionEnded A session ended, and why.
+type SessionEnded struct {
+	// Reason Why it ended.
+	Reason SessionEndReason `json:"reason"`
+}
+
 // SessionJoinedEvent A participant opened a live connection to this KB — an
 // SSE stream on /bus/subscribe. Presence is CONNECTION lifecycle, not login:
 // a token can be minted and sit unused, so what this reports is that someone
@@ -7241,6 +7463,40 @@ func (e SettingsThemeChangedEventTheme) Valid() bool {
 		return true
 	}
 	return false
+}
+
+// SignInOutcome The entry a sign-in landed on, and what the person believed,
+// so a host can set the two against each other and say when they differ. The
+// sign-in stands either way: the knowledge base that answered is the one
+// reached.
+type SignInOutcome struct {
+	// Expected What the person believed they were signing in to. Absent when
+	// they named nothing.
+	Expected *Expected `json:"expected,omitempty"`
+	// Kb The entry the sign-in made or signed in to again.
+	Kb KnowledgeBase `json:"kb"`
+}
+
+// SignedIn What a completed sign-in learned, as a registry is handed it to
+// record: where it was, who the knowledge base there says it is, the tokens,
+// and what the person believed they were signing in to.
+type SignedIn struct {
+	// Description What the knowledge base said of itself, asked with the new
+	// token.
+	Description KbDescription `json:"description"`
+	// Endpoint Where the sign-in was.
+	Endpoint KbEndpoint `json:"endpoint"`
+	// ExpectedDid The did of what the person believed they clicked. Absent when
+	// they named nothing.
+	ExpectedDid *string `json:"expectedDid,omitempty"`
+	// ExpectedName The name of what the person believed they clicked. Absent
+	// when they named nothing.
+	ExpectedName *string `json:"expectedName,omitempty"`
+	// KbId The registered knowledge base the person signed in to again. Absent
+	// when it is none.
+	KbId *string `json:"kbId,omitempty"`
+	// Session The tokens, as a registry keeps them.
+	Session StoredSession `json:"session"`
 }
 
 // SmeltRebuildAnchorsCommand Bus command to rebuild anchored-text artifacts
@@ -7432,6 +7688,37 @@ type StoredEventResponse struct {
 	Version int `json:"version"`
 }
 
+// StoredSession What is kept of a sign-in: the tokens an issuer issued, the
+// client they were issued to, and the issuer's endpoints a renewal and a
+// sign-out need, learned once at sign-in so no session asks again. TOKENS,
+// never a password. A stored value that lacks a member it requires is no
+// session.
+type StoredSession struct {
+	// Access The access token: short-lived, sent as a Bearer token.
+	Access string `json:"access"`
+	// ClientId The client the tokens were issued to, which a renewal and a
+	// revocation name.
+	ClientId string `json:"clientId"`
+	// PersonKey Who the gateway said the sign-in's person is, as the key their
+	// caches and stream position are kept under (`lastEventIdKeyPrefix`), never
+	// the did itself. Written once the gateway names the person, on the sign-in
+	// whose token it was asked about; a renewal keeps it, a new sign-in starts
+	// without it, and forgetting the sign-in, however it is forgotten, reads it
+	// first to delete what is kept under it. Absent for a sign-in whose gateway
+	// has not yet named its person.
+	PersonKey *string `json:"personKey,omitempty"`
+	// Refresh The refresh token: what renews the access token at the issuer
+	// without another sign-in.
+	Refresh string `json:"refresh"`
+	// RevocationEndpoint The issuer's revocation endpoint (RFC 7009), where a
+	// sign-out tells it to forget the refresh token. Absent when the issuer has
+	// none.
+	RevocationEndpoint *string `json:"revocationEndpoint,omitempty"`
+	// TokenEndpoint The issuer's token endpoint, where the refresh grant is
+	// made.
+	TokenEndpoint string `json:"tokenEndpoint"`
+}
+
 // SupportedMediaType Base MIME types (no parameters) admitted by Xynolog.
 // Membership is the create/yield gate — every member is storable, nameable,
 // and uploadable. What more the system can do with a type (render, annotate,
@@ -7535,6 +7822,151 @@ const (
 func (e SvgSelectorType) Valid() bool {
 	switch e {
 	case SvgSelectorTypeSvgSelector:
+		return true
+	}
+	return false
+}
+
+// TabCheck What checking one open resource against its knowledge base
+// concluded. `gone` is the only verdict that closes it, and it means the
+// knowledge base said the resource does not exist, not that the check failed:
+// a failed transport, a timeout and a peer that is down are each `unknown`,
+// and an unknown resource stays open.
+type TabCheck struct {
+	union[tabCheckMember]
+}
+
+// tabCheckMember is a member of TabCheck: TabCheckGone, TabCheckReady,
+// TabCheckUnknown.
+type tabCheckMember interface {
+	memberOfTabCheck()
+}
+
+// Discriminator is the `verdict` this value states.
+func (u TabCheck) Discriminator() (string, error) { return u.stated("verdict") }
+
+// ValueByDiscriminator is the member this value's `verdict` names.
+func (u TabCheck) ValueByDiscriminator() (any, error) {
+	tag, err := u.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch tag {
+	case "gone":
+		return as[TabCheckGone](u.union)
+	case "ready":
+		return as[TabCheckReady](u.union)
+	case "unknown":
+		return as[TabCheckUnknown](u.union)
+	}
+	return nil, unnamedMember("TabCheck", "verdict", tag)
+}
+
+// TabCheckGone The knowledge base said the resource does not exist.
+type TabCheckGone struct {
+	// Verdict What checking an open resource against its knowledge base
+	// concluded.
+	Verdict TabCheckGoneVerdict `json:"verdict"`
+}
+
+func (TabCheckGone) memberOfTabCheck()      {}
+func (TabCheckGone) told() (string, string) { return "verdict", "gone" }
+
+// TabCheckGoneVerdict What checking an open resource against its knowledge
+// base concluded.
+type TabCheckGoneVerdict string
+
+// The values of TabCheckGoneVerdict.
+const (
+	TabCheckGoneVerdictGone TabCheckGoneVerdict = "gone"
+)
+
+// Valid is whether e is one of TabCheckGoneVerdict's values.
+func (e TabCheckGoneVerdict) Valid() bool {
+	switch e {
+	case TabCheckGoneVerdictGone:
+		return true
+	}
+	return false
+}
+
+// TabCheckReady The knowledge base has the resource, and said what it is
+// called now.
+type TabCheckReady struct {
+	// MediaType The media type of its primary representation. Absent when it
+	// said none.
+	MediaType *string `json:"mediaType,omitempty"`
+	// Name The name the knowledge base gave the resource.
+	Name string `json:"name"`
+	// Verdict What checking an open resource against its knowledge base
+	// concluded.
+	Verdict TabCheckReadyVerdict `json:"verdict"`
+}
+
+func (TabCheckReady) memberOfTabCheck()      {}
+func (TabCheckReady) told() (string, string) { return "verdict", "ready" }
+
+// TabCheckReadyVerdict What checking an open resource against its knowledge
+// base concluded.
+type TabCheckReadyVerdict string
+
+// The values of TabCheckReadyVerdict.
+const (
+	TabCheckReadyVerdictReady TabCheckReadyVerdict = "ready"
+)
+
+// Valid is whether e is one of TabCheckReadyVerdict's values.
+func (e TabCheckReadyVerdict) Valid() bool {
+	switch e {
+	case TabCheckReadyVerdictReady:
+		return true
+	}
+	return false
+}
+
+// TabCheckUnknown The check found out nothing.
+type TabCheckUnknown struct {
+	// Verdict What checking an open resource against its knowledge base
+	// concluded.
+	Verdict TabCheckUnknownVerdict `json:"verdict"`
+}
+
+func (TabCheckUnknown) memberOfTabCheck()      {}
+func (TabCheckUnknown) told() (string, string) { return "verdict", "unknown" }
+
+// TabCheckUnknownVerdict What checking an open resource against its knowledge
+// base concluded.
+type TabCheckUnknownVerdict string
+
+// The values of TabCheckUnknownVerdict.
+const (
+	TabCheckUnknownVerdictUnknown TabCheckUnknownVerdict = "unknown"
+)
+
+// Valid is whether e is one of TabCheckUnknownVerdict's values.
+func (e TabCheckUnknownVerdict) Valid() bool {
+	switch e {
+	case TabCheckUnknownVerdictUnknown:
+		return true
+	}
+	return false
+}
+
+// TabVerdict What checking an open resource against its knowledge base
+// concluded.
+type TabVerdict string
+
+// The values of TabVerdict.
+const (
+	TabVerdictGone    TabVerdict = "gone"
+	TabVerdictReady   TabVerdict = "ready"
+	TabVerdictUnknown TabVerdict = "unknown"
+)
+
+// Valid is whether e is one of TabVerdict's values.
+func (e TabVerdict) Valid() bool {
+	switch e {
+	case TabVerdictGone, TabVerdictReady, TabVerdictUnknown:
 		return true
 	}
 	return false

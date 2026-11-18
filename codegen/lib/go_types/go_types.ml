@@ -1,6 +1,7 @@
 (* The Go SDK's protocol types (go/api/types_gen.go): a type for every
-   component schema of the gateway's document, with every schema they reach,
-   but the kinds of id, which go/api/ids_gen.go declares. *)
+   component schema of the gateway's document and every record Protocol
+   states in its tables ([Table_records]), with every schema they reach, but
+   the kinds of id, which go/api/ids_gen.go declares. *)
 
 module Generate = Generate
 
@@ -15,6 +16,7 @@ let generated (spec : Spec.t) =
   in
   let roots =
     List.filter (fun n -> not (List.mem n identifiers)) bundle.definitions.names
+    @ List.map (fun (_, name, _) -> name) (Definitions.records spec)
   in
   ( Generate.generate bundle.definitions ~identifiers roots,
     List.map (fun name -> (name, None)) identifiers )

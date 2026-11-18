@@ -27,15 +27,11 @@ func TestTheyAreOrderedByPlaceAndThenByWhenTheyWereOpened(t *testing.T) {
 }
 
 func TestOnlyAResourceTheKnowledgeBaseSaysIsGoneIsDropped(t *testing.T) {
-	checks := map[string]registry.TabCheck{
-		"gone":    {Verdict: registry.TabGone},
-		"found":   {Verdict: registry.TabReady, Name: "Its name now"},
-		"unknown": {Verdict: registry.TabUnknown},
-	}
-	byID := map[api.ResourceId]registry.TabCheck{}
-	for named, check := range checks {
-		byID[id(named)] = check
-	}
+	var gone, found, unknown api.TabCheck
+	must(t, gone.From(api.TabCheckGone{}))
+	must(t, found.From(api.TabCheckReady{Name: "Its name now"}))
+	must(t, unknown.From(api.TabCheckUnknown{}))
+	byID := map[api.ResourceId]api.TabCheck{id("gone"): gone, id("found"): found, id("unknown"): unknown}
 	kept := registry.ApplyTabChecks([]registry.OpenResource{tab("gone", 1, 0), tab("found", 2, 1), tab("unknown", 3, 2), tab("opened-meanwhile", 4, 3)}, byID)
 	if got := ids(kept); !equalStrings(got, []string{"found", "unknown", "opened-meanwhile"}) {
 		t.Fatalf("kept: %v", got)

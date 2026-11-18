@@ -204,8 +204,9 @@ per language it writes:
   their own table. `Kotlin_syntax` is the Kotlin they are built of, laid out
   as ktlint leaves it.
 - `go-types`: the Go SDK's package `api` (`go/api/types_gen.go`), a type for
-  every component schema and every schema it reaches but the kinds of id,
-  which `identifiers` writes. A union embeds the hand-written generic
+  every component schema, every record Protocol states in its tables
+  (`Table_records`), and every schema they reach but the kinds of id, which
+  `identifiers` writes. A union embeds the hand-written generic
   `union` (`go/api/union.go`); `Go_syntax` is the Go it is built of, laid out
   as gofmt leaves it. It reads the schemas as Rust's types do, through `View`
   (a `$ref`'s schema, a union's members) and `Definitions.meant` (an `allOf`
