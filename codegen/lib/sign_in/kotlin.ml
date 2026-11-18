@@ -27,12 +27,14 @@ let file (o : Owner_only.t) =
     [
       mode "OWNER_ONLY_DIRECTORY_PERMISSIONS" o.directory;
       mode "OWNER_ONLY_FILE_PERMISSIONS" o.file;
-      K.function_ ~about:(K.Block o.access_list.docs) ~visibility:K.Internal
+      K.function_ ~about:(K.Block o.directory_access_list.docs)
+        ~visibility:K.Internal
         ~params:[ ("owner", K.Type "String") ]
         ~returns:(K.Type "String") "ownerOnlyAccessList"
         (K.Same_line
            (K.Binary
-              ( K.Binary (K.Str o.access_list.before, K.Plus, K.Name "owner"),
+              ( K.Binary
+                  (K.Str o.directory_access_list.before, K.Plus, K.Name "owner"),
                 K.Plus,
-                K.Str o.access_list.after )));
+                K.Str o.directory_access_list.after )));
     ]

@@ -232,7 +232,8 @@ let owner_only ?(directory = "0700") ?(access = "D:PAI(A;OICI;FA;;;{owner})") ()
       comment = "c";
       directory_mode = { value = directory; docs = "D." };
       file_mode = { value = "0600"; docs = "D." };
-      access_list = { value = access; docs = "With `{owner}`." };
+      directory_access_list = { value = access; docs = "With `{owner}`." };
+      file_access_list = { value = "D:PAI(A;;FA;;;{owner})"; docs = "F." };
     }
 
 let flat json =
@@ -256,7 +257,7 @@ let sign_in =
         | Ok o ->
             Alcotest.(check string)
               "the owner's place, by its argument" "With `owner`."
-              o.access_list.docs
+              o.directory_access_list.docs
         | Error _ -> Alcotest.fail "refused");
     case "a mode that is not four octal digits" (fun () ->
         List.iter
@@ -265,7 +266,7 @@ let sign_in =
               (owner_only ~directory ()))
           [ "700"; "0800"; "07000" ]);
     case "an access list that names the owner's place twice" (fun () ->
-        refuses "/accessList/value" "2 times"
+        refuses "/directoryAccessList/value" "2 times"
           (owner_only ~access:"D:(A;;FA;;;{owner})(A;;FA;;;{owner})" ()));
     case "an entry every rule holds" (fun () -> accepts (flat (entry ())));
     case "a property that is not a string" (fun () ->

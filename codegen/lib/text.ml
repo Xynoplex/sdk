@@ -57,6 +57,29 @@ let wrapped ~lead ~width text =
   in
   List.rev (if last = "" then lines else last :: lines)
 
+(* Prose as a spec states it: paragraphs, each a text of words or a list of
+   items. *)
+type paragraph = Words of string | Items of string list
+
+(* [paragraphs] as comment lines behind [lead], within [width]: each
+   paragraph's words wrapped, an item's first line behind ["- "] and its
+   others behind two spaces, and an empty line between paragraphs. *)
+let paragraphs ~lead ~width paragraphs =
+  let item text =
+    match wrapped ~lead:(lead ^ "  ") ~width text with
+    | first :: rest -> ("- " ^ first) :: List.map (fun l -> "  " ^ l) rest
+    | [] -> []
+  in
+  List.concat
+    (List.mapi
+       (fun i paragraph ->
+         (if i > 0 then [ "" ] else [])
+         @
+         match paragraph with
+         | Words text -> wrapped ~lead ~width text
+         | Items items -> List.concat_map item items)
+       paragraphs)
+
 let replace_all ~sub ~by text =
   let n = String.length sub and length = String.length text in
   let out = Buffer.create length in

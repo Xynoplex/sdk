@@ -5,6 +5,7 @@
 open Xynolog_codegen
 
 let docs = `Assoc [ ("lead", `List []); ("trailing", `String "") ]
+let prose = `List [ `String "Words." ]
 
 let channel name members : Yojson.Safe.t =
   `Assoc
@@ -64,25 +65,24 @@ let base : Yojson.Safe.t =
       ( "docs",
         `Assoc
           [
-            ("eventName", `String "");
-            ("enrichedEvents", `String "");
-            ("channelSchemas", `String "");
-            ("emittableChannel", `String "");
+            ("eventName", prose);
+            ("enrichedEvents", prose);
+            ("channelSchemas", prose);
+            ("emittableChannel", prose);
           ] );
       ( "inProcess",
-        `Assoc
-          [ ("doc", `String ""); ("channels", strings [ "demo:internal" ]) ] );
+        `Assoc [ ("doc", prose); ("channels", strings [ "demo:internal" ]) ] );
       ( "kind",
         `Assoc
           [
-            ("doc", `String "");
+            ("doc", prose);
             ("command", `List []);
             ("event", strings [ "demo:happened" ]);
           ] );
       ( "audience",
         `Assoc
           [
-            ("doc", `String "");
+            ("doc", prose);
             ("everyone", strings [ "demo:happened" ]);
             ("scoped", `List []);
             ("declared", `List []);
@@ -90,7 +90,7 @@ let base : Yojson.Safe.t =
       ( "effect",
         `Assoc
           [
-            ("doc", `String "");
+            ("doc", prose);
             ("writes", strings [ "demo:limits-requested" ]);
             ("reads", `List []);
           ] );
@@ -188,6 +188,47 @@ let case name test = Alcotest.test_case name `Quick test
 let axes =
   [
     case "the base registry holds every rule" (accepts base);
+    case "prose of paragraphs and items, and a lead of every block"
+      (accepts
+         (base
+         |> set [ "kind"; "doc" ]
+              (`List
+                 [
+                   `String "Words."; `Assoc [ ("items", strings [ "a"; "b" ]) ];
+                 ])
+         |> set
+              [ "operations"; "0"; "docs"; "lead" ]
+              (`List
+                 [
+                   `Assoc [ ("section", `String "Part") ];
+                   `String "";
+                   `Assoc [ ("comment", prose) ];
+                   `Assoc [ ("doc", prose) ];
+                 ])));
+    case "a lead line as one language writes it"
+      (refuses
+         (set
+            [ "operations"; "0"; "docs"; "lead" ]
+            (strings [ "  // a comment" ])
+            base)
+         "/operations/0/docs/lead/0: expected \"\", found \"  // a comment\"");
+    case "a block of two kinds"
+      (refuses
+         (set
+            [ "operations"; "0"; "docs"; "lead" ]
+            (`List [ `Assoc [ ("section", `String "Part"); ("doc", prose) ] ])
+            base)
+         "/operations/0/docs/lead/0: has more than one of section, doc");
+    case "prose of no paragraph"
+      (refuses
+         (set [ "effect"; "doc" ] (`List []) base)
+         "/effect/doc: expected a non-empty array");
+    case "a list of no items"
+      (refuses
+         (set [ "docs"; "eventName" ]
+            (`List [ `Assoc [ ("items", `List []) ] ])
+            base)
+         "/docs/eventName/0/items: expected a non-empty array");
     case "a crossing channel with no audience"
       (refuses
          (set [ "audience"; "everyone" ] (`List []) base)

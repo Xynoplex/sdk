@@ -121,9 +121,56 @@ let cases =
             (T.type_alias "M" ~export:false
                (T_object
                   ( Rows,
-                    [
-                      T.member ~trailing:"// why" (Ident "a") (T_name "string");
-                    ] )))));
+                    [ T.member ~trailing:"why" (Ident "a") (T_name "string") ]
+                  )))));
+    case "a trailing comment is one line"
+      (refuses
+         (decl
+            (T.type_alias "M" ~export:false
+               (T_object
+                  (Rows, [ T.member ~trailing:"a\nb" (Ident "a") (T_name "x") ])))));
+    case "prose that fits is a doc comment on one line"
+      (writes "/** Short words. */"
+         (decl (T.Comment [ Doc_prose [ Words "Short words." ] ])));
+    case "prose is wrapped within 80 columns, a list's items behind a dash"
+      (writes
+         "/**\n\
+         \ * One two three four five six seven eight nine ten eleven twelve \
+          thirteen\n\
+         \ * fourteen.\n\
+         \ *\n\
+         \ * - an item that is long enough to wrap past the end of the line it \
+          starts on,\n\
+         \ *   so its next line hangs.\n\
+         \ * - b *\\/ c\n\
+         \ */"
+         (decl
+            (T.Comment
+               [
+                 Doc_prose
+                   [
+                     Words
+                       "One two three four five six seven eight nine ten \
+                        eleven twelve thirteen fourteen.";
+                     Items
+                       [
+                         "an item that is long enough to wrap past the end of \
+                          the line it starts on, so its next line hangs.";
+                         "b */ c";
+                       ];
+                   ];
+               ])));
+    case
+      "line prose separates its paragraphs with an empty comment, and a gap is \
+       a blank line"
+      (writes "// a\n//\n// b\n\n// c"
+         (decl
+            (T.Comment
+               [
+                 Line_prose [ Words "a"; Words "b" ];
+                 Gap;
+                 Line_prose [ Words "c" ];
+               ])));
     case "hexadecimal digits are refused when they are none"
       (refuses (expr (Hex "0x40")));
   ]

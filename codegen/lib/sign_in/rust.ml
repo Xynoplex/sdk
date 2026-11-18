@@ -31,7 +31,8 @@ let file (o : Owner_only.t) =
           mode "OWNER_ONLY_DIRECTORY_MODE" o.directory;
           mode "OWNER_ONLY_FILE_MODE" o.file;
           R.Fn
-            (R.fn_ ~doc:[ o.access_list.docs ]
+            (R.fn_
+               ~doc:[ o.directory_access_list.docs ]
                ~attrs:[ cfg "windows" ]
                "owner_only_access_list"
                ~params:[ R.Param ("owner", R.str_ty) ]
@@ -41,9 +42,9 @@ let file (o : Owner_only.t) =
                    (R.Method
                       ( R.Array
                           [
-                            R.Str o.access_list.before;
+                            R.Str o.directory_access_list.before;
                             R.p "owner";
-                            R.Str o.access_list.after;
+                            R.Str o.directory_access_list.after;
                           ],
                         "concat",
                         [] ));

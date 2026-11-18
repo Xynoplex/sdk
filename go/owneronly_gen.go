@@ -26,3 +26,13 @@ const OwnerOnlyFileMode os.FileMode = 0o600
 func OwnerOnlyDirAccessList(owner string) string {
 	return "D:PAI(A;OICI;FA;;;" + owner + ")(A;OICI;FA;;;SY)(A;OICI;FA;;;BA)"
 }
+
+// OwnerOnlyFileAccessList: A file's access list on Windows, which the
+// launcher gives each file it keeps to its owner, in SDDL, with `owner` where
+// the SID of the user it runs as goes: the directory's list, with nothing
+// handed down, since a file has nothing beneath it. Full access for that
+// user, the system and the administrators, and nobody else, protected, so
+// nothing is inherited from above.
+func OwnerOnlyFileAccessList(owner string) string {
+	return "D:PAI(A;;FA;;;" + owner + ")(A;;FA;;;SY)(A;;FA;;;BA)"
+}

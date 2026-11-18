@@ -89,7 +89,7 @@ export const BUS_OPERATIONS = {
   // Graph-projection rebuild, served by the Weaver
   'weave:rebuild':                       { result: 'weave:rebuild-ok',               failure: 'weave:rebuild-failed' },
 
-  // ── SMELT ────────────────────────────────────────────
+  // ── SMELT ───────────────────────────────────────────────────────
   // Anchored-text rebuild, served by the Smelter
   'smelt:rebuild-anchors':               { result: 'smelt:rebuild-anchors-ok',       failure: 'smelt:rebuild-anchors-failed' },
 
