@@ -141,7 +141,7 @@ writeCases fixtures = withCarrier $ \carrier input local -> do
       plain =
         enriched
           { enrichedResourceEventAnnotation = Nothing,
-            enrichedResourceEventPayload = EnrichedResourceEventPayload (KM.singleton "annotationId" (toJSON identity))
+            enrichedResourceEventPayload = StoredEventResponsePayload (KM.singleton "annotationId" (toJSON identity))
           }
   bracket (Cache.newCache fetch (options time)) Cache.dispose $ \cache -> do
     Cache.set cache identity annotation

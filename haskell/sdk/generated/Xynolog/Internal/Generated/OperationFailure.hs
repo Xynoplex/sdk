@@ -69,11 +69,11 @@ code BrowseTagSchemasRequestedOperation = fromCommandErrorCode . Types.commandEr
 code BrowseEnginesRequestedOperation = fromCommandErrorCode . Types.commandErrorCode
 code BrowseProfilesRequestedOperation = fromCommandErrorCode . Types.commandErrorCode
 code BrowseKbRequestedOperation = fromCommandErrorCode . Types.commandErrorCode
-code BrowseDirectoryRequestedOperation = fromBrowseDirectoryFailedCode . Types.browseDirectoryFailedCode
+code BrowseDirectoryRequestedOperation = fromCommandErrorCode . Types.browseDirectoryFailedCode
 code FrameAddEntityTypeOperation = fromCommandErrorCode . Types.commandErrorCode
 code FrameAddTagSchemaOperation = fromCommandErrorCode . Types.commandErrorCode
-code GatherRequestedOperation = fromGatherFailedCode . Types.gatherFailedCode
-code GatherResourceRequestedOperation = fromGatherResourceFailedCode . Types.gatherResourceFailedCode
+code GatherRequestedOperation = fromCommandErrorCode . Types.gatherFailedCode
+code GatherResourceRequestedOperation = fromCommandErrorCode . Types.gatherResourceFailedCode
 code GatherSummaryRequestedOperation = fromCommandErrorCode . Types.commandErrorCode
 code GatherReferencedByRequestedOperation = fromCommandErrorCode . Types.commandErrorCode
 code GatherLimitsRequestedOperation = fromCommandErrorCode . Types.commandErrorCode
@@ -88,7 +88,7 @@ code MarkDeleteOperation = fromCommandErrorCode . Types.commandErrorCode
 code MarkArchiveOperation = fromCommandErrorCode . Types.commandErrorCode
 code MarkUnarchiveOperation = fromCommandErrorCode . Types.commandErrorCode
 code MarkUpdateEntityTypesOperation = fromCommandErrorCode . Types.commandErrorCode
-code MatchSearchRequestedOperation = fromMatchSearchFailedCode . Types.matchSearchFailedCode
+code MatchSearchRequestedOperation = fromCommandErrorCode . Types.matchSearchFailedCode
 code MatchResourcesRequestedOperation = fromCommandErrorCode . Types.commandErrorCode
 code MatchLimitsRequestedOperation = fromCommandErrorCode . Types.commandErrorCode
 code WeaveRebuildOperation = fromCommandErrorCode . Types.commandErrorCode
@@ -107,35 +107,3 @@ fromCommandErrorCode value = case value of
   (Just Types.CommandErrorCodeNotU2d_found) -> BusRequestNotFound
   (Just Types.CommandErrorCodeUnauthorized) -> BusRequestUnauthorized
   (Just Types.CommandErrorCodeNoneU2d_pending) -> BusRequestNonePending
-
-fromBrowseDirectoryFailedCode :: Maybe Types.BrowseDirectoryFailedCode -> BusRequestCode
-fromBrowseDirectoryFailedCode value = case value of
-  Nothing -> BusRequestRejected
-  (Just Types.BrowseDirectoryFailedCodePeerU2d_unavailable) -> BusRequestPeerUnavailable
-  (Just Types.BrowseDirectoryFailedCodeNotU2d_found) -> BusRequestNotFound
-  (Just Types.BrowseDirectoryFailedCodeUnauthorized) -> BusRequestUnauthorized
-  (Just Types.BrowseDirectoryFailedCodeNoneU2d_pending) -> BusRequestNonePending
-
-fromGatherFailedCode :: Maybe Types.GatherFailedCode -> BusRequestCode
-fromGatherFailedCode value = case value of
-  Nothing -> BusRequestRejected
-  (Just Types.GatherFailedCodePeerU2d_unavailable) -> BusRequestPeerUnavailable
-  (Just Types.GatherFailedCodeNotU2d_found) -> BusRequestNotFound
-  (Just Types.GatherFailedCodeUnauthorized) -> BusRequestUnauthorized
-  (Just Types.GatherFailedCodeNoneU2d_pending) -> BusRequestNonePending
-
-fromGatherResourceFailedCode :: Maybe Types.GatherResourceFailedCode -> BusRequestCode
-fromGatherResourceFailedCode value = case value of
-  Nothing -> BusRequestRejected
-  (Just Types.GatherResourceFailedCodePeerU2d_unavailable) -> BusRequestPeerUnavailable
-  (Just Types.GatherResourceFailedCodeNotU2d_found) -> BusRequestNotFound
-  (Just Types.GatherResourceFailedCodeUnauthorized) -> BusRequestUnauthorized
-  (Just Types.GatherResourceFailedCodeNoneU2d_pending) -> BusRequestNonePending
-
-fromMatchSearchFailedCode :: Maybe Types.MatchSearchFailedCode -> BusRequestCode
-fromMatchSearchFailedCode value = case value of
-  Nothing -> BusRequestRejected
-  (Just Types.MatchSearchFailedCodePeerU2d_unavailable) -> BusRequestPeerUnavailable
-  (Just Types.MatchSearchFailedCodeNotU2d_found) -> BusRequestNotFound
-  (Just Types.MatchSearchFailedCodeUnauthorized) -> BusRequestUnauthorized
-  (Just Types.MatchSearchFailedCodeNoneU2d_pending) -> BusRequestNonePending

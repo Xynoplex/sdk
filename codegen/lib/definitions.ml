@@ -334,3 +334,20 @@ let alone ~name (s : Schema.t) =
       (fun n ->
         if n = name then v else refuse "the spec declares no schema %s" n);
   }
+
+(* The schema that states each property of [name]'s schema [s], as
+   [Inherited.owners] decides it: an [allOf]'s members are its parts, and any
+   other schema is one part stating its own properties. *)
+let owners definitions name s =
+  let stated = function
+    | Node { properties = Some ps; _ } -> Inherited.Stated (List.map fst ps)
+    | _ -> Inherited.Stated []
+  in
+  let parts = function
+    | Node { all_of = Some members; _ } ->
+        List.map
+          (function Ref n -> Inherited.Component n | m -> stated m)
+          members
+    | s -> [ stated s ]
+  in
+  Inherited.owners ~parts:(fun n -> parts (definitions.schema n)) name (parts s)
