@@ -4,35 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(GatheredContextSemanticContextJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record GatheredContextSemanticContext
 {
-    public global::System.Collections.Generic.IReadOnlyList<string>? ExcludedEntityTypes { get; init; }
-    public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.SemanticMatch> Similar { get; init; }
-}
-
-internal sealed class GatheredContextSemanticContextJsonConverter : global::System.Text.Json.Serialization.JsonConverter<GatheredContextSemanticContext>
-{
-    public override GatheredContextSemanticContext Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("GatheredContextSemanticContext", root);
-        return new GatheredContextSemanticContext
-        {
-            ExcludedEntityTypes = root.TryGetProperty("excludedEntityTypes", out var p0) ? global::Xynolog.Serialization.WireJson.Read<global::System.Collections.Generic.IReadOnlyList<string>>(p0, options) : null,
-            Similar = global::Xynolog.Serialization.WireJson.ReadMember<global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.SemanticMatch>>(root, "similar", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, GatheredContextSemanticContext value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        if (value.ExcludedEntityTypes is not null)
-        {
-            fields.Add("excludedEntityTypes", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ExcludedEntityTypes, options));
-        }
-        fields.Add("similar", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Similar, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "GatheredContextSemanticContext", fields);
-    }
+    [global::Xynolog.Serialization.Wire("excludedEntityTypes")] public global::System.Collections.Generic.IReadOnlyList<string>? ExcludedEntityTypes { get; init; }
+    [global::Xynolog.Serialization.Wire("similar")] public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.SemanticMatch> Similar { get; init; }
 }

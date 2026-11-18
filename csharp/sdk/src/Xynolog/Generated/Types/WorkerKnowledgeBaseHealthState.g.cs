@@ -4,38 +4,10 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(WorkerKnowledgeBaseHealthStateJsonConverter))]
+[global::Xynolog.Serialization.WireEnum]
 public enum WorkerKnowledgeBaseHealthState
 {
-    Starting,
-    Working,
-    Refused,
-}
-
-internal sealed class WorkerKnowledgeBaseHealthStateJsonConverter : global::System.Text.Json.Serialization.JsonConverter<WorkerKnowledgeBaseHealthState>
-{
-    public override WorkerKnowledgeBaseHealthState Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("WorkerKnowledgeBaseHealthState", root);
-        return root.GetString() switch
-        {
-            "starting" => WorkerKnowledgeBaseHealthState.Starting,
-            "working" => WorkerKnowledgeBaseHealthState.Working,
-            "refused" => WorkerKnowledgeBaseHealthState.Refused,
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, WorkerKnowledgeBaseHealthState value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        writer.WriteStringValue(value switch
-        {
-            WorkerKnowledgeBaseHealthState.Starting => "starting",
-            WorkerKnowledgeBaseHealthState.Working => "working",
-            WorkerKnowledgeBaseHealthState.Refused => "refused",
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        });
-    }
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("starting")] Starting,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("working")] Working,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("refused")] Refused,
 }

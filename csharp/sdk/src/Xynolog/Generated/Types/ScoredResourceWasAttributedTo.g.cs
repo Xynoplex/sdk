@@ -4,36 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(ScoredResourceWasAttributedToJsonConverter))]
+[global::Xynolog.Serialization.WireUnion(typeof(ScoredResourceWasAttributedTo.AgentCase), typeof(ScoredResourceWasAttributedTo.ArrayCase))]
 public closed record ScoredResourceWasAttributedTo
 {
     public sealed record AgentCase(global::Xynolog.Types.Agent Value) : ScoredResourceWasAttributedTo;
     public sealed record ArrayCase(global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.Agent> Value) : ScoredResourceWasAttributedTo;
-}
-
-internal sealed class ScoredResourceWasAttributedToJsonConverter : global::System.Text.Json.Serialization.JsonConverter<ScoredResourceWasAttributedTo>
-{
-    public override ScoredResourceWasAttributedTo Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("ScoredResourceWasAttributedTo", root);
-        var variant = global::Xynolog.Serialization.WireJson.Variant("ScoredResourceWasAttributedTo", root);
-        return variant switch
-        {
-            0 => new ScoredResourceWasAttributedTo.AgentCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.Agent>(root, options)),
-            1 => new ScoredResourceWasAttributedTo.ArrayCase(global::Xynolog.Serialization.WireJson.Read<global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.Agent>>(root, options)),
-            _ => throw new global::System.Text.Json.JsonException("No matching union variant."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, ScoredResourceWasAttributedTo value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        switch (value)
-        {
-            case ScoredResourceWasAttributedTo.AgentCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            case ScoredResourceWasAttributedTo.ArrayCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            default: throw new global::System.Text.Json.JsonException("Unknown union variant.");
-        }
-    }
 }

@@ -4,128 +4,25 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(RepresentationJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record Representation
 {
-    public string? Id { get; init; }
-    public global::Xynolog.Types.RepresentationType? Type { get; init; }
-    public long? ByteSize { get; init; }
-    public string? Checksum { get; init; }
-    public global::Xynolog.Types.RepresentationConformsTo? ConformsTo { get; init; }
-    public string? Created { get; init; }
-    public double? Duration { get; init; }
-    public string? Encoding { get; init; }
-    public string? Filename { get; init; }
-    public long? Height { get; init; }
-    public string? Language { get; init; }
-    public required string MediaType { get; init; }
-    public string? Modified { get; init; }
-    public global::Xynolog.Types.RepresentationRel? Rel { get; init; }
-    public string? StorageUri { get; init; }
-    public global::System.Collections.Generic.IReadOnlyList<string>? Tags { get; init; }
-    public long? Width { get; init; }
-    public global::System.Collections.Generic.IReadOnlyDictionary<string, global::System.Text.Json.JsonElement> AdditionalProperties { get; init; } = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-}
-
-internal sealed class RepresentationJsonConverter : global::System.Text.Json.Serialization.JsonConverter<Representation>
-{
-    public override Representation Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("Representation", root);
-        return new Representation
-        {
-            Id = root.TryGetProperty("@id", out var p0) ? global::Xynolog.Serialization.WireJson.Read<string>(p0, options) : null,
-            Type = root.TryGetProperty("@type", out var p1) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.RepresentationType>(p1, options) : null,
-            ByteSize = root.TryGetProperty("byteSize", out var p2) ? global::Xynolog.Serialization.WireJson.Read<long>(p2, options) : null,
-            Checksum = root.TryGetProperty("checksum", out var p3) ? global::Xynolog.Serialization.WireJson.Read<string>(p3, options) : null,
-            ConformsTo = root.TryGetProperty("conformsTo", out var p4) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.RepresentationConformsTo>(p4, options) : null,
-            Created = root.TryGetProperty("created", out var p5) ? global::Xynolog.Serialization.WireJson.Read<string>(p5, options) : null,
-            Duration = root.TryGetProperty("duration", out var p6) ? global::Xynolog.Serialization.WireJson.Read<double>(p6, options) : null,
-            Encoding = root.TryGetProperty("encoding", out var p7) ? global::Xynolog.Serialization.WireJson.Read<string>(p7, options) : null,
-            Filename = root.TryGetProperty("filename", out var p8) ? global::Xynolog.Serialization.WireJson.Read<string>(p8, options) : null,
-            Height = root.TryGetProperty("height", out var p9) ? global::Xynolog.Serialization.WireJson.Read<long>(p9, options) : null,
-            Language = root.TryGetProperty("language", out var p10) ? global::Xynolog.Serialization.WireJson.Read<string>(p10, options) : null,
-            MediaType = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "mediaType", options),
-            Modified = root.TryGetProperty("modified", out var p12) ? global::Xynolog.Serialization.WireJson.Read<string>(p12, options) : null,
-            Rel = root.TryGetProperty("rel", out var p13) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.RepresentationRel>(p13, options) : null,
-            StorageUri = root.TryGetProperty("storageUri", out var p14) ? global::Xynolog.Serialization.WireJson.Read<string>(p14, options) : null,
-            Tags = root.TryGetProperty("tags", out var p15) ? global::Xynolog.Serialization.WireJson.Read<global::System.Collections.Generic.IReadOnlyList<string>>(p15, options) : null,
-            Width = root.TryGetProperty("width", out var p16) ? global::Xynolog.Serialization.WireJson.Read<long>(p16, options) : null,
-            AdditionalProperties = global::Xynolog.Serialization.WireJson.Extra(root, new string[] { "@id", "@type", "byteSize", "checksum", "conformsTo", "created", "duration", "encoding", "filename", "height", "language", "mediaType", "modified", "rel", "storageUri", "tags", "width" }),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, Representation value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        if (value.Id is not null)
-        {
-            fields.Add("@id", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Id, options));
-        }
-        if (value.Type is not null)
-        {
-            fields.Add("@type", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Type, options));
-        }
-        if (value.ByteSize is not null)
-        {
-            fields.Add("byteSize", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ByteSize, options));
-        }
-        if (value.Checksum is not null)
-        {
-            fields.Add("checksum", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Checksum, options));
-        }
-        if (value.ConformsTo is not null)
-        {
-            fields.Add("conformsTo", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ConformsTo, options));
-        }
-        if (value.Created is not null)
-        {
-            fields.Add("created", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Created, options));
-        }
-        if (value.Duration is not null)
-        {
-            fields.Add("duration", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Duration, options));
-        }
-        if (value.Encoding is not null)
-        {
-            fields.Add("encoding", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Encoding, options));
-        }
-        if (value.Filename is not null)
-        {
-            fields.Add("filename", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Filename, options));
-        }
-        if (value.Height is not null)
-        {
-            fields.Add("height", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Height, options));
-        }
-        if (value.Language is not null)
-        {
-            fields.Add("language", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Language, options));
-        }
-        fields.Add("mediaType", global::System.Text.Json.JsonSerializer.SerializeToElement(value.MediaType, options));
-        if (value.Modified is not null)
-        {
-            fields.Add("modified", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Modified, options));
-        }
-        if (value.Rel is not null)
-        {
-            fields.Add("rel", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Rel, options));
-        }
-        if (value.StorageUri is not null)
-        {
-            fields.Add("storageUri", global::System.Text.Json.JsonSerializer.SerializeToElement(value.StorageUri, options));
-        }
-        if (value.Tags is not null)
-        {
-            fields.Add("tags", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Tags, options));
-        }
-        if (value.Width is not null)
-        {
-            fields.Add("width", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Width, options));
-        }
-        foreach (var pair in value.AdditionalProperties) { fields.Add(pair.Key, pair.Value); }
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "Representation", fields);
-    }
+    [global::Xynolog.Serialization.Wire("@id")] public string? Id { get; init; }
+    [global::Xynolog.Serialization.Wire("@type")] public global::Xynolog.Types.RepresentationType? Type { get; init; }
+    [global::Xynolog.Serialization.Wire("byteSize")] public long? ByteSize { get; init; }
+    [global::Xynolog.Serialization.Wire("checksum")] public string? Checksum { get; init; }
+    [global::Xynolog.Serialization.Wire("conformsTo")] public global::Xynolog.Types.RepresentationConformsTo? ConformsTo { get; init; }
+    [global::Xynolog.Serialization.Wire("created")] public string? Created { get; init; }
+    [global::Xynolog.Serialization.Wire("duration")] public double? Duration { get; init; }
+    [global::Xynolog.Serialization.Wire("encoding")] public string? Encoding { get; init; }
+    [global::Xynolog.Serialization.Wire("filename")] public string? Filename { get; init; }
+    [global::Xynolog.Serialization.Wire("height")] public long? Height { get; init; }
+    [global::Xynolog.Serialization.Wire("language")] public string? Language { get; init; }
+    [global::Xynolog.Serialization.Wire("mediaType")] public required string MediaType { get; init; }
+    [global::Xynolog.Serialization.Wire("modified")] public string? Modified { get; init; }
+    [global::Xynolog.Serialization.Wire("rel")] public global::Xynolog.Types.RepresentationRel? Rel { get; init; }
+    [global::Xynolog.Serialization.Wire("storageUri")] public string? StorageUri { get; init; }
+    [global::Xynolog.Serialization.Wire("tags")] public global::System.Collections.Generic.IReadOnlyList<string>? Tags { get; init; }
+    [global::Xynolog.Serialization.Wire("width")] public long? Width { get; init; }
+    [global::Xynolog.Serialization.WireRest] public global::System.Collections.Generic.IReadOnlyDictionary<string, global::System.Text.Json.JsonElement> AdditionalProperties { get; init; } = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
 }

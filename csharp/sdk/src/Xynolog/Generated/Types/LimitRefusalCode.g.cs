@@ -4,44 +4,12 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(LimitRefusalCodeJsonConverter))]
+[global::Xynolog.Serialization.WireEnum]
 public enum LimitRefusalCode
 {
-    Streams,
-    EmitRate,
-    UnansweredRequests,
-    Capacity,
-    RefusalRate,
-}
-
-internal sealed class LimitRefusalCodeJsonConverter : global::System.Text.Json.Serialization.JsonConverter<LimitRefusalCode>
-{
-    public override LimitRefusalCode Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("LimitRefusalCode", root);
-        return root.GetString() switch
-        {
-            "streams" => LimitRefusalCode.Streams,
-            "emit-rate" => LimitRefusalCode.EmitRate,
-            "unanswered-requests" => LimitRefusalCode.UnansweredRequests,
-            "capacity" => LimitRefusalCode.Capacity,
-            "refusal-rate" => LimitRefusalCode.RefusalRate,
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, LimitRefusalCode value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        writer.WriteStringValue(value switch
-        {
-            LimitRefusalCode.Streams => "streams",
-            LimitRefusalCode.EmitRate => "emit-rate",
-            LimitRefusalCode.UnansweredRequests => "unanswered-requests",
-            LimitRefusalCode.Capacity => "capacity",
-            LimitRefusalCode.RefusalRate => "refusal-rate",
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        });
-    }
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("streams")] Streams,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("emit-rate")] EmitRate,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("unanswered-requests")] UnansweredRequests,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("capacity")] Capacity,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("refusal-rate")] RefusalRate,
 }

@@ -4,46 +4,11 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(HighlightingJobParamsJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record HighlightingJobParams
 {
-    public double? Density { get; init; }
-    public string? Instructions { get; init; }
-    public string Motivation => "highlighting";
-    public string? SourceLanguage { get; init; }
-}
-
-internal sealed class HighlightingJobParamsJsonConverter : global::System.Text.Json.Serialization.JsonConverter<HighlightingJobParams>
-{
-    public override HighlightingJobParams Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("HighlightingJobParams", root);
-        return new HighlightingJobParams
-        {
-            Density = root.TryGetProperty("density", out var p0) ? global::Xynolog.Serialization.WireJson.Read<double>(p0, options) : null,
-            Instructions = root.TryGetProperty("instructions", out var p1) ? global::Xynolog.Serialization.WireJson.Read<string>(p1, options) : null,
-            SourceLanguage = root.TryGetProperty("sourceLanguage", out var p2) ? global::Xynolog.Serialization.WireJson.Read<string>(p2, options) : null,
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, HighlightingJobParams value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        if (value.Density is not null)
-        {
-            fields.Add("density", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Density, options));
-        }
-        if (value.Instructions is not null)
-        {
-            fields.Add("instructions", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Instructions, options));
-        }
-        fields.Add("motivation", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Motivation, options));
-        if (value.SourceLanguage is not null)
-        {
-            fields.Add("sourceLanguage", global::System.Text.Json.JsonSerializer.SerializeToElement(value.SourceLanguage, options));
-        }
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "HighlightingJobParams", fields);
-    }
+    [global::Xynolog.Serialization.Wire("density")] public double? Density { get; init; }
+    [global::Xynolog.Serialization.Wire("instructions")] public string? Instructions { get; init; }
+    [global::Xynolog.Serialization.Wire("motivation")] public string Motivation => "highlighting";
+    [global::Xynolog.Serialization.Wire("sourceLanguage")] public string? SourceLanguage { get; init; }
 }

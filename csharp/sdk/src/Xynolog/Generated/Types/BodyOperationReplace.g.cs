@@ -4,34 +4,10 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(BodyOperationReplaceJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record BodyOperationReplace
 {
-    public required global::Xynolog.Types.BodyOperationReplaceNewItem NewItem { get; init; }
-    public required global::Xynolog.Types.BodyOperationReplaceOldItem OldItem { get; init; }
-    public string Op => "replace";
-}
-
-internal sealed class BodyOperationReplaceJsonConverter : global::System.Text.Json.Serialization.JsonConverter<BodyOperationReplace>
-{
-    public override BodyOperationReplace Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("BodyOperationReplace", root);
-        return new BodyOperationReplace
-        {
-            NewItem = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.BodyOperationReplaceNewItem>(root, "newItem", options),
-            OldItem = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.BodyOperationReplaceOldItem>(root, "oldItem", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, BodyOperationReplace value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("newItem", global::System.Text.Json.JsonSerializer.SerializeToElement(value.NewItem, options));
-        fields.Add("oldItem", global::System.Text.Json.JsonSerializer.SerializeToElement(value.OldItem, options));
-        fields.Add("op", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Op, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "BodyOperationReplace", fields);
-    }
+    [global::Xynolog.Serialization.Wire("newItem")] public required global::Xynolog.Types.BodyOperationReplaceNewItem NewItem { get; init; }
+    [global::Xynolog.Serialization.Wire("oldItem")] public required global::Xynolog.Types.BodyOperationReplaceOldItem OldItem { get; init; }
+    [global::Xynolog.Serialization.Wire("op")] public string Op => "replace";
 }

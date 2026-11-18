@@ -4,36 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(BodyOperationReplaceOldItemJsonConverter))]
+[global::Xynolog.Serialization.WireUnion(typeof(BodyOperationReplaceOldItem.TextualBodyCase), typeof(BodyOperationReplaceOldItem.SpecificResourceCase))]
 public closed record BodyOperationReplaceOldItem
 {
     public sealed record TextualBodyCase(global::Xynolog.Types.TextualBody Value) : BodyOperationReplaceOldItem;
     public sealed record SpecificResourceCase(global::Xynolog.Types.SpecificResource Value) : BodyOperationReplaceOldItem;
-}
-
-internal sealed class BodyOperationReplaceOldItemJsonConverter : global::System.Text.Json.Serialization.JsonConverter<BodyOperationReplaceOldItem>
-{
-    public override BodyOperationReplaceOldItem Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("BodyOperationReplaceOldItem", root);
-        var variant = global::Xynolog.Serialization.WireJson.Variant("BodyOperationReplaceOldItem", root);
-        return variant switch
-        {
-            0 => new BodyOperationReplaceOldItem.TextualBodyCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.TextualBody>(root, options)),
-            1 => new BodyOperationReplaceOldItem.SpecificResourceCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.SpecificResource>(root, options)),
-            _ => throw new global::System.Text.Json.JsonException("No matching union variant."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, BodyOperationReplaceOldItem value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        switch (value)
-        {
-            case BodyOperationReplaceOldItem.TextualBodyCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            case BodyOperationReplaceOldItem.SpecificResourceCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            default: throw new global::System.Text.Json.JsonException("Unknown union variant.");
-        }
-    }
 }

@@ -4,47 +4,13 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(SmeltSettledReasonJsonConverter))]
+[global::Xynolog.Serialization.WireEnum]
 public enum SmeltSettledReason
 {
-    NoExtractor,
-    Empty,
-    NoTextLayer,
-    Encrypted,
-    Corrupt,
-    TooLarge,
-}
-
-internal sealed class SmeltSettledReasonJsonConverter : global::System.Text.Json.Serialization.JsonConverter<SmeltSettledReason>
-{
-    public override SmeltSettledReason Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("SmeltSettledReason", root);
-        return root.GetString() switch
-        {
-            "no-extractor" => SmeltSettledReason.NoExtractor,
-            "empty" => SmeltSettledReason.Empty,
-            "no-text-layer" => SmeltSettledReason.NoTextLayer,
-            "encrypted" => SmeltSettledReason.Encrypted,
-            "corrupt" => SmeltSettledReason.Corrupt,
-            "too-large" => SmeltSettledReason.TooLarge,
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, SmeltSettledReason value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        writer.WriteStringValue(value switch
-        {
-            SmeltSettledReason.NoExtractor => "no-extractor",
-            SmeltSettledReason.Empty => "empty",
-            SmeltSettledReason.NoTextLayer => "no-text-layer",
-            SmeltSettledReason.Encrypted => "encrypted",
-            SmeltSettledReason.Corrupt => "corrupt",
-            SmeltSettledReason.TooLarge => "too-large",
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        });
-    }
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("no-extractor")] NoExtractor,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("empty")] Empty,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("no-text-layer")] NoTextLayer,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("encrypted")] Encrypted,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("corrupt")] Corrupt,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("too-large")] TooLarge,
 }

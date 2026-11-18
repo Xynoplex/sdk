@@ -4,35 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(MatchResourcesResponseMatchKindJsonConverter))]
+[global::Xynolog.Serialization.WireEnum]
 public enum MatchResourcesResponseMatchKind
 {
-    Lexical,
-    Semantic,
-}
-
-internal sealed class MatchResourcesResponseMatchKindJsonConverter : global::System.Text.Json.Serialization.JsonConverter<MatchResourcesResponseMatchKind>
-{
-    public override MatchResourcesResponseMatchKind Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("MatchResourcesResponseMatchKind", root);
-        return root.GetString() switch
-        {
-            "lexical" => MatchResourcesResponseMatchKind.Lexical,
-            "semantic" => MatchResourcesResponseMatchKind.Semantic,
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, MatchResourcesResponseMatchKind value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        writer.WriteStringValue(value switch
-        {
-            MatchResourcesResponseMatchKind.Lexical => "lexical",
-            MatchResourcesResponseMatchKind.Semantic => "semantic",
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        });
-    }
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("lexical")] Lexical,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("semantic")] Semantic,
 }

@@ -4,44 +4,12 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(LogLevelJsonConverter))]
+[global::Xynolog.Serialization.WireEnum]
 public enum LogLevel
 {
-    Error,
-    Warn,
-    Info,
-    Http,
-    Debug,
-}
-
-internal sealed class LogLevelJsonConverter : global::System.Text.Json.Serialization.JsonConverter<LogLevel>
-{
-    public override LogLevel Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("LogLevel", root);
-        return root.GetString() switch
-        {
-            "error" => LogLevel.Error,
-            "warn" => LogLevel.Warn,
-            "info" => LogLevel.Info,
-            "http" => LogLevel.Http,
-            "debug" => LogLevel.Debug,
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, LogLevel value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        writer.WriteStringValue(value switch
-        {
-            LogLevel.Error => "error",
-            LogLevel.Warn => "warn",
-            LogLevel.Info => "info",
-            LogLevel.Http => "http",
-            LogLevel.Debug => "debug",
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        });
-    }
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("error")] Error,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("warn")] Warn,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("info")] Info,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("http")] Http,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("debug")] Debug,
 }

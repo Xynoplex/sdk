@@ -4,41 +4,12 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(UserResponseJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record UserResponse
 {
-    public required global::Xynolog.Identifiers.UserId Did { get; init; }
-    public required string Domain { get; init; }
-    public required string? Email { get; init; }
-    public required string? Image { get; init; }
-    public required string? Name { get; init; }
-}
-
-internal sealed class UserResponseJsonConverter : global::System.Text.Json.Serialization.JsonConverter<UserResponse>
-{
-    public override UserResponse Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("UserResponse", root);
-        return new UserResponse
-        {
-            Did = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.UserId>(root, "did", options),
-            Domain = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "domain", options),
-            Email = root.GetProperty("email").ValueKind == global::System.Text.Json.JsonValueKind.Null ? (string?)null : global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "email", options),
-            Image = root.GetProperty("image").ValueKind == global::System.Text.Json.JsonValueKind.Null ? (string?)null : global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "image", options),
-            Name = root.GetProperty("name").ValueKind == global::System.Text.Json.JsonValueKind.Null ? (string?)null : global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "name", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, UserResponse value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("did", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Did, options));
-        fields.Add("domain", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Domain, options));
-        fields.Add("email", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Email, options));
-        fields.Add("image", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Image, options));
-        fields.Add("name", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Name, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "UserResponse", fields);
-    }
+    [global::Xynolog.Serialization.Wire("did")] public required global::Xynolog.Identifiers.UserId Did { get; init; }
+    [global::Xynolog.Serialization.Wire("domain")] public required string Domain { get; init; }
+    [global::Xynolog.Serialization.Wire("email")] public required string? Email { get; init; }
+    [global::Xynolog.Serialization.Wire("image")] public required string? Image { get; init; }
+    [global::Xynolog.Serialization.Wire("name")] public required string? Name { get; init; }
 }

@@ -4,32 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(GetResourceResponseJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record GetResourceResponse
 {
-    public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.Annotation> Annotations { get; init; }
-    public required global::Xynolog.Types.ResourceDescriptor Resource { get; init; }
-}
-
-internal sealed class GetResourceResponseJsonConverter : global::System.Text.Json.Serialization.JsonConverter<GetResourceResponse>
-{
-    public override GetResourceResponse Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("GetResourceResponse", root);
-        return new GetResourceResponse
-        {
-            Annotations = global::Xynolog.Serialization.WireJson.ReadMember<global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.Annotation>>(root, "annotations", options),
-            Resource = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.ResourceDescriptor>(root, "resource", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, GetResourceResponse value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("annotations", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Annotations, options));
-        fields.Add("resource", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Resource, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "GetResourceResponse", fields);
-    }
+    [global::Xynolog.Serialization.Wire("annotations")] public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.Annotation> Annotations { get; init; }
+    [global::Xynolog.Serialization.Wire("resource")] public required global::Xynolog.Types.ResourceDescriptor Resource { get; init; }
 }

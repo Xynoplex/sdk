@@ -4,41 +4,10 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(JobClaimCommandJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record JobClaimCommand
 {
-    public global::System.Collections.Generic.IReadOnlyList<string>? Roles { get; init; }
-    public global::Xynolog.Identifiers.UserId? UserId { get; init; }
-    public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.JobFilter> Accepts { get; init; }
-}
-
-internal sealed class JobClaimCommandJsonConverter : global::System.Text.Json.Serialization.JsonConverter<JobClaimCommand>
-{
-    public override JobClaimCommand Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("JobClaimCommand", root);
-        return new JobClaimCommand
-        {
-            Roles = root.TryGetProperty("_roles", out var p0) ? global::Xynolog.Serialization.WireJson.Read<global::System.Collections.Generic.IReadOnlyList<string>>(p0, options) : null,
-            UserId = root.TryGetProperty("_userId", out var p1) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Identifiers.UserId>(p1, options) : null,
-            Accepts = global::Xynolog.Serialization.WireJson.ReadMember<global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.JobFilter>>(root, "accepts", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, JobClaimCommand value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        if (value.Roles is not null)
-        {
-            fields.Add("_roles", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Roles, options));
-        }
-        if (value.UserId is not null)
-        {
-            fields.Add("_userId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.UserId, options));
-        }
-        fields.Add("accepts", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Accepts, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "JobClaimCommand", fields);
-    }
+    [global::Xynolog.Serialization.Wire("_roles")] public global::System.Collections.Generic.IReadOnlyList<string>? Roles { get; init; }
+    [global::Xynolog.Serialization.Wire("_userId")] public global::Xynolog.Identifiers.UserId? UserId { get; init; }
+    [global::Xynolog.Serialization.Wire("accepts")] public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.JobFilter> Accepts { get; init; }
 }

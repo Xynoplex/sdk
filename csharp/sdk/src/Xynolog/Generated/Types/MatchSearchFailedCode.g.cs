@@ -4,41 +4,11 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(MatchSearchFailedCodeJsonConverter))]
+[global::Xynolog.Serialization.WireEnum]
 public enum MatchSearchFailedCode
 {
-    PeerUnavailable,
-    NotFound,
-    Unauthorized,
-    NonePending,
-}
-
-internal sealed class MatchSearchFailedCodeJsonConverter : global::System.Text.Json.Serialization.JsonConverter<MatchSearchFailedCode>
-{
-    public override MatchSearchFailedCode Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("MatchSearchFailedCode", root);
-        return root.GetString() switch
-        {
-            "peer-unavailable" => MatchSearchFailedCode.PeerUnavailable,
-            "not-found" => MatchSearchFailedCode.NotFound,
-            "unauthorized" => MatchSearchFailedCode.Unauthorized,
-            "none-pending" => MatchSearchFailedCode.NonePending,
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, MatchSearchFailedCode value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        writer.WriteStringValue(value switch
-        {
-            MatchSearchFailedCode.PeerUnavailable => "peer-unavailable",
-            MatchSearchFailedCode.NotFound => "not-found",
-            MatchSearchFailedCode.Unauthorized => "unauthorized",
-            MatchSearchFailedCode.NonePending => "none-pending",
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        });
-    }
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("peer-unavailable")] PeerUnavailable,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("not-found")] NotFound,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("unauthorized")] Unauthorized,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("none-pending")] NonePending,
 }

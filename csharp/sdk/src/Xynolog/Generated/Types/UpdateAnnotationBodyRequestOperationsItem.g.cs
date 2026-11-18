@@ -4,39 +4,10 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(UpdateAnnotationBodyRequestOperationsItemJsonConverter))]
+[global::Xynolog.Serialization.WireUnion(typeof(UpdateAnnotationBodyRequestOperationsItem.BodyOperationAddCase), typeof(UpdateAnnotationBodyRequestOperationsItem.BodyOperationRemoveCase), typeof(UpdateAnnotationBodyRequestOperationsItem.BodyOperationReplaceCase))]
 public closed record UpdateAnnotationBodyRequestOperationsItem
 {
     public sealed record BodyOperationAddCase(global::Xynolog.Types.BodyOperationAdd Value) : UpdateAnnotationBodyRequestOperationsItem;
     public sealed record BodyOperationRemoveCase(global::Xynolog.Types.BodyOperationRemove Value) : UpdateAnnotationBodyRequestOperationsItem;
     public sealed record BodyOperationReplaceCase(global::Xynolog.Types.BodyOperationReplace Value) : UpdateAnnotationBodyRequestOperationsItem;
-}
-
-internal sealed class UpdateAnnotationBodyRequestOperationsItemJsonConverter : global::System.Text.Json.Serialization.JsonConverter<UpdateAnnotationBodyRequestOperationsItem>
-{
-    public override UpdateAnnotationBodyRequestOperationsItem Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("UpdateAnnotationBodyRequestOperationsItem", root);
-        var variant = global::Xynolog.Serialization.WireJson.Variant("UpdateAnnotationBodyRequestOperationsItem", root);
-        return variant switch
-        {
-            0 => new UpdateAnnotationBodyRequestOperationsItem.BodyOperationAddCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.BodyOperationAdd>(root, options)),
-            1 => new UpdateAnnotationBodyRequestOperationsItem.BodyOperationRemoveCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.BodyOperationRemove>(root, options)),
-            2 => new UpdateAnnotationBodyRequestOperationsItem.BodyOperationReplaceCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.BodyOperationReplace>(root, options)),
-            _ => throw new global::System.Text.Json.JsonException("No matching union variant."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, UpdateAnnotationBodyRequestOperationsItem value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        switch (value)
-        {
-            case UpdateAnnotationBodyRequestOperationsItem.BodyOperationAddCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            case UpdateAnnotationBodyRequestOperationsItem.BodyOperationRemoveCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            case UpdateAnnotationBodyRequestOperationsItem.BodyOperationReplaceCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            default: throw new global::System.Text.Json.JsonException("Unknown union variant.");
-        }
-    }
 }

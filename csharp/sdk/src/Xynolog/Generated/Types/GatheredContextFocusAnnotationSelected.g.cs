@@ -4,41 +4,10 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(GatheredContextFocusAnnotationSelectedJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record GatheredContextFocusAnnotationSelected
 {
-    public string? After { get; init; }
-    public string? Before { get; init; }
-    public required string Text { get; init; }
-}
-
-internal sealed class GatheredContextFocusAnnotationSelectedJsonConverter : global::System.Text.Json.Serialization.JsonConverter<GatheredContextFocusAnnotationSelected>
-{
-    public override GatheredContextFocusAnnotationSelected Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("GatheredContextFocusAnnotationSelected", root);
-        return new GatheredContextFocusAnnotationSelected
-        {
-            After = root.TryGetProperty("after", out var p0) ? global::Xynolog.Serialization.WireJson.Read<string>(p0, options) : null,
-            Before = root.TryGetProperty("before", out var p1) ? global::Xynolog.Serialization.WireJson.Read<string>(p1, options) : null,
-            Text = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "text", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, GatheredContextFocusAnnotationSelected value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        if (value.After is not null)
-        {
-            fields.Add("after", global::System.Text.Json.JsonSerializer.SerializeToElement(value.After, options));
-        }
-        if (value.Before is not null)
-        {
-            fields.Add("before", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Before, options));
-        }
-        fields.Add("text", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Text, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "GatheredContextFocusAnnotationSelected", fields);
-    }
+    [global::Xynolog.Serialization.Wire("after")] public string? After { get; init; }
+    [global::Xynolog.Serialization.Wire("before")] public string? Before { get; init; }
+    [global::Xynolog.Serialization.Wire("text")] public required string Text { get; init; }
 }

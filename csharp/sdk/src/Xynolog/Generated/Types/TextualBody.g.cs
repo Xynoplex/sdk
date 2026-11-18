@@ -4,49 +4,12 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(TextualBodyJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record TextualBody
 {
-    public string? Format { get; init; }
-    public string? Language { get; init; }
-    public global::Xynolog.Types.BodyPurpose? Purpose { get; init; }
-    public string Type => "TextualBody";
-    public required string Value { get; init; }
-}
-
-internal sealed class TextualBodyJsonConverter : global::System.Text.Json.Serialization.JsonConverter<TextualBody>
-{
-    public override TextualBody Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("TextualBody", root);
-        return new TextualBody
-        {
-            Format = root.TryGetProperty("format", out var p0) ? global::Xynolog.Serialization.WireJson.Read<string>(p0, options) : null,
-            Language = root.TryGetProperty("language", out var p1) ? global::Xynolog.Serialization.WireJson.Read<string>(p1, options) : null,
-            Purpose = root.TryGetProperty("purpose", out var p2) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.BodyPurpose>(p2, options) : null,
-            Value = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "value", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, TextualBody value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        if (value.Format is not null)
-        {
-            fields.Add("format", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Format, options));
-        }
-        if (value.Language is not null)
-        {
-            fields.Add("language", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Language, options));
-        }
-        if (value.Purpose is not null)
-        {
-            fields.Add("purpose", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Purpose, options));
-        }
-        fields.Add("type", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Type, options));
-        fields.Add("value", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Value, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "TextualBody", fields);
-    }
+    [global::Xynolog.Serialization.Wire("format")] public string? Format { get; init; }
+    [global::Xynolog.Serialization.Wire("language")] public string? Language { get; init; }
+    [global::Xynolog.Serialization.Wire("purpose")] public global::Xynolog.Types.BodyPurpose? Purpose { get; init; }
+    [global::Xynolog.Serialization.Wire("type")] public string Type => "TextualBody";
+    [global::Xynolog.Serialization.Wire("value")] public required string Value { get; init; }
 }

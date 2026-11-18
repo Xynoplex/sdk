@@ -4,38 +4,10 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(BrowseDirectoryRequestSortJsonConverter))]
+[global::Xynolog.Serialization.WireEnum]
 public enum BrowseDirectoryRequestSort
 {
-    Name,
-    Mtime,
-    AnnotationCount,
-}
-
-internal sealed class BrowseDirectoryRequestSortJsonConverter : global::System.Text.Json.Serialization.JsonConverter<BrowseDirectoryRequestSort>
-{
-    public override BrowseDirectoryRequestSort Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("BrowseDirectoryRequestSort", root);
-        return root.GetString() switch
-        {
-            "name" => BrowseDirectoryRequestSort.Name,
-            "mtime" => BrowseDirectoryRequestSort.Mtime,
-            "annotationCount" => BrowseDirectoryRequestSort.AnnotationCount,
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, BrowseDirectoryRequestSort value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        writer.WriteStringValue(value switch
-        {
-            BrowseDirectoryRequestSort.Name => "name",
-            BrowseDirectoryRequestSort.Mtime => "mtime",
-            BrowseDirectoryRequestSort.AnnotationCount => "annotationCount",
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        });
-    }
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("name")] Name,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("mtime")] Mtime,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("annotationCount")] AnnotationCount,
 }

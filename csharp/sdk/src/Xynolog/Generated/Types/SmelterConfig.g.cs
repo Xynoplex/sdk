@@ -4,62 +4,19 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(SmelterConfigJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record SmelterConfig
 {
-    public required global::Xynolog.Types.SmelterConfigArchivist Archivist { get; init; }
-    public required global::Xynolog.Types.SmelterConfigChunking Chunking { get; init; }
-    public required string CursorsPath { get; init; }
-    public required global::Xynolog.Types.EmbeddingConfig Embedding { get; init; }
-    public required string GatewayUrl { get; init; }
-    public required global::Xynolog.Types.SmelterConfigIdentity Identity { get; init; }
-    public required global::Xynolog.Types.KbIdentity Kb { get; init; }
-    public required global::Xynolog.Types.LogFormat LogFormat { get; init; }
-    public required global::Xynolog.Types.LogLevel LogLevel { get; init; }
-    public required long PdfsAtOnce { get; init; }
-    public required long Port { get; init; }
-    public required global::Xynolog.Types.VectorsConfig Vectors { get; init; }
-}
-
-internal sealed class SmelterConfigJsonConverter : global::System.Text.Json.Serialization.JsonConverter<SmelterConfig>
-{
-    public override SmelterConfig Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("SmelterConfig", root);
-        return new SmelterConfig
-        {
-            Archivist = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.SmelterConfigArchivist>(root, "archivist", options),
-            Chunking = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.SmelterConfigChunking>(root, "chunking", options),
-            CursorsPath = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "cursorsPath", options),
-            Embedding = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.EmbeddingConfig>(root, "embedding", options),
-            GatewayUrl = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "gatewayUrl", options),
-            Identity = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.SmelterConfigIdentity>(root, "identity", options),
-            Kb = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.KbIdentity>(root, "kb", options),
-            LogFormat = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.LogFormat>(root, "logFormat", options),
-            LogLevel = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.LogLevel>(root, "logLevel", options),
-            PdfsAtOnce = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "pdfsAtOnce", options),
-            Port = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "port", options),
-            Vectors = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.VectorsConfig>(root, "vectors", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, SmelterConfig value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("archivist", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Archivist, options));
-        fields.Add("chunking", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Chunking, options));
-        fields.Add("cursorsPath", global::System.Text.Json.JsonSerializer.SerializeToElement(value.CursorsPath, options));
-        fields.Add("embedding", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Embedding, options));
-        fields.Add("gatewayUrl", global::System.Text.Json.JsonSerializer.SerializeToElement(value.GatewayUrl, options));
-        fields.Add("identity", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Identity, options));
-        fields.Add("kb", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Kb, options));
-        fields.Add("logFormat", global::System.Text.Json.JsonSerializer.SerializeToElement(value.LogFormat, options));
-        fields.Add("logLevel", global::System.Text.Json.JsonSerializer.SerializeToElement(value.LogLevel, options));
-        fields.Add("pdfsAtOnce", global::System.Text.Json.JsonSerializer.SerializeToElement(value.PdfsAtOnce, options));
-        fields.Add("port", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Port, options));
-        fields.Add("vectors", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Vectors, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "SmelterConfig", fields);
-    }
+    [global::Xynolog.Serialization.Wire("archivist")] public required global::Xynolog.Types.SmelterConfigArchivist Archivist { get; init; }
+    [global::Xynolog.Serialization.Wire("chunking")] public required global::Xynolog.Types.SmelterConfigChunking Chunking { get; init; }
+    [global::Xynolog.Serialization.Wire("cursorsPath")] public required string CursorsPath { get; init; }
+    [global::Xynolog.Serialization.Wire("embedding")] public required global::Xynolog.Types.EmbeddingConfig Embedding { get; init; }
+    [global::Xynolog.Serialization.Wire("gatewayUrl")] public required string GatewayUrl { get; init; }
+    [global::Xynolog.Serialization.Wire("identity")] public required global::Xynolog.Types.SmelterConfigIdentity Identity { get; init; }
+    [global::Xynolog.Serialization.Wire("kb")] public required global::Xynolog.Types.KbIdentity Kb { get; init; }
+    [global::Xynolog.Serialization.Wire("logFormat")] public required global::Xynolog.Types.LogFormat LogFormat { get; init; }
+    [global::Xynolog.Serialization.Wire("logLevel")] public required global::Xynolog.Types.LogLevel LogLevel { get; init; }
+    [global::Xynolog.Serialization.Wire("pdfsAtOnce")] public required long PdfsAtOnce { get; init; }
+    [global::Xynolog.Serialization.Wire("port")] public required long Port { get; init; }
+    [global::Xynolog.Serialization.Wire("vectors")] public required global::Xynolog.Types.VectorsConfig Vectors { get; init; }
 }

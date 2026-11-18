@@ -4,59 +4,15 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(AnchoredTextExtractedEntryJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record AnchoredTextExtractedEntry
 {
-    public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.AnchoredTextExtractedEntryLinesItem> Lines { get; init; }
-    public required global::Xynolog.Types.AnchoredTextExtractedEntryMethod Method { get; init; }
-    public global::Xynolog.Types.AnchoredTextExtractedEntryOcrConfidence? OcrConfidence { get; init; }
-    public global::Xynolog.Types.AnchoredTextExtractedEntryPdfClass? PdfClass { get; init; }
-    public required string Stamp { get; init; }
-    public required string Text { get; init; }
-    public global::System.Collections.Generic.IReadOnlyList<long>? UnreadPages { get; init; }
-    public required long V { get; init; }
-}
-
-internal sealed class AnchoredTextExtractedEntryJsonConverter : global::System.Text.Json.Serialization.JsonConverter<AnchoredTextExtractedEntry>
-{
-    public override AnchoredTextExtractedEntry Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("AnchoredTextExtractedEntry", root);
-        return new AnchoredTextExtractedEntry
-        {
-            Lines = global::Xynolog.Serialization.WireJson.ReadMember<global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.AnchoredTextExtractedEntryLinesItem>>(root, "lines", options),
-            Method = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.AnchoredTextExtractedEntryMethod>(root, "method", options),
-            OcrConfidence = root.TryGetProperty("ocrConfidence", out var p2) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.AnchoredTextExtractedEntryOcrConfidence>(p2, options) : null,
-            PdfClass = root.TryGetProperty("pdfClass", out var p3) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.AnchoredTextExtractedEntryPdfClass>(p3, options) : null,
-            Stamp = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "stamp", options),
-            Text = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "text", options),
-            UnreadPages = root.TryGetProperty("unreadPages", out var p6) ? global::Xynolog.Serialization.WireJson.Read<global::System.Collections.Generic.IReadOnlyList<long>>(p6, options) : null,
-            V = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "v", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, AnchoredTextExtractedEntry value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("lines", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Lines, options));
-        fields.Add("method", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Method, options));
-        if (value.OcrConfidence is not null)
-        {
-            fields.Add("ocrConfidence", global::System.Text.Json.JsonSerializer.SerializeToElement(value.OcrConfidence, options));
-        }
-        if (value.PdfClass is not null)
-        {
-            fields.Add("pdfClass", global::System.Text.Json.JsonSerializer.SerializeToElement(value.PdfClass, options));
-        }
-        fields.Add("stamp", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Stamp, options));
-        fields.Add("text", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Text, options));
-        if (value.UnreadPages is not null)
-        {
-            fields.Add("unreadPages", global::System.Text.Json.JsonSerializer.SerializeToElement(value.UnreadPages, options));
-        }
-        fields.Add("v", global::System.Text.Json.JsonSerializer.SerializeToElement(value.V, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "AnchoredTextExtractedEntry", fields);
-    }
+    [global::Xynolog.Serialization.Wire("lines")] public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.AnchoredTextExtractedEntryLinesItem> Lines { get; init; }
+    [global::Xynolog.Serialization.Wire("method")] public required global::Xynolog.Types.AnchoredTextExtractedEntryMethod Method { get; init; }
+    [global::Xynolog.Serialization.Wire("ocrConfidence")] public global::Xynolog.Types.AnchoredTextExtractedEntryOcrConfidence? OcrConfidence { get; init; }
+    [global::Xynolog.Serialization.Wire("pdfClass")] public global::Xynolog.Types.AnchoredTextExtractedEntryPdfClass? PdfClass { get; init; }
+    [global::Xynolog.Serialization.Wire("stamp")] public required string Stamp { get; init; }
+    [global::Xynolog.Serialization.Wire("text")] public required string Text { get; init; }
+    [global::Xynolog.Serialization.Wire("unreadPages")] public global::System.Collections.Generic.IReadOnlyList<long>? UnreadPages { get; init; }
+    [global::Xynolog.Serialization.Wire("v")] public required long V { get; init; }
 }

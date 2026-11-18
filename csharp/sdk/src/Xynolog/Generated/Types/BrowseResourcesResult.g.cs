@@ -4,29 +4,8 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(BrowseResourcesResultJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record BrowseResourcesResult
 {
-    public required global::Xynolog.Types.ListResourcesResponse Response { get; init; }
-}
-
-internal sealed class BrowseResourcesResultJsonConverter : global::System.Text.Json.Serialization.JsonConverter<BrowseResourcesResult>
-{
-    public override BrowseResourcesResult Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("BrowseResourcesResult", root);
-        return new BrowseResourcesResult
-        {
-            Response = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.ListResourcesResponse>(root, "response", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, BrowseResourcesResult value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("response", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Response, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "BrowseResourcesResult", fields);
-    }
+    [global::Xynolog.Serialization.Wire("response")] public required global::Xynolog.Types.ListResourcesResponse Response { get; init; }
 }

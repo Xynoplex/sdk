@@ -4,47 +4,11 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(BindBodyOperationJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record BindBodyOperation
 {
-    public global::Xynolog.Types.AnnotationBody? Item { get; init; }
-    public global::Xynolog.Types.AnnotationBody? NewItem { get; init; }
-    public global::Xynolog.Types.AnnotationBody? OldItem { get; init; }
-    public required global::Xynolog.Types.BindBodyOperationOp Op { get; init; }
-}
-
-internal sealed class BindBodyOperationJsonConverter : global::System.Text.Json.Serialization.JsonConverter<BindBodyOperation>
-{
-    public override BindBodyOperation Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("BindBodyOperation", root);
-        return new BindBodyOperation
-        {
-            Item = root.TryGetProperty("item", out var p0) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.AnnotationBody>(p0, options) : null,
-            NewItem = root.TryGetProperty("newItem", out var p1) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.AnnotationBody>(p1, options) : null,
-            OldItem = root.TryGetProperty("oldItem", out var p2) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.AnnotationBody>(p2, options) : null,
-            Op = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.BindBodyOperationOp>(root, "op", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, BindBodyOperation value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        if (value.Item is not null)
-        {
-            fields.Add("item", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Item, options));
-        }
-        if (value.NewItem is not null)
-        {
-            fields.Add("newItem", global::System.Text.Json.JsonSerializer.SerializeToElement(value.NewItem, options));
-        }
-        if (value.OldItem is not null)
-        {
-            fields.Add("oldItem", global::System.Text.Json.JsonSerializer.SerializeToElement(value.OldItem, options));
-        }
-        fields.Add("op", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Op, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "BindBodyOperation", fields);
-    }
+    [global::Xynolog.Serialization.Wire("item")] public global::Xynolog.Types.AnnotationBody? Item { get; init; }
+    [global::Xynolog.Serialization.Wire("newItem")] public global::Xynolog.Types.AnnotationBody? NewItem { get; init; }
+    [global::Xynolog.Serialization.Wire("oldItem")] public global::Xynolog.Types.AnnotationBody? OldItem { get; init; }
+    [global::Xynolog.Serialization.Wire("op")] public required global::Xynolog.Types.BindBodyOperationOp Op { get; init; }
 }

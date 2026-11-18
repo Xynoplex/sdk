@@ -4,32 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(MarkCommitOkResponseJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record MarkCommitOkResponse
 {
-    public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Identifiers.AnnotationId> AnnotationIds { get; init; }
-    public required long Persisted { get; init; }
-}
-
-internal sealed class MarkCommitOkResponseJsonConverter : global::System.Text.Json.Serialization.JsonConverter<MarkCommitOkResponse>
-{
-    public override MarkCommitOkResponse Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("MarkCommitOkResponse", root);
-        return new MarkCommitOkResponse
-        {
-            AnnotationIds = global::Xynolog.Serialization.WireJson.ReadMember<global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Identifiers.AnnotationId>>(root, "annotationIds", options),
-            Persisted = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "persisted", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, MarkCommitOkResponse value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("annotationIds", global::System.Text.Json.JsonSerializer.SerializeToElement(value.AnnotationIds, options));
-        fields.Add("persisted", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Persisted, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "MarkCommitOkResponse", fields);
-    }
+    [global::Xynolog.Serialization.Wire("annotationIds")] public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Identifiers.AnnotationId> AnnotationIds { get; init; }
+    [global::Xynolog.Serialization.Wire("persisted")] public required long Persisted { get; init; }
 }

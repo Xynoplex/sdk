@@ -4,47 +4,12 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(MatchSearchRequestJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record MatchSearchRequest
 {
-    public required global::Xynolog.Types.GatheredContext Context { get; init; }
-    public long? Limit { get; init; }
-    public required global::Xynolog.Identifiers.AnnotationId ReferenceId { get; init; }
-    public required global::Xynolog.Identifiers.ResourceId ResourceId { get; init; }
-    public bool? UseSemanticScoring { get; init; }
-}
-
-internal sealed class MatchSearchRequestJsonConverter : global::System.Text.Json.Serialization.JsonConverter<MatchSearchRequest>
-{
-    public override MatchSearchRequest Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("MatchSearchRequest", root);
-        return new MatchSearchRequest
-        {
-            Context = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.GatheredContext>(root, "context", options),
-            Limit = root.TryGetProperty("limit", out var p1) ? global::Xynolog.Serialization.WireJson.Read<long>(p1, options) : null,
-            ReferenceId = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.AnnotationId>(root, "referenceId", options),
-            ResourceId = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.ResourceId>(root, "resourceId", options),
-            UseSemanticScoring = root.TryGetProperty("useSemanticScoring", out var p4) ? global::Xynolog.Serialization.WireJson.Read<bool>(p4, options) : null,
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, MatchSearchRequest value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("context", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Context, options));
-        if (value.Limit is not null)
-        {
-            fields.Add("limit", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Limit, options));
-        }
-        fields.Add("referenceId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ReferenceId, options));
-        fields.Add("resourceId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ResourceId, options));
-        if (value.UseSemanticScoring is not null)
-        {
-            fields.Add("useSemanticScoring", global::System.Text.Json.JsonSerializer.SerializeToElement(value.UseSemanticScoring, options));
-        }
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "MatchSearchRequest", fields);
-    }
+    [global::Xynolog.Serialization.Wire("context")] public required global::Xynolog.Types.GatheredContext Context { get; init; }
+    [global::Xynolog.Serialization.Wire("limit")] public long? Limit { get; init; }
+    [global::Xynolog.Serialization.Wire("referenceId")] public required global::Xynolog.Identifiers.AnnotationId ReferenceId { get; init; }
+    [global::Xynolog.Serialization.Wire("resourceId")] public required global::Xynolog.Identifiers.ResourceId ResourceId { get; init; }
+    [global::Xynolog.Serialization.Wire("useSemanticScoring")] public bool? UseSemanticScoring { get; init; }
 }

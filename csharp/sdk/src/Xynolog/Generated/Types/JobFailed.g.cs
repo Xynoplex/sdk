@@ -4,52 +4,14 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(JobFailedJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record JobFailed
 {
-    public required string CompletedAt { get; init; }
-    public required string Error { get; init; }
-    public global::Xynolog.Types.FailureClass? FailureClass { get; init; }
-    public required global::Xynolog.Types.JobMetadata Metadata { get; init; }
-    public required global::Xynolog.Types.JobParams Params { get; init; }
-    public string? StartedAt { get; init; }
-    public string Status => "failed";
-}
-
-internal sealed class JobFailedJsonConverter : global::System.Text.Json.Serialization.JsonConverter<JobFailed>
-{
-    public override JobFailed Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("JobFailed", root);
-        return new JobFailed
-        {
-            CompletedAt = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "completedAt", options),
-            Error = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "error", options),
-            FailureClass = root.TryGetProperty("failureClass", out var p2) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.FailureClass>(p2, options) : null,
-            Metadata = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.JobMetadata>(root, "metadata", options),
-            Params = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.JobParams>(root, "params", options),
-            StartedAt = root.TryGetProperty("startedAt", out var p5) ? global::Xynolog.Serialization.WireJson.Read<string>(p5, options) : null,
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, JobFailed value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("completedAt", global::System.Text.Json.JsonSerializer.SerializeToElement(value.CompletedAt, options));
-        fields.Add("error", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Error, options));
-        if (value.FailureClass is not null)
-        {
-            fields.Add("failureClass", global::System.Text.Json.JsonSerializer.SerializeToElement(value.FailureClass, options));
-        }
-        fields.Add("metadata", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Metadata, options));
-        fields.Add("params", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Params, options));
-        if (value.StartedAt is not null)
-        {
-            fields.Add("startedAt", global::System.Text.Json.JsonSerializer.SerializeToElement(value.StartedAt, options));
-        }
-        fields.Add("status", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Status, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "JobFailed", fields);
-    }
+    [global::Xynolog.Serialization.Wire("completedAt")] public required string CompletedAt { get; init; }
+    [global::Xynolog.Serialization.Wire("error")] public required string Error { get; init; }
+    [global::Xynolog.Serialization.Wire("failureClass")] public global::Xynolog.Types.FailureClass? FailureClass { get; init; }
+    [global::Xynolog.Serialization.Wire("metadata")] public required global::Xynolog.Types.JobMetadata Metadata { get; init; }
+    [global::Xynolog.Serialization.Wire("params")] public required global::Xynolog.Types.JobParams Params { get; init; }
+    [global::Xynolog.Serialization.Wire("startedAt")] public string? StartedAt { get; init; }
+    [global::Xynolog.Serialization.Wire("status")] public string Status => "failed";
 }

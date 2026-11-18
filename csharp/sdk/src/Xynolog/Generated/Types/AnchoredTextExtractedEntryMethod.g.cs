@@ -4,44 +4,12 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(AnchoredTextExtractedEntryMethodJsonConverter))]
+[global::Xynolog.Serialization.WireEnum]
 public enum AnchoredTextExtractedEntryMethod
 {
-    TextPassthrough,
-    PdfTextLayer,
-    Table,
-    Form,
-    Ocr,
-}
-
-internal sealed class AnchoredTextExtractedEntryMethodJsonConverter : global::System.Text.Json.Serialization.JsonConverter<AnchoredTextExtractedEntryMethod>
-{
-    public override AnchoredTextExtractedEntryMethod Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("AnchoredTextExtractedEntryMethod", root);
-        return root.GetString() switch
-        {
-            "text-passthrough" => AnchoredTextExtractedEntryMethod.TextPassthrough,
-            "pdf-text-layer" => AnchoredTextExtractedEntryMethod.PdfTextLayer,
-            "table" => AnchoredTextExtractedEntryMethod.Table,
-            "form" => AnchoredTextExtractedEntryMethod.Form,
-            "ocr" => AnchoredTextExtractedEntryMethod.Ocr,
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, AnchoredTextExtractedEntryMethod value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        writer.WriteStringValue(value switch
-        {
-            AnchoredTextExtractedEntryMethod.TextPassthrough => "text-passthrough",
-            AnchoredTextExtractedEntryMethod.PdfTextLayer => "pdf-text-layer",
-            AnchoredTextExtractedEntryMethod.Table => "table",
-            AnchoredTextExtractedEntryMethod.Form => "form",
-            AnchoredTextExtractedEntryMethod.Ocr => "ocr",
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        });
-    }
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("text-passthrough")] TextPassthrough,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("pdf-text-layer")] PdfTextLayer,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("table")] Table,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("form")] Form,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("ocr")] Ocr,
 }

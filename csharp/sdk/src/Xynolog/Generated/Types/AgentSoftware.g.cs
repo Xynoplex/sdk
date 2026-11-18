@@ -4,61 +4,14 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(AgentSoftwareJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record AgentSoftware
 {
-    public string? Id { get; init; }
-    public string Type => "Software";
-    public string? Model { get; init; }
-    public string? Name { get; init; }
-    public global::System.Text.Json.JsonElement? Parameters { get; init; }
-    public string? Provider { get; init; }
-    public global::System.Collections.Generic.IReadOnlyDictionary<string, global::System.Text.Json.JsonElement> AdditionalProperties { get; init; } = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-}
-
-internal sealed class AgentSoftwareJsonConverter : global::System.Text.Json.Serialization.JsonConverter<AgentSoftware>
-{
-    public override AgentSoftware Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("AgentSoftware", root);
-        return new AgentSoftware
-        {
-            Id = root.TryGetProperty("@id", out var p0) ? global::Xynolog.Serialization.WireJson.Read<string>(p0, options) : null,
-            Model = root.TryGetProperty("model", out var p1) ? global::Xynolog.Serialization.WireJson.Read<string>(p1, options) : null,
-            Name = root.TryGetProperty("name", out var p2) ? global::Xynolog.Serialization.WireJson.Read<string>(p2, options) : null,
-            Parameters = root.TryGetProperty("parameters", out var p3) ? global::Xynolog.Serialization.WireJson.Read<global::System.Text.Json.JsonElement>(p3, options) : null,
-            Provider = root.TryGetProperty("provider", out var p4) ? global::Xynolog.Serialization.WireJson.Read<string>(p4, options) : null,
-            AdditionalProperties = global::Xynolog.Serialization.WireJson.Extra(root, new string[] { "@id", "@type", "model", "name", "parameters", "provider" }),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, AgentSoftware value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        if (value.Id is not null)
-        {
-            fields.Add("@id", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Id, options));
-        }
-        fields.Add("@type", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Type, options));
-        if (value.Model is not null)
-        {
-            fields.Add("model", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Model, options));
-        }
-        if (value.Name is not null)
-        {
-            fields.Add("name", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Name, options));
-        }
-        if (value.Parameters is not null)
-        {
-            fields.Add("parameters", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Parameters, options));
-        }
-        if (value.Provider is not null)
-        {
-            fields.Add("provider", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Provider, options));
-        }
-        foreach (var pair in value.AdditionalProperties) { fields.Add(pair.Key, pair.Value); }
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "AgentSoftware", fields);
-    }
+    [global::Xynolog.Serialization.Wire("@id")] public string? Id { get; init; }
+    [global::Xynolog.Serialization.Wire("@type")] public string Type => "Software";
+    [global::Xynolog.Serialization.Wire("model")] public string? Model { get; init; }
+    [global::Xynolog.Serialization.Wire("name")] public string? Name { get; init; }
+    [global::Xynolog.Serialization.Wire("parameters")] public global::System.Text.Json.JsonElement? Parameters { get; init; }
+    [global::Xynolog.Serialization.Wire("provider")] public string? Provider { get; init; }
+    [global::Xynolog.Serialization.WireRest] public global::System.Collections.Generic.IReadOnlyDictionary<string, global::System.Text.Json.JsonElement> AdditionalProperties { get; init; } = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
 }

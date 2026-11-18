@@ -4,29 +4,8 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(EntityTypesProjectionJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record EntityTypesProjection
 {
-    public required global::System.Collections.Generic.IReadOnlyList<string> EntityTypes { get; init; }
-}
-
-internal sealed class EntityTypesProjectionJsonConverter : global::System.Text.Json.Serialization.JsonConverter<EntityTypesProjection>
-{
-    public override EntityTypesProjection Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("EntityTypesProjection", root);
-        return new EntityTypesProjection
-        {
-            EntityTypes = global::Xynolog.Serialization.WireJson.ReadMember<global::System.Collections.Generic.IReadOnlyList<string>>(root, "entityTypes", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, EntityTypesProjection value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("entityTypes", global::System.Text.Json.JsonSerializer.SerializeToElement(value.EntityTypes, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "EntityTypesProjection", fields);
-    }
+    [global::Xynolog.Serialization.Wire("entityTypes")] public required global::System.Collections.Generic.IReadOnlyList<string> EntityTypes { get; init; }
 }

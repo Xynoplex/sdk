@@ -4,41 +4,11 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(MarkSubmitEventJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record MarkSubmitEvent
 {
-    public global::Xynolog.Types.AnnotationBodies? Body { get; init; }
-    public required global::Xynolog.Types.Motivation Motivation { get; init; }
-    public required global::Xynolog.Types.AnnotationSelector Selector { get; init; }
-    public required global::Xynolog.Identifiers.ResourceId Source { get; init; }
-}
-
-internal sealed class MarkSubmitEventJsonConverter : global::System.Text.Json.Serialization.JsonConverter<MarkSubmitEvent>
-{
-    public override MarkSubmitEvent Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("MarkSubmitEvent", root);
-        return new MarkSubmitEvent
-        {
-            Body = root.TryGetProperty("body", out var p0) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.AnnotationBodies>(p0, options) : null,
-            Motivation = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.Motivation>(root, "motivation", options),
-            Selector = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.AnnotationSelector>(root, "selector", options),
-            Source = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.ResourceId>(root, "source", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, MarkSubmitEvent value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        if (value.Body is not null)
-        {
-            fields.Add("body", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Body, options));
-        }
-        fields.Add("motivation", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Motivation, options));
-        fields.Add("selector", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Selector, options));
-        fields.Add("source", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Source, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "MarkSubmitEvent", fields);
-    }
+    [global::Xynolog.Serialization.Wire("body")] public global::Xynolog.Types.AnnotationBodies? Body { get; init; }
+    [global::Xynolog.Serialization.Wire("motivation")] public required global::Xynolog.Types.Motivation Motivation { get; init; }
+    [global::Xynolog.Serialization.Wire("selector")] public required global::Xynolog.Types.AnnotationSelector Selector { get; init; }
+    [global::Xynolog.Serialization.Wire("source")] public required global::Xynolog.Identifiers.ResourceId Source { get; init; }
 }

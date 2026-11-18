@@ -4,36 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(ExtractionOutcomeJsonConverter))]
+[global::Xynolog.Serialization.WireUnion(typeof(ExtractionOutcome.ExtractedTextCase), typeof(ExtractionOutcome.ExtractionDeclinedCase))]
 public closed record ExtractionOutcome
 {
     public sealed record ExtractedTextCase(global::Xynolog.Types.ExtractedText Value) : ExtractionOutcome;
     public sealed record ExtractionDeclinedCase(global::Xynolog.Types.ExtractionDeclined Value) : ExtractionOutcome;
-}
-
-internal sealed class ExtractionOutcomeJsonConverter : global::System.Text.Json.Serialization.JsonConverter<ExtractionOutcome>
-{
-    public override ExtractionOutcome Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("ExtractionOutcome", root);
-        var variant = global::Xynolog.Serialization.WireJson.Variant("ExtractionOutcome", root);
-        return variant switch
-        {
-            0 => new ExtractionOutcome.ExtractedTextCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.ExtractedText>(root, options)),
-            1 => new ExtractionOutcome.ExtractionDeclinedCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.ExtractionDeclined>(root, options)),
-            _ => throw new global::System.Text.Json.JsonException("No matching union variant."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, ExtractionOutcome value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        switch (value)
-        {
-            case ExtractionOutcome.ExtractedTextCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            case ExtractionOutcome.ExtractionDeclinedCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            default: throw new global::System.Text.Json.JsonException("Unknown union variant.");
-        }
-    }
 }

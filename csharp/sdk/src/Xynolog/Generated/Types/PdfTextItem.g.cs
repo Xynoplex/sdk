@@ -4,47 +4,14 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(PdfTextItemJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record PdfTextItem
 {
-    public required long End { get; init; }
-    public required double Height { get; init; }
-    public required long Page { get; init; }
-    public required long Start { get; init; }
-    public required double Width { get; init; }
-    public required double X { get; init; }
-    public required double Y { get; init; }
-}
-
-internal sealed class PdfTextItemJsonConverter : global::System.Text.Json.Serialization.JsonConverter<PdfTextItem>
-{
-    public override PdfTextItem Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("PdfTextItem", root);
-        return new PdfTextItem
-        {
-            End = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "end", options),
-            Height = global::Xynolog.Serialization.WireJson.ReadMember<double>(root, "height", options),
-            Page = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "page", options),
-            Start = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "start", options),
-            Width = global::Xynolog.Serialization.WireJson.ReadMember<double>(root, "width", options),
-            X = global::Xynolog.Serialization.WireJson.ReadMember<double>(root, "x", options),
-            Y = global::Xynolog.Serialization.WireJson.ReadMember<double>(root, "y", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, PdfTextItem value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("end", global::System.Text.Json.JsonSerializer.SerializeToElement(value.End, options));
-        fields.Add("height", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Height, options));
-        fields.Add("page", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Page, options));
-        fields.Add("start", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Start, options));
-        fields.Add("width", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Width, options));
-        fields.Add("x", global::System.Text.Json.JsonSerializer.SerializeToElement(value.X, options));
-        fields.Add("y", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Y, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "PdfTextItem", fields);
-    }
+    [global::Xynolog.Serialization.Wire("end")] public required long End { get; init; }
+    [global::Xynolog.Serialization.Wire("height")] public required double Height { get; init; }
+    [global::Xynolog.Serialization.Wire("page")] public required long Page { get; init; }
+    [global::Xynolog.Serialization.Wire("start")] public required long Start { get; init; }
+    [global::Xynolog.Serialization.Wire("width")] public required double Width { get; init; }
+    [global::Xynolog.Serialization.Wire("x")] public required double X { get; init; }
+    [global::Xynolog.Serialization.Wire("y")] public required double Y { get; init; }
 }

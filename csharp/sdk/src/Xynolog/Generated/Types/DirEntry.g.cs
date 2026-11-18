@@ -4,37 +4,11 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(DirEntryJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record DirEntry
 {
-    public required string Mtime { get; init; }
-    public required string Name { get; init; }
-    public required string Path { get; init; }
-    public string Type => "dir";
-}
-
-internal sealed class DirEntryJsonConverter : global::System.Text.Json.Serialization.JsonConverter<DirEntry>
-{
-    public override DirEntry Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("DirEntry", root);
-        return new DirEntry
-        {
-            Mtime = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "mtime", options),
-            Name = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "name", options),
-            Path = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "path", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, DirEntry value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("mtime", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Mtime, options));
-        fields.Add("name", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Name, options));
-        fields.Add("path", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Path, options));
-        fields.Add("type", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Type, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "DirEntry", fields);
-    }
+    [global::Xynolog.Serialization.Wire("mtime")] public required string Mtime { get; init; }
+    [global::Xynolog.Serialization.Wire("name")] public required string Name { get; init; }
+    [global::Xynolog.Serialization.Wire("path")] public required string Path { get; init; }
+    [global::Xynolog.Serialization.Wire("type")] public string Type => "dir";
 }

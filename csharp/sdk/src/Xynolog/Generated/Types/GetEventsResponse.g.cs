@@ -4,35 +4,10 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(GetEventsResponseJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record GetEventsResponse
 {
-    public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.AttributedEvent> Events { get; init; }
-    public required global::Xynolog.Identifiers.ResourceId ResourceId { get; init; }
-    public required double Total { get; init; }
-}
-
-internal sealed class GetEventsResponseJsonConverter : global::System.Text.Json.Serialization.JsonConverter<GetEventsResponse>
-{
-    public override GetEventsResponse Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("GetEventsResponse", root);
-        return new GetEventsResponse
-        {
-            Events = global::Xynolog.Serialization.WireJson.ReadMember<global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.AttributedEvent>>(root, "events", options),
-            ResourceId = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.ResourceId>(root, "resourceId", options),
-            Total = global::Xynolog.Serialization.WireJson.ReadMember<double>(root, "total", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, GetEventsResponse value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("events", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Events, options));
-        fields.Add("resourceId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ResourceId, options));
-        fields.Add("total", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Total, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "GetEventsResponse", fields);
-    }
+    [global::Xynolog.Serialization.Wire("events")] public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.AttributedEvent> Events { get; init; }
+    [global::Xynolog.Serialization.Wire("resourceId")] public required global::Xynolog.Identifiers.ResourceId ResourceId { get; init; }
+    [global::Xynolog.Serialization.Wire("total")] public required double Total { get; init; }
 }

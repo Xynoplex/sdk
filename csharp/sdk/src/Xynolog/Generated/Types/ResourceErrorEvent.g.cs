@@ -4,32 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(ResourceErrorEventJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record ResourceErrorEvent
 {
-    public required string Message { get; init; }
-    public required global::Xynolog.Identifiers.ResourceId ResourceId { get; init; }
-}
-
-internal sealed class ResourceErrorEventJsonConverter : global::System.Text.Json.Serialization.JsonConverter<ResourceErrorEvent>
-{
-    public override ResourceErrorEvent Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("ResourceErrorEvent", root);
-        return new ResourceErrorEvent
-        {
-            Message = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "message", options),
-            ResourceId = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.ResourceId>(root, "resourceId", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, ResourceErrorEvent value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("message", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Message, options));
-        fields.Add("resourceId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ResourceId, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "ResourceErrorEvent", fields);
-    }
+    [global::Xynolog.Serialization.Wire("message")] public required string Message { get; init; }
+    [global::Xynolog.Serialization.Wire("resourceId")] public required global::Xynolog.Identifiers.ResourceId ResourceId { get; init; }
 }

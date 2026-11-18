@@ -4,35 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(BrowseLinkClickedEventJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record BrowseLinkClickedEvent
 {
-    public required string Href { get; init; }
-    public string? Label { get; init; }
-}
-
-internal sealed class BrowseLinkClickedEventJsonConverter : global::System.Text.Json.Serialization.JsonConverter<BrowseLinkClickedEvent>
-{
-    public override BrowseLinkClickedEvent Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("BrowseLinkClickedEvent", root);
-        return new BrowseLinkClickedEvent
-        {
-            Href = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "href", options),
-            Label = root.TryGetProperty("label", out var p1) ? global::Xynolog.Serialization.WireJson.Read<string>(p1, options) : null,
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, BrowseLinkClickedEvent value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("href", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Href, options));
-        if (value.Label is not null)
-        {
-            fields.Add("label", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Label, options));
-        }
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "BrowseLinkClickedEvent", fields);
-    }
+    [global::Xynolog.Serialization.Wire("href")] public required string Href { get; init; }
+    [global::Xynolog.Serialization.Wire("label")] public string? Label { get; init; }
 }

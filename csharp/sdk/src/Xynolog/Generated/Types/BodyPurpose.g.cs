@@ -4,68 +4,20 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(BodyPurposeJsonConverter))]
+[global::Xynolog.Serialization.WireEnum]
 public enum BodyPurpose
 {
-    Assessing,
-    Bookmarking,
-    Classifying,
-    Commenting,
-    Describing,
-    Editing,
-    Highlighting,
-    Identifying,
-    Linking,
-    Moderating,
-    Questioning,
-    Replying,
-    Tagging,
-}
-
-internal sealed class BodyPurposeJsonConverter : global::System.Text.Json.Serialization.JsonConverter<BodyPurpose>
-{
-    public override BodyPurpose Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("BodyPurpose", root);
-        return root.GetString() switch
-        {
-            "assessing" => BodyPurpose.Assessing,
-            "bookmarking" => BodyPurpose.Bookmarking,
-            "classifying" => BodyPurpose.Classifying,
-            "commenting" => BodyPurpose.Commenting,
-            "describing" => BodyPurpose.Describing,
-            "editing" => BodyPurpose.Editing,
-            "highlighting" => BodyPurpose.Highlighting,
-            "identifying" => BodyPurpose.Identifying,
-            "linking" => BodyPurpose.Linking,
-            "moderating" => BodyPurpose.Moderating,
-            "questioning" => BodyPurpose.Questioning,
-            "replying" => BodyPurpose.Replying,
-            "tagging" => BodyPurpose.Tagging,
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, BodyPurpose value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        writer.WriteStringValue(value switch
-        {
-            BodyPurpose.Assessing => "assessing",
-            BodyPurpose.Bookmarking => "bookmarking",
-            BodyPurpose.Classifying => "classifying",
-            BodyPurpose.Commenting => "commenting",
-            BodyPurpose.Describing => "describing",
-            BodyPurpose.Editing => "editing",
-            BodyPurpose.Highlighting => "highlighting",
-            BodyPurpose.Identifying => "identifying",
-            BodyPurpose.Linking => "linking",
-            BodyPurpose.Moderating => "moderating",
-            BodyPurpose.Questioning => "questioning",
-            BodyPurpose.Replying => "replying",
-            BodyPurpose.Tagging => "tagging",
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        });
-    }
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("assessing")] Assessing,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("bookmarking")] Bookmarking,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("classifying")] Classifying,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("commenting")] Commenting,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("describing")] Describing,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("editing")] Editing,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("highlighting")] Highlighting,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("identifying")] Identifying,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("linking")] Linking,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("moderating")] Moderating,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("questioning")] Questioning,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("replying")] Replying,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("tagging")] Tagging,
 }

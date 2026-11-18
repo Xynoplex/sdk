@@ -17,6 +17,7 @@ let u hex = "\\" ^ "u" ^ hex
 let expr e () = String.concat "\n" (C.expr ~depth:0 e)
 let stmt s () = String.concat "\n" (C.stmt ~depth:0 s)
 let decl d () = String.concat "\n" (C.decl ~depth:0 d)
+let member m () = String.concat "\n" (C.member ~depth:0 m)
 
 let record ?(modifiers = [ C.Public; Sealed ]) ?(spacing = C.Packed) name
     members =
@@ -34,6 +35,7 @@ let record ?(modifiers = [ C.Public; Sealed ]) ?(spacing = C.Packed) name
 let property name =
   C.Property
     {
+      attributes = [];
       modifiers = [ Public ];
       type_ = T "string";
       name;
@@ -168,6 +170,7 @@ let cases =
                  property "A";
                  Expression_property
                    {
+                     attributes = [];
                      modifiers = [ Public ];
                      type_ = T "string";
                      name = "B";
@@ -196,12 +199,14 @@ let cases =
                  base = Some (T "U");
                  body = None;
                })));
-    case "an enum's members are a line each, an attribute above it"
+    case
+      "an enum's members are a line each, each after its attributes, and an \
+       attribute above it"
       (writes
          "[global::System.Text.Json.Serialization.JsonConverter(typeof(KJsonConverter))]\n\
           public enum K\n\
           {\n\
-         \    A,\n\
+         \    [N(\"a\")] A,\n\
          \    B,\n\
           }"
          (decl
@@ -217,7 +222,24 @@ let cases =
                    ];
                  modifiers = [ Public ];
                  name = "K";
-                 members = [ "A"; "B" ];
+                 members =
+                   [ ([ { name = "N"; args = [ Str "a" ] } ], "A"); ([], "B") ];
+               })));
+    case "a property's attributes come before it on its line"
+      (writes "[N(\"a\")] [M] public string A { get; init; }"
+         (member
+            (C.Property
+               {
+                 attributes =
+                   [
+                     { name = "N"; args = [ Str "a" ] };
+                     { name = "M"; args = [] };
+                   ];
+                 modifiers = [ Public ];
+                 type_ = T "string";
+                 name = "A";
+                 accessors = [ Get; Init ];
+                 value = None;
                })));
     case "a file opens auto-generated, its header after, and ends a line"
       (writes

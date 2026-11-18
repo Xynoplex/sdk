@@ -4,39 +4,10 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(JobResultJsonConverter))]
+[global::Xynolog.Serialization.WireUnion(typeof(JobResult.MarkJobDoneCase), typeof(JobResult.YieldJobDoneCase), typeof(JobResult.JobDeclinedCase))]
 public closed record JobResult
 {
     public sealed record MarkJobDoneCase(global::Xynolog.Types.MarkJobDone Value) : JobResult;
     public sealed record YieldJobDoneCase(global::Xynolog.Types.YieldJobDone Value) : JobResult;
     public sealed record JobDeclinedCase(global::Xynolog.Types.JobDeclined Value) : JobResult;
-}
-
-internal sealed class JobResultJsonConverter : global::System.Text.Json.Serialization.JsonConverter<JobResult>
-{
-    public override JobResult Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("JobResult", root);
-        var variant = global::Xynolog.Serialization.WireJson.Variant("JobResult", root);
-        return variant switch
-        {
-            0 => new JobResult.MarkJobDoneCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.MarkJobDone>(root, options)),
-            1 => new JobResult.YieldJobDoneCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.YieldJobDone>(root, options)),
-            2 => new JobResult.JobDeclinedCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.JobDeclined>(root, options)),
-            _ => throw new global::System.Text.Json.JsonException("No matching union variant."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, JobResult value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        switch (value)
-        {
-            case JobResult.MarkJobDoneCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            case JobResult.YieldJobDoneCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            case JobResult.JobDeclinedCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            default: throw new global::System.Text.Json.JsonException("Unknown union variant.");
-        }
-    }
 }

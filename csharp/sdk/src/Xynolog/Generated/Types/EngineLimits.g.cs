@@ -4,32 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(EngineLimitsJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record EngineLimits
 {
-    public required global::Xynolog.Types.Engine Engine { get; init; }
-    public required global::Xynolog.Types.InferenceLimits Limits { get; init; }
-}
-
-internal sealed class EngineLimitsJsonConverter : global::System.Text.Json.Serialization.JsonConverter<EngineLimits>
-{
-    public override EngineLimits Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("EngineLimits", root);
-        return new EngineLimits
-        {
-            Engine = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.Engine>(root, "engine", options),
-            Limits = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.InferenceLimits>(root, "limits", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, EngineLimits value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("engine", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Engine, options));
-        fields.Add("limits", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Limits, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "EngineLimits", fields);
-    }
+    [global::Xynolog.Serialization.Wire("engine")] public required global::Xynolog.Types.Engine Engine { get; init; }
+    [global::Xynolog.Serialization.Wire("limits")] public required global::Xynolog.Types.InferenceLimits Limits { get; init; }
 }

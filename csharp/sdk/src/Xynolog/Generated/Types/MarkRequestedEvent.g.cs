@@ -4,35 +4,10 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(MarkRequestedEventJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record MarkRequestedEvent
 {
-    public required global::Xynolog.Types.Motivation Motivation { get; init; }
-    public required global::Xynolog.Types.AnnotationSelector Selector { get; init; }
-    public required global::Xynolog.Identifiers.ResourceId Source { get; init; }
-}
-
-internal sealed class MarkRequestedEventJsonConverter : global::System.Text.Json.Serialization.JsonConverter<MarkRequestedEvent>
-{
-    public override MarkRequestedEvent Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("MarkRequestedEvent", root);
-        return new MarkRequestedEvent
-        {
-            Motivation = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.Motivation>(root, "motivation", options),
-            Selector = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.AnnotationSelector>(root, "selector", options),
-            Source = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.ResourceId>(root, "source", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, MarkRequestedEvent value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("motivation", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Motivation, options));
-        fields.Add("selector", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Selector, options));
-        fields.Add("source", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Source, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "MarkRequestedEvent", fields);
-    }
+    [global::Xynolog.Serialization.Wire("motivation")] public required global::Xynolog.Types.Motivation Motivation { get; init; }
+    [global::Xynolog.Serialization.Wire("selector")] public required global::Xynolog.Types.AnnotationSelector Selector { get; init; }
+    [global::Xynolog.Serialization.Wire("source")] public required global::Xynolog.Identifiers.ResourceId Source { get; init; }
 }

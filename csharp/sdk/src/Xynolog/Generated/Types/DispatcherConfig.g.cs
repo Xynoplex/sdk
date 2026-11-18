@@ -4,50 +4,15 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(DispatcherConfigJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record DispatcherConfig
 {
-    public required string GatewayUrl { get; init; }
-    public required global::Xynolog.Types.DispatcherConfigIdentity Identity { get; init; }
-    public required global::Xynolog.Types.KbIdentity Kb { get; init; }
-    public required global::Xynolog.Types.LogFormat LogFormat { get; init; }
-    public required global::Xynolog.Types.LogLevel LogLevel { get; init; }
-    public required long Port { get; init; }
-    public required global::Xynolog.Types.DispatcherConfigQueue Queue { get; init; }
-    public required global::Xynolog.Types.DispatcherConfigTiming Timing { get; init; }
-}
-
-internal sealed class DispatcherConfigJsonConverter : global::System.Text.Json.Serialization.JsonConverter<DispatcherConfig>
-{
-    public override DispatcherConfig Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("DispatcherConfig", root);
-        return new DispatcherConfig
-        {
-            GatewayUrl = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "gatewayUrl", options),
-            Identity = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.DispatcherConfigIdentity>(root, "identity", options),
-            Kb = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.KbIdentity>(root, "kb", options),
-            LogFormat = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.LogFormat>(root, "logFormat", options),
-            LogLevel = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.LogLevel>(root, "logLevel", options),
-            Port = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "port", options),
-            Queue = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.DispatcherConfigQueue>(root, "queue", options),
-            Timing = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.DispatcherConfigTiming>(root, "timing", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, DispatcherConfig value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("gatewayUrl", global::System.Text.Json.JsonSerializer.SerializeToElement(value.GatewayUrl, options));
-        fields.Add("identity", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Identity, options));
-        fields.Add("kb", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Kb, options));
-        fields.Add("logFormat", global::System.Text.Json.JsonSerializer.SerializeToElement(value.LogFormat, options));
-        fields.Add("logLevel", global::System.Text.Json.JsonSerializer.SerializeToElement(value.LogLevel, options));
-        fields.Add("port", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Port, options));
-        fields.Add("queue", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Queue, options));
-        fields.Add("timing", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Timing, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "DispatcherConfig", fields);
-    }
+    [global::Xynolog.Serialization.Wire("gatewayUrl")] public required string GatewayUrl { get; init; }
+    [global::Xynolog.Serialization.Wire("identity")] public required global::Xynolog.Types.DispatcherConfigIdentity Identity { get; init; }
+    [global::Xynolog.Serialization.Wire("kb")] public required global::Xynolog.Types.KbIdentity Kb { get; init; }
+    [global::Xynolog.Serialization.Wire("logFormat")] public required global::Xynolog.Types.LogFormat LogFormat { get; init; }
+    [global::Xynolog.Serialization.Wire("logLevel")] public required global::Xynolog.Types.LogLevel LogLevel { get; init; }
+    [global::Xynolog.Serialization.Wire("port")] public required long Port { get; init; }
+    [global::Xynolog.Serialization.Wire("queue")] public required global::Xynolog.Types.DispatcherConfigQueue Queue { get; init; }
+    [global::Xynolog.Serialization.Wire("timing")] public required global::Xynolog.Types.DispatcherConfigTiming Timing { get; init; }
 }

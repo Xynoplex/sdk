@@ -4,29 +4,8 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(BrowseResourceCloseEventJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record BrowseResourceCloseEvent
 {
-    public required global::Xynolog.Identifiers.ResourceId ResourceId { get; init; }
-}
-
-internal sealed class BrowseResourceCloseEventJsonConverter : global::System.Text.Json.Serialization.JsonConverter<BrowseResourceCloseEvent>
-{
-    public override BrowseResourceCloseEvent Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("BrowseResourceCloseEvent", root);
-        return new BrowseResourceCloseEvent
-        {
-            ResourceId = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.ResourceId>(root, "resourceId", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, BrowseResourceCloseEvent value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("resourceId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ResourceId, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "BrowseResourceCloseEvent", fields);
-    }
+    [global::Xynolog.Serialization.Wire("resourceId")] public required global::Xynolog.Identifiers.ResourceId ResourceId { get; init; }
 }

@@ -4,31 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(JobProgressCreatingAnnotationsJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record JobProgressCreatingAnnotations
 {
-    public string Code => "creating-annotations";
-    public required long Count { get; init; }
-}
-
-internal sealed class JobProgressCreatingAnnotationsJsonConverter : global::System.Text.Json.Serialization.JsonConverter<JobProgressCreatingAnnotations>
-{
-    public override JobProgressCreatingAnnotations Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("JobProgressCreatingAnnotations", root);
-        return new JobProgressCreatingAnnotations
-        {
-            Count = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "count", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, JobProgressCreatingAnnotations value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("code", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Code, options));
-        fields.Add("count", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Count, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "JobProgressCreatingAnnotations", fields);
-    }
+    [global::Xynolog.Serialization.Wire("code")] public string Code => "creating-annotations";
+    [global::Xynolog.Serialization.Wire("count")] public required long Count { get; init; }
 }

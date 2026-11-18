@@ -4,29 +4,8 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(JobCreatedResultResponseJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record JobCreatedResultResponse
 {
-    public required global::Xynolog.Identifiers.JobId JobId { get; init; }
-}
-
-internal sealed class JobCreatedResultResponseJsonConverter : global::System.Text.Json.Serialization.JsonConverter<JobCreatedResultResponse>
-{
-    public override JobCreatedResultResponse Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("JobCreatedResultResponse", root);
-        return new JobCreatedResultResponse
-        {
-            JobId = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.JobId>(root, "jobId", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, JobCreatedResultResponse value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("jobId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.JobId, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "JobCreatedResultResponse", fields);
-    }
+    [global::Xynolog.Serialization.Wire("jobId")] public required global::Xynolog.Identifiers.JobId JobId { get; init; }
 }

@@ -4,36 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(DirectoryEntryJsonConverter))]
+[global::Xynolog.Serialization.WireUnion(typeof(DirectoryEntry.FileEntryCase), typeof(DirectoryEntry.DirEntryCase))]
 public closed record DirectoryEntry
 {
     public sealed record FileEntryCase(global::Xynolog.Types.FileEntry Value) : DirectoryEntry;
     public sealed record DirEntryCase(global::Xynolog.Types.DirEntry Value) : DirectoryEntry;
-}
-
-internal sealed class DirectoryEntryJsonConverter : global::System.Text.Json.Serialization.JsonConverter<DirectoryEntry>
-{
-    public override DirectoryEntry Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("DirectoryEntry", root);
-        var variant = global::Xynolog.Serialization.WireJson.Variant("DirectoryEntry", root);
-        return variant switch
-        {
-            0 => new DirectoryEntry.FileEntryCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.FileEntry>(root, options)),
-            1 => new DirectoryEntry.DirEntryCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.DirEntry>(root, options)),
-            _ => throw new global::System.Text.Json.JsonException("No matching union variant."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, DirectoryEntry value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        switch (value)
-        {
-            case DirectoryEntry.FileEntryCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            case DirectoryEntry.DirEntryCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            default: throw new global::System.Text.Json.JsonException("Unknown union variant.");
-        }
-    }
 }

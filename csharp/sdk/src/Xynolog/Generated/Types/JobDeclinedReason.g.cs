@@ -4,44 +4,12 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(JobDeclinedReasonJsonConverter))]
+[global::Xynolog.Serialization.WireEnum]
 public enum JobDeclinedReason
 {
-    NoTextLayer,
-    Encrypted,
-    Corrupt,
-    TooLarge,
-    Empty,
-}
-
-internal sealed class JobDeclinedReasonJsonConverter : global::System.Text.Json.Serialization.JsonConverter<JobDeclinedReason>
-{
-    public override JobDeclinedReason Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("JobDeclinedReason", root);
-        return root.GetString() switch
-        {
-            "no-text-layer" => JobDeclinedReason.NoTextLayer,
-            "encrypted" => JobDeclinedReason.Encrypted,
-            "corrupt" => JobDeclinedReason.Corrupt,
-            "too-large" => JobDeclinedReason.TooLarge,
-            "empty" => JobDeclinedReason.Empty,
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, JobDeclinedReason value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        writer.WriteStringValue(value switch
-        {
-            JobDeclinedReason.NoTextLayer => "no-text-layer",
-            JobDeclinedReason.Encrypted => "encrypted",
-            JobDeclinedReason.Corrupt => "corrupt",
-            JobDeclinedReason.TooLarge => "too-large",
-            JobDeclinedReason.Empty => "empty",
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        });
-    }
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("no-text-layer")] NoTextLayer,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("encrypted")] Encrypted,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("corrupt")] Corrupt,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("too-large")] TooLarge,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("empty")] Empty,
 }

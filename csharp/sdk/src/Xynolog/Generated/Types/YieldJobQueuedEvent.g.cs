@@ -4,40 +4,12 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(YieldJobQueuedEventJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record YieldJobQueuedEvent
 {
-    public required global::Xynolog.Identifiers.JobId JobId { get; init; }
-    public string JobType => "yield";
-    public required global::Xynolog.Types.GenerationJobRequest Params { get; init; }
-    public required global::Xynolog.Identifiers.ResourceId ResourceId { get; init; }
-    public required global::Xynolog.Identifiers.UserId UserId { get; init; }
-}
-
-internal sealed class YieldJobQueuedEventJsonConverter : global::System.Text.Json.Serialization.JsonConverter<YieldJobQueuedEvent>
-{
-    public override YieldJobQueuedEvent Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("YieldJobQueuedEvent", root);
-        return new YieldJobQueuedEvent
-        {
-            JobId = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.JobId>(root, "jobId", options),
-            Params = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.GenerationJobRequest>(root, "params", options),
-            ResourceId = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.ResourceId>(root, "resourceId", options),
-            UserId = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.UserId>(root, "userId", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, YieldJobQueuedEvent value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("jobId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.JobId, options));
-        fields.Add("jobType", global::System.Text.Json.JsonSerializer.SerializeToElement(value.JobType, options));
-        fields.Add("params", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Params, options));
-        fields.Add("resourceId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ResourceId, options));
-        fields.Add("userId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.UserId, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "YieldJobQueuedEvent", fields);
-    }
+    [global::Xynolog.Serialization.Wire("jobId")] public required global::Xynolog.Identifiers.JobId JobId { get; init; }
+    [global::Xynolog.Serialization.Wire("jobType")] public string JobType => "yield";
+    [global::Xynolog.Serialization.Wire("params")] public required global::Xynolog.Types.GenerationJobRequest Params { get; init; }
+    [global::Xynolog.Serialization.Wire("resourceId")] public required global::Xynolog.Identifiers.ResourceId ResourceId { get; init; }
+    [global::Xynolog.Serialization.Wire("userId")] public required global::Xynolog.Identifiers.UserId UserId { get; init; }
 }

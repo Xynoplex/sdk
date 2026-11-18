@@ -4,38 +4,10 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(JobParamsJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record JobParams
 {
-    public required global::Xynolog.Identifiers.ResourceId ResourceId { get; init; }
-    public global::Xynolog.Types.TagSchema? Schema { get; init; }
-    public global::System.Collections.Generic.IReadOnlyDictionary<string, global::System.Text.Json.JsonElement> AdditionalProperties { get; init; } = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-}
-
-internal sealed class JobParamsJsonConverter : global::System.Text.Json.Serialization.JsonConverter<JobParams>
-{
-    public override JobParams Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("JobParams", root);
-        return new JobParams
-        {
-            ResourceId = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.ResourceId>(root, "resourceId", options),
-            Schema = root.TryGetProperty("schema", out var p1) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.TagSchema>(p1, options) : null,
-            AdditionalProperties = global::Xynolog.Serialization.WireJson.Extra(root, new string[] { "resourceId", "schema" }),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, JobParams value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("resourceId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ResourceId, options));
-        if (value.Schema is not null)
-        {
-            fields.Add("schema", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Schema, options));
-        }
-        foreach (var pair in value.AdditionalProperties) { fields.Add(pair.Key, pair.Value); }
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "JobParams", fields);
-    }
+    [global::Xynolog.Serialization.Wire("resourceId")] public required global::Xynolog.Identifiers.ResourceId ResourceId { get; init; }
+    [global::Xynolog.Serialization.Wire("schema")] public global::Xynolog.Types.TagSchema? Schema { get; init; }
+    [global::Xynolog.Serialization.WireRest] public global::System.Collections.Generic.IReadOnlyDictionary<string, global::System.Text.Json.JsonElement> AdditionalProperties { get; init; } = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
 }

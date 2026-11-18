@@ -4,34 +4,10 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(TextPositionSelectorJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record TextPositionSelector
 {
-    public required long End { get; init; }
-    public required long Start { get; init; }
-    public string Type => "TextPositionSelector";
-}
-
-internal sealed class TextPositionSelectorJsonConverter : global::System.Text.Json.Serialization.JsonConverter<TextPositionSelector>
-{
-    public override TextPositionSelector Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("TextPositionSelector", root);
-        return new TextPositionSelector
-        {
-            End = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "end", options),
-            Start = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "start", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, TextPositionSelector value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("end", global::System.Text.Json.JsonSerializer.SerializeToElement(value.End, options));
-        fields.Add("start", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Start, options));
-        fields.Add("type", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Type, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "TextPositionSelector", fields);
-    }
+    [global::Xynolog.Serialization.Wire("end")] public required long End { get; init; }
+    [global::Xynolog.Serialization.Wire("start")] public required long Start { get; init; }
+    [global::Xynolog.Serialization.Wire("type")] public string Type => "TextPositionSelector";
 }

@@ -4,29 +4,8 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(DispatcherConfigIdentityJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record DispatcherConfigIdentity
 {
-    public required string Issuer { get; init; }
-}
-
-internal sealed class DispatcherConfigIdentityJsonConverter : global::System.Text.Json.Serialization.JsonConverter<DispatcherConfigIdentity>
-{
-    public override DispatcherConfigIdentity Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("DispatcherConfigIdentity", root);
-        return new DispatcherConfigIdentity
-        {
-            Issuer = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "issuer", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, DispatcherConfigIdentity value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("issuer", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Issuer, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "DispatcherConfigIdentity", fields);
-    }
+    [global::Xynolog.Serialization.Wire("issuer")] public required string Issuer { get; init; }
 }

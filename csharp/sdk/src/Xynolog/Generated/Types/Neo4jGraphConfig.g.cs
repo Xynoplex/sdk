@@ -4,40 +4,12 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(Neo4jGraphConfigJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record Neo4jGraphConfig
 {
-    public required string Database { get; init; }
-    public required string PasswordEnv { get; init; }
-    public string Type => "neo4j";
-    public required string Uri { get; init; }
-    public required string Username { get; init; }
-}
-
-internal sealed class Neo4jGraphConfigJsonConverter : global::System.Text.Json.Serialization.JsonConverter<Neo4jGraphConfig>
-{
-    public override Neo4jGraphConfig Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("Neo4jGraphConfig", root);
-        return new Neo4jGraphConfig
-        {
-            Database = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "database", options),
-            PasswordEnv = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "passwordEnv", options),
-            Uri = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "uri", options),
-            Username = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "username", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, Neo4jGraphConfig value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("database", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Database, options));
-        fields.Add("passwordEnv", global::System.Text.Json.JsonSerializer.SerializeToElement(value.PasswordEnv, options));
-        fields.Add("type", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Type, options));
-        fields.Add("uri", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Uri, options));
-        fields.Add("username", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Username, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "Neo4jGraphConfig", fields);
-    }
+    [global::Xynolog.Serialization.Wire("database")] public required string Database { get; init; }
+    [global::Xynolog.Serialization.Wire("passwordEnv")] public required string PasswordEnv { get; init; }
+    [global::Xynolog.Serialization.Wire("type")] public string Type => "neo4j";
+    [global::Xynolog.Serialization.Wire("uri")] public required string Uri { get; init; }
+    [global::Xynolog.Serialization.Wire("username")] public required string Username { get; init; }
 }

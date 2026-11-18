@@ -4,32 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(AnchoredTextJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record AnchoredText
 {
-    public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.PdfTextItem> Items { get; init; }
-    public required string Text { get; init; }
-}
-
-internal sealed class AnchoredTextJsonConverter : global::System.Text.Json.Serialization.JsonConverter<AnchoredText>
-{
-    public override AnchoredText Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("AnchoredText", root);
-        return new AnchoredText
-        {
-            Items = global::Xynolog.Serialization.WireJson.ReadMember<global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.PdfTextItem>>(root, "items", options),
-            Text = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "text", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, AnchoredText value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("items", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Items, options));
-        fields.Add("text", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Text, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "AnchoredText", fields);
-    }
+    [global::Xynolog.Serialization.Wire("items")] public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.PdfTextItem> Items { get; init; }
+    [global::Xynolog.Serialization.Wire("text")] public required string Text { get; init; }
 }

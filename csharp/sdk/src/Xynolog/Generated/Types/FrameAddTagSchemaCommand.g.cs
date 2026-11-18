@@ -4,35 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(FrameAddTagSchemaCommandJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record FrameAddTagSchemaCommand
 {
-    public global::Xynolog.Identifiers.UserId? UserId { get; init; }
-    public required global::Xynolog.Types.TagSchema Schema { get; init; }
-}
-
-internal sealed class FrameAddTagSchemaCommandJsonConverter : global::System.Text.Json.Serialization.JsonConverter<FrameAddTagSchemaCommand>
-{
-    public override FrameAddTagSchemaCommand Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("FrameAddTagSchemaCommand", root);
-        return new FrameAddTagSchemaCommand
-        {
-            UserId = root.TryGetProperty("_userId", out var p0) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Identifiers.UserId>(p0, options) : null,
-            Schema = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.TagSchema>(root, "schema", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, FrameAddTagSchemaCommand value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        if (value.UserId is not null)
-        {
-            fields.Add("_userId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.UserId, options));
-        }
-        fields.Add("schema", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Schema, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "FrameAddTagSchemaCommand", fields);
-    }
+    [global::Xynolog.Serialization.Wire("_userId")] public global::Xynolog.Identifiers.UserId? UserId { get; init; }
+    [global::Xynolog.Serialization.Wire("schema")] public required global::Xynolog.Types.TagSchema Schema { get; init; }
 }

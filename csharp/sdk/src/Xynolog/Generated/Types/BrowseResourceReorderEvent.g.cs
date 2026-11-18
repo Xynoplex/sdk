@@ -4,32 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(BrowseResourceReorderEventJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record BrowseResourceReorderEvent
 {
-    public required long NewIndex { get; init; }
-    public required long OldIndex { get; init; }
-}
-
-internal sealed class BrowseResourceReorderEventJsonConverter : global::System.Text.Json.Serialization.JsonConverter<BrowseResourceReorderEvent>
-{
-    public override BrowseResourceReorderEvent Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("BrowseResourceReorderEvent", root);
-        return new BrowseResourceReorderEvent
-        {
-            NewIndex = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "newIndex", options),
-            OldIndex = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "oldIndex", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, BrowseResourceReorderEvent value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("newIndex", global::System.Text.Json.JsonSerializer.SerializeToElement(value.NewIndex, options));
-        fields.Add("oldIndex", global::System.Text.Json.JsonSerializer.SerializeToElement(value.OldIndex, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "BrowseResourceReorderEvent", fields);
-    }
+    [global::Xynolog.Serialization.Wire("newIndex")] public required long NewIndex { get; init; }
+    [global::Xynolog.Serialization.Wire("oldIndex")] public required long OldIndex { get; init; }
 }

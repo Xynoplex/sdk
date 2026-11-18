@@ -4,38 +4,10 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(AnchoredTextAbsentKindJsonConverter))]
+[global::Xynolog.Serialization.WireEnum]
 public enum AnchoredTextAbsentKind
 {
-    NotYet,
-    NoMap,
-    Unknown,
-}
-
-internal sealed class AnchoredTextAbsentKindJsonConverter : global::System.Text.Json.Serialization.JsonConverter<AnchoredTextAbsentKind>
-{
-    public override AnchoredTextAbsentKind Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("AnchoredTextAbsentKind", root);
-        return root.GetString() switch
-        {
-            "not-yet" => AnchoredTextAbsentKind.NotYet,
-            "no-map" => AnchoredTextAbsentKind.NoMap,
-            "unknown" => AnchoredTextAbsentKind.Unknown,
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, AnchoredTextAbsentKind value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        writer.WriteStringValue(value switch
-        {
-            AnchoredTextAbsentKind.NotYet => "not-yet",
-            AnchoredTextAbsentKind.NoMap => "no-map",
-            AnchoredTextAbsentKind.Unknown => "unknown",
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        });
-    }
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("not-yet")] NotYet,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("no-map")] NoMap,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("unknown")] Unknown,
 }

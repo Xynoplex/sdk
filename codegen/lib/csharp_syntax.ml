@@ -108,6 +108,7 @@ type member =
       value : expr option;
     }
   | Property of {
+      attributes : attribute list;  (** On the property's own line. *)
       modifiers : modifier list;
       type_ : type_;
       name : string;
@@ -115,6 +116,7 @@ type member =
       value : expr option;
     }  (** [{ get; init; }], with an initial value or none. *)
   | Expression_property of {
+      attributes : attribute list;  (** On the property's own line. *)
       modifiers : modifier list;
       type_ : type_;
       name : string;
@@ -153,7 +155,8 @@ and decl =
       attributes : attribute list;
       modifiers : modifier list;
       name : string;
-      members : string list;
+      members : (attribute list * string) list;
+          (** Each with its attributes on its own line. *)
     }
 
 type file = {
@@ -577,6 +580,18 @@ let attribute_line ~depth { name; args } =
       | args -> args_lines ~depth (List.map (fun a -> Arg a) args))
     ^^ [ "]" ])
 
+(* [attributes] before what follows them on one line. *)
+let attributes_before ~depth attributes =
+  List.fold_left
+    (fun before { name; args } ->
+      before
+      ^^ [ "[" ^ qualified name ]
+      ^^ (match args with
+        | [] -> [ "" ]
+        | args -> args_lines ~depth (List.map (fun a -> Arg a) args))
+      ^^ [ "] " ])
+    [ "" ] attributes
+
 let body_lines ~depth head = function
   | Arrow e -> line ~depth (head ^^ [ " => " ] ^^ at_least ~depth 0 e ^^ [ ";" ])
   | Block stmts -> line ~depth head @ braced ~depth stmts
@@ -594,26 +609,28 @@ let rec member ~depth = function
           | None -> [ "" ]
           | Some v -> [ " = " ] ^^ at_least ~depth 1 v)
         ^^ [ ";" ])
-  | Property { modifiers; type_; name; accessors; value } ->
+  | Property { attributes; modifiers; type_; name; accessors; value } ->
       let accessor = function Get -> "get;" | Init -> "init;" in
       if accessors = [] then refuse "a property with no accessor";
       line ~depth
-        ([
-           modifiers_text modifiers ^ type_text type_ ^ " " ^ checked name
-           ^ " { "
-           ^ String.concat " " (List.map accessor accessors)
-           ^ " }";
-         ]
+        (attributes_before ~depth attributes
+        ^^ [
+             modifiers_text modifiers ^ type_text type_ ^ " " ^ checked name
+             ^ " { "
+             ^ String.concat " " (List.map accessor accessors)
+             ^ " }";
+           ]
         ^^
         match value with
         | None -> [ "" ]
         | Some v -> [ " = " ] ^^ at_least ~depth 1 v ^^ [ ";" ])
-  | Expression_property { modifiers; type_; name; value } ->
+  | Expression_property { attributes; modifiers; type_; name; value } ->
       line ~depth
-        ([
-           modifiers_text modifiers ^ type_text type_ ^ " " ^ checked name
-           ^ " => ";
-         ]
+        (attributes_before ~depth attributes
+        ^^ [
+             modifiers_text modifiers ^ type_text type_ ^ " " ^ checked name
+             ^ " => ";
+           ]
         ^^ at_least ~depth 1 value ^^ [ ";" ])
   | Method { modifiers; returns; name; params; body } ->
       body_lines ~depth
@@ -655,7 +672,12 @@ and decl ~depth = function
           indent depth ^ modifiers_text modifiers ^ "enum " ^ checked name;
           indent depth ^ "{";
         ]
-      @ List.map (fun m -> indent (depth + 1) ^ checked m ^ ",") members
+      @ List.concat_map
+          (fun (attributes, m) ->
+            line ~depth:(depth + 1)
+              (attributes_before ~depth:(depth + 1) attributes
+              ^^ [ checked m ^ "," ]))
+          members
       @ [ indent depth ^ "}" ]
 
 let comment_line text =

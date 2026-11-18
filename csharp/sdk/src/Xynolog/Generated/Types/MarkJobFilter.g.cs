@@ -4,31 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(MarkJobFilterJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record MarkJobFilter
 {
-    public string JobType => "mark";
-    public required global::Xynolog.Types.MarkJobFilterParams Params { get; init; }
-}
-
-internal sealed class MarkJobFilterJsonConverter : global::System.Text.Json.Serialization.JsonConverter<MarkJobFilter>
-{
-    public override MarkJobFilter Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("MarkJobFilter", root);
-        return new MarkJobFilter
-        {
-            Params = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.MarkJobFilterParams>(root, "params", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, MarkJobFilter value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("jobType", global::System.Text.Json.JsonSerializer.SerializeToElement(value.JobType, options));
-        fields.Add("params", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Params, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "MarkJobFilter", fields);
-    }
+    [global::Xynolog.Serialization.Wire("jobType")] public string JobType => "mark";
+    [global::Xynolog.Serialization.Wire("params")] public required global::Xynolog.Types.MarkJobFilterParams Params { get; init; }
 }

@@ -4,32 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(JobDeclinedJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record JobDeclined
 {
-    public required bool Declined { get; init; }
-    public required global::Xynolog.Types.JobDeclinedReason Reason { get; init; }
-}
-
-internal sealed class JobDeclinedJsonConverter : global::System.Text.Json.Serialization.JsonConverter<JobDeclined>
-{
-    public override JobDeclined Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("JobDeclined", root);
-        return new JobDeclined
-        {
-            Declined = global::Xynolog.Serialization.WireJson.ReadMember<bool>(root, "declined", options),
-            Reason = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.JobDeclinedReason>(root, "reason", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, JobDeclined value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("declined", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Declined, options));
-        fields.Add("reason", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Reason, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "JobDeclined", fields);
-    }
+    [global::Xynolog.Serialization.Wire("declined")] public required bool Declined { get; init; }
+    [global::Xynolog.Serialization.Wire("reason")] public required global::Xynolog.Types.JobDeclinedReason Reason { get; init; }
 }

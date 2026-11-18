@@ -4,32 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(WeaveAppliedJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record WeaveApplied
 {
-    public required global::Xynolog.Identifiers.ResourceId ResourceId { get; init; }
-    public required long SequenceNumber { get; init; }
-}
-
-internal sealed class WeaveAppliedJsonConverter : global::System.Text.Json.Serialization.JsonConverter<WeaveApplied>
-{
-    public override WeaveApplied Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("WeaveApplied", root);
-        return new WeaveApplied
-        {
-            ResourceId = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.ResourceId>(root, "resourceId", options),
-            SequenceNumber = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "sequenceNumber", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, WeaveApplied value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("resourceId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ResourceId, options));
-        fields.Add("sequenceNumber", global::System.Text.Json.JsonSerializer.SerializeToElement(value.SequenceNumber, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "WeaveApplied", fields);
-    }
+    [global::Xynolog.Serialization.Wire("resourceId")] public required global::Xynolog.Identifiers.ResourceId ResourceId { get; init; }
+    [global::Xynolog.Serialization.Wire("sequenceNumber")] public required long SequenceNumber { get; init; }
 }

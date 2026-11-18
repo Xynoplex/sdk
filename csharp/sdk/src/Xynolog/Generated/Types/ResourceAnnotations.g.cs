@@ -4,38 +4,11 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(ResourceAnnotationsJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record ResourceAnnotations
 {
-    public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.Annotation> Annotations { get; init; }
-    public required global::Xynolog.Identifiers.ResourceId ResourceId { get; init; }
-    public required string UpdatedAt { get; init; }
-    public required long Version { get; init; }
-}
-
-internal sealed class ResourceAnnotationsJsonConverter : global::System.Text.Json.Serialization.JsonConverter<ResourceAnnotations>
-{
-    public override ResourceAnnotations Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("ResourceAnnotations", root);
-        return new ResourceAnnotations
-        {
-            Annotations = global::Xynolog.Serialization.WireJson.ReadMember<global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.Annotation>>(root, "annotations", options),
-            ResourceId = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.ResourceId>(root, "resourceId", options),
-            UpdatedAt = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "updatedAt", options),
-            Version = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "version", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, ResourceAnnotations value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("annotations", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Annotations, options));
-        fields.Add("resourceId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ResourceId, options));
-        fields.Add("updatedAt", global::System.Text.Json.JsonSerializer.SerializeToElement(value.UpdatedAt, options));
-        fields.Add("version", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Version, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "ResourceAnnotations", fields);
-    }
+    [global::Xynolog.Serialization.Wire("annotations")] public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.Annotation> Annotations { get; init; }
+    [global::Xynolog.Serialization.Wire("resourceId")] public required global::Xynolog.Identifiers.ResourceId ResourceId { get; init; }
+    [global::Xynolog.Serialization.Wire("updatedAt")] public required string UpdatedAt { get; init; }
+    [global::Xynolog.Serialization.Wire("version")] public required long Version { get; init; }
 }

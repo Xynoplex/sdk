@@ -4,38 +4,10 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(FailureClassJsonConverter))]
+[global::Xynolog.Serialization.WireEnum]
 public enum FailureClass
 {
-    Transient,
-    Deterministic,
-    Withheld,
-}
-
-internal sealed class FailureClassJsonConverter : global::System.Text.Json.Serialization.JsonConverter<FailureClass>
-{
-    public override FailureClass Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("FailureClass", root);
-        return root.GetString() switch
-        {
-            "transient" => FailureClass.Transient,
-            "deterministic" => FailureClass.Deterministic,
-            "withheld" => FailureClass.Withheld,
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, FailureClass value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        writer.WriteStringValue(value switch
-        {
-            FailureClass.Transient => "transient",
-            FailureClass.Deterministic => "deterministic",
-            FailureClass.Withheld => "withheld",
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        });
-    }
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("transient")] Transient,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("deterministic")] Deterministic,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("withheld")] Withheld,
 }

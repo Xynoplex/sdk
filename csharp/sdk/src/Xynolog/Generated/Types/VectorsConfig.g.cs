@@ -4,36 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(VectorsConfigJsonConverter))]
+[global::Xynolog.Serialization.WireUnion(typeof(VectorsConfig.QdrantVectorsConfigCase), typeof(VectorsConfig.MemoryVectorsConfigCase))]
 public closed record VectorsConfig
 {
     public sealed record QdrantVectorsConfigCase(global::Xynolog.Types.QdrantVectorsConfig Value) : VectorsConfig;
     public sealed record MemoryVectorsConfigCase(global::Xynolog.Types.MemoryVectorsConfig Value) : VectorsConfig;
-}
-
-internal sealed class VectorsConfigJsonConverter : global::System.Text.Json.Serialization.JsonConverter<VectorsConfig>
-{
-    public override VectorsConfig Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("VectorsConfig", root);
-        var variant = global::Xynolog.Serialization.WireJson.Variant("VectorsConfig", root);
-        return variant switch
-        {
-            0 => new VectorsConfig.QdrantVectorsConfigCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.QdrantVectorsConfig>(root, options)),
-            1 => new VectorsConfig.MemoryVectorsConfigCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.MemoryVectorsConfig>(root, options)),
-            _ => throw new global::System.Text.Json.JsonException("No matching union variant."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, VectorsConfig value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        switch (value)
-        {
-            case VectorsConfig.QdrantVectorsConfigCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            case VectorsConfig.MemoryVectorsConfigCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            default: throw new global::System.Text.Json.JsonException("Unknown union variant.");
-        }
-    }
 }

@@ -4,32 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(ArchivistEnginesJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record ArchivistEngines
 {
-    public required global::Xynolog.Types.ArchivistEnginesActors Actors { get; init; }
-    public required global::Xynolog.Types.ArchivistEnginesJobs Jobs { get; init; }
-}
-
-internal sealed class ArchivistEnginesJsonConverter : global::System.Text.Json.Serialization.JsonConverter<ArchivistEngines>
-{
-    public override ArchivistEngines Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("ArchivistEngines", root);
-        return new ArchivistEngines
-        {
-            Actors = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.ArchivistEnginesActors>(root, "actors", options),
-            Jobs = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.ArchivistEnginesJobs>(root, "jobs", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, ArchivistEngines value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("actors", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Actors, options));
-        fields.Add("jobs", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Jobs, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "ArchivistEngines", fields);
-    }
+    [global::Xynolog.Serialization.Wire("actors")] public required global::Xynolog.Types.ArchivistEnginesActors Actors { get; init; }
+    [global::Xynolog.Serialization.Wire("jobs")] public required global::Xynolog.Types.ArchivistEnginesJobs Jobs { get; init; }
 }

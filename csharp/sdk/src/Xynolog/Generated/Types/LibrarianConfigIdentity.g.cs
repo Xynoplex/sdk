@@ -4,29 +4,8 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(LibrarianConfigIdentityJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record LibrarianConfigIdentity
 {
-    public required string Issuer { get; init; }
-}
-
-internal sealed class LibrarianConfigIdentityJsonConverter : global::System.Text.Json.Serialization.JsonConverter<LibrarianConfigIdentity>
-{
-    public override LibrarianConfigIdentity Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("LibrarianConfigIdentity", root);
-        return new LibrarianConfigIdentity
-        {
-            Issuer = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "issuer", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, LibrarianConfigIdentity value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("issuer", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Issuer, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "LibrarianConfigIdentity", fields);
-    }
+    [global::Xynolog.Serialization.Wire("issuer")] public required string Issuer { get; init; }
 }

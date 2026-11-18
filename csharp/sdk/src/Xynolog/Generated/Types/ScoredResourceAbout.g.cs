@@ -4,36 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(ScoredResourceAboutJsonConverter))]
+[global::Xynolog.Serialization.WireUnion(typeof(ScoredResourceAbout.TextCase), typeof(ScoredResourceAbout.ArrayCase))]
 public closed record ScoredResourceAbout
 {
     public sealed record TextCase(string Value) : ScoredResourceAbout;
     public sealed record ArrayCase(global::System.Collections.Generic.IReadOnlyList<string> Value) : ScoredResourceAbout;
-}
-
-internal sealed class ScoredResourceAboutJsonConverter : global::System.Text.Json.Serialization.JsonConverter<ScoredResourceAbout>
-{
-    public override ScoredResourceAbout Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("ScoredResourceAbout", root);
-        var variant = global::Xynolog.Serialization.WireJson.Variant("ScoredResourceAbout", root);
-        return variant switch
-        {
-            0 => new ScoredResourceAbout.TextCase(global::Xynolog.Serialization.WireJson.Read<string>(root, options)),
-            1 => new ScoredResourceAbout.ArrayCase(global::Xynolog.Serialization.WireJson.Read<global::System.Collections.Generic.IReadOnlyList<string>>(root, options)),
-            _ => throw new global::System.Text.Json.JsonException("No matching union variant."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, ScoredResourceAbout value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        switch (value)
-        {
-            case ScoredResourceAbout.TextCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            case ScoredResourceAbout.ArrayCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            default: throw new global::System.Text.Json.JsonException("Unknown union variant.");
-        }
-    }
 }

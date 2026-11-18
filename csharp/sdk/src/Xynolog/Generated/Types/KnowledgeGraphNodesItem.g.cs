@@ -4,36 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(KnowledgeGraphNodesItemJsonConverter))]
+[global::Xynolog.Serialization.WireUnion(typeof(KnowledgeGraphNodesItem.GraphResourceNodeCase), typeof(KnowledgeGraphNodesItem.GraphAnnotationNodeCase))]
 public closed record KnowledgeGraphNodesItem
 {
     public sealed record GraphResourceNodeCase(global::Xynolog.Types.GraphResourceNode Value) : KnowledgeGraphNodesItem;
     public sealed record GraphAnnotationNodeCase(global::Xynolog.Types.GraphAnnotationNode Value) : KnowledgeGraphNodesItem;
-}
-
-internal sealed class KnowledgeGraphNodesItemJsonConverter : global::System.Text.Json.Serialization.JsonConverter<KnowledgeGraphNodesItem>
-{
-    public override KnowledgeGraphNodesItem Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("KnowledgeGraphNodesItem", root);
-        var variant = global::Xynolog.Serialization.WireJson.Variant("KnowledgeGraphNodesItem", root);
-        return variant switch
-        {
-            0 => new KnowledgeGraphNodesItem.GraphResourceNodeCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.GraphResourceNode>(root, options)),
-            1 => new KnowledgeGraphNodesItem.GraphAnnotationNodeCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.GraphAnnotationNode>(root, options)),
-            _ => throw new global::System.Text.Json.JsonException("No matching union variant."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, KnowledgeGraphNodesItem value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        switch (value)
-        {
-            case KnowledgeGraphNodesItem.GraphResourceNodeCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            case KnowledgeGraphNodesItem.GraphAnnotationNodeCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            default: throw new global::System.Text.Json.JsonException("Unknown union variant.");
-        }
-    }
 }

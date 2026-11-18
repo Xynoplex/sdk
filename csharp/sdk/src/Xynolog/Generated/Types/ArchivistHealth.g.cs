@@ -4,31 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(ArchivistHealthJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record ArchivistHealth
 {
-    public required global::System.Collections.Generic.IReadOnlyList<string> Actors { get; init; }
-    public string Status => "ok";
-}
-
-internal sealed class ArchivistHealthJsonConverter : global::System.Text.Json.Serialization.JsonConverter<ArchivistHealth>
-{
-    public override ArchivistHealth Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("ArchivistHealth", root);
-        return new ArchivistHealth
-        {
-            Actors = global::Xynolog.Serialization.WireJson.ReadMember<global::System.Collections.Generic.IReadOnlyList<string>>(root, "actors", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, ArchivistHealth value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("actors", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Actors, options));
-        fields.Add("status", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Status, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "ArchivistHealth", fields);
-    }
+    [global::Xynolog.Serialization.Wire("actors")] public required global::System.Collections.Generic.IReadOnlyList<string> Actors { get; init; }
+    [global::Xynolog.Serialization.Wire("status")] public string Status => "ok";
 }

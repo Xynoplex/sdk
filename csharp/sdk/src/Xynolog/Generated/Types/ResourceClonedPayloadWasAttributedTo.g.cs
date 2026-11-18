@@ -4,36 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(ResourceClonedPayloadWasAttributedToJsonConverter))]
+[global::Xynolog.Serialization.WireUnion(typeof(ResourceClonedPayloadWasAttributedTo.AgentCase), typeof(ResourceClonedPayloadWasAttributedTo.ArrayCase))]
 public closed record ResourceClonedPayloadWasAttributedTo
 {
     public sealed record AgentCase(global::Xynolog.Types.Agent Value) : ResourceClonedPayloadWasAttributedTo;
     public sealed record ArrayCase(global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.Agent> Value) : ResourceClonedPayloadWasAttributedTo;
-}
-
-internal sealed class ResourceClonedPayloadWasAttributedToJsonConverter : global::System.Text.Json.Serialization.JsonConverter<ResourceClonedPayloadWasAttributedTo>
-{
-    public override ResourceClonedPayloadWasAttributedTo Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("ResourceClonedPayloadWasAttributedTo", root);
-        var variant = global::Xynolog.Serialization.WireJson.Variant("ResourceClonedPayloadWasAttributedTo", root);
-        return variant switch
-        {
-            0 => new ResourceClonedPayloadWasAttributedTo.AgentCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.Agent>(root, options)),
-            1 => new ResourceClonedPayloadWasAttributedTo.ArrayCase(global::Xynolog.Serialization.WireJson.Read<global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.Agent>>(root, options)),
-            _ => throw new global::System.Text.Json.JsonException("No matching union variant."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, ResourceClonedPayloadWasAttributedTo value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        switch (value)
-        {
-            case ResourceClonedPayloadWasAttributedTo.AgentCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            case ResourceClonedPayloadWasAttributedTo.ArrayCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            default: throw new global::System.Text.Json.JsonException("Unknown union variant.");
-        }
-    }
 }

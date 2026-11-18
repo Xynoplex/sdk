@@ -4,35 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(SmeltSettledOutcomeJsonConverter))]
+[global::Xynolog.Serialization.WireEnum]
 public enum SmeltSettledOutcome
 {
-    Indexed,
-    Skipped,
-}
-
-internal sealed class SmeltSettledOutcomeJsonConverter : global::System.Text.Json.Serialization.JsonConverter<SmeltSettledOutcome>
-{
-    public override SmeltSettledOutcome Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("SmeltSettledOutcome", root);
-        return root.GetString() switch
-        {
-            "indexed" => SmeltSettledOutcome.Indexed,
-            "skipped" => SmeltSettledOutcome.Skipped,
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, SmeltSettledOutcome value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        writer.WriteStringValue(value switch
-        {
-            SmeltSettledOutcome.Indexed => "indexed",
-            SmeltSettledOutcome.Skipped => "skipped",
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        });
-    }
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("indexed")] Indexed,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("skipped")] Skipped,
 }

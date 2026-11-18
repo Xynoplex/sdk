@@ -4,39 +4,10 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(AnchoredTextAnswerJsonConverter))]
+[global::Xynolog.Serialization.WireUnion(typeof(AnchoredTextAnswer.ExtractedTextCase), typeof(AnchoredTextAnswer.ExtractionDeclinedCase), typeof(AnchoredTextAnswer.AnchoredTextAbsentCase))]
 public closed record AnchoredTextAnswer
 {
     public sealed record ExtractedTextCase(global::Xynolog.Types.ExtractedText Value) : AnchoredTextAnswer;
     public sealed record ExtractionDeclinedCase(global::Xynolog.Types.ExtractionDeclined Value) : AnchoredTextAnswer;
     public sealed record AnchoredTextAbsentCase(global::Xynolog.Types.AnchoredTextAbsent Value) : AnchoredTextAnswer;
-}
-
-internal sealed class AnchoredTextAnswerJsonConverter : global::System.Text.Json.Serialization.JsonConverter<AnchoredTextAnswer>
-{
-    public override AnchoredTextAnswer Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("AnchoredTextAnswer", root);
-        var variant = global::Xynolog.Serialization.WireJson.Variant("AnchoredTextAnswer", root);
-        return variant switch
-        {
-            0 => new AnchoredTextAnswer.ExtractedTextCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.ExtractedText>(root, options)),
-            1 => new AnchoredTextAnswer.ExtractionDeclinedCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.ExtractionDeclined>(root, options)),
-            2 => new AnchoredTextAnswer.AnchoredTextAbsentCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.AnchoredTextAbsent>(root, options)),
-            _ => throw new global::System.Text.Json.JsonException("No matching union variant."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, AnchoredTextAnswer value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        switch (value)
-        {
-            case AnchoredTextAnswer.ExtractedTextCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            case AnchoredTextAnswer.ExtractionDeclinedCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            case AnchoredTextAnswer.AnchoredTextAbsentCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            default: throw new global::System.Text.Json.JsonException("Unknown union variant.");
-        }
-    }
 }

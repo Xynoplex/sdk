@@ -4,32 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(StatusResponseFeaturesJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record StatusResponseFeatures
 {
-    public required string Collaboration { get; init; }
-    public required string SemanticContent { get; init; }
-}
-
-internal sealed class StatusResponseFeaturesJsonConverter : global::System.Text.Json.Serialization.JsonConverter<StatusResponseFeatures>
-{
-    public override StatusResponseFeatures Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("StatusResponseFeatures", root);
-        return new StatusResponseFeatures
-        {
-            Collaboration = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "collaboration", options),
-            SemanticContent = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "semanticContent", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, StatusResponseFeatures value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("collaboration", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Collaboration, options));
-        fields.Add("semanticContent", global::System.Text.Json.JsonSerializer.SerializeToElement(value.SemanticContent, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "StatusResponseFeatures", fields);
-    }
+    [global::Xynolog.Serialization.Wire("collaboration")] public required string Collaboration { get; init; }
+    [global::Xynolog.Serialization.Wire("semanticContent")] public required string SemanticContent { get; init; }
 }

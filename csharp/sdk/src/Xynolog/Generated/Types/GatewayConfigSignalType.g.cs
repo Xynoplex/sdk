@@ -4,35 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(GatewayConfigSignalTypeJsonConverter))]
+[global::Xynolog.Serialization.WireEnum]
 public enum GatewayConfigSignalType
 {
-    InProcess,
-    Nats,
-}
-
-internal sealed class GatewayConfigSignalTypeJsonConverter : global::System.Text.Json.Serialization.JsonConverter<GatewayConfigSignalType>
-{
-    public override GatewayConfigSignalType Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("GatewayConfigSignalType", root);
-        return root.GetString() switch
-        {
-            "in-process" => GatewayConfigSignalType.InProcess,
-            "nats" => GatewayConfigSignalType.Nats,
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, GatewayConfigSignalType value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        writer.WriteStringValue(value switch
-        {
-            GatewayConfigSignalType.InProcess => "in-process",
-            GatewayConfigSignalType.Nats => "nats",
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        });
-    }
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("in-process")] InProcess,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("nats")] Nats,
 }

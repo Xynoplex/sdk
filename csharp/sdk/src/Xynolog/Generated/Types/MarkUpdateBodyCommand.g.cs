@@ -4,41 +4,11 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(MarkUpdateBodyCommandJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record MarkUpdateBodyCommand
 {
-    public global::Xynolog.Identifiers.UserId? UserId { get; init; }
-    public required global::Xynolog.Identifiers.AnnotationId AnnotationId { get; init; }
-    public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.MarkUpdateBodyCommandOperationsItem> Operations { get; init; }
-    public required global::Xynolog.Identifiers.ResourceId ResourceId { get; init; }
-}
-
-internal sealed class MarkUpdateBodyCommandJsonConverter : global::System.Text.Json.Serialization.JsonConverter<MarkUpdateBodyCommand>
-{
-    public override MarkUpdateBodyCommand Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("MarkUpdateBodyCommand", root);
-        return new MarkUpdateBodyCommand
-        {
-            UserId = root.TryGetProperty("_userId", out var p0) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Identifiers.UserId>(p0, options) : null,
-            AnnotationId = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.AnnotationId>(root, "annotationId", options),
-            Operations = global::Xynolog.Serialization.WireJson.ReadMember<global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.MarkUpdateBodyCommandOperationsItem>>(root, "operations", options),
-            ResourceId = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.ResourceId>(root, "resourceId", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, MarkUpdateBodyCommand value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        if (value.UserId is not null)
-        {
-            fields.Add("_userId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.UserId, options));
-        }
-        fields.Add("annotationId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.AnnotationId, options));
-        fields.Add("operations", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Operations, options));
-        fields.Add("resourceId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ResourceId, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "MarkUpdateBodyCommand", fields);
-    }
+    [global::Xynolog.Serialization.Wire("_userId")] public global::Xynolog.Identifiers.UserId? UserId { get; init; }
+    [global::Xynolog.Serialization.Wire("annotationId")] public required global::Xynolog.Identifiers.AnnotationId AnnotationId { get; init; }
+    [global::Xynolog.Serialization.Wire("operations")] public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.MarkUpdateBodyCommandOperationsItem> Operations { get; init; }
+    [global::Xynolog.Serialization.Wire("resourceId")] public required global::Xynolog.Identifiers.ResourceId ResourceId { get; init; }
 }

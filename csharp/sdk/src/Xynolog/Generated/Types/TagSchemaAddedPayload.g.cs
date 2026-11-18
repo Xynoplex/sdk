@@ -4,29 +4,8 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(TagSchemaAddedPayloadJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record TagSchemaAddedPayload
 {
-    public required global::Xynolog.Types.TagSchema Schema { get; init; }
-}
-
-internal sealed class TagSchemaAddedPayloadJsonConverter : global::System.Text.Json.Serialization.JsonConverter<TagSchemaAddedPayload>
-{
-    public override TagSchemaAddedPayload Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("TagSchemaAddedPayload", root);
-        return new TagSchemaAddedPayload
-        {
-            Schema = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.TagSchema>(root, "schema", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, TagSchemaAddedPayload value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("schema", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Schema, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "TagSchemaAddedPayload", fields);
-    }
+    [global::Xynolog.Serialization.Wire("schema")] public required global::Xynolog.Types.TagSchema Schema { get; init; }
 }

@@ -4,44 +4,12 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(MotivationJsonConverter))]
+[global::Xynolog.Serialization.WireEnum]
 public enum Motivation
 {
-    Assessing,
-    Commenting,
-    Highlighting,
-    Linking,
-    Tagging,
-}
-
-internal sealed class MotivationJsonConverter : global::System.Text.Json.Serialization.JsonConverter<Motivation>
-{
-    public override Motivation Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("Motivation", root);
-        return root.GetString() switch
-        {
-            "assessing" => Motivation.Assessing,
-            "commenting" => Motivation.Commenting,
-            "highlighting" => Motivation.Highlighting,
-            "linking" => Motivation.Linking,
-            "tagging" => Motivation.Tagging,
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, Motivation value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        writer.WriteStringValue(value switch
-        {
-            Motivation.Assessing => "assessing",
-            Motivation.Commenting => "commenting",
-            Motivation.Highlighting => "highlighting",
-            Motivation.Linking => "linking",
-            Motivation.Tagging => "tagging",
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        });
-    }
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("assessing")] Assessing,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("commenting")] Commenting,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("highlighting")] Highlighting,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("linking")] Linking,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("tagging")] Tagging,
 }

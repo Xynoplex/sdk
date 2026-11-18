@@ -4,41 +4,11 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(NewKnowledgeBaseJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record NewKnowledgeBase
 {
-    public required string Did { get; init; }
-    public required global::Xynolog.Types.KbEndpoint Endpoint { get; init; }
-    public required string Label { get; init; }
-    public global::Xynolog.Types.KbRead? LastRead { get; init; }
-}
-
-internal sealed class NewKnowledgeBaseJsonConverter : global::System.Text.Json.Serialization.JsonConverter<NewKnowledgeBase>
-{
-    public override NewKnowledgeBase Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("NewKnowledgeBase", root);
-        return new NewKnowledgeBase
-        {
-            Did = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "did", options),
-            Endpoint = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.KbEndpoint>(root, "endpoint", options),
-            Label = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "label", options),
-            LastRead = root.TryGetProperty("lastRead", out var p3) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.KbRead>(p3, options) : null,
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, NewKnowledgeBase value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("did", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Did, options));
-        fields.Add("endpoint", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Endpoint, options));
-        fields.Add("label", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Label, options));
-        if (value.LastRead is not null)
-        {
-            fields.Add("lastRead", global::System.Text.Json.JsonSerializer.SerializeToElement(value.LastRead, options));
-        }
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "NewKnowledgeBase", fields);
-    }
+    [global::Xynolog.Serialization.Wire("did")] public required string Did { get; init; }
+    [global::Xynolog.Serialization.Wire("endpoint")] public required global::Xynolog.Types.KbEndpoint Endpoint { get; init; }
+    [global::Xynolog.Serialization.Wire("label")] public required string Label { get; init; }
+    [global::Xynolog.Serialization.Wire("lastRead")] public global::Xynolog.Types.KbRead? LastRead { get; init; }
 }

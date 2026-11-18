@@ -4,53 +4,12 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(MatchResourcesRequestJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record MatchResourcesRequest
 {
-    public bool? Archived { get; init; }
-    public string? EntityType { get; init; }
-    public long? Limit { get; init; }
-    public long? Offset { get; init; }
-    public required string Search { get; init; }
-}
-
-internal sealed class MatchResourcesRequestJsonConverter : global::System.Text.Json.Serialization.JsonConverter<MatchResourcesRequest>
-{
-    public override MatchResourcesRequest Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("MatchResourcesRequest", root);
-        return new MatchResourcesRequest
-        {
-            Archived = root.TryGetProperty("archived", out var p0) ? global::Xynolog.Serialization.WireJson.Read<bool>(p0, options) : null,
-            EntityType = root.TryGetProperty("entityType", out var p1) ? global::Xynolog.Serialization.WireJson.Read<string>(p1, options) : null,
-            Limit = root.TryGetProperty("limit", out var p2) ? global::Xynolog.Serialization.WireJson.Read<long>(p2, options) : null,
-            Offset = root.TryGetProperty("offset", out var p3) ? global::Xynolog.Serialization.WireJson.Read<long>(p3, options) : null,
-            Search = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "search", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, MatchResourcesRequest value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        if (value.Archived is not null)
-        {
-            fields.Add("archived", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Archived, options));
-        }
-        if (value.EntityType is not null)
-        {
-            fields.Add("entityType", global::System.Text.Json.JsonSerializer.SerializeToElement(value.EntityType, options));
-        }
-        if (value.Limit is not null)
-        {
-            fields.Add("limit", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Limit, options));
-        }
-        if (value.Offset is not null)
-        {
-            fields.Add("offset", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Offset, options));
-        }
-        fields.Add("search", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Search, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "MatchResourcesRequest", fields);
-    }
+    [global::Xynolog.Serialization.Wire("archived")] public bool? Archived { get; init; }
+    [global::Xynolog.Serialization.Wire("entityType")] public string? EntityType { get; init; }
+    [global::Xynolog.Serialization.Wire("limit")] public long? Limit { get; init; }
+    [global::Xynolog.Serialization.Wire("offset")] public long? Offset { get; init; }
+    [global::Xynolog.Serialization.Wire("search")] public required string Search { get; init; }
 }

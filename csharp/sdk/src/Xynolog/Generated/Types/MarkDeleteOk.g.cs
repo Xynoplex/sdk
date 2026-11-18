@@ -4,29 +4,8 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(MarkDeleteOkJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record MarkDeleteOk
 {
-    public required global::Xynolog.Types.MarkDeleteOkResponse Response { get; init; }
-}
-
-internal sealed class MarkDeleteOkJsonConverter : global::System.Text.Json.Serialization.JsonConverter<MarkDeleteOk>
-{
-    public override MarkDeleteOk Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("MarkDeleteOk", root);
-        return new MarkDeleteOk
-        {
-            Response = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.MarkDeleteOkResponse>(root, "response", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, MarkDeleteOk value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("response", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Response, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "MarkDeleteOk", fields);
-    }
+    [global::Xynolog.Serialization.Wire("response")] public required global::Xynolog.Types.MarkDeleteOkResponse Response { get; init; }
 }

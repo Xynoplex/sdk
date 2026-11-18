@@ -4,41 +4,11 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(BusResumeGapReasonJsonConverter))]
+[global::Xynolog.Serialization.WireEnum]
 public enum BusResumeGapReason
 {
-    UnparseableLastEventId,
-    ScopeMismatch,
-    RetentionExceeded,
-    QueryError,
-}
-
-internal sealed class BusResumeGapReasonJsonConverter : global::System.Text.Json.Serialization.JsonConverter<BusResumeGapReason>
-{
-    public override BusResumeGapReason Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("BusResumeGapReason", root);
-        return root.GetString() switch
-        {
-            "unparseable-last-event-id" => BusResumeGapReason.UnparseableLastEventId,
-            "scope-mismatch" => BusResumeGapReason.ScopeMismatch,
-            "retention-exceeded" => BusResumeGapReason.RetentionExceeded,
-            "query-error" => BusResumeGapReason.QueryError,
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, BusResumeGapReason value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        writer.WriteStringValue(value switch
-        {
-            BusResumeGapReason.UnparseableLastEventId => "unparseable-last-event-id",
-            BusResumeGapReason.ScopeMismatch => "scope-mismatch",
-            BusResumeGapReason.RetentionExceeded => "retention-exceeded",
-            BusResumeGapReason.QueryError => "query-error",
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        });
-    }
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("unparseable-last-event-id")] UnparseableLastEventId,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("scope-mismatch")] ScopeMismatch,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("retention-exceeded")] RetentionExceeded,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("query-error")] QueryError,
 }

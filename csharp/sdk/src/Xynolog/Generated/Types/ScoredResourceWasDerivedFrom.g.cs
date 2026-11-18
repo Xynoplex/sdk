@@ -4,36 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(ScoredResourceWasDerivedFromJsonConverter))]
+[global::Xynolog.Serialization.WireUnion(typeof(ScoredResourceWasDerivedFrom.ResourceIdCase), typeof(ScoredResourceWasDerivedFrom.ArrayCase))]
 public closed record ScoredResourceWasDerivedFrom
 {
     public sealed record ResourceIdCase(global::Xynolog.Identifiers.ResourceId Value) : ScoredResourceWasDerivedFrom;
     public sealed record ArrayCase(global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Identifiers.ResourceId> Value) : ScoredResourceWasDerivedFrom;
-}
-
-internal sealed class ScoredResourceWasDerivedFromJsonConverter : global::System.Text.Json.Serialization.JsonConverter<ScoredResourceWasDerivedFrom>
-{
-    public override ScoredResourceWasDerivedFrom Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("ScoredResourceWasDerivedFrom", root);
-        var variant = global::Xynolog.Serialization.WireJson.Variant("ScoredResourceWasDerivedFrom", root);
-        return variant switch
-        {
-            0 => new ScoredResourceWasDerivedFrom.ResourceIdCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Identifiers.ResourceId>(root, options)),
-            1 => new ScoredResourceWasDerivedFrom.ArrayCase(global::Xynolog.Serialization.WireJson.Read<global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Identifiers.ResourceId>>(root, options)),
-            _ => throw new global::System.Text.Json.JsonException("No matching union variant."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, ScoredResourceWasDerivedFrom value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        switch (value)
-        {
-            case ScoredResourceWasDerivedFrom.ResourceIdCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            case ScoredResourceWasDerivedFrom.ArrayCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            default: throw new global::System.Text.Json.JsonException("Unknown union variant.");
-        }
-    }
 }

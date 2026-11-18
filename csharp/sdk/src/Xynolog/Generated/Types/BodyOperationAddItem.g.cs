@@ -4,36 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(BodyOperationAddItemJsonConverter))]
+[global::Xynolog.Serialization.WireUnion(typeof(BodyOperationAddItem.TextualBodyCase), typeof(BodyOperationAddItem.SpecificResourceCase))]
 public closed record BodyOperationAddItem
 {
     public sealed record TextualBodyCase(global::Xynolog.Types.TextualBody Value) : BodyOperationAddItem;
     public sealed record SpecificResourceCase(global::Xynolog.Types.SpecificResource Value) : BodyOperationAddItem;
-}
-
-internal sealed class BodyOperationAddItemJsonConverter : global::System.Text.Json.Serialization.JsonConverter<BodyOperationAddItem>
-{
-    public override BodyOperationAddItem Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("BodyOperationAddItem", root);
-        var variant = global::Xynolog.Serialization.WireJson.Variant("BodyOperationAddItem", root);
-        return variant switch
-        {
-            0 => new BodyOperationAddItem.TextualBodyCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.TextualBody>(root, options)),
-            1 => new BodyOperationAddItem.SpecificResourceCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.SpecificResource>(root, options)),
-            _ => throw new global::System.Text.Json.JsonException("No matching union variant."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, BodyOperationAddItem value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        switch (value)
-        {
-            case BodyOperationAddItem.TextualBodyCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            case BodyOperationAddItem.SpecificResourceCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            default: throw new global::System.Text.Json.JsonException("Unknown union variant.");
-        }
-    }
 }

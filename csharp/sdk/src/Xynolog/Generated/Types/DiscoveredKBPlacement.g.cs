@@ -4,35 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(DiscoveredKBPlacementJsonConverter))]
+[global::Xynolog.Serialization.WireEnum]
 public enum DiscoveredKBPlacement
 {
-    Local,
-    Codespace,
-}
-
-internal sealed class DiscoveredKBPlacementJsonConverter : global::System.Text.Json.Serialization.JsonConverter<DiscoveredKBPlacement>
-{
-    public override DiscoveredKBPlacement Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("DiscoveredKBPlacement", root);
-        return root.GetString() switch
-        {
-            "local" => DiscoveredKBPlacement.Local,
-            "codespace" => DiscoveredKBPlacement.Codespace,
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, DiscoveredKBPlacement value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        writer.WriteStringValue(value switch
-        {
-            DiscoveredKBPlacement.Local => "local",
-            DiscoveredKBPlacement.Codespace => "codespace",
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        });
-    }
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("local")] Local,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("codespace")] Codespace,
 }

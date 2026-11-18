@@ -4,38 +4,10 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(GetReferencedByResponseReferencedByItemJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record GetReferencedByResponseReferencedByItem
 {
-    public required global::Xynolog.Identifiers.AnnotationId Id { get; init; }
-    public string? ResourceName { get; init; }
-    public required global::Xynolog.Types.GetReferencedByResponseReferencedByItemTarget Target { get; init; }
-}
-
-internal sealed class GetReferencedByResponseReferencedByItemJsonConverter : global::System.Text.Json.Serialization.JsonConverter<GetReferencedByResponseReferencedByItem>
-{
-    public override GetReferencedByResponseReferencedByItem Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("GetReferencedByResponseReferencedByItem", root);
-        return new GetReferencedByResponseReferencedByItem
-        {
-            Id = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.AnnotationId>(root, "id", options),
-            ResourceName = root.TryGetProperty("resourceName", out var p1) ? global::Xynolog.Serialization.WireJson.Read<string>(p1, options) : null,
-            Target = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.GetReferencedByResponseReferencedByItemTarget>(root, "target", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, GetReferencedByResponseReferencedByItem value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("id", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Id, options));
-        if (value.ResourceName is not null)
-        {
-            fields.Add("resourceName", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ResourceName, options));
-        }
-        fields.Add("target", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Target, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "GetReferencedByResponseReferencedByItem", fields);
-    }
+    [global::Xynolog.Serialization.Wire("id")] public required global::Xynolog.Identifiers.AnnotationId Id { get; init; }
+    [global::Xynolog.Serialization.Wire("resourceName")] public string? ResourceName { get; init; }
+    [global::Xynolog.Serialization.Wire("target")] public required global::Xynolog.Types.GetReferencedByResponseReferencedByItemTarget Target { get; init; }
 }

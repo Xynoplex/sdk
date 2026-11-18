@@ -4,38 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(ArchivistEnginesActorsJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record ArchivistEnginesActors
 {
-    public global::Xynolog.Types.Engine? Gatherer { get; init; }
-    public global::Xynolog.Types.Engine? Matcher { get; init; }
-}
-
-internal sealed class ArchivistEnginesActorsJsonConverter : global::System.Text.Json.Serialization.JsonConverter<ArchivistEnginesActors>
-{
-    public override ArchivistEnginesActors Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("ArchivistEnginesActors", root);
-        return new ArchivistEnginesActors
-        {
-            Gatherer = root.TryGetProperty("gatherer", out var p0) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.Engine>(p0, options) : null,
-            Matcher = root.TryGetProperty("matcher", out var p1) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.Engine>(p1, options) : null,
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, ArchivistEnginesActors value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        if (value.Gatherer is not null)
-        {
-            fields.Add("gatherer", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Gatherer, options));
-        }
-        if (value.Matcher is not null)
-        {
-            fields.Add("matcher", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Matcher, options));
-        }
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "ArchivistEnginesActors", fields);
-    }
+    [global::Xynolog.Serialization.Wire("gatherer")] public global::Xynolog.Types.Engine? Gatherer { get; init; }
+    [global::Xynolog.Serialization.Wire("matcher")] public global::Xynolog.Types.Engine? Matcher { get; init; }
 }

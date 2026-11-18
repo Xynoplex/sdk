@@ -4,38 +4,10 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(CreateAnnotationRequestJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record CreateAnnotationRequest
 {
-    public global::Xynolog.Types.AnnotationBodies? Body { get; init; }
-    public required global::Xynolog.Types.Motivation Motivation { get; init; }
-    public required global::Xynolog.Types.AnnotationTarget Target { get; init; }
-}
-
-internal sealed class CreateAnnotationRequestJsonConverter : global::System.Text.Json.Serialization.JsonConverter<CreateAnnotationRequest>
-{
-    public override CreateAnnotationRequest Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("CreateAnnotationRequest", root);
-        return new CreateAnnotationRequest
-        {
-            Body = root.TryGetProperty("body", out var p0) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.AnnotationBodies>(p0, options) : null,
-            Motivation = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.Motivation>(root, "motivation", options),
-            Target = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.AnnotationTarget>(root, "target", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, CreateAnnotationRequest value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        if (value.Body is not null)
-        {
-            fields.Add("body", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Body, options));
-        }
-        fields.Add("motivation", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Motivation, options));
-        fields.Add("target", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Target, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "CreateAnnotationRequest", fields);
-    }
+    [global::Xynolog.Serialization.Wire("body")] public global::Xynolog.Types.AnnotationBodies? Body { get; init; }
+    [global::Xynolog.Serialization.Wire("motivation")] public required global::Xynolog.Types.Motivation Motivation { get; init; }
+    [global::Xynolog.Serialization.Wire("target")] public required global::Xynolog.Types.AnnotationTarget Target { get; init; }
 }

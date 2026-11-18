@@ -4,50 +4,14 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(AnchoredTextExtractedEntryPdfClassJsonConverter))]
+[global::Xynolog.Serialization.WireEnum]
 public enum AnchoredTextExtractedEntryPdfClass
 {
-    A,
-    B,
-    C,
-    D,
-    E,
-    F,
-    G,
-}
-
-internal sealed class AnchoredTextExtractedEntryPdfClassJsonConverter : global::System.Text.Json.Serialization.JsonConverter<AnchoredTextExtractedEntryPdfClass>
-{
-    public override AnchoredTextExtractedEntryPdfClass Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("AnchoredTextExtractedEntryPdfClass", root);
-        return root.GetString() switch
-        {
-            "A" => AnchoredTextExtractedEntryPdfClass.A,
-            "B" => AnchoredTextExtractedEntryPdfClass.B,
-            "C" => AnchoredTextExtractedEntryPdfClass.C,
-            "D" => AnchoredTextExtractedEntryPdfClass.D,
-            "E" => AnchoredTextExtractedEntryPdfClass.E,
-            "F" => AnchoredTextExtractedEntryPdfClass.F,
-            "G" => AnchoredTextExtractedEntryPdfClass.G,
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, AnchoredTextExtractedEntryPdfClass value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        writer.WriteStringValue(value switch
-        {
-            AnchoredTextExtractedEntryPdfClass.A => "A",
-            AnchoredTextExtractedEntryPdfClass.B => "B",
-            AnchoredTextExtractedEntryPdfClass.C => "C",
-            AnchoredTextExtractedEntryPdfClass.D => "D",
-            AnchoredTextExtractedEntryPdfClass.E => "E",
-            AnchoredTextExtractedEntryPdfClass.F => "F",
-            AnchoredTextExtractedEntryPdfClass.G => "G",
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        });
-    }
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("A")] A,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("B")] B,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("C")] C,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("D")] D,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("E")] E,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("F")] F,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("G")] G,
 }

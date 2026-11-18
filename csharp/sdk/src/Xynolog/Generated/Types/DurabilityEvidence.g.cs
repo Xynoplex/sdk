@@ -4,41 +4,11 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(DurabilityEvidenceJsonConverter))]
+[global::Xynolog.Serialization.WireEnum]
 public enum DurabilityEvidence
 {
-    Acknowledged,
-    ProbeConfirmed,
-    ProbeRefused,
-    ProbeUnreachable,
-}
-
-internal sealed class DurabilityEvidenceJsonConverter : global::System.Text.Json.Serialization.JsonConverter<DurabilityEvidence>
-{
-    public override DurabilityEvidence Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("DurabilityEvidence", root);
-        return root.GetString() switch
-        {
-            "acknowledged" => DurabilityEvidence.Acknowledged,
-            "probe-confirmed" => DurabilityEvidence.ProbeConfirmed,
-            "probe-refused" => DurabilityEvidence.ProbeRefused,
-            "probe-unreachable" => DurabilityEvidence.ProbeUnreachable,
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, DurabilityEvidence value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        writer.WriteStringValue(value switch
-        {
-            DurabilityEvidence.Acknowledged => "acknowledged",
-            DurabilityEvidence.ProbeConfirmed => "probe-confirmed",
-            DurabilityEvidence.ProbeRefused => "probe-refused",
-            DurabilityEvidence.ProbeUnreachable => "probe-unreachable",
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        });
-    }
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("acknowledged")] Acknowledged,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("probe-confirmed")] ProbeConfirmed,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("probe-refused")] ProbeRefused,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("probe-unreachable")] ProbeUnreachable,
 }
