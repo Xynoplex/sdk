@@ -61,11 +61,11 @@ let registry events =
           "channelOrder":{"eventMap":[%s],"schemas":[]},
           "channels":[%s],
           "operations":[{"request":"demo:limits-requested","result":"demo:limits-result","failure":"demo:limits-failed","docs":{"lead":[],"trailing":""}}],
-          "docs":{"eventName":"","enrichedEvents":"","channelSchemas":"","emittableChannel":""},
-          "inProcess":{"doc":"","channels":[]},
-          "kind":{"doc":"","command":[],"event":[%s]},
-          "audience":{"doc":"","everyone":[%s],"scoped":[],"declared":[]},
-          "effect":{"doc":"","writes":["demo:limits-requested"],"reads":[]},
+          "docs":{"eventName":["P."],"enrichedEvents":["P."],"channelSchemas":["P."],"emittableChannel":["P."]},
+          "inProcess":{"doc":["P."],"channels":[]},
+          "kind":{"doc":["P."],"command":[],"event":[%s]},
+          "audience":{"doc":["P."],"everyone":[%s],"scoped":[],"declared":[]},
+          "effect":{"doc":["P."],"writes":["demo:limits-requested"],"reads":[]},
           "trace":{"meaning":"Where a relayed frame carries its trace.","field":"_carried"}}|}
        (quoted (operation @ names))
        (String.concat ","
