@@ -59,15 +59,32 @@ let refused message =
 
 let types_of spec = Result.map_error refused (spec_of spec)
 
-let opt_in =
-  K.annotation
-    ~args:
+(* The opt-ins a file needs, by what it names: each experimental API a
+   generated file may use, beside the opt-in it requires. The compiler, every
+   warning an error, refuses a file that uses one unnamed here. *)
+let experimental =
+  [
+    ( "kotlinx.serialization.ExperimentalSerializationApi",
       [
-        K.arg
-          (K.Class_literal "kotlinx.serialization.ExperimentalSerializationApi");
-        K.arg (K.Class_literal "kotlin.ExperimentalStdlibApi");
-      ]
-    "OptIn"
+        "EncodeDefault";
+        "JsonIgnoreUnknownKeys";
+        "KeepGeneratedSerializer";
+        "SerialDescriptor";
+      ] );
+    ("kotlin.ExperimentalStdlibApi", [ "JvmExposeBoxed" ]);
+  ]
+
+let opt_in named =
+  match
+    List.filter_map
+      (fun (opt_in, apis) ->
+        if List.exists (fun api -> List.mem api named) apis then
+          Some (K.arg (K.Class_literal opt_in))
+        else None)
+      experimental
+  with
+  | [] -> []
+  | args -> [ K.annotation ~args "OptIn" ]
 
 (* A file of [decls], importing those of [Types.imported] and [imports]
    they name. *)
@@ -78,7 +95,7 @@ let file ~package ~imports decls =
       banner =
         Banner.lines ~from_:"the component schemas in protocol/specs/src"
           __FILE__;
-      file_annotations = [ opt_in ];
+      file_annotations = opt_in named;
       package;
       imports =
         List.filter

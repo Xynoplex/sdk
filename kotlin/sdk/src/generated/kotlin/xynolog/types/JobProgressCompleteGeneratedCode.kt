@@ -1,6 +1,5 @@
 // Generated from the component schemas in protocol/specs/src; do not edit.
 // Regenerate: make generate (codegen/lib/kotlin_sdk/kotlin_sdk.ml)
-@file:OptIn(kotlinx.serialization.ExperimentalSerializationApi::class, kotlin.ExperimentalStdlibApi::class)
 
 package xynolog.types
 
