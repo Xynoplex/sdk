@@ -50,6 +50,8 @@ def working_tree_digest() -> str:
 
 def files(language: str) -> list[tuple[Path, str, str]]:
     """Return source paths and package coordinate for a built language output."""
+    if language == "codegen":
+        return [(STATE / "codegen/xynolog-codegen", "codegen-binary", "xynolog-codegen")]
     version = sdk_version.version(language)
     if language == "typescript":
         config = json.loads((ROOT / "version.json").read_text())
@@ -99,6 +101,8 @@ def package_version(language: str, path: Path) -> str:
         with tarfile.open(path, "r:gz") as archive:
             metadata = next(m for m in archive.getmembers() if m.name.endswith("/PKG-INFO"))
             text = archive.extractfile(metadata).read().decode()
+    elif language == "codegen":
+        return SDK_COMMIT
     else:
         return sdk_version.version(language)
     match = re.search(r"(?m)^Version: (.+)$", text)
@@ -174,6 +178,7 @@ def write_bundle(languages: list[str], tree_digest: str, output: Path, staged: P
         "kotlin": "eclipse-temurin (version from kotlin/sdk/.java-version)",
         "ocaml": "ocaml/opam:debian-13-ocaml-5.5",
         "swift": f"swift:{(ROOT / 'swift/sdk/.swift-version').read_text().strip()}",
+        "codegen": "xynolog-ocaml-toolchain (ocaml/toolchain.json), linked statically",
     }
     release = sdk_version.config()
     verifier_source = ROOT / "scripts/verify-artifact-bundle.py"

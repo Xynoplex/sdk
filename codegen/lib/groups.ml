@@ -1,14 +1,16 @@
-(* Every generation group, by the name make generate and make check-generated
-   run it under. A group writes its files from the model, and refuses a spec
-   that breaks a rule its files rely on. [root] is the sdk checkout, for a
-   group that holds its files to what another generator wrote there. *)
+(* Every generation group, by the repository whose files it writes (its
+   target) and the name that repository's make generate and make
+   check-generated run it under. A group writes its files from the model,
+   and refuses a spec that breaks a rule its files rely on. [root] is the
+   target's checkout, whose protocol/specs/src the model reads, for a group
+   that reads or holds its files to what is there. *)
 
 type group = {
   name : string;
   files : root:string -> Spec.t -> (Output.file list, Decode.error list) result;
 }
 
-let all =
+let sdk =
   [
     { name = "bus"; files = Bus.files };
     { name = "required"; files = Required.files };
@@ -37,3 +39,15 @@ let all =
     { name = "kotlin-sdk"; files = Kotlin_sdk.files };
     { name = "csharp-sdk"; files = Csharp_sdk.files };
   ]
+
+let cli =
+  [
+    { name = "control"; files = Cli.Control.files };
+    { name = "stack"; files = Cli.Stack.files };
+    { name = "mcp-tools"; files = Cli.Mcp_tools.files };
+  ]
+
+type target = Sdk | Cli
+
+let targets = [ ("sdk", Sdk); ("cli", Cli) ]
+let of_target = function Sdk -> sdk | Cli -> cli

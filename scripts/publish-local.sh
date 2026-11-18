@@ -22,7 +22,7 @@ else
 fi
 for language in "${LANGUAGES[@]}"; do
   case "$language" in
-    typescript|python|rust|go|csharp|haskell|kotlin|ocaml|swift) ;;
+    typescript|python|rust|go|csharp|haskell|kotlin|ocaml|swift|codegen) ;;
     *) echo "Unknown SDK language: $language" >&2; exit 2 ;;
   esac
 done
@@ -110,6 +110,11 @@ for language in go csharp haskell kotlin ocaml swift; do
   fi
 done
 
+if has_language codegen; then
+  echo 'Building the generator in the OCaml toolchain container…'
+  bash "$ROOT/scripts/make-target.sh" codegen-binary "$STATE_ROOT/codegen"
+fi
+
 python3 "$ROOT/scripts/create-artifact-bundle.py" "${LANGUAGES[@]}"
 
 if [[ "$ALL_LANGUAGES" == true ]]; then
@@ -139,5 +144,6 @@ else
     kotlin) echo "Kotlin Maven artifacts are ready under: $STATE_ROOT/kotlin-maven" ;;
     ocaml) echo "OCaml package repository is ready under: $STATE_ROOT/opam-repo/repo" ;;
     swift) echo "Swift package archive is ready under: $STATE_ROOT/swift" ;;
+    codegen) echo "The generator is ready under: $STATE_ROOT/codegen" ;;
   esac
 fi
