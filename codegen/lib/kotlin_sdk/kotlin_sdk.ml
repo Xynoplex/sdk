@@ -42,6 +42,10 @@ let spec_of (spec : Spec.t) : (Types.spec, string) result =
         component_of_file = List.map (fun (name, file) -> (file, name)) components;
       }
 
+(* [spec_of], its refusal one of the gateway's document's. *)
+let refused message = [ { Decode.file = "openapi.json"; pointer = ""; message } ]
+let types_of spec = Result.map_error refused (spec_of spec)
+
 let opt_in =
   K.annotation
     ~args:
@@ -62,6 +66,23 @@ let file ~package ~imports decls =
     }
 
 let path package name = directory ^ "/" ^ String.map (function '.' -> '/' | c -> c) package ^ "/" ^ name ^ ".kt"
+
+(* A file of data, opening with [banner]: no opt-in, and the imports and
+   declarations it is given. *)
+let data_file ~banner ~package ~name ~imports decls =
+  { Output.path = path package name; text = K.text { banner; file_annotations = []; package; imports; decls } }
+
+(* A table's file, which [writer] (its [__FILE__]) writes from Protocol's
+   [from_]. *)
+let table ~from_ writer =
+  data_file ~banner:(Banner.kotlin_lines ~from_:("protocol/specs/src/" ^ from_) writer)
+
+(* What [write] writes, or the refusal it raises, made one of Protocol's
+   [from_]. *)
+let written ~from_ write =
+  match write () with
+  | written -> Ok written
+  | exception Names.Refused message -> Error [ { Decode.file = from_; pointer = ""; message } ]
 
 (* A file in the types' directory that no run writes: refused rather than
    removed, so the run that drops a schema names the file to delete with
@@ -93,7 +114,6 @@ let generate (spec : Spec.t) =
              generated.types)
 
 let files ~root (spec : Spec.t) =
-  let refused message = [ { Decode.file = "openapi.json"; pointer = ""; message } ] in
   Result.map_error refused
     (let* files = generate spec in
      let* () = stale ~root (List.map (fun (f : Output.file) -> f.path) files) in

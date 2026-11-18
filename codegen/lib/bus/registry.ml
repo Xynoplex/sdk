@@ -322,8 +322,9 @@ let named component name =
   | Some schema -> schema
   | None -> problem "names the schema %s, which Protocol does not have" name
 
-(* The schema a payload's schema refers to by "./<name>.json". *)
-let referred component (reference : Decode.reference) =
+(* The name of the component schema a payload's schema refers to by
+   "./<name>.json". *)
+let referred (reference : Decode.reference) =
   let target = reference.target in
   let n = String.length target in
   let name = if n > 7 then String.sub target 2 (n - 7) else "" in
@@ -334,18 +335,20 @@ let referred component (reference : Decode.reference) =
     && String.for_all
          (function 'A' .. 'Z' | 'a' .. 'z' | '0' .. '9' -> true | _ -> false)
          name
-  then named component name
+  then name
   else
     problem "a payload schema refers to %S, which names no component schema"
       target
 
-let rec stamps component (schema : Schema.t) =
-  let read =
-    match schema with
-    | Schema { ref_ = Some reference; _ } -> referred component reference
-    | schema -> schema
-  in
-  match read with
+(* The stamps [schema], the component [of_] or a schema within it, declares:
+   its own, each of its allOf's, and a union's, on which its members must
+   agree: a stamp is kept or dropped before a frame is read, so before it is
+   known which member the frame is. *)
+let rec stamps component ~of_ (schema : Schema.t) =
+  match schema with
+  | Schema { ref_ = Some reference; _ } ->
+      let name = referred reference in
+      stamps component ~of_:name (named component name)
   | Boolean_schema _ -> []
   | Schema s ->
       let own =
@@ -353,11 +356,30 @@ let rec stamps component (schema : Schema.t) =
           (fun name -> String.starts_with ~prefix:"_" name)
           (List.map fst (Option.value s.properties ~default:[]))
       in
+      let union members =
+        match
+          List.map
+            (fun member ->
+              List.sort_uniq String.compare (stamps component ~of_ member))
+            (Option.value members ~default:[])
+        with
+        | [] -> []
+        | first :: rest when List.for_all (( = ) first) rest -> first
+        | each ->
+            problem
+              "%s: its members do not declare the same stamps (%s), and a \
+               stamp is kept or dropped before it is known which member a \
+               frame is"
+              of_
+              (String.concat "; "
+                 (List.map
+                    (fun one -> "[" ^ String.concat ", " one ^ "]")
+                    each))
+      in
       own
-      @ List.concat_map (stamps component)
-          (List.concat_map
-             (fun members -> Option.value members ~default:[])
-             [ s.all_of; s.one_of; s.any_of ])
+      @ List.concat_map (stamps component ~of_)
+          (Option.value s.all_of ~default:[])
+      @ union s.one_of @ union s.any_of
 
 let required (schema : Schema.t) =
   match schema with
@@ -486,7 +508,7 @@ let derive ~component (reg : R.t) =
                   match (channel ch).payload with
                   | Schema { schema; _ } ->
                       List.sort_uniq String.compare
-                        (stamps component (named component schema))
+                        (stamps component ~of_:schema (named component schema))
                   | _ -> [])
                 [] ))
           reg.channel_order.event_map

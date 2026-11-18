@@ -1,7 +1,8 @@
 (* The required group: what each component schema requires of a value, the
    table every SDK holds a reply to before it reads it. Shape derives it, and
-   Event what an event on each bus channel is; Table, Typescript, Python and
-   Haskell write it; Go holds it to what package api declares. *)
+   Event what an event on each bus channel is; Table, Typescript, Python,
+   Haskell, Ocaml and Kotlin write it; Go holds it to what package api
+   declares. *)
 
 module Shape = Shape
 module Event = Event
@@ -11,6 +12,7 @@ module Python = Python
 module Haskell = Haskell
 module Go = Go
 module Ocaml = Ocaml
+module Kotlin = Kotlin
 
 let refusal file pointer message = { Decode.file; pointer; message }
 
@@ -124,12 +126,16 @@ let files ~root (spec : Spec.t) =
   let* http = collect (replies spec derivation) in
   match Go.check ~declared:(declared ~root) shapes with
   | [] ->
+      let* kotlin =
+        Kotlin_sdk.written ~from_:"openapi.json" (fun () -> Kotlin.file shapes)
+      in
       Ok
         (Table.files shapes
         @ [
             Typescript.file shapes;
             Python.file shapes;
             Haskell.file ~shapes ~channels ~http;
+            kotlin;
           ]
         @ Ocaml.files shapes)
   | refusals -> Error refusals

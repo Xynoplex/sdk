@@ -627,6 +627,45 @@ let derivations =
               "stamps" [ "_roles"; "_userId" ]
               (List.assoc "demo:happened" bus.stamps)
         | Error errors -> Alcotest.fail (String.concat "\n" errors));
+    case "a union whose members declare different stamps"
+      (refuses
+         ~schemas:
+           (with_schemas
+              [
+                ( "DemoEvent",
+                  {|{"oneOf":[{"$ref":"./Signed.json"},{"$ref":"./Plain.json"}]}|}
+                );
+                ("Signed", {|{"properties":{"_userId":{},"kind":{}}}|});
+                ("Plain", {|{"properties":{"kind":{}}}|});
+              ])
+         base
+         "/channelOrder/eventMap/3: DemoEvent: its members do not declare the \
+          same stamps ([_userId]; []), and a stamp is kept or dropped before \
+          it is known which member a frame is");
+    case "a union whose members declare the same stamps" (fun () ->
+        match
+          derived
+            ~schemas:
+              (with_schemas
+                 [
+                   ( "DemoEvent",
+                     {|{"anyOf":[{"$ref":"./Signed.json"},{"$ref":"./Also.json"}]}|}
+                   );
+                   ("Signed", {|{"properties":{"_userId":{},"kind":{}}}|});
+                   ("Also", {|{"properties":{"_userId":{}}}|});
+                 ])
+            base
+        with
+        | Ok bus ->
+            Alcotest.(check (list string))
+              "stamps" [ "_userId" ]
+              (List.assoc "demo:happened" bus.stamps)
+        | Error errors -> Alcotest.fail (String.concat "\n" errors));
+    case "an operation's reply on a resource's scope"
+      (refuses
+         (set [ "audience"; "scoped" ] (strings [ "demo:limits-result" ]) base)
+         "/audience: \"demo:limits-result\" belongs to an operation, so its \
+          audience is derived: remove it from audience.scoped");
     case "a payload schema referring to no component"
       (refuses
          ~schemas:

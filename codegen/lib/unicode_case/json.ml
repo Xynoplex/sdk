@@ -1,11 +1,6 @@
-(* The two properties as the C# and Kotlin SDKs read them as they build, one
-   copy in each. *)
+(* The two properties as the C# SDK reads them as it builds. *)
 
-let paths =
-  [
-    "csharp/sdk/generators/Xynolog.Generator/unicode-case.json";
-    "kotlin/sdk/src/codegen/unicode-case.json";
-  ]
+let paths = [ "csharp/sdk/generators/Xynolog.Generator/unicode-case.json" ]
 
 let comment ~version ~notice =
   Printf.sprintf

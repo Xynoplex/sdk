@@ -79,3 +79,8 @@
  (name kotlin_sdk)
  (modules kotlin_sdk)
  (libraries xynolog_codegen yojson alcotest))
+
+(test
+ (name kotlin_tables)
+ (modules kotlin_tables)
+ (libraries xynolog_codegen yojson alcotest))
