@@ -1,16 +1,17 @@
 {-# LANGUAGE OverloadedStrings #-}
+
 module Xynolog.Internal.Lifetime (Lifetime, newLifetime, start, run, close, isClosed) where
 
 import Control.Concurrent (ThreadId, myThreadId)
-import Control.Concurrent.Async (Async, AsyncCancelled(..), asyncThreadId, cancel, mapConcurrently_, race)
+import Control.Concurrent.Async (Async, AsyncCancelled (..), asyncThreadId, cancel, mapConcurrently_, race)
 import Control.Concurrent.STM
 import Control.Exception (SomeException, finally, fromException, mask, throwIO, try)
 import Control.Monad (unless, void, when)
-import qualified Data.Map.Strict as Map
+import Data.Map.Strict qualified as Map
 import Data.Text (Text)
 import OpenTelemetry.Context.ThreadLocal.Propagation (propagateContext, tracedAsync)
-import Xynolog.ErrorCodes (BusRequestCode(BusRequestClosed))
-import Xynolog.Errors (BusRequestError(..))
+import Xynolog.ErrorCodes (BusRequestCode (BusRequestClosed))
+import Xynolog.Errors (BusRequestError (..))
 
 data Lifetime = Lifetime (TVar Bool) (TVar Integer) (TVar (Map.Map Integer (ThreadId, IO ()))) (TMVar (Either SomeException ())) Text
 
@@ -32,14 +33,19 @@ start lifetime@(Lifetime _ counter children _ _) action = mask $ \restore -> do
     writeTVar counter (key + 1)
     pure key
   gate <- newEmptyTMVarIO
-  child <- tracedAsync ((atomically (takeTMVar gate) >> restore action)
-    `finally` atomically (modifyTVar' children (Map.delete key)))
+  child <-
+    tracedAsync
+      ( (atomically (takeTMVar gate) >> restore action)
+          `finally` atomically (modifyTVar' children (Map.delete key))
+      )
   accepted <- atomically $ do
     over <- isClosed lifetime
-    if over then pure False else do
-      modifyTVar' children (Map.insert key (asyncThreadId child, cancel child))
-      putTMVar gate ()
-      pure True
+    if over
+      then pure False
+      else do
+        modifyTVar' children (Map.insert key (asyncThreadId child, cancel child))
+        putTMVar gate ()
+        pure True
   if accepted then pure child else cancel child >> throwIO (closedError lifetime)
 
 run :: Lifetime -> IO result -> IO result

@@ -5,14 +5,14 @@ import Control.Concurrent.STM
 import Control.Exception (SomeAsyncException, SomeException, bracket, catch, finally, fromException, mask, onException, throwIO)
 import Control.Monad (forever, unless, void)
 import Data.Text (Text)
-import qualified OpenTelemetry.Context as Context
+import OpenTelemetry.Context qualified as Context
 import OpenTelemetry.Context.ThreadLocal (attachContext, detachContext)
 import OpenTelemetry.Context.ThreadLocal.Propagation (propagateContext)
-import Xynolog.Errors (BusRequestError(..))
-import Xynolog.ErrorCodes (BusRequestCode(BusRequestClosed))
-import qualified Xynolog.Internal.Lifetime as Lifetime
-import qualified Xynolog.Internal.Transport as Local
-import Xynolog.Types (BusFrame(..))
+import Xynolog.ErrorCodes (BusRequestCode (BusRequestClosed))
+import Xynolog.Errors (BusRequestError (..))
+import Xynolog.Internal.Lifetime qualified as Lifetime
+import Xynolog.Internal.Transport qualified as Local
+import Xynolog.Types (BusFrame (..))
 
 -- A state unit owns its workers. Unexpected failures remain observable when
 -- that owner is joined, rather than disappearing with an unobserved Async.
@@ -43,9 +43,10 @@ start (Tasks lifetime failed _ _) action = Lifetime.start lifetime (action `catc
       throwIO problem
 
 fork :: Tasks -> IO () -> IO ()
-fork tasks action = void (start tasks action) `catch` \problem -> do
-  over <- atomically (closed tasks)
-  if over && busRequestErrorCode problem == BusRequestClosed then pure () else throwIO problem
+fork tasks action =
+  void (start tasks action) `catch` \problem -> do
+    over <- atomically (closed tasks)
+    if over && busRequestErrorCode problem == BusRequestClosed then pure () else throwIO problem
 
 -- Queue creation in invocation order. Once the producer knows its job id it
 -- releases the next creation, while continuing to own the current job. A
@@ -54,7 +55,7 @@ submit :: Tasks -> (IO () -> IO ()) -> IO ()
 submit tasks@(Tasks _ _ _ queue) action = do
   accepted <- newEmptyTMVarIO
   inherited <- propagateContext (action (void (atomically (tryPutTMVar accepted ()))))
-  atomically (closed tasks >>= \over -> unless over (writeTQueue queue (inherited,accepted)))
+  atomically (closed tasks >>= \over -> unless over (writeTQueue queue (inherited, accepted)))
 
 -- Subscription installation is synchronous. The queue retains ordering
 -- across channels, with the publishing context attached only while handling
@@ -65,7 +66,7 @@ listen tasks@(Tasks _ _ finalizers _) bus channels consume = do
   detach <- Local.tapLocal bus $ \frame context -> do
     over <- closed tasks
     case frame of
-      Local.Arrived delivered -> unless (over || busFrameChannel (Local.wireFrame delivered) `notElem` channels) (writeTQueue queue (delivered,context))
+      Local.Arrived delivered -> unless (over || busFrameChannel (Local.wireFrame delivered) `notElem` channels) (writeTQueue queue (delivered, context))
       Local.FrameRejected _ -> pure ()
   let work = forever $ do
         (frame, context) <- atomically (readTQueue queue)
@@ -81,6 +82,7 @@ listen tasks@(Tasks _ _ finalizers _) bus channels consume = do
   if release then detach else pure ()
 
 dispose :: Tasks -> IO ()
-dispose (Tasks lifetime failed finalizers _) = Lifetime.close lifetime `finally` do
-  actions <- atomically (flushTQueue finalizers)
-  foldr finally (readTVarIO failed >>= maybe (pure ()) throwIO) actions
+dispose (Tasks lifetime failed finalizers _) =
+  Lifetime.close lifetime `finally` do
+    actions <- atomically (flushTQueue finalizers)
+    foldr finally (readTVarIO failed >>= maybe (pure ()) throwIO) actions

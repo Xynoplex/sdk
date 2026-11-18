@@ -1,24 +1,27 @@
 {-# LANGUAGE OverloadedStrings #-}
+
 module ResourceCases (resourceCases) where
 
 import Control.Monad (forM_, unless)
-import Data.Aeson (Value(..), eitherDecodeStrict', toJSON, fromJSON, Result(..))
-import qualified Data.Aeson.Key as Key
-import qualified Data.Aeson.KeyMap as KM
-import qualified Data.ByteString as Bytes
+import Data.Aeson (Result (..), Value (..), eitherDecodeStrict', fromJSON, toJSON)
+import Data.Aeson.Key qualified as Key
+import Data.Aeson.KeyMap qualified as KM
+import Data.ByteString qualified as Bytes
 import Data.Foldable (toList)
 import Data.Text (Text)
-import qualified Data.Text as Text
-import qualified Xynolog.Internal.Required as Required
-import qualified Xynolog.Resources as Resources
-import Xynolog.Types (ResourceDescriptor)
+import Data.Text qualified as Text
 import System.FilePath ((</>))
+import Xynolog.Internal.Required qualified as Required
+import Xynolog.Resources qualified as Resources
+import Xynolog.Types (ResourceDescriptor)
 
 member :: Text -> Value -> Value
 member name (Object fields) = maybe (error ("missing resource case member " ++ Text.unpack name)) id (KM.lookup (Key.fromText name) fields)
 member _ _ = error "resource case is not an object"
+
 require :: String -> Bool -> IO ()
 require label good = unless good (ioError (userError label))
+
 resourceCases :: FilePath -> IO ()
 resourceCases root = do
   table <- Bytes.readFile (root </> "protocol/specs/src/resources/reader-cases.json") >>= either (ioError . userError) pure . eitherDecodeStrict'

@@ -1,19 +1,26 @@
 module Xynolog.Internal.Running
-  ( Running, ConsumptionError(..), newRunning, await, withReports
-  ) where
+  ( Running,
+    ConsumptionError (..),
+    newRunning,
+    await,
+    withReports,
+  )
+where
 
-import OpenTelemetry.Context.ThreadLocal.Propagation (tracedWithAsync)
 import Control.Concurrent.STM
 import Control.Exception (Exception, SomeException, bracket_, mask, throwIO, try)
 import Control.Monad (unless)
 import Control.Monad.IO.Class (liftIO)
+import OpenTelemetry.Context.ThreadLocal.Propagation (tracedWithAsync)
 import Streaming (Of, Stream)
-import qualified Streaming.Prelude as Stream
+import Streaming.Prelude qualified as Stream
 
 data ConsumptionError = AlreadyConsumed | ObservationEnded deriving (Eq, Show)
+
 instance Exception ConsumptionError
 
 data Running report result = Running (TVar Bool) ((report -> IO ()) -> IO result)
+
 data Item report result = Report report | Ended (Either SomeException result)
 
 newRunning :: ((report -> IO ()) -> IO result) -> IO (Running report result)
@@ -43,12 +50,14 @@ withReports running@(Running _ start) consume = mask $ \restore -> do
         pure ()
       readItem = atomically $ do
         over <- readTVar stopped
-        if over then throwSTM ObservationEnded else do
-          item <- readTQueue queue
-          case item of
-            Report _ -> pure ()
-            Ended _ -> writeTVar stopped True >> flushTQueue queue >> pure ()
-          pure item
+        if over
+          then throwSTM ObservationEnded
+          else do
+            item <- readTQueue queue
+            case item of
+              Report _ -> pure ()
+              Ended _ -> writeTVar stopped True >> flushTQueue queue >> pure ()
+            pure item
       reports = do
         item <- liftIO readItem
         case item of

@@ -1,40 +1,46 @@
-{-# LANGUAGE DataKinds, GADTs, OverloadedStrings, ScopedTypeVariables #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+
 module HeldCases (heldCases, heldClockCases) where
 
+import ClockCases (Scenario (..), clockCasesFor)
 import Control.Concurrent (yield)
-import Control.Concurrent.Async (async, cancel, wait, concurrently, withAsync)
+import Control.Concurrent.Async (async, cancel, concurrently, wait, withAsync)
 import Control.Concurrent.MVar
 import Control.Concurrent.STM
 import Control.Exception (IOException, bracket, try)
 import Control.Monad (forM_, unless, when)
-import Data.Aeson (FromJSON, Result(..), Value(..), fromJSON, toJSON)
-import qualified Data.Aeson.KeyMap as KM
-import qualified Data.List.NonEmpty as NE
-import qualified Data.Map.Strict as Map
-import qualified Data.Set as Set
+import ControlledTime qualified as Time
+import Data.Aeson (FromJSON, Result (..), Value (..), fromJSON, toJSON)
+import Data.Aeson.KeyMap qualified as KM
+import Data.List.NonEmpty qualified as NE
+import Data.Map.Strict qualified as Map
+import Data.Set qualified as Set
 import Data.Text (Text)
-import qualified Data.Text as T
-import qualified Xynolog.Bus as Bus
-import Xynolog.Channels hiding (JobComplete, JobCheckpoint)
-import qualified Xynolog.Channels as Ch
-import qualified Xynolog.ErrorCodes as Code
-import Xynolog.Errors (BusRequestError(..))
-import Xynolog.Timing (errorsKeptForFirstReaderCount)
-import qualified Xynolog.Timing.Settings as Timing
-import qualified Xynolog.Transport as Transport
-import Xynolog.Types
-import qualified Xynolog.Worker as Worker
-import Xynolog.Worker.Types
-import qualified Streaming.Prelude as Stream
+import Data.Text qualified as T
+import Streaming.Prelude qualified as Stream
 import System.Timeout (timeout)
-import ClockCases (Scenario(..), clockCasesFor)
-import qualified ControlledTime as Time
+import Xynolog.Bus qualified as Bus
+import Xynolog.Channels hiding (JobCheckpoint, JobComplete)
+import Xynolog.Channels qualified as Ch
+import Xynolog.ErrorCodes qualified as Code
+import Xynolog.Errors (BusRequestError (..))
+import Xynolog.Timing (errorsKeptForFirstReaderCount)
+import Xynolog.Timing.Settings qualified as Timing
+import Xynolog.Transport qualified as Transport
+import Xynolog.Types
+import Xynolog.Worker qualified as Worker
+import Xynolog.Worker.Types
 
 require :: String -> Bool -> IO ()
 require label value = unless value (ioError (userError label))
-decode :: FromJSON value => Value -> IO value
+
+decode :: (FromJSON value) => Value -> IO value
 decode value = case fromJSON value of Error message -> ioError (userError message); Success parsed -> pure parsed
-fixture :: FromJSON value => Map.Map Text Value -> Text -> IO value
+
+fixture :: (FromJSON value) => Map.Map Text Value -> Text -> IO value
 fixture values name = maybe (ioError (userError ("missing schema fixture " ++ T.unpack name))) decode (Map.lookup name values)
 
 data Rig = Rig Worker.Claims Transport.TransportInput (TQueue BusFrame) (TVar Integer) (TVar Bool)
@@ -51,13 +57,23 @@ rig fixtures action = do
         when (broken && busFrameChannel frame /= channelName JobClaim) (ioError (userError "send refused"))
         atomically (writeTQueue sent frame)
         pure Nothing
-      clockOptions = Bus.BusOptions (readTVarIO clock) (\due -> atomically (readTVar clock >>= check . (>= due)))
-        (atomically $ do modifyTVar' ids (+1); number <- readTVar ids; pure (T.pack (show number)))
-      timing = Timing.protocolSettings { Timing.jobClaimTimeoutMs = 100, Timing.markCommitTimeoutMs = 10,
-        Timing.heldJobStallMs = 1000, Timing.heldJobStallCheckMs = 100 }
+      clockOptions =
+        Bus.BusOptions
+          (readTVarIO clock)
+          (\due -> atomically (readTVar clock >>= check . (>= due)))
+          (atomically $ do modifyTVar' ids (+ 1); number <- readTVar ids; pure (T.pack (show number)))
+      timing =
+        Timing.protocolSettings
+          { Timing.jobClaimTimeoutMs = 100,
+            Timing.markCommitTimeoutMs = 10,
+            Timing.heldJobStallMs = 1000,
+            Timing.heldJobStallCheckMs = 100
+          }
       configuration = Worker.WorkerOptions (filterValue NE.:| []) clockOptions timing (pure "2026-11-05T00:00:00Z")
-  bracket (Transport.newTransport (Transport.TransportOptions "local://worker" (Set.fromList channelNames) send (pure ())))
-    (Transport.dispose . fst) $ \(carrier,input) -> do
+  bracket
+    (Transport.newTransport (Transport.TransportOptions "local://worker" (Set.fromList channelNames) send (pure ())))
+    (Transport.dispose . fst)
+    $ \(carrier, input) -> do
       Transport.setState input Transport.Connecting
       Transport.setState input Transport.Open
       bracket (Worker.newClaims carrier configuration) Worker.stop $ \worker -> action (Rig worker input sent clock failEmission)
@@ -76,7 +92,7 @@ reply (Rig _ input _ _ _) request channel payload = case encodePayload channel p
 record :: Map.Map Text Value -> IO JobRunning
 record fixtures = do
   value <- fixture fixtures "JobRunning"
-  pure value { jobRunningMetadata = (jobRunningMetadata value) { jobMetadataType = JobTypeMark, jobMetadataRetryCount = 1, jobMetadataMaxRetries = 3 } }
+  pure value {jobRunningMetadata = (jobRunningMetadata value) {jobMetadataType = JobTypeMark, jobMetadataRetryCount = 1, jobMetadataMaxRetries = 3}}
 
 acquire :: Map.Map Text Value -> Rig -> IO (Worker.HeldJob MarkJobResult)
 acquire fixtures rigValue@(Rig worker _ _ _ _) = do
@@ -85,7 +101,7 @@ acquire fixtures rigValue@(Rig worker _ _ _ _) = do
   running <- record fixtures
   reply rigValue asked JobClaimed (JobClaimedResult running)
   answer <- wait reader
-  case answer of Just (Worker.HeldMark job) -> pure job; _ -> ioError (userError "claim did not hand over a typed mark job")
+  case answer of { Just (Worker.HeldMark job) -> pure job; _ -> ioError (userError "claim did not hand over a typed mark job") }
 
 -- | A job the worker accepts is announced as queued.
 announceJob :: Map.Map Text Value -> Rig -> IO ()
@@ -97,8 +113,18 @@ announceJob fixtures (Rig _ input _ _ _) = do
 
 heldCases :: Map.Map Text Value -> IO ()
 heldCases fixtures = do
-  result <- timeout 15000000 (lifecycle fixtures >> commits fixtures >> failedSettle fixtures >> stopping fixtures >> idleAndStalled fixtures >> yieldJob fixtures
-    >> refusalsKept fixtures >> stallsKept fixtures)
+  result <-
+    timeout
+      15000000
+      ( lifecycle fixtures
+          >> commits fixtures
+          >> failedSettle fixtures
+          >> stopping fixtures
+          >> idleAndStalled fixtures
+          >> yieldJob fixtures
+          >> refusalsKept fixtures
+          >> stallsKept fixtures
+      )
   require "held-job liveness deadline expired" (result == Just ())
   putStrLn "PASS worker lifecycle, cancellation, commit evidence, atomic settlement, scoped shutdown, and what refusals and stalls keep for a first reader"
 
@@ -176,7 +202,7 @@ failedSettle fixtures = rig fixtures $ \rigValue@(Rig _ _ _ _ broken) -> do
 stopping :: Map.Map Text Value -> IO ()
 stopping fixtures = rig fixtures $ \rigValue@(Rig worker _ _ _ _) -> do
   job <- acquire fixtures rigValue
-  ((),()) <- concurrently (Worker.stop worker) (Worker.stop worker)
+  ((), ()) <- concurrently (Worker.stop worker) (Worker.stop worker)
   said <- outgoing rigValue (channelName JobFail)
   payload <- decode (Object (busFramePayloadAdditionalProperties (busFramePayload said)))
   require "stop did not fail the held job for retry" (jobFailCommandWillRetry payload == Just True && jobFailCommandFailureClass payload == Nothing)
@@ -196,7 +222,7 @@ idleAndStalled fixtures = rig fixtures $ \rigValue@(Rig worker input _ clock _) 
   firstClaim <- outgoing rigValue (channelName JobClaim)
   let waitStamp = do
         stats <- Worker.vitals worker
-        case workerVitalsLastQueuedEventAt stats of Nothing -> yield >> waitStamp; Just _ -> pure ()
+        case workerVitalsLastQueuedEventAt stats of { Nothing -> yield >> waitStamp; Just _ -> pure () }
   announceJob fixtures rigValue
   waitStamp
   reply rigValue firstClaim JobClaimFailed (CommandError (Just CommandErrorCodeNoneU2d_pending) Nothing "empty" KM.empty)
@@ -243,7 +269,8 @@ refusalsKept fixtures = do
       reasons = ["claim " <> T.pack (show serial) <> " refused" | serial <- [1 .. fromInteger errorsKeptForFirstReaderCount + beyond]]
   refusing fixtures reasons $ \worker -> do
     heard <- Worker.refused worker (\given -> Worker.stop worker >> Stream.toList_ given)
-    require ("the first reader was not given the latest refusals, in order: " ++ show (map claimRefusalMessage heard))
+    require
+      ("the first reader was not given the latest refusals, in order: " ++ show (map claimRefusalMessage heard))
       (map claimRefusalMessage heard == drop beyond reasons)
   refusing fixtures ["refused before the stop"] $ \worker -> do
     Worker.stop worker
@@ -259,7 +286,7 @@ stalling fixtures jobs body = rig fixtures $ \rigValue@(Rig worker _ _ clock _) 
   forM_ jobs $ \identity -> do
     reader <- async (Worker.next worker)
     asked <- outgoing rigValue (channelName JobClaim)
-    let named = running { jobRunningMetadata = (jobRunningMetadata running) { jobMetadataId = identity } }
+    let named = running {jobRunningMetadata = (jobRunningMetadata running) {jobMetadataId = identity}}
     reply rigValue asked JobClaimed (JobClaimedResult named)
     received <- wait reader
     job <- case received of Just (Worker.HeldMark value) -> pure value; _ -> ioError (userError "claim did not hand over a typed mark job")
@@ -278,7 +305,8 @@ stallsKept fixtures = do
   jobs <- mapM (\serial -> decode (String ("job-" <> T.pack (show serial)))) [1 .. fromInteger errorsKeptForFirstReaderCount + beyond]
   stalling fixtures jobs $ \worker -> do
     heard <- Worker.stalled worker (\given -> Worker.stop worker >> Stream.toList_ given)
-    require ("the first reader was not given the latest stalls, in order: " ++ show (map heldJobStallJobId heard))
+    require
+      ("the first reader was not given the latest stalls, in order: " ++ show (map heldJobStallJobId heard))
       (map heldJobStallJobId heard == drop beyond jobs)
   quiet <- decode (String "job-stalled-before-the-stop")
   stalling fixtures [quiet] $ \worker -> do
@@ -291,7 +319,7 @@ yieldJob fixtures = rig fixtures $ \rigValue@(Rig worker _ _ _ _) -> do
   reader <- async (Worker.next worker)
   asked <- outgoing rigValue (channelName JobClaim)
   running <- record fixtures
-  let asYield = running { jobRunningMetadata = (jobRunningMetadata running) { jobMetadataType = JobTypeYield } }
+  let asYield = running {jobRunningMetadata = (jobRunningMetadata running) {jobMetadataType = JobTypeYield}}
   reply rigValue asked JobClaimed (JobClaimedResult asYield)
   received <- wait reader
   case received of
@@ -307,20 +335,23 @@ yieldJob fixtures = rig fixtures $ \rigValue@(Rig worker _ _ _ _) -> do
 heldClockCases :: FilePath -> Map.Map Text Value -> IO [Text]
 heldClockCases root fixtures = clockCasesFor root ["heldJobStall"] $ \clock _ -> do
   sent <- newTQueueIO
-  ids <- newTVarIO (0::Integer)
+  ids <- newTVarIO (0 :: Integer)
   stalls <- newTVarIO 0
   accepts <- fixture fixtures "JobFilter"
   running <- record fixtures
   progressValue <- fixture fixtures "JobProgress"
-  let options = Bus.BusOptions (Time.now clock) (Time.waitUntil clock)
-        (atomically (modifyTVar' ids (+1) >> T.pack . show <$> readTVar ids))
+  let options =
+        Bus.BusOptions
+          (Time.now clock)
+          (Time.waitUntil clock)
+          (atomically (modifyTVar' ids (+ 1) >> T.pack . show <$> readTVar ids))
       config = Worker.WorkerOptions (accepts NE.:| []) options Timing.protocolSettings (pure "2026-11-05T00:00:00Z")
       send frame = atomically (writeTQueue sent frame) >> pure Nothing
-  (carrier,input) <- Transport.newTransport (Transport.TransportOptions "local://clock-worker" (Set.fromList channelNames) send (pure ()))
+  (carrier, input) <- Transport.newTransport (Transport.TransportOptions "local://clock-worker" (Set.fromList channelNames) send (pure ()))
   Transport.setState input Transport.Connecting
   Transport.setState input Transport.Open
   worker <- Worker.newClaims carrier config
-  observer <- async (Worker.stalled worker (Stream.mapM_ (\_ -> atomically (modifyTVar' stalls (+1)))))
+  observer <- async (Worker.stalled worker (Stream.mapM_ (\_ -> atomically (modifyTVar' stalls (+ 1)))))
   reader <- async (Worker.next worker)
   asked <- atomically (readTQueue sent)
   require "clock worker did not claim" (busFrameChannel asked == channelName JobClaim)
@@ -329,5 +360,9 @@ heldClockCases root fixtures = clockCasesFor root ["heldJobStall"] $ \clock _ ->
     _ -> ioError (userError "clock claim reply is not an object")
   received <- wait reader
   job <- case received of Just (Worker.HeldMark value) -> pure value; _ -> ioError (userError "clock worker did not receive its held job")
-  pure (Scenario (Worker.progress job progressValue) (readTVarIO stalls)
-    (cancel observer >> Worker.stop worker >> Transport.dispose carrier))
+  pure
+    ( Scenario
+        (Worker.progress job progressValue)
+        (readTVarIO stalls)
+        (cancel observer >> Worker.stop worker >> Transport.dispose carrier)
+    )
