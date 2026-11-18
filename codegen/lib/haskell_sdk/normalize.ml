@@ -145,34 +145,52 @@ let layer : Schema.t -> Schema.schema outcome = function
   | Schema s -> Ok s
   | Boolean_schema _ -> Error "expected a schema object"
 
+(* A schema expanded as the whole that is normalized, and as a part of an
+   [allOf]: a part that refers to a schema is that schema expanded, with the
+   part's own keywords on top. Each is given the references the expansion is
+   within, so a schema that is a part of itself is refused. *)
+type expansion = {
+  whole : string list -> Schema.schema outcome;
+  part : string list -> Schema.schema outcome;
+}
+
 (* [schema] with its [allOf] merged, each reference in it found by [find]. *)
 let normalize ~find schema =
-  let rec expand trail schema =
-    let* s = layer schema in
-    match s.all_of with
-    | None -> Ok s
-    | Some parts ->
-        let* merged =
-          List.fold_left
-            (fun merged p ->
-              let* merged = merged in
-              let* p = part trail p in
-              merge merged p)
-            (Ok Schema.empty) parts
+  let rec expand schema =
+    Schema.para
+      ~boolean:(fun b ->
+        let refused _ = layer (Schema.Boolean_schema b) in
+        { whole = refused; part = refused })
+      ~schema:(fun l ->
+        let s = Schema.map fst l in
+        let whole trail =
+          match l.all_of with
+          | None -> Ok s
+          | Some parts ->
+              let* merged =
+                List.fold_left
+                  (fun merged (_, p) ->
+                    let* merged = merged in
+                    let* p = p.part trail in
+                    merge merged p)
+                  (Ok Schema.empty) parts
+              in
+              merge merged { s with all_of = None }
         in
-        merge merged { s with all_of = None }
-  and part trail p =
-    let* s = layer p in
-    match s.ref_ with
-    | Some r ->
-        let* () =
-          if List.mem r.target trail then
-            Error ("cyclic schema intersection: " ^ r.target)
-          else Ok ()
+        let part trail =
+          match s.ref_ with
+          | Some r ->
+              let* () =
+                if List.mem r.target trail then
+                  Error ("cyclic schema intersection: " ^ r.target)
+                else Ok ()
+              in
+              let* target = find (referenced r) in
+              let* expanded = (expand target).whole (r.target :: trail) in
+              merge expanded { s with ref_ = None }
+          | None -> whole trail
         in
-        let* target = find (referenced r) in
-        let* expanded = expand (r.target :: trail) target in
-        merge expanded { s with ref_ = None }
-    | None -> expand trail p
+        { whole; part })
+      schema
   in
-  expand [] schema
+  (expand schema).whole []

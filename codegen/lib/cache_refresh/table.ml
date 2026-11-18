@@ -130,13 +130,18 @@ let derive context (table : T.t) =
           if file = target then Some (name, schema) else None)
         context.components
   in
-  let rec type_of : Schema.t -> value_type option = function
-    | Schema { ref_ = Some reference; _ } ->
-        Option.map (fun (name, _) -> Component name) (component_at reference)
-    | Schema { type_ = Some [ Array ]; items = Some items; _ } ->
-        Option.map (fun t -> List t) (type_of items)
-    | Schema { type_ = Some [ String ]; _ } -> Some Text
-    | _ -> None
+  let type_of : Schema.t -> value_type option =
+    Schema.cata
+      ~boolean:(fun _ -> None)
+      ~schema:(function
+        | { ref_ = Some reference; _ } ->
+            Option.map
+              (fun (name, _) -> Component name)
+              (component_at reference)
+        | { type_ = Some [ Array ]; items = Some item; _ } ->
+            Option.map (fun t -> List t) item
+        | { type_ = Some [ String ]; _ } -> Some Text
+        | _ -> None)
   in
   let value ~persisted (reference : Decode.reference) =
     let refuse message =
