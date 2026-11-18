@@ -2,13 +2,12 @@
 /**
  * @xynolog/core's heavy subpaths must stay out of the root entry.
  *
- * `.` is what every browser consumer imports. Two modules are deliberately
- * reachable only by their own subpath because of what they drag in:
+ * `.` is what every browser consumer imports. One module is deliberately
+ * reachable only by its own subpath because of what it drags in:
  *
- *   src/openapi.ts        — ~1.3 MB of generated validators
  *   src/testing/issuer.ts — `jose`, for signing a test issuer's tokens
  *
- * A re-export of either from the root index would pull that weight into every
+ * A re-export of it from the root index would pull that weight into every
  * bundle, and nothing would fail: the build would succeed, the tests would
  * pass, and the browser would simply get bigger. This is the gate that makes
  * that loud instead of silent.
@@ -17,7 +16,6 @@ import { readFileSync } from 'fs';
 
 const ROOT_INDEX = 'typescript/core/src/index.ts';
 const FORBIDDEN = [
-  { module: './openapi', subpath: '@xynolog/core/openapi', why: 'pulls ~1.3 MB of generated validators' },
   { module: './testing/issuer', subpath: '@xynolog/core/testing/issuer', why: 'pulls `jose` into every browser bundle' },
 ];
 

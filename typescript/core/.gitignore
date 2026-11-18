@@ -1,5 +1,2 @@
-# Generated from the spec by the build: what typescript/scripts/generators/
-# generates
-/src/generated/
 # tsc's declarations, which the build bundles and then deletes
 /dist-types/

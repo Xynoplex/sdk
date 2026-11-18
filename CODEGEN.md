@@ -14,7 +14,7 @@ Generation runs as part of building the SDK artifact, with language-native tools
 
 | SDK | Protocol-derived output | Generation point |
 | --- | --- | --- |
-| TypeScript | OpenAPI types, validators, registries, limits, and client tables | Package build; emitted npm packages carry built output |
+| TypeScript | OpenAPI types, registries, limits, and client tables | codegen/ writes committed source (`make check-generated`); emitted npm packages carry built output |
 | Python | OpenAPI models and protocol tables | codegen/ writes committed source (`make check-generated`); wheel carries generated models |
 | Go | API types, REST client and registry tables | codegen/ writes committed source (`make check-generated`); module artifact carries generated Go source |
 | Rust | Wire types, bus operations, and protocol tables | codegen/ writes committed source (`make check-generated`); the crate carries it |
