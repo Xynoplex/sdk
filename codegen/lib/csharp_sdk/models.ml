@@ -35,31 +35,20 @@ let element = C.T (json "JsonElement")
 let generic name args =
   C.Generic ("global::System.Collections.Generic." ^ name, args)
 
-(* [in-process] and [subjectClaim] as [InProcess] and [SubjectClaim], each
-   [+] spelled Plus; a name a digit would begin begins Value. *)
-let pascal text =
-  let b = Buffer.create (String.length text) in
-  let start = ref true in
-  String.iter
-    (fun c ->
-      match c with
-      | 'A' .. 'Z' | 'a' .. 'z' | '0' .. '9' ->
-          Buffer.add_char b (if !start then Char.uppercase_ascii c else c);
-          start := false
-      | '+' ->
-          Buffer.add_string b "Plus";
-          start := true
-      | _ -> start := true)
-    text;
-  let name = Buffer.contents b in
+(* [name] as C# takes it: [Value] before a name that is empty or would
+   begin with a digit. *)
+let identifier name =
   if name = "" || match name.[0] with '0' .. '9' -> true | _ -> false then
     "Value" ^ name
   else name
 
+(* The constant an enumeration's [value] is. *)
+let enum_constant value = identifier (Naming.variant value)
+
 (* The C# name of [owner]'s property [property]: no member is named as its
    type is. *)
 let field_name owner property =
-  let field = pascal property in
+  let field = identifier (Text.pascal property) in
   if field = owner then field ^ "Value" else field
 
 (* The schema a reference names, by its file's name. *)
@@ -184,12 +173,12 @@ and inline state owner property (schema, json) =
   match Hashtbl.find_opt state.inlined key with
   | Some known -> C.T (types ^ known)
   | None ->
-      let rec free name =
-        if Hashtbl.mem state.definitions name || Hashtbl.mem state.written name
-        then free (name ^ "Value")
-        else name
+      let name =
+        Naming.inline
+          ~defined:(fun n ->
+            Hashtbl.mem state.definitions n || Hashtbl.mem state.written n)
+          owner property
       in
-      let name = free (owner ^ pascal property) in
       Hashtbl.replace state.inlined key name;
       let d = { schema; json } in
       define state name d;
@@ -283,7 +272,7 @@ and enum name ~attribute values =
             refuse "%s: an enumeration contains a non-string." name)
       values
   in
-  let constants = List.map pascal members in
+  let constants = List.map enum_constant members in
   if
     List.length (List.sort_uniq String.compare constants) <> List.length members
   then refuse "%s has colliding C# enumeration names." name;
@@ -302,7 +291,7 @@ and enum name ~attribute values =
                     args = [ Str member ];
                   };
                 ],
-                pascal member ))
+                enum_constant member ))
             members;
       };
   ]
@@ -447,7 +436,8 @@ and union state name (members, written) =
     List.mapi
       (fun i member ->
         let v = variant (merged state name member) in
-        (pascal v ^ "Case", type_of state name v (member, nth i written)))
+        ( identifier (Text.pascal v) ^ "Case",
+          type_of state name v (member, nth i written) ))
       members
   in
   let names = List.map fst cases in

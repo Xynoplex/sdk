@@ -21,18 +21,18 @@ let pieces text =
     (String.map (fun c -> if is_alphanumeric c then c else ' ') text)
   |> List.filter (( <> ) "")
 
-let pascal text =
-  String.concat "" (List.map String.capitalize_ascii (pieces text))
+let leading_underscores text =
+  let rec count i =
+    if i < String.length text && text.[i] = '_' then count (i + 1) else i
+  in
+  count 0
+
+let is_digit = function '0' .. '9' -> true | _ -> false
 
 (* A member's name: the wire name's words in lowerCamelCase, its leading
    underscores kept. *)
 let member_name text =
-  let lead =
-    let rec count i =
-      if i < String.length text && text.[i] = '_' then count (i + 1) else i
-    in
-    count 0
-  in
+  let lead = leading_underscores text in
   match pieces (String.sub text lead (String.length text - lead)) with
   | [] -> if lead > 0 then text else "value"
   | first :: rest ->
@@ -40,12 +40,17 @@ let member_name text =
         String.make lead '_' ^ first
         ^ String.concat "" (List.map String.capitalize_ascii rest)
       in
-      if lead = 0 && name.[0] >= '0' && name.[0] <= '9' then "value" ^ name
-      else name
+      if lead = 0 && is_digit name.[0] then "value" ^ name else name
 
+(* An enumeration's case: its value's name ([Naming.variant]) in
+   lowerCamelCase, as Swift takes it: its leading underscores kept, and
+   [value] before a name that is empty or would begin with a digit. *)
 let enum_case text =
-  String.uncapitalize_ascii
-    (member_name (Text.replace_all ~sub:"+" ~by:" Plus " text))
+  let lead = leading_underscores text in
+  let name =
+    String.make lead '_' ^ String.uncapitalize_ascii (Naming.variant text)
+  in
+  if lead = 0 && (name = "" || is_digit name.[0]) then "value" ^ name else name
 
 (* Expressions the declarations share *)
 
@@ -191,8 +196,7 @@ let rec named t n =
   S.Named n
 
 and inline t ~modifiers owner part s =
-  let rec free name = if defined t name then free (name ^ "Value") else name in
-  let n = free (owner ^ pascal part) in
+  let n = Naming.inline ~defined:(defined t) owner part in
   let declared = declaration_with t ~modifiers n s in
   (match Hashtbl.find_opt t.written n with
   | Some (Some old) when old <> declared ->
@@ -610,7 +614,7 @@ and union t ~modifiers n members s =
         let part =
           match (raw, tag) with
           | D.Ref r, _ -> r
-          | _, Some tag -> pascal tag
+          | _, Some tag -> Text.pascal tag
           | _ when is_type Schema.String resolved -> "Text"
           | _ when is_type Schema.Array resolved -> "List"
           | _
@@ -636,7 +640,7 @@ and union t ~modifiers n members s =
                   properties
               in
               match constants with
-              | tag :: _ -> pascal tag
+              | tag :: _ -> Text.pascal tag
               | [] when is_type Schema.Object resolved -> "Object"
               | [] -> refuse "%s: union member %d has no stable name" n index)
         in

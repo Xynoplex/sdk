@@ -268,7 +268,9 @@ let error_codes models ~shapes ~table (codes : Error_codes.Table.t) ~wire_codes
   let enums =
     List.map
       (fun (family, listed) ->
-        string_enumeration [ "public" ] (M.pascal family ^ "ErrorCode") listed)
+        string_enumeration [ "public" ]
+          (Text.pascal family ^ "ErrorCode")
+          listed)
       (List.sort (fun (a, _) (b, _) -> String.compare a b) (families table))
   in
   let returns (code : Error_codes.Table.code) =
@@ -1030,7 +1032,7 @@ let kept models ~shapes (refresh : Tables.Client_refresh.t)
           Some (q.name, key, stored_type models ~of_:q.name q.value.target))
       refresh.queries
   in
-  let kept_name q = "Kept" ^ M.pascal q in
+  let kept_name q = "Kept" ^ Text.pascal q in
   let version =
     let document = stored.cache_document in
     let items = document.properties.entries.items in

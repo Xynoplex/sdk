@@ -276,9 +276,6 @@ let rec named st name =
     Hashtbl.replace st.written name items);
   ty name
 
-(* The name of the type of [owner]'s property [property], when its schema
-   is written in place: the two names together, and [Value] after them for
-   as long as a component schema already has that name. *)
 and inline_name st owner property =
   Naming.inline ~defined:(defined st) owner property
 
