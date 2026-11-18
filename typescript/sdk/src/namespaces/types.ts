@@ -45,7 +45,13 @@ import type {
   UploadObservable,
   YieldJobCompletion,
 } from '../awaitable';
-import type { components, EventMap, FrameRefusal, paths } from '@xynolog/core';
+import type {
+  components,
+  EventMap,
+  FrameRefusal,
+  HealthCheckResponse,
+  StatusResponse,
+} from '@xynolog/core';
 import type { ClaimOptions, ClaimsObservable } from '../claims';
 import type {
   ResourceId,
@@ -77,28 +83,6 @@ type CloneResourceWithTokenResponse =
   components['schemas']['CloneResourceWithTokenResponse'];
 type ProtectedResourceMetadata =
   components['schemas']['ProtectedResourceMetadata'];
-
-// ── Response type helpers (extract JSON body from OpenAPI path types) ────────
-
-export type ResponseContent<T> = T extends {
-  responses: { 200: { content: { 'application/json': infer R } } };
-}
-  ? R
-  : T extends {
-        responses: { 201: { content: { 'application/json': infer R } } };
-      }
-    ? R
-    : T extends {
-          responses: { 202: { content: { 'application/json': infer R } } };
-        }
-      ? R
-      : never;
-
-export type RequestContent<T> = T extends {
-  requestBody?: { content: { 'application/json': infer R } };
-}
-  ? R
-  : never;
 
 // ── Domain-specific input types ─────────────────────────────────────────────
 
@@ -581,6 +565,6 @@ export interface AuthNamespace {
  * System — what the knowledge base says about itself (health, status).
  */
 export interface SystemNamespace {
-  healthCheck(): Promise<ResponseContent<paths['/api/health']['get']>>;
-  status(): Promise<ResponseContent<paths['/api/status']['get']>>;
+  healthCheck(): Promise<HealthCheckResponse>;
+  status(): Promise<StatusResponse>;
 }

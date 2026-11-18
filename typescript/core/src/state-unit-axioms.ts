@@ -1,6 +1,6 @@
 /**
  * Executable enforcement of the StateUnit pattern — the runtime twin of
- * `docs/builder/STATE-UNITS.md`. The `StateUnit` interface's own comment notes
+ * https://github.com/xynolog/docs/blob/main/builder/STATE-UNITS.md. The `StateUnit` interface's own comment notes
  * the pattern is convention; this file makes it executable.
  *
  * `assertStateUnitAxioms(spec)` runs every applicable axiom against a factory in

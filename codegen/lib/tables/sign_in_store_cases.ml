@@ -94,18 +94,12 @@ let renewal =
         gives = Decode.required o "gives" (Decode.nullable Decode.string);
       })
 
-type t = {
-  comment : string;
-  run_by : Case_table.run_by;
-  cases : case list;
-  renewals : renewal list;
-}
+type t = { comment : string; cases : case list; renewals : renewal list }
 
 let decode =
   Decode.obj (fun o : t ->
       {
         comment = Decode.required o "$comment" Decode.string;
-        run_by = Decode.required o "runBy" Case_table.run_by;
         cases = Decode.required o "cases" (Decode.list case);
         renewals = Decode.required o "renewals" (Decode.list renewal);
       })

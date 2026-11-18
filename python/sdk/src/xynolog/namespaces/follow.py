@@ -62,6 +62,7 @@ from xynolog.types import (
     JobReportProgressCommand,
     JobStatusRequest,
     JobStatusResponse,
+    JobStoredResultEmpty,
     JobType,
 )
 
@@ -212,7 +213,7 @@ def _learned[C: JobCompleteCommand](completion: type[C], delegated: JobType, sta
     """
     stated: dict[str, JsonValue] = {"resourceId": resource_id, "jobId": status.job_id, "jobType": status.type}
     # A job completed without a result is stored with an empty one: an object that holds nothing.
-    if not (status.result is None or isinstance(status.result, dict)):
+    if not (status.result is None or isinstance(status.result, JobStoredResultEmpty)):
         stated["result"] = written(status.result)
     read = as_read(completion, stated)
     if isinstance(read, Fault):

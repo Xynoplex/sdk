@@ -242,14 +242,6 @@ let pair first second cursor =
   | `List [ a; b ] -> (first (child cursor "0" a), second (child cursor "1" b))
   | _ -> wrong_length 2 cursor
 
-let triple first second third cursor =
-  match cursor.json with
-  | `List [ a; b; c ] ->
-      ( first (child cursor "0" a),
-        second (child cursor "1" b),
-        third (child cursor "2" c) )
-  | _ -> wrong_length 3 cursor
-
 type nothing = |
 
 let nothing cursor = refuse cursor "a value where the model knows none"

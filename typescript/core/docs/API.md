@@ -2,30 +2,27 @@
 
 What `@xynolog/core` exports, area by area, with an example of each. The small utilities have a guide of their own: [Utilities](Utilities.md).
 
-## OpenAPI Types (Generated)
+## Schema Types (Generated)
 
-TypeScript types generated from the OpenAPI specification - the **source of truth** for all API schemas:
+A type for each of the spec's component schemas - the **source of truth** for all API schemas:
 
 ```typescript
-import type { components, paths, operations } from '@xynolog/core';
+import type { components } from '@xynolog/core';
 
 type Annotation = components['schemas']['Annotation'];
 type Resource = components['schemas']['ResourceDescriptor'];
 type CreateAnnotationRequest = components['schemas']['CreateAnnotationRequest'];
 ```
 
-These types are generated during the build process:
-```bash
-npm run generate:openapi  # Bundles spec → generates types.ts
-```
+`src/types.ts` is generated from the spec's component schemas and committed;
+`make generate` writes it again after a change to the spec.
 
-The spec's validators and limits come from the same bundle, on the
-`@xynolog/core/openapi` subpath:
+The spec's limits come from the same spec, on the `@xynolog/core/openapi`
+subpath:
 
 ```typescript
-import { validators, operationLimits, itemLimits } from '@xynolog/core/openapi';
+import { operationLimits, itemLimits } from '@xynolog/core/openapi';
 
-validators.BusEmitRequest(body);                          // Ajv, compiled at build
 operationLimits['POST /bus/emit'].claimSeconds;           // an operation's x-xynolog-limits
 itemLimits['BusSubscribeRequest.pendingReplies'];         // a property's maxItems
 ```
@@ -174,7 +171,7 @@ canvas pixels happens in the browser. `textUnder` counts a word as covered at
 with ~2pt of headroom between lines, a hand-drawn box that overshoots by less
 than the height of a comma would otherwise pull in its neighbours.
 
-See **[ANCHORING.md](../../../../docs/architecture/ANCHORING.md)** for how a map is derived,
+See **[ANCHORING.md](https://github.com/xynolog/docs/blob/main/architecture/ANCHORING.md)** for how a map is derived,
 stored, served, and turned into a selector.
 
 ## DID Utilities

@@ -514,16 +514,14 @@ private let callsByName:
     "system.healthCheck": { client, _ in try await encoded(#require(client.system).healthCheck()) },
     "system.status": { client, _ in try await encoded(#require(client.system).status()) },
   ]
-@Test func everyReachedNamespaceRunsEverySurfaceCase() async throws {
+@Test func everyNamespaceRunsEverySurfaceCase() async throws {
   let table = try Spec.read("client/surface.json").object
   var reached: Set<String> = []
   for value in try required(table, "namespaces").array {
     let namespace = try value.object
-    if try namespace["notYetReached"]?.object["swift"] != nil { continue }
     let name = try required(namespace, "namespace").text
     for method in try required(namespace, "methods").array {
       let row = try method.object
-      if try row["notYetReached"]?.object["swift"] != nil { continue }
       let key = name + "." + (try required(row, "method").text)
       reached.insert(key)
       let invoke = callsByName[key]

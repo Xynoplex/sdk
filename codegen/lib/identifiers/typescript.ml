@@ -2,8 +2,7 @@
    (typescript/core/src/identifiers.ts): for each, its branded type, a guard
    and the one constructor that makes it, of the kind its rule makes. What the
    kinds share is the SDK's own (typescript/core/src/identifier.ts). The
-   brands themselves are written into openapi-typescript's types.ts by
-   generate-identifiers.mjs, until types.ts is the generator's own. *)
+   brands themselves are the typescript-types group's, in types.ts. *)
 
 module T = Typescript_syntax
 

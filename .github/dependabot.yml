@@ -87,11 +87,6 @@ updates:
         patterns: ["*"]
       typescript:
         patterns: ["*"]
-    ignore:
-      # openapi-typescript generates the types through TypeScript's JavaScript
-      # API, which TypeScript 7 does not have: core's build fails on it.
-      - dependency-name: typescript
-        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: uv
     labels: ["dependencies"]

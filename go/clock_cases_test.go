@@ -61,10 +61,8 @@ type clockGiven struct {
 func readClockCases(t *testing.T) []clockCase {
 	t.Helper()
 	var table struct {
-		Comment       string              `json:"$comment"`
-		RunBy         map[string][]string `json:"runBy"`
-		NotYetReached map[string]string   `json:"notYetReached"`
-		Cases         []clockCase         `json:"cases"`
+		Comment string      `json:"$comment"`
+		Cases   []clockCase `json:"cases"`
 	}
 	strictly(t, readSpec(t, "client", "clock-cases.json"), &table)
 	if len(table.Cases) == 0 {

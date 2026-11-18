@@ -20,7 +20,7 @@ It has the same namespaces, methods and behaviour as the
 [TypeScript SDK](../../typescript/sdk/README.md), the [Python SDK](../../python/sdk/README.md)
 the [Go SDK](../../go/README.md) and the [Kotlin SDK](../../kotlin/sdk/README.md), and the five are held to the same
 [conformance suite](https://github.com/xynolog/protocol/blob/main/conformance/sdk/README.md). New to Xynolog?
-The [Introduction](../../../docs/builder/INTRODUCTION.md) explains the domain
+The [Introduction](https://github.com/xynolog/docs/blob/main/builder/INTRODUCTION.md) explains the domain
 and the ideas the API falls out of. Its code is TypeScript, and the ideas
 are this crate's too.
 
@@ -41,7 +41,7 @@ Two crates, because the client does no networking of its own:
 
 A client is built and used inside a [Tokio](https://tokio.rs) runtime, and
 speaks to a running knowledge base. The
-[Quick Start](../../../docs/builder/QUICK-START.md) sets one up on your own
+[Quick Start](https://github.com/xynolog/docs/blob/main/builder/QUICK-START.md) sets one up on your own
 machine.
 
 | Feature | What it adds |
@@ -99,7 +99,7 @@ when the client has a gateway. What each flow means is in
 From a signed-in client, this ingests a paper, has a model mark the concepts
 it mentions, gathers the context around it, and generates a summary grounded
 in that context. Those are the
-[Quick Start](../../../docs/builder/QUICK-START.md)'s last two steps, from code,
+[Quick Start](https://github.com/xynolog/docs/blob/main/builder/QUICK-START.md)'s last two steps, from code,
 and the two that come next. [Connect](#connect) is how a client comes to be
 signed in.
 
@@ -162,7 +162,7 @@ base for the next participant, person or agent, to read and build on.
 
 Where to go from here:
 
-- The [Developer Guide](../../../docs/builder/DEVELOPER-GUIDE.md) has each of
+- The [Developer Guide](https://github.com/xynolog/docs/blob/main/builder/DEVELOPER-GUIDE.md) has each of
   these steps as a recipe, and the ones after them: reading, searching,
   annotating by hand, reacting to what others do, and testing. Its code is
   TypeScript, and [the table below](#from-the-typescript-sdk) maps each shape
@@ -490,7 +490,7 @@ so does dropping it.
 | `HoverDwell` | nothing: it says an annotation is hovered once the pointer has rested on it for a delay, and none the moment the pointer leaves | `enter`, `leave` |
 | `SearchPipeline<T>` | a query and the results of the query it settled on | `set_query` |
 
-The ideas behind them are in [State Units](../../../docs/builder/STATE-UNITS.md).
+The ideas behind them are in [State Units](https://github.com/xynolog/docs/blob/main/builder/STATE-UNITS.md).
 
 ## Ending things: `close` and `Drop`
 

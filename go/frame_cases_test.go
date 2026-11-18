@@ -66,9 +66,8 @@ func readFrameCases(t *testing.T) []frameCase {
 		t.Fatal(err)
 	}
 	var table struct {
-		Comment string              `json:"$comment"`
-		RunBy   map[string][]string `json:"runBy"`
-		Cases   []frameCase         `json:"cases"`
+		Comment string      `json:"$comment"`
+		Cases   []frameCase `json:"cases"`
 	}
 	// A case that states what this runner does not know fails it.
 	decoder := json.NewDecoder(bytes.NewReader(text))

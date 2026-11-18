@@ -39,11 +39,9 @@ import (
 // registryErrorsCases is the table. Each code is read as the generated
 // vocabulary's type, whose constants are errors/codes.json's codes.
 type registryErrorsCases struct {
-	Comment       string               `json:"$comment"`
-	NotYetReached map[string]string    `json:"notYetReached"`
-	RunBy         map[string][]string  `json:"runBy"`
-	Cases         []registryErrorsCase `json:"cases"`
-	Closing       []registryClosingRow `json:"closing"`
+	Comment string               `json:"$comment"`
+	Cases   []registryErrorsCase `json:"cases"`
+	Closing []registryClosingRow `json:"closing"`
 }
 
 type registryErrorsCase struct {

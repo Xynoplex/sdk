@@ -28,7 +28,7 @@
 // # The state-unit axioms
 //
 // AssertStateUnitAxioms holds a state unit to what every unit promises
-// (docs/builder/STATE-UNITS.md): Close is idempotent and total, the unit is
+// (https://github.com/xynolog/docs/blob/main/builder/STATE-UNITS.md): Close is idempotent and total, the unit is
 // inert after it, every reader of what it hands out sees that end, it closes
 // nothing it was given and everything it made, it hands out no writer, and
 // two units never move each other. One call per unit, from that unit's tests:

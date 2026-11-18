@@ -1,9 +1,9 @@
 (* Every object component the gateway's document names, as a record of the
    OCaml SDK (ocaml/sdk/lib/records.ml), and every one that is a
    discriminated union of them as a variant. An object composed by allOf is
-   its parts' members together, a member two parts state being read raw; a
-   string or a boolean member is read as one, and every other kept as its raw
-   JSON, numbers exactly. A union's every branch is one of the records.
+   what its parts merge to ([Normalize]); a string or a boolean member is
+   read as one, and every other kept as its raw JSON, numbers exactly, an
+   allOf among them. A union's every branch is one of the records.
    Records are read through ocaml/sdk/lib/record_reader.ml, and the module
    has no interface, so each record's type is stated once. *)
 
@@ -42,78 +42,27 @@ let member_of = function
 
 exception Refused of Decode.error
 
-(* The object a schema of [file] is, its references followed, or none. *)
-let object_shape (spec : Spec.t) =
-  let rec shape schema : file:string -> seen:string list -> composed option =
-    Schema.para
-      ~boolean:(fun _ ~file:_ ~seen:_ -> None)
-      ~schema:(fun s ~file ~seen ->
-        match s.ref_ with
-        | Some reference ->
-            let target, _ = Decode.resolve reference in
-            if List.mem target seen then
-              raise
-                (Refused
-                   {
-                     Decode.file;
-                     pointer = reference.pointer;
-                     message = "is an object composed of itself";
-                   });
-            shape
-              (List.assoc target spec.schemas)
-              ~file:target ~seen:(target :: seen)
-        | None -> (
-            let own =
-              if s.type_ = Some [ Object ] then
-                Some
-                  {
-                    properties =
-                      List.map
-                        (fun (n, (m, _)) -> (n, member_of m))
-                        (Option.value ~default:[] s.properties);
-                    required = Option.value ~default:[] s.required;
-                  }
-              else None
-            in
-            match s.all_of with
-            | None -> own
-            | Some parts ->
-                let parts =
-                  List.map (fun (_, part) -> part ~file ~seen) parts
-                in
-                if List.mem None parts then None
-                else
-                  let parts = List.filter_map Fun.id parts in
-                  let all =
-                    match own with None -> parts | Some o -> o :: parts
-                  in
-                  let properties =
-                    List.fold_left
-                      (fun acc part ->
-                        List.fold_left
-                          (fun acc (name, m) ->
-                            if List.mem_assoc name acc then
-                              List.map
-                                (fun (n, v) ->
-                                  if n = name then (n, Raw_member) else (n, v))
-                                acc
-                            else acc @ [ (name, m) ])
-                          acc part.properties)
-                      [] all
-                  in
-                  let required =
-                    List.fold_left
-                      (fun acc part ->
-                        List.fold_left
-                          (fun acc n ->
-                            if List.mem n acc then acc else acc @ [ n ])
-                          acc part.required)
-                      [] all
-                  in
-                  Some { properties; required }))
-      schema
+(* The object a schema of [file] is, its [allOf] merged ([Normalize]), or
+   none. *)
+let object_shape (spec : Spec.t) ~file schema =
+  let find (r : Decode.reference) =
+    let target, _ = Decode.resolve r in
+    match List.assoc_opt target spec.schemas with
+    | Some s -> Ok s
+    | None -> Error ("$ref " ^ r.target ^ " names no schema")
   in
-  fun ~file ~seen schema -> shape schema ~file ~seen
+  match Normalize.normalize ~find schema with
+  | Error message -> raise (Refused { Decode.file; pointer = ""; message })
+  | Ok { type_ = Some [ Object ]; properties; required; _ } ->
+      Some
+        {
+          properties =
+            List.map
+              (fun (n, m) -> (n, member_of m))
+              (Option.value ~default:[] properties);
+          required = Option.value ~default:[] required;
+        }
+  | Ok _ -> None
 
 type record = { name : string; file : string; shape : composed }
 
@@ -136,7 +85,7 @@ let derive (spec : Spec.t) =
     let records =
       List.filter_map
         (fun (name, file, schema) ->
-          match object_shape spec ~file ~seen:[ file ] schema with
+          match object_shape spec ~file schema with
           | Some shape when shape.properties <> [] -> Some { name; file; shape }
           | _ -> None)
         components

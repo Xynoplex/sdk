@@ -17,13 +17,12 @@
  * well a scan was read stays an open question). Enforced by `tsc --noEmit`.
  */
 import { describe, it, expect } from 'vitest';
-import type { components, paths } from '../types';
+import type { components } from '../types';
 
 // A reader reaches the store only by the content read, so the wire shape
-// this pins is the ROUTE's body.
+// this pins is the schema the ROUTE answers with.
 type Outcome = components['schemas']['ExtractionOutcome'];
-type Answer =
-  paths['/resources/{id}/anchored-text']['get']['responses'][200]['content']['application/json'];
+type Answer = components['schemas']['AnchoredTextAnswer'];
 
 /**
  * Axioms A2 and A3 of job-result-types.test.ts, for THIS union. Both members

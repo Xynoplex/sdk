@@ -14,8 +14,7 @@ let every_byte lead =
   Buffer.contents out
 
 let table cases =
-  Printf.sprintf {|{"$comment":"c","runBy":{"ocaml":["test"]},"cases":[%s]}|}
-    (String.concat "," cases)
+  Printf.sprintf {|{"$comment":"c","cases":[%s]}|} (String.concat "," cases)
 
 let decoded encoding labels =
   Printf.sprintf {|{"encoding":%s,"labels":[%s],"bytes":"","text":""}|}

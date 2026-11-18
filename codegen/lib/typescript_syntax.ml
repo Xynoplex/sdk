@@ -36,12 +36,15 @@ type key = Ident of string | Quoted of string
 type type_ =
   | T_name of string
   | T_str of string
+  | T_int of int
+  | T_bool of bool
   | T_index of type_ * type_  (** [t[k]] *)
   | T_generic of string * type_ list
   | T_union of type_ list  (** On one line. *)
   | T_cases of case list  (** A case a line, each behind its [|]. *)
   | T_intersection of type_ list
   | T_object of layout * member list
+  | T_index_signature of type_  (** [{ [key: string]: t }] *)
   | T_keyof of type_
   | T_typeof of string
   | T_paren of type_
@@ -313,6 +316,8 @@ let binary = function
 let rec type_ ~depth = function
   | T_name name -> checked name
   | T_str text -> literal text
+  | T_int n -> string_of_int n
+  | T_bool b -> string_of_bool b
   | T_index (t, k) -> type_ ~depth t ^ "[" ^ type_ ~depth k ^ "]"
   | T_generic (name, args) ->
       checked name ^ "<"
@@ -334,6 +339,7 @@ let rec type_ ~depth = function
            cases)
   | T_intersection ts -> String.concat " & " (List.map (type_ ~depth) ts)
   | T_object (layout, members) -> object_type ~depth layout members
+  | T_index_signature t -> "{ [key: string]: " ^ type_ ~depth t ^ " }"
   | T_keyof t -> "keyof " ^ type_ ~depth t
   | T_typeof name -> "typeof " ^ checked name
   | T_paren t -> "(" ^ type_ ~depth t ^ ")"

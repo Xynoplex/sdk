@@ -1,0 +1,264 @@
+(* coverage_census.exe SDK: Case_coverage names every case table of the pinned
+   Protocol and no other, and the SDKs the Makefile's LANGUAGES names, in its
+   order; and for each table and SDK, either tests this checkout has under the
+   SDK's directory that each name the table's path, or a reason. A case table
+   is a table of the model whose file name ends in cases.json (specs/README.md,
+   "Case tables"). Surface_coverage names only items the pinned Protocol's
+   client surface has, each once, with each SDK that lacks it once and a
+   reason; that an SDK has an item it names nowhere is its own surface test's
+   to hold. The readers annotations/reader-cases.json names are the readers of
+   the surface's annotations module that no SDK lacks. SDK is the checkout's
+   root. *)
+
+open Xynolog_codegen
+
+let root = Sys.argv.(1)
+let read path = In_channel.with_open_bin path In_channel.input_all
+
+let contains text part =
+  let n = String.length text and m = String.length part in
+  let rec from i = i + m <= n && (String.sub text i m = part || from (i + 1)) in
+  from 0
+
+let duplicates names =
+  List.sort compare names
+  |> List.fold_left
+       (fun (previous, found) name ->
+         ( Some name,
+           if previous = Some name && not (List.mem name found) then
+             name :: found
+           else found ))
+       (None, [])
+  |> snd |> List.rev
+
+let prefix = "LANGUAGES := "
+
+let languages =
+  read (Filename.concat root "Makefile")
+  |> String.split_on_char '\n'
+  |> List.find_map (fun line ->
+      if String.starts_with ~prefix line then
+        Some
+          (String.sub line (String.length prefix)
+             (String.length line - String.length prefix)
+          |> String.split_on_char ' '
+          |> List.filter (( <> ) ""))
+      else None)
+
+let spec =
+  match Spec.load (Filename.concat root "protocol/specs/src") with
+  | Error errors ->
+      List.iter (fun e -> prerr_endline (Decode.error_to_string e)) errors;
+      exit 1
+  | Ok spec -> spec
+
+let case_tables =
+  List.filter
+    (fun file -> String.ends_with ~suffix:"cases.json" file)
+    spec.table_files
+
+let named = List.map fst Case_coverage.tables
+
+let sdk_refusals =
+  let names = List.map Coverage_sdk.name Coverage_sdk.all in
+  match languages with
+  | None -> [ "the Makefile states no LANGUAGES" ]
+  | Some languages when languages <> names ->
+      [
+        Printf.sprintf
+          "Coverage_sdk.all names %s, and the Makefile's LANGUAGES %s"
+          (String.concat " " names)
+          (String.concat " " languages);
+      ]
+  | Some _ -> []
+
+let table_refusals =
+  List.map
+    (Printf.sprintf "%s: Case_coverage names it more than once")
+    (duplicates named)
+  @ List.filter_map
+      (fun table ->
+        if List.mem table named then None
+        else
+          Some
+            (Printf.sprintf
+               "%s: a case table of the pinned Protocol that Case_coverage \
+                does not name"
+               table))
+      case_tables
+  @ List.filter_map
+      (fun table ->
+        if List.mem table case_tables then None
+        else
+          Some
+            (Printf.sprintf
+               "%s: Case_coverage names it, and the pinned Protocol has no \
+                such case table"
+               table))
+      named
+
+let coverage_refusals table sdk =
+  let where = Printf.sprintf "%s, %s" table (Coverage_sdk.name sdk) in
+  match (List.assoc table Case_coverage.tables) sdk with
+  | Case_coverage.Absent why | Case_coverage.Not_yet_reached why ->
+      if String.trim why = "" then [ where ^ ": states no reason" ] else []
+  | Case_coverage.Run_by [] -> [ where ^ ": names no test" ]
+  | Case_coverage.Run_by tests ->
+      List.map
+        (Printf.sprintf "%s: names %s more than once" where)
+        (duplicates tests)
+      @ List.concat_map
+          (fun test ->
+            let path = Filename.concat root test in
+            if
+              not
+                (String.starts_with ~prefix:(Coverage_sdk.name sdk ^ "/") test)
+            then
+              [
+                Printf.sprintf "%s: %s is not under %s/" where test
+                  (Coverage_sdk.name sdk);
+              ]
+            else if not (Sys.file_exists path && not (Sys.is_directory path))
+            then [ Printf.sprintf "%s: %s is not in the checkout" where test ]
+            else if not (contains (read path) table) then
+              [ Printf.sprintf "%s: %s does not name %s" where test table ]
+            else [])
+          tests
+
+module Surface = Tables.Client_surface
+
+let module_member_name : Surface.module__member -> string = function
+  | Reader m -> m.member
+  | Function m -> m.member
+  | Type m -> m.member
+  | Constant m -> m.member
+
+(* Every item of the pinned Protocol's surface that Surface_coverage can name. *)
+let surface_items =
+  let surface = spec.tables.client_surface in
+  List.concat_map
+    (fun (m : Surface.module_) ->
+      Surface_coverage.Module m.module_
+      :: List.map
+           (fun member ->
+             Surface_coverage.Module_member
+               (m.module_, module_member_name member))
+           m.members)
+    surface.modules
+  @ List.concat_map
+      (fun (w : Surface.worker_item) ->
+        List.map
+          (fun (member : Surface.member) ->
+            Surface_coverage.Worker_member (w.handed, member.member))
+          w.members)
+      surface.worker
+  @ List.concat_map
+      (fun (u : Surface.state_unit) ->
+        List.map
+          (fun (member : Surface.state_unit_member) ->
+            Surface_coverage.State_unit_member (u.unit, member.member))
+          u.members)
+      surface.state_units
+  @ List.map
+      (fun (member : Surface.wire_member) ->
+        Surface_coverage.Wire_member member.member)
+      surface.wire.members
+
+let item_name = function
+  | Surface_coverage.Module m -> "module " ^ m
+  | Module_member (m, member) -> Printf.sprintf "module %s's %s" m member
+  | Worker_member (handed, member) ->
+      Printf.sprintf "the worker's %s's %s" handed member
+  | State_unit_member (unit, member) ->
+      Printf.sprintf "state unit %s's %s" unit member
+  | Wire_member member -> "wire's " ^ member
+
+let lacked = List.map fst Surface_coverage.lacking
+
+let surface_refusals =
+  List.map
+    (fun item ->
+      Printf.sprintf "%s: Surface_coverage names it more than once"
+        (item_name item))
+    (duplicates lacked)
+  @ List.concat_map
+      (fun (item, lacks) ->
+        let where = item_name item in
+        (if List.mem item surface_items then []
+         else
+           [ where ^ ": Surface_coverage names it, and the surface has none" ])
+        @ (if lacks = [] then [ where ^ ": names no SDK" ] else [])
+        @ List.map
+            (fun sdk ->
+              Printf.sprintf "%s: names %s more than once" where
+                (Coverage_sdk.name sdk))
+            (duplicates (List.map fst lacks))
+        @ List.filter_map
+            (fun (sdk, lack) ->
+              match lack with
+              | Surface_coverage.Absent why | Not_yet_reached why ->
+                  if String.trim why = "" then
+                    Some
+                      (Printf.sprintf "%s, %s: states no reason" where
+                         (Coverage_sdk.name sdk))
+                  else None)
+            lacks)
+      Surface_coverage.lacking
+
+(* The annotations module's readers, and its is-functions, which read too. *)
+let reader_refusals =
+  let every_sdk =
+    List.find
+      (fun (m : Surface.module_) -> m.module_ = "annotations")
+      spec.tables.client_surface.modules
+    |> fun m ->
+    List.filter_map
+      (fun (member : Surface.module__member) ->
+        let name = module_member_name member in
+        let reads =
+          match member with
+          | Reader _ -> true
+          | Function _ ->
+              String.length name > 2
+              && String.sub name 0 2 = "is"
+              && Char.uppercase_ascii name.[2] = name.[2]
+          | Type _ | Constant _ -> false
+        in
+        if
+          reads
+          && not
+               (List.mem_assoc
+                  (Surface_coverage.Module_member ("annotations", name))
+                  Surface_coverage.lacking)
+        then Some name
+        else None)
+      m.members
+  in
+  let table = spec.tables.annotations_reader_cases.readers in
+  if List.sort compare table = List.sort compare every_sdk then []
+  else
+    [
+      Printf.sprintf
+        "annotations/reader-cases.json's readers are %s, and the readers of \
+         the surface's annotations module that no SDK lacks %s"
+        (String.concat " " table)
+        (String.concat " " every_sdk);
+    ]
+
+let refusals =
+  sdk_refusals @ table_refusals
+  @ List.concat_map
+      (fun table -> List.concat_map (coverage_refusals table) Coverage_sdk.all)
+      (List.sort_uniq compare named)
+  @ surface_refusals @ reader_refusals
+
+let () =
+  List.iter prerr_endline refusals;
+  if refusals <> [] then exit 1;
+  Printf.printf
+    "PASS every case table is run by a named test or absent with a reason, in \
+     each SDK, and every surface item an SDK lacks is one Protocol has, with a \
+     reason: %d case tables, %d SDKs, %d surface items lacked\n"
+    (List.length case_tables)
+    (List.length Coverage_sdk.all)
+    (List.length Surface_coverage.lacking)

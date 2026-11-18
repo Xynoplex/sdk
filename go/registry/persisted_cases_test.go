@@ -44,11 +44,9 @@ type forgetRow struct {
 }
 
 type persistedCases struct {
-	Comment       string              `json:"$comment"`
-	NotYetReached map[string]string   `json:"notYetReached"`
-	RunBy         map[string][]string `json:"runBy"`
-	People        map[string]person   `json:"people"`
-	Keys          []struct {
+	Comment string            `json:"$comment"`
+	People  map[string]person `json:"people"`
+	Keys    []struct {
 		Why            string `json:"why"`
 		KbID           string `json:"kbId"`
 		Did            string `json:"did"`

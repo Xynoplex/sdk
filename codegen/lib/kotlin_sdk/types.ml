@@ -202,6 +202,23 @@ let schema spec name =
   | Some s -> node s
   | None -> refuse "the spec declares no schema %s" name
 
+(* What [what]'s node [n] means: one that states an [allOf], what its parts
+   merge to. Whether it admits null is the node's own: its merge is made from
+   what it states beside its null. *)
+let meant spec what = function
+  | Node { s = { all_of = Some _; _ } as s; null_form } -> (
+      match
+        Normalize.normalize
+          ~find:(fun r ->
+            match List.assoc_opt (component spec r) spec.definitions with
+            | Some s -> Ok s
+            | None -> Error ("the spec declares no schema " ^ r.target))
+          (Schema.Schema s)
+      with
+      | Ok s -> Node { s; null_form }
+      | Error message -> refuse "%s: %s" what message)
+  | n -> n
+
 type form =
   | Stated_nullable
   | Single of string
@@ -414,6 +431,19 @@ and node_of_items what n =
   | None -> refuse "%s: a list that states no items" what
 
 and declaration st name raw : written =
+  match (all_of raw, keywords raw) with
+  | Some _, Some s ->
+      plain_declaration st name
+        ~owner:
+          (Inherited.of_schemas
+             ~find:(fun n -> List.assoc n st.spec.definitions)
+             ~referenced:(component st.spec) name (Schema.Schema s))
+        (meant st.spec name raw)
+  | _ -> plain_declaration st name ~owner:(fun _ -> name) raw
+
+(* The declaration of [name], whose schema [raw] states no [allOf], each of
+   its properties named for the schema [owner] says states it. *)
+and plain_declaration st name ~owner raw : written =
   let about = doc (description raw) in
   match union raw with
   | Some members ->
@@ -425,38 +455,27 @@ and declaration st name raw : written =
       in
       union_declaration st name members told_apart about
   | None -> (
-      match (all_of raw, keywords raw) with
-      | Some members, Some s ->
-          object_declaration st name
-            ~owner:
-              (Inherited.of_schemas
-                 ~find:(fun n -> List.assoc n st.spec.definitions)
-                 ~referenced:(component st.spec) name (Schema.Schema s))
-            (merged st name members) about
-      | _ -> (
-          refuse_const name raw;
-          match enum raw with
-          | Some values ->
-              if type_name raw <> Some String then
-                refuse "%s: only string enumerations are generated" name;
-              enum_declaration name values about
-          | None ->
-              if is_string st raw then
-                Alias
-                  (K.Typealias
-                     { about; visibility = K.Public; name; type_ = t "String" })
-              else if type_name raw <> Some Object then
-                refuse "%s: a schema shape the generator does not know" name
-              else
-                object_declaration st name
-                  ~owner:(fun _ -> name)
-                  {
-                    stated_properties =
-                      Option.value ~default:[] (properties raw);
-                    required_names = required raw;
-                    beside = additional raw;
-                  }
-                  about))
+      refuse_const name raw;
+      match enum raw with
+      | Some values ->
+          if type_name raw <> Some String then
+            refuse "%s: only string enumerations are generated" name;
+          enum_declaration name values about
+      | None ->
+          if is_string st raw then
+            Alias
+              (K.Typealias
+                 { about; visibility = K.Public; name; type_ = t "String" })
+          else if type_name raw <> Some Object then
+            refuse "%s: a schema shape the generator does not know" name
+          else
+            object_declaration st name ~owner
+              {
+                stated_properties = Option.value ~default:[] (properties raw);
+                required_names = required raw;
+                beside = additional raw;
+              }
+              about)
 
 and enum_declaration name values about =
   let entries =
@@ -495,15 +514,16 @@ and enum_declaration name values about =
 and property st owner wire n required =
   let name = Names.property_name wire in
   let type_ = type_of st owner wire n in
-  let nullable = without_null (owner ^ "." ^ wire) n <> None in
-  let about = doc (description n) in
+  let meant = meant st.spec (owner ^ "." ^ wire) n in
+  let nullable = without_null (owner ^ "." ^ wire) meant <> None in
+  let about = doc (description meant) in
   let boxed =
     match name_of type_ with
     | Some k -> List.mem k st.spec.identifiers
     | None -> false
   in
   let form =
-    match (required, nullable, only_value n) with
+    match (required, nullable, only_value meant) with
     | true, true, _ -> Stated_nullable
     | true, false, Some only -> Single only
     | true, false, None -> Required
@@ -916,47 +936,6 @@ and identifier name n =
       ]
     K.Value_class name
 
-(* An [allOf]'s members as one object: the properties of each, a later
-   member's refining an earlier's in the earlier's place, and every member's
-   requirements. *)
-and merged st name members =
-  List.fold_left
-    (fun merged raw ->
-      let raw = node raw in
-      let member =
-        match reference st.spec raw with
-        | Some r -> schema st.spec r
-        | None -> raw
-      in
-      (match member with
-      | Node _ -> ()
-      | _ -> refuse "%s: an allOf member that is no object" name);
-      if type_name member <> Some Object then
-        refuse "%s: an allOf member that is not an object" name;
-      {
-        stated_properties =
-          List.fold_left
-            (fun properties (key, value) ->
-              if List.mem_assoc key properties then
-                List.map
-                  (fun (k, v) -> if k = key then (k, value) else (k, v))
-                  properties
-              else properties @ [ (key, value) ])
-            merged.stated_properties
-            (Option.value ~default:[] (properties member));
-        required_names =
-          merged.required_names
-          @ List.filter
-              (fun r -> not (List.mem r merged.required_names))
-              (required member);
-        beside =
-          (if merged.beside <> None || is_closed member then
-             Some (Boolean_schema false)
-           else None);
-      })
-    { stated_properties = []; required_names = []; beside = None }
-    members
-
 (* The value of [property] each member of a union states, when every member
    is an object that must state it, each admits one value, and no two admit
    the same. *)
@@ -965,9 +944,10 @@ and tags st property members =
     (fun found raw ->
       Option.bind found (fun found ->
           let member =
-            match reference st.spec raw with
-            | Some r -> schema st.spec r
-            | None -> raw
+            meant st.spec property
+              (match reference st.spec raw with
+              | Some r -> schema st.spec r
+              | None -> raw)
           in
           match Option.bind (property_node member property) only_value with
           | Some tag

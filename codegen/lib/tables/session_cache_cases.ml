@@ -515,8 +515,6 @@ let place =
 
 type t = {
   comment : string;
-  run_by : Case_table.run_by;
-  not_yet_reached : Case_table.explanations;
   cases : case list;
   writes : write list;
   refused_writes : refused_write list;
@@ -527,9 +525,6 @@ let decode =
   Decode.obj (fun o : t ->
       {
         comment = Decode.required o "$comment" Decode.string;
-        run_by = Decode.required o "runBy" Case_table.run_by;
-        not_yet_reached =
-          Decode.required o "notYetReached" Case_table.explanations;
         cases = Decode.required o "cases" (Decode.list case);
         writes = Decode.required o "writes" (Decode.list write);
         refused_writes =

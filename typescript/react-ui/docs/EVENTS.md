@@ -1,7 +1,7 @@
 # Event internals
 
 How to use the event buses from a React app is in the builder docs:
-[EVENTS.md](../../../../docs/builder/react-ui/EVENTS.md). This page holds what
+[EVENTS.md](https://github.com/xynolog/docs/blob/main/builder/react-ui/EVENTS.md). This page holds what
 only someone working on react-ui itself needs.
 
 ## The wire log in e2e tests

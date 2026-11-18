@@ -1127,12 +1127,12 @@ for word: both type checkers check them, and each one is run.
 Apache-2.0. See [LICENSE][license].
 
 [xynolog]: https://github.com/xynolog/sdk
-[introduction]: https://github.com/xynolog/sdk/blob/main/docs/builder/INTRODUCTION.md
-[quick-start]: https://github.com/xynolog/sdk/blob/main/docs/builder/QUICK-START.md
-[developer-guide]: https://github.com/xynolog/sdk/blob/main/docs/builder/DEVELOPER-GUIDE.md
-[skills]: https://github.com/xynolog/sdk/tree/main/docs/builder/skills
+[introduction]: https://github.com/xynolog/docs/blob/main/builder/INTRODUCTION.md
+[quick-start]: https://github.com/xynolog/docs/blob/main/builder/QUICK-START.md
+[developer-guide]: https://github.com/xynolog/docs/blob/main/builder/DEVELOPER-GUIDE.md
+[skills]: https://github.com/xynolog/docs/tree/main/builder/skills
 [flows]: https://github.com/xynolog/protocol/blob/main/contract/flows/README.md
-[reactive-model]: https://github.com/xynolog/sdk/blob/main/docs/builder/REACTIVE-MODEL.md
+[reactive-model]: https://github.com/xynolog/docs/blob/main/builder/REACTIVE-MODEL.md
 [protocol]: https://github.com/xynolog/protocol/blob/main/contract/README.md
 [transport-contract]: https://github.com/xynolog/protocol/blob/main/contract/TRANSPORT-CONTRACT.md
 [transport-http]: https://github.com/xynolog/protocol/blob/main/contract/TRANSPORT-HTTP.md
@@ -1159,7 +1159,7 @@ Apache-2.0. See [LICENSE][license].
 [telemetry]: https://github.com/xynolog/protocol/blob/main/specs/src/sdk-telemetry/telemetry.json
 [bus-log]: https://github.com/xynolog/protocol/blob/main/contract/EVENT-BUS.md#wire-format-the-bus-log
 [package]: https://github.com/xynolog/sdk/tree/main/python/sdk
-[testing]: https://github.com/xynolog/sdk/blob/main/docs/contributor/TESTING.md
-[state-units]: https://github.com/xynolog/sdk/blob/main/docs/builder/STATE-UNITS.md
+[testing]: https://github.com/xynolog/docs/blob/main/contributor/TESTING.md
+[state-units]: https://github.com/xynolog/docs/blob/main/builder/STATE-UNITS.md
 [state-units-cases]: https://github.com/xynolog/protocol/blob/main/specs/src/client/state-units.json
 [license]: https://github.com/xynolog/sdk/blob/main/LICENSE

@@ -2,11 +2,9 @@ package state_test
 
 // The state units against protocol/specs/src/client/state-units.json.
 //
-// Each case of a unit this SDK has is run as the table states it: its units
-// are built over a scripted transport, driven step by step, and held to what
-// the case says they hold and said. A unit that the names table
-// (protocol/specs/src/client/surface.json, `stateUnits`) says this SDK lacks has its
-// cases left unrun. What the table may say is held by
+// Each case is run as the table states it: its units are built over a
+// scripted transport, driven step by step, and held to what the case says they
+// hold and said. What the table may say is held by
 // .github/scripts/checks/check-state-unit-cases.mjs; what a case cannot say, the axioms,
 // each unit's own test holds.
 //
@@ -38,9 +36,6 @@ import (
 	"github.com/xynolog/sdk/go/xynologtest"
 )
 
-// sdk is this SDK, as the names table's `absent` names it.
-const sdk = "go"
-
 // ── The tables ──────────────────────────────────────────────────────────
 
 type stateTable struct {
@@ -65,8 +60,7 @@ type caseTransport struct {
 
 type namesTable struct {
 	StateUnits []struct {
-		Unit   string            `json:"unit"`
-		Absent map[string]string `json:"absent"`
+		Unit string `json:"unit"`
 	} `json:"stateUnits"`
 }
 
@@ -83,32 +77,13 @@ func readJSON[T any](t *testing.T, path string) T {
 	return read
 }
 
-// unitsThisSDKHas is each unit of the names table that does not say this SDK
-// lacks it.
-func unitsThisSDKHas(t *testing.T) map[string]bool {
-	has := map[string]bool{}
-	for _, row := range readJSON[namesTable](t, "client/surface.json").StateUnits {
-		if _, absent := row.Absent[sdk]; !absent {
-			has[row.Unit] = true
-		}
-	}
-	return has
-}
-
-// casesToRun is every case of a unit this SDK has, and the table's fixtures.
+// casesToRun is every case of the table, and the table's fixtures.
 func casesToRun(t *testing.T) ([]stateCase, map[string]any) {
 	table := readJSON[stateTable](t, "client/state-units.json")
-	has := unitsThisSDKHas(t)
-	var run []stateCase
-	for _, c := range table.Cases {
-		if has[c.Unit] {
-			run = append(run, c)
-		}
+	if len(table.Cases) == 0 {
+		t.Fatal("the table has no case")
 	}
-	if len(run) == 0 {
-		t.Fatal("the table has no case of a unit this SDK has")
-	}
-	return run, table.Fixtures
+	return table.Cases, table.Fixtures
 }
 
 // ── What a case states ──────────────────────────────────────────────────
