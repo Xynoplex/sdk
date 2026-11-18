@@ -6556,6 +6556,7 @@ type RepresentationAddedPayload struct {
 // holds the resource but not its bytes. Each reader answers the two
 // differently.
 type RepresentationNotFound struct {
+	// Code A machine-readable class, when the route defines one.
 	Code    RepresentationNotFoundCode `json:"code"`
 	Details any                        `json:"details,omitempty"`
 	// Error What went wrong, in a sentence.
@@ -6564,6 +6565,8 @@ type RepresentationNotFound struct {
 	Hint *string `json:"hint,omitempty"`
 }
 
+// RepresentationNotFoundCode A machine-readable class, when the route defines
+// one.
 type RepresentationNotFoundCode string
 
 // The values of RepresentationNotFoundCode.

@@ -169,6 +169,58 @@ let map f layer =
     not_;
   }
 
+(* [map], for an [f] that may refuse: the layer of its results, or its first
+   refusal in [children]'s order. *)
+let traverse f layer =
+  let ( let* ) = Result.bind in
+  let one = function
+    | None -> Ok None
+    | Some s -> Result.map Option.some (f s)
+  in
+  let list g xs =
+    Result.map List.rev
+      (List.fold_left
+         (fun found x ->
+           let* found = found in
+           let* y = g x in
+           Ok (y :: found))
+         (Ok []) xs)
+  in
+  let each = function
+    | None -> Ok None
+    | Some xs -> Result.map Option.some (list f xs)
+  in
+  let* properties =
+    match layer.properties with
+    | None -> Ok None
+    | Some ps ->
+        Result.map Option.some
+          (list
+             (fun (name, s) ->
+               let* s = f s in
+               Ok (name, s))
+             ps)
+  in
+  let* additional_properties = one layer.additional_properties in
+  let* property_names = one layer.property_names in
+  let* items = one layer.items in
+  let* all_of = each layer.all_of in
+  let* any_of = each layer.any_of in
+  let* one_of = each layer.one_of in
+  let* not_ = one layer.not_ in
+  Ok
+    {
+      layer with
+      properties;
+      additional_properties;
+      property_names;
+      items;
+      all_of;
+      any_of;
+      one_of;
+      not_;
+    }
+
 (* The one recursion over a schema: each schema it holds is folded first, in
    [children]'s order, and [schema] is given the layer of their results. It
    stops at a [$ref]: a walk that follows one is given what resolves it, and
@@ -266,6 +318,71 @@ let unread schema =
     (fun keyword ->
       List.mem keyword [ "const"; "propertyNames"; "minProperties"; "not" ])
     (keywords schema)
+
+(* [unread] of a schema and of every schema it holds, at any depth. *)
+let unread_anywhere : t -> string list =
+  cata
+    ~boolean:(fun _ -> [])
+    ~schema:(fun s -> unread s @ List.concat (children s))
+
+let literal_json : literal -> Yojson.Safe.t = function
+  | String_literal s -> `String s
+  | Int_literal n -> `Int n
+  | Bool_literal b -> `Bool b
+
+let type_word : type_name -> string = function
+  | String -> "string"
+  | Object -> "object"
+  | Integer -> "integer"
+  | Array -> "array"
+  | Boolean -> "boolean"
+  | Number -> "number"
+
+let format_word : format -> string = function
+  | Date_time -> "date-time"
+  | Uri -> "uri"
+  | Binary -> "binary"
+
+(* A schema as an SDK's validator reads it at run time: every keyword but
+   those that only describe it. *)
+let runtime : t -> Yojson.Safe.t =
+  cata
+    ~boolean:(fun b -> `Bool b)
+    ~schema:(fun s ->
+      let some name f = Option.map (fun v -> (name, f v)) in
+      let int n = `Int n in
+      let schemas = Option.map (fun xs -> `List xs) in
+      `Assoc
+        (List.filter_map Fun.id
+           [
+             some "$ref" (fun (r : Decode.reference) -> `String r.target) s.ref_;
+             some "type"
+               (function
+                 | [ t ] -> `String (type_word t)
+                 | ts -> `List (List.map (fun t -> `String (type_word t)) ts))
+               s.type_;
+             some "format" (fun f -> `String (format_word f)) s.format;
+             some "enum" (fun vs -> `List (List.map literal_json vs)) s.enum;
+             some "nullable" (fun b -> `Bool b) s.nullable;
+             some "properties" (fun ps -> `Assoc ps) s.properties;
+             some "required"
+               (fun rs -> `List (List.map (fun r -> `String r) rs))
+               s.required;
+             some "additionalProperties" Fun.id s.additional_properties;
+             some "maxProperties" int s.max_properties;
+             some "items" Fun.id s.items;
+             some "minItems" int s.min_items;
+             some "maxItems" int s.max_items;
+             some "uniqueItems" (fun b -> `Bool b) s.unique_items;
+             some "minLength" int s.min_length;
+             some "maxLength" int s.max_length;
+             some "pattern" (fun p -> `String p) s.pattern;
+             some "minimum" (fun f -> `Float f) s.minimum;
+             some "maximum" (fun f -> `Float f) s.maximum;
+             Option.map (fun v -> ("allOf", v)) (schemas s.all_of);
+             Option.map (fun v -> ("anyOf", v)) (schemas s.any_of);
+             Option.map (fun v -> ("oneOf", v)) (schemas s.one_of);
+           ]))
 
 let type_name =
   Decode.enum

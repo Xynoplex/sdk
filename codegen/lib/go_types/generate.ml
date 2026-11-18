@@ -169,12 +169,7 @@ and declaration st name (s : D.t) =
   | Some members -> union_declaration st name members s doc
   | None -> (
       let owner = D.owners st.definitions name s in
-      let s =
-        match s with
-        | D.Node { all_of = Some members; _ } ->
-            View.merged st.definitions name members
-        | _ -> s
-      in
+      let s = D.meant s in
       View.refuse_const name s;
       let n =
         match s with
@@ -644,12 +639,7 @@ and union_declaration st name members (s : D.t) doc =
 (* The values of [property] a member of the union [name] states: the ones
    its schema's enumeration of it admits. *)
 and values_of st name property member =
-  let member =
-    match View.resolved st.definitions member with
-    | D.Node { all_of = Some parts; _ } -> View.merged st.definitions name parts
-    | resolved -> resolved
-  in
-  match member with
+  match D.meant (View.resolved st.definitions member) with
   | D.Node { required = Some required; properties = Some ps; _ }
     when List.mem property required -> (
       match List.assoc_opt property ps with

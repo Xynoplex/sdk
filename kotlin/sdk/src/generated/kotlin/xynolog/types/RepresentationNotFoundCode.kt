@@ -6,6 +6,7 @@ package xynolog.types
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+/** A machine-readable class, when the route defines one. */
 @Serializable
 public enum class RepresentationNotFoundCode(
     /** The value as the wire spells it. */

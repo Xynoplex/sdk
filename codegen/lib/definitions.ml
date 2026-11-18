@@ -4,7 +4,9 @@
    [$ref] names is written in its place, the [$ref]'s siblings with it gone),
    and OpenAPI's [nullable] as JSON Schema draft 7 states it: beside one
    [type], [null] is a second type; beside anything else, the schema is a
-   union of [null] and the rest. *)
+   union of [null] and the rest. A schema that states an [allOf] holds its
+   parts, for the names a writer gives what they state, and what they merge
+   to ([Normalize]), which describes it. *)
 
 exception Refused of string
 
@@ -35,6 +37,7 @@ and node = {
   maximum : float option;
   items : t option;
   all_of : t list option;
+  merged : t option;  (** What its [allOf] merges to, when it states one. *)
   any_of : t list option;
   one_of : t list option;
   discriminator : string option;  (** Its property's name. *)
@@ -57,11 +60,17 @@ let node keys =
     maximum = None;
     items = None;
     all_of = None;
+    merged = None;
     any_of = None;
     one_of = None;
     discriminator = None;
     pattern = None;
   }
+
+(* A schema as what it means: one that states an [allOf], what its parts
+   merge to. Whether it admits null is the schema's own: its merge is made
+   from what it states beside its null. *)
+let meant = function Node { merged = Some m; _ } -> m | s -> s
 
 type definitions = {
   names : string list;  (** Every component schema, by its name. *)
@@ -92,11 +101,20 @@ let referent ~named ~schemas (r : Decode.reference) =
   | None ->
       Option.map (fun s -> In_place (file, s)) (Hashtbl.find_opt schemas file)
 
+(* The schema a [$ref] names, for [Normalize]: the file it names, from
+   [schemas]. *)
+let schema_of ~schemas (r : Decode.reference) =
+  let file, pointer = Decode.resolve r in
+  match Hashtbl.find_opt schemas file with
+  | Some s when pointer = "" -> Ok s
+  | _ -> Error ("$ref " ^ r.target ^ " names no schema file")
+
 (* The view of a schema written in [file], each [$ref] it holds resolved by
    [named] or written in place from [schemas]. *)
 let view ~named ~schemas =
-  let rec view s = Schema.cata ~boolean:(fun b _ -> Bool b) ~schema:layer s
-  and layer (s : (string list -> t) Schema.layer) trail =
+  let rec view s = Schema.para ~boolean:(fun b _ -> Bool b) ~schema:layer s
+  and layer (l : (Schema.t * (string list -> t)) Schema.layer) trail =
+    let s = Schema.map snd l in
     match s.ref_ with
     | Some r -> (
         match referent ~named ~schemas r with
@@ -112,6 +130,17 @@ let view ~named ~schemas =
             (fun k -> not (nullable && k = "nullable"))
             (Schema.keywords s)
         in
+        let merged =
+          Option.map
+            (fun _ ->
+              match
+                Normalize.normalize ~find:(schema_of ~schemas)
+                  (Schema.Schema { (Schema.map fst l) with nullable = None })
+              with
+              | Ok m -> view (Schema.Schema m) trail
+              | Error message -> refuse "%s" message)
+            s.all_of
+        in
         let types =
           match s.type_ with
           | None -> None
@@ -122,7 +151,10 @@ let view ~named ~schemas =
         let own =
           {
             keys;
-            description = s.description;
+            description =
+              (match merged with
+              | Some (Node m) -> m.description
+              | _ -> s.description);
             type_ = types;
             format = s.format;
             enum = s.enum;
@@ -136,6 +168,7 @@ let view ~named ~schemas =
             maximum = s.maximum;
             items = Option.map sub s.items;
             all_of = subs s.all_of;
+            merged;
             any_of = subs s.any_of;
             one_of = subs s.one_of;
             discriminator =

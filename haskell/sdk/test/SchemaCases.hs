@@ -15,7 +15,7 @@ require label good = unless good (ioError (userError label))
 schemaCases :: IO ()
 schemaCases = do
   let text = object ["type" .= String "string"]
-      definitions = Map.fromList [("Text", text), ("Cycle", object ["allOf" .= [ref "Cycle"]])]
+      definitions = Map.fromList [("Text", text)]
       checked = checkSchema definitions
       malformed label shape = require label (isLeft (checked shape))
       accepted label shape = require label (checked shape == Right ())
@@ -57,7 +57,8 @@ schemaCases = do
   malformed "non-object properties accepted" (object ["properties" .= True])
   accepted "array items refused" (object ["items" .= text])
   forM_ [Bool True, Bool False, text] $ \extra -> accepted "additional properties refused" (object ["additionalProperties" .= extra])
-  forM_ ["allOf", "oneOf", "anyOf"] $ \key -> do
+  malformed "allOf accepted, which the generator merges" (object ["allOf" .= [text]])
+  forM_ ["oneOf", "anyOf"] $ \key -> do
     accepted "schema branches refused" (object [key .= [text]])
     malformed "empty branches accepted" (object [key .= ([] :: [Value])])
     malformed "non-array branches accepted" (object [key .= True])
@@ -103,27 +104,6 @@ schemaCases = do
   refuses (object ["type" .= String "string", "pattern" .= String "^a+$"]) (String "b")
   refuses (object ["enum" .= [String "a"]]) (String "b")
 
-  let merge left right = normalize definitions (object ["allOf" .= [left, right]])
-      merged label left right expected = require label (merge left right == Right expected)
-  merged "intersection retained no fields" (ref "Text") text text
-  forM_ [("minimum", 2), ("maximum", 1), ("minLength", 2), ("maxLength", 1), ("minItems", 2), ("maxItems", 1), ("maxProperties", 1)] $ \(key, expected) ->
-    merged "intersection chose weaker bound" (object [key .= (1 :: Int)]) (object [key .= (2 :: Int)]) (object [key .= (expected :: Int)])
-  merged "enum intersection broadened choices" (object ["enum" .= [String "a", String "b"]]) (object ["enum" .= [String "b", String "c"]]) (object ["enum" .= [String "b"]])
-  merged "closed object reopened" (object ["additionalProperties" .= False]) (object ["additionalProperties" .= True]) (object ["additionalProperties" .= False])
-  merged "uniqueness lost" (object ["uniqueItems" .= True]) (object ["uniqueItems" .= False]) (object ["uniqueItems" .= True])
-  merged "required members lost or duplicated" (object ["required" .= [String "a"]]) (object ["required" .= [String "b", String "a"]]) (object ["required" .= [String "a", String "b"]])
-  forM_ ["pattern", "oneOf", "anyOf", "items"] $ \key -> do
-    let one = object [key .= String "a"]
-    merged "identical constraint refused" one one one
-    require "incompatible constraint merged" (isLeft (merge one (object [key .= String "b"])))
-  require "incompatible types merged" (isLeft (merge text (object ["type" .= String "boolean"])))
-  require "empty enum intersection accepted" (isLeft (merge (object ["enum" .= [String "a"]]) (object ["enum" .= [String "b"]])))
-  require "cyclic intersection accepted" (isLeft (normalize definitions (object ["allOf" .= [ref "Cycle"]])))
-  let left = object ["type" .= String "object", "properties" .= object ["a" .= text]]
-      right = object ["properties" .= object ["a" .= object ["minLength" .= (2 :: Int)]]]
-  normalized <- either (ioError . userError) pure (merge left right)
-  holds normalized (object ["a" .= String "ab"])
-  refuses normalized (object ["a" .= String "a"])
   require "unknown named schema accepted" (isLeft (validateNamed definitions "Missing" Null))
   let enclosing = Map.insert "Enclosing" record definitions
   require "declared property refused" (validateProperty enclosing "Enclosing" "a" (String "value") == Right ())
@@ -131,7 +111,7 @@ schemaCases = do
   require "absent enclosing schema accepted" (isLeft (validateProperty enclosing "Missing" "a" Null))
   require "absent property accepted" (isLeft (validateProperty enclosing "Enclosing" "missing" Null))
   require "propertyless schema accepted" (isLeft (validateProperty enclosing "Text" "a" Null))
-  putStrLn "PASS schema refusal boundaries, intersections, unions and Unicode lengths"
+  putStrLn "PASS schema refusal boundaries, unions and Unicode lengths"
   where
     ref :: Text -> Value
     ref name = object ["$ref" .= (name <> ".json")]

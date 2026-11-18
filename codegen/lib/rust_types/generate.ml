@@ -276,9 +276,6 @@ let rec named st name =
     Hashtbl.replace st.written name items);
   ty name
 
-(* The name of the type of [owner]'s property [property], when its schema
-   is written in place: the two names together, and [Value] after them for
-   as long as a component schema already has that name. *)
 and inline_name st owner property =
   Naming.inline ~defined:(defined st) owner property
 
@@ -419,12 +416,7 @@ and declaration st name (s : D.t) =
       union_declaration st name members told_apart doc
   | None ->
       let owner = D.owners st.definitions name s in
-      let s =
-        match s with
-        | D.Node { all_of = Some members; _ } ->
-            View.merged st.definitions name members
-        | _ -> s
-      in
+      let s = D.meant s in
       View.refuse_const name s;
       let n =
         match s with
@@ -742,6 +734,7 @@ and structure st name ~owner (n : D.node) doc =
           else []
         in
         let nullable = Option.is_some (View.without_null ps) in
+        let only_value = View.only_value (D.meant ps) in
         let is_required = List.mem property required in
         let make attrs t =
           R.field ~doc:(describe ps) ~attrs:(renamed @ attrs) field t
@@ -750,7 +743,7 @@ and structure st name ~owner (n : D.node) doc =
           add_param (R.Param (field, option rust_type));
           add_set (field, R.p field);
           make [] (option rust_type))
-        else if is_required && Option.is_some (View.only_value ps) then (
+        else if is_required && Option.is_some only_value then (
           (* A property that admits one value says which member of a union
              this is. It is the type's to state, not its maker's. *)
           incr single_valued;
@@ -760,10 +753,7 @@ and structure st name ~owner (n : D.node) doc =
             | _ -> refuse "%s.%s: one value of no enumeration" name property
           in
           add_set
-            ( field,
-              path
-                [ type_name; Naming.variant (Option.get (View.only_value ps)) ]
-            );
+            (field, path [ type_name; Naming.variant (Option.get only_value) ]);
           make [] rust_type)
         else if is_required && rust_type = string_ty then (
           add_param (R.Param (field, R.Impl_of (generic "Into" [ string_ty ])));

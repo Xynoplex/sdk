@@ -191,7 +191,7 @@
     "lib/pattern.ml": "a41d5ebb9ebc0eee59522a4d883e2a5281202c4fbebb0a2040b267961bf677ad",
     "lib/record_reader.ml": "053aa7e17c38b3cedb840b7623fd666e17717a5bbe8e1087b56aaf05d8ac3d89",
     "lib/record_reader.mli": "8f988856668a1d426cb6384fa2bf2703d6d791be33f82c8db87c2e1fd1919ce5",
-    "lib/records.ml": "9218f358089d2a5db7c4dc864c20c1c1d05f8d6ca194ac5a4d560e3ca8aab67e",
+    "lib/records.ml": "6397f77092bc40c69bea8dbe8e4789bde5b755d923ef97737e244443369ea2d1",
     "lib/redirect_sign_in.ml": "0d4bab713f5a86ddd705b15dca1aa01919702bfc5484469d104c9a1776d723fd",
     "lib/refusals.ml": "53b42a4d41b53e88968f5010a843038ffa0ddbcd842f390ce88acba818ad15d1",
     "lib/registry.ml": "c93ac089204cf0e3a42301c82df77ad129a39253735ad969483f5699bd88b23c",
@@ -8669,12 +8669,12 @@
     {
       "kind": "module",
       "path": "Xynolog.Records.Knowledge_base",
-      "declaration": "module Knowledge_base :\n  sig\n    type t = {\n      id : string;\n      label : Yojson.Raw.t;\n      endpoint : Yojson.Raw.t;\n      did : string;\n      last_read : Yojson.Raw.t Xynolog__.Types.presence;\n      extra : (string * Yojson.Raw.t) list;\n    }\n    val project : (string * Yojson.Raw.t) list -> t\n    val of_model : [ `KnowledgeBase ] Xynolog__.Models.t -> t\n  end"
+      "declaration": "module Knowledge_base :\n  sig\n    type t = {\n      id : string;\n      label : string;\n      endpoint : Yojson.Raw.t;\n      did : string;\n      last_read : Yojson.Raw.t Xynolog__.Types.presence;\n      extra : (string * Yojson.Raw.t) list;\n    }\n    val project : (string * Yojson.Raw.t) list -> t\n    val of_model : [ `KnowledgeBase ] Xynolog__.Models.t -> t\n  end"
     },
     {
       "kind": "type",
       "path": "Xynolog.Records.Knowledge_base.t",
-      "declaration": "type t = {\n  id : string;\n  label : Yojson.Raw.t;\n  endpoint : Yojson.Raw.t;\n  did : string;\n  last_read : Yojson.Raw.t Xynolog__.Types.presence;\n  extra : (string * Yojson.Raw.t) list;\n}",
+      "declaration": "type t = {\n  id : string;\n  label : string;\n  endpoint : Yojson.Raw.t;\n  did : string;\n  last_read : Yojson.Raw.t Xynolog__.Types.presence;\n  extra : (string * Yojson.Raw.t) list;\n}",
       "representation": "record",
       "fields": [
         "id",
