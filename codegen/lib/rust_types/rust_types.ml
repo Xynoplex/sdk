@@ -91,8 +91,31 @@ let sign_in (spec : Spec.t) =
            { roots = [ "SignIn" ]; identifiers = []; accessors = [] });
   }
 
+(* Why a client that read a launcher's discovery document found no launcher
+   (rust/sdk/src/discovery.rs): an enumeration of the reasons. *)
+let discovery_absent (spec : Spec.t) =
+  let reasons =
+    List.map
+      (fun (r : Tables.Client_discovery_absent.reason) ->
+        Schema.String_literal r.reason)
+      spec.tables.client_discovery_absent.reasons
+  in
+  {
+    Output.path = "rust/sdk/src/generated/discovery_absent.rs";
+    text =
+      Rust_syntax.text
+        ~header:(regenerate "protocol/specs/src/client/discovery-absent.json")
+        (Generate.enumeration "DiscoveryAbsentReason"
+           {
+             (Definitions.node [ "type"; "enum" ]) with
+             type_ = Some (One String);
+             enum = Some reasons;
+           }
+           [ "Why no launcher was found." ]);
+  }
+
 let files ~root:_ (spec : Spec.t) =
-  match [ types spec; sign_in spec ] with
+  match [ types spec; sign_in spec; discovery_absent spec ] with
   | files -> Ok files
   | exception Definitions.Refused message ->
       Error [ { Decode.file = "openapi.json"; pointer = ""; message } ]
