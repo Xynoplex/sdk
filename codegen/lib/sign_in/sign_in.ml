@@ -229,7 +229,11 @@ let python_owner_only (o : Owner_only.t) =
                      (P.items
                         (List.map
                            (fun n -> P.item (P.Str n))
-                           [ "DIRECTORY_MODE"; "FILE_MODE"; "directory_access_list" ])));
+                           [
+                             "DIRECTORY_MODE";
+                             "FILE_MODE";
+                             "directory_access_list";
+                           ])));
               constant "DIRECTORY_MODE" o.directory;
               constant "FILE_MODE" o.file;
               P.Def
