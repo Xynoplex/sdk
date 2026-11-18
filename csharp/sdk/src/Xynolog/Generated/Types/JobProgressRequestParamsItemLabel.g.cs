@@ -4,41 +4,11 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(JobProgressRequestParamsItemLabelJsonConverter))]
+[global::Xynolog.Serialization.WireEnum]
 public enum JobProgressRequestParamsItemLabel
 {
-    EntityTypes,
-    Instructions,
-    Tone,
-    Density,
-}
-
-internal sealed class JobProgressRequestParamsItemLabelJsonConverter : global::System.Text.Json.Serialization.JsonConverter<JobProgressRequestParamsItemLabel>
-{
-    public override JobProgressRequestParamsItemLabel Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("JobProgressRequestParamsItemLabel", root);
-        return root.GetString() switch
-        {
-            "entity-types" => JobProgressRequestParamsItemLabel.EntityTypes,
-            "instructions" => JobProgressRequestParamsItemLabel.Instructions,
-            "tone" => JobProgressRequestParamsItemLabel.Tone,
-            "density" => JobProgressRequestParamsItemLabel.Density,
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, JobProgressRequestParamsItemLabel value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        writer.WriteStringValue(value switch
-        {
-            JobProgressRequestParamsItemLabel.EntityTypes => "entity-types",
-            JobProgressRequestParamsItemLabel.Instructions => "instructions",
-            JobProgressRequestParamsItemLabel.Tone => "tone",
-            JobProgressRequestParamsItemLabel.Density => "density",
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        });
-    }
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("entity-types")] EntityTypes,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("instructions")] Instructions,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("tone")] Tone,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("density")] Density,
 }

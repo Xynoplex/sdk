@@ -4,46 +4,17 @@
 
 package xynolog.types
 
-import kotlinx.serialization.DeserializationStrategy
-import kotlinx.serialization.EncodeDefault
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationException
-import kotlinx.serialization.builtins.ListSerializer
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.descriptors.nullable
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonContentPolymorphicSerializer
-import kotlinx.serialization.json.JsonDecoder
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonEncoder
 import kotlinx.serialization.json.JsonIgnoreUnknownKeys
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.serializer
-import xynolog.identifiers.AnnotationId
-import xynolog.identifiers.JobId
-import xynolog.identifiers.ResourceId
 import xynolog.identifiers.UserId
 
-/**
- * Bus command to add a new entity type to the KB's vocabulary. Carried on the `frame:add-entity-type` channel — Frame is the schema-layer flow that owns vocabulary writes.
- */
+/** Bus command to add a new entity type to the KB's vocabulary. Carried on the `frame:add-entity-type` channel — Frame is the schema-layer flow that owns vocabulary writes. */
 @Serializable
 @JsonIgnoreUnknownKeys
 public data class FrameAddEntityTypeCommand(
-    @SerialName("tag")
     public val tag: String,
-    /**
-     * Authenticated user's DID, injected by the /bus/emit gateway. Clients do not set this.
-     */
+    /** Authenticated user's DID, injected by the /bus/emit gateway. Clients do not set this. */
     @SerialName("_userId")
     @get:JvmExposeBoxed
     public val userId: UserId? = null,
@@ -55,10 +26,7 @@ public data class FrameAddEntityTypeCommand(
         private var userId: UserId? = null
 
         @JvmExposeBoxed
-        public fun userId(userId: UserId?): Builder {
-            this.userId = userId
-            return this
-        }
+        public fun userId(userId: UserId?): Builder = apply { this.userId = userId }
 
         public fun build(): FrameAddEntityTypeCommand = FrameAddEntityTypeCommand(tag = tag, userId = userId)
     }

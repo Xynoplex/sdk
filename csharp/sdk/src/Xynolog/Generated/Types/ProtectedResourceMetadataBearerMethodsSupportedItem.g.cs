@@ -4,32 +4,8 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(ProtectedResourceMetadataBearerMethodsSupportedItemJsonConverter))]
+[global::Xynolog.Serialization.WireEnum]
 public enum ProtectedResourceMetadataBearerMethodsSupportedItem
 {
-    Header,
-}
-
-internal sealed class ProtectedResourceMetadataBearerMethodsSupportedItemJsonConverter : global::System.Text.Json.Serialization.JsonConverter<ProtectedResourceMetadataBearerMethodsSupportedItem>
-{
-    public override ProtectedResourceMetadataBearerMethodsSupportedItem Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("ProtectedResourceMetadataBearerMethodsSupportedItem", root);
-        return root.GetString() switch
-        {
-            "header" => ProtectedResourceMetadataBearerMethodsSupportedItem.Header,
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, ProtectedResourceMetadataBearerMethodsSupportedItem value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        writer.WriteStringValue(value switch
-        {
-            ProtectedResourceMetadataBearerMethodsSupportedItem.Header => "header",
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        });
-    }
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("header")] Header,
 }

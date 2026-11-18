@@ -4,29 +4,8 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(SettingsLocaleChangedEventJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record SettingsLocaleChangedEvent
 {
-    public required string Locale { get; init; }
-}
-
-internal sealed class SettingsLocaleChangedEventJsonConverter : global::System.Text.Json.Serialization.JsonConverter<SettingsLocaleChangedEvent>
-{
-    public override SettingsLocaleChangedEvent Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("SettingsLocaleChangedEvent", root);
-        return new SettingsLocaleChangedEvent
-        {
-            Locale = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "locale", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, SettingsLocaleChangedEvent value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("locale", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Locale, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "SettingsLocaleChangedEvent", fields);
-    }
+    [global::Xynolog.Serialization.Wire("locale")] public required string Locale { get; init; }
 }

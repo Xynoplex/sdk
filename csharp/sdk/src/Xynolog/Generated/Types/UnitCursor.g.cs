@@ -4,41 +4,12 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(UnitCursorJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record UnitCursor
 {
-    public required long Emitted { get; init; }
-    public required long Errors { get; init; }
-    public required long Found { get; init; }
-    public required long Next { get; init; }
-    public required long Size { get; init; }
-}
-
-internal sealed class UnitCursorJsonConverter : global::System.Text.Json.Serialization.JsonConverter<UnitCursor>
-{
-    public override UnitCursor Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("UnitCursor", root);
-        return new UnitCursor
-        {
-            Emitted = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "emitted", options),
-            Errors = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "errors", options),
-            Found = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "found", options),
-            Next = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "next", options),
-            Size = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "size", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, UnitCursor value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("emitted", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Emitted, options));
-        fields.Add("errors", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Errors, options));
-        fields.Add("found", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Found, options));
-        fields.Add("next", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Next, options));
-        fields.Add("size", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Size, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "UnitCursor", fields);
-    }
+    [global::Xynolog.Serialization.Wire("emitted")] public required long Emitted { get; init; }
+    [global::Xynolog.Serialization.Wire("errors")] public required long Errors { get; init; }
+    [global::Xynolog.Serialization.Wire("found")] public required long Found { get; init; }
+    [global::Xynolog.Serialization.Wire("next")] public required long Next { get; init; }
+    [global::Xynolog.Serialization.Wire("size")] public required long Size { get; init; }
 }

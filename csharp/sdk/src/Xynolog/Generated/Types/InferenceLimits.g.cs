@@ -4,38 +4,10 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(InferenceLimitsJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record InferenceLimits
 {
-    public bool? AcceptsTemperature { get; init; }
-    public required double ContextTokens { get; init; }
-    public required double MaxOutputTokens { get; init; }
-}
-
-internal sealed class InferenceLimitsJsonConverter : global::System.Text.Json.Serialization.JsonConverter<InferenceLimits>
-{
-    public override InferenceLimits Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("InferenceLimits", root);
-        return new InferenceLimits
-        {
-            AcceptsTemperature = root.TryGetProperty("acceptsTemperature", out var p0) ? global::Xynolog.Serialization.WireJson.Read<bool>(p0, options) : null,
-            ContextTokens = global::Xynolog.Serialization.WireJson.ReadMember<double>(root, "contextTokens", options),
-            MaxOutputTokens = global::Xynolog.Serialization.WireJson.ReadMember<double>(root, "maxOutputTokens", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, InferenceLimits value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        if (value.AcceptsTemperature is not null)
-        {
-            fields.Add("acceptsTemperature", global::System.Text.Json.JsonSerializer.SerializeToElement(value.AcceptsTemperature, options));
-        }
-        fields.Add("contextTokens", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ContextTokens, options));
-        fields.Add("maxOutputTokens", global::System.Text.Json.JsonSerializer.SerializeToElement(value.MaxOutputTokens, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "InferenceLimits", fields);
-    }
+    [global::Xynolog.Serialization.Wire("acceptsTemperature")] public bool? AcceptsTemperature { get; init; }
+    [global::Xynolog.Serialization.Wire("contextTokens")] public required double ContextTokens { get; init; }
+    [global::Xynolog.Serialization.Wire("maxOutputTokens")] public required double MaxOutputTokens { get; init; }
 }

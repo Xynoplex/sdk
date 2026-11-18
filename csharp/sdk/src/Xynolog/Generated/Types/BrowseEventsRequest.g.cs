@@ -4,47 +4,11 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(BrowseEventsRequestJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record BrowseEventsRequest
 {
-    public long? Limit { get; init; }
-    public required global::Xynolog.Identifiers.ResourceId ResourceId { get; init; }
-    public string? Type { get; init; }
-    public global::Xynolog.Identifiers.UserId? UserId { get; init; }
-}
-
-internal sealed class BrowseEventsRequestJsonConverter : global::System.Text.Json.Serialization.JsonConverter<BrowseEventsRequest>
-{
-    public override BrowseEventsRequest Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("BrowseEventsRequest", root);
-        return new BrowseEventsRequest
-        {
-            Limit = root.TryGetProperty("limit", out var p0) ? global::Xynolog.Serialization.WireJson.Read<long>(p0, options) : null,
-            ResourceId = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.ResourceId>(root, "resourceId", options),
-            Type = root.TryGetProperty("type", out var p2) ? global::Xynolog.Serialization.WireJson.Read<string>(p2, options) : null,
-            UserId = root.TryGetProperty("userId", out var p3) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Identifiers.UserId>(p3, options) : null,
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, BrowseEventsRequest value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        if (value.Limit is not null)
-        {
-            fields.Add("limit", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Limit, options));
-        }
-        fields.Add("resourceId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ResourceId, options));
-        if (value.Type is not null)
-        {
-            fields.Add("type", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Type, options));
-        }
-        if (value.UserId is not null)
-        {
-            fields.Add("userId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.UserId, options));
-        }
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "BrowseEventsRequest", fields);
-    }
+    [global::Xynolog.Serialization.Wire("limit")] public long? Limit { get; init; }
+    [global::Xynolog.Serialization.Wire("resourceId")] public required global::Xynolog.Identifiers.ResourceId ResourceId { get; init; }
+    [global::Xynolog.Serialization.Wire("type")] public string? Type { get; init; }
+    [global::Xynolog.Serialization.Wire("userId")] public global::Xynolog.Identifiers.UserId? UserId { get; init; }
 }

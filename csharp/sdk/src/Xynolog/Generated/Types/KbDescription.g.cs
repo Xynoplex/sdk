@@ -4,38 +4,10 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(KbDescriptionJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record KbDescription
 {
-    public required string Domain { get; init; }
-    public string? GitBranch { get; init; }
-    public required string Name { get; init; }
-}
-
-internal sealed class KbDescriptionJsonConverter : global::System.Text.Json.Serialization.JsonConverter<KbDescription>
-{
-    public override KbDescription Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("KbDescription", root);
-        return new KbDescription
-        {
-            Domain = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "domain", options),
-            GitBranch = root.TryGetProperty("gitBranch", out var p1) ? global::Xynolog.Serialization.WireJson.Read<string>(p1, options) : null,
-            Name = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "name", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, KbDescription value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("domain", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Domain, options));
-        if (value.GitBranch is not null)
-        {
-            fields.Add("gitBranch", global::System.Text.Json.JsonSerializer.SerializeToElement(value.GitBranch, options));
-        }
-        fields.Add("name", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Name, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "KbDescription", fields);
-    }
+    [global::Xynolog.Serialization.Wire("domain")] public required string Domain { get; init; }
+    [global::Xynolog.Serialization.Wire("gitBranch")] public string? GitBranch { get; init; }
+    [global::Xynolog.Serialization.Wire("name")] public required string Name { get; init; }
 }

@@ -4,45 +4,15 @@
 
 package xynolog.types
 
-import kotlinx.serialization.DeserializationStrategy
-import kotlinx.serialization.EncodeDefault
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationException
-import kotlinx.serialization.builtins.ListSerializer
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.descriptors.nullable
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonContentPolymorphicSerializer
-import kotlinx.serialization.json.JsonDecoder
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonEncoder
 import kotlinx.serialization.json.JsonIgnoreUnknownKeys
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.serializer
-import xynolog.identifiers.AnnotationId
-import xynolog.identifiers.JobId
 import xynolog.identifiers.ResourceId
-import xynolog.identifiers.UserId
 
-/**
- * The id of the resource an upload created. The Archivist answers it (200) once it has stored the bytes and recorded the resource, and the gateway forwards it (202), so the id is the one the record minted and its creation event is persisted. What remains asynchronous is downstream projection: graph, views and vectors settle afterwards.
- */
+/** The id of the resource an upload created. The Archivist answers it (200) once it has stored the bytes and recorded the resource, and the gateway forwards it (202), so the id is the one the record minted and its creation event is persisted. What remains asynchronous is downstream projection: graph, views and vectors settle afterwards. */
 @Serializable
 @JsonIgnoreUnknownKeys
 public data class CreateResourceResponse(
-    /**
-     * The id of the newly created resource, as the record minted it.
-     */
-    @SerialName("resourceId")
+    /** The id of the newly created resource, as the record minted it. */
     @get:JvmExposeBoxed
     public val resourceId: ResourceId,
 ) {

@@ -4,29 +4,8 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(ProfilesProjectionJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record ProfilesProjection
 {
-    public required global::System.Collections.Generic.IReadOnlyDictionary<string, global::Xynolog.Types.Profile> Profiles { get; init; }
-}
-
-internal sealed class ProfilesProjectionJsonConverter : global::System.Text.Json.Serialization.JsonConverter<ProfilesProjection>
-{
-    public override ProfilesProjection Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("ProfilesProjection", root);
-        return new ProfilesProjection
-        {
-            Profiles = global::Xynolog.Serialization.WireJson.ReadMember<global::System.Collections.Generic.IReadOnlyDictionary<string, global::Xynolog.Types.Profile>>(root, "profiles", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, ProfilesProjection value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("profiles", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Profiles, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "ProfilesProjection", fields);
-    }
+    [global::Xynolog.Serialization.Wire("profiles")] public required global::System.Collections.Generic.IReadOnlyDictionary<string, global::Xynolog.Types.Profile> Profiles { get; init; }
 }

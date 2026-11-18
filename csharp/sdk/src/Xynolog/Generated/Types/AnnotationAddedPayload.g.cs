@@ -4,35 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(AnnotationAddedPayloadJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record AnnotationAddedPayload
 {
-    public required global::Xynolog.Types.Annotation Annotation { get; init; }
-    public string? ContentChecksum { get; init; }
-}
-
-internal sealed class AnnotationAddedPayloadJsonConverter : global::System.Text.Json.Serialization.JsonConverter<AnnotationAddedPayload>
-{
-    public override AnnotationAddedPayload Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("AnnotationAddedPayload", root);
-        return new AnnotationAddedPayload
-        {
-            Annotation = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.Annotation>(root, "annotation", options),
-            ContentChecksum = root.TryGetProperty("contentChecksum", out var p1) ? global::Xynolog.Serialization.WireJson.Read<string>(p1, options) : null,
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, AnnotationAddedPayload value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("annotation", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Annotation, options));
-        if (value.ContentChecksum is not null)
-        {
-            fields.Add("contentChecksum", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ContentChecksum, options));
-        }
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "AnnotationAddedPayload", fields);
-    }
+    [global::Xynolog.Serialization.Wire("annotation")] public required global::Xynolog.Types.Annotation Annotation { get; init; }
+    [global::Xynolog.Serialization.Wire("contentChecksum")] public string? ContentChecksum { get; init; }
 }

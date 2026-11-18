@@ -4,35 +4,10 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(TagCategoryJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record TagCategory
 {
-    public required string Description { get; init; }
-    public required global::System.Collections.Generic.IReadOnlyList<string> Examples { get; init; }
-    public required string Name { get; init; }
-}
-
-internal sealed class TagCategoryJsonConverter : global::System.Text.Json.Serialization.JsonConverter<TagCategory>
-{
-    public override TagCategory Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("TagCategory", root);
-        return new TagCategory
-        {
-            Description = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "description", options),
-            Examples = global::Xynolog.Serialization.WireJson.ReadMember<global::System.Collections.Generic.IReadOnlyList<string>>(root, "examples", options),
-            Name = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "name", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, TagCategory value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("description", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Description, options));
-        fields.Add("examples", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Examples, options));
-        fields.Add("name", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Name, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "TagCategory", fields);
-    }
+    [global::Xynolog.Serialization.Wire("description")] public required string Description { get; init; }
+    [global::Xynolog.Serialization.Wire("examples")] public required global::System.Collections.Generic.IReadOnlyList<string> Examples { get; init; }
+    [global::Xynolog.Serialization.Wire("name")] public required string Name { get; init; }
 }

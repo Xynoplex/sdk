@@ -4,47 +4,17 @@
 
 package xynolog.types
 
-import kotlinx.serialization.DeserializationStrategy
-import kotlinx.serialization.EncodeDefault
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationException
-import kotlinx.serialization.builtins.ListSerializer
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.descriptors.nullable
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonContentPolymorphicSerializer
-import kotlinx.serialization.json.JsonDecoder
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonEncoder
 import kotlinx.serialization.json.JsonIgnoreUnknownKeys
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.serializer
 import xynolog.identifiers.AnnotationId
-import xynolog.identifiers.JobId
-import xynolog.identifiers.ResourceId
-import xynolog.identifiers.UserId
 
-/**
- * Emitted when a browse panel is opened
- */
+/** Emitted when a browse panel is opened */
 @Serializable
 @JsonIgnoreUnknownKeys
 public data class BrowsePanelOpenEvent(
-    @SerialName("panel")
     public val panel: String,
-    @SerialName("scrollToAnnotationId")
     @get:JvmExposeBoxed
     public val scrollToAnnotationId: AnnotationId? = null,
-    @SerialName("motivation")
     public val motivation: Motivation? = null,
 ) {
     /** How Java makes a `BrowsePanelOpenEvent`: `builder` takes what it must state, a setter each thing it may, and `build` makes it. */
@@ -55,15 +25,9 @@ public data class BrowsePanelOpenEvent(
         private var motivation: Motivation? = null
 
         @JvmExposeBoxed
-        public fun scrollToAnnotationId(scrollToAnnotationId: AnnotationId?): Builder {
-            this.scrollToAnnotationId = scrollToAnnotationId
-            return this
-        }
+        public fun scrollToAnnotationId(scrollToAnnotationId: AnnotationId?): Builder = apply { this.scrollToAnnotationId = scrollToAnnotationId }
 
-        public fun motivation(motivation: Motivation?): Builder {
-            this.motivation = motivation
-            return this
-        }
+        public fun motivation(motivation: Motivation?): Builder = apply { this.motivation = motivation }
 
         public fun build(): BrowsePanelOpenEvent = BrowsePanelOpenEvent(panel = panel, scrollToAnnotationId = scrollToAnnotationId, motivation = motivation)
     }

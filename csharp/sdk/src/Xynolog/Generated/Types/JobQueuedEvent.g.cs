@@ -4,36 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(JobQueuedEventJsonConverter))]
+[global::Xynolog.Serialization.WireUnion(typeof(JobQueuedEvent.MarkJobQueuedEventCase), typeof(JobQueuedEvent.YieldJobQueuedEventCase))]
 public closed record JobQueuedEvent
 {
     public sealed record MarkJobQueuedEventCase(global::Xynolog.Types.MarkJobQueuedEvent Value) : JobQueuedEvent;
     public sealed record YieldJobQueuedEventCase(global::Xynolog.Types.YieldJobQueuedEvent Value) : JobQueuedEvent;
-}
-
-internal sealed class JobQueuedEventJsonConverter : global::System.Text.Json.Serialization.JsonConverter<JobQueuedEvent>
-{
-    public override JobQueuedEvent Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("JobQueuedEvent", root);
-        var variant = global::Xynolog.Serialization.WireJson.Variant("JobQueuedEvent", root);
-        return variant switch
-        {
-            0 => new JobQueuedEvent.MarkJobQueuedEventCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.MarkJobQueuedEvent>(root, options)),
-            1 => new JobQueuedEvent.YieldJobQueuedEventCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.YieldJobQueuedEvent>(root, options)),
-            _ => throw new global::System.Text.Json.JsonException("No matching union variant."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, JobQueuedEvent value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        switch (value)
-        {
-            case JobQueuedEvent.MarkJobQueuedEventCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            case JobQueuedEvent.YieldJobQueuedEventCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            default: throw new global::System.Text.Json.JsonException("Unknown union variant.");
-        }
-    }
 }

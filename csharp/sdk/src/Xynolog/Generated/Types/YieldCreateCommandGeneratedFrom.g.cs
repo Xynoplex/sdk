@@ -4,38 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(YieldCreateCommandGeneratedFromJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record YieldCreateCommandGeneratedFrom
 {
-    public global::Xynolog.Identifiers.AnnotationId? AnnotationId { get; init; }
-    public global::Xynolog.Identifiers.ResourceId? ResourceId { get; init; }
-}
-
-internal sealed class YieldCreateCommandGeneratedFromJsonConverter : global::System.Text.Json.Serialization.JsonConverter<YieldCreateCommandGeneratedFrom>
-{
-    public override YieldCreateCommandGeneratedFrom Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("YieldCreateCommandGeneratedFrom", root);
-        return new YieldCreateCommandGeneratedFrom
-        {
-            AnnotationId = root.TryGetProperty("annotationId", out var p0) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Identifiers.AnnotationId>(p0, options) : null,
-            ResourceId = root.TryGetProperty("resourceId", out var p1) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Identifiers.ResourceId>(p1, options) : null,
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, YieldCreateCommandGeneratedFrom value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        if (value.AnnotationId is not null)
-        {
-            fields.Add("annotationId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.AnnotationId, options));
-        }
-        if (value.ResourceId is not null)
-        {
-            fields.Add("resourceId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ResourceId, options));
-        }
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "YieldCreateCommandGeneratedFrom", fields);
-    }
+    [global::Xynolog.Serialization.Wire("annotationId")] public global::Xynolog.Identifiers.AnnotationId? AnnotationId { get; init; }
+    [global::Xynolog.Serialization.Wire("resourceId")] public global::Xynolog.Identifiers.ResourceId? ResourceId { get; init; }
 }

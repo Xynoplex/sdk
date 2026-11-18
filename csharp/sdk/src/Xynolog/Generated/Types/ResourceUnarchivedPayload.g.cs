@@ -4,26 +4,7 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(ResourceUnarchivedPayloadJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record ResourceUnarchivedPayload
 {
-}
-
-internal sealed class ResourceUnarchivedPayloadJsonConverter : global::System.Text.Json.Serialization.JsonConverter<ResourceUnarchivedPayload>
-{
-    public override ResourceUnarchivedPayload Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("ResourceUnarchivedPayload", root);
-        return new ResourceUnarchivedPayload
-        {
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, ResourceUnarchivedPayload value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "ResourceUnarchivedPayload", fields);
-    }
 }

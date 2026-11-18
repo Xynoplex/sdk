@@ -4,35 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(KbReadJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record KbRead
 {
-    public required string At { get; init; }
-    public string? GitBranch { get; init; }
-}
-
-internal sealed class KbReadJsonConverter : global::System.Text.Json.Serialization.JsonConverter<KbRead>
-{
-    public override KbRead Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("KbRead", root);
-        return new KbRead
-        {
-            At = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "at", options),
-            GitBranch = root.TryGetProperty("gitBranch", out var p1) ? global::Xynolog.Serialization.WireJson.Read<string>(p1, options) : null,
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, KbRead value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("at", global::System.Text.Json.JsonSerializer.SerializeToElement(value.At, options));
-        if (value.GitBranch is not null)
-        {
-            fields.Add("gitBranch", global::System.Text.Json.JsonSerializer.SerializeToElement(value.GitBranch, options));
-        }
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "KbRead", fields);
-    }
+    [global::Xynolog.Serialization.Wire("at")] public required string At { get; init; }
+    [global::Xynolog.Serialization.Wire("gitBranch")] public string? GitBranch { get; init; }
 }

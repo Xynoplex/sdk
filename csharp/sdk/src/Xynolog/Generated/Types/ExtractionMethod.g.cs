@@ -4,44 +4,12 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(ExtractionMethodJsonConverter))]
+[global::Xynolog.Serialization.WireEnum]
 public enum ExtractionMethod
 {
-    TextPassthrough,
-    PdfTextLayer,
-    Table,
-    Form,
-    Ocr,
-}
-
-internal sealed class ExtractionMethodJsonConverter : global::System.Text.Json.Serialization.JsonConverter<ExtractionMethod>
-{
-    public override ExtractionMethod Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("ExtractionMethod", root);
-        return root.GetString() switch
-        {
-            "text-passthrough" => ExtractionMethod.TextPassthrough,
-            "pdf-text-layer" => ExtractionMethod.PdfTextLayer,
-            "table" => ExtractionMethod.Table,
-            "form" => ExtractionMethod.Form,
-            "ocr" => ExtractionMethod.Ocr,
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, ExtractionMethod value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        writer.WriteStringValue(value switch
-        {
-            ExtractionMethod.TextPassthrough => "text-passthrough",
-            ExtractionMethod.PdfTextLayer => "pdf-text-layer",
-            ExtractionMethod.Table => "table",
-            ExtractionMethod.Form => "form",
-            ExtractionMethod.Ocr => "ocr",
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        });
-    }
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("text-passthrough")] TextPassthrough,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("pdf-text-layer")] PdfTextLayer,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("table")] Table,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("form")] Form,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("ocr")] Ocr,
 }

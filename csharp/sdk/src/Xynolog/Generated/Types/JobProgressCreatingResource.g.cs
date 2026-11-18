@@ -4,28 +4,8 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(JobProgressCreatingResourceJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record JobProgressCreatingResource
 {
-    public string Code => "creating-resource";
-}
-
-internal sealed class JobProgressCreatingResourceJsonConverter : global::System.Text.Json.Serialization.JsonConverter<JobProgressCreatingResource>
-{
-    public override JobProgressCreatingResource Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("JobProgressCreatingResource", root);
-        return new JobProgressCreatingResource
-        {
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, JobProgressCreatingResource value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("code", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Code, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "JobProgressCreatingResource", fields);
-    }
+    [global::Xynolog.Serialization.Wire("code")] public string Code => "creating-resource";
 }

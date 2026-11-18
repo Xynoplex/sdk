@@ -4,36 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(JobFilterJsonConverter))]
+[global::Xynolog.Serialization.WireUnion(typeof(JobFilter.MarkJobFilterCase), typeof(JobFilter.YieldJobFilterCase))]
 public closed record JobFilter
 {
     public sealed record MarkJobFilterCase(global::Xynolog.Types.MarkJobFilter Value) : JobFilter;
     public sealed record YieldJobFilterCase(global::Xynolog.Types.YieldJobFilter Value) : JobFilter;
-}
-
-internal sealed class JobFilterJsonConverter : global::System.Text.Json.Serialization.JsonConverter<JobFilter>
-{
-    public override JobFilter Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("JobFilter", root);
-        var variant = global::Xynolog.Serialization.WireJson.Variant("JobFilter", root);
-        return variant switch
-        {
-            0 => new JobFilter.MarkJobFilterCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.MarkJobFilter>(root, options)),
-            1 => new JobFilter.YieldJobFilterCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.YieldJobFilter>(root, options)),
-            _ => throw new global::System.Text.Json.JsonException("No matching union variant."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, JobFilter value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        switch (value)
-        {
-            case JobFilter.MarkJobFilterCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            case JobFilter.YieldJobFilterCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            default: throw new global::System.Text.Json.JsonException("Unknown union variant.");
-        }
-    }
 }

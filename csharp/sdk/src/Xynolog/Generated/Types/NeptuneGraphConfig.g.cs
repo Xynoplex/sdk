@@ -4,34 +4,10 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(NeptuneGraphConfigJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record NeptuneGraphConfig
 {
-    public required string Endpoint { get; init; }
-    public required long Port { get; init; }
-    public string Type => "neptune";
-}
-
-internal sealed class NeptuneGraphConfigJsonConverter : global::System.Text.Json.Serialization.JsonConverter<NeptuneGraphConfig>
-{
-    public override NeptuneGraphConfig Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("NeptuneGraphConfig", root);
-        return new NeptuneGraphConfig
-        {
-            Endpoint = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "endpoint", options),
-            Port = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "port", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, NeptuneGraphConfig value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("endpoint", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Endpoint, options));
-        fields.Add("port", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Port, options));
-        fields.Add("type", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Type, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "NeptuneGraphConfig", fields);
-    }
+    [global::Xynolog.Serialization.Wire("endpoint")] public required string Endpoint { get; init; }
+    [global::Xynolog.Serialization.Wire("port")] public required long Port { get; init; }
+    [global::Xynolog.Serialization.Wire("type")] public string Type => "neptune";
 }

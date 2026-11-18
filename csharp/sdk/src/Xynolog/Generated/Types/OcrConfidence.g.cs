@@ -4,35 +4,10 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(OcrConfidenceJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record OcrConfidence
 {
-    public required long LowConfidenceWords { get; init; }
-    public required double Mean { get; init; }
-    public required long TotalWords { get; init; }
-}
-
-internal sealed class OcrConfidenceJsonConverter : global::System.Text.Json.Serialization.JsonConverter<OcrConfidence>
-{
-    public override OcrConfidence Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("OcrConfidence", root);
-        return new OcrConfidence
-        {
-            LowConfidenceWords = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "lowConfidenceWords", options),
-            Mean = global::Xynolog.Serialization.WireJson.ReadMember<double>(root, "mean", options),
-            TotalWords = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "totalWords", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, OcrConfidence value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("lowConfidenceWords", global::System.Text.Json.JsonSerializer.SerializeToElement(value.LowConfidenceWords, options));
-        fields.Add("mean", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Mean, options));
-        fields.Add("totalWords", global::System.Text.Json.JsonSerializer.SerializeToElement(value.TotalWords, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "OcrConfidence", fields);
-    }
+    [global::Xynolog.Serialization.Wire("lowConfidenceWords")] public required long LowConfidenceWords { get; init; }
+    [global::Xynolog.Serialization.Wire("mean")] public required double Mean { get; init; }
+    [global::Xynolog.Serialization.Wire("totalWords")] public required long TotalWords { get; init; }
 }

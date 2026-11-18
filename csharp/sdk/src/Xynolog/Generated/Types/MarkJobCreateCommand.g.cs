@@ -4,46 +4,12 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(MarkJobCreateCommandJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record MarkJobCreateCommand
 {
-    public global::System.Collections.Generic.IReadOnlyList<string>? Roles { get; init; }
-    public global::Xynolog.Identifiers.UserId? UserId { get; init; }
-    public string JobType => "mark";
-    public required global::Xynolog.Types.MarkJobParams Params { get; init; }
-    public required global::Xynolog.Identifiers.ResourceId ResourceId { get; init; }
-}
-
-internal sealed class MarkJobCreateCommandJsonConverter : global::System.Text.Json.Serialization.JsonConverter<MarkJobCreateCommand>
-{
-    public override MarkJobCreateCommand Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("MarkJobCreateCommand", root);
-        return new MarkJobCreateCommand
-        {
-            Roles = root.TryGetProperty("_roles", out var p0) ? global::Xynolog.Serialization.WireJson.Read<global::System.Collections.Generic.IReadOnlyList<string>>(p0, options) : null,
-            UserId = root.TryGetProperty("_userId", out var p1) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Identifiers.UserId>(p1, options) : null,
-            Params = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.MarkJobParams>(root, "params", options),
-            ResourceId = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.ResourceId>(root, "resourceId", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, MarkJobCreateCommand value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        if (value.Roles is not null)
-        {
-            fields.Add("_roles", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Roles, options));
-        }
-        if (value.UserId is not null)
-        {
-            fields.Add("_userId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.UserId, options));
-        }
-        fields.Add("jobType", global::System.Text.Json.JsonSerializer.SerializeToElement(value.JobType, options));
-        fields.Add("params", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Params, options));
-        fields.Add("resourceId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ResourceId, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "MarkJobCreateCommand", fields);
-    }
+    [global::Xynolog.Serialization.Wire("_roles")] public global::System.Collections.Generic.IReadOnlyList<string>? Roles { get; init; }
+    [global::Xynolog.Serialization.Wire("_userId")] public global::Xynolog.Identifiers.UserId? UserId { get; init; }
+    [global::Xynolog.Serialization.Wire("jobType")] public string JobType => "mark";
+    [global::Xynolog.Serialization.Wire("params")] public required global::Xynolog.Types.MarkJobParams Params { get; init; }
+    [global::Xynolog.Serialization.Wire("resourceId")] public required global::Xynolog.Identifiers.ResourceId ResourceId { get; init; }
 }

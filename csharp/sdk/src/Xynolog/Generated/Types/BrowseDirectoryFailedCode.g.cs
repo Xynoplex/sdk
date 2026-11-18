@@ -4,41 +4,11 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(BrowseDirectoryFailedCodeJsonConverter))]
+[global::Xynolog.Serialization.WireEnum]
 public enum BrowseDirectoryFailedCode
 {
-    PeerUnavailable,
-    NotFound,
-    Unauthorized,
-    NonePending,
-}
-
-internal sealed class BrowseDirectoryFailedCodeJsonConverter : global::System.Text.Json.Serialization.JsonConverter<BrowseDirectoryFailedCode>
-{
-    public override BrowseDirectoryFailedCode Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("BrowseDirectoryFailedCode", root);
-        return root.GetString() switch
-        {
-            "peer-unavailable" => BrowseDirectoryFailedCode.PeerUnavailable,
-            "not-found" => BrowseDirectoryFailedCode.NotFound,
-            "unauthorized" => BrowseDirectoryFailedCode.Unauthorized,
-            "none-pending" => BrowseDirectoryFailedCode.NonePending,
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, BrowseDirectoryFailedCode value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        writer.WriteStringValue(value switch
-        {
-            BrowseDirectoryFailedCode.PeerUnavailable => "peer-unavailable",
-            BrowseDirectoryFailedCode.NotFound => "not-found",
-            BrowseDirectoryFailedCode.Unauthorized => "unauthorized",
-            BrowseDirectoryFailedCode.NonePending => "none-pending",
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        });
-    }
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("peer-unavailable")] PeerUnavailable,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("not-found")] NotFound,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("unauthorized")] Unauthorized,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("none-pending")] NonePending,
 }

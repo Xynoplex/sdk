@@ -4,32 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(BrowseFilesResponseJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record BrowseFilesResponse
 {
-    public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.DirectoryEntry> Entries { get; init; }
-    public required string Path { get; init; }
-}
-
-internal sealed class BrowseFilesResponseJsonConverter : global::System.Text.Json.Serialization.JsonConverter<BrowseFilesResponse>
-{
-    public override BrowseFilesResponse Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("BrowseFilesResponse", root);
-        return new BrowseFilesResponse
-        {
-            Entries = global::Xynolog.Serialization.WireJson.ReadMember<global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.DirectoryEntry>>(root, "entries", options),
-            Path = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "path", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, BrowseFilesResponse value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("entries", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Entries, options));
-        fields.Add("path", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Path, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "BrowseFilesResponse", fields);
-    }
+    [global::Xynolog.Serialization.Wire("entries")] public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.DirectoryEntry> Entries { get; init; }
+    [global::Xynolog.Serialization.Wire("path")] public required string Path { get; init; }
 }

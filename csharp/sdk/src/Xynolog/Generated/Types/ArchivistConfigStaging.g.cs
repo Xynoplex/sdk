@@ -4,32 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(ArchivistConfigStagingJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record ArchivistConfigStaging
 {
-    public required long FlushMs { get; init; }
-    public required long MaxWaitMs { get; init; }
-}
-
-internal sealed class ArchivistConfigStagingJsonConverter : global::System.Text.Json.Serialization.JsonConverter<ArchivistConfigStaging>
-{
-    public override ArchivistConfigStaging Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("ArchivistConfigStaging", root);
-        return new ArchivistConfigStaging
-        {
-            FlushMs = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "flushMs", options),
-            MaxWaitMs = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "maxWaitMs", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, ArchivistConfigStaging value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("flushMs", global::System.Text.Json.JsonSerializer.SerializeToElement(value.FlushMs, options));
-        fields.Add("maxWaitMs", global::System.Text.Json.JsonSerializer.SerializeToElement(value.MaxWaitMs, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "ArchivistConfigStaging", fields);
-    }
+    [global::Xynolog.Serialization.Wire("flushMs")] public required long FlushMs { get; init; }
+    [global::Xynolog.Serialization.Wire("maxWaitMs")] public required long MaxWaitMs { get; init; }
 }

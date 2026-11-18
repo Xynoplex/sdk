@@ -178,16 +178,19 @@ internal static partial class WireJson
         return Select(schema.TryGetProperty("oneOf", out var alternatives) ? alternatives : schema.GetProperty("anyOf"), value, name);
     }
 
-    internal static T Read<T>(JsonElement value, JsonSerializerOptions options) =>
-        JsonSerializer.Deserialize<T>(value, options) is T result ? result : throw new JsonException("Unexpected null value");
+    internal static object Read(JsonElement value, Type type, JsonSerializerOptions options) =>
+        JsonSerializer.Deserialize(value, type, options) ?? throw new JsonException("Unexpected null value");
 
-    internal static T ReadMember<T>(JsonElement root, string member, JsonSerializerOptions options)
+    internal static T Read<T>(JsonElement value, JsonSerializerOptions options) =>
+        Read(value, typeof(T), options) is T result ? result : throw new JsonException("Unexpected null value");
+
+    internal static object ReadMember(JsonElement root, string member, Type type, JsonSerializerOptions options)
     {
         if (!root.TryGetProperty(member, out var value))
         {
             throw new JsonException(member + ": missing required member");
         }
-        return Read<T>(value, options);
+        return Read(value, type, options);
     }
 
     internal static IReadOnlyDictionary<string, JsonElement> Extra(JsonElement root, string[] known) =>

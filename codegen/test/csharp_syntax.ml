@@ -17,6 +17,7 @@ let u hex = "\\" ^ "u" ^ hex
 let expr e () = String.concat "\n" (C.expr ~depth:0 e)
 let stmt s () = String.concat "\n" (C.stmt ~depth:0 s)
 let decl d () = String.concat "\n" (C.decl ~depth:0 d)
+let member m () = String.concat "\n" (C.member ~depth:0 m)
 
 let record ?(modifiers = [ C.Public; Sealed ]) ?(spacing = C.Packed) name
     members =
@@ -34,6 +35,7 @@ let record ?(modifiers = [ C.Public; Sealed ]) ?(spacing = C.Packed) name
 let property name =
   C.Property
     {
+      attributes = [];
       modifiers = [ Public ];
       type_ = T "string";
       name;
@@ -65,13 +67,11 @@ let cases =
       (refuses
          (expr
             (Binary (Conditional (Name "a", Name "b", Name "c"), And, Name "d"))));
-    case "a conditional's arms may be a cast null and a call"
-      (writes "a ? (long?)null : f(a)"
+    case "a conditional's arms may be null and a call"
+      (writes "a ? null : f(a)"
          (expr
             (Conditional
-               ( Name "a",
-                 Cast (Nullable (T "long"), Null),
-                 Call (Name "f", [], [ Arg (Name "a") ]) ))));
+               (Name "a", Null, Call (Name "f", [], [ Arg (Name "a") ])))));
     case "a call's type arguments and out variable"
       (writes
          "x.TryRead<global::Xynolog.Types.Stated<string?>>(\"k\", out var p0)"
@@ -106,53 +106,11 @@ let cases =
                             init = None;
                           }) );
                  ] ))));
-    case "an object initializer assigns a member a line"
-      (writes "new X\n{\n    A = 1,\n    B = \"b\",\n}"
-         (expr
-            (New
-               {
-                 type_ = Some (T "X");
-                 args = None;
-                 init = Some (Assigns [ ("A", Int 1); ("B", Str "b") ]);
-               })));
-    case "an array is made on one line"
-      (writes "new string[] { \"a\", \"b\" }"
-         (expr (Array_new (T "string", [ Str "a"; Str "b" ]))));
     case "an if's block is braced on lines of its own"
       (writes "if (value.A is not null)\n{\n    return true;\n}"
          (stmt
             (If
                (Is_not_null (Member (Name "value", "A")), [ Return (Bool true) ]))));
-    case "a foreach of one statement is one line"
-      (writes "foreach (var pair in xs) { f(pair); }"
-         (stmt
-            (Foreach
-               {
-                 name = "pair";
-                 over = Name "xs";
-                 body = Do (Call (Name "f", [], [ Arg (Name "pair") ]));
-               })));
-    case "a switch statement's cases are a line each"
-      (writes
-         "switch (value)\n\
-          {\n\
-         \    case X.ACase selected: f(selected); break;\n\
-         \    default: throw new E();\n\
-          }"
-         (stmt
-            (Switch_stmt
-               {
-                 on = Name "value";
-                 cases =
-                   [
-                     ( T "X.ACase",
-                       "selected",
-                       Do (Call (Name "f", [], [ Arg (Name "selected") ])) );
-                   ];
-                 default =
-                   Throw_stmt
-                     (New { type_ = Some (T "E"); args = Some []; init = None });
-               })));
     case "a statement that only reads is refused"
       (refuses (stmt (Do (Name "x"))));
     case "a packed type's members are a line each, its braces Allman's"
@@ -168,6 +126,7 @@ let cases =
                  property "A";
                  Expression_property
                    {
+                     attributes = [];
                      modifiers = [ Public ];
                      type_ = T "string";
                      name = "B";
@@ -196,12 +155,14 @@ let cases =
                  base = Some (T "U");
                  body = None;
                })));
-    case "an enum's members are a line each, an attribute above it"
+    case
+      "an enum's members are a line each, each after its attributes, and an \
+       attribute above it"
       (writes
          "[global::System.Text.Json.Serialization.JsonConverter(typeof(KJsonConverter))]\n\
           public enum K\n\
           {\n\
-         \    A,\n\
+         \    [N(\"a\")] A,\n\
          \    B,\n\
           }"
          (decl
@@ -217,7 +178,24 @@ let cases =
                    ];
                  modifiers = [ Public ];
                  name = "K";
-                 members = [ "A"; "B" ];
+                 members =
+                   [ ([ { name = "N"; args = [ Str "a" ] } ], "A"); ([], "B") ];
+               })));
+    case "a property's attributes come before it on its line"
+      (writes "[N(\"a\")] [M] public string A { get; init; }"
+         (member
+            (C.Property
+               {
+                 attributes =
+                   [
+                     { name = "N"; args = [ Str "a" ] };
+                     { name = "M"; args = [] };
+                   ];
+                 modifiers = [ Public ];
+                 type_ = T "string";
+                 name = "A";
+                 accessors = [ Get; Init ];
+                 value = None;
                })));
     case "a file opens auto-generated, its header after, and ends a line"
       (writes

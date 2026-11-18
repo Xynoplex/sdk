@@ -4,92 +4,19 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(GenerationJobRequestJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record GenerationJobRequest
 {
-    public bool? Cite { get; init; }
-    public global::System.Collections.Generic.IReadOnlyList<string>? EntityTypes { get; init; }
-    public string? Language { get; init; }
-    public double? MaxTokens { get; init; }
-    public global::Xynolog.Types.SupportedMediaType? OutputMediaType { get; init; }
-    public string? Prompt { get; init; }
-    public string? SourceLanguage { get; init; }
-    public required string StorageUri { get; init; }
-    public string? Structure { get; init; }
-    public string? Task { get; init; }
-    public double? Temperature { get; init; }
-    public required string Title { get; init; }
-}
-
-internal sealed class GenerationJobRequestJsonConverter : global::System.Text.Json.Serialization.JsonConverter<GenerationJobRequest>
-{
-    public override GenerationJobRequest Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("GenerationJobRequest", root);
-        return new GenerationJobRequest
-        {
-            Cite = root.TryGetProperty("cite", out var p0) ? global::Xynolog.Serialization.WireJson.Read<bool>(p0, options) : null,
-            EntityTypes = root.TryGetProperty("entityTypes", out var p1) ? global::Xynolog.Serialization.WireJson.Read<global::System.Collections.Generic.IReadOnlyList<string>>(p1, options) : null,
-            Language = root.TryGetProperty("language", out var p2) ? global::Xynolog.Serialization.WireJson.Read<string>(p2, options) : null,
-            MaxTokens = root.TryGetProperty("maxTokens", out var p3) ? global::Xynolog.Serialization.WireJson.Read<double>(p3, options) : null,
-            OutputMediaType = root.TryGetProperty("outputMediaType", out var p4) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.SupportedMediaType>(p4, options) : null,
-            Prompt = root.TryGetProperty("prompt", out var p5) ? global::Xynolog.Serialization.WireJson.Read<string>(p5, options) : null,
-            SourceLanguage = root.TryGetProperty("sourceLanguage", out var p6) ? global::Xynolog.Serialization.WireJson.Read<string>(p6, options) : null,
-            StorageUri = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "storageUri", options),
-            Structure = root.TryGetProperty("structure", out var p8) ? global::Xynolog.Serialization.WireJson.Read<string>(p8, options) : null,
-            Task = root.TryGetProperty("task", out var p9) ? global::Xynolog.Serialization.WireJson.Read<string>(p9, options) : null,
-            Temperature = root.TryGetProperty("temperature", out var p10) ? global::Xynolog.Serialization.WireJson.Read<double>(p10, options) : null,
-            Title = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "title", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, GenerationJobRequest value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        if (value.Cite is not null)
-        {
-            fields.Add("cite", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Cite, options));
-        }
-        if (value.EntityTypes is not null)
-        {
-            fields.Add("entityTypes", global::System.Text.Json.JsonSerializer.SerializeToElement(value.EntityTypes, options));
-        }
-        if (value.Language is not null)
-        {
-            fields.Add("language", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Language, options));
-        }
-        if (value.MaxTokens is not null)
-        {
-            fields.Add("maxTokens", global::System.Text.Json.JsonSerializer.SerializeToElement(value.MaxTokens, options));
-        }
-        if (value.OutputMediaType is not null)
-        {
-            fields.Add("outputMediaType", global::System.Text.Json.JsonSerializer.SerializeToElement(value.OutputMediaType, options));
-        }
-        if (value.Prompt is not null)
-        {
-            fields.Add("prompt", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Prompt, options));
-        }
-        if (value.SourceLanguage is not null)
-        {
-            fields.Add("sourceLanguage", global::System.Text.Json.JsonSerializer.SerializeToElement(value.SourceLanguage, options));
-        }
-        fields.Add("storageUri", global::System.Text.Json.JsonSerializer.SerializeToElement(value.StorageUri, options));
-        if (value.Structure is not null)
-        {
-            fields.Add("structure", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Structure, options));
-        }
-        if (value.Task is not null)
-        {
-            fields.Add("task", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Task, options));
-        }
-        if (value.Temperature is not null)
-        {
-            fields.Add("temperature", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Temperature, options));
-        }
-        fields.Add("title", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Title, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "GenerationJobRequest", fields);
-    }
+    [global::Xynolog.Serialization.Wire("cite")] public bool? Cite { get; init; }
+    [global::Xynolog.Serialization.Wire("entityTypes")] public global::System.Collections.Generic.IReadOnlyList<string>? EntityTypes { get; init; }
+    [global::Xynolog.Serialization.Wire("language")] public string? Language { get; init; }
+    [global::Xynolog.Serialization.Wire("maxTokens")] public double? MaxTokens { get; init; }
+    [global::Xynolog.Serialization.Wire("outputMediaType")] public global::Xynolog.Types.SupportedMediaType? OutputMediaType { get; init; }
+    [global::Xynolog.Serialization.Wire("prompt")] public string? Prompt { get; init; }
+    [global::Xynolog.Serialization.Wire("sourceLanguage")] public string? SourceLanguage { get; init; }
+    [global::Xynolog.Serialization.Wire("storageUri")] public required string StorageUri { get; init; }
+    [global::Xynolog.Serialization.Wire("structure")] public string? Structure { get; init; }
+    [global::Xynolog.Serialization.Wire("task")] public string? Task { get; init; }
+    [global::Xynolog.Serialization.Wire("temperature")] public double? Temperature { get; init; }
+    [global::Xynolog.Serialization.Wire("title")] public required string Title { get; init; }
 }

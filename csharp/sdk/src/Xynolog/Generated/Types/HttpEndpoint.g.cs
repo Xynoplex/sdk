@@ -4,37 +4,11 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(HttpEndpointJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record HttpEndpoint
 {
-    public required string Host { get; init; }
-    public string Kind => "http";
-    public required long Port { get; init; }
-    public required global::Xynolog.Types.HttpEndpointProtocol Protocol { get; init; }
-}
-
-internal sealed class HttpEndpointJsonConverter : global::System.Text.Json.Serialization.JsonConverter<HttpEndpoint>
-{
-    public override HttpEndpoint Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("HttpEndpoint", root);
-        return new HttpEndpoint
-        {
-            Host = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "host", options),
-            Port = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "port", options),
-            Protocol = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.HttpEndpointProtocol>(root, "protocol", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, HttpEndpoint value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("host", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Host, options));
-        fields.Add("kind", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Kind, options));
-        fields.Add("port", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Port, options));
-        fields.Add("protocol", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Protocol, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "HttpEndpoint", fields);
-    }
+    [global::Xynolog.Serialization.Wire("host")] public required string Host { get; init; }
+    [global::Xynolog.Serialization.Wire("kind")] public string Kind => "http";
+    [global::Xynolog.Serialization.Wire("port")] public required long Port { get; init; }
+    [global::Xynolog.Serialization.Wire("protocol")] public required global::Xynolog.Types.HttpEndpointProtocol Protocol { get; init; }
 }

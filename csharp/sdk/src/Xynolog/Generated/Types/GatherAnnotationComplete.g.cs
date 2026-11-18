@@ -4,32 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(GatherAnnotationCompleteJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record GatherAnnotationComplete
 {
-    public required global::Xynolog.Identifiers.AnnotationId AnnotationId { get; init; }
-    public required global::Xynolog.Types.GatheredContext Response { get; init; }
-}
-
-internal sealed class GatherAnnotationCompleteJsonConverter : global::System.Text.Json.Serialization.JsonConverter<GatherAnnotationComplete>
-{
-    public override GatherAnnotationComplete Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("GatherAnnotationComplete", root);
-        return new GatherAnnotationComplete
-        {
-            AnnotationId = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.AnnotationId>(root, "annotationId", options),
-            Response = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.GatheredContext>(root, "response", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, GatherAnnotationComplete value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("annotationId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.AnnotationId, options));
-        fields.Add("response", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Response, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "GatherAnnotationComplete", fields);
-    }
+    [global::Xynolog.Serialization.Wire("annotationId")] public required global::Xynolog.Identifiers.AnnotationId AnnotationId { get; init; }
+    [global::Xynolog.Serialization.Wire("response")] public required global::Xynolog.Types.GatheredContext Response { get; init; }
 }

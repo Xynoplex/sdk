@@ -4,50 +4,14 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(PdfClassJsonConverter))]
+[global::Xynolog.Serialization.WireEnum]
 public enum PdfClass
 {
-    A,
-    B,
-    C,
-    D,
-    E,
-    F,
-    G,
-}
-
-internal sealed class PdfClassJsonConverter : global::System.Text.Json.Serialization.JsonConverter<PdfClass>
-{
-    public override PdfClass Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("PdfClass", root);
-        return root.GetString() switch
-        {
-            "A" => PdfClass.A,
-            "B" => PdfClass.B,
-            "C" => PdfClass.C,
-            "D" => PdfClass.D,
-            "E" => PdfClass.E,
-            "F" => PdfClass.F,
-            "G" => PdfClass.G,
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, PdfClass value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        writer.WriteStringValue(value switch
-        {
-            PdfClass.A => "A",
-            PdfClass.B => "B",
-            PdfClass.C => "C",
-            PdfClass.D => "D",
-            PdfClass.E => "E",
-            PdfClass.F => "F",
-            PdfClass.G => "G",
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        });
-    }
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("A")] A,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("B")] B,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("C")] C,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("D")] D,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("E")] E,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("F")] F,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("G")] G,
 }

@@ -4,41 +4,10 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(MarkUnarchiveCommandJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record MarkUnarchiveCommand
 {
-    public global::Xynolog.Identifiers.UserId? UserId { get; init; }
-    public required global::Xynolog.Identifiers.ResourceId ResourceId { get; init; }
-    public string? StorageUri { get; init; }
-}
-
-internal sealed class MarkUnarchiveCommandJsonConverter : global::System.Text.Json.Serialization.JsonConverter<MarkUnarchiveCommand>
-{
-    public override MarkUnarchiveCommand Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("MarkUnarchiveCommand", root);
-        return new MarkUnarchiveCommand
-        {
-            UserId = root.TryGetProperty("_userId", out var p0) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Identifiers.UserId>(p0, options) : null,
-            ResourceId = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.ResourceId>(root, "resourceId", options),
-            StorageUri = root.TryGetProperty("storageUri", out var p2) ? global::Xynolog.Serialization.WireJson.Read<string>(p2, options) : null,
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, MarkUnarchiveCommand value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        if (value.UserId is not null)
-        {
-            fields.Add("_userId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.UserId, options));
-        }
-        fields.Add("resourceId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ResourceId, options));
-        if (value.StorageUri is not null)
-        {
-            fields.Add("storageUri", global::System.Text.Json.JsonSerializer.SerializeToElement(value.StorageUri, options));
-        }
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "MarkUnarchiveCommand", fields);
-    }
+    [global::Xynolog.Serialization.Wire("_userId")] public global::Xynolog.Identifiers.UserId? UserId { get; init; }
+    [global::Xynolog.Serialization.Wire("resourceId")] public required global::Xynolog.Identifiers.ResourceId ResourceId { get; init; }
+    [global::Xynolog.Serialization.Wire("storageUri")] public string? StorageUri { get; init; }
 }

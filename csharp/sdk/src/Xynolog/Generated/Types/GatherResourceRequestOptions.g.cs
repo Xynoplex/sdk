@@ -4,44 +4,12 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(GatherResourceRequestOptionsJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record GatherResourceRequestOptions
 {
-    public required long Depth { get; init; }
-    public global::System.Collections.Generic.IReadOnlyList<string>? ExcludeEntityTypes { get; init; }
-    public required bool IncludeContent { get; init; }
-    public required bool IncludeSummary { get; init; }
-    public required long MaxResources { get; init; }
-}
-
-internal sealed class GatherResourceRequestOptionsJsonConverter : global::System.Text.Json.Serialization.JsonConverter<GatherResourceRequestOptions>
-{
-    public override GatherResourceRequestOptions Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("GatherResourceRequestOptions", root);
-        return new GatherResourceRequestOptions
-        {
-            Depth = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "depth", options),
-            ExcludeEntityTypes = root.TryGetProperty("excludeEntityTypes", out var p1) ? global::Xynolog.Serialization.WireJson.Read<global::System.Collections.Generic.IReadOnlyList<string>>(p1, options) : null,
-            IncludeContent = global::Xynolog.Serialization.WireJson.ReadMember<bool>(root, "includeContent", options),
-            IncludeSummary = global::Xynolog.Serialization.WireJson.ReadMember<bool>(root, "includeSummary", options),
-            MaxResources = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "maxResources", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, GatherResourceRequestOptions value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("depth", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Depth, options));
-        if (value.ExcludeEntityTypes is not null)
-        {
-            fields.Add("excludeEntityTypes", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ExcludeEntityTypes, options));
-        }
-        fields.Add("includeContent", global::System.Text.Json.JsonSerializer.SerializeToElement(value.IncludeContent, options));
-        fields.Add("includeSummary", global::System.Text.Json.JsonSerializer.SerializeToElement(value.IncludeSummary, options));
-        fields.Add("maxResources", global::System.Text.Json.JsonSerializer.SerializeToElement(value.MaxResources, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "GatherResourceRequestOptions", fields);
-    }
+    [global::Xynolog.Serialization.Wire("depth")] public required long Depth { get; init; }
+    [global::Xynolog.Serialization.Wire("excludeEntityTypes")] public global::System.Collections.Generic.IReadOnlyList<string>? ExcludeEntityTypes { get; init; }
+    [global::Xynolog.Serialization.Wire("includeContent")] public required bool IncludeContent { get; init; }
+    [global::Xynolog.Serialization.Wire("includeSummary")] public required bool IncludeSummary { get; init; }
+    [global::Xynolog.Serialization.Wire("maxResources")] public required long MaxResources { get; init; }
 }

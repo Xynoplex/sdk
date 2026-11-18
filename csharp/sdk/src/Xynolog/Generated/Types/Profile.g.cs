@@ -4,32 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(ProfileJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record Profile
 {
-    public required string Name { get; init; }
-    public required string Since { get; init; }
-}
-
-internal sealed class ProfileJsonConverter : global::System.Text.Json.Serialization.JsonConverter<Profile>
-{
-    public override Profile Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("Profile", root);
-        return new Profile
-        {
-            Name = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "name", options),
-            Since = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "since", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, Profile value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("name", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Name, options));
-        fields.Add("since", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Since, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "Profile", fields);
-    }
+    [global::Xynolog.Serialization.Wire("name")] public required string Name { get; init; }
+    [global::Xynolog.Serialization.Wire("since")] public required string Since { get; init; }
 }

@@ -4,35 +4,10 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(YieldJobDoneJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record YieldJobDone
 {
-    public required global::Xynolog.Identifiers.ResourceId ResourceId { get; init; }
-    public required string ResourceName { get; init; }
-    public required bool Truncated { get; init; }
-}
-
-internal sealed class YieldJobDoneJsonConverter : global::System.Text.Json.Serialization.JsonConverter<YieldJobDone>
-{
-    public override YieldJobDone Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("YieldJobDone", root);
-        return new YieldJobDone
-        {
-            ResourceId = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.ResourceId>(root, "resourceId", options),
-            ResourceName = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "resourceName", options),
-            Truncated = global::Xynolog.Serialization.WireJson.ReadMember<bool>(root, "truncated", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, YieldJobDone value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("resourceId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ResourceId, options));
-        fields.Add("resourceName", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ResourceName, options));
-        fields.Add("truncated", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Truncated, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "YieldJobDone", fields);
-    }
+    [global::Xynolog.Serialization.Wire("resourceId")] public required global::Xynolog.Identifiers.ResourceId ResourceId { get; init; }
+    [global::Xynolog.Serialization.Wire("resourceName")] public required string ResourceName { get; init; }
+    [global::Xynolog.Serialization.Wire("truncated")] public required bool Truncated { get; init; }
 }

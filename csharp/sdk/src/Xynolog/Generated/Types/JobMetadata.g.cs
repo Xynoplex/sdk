@@ -4,56 +4,15 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(JobMetadataJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record JobMetadata
 {
-    public global::System.Collections.Generic.IReadOnlyList<string>? CompletedUnits { get; init; }
-    public required string Created { get; init; }
-    public required global::Xynolog.Identifiers.JobId Id { get; init; }
-    public required long MaxRetries { get; init; }
-    public required long RetryCount { get; init; }
-    public required global::Xynolog.Types.JobType Type { get; init; }
-    public global::System.Collections.Generic.IReadOnlyDictionary<string, global::Xynolog.Types.UnitCursor>? UnitCursors { get; init; }
-    public required global::Xynolog.Identifiers.UserId UserId { get; init; }
-}
-
-internal sealed class JobMetadataJsonConverter : global::System.Text.Json.Serialization.JsonConverter<JobMetadata>
-{
-    public override JobMetadata Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("JobMetadata", root);
-        return new JobMetadata
-        {
-            CompletedUnits = root.TryGetProperty("completedUnits", out var p0) ? global::Xynolog.Serialization.WireJson.Read<global::System.Collections.Generic.IReadOnlyList<string>>(p0, options) : null,
-            Created = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "created", options),
-            Id = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.JobId>(root, "id", options),
-            MaxRetries = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "maxRetries", options),
-            RetryCount = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "retryCount", options),
-            Type = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.JobType>(root, "type", options),
-            UnitCursors = root.TryGetProperty("unitCursors", out var p6) ? global::Xynolog.Serialization.WireJson.Read<global::System.Collections.Generic.IReadOnlyDictionary<string, global::Xynolog.Types.UnitCursor>>(p6, options) : null,
-            UserId = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.UserId>(root, "userId", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, JobMetadata value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        if (value.CompletedUnits is not null)
-        {
-            fields.Add("completedUnits", global::System.Text.Json.JsonSerializer.SerializeToElement(value.CompletedUnits, options));
-        }
-        fields.Add("created", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Created, options));
-        fields.Add("id", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Id, options));
-        fields.Add("maxRetries", global::System.Text.Json.JsonSerializer.SerializeToElement(value.MaxRetries, options));
-        fields.Add("retryCount", global::System.Text.Json.JsonSerializer.SerializeToElement(value.RetryCount, options));
-        fields.Add("type", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Type, options));
-        if (value.UnitCursors is not null)
-        {
-            fields.Add("unitCursors", global::System.Text.Json.JsonSerializer.SerializeToElement(value.UnitCursors, options));
-        }
-        fields.Add("userId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.UserId, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "JobMetadata", fields);
-    }
+    [global::Xynolog.Serialization.Wire("completedUnits")] public global::System.Collections.Generic.IReadOnlyList<string>? CompletedUnits { get; init; }
+    [global::Xynolog.Serialization.Wire("created")] public required string Created { get; init; }
+    [global::Xynolog.Serialization.Wire("id")] public required global::Xynolog.Identifiers.JobId Id { get; init; }
+    [global::Xynolog.Serialization.Wire("maxRetries")] public required long MaxRetries { get; init; }
+    [global::Xynolog.Serialization.Wire("retryCount")] public required long RetryCount { get; init; }
+    [global::Xynolog.Serialization.Wire("type")] public required global::Xynolog.Types.JobType Type { get; init; }
+    [global::Xynolog.Serialization.Wire("unitCursors")] public global::System.Collections.Generic.IReadOnlyDictionary<string, global::Xynolog.Types.UnitCursor>? UnitCursors { get; init; }
+    [global::Xynolog.Serialization.Wire("userId")] public required global::Xynolog.Identifiers.UserId UserId { get; init; }
 }

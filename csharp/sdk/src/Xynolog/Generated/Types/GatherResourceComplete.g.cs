@@ -4,32 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(GatherResourceCompleteJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record GatherResourceComplete
 {
-    public required global::Xynolog.Identifiers.ResourceId ResourceId { get; init; }
-    public required global::Xynolog.Types.GatheredContext Response { get; init; }
-}
-
-internal sealed class GatherResourceCompleteJsonConverter : global::System.Text.Json.Serialization.JsonConverter<GatherResourceComplete>
-{
-    public override GatherResourceComplete Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("GatherResourceComplete", root);
-        return new GatherResourceComplete
-        {
-            ResourceId = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.ResourceId>(root, "resourceId", options),
-            Response = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.GatheredContext>(root, "response", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, GatherResourceComplete value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("resourceId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ResourceId, options));
-        fields.Add("response", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Response, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "GatherResourceComplete", fields);
-    }
+    [global::Xynolog.Serialization.Wire("resourceId")] public required global::Xynolog.Identifiers.ResourceId ResourceId { get; init; }
+    [global::Xynolog.Serialization.Wire("response")] public required global::Xynolog.Types.GatheredContext Response { get; init; }
 }

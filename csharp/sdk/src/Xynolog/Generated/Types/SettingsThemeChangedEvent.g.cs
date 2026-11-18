@@ -4,29 +4,8 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(SettingsThemeChangedEventJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record SettingsThemeChangedEvent
 {
-    public required global::Xynolog.Types.SettingsThemeChangedEventTheme Theme { get; init; }
-}
-
-internal sealed class SettingsThemeChangedEventJsonConverter : global::System.Text.Json.Serialization.JsonConverter<SettingsThemeChangedEvent>
-{
-    public override SettingsThemeChangedEvent Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("SettingsThemeChangedEvent", root);
-        return new SettingsThemeChangedEvent
-        {
-            Theme = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.SettingsThemeChangedEventTheme>(root, "theme", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, SettingsThemeChangedEvent value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("theme", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Theme, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "SettingsThemeChangedEvent", fields);
-    }
+    [global::Xynolog.Serialization.Wire("theme")] public required global::Xynolog.Types.SettingsThemeChangedEventTheme Theme { get; init; }
 }

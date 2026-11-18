@@ -4,29 +4,8 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(LibrarianConfigGatherJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record LibrarianConfigGather
 {
-    public required long SettleTimeoutMs { get; init; }
-}
-
-internal sealed class LibrarianConfigGatherJsonConverter : global::System.Text.Json.Serialization.JsonConverter<LibrarianConfigGather>
-{
-    public override LibrarianConfigGather Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("LibrarianConfigGather", root);
-        return new LibrarianConfigGather
-        {
-            SettleTimeoutMs = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "settleTimeoutMs", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, LibrarianConfigGather value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("settleTimeoutMs", global::System.Text.Json.JsonSerializer.SerializeToElement(value.SettleTimeoutMs, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "LibrarianConfigGather", fields);
-    }
+    [global::Xynolog.Serialization.Wire("settleTimeoutMs")] public required long SettleTimeoutMs { get; init; }
 }

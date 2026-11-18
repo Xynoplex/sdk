@@ -4,35 +4,10 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(CloneResourceWithTokenResponseJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record CloneResourceWithTokenResponse
 {
-    public required string ExpiresAt { get; init; }
-    public required global::Xynolog.Types.ResourceDescriptor Resource { get; init; }
-    public required string Token { get; init; }
-}
-
-internal sealed class CloneResourceWithTokenResponseJsonConverter : global::System.Text.Json.Serialization.JsonConverter<CloneResourceWithTokenResponse>
-{
-    public override CloneResourceWithTokenResponse Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("CloneResourceWithTokenResponse", root);
-        return new CloneResourceWithTokenResponse
-        {
-            ExpiresAt = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "expiresAt", options),
-            Resource = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.ResourceDescriptor>(root, "resource", options),
-            Token = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "token", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, CloneResourceWithTokenResponse value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("expiresAt", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ExpiresAt, options));
-        fields.Add("resource", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Resource, options));
-        fields.Add("token", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Token, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "CloneResourceWithTokenResponse", fields);
-    }
+    [global::Xynolog.Serialization.Wire("expiresAt")] public required string ExpiresAt { get; init; }
+    [global::Xynolog.Serialization.Wire("resource")] public required global::Xynolog.Types.ResourceDescriptor Resource { get; init; }
+    [global::Xynolog.Serialization.Wire("token")] public required string Token { get; init; }
 }

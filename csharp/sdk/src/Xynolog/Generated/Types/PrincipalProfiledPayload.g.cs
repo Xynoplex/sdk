@@ -4,29 +4,8 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(PrincipalProfiledPayloadJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record PrincipalProfiledPayload
 {
-    public required string Name { get; init; }
-}
-
-internal sealed class PrincipalProfiledPayloadJsonConverter : global::System.Text.Json.Serialization.JsonConverter<PrincipalProfiledPayload>
-{
-    public override PrincipalProfiledPayload Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("PrincipalProfiledPayload", root);
-        return new PrincipalProfiledPayload
-        {
-            Name = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "name", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, PrincipalProfiledPayload value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("name", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Name, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "PrincipalProfiledPayload", fields);
-    }
+    [global::Xynolog.Serialization.Wire("name")] public required string Name { get; init; }
 }

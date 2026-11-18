@@ -4,35 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(JobProgressCurrentKindJsonConverter))]
+[global::Xynolog.Serialization.WireEnum]
 public enum JobProgressCurrentKind
 {
-    EntityType,
-    Category,
-}
-
-internal sealed class JobProgressCurrentKindJsonConverter : global::System.Text.Json.Serialization.JsonConverter<JobProgressCurrentKind>
-{
-    public override JobProgressCurrentKind Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("JobProgressCurrentKind", root);
-        return root.GetString() switch
-        {
-            "entity-type" => JobProgressCurrentKind.EntityType,
-            "category" => JobProgressCurrentKind.Category,
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, JobProgressCurrentKind value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        writer.WriteStringValue(value switch
-        {
-            JobProgressCurrentKind.EntityType => "entity-type",
-            JobProgressCurrentKind.Category => "category",
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        });
-    }
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("entity-type")] EntityType,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("category")] Category,
 }

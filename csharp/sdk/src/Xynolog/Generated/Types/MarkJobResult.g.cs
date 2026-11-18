@@ -4,36 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(MarkJobResultJsonConverter))]
+[global::Xynolog.Serialization.WireUnion(typeof(MarkJobResult.MarkJobDoneCase), typeof(MarkJobResult.JobDeclinedCase))]
 public closed record MarkJobResult
 {
     public sealed record MarkJobDoneCase(global::Xynolog.Types.MarkJobDone Value) : MarkJobResult;
     public sealed record JobDeclinedCase(global::Xynolog.Types.JobDeclined Value) : MarkJobResult;
-}
-
-internal sealed class MarkJobResultJsonConverter : global::System.Text.Json.Serialization.JsonConverter<MarkJobResult>
-{
-    public override MarkJobResult Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("MarkJobResult", root);
-        var variant = global::Xynolog.Serialization.WireJson.Variant("MarkJobResult", root);
-        return variant switch
-        {
-            0 => new MarkJobResult.MarkJobDoneCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.MarkJobDone>(root, options)),
-            1 => new MarkJobResult.JobDeclinedCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.JobDeclined>(root, options)),
-            _ => throw new global::System.Text.Json.JsonException("No matching union variant."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, MarkJobResult value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        switch (value)
-        {
-            case MarkJobResult.MarkJobDoneCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            case MarkJobResult.JobDeclinedCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            default: throw new global::System.Text.Json.JsonException("Unknown union variant.");
-        }
-    }
 }

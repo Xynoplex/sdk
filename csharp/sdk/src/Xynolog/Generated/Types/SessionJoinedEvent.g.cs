@@ -4,32 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(SessionJoinedEventJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record SessionJoinedEvent
 {
-    public required string ConnectionId { get; init; }
-    public required global::Xynolog.Identifiers.UserId Participant { get; init; }
-}
-
-internal sealed class SessionJoinedEventJsonConverter : global::System.Text.Json.Serialization.JsonConverter<SessionJoinedEvent>
-{
-    public override SessionJoinedEvent Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("SessionJoinedEvent", root);
-        return new SessionJoinedEvent
-        {
-            ConnectionId = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "connectionId", options),
-            Participant = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.UserId>(root, "participant", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, SessionJoinedEvent value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("connectionId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ConnectionId, options));
-        fields.Add("participant", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Participant, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "SessionJoinedEvent", fields);
-    }
+    [global::Xynolog.Serialization.Wire("connectionId")] public required string ConnectionId { get; init; }
+    [global::Xynolog.Serialization.Wire("participant")] public required global::Xynolog.Identifiers.UserId Participant { get; init; }
 }

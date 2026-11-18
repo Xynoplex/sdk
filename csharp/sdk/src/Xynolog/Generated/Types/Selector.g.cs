@@ -4,42 +4,11 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(SelectorJsonConverter))]
+[global::Xynolog.Serialization.WireUnion(typeof(Selector.TextPositionSelectorCase), typeof(Selector.TextQuoteSelectorCase), typeof(Selector.SvgSelectorCase), typeof(Selector.FragmentSelectorCase))]
 public closed record Selector
 {
     public sealed record TextPositionSelectorCase(global::Xynolog.Types.TextPositionSelector Value) : Selector;
     public sealed record TextQuoteSelectorCase(global::Xynolog.Types.TextQuoteSelector Value) : Selector;
     public sealed record SvgSelectorCase(global::Xynolog.Types.SvgSelector Value) : Selector;
     public sealed record FragmentSelectorCase(global::Xynolog.Types.FragmentSelector Value) : Selector;
-}
-
-internal sealed class SelectorJsonConverter : global::System.Text.Json.Serialization.JsonConverter<Selector>
-{
-    public override Selector Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("Selector", root);
-        var variant = global::Xynolog.Serialization.WireJson.Variant("Selector", root);
-        return variant switch
-        {
-            0 => new Selector.TextPositionSelectorCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.TextPositionSelector>(root, options)),
-            1 => new Selector.TextQuoteSelectorCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.TextQuoteSelector>(root, options)),
-            2 => new Selector.SvgSelectorCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.SvgSelector>(root, options)),
-            3 => new Selector.FragmentSelectorCase(global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.FragmentSelector>(root, options)),
-            _ => throw new global::System.Text.Json.JsonException("No matching union variant."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, Selector value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        switch (value)
-        {
-            case Selector.TextPositionSelectorCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            case Selector.TextQuoteSelectorCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            case Selector.SvgSelectorCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            case Selector.FragmentSelectorCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            default: throw new global::System.Text.Json.JsonException("Unknown union variant.");
-        }
-    }
 }

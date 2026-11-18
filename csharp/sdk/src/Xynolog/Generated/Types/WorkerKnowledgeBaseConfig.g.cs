@@ -4,38 +4,11 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(WorkerKnowledgeBaseConfigJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record WorkerKnowledgeBaseConfig
 {
-    public required string Domain { get; init; }
-    public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.WorkerEngineConfig> Engines { get; init; }
-    public required string GatewayUrl { get; init; }
-    public required global::Xynolog.Types.WorkerKnowledgeBaseConfigIdentity Identity { get; init; }
-}
-
-internal sealed class WorkerKnowledgeBaseConfigJsonConverter : global::System.Text.Json.Serialization.JsonConverter<WorkerKnowledgeBaseConfig>
-{
-    public override WorkerKnowledgeBaseConfig Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("WorkerKnowledgeBaseConfig", root);
-        return new WorkerKnowledgeBaseConfig
-        {
-            Domain = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "domain", options),
-            Engines = global::Xynolog.Serialization.WireJson.ReadMember<global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.WorkerEngineConfig>>(root, "engines", options),
-            GatewayUrl = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "gatewayUrl", options),
-            Identity = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.WorkerKnowledgeBaseConfigIdentity>(root, "identity", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, WorkerKnowledgeBaseConfig value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("domain", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Domain, options));
-        fields.Add("engines", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Engines, options));
-        fields.Add("gatewayUrl", global::System.Text.Json.JsonSerializer.SerializeToElement(value.GatewayUrl, options));
-        fields.Add("identity", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Identity, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "WorkerKnowledgeBaseConfig", fields);
-    }
+    [global::Xynolog.Serialization.Wire("domain")] public required string Domain { get; init; }
+    [global::Xynolog.Serialization.Wire("engines")] public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.WorkerEngineConfig> Engines { get; init; }
+    [global::Xynolog.Serialization.Wire("gatewayUrl")] public required string GatewayUrl { get; init; }
+    [global::Xynolog.Serialization.Wire("identity")] public required global::Xynolog.Types.WorkerKnowledgeBaseConfigIdentity Identity { get; init; }
 }

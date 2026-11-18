@@ -4,34 +4,10 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(OllamaEmbeddingConfigJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record OllamaEmbeddingConfig
 {
-    public required string BaseUrl { get; init; }
-    public required string Model { get; init; }
-    public string Type => "ollama";
-}
-
-internal sealed class OllamaEmbeddingConfigJsonConverter : global::System.Text.Json.Serialization.JsonConverter<OllamaEmbeddingConfig>
-{
-    public override OllamaEmbeddingConfig Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("OllamaEmbeddingConfig", root);
-        return new OllamaEmbeddingConfig
-        {
-            BaseUrl = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "baseUrl", options),
-            Model = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "model", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, OllamaEmbeddingConfig value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("baseUrl", global::System.Text.Json.JsonSerializer.SerializeToElement(value.BaseUrl, options));
-        fields.Add("model", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Model, options));
-        fields.Add("type", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Type, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "OllamaEmbeddingConfig", fields);
-    }
+    [global::Xynolog.Serialization.Wire("baseUrl")] public required string BaseUrl { get; init; }
+    [global::Xynolog.Serialization.Wire("model")] public required string Model { get; init; }
+    [global::Xynolog.Serialization.Wire("type")] public string Type => "ollama";
 }

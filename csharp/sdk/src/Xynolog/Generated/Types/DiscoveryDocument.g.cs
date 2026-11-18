@@ -4,32 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(DiscoveryDocumentJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record DiscoveryDocument
 {
-    public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.DiscoveredKB> Kbs { get; init; }
-    public required long Version { get; init; }
-}
-
-internal sealed class DiscoveryDocumentJsonConverter : global::System.Text.Json.Serialization.JsonConverter<DiscoveryDocument>
-{
-    public override DiscoveryDocument Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("DiscoveryDocument", root);
-        return new DiscoveryDocument
-        {
-            Kbs = global::Xynolog.Serialization.WireJson.ReadMember<global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.DiscoveredKB>>(root, "kbs", options),
-            Version = global::Xynolog.Serialization.WireJson.ReadMember<long>(root, "version", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, DiscoveryDocument value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("kbs", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Kbs, options));
-        fields.Add("version", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Version, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "DiscoveryDocument", fields);
-    }
+    [global::Xynolog.Serialization.Wire("kbs")] public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.DiscoveredKB> Kbs { get; init; }
+    [global::Xynolog.Serialization.Wire("version")] public required long Version { get; init; }
 }

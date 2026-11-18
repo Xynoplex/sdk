@@ -4,29 +4,8 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(EntityTagChangedPayloadJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record EntityTagChangedPayload
 {
-    public required string EntityType { get; init; }
-}
-
-internal sealed class EntityTagChangedPayloadJsonConverter : global::System.Text.Json.Serialization.JsonConverter<EntityTagChangedPayload>
-{
-    public override EntityTagChangedPayload Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("EntityTagChangedPayload", root);
-        return new EntityTagChangedPayload
-        {
-            EntityType = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "entityType", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, EntityTagChangedPayload value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("entityType", global::System.Text.Json.JsonSerializer.SerializeToElement(value.EntityType, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "EntityTagChangedPayload", fields);
-    }
+    [global::Xynolog.Serialization.Wire("entityType")] public required string EntityType { get; init; }
 }

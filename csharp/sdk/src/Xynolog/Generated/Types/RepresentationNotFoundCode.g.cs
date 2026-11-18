@@ -4,35 +4,9 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(RepresentationNotFoundCodeJsonConverter))]
+[global::Xynolog.Serialization.WireEnum]
 public enum RepresentationNotFoundCode
 {
-    Resource,
-    Representation,
-}
-
-internal sealed class RepresentationNotFoundCodeJsonConverter : global::System.Text.Json.Serialization.JsonConverter<RepresentationNotFoundCode>
-{
-    public override RepresentationNotFoundCode Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("RepresentationNotFoundCode", root);
-        return root.GetString() switch
-        {
-            "resource" => RepresentationNotFoundCode.Resource,
-            "representation" => RepresentationNotFoundCode.Representation,
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, RepresentationNotFoundCode value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        writer.WriteStringValue(value switch
-        {
-            RepresentationNotFoundCode.Resource => "resource",
-            RepresentationNotFoundCode.Representation => "representation",
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        });
-    }
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("resource")] Resource,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("representation")] Representation,
 }

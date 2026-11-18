@@ -4,38 +4,11 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(ListResourcesResponseJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record ListResourcesResponse
 {
-    public required double Limit { get; init; }
-    public required double Offset { get; init; }
-    public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.ResourceDescriptor> Resources { get; init; }
-    public required double Total { get; init; }
-}
-
-internal sealed class ListResourcesResponseJsonConverter : global::System.Text.Json.Serialization.JsonConverter<ListResourcesResponse>
-{
-    public override ListResourcesResponse Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("ListResourcesResponse", root);
-        return new ListResourcesResponse
-        {
-            Limit = global::Xynolog.Serialization.WireJson.ReadMember<double>(root, "limit", options),
-            Offset = global::Xynolog.Serialization.WireJson.ReadMember<double>(root, "offset", options),
-            Resources = global::Xynolog.Serialization.WireJson.ReadMember<global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.ResourceDescriptor>>(root, "resources", options),
-            Total = global::Xynolog.Serialization.WireJson.ReadMember<double>(root, "total", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, ListResourcesResponse value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("limit", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Limit, options));
-        fields.Add("offset", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Offset, options));
-        fields.Add("resources", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Resources, options));
-        fields.Add("total", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Total, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "ListResourcesResponse", fields);
-    }
+    [global::Xynolog.Serialization.Wire("limit")] public required double Limit { get; init; }
+    [global::Xynolog.Serialization.Wire("offset")] public required double Offset { get; init; }
+    [global::Xynolog.Serialization.Wire("resources")] public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.ResourceDescriptor> Resources { get; init; }
+    [global::Xynolog.Serialization.Wire("total")] public required double Total { get; init; }
 }

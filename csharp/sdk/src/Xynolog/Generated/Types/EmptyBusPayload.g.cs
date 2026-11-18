@@ -4,26 +4,7 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(EmptyBusPayloadJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record EmptyBusPayload
 {
-}
-
-internal sealed class EmptyBusPayloadJsonConverter : global::System.Text.Json.Serialization.JsonConverter<EmptyBusPayload>
-{
-    public override EmptyBusPayload Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("EmptyBusPayload", root);
-        return new EmptyBusPayload
-        {
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, EmptyBusPayload value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "EmptyBusPayload", fields);
-    }
 }

@@ -4,29 +4,8 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(AnchoredTextAbsentJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record AnchoredTextAbsent
 {
-    public required global::Xynolog.Types.AnchoredTextAbsentKind Kind { get; init; }
-}
-
-internal sealed class AnchoredTextAbsentJsonConverter : global::System.Text.Json.Serialization.JsonConverter<AnchoredTextAbsent>
-{
-    public override AnchoredTextAbsent Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("AnchoredTextAbsent", root);
-        return new AnchoredTextAbsent
-        {
-            Kind = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.AnchoredTextAbsentKind>(root, "kind", options),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, AnchoredTextAbsent value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("kind", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Kind, options));
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "AnchoredTextAbsent", fields);
-    }
+    [global::Xynolog.Serialization.Wire("kind")] public required global::Xynolog.Types.AnchoredTextAbsentKind Kind { get; init; }
 }

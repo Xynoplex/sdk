@@ -4,74 +4,17 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(ResourceClonedPayloadJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record ResourceClonedPayload
 {
-    public long? ContentByteSize { get; init; }
-    public required string ContentChecksum { get; init; }
-    public global::Xynolog.Types.Agent? Creator { get; init; }
-    public global::System.Collections.Generic.IReadOnlyList<string>? EntityTypes { get; init; }
-    public required string Format { get; init; }
-    public string? Language { get; init; }
-    public required string Name { get; init; }
-    public required global::Xynolog.Identifiers.ResourceId ParentResourceId { get; init; }
-    public string? StorageUri { get; init; }
-    public global::Xynolog.Types.OneOrMoreAgents? WasAttributedTo { get; init; }
-}
-
-internal sealed class ResourceClonedPayloadJsonConverter : global::System.Text.Json.Serialization.JsonConverter<ResourceClonedPayload>
-{
-    public override ResourceClonedPayload Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("ResourceClonedPayload", root);
-        return new ResourceClonedPayload
-        {
-            ContentByteSize = root.TryGetProperty("contentByteSize", out var p0) ? global::Xynolog.Serialization.WireJson.Read<long>(p0, options) : null,
-            ContentChecksum = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "contentChecksum", options),
-            Creator = root.TryGetProperty("creator", out var p2) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.Agent>(p2, options) : null,
-            EntityTypes = root.TryGetProperty("entityTypes", out var p3) ? global::Xynolog.Serialization.WireJson.Read<global::System.Collections.Generic.IReadOnlyList<string>>(p3, options) : null,
-            Format = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "format", options),
-            Language = root.TryGetProperty("language", out var p5) ? global::Xynolog.Serialization.WireJson.Read<string>(p5, options) : null,
-            Name = global::Xynolog.Serialization.WireJson.ReadMember<string>(root, "name", options),
-            ParentResourceId = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Identifiers.ResourceId>(root, "parentResourceId", options),
-            StorageUri = root.TryGetProperty("storageUri", out var p8) ? global::Xynolog.Serialization.WireJson.Read<string>(p8, options) : null,
-            WasAttributedTo = root.TryGetProperty("wasAttributedTo", out var p9) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.OneOrMoreAgents>(p9, options) : null,
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, ResourceClonedPayload value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        if (value.ContentByteSize is not null)
-        {
-            fields.Add("contentByteSize", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ContentByteSize, options));
-        }
-        fields.Add("contentChecksum", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ContentChecksum, options));
-        if (value.Creator is not null)
-        {
-            fields.Add("creator", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Creator, options));
-        }
-        if (value.EntityTypes is not null)
-        {
-            fields.Add("entityTypes", global::System.Text.Json.JsonSerializer.SerializeToElement(value.EntityTypes, options));
-        }
-        fields.Add("format", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Format, options));
-        if (value.Language is not null)
-        {
-            fields.Add("language", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Language, options));
-        }
-        fields.Add("name", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Name, options));
-        fields.Add("parentResourceId", global::System.Text.Json.JsonSerializer.SerializeToElement(value.ParentResourceId, options));
-        if (value.StorageUri is not null)
-        {
-            fields.Add("storageUri", global::System.Text.Json.JsonSerializer.SerializeToElement(value.StorageUri, options));
-        }
-        if (value.WasAttributedTo is not null)
-        {
-            fields.Add("wasAttributedTo", global::System.Text.Json.JsonSerializer.SerializeToElement(value.WasAttributedTo, options));
-        }
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "ResourceClonedPayload", fields);
-    }
+    [global::Xynolog.Serialization.Wire("contentByteSize")] public long? ContentByteSize { get; init; }
+    [global::Xynolog.Serialization.Wire("contentChecksum")] public required string ContentChecksum { get; init; }
+    [global::Xynolog.Serialization.Wire("creator")] public global::Xynolog.Types.Agent? Creator { get; init; }
+    [global::Xynolog.Serialization.Wire("entityTypes")] public global::System.Collections.Generic.IReadOnlyList<string>? EntityTypes { get; init; }
+    [global::Xynolog.Serialization.Wire("format")] public required string Format { get; init; }
+    [global::Xynolog.Serialization.Wire("language")] public string? Language { get; init; }
+    [global::Xynolog.Serialization.Wire("name")] public required string Name { get; init; }
+    [global::Xynolog.Serialization.Wire("parentResourceId")] public required global::Xynolog.Identifiers.ResourceId ParentResourceId { get; init; }
+    [global::Xynolog.Serialization.Wire("storageUri")] public string? StorageUri { get; init; }
+    [global::Xynolog.Serialization.Wire("wasAttributedTo")] public global::Xynolog.Types.OneOrMoreAgents? WasAttributedTo { get; init; }
 }

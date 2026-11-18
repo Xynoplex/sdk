@@ -4,58 +4,14 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(GatheredContextFocusAnnotationJsonConverter))]
+[global::Xynolog.Serialization.WireObject]
 public sealed record GatheredContextFocusAnnotation
 {
-    public required global::Xynolog.Types.Annotation Annotation { get; init; }
-    public string Kind => "annotation";
-    public global::Xynolog.Types.GatheredContextFocusAnnotationSelected? Selected { get; init; }
-    public required global::Xynolog.Types.ResourceDescriptor SourceResource { get; init; }
-    public global::Xynolog.Types.GatheredContextFocusAnnotationTargetContext? TargetContext { get; init; }
-    public global::Xynolog.Types.ResourceDescriptor? TargetResource { get; init; }
-    public string? UserHint { get; init; }
-}
-
-internal sealed class GatheredContextFocusAnnotationJsonConverter : global::System.Text.Json.Serialization.JsonConverter<GatheredContextFocusAnnotation>
-{
-    public override GatheredContextFocusAnnotation Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("GatheredContextFocusAnnotation", root);
-        return new GatheredContextFocusAnnotation
-        {
-            Annotation = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.Annotation>(root, "annotation", options),
-            Selected = root.TryGetProperty("selected", out var p1) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.GatheredContextFocusAnnotationSelected>(p1, options) : null,
-            SourceResource = global::Xynolog.Serialization.WireJson.ReadMember<global::Xynolog.Types.ResourceDescriptor>(root, "sourceResource", options),
-            TargetContext = root.TryGetProperty("targetContext", out var p3) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.GatheredContextFocusAnnotationTargetContext>(p3, options) : null,
-            TargetResource = root.TryGetProperty("targetResource", out var p4) ? global::Xynolog.Serialization.WireJson.Read<global::Xynolog.Types.ResourceDescriptor>(p4, options) : null,
-            UserHint = root.TryGetProperty("userHint", out var p5) ? global::Xynolog.Serialization.WireJson.Read<string>(p5, options) : null,
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, GatheredContextFocusAnnotation value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        var fields = new global::System.Collections.Generic.Dictionary<string, global::System.Text.Json.JsonElement>();
-        fields.Add("annotation", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Annotation, options));
-        fields.Add("kind", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Kind, options));
-        if (value.Selected is not null)
-        {
-            fields.Add("selected", global::System.Text.Json.JsonSerializer.SerializeToElement(value.Selected, options));
-        }
-        fields.Add("sourceResource", global::System.Text.Json.JsonSerializer.SerializeToElement(value.SourceResource, options));
-        if (value.TargetContext is not null)
-        {
-            fields.Add("targetContext", global::System.Text.Json.JsonSerializer.SerializeToElement(value.TargetContext, options));
-        }
-        if (value.TargetResource is not null)
-        {
-            fields.Add("targetResource", global::System.Text.Json.JsonSerializer.SerializeToElement(value.TargetResource, options));
-        }
-        if (value.UserHint is not null)
-        {
-            fields.Add("userHint", global::System.Text.Json.JsonSerializer.SerializeToElement(value.UserHint, options));
-        }
-        global::Xynolog.Serialization.WireJson.WriteObject(writer, "GatheredContextFocusAnnotation", fields);
-    }
+    [global::Xynolog.Serialization.Wire("annotation")] public required global::Xynolog.Types.Annotation Annotation { get; init; }
+    [global::Xynolog.Serialization.Wire("kind")] public string Kind => "annotation";
+    [global::Xynolog.Serialization.Wire("selected")] public global::Xynolog.Types.GatheredContextFocusAnnotationSelected? Selected { get; init; }
+    [global::Xynolog.Serialization.Wire("sourceResource")] public required global::Xynolog.Types.ResourceDescriptor SourceResource { get; init; }
+    [global::Xynolog.Serialization.Wire("targetContext")] public global::Xynolog.Types.GatheredContextFocusAnnotationTargetContext? TargetContext { get; init; }
+    [global::Xynolog.Serialization.Wire("targetResource")] public global::Xynolog.Types.ResourceDescriptor? TargetResource { get; init; }
+    [global::Xynolog.Serialization.Wire("userHint")] public string? UserHint { get; init; }
 }

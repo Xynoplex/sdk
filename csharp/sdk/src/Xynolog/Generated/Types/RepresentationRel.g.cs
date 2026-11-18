@@ -4,47 +4,13 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(RepresentationRelJsonConverter))]
+[global::Xynolog.Serialization.WireEnum]
 public enum RepresentationRel
 {
-    Original,
-    Thumbnail,
-    Preview,
-    Optimized,
-    Derived,
-    Other,
-}
-
-internal sealed class RepresentationRelJsonConverter : global::System.Text.Json.Serialization.JsonConverter<RepresentationRel>
-{
-    public override RepresentationRel Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("RepresentationRel", root);
-        return root.GetString() switch
-        {
-            "original" => RepresentationRel.Original,
-            "thumbnail" => RepresentationRel.Thumbnail,
-            "preview" => RepresentationRel.Preview,
-            "optimized" => RepresentationRel.Optimized,
-            "derived" => RepresentationRel.Derived,
-            "other" => RepresentationRel.Other,
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, RepresentationRel value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        writer.WriteStringValue(value switch
-        {
-            RepresentationRel.Original => "original",
-            RepresentationRel.Thumbnail => "thumbnail",
-            RepresentationRel.Preview => "preview",
-            RepresentationRel.Optimized => "optimized",
-            RepresentationRel.Derived => "derived",
-            RepresentationRel.Other => "other",
-            _ => throw new global::System.Text.Json.JsonException("Unknown enumeration value."),
-        });
-    }
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("original")] Original,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("thumbnail")] Thumbnail,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("preview")] Preview,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("optimized")] Optimized,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("derived")] Derived,
+    [global::System.Text.Json.Serialization.JsonStringEnumMemberName("other")] Other,
 }

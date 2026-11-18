@@ -4,39 +4,10 @@
 #nullable enable
 namespace Xynolog.Types;
 
-[global::System.Text.Json.Serialization.JsonConverter(typeof(ScoredResourceContextJsonConverter))]
+[global::Xynolog.Serialization.WireUnion(typeof(ScoredResourceContext.TextCase), typeof(ScoredResourceContext.ObjectCase), typeof(ScoredResourceContext.ArrayCase))]
 public closed record ScoredResourceContext
 {
     public sealed record TextCase(string Value) : ScoredResourceContext;
     public sealed record ObjectCase(global::System.Text.Json.JsonElement Value) : ScoredResourceContext;
     public sealed record ArrayCase(global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.ScoredResourceContextArrayItem> Value) : ScoredResourceContext;
-}
-
-internal sealed class ScoredResourceContextJsonConverter : global::System.Text.Json.Serialization.JsonConverter<ScoredResourceContext>
-{
-    public override ScoredResourceContext Read(ref global::System.Text.Json.Utf8JsonReader reader, global::System.Type type, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        using var document = global::System.Text.Json.JsonDocument.ParseValue(ref reader);
-        var root = document.RootElement;
-        global::Xynolog.Serialization.WireJson.Validate("ScoredResourceContext", root);
-        var variant = global::Xynolog.Serialization.WireJson.Variant("ScoredResourceContext", root);
-        return variant switch
-        {
-            0 => new ScoredResourceContext.TextCase(global::Xynolog.Serialization.WireJson.Read<string>(root, options)),
-            1 => new ScoredResourceContext.ObjectCase(global::Xynolog.Serialization.WireJson.Read<global::System.Text.Json.JsonElement>(root, options)),
-            2 => new ScoredResourceContext.ArrayCase(global::Xynolog.Serialization.WireJson.Read<global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.ScoredResourceContextArrayItem>>(root, options)),
-            _ => throw new global::System.Text.Json.JsonException("No matching union variant."),
-        };
-    }
-
-    public override void Write(global::System.Text.Json.Utf8JsonWriter writer, ScoredResourceContext value, global::System.Text.Json.JsonSerializerOptions options)
-    {
-        switch (value)
-        {
-            case ScoredResourceContext.TextCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            case ScoredResourceContext.ObjectCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            case ScoredResourceContext.ArrayCase selected: global::System.Text.Json.JsonSerializer.Serialize(writer, selected.Value, options); break;
-            default: throw new global::System.Text.Json.JsonException("Unknown union variant.");
-        }
-    }
 }

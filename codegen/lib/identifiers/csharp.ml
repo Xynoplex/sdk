@@ -90,6 +90,7 @@ let value_type (kind : Table.kind) =
                 };
               C.Expression_property
                 {
+                  attributes = [];
                   modifiers = [ Public ];
                   type_ = text;
                   name = "Value";
