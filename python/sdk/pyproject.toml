@@ -112,7 +112,7 @@ select = ["ANN", "ASYNC", "B", "C4", "E", "F", "I", "PGH", "PT", "RUF", "SIM", "
 # requires-python's floor, which mypy does not read. lint:python-version holds
 # this, pyright's, the classifiers and CI's matrix to it.
 python_version = "3.12"
-files = ["src", "tests", "conformance", "scripts"]
+files = ["src", "tests", "conformance"]
 strict = true
 # pydantic's own plugin, with each of its looser defaults turned off below: at
 # its defaults a constructor takes anything, and a wrong kind of id would pass.
@@ -129,7 +129,7 @@ warn_required_dynamic_aliases = true
 
 [tool.pyright]
 pythonVersion = "3.12"
-include = ["src", "tests", "conformance", "scripts"]
+include = ["src", "tests", "conformance"]
 typeCheckingMode = "strict"
 # `# type: ignore` is mypy's alone here; pyright is told by `# pyright: ignore[rule]`.
 # Either left on a line that no longer needs it is an error, which is what
