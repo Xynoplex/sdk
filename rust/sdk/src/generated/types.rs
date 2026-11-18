@@ -1146,7 +1146,7 @@ schema!(BrowseClickEvent);
 pub struct BrowseDirectoryFailed {
     /// Machine-readable failure class, for consumers that must BRANCH on why a command failed rather than log it. Optional and deliberately sparse: absent means 'no class declared', and every existing failure stays that way. An enum rather than a free string so the vocabulary has an owner — an unconstrained code is a mirror with no gate, and adding one should be a deliberate spec change. `message` remains the human-readable text and is unaffected. Members: `peer-unavailable` — the channel this command was sent on has no subscriber, i.e. the service that answers it has not connected yet. Transient by nature (a peer still starting), which is what distinguishes it from a refusal: retrying is the correct response. `not-found` — the resource this command addressed does not exist in this knowledge base. A verdict, not a symptom: it is emitted only where the answer comes from the event store, which is the system of record, and never from a projection that may merely be lagging. Deterministic, so unlike `peer-unavailable` retrying is pointless — and consumers may act destructively on it (the SDK deletes a restored tab). Absence is not denial: a future 'exists, but not for you' must travel as its own code, never as this one. `unauthorized` — that code: the caller is authenticated but not permitted to do what it asked. A verdict about the CALLER, not the resource, so retrying under the same credential cannot succeed and a consumer must never spin on it; emitted by `job:claim` for a caller whose token carries no worker role. `none-pending` — a declined claim, not an error: the queue holds no pending job of the requested types. Nothing went wrong; the one code a consumer PARKS on, meaning 'nothing to do until a wake-up'. Emitted by `job:claim` only. A `job:claim` refusal carrying neither is unclassified — a malformed record or a missing injection — and a consumer treats it as 'log it, assume nothing'.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub code: Option<BrowseDirectoryFailedCode>,
+    pub code: Option<CommandErrorCode>,
     /// Human-readable error message
     pub message: String,
     /// Optional additional context (stack trace, field name, etc.)
@@ -1169,33 +1169,6 @@ impl BrowseDirectoryFailed {
 }
 
 schema!(BrowseDirectoryFailed);
-
-/// Machine-readable failure class, for consumers that must BRANCH on why a command failed rather than log it. Optional and deliberately sparse: absent means 'no class declared', and every existing failure stays that way. An enum rather than a free string so the vocabulary has an owner — an unconstrained code is a mirror with no gate, and adding one should be a deliberate spec change. `message` remains the human-readable text and is unaffected. Members: `peer-unavailable` — the channel this command was sent on has no subscriber, i.e. the service that answers it has not connected yet. Transient by nature (a peer still starting), which is what distinguishes it from a refusal: retrying is the correct response. `not-found` — the resource this command addressed does not exist in this knowledge base. A verdict, not a symptom: it is emitted only where the answer comes from the event store, which is the system of record, and never from a projection that may merely be lagging. Deterministic, so unlike `peer-unavailable` retrying is pointless — and consumers may act destructively on it (the SDK deletes a restored tab). Absence is not denial: a future 'exists, but not for you' must travel as its own code, never as this one. `unauthorized` — that code: the caller is authenticated but not permitted to do what it asked. A verdict about the CALLER, not the resource, so retrying under the same credential cannot succeed and a consumer must never spin on it; emitted by `job:claim` for a caller whose token carries no worker role. `none-pending` — a declined claim, not an error: the queue holds no pending job of the requested types. Nothing went wrong; the one code a consumer PARKS on, meaning 'nothing to do until a wake-up'. Emitted by `job:claim` only. A `job:claim` refusal carrying neither is unclassified — a malformed record or a missing injection — and a consumer treats it as 'log it, assume nothing'.
-#[derive(
-    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
-)]
-pub enum BrowseDirectoryFailedCode {
-    #[serde(rename = "peer-unavailable")]
-    PeerUnavailable,
-    #[serde(rename = "not-found")]
-    NotFound,
-    #[serde(rename = "unauthorized")]
-    Unauthorized,
-    #[serde(rename = "none-pending")]
-    NonePending,
-}
-
-impl BrowseDirectoryFailedCode {
-    /// The value as the wire spells it.
-    pub const fn as_str(&self) -> &'static str {
-        match self {
-            BrowseDirectoryFailedCode::PeerUnavailable => "peer-unavailable",
-            BrowseDirectoryFailedCode::NotFound => "not-found",
-            BrowseDirectoryFailedCode::Unauthorized => "unauthorized",
-            BrowseDirectoryFailedCode::NonePending => "none-pending",
-        }
-    }
-}
 
 /// Request to browse a directory listing
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -2849,7 +2822,7 @@ schema!(GatherAnnotationRequest);
 pub struct GatherFailed {
     /// Machine-readable failure class, for consumers that must BRANCH on why a command failed rather than log it. Optional and deliberately sparse: absent means 'no class declared', and every existing failure stays that way. An enum rather than a free string so the vocabulary has an owner — an unconstrained code is a mirror with no gate, and adding one should be a deliberate spec change. `message` remains the human-readable text and is unaffected. Members: `peer-unavailable` — the channel this command was sent on has no subscriber, i.e. the service that answers it has not connected yet. Transient by nature (a peer still starting), which is what distinguishes it from a refusal: retrying is the correct response. `not-found` — the resource this command addressed does not exist in this knowledge base. A verdict, not a symptom: it is emitted only where the answer comes from the event store, which is the system of record, and never from a projection that may merely be lagging. Deterministic, so unlike `peer-unavailable` retrying is pointless — and consumers may act destructively on it (the SDK deletes a restored tab). Absence is not denial: a future 'exists, but not for you' must travel as its own code, never as this one. `unauthorized` — that code: the caller is authenticated but not permitted to do what it asked. A verdict about the CALLER, not the resource, so retrying under the same credential cannot succeed and a consumer must never spin on it; emitted by `job:claim` for a caller whose token carries no worker role. `none-pending` — a declined claim, not an error: the queue holds no pending job of the requested types. Nothing went wrong; the one code a consumer PARKS on, meaning 'nothing to do until a wake-up'. Emitted by `job:claim` only. A `job:claim` refusal carrying neither is unclassified — a malformed record or a missing injection — and a consumer treats it as 'log it, assume nothing'.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub code: Option<GatherFailedCode>,
+    pub code: Option<CommandErrorCode>,
     /// Human-readable error message
     pub message: String,
     /// Optional additional context (stack trace, field name, etc.)
@@ -2873,33 +2846,6 @@ impl GatherFailed {
 }
 
 schema!(GatherFailed);
-
-/// Machine-readable failure class, for consumers that must BRANCH on why a command failed rather than log it. Optional and deliberately sparse: absent means 'no class declared', and every existing failure stays that way. An enum rather than a free string so the vocabulary has an owner — an unconstrained code is a mirror with no gate, and adding one should be a deliberate spec change. `message` remains the human-readable text and is unaffected. Members: `peer-unavailable` — the channel this command was sent on has no subscriber, i.e. the service that answers it has not connected yet. Transient by nature (a peer still starting), which is what distinguishes it from a refusal: retrying is the correct response. `not-found` — the resource this command addressed does not exist in this knowledge base. A verdict, not a symptom: it is emitted only where the answer comes from the event store, which is the system of record, and never from a projection that may merely be lagging. Deterministic, so unlike `peer-unavailable` retrying is pointless — and consumers may act destructively on it (the SDK deletes a restored tab). Absence is not denial: a future 'exists, but not for you' must travel as its own code, never as this one. `unauthorized` — that code: the caller is authenticated but not permitted to do what it asked. A verdict about the CALLER, not the resource, so retrying under the same credential cannot succeed and a consumer must never spin on it; emitted by `job:claim` for a caller whose token carries no worker role. `none-pending` — a declined claim, not an error: the queue holds no pending job of the requested types. Nothing went wrong; the one code a consumer PARKS on, meaning 'nothing to do until a wake-up'. Emitted by `job:claim` only. A `job:claim` refusal carrying neither is unclassified — a malformed record or a missing injection — and a consumer treats it as 'log it, assume nothing'.
-#[derive(
-    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
-)]
-pub enum GatherFailedCode {
-    #[serde(rename = "peer-unavailable")]
-    PeerUnavailable,
-    #[serde(rename = "not-found")]
-    NotFound,
-    #[serde(rename = "unauthorized")]
-    Unauthorized,
-    #[serde(rename = "none-pending")]
-    NonePending,
-}
-
-impl GatherFailedCode {
-    /// The value as the wire spells it.
-    pub const fn as_str(&self) -> &'static str {
-        match self {
-            GatherFailedCode::PeerUnavailable => "peer-unavailable",
-            GatherFailedCode::NotFound => "not-found",
-            GatherFailedCode::Unauthorized => "unauthorized",
-            GatherFailedCode::NonePending => "none-pending",
-        }
-    }
-}
 
 /// Request for the annotations elsewhere that refer to a resource. The Librarian answers from the graph.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -2948,7 +2894,7 @@ schema!(GatherResourceComplete);
 pub struct GatherResourceFailed {
     /// Machine-readable failure class, for consumers that must BRANCH on why a command failed rather than log it. Optional and deliberately sparse: absent means 'no class declared', and every existing failure stays that way. An enum rather than a free string so the vocabulary has an owner — an unconstrained code is a mirror with no gate, and adding one should be a deliberate spec change. `message` remains the human-readable text and is unaffected. Members: `peer-unavailable` — the channel this command was sent on has no subscriber, i.e. the service that answers it has not connected yet. Transient by nature (a peer still starting), which is what distinguishes it from a refusal: retrying is the correct response. `not-found` — the resource this command addressed does not exist in this knowledge base. A verdict, not a symptom: it is emitted only where the answer comes from the event store, which is the system of record, and never from a projection that may merely be lagging. Deterministic, so unlike `peer-unavailable` retrying is pointless — and consumers may act destructively on it (the SDK deletes a restored tab). Absence is not denial: a future 'exists, but not for you' must travel as its own code, never as this one. `unauthorized` — that code: the caller is authenticated but not permitted to do what it asked. A verdict about the CALLER, not the resource, so retrying under the same credential cannot succeed and a consumer must never spin on it; emitted by `job:claim` for a caller whose token carries no worker role. `none-pending` — a declined claim, not an error: the queue holds no pending job of the requested types. Nothing went wrong; the one code a consumer PARKS on, meaning 'nothing to do until a wake-up'. Emitted by `job:claim` only. A `job:claim` refusal carrying neither is unclassified — a malformed record or a missing injection — and a consumer treats it as 'log it, assume nothing'.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub code: Option<GatherResourceFailedCode>,
+    pub code: Option<CommandErrorCode>,
     /// Human-readable error message
     pub message: String,
     /// Optional additional context (stack trace, field name, etc.)
@@ -2972,33 +2918,6 @@ impl GatherResourceFailed {
 }
 
 schema!(GatherResourceFailed);
-
-/// Machine-readable failure class, for consumers that must BRANCH on why a command failed rather than log it. Optional and deliberately sparse: absent means 'no class declared', and every existing failure stays that way. An enum rather than a free string so the vocabulary has an owner — an unconstrained code is a mirror with no gate, and adding one should be a deliberate spec change. `message` remains the human-readable text and is unaffected. Members: `peer-unavailable` — the channel this command was sent on has no subscriber, i.e. the service that answers it has not connected yet. Transient by nature (a peer still starting), which is what distinguishes it from a refusal: retrying is the correct response. `not-found` — the resource this command addressed does not exist in this knowledge base. A verdict, not a symptom: it is emitted only where the answer comes from the event store, which is the system of record, and never from a projection that may merely be lagging. Deterministic, so unlike `peer-unavailable` retrying is pointless — and consumers may act destructively on it (the SDK deletes a restored tab). Absence is not denial: a future 'exists, but not for you' must travel as its own code, never as this one. `unauthorized` — that code: the caller is authenticated but not permitted to do what it asked. A verdict about the CALLER, not the resource, so retrying under the same credential cannot succeed and a consumer must never spin on it; emitted by `job:claim` for a caller whose token carries no worker role. `none-pending` — a declined claim, not an error: the queue holds no pending job of the requested types. Nothing went wrong; the one code a consumer PARKS on, meaning 'nothing to do until a wake-up'. Emitted by `job:claim` only. A `job:claim` refusal carrying neither is unclassified — a malformed record or a missing injection — and a consumer treats it as 'log it, assume nothing'.
-#[derive(
-    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
-)]
-pub enum GatherResourceFailedCode {
-    #[serde(rename = "peer-unavailable")]
-    PeerUnavailable,
-    #[serde(rename = "not-found")]
-    NotFound,
-    #[serde(rename = "unauthorized")]
-    Unauthorized,
-    #[serde(rename = "none-pending")]
-    NonePending,
-}
-
-impl GatherResourceFailedCode {
-    /// The value as the wire spells it.
-    pub const fn as_str(&self) -> &'static str {
-        match self {
-            GatherResourceFailedCode::PeerUnavailable => "peer-unavailable",
-            GatherResourceFailedCode::NotFound => "not-found",
-            GatherResourceFailedCode::Unauthorized => "unauthorized",
-            GatherResourceFailedCode::NonePending => "none-pending",
-        }
-    }
-}
 
 /// Request payload sent on the gather:resource-requested bus channel to gather context for a resource.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -6893,7 +6812,7 @@ schema!(MatchResourcesResult);
 pub struct MatchSearchFailed {
     /// Machine-readable failure class, for consumers that must BRANCH on why a command failed rather than log it. Optional and deliberately sparse: absent means 'no class declared', and every existing failure stays that way. An enum rather than a free string so the vocabulary has an owner — an unconstrained code is a mirror with no gate, and adding one should be a deliberate spec change. `message` remains the human-readable text and is unaffected. Members: `peer-unavailable` — the channel this command was sent on has no subscriber, i.e. the service that answers it has not connected yet. Transient by nature (a peer still starting), which is what distinguishes it from a refusal: retrying is the correct response. `not-found` — the resource this command addressed does not exist in this knowledge base. A verdict, not a symptom: it is emitted only where the answer comes from the event store, which is the system of record, and never from a projection that may merely be lagging. Deterministic, so unlike `peer-unavailable` retrying is pointless — and consumers may act destructively on it (the SDK deletes a restored tab). Absence is not denial: a future 'exists, but not for you' must travel as its own code, never as this one. `unauthorized` — that code: the caller is authenticated but not permitted to do what it asked. A verdict about the CALLER, not the resource, so retrying under the same credential cannot succeed and a consumer must never spin on it; emitted by `job:claim` for a caller whose token carries no worker role. `none-pending` — a declined claim, not an error: the queue holds no pending job of the requested types. Nothing went wrong; the one code a consumer PARKS on, meaning 'nothing to do until a wake-up'. Emitted by `job:claim` only. A `job:claim` refusal carrying neither is unclassified — a malformed record or a missing injection — and a consumer treats it as 'log it, assume nothing'.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub code: Option<MatchSearchFailedCode>,
+    pub code: Option<CommandErrorCode>,
     /// Human-readable error message
     pub message: String,
     /// Optional additional context (stack trace, field name, etc.)
@@ -6917,33 +6836,6 @@ impl MatchSearchFailed {
 }
 
 schema!(MatchSearchFailed);
-
-/// Machine-readable failure class, for consumers that must BRANCH on why a command failed rather than log it. Optional and deliberately sparse: absent means 'no class declared', and every existing failure stays that way. An enum rather than a free string so the vocabulary has an owner — an unconstrained code is a mirror with no gate, and adding one should be a deliberate spec change. `message` remains the human-readable text and is unaffected. Members: `peer-unavailable` — the channel this command was sent on has no subscriber, i.e. the service that answers it has not connected yet. Transient by nature (a peer still starting), which is what distinguishes it from a refusal: retrying is the correct response. `not-found` — the resource this command addressed does not exist in this knowledge base. A verdict, not a symptom: it is emitted only where the answer comes from the event store, which is the system of record, and never from a projection that may merely be lagging. Deterministic, so unlike `peer-unavailable` retrying is pointless — and consumers may act destructively on it (the SDK deletes a restored tab). Absence is not denial: a future 'exists, but not for you' must travel as its own code, never as this one. `unauthorized` — that code: the caller is authenticated but not permitted to do what it asked. A verdict about the CALLER, not the resource, so retrying under the same credential cannot succeed and a consumer must never spin on it; emitted by `job:claim` for a caller whose token carries no worker role. `none-pending` — a declined claim, not an error: the queue holds no pending job of the requested types. Nothing went wrong; the one code a consumer PARKS on, meaning 'nothing to do until a wake-up'. Emitted by `job:claim` only. A `job:claim` refusal carrying neither is unclassified — a malformed record or a missing injection — and a consumer treats it as 'log it, assume nothing'.
-#[derive(
-    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
-)]
-pub enum MatchSearchFailedCode {
-    #[serde(rename = "peer-unavailable")]
-    PeerUnavailable,
-    #[serde(rename = "not-found")]
-    NotFound,
-    #[serde(rename = "unauthorized")]
-    Unauthorized,
-    #[serde(rename = "none-pending")]
-    NonePending,
-}
-
-impl MatchSearchFailedCode {
-    /// The value as the wire spells it.
-    pub const fn as_str(&self) -> &'static str {
-        match self {
-            MatchSearchFailedCode::PeerUnavailable => "peer-unavailable",
-            MatchSearchFailedCode::NotFound => "not-found",
-            MatchSearchFailedCode::Unauthorized => "unauthorized",
-            MatchSearchFailedCode::NonePending => "none-pending",
-        }
-    }
-}
 
 /// Request payload sent on the match:search-request bus channel to find candidate matches.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -7904,7 +7796,7 @@ schema!(ResourceUpdatedPayload);
 pub struct ScoredResource {
     /// JSON-LD context; URI, object, or array of these.
     #[serde(rename = "@context")]
-    pub context: ScoredResourceContext,
+    pub context: ResourceDescriptorContext,
     /// The id of the resource being described.
     #[serde(rename = "@id")]
     pub id: ResourceId,
@@ -7917,7 +7809,7 @@ pub struct ScoredResource {
     pub description: Option<String>,
     /// Persistent identifiers (e.g., DOI, URN).
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub identifier: Option<ScoredResourceIdentifier>,
+    pub identifier: Option<ResourceDescriptorIdentifier>,
     /// Topics (IRIs or strings).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub about: Option<OneOrMoreStrings>,
@@ -7944,7 +7836,7 @@ pub struct ScoredResource {
     /// W3C PROV: the resource, or resources, this one was derived from, each by its id
     #[serde(rename = "wasDerivedFrom")]
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub was_derived_from: Option<ScoredResourceWasDerivedFrom>,
+    pub was_derived_from: Option<ResourceDescriptorWasDerivedFrom>,
     /// W3C PROV — every party responsible for this resource, derived by the knowledge base at creation from verified identities: `[requester, generator]` for a resource a job produced, collapsed to the one agent when the requester produced it. Never accepted from an emitter.
     #[serde(rename = "wasAttributedTo")]
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -7961,7 +7853,7 @@ pub struct ScoredResource {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub available_formats: Option<Vec<String>>,
     /// Managed or referenced byte-level renditions of this resource.
-    pub representations: ScoredResourceRepresentations,
+    pub representations: ResourceDescriptorRepresentations,
     /// Application-specific: Whether this resource is archived
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub archived: Option<bool>,
@@ -7997,10 +7889,10 @@ pub struct ScoredResource {
 impl ScoredResource {
     /// The `ScoredResource` that states these and nothing else.
     pub fn new(
-        context: ScoredResourceContext,
+        context: ResourceDescriptorContext,
         id: ResourceId,
         name: impl Into<String>,
-        representations: ScoredResourceRepresentations,
+        representations: ResourceDescriptorRepresentations,
     ) -> Self {
         Self {
             context,
@@ -8036,65 +7928,6 @@ impl ScoredResource {
 }
 
 schema!(ScoredResource);
-
-/// JSON-LD context; URI, object, or array of these.
-#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
-#[serde(untagged)]
-pub enum ScoredResourceContext {
-    Text(String),
-    Object(serde_json::Map<String, serde_json::Value>),
-    List(Vec<ScoredResourceContextItem>),
-}
-
-#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
-#[serde(untagged)]
-pub enum ScoredResourceContextItem {
-    Text(String),
-    Object(serde_json::Map<String, serde_json::Value>),
-}
-
-/// Persistent identifiers (e.g., DOI, URN).
-#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
-#[serde(untagged)]
-pub enum ScoredResourceIdentifier {
-    Text(String),
-    List(Vec<String>),
-    Object(ScoredResourceIdentifierObject),
-}
-
-#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
-pub struct ScoredResourceIdentifierObject {
-    #[serde(rename = "@id")]
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub id: Option<String>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub value: Option<String>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub scheme: Option<String>,
-    /// Every property the schema does not name, as it came.
-    #[serde(flatten)]
-    pub rest: serde_json::Map<String, serde_json::Value>,
-}
-
-/// Managed or referenced byte-level renditions of this resource.
-#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
-#[serde(untagged)]
-pub enum ScoredResourceRepresentations {
-    Representation(Representation),
-    List(Vec<Representation>),
-}
-
-member!(ScoredResourceRepresentations::Representation(
-    Representation,
-));
-
-/// W3C PROV: the resource, or resources, this one was derived from, each by its id
-#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
-#[serde(untagged)]
-pub enum ScoredResourceWasDerivedFrom {
-    ResourceId(ResourceId),
-    List(Vec<ResourceId>),
-}
 
 /// One W3C selector: a way of finding a segment of a resource. Tell them apart by `type`, which is required on each and single-valued.
 #[derive(Debug, Clone, PartialEq, serde::Serialize)]

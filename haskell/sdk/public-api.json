@@ -39,7 +39,7 @@
     "generated/Xynolog/Internal/Generated/Models/ArchivistStream.hs": "b2990b0c9af11523ea8a836201a58481882a5ab1540c1bf451dca260b10d2268",
     "generated/Xynolog/Internal/Generated/Models/ArchivistStreamsResponse.hs": "e1c5bb5044ef01438c2f3f708ed93ace9ae30577d6e8f2453b218a2147733c3a",
     "generated/Xynolog/Internal/Generated/Models/AssessingJobParams.hs": "a55297c115fde5be4bc2482984daf8d4e7664606f782fb3ac5f0f39c73b053b5",
-    "generated/Xynolog/Internal/Generated/Models/AttributedEvent.hs": "f865e9454386c0b5f2c6cb30cc4a802a2a7fb97f495cb5cd3e8eade41aa2a393",
+    "generated/Xynolog/Internal/Generated/Models/AttributedEvent.hs": "b4d3172dfbbb98b627eb82a6a1918f9aeee3ebfd1189cf2553a53eca430a8d22",
     "generated/Xynolog/Internal/Generated/Models/BeckonFocusEvent.hs": "4a720e27a25c894d01a22f6049784d8775f92df9b0611860996f661694417e8a",
     "generated/Xynolog/Internal/Generated/Models/BeckonHoverEvent.hs": "3e33fc4ad9a8ced2592941657b021729eebcb86c88d8ba243e78913e6105e25f",
     "generated/Xynolog/Internal/Generated/Models/BeckonSparkleEvent.hs": "6640aa73bfd9186ffc2600a275eb2853645dd54439ee60a82cde8efeaa424f83",
@@ -58,7 +58,7 @@
     "generated/Xynolog/Internal/Generated/Models/BrowseAnnotationRequest.hs": "3ea8b8e4c0b9131489003b3b42b2786917a3ce53a5c75f94c8e1eba8ec28778a",
     "generated/Xynolog/Internal/Generated/Models/BrowseAnnotationResult.hs": "1fe3fcfeac664585f9f1824223a0c665e0361f8f8c34ebf7c2618fe64c86a983",
     "generated/Xynolog/Internal/Generated/Models/BrowseClickEvent.hs": "28f007c42e274ddf4f8da914467c5ba2f9d27f0311bc943ff4bf6bc763adc239",
-    "generated/Xynolog/Internal/Generated/Models/BrowseDirectoryFailed.hs": "dd3e3701f737b14bb10730014f62cb7e1ef2bbf2b8bcd2580d9b6cba9ddf2ab5",
+    "generated/Xynolog/Internal/Generated/Models/BrowseDirectoryFailed.hs": "b15f7a9fc2c4f04a9aa4dc67cdff4c18c72997bf9779c31dee2dff22e4029a13",
     "generated/Xynolog/Internal/Generated/Models/BrowseDirectoryRequest.hs": "39e79d76534cdf36bf3337d10fdd6693dd419929e6dbeacfc842245cf16022c4",
     "generated/Xynolog/Internal/Generated/Models/BrowseDirectoryResult.hs": "0808db856ad816bb634ab5c73a509b4132162a52d3f7125b64ec4768e6343159",
     "generated/Xynolog/Internal/Generated/Models/BrowseDirectoryResultResponse.hs": "c7c0d3e99237a153caeb26a1713e612a22ffff6e506a51938e341475a11c8177",
@@ -123,7 +123,7 @@
     "generated/Xynolog/Internal/Generated/Models/EngineEntry.hs": "c5f257f1ede9f14a1d66843cc01f1854078406d09e3c00606559178f28c913f4",
     "generated/Xynolog/Internal/Generated/Models/EngineLimits.hs": "e8e6bd7288380202316a3e40987936191fb33a410dfebcbd109c7e7cb785bb47",
     "generated/Xynolog/Internal/Generated/Models/EngineWithLimits.hs": "66f00abb19cfe29973b5f3ddec8f503c3012d2aaa5774c9fe822ba509810532d",
-    "generated/Xynolog/Internal/Generated/Models/EnrichedResourceEvent.hs": "39c5877f3513e4e6f16dede8e9e45dc1e59bc8a3a714fc84c74f17343cecbb1a",
+    "generated/Xynolog/Internal/Generated/Models/EnrichedResourceEvent.hs": "e8113a8c28d68508860a045ebe30071c73e694fd99d2fcd5beb13a1486c9ae45",
     "generated/Xynolog/Internal/Generated/Models/EntityTagChangedPayload.hs": "b2ffeedefa5f51d5b083105fd9cd0e09b7fc5d2e18950be89dac9ae73ffb05b0",
     "generated/Xynolog/Internal/Generated/Models/EntityTypeAddedPayload.hs": "4b0f78e2128a618316d051dd19a1e84f78b57605de8fce2c700027ef6ed62146",
     "generated/Xynolog/Internal/Generated/Models/EntityTypesProjection.hs": "8963aab4c8bc8a5a91fd5bd07e7b8b73999e367dcd43846d889ac54b8260c628",
@@ -145,11 +145,11 @@
     "generated/Xynolog/Internal/Generated/Models/GatherAnnotationComplete.hs": "2f3d157cc56a1c285f3c5a3df6baf488659f54cfd419110a22d9e7e7667dc31f",
     "generated/Xynolog/Internal/Generated/Models/GatherAnnotationOptions.hs": "124af51660aabd393cb0897ae3d961a476b32cdcc37a0531291edaca4d719d56",
     "generated/Xynolog/Internal/Generated/Models/GatherAnnotationRequest.hs": "921cd9c38d9c1506ac044035988373efa1278387c97e59f82b95bdf6bc7466ef",
-    "generated/Xynolog/Internal/Generated/Models/GatherFailed.hs": "498030ce358873c431eb0e2bc4e69d442ab0aec298b54cfa1803739463af7bc7",
+    "generated/Xynolog/Internal/Generated/Models/GatherFailed.hs": "5a9fc9bdbedfde6009703c6b33e9456a34edf97ee2b3d3b7fb90017f5dd90d83",
     "generated/Xynolog/Internal/Generated/Models/GatherReferencedByRequest.hs": "aa2c84277f44a9d336330d1f33c1c7bfe8bbdd8274626b5309a9e69506e045a9",
     "generated/Xynolog/Internal/Generated/Models/GatherReferencedByResult.hs": "0f4201b1449bef0269afdd823f27b4c6ab253ad369650b9664780aea2fb3b3ab",
     "generated/Xynolog/Internal/Generated/Models/GatherResourceComplete.hs": "0164eb8f973619939ac9bc37f74d2805b5467670a7d8682e9d164fb93b314dd4",
-    "generated/Xynolog/Internal/Generated/Models/GatherResourceFailed.hs": "51949a6da31038c0e12b21fe0711abf7921a1b7c948f92228f0e6a227f94bfe3",
+    "generated/Xynolog/Internal/Generated/Models/GatherResourceFailed.hs": "041fd1f345c94afacedf1d9690799045f8c37bd6aeb3c42c9413b22424c1e4eb",
     "generated/Xynolog/Internal/Generated/Models/GatherResourceOptions.hs": "6e100bddb3518dca4609dbefb851fd705cc94b51b45f308519b35f93bdad66c3",
     "generated/Xynolog/Internal/Generated/Models/GatherResourceRequest.hs": "fbac241ff4026830e88b1d52cf254b4e1fe8a4fe747ca3bfe7c774ef9e11fd91",
     "generated/Xynolog/Internal/Generated/Models/GatherResourceRequestOptions.hs": "7149c503283d606d056a52aa080b9dd1544f67eb8db95fbbadcf390eb61e72f1",
@@ -276,7 +276,7 @@
     "generated/Xynolog/Internal/Generated/Models/MatchResourcesRequest.hs": "39d26db272da3a5a98ad02d58374f1f42dfa4b9981c2e657a473d3adfd62faee",
     "generated/Xynolog/Internal/Generated/Models/MatchResourcesResponse.hs": "a3d66c8743c409e31599eea0c34dea5a6e15840bd9c99b41443c0240573eaf32",
     "generated/Xynolog/Internal/Generated/Models/MatchResourcesResult.hs": "658e3ffca8c04bf6f545dfce3872845bd32c6489b78decb3e5da9e2a93c8541d",
-    "generated/Xynolog/Internal/Generated/Models/MatchSearchFailed.hs": "9ee41e65481d469f49046b547c2c748310c55c2c86981b1e3a4f0dc98781d828",
+    "generated/Xynolog/Internal/Generated/Models/MatchSearchFailed.hs": "e15951735fb39a03e6796a3d29aa75cfca7ea1290d979624bb58309e131cf754",
     "generated/Xynolog/Internal/Generated/Models/MatchSearchOptions.hs": "9f2247c7727bb5fc9a0d9cd4a3e486fc052dcb4a5f2b792d61a6cea0d795d76d",
     "generated/Xynolog/Internal/Generated/Models/MatchSearchRequest.hs": "166dcbff40273a7702cdd27433f211cabc726b20b482ab2ec21d916da3d5ed55",
     "generated/Xynolog/Internal/Generated/Models/MatchSearchResult.hs": "272f59681010391a525785ba7f5ca80a1d1c94148c9459772078041b8a7e383d",
@@ -326,7 +326,7 @@
     "generated/Xynolog/Internal/Generated/Models/ResourceUpload.hs": "3704cef8a2a022d03230ed1fa18de884d64fcb48b92a8c382718abfacb72768e",
     "generated/Xynolog/Internal/Generated/Models/ResourceUploadMetadata.hs": "5d348bdd04725c9eab8028f3be0e8905713f0be33ce27adb95470ec30057658d",
     "generated/Xynolog/Internal/Generated/Models/ResourceView.hs": "ea580378850a772e26424c05ee486c840051dae45389753252885c2187967121",
-    "generated/Xynolog/Internal/Generated/Models/ScoredResource.hs": "75354c9981679c08b7edc30e8ae410f6af6868c47a1b9e6577d5e84499130d63",
+    "generated/Xynolog/Internal/Generated/Models/ScoredResource.hs": "497e90667d6714f9d4213af3319a35239600a0d4c032a23222977b64201fa3be",
     "generated/Xynolog/Internal/Generated/Models/Selector.hs": "d2b3516c92cde402d81cfc19d29b8d2acf7617ff962ae40e62ef0bb26283523d",
     "generated/Xynolog/Internal/Generated/Models/SemanticMatch.hs": "b15ff7c46ebe0aa8f3078cb14e7b7de13a77f39fbe462d335393ffb767982648",
     "generated/Xynolog/Internal/Generated/Models/ServiceAddress.hs": "c425527ddc0c9d33b06975a4d9099440d71ce06d3c06c9d0bd08c30016878ee5",
@@ -397,12 +397,12 @@
     "generated/Xynolog/Internal/Generated/Models/YieldUpdateOk.hs": "207dc04a0961da4f10e129a425ca3fb67e6520604f7bf2550a9c97fe003e632a",
     "generated/Xynolog/Internal/Generated/Models/YieldedResource.hs": "d0d6548c36346e826de4871ffed191580a320addb2e6fe9cb3d4b1352809bb6b",
     "generated/Xynolog/Internal/Generated/OAuth.hs": "d465af47d90148c06df0f2c76fed0818e7a1159cd2f51267d181d0676a285467",
-    "generated/Xynolog/Internal/Generated/OperationFailure.hs": "1ce84f80a19cb42163ebd8035fbc392bf1776108e4b3b073a59d5ae44a75c9f0",
+    "generated/Xynolog/Internal/Generated/OperationFailure.hs": "ba52fe1a6820065a7a163bea55e493fab33e65dd477cbb51834b87c8b1df8224",
     "generated/Xynolog/Internal/Generated/OperationReports.hs": "ae06fe64f5efd431f7b6a2406b8fe53f1513c80a1e5bb24894e1cf36492c3365",
     "generated/Xynolog/Internal/Generated/PendingAnnotation.hs": "0a59e659c292318dbab933713a69f61d0a451ee0c86e068063ddffc62b443836",
     "generated/Xynolog/Internal/Generated/Principals.hs": "02fd2fd7b956e96bcda03bb7685472bf1a029666bf21fe32c1ff3e0ab217ceb9",
     "generated/Xynolog/Internal/Generated/Required.hs": "e5e609258787fb3f90036fc2da74e0ea52418f586d0aea6b0d876cc73bc0ada4",
-    "generated/Xynolog/Internal/Generated/Schemas.hs": "3565ae671856d773991771311e49ebb22cfc83e1ff7d3a9602e70f6b564a562d",
+    "generated/Xynolog/Internal/Generated/Schemas.hs": "4332356ea849d758ebbce41b7f8754f7bb9f5fef0e27e59b8a672e2244f6bcca",
     "generated/Xynolog/Internal/Generated/SearchState.hs": "5e7c4daed0a722d855ef53499aa35c29fc7a62e7e943234f36576d49e6f79303",
     "generated/Xynolog/Internal/Generated/ServiceProof.hs": "86e44db90b1ac4a3713f4794f4f1f2f32bdf7eeeb7ad24e12046c050f8acadaf",
     "generated/Xynolog/Internal/Generated/SessionFactoryOptions.hs": "1378c790f4a48832e1a0a938eb64c8759870e4ebf73f2445e8ba81c354334c45",
@@ -3100,10 +3100,6 @@
           "definition": "data Xynolog.Internal.Generated.Models.AttributedEvent.AttributedEvent = ...",
           "kind": "*"
         },
-        "AttributedEventPayload": {
-          "definition": "data Xynolog.Internal.Generated.Models.AttributedEvent.AttributedEventPayload = ...",
-          "kind": "*"
-        },
         "BeckonFocusEvent": {
           "definition": "data Xynolog.Internal.Generated.Models.BeckonFocusEvent.BeckonFocusEvent = ...",
           "kind": "*"
@@ -3194,10 +3190,6 @@
         },
         "BrowseDirectoryFailed": {
           "definition": "data Xynolog.Internal.Generated.Models.BrowseDirectoryFailed.BrowseDirectoryFailed = ...",
-          "kind": "*"
-        },
-        "BrowseDirectoryFailedCode": {
-          "definition": "data Xynolog.Internal.Generated.Models.BrowseDirectoryFailed.BrowseDirectoryFailedCode = ...",
           "kind": "*"
         },
         "BrowseDirectoryRequest": {
@@ -3560,10 +3552,6 @@
           "definition": "data Xynolog.Internal.Generated.Models.EnrichedResourceEvent.EnrichedResourceEvent = ...",
           "kind": "*"
         },
-        "EnrichedResourceEventPayload": {
-          "definition": "data Xynolog.Internal.Generated.Models.EnrichedResourceEvent.EnrichedResourceEventPayload = ...",
-          "kind": "*"
-        },
         "EntityTagChangedPayload": {
           "definition": "data Xynolog.Internal.Generated.Models.EntityTagChangedPayload.EntityTagChangedPayload = ...",
           "kind": "*"
@@ -3684,10 +3672,6 @@
           "definition": "data Xynolog.Internal.Generated.Models.GatherFailed.GatherFailed = ...",
           "kind": "*"
         },
-        "GatherFailedCode": {
-          "definition": "data Xynolog.Internal.Generated.Models.GatherFailed.GatherFailedCode = ...",
-          "kind": "*"
-        },
         "GatherReferencedByRequest": {
           "definition": "data Xynolog.Internal.Generated.Models.GatherReferencedByRequest.GatherReferencedByRequest = ...",
           "kind": "*"
@@ -3702,10 +3686,6 @@
         },
         "GatherResourceFailed": {
           "definition": "data Xynolog.Internal.Generated.Models.GatherResourceFailed.GatherResourceFailed = ...",
-          "kind": "*"
-        },
-        "GatherResourceFailedCode": {
-          "definition": "data Xynolog.Internal.Generated.Models.GatherResourceFailed.GatherResourceFailedCode = ...",
           "kind": "*"
         },
         "GatherResourceOptions": {
@@ -4520,10 +4500,6 @@
           "definition": "data Xynolog.Internal.Generated.Models.MatchSearchFailed.MatchSearchFailed = ...",
           "kind": "*"
         },
-        "MatchSearchFailedCode": {
-          "definition": "data Xynolog.Internal.Generated.Models.MatchSearchFailed.MatchSearchFailedCode = ...",
-          "kind": "*"
-        },
         "MatchSearchOptions": {
           "definition": "data Xynolog.Internal.Generated.Models.MatchSearchOptions.MatchSearchOptions = ...",
           "kind": "*"
@@ -4798,38 +4774,6 @@
         },
         "ScoredResource": {
           "definition": "data Xynolog.Internal.Generated.Models.ScoredResource.ScoredResource = ...",
-          "kind": "*"
-        },
-        "ScoredResourceIdentifier": {
-          "definition": "data Xynolog.Internal.Generated.Models.ScoredResource.ScoredResourceIdentifier = ...",
-          "kind": "*"
-        },
-        "ScoredResourceIdentifierBranch3Value": {
-          "definition": "data Xynolog.Internal.Generated.Models.ScoredResource.ScoredResourceIdentifierBranch3Value = ...",
-          "kind": "*"
-        },
-        "ScoredResourceRepresentations": {
-          "definition": "data Xynolog.Internal.Generated.Models.ScoredResource.ScoredResourceRepresentations = ...",
-          "kind": "*"
-        },
-        "ScoredResourceU40_context": {
-          "definition": "data Xynolog.Internal.Generated.Models.ScoredResource.ScoredResourceU40_context = ...",
-          "kind": "*"
-        },
-        "ScoredResourceU40_contextBranch2Value": {
-          "definition": "data Xynolog.Internal.Generated.Models.ScoredResource.ScoredResourceU40_contextBranch2Value = ...",
-          "kind": "*"
-        },
-        "ScoredResourceU40_contextBranch3ValueItem": {
-          "definition": "data Xynolog.Internal.Generated.Models.ScoredResource.ScoredResourceU40_contextBranch3ValueItem = ...",
-          "kind": "*"
-        },
-        "ScoredResourceU40_contextBranch3ValueItemBranch2Value": {
-          "definition": "data Xynolog.Internal.Generated.Models.ScoredResource.ScoredResourceU40_contextBranch3ValueItemBranch2Value = ...",
-          "kind": "*"
-        },
-        "ScoredResourceWasDerivedFrom": {
-          "definition": "data Xynolog.Internal.Generated.Models.ScoredResource.ScoredResourceWasDerivedFrom = ...",
           "kind": "*"
         },
         "Selector": {
@@ -5275,8 +5219,7 @@
         "AssessingJobParamsToneBalanced": "Xynolog.Internal.Generated.Models.AssessingJobParams.AssessingJobParamsTone",
         "AssessingJobParamsToneConstructive": "Xynolog.Internal.Generated.Models.AssessingJobParams.AssessingJobParamsTone",
         "AssessingJobParamsToneCritical": "Xynolog.Internal.Generated.Models.AssessingJobParams.AssessingJobParamsTone",
-        "AttributedEvent": "Xynolog.Internal.Generated.Models.Agent.Agent -> Data.Text.Internal.Text -> Xynolog.Internal.Generated.Models.EventMetadata.EventMetadata -> Xynolog.Internal.Generated.Models.AttributedEvent.AttributedEventPayload -> Maybe Xynolog.Internal.Generated.Models.ResourceId.ResourceId -> Data.Text.Internal.Text -> Data.Text.Internal.Text -> Xynolog.Internal.Generated.Models.UserId.UserId -> Integer -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.AttributedEvent.AttributedEvent",
-        "AttributedEventPayload": "Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.AttributedEvent.AttributedEventPayload",
+        "AttributedEvent": "Xynolog.Internal.Generated.Models.Agent.Agent -> Data.Text.Internal.Text -> Xynolog.Internal.Generated.Models.EventMetadata.EventMetadata -> Xynolog.Internal.Generated.Models.StoredEventResponse.StoredEventResponsePayload -> Maybe Xynolog.Internal.Generated.Models.ResourceId.ResourceId -> Data.Text.Internal.Text -> Data.Text.Internal.Text -> Xynolog.Internal.Generated.Models.UserId.UserId -> Integer -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.AttributedEvent.AttributedEvent",
         "BeckonFocusEvent": "Maybe Xynolog.Internal.Generated.Models.AnnotationId.AnnotationId -> Xynolog.Internal.Generated.Models.ResourceId.ResourceId -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.BeckonFocusEvent.BeckonFocusEvent",
         "BeckonHoverEvent": "Maybe Xynolog.Internal.Generated.Models.AnnotationId.AnnotationId -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.BeckonHoverEvent.BeckonHoverEvent",
         "BeckonSparkleEvent": "Xynolog.Internal.Generated.Models.AnnotationId.AnnotationId -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.BeckonSparkleEvent.BeckonSparkleEvent",
@@ -5315,11 +5258,7 @@
         "BrowseAnnotationRequest": "Xynolog.Internal.Generated.Models.AnnotationId.AnnotationId -> Xynolog.Internal.Generated.Models.ResourceId.ResourceId -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.BrowseAnnotationRequest.BrowseAnnotationRequest",
         "BrowseAnnotationResult": "Xynolog.Internal.Generated.Models.GetAnnotationResponse.GetAnnotationResponse -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.BrowseAnnotationResult.BrowseAnnotationResult",
         "BrowseClickEvent": "Xynolog.Internal.Generated.Models.AnnotationId.AnnotationId -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.BrowseClickEvent.BrowseClickEvent",
-        "BrowseDirectoryFailed": "Maybe Xynolog.Internal.Generated.Models.BrowseDirectoryFailed.BrowseDirectoryFailedCode -> Maybe Data.Text.Internal.Text -> Data.Text.Internal.Text -> Data.Text.Internal.Text -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.BrowseDirectoryFailed.BrowseDirectoryFailed",
-        "BrowseDirectoryFailedCodeNoneU2d_pending": "Xynolog.Internal.Generated.Models.BrowseDirectoryFailed.BrowseDirectoryFailedCode",
-        "BrowseDirectoryFailedCodeNotU2d_found": "Xynolog.Internal.Generated.Models.BrowseDirectoryFailed.BrowseDirectoryFailedCode",
-        "BrowseDirectoryFailedCodePeerU2d_unavailable": "Xynolog.Internal.Generated.Models.BrowseDirectoryFailed.BrowseDirectoryFailedCode",
-        "BrowseDirectoryFailedCodeUnauthorized": "Xynolog.Internal.Generated.Models.BrowseDirectoryFailed.BrowseDirectoryFailedCode",
+        "BrowseDirectoryFailed": "Maybe Xynolog.Internal.Generated.Models.CommandError.CommandErrorCode -> Maybe Data.Text.Internal.Text -> Data.Text.Internal.Text -> Data.Text.Internal.Text -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.BrowseDirectoryFailed.BrowseDirectoryFailed",
         "BrowseDirectoryRequest": "Data.Text.Internal.Text -> Maybe Xynolog.Internal.Generated.Models.BrowseDirectoryRequest.BrowseDirectoryRequestSort -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.BrowseDirectoryRequest.BrowseDirectoryRequest",
         "BrowseDirectoryRequestSortAnnotationCount": "Xynolog.Internal.Generated.Models.BrowseDirectoryRequest.BrowseDirectoryRequestSort",
         "BrowseDirectoryRequestSortMtime": "Xynolog.Internal.Generated.Models.BrowseDirectoryRequest.BrowseDirectoryRequestSort",
@@ -5435,8 +5374,7 @@
         "EngineProviderTogether": "Xynolog.Internal.Generated.Models.Engine.EngineProvider",
         "EngineProviderVllm": "Xynolog.Internal.Generated.Models.Engine.EngineProvider",
         "EngineWithLimits": "Xynolog.Internal.Generated.Models.Engine.Engine -> Maybe [Xynolog.Internal.Generated.Models.JobFilter.JobFilter] -> Maybe Xynolog.Internal.Generated.Models.InferenceLimits.InferenceLimits -> Xynolog.Internal.Generated.Models.EngineWithLimits.EngineWithLimits",
-        "EnrichedResourceEvent": "Maybe Xynolog.Internal.Generated.Models.Annotation.Annotation -> Data.Text.Internal.Text -> Xynolog.Internal.Generated.Models.EventMetadata.EventMetadata -> Xynolog.Internal.Generated.Models.EnrichedResourceEvent.EnrichedResourceEventPayload -> Maybe Xynolog.Internal.Generated.Models.ResourceId.ResourceId -> Data.Text.Internal.Text -> Data.Text.Internal.Text -> Xynolog.Internal.Generated.Models.UserId.UserId -> Integer -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.EnrichedResourceEvent.EnrichedResourceEvent",
-        "EnrichedResourceEventPayload": "Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.EnrichedResourceEvent.EnrichedResourceEventPayload",
+        "EnrichedResourceEvent": "Maybe Xynolog.Internal.Generated.Models.Annotation.Annotation -> Data.Text.Internal.Text -> Xynolog.Internal.Generated.Models.EventMetadata.EventMetadata -> Xynolog.Internal.Generated.Models.StoredEventResponse.StoredEventResponsePayload -> Maybe Xynolog.Internal.Generated.Models.ResourceId.ResourceId -> Data.Text.Internal.Text -> Data.Text.Internal.Text -> Xynolog.Internal.Generated.Models.UserId.UserId -> Integer -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.EnrichedResourceEvent.EnrichedResourceEvent",
         "EntityTagChangedPayload": "Data.Text.Internal.Text -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.EntityTagChangedPayload.EntityTagChangedPayload",
         "EntityTypeAddedPayload": "Data.Text.Internal.Text -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.EntityTypeAddedPayload.EntityTypeAddedPayload",
         "EntityTypesProjection": "[Data.Text.Internal.Text] -> Xynolog.Internal.Generated.Models.EntityTypesProjection.EntityTypesProjection",
@@ -5477,19 +5415,11 @@
         "GatherAnnotationComplete": "Xynolog.Internal.Generated.Models.AnnotationId.AnnotationId -> Xynolog.Internal.Generated.Models.GatheredContext.GatheredContext -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.GatherAnnotationComplete.GatherAnnotationComplete",
         "GatherAnnotationOptions": "Maybe Integer -> Maybe Bool -> Maybe Bool -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.GatherAnnotationOptions.GatherAnnotationOptions",
         "GatherAnnotationRequest": "Xynolog.Internal.Generated.Models.AnnotationId.AnnotationId -> Maybe Xynolog.Internal.Generated.Models.GatherAnnotationOptions.GatherAnnotationOptions -> Xynolog.Internal.Generated.Models.ResourceId.ResourceId -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.GatherAnnotationRequest.GatherAnnotationRequest",
-        "GatherFailed": "Xynolog.Internal.Generated.Models.AnnotationId.AnnotationId -> Maybe Xynolog.Internal.Generated.Models.GatherFailed.GatherFailedCode -> Maybe Data.Text.Internal.Text -> Data.Text.Internal.Text -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.GatherFailed.GatherFailed",
-        "GatherFailedCodeNoneU2d_pending": "Xynolog.Internal.Generated.Models.GatherFailed.GatherFailedCode",
-        "GatherFailedCodeNotU2d_found": "Xynolog.Internal.Generated.Models.GatherFailed.GatherFailedCode",
-        "GatherFailedCodePeerU2d_unavailable": "Xynolog.Internal.Generated.Models.GatherFailed.GatherFailedCode",
-        "GatherFailedCodeUnauthorized": "Xynolog.Internal.Generated.Models.GatherFailed.GatherFailedCode",
+        "GatherFailed": "Xynolog.Internal.Generated.Models.AnnotationId.AnnotationId -> Maybe Xynolog.Internal.Generated.Models.CommandError.CommandErrorCode -> Maybe Data.Text.Internal.Text -> Data.Text.Internal.Text -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.GatherFailed.GatherFailed",
         "GatherReferencedByRequest": "Maybe Xynolog.Internal.Generated.Models.Motivation.Motivation -> Xynolog.Internal.Generated.Models.ResourceId.ResourceId -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.GatherReferencedByRequest.GatherReferencedByRequest",
         "GatherReferencedByResult": "Xynolog.Internal.Generated.Models.GetReferencedByResponse.GetReferencedByResponse -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.GatherReferencedByResult.GatherReferencedByResult",
         "GatherResourceComplete": "Xynolog.Internal.Generated.Models.ResourceId.ResourceId -> Xynolog.Internal.Generated.Models.GatheredContext.GatheredContext -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.GatherResourceComplete.GatherResourceComplete",
-        "GatherResourceFailed": "Maybe Xynolog.Internal.Generated.Models.GatherResourceFailed.GatherResourceFailedCode -> Maybe Data.Text.Internal.Text -> Data.Text.Internal.Text -> Xynolog.Internal.Generated.Models.ResourceId.ResourceId -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.GatherResourceFailed.GatherResourceFailed",
-        "GatherResourceFailedCodeNoneU2d_pending": "Xynolog.Internal.Generated.Models.GatherResourceFailed.GatherResourceFailedCode",
-        "GatherResourceFailedCodeNotU2d_found": "Xynolog.Internal.Generated.Models.GatherResourceFailed.GatherResourceFailedCode",
-        "GatherResourceFailedCodePeerU2d_unavailable": "Xynolog.Internal.Generated.Models.GatherResourceFailed.GatherResourceFailedCode",
-        "GatherResourceFailedCodeUnauthorized": "Xynolog.Internal.Generated.Models.GatherResourceFailed.GatherResourceFailedCode",
+        "GatherResourceFailed": "Maybe Xynolog.Internal.Generated.Models.CommandError.CommandErrorCode -> Maybe Data.Text.Internal.Text -> Data.Text.Internal.Text -> Xynolog.Internal.Generated.Models.ResourceId.ResourceId -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.GatherResourceFailed.GatherResourceFailed",
         "GatherResourceOptions": "Maybe Integer -> Maybe [Data.Text.Internal.Text] -> Maybe Bool -> Maybe Bool -> Maybe Integer -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.GatherResourceOptions.GatherResourceOptions",
         "GatherResourceRequest": "Xynolog.Internal.Generated.Models.GatherResourceRequestOptions.GatherResourceRequestOptions -> Xynolog.Internal.Generated.Models.ResourceId.ResourceId -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.GatherResourceRequest.GatherResourceRequest",
         "GatherResourceRequestOptions": "Integer -> Maybe [Data.Text.Internal.Text] -> Bool -> Bool -> Integer -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.GatherResourceRequestOptions.GatherResourceRequestOptions",
@@ -5755,11 +5685,7 @@
         "MatchResourcesResponseMatchKindLexical": "Xynolog.Internal.Generated.Models.MatchResourcesResponse.MatchResourcesResponseMatchKind",
         "MatchResourcesResponseMatchKindSemantic": "Xynolog.Internal.Generated.Models.MatchResourcesResponse.MatchResourcesResponseMatchKind",
         "MatchResourcesResult": "Xynolog.Internal.Generated.Models.MatchResourcesResponse.MatchResourcesResponse -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.MatchResourcesResult.MatchResourcesResult",
-        "MatchSearchFailed": "Maybe Xynolog.Internal.Generated.Models.MatchSearchFailed.MatchSearchFailedCode -> Maybe Data.Text.Internal.Text -> Data.Text.Internal.Text -> Xynolog.Internal.Generated.Models.AnnotationId.AnnotationId -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.MatchSearchFailed.MatchSearchFailed",
-        "MatchSearchFailedCodeNoneU2d_pending": "Xynolog.Internal.Generated.Models.MatchSearchFailed.MatchSearchFailedCode",
-        "MatchSearchFailedCodeNotU2d_found": "Xynolog.Internal.Generated.Models.MatchSearchFailed.MatchSearchFailedCode",
-        "MatchSearchFailedCodePeerU2d_unavailable": "Xynolog.Internal.Generated.Models.MatchSearchFailed.MatchSearchFailedCode",
-        "MatchSearchFailedCodeUnauthorized": "Xynolog.Internal.Generated.Models.MatchSearchFailed.MatchSearchFailedCode",
+        "MatchSearchFailed": "Maybe Xynolog.Internal.Generated.Models.CommandError.CommandErrorCode -> Maybe Data.Text.Internal.Text -> Data.Text.Internal.Text -> Xynolog.Internal.Generated.Models.AnnotationId.AnnotationId -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.MatchSearchFailed.MatchSearchFailed",
         "MatchSearchOptions": "Maybe Integer -> Maybe Bool -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.MatchSearchOptions.MatchSearchOptions",
         "MatchSearchRequest": "Xynolog.Internal.Generated.Models.GatheredContext.GatheredContext -> Maybe Integer -> Xynolog.Internal.Generated.Models.AnnotationId.AnnotationId -> Xynolog.Internal.Generated.Models.ResourceId.ResourceId -> Maybe Bool -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.MatchSearchRequest.MatchSearchRequest",
         "MatchSearchResult": "Xynolog.Internal.Generated.Models.AnnotationId.AnnotationId -> [Xynolog.Internal.Generated.Models.ScoredResource.ScoredResource] -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.MatchSearchResult.MatchSearchResult",
@@ -5853,22 +5779,7 @@
         "ResourceUpload": "Maybe Data.Text.Internal.Text -> Maybe Data.Text.Internal.Text -> Maybe Data.Text.Internal.Text -> Data.Text.Internal.Text -> Data.Text.Internal.Text -> Maybe Data.Text.Internal.Text -> Maybe Data.Text.Internal.Text -> Maybe Data.Text.Internal.Text -> Maybe Xynolog.Internal.Generated.Models.JobId.JobId -> Maybe Data.Text.Internal.Text -> Data.Text.Internal.Text -> Maybe Xynolog.Internal.Generated.Models.AnnotationId.AnnotationId -> Maybe Xynolog.Internal.Generated.Models.ResourceId.ResourceId -> Data.Text.Internal.Text -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.ResourceUpload.ResourceUpload",
         "ResourceUploadMetadata": "Maybe Data.Text.Internal.Text -> Maybe Data.Text.Internal.Text -> Maybe Data.Text.Internal.Text -> Data.Text.Internal.Text -> Maybe Data.Text.Internal.Text -> Maybe Data.Text.Internal.Text -> Maybe Data.Text.Internal.Text -> Maybe Xynolog.Internal.Generated.Models.JobId.JobId -> Maybe Data.Text.Internal.Text -> Data.Text.Internal.Text -> Maybe Xynolog.Internal.Generated.Models.AnnotationId.AnnotationId -> Maybe Xynolog.Internal.Generated.Models.ResourceId.ResourceId -> Data.Text.Internal.Text -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.ResourceUploadMetadata.ResourceUploadMetadata",
         "ResourceView": "Xynolog.Internal.Generated.Models.ResourceAnnotations.ResourceAnnotations -> Integer -> Xynolog.Internal.Generated.Models.ResourceDescriptor.ResourceDescriptor -> Xynolog.Internal.Generated.Models.ResourceView.ResourceView",
-        "ScoredResource": "Xynolog.Internal.Generated.Models.ScoredResource.ScoredResourceU40_context -> Xynolog.Internal.Generated.Models.ResourceId.ResourceId -> Maybe Xynolog.Internal.Generated.Models.OneOrMoreStrings.OneOrMoreStrings -> Maybe Xynolog.Internal.Generated.Models.OneOrMoreStrings.OneOrMoreStrings -> Maybe Bool -> Maybe [Data.Text.Internal.Text] -> Maybe Xynolog.Internal.Generated.Models.OneOrMoreUris.OneOrMoreUris -> Maybe Data.Text.Internal.Text -> Maybe Data.Text.Internal.Text -> Maybe Data.Text.Internal.Text -> Maybe [Data.Text.Internal.Text] -> Maybe Xynolog.Internal.Generated.Models.OneOrMoreAgents.OneOrMoreAgents -> Maybe [Data.Text.Internal.Text] -> Maybe Xynolog.Internal.Generated.Models.ScoredResource.ScoredResourceIdentifier -> Maybe Bool -> Maybe [Data.Text.Internal.Text] -> Maybe Data.Text.Internal.Text -> Maybe Data.Text.Internal.Text -> Data.Text.Internal.Text -> Maybe Data.Text.Internal.Text -> Xynolog.Internal.Generated.Models.ScoredResource.ScoredResourceRepresentations -> Maybe [Data.Text.Internal.Text] -> Maybe Data.Scientific.Scientific -> Maybe Xynolog.Internal.Generated.Models.AnnotationId.AnnotationId -> Maybe Xynolog.Internal.Generated.Models.ResourceId.ResourceId -> Maybe Data.Text.Internal.Text -> Maybe Xynolog.Internal.Generated.Models.OneOrMoreAgents.OneOrMoreAgents -> Maybe Xynolog.Internal.Generated.Models.ScoredResource.ScoredResourceWasDerivedFrom -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.ScoredResource.ScoredResource",
-        "ScoredResourceIdentifierBranch1": "Data.Text.Internal.Text -> Xynolog.Internal.Generated.Models.ScoredResource.ScoredResourceIdentifier",
-        "ScoredResourceIdentifierBranch2": "[Data.Text.Internal.Text] -> Xynolog.Internal.Generated.Models.ScoredResource.ScoredResourceIdentifier",
-        "ScoredResourceIdentifierBranch3": "Xynolog.Internal.Generated.Models.ScoredResource.ScoredResourceIdentifierBranch3Value -> Xynolog.Internal.Generated.Models.ScoredResource.ScoredResourceIdentifier",
-        "ScoredResourceIdentifierBranch3Value": "Maybe Data.Text.Internal.Text -> Maybe Data.Text.Internal.Text -> Maybe Data.Text.Internal.Text -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.ScoredResource.ScoredResourceIdentifierBranch3Value",
-        "ScoredResourceRepresentationsBranch1": "Xynolog.Internal.Generated.Models.Representation.Representation -> Xynolog.Internal.Generated.Models.ScoredResource.ScoredResourceRepresentations",
-        "ScoredResourceRepresentationsBranch2": "[Xynolog.Internal.Generated.Models.Representation.Representation] -> Xynolog.Internal.Generated.Models.ScoredResource.ScoredResourceRepresentations",
-        "ScoredResourceU40_contextBranch1": "Data.Text.Internal.Text -> Xynolog.Internal.Generated.Models.ScoredResource.ScoredResourceU40_context",
-        "ScoredResourceU40_contextBranch2": "Xynolog.Internal.Generated.Models.ScoredResource.ScoredResourceU40_contextBranch2Value -> Xynolog.Internal.Generated.Models.ScoredResource.ScoredResourceU40_context",
-        "ScoredResourceU40_contextBranch2Value": "Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.ScoredResource.ScoredResourceU40_contextBranch2Value",
-        "ScoredResourceU40_contextBranch3": "[Xynolog.Internal.Generated.Models.ScoredResource.ScoredResourceU40_contextBranch3ValueItem] -> Xynolog.Internal.Generated.Models.ScoredResource.ScoredResourceU40_context",
-        "ScoredResourceU40_contextBranch3ValueItemBranch1": "Data.Text.Internal.Text -> Xynolog.Internal.Generated.Models.ScoredResource.ScoredResourceU40_contextBranch3ValueItem",
-        "ScoredResourceU40_contextBranch3ValueItemBranch2": "Xynolog.Internal.Generated.Models.ScoredResource.ScoredResourceU40_contextBranch3ValueItemBranch2Value -> Xynolog.Internal.Generated.Models.ScoredResource.ScoredResourceU40_contextBranch3ValueItem",
-        "ScoredResourceU40_contextBranch3ValueItemBranch2Value": "Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.ScoredResource.ScoredResourceU40_contextBranch3ValueItemBranch2Value",
-        "ScoredResourceWasDerivedFromBranch1": "Xynolog.Internal.Generated.Models.ResourceId.ResourceId -> Xynolog.Internal.Generated.Models.ScoredResource.ScoredResourceWasDerivedFrom",
-        "ScoredResourceWasDerivedFromBranch2": "[Xynolog.Internal.Generated.Models.ResourceId.ResourceId] -> Xynolog.Internal.Generated.Models.ScoredResource.ScoredResourceWasDerivedFrom",
+        "ScoredResource": "Xynolog.Internal.Generated.Models.ResourceDescriptor.ResourceDescriptorU40_context -> Xynolog.Internal.Generated.Models.ResourceId.ResourceId -> Maybe Xynolog.Internal.Generated.Models.OneOrMoreStrings.OneOrMoreStrings -> Maybe Xynolog.Internal.Generated.Models.OneOrMoreStrings.OneOrMoreStrings -> Maybe Bool -> Maybe [Data.Text.Internal.Text] -> Maybe Xynolog.Internal.Generated.Models.OneOrMoreUris.OneOrMoreUris -> Maybe Data.Text.Internal.Text -> Maybe Data.Text.Internal.Text -> Maybe Data.Text.Internal.Text -> Maybe [Data.Text.Internal.Text] -> Maybe Xynolog.Internal.Generated.Models.OneOrMoreAgents.OneOrMoreAgents -> Maybe [Data.Text.Internal.Text] -> Maybe Xynolog.Internal.Generated.Models.ResourceDescriptor.ResourceDescriptorIdentifier -> Maybe Bool -> Maybe [Data.Text.Internal.Text] -> Maybe Data.Text.Internal.Text -> Maybe Data.Text.Internal.Text -> Data.Text.Internal.Text -> Maybe Data.Text.Internal.Text -> Xynolog.Internal.Generated.Models.ResourceDescriptor.ResourceDescriptorRepresentations -> Maybe [Data.Text.Internal.Text] -> Maybe Data.Scientific.Scientific -> Maybe Xynolog.Internal.Generated.Models.AnnotationId.AnnotationId -> Maybe Xynolog.Internal.Generated.Models.ResourceId.ResourceId -> Maybe Data.Text.Internal.Text -> Maybe Xynolog.Internal.Generated.Models.OneOrMoreAgents.OneOrMoreAgents -> Maybe Xynolog.Internal.Generated.Models.ResourceDescriptor.ResourceDescriptorWasDerivedFrom -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value -> Xynolog.Internal.Generated.Models.ScoredResource.ScoredResource",
         "SelectorBranch1": "Xynolog.Internal.Generated.Models.TextPositionSelector.TextPositionSelector -> Xynolog.Internal.Generated.Models.Selector.Selector",
         "SelectorBranch2": "Xynolog.Internal.Generated.Models.TextQuoteSelector.TextQuoteSelector -> Xynolog.Internal.Generated.Models.Selector.Selector",
         "SelectorBranch3": "Xynolog.Internal.Generated.Models.SvgSelector.SvgSelector -> Xynolog.Internal.Generated.Models.Selector.Selector",
@@ -6157,8 +6068,7 @@
         "attributedEventAgent": "Xynolog.Internal.Generated.Models.AttributedEvent.AttributedEvent -> Xynolog.Internal.Generated.Models.Agent.Agent",
         "attributedEventId": "Xynolog.Internal.Generated.Models.AttributedEvent.AttributedEvent -> Data.Text.Internal.Text",
         "attributedEventMetadata": "Xynolog.Internal.Generated.Models.AttributedEvent.AttributedEvent -> Xynolog.Internal.Generated.Models.EventMetadata.EventMetadata",
-        "attributedEventPayload": "Xynolog.Internal.Generated.Models.AttributedEvent.AttributedEvent -> Xynolog.Internal.Generated.Models.AttributedEvent.AttributedEventPayload",
-        "attributedEventPayloadAdditionalProperties": "Xynolog.Internal.Generated.Models.AttributedEvent.AttributedEventPayload -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value",
+        "attributedEventPayload": "Xynolog.Internal.Generated.Models.AttributedEvent.AttributedEvent -> Xynolog.Internal.Generated.Models.StoredEventResponse.StoredEventResponsePayload",
         "attributedEventResourceId": "Xynolog.Internal.Generated.Models.AttributedEvent.AttributedEvent -> Maybe Xynolog.Internal.Generated.Models.ResourceId.ResourceId",
         "attributedEventTimestamp": "Xynolog.Internal.Generated.Models.AttributedEvent.AttributedEvent -> Data.Text.Internal.Text",
         "attributedEventType": "Xynolog.Internal.Generated.Models.AttributedEvent.AttributedEvent -> Data.Text.Internal.Text",
@@ -6216,7 +6126,7 @@
         "browseClickEventAdditionalProperties": "Xynolog.Internal.Generated.Models.BrowseClickEvent.BrowseClickEvent -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value",
         "browseClickEventAnnotationId": "Xynolog.Internal.Generated.Models.BrowseClickEvent.BrowseClickEvent -> Xynolog.Internal.Generated.Models.AnnotationId.AnnotationId",
         "browseDirectoryFailedAdditionalProperties": "Xynolog.Internal.Generated.Models.BrowseDirectoryFailed.BrowseDirectoryFailed -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value",
-        "browseDirectoryFailedCode": "Xynolog.Internal.Generated.Models.BrowseDirectoryFailed.BrowseDirectoryFailed -> Maybe Xynolog.Internal.Generated.Models.BrowseDirectoryFailed.BrowseDirectoryFailedCode",
+        "browseDirectoryFailedCode": "Xynolog.Internal.Generated.Models.BrowseDirectoryFailed.BrowseDirectoryFailed -> Maybe Xynolog.Internal.Generated.Models.CommandError.CommandErrorCode",
         "browseDirectoryFailedDetails": "Xynolog.Internal.Generated.Models.BrowseDirectoryFailed.BrowseDirectoryFailed -> Maybe Data.Text.Internal.Text",
         "browseDirectoryFailedMessage": "Xynolog.Internal.Generated.Models.BrowseDirectoryFailed.BrowseDirectoryFailed -> Data.Text.Internal.Text",
         "browseDirectoryFailedPath": "Xynolog.Internal.Generated.Models.BrowseDirectoryFailed.BrowseDirectoryFailed -> Data.Text.Internal.Text",
@@ -6415,8 +6325,7 @@
         "enrichedResourceEventAnnotation": "Xynolog.Internal.Generated.Models.EnrichedResourceEvent.EnrichedResourceEvent -> Maybe Xynolog.Internal.Generated.Models.Annotation.Annotation",
         "enrichedResourceEventId": "Xynolog.Internal.Generated.Models.EnrichedResourceEvent.EnrichedResourceEvent -> Data.Text.Internal.Text",
         "enrichedResourceEventMetadata": "Xynolog.Internal.Generated.Models.EnrichedResourceEvent.EnrichedResourceEvent -> Xynolog.Internal.Generated.Models.EventMetadata.EventMetadata",
-        "enrichedResourceEventPayload": "Xynolog.Internal.Generated.Models.EnrichedResourceEvent.EnrichedResourceEvent -> Xynolog.Internal.Generated.Models.EnrichedResourceEvent.EnrichedResourceEventPayload",
-        "enrichedResourceEventPayloadAdditionalProperties": "Xynolog.Internal.Generated.Models.EnrichedResourceEvent.EnrichedResourceEventPayload -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value",
+        "enrichedResourceEventPayload": "Xynolog.Internal.Generated.Models.EnrichedResourceEvent.EnrichedResourceEvent -> Xynolog.Internal.Generated.Models.StoredEventResponse.StoredEventResponsePayload",
         "enrichedResourceEventResourceId": "Xynolog.Internal.Generated.Models.EnrichedResourceEvent.EnrichedResourceEvent -> Maybe Xynolog.Internal.Generated.Models.ResourceId.ResourceId",
         "enrichedResourceEventTimestamp": "Xynolog.Internal.Generated.Models.EnrichedResourceEvent.EnrichedResourceEvent -> Data.Text.Internal.Text",
         "enrichedResourceEventType": "Xynolog.Internal.Generated.Models.EnrichedResourceEvent.EnrichedResourceEvent -> Data.Text.Internal.Text",
@@ -6498,7 +6407,7 @@
         "gatherAnnotationRequestResourceId": "Xynolog.Internal.Generated.Models.GatherAnnotationRequest.GatherAnnotationRequest -> Xynolog.Internal.Generated.Models.ResourceId.ResourceId",
         "gatherFailedAdditionalProperties": "Xynolog.Internal.Generated.Models.GatherFailed.GatherFailed -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value",
         "gatherFailedAnnotationId": "Xynolog.Internal.Generated.Models.GatherFailed.GatherFailed -> Xynolog.Internal.Generated.Models.AnnotationId.AnnotationId",
-        "gatherFailedCode": "Xynolog.Internal.Generated.Models.GatherFailed.GatherFailed -> Maybe Xynolog.Internal.Generated.Models.GatherFailed.GatherFailedCode",
+        "gatherFailedCode": "Xynolog.Internal.Generated.Models.GatherFailed.GatherFailed -> Maybe Xynolog.Internal.Generated.Models.CommandError.CommandErrorCode",
         "gatherFailedDetails": "Xynolog.Internal.Generated.Models.GatherFailed.GatherFailed -> Maybe Data.Text.Internal.Text",
         "gatherFailedMessage": "Xynolog.Internal.Generated.Models.GatherFailed.GatherFailed -> Data.Text.Internal.Text",
         "gatherReferencedByRequestAdditionalProperties": "Xynolog.Internal.Generated.Models.GatherReferencedByRequest.GatherReferencedByRequest -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value",
@@ -6510,7 +6419,7 @@
         "gatherResourceCompleteResourceId": "Xynolog.Internal.Generated.Models.GatherResourceComplete.GatherResourceComplete -> Xynolog.Internal.Generated.Models.ResourceId.ResourceId",
         "gatherResourceCompleteResponse": "Xynolog.Internal.Generated.Models.GatherResourceComplete.GatherResourceComplete -> Xynolog.Internal.Generated.Models.GatheredContext.GatheredContext",
         "gatherResourceFailedAdditionalProperties": "Xynolog.Internal.Generated.Models.GatherResourceFailed.GatherResourceFailed -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value",
-        "gatherResourceFailedCode": "Xynolog.Internal.Generated.Models.GatherResourceFailed.GatherResourceFailed -> Maybe Xynolog.Internal.Generated.Models.GatherResourceFailed.GatherResourceFailedCode",
+        "gatherResourceFailedCode": "Xynolog.Internal.Generated.Models.GatherResourceFailed.GatherResourceFailed -> Maybe Xynolog.Internal.Generated.Models.CommandError.CommandErrorCode",
         "gatherResourceFailedDetails": "Xynolog.Internal.Generated.Models.GatherResourceFailed.GatherResourceFailed -> Maybe Data.Text.Internal.Text",
         "gatherResourceFailedMessage": "Xynolog.Internal.Generated.Models.GatherResourceFailed.GatherResourceFailed -> Data.Text.Internal.Text",
         "gatherResourceFailedResourceId": "Xynolog.Internal.Generated.Models.GatherResourceFailed.GatherResourceFailed -> Xynolog.Internal.Generated.Models.ResourceId.ResourceId",
@@ -7082,7 +6991,7 @@
         "matchResourcesResultAdditionalProperties": "Xynolog.Internal.Generated.Models.MatchResourcesResult.MatchResourcesResult -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value",
         "matchResourcesResultResponse": "Xynolog.Internal.Generated.Models.MatchResourcesResult.MatchResourcesResult -> Xynolog.Internal.Generated.Models.MatchResourcesResponse.MatchResourcesResponse",
         "matchSearchFailedAdditionalProperties": "Xynolog.Internal.Generated.Models.MatchSearchFailed.MatchSearchFailed -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value",
-        "matchSearchFailedCode": "Xynolog.Internal.Generated.Models.MatchSearchFailed.MatchSearchFailed -> Maybe Xynolog.Internal.Generated.Models.MatchSearchFailed.MatchSearchFailedCode",
+        "matchSearchFailedCode": "Xynolog.Internal.Generated.Models.MatchSearchFailed.MatchSearchFailed -> Maybe Xynolog.Internal.Generated.Models.CommandError.CommandErrorCode",
         "matchSearchFailedDetails": "Xynolog.Internal.Generated.Models.MatchSearchFailed.MatchSearchFailed -> Maybe Data.Text.Internal.Text",
         "matchSearchFailedMessage": "Xynolog.Internal.Generated.Models.MatchSearchFailed.MatchSearchFailed -> Data.Text.Internal.Text",
         "matchSearchFailedReferenceId": "Xynolog.Internal.Generated.Models.MatchSearchFailed.MatchSearchFailed -> Xynolog.Internal.Generated.Models.AnnotationId.AnnotationId",
@@ -7339,30 +7248,24 @@
         "scoredResourceEntityTypes": "Xynolog.Internal.Generated.Models.ScoredResource.ScoredResource -> Maybe [Data.Text.Internal.Text]",
         "scoredResourceGenerator": "Xynolog.Internal.Generated.Models.ScoredResource.ScoredResource -> Maybe Xynolog.Internal.Generated.Models.OneOrMoreAgents.OneOrMoreAgents",
         "scoredResourceHasPart": "Xynolog.Internal.Generated.Models.ScoredResource.ScoredResource -> Maybe [Data.Text.Internal.Text]",
-        "scoredResourceIdentifier": "Xynolog.Internal.Generated.Models.ScoredResource.ScoredResource -> Maybe Xynolog.Internal.Generated.Models.ScoredResource.ScoredResourceIdentifier",
-        "scoredResourceIdentifierBranch3ValueAdditionalProperties": "Xynolog.Internal.Generated.Models.ScoredResource.ScoredResourceIdentifierBranch3Value -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value",
-        "scoredResourceIdentifierBranch3ValueScheme": "Xynolog.Internal.Generated.Models.ScoredResource.ScoredResourceIdentifierBranch3Value -> Maybe Data.Text.Internal.Text",
-        "scoredResourceIdentifierBranch3ValueU40_id": "Xynolog.Internal.Generated.Models.ScoredResource.ScoredResourceIdentifierBranch3Value -> Maybe Data.Text.Internal.Text",
-        "scoredResourceIdentifierBranch3ValueValue": "Xynolog.Internal.Generated.Models.ScoredResource.ScoredResourceIdentifierBranch3Value -> Maybe Data.Text.Internal.Text",
+        "scoredResourceIdentifier": "Xynolog.Internal.Generated.Models.ScoredResource.ScoredResource -> Maybe Xynolog.Internal.Generated.Models.ResourceDescriptor.ResourceDescriptorIdentifier",
         "scoredResourceIsDraft": "Xynolog.Internal.Generated.Models.ScoredResource.ScoredResource -> Maybe Bool",
         "scoredResourceIsPartOf": "Xynolog.Internal.Generated.Models.ScoredResource.ScoredResource -> Maybe [Data.Text.Internal.Text]",
         "scoredResourceLicense": "Xynolog.Internal.Generated.Models.ScoredResource.ScoredResource -> Maybe Data.Text.Internal.Text",
         "scoredResourceMatchReason": "Xynolog.Internal.Generated.Models.ScoredResource.ScoredResource -> Maybe Data.Text.Internal.Text",
         "scoredResourceName": "Xynolog.Internal.Generated.Models.ScoredResource.ScoredResource -> Data.Text.Internal.Text",
         "scoredResourceOriginatedFrom": "Xynolog.Internal.Generated.Models.ScoredResource.ScoredResource -> Maybe Data.Text.Internal.Text",
-        "scoredResourceRepresentations": "Xynolog.Internal.Generated.Models.ScoredResource.ScoredResource -> Xynolog.Internal.Generated.Models.ScoredResource.ScoredResourceRepresentations",
+        "scoredResourceRepresentations": "Xynolog.Internal.Generated.Models.ScoredResource.ScoredResource -> Xynolog.Internal.Generated.Models.ResourceDescriptor.ResourceDescriptorRepresentations",
         "scoredResourceSameAs": "Xynolog.Internal.Generated.Models.ScoredResource.ScoredResource -> Maybe [Data.Text.Internal.Text]",
         "scoredResourceScore": "Xynolog.Internal.Generated.Models.ScoredResource.ScoredResource -> Maybe Data.Scientific.Scientific",
         "scoredResourceSourceAnnotationId": "Xynolog.Internal.Generated.Models.ScoredResource.ScoredResource -> Maybe Xynolog.Internal.Generated.Models.AnnotationId.AnnotationId",
         "scoredResourceSourceResourceId": "Xynolog.Internal.Generated.Models.ScoredResource.ScoredResource -> Maybe Xynolog.Internal.Generated.Models.ResourceId.ResourceId",
-        "scoredResourceU40_context": "Xynolog.Internal.Generated.Models.ScoredResource.ScoredResource -> Xynolog.Internal.Generated.Models.ScoredResource.ScoredResourceU40_context",
-        "scoredResourceU40_contextBranch2ValueAdditionalProperties": "Xynolog.Internal.Generated.Models.ScoredResource.ScoredResourceU40_contextBranch2Value -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value",
-        "scoredResourceU40_contextBranch3ValueItemBranch2ValueAdditionalProperties": "Xynolog.Internal.Generated.Models.ScoredResource.ScoredResourceU40_contextBranch3ValueItemBranch2Value -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value",
+        "scoredResourceU40_context": "Xynolog.Internal.Generated.Models.ScoredResource.ScoredResource -> Xynolog.Internal.Generated.Models.ResourceDescriptor.ResourceDescriptorU40_context",
         "scoredResourceU40_id": "Xynolog.Internal.Generated.Models.ScoredResource.ScoredResource -> Xynolog.Internal.Generated.Models.ResourceId.ResourceId",
         "scoredResourceU40_type": "Xynolog.Internal.Generated.Models.ScoredResource.ScoredResource -> Maybe Xynolog.Internal.Generated.Models.OneOrMoreStrings.OneOrMoreStrings",
         "scoredResourceVersion": "Xynolog.Internal.Generated.Models.ScoredResource.ScoredResource -> Maybe Data.Text.Internal.Text",
         "scoredResourceWasAttributedTo": "Xynolog.Internal.Generated.Models.ScoredResource.ScoredResource -> Maybe Xynolog.Internal.Generated.Models.OneOrMoreAgents.OneOrMoreAgents",
-        "scoredResourceWasDerivedFrom": "Xynolog.Internal.Generated.Models.ScoredResource.ScoredResource -> Maybe Xynolog.Internal.Generated.Models.ScoredResource.ScoredResourceWasDerivedFrom",
+        "scoredResourceWasDerivedFrom": "Xynolog.Internal.Generated.Models.ScoredResource.ScoredResource -> Maybe Xynolog.Internal.Generated.Models.ResourceDescriptor.ResourceDescriptorWasDerivedFrom",
         "semanticMatchAdditionalProperties": "Xynolog.Internal.Generated.Models.SemanticMatch.SemanticMatch -> Data.Aeson.KeyMap.KeyMap Data.Aeson.Types.Internal.Value",
         "semanticMatchAnnotationId": "Xynolog.Internal.Generated.Models.SemanticMatch.SemanticMatch -> Maybe Xynolog.Internal.Generated.Models.AnnotationId.AnnotationId",
         "semanticMatchEntityTypes": "Xynolog.Internal.Generated.Models.SemanticMatch.SemanticMatch -> Maybe [Data.Text.Internal.Text]",

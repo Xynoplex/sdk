@@ -2,7 +2,7 @@
 -- Regenerate: make generate (codegen/lib/haskell_sdk/haskell_sdk.ml)
 {-# LANGUAGE OverloadedStrings #-}
 
-module Xynolog.Internal.Generated.Models.AttributedEvent (AttributedEvent (..), AttributedEventPayload (..)) where
+module Xynolog.Internal.Generated.Models.AttributedEvent (AttributedEvent (..)) where
 
 import Data.Aeson (FromJSON (..), ToJSON (..), Value (..), withObject, (.:))
 import Data.Aeson.KeyMap qualified as KM
@@ -11,13 +11,14 @@ import Xynolog.Internal.Codec
 import Xynolog.Internal.Generated.Models.Agent
 import Xynolog.Internal.Generated.Models.EventMetadata
 import Xynolog.Internal.Generated.Models.ResourceId
+import Xynolog.Internal.Generated.Models.StoredEventResponse
 import Xynolog.Internal.Generated.Models.UserId
 
 data AttributedEvent = AttributedEvent
   { attributedEventAgent :: Agent,
     attributedEventId :: Text,
     attributedEventMetadata :: EventMetadata,
-    attributedEventPayload :: AttributedEventPayload,
+    attributedEventPayload :: StoredEventResponsePayload,
     attributedEventResourceId :: Maybe ResourceId,
     attributedEventTimestamp :: Text,
     attributedEventType :: Text,
@@ -30,12 +31,3 @@ data AttributedEvent = AttributedEvent
 instance FromJSON AttributedEvent where parseJSON = checked "AttributedEvent" $ withObject "AttributedEvent" (\fields -> AttributedEvent <$> (fields .: "agent") <*> (fields .: "id") <*> (fields .: "metadata") <*> (fields .: "payload") <*> optional fields "resourceId" <*> (fields .: "timestamp") <*> (fields .: "type") <*> (fields .: "userId") <*> (fields .: "version") <*> traverse parseJSON (withoutFields ["agent", "id", "metadata", "payload", "resourceId", "timestamp", "type", "userId", "version"] fields))
 
 instance ToJSON AttributedEvent where toJSON value = Object (KM.fromList (concat [[("agent", toJSON (attributedEventAgent value))], [("id", toJSON (attributedEventId value))], [("metadata", toJSON (attributedEventMetadata value))], [("payload", toJSON (attributedEventPayload value))], optionalPair "resourceId" (attributedEventResourceId value), [("timestamp", toJSON (attributedEventTimestamp value))], [("type", toJSON (attributedEventType value))], [("userId", toJSON (attributedEventUserId value))], [("version", toJSON (attributedEventVersion value))]]) <> fmap toJSON (withoutFields ["agent", "id", "metadata", "payload", "resourceId", "timestamp", "type", "userId", "version"] (attributedEventAdditionalProperties value)))
-
-data AttributedEventPayload = AttributedEventPayload
-  { attributedEventPayloadAdditionalProperties :: KM.KeyMap Value
-  }
-  deriving (Eq, Show)
-
-instance FromJSON AttributedEventPayload where parseJSON = checked "AttributedEventPayload" $ withObject "AttributedEventPayload" (\fields -> AttributedEventPayload <$> traverse parseJSON (withoutFields [] fields))
-
-instance ToJSON AttributedEventPayload where toJSON value = Object (KM.fromList (concat []) <> fmap toJSON (withoutFields [] (attributedEventPayloadAdditionalProperties value)))

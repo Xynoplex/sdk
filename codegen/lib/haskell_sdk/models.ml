@@ -4,7 +4,8 @@
    needs and none imports back.
 
    Haskell's own choices are this writer's rules. A schema's type is named as
-   the schema is; one stated in place takes its holder's name and the
+   the schema is; one stated in place takes the name of the schema that
+   states its member (through an allOf, the member's own schema) and the
    member's, made unique by "Inline". A string, integer, number and boolean
    are Text, Integer, Scientific and Bool. Words are a type of constructors,
    branches a type of one constructor each, an object a record, and anything
@@ -41,6 +42,10 @@ let identifier value =
   | encoded -> String.capitalize_ascii encoded
 
 let lower = String.uncapitalize_ascii
+
+(* The name of the type written in place for member [key] of [owner], the
+   schema that states it. *)
+let member_type owner key = owner ^ identifier key
 
 (* A number as Haskell's Scientific shows it: a whole number below ten
    million with ".0" after it. *)
@@ -120,17 +125,21 @@ let member ~row ~key ~held ~nullable ~mandatory t =
       H.Apply (Name "optional", [ Name row; Str key ]),
       H.Apply (Name "optionalPair", [ Str key; held ]) )
 
+(* That the module of what is being declared refers to [component]'s. *)
+let depend state component =
+  state.dependencies <-
+    Named.update state.owner
+      (fun found ->
+        Some (Names.add component (Option.value found ~default:Names.empty)))
+      state.dependencies
+
 let rec type_of state proposed original : (H.type_, string) result =
   let* raw = Normalize.layer original in
   match raw.ref_ with
   | Some r ->
       let target = referenced r in
       let* _ = find state target in
-      state.dependencies <-
-        Named.update state.owner
-          (fun found ->
-            Some (Names.add target (Option.value found ~default:Names.empty)))
-          state.dependencies;
+      depend state target;
       Ok (H.T_name target)
   | None -> (
       match raw.all_of with
@@ -160,14 +169,33 @@ and structural state proposed original =
       | None -> Error (proposed ^ ": unsupported type shape"))
 
 and inline state proposed schema =
-  let rec unique candidate =
-    if Named.mem candidate state.definitions then unique (candidate ^ "Inline")
-    else candidate
-  in
-  let name = unique proposed in
-  state.definitions <- Named.add name schema state.definitions;
-  let* () = declare state name schema in
-  Ok (H.T_name name)
+  match
+    ( Named.find_opt proposed state.definitions,
+      Named.find_opt proposed state.declarations )
+  with
+  | Some written, Some (Some { owner; _ }) when written = schema ->
+      if owner <> state.owner then depend state owner;
+      Ok (H.T_name proposed)
+  | _ ->
+      let rec unique candidate =
+        if Named.mem candidate state.definitions then
+          unique (candidate ^ "Inline")
+        else candidate
+      in
+      let name = unique proposed in
+      state.definitions <- Named.add name schema state.definitions;
+      let* () = declare state name schema in
+      Ok (H.T_name name)
+
+(* [component] declared as its own module's, before a schema that inherits
+   its properties refers to the types written in place for them. *)
+and declare_parent state component =
+  let holder = state.owner in
+  let* schema = find state component in
+  state.owner <- component;
+  let declared = declare state component schema in
+  state.owner <- holder;
+  declared
 
 and declare state name original =
   if Named.mem name state.declarations then Ok ()
@@ -187,7 +215,13 @@ and declare state name original =
       | None, None, None -> (
           let* t = one_type name s in
           match t with
-          | Some Object -> object_ state name s
+          | Some Object ->
+              object_ state name
+                ~owner:
+                  (Inherited.of_schemas
+                     ~find:(fun n -> Named.find n state.definitions)
+                     ~referenced name original)
+                s
           | _ -> scalar state name original (Names.mem name state.identifiers))
     in
     state.declarations <-
@@ -370,7 +404,7 @@ and scalar state name original opaque =
         ])
   else Ok (newtype :: instances)
 
-and object_ state name (s : Schema.schema) =
+and object_ state name ~owner (s : Schema.schema) =
   let properties =
     List.sort
       (fun (a, _) (b, _) -> String.compare a b)
@@ -389,8 +423,12 @@ and object_ state name (s : Schema.schema) =
            let field = lower name ^ suffix in
            let nullable = fields.nullable = Some true in
            let mandatory = List.mem key required in
+           let owner = owner key in
+           let* () =
+             if owner = name then Ok () else declare_parent state owner
+           in
            let* t =
-             type_of state (name ^ suffix)
+             type_of state (member_type owner key)
                (Schema { fields with nullable = None })
            in
            let held = H.Apply (Name field, [ Name "value" ]) in
