@@ -478,7 +478,7 @@ let readers t ~normalize ~definition (codes : Tables.Errors_codes.t) =
       let code_owner =
         Inherited.of_schemas
           ~find:(fun n -> Result.get_ok (definition n))
-          ~referenced:Normalize.referenced failure schema "code"
+          ~referenced:Definitions.referenced failure schema "code"
       in
       let properties = Option.value s.Schema.properties ~default:[] in
       let required = Option.value s.required ~default:[] in

@@ -319,6 +319,12 @@ let unread schema =
       List.mem keyword [ "const"; "propertyNames"; "minProperties"; "not" ])
     (keywords schema)
 
+(* [unread] of a schema and of every schema it holds, at any depth. *)
+let unread_anywhere : t -> string list =
+  cata
+    ~boolean:(fun _ -> [])
+    ~schema:(fun s -> unread s @ List.concat (children s))
+
 let type_name =
   Decode.enum
     [

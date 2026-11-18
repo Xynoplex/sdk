@@ -23,6 +23,10 @@ Pointer of the value refused; nothing is defaulted.
   table that Protocol adds stops the run until the module knows it.
 - `Spec`: every file accounted for, and every `$ref` resolved to a file of
   the kind its place calls for.
+- `Normalize`: what an `allOf` means, its parts merged keyword by keyword
+  into the one schema they describe, which every group's writers read and
+  none decides itself. `Inherited` is which schema states each property it
+  merges, so a writer names a type for the schema that states it.
 
 ## The groups
 

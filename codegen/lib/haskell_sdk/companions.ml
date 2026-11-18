@@ -56,14 +56,6 @@ let format_word : Schema.format -> string = function
   | Uri -> "uri"
   | Binary -> "binary"
 
-(* The keywords no SDK reads ([Schema.unread]) that a schema states, at any
-   depth: those the SDK's validator
-   (haskell/sdk/internal/Xynolog/Internal/Schema.hs) does not read. *)
-let unread : Schema.t -> string list =
-  Schema.cata
-    ~boolean:(fun _ -> [])
-    ~schema:(fun s -> Schema.unread s @ List.concat (Schema.children s))
-
 (* A schema as the SDK validates against it: every keyword but those that
    only describe it. *)
 let runtime : Schema.t -> Yojson.Safe.t =

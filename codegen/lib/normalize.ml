@@ -1,18 +1,15 @@
-(* A schema's [allOf] merged into the one object it describes, for the
-   Haskell SDK's types and for the schemas it validates against, which hold no
-   [allOf]: each part, a reference expanded, merged keyword by keyword, then
-   the schema's own keywords on top. Bounds tighten, [required] and [enum] combine, a closed
-   object stays closed, and keywords that must agree are refused when they
-   don't; any other keyword is the last part's. A property two parts state
-   differently is the [allOf] of both. *)
+(* What an [allOf] means: its parts, a reference expanded, merged keyword by
+   keyword into the one schema they describe, then the schema's own keywords
+   on top. Every writer reads an [allOf] through this merge, and decides
+   nothing of it itself. Bounds tighten, [required] and [enum] combine, a
+   closed object stays closed, and keywords that must agree are refused when
+   they don't; any other keyword is the last part's. A property two parts
+   state differently is the [allOf] of both, in the place the first states
+   it, so properties keep the order the parts state them in. *)
 
 type 'a outcome = ('a, string) result
 
 let ( let* ) = Result.bind
-
-(* A reference names the schema of its file's base name. *)
-let referenced (r : Decode.reference) =
-  Filename.remove_extension (Filename.basename r.target)
 
 let agree what left right =
   if left = right then Ok right
@@ -30,7 +27,8 @@ let union_properties old next =
     else Schema.Schema { Schema.empty with all_of = Some [ left; right ] }
   in
   let keys =
-    List.sort_uniq String.compare (List.map fst old @ List.map fst next)
+    List.map fst old
+    @ List.filter (fun key -> not (List.mem_assoc key old)) (List.map fst next)
   in
   Ok
     (List.map
@@ -147,14 +145,15 @@ let layer : Schema.t -> Schema.schema outcome = function
 
 (* A schema expanded as the whole that is normalized, and as a part of an
    [allOf]: a part that refers to a schema is that schema expanded, with the
-   part's own keywords on top. Each is given the references the expansion is
-   within, so a schema that is a part of itself is refused. *)
+   part's own keywords on top. Each is given the places ([Decode.resolve])
+   the expansion is within, so a schema that is a part of itself is refused. *)
 type expansion = {
-  whole : string list -> Schema.schema outcome;
-  part : string list -> Schema.schema outcome;
+  whole : (string * string) list -> Schema.schema outcome;
+  part : (string * string) list -> Schema.schema outcome;
 }
 
-(* [schema] with its [allOf] merged, each reference in it found by [find]. *)
+(* [schema] with its [allOf] merged, the schema each reference in it names
+   found by [find]. *)
 let normalize ~find schema =
   let rec expand schema =
     Schema.para
@@ -180,13 +179,14 @@ let normalize ~find schema =
         let part trail =
           match s.ref_ with
           | Some r ->
+              let named = Decode.resolve r in
               let* () =
-                if List.mem r.target trail then
+                if List.mem named trail then
                   Error ("cyclic schema intersection: " ^ r.target)
                 else Ok ()
               in
-              let* target = find (referenced r) in
-              let* expanded = (expand target).whole (r.target :: trail) in
+              let* target = find r in
+              let* expanded = (expand target).whole (named :: trail) in
               merge expanded { s with ref_ = None }
           | None -> whole trail
         in
@@ -199,9 +199,10 @@ let normalize ~find schema =
    what each node holds is merged first, then the node's own [allOf], each
    part that refers to a schema given that schema merged, and then what that
    merge makes, which states a property two parts state differently as the
-   [allOf] of both. A schema whose merge needs its own is refused: written
-   merged, it would never end. *)
-let everywhere ~find =
+   [allOf] of both. [referenced] is the name of the schema a reference names.
+   A schema whose merge needs its own is refused: written merged, it would
+   never end. *)
+let everywhere ~referenced ~find =
   let written = Hashtbl.create 64 in
   let rec named within name =
     match Hashtbl.find_opt written name with
@@ -227,7 +228,7 @@ let everywhere ~find =
         let* s = each l in
         match s with
         | Schema { all_of = Some _; _ } ->
-            let* l = normalize ~find:(named within) s in
+            let* l = normalize ~find:(fun r -> named within (referenced r)) s in
             each l
         | s -> Ok s)
   in

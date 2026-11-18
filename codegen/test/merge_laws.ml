@@ -18,7 +18,6 @@
    required and enum as sets. *)
 
 open Xynolog_codegen
-module Normalize = Haskell_sdk.Normalize
 module Gen = QCheck2.Gen
 
 let reference target = { Decode.target; file = ""; pointer = "" }

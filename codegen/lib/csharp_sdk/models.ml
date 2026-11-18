@@ -120,7 +120,7 @@ let rec readable path ((schema : Schema.t), json) =
    accept what the schema refuses. *)
 let validate path ((schema : Schema.t), json) =
   readable path (schema, json);
-  match Haskell_sdk.Companions.unread schema with
+  match Schema.unread_anywhere schema with
   | [] -> ()
   | keyword :: _ -> refuse "%s uses unsupported schema keyword %s." path keyword
 
