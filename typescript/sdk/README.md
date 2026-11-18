@@ -21,7 +21,7 @@ It has the same namespaces, methods and behaviour as the
 the [Python SDK](https://github.com/xynolog/sdk/tree/main/python/sdk) ([`xynolog`](https://pypi.org/project/xynolog/) on PyPI)
 the [Go SDK](https://github.com/xynolog/sdk/tree/main/go) ([`github.com/xynolog/sdk/go`](https://pkg.go.dev/github.com/xynolog/sdk/go) on pkg.go.dev)
 and the [Kotlin SDK](https://github.com/xynolog/sdk/tree/main/kotlin/sdk), for Kotlin and Java programs,
-and the five are held to the same [conformance suite](https://github.com/xynolog/sdk/tree/main/protocol/conformance/sdk).
+and the five are held to the same [conformance suite](https://github.com/xynolog/protocol/tree/main/conformance/sdk).
 New to Xynolog? The [Introduction](https://github.com/xynolog/sdk/blob/main/docs/builder/INTRODUCTION.md)
 explains the domain and the ideas the API falls out of.
 
@@ -87,7 +87,7 @@ a one-shot script that finishes inside one token's life.
 
 A person who has run `xynolog login` has a sign-in the launcher keeps for each stack, in
 `tokens.json` in the launcher's state home
-([the sign-in store](https://github.com/xynolog/sdk/tree/main/protocol/specs/src/sign-in-store)).
+([the sign-in store](https://github.com/xynolog/protocol/tree/main/specs/src/sign-in-store)).
 A `SignInStore` is that file, and `entry(key)` is where the sign-in of the stack `key` is kept.
 `XynologSession.fromKept` builds a session over an entry; with nothing kept there, the session is
 signed out. The session renews the sign-in by the contract's rules and keeps each renewal in the
@@ -157,7 +157,7 @@ attention. Each is a namespace of the client.
 
 Beside the eight are `job`, and `auth` and `system` when the client has a
 gateway. What each flow means is in
-[protocol/contract/flows](https://github.com/xynolog/sdk/tree/main/protocol/contract/flows).
+[protocol/contract/flows](https://github.com/xynolog/protocol/tree/main/contract/flows).
 
 ## A first program
 
@@ -333,7 +333,7 @@ claims.subscribe(async (job) => {
 
 The [`xynolog-worker` skill](https://github.com/xynolog/sdk/blob/main/skills/xynolog-worker/SKILL.md)
 is a whole worker, sign-in to shutdown, and
-[`protocol/contract/WORKER-CONTRACT.md`](https://github.com/xynolog/sdk/blob/main/protocol/contract/WORKER-CONTRACT.md)
+[`protocol/contract/WORKER-CONTRACT.md`](https://github.com/xynolog/protocol/blob/main/contract/WORKER-CONTRACT.md)
 is what a worker promises the dispatcher.
 
 ## Any transport
@@ -372,7 +372,7 @@ is what a worker promises the dispatcher.
   Descriptors only; auth stays per-KB. Types (`DiscoveredKB`, `DiscoveryDocument`) come
   from `@xynolog/core`'s generated schema.
 - **Helpers & types** — the cache primitive behind live queries
-  ([`protocol/contract/CACHE-SEMANTICS.md`](https://github.com/xynolog/sdk/blob/main/protocol/contract/CACHE-SEMANTICS.md)),
+  ([`protocol/contract/CACHE-SEMANTICS.md`](https://github.com/xynolog/protocol/blob/main/contract/CACHE-SEMANTICS.md)),
   `createSearchPipeline`, branded ids, and the unified error hierarchy (`XynologError`,
   `BusRequestError`) re-exported so you catch every SDK error from one package. (The
   typed bus over a transport, `Bus`, lives in `@xynolog/core`; a client hands its own out as
@@ -391,8 +391,8 @@ who the SDK is for, where it goes, and the docs in reading order.
 - [`docs/builder/Usage.md`](https://github.com/xynolog/sdk/blob/main/docs/builder/Usage.md) — per-namespace API tour with concrete examples, plus SSE and error handling.
 - [`docs/builder/REACTIVE-MODEL.md`](https://github.com/xynolog/sdk/blob/main/docs/builder/REACTIVE-MODEL.md) — the Promise-shape-over-Observable design.
 - [`docs/builder/STATE-UNITS.md`](https://github.com/xynolog/sdk/blob/main/docs/builder/STATE-UNITS.md) — the state-unit pattern and its enforced axioms.
-- [`protocol/contract/CACHE-SEMANTICS.md`](https://github.com/xynolog/sdk/blob/main/protocol/contract/CACHE-SEMANTICS.md) — the cache primitive's numbered behavioral contract.
-- [`protocol/contract/TRANSPORT-CONTRACT.md`](https://github.com/xynolog/sdk/blob/main/protocol/contract/TRANSPORT-CONTRACT.md) — what every `ITransport` must honor; HTTP specifics in [TRANSPORT-HTTP.md](https://github.com/xynolog/sdk/blob/main/protocol/contract/TRANSPORT-HTTP.md). New transports implement the `@xynolog/core` interfaces directly — no inheritance from `HttpTransport`.
+- [`protocol/contract/CACHE-SEMANTICS.md`](https://github.com/xynolog/protocol/blob/main/contract/CACHE-SEMANTICS.md) — the cache primitive's numbered behavioral contract.
+- [`protocol/contract/TRANSPORT-CONTRACT.md`](https://github.com/xynolog/protocol/blob/main/contract/TRANSPORT-CONTRACT.md) — what every `ITransport` must honor; HTTP specifics in [TRANSPORT-HTTP.md](https://github.com/xynolog/protocol/blob/main/contract/TRANSPORT-HTTP.md). New transports implement the `@xynolog/core` interfaces directly — no inheritance from `HttpTransport`.
 
 ## Related packages
 

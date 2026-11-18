@@ -41,7 +41,7 @@ const token = accessToken('eyJhbGc...');
 const eType = entityType('Person');
 ```
 
-The four kinds of id are types of their own, generated from the spec ([`protocol/specs/src/identifiers/kinds.json`](../../../../protocol/specs/src/identifiers/kinds.json) and each kind's schema): `ResourceId`, `AnnotationId`, `JobId`, `UserId`. The spec's types carry them, so a property that holds an id is of its kind and one kind is not assignable to another. Each is made by its constructor (`resourceId`, `annotationId`, `jobId`, `userId`), which holds text to the kind's rule and throws a `TypeError` for text the rule refuses:
+The four kinds of id are types of their own, generated from the spec ([`protocol/specs/src/identifiers/kinds.json`](https://github.com/xynolog/protocol/blob/main/specs/src/identifiers/kinds.json) and each kind's schema): `ResourceId`, `AnnotationId`, `JobId`, `UserId`. The spec's types carry them, so a property that holds an id is of its kind and one kind is not assignable to another. Each is made by its constructor (`resourceId`, `annotationId`, `jobId`, `userId`), which holds text to the kind's rule and throws a `TypeError` for text the rule refuses:
 
 ```typescript
 import { resourceId, annotationId } from '@xynolog/core';
@@ -155,7 +155,7 @@ a position to something that indexes one converts with `textOffsets(text)`:
 Text paired with the geometry that indexes it, and the inverse pair that reads
 it in either direction. Pure arithmetic over plain data — this is what *reasons
 over* a coordinate map; producing one (text layer, OCR, tables, forms) is the
-[Smelter](../../../../protocol/contract/SMELTER.md)'s.
+[Smelter](https://github.com/xynolog/protocol/blob/main/contract/SMELTER.md)'s.
 
 ```typescript
 import { locate, textUnder, type AnchoredText } from '@xynolog/core';

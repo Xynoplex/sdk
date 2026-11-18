@@ -7,7 +7,7 @@ only someone working on react-ui itself needs.
 ## The wire log in e2e tests
 
 **Enable in e2e tests:** automatic via the `bus` fixture — see
-[images/e2e/docs/bus-logging.md](../../../../images/e2e/docs/bus-logging.md).
+[images/e2e/docs/bus-logging.md](https://github.com/xynolog/images/blob/main/e2e/docs/bus-logging.md).
 
 The wire log covers the Browser-to-gateway edge. An equivalent
 instrumentation on the gateway's own bus — gated behind the same
@@ -32,8 +32,8 @@ where an event reaches `/bus/emit` but never produces a response.
 ## Channels that never leave the page
 
 Some channels are published on a client's own bus and never cross the wire. The
-protocol's flow docs say which channels cross ([Browse](../../../../protocol/contract/flows/BROWSE.md),
-[Beckon](../../../../protocol/contract/flows/BECKON.md)); this section is the other half.
+protocol's flow docs say which channels cross ([Browse](https://github.com/xynolog/protocol/blob/main/contract/flows/BROWSE.md),
+[Beckon](https://github.com/xynolog/protocol/blob/main/contract/flows/BECKON.md)); this section is the other half.
 
 ### The rule: `browse:*` may cross, `nav:*` never does
 

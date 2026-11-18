@@ -387,8 +387,6 @@ This library follows strict quality standards:
 - **No cruft** - Delete dead code immediately, no "legacy" patterns
 - **Direct fixes** - If something is wrong, fix it directly (no aliases/wrappers)
 
-See [CONTRIBUTING.md](../../../CONTRIBUTING.md) in the repository root for full guidelines.
-
 ## License
 
 [License information to be added]

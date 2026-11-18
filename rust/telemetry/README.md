@@ -58,7 +58,7 @@ xynolog::bus_log::set_trace_id_provider(xynolog_telemetry::active_trace_id);
 ## What is reported
 
 The spans and the count are the rows of the SDK telemetry table
-([telemetry.json](../../../protocol/specs/src/sdk-telemetry/telemetry.json)), which
+([telemetry.json](https://github.com/xynolog/protocol/blob/main/specs/src/sdk-telemetry/telemetry.json)), which
 every Xynolog SDK reports the same way.
 
 | Name | Kind | When |
@@ -104,7 +104,7 @@ A transport depends on this crate and on no OpenTelemetry crate.
 
 Xynolog's own services state spans of their own, the rows of the service
 telemetry table
-([telemetry.json](../../../protocol/specs/src/service-telemetry/telemetry.json)), over
+([telemetry.json](https://github.com/xynolog/protocol/blob/main/specs/src/service-telemetry/telemetry.json)), over
 four more functions:
 
 | Function | |
@@ -130,4 +130,4 @@ holds the crate to the telemetry table in both directions.
 
 ## License
 
-Apache-2.0. See [LICENSE](../../../LICENSE).
+Apache-2.0. See [LICENSE](../../LICENSE).

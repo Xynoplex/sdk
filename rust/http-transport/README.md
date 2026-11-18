@@ -11,7 +11,7 @@ connects a [`xynolog`](https://crates.io/crates/xynolog) client to a
 knowledge base's gateway, and signs in the person or the service that uses
 it.
 
-[Xynolog](../../../README.md) is an open platform for building trusted AI
+[Xynolog](../../README.md) is an open platform for building trusted AI
 knowledge bases. The SDK's client does no networking of its own: this crate
 is how it reaches a knowledge base. Start with the
 [SDK's README](../sdk/README.md) for what the client does, and come
@@ -92,9 +92,9 @@ In the examples:
 
 ### A script, after `xynolog login`
 
-The [launcher](../../../apps/launcher/README.md)'s `xynolog login` signs a
+The [launcher](https://github.com/xynolog/cli/blob/main/README.md)'s `xynolog login` signs a
 person in and keeps the sign-in on disk
-([sign-in store](../../../protocol/specs/src/sign-in-store/README.md)). A script reuses
+([sign-in store](https://github.com/xynolog/protocol/blob/main/specs/src/sign-in-store/README.md)). A script reuses
 it. `state_home` is the directory that holds it:
 `xynolog::sign_in_store::state_dir` of what the script read of its own
 environment. The crates read none themselves. The session renews the
@@ -416,8 +416,8 @@ to provide is in
 
 The SDK states three contracts a client needs of the wire
 (`xynolog::transport`), and this crate implements each over a gateway
-([HTTP transport](../../../protocol/contract/TRANSPORT-HTTP.md),
-[transport contract](../../../protocol/contract/TRANSPORT-CONTRACT.md)):
+([HTTP transport](https://github.com/xynolog/protocol/blob/main/contract/TRANSPORT-HTTP.md),
+[transport contract](https://github.com/xynolog/protocol/blob/main/contract/TRANSPORT-CONTRACT.md)):
 
 | Contract | Type here | Carries |
 |---|---|---|
@@ -506,10 +506,10 @@ stand-in gateway and issuer. The Rust block of the
 is held to the same regions. [tests/stream.rs](tests/stream.rs) holds the
 stream's behaviour against a gateway that misbehaves on cue.
 [conformance/](conformance) holds the two drivers the
-[SDK conformance suite](../../../protocol/conformance/sdk/README.md) runs, and the
-one the [worker conformance suite](../../../protocol/conformance/worker/README.md)
+[SDK conformance suite](https://github.com/xynolog/protocol/blob/main/conformance/sdk/README.md) runs, and the
+one the [worker conformance suite](https://github.com/xynolog/protocol/blob/main/conformance/worker/README.md)
 runs.
 
 ## License
 
-Apache-2.0. See [LICENSE](../../../LICENSE).
+Apache-2.0. See [LICENSE](../../LICENSE).
