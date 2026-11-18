@@ -7,13 +7,13 @@ namespace Xynolog.Types;
 [global::Xynolog.Serialization.WireObject]
 public sealed record LibrarianConfig
 {
-    [global::Xynolog.Serialization.Wire("archivist")] public required global::Xynolog.Types.LibrarianConfigArchivist Archivist { get; init; }
+    [global::Xynolog.Serialization.Wire("archivist")] public required global::Xynolog.Types.ServiceAddress Archivist { get; init; }
     [global::Xynolog.Serialization.Wire("embedding")] public required global::Xynolog.Types.EmbeddingConfig Embedding { get; init; }
     [global::Xynolog.Serialization.Wire("gatewayUrl")] public required string GatewayUrl { get; init; }
     [global::Xynolog.Serialization.Wire("gather")] public required global::Xynolog.Types.LibrarianConfigGather Gather { get; init; }
     [global::Xynolog.Serialization.Wire("gatherer")] public required global::Xynolog.Types.LibrarianEngineConfig Gatherer { get; init; }
     [global::Xynolog.Serialization.Wire("graph")] public required global::Xynolog.Types.GraphConfig Graph { get; init; }
-    [global::Xynolog.Serialization.Wire("identity")] public required global::Xynolog.Types.LibrarianConfigIdentity Identity { get; init; }
+    [global::Xynolog.Serialization.Wire("identity")] public required global::Xynolog.Types.ServiceIdentity Identity { get; init; }
     [global::Xynolog.Serialization.Wire("kb")] public required global::Xynolog.Types.KbIdentity Kb { get; init; }
     [global::Xynolog.Serialization.Wire("logFormat")] public required global::Xynolog.Types.LogFormat LogFormat { get; init; }
     [global::Xynolog.Serialization.Wire("logLevel")] public required global::Xynolog.Types.LogLevel LogLevel { get; init; }

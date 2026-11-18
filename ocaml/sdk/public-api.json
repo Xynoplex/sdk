@@ -145,8 +145,8 @@
     "lib/discovery.mli": "c9924f5e42d374573dc62eb9aa405126a28769a0ce72b65a2187aae704c33747",
     "lib/dune": "f9f3c00c890991b5de2221f2698134302e986540dc89525f595fd819d91d9828",
     "lib/encoding_facts.ml": "dc9602d08894d9a3bd5334cb3254218f7a74dad0528d552acb00cec4061bb9bb",
-    "lib/enums.ml": "5fbca6713a3f9335ff0fa7f55a86cb25b103fba332da3e14615d968a0de59dcf",
-    "lib/enums.mli": "4203ea7bcd6e5fb0201238ad84a2807850f04d9b063eee4be0554553659faa05",
+    "lib/enums.ml": "c6a59761d10dbc3d2db779ec9a9f808381c8c19362984c5eb2a8cd4a03e48bc5",
+    "lib/enums.mli": "172b5dd01940b392a71a8522fbe82cc3e4c05f391a6910fd56aa6b7718b68851",
     "lib/error_codes.ml": "8b3cdc0715ef66280788464e79517d7a00147913e88e9c065ed13c396c84bb93",
     "lib/frame.ml": "6e0ba59a959758ccdc672cec1d8d802be2f882a5d1354ded4e5ab21398716d54",
     "lib/gather.ml": "c1b78c87f2e5c35a9636e61aa0ca9b1477a41341f38acda6ff396cb380b3d3b7",
@@ -182,15 +182,15 @@
     "lib/media_facts.ml": "462bb526a754d71c947d838d618ffdc3ad255ab8b61307ac3aa05ddc498fcf2a",
     "lib/media_types.ml": "627feecc23b4f887709476ee12e6fe99099303c19e06be88240ac8bf1905413d",
     "lib/media_types.mli": "2d65a7872184f4fedba7fb88e5ab2069b0031e9ac924fb0a093978e31ad0c7cc",
-    "lib/models.ml": "44b985d5d418604b927f3375331d58e2e7984e958b7bf29e6cf8c0cd453e8e00",
-    "lib/models.mli": "2e9418cd31a0942bb952f37715c07e20deef95601cd27640c8a59ff1e0fc6dbb",
+    "lib/models.ml": "9a6a7823329398ef10995f8758f95e42d0ce2bac3eff7cbc62fc597d4b3ddb8f",
+    "lib/models.mli": "b37e8935a0265559bee835a8d2fdee2aaecfbcfdb9a97b4f65a323aa3fe5e65e",
     "lib/namespace_methods.ml": "37178853cd16d5975132820d07bf0ee703039b946557167dd39560f0b5025147",
     "lib/oauth.ml": "3e1c7f5ea7465ff24379a2ae1c3b548834657a1643e146f77c18731054ff9bb2",
     "lib/oauth.mli": "74dce2642014e9de8ed38f09367c76c97e83362763305eed04c0faddb951ba07",
     "lib/oauth_facts.ml": "8d318f922bc93b766445f8e0f3f0fc2deb2e9a78244e7553f717d620d69127b2",
     "lib/pattern.ml": "a41d5ebb9ebc0eee59522a4d883e2a5281202c4fbebb0a2040b267961bf677ad",
-    "lib/records.ml": "bab52b627ef4b852d7334fdb7ef5f84554ce98d2cd9a3990faf9492846d60d59",
-    "lib/records.mli": "dca5017f2577b9d011fb22b1a2d4d7359196fd90d7009bdcd1e7629734216930",
+    "lib/records.ml": "90976097e1e6dd5c92cbc559b40319e0561227a9cb6aa1b2811760a34b799037",
+    "lib/records.mli": "680078e96d03c8790980cb4076754898b6fd8c3bee9c9384f9621d0f1a30263d",
     "lib/redirect_sign_in.ml": "0d4bab713f5a86ddd705b15dca1aa01919702bfc5484469d104c9a1776d723fd",
     "lib/refusals.ml": "53b42a4d41b53e88968f5010a843038ffa0ddbcd842f390ce88acba818ad15d1",
     "lib/registry.ml": "c93ac089204cf0e3a42301c82df77ad129a39253735ad969483f5699bd88b23c",
@@ -204,7 +204,7 @@
     "lib/running.mli": "74bef29c19b9b132888e875f77ea4fec64855a7bb7c6e119e0fb8346a47176f9",
     "lib/schema_codec.ml": "636e8eb313af9998b59c8c6a3adec349297ab949c456839a491a37cb18264b1f",
     "lib/schema_shape.ml": "fe4e72c044905dad381dff38a06ee4809e2411698b6c9096926b17f077eb3cc3",
-    "lib/schema_shapes.ml": "a5b02d0c0751158af3236fe91a52b084e887f661a8af950a2dfe758b61570ef6",
+    "lib/schema_shapes.ml": "efb4ab8ba29987e48d283baac31903d05c8a5349ad6ff1e9b2e785ebabf0bc2c",
     "lib/search_pipeline.ml": "c686787cea18854164219082e02d586aa34f7a0801c876cb011648bd72222ba0",
     "lib/search_pipeline.mli": "8569d48ac54fb0e5b0165613f479fce0d4dcd897d89dae4699c8d25f6d5db0d3",
     "lib/selector.ml": "9281ca10562fa835a666b0a15637bb970785644c408c6537aa82f1223b14500c",
@@ -632,6 +632,110 @@
     },
     {
       "kind": "module",
+      "path": "Xynolog.Enums.Extraction_declined_reason",
+      "declaration": "module Extraction_declined_reason :\n  sig\n    type t = No_text_layer | Encrypted | Corrupt | Too_large\n    val to_string : t -> string\n    val of_string : string -> t option\n  end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Enums.Extraction_declined_reason.t",
+      "declaration": "type t = No_text_layer | Encrypted | Corrupt | Too_large",
+      "representation": "variant",
+      "constructors": [
+        "No_text_layer",
+        "Encrypted",
+        "Corrupt",
+        "Too_large"
+      ],
+      "variants": [
+        {
+          "name": "No_text_layer",
+          "fields": [],
+          "unit": true
+        },
+        {
+          "name": "Encrypted",
+          "fields": [],
+          "unit": true
+        },
+        {
+          "name": "Corrupt",
+          "fields": [],
+          "unit": true
+        },
+        {
+          "name": "Too_large",
+          "fields": [],
+          "unit": true
+        }
+      ]
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Enums.Extraction_declined_reason.to_string",
+      "declaration": "val to_string : t -> string"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Enums.Extraction_declined_reason.of_string",
+      "declaration": "val of_string : string -> t option"
+    },
+    {
+      "kind": "module",
+      "path": "Xynolog.Enums.Extraction_method",
+      "declaration": "module Extraction_method :\n  sig\n    type t = Text_passthrough | Pdf_text_layer | Table | Form | Ocr\n    val to_string : t -> string\n    val of_string : string -> t option\n  end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Enums.Extraction_method.t",
+      "declaration": "type t = Text_passthrough | Pdf_text_layer | Table | Form | Ocr",
+      "representation": "variant",
+      "constructors": [
+        "Text_passthrough",
+        "Pdf_text_layer",
+        "Table",
+        "Form",
+        "Ocr"
+      ],
+      "variants": [
+        {
+          "name": "Text_passthrough",
+          "fields": [],
+          "unit": true
+        },
+        {
+          "name": "Pdf_text_layer",
+          "fields": [],
+          "unit": true
+        },
+        {
+          "name": "Table",
+          "fields": [],
+          "unit": true
+        },
+        {
+          "name": "Form",
+          "fields": [],
+          "unit": true
+        },
+        {
+          "name": "Ocr",
+          "fields": [],
+          "unit": true
+        }
+      ]
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Enums.Extraction_method.to_string",
+      "declaration": "val to_string : t -> string"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Enums.Extraction_method.of_string",
+      "declaration": "val of_string : string -> t option"
+    },
+    {
+      "kind": "module",
       "path": "Xynolog.Enums.Failure_class",
       "declaration": "module Failure_class :\n  sig\n    type t = Transient | Deterministic | Withheld\n    val to_string : t -> string\n    val of_string : string -> t option\n  end"
     },
@@ -855,6 +959,73 @@
     {
       "kind": "value",
       "path": "Xynolog.Enums.Motivation.of_string",
+      "declaration": "val of_string : string -> t option"
+    },
+    {
+      "kind": "module",
+      "path": "Xynolog.Enums.Pdf_class",
+      "declaration": "module Pdf_class :\n  sig\n    type t = A | B | C | D | E | F | G\n    val to_string : t -> string\n    val of_string : string -> t option\n  end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Enums.Pdf_class.t",
+      "declaration": "type t = A | B | C | D | E | F | G",
+      "representation": "variant",
+      "constructors": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G"
+      ],
+      "variants": [
+        {
+          "name": "A",
+          "fields": [],
+          "unit": true
+        },
+        {
+          "name": "B",
+          "fields": [],
+          "unit": true
+        },
+        {
+          "name": "C",
+          "fields": [],
+          "unit": true
+        },
+        {
+          "name": "D",
+          "fields": [],
+          "unit": true
+        },
+        {
+          "name": "E",
+          "fields": [],
+          "unit": true
+        },
+        {
+          "name": "F",
+          "fields": [],
+          "unit": true
+        },
+        {
+          "name": "G",
+          "fields": [],
+          "unit": true
+        }
+      ]
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Enums.Pdf_class.to_string",
+      "declaration": "val to_string : t -> string"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Enums.Pdf_class.of_string",
       "declaration": "val of_string : string -> t option"
     },
     {
@@ -3116,6 +3287,11 @@
     },
     {
       "kind": "value",
+      "path": "Xynolog.Models.body_operation",
+      "declaration": "val body_operation : [ `BodyOperation ] descriptor"
+    },
+    {
+      "kind": "value",
       "path": "Xynolog.Models.body_operation_add",
       "declaration": "val body_operation_add : [ `BodyOperationAdd ] descriptor"
     },
@@ -3493,6 +3669,16 @@
       "kind": "value",
       "path": "Xynolog.Models.extraction_declined",
       "declaration": "val extraction_declined : [ `ExtractionDeclined ] descriptor"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Models.extraction_declined_reason",
+      "declaration": "val extraction_declined_reason : [ `ExtractionDeclinedReason ] descriptor"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Models.extraction_method",
+      "declaration": "val extraction_method : [ `ExtractionMethod ] descriptor"
     },
     {
       "kind": "value",
@@ -4201,8 +4387,33 @@
     },
     {
       "kind": "value",
+      "path": "Xynolog.Models.ocr_confidence",
+      "declaration": "val ocr_confidence : [ `OcrConfidence ] descriptor"
+    },
+    {
+      "kind": "value",
       "path": "Xynolog.Models.ollama_embedding_config",
       "declaration": "val ollama_embedding_config : [ `OllamaEmbeddingConfig ] descriptor"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Models.one_or_more_agents",
+      "declaration": "val one_or_more_agents : [ `OneOrMoreAgents ] descriptor"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Models.one_or_more_strings",
+      "declaration": "val one_or_more_strings : [ `OneOrMoreStrings ] descriptor"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Models.one_or_more_uris",
+      "declaration": "val one_or_more_uris : [ `OneOrMoreUris ] descriptor"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Models.pdf_class",
+      "declaration": "val pdf_class : [ `PdfClass ] descriptor"
     },
     {
       "kind": "value",
@@ -4343,6 +4554,16 @@
       "kind": "value",
       "path": "Xynolog.Models.semantic_match",
       "declaration": "val semantic_match : [ `SemanticMatch ] descriptor"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Models.service_address",
+      "declaration": "val service_address : [ `ServiceAddress ] descriptor"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Models.service_identity",
+      "declaration": "val service_identity : [ `ServiceIdentity ] descriptor"
     },
     {
       "kind": "value",
@@ -4608,6 +4829,11 @@
       "kind": "value",
       "path": "Xynolog.Models.yield_update_ok",
       "declaration": "val yield_update_ok : [ `YieldUpdateOk ] descriptor"
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Models.yielded_resource",
+      "declaration": "val yielded_resource : [ `YieldedResource ] descriptor"
     },
     {
       "kind": "module",
@@ -6109,12 +6335,12 @@
     {
       "kind": "module",
       "path": "Xynolog.Records.Extracted_text",
-      "declaration": "module Extracted_text :\n  sig\n    type t = {\n      text : string;\n      items : Yojson.Raw.t;\n      kind : string;\n      method_ : string;\n      pdf_class : string Xynolog__.Types.presence;\n      ocr_confidence : Yojson.Raw.t Xynolog__.Types.presence;\n      unread_pages : Yojson.Raw.t Xynolog__.Types.presence;\n      extra : (string * Yojson.Raw.t) list;\n    }\n    val of_model : [ `ExtractedText ] Xynolog__.Models.t -> t\n  end"
+      "declaration": "module Extracted_text :\n  sig\n    type t = {\n      text : string;\n      items : Yojson.Raw.t;\n      kind : string;\n      method_ : Yojson.Raw.t;\n      pdf_class : Yojson.Raw.t Xynolog__.Types.presence;\n      ocr_confidence : Yojson.Raw.t Xynolog__.Types.presence;\n      unread_pages : Yojson.Raw.t Xynolog__.Types.presence;\n      extra : (string * Yojson.Raw.t) list;\n    }\n    val of_model : [ `ExtractedText ] Xynolog__.Models.t -> t\n  end"
     },
     {
       "kind": "type",
       "path": "Xynolog.Records.Extracted_text.t",
-      "declaration": "type t = {\n  text : string;\n  items : Yojson.Raw.t;\n  kind : string;\n  method_ : string;\n  pdf_class : string Xynolog__.Types.presence;\n  ocr_confidence : Yojson.Raw.t Xynolog__.Types.presence;\n  unread_pages : Yojson.Raw.t Xynolog__.Types.presence;\n  extra : (string * Yojson.Raw.t) list;\n}",
+      "declaration": "type t = {\n  text : string;\n  items : Yojson.Raw.t;\n  kind : string;\n  method_ : Yojson.Raw.t;\n  pdf_class : Yojson.Raw.t Xynolog__.Types.presence;\n  ocr_confidence : Yojson.Raw.t Xynolog__.Types.presence;\n  unread_pages : Yojson.Raw.t Xynolog__.Types.presence;\n  extra : (string * Yojson.Raw.t) list;\n}",
       "representation": "record",
       "fields": [
         "text",
@@ -6134,13 +6360,35 @@
     },
     {
       "kind": "module",
+      "path": "Xynolog.Records.Ocr_confidence",
+      "declaration": "module Ocr_confidence :\n  sig\n    type t = {\n      mean : Yojson.Raw.t;\n      low_confidence_words : Yojson.Raw.t;\n      total_words : Yojson.Raw.t;\n      extra : (string * Yojson.Raw.t) list;\n    }\n    val of_model : [ `OcrConfidence ] Xynolog__.Models.t -> t\n  end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Records.Ocr_confidence.t",
+      "declaration": "type t = {\n  mean : Yojson.Raw.t;\n  low_confidence_words : Yojson.Raw.t;\n  total_words : Yojson.Raw.t;\n  extra : (string * Yojson.Raw.t) list;\n}",
+      "representation": "record",
+      "fields": [
+        "mean",
+        "low_confidence_words",
+        "total_words",
+        "extra"
+      ]
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Records.Ocr_confidence.of_model",
+      "declaration": "val of_model : [ `OcrConfidence ] Xynolog__.Models.t -> t"
+    },
+    {
+      "kind": "module",
       "path": "Xynolog.Records.Extraction_declined",
-      "declaration": "module Extraction_declined :\n  sig\n    type t = {\n      kind : string;\n      declined : string;\n      extra : (string * Yojson.Raw.t) list;\n    }\n    val of_model : [ `ExtractionDeclined ] Xynolog__.Models.t -> t\n  end"
+      "declaration": "module Extraction_declined :\n  sig\n    type t = {\n      kind : string;\n      declined : Yojson.Raw.t;\n      extra : (string * Yojson.Raw.t) list;\n    }\n    val of_model : [ `ExtractionDeclined ] Xynolog__.Models.t -> t\n  end"
     },
     {
       "kind": "type",
       "path": "Xynolog.Records.Extraction_declined.t",
-      "declaration": "type t = {\n  kind : string;\n  declined : string;\n  extra : (string * Yojson.Raw.t) list;\n}",
+      "declaration": "type t = {\n  kind : string;\n  declined : Yojson.Raw.t;\n  extra : (string * Yojson.Raw.t) list;\n}",
       "representation": "record",
       "fields": [
         "kind",
@@ -9277,6 +9525,26 @@
     },
     {
       "kind": "module",
+      "path": "Xynolog.Records.Yielded_resource",
+      "declaration": "module Yielded_resource :\n  sig\n    type t = {\n      resource_id : Yojson.Raw.t;\n      extra : (string * Yojson.Raw.t) list;\n    }\n    val of_model : [ `YieldedResource ] Xynolog__.Models.t -> t\n  end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Records.Yielded_resource.t",
+      "declaration": "type t = {\n  resource_id : Yojson.Raw.t;\n  extra : (string * Yojson.Raw.t) list;\n}",
+      "representation": "record",
+      "fields": [
+        "resource_id",
+        "extra"
+      ]
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Records.Yielded_resource.of_model",
+      "declaration": "val of_model : [ `YieldedResource ] Xynolog__.Models.t -> t"
+    },
+    {
+      "kind": "module",
       "path": "Xynolog.Records.Bus_event_message",
       "declaration": "module Bus_event_message :\n  sig\n    type t = {\n      event : string;\n      id : Yojson.Raw.t;\n      data : Yojson.Raw.t;\n      extra : (string * Yojson.Raw.t) list;\n    }\n    val of_model : [ `BusEventMessage ] Xynolog__.Models.t -> t\n  end"
     },
@@ -10637,6 +10905,47 @@
     },
     {
       "kind": "module",
+      "path": "Xynolog.Records.Service_identity",
+      "declaration": "module Service_identity :\n  sig\n    type t = { issuer : string; extra : (string * Yojson.Raw.t) list; }\n    val of_model : [ `ServiceIdentity ] Xynolog__.Models.t -> t\n  end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Records.Service_identity.t",
+      "declaration": "type t = { issuer : string; extra : (string * Yojson.Raw.t) list; }",
+      "representation": "record",
+      "fields": [
+        "issuer",
+        "extra"
+      ]
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Records.Service_identity.of_model",
+      "declaration": "val of_model : [ `ServiceIdentity ] Xynolog__.Models.t -> t"
+    },
+    {
+      "kind": "module",
+      "path": "Xynolog.Records.Service_address",
+      "declaration": "module Service_address :\n  sig\n    type t = {\n      host : string;\n      port : Yojson.Raw.t;\n      extra : (string * Yojson.Raw.t) list;\n    }\n    val of_model : [ `ServiceAddress ] Xynolog__.Models.t -> t\n  end"
+    },
+    {
+      "kind": "type",
+      "path": "Xynolog.Records.Service_address.t",
+      "declaration": "type t = {\n  host : string;\n  port : Yojson.Raw.t;\n  extra : (string * Yojson.Raw.t) list;\n}",
+      "representation": "record",
+      "fields": [
+        "host",
+        "port",
+        "extra"
+      ]
+    },
+    {
+      "kind": "value",
+      "path": "Xynolog.Records.Service_address.of_model",
+      "declaration": "val of_model : [ `ServiceAddress ] Xynolog__.Models.t -> t"
+    },
+    {
+      "kind": "module",
       "path": "Xynolog.Records.Resource_annotations",
       "declaration": "module Resource_annotations :\n  sig\n    type t = {\n      resource_id : Yojson.Raw.t;\n      annotations : Yojson.Raw.t;\n      version : Yojson.Raw.t;\n      updated_at : string;\n      extra : (string * Yojson.Raw.t) list;\n    }\n    val of_model : [ `ResourceAnnotations ] Xynolog__.Models.t -> t\n  end"
     },
@@ -10785,12 +11094,12 @@
     {
       "kind": "module",
       "path": "Xynolog.Records.Anchored_text_extracted_entry",
-      "declaration": "module Anchored_text_extracted_entry :\n  sig\n    type t = {\n      v : Yojson.Raw.t;\n      stamp : string;\n      text : string;\n      lines : Yojson.Raw.t;\n      method_ : string;\n      pdf_class : string Xynolog__.Types.presence;\n      ocr_confidence : Yojson.Raw.t Xynolog__.Types.presence;\n      unread_pages : Yojson.Raw.t Xynolog__.Types.presence;\n      extra : (string * Yojson.Raw.t) list;\n    }\n    val of_model : [ `AnchoredTextExtractedEntry ] Xynolog__.Models.t -> t\n  end"
+      "declaration": "module Anchored_text_extracted_entry :\n  sig\n    type t = {\n      v : Yojson.Raw.t;\n      stamp : string;\n      text : string;\n      lines : Yojson.Raw.t;\n      method_ : Yojson.Raw.t;\n      pdf_class : Yojson.Raw.t Xynolog__.Types.presence;\n      ocr_confidence : Yojson.Raw.t Xynolog__.Types.presence;\n      unread_pages : Yojson.Raw.t Xynolog__.Types.presence;\n      extra : (string * Yojson.Raw.t) list;\n    }\n    val of_model : [ `AnchoredTextExtractedEntry ] Xynolog__.Models.t -> t\n  end"
     },
     {
       "kind": "type",
       "path": "Xynolog.Records.Anchored_text_extracted_entry.t",
-      "declaration": "type t = {\n  v : Yojson.Raw.t;\n  stamp : string;\n  text : string;\n  lines : Yojson.Raw.t;\n  method_ : string;\n  pdf_class : string Xynolog__.Types.presence;\n  ocr_confidence : Yojson.Raw.t Xynolog__.Types.presence;\n  unread_pages : Yojson.Raw.t Xynolog__.Types.presence;\n  extra : (string * Yojson.Raw.t) list;\n}",
+      "declaration": "type t = {\n  v : Yojson.Raw.t;\n  stamp : string;\n  text : string;\n  lines : Yojson.Raw.t;\n  method_ : Yojson.Raw.t;\n  pdf_class : Yojson.Raw.t Xynolog__.Types.presence;\n  ocr_confidence : Yojson.Raw.t Xynolog__.Types.presence;\n  unread_pages : Yojson.Raw.t Xynolog__.Types.presence;\n  extra : (string * Yojson.Raw.t) list;\n}",
       "representation": "record",
       "fields": [
         "v",
@@ -10812,12 +11121,12 @@
     {
       "kind": "module",
       "path": "Xynolog.Records.Anchored_text_declined_entry",
-      "declaration": "module Anchored_text_declined_entry :\n  sig\n    type t = {\n      v : Yojson.Raw.t;\n      stamp : string;\n      declined : string;\n      extra : (string * Yojson.Raw.t) list;\n    }\n    val of_model : [ `AnchoredTextDeclinedEntry ] Xynolog__.Models.t -> t\n  end"
+      "declaration": "module Anchored_text_declined_entry :\n  sig\n    type t = {\n      v : Yojson.Raw.t;\n      stamp : string;\n      declined : Yojson.Raw.t;\n      extra : (string * Yojson.Raw.t) list;\n    }\n    val of_model : [ `AnchoredTextDeclinedEntry ] Xynolog__.Models.t -> t\n  end"
     },
     {
       "kind": "type",
       "path": "Xynolog.Records.Anchored_text_declined_entry.t",
-      "declaration": "type t = {\n  v : Yojson.Raw.t;\n  stamp : string;\n  declined : string;\n  extra : (string * Yojson.Raw.t) list;\n}",
+      "declaration": "type t = {\n  v : Yojson.Raw.t;\n  stamp : string;\n  declined : Yojson.Raw.t;\n  extra : (string * Yojson.Raw.t) list;\n}",
       "representation": "record",
       "fields": [
         "v",

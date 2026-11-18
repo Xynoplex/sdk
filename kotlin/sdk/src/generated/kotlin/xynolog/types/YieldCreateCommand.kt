@@ -36,7 +36,7 @@ public data class YieldCreateCommand(
     public val generatedFrom: YieldCreateCommandGeneratedFrom? = null,
     public val generationPrompt: String? = null,
     /** The Software peer that produced the content, when software did. Its identity must be the emitter's own — the knowledge base refuses a generator naming anyone else, and supplies it from the verified emitter when omitted. `creator` and `wasAttributedTo` are never sent; the knowledge base derives them from the emitter and the cited job. */
-    public val generator: YieldCreateCommandGenerator? = null,
+    public val generator: OneOrMoreAgents? = null,
 ) {
     /** How Java makes a `YieldCreateCommand`: `builder` takes what it must state, a setter each thing it may, and `build` makes it. */
     public class Builder internal constructor(
@@ -54,7 +54,7 @@ public data class YieldCreateCommand(
         private var isDraft: Boolean? = null
         private var generatedFrom: YieldCreateCommandGeneratedFrom? = null
         private var generationPrompt: String? = null
-        private var generator: YieldCreateCommandGenerator? = null
+        private var generator: OneOrMoreAgents? = null
 
         @JvmExposeBoxed
         public fun userId(userId: UserId?): Builder = apply { this.userId = userId }
@@ -69,7 +69,7 @@ public data class YieldCreateCommand(
         public fun isDraft(isDraft: Boolean?): Builder = apply { this.isDraft = isDraft }
         public fun generatedFrom(generatedFrom: YieldCreateCommandGeneratedFrom?): Builder = apply { this.generatedFrom = generatedFrom }
         public fun generationPrompt(generationPrompt: String?): Builder = apply { this.generationPrompt = generationPrompt }
-        public fun generator(generator: YieldCreateCommandGenerator?): Builder = apply { this.generator = generator }
+        public fun generator(generator: OneOrMoreAgents?): Builder = apply { this.generator = generator }
 
         public fun build(): YieldCreateCommand = YieldCreateCommand(userId = userId, roles = roles, jobId = jobId, name = name, storageUri = storageUri, contentChecksum = contentChecksum, byteSize = byteSize, format = format, language = language, entityTypes = entityTypes, isDraft = isDraft, generatedFrom = generatedFrom, generationPrompt = generationPrompt, generator = generator)
     }

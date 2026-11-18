@@ -45,8 +45,13 @@ export const OWNER_ONLY_DIRECTORY_MODE = 0o700;
 export const OWNER_ONLY_FILE_MODE = 0o600;
 
 /** The directory's access list on Windows, where a mode keeps nobody out, in SDDL, with `owner` where the SID of the user the writer runs as goes (its process token's user): full access for that user, the system and the administrators, and nobody else. It is handed down to everything made in the directory, and protected, so nothing is inherited from above. */
-export function ownerOnlyAccessList(owner: string): string {
+export function ownerOnlyDirectoryAccessList(owner: string): string {
   return "D:PAI(A;OICI;FA;;;" + owner + ")(A;OICI;FA;;;SY)(A;OICI;FA;;;BA)";
+}
+
+/** A file's access list on Windows, which the launcher gives each file it keeps to its owner, in SDDL, with `owner` where the SID of the user it runs as goes: the directory's list, with nothing handed down, since a file has nothing beneath it. Full access for that user, the system and the administrators, and nobody else, protected, so nothing is inherited from above. */
+export function ownerOnlyFileAccessList(owner: string): string {
+  return "D:PAI(A;;FA;;;" + owner + ")(A;;FA;;;SY)(A;;FA;;;BA)";
 }
 
 /** The document's name in the state home: one sign-in per stack. */

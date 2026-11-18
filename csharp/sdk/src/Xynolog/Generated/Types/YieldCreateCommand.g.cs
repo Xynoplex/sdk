@@ -15,7 +15,7 @@ public sealed record YieldCreateCommand
     [global::Xynolog.Serialization.Wire("format")] public required string Format { get; init; }
     [global::Xynolog.Serialization.Wire("generatedFrom")] public global::Xynolog.Types.YieldCreateCommandGeneratedFrom? GeneratedFrom { get; init; }
     [global::Xynolog.Serialization.Wire("generationPrompt")] public string? GenerationPrompt { get; init; }
-    [global::Xynolog.Serialization.Wire("generator")] public global::Xynolog.Types.YieldCreateCommandGenerator? Generator { get; init; }
+    [global::Xynolog.Serialization.Wire("generator")] public global::Xynolog.Types.OneOrMoreAgents? Generator { get; init; }
     [global::Xynolog.Serialization.Wire("isDraft")] public bool? IsDraft { get; init; }
     [global::Xynolog.Serialization.Wire("jobId")] public global::Xynolog.Identifiers.JobId? JobId { get; init; }
     [global::Xynolog.Serialization.Wire("language")] public string? Language { get; init; }

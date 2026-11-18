@@ -13,13 +13,11 @@ import kotlinx.serialization.json.JsonIgnoreUnknownKeys
 public data class BodyOperationRemove(
     @EncodeDefault
     public val op: BodyOperationRemoveOp = BodyOperationRemoveOp.Remove,
-    public val item: BodyOperationRemoveItem,
-) : AnnotationBodyUpdatedPayloadOperationsItem,
-    MarkUpdateBodyCommandOperationsItem,
-    UpdateAnnotationBodyRequestOperationsItem {
+    public val item: AnnotationBody,
+) : BodyOperation {
     /** How Java makes a `BodyOperationRemove`: `builder` takes what it must state, a setter each thing it may, and `build` makes it. */
     public class Builder internal constructor(
-        private val item: BodyOperationRemoveItem,
+        private val item: AnnotationBody,
     ) {
         public fun build(): BodyOperationRemove = BodyOperationRemove(item = item)
     }
@@ -27,6 +25,6 @@ public data class BodyOperationRemove(
     public companion object {
         /** A builder of a `BodyOperationRemove` that states these, and what its setters add. */
         @JvmStatic
-        public fun builder(item: BodyOperationRemoveItem): Builder = Builder(item)
+        public fun builder(item: AnnotationBody): Builder = Builder(item)
     }
 }

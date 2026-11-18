@@ -2,9 +2,8 @@
 -- Regenerate: make generate (codegen/lib/haskell_sdk/haskell_sdk.ml)
 {-# LANGUAGE OverloadedStrings #-}
 
-module Xynolog.Internal.Generated.Models.ResourceCreatedPayload (ResourceCreatedPayload (..), ResourceCreatedPayloadGeneratedFrom (..), ResourceCreatedPayloadGenerator (..), ResourceCreatedPayloadWasAttributedTo (..)) where
+module Xynolog.Internal.Generated.Models.ResourceCreatedPayload (ResourceCreatedPayload (..), ResourceCreatedPayloadGeneratedFrom (..)) where
 
-import Control.Applicative ((<|>))
 import Data.Aeson (FromJSON (..), ToJSON (..), Value (..), withObject, (.:))
 import Data.Aeson.KeyMap qualified as KM
 import Data.Text (Text)
@@ -13,6 +12,7 @@ import Xynolog.Internal.Generated.Models.Agent
 import Xynolog.Internal.Generated.Models.AnnotationId
 import Xynolog.Internal.Generated.Models.ContentFormat
 import Xynolog.Internal.Generated.Models.JobId
+import Xynolog.Internal.Generated.Models.OneOrMoreAgents
 import Xynolog.Internal.Generated.Models.ResourceId
 
 data ResourceCreatedPayload = ResourceCreatedPayload
@@ -23,13 +23,13 @@ data ResourceCreatedPayload = ResourceCreatedPayload
     resourceCreatedPayloadFormat :: ContentFormat,
     resourceCreatedPayloadGeneratedFrom :: Maybe ResourceCreatedPayloadGeneratedFrom,
     resourceCreatedPayloadGenerationPrompt :: Maybe Text,
-    resourceCreatedPayloadGenerator :: Maybe ResourceCreatedPayloadGenerator,
+    resourceCreatedPayloadGenerator :: Maybe OneOrMoreAgents,
     resourceCreatedPayloadIsDraft :: Maybe Bool,
     resourceCreatedPayloadJobId :: Maybe JobId,
     resourceCreatedPayloadLanguage :: Maybe Text,
     resourceCreatedPayloadName :: Text,
     resourceCreatedPayloadStorageUri :: Maybe Text,
-    resourceCreatedPayloadWasAttributedTo :: Maybe ResourceCreatedPayloadWasAttributedTo,
+    resourceCreatedPayloadWasAttributedTo :: Maybe OneOrMoreAgents,
     resourceCreatedPayloadAdditionalProperties :: KM.KeyMap Value
   }
   deriving (Eq, Show)
@@ -48,19 +48,3 @@ data ResourceCreatedPayloadGeneratedFrom = ResourceCreatedPayloadGeneratedFrom
 instance FromJSON ResourceCreatedPayloadGeneratedFrom where parseJSON = checked "ResourceCreatedPayloadGeneratedFrom" $ withObject "ResourceCreatedPayloadGeneratedFrom" (\fields -> ResourceCreatedPayloadGeneratedFrom <$> optional fields "annotationId" <*> (fields .: "resourceId") <*> traverse parseJSON (withoutFields ["annotationId", "resourceId"] fields))
 
 instance ToJSON ResourceCreatedPayloadGeneratedFrom where toJSON value = Object (KM.fromList (concat [optionalPair "annotationId" (resourceCreatedPayloadGeneratedFromAnnotationId value), [("resourceId", toJSON (resourceCreatedPayloadGeneratedFromResourceId value))]]) <> fmap toJSON (withoutFields ["annotationId", "resourceId"] (resourceCreatedPayloadGeneratedFromAdditionalProperties value)))
-
-data ResourceCreatedPayloadGenerator = ResourceCreatedPayloadGeneratorBranch1 Agent | ResourceCreatedPayloadGeneratorBranch2 [Agent] deriving (Eq, Show)
-
-instance FromJSON ResourceCreatedPayloadGenerator where parseJSON = checked "ResourceCreatedPayloadGenerator" $ \value -> (ResourceCreatedPayloadGeneratorBranch1 <$> parseJSON value) <|> (ResourceCreatedPayloadGeneratorBranch2 <$> parseJSON value)
-
-instance ToJSON ResourceCreatedPayloadGenerator where
-  toJSON (ResourceCreatedPayloadGeneratorBranch1 value) = toJSON value
-  toJSON (ResourceCreatedPayloadGeneratorBranch2 value) = toJSON value
-
-data ResourceCreatedPayloadWasAttributedTo = ResourceCreatedPayloadWasAttributedToBranch1 Agent | ResourceCreatedPayloadWasAttributedToBranch2 [Agent] deriving (Eq, Show)
-
-instance FromJSON ResourceCreatedPayloadWasAttributedTo where parseJSON = checked "ResourceCreatedPayloadWasAttributedTo" $ \value -> (ResourceCreatedPayloadWasAttributedToBranch1 <$> parseJSON value) <|> (ResourceCreatedPayloadWasAttributedToBranch2 <$> parseJSON value)
-
-instance ToJSON ResourceCreatedPayloadWasAttributedTo where
-  toJSON (ResourceCreatedPayloadWasAttributedToBranch1 value) = toJSON value
-  toJSON (ResourceCreatedPayloadWasAttributedToBranch2 value) = toJSON value

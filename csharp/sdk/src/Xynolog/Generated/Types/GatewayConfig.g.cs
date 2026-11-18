@@ -7,7 +7,7 @@ namespace Xynolog.Types;
 [global::Xynolog.Serialization.WireObject]
 public sealed record GatewayConfig
 {
-    [global::Xynolog.Serialization.Wire("archivist")] public required global::Xynolog.Types.GatewayConfigArchivist Archivist { get; init; }
+    [global::Xynolog.Serialization.Wire("archivist")] public required global::Xynolog.Types.ServiceAddress Archivist { get; init; }
     [global::Xynolog.Serialization.Wire("capacity")] public required global::Xynolog.Types.GatewayConfigCapacity Capacity { get; init; }
     [global::Xynolog.Serialization.Wire("identity")] public required global::Xynolog.Types.GatewayConfigIdentity Identity { get; init; }
     [global::Xynolog.Serialization.Wire("kb")] public required global::Xynolog.Types.KbIdentity Kb { get; init; }

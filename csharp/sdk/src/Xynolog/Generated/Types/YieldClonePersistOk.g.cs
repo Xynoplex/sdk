@@ -7,5 +7,5 @@ namespace Xynolog.Types;
 [global::Xynolog.Serialization.WireObject]
 public sealed record YieldClonePersistOk
 {
-    [global::Xynolog.Serialization.Wire("response")] public required global::Xynolog.Types.YieldClonePersistOkResponse Response { get; init; }
+    [global::Xynolog.Serialization.Wire("response")] public required global::Xynolog.Types.YieldedResource Response { get; init; }
 }

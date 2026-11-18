@@ -14,12 +14,12 @@ import xynolog.identifiers.AnnotationId
 public data class AnnotationBodyUpdatedPayload(
     @get:JvmExposeBoxed
     public val annotationId: AnnotationId,
-    public val operations: kotlin.collections.List<AnnotationBodyUpdatedPayloadOperationsItem>,
+    public val operations: kotlin.collections.List<BodyOperation>,
 ) {
     /** How Java makes a `AnnotationBodyUpdatedPayload`: `builder` takes what it must state, a setter each thing it may, and `build` makes it. */
     public class Builder internal constructor(
         private val annotationId: AnnotationId,
-        private val operations: kotlin.collections.List<AnnotationBodyUpdatedPayloadOperationsItem>,
+        private val operations: kotlin.collections.List<BodyOperation>,
     ) {
         public fun build(): AnnotationBodyUpdatedPayload = AnnotationBodyUpdatedPayload(annotationId = annotationId, operations = operations)
     }
@@ -28,6 +28,6 @@ public data class AnnotationBodyUpdatedPayload(
         /** A builder of a `AnnotationBodyUpdatedPayload` that states these, and what its setters add. */
         @JvmStatic
         @JvmExposeBoxed
-        public fun builder(annotationId: AnnotationId, operations: kotlin.collections.List<AnnotationBodyUpdatedPayloadOperationsItem>): Builder = Builder(annotationId, operations)
+        public fun builder(annotationId: AnnotationId, operations: kotlin.collections.List<BodyOperation>): Builder = Builder(annotationId, operations)
     }
 }

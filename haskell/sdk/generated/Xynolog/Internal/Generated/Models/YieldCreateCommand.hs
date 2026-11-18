@@ -2,17 +2,16 @@
 -- Regenerate: make generate (codegen/lib/haskell_sdk/haskell_sdk.ml)
 {-# LANGUAGE OverloadedStrings #-}
 
-module Xynolog.Internal.Generated.Models.YieldCreateCommand (YieldCreateCommand (..), YieldCreateCommandGeneratedFrom (..), YieldCreateCommandGenerator (..)) where
+module Xynolog.Internal.Generated.Models.YieldCreateCommand (YieldCreateCommand (..), YieldCreateCommandGeneratedFrom (..)) where
 
-import Control.Applicative ((<|>))
 import Data.Aeson (FromJSON (..), ToJSON (..), Value (..), withObject, (.:))
 import Data.Aeson.KeyMap qualified as KM
 import Data.Text (Text)
 import Xynolog.Internal.Codec
-import Xynolog.Internal.Generated.Models.Agent
 import Xynolog.Internal.Generated.Models.AnnotationId
 import Xynolog.Internal.Generated.Models.ContentFormat
 import Xynolog.Internal.Generated.Models.JobId
+import Xynolog.Internal.Generated.Models.OneOrMoreAgents
 import Xynolog.Internal.Generated.Models.ResourceId
 import Xynolog.Internal.Generated.Models.UserId
 
@@ -25,7 +24,7 @@ data YieldCreateCommand = YieldCreateCommand
     yieldCreateCommandFormat :: ContentFormat,
     yieldCreateCommandGeneratedFrom :: Maybe YieldCreateCommandGeneratedFrom,
     yieldCreateCommandGenerationPrompt :: Maybe Text,
-    yieldCreateCommandGenerator :: Maybe YieldCreateCommandGenerator,
+    yieldCreateCommandGenerator :: Maybe OneOrMoreAgents,
     yieldCreateCommandIsDraft :: Maybe Bool,
     yieldCreateCommandJobId :: Maybe JobId,
     yieldCreateCommandLanguage :: Maybe Text,
@@ -49,11 +48,3 @@ data YieldCreateCommandGeneratedFrom = YieldCreateCommandGeneratedFrom
 instance FromJSON YieldCreateCommandGeneratedFrom where parseJSON = checked "YieldCreateCommandGeneratedFrom" $ withObject "YieldCreateCommandGeneratedFrom" (\fields -> YieldCreateCommandGeneratedFrom <$> optional fields "annotationId" <*> optional fields "resourceId" <*> traverse parseJSON (withoutFields ["annotationId", "resourceId"] fields))
 
 instance ToJSON YieldCreateCommandGeneratedFrom where toJSON value = Object (KM.fromList (concat [optionalPair "annotationId" (yieldCreateCommandGeneratedFromAnnotationId value), optionalPair "resourceId" (yieldCreateCommandGeneratedFromResourceId value)]) <> fmap toJSON (withoutFields ["annotationId", "resourceId"] (yieldCreateCommandGeneratedFromAdditionalProperties value)))
-
-data YieldCreateCommandGenerator = YieldCreateCommandGeneratorBranch1 Agent | YieldCreateCommandGeneratorBranch2 [Agent] deriving (Eq, Show)
-
-instance FromJSON YieldCreateCommandGenerator where parseJSON = checked "YieldCreateCommandGenerator" $ \value -> (YieldCreateCommandGeneratorBranch1 <$> parseJSON value) <|> (YieldCreateCommandGeneratorBranch2 <$> parseJSON value)
-
-instance ToJSON YieldCreateCommandGenerator where
-  toJSON (YieldCreateCommandGeneratorBranch1 value) = toJSON value
-  toJSON (YieldCreateCommandGeneratorBranch2 value) = toJSON value

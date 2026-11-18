@@ -252,7 +252,7 @@ if sys.platform == "win32":
         administrator is `LA`) rather than by their SID, and with their entries
         in any order.
         """
-        listed = _owner_only_table.access_list(_user())
+        listed = _owner_only_table.directory_access_list(_user())
         descriptor = ctypes.c_void_p()
         if not _ConvertStringSecurityDescriptorToSecurityDescriptorW(listed, _SDDL_REVISION_1, ctypes.byref(descriptor), None):
             raise ctypes.WinError(ctypes.get_last_error())

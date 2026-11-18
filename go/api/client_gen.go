@@ -89,30 +89,6 @@ func (e AnchoredTextAbsentKind) Valid() bool {
 	}
 }
 
-// Defines values for AnchoredTextDeclinedEntryDeclined.
-const (
-	AnchoredTextDeclinedEntryDeclinedCorrupt     AnchoredTextDeclinedEntryDeclined = "corrupt"
-	AnchoredTextDeclinedEntryDeclinedEncrypted   AnchoredTextDeclinedEntryDeclined = "encrypted"
-	AnchoredTextDeclinedEntryDeclinedNoTextLayer AnchoredTextDeclinedEntryDeclined = "no-text-layer"
-	AnchoredTextDeclinedEntryDeclinedTooLarge    AnchoredTextDeclinedEntryDeclined = "too-large"
-)
-
-// Valid indicates whether the value is a known member of the AnchoredTextDeclinedEntryDeclined enum.
-func (e AnchoredTextDeclinedEntryDeclined) Valid() bool {
-	switch e {
-	case AnchoredTextDeclinedEntryDeclinedCorrupt:
-		return true
-	case AnchoredTextDeclinedEntryDeclinedEncrypted:
-		return true
-	case AnchoredTextDeclinedEntryDeclinedNoTextLayer:
-		return true
-	case AnchoredTextDeclinedEntryDeclinedTooLarge:
-		return true
-	default:
-		return false
-	}
-}
-
 // Defines values for AnchoredTextDeclinedEntryV.
 const (
 	AnchoredTextDeclinedEntryVN3 AnchoredTextDeclinedEntryV = 3
@@ -122,66 +98,6 @@ const (
 func (e AnchoredTextDeclinedEntryV) Valid() bool {
 	switch e {
 	case AnchoredTextDeclinedEntryVN3:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for AnchoredTextExtractedEntryMethod.
-const (
-	AnchoredTextExtractedEntryMethodForm            AnchoredTextExtractedEntryMethod = "form"
-	AnchoredTextExtractedEntryMethodOcr             AnchoredTextExtractedEntryMethod = "ocr"
-	AnchoredTextExtractedEntryMethodPdfTextLayer    AnchoredTextExtractedEntryMethod = "pdf-text-layer"
-	AnchoredTextExtractedEntryMethodTable           AnchoredTextExtractedEntryMethod = "table"
-	AnchoredTextExtractedEntryMethodTextPassthrough AnchoredTextExtractedEntryMethod = "text-passthrough"
-)
-
-// Valid indicates whether the value is a known member of the AnchoredTextExtractedEntryMethod enum.
-func (e AnchoredTextExtractedEntryMethod) Valid() bool {
-	switch e {
-	case AnchoredTextExtractedEntryMethodForm:
-		return true
-	case AnchoredTextExtractedEntryMethodOcr:
-		return true
-	case AnchoredTextExtractedEntryMethodPdfTextLayer:
-		return true
-	case AnchoredTextExtractedEntryMethodTable:
-		return true
-	case AnchoredTextExtractedEntryMethodTextPassthrough:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for AnchoredTextExtractedEntryPdfClass.
-const (
-	AnchoredTextExtractedEntryPdfClassA AnchoredTextExtractedEntryPdfClass = "A"
-	AnchoredTextExtractedEntryPdfClassB AnchoredTextExtractedEntryPdfClass = "B"
-	AnchoredTextExtractedEntryPdfClassC AnchoredTextExtractedEntryPdfClass = "C"
-	AnchoredTextExtractedEntryPdfClassD AnchoredTextExtractedEntryPdfClass = "D"
-	AnchoredTextExtractedEntryPdfClassE AnchoredTextExtractedEntryPdfClass = "E"
-	AnchoredTextExtractedEntryPdfClassF AnchoredTextExtractedEntryPdfClass = "F"
-	AnchoredTextExtractedEntryPdfClassG AnchoredTextExtractedEntryPdfClass = "G"
-)
-
-// Valid indicates whether the value is a known member of the AnchoredTextExtractedEntryPdfClass enum.
-func (e AnchoredTextExtractedEntryPdfClass) Valid() bool {
-	switch e {
-	case AnchoredTextExtractedEntryPdfClassA:
-		return true
-	case AnchoredTextExtractedEntryPdfClassB:
-		return true
-	case AnchoredTextExtractedEntryPdfClassC:
-		return true
-	case AnchoredTextExtractedEntryPdfClassD:
-		return true
-	case AnchoredTextExtractedEntryPdfClassE:
-		return true
-	case AnchoredTextExtractedEntryPdfClassF:
-		return true
-	case AnchoredTextExtractedEntryPdfClassG:
 		return true
 	default:
 		return false
@@ -731,90 +647,6 @@ func (e ExtractedTextKind) Valid() bool {
 	}
 }
 
-// Defines values for ExtractedTextMethod.
-const (
-	ExtractedTextMethodForm            ExtractedTextMethod = "form"
-	ExtractedTextMethodOcr             ExtractedTextMethod = "ocr"
-	ExtractedTextMethodPdfTextLayer    ExtractedTextMethod = "pdf-text-layer"
-	ExtractedTextMethodTable           ExtractedTextMethod = "table"
-	ExtractedTextMethodTextPassthrough ExtractedTextMethod = "text-passthrough"
-)
-
-// Valid indicates whether the value is a known member of the ExtractedTextMethod enum.
-func (e ExtractedTextMethod) Valid() bool {
-	switch e {
-	case ExtractedTextMethodForm:
-		return true
-	case ExtractedTextMethodOcr:
-		return true
-	case ExtractedTextMethodPdfTextLayer:
-		return true
-	case ExtractedTextMethodTable:
-		return true
-	case ExtractedTextMethodTextPassthrough:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for ExtractedTextPdfClass.
-const (
-	ExtractedTextPdfClassA ExtractedTextPdfClass = "A"
-	ExtractedTextPdfClassB ExtractedTextPdfClass = "B"
-	ExtractedTextPdfClassC ExtractedTextPdfClass = "C"
-	ExtractedTextPdfClassD ExtractedTextPdfClass = "D"
-	ExtractedTextPdfClassE ExtractedTextPdfClass = "E"
-	ExtractedTextPdfClassF ExtractedTextPdfClass = "F"
-	ExtractedTextPdfClassG ExtractedTextPdfClass = "G"
-)
-
-// Valid indicates whether the value is a known member of the ExtractedTextPdfClass enum.
-func (e ExtractedTextPdfClass) Valid() bool {
-	switch e {
-	case ExtractedTextPdfClassA:
-		return true
-	case ExtractedTextPdfClassB:
-		return true
-	case ExtractedTextPdfClassC:
-		return true
-	case ExtractedTextPdfClassD:
-		return true
-	case ExtractedTextPdfClassE:
-		return true
-	case ExtractedTextPdfClassF:
-		return true
-	case ExtractedTextPdfClassG:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for ExtractionDeclinedDeclined.
-const (
-	ExtractionDeclinedDeclinedCorrupt     ExtractionDeclinedDeclined = "corrupt"
-	ExtractionDeclinedDeclinedEncrypted   ExtractionDeclinedDeclined = "encrypted"
-	ExtractionDeclinedDeclinedNoTextLayer ExtractionDeclinedDeclined = "no-text-layer"
-	ExtractionDeclinedDeclinedTooLarge    ExtractionDeclinedDeclined = "too-large"
-)
-
-// Valid indicates whether the value is a known member of the ExtractionDeclinedDeclined enum.
-func (e ExtractionDeclinedDeclined) Valid() bool {
-	switch e {
-	case ExtractionDeclinedDeclinedCorrupt:
-		return true
-	case ExtractionDeclinedDeclinedEncrypted:
-		return true
-	case ExtractionDeclinedDeclinedNoTextLayer:
-		return true
-	case ExtractionDeclinedDeclinedTooLarge:
-		return true
-	default:
-		return false
-	}
-}
-
 // Defines values for ExtractionDeclinedKind.
 const (
 	ExtractionDeclinedKindDeclined ExtractionDeclinedKind = "declined"
@@ -824,6 +656,57 @@ const (
 func (e ExtractionDeclinedKind) Valid() bool {
 	switch e {
 	case ExtractionDeclinedKindDeclined:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ExtractionDeclinedReason.
+const (
+	ExtractionDeclinedReasonCorrupt     ExtractionDeclinedReason = "corrupt"
+	ExtractionDeclinedReasonEncrypted   ExtractionDeclinedReason = "encrypted"
+	ExtractionDeclinedReasonNoTextLayer ExtractionDeclinedReason = "no-text-layer"
+	ExtractionDeclinedReasonTooLarge    ExtractionDeclinedReason = "too-large"
+)
+
+// Valid indicates whether the value is a known member of the ExtractionDeclinedReason enum.
+func (e ExtractionDeclinedReason) Valid() bool {
+	switch e {
+	case ExtractionDeclinedReasonCorrupt:
+		return true
+	case ExtractionDeclinedReasonEncrypted:
+		return true
+	case ExtractionDeclinedReasonNoTextLayer:
+		return true
+	case ExtractionDeclinedReasonTooLarge:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ExtractionMethod.
+const (
+	ExtractionMethodForm            ExtractionMethod = "form"
+	ExtractionMethodOcr             ExtractionMethod = "ocr"
+	ExtractionMethodPdfTextLayer    ExtractionMethod = "pdf-text-layer"
+	ExtractionMethodTable           ExtractionMethod = "table"
+	ExtractionMethodTextPassthrough ExtractionMethod = "text-passthrough"
+)
+
+// Valid indicates whether the value is a known member of the ExtractionMethod enum.
+func (e ExtractionMethod) Valid() bool {
+	switch e {
+	case ExtractionMethodForm:
+		return true
+	case ExtractionMethodOcr:
+		return true
+	case ExtractionMethodPdfTextLayer:
+		return true
+	case ExtractionMethodTable:
+		return true
+	case ExtractionMethodTextPassthrough:
 		return true
 	default:
 		return false
@@ -1730,6 +1613,39 @@ func (e OllamaEmbeddingConfigType) Valid() bool {
 	}
 }
 
+// Defines values for PdfClass.
+const (
+	PdfClassA PdfClass = "A"
+	PdfClassB PdfClass = "B"
+	PdfClassC PdfClass = "C"
+	PdfClassD PdfClass = "D"
+	PdfClassE PdfClass = "E"
+	PdfClassF PdfClass = "F"
+	PdfClassG PdfClass = "G"
+)
+
+// Valid indicates whether the value is a known member of the PdfClass enum.
+func (e PdfClass) Valid() bool {
+	switch e {
+	case PdfClassA:
+		return true
+	case PdfClassB:
+		return true
+	case PdfClassC:
+		return true
+	case PdfClassD:
+		return true
+	case PdfClassE:
+		return true
+	case PdfClassF:
+		return true
+	case PdfClassG:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ProtectedResourceMetadataBearerMethodsSupported.
 const (
 	ProtectedResourceMetadataBearerMethodsSupportedHeader ProtectedResourceMetadataBearerMethodsSupported = "header"
@@ -2381,7 +2297,7 @@ type AnchoredTextAnswer struct {
 // AnchoredTextDeclinedEntry The bytes were declined: no text is extracted from them.
 type AnchoredTextDeclinedEntry struct {
 	// Declined Why extraction yielded nothing, by class.
-	Declined AnchoredTextDeclinedEntryDeclined `json:"declined"`
+	Declined ExtractionDeclinedReason `json:"declined"`
 
 	// Stamp The stamp the entry was derived under: the PDF reader's and the OCR engine's. A reader takes the entry only when it equals the stamp the Smelter last stated.
 	Stamp string `json:"stamp"`
@@ -2389,9 +2305,6 @@ type AnchoredTextDeclinedEntry struct {
 	// V The entry format.
 	V AnchoredTextDeclinedEntryV `json:"v"`
 }
-
-// AnchoredTextDeclinedEntryDeclined Why extraction yielded nothing, by class.
-type AnchoredTextDeclinedEntryDeclined string
 
 // AnchoredTextDeclinedEntryV The entry format.
 type AnchoredTextDeclinedEntryV int
@@ -2424,20 +2337,13 @@ type AnchoredTextExtractedEntry struct {
 	} `json:"lines"`
 
 	// Method How the text was extracted.
-	Method AnchoredTextExtractedEntryMethod `json:"method"`
+	Method ExtractionMethod `json:"method"`
 
 	// OcrConfidence How well the engine read the pixels, when any of this text came from OCR.
-	OcrConfidence *struct {
-		// LowConfidenceWords Words the engine was unsure of.
-		LowConfidenceWords int `json:"lowConfidenceWords"`
-
-		// Mean Mean per-word confidence, 0-100.
-		Mean       float64 `json:"mean"`
-		TotalWords int     `json:"totalWords"`
-	} `json:"ocrConfidence,omitempty"`
+	OcrConfidence *OcrConfidence `json:"ocrConfidence,omitempty"`
 
 	// PdfClass PDF classification, when the source was a PDF.
-	PdfClass *AnchoredTextExtractedEntryPdfClass `json:"pdfClass,omitempty"`
+	PdfClass *PdfClass `json:"pdfClass,omitempty"`
 
 	// Stamp The stamp the entry was derived under: the PDF reader's and the OCR engine's. A reader takes the entry only when it equals the stamp the Smelter last stated.
 	Stamp string `json:"stamp"`
@@ -2451,12 +2357,6 @@ type AnchoredTextExtractedEntry struct {
 	// V The entry format.
 	V AnchoredTextExtractedEntryV `json:"v"`
 }
-
-// AnchoredTextExtractedEntryMethod How the text was extracted.
-type AnchoredTextExtractedEntryMethod string
-
-// AnchoredTextExtractedEntryPdfClass PDF classification, when the source was a PDF.
-type AnchoredTextExtractedEntryPdfClass string
 
 // AnchoredTextExtractedEntryV The entry format.
 type AnchoredTextExtractedEntryV int
@@ -2491,7 +2391,7 @@ type Annotation struct {
 	Creator *Agent `json:"creator,omitempty"`
 
 	// Generator Web Annotation generator — the Software peer that produced the annotation, when software did. Absent for a person's own annotation. An emitter may supply it to carry the model's parameters, but its identity must be the emitter's own: the knowledge base refuses a generator naming anyone else, and supplies it from the verified emitter when omitted. One producer per write — a write carrying the array form is refused.
-	Generator *Annotation_Generator `json:"generator,omitempty"`
+	Generator *OneOrMoreAgents `json:"generator,omitempty"`
 
 	// Id An annotation's id: a name, never the annotation's URI. 1 to 128 of the letters `A`–`Z` and `a`–`z`, the digits, `_` and `-`. It is one segment of a URL and one name in a file system, and it is held to that wherever it enters: a gateway refuses a payload that carries anything else. How one is made is no part of the rule.
 	Id       AnnotationId `json:"id"`
@@ -2507,19 +2407,11 @@ type Annotation struct {
 	Type AnnotationType `json:"type"`
 
 	// WasAttributedTo PROV-O wasAttributedTo — every party responsible for this annotation, DERIVED by the knowledge base from `creator` and the verified executor of the write: `[creator, generator]` when one agent requested the work and software produced it; collapsed to the one agent when requester and producer are the same. Never accepted from an emitter.
-	WasAttributedTo *Annotation_WasAttributedTo `json:"wasAttributedTo,omitempty"`
+	WasAttributedTo *OneOrMoreAgents `json:"wasAttributedTo,omitempty"`
 }
 
 // AnnotationContext W3C Web Annotation JSON-LD context
 type AnnotationContext string
-
-// AnnotationGenerator1 defines model for .
-type AnnotationGenerator1 = []Agent
-
-// Annotation_Generator Web Annotation generator — the Software peer that produced the annotation, when software did. Absent for a person's own annotation. An emitter may supply it to carry the model's parameters, but its identity must be the emitter's own: the knowledge base refuses a generator naming anyone else, and supplies it from the verified emitter when omitted. One producer per write — a write carrying the array form is refused.
-type Annotation_Generator struct {
-	union json.RawMessage
-}
 
 // Annotation_Target W3C Web Annotation target: the id of the resource annotated, when the whole of it is, or an object with source and optional selector (fragment)
 type Annotation_Target struct {
@@ -2528,14 +2420,6 @@ type Annotation_Target struct {
 
 // AnnotationType W3C Annotation type
 type AnnotationType string
-
-// AnnotationWasAttributedTo1 defines model for .
-type AnnotationWasAttributedTo1 = []Agent
-
-// Annotation_WasAttributedTo PROV-O wasAttributedTo — every party responsible for this annotation, DERIVED by the knowledge base from `creator` and the verified executor of the write: `[creator, generator]` when one agent requested the work and software produced it; collapsed to the one agent when requester and producer are the same. Never accepted from an emitter.
-type Annotation_WasAttributedTo struct {
-	union json.RawMessage
-}
 
 // AnnotationAddedPayload Payload for mark:added domain event
 type AnnotationAddedPayload struct {
@@ -2561,13 +2445,8 @@ type AnnotationBody struct {
 // AnnotationBodyUpdatedPayload Payload for mark:body-updated domain event
 type AnnotationBodyUpdatedPayload struct {
 	// AnnotationId An annotation's id: a name, never the annotation's URI. 1 to 128 of the letters `A`–`Z` and `a`–`z`, the digits, `_` and `-`. It is one segment of a URL and one name in a file system, and it is held to that wherever it enters: a gateway refuses a payload that carries anything else. How one is made is no part of the rule.
-	AnnotationId AnnotationId                                   `json:"annotationId"`
-	Operations   []AnnotationBodyUpdatedPayload_Operations_Item `json:"operations"`
-}
-
-// AnnotationBodyUpdatedPayload_Operations_Item defines model for AnnotationBodyUpdatedPayload.operations.Item.
-type AnnotationBodyUpdatedPayload_Operations_Item struct {
-	union json.RawMessage
+	AnnotationId AnnotationId    `json:"annotationId"`
+	Operations   []BodyOperation `json:"operations"`
 }
 
 // AnnotationRemovedPayload Payload for mark:removed domain event
@@ -2611,10 +2490,7 @@ type ArchivistConfig struct {
 	GatewayUrl string `json:"gatewayUrl"`
 
 	// Identity The issuer the Archivist's service account signs in at, and whose tokens it admits callers of its HTTP surface by.
-	Identity struct {
-		// Issuer The issuer URL, exactly as tokens carry it in `iss`.
-		Issuer string `json:"issuer"`
-	} `json:"identity"`
+	Identity ServiceIdentity `json:"identity"`
 
 	// LogFormat How each log line is written to stdout: `json`, one JSON object per line carrying the active trace's `trace_id` and `span_id`; or `simple`, `<timestamp> [<LEVEL>] <message>` followed by any metadata as JSON.
 	LogFormat LogFormat `json:"logFormat"`
@@ -2838,15 +2714,16 @@ type BindUpdateBodyCommand struct {
 	ResourceId ResourceId `json:"resourceId"`
 }
 
-// BodyOperationAdd defines model for BodyOperationAdd.
-type BodyOperationAdd struct {
-	Item BodyOperationAdd_Item `json:"item"`
-	Op   BodyOperationAddOp    `json:"op"`
+// BodyOperation One change to an annotation's bodies: a body added, a body removed, or one body replaced by another.
+type BodyOperation struct {
+	union json.RawMessage
 }
 
-// BodyOperationAdd_Item defines model for BodyOperationAdd.Item.
-type BodyOperationAdd_Item struct {
-	union json.RawMessage
+// BodyOperationAdd defines model for BodyOperationAdd.
+type BodyOperationAdd struct {
+	// Item An annotation's body: a TextualBody carries text the annotation states (entity tags, descriptions, comments), a SpecificResource points at what it links to. Tell them apart by `type`, which is required on both and single-valued — a consumer never has to probe for which fields happen to be present.
+	Item AnnotationBody     `json:"item"`
+	Op   BodyOperationAddOp `json:"op"`
 }
 
 // BodyOperationAddOp defines model for BodyOperationAdd.Op.
@@ -2854,13 +2731,9 @@ type BodyOperationAddOp string
 
 // BodyOperationRemove defines model for BodyOperationRemove.
 type BodyOperationRemove struct {
-	Item BodyOperationRemove_Item `json:"item"`
-	Op   BodyOperationRemoveOp    `json:"op"`
-}
-
-// BodyOperationRemove_Item defines model for BodyOperationRemove.Item.
-type BodyOperationRemove_Item struct {
-	union json.RawMessage
+	// Item An annotation's body: a TextualBody carries text the annotation states (entity tags, descriptions, comments), a SpecificResource points at what it links to. Tell them apart by `type`, which is required on both and single-valued — a consumer never has to probe for which fields happen to be present.
+	Item AnnotationBody        `json:"item"`
+	Op   BodyOperationRemoveOp `json:"op"`
 }
 
 // BodyOperationRemoveOp defines model for BodyOperationRemove.Op.
@@ -2868,19 +2741,12 @@ type BodyOperationRemoveOp string
 
 // BodyOperationReplace defines model for BodyOperationReplace.
 type BodyOperationReplace struct {
-	NewItem BodyOperationReplace_NewItem `json:"newItem"`
-	OldItem BodyOperationReplace_OldItem `json:"oldItem"`
-	Op      BodyOperationReplaceOp       `json:"op"`
-}
+	// NewItem An annotation's body: a TextualBody carries text the annotation states (entity tags, descriptions, comments), a SpecificResource points at what it links to. Tell them apart by `type`, which is required on both and single-valued — a consumer never has to probe for which fields happen to be present.
+	NewItem AnnotationBody `json:"newItem"`
 
-// BodyOperationReplace_NewItem defines model for BodyOperationReplace.NewItem.
-type BodyOperationReplace_NewItem struct {
-	union json.RawMessage
-}
-
-// BodyOperationReplace_OldItem defines model for BodyOperationReplace.OldItem.
-type BodyOperationReplace_OldItem struct {
-	union json.RawMessage
+	// OldItem An annotation's body: a TextualBody carries text the annotation states (entity tags, descriptions, comments), a SpecificResource points at what it links to. Tell them apart by `type`, which is required on both and single-valued — a consumer never has to probe for which fields happen to be present.
+	OldItem AnnotationBody         `json:"oldItem"`
+	Op      BodyOperationReplaceOp `json:"op"`
 }
 
 // BodyOperationReplaceOp defines model for BodyOperationReplace.Op.
@@ -3401,10 +3267,7 @@ type DispatcherConfig struct {
 	GatewayUrl string `json:"gatewayUrl"`
 
 	// Identity The issuer the dispatcher's service account signs in at.
-	Identity struct {
-		// Issuer The issuer URL, exactly as tokens carry it in `iss`.
-		Issuer string `json:"issuer"`
-	} `json:"identity"`
+	Identity ServiceIdentity `json:"identity"`
 
 	// Kb A knowledge base's committed identity (`project.name` and `site.domain` in its .xynolog/config.yaml), as a service's document names the knowledge base it serves. Its telemetry names it by its DID (`xynolog.kb`, specs/src/service-telemetry/telemetry.json).
 	Kb KbIdentity `json:"kb"`
@@ -3583,20 +3446,13 @@ type ExtractedText struct {
 	Kind ExtractedTextKind `json:"kind"`
 
 	// Method How the text was extracted.
-	Method ExtractedTextMethod `json:"method"`
+	Method ExtractionMethod `json:"method"`
 
 	// OcrConfidence How well the engine read the pixels, when any of this text came from OCR.
-	OcrConfidence *struct {
-		// LowConfidenceWords Words the engine was unsure of.
-		LowConfidenceWords int `json:"lowConfidenceWords"`
-
-		// Mean Mean per-word confidence, 0-100.
-		Mean       float64 `json:"mean"`
-		TotalWords int     `json:"totalWords"`
-	} `json:"ocrConfidence,omitempty"`
+	OcrConfidence *OcrConfidence `json:"ocrConfidence,omitempty"`
 
 	// PdfClass PDF classification, when the source was a PDF.
-	PdfClass *ExtractedTextPdfClass `json:"pdfClass,omitempty"`
+	PdfClass *PdfClass `json:"pdfClass,omitempty"`
 
 	// Text Reading-order text of the whole resource.
 	Text string `json:"text"`
@@ -3608,26 +3464,23 @@ type ExtractedText struct {
 // ExtractedTextKind Discriminant — both ExtractionOutcome members carry `kind`, single-valued: the category here, the detail in `method`.
 type ExtractedTextKind string
 
-// ExtractedTextMethod How the text was extracted.
-type ExtractedTextMethod string
-
-// ExtractedTextPdfClass PDF classification, when the source was a PDF.
-type ExtractedTextPdfClass string
-
 // ExtractionDeclined A named decline: extraction ran and yielded nothing, by class. A first-class, cacheable outcome — 'we ran and there was nothing' costs a full recognition pass to discover.
 type ExtractionDeclined struct {
 	// Declined Why extraction yielded nothing, by class.
-	Declined ExtractionDeclinedDeclined `json:"declined"`
+	Declined ExtractionDeclinedReason `json:"declined"`
 
 	// Kind Discriminant — both ExtractionOutcome members carry `kind`, single-valued: the category here, the detail in `declined`.
 	Kind ExtractionDeclinedKind `json:"kind"`
 }
 
-// ExtractionDeclinedDeclined Why extraction yielded nothing, by class.
-type ExtractionDeclinedDeclined string
-
 // ExtractionDeclinedKind Discriminant — both ExtractionOutcome members carry `kind`, single-valued: the category here, the detail in `declined`.
 type ExtractionDeclinedKind string
+
+// ExtractionDeclinedReason Why extraction yielded nothing, by class.
+type ExtractionDeclinedReason string
+
+// ExtractionMethod How a text was extracted: a plain text taken as it is, a PDF's text layer read, a grid written as rows, a filled form's values read, or pixels read by OCR.
+type ExtractionMethod string
 
 // ExtractionOutcome The full outcome of text extraction for one representation — the record the anchored-text store holds and the wire serves. Discriminated on `kind`: 'extracted' — the anchored text with its provenance; 'declined' — a named decline. ocrConfidence is extraction quality for operators, deliberately not anchor confidence.
 type ExtractionOutcome struct {
@@ -3703,10 +3556,7 @@ type FrameAddTagSchemaCommand struct {
 // GatewayConfig Everything the gateway reads at boot: nothing in it is defaulted by the gateway. The launcher writes it for the gateway it starts — from the knowledge base's committed identity and its stack documents — and a gateway started any other way is given the same document at the path its `--config` flag names (the image passes `/etc/xynolog/gateway.json`). Started without `--config`, or with a path that names no file, the gateway refuses to start and says which. Secrets are never values here: a field that needs one names the environment variable holding it. The gateway's other inputs are the environment variables specs/src/service-environment/variables.json lists for it, and the ones this document names. A document that does not validate is refused at boot — the gateway exits without serving — and the refusal names each failing field by its JSON pointer.
 type GatewayConfig struct {
 	// Archivist Where the Archivist listens.
-	Archivist struct {
-		Host string `json:"host"`
-		Port int    `json:"port"`
-	} `json:"archivist"`
+	Archivist ServiceAddress `json:"archivist"`
 
 	// Capacity What this gateway process can hold, from the memory its deployment gives it. `queuedBytes`: the bytes queued for all its streams together; at it, a new stream is refused with 503 (`AtCapacity`, code `capacity`) until the queues drain — each stream's own bound is `x-xynolog-limits.pendingWriteBytes`. `connections`: the connections it holds open at once; one past it is closed unanswered. The launcher derives both from the memory it gives the gateway's container.
 	Capacity struct {
@@ -5060,10 +4910,7 @@ type KnowledgeGraph_Nodes_Item struct {
 // LibrarianConfig Everything a Librarian reads at boot: nothing in it is defaulted by the Librarian. Whoever starts a Librarian writes it, from the knowledge base's stack documents, and the Librarian reads it from the path its `--config` flag names. This schema is the contract, and a Librarian needs no launcher. Started without `--config`, or with a path that names no file, the Librarian refuses to start and says which. No secret is a value here: the graph database's password, an embedding provider's key and a model provider's key are each named by the environment variable that holds it, and the Librarian's own service account is `XYNOLOG_OIDC_CLIENT_ID` and `XYNOLOG_OIDC_CLIENT_SECRET` in its environment. A document that does not validate is refused at boot, naming each failing field.
 type LibrarianConfig struct {
 	// Archivist Where the Archivist listens. The Librarian reads a resource's bytes from it, as its service account.
-	Archivist struct {
-		Host string `json:"host"`
-		Port int    `json:"port"`
-	} `json:"archivist"`
+	Archivist ServiceAddress `json:"archivist"`
 
 	// Embedding The embedding provider a service asks for vectors, and what that kind of provider needs to be asked: one of the providers `xynolog-vectors` has, told apart by `type`. Two services that share an index name the same provider and the same model: a vector is compared only with vectors of the model that made it. A secret is never a value here: a provider's key is named by the environment variable that holds it.
 	Embedding EmbeddingConfig `json:"embedding"`
@@ -5084,10 +4931,7 @@ type LibrarianConfig struct {
 	Graph GraphConfig `json:"graph"`
 
 	// Identity The issuer the Librarian's service account signs in at.
-	Identity struct {
-		// Issuer The issuer URL, exactly as tokens carry it in `iss`.
-		Issuer string `json:"issuer"`
-	} `json:"identity"`
+	Identity ServiceIdentity `json:"identity"`
 
 	// Kb A knowledge base's committed identity (`project.name` and `site.domain` in its .xynolog/config.yaml), as a service's document names the knowledge base it serves. Its telemetry names it by its DID (`xynolog.kb`, specs/src/service-telemetry/telemetry.json).
 	Kb KbIdentity `json:"kb"`
@@ -5434,16 +5278,11 @@ type MarkUpdateBodyCommand struct {
 	UnderscoreUserId *UserId `json:"_userId,omitempty"`
 
 	// AnnotationId An annotation's id: a name, never the annotation's URI. 1 to 128 of the letters `A`–`Z` and `a`–`z`, the digits, `_` and `-`. It is one segment of a URL and one name in a file system, and it is held to that wherever it enters: a gateway refuses a payload that carries anything else. How one is made is no part of the rule.
-	AnnotationId AnnotationId                            `json:"annotationId"`
-	Operations   []MarkUpdateBodyCommand_Operations_Item `json:"operations"`
+	AnnotationId AnnotationId    `json:"annotationId"`
+	Operations   []BodyOperation `json:"operations"`
 
 	// ResourceId A resource's id: a name, never the resource's URI or a path. 1 to 128 of the letters `A`–`Z` and `a`–`z`, the digits, `_` and `-`. It is one segment of a URL and one name in a file system, and it is held to that wherever it enters: a gateway refuses a payload that carries anything else. How one is made is no part of the rule. `__system__` is the one that names no resource: the scope events about the knowledge base itself are logged under.
 	ResourceId ResourceId `json:"resourceId"`
-}
-
-// MarkUpdateBodyCommand_Operations_Item defines model for MarkUpdateBodyCommand.operations.Item.
-type MarkUpdateBodyCommand_Operations_Item struct {
-	union json.RawMessage
 }
 
 // MarkUpdateEntityTypesCommand Bus command to replace the entity types on a resource.
@@ -5620,6 +5459,16 @@ type NewKnowledgeBase struct {
 	LastRead *KbRead `json:"lastRead,omitempty"`
 }
 
+// OcrConfidence How well an OCR engine read the pixels.
+type OcrConfidence struct {
+	// LowConfidenceWords Words the engine was unsure of.
+	LowConfidenceWords int `json:"lowConfidenceWords"`
+
+	// Mean Mean per-word confidence, 0-100.
+	Mean       float64 `json:"mean"`
+	TotalWords int     `json:"totalWords"`
+}
+
 // OllamaEmbeddingConfig An embedding model served by an Ollama.
 type OllamaEmbeddingConfig struct {
 	// BaseUrl The address the Ollama's API is reached at (`http://host:11434`).
@@ -5632,6 +5481,39 @@ type OllamaEmbeddingConfig struct {
 
 // OllamaEmbeddingConfigType defines model for OllamaEmbeddingConfig.Type.
 type OllamaEmbeddingConfigType string
+
+// OneOrMoreAgents One Agent, or a non-empty list of them: the parties PROV-O and the Web Annotation model let a resource or an annotation name in one place, as one agent or several.
+type OneOrMoreAgents struct {
+	union json.RawMessage
+}
+
+// OneOrMoreAgents1 defines model for .
+type OneOrMoreAgents1 = []Agent
+
+// OneOrMoreStrings One string, or a non-empty list of them: a JSON-LD term that may take one value or several.
+type OneOrMoreStrings struct {
+	union json.RawMessage
+}
+
+// OneOrMoreStrings0 defines model for .
+type OneOrMoreStrings0 = string
+
+// OneOrMoreStrings1 defines model for .
+type OneOrMoreStrings1 = []string
+
+// OneOrMoreUris One URI, or a non-empty list of them: a JSON-LD term that may name one resource or several.
+type OneOrMoreUris struct {
+	union json.RawMessage
+}
+
+// OneOrMoreUris0 defines model for .
+type OneOrMoreUris0 = string
+
+// OneOrMoreUris1 defines model for .
+type OneOrMoreUris1 = []string
+
+// PdfClass The class a PDF is sorted into, which decides how its text is read. smelter/extraction-cases.json states what each class is.
+type PdfClass string
 
 // PdfTextItem One positioned text run. Coordinates are PDF points with the origin at the bottom-left of the page, Y increasing upward; the flip to canvas pixels happens in the browser.
 type PdfTextItem struct {
@@ -5725,7 +5607,7 @@ type Representation struct {
 	Id *string `json:"@id,omitempty"`
 
 	// Type Type(s), e.g., schema:MediaObject.
-	Type *Representation_Type `json:"@type,omitempty"`
+	Type *OneOrMoreStrings `json:"@type,omitempty"`
 
 	// ByteSize Size of the payload in bytes.
 	ByteSize *int `json:"byteSize,omitempty"`
@@ -5734,8 +5616,8 @@ type Representation struct {
 	Checksum *string `json:"checksum,omitempty"`
 
 	// ConformsTo Profile/shape the bytes conform to (e.g., a JSON profile or SVG profile).
-	ConformsTo *Representation_ConformsTo `json:"conformsTo,omitempty"`
-	Created    *string                    `json:"created,omitempty"`
+	ConformsTo *OneOrMoreUris `json:"conformsTo,omitempty"`
+	Created    *string        `json:"created,omitempty"`
 
 	// Duration Seconds (audio/video).
 	Duration *float64 `json:"duration,omitempty"`
@@ -5764,28 +5646,6 @@ type Representation struct {
 	// Width Pixels (images/video).
 	Width                *int                   `json:"width,omitempty"`
 	AdditionalProperties map[string]interface{} `json:"-"`
-}
-
-// RepresentationType0 defines model for .
-type RepresentationType0 = string
-
-// RepresentationType1 defines model for .
-type RepresentationType1 = []string
-
-// Representation_Type Type(s), e.g., schema:MediaObject.
-type Representation_Type struct {
-	union json.RawMessage
-}
-
-// RepresentationConformsTo0 defines model for .
-type RepresentationConformsTo0 = string
-
-// RepresentationConformsTo1 defines model for .
-type RepresentationConformsTo1 = []string
-
-// Representation_ConformsTo Profile/shape the bytes conform to (e.g., a JSON profile or SVG profile).
-type Representation_ConformsTo struct {
-	union json.RawMessage
 }
 
 // RepresentationRel Semantics of this rendition relative to the resource (e.g., original, thumbnail, preview, derived).
@@ -5859,15 +5719,7 @@ type ResourceClonedPayload struct {
 	StorageUri *string `json:"storageUri,omitempty"`
 
 	// WasAttributedTo PROV-O wasAttributedTo, derived at write time: the cloner alone. The value the resource view carries.
-	WasAttributedTo *ResourceClonedPayload_WasAttributedTo `json:"wasAttributedTo,omitempty"`
-}
-
-// ResourceClonedPayloadWasAttributedTo1 defines model for .
-type ResourceClonedPayloadWasAttributedTo1 = []Agent
-
-// ResourceClonedPayload_WasAttributedTo PROV-O wasAttributedTo, derived at write time: the cloner alone. The value the resource view carries.
-type ResourceClonedPayload_WasAttributedTo struct {
-	union json.RawMessage
+	WasAttributedTo *OneOrMoreAgents `json:"wasAttributedTo,omitempty"`
 }
 
 // ResourceCreatedPayload Payload for yield:created domain event
@@ -5892,9 +5744,11 @@ type ResourceCreatedPayload struct {
 		// ResourceId A resource's id: a name, never the resource's URI or a path. 1 to 128 of the letters `A`–`Z` and `a`–`z`, the digits, `_` and `-`. It is one segment of a URL and one name in a file system, and it is held to that wherever it enters: a gateway refuses a payload that carries anything else. How one is made is no part of the rule. `__system__` is the one that names no resource: the scope events about the knowledge base itself are logged under.
 		ResourceId ResourceId `json:"resourceId"`
 	} `json:"generatedFrom,omitempty"`
-	GenerationPrompt *string                           `json:"generationPrompt,omitempty"`
-	Generator        *ResourceCreatedPayload_Generator `json:"generator,omitempty"`
-	IsDraft          *bool                             `json:"isDraft,omitempty"`
+	GenerationPrompt *string `json:"generationPrompt,omitempty"`
+
+	// Generator One Agent, or a non-empty list of them: the parties PROV-O and the Web Annotation model let a resource or an annotation name in one place, as one agent or several.
+	Generator *OneOrMoreAgents `json:"generator,omitempty"`
+	IsDraft   *bool            `json:"isDraft,omitempty"`
 
 	// JobId The job this resource was made in fulfilment of, when its create cited one. A write that cites the same job on this resource, by the one who made it, is attributed to that job's requester: the `creator` here.
 	JobId    *JobId  `json:"jobId,omitempty"`
@@ -5905,23 +5759,7 @@ type ResourceCreatedPayload struct {
 	StorageUri *string `json:"storageUri,omitempty"`
 
 	// WasAttributedTo PROV-O wasAttributedTo, derived at write time from `creator` and the executor: both parties when they differ, one when they are the same. The value the resource view carries; readers do not re-derive it.
-	WasAttributedTo *ResourceCreatedPayload_WasAttributedTo `json:"wasAttributedTo,omitempty"`
-}
-
-// ResourceCreatedPayloadGenerator1 defines model for .
-type ResourceCreatedPayloadGenerator1 = []Agent
-
-// ResourceCreatedPayload_Generator defines model for ResourceCreatedPayload.Generator.
-type ResourceCreatedPayload_Generator struct {
-	union json.RawMessage
-}
-
-// ResourceCreatedPayloadWasAttributedTo1 defines model for .
-type ResourceCreatedPayloadWasAttributedTo1 = []Agent
-
-// ResourceCreatedPayload_WasAttributedTo PROV-O wasAttributedTo, derived at write time from `creator` and the executor: both parties when they differ, one when they are the same. The value the resource view carries; readers do not re-derive it.
-type ResourceCreatedPayload_WasAttributedTo struct {
-	union json.RawMessage
+	WasAttributedTo *OneOrMoreAgents `json:"wasAttributedTo,omitempty"`
 }
 
 // ResourceDescriptor Metadata about a resource (1:1 with its URI). JSON-LD subject is @id. Link to concrete bytes via representations.
@@ -5933,10 +5771,10 @@ type ResourceDescriptor struct {
 	Id ResourceId `json:"@id"`
 
 	// Type Type(s) of the resource (IRIs/CURIEs via @context).
-	Type *ResourceDescriptor_Type `json:"@type,omitempty"`
+	Type *OneOrMoreStrings `json:"@type,omitempty"`
 
 	// About Topics (IRIs or strings).
-	About *ResourceDescriptor_About `json:"about,omitempty"`
+	About *OneOrMoreStrings `json:"about,omitempty"`
 
 	// Archived Application-specific: Whether this resource is archived
 	Archived *bool `json:"archived,omitempty"`
@@ -5945,17 +5783,17 @@ type ResourceDescriptor struct {
 	AvailableFormats *[]string `json:"availableFormats,omitempty"`
 
 	// ConformsTo Profile/shape URI this resource description conforms to.
-	ConformsTo   *ResourceDescriptor_ConformsTo `json:"conformsTo,omitempty"`
-	DateCreated  *string                        `json:"dateCreated,omitempty"`
-	DateModified *string                        `json:"dateModified,omitempty"`
-	Description  *string                        `json:"description,omitempty"`
+	ConformsTo   *OneOrMoreUris `json:"conformsTo,omitempty"`
+	DateCreated  *string        `json:"dateCreated,omitempty"`
+	DateModified *string        `json:"dateModified,omitempty"`
+	Description  *string        `json:"description,omitempty"`
 
 	// EntityTypes Application-specific: Entity types for this resource
 	EntityTypes *[]string `json:"entityTypes,omitempty"`
 
 	// Generator Software peer that produced this resource (W3C Web Annotation model). Its identity is the verified emitter of the create; the parameters are the producer's to state.
-	Generator *ResourceDescriptor_Generator `json:"generator,omitempty"`
-	HasPart   *[]string                     `json:"hasPart,omitempty"`
+	Generator *OneOrMoreAgents `json:"generator,omitempty"`
+	HasPart   *[]string        `json:"hasPart,omitempty"`
 
 	// Identifier Persistent identifiers (e.g., DOI, URN).
 	Identifier *ResourceDescriptor_Identifier `json:"identifier,omitempty"`
@@ -5983,7 +5821,7 @@ type ResourceDescriptor struct {
 	Version          *string     `json:"version,omitempty"`
 
 	// WasAttributedTo W3C PROV — every party responsible for this resource, derived by the knowledge base at creation from verified identities: `[requester, generator]` for a resource a job produced, collapsed to the one agent when the requester produced it. Never accepted from an emitter.
-	WasAttributedTo *ResourceDescriptor_WasAttributedTo `json:"wasAttributedTo,omitempty"`
+	WasAttributedTo *OneOrMoreAgents `json:"wasAttributedTo,omitempty"`
 
 	// WasDerivedFrom W3C PROV: the resource, or resources, this one was derived from, each by its id
 	WasDerivedFrom       *ResourceDescriptor_WasDerivedFrom `json:"wasDerivedFrom,omitempty"`
@@ -6015,47 +5853,6 @@ type ResourceDescriptor_Context struct {
 	union json.RawMessage
 }
 
-// ResourceDescriptorType0 defines model for .
-type ResourceDescriptorType0 = string
-
-// ResourceDescriptorType1 defines model for .
-type ResourceDescriptorType1 = []string
-
-// ResourceDescriptor_Type Type(s) of the resource (IRIs/CURIEs via @context).
-type ResourceDescriptor_Type struct {
-	union json.RawMessage
-}
-
-// ResourceDescriptorAbout0 defines model for .
-type ResourceDescriptorAbout0 = string
-
-// ResourceDescriptorAbout1 defines model for .
-type ResourceDescriptorAbout1 = []string
-
-// ResourceDescriptor_About Topics (IRIs or strings).
-type ResourceDescriptor_About struct {
-	union json.RawMessage
-}
-
-// ResourceDescriptorConformsTo0 defines model for .
-type ResourceDescriptorConformsTo0 = string
-
-// ResourceDescriptorConformsTo1 defines model for .
-type ResourceDescriptorConformsTo1 = []string
-
-// ResourceDescriptor_ConformsTo Profile/shape URI this resource description conforms to.
-type ResourceDescriptor_ConformsTo struct {
-	union json.RawMessage
-}
-
-// ResourceDescriptorGenerator1 defines model for .
-type ResourceDescriptorGenerator1 = []Agent
-
-// ResourceDescriptor_Generator Software peer that produced this resource (W3C Web Annotation model). Its identity is the verified emitter of the create; the parameters are the producer's to state.
-type ResourceDescriptor_Generator struct {
-	union json.RawMessage
-}
-
 // ResourceDescriptorIdentifier0 defines model for .
 type ResourceDescriptorIdentifier0 = string
 
@@ -6080,14 +5877,6 @@ type ResourceDescriptorRepresentations1 = []Representation
 
 // ResourceDescriptor_Representations Managed or referenced byte-level renditions of this resource.
 type ResourceDescriptor_Representations struct {
-	union json.RawMessage
-}
-
-// ResourceDescriptorWasAttributedTo1 defines model for .
-type ResourceDescriptorWasAttributedTo1 = []Agent
-
-// ResourceDescriptor_WasAttributedTo W3C PROV — every party responsible for this resource, derived by the knowledge base at creation from verified identities: `[requester, generator]` for a resource a job produced, collapsed to the one agent when the requester produced it. Never accepted from an emitter.
-type ResourceDescriptor_WasAttributedTo struct {
 	union json.RawMessage
 }
 
@@ -6194,10 +5983,10 @@ type ScoredResource struct {
 	Id ResourceId `json:"@id"`
 
 	// Type Type(s) of the resource (IRIs/CURIEs via @context).
-	Type *ScoredResource_Type `json:"@type,omitempty"`
+	Type *OneOrMoreStrings `json:"@type,omitempty"`
 
 	// About Topics (IRIs or strings).
-	About *ScoredResource_About `json:"about,omitempty"`
+	About *OneOrMoreStrings `json:"about,omitempty"`
 
 	// Archived Application-specific: Whether this resource is archived
 	Archived *bool `json:"archived,omitempty"`
@@ -6206,17 +5995,17 @@ type ScoredResource struct {
 	AvailableFormats *[]string `json:"availableFormats,omitempty"`
 
 	// ConformsTo Profile/shape URI this resource description conforms to.
-	ConformsTo   *ScoredResource_ConformsTo `json:"conformsTo,omitempty"`
-	DateCreated  *string                    `json:"dateCreated,omitempty"`
-	DateModified *string                    `json:"dateModified,omitempty"`
-	Description  *string                    `json:"description,omitempty"`
+	ConformsTo   *OneOrMoreUris `json:"conformsTo,omitempty"`
+	DateCreated  *string        `json:"dateCreated,omitempty"`
+	DateModified *string        `json:"dateModified,omitempty"`
+	Description  *string        `json:"description,omitempty"`
 
 	// EntityTypes Application-specific: Entity types for this resource
 	EntityTypes *[]string `json:"entityTypes,omitempty"`
 
 	// Generator Software peer that produced this resource (W3C Web Annotation model). Its identity is the verified emitter of the create; the parameters are the producer's to state.
-	Generator *ScoredResource_Generator `json:"generator,omitempty"`
-	HasPart   *[]string                 `json:"hasPart,omitempty"`
+	Generator *OneOrMoreAgents `json:"generator,omitempty"`
+	HasPart   *[]string        `json:"hasPart,omitempty"`
 
 	// Identifier Persistent identifiers (e.g., DOI, URN).
 	Identifier *ScoredResource_Identifier `json:"identifier,omitempty"`
@@ -6250,7 +6039,7 @@ type ScoredResource struct {
 	Version          *string     `json:"version,omitempty"`
 
 	// WasAttributedTo W3C PROV — every party responsible for this resource, derived by the knowledge base at creation from verified identities: `[requester, generator]` for a resource a job produced, collapsed to the one agent when the requester produced it. Never accepted from an emitter.
-	WasAttributedTo *ScoredResource_WasAttributedTo `json:"wasAttributedTo,omitempty"`
+	WasAttributedTo *OneOrMoreAgents `json:"wasAttributedTo,omitempty"`
 
 	// WasDerivedFrom W3C PROV: the resource, or resources, this one was derived from, each by its id
 	WasDerivedFrom       *ScoredResource_WasDerivedFrom `json:"wasDerivedFrom,omitempty"`
@@ -6282,47 +6071,6 @@ type ScoredResource_Context struct {
 	union json.RawMessage
 }
 
-// ScoredResourceType0 defines model for .
-type ScoredResourceType0 = string
-
-// ScoredResourceType1 defines model for .
-type ScoredResourceType1 = []string
-
-// ScoredResource_Type Type(s) of the resource (IRIs/CURIEs via @context).
-type ScoredResource_Type struct {
-	union json.RawMessage
-}
-
-// ScoredResourceAbout0 defines model for .
-type ScoredResourceAbout0 = string
-
-// ScoredResourceAbout1 defines model for .
-type ScoredResourceAbout1 = []string
-
-// ScoredResource_About Topics (IRIs or strings).
-type ScoredResource_About struct {
-	union json.RawMessage
-}
-
-// ScoredResourceConformsTo0 defines model for .
-type ScoredResourceConformsTo0 = string
-
-// ScoredResourceConformsTo1 defines model for .
-type ScoredResourceConformsTo1 = []string
-
-// ScoredResource_ConformsTo Profile/shape URI this resource description conforms to.
-type ScoredResource_ConformsTo struct {
-	union json.RawMessage
-}
-
-// ScoredResourceGenerator1 defines model for .
-type ScoredResourceGenerator1 = []Agent
-
-// ScoredResource_Generator Software peer that produced this resource (W3C Web Annotation model). Its identity is the verified emitter of the create; the parameters are the producer's to state.
-type ScoredResource_Generator struct {
-	union json.RawMessage
-}
-
 // ScoredResourceIdentifier0 defines model for .
 type ScoredResourceIdentifier0 = string
 
@@ -6347,14 +6095,6 @@ type ScoredResourceRepresentations1 = []Representation
 
 // ScoredResource_Representations Managed or referenced byte-level renditions of this resource.
 type ScoredResource_Representations struct {
-	union json.RawMessage
-}
-
-// ScoredResourceWasAttributedTo1 defines model for .
-type ScoredResourceWasAttributedTo1 = []Agent
-
-// ScoredResource_WasAttributedTo W3C PROV — every party responsible for this resource, derived by the knowledge base at creation from verified identities: `[requester, generator]` for a resource a job produced, collapsed to the one agent when the requester produced it. Never accepted from an emitter.
-type ScoredResource_WasAttributedTo struct {
 	union json.RawMessage
 }
 
@@ -6393,6 +6133,18 @@ type SemanticMatch struct {
 
 	// Text The chunk text that matched
 	Text string `json:"text"`
+}
+
+// ServiceAddress The host and port a service listens at.
+type ServiceAddress struct {
+	Host string `json:"host"`
+	Port int    `json:"port"`
+}
+
+// ServiceIdentity The identity provider a service's account signs in at, by its issuer.
+type ServiceIdentity struct {
+	// Issuer The issuer URL, exactly as tokens carry it in `iss`.
+	Issuer string `json:"issuer"`
 }
 
 // SessionJoinedEvent A participant opened a live connection to this KB — an SSE stream on /bus/subscribe. Presence is CONNECTION lifecycle, not login: a token can be minted and sit unused, so what this reports is that someone is WATCHING. One person with two tabs produces two of these, which is why connectionId is required — the DID alone cannot tell two connections apart, and a consumer that counts DIDs will undercount viewers.
@@ -6462,10 +6214,7 @@ type SmeltSettledReason string
 // SmelterConfig Everything a Smelter reads at boot: nothing in it is defaulted by the Smelter. Whoever starts a Smelter writes it, from the knowledge base's stack documents, and the Smelter reads it from the path its `--config` flag names. This schema is the contract, and a Smelter needs no launcher. Started without `--config`, or with a path that names no file, the Smelter refuses to start and says which. No secret is a value here: an embedding provider's key is named by the environment variable that holds it, and the Smelter's own service account is `XYNOLOG_OIDC_CLIENT_ID` and `XYNOLOG_OIDC_CLIENT_SECRET` in its environment. A document that does not validate is refused at boot, naming each failing field.
 type SmelterConfig struct {
 	// Archivist Where the Archivist listens. The Smelter reads a resource's bytes from it, and keeps the anchored-text store there, as its service account.
-	Archivist struct {
-		Host string `json:"host"`
-		Port int    `json:"port"`
-	} `json:"archivist"`
+	Archivist ServiceAddress `json:"archivist"`
 
 	// Chunking The two numbers a text is cut by before it is embedded, both in tokens, a token being taken as four code points.
 	Chunking struct {
@@ -6486,10 +6235,7 @@ type SmelterConfig struct {
 	GatewayUrl string `json:"gatewayUrl"`
 
 	// Identity The issuer the Smelter's service account signs in at.
-	Identity struct {
-		// Issuer The issuer URL, exactly as tokens carry it in `iss`.
-		Issuer string `json:"issuer"`
-	} `json:"identity"`
+	Identity ServiceIdentity `json:"identity"`
 
 	// Kb A knowledge base's committed identity (`project.name` and `site.domain` in its .xynolog/config.yaml), as a service's document names the knowledge base it serves. Its telemetry names it by its DID (`xynolog.kb`, specs/src/service-telemetry/telemetry.json).
 	Kb KbIdentity `json:"kb"`
@@ -6702,15 +6448,10 @@ type UnitCursor struct {
 // UpdateAnnotationBodyRequest defines model for UpdateAnnotationBodyRequest.
 type UpdateAnnotationBodyRequest struct {
 	// Operations Array of body modification operations to apply
-	Operations []UpdateAnnotationBodyRequest_Operations_Item `json:"operations"`
+	Operations []BodyOperation `json:"operations"`
 
 	// ResourceId Resource ID containing the annotation (required for O(1) Layer 3 lookup)
 	ResourceId ResourceId `json:"resourceId"`
-}
-
-// UpdateAnnotationBodyRequest_Operations_Item defines model for UpdateAnnotationBodyRequest.operations.Item.
-type UpdateAnnotationBodyRequest_Operations_Item struct {
-	union json.RawMessage
 }
 
 // UserResponse The authenticated principal, as this knowledge base names it.
@@ -6773,10 +6514,7 @@ type WeaveRebuildCommand struct {
 // WeaverConfig Everything a Weaver reads at boot: nothing in it is defaulted by the Weaver. The launcher writes it for the Weaver it starts, from the knowledge base's stack documents, and the Weaver reads it from the path its `--config` flag names (its image passes `/etc/xynolog/weaver.json`). Whoever starts a Weaver another way writes the same document: this schema is the contract, and a Weaver needs no launcher. Started without `--config`, or with a path that names no file, the Weaver refuses to start and says which. No secret is a value here: the graph database's password is named by the environment variable that holds it, and the Weaver's own service account is `XYNOLOG_OIDC_CLIENT_ID` and `XYNOLOG_OIDC_CLIENT_SECRET` in its environment. A document that does not validate is refused at boot, naming each failing field.
 type WeaverConfig struct {
 	// Archivist Where the Archivist listens. The Weaver reads the record by position from it, and a resource's annotations, as its service account.
-	Archivist struct {
-		Host string `json:"host"`
-		Port int    `json:"port"`
-	} `json:"archivist"`
+	Archivist ServiceAddress `json:"archivist"`
 
 	// CursorsPath The file a follower of the record keeps its cursors in: for each log of the record it follows, the sequence number of the last event of it taken (contract/TRANSPORT-CONTRACT.md § What repairs a passing frame). A file of the service's own disk, never of the knowledge base: a service that finds none starts each log as it starts one with no cursor, so losing it costs time and never correctness.
 	CursorsPath CursorsPath `json:"cursorsPath"`
@@ -6788,10 +6526,7 @@ type WeaverConfig struct {
 	Graph GraphConfig `json:"graph"`
 
 	// Identity The issuer the Weaver's service account signs in at.
-	Identity struct {
-		// Issuer The issuer URL, exactly as tokens carry it in `iss`.
-		Issuer string `json:"issuer"`
-	} `json:"identity"`
+	Identity ServiceIdentity `json:"identity"`
 
 	// Kb A knowledge base's committed identity (`project.name` and `site.domain` in its .xynolog/config.yaml), as a service's document names the knowledge base it serves. Its telemetry names it by its DID (`xynolog.kb`, specs/src/service-telemetry/telemetry.json).
 	Kb KbIdentity `json:"kb"`
@@ -6943,10 +6678,8 @@ type YieldCloneCreateCommand struct {
 
 // YieldCloneCreated Success response after creating a cloned resource.
 type YieldCloneCreated struct {
-	Response struct {
-		// ResourceId A resource's id: a name, never the resource's URI or a path. 1 to 128 of the letters `A`–`Z` and `a`–`z`, the digits, `_` and `-`. It is one segment of a URL and one name in a file system, and it is held to that wherever it enters: a gateway refuses a payload that carries anything else. How one is made is no part of the rule. `__system__` is the one that names no resource: the scope events about the knowledge base itself are logged under.
-		ResourceId ResourceId `json:"resourceId"`
-	} `json:"response"`
+	// Response The resource a yield command wrote, by its id.
+	Response YieldedResource `json:"response"`
 }
 
 // YieldClonePersistCommand Command: stow an already-uploaded clone's bytes and append `yield:cloned`.
@@ -6980,10 +6713,7 @@ type YieldClonePersistCommand struct {
 // YieldClonePersistOk Success reply after cloning a resource, matched to the originating command by correlationId.
 type YieldClonePersistOk struct {
 	// Response The clone's identity — a new resource, distinct from its parent.
-	Response struct {
-		// ResourceId A resource's id: a name, never the resource's URI or a path. 1 to 128 of the letters `A`–`Z` and `a`–`z`, the digits, `_` and `-`. It is one segment of a URL and one name in a file system, and it is held to that wherever it enters: a gateway refuses a payload that carries anything else. How one is made is no part of the rule. `__system__` is the one that names no resource: the scope events about the knowledge base itself are logged under.
-		ResourceId ResourceId `json:"resourceId"`
-	} `json:"response"`
+	Response YieldedResource `json:"response"`
 }
 
 // YieldCloneResourceRequest Bus command to request cloning a resource using a clone token.
@@ -7020,8 +6750,8 @@ type YieldCreateCommand struct {
 	GenerationPrompt *string `json:"generationPrompt,omitempty"`
 
 	// Generator The Software peer that produced the content, when software did. Its identity must be the emitter's own — the knowledge base refuses a generator naming anyone else, and supplies it from the verified emitter when omitted. `creator` and `wasAttributedTo` are never sent; the knowledge base derives them from the emitter and the cited job.
-	Generator *YieldCreateCommand_Generator `json:"generator,omitempty"`
-	IsDraft   *bool                         `json:"isDraft,omitempty"`
+	Generator *OneOrMoreAgents `json:"generator,omitempty"`
+	IsDraft   *bool            `json:"isDraft,omitempty"`
 
 	// JobId The job this resource fulfils. Required when the emitter carries the worker role; absent for self-initiated work (a person, or an agent acting on its own). The knowledge base derives who requested this resource from the cited job's own events — the emitter never says who the work was for.
 	JobId    *JobId  `json:"jobId,omitempty"`
@@ -7032,21 +6762,10 @@ type YieldCreateCommand struct {
 	StorageUri string `json:"storageUri"`
 }
 
-// YieldCreateCommandGenerator1 defines model for .
-type YieldCreateCommandGenerator1 = []Agent
-
-// YieldCreateCommand_Generator The Software peer that produced the content, when software did. Its identity must be the emitter's own — the knowledge base refuses a generator naming anyone else, and supplies it from the verified emitter when omitted. `creator` and `wasAttributedTo` are never sent; the knowledge base derives them from the emitter and the cited job.
-type YieldCreateCommand_Generator struct {
-	union json.RawMessage
-}
-
 // YieldCreateOk Success reply after creating a yielded resource, matched to the originating command by correlationId.
 type YieldCreateOk struct {
 	// Response The created resource's identity.
-	Response struct {
-		// ResourceId A resource's id: a name, never the resource's URI or a path. 1 to 128 of the letters `A`–`Z` and `a`–`z`, the digits, `_` and `-`. It is one segment of a URL and one name in a file system, and it is held to that wherever it enters: a gateway refuses a payload that carries anything else. How one is made is no part of the rule. `__system__` is the one that names no resource: the scope events about the knowledge base itself are logged under.
-		ResourceId ResourceId `json:"resourceId"`
-	} `json:"response"`
+	Response YieldedResource `json:"response"`
 }
 
 // YieldJobCompleteCommand A `yield` job's worker says the job is complete, with what a `yield` job reports.
@@ -7154,10 +6873,13 @@ type YieldUpdateCommand struct {
 // YieldUpdateOk Success reply after updating a yielded resource, matched to the originating command by correlationId.
 type YieldUpdateOk struct {
 	// Response The updated resource's identity.
-	Response struct {
-		// ResourceId A resource's id: a name, never the resource's URI or a path. 1 to 128 of the letters `A`–`Z` and `a`–`z`, the digits, `_` and `-`. It is one segment of a URL and one name in a file system, and it is held to that wherever it enters: a gateway refuses a payload that carries anything else. How one is made is no part of the rule. `__system__` is the one that names no resource: the scope events about the knowledge base itself are logged under.
-		ResourceId ResourceId `json:"resourceId"`
-	} `json:"response"`
+	Response YieldedResource `json:"response"`
+}
+
+// YieldedResource The resource a yield command wrote, by its id.
+type YieldedResource struct {
+	// ResourceId A resource's id: a name, never the resource's URI or a path. 1 to 128 of the letters `A`–`Z` and `a`–`z`, the digits, `_` and `-`. It is one segment of a URL and one name in a file system, and it is held to that wherever it enters: a gateway refuses a payload that carries anything else. How one is made is no part of the rule. `__system__` is the one that names no resource: the scope events about the knowledge base itself are logged under.
+	ResourceId ResourceId `json:"resourceId"`
 }
 
 // AtCapacity An ErrorResponse that names, in `code`, the limit the request met.
@@ -9389,68 +9111,6 @@ func (t *AnchoredTextEntry) UnmarshalJSON(b []byte) error {
 	return err
 }
 
-// AsAgent returns the union data inside the Annotation_Generator as a Agent
-func (t Annotation_Generator) AsAgent() (Agent, error) {
-	var body Agent
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromAgent overwrites any union data inside the Annotation_Generator as the provided Agent
-func (t *Annotation_Generator) FromAgent(v Agent) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeAgent performs a merge with any union data inside the Annotation_Generator, using the provided Agent
-func (t *Annotation_Generator) MergeAgent(v Agent) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-// AsAnnotationGenerator1 returns the union data inside the Annotation_Generator as a AnnotationGenerator1
-func (t Annotation_Generator) AsAnnotationGenerator1() (AnnotationGenerator1, error) {
-	var body AnnotationGenerator1
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromAnnotationGenerator1 overwrites any union data inside the Annotation_Generator as the provided AnnotationGenerator1
-func (t *Annotation_Generator) FromAnnotationGenerator1(v AnnotationGenerator1) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeAnnotationGenerator1 performs a merge with any union data inside the Annotation_Generator, using the provided AnnotationGenerator1
-func (t *Annotation_Generator) MergeAnnotationGenerator1(v AnnotationGenerator1) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-func (t Annotation_Generator) MarshalJSON() ([]byte, error) {
-	b, err := t.union.MarshalJSON()
-	return b, err
-}
-
-func (t *Annotation_Generator) UnmarshalJSON(b []byte) error {
-	err := t.union.UnmarshalJSON(b)
-	return err
-}
-
 // AsResourceId returns the union data inside the Annotation_Target as a ResourceId
 func (t Annotation_Target) AsResourceId() (ResourceId, error) {
 	var body ResourceId
@@ -9509,68 +9169,6 @@ func (t Annotation_Target) MarshalJSON() ([]byte, error) {
 }
 
 func (t *Annotation_Target) UnmarshalJSON(b []byte) error {
-	err := t.union.UnmarshalJSON(b)
-	return err
-}
-
-// AsAgent returns the union data inside the Annotation_WasAttributedTo as a Agent
-func (t Annotation_WasAttributedTo) AsAgent() (Agent, error) {
-	var body Agent
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromAgent overwrites any union data inside the Annotation_WasAttributedTo as the provided Agent
-func (t *Annotation_WasAttributedTo) FromAgent(v Agent) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeAgent performs a merge with any union data inside the Annotation_WasAttributedTo, using the provided Agent
-func (t *Annotation_WasAttributedTo) MergeAgent(v Agent) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-// AsAnnotationWasAttributedTo1 returns the union data inside the Annotation_WasAttributedTo as a AnnotationWasAttributedTo1
-func (t Annotation_WasAttributedTo) AsAnnotationWasAttributedTo1() (AnnotationWasAttributedTo1, error) {
-	var body AnnotationWasAttributedTo1
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromAnnotationWasAttributedTo1 overwrites any union data inside the Annotation_WasAttributedTo as the provided AnnotationWasAttributedTo1
-func (t *Annotation_WasAttributedTo) FromAnnotationWasAttributedTo1(v AnnotationWasAttributedTo1) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeAnnotationWasAttributedTo1 performs a merge with any union data inside the Annotation_WasAttributedTo, using the provided AnnotationWasAttributedTo1
-func (t *Annotation_WasAttributedTo) MergeAnnotationWasAttributedTo1(v AnnotationWasAttributedTo1) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-func (t Annotation_WasAttributedTo) MarshalJSON() ([]byte, error) {
-	b, err := t.union.MarshalJSON()
-	return b, err
-}
-
-func (t *Annotation_WasAttributedTo) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
@@ -9726,94 +9324,6 @@ func (t *AnnotationBody) UnmarshalJSON(b []byte) error {
 	return err
 }
 
-// AsBodyOperationAdd returns the union data inside the AnnotationBodyUpdatedPayload_Operations_Item as a BodyOperationAdd
-func (t AnnotationBodyUpdatedPayload_Operations_Item) AsBodyOperationAdd() (BodyOperationAdd, error) {
-	var body BodyOperationAdd
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromBodyOperationAdd overwrites any union data inside the AnnotationBodyUpdatedPayload_Operations_Item as the provided BodyOperationAdd
-func (t *AnnotationBodyUpdatedPayload_Operations_Item) FromBodyOperationAdd(v BodyOperationAdd) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeBodyOperationAdd performs a merge with any union data inside the AnnotationBodyUpdatedPayload_Operations_Item, using the provided BodyOperationAdd
-func (t *AnnotationBodyUpdatedPayload_Operations_Item) MergeBodyOperationAdd(v BodyOperationAdd) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-// AsBodyOperationRemove returns the union data inside the AnnotationBodyUpdatedPayload_Operations_Item as a BodyOperationRemove
-func (t AnnotationBodyUpdatedPayload_Operations_Item) AsBodyOperationRemove() (BodyOperationRemove, error) {
-	var body BodyOperationRemove
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromBodyOperationRemove overwrites any union data inside the AnnotationBodyUpdatedPayload_Operations_Item as the provided BodyOperationRemove
-func (t *AnnotationBodyUpdatedPayload_Operations_Item) FromBodyOperationRemove(v BodyOperationRemove) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeBodyOperationRemove performs a merge with any union data inside the AnnotationBodyUpdatedPayload_Operations_Item, using the provided BodyOperationRemove
-func (t *AnnotationBodyUpdatedPayload_Operations_Item) MergeBodyOperationRemove(v BodyOperationRemove) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-// AsBodyOperationReplace returns the union data inside the AnnotationBodyUpdatedPayload_Operations_Item as a BodyOperationReplace
-func (t AnnotationBodyUpdatedPayload_Operations_Item) AsBodyOperationReplace() (BodyOperationReplace, error) {
-	var body BodyOperationReplace
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromBodyOperationReplace overwrites any union data inside the AnnotationBodyUpdatedPayload_Operations_Item as the provided BodyOperationReplace
-func (t *AnnotationBodyUpdatedPayload_Operations_Item) FromBodyOperationReplace(v BodyOperationReplace) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeBodyOperationReplace performs a merge with any union data inside the AnnotationBodyUpdatedPayload_Operations_Item, using the provided BodyOperationReplace
-func (t *AnnotationBodyUpdatedPayload_Operations_Item) MergeBodyOperationReplace(v BodyOperationReplace) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-func (t AnnotationBodyUpdatedPayload_Operations_Item) MarshalJSON() ([]byte, error) {
-	b, err := t.union.MarshalJSON()
-	return b, err
-}
-
-func (t *AnnotationBodyUpdatedPayload_Operations_Item) UnmarshalJSON(b []byte) error {
-	err := t.union.UnmarshalJSON(b)
-	return err
-}
-
 // AsSelector returns the union data inside the AnnotationSelector as a Selector
 func (t AnnotationSelector) AsSelector() (Selector, error) {
 	var body Selector
@@ -9876,22 +9386,22 @@ func (t *AnnotationSelector) UnmarshalJSON(b []byte) error {
 	return err
 }
 
-// AsTextualBody returns the union data inside the BodyOperationAdd_Item as a TextualBody
-func (t BodyOperationAdd_Item) AsTextualBody() (TextualBody, error) {
-	var body TextualBody
+// AsBodyOperationAdd returns the union data inside the BodyOperation as a BodyOperationAdd
+func (t BodyOperation) AsBodyOperationAdd() (BodyOperationAdd, error) {
+	var body BodyOperationAdd
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromTextualBody overwrites any union data inside the BodyOperationAdd_Item as the provided TextualBody
-func (t *BodyOperationAdd_Item) FromTextualBody(v TextualBody) error {
+// FromBodyOperationAdd overwrites any union data inside the BodyOperation as the provided BodyOperationAdd
+func (t *BodyOperation) FromBodyOperationAdd(v BodyOperationAdd) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeTextualBody performs a merge with any union data inside the BodyOperationAdd_Item, using the provided TextualBody
-func (t *BodyOperationAdd_Item) MergeTextualBody(v TextualBody) error {
+// MergeBodyOperationAdd performs a merge with any union data inside the BodyOperation, using the provided BodyOperationAdd
+func (t *BodyOperation) MergeBodyOperationAdd(v BodyOperationAdd) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -9902,22 +9412,22 @@ func (t *BodyOperationAdd_Item) MergeTextualBody(v TextualBody) error {
 	return err
 }
 
-// AsSpecificResource returns the union data inside the BodyOperationAdd_Item as a SpecificResource
-func (t BodyOperationAdd_Item) AsSpecificResource() (SpecificResource, error) {
-	var body SpecificResource
+// AsBodyOperationRemove returns the union data inside the BodyOperation as a BodyOperationRemove
+func (t BodyOperation) AsBodyOperationRemove() (BodyOperationRemove, error) {
+	var body BodyOperationRemove
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromSpecificResource overwrites any union data inside the BodyOperationAdd_Item as the provided SpecificResource
-func (t *BodyOperationAdd_Item) FromSpecificResource(v SpecificResource) error {
+// FromBodyOperationRemove overwrites any union data inside the BodyOperation as the provided BodyOperationRemove
+func (t *BodyOperation) FromBodyOperationRemove(v BodyOperationRemove) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeSpecificResource performs a merge with any union data inside the BodyOperationAdd_Item, using the provided SpecificResource
-func (t *BodyOperationAdd_Item) MergeSpecificResource(v SpecificResource) error {
+// MergeBodyOperationRemove performs a merge with any union data inside the BodyOperation, using the provided BodyOperationRemove
+func (t *BodyOperation) MergeBodyOperationRemove(v BodyOperationRemove) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -9928,198 +9438,38 @@ func (t *BodyOperationAdd_Item) MergeSpecificResource(v SpecificResource) error 
 	return err
 }
 
-func (t BodyOperationAdd_Item) MarshalJSON() ([]byte, error) {
+// AsBodyOperationReplace returns the union data inside the BodyOperation as a BodyOperationReplace
+func (t BodyOperation) AsBodyOperationReplace() (BodyOperationReplace, error) {
+	var body BodyOperationReplace
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromBodyOperationReplace overwrites any union data inside the BodyOperation as the provided BodyOperationReplace
+func (t *BodyOperation) FromBodyOperationReplace(v BodyOperationReplace) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeBodyOperationReplace performs a merge with any union data inside the BodyOperation, using the provided BodyOperationReplace
+func (t *BodyOperation) MergeBodyOperationReplace(v BodyOperationReplace) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t BodyOperation) MarshalJSON() ([]byte, error) {
 	b, err := t.union.MarshalJSON()
 	return b, err
 }
 
-func (t *BodyOperationAdd_Item) UnmarshalJSON(b []byte) error {
-	err := t.union.UnmarshalJSON(b)
-	return err
-}
-
-// AsTextualBody returns the union data inside the BodyOperationRemove_Item as a TextualBody
-func (t BodyOperationRemove_Item) AsTextualBody() (TextualBody, error) {
-	var body TextualBody
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromTextualBody overwrites any union data inside the BodyOperationRemove_Item as the provided TextualBody
-func (t *BodyOperationRemove_Item) FromTextualBody(v TextualBody) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeTextualBody performs a merge with any union data inside the BodyOperationRemove_Item, using the provided TextualBody
-func (t *BodyOperationRemove_Item) MergeTextualBody(v TextualBody) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-// AsSpecificResource returns the union data inside the BodyOperationRemove_Item as a SpecificResource
-func (t BodyOperationRemove_Item) AsSpecificResource() (SpecificResource, error) {
-	var body SpecificResource
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromSpecificResource overwrites any union data inside the BodyOperationRemove_Item as the provided SpecificResource
-func (t *BodyOperationRemove_Item) FromSpecificResource(v SpecificResource) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeSpecificResource performs a merge with any union data inside the BodyOperationRemove_Item, using the provided SpecificResource
-func (t *BodyOperationRemove_Item) MergeSpecificResource(v SpecificResource) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-func (t BodyOperationRemove_Item) MarshalJSON() ([]byte, error) {
-	b, err := t.union.MarshalJSON()
-	return b, err
-}
-
-func (t *BodyOperationRemove_Item) UnmarshalJSON(b []byte) error {
-	err := t.union.UnmarshalJSON(b)
-	return err
-}
-
-// AsTextualBody returns the union data inside the BodyOperationReplace_NewItem as a TextualBody
-func (t BodyOperationReplace_NewItem) AsTextualBody() (TextualBody, error) {
-	var body TextualBody
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromTextualBody overwrites any union data inside the BodyOperationReplace_NewItem as the provided TextualBody
-func (t *BodyOperationReplace_NewItem) FromTextualBody(v TextualBody) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeTextualBody performs a merge with any union data inside the BodyOperationReplace_NewItem, using the provided TextualBody
-func (t *BodyOperationReplace_NewItem) MergeTextualBody(v TextualBody) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-// AsSpecificResource returns the union data inside the BodyOperationReplace_NewItem as a SpecificResource
-func (t BodyOperationReplace_NewItem) AsSpecificResource() (SpecificResource, error) {
-	var body SpecificResource
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromSpecificResource overwrites any union data inside the BodyOperationReplace_NewItem as the provided SpecificResource
-func (t *BodyOperationReplace_NewItem) FromSpecificResource(v SpecificResource) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeSpecificResource performs a merge with any union data inside the BodyOperationReplace_NewItem, using the provided SpecificResource
-func (t *BodyOperationReplace_NewItem) MergeSpecificResource(v SpecificResource) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-func (t BodyOperationReplace_NewItem) MarshalJSON() ([]byte, error) {
-	b, err := t.union.MarshalJSON()
-	return b, err
-}
-
-func (t *BodyOperationReplace_NewItem) UnmarshalJSON(b []byte) error {
-	err := t.union.UnmarshalJSON(b)
-	return err
-}
-
-// AsTextualBody returns the union data inside the BodyOperationReplace_OldItem as a TextualBody
-func (t BodyOperationReplace_OldItem) AsTextualBody() (TextualBody, error) {
-	var body TextualBody
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromTextualBody overwrites any union data inside the BodyOperationReplace_OldItem as the provided TextualBody
-func (t *BodyOperationReplace_OldItem) FromTextualBody(v TextualBody) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeTextualBody performs a merge with any union data inside the BodyOperationReplace_OldItem, using the provided TextualBody
-func (t *BodyOperationReplace_OldItem) MergeTextualBody(v TextualBody) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-// AsSpecificResource returns the union data inside the BodyOperationReplace_OldItem as a SpecificResource
-func (t BodyOperationReplace_OldItem) AsSpecificResource() (SpecificResource, error) {
-	var body SpecificResource
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromSpecificResource overwrites any union data inside the BodyOperationReplace_OldItem as the provided SpecificResource
-func (t *BodyOperationReplace_OldItem) FromSpecificResource(v SpecificResource) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeSpecificResource performs a merge with any union data inside the BodyOperationReplace_OldItem, using the provided SpecificResource
-func (t *BodyOperationReplace_OldItem) MergeSpecificResource(v SpecificResource) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-func (t BodyOperationReplace_OldItem) MarshalJSON() ([]byte, error) {
-	b, err := t.union.MarshalJSON()
-	return b, err
-}
-
-func (t *BodyOperationReplace_OldItem) UnmarshalJSON(b []byte) error {
+func (t *BodyOperation) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
@@ -12247,234 +11597,22 @@ func (t *MarkJobResult) UnmarshalJSON(b []byte) error {
 	return err
 }
 
-// AsBodyOperationAdd returns the union data inside the MarkUpdateBodyCommand_Operations_Item as a BodyOperationAdd
-func (t MarkUpdateBodyCommand_Operations_Item) AsBodyOperationAdd() (BodyOperationAdd, error) {
-	var body BodyOperationAdd
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromBodyOperationAdd overwrites any union data inside the MarkUpdateBodyCommand_Operations_Item as the provided BodyOperationAdd
-func (t *MarkUpdateBodyCommand_Operations_Item) FromBodyOperationAdd(v BodyOperationAdd) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeBodyOperationAdd performs a merge with any union data inside the MarkUpdateBodyCommand_Operations_Item, using the provided BodyOperationAdd
-func (t *MarkUpdateBodyCommand_Operations_Item) MergeBodyOperationAdd(v BodyOperationAdd) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-// AsBodyOperationRemove returns the union data inside the MarkUpdateBodyCommand_Operations_Item as a BodyOperationRemove
-func (t MarkUpdateBodyCommand_Operations_Item) AsBodyOperationRemove() (BodyOperationRemove, error) {
-	var body BodyOperationRemove
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromBodyOperationRemove overwrites any union data inside the MarkUpdateBodyCommand_Operations_Item as the provided BodyOperationRemove
-func (t *MarkUpdateBodyCommand_Operations_Item) FromBodyOperationRemove(v BodyOperationRemove) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeBodyOperationRemove performs a merge with any union data inside the MarkUpdateBodyCommand_Operations_Item, using the provided BodyOperationRemove
-func (t *MarkUpdateBodyCommand_Operations_Item) MergeBodyOperationRemove(v BodyOperationRemove) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-// AsBodyOperationReplace returns the union data inside the MarkUpdateBodyCommand_Operations_Item as a BodyOperationReplace
-func (t MarkUpdateBodyCommand_Operations_Item) AsBodyOperationReplace() (BodyOperationReplace, error) {
-	var body BodyOperationReplace
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromBodyOperationReplace overwrites any union data inside the MarkUpdateBodyCommand_Operations_Item as the provided BodyOperationReplace
-func (t *MarkUpdateBodyCommand_Operations_Item) FromBodyOperationReplace(v BodyOperationReplace) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeBodyOperationReplace performs a merge with any union data inside the MarkUpdateBodyCommand_Operations_Item, using the provided BodyOperationReplace
-func (t *MarkUpdateBodyCommand_Operations_Item) MergeBodyOperationReplace(v BodyOperationReplace) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-func (t MarkUpdateBodyCommand_Operations_Item) MarshalJSON() ([]byte, error) {
-	b, err := t.union.MarshalJSON()
-	return b, err
-}
-
-func (t *MarkUpdateBodyCommand_Operations_Item) UnmarshalJSON(b []byte) error {
-	err := t.union.UnmarshalJSON(b)
-	return err
-}
-
-// AsRepresentationType0 returns the union data inside the Representation_Type as a RepresentationType0
-func (t Representation_Type) AsRepresentationType0() (RepresentationType0, error) {
-	var body RepresentationType0
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromRepresentationType0 overwrites any union data inside the Representation_Type as the provided RepresentationType0
-func (t *Representation_Type) FromRepresentationType0(v RepresentationType0) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeRepresentationType0 performs a merge with any union data inside the Representation_Type, using the provided RepresentationType0
-func (t *Representation_Type) MergeRepresentationType0(v RepresentationType0) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-// AsRepresentationType1 returns the union data inside the Representation_Type as a RepresentationType1
-func (t Representation_Type) AsRepresentationType1() (RepresentationType1, error) {
-	var body RepresentationType1
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromRepresentationType1 overwrites any union data inside the Representation_Type as the provided RepresentationType1
-func (t *Representation_Type) FromRepresentationType1(v RepresentationType1) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeRepresentationType1 performs a merge with any union data inside the Representation_Type, using the provided RepresentationType1
-func (t *Representation_Type) MergeRepresentationType1(v RepresentationType1) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-func (t Representation_Type) MarshalJSON() ([]byte, error) {
-	b, err := t.union.MarshalJSON()
-	return b, err
-}
-
-func (t *Representation_Type) UnmarshalJSON(b []byte) error {
-	err := t.union.UnmarshalJSON(b)
-	return err
-}
-
-// AsRepresentationConformsTo0 returns the union data inside the Representation_ConformsTo as a RepresentationConformsTo0
-func (t Representation_ConformsTo) AsRepresentationConformsTo0() (RepresentationConformsTo0, error) {
-	var body RepresentationConformsTo0
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromRepresentationConformsTo0 overwrites any union data inside the Representation_ConformsTo as the provided RepresentationConformsTo0
-func (t *Representation_ConformsTo) FromRepresentationConformsTo0(v RepresentationConformsTo0) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeRepresentationConformsTo0 performs a merge with any union data inside the Representation_ConformsTo, using the provided RepresentationConformsTo0
-func (t *Representation_ConformsTo) MergeRepresentationConformsTo0(v RepresentationConformsTo0) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-// AsRepresentationConformsTo1 returns the union data inside the Representation_ConformsTo as a RepresentationConformsTo1
-func (t Representation_ConformsTo) AsRepresentationConformsTo1() (RepresentationConformsTo1, error) {
-	var body RepresentationConformsTo1
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromRepresentationConformsTo1 overwrites any union data inside the Representation_ConformsTo as the provided RepresentationConformsTo1
-func (t *Representation_ConformsTo) FromRepresentationConformsTo1(v RepresentationConformsTo1) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeRepresentationConformsTo1 performs a merge with any union data inside the Representation_ConformsTo, using the provided RepresentationConformsTo1
-func (t *Representation_ConformsTo) MergeRepresentationConformsTo1(v RepresentationConformsTo1) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-func (t Representation_ConformsTo) MarshalJSON() ([]byte, error) {
-	b, err := t.union.MarshalJSON()
-	return b, err
-}
-
-func (t *Representation_ConformsTo) UnmarshalJSON(b []byte) error {
-	err := t.union.UnmarshalJSON(b)
-	return err
-}
-
-// AsAgent returns the union data inside the ResourceClonedPayload_WasAttributedTo as a Agent
-func (t ResourceClonedPayload_WasAttributedTo) AsAgent() (Agent, error) {
+// AsAgent returns the union data inside the OneOrMoreAgents as a Agent
+func (t OneOrMoreAgents) AsAgent() (Agent, error) {
 	var body Agent
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromAgent overwrites any union data inside the ResourceClonedPayload_WasAttributedTo as the provided Agent
-func (t *ResourceClonedPayload_WasAttributedTo) FromAgent(v Agent) error {
+// FromAgent overwrites any union data inside the OneOrMoreAgents as the provided Agent
+func (t *OneOrMoreAgents) FromAgent(v Agent) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeAgent performs a merge with any union data inside the ResourceClonedPayload_WasAttributedTo, using the provided Agent
-func (t *ResourceClonedPayload_WasAttributedTo) MergeAgent(v Agent) error {
+// MergeAgent performs a merge with any union data inside the OneOrMoreAgents, using the provided Agent
+func (t *OneOrMoreAgents) MergeAgent(v Agent) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -12485,22 +11623,22 @@ func (t *ResourceClonedPayload_WasAttributedTo) MergeAgent(v Agent) error {
 	return err
 }
 
-// AsResourceClonedPayloadWasAttributedTo1 returns the union data inside the ResourceClonedPayload_WasAttributedTo as a ResourceClonedPayloadWasAttributedTo1
-func (t ResourceClonedPayload_WasAttributedTo) AsResourceClonedPayloadWasAttributedTo1() (ResourceClonedPayloadWasAttributedTo1, error) {
-	var body ResourceClonedPayloadWasAttributedTo1
+// AsOneOrMoreAgents1 returns the union data inside the OneOrMoreAgents as a OneOrMoreAgents1
+func (t OneOrMoreAgents) AsOneOrMoreAgents1() (OneOrMoreAgents1, error) {
+	var body OneOrMoreAgents1
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromResourceClonedPayloadWasAttributedTo1 overwrites any union data inside the ResourceClonedPayload_WasAttributedTo as the provided ResourceClonedPayloadWasAttributedTo1
-func (t *ResourceClonedPayload_WasAttributedTo) FromResourceClonedPayloadWasAttributedTo1(v ResourceClonedPayloadWasAttributedTo1) error {
+// FromOneOrMoreAgents1 overwrites any union data inside the OneOrMoreAgents as the provided OneOrMoreAgents1
+func (t *OneOrMoreAgents) FromOneOrMoreAgents1(v OneOrMoreAgents1) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeResourceClonedPayloadWasAttributedTo1 performs a merge with any union data inside the ResourceClonedPayload_WasAttributedTo, using the provided ResourceClonedPayloadWasAttributedTo1
-func (t *ResourceClonedPayload_WasAttributedTo) MergeResourceClonedPayloadWasAttributedTo1(v ResourceClonedPayloadWasAttributedTo1) error {
+// MergeOneOrMoreAgents1 performs a merge with any union data inside the OneOrMoreAgents, using the provided OneOrMoreAgents1
+func (t *OneOrMoreAgents) MergeOneOrMoreAgents1(v OneOrMoreAgents1) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -12511,32 +11649,32 @@ func (t *ResourceClonedPayload_WasAttributedTo) MergeResourceClonedPayloadWasAtt
 	return err
 }
 
-func (t ResourceClonedPayload_WasAttributedTo) MarshalJSON() ([]byte, error) {
+func (t OneOrMoreAgents) MarshalJSON() ([]byte, error) {
 	b, err := t.union.MarshalJSON()
 	return b, err
 }
 
-func (t *ResourceClonedPayload_WasAttributedTo) UnmarshalJSON(b []byte) error {
+func (t *OneOrMoreAgents) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
 
-// AsAgent returns the union data inside the ResourceCreatedPayload_Generator as a Agent
-func (t ResourceCreatedPayload_Generator) AsAgent() (Agent, error) {
-	var body Agent
+// AsOneOrMoreStrings0 returns the union data inside the OneOrMoreStrings as a OneOrMoreStrings0
+func (t OneOrMoreStrings) AsOneOrMoreStrings0() (OneOrMoreStrings0, error) {
+	var body OneOrMoreStrings0
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromAgent overwrites any union data inside the ResourceCreatedPayload_Generator as the provided Agent
-func (t *ResourceCreatedPayload_Generator) FromAgent(v Agent) error {
+// FromOneOrMoreStrings0 overwrites any union data inside the OneOrMoreStrings as the provided OneOrMoreStrings0
+func (t *OneOrMoreStrings) FromOneOrMoreStrings0(v OneOrMoreStrings0) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeAgent performs a merge with any union data inside the ResourceCreatedPayload_Generator, using the provided Agent
-func (t *ResourceCreatedPayload_Generator) MergeAgent(v Agent) error {
+// MergeOneOrMoreStrings0 performs a merge with any union data inside the OneOrMoreStrings, using the provided OneOrMoreStrings0
+func (t *OneOrMoreStrings) MergeOneOrMoreStrings0(v OneOrMoreStrings0) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -12547,22 +11685,22 @@ func (t *ResourceCreatedPayload_Generator) MergeAgent(v Agent) error {
 	return err
 }
 
-// AsResourceCreatedPayloadGenerator1 returns the union data inside the ResourceCreatedPayload_Generator as a ResourceCreatedPayloadGenerator1
-func (t ResourceCreatedPayload_Generator) AsResourceCreatedPayloadGenerator1() (ResourceCreatedPayloadGenerator1, error) {
-	var body ResourceCreatedPayloadGenerator1
+// AsOneOrMoreStrings1 returns the union data inside the OneOrMoreStrings as a OneOrMoreStrings1
+func (t OneOrMoreStrings) AsOneOrMoreStrings1() (OneOrMoreStrings1, error) {
+	var body OneOrMoreStrings1
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromResourceCreatedPayloadGenerator1 overwrites any union data inside the ResourceCreatedPayload_Generator as the provided ResourceCreatedPayloadGenerator1
-func (t *ResourceCreatedPayload_Generator) FromResourceCreatedPayloadGenerator1(v ResourceCreatedPayloadGenerator1) error {
+// FromOneOrMoreStrings1 overwrites any union data inside the OneOrMoreStrings as the provided OneOrMoreStrings1
+func (t *OneOrMoreStrings) FromOneOrMoreStrings1(v OneOrMoreStrings1) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeResourceCreatedPayloadGenerator1 performs a merge with any union data inside the ResourceCreatedPayload_Generator, using the provided ResourceCreatedPayloadGenerator1
-func (t *ResourceCreatedPayload_Generator) MergeResourceCreatedPayloadGenerator1(v ResourceCreatedPayloadGenerator1) error {
+// MergeOneOrMoreStrings1 performs a merge with any union data inside the OneOrMoreStrings, using the provided OneOrMoreStrings1
+func (t *OneOrMoreStrings) MergeOneOrMoreStrings1(v OneOrMoreStrings1) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -12573,32 +11711,32 @@ func (t *ResourceCreatedPayload_Generator) MergeResourceCreatedPayloadGenerator1
 	return err
 }
 
-func (t ResourceCreatedPayload_Generator) MarshalJSON() ([]byte, error) {
+func (t OneOrMoreStrings) MarshalJSON() ([]byte, error) {
 	b, err := t.union.MarshalJSON()
 	return b, err
 }
 
-func (t *ResourceCreatedPayload_Generator) UnmarshalJSON(b []byte) error {
+func (t *OneOrMoreStrings) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
 
-// AsAgent returns the union data inside the ResourceCreatedPayload_WasAttributedTo as a Agent
-func (t ResourceCreatedPayload_WasAttributedTo) AsAgent() (Agent, error) {
-	var body Agent
+// AsOneOrMoreUris0 returns the union data inside the OneOrMoreUris as a OneOrMoreUris0
+func (t OneOrMoreUris) AsOneOrMoreUris0() (OneOrMoreUris0, error) {
+	var body OneOrMoreUris0
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromAgent overwrites any union data inside the ResourceCreatedPayload_WasAttributedTo as the provided Agent
-func (t *ResourceCreatedPayload_WasAttributedTo) FromAgent(v Agent) error {
+// FromOneOrMoreUris0 overwrites any union data inside the OneOrMoreUris as the provided OneOrMoreUris0
+func (t *OneOrMoreUris) FromOneOrMoreUris0(v OneOrMoreUris0) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeAgent performs a merge with any union data inside the ResourceCreatedPayload_WasAttributedTo, using the provided Agent
-func (t *ResourceCreatedPayload_WasAttributedTo) MergeAgent(v Agent) error {
+// MergeOneOrMoreUris0 performs a merge with any union data inside the OneOrMoreUris, using the provided OneOrMoreUris0
+func (t *OneOrMoreUris) MergeOneOrMoreUris0(v OneOrMoreUris0) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -12609,22 +11747,22 @@ func (t *ResourceCreatedPayload_WasAttributedTo) MergeAgent(v Agent) error {
 	return err
 }
 
-// AsResourceCreatedPayloadWasAttributedTo1 returns the union data inside the ResourceCreatedPayload_WasAttributedTo as a ResourceCreatedPayloadWasAttributedTo1
-func (t ResourceCreatedPayload_WasAttributedTo) AsResourceCreatedPayloadWasAttributedTo1() (ResourceCreatedPayloadWasAttributedTo1, error) {
-	var body ResourceCreatedPayloadWasAttributedTo1
+// AsOneOrMoreUris1 returns the union data inside the OneOrMoreUris as a OneOrMoreUris1
+func (t OneOrMoreUris) AsOneOrMoreUris1() (OneOrMoreUris1, error) {
+	var body OneOrMoreUris1
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromResourceCreatedPayloadWasAttributedTo1 overwrites any union data inside the ResourceCreatedPayload_WasAttributedTo as the provided ResourceCreatedPayloadWasAttributedTo1
-func (t *ResourceCreatedPayload_WasAttributedTo) FromResourceCreatedPayloadWasAttributedTo1(v ResourceCreatedPayloadWasAttributedTo1) error {
+// FromOneOrMoreUris1 overwrites any union data inside the OneOrMoreUris as the provided OneOrMoreUris1
+func (t *OneOrMoreUris) FromOneOrMoreUris1(v OneOrMoreUris1) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeResourceCreatedPayloadWasAttributedTo1 performs a merge with any union data inside the ResourceCreatedPayload_WasAttributedTo, using the provided ResourceCreatedPayloadWasAttributedTo1
-func (t *ResourceCreatedPayload_WasAttributedTo) MergeResourceCreatedPayloadWasAttributedTo1(v ResourceCreatedPayloadWasAttributedTo1) error {
+// MergeOneOrMoreUris1 performs a merge with any union data inside the OneOrMoreUris, using the provided OneOrMoreUris1
+func (t *OneOrMoreUris) MergeOneOrMoreUris1(v OneOrMoreUris1) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -12635,12 +11773,12 @@ func (t *ResourceCreatedPayload_WasAttributedTo) MergeResourceCreatedPayloadWasA
 	return err
 }
 
-func (t ResourceCreatedPayload_WasAttributedTo) MarshalJSON() ([]byte, error) {
+func (t OneOrMoreUris) MarshalJSON() ([]byte, error) {
 	b, err := t.union.MarshalJSON()
 	return b, err
 }
 
-func (t *ResourceCreatedPayload_WasAttributedTo) UnmarshalJSON(b []byte) error {
+func (t *OneOrMoreUris) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
@@ -12795,254 +11933,6 @@ func (t *ResourceDescriptor_Context) UnmarshalJSON(b []byte) error {
 	return err
 }
 
-// AsResourceDescriptorType0 returns the union data inside the ResourceDescriptor_Type as a ResourceDescriptorType0
-func (t ResourceDescriptor_Type) AsResourceDescriptorType0() (ResourceDescriptorType0, error) {
-	var body ResourceDescriptorType0
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromResourceDescriptorType0 overwrites any union data inside the ResourceDescriptor_Type as the provided ResourceDescriptorType0
-func (t *ResourceDescriptor_Type) FromResourceDescriptorType0(v ResourceDescriptorType0) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeResourceDescriptorType0 performs a merge with any union data inside the ResourceDescriptor_Type, using the provided ResourceDescriptorType0
-func (t *ResourceDescriptor_Type) MergeResourceDescriptorType0(v ResourceDescriptorType0) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-// AsResourceDescriptorType1 returns the union data inside the ResourceDescriptor_Type as a ResourceDescriptorType1
-func (t ResourceDescriptor_Type) AsResourceDescriptorType1() (ResourceDescriptorType1, error) {
-	var body ResourceDescriptorType1
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromResourceDescriptorType1 overwrites any union data inside the ResourceDescriptor_Type as the provided ResourceDescriptorType1
-func (t *ResourceDescriptor_Type) FromResourceDescriptorType1(v ResourceDescriptorType1) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeResourceDescriptorType1 performs a merge with any union data inside the ResourceDescriptor_Type, using the provided ResourceDescriptorType1
-func (t *ResourceDescriptor_Type) MergeResourceDescriptorType1(v ResourceDescriptorType1) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-func (t ResourceDescriptor_Type) MarshalJSON() ([]byte, error) {
-	b, err := t.union.MarshalJSON()
-	return b, err
-}
-
-func (t *ResourceDescriptor_Type) UnmarshalJSON(b []byte) error {
-	err := t.union.UnmarshalJSON(b)
-	return err
-}
-
-// AsResourceDescriptorAbout0 returns the union data inside the ResourceDescriptor_About as a ResourceDescriptorAbout0
-func (t ResourceDescriptor_About) AsResourceDescriptorAbout0() (ResourceDescriptorAbout0, error) {
-	var body ResourceDescriptorAbout0
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromResourceDescriptorAbout0 overwrites any union data inside the ResourceDescriptor_About as the provided ResourceDescriptorAbout0
-func (t *ResourceDescriptor_About) FromResourceDescriptorAbout0(v ResourceDescriptorAbout0) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeResourceDescriptorAbout0 performs a merge with any union data inside the ResourceDescriptor_About, using the provided ResourceDescriptorAbout0
-func (t *ResourceDescriptor_About) MergeResourceDescriptorAbout0(v ResourceDescriptorAbout0) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-// AsResourceDescriptorAbout1 returns the union data inside the ResourceDescriptor_About as a ResourceDescriptorAbout1
-func (t ResourceDescriptor_About) AsResourceDescriptorAbout1() (ResourceDescriptorAbout1, error) {
-	var body ResourceDescriptorAbout1
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromResourceDescriptorAbout1 overwrites any union data inside the ResourceDescriptor_About as the provided ResourceDescriptorAbout1
-func (t *ResourceDescriptor_About) FromResourceDescriptorAbout1(v ResourceDescriptorAbout1) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeResourceDescriptorAbout1 performs a merge with any union data inside the ResourceDescriptor_About, using the provided ResourceDescriptorAbout1
-func (t *ResourceDescriptor_About) MergeResourceDescriptorAbout1(v ResourceDescriptorAbout1) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-func (t ResourceDescriptor_About) MarshalJSON() ([]byte, error) {
-	b, err := t.union.MarshalJSON()
-	return b, err
-}
-
-func (t *ResourceDescriptor_About) UnmarshalJSON(b []byte) error {
-	err := t.union.UnmarshalJSON(b)
-	return err
-}
-
-// AsResourceDescriptorConformsTo0 returns the union data inside the ResourceDescriptor_ConformsTo as a ResourceDescriptorConformsTo0
-func (t ResourceDescriptor_ConformsTo) AsResourceDescriptorConformsTo0() (ResourceDescriptorConformsTo0, error) {
-	var body ResourceDescriptorConformsTo0
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromResourceDescriptorConformsTo0 overwrites any union data inside the ResourceDescriptor_ConformsTo as the provided ResourceDescriptorConformsTo0
-func (t *ResourceDescriptor_ConformsTo) FromResourceDescriptorConformsTo0(v ResourceDescriptorConformsTo0) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeResourceDescriptorConformsTo0 performs a merge with any union data inside the ResourceDescriptor_ConformsTo, using the provided ResourceDescriptorConformsTo0
-func (t *ResourceDescriptor_ConformsTo) MergeResourceDescriptorConformsTo0(v ResourceDescriptorConformsTo0) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-// AsResourceDescriptorConformsTo1 returns the union data inside the ResourceDescriptor_ConformsTo as a ResourceDescriptorConformsTo1
-func (t ResourceDescriptor_ConformsTo) AsResourceDescriptorConformsTo1() (ResourceDescriptorConformsTo1, error) {
-	var body ResourceDescriptorConformsTo1
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromResourceDescriptorConformsTo1 overwrites any union data inside the ResourceDescriptor_ConformsTo as the provided ResourceDescriptorConformsTo1
-func (t *ResourceDescriptor_ConformsTo) FromResourceDescriptorConformsTo1(v ResourceDescriptorConformsTo1) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeResourceDescriptorConformsTo1 performs a merge with any union data inside the ResourceDescriptor_ConformsTo, using the provided ResourceDescriptorConformsTo1
-func (t *ResourceDescriptor_ConformsTo) MergeResourceDescriptorConformsTo1(v ResourceDescriptorConformsTo1) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-func (t ResourceDescriptor_ConformsTo) MarshalJSON() ([]byte, error) {
-	b, err := t.union.MarshalJSON()
-	return b, err
-}
-
-func (t *ResourceDescriptor_ConformsTo) UnmarshalJSON(b []byte) error {
-	err := t.union.UnmarshalJSON(b)
-	return err
-}
-
-// AsAgent returns the union data inside the ResourceDescriptor_Generator as a Agent
-func (t ResourceDescriptor_Generator) AsAgent() (Agent, error) {
-	var body Agent
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromAgent overwrites any union data inside the ResourceDescriptor_Generator as the provided Agent
-func (t *ResourceDescriptor_Generator) FromAgent(v Agent) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeAgent performs a merge with any union data inside the ResourceDescriptor_Generator, using the provided Agent
-func (t *ResourceDescriptor_Generator) MergeAgent(v Agent) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-// AsResourceDescriptorGenerator1 returns the union data inside the ResourceDescriptor_Generator as a ResourceDescriptorGenerator1
-func (t ResourceDescriptor_Generator) AsResourceDescriptorGenerator1() (ResourceDescriptorGenerator1, error) {
-	var body ResourceDescriptorGenerator1
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromResourceDescriptorGenerator1 overwrites any union data inside the ResourceDescriptor_Generator as the provided ResourceDescriptorGenerator1
-func (t *ResourceDescriptor_Generator) FromResourceDescriptorGenerator1(v ResourceDescriptorGenerator1) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeResourceDescriptorGenerator1 performs a merge with any union data inside the ResourceDescriptor_Generator, using the provided ResourceDescriptorGenerator1
-func (t *ResourceDescriptor_Generator) MergeResourceDescriptorGenerator1(v ResourceDescriptorGenerator1) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-func (t ResourceDescriptor_Generator) MarshalJSON() ([]byte, error) {
-	b, err := t.union.MarshalJSON()
-	return b, err
-}
-
-func (t *ResourceDescriptor_Generator) UnmarshalJSON(b []byte) error {
-	err := t.union.UnmarshalJSON(b)
-	return err
-}
-
 // AsResourceDescriptorIdentifier0 returns the union data inside the ResourceDescriptor_Identifier as a ResourceDescriptorIdentifier0
 func (t ResourceDescriptor_Identifier) AsResourceDescriptorIdentifier0() (ResourceDescriptorIdentifier0, error) {
 	var body ResourceDescriptorIdentifier0
@@ -13189,68 +12079,6 @@ func (t ResourceDescriptor_Representations) MarshalJSON() ([]byte, error) {
 }
 
 func (t *ResourceDescriptor_Representations) UnmarshalJSON(b []byte) error {
-	err := t.union.UnmarshalJSON(b)
-	return err
-}
-
-// AsAgent returns the union data inside the ResourceDescriptor_WasAttributedTo as a Agent
-func (t ResourceDescriptor_WasAttributedTo) AsAgent() (Agent, error) {
-	var body Agent
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromAgent overwrites any union data inside the ResourceDescriptor_WasAttributedTo as the provided Agent
-func (t *ResourceDescriptor_WasAttributedTo) FromAgent(v Agent) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeAgent performs a merge with any union data inside the ResourceDescriptor_WasAttributedTo, using the provided Agent
-func (t *ResourceDescriptor_WasAttributedTo) MergeAgent(v Agent) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-// AsResourceDescriptorWasAttributedTo1 returns the union data inside the ResourceDescriptor_WasAttributedTo as a ResourceDescriptorWasAttributedTo1
-func (t ResourceDescriptor_WasAttributedTo) AsResourceDescriptorWasAttributedTo1() (ResourceDescriptorWasAttributedTo1, error) {
-	var body ResourceDescriptorWasAttributedTo1
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromResourceDescriptorWasAttributedTo1 overwrites any union data inside the ResourceDescriptor_WasAttributedTo as the provided ResourceDescriptorWasAttributedTo1
-func (t *ResourceDescriptor_WasAttributedTo) FromResourceDescriptorWasAttributedTo1(v ResourceDescriptorWasAttributedTo1) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeResourceDescriptorWasAttributedTo1 performs a merge with any union data inside the ResourceDescriptor_WasAttributedTo, using the provided ResourceDescriptorWasAttributedTo1
-func (t *ResourceDescriptor_WasAttributedTo) MergeResourceDescriptorWasAttributedTo1(v ResourceDescriptorWasAttributedTo1) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-func (t ResourceDescriptor_WasAttributedTo) MarshalJSON() ([]byte, error) {
-	b, err := t.union.MarshalJSON()
-	return b, err
-}
-
-func (t *ResourceDescriptor_WasAttributedTo) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
@@ -13467,254 +12295,6 @@ func (t *ScoredResource_Context) UnmarshalJSON(b []byte) error {
 	return err
 }
 
-// AsScoredResourceType0 returns the union data inside the ScoredResource_Type as a ScoredResourceType0
-func (t ScoredResource_Type) AsScoredResourceType0() (ScoredResourceType0, error) {
-	var body ScoredResourceType0
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromScoredResourceType0 overwrites any union data inside the ScoredResource_Type as the provided ScoredResourceType0
-func (t *ScoredResource_Type) FromScoredResourceType0(v ScoredResourceType0) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeScoredResourceType0 performs a merge with any union data inside the ScoredResource_Type, using the provided ScoredResourceType0
-func (t *ScoredResource_Type) MergeScoredResourceType0(v ScoredResourceType0) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-// AsScoredResourceType1 returns the union data inside the ScoredResource_Type as a ScoredResourceType1
-func (t ScoredResource_Type) AsScoredResourceType1() (ScoredResourceType1, error) {
-	var body ScoredResourceType1
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromScoredResourceType1 overwrites any union data inside the ScoredResource_Type as the provided ScoredResourceType1
-func (t *ScoredResource_Type) FromScoredResourceType1(v ScoredResourceType1) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeScoredResourceType1 performs a merge with any union data inside the ScoredResource_Type, using the provided ScoredResourceType1
-func (t *ScoredResource_Type) MergeScoredResourceType1(v ScoredResourceType1) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-func (t ScoredResource_Type) MarshalJSON() ([]byte, error) {
-	b, err := t.union.MarshalJSON()
-	return b, err
-}
-
-func (t *ScoredResource_Type) UnmarshalJSON(b []byte) error {
-	err := t.union.UnmarshalJSON(b)
-	return err
-}
-
-// AsScoredResourceAbout0 returns the union data inside the ScoredResource_About as a ScoredResourceAbout0
-func (t ScoredResource_About) AsScoredResourceAbout0() (ScoredResourceAbout0, error) {
-	var body ScoredResourceAbout0
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromScoredResourceAbout0 overwrites any union data inside the ScoredResource_About as the provided ScoredResourceAbout0
-func (t *ScoredResource_About) FromScoredResourceAbout0(v ScoredResourceAbout0) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeScoredResourceAbout0 performs a merge with any union data inside the ScoredResource_About, using the provided ScoredResourceAbout0
-func (t *ScoredResource_About) MergeScoredResourceAbout0(v ScoredResourceAbout0) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-// AsScoredResourceAbout1 returns the union data inside the ScoredResource_About as a ScoredResourceAbout1
-func (t ScoredResource_About) AsScoredResourceAbout1() (ScoredResourceAbout1, error) {
-	var body ScoredResourceAbout1
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromScoredResourceAbout1 overwrites any union data inside the ScoredResource_About as the provided ScoredResourceAbout1
-func (t *ScoredResource_About) FromScoredResourceAbout1(v ScoredResourceAbout1) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeScoredResourceAbout1 performs a merge with any union data inside the ScoredResource_About, using the provided ScoredResourceAbout1
-func (t *ScoredResource_About) MergeScoredResourceAbout1(v ScoredResourceAbout1) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-func (t ScoredResource_About) MarshalJSON() ([]byte, error) {
-	b, err := t.union.MarshalJSON()
-	return b, err
-}
-
-func (t *ScoredResource_About) UnmarshalJSON(b []byte) error {
-	err := t.union.UnmarshalJSON(b)
-	return err
-}
-
-// AsScoredResourceConformsTo0 returns the union data inside the ScoredResource_ConformsTo as a ScoredResourceConformsTo0
-func (t ScoredResource_ConformsTo) AsScoredResourceConformsTo0() (ScoredResourceConformsTo0, error) {
-	var body ScoredResourceConformsTo0
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromScoredResourceConformsTo0 overwrites any union data inside the ScoredResource_ConformsTo as the provided ScoredResourceConformsTo0
-func (t *ScoredResource_ConformsTo) FromScoredResourceConformsTo0(v ScoredResourceConformsTo0) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeScoredResourceConformsTo0 performs a merge with any union data inside the ScoredResource_ConformsTo, using the provided ScoredResourceConformsTo0
-func (t *ScoredResource_ConformsTo) MergeScoredResourceConformsTo0(v ScoredResourceConformsTo0) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-// AsScoredResourceConformsTo1 returns the union data inside the ScoredResource_ConformsTo as a ScoredResourceConformsTo1
-func (t ScoredResource_ConformsTo) AsScoredResourceConformsTo1() (ScoredResourceConformsTo1, error) {
-	var body ScoredResourceConformsTo1
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromScoredResourceConformsTo1 overwrites any union data inside the ScoredResource_ConformsTo as the provided ScoredResourceConformsTo1
-func (t *ScoredResource_ConformsTo) FromScoredResourceConformsTo1(v ScoredResourceConformsTo1) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeScoredResourceConformsTo1 performs a merge with any union data inside the ScoredResource_ConformsTo, using the provided ScoredResourceConformsTo1
-func (t *ScoredResource_ConformsTo) MergeScoredResourceConformsTo1(v ScoredResourceConformsTo1) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-func (t ScoredResource_ConformsTo) MarshalJSON() ([]byte, error) {
-	b, err := t.union.MarshalJSON()
-	return b, err
-}
-
-func (t *ScoredResource_ConformsTo) UnmarshalJSON(b []byte) error {
-	err := t.union.UnmarshalJSON(b)
-	return err
-}
-
-// AsAgent returns the union data inside the ScoredResource_Generator as a Agent
-func (t ScoredResource_Generator) AsAgent() (Agent, error) {
-	var body Agent
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromAgent overwrites any union data inside the ScoredResource_Generator as the provided Agent
-func (t *ScoredResource_Generator) FromAgent(v Agent) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeAgent performs a merge with any union data inside the ScoredResource_Generator, using the provided Agent
-func (t *ScoredResource_Generator) MergeAgent(v Agent) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-// AsScoredResourceGenerator1 returns the union data inside the ScoredResource_Generator as a ScoredResourceGenerator1
-func (t ScoredResource_Generator) AsScoredResourceGenerator1() (ScoredResourceGenerator1, error) {
-	var body ScoredResourceGenerator1
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromScoredResourceGenerator1 overwrites any union data inside the ScoredResource_Generator as the provided ScoredResourceGenerator1
-func (t *ScoredResource_Generator) FromScoredResourceGenerator1(v ScoredResourceGenerator1) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeScoredResourceGenerator1 performs a merge with any union data inside the ScoredResource_Generator, using the provided ScoredResourceGenerator1
-func (t *ScoredResource_Generator) MergeScoredResourceGenerator1(v ScoredResourceGenerator1) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-func (t ScoredResource_Generator) MarshalJSON() ([]byte, error) {
-	b, err := t.union.MarshalJSON()
-	return b, err
-}
-
-func (t *ScoredResource_Generator) UnmarshalJSON(b []byte) error {
-	err := t.union.UnmarshalJSON(b)
-	return err
-}
-
 // AsScoredResourceIdentifier0 returns the union data inside the ScoredResource_Identifier as a ScoredResourceIdentifier0
 func (t ScoredResource_Identifier) AsScoredResourceIdentifier0() (ScoredResourceIdentifier0, error) {
 	var body ScoredResourceIdentifier0
@@ -13861,68 +12441,6 @@ func (t ScoredResource_Representations) MarshalJSON() ([]byte, error) {
 }
 
 func (t *ScoredResource_Representations) UnmarshalJSON(b []byte) error {
-	err := t.union.UnmarshalJSON(b)
-	return err
-}
-
-// AsAgent returns the union data inside the ScoredResource_WasAttributedTo as a Agent
-func (t ScoredResource_WasAttributedTo) AsAgent() (Agent, error) {
-	var body Agent
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromAgent overwrites any union data inside the ScoredResource_WasAttributedTo as the provided Agent
-func (t *ScoredResource_WasAttributedTo) FromAgent(v Agent) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeAgent performs a merge with any union data inside the ScoredResource_WasAttributedTo, using the provided Agent
-func (t *ScoredResource_WasAttributedTo) MergeAgent(v Agent) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-// AsScoredResourceWasAttributedTo1 returns the union data inside the ScoredResource_WasAttributedTo as a ScoredResourceWasAttributedTo1
-func (t ScoredResource_WasAttributedTo) AsScoredResourceWasAttributedTo1() (ScoredResourceWasAttributedTo1, error) {
-	var body ScoredResourceWasAttributedTo1
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromScoredResourceWasAttributedTo1 overwrites any union data inside the ScoredResource_WasAttributedTo as the provided ScoredResourceWasAttributedTo1
-func (t *ScoredResource_WasAttributedTo) FromScoredResourceWasAttributedTo1(v ScoredResourceWasAttributedTo1) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeScoredResourceWasAttributedTo1 performs a merge with any union data inside the ScoredResource_WasAttributedTo, using the provided ScoredResourceWasAttributedTo1
-func (t *ScoredResource_WasAttributedTo) MergeScoredResourceWasAttributedTo1(v ScoredResourceWasAttributedTo1) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-func (t ScoredResource_WasAttributedTo) MarshalJSON() ([]byte, error) {
-	b, err := t.union.MarshalJSON()
-	return b, err
-}
-
-func (t *ScoredResource_WasAttributedTo) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
@@ -14138,94 +12656,6 @@ func (t *Selector) UnmarshalJSON(b []byte) error {
 	return err
 }
 
-// AsBodyOperationAdd returns the union data inside the UpdateAnnotationBodyRequest_Operations_Item as a BodyOperationAdd
-func (t UpdateAnnotationBodyRequest_Operations_Item) AsBodyOperationAdd() (BodyOperationAdd, error) {
-	var body BodyOperationAdd
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromBodyOperationAdd overwrites any union data inside the UpdateAnnotationBodyRequest_Operations_Item as the provided BodyOperationAdd
-func (t *UpdateAnnotationBodyRequest_Operations_Item) FromBodyOperationAdd(v BodyOperationAdd) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeBodyOperationAdd performs a merge with any union data inside the UpdateAnnotationBodyRequest_Operations_Item, using the provided BodyOperationAdd
-func (t *UpdateAnnotationBodyRequest_Operations_Item) MergeBodyOperationAdd(v BodyOperationAdd) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-// AsBodyOperationRemove returns the union data inside the UpdateAnnotationBodyRequest_Operations_Item as a BodyOperationRemove
-func (t UpdateAnnotationBodyRequest_Operations_Item) AsBodyOperationRemove() (BodyOperationRemove, error) {
-	var body BodyOperationRemove
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromBodyOperationRemove overwrites any union data inside the UpdateAnnotationBodyRequest_Operations_Item as the provided BodyOperationRemove
-func (t *UpdateAnnotationBodyRequest_Operations_Item) FromBodyOperationRemove(v BodyOperationRemove) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeBodyOperationRemove performs a merge with any union data inside the UpdateAnnotationBodyRequest_Operations_Item, using the provided BodyOperationRemove
-func (t *UpdateAnnotationBodyRequest_Operations_Item) MergeBodyOperationRemove(v BodyOperationRemove) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-// AsBodyOperationReplace returns the union data inside the UpdateAnnotationBodyRequest_Operations_Item as a BodyOperationReplace
-func (t UpdateAnnotationBodyRequest_Operations_Item) AsBodyOperationReplace() (BodyOperationReplace, error) {
-	var body BodyOperationReplace
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromBodyOperationReplace overwrites any union data inside the UpdateAnnotationBodyRequest_Operations_Item as the provided BodyOperationReplace
-func (t *UpdateAnnotationBodyRequest_Operations_Item) FromBodyOperationReplace(v BodyOperationReplace) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeBodyOperationReplace performs a merge with any union data inside the UpdateAnnotationBodyRequest_Operations_Item, using the provided BodyOperationReplace
-func (t *UpdateAnnotationBodyRequest_Operations_Item) MergeBodyOperationReplace(v BodyOperationReplace) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-func (t UpdateAnnotationBodyRequest_Operations_Item) MarshalJSON() ([]byte, error) {
-	b, err := t.union.MarshalJSON()
-	return b, err
-}
-
-func (t *UpdateAnnotationBodyRequest_Operations_Item) UnmarshalJSON(b []byte) error {
-	err := t.union.UnmarshalJSON(b)
-	return err
-}
-
 // AsQdrantVectorsConfig returns the union data inside the VectorsConfig as a QdrantVectorsConfig
 func (t VectorsConfig) AsQdrantVectorsConfig() (QdrantVectorsConfig, error) {
 	var body QdrantVectorsConfig
@@ -14311,68 +12741,6 @@ func (t VectorsConfig) MarshalJSON() ([]byte, error) {
 }
 
 func (t *VectorsConfig) UnmarshalJSON(b []byte) error {
-	err := t.union.UnmarshalJSON(b)
-	return err
-}
-
-// AsAgent returns the union data inside the YieldCreateCommand_Generator as a Agent
-func (t YieldCreateCommand_Generator) AsAgent() (Agent, error) {
-	var body Agent
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromAgent overwrites any union data inside the YieldCreateCommand_Generator as the provided Agent
-func (t *YieldCreateCommand_Generator) FromAgent(v Agent) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeAgent performs a merge with any union data inside the YieldCreateCommand_Generator, using the provided Agent
-func (t *YieldCreateCommand_Generator) MergeAgent(v Agent) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-// AsYieldCreateCommandGenerator1 returns the union data inside the YieldCreateCommand_Generator as a YieldCreateCommandGenerator1
-func (t YieldCreateCommand_Generator) AsYieldCreateCommandGenerator1() (YieldCreateCommandGenerator1, error) {
-	var body YieldCreateCommandGenerator1
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromYieldCreateCommandGenerator1 overwrites any union data inside the YieldCreateCommand_Generator as the provided YieldCreateCommandGenerator1
-func (t *YieldCreateCommand_Generator) FromYieldCreateCommandGenerator1(v YieldCreateCommandGenerator1) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeYieldCreateCommandGenerator1 performs a merge with any union data inside the YieldCreateCommand_Generator, using the provided YieldCreateCommandGenerator1
-func (t *YieldCreateCommand_Generator) MergeYieldCreateCommandGenerator1(v YieldCreateCommandGenerator1) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-func (t YieldCreateCommand_Generator) MarshalJSON() ([]byte, error) {
-	b, err := t.union.MarshalJSON()
-	return b, err
-}
-
-func (t *YieldCreateCommand_Generator) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }

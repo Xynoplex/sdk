@@ -21,11 +21,7 @@ public data class TextualBody(
     public val format: String? = null,
     /** BCP 47 language tag */
     public val language: String? = null,
-) : AnnotationBody,
-    BodyOperationAddItem,
-    BodyOperationRemoveItem,
-    BodyOperationReplaceNewItem,
-    BodyOperationReplaceOldItem {
+) : AnnotationBody {
     /** How Java makes a `TextualBody`: `builder` takes what it must state, a setter each thing it may, and `build` makes it. */
     public class Builder internal constructor(
         private val value: String,

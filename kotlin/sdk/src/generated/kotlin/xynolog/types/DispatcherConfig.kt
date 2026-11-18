@@ -12,7 +12,7 @@ public data class DispatcherConfig(
     /** The URL the dispatcher reaches the gateway at: its only route to the bus. */
     public val gatewayUrl: String,
     /** The issuer the dispatcher's service account signs in at. */
-    public val identity: DispatcherConfigIdentity,
+    public val identity: ServiceIdentity,
     /** The JetStream broker holding the job queue, whose layout is specs/src/jobs/storage.json. */
     public val queue: DispatcherConfigQueue,
     /** The port the dispatcher answers `/health` on. */
@@ -26,7 +26,7 @@ public data class DispatcherConfig(
     public class Builder internal constructor(
         private val kb: KbIdentity,
         private val gatewayUrl: String,
-        private val identity: DispatcherConfigIdentity,
+        private val identity: ServiceIdentity,
         private val queue: DispatcherConfigQueue,
         private val port: Long,
         private val timing: DispatcherConfigTiming,
@@ -39,6 +39,6 @@ public data class DispatcherConfig(
     public companion object {
         /** A builder of a `DispatcherConfig` that states these, and what its setters add. */
         @JvmStatic
-        public fun builder(kb: KbIdentity, gatewayUrl: String, identity: DispatcherConfigIdentity, queue: DispatcherConfigQueue, port: Long, timing: DispatcherConfigTiming, logLevel: LogLevel, logFormat: LogFormat): Builder = Builder(kb, gatewayUrl, identity, queue, port, timing, logLevel, logFormat)
+        public fun builder(kb: KbIdentity, gatewayUrl: String, identity: ServiceIdentity, queue: DispatcherConfigQueue, port: Long, timing: DispatcherConfigTiming, logLevel: LogLevel, logFormat: LogFormat): Builder = Builder(kb, gatewayUrl, identity, queue, port, timing, logLevel, logFormat)
     }
 }

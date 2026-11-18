@@ -122,7 +122,7 @@ int xynolog_store_owner_only(const char *path) {
     if (!user) { error = ERROR_NOT_ENOUGH_MEMORY; goto finished; }
     if (!GetTokenInformation(token, TokenUser, user, needed, &needed)) { error = GetLastError(); goto finished; }
     if (!ConvertSidToStringSidW(user->User.Sid, &sid)) { error = GetLastError(); goto finished; }
-    const char *source = XYNOLOG_ACCESS_LIST;
+    const char *source = XYNOLOG_DIRECTORY_ACCESS_LIST;
     const char *placeholder = "{owner}";
     size_t placeholder_size = strlen(placeholder);
     const char *marker = strstr(source, placeholder);

@@ -17,11 +17,11 @@ public data class AnchoredTextExtractedEntry(
     /** Where each word of `text` is, line by line, in reading order. */
     public val lines: kotlin.collections.List<AnchoredTextExtractedEntryLinesItem>,
     /** How the text was extracted. */
-    public val method: AnchoredTextExtractedEntryMethod,
+    public val method: ExtractionMethod,
     /** PDF classification, when the source was a PDF. */
-    public val pdfClass: AnchoredTextExtractedEntryPdfClass? = null,
+    public val pdfClass: PdfClass? = null,
     /** How well the engine read the pixels, when any of this text came from OCR. */
-    public val ocrConfidence: AnchoredTextExtractedEntryOcrConfidence? = null,
+    public val ocrConfidence: OcrConfidence? = null,
     /** 1-indexed pages this extraction could not read — present only for partially covered documents (class C). */
     public val unreadPages: kotlin.collections.List<Long>? = null,
 ) : AnchoredTextEntry {
@@ -31,14 +31,14 @@ public data class AnchoredTextExtractedEntry(
         private val stamp: String,
         private val text: String,
         private val lines: kotlin.collections.List<AnchoredTextExtractedEntryLinesItem>,
-        private val method: AnchoredTextExtractedEntryMethod,
+        private val method: ExtractionMethod,
     ) {
-        private var pdfClass: AnchoredTextExtractedEntryPdfClass? = null
-        private var ocrConfidence: AnchoredTextExtractedEntryOcrConfidence? = null
+        private var pdfClass: PdfClass? = null
+        private var ocrConfidence: OcrConfidence? = null
         private var unreadPages: kotlin.collections.List<Long>? = null
 
-        public fun pdfClass(pdfClass: AnchoredTextExtractedEntryPdfClass?): Builder = apply { this.pdfClass = pdfClass }
-        public fun ocrConfidence(ocrConfidence: AnchoredTextExtractedEntryOcrConfidence?): Builder = apply { this.ocrConfidence = ocrConfidence }
+        public fun pdfClass(pdfClass: PdfClass?): Builder = apply { this.pdfClass = pdfClass }
+        public fun ocrConfidence(ocrConfidence: OcrConfidence?): Builder = apply { this.ocrConfidence = ocrConfidence }
         public fun unreadPages(unreadPages: kotlin.collections.List<Long>?): Builder = apply { this.unreadPages = unreadPages }
 
         public fun build(): AnchoredTextExtractedEntry = AnchoredTextExtractedEntry(v = v, stamp = stamp, text = text, lines = lines, method = method, pdfClass = pdfClass, ocrConfidence = ocrConfidence, unreadPages = unreadPages)
@@ -47,6 +47,6 @@ public data class AnchoredTextExtractedEntry(
     public companion object {
         /** A builder of a `AnchoredTextExtractedEntry` that states these, and what its setters add. */
         @JvmStatic
-        public fun builder(v: Long, stamp: String, text: String, lines: kotlin.collections.List<AnchoredTextExtractedEntryLinesItem>, method: AnchoredTextExtractedEntryMethod): Builder = Builder(v, stamp, text, lines, method)
+        public fun builder(v: Long, stamp: String, text: String, lines: kotlin.collections.List<AnchoredTextExtractedEntryLinesItem>, method: ExtractionMethod): Builder = Builder(v, stamp, text, lines, method)
     }
 }

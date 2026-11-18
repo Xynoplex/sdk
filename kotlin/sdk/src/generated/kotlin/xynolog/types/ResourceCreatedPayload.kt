@@ -28,10 +28,10 @@ public data class ResourceCreatedPayload(
     /** What this resource was generated from: the resource, and the annotation on it when the generation was for one. The resource's descriptor names the resource as `wasDerivedFrom`. */
     public val generatedFrom: ResourceCreatedPayloadGeneratedFrom? = null,
     public val generationPrompt: String? = null,
-    public val generator: ResourceCreatedPayloadGenerator? = null,
+    public val generator: OneOrMoreAgents? = null,
     public val creator: Agent? = null,
     /** PROV-O wasAttributedTo, derived at write time from `creator` and the executor: both parties when they differ, one when they are the same. The value the resource view carries; readers do not re-derive it. */
-    public val wasAttributedTo: ResourceCreatedPayloadWasAttributedTo? = null,
+    public val wasAttributedTo: OneOrMoreAgents? = null,
 ) {
     /** How Java makes a `ResourceCreatedPayload`: `builder` takes what it must state, a setter each thing it may, and `build` makes it. */
     public class Builder internal constructor(
@@ -47,9 +47,9 @@ public data class ResourceCreatedPayload(
         private var jobId: JobId? = null
         private var generatedFrom: ResourceCreatedPayloadGeneratedFrom? = null
         private var generationPrompt: String? = null
-        private var generator: ResourceCreatedPayloadGenerator? = null
+        private var generator: OneOrMoreAgents? = null
         private var creator: Agent? = null
-        private var wasAttributedTo: ResourceCreatedPayloadWasAttributedTo? = null
+        private var wasAttributedTo: OneOrMoreAgents? = null
 
         public fun contentByteSize(contentByteSize: Long?): Builder = apply { this.contentByteSize = contentByteSize }
         public fun entityTypes(entityTypes: kotlin.collections.List<String>?): Builder = apply { this.entityTypes = entityTypes }
@@ -62,9 +62,9 @@ public data class ResourceCreatedPayload(
 
         public fun generatedFrom(generatedFrom: ResourceCreatedPayloadGeneratedFrom?): Builder = apply { this.generatedFrom = generatedFrom }
         public fun generationPrompt(generationPrompt: String?): Builder = apply { this.generationPrompt = generationPrompt }
-        public fun generator(generator: ResourceCreatedPayloadGenerator?): Builder = apply { this.generator = generator }
+        public fun generator(generator: OneOrMoreAgents?): Builder = apply { this.generator = generator }
         public fun creator(creator: Agent?): Builder = apply { this.creator = creator }
-        public fun wasAttributedTo(wasAttributedTo: ResourceCreatedPayloadWasAttributedTo?): Builder = apply { this.wasAttributedTo = wasAttributedTo }
+        public fun wasAttributedTo(wasAttributedTo: OneOrMoreAgents?): Builder = apply { this.wasAttributedTo = wasAttributedTo }
 
         public fun build(): ResourceCreatedPayload = ResourceCreatedPayload(name = name, format = format, contentChecksum = contentChecksum, contentByteSize = contentByteSize, entityTypes = entityTypes, storageUri = storageUri, language = language, isDraft = isDraft, jobId = jobId, generatedFrom = generatedFrom, generationPrompt = generationPrompt, generator = generator, creator = creator, wasAttributedTo = wasAttributedTo)
     }

@@ -2,6 +2,45 @@
   "$comment": "Generated from protocol/specs/src; do not edit. Regenerate: make generate (codegen/lib/haskell_sdk/merged.ml) Each node that states an allOf in a schema the Haskell SDK validates against, by the schema's name and the node's path in it, with the generator's merge of it (codegen/lib/haskell_sdk/normalize.ml) as the SDK holds a schema, or the merge's refusal: what the SDK's Xynolog.Internal.Schema.normalize must give.",
   "merged": [
     {
+      "schema": "AnchoredTextDeclinedEntry",
+      "at": [ "properties", "declined" ],
+      "merged": {
+        "type": "string",
+        "enum": [ "no-text-layer", "encrypted", "corrupt", "too-large" ]
+      }
+    },
+    {
+      "schema": "AnchoredTextExtractedEntry",
+      "at": [ "properties", "method" ],
+      "merged": {
+        "type": "string",
+        "enum": [
+          "text-passthrough", "pdf-text-layer", "table", "form", "ocr"
+        ]
+      }
+    },
+    {
+      "schema": "AnchoredTextExtractedEntry",
+      "at": [ "properties", "ocrConfidence" ],
+      "merged": {
+        "type": "object",
+        "properties": {
+          "lowConfidenceWords": { "type": "integer" },
+          "mean": { "type": "number" },
+          "totalWords": { "type": "integer" }
+        },
+        "required": [ "mean", "lowConfidenceWords", "totalWords" ]
+      }
+    },
+    {
+      "schema": "AnchoredTextExtractedEntry",
+      "at": [ "properties", "pdfClass" ],
+      "merged": {
+        "type": "string",
+        "enum": [ "A", "B", "C", "D", "E", "F", "G" ]
+      }
+    },
+    {
       "schema": "Annotation",
       "at": [ "properties", "body" ],
       "merged": {
@@ -10,6 +49,34 @@
           {
             "type": "array",
             "items": { "$ref": "./AnnotationBody.json" },
+            "minItems": 1
+          }
+        ]
+      }
+    },
+    {
+      "schema": "Annotation",
+      "at": [ "properties", "generator" ],
+      "merged": {
+        "oneOf": [
+          { "$ref": "./Agent.json" },
+          {
+            "type": "array",
+            "items": { "$ref": "./Agent.json" },
+            "minItems": 1
+          }
+        ]
+      }
+    },
+    {
+      "schema": "Annotation",
+      "at": [ "properties", "wasAttributedTo" ],
+      "merged": {
+        "oneOf": [
+          { "$ref": "./Agent.json" },
+          {
+            "type": "array",
+            "items": { "$ref": "./Agent.json" },
             "minItems": 1
           }
         ]
@@ -29,6 +96,16 @@
       "schema": "AnnotationTarget",
       "at": [ "properties", "source" ],
       "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "ArchivistConfig",
+      "at": [ "properties", "identity" ],
+      "merged": {
+        "type": "object",
+        "properties": { "issuer": { "type": "string", "minLength": 1 } },
+        "required": [ "issuer" ],
+        "additionalProperties": false
+      }
     },
     {
       "schema": "AttributedEvent",
@@ -173,6 +250,16 @@
       "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
     },
     {
+      "schema": "DispatcherConfig",
+      "at": [ "properties", "identity" ],
+      "merged": {
+        "type": "object",
+        "properties": { "issuer": { "type": "string", "minLength": 1 } },
+        "required": [ "issuer" ],
+        "additionalProperties": false
+      }
+    },
+    {
       "schema": "EnrichedResourceEvent",
       "at": [],
       "merged": {
@@ -207,16 +294,7 @@
           "body": { "allOf": [ { "$ref": "./AnnotationBodies.json" } ] },
           "created": { "type": "string", "format": "date-time" },
           "creator": { "$ref": "./Agent.json" },
-          "generator": {
-            "oneOf": [
-              { "$ref": "./Agent.json" },
-              {
-                "type": "array",
-                "items": { "$ref": "./Agent.json" },
-                "minItems": 1
-              }
-            ]
-          },
+          "generator": { "allOf": [ { "$ref": "./OneOrMoreAgents.json" } ] },
           "id": { "$ref": "./AnnotationId.json" },
           "modified": { "type": "string", "format": "date-time" },
           "motivation": { "$ref": "./Motivation.json" },
@@ -228,14 +306,7 @@
           },
           "type": { "type": "string", "enum": [ "Annotation" ] },
           "wasAttributedTo": {
-            "oneOf": [
-              { "$ref": "./Agent.json" },
-              {
-                "type": "array",
-                "items": { "$ref": "./Agent.json" },
-                "minItems": 1
-              }
-            ]
+            "allOf": [ { "$ref": "./OneOrMoreAgents.json" } ]
           }
         },
         "required": [
@@ -254,29 +325,54 @@
             "items": { "$ref": "./PdfTextItem.json" }
           },
           "kind": { "type": "string", "enum": [ "extracted" ] },
-          "method": {
-            "type": "string",
-            "enum": [
-              "text-passthrough", "pdf-text-layer", "table", "form", "ocr"
-            ]
-          },
+          "method": { "allOf": [ { "$ref": "./ExtractionMethod.json" } ] },
           "ocrConfidence": {
-            "type": "object",
-            "properties": {
-              "lowConfidenceWords": { "type": "integer" },
-              "mean": { "type": "number" },
-              "totalWords": { "type": "integer" }
-            },
-            "required": [ "mean", "lowConfidenceWords", "totalWords" ]
+            "allOf": [ { "$ref": "./OcrConfidence.json" } ]
           },
-          "pdfClass": {
-            "type": "string",
-            "enum": [ "A", "B", "C", "D", "E", "F", "G" ]
-          },
+          "pdfClass": { "allOf": [ { "$ref": "./PdfClass.json" } ] },
           "text": { "type": "string" },
           "unreadPages": { "type": "array", "items": { "type": "integer" } }
         },
         "required": [ "text", "items", "kind", "method" ]
+      }
+    },
+    {
+      "schema": "ExtractedText",
+      "at": [ "allOf", "1", "properties", "method" ],
+      "merged": {
+        "type": "string",
+        "enum": [
+          "text-passthrough", "pdf-text-layer", "table", "form", "ocr"
+        ]
+      }
+    },
+    {
+      "schema": "ExtractedText",
+      "at": [ "allOf", "1", "properties", "ocrConfidence" ],
+      "merged": {
+        "type": "object",
+        "properties": {
+          "lowConfidenceWords": { "type": "integer" },
+          "mean": { "type": "number" },
+          "totalWords": { "type": "integer" }
+        },
+        "required": [ "mean", "lowConfidenceWords", "totalWords" ]
+      }
+    },
+    {
+      "schema": "ExtractedText",
+      "at": [ "allOf", "1", "properties", "pdfClass" ],
+      "merged": {
+        "type": "string",
+        "enum": [ "A", "B", "C", "D", "E", "F", "G" ]
+      }
+    },
+    {
+      "schema": "ExtractionDeclined",
+      "at": [ "properties", "declined" ],
+      "merged": {
+        "type": "string",
+        "enum": [ "no-text-layer", "encrypted", "corrupt", "too-large" ]
       }
     },
     {
@@ -293,6 +389,19 @@
       "schema": "FrameAddTagSchemaCommand",
       "at": [ "properties", "_userId" ],
       "merged": { "type": "string", "pattern": "^did:\\S+$" }
+    },
+    {
+      "schema": "GatewayConfig",
+      "at": [ "properties", "archivist" ],
+      "merged": {
+        "type": "object",
+        "properties": {
+          "host": { "type": "string", "minLength": 1 },
+          "port": { "type": "integer", "minimum": 1.0, "maximum": 65535.0 }
+        },
+        "required": [ "host", "port" ],
+        "additionalProperties": false
+      }
     },
     {
       "schema": "GatherAnnotationComplete",
@@ -600,16 +709,7 @@
           "body": { "allOf": [ { "$ref": "./AnnotationBodies.json" } ] },
           "created": { "type": "string", "format": "date-time" },
           "creator": { "$ref": "./Agent.json" },
-          "generator": {
-            "oneOf": [
-              { "$ref": "./Agent.json" },
-              {
-                "type": "array",
-                "items": { "$ref": "./Agent.json" },
-                "minItems": 1
-              }
-            ]
-          },
+          "generator": { "allOf": [ { "$ref": "./OneOrMoreAgents.json" } ] },
           "id": { "$ref": "./AnnotationId.json" },
           "modified": { "type": "string", "format": "date-time" },
           "motivation": { "$ref": "./Motivation.json" },
@@ -621,14 +721,7 @@
           },
           "type": { "type": "string", "enum": [ "Annotation" ] },
           "wasAttributedTo": {
-            "oneOf": [
-              { "$ref": "./Agent.json" },
-              {
-                "type": "array",
-                "items": { "$ref": "./Agent.json" },
-                "minItems": 1
-              }
-            ]
+            "allOf": [ { "$ref": "./OneOrMoreAgents.json" } ]
           }
         },
         "required": [
@@ -660,50 +753,19 @@
             ]
           },
           "@id": { "allOf": [ { "$ref": "./ResourceId.json" } ] },
-          "@type": {
-            "oneOf": [
-              { "type": "string" },
-              {
-                "type": "array",
-                "items": { "type": "string" },
-                "minItems": 1
-              }
-            ]
-          },
-          "about": {
-            "oneOf": [
-              { "type": "string" },
-              {
-                "type": "array",
-                "items": { "type": "string" },
-                "minItems": 1
-              }
-            ]
-          },
+          "@type": { "allOf": [ { "$ref": "./OneOrMoreStrings.json" } ] },
+          "about": { "allOf": [ { "$ref": "./OneOrMoreStrings.json" } ] },
           "archived": { "type": "boolean" },
           "availableFormats": {
             "type": "array",
             "items": { "type": "string" }
           },
-          "conformsTo": {
-            "oneOf": [
-              { "type": "string", "format": "uri" },
-              {
-                "type": "array",
-                "items": { "type": "string", "format": "uri" }
-              }
-            ]
-          },
+          "conformsTo": { "allOf": [ { "$ref": "./OneOrMoreUris.json" } ] },
           "dateCreated": { "type": "string", "format": "date-time" },
           "dateModified": { "type": "string", "format": "date-time" },
           "description": { "type": "string" },
           "entityTypes": { "type": "array", "items": { "type": "string" } },
-          "generator": {
-            "oneOf": [
-              { "$ref": "./Agent.json" },
-              { "type": "array", "items": { "$ref": "./Agent.json" } }
-            ]
-          },
+          "generator": { "allOf": [ { "$ref": "./OneOrMoreAgents.json" } ] },
           "hasPart": {
             "type": "array",
             "items": { "type": "string", "format": "uri" }
@@ -756,10 +818,7 @@
           },
           "version": { "type": "string" },
           "wasAttributedTo": {
-            "oneOf": [
-              { "$ref": "./Agent.json" },
-              { "type": "array", "items": { "$ref": "./Agent.json" } }
-            ]
+            "allOf": [ { "$ref": "./OneOrMoreAgents.json" } ]
           },
           "wasDerivedFrom": {
             "oneOf": [
@@ -796,50 +855,19 @@
             ]
           },
           "@id": { "allOf": [ { "$ref": "./ResourceId.json" } ] },
-          "@type": {
-            "oneOf": [
-              { "type": "string" },
-              {
-                "type": "array",
-                "items": { "type": "string" },
-                "minItems": 1
-              }
-            ]
-          },
-          "about": {
-            "oneOf": [
-              { "type": "string" },
-              {
-                "type": "array",
-                "items": { "type": "string" },
-                "minItems": 1
-              }
-            ]
-          },
+          "@type": { "allOf": [ { "$ref": "./OneOrMoreStrings.json" } ] },
+          "about": { "allOf": [ { "$ref": "./OneOrMoreStrings.json" } ] },
           "archived": { "type": "boolean" },
           "availableFormats": {
             "type": "array",
             "items": { "type": "string" }
           },
-          "conformsTo": {
-            "oneOf": [
-              { "type": "string", "format": "uri" },
-              {
-                "type": "array",
-                "items": { "type": "string", "format": "uri" }
-              }
-            ]
-          },
+          "conformsTo": { "allOf": [ { "$ref": "./OneOrMoreUris.json" } ] },
           "dateCreated": { "type": "string", "format": "date-time" },
           "dateModified": { "type": "string", "format": "date-time" },
           "description": { "type": "string" },
           "entityTypes": { "type": "array", "items": { "type": "string" } },
-          "generator": {
-            "oneOf": [
-              { "$ref": "./Agent.json" },
-              { "type": "array", "items": { "$ref": "./Agent.json" } }
-            ]
-          },
+          "generator": { "allOf": [ { "$ref": "./OneOrMoreAgents.json" } ] },
           "hasPart": {
             "type": "array",
             "items": { "type": "string", "format": "uri" }
@@ -892,10 +920,7 @@
           },
           "version": { "type": "string" },
           "wasAttributedTo": {
-            "oneOf": [
-              { "$ref": "./Agent.json" },
-              { "type": "array", "items": { "$ref": "./Agent.json" } }
-            ]
+            "allOf": [ { "$ref": "./OneOrMoreAgents.json" } ]
           },
           "wasDerivedFrom": {
             "oneOf": [
@@ -930,50 +955,19 @@
             ]
           },
           "@id": { "allOf": [ { "$ref": "./ResourceId.json" } ] },
-          "@type": {
-            "oneOf": [
-              { "type": "string" },
-              {
-                "type": "array",
-                "items": { "type": "string" },
-                "minItems": 1
-              }
-            ]
-          },
-          "about": {
-            "oneOf": [
-              { "type": "string" },
-              {
-                "type": "array",
-                "items": { "type": "string" },
-                "minItems": 1
-              }
-            ]
-          },
+          "@type": { "allOf": [ { "$ref": "./OneOrMoreStrings.json" } ] },
+          "about": { "allOf": [ { "$ref": "./OneOrMoreStrings.json" } ] },
           "archived": { "type": "boolean" },
           "availableFormats": {
             "type": "array",
             "items": { "type": "string" }
           },
-          "conformsTo": {
-            "oneOf": [
-              { "type": "string", "format": "uri" },
-              {
-                "type": "array",
-                "items": { "type": "string", "format": "uri" }
-              }
-            ]
-          },
+          "conformsTo": { "allOf": [ { "$ref": "./OneOrMoreUris.json" } ] },
           "dateCreated": { "type": "string", "format": "date-time" },
           "dateModified": { "type": "string", "format": "date-time" },
           "description": { "type": "string" },
           "entityTypes": { "type": "array", "items": { "type": "string" } },
-          "generator": {
-            "oneOf": [
-              { "$ref": "./Agent.json" },
-              { "type": "array", "items": { "$ref": "./Agent.json" } }
-            ]
-          },
+          "generator": { "allOf": [ { "$ref": "./OneOrMoreAgents.json" } ] },
           "hasPart": {
             "type": "array",
             "items": { "type": "string", "format": "uri" }
@@ -1026,10 +1020,7 @@
           },
           "version": { "type": "string" },
           "wasAttributedTo": {
-            "oneOf": [
-              { "$ref": "./Agent.json" },
-              { "type": "array", "items": { "$ref": "./Agent.json" } }
-            ]
+            "allOf": [ { "$ref": "./OneOrMoreAgents.json" } ]
           },
           "wasDerivedFrom": {
             "oneOf": [
@@ -1089,16 +1080,7 @@
           "body": { "allOf": [ { "$ref": "./AnnotationBodies.json" } ] },
           "created": { "type": "string", "format": "date-time" },
           "creator": { "$ref": "./Agent.json" },
-          "generator": {
-            "oneOf": [
-              { "$ref": "./Agent.json" },
-              {
-                "type": "array",
-                "items": { "$ref": "./Agent.json" },
-                "minItems": 1
-              }
-            ]
-          },
+          "generator": { "allOf": [ { "$ref": "./OneOrMoreAgents.json" } ] },
           "id": { "$ref": "./AnnotationId.json" },
           "modified": { "type": "string", "format": "date-time" },
           "motivation": { "$ref": "./Motivation.json" },
@@ -1110,14 +1092,7 @@
           },
           "type": { "type": "string", "enum": [ "Annotation" ] },
           "wasAttributedTo": {
-            "oneOf": [
-              { "$ref": "./Agent.json" },
-              {
-                "type": "array",
-                "items": { "$ref": "./Agent.json" },
-                "minItems": 1
-              }
-            ]
+            "allOf": [ { "$ref": "./OneOrMoreAgents.json" } ]
           }
         },
         "required": [
@@ -1147,50 +1122,19 @@
             ]
           },
           "@id": { "allOf": [ { "$ref": "./ResourceId.json" } ] },
-          "@type": {
-            "oneOf": [
-              { "type": "string" },
-              {
-                "type": "array",
-                "items": { "type": "string" },
-                "minItems": 1
-              }
-            ]
-          },
-          "about": {
-            "oneOf": [
-              { "type": "string" },
-              {
-                "type": "array",
-                "items": { "type": "string" },
-                "minItems": 1
-              }
-            ]
-          },
+          "@type": { "allOf": [ { "$ref": "./OneOrMoreStrings.json" } ] },
+          "about": { "allOf": [ { "$ref": "./OneOrMoreStrings.json" } ] },
           "archived": { "type": "boolean" },
           "availableFormats": {
             "type": "array",
             "items": { "type": "string" }
           },
-          "conformsTo": {
-            "oneOf": [
-              { "type": "string", "format": "uri" },
-              {
-                "type": "array",
-                "items": { "type": "string", "format": "uri" }
-              }
-            ]
-          },
+          "conformsTo": { "allOf": [ { "$ref": "./OneOrMoreUris.json" } ] },
           "dateCreated": { "type": "string", "format": "date-time" },
           "dateModified": { "type": "string", "format": "date-time" },
           "description": { "type": "string" },
           "entityTypes": { "type": "array", "items": { "type": "string" } },
-          "generator": {
-            "oneOf": [
-              { "$ref": "./Agent.json" },
-              { "type": "array", "items": { "$ref": "./Agent.json" } }
-            ]
-          },
+          "generator": { "allOf": [ { "$ref": "./OneOrMoreAgents.json" } ] },
           "hasPart": {
             "type": "array",
             "items": { "type": "string", "format": "uri" }
@@ -1243,10 +1187,7 @@
           },
           "version": { "type": "string" },
           "wasAttributedTo": {
-            "oneOf": [
-              { "$ref": "./Agent.json" },
-              { "type": "array", "items": { "$ref": "./Agent.json" } }
-            ]
+            "allOf": [ { "$ref": "./OneOrMoreAgents.json" } ]
           },
           "wasDerivedFrom": {
             "oneOf": [
@@ -1281,50 +1222,19 @@
             ]
           },
           "@id": { "allOf": [ { "$ref": "./ResourceId.json" } ] },
-          "@type": {
-            "oneOf": [
-              { "type": "string" },
-              {
-                "type": "array",
-                "items": { "type": "string" },
-                "minItems": 1
-              }
-            ]
-          },
-          "about": {
-            "oneOf": [
-              { "type": "string" },
-              {
-                "type": "array",
-                "items": { "type": "string" },
-                "minItems": 1
-              }
-            ]
-          },
+          "@type": { "allOf": [ { "$ref": "./OneOrMoreStrings.json" } ] },
+          "about": { "allOf": [ { "$ref": "./OneOrMoreStrings.json" } ] },
           "archived": { "type": "boolean" },
           "availableFormats": {
             "type": "array",
             "items": { "type": "string" }
           },
-          "conformsTo": {
-            "oneOf": [
-              { "type": "string", "format": "uri" },
-              {
-                "type": "array",
-                "items": { "type": "string", "format": "uri" }
-              }
-            ]
-          },
+          "conformsTo": { "allOf": [ { "$ref": "./OneOrMoreUris.json" } ] },
           "dateCreated": { "type": "string", "format": "date-time" },
           "dateModified": { "type": "string", "format": "date-time" },
           "description": { "type": "string" },
           "entityTypes": { "type": "array", "items": { "type": "string" } },
-          "generator": {
-            "oneOf": [
-              { "$ref": "./Agent.json" },
-              { "type": "array", "items": { "$ref": "./Agent.json" } }
-            ]
-          },
+          "generator": { "allOf": [ { "$ref": "./OneOrMoreAgents.json" } ] },
           "hasPart": {
             "type": "array",
             "items": { "type": "string", "format": "uri" }
@@ -1377,10 +1287,7 @@
           },
           "version": { "type": "string" },
           "wasAttributedTo": {
-            "oneOf": [
-              { "$ref": "./Agent.json" },
-              { "type": "array", "items": { "$ref": "./Agent.json" } }
-            ]
+            "allOf": [ { "$ref": "./OneOrMoreAgents.json" } ]
           },
           "wasDerivedFrom": {
             "oneOf": [
@@ -1415,50 +1322,19 @@
             ]
           },
           "@id": { "allOf": [ { "$ref": "./ResourceId.json" } ] },
-          "@type": {
-            "oneOf": [
-              { "type": "string" },
-              {
-                "type": "array",
-                "items": { "type": "string" },
-                "minItems": 1
-              }
-            ]
-          },
-          "about": {
-            "oneOf": [
-              { "type": "string" },
-              {
-                "type": "array",
-                "items": { "type": "string" },
-                "minItems": 1
-              }
-            ]
-          },
+          "@type": { "allOf": [ { "$ref": "./OneOrMoreStrings.json" } ] },
+          "about": { "allOf": [ { "$ref": "./OneOrMoreStrings.json" } ] },
           "archived": { "type": "boolean" },
           "availableFormats": {
             "type": "array",
             "items": { "type": "string" }
           },
-          "conformsTo": {
-            "oneOf": [
-              { "type": "string", "format": "uri" },
-              {
-                "type": "array",
-                "items": { "type": "string", "format": "uri" }
-              }
-            ]
-          },
+          "conformsTo": { "allOf": [ { "$ref": "./OneOrMoreUris.json" } ] },
           "dateCreated": { "type": "string", "format": "date-time" },
           "dateModified": { "type": "string", "format": "date-time" },
           "description": { "type": "string" },
           "entityTypes": { "type": "array", "items": { "type": "string" } },
-          "generator": {
-            "oneOf": [
-              { "$ref": "./Agent.json" },
-              { "type": "array", "items": { "$ref": "./Agent.json" } }
-            ]
-          },
+          "generator": { "allOf": [ { "$ref": "./OneOrMoreAgents.json" } ] },
           "hasPart": {
             "type": "array",
             "items": { "type": "string", "format": "uri" }
@@ -1511,10 +1387,7 @@
           },
           "version": { "type": "string" },
           "wasAttributedTo": {
-            "oneOf": [
-              { "$ref": "./Agent.json" },
-              { "type": "array", "items": { "$ref": "./Agent.json" } }
-            ]
+            "allOf": [ { "$ref": "./OneOrMoreAgents.json" } ]
           },
           "wasDerivedFrom": {
             "oneOf": [
@@ -1540,16 +1413,7 @@
           "body": { "allOf": [ { "$ref": "./AnnotationBodies.json" } ] },
           "created": { "type": "string", "format": "date-time" },
           "creator": { "$ref": "./Agent.json" },
-          "generator": {
-            "oneOf": [
-              { "$ref": "./Agent.json" },
-              {
-                "type": "array",
-                "items": { "$ref": "./Agent.json" },
-                "minItems": 1
-              }
-            ]
-          },
+          "generator": { "allOf": [ { "$ref": "./OneOrMoreAgents.json" } ] },
           "id": { "$ref": "./AnnotationId.json" },
           "modified": { "type": "string", "format": "date-time" },
           "motivation": { "$ref": "./Motivation.json" },
@@ -1561,14 +1425,7 @@
           },
           "type": { "type": "string", "enum": [ "Annotation" ] },
           "wasAttributedTo": {
-            "oneOf": [
-              { "$ref": "./Agent.json" },
-              {
-                "type": "array",
-                "items": { "$ref": "./Agent.json" },
-                "minItems": 1
-              }
-            ]
+            "allOf": [ { "$ref": "./OneOrMoreAgents.json" } ]
           }
         },
         "required": [
@@ -1598,50 +1455,19 @@
             ]
           },
           "@id": { "allOf": [ { "$ref": "./ResourceId.json" } ] },
-          "@type": {
-            "oneOf": [
-              { "type": "string" },
-              {
-                "type": "array",
-                "items": { "type": "string" },
-                "minItems": 1
-              }
-            ]
-          },
-          "about": {
-            "oneOf": [
-              { "type": "string" },
-              {
-                "type": "array",
-                "items": { "type": "string" },
-                "minItems": 1
-              }
-            ]
-          },
+          "@type": { "allOf": [ { "$ref": "./OneOrMoreStrings.json" } ] },
+          "about": { "allOf": [ { "$ref": "./OneOrMoreStrings.json" } ] },
           "archived": { "type": "boolean" },
           "availableFormats": {
             "type": "array",
             "items": { "type": "string" }
           },
-          "conformsTo": {
-            "oneOf": [
-              { "type": "string", "format": "uri" },
-              {
-                "type": "array",
-                "items": { "type": "string", "format": "uri" }
-              }
-            ]
-          },
+          "conformsTo": { "allOf": [ { "$ref": "./OneOrMoreUris.json" } ] },
           "dateCreated": { "type": "string", "format": "date-time" },
           "dateModified": { "type": "string", "format": "date-time" },
           "description": { "type": "string" },
           "entityTypes": { "type": "array", "items": { "type": "string" } },
-          "generator": {
-            "oneOf": [
-              { "$ref": "./Agent.json" },
-              { "type": "array", "items": { "$ref": "./Agent.json" } }
-            ]
-          },
+          "generator": { "allOf": [ { "$ref": "./OneOrMoreAgents.json" } ] },
           "hasPart": {
             "type": "array",
             "items": { "type": "string", "format": "uri" }
@@ -1694,10 +1520,7 @@
           },
           "version": { "type": "string" },
           "wasAttributedTo": {
-            "oneOf": [
-              { "$ref": "./Agent.json" },
-              { "type": "array", "items": { "$ref": "./Agent.json" } }
-            ]
+            "allOf": [ { "$ref": "./OneOrMoreAgents.json" } ]
           },
           "wasDerivedFrom": {
             "oneOf": [
@@ -1732,50 +1555,19 @@
             ]
           },
           "@id": { "allOf": [ { "$ref": "./ResourceId.json" } ] },
-          "@type": {
-            "oneOf": [
-              { "type": "string" },
-              {
-                "type": "array",
-                "items": { "type": "string" },
-                "minItems": 1
-              }
-            ]
-          },
-          "about": {
-            "oneOf": [
-              { "type": "string" },
-              {
-                "type": "array",
-                "items": { "type": "string" },
-                "minItems": 1
-              }
-            ]
-          },
+          "@type": { "allOf": [ { "$ref": "./OneOrMoreStrings.json" } ] },
+          "about": { "allOf": [ { "$ref": "./OneOrMoreStrings.json" } ] },
           "archived": { "type": "boolean" },
           "availableFormats": {
             "type": "array",
             "items": { "type": "string" }
           },
-          "conformsTo": {
-            "oneOf": [
-              { "type": "string", "format": "uri" },
-              {
-                "type": "array",
-                "items": { "type": "string", "format": "uri" }
-              }
-            ]
-          },
+          "conformsTo": { "allOf": [ { "$ref": "./OneOrMoreUris.json" } ] },
           "dateCreated": { "type": "string", "format": "date-time" },
           "dateModified": { "type": "string", "format": "date-time" },
           "description": { "type": "string" },
           "entityTypes": { "type": "array", "items": { "type": "string" } },
-          "generator": {
-            "oneOf": [
-              { "$ref": "./Agent.json" },
-              { "type": "array", "items": { "$ref": "./Agent.json" } }
-            ]
-          },
+          "generator": { "allOf": [ { "$ref": "./OneOrMoreAgents.json" } ] },
           "hasPart": {
             "type": "array",
             "items": { "type": "string", "format": "uri" }
@@ -1828,10 +1620,7 @@
           },
           "version": { "type": "string" },
           "wasAttributedTo": {
-            "oneOf": [
-              { "$ref": "./Agent.json" },
-              { "type": "array", "items": { "$ref": "./Agent.json" } }
-            ]
+            "allOf": [ { "$ref": "./OneOrMoreAgents.json" } ]
           },
           "wasDerivedFrom": {
             "oneOf": [
@@ -1866,50 +1655,19 @@
             ]
           },
           "@id": { "allOf": [ { "$ref": "./ResourceId.json" } ] },
-          "@type": {
-            "oneOf": [
-              { "type": "string" },
-              {
-                "type": "array",
-                "items": { "type": "string" },
-                "minItems": 1
-              }
-            ]
-          },
-          "about": {
-            "oneOf": [
-              { "type": "string" },
-              {
-                "type": "array",
-                "items": { "type": "string" },
-                "minItems": 1
-              }
-            ]
-          },
+          "@type": { "allOf": [ { "$ref": "./OneOrMoreStrings.json" } ] },
+          "about": { "allOf": [ { "$ref": "./OneOrMoreStrings.json" } ] },
           "archived": { "type": "boolean" },
           "availableFormats": {
             "type": "array",
             "items": { "type": "string" }
           },
-          "conformsTo": {
-            "oneOf": [
-              { "type": "string", "format": "uri" },
-              {
-                "type": "array",
-                "items": { "type": "string", "format": "uri" }
-              }
-            ]
-          },
+          "conformsTo": { "allOf": [ { "$ref": "./OneOrMoreUris.json" } ] },
           "dateCreated": { "type": "string", "format": "date-time" },
           "dateModified": { "type": "string", "format": "date-time" },
           "description": { "type": "string" },
           "entityTypes": { "type": "array", "items": { "type": "string" } },
-          "generator": {
-            "oneOf": [
-              { "$ref": "./Agent.json" },
-              { "type": "array", "items": { "$ref": "./Agent.json" } }
-            ]
-          },
+          "generator": { "allOf": [ { "$ref": "./OneOrMoreAgents.json" } ] },
           "hasPart": {
             "type": "array",
             "items": { "type": "string", "format": "uri" }
@@ -1962,10 +1720,7 @@
           },
           "version": { "type": "string" },
           "wasAttributedTo": {
-            "oneOf": [
-              { "$ref": "./Agent.json" },
-              { "type": "array", "items": { "$ref": "./Agent.json" } }
-            ]
+            "allOf": [ { "$ref": "./OneOrMoreAgents.json" } ]
           },
           "wasDerivedFrom": {
             "oneOf": [
@@ -2161,50 +1916,19 @@
             ]
           },
           "@id": { "allOf": [ { "$ref": "./ResourceId.json" } ] },
-          "@type": {
-            "oneOf": [
-              { "type": "string" },
-              {
-                "type": "array",
-                "items": { "type": "string" },
-                "minItems": 1
-              }
-            ]
-          },
-          "about": {
-            "oneOf": [
-              { "type": "string" },
-              {
-                "type": "array",
-                "items": { "type": "string" },
-                "minItems": 1
-              }
-            ]
-          },
+          "@type": { "allOf": [ { "$ref": "./OneOrMoreStrings.json" } ] },
+          "about": { "allOf": [ { "$ref": "./OneOrMoreStrings.json" } ] },
           "archived": { "type": "boolean" },
           "availableFormats": {
             "type": "array",
             "items": { "type": "string" }
           },
-          "conformsTo": {
-            "oneOf": [
-              { "type": "string", "format": "uri" },
-              {
-                "type": "array",
-                "items": { "type": "string", "format": "uri" }
-              }
-            ]
-          },
+          "conformsTo": { "allOf": [ { "$ref": "./OneOrMoreUris.json" } ] },
           "dateCreated": { "type": "string", "format": "date-time" },
           "dateModified": { "type": "string", "format": "date-time" },
           "description": { "type": "string" },
           "entityTypes": { "type": "array", "items": { "type": "string" } },
-          "generator": {
-            "oneOf": [
-              { "$ref": "./Agent.json" },
-              { "type": "array", "items": { "$ref": "./Agent.json" } }
-            ]
-          },
+          "generator": { "allOf": [ { "$ref": "./OneOrMoreAgents.json" } ] },
           "hasPart": {
             "type": "array",
             "items": { "type": "string", "format": "uri" }
@@ -2257,10 +1981,7 @@
           },
           "version": { "type": "string" },
           "wasAttributedTo": {
-            "oneOf": [
-              { "$ref": "./Agent.json" },
-              { "type": "array", "items": { "$ref": "./Agent.json" } }
-            ]
+            "allOf": [ { "$ref": "./OneOrMoreAgents.json" } ]
           },
           "wasDerivedFrom": {
             "oneOf": [
@@ -2296,50 +2017,19 @@
             ]
           },
           "@id": { "allOf": [ { "$ref": "./ResourceId.json" } ] },
-          "@type": {
-            "oneOf": [
-              { "type": "string" },
-              {
-                "type": "array",
-                "items": { "type": "string" },
-                "minItems": 1
-              }
-            ]
-          },
-          "about": {
-            "oneOf": [
-              { "type": "string" },
-              {
-                "type": "array",
-                "items": { "type": "string" },
-                "minItems": 1
-              }
-            ]
-          },
+          "@type": { "allOf": [ { "$ref": "./OneOrMoreStrings.json" } ] },
+          "about": { "allOf": [ { "$ref": "./OneOrMoreStrings.json" } ] },
           "archived": { "type": "boolean" },
           "availableFormats": {
             "type": "array",
             "items": { "type": "string" }
           },
-          "conformsTo": {
-            "oneOf": [
-              { "type": "string", "format": "uri" },
-              {
-                "type": "array",
-                "items": { "type": "string", "format": "uri" }
-              }
-            ]
-          },
+          "conformsTo": { "allOf": [ { "$ref": "./OneOrMoreUris.json" } ] },
           "dateCreated": { "type": "string", "format": "date-time" },
           "dateModified": { "type": "string", "format": "date-time" },
           "description": { "type": "string" },
           "entityTypes": { "type": "array", "items": { "type": "string" } },
-          "generator": {
-            "oneOf": [
-              { "$ref": "./Agent.json" },
-              { "type": "array", "items": { "$ref": "./Agent.json" } }
-            ]
-          },
+          "generator": { "allOf": [ { "$ref": "./OneOrMoreAgents.json" } ] },
           "hasPart": {
             "type": "array",
             "items": { "type": "string", "format": "uri" }
@@ -2392,10 +2082,7 @@
           },
           "version": { "type": "string" },
           "wasAttributedTo": {
-            "oneOf": [
-              { "$ref": "./Agent.json" },
-              { "type": "array", "items": { "$ref": "./Agent.json" } }
-            ]
+            "allOf": [ { "$ref": "./OneOrMoreAgents.json" } ]
           },
           "wasDerivedFrom": {
             "oneOf": [
@@ -2635,6 +2322,29 @@
           "lastRead": { "allOf": [ { "$ref": "./KbRead.json" } ] }
         },
         "required": [ "id", "label", "endpoint", "did" ]
+      }
+    },
+    {
+      "schema": "LibrarianConfig",
+      "at": [ "properties", "archivist" ],
+      "merged": {
+        "type": "object",
+        "properties": {
+          "host": { "type": "string", "minLength": 1 },
+          "port": { "type": "integer", "minimum": 1.0, "maximum": 65535.0 }
+        },
+        "required": [ "host", "port" ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "schema": "LibrarianConfig",
+      "at": [ "properties", "identity" ],
+      "merged": {
+        "type": "object",
+        "properties": { "issuer": { "type": "string", "minLength": 1 } },
+        "required": [ "issuer" ],
+        "additionalProperties": false
       }
     },
     {
@@ -2967,6 +2677,30 @@
       "merged": { "type": "string", "pattern": "^did:\\S+$" }
     },
     {
+      "schema": "Representation",
+      "at": [ "properties", "@type" ],
+      "merged": {
+        "oneOf": [
+          { "type": "string" },
+          { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+        ]
+      }
+    },
+    {
+      "schema": "Representation",
+      "at": [ "properties", "conformsTo" ],
+      "merged": {
+        "oneOf": [
+          { "type": "string", "format": "uri" },
+          {
+            "type": "array",
+            "items": { "type": "string", "format": "uri" },
+            "minItems": 1
+          }
+        ]
+      }
+    },
+    {
       "schema": "RepresentationNotFound",
       "at": [],
       "merged": {
@@ -2994,14 +2728,90 @@
       }
     },
     {
+      "schema": "ResourceClonedPayload",
+      "at": [ "properties", "wasAttributedTo" ],
+      "merged": {
+        "oneOf": [
+          { "$ref": "./Agent.json" },
+          {
+            "type": "array",
+            "items": { "$ref": "./Agent.json" },
+            "minItems": 1
+          }
+        ]
+      }
+    },
+    {
       "schema": "ResourceCreatedPayload",
       "at": [ "properties", "jobId" ],
       "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
     },
     {
+      "schema": "ResourceCreatedPayload",
+      "at": [ "properties", "wasAttributedTo" ],
+      "merged": {
+        "oneOf": [
+          { "$ref": "./Agent.json" },
+          {
+            "type": "array",
+            "items": { "$ref": "./Agent.json" },
+            "minItems": 1
+          }
+        ]
+      }
+    },
+    {
       "schema": "ResourceDescriptor",
       "at": [ "properties", "@id" ],
       "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "ResourceDescriptor",
+      "at": [ "properties", "@type" ],
+      "merged": {
+        "oneOf": [
+          { "type": "string" },
+          { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+        ]
+      }
+    },
+    {
+      "schema": "ResourceDescriptor",
+      "at": [ "properties", "about" ],
+      "merged": {
+        "oneOf": [
+          { "type": "string" },
+          { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+        ]
+      }
+    },
+    {
+      "schema": "ResourceDescriptor",
+      "at": [ "properties", "conformsTo" ],
+      "merged": {
+        "oneOf": [
+          { "type": "string", "format": "uri" },
+          {
+            "type": "array",
+            "items": { "type": "string", "format": "uri" },
+            "minItems": 1
+          }
+        ]
+      }
+    },
+    {
+      "schema": "ResourceDescriptor",
+      "at": [ "properties", "generator" ],
+      "merged": {
+        "oneOf": [
+          { "$ref": "./Agent.json" },
+          {
+            "type": "array",
+            "items": { "$ref": "./Agent.json" },
+            "minItems": 1
+          }
+        ]
+      }
     },
     {
       "schema": "ResourceDescriptor",
@@ -3012,6 +2822,20 @@
       "schema": "ResourceDescriptor",
       "at": [ "properties", "sourceResourceId" ],
       "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "ResourceDescriptor",
+      "at": [ "properties", "wasAttributedTo" ],
+      "merged": {
+        "oneOf": [
+          { "$ref": "./Agent.json" },
+          {
+            "type": "array",
+            "items": { "$ref": "./Agent.json" },
+            "minItems": 1
+          }
+        ]
+      }
     },
     {
       "schema": "ResourceErrorEvent",
@@ -3070,50 +2894,19 @@
             ]
           },
           "@id": { "allOf": [ { "$ref": "./ResourceId.json" } ] },
-          "@type": {
-            "oneOf": [
-              { "type": "string" },
-              {
-                "type": "array",
-                "items": { "type": "string" },
-                "minItems": 1
-              }
-            ]
-          },
-          "about": {
-            "oneOf": [
-              { "type": "string" },
-              {
-                "type": "array",
-                "items": { "type": "string" },
-                "minItems": 1
-              }
-            ]
-          },
+          "@type": { "allOf": [ { "$ref": "./OneOrMoreStrings.json" } ] },
+          "about": { "allOf": [ { "$ref": "./OneOrMoreStrings.json" } ] },
           "archived": { "type": "boolean" },
           "availableFormats": {
             "type": "array",
             "items": { "type": "string" }
           },
-          "conformsTo": {
-            "oneOf": [
-              { "type": "string", "format": "uri" },
-              {
-                "type": "array",
-                "items": { "type": "string", "format": "uri" }
-              }
-            ]
-          },
+          "conformsTo": { "allOf": [ { "$ref": "./OneOrMoreUris.json" } ] },
           "dateCreated": { "type": "string", "format": "date-time" },
           "dateModified": { "type": "string", "format": "date-time" },
           "description": { "type": "string" },
           "entityTypes": { "type": "array", "items": { "type": "string" } },
-          "generator": {
-            "oneOf": [
-              { "$ref": "./Agent.json" },
-              { "type": "array", "items": { "$ref": "./Agent.json" } }
-            ]
-          },
+          "generator": { "allOf": [ { "$ref": "./OneOrMoreAgents.json" } ] },
           "hasPart": {
             "type": "array",
             "items": { "type": "string", "format": "uri" }
@@ -3168,10 +2961,7 @@
           },
           "version": { "type": "string" },
           "wasAttributedTo": {
-            "oneOf": [
-              { "$ref": "./Agent.json" },
-              { "type": "array", "items": { "$ref": "./Agent.json" } }
-            ]
+            "allOf": [ { "$ref": "./OneOrMoreAgents.json" } ]
           },
           "wasDerivedFrom": {
             "oneOf": [
@@ -3292,6 +3082,29 @@
       "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
     },
     {
+      "schema": "SmelterConfig",
+      "at": [ "properties", "archivist" ],
+      "merged": {
+        "type": "object",
+        "properties": {
+          "host": { "type": "string", "minLength": 1 },
+          "port": { "type": "integer", "minimum": 1.0, "maximum": 65535.0 }
+        },
+        "required": [ "host", "port" ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "schema": "SmelterConfig",
+      "at": [ "properties", "identity" ],
+      "merged": {
+        "type": "object",
+        "properties": { "issuer": { "type": "string", "minLength": 1 } },
+        "required": [ "issuer" ],
+        "additionalProperties": false
+      }
+    },
+    {
       "schema": "SpecificResource",
       "at": [ "properties", "purpose" ],
       "merged": {
@@ -3386,6 +3199,29 @@
       "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
     },
     {
+      "schema": "WeaverConfig",
+      "at": [ "properties", "archivist" ],
+      "merged": {
+        "type": "object",
+        "properties": {
+          "host": { "type": "string", "minLength": 1 },
+          "port": { "type": "integer", "minimum": 1.0, "maximum": 65535.0 }
+        },
+        "required": [ "host", "port" ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "schema": "WeaverConfig",
+      "at": [ "properties", "identity" ],
+      "merged": {
+        "type": "object",
+        "properties": { "issuer": { "type": "string", "minLength": 1 } },
+        "required": [ "issuer" ],
+        "additionalProperties": false
+      }
+    },
+    {
       "schema": "YieldCloneCreateCommand",
       "at": [ "properties", "_userId" ],
       "merged": { "type": "string", "pattern": "^did:\\S+$" }
@@ -3401,14 +3237,46 @@
       "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
     },
     {
+      "schema": "YieldClonePersistOk",
+      "at": [ "properties", "response" ],
+      "merged": {
+        "type": "object",
+        "properties": { "resourceId": { "$ref": "./ResourceId.json" } },
+        "required": [ "resourceId" ]
+      }
+    },
+    {
       "schema": "YieldCreateCommand",
       "at": [ "properties", "_userId" ],
       "merged": { "type": "string", "pattern": "^did:\\S+$" }
     },
     {
       "schema": "YieldCreateCommand",
+      "at": [ "properties", "generator" ],
+      "merged": {
+        "oneOf": [
+          { "$ref": "./Agent.json" },
+          {
+            "type": "array",
+            "items": { "$ref": "./Agent.json" },
+            "minItems": 1
+          }
+        ]
+      }
+    },
+    {
+      "schema": "YieldCreateCommand",
       "at": [ "properties", "jobId" ],
       "merged": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,128}$" }
+    },
+    {
+      "schema": "YieldCreateOk",
+      "at": [ "properties", "response" ],
+      "merged": {
+        "type": "object",
+        "properties": { "resourceId": { "$ref": "./ResourceId.json" } },
+        "required": [ "resourceId" ]
+      }
     },
     {
       "schema": "YieldJobCompleteCommand",
@@ -3444,6 +3312,15 @@
       "schema": "YieldUpdateCommand",
       "at": [ "properties", "_userId" ],
       "merged": { "type": "string", "pattern": "^did:\\S+$" }
+    },
+    {
+      "schema": "YieldUpdateOk",
+      "at": [ "properties", "response" ],
+      "merged": {
+        "type": "object",
+        "properties": { "resourceId": { "$ref": "./ResourceId.json" } },
+        "required": [ "resourceId" ]
+      }
     }
   ]
 }

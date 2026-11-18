@@ -8,5 +8,5 @@ namespace Xynolog.Types;
 public sealed record AnnotationBodyUpdatedPayload
 {
     [global::Xynolog.Serialization.Wire("annotationId")] public required global::Xynolog.Identifiers.AnnotationId AnnotationId { get; init; }
-    [global::Xynolog.Serialization.Wire("operations")] public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.AnnotationBodyUpdatedPayloadOperationsItem> Operations { get; init; }
+    [global::Xynolog.Serialization.Wire("operations")] public required global::System.Collections.Generic.IReadOnlyList<global::Xynolog.Types.BodyOperation> Operations { get; init; }
 }

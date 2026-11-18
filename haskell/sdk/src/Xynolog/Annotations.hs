@@ -149,7 +149,7 @@ built wall resource motivation anchor target generator body = do
         body
         created
         Nothing
-        (AnnotationGeneratorBranch1 <$> generator)
+        (OneOrMoreAgentsBranch1 <$> generator)
         identity
         Nothing
         motivation

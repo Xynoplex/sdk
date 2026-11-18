@@ -20,11 +20,11 @@ public data class ExtractedText(
     @EncodeDefault
     public val kind: ExtractedTextKind = ExtractedTextKind.Extracted,
     /** How the text was extracted. */
-    public val method: ExtractedTextMethod,
+    public val method: ExtractionMethod,
     /** PDF classification, when the source was a PDF. */
-    public val pdfClass: ExtractedTextPdfClass? = null,
+    public val pdfClass: PdfClass? = null,
     /** How well the engine read the pixels, when any of this text came from OCR. */
-    public val ocrConfidence: ExtractedTextOcrConfidence? = null,
+    public val ocrConfidence: OcrConfidence? = null,
     /** 1-indexed pages this extraction could not read — present only for partially covered documents (class C). */
     public val unreadPages: kotlin.collections.List<Long>? = null,
 ) : AnchoredTextAnswer,
@@ -33,14 +33,14 @@ public data class ExtractedText(
     public class Builder internal constructor(
         private val text: String,
         private val items: kotlin.collections.List<PdfTextItem>,
-        private val method: ExtractedTextMethod,
+        private val method: ExtractionMethod,
     ) {
-        private var pdfClass: ExtractedTextPdfClass? = null
-        private var ocrConfidence: ExtractedTextOcrConfidence? = null
+        private var pdfClass: PdfClass? = null
+        private var ocrConfidence: OcrConfidence? = null
         private var unreadPages: kotlin.collections.List<Long>? = null
 
-        public fun pdfClass(pdfClass: ExtractedTextPdfClass?): Builder = apply { this.pdfClass = pdfClass }
-        public fun ocrConfidence(ocrConfidence: ExtractedTextOcrConfidence?): Builder = apply { this.ocrConfidence = ocrConfidence }
+        public fun pdfClass(pdfClass: PdfClass?): Builder = apply { this.pdfClass = pdfClass }
+        public fun ocrConfidence(ocrConfidence: OcrConfidence?): Builder = apply { this.ocrConfidence = ocrConfidence }
         public fun unreadPages(unreadPages: kotlin.collections.List<Long>?): Builder = apply { this.unreadPages = unreadPages }
 
         public fun build(): ExtractedText = ExtractedText(text = text, items = items, method = method, pdfClass = pdfClass, ocrConfidence = ocrConfidence, unreadPages = unreadPages)
@@ -49,6 +49,6 @@ public data class ExtractedText(
     public companion object {
         /** A builder of a `ExtractedText` that states these, and what its setters add. */
         @JvmStatic
-        public fun builder(text: String, items: kotlin.collections.List<PdfTextItem>, method: ExtractedTextMethod): Builder = Builder(text, items, method)
+        public fun builder(text: String, items: kotlin.collections.List<PdfTextItem>, method: ExtractionMethod): Builder = Builder(text, items, method)
     }
 }

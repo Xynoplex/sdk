@@ -2,15 +2,15 @@
 -- Regenerate: make generate (codegen/lib/haskell_sdk/haskell_sdk.ml)
 {-# LANGUAGE OverloadedStrings #-}
 
-module Xynolog.Internal.Generated.Models.YieldCreateOk (YieldCreateOk (..), YieldCreateOkResponse (..)) where
+module Xynolog.Internal.Generated.Models.YieldCreateOk (YieldCreateOk (..)) where
 
 import Data.Aeson (FromJSON (..), ToJSON (..), Value (..), withObject, (.:))
 import Data.Aeson.KeyMap qualified as KM
 import Xynolog.Internal.Codec
-import Xynolog.Internal.Generated.Models.ResourceId
+import Xynolog.Internal.Generated.Models.YieldedResource
 
 data YieldCreateOk = YieldCreateOk
-  { yieldCreateOkResponse :: YieldCreateOkResponse,
+  { yieldCreateOkResponse :: YieldedResource,
     yieldCreateOkAdditionalProperties :: KM.KeyMap Value
   }
   deriving (Eq, Show)
@@ -18,13 +18,3 @@ data YieldCreateOk = YieldCreateOk
 instance FromJSON YieldCreateOk where parseJSON = checked "YieldCreateOk" $ withObject "YieldCreateOk" (\fields -> YieldCreateOk <$> (fields .: "response") <*> traverse parseJSON (withoutFields ["response"] fields))
 
 instance ToJSON YieldCreateOk where toJSON value = Object (KM.fromList (concat [[("response", toJSON (yieldCreateOkResponse value))]]) <> fmap toJSON (withoutFields ["response"] (yieldCreateOkAdditionalProperties value)))
-
-data YieldCreateOkResponse = YieldCreateOkResponse
-  { yieldCreateOkResponseResourceId :: ResourceId,
-    yieldCreateOkResponseAdditionalProperties :: KM.KeyMap Value
-  }
-  deriving (Eq, Show)
-
-instance FromJSON YieldCreateOkResponse where parseJSON = checked "YieldCreateOkResponse" $ withObject "YieldCreateOkResponse" (\fields -> YieldCreateOkResponse <$> (fields .: "resourceId") <*> traverse parseJSON (withoutFields ["resourceId"] fields))
-
-instance ToJSON YieldCreateOkResponse where toJSON value = Object (KM.fromList (concat [[("resourceId", toJSON (yieldCreateOkResponseResourceId value))]]) <> fmap toJSON (withoutFields ["resourceId"] (yieldCreateOkResponseAdditionalProperties value)))

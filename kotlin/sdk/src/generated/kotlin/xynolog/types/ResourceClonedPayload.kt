@@ -24,7 +24,7 @@ public data class ResourceClonedPayload(
     public val language: String? = null,
     public val creator: Agent? = null,
     /** PROV-O wasAttributedTo, derived at write time: the cloner alone. The value the resource view carries. */
-    public val wasAttributedTo: ResourceClonedPayloadWasAttributedTo? = null,
+    public val wasAttributedTo: OneOrMoreAgents? = null,
 ) {
     /** How Java makes a `ResourceClonedPayload`: `builder` takes what it must state, a setter each thing it may, and `build` makes it. */
     public class Builder internal constructor(
@@ -38,14 +38,14 @@ public data class ResourceClonedPayload(
         private var entityTypes: kotlin.collections.List<String>? = null
         private var language: String? = null
         private var creator: Agent? = null
-        private var wasAttributedTo: ResourceClonedPayloadWasAttributedTo? = null
+        private var wasAttributedTo: OneOrMoreAgents? = null
 
         public fun contentByteSize(contentByteSize: Long?): Builder = apply { this.contentByteSize = contentByteSize }
         public fun storageUri(storageUri: String?): Builder = apply { this.storageUri = storageUri }
         public fun entityTypes(entityTypes: kotlin.collections.List<String>?): Builder = apply { this.entityTypes = entityTypes }
         public fun language(language: String?): Builder = apply { this.language = language }
         public fun creator(creator: Agent?): Builder = apply { this.creator = creator }
-        public fun wasAttributedTo(wasAttributedTo: ResourceClonedPayloadWasAttributedTo?): Builder = apply { this.wasAttributedTo = wasAttributedTo }
+        public fun wasAttributedTo(wasAttributedTo: OneOrMoreAgents?): Builder = apply { this.wasAttributedTo = wasAttributedTo }
 
         public fun build(): ResourceClonedPayload = ResourceClonedPayload(name = name, format = format, contentChecksum = contentChecksum, contentByteSize = contentByteSize, storageUri = storageUri, parentResourceId = parentResourceId, entityTypes = entityTypes, language = language, creator = creator, wasAttributedTo = wasAttributedTo)
     }

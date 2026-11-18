@@ -7,5 +7,5 @@ namespace Xynolog.Types;
 [global::Xynolog.Serialization.WireObject]
 public sealed record YieldCloneCreated
 {
-    [global::Xynolog.Serialization.Wire("response")] public required global::Xynolog.Types.YieldCloneCreatedResponse Response { get; init; }
+    [global::Xynolog.Serialization.Wire("response")] public required global::Xynolog.Types.YieldedResource Response { get; init; }
 }

@@ -16,7 +16,7 @@ public data class GatewayConfig(
     /** The issuer this knowledge base trusts. */
     public val identity: GatewayConfigIdentity,
     /** Where the Archivist listens. */
-    public val archivist: GatewayConfigArchivist,
+    public val archivist: ServiceAddress,
     /** The signal plane: `in-process`, one gateway on its own fabric; or `nats`, the fabric every replica on one broker shares, which requires `servers` and a broker with JetStream. */
     public val signal: GatewayConfigSignal,
     public val logLevel: LogLevel,
@@ -30,7 +30,7 @@ public data class GatewayConfig(
         private val port: Long,
         private val publicUrl: String,
         private val identity: GatewayConfigIdentity,
-        private val archivist: GatewayConfigArchivist,
+        private val archivist: ServiceAddress,
         private val signal: GatewayConfigSignal,
         private val logLevel: LogLevel,
         private val logFormat: LogFormat,
@@ -42,6 +42,6 @@ public data class GatewayConfig(
     public companion object {
         /** A builder of a `GatewayConfig` that states these, and what its setters add. */
         @JvmStatic
-        public fun builder(kb: KbIdentity, port: Long, publicUrl: String, identity: GatewayConfigIdentity, archivist: GatewayConfigArchivist, signal: GatewayConfigSignal, logLevel: LogLevel, logFormat: LogFormat, capacity: GatewayConfigCapacity): Builder = Builder(kb, port, publicUrl, identity, archivist, signal, logLevel, logFormat, capacity)
+        public fun builder(kb: KbIdentity, port: Long, publicUrl: String, identity: GatewayConfigIdentity, archivist: ServiceAddress, signal: GatewayConfigSignal, logLevel: LogLevel, logFormat: LogFormat, capacity: GatewayConfigCapacity): Builder = Builder(kb, port, publicUrl, identity, archivist, signal, logLevel, logFormat, capacity)
     }
 }

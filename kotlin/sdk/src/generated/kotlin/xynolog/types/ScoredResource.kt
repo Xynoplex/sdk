@@ -23,13 +23,13 @@ public data class ScoredResource(
     public val id: ResourceId,
     /** Type(s) of the resource (IRIs/CURIEs via @context). */
     @SerialName("@type")
-    public val type: ScoredResourceType? = null,
+    public val type: OneOrMoreStrings? = null,
     public val name: String,
     public val description: String? = null,
     /** Persistent identifiers (e.g., DOI, URN). */
     public val identifier: ScoredResourceIdentifier? = null,
     /** Topics (IRIs or strings). */
-    public val about: ScoredResourceAbout? = null,
+    public val about: OneOrMoreStrings? = null,
     /** Equivalent/authoritative references. */
     public val sameAs: kotlin.collections.List<String>? = null,
     public val isPartOf: kotlin.collections.List<String>? = null,
@@ -41,11 +41,11 @@ public data class ScoredResource(
     /** W3C PROV: the resource, or resources, this one was derived from, each by its id */
     public val wasDerivedFrom: ScoredResourceWasDerivedFrom? = null,
     /** W3C PROV — every party responsible for this resource, derived by the knowledge base at creation from verified identities: `[requester, generator]` for a resource a job produced, collapsed to the one agent when the requester produced it. Never accepted from an emitter. */
-    public val wasAttributedTo: ScoredResourceWasAttributedTo? = null,
+    public val wasAttributedTo: OneOrMoreAgents? = null,
     /** Software peer that produced this resource (W3C Web Annotation model). Its identity is the verified emitter of the create; the parameters are the producer's to state. */
-    public val generator: ScoredResourceGenerator? = null,
+    public val generator: OneOrMoreAgents? = null,
     /** Profile/shape URI this resource description conforms to. */
-    public val conformsTo: ScoredResourceConformsTo? = null,
+    public val conformsTo: OneOrMoreUris? = null,
     /** Convenience set summarizing media types across representations. */
     public val availableFormats: kotlin.collections.List<String>? = null,
     /** Managed or referenced byte-level renditions of this resource. */
@@ -76,10 +76,10 @@ public data class ScoredResource(
         private val name: String,
         private val representations: ScoredResourceRepresentations,
     ) {
-        private var type: ScoredResourceType? = null
+        private var type: OneOrMoreStrings? = null
         private var description: String? = null
         private var identifier: ScoredResourceIdentifier? = null
-        private var about: ScoredResourceAbout? = null
+        private var about: OneOrMoreStrings? = null
         private var sameAs: kotlin.collections.List<String>? = null
         private var isPartOf: kotlin.collections.List<String>? = null
         private var hasPart: kotlin.collections.List<String>? = null
@@ -88,9 +88,9 @@ public data class ScoredResource(
         private var dateCreated: String? = null
         private var dateModified: String? = null
         private var wasDerivedFrom: ScoredResourceWasDerivedFrom? = null
-        private var wasAttributedTo: ScoredResourceWasAttributedTo? = null
-        private var generator: ScoredResourceGenerator? = null
-        private var conformsTo: ScoredResourceConformsTo? = null
+        private var wasAttributedTo: OneOrMoreAgents? = null
+        private var generator: OneOrMoreAgents? = null
+        private var conformsTo: OneOrMoreUris? = null
         private var availableFormats: kotlin.collections.List<String>? = null
         private var archived: Boolean? = null
         private var entityTypes: kotlin.collections.List<String>? = null
@@ -101,10 +101,10 @@ public data class ScoredResource(
         private var score: Double? = null
         private var matchReason: String? = null
 
-        public fun type(type: ScoredResourceType?): Builder = apply { this.type = type }
+        public fun type(type: OneOrMoreStrings?): Builder = apply { this.type = type }
         public fun description(description: String?): Builder = apply { this.description = description }
         public fun identifier(identifier: ScoredResourceIdentifier?): Builder = apply { this.identifier = identifier }
-        public fun about(about: ScoredResourceAbout?): Builder = apply { this.about = about }
+        public fun about(about: OneOrMoreStrings?): Builder = apply { this.about = about }
         public fun sameAs(sameAs: kotlin.collections.List<String>?): Builder = apply { this.sameAs = sameAs }
         public fun isPartOf(isPartOf: kotlin.collections.List<String>?): Builder = apply { this.isPartOf = isPartOf }
         public fun hasPart(hasPart: kotlin.collections.List<String>?): Builder = apply { this.hasPart = hasPart }
@@ -113,9 +113,9 @@ public data class ScoredResource(
         public fun dateCreated(dateCreated: String?): Builder = apply { this.dateCreated = dateCreated }
         public fun dateModified(dateModified: String?): Builder = apply { this.dateModified = dateModified }
         public fun wasDerivedFrom(wasDerivedFrom: ScoredResourceWasDerivedFrom?): Builder = apply { this.wasDerivedFrom = wasDerivedFrom }
-        public fun wasAttributedTo(wasAttributedTo: ScoredResourceWasAttributedTo?): Builder = apply { this.wasAttributedTo = wasAttributedTo }
-        public fun generator(generator: ScoredResourceGenerator?): Builder = apply { this.generator = generator }
-        public fun conformsTo(conformsTo: ScoredResourceConformsTo?): Builder = apply { this.conformsTo = conformsTo }
+        public fun wasAttributedTo(wasAttributedTo: OneOrMoreAgents?): Builder = apply { this.wasAttributedTo = wasAttributedTo }
+        public fun generator(generator: OneOrMoreAgents?): Builder = apply { this.generator = generator }
+        public fun conformsTo(conformsTo: OneOrMoreUris?): Builder = apply { this.conformsTo = conformsTo }
         public fun availableFormats(availableFormats: kotlin.collections.List<String>?): Builder = apply { this.availableFormats = availableFormats }
         public fun archived(archived: Boolean?): Builder = apply { this.archived = archived }
         public fun entityTypes(entityTypes: kotlin.collections.List<String>?): Builder = apply { this.entityTypes = entityTypes }

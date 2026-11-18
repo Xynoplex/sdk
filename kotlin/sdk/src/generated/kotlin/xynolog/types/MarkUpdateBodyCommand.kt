@@ -23,13 +23,13 @@ public data class MarkUpdateBodyCommand(
     public val annotationId: AnnotationId,
     @get:JvmExposeBoxed
     public val resourceId: ResourceId,
-    public val operations: kotlin.collections.List<MarkUpdateBodyCommandOperationsItem>,
+    public val operations: kotlin.collections.List<BodyOperation>,
 ) {
     /** How Java makes a `MarkUpdateBodyCommand`: `builder` takes what it must state, a setter each thing it may, and `build` makes it. */
     public class Builder internal constructor(
         private val annotationId: AnnotationId,
         private val resourceId: ResourceId,
-        private val operations: kotlin.collections.List<MarkUpdateBodyCommandOperationsItem>,
+        private val operations: kotlin.collections.List<BodyOperation>,
     ) {
         private var userId: UserId? = null
 
@@ -43,6 +43,6 @@ public data class MarkUpdateBodyCommand(
         /** A builder of a `MarkUpdateBodyCommand` that states these, and what its setters add. */
         @JvmStatic
         @JvmExposeBoxed
-        public fun builder(annotationId: AnnotationId, resourceId: ResourceId, operations: kotlin.collections.List<MarkUpdateBodyCommandOperationsItem>): Builder = Builder(annotationId, resourceId, operations)
+        public fun builder(annotationId: AnnotationId, resourceId: ResourceId, operations: kotlin.collections.List<BodyOperation>): Builder = Builder(annotationId, resourceId, operations)
     }
 }

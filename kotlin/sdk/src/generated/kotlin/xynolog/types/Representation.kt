@@ -19,7 +19,7 @@ public data class Representation(
     public val id: String? = null,
     /** Type(s), e.g., schema:MediaObject. */
     @SerialName("@type")
-    public val type: RepresentationType? = null,
+    public val type: OneOrMoreStrings? = null,
     /** MIME/media type (e.g., text/markdown, image/png). */
     public val mediaType: String,
     /** Working-tree URI identifying where this rendition's bytes live. Only file:// is supported (e.g. file://docs/overview.md). The single home of the storage location: maintained across moves (yield:moved relocates it), absent when the resource has no stored bytes. */
@@ -42,7 +42,7 @@ public data class Representation(
     public val created: String? = null,
     public val modified: String? = null,
     /** Profile/shape the bytes conform to (e.g., a JSON profile or SVG profile). */
-    public val conformsTo: RepresentationConformsTo? = null,
+    public val conformsTo: OneOrMoreUris? = null,
     public val tags: kotlin.collections.List<String>? = null,
     /** Semantics of this rendition relative to the resource (e.g., original, thumbnail, preview, derived). */
     public val rel: RepresentationRel? = null,
@@ -56,7 +56,7 @@ public data class Representation(
         private val mediaType: String,
     ) {
         private var id: String? = null
-        private var type: RepresentationType? = null
+        private var type: OneOrMoreStrings? = null
         private var storageUri: String? = null
         private var filename: String? = null
         private var byteSize: Long? = null
@@ -68,13 +68,13 @@ public data class Representation(
         private var duration: Double? = null
         private var created: String? = null
         private var modified: String? = null
-        private var conformsTo: RepresentationConformsTo? = null
+        private var conformsTo: OneOrMoreUris? = null
         private var tags: kotlin.collections.List<String>? = null
         private var rel: RepresentationRel? = null
         private var rest: JsonObject = JsonObject(emptyMap())
 
         public fun id(id: String?): Builder = apply { this.id = id }
-        public fun type(type: RepresentationType?): Builder = apply { this.type = type }
+        public fun type(type: OneOrMoreStrings?): Builder = apply { this.type = type }
         public fun storageUri(storageUri: String?): Builder = apply { this.storageUri = storageUri }
         public fun filename(filename: String?): Builder = apply { this.filename = filename }
         public fun byteSize(byteSize: Long?): Builder = apply { this.byteSize = byteSize }
@@ -86,7 +86,7 @@ public data class Representation(
         public fun duration(duration: Double?): Builder = apply { this.duration = duration }
         public fun created(created: String?): Builder = apply { this.created = created }
         public fun modified(modified: String?): Builder = apply { this.modified = modified }
-        public fun conformsTo(conformsTo: RepresentationConformsTo?): Builder = apply { this.conformsTo = conformsTo }
+        public fun conformsTo(conformsTo: OneOrMoreUris?): Builder = apply { this.conformsTo = conformsTo }
         public fun tags(tags: kotlin.collections.List<String>?): Builder = apply { this.tags = tags }
         public fun rel(rel: RepresentationRel?): Builder = apply { this.rel = rel }
         public fun rest(rest: JsonObject): Builder = apply { this.rest = rest }

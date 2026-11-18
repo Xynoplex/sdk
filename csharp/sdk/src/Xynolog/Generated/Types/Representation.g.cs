@@ -8,10 +8,10 @@ namespace Xynolog.Types;
 public sealed record Representation
 {
     [global::Xynolog.Serialization.Wire("@id")] public string? Id { get; init; }
-    [global::Xynolog.Serialization.Wire("@type")] public global::Xynolog.Types.RepresentationType? Type { get; init; }
+    [global::Xynolog.Serialization.Wire("@type")] public global::Xynolog.Types.OneOrMoreStrings? Type { get; init; }
     [global::Xynolog.Serialization.Wire("byteSize")] public long? ByteSize { get; init; }
     [global::Xynolog.Serialization.Wire("checksum")] public string? Checksum { get; init; }
-    [global::Xynolog.Serialization.Wire("conformsTo")] public global::Xynolog.Types.RepresentationConformsTo? ConformsTo { get; init; }
+    [global::Xynolog.Serialization.Wire("conformsTo")] public global::Xynolog.Types.OneOrMoreUris? ConformsTo { get; init; }
     [global::Xynolog.Serialization.Wire("created")] public string? Created { get; init; }
     [global::Xynolog.Serialization.Wire("duration")] public double? Duration { get; init; }
     [global::Xynolog.Serialization.Wire("encoding")] public string? Encoding { get; init; }

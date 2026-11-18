@@ -16,5 +16,5 @@ public sealed record ResourceClonedPayload
     [global::Xynolog.Serialization.Wire("name")] public required string Name { get; init; }
     [global::Xynolog.Serialization.Wire("parentResourceId")] public required global::Xynolog.Identifiers.ResourceId ParentResourceId { get; init; }
     [global::Xynolog.Serialization.Wire("storageUri")] public string? StorageUri { get; init; }
-    [global::Xynolog.Serialization.Wire("wasAttributedTo")] public global::Xynolog.Types.ResourceClonedPayloadWasAttributedTo? WasAttributedTo { get; init; }
+    [global::Xynolog.Serialization.Wire("wasAttributedTo")] public global::Xynolog.Types.OneOrMoreAgents? WasAttributedTo { get; init; }
 }

@@ -8,7 +8,7 @@ namespace Xynolog.Types;
 public sealed record DispatcherConfig
 {
     [global::Xynolog.Serialization.Wire("gatewayUrl")] public required string GatewayUrl { get; init; }
-    [global::Xynolog.Serialization.Wire("identity")] public required global::Xynolog.Types.DispatcherConfigIdentity Identity { get; init; }
+    [global::Xynolog.Serialization.Wire("identity")] public required global::Xynolog.Types.ServiceIdentity Identity { get; init; }
     [global::Xynolog.Serialization.Wire("kb")] public required global::Xynolog.Types.KbIdentity Kb { get; init; }
     [global::Xynolog.Serialization.Wire("logFormat")] public required global::Xynolog.Types.LogFormat LogFormat { get; init; }
     [global::Xynolog.Serialization.Wire("logLevel")] public required global::Xynolog.Types.LogLevel LogLevel { get; init; }

@@ -8,7 +8,7 @@ const OWNER_ONLY_DIRECTORY_MODE: u32 = 0o700;
 const OWNER_ONLY_FILE_MODE: u32 = 0o600;
 /// The directory's access list on Windows, where a mode keeps nobody out, in SDDL, with `owner` where the SID of the user the writer runs as goes (its process token's user): full access for that user, the system and the administrators, and nobody else. It is handed down to everything made in the directory, and protected, so nothing is inherited from above.
 #[cfg(windows)]
-fn owner_only_access_list(owner: &str) -> String {
+fn owner_only_directory_access_list(owner: &str) -> String {
     [
         "D:PAI(A;OICI;FA;;;",
         owner,

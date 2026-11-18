@@ -12,11 +12,11 @@ import kotlinx.serialization.json.JsonIgnoreUnknownKeys
 @JsonIgnoreUnknownKeys
 public data class YieldUpdateOk(
     /** The updated resource's identity. */
-    public val response: YieldUpdateOkResponse,
+    public val response: YieldedResource,
 ) {
     /** How Java makes a `YieldUpdateOk`: `builder` takes what it must state, a setter each thing it may, and `build` makes it. */
     public class Builder internal constructor(
-        private val response: YieldUpdateOkResponse,
+        private val response: YieldedResource,
     ) {
         public fun build(): YieldUpdateOk = YieldUpdateOk(response = response)
     }
@@ -24,6 +24,6 @@ public data class YieldUpdateOk(
     public companion object {
         /** A builder of a `YieldUpdateOk` that states these, and what its setters add. */
         @JvmStatic
-        public fun builder(response: YieldUpdateOkResponse): Builder = Builder(response)
+        public fun builder(response: YieldedResource): Builder = Builder(response)
     }
 }

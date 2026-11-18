@@ -7,6 +7,6 @@ namespace Xynolog.Types;
 [global::Xynolog.Serialization.WireObject]
 public sealed record BodyOperationAdd
 {
-    [global::Xynolog.Serialization.Wire("item")] public required global::Xynolog.Types.BodyOperationAddItem Item { get; init; }
+    [global::Xynolog.Serialization.Wire("item")] public required global::Xynolog.Types.AnnotationBody Item { get; init; }
     [global::Xynolog.Serialization.Wire("op")] public string Op => "add";
 }
