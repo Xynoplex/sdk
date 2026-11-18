@@ -25,10 +25,9 @@ use xynolog::channels::BRIDGED_CHANNELS;
 use xynolog::client::{CachePersistence, ClientOptions};
 use xynolog::errors::{SessionError, SessionErrorCode, TransportError, TransportErrorCode};
 use xynolog::session::{
-    ACTIVE_KEY, Expected, KNOWLEDGE_BASES_KEY, KbIdentityConflict, KbReadVerdict, KbSessionStatus,
-    LAST_VIEWED_RESOURCE_BY_KB_KEY, MemorySignIn, OPEN_RESOURCES_BY_KB_KEY, OpenResource,
-    PermissionDenied, SessionEnded, SessionFactory, SessionFactoryOptions, SignInKept, SignedIn,
-    StoredSession, XynologBrowser, XynologBrowserConfig, XynologSession, XynologSessionConfig,
+    ACTIVE_KEY, KNOWLEDGE_BASES_KEY, LAST_VIEWED_RESOURCE_BY_KB_KEY, MemorySignIn,
+    OPEN_RESOURCES_BY_KB_KEY, OpenResource, SessionFactory, SessionFactoryOptions, SignInKept,
+    XynologBrowser, XynologBrowserConfig, XynologSession, XynologSessionConfig,
     load_knowledge_bases, person_key, save_knowledge_bases, session_key, store_session,
     stored_session,
 };
@@ -39,6 +38,11 @@ use xynolog::testing::{
 };
 use xynolog::timing::SAVE_DEBOUNCE;
 use xynolog::transport::{BoxFuture, ConnectionState, Events, Transport};
+use xynolog::types::{
+    Expected, KbIdentityConflict, KbReadVerdict, KbReadVerdictConflict, KbReadVerdictNoVerdict,
+    KbReadVerdictRecorded, KbSessionStatus, PermissionDenied, SessionEnded, SignedIn,
+    StoredSession,
+};
 use xynolog::types::{
     HttpEndpoint, HttpEndpointProtocol, KbEndpoint, KbRead, KnowledgeBase, NewKnowledgeBase,
     UserResponse,
@@ -1397,7 +1401,7 @@ async fn no_answer_and_a_refusal_to_say_are_no_verdict_and_void_nothing() {
         assert_eq!(world.factory.asked_about(A), ["a1"]);
         assert_eq!(
             browser.read_active_kb().await.expect("asked"),
-            KbReadVerdict::NoVerdict
+            KbReadVerdict::NoVerdict(KbReadVerdictNoVerdict::new())
         );
     }
 }
@@ -1489,7 +1493,7 @@ async fn asking_the_active_knowledge_base_again_records_what_it_says_now() {
         .describes(A, description("KB A", "example.org:kb-a", None));
     assert_eq!(
         browser.read_active_kb().await.expect("asked"),
-        KbReadVerdict::Recorded
+        KbReadVerdict::Recorded(KbReadVerdictRecorded::new())
     );
 
     assert_eq!(world.factory.asked_who(A), asked + 1);
@@ -1518,10 +1522,7 @@ async fn asking_again_reports_a_different_knowledge_base_and_acts_on_nothing() {
 
     assert_eq!(
         verdict,
-        KbReadVerdict::Conflict {
-            observed_did: DID_B.to_owned(),
-            observed_name: "KB B".to_owned(),
-        }
+        KbReadVerdict::Conflict(KbReadVerdictConflict::new(DID_B, "KB B"))
     );
     // Asking is not activating: nothing is voided, and nothing is raised.
     assert_eq!(open(&browser), ["a1"]);
@@ -1557,7 +1558,7 @@ async fn with_no_session_there_is_nothing_to_ask() {
     let browser = World::new().browser();
     assert_eq!(
         browser.read_active_kb().await.expect("asked"),
-        KbReadVerdict::NoVerdict
+        KbReadVerdict::NoVerdict(KbReadVerdictNoVerdict::new())
     );
 }
 

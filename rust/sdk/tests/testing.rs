@@ -15,9 +15,7 @@ use xynolog::bus::{Bus, operation};
 use xynolog::channels::BRIDGED_CHANNELS;
 use xynolog::client::{ClientOptions, ClientTiming};
 use xynolog::errors::{SessionError, SessionErrorCode, TransportError, XynologError};
-use xynolog::session::{
-    SessionFactory, SessionFactoryOptions, SessionSignals, StoredSession, store_session,
-};
+use xynolog::session::{SessionFactory, SessionFactoryOptions, SessionSignals, store_session};
 use xynolog::state_unit::StateUnit;
 use xynolog::storage::InMemorySessionStorage;
 use xynolog::testing::as_id;
@@ -27,6 +25,7 @@ use xynolog::testing::{
 };
 use xynolog::timing::ERRORS_KEPT_FOR_FIRST_READER_COUNT;
 use xynolog::transport::{ConnectionState, Content, Events, Failures, Transport};
+use xynolog::types::StoredSession;
 use xynolog::types::{
     AnchoredTextAnswer, GatherResourceRequestOptions, HttpEndpoint, HttpEndpointProtocol,
     KbEndpoint, KbTarget, KnowledgeBase, ResourceId, UserResponse,

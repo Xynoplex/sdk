@@ -22,8 +22,8 @@ use xynolog::errors::{
     SessionError, SessionErrorCode, SignInError, SignInErrorCode, TransportError, XynologError,
 };
 use xynolog::session::{
-    OpenedSession, SessionEndReason, SessionSignals, SignInKept, StoredSession, XynologSession,
-    XynologSessionConfig, kept_in, store_session, stored_session,
+    OpenedSession, SessionSignals, SignInKept, XynologSession, XynologSessionConfig, kept_in,
+    store_session, stored_session,
 };
 use xynolog::state_unit::StateUnit;
 use xynolog::testing::axioms::{
@@ -36,6 +36,7 @@ use xynolog::testing::{
 use xynolog::timing::{MAX_RECONNECT, RECONNECT};
 use xynolog::transport::{BoxFuture, Events};
 use xynolog::types::{HttpEndpointProtocol, KbTarget, UserResponse};
+use xynolog::types::{SessionEndReason, StoredSession};
 
 const KB: &str = "kb-alpha";
 

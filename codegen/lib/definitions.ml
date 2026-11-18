@@ -91,23 +91,43 @@ let in_place ~trail file =
 type referent = Named of string | In_place of string * Schema.t
 
 let referent ~named ~schemas (r : Decode.reference) =
-  let file, pointer = Decode.resolve r in
-  if pointer <> "" then
-    refuse
-      "$ref %s points into a file: protocol/specs/src refers to whole files"
-      r.target;
-  match named file with
+  let key = Table_records.key r in
+  match named key with
   | Some name -> Some (Named name)
   | None ->
-      Option.map (fun s -> In_place (file, s)) (Hashtbl.find_opt schemas file)
+      if snd (Decode.resolve r) <> "" then
+        refuse "$ref %s points into a file at a schema no table record is"
+          r.target;
+      Option.map (fun s -> In_place (key, s)) (Hashtbl.find_opt schemas key)
 
-(* The schema a [$ref] names, for [Normalize]: the file it names, from
-   [schemas]. *)
+(* The schema a [$ref] names, for [Normalize], from [schemas]. *)
 let schema_of ~schemas (r : Decode.reference) =
-  let file, pointer = Decode.resolve r in
-  match Hashtbl.find_opt schemas file with
-  | Some s when pointer = "" -> Ok s
-  | _ -> Error ("$ref " ^ r.target ^ " names no schema file")
+  match Hashtbl.find_opt schemas (Table_records.key r) with
+  | Some s -> Ok s
+  | None -> Error ("$ref " ^ r.target ^ " names no schema")
+
+(* What a client hands its callers that no wire message carries: each file of
+   protocol/specs/src/client/types, and the records of the registry and of the
+   state units' notices. *)
+let client_types = "client/types/"
+
+let records spec =
+  match Table_records.all spec with
+  | Ok records -> records
+  | Error message -> refuse "%s" message
+
+let client_roots (spec : Spec.t) =
+  List.filter
+    (String.starts_with ~prefix:client_types)
+    (List.map fst spec.schemas)
+  @ List.filter_map
+      (fun (key, _, _) ->
+        if
+          String.starts_with ~prefix:"client/registry.json#" key
+          || String.starts_with ~prefix:"client/state-units.json#" key
+        then Some key
+        else None)
+      (records spec)
 
 (* The view of a schema written in [file], each [$ref] it holds resolved by
    [named] or written in place from [schemas]. *)
@@ -194,7 +214,7 @@ let references ~named ~schemas =
     match s.ref_ with
     | Some r -> (
         match referent ~named ~schemas r with
-        | Some (Named _) -> [ fst (Decode.resolve r) ]
+        | Some (Named _) -> [ Table_records.key r ]
         | Some (In_place (file, target)) ->
             references target (in_place ~trail file)
         | None -> [])
@@ -220,24 +240,34 @@ type bundle = {
   bodies : string list;
       (** Every component schema a request or response body of the paths names.
       *)
+  client : string list;
+      (** Every client type ([client_roots]), and every schema only they reach,
+          by its name: in neither [definitions.names] nor any other writer's
+          output unless a writer roots them. *)
 }
 
 let bundle (spec : Spec.t) =
   let schemas = Hashtbl.create 1024 in
   List.iter (fun (file, s) -> Hashtbl.replace schemas file s) spec.schemas;
+  let records = records spec in
+  List.iter (fun (key, _, s) -> Hashtbl.replace schemas key s) records;
   let declared =
     List.map
       (fun (name, r) -> (fst (Decode.resolve r), name))
       spec.gateway.components.schemas
   in
-  (* A file is a schema by the name the document gives it, or by its own in a
-     directory of schemas. *)
-  let named file =
-    match List.assoc_opt file declared with
+  let titled = List.map (fun (key, name, _) -> (key, name)) records in
+  (* A schema is named by the name the document gives it, a table's record by
+     its title, and a file of a directory of schemas or of client types by its
+     own. *)
+  let named key =
+    match List.assoc_opt key (declared @ titled) with
     | Some name -> Some name
     | None ->
-        if Filename.basename (Filename.dirname file) = "schemas" then
-          Some (stem file)
+        if
+          Filename.basename (Filename.dirname key) = "schemas"
+          || String.starts_with ~prefix:client_types key
+        then Some (stem key)
         else None
   in
   let response file =
@@ -324,6 +354,8 @@ let bundle (spec : Spec.t) =
            (fun r -> response_schemas r @ header_schemas r)
            (component_responses @ List.concat_map item_responses items)
        @ List.concat_map header_schemas (List.concat_map item_responses items)));
+  let gateway = Hashtbl.copy reached in
+  List.iter reach (client_roots spec);
   let by_name = Hashtbl.create 512 in
   Hashtbl.iter
     (fun file () ->
@@ -345,15 +377,20 @@ let bundle (spec : Spec.t) =
             Hashtbl.replace views name v;
             v)
   in
-  let names =
-    List.sort String.compare (Hashtbl.fold (fun n _ acc -> n :: acc) by_name [])
+  let names_of keep =
+    List.sort String.compare
+      (Hashtbl.fold
+         (fun n file acc -> if keep file then n :: acc else acc)
+         by_name [])
   in
+  let names = names_of (Hashtbl.mem gateway) in
   {
     definitions = { names; schema };
     view = view ~named ~schemas;
     bodies =
       List.filter_map named (List.concat_map refs body_schemas)
       |> List.sort_uniq String.compare;
+    client = names_of (fun file -> not (Hashtbl.mem gateway file));
   }
 
 (* One schema file alone, as its own definitions: its [$ref]s are refused. *)

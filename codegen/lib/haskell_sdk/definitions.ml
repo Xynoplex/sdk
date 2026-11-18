@@ -120,24 +120,12 @@ let components (spec : Spec.t) =
 
 (* A table's record that a reference into the table names is named by its
    title. *)
-let titled (spec : Spec.t) (r : Decode.reference) =
-  let file, fragment = Decode.resolve r in
-  if fragment = "" then r.target
+let titled records (r : Decode.reference) =
+  if snd (Decode.resolve r) = "" then r.target
   else
-    let target =
-      match (file, String.split_on_char '/' fragment) with
-      | "client/registry.json", [ ""; "types"; name ] ->
-          List.assoc_opt name spec.tables.client_registry.types
-      | "session/stored.json", [ ""; "storedSession" ] ->
-          Some spec.tables.session_stored.stored_session
-      | "session/cases.json", [ ""; "told" ] ->
-          Some spec.tables.session_cases.told
-      | _ -> None
-    in
-    match target with
-    | Some (Schema { title = Some title; _ }) -> title ^ ".json"
-    | Some _ ->
-        raise (Unresolved ("reference to a schema with no title: " ^ r.target))
+    let key = Table_records.key r in
+    match List.find_opt (fun (k, _, _) -> k = key) records with
+    | Some (_, title, _) -> title ^ ".json"
     | None ->
         raise (Unresolved ("reference into a table not read: " ^ r.target))
 
@@ -225,9 +213,12 @@ let derive ~root (spec : Spec.t) ~adapters ~carrier ~http ~envelopes =
     then Error "an SDK-owned adapter and a record of the spec share a name"
     else Ok ()
   in
+  let* table_records = Table_records.all spec in
   let* records =
     match
-      List.map (fun (n, s) -> (n, canonical ~rewrite:(titled spec) s)) pointed
+      List.map
+        (fun (n, s) -> (n, canonical ~rewrite:(titled table_records) s))
+        pointed
     with
     | records -> Ok (records @ [ told ])
     | exception Unresolved message -> Error message

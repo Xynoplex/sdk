@@ -1966,6 +1966,18 @@ impl CommentingJobParamsTone {
     }
 }
 
+/// Who the knowledge base at an address says it is, asked with a token just issued, before any entry is made for it.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct ConnectionIdentity {
+    /// The did it reports for itself.
+    pub did: UserId,
+    /// What it says of itself.
+    pub description: KbDescription,
+}
+
+schema!(ConnectionIdentity);
+
 /// Content format as a MIME type, optionally with parameters. The base type (everything before the first ';') MUST be a SupportedMediaType; parameters such as charset are preserved as metadata. Semantic validation happens in code at the create/yield boundary — there is deliberately no pattern here, the vocabulary lives in SupportedMediaType. Examples: text/plain, text/plain; charset=iso-8859-1, text/markdown; charset=windows-1252, image/png, application/pdf
 pub type ContentFormat = String;
 
@@ -2413,6 +2425,29 @@ pub struct EventMetadata {
 }
 
 schema!(EventMetadata);
+
+/// What a person believed they were signing in to: the did and the name of the row they clicked, or of the entry they signed in to again.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct Expected {
+    /// The did they believed it has.
+    pub did: String,
+    /// The name they believed it has. Absent when they had none.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+}
+
+impl Expected {
+    /// The `Expected` that states these and nothing else.
+    pub fn new(did: impl Into<String>) -> Self {
+        Self {
+            did: did.into(),
+            name: None,
+        }
+    }
+}
+
+schema!(Expected);
 
 /// A successful extraction: the anchored text plus its provenance. The 'extracted' member of ExtractionOutcome, the record the anchored-text store holds.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -5745,6 +5780,20 @@ member!(KbEndpoint::HttpEndpoint(HttpEndpoint));
 member!(KbEndpoint::LocalEndpoint(LocalEndpoint));
 schema!(KbEndpoint);
 
+/// A different knowledge base answers at a registered address. Both dids, because neither alone says what to do: a person has to recognise which knowledge base they registered and which one answers.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct KbIdentityConflict {
+    /// The did the entry records.
+    #[serde(rename = "expectedDid")]
+    pub expected_did: String,
+    /// The did the knowledge base that answered reported.
+    #[serde(rename = "observedDid")]
+    pub observed_did: String,
+}
+
+schema!(KbIdentityConflict);
+
 /// When a knowledge base last described itself, and what it said beyond its name. A client shows it as current only while a session to the knowledge base is live, and as of `at` otherwise.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct KbRead {
@@ -5767,6 +5816,211 @@ impl KbRead {
 }
 
 schema!(KbRead);
+
+/// What reading the active knowledge base against its entry concluded.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum KbReadKind {
+    #[serde(rename = "recorded")]
+    Recorded,
+    #[serde(rename = "conflict")]
+    Conflict,
+    #[serde(rename = "no-verdict")]
+    NoVerdict,
+}
+
+impl KbReadKind {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            KbReadKind::Recorded => "recorded",
+            KbReadKind::Conflict => "conflict",
+            KbReadKind::NoVerdict => "no-verdict",
+        }
+    }
+}
+
+schema!(KbReadKind);
+
+/// What a knowledge base said when it was asked to describe itself, read against the entry it was asked as.
+#[derive(Debug, Clone, PartialEq, serde::Serialize)]
+#[serde(untagged)]
+pub enum KbReadVerdict {
+    Recorded(KbReadVerdictRecorded),
+    Conflict(KbReadVerdictConflict),
+    NoVerdict(KbReadVerdictNoVerdict),
+}
+
+impl<'de> serde::Deserialize<'de> for KbReadVerdict {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let value = <serde_json::Value as serde::Deserialize>::deserialize(deserializer)?;
+        let member = match value.get("kind").and_then(serde_json::Value::as_str) {
+            Some("recorded") => serde_json::from_value(value).map(KbReadVerdict::Recorded),
+            Some("conflict") => serde_json::from_value(value).map(KbReadVerdict::Conflict),
+            Some("no-verdict") => serde_json::from_value(value).map(KbReadVerdict::NoVerdict),
+            _ => {
+                return Err(serde::de::Error::custom(
+                    "a KbReadVerdict states a `kind` that is one of `recorded`, `conflict`, `no-verdict`",
+                ));
+            }
+        };
+        member.map_err(serde::de::Error::custom)
+    }
+}
+
+schema!(KbReadVerdict);
+
+/// A different knowledge base answered. Its did and the name it gave itself are here and nowhere else: the entry is as it was.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct KbReadVerdictConflict {
+    /// What reading the active knowledge base against its entry concluded.
+    pub kind: KbReadVerdictConflictKind,
+    /// The did the knowledge base that answered reported.
+    #[serde(rename = "observedDid")]
+    pub observed_did: String,
+    /// The name the knowledge base that answered gave itself.
+    #[serde(rename = "observedName")]
+    pub observed_name: String,
+}
+
+impl KbReadVerdictConflict {
+    /// The `KbReadVerdictConflict` that states these and nothing else.
+    pub fn new(observed_did: impl Into<String>, observed_name: impl Into<String>) -> Self {
+        Self {
+            kind: KbReadVerdictConflictKind::Conflict,
+            observed_did: observed_did.into(),
+            observed_name: observed_name.into(),
+        }
+    }
+}
+
+/// What reading the active knowledge base against its entry concluded.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum KbReadVerdictConflictKind {
+    #[serde(rename = "conflict")]
+    Conflict,
+}
+
+impl KbReadVerdictConflictKind {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            KbReadVerdictConflictKind::Conflict => "conflict",
+        }
+    }
+}
+
+/// It did not answer, or could not say who it is. Evidence of nothing.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct KbReadVerdictNoVerdict {
+    /// What reading the active knowledge base against its entry concluded.
+    pub kind: KbReadVerdictNoVerdictKind,
+}
+
+impl Default for KbReadVerdictNoVerdict {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl KbReadVerdictNoVerdict {
+    /// The `KbReadVerdictNoVerdict` that states what it must and nothing else.
+    pub fn new() -> Self {
+        Self {
+            kind: KbReadVerdictNoVerdictKind::NoVerdict,
+        }
+    }
+}
+
+/// What reading the active knowledge base against its entry concluded.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum KbReadVerdictNoVerdictKind {
+    #[serde(rename = "no-verdict")]
+    NoVerdict,
+}
+
+impl KbReadVerdictNoVerdictKind {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            KbReadVerdictNoVerdictKind::NoVerdict => "no-verdict",
+        }
+    }
+}
+
+/// It answered as that entry, and its name and branch are on the entry now.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct KbReadVerdictRecorded {
+    /// What reading the active knowledge base against its entry concluded.
+    pub kind: KbReadVerdictRecordedKind,
+}
+
+impl Default for KbReadVerdictRecorded {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl KbReadVerdictRecorded {
+    /// The `KbReadVerdictRecorded` that states what it must and nothing else.
+    pub fn new() -> Self {
+        Self {
+            kind: KbReadVerdictRecordedKind::Recorded,
+        }
+    }
+}
+
+/// What reading the active knowledge base against its entry concluded.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum KbReadVerdictRecordedKind {
+    #[serde(rename = "recorded")]
+    Recorded,
+}
+
+impl KbReadVerdictRecordedKind {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            KbReadVerdictRecordedKind::Recorded => "recorded",
+        }
+    }
+}
+
+/// What the credential stored for a knowledge base says, read without asking anyone: `authenticated`, a token is stored and has not expired; `expired`, a token is stored and has expired; `signed-out`, nothing is stored.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum KbSessionStatus {
+    #[serde(rename = "authenticated")]
+    Authenticated,
+    #[serde(rename = "expired")]
+    Expired,
+    #[serde(rename = "signed-out")]
+    SignedOut,
+}
+
+impl KbSessionStatus {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            KbSessionStatus::Authenticated => "authenticated",
+            KbSessionStatus::Expired => "expired",
+            KbSessionStatus::SignedOut => "signed-out",
+        }
+    }
+}
+
+schema!(KbSessionStatus);
 
 /// Where to connect to a knowledge base: an endpoint, and the labels a client keeps of it. It carries no identity: which knowledge base answers at an address is known only once it has been reached with a token and asked, so a target is what every caller can build before then, and a session's whole input. A client keeps it locally; it is never sent.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -7064,6 +7318,16 @@ pub struct PdfTextItem {
 
 schema!(PdfTextItem);
 
+/// A request was refused for lack of permission.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct PermissionDenied {
+    /// The refusal's own message, untranslated; null when it gave none.
+    pub detail: Option<String>,
+}
+
+schema!(PermissionDenied);
+
 /// Bus command saying what a principal is called. The gateway emits it when a principal ACTS, carrying the display name it just verified on its token; a principal may also emit it itself, for itself, which is how an agent, whose token carries no name, says what it is called. Either way the gateway stamps `_userId` with the sender's verified DID, so a principal names only itself. The Stower persists it as principal:profiled, and only when the name differs from the latest one recorded for that DID — so the log holds one line per name a principal has had, not one per act. A name is a fact ABOUT an identity, never part of the record of an act: no artifact carries it, and readers resolve it from the profiles projection. Emitted for a person and for an agent alike; never for a request that merely reads.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct PrincipalProfileCommand {
@@ -8021,6 +8285,39 @@ impl SemanticMatch {
 
 schema!(SemanticMatch);
 
+/// Why a session ended: `expired`, the issuer refused to renew its token; `refused`, the gateway refused a token its issuer had just issued.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum SessionEndReason {
+    #[serde(rename = "expired")]
+    Expired,
+    #[serde(rename = "refused")]
+    Refused,
+}
+
+impl SessionEndReason {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            SessionEndReason::Expired => "expired",
+            SessionEndReason::Refused => "refused",
+        }
+    }
+}
+
+schema!(SessionEndReason);
+
+/// A session ended, and why.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct SessionEnded {
+    /// Why it ended.
+    pub reason: SessionEndReason,
+}
+
+schema!(SessionEnded);
+
 /// A participant opened a live connection to this KB — an SSE stream on /bus/subscribe. Presence is CONNECTION lifecycle, not login: a token can be minted and sit unused, so what this reports is that someone is WATCHING. One person with two tabs produces two of these, which is why connectionId is required — the DID alone cannot tell two connections apart, and a consumer that counts DIDs will undercount viewers.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct SessionJoinedEvent {
@@ -8092,6 +8389,66 @@ impl SettingsThemeChangedEventTheme {
         }
     }
 }
+
+/// The entry a sign-in landed on, and what the person believed, so a host can set the two against each other and say when they differ. The sign-in stands either way: the knowledge base that answered is the one reached.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct SignInOutcome {
+    /// The entry the sign-in made or signed in to again.
+    pub kb: KnowledgeBase,
+    /// What the person believed they were signing in to. Absent when they named nothing.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub expected: Option<Expected>,
+}
+
+impl SignInOutcome {
+    /// The `SignInOutcome` that states these and nothing else.
+    pub fn new(kb: KnowledgeBase) -> Self {
+        Self { kb, expected: None }
+    }
+}
+
+schema!(SignInOutcome);
+
+/// What a completed sign-in learned, as a registry is handed it to record: where it was, who the knowledge base there says it is, the tokens, and what the person believed they were signing in to.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct SignedIn {
+    /// Where the sign-in was.
+    pub endpoint: KbEndpoint,
+    /// What the knowledge base said of itself, asked with the new token.
+    pub description: KbDescription,
+    /// The tokens, as a registry keeps them.
+    pub session: StoredSession,
+    /// The registered knowledge base the person signed in to again. Absent when it is none.
+    #[serde(rename = "kbId")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub kb_id: Option<String>,
+    /// The did of what the person believed they clicked. Absent when they named nothing.
+    #[serde(rename = "expectedDid")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub expected_did: Option<String>,
+    /// The name of what the person believed they clicked. Absent when they named nothing.
+    #[serde(rename = "expectedName")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub expected_name: Option<String>,
+}
+
+impl SignedIn {
+    /// The `SignedIn` that states these and nothing else.
+    pub fn new(endpoint: KbEndpoint, description: KbDescription, session: StoredSession) -> Self {
+        Self {
+            endpoint,
+            description,
+            session,
+            kb_id: None,
+            expected_did: None,
+            expected_name: None,
+        }
+    }
+}
+
+schema!(SignedIn);
 
 /// Bus command to rebuild anchored-text artifacts by re-running extraction — every geometry-capable resource when resourceId is absent, one resource when present. Served by the Smelter, serialized (each unit can be a multi-second OCR pass), and never destructive: nothing is deleted first, stale entries are simply overwritten. Re-anchoring makes zero embedding calls — the vectors are already correct; only the derived map is re-made. Partial completion replies failed, with counts: a rebuild that quietly skipped resources would present exactly like a document with no text.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
@@ -8320,6 +8677,50 @@ impl StoredEventResponse {
 }
 
 schema!(StoredEventResponse);
+
+/// What is kept of a sign-in: the tokens an issuer issued, the client they were issued to, and the issuer's endpoints a renewal and a sign-out need, learned once at sign-in so no session asks again. TOKENS, never a password. A stored value that lacks a member it requires is no session.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+pub struct StoredSession {
+    /// The access token: short-lived, sent as a Bearer token.
+    pub access: String,
+    /// The refresh token: what renews the access token at the issuer without another sign-in.
+    pub refresh: String,
+    /// The client the tokens were issued to, which a renewal and a revocation name.
+    #[serde(rename = "clientId")]
+    pub client_id: String,
+    /// The issuer's token endpoint, where the refresh grant is made.
+    #[serde(rename = "tokenEndpoint")]
+    pub token_endpoint: String,
+    /// The issuer's revocation endpoint (RFC 7009), where a sign-out tells it to forget the refresh token. Absent when the issuer has none.
+    #[serde(rename = "revocationEndpoint")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub revocation_endpoint: Option<String>,
+    /// Who the gateway said the sign-in's person is, as the key their caches and stream position are kept under (`lastEventIdKeyPrefix`), never the did itself. Written once the gateway names the person, on the sign-in whose token it was asked about; a renewal keeps it, a new sign-in starts without it, and forgetting the sign-in, however it is forgotten, reads it first to delete what is kept under it. Absent for a sign-in whose gateway has not yet named its person.
+    #[serde(rename = "personKey")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub person_key: Option<String>,
+}
+
+impl StoredSession {
+    /// The `StoredSession` that states these and nothing else.
+    pub fn new(
+        access: impl Into<String>,
+        refresh: impl Into<String>,
+        client_id: impl Into<String>,
+        token_endpoint: impl Into<String>,
+    ) -> Self {
+        Self {
+            access: access.into(),
+            refresh: refresh.into(),
+            client_id: client_id.into(),
+            token_endpoint: token_endpoint.into(),
+            revocation_endpoint: None,
+            person_key: None,
+        }
+    }
+}
+
+schema!(StoredSession);
 
 /// Base MIME types (no parameters) admitted by Xynolog. Membership is the create/yield gate — every member is storable, nameable, and uploadable. What more the system can do with a type (render, annotate, extract text, author) is curated per type in @xynolog/core's media-type registry, which is keyed by this enum.
 #[derive(
@@ -8562,6 +8963,185 @@ impl SvgSelectorType {
         }
     }
 }
+
+/// What checking one open resource against its knowledge base concluded. `gone` is the only verdict that closes it, and it means the knowledge base said the resource does not exist, not that the check failed: a failed transport, a timeout and a peer that is down are each `unknown`, and an unknown resource stays open.
+#[derive(Debug, Clone, PartialEq, serde::Serialize)]
+#[serde(untagged)]
+pub enum TabCheck {
+    Gone(TabCheckGone),
+    Ready(TabCheckReady),
+    Unknown(TabCheckUnknown),
+}
+
+impl<'de> serde::Deserialize<'de> for TabCheck {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let value = <serde_json::Value as serde::Deserialize>::deserialize(deserializer)?;
+        let member = match value.get("verdict").and_then(serde_json::Value::as_str) {
+            Some("gone") => serde_json::from_value(value).map(TabCheck::Gone),
+            Some("ready") => serde_json::from_value(value).map(TabCheck::Ready),
+            Some("unknown") => serde_json::from_value(value).map(TabCheck::Unknown),
+            _ => {
+                return Err(serde::de::Error::custom(
+                    "a TabCheck states a `verdict` that is one of `gone`, `ready`, `unknown`",
+                ));
+            }
+        };
+        member.map_err(serde::de::Error::custom)
+    }
+}
+
+schema!(TabCheck);
+
+/// The knowledge base said the resource does not exist.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct TabCheckGone {
+    /// What checking an open resource against its knowledge base concluded.
+    pub verdict: TabCheckGoneVerdict,
+}
+
+impl Default for TabCheckGone {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl TabCheckGone {
+    /// The `TabCheckGone` that states what it must and nothing else.
+    pub fn new() -> Self {
+        Self {
+            verdict: TabCheckGoneVerdict::Gone,
+        }
+    }
+}
+
+/// What checking an open resource against its knowledge base concluded.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum TabCheckGoneVerdict {
+    #[serde(rename = "gone")]
+    Gone,
+}
+
+impl TabCheckGoneVerdict {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            TabCheckGoneVerdict::Gone => "gone",
+        }
+    }
+}
+
+/// The knowledge base has the resource, and said what it is called now.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct TabCheckReady {
+    /// What checking an open resource against its knowledge base concluded.
+    pub verdict: TabCheckReadyVerdict,
+    /// The name the knowledge base gave the resource.
+    pub name: String,
+    /// The media type of its primary representation. Absent when it said none.
+    #[serde(rename = "mediaType")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub media_type: Option<String>,
+}
+
+impl TabCheckReady {
+    /// The `TabCheckReady` that states these and nothing else.
+    pub fn new(name: impl Into<String>) -> Self {
+        Self {
+            verdict: TabCheckReadyVerdict::Ready,
+            name: name.into(),
+            media_type: None,
+        }
+    }
+}
+
+/// What checking an open resource against its knowledge base concluded.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum TabCheckReadyVerdict {
+    #[serde(rename = "ready")]
+    Ready,
+}
+
+impl TabCheckReadyVerdict {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            TabCheckReadyVerdict::Ready => "ready",
+        }
+    }
+}
+
+/// The check found out nothing.
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct TabCheckUnknown {
+    /// What checking an open resource against its knowledge base concluded.
+    pub verdict: TabCheckUnknownVerdict,
+}
+
+impl Default for TabCheckUnknown {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl TabCheckUnknown {
+    /// The `TabCheckUnknown` that states what it must and nothing else.
+    pub fn new() -> Self {
+        Self {
+            verdict: TabCheckUnknownVerdict::Unknown,
+        }
+    }
+}
+
+/// What checking an open resource against its knowledge base concluded.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum TabCheckUnknownVerdict {
+    #[serde(rename = "unknown")]
+    Unknown,
+}
+
+impl TabCheckUnknownVerdict {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            TabCheckUnknownVerdict::Unknown => "unknown",
+        }
+    }
+}
+
+/// What checking an open resource against its knowledge base concluded.
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Deserialize, serde::Serialize,
+)]
+pub enum TabVerdict {
+    #[serde(rename = "gone")]
+    Gone,
+    #[serde(rename = "ready")]
+    Ready,
+    #[serde(rename = "unknown")]
+    Unknown,
+}
+
+impl TabVerdict {
+    /// The value as the wire spells it.
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            TabVerdict::Gone => "gone",
+            TabVerdict::Ready => "ready",
+            TabVerdict::Unknown => "unknown",
+        }
+    }
+}
+
+schema!(TabVerdict);
 
 /// A single category within a tag schema (e.g. 'Issue' in IRAC, 'distinguished' in legal-citation-treatment). Each category carries methodology-bound semantics: a name, a description, and examples used in the LLM prompt.
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]

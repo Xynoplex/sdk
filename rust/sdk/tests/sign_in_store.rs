@@ -13,8 +13,9 @@ use std::error::Error;
 use std::path::PathBuf;
 use std::sync::Arc;
 use xynolog::errors::{SignInError, SignInErrorCode};
-use xynolog::session::{SignInKept, StoredSession, person_key};
+use xynolog::session::{SignInKept, person_key};
 use xynolog::sign_in_store::{SignInStore, System, state_dir};
+use xynolog::types::StoredSession;
 
 // ── Where it is ─────────────────────────────────────────────────────────
 

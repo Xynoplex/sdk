@@ -39,9 +39,9 @@ use xynolog::event_bus::EventBus;
 use xynolog::identity::kb_did;
 use xynolog::refresh::CacheQuery;
 use xynolog::session::{
-    SessionFactory, SessionFactoryOptions, SessionSignals, StoredSession, XynologBrowser,
-    XynologBrowserConfig, XynologSession, XynologSessionConfig, cache_key, clear_stored_session,
-    kept_in, last_event_id_key, person_key, save_knowledge_bases, session_key, store_session,
+    SessionFactory, SessionFactoryOptions, SessionSignals, XynologBrowser, XynologBrowserConfig,
+    XynologSession, XynologSessionConfig, cache_key, clear_stored_session, kept_in,
+    last_event_id_key, person_key, save_knowledge_bases, session_key, store_session,
     stored_session,
 };
 use xynolog::state_unit::StateUnit;
@@ -51,6 +51,7 @@ use xynolog::transport::{
     BoxFuture, ConnectionState, Envelope, FailureListener, Failures, Frames, PendingReply,
     ResourceHold, Transport,
 };
+use xynolog::types::StoredSession;
 use xynolog::types::{
     HttpEndpoint, HttpEndpointProtocol, KbEndpoint, KnowledgeBase, LocalEndpoint,
     ResourceDescriptor, ResourceId,

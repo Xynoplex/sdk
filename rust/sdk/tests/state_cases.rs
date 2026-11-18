@@ -26,7 +26,7 @@ use tokio_stream::wrappers::UnboundedReceiverStream;
 use xynolog::channels::BRIDGED_CHANNELS;
 use xynolog::client::XynologClient;
 use xynolog::errors::XynologError;
-use xynolog::session::{KbIdentityConflict, SessionEndReason, SessionSignals};
+use xynolog::session::SessionSignals;
 use xynolog::state::{
     BeckonStateUnit, GatherStateUnit, HoverDwell, MarkStateUnit, MatchStateUnit, SearchPipeline,
     SearchPipelineOptions, YieldStateUnit,
@@ -39,6 +39,7 @@ use xynolog::transport::{Envelope, Frame, FrameRefusal, Lagged};
 use xynolog::types::{
     GatherAnnotationOptions, GatherResourceRequestOptions, GenerationJobParams, MarkJobParams,
 };
+use xynolog::types::{KbIdentityConflict, SessionEndReason};
 
 /// How many turns of the runtime a settle lets pass: enough for what any case
 /// sets going to run to its end, as a paused clock lets it.

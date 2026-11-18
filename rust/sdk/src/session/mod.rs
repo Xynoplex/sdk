@@ -37,19 +37,15 @@ mod signals;
 mod stored;
 mod xynolog_session;
 
-pub use browser::{
-    Expected, KbReadVerdict, SignInOutcome, SignedIn, XynologBrowser, XynologBrowserConfig,
-};
+pub use browser::{XynologBrowser, XynologBrowserConfig};
 pub use factory::{SessionFactory, SessionFactoryOptions};
 pub use kept::{MemorySignIn, SignInKept};
-pub use knowledge_base::{KbSessionStatus, is_valid_hostname};
-pub use open_resource::{OpenResource, TabCheck, apply_tab_checks, sort_open_resources};
-pub use signals::{
-    KbIdentityConflict, PermissionDenied, SessionEndReason, SessionEnded, SessionSignals,
-};
+pub use knowledge_base::is_valid_hostname;
+pub use open_resource::{OpenResource, apply_tab_checks, sort_open_resources};
+pub use signals::SessionSignals;
 pub use stored::{
     ACTIVE_KEY, KNOWLEDGE_BASES_KEY, LAST_VIEWED_RESOURCE_BY_KB_KEY, OPEN_RESOURCES_BY_KB_KEY,
-    StoredSession, cache_key, clear_stored_session, is_token_expired, kb_of_session_key, kept_in,
+    cache_key, clear_stored_session, is_token_expired, kb_of_session_key, kept_in,
     last_event_id_key, load_knowledge_bases, person_key, save_knowledge_bases, session_key,
     store_session, stored_session,
 };

@@ -59,8 +59,7 @@
 //! on (`XynologClient::record_person_key`).
 
 use super::kept::SignInKept;
-use super::signals::SessionEndReason;
-use super::stored::{StoredSession, is_token_expired};
+use super::stored::is_token_expired;
 use super::{renew_when_due, token_expiry};
 use crate::client::{Owner, XynologClient};
 use crate::errors::{
@@ -73,7 +72,7 @@ use crate::state::{Held, Tasks};
 use crate::state_unit::StateUnit;
 use crate::timing::{MAX_RECONNECT, RECONNECT};
 use crate::transport::{BoxFuture, ConnectionState, Events};
-use crate::types::{KbTarget, UserResponse};
+use crate::types::{KbTarget, SessionEndReason, StoredSession, UserResponse};
 use rand_core::Rng;
 use std::sync::{Arc, Mutex, Weak};
 use std::time::SystemTime;

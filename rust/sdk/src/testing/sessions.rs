@@ -21,11 +21,10 @@ use crate::errors::{
 };
 use crate::locked;
 use crate::session::{
-    SessionFactory, SessionFactoryOptions, StoredSession, XynologSession, XynologSessionConfig,
-    kept_in,
+    SessionFactory, SessionFactoryOptions, XynologSession, XynologSessionConfig, kept_in,
 };
 use crate::transport::BoxFuture;
-use crate::types::UserResponse;
+use crate::types::{StoredSession, UserResponse};
 use rand_core::Rng;
 use serde_json::{Map, Value};
 use std::collections::VecDeque;
