@@ -75,27 +75,34 @@ let in_place ~trail file =
     refuse "%s reaches itself through the files written in its place" file;
   file :: trail
 
+(* A schema a [$ref] names, as [named] names it or, when it names none, the
+   schema written in its place from [schemas]. *)
+type referent = Named of string | In_place of string * Schema.t
+
+let referent ~named ~schemas (r : Decode.reference) =
+  let file, pointer = Decode.resolve r in
+  if pointer <> "" then
+    refuse
+      "$ref %s points into a file: protocol/specs/src refers to whole files"
+      r.target;
+  match named file with
+  | Some name -> Some (Named name)
+  | None ->
+      Option.map (fun s -> In_place (file, s)) (Hashtbl.find_opt schemas file)
+
 (* The view of a schema written in [file], each [$ref] it holds resolved by
    [named] or written in place from [schemas]. *)
 let view ~named ~schemas =
-  let rec view trail (s : Schema.t) =
-    match s with
-    | Schema.Boolean_schema b -> Bool b
-    | Schema.Schema ({ ref_ = Some r; _ } as _s) -> (
-        let file, pointer = Decode.resolve r in
-        if pointer <> "" then
-          refuse
-            "$ref %s points into a file: protocol/specs/src refers to whole \
-             files"
-            r.target;
-        match named file with
-        | Some name -> Ref name
-        | None -> (
-            match Hashtbl.find_opt schemas file with
-            | Some target -> view (in_place ~trail file) target
-            | None -> refuse "$ref %s names no schema" r.target))
-    | Schema.Schema s -> (
-        let sub = view trail in
+  let rec view s = Schema.cata ~boolean:(fun b _ -> Bool b) ~schema:layer s
+  and layer (s : (string list -> t) Schema.layer) trail =
+    match s.ref_ with
+    | Some r -> (
+        match referent ~named ~schemas r with
+        | Some (Named name) -> Ref name
+        | Some (In_place (file, target)) -> view target (in_place ~trail file)
+        | None -> refuse "$ref %s names no schema" r.target)
+    | None -> (
+        let sub f = f trail in
         let subs = Option.map (List.map sub) in
         let nullable = s.nullable = Some true in
         let keys =
@@ -142,40 +149,22 @@ let view ~named ~schemas =
           | _ ->
               Node { (node [ "anyOf" ]) with any_of = Some [ Null; Node own ] })
   in
-  view []
+  fun s -> view s []
 
 (* Every [$ref] a schema holds, through the files written in its place. *)
 let references ~named ~schemas =
-  let rec references trail (s : Schema.t) =
-    match s with
-    | Schema.Boolean_schema _ -> []
-    | Schema.Schema { ref_ = Some r; _ } -> (
-        let file, _ = Decode.resolve r in
-        match named file with
-        | Some _ -> [ file ]
-        | None -> (
-            match Hashtbl.find_opt schemas file with
-            | Some target -> references (in_place ~trail file) target
-            | None -> []))
-    | Schema.Schema s ->
-        let each = List.concat_map (references trail) in
-        let opt = function None -> [] | Some x -> references trail x in
-        let opts = function None -> [] | Some xs -> each xs in
-        List.concat
-          [
-            (match s.properties with
-            | None -> []
-            | Some ps -> each (List.map snd ps));
-            opt s.additional_properties;
-            opt s.property_names;
-            opt s.items;
-            opts s.all_of;
-            opts s.any_of;
-            opts s.one_of;
-            opt s.not_;
-          ]
+  let rec references s = Schema.cata ~boolean:(fun _ _ -> []) ~schema:layer s
+  and layer (s : (string list -> string list) Schema.layer) trail =
+    match s.ref_ with
+    | Some r -> (
+        match referent ~named ~schemas r with
+        | Some (Named _) -> [ fst (Decode.resolve r) ]
+        | Some (In_place (file, target)) ->
+            references target (in_place ~trail file)
+        | None -> [])
+    | None -> List.concat_map (fun f -> f trail) (Schema.children s)
   in
-  references []
+  fun s -> references s []
 
 let response_schemas (r : Openapi.response) =
   match r.content with

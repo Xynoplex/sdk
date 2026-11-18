@@ -462,9 +462,7 @@ let service_proof ~grant_type (form : member list) =
         H.text
           {
             banner =
-              Banner.lines
-                ~from_:("protocol/specs/src/" ^ Model.form)
-                __FILE__;
+              Banner.lines ~from_:("protocol/specs/src/" ^ Model.form) __FILE__;
             extensions = [ "OverloadedStrings" ];
             name = "Xynolog.Internal.Generated.ServiceProof";
             imports =

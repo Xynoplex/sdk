@@ -391,9 +391,7 @@ let haskell (t : T.t) (encodings : Encodings.Table.t) =
       H.text
         {
           banner =
-            Banner.lines
-              ~from_:(Encodings.Table.file ^ " and " ^ file)
-              __FILE__;
+            Banner.lines ~from_:(Encodings.Table.file ^ " and " ^ file) __FILE__;
           extensions = [ "OverloadedStrings" ];
           name = "Xynolog.Internal.Generated.Text";
           imports =
