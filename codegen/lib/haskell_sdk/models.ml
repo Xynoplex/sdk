@@ -101,6 +101,25 @@ let instance_from name body =
 let to_json clauses name =
   H.instance "ToJSON" (T_name name) (List.map (fun c -> ("toJSON", c)) clauses)
 
+(* A record's member of type [t] under [key]: the type the record holds it
+   as, how its parser reads it from the object it names [row], and how its
+   encoder writes [held], its value. A member that may be absent or null is
+   a Presence, one that may be absent a Maybe, and one that is required its
+   own type, or a Maybe if it may be null. *)
+let member ~row ~key ~held ~nullable ~mandatory t =
+  if nullable && not mandatory then
+    ( H.T_apply ("Presence", [ t ]),
+      H.Apply (Name "presence", [ Name row; Str key ]),
+      H.Apply (Name "presencePair", [ Str key; held ]) )
+  else if mandatory then
+    ( (if nullable then H.T_apply ("Maybe", [ t ]) else t),
+      H.Infix (Name row, [ (".:", Str key) ]),
+      H.List [ Tuple [ Str key; Apply (Name "toJSON", [ held ]) ] ] )
+  else
+    ( H.T_apply ("Maybe", [ t ]),
+      H.Apply (Name "optional", [ Name row; Str key ]),
+      H.Apply (Name "optionalPair", [ Str key; held ]) )
+
 let rec type_of state proposed original : (H.type_, string) result =
   let* raw = Normalize.layer original in
   match raw.ref_ with
@@ -376,19 +395,7 @@ and object_ state name (s : Schema.schema) =
            in
            let held = H.Apply (Name field, [ Name "value" ]) in
            let typ, parser, encoder =
-             if nullable && not mandatory then
-               ( H.T_apply ("Presence", [ t ]),
-                 H.Apply (Name "presence", [ Name "fields"; Str key ]),
-                 H.Apply (Name "presencePair", [ Str key; held ]) )
-             else if mandatory then
-               ( (if nullable then H.T_apply ("Maybe", [ t ]) else t),
-                 H.Infix (Name "fields", [ (".:", Str key) ]),
-                 H.List [ Tuple [ Str key; Apply (Name "toJSON", [ held ]) ] ]
-               )
-             else
-               ( H.T_apply ("Maybe", [ t ]),
-                 H.Apply (Name "optional", [ Name "fields"; Str key ]),
-                 H.Apply (Name "optionalPair", [ Str key; held ]) )
+             member ~row:"fields" ~key ~held ~nullable ~mandatory t
            in
            Ok ((field, typ, parser, encoder) :: found))
          (Ok []) properties)

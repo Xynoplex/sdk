@@ -6,6 +6,7 @@
    writes the Haskell SDK's module of it itself. *)
 
 module Normalize = Normalize
+module Merged = Merged
 module Models = Models
 module Companions = Companions
 module Definitions = Definitions
@@ -192,7 +193,7 @@ let files ~root (spec : Spec.t) =
       | Error e -> Error e)
   in
   let* constants = within "client/surface.json" (Constants.modules spec) in
-  let* worker = within Worker.source (Worker.modules ~root) in
+  let* worker = Worker.modules ~root in
   let* manifest =
     within "haskell/sdk/xynolog.cabal.in" (manifest ~root models.module_names)
   in
@@ -211,6 +212,7 @@ let files ~root (spec : Spec.t) =
           (Companions.schemas_module
              ~banner:(banner "protocol/specs/src")
              models.definitions);
+        Merged.file models.definitions;
         file ~under:"test"
           (Companions.round_trip_module
              ~banner:(banner "protocol/specs/src")
