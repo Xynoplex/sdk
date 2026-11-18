@@ -69,3 +69,8 @@
  (name client_types)
  (modules client_types)
  (libraries xynolog_codegen yojson alcotest))
+
+(test
+ (name schema)
+ (modules schema)
+ (libraries xynolog_codegen alcotest))
