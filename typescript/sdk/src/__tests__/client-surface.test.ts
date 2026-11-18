@@ -61,9 +61,6 @@ import type {
   YieldNamespace,
 } from '../namespaces/types';
 
-/** The SDK this runner is, as the table's `absent` names it. */
-const SDK = 'typescript';
-
 type Json = null | boolean | number | string | Json[] | { [key: string]: Json };
 type Args = { [key: string]: Json };
 
@@ -97,7 +94,6 @@ interface Row {
     | 'events'
     | 'claims';
   via: Omit<Step, 'sends'>;
-  absent?: Record<string, string>;
   cases: Case[];
 }
 interface Table {
@@ -480,9 +476,7 @@ function callOf(namespace: string, method: string): Call | undefined {
 
 describe('the client surface (protocol/specs/src/client/surface.json)', () => {
   const listed = TABLE.namespaces.flatMap(({ namespace, methods }) =>
-    methods
-      .filter((row) => row.absent?.[SDK] === undefined)
-      .map((row) => ({ namespace, row })),
+    methods.map((row) => ({ namespace, row })),
   );
 
   it('lists the methods this SDK has, and no other', () => {

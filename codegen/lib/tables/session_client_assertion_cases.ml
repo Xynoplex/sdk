@@ -85,7 +85,6 @@ let case =
 
 type t = {
   comment : string;
-  run_by : Case_table.run_by;
   form : string list;
   grant_type : string;
   assertion_type : string;
@@ -98,7 +97,6 @@ let decode =
   Decode.obj (fun o : t ->
       {
         comment = Decode.required o "$comment" Decode.string;
-        run_by = Decode.required o "runBy" Case_table.run_by;
         form = Decode.required o "form" (Decode.list Decode.string);
         grant_type = Decode.required o "grantType" Decode.string;
         assertion_type = Decode.required o "assertionType" Decode.string;

@@ -218,7 +218,6 @@ let case =
 
 type t = {
   comment : string;
-  run_by : Case_table.run_by;
   elements : (string * Schema.t) list;
   cases : case list;
 }
@@ -227,7 +226,6 @@ let decode =
   Decode.obj (fun o : t ->
       {
         comment = Decode.required o "$comment" Decode.string;
-        run_by = Decode.required o "runBy" Case_table.run_by;
         elements = Decode.required o "elements" (Decode.map Schema.decode);
         cases = Decode.required o "cases" (Decode.list case);
       })

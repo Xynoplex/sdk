@@ -182,8 +182,6 @@ let resume_from_item =
 
 type t = {
   comment : string;
-  not_yet_reached : Case_table.explanations;
-  run_by : Case_table.run_by;
   people : people;
   keys : key list;
   forget_storage : (string * string) list;
@@ -200,9 +198,6 @@ let decode =
   Decode.obj (fun o : t ->
       {
         comment = Decode.required o "$comment" Decode.string;
-        not_yet_reached =
-          Decode.required o "notYetReached" Case_table.explanations;
-        run_by = Decode.required o "runBy" Case_table.run_by;
         people = Decode.required o "people" people;
         keys = Decode.required o "keys" (Decode.list key);
         forget_storage =

@@ -91,15 +91,6 @@ func reading(t *testing.T) func(data []byte, contentType string) (string, error)
 	}
 }
 
-// whoRuns is what a case table says of who runs it, which
-// lint:spec-case-tables holds it to: a runner reads it and is held to nothing
-// by it.
-type whoRuns struct {
-	RunBy         map[string][]string `json:"runBy"`
-	Absent        map[string]string   `json:"absent"`
-	NotYetReached map[string]string   `json:"notYetReached"`
-}
-
 type decodeCase struct {
 	Why         string  `json:"why"`
 	ContentType string  `json:"contentType"`
@@ -112,7 +103,6 @@ func TestAResourcesBytesAreTheTextTheTableSays(t *testing.T) {
 	var table struct {
 		Comment string            `json:"$comment"`
 		Cases   []json.RawMessage `json:"cases"`
-		whoRuns
 	}
 	strictly(t, readSpec(t, "text", "decode-cases.json"), &table)
 	if len(table.Cases) < 90 {
@@ -163,7 +153,6 @@ type encodingCase struct {
 type encodingTable struct {
 	Comment string            `json:"$comment"`
 	Cases   []json.RawMessage `json:"cases"`
-	whoRuns
 }
 
 func readEncodings(t *testing.T) []encodingCase {
@@ -226,7 +215,6 @@ func TestEveryReaderOfAResourceGivesWhatTheTableSays(t *testing.T) {
 	var table struct {
 		Comment string            `json:"$comment"`
 		Cases   []json.RawMessage `json:"cases"`
-		whoRuns
 	}
 	strictly(t, readSpec(t, "resources", "reader-cases.json"), &table)
 	if len(table.Cases) == 0 {

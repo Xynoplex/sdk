@@ -36,9 +36,6 @@ import (
 	"github.com/xynolog/sdk/go/xynologtest"
 )
 
-// sdk is this runner's SDK, as the table's `absent` names it.
-const sdk = "go"
-
 type surfaceCase struct {
 	Why   string                     `json:"why"`
 	Args  map[string]json.RawMessage `json:"args"`
@@ -51,11 +48,10 @@ type surfaceCase struct {
 }
 
 type surfaceRow struct {
-	Method string                     `json:"method"`
-	Shape  string                     `json:"shape"`
-	Via    map[string]string          `json:"via"`
-	Cases  []surfaceCase              `json:"cases"`
-	Absent map[string]json.RawMessage `json:"absent"`
+	Method string            `json:"method"`
+	Shape  string            `json:"shape"`
+	Via    map[string]string `json:"via"`
+	Cases  []surfaceCase     `json:"cases"`
 }
 
 type surfaceTable struct {
@@ -701,9 +697,6 @@ func surfaceCases(t *testing.T, table surfaceTable) []rowCase {
 	var found []rowCase
 	for _, namespace := range table.Namespaces {
 		for _, row := range namespace.Methods {
-			if _, absent := row.Absent[sdk]; absent {
-				continue
-			}
 			for _, c := range row.Cases {
 				found = append(found, rowCase{name: namespace.Namespace + "." + row.Method, row: row, c: c})
 			}

@@ -101,7 +101,6 @@ let open_resource_order_item =
 
 type t = {
   comment : string;
-  run_by : Case_table.run_by;
   cases : case list;
   open_resource_order : open_resource_order_item list;
 }
@@ -110,7 +109,6 @@ let decode =
   Decode.obj (fun o : t ->
       {
         comment = Decode.required o "$comment" Decode.string;
-        run_by = Decode.required o "runBy" Case_table.run_by;
         cases = Decode.required o "cases" (Decode.list case);
         open_resource_order =
           Decode.required o "openResourceOrder"

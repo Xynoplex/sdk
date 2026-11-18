@@ -1,11 +1,8 @@
 """The state units against `protocol/specs/src/client/state-units.json`.
 
-Each case of a unit this SDK has is run as the table states it: its units are
-built over a scripted transport, driven step by step, and held to what the case
-says they hold and said. A unit that the names table
-(`protocol/specs/src/client/surface.json`, `stateUnits`) says this SDK lacks has its
-cases left unrun, as the surface test leaves a row's `absent` SDK: they run
-once the unit lands and its `absent` goes. What the table may say is held by
+Each case is run as the table states it: its units are built over a scripted
+transport, driven step by step, and held to what the case says they hold and
+said. What the table may say is held by
 `.github/scripts/checks/check-state-unit-cases.mjs`; what a case cannot say, the axioms,
 each unit's own test holds.
 """
@@ -42,9 +39,6 @@ from xynolog.state_unit import StateUnit
 from xynolog.testing import Delay, DropReply, FaultAction, FaultyTransport, create_test_client, refuse_unscripted_operation
 from xynolog.transport import Frame, FrameRefusal, Transport
 from xynolog.watched import Watched
-
-# The SDK this runner is, as the names table's `absent` names it.
-SDK: Final = "python"
 
 SETTLE_TURNS: Final = 200
 """How many turns of the loop a settle lets pass: enough for what any case sets going to run to its end, as a paused clock lets it."""
@@ -113,22 +107,9 @@ MAKERS: Final[Mapping[str, Make]] = {
     "mark": lambda client, searches, made: MarkStateUnit(client, ResourceId(text(made["resourceId"], "a resource"))),
     "sessionSignals": lambda client, searches, made: SessionSignals(),
 }
-"""How this SDK makes each unit it has, from the client and what the case makes it from."""
+"""How this SDK makes each unit, from the client and what the case makes it from."""
 
-
-def units_this_sdk_has() -> set[str]:
-    has: set[str] = set()
-    for row in objects(NAMES["stateUnits"], "stateUnits"):
-        absent = row.get("absent", {})
-        assert isinstance(absent, dict)
-        if SDK not in absent:
-            has.add(text(row["unit"], "a unit"))
-    return has
-
-
-HAS: Final = units_this_sdk_has()
 CASES: Final = objects(TABLE["cases"], "cases")
-RUN: Final = [case for case in CASES if text(case["unit"], "a case's unit") in HAS]
 
 
 def fixture(name: str) -> JsonValue:
@@ -461,7 +442,7 @@ async def perform(
 
 def test_this_sdk_makes_each_unit_it_has_cases_of_and_no_other() -> None:
     # A unit the table states no case of (the cache, whose behaviour its own tables hold) needs no maker here.
-    assert set(MAKERS) == {text(case["unit"], "a case's unit") for case in RUN}
+    assert set(MAKERS) == {text(case["unit"], "a case's unit") for case in CASES}
 
 
 def test_every_case_is_of_a_unit_the_names_table_has() -> None:
@@ -469,13 +450,13 @@ def test_every_case_is_of_a_unit_the_names_table_has() -> None:
     assert {text(case["unit"], "a case's unit") for case in CASES} <= named
 
 
-@pytest.mark.parametrize("case", RUN, ids=[f"{case['unit']}: {case['case']}" for case in RUN])
+@pytest.mark.parametrize("case", CASES, ids=[f"{case['unit']}: {case['case']}" for case in CASES])
 def test_a_unit_does_what_its_case_says(case: JsonObject) -> None:
     run_still(play(case))
 
 
 def test_the_runner_fails_a_case_whose_check_is_wrong() -> None:
-    told = copy.deepcopy(next(case for case in RUN if case["unit"] == "match"))
+    told = copy.deepcopy(next(case for case in CASES if case["unit"] == "match"))
     steps = told["steps"]
     assert isinstance(steps, list)
     for step in steps:

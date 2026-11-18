@@ -396,18 +396,12 @@ let case =
         reads = Decode.required o "reads" reads;
       })
 
-type t = {
-  comment : string;
-  run_by : Case_table.run_by;
-  readers : string list;
-  cases : case list;
-}
+type t = { comment : string; readers : string list; cases : case list }
 
 let decode =
   Decode.obj (fun o : t ->
       {
         comment = Decode.required o "$comment" Decode.string;
-        run_by = Decode.required o "runBy" Case_table.run_by;
         readers = Decode.required o "readers" (Decode.list Decode.string);
         cases = Decode.required o "cases" (Decode.list case);
       })
