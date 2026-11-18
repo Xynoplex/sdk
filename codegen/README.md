@@ -227,6 +227,9 @@ make test-codegen
 
 builds the project, checks its formatting, runs its tests, and reads the
 pinned Protocol with `xynolog-codegen read`, in the toolchain's container.
+`check-protocol-paths.py` then holds every sdk file the pinned Protocol names,
+as `sdk/<path>` or as a link into this repository, to the files this checkout
+has.
 
 ```sh
 make generate
