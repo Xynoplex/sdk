@@ -76,7 +76,7 @@ private val MEMBERS = mapOf(
     "forget" to setOf("why", "by", "stored", "signedIn", "open", "removes"),
     "startup" to setOf("why", "signedIn", "gateway", "first", "then", "recorded", "place", "untouched"),
     "crossTab" to setOf("why", "stored", "saved"),
-    "holder" to setOf("why", "stored", "saved"),
+    "inProcess" to setOf("why", "stored", "saved"),
     "resumeFrom" to setOf("why", "frames", "resumes"),
 )
 
@@ -351,8 +351,8 @@ class PersistedCasesTest {
     }
 
     @TestFactory
-    fun aSignInChangedThroughWhatHoldsItIsHeededAsTheTableSays(): List<DynamicTest> = rows("holder").map { row ->
-        DynamicTest.dynamicTest(row.text("why")) { holder(row) }
+    fun aSignInChangedThroughWhatHoldsItIsHeededAsTheTableSays(): List<DynamicTest> = rows("inProcess").map { row ->
+        DynamicTest.dynamicTest(row.text("why")) { inProcess(row) }
     }
 
     @TestFactory
@@ -531,8 +531,8 @@ class PersistedCasesTest {
      * memory sign-in, in this process: forgotten, a new sign-in kept in its
      * place, or renewed.
      */
-    private fun holder(row: JsonObject): Unit = runBlocking {
-        read(row, "holder")
+    private fun inProcess(row: JsonObject): Unit = runBlocking {
+        read(row, "inProcess")
         Realm().use { realm ->
             realm.answersFresh()
             repeat(10) { realm.script(WHO, Said(200, whoAmI)) }

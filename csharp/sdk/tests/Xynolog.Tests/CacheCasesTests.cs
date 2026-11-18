@@ -122,8 +122,9 @@ public sealed class CacheCasesTests
         Assert.Equal(expected.Length, actual.Length);
         foreach (var entry in expected)
         {
-            var found = Assert.Single(actual, held => JsonElement.DeepEquals(held.Key, entry[0]));
-            Assert.True(JsonElement.DeepEquals(found.Value, entry[1]), entry[0].GetRawText() + ": " + found.Value.GetRawText());
+            var key = entry.GetProperty("key");
+            var found = Assert.Single(actual, held => JsonElement.DeepEquals(held.Key, key));
+            Assert.True(JsonElement.DeepEquals(found.Value, entry.GetProperty("value")), key.GetRawText() + ": " + found.Value.GetRawText());
         }
     }
 
@@ -196,8 +197,8 @@ public sealed class CacheCasesTests
         {
             foreach (var entry in entries.EnumerateArray())
             {
-                var value = entry[1].Deserialize<T>() is T read ? read : throw new InvalidOperationException("A held value is null.");
-                cache.Set(key.Read(entry[0], value), value);
+                var value = entry.GetProperty("value").Deserialize<T>() is T read ? read : throw new InvalidOperationException("A held value is null.");
+                cache.Set(key.Read(entry.GetProperty("key"), value), value);
             }
         }
 

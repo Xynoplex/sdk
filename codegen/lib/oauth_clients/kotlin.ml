@@ -20,4 +20,4 @@ let file ~from_ (t : T.t) =
            (Kotlin_sdk.Names.constant_name c.name ^ "_CLIENT_ID")
            c.id)
        t.clients
-    @ [ constant ~docs:t.scope.docs "SIGN_IN_SCOPE" t.scope.value ])
+    @ [ constant ~docs:t.scopes.docs "SIGN_IN_SCOPE" t.scopes.value ])

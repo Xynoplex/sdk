@@ -58,13 +58,24 @@ private func caseText(_ row: [String: JSONValue]) throws -> String {
   return String(decoding: try JSONEncoder().encode(required(row, "stored")), as: UTF8.self)
 }
 
-/// Entries as a map from each key, as a document writes it, to its value.
-private func entryMap(_ entries: JSONValue) throws -> [String: JSONValue] {
+/// A document's entries as a map from each key, as the document writes it, to its value.
+private func documentEntryMap(_ entries: JSONValue) throws -> [String: JSONValue] {
   var map: [String: JSONValue] = [:]
   for entry in try entries.array {
     let parts = try entry.array
     guard parts.count >= 2 else { throw SpecFailure.shape("an entry with no key and value") }
     map[try parts[0].text] = parts[1]
+  }
+  return map
+}
+
+/// The table's entries, each its `key` and its `value`, as a map from each key, as a document
+/// writes it, to its value.
+private func tableEntryMap(_ entries: JSONValue) throws -> [String: JSONValue] {
+  var map: [String: JSONValue] = [:]
+  for entry in try entries.array {
+    let members = try entry.object
+    map[try required(members, "key").text] = try required(members, "value")
   }
   return map
 }
@@ -140,15 +151,15 @@ private func hold(
   }
 }
 
-/// Hold each of a case's `held` pairs in its query's cache.
+/// Hold each of a case's `held` entries in its query's cache.
 private func holdAll(
-  _ row: [String: JSONValue], _ query: KeptQuery, in live: LiveQueries, keys: StoredKeys,
-  _ name: String
+  _ row: [String: JSONValue], _ query: KeptQuery, in live: LiveQueries, keys: StoredKeys
 ) async throws {
-  for pair in try required(row, "held").array {
-    let parts = try pair.array
-    guard parts.count == 2 else { throw SpecFailure.shape("\(name): a held key and value") }
-    try await hold(query, parts[0], parts[1], in: live, keys: keys)
+  for entry in try required(row, "held").array {
+    let members = try entry.object
+    let key = try required(members, "key")
+    let value = try required(members, "value")
+    try await hold(query, key, value, in: live, keys: keys)
   }
 }
 
@@ -160,7 +171,8 @@ private func expectWritten(_ text: String, _ row: [String: JSONValue], _ name: S
   #expect(Set(document.keys) == Set(written.keys), "\(name)")
   #expect(try required(document, "version") == required(written, "version"), "\(name)")
   let entries = try required(document, "entries")
-  #expect(try entryMap(entries) == entryMap(required(written, "entries")), "\(name)")
+  #expect(
+    try documentEntryMap(entries) == tableEntryMap(required(written, "entries")), "\(name)")
   for entry in try entries.array {
     let parts = try entry.array
     guard parts.count == 3, case .number(let stamp) = parts[2] else {
@@ -215,7 +227,7 @@ private final class RefusingFirstWrite: SessionStorage {
     let storage = MemorySessionStorage()
     storage.set(keys.document(query), try caseText(row))
     let held = try await loaded(query, from: storage, keys: keys, name)
-    #expect(held == (try entryMap(required(row, "kept"))), "\(name)")
+    #expect(held == (try tableEntryMap(required(row, "kept"))), "\(name)")
   }
 }
 
@@ -226,7 +238,7 @@ private final class RefusingFirstWrite: SessionStorage {
     let query = try caseQuery(row)
     let storage = MemorySessionStorage()
     let client = try await keepingClient(over: storage, keys: keys)
-    try await holdAll(row, query, in: client.browse.live, keys: keys, name)
+    try await holdAll(row, query, in: client.browse.live, keys: keys)
     client.dispose()
     let text = try #require(storage.get(keys.document(query)), "\(name): a document is written")
     try expectWritten(text, row, name)
@@ -241,7 +253,7 @@ private final class RefusingFirstWrite: SessionStorage {
     let storage = RefusingFirstWrite(keys.document(query))
     let clock = TestClock()
     let client = try await keepingClient(over: storage, keys: keys, clock: clock)
-    try await holdAll(row, query, in: client.browse.live, keys: keys, name)
+    try await holdAll(row, query, in: client.browse.live, keys: keys)
     try await withinTestDeadline {
       while !storage.refused {
         clock.advance(by: .milliseconds(Timings.saveDebounceMs))

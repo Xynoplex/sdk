@@ -134,14 +134,26 @@ fn same(one: &Value, other: &Value) -> bool {
     }
 }
 
-/// A list of `[key, value]`, by each key's JSON text.
-fn pairs(list: &Value) -> BTreeMap<String, Value> {
+/// An entry as the table states it: its `key` and its `value`, and nothing
+/// else.
+fn key_and_value(entry: &Value) -> (&Value, &Value) {
+    match entry.as_object() {
+        Some(members) if members.len() == 2 => match (members.get("key"), members.get("value")) {
+            (Some(key), Some(value)) => (key, value),
+            _ => panic!("an entry of the table is not a key and a value: {entry}"),
+        },
+        _ => panic!("an entry of the table is not a key and a value: {entry}"),
+    }
+}
+
+/// A list of the table's entries, by each key's JSON text.
+fn table_entries(list: &Value) -> BTreeMap<String, Value> {
     list.as_array()
         .unwrap_or_else(|| panic!("no list of entries: {list}"))
         .iter()
-        .map(|pair| match pair.as_array().map(Vec::as_slice) {
-            Some([key, value]) => (key.to_string(), value.clone()),
-            _ => panic!("an entry of the table is not a key and a value: {pair}"),
+        .map(|entry| {
+            let (key, value) = key_and_value(entry);
+            (key.to_string(), value.clone())
         })
         .collect()
 }
@@ -264,10 +276,8 @@ impl Keeping {
             transport,
             content,
         } = self;
-        for pair in held {
-            let Some([key, value]) = pair.as_array().map(Vec::as_slice) else {
-                panic!("a held entry is not a key and a value: {pair}");
-            };
+        for entry in held {
+            let (key, value) = key_and_value(entry);
             let per_nothing = || {
                 assert_eq!(
                     key.as_str(),
@@ -383,7 +393,7 @@ fn assert_written(case: &str, written: Option<String>, expected: &Value) {
             _ => panic!("{case}: an entry is not a key, a value and a stamp: {entry}"),
         })
         .collect();
-    assert_entries(case, &entries, &pairs(&expected["entries"]));
+    assert_entries(case, &entries, &table_entries(&expected["entries"]));
 }
 
 #[test]
@@ -397,7 +407,11 @@ fn each_load_keeps_what_the_table_says() {
         storage
             .set(&cache_key(&query), &stored_text(case))
             .expect("stored");
-        assert_entries(&name, &kept_of(&query, &storage), &pairs(&case["kept"]));
+        assert_entries(
+            &name,
+            &kept_of(&query, &storage),
+            &table_entries(&case["kept"]),
+        );
     }
 }
 

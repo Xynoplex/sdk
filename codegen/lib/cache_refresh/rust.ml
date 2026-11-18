@@ -41,7 +41,7 @@ let able (t : Table.t) =
       pointer = "/refresh";
       message =
         Printf.sprintf "%s %s %s, which no event the Rust SDK reads says how to"
-          tr.on key name;
+          tr.name key name;
     }
   in
   List.concat_map
@@ -95,7 +95,7 @@ let cache_refresh (table : T.t) (t : Table.t) =
     String.concat " "
       (List.filter_map
          (fun (item : T.refresh_item) ->
-           if item.on = on then Some item.docs else None)
+           if T.trigger_name item.trigger = on then Some item.docs else None)
          table.refresh)
   in
   let persisted =
@@ -170,7 +170,7 @@ let cache_refresh (table : T.t) (t : Table.t) =
               variants =
                 List.map
                   (fun (tr : Table.trigger) ->
-                    R.variant ~doc:[ docs tr.on ] (Text.pascal tr.on))
+                    R.variant ~doc:[ docs tr.name ] (Text.pascal tr.name))
                   t.triggers;
             };
           R.Blank;
@@ -185,7 +185,7 @@ let cache_refresh (table : T.t) (t : Table.t) =
                     (static_slice "RefreshTrigger")
                     (slice
                        (List.map
-                          (fun (tr : Table.trigger) -> trigger tr.on)
+                          (fun (tr : Table.trigger) -> trigger tr.name)
                           t.triggers));
                   R.I_blank;
                   method_
@@ -196,9 +196,9 @@ let cache_refresh (table : T.t) (t : Table.t) =
                     ~ret:(R.named "Option" ~args:[ R.static_str ])
                     (List.map
                        (fun (tr : Table.trigger) ->
-                         ( trigger tr.on,
+                         ( trigger tr.name,
                            match tr.kind with
-                           | Channel _ -> some (R.Str tr.on)
+                           | Channel _ -> some (R.Str tr.name)
                            | Reopened | Unreadable -> R.p "None" ))
                        t.triggers);
                   R.I_blank;
@@ -210,7 +210,7 @@ let cache_refresh (table : T.t) (t : Table.t) =
                     ~ret:(static_slice "CacheRefresh")
                     (List.map
                        (fun (tr : Table.trigger) ->
-                         (trigger tr.on, slice (List.map row tr.rows)))
+                         (trigger tr.name, slice (List.map row tr.rows)))
                        t.triggers);
                 ];
             };

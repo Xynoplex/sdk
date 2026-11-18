@@ -83,15 +83,14 @@ storedText name _ = failure name "is no object"
 asMap :: [(Value, Value)] -> Map.Map Text Value
 asMap pairs = Map.fromList [(decodeUtf8 (Lazy.toStrict (encode key)), value) | (key, value) <- pairs]
 
-pairsOf :: Text -> Value -> IO [(Value, Value)]
-pairsOf name entries =
+-- | The table's entries, each its @key@ and its @value@.
+entriesOf :: Text -> Value -> IO [(Value, Value)]
+entriesOf name entries =
   listOf name entries
     >>= traverse
-      ( \entry -> do
-          parts <- listOf name entry
-          case parts of
-            [key, value] -> pure (key, value)
-            _ -> failure name "states an entry that is not a key and a value"
+      ( \entry -> case entry of
+          Object fields | KM.size fields == 2, Just key <- KM.lookup "key" fields, Just value <- KM.lookup "value" fields -> pure (key, value)
+          _ -> failure name "states an entry that is not a key and a value"
       )
 
 -- | The case's query, and the key its document is kept under, by the case's own name for it.
@@ -129,14 +128,14 @@ loadCase row = do
           entries <- Cache.load persister
           pure [(toJSON identity, toJSON value) | (identity, value) <- entries]
       )
-  expected <- member name "kept" row >>= pairsOf name
+  expected <- member name "kept" row >>= entriesOf name
   unless (asMap loaded == asMap expected) (failure name ("kept " ++ show loaded))
 
 -- | A cache of the case's query, saving to @storage@ and waiting out its debounce with @wait@, given the case's
 -- @held@; @between@ is handed whether it owes a save, and then the cache is disposed.
 holding :: Text -> Value -> KeptQuery -> Storage.SessionStorage -> (Integer -> IO ()) -> (STM Bool -> IO ()) -> IO ()
 holding name row query storage wait between = do
-  held <- member name "held" row >>= pairsOf name
+  held <- member name "held" row >>= entriesOf name
   kept
     query
     ( \(_ :: Proxy key) (_ :: Proxy value) -> do
@@ -201,7 +200,7 @@ writtenAsStated name storage key row = do
     case parts of
       [identity, value, Number stamp] | Right at <- (floatingOrInteger stamp :: Either Double Integer), at >= 0 -> pure (identity, value)
       _ -> failure name ("wrote an entry that is not a key, a value and a whole-number stamp of at least 0: " ++ show entry)
-  expected <- member name "entries" written >>= pairsOf name
+  expected <- member name "entries" written >>= entriesOf name
   unless (asMap writtenPairs == asMap expected) (failure name ("wrote " ++ show writtenPairs))
 
 placesCase :: Value -> IO ()

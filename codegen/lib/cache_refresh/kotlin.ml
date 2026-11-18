@@ -178,7 +178,7 @@ let file ~(types : Types.spec) (t : Table.t) =
         ~entries:
           (List.map
              (fun (tr : Table.trigger) ->
-               K.entry ~args:[ K.Str tr.on ] (Names.variant_of tr.on))
+               K.entry ~args:[ K.Str tr.name ] (Names.variant_of tr.name))
              t.triggers)
         K.Enum_class "CacheRefreshTrigger";
       K.property
@@ -200,7 +200,7 @@ let file ~(types : Types.spec) (t : Table.t) =
                 (List.map
                    (fun (tr : Table.trigger) ->
                      K.Binary
-                       ( trigger tr.on,
+                       ( trigger tr.name,
                          K.To,
                          K.call ~layout:K.Lines (K.Name "listOf")
                            (List.map row tr.rows) ))
@@ -220,7 +220,7 @@ let file ~(types : Types.spec) (t : Table.t) =
                 (List.map
                    (fun (tr : Table.trigger) ->
                      K.Binary
-                       ( K.Str tr.on,
+                       ( K.Str tr.name,
                          K.To,
                          K.call
                            ~lambda:
@@ -229,11 +229,12 @@ let file ~(types : Types.spec) (t : Table.t) =
                                   K.call (K.Name "decoded")
                                     [
                                       K.Name
-                                        ("Channels." ^ Names.constant_name tr.on);
+                                        ("Channels."
+                                        ^ Names.constant_name tr.name);
                                       K.Name "it";
                                     ] ))
                            (K.Name "CacheRefreshChannel")
-                           [ trigger tr.on ] ))
+                           [ trigger tr.name ] ))
                    channels)))
         "CACHE_REFRESH_CHANNELS";
     ]

@@ -75,9 +75,6 @@ val map : (cursor -> 'a) -> cursor -> (string * 'a) list
 val enum : (string * 'a) list -> cursor -> 'a
 (** A string naming one of a closed set. *)
 
-val pair : (cursor -> 'a) -> (cursor -> 'b) -> cursor -> 'a * 'b
-(** An array of exactly two elements, each of its own type. *)
-
 type nothing = |
 
 val nothing : cursor -> nothing
