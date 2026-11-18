@@ -4865,7 +4865,9 @@ class RepresentationAddedPayload(WireModel, frozen=True):
     representation: Representation
 
 
-type RepresentationNotFoundCode = Literal["resource", "representation"]
+type RepresentationNotFoundCode = Annotated[
+    Literal["resource", "representation"], Field(description="A machine-readable class, when the route defines one.")
+]
 
 
 class RepresentationNotFound(WireModel, frozen=True):

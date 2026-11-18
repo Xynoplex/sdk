@@ -103,6 +103,38 @@ let cases =
             ]
         in
         has code "class S(A, frozen=True):\n    b: str | None = None\n");
+    case "a member that restates its base's as an enum is the enum's literals"
+      (fun () ->
+        let code =
+          written
+            [
+              ( "S",
+                {|{"allOf": [{"$ref": "A.json"}, {"type": "object", "required": ["code"], "properties": {"code": {"type": "string", "enum": ["x", "y"]}}}]}|}
+              );
+              ( "A",
+                {|{"type": "object", "properties": {"code": {"type": "string"}}}|}
+              );
+            ]
+        in
+        has code {|    code: SCode|};
+        has code {|Literal["x", "y"]|};
+        lacks code "class SCode(");
+    case "a member is described by what it states, not by what it names"
+      (fun () ->
+        let code =
+          written
+            [
+              ( "S",
+                {|{"type": "object", "required": ["a"], "properties": {"a": {"allOf": [{"$ref": "A.json"}], "nullable": true}}}|}
+              );
+              ("A", {|{"type": "string", "description": "What an A is."}|});
+            ]
+        in
+        has code "    a: A | None\n";
+        has code {|type A = Annotated[str, Field(description="What an A is.")]|};
+        Alcotest.(check int)
+          "A's description, once" 1
+          (count code "What an A is."));
     case "a declaration follows every one it names" (fun () ->
         let code =
           written

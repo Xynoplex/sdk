@@ -119,15 +119,6 @@ let python_name wire =
   in
   if List.mem name keywords || List.mem name taken then name ^ "_" else name
 
-(* What [s] says of itself, or, when it only admits null beside another
-   schema, what that schema says. *)
-let description (s : D.t) =
-  match s with
-  | D.Node { description = Some d; _ } -> Some d
-  | D.Node { any_of = Some [ D.Null; D.Node { description; _ } ]; _ } ->
-      description
-  | _ -> None
-
 let docstring = function
   | None -> None
   | Some d -> Some (P.As_is ("\n" ^ d ^ "\n"))
@@ -174,10 +165,13 @@ let rec placed st owner held_as (s : D.t) : P.expr =
           match (n.all_of, View.union s, n.enum) with
           | Some [ (D.Ref _ as only) ], _, _ when properties n = [] ->
               placed st owner held_as only
-          | Some _, _, _ ->
-              let name = named st owner held_as in
-              declare st name (declaration st name s);
-              P.Name name
+          | Some _, _, _ -> (
+              match D.meant s with
+              | D.Node m when is_class m ->
+                  let name = named st owner held_as in
+                  declare st name (declaration st name s);
+                  P.Name name
+              | merged -> placed st owner held_as merged)
           | None, Some members, _ ->
               union (List.map (member st (owner ^ Text.pascal held_as)) members)
           | None, None, Some ([ _ ] as one) -> literals one
@@ -227,7 +221,7 @@ and item st owner held_as items =
    property a union is told apart by. *)
 and typed_alias name (s : D.t) t =
   let keywords =
-    (match description s with
+    (match View.description s with
       | Some d -> [ P.keyword "description" (Str d) ]
       | None -> [])
     @
@@ -273,7 +267,7 @@ and field st owner ~required (wire, (s : D.t)) =
   let keywords =
     (if python <> wire then [ P.keyword "alias" (Str wire) ] else [])
     @
-    match description s with
+    match View.description s with
     | Some d when not (declared_here t) -> [ P.keyword "description" (Str d) ]
     | _ -> []
   in
@@ -327,7 +321,7 @@ and object_class st name (n : D.node) ~doc =
 
 (* A schema declared by [name]. *)
 and declaration st name (s : D.t) : P.stmt =
-  let doc = docstring (description s) in
+  let doc = docstring (View.description s) in
   let alias t = typed_alias name s t in
   match s with
   | D.Node ({ all_of = Some parts; _ } as n) -> inherited st name n parts ~doc
@@ -372,9 +366,9 @@ and inherited st name (n : D.node) parts ~doc =
       own
   in
   if restated || bases = [] then
-    match View.merged st.definitions name parts with
+    match D.meant (D.Node n) with
     | D.Node merged -> object_class st name merged ~doc
-    | _ -> assert false
+    | _ -> refuse "%s: an allOf whose parts merge to no object" name
   else
     let body =
       List.concat_map
