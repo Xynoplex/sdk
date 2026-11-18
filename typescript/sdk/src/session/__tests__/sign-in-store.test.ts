@@ -63,7 +63,7 @@ interface Renewal {
 interface OwnerOnly {
   directoryMode: { value: string };
   fileMode: { value: string };
-  accessList: { value: string };
+  directoryAccessList: { value: string };
 }
 
 const table = JSON.parse(readFileSync(join(SPECS, 'cases.json'), 'utf-8')) as { cases: StateCase[]; renewals: Renewal[] };
@@ -274,7 +274,7 @@ describe('an entry of the sign-in store', () => {
     expect(directory.locks).toEqual([{ name: SIGN_IN_STORE_LOCK, mode: Number.parseInt(ownerOnly.fileMode.value, 8), windowsOffsetHigh: SIGN_IN_STORE_WINDOWS_OFFSET_HIGH }]);
     expect(directory.keptToOwner).toEqual([{
       mode: Number.parseInt(ownerOnly.directoryMode.value, 8),
-      accessList: ownerOnly.accessList.value.replace('{owner}', OWNER_SID),
+      accessList: ownerOnly.directoryAccessList.value.replace('{owner}', OWNER_SID),
     }]);
     expect(directory.replaced).toEqual([{ name: SIGN_IN_STORE_FILE, mode: Number.parseInt(ownerOnly.fileMode.value, 8) }]);
   });

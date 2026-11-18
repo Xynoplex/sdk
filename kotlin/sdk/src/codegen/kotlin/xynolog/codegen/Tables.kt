@@ -224,7 +224,7 @@ internal fun ownerOnlyFile(table: JsonObject): String = buildString {
         append(kdoc("", mode["docs"].text("the owner-only $key's docs")))
         append("internal const val $constant: String = ${literal(permissions)}\n\n")
     }
-    val list = table["accessList"].obj("the owner-only access list")
+    val list = table["directoryAccessList"].obj("the owner-only access list")
     val parts = list["value"].text("the owner-only access list's value").split("{owner}")
     if (parts.size != 2) refuse("the owner-only access list names {owner} ${parts.size - 1} times, not once")
     append(kdoc("", list["docs"].text("the owner-only access list's docs").replace("`{owner}`", "`owner`")))

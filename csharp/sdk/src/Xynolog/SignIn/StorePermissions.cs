@@ -29,7 +29,7 @@ internal static class StorePermissions
     {
         using var user = WindowsIdentity.GetCurrent();
         var sid = user.User?.Value ?? throw new IOException("The writer has no Windows identity");
-        var stated = Policy.RootElement.GetProperty("accessList").GetProperty("value").GetString() ?? throw new InvalidOperationException("No owner-only access list");
+        var stated = Policy.RootElement.GetProperty("directoryAccessList").GetProperty("value").GetString() ?? throw new InvalidOperationException("No owner-only access list");
         var target = new DirectorySecurity();
         target.SetSecurityDescriptorSddlForm(stated.Replace("{owner}", sid, StringComparison.Ordinal));
         var directory = new DirectoryInfo(path);

@@ -5,7 +5,7 @@ if (-not $actual.AreAccessRulesProtected) { throw 'Directory ACL is inherited' }
 $owner = [System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value
 $policy = Get-Content -Raw -LiteralPath $PolicyFile | ConvertFrom-Json
 $expected = New-Object System.Security.AccessControl.DirectorySecurity
-$expected.SetSecurityDescriptorSddlForm($policy.accessList.value.Replace('{owner}', $owner))
+$expected.SetSecurityDescriptorSddlForm($policy.directoryAccessList.value.Replace('{owner}', $owner))
 function Rules($Acl, [bool]$WithInheritance) {
     @($Acl.Access | ForEach-Object {
         $sid = $_.IdentityReference.Translate([System.Security.Principal.SecurityIdentifier]).Value
