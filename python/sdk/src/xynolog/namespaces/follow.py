@@ -41,7 +41,6 @@ from typing import Final, Literal, final
 
 from pydantic import JsonValue, TypeAdapter, ValidationError
 
-from xynolog._required import UNDECODED, Fault, as_read
 from xynolog.bus import Heard, heard
 from xynolog.channels import JOB_COMPLETE, JOB_FAIL, JOB_REPORT_PROGRESS
 from xynolog.errors import BusRequestError, JobError, TransportError, XynologError
@@ -49,6 +48,7 @@ from xynolog.identifiers import JobId, ResourceId
 from xynolog.model import WireModel, written
 from xynolog.namespaces.links import Links
 from xynolog.operations import JOB_CANCEL_REQUESTED, JOB_CREATE, JOB_STATUS_REQUESTED
+from xynolog.required import UNDECODED, Fault, as_read
 from xynolog.running import Running
 from xynolog.transport import Frame, FrameRefusal
 from xynolog.types import (

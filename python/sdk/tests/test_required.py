@@ -1,9 +1,10 @@
 """What the table of what each schema requires holds a value to, besides its kinds and its members: read as every SDK reads it."""
 
+import pytest
 from pydantic import JsonValue
 
-from xynolog._required import Fault, fault_of
-from xynolog.types import BrowseProfilesRequest, BusPingMessage, GatherAnnotationOptions
+from xynolog.required import Bounds, Fault, bounds_of, fault_of
+from xynolog.types import BrowseProfilesRequest, BusPingMessage, GatherAnnotationOptions, WorkerConfig, WorkerKnowledgeBaseConfig
 
 
 def malformed(member: str) -> Fault:
@@ -34,3 +35,21 @@ def test_a_closed_object_carries_no_member_it_does_not_name() -> None:
     assert fault_of(BrowseProfilesRequest, {"dids": [], "more": 1}) == malformed("dids")
     assert fault_of(BrowseProfilesRequest, {"more": 1}) == Fault(member="dids", reason="lacks")
     assert fault_of(BrowseProfilesRequest, {"dids": ["did:web:example.org"], "\U0001f600": 1, "｡": 1}) == malformed("｡")
+
+
+def test_a_members_bounds_are_the_tables() -> None:
+    unbounded = Bounds(min_length=None, max_length=None, minimum=None, maximum=None, min_items=None, max_items=None)
+    assert bounds_of(BrowseProfilesRequest, "dids") == Bounds(
+        min_length=None, max_length=None, minimum=None, maximum=None, min_items=1, max_items=500
+    )
+    assert bounds_of(GatherAnnotationOptions, "contextWindow") == Bounds(
+        min_length=None, max_length=None, minimum=100, maximum=5000, min_items=None, max_items=None
+    )
+    assert bounds_of(BusPingMessage, "event") == unbounded
+    assert bounds_of(BusPingMessage, "data").max_length == 0
+    assert bounds_of(WorkerKnowledgeBaseConfig, "identity.issuer").min_length == 1
+    assert bounds_of(WorkerConfig, "knowledgeBases").min_items == 1
+    assert bounds_of(WorkerConfig, "knowledgeBases.engines").min_items == 1
+    assert bounds_of(WorkerConfig, "knowledgeBases.identity.clientId").min_length == 1
+    with pytest.raises(KeyError):
+        bounds_of(BrowseProfilesRequest, "more")

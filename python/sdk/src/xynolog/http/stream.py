@@ -37,12 +37,12 @@ from xynolog import telemetry
 from xynolog._bus_log import bus_log, bus_note
 from xynolog._kept_for_first_reader import KeptForFirstReader
 from xynolog._reading import Reading
-from xynolog._required import Fault, read_as
 from xynolog.channels import RESOURCE_SCOPED_CHANNELS, TRACE_FIELD
 from xynolog.errors import TransportError, XynologError
 from xynolog.http.exchange import TokenRefresher, refusal
 from xynolog.http.sse import SseParser
 from xynolog.identifiers import ResourceId
+from xynolog.required import Fault, read_as
 from xynolog.resume import is_recorded_event_id
 from xynolog.retry import RetryPolicy, equal_jitter, retry_after_ms
 from xynolog.timing import (

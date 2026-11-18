@@ -35,7 +35,6 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey
 
 from xynolog._reading import Reading
-from xynolog._required import Fault, read_as
 from xynolog._shared_task import answer, heard
 from xynolog.errors import SignInError, TransportError, XynologError
 from xynolog.http._client_assertion import JWT_BEARER, client_assertion
@@ -43,6 +42,7 @@ from xynolog.http._withheld import why_unanswered
 from xynolog.http.exchange import refusal
 from xynolog.http.oauth import issuer_client, object_in, post_form, seconds_in, text_in
 from xynolog.identifiers import UserId
+from xynolog.required import Fault, read_as
 from xynolog.retry import REFRESH, RetryFacts, retry_after_ms, retry_with_backoff
 from xynolog.session import refresh_delay, renew_when_due, renewal_delay
 from xynolog.timing import HTTP_REQUEST_TIMEOUT_MS, REFRESH_RETRY

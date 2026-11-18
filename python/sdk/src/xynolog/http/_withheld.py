@@ -15,7 +15,7 @@ is quoted by the parser that refused it, a header of the request and a line of
 the answer alike; and a kind not named here is one nobody has vouched for.
 
 An answer that is not the body its operation declares is said by its first
-fault (`xynolog._required`): the decoder's account of it shows what it was
+fault (`xynolog.required`): the decoder's account of it shows what it was
 given.
 """
 

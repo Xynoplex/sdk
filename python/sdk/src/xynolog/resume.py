@@ -33,8 +33,8 @@ from weakref import WeakKeyDictionary
 
 from pydantic import JsonValue, TypeAdapter, ValidationError
 
-from xynolog._required import fault_of
 from xynolog.identifiers import ResourceId
+from xynolog.required import fault_of
 from xynolog.storage import SessionStorage
 from xynolog.stored import LastEventIds
 from xynolog.types import PersistedEventId
