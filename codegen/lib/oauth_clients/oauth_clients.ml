@@ -180,7 +180,30 @@ let rust (t : T.t) =
         @ [ constant "SIGN_IN_SCOPE" t.scope.docs t.scope.value ]);
   }
 
+(* The clients and the scope as the Haskell SDK names them
+   (generated/.../OAuth.hs): a client's id by its name and ClientId, and the
+   scope. *)
+let haskell (t : T.t) =
+  let module H = Haskell_syntax in
+  {
+    Output.path = "haskell/sdk/generated/Xynolog/Internal/Generated/OAuth.hs";
+    text =
+      H.text
+        {
+          banner = Banner.haskell_lines ~from_:file __FILE__;
+          extensions = [ "OverloadedStrings" ];
+          name = "Xynolog.Internal.Generated.OAuth";
+          imports = [ H.import "Data.Text" ~items:[ Plain "Text" ] ];
+          body =
+            List.map
+              (fun (c : T.client) ->
+                H.value (c.name ^ "ClientId") (T_name "Text") (Str c.id))
+              t.clients
+            @ [ H.value "signInScope" (T_name "Text") (Str t.scope.value) ];
+        };
+  }
+
 let files ~root:_ (spec : Spec.t) =
   Result.map
-    (fun t -> [ go t; python t; typescript t; ocaml t; rust t ])
+    (fun t -> [ go t; python t; typescript t; ocaml t; rust t; haskell t ])
     (derive spec.tables.session_oauth)

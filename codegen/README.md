@@ -60,20 +60,23 @@ per language it writes:
   `Encodings.Typescript` the refused encodings, which the platform's
   `TextDecoder` decodes all the same.
 - `error-codes`: the codes a client reports a failure under, from
-  `errors/codes.json`, for the Go, Python and TypeScript SDKs.
-  `Error_codes.Table` holds the table to the wire's own codes
+  `errors/codes.json`, for the Go, Python, TypeScript, OCaml and Haskell
+  SDKs. `Error_codes.Table` holds the table to the wire's own codes
   (`CommandError.code`), each restated once, and to its statuses: one per
   code, at most one open range, and every code but the unclassified one read
   from a status. `Error_codes.Go`, `Error_codes.Python` and
   `Error_codes.Typescript` write each vocabulary, the bus code a wire code
-  becomes and the transport code a status becomes.
+  becomes and the transport code a status becomes. `Error_codes.Haskell`
+  writes every vocabulary, the control plane's with them, and discovery's
+  absent reasons as one more.
 - `timing`: the durations, retry budgets and counts a client waits and
-  retries by, from `client/timing.json`, for the Go, Python and TypeScript
-  SDKs. `Timing.Table` holds each entry to the kind its name says (a name
+  retries by, from `client/timing.json`, for the Go, Python, TypeScript,
+  OCaml and Haskell SDKs. `Timing.Table` holds each entry to the kind its name says (a name
   ending in Ms is a duration, in Retry a budget, in Count a count), states
   each once, and holds a budget's backoff at or below its ceiling.
   `Timing.Go`, `Timing.Python` and `Timing.Typescript` write each SDK's
-  constants.
+  constants; `Timing.Haskell` writes Haskell's, and the settings
+  `Xynolog.Timing.Settings` overrides.
 - `cache-refresh`: what a client's live queries hold, and what each event on
   the bus, the reopening of a dropped stream and an event that cannot be read
   does to them, from `client/refresh.json`, for the Go, Python, TypeScript
@@ -90,17 +93,18 @@ per language it writes:
   each kind to a string schema with a pattern, and `Identifiers.Go` holds
   `go/oapi-codegen.yaml`'s excluded schemas to the kinds.
 - `oauth-clients`: the client ids a client signs in as and the scope it asks
-  for, from `session/oauth.json`, for the Go, Python and TypeScript SDKs. A
-  client is named in lowercase letters, once.
+  for, from `session/oauth.json`, for the Go, Python, TypeScript, OCaml and
+  Haskell SDKs. A client is named in lowercase letters, once.
 - `telemetry`: every span and metric an SDK's transports export, from
   `sdk-telemetry/telemetry.json`, for the Go and Python SDKs. A span's kind
   is one of OTLP's, a metric a counter, a span's name holds no placeholder
   but `{channel}`, and no two rows or keys are one Go or Python name.
 - `sign-in`: the sign-in store's entry, from `sign-in-store/SignIn.json`, and
   how its directory and files are kept to their owner, from
-  `sign-in-store/owner-only.json`, for the Go, Python and TypeScript SDKs;
-  TypeScript's with the names `sign-in-store/README.md` gives the store's
-  files. `Sign_in.Flat` holds the entry to a flat schema (every property a
+  `sign-in-store/owner-only.json`, for the Go, Python, TypeScript, OCaml and
+  Haskell SDKs; TypeScript's and Haskell's with the names
+  `sign-in-store/README.md` gives the store's files, and Haskell's native
+  binding with the one byte of the lock file a Windows writer locks. `Sign_in.Flat` holds the entry to a flat schema (every property a
   described string, some of them a date-time), `Sign_in.Owner_only` each
   mode to four octal digits and the access list to one place for the owner,
   and `Sign_in.Contract` the README to one name for each.
@@ -129,7 +133,7 @@ per language it writes:
 - `client-types`: the shapes an SDK hands its callers that no wire message
   carries, from `client/types`, and the form a service account posts with a
   client secret, from `session/ClientSecretForm.json`, for the Haskell SDK:
-  the reconciled span's and the sign-in's types as `haskell/sdk/codegen`
+  the reconciled span's and the sign-in's types as the `haskell-sdk` group
   reads them, the pending annotation's and the search state's records, the
   events a delegation and an upload report, and the secret proof. A type is
   words, an object's members (with those of each type it is all of) or a
@@ -159,6 +163,22 @@ per language it writes:
   where they hold the same data, and `Swift_sdk.Spec_values` the tables
   Swift holds as Protocol writes them, which the census holds to Protocol's
   own members.
+- `haskell-sdk`: the Haskell SDK's modules that no other group's table owns:
+  a model of every schema it reads or writes, from the gateway's components,
+  the client registry's records, the stored session's, the HTTP routes'
+  bodies and the bus's envelopes, each `allOf` merged into one object, a
+  module per cycle of references, with `Xynolog.Types`, the schemas it
+  validates against and the round trips its tests drive; its HTTP routes and
+  what a refused credential is, from the reference transport; its
+  transport's facts, from `TRANSPORT-HTTP.md`; its bus's channels and
+  operations, with each operation's failure; the worker's channels and
+  records, from `typescript/sdk/src/claims.ts`; the facts of tables no group
+  writes for it; and its manifest, with the repository's `LICENSE`. A
+  schema that states a keyword the SDK's validator does not read is refused,
+  as is a model module no schema makes any more. The `error-codes`, `timing`,
+  `cache-refresh`, `oauth-clients`, `sign-in`, `media-types`, `stored`,
+  `client-types`, `testing`, `required` and `unicode-case` groups each write
+  the Haskell SDK's module of their own table.
 
 `Text` measures and spells text: a width in code points, a word ended by
 ASCII white space, a string as JSON writes it or as a Go or Python literal

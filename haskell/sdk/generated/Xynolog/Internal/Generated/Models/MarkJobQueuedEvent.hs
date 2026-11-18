@@ -1,30 +1,24 @@
--- Generated from protocol/specs/src. Run xynolog-codegen; do not edit.
+-- Generated from protocol/specs/src; do not edit.
+-- Regenerate: make generate (codegen/lib/haskell_sdk/haskell_sdk.ml)
 {-# LANGUAGE OverloadedStrings #-}
-
-{-# OPTIONS_GHC -Wno-unused-imports #-}
-module Xynolog.Internal.Generated.Models.MarkJobQueuedEvent
-  ( MarkJobQueuedEvent(..)
-  , MarkJobQueuedEventJobType(..)
-  ) where
-import Control.Applicative ((<|>))
+module Xynolog.Internal.Generated.Models.MarkJobQueuedEvent (MarkJobQueuedEvent(..), MarkJobQueuedEventJobType(..)) where
 import Data.Aeson (FromJSON(..), ToJSON(..), Value(..), withObject, (.:))
-import Data.Aeson.Types (parseEither)
 import qualified Data.Aeson.KeyMap as KM
-import Data.Scientific (Scientific)
-import Data.Text (Text)
 import Xynolog.Internal.Codec
-import Xynolog.Types.Presence (Presence)
 import Xynolog.Internal.Generated.Models.JobId
 import Xynolog.Internal.Generated.Models.MarkJobParams
 import Xynolog.Internal.Generated.Models.ResourceId
 import Xynolog.Internal.Generated.Models.UserId
-data MarkJobQueuedEvent = MarkJobQueuedEvent { markJobQueuedEventJobId :: JobId, markJobQueuedEventJobType :: MarkJobQueuedEventJobType, markJobQueuedEventParams :: MarkJobParams, markJobQueuedEventResourceId :: ResourceId, markJobQueuedEventUserId :: UserId, markJobQueuedEventAdditionalProperties :: KM.KeyMap (Value) } deriving (Eq, Show)
-instance FromJSON MarkJobQueuedEvent where
-  parseJSON = checked "MarkJobQueuedEvent" $ withObject "MarkJobQueuedEvent" (\fields -> MarkJobQueuedEvent <$> fields .: "jobId" <*> fields .: "jobType" <*> fields .: "params" <*> fields .: "resourceId" <*> fields .: "userId" <*> traverse parseJSON (withoutFields ["jobId", "jobType", "params", "resourceId", "userId"] fields))
+data MarkJobQueuedEvent = MarkJobQueuedEvent
+  { markJobQueuedEventJobId :: JobId
+  , markJobQueuedEventJobType :: MarkJobQueuedEventJobType
+  , markJobQueuedEventParams :: MarkJobParams
+  , markJobQueuedEventResourceId :: ResourceId
+  , markJobQueuedEventUserId :: UserId
+  , markJobQueuedEventAdditionalProperties :: KM.KeyMap Value
+  } deriving (Eq, Show)
+instance FromJSON MarkJobQueuedEvent where parseJSON = checked "MarkJobQueuedEvent" $ withObject "MarkJobQueuedEvent" (\fields -> MarkJobQueuedEvent <$> (fields .: "jobId") <*> (fields .: "jobType") <*> (fields .: "params") <*> (fields .: "resourceId") <*> (fields .: "userId") <*> traverse parseJSON (withoutFields ["jobId", "jobType", "params", "resourceId", "userId"] fields))
 instance ToJSON MarkJobQueuedEvent where toJSON value = Object (KM.fromList (concat [[("jobId", toJSON (markJobQueuedEventJobId value))], [("jobType", toJSON (markJobQueuedEventJobType value))], [("params", toJSON (markJobQueuedEventParams value))], [("resourceId", toJSON (markJobQueuedEventResourceId value))], [("userId", toJSON (markJobQueuedEventUserId value))]]) <> fmap toJSON (withoutFields ["jobId", "jobType", "params", "resourceId", "userId"] (markJobQueuedEventAdditionalProperties value)))
-
 data MarkJobQueuedEventJobType = MarkJobQueuedEventJobTypeMark deriving (Eq, Show)
-instance FromJSON MarkJobQueuedEventJobType where
-  parseJSON = checked "MarkJobQueuedEventJobType" $ \value -> if value == (String "mark") then pure MarkJobQueuedEventJobTypeMark else fail "unknown enumeration member"
-instance ToJSON MarkJobQueuedEventJobType where
-  toJSON MarkJobQueuedEventJobTypeMark = String "mark"
+instance FromJSON MarkJobQueuedEventJobType where parseJSON = checked "MarkJobQueuedEventJobType" $ \value -> if value == String "mark" then pure MarkJobQueuedEventJobTypeMark else fail "unknown enumeration member"
+instance ToJSON MarkJobQueuedEventJobType where toJSON MarkJobQueuedEventJobTypeMark = String "mark"

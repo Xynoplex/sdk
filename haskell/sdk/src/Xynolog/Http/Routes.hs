@@ -1,10 +1,11 @@
--- Generated from protocol/specs/src/openapi.json and its paths, and the reference credential classifier. Do not edit.
-{-# LANGUAGE GADTs, OverloadedStrings #-}
-module Xynolog.Http.Routes (HttpRoute(..), routeName, routeMethod, routePath, routeStatus, routeMediaType, routeAuthenticated, routeRequestMediaType, routeRequiredHeaders, wireRefusesCredential, busEventName) where
+-- Generated from protocol/specs/src/openapi.json, its paths, and the reference credential classifier; do not edit.
+-- Regenerate: make generate (codegen/lib/haskell_sdk/haskell_sdk.ml)
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE OverloadedStrings #-}
+module Xynolog.Http.Routes (HttpRoute(..), routeName, routeMethod, routePath, routeStatus, routeMediaType, routeRequestMediaType, routeAuthenticated, routeRequiredHeaders, unauthorizedStatus, limitedStatus, refusalField, refusalCode, busEventName) where
+import Data.Aeson.Key (Key)
 import Data.ByteString (ByteString)
 import Data.Text (Text)
-import Data.Aeson (Value(..))
-import qualified Data.Aeson.KeyMap as KM
 import Xynolog.Types
 data HttpRoute request answer where
   GetHealthAtRoot :: HttpRoute () HealthResponse
@@ -150,9 +151,13 @@ routeRequiredHeaders GetResourceRepresentation = []
 routeRequiredHeaders GetResourceAnchoredText = []
 routeRequiredHeaders GetResourceAnnotations = []
 routeRequiredHeaders GetResourceJsonLd = []
-wireRefusesCredential :: Int -> Maybe Value -> Bool
-wireRefusesCredential status body = status == 401 || (status == 429 && maybe False matches body)
-  where matches (Object fields) = KM.lookup "code" fields == Just (String "refusal-rate")
-        matches _ = False
+unauthorizedStatus :: Int
+unauthorizedStatus = 401
+limitedStatus :: Int
+limitedStatus = 429
+refusalField :: Key
+refusalField = "code"
+refusalCode :: Text
+refusalCode = "refusal-rate"
 busEventName :: Text
 busEventName = "bus-event"

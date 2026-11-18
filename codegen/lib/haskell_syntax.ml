@@ -19,6 +19,7 @@ type type_ =
   | T_list of type_
   | T_tuple of type_ list
   | T_fun of type_ * type_
+  | T_promoted of string  (** A constructor as a type: ['Global]. *)
 
 (* What a clause or an alternative matches: a constructor matches what it
    holds by a pattern each, and a variable matches anything and names it. *)
@@ -45,17 +46,28 @@ type expr =
           that associate to the left, so the writer states the grouping Haskell
           reads. An operand that is itself an operation is parenthesised. *)
   | Typed of expr * type_  (** [(e :: T)] *)
+  | If of expr * expr * expr  (** [if c then a else b] *)
+  | Section of string * expr
+      (** [(op e)]: an operator, or a function named in backticks, waiting for
+          its left operand. *)
+  | Do of statement list  (** A statement a line, indented past [do]. *)
+  | Construct of string * (string * expr) list
+      (** [C { f = e, g = e' }]: a record built by its fields' names. *)
+
+and statement = Bind of string * expr  (** [x <- e] *) | Run of expr
 
 type constructor = { constructor : string; fields : type_ list }
 type clause = { patterns : pattern list; body : expr }
 
 (* What an import names of a module: one name, an operator, a type with all
-   of its constructors, or a type with the ones listed. *)
+   of its constructors, or a type with the ones listed; and what an export
+   names besides, every name another module exports. *)
 type item =
   | Plain of string
   | Op of string
   | All of string
   | With of string * string list
+  | Module of string
 
 type import = {
   module_ : string;
@@ -80,6 +92,24 @@ type decl =
       fields : (string * type_) list;
       deriving : string list;
     }  (** A type of one constructor, named as the type, with named fields. *)
+  | Newtype of {
+      about : string list;
+      name : string;
+      field : string option;  (** The accessor, if the field is named. *)
+      type_ : type_;
+      opaque : bool;
+          (** Exported without its constructor, so only the module makes one. *)
+      deriving : string list;
+    }  (** A type of one constructor, named as the type, holding one value. *)
+  | Gadt of {
+      about : string list;
+      name : string;
+      params : (string * string option) list;
+          (** Each type variable, and the kind it is of if stated. *)
+      constructors : (string * type_) list;
+    }  (** A type whose constructors each state their own type. *)
+  | Reexport of string
+      (** Every name the module exports, which this one imports. *)
   | Alias of { about : string list; name : string; type_ : type_ }
   | Value of {
       about : string list;
@@ -99,6 +129,8 @@ type decl =
       instance : type_;
       methods : (string * clause) list;  (** A method's clauses, in order. *)
     }
+  | Private of decl
+      (** A declaration the module keeps to itself: it exports none of it. *)
 
 type module_ = {
   banner : string list;  (** Line comments, each written after a [--]. *)
@@ -193,6 +225,7 @@ let rec type_ = function
   | T_fun (a, b) ->
       (match a with T_fun _ -> "(" ^ type_ a ^ ")" | _ -> type_ a)
       ^ " -> " ^ type_ b
+  | T_promoted name -> "'" ^ checked name
 
 and type_argument = function
   | (T_apply _ | T_fun _) as t -> "(" ^ type_ t ^ ")"
@@ -234,18 +267,43 @@ let rec expr ~depth = function
              (fun (symbol, e) -> [ operator symbol; operand ~depth e ])
              rest)
   | Typed (e, t) -> "(" ^ expr ~depth e ^ " :: " ^ type_ t ^ ")"
+  | If (c, a, b) ->
+      "if " ^ expr ~depth c ^ " then " ^ expr ~depth a ^ " else "
+      ^ expr ~depth b
+  | Section (op, e) ->
+      let op = if identifier op then "`" ^ op ^ "`" else operator op in
+      "(" ^ op ^ " " ^ operand ~depth e ^ ")"
+  | Construct (name, fields) ->
+      checked name ^ " { "
+      ^ String.concat ", "
+          (List.map (fun (f, e) -> variable f ^ " = " ^ expr ~depth e) fields)
+      ^ " }"
+  | Do statements ->
+      "do"
+      ^ String.concat ""
+          (List.map
+             (fun s ->
+               "\n"
+               ^ indentation (depth + 1)
+               ^
+               match s with
+               | Bind (name, e) ->
+                   variable name ^ " <- " ^ expr ~depth:(depth + 1) e
+               | Run e -> expr ~depth:(depth + 1) e)
+             statements)
 
 (* What an operator takes, and what is applied: an application binds tighter
    than either. *)
 and applied ~depth = function
-  | (Compose _ | Dollar _ | Lambda _ | Case _ | Infix _) as e ->
+  | (Compose _ | Dollar _ | Lambda _ | Case _ | Infix _ | If _ | Do _) as e ->
       "(" ^ expr ~depth e ^ ")"
   | e -> expr ~depth e
 
 and operand ~depth = applied ~depth
 
 and argument ~depth = function
-  | (Apply _ | Compose _ | Dollar _ | Lambda _ | Case _ | Infix _) as e ->
+  | ( Apply _ | Compose _ | Dollar _ | Lambda _ | Case _ | Infix _ | If _ | Do _
+    | Construct _ ) as e ->
       "(" ^ expr ~depth e ^ ")"
   | e -> expr ~depth e
 
@@ -267,6 +325,7 @@ let item = function
       checked name ^ "("
       ^ String.concat ", " (List.map checked constructors)
       ^ ")"
+  | Module name -> "module " ^ checked name
 
 let import_line { module_; qualified; items } =
   "import "
@@ -279,10 +338,12 @@ let import_line { module_; qualified; items } =
   | Some items -> " (" ^ String.concat ", " (List.map item items) ^ ")"
 
 let exports = function
-  | Data { name; _ } | Record { name; _ } -> [ All name ]
+  | Data { name; _ } | Record { name; _ } | Gadt { name; _ } -> [ All name ]
+  | Newtype { name; opaque; _ } -> [ (if opaque then Plain name else All name) ]
+  | Reexport name -> [ Module name ]
   | Alias { name; _ } | Value { name; _ } -> [ Plain name ]
   | Values { values; _ } -> List.map (fun (name, _) -> Plain name) values
-  | Instance _ -> []
+  | Instance _ | Private _ -> []
 
 let deriving_clause = function
   | [] -> ""
@@ -295,7 +356,8 @@ let clause_line name { patterns; body } =
   String.concat " " (checked name :: List.map pattern patterns)
   ^ " = " ^ expr ~depth:0 body
 
-let decl = function
+let rec decl = function
+  | Private d -> decl d
   | Data { about; name; params; constructors; deriving } ->
       doc about
       @ [
@@ -320,6 +382,35 @@ let decl = function
                ^ variable field ^ " :: " ^ type_ t)
              fields
       @ [ "  }" ^ deriving_clause deriving ]
+  | Newtype { about; name; field; type_ = t; deriving; _ } ->
+      doc about
+      @ [
+          "newtype " ^ checked name ^ " = " ^ checked name
+          ^ (match field with
+            | None -> " " ^ type_argument t
+            | Some field -> " { " ^ variable field ^ " :: " ^ type_ t ^ " }")
+          ^ deriving_clause deriving;
+        ]
+  | Gadt { name; constructors = []; _ } ->
+      invalid_arg
+        (Printf.sprintf "Haskell_syntax: the type %S has no constructors" name)
+  | Gadt { about; name; params; constructors } ->
+      doc about
+      @ ("data "
+        ^ String.concat " "
+            (checked name
+            :: List.map
+                 (function
+                   | v, None -> variable v
+                   | v, Some kind ->
+                       "(" ^ variable v ^ " :: " ^ checked kind ^ ")")
+                 params)
+        ^ " where")
+        :: List.map
+             (fun (constructor, t) ->
+               indentation 1 ^ checked constructor ^ " :: " ^ type_ t)
+             constructors
+  | Reexport _ -> []
   | Alias { about; name; type_ = t } ->
       doc about @ [ "type " ^ checked name ^ " = " ^ type_ t ]
   | Value { about; name; type_ = t; clauses } ->
@@ -356,6 +447,118 @@ let decl = function
       | methods ->
           head :: List.map (fun m -> indentation 1 ^ method_ ~depth:1 m) methods
       )
+
+(* The names a module's declarations use, by namespace: each type and class
+   a type, an instance or a deriving clause names, and each name, constructor
+   and operator an expression or a pattern refers to, so a writer imports
+   what provides them and nothing else. *)
+type used = { types : string list; values : string list }
+
+let uses body =
+  let types = Hashtbl.create 64 and values = Hashtbl.create 64 in
+  let type_use name = Hashtbl.replace types name () in
+  let use name = Hashtbl.replace values name () in
+  let rec type_ = function
+    | T_name name | T_promoted name -> type_use name
+    | T_apply (name, args) ->
+        type_use name;
+        List.iter type_ args
+    | T_list t -> type_ t
+    | T_tuple ts -> List.iter type_ ts
+    | T_fun (a, b) ->
+        type_ a;
+        type_ b
+  in
+  let rec pattern = function
+    | Constructor (name, held) ->
+        use name;
+        List.iter pattern held
+    | Var _ | Literal _ | Otherwise -> ()
+  in
+  let rec expr = function
+    | Name name -> use name
+    | Str _ | Int _ -> ()
+    | List items | Tuple items -> List.iter expr items
+    | Apply (f, args) ->
+        expr f;
+        List.iter expr args
+    | Compose (f, g) ->
+        use ".";
+        expr f;
+        expr g
+    | Dollar (f, x) ->
+        use "$";
+        expr f;
+        expr x
+    | Lambda (_, body) -> expr body
+    | Case (subject, alternatives) ->
+        expr subject;
+        List.iter
+          (fun (p, e) ->
+            pattern p;
+            expr e)
+          alternatives
+    | Infix (first, rest) ->
+        expr first;
+        List.iter
+          (fun (symbol, e) ->
+            use symbol;
+            expr e)
+          rest
+    | Typed (e, t) ->
+        expr e;
+        type_ t
+    | If (c, a, b) -> List.iter expr [ c; a; b ]
+    | Section (op, e) ->
+        use op;
+        expr e
+    | Do statements ->
+        List.iter (function Bind (_, e) | Run e -> expr e) statements
+    | Construct (name, fields) ->
+        use name;
+        List.iter
+          (fun (f, e) ->
+            use f;
+            expr e)
+          fields
+  in
+  let clause { patterns; body } =
+    List.iter pattern patterns;
+    expr body
+  in
+  let rec declaration = function
+    | Private d -> declaration d
+    | Data { constructors; deriving; _ } ->
+        List.iter (fun c -> List.iter type_ c.fields) constructors;
+        List.iter type_use deriving
+    | Record { fields; deriving; _ } ->
+        List.iter (fun (_, t) -> type_ t) fields;
+        List.iter type_use deriving
+    | Newtype { type_ = t; deriving; _ } ->
+        type_ t;
+        List.iter type_use deriving
+    | Gadt { params; constructors; _ } ->
+        List.iter (fun (_, kind) -> Option.iter type_use kind) params;
+        List.iter (fun (_, t) -> type_ t) constructors
+    | Reexport _ -> ()
+    | Alias { type_ = t; _ } -> type_ t
+    | Value { type_ = t; clauses; _ } ->
+        type_ t;
+        List.iter clause clauses
+    | Values { type_ = t; values; _ } ->
+        type_ t;
+        List.iter (fun (_, e) -> expr e) values
+    | Instance { context; class_; instance; methods } ->
+        List.iter (fun (c, _) -> type_use c) context;
+        type_use class_;
+        type_ instance;
+        List.iter (fun (_, c) -> clause c) methods
+  in
+  List.iter declaration body;
+  let sorted found =
+    List.sort String.compare (List.of_seq (Hashtbl.to_seq_keys found))
+  in
+  { types = sorted types; values = sorted values }
 
 let text m =
   String.concat "\n"

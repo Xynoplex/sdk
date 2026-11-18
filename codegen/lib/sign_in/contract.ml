@@ -86,6 +86,15 @@ let read ~root =
   let document = one "the document" (in_state_home ".json") in
   let lock = one "the lock" (in_state_home ".lock") in
   let offset_high = one "the Windows lock's offset" offsets in
+  (* A writer locks one byte, as a native binding is told. *)
+  if ends ~prefix:"on one byte of the lock file" text = [] then
+    refusals :=
+      {
+        Decode.file;
+        pointer = "";
+        message = "no longer says the lock is on one byte of the lock file";
+      }
+      :: !refusals;
   match List.rev !refusals with
   | [] -> Ok { document; lock; offset_high }
   | errors -> Error errors

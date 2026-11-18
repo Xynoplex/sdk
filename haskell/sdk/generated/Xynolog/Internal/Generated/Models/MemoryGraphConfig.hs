@@ -1,26 +1,15 @@
--- Generated from protocol/specs/src. Run xynolog-codegen; do not edit.
+-- Generated from protocol/specs/src; do not edit.
+-- Regenerate: make generate (codegen/lib/haskell_sdk/haskell_sdk.ml)
 {-# LANGUAGE OverloadedStrings #-}
-
-{-# OPTIONS_GHC -Wno-unused-imports #-}
-module Xynolog.Internal.Generated.Models.MemoryGraphConfig
-  ( MemoryGraphConfig(..)
-  , MemoryGraphConfigType(..)
-  ) where
-import Control.Applicative ((<|>))
+module Xynolog.Internal.Generated.Models.MemoryGraphConfig (MemoryGraphConfig(..), MemoryGraphConfigType(..)) where
 import Data.Aeson (FromJSON(..), ToJSON(..), Value(..), withObject, (.:))
-import Data.Aeson.Types (parseEither)
 import qualified Data.Aeson.KeyMap as KM
-import Data.Scientific (Scientific)
-import Data.Text (Text)
 import Xynolog.Internal.Codec
-import Xynolog.Types.Presence (Presence)
-data MemoryGraphConfig = MemoryGraphConfig { memoryGraphConfigType :: MemoryGraphConfigType } deriving (Eq, Show)
-instance FromJSON MemoryGraphConfig where
-  parseJSON = checked "MemoryGraphConfig" $ withObject "MemoryGraphConfig" (\fields -> MemoryGraphConfig <$> fields .: "type")
+data MemoryGraphConfig = MemoryGraphConfig
+  { memoryGraphConfigType :: MemoryGraphConfigType
+  } deriving (Eq, Show)
+instance FromJSON MemoryGraphConfig where parseJSON = checked "MemoryGraphConfig" $ withObject "MemoryGraphConfig" (\fields -> MemoryGraphConfig <$> (fields .: "type"))
 instance ToJSON MemoryGraphConfig where toJSON value = Object (KM.fromList (concat [[("type", toJSON (memoryGraphConfigType value))]]))
-
 data MemoryGraphConfigType = MemoryGraphConfigTypeMemory deriving (Eq, Show)
-instance FromJSON MemoryGraphConfigType where
-  parseJSON = checked "MemoryGraphConfigType" $ \value -> if value == (String "memory") then pure MemoryGraphConfigTypeMemory else fail "unknown enumeration member"
-instance ToJSON MemoryGraphConfigType where
-  toJSON MemoryGraphConfigTypeMemory = String "memory"
+instance FromJSON MemoryGraphConfigType where parseJSON = checked "MemoryGraphConfigType" $ \value -> if value == String "memory" then pure MemoryGraphConfigTypeMemory else fail "unknown enumeration member"
+instance ToJSON MemoryGraphConfigType where toJSON MemoryGraphConfigTypeMemory = String "memory"

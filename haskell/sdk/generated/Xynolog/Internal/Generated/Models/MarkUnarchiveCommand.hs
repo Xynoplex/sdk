@@ -1,21 +1,18 @@
--- Generated from protocol/specs/src. Run xynolog-codegen; do not edit.
+-- Generated from protocol/specs/src; do not edit.
+-- Regenerate: make generate (codegen/lib/haskell_sdk/haskell_sdk.ml)
 {-# LANGUAGE OverloadedStrings #-}
-
-{-# OPTIONS_GHC -Wno-unused-imports #-}
-module Xynolog.Internal.Generated.Models.MarkUnarchiveCommand
-  ( MarkUnarchiveCommand(..)
-  ) where
-import Control.Applicative ((<|>))
+module Xynolog.Internal.Generated.Models.MarkUnarchiveCommand (MarkUnarchiveCommand(..)) where
 import Data.Aeson (FromJSON(..), ToJSON(..), Value(..), withObject, (.:))
-import Data.Aeson.Types (parseEither)
 import qualified Data.Aeson.KeyMap as KM
-import Data.Scientific (Scientific)
 import Data.Text (Text)
 import Xynolog.Internal.Codec
-import Xynolog.Types.Presence (Presence)
 import Xynolog.Internal.Generated.Models.ResourceId
 import Xynolog.Internal.Generated.Models.UserId
-data MarkUnarchiveCommand = MarkUnarchiveCommand { markUnarchiveCommandU5f_userId :: Maybe (UserId), markUnarchiveCommandResourceId :: ResourceId, markUnarchiveCommandStorageUri :: Maybe (Text), markUnarchiveCommandAdditionalProperties :: KM.KeyMap (Value) } deriving (Eq, Show)
-instance FromJSON MarkUnarchiveCommand where
-  parseJSON = checked "MarkUnarchiveCommand" $ withObject "MarkUnarchiveCommand" (\fields -> MarkUnarchiveCommand <$> optional fields "_userId" <*> fields .: "resourceId" <*> optional fields "storageUri" <*> traverse parseJSON (withoutFields ["_userId", "resourceId", "storageUri"] fields))
+data MarkUnarchiveCommand = MarkUnarchiveCommand
+  { markUnarchiveCommandU5f_userId :: Maybe UserId
+  , markUnarchiveCommandResourceId :: ResourceId
+  , markUnarchiveCommandStorageUri :: Maybe Text
+  , markUnarchiveCommandAdditionalProperties :: KM.KeyMap Value
+  } deriving (Eq, Show)
+instance FromJSON MarkUnarchiveCommand where parseJSON = checked "MarkUnarchiveCommand" $ withObject "MarkUnarchiveCommand" (\fields -> MarkUnarchiveCommand <$> optional fields "_userId" <*> (fields .: "resourceId") <*> optional fields "storageUri" <*> traverse parseJSON (withoutFields ["_userId", "resourceId", "storageUri"] fields))
 instance ToJSON MarkUnarchiveCommand where toJSON value = Object (KM.fromList (concat [optionalPair "_userId" (markUnarchiveCommandU5f_userId value), [("resourceId", toJSON (markUnarchiveCommandResourceId value))], optionalPair "storageUri" (markUnarchiveCommandStorageUri value)]) <> fmap toJSON (withoutFields ["_userId", "resourceId", "storageUri"] (markUnarchiveCommandAdditionalProperties value)))

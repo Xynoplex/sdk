@@ -82,196 +82,6 @@ let whole_key =
         docs = Decode.required o "docs" Decode.string;
       })
 
-type state = { type_ : string; description : string }
-
-let state =
-  Decode.obj (fun o : state ->
-      {
-        type_ = Decode.required o "type" Decode.string;
-        description = Decode.required o "description" Decode.string;
-      })
-
-type verifier = { type_ : string; description : string }
-
-let verifier =
-  Decode.obj (fun o : verifier ->
-      {
-        type_ = Decode.required o "type" Decode.string;
-        description = Decode.required o "description" Decode.string;
-      })
-
-type redirect_uri = { type_ : string; description : string }
-
-let redirect_uri =
-  Decode.obj (fun o : redirect_uri ->
-      {
-        type_ = Decode.required o "type" Decode.string;
-        description = Decode.required o "description" Decode.string;
-      })
-
-type all_of_item = { ref : string }
-
-let all_of_item =
-  Decode.obj (fun o : all_of_item ->
-      { ref = Decode.required o "$ref" Decode.string })
-
-type target = { all_of : all_of_item list; description : string }
-
-let target =
-  Decode.obj (fun o : target ->
-      {
-        all_of = Decode.required o "allOf" (Decode.list all_of_item);
-        description = Decode.required o "description" Decode.string;
-      })
-
-type issuer_properties_issuer = { type_ : string; description : string }
-
-let issuer_properties_issuer =
-  Decode.obj (fun o : issuer_properties_issuer ->
-      {
-        type_ = Decode.required o "type" Decode.string;
-        description = Decode.required o "description" Decode.string;
-      })
-
-type authorization = { type_ : string; description : string }
-
-let authorization =
-  Decode.obj (fun o : authorization ->
-      {
-        type_ = Decode.required o "type" Decode.string;
-        description = Decode.required o "description" Decode.string;
-      })
-
-type token = { type_ : string; description : string }
-
-let token =
-  Decode.obj (fun o : token ->
-      {
-        type_ = Decode.required o "type" Decode.string;
-        description = Decode.required o "description" Decode.string;
-      })
-
-type device = { type_ : string; description : string }
-
-let device =
-  Decode.obj (fun o : device ->
-      {
-        type_ = Decode.required o "type" Decode.string;
-        description = Decode.required o "description" Decode.string;
-      })
-
-type revocation = { type_ : string; description : string }
-
-let revocation =
-  Decode.obj (fun o : revocation ->
-      {
-        type_ = Decode.required o "type" Decode.string;
-        description = Decode.required o "description" Decode.string;
-      })
-
-type issuer_properties = {
-  issuer : issuer_properties_issuer;
-  authorization : authorization;
-  token : token;
-  device : device;
-  revocation : revocation;
-}
-
-let issuer_properties =
-  Decode.obj (fun o : issuer_properties ->
-      {
-        issuer = Decode.required o "issuer" issuer_properties_issuer;
-        authorization = Decode.required o "authorization" authorization;
-        token = Decode.required o "token" token;
-        device = Decode.required o "device" device;
-        revocation = Decode.required o "revocation" revocation;
-      })
-
-type issuer = {
-  type_ : string;
-  description : string;
-  properties : issuer_properties;
-  required : string list;
-}
-
-let issuer =
-  Decode.obj (fun o : issuer ->
-      {
-        type_ = Decode.required o "type" Decode.string;
-        description = Decode.required o "description" Decode.string;
-        properties = Decode.required o "properties" issuer_properties;
-        required = Decode.required o "required" (Decode.list Decode.string);
-      })
-
-type kb_id = { type_ : string; description : string }
-
-let kb_id =
-  Decode.obj (fun o : kb_id ->
-      {
-        type_ = Decode.required o "type" Decode.string;
-        description = Decode.required o "description" Decode.string;
-      })
-
-type expected_did = { type_ : string; description : string }
-
-let expected_did =
-  Decode.obj (fun o : expected_did ->
-      {
-        type_ = Decode.required o "type" Decode.string;
-        description = Decode.required o "description" Decode.string;
-      })
-
-type expected_name = { type_ : string; description : string }
-
-let expected_name =
-  Decode.obj (fun o : expected_name ->
-      {
-        type_ = Decode.required o "type" Decode.string;
-        description = Decode.required o "description" Decode.string;
-      })
-
-type properties = {
-  state : state;
-  verifier : verifier;
-  redirect_uri : redirect_uri;
-  target : target;
-  issuer : issuer;
-  kb_id : kb_id;
-  expected_did : expected_did;
-  expected_name : expected_name;
-}
-
-let properties =
-  Decode.obj (fun o : properties ->
-      {
-        state = Decode.required o "state" state;
-        verifier = Decode.required o "verifier" verifier;
-        redirect_uri = Decode.required o "redirectUri" redirect_uri;
-        target = Decode.required o "target" target;
-        issuer = Decode.required o "issuer" issuer;
-        kb_id = Decode.required o "kbId" kb_id;
-        expected_did = Decode.required o "expectedDid" expected_did;
-        expected_name = Decode.required o "expectedName" expected_name;
-      })
-
-type pending_authorization = {
-  title : string;
-  type_ : string;
-  description : string;
-  properties : properties;
-  required : string list;
-}
-
-let pending_authorization =
-  Decode.obj (fun o : pending_authorization ->
-      {
-        title = Decode.required o "title" Decode.string;
-        type_ = Decode.required o "type" Decode.string;
-        description = Decode.required o "description" Decode.string;
-        properties = Decode.required o "properties" properties;
-        required = Decode.required o "required" (Decode.list Decode.string);
-      })
-
 type id_all_of_item = { ref : string }
 
 let id_all_of_item =
@@ -487,8 +297,9 @@ type t = {
   cache_key_prefix : cache_key_prefix;
   whole_key : whole_key;
   stored_session : Schema.t;
-  pending_authorization : pending_authorization;
+  pending_authorization : Schema.t;
   open_resource : open_resource;
+  open_resource_schema : Schema.t;
   cache_document : cache_document;
   last_event_ids : last_event_ids;
 }
@@ -506,8 +317,9 @@ let decode =
         whole_key = Decode.required o "wholeKey" whole_key;
         stored_session = Decode.required o "storedSession" Schema.decode;
         pending_authorization =
-          Decode.required o "pendingAuthorization" pending_authorization;
+          Decode.required o "pendingAuthorization" Schema.decode;
         open_resource = Decode.required o "openResource" open_resource;
+        open_resource_schema = Decode.required o "openResource" Schema.decode;
         cache_document = Decode.required o "cacheDocument" cache_document;
         last_event_ids = Decode.required o "lastEventIds" last_event_ids;
       })

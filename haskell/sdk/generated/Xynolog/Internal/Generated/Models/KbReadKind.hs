@@ -1,21 +1,11 @@
--- Generated from protocol/specs/src. Run xynolog-codegen; do not edit.
+-- Generated from protocol/specs/src; do not edit.
+-- Regenerate: make generate (codegen/lib/haskell_sdk/haskell_sdk.ml)
 {-# LANGUAGE OverloadedStrings #-}
-
-{-# OPTIONS_GHC -Wno-unused-imports #-}
-module Xynolog.Internal.Generated.Models.KbReadKind
-  ( KbReadKind(..)
-  ) where
-import Control.Applicative ((<|>))
-import Data.Aeson (FromJSON(..), ToJSON(..), Value(..), withObject, (.:))
-import Data.Aeson.Types (parseEither)
-import qualified Data.Aeson.KeyMap as KM
-import Data.Scientific (Scientific)
-import Data.Text (Text)
+module Xynolog.Internal.Generated.Models.KbReadKind (KbReadKind(..)) where
+import Data.Aeson (FromJSON(..), ToJSON(..), Value(..))
 import Xynolog.Internal.Codec
-import Xynolog.Types.Presence (Presence)
 data KbReadKind = KbReadKindRecorded | KbReadKindConflict | KbReadKindNoU2d_verdict deriving (Eq, Show)
-instance FromJSON KbReadKind where
-  parseJSON = checked "KbReadKind" $ \value -> if value == (String "recorded") then pure KbReadKindRecorded else if value == (String "conflict") then pure KbReadKindConflict else if value == (String "no-verdict") then pure KbReadKindNoU2d_verdict else fail "unknown enumeration member"
+instance FromJSON KbReadKind where parseJSON = checked "KbReadKind" $ \value -> if value == String "recorded" then pure KbReadKindRecorded else if value == String "conflict" then pure KbReadKindConflict else if value == String "no-verdict" then pure KbReadKindNoU2d_verdict else fail "unknown enumeration member"
 instance ToJSON KbReadKind where
   toJSON KbReadKindRecorded = String "recorded"
   toJSON KbReadKindConflict = String "conflict"

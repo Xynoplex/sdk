@@ -1,24 +1,15 @@
--- Generated from protocol/specs/src. Run xynolog-codegen; do not edit.
+-- Generated from protocol/specs/src; do not edit.
+-- Regenerate: make generate (codegen/lib/haskell_sdk/haskell_sdk.ml)
 {-# LANGUAGE OverloadedStrings #-}
-
-{-# OPTIONS_GHC -Wno-unused-imports #-}
-module Xynolog.Internal.Generated.Models.JobResult
-  ( JobResult(..)
-  ) where
+module Xynolog.Internal.Generated.Models.JobResult (JobResult(..)) where
 import Control.Applicative ((<|>))
-import Data.Aeson (FromJSON(..), ToJSON(..), Value(..), withObject, (.:))
-import Data.Aeson.Types (parseEither)
-import qualified Data.Aeson.KeyMap as KM
-import Data.Scientific (Scientific)
-import Data.Text (Text)
+import Data.Aeson (FromJSON(..), ToJSON(..))
 import Xynolog.Internal.Codec
-import Xynolog.Types.Presence (Presence)
 import Xynolog.Internal.Generated.Models.JobDeclined
 import Xynolog.Internal.Generated.Models.MarkJobDone
 import Xynolog.Internal.Generated.Models.YieldJobDone
-data JobResult = JobResultBranch1 (MarkJobDone) | JobResultBranch2 (YieldJobDone) | JobResultBranch3 (JobDeclined) deriving (Eq, Show)
-instance FromJSON JobResult where
-  parseJSON = checked "JobResult" $ \value -> (JobResultBranch1 <$> parseJSON value) <|> (JobResultBranch2 <$> parseJSON value) <|> (JobResultBranch3 <$> parseJSON value)
+data JobResult = JobResultBranch1 MarkJobDone | JobResultBranch2 YieldJobDone | JobResultBranch3 JobDeclined deriving (Eq, Show)
+instance FromJSON JobResult where parseJSON = checked "JobResult" $ \value -> (JobResultBranch1 <$> parseJSON value) <|> (JobResultBranch2 <$> parseJSON value) <|> (JobResultBranch3 <$> parseJSON value)
 instance ToJSON JobResult where
   toJSON (JobResultBranch1 value) = toJSON value
   toJSON (JobResultBranch2 value) = toJSON value

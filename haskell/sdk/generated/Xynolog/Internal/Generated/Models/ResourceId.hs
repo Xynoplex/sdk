@@ -1,21 +1,13 @@
--- Generated from protocol/specs/src. Run xynolog-codegen; do not edit.
+-- Generated from protocol/specs/src; do not edit.
+-- Regenerate: make generate (codegen/lib/haskell_sdk/haskell_sdk.ml)
 {-# LANGUAGE OverloadedStrings #-}
-
-{-# OPTIONS_GHC -Wno-unused-imports #-}
-module Xynolog.Internal.Generated.Models.ResourceId
-  ( ResourceId, resourceIdValue, mkResourceId
-  ) where
-import Control.Applicative ((<|>))
-import Data.Aeson (FromJSON(..), ToJSON(..), Value(..), withObject, (.:))
+module Xynolog.Internal.Generated.Models.ResourceId (ResourceId, resourceIdValue, mkResourceId) where
+import Data.Aeson (FromJSON(..), ToJSON(..))
 import Data.Aeson.Types (parseEither)
-import qualified Data.Aeson.KeyMap as KM
-import Data.Scientific (Scientific)
 import Data.Text (Text)
 import Xynolog.Internal.Codec
-import Xynolog.Types.Presence (Presence)
-newtype ResourceId = ResourceId (Text) deriving (Eq, Ord, Show)
-instance FromJSON ResourceId where
-  parseJSON = checked "ResourceId" $ \value -> ResourceId <$> parseJSON value
+newtype ResourceId = ResourceId Text deriving (Eq, Ord, Show)
+instance FromJSON ResourceId where parseJSON = checked "ResourceId" $ \value -> ResourceId <$> parseJSON value
 instance ToJSON ResourceId where toJSON (ResourceId value) = toJSON value
 resourceIdValue :: ResourceId -> Text
 resourceIdValue (ResourceId value) = value
