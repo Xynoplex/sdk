@@ -346,6 +346,7 @@ type t = {
   responses : (string * Openapi.response) list;
   schemas : (string * Schema.t) list;
   tables : tables;
+  table_files : string list;
 }
 
 type kind = Document | Path_item | Response | Table | Schema_file
@@ -573,7 +574,23 @@ let load root =
   in
   match (schemas, census @ unresolved) with
   | Ok schemas, [] ->
-      Ok { gateway; archivist; path_items; responses; schemas; tables }
+      let table_files =
+        Hashtbl.fold
+          (fun file (kind, _) files ->
+            if kind = Table then file :: files else files)
+          decoded []
+        |> List.sort compare
+      in
+      Ok
+        {
+          gateway;
+          archivist;
+          path_items;
+          responses;
+          schemas;
+          tables;
+          table_files;
+        }
   | Ok _, errors -> Error errors
   (* A file that is no JSON Schema leaves the references to it unresolved, so
      its refusal is given in their place. *)
