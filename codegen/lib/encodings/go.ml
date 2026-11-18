@@ -8,7 +8,7 @@ let path = "go/encodings_gen.go"
 
 let pairs ~names rows =
   G.lines
-    ~of_:(G.Slice (G.Struct_type [ (names, G.Named "string") ]))
+    ~of_:(G.Slice (G.Struct_type (names, G.Named "string")))
     (List.map
        (fun (a, b) ->
          G.item (G.inline [ G.item (G.Ascii a); G.item (G.Ascii b) ]))

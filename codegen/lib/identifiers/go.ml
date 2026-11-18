@@ -2,54 +2,10 @@
    (go/api/ids_gen.go): a type of its own for each, made only through the
    kind's rule.
 
-   oapi-codegen writes the rest of package api, and would write each kind as
-   an alias of string, which any text converts to. So go/oapi-codegen.yaml's
-   exclude-schemas names the kinds, and this writes them instead. That list
-   restates the table, so it is held to it here. *)
+   The Go types group writes the rest of package api (go/api/types_gen.go)
+   but the kinds, which it names and leaves to this. *)
 
 let path = "go/api/ids_gen.go"
-let config = "go/oapi-codegen.yaml"
-
-(* The config's exclude-schemas, read as the config writes it: one `- Name`
-   per line, indented four, under the key indented two. *)
-let excluded text =
-  let rec after_key = function
-    | [] -> None
-    | "  exclude-schemas:" :: rest -> Some (names rest)
-    | _ :: rest -> after_key rest
-  and names = function
-    | line :: rest when String.starts_with ~prefix:"    - " line ->
-        String.trim (String.sub line 6 (String.length line - 6)) :: names rest
-    | _ -> []
-  in
-  after_key (String.split_on_char '\n' text)
-
-let held ~root (kinds : Table.kind list) =
-  let refuse message =
-    Error [ { Decode.file = config; pointer = ""; message } ]
-  in
-  let text =
-    In_channel.with_open_bin (Filename.concat root config) In_channel.input_all
-  in
-  let named = List.map (fun (k : Table.kind) -> k.name) kinds in
-  match excluded text with
-  | None | Some [] ->
-      refuse
-        "names no exclude-schemas under output-options, so oapi-codegen would \
-         write each kind of id as a string"
-  | Some excluded -> (
-      let missing = List.filter (fun n -> not (List.mem n excluded)) named in
-      let stray = List.filter (fun n -> not (List.mem n named)) excluded in
-      match (missing, stray) with
-      | [], [] -> Ok ()
-      | _ :: _, _ ->
-          refuse
-            ("exclude-schemas leaves out " ^ String.concat ", " missing
-           ^ ", a kind of id in protocol/specs/src/" ^ Table.file)
-      | [], _ :: _ ->
-          refuse
-            ("exclude-schemas names " ^ String.concat ", " stray
-           ^ ", which is no kind of id in protocol/specs/src/" ^ Table.file))
 
 module G = Go_syntax
 
@@ -88,7 +44,7 @@ let kind (k : Table.kind) =
                   is refused wherever an id is written, and IsZero names it."
                  name);
         name;
-        def = G.Is (G.Struct_type [ ([ "text" ], G.Named "string") ]);
+        def = G.Is (G.Struct_type ([ "text" ], G.Named "string"));
       };
     G.Const (G.spec pattern (G.Quoted k.pattern));
     G.Var (G.spec rule (G.call "regexp.MustCompile" [ G.Name pattern ]));
@@ -172,5 +128,4 @@ let text kinds =
       decls = List.concat_map kind kinds;
     }
 
-let file ~root kinds =
-  Result.map (fun () -> { Output.path; text = text kinds }) (held ~root kinds)
+let file kinds = { Output.path; text = text kinds }

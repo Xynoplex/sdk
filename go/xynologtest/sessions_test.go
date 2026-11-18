@@ -68,7 +68,7 @@ func TestATestSessionIsReadyAtOnceAndSignedInAsNobody(t *testing.T) {
 func TestATestSessionHoldsTheTokenItsSignInHeldAndThenTheOneTheTestSets(t *testing.T) {
 	synctest.Test(t, func(t *testing.T) {
 		var at api.KbEndpoint
-		if err := at.FromHttpEndpoint(api.HttpEndpoint{Kind: api.HttpEndpointKindHttp, Host: "example.org", Port: 443, Protocol: api.HttpEndpointProtocolHttps}); err != nil {
+		if err := at.From(api.HttpEndpoint{Kind: api.HttpEndpointKindHttp, Host: "example.org", Port: 443, Protocol: api.HttpEndpointProtocolHttps}); err != nil {
 			t.Fatal(err)
 		}
 		kb := api.KbTarget{Id: "mine", Label: "Mine", Endpoint: at}
@@ -121,7 +121,7 @@ func alice() api.UserResponse {
 
 func knowledgeBase(kbID string) api.KnowledgeBase {
 	var at api.KbEndpoint
-	if err := at.FromHttpEndpoint(api.HttpEndpoint{Kind: api.HttpEndpointKindHttp, Host: "localhost", Port: 4000, Protocol: api.HttpEndpointProtocolHttp}); err != nil {
+	if err := at.From(api.HttpEndpoint{Kind: api.HttpEndpointKindHttp, Host: "localhost", Port: 4000, Protocol: api.HttpEndpointProtocolHttp}); err != nil {
 		panic(err)
 	}
 	return api.KnowledgeBase{Id: kbID, Label: kbID, Did: "did:web:example.org:" + kbID, Endpoint: at}

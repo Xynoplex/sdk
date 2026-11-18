@@ -118,12 +118,12 @@ func ParseDiscoveryDocument(text string) DiscoveryState {
 	if raw, has := members["version"]; !has || string(raw) == "null" || json.Unmarshal(raw, &version) != nil {
 		return invalid(`missing numeric "version"`)
 	}
-	if version != int64(api.DiscoveryDocumentVersionN1) {
+	if version != int64(api.DiscoveryDocumentVersion1) {
 		return Absent{
 			Reason: UnsupportedVersion,
 			Diagnostic: fmt.Sprintf(
 				"discovery document version %d is not the one this client speaks (%d); it is not read in part",
-				version, api.DiscoveryDocumentVersionN1,
+				version, api.DiscoveryDocumentVersion1,
 			),
 		}
 	}

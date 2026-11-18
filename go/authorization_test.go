@@ -28,8 +28,8 @@ func TestTheChallengeIsTheOneRFC7636GivesForItsVerifier(t *testing.T) {
 // gatewayEndpoint is the HTTP endpoint the stand-in gateway is at.
 func gatewayEndpoint(t *testing.T, s *stack) api.HttpEndpoint {
 	t.Helper()
-	endpoint, err := gatewayTarget(t, "kb-a", s.gateway.URL).Endpoint.AsHttpEndpoint()
-	if err != nil {
+	var endpoint api.HttpEndpoint
+	if err := gatewayTarget(t, "kb-a", s.gateway.URL).Endpoint.As(&endpoint); err != nil {
 		t.Fatal(err)
 	}
 	return endpoint

@@ -320,16 +320,11 @@ func (s *stream) subscription() api.BusSubscribeRequest {
 	for i, channel := range s.shared.global {
 		global[i] = string(channel)
 	}
-	type scopedEntry = struct {
-		Channels    []string       `json:"channels"`
-		LastEventId *string        `json:"lastEventId,omitempty"`
-		Scope       api.ResourceId `json:"scope"`
-	}
-	scoped := []scopedEntry{}
+	scoped := []api.BusSubscribeRequestScopedItem{}
 	for _, scope := range slices.SortedFunc(maps.Keys(s.scoped), func(a, b api.ResourceId) int {
 		return strings.Compare(a.String(), b.String())
 	}) {
-		entry := scopedEntry{Channels: s.scoped[scope], Scope: scope}
+		entry := api.BusSubscribeRequestScopedItem{Channels: s.scoped[scope], Scope: scope}
 		if position, ok := s.watermarks[scope]; ok {
 			entry.LastEventId = &position
 		}

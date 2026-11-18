@@ -160,33 +160,19 @@ case "${1:-}" in
       python3 check-boundary.py ..' --memory 4g
     ;;
   generate|check-generated)
-    # The Node groups are codegen/node/package.json's generate:<group>, in the
-    # order it lists them; the OCaml groups are xynolog-codegen's. check-generated
-    # compares each group's files with the committed ones and writes nothing.
-    # generate writes into the checkout itself, and builds xynolog-codegen in a
-    # copy of codegen/, never in the checkout.
+    # The groups are xynolog-codegen's. check-generated compares each group's
+    # files with the committed ones and writes nothing. generate writes into
+    # the checkout itself, and builds xynolog-codegen in a copy of codegen/,
+    # never in the checkout.
     bash "$ROOT/scripts/bundle-protocol.sh"
     ocaml_toolchain_image
-    suffix=""
-    [[ "$1" == check-generated ]] && suffix=:check
-    node_groups='
-      cd typescript
-      npm install --no-package-lock --ignore-scripts
-      ln -sfn ../../typescript/node_modules ../codegen/node/node_modules
-      cd ../codegen/node
-      for script in $(node -p "Object.keys(require(\"./package.json\").scripts).filter((s) => /^generate:[a-z-]+$/.test(s)).join(\" \")"); do
-        npm run --silent "$script'"$suffix"'"
-      done'
     if [[ "$1" == generate ]]; then
-      "$RUNTIME" run --rm --volume "$ROOT:/sdk" --workdir /sdk node:26-bookworm bash -euc "$node_groups"
       "$RUNTIME" run --rm --volume "$ROOT:/sdk" --workdir /tmp --memory 4g xynolog-ocaml-toolchain bash -euc '
         cp -a /sdk/codegen /tmp/codegen
         cd /tmp/codegen
         dune build ./bin/main.exe
         dune exec -- xynolog-codegen generate /sdk'
     else
-      in_container node:26-bookworm "cd /tmp/sdk
-$node_groups"
       in_container xynolog-ocaml-toolchain '
         cd /tmp/sdk/codegen
         dune build ./bin/main.exe

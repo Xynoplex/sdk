@@ -142,8 +142,8 @@ func gatewayOf(kb api.KbTarget) (string, error) {
 	if kind != string(api.HttpEndpointKindHttp) {
 		return "", &SessionError{Code: SessionErrorCodeConstructFailed, Message: fmt.Sprintf("A session over HTTP cannot be built for endpoint kind %q", kind), KbID: kb.Id}
 	}
-	endpoint, err := kb.Endpoint.AsHttpEndpoint()
-	if err != nil {
+	var endpoint api.HttpEndpoint
+	if err := kb.Endpoint.As(&endpoint); err != nil {
 		return "", &SessionError{Code: SessionErrorCodeConstructFailed, Message: fmt.Sprintf("The knowledge base's endpoint cannot be read: %v", err), KbID: kb.Id}
 	}
 	baseURL, err := GatewayURL(endpoint)

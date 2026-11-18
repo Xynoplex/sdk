@@ -80,7 +80,7 @@ func fragments(anchored api.AnchoredText, text offsets, span TextSpan) ([]api.Se
 	conformsTo := pdfFragments
 	selectors := make([]api.Selector, len(rectangles))
 	for i, at := range rectangles {
-		if err := selectors[i].FromFragmentSelector(api.FragmentSelector{
+		if err := selectors[i].From(api.FragmentSelector{
 			Type: api.FragmentSelectorTypeFragmentSelector, ConformsTo: &conformsTo, Value: fragmentOf(at),
 		}); err != nil {
 			return nil, err
@@ -119,7 +119,7 @@ func selectorsOf(of OfSpan) ([]api.Selector, error) {
 			return nil, refused(xynolog.SpanRefusalExactMismatch, "the text from offset %d to offset %d is not the span's words", span.Start, span.End)
 		}
 		where = make([]api.Selector, 1)
-		if err := where[0].FromTextPositionSelector(api.TextPositionSelector{
+		if err := where[0].From(api.TextPositionSelector{
 			Type: api.TextPositionSelectorTypeTextPositionSelector, Start: span.Start, End: span.End,
 		}); err != nil {
 			return nil, err
@@ -145,7 +145,7 @@ func selectorsOf(of OfSpan) ([]api.Selector, error) {
 		quote.Suffix = &span.Suffix
 	}
 	var quoted api.Selector
-	if err := quoted.FromTextQuoteSelector(quote); err != nil {
+	if err := quoted.From(quote); err != nil {
 		return nil, err
 	}
 	return append(where, quoted), nil
@@ -178,19 +178,19 @@ func built(target api.AnnotationTarget, motivation api.Motivation, anchor string
 		return api.Annotation{}, err
 	}
 	annotation := api.Annotation{
-		Context:    api.AnnotationContextHttpwwwW3OrgnsannoJsonld,
+		Context:    api.AnnotationContextHttpWwwW3OrgNsAnnoJsonld,
 		Type:       api.AnnotationTypeAnnotation,
 		Id:         id,
 		Motivation: motivation,
 		Body:       body,
 		Created:    time.Now().UTC().Format("2006-01-02T15:04:05.000Z07:00"),
 	}
-	if err := annotation.Target.FromAnnotationTarget(target); err != nil {
+	if err := annotation.Target.From(target); err != nil {
 		return api.Annotation{}, err
 	}
 	if generator != nil {
 		annotation.Generator = &api.OneOrMoreAgents{}
-		if err := annotation.Generator.FromAgent(*generator); err != nil {
+		if err := annotation.Generator.From(*generator); err != nil {
 			return api.Annotation{}, err
 		}
 	}
@@ -226,7 +226,7 @@ func AnnotationOfSpan(of OfSpan) (api.Annotation, error) {
 		return api.Annotation{}, err
 	}
 	var selector api.AnnotationSelector
-	if err := selector.FromAnnotationSelector1(selectors); err != nil {
+	if err := selector.From(api.AnnotationSelectorList(selectors)); err != nil {
 		return api.Annotation{}, err
 	}
 	specificResource := api.AnnotationTargetTypeSpecificResource

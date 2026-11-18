@@ -66,7 +66,7 @@ func (n *YieldNamespace) Delegate(params api.GenerationJobParams, stallDeadline 
 		within = generationStallDeadline(n.links.timing, params.MaxTokens)
 	}
 	var create api.JobCreateCommand
-	if err := create.FromYieldJobCreateCommand(api.YieldJobCreateCommand{JobType: api.YieldJobCreateCommandJobTypeYield, Params: params}); err != nil {
+	if err := create.From(api.YieldJobCreateCommand{JobType: api.YieldJobCreateCommandJobTypeYield, Params: params}); err != nil {
 		return refused[api.YieldJobCompleteCommand](n.links, err)
 	}
 	return follow[api.YieldJobCompleteCommand](n.links, create, api.JobTypeYield, about, &within)
@@ -88,9 +88,9 @@ func focusOf(gathered api.GatheredContext) (api.ResourceId, error) {
 		return api.ResourceId{}, err
 	}
 	switch {
-	case named.Kind == string(api.GatheredContextFocus1KindResource) && named.Resource != nil:
+	case named.Kind == string(api.GatheredContextFocusResourceKindResource) && named.Resource != nil:
 		return named.Resource.Id, nil
-	case named.Kind == string(api.GatheredContextFocus0KindAnnotation) && named.SourceResource != nil:
+	case named.Kind == string(api.GatheredContextFocusAnnotationKindAnnotation) && named.SourceResource != nil:
 		return named.SourceResource.Id, nil
 	}
 	return api.ResourceId{}, transportErrorWithoutResponse("a gathered context whose focus names no resource", TransportErrorCodeError)

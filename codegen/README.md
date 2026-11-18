@@ -46,7 +46,7 @@ per language it writes:
   each bus channel's
   payload and each HTTP operation's reply, which `Required.Event` derives
   for every reader of a channel's events. `Required.Go` holds it to the
-  types `go/api` declares.
+  types the `go-types` group declares.
 - `unicode-case`: the code points Unicode gives the Cased and the
   Case_Ignorable property, for the C#, Kotlin and Go SDKs, whose runtimes
   give neither. `Ucd` reads them from Unicode's own
@@ -93,8 +93,7 @@ per language it writes:
 - `identifiers`: the kinds of id, from `identifiers/kinds.json` and each
   kind's schema, for the Go, Python and TypeScript SDKs: a type of its own
   per kind, made only through the kind's pattern. `Identifiers.Table` holds
-  each kind to a string schema with a pattern, and `Identifiers.Go` holds
-  `go/oapi-codegen.yaml`'s excluded schemas to the kinds.
+  each kind to a string schema with a pattern.
 - `oauth-clients`: the client ids a client signs in as and the scope it asks
   for, from `session/oauth.json`, for the Go, Python, TypeScript, OCaml and
   Haskell SDKs. A client is named in lowercase letters, once.
@@ -201,6 +200,13 @@ per language it writes:
   `sign-in` and `media-types` groups each write the Kotlin SDK's file of
   their own table. `Kotlin_syntax` is the Kotlin they are built of, laid out
   as ktlint leaves it.
+- `go-types`: the Go SDK's package `api` (`go/api/types_gen.go`), a type for
+  every component schema and every schema it reaches but the kinds of id,
+  which `identifiers` writes. A union embeds the hand-written generic
+  `union` (`go/api/union.go`); `Go_syntax` is the Go it is built of, laid out
+  as gofmt leaves it. It reads the schemas as Rust's types do, through `View`
+  (a `$ref`'s schema, a union's members, an `allOf` as one object) and names
+  what it writes in place by `Naming`.
 
 `Text` measures and spells text: a width in code points, a word ended by
 ASCII white space, a string as JSON writes it or as a Go or Python literal

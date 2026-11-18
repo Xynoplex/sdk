@@ -51,8 +51,8 @@ replace github.com/xynolog/sdk/go => ../../go
 It requires the Go toolchain its `go.mod` names. One module holds all of it:
 the client, the transport that carries it over HTTP to a knowledge base's
 gateway, signing in, the state units (package `state`) and the doubles a test
-is built on (package `xynologtest`). Its dependencies are `oapi-codegen`'s
-runtime, `google/uuid`, OpenTelemetry's API and `golang.org/x/text`.
+is built on (package `xynologtest`). Its dependencies are `google/uuid`,
+OpenTelemetry's API and `golang.org/x/text`.
 
 A client speaks to a running knowledge base. The [Quick Start][quick-start]
 sets one up on your own machine.
@@ -1126,7 +1126,7 @@ log keeps) is written as `[withheld]`.
 | Package | Holds | Generated from |
 |---|---|---|
 | `xynolog` | The client (`Client`, `NewClient`) and its eleven namespaces; `Cached`, `Running`, `Delegation` and `Upload`; the cache, its refresher and what it keeps (`Cache`, `CachePersistence`, `SessionStorage`, `MemoryStorage`, `CoupledBookmarks`); `Claims` and the held jobs; `HTTPTransport`, `HTTPContentTransport`, `Wire` and the client's own `EventBus`; signing in (`SessionFromKept`, `ResumeSession`, `SignInWithDevice`, `SignOut`, `SignInAgent`, `NewServiceToken`, with a `SecretCredential` or a `KeyCredential`) and `Session`; a person's sign-in by a page redirect (`BeginAuthorization`, `CompleteAuthorization`, `DescribeConnection`); the sign-in store (`SignInStore`, `StateDir`); `SessionSignals`, `StateUnit`, `Variable` and `Watched`; the readers of a resource (`PrimaryRepresentation`, `PrimaryMediaType`, `ResourceEntityTypes`, `DecodeRepresentation`); how a knowledge base and its principals are named (`KbDid`, `PersonDid`, `AgentDid` and the rest); `GatewayURL`; the retry rules; and the generated tables: the failure codes (`errorcodes_gen.go`), the timing (`timing_gen.go`), the refresh table (`refresh_gen.go`), the telemetry names (`telemetry_gen.go`), the sign-in store's entry (`signin_gen.go`), the modes and the directory's and a file's access lists that keep the store and the launcher's state home to their owner (`owneronly_gen.go`: `OwnerOnlyDirMode`, `OwnerOnlyFileMode`, `OwnerOnlyDirAccessList`, `OwnerOnlyFileAccessList`), the OAuth clients (`oauthclients_gen.go`) and the Encoding Standard's labels (`encodings_gen.go`) | hand-written; [`protocol/specs/src/errors/codes.json`][codes]; [`protocol/specs/src/client/timing.json`](../../../protocol/specs/src/client/timing.json); [`protocol/specs/src/client/refresh.json`][refresh]; [`protocol/specs/src/sdk-telemetry/telemetry.json`][telemetry]; [`protocol/specs/src/sign-in-store/SignIn.json`](../../../protocol/specs/src/sign-in-store/SignIn.json); [`protocol/specs/src/sign-in-store/owner-only.json`](../../../protocol/specs/src/sign-in-store/owner-only.json); [`protocol/specs/src/session/oauth.json`](../../../protocol/specs/src/session/oauth.json) |
-| `api` | `client_gen.go`: a Go type for every schema of the spec, and a typed HTTP call for every operation. `ids_gen.go`: the kinds of id, each a type made only through its kind's rule (`ParseResourceId` and the others). `required_lists_gen.go`: each type that holds a list its schema requires writes it as `[]` where Go holds it as nil, so a caller may leave an empty list nil | [`protocol/specs/src/openapi.json`](../../../protocol/specs/src/openapi.json), bundled; [`protocol/specs/src/identifiers/kinds.json`](../../../protocol/specs/src/identifiers/kinds.json); each component schema's `required` |
+| `api` | `types_gen.go`: a Go type for every component schema of the spec; each type that holds a list its schema requires writes it as `[]` where Go holds it as nil, so a caller may leave an empty list nil. `ids_gen.go`: the kinds of id, each a type made only through its kind's rule (`ParseResourceId` and the others). `union.go` and `written.go`: how a union and an object that keeps the members its schema does not name are read and written | [`protocol/specs/src/openapi.json`](../../../protocol/specs/src/openapi.json), bundled; [`protocol/specs/src/identifiers/kinds.json`](../../../protocol/specs/src/identifiers/kinds.json); each component schema's `required` |
 | `bus` | The bus's channels, each typed by its payload, its request and reply operations, and the channels a transport delivers | [`protocol/specs/src/bus/registry.json`](../../../protocol/specs/src/bus/registry.json) |
 | `state` | The state units a client's bus moves | hand-written |
 | `annotations` | Reading an annotation, building one of a span or of a resource, and `Reconcile`; and the generated table of Unicode's Cased and Case_Ignorable properties (`unicodecase_gen.go`), which decide whether a capital sigma ends a word | hand-written; Unicode's [`DerivedCoreProperties.txt`](../codegen/ucd/DerivedCoreProperties.txt), by [`codegen/lib/unicode_case`](../codegen/lib/unicode_case) |
@@ -1143,44 +1143,27 @@ differs from what the spec generates.
 
 ## Regenerating
 
-Nothing regenerates by itself. When the spec changes, the client:
+Nothing regenerates by itself. When the spec changes:
 
 ```sh
-cd go && go generate ./...
+make generate
 ```
 
-That runs the pinned generator (`oapi-codegen@v2.6.0`) in a `golang`
-container at the toolchain `go.mod` names, so no Go is needed on the host. It
-reads the bundle `npm run openapi:bundle` writes and rewrites `api/client_gen.go`.
-Commit the result. CI runs the same generator and fails while the committed
-client differs from what the spec generates.
+That runs the generator, [`codegen/`](../codegen), in a container, so no Go
+or OCaml is needed on the host, and rewrites every generated file of every
+SDK, this module's among them. Commit the result. CI runs
+`make check-generated`, which writes nothing, and fails while a committed file
+differs from what the spec generates.
 
-What the generator is told is in [`oapi-codegen.yaml`](oapi-codegen.yaml), the
-one file `go generate`, CI and `make build` all give it. Each
-of the three adds only the spec's path and the path it writes to.
-
-Generation covers the whole spec on purpose: a Go type for every schema and a
-complete typed call for every operation. The file sets `skip-prune`, because
-oapi-codegen otherwise drops every schema no HTTP path reaches, which is the
-whole of the bus's payload vocabulary. The drift check compares the generator
-with itself and cannot see that kind of gap, so a second check in CI
-(`go/scripts/check-go-schema-coverage.mjs`) holds the count of generated types
-to the count of schemas in the spec.
-
-The file also sets `always-prefix-enum-values`: every enum constant is named
-by its type and then its value, as `LogFormatJson` is the `json` of
-`LogFormat`. A schema that reuses a value another schema has renames no
-constant.
-
-The bus's channels are written by the generator's bus group
-(`codegen/lib/bus`), which `make generate` runs with every other group, and
-`make check-generated` verifies without writing, as CI does. The SDK's tables:
-
-```sh
-npm run generate:go           # the Go SDK's tables
-```
-
-`generate:go` has a `:check` form that verifies without writing.
+Package `api`'s types are its Go types group
+([`codegen/lib/go_types`](../codegen/lib/go_types)): a type for every
+component schema and every schema it reaches, so the bus's payloads too, which
+no HTTP path reaches. An enumeration's constants are named by the type and
+then the value, as `LogFormatJson` is the `json` of `LogFormat`, so a schema
+that reuses another's value renames no constant. A union holds its value as
+the wire carries it ([`api/union.go`](api/union.go)): `From` sets it to one of
+its members, `As` reads it into one, and a union that holds no member is
+refused when it is written.
 
 ## Working on it
 
