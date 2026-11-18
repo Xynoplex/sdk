@@ -77,6 +77,25 @@ let thing pattern =
 let identifier pattern =
   generated ~identifiers:[ "ThingId" ] (thing pattern) "ThingId"
 
+(* A file no directory of schemas holds, so written in place, that names
+   itself. *)
+let looped_file = "in-place/Loop.json"
+
+let looped_schema =
+  match
+    Decode.run ~file:looped_file
+      (Yojson.Safe.from_string
+         {|{"type": "object", "properties": {"next": {"$ref": "Loop.json"}}}|})
+      Schema.decode
+  with
+  | Ok (s, _) -> s
+  | Error e -> failwith (Decode.error_to_string e)
+
+let looped =
+  let schemas = Hashtbl.create 1 in
+  Hashtbl.replace schemas looped_file looped_schema;
+  schemas
+
 let cases =
   [
     case "a type written for a component schema names it, and an alias does not"
@@ -511,6 +530,14 @@ let cases =
            generated
              [ ("InvalidIdentifier", {|{"type": "string"}|}) ]
              "InvalidIdentifier"));
+    case "a file written in place that reaches itself is refused"
+      (refused "reaches itself" (fun () ->
+           ignore (D.view ~named:(fun _ -> None) ~schemas:looped looped_schema);
+           ""));
+    case "a file written in place that reaches itself has no references"
+      (refused "reaches itself" (fun () ->
+           String.concat " "
+             (D.references ~named:(fun _ -> None) ~schemas:looped looped_schema)));
   ]
 
 let () = Alcotest.run "rust_types" [ ("types", cases) ]

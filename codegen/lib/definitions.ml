@@ -68,103 +68,114 @@ type definitions = {
 
 let stem file = Filename.remove_extension (Filename.basename file)
 
+(* A file written in place that reaches itself would be written in place
+   without end. *)
+let in_place ~trail file =
+  if List.mem file trail then
+    refuse "%s reaches itself through the files written in its place" file;
+  file :: trail
+
 (* The view of a schema written in [file], each [$ref] it holds resolved by
    [named] or written in place from [schemas]. *)
-let rec view ~named ~schemas (s : Schema.t) =
-  match s with
-  | Schema.Boolean_schema b -> Bool b
-  | Schema.Schema ({ ref_ = Some r; _ } as _s) -> (
-      let file, pointer = Decode.resolve r in
-      if pointer <> "" then
-        refuse
-          "$ref %s points into a file: protocol/specs/src refers to whole files"
-          r.target;
-      match named file with
-      | Some name -> Ref name
-      | None -> (
-          match Hashtbl.find_opt schemas file with
-          | Some target -> view ~named ~schemas target
-          | None -> refuse "$ref %s names no schema" r.target))
-  | Schema.Schema s -> (
-      let sub = view ~named ~schemas in
-      let subs = Option.map (List.map sub) in
-      let nullable = s.nullable = Some true in
-      let keys =
-        List.filter
-          (fun k -> not (nullable && k = "nullable"))
-          (Schema.keywords s)
-      in
-      let types =
-        match s.type_ with
-        | None -> None
-        | Some [ t ] -> Some (One t)
-        | Some _ ->
-            refuse "a schema of several types the generator does not know"
-      in
-      let own =
-        {
-          keys;
-          description = s.description;
-          type_ = types;
-          enum = s.enum;
-          const = Option.is_some s.const;
-          properties =
-            Option.map (List.map (fun (k, v) -> (k, sub v))) s.properties;
-          required = s.required;
-          additional_properties = Option.map sub s.additional_properties;
-          max_properties = s.max_properties;
-          minimum = s.minimum;
-          maximum = s.maximum;
-          items = Option.map sub s.items;
-          all_of = subs s.all_of;
-          any_of = subs s.any_of;
-          one_of = subs s.one_of;
-          discriminator =
-            Option.map
-              (fun (d : Schema.discriminator) -> d.property_name)
-              s.discriminator;
-          pattern = s.pattern;
-        }
-      in
-      if not nullable then Node own
-      else
-        match types with
-        | Some (One t) -> Node { own with type_ = Some (Or_null t) }
-        | _ -> Node { (node [ "anyOf" ]) with any_of = Some [ Null; Node own ] }
-      )
+let view ~named ~schemas =
+  let rec view trail (s : Schema.t) =
+    match s with
+    | Schema.Boolean_schema b -> Bool b
+    | Schema.Schema ({ ref_ = Some r; _ } as _s) -> (
+        let file, pointer = Decode.resolve r in
+        if pointer <> "" then
+          refuse
+            "$ref %s points into a file: protocol/specs/src refers to whole \
+             files"
+            r.target;
+        match named file with
+        | Some name -> Ref name
+        | None -> (
+            match Hashtbl.find_opt schemas file with
+            | Some target -> view (in_place ~trail file) target
+            | None -> refuse "$ref %s names no schema" r.target))
+    | Schema.Schema s -> (
+        let sub = view trail in
+        let subs = Option.map (List.map sub) in
+        let nullable = s.nullable = Some true in
+        let keys =
+          List.filter
+            (fun k -> not (nullable && k = "nullable"))
+            (Schema.keywords s)
+        in
+        let types =
+          match s.type_ with
+          | None -> None
+          | Some [ t ] -> Some (One t)
+          | Some _ ->
+              refuse "a schema of several types the generator does not know"
+        in
+        let own =
+          {
+            keys;
+            description = s.description;
+            type_ = types;
+            enum = s.enum;
+            const = Option.is_some s.const;
+            properties =
+              Option.map (List.map (fun (k, v) -> (k, sub v))) s.properties;
+            required = s.required;
+            additional_properties = Option.map sub s.additional_properties;
+            max_properties = s.max_properties;
+            minimum = s.minimum;
+            maximum = s.maximum;
+            items = Option.map sub s.items;
+            all_of = subs s.all_of;
+            any_of = subs s.any_of;
+            one_of = subs s.one_of;
+            discriminator =
+              Option.map
+                (fun (d : Schema.discriminator) -> d.property_name)
+                s.discriminator;
+            pattern = s.pattern;
+          }
+        in
+        if not nullable then Node own
+        else
+          match types with
+          | Some (One t) -> Node { own with type_ = Some (Or_null t) }
+          | _ ->
+              Node { (node [ "anyOf" ]) with any_of = Some [ Null; Node own ] })
+  in
+  view []
 
 (* Every [$ref] a schema holds, through the files written in its place. *)
-let rec references ~named ~schemas (s : Schema.t) =
-  match s with
-  | Schema.Boolean_schema _ -> []
-  | Schema.Schema { ref_ = Some r; _ } -> (
-      let file, _ = Decode.resolve r in
-      match named file with
-      | Some _ -> [ file ]
-      | None -> (
-          match Hashtbl.find_opt schemas file with
-          | Some target -> references ~named ~schemas target
-          | None -> []))
-  | Schema.Schema s ->
-      let each = List.concat_map (references ~named ~schemas) in
-      let opt = function
-        | None -> []
-        | Some x -> references ~named ~schemas x
-      in
-      let opts = function None -> [] | Some xs -> each xs in
-      List.concat
-        [
-          (match s.properties with
-          | None -> []
-          | Some ps -> each (List.map snd ps));
-          opt s.additional_properties;
-          opt s.property_names;
-          opt s.items;
-          opts s.all_of;
-          opts s.any_of;
-          opts s.one_of;
-          opt s.not_;
-        ]
+let references ~named ~schemas =
+  let rec references trail (s : Schema.t) =
+    match s with
+    | Schema.Boolean_schema _ -> []
+    | Schema.Schema { ref_ = Some r; _ } -> (
+        let file, _ = Decode.resolve r in
+        match named file with
+        | Some _ -> [ file ]
+        | None -> (
+            match Hashtbl.find_opt schemas file with
+            | Some target -> references (in_place ~trail file) target
+            | None -> []))
+    | Schema.Schema s ->
+        let each = List.concat_map (references trail) in
+        let opt = function None -> [] | Some x -> references trail x in
+        let opts = function None -> [] | Some xs -> each xs in
+        List.concat
+          [
+            (match s.properties with
+            | None -> []
+            | Some ps -> each (List.map snd ps));
+            opt s.additional_properties;
+            opt s.property_names;
+            opt s.items;
+            opts s.all_of;
+            opts s.any_of;
+            opts s.one_of;
+            opt s.not_;
+          ]
+  in
+  references []
 
 let response_schemas (r : Openapi.response) =
   match r.content with
