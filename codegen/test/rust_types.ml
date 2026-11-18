@@ -110,11 +110,8 @@ let cases =
             ]
             "Holder"
         in
-        has code
-          "impl Schema for Holder {\n\
-          \    const NAME: &'static str = \"Holder\";\n\
-           }";
-        Alcotest.(check int) "one" 1 (count code "impl Schema for"));
+        has code "schema!(Holder);";
+        Alcotest.(check int) "one" 1 (count code "schema!("));
     case
       "a kind of id is a type of its own that decodes through its constructor"
       (fun () ->
@@ -427,13 +424,8 @@ let cases =
             ]
             "Holder"
         in
-        has code
-          "impl From<Target> for Holder {\n\
-          \    fn from(member: Target) -> Self {\n\
-          \        Holder::Target(member)\n\
-          \    }\n\
-           }";
-        Alcotest.(check int) "one" 1 (count code "impl From<"));
+        has code "member!(Holder::Target(Target));";
+        Alcotest.(check int) "one" 1 (count code "member!("));
     case
       "a union told apart by a property is decoded as the member the property \
        names, and says which value it states" (fun () ->

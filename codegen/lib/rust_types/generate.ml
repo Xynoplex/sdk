@@ -169,7 +169,14 @@ let derive paths =
         paths )
 
 let serde metas = R.List ([ "serde" ], metas)
-let blank_between items = List.concat_map (fun i -> [ i; R.Blank ]) items
+
+(* [items] a blank line apart, but for calls of the type macros, which are
+   one block of lines. *)
+let rec blank_between = function
+  | [] -> []
+  | (R.Macro_item _ as call) :: (R.Macro_item _ :: _ as rest) ->
+      call :: blank_between rest
+  | item :: rest -> item :: R.Blank :: blank_between rest
 
 let impl ?(generics = []) ?trait_ for_ items =
   R.Impl { generics; trait_; for_; items }
@@ -325,20 +332,12 @@ let rec named st name =
     let items =
       if alias then items
       else
-        items
-        @ [
-            impl ~trait_:(ty schema_trait) (ty name)
-              [
-                R.I_const
-                  {
-                    doc = [];
-                    vis = Private;
-                    name = "NAME";
-                    ty = R.static_str;
-                    value = Some (R.Str name);
-                  };
-              ];
-          ]
+        let calls_before =
+          match List.rev items with
+          | R.Blank :: (R.Macro_item _ :: _ as before) -> List.rev before
+          | _ -> items
+        in
+        calls_before @ [ R.Macro_item ("schema", [ R.p name ]) ]
     in
     Hashtbl.replace st.written name items);
   ty name
@@ -1170,19 +1169,12 @@ and union_declaration st name members told_apart doc =
          (fun member (variant, rust_type) ->
            if reference member <> None && not (is_string st member) then
              [
-               impl
-                 ~trait_:(generic "From" [ rust_type ])
-                 self_name
-                 [
-                   R.I_fn
-                     (R.fn_ "from"
-                        ~params:[ R.Param ("member", rust_type) ]
-                        ~ret:(ty "Self")
-                        [
-                          R.Tail
-                            (R.Call (path [ name; variant ], [ R.p "member" ]));
-                        ]);
-                 ];
+               R.Macro_item
+                 ( "member",
+                   [
+                     R.Call
+                       (path [ name; variant ], [ R.p (R.type_text rust_type) ]);
+                   ] );
              ]
            else [])
          members variants)

@@ -396,46 +396,23 @@ public struct FidelityFixture: Codable, Sendable {
   }
   public init(from decoder: any Decoder) throws {
     let c = try decoder.container(keyedBy: WireKey.self)
-    if !c.contains(WireKey("optionalNullable")) {
-      self.optionalNullable = .absent
-    } else if try c.decodeNil(forKey: WireKey("optionalNullable")) {
-      self.optionalNullable = .null
-    } else {
-      self.optionalNullable = .value(try c.decode(String.self, forKey: WireKey("optionalNullable")))
-    }
-    self.optionalValue =
-      c.contains(WireKey("optionalValue"))
-      ? try c.decode(String.self, forKey: WireKey("optionalValue")) : nil
-    self.requiredNullable = try c.decode(Optional<String>.self, forKey: WireKey("requiredNullable"))
-    self.requiredValue = try c.decode(String.self, forKey: WireKey("requiredValue"))
-    rest = [:]
-    for key in c.allKeys
-    where !Set<String>(["optionalNullable", "optionalValue", "requiredNullable", "requiredValue"])
-      .contains(key.stringValue)
-    { rest[key.stringValue] = try c.decode(JSONValue.self, forKey: key) }
+    self.optionalNullable = try c.stated("optionalNullable")
+    self.optionalValue = try c.ifPresent("optionalValue")
+    self.requiredNullable = try c.value("requiredNullable")
+    self.requiredValue = try c.value("requiredValue")
+    rest = try c.rest(excluding: [
+      "optionalNullable", "optionalValue", "requiredNullable", "requiredValue",
+    ])
   }
   public func encode(to encoder: any Encoder) throws {
     var c = encoder.container(keyedBy: WireKey.self)
-    for (key, value) in rest {
-      guard
-        !Set<String>(["optionalNullable", "optionalValue", "requiredNullable", "requiredValue"])
-          .contains(key)
-      else {
-        throw EncodingError.invalidValue(
-          value,
-          .init(
-            codingPath: encoder.codingPath,
-            debugDescription: "rest overrides a named property of FidelityFixture"))
-      }
-      try c.encode(value, forKey: WireKey(key))
-    }
-    switch self.optionalNullable {
-    case .absent: break
-    case .null: try c.encodeNil(forKey: WireKey("optionalNullable"))
-    case .value(let value): try c.encode(value, forKey: WireKey("optionalNullable"))
-    }
-    try c.encodeIfPresent(self.optionalValue, forKey: WireKey("optionalValue"))
-    try c.encode(self.requiredNullable, forKey: WireKey("requiredNullable"))
-    try c.encode(self.requiredValue, forKey: WireKey("requiredValue"))
+    try c.encode(
+      rest: rest,
+      excluding: ["optionalNullable", "optionalValue", "requiredNullable", "requiredValue"],
+      of: "FidelityFixture")
+    try c.encode(stated: self.optionalNullable, as: "optionalNullable")
+    try c.encodeIfPresent(self.optionalValue, as: "optionalValue")
+    try c.encode(self.requiredNullable, as: "requiredNullable")
+    try c.encode(self.requiredValue, as: "requiredValue")
   }
 }

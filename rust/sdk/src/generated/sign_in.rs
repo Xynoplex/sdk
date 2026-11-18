@@ -51,6 +51,4 @@ impl SignIn {
     }
 }
 
-impl Schema for SignIn {
-    const NAME: &'static str = "SignIn";
-}
+schema!(SignIn);

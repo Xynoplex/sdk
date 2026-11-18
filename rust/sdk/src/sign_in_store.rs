@@ -35,7 +35,7 @@ use crate::locked;
 use crate::rfc3339;
 use crate::session::{SCRIPT_CLIENT_ID, SignInKept, StoredSession, text_claim, token_expiry};
 use crate::transport::BoxFuture;
-use crate::types::Schema;
+use crate::types::schema;
 use serde_json::{Map, Value};
 use std::error::Error;
 use std::fs::{self, OpenOptions};
